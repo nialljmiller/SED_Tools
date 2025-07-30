@@ -23,6 +23,9 @@ from astropy.utils.data import download_file
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 
+
+
+
 __all__ = ['AtmosphereGrabber', 'discover_models', 'download_model_grid']
 
 
@@ -197,110 +200,116 @@ class AtmosphereGrabber:
         
         print(f"Successfully downloaded {len(successful_downloads)} spectra to {output_dir}")
         return output_dir
-    
+
+
+    def _parse_json_response(response) -> Optional[List[Dict]]:
+        try:
+            data = response.json()
+            if isinstance(data, list):
+                return data
+        except json.JSONDecodeError:
+            pass
+        return None
+
+
     def _discover_spectra(self, model_name: str) -> List[Dict]:
         """Discover available spectra for a model using multiple methods."""
         spectra_info = []
-        
+
         # Method 1: Direct metadata query
         try:
-            params = {'model': model_name, 'format': 'json'}
-            response = self.session.get(
-                self.metadata_url, params=params, timeout=self.timeout
+            resp = self.session.get(
+                self.metadata_url, 
+                params={"model": model_name, "format": "json"}, 
+                timeout=self.timeout
             )
-            if response.status_code == 200:
-                try:
-                    metadata = response.json()
-                    if isinstance(metadata, list):
-                        spectra_info.extend(metadata)
-                except json.JSONDecodeError:
-                    pass
-        except requests.RequestException:
-            pass
-        
-        # Method 2: SSAP discovery if method 1 failed
-        if not spectra_info:
-            spectra_info = self._discover_spectra_ssap(model_name)
-        
-        # Method 3: Intelligent brute force as fallback
-        if not spectra_info:
-            print(f"Using brute force discovery for {model_name}...")
-            spectra_info = self._discover_spectra_brute_force(model_name)
-        
-        return spectra_info
-    
-    def _discover_spectra_ssap(self, model_name: str) -> List[Dict]:
-        """Use SSAP protocol to discover spectra."""
-        spectra_info = []
-        
+            if resp.status_code == 200:
+                data = _parse_json_response(resp)
+                if data:
+                    return data
+        except requests.RequestException as e:
+            print(f"[WARN] Metadata query failed: {e}")
+
+        # Method 2: SSAP query
         try:
-            params = {
-                'model': model_name, 
-                'REQUEST': 'queryData', 
-                'FORMAT': 'metadata'
-            }
-            response = self.session.get(
-                self.spectra_url, params=params, timeout=self.timeout
+            spectra_info = self._discover_spectra_ssap(model_name)
+            if spectra_info:
+                return spectra_info
+        except Exception as e:
+            print(f"[WARN] SSAP discovery failed: {e}")
+
+        # Method 3: Brute force fallback
+        print(f"[INFO] Falling back to brute-force discovery for '{model_name}'...")
+        return self._discover_spectra_brute_force(model_name)
+
+
+    def _discover_spectra_ssap(self, model_name: str) -> List[Dict]:
+        """Discover spectra using SSAP protocol."""
+        spectra_info = []
+
+        try:
+            resp = self.session.get(
+                self.spectra_url, 
+                params={"model": model_name, "REQUEST": "queryData", "FORMAT": "metadata"}, 
+                timeout=self.timeout
             )
-            
-            if response.status_code == 200:
-                soup = BeautifulSoup(response.text, 'html.parser')
-                for link in soup.find_all('a', href=True):
-                    href = link.get('href', '')
-                    if 'fid=' in href:
-                        fid = href.split('fid=')[1].split('&')[0]
-                        if fid.isdigit():
-                            spectra_info.append({'fid': int(fid)})
-        
-        except requests.RequestException:
-            pass
-        
+            if resp.status_code != 200:
+                return []
+
+            soup = BeautifulSoup(resp.text, features="html.parser")  # Use 'xml' if appropriate
+            for link in soup.find_all("a", href=True):
+                href = link["href"]
+                if "fid=" in href:
+                    fid = href.split("fid=")[1].split("&")[0]
+                    if fid.isdigit():
+                        spectra_info.append({"fid": int(fid)})
+
+        except requests.RequestException as e:
+            print(f"[WARN] SSAP request failed: {e}")
+
         return spectra_info
-    
+
+
     def _discover_spectra_brute_force(
         self, 
         model_name: str, 
         max_fid: int = 20000, 
         batch_size: int = 50
     ) -> List[Dict]:
-        """Brute force discovery with intelligent batching."""
+        """Brute-force spectrum discovery via parallel probing of FIDs."""
         spectra_info = []
         consecutive_failures = 0
-        max_consecutive_failures = 100
-        
+        max_failures = 100
+
         with ThreadPoolExecutor(max_workers=min(10, batch_size)) as executor:
-            for start_fid in tqdm(
-                range(1, max_fid, batch_size), 
-                desc="Scanning for spectra"
-            ):
-                batch_fids = list(range(start_fid, min(start_fid + batch_size, max_fid)))
-                
-                # Test batch in parallel
-                future_to_fid = {
+            for start in tqdm(range(1, max_fid, batch_size), desc=f"Brute scan {model_name}"):
+                fids = list(range(start, min(start + batch_size, max_fid)))
+
+                futures = {
                     executor.submit(self._test_spectrum_exists, model_name, fid): fid
-                    for fid in batch_fids
+                    for fid in fids
                 }
-                
-                batch_found = False
-                for future in as_completed(future_to_fid):
-                    fid = future_to_fid[future]
+
+                found = False
+                for future in as_completed(futures):
+                    fid = futures[future]
                     try:
-                        exists = future.result()
-                        if exists:
-                            spectra_info.append({'fid': fid})
+                        if future.result():
+                            spectra_info.append({"fid": fid})
                             consecutive_failures = 0
-                            batch_found = True
+                            found = True
                         else:
                             consecutive_failures += 1
                     except Exception:
                         consecutive_failures += 1
-                
-                if not batch_found and consecutive_failures > max_consecutive_failures:
-                    if len(spectra_info) > 0:
-                        break
-        
+
+                if not found and consecutive_failures > max_failures:
+                    print(f"[INFO] Exceeded max failures, stopping at fid {start}")
+                    break
+
         return spectra_info
-    
+
+
     def _test_spectrum_exists(self, model_name: str, fid: int) -> bool:
         """Test if a spectrum exists without downloading it."""
         try:
