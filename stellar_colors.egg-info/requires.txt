@@ -1,0 +1,10 @@
+numpy
+scipy
+pandas
+astropy
+h5py
+requests
+
+[dev]
+pytest
+requests-mock

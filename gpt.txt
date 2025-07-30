@@ -1,0 +1,1391 @@
+# stellar_colors/config.py
+"""
+Configuration management for the stellar_colors package.
+"""
+
+import os
+from pathlib import Path
+import logging
+
+class Config:
+    """Configuration class for stellar_colors package."""
+    
+    def __init__(self):
+        # Default configuration values
+        self.max_download_workers = 5
+        self.download_timeout = 30.0
+        self.default_interpolation_method = 'linear'
+        self.magnitude_system = 'vega'
+        self.data_dir = Path.home() / '.stellar_colors'
+        self.models_dir = 'models'
+        self.filters_dir = 'filters'
+        
+        # Ensure data directory exists
+        self._create_data_dirs()
+
+    def _create_data_dirs(self):
+        """Create data directories if they don't exist."""
+        try:
+            self.data_dir.mkdir(parents=True, exist_ok=True)
+            self.get_models_dir().mkdir(parents=True, exist_ok=True)
+            self.get_filters_dir().mkdir(parents=True, exist_ok=True)
+        except Exception as e:
+            logging.error(f"Failed to create data directories: {e}")
+            raise
+
+    def get_data_dir(self) -> Path:
+        """Return the main data directory."""
+        return self.data_dir
+
+    def get_models_dir(self) -> Path:
+        """Return the models subdirectory."""
+        return self.data_dir / self.models_dir
+
+    def get_filters_dir(self) -> Path:
+        """Return the filters subdirectory."""
+        return self.data_dir / self.filters_dir
+
+# Singleton configuration instance
+conf = Config()
+
+def get_data_dir() -> Path:
+    """Convenience function to get data directory."""
+    return conf.get_data_dir()
+
+def get_models_dir() -> Path:
+    """Convenience function to get models directory."""
+    return conf.get_models_dir()
+
+def get_filters_dir() -> Path:
+    """Convenience function to get filters directory."""
+    return conf.get_filters_dir()# stellar_colors/__init__.py
+"""
+Stellar Colors: A comprehensive package for stellar atmosphere modeling and synthetic photometry.
+
+This package provides tools for:
+- Downloading stellar atmosphere models and filter transmission curves
+- Building interpolatable data cubes from model collections
+- Computing synthetic photometry and bolometric corrections
+- Integration with astropy for astronomical applications
+
+Examples
+--------
+Basic usage for synthetic photometry:
+
+>>> import stellar_colors as sc
+>>> from astropy import units as u
+
+# Download some stellar atmosphere models
+>>> models = sc.discover_models()
+>>> sc.download_model_grid('KURUCZ2003')cp 
+
+# Download photometric filters  
+>>> filters = sc.discover_filters(facility='HST')
+>>> sc.download_filter_collection('HST_Collection', ['HST'])
+
+# Build a flux cube for fast interpolation
+>>> cube_file = sc.build_flux_cube('models/KURUCZ2003/', 'kurucz_cube.h5')
+
+# Compute synthetic photometry
+>>> photometry = sc.SyntheticPhotometry(cube_file, 'filters/HST_Collection/')
+>>> magnitude = photometry.compute_magnitude(5777, 4.44, 0.0, 'HST/WFC3/F555W')
+"""
+
+# Version information
+try:
+    from .version import version as __version__
+except ImportError:
+    __version__ = "unknown"
+
+# Core imports - make main functionality easily accessible
+from .atmosphere.grabber import AtmosphereGrabber, discover_models, download_model_grid
+from .filters.grabber import FilterGrabber, discover_filters, download_filter_collection
+from .cube.builder import DataCubeBuilder, FluxCube, build_flux_cube
+from .photometry.synthetic import SyntheticPhotometry, compute_synthetic_magnitude
+from .photometry.bolometric import BolometricCorrections, compute_bolometric_correction
+
+# Configuration
+from .config import conf
+
+# Make key classes and functions available at package level
+__all__ = [
+    # Version
+    '__version__',
+    
+    # Main classes
+    'AtmosphereGrabber',
+    'FilterGrabber', 
+    'DataCubeBuilder',
+    'FluxCube',
+    'SyntheticPhotometry',
+    'BolometricCorrections',
+    
+    # Convenience functions
+    'discover_models',
+    'download_model_grid',
+    'discover_filters',
+    'download_filter_collection',
+    'build_flux_cube',
+    'compute_synthetic_magnitude',
+    'compute_bolometric_correction',
+    
+    # Configuration
+    'conf',
+]
+
+# Package metadata
+__author__ = "Stellar Colors Development Team"
+__email__ = "stellar-colors@example.com"
+__license__ = "BSD-3-Clause"
+__description__ = "Stellar atmosphere modeling and synthetic photometry for astronomy"
+
+
+# stellar_colors/photometry/synthetic.py
+"""
+Synthetic photometry calculations using stellar atmosphere models and filter transmission curves.
+"""
+
+import warnings
+from pathlib import Path
+from typing import Dict, List, Optional, Union, Tuple
+
+import numpy as np
+import pandas as pd
+from astropy import constants as const
+from astropy import units as u
+from astropy.io import ascii
+from scipy.integrate import trapz, simpson
+
+from ..cube.builder import FluxCube
+from ..utils.integration import adaptive_integration
+
+__all__ = ['SyntheticPhotometry', 'compute_synthetic_magnitude']
+
+
+class SyntheticPhotometry:
+    """
+    A class for computing synthetic photometry from stellar atmosphere models.
+    
+    This class provides methods to compute synthetic magnitudes by convolving
+    stellar atmosphere model spectra with photometric filter transmission curves.
+    
+    Parameters
+    ----------
+    flux_cube : str, Path, or FluxCube
+        Path to flux cube file or FluxCube instance
+    filter_dir : str or Path
+        Directory containing filter transmission curves
+    vega_spectrum : str or Path, optional
+        Path to Vega spectrum for magnitude zero points
+    """
+    
+    def __init__(
+        self,
+        flux_cube: Union[str, Path, FluxCube],
+        filter_dir: Union[str, Path],
+        vega_spectrum: Optional[Union[str, Path]] = None
+    ):
+        # Load flux cube
+        if isinstance(flux_cube, FluxCube):
+            self.flux_cube = flux_cube
+        else:
+            self.flux_cube = FluxCube(flux_cube)
+        
+        self.filter_dir = Path(filter_dir)
+        if not self.filter_dir.exists():
+            raise FileNotFoundError(f"Filter directory not found: {filter_dir}")
+        
+        # Load Vega spectrum if provided
+        self.vega_spectrum = None
+        if vega_spectrum:
+            self.vega_spectrum = self._load_vega_spectrum(vega_spectrum)
+        
+        # Cache for loaded filters
+        self._filter_cache = {}
+        
+        # Discover available filters
+        self._discover_filters()
+    
+    def _discover_filters(self):
+        """Discover available filters in the filter directory."""
+        self.available_filters = []
+        
+        # Look for filter files (various formats)
+        filter_extensions = ['.dat', '.txt', '.csv', '.fits']
+        
+        for ext in filter_extensions:
+            for filter_file in self.filter_dir.rglob(f'*{ext}'):
+                # Skip catalog files
+                if 'catalog' in filter_file.name.lower():
+                    continue
+                
+                # Create filter ID from path structure
+                rel_path = filter_file.relative_to(self.filter_dir)
+                filter_id = str(rel_path.with_suffix(''))
+                self.available_filters.append(filter_id)
+        
+        print(f"Discovered {len(self.available_filters)} filters")
+    
+    def list_filters(self) -> List[str]:
+        """
+        List all available filters.
+        
+        Returns
+        -------
+        List[str]
+            List of available filter identifiers
+        """
+        return self.available_filters.copy()
+    
+    def compute_magnitude(
+        self,
+        teff: float,
+        logg: float,
+        metallicity: float,
+        filter_id: str,
+        distance: Optional[float] = None,
+        radius: Optional[float] = None,
+        interpolation_method: str = 'linear'
+    ) -> float:
+        """
+        Compute synthetic magnitude for given stellar parameters.
+        
+        Parameters
+        ----------
+        teff : float
+            Effective temperature in K
+        logg : float
+            Surface gravity (log g)
+        metallicity : float
+            Metallicity [M/H]
+        filter_id : str
+            Filter identifier
+        distance : float, optional
+            Distance in parsecs (for apparent magnitudes)
+        radius : float, optional
+            Stellar radius in solar radii (for flux scaling)
+        interpolation_method : str, optional
+            Interpolation method for flux cube
+            
+        Returns
+        -------
+        float
+            Synthetic magnitude
+        """
+        # Get stellar spectrum from flux cube
+        wavelengths, fluxes = self.flux_cube.interpolate_spectrum(
+            teff, logg, metallicity, method=interpolation_method
+        )
+        
+        # Apply distance and radius scaling if provided
+        if distance is not None and radius is not None:
+            # Convert surface flux to observed flux
+            distance_cm = distance * u.pc.to(u.cm)
+            radius_cm = radius * const.R_sun.to(u.cm).value
+            flux_scale = (radius_cm / distance_cm) ** 2
+            fluxes = fluxes * flux_scale
+        
+        # Load filter transmission
+        filter_wavelengths, filter_transmission = self._load_filter(filter_id)
+        
+        # Compute synthetic flux
+        synthetic_flux = self._compute_synthetic_flux(
+            wavelengths, fluxes, filter_wavelengths, filter_transmission
+        )
+        
+        # Convert to magnitude using Vega zero point
+        if self.vega_spectrum is not None:
+            vega_flux = self._compute_synthetic_flux(
+                self.vega_spectrum['wavelength'],
+                self.vega_spectrum['flux'],
+                filter_wavelengths,
+                filter_transmission
+            )
+            magnitude = -2.5 * np.log10(synthetic_flux / vega_flux)
+        else:
+            # Use AB magnitude system as fallback
+            # AB magnitude = -2.5 * log10(flux) - 48.6
+            magnitude = -2.5 * np.log10(synthetic_flux) - 48.6
+            warnings.warn("No Vega spectrum provided, using AB magnitude system")
+        
+        return magnitude
+    
+    def compute_color(
+        self,
+        teff: float,
+        logg: float,
+        metallicity: float,
+        filter1_id: str,
+        filter2_id: str,
+        **kwargs
+    ) -> float:
+        """
+        Compute color index (filter1 - filter2).
+        
+        Parameters
+        ----------
+        teff : float
+            Effective temperature in K
+        logg : float
+            Surface gravity (log g)
+        metallicity : float
+            Metallicity [M/H]
+        filter1_id : str
+            First filter identifier
+        filter2_id : str
+            Second filter identifier
+        **kwargs
+            Additional arguments passed to compute_magnitude
+            
+        Returns
+        -------
+        float
+            Color index (magnitude1 - magnitude2)
+        """
+        mag1 = self.compute_magnitude(teff, logg, metallicity, filter1_id, **kwargs)
+        mag2 = self.compute_magnitude(teff, logg, metallicity, filter2_id, **kwargs)
+        
+        return mag1 - mag2
+    
+    def compute_magnitude_grid(
+        self,
+        teff_range: Tuple[float, float],
+        logg_range: Tuple[float, float],
+        metallicity_range: Tuple[float, float],
+        filter_id: str,
+        n_teff: int = 20,
+        n_logg: int = 20,
+        n_metallicity: int = 10,
+        **kwargs
+    ) -> Dict[str, np.ndarray]:
+        """
+        Compute synthetic magnitudes on a regular parameter grid.
+        
+        Parameters
+        ----------
+        teff_range : tuple
+            (min_teff, max_teff) in K
+        logg_range : tuple
+            (min_logg, max_logg)
+        metallicity_range : tuple
+            (min_metallicity, max_metallicity)
+        filter_id : str
+            Filter identifier
+        n_teff : int, optional
+            Number of Teff grid points
+        n_logg : int, optional
+            Number of log g grid points
+        n_metallicity : int, optional
+            Number of metallicity grid points
+        **kwargs
+            Additional arguments passed to compute_magnitude
+            
+        Returns
+        -------
+        Dict[str, np.ndarray]
+            Dictionary containing parameter grids and magnitude array
+        """
+        # Create parameter grids
+        teff_grid = np.linspace(teff_range[0], teff_range[1], n_teff)
+        logg_grid = np.linspace(logg_range[0], logg_range[1], n_logg)
+        metallicity_grid = np.linspace(metallicity_range[0], metallicity_range[1], n_metallicity)
+        
+        # Initialize magnitude array
+        magnitudes = np.zeros((n_teff, n_logg, n_metallicity))
+        
+        # Compute magnitudes
+        for i, teff in enumerate(teff_grid):
+            for j, logg in enumerate(logg_grid):
+                for k, metallicity in enumerate(metallicity_grid):
+                    try:
+                        mag = self.compute_magnitude(
+                            teff, logg, metallicity, filter_id, **kwargs
+                        )
+                        magnitudes[i, j, k] = mag
+                    except Exception as e:
+                        magnitudes[i, j, k] = np.nan
+                        warnings.warn(f"Failed to compute magnitude at "
+                                    f"Teff={teff}, logg={logg}, [M/H]={metallicity}: {e}")
+        
+        return {
+            'teff_grid': teff_grid,
+            'logg_grid': logg_grid,
+            'metallicity_grid': metallicity_grid,
+            'magnitudes': magnitudes
+        }
+    
+    def _load_filter(self, filter_id: str) -> Tuple[np.ndarray, np.ndarray]:
+        """Load filter transmission curve."""
+        if filter_id in self._filter_cache:
+            return self._filter_cache[filter_id]
+        
+        # Find filter file
+        filter_file = None
+        for ext in ['.dat', '.txt', '.csv']:
+            candidate = self.filter_dir / f"{filter_id}{ext}"
+            if candidate.exists():
+                filter_file = candidate
+                break
+        
+        if filter_file is None:
+            raise FileNotFoundError(f"Filter {filter_id} not found in {self.filter_dir}")
+        
+        try:
+            # Try different loading methods
+            if filter_file.suffix == '.csv':
+                data = pd.read_csv(filter_file, comment='#')
+                wavelengths = data.iloc[:, 0].values
+                transmission = data.iloc[:, 1].values
+            else:
+                data = np.loadtxt(filter_file, comments='#')
+                wavelengths = data[:, 0]
+                transmission = data[:, 1]
+            
+            # Validate and sort
+            if len(wavelengths) != len(transmission):
+                raise ValueError("Wavelength and transmission arrays must have same length")
+            
+            # Sort by wavelength
+            sort_idx = np.argsort(wavelengths)
+            wavelengths = wavelengths[sort_idx]
+            transmission = transmission[sort_idx]
+            
+            # Normalize transmission to [0, 1]
+            transmission = np.maximum(transmission, 0)  # No negative transmission
+            if transmission.max() > 1.1:  # Likely in percentage
+                transmission = transmission / 100.0
+            
+            # Cache the result
+            self._filter_cache[filter_id] = (wavelengths, transmission)
+            
+            return wavelengths, transmission
+            
+        except Exception as e:
+            raise RuntimeError(f"Failed to load filter {filter_id}: {e}")
+    
+    def _load_vega_spectrum(self, vega_file: Union[str, Path]) -> Dict[str, np.ndarray]:
+        """Load Vega spectrum."""
+        vega_file = Path(vega_file)
+        
+        try:
+            if vega_file.suffix == '.csv':
+                data = pd.read_csv(vega_file, comment='#')
+                wavelengths = data.iloc[:, 0].values
+                fluxes = data.iloc[:, 1].values
+            else:
+                data = np.loadtxt(vega_file, comments='#')
+                wavelengths = data[:, 0]
+                fluxes = data[:, 1]
+            
+            # Sort by wavelength
+            sort_idx = np.argsort(wavelengths)
+            wavelengths = wavelengths[sort_idx]
+            fluxes = fluxes[sort_idx]
+            
+            return {'wavelength': wavelengths, 'flux': fluxes}
+            
+        except Exception as e:
+            raise RuntimeError(f"Failed to load Vega spectrum: {e}")
+    
+    def _compute_synthetic_flux(
+        self,
+        spec_wavelengths: np.ndarray,
+        spec_fluxes: np.ndarray,
+        filter_wavelengths: np.ndarray,
+        filter_transmission: np.ndarray
+    ) -> float:
+        """
+        Compute synthetic flux by convolving spectrum with filter.
+        
+        Uses the standard formula:
+        F = ∫ F_λ(λ) * T(λ) * λ dλ / ∫ T(λ) * λ dλ
+        """
+        # Find wavelength overlap
+        wave_min = max(spec_wavelengths.min(), filter_wavelengths.min())
+        wave_max = min(spec_wavelengths.max(), filter_wavelengths.max())
+        
+        if wave_min >= wave_max:
+            raise ValueError("No wavelength overlap between spectrum and filter")
+        
+        # Create common wavelength grid
+        # Use the finer of the two grids
+        spec_resolution = np.median(np.diff(spec_wavelengths))
+        filter_resolution = np.median(np.diff(filter_wavelengths))
+        resolution = min(spec_resolution, filter_resolution)
+        
+        n_points = int((wave_max - wave_min) / resolution) + 1
+        n_points = min(n_points, 10000)  # Cap for memory
+        
+        common_wavelengths = np.linspace(wave_min, wave_max, n_points)
+        
+        # Interpolate spectrum and filter to common grid
+        interp_flux = np.interp(common_wavelengths, spec_wavelengths, spec_fluxes)
+        interp_transmission = np.interp(
+            common_wavelengths, filter_wavelengths, filter_transmission
+        )
+        
+        # Compute integrals
+        numerator = trapz(
+            interp_flux * interp_transmission * common_wavelengths,
+            common_wavelengths
+        )
+        denominator = trapz(
+            interp_transmission * common_wavelengths,
+            common_wavelengths
+        )
+        
+        if denominator == 0:
+            raise ValueError("Filter transmission integrates to zero")
+        
+        return numerator / denominator
+
+
+def compute_synthetic_magnitude(
+    teff: float,
+    logg: float,
+    metallicity: float,
+    filter_id: str,
+    flux_cube_file: Union[str, Path],
+    filter_dir: Union[str, Path],
+    **kwargs
+) -> float:
+    """
+    Convenience function to compute a synthetic magnitude.
+    
+    Parameters
+    ----------
+    teff : float
+        Effective temperature in K
+    logg : float
+        Surface gravity (log g)
+    metallicity : float
+        Metallicity [M/H]
+    filter_id : str
+        Filter identifier
+    flux_cube_file : str or Path
+        Path to flux cube file
+    filter_dir : str or Path
+        Directory containing filter transmission curves
+    **kwargs
+        Additional arguments passed to SyntheticPhotometry.compute_magnitude
+        
+    Returns
+    -------
+    float
+        Synthetic magnitude
+    """
+    photometry = SyntheticPhotometry(flux_cube_file, filter_dir)
+    return photometry.compute_magnitude(teff, logg, metallicity, filter_id, **kwargs)
+
+
+# stellar_colors/utils/integration.py
+"""
+Numerical integration utilities for stellar colors calculations.
+"""
+
+import warnings
+from typing import Callable, Tuple
+
+import numpy as np
+from scipy.integrate import quad, trapz, simpson
+
+
+def adaptive_integration(
+    x: np.ndarray,
+    y: np.ndarray,
+    method: str = 'auto'
+) -> float:
+    """
+    Perform adaptive numerical integration.
+    
+    Parameters
+    ----------
+    x : np.ndarray
+        Independent variable array
+    y : np.ndarray
+        Dependent variable array
+    method : str, optional
+        Integration method ('auto', 'trapz', 'simpson')
+        
+    Returns
+    -------
+    float
+        Integrated value
+    """
+    if len(x) != len(y):
+        raise ValueError("x and y arrays must have the same length")
+    
+    if len(x) < 2:
+        raise ValueError("Need at least 2 points for integration")
+    
+    if method == 'auto':
+        # Choose method based on array size and regularity
+        if len(x) < 5:
+            method = 'trapz'
+        else:
+            # Check if grid is regular
+            dx = np.diff(x)
+            if np.allclose(dx, dx[0], rtol=1e-3):
+                method = 'simpson'
+            else:
+                method = 'trapz'
+    
+    if method == 'trapz':
+        return trapz(y, x)
+    elif method == 'simpson':
+        if len(x) % 2 == 0:
+            # Simpson's rule requires odd number of points
+            # Use composite rule for even number
+            result = simpson(y[:-1], x[:-1])
+            result += trapz(y[-2:], x[-2:])  # Add last interval with trapz
+            return result
+        else:
+            return simpson(y, x)
+    else:
+        raise ValueError(f"Unknown integration method: {method}")
+
+
+def romberg_integration(
+    x: np.ndarray,
+    y: np.ndarray,
+    max_levels: int = 10
+) -> float:
+    """
+    Romberg integration for improved accuracy.
+    
+    Parameters
+    ----------
+    x : np.ndarray
+        Independent variable array (must be uniformly spaced)
+    y : np.ndarray
+        Dependent variable array
+    max_levels : int, optional
+        Maximum number of Romberg levels
+        
+    Returns
+    -------
+    float
+        Integrated value
+    """
+    n = len(x)
+    if n < 3:
+        return trapz(y, x)
+    
+    # Check if uniformly spaced
+    dx = np.diff(x)
+    if not np.allclose(dx, dx[0], rtol=1e-6):
+        warnings.warn("Romberg integration requires uniform spacing, falling back to trapz")
+        return trapz(y, x)
+    
+    h = dx[0]
+    
+    # Initialize Romberg table
+    R = np.zeros((max_levels, max_levels))
+    
+    # First column: trapezoidal rule with successive halvings
+    R[0, 0] = 0.5 * h * (y[0] + y[-1])  # Single interval
+    
+    for i in range(1, min(max_levels, int(np.log2(n-1)) + 1)):
+        # Refine with half the step size
+        step = 2 ** i
+        if step >= n:
+            break
+            
+        # Add intermediate points
+        sum_intermediate = 0
+        for k in range(1, step, 2):
+            if k < n:
+                sum_intermediate += y[k * (n-1) // step]
+        
+        R[i, 0] = 0.5 * R[i-1, 0] + (h / step) * sum_intermediate
+        
+        # Richardson extrapolation
+        for j in range(1, i+1):
+            R[i, j] = R[i, j-1] + (R[i, j-1] - R[i-1, j-1]) / (4**j - 1)
+    
+    # Return the most accurate estimate
+    max_i = min(max_levels-1, int(np.log2(n-1)))
+    return R[max_i, max_i] if max_i > 0 else R[0, 0]# stellar_colors/version.py
+"""
+Version information for the stellar_colors package.
+"""
+
+__version__ = "0.1.0"# tests/test_atmosphere.py
+"""
+Tests for stellar atmosphere model grabber functionality.
+"""
+
+import tempfile
+from pathlib import Path
+from unittest.mock import Mock, patch
+
+import pytest
+import requests_mock
+from astropy.table import Table
+
+from stellar_colors.atmosphere.grabber import AtmosphereGrabber
+
+
+class TestAtmosphereGrabber:
+    """Test cases for AtmosphereGrabber class."""
+    
+    @pytest.fixture
+    def temp_cache_dir(self):
+        """Create temporary cache directory."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            yield Path(temp_dir)
+    
+    @pytest.fixture
+    def grabber(self, temp_cache_dir):
+        """Create AtmosphereGrabber instance with temporary cache."""
+        return AtmosphereGrabber(cache_dir=temp_cache_dir)
+    
+    def test_initialization(self, temp_cache_dir):
+        """Test proper initialization of AtmosphereGrabber."""
+        grabber = AtmosphereGrabber(cache_dir=temp_cache_dir)
+        assert grabber.cache_dir == temp_cache_dir
+        assert grabber.cache_dir.exists()
+        assert grabber.max_workers == 5
+        assert grabber.timeout == 30.0
+    
+    @requests_mock.Mocker()
+    def test_discover_models(self, m, grabber):
+        """Test model discovery functionality."""
+        # Mock SVO response
+        mock_html = '''
+        <html>
+        <body>
+            <a href="?models=KURUCZ2003&action=view">KURUCZ2003</a>
+            <a href="?models=PHOENIX&action=view">PHOENIX</a>
+            <a href="?models=ATLAS9&action=view">ATLAS9</a>
+        </body>
+        </html>
+        '''
+        m.get(grabber.model_index_url, text=mock_html)
+        
+        models = grabber.discover_models()
+        
+        assert isinstance(models, list)
+        assert 'KURUCZ2003' in models
+        assert 'PHOENIX' in models
+        assert 'ATLAS9' in models
+        assert len(models) == 3
+    
+    @requests_mock.Mocker()
+    def test_discover_models_connection_error(self, m, grabber):
+        """Test handling of connection errors during model discovery."""
+        m.get(grabber.model_index_url, exc=requests.ConnectionError)
+        
+        with pytest.raises(ConnectionError):
+            grabber.discover_models()
+    
+    def test_get_model_info(self, grabber):
+        """Test getting model information."""
+        with patch.object(grabber, '_discover_spectra') as mock_discover:
+            mock_spectra = [
+                {'fid': 1, 'teff': 5000, 'logg': 4.0, 'meta': 0.0},
+                {'fid': 2, 'teff': 5500, 'logg': 4.5, 'meta': 0.0}
+            ]
+            mock_discover.return_value = mock_spectra
+            
+            info = grabber.get_model_info('TEST_MODEL')
+            
+            assert info['name'] == 'TEST_MODEL'
+            assert info['n_spectra'] == 2
+            assert 'parameter_ranges' in info
+            assert 'teff' in info['parameter_ranges']
+    
+    def test_test_spectrum_exists(self, grabber):
+        """Test spectrum existence checking."""
+        with requests_mock.Mocker() as m:
+            # Mock successful response
+            m.head(grabber.spectra_url, headers={'content-length': '2048'})
+            result = grabber._test_spectrum_exists('TEST_MODEL', 123)
+            assert result is True
+            
+            # Mock failed response
+            m.head(grabber.spectra_url, status_code=404)
+            result = grabber._test_spectrum_exists('TEST_MODEL', 456)
+            assert result is False
+
+
+# tests/test_filters.py
+"""
+Tests for filter transmission curve grabber functionality.
+"""
+
+import tempfile
+from pathlib import Path
+from unittest.mock import Mock, patch
+
+import pytest
+from astropy import units as u
+from astropy.table import Table
+
+from stellar_colors.filters.grabber import FilterGrabber
+
+
+class TestFilterGrabber:
+    """Test cases for FilterGrabber class."""
+    
+    @pytest.fixture
+    def temp_cache_dir(self):
+        """Create temporary cache directory."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            yield Path(temp_dir)
+    
+    @pytest.fixture
+    def grabber(self, temp_cache_dir):
+        """Create FilterGrabber instance with temporary cache."""
+        return FilterGrabber(cache_dir=temp_cache_dir)
+    
+    @pytest.fixture
+    def mock_filter_table(self):
+        """Create mock filter table."""
+        return Table({
+            'filterID': ['Generic/Johnson.V', 'HST/WFC3/F555W', 'Gaia/G'],
+            'Facility': ['Generic', 'HST', 'Gaia'],
+            'Instrument': ['Johnson', 'WFC3', 'Gaia'],
+            'Band': ['V', 'F555W', 'G'],
+            'WavelengthEff': [5500.0, 5300.0, 6200.0],
+            'WavelengthMin': [4800.0, 4500.0, 3300.0],
+            'WavelengthMax': [6200.0, 6100.0, 10500.0],
+            'FWHM': [800.0, 1200.0, 4500.0]
+        })
+    
+    def test_initialization(self, temp_cache_dir):
+        """Test proper initialization of FilterGrabber."""
+        grabber = FilterGrabber(cache_dir=temp_cache_dir)
+        assert grabber.cache_dir == temp_cache_dir
+        assert grabber.cache_dir.exists()
+        assert len(grabber.wavelength_ranges) > 0
+    
+    def test_discover_facilities(self, grabber, mock_filter_table):
+        """Test facility discovery."""
+        with patch.object(grabber, '_get_all_filters', return_value=mock_filter_table):
+            facilities = grabber.discover_facilities()
+            
+            assert isinstance(facilities, list)
+            assert 'Generic' in facilities
+            assert 'HST' in facilities
+            assert 'Gaia' in facilities
+    
+    def test_search_filters_by_facility(self, grabber, mock_filter_table):
+        """Test searching filters by facility."""
+        with patch.object(grabber, '_get_all_filters', return_value=mock_filter_table):
+            hst_filters = grabber.search_filters(facility='HST')
+            
+            assert len(hst_filters) == 1
+            assert hst_filters['filterID'][0] == 'HST/WFC3/F555W'
+    
+    def test_search_filters_by_wavelength(self, grabber, mock_filter_table):
+        """Test searching filters by wavelength range."""
+        with patch.object(grabber, '_get_all_filters', return_value=mock_filter_table):
+            optical_filters = grabber.search_filters(
+                wavelength_range=(5000*u.AA, 6000*u.AA)
+            )
+            
+            # Should find Generic/Johnson.V and HST/WFC3/F555W
+            assert len(optical_filters) == 2
+    
+    def test_clean_name(self, grabber):
+        """Test name cleaning functionality."""
+        assert grabber._clean_name('HST/ACS') == 'HST_ACS'
+        assert grabber._clean_name('Test Filter') == 'Test_Filter'
+        assert grabber._clean_name('') == 'Unknown'
+        assert grabber._clean_name(None) == 'Unknown'
+
+
+# tests/test_cube.py
+"""
+Tests for data cube builder functionality.
+"""
+
+import tempfile
+from pathlib import Path
+import numpy as np
+import pandas as pd
+import pytest
+import h5py
+
+from stellar_colors.cube.builder import DataCubeBuilder, FluxCube
+
+
+class TestDataCubeBuilder:
+    """Test cases for DataCubeBuilder class."""
+    
+    @pytest.fixture
+    def temp_model_dir(self):
+        """Create temporary model directory with test data."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            model_dir = Path(temp_dir)
+            
+            # Create lookup table
+            lookup_data = {
+                'filename': ['model_1.txt', 'model_2.txt', 'model_3.txt'],
+                'teff': [5000, 5500, 6000],
+                'logg': [4.0, 4.5, 4.0],
+                'metallicity': [0.0, 0.0, 0.5]
+            }
+            lookup_df = pd.DataFrame(lookup_data)
+            lookup_df.to_csv(model_dir / 'lookup_table.csv', index=False)
+            
+            # Create simple model files
+            wavelengths = np.linspace(4000, 7000, 100)
+            for i, (teff, filename) in enumerate(zip([5000, 5500, 6000], lookup_data['filename'])):
+                # Simple blackbody-like spectrum
+                fluxes = np.exp(-((wavelengths - 5500) / 500)**2) * (teff / 5500)**4
+                spectrum = np.column_stack([wavelengths, fluxes])
+                np.savetxt(model_dir / filename, spectrum, 
+                          header='Wavelength(A) Flux(erg/s/cm2/A)', comments='#')
+            
+            yield model_dir
+    
+    @pytest.fixture
+    def builder(self, temp_model_dir):
+        """Create DataCubeBuilder instance."""
+        return DataCubeBuilder(temp_model_dir)
+    
+    def test_initialization(self, temp_model_dir):
+        """Test proper initialization of DataCubeBuilder."""
+        builder = DataCubeBuilder(temp_model_dir)
+        assert builder.model_dir == temp_model_dir
+        assert len(builder.lookup_table) == 3
+        assert 'filename' in builder.lookup_table.columns
+        assert 'teff' in builder.lookup_table.columns
+    
+    def test_initialization_missing_directory(self):
+        """Test initialization with missing directory."""
+        with pytest.raises(FileNotFoundError):
+            DataCubeBuilder('/nonexistent/directory')
+    
+    def test_analyze_grid_structure(self, builder):
+        """Test grid structure analysis."""
+        analysis = builder.analyze_grid_structure()
+        
+        assert 'teff' in analysis
+        assert 'logg' in analysis
+        assert 'metallicity' in analysis
+        
+        # Check Teff analysis
+        teff_analysis = analysis['teff']
+        assert teff_analysis['range'] == (5000, 6000)
+        assert teff_analysis['n_unique'] == 3
+    
+    def test_create_regular_grid(self, builder):
+        """Test regular grid creation."""
+        teff_grid, logg_grid, meta_grid = builder.create_regular_grid()
+        
+        assert len(teff_grid) == 3  # Unique values from data
+        assert len(logg_grid) == 2  # Two unique logg values
+        assert len(meta_grid) == 2  # Two unique metallicity values
+        
+        # Test with specified points
+        teff_grid, logg_grid, meta_grid = builder.create_regular_grid(
+            teff_points=10, logg_points=5, metallicity_points=3
+        )
+        
+        assert len(teff_grid) == 10
+        assert len(logg_grid) == 5
+        assert len(meta_grid) == 3
+    
+    def test_create_wavelength_grid(self, builder):
+        """Test wavelength grid creation."""
+        wavelength_grid = builder.create_wavelength_grid()
+        
+        assert len(wavelength_grid) > 0
+        assert wavelength_grid[0] >= 4000  # Should be around model range
+        assert wavelength_grid[-1] <= 7000
+        
+        # Test with specified points
+        wavelength_grid = builder.create_wavelength_grid(n_points=50)
+        assert len(wavelength_grid) == 50
+    
+    def test_build_cube_hdf5(self, builder):
+        """Test building HDF5 flux cube."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output_file = Path(temp_dir) / 'test_cube.h5'
+            
+            result_file = builder.build_cube(output_file, format='hdf5')
+            
+            assert result_file.exists()
+            assert result_file == output_file
+            
+            # Verify HDF5 structure
+            with h5py.File(result_file, 'r') as f:
+                assert 'grids' in f
+                assert 'flux_cube' in f
+                assert 'grids/teff' in f
+                assert 'grids/logg' in f
+                assert 'grids/metallicity' in f
+                assert 'grids/wavelength' in f
+
+
+class TestFluxCube:
+    """Test cases for FluxCube class."""
+    
+    @pytest.fixture
+    def test_cube_file(self):
+        """Create a test HDF5 flux cube file."""
+        with tempfile.NamedTemporaryFile(suffix='.h5', delete=False) as temp_file:
+            # Create test cube data
+            teff_grid = np.array([5000, 5500, 6000])
+            logg_grid = np.array([4.0, 4.5])
+            meta_grid = np.array([0.0, 0.5])
+            wavelength_grid = np.linspace(4000, 7000, 50)
+            
+            flux_cube = np.random.rand(3, 2, 2, 50) + 1e-10  # Add small offset
+            
+            with h5py.File(temp_file.name, 'w') as f:
+                grids_group = f.create_group('grids')
+                grids_group.create_dataset('teff', data=teff_grid)
+                grids_group.create_dataset('logg', data=logg_grid)
+                grids_group.create_dataset('metallicity', data=meta_grid)
+                grids_group.create_dataset('wavelength', data=wavelength_grid)
+                
+                f.create_dataset('flux_cube', data=flux_cube)
+                f.attrs['format_version'] = '1.0'
+            
+            yield Path(temp_file.name)
+            Path(temp_file.name).unlink()  # Clean up
+    
+    def test_initialization(self, test_cube_file):
+        """Test FluxCube initialization."""
+        cube = FluxCube(test_cube_file)
+        
+        assert cube.cube_file == test_cube_file
+        assert hasattr(cube, 'teff_grid')
+        assert hasattr(cube, 'logg_grid')
+        assert hasattr(cube, 'meta_grid')
+        assert hasattr(cube, 'wavelength_grid')
+        assert hasattr(cube, 'flux_cube')
+    
+    def test_initialization_missing_file(self):
+        """Test initialization with missing file."""
+        with pytest.raises(FileNotFoundError):
+            FluxCube('/nonexistent/file.h5')
+    
+    def test_parameter_ranges(self, test_cube_file):
+        """Test parameter range properties."""
+        cube = FluxCube(test_cube_file)
+        ranges = cube.parameter_ranges
+        
+        assert 'teff' in ranges
+        assert 'logg' in ranges
+        assert 'metallicity' in ranges
+        assert 'wavelength' in ranges
+        
+        assert ranges['teff'][0] == 5000
+        assert ranges['teff'][1] == 6000
+    
+    def test_interpolate_spectrum(self, test_cube_file):
+        """Test spectrum interpolation."""
+        cube = FluxCubeProvider(test_cube_file)
+        
+        wavelengths, fluxes = cube.interpolate_spectrum(5250, 4.25, 0.25)
+        
+        assert len(wavelengths) == len(fluxes)
+        assert len(wavelengths) > 0
+        assert np.all(fluxes >= 0)  # Should be non-negative
+        
+        # Test nearest neighbor interpolation
+        wavelengths_nn, fluxes_nn = cube.interpolate_spectrum(
+            5250, 4.25, 0.25, method='nearest'
+        )
+        
+        assert len(wavelengths_nn) == len(wavelengths)
+    
+    def test_interpolate_at_wavelength(self, test_cube_file):
+        """Test interpolation at specific wavelengths."""
+        cube = FluxCube(test_cube_file)
+        
+        target_wavelengths = np.array([5000, 5500, 6000])
+        fluxes = cube.interpolate_at_wavelength(
+            target_wavelengths, 5250, 4.25, 0.25
+        )
+        
+        assert len(fluxes) == len(target_wavelengths)
+        assert np.all(fluxes >= 0)
+
+
+# tests/test_photometry.py
+"""
+Tests for synthetic photometry functionality.
+"""
+
+import tempfile
+from pathlib import Path
+import numpy as np
+import pytest
+from unittest.mock import Mock, patch
+
+from stellar_colors.photometry.synthetic import SyntheticPhotometry
+from stellar_colors.cube.builder import FluxCube
+
+
+class TestSyntheticPhotometry:
+    """Test cases for SyntheticPhotometry class."""
+    
+    @pytest.fixture
+    def mock_flux_cube(self):
+        """Create mock flux cube."""
+        mock_cube = Mock(spec=FluxCube)
+        mock_cube.interpolate_spectrum.return_value = (
+            np.linspace(4000, 7000, 100),  # wavelengths
+            np.ones(100) * 1e-10  # fluxes
+        )
+        return mock_cube
+    
+    @pytest.fixture
+    def temp_filter_dir(self):
+        """Create temporary filter directory with test filters."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            filter_dir = Path(temp_dir)
+            
+            # Create test filter
+            wavelengths = np.linspace(4800, 6200, 50)
+            transmission = np.exp(-((wavelengths - 5500) / 400)**2)
+            
+            filter_file = filter_dir / 'test_filter.dat'
+            filter_data = np.column_stack([wavelengths, transmission])
+            np.savetxt(filter_file, filter_data, 
+                      header='Wavelength(A) Transmission', comments='#')
+            
+            yield filter_dir
+    
+    @pytest.fixture
+    def photometry(self, mock_flux_cube, temp_filter_dir):
+        """Create SyntheticPhotometry instance."""
+        return SyntheticPhotometry(mock_flux_cube, temp_filter_dir)
+    
+    def test_initialization(self, mock_flux_cube, temp_filter_dir):
+        """Test SyntheticPhotometry initialization."""
+        photometry = SyntheticPhotometry(mock_flux_cube, temp_filter_dir)
+        
+        assert photometry.flux_cube == mock_flux_cube
+        assert photometry.filter_dir == temp_filter_dir
+        assert len(photometry.available_filters) > 0
+        assert 'test_filter' in photometry.available_filters
+    
+    def test_list_filters(self, photometry):
+        """Test filter listing."""
+        filters = photometry.list_filters()
+        
+        assert isinstance(filters, list)
+        assert 'test_filter' in filters
+    
+    def test_load_filter(self, photometry):
+        """Test filter loading."""
+        wavelengths, transmission = photometry._load_filter('test_filter')
+        
+        assert len(wavelengths) == len(transmission)
+        assert len(wavelengths) > 0
+        assert np.all(transmission >= 0)
+        assert np.all(transmission <= 1.1)  # Allow for slight numerical errors
+    
+    def test_load_filter_caching(self, photometry):
+        """Test filter caching."""
+        # Load filter twice
+        wl1, tr1 = photometry._load_filter('test_filter')
+        wl2, tr2 = photometry._load_filter('test_filter')
+        
+        # Should return same arrays (cached)
+        assert np.array_equal(wl1, wl2)
+        assert np.array_equal(tr1, tr2)
+        assert 'test_filter' in photometry._filter_cache
+    
+    def test_compute_magnitude(self, photometry):
+        """Test magnitude computation."""
+        magnitude = photometry.compute_magnitude(5500, 4.5, 0.0, 'test_filter')
+        
+        assert isinstance(magnitude, float)
+        assert not np.isnan(magnitude)
+        
+        # Test with distance and radius
+        magnitude_apparent = photometry.compute_magnitude(
+            5500, 4.5, 0.0, 'test_filter', distance=10.0, radius=1.0
+        )
+        
+        assert isinstance(magnitude_apparent, float)
+        assert not np.isnan(magnitude_apparent)
+    
+    def test_compute_color(self, photometry):
+        """Test color computation.""" 
+        # Create second filter
+        wavelengths = np.linspace(5800, 7200, 50)
+        transmission = np.exp(-((wavelengths - 6500) / 400)**2)
+        
+        filter_file = photometry.filter_dir / 'test_filter_2.dat'
+        filter_data = np.column_stack([wavelengths, transmission])
+        np.savetxt(filter_file, filter_data, 
+                  header='Wavelength(A) Transmission', comments='#')
+        
+        # Rediscover filters
+        photometry._discover_filters()
+        
+        color = photometry.compute_color(5500, 4.5, 0.0, 'test_filter', 'test_filter_2')
+        
+        assert isinstance(color, float)
+        assert not np.isnan(color)
+    
+    def test_compute_synthetic_flux(self, photometry):
+        """Test synthetic flux computation."""
+        spec_wavelengths = np.linspace(4000, 7000, 100)
+        spec_fluxes = np.ones(100) * 1e-10
+        
+        filter_wavelengths = np.linspace(4800, 6200, 50)
+        filter_transmission = np.exp(-((filter_wavelengths - 5500) / 400)**2)
+        
+        flux = photometry._compute_synthetic_flux(
+            spec_wavelengths, spec_fluxes, filter_wavelengths, filter_transmission
+        )
+        
+        assert isinstance(flux, float)
+        assert flux > 0
+        assert not np.isnan(flux)
+    
+    def test_compute_synthetic_flux_no_overlap(self, photometry):
+        """Test synthetic flux computation with no wavelength overlap."""
+        spec_wavelengths = np.linspace(4000, 5000, 100)
+        spec_fluxes = np.ones(100) * 1e-10
+        
+        filter_wavelengths = np.linspace(6000, 7000, 50)
+        filter_transmission = np.ones(50)
+        
+        with pytest.raises(ValueError, match="No wavelength overlap"):
+            photometry._compute_synthetic_flux(
+                spec_wavelengths, spec_fluxes, filter_wavelengths, filter_transmission
+            )
+
+
+# tests/test_config.py
+"""
+Tests for configuration functionality.
+"""
+
+import pytest
+from stellar_colors.config import conf, get_data_dir, get_models_dir
+
+
+class TestConfiguration:
+    """Test cases for configuration management."""
+    
+    def test_default_values(self):
+        """Test default configuration values."""
+        assert conf.max_download_workers == 5
+        assert conf.download_timeout == 30.0
+        assert conf.default_interpolation_method == 'linear'
+        assert conf.magnitude_system == 'vega'
+    
+    def test_data_directory_creation(self):
+        """Test data directory creation."""
+        data_dir = get_data_dir()
+        assert data_dir.exists()
+        assert data_dir.is_dir()
+    
+    def test_subdirectory_creation(self):
+        """Test subdirectory creation."""
+        models_dir = get_models_dir()
+        assert models_dir.exists()
+        assert models_dir.is_dir()
+        assert models_dir.name == conf.models_dir
+
+
+# tests/conftest.py
+"""
+Shared pytest fixtures and configuration.
+"""
+
+import pytest
+import tempfile
+from pathlib import Path
+
+
+@pytest.fixture(scope="session")
+def test_data_dir():
+    """Create temporary test data directory."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        yield Path(temp_dir)
+
+
+@pytest.fixture
+def suppress_warnings():
+    """Suppress warnings during tests."""
+    import warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        yield
+
+
+# Integration test example
+# tests/test_integration.py
+"""
+Integration tests for stellar-colors package.
+"""
+
+import tempfile
+from pathlib import Path
+import pytest
+from unittest.mock import patch, Mock
+
+import stellar_colors as sc
+
+
+class TestIntegration:
+    """Integration tests combining multiple components."""
+    
+    @pytest.fixture
+    def temp_workspace(self):
+        """Create temporary workspace for integration tests."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            workspace = Path(temp_dir)
+            yield workspace
+    
+    @patch('stellar_colors.atmosphere.grabber.AtmosphereGrabber')
+    @patch('stellar_colors.filters.grabber.FilterGrabber')
+    def test_basic_workflow(self, mock_filter_grabber, mock_atmosphere_grabber, temp_workspace):
+        """Test basic workflow from download to photometry."""
+        # Mock the grabbers to avoid actual downloads
+        mock_atm_instance = Mock()
+        mock_atm_instance.download_model.return_value = temp_workspace / 'test_model'
+        mock_atmosphere_grabber.return_value = mock_atm_instance
+        
+        mock_filter_instance = Mock()
+        mock_filter_instance.download_facility_filters.return_value = temp_workspace / 'test_filters'
+        mock_filter_grabber.return_value = mock_filter_instance
+        
+        # Test discovery functions
+        with patch('stellar_colors.discover_models') as mock_discover_models:
+            mock_discover_models.return_value = ['TEST_MODEL']
+            models = sc.discover_models()
+            assert 'TEST_MODEL' in models
+        
+        with patch('stellar_colors.discover_filters') as mock_discover_filters:
+            mock_discover_filters.return_value = Mock()
+            filters = sc.discover_filters(facility='TEST')
+            assert filters is not None
+    
+    def test_package_imports(self):
+        """Test that all main components can be imported."""
+        # Test main classes
+        assert hasattr(sc, 'AtmosphereGrabber')
+        assert hasattr(sc, 'FilterGrabber')
+        assert hasattr(sc, 'DataCubeBuilder')
+        assert hasattr(sc, 'FluxCube')
+        assert hasattr(sc, 'SyntheticPhotometry')
+        assert hasattr(sc, 'BolometricCorrections')
+        
+        # Test convenience functions
+        assert hasattr(sc, 'discover_models')
+        assert hasattr(sc, 'download_model_grid')
+        assert hasattr(sc, 'discover_filters')
+        assert hasattr(sc, 'build_flux_cube')
+        
+        # Test configuration
+        assert hasattr(sc, 'conf')
+    
+    def test_version_info(self):
+        """Test version information is available."""
+        assert hasattr(sc, '__version__')
+        assert isinstance(sc.__version__, str)
+        

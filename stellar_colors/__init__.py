@@ -32,17 +32,15 @@ Basic usage for synthetic photometry:
 """
 
 # Version information
-try:
-    from .version import version as __version__
-except ImportError:
-    __version__ = "unknown"
+from .version import __version__
+
 
 # Core imports - make main functionality easily accessible
 from .atmosphere.grabber import AtmosphereGrabber, discover_models, download_model_grid
 from .filters.grabber import FilterGrabber, discover_filters, download_filter_collection
-from .cube.builder import DataCubeBuilder, FluxCube, build_flux_cube
-from .photometry.synthetic import SyntheticPhotometry, compute_synthetic_magnitude
-from .photometry.bolometric import BolometricCorrections, compute_bolometric_correction
+from .cube.builder import DataCubeBuilder,  build_flux_cube
+#from .photometry.synthetic import SyntheticPhotometry, compute_synthetic_magnitude
+#from .photometry.bolometric import BolometricCorrections, compute_bolometric_correction
 
 # Configuration
 from .config import conf
@@ -56,7 +54,6 @@ __all__ = [
     'AtmosphereGrabber',
     'FilterGrabber', 
     'DataCubeBuilder',
-    'FluxCube',
     'SyntheticPhotometry',
     'BolometricCorrections',
     
@@ -96,8 +93,8 @@ from astropy import units as u
 from astropy.io import ascii
 from scipy.integrate import trapz, simpson
 
-from ..cube.builder import FluxCube
-from ..utils.integration import adaptive_integration
+from .cube.builder import FluxCube
+from .utils.integration import adaptive_integration
 
 __all__ = ['SyntheticPhotometry', 'compute_synthetic_magnitude']
 

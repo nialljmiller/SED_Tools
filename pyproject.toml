@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stellar_colors"
+version = "0.1.0"
+description = "Stellar atmosphere modeling and synthetic photometry for astronomy"
+authors = [
+    { name = "Stellar Colors Development Team", email = "stellar-colors@example.com" }
+]
+license = { text = "BSD-3-Clause" }
+readme = "README.md"
+requires-python = ">=3.8"
+
+dependencies = [
+    "numpy",
+    "scipy",
+    "pandas",
+    "astropy",
+    "h5py",
+    "requests"
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "requests-mock"]
+
+[tool.setuptools]
+packages = ["stellar_colors"]
+
+[tool.setuptools.package-data]
+"stellar_colors" = ["**/*.csv", "**/*.txt", "**/*.dat", "**/*.fits"]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/stellar_colors"

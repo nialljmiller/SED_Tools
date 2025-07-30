@@ -5,7 +5,7 @@ This module provides tools for downloading, managing, and interpolating
 stellar atmosphere model grids for synthetic photometry calculations.
 """
 
-from .grabber import SVOSpectraGrabber, download_atmosphere_models
+from .grabber import AtmosphereGrabber, discover_models, download_model_grid
 from .models import (
     AtmosphereModel,
     KuruczModel, 
@@ -22,8 +22,10 @@ from .interpolation import (
 
 __all__ = [
     # Grabber functions
-    'SVOSpectraGrabber',
-    'download_atmosphere_models',
+    'AtmosphereGrabber',
+    'discover_models',
+    'download_model_grid',
+
     
     # Model classes
     'AtmosphereModel',
