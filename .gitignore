@@ -1,0 +1,41 @@
+# Bytecode
+__pycache__/
+*.py[cod]
+
+# Virtualenvs
+.env/
+.venv/
+env/
+venv/
+
+# Build artifacts
+*.egg-info/
+dist/
+build/
+
+# Editable install leftovers
+*.egg
+*.manifest
+*.spec
+
+# Jupyter/IPython
+.ipynb_checkpoints/
+
+# System
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Pytest
+.cache/
+
+# MyPy
+.mypy_cache/
+
+# VSCode (only if you use it)
+.vscode/
+
+# PyCharm (only if you use it)
+.idea/
