@@ -1,3 +1,4 @@
+# stellar_colors/atmosphere/grabber.py
 """
 Stellar atmosphere model grabber for SVO (Spanish Virtual Observatory).
 
@@ -6,10 +7,12 @@ models from the SVO theoretical spectra database.
 """
 
 import json
+import logging
 import os
 import re
 import warnings
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from io import BytesIO
 from pathlib import Path
 from typing import Dict, List, Optional, Union, Tuple
 from urllib.parse import urljoin
@@ -23,10 +26,22 @@ from astropy.utils.data import download_file
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 
-
-
+logger = logging.getLogger(__name__)
 
 __all__ = ['AtmosphereGrabber', 'discover_models', 'download_model_grid']
+
+
+def _parse_json_response(response):
+    """Parse JSON response from SVO."""
+    try:
+        data = response.json()
+        if isinstance(data, list):
+            return data
+        elif isinstance(data, dict) and 'spectra' in data:
+            return data['spectra']
+        return []
+    except (json.JSONDecodeError, KeyError):
+        return []
 
 
 class AtmosphereGrabber:
@@ -156,14 +171,13 @@ class AtmosphereGrabber:
         model_name : str
             Name of the model to download
         output_dir : str or Path, optional
-            Directory to save the model. If None, uses cache_dir/model_name
+            Directory to save the model. Default is cache_dir/model_name
         max_spectra : int, optional
             Maximum number of spectra to download (for testing)
         parameter_filter : dict, optional
-            Filter spectra by parameter ranges, e.g., 
-            {'teff': (4000, 8000), 'logg': (3.5, 5.0)}
+            Dictionary to filter spectra by parameter ranges
         show_progress : bool, optional
-            Show download progress bar
+            Show progress bars
             
         Returns
         -------
@@ -177,46 +191,99 @@ class AtmosphereGrabber:
         
         output_dir.mkdir(parents=True, exist_ok=True)
         
+        logger.info(f"Downloading model {model_name} to {output_dir}")
+        
         # Discover available spectra
         spectra_info = self._discover_spectra(model_name)
         
         if not spectra_info:
             raise ValueError(f"No spectra found for model {model_name}")
         
-        # Apply filters
+        # Apply parameter filtering if provided
         if parameter_filter:
             spectra_info = self._filter_spectra(spectra_info, parameter_filter)
         
+        # Limit number of spectra if requested
         if max_spectra:
             spectra_info = spectra_info[:max_spectra]
         
+        logger.info(f"Downloading {len(spectra_info)} spectra for {model_name}")
+        
         # Download spectra
-        successful_downloads = self._download_spectra_parallel(
-            model_name, spectra_info, output_dir, show_progress
-        )
+        metadata_rows = []
+        successful_downloads = 0
         
-        # Create metadata table
-        self._create_lookup_table(output_dir, successful_downloads)
+        # Set up progress bar
+        iterator = spectra_info
+        if show_progress:
+            iterator = tqdm(spectra_info, desc=f"Downloading {model_name}")
         
-        print(f"Successfully downloaded {len(successful_downloads)} spectra to {output_dir}")
+        # Download in parallel
+        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+            future_to_spectrum = {}
+            
+            for spectrum in iterator:
+                fid = spectrum.get('fid')
+                if fid is None:
+                    continue
+                
+                filename = f"{model_name}_fid{fid}.txt"
+                output_path = output_dir / filename
+                
+                # Skip if already exists
+                if output_path.exists():
+                    metadata = self._parse_spectrum_metadata(output_path)
+                    metadata['file_name'] = filename
+                    metadata_rows.append(metadata)
+                    successful_downloads += 1
+                    continue
+                
+                future = executor.submit(
+                    self._download_single_spectrum, model_name, fid, output_path
+                )
+                future_to_spectrum[future] = (fid, filename, output_path)
+            
+            # Collect results
+            for future in as_completed(future_to_spectrum):
+                fid, filename, output_path = future_to_spectrum[future]
+                
+                try:
+                    success = future.result()
+                    if success:
+                        metadata = self._parse_spectrum_metadata(output_path)
+                        metadata['file_name'] = filename
+                        metadata_rows.append(metadata)
+                        successful_downloads += 1
+                    else:
+                        # Clean up failed download
+                        if output_path.exists():
+                            output_path.unlink()
+                except Exception as e:
+                    logger.warning(f"Error processing FID {fid}: {e}")
+        
+        # Create lookup table
+        if metadata_rows:
+            self._create_lookup_table(output_dir, metadata_rows)
+            logger.info(f"Successfully downloaded {successful_downloads} spectra")
+        else:
+            raise RuntimeError(f"No spectra downloaded for {model_name}")
+        
         return output_dir
-
-
-    def _parse_json_response(response) -> Optional[List[Dict]]:
-        try:
-            data = response.json()
-            if isinstance(data, list):
-                return data
-        except json.JSONDecodeError:
-            pass
-        return None
-
-
+    
     def _discover_spectra(self, model_name: str) -> List[Dict]:
         """Discover available spectra for a model using multiple methods."""
-        spectra_info = []
-
-        # Method 1: Direct metadata query
+        logger.info(f"Discovering spectra for model {model_name}")
+        
+        # Method 1: VOTable catalog query (NEW - handles KURUCZ2003 type models)
+        try:
+            spectra_info = self._discover_spectra_votable(model_name)
+            if spectra_info:
+                logger.info(f"Found {len(spectra_info)} spectra via VOTable catalog")
+                return spectra_info
+        except Exception as e:
+            logger.warning(f"VOTable discovery failed: {e}")
+        
+        # Method 2: Direct metadata query
         try:
             resp = self.session.get(
                 self.metadata_url, 
@@ -226,21 +293,99 @@ class AtmosphereGrabber:
             if resp.status_code == 200:
                 data = _parse_json_response(resp)
                 if data:
+                    logger.info(f"Found {len(data)} spectra via metadata query")
                     return data
         except requests.RequestException as e:
-            print(f"[WARN] Metadata query failed: {e}")
+            logger.warning(f"Metadata query failed: {e}")
 
-        # Method 2: SSAP query
+        # Method 3: SSAP query
         try:
             spectra_info = self._discover_spectra_ssap(model_name)
             if spectra_info:
+                logger.info(f"Found {len(spectra_info)} spectra via SSAP")
                 return spectra_info
         except Exception as e:
-            print(f"[WARN] SSAP discovery failed: {e}")
+            logger.warning(f"SSAP discovery failed: {e}")
 
-        # Method 3: Brute force fallback
-        print(f"[INFO] Falling back to brute-force discovery for '{model_name}'...")
+        # Method 4: Brute force fallback
+        logger.info(f"Falling back to brute-force discovery for '{model_name}'...")
         return self._discover_spectra_brute_force(model_name)
+
+
+    def _discover_spectra_votable(self, model_name: str) -> list:
+        """Discover spectra using VOTable with case sensitivity handling."""
+
+        from astropy.io.votable import parse_single_table
+        from io import BytesIO
+
+        name_variations = [
+            model_name,
+            model_name.lower(),
+            model_name.upper(),
+            model_name.capitalize(),
+            model_name.title(),
+        ]
+
+        for variant in name_variations:
+            try:
+                print(f"Trying model name variant: '{variant}'")
+                params = {"model": variant, "REQUEST": "queryData"}
+                resp = self.session.get(self.spectra_url, params=params, timeout=self.timeout)
+
+                if resp.status_code != 200 or len(resp.content) < 1000:
+                    continue
+
+                print(f"*** SUCCESS with variant '{variant}' - {len(resp.content)} bytes ***")
+
+                votable_data = BytesIO(resp.content)
+                table = parse_single_table(votable_data).to_table()
+                print(f"Parsed VOTable: {len(table)} entries")
+
+                url_column = None
+                for col in table.colnames:
+                    simplified = col.strip().lower().replace('_', '').replace('.', '')
+                    if 'access' in simplified and 'reference' in simplified:
+                        url_column = col
+                        break
+
+                if url_column is None:
+                    print(f"No usable URL column found among: {table.colnames}")
+                    continue
+
+                spectra_info = []
+                for row in table:
+                    try:
+
+                        access_url = str(row[url_column])
+                        fid_match = re.search(r'fid=(\d+)', access_url)
+                        if fid_match:
+                            entry = {
+                                'fid': int(fid_match.group(1)),
+                                'access_url': access_url
+                            }
+                            for param_col in ['teff', 'logg', 'meta']:
+                                if param_col in table.colnames:
+                                    val = row[param_col]
+                                    if hasattr(val, 'item'):
+                                        val = val.item()
+                                    entry[param_col] = val
+                            spectra_info.append(entry)
+
+                    except Exception:
+                        continue
+
+                print(f"Extracted {len(spectra_info)} spectra")
+                if spectra_info:
+                    spectra_info.sort(key=lambda s: s['fid'])
+                    self._fid_offset = spectra_info[0]['fid']  # save lowest FID universally
+                return spectra_info
+
+            except Exception as e:
+                print(f"Variant '{variant}' failed: {e}")
+                continue
+
+        return []
+
 
 
     def _discover_spectra_ssap(self, model_name: str) -> List[Dict]:
@@ -256,178 +401,176 @@ class AtmosphereGrabber:
             if resp.status_code != 200:
                 return []
 
-            soup = BeautifulSoup(resp.text, features="html.parser")  # Use 'xml' if appropriate
+            soup = BeautifulSoup(resp.text, 'html.parser')
             for link in soup.find_all("a", href=True):
                 href = link["href"]
                 if "fid=" in href:
-                    fid = href.split("fid=")[1].split("&")[0]
-                    if fid.isdigit():
-                        spectra_info.append({"fid": int(fid)})
+                    fid_match = re.search(r'fid=(\d+)', href)
+                    if fid_match:
+                        fid = int(fid_match.group(1))
+                        spectra_info.append({"fid": fid})
 
         except requests.RequestException as e:
-            print(f"[WARN] SSAP request failed: {e}")
+            logger.warning(f"SSAP request failed: {e}")
 
         return spectra_info
-
 
     def _discover_spectra_brute_force(
         self, 
         model_name: str, 
-        max_fid: int = 20000, 
-        batch_size: int = 50
+        max_fid: int = 50000,  # Increased to handle KURUCZ2003-type models
+        batch_size: int = 100,
+        max_failures: int = 1000  # Increased failure tolerance
     ) -> List[Dict]:
         """Brute-force spectrum discovery via parallel probing of FIDs."""
+        logger.info(f"Starting brute-force discovery for {model_name}")
+        
         spectra_info = []
         consecutive_failures = 0
-        max_failures = 100
-
-        with ThreadPoolExecutor(max_workers=min(10, batch_size)) as executor:
-            for start in tqdm(range(1, max_fid, batch_size), desc=f"Brute scan {model_name}"):
-                fids = list(range(start, min(start + batch_size, max_fid)))
-
-                futures = {
-                    executor.submit(self._test_spectrum_exists, model_name, fid): fid
-                    for fid in fids
-                }
-
-                found = False
-                for future in as_completed(futures):
-                    fid = futures[future]
-                    try:
-                        if future.result():
-                            spectra_info.append({"fid": fid})
-                            consecutive_failures = 0
-                            found = True
-                        else:
+        total_failures = 0
+        
+        # Define search ranges based on model type
+        # Some models (like KURUCZ2003) have real spectra at high FIDs
+        if any(pattern in model_name.upper() for pattern in ['KURUCZ2003', 'ATLAS', 'PHOENIX']):
+            # For these models, try high FID ranges first
+            search_ranges = [
+                range(10000, 15000),  # High range first
+                range(1, 1000),       # Then low range
+                range(1000, 5000),    # Medium range
+                range(15000, max_fid, 1000)  # Very high range (sparse)
+            ]
+            logger.info(f"Using high-FID search pattern for {model_name}")
+        else:
+            # Standard search pattern for other models
+            search_ranges = [
+                range(1, 2000),       # Low range
+                range(2000, 10000),   # Medium range  
+                range(10000, max_fid, 1000)  # High range (sparse)
+            ]
+        
+        # Test FID ranges
+        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+            for search_range in search_ranges:
+                logger.info(f"Testing FID range {search_range.start}-{search_range.stop-1} (step {search_range.step})")
+                
+                # Break range into batches
+                range_list = list(search_range)
+                for start_idx in range(0, len(range_list), batch_size):
+                    end_idx = min(start_idx + batch_size, len(range_list))
+                    fids = range_list[start_idx:end_idx]
+                    
+                    # Submit batch of tests
+                    future_to_fid = {
+                        executor.submit(self._test_spectrum_exists, model_name, fid): fid
+                        for fid in fids
+                    }
+                    
+                    batch_found = 0
+                    batch_failures = 0
+                    
+                    # Collect results
+                    for future in as_completed(future_to_fid):
+                        fid = future_to_fid[future]
+                        try:
+                            exists = future.result()
+                            if exists:
+                                spectra_info.append({"fid": fid})
+                                batch_found += 1
+                                consecutive_failures = 0
+                            else:
+                                batch_failures += 1
+                                consecutive_failures += 1
+                                total_failures += 1
+                                
+                        except Exception as e:
+                            logger.debug(f"Error testing FID {fid}: {e}")
+                            batch_failures += 1
                             consecutive_failures += 1
-                    except Exception:
-                        consecutive_failures += 1
-
-                if not found and consecutive_failures > max_failures:
-                    print(f"[INFO] Exceeded max failures, stopping at fid {start}")
+                            total_failures += 1
+                    
+                    if batch_found > 0:
+                        logger.info(f"Batch {fids[0]}-{fids[-1]}: found {batch_found}, failed {batch_failures}")
+                    
+                    # If we found spectra in this range, continue with this range
+                    if batch_found > 0:
+                        consecutive_failures = 0
+                    
+                    # Stop if too many consecutive failures within a range
+                    if consecutive_failures > 500:
+                        logger.info(f"Stopping range after {consecutive_failures} consecutive failures")
+                        break
+                    
+                    # Progress update
+                    if len(spectra_info) > 0 and len(spectra_info) % 100 == 0:
+                        logger.info(f"Found {len(spectra_info)} spectra so far...")
+                
+                # If we found enough spectra, no need to test other ranges
+                if len(spectra_info) > 50:
+                    logger.info(f"Found sufficient spectra ({len(spectra_info)}), stopping search")
                     break
+                
+                # Reset consecutive failures for next range
+                consecutive_failures = 0
 
+        logger.info(f"Brute-force discovery found {len(spectra_info)} spectra")
         return spectra_info
 
 
+
     def _test_spectrum_exists(self, model_name: str, fid: int) -> bool:
-        """Test if a spectrum exists without downloading it."""
+        """Try downloading the spectrum and check that it's real data, not a template."""
+        import re
+
+        params = {
+            "model": model_name,
+            "fid": fid,
+            "format": "ascii"
+        }
+
         try:
-            params = {'model': model_name, 'fid': fid, 'format': 'ascii'}
-            response = self.session.head(
-                self.spectra_url, params=params, timeout=10
-            )
-            return (
-                response.status_code == 200 and 
-                int(response.headers.get('content-length', '0')) > 1024
-            )
-        except (requests.RequestException, ValueError, KeyError):
-            return False
-    
-    def _filter_spectra(self, spectra_info: List[Dict], filters: Dict) -> List[Dict]:
-        """Filter spectra based on parameter ranges."""
-        filtered = []
-        
-        for spectrum in spectra_info:
-            include = True
-            for param, (min_val, max_val) in filters.items():
-                if param in spectrum:
-                    value = float(spectrum[param])
-                    if not (min_val <= value <= max_val):
-                        include = False
-                        break
-            
-            if include:
-                filtered.append(spectrum)
-        
-        return filtered
-    
-    def _download_spectra_parallel(
-        self, 
-        model_name: str, 
-        spectra_info: List[Dict], 
-        output_dir: Path,
-        show_progress: bool = True
-    ) -> List[Dict]:
-        """Download spectra in parallel with progress tracking."""
-        successful_downloads = []
-        
-        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            # Submit all download tasks
-            future_to_spectrum = {}
-            for spectrum in spectra_info:
-                fid = spectrum['fid']
-                filename = f"{model_name}_fid{fid:06d}.txt"
-                filepath = output_dir / filename
-                
-                # Skip if already exists
-                if filepath.exists() and filepath.stat().st_size > 1024:
-                    # Parse metadata from existing file
-                    metadata = self._parse_spectrum_metadata(filepath)
-                    metadata['file_name'] = filename
-                    successful_downloads.append(metadata)
-                    continue
-                
-                future = executor.submit(
-                    self._download_single_spectrum, model_name, fid, filepath
-                )
-                future_to_spectrum[future] = (spectrum, filename, filepath)
-            
-            # Process completed downloads
-            progress_bar = tqdm(
-                total=len(future_to_spectrum),
-                desc=f"Downloading {model_name}",
-                disable=not show_progress
-            )
-            
-            for future in as_completed(future_to_spectrum):
-                spectrum, filename, filepath = future_to_spectrum[future]
-                progress_bar.update(1)
-                
-                try:
-                    success = future.result()
-                    if success:
-                        metadata = self._parse_spectrum_metadata(filepath)
-                        metadata['file_name'] = filename
-                        successful_downloads.append(metadata)
-                    else:
-                        # Clean up failed download
-                        if filepath.exists():
-                            filepath.unlink()
-                except Exception as e:
-                    warnings.warn(f"Error processing FID {spectrum['fid']}: {e}")
-            
-            progress_bar.close()
-        
-        return successful_downloads
-    
-    def _download_single_spectrum(
-        self, 
-        model_name: str, 
-        fid: int, 
-        filepath: Path
-    ) -> bool:
-        """Download a single spectrum file."""
-        try:
-            params = {'model': model_name, 'fid': fid, 'format': 'ascii'}
-            response = self.session.get(
-                self.spectra_url, params=params, timeout=self.timeout, stream=True
-            )
-            
-            if response.status_code == 200 and len(response.content) > 1024:
-                with open(filepath, 'wb') as f:
-                    f.write(response.content)
-                return True
-            
-            return False
-            
+            r = self.session.get(self.spectra_url, params=params, timeout=10)
+            if r.status_code != 200 or len(r.content) < 500:
+                return False
+
+            content = r.text
+
+            # Template-like patterns — bad
+            if re.search(r'teff\s*=\s*K', content) or \
+               re.search(r'logg\s*=\s*log', content) or \
+               re.search(r'meta\s*=\s*$', content):
+                return False
+
+            # Looks real
+            return True
+
         except Exception:
             return False
-    
+
+    def _download_single_spectrum(self, model_name: str, fid: int, output_path: Path) -> bool:
+        """Download a single spectrum file."""
+        try:
+            params = {"model": model_name, "fid": fid, "format": "ascii"}
+            response = self.session.get(
+                self.spectra_url, 
+                params=params, 
+                timeout=self.timeout,
+                stream=True
+            )
+
+            if response.status_code == 200 and len(response.content) > 1024:
+                with open(output_path, 'wb') as f:
+                    f.write(response.content)
+                return True
+            else:
+                return False
+
+        except Exception as e:
+            logger.warning(f"Error downloading FID {fid}: {e}")
+            return False
+
     def _parse_spectrum_metadata(self, filepath: Path) -> Dict:
-        """Parse metadata from a spectrum file."""
+        """Parse metadata from a downloaded spectrum file."""
         metadata = {}
-        
         try:
             with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
                 for line in f:
@@ -437,43 +580,79 @@ class AtmosphereGrabber:
                             key, value = line.split('=', 1)
                             key = key.strip('#').strip()
                             value = value.split('(')[0].strip()
-                            
-                            # Extract numerical values
-                            if key.lower() != 'file_name':
+
+                            # Clean numerical values
+                            if key != 'file_name':
                                 match = re.search(r'[-+]?\d*\.?\d+', value)
-                                value = float(match.group()) if match else np.nan
-                            
+                                value = match.group() if match else '999.9'
+
                             metadata[key] = value
-                        except (ValueError, AttributeError):
+                        except ValueError:
                             continue
                     elif not line.startswith('#'):
-                        break
+                        break  # Stop at first data line
         except Exception as e:
-            warnings.warn(f"Error parsing metadata from {filepath}: {e}")
-        
+            logger.warning(f"Error parsing metadata in {filepath}: {e}")
+
         return metadata
-    
-    def _create_lookup_table(self, output_dir: Path, metadata_list: List[Dict]):
-        """Create a lookup table CSV for the downloaded model."""
-        if not metadata_list:
+
+    def _create_lookup_table(self, output_dir: Path, metadata_rows: List[Dict]) -> None:
+        """Create a lookup table CSV from metadata."""
+        if not metadata_rows:
             return
         
-        # Convert to DataFrame
-        df = pd.DataFrame(metadata_list)
+        # Create DataFrame
+        df = pd.DataFrame(metadata_rows)
         
-        # Ensure file_name is first column
-        columns = ['file_name']
-        columns.extend([col for col in df.columns if col != 'file_name'])
-        df = df[columns]
+        # Ensure required columns exist
+        required_columns = ['file_name', 'teff', 'logg', 'metallicity']
+        for col in required_columns:
+            if col not in df.columns:
+                if col == 'metallicity' and 'meta' in df.columns:
+                    df['metallicity'] = df['meta']
+                elif col == 'file_name':
+                    df['file_name'] = df.index.map(lambda i: f"spectrum_{i}.txt")
+                else:
+                    df[col] = 999.9  # Default value for missing parameters
         
-        # Save to CSV
-        lookup_path = output_dir / 'lookup_table.csv'
-        df.to_csv(lookup_path, index=False)
+        # Clean up data types
+        for col in ['teff', 'logg', 'metallicity']:
+            df[col] = pd.to_numeric(df[col], errors='coerce').fillna(999.9)
         
-        print(f"Created lookup table with {len(df)} entries: {lookup_path}")
-    
+        # Sort by parameters
+        df = df.sort_values(['teff', 'logg', 'metallicity'])
+        
+        # Save lookup table
+        lookup_file = output_dir / 'lookup_table.csv'
+        with open(lookup_file, 'w') as f:
+            f.write('#file_name,teff,logg,metallicity\n')
+            df[required_columns].to_csv(f, index=False, header=False)
+        
+        logger.info(f"Created lookup table: {lookup_file}")
+
+    def _filter_spectra(self, spectra_info: List[Dict], parameter_filter: Dict) -> List[Dict]:
+        """Filter spectra based on parameter ranges."""
+        filtered = []
+        
+        for spectrum in spectra_info:
+            keep = True
+            for param, (min_val, max_val) in parameter_filter.items():
+                value = spectrum.get(param)
+                if value is not None:
+                    try:
+                        value = float(value)
+                        if not (min_val <= value <= max_val):
+                            keep = False
+                            break
+                    except (ValueError, TypeError):
+                        continue
+            if keep:
+                filtered.append(spectrum)
+        
+        return filtered
+
     def _analyze_parameter_ranges(self, spectra_info: List[Dict]) -> Dict:
-        """Analyze parameter ranges from spectra metadata."""
+        """Analyze parameter ranges from spectra info."""
         ranges = {}
         
         if not spectra_info:
