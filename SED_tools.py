@@ -32,7 +32,7 @@ from svo_spectra_grabber import SVOSpectraGrabber         # SVO spectra → .txt
 from msg_spectra_grabber import MSGSpectraGrabber         # MSG (Townsend) .h5 → .txt + lookup_table.csv
 from precompute_flux_cube import precompute_flux_cube     # builds flux cube from lookup + .txt
 from svo_regen_spectra_lookup import regenerate_lookup_table
-
+from mast_spectra_grabber import MASTSpectraGrabber
 import h5py
 import numpy as np
 
@@ -273,18 +273,27 @@ def run_spectra_flow(source: str,
 
     # Discover model menus
     choices = []
-    if source in ("svo", "both"):
+    if source in ("svo", "both", "all"):
         try:
             mlist = svo.discover_models()
             choices += [("svo", m) for m in mlist]
         except Exception as e:
             print(f"[warn] SVO discovery failed: {e}")
-    if source in ("msg", "both"):
+    if source in ("msg", "both", "all"):
         try:
             mlist = msg.discover_models()
             choices += [("msg", m) for m in mlist]
         except Exception as e:
             print(f"[warn] MSG discovery failed: {e}")
+
+    if source in ("mast","all"):
+        try:
+            mast = MASTSpectraGrabber(base_dir=base_dir, max_workers=workers)
+            mlist = mast.discover_models()
+            choices += [("mast", m) for m in mlist]
+        except Exception as e:
+            print(f"[warn] MAST discovery failed: {e}")
+
 
     if not choices:
         print("No models discovered. Exiting.")
@@ -353,6 +362,19 @@ def run_spectra_flow(source: str,
             out_h5_extra = os.path.join(model_dir, f"{model_name}_bundle.h5")
             if force_bundle_h5 and not os.path.exists(out_h5_extra):
                 build_h5_bundle_from_txt(model_dir, out_h5_extra)
+
+        elif src == "mast":
+            spectra_info = mast.get_model_metadata(model_name)
+            if not spectra_info:
+                print(f"[MAST] No metadata for {model_name}; skipping.")
+                continue
+            n = mast.download_model_spectra(model_name, spectra_info)
+            print(f"[MAST] Wrote {n} spectra into {model_dir}")
+            out_h5 = os.path.join(model_dir, f"{model_name}.h5")
+            if force_bundle_h5 and not os.path.exists(out_h5):
+                build_h5_bundle_from_txt(model_dir, out_h5)
+
+
 
         # 3) lookup table should already be present from the grabbers.
         lookup_csv = os.path.join(model_dir, "lookup_table.csv")
@@ -461,8 +483,10 @@ def main():
 
     # spectra
     sp = sub.add_parser("spectra", help="Download/build spectra products")
-    sp.add_argument("--source", choices=["svo","msg","both"], default="both",
-                    help="Which provider(s) to use.")
+    # spectra subparser:
+    sp.add_argument("--source", choices=["svo","msg","mast","both","all"], default="all",
+                    help="Which provider(s) to use. 'both'=SVO+MSG, 'all'=SVO+MSG+MAST")
+
     sp.add_argument("--models", nargs="*", default=None,
                     help="Model names to process. For mixed sources, allow 'src:model' entries.")
     sp.add_argument("--base", default=STELLAR_DIR_DEFAULT,
@@ -507,7 +531,7 @@ def main():
                          rebuild_flux_cube=not args.no_cube)
 
     else:
-        print("  1) Spectra (SVO / MSG)")
+        print("  1) Spectra (SVO / MSG / MAST)")
         print("  2) Filters (SVO)")
         print("  3) Rebuild (lookup + HDF5 + flux cube)")
         choice = (input("> ").strip() or "1")
@@ -516,7 +540,7 @@ def main():
         elif choice == "3":
             run_rebuild_flow(base_dir=STELLAR_DIR_DEFAULT)
         else:
-            run_spectra_flow(source="both",
+            run_spectra_flow(source="all",
                              base_dir=STELLAR_DIR_DEFAULT,
                              models=None,
                              workers=5,
