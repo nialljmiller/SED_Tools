@@ -19,7 +19,7 @@ One-stop launcher to fetch stellar/atmosphere spectra and filters, and to build 
 Default data paths (relative to this repo):
 - Spectra: `../data/stellar_models/`
 - Filters: `../data/filters/`
-
+````
 ---
 
 ## Quick start
@@ -35,8 +35,6 @@ Interactive menu:
 2) Filters (SVO)
 3) Rebuild (lookup + HDF5 + flux cube)
 ```
-
-Pick **1** to select models from SVO/MSG/MAST.
 
 * For **MAST/BOSZ**, you’ll be prompted to optionally limit metallicities (e.g. `-1.00,+0.00`) or press **Enter** for **all**.
 

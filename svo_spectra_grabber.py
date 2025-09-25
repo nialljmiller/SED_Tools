@@ -1,425 +1,344 @@
 #!/usr/bin/env python3
-"""
-Improved SVO Stellar Spectra Grabber
-Uses proper API queries to discover and download all available spectra
-"""
+# svo_spectra_grabber.py — fast, bounded SVO discovery & downloader
 
-import csv
-import json
-import os
-import re
+import csv, os, re, io, time, json, urllib.parse
 from concurrent.futures import ThreadPoolExecutor, as_completed
-
 import requests
 from bs4 import BeautifulSoup
-from tqdm import tqdm
+
+try:
+    from astropy.io.votable import parse_single_table as vot_parse_single_table
+    _HAS_VOTABLE = True
+except Exception:
+    _HAS_VOTABLE = False
 
 
 class SVOSpectraGrabber:
-    def __init__(self, base_dir="../data/stellar_models/", max_workers=5):
+    """
+    Fast/robust discovery:
+      1) SSAP VOTable (streamed, max bytes, hard timeout) → parse URLs → FIDs
+      2) Fallback: scrape model index for 'fid='
+      3) Fallback: bounded parallel HEAD probes (sparse → expand locally), with a small budget
+
+    Download:
+      - ASCII spectra to <base>/<model>/
+      - Build lookup_table.csv from parsed headers
+    """
+
+    def __init__(self, base_dir="../data/stellar_models/", max_workers=8):
         self.base_dir = base_dir
         self.max_workers = max_workers
-        self.session = requests.Session()
-        self.session.headers.update({"User-Agent": "Mozilla/5.0 (MESA Colors Module)"})
-
-        # SVO endpoints
-        self.model_index_url = "http://svo2.cab.inta-csic.es/theory/newov2/index.php"
-        self.spectra_base_url = "http://svo2.cab.inta-csic.es/theory/newov2/ssap.php"
-        self.metadata_url = "http://svo2.cab.inta-csic.es/theory/newov2/getmeta.php"
-
         os.makedirs(base_dir, exist_ok=True)
 
-            
+        self.session = requests.Session()
+        self.session.headers.update({"User-Agent": "SED_Tools/1.0 (SVO)"})
+
+        # Endpoints
+        self.model_index_url = "http://svo2.cab.inta-csic.es/theory/newov2/index.php"
+        self.spectra_base_url = "http://svo2.cab.inta-csic.es/theory/newov2/ssap.php"
+
+        # Budgets (tweak if needed)
+        self.ssap_timeout = 15         # seconds
+        self.ssap_max_bytes = 2_000_000  # 2 MB cap when streaming SSAP
+        self.head_timeout = 6          # seconds per HEAD
+        self.bruteforce_budget = 350   # maximum total HEADs
+        self.expand_window = 12
+        self.expand_max_gap = 20
+
+        # Cache
+        self.cache_root = os.path.join(self.base_dir, ".cache", "svo_fids")
+        os.makedirs(self.cache_root, exist_ok=True)
+
+    # -------------------- model list --------------------
+
     def discover_models(self):
-        """Discover all available stellar atmosphere models on SVO."""
         print("Discovering available models from SVO...")
-
         try:
-            response = self.session.get(self.model_index_url, timeout=30)
-            response.raise_for_status()
+            r = self.session.get(self.model_index_url, timeout=20)
+            r.raise_for_status()
         except requests.RequestException as e:
-            print(f"Error fetching model index: {e}")
+            print(f"[SVO] model index failed: {e}")
             return []
-
-        # SVO returns HTML, not XML
-        soup = BeautifulSoup(response.text, "html.parser")
+        soup = BeautifulSoup(r.text, "html.parser")
         models = set()
-
-        # 1) Anchor hrefs that contain '?models=' (primary)
         for a in soup.find_all("a", href=True):
             href = a["href"]
             if "models=" in href:
                 val = href.split("models=", 1)[1].split("&", 1)[0]
                 if val:
                     models.add(val)
-
-        # 2) Regex fallback (handles cases where links are constructed dynamically)
         if not models:
-            import re
-            for m in re.findall(r"models=([A-Za-z0-9._\-]+)", response.text):
+            for m in re.findall(r"models=([A-Za-z0-9._\-]+)", r.text):
                 models.add(m)
-
         out = sorted(models)
         if not out:
-            print("  [warn] No models discovered on SVO index page.")
+            print("  [warn] no models found on SVO index page.")
         return out
 
+    # -------------------- spectra discovery --------------------
 
     def get_model_metadata(self, model_name):
-        """Get metadata about available spectra for a specific model."""
         print(f"  Fetching metadata for {model_name}...")
 
-        # Try different approaches to get spectrum list
-        spectra_info = []
+        # cache hit?
+        cache_path = os.path.join(self.cache_root, f"{model_name}.json")
+        if os.path.exists(cache_path):
+            try:
+                with open(cache_path, "r") as f:
+                    data = json.load(f)
+                if isinstance(data, list) and data:
+                    print(f"    (cache) {len(data)} spectra")
+                    return [{"fid": int(x)} for x in sorted(set(int(y) for y in data))]
+            except Exception:
+                pass
 
-        # Method 1: Direct metadata query
+        fids = set()
+
+        # A) SSAP VOTable (streamed, bounded)
+        fids |= self._discover_ssap_stream(model_name)
+
+        # B) model index scrape
+        if not fids:
+            fids |= self._discover_index_page(model_name)
+
+        # C) bounded sparse probe + expansion
+        if not fids:
+            fids |= self._bounded_probe(model_name)
+
+        out = [{"fid": int(fid)} for fid in sorted(fids)]
+        print(f"    Found {len(out)} spectra for {model_name}")
+
+        # cache for next time
+        if out:
+            try:
+                with open(cache_path, "w") as f:
+                    json.dump([int(d["fid"]) for d in out], f)
+            except Exception:
+                pass
+
+        return out
+
+    # ---- A) SSAP (streamed) ----
+
+    def _discover_ssap_stream(self, model_name):
+        params = {"model": model_name, "REQUEST": "queryData", "FORMAT": "votable"}
         try:
-            params = {"model": model_name, "format": "json"}
-            response = self.session.get(self.metadata_url, params=params, timeout=30)
-            if response.status_code == 200:
+            with self.session.get(self.spectra_base_url, params=params,
+                                  timeout=self.ssap_timeout, stream=True) as r:
+                if r.status_code != 200:
+                    return set()
+                buf = io.BytesIO()
+                total = 0
+                for chunk in r.iter_content(chunk_size=65536):
+                    if not chunk:
+                        break
+                    buf.write(chunk)
+                    total += len(chunk)
+                    if total >= self.ssap_max_bytes:
+                        break
+                raw = buf.getvalue()
+        except Exception as e:
+            print(f"    [SVO] SSAP stream failed: {e}")
+            return set()
+
+        # Try Astropy parser first (if present)
+        if _HAS_VOTABLE:
+            try:
+                table = vot_parse_single_table(io.BytesIO(raw)).to_table()
+                url_cols = [c for c in table.colnames if any(k in c.lower() for k in ("access", "acref", "url"))]
+                fids = set()
+                for row in table:
+                    for c in url_cols:
+                        val = str(row[c])
+                        m = re.search(r"[?&]fid=(\d+)", val)
+                        if m:
+                            fids.add(int(m.group(1))); break
+                    else:
+                        for c in table.colnames:
+                            val = str(row[c])
+                            m = re.search(r"[?&]fid=(\d+)", val)
+                            if m: fids.add(int(m.group(1))); break
+                if fids:
+                    print(f"    SSAP: {len(fids)} fids (parsed)")
+                    return fids
+            except Exception as e:
+                print(f"    [SVO] VOTable parse failed: {e}")
+
+        # Fallback: regex over raw
+        text = raw.decode("utf-8", "ignore")
+        fids = set(int(x) for x in re.findall(r"[?&]fid=(\d+)", text))
+        if fids:
+            print(f"    SSAP(regex): {len(fids)} fids")
+        return fids
+
+    # ---- B) index scrape ----
+    def _discover_index_page(self, model_name):
+        try:
+            url = f"{self.model_index_url}?models={urllib.parse.quote(model_name)}"
+            r = self.session.get(url, timeout=20)
+            if r.status_code != 200:
+                return set()
+            fids = set(int(x) for x in re.findall(r"[?&]fid=(\d+)", r.text))
+            if fids:
+                print(f"    index: {len(fids)} fids")
+            return fids
+        except Exception:
+            return set()
+
+    # ---- C) bounded probe ----
+    def _bounded_probe(self, model_name):
+        print("    Probing sparsely (bounded)...")
+        # Geometric-ish sparse probes; tuned to keep budget small
+        probes = [1,2,3,4,5,6,7,8,9,10,
+                  12,15,20,25,30,40,50,60,75,100,
+                  125,150,200,250,300,400,500,650,800,1000,
+                  1200,1500,2000,2500,3000,4000,5000,6500,8000,10000]
+        hits = []
+        budget = min(self.bruteforce_budget, len(probes))
+        with ThreadPoolExecutor(max_workers=min(self.max_workers, 16)) as ex:
+            futs = {ex.submit(self._head_exists, model_name, fid): fid for fid in probes[:budget]}
+            for fut in as_completed(futs):
+                fid = futs[fut]
                 try:
-                    metadata = response.json()
-                    if isinstance(metadata, list):
-                        spectra_info.extend(metadata)
-                except json.JSONDecodeError:
+                    if fut.result():
+                        hits.append(fid)
+                except Exception:
                     pass
-        except requests.RequestException:
-            pass
+        if not hits:
+            return set()
+        # expand locally around each hit, with early-stop on gaps
+        found = set(hits)
+        for seed in sorted(hits):
+            found |= self._expand_around(model_name, seed)
+        print(f"    probe+expand: {len(found)} fids")
+        return found
 
-        # Method 2: SSAP query for spectrum discovery
-        if not spectra_info:
-            spectra_info = self._discover_spectra_ssap(model_name)
-
-        # Method 3: Brute force discovery (fallback)
-        if not spectra_info:
-            print(f"    Using brute force discovery for {model_name}")
-            spectra_info = self._discover_spectra_brute_force(model_name)
-
-        print(f"    Found {len(spectra_info)} spectra for {model_name}")
-        return spectra_info
-
-    def _discover_spectra_ssap(self, model_name):
-        """Use SSAP protocol to discover available spectra."""
-        spectra_info = []
-
+    def _head_exists(self, model_name, fid):
+        params = {"model": model_name, "fid": int(fid), "format": "ascii"}
         try:
-            # Query for all spectra in this model
-            params = {"model": model_name, "REQUEST": "queryData", "FORMAT": "metadata"}
-
-            response = self.session.get(
-                self.spectra_base_url, params=params, timeout=30
-            )
-            if response.status_code == 200:
-                # Parse response for spectrum IDs
-                soup = BeautifulSoup(response.text, features="xml")
-                # Look for spectrum identifiers in the response
-                for link in soup.find_all("a", href=True):
-                    href = link["href"]
-                    if "fid=" in href:
-                        fid = href.split("fid=")[1].split("&")[0]
-                        if fid.isdigit():
-                            spectra_info.append({"fid": int(fid)})
-
-        except requests.RequestException:
-            pass
-
-        return spectra_info
-
-    def _discover_spectra_brute_force(self, model_name, max_fid=20000, batch_size=50):
-        """Brute force discovery with intelligent searching."""
-        print("    Scanning for spectra (this may take a while)...")
-
-        spectra_info = []
-        consecutive_failures = 0
-        max_consecutive_failures = 100  # More generous than before
-
-        # Use batch requests to speed up discovery
-        for start_fid in tqdm(range(1, max_fid, batch_size), desc="Scanning FIDs"):
-            batch_fids = list(range(start_fid, min(start_fid + batch_size, max_fid)))
-
-            # Test batch in parallel
-            with ThreadPoolExecutor(max_workers=min(10, batch_size)) as executor:
-                future_to_fid = {
-                    executor.submit(self._test_spectrum_exists, model_name, fid): fid
-                    for fid in batch_fids
-                }
-
-                for future in as_completed(future_to_fid):
-                    fid = future_to_fid[future]
-                    try:
-                        exists = future.result()
-                        if exists:
-                            spectra_info.append({"fid": fid})
-                            consecutive_failures = 0
-                        else:
-                            consecutive_failures += 1
-                    except Exception:
-                        consecutive_failures += 1
-
-            # Early termination if we've gone too long without finding anything
-            if (
-                consecutive_failures > max_consecutive_failures
-                and len(spectra_info) > 0
-            ):
-                print(
-                    f"    Stopping search after {
-                        consecutive_failures
-                    } consecutive failures"
-                )
-                break
-
-        return spectra_info
-
-    def _test_spectrum_exists(self, model_name, fid):
-        """Test if a spectrum exists without downloading it."""
-        try:
-            params = {"model": model_name, "fid": fid, "format": "ascii"}
-            response = self.session.head(
-                self.spectra_base_url, params=params, timeout=10
-            )
-            return (
-                response.status_code == 200
-                and response.headers.get("content-length", "0") != "0"
-            )
-        except (requests.RequestException, ValueError, KeyError):
-            return False
-
-    def download_spectrum(self, model_name, fid, output_path):
-        """Download a single spectrum."""
-        try:
-            params = {"model": model_name, "fid": fid, "format": "ascii"}
-            response = self.session.get(
-                self.spectra_base_url, params=params, timeout=30, stream=True
-            )
-
-            if response.status_code == 200 and len(response.content) > 1024:
-                with open(output_path, "wb") as file:
-                    file.write(response.content)
+            r = self.session.head(self.spectra_base_url, params=params,
+                                  timeout=self.head_timeout, allow_redirects=True)
+            if r.status_code == 200:
+                cl = r.headers.get("content-length")
+                if cl is None or cl == "0":
+                    g = self.session.get(self.spectra_base_url, params=params, timeout=self.head_timeout, stream=True)
+                    ok = (g.status_code == 200)
+                    if ok:
+                        # read tiny chunk
+                        for chunk in g.iter_content(chunk_size=256):
+                            if chunk:
+                                return True
+                        return False
                 return True
-            else:
-                return False
-
-        except Exception as e:
-            print(f"    Error downloading FID {fid}: {e}")
+            return False
+        except Exception:
             return False
 
-    def parse_metadata(self, file_path):
-        """Parse metadata from a downloaded spectrum file."""
-        metadata = {}
-        try:
-            with open(file_path, "r", encoding="utf-8", errors="ignore") as file:
-                for line in file:
-                    line = line.strip()
-                    if line.startswith("#") and "=" in line:
-                        try:
-                            key, value = line.split("=", 1)
-                            key = key.strip("#").strip()
-                            value = value.split("(")[0].strip()
+    def _expand_around(self, model_name, seed):
+        found = set([seed])
+        for direction in (-1, +1):
+            misses = 0
+            step = 1
+            while misses < self.expand_max_gap:
+                fid = seed + direction * (self.expand_window + step - 1)
+                step += 1
+                if fid <= 0:
+                    misses += 1
+                    continue
+                if self._head_exists(model_name, fid):
+                    found.add(fid)
+                    misses = 0
+                else:
+                    misses += 1
+        return found
 
-                            # Clean numerical values
-                            if key != "file_name":
-                                match = re.search(r"[-+]?\d*\.?\d+", value)
-                                value = match.group() if match else "999.9"
-
-                            metadata[key] = value
-                        except ValueError:
-                            continue
-                    elif not line.startswith("#"):
-                        break  # Stop at first data line
-        except Exception as e:
-            print(f"    Error parsing metadata in {file_path}: {e}")
-
-        return metadata
+    # -------------------- download + lookup --------------------
 
     def download_model_spectra(self, model_name, spectra_info):
-        """Download all spectra for a given model."""
-        output_dir = os.path.join(self.base_dir, model_name)
-        os.makedirs(output_dir, exist_ok=True)
+        out_dir = os.path.join(self.base_dir, model_name)
+        os.makedirs(out_dir, exist_ok=True)
+
+        if not spectra_info:
+            print(f"  No spectra to download for {model_name}.")
+            return 0
 
         print(f"Downloading {len(spectra_info)} spectra for {model_name}...")
+        rows, ok = [], 0
 
-        metadata_rows = []
-        successful_downloads = 0
+        with ThreadPoolExecutor(max_workers=self.max_workers) as ex:
+            futures = {}
+            for spec in spectra_info:
+                fid = int(spec["fid"])
+                fname = f"{model_name}_fid{fid}.txt"
+                fpath = os.path.join(out_dir, fname)
 
-        # Download spectra in parallel
-        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            future_to_fid = {}
-
-            for spectrum in spectra_info:
-                fid = spectrum["fid"]
-                filename = f"{model_name}_fid{fid}.txt"
-                output_path = os.path.join(output_dir, filename)
-
-                # Skip if already exists
-                if os.path.exists(output_path):
-                    metadata = self.parse_metadata(output_path)
-                    metadata["file_name"] = filename
-                    metadata_rows.append(metadata)
-                    successful_downloads += 1
+                if os.path.exists(fpath) and os.path.getsize(fpath) > 1024:
+                    meta = self._parse_header(fpath); meta["file_name"] = fname
+                    rows.append(meta); ok += 1
                     continue
 
-                future = executor.submit(
-                    self.download_spectrum, model_name, fid, output_path
-                )
-                future_to_fid[future] = (fid, filename, output_path)
+                futures[ex.submit(self._download_one, model_name, fid, fpath)] = (fid, fname, fpath)
 
-            # Process completed downloads
-            for future in tqdm(
-                as_completed(future_to_fid),
-                total=len(future_to_fid),
-                desc=f"Downloading {model_name}",
-            ):
-                fid, filename, output_path = future_to_fid[future]
-
+            for fut in as_completed(futures):
+                fid, fname, fpath = futures[fut]
                 try:
-                    success = future.result()
-                    if success:
-                        metadata = self.parse_metadata(output_path)
-                        metadata["file_name"] = filename
-                        metadata_rows.append(metadata)
-                        successful_downloads += 1
+                    if fut.result():
+                        meta = self._parse_header(fpath); meta["file_name"] = fname
+                        rows.append(meta); ok += 1
                     else:
-                        # Clean up failed download
-                        if os.path.exists(output_path):
-                            os.remove(output_path)
+                        if os.path.exists(fpath): os.remove(fpath)
                 except Exception as e:
                     print(f"    Error processing FID {fid}: {e}")
 
-        # Create lookup table
-        if metadata_rows:
-            self._create_lookup_table(output_dir, metadata_rows)
-            print(f"  Successfully downloaded {successful_downloads} spectra")
+        if rows:
+            self._write_lookup(out_dir, rows)
+            print(f"  Successfully downloaded {ok} spectra")
         else:
-            print(
-                f"  No spectra downloaded for {
-                    model_name
-                }. Consider using --force-brute if the model lacks metadata."
-            )
+            print(f"  No spectra downloaded for {model_name}")
+        return ok
 
-        return successful_downloads
-
-    def _create_lookup_table(self, output_dir, metadata_rows):
-        """Create lookup table CSV for the model."""
-        lookup_table_path = os.path.join(output_dir, "lookup_table.csv")
-
-        # Get all unique metadata keys
-        all_keys = set()
-        for row in metadata_rows:
-            all_keys.update(row.keys())
-
-        # Define column order
-        header = ["file_name"] + sorted(all_keys - {"file_name"})
-
-        # Write CSV
-        with open(
-            lookup_table_path, mode="w", newline="", encoding="utf-8"
-        ) as csv_file:
-            csv_file.write("#" + ", ".join(header) + "\n")
-            writer = csv.DictWriter(csv_file, fieldnames=header, extrasaction="ignore")
-            writer.writerows(metadata_rows)
-
-        print(f"    Lookup table saved: {lookup_table_path}")
-
-    def select_models_interactive(self, available_models):
-        """Allow user to select which models to download."""
-        print("\nAvailable stellar atmosphere models:")
-        print("-" * 50)
-        for idx, model in enumerate(available_models, start=1):
-            print(f"{idx:2d}. {model}")
-
-        print("\nEnter model numbers to download (comma-separated):")
-        print("Example: 1,3,5 or 'all' for all models")
-
-        user_input = input("> ").strip()
-
-        if user_input.lower() == "all":
-            return available_models
-
+    def _download_one(self, model_name, fid, out_path):
+        params = {"model": model_name, "fid": int(fid), "format": "ascii"}
         try:
-            indices = [int(x.strip()) - 1 for x in user_input.split(",")]
-            selected = [
-                available_models[i] for i in indices if 0 <= i < len(available_models)
-            ]
-            return selected
-        except (ValueError, IndexError):
-            print("Invalid input. Please try again.")
-            return self.select_models_interactive(available_models)
+            r = self.session.get(self.spectra_base_url, params=params, timeout=60, stream=True)
+            if r.status_code == 200:
+                with open(out_path, "wb") as f:
+                    for chunk in r.iter_content(chunk_size=65536):
+                        if not chunk: break
+                        f.write(chunk)
+                return os.path.getsize(out_path) > 1024
+            return False
+        except Exception:
+            return False
 
-    def run(self, selected_models=None):
-        """Main execution function."""
-        print("SVO Stellar Atmosphere Model Downloader")
-        print("=" * 50)
+    def _parse_header(self, file_path):
+        meta = {}
+        try:
+            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                for line in f:
+                    s = line.strip()
+                    if s.startswith("#") and "=" in s:
+                        try:
+                            key, val = s.split("=", 1)
+                            key = key.strip("#").strip()
+                            val = val.split("(")[0].strip()
+                            m = re.search(r"[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?", val)
+                            meta[key] = m.group(0) if m else val
+                        except Exception:
+                            continue
+                    elif not s.startswith("#"):
+                        break
+        except Exception:
+            pass
+        return meta
 
-        # Discover available models
-        available_models = self.discover_models()
-        if not available_models:
-            print("No models found on SVO!")
-            return
-
-        # Select models to download
-        if selected_models is None:
-            selected_models = self.select_models_interactive(available_models)
-
-        if not selected_models:
-            print("No models selected.")
-            return
-
-        print(f"\nSelected models: {', '.join(selected_models)}")
-        print("=" * 50)
-
-        total_spectra = 0
-
-        # Process each model
-        for model_name in selected_models:
-            print(f"\nProcessing model: {model_name}")
-            print("-" * 30)
-
-            # Get metadata about available spectra
-            spectra_info = self.get_model_metadata(model_name)
-
-            if not spectra_info:
-                print(f"  No spectra found for {model_name}")
-                continue
-
-            # Download spectra
-            downloaded = self.download_model_spectra(model_name, spectra_info)
-            total_spectra += downloaded
-
-        print("\n" + "=" * 50)
-        print("Download complete!")
-        print(f"Total spectra downloaded: {total_spectra}")
-        print(f"Models processed: {len(selected_models)}")
-        print(f"Output directory: {self.base_dir}")
-
-
-def main():
-    import argparse
-
-    parser = argparse.ArgumentParser(description="Download stellar spectra from SVO")
-    parser.add_argument(
-        "--output",
-        type=str,
-        default="../data/stellar_models/",
-        help="Output directory for downloaded spectra",
-    )
-    parser.add_argument(
-        "--workers", type=int, default=5, help="Number of parallel download workers"
-    )
-    parser.add_argument(
-        "--models",
-        type=str,
-        nargs="*",
-        help="Specific models to download (if not provided, interactive selection)",
-    )
-
-    args = parser.parse_args()
-
-    # Create downloader
-    downloader = SVOSpectraGrabber(base_dir=args.output, max_workers=args.workers)
-
-    # Run downloader
-    downloader.run(selected_models=args.models)
-
-
-if __name__ == "__main__":
-    main()
+    def _write_lookup(self, out_dir, rows):
+        path = os.path.join(out_dir, "lookup_table.csv")
+        keys = set()
+        for r in rows: keys.update(r.keys())
+        header = ["file_name"] + sorted(k for k in keys if k != "file_name")
+        with open(path, "w", encoding="utf-8", newline="") as f:
+            f.write("#" + ",".join(header) + "\n")
+            w = csv.DictWriter(f, fieldnames=header, extrasaction="ignore")
+            w.writerows(rows)
+        print(f"    Lookup table saved: {path}")
