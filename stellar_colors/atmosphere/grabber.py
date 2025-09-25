@@ -726,3 +726,211 @@ def download_model_grid(
     """
     grabber = AtmosphereGrabber()
     return grabber.download_model(model_name, output_dir, **kwargs)
+
+
+    def download_model(
+    self, 
+    model_name: str, 
+    output_dir: Optional[Union[str, Path]] = None,
+    max_spectra: Optional[int] = None,
+    parameter_filter: Optional[Dict] = None,
+    show_progress: bool = True
+) -> Path:
+    """
+    Download a complete stellar atmosphere model grid.
+    
+    Parameters
+    ----------
+    model_name : str
+        Name of the model to download
+    output_dir : str or Path, optional
+        Directory to save the model. Default is cache_dir/model_name
+    max_spectra : int, optional
+        Maximum number of spectra to download (for testing)
+    parameter_filter : dict, optional
+        Dictionary to filter spectra by parameter ranges
+    show_progress : bool, optional
+        Show progress bars
+        
+    Returns
+    -------
+    Path
+        Path to the downloaded model directory
+    """
+    if output_dir is None:
+        output_dir = self.cache_dir / model_name
+    else:
+        output_dir = Path(output_dir)
+    
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
+    logger.info(f"Downloading model {model_name} to {output_dir}")
+    
+    # Discover available spectra 
+    spectra_info = self._discover_spectra(model_name)
+    
+    if not spectra_info:
+        raise ValueError(f"No spectra found for model {model_name}")
+    
+    # Apply parameter filtering if provided
+    if parameter_filter:
+        spectra_info = self._filter_spectra(spectra_info, parameter_filter)
+    
+    # Limit number of spectra if requested
+    if max_spectra:
+        spectra_info = spectra_info[:max_spectra]
+    
+    logger.info(f"Downloading {len(spectra_info)} spectra for {model_name}")
+    
+    # Download spectra using ASCII format (the method that actually works)
+    metadata_rows = []
+    successful_downloads = 0
+    
+    # Use ThreadPoolExecutor for parallel downloads
+    with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+        # Submit download tasks
+        future_to_fid = {}
+        
+        for spectrum in spectra_info:
+            fid = spectrum.get('fid')
+            if not fid:
+                continue
+                
+            filename = f"{model_name}_fid{fid}.txt"
+            output_path = output_dir / filename
+            
+            # Skip if already exists
+            if output_path.exists():
+                metadata = self._parse_spectrum_metadata(output_path)
+                metadata['filename'] = filename
+                metadata['file_name'] = filename
+                metadata_rows.append(metadata)
+                successful_downloads += 1
+                continue
+            
+            future = executor.submit(self._download_single_spectrum, model_name, fid, output_path)
+            future_to_fid[future] = (fid, filename, output_path)
+        
+        # Process completed downloads with progress bar
+        if show_progress:
+            futures_iter = tqdm(as_completed(future_to_fid), 
+                              total=len(future_to_fid),
+                              desc=f"Downloading {model_name}")
+        else:
+            futures_iter = as_completed(future_to_fid)
+            
+        for future in futures_iter:
+            fid, filename, output_path = future_to_fid[future]
+            
+            try:
+                success = future.result()
+                if success:
+                    # Parse metadata from downloaded file
+                    metadata = self._parse_spectrum_metadata(output_path)
+                    metadata['filename'] = filename
+                    metadata['file_name'] = filename
+                    metadata_rows.append(metadata)
+                    successful_downloads += 1
+                else:
+                    # Clean up failed download
+                    if output_path.exists():
+                        output_path.unlink()
+                        
+            except Exception as e:
+                logger.warning(f"Error processing FID {fid}: {e}")
+                if output_path.exists():
+                    output_path.unlink()
+    
+    # Create lookup table with the correct column names expected by DataCubeBuilder
+    if metadata_rows:
+        self._create_lookup_table(output_dir, metadata_rows)
+        logger.info(f"Successfully downloaded {successful_downloads} spectra")
+    else:
+        raise RuntimeError(f"No spectra downloaded for {model_name}")
+    
+    return output_dir
+
+
+def _parse_spectrum_metadata(self, filepath: Path) -> Dict:
+    """Parse metadata from a downloaded spectrum file."""
+    metadata = {}
+    try:
+        with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith('#') and '=' in line:
+                    try:
+                        key, value = line.split('=', 1)
+                        key = key.strip('#').strip().lower()
+                        value = value.split('(')[0].strip()
+
+                        # Map SVO parameter names to standard names
+                        key_mapping = {
+                            'teff': 'teff',
+                            'teffs': 'teff', 
+                            'temp': 'teff',
+                            'temperature': 'teff',
+                            'logg': 'logg',
+                            'log_g': 'logg',
+                            'grav': 'logg',
+                            'meta': 'metallicity',
+                            'metallicity': 'metallicity',
+                            'm_h': 'metallicity',
+                            'feh': 'metallicity',
+                            '[m/h]': 'metallicity',
+                            '[fe/h]': 'metallicity'
+                        }
+                        
+                        standard_key = key_mapping.get(key, key)
+                        
+                        # Clean numerical values
+                        if standard_key in ['teff', 'logg', 'metallicity']:
+                            match = re.search(r'[-+]?\d*\.?\d+', value)
+                            value = float(match.group()) if match else 0.0
+
+                        metadata[standard_key] = value
+                        
+                    except (ValueError, AttributeError):
+                        continue
+                elif not line.startswith('#'):
+                    break  # Stop at first data line
+    except Exception as e:
+        logger.warning(f"Error parsing metadata in {filepath}: {e}")
+
+    return metadata
+
+
+def _create_lookup_table(self, output_dir: Path, metadata_rows: List[Dict]) -> None:
+    """Create a lookup table CSV from metadata with correct column names."""
+    lookup_file = output_dir / 'lookup_table.csv'
+    
+    # Ensure all required columns exist with defaults
+    required_columns = ['filename', 'teff', 'logg', 'metallicity', 'file_name']
+    
+    for row in metadata_rows:
+        for col in required_columns:
+            if col not in row:
+                if col == 'file_name' and 'filename' in row:
+                    row[col] = row['filename']
+                elif col == 'filename' and 'file_name' in row:
+                    row[col] = row['file_name']
+                else:
+                    row[col] = 0.0 if col in ['teff', 'logg', 'metallicity'] else 'unknown'
+    
+    # Create DataFrame and save
+    df = pd.DataFrame(metadata_rows)
+    
+    # Reorder columns to match expected format
+    column_order = ['filename', 'teff', 'logg', 'metallicity', 'file_name']
+    existing_cols = [col for col in column_order if col in df.columns]
+    other_cols = [col for col in df.columns if col not in column_order]
+    final_columns = existing_cols + other_cols
+    
+    df = df[final_columns]
+    
+    # Save with header comment
+    with open(lookup_file, 'w') as f:
+        f.write('#' + ','.join(final_columns) + '\n')
+        df.to_csv(f, index=False, header=False)
+    
+    logger.info(f"Created lookup table: {lookup_file}")

@@ -6,6 +6,7 @@ This package provides tools for:
 - Downloading stellar atmosphere models and filter transmission curves
 - Building interpolatable data cubes from model collections
 - Computing synthetic photometry and bolometric corrections
+- Creating visualizations of parameter spaces and flux cubes
 - Integration with astropy for astronomical applications
 
 Examples
@@ -26,6 +27,11 @@ Basic usage for synthetic photometry:
 # Build a flux cube for fast interpolation
 >>> cube_file = sc.build_flux_cube('models/KURUCZ2003/', 'kurucz_cube.h5')
 
+# Create visualizations
+>>> cube = sc.FluxCube(cube_file)
+>>> sc.plot_parameter_space_3d(cube.teff_grid, cube.logg_grid, cube.meta_grid)
+>>> sc.create_comprehensive_plots(cube, 'plots/')
+
 # Compute synthetic photometry
 >>> photometry = sc.SyntheticPhotometry(cube_file, 'filters/HST_Collection/')
 >>> magnitude = photometry.compute_magnitude(5777, 4.44, 0.0, 'HST/WFC3/F555W')
@@ -38,6 +44,17 @@ from .version import __version__
 from .atmosphere.grabber import AtmosphereGrabber, discover_models, download_model_grid
 from .filters.grabber import FilterGrabber, discover_filters, download_filter_collection
 from .cube.builder import DataCubeBuilder, FluxCube, build_flux_cube
+
+# Plotting functionality
+from .plotting import (
+    plot_parameter_space_2d,
+    plot_parameter_space_3d,
+    plot_flux_cube_analysis,
+    plot_spectrum_comparison,
+    plot_model_coverage,
+    create_comprehensive_plots
+)
+
 #from .photometry.synthetic import SyntheticPhotometry, compute_synthetic_magnitude
 #from .photometry.bolometric import BolometricCorrections, compute_bolometric_correction
 
@@ -65,6 +82,14 @@ __all__ = [
     'build_flux_cube',
     'compute_synthetic_magnitude',
     'compute_bolometric_correction',
+    
+    # Plotting functions
+    'plot_parameter_space_2d',
+    'plot_parameter_space_3d', 
+    'plot_flux_cube_analysis',
+    'plot_spectrum_comparison',
+    'plot_model_coverage',
+    'create_comprehensive_plots',
     
     # Configuration
     'conf',

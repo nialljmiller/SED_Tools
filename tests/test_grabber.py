@@ -1,18 +1,18 @@
 import pytest
 from stellar_colors.atmosphere.grabber import AtmosphereGrabber
-from astropy.io import fits
-from io import BytesIO
 
 @pytest.mark.parametrize("model_name", [
     "Kurucz2003",
-    "NextGen",
+    "NextGen", 
     "bt-settl",
     "tmap",
     "coelho_sed"
 ])
 def test_at_least_10_real_downloadable_spectra(model_name):
     grabber = AtmosphereGrabber()
-    spectra = grabber._discover_spectra_votable(model_name)
+    
+    # Use the main discovery method that tries multiple approaches
+    spectra = grabber._discover_spectra(model_name)
     assert isinstance(spectra, list)
     assert len(spectra) >= 10
 
@@ -20,20 +20,14 @@ def test_at_least_10_real_downloadable_spectra(model_name):
     for entry in spectra:
         if count_valid >= 10:
             break
-        access_url = entry.get('access_url')
-        if not access_url:
+            
+        # Get FID for ASCII-based download
+        fid = entry.get('fid')
+        if not fid:
             continue
-        try:
-            r = grabber.session.get(access_url, timeout=15)
-            if r.status_code != 200 or len(r.content) < 1000:
-                continue
-            try:
-                with fits.open(BytesIO(r.content), ignore_missing_end=True) as hdul:
-                    if len(hdul) > 0:
-                        count_valid += 1
-            except Exception:
-                continue
-        except Exception:
-            continue
+            
+        # Test if spectrum exists using ASCII format (like the working code)
+        if grabber._test_spectrum_exists(model_name, fid):
+            count_valid += 1
 
     assert count_valid >= 10, f"Only {count_valid} valid spectra found for {model_name}"
