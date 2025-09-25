@@ -57,6 +57,10 @@ METALS    = ["m+0.00","m+0.25","m+0.50","m+0.75",
              "m-2.00","m-2.25","m-2.50"]
 MET_DIR_RE = re.compile(r"^m[+-]\d\.\d{2}/?$", re.IGNORECASE)
 
+
+SCRIPT_URL_RE = re.compile(r'https?://\S+?\.txt(?:\.gz)?', re.IGNORECASE)
+MET_TAG_RE    = re.compile(r"/(m[+\-]\d\.\d{2})/", re.IGNORECASE)
+
 HEAD_RE = re.compile(
     r"^bosz2024_(?P<atmos>ap|mp|ms)_t(?P<teff>\d{4,5})_g(?P<gsgn>[+-])(?P<gval>\d\.\d)"
     r"_m(?P<metsgn>[+-])(?P<metval>\d\.\d{2})_a(?P<asgn>[+-])(?P<aval>\d\.\d{2})"
@@ -65,7 +69,41 @@ HEAD_RE = re.compile(
 
 # ---- helpers ----
 
+def _gather_urls_from_scripts(reskey: str, metals: List[str], session: requests.Session) -> List[str]:
+    """
+    Scrape BOSZ 'download_scripts/' shell scripts and extract direct .txt(.gz) URLs.
+    Filter to the desired <reskey> (e.g. 'r10000' or 'rorig') and metallicities.
+    """
+    script_dir = f"{BOSZ_BASE}/download_scripts/"
+    scripts = [u for u in _list_dir_links(script_dir, session=session) if u.lower().endswith(".sh")]
+    urls = set()
+    if not scripts:
+        print(f"[MAST] no scripts found under {script_dir}")
+        return []
 
+    want_metals = set(metals) if metals and len(metals) != len(METALS) else None
+
+    for s in scripts:
+        stxt = _download_text(s, session=session)
+        if not stxt:
+            continue
+        for url in SCRIPT_URL_RE.findall(stxt):
+            upath = urllib.parse.urlparse(url).path
+            low   = upath.lower()
+            # must be bosz2024 and our resolution key
+            if "/bosz/bosz2024/" not in low or f"/{reskey}/" not in low:
+                continue
+            # match product type for this reskey
+            if not _want_product(url, reskey):
+                continue
+            # optional metallicity filter
+            if want_metals is not None:
+                m = MET_TAG_RE.search(low)
+                tag = urllib.parse.unquote(m.group(1)) if m else None
+                if tag not in want_metals:
+                    continue
+            urls.add(url)
+    return sorted(urls)
 
 def _list_metallicity_dirs(res_url: str, session: requests.Session) -> List[str]:
     """
@@ -368,8 +406,7 @@ class MASTSpectraGrabber:
         metals: List[str] = info["metals"]
         model_dir = os.path.join(self.base_dir, model_name)
         _safe_makedirs(model_dir)
-        # 1) enumerate product URLs by listing the resolution dir,
-        #    then walking into each metallicity subdir
+
         res_url = f"{BOSZ_BASE}/{reskey}/"
         res_children = _list_metallicity_dirs(res_url, session=self.session)
         if not res_children:
@@ -394,6 +431,14 @@ class MASTSpectraGrabber:
                 if _is_txt_like(u) and _want_product(u, reskey):
                     urls.append(u)
         urls = sorted(set(urls))
+
+        # Collect URLs exclusively via download_scripts parsing (robust even when listings are disabled)
+        urls = _gather_urls_from_scripts(reskey, metals, self.session)
+        if not urls:
+            print(f"[MAST] No BOSZ spectra URLs found for {reskey} (via download_scripts).")
+            return 0
+
+
 
         # Fallback to download_scripts only if nothing found
         if not urls:
