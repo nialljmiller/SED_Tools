@@ -1,93 +1,119 @@
-# Stellar Spectra Toolkit
+Here’s a minimal `README.md` you can drop in:
 
-A Python toolkit for downloading, processing, filtering, combining, and precomputing stellar atmosphere spectra from SVO and MSG sources. Designed for integration with stellar evolution models like MESA.
+````markdown
+# SED_Tools
 
-## Features
+One-stop launcher to fetch stellar/atmosphere spectra and filters, and to build the standard products for each model.
 
-- Download spectra from SVO and MSG grids.
-- Filter and regenerate lookup tables.
-- Combine multiple atmosphere models into unified grids.
-- Precompute flux cubes for efficient access.
+**Providers**
+- **SVO** (various synthetic & empirical sets)
+- **MSG** (Rich Townsend’s grids; downloads `.h5`, extracts to `.txt`)
+- **MAST (BOSZ 2024)** via official bulk scripts (no directory listings)
 
-## Requirements
+**Outputs (guaranteed per selected model)**
+- `*.txt` spectra (collection)
+- `lookup_table.csv`
+- `<model>.h5` (bundle of all spectra)
+- `flux_cube.bin`
 
-- Python 3.8+
-- Dependencies: `numpy`, `scipy`, `pandas`, `matplotlib`, `astropy`, `astroquery`, `h5py`, `requests`, `beautifulsoup4`, `tqdm`
+Default data paths (relative to this repo):
+- Spectra: `../data/stellar_models/`
+- Filters: `../data/filters/`
 
-Install with:
-```
-pip install numpy scipy pandas matplotlib astropy astroquery h5py requests beautifulsoup4 tqdm
-```
+---
 
-## Scripts and Usage
+## Quick start
 
-### 1. `svo_spectra_grabber.py`
-Downloads stellar spectra from SVO.
+```bash
+python SED_tools.py
+````
 
-```
-python svo_spectra_grabber.py --output ../data/stellar_models/ --workers 5
-```
-- `--output`: Output directory (default: `../data/stellar_models/`).
-- `--workers`: Parallel downloads (default: 5).
-- `--models`: Specific models (e.g., `kurucz castelli`); interactive if omitted.
-
-### 2. `msg_spectra_grabber.py`
-Downloads and extracts spectra from MSG grids.
+Interactive menu:
 
 ```
-python msg_spectra_grabber.py --output ../data/stellar_models/ --workers 5
+1) Spectra (SVO / MSG / MAST)
+2) Filters (SVO)
+3) Rebuild (lookup + HDF5 + flux cube)
 ```
-- Arguments mirror `svo_spectra_grabber.py`.
 
-### 3. `svo_spectra_filter.py`
-Filters lookup tables interactively.
+Pick **1** to select models from SVO/MSG/MAST.
+
+* For **MAST/BOSZ**, you’ll be prompted to optionally limit metallicities (e.g. `-1.00,+0.00`) or press **Enter** for **all**.
+
+Everything lands under `../data/stellar_models/<ModelName>/`.
+
+---
+
+## Command-line usage (non-interactive)
+
+### Spectra
+
+```bash
+# interactive model picker, all providers
+python SED_tools.py spectra --source all
+
+# SVO only (choose from list)
+python SED_tools.py spectra --source svo
+
+# Specific models (mixed): use 'src:model'
+python SED_tools.py spectra --models svo:bt-settl msg:sg-SPHINX mast:BOSZ-2024-r10000
+
+# Change output location; skip flux cube; skip HDF5 bundle
+python SED_tools.py spectra --base /path/to/stellar_models --no-cube --no-h5
+```
+
+### Filters (SVO)
+
+```bash
+python SED_tools.py filters
+```
+
+You’ll be asked for optional substrings (Facility / Instrument / Band) and a wavelength range.
+Filters are written under `../data/filters/<Facility>/<Instrument>/<Band>.dat` (CSV-ascii).
+
+### Rebuild (no download)
+
+```bash
+# Rebuild lookup_table.csv, HDF5, and flux cube for local models
+python SED_tools.py rebuild
+
+# Rebuild only lookup + HDF5
+python SED_tools.py rebuild --no-cube
+
+# Rebuild a specific local model folder
+python SED_tools.py rebuild --models BOSZ-2024-r10000
+```
+
+---
+
+## What gets written
+
+Example: `../data/stellar_models/BOSZ-2024-r10000/`
 
 ```
-python svo_spectra_filter.py
+BOSZ-2024-r10000/
+  bosz2024_ms_t05000_g+4.5_m+0.00_a+0.00_c+0.00_v2_r10000_resam.txt
+  ...
+  lookup_table.csv
+  BOSZ-2024-r10000.h5
+  flux_cube.bin
 ```
-- Prompts for base directory and filters (e.g., Teff range).
 
-### 4. `svo_regen_spectra_lookup.py`
-Regenerates lookup tables from existing spectra files.
+Each `.txt` has a comment header with parsed parameters and source URL.
+HDF5 bundles all spectra under `/spectra/<filename>/{lambda,flux}` (plus attributes).
+`flux_cube.bin` is produced by the provided `precompute_flux_cube` tool.
 
+---
+
+## Dependencies
+
+Install what you don’t already have:
+
+```bash
+pip install numpy pandas requests beautifulsoup4 h5py astropy astroquery tqdm
 ```
-python svo_regen_spectra_lookup.py
-```
-- Scans `../../data/stellar_models/` by default.
 
-### 5. `combine_stellar_atm.py`
-Combines models into a unified grid.
+* Filters require `astropy` + `astroquery`.
+* MAST/BOSZ uses `requests` + `bs4` (no astroquery needed).
+* Your existing grabbers/flux cube code are used as-is.
 
-```
-python combine_stellar_atm.py --data_dir ../data/stellar_models/ --output combined_models --interactive
-```
-- `--data_dir`: Models directory.
-- `--output`: Output subdirectory.
-- `--interactive`: Select models (default: True).
-
-### 6. `precompute_flux_cube.py`
-Precomputes flux cube from a model directory.
-
-```
-python precompute_flux_cube.py --model_dir path/to/model --output flux_cube.bin
-```
-- `--model_dir`: Directory with lookup_table.csv and spectra.
-- `--output`: Binary output file.
-
-### 7. `svo_filter_grabber.py`
-Downloads filter transmission curves from SVO.
-
-```
-python svo_filter_grabber.py
-```
-- Saves to `data/filters` by wavelength region.
-
-## Directory Structure
-
-- Spectra saved to `../data/stellar_models/<model_name>/`.
-- Combined models to `../data/stellar_models/<output>/`.
-- Filters to `data/filters/<facility>/<instrument>/`.
-
-## License
-
-MIT
