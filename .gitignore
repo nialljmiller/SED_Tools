@@ -45,3 +45,8 @@ Thumbs.db
 *.fits
 *.txz
 *.h5?*
+/data/
+*.bin
+*.h5
+*.fits
+*.txz
