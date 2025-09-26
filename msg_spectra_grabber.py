@@ -1,494 +1,427 @@
 #!/usr/bin/env python3
-"""
-MSG Grids Stellar Spectra Grabber
-Downloads and extracts spectra from MSG HDF5 grids into individual files
-"""
+# msg_spectra_grabber.py — MSG extractor with correct (Teff, logg, [M/H]) for C3K and friends
 
-import csv
-import os
-import re
+import csv, os, re
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from urllib.parse import urljoin
 
-import requests
-from bs4 import BeautifulSoup
-from tqdm import tqdm
 import h5py
 import numpy as np
-from itertools import product
-from urllib.parse import urljoin
+import requests
+from bs4 import BeautifulSoup
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
+from tqdm import tqdm
 
+_SEG_IDX = re.compile(r"\[(\d+)\]")
+
+# Known axis-role overrides per model (0-based axis indices in vgrid/axes[i]/x)
+AXIS_ROLE_OVERRIDES = {
+    # C3K grids: axes[1]=Teff, axes[2]=[M/H], axes[3]=alpha, axes[4]=logg
+    # → zero-based: teff=0, meta=1, logg=3
+    "sg-C3K": {"teff": 0, "meta": 1, "logg": 3},
+}
+
+def _dataset_if_exists(g, names):
+    for n in names:
+        if n in g and isinstance(g[n], h5py.Dataset):
+            return g[n]
+    return None
+
+def _iter_datasets_recursive(g, prefix=""):
+    for k, v in g.items():
+        path = f"{prefix}/{k}" if prefix else k
+        if isinstance(v, h5py.Dataset):
+            yield (path, v)
+        elif isinstance(v, h5py.Group):
+            yield from _iter_datasets_recursive(v, path)
+
+def _recover_wavelengths(spec_g, expected_len=None):
+    # 1) direct dataset
+    WAVE_KEYS = ("lambda","wavelength","wave","wl","wavelength_A")
+    ds = _dataset_if_exists(spec_g, WAVE_KEYS)
+    if ds is not None:
+        wl = np.array(ds[()]).astype(float).squeeze()
+        if wl.size > 1 and np.all(np.diff(wl) > 0):
+            return wl
+
+    # 2) range/x
+    if "range" in spec_g and isinstance(spec_g["range"], h5py.Group):
+        rg = spec_g["range"]
+        if "x" in rg and isinstance(rg["x"], h5py.Dataset):
+            wl = np.array(rg["x"][()]).astype(float).ravel()
+            if wl.size > 1 and np.all(np.diff(wl) > 0):
+                return wl
+
+        # 3) concatenated segments
+        seg_root = rg.get("ranges", rg)
+        seg_names = [k for k in seg_root.keys() if k.startswith("ranges")]
+        def seg_key(name):
+            m = _SEG_IDX.search(name); return int(m.group(1)) if m else 0
+        seg_names.sort(key=seg_key)
+        segs=[]
+        def num(grp, keys):
+            for k in keys:
+                if k in grp.attrs:
+                    try: return float(np.array(grp.attrs[k]).ravel()[0])
+                    except Exception: pass
+            d = _dataset_if_exists(grp, keys)
+            if d is not None:
+                arr = np.array(d[()]).ravel()
+                if arr.size:
+                    try: return float(arr[0])
+                    except Exception: pass
+            return None
+        for sn in seg_names:
+            sgrp = seg_root[sn]
+            if not isinstance(sgrp, h5py.Group): continue
+            xds = _dataset_if_exists(sgrp, ("x",)+WAVE_KEYS)
+            if xds is not None:
+                x = np.array(xds[()]).astype(float).ravel()
+                if x.size: segs.append(x); continue
+            start = num(sgrp, ("start","min","lmin","lambda_min","lam_min"))
+            stop  = num(sgrp, ("stop","max","lmax","lambda_max","lam_max"))
+            step  = num(sgrp, ("dlam","dl","step","delta"))
+            npts  = num(sgrp, ("n","N","len","size"))
+            if start is not None and stop is not None and step is not None:
+                segs.append(np.arange(start, stop+0.5*step, step, dtype=float))
+            elif start is not None and step is not None and npts is not None:
+                segs.append(start + step*np.arange(int(round(npts)), dtype=float))
+            elif start is not None and stop is not None and npts is not None:
+                n = int(round(npts))
+                if n >= 2: segs.append(np.linspace(start, stop, n, dtype=float))
+        if segs:
+            wl = np.concatenate(segs)
+            if wl.size > 1 and np.all(np.diff(wl) >= 0):
+                return wl
+
+    # 4) any monotonic 1-D dataset matching expected_len
+    if expected_len and expected_len > 1:
+        for path, d in _iter_datasets_recursive(spec_g):
+            try:
+                arr = np.array(d[()]).astype(float).ravel()
+            except Exception:
+                continue
+            if arr.ndim == 1 and arr.size == expected_len and np.all(np.diff(arr) > 0):
+                return arr
+
+    # 5) last resort
+    if expected_len and expected_len > 1:
+        return np.arange(int(expected_len), dtype=float)
+    raise RuntimeError("Unable to recover wavelength grid")
+
+def _pick_flux(spec_g):
+    FLUX_PREFS = ("flux","specific_intensity","intensity","F","H","I","c")
+    ds = _dataset_if_exists(spec_g, FLUX_PREFS)
+    if ds is not None:
+        return np.array(ds[()]).astype(float).squeeze()
+    # single 1D/(N,1) candidate
+    cands=[]
+    for k,d in spec_g.items():
+        if isinstance(d,h5py.Dataset):
+            shp=d.shape
+            if len(shp)==1 or (len(shp)==2 and shp[1]==1):
+                cands.append(k)
+    if len(cands)==1:
+        return np.array(spec_g[cands[0]][()]).astype(float).squeeze()
+    raise RuntimeError("No suitable flux dataset")
+
+def _guess_roles_from_axes(axes):
+    # Basic heuristics if no override: pick max-span as Teff; logg in [-1.5,6.8]; meta in [-3.5,1.5]
+    role = {}
+    if not axes:
+        return role
+    # Teff: largest max
+    role["teff"] = int(np.argmax([np.nanmax(a) for a in axes]))
+    # meta: span in [-3.5,+1.5]
+    cand_meta = [j for j,a in enumerate(axes) if -3.5 <= float(np.nanmin(a)) <= 1.5 and -3.5 <= float(np.nanmax(a)) <= 1.5]
+    if cand_meta: role["meta"] = cand_meta[0]
+    # logg: span in [-1.5,6.8], not meta
+    cand_logg = [j for j,a in enumerate(axes) if -1.5 <= float(np.nanmin(a)) <= 6.8 and -1.5 <= float(np.nanmax(a)) <= 6.8 and j != role.get("meta")]
+    if cand_logg: role["logg"] = cand_logg[0]
+    return role
+
+def _role_override_for_model(model_name):
+    for key, mapping in AXIS_ROLE_OVERRIDES.items():
+        if key in model_name:
+            return mapping.copy()
+    return {}
 
 class MSGSpectraGrabber:
-    def __init__(self, base_dir="../data/stellar_models/", max_workers=5):
+    def __init__(self, base_dir="../data/stellar_models/", max_workers=6):
         self.base_dir = base_dir
         self.max_workers = max_workers
-        self.session = requests.Session()
-        self.session.headers.update({"User-Agent": "Mozilla/5.0 (MESA Colors Module)"})
-
-        # Add retries
-        retry = Retry(total=5, backoff_factor=1, status_forcelist=[500, 502, 503, 504])
-        adapter = HTTPAdapter(max_retries=retry)
-        self.session.mount('http://', adapter)
-        self.session.mount('https://', adapter)
-
-        # MSG endpoints
-        self.index_url = "http://user.astro.wisc.edu/~townsend/static.php?ref=msg-grids"
-
-        self.model_urls = {}
-
         os.makedirs(base_dir, exist_ok=True)
 
-    def inspect_hdf5_structure(self, h5_path):
-        """Inspect and print the structure of an HDF5 file for debugging."""
-        print(f"Inspecting HDF5 file: {h5_path}")
-        try:
-            with h5py.File(h5_path, "r") as f:
-                def print_structure(name, obj):
-                    print(f"  {name}: {type(obj)}")
-                    if isinstance(obj, h5py.Dataset):
-                        print(f"    Shape: {obj.shape}, Dtype: {obj.dtype}")
-                        if obj.size < 10:
-                            print(f"    Values: {obj[:]}")
-                        else:
-                            print(f"    First few values: {obj[:5]}")
-                f.visititems(print_structure)
-        except Exception as e:
-            print(f"Error inspecting HDF5 file: {e}")
+        self.session = requests.Session()
+        self.session.headers.update({"User-Agent": "SED_Tools (MSG)"} )
+        retry = Retry(total=5, backoff_factor=1, status_forcelist=[500,502,503,504,429])
+        self.session.mount("http://", HTTPAdapter(max_retries=retry))
+        self.session.mount("https://", HTTPAdapter(max_retries=retry))
+
+        self.index_url = "http://user.astro.wisc.edu/~townsend/static.php?ref=msg-grids"
+        self.model_urls = {}
+        self.model_axes = {}   # model -> dict(axes=list, shape=tuple, vlin=array, roles=dict)
 
     def discover_models(self):
-        """Discover all available stellar atmosphere models."""
         print("Discovering available models from MSG grids...")
-
         try:
-            response = self.session.get(self.index_url, timeout=30)
-            response.raise_for_status()
+            r = self.session.get(self.index_url, timeout=30)
+            r.raise_for_status()
         except requests.RequestException as e:
-            print(f"Error fetching model index: {e}")
+            print(f"Error fetching MSG index: {e}")
             return []
-
-        soup = BeautifulSoup(response.text, 'html.parser')
+        soup = BeautifulSoup(r.text, "html.parser")
         models = []
-
         for link in soup.find_all("a", href=True):
             href = link["href"]
-            if '/msg/grids/' in href and href.endswith('.h5'):
-                model_name = os.path.basename(href).rstrip('.h5')
-                if model_name not in [m['name'] for m in models]:
-                    models.append({'name': model_name, 'url': urljoin(self.index_url, href)})
+            if "/msg/grids/" in href and href.endswith(".h5"):
+                name = os.path.basename(href).rstrip(".h5")
+                models.append({"name": name, "url": urljoin(self.index_url, href)})
+        self.model_urls = {m["name"]: m["url"] for m in models}
+        return sorted(self.model_urls.keys())
 
-        self.model_urls = {m['name']: m['url'] for m in models}
-
-        return sorted([m['name'] for m in models])
+    def _load_axes_and_vlin(self, f: h5py.File, model_name: str):
+        axes=[]
+        i=1
+        while f"vgrid/axes[{i}]" in f:
+            ax = f[f"vgrid/axes[{i}]"]
+            if "x" in ax and isinstance(ax["x"], h5py.Dataset):
+                axes.append(np.array(ax["x"][()], dtype=float).ravel())
+            i+=1
+        shape = tuple(len(a) for a in axes)
+        # v_lin_seq
+        vlin = None
+        if "vgrid/v_lin_seq" in f and isinstance(f["vgrid/v_lin_seq"], h5py.Dataset):
+            vlin = np.array(f["vgrid/v_lin_seq"][()], dtype=int).ravel()
+            prod = int(np.prod(shape)) if shape else 0
+            if prod>0 and vlin.size>0:
+                # 1-based?
+                vmax = int(vlin.max())
+                if vmax == prod:
+                    vlin = vlin - 1
+                # clamp
+                vlin = np.clip(vlin, 0, max(prod-1, 0))
+        # role mapping
+        roles = _role_override_for_model(model_name)
+        if not roles:
+            roles = _guess_roles_from_axes(axes)
+        return {"axes": axes, "shape": shape, "vlin": vlin, "roles": roles}
 
     def get_model_metadata(self, model_name):
-        """Get metadata about available spectra for a specific model."""
         print(f"  Fetching metadata for {model_name}...")
+        out_dir = os.path.join(self.base_dir, model_name)
+        os.makedirs(out_dir, exist_ok=True)
+        h5_path = os.path.join(out_dir, f"{model_name}.h5")
 
-        output_dir = os.path.join(self.base_dir, model_name)
-        os.makedirs(output_dir, exist_ok=True)
-
-        h5_filename = f"{model_name}.h5"
-        h5_path = os.path.join(output_dir, h5_filename)
-
-        model_url = self.model_urls.get(model_name)
-        if not model_url:
-            print(f"    No URL found for {model_name}")
+        url = self.model_urls.get(model_name)
+        if not url:
+            print(f"    No URL for {model_name}")
             return []
 
         if not os.path.exists(h5_path):
-            print(f"    Downloading {h5_filename}...")
+            print(f"    Downloading {model_name}.h5 ...")
             try:
-                response = self.session.get(model_url, stream=True, timeout=30)
-                response.raise_for_status()
-                with open(h5_path, "wb") as f:
-                    for chunk in response.iter_content(chunk_size=8192):
-                        f.write(chunk)
+                with self.session.get(url, stream=True, timeout=60) as r:
+                    r.raise_for_status()
+                    with open(h5_path, "wb") as f:
+                        for chunk in r.iter_content(chunk_size=1<<20):
+                            if not chunk: break
+                            f.write(chunk)
             except requests.RequestException as e:
-                print(f"Error downloading {h5_filename}: {e}")
+                print(f"    Error downloading HDF5: {e}")
                 return []
 
-        # Inspect HDF5 structure for debugging
-        self.inspect_hdf5_structure(h5_path)
-
-        # Extract parameter axes from HDF5
+        spectra=[]
         try:
-            with h5py.File(h5_path, "r") as f:
-                if model_name == "sg-SPHINX":
-                    # SPHINX structure
-                    param_names = ["microturbulence", "Teff", "metallicity", "logg"]
-                    param_values = []
-                    for i in range(1, 5):
-                        axis_key = f"vgrid/axes[{i}]/x"
-                        if axis_key not in f:
-                            raise KeyError(f"Parameter axis {axis_key} not found")
-                        param_values.append(f[axis_key][:])
-                    v_lin_seq = f["vgrid/v_lin_seq"][:]
+            with h5py.File(h5_path,"r") as f:
+                # specsource root
+                spec_root=None
+                for k in f.keys():
+                    if k.startswith("specsource"):
+                        spec_root=k; break
+                if spec_root is None:
+                    print("    No 'specsource' group in HDF5"); return []
 
-                    # Verify v_lin_seq indices
-                    max_spec_idx = max(v_lin_seq)
-                    min_spec_idx = min(v_lin_seq)
-                    if max_spec_idx > 5292 or min_spec_idx < 1:
-                        raise ValueError(f"v_lin_seq indices out of range (min: {min_spec_idx}, max: {max_spec_idx}, expected 1-5292)")
+                src=f[spec_root]
+                names=[k for k in src.keys() if k.startswith("specints[")]
+                def keynum(s):
+                    m=_SEG_IDX.search(s); return int(m.group(1)) if m else 0
+                names.sort(key=keynum)
 
-                    spectra_info = []
-                    for fid, spec_idx in enumerate(v_lin_seq, 1):
-                        # Adjust spec_idx to map to specsource/specints[0-5291]
-                        adjusted_spec_idx = spec_idx - 1
-                        if adjusted_spec_idx < 0 or adjusted_spec_idx >= 5292:
-                            print(f"    Warning: Invalid spec_idx {adjusted_spec_idx} for FID {fid}, skipping")
-                            continue
-                        idx = np.unravel_index(adjusted_spec_idx, [len(v) for v in param_values])
-                        meta = {
-                            param_names[j]: float(param_values[j][idx[j]])
-                            for j in range(len(param_names))
-                        }
-                        spectra_info.append({"fid": fid, "spec_idx": adjusted_spec_idx, "meta": meta})
+                # load axes and mapping
+                axinfo = self._load_axes_and_vlin(f, model_name)
+                self.model_axes[model_name] = axinfo
 
-                    print(f"    Found {len(spectra_info)} spectra for {model_name}")
-                    return spectra_info
-                else:
-                    # Standard MSG structure
-                    wavelength_candidates = ['lambda', 'wavelength', 'wave']
-                    data_candidates = ['intensity', 'flux', 'specific_intensity']
-
-                    wavelength_key = None
-                    for candidate in wavelength_candidates:
-                        if candidate in f and isinstance(f[candidate], h5py.Dataset):
-                            wavelength_key = candidate
-                            break
-                    if not wavelength_key:
-                        raise KeyError("No wavelength dataset found (tried: {})".format(', '.join(wavelength_candidates)))
-
-                    data_key = None
-                    for candidate in data_candidates:
-                        if candidate in f and isinstance(f[candidate], h5py.Dataset):
-                            data_key = candidate
-                            break
-                    if not data_key:
-                        raise KeyError("No data dataset found (tried: {})".format(', '.join(data_candidates)))
-
-                    param_names = [
-                        k for k in f
-                        if isinstance(f[k], h5py.Dataset)
-                        and len(f[k].shape) == 1
-                        and k not in [wavelength_key, 'mu', data_key]
-                        and f[k].dtype.kind == "f"
-                    ]
-                    param_values = [f[k][:] for k in param_names]
-
-                    if not param_names:
-                        print(f"    No parameter axes found for {model_name}, assuming single spectrum")
-                        return [{"fid": 1, "indices": (), "meta": {}}]
-
-                    axes_ranges = [range(len(v)) for v in param_values]
-                    spectra_info = []
-                    fid = 1
-                    for indices in product(*axes_ranges):
-                        meta = {
-                            param_names[j]: float(param_values[j][indices[j]])
-                            for j in range(len(param_names))
-                        }
-                        spectra_info.append({"fid": fid, "indices": indices, "meta": meta})
-                        fid += 1
-
-                    print(f"    Found {len(spectra_info)} spectra for {model_name}")
-                    return spectra_info
+                for i, nm in enumerate(names):
+                    spectra.append({
+                        "fid": i+1,
+                        "gname": f"{spec_root}/{nm}",
+                        "order_index": i  # index into vlin, same order as groups
+                    })
+            print(f"    Found {len(spectra)} spectra for {model_name}")
+            return spectra
         except Exception as e:
-            print(f"    Error reading HDF5 metadata: {e}")
+            print(f"    Error reading HDF5: {e}")
             return []
 
-    def download_spectrum(self, model_name, spectrum, output_path):
-        """Extract a single spectrum from HDF5."""
-        try:
-            output_dir = os.path.dirname(output_path)
-            h5_filename = f"{model_name}.h5"
-            h5_path = os.path.join(output_dir, h5_filename)
+    def _params_from_index(self, model_name, order_index):
+        axinfo = self.model_axes.get(model_name, {})
+        axes = axinfo.get("axes", [])
+        shape = axinfo.get("shape", ())
+        roles = axinfo.get("roles", {})
+        vlin  = axinfo.get("vlin", None)
 
-            with h5py.File(h5_path, "r") as f:
-                if model_name == "sg-SPHINX":
-                    spec_idx = spectrum["spec_idx"]
-                    spec_group = f"specsource/specints[{spec_idx}]"
-                    if spec_group not in f:
-                        raise KeyError(f"Spectrum group {spec_group} not found")
-                    lambda_ = f[f"{spec_group}/range/x"][:]
-                    spec_data = f[f"{spec_group}/c"][:, 0]  # Shape (1324,)
-                    meta = spectrum["meta"]
+        teff = logg = meta = float("nan")
+        if vlin is None or not shape or order_index >= len(vlin):
+            return teff, logg, meta
 
-                    # Handle shape mismatch (1325 wavelengths vs 1324 fluxes)
-                    if len(lambda_) == len(spec_data) + 1:
-                        lambda_ = lambda_[:-1]  # Truncate last wavelength
-                    elif len(lambda_) != len(spec_data):
-                        raise ValueError(f"Wavelength ({len(lambda_)}) and flux ({len(spec_data)}) length mismatch")
+        flat = int(vlin[order_index])
 
-                    spec_flux = spec_data
-                else:
-                    wavelength_candidates = ['lambda', 'wavelength', 'wave']
-                    data_candidates = ['intensity', 'flux', 'specific_intensity']
+        # try both unravel orders, pick the one yielding plausible values
+        coordsC = None; coordsF = None
+        try: coordsC = np.unravel_index(flat, shape, order="C")
+        except Exception: pass
+        try: coordsF = np.unravel_index(flat, shape, order="F")
+        except Exception: pass
 
-                    wavelength_key = None
-                    for candidate in wavelength_candidates:
-                        if candidate in f and isinstance(f[candidate], h5py.Dataset):
-                            wavelength_key = candidate
-                            break
-                    if not wavelength_key:
-                        raise KeyError("No wavelength dataset found")
+        def vals_from_coords(coords):
+            if coords is None: return None
+            out = {}
+            for key, j in roles.items():
+                try:
+                    out[key] = float(axes[j][coords[j]])
+                except Exception:
+                    out[key] = float("nan")
+            return out
 
-                    data_key = None
-                    for candidate in data_candidates:
-                        if candidate in f and isinstance(f[candidate], h5py.Dataset):
-                            data_key = candidate
-                            break
-                    if not data_key:
-                        raise KeyError("No data dataset found")
+        vc = vals_from_coords(coordsC)
+        vf = vals_from_coords(coordsF)
 
-                    lambda_ = f[wavelength_key][:]
-                    indices = spectrum["indices"]
-                    meta = spectrum["meta"]
+        def plausible(v):
+            if v is None: return False
+            t = v.get("teff", float("nan"))
+            g = v.get("logg", float("nan"))
+            m = v.get("meta", float("nan"))
+            ok_t = np.isfinite(t) and (1200 <= t <= 150000)
+            ok_g = np.isfinite(g) and (-1.5 <= g <= 6.8)
+            ok_m = np.isfinite(m) and (-5.0 <= m <= 2.0)
+            return ok_t and ok_g and ok_m
 
-                    has_mu = "mu" in f and isinstance(f["mu"], h5py.Dataset)
-                    if has_mu:
-                        mu = f["mu"][:]
+        if plausible(vc):
+            teff, logg, meta = vc["teff"], vc["logg"], vc["meta"]
+        elif plausible(vf):
+            teff, logg, meta = vf["teff"], vf["logg"], vf["meta"]
+        else:
+            # take whichever has more finite fields
+            def score(v): return sum(np.isfinite([v.get("teff",np.nan), v.get("logg",np.nan), v.get("meta",np.nan)])) if v else -1
+            if score(vc) >= score(vf) and vc:
+                teff, logg, meta = vc.get("teff",np.nan), vc.get("logg",np.nan), vc.get("meta",np.nan)
+            elif vf:
+                teff, logg, meta = vf.get("teff",np.nan), vf.get("logg",np.nan), vf.get("meta",np.nan)
 
-                    dset = f[data_key]
-                    spec_data = dset[indices] if indices else dset[()]
+        return teff, logg, meta
 
-                    if has_mu:
-                        if spec_data.shape[-1] != len(mu):
-                            raise ValueError("Shape mismatch for mu")
-                        i_mu = spec_data * mu[np.newaxis, :]
-                        spec_flux = 2 * np.pi * np.trapz(i_mu, x=mu, axis=-1)
-                    else:
-                        if len(spec_data.shape) > 1 or (len(spec_data.shape) == 1 and spec_data.shape[0] != len(lambda_)):
-                            raise ValueError("Shape mismatch for flux")
-                        spec_flux = spec_data
-
-            with open(output_path, "w", encoding="utf-8") as file:
-                for k, v in meta.items():
-                    file.write(f"# {k} = {v}\n")
-                for w, fl in zip(lambda_, spec_flux):
-                    file.write(f"{w:.6e} {fl:.6e}\n")
-
-            return True
-
-        except Exception as e:
-            print(f"    Error extracting spectrum FID {spectrum['fid']}: {e}")
-            return False
-
-    def parse_metadata(self, file_path):
-        """Parse metadata from a downloaded spectrum file."""
-        metadata = {}
-        try:
-            with open(file_path, "r", encoding="utf-8", errors="ignore") as file:
-                for line in file:
-                    line = line.strip()
-                    if line.startswith("#") and "=" in line:
-                        try:
-                            key, value = line.split("=", 1)
-                            key = key.strip("# ").strip()
-                            value = value.strip()
-
-                            # Clean numerical values
-                            if key != "file_name":
-                                match = re.search(r"[-+]?\d*\.?\d+", value)
-                                value = match.group() if match else "999.9"
-
-                            metadata[key] = value
-                        except ValueError:
-                            continue
-                    elif not line.startswith("#"):
-                        break  # Stop at first data line
-        except Exception as e:
-            print(f"    Error parsing metadata in {file_path}: {e}")
-
-        return metadata
+    def _extract_one(self, h5_path, gpath, model_name, order_index):
+        with h5py.File(h5_path, "r") as f:
+            if gpath not in f: raise KeyError(f"missing {gpath}")
+            spec_g = f[gpath]
+            fx = _pick_flux(spec_g)
+            wl = _recover_wavelengths(spec_g, expected_len=len(fx))
+            n = min(len(wl), len(fx))
+            wl = wl[:n].astype(float); fx = fx[:n].astype(float)
+        teff, logg, meta = self._params_from_index(model_name, order_index)
+        return wl, fx, teff, logg, meta
 
     def download_model_spectra(self, model_name, spectra_info):
-        """Extract all spectra for a given model."""
-        output_dir = os.path.join(self.base_dir, model_name)
-        os.makedirs(output_dir, exist_ok=True)
+        out_dir = os.path.join(self.base_dir, model_name)
+        os.makedirs(out_dir, exist_ok=True)
+        h5_path = os.path.join(out_dir, f"{model_name}.h5")
+
+        if not spectra_info:
+            print(f"  No spectra to extract for {model_name}.")
+            return 0
 
         print(f"Extracting {len(spectra_info)} spectra for {model_name}...")
 
-        metadata_rows = []
-        successful_downloads = 0
+        rows=[]; ok=0
 
-        # Extract spectra in parallel
-        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            future_to_fid = {}
+        def task(spec):
+            fid = int(spec["fid"])
+            gpath = spec["gname"]
+            idx = int(spec["order_index"])
+            fname = f"{model_name}_fid{fid}.txt"
+            fpath = os.path.join(out_dir, fname)
 
-            for spectrum in spectra_info:
-                fid = spectrum["fid"]
-                filename = f"{model_name}_fid{fid}.txt"
-                output_path = os.path.join(output_dir, filename)
+            if os.path.exists(fpath) and os.path.getsize(fpath) > 1024:
+                return (fname, None, True)
 
-                # Skip if already exists
-                if os.path.exists(output_path):
-                    metadata = self.parse_metadata(output_path)
-                    metadata["file_name"] = filename
-                    metadata_rows.append(metadata)
-                    successful_downloads += 1
-                    continue
+            try:
+                wl, fx, teff, logg, meta = self._extract_one(h5_path, gpath, model_name, idx)
+            except Exception as e:
+                return (fname, {"error": str(e)}, False)
 
-                future = executor.submit(
-                    self.download_spectrum, model_name, spectrum, output_path
-                )
-                future_to_fid[future] = (fid, filename, output_path)
+            with open(fpath, "w", encoding="utf-8") as fh:
+                fh.write("# source = MSG HDF5\n")
+                fh.write(f"# spec_group = {gpath}\n")
+                if np.isfinite(teff): fh.write(f"# teff = {teff}\n")
+                if np.isfinite(logg): fh.write(f"# logg = {logg}\n")
+                if np.isfinite(meta): fh.write(f"# meta = {meta}\n")
+                fh.write("# columns = wavelength_A flux\n")
+                for x,y in zip(wl, fx):
+                    fh.write(f"{x:.6f} {y:.8e}\n")
 
-            # Process completed extractions
-            for future in tqdm(
-                as_completed(future_to_fid),
-                total=len(future_to_fid),
-                desc=f"Extracting {model_name}",
-            ):
-                fid, filename, output_path = future_to_fid[future]
+            return (fname, {"teff":teff,"logg":logg,"meta":meta}, True)
 
-                try:
-                    success = future.result()
-                    if success:
-                        metadata = self.parse_metadata(output_path)
-                        metadata["file_name"] = filename
-                        metadata_rows.append(metadata)
-                        successful_downloads += 1
-                    else:
-                        # Clean up failed extraction
-                        if os.path.exists(output_path):
-                            os.remove(output_path)
-                except Exception as e:
-                    print(f"    Error processing FID {fid}: {e}")
+        with ThreadPoolExecutor(max_workers=self.max_workers) as ex:
+            futs = {ex.submit(task, spec): spec for spec in spectra_info}
+            for fut in tqdm(as_completed(futs), total=len(futs), desc=f"Extracting {model_name}"):
+                fname, params, okflag = fut.result()
+                if okflag:
+                    row = {"file_name": fname}
+                    if params: row.update(params)
+                    rows.append(row); ok += 1
 
-        # Create lookup table
-        if metadata_rows:
-            self._create_lookup_table(output_dir, metadata_rows)
-            print(f"  Successfully extracted {successful_downloads} spectra")
+        if rows:
+            self._write_lookup(out_dir, rows)
+            print(f"  Successfully extracted {ok} spectra")
         else:
-            print(f"  No spectra extracted for {model_name}.")
+            print(f"  No spectra extracted for {model_name}")
+        return ok
 
-        return successful_downloads
+    def _write_lookup(self, out_dir, rows):
+        header = ["file_name","teff","logg","meta"]
+        with open(os.path.join(out_dir, "lookup_table.csv"), "w", encoding="utf-8", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=header, extrasaction="ignore")
+            w.writeheader()
+            for r in rows:
+                out = {k: r.get(k, float("nan")) for k in header}
+                w.writerow(out)
+        print(f"    Lookup table saved: {os.path.join(out_dir,'lookup_table.csv')}")
 
-    def _create_lookup_table(self, output_dir, metadata_rows):
-        """Create lookup table CSV for the model."""
-        lookup_table_path = os.path.join(output_dir, "lookup_table.csv")
-
-        # Get all unique metadata keys
-        all_keys = set()
-        for row in metadata_rows:
-            all_keys.update(row.keys())
-
-        # Define column order
-        header = ["file_name"] + sorted(all_keys - {"file_name"})
-
-        # Write CSV
-        with open(
-            lookup_table_path, mode="w", newline="", encoding="utf-8"
-        ) as csv_file:
-            csv_file.write("#" + ", ".join(header) + "\n")
-            writer = csv.DictWriter(csv_file, fieldnames=header, extrasaction="ignore")
-            writer.writerows(metadata_rows)
-
-        print(f"    Lookup table saved: {lookup_table_path}")
-
-    def select_models_interactive(self, available_models):
-        """Allow user to select which models to download."""
-        print("\nAvailable stellar atmosphere models:")
-        print("-" * 50)
-        for idx, model in enumerate(available_models, start=1):
-            print(f"{idx:2d}. {model}")
-
-        print("\nEnter model numbers to download (comma-separated):")
-        print("Example: 1,3,5 or 'all' for all models")
-
-        user_input = input("> ").strip()
-
-        if user_input.lower() == "all":
-            return available_models
-
-        try:
-            indices = [int(x.strip()) - 1 for x in user_input.split(",")]
-            selected = [
-                available_models[i] for i in indices if 0 <= i < len(available_models)
-            ]
-            return selected
-        except (ValueError, IndexError):
-            print("Invalid input. Please try again.")
-            return self.select_models_interactive(available_models)
-
-    def run(self, selected_models=None):
-        """Main execution function."""
-        print("MSG Grids Stellar Atmosphere Model Downloader")
-        print("=" * 50)
-
-        # Discover available models
-        available_models = self.discover_models()
-        if not available_models:
-            print("No models found on MSG grids page!")
-            return
-
-        # Select models to process
-        if selected_models is None:
-            selected_models = self.select_models_interactive(available_models)
-
-        if not selected_models:
-            print("No models selected.")
-            return
-
-        print(f"\nSelected models: {', '.join(selected_models)}")
-        print("=" * 50)
-
-        total_spectra = 0
-
-        # Process each model
-        for model_name in selected_models:
-            print(f"\nProcessing model: {model_name}")
-            print("-" * 30)
-
-            # Get metadata about available spectra
-            spectra_info = self.get_model_metadata(model_name)
-
-            if not spectra_info:
-                print(f"  No spectra found for {model_name}")
-                continue
-
-            # Extract spectra
-            downloaded = self.download_model_spectra(model_name, spectra_info)
-            total_spectra += downloaded
-
-        print("\n" + "=" * 50)
-        print("Processing complete!")
-        print(f"Total spectra extracted: {total_spectra}")
-        print(f"Models processed: {len(selected_models)}")
-        print(f"Output directory: {self.base_dir}")
-
+    # optional standalone
+    def discover_and_run(self, selected_models=None):
+        avail = self.discover_models()
+        if not avail:
+            print("No MSG models found."); return
+        selected = selected_models or avail
+        total=0
+        for name in selected:
+            print(f"\n[msg] Processing model: {name}")
+            meta = self.get_model_metadata(name)
+            if not meta: continue
+            total += self.download_model_spectra(name, meta)
+        print(f"\n[MSG] Done. Extracted {total} spectra total.")
 
 def main():
     import argparse
-
-    parser = argparse.ArgumentParser(description="Download and extract stellar spectra from MSG grids")
-    parser.add_argument(
-        "--output",
-        type=str,
-        default="../data/stellar_models/",
-        help="Output directory for downloaded spectra",
-    )
-    parser.add_argument(
-        "--workers", type=int, default=5, help="Number of parallel extraction workers"
-    )
-    parser.add_argument(
-        "--models",
-        type=str,
-        nargs="*",
-        help="Specific models to process (if not provided, interactive selection)",
-    )
-
-    args = parser.parse_args()
-
-    # Create grabber
-    grabber = MSGSpectraGrabber(base_dir=args.output, max_workers=args.workers)
-
-    # Run grabber
-    grabber.run(selected_models=args.models)
-
+    p = argparse.ArgumentParser(description="Extract MSG stellar spectra to ASCII with correct params")
+    p.add_argument("--output", default="../data/stellar_models/")
+    p.add_argument("--workers", type=int, default=6)
+    p.add_argument("--models", nargs="*")
+    a = p.parse_args()
+    g = MSGSpectraGrabber(base_dir=a.output, max_workers=a.workers)
+    g.discover_and_run(selected_models=a.models)
 
 if __name__ == "__main__":
     main()

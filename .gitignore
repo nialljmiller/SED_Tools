@@ -39,3 +39,9 @@ Thumbs.db
 
 # PyCharm (only if you use it)
 .idea/
+/data/
+*.bin
+*.h5
+*.fits
+*.txz
+*.h5?*

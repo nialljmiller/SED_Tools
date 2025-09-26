@@ -11,11 +11,11 @@ Pipeline per selected model:
 
 Filters (SVO only):
   - Interactive substring filter over Facility/Instrument/Band (or 'all')
-  - Saves to ../data/filters/<Facility>/<Instrument>/<Band>.dat
+  - Saves to data/filters/<Facility>/<Instrument>/<Band>.dat
 
 Defaults:
-  STELLAR_DIR = ../data/stellar_models/
-  FILTER_DIR  = ../data/filters/
+  STELLAR_DIR = data/stellar_models/
+  FILTER_DIR  = data/filters/
 
 Dependencies (already used in your codebase):
   requests, bs4, h5py, numpy, tqdm, pandas, astroquery, astropy
@@ -35,9 +35,11 @@ from svo_regen_spectra_lookup import regenerate_lookup_table
 from mast_spectra_grabber import MASTSpectraGrabber
 import h5py
 import numpy as np
+from spectra_cleaner import clean_model_dir
 
-STELLAR_DIR_DEFAULT = os.path.normpath(os.path.join(os.path.dirname(__file__), "../data/stellar_models"))
-FILTER_DIR_DEFAULT  = os.path.normpath(os.path.join(os.path.dirname(__file__), "../data/filters"))
+
+STELLAR_DIR_DEFAULT = os.path.normpath(os.path.join(os.path.dirname(__file__), "data/stellar_models"))
+FILTER_DIR_DEFAULT  = os.path.normpath(os.path.join(os.path.dirname(__file__), "data/filters"))
 
 # ------------ small utils ------------
 
@@ -115,98 +117,6 @@ def regen_lookup_from_txt(model_dir: str) -> str:
     print(f"[rebuild] lookup_table.csv -> {out_csv}")
     return out_csv
 
-def run_rebuild_flow(base_dir: str = STELLAR_DIR_DEFAULT,
-                     models: List[str] = None,
-                     rebuild_h5: bool = True,
-                     rebuild_flux_cube: bool = True) -> None:
-    """
-    Rebuild lookup_table.csv (+ optional HDF5 bundle and flux cube)
-    for existing local model directories.
-    """
-    ensure_dir(base_dir)
-
-    # discover local model dirs by presence of .txt or .h5
-    cand = []
-    for name in sorted(os.listdir(base_dir)):
-        p = os.path.join(base_dir, name)
-        if not os.path.isdir(p):
-            continue
-        has_txt = any(fn.lower().endswith(".txt") for fn in os.listdir(p))
-        has_h5  = any(fn.lower().endswith(".h5") for fn in os.listdir(p))
-        if has_txt or has_h5:
-            cand.append(name)
-
-    if not cand:
-        print(f"No local models found under {base_dir}")
-        return
-
-    if models is None:
-        print("\nLocal models available for rebuild:")
-        print("-" * 64)
-        for i, m in enumerate(cand, 1):
-            print(f"{i:3d}. {m}")
-        print("\nSelect indices (comma / ranges like 3-6) or 'all':")
-        raw = input("> ").strip().lower()
-        if raw == "all":
-            selected = cand
-        else:
-            idxs = []
-            for token in raw.split(","):
-                token = token.strip()
-                if "-" in token:
-                    a, b = token.split("-", 1)
-                    idxs += list(range(int(a), int(b)+1))
-                else:
-                    idxs.append(int(token))
-            selected = [cand[i-1] for i in idxs if 1 <= i <= len(cand)]
-    else:
-        selected = models
-
-    if not selected:
-        print("Nothing selected.")
-        return
-
-    # try to import your dedicated regen (if present)
-    regen = None
-    try:
-        from svo_regen_spectra_lookup import regenerate_lookup_table as regen  # type: ignore
-    except Exception:
-        regen = None
-
-    for model_name in selected:
-        print("\n" + "="*64)
-        print(f"[rebuild] {model_name}")
-        model_dir = os.path.join(base_dir, model_name)
-
-        # 1) lookup table
-        try:
-            if regen:
-                regen(model_dir)  # your helper
-                print("[rebuild] lookup_table.csv via svo_regen_spectra_lookup")
-            else:
-                regen_lookup_from_txt(model_dir)  # fallback
-        except Exception as e:
-            print(f"[rebuild] lookup failed: {e}")
-
-        # 2) HDF5 bundle (from .txt), ensure it exists
-        if rebuild_h5:
-            out_h5 = os.path.join(model_dir, f"{model_name}.h5")
-            try:
-                build_h5_bundle_from_txt(model_dir, out_h5)
-            except Exception as e:
-                print(f"[rebuild] h5 bundle failed: {e}")
-
-        # 3) flux cube
-        if rebuild_flux_cube:
-            out_flux = os.path.join(model_dir, "flux_cube.bin")
-            try:
-                precompute_flux_cube(model_dir, out_flux)
-            except Exception as e:
-                print(f"[rebuild] flux cube failed: {e}")
-
-    print("\nRebuild complete.")
-
-
 # ------------ HDF5 bundling ------------
 
 def build_h5_bundle_from_txt(model_dir: str, out_h5: str) -> None:
@@ -252,7 +162,122 @@ def build_h5_bundle_from_txt(model_dir: str, out_h5: str) -> None:
 
     print(f"[H5 bundle] Wrote {out_h5}")
 
-# ------------ spectra orchestration ------------
+def run_rebuild_flow(base_dir: str = STELLAR_DIR_DEFAULT,
+                     models: List[str] = None,
+                     rebuild_h5: bool = True,
+                     rebuild_flux_cube: bool = True) -> None:
+    """
+    Rebuild lookup_table.csv (+ optional HDF5 bundle and flux cube)
+    for existing local model directories. Now cleans spectra first.
+    """
+    import glob
+    ensure_dir(base_dir)
+
+    # discover local model dirs by presence of .txt or .h5
+    cand = []
+    for name in sorted(os.listdir(base_dir)):
+        p = os.path.join(base_dir, name)
+        if not os.path.isdir(p):
+            continue
+        has_txt = any(fn.lower().endswith(".txt") for fn in os.listdir(p))
+        has_h5  = any(fn.lower().endswith(".h5") for fn in os.listdir(p))
+        if has_txt or has_h5:
+            cand.append(name)
+
+    if not cand:
+        print(f"No local models found under {base_dir}")
+        return
+
+    if models is None:
+        print("\nLocal models available for rebuild:")
+        print("-" * 64)
+        for i, m in enumerate(cand, 1):
+            print(f"{i:3d}. {m}")
+        print("\nSelect indices (comma / ranges like 3-6) or 'all':")
+        raw = input("> ").strip().lower()
+        if raw == "all":
+            selected = cand
+        else:
+            idxs = []
+            for token in raw.split(","):
+                token = token.strip()
+                if "-" in token:
+                    a, b = token.split("-", 1)
+                    idxs += list(range(int(a), int(b)+1))
+                else:
+                    if token:
+                        idxs.append(int(token))
+            selected = [cand[i-1] for i in idxs if 1 <= i <= len(cand)]
+    else:
+        selected = models
+
+    if not selected:
+        print("Nothing selected.")
+        return
+
+    # optional SVO lookup regen helper
+    regen = None
+    try:
+        from svo_regen_spectra_lookup import regenerate_lookup_table as regen  # type: ignore
+    except Exception:
+        regen = None
+
+    # cleaner
+    try:
+        from spectra_cleaner import clean_model_dir
+    except Exception as e:
+        clean_model_dir = None
+        print(f"[clean] cleaner unavailable: {e}")
+
+    for model_name in selected:
+        print("\n" + "="*64)
+        print(f"[rebuild] {model_name}")
+        model_dir = os.path.join(base_dir, model_name)
+
+        # 0) CLEAN FIRST (fix λ<=0, repair index grids via HDF5 when possible)
+        if clean_model_dir:
+            try:
+                summary = clean_model_dir(model_dir, try_h5_recovery=True, backup=True, rebuild_lookup=True)
+                print(f"[clean] {model_name}: total={summary['total']}, "
+                      f"fixed={len(summary['fixed'])}, recovered={len(summary['recovered'])}, "
+                      f"skipped={len(summary['skipped'])}, deleted={len(summary['deleted'])}")
+            except Exception as e:
+                print(f"[clean] failed for {model_name}: {e}")
+
+        # If no .txt remain, skip this model
+        txts = glob.glob(os.path.join(model_dir, "*.txt"))
+        if not txts:
+            print(f"[rebuild] no spectra (.txt) present after cleaning; skipping {model_name}.")
+            continue
+
+        # 1) lookup table
+        try:
+            if regen:
+                regen(model_dir)
+                print("[rebuild] lookup_table.csv via svo_regen_spectra_lookup")
+            else:
+                regen_lookup_from_txt(model_dir)
+        except Exception as e:
+            print(f"[rebuild] lookup failed: {e}")
+
+        # 2) HDF5 bundle (from .txt), ensure it exists
+        if rebuild_h5:
+            out_h5 = os.path.join(model_dir, f"{model_name}.h5")
+            try:
+                build_h5_bundle_from_txt(model_dir, out_h5)
+            except Exception as e:
+                print(f"[rebuild] h5 bundle failed: {e}")
+
+        # 3) flux cube
+        if rebuild_flux_cube:
+            out_flux = os.path.join(model_dir, "flux_cube.bin")
+            try:
+                precompute_flux_cube(model_dir, out_flux)
+            except Exception as e:
+                print(f"[rebuild] flux cube failed: {e}")
+
+    print("\nRebuild complete.")
+
 
 def run_spectra_flow(source: str,
                      base_dir: str = STELLAR_DIR_DEFAULT,
@@ -261,17 +286,21 @@ def run_spectra_flow(source: str,
                      force_bundle_h5: bool = True,
                      build_flux_cube: bool = True) -> None:
     """
-    source: 'svo', 'msg', or 'both'
-    models: optional explicit model names for the given source;
-            if None → interactive chooser unified across sources
+    source: 'svo', 'msg', 'mast', 'both', or 'all'
+    models: optional explicit model names; supports "src:model" or just model.
+    Integrates spectra_cleaner to sanitize/repair spectra before HDF5/flux cube.
     """
+    import glob
     ensure_dir(base_dir)
 
-    # Instantiate grabbers
-    svo = SVOSpectraGrabber(base_dir=base_dir, max_workers=workers)   # uses your SVO module
-    msg = MSGSpectraGrabber(base_dir=base_dir, max_workers=workers)   # uses your MSG module
+    # grabbers
+    svo = SVOSpectraGrabber(base_dir=base_dir, max_workers=workers)
+    msg = MSGSpectraGrabber(base_dir=base_dir, max_workers=workers)
 
-    # Discover model menus
+    # (lazy) MAST only if requested
+    mast = None
+
+    # discover menus
     choices = []
     if source in ("svo", "both", "all"):
         try:
@@ -285,8 +314,7 @@ def run_spectra_flow(source: str,
             choices += [("msg", m) for m in mlist]
         except Exception as e:
             print(f"[warn] MSG discovery failed: {e}")
-
-    if source in ("mast","all"):
+    if source in ("mast", "all"):
         try:
             mast = MASTSpectraGrabber(base_dir=base_dir, max_workers=workers)
             mlist = mast.discover_models()
@@ -294,13 +322,11 @@ def run_spectra_flow(source: str,
         except Exception as e:
             print(f"[warn] MAST discovery failed: {e}")
 
-
     if not choices:
         print("No models discovered. Exiting.")
         return
 
     if models is None:
-        # unified interactive list
         print("\nAvailable models:")
         print("-" * 64)
         for i, (src, mname) in enumerate(choices, 1):
@@ -317,11 +343,10 @@ def run_spectra_flow(source: str,
                     a, b = token.split("-", 1)
                     idxs += list(range(int(a), int(b)+1))
                 else:
-                    idxs.append(int(token))
+                    if token:
+                        idxs.append(int(token))
             selected = [choices[i-1] for i in idxs if 1 <= i <= len(choices)]
     else:
-        # models explicitly provided → assume all are for the single 'source' unless the user
-        # passed "src:model" forms; support both styles
         selected = []
         for m in models:
             if ":" in m:
@@ -330,6 +355,13 @@ def run_spectra_flow(source: str,
             else:
                 selected.append((source, m))
 
+    # cleaner
+    try:
+        from spectra_cleaner import clean_model_dir
+    except Exception as e:
+        clean_model_dir = None
+        print(f"[clean] cleaner unavailable: {e}")
+
     # Process
     for src, model_name in selected:
         print("\n" + "="*64)
@@ -337,54 +369,88 @@ def run_spectra_flow(source: str,
         model_dir = os.path.join(base_dir, model_name)
         ensure_dir(model_dir)
 
+        # 1) acquire spectra
+        n_written = 0
         if src == "svo":
-            # 1) discover spectra list and download
             spectra_info = svo.get_model_metadata(model_name)
             if not spectra_info:
                 print(f"[SVO] No spectra found for {model_name}; skipping.")
                 continue
-            n = svo.download_model_spectra(model_name, spectra_info)
-            print(f"[SVO] Downloaded {n} spectra into {model_dir}")
-            # 2) HDF5 bundle (since SVO doesn't ship one)
-            out_h5 = os.path.join(model_dir, f"{model_name}.h5")
-            if force_bundle_h5 or (not os.path.exists(out_h5)):
-                build_h5_bundle_from_txt(model_dir, out_h5)
+            n_written = svo.download_model_spectra(model_name, spectra_info)
+            print(f"[SVO] Downloaded {n_written} spectra into {model_dir}")
 
         elif src == "msg":
-            # 1) locate HDF5, extract to txt + lookup (your class handles both)
             spectra_info = msg.get_model_metadata(model_name)
             if not spectra_info:
                 print(f"[MSG] No spectra metadata for {model_name}; skipping.")
                 continue
-            n = msg.download_model_spectra(model_name, spectra_info)
-            print(f"[MSG] Extracted {n} spectra into {model_dir}")
-            # ensure we also create a bundle of per-spectrum groups for symmetry
-            out_h5_extra = os.path.join(model_dir, f"{model_name}_bundle.h5")
-            if force_bundle_h5 and not os.path.exists(out_h5_extra):
-                build_h5_bundle_from_txt(model_dir, out_h5_extra)
+            n_written = msg.download_model_spectra(model_name, spectra_info)
+            print(f"[MSG] Extracted {n_written} spectra into {model_dir}")
 
         elif src == "mast":
+            if mast is None:
+                mast = MASTSpectraGrabber(base_dir=base_dir, max_workers=workers)
             spectra_info = mast.get_model_metadata(model_name)
             if not spectra_info:
                 print(f"[MAST] No metadata for {model_name}; skipping.")
                 continue
-            n = mast.download_model_spectra(model_name, spectra_info)
-            print(f"[MAST] Wrote {n} spectra into {model_dir}")
+            n_written = mast.download_model_spectra(model_name, spectra_info)
+            print(f"[MAST] Wrote {n_written} spectra into {model_dir}")
+
+        # 2) CLEAN (fix λ<=0 / index-grid → recover λ from HDF5 when possible)
+        if clean_model_dir:
+            try:
+                summary = clean_model_dir(model_dir, try_h5_recovery=True, backup=True, rebuild_lookup=True)
+                print(f"[clean] {model_name}: total={summary['total']}, "
+                      f"fixed={len(summary['fixed'])}, recovered={len(summary['recovered'])}, "
+                      f"skipped={len(summary['skipped'])}, deleted={len(summary['deleted'])}")
+            except Exception as e:
+                print(f"[clean] failed for {model_name}: {e}")
+
+        # If nothing usable remains, skip downstream
+        txts = glob.glob(os.path.join(model_dir, "*.txt"))
+        if not txts:
+            print(f"[{src}] No .txt spectra present after cleaning; skipping downstream steps.")
+            continue
+
+        # 3) HDF5 bundle (ensure presence/consistency)
+        if src == "svo":
+            out_h5 = os.path.join(model_dir, f"{model_name}.h5")
+            if force_bundle_h5 or (not os.path.exists(out_h5)):
+                try:
+                    build_h5_bundle_from_txt(model_dir, out_h5)
+                except Exception as e:
+                    print(f"[h5 bundle] failed for {model_name}: {e}")
+
+        elif src == "msg":
+            # keep the original MSG HDF5; also build a derived bundle from cleaned txt for symmetry
+            out_h5_extra = os.path.join(model_dir, f"{model_name}_bundle.h5")
+            if force_bundle_h5 and not os.path.exists(out_h5_extra):
+                try:
+                    build_h5_bundle_from_txt(model_dir, out_h5_extra)
+                except Exception as e:
+                    print(f"[h5 bundle] failed for {model_name}: {e}")
+
+        elif src == "mast":
             out_h5 = os.path.join(model_dir, f"{model_name}.h5")
             if force_bundle_h5 and not os.path.exists(out_h5):
-                build_h5_bundle_from_txt(model_dir, out_h5)
+                try:
+                    build_h5_bundle_from_txt(model_dir, out_h5)
+                except Exception as e:
+                    print(f"[h5 bundle] failed for {model_name}: {e}")
 
-
-
-        # 3) lookup table should already be present from the grabbers.
+        # 4) lookup table (cleaner already rebuilt; warn if missing)
         lookup_csv = os.path.join(model_dir, "lookup_table.csv")
         if not os.path.exists(lookup_csv):
-            print(f"[warn] lookup_table.csv missing in {model_dir}.")
-            # could regenerate from text headers if needed here.
+            print(f"[warn] lookup_table.csv missing in {model_dir}. "
+                  f"Rebuilding from text headers.")
+            try:
+                regen_lookup_from_txt(model_dir)
+            except Exception as e:
+                print(f"[lookup] rebuild failed: {e}")
 
-        # 4) Flux cube
+        # 5) Flux cube
         if build_flux_cube:
-            # place it alongside the model; choose a consistent name
             out_flux = os.path.join(model_dir, "flux_cube.bin")
             try:
                 precompute_flux_cube(model_dir, out_flux)
@@ -392,6 +458,8 @@ def run_spectra_flow(source: str,
                 print(f"[flux-cube] Failed for {model_name}: {e}")
 
     print("\nAll requested models processed.")
+
+
 
 # ------------ filters (SVO only) ------------
 

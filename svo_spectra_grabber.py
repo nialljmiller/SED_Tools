@@ -25,7 +25,7 @@ class SVOSpectraGrabber:
       - Build lookup_table.csv from parsed headers
     """
 
-    def __init__(self, base_dir="../data/stellar_models/", max_workers=8):
+    def __init__(self, base_dir="data/stellar_models/", max_workers=8):
         self.base_dir = base_dir
         self.max_workers = max_workers
         os.makedirs(base_dir, exist_ok=True)

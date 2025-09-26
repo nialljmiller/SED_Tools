@@ -17,8 +17,8 @@ One-stop launcher to fetch stellar/atmosphere spectra and filters, and to build 
 - `flux_cube.bin`
 
 Default data paths (relative to this repo):
-- Spectra: `../data/stellar_models/`
-- Filters: `../data/filters/`
+- Spectra: `data/stellar_models/`
+- Filters: `data/filters/`
 ````
 ---
 
@@ -38,7 +38,7 @@ Interactive menu:
 
 * For **MAST/BOSZ**, you’ll be prompted to optionally limit metallicities (e.g. `-1.00,+0.00`) or press **Enter** for **all**.
 
-Everything lands under `../data/stellar_models/<ModelName>/`.
+Everything lands under `data/stellar_models/<ModelName>/`.
 
 ---
 
@@ -67,7 +67,7 @@ python SED_tools.py filters
 ```
 
 You’ll be asked for optional substrings (Facility / Instrument / Band) and a wavelength range.
-Filters are written under `../data/filters/<Facility>/<Instrument>/<Band>.dat` (CSV-ascii).
+Filters are written under `data/filters/<Facility>/<Instrument>/<Band>.dat` (CSV-ascii).
 
 ### Rebuild (no download)
 
@@ -86,7 +86,7 @@ python SED_tools.py rebuild --models BOSZ-2024-r10000
 
 ## What gets written
 
-Example: `../data/stellar_models/BOSZ-2024-r10000/`
+Example: `data/stellar_models/BOSZ-2024-r10000/`
 
 ```
 BOSZ-2024-r10000/
