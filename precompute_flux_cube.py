@@ -7,6 +7,11 @@ import numpy as np
 from tqdm import tqdm
 
 
+# --- replace existing load_lookup_table(...) with this ---
+import csv, re
+
+_NUM = re.compile(r"[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?")
+
 def load_sed(filepath, index):
     """Load a spectral energy distribution file."""
     wavelengths = []
@@ -36,65 +41,58 @@ def load_sed(filepath, index):
 
     return np.array(wavelengths), np.array(fluxes)
 
+def _num(x, default=0.0):
+    if x is None: return default
+    m = _NUM.search(str(x))
+    return float(m.group(0)) if m else default
 
 def load_lookup_table(lookup_file):
-    """Load the lookup table with model parameters."""
-    file_names = []
-    teff_values = []
-    logg_values = []
-    meta_values = []
+    file_names, teff_vals, logg_vals, meta_vals = [], [], [], []
 
-    with open(lookup_file, "r") as f:
-        # Skip header line
-        header = f.readline().strip().split(",")
+    with open(lookup_file, "r", newline="", encoding="utf-8", errors="ignore") as f:
+        # read header, strip leading "#"
+        header_line = f.readline().lstrip("#").strip()
+        reader = csv.reader([header_line])
+        header = next(reader)
+        header = [h.strip().lower() for h in header]
 
-        # Find column indices
-        file_col = 0  # Assume first column is filename
-        teff_col = None
-        logg_col = None
-        meta_col = None
+        # locate columns (be flexible about metallicity naming)
+        def _find(names):
+            for n in names:
+                if n in header:
+                    return header.index(n)
+            return None
 
-        for i, col in enumerate(header):
-            col = col.strip().lower()
-            if col == "teff":
-                teff_col = i
-            elif col == "logg":
-                logg_col = i
-            elif col in ["meta", "feh"]:
-                meta_col = i
+        file_col = 0  # first column is the filename in all our writers
+        teff_col = _find(["teff"])
+        logg_col = _find(["logg", "log_g"])
+        meta_col = _find(["meta", "feh", "[fe/h]", "metallicity", "met"])
 
-        # Read data rows
-        for line in f:
-            if line.strip():
-                values = line.strip().split(",")
-                if len(values) <= max(
-                    file_col, teff_col or 0, logg_col or 0, meta_col or 0
-                ):
-                    continue  # Skip lines that don't have enough values
+        print(f"Column indices found - teff: {teff_col}, logg: {logg_col}, meta: {meta_col}")
 
-                file_names.append(values[file_col].strip())
+        # parse rows with csv so commas inside fields don't break us
+        reader = csv.reader(f)
+        for row in reader:
+            if not row or row[0].startswith("#"):
+                continue
+            # pad short rows
+            if len(row) <= max(file_col, teff_col or 0, logg_col or 0, meta_col or 0):
+                continue
+            fn   = row[file_col].strip()
+            teff = _num(row[teff_col]) if teff_col is not None else 0.0
+            logg = _num(row[logg_col]) if logg_col is not None else 0.0
+            meta = _num(row[meta_col]) if meta_col is not None else 0.0
 
-                try:
-                    teff = float(values[teff_col]) if teff_col is not None else 0.0
-                    logg = float(values[logg_col]) if logg_col is not None else 0.0
-                    meta = float(values[meta_col]) if meta_col is not None else 0.0
+            # require at least teff/logg to be sane
+            if teff > 0 and np.isfinite(logg):
+                file_names.append(fn)
+                teff_vals.append(teff)
+                logg_vals.append(logg)
+                meta_vals.append(meta)
 
-                    teff_values.append(teff)
-                    logg_values.append(logg)
-                    meta_values.append(meta)
-                except (ValueError, IndexError):
-                    # Skip rows with invalid values
-                    file_names.pop()  # Remove the added filename
+    print(f"Loaded {len(file_names)} model files from lookup table")
+    return file_names, np.array(teff_vals), np.array(logg_vals), np.array(meta_vals)
 
-    print(
-        f"Column indices found - teff: {teff_col}, logg: {logg_col}, meta: {meta_col}"
-    )
-    return (
-        file_names,
-        np.array(teff_values),
-        np.array(logg_values),
-        np.array(meta_values),
-    )
 
 
 def get_unique_sorted(values, tolerance=1e-8):
