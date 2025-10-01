@@ -122,7 +122,7 @@ def run_tool(tool_key: str, extra_args=None):
 def main():
     ensure_deps()
 
-    from SED_tools import menu, run_filters_flow, run_rebuild_flow, run_spectra_flow
+    from SED_tools import menu, run_filters_flow, run_rebuild_flow, run_spectra_flow, STELLAR_DIR_DEFAULT, FILTER_DIR_DEFAULT
 
     argv = sys.argv[1:]
     if argv:
