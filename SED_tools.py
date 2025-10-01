@@ -543,6 +543,22 @@ def run_filters_flow(base_dir: str = FILTER_DIR_DEFAULT) -> None:
 
     print("\nFilter flow complete.")
 
+
+
+def menu() -> str:
+    print("\nWhat would you like to run?")
+    print("  1) Spectra (SVO / MSG / MAST)")
+    print("  2) Filters (SVO)")
+    print("  3) Rebuild (lookup + HDF5 + flux cube)")
+    print("  0) Quit")
+    choice = input("> ").strip()
+    mapping = {
+        "1": "spectra", "2": "filters", "3": "rebuild",
+        "0": "quit"
+    }
+    return mapping.get(choice, "")
+
+
 # ------------ CLI ------------
 
 def main():
@@ -599,21 +615,25 @@ def main():
                          rebuild_flux_cube=not args.no_cube)
 
     else:
-        print("  1) Spectra (SVO / MSG / MAST)")
-        print("  2) Filters (SVO)")
-        print("  3) Rebuild (lookup + HDF5 + flux cube)")
-        choice = (input("> ").strip() or "1")
-        if choice == "2":
+
+
+
+
+        choice = menu()
+
+        if choice == "filters":
             run_filters_flow(base_dir=FILTER_DIR_DEFAULT)
-        elif choice == "3":
+        elif choice == "rebuild":
             run_rebuild_flow(base_dir=STELLAR_DIR_DEFAULT)
-        else:
+        elif choice == "spectra":
             run_spectra_flow(source="all",
                              base_dir=STELLAR_DIR_DEFAULT,
                              models=None,
                              workers=5,
                              force_bundle_h5=True,
                              build_flux_cube=True)
+        else:
+            exit()
 
 if __name__ == "__main__":
     main()
