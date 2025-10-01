@@ -546,6 +546,8 @@ def run_filters_flow(base_dir: str = FILTER_DIR_DEFAULT) -> None:
 
 
 def menu() -> str:
+    print("\nThis tool will download an SED library and then process the files to be used with MESA-Custom Colors")
+    print("\nThe data will be stored in the data/ folder and will have the same structure as the data seen in $MESA_DIR/colors/data")
     print("\nWhat would you like to run?")
     print("  1) Spectra (SVO / MSG / MAST)")
     print("  2) Filters (SVO)")
