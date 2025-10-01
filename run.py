@@ -6,7 +6,6 @@ Self-bootstrapping runner for spectraa tools.
 """
 
 import os, sys, subprocess, importlib, shutil, textwrap
-from SED_tools import *
 
 REQUIRED = {
     "numpy":             "numpy>=1.22",
@@ -62,31 +61,36 @@ def ensure_deps():
     for spec in missing:
         print(f"  - {spec}")
 
+
     cmd = [sys.executable, "-m", "pip", "install", "--upgrade"]
     if not in_venv():
         cmd.append("--user")
     cmd.extend(missing)
     print(f"[pip] {' '.join(cmd)}")
-    rc = subprocess.call(cmd)
-    if rc != 0:
-        print("Bulk install failed; retrying one-by-one…")
-        for spec in missing:
-            rc_i = pip_install(spec)
-            if rc_i != 0:
-                print(textwrap.dedent(
-                    f"""
-                    ERROR: Failed to install '{spec}'.
-                    Some wheels (e.g., h5py/numpy) may need system headers:
-                      - Debian/Ubuntu: sudo apt-get install python3-dev build-essential libhdf5-dev
-                      - Fedora/RHEL:   sudo dnf install python3-devel gcc hdf5-devel
-                      - macOS (brew):  brew install hdf5
-                    """
-                ).strip())
-                sys.exit(1)
+    do_deps = 'N'
+    do_deps = input("Install missing dependenceis? [y/N]")
 
-    for import_name in REQUIRED:
-        importlib.import_module(import_name)
-    print("Dependencies installed OK.\n")
+    if ['y', 'Y', 'yes', 'Yes'] in do_deps:
+        rc = subprocess.call(cmd)
+        if rc != 0:
+            print("Bulk install failed; retrying one-by-one…")
+            for spec in missing:
+                rc_i = pip_install(spec)
+                if rc_i != 0:
+                    print(textwrap.dedent(
+                        f"""
+                        ERROR: Failed to install '{spec}'.
+                        Some wheels (e.g., h5py/numpy) may need system headers:
+                          - Debian/Ubuntu: sudo apt-get install python3-dev build-essential libhdf5-dev
+                          - Fedora/RHEL:   sudo dnf install python3-devel gcc hdf5-devel
+                          - macOS (brew):  brew install hdf5
+                        """
+                    ).strip())
+                    sys.exit(1)
+
+        for import_name in REQUIRED:
+            importlib.import_module(import_name)
+        print("Dependencies installed OK.\n")
 
 
 
@@ -119,6 +123,9 @@ def run_tool(tool_key: str, extra_args=None):
 
 def main():
     ensure_deps()
+    
+    from SED_tools import *
+
     argv = sys.argv[1:]
     if argv:
         sub = argv[0].lower()
