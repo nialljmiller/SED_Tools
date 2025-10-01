@@ -67,10 +67,8 @@ def ensure_deps():
         cmd.append("--user")
     cmd.extend(missing)
     print(f"[pip] {' '.join(cmd)}")
-    do_deps = 'N'
-    do_deps = input("Install missing dependenceis? [y/N]")
-
-    if ['y', 'Y', 'yes', 'Yes'] in do_deps:
+    resp = input("Install missing dependencies? [y/N] ").strip().lower()
+    if resp in ("y", "yes"):
         rc = subprocess.call(cmd)
         if rc != 0:
             print("Bulk install failed; retrying one-by-one…")
