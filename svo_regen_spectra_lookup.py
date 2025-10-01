@@ -1,6 +1,7 @@
 import csv
 import os
 import re
+from typing import Iterable, List, Optional
 
 
 def clean_metadata_values(metadata):
@@ -61,15 +62,62 @@ def scan_existing_files(base_dir):
     return existing_files
 
 
-def regenerate_lookup_table(model, files, output_dir):
-    """
-    Regenerate the lookup table from existing files.
+def _discover_txt_files(directory: str) -> List[str]:
+    """Return a sorted list of .txt spectra inside *directory*."""
 
-    Args:
-        model (str): The model name.
-        files (list): List of file paths for the model.
-        output_dir (str): Directory to save the lookup table.
+    return sorted(
+        [
+            os.path.join(directory, fname)
+            for fname in os.listdir(directory)
+            if fname.lower().endswith(".txt")
+        ]
+    )
+
+
+def regenerate_lookup_table(
+    model: Optional[str] = None,
+    files: Optional[Iterable[str]] = None,
+    output_dir: Optional[str] = None,
+):
     """
+    Regenerate ``lookup_table.csv`` for a model directory.
+
+    Parameters
+    ----------
+    model
+        Either the model name or a direct path to the model directory when
+        ``files``/``output_dir`` are omitted (backwards compatibility with the
+        CLI tooling).
+    files
+        Iterable of absolute paths to ``.txt`` spectra files to parse.  When
+        omitted we will scan ``output_dir`` for ``.txt`` files.
+    output_dir
+        Directory where the lookup table should be written.  When not provided
+        but ``model`` points to an existing directory we assume it is the
+        output directory.
+    """
+
+    # Support legacy calls that only pass the model directory path.  In that
+    # case ``model`` is actually the directory and ``files``/``output_dir`` are
+    # omitted.
+    if output_dir is None and isinstance(model, str) and os.path.isdir(model):
+        output_dir = model
+        model_name = os.path.basename(os.path.normpath(model))
+    else:
+        model_name = model if isinstance(model, str) else "unknown"
+
+    if output_dir is None:
+        raise TypeError("output_dir must be supplied or derivable from 'model'.")
+
+    if files is None:
+        files = _discover_txt_files(output_dir)
+
+    files = list(files)
+    if not files:
+        raise RuntimeError(
+            f"No spectra files found for model '{model_name}' in {output_dir}."
+        )
+
     lookup_table_path = os.path.join(output_dir, "lookup_table.csv")
     all_keys = set()
     metadata_rows = []
