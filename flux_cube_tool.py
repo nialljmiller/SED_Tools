@@ -26,6 +26,14 @@ When loaded we restore the more natural shape
 
 Example usage from the command line::
 
+    python flux_cube_tool.py --flux-cube data/stellar_models/MODEL/flux_cube.bin
+
+When run interactively the tool reminds you of the valid parameter ranges,
+prompts for any missing values, auto-discovers filter curves under
+``data/filters/`` (or directories provided via ``--filters``), computes
+synthetic photometry for each, and saves a diagnostic plot to ``plots/``.
+Optional flags such as ``--plot`` and ``--save-sed`` allow overriding the
+output locations or exporting the interpolated spectrum to disk.
     python flux_cube_tool.py \
         --flux-cube data/stellar_models/MODEL/flux_cube.bin \
         --teff 6000 --logg 4.5 --metallicity 0.0 \
@@ -44,6 +52,11 @@ import math
 import os
 import struct
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Dict, Iterable, List, Sequence, Tuple
+
+FILTER_EXTENSIONS = {".dat", ".txt", ".csv"}
+
 from typing import Dict, Iterable, List, Sequence, Tuple
 
 import matplotlib.pyplot as plt
@@ -159,6 +172,7 @@ class FluxCube:
 def integrate_flux(wavelength: np.ndarray, flux: np.ndarray) -> float:
     """Compute bolometric flux via trapezoidal integration."""
 
+    return float(np.trapezoid(flux, wavelength))
     return float(np.trapz(flux, wavelength))
 
 
@@ -181,6 +195,35 @@ def bolometric_magnitude(
 def load_filter_curve(path: str) -> Tuple[np.ndarray, np.ndarray]:
     """Load a two-column filter curve (wavelength, throughput)."""
 
+    wavelengths: List[float] = []
+    transmissions: List[float] = []
+
+    with open(path, "r", encoding="utf-8") as fh:
+        for line_no, raw_line in enumerate(fh, start=1):
+            line = raw_line.strip()
+            if not line or line.startswith("#"):
+                continue
+
+            normalized = line.replace(",", " ")
+            parts = normalized.split()
+            if len(parts) < 2:
+                continue
+
+            try:
+                wl = float(parts[0])
+                tr = float(parts[1])
+            except ValueError:
+                # Skip header or malformed rows gracefully.
+                continue
+
+            wavelengths.append(wl)
+            transmissions.append(tr)
+
+    if not wavelengths:
+        raise ValueError(f"Filter file {path} does not contain numeric wavelength/transmission data")
+
+    wavelength = np.asarray(wavelengths)
+    transmission = np.asarray(transmissions)
     data = np.loadtxt(path, unpack=True)
     if data.shape[0] < 2:
         raise ValueError(f"Filter file {path} must contain at least two columns")
@@ -198,6 +241,8 @@ def filter_flux(
     """Compute band-integrated flux through a filter curve."""
 
     interp_trans = np.interp(sed_wavelength, filter_wavelength, filter_transmission, left=0.0, right=0.0)
+    numerator = np.trapezoid(sed_flux * interp_trans, sed_wavelength)
+    denom = np.trapezoid(interp_trans, sed_wavelength)
     numerator = np.trapz(sed_flux * interp_trans, sed_wavelength)
     denom = np.trapz(interp_trans, sed_wavelength)
     if denom == 0:
@@ -266,6 +311,137 @@ def save_sed(path: str, wavelength: np.ndarray, flux: np.ndarray) -> None:
     np.savetxt(path, data, header=header)
 
 
+def prompt_for_parameter(name: str, units: str, grid: np.ndarray, provided: float | None) -> float:
+    """Return the requested parameter, prompting if ``provided`` is ``None``."""
+
+    if provided is not None:
+        return provided
+
+    lower = float(np.min(grid))
+    upper = float(np.max(grid))
+    prompt = f"Enter target {name} in {units} (range: {lower:g}–{upper:g} {units}): "
+
+    while True:
+        try:
+            value_str = input(prompt).strip()
+        except EOFError:
+            raise SystemExit(f"Missing {name}; aborting.")
+
+        try:
+            value = float(value_str)
+        except ValueError:
+            print(f"Could not parse '{value_str}'. Please enter a numeric value.")
+            continue
+
+        if not (lower <= value <= upper):
+            print(f"Value {value} is outside the supported range {lower:g}–{upper:g} {units}.")
+            continue
+
+        return value
+
+
+def infer_filter_directories(flux_cube_path: str) -> List[Path]:
+    """Return likely filter directories based on the flux cube location."""
+
+    cube_path = Path(flux_cube_path).expanduser().resolve()
+    candidates: List[Path] = []
+    for parent in [cube_path.parent, *cube_path.parents]:
+        candidate = parent / "filters"
+        if candidate.is_dir():
+            candidates.append(candidate)
+    return candidates
+
+
+def collect_filter_files(
+    entries: Sequence[str] | None, flux_cube_path: str
+) -> Tuple[List[Tuple[str, Path]], List[Path]]:
+    """Discover filter files from explicit paths or inferred directories."""
+
+    discovered: List[Path] = []
+    search_roots: List[Path] = []
+
+    def add_file(file_path: Path) -> None:
+        if file_path.suffix.lower() in FILTER_EXTENSIONS and file_path.is_file():
+            discovered.append(file_path)
+
+    if entries:
+        for item in entries:
+            path = Path(item).expanduser().resolve()
+            if path.is_dir():
+                search_roots.append(path)
+                for file_path in sorted(path.rglob("*")):
+                    add_file(file_path)
+            elif path.is_file():
+                add_file(path)
+            else:
+                raise FileNotFoundError(f"Filter path '{item}' does not exist")
+    else:
+        for directory in infer_filter_directories(flux_cube_path):
+            search_roots.append(directory)
+            for file_path in sorted(directory.rglob("*")):
+                add_file(file_path)
+
+    unique_files = list(dict.fromkeys(discovered))
+    if not unique_files:
+        unique_roots: List[Path] = []
+        seen_roots: set[Path] = set()
+        for root in search_roots:
+            resolved_root = root.resolve()
+            if resolved_root not in seen_roots:
+                unique_roots.append(resolved_root)
+                seen_roots.add(resolved_root)
+        return [], unique_roots
+
+    if not search_roots:
+        common_root = Path(os.path.commonpath([str(p.parent) for p in unique_files])).resolve()
+        search_roots = [common_root]
+
+    unique_roots: List[Path] = []
+    seen_roots: set[Path] = set()
+    for root in search_roots:
+        resolved_root = root.resolve()
+        if resolved_root not in seen_roots:
+            unique_roots.append(resolved_root)
+            seen_roots.add(resolved_root)
+    search_roots = unique_roots
+
+    filter_entries: List[Tuple[str, Path]] = []
+    existing_names: set[str] = set()
+    name_counts: Dict[str, int] = {}
+
+    for file_path in unique_files:
+        name: str | None = None
+        for root in search_roots:
+            try:
+                rel = file_path.relative_to(root)
+            except ValueError:
+                continue
+            else:
+                name = rel.with_suffix("").as_posix()
+                break
+
+        if name is None:
+            name = file_path.stem
+
+        base_name = name
+        counter = name_counts.get(base_name, 0)
+        while name in existing_names:
+            counter += 1
+            name = f"{base_name}_{counter}"
+        name_counts[base_name] = counter
+
+        filter_entries.append((name, file_path))
+        existing_names.add(name)
+
+    return filter_entries, search_roots
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Inspect and interpolate a flux cube")
+    parser.add_argument("--flux-cube", required=True, help="Path to flux_cube.bin")
+    parser.add_argument("--teff", type=float, help="Target effective temperature (K)")
+    parser.add_argument("--logg", type=float, help="Target log g (dex)")
+    parser.add_argument("--metallicity", type=float, help="Target metallicity [M/H] (dex)")
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Inspect and interpolate a flux cube")
     parser.add_argument("--flux-cube", required=True, help="Path to flux_cube.bin")
@@ -276,11 +452,13 @@ def main(argv: Sequence[str] | None = None) -> int:
                         help="Reference flux for bolometric magnitude (default: 1)")
     parser.add_argument("--bolometric-reference-mag", type=float, default=0.0,
                         help="Reference magnitude for bolometric magnitude (default: 0)")
+    parser.add_argument("--filters", nargs="*", help="Filter files or directories (all filters discovered are used)")
     parser.add_argument("--filters", nargs="*", default=[], help="Filter curve files (two-column)")
     parser.add_argument("--filter-reference-flux", type=float, default=1.0,
                         help="Reference flux for filter magnitudes")
     parser.add_argument("--filter-reference-mag", type=float, default=0.0,
                         help="Reference magnitude for filter magnitudes")
+    parser.add_argument("--plot", help="Write a diagnostic plot to this path (defaults to plots/)")
     parser.add_argument("--plot", help="Write a diagnostic plot to this path")
     parser.add_argument("--save-sed", help="Write interpolated SED (wavelength, flux) to a text file")
 
@@ -288,6 +466,11 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     cube = FluxCube.from_file(args.flux_cube)
 
+    teff = prompt_for_parameter("effective temperature", "K", cube.teff_grid, args.teff)
+    logg = prompt_for_parameter("surface gravity (log g)", "dex", cube.logg_grid, args.logg)
+    metallicity = prompt_for_parameter("metallicity [M/H]", "dex", cube.meta_grid, args.metallicity)
+
+    wl, flux = cube.interpolate_spectrum(teff, logg, metallicity)
     wl, flux = cube.interpolate_spectrum(args.teff, args.logg, args.metallicity)
 
     fbol, mbol = bolometric_magnitude(
@@ -297,6 +480,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         reference_magnitude=args.bolometric_reference_mag,
     )
 
+    print(f"Interpolated SED at Teff={teff}, logg={logg}, [M/H]={metallicity}")
     print(f"Interpolated SED at Teff={args.teff}, logg={args.logg}, [M/H]={args.metallicity}")
     print(f"Bolometric flux: {fbol:.6e}")
     if math.isfinite(mbol):
@@ -305,6 +489,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         print("Bolometric magnitude: undefined (non-positive flux)")
 
     filters: Dict[str, Tuple[np.ndarray, np.ndarray]] = {}
+    filter_entries, filter_roots = collect_filter_files(args.filters, args.flux_cube)
+    if filter_entries:
+        if args.filters:
+            source_msg = ", ".join(str(path) for path in filter_roots) if filter_roots else "provided paths"
+        else:
+            source_msg = ", ".join(str(path) for path in filter_roots) or "inferred filter directories"
+        print(f"\nFilter photometry (using {len(filter_entries)} filters from {source_msg}):")
+        for name, fpath in filter_entries:
+            fw, ft = load_filter_curve(str(fpath))
     if args.filters:
         print("\nFilter photometry:")
         for fpath in args.filters:
@@ -320,6 +513,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                 reference_magnitude=args.filter_reference_mag,
             )
             if math.isfinite(mag):
+                print(f"  {name:30s}  flux={f:.6e}  mag={mag:.4f}")
+            else:
+                print(f"  {name:30s}  flux={f:.6e}  mag=undefined")
+    else:
+        print("\nNo filter files found; skipping filter photometry.")
                 print(f"  {name:20s}  flux={f:.6e}  mag={mag:.4f}")
             else:
                 print(f"  {name:20s}  flux={f:.6e}  mag=undefined")
@@ -329,6 +527,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"Saved SED to {args.save_sed}")
 
     if args.plot:
+        plot_path = args.plot
+    else:
+        plot_filename = f"sed_T{teff:.0f}_g{logg:.2f}_M{metallicity:.2f}.png"
+        plot_path = os.path.join("plots", plot_filename)
+
+    plot_sed(wl, flux, filters, out_path=plot_path)
+    print(f"Saved plot to {plot_path}")
         plot_sed(wl, flux, filters, out_path=args.plot)
         print(f"Saved plot to {args.plot}")
 
