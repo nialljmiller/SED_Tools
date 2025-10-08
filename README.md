@@ -18,11 +18,15 @@ One-stop launcher to fetch stellar/atmosphere spectra and filters, and to build 
 
 ## Flux cube inspector
 
-Use `flux_cube_tool.py` to open a `flux_cube.bin`, interpolate an SED at arbitrary `(Teff, logg, [M/H])`, compute bolometric and synthetic filter magnitudes, and generate diagnostic plots. At its simplest you only need to supply the flux cube path::
+Use `flux_cube_tool.py` to open a `flux_cube.bin`, interpolate an SED at arbitrary `(Teff, logg, [M/H])`, compute bolometric and synthetic filter magnitudes, and optionally generate diagnostic plots::
 
-    python flux_cube_tool.py --flux-cube data/stellar_models/<model>/flux_cube.bin
+    python flux_cube_tool.py \
+        --flux-cube data/stellar_models/<model>/flux_cube.bin \
+        --teff 6000 --logg 4.5 --metallicity 0.0 \
+        --filters data/filters/Johnson/U.dat data/filters/Johnson/B.dat \
+        --plot sed.png --save-sed sed.csv
 
-The script will report the valid parameter ranges, prompt for any missing `Teff`, `logg`, or `[M/H]` values, automatically discover every filter curve beneath `data/filters/` (or any directories/files you pass via `--filters`), evaluate magnitudes for each, and save a plot to `plots/` by default. Additional options allow you to override the plot destination (`--plot`), persist the interpolated SED (`--save-sed`), or change the magnitude zero points via `--bolometric-reference-flux`/`--bolometric-reference-mag` and the analogous filter settings.
+By default the magnitudes are reported relative to a reference flux of `1.0`, but alternative zero points can be provided with `--bolometric-reference-flux`/`--bolometric-reference-mag` and the analogous filter options.
 
 Default data paths (relative to this repo):
 - Spectra: `data/stellar_models/`

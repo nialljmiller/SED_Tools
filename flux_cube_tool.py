@@ -34,6 +34,15 @@ prompts for any missing values, auto-discovers filter curves under
 synthetic photometry for each, and saves a diagnostic plot to ``plots/``.
 Optional flags such as ``--plot`` and ``--save-sed`` allow overriding the
 output locations or exporting the interpolated spectrum to disk.
+    python flux_cube_tool.py \
+        --flux-cube data/stellar_models/MODEL/flux_cube.bin \
+        --teff 6000 --logg 4.5 --metallicity 0.0 \
+        --filters data/filters/Johnson/U.dat data/filters/Johnson/B.dat \
+        --plot sed.png --save-sed sed.csv
+
+The CLI prints the bolometric flux / magnitude and the synthetic
+photometry in each requested filter.  The plot overlays any supplied
+filters (scaled to the SED peak) for visual sanity checks.
 """
 
 from __future__ import annotations
@@ -47,6 +56,8 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Sequence, Tuple
 
 FILTER_EXTENSIONS = {".dat", ".txt", ".csv"}
+
+from typing import Dict, Iterable, List, Sequence, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -162,6 +173,7 @@ def integrate_flux(wavelength: np.ndarray, flux: np.ndarray) -> float:
     """Compute bolometric flux via trapezoidal integration."""
 
     return float(np.trapezoid(flux, wavelength))
+    return float(np.trapz(flux, wavelength))
 
 
 def bolometric_magnitude(
@@ -212,6 +224,10 @@ def load_filter_curve(path: str) -> Tuple[np.ndarray, np.ndarray]:
 
     wavelength = np.asarray(wavelengths)
     transmission = np.asarray(transmissions)
+    data = np.loadtxt(path, unpack=True)
+    if data.shape[0] < 2:
+        raise ValueError(f"Filter file {path} must contain at least two columns")
+    wavelength, transmission = data[0], data[1]
     order = np.argsort(wavelength)
     return wavelength[order], transmission[order]
 
@@ -227,6 +243,8 @@ def filter_flux(
     interp_trans = np.interp(sed_wavelength, filter_wavelength, filter_transmission, left=0.0, right=0.0)
     numerator = np.trapezoid(sed_flux * interp_trans, sed_wavelength)
     denom = np.trapezoid(interp_trans, sed_wavelength)
+    numerator = np.trapz(sed_flux * interp_trans, sed_wavelength)
+    denom = np.trapz(interp_trans, sed_wavelength)
     if denom == 0:
         raise ValueError("Filter transmission integrates to zero")
     return float(numerator / denom)
@@ -424,16 +442,24 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--teff", type=float, help="Target effective temperature (K)")
     parser.add_argument("--logg", type=float, help="Target log g (dex)")
     parser.add_argument("--metallicity", type=float, help="Target metallicity [M/H] (dex)")
+def main(argv: Sequence[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Inspect and interpolate a flux cube")
+    parser.add_argument("--flux-cube", required=True, help="Path to flux_cube.bin")
+    parser.add_argument("--teff", type=float, required=True, help="Target effective temperature")
+    parser.add_argument("--logg", type=float, required=True, help="Target log g")
+    parser.add_argument("--metallicity", type=float, required=True, help="Target metallicity")
     parser.add_argument("--bolometric-reference-flux", type=float, default=1.0,
                         help="Reference flux for bolometric magnitude (default: 1)")
     parser.add_argument("--bolometric-reference-mag", type=float, default=0.0,
                         help="Reference magnitude for bolometric magnitude (default: 0)")
     parser.add_argument("--filters", nargs="*", help="Filter files or directories (all filters discovered are used)")
+    parser.add_argument("--filters", nargs="*", default=[], help="Filter curve files (two-column)")
     parser.add_argument("--filter-reference-flux", type=float, default=1.0,
                         help="Reference flux for filter magnitudes")
     parser.add_argument("--filter-reference-mag", type=float, default=0.0,
                         help="Reference magnitude for filter magnitudes")
     parser.add_argument("--plot", help="Write a diagnostic plot to this path (defaults to plots/)")
+    parser.add_argument("--plot", help="Write a diagnostic plot to this path")
     parser.add_argument("--save-sed", help="Write interpolated SED (wavelength, flux) to a text file")
 
     args = parser.parse_args(argv)
@@ -445,6 +471,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     metallicity = prompt_for_parameter("metallicity [M/H]", "dex", cube.meta_grid, args.metallicity)
 
     wl, flux = cube.interpolate_spectrum(teff, logg, metallicity)
+    wl, flux = cube.interpolate_spectrum(args.teff, args.logg, args.metallicity)
 
     fbol, mbol = bolometric_magnitude(
         wl,
@@ -454,6 +481,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
 
     print(f"Interpolated SED at Teff={teff}, logg={logg}, [M/H]={metallicity}")
+    print(f"Interpolated SED at Teff={args.teff}, logg={args.logg}, [M/H]={args.metallicity}")
     print(f"Bolometric flux: {fbol:.6e}")
     if math.isfinite(mbol):
         print(f"Bolometric magnitude: {mbol:.4f}")
@@ -470,6 +498,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"\nFilter photometry (using {len(filter_entries)} filters from {source_msg}):")
         for name, fpath in filter_entries:
             fw, ft = load_filter_curve(str(fpath))
+    if args.filters:
+        print("\nFilter photometry:")
+        for fpath in args.filters:
+            name = os.path.splitext(os.path.basename(fpath))[0]
+            fw, ft = load_filter_curve(fpath)
             filters[name] = (fw, ft)
             f, mag = filter_magnitude(
                 wl,
@@ -485,6 +518,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 print(f"  {name:30s}  flux={f:.6e}  mag=undefined")
     else:
         print("\nNo filter files found; skipping filter photometry.")
+                print(f"  {name:20s}  flux={f:.6e}  mag={mag:.4f}")
+            else:
+                print(f"  {name:20s}  flux={f:.6e}  mag=undefined")
 
     if args.save_sed:
         save_sed(args.save_sed, wl, flux)
@@ -498,6 +534,8 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     plot_sed(wl, flux, filters, out_path=plot_path)
     print(f"Saved plot to {plot_path}")
+        plot_sed(wl, flux, filters, out_path=args.plot)
+        print(f"Saved plot to {args.plot}")
 
     return 0
 
