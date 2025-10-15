@@ -9,6 +9,7 @@ This module exposes a small command line tool that can
   interpolation in each axis
 * compute bolometric fluxes / magnitudes
 * fold SEDs through user supplied filter transmission curves
+* interactively select filter systems and compute AB or Vega magnitudes
 * create quick-look plots for the interpolated SED (and filters)
 
 The binary format that :func:`precompute_flux_cube` writes is::
@@ -41,12 +42,159 @@ from __future__ import annotations
 import argparse
 import math
 import os
+import re
 import struct
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, List, Sequence, Tuple
 
 FILTER_EXTENSIONS = {".dat", ".txt", ".csv"}
+SPEED_OF_LIGHT_ANG_PER_S = 2.99792458e18  # speed of light in Angstrom/s
+AB_ZERO_FLUX = 3.631e-20  # 3631 Jy expressed in erg s^-1 cm^-2 Hz^-1
+UNIT_TO_ANGSTROM: Dict[str, float] = {
+    "angstrom": 1.0,
+    "ang": 1.0,
+    "a": 1.0,
+    "aa": 1.0,
+    "nanometer": 10.0,
+    "nanometre": 10.0,
+    "nm": 10.0,
+    "micrometer": 1.0e4,
+    "micrometre": 1.0e4,
+    "micron": 1.0e4,
+    "um": 1.0e4,
+    "millimeter": 1.0e7,
+    "millimetre": 1.0e7,
+    "mm": 1.0e7,
+    "meter": 1.0e10,
+    "metre": 1.0e10,
+    "m": 1.0e10,
+}
+VEGA_ZP_KEYS = [
+    "zp_vega",
+    "vega_zp",
+    "vega_flux",
+    "zero_point_flux_vega",
+    "zero_point_flux",
+    "zeropointflux",
+    "zeropoint_flux",
+    "zeropointflux_ergcm2sa",
+    "zeropointflux_ergcm2sang",
+    "zeropointfluxergcm2sa",
+]
+
+
+@dataclass
+class FilterCurve:
+    name: str
+    wavelength: np.ndarray
+    transmission: np.ndarray
+    metadata: Dict[str, object]
+    wavelength_unit: str = "angstrom"
+
+
+@dataclass
+class Spectrum:
+    wavelength: np.ndarray
+    flux: np.ndarray
+    metadata: Dict[str, object]
+    wavelength_unit: str = "angstrom"
+
+
+def normalize_metadata_key(key: str) -> str:
+    normalized = re.sub(r"[^a-z0-9]+", "_", key.strip().lower())
+    return normalized.strip("_")
+
+
+def parse_metadata_value(value: str) -> object:
+    value = value.strip()
+    if not value:
+        return ""
+    try:
+        return float(value)
+    except ValueError:
+        return value
+
+
+def infer_unit_from_values(values: np.ndarray) -> str:
+    if values.size == 0:
+        return "angstrom"
+    max_value = float(np.max(values))
+    if max_value >= 5e4:
+        return "angstrom"
+    if max_value >= 50:
+        return "nanometer"
+    if max_value >= 0.5:
+        return "micrometer"
+    return "meter"
+
+
+def standardize_wavelength_array(
+    values: Sequence[float], unit_hint: str | None = None
+) -> Tuple[np.ndarray, np.ndarray, str]:
+    arr = np.asarray(values, dtype=float)
+    if arr.size == 0:
+        raise ValueError("No wavelength data found in file")
+    order = np.argsort(arr)
+    arr = arr[order]
+    unit_key = (unit_hint or "").strip().lower()
+    if not unit_key:
+        unit_key = infer_unit_from_values(arr)
+    factor = UNIT_TO_ANGSTROM.get(unit_key, 1.0)
+    converted = arr * factor
+    return converted, order, unit_key or "angstrom"
+
+
+def load_two_column_file(path: str) -> Tuple[List[float], List[float], Dict[str, object]]:
+    x_values: List[float] = []
+    y_values: List[float] = []
+    metadata: Dict[str, object] = {}
+
+    with open(path, "r", encoding="utf-8") as fh:
+        for line_no, raw_line in enumerate(fh, start=1):
+            line = raw_line.strip()
+            if not line:
+                continue
+            if line.startswith("#"):
+                meta = line[1:].strip()
+                for sep in (":", "="):
+                    if sep in meta:
+                        key, value = meta.split(sep, 1)
+                        metadata[normalize_metadata_key(key)] = parse_metadata_value(value)
+                        break
+                else:
+                    comments = metadata.setdefault("comments", [])
+                    comments.append(meta)
+                continue
+
+            normalized = line.replace(",", " ")
+            parts = normalized.split()
+            if len(parts) < 2:
+                continue
+            try:
+                x = float(parts[0])
+                y = float(parts[1])
+            except ValueError:
+                continue
+            x_values.append(x)
+            y_values.append(y)
+
+    return x_values, y_values, metadata
+
+
+def get_metadata_float(metadata: Dict[str, object], keys: Sequence[str]) -> float | None:
+    for key in keys:
+        if key not in metadata:
+            continue
+        value = metadata[key]
+        if isinstance(value, (int, float)):
+            return float(value)
+        if isinstance(value, str):
+            try:
+                return float(value)
+            except ValueError:
+                continue
+    return None
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -66,6 +214,8 @@ class FluxCube:
     def from_file(cls, path: str) -> "FluxCube":
         """Load a :class:`FluxCube` from a binary file."""
 
+        leftover = b""
+
         with open(path, "rb") as fh:
             header = fh.read(16)
             if len(header) != 16:
@@ -76,13 +226,21 @@ class FluxCube:
             meta = np.fromfile(fh, dtype=np.float64, count=nm)
             wavelengths = np.fromfile(fh, dtype=np.float64, count=nw)
             flux_expected = nt * nl * nm * nw
-            flux_flat = np.fromfile(fh, dtype=np.float64)
+            flux_flat = np.fromfile(fh, dtype=np.float64, count=flux_expected)
+
+            if flux_flat.size == flux_expected:
+                leftover = fh.read(1)
+            else:
+                leftover = b""
 
         if flux_flat.size != flux_expected:
             raise ValueError(
                 f"Flux cube body truncated: expected {flux_expected} values,"
                 f" found {flux_flat.size}"
             )
+
+        if leftover:
+            print("Warning: trailing data detected in flux cube; ignoring extra bytes.")
 
         # Restore original (nt, nl, nm, nw) ordering.
         flux = flux_flat.reshape((nw, nm, nl, nt)).transpose(3, 2, 1, 0)
@@ -97,8 +255,9 @@ class FluxCube:
     ) -> np.ndarray:
         """Perform cubic Hermite interpolation along one axis."""
 
-        if values.shape[axis] < 2:
-            raise ValueError("Need at least two grid points for Hermite interpolation")
+        if values.shape[axis] < 2 or len(grid) < 2:
+            # Degenerate axis: return the lone slice without interpolation.
+            return np.take(values, 0, axis=axis)
 
         if not (grid[0] <= x <= grid[-1]):
             raise ValueError(
@@ -180,80 +339,55 @@ def bolometric_magnitude(
     return fbol, mag
 
 
-def load_filter_curve(path: str) -> Tuple[np.ndarray, np.ndarray]:
-    """Load a two-column filter curve (wavelength, throughput)."""
+def load_filter_curve(path: str, name: str | None = None) -> FilterCurve:
+    """Load a filter throughput curve along with its metadata."""
 
-    wavelengths: List[float] = []
-    transmissions: List[float] = []
+    raw_wavelengths, raw_transmission, metadata = load_two_column_file(path)
+    wavelength, order, unit_key = standardize_wavelength_array(
+        raw_wavelengths, metadata.get("wavelength_unit") or metadata.get("wavelengthunit")
+    )
+    transmission = np.asarray(raw_transmission, dtype=float)[order]
 
-    with open(path, "r", encoding="utf-8") as fh:
-        for line_no, raw_line in enumerate(fh, start=1):
-            line = raw_line.strip()
-            if not line or line.startswith("#"):
-                continue
-
-            normalized = line.replace(",", " ")
-            parts = normalized.split()
-            if len(parts) < 2:
-                continue
-
-            try:
-                wl = float(parts[0])
-                tr = float(parts[1])
-            except ValueError:
-                # Skip header or malformed rows gracefully.
-                continue
-
-            wavelengths.append(wl)
-            transmissions.append(tr)
-
-    if not wavelengths:
-        raise ValueError(f"Filter file {path} does not contain numeric wavelength/transmission data")
-
-    wavelength = np.asarray(wavelengths)
-    transmission = np.asarray(transmissions)
-    order = np.argsort(wavelength)
-    return wavelength[order], transmission[order]
+    metadata["wavelength_unit_inferred"] = unit_key or "angstrom"
+    metadata["wavelength_unit_resolved"] = "angstrom"
+    curve_name = name or Path(path).stem
+    return FilterCurve(curve_name, wavelength, transmission, metadata, wavelength_unit="angstrom")
 
 
-def filter_flux(
-    sed_wavelength: np.ndarray,
-    sed_flux: np.ndarray,
-    filter_wavelength: np.ndarray,
-    filter_transmission: np.ndarray,
+def band_average_flux_lambda_from_arrays(
+    wavelength: np.ndarray, flux: np.ndarray, transmission: np.ndarray
 ) -> float:
-    """Compute band-integrated flux through a filter curve."""
-
-    interp_trans = np.interp(sed_wavelength, filter_wavelength, filter_transmission, left=0.0, right=0.0)
-    numerator = np.trapezoid(sed_flux * interp_trans, sed_wavelength)
-    denom = np.trapezoid(interp_trans, sed_wavelength)
+    numerator = np.trapezoid(flux * transmission, wavelength)
+    denom = np.trapezoid(transmission, wavelength)
     if denom == 0:
         raise ValueError("Filter transmission integrates to zero")
     return float(numerator / denom)
 
 
-def filter_magnitude(
-    sed_wavelength: np.ndarray,
-    sed_flux: np.ndarray,
-    filter_wavelength: np.ndarray,
-    filter_transmission: np.ndarray,
-    reference_flux: float = 1.0,
-    reference_magnitude: float = 0.0,
-) -> Tuple[float, float]:
-    """Compute synthetic flux and magnitude for a filter."""
+def band_average_flux_lambda(
+    sed_wavelength: np.ndarray, sed_flux: np.ndarray, curve: FilterCurve
+) -> float:
+    interp_flux = np.interp(curve.wavelength, sed_wavelength, sed_flux, left=0.0, right=0.0)
+    return band_average_flux_lambda_from_arrays(curve.wavelength, interp_flux, curve.transmission)
 
-    f = filter_flux(sed_wavelength, sed_flux, filter_wavelength, filter_transmission)
-    if f <= 0:
-        mag = math.inf
-    else:
-        mag = reference_magnitude - 2.5 * math.log10(f / reference_flux)
-    return f, mag
+
+def band_average_flux_nu(
+    sed_wavelength: np.ndarray, sed_flux: np.ndarray, curve: FilterCurve
+) -> float:
+    interp_flux = np.interp(curve.wavelength, sed_wavelength, sed_flux, left=0.0, right=0.0)
+    numerator = np.trapezoid(interp_flux * curve.transmission, curve.wavelength)
+    denom = np.trapezoid(
+        curve.transmission * SPEED_OF_LIGHT_ANG_PER_S / (curve.wavelength**2), curve.wavelength
+    )
+    if denom == 0:
+        raise ValueError("Filter transmission integrates to zero")
+    return float(numerator / denom)
 
 
 def plot_sed(
     wavelength: np.ndarray,
     flux: np.ndarray,
-    filters: Dict[str, Tuple[np.ndarray, np.ndarray]] = None,
+    filters: Dict[str, FilterCurve] | None = None,
     out_path: str | None = None,
 ) -> None:
     """Plot the interpolated SED and optional filter curves."""
@@ -263,9 +397,14 @@ def plot_sed(
 
     if filters:
         peak = np.max(flux) if flux.size else 1.0
-        for name, (fw, ft) in filters.items():
-            scaled = ft / np.max(ft) * peak if np.max(ft) != 0 else ft
-            plt.plot(fw, scaled, label=f"Filter {name}")
+        for name, curve in filters.items():
+            if curve.transmission.size == 0:
+                continue
+            scale = np.max(curve.transmission)
+            scaled = (
+                curve.transmission / scale * peak if scale and scale > 0 else curve.transmission
+            )
+            plt.plot(curve.wavelength, scaled, label=f"Filter {name}")
 
     plt.xlabel("Wavelength")
     plt.ylabel("Flux")
@@ -418,6 +557,240 @@ def collect_filter_files(
     return filter_entries, search_roots
 
 
+def extract_filter_system(filter_name: str) -> str:
+    if "/" in filter_name:
+        return filter_name.split("/", 1)[0]
+    if "\\" in filter_name:
+        return filter_name.split("\\", 1)[0]
+    return filter_name
+
+
+def prompt_for_filter_system(
+    filter_entries: Sequence[Tuple[str, Path]], provided: str | None
+) -> Tuple[str | None, Sequence[Tuple[str, Path]]]:
+    systems: Dict[str, List[Tuple[str, Path]]] = {}
+    for name, path in filter_entries:
+        system = extract_filter_system(name)
+        systems.setdefault(system, []).append((name, path))
+
+    if provided:
+        provided_key = provided.strip()
+        if provided_key.lower() in {"all", "*"}:
+            return None, filter_entries
+        if provided_key in systems:
+            return provided_key, systems[provided_key]
+        raise SystemExit(
+            f"Unknown filter system '{provided}'. Available systems: {', '.join(sorted(systems))}"
+        )
+
+    if len(systems) <= 1:
+        key = next(iter(systems)) if systems else None
+        return key, filter_entries
+
+    print("\nDiscovered filter systems:")
+    ordered = sorted((system, len(entries)) for system, entries in systems.items())
+    for idx, (system, count) in enumerate(ordered, start=1):
+        print(f"  {idx}) {system} ({count} filters)")
+    print("  0) All systems")
+
+    while True:
+        response = input("Select a filter system by number (or '0' for all): ").strip()
+        if not response:
+            response = "0"
+        if response.lower() in {"all", "a", "*"}:
+            return None, filter_entries
+        if response == "0":
+            return None, filter_entries
+        if response.isdigit():
+            index = int(response)
+            if 1 <= index <= len(ordered):
+                system = ordered[index - 1][0]
+                return system, systems[system]
+        print("Please enter a valid selection from the list above.")
+
+
+def prompt_for_photometric_system(provided: str | None) -> str:
+    if provided:
+        normalized = provided.strip().lower()
+        if normalized in {"ab", "vega"}:
+            return "AB" if normalized == "ab" else "Vega"
+        raise SystemExit("Photometric system must be either 'AB' or 'Vega'.")
+
+    while True:
+        response = input("Compute magnitudes in the AB or Vega system? [AB/Vega]: ").strip()
+        if not response:
+            return "AB"
+        normalized = response.lower()
+        if normalized in {"ab", "a"}:
+            return "AB"
+        if normalized in {"vega", "v"}:
+            return "Vega"
+        print("Please answer 'AB' or 'Vega'.")
+
+
+def discover_vega_candidates(search_roots: Sequence[Path]) -> List[Path]:
+    candidates: List[Path] = []
+    for root in search_roots:
+        if not root.exists():
+            continue
+        try:
+            root = root.resolve()
+        except FileNotFoundError:
+            continue
+        for suffix in (".dat", ".txt", ".csv", ".sed"):
+            try:
+                for path in root.rglob(f"*vega*{suffix}"):
+                    if path.is_file():
+                        candidates.append(path)
+            except OSError:
+                continue
+    unique: List[Path] = []
+    seen: set[Path] = set()
+    for path in candidates:
+        resolved = path.resolve()
+        if resolved not in seen:
+            unique.append(resolved)
+            seen.add(resolved)
+    return unique
+
+
+def resolve_vega_spectrum_path(
+    provided: str | None, flux_cube_path: Path, hints: Iterable[str | os.PathLike[str]] = ()
+) -> Path:
+    hint_paths = [Path(hint).expanduser() for hint in hints]
+    env_hint = os.environ.get("SED_VEGA_SPECTRUM")
+    if env_hint:
+        hint_paths.append(Path(env_hint).expanduser())
+
+    if provided:
+        candidate = Path(provided).expanduser()
+        if candidate.is_file():
+            return candidate.resolve()
+        raise FileNotFoundError(f"Vega spectrum '{provided}' does not exist")
+
+    for hint in hint_paths:
+        if hint.is_file() and "vega" in hint.name.lower():
+            return hint.resolve()
+
+    cube_dir = flux_cube_path.parent
+    search_roots = [cube_dir, cube_dir.parent, Path.cwd(), Path.cwd() / "data"]
+    for hint in hint_paths:
+        if hint.is_dir():
+            search_roots.append(hint)
+        elif hint.is_file():
+            search_roots.append(hint.parent)
+
+    candidates = discover_vega_candidates(search_roots)
+    if not candidates:
+        raise FileNotFoundError("Could not locate a Vega reference spectrum.")
+    if len(candidates) == 1:
+        return candidates[0]
+
+    print("\nDiscovered potential Vega spectra:")
+    for idx, path in enumerate(candidates, start=1):
+        print(f"  {idx}) {path}")
+
+    while True:
+        choice = input("Select Vega spectrum by number: ").strip()
+        if choice.isdigit():
+            index = int(choice)
+            if 1 <= index <= len(candidates):
+                return candidates[index - 1]
+        print("Please select one of the listed Vega spectra.")
+
+
+def load_spectrum(path: str) -> Spectrum:
+    wavelengths, fluxes, metadata = load_two_column_file(path)
+    wavelength, order, unit_key = standardize_wavelength_array(
+        wavelengths, metadata.get("wavelength_unit") or metadata.get("wavelengthunit")
+    )
+    flux = np.asarray(fluxes, dtype=float)[order]
+    metadata["wavelength_unit_inferred"] = unit_key or "angstrom"
+    metadata["wavelength_unit_resolved"] = "angstrom"
+    return Spectrum(wavelength, flux, metadata, wavelength_unit="angstrom")
+
+
+def discover_flux_cube_files(hints: Sequence[str | os.PathLike[str]] | None = None) -> List[Path]:
+    """Discover ``flux_cube.bin`` files from common locations and hints."""
+
+    hints = list(hints or [])
+    env_path = os.environ.get("SED_FLUX_CUBE")
+    env_dir = os.environ.get("SED_FLUX_CUBE_DIR")
+    if env_path:
+        hints.append(env_path)
+    if env_dir:
+        hints.append(env_dir)
+
+    search_dirs: List[Path] = []
+    direct_files: List[Path] = []
+
+    def add_file(path: Path) -> None:
+        try:
+            resolved = path.expanduser().resolve()
+        except FileNotFoundError:
+            return
+        if resolved.is_file():
+            direct_files.append(resolved)
+
+    for hint in hints:
+        path = Path(hint).expanduser()
+        if path.is_file():
+            add_file(path)
+        elif path.is_dir():
+            search_dirs.append(path)
+
+    this_dir = Path(__file__).resolve().parent
+    default_roots = [
+        Path.cwd(),
+        Path.cwd() / "data",
+        Path.cwd() / "data" / "stellar_models",
+        this_dir,
+        this_dir / "data",
+        this_dir / "data" / "stellar_models",
+    ]
+
+    for root in default_roots:
+        if root not in search_dirs:
+            search_dirs.append(root)
+
+    seen: set[Path] = set()
+    results: List[Path] = []
+
+    def register(path: Path) -> None:
+        try:
+            resolved = path.expanduser().resolve()
+        except FileNotFoundError:
+            return
+        if resolved in seen:
+            return
+        if resolved.is_file():
+            seen.add(resolved)
+            results.append(resolved)
+
+    for file_path in direct_files:
+        register(file_path)
+
+    for directory in search_dirs:
+        try:
+            directory = directory.expanduser().resolve()
+        except FileNotFoundError:
+            continue
+        if not directory.exists():
+            continue
+        if directory.is_file():
+            register(directory)
+            continue
+        try:
+            for match in directory.rglob("flux_cube.bin"):
+                if match.is_file():
+                    register(match)
+        except OSError:
+            continue
+
+    results.sort()
+    return results
+
+
 def resolve_flux_cube_path(path: str) -> Path:
     """Return a concrete flux cube file path.
 
@@ -449,9 +822,57 @@ def resolve_flux_cube_path(path: str) -> Path:
     raise FileNotFoundError(f"Flux cube path '{path}' does not exist")
 
 
+def prompt_for_flux_cube_path(hints: Sequence[str | os.PathLike[str]] | None = None) -> Path:
+    """Interactively determine which flux cube file to use."""
+
+    hints = list(hints or [])
+
+    while True:
+        candidates = discover_flux_cube_files(hints)
+        if len(candidates) == 1:
+            chosen = candidates[0]
+            print(f"Using flux cube: {chosen}")
+            return chosen
+        if len(candidates) > 1:
+            print("Discovered flux cube files:")
+            for idx, candidate in enumerate(candidates, start=1):
+                print(f"  {idx}. {candidate}")
+            response = input(
+                "Select a flux cube by number or enter a path (or 'q' to quit): "
+            ).strip()
+            if not response:
+                continue
+            if response.lower() in {"q", "quit", "exit"}:
+                raise SystemExit("No flux cube selected; aborting.")
+            if response.isdigit():
+                index = int(response)
+                if 1 <= index <= len(candidates):
+                    return candidates[index - 1]
+                print("Invalid selection. Please choose one of the listed numbers.")
+                continue
+            try:
+                return resolve_flux_cube_path(response)
+            except FileNotFoundError as exc:
+                print(exc)
+                continue
+
+        response = input("Enter path to flux_cube.bin (or 'q' to quit): ").strip()
+        if not response:
+            print("Please provide a path to a flux cube file.")
+            continue
+        if response.lower() in {"q", "quit", "exit"}:
+            raise SystemExit("No flux cube selected; aborting.")
+        try:
+            return resolve_flux_cube_path(response)
+        except FileNotFoundError as exc:
+            print(exc)
+            hints.append(response)
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Inspect and interpolate a flux cube")
-    parser.add_argument("--flux-cube", required=True, help="Path to flux_cube.bin")
+    parser.add_argument("--flux-cube", help="Path to flux_cube.bin")
+    parser.add_argument("--model-dir", help="Model directory containing a flux cube", default=None)
     parser.add_argument("--teff", type=float, help="Target effective temperature (K)")
     parser.add_argument("--logg", type=float, help="Target log g (dex)")
     parser.add_argument("--metallicity", type=float, help="Target metallicity [M/H] (dex)")
@@ -460,16 +881,24 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--bolometric-reference-mag", type=float, default=0.0,
                         help="Reference magnitude for bolometric magnitude (default: 0)")
     parser.add_argument("--filters", nargs="*", help="Filter files or directories (all filters discovered are used)")
-    parser.add_argument("--filter-reference-flux", type=float, default=1.0,
-                        help="Reference flux for filter magnitudes")
-    parser.add_argument("--filter-reference-mag", type=float, default=0.0,
-                        help="Reference magnitude for filter magnitudes")
+    parser.add_argument("--filter-system", help="Restrict photometry to a specific filter system")
+    parser.add_argument("--photometric-system", choices=["AB", "Vega", "ab", "vega"],
+                        help="Photometric system for synthetic magnitudes")
+    parser.add_argument("--vega-sed", help="Path to a Vega reference spectrum (required for Vega magnitudes if no zeropoint metadata is provided)")
     parser.add_argument("--plot", help="Write a diagnostic plot to this path (defaults to plots/)")
     parser.add_argument("--save-sed", help="Write interpolated SED (wavelength, flux) to a text file")
 
     args = parser.parse_args(argv)
 
-    flux_cube_path = resolve_flux_cube_path(args.flux_cube)
+    hints: List[str | os.PathLike[str]] = []
+    if args.model_dir:
+        hints.append(args.model_dir)
+
+    if args.flux_cube:
+        flux_cube_path = resolve_flux_cube_path(args.flux_cube)
+    else:
+        flux_cube_path = prompt_for_flux_cube_path(hints)
+
     cube = FluxCube.from_file(str(flux_cube_path))
 
     teff = prompt_for_parameter("effective temperature", "K", cube.teff_grid, args.teff)
@@ -492,29 +921,83 @@ def main(argv: Sequence[str] | None = None) -> int:
     else:
         print("Bolometric magnitude: undefined (non-positive flux)")
 
-    filters: Dict[str, Tuple[np.ndarray, np.ndarray]] = {}
+    filters: Dict[str, FilterCurve] = {}
     filter_entries, filter_roots = collect_filter_files(args.filters, str(flux_cube_path))
     if filter_entries:
+        system_name, selected_entries = prompt_for_filter_system(filter_entries, args.filter_system)
+        photometric_system = prompt_for_photometric_system(args.photometric_system)
+
+        vega_spec: Spectrum | None = None
+
+        def ensure_vega_spec() -> Spectrum:
+            nonlocal vega_spec
+            if vega_spec is None:
+                try:
+                    spectrum_path = resolve_vega_spectrum_path(
+                        args.vega_sed, flux_cube_path, args.filters or []
+                    )
+                except FileNotFoundError as exc:
+                    raise SystemExit(
+                        f"{exc} Provide a Vega spectrum via --vega-sed or place one near the flux cube."
+                    )
+                print(f"Using Vega spectrum: {spectrum_path}")
+                vega_spec = load_spectrum(str(spectrum_path))
+            return vega_spec
+
         if args.filters:
             source_msg = ", ".join(str(path) for path in filter_roots) if filter_roots else "provided paths"
         else:
             source_msg = ", ".join(str(path) for path in filter_roots) or "inferred filter directories"
-        print(f"\nFilter photometry (using {len(filter_entries)} filters from {source_msg}):")
-        for name, fpath in filter_entries:
-            fw, ft = load_filter_curve(str(fpath))
-            filters[name] = (fw, ft)
-            f, mag = filter_magnitude(
-                wl,
-                flux,
-                fw,
-                ft,
-                reference_flux=args.filter_reference_flux,
-                reference_magnitude=args.filter_reference_mag,
-            )
-            if math.isfinite(mag):
-                print(f"  {name:30s}  flux={f:.6e}  mag={mag:.4f}")
+
+        if system_name:
+            source_msg = f"{source_msg} (system: {system_name})"
+
+        print(
+            f"\nFilter photometry (using {len(selected_entries)} filters from {source_msg})\n"
+            f"Photometric system: {photometric_system}"
+        )
+
+        for name, fpath in selected_entries:
+            curve = load_filter_curve(str(fpath), name)
+            filters[name] = curve
+
+            try:
+                if photometric_system == "AB":
+                    flux_density = band_average_flux_nu(wl, flux, curve)
+                    if flux_density <= 0:
+                        magnitude = math.inf
+                    else:
+                        magnitude = -2.5 * math.log10(flux_density / AB_ZERO_FLUX)
+                    flux_label = "f_nu"
+                else:
+                    flux_density = band_average_flux_lambda(wl, flux, curve)
+                    vega_zero = get_metadata_float(curve.metadata, VEGA_ZP_KEYS)
+                    if vega_zero is None:
+                        vega_curve = ensure_vega_spec()
+                        interp_flux = np.interp(
+                            curve.wavelength,
+                            vega_curve.wavelength,
+                            vega_curve.flux,
+                            left=0.0,
+                            right=0.0,
+                        )
+                        vega_zero = band_average_flux_lambda_from_arrays(
+                            curve.wavelength, interp_flux, curve.transmission
+                        )
+                    if vega_zero <= 0:
+                        raise ValueError(
+                            "Computed Vega zero point is non-positive; cannot determine magnitude."
+                        )
+                    magnitude = -2.5 * math.log10(flux_density / vega_zero)
+                    flux_label = "f_lambda"
+            except ValueError as exc:
+                print(f"  {name:30s}  error: {exc}")
+                continue
+
+            if math.isfinite(magnitude):
+                print(f"  {name:30s}  {flux_label}={flux_density:.6e}  mag={magnitude:.4f}")
             else:
-                print(f"  {name:30s}  flux={f:.6e}  mag=undefined")
+                print(f"  {name:30s}  {flux_label}={flux_density:.6e}  mag=undefined")
     else:
         print("\nNo filter files found; skipping filter photometry.")
 
