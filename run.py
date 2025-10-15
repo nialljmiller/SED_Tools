@@ -17,6 +17,7 @@ REQUIRED = {
     "h5py":              "h5py>=3.10",
     "astropy":           "astropy>=6.0",
     "astroquery":        "astroquery>=0.4.7",
+    "matplotlib":        "matplotlib>=3.7",
 }
 
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -28,6 +29,8 @@ TOOLS = {
     "regen":      os.path.join(THIS_DIR, "svo_regen_spectra_lookup.py"),
     "flux":       os.path.join(THIS_DIR, "precompute_flux_cube.py"),
     "lookfilter": os.path.join(THIS_DIR, "svo_spectra_filter.py"),
+    "fluxcube":   os.path.join(THIS_DIR, "flux_cube_tool.py"),
+    "flux-tool":  os.path.join(THIS_DIR, "flux_cube_tool.py"),
 }
 
 def in_venv() -> bool:
@@ -149,6 +152,8 @@ def main():
                              workers=5,
                              force_bundle_h5=True,
                              build_flux_cube=True)
+        elif choice == "fluxcube":
+            run_tool("fluxcube")
         else:
             exit()
 

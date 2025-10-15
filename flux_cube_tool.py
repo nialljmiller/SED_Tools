@@ -66,6 +66,8 @@ class FluxCube:
     def from_file(cls, path: str) -> "FluxCube":
         """Load a :class:`FluxCube` from a binary file."""
 
+        leftover = b""
+
         with open(path, "rb") as fh:
             header = fh.read(16)
             if len(header) != 16:
@@ -76,13 +78,21 @@ class FluxCube:
             meta = np.fromfile(fh, dtype=np.float64, count=nm)
             wavelengths = np.fromfile(fh, dtype=np.float64, count=nw)
             flux_expected = nt * nl * nm * nw
-            flux_flat = np.fromfile(fh, dtype=np.float64)
+            flux_flat = np.fromfile(fh, dtype=np.float64, count=flux_expected)
+
+            if flux_flat.size == flux_expected:
+                leftover = fh.read(1)
+            else:
+                leftover = b""
 
         if flux_flat.size != flux_expected:
             raise ValueError(
                 f"Flux cube body truncated: expected {flux_expected} values,"
                 f" found {flux_flat.size}"
             )
+
+        if leftover:
+            print("Warning: trailing data detected in flux cube; ignoring extra bytes.")
 
         # Restore original (nt, nl, nm, nw) ordering.
         flux = flux_flat.reshape((nw, nm, nl, nt)).transpose(3, 2, 1, 0)
@@ -97,8 +107,9 @@ class FluxCube:
     ) -> np.ndarray:
         """Perform cubic Hermite interpolation along one axis."""
 
-        if values.shape[axis] < 2:
-            raise ValueError("Need at least two grid points for Hermite interpolation")
+        if values.shape[axis] < 2 or len(grid) < 2:
+            # Degenerate axis: return the lone slice without interpolation.
+            return np.take(values, 0, axis=axis)
 
         if not (grid[0] <= x <= grid[-1]):
             raise ValueError(
@@ -418,6 +429,87 @@ def collect_filter_files(
     return filter_entries, search_roots
 
 
+def discover_flux_cube_files(hints: Sequence[str | os.PathLike[str]] | None = None) -> List[Path]:
+    """Discover ``flux_cube.bin`` files from common locations and hints."""
+
+    hints = list(hints or [])
+    env_path = os.environ.get("SED_FLUX_CUBE")
+    env_dir = os.environ.get("SED_FLUX_CUBE_DIR")
+    if env_path:
+        hints.append(env_path)
+    if env_dir:
+        hints.append(env_dir)
+
+    search_dirs: List[Path] = []
+    direct_files: List[Path] = []
+
+    def add_file(path: Path) -> None:
+        try:
+            resolved = path.expanduser().resolve()
+        except FileNotFoundError:
+            return
+        if resolved.is_file():
+            direct_files.append(resolved)
+
+    for hint in hints:
+        path = Path(hint).expanduser()
+        if path.is_file():
+            add_file(path)
+        elif path.is_dir():
+            search_dirs.append(path)
+
+    this_dir = Path(__file__).resolve().parent
+    default_roots = [
+        Path.cwd(),
+        Path.cwd() / "data",
+        Path.cwd() / "data" / "stellar_models",
+        this_dir,
+        this_dir / "data",
+        this_dir / "data" / "stellar_models",
+    ]
+
+    for root in default_roots:
+        if root not in search_dirs:
+            search_dirs.append(root)
+
+    seen: set[Path] = set()
+    results: List[Path] = []
+
+    def register(path: Path) -> None:
+        try:
+            resolved = path.expanduser().resolve()
+        except FileNotFoundError:
+            return
+        if resolved in seen:
+            return
+        if resolved.is_file():
+            seen.add(resolved)
+            results.append(resolved)
+
+    for file_path in direct_files:
+        register(file_path)
+
+    for directory in search_dirs:
+        try:
+            directory = directory.expanduser().resolve()
+        except FileNotFoundError:
+            continue
+        if not directory.exists():
+            continue
+        if directory.is_file():
+            register(directory)
+            continue
+        try:
+            for match in directory.rglob("flux_cube.bin"):
+                if match.is_file():
+                    register(match)
+        except OSError:
+            continue
+
+    results.sort()
+    return results
+
+
 def resolve_flux_cube_path(path: str) -> Path:
     """Return a concrete flux cube file path.
 
@@ -449,9 +541,57 @@ def resolve_flux_cube_path(path: str) -> Path:
     raise FileNotFoundError(f"Flux cube path '{path}' does not exist")
 
 
+def prompt_for_flux_cube_path(hints: Sequence[str | os.PathLike[str]] | None = None) -> Path:
+    """Interactively determine which flux cube file to use."""
+
+    hints = list(hints or [])
+
+    while True:
+        candidates = discover_flux_cube_files(hints)
+        if len(candidates) == 1:
+            chosen = candidates[0]
+            print(f"Using flux cube: {chosen}")
+            return chosen
+        if len(candidates) > 1:
+            print("Discovered flux cube files:")
+            for idx, candidate in enumerate(candidates, start=1):
+                print(f"  {idx}. {candidate}")
+            response = input(
+                "Select a flux cube by number or enter a path (or 'q' to quit): "
+            ).strip()
+            if not response:
+                continue
+            if response.lower() in {"q", "quit", "exit"}:
+                raise SystemExit("No flux cube selected; aborting.")
+            if response.isdigit():
+                index = int(response)
+                if 1 <= index <= len(candidates):
+                    return candidates[index - 1]
+                print("Invalid selection. Please choose one of the listed numbers.")
+                continue
+            try:
+                return resolve_flux_cube_path(response)
+            except FileNotFoundError as exc:
+                print(exc)
+                continue
+
+        response = input("Enter path to flux_cube.bin (or 'q' to quit): ").strip()
+        if not response:
+            print("Please provide a path to a flux cube file.")
+            continue
+        if response.lower() in {"q", "quit", "exit"}:
+            raise SystemExit("No flux cube selected; aborting.")
+        try:
+            return resolve_flux_cube_path(response)
+        except FileNotFoundError as exc:
+            print(exc)
+            hints.append(response)
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Inspect and interpolate a flux cube")
-    parser.add_argument("--flux-cube", required=True, help="Path to flux_cube.bin")
+    parser.add_argument("--flux-cube", help="Path to flux_cube.bin")
+    parser.add_argument("--model-dir", help="Model directory containing a flux cube", default=None)
     parser.add_argument("--teff", type=float, help="Target effective temperature (K)")
     parser.add_argument("--logg", type=float, help="Target log g (dex)")
     parser.add_argument("--metallicity", type=float, help="Target metallicity [M/H] (dex)")
@@ -469,7 +609,15 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     args = parser.parse_args(argv)
 
-    flux_cube_path = resolve_flux_cube_path(args.flux_cube)
+    hints: List[str | os.PathLike[str]] = []
+    if args.model_dir:
+        hints.append(args.model_dir)
+
+    if args.flux_cube:
+        flux_cube_path = resolve_flux_cube_path(args.flux_cube)
+    else:
+        flux_cube_path = prompt_for_flux_cube_path(hints)
+
     cube = FluxCube.from_file(str(flux_cube_path))
 
     teff = prompt_for_parameter("effective temperature", "K", cube.teff_grid, args.teff)
