@@ -15,10 +15,18 @@ Typical usage::
     spec = model(5777, 4.44, 0.0)           # interpolate a spectrum
     gaia = spec.photometry("GAIA")         # synthetic GAIA magnitudes
 
+For range-based discovery a convenience wrapper is also provided::
+
+    from sed_tools import find_atmospheres
+
+    grids = find_atmospheres(teff_range=(5000, 6500), metallicity_range=(-0.5, 0.5))
+
 The package reuses the heavy lifting that already powers the interactive tools
 shipped with SED Tools so that workflows built on the CLI continue to operate
 unchanged while pipelines can opt into the same functionality via imports.
 """
+
+from typing import Optional, Sequence
 
 from .models import (
     SED,
@@ -30,6 +38,35 @@ from .models import (
     FILTER_DIR_DEFAULT,
 )
 
+__version__ = "0.1.0"
+
+
+def find_atmospheres(
+    *,
+    teff_range: Optional[Sequence[float]] = None,
+    logg_range: Optional[Sequence[float]] = None,
+    metallicity_range: Optional[Sequence[float]] = None,
+    limit: Optional[int] = None,
+    allow_partial: bool = False,
+) -> list[ModelMatch]:
+    """Discover locally available model grids matching the requested ranges."""
+
+    sed = SED()
+    return sed.find_atmospheres(
+        teff_range=teff_range,
+        logg_range=logg_range,
+        metallicity_range=metallicity_range,
+        limit=limit,
+        allow_partial=allow_partial,
+    )
+
+
+def find_atm(**kwargs) -> list[ModelMatch]:
+    """Alias for :func:`find_atmospheres` matching the historical API sketch."""
+
+    return find_atmospheres(**kwargs)
+
+
 __all__ = [
     "SED",
     "SEDModel",
@@ -38,4 +75,7 @@ __all__ = [
     "ModelMatch",
     "STELLAR_DIR_DEFAULT",
     "FILTER_DIR_DEFAULT",
+    "find_atmospheres",
+    "find_atm",
+    "__version__",
 ]
