@@ -48,10 +48,12 @@ def find_atmospheres(
     metallicity_range: Optional[Sequence[float]] = None,
     limit: Optional[int] = None,
     allow_partial: bool = False,
+    model_root: Optional[Union[str, os.PathLike[str]]] = None,
+    filter_root: Optional[Union[str, os.PathLike[str]]] = None,
 ) -> list[ModelMatch]:
     """Discover locally available model grids matching the requested ranges."""
 
-    sed = SED()
+    sed = SED(model_root=model_root, filter_root=filter_root)
     return sed.find_atmospheres(
         teff_range=teff_range,
         logg_range=logg_range,
@@ -64,6 +66,11 @@ def find_atmospheres(
 def find_atm(**kwargs) -> list[ModelMatch]:
     """Alias for :func:`find_atmospheres` matching the historical API sketch."""
 
+    for legacy_key in ("Z_range", "z_range"):
+        if legacy_key in kwargs and "metallicity_range" not in kwargs:
+            kwargs["metallicity_range"] = kwargs.pop(legacy_key)
+    if "logg_range" not in kwargs and "log_g_range" in kwargs:
+        kwargs["logg_range"] = kwargs.pop("log_g_range")
     return find_atmospheres(**kwargs)
 
 
@@ -79,3 +86,8 @@ __all__ = [
     "find_atm",
     "__version__",
 ]
+
+
+# Expose a camel-cased import alias so that ``import SED_tools`` works as sketched
+# in the original API proposal without breaking the historical script module.
+sys.modules.setdefault("SED_tools", sys.modules[__name__])

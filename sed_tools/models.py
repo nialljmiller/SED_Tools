@@ -345,10 +345,22 @@ class SED:
         *,
         model_root: Union[str, os.PathLike[str], None] = None,
         filter_root: Union[str, os.PathLike[str], None] = None,
+        atm: Optional[Union[str, os.PathLike[str], ModelMatch, "SEDModel"]] = None,
+        interpolation: str = "hermite",
+        fill_gaps: bool = True,
     ) -> None:
         self.model_root = Path(model_root) if model_root else STELLAR_DIR_DEFAULT
         self.filter_root = Path(filter_root) if filter_root else FILTER_DIR_DEFAULT
         self._metadata_cache: Dict[str, Dict[str, np.ndarray]] = {}
+        self._active_model: Optional[SEDModel] = None
+
+        if atm is not None:
+            self.model(
+                atm,
+                interpolation=interpolation,
+                fill_gaps=fill_gaps,
+                activate=True,
+            )
 
     # ------------------------------------------------------------------
     # Model discovery
@@ -498,25 +510,67 @@ class SED:
 
     def model(
         self,
-        model: Union[str, os.PathLike[str]],
+        model: Union[str, os.PathLike[str], ModelMatch, SEDModel],
         *,
         interpolation: str = "hermite",
         fill_gaps: bool = True,
+        activate: bool = True,
     ) -> SEDModel:
-        flux_path = self._resolve_model_path(model)
-        name = flux_path.parent.name if flux_path.parent != flux_path else flux_path.stem
-        filters_dir = self.filter_root if self.filter_root.exists() else None
-        return SEDModel(
-            name=name,
-            flux_cube_path=flux_path,
-            filters_dir=filters_dir,
-            interpolation=interpolation,
-            fill_gaps=fill_gaps,
-        )
+        if isinstance(model, SEDModel):
+            result = model
+        else:
+            flux_path, name = self._resolve_model_inputs(model)
+            filters_dir = self.filter_root if self.filter_root.exists() else None
+            result = SEDModel(
+                name=name,
+                flux_cube_path=flux_path,
+                filters_dir=filters_dir,
+                interpolation=interpolation,
+                fill_gaps=fill_gaps,
+            )
+
+        if activate:
+            self._active_model = result
+        return result
+
+    def __call__(
+        self,
+        teff: Number,
+        logg: Number,
+        metallicity: Optional[Number] = None,
+        **aliases: Number,
+    ) -> EvaluatedSED:
+        if self._active_model is None:
+            raise RuntimeError(
+                "No atmosphere selected. Call 'model(...)' or pass 'atm=' when constructing SED."
+            )
+        if metallicity is None:
+            for key in ("z", "Z"):
+                if key in aliases:
+                    metallicity = aliases.pop(key)
+                    break
+        if aliases:
+            unexpected = ", ".join(sorted(aliases.keys()))
+            raise TypeError(f"Unexpected keyword arguments: {unexpected}")
+        if metallicity is None:
+            raise TypeError("Metallicity value missing; supply 'metallicity' or 'z'.")
+        return self._active_model(teff, logg, metallicity)
 
     # ------------------------------------------------------------------
     # Helpers
     # ------------------------------------------------------------------
+
+    def _resolve_model_inputs(
+        self, model: Union[str, os.PathLike[str], ModelMatch]
+    ) -> Tuple[Path, str]:
+        if isinstance(model, ModelMatch):
+            path = Path(model.flux_cube)
+            name = model.name
+            return path, name
+
+        flux_path = self._resolve_model_path(model)
+        name = flux_path.parent.name if flux_path.parent != flux_path else flux_path.stem
+        return flux_path, name
 
     def _resolve_model_path(self, model: Union[str, os.PathLike[str]]) -> Path:
         path = Path(model)

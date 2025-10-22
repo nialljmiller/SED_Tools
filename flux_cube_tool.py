@@ -196,7 +196,10 @@ def get_metadata_float(metadata: Dict[str, object], keys: Sequence[str]) -> floa
                 continue
     return None
 
-import matplotlib.pyplot as plt
+try:
+    import matplotlib.pyplot as plt
+except Exception:  # pragma: no cover - optional dependency for plotting
+    plt = None
 import numpy as np
 
 
@@ -391,6 +394,9 @@ def plot_sed(
     out_path: str | None = None,
 ) -> None:
     """Plot the interpolated SED and optional filter curves."""
+
+    if plt is None:
+        raise ImportError("matplotlib is required for plotting SEDs")
 
     plt.figure(figsize=(10, 6))
     plt.plot(wavelength, flux, label="Interpolated SED", color="C0")

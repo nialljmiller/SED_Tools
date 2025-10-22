@@ -35,7 +35,7 @@ dependencies = [
 "Homepage" = "https://github.com/"
 
 [tool.setuptools.packages.find]
-include = ["sed_tools"]
+include = ["sed_tools", "SED_tools"]
 
 [tool.setuptools]
 include-package-data = true
