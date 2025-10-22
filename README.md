@@ -32,3 +32,23 @@ Default data paths (relative to this repo):
 - Spectra: `data/stellar_models/`
 - Filters: `data/filters/`
 ````
+
+## Python API
+
+Once installed as a package the core functionality can be accessed directly
+from Python code::
+
+    from sed_tools import SED, find_atmospheres
+
+    # Inspect available models around a given point in parameter space
+    sed = SED()
+    matches = sed.find_model(5777, 4.44, 0.0)
+    solar_model = sed.model(matches[0].name)
+    spectrum = solar_model(5777, 4.44, 0.0)
+    gaia_photometry = spectrum.photometry("GAIA")
+
+    # Discover grids that cover a broader parameter range
+    grids = find_atmospheres(teff_range=(5000, 6500), logg_range=(3.5, 4.5))
+
+This mirrors the functionality of :mod:`run.py` while fitting neatly into
+automated pipelines.
