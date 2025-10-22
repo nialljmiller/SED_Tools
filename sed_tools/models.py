@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 import os
 import struct
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, Iterable, Iterator, List, Mapping, Optional, Sequence, Tuple, Union
 
@@ -46,6 +46,7 @@ class ModelMatch:
     logg_range: Tuple[float, float]
     metallicity_range: Tuple[float, float]
     contains_point: bool
+    covers_range: bool = field(default=False, compare=False)
 
     def as_dict(self) -> Dict[str, object]:
         return {
@@ -56,6 +57,7 @@ class ModelMatch:
             "metallicity_range": self.metallicity_range,
             "distance": self.distance,
             "contains_point": self.contains_point,
+            "covers_range": self.covers_range,
         }
 
 
@@ -343,10 +345,22 @@ class SED:
         *,
         model_root: Union[str, os.PathLike[str], None] = None,
         filter_root: Union[str, os.PathLike[str], None] = None,
+        atm: Optional[Union[str, os.PathLike[str], ModelMatch, "SEDModel"]] = None,
+        interpolation: str = "hermite",
+        fill_gaps: bool = True,
     ) -> None:
         self.model_root = Path(model_root) if model_root else STELLAR_DIR_DEFAULT
         self.filter_root = Path(filter_root) if filter_root else FILTER_DIR_DEFAULT
         self._metadata_cache: Dict[str, Dict[str, np.ndarray]] = {}
+        self._active_model: Optional[SEDModel] = None
+
+        if atm is not None:
+            self.model(
+                atm,
+                interpolation=interpolation,
+                fill_gaps=fill_gaps,
+                activate=True,
+            )
 
     # ------------------------------------------------------------------
     # Model discovery
@@ -408,31 +422,155 @@ class SED:
             return candidates[:limit]
         return candidates
 
+    def find_atmospheres(
+        self,
+        *,
+        teff_range: Optional[Sequence[Number]] = None,
+        logg_range: Optional[Sequence[Number]] = None,
+        metallicity_range: Optional[Sequence[Number]] = None,
+        limit: Optional[int] = None,
+        allow_partial: bool = False,
+    ) -> List[ModelMatch]:
+        """Discover flux cubes compatible with the provided parameter ranges.
+
+        Parameters
+        ----------
+        teff_range, logg_range, metallicity_range:
+            Inclusive parameter ranges expressed as ``(min, max)`` pairs. Any
+            parameter left as ``None`` will not be used for filtering.
+        limit:
+            Optional maximum number of matches to return after sorting by the
+            proximity of the requested range to the model grid.
+        allow_partial:
+            When ``False`` (default) only models that fully cover the supplied
+            ranges are returned. Set to ``True`` to also include partial overlaps
+            which can be useful when exploring sparse grids.
+        """
+
+        if teff_range is None and logg_range is None and metallicity_range is None:
+            raise ValueError("Provide at least one parameter range to search for")
+
+        teff_requested = _normalize_range(teff_range, "teff")
+        logg_requested = _normalize_range(logg_range, "logg")
+        meta_requested = _normalize_range(metallicity_range, "metallicity")
+
+        candidates: List[ModelMatch] = []
+        for name in self.available_models():
+            cube_path = self.model_root / name / "flux_cube.bin"
+            metadata = self._get_metadata(name, cube_path)
+            teff_grid = metadata["teff"]
+            logg_grid = metadata["logg"]
+            meta_grid = metadata["meta"]
+
+            teff_bounds = (float(teff_grid[0]), float(teff_grid[-1]))
+            logg_bounds = (float(logg_grid[0]), float(logg_grid[-1]))
+            meta_bounds = (float(meta_grid[0]), float(meta_grid[-1]))
+
+            overlap_teff, cover_teff = _range_coverage(teff_requested, teff_bounds)
+            overlap_logg, cover_logg = _range_coverage(logg_requested, logg_bounds)
+            overlap_meta, cover_meta = _range_coverage(meta_requested, meta_bounds)
+
+            if not (overlap_teff and overlap_logg and overlap_meta):
+                continue
+
+            covers_range = cover_teff and cover_logg and cover_meta
+            if not covers_range and not allow_partial:
+                continue
+
+            teff_value = _range_center(teff_requested, teff_grid)
+            logg_value = _range_center(logg_requested, logg_grid)
+            meta_value = _range_center(meta_requested, meta_grid)
+
+            distance = _parameter_distance(
+                (teff_value, teff_grid),
+                (logg_value, logg_grid),
+                (meta_value, meta_grid),
+            )
+
+            match = ModelMatch(
+                distance=distance,
+                name=name,
+                flux_cube=cube_path,
+                teff_range=teff_bounds,
+                logg_range=logg_bounds,
+                metallicity_range=meta_bounds,
+                contains_point=_contains_point(teff_value, logg_value, meta_value, metadata),
+                covers_range=covers_range,
+            )
+            candidates.append(match)
+
+        candidates.sort()
+        if limit is not None:
+            return candidates[:limit]
+        return candidates
+
     # ------------------------------------------------------------------
     # Model loading
     # ------------------------------------------------------------------
 
     def model(
         self,
-        model: Union[str, os.PathLike[str]],
+        model: Union[str, os.PathLike[str], ModelMatch, SEDModel],
         *,
         interpolation: str = "hermite",
         fill_gaps: bool = True,
+        activate: bool = True,
     ) -> SEDModel:
-        flux_path = self._resolve_model_path(model)
-        name = flux_path.parent.name if flux_path.parent != flux_path else flux_path.stem
-        filters_dir = self.filter_root if self.filter_root.exists() else None
-        return SEDModel(
-            name=name,
-            flux_cube_path=flux_path,
-            filters_dir=filters_dir,
-            interpolation=interpolation,
-            fill_gaps=fill_gaps,
-        )
+        if isinstance(model, SEDModel):
+            result = model
+        else:
+            flux_path, name = self._resolve_model_inputs(model)
+            filters_dir = self.filter_root if self.filter_root.exists() else None
+            result = SEDModel(
+                name=name,
+                flux_cube_path=flux_path,
+                filters_dir=filters_dir,
+                interpolation=interpolation,
+                fill_gaps=fill_gaps,
+            )
+
+        if activate:
+            self._active_model = result
+        return result
+
+    def __call__(
+        self,
+        teff: Number,
+        logg: Number,
+        metallicity: Optional[Number] = None,
+        **aliases: Number,
+    ) -> EvaluatedSED:
+        if self._active_model is None:
+            raise RuntimeError(
+                "No atmosphere selected. Call 'model(...)' or pass 'atm=' when constructing SED."
+            )
+        if metallicity is None:
+            for key in ("z", "Z"):
+                if key in aliases:
+                    metallicity = aliases.pop(key)
+                    break
+        if aliases:
+            unexpected = ", ".join(sorted(aliases.keys()))
+            raise TypeError(f"Unexpected keyword arguments: {unexpected}")
+        if metallicity is None:
+            raise TypeError("Metallicity value missing; supply 'metallicity' or 'z'.")
+        return self._active_model(teff, logg, metallicity)
 
     # ------------------------------------------------------------------
     # Helpers
     # ------------------------------------------------------------------
+
+    def _resolve_model_inputs(
+        self, model: Union[str, os.PathLike[str], ModelMatch]
+    ) -> Tuple[Path, str]:
+        if isinstance(model, ModelMatch):
+            path = Path(model.flux_cube)
+            name = model.name
+            return path, name
+
+        flux_path = self._resolve_model_path(model)
+        name = flux_path.parent.name if flux_path.parent != flux_path else flux_path.stem
+        return flux_path, name
 
     def _resolve_model_path(self, model: Union[str, os.PathLike[str]]) -> Path:
         path = Path(model)
@@ -535,6 +673,43 @@ def _normalize_filter_sequence(filters: Sequence[FilterSpec]) -> List[FilterSpec
         if isinstance(inner, (list, tuple, set)):
             return list(inner)  # type: ignore[return-value]
     return list(filters)
+
+
+def _normalize_range(
+    value: Optional[Sequence[Number]], label: str
+) -> Optional[Tuple[float, float]]:
+    if value is None:
+        return None
+    if len(value) != 2:
+        raise ValueError(f"{label} range must contain exactly two entries")
+    start, end = float(value[0]), float(value[1])
+    if start > end:
+        start, end = end, start
+    return start, end
+
+
+def _range_coverage(
+    requested: Optional[Tuple[float, float]],
+    available: Tuple[float, float],
+) -> Tuple[bool, bool]:
+    if requested is None:
+        return True, True
+    req_min, req_max = requested
+    avail_min, avail_max = available
+    overlaps = req_max >= avail_min and req_min <= avail_max
+    covers = avail_min <= req_min and avail_max >= req_max
+    return overlaps, covers
+
+
+def _range_center(
+    requested: Optional[Tuple[float, float]], grid: np.ndarray
+) -> float:
+    if requested is not None:
+        return float((requested[0] + requested[1]) / 2.0)
+    if grid.size == 0:
+        return 0.0
+    midpoint = grid[len(grid) // 2]
+    return float(midpoint)
 
 
 __all__ = [
