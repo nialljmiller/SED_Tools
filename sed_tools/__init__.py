@@ -26,11 +26,7 @@ shipped with SED Tools so that workflows built on the CLI continue to operate
 unchanged while pipelines can opt into the same functionality via imports.
 """
 
-from typing import Optional, Sequence, Union
-
-import os
-
-import sys
+from typing import Optional, Sequence
 
 from .models import (
     SED,
