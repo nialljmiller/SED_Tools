@@ -28,10 +28,10 @@ import re
 from typing import List, Dict, Any, Tuple
 
 # local modules you already have
-from svo_spectra_grabber import SVOSpectraGrabber         # SVO spectra → .txt + lookup_table.csv
-from msg_spectra_grabber import MSGSpectraGrabber         # MSG (Townsend) .h5 → .txt + lookup_table.csv
-from precompute_flux_cube import precompute_flux_cube     # builds flux cube from lookup + .txt
-from svo_regen_spectra_lookup import regenerate_lookup_table
+from svo_spectra_grabber import SVOSpectraGrabber  # SVO spectra → .txt + lookup_table.csv
+from msg_spectra_grabber import MSGSpectraGrabber  # MSG (Townsend) .h5 → .txt + lookup_table.csv
+from precompute_flux_cube import precompute_flux_cube  # builds flux cube from lookup + .txt
+from svo_regen_spectra_lookup import parse_metadata, regenerate_lookup_table
 from mast_spectra_grabber import MASTSpectraGrabber
 import h5py
 import numpy as np
@@ -48,19 +48,6 @@ def ensure_dir(path: str) -> None:
 
 def list_txt_spectra(model_dir: str) -> List[str]:
     return sorted([f for f in os.listdir(model_dir) if f.lower().endswith(".txt")])
-
-def parse_txt_metadata(txt_path: str) -> Dict[str, str]:
-    """Parse '# key = value' header lines; return dict with raw values."""
-    meta = {}
-    with open(txt_path, "r", encoding="utf-8", errors="ignore") as f:
-        for line in f:
-            s = line.strip()
-            if s.startswith("#") and "=" in s:
-                key, val = s.lstrip("#").split("=", 1)
-                meta[key.strip()] = val.strip()
-            elif not s.startswith("#"):
-                break
-    return meta
 
 def load_txt_spectrum(txt_path: str) -> Tuple[np.ndarray, np.ndarray]:
     wl, fl = [], []
@@ -90,33 +77,6 @@ def numeric_from(meta: Dict[str, str], key_candidates: List[str], default: float
                 except ValueError:
                     pass
     return default
-
-
-
-def regen_lookup_from_txt(model_dir: str) -> str:
-    """Rebuild lookup_table.csv by parsing headers from all .txt spectra."""
-    txt_files = list_txt_spectra(model_dir)
-    if not txt_files:
-        raise RuntimeError(f"No .txt spectra found in {model_dir}")
-
-    rows = []
-    keys = set(["file_name"])
-    for fname in txt_files:
-        path = os.path.join(model_dir, fname)
-        meta = parse_txt_metadata(path)
-        meta["file_name"] = fname
-        rows.append(meta)
-        keys.update(meta.keys())
-
-    header = ["file_name"] + sorted([k for k in keys if k != "file_name"])
-    out_csv = os.path.join(model_dir, "lookup_table.csv")
-    with open(out_csv, "w", encoding="utf-8", newline="") as f:
-        f.write("#" + ",".join(header) + "\n")
-        for r in rows:
-            f.write(",".join(str(r.get(k, "")) for k in header) + "\n")
-    print(f"[rebuild] lookup_table.csv -> {out_csv}")
-    return out_csv
-
 # ------------ HDF5 bundling ------------
 
 def build_h5_bundle_from_txt(model_dir: str, out_h5: str) -> None:
@@ -146,7 +106,7 @@ def build_h5_bundle_from_txt(model_dir: str, out_h5: str) -> None:
                 g.create_dataset("lambda", data=wl, dtype="f8")
                 g.create_dataset("flux",   data=fl, dtype="f8")
 
-                meta = parse_txt_metadata(path)
+                meta = parse_metadata(path)
                 # canonical numeric attrs
                 teff = numeric_from(meta, ["Teff", "teff", "T_eff"])
                 logg = numeric_from(meta, ["logg", "Logg", "log_g"])
@@ -256,7 +216,7 @@ def run_rebuild_flow(base_dir: str = STELLAR_DIR_DEFAULT,
                 regen(model_dir)
                 print("[rebuild] lookup_table.csv via svo_regen_spectra_lookup")
             else:
-                regen_lookup_from_txt(model_dir)
+                regenerate_lookup_table(model_dir)
         except Exception as e:
             print(f"[rebuild] lookup failed: {e}")
 
@@ -445,7 +405,7 @@ def run_spectra_flow(source: str,
             print(f"[warn] lookup_table.csv missing in {model_dir}. "
                   f"Rebuilding from text headers.")
             try:
-                regen_lookup_from_txt(model_dir)
+                regenerate_lookup_table(model_dir)
             except Exception as e:
                 print(f"[lookup] rebuild failed: {e}")
 
