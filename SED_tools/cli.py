@@ -238,187 +238,98 @@ def run_rebuild_flow(base_dir: str = STELLAR_DIR_DEFAULT,
 
     print("\nRebuild complete.")
 
+from typing import List, Tuple
+import os, glob
+# assumes in scope:
+# ensure_dir, STELLAR_DIR_DEFAULT
+# SVOSpectraGrabber, MSGSpectraGrabber, MASTSpectraGrabber
+# build_h5_bundle_from_txt, regenerate_lookup_table, precompute_flux_cube
+# and: from SED_tools.cli import _prompt_choice
 
-def run_spectra_flow(source: str,
-                     base_dir: str = STELLAR_DIR_DEFAULT,
-                     models: List[str] = None,
-                     workers: int = 5,
-                     force_bundle_h5: bool = True,
-                     build_flux_cube: bool = True) -> None:
-    """
-    source: 'svo', 'msg', 'mast', 'both', or 'all'
-    models: optional explicit model names; supports "src:model" or just model.
-    Integrates spectra_cleaner to sanitize/repair spectra before HDF5/flux cube.
-    """
-    import glob
+def _srcs(s: str) -> List[str]:
+    s = s.lower()
+    return {"svo":["svo"], "msg":["msg"], "mast":["mast"], "both":["svo","msg"], "all":["svo","msg","mast"]}[s]
+
+class _Opt:
+    __slots__ = ("src","name","label")
+    def __init__(self, src, name):
+        self.src, self.name = src, name
+        self.label = f"{name} [{src}]"
+
+def run_spectra_flow(
+    source: str,
+    base_dir: str = STELLAR_DIR_DEFAULT,
+    models: List[str] = None,
+    workers: int = 5,
+    force_bundle_h5: bool = True,
+    build_flux_cube: bool = True
+) -> None:
+    from spectra_cleaner import clean_model_dir
+
     ensure_dir(base_dir)
+    src_list = _srcs(source)
 
-    # grabbers
-    svo = SVOSpectraGrabber(base_dir=base_dir, max_workers=workers)
-    msg = MSGSpectraGrabber(base_dir=base_dir, max_workers=workers)
+    grabs = {}
+    if "svo" in src_list:  grabs["svo"]  = SVOSpectraGrabber(base_dir=base_dir, max_workers=workers)
+    if "msg" in src_list:  grabs["msg"]  = MSGSpectraGrabber(base_dir=base_dir, max_workers=workers)
+    if "mast" in src_list: grabs["mast"] = MASTSpectraGrabber(base_dir=base_dir, max_workers=workers)
 
-    # (lazy) MAST only if requested
-    mast = None
+    discovered: List[Tuple[str,str]] = [(s, m) for s in src_list for m in grabs[s].discover_models()]
+    if models is None and not discovered:
+        print("No models discovered."); return
 
-    # discover menus
-    choices = []
-    if source in ("svo", "both", "all"):
-        try:
-            mlist = svo.discover_models()
-            choices += [("svo", m) for m in mlist]
-        except Exception as e:
-            print(f"[warn] SVO discovery failed: {e}")
-    if source in ("msg", "both", "all"):
-        try:
-            mlist = msg.discover_models()
-            choices += [("msg", m) for m in mlist]
-        except Exception as e:
-            print(f"[warn] MSG discovery failed: {e}")
-    if source in ("mast", "all"):
-        try:
-            mast = MASTSpectraGrabber(base_dir=base_dir, max_workers=workers)
-            mlist = mast.discover_models()
-            choices += [("mast", m) for m in mlist]
-        except Exception as e:
-            print(f"[warn] MAST discovery failed: {e}")
-
-    if not choices:
-        print("No models discovered. Exiting.")
-        return
-
-    if models is None:
-        print("\nAvailable models:")
-        print("-" * 64)
-        for i, (src, mname) in enumerate(choices, 1):
-            print(f"{i:3d}. {mname:<30s}  [{src}]")
-        print("\nSelect indices (comma, ranges like 3-6 ok) or 'all':")
-        raw = input("> ").strip().lower()
-        if raw == "all":
-            selected = choices
+    if models is not None:
+        if len(models)==1 and models[0].lower()=="all":
+            chosen = discovered
         else:
-            idxs = []
-            for token in raw.split(","):
-                token = token.strip()
-                if "-" in token:
-                    a, b = token.split("-", 1)
-                    idxs += list(range(int(a), int(b)+1))
+            chosen = []
+            for m in models:
+                if ":" in m:
+                    src, name = m.split(":",1); src, name = src.strip().lower(), name.strip()
                 else:
-                    if token:
-                        idxs.append(int(token))
-            selected = [choices[i-1] for i in idxs if 1 <= i <= len(choices)]
+                    if len(src_list)!=1: raise ValueError(f"Ambiguous '{m}' with source='{source}'. Use 'src:model'.")
+                    src, name = src_list[0], m.strip()
+                if (src,name) not in discovered: raise ValueError(f"Model '{name}' not found in '{src}'.")
+                chosen.append((src,name))
     else:
-        selected = []
-        for m in models:
-            if ":" in m:
-                src, name = m.split(":", 1)
-                selected.append((src.strip().lower(), name.strip()))
-            else:
-                selected.append((source, m))
+        opts = [_Opt(s,n) for s,n in discovered]
+        idx = _prompt_choice(opts, label="Spectral models", allow_back=True, page_size=30, prefer_grid=True)
+        if idx is None or idx==-1: print("No model selected."); return
+        sel = opts[idx]; chosen = [(sel.src, sel.name)]
 
-    # cleaner
-    try:
-        from spectra_cleaner import clean_model_dir
-    except Exception as e:
-        clean_model_dir = None
-        print(f"[clean] cleaner unavailable: {e}")
+    for src, name in chosen:
+        print("\n"+"="*64); print(f"[{src}] {name}")
+        model_dir = os.path.join(base_dir, name); ensure_dir(model_dir)
 
-    # Process
-    for src, model_name in selected:
-        print("\n" + "="*64)
-        print(f"[{src}] Processing model: {model_name}")
-        model_dir = os.path.join(base_dir, model_name)
-        ensure_dir(model_dir)
+        g = grabs[src]
+        meta = g.get_model_metadata(name)
+        if not meta: print(f"[{src}] No metadata for {name}; skip."); continue
+        n_written = g.download_model_spectra(name, meta)
+        print(f"[{src}] wrote {n_written} spectra -> {model_dir}")
 
-        # 1) acquire spectra
-        n_written = 0
-        if src == "svo":
-            spectra_info = svo.get_model_metadata(model_name)
-            if not spectra_info:
-                print(f"[SVO] No spectra found for {model_name}; skipping.")
-                continue
-            n_written = svo.download_model_spectra(model_name, spectra_info)
-            print(f"[SVO] Downloaded {n_written} spectra into {model_dir}")
+        summary = clean_model_dir(model_dir, try_h5_recovery=True, backup=True, rebuild_lookup=True)
+        print(f"[clean] total={summary['total']} fixed={len(summary['fixed'])} "
+              f"recovered={len(summary['recovered'])} skipped={len(summary['skipped'])} "
+              f"deleted={len(summary['deleted'])}")
 
-        elif src == "msg":
-            spectra_info = msg.get_model_metadata(model_name)
-            if not spectra_info:
-                print(f"[MSG] No spectra metadata for {model_name}; skipping.")
-                continue
-            n_written = msg.download_model_spectra(model_name, spectra_info)
-            print(f"[MSG] Extracted {n_written} spectra into {model_dir}")
+        if not glob.glob(os.path.join(model_dir, "*.txt")):
+            print(f"[{src}] no .txt after cleaning; skip downstream."); continue
 
-        elif src == "mast":
-            if mast is None:
-                mast = MASTSpectraGrabber(base_dir=base_dir, max_workers=workers)
-            spectra_info = mast.get_model_metadata(model_name)
-            if not spectra_info:
-                print(f"[MAST] No metadata for {model_name}; skipping.")
-                continue
-            n_written = mast.download_model_spectra(model_name, spectra_info)
-            print(f"[MAST] Wrote {n_written} spectra into {model_dir}")
-
-        # 2) CLEAN (fix λ<=0 / index-grid → recover λ from HDF5 when possible)
-        if clean_model_dir:
-            try:
-                summary = clean_model_dir(model_dir, try_h5_recovery=True, backup=True, rebuild_lookup=True)
-                print(f"[clean] {model_name}: total={summary['total']}, "
-                      f"fixed={len(summary['fixed'])}, recovered={len(summary['recovered'])}, "
-                      f"skipped={len(summary['skipped'])}, deleted={len(summary['deleted'])}")
-            except Exception as e:
-                print(f"[clean] failed for {model_name}: {e}")
-
-        # If nothing usable remains, skip downstream
-        txts = glob.glob(os.path.join(model_dir, "*.txt"))
-        if not txts:
-            print(f"[{src}] No .txt spectra present after cleaning; skipping downstream steps.")
-            continue
-
-        # 3) HDF5 bundle (ensure presence/consistency)
-        if src == "svo":
-            out_h5 = os.path.join(model_dir, f"{model_name}.h5")
-            if force_bundle_h5 or (not os.path.exists(out_h5)):
-                try:
-                    build_h5_bundle_from_txt(model_dir, out_h5)
-                except Exception as e:
-                    print(f"[h5 bundle] failed for {model_name}: {e}")
-
-        elif src == "msg":
-            # keep the original MSG HDF5; also build a derived bundle from cleaned txt for symmetry
-            out_h5_extra = os.path.join(model_dir, f"{model_name}_bundle.h5")
-            if force_bundle_h5 and not os.path.exists(out_h5_extra):
-                try:
-                    build_h5_bundle_from_txt(model_dir, out_h5_extra)
-                except Exception as e:
-                    print(f"[h5 bundle] failed for {model_name}: {e}")
-
-        elif src == "mast":
-            out_h5 = os.path.join(model_dir, f"{model_name}.h5")
+        if src == "msg":
+            out_h5 = os.path.join(model_dir, f"{name}_bundle.h5")
             if force_bundle_h5 and not os.path.exists(out_h5):
-                try:
-                    build_h5_bundle_from_txt(model_dir, out_h5)
-                except Exception as e:
-                    print(f"[h5 bundle] failed for {model_name}: {e}")
+                build_h5_bundle_from_txt(model_dir, out_h5)
+        else:
+            out_h5 = os.path.join(model_dir, f"{name}.h5")
+            if force_bundle_h5 or not os.path.exists(out_h5):
+                build_h5_bundle_from_txt(model_dir, out_h5)
 
-        # 4) lookup table (cleaner already rebuilt; warn if missing)
-        lookup_csv = os.path.join(model_dir, "lookup_table.csv")
-        if not os.path.exists(lookup_csv):
-            print(f"[warn] lookup_table.csv missing in {model_dir}. "
-                  f"Rebuilding from text headers.")
-            try:
-                regenerate_lookup_table(model_dir)
-            except Exception as e:
-                print(f"[lookup] rebuild failed: {e}")
+        print("[lookup] rebuilding lookup_table.csv"); regenerate_lookup_table(model_dir)
 
-        # 5) Flux cube
         if build_flux_cube:
-            out_flux = os.path.join(model_dir, "flux_cube.bin")
-            try:
-                precompute_flux_cube(model_dir, out_flux)
-            except Exception as e:
-                print(f"[flux-cube] Failed for {model_name}: {e}")
+            precompute_flux_cube(model_dir, os.path.join(model_dir,"flux_cube.bin"))
 
-    print("\nAll requested models processed.")
-
+    print("\nDone.")
 
 
 # ------------ filters (SVO only) ------------
@@ -528,6 +439,550 @@ def main():
                              build_flux_cube=True)
         else:
             exit()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+from typing import Sequence, Optional, Callable, Any, Dict, List, Tuple
+import math
+import re
+import shutil
+
+# Optional rich support
+try:
+    from rich.console import Console
+    from rich.table import Table
+    from rich.panel import Panel
+    from rich.text import Text
+    _RICH = True
+    _console = Console()
+except Exception:
+    _RICH = False
+    _console = None
+
+
+
+
+
+
+def _prompt_choice(options: Sequence, label: str, allow_back: bool = False) -> Optional[int]:
+    if not options:
+        print(f"No {label} options available.")
+        return None
+
+    filtered = list(range(len(options)))
+    while True:
+        print(f"\nAvailable {label} ({len(filtered)} shown):")
+        print("-" * 64)
+        for idx, opt_index in enumerate(filtered, 1):
+            opt = options[opt_index]
+            display = getattr(opt, "label", str(opt))
+            print(f"{idx:3d}. {display}")
+        print("\nEnter number to select", end="")
+        if allow_back:
+            print(", 'b' to go back", end="")
+        print(", 'q' to quit, or text to filter list.")
+        resp = input("> ").strip()
+        if not resp:
+            continue
+        if resp.lower() in ("q", "quit", "exit"):
+            return None
+        if allow_back and resp.lower() in ("b", "back"):
+            return -1
+        if resp.isdigit():
+            idx = int(resp)
+            if 1 <= idx <= len(filtered):
+                return filtered[idx - 1]
+            print("Invalid index.")
+            continue
+        # treat as substring filter
+        query = resp.lower()
+        new_filtered = [i for i in range(len(options)) if query in (getattr(options[i], "label", str(options[i])).lower())]
+        if not new_filtered:
+            print(f"No matches for '{resp}'.")
+            continue
+        filtered = new_filtered
+
+
+
+
+def _prompt_choice(
+    options: Sequence,
+    label: str,
+    allow_back: bool = False,
+    group_by: Optional[Callable[[Any], str]] = None,
+    page_size: int = 40,
+    grid_min_cols: int = 1,
+    grid_max_cols: int = 3,
+    prefer_grid: bool = True,
+) -> Optional[int]:
+    """
+    Interactive selector with:
+      - Stable IDs (1..N) independent of filters/pagination
+      - Pagination controls (n/p/g <page>)
+      - Filters: /text (substring), !text (negated substring), //regex (case-ins regex)
+      - Optional two-stage grouping (B) via group_by callable
+      - Multi-column grid layout (C) that adapts to terminal width
+      - Rich-rendered UI if 'rich' is available; ASCII otherwise
+
+    Returns:
+      0-based index into 'options' on selection,
+      -1 if user goes back (when allow_back=True),
+      None if user quits.
+
+    Commands (item mode):
+      q                  quit
+      b                  back (if allow_back)
+      n / p              next / previous page
+      g <page>           go to page number (1-based)
+      id <N>             select by stable ID (1..N)
+      /text              set substring filter (case-insensitive)
+      !text              set negated substring filter
+      //regex            set regex filter (case-insensitive)
+      clear              clear filter
+      groups             enter group selection (if group_by provided)
+      all                clear group constraint
+
+    Commands (group mode):
+      q                  quit
+      b                  back to items (without changing group)
+      n / p / g <page>   paginate groups
+      id <N>             pick group by its stable group ID
+      /text, !text, //re filter group names
+      clear              clear group filter
+
+    Notes:
+      - Displayed numbers in lists are stable IDs, not row indices.
+      - Filtering matches against the display label: getattr(opt, "label", str(opt)).
+    """
+    if not options:
+        print(f"No {label} options available.")
+        return None
+
+    # --------- Core data -----------
+    N = len(options)
+    ids = list(range(1, N + 1))  # stable 1-based IDs
+    def _disp(o: Any) -> str:
+        return getattr(o, "label", str(o))
+
+    labels = [_disp(o) for o in options]
+    labels_lc = [s.lower() for s in labels]
+
+    # Grouping (optional)
+    groups: Dict[str, List[int]] = {}
+    group_order: List[str] = []
+    if group_by is not None:
+        for i, o in enumerate(options):
+            g = group_by(o)
+            if g not in groups:
+                groups[g] = []
+                group_order.append(g)
+            groups[g].append(i)  # store 0-based indices
+
+    # --------- State -----------
+    mode = "group" if (group_by is not None) else "item"
+    current_group: Optional[str] = None
+    page = 1
+    group_page = 1
+    current_filter: Optional[Tuple[str, str]] = None  # ('substr'| 'neg' | 'regex', pattern)
+
+    # --------- Helpers -----------
+    def _term_width() -> int:
+        try:
+            return shutil.get_terminal_size().columns
+        except Exception:
+            return 80
+
+    def _apply_filter_to_names(names: List[str], names_lc: List[str]) -> List[int]:
+        if current_filter is None:
+            return list(range(len(names)))
+        ftype, patt = current_filter
+        if ftype == "substr":
+            q = patt.lower()
+            return [i for i, s in enumerate(names_lc) if q in s]
+        if ftype == "neg":
+            q = patt.lower()
+            return [i for i, s in enumerate(names_lc) if q not in s]
+        if ftype == "regex":
+            try:
+                rx = re.compile(patt, flags=re.IGNORECASE)
+            except re.error:
+                # keep previous filter if regex invalid; show nothing to force correction
+                return []
+            return [i for i, s in enumerate(names) if rx.search(s)]
+        return list(range(len(names)))
+
+    def _filtered_item_indices() -> List[int]:
+        # start from all or a group
+        base_idx: List[int]
+        if current_group is None:
+            base_idx = list(range(N))
+        else:
+            base_idx = groups.get(current_group, [])
+
+        # build name arrays for those
+        sub_names = [labels[i] for i in base_idx]
+        sub_names_lc = [labels_lc[i] for i in base_idx]
+
+        keep_rel = _apply_filter_to_names(sub_names, sub_names_lc)
+        return [base_idx[k] for k in keep_rel]
+
+    def _filtered_group_names() -> List[str]:
+        if group_by is None:
+            return []
+        group_names = group_order
+        group_names_lc = [g.lower() for g in group_names]
+        keep = _apply_filter_to_names(group_names, group_names_lc)
+        return [group_names[k] for k in keep]
+
+    def _page_slices(total: int, page_num: int, psize: int) -> slice:
+        page_max = max(1, math.ceil(total / psize))
+        p = max(1, min(page_num, page_max))
+        start = (p - 1) * psize
+        end = min(start + psize, total)
+        return slice(start, end)
+
+    def _grid_columns(current_rows: List[str]) -> int:
+        if not prefer_grid:
+            return 1
+        width = max(40, _term_width())
+        # conservative col width: ID “[####] ” + up to 28 chars + gap
+        # but adapt to longest visible label up to 32 chars
+        max_label = min(32, max((len(s) for s in current_rows), default=10))
+        col_w = 6 + max_label + 2
+        cols = max(grid_min_cols, min(grid_max_cols, max(1, width // col_w)))
+        return cols
+
+    def _ellipsize(s: str, maxlen: int) -> str:
+        return s if len(s) <= maxlen else (s[: max(0, maxlen - 1)] + "…")
+
+    def _id_of_index(idx0: int) -> int:
+        return idx0 + 1
+
+    def _index_of_id(id1: int) -> Optional[int]:
+        # validate stable ID in range
+        if 1 <= id1 <= N:
+            return id1 - 1
+        return None
+
+    def _status_line(total: int, shown_start: int, shown_end: int) -> str:
+        f = ""
+        if current_filter is not None:
+            t, p = current_filter
+            if t == "substr":
+                f = f' filter="/{p}"'
+            elif t == "neg":
+                f = f' filter="!{p}"'
+            elif t == "regex":
+                f = f' filter="//{p}"'
+        g = f' group="{current_group}"' if current_group else ""
+        return f"Showing {shown_start}–{shown_end} of {total}{g}{f}"
+
+    # --------- Renderers -----------
+    def _render_items(indices: List[int], page_num: int):
+        # Prepare rows
+        rows = [labels[i] for i in indices]
+        total = len(rows)
+        if total == 0:
+            msg = "No matches."
+            if _RICH:
+                _console.print(Panel(Text(msg, style="bold red"), title=f"{label}", expand=False))
+            else:
+                print(f"\n{label}: {msg}")
+            return
+
+        sl = _page_slices(total, page_num, page_size)
+        view = rows[sl]
+        view_idx = indices[sl]
+        start = sl.start + 1
+        end = sl.stop
+
+        # Decide grid
+        cols = _grid_columns(view)
+        if cols <= 1:
+            # Single column
+            if _RICH:
+                table = Table(title=Text(f"{label}", style="bold"), show_lines=False)
+                table.add_column("ID", justify="right", no_wrap=True, style="cyan")
+                table.add_column("Label", overflow="fold")
+                for idx0, name in zip(view_idx, view):
+                    table.add_row(str(_id_of_index(idx0)), name)
+                _console.print(table)
+                _console.print(Text(_status_line(total, start, end), style="dim"))
+            else:
+                print(f"\n{label} ({total} total):")
+                print("-" * 64)
+                for idx0, name in zip(view_idx, view):
+                    print(f"[{_id_of_index(idx0):4d}] {name}")
+                print(_status_line(total, start, end))
+        else:
+            # Grid layout
+            # Compute per-cell label width
+            max_label = min(32, max(len(s) for s in view))
+            cell_label_w = max_label
+            entries = [f"[{_id_of_index(i):4d}] {_ellipsize(n, cell_label_w)}" for i, n in zip(view_idx, view)]
+            # Pad to full rows
+            while len(entries) % cols != 0:
+                entries.append("")
+            rows_of_cols = [entries[i:i+cols] for i in range(0, len(entries), cols)]
+
+            if _RICH:
+                table = Table(title=Text(f"{label}", style="bold"), show_lines=False, pad_edge=False)
+                for c in range(cols):
+                    table.add_column(justify="left", overflow="fold")
+                for r in rows_of_cols:
+                    table.add_row(*r)
+                _console.print(table)
+                _console.print(Text(_status_line(total, start, end), style="dim"))
+            else:
+                print(f"\n{label} ({total} total):")
+                print("-" * 64)
+                for r in rows_of_cols:
+                    print("   ".join(x.ljust(cell_label_w + 7) for x in r))
+                print(_status_line(total, start, end))
+
+        # Controls line
+        if _RICH:
+            controls = "[n]ext [p]rev [g <page>] [/text] [!text] [//regex] [id <N>] [clear]"
+            if group_by is not None:
+                controls += " [groups]"
+            if allow_back:
+                controls += " [b]"
+            controls += " [q]"
+            _console.print(Text(controls, style="italic dim"))
+        else:
+            controls = "Commands: n, p, g <page>, /text, !text, //regex, id <N>, clear"
+            if group_by is not None:
+                controls += ", groups"
+            if allow_back:
+                controls += ", b"
+            controls += ", q"
+            print(controls)
+
+    def _render_groups(group_names: List[str], page_num: int):
+        total = len(group_names)
+        if total == 0:
+            msg = "No groups match."
+            if _RICH:
+                _console.print(Panel(Text(msg, style="bold red"), title=f"{label} groups", expand=False))
+            else:
+                print(f"\n{label} groups: {msg}")
+            return
+
+        # stable group IDs: 1..len(group_order) regardless of filter
+        # we need to map visible names to their stable group IDs
+        name_to_gid = {name: i + 1 for i, name in enumerate(group_order)}
+        sl = _page_slices(total, page_num, page_size)
+        view = group_names[sl]
+        start = sl.start + 1
+        end = sl.stop
+
+        if _RICH:
+            table = Table(title=Text(f"{label} groups", style="bold"))
+            table.add_column("GrpID", justify="right", style="magenta")
+            table.add_column("Group")
+            table.add_column("Count", justify="right", style="cyan")
+            for name in view:
+                gid = name_to_gid[name]
+                cnt = len(groups[name])
+                table.add_row(str(gid), name, str(cnt))
+            _console.print(table)
+            _console.print(Text(_status_line(total, start, end), style="dim"))
+            _console.print(Text("Commands: n, p, g <page>, /text, !text, //regex, id <GrpID>, clear, b, q", style="italic dim"))
+        else:
+            print(f"\n{label} groups ({total} total):")
+            print("-" * 64)
+            for name in view:
+                gid = name_to_gid[name]
+                cnt = len(groups[name])
+                print(f"[{gid:4d}] {name} ({cnt})")
+            print(_status_line(total, start, end))
+            print("Commands: n, p, g <page>, /text, !text, //regex, id <GrpID>, clear, b, q")
+
+    # --------- Main loop -----------
+    while True:
+        if mode == "group":
+            # Show groups
+            gnames = _filtered_group_names()
+            _render_groups(gnames, group_page)
+            resp = input("> ").strip()
+            if not resp:
+                continue
+            low = resp.lower()
+
+            if low in ("q", "quit", "exit"):
+                return None
+            if low in ("b", "back"):
+                # leave group mode without changing current_group
+                mode = "item"
+                continue
+            if low.startswith("n"):
+                group_page += 1
+                continue
+            if low.startswith("p"):
+                group_page = max(1, group_page - 1)
+                continue
+            if low.startswith("g "):
+                parts = low.split()
+                if len(parts) == 2 and parts[1].isdigit():
+                    group_page = max(1, int(parts[1]))
+                continue
+            if low.startswith("id "):
+                parts = low.split()
+                if len(parts) == 2 and parts[1].isdigit():
+                    gid = int(parts[1])
+                    if 1 <= gid <= len(group_order):
+                        # select this group
+                        current_group = group_order[gid - 1]
+                        mode = "item"
+                        page = 1
+                continue
+            if low == "clear":
+                current_filter = None
+                continue
+            if low.startswith("//"):
+                patt = resp[2:].strip()
+                current_filter = ("regex", patt) if patt else None
+                group_page = 1
+                continue
+            if low.startswith("!"):
+                patt = resp[1:].strip()
+                current_filter = ("neg", patt) if patt else None
+                group_page = 1
+                continue
+            if low.startswith("/"):
+                patt = resp[1:].strip()
+                current_filter = ("substr", patt) if patt else None
+                group_page = 1
+                continue
+            # default: treat as substring filter
+            current_filter = ("substr", resp)
+            group_page = 1
+            continue
+
+        # mode == "item"
+        items = _filtered_item_indices()
+        _render_items(items, page)
+
+        resp = input("> ").strip()
+        if not resp:
+            continue
+        low = resp.lower()
+
+        if low in ("q", "quit", "exit"):
+            return None
+        if allow_back and low in ("b", "back"):
+            return -1
+        if low.startswith("n"):
+            page += 1
+            continue
+        if low.startswith("p"):
+            page = max(1, page - 1)
+            continue
+        if low.startswith("g "):
+            parts = low.split()
+            if len(parts) == 2 and parts[1].isdigit():
+                page = max(1, int(parts[1]))
+            continue
+        if low == "groups" and group_by is not None:
+            mode = "group"
+            group_page = 1
+            continue
+        if low == "all":
+            current_group = None
+            page = 1
+            continue
+        if low.startswith("id "):
+            parts = low.split()
+            if len(parts) == 2 and parts[1].isdigit():
+                sel_id = int(parts[1])
+                idx0 = _index_of_id(sel_id)
+                if idx0 is not None:
+                    return idx0
+            continue
+        if low == "clear":
+            current_filter = None
+            page = 1
+            continue
+        if low.startswith("//"):
+            patt = resp[2:].strip()
+            current_filter = ("regex", patt) if patt else None
+            page = 1
+            continue
+        if low.startswith("!"):
+            patt = resp[1:].strip()
+            current_filter = ("neg", patt) if patt else None
+            page = 1
+            continue
+        if low.startswith("/"):
+            patt = resp[1:].strip()
+            current_filter = ("substr", patt) if patt else None
+            page = 1
+            continue
+        # If purely digits, interpret as stable ID selection for convenience
+        if resp.isdigit():
+            sel_id = int(resp)
+            idx0 = _index_of_id(sel_id)
+            if idx0 is not None:
+                return idx0
+            # fall through to set as filter if out-of-range? No. Just ignore invalid.
+            continue
+
+        # default: treat input as substring filter
+        current_filter = ("substr", resp)
+        page = 1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 if __name__ == "__main__":
     main()

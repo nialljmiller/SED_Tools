@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-"""Interactive SVO filter downloader with nested facility/instrument selection."""
 
 from __future__ import annotations
 
@@ -13,6 +12,8 @@ import urllib.parse
 import requests
 from bs4 import BeautifulSoup
 from astroquery.svo_fps import SvoFps
+
+from SED_tools.cli import _prompt_choice
 
 SvoFps.TIMEOUT = 300  # give SVO a generous timeout
 
@@ -224,43 +225,6 @@ def _clean_filename(value: str) -> str:
     return _clean_path(value).replace(" ", "_")
 
 
-def _prompt_choice(options: Sequence, label: str, allow_back: bool = False) -> Optional[int]:
-    if not options:
-        print(f"No {label} options available.")
-        return None
-
-    filtered = list(range(len(options)))
-    while True:
-        print(f"\nAvailable {label} ({len(filtered)} shown):")
-        print("-" * 64)
-        for idx, opt_index in enumerate(filtered, 1):
-            opt = options[opt_index]
-            display = getattr(opt, "label", str(opt))
-            print(f"{idx:3d}. {display}")
-        print("\nEnter number to select", end="")
-        if allow_back:
-            print(", 'b' to go back", end="")
-        print(", 'q' to quit, or text to filter list.")
-        resp = input("> ").strip()
-        if not resp:
-            continue
-        if resp.lower() in ("q", "quit", "exit"):
-            return None
-        if allow_back and resp.lower() in ("b", "back"):
-            return -1
-        if resp.isdigit():
-            idx = int(resp)
-            if 1 <= idx <= len(filtered):
-                return filtered[idx - 1]
-            print("Invalid index.")
-            continue
-        # treat as substring filter
-        query = resp.lower()
-        new_filtered = [i for i in range(len(options)) if query in (getattr(options[i], "label", str(options[i])).lower())]
-        if not new_filtered:
-            print(f"No matches for '{resp}'.")
-            continue
-        filtered = new_filtered
 
 
 def run_interactive(base_dir: str = DEFAULT_BASE_DIR) -> None:
