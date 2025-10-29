@@ -424,84 +424,15 @@ def run_spectra_flow(source: str,
 # ------------ filters (SVO only) ------------
 
 def run_filters_flow(base_dir: str = FILTER_DIR_DEFAULT) -> None:
-    """
-    Simple SVO filters downloader with interactive substring filters.
-    Saves to base_dir/<Facility>/<Instrument>/<Band>.dat
-    """
+    """Interactive nested filter downloader that mirrors the spectra workflow."""
     ensure_dir(base_dir)
     try:
-        # import lazily so users who only want spectra don't need astroquery installed
-        from astropy import units as u
-        from astropy.table import unique, vstack
-        from astroquery.svo_fps import SvoFps
-    except Exception as e:
-        print("This feature needs astropy & astroquery installed:", e)
+        from svo_filter_grabber import run_interactive as _run_filter_cli
+    except Exception as exc:
+        print("This feature needs requests/bs4/astroquery available:", exc)
         return
 
-    SvoFps.TIMEOUT = 300
-
-    print("\nFilter search (SVO): leave blank to match everything.")
-    fac = input("Substring for Facility (e.g. 'Gaia', '2MASS', 'HST'): ").strip()
-    ins = input("Substring for Instrument (e.g. 'WFC3', 'IRAC'): ").strip()
-    bnd = input("Substring for Band (e.g. 'G', 'J', 'r'): ").strip()
-
-    print("Choose wavelength span (Angstrom):")
-    try:
-        wmin = float(input("  min (default 100): ") or "100")
-        wmax = float(input("  max (default 1e8): ") or "1e8")
-    except ValueError:
-        wmin, wmax = 100.0, 1e8
-
-    try:
-        idx = SvoFps.get_filter_index(wavelength_eff_min=wmin * u.AA,
-                                      wavelength_eff_max=wmax * u.AA)
-    except Exception as e:
-        print("Failed to query SVO:", e)
-        return
-
-    # pandas-ish filtering via astropy table
-    df = idx.to_pandas()
-    if fac:
-        df = df[df["Facility"].str.contains(fac, case=False, na=False)]
-    if ins:
-        df = df[df["Instrument"].str.contains(ins, case=False, na=False)]
-    if bnd:
-        df = df[df["Band"].astype(str).str.contains(bnd, case=False, na=False)]
-
-    if df.empty:
-        print("No filters matched.")
-        return
-
-    print(f"\nMatched {len(df)} filters. Download? (y/n, default y)")
-    if (input("> ").strip().lower() or "y").startswith("y"):
-        # drop duplicates on filterID
-        df = df.drop_duplicates(subset="filterID").reset_index(drop=True)
-        for i, row in df.iterrows():
-            fid = row["filterID"]
-            facility = (row.get("Facility") or "UnknownFacility")
-            instrument = (row.get("Instrument") or "UnknownInstrument")
-            band = (row.get("Band") or fid.split(".")[-1] or "unknown")
-
-            # sanitize paths
-            clean = lambda s: "".join(ch if ch.isalnum() or ch in (" ",".","_") else "_" for ch in str(s)).strip()
-            fac_dir = clean(facility)
-            ins_dir = clean(instrument)
-            fname   = clean(band) + ".dat"
-
-            out_dir = os.path.join(base_dir, fac_dir, ins_dir)
-            ensure_dir(out_dir)
-            out_path = os.path.join(out_dir, fname)
-            try:
-                t = SvoFps.get_transmission_data(fid)
-                if t is not None and len(t) > 0:
-                    t.write(out_path, format="ascii.csv", overwrite=True)
-                    print(f"[saved] {out_path}")
-                else:
-                    print(f"[skip] no data for {fid}")
-            except Exception as e:
-                print(f"[error] {fid}: {e}")
-
-    print("\nFilter flow complete.")
+    _run_filter_cli(base_dir)
 
 
 
@@ -543,7 +474,7 @@ def main():
     sp.add_argument("--no-cube", action="store_true", help="Skip flux cube build")
 
     # filters
-    fp = sub.add_parser("filters", help="Download SVO filters (interactive substring matching)")
+    fp = sub.add_parser("filters", help="Download SVO filters (interactive facility/instrument browser)")
     fp.add_argument("--base", default=FILTER_DIR_DEFAULT,
                     help=f"Output base for filters (default {FILTER_DIR_DEFAULT})")
 

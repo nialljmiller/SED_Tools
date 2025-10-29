@@ -1,116 +1,351 @@
-import os
+#!/usr/bin/env python3
+"""Interactive SVO filter downloader with nested facility/instrument selection."""
 
-from astropy import units as u
-from astropy.table import unique, vstack
+from __future__ import annotations
+
+import os
+import sys
+import textwrap
+from dataclasses import dataclass
+from typing import Dict, List, Optional, Sequence
+import urllib.parse
+
+import requests
+from bs4 import BeautifulSoup
 from astroquery.svo_fps import SvoFps
 
-# Set a longer timeout
-SvoFps.TIMEOUT = 300  # Increase timeout to 5 minutes
+SvoFps.TIMEOUT = 300  # give SVO a generous timeout
 
-# Define wavelength ranges for different spectral regions (in Angstroms)
-wavelength_ranges = [
-    ("X-ray", 0.1 * u.AA, 100 * u.AA),
-    ("UV", 100 * u.AA, 4000 * u.AA),
-    ("Optical", 4000 * u.AA, 7000 * u.AA),
-    ("NIR", 7000 * u.AA, 25000 * u.AA),
-    ("MIR", 25000 * u.AA, 250000 * u.AA),
-    ("FIR", 250000 * u.AA, 1e7 * u.AA),
-    ("Radio", 1e7 * u.AA, 1e8 * u.AA),
-]
+BASE_URL = "https://svo2.cab.inta-csic.es/theory/fps/"
+INDEX_URL = urllib.parse.urljoin(BASE_URL, "index.php")
 
-all_filters = []
+DEFAULT_BASE_DIR = os.path.join(os.path.dirname(__file__), "data", "filters")
 
-# Loop over each wavelength range
-for region_name, wavelength_min, wavelength_max in wavelength_ranges:
-    print(
-        f"\nRetrieving filters for {region_name} range ({wavelength_min} - {
-            wavelength_max
-        })"
-    )
-    try:
-        filters_table = SvoFps.get_filter_index(
-            wavelength_eff_min=wavelength_min, wavelength_eff_max=wavelength_max
+
+@dataclass(frozen=True)
+class Facility:
+    key: str
+    label: str
+
+
+@dataclass(frozen=True)
+class Instrument:
+    facility_key: str
+    key: str
+    label: str
+
+
+@dataclass(frozen=True)
+class FilterRow:
+    filter_id: str
+    band: str
+    facility: str
+    instrument: str
+    description: str
+
+
+class SVOFilterBrowser:
+    """Navigate the SVO Filter Profile Service and download filters."""
+
+    def __init__(self, base_dir: str = DEFAULT_BASE_DIR, session: Optional[requests.Session] = None):
+        self.base_dir = base_dir
+        os.makedirs(self.base_dir, exist_ok=True)
+
+        self.session = session or requests.Session()
+        self.session.headers.setdefault("User-Agent", "SED_Tools/filters (https://github.com)")
+
+        self._facility_cache: Optional[List[Facility]] = None
+        self._instrument_cache: Dict[str, List[Instrument]] = {}
+        self._filters_cache: Dict[tuple[str, str], List[FilterRow]] = {}
+
+    # -------------------- discovery helpers --------------------
+    def list_facilities(self) -> List[Facility]:
+        if self._facility_cache is not None:
+            return self._facility_cache
+
+        soup = self._fetch_index({"mode": "browse"})
+        facilities: Dict[str, Facility] = {}
+        for link in soup.find_all("a", href=True):
+            params = self._parse_params(link["href"])
+            if params.get("mode") != "browse":
+                continue
+            gname = params.get("gname")
+            if not gname or "gname2" in params:
+                continue
+            label = link.get_text(" ", strip=True) or gname
+            label = label.split("(")[0].strip() or gname
+            facilities.setdefault(gname, Facility(key=gname, label=label))
+
+        ordered = sorted(facilities.values(), key=lambda f: f.label.lower())
+        self._facility_cache = ordered
+        return ordered
+
+    def list_instruments(self, facility_key: str) -> List[Instrument]:
+        if facility_key in self._instrument_cache:
+            return self._instrument_cache[facility_key]
+
+        soup = self._fetch_index({"mode": "browse", "gname": facility_key, "asttype": ""})
+        instruments: Dict[str, Instrument] = {}
+        for link in soup.find_all("a", href=True):
+            params = self._parse_params(link["href"])
+            if params.get("mode") != "browse":
+                continue
+            if params.get("gname") != facility_key:
+                continue
+            gname2 = params.get("gname2")
+            if not gname2:
+                continue
+            label = link.get_text(" ", strip=True) or gname2
+            label = label.split("(")[0].strip() or gname2
+            instruments.setdefault(gname2, Instrument(facility_key=facility_key, key=gname2, label=label))
+
+        ordered = sorted(instruments.values(), key=lambda inst: inst.label.lower())
+        self._instrument_cache[facility_key] = ordered
+        return ordered
+
+    def list_filters(self, facility_key: str, instrument_key: str) -> List[FilterRow]:
+        cache_key = (facility_key, instrument_key)
+        if cache_key in self._filters_cache:
+            return self._filters_cache[cache_key]
+
+        soup = self._fetch_index(
+            {"mode": "browse", "gname": facility_key, "gname2": instrument_key, "asttype": ""}
         )
-        print(f"Retrieved {len(filters_table)} filters for {region_name}")
-        all_filters.append(filters_table)
-    except Exception as e:
-        print(f"Error retrieving filters for {region_name}: {e}")
+        table = self._find_filter_table(soup)
+        rows: List[FilterRow] = []
+        if table:
+            for tr in table.find_all("tr"):
+                cells = tr.find_all("td")
+                if not cells:
+                    continue
+                link = cells[0].find("a", href=True)
+                if not link:
+                    continue
+                filter_id = link.get_text(strip=True)
+                if not filter_id:
+                    continue
+                # Guard against header rows duplicated as td
+                if filter_id.lower() == "filter id":
+                    continue
+                band = _band_from_filter_id(filter_id)
+                facility = cells[-3].get_text(strip=True) if len(cells) >= 3 else facility_key
+                instrument = cells[-2].get_text(strip=True) if len(cells) >= 2 else instrument_key
+                description = cells[-1].get_text(strip=True) if cells else ""
+                rows.append(
+                    FilterRow(
+                        filter_id=filter_id,
+                        band=band or filter_id,
+                        facility=facility or facility_key,
+                        instrument=instrument or instrument_key,
+                        description=description,
+                    )
+                )
 
-# Combine all filters into a single table
-if all_filters:
-    combined_filters_table = vstack(all_filters)
-    # Remove duplicate filters based on 'filterID'
-    combined_filters_table = unique(combined_filters_table, keys="filterID")
-else:
-    print("No filters retrieved. Exiting.")
-    exit(1)
+        # de-duplicate by filter_id while keeping order
+        seen = set()
+        unique_rows: List[FilterRow] = []
+        for row in rows:
+            if row.filter_id in seen:
+                continue
+            seen.add(row.filter_id)
+            unique_rows.append(row)
 
-# Convert to Pandas DataFrame
-filters_df = combined_filters_table.to_pandas()
+        self._filters_cache[cache_key] = unique_rows
+        return unique_rows
 
-# Print the column names
-print("Available columns in filters_df:")
-print(filters_df.columns.tolist())
-# Uncomment the following line to test with a subset of filters
-# filters_df = filters_df.head(10)  # Only process the first 10 filters
+    # -------------------- downloading --------------------
+    def download_filters(self, filters: Sequence[FilterRow]) -> None:
+        if not filters:
+            print("No filters to download.")
+            return
 
-# Base directory to save filters
-base_dir = "data/filters"
+        for idx, row in enumerate(filters, 1):
+            print(f"  [{idx:3d}/{len(filters):3d}] {row.filter_id}")
+            facility_dir = _clean_path(row.facility or "UnknownFacility")
+            instrument_dir = _clean_path(row.instrument or "UnknownInstrument")
+            band_name = _clean_filename(row.band) or _clean_filename(_band_from_filter_id(row.filter_id))
+            if not band_name:
+                band_name = _clean_filename(row.filter_id.split("/")[-1])
+            out_dir = os.path.join(self.base_dir, facility_dir, instrument_dir)
+            os.makedirs(out_dir, exist_ok=True)
+            out_path = os.path.join(out_dir, f"{band_name}.dat")
+            try:
+                table = SvoFps.get_transmission_data(row.filter_id)
+                if table is None or len(table) == 0:
+                    print(f"    [skip] No transmission data returned for {row.filter_id}")
+                    continue
+                table.write(out_path, format="ascii.csv", overwrite=True)
+                print(f"    [saved] {out_path}")
+            except Exception as exc:  # pragma: no cover - network issues
+                print(f"    [error] Failed to download {row.filter_id}: {exc}")
 
-# Create base directory if it doesn't exist
-if not os.path.exists(base_dir):
-    os.makedirs(base_dir)
+    # -------------------- HTTP helpers --------------------
+    def _fetch_index(self, params: Dict[str, str]) -> BeautifulSoup:
+        try:
+            resp = self.session.get(INDEX_URL, params=params, timeout=60)
+            resp.raise_for_status()
+        except requests.RequestException as exc:
+            raise RuntimeError(f"Failed to fetch SVO index: {exc}") from exc
+        return BeautifulSoup(resp.text, "html.parser")
 
-# Print total# Print total number of filters
-print(f"\nTotal number of filters to process: {len(filters_df)}")
+    def _parse_params(self, href: str) -> Dict[str, str]:
+        url = urllib.parse.urljoin(BASE_URL, href)
+        parsed = urllib.parse.urlparse(url)
+        qs = urllib.parse.parse_qs(parsed.query)
+        return {k: v[0] for k, v in qs.items() if v}
 
-# Print the list of filters to be downloaded
-print("Filters to be downloaded:")
-print(filters_df[["filterID", "Facility", "Instrument", "Band"]])
+    def _find_filter_table(self, soup: BeautifulSoup) -> Optional[BeautifulSoup]:
+        for table in soup.find_all("table"):
+            header = table.find("tr")
+            if not header:
+                continue
+            titles = [cell.get_text(strip=True).lower() for cell in header.find_all(["th", "td"])]
+            if titles and titles[0] == "filter id":
+                return table
+        return None
 
-# Loop over each filter
-for idx, row in filters_df.iterrows():
-    filter_id = row["filterID"]
-    facility = row.get("Facility", "UnknownFacility")
-    instrument = row.get("Instrument", "UnknownInstrument")
-    filter_name = row.get("Band", filter_id)
 
-    if filter_name == "":
-        filter_name = filter_id.split(".")[-1]
+# -------------------- CLI helpers --------------------
+def _band_from_filter_id(filter_id: str) -> str:
+    if "." in filter_id:
+        return filter_id.rsplit(".", 1)[-1]
+    if "/" in filter_id:
+        return filter_id.rsplit("/", 1)[-1]
+    return filter_id
 
-    # Print progress
-    print(f"\nProcessing filter {idx + 1}/{len(filters_df)}: {filter_id}")
 
-    # Clean up facility and filter names to make valid directory/file names
-    facility_dir = "".join(
-        c if c.isalnum() or c in (" ", ".", "_") else "_" for c in facility
-    ).strip()
-    instrument_dir = "".join(
-        c if c.isalnum() or c in (" ", ".", "_") else "_" for c in instrument
-    ).strip()
-    filter_filename = (
-        "".join(
-            c if c.isalnum() or c in (" ", ".", "_") else "_" for c in filter_name
-        ).strip()
-        + ".dat"
-    )
+def _clean_path(value: str) -> str:
+    cleaned = "".join(ch if ch.isalnum() or ch in (" ", ".", "_") else "_" for ch in value)
+    cleaned = cleaned.strip()
+    return cleaned or "Unknown"
 
-    # Full path for the facility and instrument directory
-    directory_path = os.path.join(base_dir, facility_dir, instrument_dir)
 
-    # Create directories if they don't exist
-    if not os.path.exists(directory_path):
-        os.makedirs(directory_path)
+def _clean_filename(value: str) -> str:
+    return _clean_path(value).replace(" ", "_")
 
-    # Download transmission data
+
+def _prompt_choice(options: Sequence, label: str, allow_back: bool = False) -> Optional[int]:
+    if not options:
+        print(f"No {label} options available.")
+        return None
+
+    filtered = list(range(len(options)))
+    while True:
+        print(f"\nAvailable {label} ({len(filtered)} shown):")
+        print("-" * 64)
+        for idx, opt_index in enumerate(filtered, 1):
+            opt = options[opt_index]
+            display = getattr(opt, "label", str(opt))
+            print(f"{idx:3d}. {display}")
+        print("\nEnter number to select", end="")
+        if allow_back:
+            print(", 'b' to go back", end="")
+        print(", 'q' to quit, or text to filter list.")
+        resp = input("> ").strip()
+        if not resp:
+            continue
+        if resp.lower() in ("q", "quit", "exit"):
+            return None
+        if allow_back and resp.lower() in ("b", "back"):
+            return -1
+        if resp.isdigit():
+            idx = int(resp)
+            if 1 <= idx <= len(filtered):
+                return filtered[idx - 1]
+            print("Invalid index.")
+            continue
+        # treat as substring filter
+        query = resp.lower()
+        new_filtered = [i for i in range(len(options)) if query in (getattr(options[i], "label", str(options[i])).lower())]
+        if not new_filtered:
+            print(f"No matches for '{resp}'.")
+            continue
+        filtered = new_filtered
+
+
+def run_interactive(base_dir: str = DEFAULT_BASE_DIR) -> None:
+    browser = SVOFilterBrowser(base_dir=base_dir)
+
+    facilities = browser.list_facilities()
+    if not facilities:
+        print("No facilities discovered.")
+        return
+
+    while True:
+        fac_idx = _prompt_choice(facilities, "facilities")
+        if fac_idx is None:
+            print("Exiting.")
+            return
+        facility = facilities[fac_idx]
+
+        instruments = browser.list_instruments(facility.key)
+        if not instruments:
+            print(f"No instruments found for {facility.label}.")
+            continue
+
+        while True:
+            inst_idx = _prompt_choice(instruments, f"instruments for {facility.label}", allow_back=True)
+            if inst_idx is None:
+                print("Exiting.")
+                return
+            if inst_idx == -1:
+                # user chose to go back to facility list
+                break
+            instrument = instruments[inst_idx]
+
+            filters = browser.list_filters(facility.key, instrument.key)
+            if not filters:
+                print(f"No filters found for {instrument.label}.")
+                continue
+
+            print(
+                textwrap.dedent(
+                    f"""
+                    \nSelected:
+                      Facility : {facility.label} ({facility.key})
+                      Instrument: {instrument.label} ({instrument.key})
+                      Filters  : {len(filters)} available
+                    """
+                ).strip()
+            )
+
+            confirm = input("Download all filters for this instrument? [Y/n] ").strip().lower()
+            if confirm and not confirm.startswith("y"):
+                continue
+
+            browser.download_filters(filters)
+
+            again = input("Download another instrument from this facility? [y/N] ").strip().lower()
+            if not again.startswith("y"):
+                break
+
+
+def main(argv: Optional[Sequence[str]] = None) -> int:
+    argv = list(argv or sys.argv[1:])
+    if argv and argv[0] in ("-h", "--help"):
+        print(
+            textwrap.dedent(
+                f"""
+                Usage: {os.path.basename(sys.argv[0])} [base_dir]
+
+                Interactively browse the SVO Filter Profile Service, choose a facility and
+                instrument, then download all filters for that instrument into
+                <base_dir>/<Facility>/<Instrument>/<Band>.dat.
+
+                If base_dir is not provided, the default is {DEFAULT_BASE_DIR}.
+                """
+            ).strip()
+        )
+        return 0
+
+    base_dir = argv[0] if argv else DEFAULT_BASE_DIR
     try:
-        transmission_data = SvoFps.get_transmission_data(filter_id)
-        if transmission_data is not None and len(transmission_data) > 0:
-            # Save the data to a file
-            file_path = os.path.join(directory_path, filter_filename)
-            transmission_data.write(file_path, format="ascii.csv", overwrite=True)
-            print(f"Saved filter '{filter_name}' to {file_path}")
-        else:
-            print(f"No transmission data for filter '{filter_id}'")
-    except Exception as e:
-        print(f"Error downloading data for filter '{filter_id}': {e}")
+        run_interactive(base_dir)
+        return 0
+    except RuntimeError as exc:
+        print(exc)
+        return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
