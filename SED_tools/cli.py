@@ -293,7 +293,7 @@ def run_spectra_flow(
                 chosen.append((src,name))
     else:
         opts = [_Opt(s,n) for s,n in discovered]
-        idx = _prompt_choice(opts, label="Spectral models", allow_back=True, page_size=30, prefer_grid=True)
+        idx = _prompt_choice(opts, label="Spectral models", allow_back=True)
         if idx is None or idx==-1: print("No model selected."); return
         sel = opts[idx]; chosen = [(sel.src, sel.name)]
 
@@ -460,501 +460,146 @@ def main():
 
 
 
-
-
-
-
-
-
-from typing import Sequence, Optional, Callable, Any, Dict, List, Tuple
-import math
-import re
-import shutil
-
-# Optional rich support
-try:
-    from rich.console import Console
-    from rich.table import Table
-    from rich.panel import Panel
-    from rich.text import Text
-    _RICH = True
-    _console = Console()
-except Exception:
-    _RICH = False
-    _console = None
-
-
-
-
-
-
-def _prompt_choice(options: Sequence, label: str, allow_back: bool = False) -> Optional[int]:
-    if not options:
-        print(f"No {label} options available.")
-        return None
-
-    filtered = list(range(len(options)))
-    while True:
-        print(f"\nAvailable {label} ({len(filtered)} shown):")
-        print("-" * 64)
-        for idx, opt_index in enumerate(filtered, 1):
-            opt = options[opt_index]
-            display = getattr(opt, "label", str(opt))
-            print(f"{idx:3d}. {display}")
-        print("\nEnter number to select", end="")
-        if allow_back:
-            print(", 'b' to go back", end="")
-        print(", 'q' to quit, or text to filter list.")
-        resp = input("> ").strip()
-        if not resp:
-            continue
-        if resp.lower() in ("q", "quit", "exit"):
-            return None
-        if allow_back and resp.lower() in ("b", "back"):
-            return -1
-        if resp.isdigit():
-            idx = int(resp)
-            if 1 <= idx <= len(filtered):
-                return filtered[idx - 1]
-            print("Invalid index.")
-            continue
-        # treat as substring filter
-        query = resp.lower()
-        new_filtered = [i for i in range(len(options)) if query in (getattr(options[i], "label", str(options[i])).lower())]
-        if not new_filtered:
-            print(f"No matches for '{resp}'.")
-            continue
-        filtered = new_filtered
-
-
-
+from typing import Sequence, Optional, Any, List, Tuple
+import re, math, shutil, sys, os
 
 def _prompt_choice(
     options: Sequence,
     label: str,
     allow_back: bool = False,
-    group_by: Optional[Callable[[Any], str]] = None,
-    page_size: int = 40,
-    grid_min_cols: int = 1,
-    grid_max_cols: int = 3,
-    prefer_grid: bool = True,
+    page_size: int = 100,
+    max_label: int = 32,
+    min_cols: int = 1,
+    max_cols: int = 3,
+    use_color: bool = True,
 ) -> Optional[int]:
     """
-    Interactive selector with:
-      - Stable IDs (1..N) independent of filters/pagination
-      - Pagination controls (n/p/g <page>)
-      - Filters: /text (substring), !text (negated substring), //regex (case-ins regex)
-      - Optional two-stage grouping (B) via group_by callable
-      - Multi-column grid layout (C) that adapts to terminal width
-      - Rich-rendered UI if 'rich' is available; ASCII otherwise
-
-    Returns:
-      0-based index into 'options' on selection,
-      -1 if user goes back (when allow_back=True),
-      None if user quits.
-
-    Commands (item mode):
-      q                  quit
-      b                  back (if allow_back)
-      n / p              next / previous page
-      g <page>           go to page number (1-based)
-      id <N>             select by stable ID (1..N)
-      /text              set substring filter (case-insensitive)
-      !text              set negated substring filter
-      //regex            set regex filter (case-insensitive)
-      clear              clear filter
-      groups             enter group selection (if group_by provided)
-      all                clear group constraint
-
-    Commands (group mode):
-      q                  quit
-      b                  back to items (without changing group)
-      n / p / g <page>   paginate groups
-      id <N>             pick group by its stable group ID
-      /text, !text, //re filter group names
-      clear              clear group filter
-
-    Notes:
-      - Displayed numbers in lists are stable IDs, not row indices.
-      - Filtering matches against the display label: getattr(opt, "label", str(opt)).
+    Plain-ASCII picker with stable IDs, paging, grid columns, and simple filters.
+    - Stable IDs: 1..N (do not renumber after filtering/paging)
+    - Pagination: n / p / g <page>
+    - Filters: /text (substring), !text (negated), //regex (case-insensitive)
+    - Select by ID: 'id <N>' or just '<N>'
+    Returns 0-based index, -1 for back (if allowed), None for quit.
     """
     if not options:
         print(f"No {label} options available.")
         return None
 
-    # --------- Core data -----------
-    N = len(options)
-    ids = list(range(1, N + 1))  # stable 1-based IDs
-    def _disp(o: Any) -> str:
-        return getattr(o, "label", str(o))
-
-    labels = [_disp(o) for o in options]
-    labels_lc = [s.lower() for s in labels]
-
-    # Grouping (optional)
-    groups: Dict[str, List[int]] = {}
-    group_order: List[str] = []
-    if group_by is not None:
-        for i, o in enumerate(options):
-            g = group_by(o)
-            if g not in groups:
-                groups[g] = []
-                group_order.append(g)
-            groups[g].append(i)  # store 0-based indices
-
-    # --------- State -----------
-    mode = "group" if (group_by is not None) else "item"
-    current_group: Optional[str] = None
+    # ---- setup ----
+    labels: List[str] = [getattr(o, "label", str(o)) for o in options]
+    N = len(labels)
     page = 1
-    group_page = 1
-    current_filter: Optional[Tuple[str, str]] = None  # ('substr'| 'neg' | 'regex', pattern)
+    filt: Optional[Tuple[str, str]] = None  # ('substr'|'neg'|'regex', pattern)
 
-    # --------- Helpers -----------
-    def _term_width() -> int:
-        try:
-            return shutil.get_terminal_size().columns
-        except Exception:
-            return 80
+    # color toggles
+    use_color = use_color and sys.stdout.isatty() and ("NO_COLOR" not in os.environ)
+    BOLD = "\x1b[1m" if use_color else ""
+    DIM = "\x1b[2m" if use_color else ""
+    CYAN = "\x1b[36m" if use_color else ""
+    YELL = "\x1b[33m" if use_color else ""
+    RESET = "\x1b[0m" if use_color else ""
 
-    def _apply_filter_to_names(names: List[str], names_lc: List[str]) -> List[int]:
-        if current_filter is None:
-            return list(range(len(names)))
-        ftype, patt = current_filter
-        if ftype == "substr":
-            q = patt.lower()
-            return [i for i, s in enumerate(names_lc) if q in s]
-        if ftype == "neg":
-            q = patt.lower()
-            return [i for i, s in enumerate(names_lc) if q not in s]
-        if ftype == "regex":
-            try:
-                rx = re.compile(patt, flags=re.IGNORECASE)
-            except re.error:
-                # keep previous filter if regex invalid; show nothing to force correction
-                return []
-            return [i for i, s in enumerate(names) if rx.search(s)]
-        return list(range(len(names)))
+    def term_width() -> int:
+        try: return shutil.get_terminal_size().columns
+        except: return 80
 
-    def _filtered_item_indices() -> List[int]:
-        # start from all or a group
-        base_idx: List[int]
-        if current_group is None:
-            base_idx = list(range(N))
-        else:
-            base_idx = groups.get(current_group, [])
+    def apply_filter(idx: List[int]) -> List[int]:
+        if filt is None: return idx
+        kind, patt = filt
+        if kind == "substr":
+            p = patt.lower()
+            return [i for i in idx if p in labels[i].lower()]
+        if kind == "neg":
+            p = patt.lower()
+            return [i for i in idx if p not in labels[i].lower()]
+        # regex
+        rx = re.compile(patt, re.I)
+        return [i for i in idx if rx.search(labels[i])]
 
-        # build name arrays for those
-        sub_names = [labels[i] for i in base_idx]
-        sub_names_lc = [labels_lc[i] for i in base_idx]
+    def page_slice(total: int, p: int) -> slice:
+        pmax = max(1, math.ceil(total / page_size))
+        if p > pmax: p = pmax
+        if p < 1: p = 1
+        a = (p - 1) * page_size
+        b = min(a + page_size, total)
+        return slice(a, b)
 
-        keep_rel = _apply_filter_to_names(sub_names, sub_names_lc)
-        return [base_idx[k] for k in keep_rel]
+    def ellipsize(s: str) -> str:
+        return s if len(s) <= max_label else s[:max_label - 1] + "…"
 
-    def _filtered_group_names() -> List[str]:
-        if group_by is None:
-            return []
-        group_names = group_order
-        group_names_lc = [g.lower() for g in group_names]
-        keep = _apply_filter_to_names(group_names, group_names_lc)
-        return [group_names[k] for k in keep]
+    def hl(s: str) -> str:
+        if not use_color or filt is None: return s
+        kind, patt = filt
+        if kind != "substr" or not patt: return s
+        rx = re.compile(re.escape(patt), re.I)
+        return rx.sub(lambda m: f"{YELL}{m.group(0)}{RESET}", s)
 
-    def _page_slices(total: int, page_num: int, psize: int) -> slice:
-        page_max = max(1, math.ceil(total / psize))
-        p = max(1, min(page_num, page_max))
-        start = (p - 1) * psize
-        end = min(start + psize, total)
-        return slice(start, end)
+    def grid_print(visible_ids: List[int]) -> None:
+        width = max(40, term_width())
+        names = [labels[i] for i in visible_ids]
+        col_w = 6 + max_label + 2     # "[####] " + label + gap
+        cols = max(min_cols, min(max_cols, max(1, width // col_w)))
+        cells = [f"[{CYAN}{i+1:4d}{RESET}] {hl(ellipsize(s))}" for i, s in zip(visible_ids, names)]
+        while len(cells) % cols: cells.append("")
+        rows = [cells[k:k+cols] for k in range(0, len(cells), cols)]
+        print(f"\n{BOLD}{label}{RESET} ({len(all_idx)} total):")
+        print("─" * min(64, width))
+        for r in rows:
+            print("  ".join(x.ljust(col_w - 2) for x in r))
 
-    def _grid_columns(current_rows: List[str]) -> int:
-        if not prefer_grid:
-            return 1
-        width = max(40, _term_width())
-        # conservative col width: ID “[####] ” + up to 28 chars + gap
-        # but adapt to longest visible label up to 32 chars
-        max_label = min(32, max((len(s) for s in current_rows), default=10))
-        col_w = 6 + max_label + 2
-        cols = max(grid_min_cols, min(grid_max_cols, max(1, width // col_w)))
-        return cols
-
-    def _ellipsize(s: str, maxlen: int) -> str:
-        return s if len(s) <= maxlen else (s[: max(0, maxlen - 1)] + "…")
-
-    def _id_of_index(idx0: int) -> int:
-        return idx0 + 1
-
-    def _index_of_id(id1: int) -> Optional[int]:
-        # validate stable ID in range
-        if 1 <= id1 <= N:
-            return id1 - 1
-        return None
-
-    def _status_line(total: int, shown_start: int, shown_end: int) -> str:
-        f = ""
-        if current_filter is not None:
-            t, p = current_filter
-            if t == "substr":
-                f = f' filter="/{p}"'
-            elif t == "neg":
-                f = f' filter="!{p}"'
-            elif t == "regex":
-                f = f' filter="//{p}"'
-        g = f' group="{current_group}"' if current_group else ""
-        return f"Showing {shown_start}–{shown_end} of {total}{g}{f}"
-
-    # --------- Renderers -----------
-    def _render_items(indices: List[int], page_num: int):
-        # Prepare rows
-        rows = [labels[i] for i in indices]
-        total = len(rows)
-        if total == 0:
-            msg = "No matches."
-            if _RICH:
-                _console.print(Panel(Text(msg, style="bold red"), title=f"{label}", expand=False))
-            else:
-                print(f"\n{label}: {msg}")
-            return
-
-        sl = _page_slices(total, page_num, page_size)
-        view = rows[sl]
-        view_idx = indices[sl]
-        start = sl.start + 1
-        end = sl.stop
-
-        # Decide grid
-        cols = _grid_columns(view)
-        if cols <= 1:
-            # Single column
-            if _RICH:
-                table = Table(title=Text(f"{label}", style="bold"), show_lines=False)
-                table.add_column("ID", justify="right", no_wrap=True, style="cyan")
-                table.add_column("Label", overflow="fold")
-                for idx0, name in zip(view_idx, view):
-                    table.add_row(str(_id_of_index(idx0)), name)
-                _console.print(table)
-                _console.print(Text(_status_line(total, start, end), style="dim"))
-            else:
-                print(f"\n{label} ({total} total):")
-                print("-" * 64)
-                for idx0, name in zip(view_idx, view):
-                    print(f"[{_id_of_index(idx0):4d}] {name}")
-                print(_status_line(total, start, end))
-        else:
-            # Grid layout
-            # Compute per-cell label width
-            max_label = min(32, max(len(s) for s in view))
-            cell_label_w = max_label
-            entries = [f"[{_id_of_index(i):4d}] {_ellipsize(n, cell_label_w)}" for i, n in zip(view_idx, view)]
-            # Pad to full rows
-            while len(entries) % cols != 0:
-                entries.append("")
-            rows_of_cols = [entries[i:i+cols] for i in range(0, len(entries), cols)]
-
-            if _RICH:
-                table = Table(title=Text(f"{label}", style="bold"), show_lines=False, pad_edge=False)
-                for c in range(cols):
-                    table.add_column(justify="left", overflow="fold")
-                for r in rows_of_cols:
-                    table.add_row(*r)
-                _console.print(table)
-                _console.print(Text(_status_line(total, start, end), style="dim"))
-            else:
-                print(f"\n{label} ({total} total):")
-                print("-" * 64)
-                for r in rows_of_cols:
-                    print("   ".join(x.ljust(cell_label_w + 7) for x in r))
-                print(_status_line(total, start, end))
-
-        # Controls line
-        if _RICH:
-            controls = "[n]ext [p]rev [g <page>] [/text] [!text] [//regex] [id <N>] [clear]"
-            if group_by is not None:
-                controls += " [groups]"
-            if allow_back:
-                controls += " [b]"
-            controls += " [q]"
-            _console.print(Text(controls, style="italic dim"))
-        else:
-            controls = "Commands: n, p, g <page>, /text, !text, //regex, id <N>, clear"
-            if group_by is not None:
-                controls += ", groups"
-            if allow_back:
-                controls += ", b"
-            controls += ", q"
-            print(controls)
-
-    def _render_groups(group_names: List[str], page_num: int):
-        total = len(group_names)
-        if total == 0:
-            msg = "No groups match."
-            if _RICH:
-                _console.print(Panel(Text(msg, style="bold red"), title=f"{label} groups", expand=False))
-            else:
-                print(f"\n{label} groups: {msg}")
-            return
-
-        # stable group IDs: 1..len(group_order) regardless of filter
-        # we need to map visible names to their stable group IDs
-        name_to_gid = {name: i + 1 for i, name in enumerate(group_order)}
-        sl = _page_slices(total, page_num, page_size)
-        view = group_names[sl]
-        start = sl.start + 1
-        end = sl.stop
-
-        if _RICH:
-            table = Table(title=Text(f"{label} groups", style="bold"))
-            table.add_column("GrpID", justify="right", style="magenta")
-            table.add_column("Group")
-            table.add_column("Count", justify="right", style="cyan")
-            for name in view:
-                gid = name_to_gid[name]
-                cnt = len(groups[name])
-                table.add_row(str(gid), name, str(cnt))
-            _console.print(table)
-            _console.print(Text(_status_line(total, start, end), style="dim"))
-            _console.print(Text("Commands: n, p, g <page>, /text, !text, //regex, id <GrpID>, clear, b, q", style="italic dim"))
-        else:
-            print(f"\n{label} groups ({total} total):")
-            print("-" * 64)
-            for name in view:
-                gid = name_to_gid[name]
-                cnt = len(groups[name])
-                print(f"[{gid:4d}] {name} ({cnt})")
-            print(_status_line(total, start, end))
-            print("Commands: n, p, g <page>, /text, !text, //regex, id <GrpID>, clear, b, q")
-
-    # --------- Main loop -----------
+    # ---- loop ----
+    all_idx = list(range(N))
     while True:
-        if mode == "group":
-            # Show groups
-            gnames = _filtered_group_names()
-            _render_groups(gnames, group_page)
-            resp = input("> ").strip()
-            if not resp:
-                continue
-            low = resp.lower()
+        kept = apply_filter(all_idx)
+        sl = page_slice(len(kept), page)
+        view = kept[sl]
+        start, end = sl.start + 1, sl.stop
+        grid_print(view)
 
-            if low in ("q", "quit", "exit"):
-                return None
-            if low in ("b", "back"):
-                # leave group mode without changing current_group
-                mode = "item"
-                continue
-            if low.startswith("n"):
-                group_page += 1
-                continue
-            if low.startswith("p"):
-                group_page = max(1, group_page - 1)
-                continue
-            if low.startswith("g "):
-                parts = low.split()
-                if len(parts) == 2 and parts[1].isdigit():
-                    group_page = max(1, int(parts[1]))
-                continue
-            if low.startswith("id "):
-                parts = low.split()
-                if len(parts) == 2 and parts[1].isdigit():
-                    gid = int(parts[1])
-                    if 1 <= gid <= len(group_order):
-                        # select this group
-                        current_group = group_order[gid - 1]
-                        mode = "item"
-                        page = 1
-                continue
-            if low == "clear":
-                current_filter = None
-                continue
-            if low.startswith("//"):
-                patt = resp[2:].strip()
-                current_filter = ("regex", patt) if patt else None
-                group_page = 1
-                continue
-            if low.startswith("!"):
-                patt = resp[1:].strip()
-                current_filter = ("neg", patt) if patt else None
-                group_page = 1
-                continue
-            if low.startswith("/"):
-                patt = resp[1:].strip()
-                current_filter = ("substr", patt) if patt else None
-                group_page = 1
-                continue
-            # default: treat as substring filter
-            current_filter = ("substr", resp)
-            group_page = 1
-            continue
+        ftxt = ""
+        if filt:
+            kind, patt = filt
+            ftxt = f' {DIM}filter="/{patt}"{RESET}' if kind == "substr" else (
+                   f' {DIM}filter="!{patt}"{RESET}' if kind == "neg" else
+                   f' {DIM}filter="//{patt}"{RESET}')
+        if end < len(kept):
+            print(f"{DIM}Showing {start}–{end} of {len(kept)}{ftxt}{RESET}")
+            controls = f"{DIM}n, p, g <page>, /text, !text, //regex, id <N> (or just N), clear"
+            if allow_back: controls += ", b"
+        else:
+            controls = f"{DIM}/text, !text, //regex, id <N> (or just N), clear"
+        controls += ", q" + RESET
+        print(controls)
 
-        # mode == "item"
-        items = _filtered_item_indices()
-        _render_items(items, page)
+        inp = input("> ").strip()
+        if not inp: continue
+        low = inp.lower()
 
-        resp = input("> ").strip()
-        if not resp:
-            continue
-        low = resp.lower()
-
-        if low in ("q", "quit", "exit"):
-            return None
-        if allow_back and low in ("b", "back"):
-            return -1
-        if low.startswith("n"):
-            page += 1
-            continue
-        if low.startswith("p"):
-            page = max(1, page - 1)
-            continue
+        if low in ("q", "quit", "exit"): return None
+        if allow_back and low in ("b", "back"): return -1
+        if low == "n": page += 1; continue
+        if low == "p": page -= 1; continue
         if low.startswith("g "):
             parts = low.split()
-            if len(parts) == 2 and parts[1].isdigit():
-                page = max(1, int(parts[1]))
+            if len(parts) == 2 and parts[1].isdigit(): page = int(parts[1])
             continue
-        if low == "groups" and group_by is not None:
-            mode = "group"
-            group_page = 1
-            continue
-        if low == "all":
-            current_group = None
-            page = 1
-            continue
+        if low == "clear": filt = None; page = 1; continue
+        if low.startswith("//"): patt = inp[2:].strip(); filt = ("regex", patt) if patt else None; page = 1; continue
+        if low.startswith("!"):  patt = inp[1:].strip();  filt = ("neg", patt)   if patt else None; page = 1; continue
+        if low.startswith("/"):  patt = inp[1:].strip();  filt = ("substr", patt)if patt else None; page = 1; continue
         if low.startswith("id "):
             parts = low.split()
             if len(parts) == 2 and parts[1].isdigit():
-                sel_id = int(parts[1])
-                idx0 = _index_of_id(sel_id)
-                if idx0 is not None:
-                    return idx0
+                k = int(parts[1])
+                if 1 <= k <= N: return k - 1
             continue
-        if low == "clear":
-            current_filter = None
-            page = 1
-            continue
-        if low.startswith("//"):
-            patt = resp[2:].strip()
-            current_filter = ("regex", patt) if patt else None
-            page = 1
-            continue
-        if low.startswith("!"):
-            patt = resp[1:].strip()
-            current_filter = ("neg", patt) if patt else None
-            page = 1
-            continue
-        if low.startswith("/"):
-            patt = resp[1:].strip()
-            current_filter = ("substr", patt) if patt else None
-            page = 1
-            continue
-        # If purely digits, interpret as stable ID selection for convenience
-        if resp.isdigit():
-            sel_id = int(resp)
-            idx0 = _index_of_id(sel_id)
-            if idx0 is not None:
-                return idx0
-            # fall through to set as filter if out-of-range? No. Just ignore invalid.
+        if inp.isdigit():
+            k = int(inp)
+            if 1 <= k <= N: return k - 1
             continue
 
-        # default: treat input as substring filter
-        current_filter = ("substr", resp)
-        page = 1
-
+        # default: substring filter
+        filt = ("substr", inp); page = 1
 
 
 

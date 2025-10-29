@@ -392,8 +392,13 @@ def plot_sed(
     flux: np.ndarray,
     filters: Dict[str, FilterCurve] | None = None,
     out_path: str | None = None,
+    *,
+    xlim: tuple[float, float] | None = None,   # manual override
+    clip: str = "auto",                        # "auto" | "flux" | "filters" | "none"
+    rel_cutoff: float = 1e-4,                  # keep λ where flux > rel_cutoff * peak
+    margin_frac: float = 0.03,                 # pad the chosen window by this fraction
 ) -> None:
-    """Plot the interpolated SED and optional filter curves."""
+    """Plot the interpolated SED and optional filter curves, with sane x-limits."""
 
     if plt is None:
         raise ImportError("matplotlib is required for plotting SEDs")
@@ -401,16 +406,43 @@ def plot_sed(
     plt.figure(figsize=(10, 6))
     plt.plot(wavelength, flux, label="Interpolated SED", color="C0")
 
+    peak = np.nanmax(flux) if flux.size else 1.0
+
     if filters:
-        peak = np.max(flux) if flux.size else 1.0
         for name, curve in filters.items():
             if curve.transmission.size == 0:
                 continue
             scale = np.max(curve.transmission)
-            scaled = (
-                curve.transmission / scale * peak if scale and scale > 0 else curve.transmission
-            )
+            scaled = curve.transmission / scale * peak if scale and scale > 0 else curve.transmission
             plt.plot(curve.wavelength, scaled, label=f"Filter {name}")
+
+    # ---- x-limit logic ----
+    if xlim is None and clip != "none":
+        candidates: list[tuple[float, float]] = []
+
+        if clip in ("auto", "flux") and flux.size:
+            mask = np.isfinite(flux) & (flux > rel_cutoff * peak)
+            if np.any(mask):
+                wl_lo = np.nanmin(wavelength[mask])
+                wl_hi = np.nanmax(wavelength[mask])
+                candidates.append((wl_lo, wl_hi))
+
+        if clip in ("auto", "filters") and filters:
+            f_los = [np.min(fc.wavelength) for fc in filters.values() if fc.wavelength.size]
+            f_his = [np.max(fc.wavelength) for fc in filters.values() if fc.wavelength.size]
+            if f_los and f_his:
+                candidates.append((min(f_los), max(f_his)))
+
+        if candidates:
+            lo = min(c[0] for c in candidates)
+            hi = max(c[1] for c in candidates)
+            span = hi - lo if hi > lo else 1.0
+            lo -= span * margin_frac
+            hi += span * margin_frac
+            plt.xlim(lo, hi)
+
+    if xlim is not None:
+        plt.xlim(*xlim)
 
     plt.xlabel("Wavelength")
     plt.ylabel("Flux")
