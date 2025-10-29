@@ -46,6 +46,11 @@ Thumbs.db
 *.txz
 *.h5?*
 /data/
+SED_tools/data/
+*.dat
+*.csv
+*/*data*/
+*/data/**
 *.bin
 *.h5
 *.fits
