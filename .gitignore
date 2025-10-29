@@ -1,8 +1,8 @@
-# Bytecode
+# Python bytecode
 __pycache__/
 *.py[cod]
 
-# Virtualenvs
+# Virtual environments
 .env/
 .venv/
 env/
@@ -12,46 +12,33 @@ venv/
 *.egg-info/
 dist/
 build/
-
-# Editable install leftovers
 *.egg
 *.manifest
 *.spec
 
-# Jupyter/IPython
+# Notebook checkpoints
 .ipynb_checkpoints/
 
-# System
+# Operating system clutter
 .DS_Store
 Thumbs.db
 
-# Logs
+# Logs and caches
 *.log
-
-# Pytest
 .cache/
-
-# MyPy
 .mypy_cache/
 
-# VSCode (only if you use it)
+# IDE settings
 .vscode/
-
-# PyCharm (only if you use it)
 .idea/
-/data/
-*.bin
-*.h5
-*.fits
-*.txz
-*.h5?*
+
+# Generated data products
 /data/
 SED_tools/data/
-*.dat
-*.csv
-*/*data*/
 */data/**
 *.bin
 *.h5
 *.fits
 *.txz
+*.dat
+*.csv

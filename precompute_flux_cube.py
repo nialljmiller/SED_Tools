@@ -7,7 +7,7 @@ import numpy as np
 from tqdm import tqdm
 
 
-def load_sed(filepath, index):
+def load_sed(filepath):
     """Load a spectral energy distribution file."""
     wavelengths = []
     fluxes = []
@@ -134,7 +134,7 @@ def populate_flux_cube(
             print(f"Warning: Invalid indices for {file_name}, skipping...")
             continue
 
-        file_wavelengths, file_fluxes = load_sed(file_path, i)
+        file_wavelengths, file_fluxes = load_sed(file_path)
 
         # Interpolate fluxes to match common wavelengths
         try:
@@ -160,7 +160,7 @@ def compute_common_wavelengths(model_dir, file_names, sample=10_000):
         file_path = os.path.join(model_dir, file_name)
         if not os.path.exists(file_path):
             continue
-        w, _ = load_sed(file_path, i)
+        w, _ = load_sed(file_path)
         if w.size:
             wl.append(w)
     if not wl:
