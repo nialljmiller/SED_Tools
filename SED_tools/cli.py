@@ -468,7 +468,7 @@ def _prompt_choice(
     label: str,
     allow_back: bool = False,
     page_size: int = 100,
-    max_label: int = 32,
+    max_label: int = -1,
     min_cols: int = 1,
     max_cols: int = 3,
     use_color: bool = True,
@@ -485,6 +485,11 @@ def _prompt_choice(
         print(f"No {label} options available.")
         return None
 
+
+    if max_label < 0:
+        max_label = max(len(getattr(x, "label", str(x))) for x in options) + 4
+
+
     # ---- setup ----
     labels: List[str] = [getattr(o, "label", str(o)) for o in options]
     N = len(labels)
@@ -497,6 +502,12 @@ def _prompt_choice(
     DIM = "\x1b[2m" if use_color else ""
     CYAN = "\x1b[36m" if use_color else ""
     YELL = "\x1b[33m" if use_color else ""
+    RED = "\x1b[31m" if use_color else ""
+    GREEN = "\x1b[32m" if use_color else ""
+    YELLOW = "\x1b[33m" if use_color else ""
+    BLUE = "\x1b[34m" if use_color else ""
+    MAGENTA = "\x1b[35m" if use_color else ""
+    WHITE = "\x1b[37m" if use_color else ""
     RESET = "\x1b[0m" if use_color else ""
 
     def term_width() -> int:
@@ -535,15 +546,15 @@ def _prompt_choice(
         return rx.sub(lambda m: f"{YELL}{m.group(0)}{RESET}", s)
 
     def grid_print(visible_ids: List[int]) -> None:
-        width = max(40, term_width())
+        width = max(80, term_width())
         names = [labels[i] for i in visible_ids]
         col_w = 6 + max_label + 2     # "[####] " + label + gap
         cols = max(min_cols, min(max_cols, max(1, width // col_w)))
-        cells = [f"[{CYAN}{i+1:4d}{RESET}] {hl(ellipsize(s))}" for i, s in zip(visible_ids, names)]
+        cells = [f"[{GREEN}{i+1:4d}{RESET}] {hl(ellipsize(s))}" for i, s in zip(visible_ids, names)]
         while len(cells) % cols: cells.append("")
         rows = [cells[k:k+cols] for k in range(0, len(cells), cols)]
-        print(f"\n{BOLD}{label}{RESET} ({len(all_idx)} total):")
-        print("─" * min(64, width))
+        print(f"\n{BOLD}{label}{RESET} ({CYAN}{len(all_idx)}{RESET} total):")
+        print("─" * min(80, width))
         for r in rows:
             print("  ".join(x.ljust(col_w - 2) for x in r))
 

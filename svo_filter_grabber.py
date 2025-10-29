@@ -159,7 +159,8 @@ class SVOFilterBrowser:
         if not filters:
             print("No filters to download.")
             return
-
+        touched_dirs = {}  # out_dir -> instrument filename
+        
         for idx, row in enumerate(filters, 1):
             print(f"  [{idx:3d}/{len(filters):3d}] {row.filter_id}")
             facility_dir = _clean_path(row.facility or "UnknownFacility")
@@ -170,6 +171,8 @@ class SVOFilterBrowser:
             out_dir = os.path.join(self.base_dir, facility_dir, instrument_dir)
             os.makedirs(out_dir, exist_ok=True)
             out_path = os.path.join(out_dir, f"{band_name}.dat")
+            touched_dirs[out_dir] = instrument_dir
+
             try:
                 table = SvoFps.get_transmission_data(row.filter_id)
                 if table is None or len(table) == 0:
@@ -179,6 +182,20 @@ class SVOFilterBrowser:
                 print(f"    [saved] {out_path}")
             except Exception as exc:  # pragma: no cover - network issues
                 print(f"    [error] Failed to download {row.filter_id}: {exc}")
+
+        # -------------------- final index files --------------------
+        for out_dir, instrument_dir in touched_dirs.items():
+            index_path = os.path.join(out_dir, instrument_dir)  # e.g., .../Generic/Johnson/Johnson
+            # list all .dat files in the folder (names only), sorted; exclude the index file itself if it ends with .dat (it won't)
+            dat_files = sorted(
+                f for f in os.listdir(out_dir)
+                if os.path.isfile(os.path.join(out_dir, f)) and f.endswith(".dat")
+            )
+            with open(index_path, "w", encoding="utf-8") as fh:
+                fh.write("\n".join(dat_files) + ("\n" if dat_files else ""))
+
+
+
 
     # -------------------- HTTP helpers --------------------
     def _fetch_index(self, params: Dict[str, str]) -> BeautifulSoup:
@@ -236,7 +253,9 @@ def run_interactive(base_dir: str = DEFAULT_BASE_DIR) -> None:
         return
 
     while True:
-        fac_idx = _prompt_choice(facilities, "facilities")
+        
+        fac_idx = _prompt_choice(facilities, "Facilities")
+
         if fac_idx is None:
             print("Exiting.")
             return
@@ -248,7 +267,7 @@ def run_interactive(base_dir: str = DEFAULT_BASE_DIR) -> None:
             continue
 
         while True:
-            inst_idx = _prompt_choice(instruments, f"instruments for {facility.label}", allow_back=True)
+            inst_idx = _prompt_choice(instruments, f"Instruments for {facility.label}", allow_back=True)
             if inst_idx is None:
                 print("Exiting.")
                 return

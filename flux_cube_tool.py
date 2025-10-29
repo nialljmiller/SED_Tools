@@ -49,6 +49,9 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Sequence, Tuple
 
 FILTER_EXTENSIONS = {".dat", ".txt", ".csv"}
+
+PC_TO_M = 3.085677581e16
+RSUN_TO_M = 6.957e8
 SPEED_OF_LIGHT_ANG_PER_S = 2.99792458e18  # speed of light in Angstrom/s
 AB_ZERO_FLUX = 3.631e-20  # 3631 Jy expressed in erg s^-1 cm^-2 Hz^-1
 UNIT_TO_ANGSTROM: Dict[str, float] = {
@@ -387,6 +390,25 @@ def band_average_flux_nu(
     return float(numerator / denom)
 
 
+def prompt_scale_choice() -> bool:
+    resp = input("\nScale flux for distance (apparent magnitudes)? [y/N]: ").strip().lower()
+    return resp in ("y", "yes")
+
+def prompt_distance_m() -> float:
+    val = input("Enter distance (append unit 'pc' or 'm', e.g. '10 pc' or '3.1e17 m'): ").strip()
+    parts = val.split()
+    d = float(parts[0])
+    unit = parts[1].lower() if len(parts) > 1 else "pc"
+    return d * PC_TO_M if unit == "pc" else d
+
+def prompt_radius_m() -> float:
+    val = input("Enter stellar radius (append unit 'Rsun' or 'm', e.g. '1 Rsun' or '7e8 m'): ").strip()
+    parts = val.split()
+    r = float(parts[0])
+    unit = parts[1].lower() if len(parts) > 1 else "Rsun"
+    return r * RSUN_TO_M if unit in ("rsun", "r☉", "r_sun") else r
+
+
 def plot_sed(
     wavelength: np.ndarray,
     flux: np.ndarray,
@@ -456,6 +478,7 @@ def plot_sed(
     else:
         plt.show()
     plt.close()
+
 
 
 def ensure_dir(path: str) -> None:
@@ -945,12 +968,21 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     wl, flux = cube.interpolate_spectrum(teff, logg, metallicity)
 
+    # >>> NEW: optional apparent-flux scaling <<<
+    if prompt_scale_choice():
+        d_m = prompt_distance_m()
+        r_m = prompt_radius_m()
+        scale = (r_m / d_m) ** 2
+        flux = flux * scale
+        print(f"[scaling] Applied geometric dilution: (R/d)^2 = {scale:.3e}")
+
+    # Existing code below uses the scaled flux automatically
     fbol, mbol = bolometric_magnitude(
-        wl,
-        flux,
+        wl, flux,
         reference_flux=args.bolometric_reference_flux,
         reference_magnitude=args.bolometric_reference_mag,
     )
+
 
     print(f"Interpolated SED at Teff={teff}, logg={logg}, [M/H]={metallicity}")
     print(f"Bolometric flux: {fbol:.6e}")
