@@ -41,6 +41,7 @@ from .models import (
     EvaluatedSED,
     PhotometryResult,
     ModelMatch,
+    DATA_DIR_DEFAULT,
     STELLAR_DIR_DEFAULT,
     FILTER_DIR_DEFAULT,
 )
@@ -414,6 +415,7 @@ __all__ = [
     "EvaluatedSED",
     "PhotometryResult",
     "ModelMatch",
+    "DATA_DIR_DEFAULT",
     "STELLAR_DIR_DEFAULT",
     "FILTER_DIR_DEFAULT",
     "find_atmospheres",

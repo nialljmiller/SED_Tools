@@ -36,11 +36,7 @@ from .mast_spectra_grabber import MASTSpectraGrabber
 import h5py
 import numpy as np
 from .spectra_cleaner import clean_model_dir
-
-
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
-STELLAR_DIR_DEFAULT = os.path.normpath(os.path.join(BASE_DIR, "data", "stellar_models"))
-FILTER_DIR_DEFAULT = os.path.normpath(os.path.join(BASE_DIR, "data", "filters"))
+from .models import STELLAR_DIR_DEFAULT, FILTER_DIR_DEFAULT
 
 # ------------ small utils ------------
 
