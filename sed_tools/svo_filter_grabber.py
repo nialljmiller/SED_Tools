@@ -13,7 +13,7 @@ import requests
 from bs4 import BeautifulSoup
 from astroquery.svo_fps import SvoFps
 
-from SED_tools.cli import _prompt_choice
+from . import _prompt_choice
 
 SvoFps.TIMEOUT = 300  # give SVO a generous timeout
 
