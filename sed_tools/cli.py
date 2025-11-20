@@ -28,18 +28,19 @@ import re
 from typing import List, Dict, Any, Tuple
 
 # local modules you already have
-from svo_spectra_grabber import SVOSpectraGrabber  # SVO spectra → .txt + lookup_table.csv
-from msg_spectra_grabber import MSGSpectraGrabber  # MSG (Townsend) .h5 → .txt + lookup_table.csv
-from precompute_flux_cube import precompute_flux_cube  # builds flux cube from lookup + .txt
-from svo_regen_spectra_lookup import parse_metadata, regenerate_lookup_table
-from mast_spectra_grabber import MASTSpectraGrabber
+from .svo_spectra_grabber import SVOSpectraGrabber  # SVO spectra → .txt + lookup_table.csv
+from .msg_spectra_grabber import MSGSpectraGrabber  # MSG (Townsend) .h5 → .txt + lookup_table.csv
+from .precompute_flux_cube import precompute_flux_cube  # builds flux cube from lookup + .txt
+from .svo_regen_spectra_lookup import parse_metadata, regenerate_lookup_table
+from .mast_spectra_grabber import MASTSpectraGrabber
 import h5py
 import numpy as np
-from spectra_cleaner import clean_model_dir
+from .spectra_cleaner import clean_model_dir
 
 
-STELLAR_DIR_DEFAULT = os.path.normpath(os.path.join(os.path.dirname(__file__), "data/stellar_models"))
-FILTER_DIR_DEFAULT  = os.path.normpath(os.path.join(os.path.dirname(__file__), "data/filters"))
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+STELLAR_DIR_DEFAULT = os.path.normpath(os.path.join(BASE_DIR, "data", "stellar_models"))
+FILTER_DIR_DEFAULT = os.path.normpath(os.path.join(BASE_DIR, "data", "filters"))
 
 # ------------ small utils ------------
 

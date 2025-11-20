@@ -20,17 +20,17 @@ REQUIRED = {
     "matplotlib":        "matplotlib>=3.7",
 }
 
-THIS_DIR = os.path.abspath(os.path.dirname(__file__))
+TOOLs_DIR = os.path.abspath(os.path.dirname(__file__)) + '/sed_tools'
 
 TOOLS = {
-    "svo":        os.path.join(THIS_DIR, "svo_spectra_grabber.py"),
-    "msg":        os.path.join(THIS_DIR, "msg_spectra_grabber.py"),
-    "filters":    os.path.join(THIS_DIR, "svo_filter_grabber.py"),
-    "regen":      os.path.join(THIS_DIR, "svo_regen_spectra_lookup.py"),
-    "flux":       os.path.join(THIS_DIR, "precompute_flux_cube.py"),
-    "lookfilter": os.path.join(THIS_DIR, "svo_spectra_filter.py"),
-    "fluxcube":   os.path.join(THIS_DIR, "flux_cube_tool.py"),
-    "flux-tool":  os.path.join(THIS_DIR, "flux_cube_tool.py"),
+    "svo":        os.path.join(TOOLs_DIR, "svo_spectra_grabber.py"),
+    "msg":        os.path.join(TOOLs_DIR, "msg_spectra_grabber.py"),
+    "filters":    os.path.join(TOOLs_DIR, "svo_filter_grabber.py"),
+    "regen":      os.path.join(TOOLs_DIR, "svo_regen_spectra_lookup.py"),
+    "flux":       os.path.join(TOOLs_DIR, "precompute_flux_cube.py"),
+    "lookfilter": os.path.join(TOOLs_DIR, "svo_spectra_filter.py"),
+    "fluxcube":   os.path.join(TOOLs_DIR, "flux_cube_tool.py"),
+    "flux-tool":  os.path.join(TOOLs_DIR, "flux_cube_tool.py"),
 }
 
 def in_venv() -> bool:
@@ -125,7 +125,7 @@ def run_tool(tool_key: str, extra_args=None):
 def main():
     ensure_deps()
 
-    from SED_tools import menu, run_filters_flow, run_rebuild_flow, run_spectra_flow, STELLAR_DIR_DEFAULT, FILTER_DIR_DEFAULT
+    from sed_tools import menu, run_filters_flow, run_rebuild_flow, run_spectra_flow, STELLAR_DIR_DEFAULT, FILTER_DIR_DEFAULT
 
     argv = sys.argv[1:]
     if argv:

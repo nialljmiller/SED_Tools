@@ -12,7 +12,7 @@ from __future__ import annotations
 from typing import Any
 
 try:  # pragma: no cover - import error path depends on user environment
-    from flux_cube_tool import (  # type: ignore
+    from .flux_cube_tool import (  # type: ignore
         AB_ZERO_FLUX,
         FILTER_EXTENSIONS,
         FilterCurve,
