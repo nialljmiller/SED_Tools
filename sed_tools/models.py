@@ -27,11 +27,14 @@ Number = Union[int, float, np.floating]
 FilterSpec = Union[str, os.PathLike[str], FilterCurve, Tuple[str, Union[str, os.PathLike[str]]]]
 
 PACKAGE_ROOT = Path(__file__).resolve().parent
+DATA_DIR_DEFAULT = Path(
+    os.environ.get("SED_DATA_DIR", PACKAGE_ROOT.parent / "data")
+).expanduser()
 STELLAR_DIR_DEFAULT = Path(
-    os.environ.get("SED_STELLAR_DIR", PACKAGE_ROOT / "data" / "stellar_models")
+    os.environ.get("SED_STELLAR_DIR", DATA_DIR_DEFAULT / "stellar_models")
 ).expanduser()
 FILTER_DIR_DEFAULT = Path(
-    os.environ.get("SED_FILTER_DIR", PACKAGE_ROOT / "data" / "filters")
+    os.environ.get("SED_FILTER_DIR", DATA_DIR_DEFAULT / "filters")
 ).expanduser()
 
 
