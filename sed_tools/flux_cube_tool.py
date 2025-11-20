@@ -19,11 +19,8 @@ The binary format that :func:`precompute_flux_cube` writes is::
     float64[nl] logg_grid
     float64[nm] meta_grid
     float64[nw] wavelengths
-    float64[nw * nm * nl * nt] flux values stored with the trailing
-        dimensions ordered as (wavelength, metallicity, logg, teff)
-
-When loaded we restore the more natural shape
-``(nt, nl, nm, nw)``.
+    float64[nt * nl * nm * nw] flux values stored with the trailing
+        dimensions ordered as (teff, logg, metallicity, wavelength)
 
 Example usage from the command line::
 
@@ -248,8 +245,10 @@ class FluxCube:
         if leftover:
             print("Warning: trailing data detected in flux cube; ignoring extra bytes.")
 
-        # Restore original (nt, nl, nm, nw) ordering.
-        flux = flux_flat.reshape((nw, nm, nl, nt)).transpose(3, 2, 1, 0)
+        # Flux cubes are written in native C-order with shape
+        # (nt, nl, nm, nw), so a direct reshape recovers the original
+        # axis ordering used during generation.
+        flux = flux_flat.reshape((nt, nl, nm, nw))
 
         return cls(teff, logg, meta, wavelengths, flux)
 
