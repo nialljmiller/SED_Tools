@@ -35,7 +35,13 @@ Thumbs.db
 # Generated data products
 /data/
 SED_tools/data/
-*/data/**
+*/data/**i
+
+
+/plots/
+SED_tools/plots/
+*/plots/**
+
 *.bin
 *.h5
 *.fits
