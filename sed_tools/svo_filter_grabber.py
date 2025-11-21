@@ -15,8 +15,6 @@ from astroquery.svo_fps import SvoFps
 
 from . import _prompt_choice
 
-SvoFps.TIMEOUT = 300  # give SVO a generous timeout
-
 BASE_URL = "https://svo2.cab.inta-csic.es/theory/fps/"
 INDEX_URL = urllib.parse.urljoin(BASE_URL, "index.php")
 

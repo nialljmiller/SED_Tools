@@ -248,7 +248,6 @@ def _clean_one_file(path: str, try_h5_recovery: bool, make_backup: bool) -> tupl
             if wl2 is not None:
                 wl = wl2[:fl.size]
                 status = "recovered"
-                detail = "λ from HDF5"
             else:
                 return ("skipped", "index grid; no HDF5 λ found")
         else:

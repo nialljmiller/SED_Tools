@@ -90,7 +90,6 @@ class FilterCurve:
     wavelength: np.ndarray
     transmission: np.ndarray
     metadata: Dict[str, object]
-    wavelength_unit: str = "angstrom"
 
 
 @dataclass
@@ -98,7 +97,6 @@ class Spectrum:
     wavelength: np.ndarray
     flux: np.ndarray
     metadata: Dict[str, object]
-    wavelength_unit: str = "angstrom"
 
 
 def normalize_metadata_key(key: str) -> str:
@@ -151,7 +149,7 @@ def load_two_column_file(path: str) -> Tuple[List[float], List[float], Dict[str,
     metadata: Dict[str, object] = {}
 
     with open(path, "r", encoding="utf-8") as fh:
-        for line_no, raw_line in enumerate(fh, start=1):
+        for raw_line in fh:
             line = raw_line.strip()
             if not line:
                 continue
@@ -356,7 +354,7 @@ def load_filter_curve(path: str, name: str | None = None) -> FilterCurve:
     metadata["wavelength_unit_inferred"] = unit_key or "angstrom"
     metadata["wavelength_unit_resolved"] = "angstrom"
     curve_name = name or Path(path).stem
-    return FilterCurve(curve_name, wavelength, transmission, metadata, wavelength_unit="angstrom")
+    return FilterCurve(curve_name, wavelength, transmission, metadata)
 
 
 def band_average_flux_lambda_from_arrays(
@@ -767,7 +765,7 @@ def load_spectrum(path: str) -> Spectrum:
     flux = np.asarray(fluxes, dtype=float)[order]
     metadata["wavelength_unit_inferred"] = unit_key or "angstrom"
     metadata["wavelength_unit_resolved"] = "angstrom"
-    return Spectrum(wavelength, flux, metadata, wavelength_unit="angstrom")
+    return Spectrum(wavelength, flux, metadata)
 
 
 def discover_flux_cube_files(hints: Sequence[str | os.PathLike[str]] | None = None) -> List[Path]:

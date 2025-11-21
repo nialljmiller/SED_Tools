@@ -42,7 +42,6 @@ HEAD_RE = re.compile(
 )
 
 SCRIPT_URL_RE = re.compile(r'https?://\S+?\.txt(?:\.gz)?', re.IGNORECASE)
-MET_TAG_RE    = re.compile(r"/(m[+\-]\d\.\d{2})/", re.IGNORECASE)
 
 # ----------------- small utils -----------------
 def _safe_makedirs(path: str) -> None:

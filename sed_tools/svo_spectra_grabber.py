@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # svo_spectra_grabber.py — fast, bounded SVO discovery & downloader
 
-import csv, os, re, io, time, json, urllib.parse
+import csv, os, re, io, json, urllib.parse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import requests
 from bs4 import BeautifulSoup
