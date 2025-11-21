@@ -354,11 +354,11 @@ def menu() -> str:
     print("  1) Spectra (SVO / MSG / MAST)")
     print("  2) Filters (SVO)")
     print("  3) Rebuild (lookup + HDF5 + flux cube)")
-    print("  4) Flux cube inspector / photometry")
+    #print("  4) Flux cube inspector / photometry")
     print("  0) Quit")
     choice = input("> ").strip()
     mapping = {
-        "1": "spectra", "2": "filters", "3": "rebuild", "4": "fluxcube",
+        "1": "spectra", "2": "filters", "3": "rebuild", #"4": "fluxcube",
         "0": "quit"
     }
     return mapping.get(choice, "")

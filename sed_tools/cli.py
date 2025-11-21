@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 """
 SED_tools.py — one-stop launcher for spectra & filters
@@ -19,7 +20,6 @@ Defaults:
 
 Dependencies (already used in your codebase):
   requests, bs4, h5py, numpy, tqdm, pandas, astroquery, astropy
-"""
 
 import argparse
 import os
@@ -351,11 +351,11 @@ def menu() -> str:
     print("  1) Spectra (SVO / MSG / MAST)")
     print("  2) Filters (SVO)")
     print("  3) Rebuild (lookup + HDF5 + flux cube)")
-    print("  4) Flux cube inspector / photometry")
+    #print("  4) Flux cube inspector / photometry")    #remove for now
     print("  0) Quit")
     choice = input("> ").strip()
     mapping = {
-        "1": "spectra", "2": "filters", "3": "rebuild", "4": "fluxcube",
+        "1": "spectra", "2": "filters", "3": "rebuild",# "4": "fluxcube",
         "0": "quit"
     }
     return mapping.get(choice, "")
@@ -639,3 +639,4 @@ def _prompt_choice(
 
 if __name__ == "__main__":
     main()
+"""

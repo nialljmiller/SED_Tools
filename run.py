@@ -29,8 +29,7 @@ TOOLS = {
     "regen":      os.path.join(TOOLs_DIR, "svo_regen_spectra_lookup.py"),
     "flux":       os.path.join(TOOLs_DIR, "precompute_flux_cube.py"),
     "lookfilter": os.path.join(TOOLs_DIR, "svo_spectra_filter.py"),
-    "fluxcube":   os.path.join(TOOLs_DIR, "flux_cube_tool.py"),
-    "flux-tool":  os.path.join(TOOLs_DIR, "flux_cube_tool.py"),
+    #"fluxcube":   os.path.join(TOOLs_DIR, "flux_cube_tool.py"),
 }
 
 def in_venv() -> bool:
@@ -152,8 +151,8 @@ def main():
                              workers=5,
                              force_bundle_h5=True,
                              build_flux_cube=True)
-        elif choice == "fluxcube":
-            run_tool("fluxcube")
+        #elif choice == "fluxcube":
+        #    run_tool("fluxcube")
         else:
             exit()
 
