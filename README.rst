@@ -37,14 +37,15 @@ Select option **2** in the menu or run ``python run.py filters``.
 * Select Facility → Instrument → Filters.
 * Downloads transmission curves in the correct format.
 
-3. Build Data Cubes (Crucial)
+3. Build Data Cubes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Select option **3** in the menu or run ``python run.py rebuild``.
 
-* **This step is required for MESA.**
+* This step **Will** be completed automatically for any *new* download of a Stellar Atmosphere table.
+* **This step is required for MESA.** -- If you are having bugs in MESA this might be a good thing to try. 
 * Converts raw text spectra into binary ``flux_cube.bin`` files and HDF5 bundles.
-* MESA cannot read the raw text files; it requires these binaries.
+* MESA will be looking for these ``flux_cubes``. 
 
 4. Install into MESA
 ~~~~~~~~~~~~~~~~~~~~
