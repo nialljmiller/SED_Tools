@@ -39,3 +39,6 @@ include = ["sed_tools", "SED_tools"]
 
 [tool.setuptools]
 include-package-data = true
+
+[project.scripts]
+sed-tools = "sed_tools.cli:main"
