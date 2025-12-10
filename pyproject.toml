@@ -32,7 +32,7 @@ dependencies = [
 ]
 
 [project.urls]
-"Homepage" = "Homepage" = "https://github.com/nialljmiller/SED_Tools"
+"Homepage" = "https://github.com/nialljmiller/SED_Tools"
 
 [tool.setuptools.packages.find]
 include = ["sed_tools", "SED_tools"]
