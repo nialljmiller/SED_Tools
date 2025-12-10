@@ -6,14 +6,14 @@ build-backend = "setuptools.build_meta"
 name = "sed-tools"
 version = "0.1.0"
 description = "Programmatic access to SED Tools stellar atmosphere grids and photometry helpers."
-readme = "README.md"
+readme = "README.rst"
 authors = [{ name = "SED Tools Maintainers" }]
 requires-python = ">=3.9"
 keywords = ["astronomy", "spectra", "photometry", "sed"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
-    "License :: Other/Proprietary License",
+    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Topic :: Scientific/Engineering :: Astronomy",
@@ -32,7 +32,7 @@ dependencies = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/"
+"Homepage" = "Homepage" = "https://github.com/nialljmiller/SED_Tools"
 
 [tool.setuptools.packages.find]
 include = ["sed_tools", "SED_tools"]
