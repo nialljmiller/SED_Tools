@@ -1,6 +1,6 @@
 
 #!/usr/bin/env python3
-"""
+'''
 SED_tools.py — one-stop launcher for spectra & filters
 
 Pipeline per selected model:
@@ -20,12 +20,21 @@ Defaults:
 
 Dependencies (already used in your codebase):
   requests, bs4, h5py, numpy, tqdm, pandas, astroquery, astropy
+'''
 
 import argparse
 import os
 import sys
 import re
 from typing import List, Dict, Any, Tuple
+
+from typing import List, Tuple
+import os, glob
+# assumes in scope:
+# ensure_dir, STELLAR_DIR_DEFAULT
+# SVOSpectraGrabber, MSGSpectraGrabber, MASTSpectraGrabber
+# build_h5_bundle_from_txt, regenerate_lookup_table, precompute_flux_cube
+# and: from SED_tools.cli import _prompt_choice
 
 # local modules you already have
 from .svo_spectra_grabber import SVOSpectraGrabber  # SVO spectra → .txt + lookup_table.csv
@@ -234,14 +243,6 @@ def run_rebuild_flow(base_dir: str = STELLAR_DIR_DEFAULT,
                 print(f"[rebuild] flux cube failed: {e}")
 
     print("\nRebuild complete.")
-
-from typing import List, Tuple
-import os, glob
-# assumes in scope:
-# ensure_dir, STELLAR_DIR_DEFAULT
-# SVOSpectraGrabber, MSGSpectraGrabber, MASTSpectraGrabber
-# build_h5_bundle_from_txt, regenerate_lookup_table, precompute_flux_cube
-# and: from SED_tools.cli import _prompt_choice
 
 def _srcs(s: str) -> List[str]:
     s = s.lower()
@@ -639,4 +640,3 @@ def _prompt_choice(
 
 if __name__ == "__main__":
     main()
-"""
