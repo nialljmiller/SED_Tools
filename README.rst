@@ -5,49 +5,84 @@ Automated data preparation for the MESA ``colors`` module.
 
 This package downloads stellar atmospheres (SEDs) and photometric filter profiles, then processes them into the specific directory structure and binary formats (``.bin``, ``.h5``) required by MESA.
 
-Quick Start
------------
+Installation
+------------
 
-This tool is self-bootstrapping. It checks for dependencies (numpy, pandas, h5py, etc.) and installs them if missing.
+You can install the package directly from the source code:
 
 .. code-block:: bash
 
-    python run.py
+    pip install .
+
+Or, for development (editable mode):
+
+.. code-block:: bash
+
+    pip install -e .
+
+Quick Start
+-----------
+
+Once installed, you can run the interactive menu from anywhere in your terminal:
+
+.. code-block:: bash
+
+    sed-tools
+
+Alternatively, you can run it as a Python module:
+
+.. code-block:: bash
+
+    python -m sed_tools
+
+(For developers: a ``run.py`` wrapper script is also provided in the root directory if you prefer not to install the package).
 
 Workflow
 --------
 
 To prepare data for MESA, follow these steps sequentially:
 
-1. Download Stellar Atmospheres (Spectra)
+Download Stellar Atmospheres (Spectra)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Select option **1** in the menu or run ``python run.py spectra``.
+Select option **1** in the menu or run:
 
-* Supports **SVO**, **MSG** (Townsend), and **MAST** (BOSZ) repositories. (TODO: create unified hosting source)
+.. code-block:: bash
+
+    sed-tools spectra
+
+* Supports **SVO**, **MSG** (Townsend), and **MAST** (BOSZ) repositories.
 * Downloads raw spectra and metadata.
 * Automatically cleans data and creates the ``lookup_table.csv``.
 
-2. Download Filters
+Download Filters
 ~~~~~~~~~~~~~~~~~~~
 
-Select option **2** in the menu or run ``python run.py filters``.
+Select option **2** in the menu or run:
+
+.. code-block:: bash
+
+    sed-tools filters
 
 * Interactive browser for the **SVO Filter Profile Service**.
 * Select Facility → Instrument → Filters.
 * Downloads transmission curves in the correct format.
 
-3. Build Data Cubes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Build Data Cubes
+~~~~~~~~~~~~~~~~~~~
 
-Select option **3** in the menu or run ``python run.py rebuild``.
+Select option **3** in the menu or run:
+
+.. code-block:: bash
+
+    sed-tools rebuild
 
 * This step **Will** be completed automatically for any *new* download of a Stellar Atmosphere table.
-* **This step is required for MESA.** -- If you are having bugs in MESA this might be a good thing to try. 
+* **This step is required for MESA.**
 * Converts raw text spectra into binary ``flux_cube.bin`` files and HDF5 bundles.
-* MESA will be looking for these ``flux_cubes``. 
+* MESA will be looking for these ``flux_cubes``.
 
-4. Install into MESA
+Install into MESA
 ~~~~~~~~~~~~~~~~~~~~
 
 Once Step 3 is complete, your ``data/`` folder will mirror the structure MESA expects.
@@ -70,10 +105,10 @@ Link the generated data directly to your MESA directory to keep this repo as the
     ln -s /path/to/SED_Tools/data/stellar_models/MyModel $MESA_DIR/colors/data/stellar_models/MyModel
     ln -s /path/to/SED_Tools/data/filters/MyInstrument $MESA_DIR/colors/data/filters/MyInstrument
 
-5. Configure MESA Inlist
+Configure MESA Inlist
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Point your MESA project's ``inlist`` to the new data. (NB can also just point to the SED Tools repo from here)
+Point your MESA project's ``inlist`` to the new data.
 
 **For Spectra:**
 
