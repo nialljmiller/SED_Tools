@@ -137,9 +137,13 @@ def _prompt_choice(
     min_cols: int = 1,
     max_cols: int = 3,
     use_color: bool = True,
-) -> Optional[int]:
+    multi: bool = False,
+) -> Union[int, List[int], None]:
     """
     Plain-ASCII picker with stable IDs, paging, grid columns, and simple filters.
+    If multi=True, allows input like "1, 3-5" and returns a List[int] of indices.
+    Otherwise returns a single int.
+    Returns None for quit, -1 for back (if allowed).
     """
     if not options:
         print(f"No {label} options available.")
@@ -228,7 +232,13 @@ def _prompt_choice(
             print(f"{DIM}Showing {start}–{end} of {len(kept)}{ftxt}{RESET}")
             controls += "n, p, g <page>, "
         
-        controls += "/text, !text, //regex, id <N> (or just N), clear"
+        controls += "/text, !text, //regex, "
+        if multi:
+            controls += "list (1,3) or range (1-5), "
+        else:
+            controls += "id <N> (or just N), "
+
+        controls += "clear"
         if allow_back: controls += ", b"
         controls += ", q" + RESET
         print(controls)
@@ -255,11 +265,43 @@ def _prompt_choice(
                 k = int(parts[1])
                 if 1 <= k <= N: return k - 1
             continue
-        if inp.isdigit():
+
+        # --- Multi Selection Logic ---
+        if multi:
+            # Check if input looks like a numeric selection string (digits, comma, hyphen, space)
+            # This prevents treating search terms like "C3K" as a failed selection attempt
+            if re.match(r"^[\d\s,-]+$", inp):
+                try:
+                    selected_indices = []
+                    parts = inp.split(',')
+                    is_range = False
+                    for p in parts:
+                        p = p.strip()
+                        if not p: continue
+                        if '-' in p:
+                            is_range = True
+                            a, b = p.split('-', 1)
+                            # Handle cases like "1 - 5" or "1-5"
+                            a, b = int(a), int(b)
+                            selected_indices.extend(range(a, b + 1))
+                        else:
+                            selected_indices.append(int(p))
+                    
+                    # Deduplicate and validate
+                    valid = [x - 1 for x in sorted(list(set(selected_indices))) if 1 <= x <= N]
+                    if valid:
+                        return valid
+                except ValueError:
+                    # Parsing failed (e.g. malformed range), fall through to filter logic
+                    pass
+
+        # --- Single Selection Logic ---
+        if not multi and inp.isdigit():
             k = int(inp)
             if 1 <= k <= N: return k - 1
             continue
 
+        # Default to substring filter
         filt = ("substr", inp); page = 1
 
 
@@ -411,12 +453,20 @@ def run_spectra_flow(
                 chosen.append((src, name))
     else:
         opts = [_Opt(s, n) for s, n in discovered]
-        idx = _prompt_choice(opts, label="Spectral models", allow_back=True)
-        if idx is None or idx == -1:
+        # Allow multi-selection (returns List[int], -1 for back, or None)
+        idxs = _prompt_choice(opts, label="Spectral models", allow_back=True, multi=True)
+        
+        if idxs is None:  # quit
+            return
+        if idxs == -1:    # back
             print("No model selected.")
             return
-        sel = opts[idx]
-        chosen = [(sel.src, sel.name)]
+            
+        # Ensure it is iterable (list)
+        if isinstance(idxs, int):
+            idxs = [idxs]
+
+        chosen = [(opts[i].src, opts[i].name) for i in idxs]
 
     for src, name in chosen:
         print("\n" + "=" * 64)
