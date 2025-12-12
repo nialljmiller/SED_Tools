@@ -32,6 +32,7 @@ from .models import STELLAR_DIR_DEFAULT, FILTER_DIR_DEFAULT
 from .svo_spectra_grabber import SVOSpectraGrabber
 from .msg_spectra_grabber import MSGSpectraGrabber
 from .mast_spectra_grabber import MASTSpectraGrabber
+from .njm_spectra_grabber import NJMSpectraGrabber
 from .precompute_flux_cube import precompute_flux_cube
 from .svo_regen_spectra_lookup import parse_metadata, regenerate_lookup_table
 from .svo_filter_grabber import run_interactive as _run_filter_cli
@@ -202,7 +203,7 @@ def _prompt_choice(
     def grid_print(visible_ids: List[int]) -> None:
         width = max(80, term_width())
         names = [labels[i] for i in visible_ids]
-        col_w = 6 + max_label + 2
+        col_w = 12 + max_label + 2
         cols = max(min_cols, min(max_cols, max(1, width // col_w)))
         cells = [f"[{GREEN}{i+1:4d}{RESET}] {hl(ellipsize(s))}" for i, s in zip(visible_ids, names)]
         while len(cells) % cols: cells.append("")
@@ -395,7 +396,6 @@ def run_rebuild_flow(
 
     print("\nRebuild complete.")
 
-
 def run_spectra_flow(
     source: str,
     base_dir: str = str(STELLAR_DIR_DEFAULT),
@@ -406,15 +406,29 @@ def run_spectra_flow(
 ) -> None:
     ensure_dir(base_dir)
     
+    # Parse source list - now includes 'njm'
     src_list = []
     if source.lower() == "all":
-        src_list = ["svo", "msg", "mast"]
+        src_list = ["njm", "svo", "msg", "mast"]  # NJM first!
     elif source.lower() == "both":
-        src_list = ["svo", "msg"]
+        src_list = ["njm", "svo", "msg"]
     else:
-        src_list = [source.lower()]
+        if "," in source:
+            src_list = [s.strip().lower() for s in source.split(",")]
+        else:
+            src_list = [source.lower()]
 
+    # Initialize grabbers - NJM first to check availability
     grabs = {}
+    if "njm" in src_list:
+        grabs["njm"] = NJMSpectraGrabber(base_dir=base_dir, max_workers=workers)
+        # Check if NJM is available, if not, remove it from src_list
+        if not grabs["njm"].is_available():
+            print("[info] NJM mirror server not accessible, falling back to other sources...")
+            del grabs["njm"]
+            if "njm" in src_list:
+                src_list.remove("njm")
+    
     if "svo" in src_list:
         grabs["svo"] = SVOSpectraGrabber(base_dir=base_dir, max_workers=workers)
     if "msg" in src_list:
@@ -422,39 +436,53 @@ def run_spectra_flow(
     if "mast" in src_list:
         grabs["mast"] = MASTSpectraGrabber(base_dir=base_dir, max_workers=workers)
 
-    discovered = []
+    # Discover models from all sources
+    model_sources = {}  # model_name -> list of sources
     for s in src_list:
         if s in grabs:
-            discovered.extend([(s, m) for m in grabs[s].discover_models()])
-
-    if models is None and not discovered:
+            for model_name in grabs[s].discover_models():
+                if model_name not in model_sources:
+                    model_sources[model_name] = []
+                model_sources[model_name].append(s)
+    
+    if not model_sources:
         print("No models discovered.")
         return
 
+    # Build display options with multiple source tags
+    class ModelOption:
+        def __init__(self, name, sources):
+            self.name = name
+            self.sources = sources
+            # Build label showing all available sources
+            source_tags = "".join(f"[{s}]" for s in sources)
+            self.label = f"{name} {source_tags}"
+    
+    all_models = [ModelOption(name, sources) for name, sources in sorted(model_sources.items())]
+
+    # Selection logic
     chosen = []
     if models is not None:
         if len(models) == 1 and models[0].lower() == "all":
-            chosen = discovered
+            chosen = [(opt.sources[0], opt.name) for opt in all_models]  # Use first source for each
         else:
             for m in models:
                 if ":" in m:
                     src, name = m.split(":", 1)
                     src, name = src.strip().lower(), name.strip()
                 else:
-                    if len(src_list) != 1:
-                        raise ValueError(f"Ambiguous '{m}' with source='{source}'. Use 'src:model'.")
-                    src, name = src_list[0], m.strip()
+                    # Find model and use first available source
+                    name = m.strip()
+                    matching = [opt for opt in all_models if opt.name == name]
+                    if not matching:
+                        print(f"[skip] Model '{name}' not found")
+                        continue
+                    src = matching[0].sources[0]  # Use first (priority) source
                 
-                match_found = False
-                for d_src, d_name in discovered:
-                    if d_src == src and d_name == name:
-                        match_found = True
-                        break
                 chosen.append((src, name))
     else:
-        opts = [_Opt(s, n) for s, n in discovered]
-        # Allow multi-selection (returns List[int], -1 for back, or None)
-        idxs = _prompt_choice(opts, label="Spectral models", allow_back=True, multi=True)
+        # Interactive selection
+        idxs = _prompt_choice(all_models, label="Spectral models", allow_back=True, multi=True)
         
         if idxs is None:  # quit
             return
@@ -462,12 +490,13 @@ def run_spectra_flow(
             print("No model selected.")
             return
             
-        # Ensure it is iterable (list)
         if isinstance(idxs, int):
             idxs = [idxs]
 
-        chosen = [(opts[i].src, opts[i].name) for i in idxs]
+        # For each selected model, use the FIRST (priority) source
+        chosen = [(all_models[i].sources[0], all_models[i].name) for i in idxs]
 
+    # Download and process each selected model
     for src, name in chosen:
         print("\n" + "=" * 64)
         print(f"[{src}] {name}")
@@ -483,10 +512,31 @@ def run_spectra_flow(
         if not meta:
             print(f"[{src}] No metadata for {name}; skipping.")
             continue
+        
+        # Check if this is pre-processed data from NJM
+        is_preprocessed = meta.get("pre_processed", False)
             
         n_written = g.download_model_spectra(name, meta)
-        print(f"[{src}] wrote {n_written} spectra -> {model_dir}")
+        print(f"[{src}] wrote {n_written} files -> {model_dir}")
 
+        # Skip cleaning and rebuilding for pre-processed NJM data
+        if is_preprocessed:
+            print(f"[{src}] Data is pre-processed, skipping cleaning and rebuilding steps.")
+            
+            # Verify essential files exist
+            essential_files = [
+                os.path.join(model_dir, "flux_cube.bin"),
+                os.path.join(model_dir, "lookup_table.csv"),
+            ]
+            missing = [f for f in essential_files if not os.path.exists(f)]
+            if missing:
+                print(f"  [warning] Missing essential files: {missing}")
+            else:
+                print(f"  [ok] All essential files present")
+            
+            continue  # Skip the cleaning/rebuilding steps below
+
+        # Standard processing for non-NJM sources
         try:
             summary = clean_model_dir(model_dir, try_h5_recovery=True, backup=True, rebuild_lookup=True)
             print(f"[clean] total={summary['total']} fixed={len(summary['fixed'])} "
@@ -516,22 +566,116 @@ def run_spectra_flow(
 
     print("\nDone.")
 
-
 def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
-    """Interactive nested filter downloader."""
+    """
+    Interactive filter downloader with automatic NJM → SVO fallback.
+    
+    Shows full SVO catalog, user selects what they want, then automatically
+    downloads from NJM mirror if available, falling back to SVO if not.
+    """
     ensure_dir(base_dir)
+    
+    from .njm_filter_grabber import NJMFilterGrabber
+    from .svo_filter_grabber import SVOFilterBrowser
+    
+    # Initialize both sources
+    svo = SVOFilterBrowser(base_dir=base_dir)
+    njm = NJMFilterGrabber(base_dir=base_dir)
+    njm_available = njm.is_available()
+    
+    # Browse SVO catalog (authoritative source)
+    print("\nBrowsing SVO Filter Profile Service...")
+    
     try:
-        _run_filter_cli(base_dir)
+        facilities = svo.list_facilities()
+        if not facilities:
+            print("No facilities found.")
+            return
+        
+        # Facility selection loop
+        while True:
+            fac_idx = _prompt_choice(facilities, "Filter Facilities")
+            if fac_idx is None:
+                return
+            
+            facility = facilities[fac_idx]
+            instruments = svo.list_instruments(facility.key)
+            
+            if not instruments:
+                print(f"No instruments found for {facility.label}.")
+                continue
+            
+            # Instrument selection loop
+            while True:
+                inst_idx = _prompt_choice(
+                    instruments,
+                    f"Instruments for {facility.label}",
+                    allow_back=True
+                )
+                
+                if inst_idx is None:
+                    return
+                if inst_idx == -1:
+                    break  # Back to facilities
+                
+                instrument = instruments[inst_idx]
+                filters = svo.list_filters(facility.key, instrument.key)
+                
+                if not filters:
+                    print(f"No filters found for {instrument.label}.")
+                    continue
+                
+                # Show selection
+                print(f"\n{facility.label} / {instrument.label}")
+                print(f"Found {len(filters)} filters")
+                
+                confirm = input("Download all filters? [Y/n] ").strip().lower()
+                if confirm and not confirm.startswith('y'):
+                    continue
+                
+                # Smart download: Try NJM first, fall back to SVO
+                downloaded = False
+                
+                if njm_available:
+                    try:
+                        # Check if NJM has this facility/instrument
+                        njm_facilities = njm.discover_facilities()
+                        if facility.key in njm_facilities:
+                            njm_instruments = njm.discover_instruments(facility.key)
+                            if instrument.key in njm_instruments:
+                                # NJM has it - download from there
+                                print(f"\n[njm] Downloading from mirror...")
+                                count = njm.download_filters(facility.key, instrument.key)
+                                if count > 0:
+                                    print(f"[njm] ✓ Downloaded {count} filters")
+                                    downloaded = True
+                    except Exception as e:
+                        print(f"[njm] Failed: {e}")
+                
+                # Fall back to SVO if NJM didn't work
+                if not downloaded:
+                    print(f"\n[svo] Downloading from SVO...")
+                    try:
+                        svo.download_filters(filters)
+                        print(f"[svo] ✓ Downloaded {len(filters)} filters")
+                    except Exception as e:
+                        print(f"[svo] ✗ Failed: {e}")
+                
+                again = input("\nDownload another instrument? [y/N] ").strip().lower()
+                if not again.startswith('y'):
+                    break
+    
+    except KeyboardInterrupt:
+        print("\nExiting.")
     except Exception as exc:
-        print("Filter tool error:", exc)
-
+        print(f"Error: {exc}")
 
 def menu() -> str:
     print("\nThis tool will download an SED library and then process the files to be used with MESA-Custom Colors")
     print("\nThe data will be stored in the data/ folder and will have the same structure as the data seen in $MESA_DIR/colors/data")
     print("\nWhat would you like to run?")
-    print("  1) Spectra (SVO / MSG / MAST)")
-    print("  2) Filters (SVO)")
+    print("  1) Spectra (NJM / SVO / MSG / MAST)")
+    print("  2) Filters (NJM / SVO)")
     print("  3) Rebuild (lookup + HDF5 + flux cube)")
     print("  0) Quit")
     choice = input("> ").strip()
@@ -550,8 +694,10 @@ def main():
 
     # spectra
     sp = sub.add_parser("spectra", help="Download/build spectra products")
-    sp.add_argument("--source", choices=["svo", "msg", "mast", "both", "all"], default="all",
-                    help="Which provider(s) to use.")
+    sp.add_argument("--source", 
+                    choices=["njm", "svo", "msg", "mast", "both", "all"], 
+                    default="all",
+                    help="Which provider(s) to use. NJM mirror is checked first when available.")
     sp.add_argument("--models", nargs="*", default=None,
                     help="Model names to process.")
     sp.add_argument("--base", default=str(STELLAR_DIR_DEFAULT),

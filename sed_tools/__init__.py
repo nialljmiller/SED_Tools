@@ -48,11 +48,12 @@ from .models import (
 
 from .svo_spectra_grabber import SVOSpectraGrabber  # SVO spectra → .txt + lookup_table.csv
 from .msg_spectra_grabber import MSGSpectraGrabber  # MSG (Townsend) .h5 → .txt + lookup_table.csv
+from .njm_spectra_grabber import NJMSpectraGrabber  # Niall J Miller
 from .precompute_flux_cube import precompute_flux_cube  # builds flux cube from lookup + .txt
 from .svo_regen_spectra_lookup import parse_metadata, regenerate_lookup_table
 from .mast_spectra_grabber import MASTSpectraGrabber
 from .spectra_cleaner import clean_model_dir
-
+from .njm_filter_grabber import NJMFilterGrabber
 
 __version__ = "0.1.0"
 

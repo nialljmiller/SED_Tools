@@ -143,3 +143,10 @@ The tool generates data in this exact hierarchy:
                 ├── B.dat           <-- Transmission curve
                 ├── V.dat
                 └── Johnson         <-- Index file (Required by MESA)
+
+Web Interface
+-------------
+
+A browsable mirror of the processed SED and filter data is available here:
+
+`SED Tools Web Interface <https://nillmill.ddns.net/sed_tools/>`_
