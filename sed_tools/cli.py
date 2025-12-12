@@ -514,8 +514,10 @@ def run_spectra_flow(
             continue
         
         # Check if this is pre-processed data from NJM
-        is_preprocessed = meta.get("pre_processed", False)
-            
+        is_preprocessed = False
+        if isinstance(meta, dict):
+            is_preprocessed = meta.get("pre_processed", False)            
+
         n_written = g.download_model_spectra(name, meta)
         print(f"[{src}] wrote {n_written} files -> {model_dir}")
 
