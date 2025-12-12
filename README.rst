@@ -26,7 +26,7 @@ Web Interface
 All data used by this tool originate from three public services: the  
 `SVO Filter Profile Service <http://svo2.cab.inta-csic.es/theory/fps/>`_,  
 the `MAST BOSZ Spectral Library <https://archive.stsci.edu/prepds/bosz/>`_,  
-and Townsend’s `MSG Stellar Atmosphere Grids <https://www.astro.wisc.edu/~townsend/msg/>`_.  
+and Townsend’s `MSG Stellar Atmosphere Grids <http://user.astro.wisc.edu/~townsend/static.php?ref=msg-grids>`_.  
 
 These datasets are mirrored on a dedicated server to ensure fast, consistent access for SED Tools and for any external workflows that rely on the processed spectra and filters.
 
