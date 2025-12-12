@@ -20,6 +20,21 @@ Or, for development (editable mode):
 
     pip install -e .
 
+Web Interface
+-------------
+
+All data used by this tool originate from three public services: the  
+`SVO Filter Profile Service <http://svo2.cab.inta-csic.es/theory/fps/>`_,  
+the `MAST BOSZ Spectral Library <https://archive.stsci.edu/prepds/bosz/>`_,  
+and Townsend’s `MSG Stellar Atmosphere Grids <https://www.astro.wisc.edu/~townsend/msg/>`_.  
+
+These datasets are mirrored on a dedicated server to ensure fast, consistent access for SED Tools and for any external workflows that rely on the processed spectra and filters.
+
+A browsable mirror of the processed SED and filter data is available here:
+
+`SED Tools Web Interface <https://nillmill.ddns.net/sed_tools/>`_
+
+
 Quick Start
 -----------
 
@@ -143,10 +158,3 @@ The tool generates data in this exact hierarchy:
                 ├── B.dat           <-- Transmission curve
                 ├── V.dat
                 └── Johnson         <-- Index file (Required by MESA)
-
-Web Interface
--------------
-
-A browsable mirror of the processed SED and filter data is available here:
-
-`SED Tools Web Interface <https://nillmill.ddns.net/sed_tools/>`_
