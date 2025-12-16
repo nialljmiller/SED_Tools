@@ -673,19 +673,172 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
         print(f"Error: {exc}")
 
 def menu() -> str:
-    print("\nThis tool will download an SED library and then process the files to be used with MESA-Custom Colors")
-    print("\nThe data will be stored in the data/ folder and will have the same structure as the data seen in $MESA_DIR/colors/data")
     print("\nWhat would you like to run?")
     print("  1) Spectra (NJM / SVO / MSG / MAST)")
     print("  2) Filters (NJM / SVO)")
     print("  3) Rebuild (lookup + HDF5 + flux cube)")
+    print("  4) Combine grids into omni grid")  # ← ADD THIS LINE
     print("  0) Quit")
     choice = input("> ").strip()
     mapping = {
-        "1": "spectra", "2": "filters", "3": "rebuild",
+        "1": "spectra", 
+        "2": "filters", 
+        "3": "rebuild",
+        "4": "combine",  # ← ADD THIS LINE
         "0": "quit"
     }
     return mapping.get(choice, "")
+
+
+#!/usr/bin/env python3
+"""
+ADD THIS FUNCTION TO sed_tools/__init__.py or sed_tools/cli.py
+
+Place it after run_rebuild_flow() function.
+"""
+
+def run_combine_flow(
+    base_dir: str = STELLAR_DIR_DEFAULT,
+    output_name: str = "combined_models", 
+    interactive: bool = True
+) -> None:
+    """
+    Combine multiple stellar atmosphere grids into unified omni grid.
+    
+    This creates a single flux cube spanning the parameter space of all
+    selected models, normalized to a reference (preferably Kurucz).
+    
+    Args:
+        base_dir: Base directory containing stellar_models/ subdirectories
+        output_name: Name for the output combined model directory  
+        interactive: If True, prompt user to select models
+    """
+    from .combine_stellar_atm import (
+        find_stellar_models,
+        select_models_interactive,
+        load_model_data,
+        create_unified_grid,
+        create_common_wavelength_grid,
+        build_combined_flux_cube,
+        save_combined_data,
+        visualize_parameter_space
+    )
+    
+    ensure_dir(base_dir)
+    
+    # Find available models
+    model_dirs = find_stellar_models(base_dir)
+    
+    if not model_dirs:
+        print(f"No stellar models found in {base_dir}")
+        print("Download some models first using option 1 (Spectra)")
+        return
+    
+    print(f"\nFound {len(model_dirs)} stellar atmosphere models")
+    
+    # Select models to combine
+    if interactive:
+        selected = select_models_interactive(model_dirs)
+    else:
+        selected = model_dirs
+    
+    if not selected:
+        print("No models selected.")
+        return
+    
+    if len(selected) < 2:
+        print("Warning: Need at least 2 models for meaningful combination.")
+        if interactive:
+            confirm = input("Continue with 1 model? [y/N] ").strip().lower()
+            if not confirm.startswith('y'):
+                return
+    
+    print(f"\nSelected {len(selected)} models to combine:")
+    for name, _ in selected:
+        print(f"  - {name}")
+    
+    # Get output name
+    if interactive:
+        user_output = input(f"\nOutput directory name [{output_name}]: ").strip()
+        if user_output:
+            output_name = user_output
+    
+    # Load model data
+    print("\nLoading model data...")
+    all_models = []
+    for name, path in selected:
+        print(f"  Loading {name}...")
+        all_models.append(load_model_data(path))
+    
+    # Create unified grids
+    print("\nCreating unified parameter grids...")
+    teff_grid, logg_grid, meta_grid = create_unified_grid(all_models)
+    wavelength_grid = create_common_wavelength_grid(all_models)
+    
+    # Show grid info
+    total_points = len(teff_grid) * len(logg_grid) * len(meta_grid)
+    print(f"\nUnified grid dimensions:")
+    print(f"  Teff:  {len(teff_grid)} points  " +
+          f"({teff_grid.min():.0f} - {teff_grid.max():.0f} K)")
+    print(f"  log g: {len(logg_grid)} points  " +
+          f"({logg_grid.min():.2f} - {logg_grid.max():.2f})")
+    print(f"  [M/H]: {len(meta_grid)} points  " +
+          f"({meta_grid.min():.2f} - {meta_grid.max():.2f})")
+    print(f"  λ:     {len(wavelength_grid)} points " +
+          f"({wavelength_grid.min():.0f} - {wavelength_grid.max():.0f} Å)")
+    print(f"\nTotal grid points: {total_points:,}")
+    
+    # Confirm before proceeding
+    if interactive:
+        confirm = input("\nProceed with building combined flux cube? [Y/n] ").strip().lower()
+        if confirm and not confirm.startswith('y'):
+            print("Cancelled.")
+            return
+    
+    # Build combined flux cube
+    print("\nBuilding combined flux cube...")
+    print("(This may take several minutes for large grids)")
+    flux_cube, source_map = build_combined_flux_cube(
+        all_models, teff_grid, logg_grid, meta_grid, wavelength_grid
+    )
+    
+    # Save combined data
+    output_dir = os.path.join(base_dir, output_name)
+    print(f"\nSaving combined model to: {output_dir}")
+    save_combined_data(
+        output_dir,
+        teff_grid,
+        logg_grid, 
+        meta_grid,
+        wavelength_grid,
+        flux_cube,
+        all_models
+    )
+    
+    # Create visualizations
+    print("\nCreating parameter space visualizations...")
+    visualize_parameter_space(
+        teff_grid, logg_grid, meta_grid, source_map, all_models, output_dir
+    )
+    
+    # Success message
+    print("\n" + "="*70)
+    print("SUCCESS: Omni grid created!")
+    print("="*70)
+    print(f"\nYour combined model is ready at:")
+    print(f"  {output_dir}")
+    print(f"\nContents:")
+    print(f"  • flux_cube.bin - MESA-ready flux cube")
+    print(f"  • lookup_table.csv - Combined model inventory")
+    print(f"  • parameter_space_visualization.png - Coverage maps")
+    print(f"  • Original spectra from all source models")
+    print(f"\nTo use in MESA, set in your inlist:")
+    print(f"  stellar_atm = '/colors/data/stellar_models/{output_name}/'")
+    print()
+
+
+
+
 
 
 # ------------ Main CLI ------------
@@ -722,6 +875,17 @@ def main():
     rp.add_argument("--no-h5", action="store_true", help="Skip HDF5 bundle")
     rp.add_argument("--no-cube", action="store_true", help="Skip flux cube")
 
+
+    # combine
+    cp = sub.add_parser("combine", help="Combine multiple grids into omni grid")
+    cp.add_argument("--base", default=str(STELLAR_DIR_DEFAULT),
+                    help="Base models directory")
+    cp.add_argument("--output", default="combined_models",
+                    help="Name for output combined model")
+    cp.add_argument("--non-interactive", action="store_true",
+                    help="Combine all models without prompting")
+
+
     args = parser.parse_args()
 
     if args.cmd == "spectra":
@@ -742,6 +906,14 @@ def main():
             rebuild_h5=not args.no_h5,
             rebuild_flux_cube=not args.no_cube
         )
+
+    elif args.cmd == "combine":
+        run_combine_flow(
+            base_dir=args.base,
+            output_name=args.output,
+            interactive=not args.non_interactive
+        )
+
     else:
         # Interactive mode
         while True:
@@ -752,6 +924,8 @@ def main():
                 run_rebuild_flow()
             elif choice == "spectra":
                 run_spectra_flow(source="all")
+            elif choice == "combine":  # ← ADD THIS
+                run_combine_flow()     # ← ADD THIS
             else:
                 sys.exit(0)
 

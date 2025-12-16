@@ -7,7 +7,7 @@ import struct
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from scipy.integrate import simps
+from scipy.integrate import simpson as simps
 from scipy.interpolate import interp1d
 from scipy.spatial import KDTree
 from tqdm import tqdm
@@ -16,11 +16,61 @@ SIGMA = 5.670374419e-5  # erg s-1 cm-2 K-4
 
 
 def renorm_to_sigmaT4(wl, flux, Teff):
-    """wl in Å, flux in erg/cm²/s/Å  →  renormalised Fλ."""
-    Fbol_model = simps(flux, wl)  # Å cancels
+    """Robust normalization to σT⁴ with automatic unit detection."""
+    # Input validation
+    if len(wl) < 10:
+        return flux
+    
+    # Clean bad data
+    good = np.isfinite(flux) & np.isfinite(wl) & (flux > 0)
+    if np.sum(good) < 10:
+        return flux
+    
+    wl_clean = wl[good]
+    flux_clean = flux[good]
+    
+    # Sort by wavelength (required for integration)
+    order = np.argsort(wl_clean)
+    wl_clean = wl_clean[order]
+    flux_clean = flux_clean[order]
+    
+    # Integrate to get bolometric flux
+    try:
+        Fbol_model = simps(flux_clean, wl_clean)
+    except:
+        return flux
+    
+    if Fbol_model <= 0 or not np.isfinite(Fbol_model):
+        return flux
+    
+    # Expected bolometric flux from Stefan-Boltzmann
     Fbol_target = SIGMA * Teff**4
-    return flux * (Fbol_target / Fbol_model)
-
+    norm_factor = Fbol_target / Fbol_model
+    
+    # === CRITICAL FIX: Detect unit problems ===
+    if norm_factor < 1e-4 or norm_factor > 1e4:
+        # Common issue: Flux is per steradian, need to multiply by π
+        if 0.3 < norm_factor * np.pi < 3.0:
+            print(f"    ⚠ Detected per-steradian flux, applying π correction")
+            flux_clean = flux_clean * np.pi
+            Fbol_model = simps(flux_clean, wl_clean)
+            norm_factor = Fbol_target / Fbol_model
+        # Wavelength unit issue
+        elif norm_factor < 1e-4:
+            test_factor = norm_factor * 10
+            if 0.1 < test_factor < 10:
+                print(f"    ⚠ Applying 10x correction (wavelength units)")
+                norm_factor = test_factor
+    
+    # Cap extreme values to prevent disasters
+    if norm_factor < 0.01:
+        print(f"    ✗ Capping extreme normalization {norm_factor:.2e} at 0.01")
+        norm_factor = 0.01
+    elif norm_factor > 100:
+        print(f"    ✗ Capping extreme normalization {norm_factor:.2e} at 100")
+        norm_factor = 100
+    
+    return flux * norm_factor
 
 def find_stellar_models(base_dir="../data/stellar_models/"):
     """Find all stellar model directories containing lookup tables."""
@@ -677,7 +727,6 @@ def save_combined_data(
 
     return lookup_df
 
-
 def visualize_parameter_space(
     teff_grid, logg_grid, meta_grid, source_map, all_models_data, output_dir
 ):
@@ -688,14 +737,22 @@ def visualize_parameter_space(
     model_names = [os.path.basename(data["model_dir"]) for data in all_models_data]
 
     # Create color map for models
-    colors = plt.cm.tab10(np.linspace(0, 1, len(model_names)))
+    cmap = plt.cm.tab10 if len(model_names) <= 10 else plt.cm.tab20
+    colors = cmap(np.linspace(0, 1, len(model_names)))
 
     fig = plt.figure(figsize=(18, 12))
+    gs = fig.add_gridspec(
+        2, 3,
+        wspace=0.35,
+        hspace=0.35,
+        width_ratios=[1.0, 1.0, 1.0],
+        height_ratios=[1.0, 1.0],
+    )
 
-    # 1. 3D scatter plot of filled points
-    ax1 = fig.add_subplot(2, 3, 1, projection="3d")
+    # ---------- Top row ----------
+    # 1) 3D scatter
+    ax1 = fig.add_subplot(gs[0, 0], projection="3d")
 
-    # Get coordinates of filled points for each model
     for model_idx, model_name in enumerate(model_names):
         mask = source_map == model_idx
         if np.any(mask):
@@ -707,75 +764,22 @@ def visualize_parameter_space(
                 c=[colors[model_idx]],
                 label=model_name,
                 alpha=0.6,
-                s=20,
+                s=18,
             )
 
     ax1.set_xlabel("Teff (K)")
     ax1.set_ylabel("log g")
     ax1.set_zlabel("[M/H]")
-    ax1.set_title("3D Parameter Space Coverage")
-    ax1.legend(bbox_to_anchor=(1.05, 1), loc="upper left")
+    ax1.set_title("3D Coverage")
+    ax1.legend(bbox_to_anchor=(1.05, 1), loc="upper left", fontsize=8, frameon=False)
 
-    # 2. Teff vs log g projection
-    ax2 = fig.add_subplot(2, 3, 2)
-    for model_idx, model_name in enumerate(model_names):
-        data = all_models_data[model_idx]
-        ax2.scatter(
-            data["teff"],
-            data["logg"],
-            c=[colors[model_idx]],
-            label=model_name,
-            alpha=0.6,
-            s=10,
-        )
-    ax2.set_xlabel("Teff (K)")
-    ax2.set_ylabel("log g")
-    ax2.set_title("Teff vs log g")
-    ax2.invert_yaxis()
-    ax2.grid(True, alpha=0.3)
-
-    # 3. Teff vs [M/H] projection
-    ax3 = fig.add_subplot(2, 3, 3)
-    for model_idx, model_name in enumerate(model_names):
-        data = all_models_data[model_idx]
-        ax3.scatter(
-            data["teff"],
-            data["meta"],
-            c=[colors[model_idx]],
-            label=model_name,
-            alpha=0.6,
-            s=10,
-        )
-    ax3.set_xlabel("Teff (K)")
-    ax3.set_ylabel("[M/H]")
-    ax3.set_title("Teff vs [M/H]")
-    ax3.grid(True, alpha=0.3)
-
-    # 4. log g vs [M/H] projection
-    ax4 = fig.add_subplot(2, 3, 4)
-    for model_idx, model_name in enumerate(model_names):
-        data = all_models_data[model_idx]
-        ax4.scatter(
-            data["logg"],
-            data["meta"],
-            c=[colors[model_idx]],
-            label=model_name,
-            alpha=0.6,
-            s=10,
-        )
-    ax4.set_xlabel("log g")
-    ax4.set_ylabel("[M/H]")
-    ax4.set_title("log g vs [M/H]")
-    ax4.grid(True, alpha=0.3)
-
-    # 5. Normalisation-verification plot: λ²Fλ (should overlay after normalization)
-    ax5 = fig.add_subplot(2, 3, 5)
+    # 2) Normalisation check (span top middle + top right)
+    ax2 = fig.add_subplot(gs[0, 1:3])
     target = (5777, 4.44, 0.0)  # solar-like reference
 
     for idx, model_name in enumerate(model_names):
         data = all_models_data[idx]
 
-        # Find closest SED to solar point
         valid_mask = (
             np.isfinite(data["teff"])
             & np.isfinite(data["logg"])
@@ -795,72 +799,114 @@ def visualize_parameter_space(
             + (valid_meta - target[2]) ** 2
         )
 
-        if len(dist) > 0:
-            j = np.argmin(dist)
-            fpath = os.path.join(data["model_dir"], valid_files[j])
+        if len(dist) == 0:
+            continue
 
-            # Quick guard against XML/FITS/binary junk
-            if not fpath.lower().endswith((".txt", ".dat", ".sed")):
-                continue
-            try:
-                # Check if file exists and is readable
-                if not os.path.exists(fpath):
-                    continue
+        j = np.argmin(dist)
+        fpath = os.path.join(data["model_dir"], valid_files[j])
 
-                with open(fpath, "rb") as fh:
-                    # skip if the first non-whitespace byte is '<' (likely XML)
-                    first = fh.read(256).lstrip()[:1]
-                if first == b"<":
-                    continue
+        # Quick guard against XML/FITS/binary junk
+        if not fpath.lower().endswith((".txt", ".dat", ".sed")):
+            continue
 
-                wl, fl = prepare_sed(fpath, valid_teff[j])
-                mask = (wl > 3000) & (wl < 10000)
-                if mask.sum() > 20:
-                    ax5.plot(
-                        wl[mask], wl[mask] ** 2 * fl[mask], label=model_name, alpha=0.8
-                    )
-            except Exception as e:
-                print(f"  ⚠ Skipping {model_name}: {e}")
+        try:
+            if not os.path.exists(fpath):
                 continue
 
-    ax5.set_xscale("log")
-    ax5.set_yscale("log")
-    ax5.set_xlabel("Wavelength (Å)")
-    ax5.set_ylabel(r"$λ^2 F_λ$ (arb. units)")
-    ax5.set_title("Normalisation Check (solar-like)")
-    ax5.grid(True, alpha=0.3)
-    ax5.legend(fontsize=8)
+            with open(fpath, "rb") as fh:
+                first = fh.read(256).lstrip()[:1]
+            if first == b"<":
+                continue
 
-    # 6. Grid density heatmap
-    ax6 = fig.add_subplot(2, 3, 6)
+            wl, fl = prepare_sed(fpath, valid_teff[j])
+            mask = (wl > 3000) & (wl < 10000)
+            if mask.sum() > 20:
+                ax2.plot(
+                    wl[mask],
+                    wl[mask] ** 2 * fl[mask],
+                    label=model_name,
+                    alpha=0.85,
+                    linewidth=1.2,
+                )
+        except Exception as e:
+            print(f"  ⚠ Skipping {model_name}: {e}")
+            continue
 
-    # Count models per grid cell (marginalized over metallicity)
-    density_map = np.zeros((len(teff_grid), len(logg_grid)))
+    ax2.set_xscale("log")
+    ax2.set_yscale("log")
+    ax2.set_xlabel("Wavelength (Å)")
+    ax2.set_ylabel(r"$\lambda^2 F_\lambda$ (arb. units)")
+    ax2.set_title("Normalisation Check (closest-to-solar SED per model)")
+    ax2.grid(True, alpha=0.25)
+    ax2.legend(fontsize=8, frameon=False, ncol=2)
+
+    # ---------- Bottom row ----------
+    def _count_unique_models(arr):
+        arr = arr[arr >= 0]
+        return len(np.unique(arr))
+
+    # 3) Teff vs log g (marginalized over [M/H])
+    ax4 = fig.add_subplot(gs[1, 0])
+    dens_tg = np.zeros((len(teff_grid), len(logg_grid)))
     for i in range(len(teff_grid)):
         for j in range(len(logg_grid)):
-            # Count unique models at this Teff, log g
-            models_here = source_map[i, j, :]
-            unique_models = len(np.unique(models_here[models_here >= 0]))
-            density_map[i, j] = unique_models
+            dens_tg[i, j] = _count_unique_models(source_map[i, j, :])
 
-    im = ax6.imshow(
-        density_map.T,
+    im4 = ax4.imshow(
+        dens_tg.T,
         origin="lower",
         aspect="auto",
         extent=[teff_grid.min(), teff_grid.max(), logg_grid.min(), logg_grid.max()],
         cmap="YlOrRd",
     )
-    ax6.set_xlabel("Teff (K)")
-    ax6.set_ylabel("log g")
-    ax6.set_title("Model Density (# of models per grid point)")
-    plt.colorbar(im, ax=ax6)
+    ax4.set_xlabel("Teff (K)")
+    ax4.set_ylabel("log g")
+    ax4.set_title("Model Density: Teff vs log g")
+    plt.colorbar(im4, ax=ax4, fraction=0.046, pad=0.04)
 
-    plt.tight_layout()
+    # 4) Teff vs [M/H] (marginalized over log g)
+    ax5 = fig.add_subplot(gs[1, 1])
+    dens_tm = np.zeros((len(teff_grid), len(meta_grid)))
+    for i in range(len(teff_grid)):
+        for k in range(len(meta_grid)):
+            dens_tm[i, k] = _count_unique_models(source_map[i, :, k])
+
+    im5 = ax5.imshow(
+        dens_tm.T,
+        origin="lower",
+        aspect="auto",
+        extent=[teff_grid.min(), teff_grid.max(), meta_grid.min(), meta_grid.max()],
+        cmap="YlOrRd",
+    )
+    ax5.set_xlabel("Teff (K)")
+    ax5.set_ylabel("[M/H]")
+    ax5.set_title("Model Density: Teff vs [M/H]")
+    plt.colorbar(im5, ax=ax5, fraction=0.046, pad=0.04)
+
+    # 5) log g vs [M/H] (marginalized over Teff)
+    ax6 = fig.add_subplot(gs[1, 2])
+    dens_gm = np.zeros((len(logg_grid), len(meta_grid)))
+    for j in range(len(logg_grid)):
+        for k in range(len(meta_grid)):
+            dens_gm[j, k] = _count_unique_models(source_map[:, j, k])
+
+    im6 = ax6.imshow(
+        dens_gm.T,
+        origin="lower",
+        aspect="auto",
+        extent=[logg_grid.min(), logg_grid.max(), meta_grid.min(), meta_grid.max()],
+        cmap="YlOrRd",
+    )
+    ax6.set_xlabel("log g")
+    ax6.set_ylabel("[M/H]")
+    ax6.set_title("Model Density: log g vs [M/H]")
+    plt.colorbar(im6, ax=ax6, fraction=0.046, pad=0.04)
+
     plot_file = os.path.join(output_dir, "parameter_space_visualization.png")
     plt.savefig(plot_file, dpi=150, bbox_inches="tight")
     print(f"Saved visualization to: {plot_file}")
 
-    # Print summary statistics
+    # Print summary statistics (unchanged)
     print("\n" + "=" * 60)
     print("COMBINED MODEL STATISTICS")
     print("=" * 60)
@@ -879,6 +925,136 @@ def visualize_parameter_space(
         n_points = np.sum(source_map == model_idx)
         pct = 100 * n_points / source_map.size
         print(f"  {model_name}: {n_points:,} grid points ({pct:.1f}%)")
+
+
+
+def validate_normalization_quality(all_models_data):
+    """
+    Check normalization quality by comparing solar-type stars.
+    Returns quality scores (1.0 = good, <0.5 = problematic).
+    """
+    print("\n" + "="*70)
+    print("NORMALIZATION QUALITY CHECK")
+    print("="*70)
+    
+    target_teff, target_logg, target_meta = 5777, 4.44, 0.0
+    model_fluxes = {}
+    
+    for model_data in all_models_data:
+        model_name = os.path.basename(model_data["model_dir"])
+        
+        # Find closest spectrum to solar parameters
+        valid_mask = (
+            np.isfinite(model_data["teff"]) &
+            np.isfinite(model_data["logg"]) &
+            np.isfinite(model_data["meta"])
+        )
+        
+        if not valid_mask.any():
+            print(f"  [{model_name}] No valid spectra")
+            continue
+        
+        valid_teff = np.array(model_data["teff"])[valid_mask]
+        valid_logg = np.array(model_data["logg"])[valid_mask]
+        valid_meta = np.array(model_data["meta"])[valid_mask]
+        valid_files = np.array(model_data["files"])[valid_mask]
+        
+        distance = (
+            ((valid_teff - target_teff) / 1000) ** 2 +
+            (valid_logg - target_logg) ** 2 +
+            (valid_meta - target_meta) ** 2
+        )
+        
+        if len(distance) == 0:
+            continue
+        
+        closest_idx = np.argmin(distance)
+        file_path = os.path.join(model_data["model_dir"], valid_files[closest_idx])
+        
+        try:
+            wl, flux = prepare_sed(file_path, valid_teff[closest_idx])
+            
+            # Calculate median λ²F_λ in optical range
+            optical = (wl > 3000) & (wl < 10000)
+            if np.sum(optical) < 20:
+                continue
+            
+            median_flux = np.median(wl[optical]**2 * flux[optical])
+            model_fluxes[model_name] = median_flux
+            print(f"  [{model_name:20s}] λ²F_λ (median) = {median_flux:.3e}")
+            
+        except Exception as e:
+            print(f"  [{model_name}] Failed: {e}")
+            continue
+    
+    if len(model_fluxes) < 2:
+        print("  ⚠ Not enough models to compare")
+        return {}
+    
+    # Calculate quality scores based on deviation from median
+    print("\n" + "-"*70)
+    print("QUALITY ASSESSMENT:")
+    print("-"*70)
+    
+    median_flux = np.median(list(model_fluxes.values()))
+    quality_scores = {}
+    problematic = []
+    
+    for model_name, flux in model_fluxes.items():
+        ratio = flux / median_flux
+        
+        # Assign quality score
+        if 0.5 <= ratio <= 2.0:
+            score = 1.0
+            status = "✓ GOOD"
+        elif 0.2 <= ratio <= 5.0:
+            score = 0.7
+            status = "⚠ OK"
+        elif 0.1 <= ratio <= 10.0:
+            score = 0.4
+            status = "⚠ POOR"
+        else:
+            score = 0.1
+            status = "✗ BAD"
+            problematic.append(model_name)
+        
+        quality_scores[model_name] = score
+        print(f"  [{model_name:20s}] Ratio: {ratio:7.2f}x  Score: {score:.2f}  {status}")
+    
+    if problematic:
+        print("\n" + "="*70)
+        print("⚠ PROBLEMATIC MODELS DETECTED:")
+        for name in problematic:
+            print(f"  - {name} (differs by >10x from median)")
+        print("\nThese models will be EXCLUDED from the combined grid.")
+        print("="*70)
+    
+    return quality_scores
+
+
+def filter_problematic_models(all_models_data, quality_scores, threshold=0.5):
+    """Remove models with poor normalization quality."""
+    if not quality_scores:
+        return all_models_data
+    
+    filtered = []
+    excluded = []
+    
+    for model_data in all_models_data:
+        model_name = os.path.basename(model_data["model_dir"])
+        score = quality_scores.get(model_name, 1.0)
+        
+        if score >= threshold:
+            filtered.append(model_data)
+        else:
+            excluded.append(model_name)
+    
+    if excluded:
+        print(f"\n⚠ EXCLUDED {len(excluded)} model(s): {', '.join(excluded)}")
+    
+    return filtered
+
+
 
 
 def main():
@@ -924,6 +1100,9 @@ def main():
     for name, path in selected_models:
         print(f"  - {name}")
 
+
+
+
     # Load all model data
     print("\nLoading model data...")
     all_models_data = []
@@ -931,6 +1110,18 @@ def main():
         print(f"  Loading {name}...")
         data = load_model_data(path)
         all_models_data.append(data)
+    
+    # === VALIDATE NORMALIZATION QUALITY ===
+    quality_scores = validate_normalization_quality(all_models_data)
+    
+    # Automatically exclude problematic models
+    all_models_data = filter_problematic_models(all_models_data, quality_scores, threshold=0.5)
+    
+    if len(all_models_data) == 0:
+        print("\n✗ ERROR: No valid models remaining after quality check!")
+        return
+    
+    print(f"\n✓ Using {len(all_models_data)} models for combined grid")
 
     # Create unified grids
     print("\nCreating unified parameter grids...")

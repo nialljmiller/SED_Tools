@@ -137,25 +137,19 @@ def main():
             print(f"Unknown subcommand '{sub}'. Valid: {', '.join(TOOLS)}")
             sys.exit(2)
 
+
     while True:
         choice = menu()
-
         if choice == "filters":
-            run_filters_flow(base_dir=FILTER_DIR_DEFAULT)
+            run_filters_flow()
         elif choice == "rebuild":
-            run_rebuild_flow(base_dir=STELLAR_DIR_DEFAULT)
+            run_rebuild_flow()
         elif choice == "spectra":
-            run_spectra_flow(source="all",
-                             base_dir=STELLAR_DIR_DEFAULT,
-                             models=None,
-                             workers=5,
-                             force_bundle_h5=True,
-                             build_flux_cube=True)
-        #elif choice == "fluxcube":
-        #    run_tool("fluxcube")
+            run_spectra_flow(source="all")
+        elif choice == "combine":  # ← ADD THIS
+            run_combine_flow()     # ← ADD THIS
         else:
-            exit()
-
+            sys.exit(0)
 
 if __name__ == "__main__":
     main()
