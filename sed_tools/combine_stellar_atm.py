@@ -3,6 +3,8 @@ import argparse
 import os
 import shutil
 import struct
+import sys
+from collections import Counter
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -11,66 +13,449 @@ from scipy.integrate import simpson as simps
 from scipy.interpolate import interp1d
 from scipy.spatial import KDTree
 from tqdm import tqdm
+from dataclasses import dataclass
+from typing import Optional
+import h5py
+import glob
 
 SIGMA = 5.670374419e-5  # erg s-1 cm-2 K-4
+SPEED_OF_LIGHT_ANG_S = 2.99792458e18  # speed of light in Angstrom/s (for F_nu conversion)
 
 
-def renorm_to_sigmaT4(wl, flux, Teff):
-    """Robust normalization to σT⁴ with automatic unit detection."""
-    # Input validation
-    if len(wl) < 10:
-        return flux
+
+def prepare_sed_with_scale(filepath, teff, scale_factor=1.0, model_dir=None):
+    result = validate_and_clean(filepath, model_dir=model_dir)
+    if not result.usable:
+        raise ValueError(f"{filepath}: {result.reason}")
+
+    wl = result.wavelength
+    flux = result.flux
+
+    flux = flux * scale_factor
+
+    return wl, flux
+
+
+def load_sed(filepath):
+    return np.loadtxt(filepath, unpack=True)
+
+
+def prepare_sed(filepath, teff, correction=1.0):
+    wl, flux = load_sed(filepath)
+    flux = flux * correction  # Apply BEFORE normalization
+    return wl, flux
+
+
+
+
+@dataclass
+class FileValidation:
+    """Result of validating one spectrum file."""
+    usable: bool
+    reason: str
+    wavelength: Optional[np.ndarray] = None  # Cleaned wavelength (in Angstroms)
+    flux: Optional[np.ndarray] = None        # Cleaned flux (NOT scaled, just cleaned)
+
+
+def validate_and_clean(filepath: str, model_dir: str) -> FileValidation:
+    """
+    Validate and clean one spectrum file with comprehensive unit detection.
     
-    # Clean bad data
-    good = np.isfinite(flux) & np.isfinite(wl) & (flux > 0)
-    if np.sum(good) < 10:
-        return flux
+    Ensures output is:
+    - Wavelength: Angstroms (Å)
+    - Flux: erg/s/cm²/Å (F_lambda)
     
-    wl_clean = wl[good]
-    flux_clean = flux[good]
+    Returns FileValidation with:
+    - usable: True if file can be used
+    - wavelength: Cleaned wavelength array in Angstroms
+    - flux: Cleaned flux array in erg/s/cm²/Å
+    - reason: Why file was skipped (if unusable) or conversion info
+    """
     
-    # Sort by wavelength (required for integration)
-    order = np.argsort(wl_clean)
-    wl_clean = wl_clean[order]
-    flux_clean = flux_clean[order]
-    
-    # Integrate to get bolometric flux
+    # Stage 1: Check file format (skip XML)
     try:
-        Fbol_model = simps(flux_clean, wl_clean)
+        with open(filepath, 'r') as f:
+            first_line = f.readline()
+            if '<?xml' in first_line.lower():
+                return FileValidation(usable=False, reason="XML file")
     except:
-        return flux
+        return FileValidation(usable=False, reason="Cannot read")
     
-    if Fbol_model <= 0 or not np.isfinite(Fbol_model):
-        return flux
+    # Stage 2: Load data
+    try:
+        data = np.loadtxt(filepath, unpack=True)
+        if data.ndim != 2 or data.shape[0] < 2:
+            return FileValidation(usable=False, reason="Wrong shape")
+        wl_raw = data[0].copy()
+        flux_raw = data[1].copy()
+    except Exception as e:
+        return FileValidation(usable=False, reason=f"Load failed: {str(e)[:30]}")
     
-    # Expected bolometric flux from Stefan-Boltzmann
-    Fbol_target = SIGMA * Teff**4
-    norm_factor = Fbol_target / Fbol_model
+    # Stage 3: Basic quality checks
+    if len(wl_raw) < 10:
+        return FileValidation(usable=False, reason="Too few points")
     
-    # === CRITICAL FIX: Detect unit problems ===
-    if norm_factor < 1e-4 or norm_factor > 1e4:
-        # Common issue: Flux is per steradian, need to multiply by π
-        if 0.3 < norm_factor * np.pi < 3.0:
-            print(f"    ⚠ Detected per-steradian flux, applying π correction")
-            flux_clean = flux_clean * np.pi
-            Fbol_model = simps(flux_clean, wl_clean)
-            norm_factor = Fbol_target / Fbol_model
-        # Wavelength unit issue
-        elif norm_factor < 1e-4:
-            test_factor = norm_factor * 10
-            if 0.1 < test_factor < 10:
-                print(f"    ⚠ Applying 10x correction (wavelength units)")
-                norm_factor = test_factor
+    # Stage 4: Remove NaN/inf from BOTH wavelength and flux
+    good = np.isfinite(wl_raw) & np.isfinite(flux_raw)
+    if np.sum(good) < 10:
+        return FileValidation(usable=False, reason="Too many NaN/inf values")
+    wl_raw = wl_raw[good]
+    flux_raw = flux_raw[good]
     
-    # Cap extreme values to prevent disasters
-    if norm_factor < 0.01:
-        print(f"    ✗ Capping extreme normalization {norm_factor:.2e} at 0.01")
-        norm_factor = 0.01
-    elif norm_factor > 100:
-        print(f"    ✗ Capping extreme normalization {norm_factor:.2e} at 100")
-        norm_factor = 100
+    # Stage 5: Check if wavelength is index grid (0, 1, 2, ...)
+    if _is_index_grid(wl_raw):
+        # Try to recover real wavelength from HDF5
+        fixed_wl = _try_recover_wavelength_from_h5(filepath, model_dir, len(wl_raw))
+        if fixed_wl is not None:
+            wl_raw = fixed_wl
+        else:
+            return FileValidation(usable=False, reason="Index grid, can't recover wavelength")
     
-    return flux * norm_factor
+    # Stage 6: Sort by wavelength
+    order = np.argsort(wl_raw)
+    wl_raw = wl_raw[order]
+    flux_raw = flux_raw[order]
+    
+    # Stage 7: Remove duplicate wavelengths
+    unique_mask = np.concatenate([[True], np.diff(wl_raw) > 0])
+    if np.sum(unique_mask) < 10:
+        return FileValidation(usable=False, reason="No unique wavelengths")
+    wl_raw = wl_raw[unique_mask]
+    flux_raw = flux_raw[unique_mask]
+    
+    # === ENHANCED UNIT DETECTION AND CONVERSION ===
+    
+    # Stage 8a: Detect wavelength units
+    wl_unit_factor = _detect_wavelength_unit_from_header(filepath)
+    if wl_unit_factor is None:
+        wl_unit_factor = _detect_wavelength_unit(wl_raw)
+    if wl_unit_factor is None:
+        return FileValidation(usable=False, reason="Can't determine wavelength units")
+    
+    # Stage 8b: Detect flux units
+    flux_unit = _detect_flux_unit_from_header(filepath)
+    if flux_unit is None:
+        # Default assumption: F_lambda (most common for stellar atmospheres)
+        flux_unit = 'flam'
+    
+    # Stage 8c: Convert wavelength to Angstroms
+    wl = wl_raw * wl_unit_factor
+    
+    # Stage 8d: Convert flux to F_lambda (erg/s/cm²/Å)
+    if flux_unit == 'fnu':
+        # Convert F_nu to F_lambda
+        flux = _convert_fnu_to_flam(flux_raw, wl)
+    elif flux_unit == 'jy':
+        # Convert Jansky to erg/s/cm²/Hz first, then to F_lambda
+        flux_fnu = flux_raw * 1e-23  # 1 Jy = 1e-23 erg/s/cm²/Hz
+        flux = _convert_fnu_to_flam(flux_fnu, wl)
+    else:
+        # Already F_lambda, just copy
+        flux = flux_raw.copy()
+    
+    # Stage 8e: Adjust flux for wavelength unit conversion
+    # F_lambda (per Å) = F_lambda (per original unit) / conversion_factor
+    flux = flux / wl_unit_factor
+    
+    # Stage 8f: Validate converted units make sense
+    is_valid, validation_msg = _validate_standard_units(wl, flux)
+    if not is_valid:
+        return FileValidation(usable=False, reason=f"Unit validation failed: {validation_msg}")
+    
+    # Stage 9: Ensure wavelength is positive and finite (should be true but double-check)
+    if not (np.all(wl > 0) and np.all(np.isfinite(wl))):
+        return FileValidation(usable=False, reason="Invalid wavelengths after conversion")
+    
+    # Stage 10: Remove negative flux values
+    positive = flux > 0
+    if np.sum(positive) < 10:
+        return FileValidation(usable=False, reason="No positive flux values")
+    wl = wl[positive]
+    flux = flux[positive]
+    
+    # Stage 11: Remove catastrophic outliers (indicates corruption)
+    flux_median = np.median(flux)
+    flux_mad = np.median(np.abs(flux - flux_median))
+    if flux_mad > 0:
+        # Remove extreme outliers (>100 MAD from median)
+        outlier_mask = np.abs(flux - flux_median) > 100 * flux_mad
+        if np.sum(outlier_mask) > 0.5 * len(flux):
+            return FileValidation(usable=False, reason="Majority are outliers (corrupted)")
+        # Remove the outliers
+        if np.sum(outlier_mask) > 0:
+            wl = wl[~outlier_mask]
+            flux = flux[~outlier_mask]
+    
+    # Final check
+    if len(wl) < 10 or len(flux) < 10:
+        return FileValidation(usable=False, reason="Too few valid points after cleaning")
+    
+    # Build reason string with conversion info
+    unit_info = f"wl_factor={wl_unit_factor}, flux_unit={flux_unit}"
+    
+    # Return cleaned data (wavelength in Angstroms, flux in erg/s/cm²/Å)
+    return FileValidation(
+        usable=True,
+        reason=f"OK ({unit_info})",
+        wavelength=wl,
+        flux=flux
+    )
+
+
+def _is_index_grid(wl):
+    """Detect if wavelength is actually an index (0, 1, 2, ...) not physical units."""
+    if len(wl) < 10:
+        return False
+    
+    # Check if it starts near zero or one
+    if not (wl[0] < 2.0):
+        return False
+    
+    # Check if differences are close to 1
+    diffs = np.diff(wl)
+    median_diff = np.median(diffs)
+    
+    if 0.9 < median_diff < 1.1:
+        # Check if most differences are close to 1
+        close_to_one = np.abs(diffs - 1.0) < 0.1
+        if np.sum(close_to_one) > 0.9 * len(diffs):
+            return True
+    
+    return False
+
+
+def _try_recover_wavelength_from_h5(txt_filepath: str, model_dir: str, expected_len: int) -> Optional[np.ndarray]:
+    """
+    Try to recover wavelength grid from HDF5 source file.
+    
+    This handles the case where MSG extraction produced index grids.
+    """
+    # Parse header to find HDF5 source info
+    try:
+        with open(txt_filepath, 'r') as f:
+            spec_group = None
+            for line in f:
+                if not line.startswith('#'):
+                    break
+                if 'spec_group' in line and '=' in line:
+                    spec_group = line.split('=', 1)[1].strip()
+                    break
+            if spec_group is None:
+                return None
+    except:
+        return None
+    
+    # Find HDF5 file in model directory
+    h5_files = glob.glob(os.path.join(model_dir, "*.h5"))
+    
+    for h5_path in h5_files:
+        try:
+            with h5py.File(h5_path, 'r') as f:
+                if spec_group not in f:
+                    continue
+                
+                spec_g = f[spec_group]
+                wl = _recover_wavelengths_from_group(spec_g, expected_len)
+                
+                if wl is not None and len(wl) == expected_len:
+                    # Verify it's monotonic and positive
+                    if np.all(wl > 0) and np.all(np.diff(wl) > 0):
+                        return wl
+        except:
+            continue
+    
+    return None
+
+
+def _recover_wavelengths_from_group(spec_g, expected_len=None):
+    """Extract wavelength from HDF5 group."""
+    # Try direct dataset
+    KEYS = ("lambda", "wavelength", "wave", "wl", "wavelength_A")
+    for key in KEYS:
+        if key in spec_g and isinstance(spec_g[key], h5py.Dataset):
+            try:
+                wl = np.array(spec_g[key][()]).astype(float).squeeze()
+                if wl.size > 1 and np.all(np.diff(wl) > 0):
+                    return wl
+            except:
+                continue
+    
+    # Try range/x
+    if "range" in spec_g and isinstance(spec_g["range"], h5py.Group):
+        rg = spec_g["range"]
+        if "x" in rg and isinstance(rg["x"], h5py.Dataset):
+            try:
+                wl = np.array(rg["x"][()]).astype(float).ravel()
+                if wl.size > 1 and np.all(np.diff(wl) > 0):
+                    return wl
+            except:
+                pass
+    
+    return None
+
+
+def _detect_wavelength_unit(wl):
+    """
+    Infer wavelength units from data range.
+    Returns conversion factor to Angstroms, or None if uncertain.
+    """
+    wl_min, wl_max = wl.min(), wl.max()
+    
+    # Safety check for index grids (should be caught earlier)
+    if wl_min < 10 and wl_max < 1000:
+        # Could be index grid or valid data in m/cm
+        # Check if values look like indices
+        if np.allclose(np.diff(wl), 1.0, rtol=0.1):
+            return None  # Likely index grid, reject
+    
+    # Angstroms: typical range 1-100,000 Å (UV to far-IR)
+    # Most stellar spectra are 1000-100000 Å but bbody can start at 1 Å
+    if wl_min >= 1 and wl_max <= 1e6:
+        return 1.0
+    
+    # Nanometers: typical range 100-10,000 nm
+    if 10 < wl_max <= 50000 and wl_min > 5:
+        # If max is in hundreds to thousands, likely nm
+        if wl_max < 20000:  # Most stellar spectra don't exceed 20000 nm
+            return 10.0
+    
+    # Micrometers: typical range 0.1-1000 μm
+    if 0.05 < wl_max <= 5000 and wl_max > 0.1:
+        # If max is in tens to hundreds, likely μm
+        if wl_max < 1000:
+            return 1e4
+    
+    # Centimeters: rare but possible for radio
+    if 1e-6 < wl_max <= 10 and wl_max < 0.1:
+        return 1e8
+    
+    # Meters: also rare
+    if 1e-8 < wl_max <= 1 and wl_max < 0.01:
+        return 1e10
+    
+    # If we get here, units are ambiguous
+    return None
+
+
+def _detect_wavelength_unit_from_header(filepath: str) -> Optional[float]:
+    """
+    Parse header for wavelength unit hints.
+    Returns conversion factor to Angstroms, or None if not found.
+    """
+    try:
+        with open(filepath, "r", encoding='utf-8', errors='ignore') as f:
+            for _ in range(100):  # Check more lines
+                line = f.readline()
+                if not line:
+                    break
+                if not line.startswith("#"):
+                    break
+                u = line.lower()
+                
+                # Look for wavelength-related lines
+                if any(kw in u for kw in ['wavelength', 'lambda', 'wave']):
+                    # Check for unit indicators
+                    if 'angstrom' in u or '(a)' in u or '(å)' in u:
+                        return 1.0
+                    if 'nanometer' in u or '(nm)' in u:
+                        return 10.0
+                    if 'micron' in u or 'micrometer' in u or '(um)' in u or '(µm)' in u:
+                        return 1e4
+                    if '(cm)' in u:
+                        return 1e8
+                    if '(m)' in u and 'nm' not in u:  # meter but not nanometer
+                        return 1e10
+    except:
+        pass
+    return None
+
+
+def _detect_flux_unit_from_header(filepath: str) -> Optional[str]:
+    """
+    Parse header for flux unit hints.
+    Returns 'flam' (F_lambda), 'fnu' (F_nu), 'jy' (Jansky), or None.
+    """
+    try:
+        with open(filepath, "r", encoding='utf-8', errors='ignore') as f:
+            for _ in range(100):
+                line = f.readline()
+                if not line:
+                    break
+                if not line.startswith("#"):
+                    break
+                u = line.lower()
+                
+                # Look for flux-related lines
+                if any(kw in u for kw in ['flux', 'f_lambda', 'flam', 'f_nu', 'fnu', 'intensity']):
+                    # Check for F_nu indicators
+                    if any(kw in u for kw in ['f_nu', 'fnu', 'hz', 'frequency']):
+                        if 'jy' in u or 'jansky' in u:
+                            return 'jy'
+                        return 'fnu'
+                    
+                    # Check for F_lambda indicators (most common)
+                    if any(kw in u for kw in ['f_lambda', 'flam', 'f_lam', 'lambda']):
+                        return 'flam'
+                    
+                    # If it just says "flux" with wavelength context, assume F_lambda
+                    if 'wavelength' in u or 'angstrom' in u:
+                        return 'flam'
+    except:
+        pass
+    return None
+
+
+def _convert_fnu_to_flam(flux_fnu, wl_angstrom):
+    """
+    Convert F_nu (erg/s/cm²/Hz) to F_lambda (erg/s/cm²/Å).
+    
+    Formula: F_lambda = F_nu * (c / λ²)
+    where c = speed of light in Å/s, λ in Å
+    """
+    # Avoid division by zero
+    wl_safe = np.maximum(wl_angstrom, 1.0)
+    conversion_factor = SPEED_OF_LIGHT_ANG_S / (wl_safe ** 2)
+    return flux_fnu * conversion_factor
+
+
+def _validate_standard_units(wl, flux):
+    """
+    Validate that wavelength and flux are in reasonable ranges.
+    
+    Returns (is_valid: bool, reason: str)
+    """
+    # Wavelength checks (should be in Angstroms)
+    if wl.min() < 0.1:  # Allow down to X-ray range
+        return False, f"Wavelength too small: {wl.min():.2e} Å"
+    
+    if wl.max() > 1e7:  # Up to far-IR/radio
+        return False, f"Wavelength too large: {wl.max():.2e} Å"
+    
+    # Check wavelength span is reasonable
+    if wl.max() / max(wl.min(), 1e-10) < 1.1:
+        return False, f"Wavelength range too narrow: {wl.min():.1f} - {wl.max():.1f} Å"
+    
+    # Flux checks - ONLY check for obviously broken data, NOT absolute magnitudes
+    # (flux hasn't been normalized yet, so magnitude checks are premature)
+    flux_finite = flux[np.isfinite(flux)]
+    if len(flux_finite) == 0:
+        return False, "No finite flux values"
+    
+    # Check for all negative flux (sign error)
+    if np.all(flux_finite <= 0):
+        return False, "All flux values are negative or zero"
+    
+    # Check for all zero flux (empty/broken file)
+    if np.all(flux_finite == 0):
+        return False, "All flux values are zero"
+    
+    # Check fraction of negative values (some noise is OK)
+    neg_frac = np.sum(flux_finite < 0) / len(flux_finite)
+    if neg_frac > 0.5:  # Allow up to 50% negative (generous for noisy data)
+        return False, f"Too many negative flux values: {neg_frac:.1%}"
+    
+    return True, "OK"
+
 
 def find_stellar_models(base_dir="../data/stellar_models/"):
     """Find all stellar model directories containing lookup tables."""
@@ -160,224 +545,6 @@ def load_model_data(model_path):
     return data
 
 
-def load_sed(filepath):
-    return np.loadtxt(filepath, unpack=True)
-
-
-def prepare_sed(filepath, teff):
-    wl, flux = load_sed(filepath)
-    # assume it's already in F_lambda, skip unit guessing for now
-    flux = renorm_to_sigmaT4(wl, flux, teff)
-    return wl, flux
-
-
-def normalize_to_reference(target_data, reference_data, wavelength_grid):
-    """
-    Normalize target SEDs to match flux scaling of closest reference model.
-    """
-    print(
-        f"  Normalizing to reference model: {
-            os.path.basename(reference_data['model_dir'])
-        }"
-    )
-
-    # Check if reference data is valid
-    if len(reference_data["files"]) == 0:
-        print("    Error: No reference files found!")
-        return np.ones(len(target_data["files"]))
-
-    # Build KDTree for reference models
-    reference_params = np.column_stack(
-        [reference_data["teff"], reference_data["logg"], reference_data["meta"]]
-    )
-
-    # Check for NaN/inf values and clean them
-    valid_mask = np.isfinite(reference_params).all(axis=1)
-    if not valid_mask.all():
-        print(
-            f"    Warning: Found {
-                np.sum(~valid_mask)
-            } invalid reference models, removing them"
-        )
-        reference_params = reference_params[valid_mask]
-        # Also filter the corresponding data
-        reference_files = np.array(reference_data["files"])[valid_mask]
-        reference_teff = np.array(reference_data["teff"])[valid_mask]
-        np.array(reference_data["logg"])[valid_mask]
-        np.array(reference_data["meta"])[valid_mask]
-    else:
-        reference_files = reference_data["files"]
-        reference_teff = reference_data["teff"]
-
-    if len(reference_params) == 0:
-        print("    Error: No valid reference models found!")
-        return np.ones(len(target_data["files"]))
-
-    print("    Reference model parameter ranges:")
-    print(
-        f"      Teff: {reference_params[:, 0].min():.1f} - {reference_params[:, 0].max():.1f} K"
-    )
-    print(
-        f"      logg: {reference_params[:, 1].min():.2f} - {reference_params[:, 1].max():.2f}"
-    )
-    print(
-        f"      [M/H]: {reference_params[:, 2].min():.2f} - {reference_params[:, 2].max():.2f}"
-    )
-
-    # Normalize parameters for better distance calculation
-    # Handle case where range is zero
-    teff_range = reference_params[:, 0].max() - reference_params[:, 0].min()
-    logg_range = reference_params[:, 1].max() - reference_params[:, 1].min()
-    meta_range = reference_params[:, 2].max() - reference_params[:, 2].min()
-
-    print(
-        f"    Parameter ranges: Teff={teff_range:.1f}, logg={logg_range:.2f}, meta={meta_range:.2f}"
-    )
-
-    if teff_range > 0:
-        teff_norm = (reference_params[:, 0] - reference_params[:, 0].min()) / teff_range
-    else:
-        teff_norm = np.zeros(len(reference_params))
-        print("    Warning: Teff range is zero, using constant normalization")
-
-    if logg_range > 0:
-        logg_norm = (reference_params[:, 1] - reference_params[:, 1].min()) / logg_range
-    else:
-        logg_norm = np.zeros(len(reference_params))
-        print("    Warning: logg range is zero, using constant normalization")
-
-    if meta_range > 0:
-        meta_norm = (reference_params[:, 2] - reference_params[:, 2].min()) / meta_range
-    else:
-        meta_norm = np.zeros(len(reference_params))
-        print("    Warning: [M/H] range is zero, using constant normalization")
-
-    reference_params_norm = np.column_stack([teff_norm, logg_norm, meta_norm])
-
-    # Final check for finite values
-    if not np.isfinite(reference_params_norm).all():
-        print("    Error: Normalized parameters contain NaN/inf values!")
-        print(
-            f"    Teff range: {reference_params[:, 0].min():.1f} - {reference_params[:, 0].max():.1f}"
-        )
-        print(
-            f"    logg range: {reference_params[:, 1].min():.2f} - {reference_params[:, 1].max():.2f}"
-        )
-        print(
-            f"    meta range: {reference_params[:, 2].min():.2f} - {reference_params[:, 2].max():.2f}"
-        )
-        return np.ones(len(target_data["files"]))
-
-    # If all parameter ranges are zero, we can't use KDTree effectively
-    if teff_range == 0 and logg_range == 0 and meta_range == 0:
-        print("    Warning: All parameter ranges are zero, using simple matching")
-        # Just use the first reference model for all targets
-        reference_tree = None
-    else:
-        reference_tree = KDTree(reference_params_norm)
-
-    norm_factors = []
-
-    for i, (file, teff, logg, meta) in enumerate(
-        zip(
-            target_data["files"],
-            target_data["teff"],
-            target_data["logg"],
-            target_data["meta"],
-        )
-    ):
-        # Check for invalid target parameters
-        if not (np.isfinite(teff) and np.isfinite(logg) and np.isfinite(meta)):
-            print(
-                f"    Warning: Invalid target parameters for {file}: Teff={teff}, logg={
-                    logg
-                }, meta={meta}"
-            )
-            norm_factors.append(1.0)
-            continue
-
-        # Normalize target parameters the same way
-        if teff_range > 0:
-            target_teff_norm = (teff - reference_params[:, 0].min()) / teff_range
-        else:
-            target_teff_norm = 0.0
-
-        if logg_range > 0:
-            target_logg_norm = (logg - reference_params[:, 1].min()) / logg_range
-        else:
-            target_logg_norm = 0.0
-
-        if meta_range > 0:
-            target_meta_norm = (meta - reference_params[:, 2].min()) / meta_range
-        else:
-            target_meta_norm = 0.0
-
-        query = np.array([target_teff_norm, target_logg_norm, target_meta_norm])
-
-        # Check if query is finite
-        if not np.isfinite(query).all():
-            print(f"    Warning: Invalid normalized query for {file}")
-            norm_factors.append(1.0)
-            continue
-
-        # Find closest reference model
-        if reference_tree is None:
-            # Use first reference model if we can't do proper matching
-            idx = 0
-        else:
-            dist, idx = reference_tree.query(query)
-
-        # Load both SEDs
-        file_target = os.path.join(target_data["model_dir"], file)
-        file_ref = os.path.join(reference_data["model_dir"], reference_files[idx])
-
-        try:
-            wl_tgt, flux_tgt = prepare_sed(file_target, teff)
-            wl_ref, flux_ref = prepare_sed(file_ref, reference_teff[idx])
-
-            # Interpolate both to common wavelength grid
-            # Use wavelength range that both models cover
-            wl_min = max(wl_tgt.min(), wl_ref.min(), wavelength_grid.min())
-            wl_max = min(wl_tgt.max(), wl_ref.max(), wavelength_grid.max())
-            mask = (wavelength_grid >= wl_min) & (wavelength_grid <= wl_max)
-
-            if mask.sum() < 100:  # Need enough overlap
-                norm_factors.append(1.0)
-                continue
-
-            wl_common = wavelength_grid[mask]
-
-            interp_tgt = interp1d(wl_tgt, flux_tgt, bounds_error=False, fill_value=0)
-            interp_ref = interp1d(wl_ref, flux_ref, bounds_error=False, fill_value=0)
-
-            flux_tgt_interp = interp_tgt(wl_common)
-            flux_ref_interp = interp_ref(wl_common)
-
-            # Compute integrated fluxes
-            F_tgt = np.trapz(flux_tgt_interp, wl_common)
-            F_ref = np.trapz(flux_ref_interp, wl_common)
-
-            # Normalization factor
-            factor = F_ref / F_tgt if F_tgt > 0 else 1.0
-
-            # Sanity check - don't allow extreme normalizations
-            if 0.01 < factor < 100:
-                norm_factors.append(factor)
-            else:
-                norm_factors.append(1.0)
-
-        except Exception as e:
-            print(f"    Warning: could not normalize {file} → {e}")
-            norm_factors.append(1.0)
-
-    norm_factors = np.array(norm_factors)
-    print(
-        f"    Normalization factors: median={np.median(norm_factors):.2f}, range=[{np.min(norm_factors):.2f}, {np.max(norm_factors):.2f}]"
-    )
-
-    return norm_factors
-
-
 def create_unified_grid(all_models_data):
     """Create unified parameter grids from all models."""
     # Collect all parameter values
@@ -461,23 +628,6 @@ def create_common_wavelength_grid(all_models_data, sample_size=20):
     return wavelength_grid
 
 
-def identify_reference_model(all_models_data):
-    """Identify which model to use as reference (prefer Kurucz)."""
-    # Look for Kurucz model
-    for i, model_data in enumerate(all_models_data):
-        model_name = os.path.basename(model_data["model_dir"]).lower()
-        if "kurucz" in model_name:
-            print(
-                f"Using {os.path.basename(model_data['model_dir'])} as reference model"
-            )
-            return i
-
-    # If no Kurucz, use the first model
-    print(
-        f"No Kurucz model found, using {os.path.basename(all_models_data[0]['model_dir'])} as reference"
-    )
-    return 0
-
 
 def build_combined_flux_cube(
     all_models_data, teff_grid, logg_grid, meta_grid, wavelength_grid
@@ -498,21 +648,11 @@ def build_combined_flux_cube(
     print(f"\nBuilding combined flux cube: {flux_cube.shape}")
     print(f"Memory requirement: {flux_cube.nbytes / (1024**2):.1f} MB")
 
-    # Identify reference model
-    reference_idx = identify_reference_model(all_models_data)
-    reference_data = all_models_data[reference_idx]
-
-    # Calculate normalization factors for each model
+    # All models are now in same units - no cross-normalization needed
     normalization_factors = {}
     for model_idx, model_data in enumerate(all_models_data):
-        if model_idx == reference_idx:
-            # Reference model doesn't need normalization
-            normalization_factors[model_idx] = np.ones(len(model_data["files"]))
-        else:
-            # Normalize to reference
-            normalization_factors[model_idx] = normalize_to_reference(
-                model_data, reference_data, wavelength_grid
-            )
+        normalization_factors[model_idx] = np.ones(len(model_data["files"]))
+
 
     # Build KDTree for fast nearest neighbor searches
     # Normalize parameters for distance calculation
@@ -550,9 +690,15 @@ def build_combined_flux_cube(
             i_meta = np.clip(i_meta, 0, n_meta - 1)
 
             # Load and interpolate SED
+
             filepath = os.path.join(model_data["model_dir"], file)
-            try:
-                model_wavelengths, model_fluxes = prepare_sed(filepath, teff)
+            scale = model_data.get("scale", 1.0)
+
+            if "fid0" not in filepath:
+
+                model_wavelengths, model_fluxes = prepare_sed_with_scale(
+                    filepath, teff, scale, model_dir=model_data["model_dir"]
+                )
 
                 # Apply normalization factor
                 model_fluxes *= norm_factors[i]
@@ -573,8 +719,6 @@ def build_combined_flux_cube(
                 filled_map[i_teff, i_logg, i_meta] = True
                 source_map[i_teff, i_logg, i_meta] = model_idx
 
-            except Exception:
-                continue
 
     # Fill gaps using nearest neighbor interpolation
     empty_points = np.sum(~filled_map)
@@ -621,6 +765,9 @@ def build_combined_flux_cube(
                         ]
 
     return flux_cube, source_map
+
+
+
 
 
 def save_combined_data(
@@ -727,6 +874,90 @@ def save_combined_data(
 
     return lookup_df
 
+
+
+# After imports
+def detect_model_scale(model_data):
+    """Detect if model needs correction factor."""
+    
+    model_name = os.path.basename(model_data['model_dir'])
+    
+    n = min(15, len(model_data['files']))
+    indices = np.linspace(0, len(model_data['files'])-1, n, dtype=int)
+    
+    ratios = []
+    for idx in indices:
+        fp = os.path.join(model_data['model_dir'], model_data['files'][idx])
+        teff = model_data['teff'][idx]
+        
+        try:
+            wl, flux = load_sed(fp)
+            good = np.isfinite(flux) & (flux > 0) & (wl > 0)
+            if np.sum(good) < 10: continue
+            
+            wl, flux = wl[good], flux[good]
+            order = np.argsort(wl)
+            
+            Fbol = simps(flux[order], wl[order])
+            Fbol_expected = SIGMA * teff**4
+            
+            if Fbol > 0 and Fbol_expected > 0:
+                ratios.append(Fbol / Fbol_expected)
+        except: 
+            pass
+    
+    if not ratios: 
+        print(f"  [{model_name:20s}] WARNING: No valid samples, scale = 1.0")
+        return 1.0
+    
+    median = np.median(ratios)
+    
+    # Detect correction needed with TIGHT threshold around 1.0
+    if 0.8 < median < 1.25:
+        # Close to 1.0 - correct units
+        print(f"  [{model_name:20s}] ∫Fλ/σT⁴ = {median:.3f} → scale = 1.0 ✓")
+        return 1.0
+    
+    elif 0.25 < median < 0.8:
+        # Check if it's per-steradian (ratio ≈ 1/π ≈ 0.318)
+        test = median * np.pi
+        if 0.8 < test < 1.25:
+            print(f"  [{model_name:20s}] ∫Fλ/σT⁴ = {median:.3f} → scale = π (per-steradian, test={test:.3f})")
+            return np.pi
+        else:
+            # In range but not per-steradian - might need other correction
+            print(f"  [{model_name:20s}] ∫Fλ/σT⁴ = {median:.3f} → scale = 1.0 (unclear)")
+            return 1.0
+    
+    elif median < 0.25:
+        # Very low - probably missing scale factor
+        for factor in [10, 100, 1000, 10000]:
+            test = median * factor
+            if 0.8 < test < 1.25:
+                print(f"  [{model_name:20s}] ∫Fλ/σT⁴ = {median:.3e} → scale = {factor} (too low, test={test:.3f})")
+                return factor
+        print(f"  [{model_name:20s}] ∫Fλ/σT⁴ = {median:.3e} → scale = 10000 (way too low)")
+        return 10000
+    elif median > 1.25:
+        # Flux too high - try dividing
+        for factor in [0.1, 0.01, 0.001, 0.0001]:
+            test = median * factor
+            if 0.8 < test < 1.25:
+                print(f"  [{model_name:20s}] ∫Fλ/σT⁴ = {median:.3e} → scale = {factor} (too high, test={test:.3f})")
+                return factor
+        print(f"  [{model_name:20s}] ∫Fλ/σT⁴ = {median:.3e} → scale = 0.0001 (way too high)")
+        return 0.0001
+    
+    print(f"  [{model_name:20s}] ∫Fλ/σT⁴ = {median:.3f} → scale = 1.0 (default)")
+    return 1.0
+
+
+
+
+
+
+
+
 def visualize_parameter_space(
     teff_grid, logg_grid, meta_grid, source_map, all_models_data, output_dir
 ):
@@ -740,11 +971,11 @@ def visualize_parameter_space(
     cmap = plt.cm.tab10 if len(model_names) <= 10 else plt.cm.tab20
     colors = cmap(np.linspace(0, 1, len(model_names)))
 
-    fig = plt.figure(figsize=(18, 12))
+    fig = plt.figure(figsize=(18, 10))
     gs = fig.add_gridspec(
         2, 3,
-        wspace=0.35,
-        hspace=0.35,
+        wspace=0.20,
+        hspace=0.20,
         width_ratios=[1.0, 1.0, 1.0],
         height_ratios=[1.0, 1.0],
     )
@@ -764,14 +995,14 @@ def visualize_parameter_space(
                 c=[colors[model_idx]],
                 label=model_name,
                 alpha=0.6,
-                s=18,
+                s=10,
             )
 
     ax1.set_xlabel("Teff (K)")
     ax1.set_ylabel("log g")
     ax1.set_zlabel("[M/H]")
     ax1.set_title("3D Coverage")
-    ax1.legend(bbox_to_anchor=(1.05, 1), loc="upper left", fontsize=8, frameon=False)
+    #ax1.legend(bbox_to_anchor=(1.05, 1), loc="upper left", fontsize=8, frameon=False)
 
     # 2) Normalisation check (span top middle + top right)
     ax2 = fig.add_subplot(gs[0, 1:3])
@@ -820,14 +1051,15 @@ def visualize_parameter_space(
 
             wl, fl = prepare_sed(fpath, valid_teff[j])
             mask = (wl > 3000) & (wl < 10000)
-            if mask.sum() > 20:
-                ax2.plot(
-                    wl[mask],
-                    wl[mask] ** 2 * fl[mask],
-                    label=model_name,
-                    alpha=0.85,
-                    linewidth=1.2,
-                )
+            ax2.plot(
+                wl[mask],
+                wl[mask] ** 2 * fl[mask],
+                label=model_name,
+                color=colors[idx],
+                alpha=0.85,
+                linewidth=1.2,
+            )
+
         except Exception as e:
             print(f"  ⚠ Skipping {model_name}: {e}")
             continue
@@ -841,9 +1073,17 @@ def visualize_parameter_space(
     ax2.legend(fontsize=8, frameon=False, ncol=2)
 
     # ---------- Bottom row ----------
+    from matplotlib.colors import BoundaryNorm
+
     def _count_unique_models(arr):
         arr = arr[arr >= 0]
         return len(np.unique(arr))
+
+    # Quantized colormap + shared norm for all bottom panels (0..N unique models)
+    n_levels = len(model_names) + 1
+    dens_cmap = plt.get_cmap("YlOrRd", n_levels)
+    bounds = np.arange(-0.5, n_levels + 0.5, 1.0)
+    dens_norm = BoundaryNorm(bounds, dens_cmap.N)
 
     # 3) Teff vs log g (marginalized over [M/H])
     ax4 = fig.add_subplot(gs[1, 0])
@@ -857,12 +1097,12 @@ def visualize_parameter_space(
         origin="lower",
         aspect="auto",
         extent=[teff_grid.min(), teff_grid.max(), logg_grid.min(), logg_grid.max()],
-        cmap="YlOrRd",
+        cmap=dens_cmap,
+        norm=dens_norm,
     )
     ax4.set_xlabel("Teff (K)")
     ax4.set_ylabel("log g")
     ax4.set_title("Model Density: Teff vs log g")
-    plt.colorbar(im4, ax=ax4, fraction=0.046, pad=0.04)
 
     # 4) Teff vs [M/H] (marginalized over log g)
     ax5 = fig.add_subplot(gs[1, 1])
@@ -876,12 +1116,12 @@ def visualize_parameter_space(
         origin="lower",
         aspect="auto",
         extent=[teff_grid.min(), teff_grid.max(), meta_grid.min(), meta_grid.max()],
-        cmap="YlOrRd",
+        cmap=dens_cmap,
+        norm=dens_norm,
     )
     ax5.set_xlabel("Teff (K)")
     ax5.set_ylabel("[M/H]")
     ax5.set_title("Model Density: Teff vs [M/H]")
-    plt.colorbar(im5, ax=ax5, fraction=0.046, pad=0.04)
 
     # 5) log g vs [M/H] (marginalized over Teff)
     ax6 = fig.add_subplot(gs[1, 2])
@@ -895,12 +1135,21 @@ def visualize_parameter_space(
         origin="lower",
         aspect="auto",
         extent=[logg_grid.min(), logg_grid.max(), meta_grid.min(), meta_grid.max()],
-        cmap="YlOrRd",
+        cmap=dens_cmap,
+        norm=dens_norm,
     )
     ax6.set_xlabel("log g")
     ax6.set_ylabel("[M/H]")
     ax6.set_title("Model Density: log g vs [M/H]")
-    plt.colorbar(im6, ax=ax6, fraction=0.046, pad=0.04)
+
+    # Single shared colorbar for bottom row
+    fig.colorbar(
+        im6,
+        ax=[ax4, ax5, ax6],
+        fraction=0.046,
+        pad=0.04,
+        ticks=np.arange(0, n_levels, 1),
+    )
 
     plot_file = os.path.join(output_dir, "parameter_space_visualization.png")
     plt.savefig(plot_file, dpi=150, bbox_inches="tight")
@@ -925,236 +1174,3 @@ def visualize_parameter_space(
         n_points = np.sum(source_map == model_idx)
         pct = 100 * n_points / source_map.size
         print(f"  {model_name}: {n_points:,} grid points ({pct:.1f}%)")
-
-
-
-def validate_normalization_quality(all_models_data):
-    """
-    Check normalization quality by comparing solar-type stars.
-    Returns quality scores (1.0 = good, <0.5 = problematic).
-    """
-    print("\n" + "="*70)
-    print("NORMALIZATION QUALITY CHECK")
-    print("="*70)
-    
-    target_teff, target_logg, target_meta = 5777, 4.44, 0.0
-    model_fluxes = {}
-    
-    for model_data in all_models_data:
-        model_name = os.path.basename(model_data["model_dir"])
-        
-        # Find closest spectrum to solar parameters
-        valid_mask = (
-            np.isfinite(model_data["teff"]) &
-            np.isfinite(model_data["logg"]) &
-            np.isfinite(model_data["meta"])
-        )
-        
-        if not valid_mask.any():
-            print(f"  [{model_name}] No valid spectra")
-            continue
-        
-        valid_teff = np.array(model_data["teff"])[valid_mask]
-        valid_logg = np.array(model_data["logg"])[valid_mask]
-        valid_meta = np.array(model_data["meta"])[valid_mask]
-        valid_files = np.array(model_data["files"])[valid_mask]
-        
-        distance = (
-            ((valid_teff - target_teff) / 1000) ** 2 +
-            (valid_logg - target_logg) ** 2 +
-            (valid_meta - target_meta) ** 2
-        )
-        
-        if len(distance) == 0:
-            continue
-        
-        closest_idx = np.argmin(distance)
-        file_path = os.path.join(model_data["model_dir"], valid_files[closest_idx])
-        
-        try:
-            wl, flux = prepare_sed(file_path, valid_teff[closest_idx])
-            
-            # Calculate median λ²F_λ in optical range
-            optical = (wl > 3000) & (wl < 10000)
-            if np.sum(optical) < 20:
-                continue
-            
-            median_flux = np.median(wl[optical]**2 * flux[optical])
-            model_fluxes[model_name] = median_flux
-            print(f"  [{model_name:20s}] λ²F_λ (median) = {median_flux:.3e}")
-            
-        except Exception as e:
-            print(f"  [{model_name}] Failed: {e}")
-            continue
-    
-    if len(model_fluxes) < 2:
-        print("  ⚠ Not enough models to compare")
-        return {}
-    
-    # Calculate quality scores based on deviation from median
-    print("\n" + "-"*70)
-    print("QUALITY ASSESSMENT:")
-    print("-"*70)
-    
-    median_flux = np.median(list(model_fluxes.values()))
-    quality_scores = {}
-    problematic = []
-    
-    for model_name, flux in model_fluxes.items():
-        ratio = flux / median_flux
-        
-        # Assign quality score
-        if 0.5 <= ratio <= 2.0:
-            score = 1.0
-            status = "✓ GOOD"
-        elif 0.2 <= ratio <= 5.0:
-            score = 0.7
-            status = "⚠ OK"
-        elif 0.1 <= ratio <= 10.0:
-            score = 0.4
-            status = "⚠ POOR"
-        else:
-            score = 0.1
-            status = "✗ BAD"
-            problematic.append(model_name)
-        
-        quality_scores[model_name] = score
-        print(f"  [{model_name:20s}] Ratio: {ratio:7.2f}x  Score: {score:.2f}  {status}")
-    
-    if problematic:
-        print("\n" + "="*70)
-        print("⚠ PROBLEMATIC MODELS DETECTED:")
-        for name in problematic:
-            print(f"  - {name} (differs by >10x from median)")
-        print("\nThese models will be EXCLUDED from the combined grid.")
-        print("="*70)
-    
-    return quality_scores
-
-
-def filter_problematic_models(all_models_data, quality_scores, threshold=0.5):
-    """Remove models with poor normalization quality."""
-    if not quality_scores:
-        return all_models_data
-    
-    filtered = []
-    excluded = []
-    
-    for model_data in all_models_data:
-        model_name = os.path.basename(model_data["model_dir"])
-        score = quality_scores.get(model_name, 1.0)
-        
-        if score >= threshold:
-            filtered.append(model_data)
-        else:
-            excluded.append(model_name)
-    
-    if excluded:
-        print(f"\n⚠ EXCLUDED {len(excluded)} model(s): {', '.join(excluded)}")
-    
-    return filtered
-
-
-
-
-def main():
-    parser = argparse.ArgumentParser(
-        description="Combine multiple stellar atmosphere models"
-    )
-    parser.add_argument(
-        "--data_dir",
-        type=str,
-        default="../data/stellar_models/",
-        help="Base directory containing stellar models",
-    )
-    parser.add_argument(
-        "--output", type=str, default="combined_models", help="Output directory name"
-    )
-    parser.add_argument(
-        "--interactive",
-        action="store_true",
-        default=True,
-        help="Interactive model selection",
-    )
-
-    args = parser.parse_args()
-
-    # Find available models
-    model_dirs = find_stellar_models(args.data_dir)
-
-    if not model_dirs:
-        print(f"No stellar models found in {args.data_dir}")
-        return
-
-    # Select models to combine
-    if args.interactive:
-        selected_models = select_models_interactive(model_dirs)
-    else:
-        selected_models = model_dirs
-
-    if not selected_models:
-        print("No models selected.")
-        return
-
-    print(f"\nSelected {len(selected_models)} models to combine:")
-    for name, path in selected_models:
-        print(f"  - {name}")
-
-
-
-
-    # Load all model data
-    print("\nLoading model data...")
-    all_models_data = []
-    for name, path in selected_models:
-        print(f"  Loading {name}...")
-        data = load_model_data(path)
-        all_models_data.append(data)
-    
-    # === VALIDATE NORMALIZATION QUALITY ===
-    quality_scores = validate_normalization_quality(all_models_data)
-    
-    # Automatically exclude problematic models
-    all_models_data = filter_problematic_models(all_models_data, quality_scores, threshold=0.5)
-    
-    if len(all_models_data) == 0:
-        print("\n✗ ERROR: No valid models remaining after quality check!")
-        return
-    
-    print(f"\n✓ Using {len(all_models_data)} models for combined grid")
-
-    # Create unified grids
-    print("\nCreating unified parameter grids...")
-    teff_grid, logg_grid, meta_grid = create_unified_grid(all_models_data)
-    wavelength_grid = create_common_wavelength_grid(all_models_data)
-
-    # Build combined flux cube
-    flux_cube, source_map = build_combined_flux_cube(
-        all_models_data, teff_grid, logg_grid, meta_grid, wavelength_grid
-    )
-
-    # Save combined data
-    output_dir = os.path.join(args.data_dir, args.output)
-    save_combined_data(
-        output_dir,
-        teff_grid,
-        logg_grid,
-        meta_grid,
-        wavelength_grid,
-        flux_cube,
-        all_models_data,
-    )
-
-    # Create visualizations
-    visualize_parameter_space(
-        teff_grid, logg_grid, meta_grid, source_map, all_models_data, output_dir
-    )
-
-    print(f"\nSuccessfully combined {len(selected_models)} stellar atmosphere models!")
-    print(f"Output saved to: {output_dir}")
-    print("You can now use this combined model in MESA by setting:")
-    print(f"  stellar_atm = '{output_dir}/'")
-
-
-if __name__ == "__main__":
-    main()
