@@ -58,11 +58,8 @@ def load_txt_spectrum(txt_path: str) -> Tuple[np.ndarray, np.ndarray]:
                 continue
             parts = s.split()
             if len(parts) >= 2:
-                try:
-                    wl.append(float(parts[0]))
-                    fl.append(float(parts[1]))
-                except ValueError:
-                    continue
+                wl.append(float(parts[0]))
+                fl.append(float(parts[1]))
     return np.asarray(wl, dtype=float), np.asarray(fl, dtype=float)
 
 
@@ -74,10 +71,7 @@ def numeric_from(meta: Dict[str, str], key_candidates: List[str], default: float
             val = lower[ck.lower()]
             m = re.search(r"[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?", val)
             if m:
-                try:
-                    return float(m.group(0))
-                except ValueError:
-                    pass
+                return float(m.group(0))
     return default
 
 
@@ -95,26 +89,20 @@ def build_h5_bundle_from_txt(model_dir: str, out_h5: str) -> None:
         spectra_grp = h5.create_group("spectra")
         for fname in txt_files:
             path = os.path.join(model_dir, fname)
-            try:
-                wl, fl = load_txt_spectrum(path)
-                if wl.size == 0 or fl.size == 0:
-                    print(f"[H5 bundle] Empty or invalid spectrum: {fname}")
-                    continue
-                g = spectra_grp.create_group(fname)
-                g.create_dataset("lambda", data=wl, dtype="f8")
-                g.create_dataset("flux",   data=fl, dtype="f8")
+            wl, fl = load_txt_spectrum(path)
+            g = spectra_grp.create_group(fname)
+            g.create_dataset("lambda", data=wl, dtype="f8")
+            g.create_dataset("flux",   data=fl, dtype="f8")
 
-                meta = parse_metadata(path)
-                teff = numeric_from(meta, ["Teff", "teff", "T_eff"])
-                logg = numeric_from(meta, ["logg", "Logg", "log_g"])
-                feh = numeric_from(meta, ["FeH", "feh", "metallicity", "[Fe/H]", "meta"])
-                if not np.isnan(teff): g.attrs["teff"] = teff
-                if not np.isnan(logg): g.attrs["logg"] = logg
-                if not np.isnan(feh):  g.attrs["feh"] = feh
-                for k, v in meta.items():
-                    g.attrs[f"raw:{k}"] = v
-            except Exception as e:
-                print(f"[H5 bundle] Error on {fname}: {e}")
+            meta = parse_metadata(path)
+            teff = numeric_from(meta, ["Teff", "teff", "T_eff"])
+            logg = numeric_from(meta, ["logg", "Logg", "log_g"])
+            feh = numeric_from(meta, ["FeH", "feh", "metallicity", "[Fe/H]", "meta"])
+            if not np.isnan(teff): g.attrs["teff"] = teff
+            if not np.isnan(logg): g.attrs["logg"] = logg
+            if not np.isnan(feh):  g.attrs["feh"] = feh
+            for k, v in meta.items():
+                g.attrs[f"raw:{k}"] = v
 
     print(f"[H5 bundle] Wrote {out_h5}")
 
@@ -167,8 +155,7 @@ def _prompt_choice(
     RESET = "\x1b[0m" if use_color else ""
 
     def term_width() -> int:
-        try: return shutil.get_terminal_size().columns
-        except: return 80
+        return shutil.get_terminal_size().columns
 
     def apply_filter(idx: List[int]) -> List[int]:
         if filt is None: return idx
@@ -272,29 +259,25 @@ def _prompt_choice(
             # Check if input looks like a numeric selection string (digits, comma, hyphen, space)
             # This prevents treating search terms like "C3K" as a failed selection attempt
             if re.match(r"^[\d\s,-]+$", inp):
-                try:
-                    selected_indices = []
-                    parts = inp.split(',')
-                    is_range = False
-                    for p in parts:
-                        p = p.strip()
-                        if not p: continue
-                        if '-' in p:
-                            is_range = True
-                            a, b = p.split('-', 1)
-                            # Handle cases like "1 - 5" or "1-5"
-                            a, b = int(a), int(b)
-                            selected_indices.extend(range(a, b + 1))
-                        else:
-                            selected_indices.append(int(p))
-                    
-                    # Deduplicate and validate
-                    valid = [x - 1 for x in sorted(list(set(selected_indices))) if 1 <= x <= N]
-                    if valid:
-                        return valid
-                except ValueError:
-                    # Parsing failed (e.g. malformed range), fall through to filter logic
-                    pass
+                selected_indices = []
+                parts = inp.split(',')
+                is_range = False
+                for p in parts:
+                    p = p.strip()
+                    if not p: continue
+                    if '-' in p:
+                        is_range = True
+                        a, b = p.split('-', 1)
+                        # Handle cases like "1 - 5" or "1-5"
+                        a, b = int(a), int(b)
+                        selected_indices.extend(range(a, b + 1))
+                    else:
+                        selected_indices.append(int(p))
+                
+                # Deduplicate and validate
+                valid = [x - 1 for x in sorted(list(set(selected_indices))) if 1 <= x <= N]
+                if valid:
+                    return valid
 
         # --- Single Selection Logic ---
         if not multi and inp.isdigit():
@@ -362,37 +345,25 @@ def run_rebuild_flow(
         print(f"[rebuild] {model_name}")
         model_dir = os.path.join(base_dir, model_name)
 
-        try:
-            summary = clean_model_dir(model_dir, try_h5_recovery=True, backup=True, rebuild_lookup=True)
-            print(f"[clean] {model_name}: total={summary['total']}, "
-                  f"fixed={len(summary['fixed'])}, recovered={len(summary['recovered'])}, "
-                  f"skipped={len(summary['skipped'])}, deleted={len(summary['deleted'])}")
-        except Exception as e:
-            print(f"[clean] failed for {model_name}: {e}")
+        summary = clean_model_dir(model_dir, try_h5_recovery=True, backup=True, rebuild_lookup=True)
+        print(f"[clean] {model_name}: total={summary['total']}, "
+              f"fixed={len(summary['fixed'])}, recovered={len(summary['recovered'])}, "
+              f"skipped={len(summary['skipped'])}, deleted={len(summary['deleted'])}")
 
         txts = glob.glob(os.path.join(model_dir, "*.txt"))
         if not txts:
             print(f"[rebuild] no spectra (.txt) present after cleaning; skipping {model_name}.")
             continue
 
-        try:
-            regenerate_lookup_table(model_dir)
-        except Exception as e:
-            print(f"[rebuild] lookup failed: {e}")
+        regenerate_lookup_table(model_dir)
 
         if rebuild_h5:
             out_h5 = os.path.join(model_dir, f"{model_name}.h5")
-            try:
-                build_h5_bundle_from_txt(model_dir, out_h5)
-            except Exception as e:
-                print(f"[rebuild] h5 bundle failed: {e}")
+            build_h5_bundle_from_txt(model_dir, out_h5)
 
         if rebuild_flux_cube:
             out_flux = os.path.join(model_dir, "flux_cube.bin")
-            try:
-                precompute_flux_cube(model_dir, out_flux)
-            except Exception as e:
-                print(f"[rebuild] flux cube failed: {e}")
+            precompute_flux_cube(model_dir, out_flux)
 
     print("\nRebuild complete.")
 
@@ -539,13 +510,10 @@ def run_spectra_flow(
             continue  # Skip the cleaning/rebuilding steps below
 
         # Standard processing for non-NJM sources
-        try:
-            summary = clean_model_dir(model_dir, try_h5_recovery=True, backup=True, rebuild_lookup=True)
-            print(f"[clean] total={summary['total']} fixed={len(summary['fixed'])} "
-                  f"recovered={len(summary['recovered'])} skipped={len(summary['skipped'])} "
-                  f"deleted={len(summary['deleted'])}")
-        except Exception as e:
-            print(f"[clean] failed: {e}")
+        summary = clean_model_dir(model_dir, try_h5_recovery=True, backup=True, rebuild_lookup=True)
+        print(f"[clean] total={summary['total']} fixed={len(summary['fixed'])} "
+              f"recovered={len(summary['recovered'])} skipped={len(summary['skipped'])} "
+              f"deleted={len(summary['deleted'])}")
 
         if not glob.glob(os.path.join(model_dir, "*.txt")):
             print(f"[{src}] no .txt after cleaning; skip downstream.")
@@ -588,96 +556,86 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
     # Browse SVO catalog (authoritative source)
     print("\nBrowsing SVO Filter Profile Service...")
     
-    try:
-        facilities = svo.list_facilities()
-        if not facilities:
-            print("No facilities found.")
+    facilities = svo.list_facilities()
+    if not facilities:
+        print("No facilities found.")
+        return
+    
+    # Facility selection loop
+    while True:
+        fac_idx = _prompt_choice(facilities, "Filter Facilities")
+        if fac_idx is None:
             return
         
-        # Facility selection loop
+        facility = facilities[fac_idx]
+        instruments = svo.list_instruments(facility.key)
+        
+        if not instruments:
+            print(f"No instruments found for {facility.label}.")
+            continue
+        
+        # Instrument selection loop
         while True:
-            fac_idx = _prompt_choice(facilities, "Filter Facilities")
-            if fac_idx is None:
+            inst_idx = _prompt_choice(
+                instruments,
+                f"Instruments for {facility.label}",
+                allow_back=True
+            )
+            
+            if inst_idx is None:
                 return
+            if inst_idx == -1:
+                break  # Back to facilities
             
-            facility = facilities[fac_idx]
-            instruments = svo.list_instruments(facility.key)
+            instrument = instruments[inst_idx]
+            filters = svo.list_filters(facility.key, instrument.key)
             
-            if not instruments:
-                print(f"No instruments found for {facility.label}.")
+            if not filters:
+                print(f"No filters found for {instrument.label}.")
                 continue
             
-            # Instrument selection loop
-            while True:
-                inst_idx = _prompt_choice(
-                    instruments,
-                    f"Instruments for {facility.label}",
-                    allow_back=True
-                )
-                
-                if inst_idx is None:
-                    return
-                if inst_idx == -1:
-                    break  # Back to facilities
-                
-                instrument = instruments[inst_idx]
-                filters = svo.list_filters(facility.key, instrument.key)
-                
-                if not filters:
-                    print(f"No filters found for {instrument.label}.")
-                    continue
-                
-                # Show selection
-                print(f"\n{facility.label} / {instrument.label}")
-                print(f"Found {len(filters)} filters")
-                
-                confirm = input("Download all filters? [Y/n] ").strip().lower()
-                if confirm and not confirm.startswith('y'):
-                    continue
-                
-                # Smart download: Try NJM first, fall back to SVO
-                downloaded = False
-                
-                if njm_available:
-                    try:
-                        # Check if NJM has this facility/instrument
-                        njm_facilities = njm.discover_facilities()
-                        if facility.key in njm_facilities:
-                            njm_instruments = njm.discover_instruments(facility.key)
-                            if instrument.key in njm_instruments:
-                                # NJM has it - download from there
-                                print(f"\n[njm] Downloading from mirror...")
-                                count = njm.download_filters(facility.key, instrument.key)
-                                if count > 0:
-                                    print(f"[njm] ✓ Downloaded {count} filters")
-                                    downloaded = True
-                    except Exception as e:
-                        print(f"[njm] Failed: {e}")
-                
-                # Fall back to SVO if NJM didn't work
-                if not downloaded:
-                    print(f"\n[svo] Downloading from SVO...")
-                    try:
-                        svo.download_filters(filters)
-                        print(f"[svo] ✓ Downloaded {len(filters)} filters")
-                    except Exception as e:
-                        print(f"[svo] ✗ Failed: {e}")
-                
-                again = input("\nDownload another instrument? [y/N] ").strip().lower()
-                if not again.startswith('y'):
-                    break
-    
-    except KeyboardInterrupt:
-        print("\nExiting.")
-    except Exception as exc:
-        print(f"Error: {exc}")
+            # Show selection
+            print(f"\n{facility.label} / {instrument.label}")
+            print(f"Found {len(filters)} filters")
+            
+            confirm = input("Download all filters? [Y/n] ").strip().lower()
+            if confirm and not confirm.startswith('y'):
+                continue
+            
+            # Smart download: Try NJM first, fall back to SVO
+            downloaded = False
+            
+            if njm_available:
+                # Check if NJM has this facility/instrument
+                njm_facilities = njm.discover_facilities()
+                if facility.key in njm_facilities:
+                    njm_instruments = njm.discover_instruments(facility.key)
+                    if instrument.key in njm_instruments:
+                        # NJM has it - download from there
+                        print(f"\n[njm] Downloading from mirror...")
+                        count = njm.download_filters(facility.key, instrument.key)
+                        if count > 0:
+                            print(f"[njm] ✓ Downloaded {count} filters")
+                            downloaded = True
+            
+            # Fall back to SVO if NJM didn't work
+            if not downloaded:
+                print(f"\n[svo] Downloading from SVO...")
+                svo.download_filters(filters)
+                print(f"[svo] ✓ Downloaded {len(filters)} filters")
+            
+            again = input("\nDownload another instrument? [y/N] ").strip().lower()
+            if not again.startswith('y'):
+                break
+
 
 def menu() -> str:
     print("\nWhat would you like to run?")
     print("  1) Spectra (NJM / SVO / MSG / MAST)")
     print("  2) Filters (NJM / SVO)")
     print("  3) Rebuild (lookup + HDF5 + flux cube)")
-    print("  4) Combine grids into omni grid")  # ← ADD THIS LINE
+    print("  4) Combine grids into omni grid")
+    print("  5) ML SED Completer (train/extend incomplete SEDs)")
     print("  0) Quit")
     choice = input("> ").strip()
     mapping = {
@@ -685,6 +643,7 @@ def menu() -> str:
         "2": "filters", 
         "3": "rebuild",
         "4": "combine",
+        "5": "ml_completer",
         "0": "quit"
     }
     return mapping.get(choice, "")
@@ -784,6 +743,328 @@ def run_combine_flow(
     print(f"  stellar_atm = '{output_dir}/'")
 
 
+def run_ml_completer_flow(
+    base_dir: str = str(STELLAR_DIR_DEFAULT),
+    models_dir: str = "models"
+) -> None:
+    """
+    Interactive ML SED Completer workflow.
+    
+    Allows user to:
+    1. Train new models on existing SED libraries
+    2. Load trained models and extend incomplete SEDs
+    """
+    import pandas as pd
+    
+    ensure_dir(base_dir)
+    ensure_dir(models_dir)
+    
+    # Import ML completer
+    import sys
+    sys.path.insert(0, os.path.dirname(__file__))
+    from ml_sed_completer import SEDCompleter
+    
+    print("\n" + "="*60)
+    print("ML SED COMPLETER")
+    print("="*60)
+    print("\nExtend incomplete SEDs using trained neural networks")
+    
+    # Main choice: train or complete
+    print("\nWhat would you like to do?")
+    print("  1) Train new model")
+    print("  2) Complete/extend SEDs (inference)")
+    print("  0) Back")
+    
+    choice = input("> ").strip()
+    
+    if choice == "0":
+        return
+    
+    elif choice == "1":
+        # TRAINING MODE
+        print("\n" + "-"*60)
+        print("TRAIN NEW MODEL")
+        print("-"*60)
+        
+        # Discover available model libraries
+        available_models = []
+        for name in sorted(os.listdir(base_dir)):
+            model_path = os.path.join(base_dir, name)
+            if not os.path.isdir(model_path):
+                continue
+            
+            # Check for flux_cube.bin (required for training)
+            flux_cube = os.path.join(model_path, "flux_cube.bin")
+            if os.path.exists(flux_cube):
+                # Count SEDs in lookup table
+                lookup = os.path.join(model_path, "lookup_table.csv")
+                n_seds = "?"
+                if os.path.exists(lookup):
+                    df = pd.read_csv(lookup, comment='#')
+                    n_seds = len(df)
+                
+                available_models.append({
+                    'name': name,
+                    'path': model_path,
+                    'n_seds': n_seds
+                })
+        
+        if not available_models:
+            print(f"\nNo model libraries with flux_cube.bin found in {base_dir}")
+            print("Download some models first (option 1 in main menu)")
+            return
+        
+        # Display available models
+        print("\nAvailable model libraries for training:")
+        print("-"*60)
+        for i, model in enumerate(available_models, 1):
+            print(f"  {i:2d}) {model['name']:30s} ({model['n_seds']} SEDs)")
+        
+        # Select model
+        print("\nSelect library to train on (enter number):")
+        selection = input("> ").strip()
+        
+        idx = int(selection) - 1
+        selected = available_models[idx]
+        print(f"\nTraining on: {selected['name']}")
+        
+        # Training parameters
+        print("\nTraining parameters:")
+        epochs = input("  Epochs [100]: ").strip() or "100"
+        batch_size = input("  Batch size [32]: ").strip() or "32"
+        
+        epochs = int(epochs)
+        batch_size = int(batch_size)
+        
+        # Model name
+        default_name = f"sed_model_{selected['name']}"
+        model_name = input(f"  Model name [{default_name}]: ").strip() or default_name
+        output_path = os.path.join(models_dir, model_name)
+        
+        print(f"\nModel will be saved to: {output_path}.keras")
+        confirm = input("Start training? [Y/n]: ").strip().lower()
+        
+        if confirm and not confirm.startswith('y'):
+            print("Cancelled")
+            return
+        
+        # Train
+        print("\n" + "="*60)
+        print("TRAINING...")
+        print("="*60)
+        
+        completer = SEDCompleter()
+        history = completer.train_from_library(
+            selected['path'],
+            output_path,
+            epochs=epochs,
+            batch_size=batch_size
+        )
+        print("\n" + "="*60)
+        print("TRAINING COMPLETE!")
+        print("="*60)
+        print(f"Model saved: {output_path}.keras")
+        print(f"Parameters: {output_path}.params")
+        print(f"Plots: {output_path}_training_plots.png")
+        print(f"       {output_path}_prediction_examples.png")
+    
+    elif choice == "2":
+        # INFERENCE/COMPLETION MODE
+        print("\n" + "-"*60)
+        print("COMPLETE/EXTEND SEDs")
+        print("-"*60)
+        
+        # Discover trained models
+        trained_models = []
+        if os.path.exists(models_dir):
+            for fname in os.listdir(models_dir):
+                if fname.endswith('.keras'):
+                    model_name = fname[:-6]  # Remove .keras
+                    params_file = os.path.join(models_dir, model_name + '.params')
+                    if os.path.exists(params_file):
+                        trained_models.append({
+                            'name': model_name,
+                            'path': os.path.join(models_dir, model_name)
+                        })
+        
+        if not trained_models:
+            print(f"\nNo trained models found in {models_dir}/")
+            print("Train a model first (option 1)")
+            return
+        
+        # Select trained model
+        print("\nAvailable trained models:")
+        print("-"*60)
+        for i, model in enumerate(trained_models, 1):
+            print(f"  {i:2d}) {model['name']}")
+        
+        print("\nSelect model to use (enter number):")
+        selection = input("> ").strip()
+        
+        idx = int(selection) - 1
+        selected_model = trained_models[idx]
+        print(f"\nUsing model: {selected_model['name']}")
+        
+        # Load model
+        completer = SEDCompleter(model_path=selected_model['path'])
+        print("✓ Model loaded successfully")
+        
+        # Select source model set to complete
+        print("\n" + "-"*60)
+        print("SELECT MODEL SET TO EXTEND")
+        print("-"*60)
+        
+        available_models = []
+        for name in sorted(os.listdir(base_dir)):
+            model_path = os.path.join(base_dir, name)
+            if not os.path.isdir(model_path):
+                continue
+            
+            # Check for lookup table
+            lookup = os.path.join(model_path, "lookup_table.csv")
+            if os.path.exists(lookup):
+                df = pd.read_csv(lookup, comment='#')
+                n_seds = len(df)
+                available_models.append({
+                    'name': name,
+                    'path': model_path,
+                    'n_seds': n_seds
+                })
+        
+        if not available_models:
+            print(f"\nNo model sets found in {base_dir}")
+            return
+        
+        # Display models
+        print("\nAvailable model sets:")
+        print("-"*60)
+        for i, model in enumerate(available_models, 1):
+            print(f"  {i:2d}) {model['name']:30s} ({model['n_seds']} SEDs)")
+        
+        print("\nSelect model set to extend (enter number):")
+        selection = input("> ").strip()
+        
+        idx = int(selection) - 1
+        source_model = available_models[idx]
+        print(f"\nExtending: {source_model['name']}")
+        
+        # Output directory
+        output_name = source_model['name'] + "_ml_extended"
+        output_dir = os.path.join(base_dir, output_name)
+        
+        print(f"Output will be saved to: {output_name}/")
+        confirm = input("Start extension? [Y/n]: ").strip().lower()
+        
+        if confirm and not confirm.startswith('y'):
+            print("Cancelled")
+            return
+        
+        # Create output directory
+        ensure_dir(output_dir)
+        
+        # Load source lookup table
+        lookup_path = os.path.join(source_model['path'], "lookup_table.csv")
+        df = pd.read_csv(lookup_path, comment='#')
+        
+        # Process each SED
+        print("\n" + "="*60)
+        print("EXTENDING SEDs...")
+        print("="*60)
+        
+        from tqdm import tqdm
+        
+        extended_rows = []
+        
+        for idx, row in tqdm(df.iterrows(), total=len(df), desc="Processing SEDs"):
+            # Get SED filename and parameters
+            if 'file_name' in row:
+                sed_file = row['file_name']
+            elif 'filename' in row:
+                sed_file = row['filename']
+            else:
+                sed_file = row.iloc[0]
+            
+            # Get parameters
+            teff = float(row.get('teff', row.get('Teff', row.get('T_eff', 5777))))
+            logg = float(row.get('logg', row.get('Logg', row.get('log_g', 4.44))))
+            meta = float(row.get('meta', row.get('metallicity', row.get('[M/H]', row.get('feh', 0.0)))))
+            
+            # Load SED
+            sed_path = os.path.join(source_model['path'], sed_file)
+            data = np.loadtxt(sed_path, comments='#')
+            if data.ndim == 1:
+                data = data.reshape(-1, 1)
+            
+            wavelength = data[:, 0]
+            flux = data[:, 1]
+            
+            # Complete SED
+            wl_extended, flux_extended = completer.complete_sed(
+                wavelength, flux,
+                teff, logg, meta,
+                extension_range=(100.0, 100000.0)
+            )
+            
+            # Save extended SED
+            output_file = os.path.join(output_dir, sed_file)
+            np.savetxt(
+                output_file,
+                np.column_stack([wl_extended, flux_extended]),
+                header=f'wavelength_A flux_erg/s/cm2/A (ML extended)\nteff={teff} logg={logg} meta={meta}',
+                fmt='%.6e'
+            )
+            
+            # Track for lookup table
+            extended_rows.append({
+                'file_name': sed_file,
+                'teff': teff,
+                'logg': logg,
+                'meta': meta,
+                'source_model': source_model['name'],
+                'extended_by_ml': True
+            })
+        
+        print(f"\n✓ Successfully extended {len(extended_rows)} SEDs")
+        
+        # Save lookup table
+        if extended_rows:
+            lookup_df = pd.DataFrame(extended_rows)
+            output_lookup = os.path.join(output_dir, "lookup_table.csv")
+            with open(output_lookup, 'w') as f:
+                f.write("#file_name,teff,logg,meta,source_model,extended_by_ml\n")
+                lookup_df.to_csv(f, index=False, header=False)
+            print(f"✓ Saved lookup table: {output_lookup}")
+        
+        # Rebuild flux cube and HDF5
+        print("\n" + "-"*60)
+        print("REBUILDING DATA PRODUCTS")
+        print("-"*60)
+        
+        rebuild = input("Rebuild flux cube and HDF5? [Y/n]: ").strip().lower()
+        if not rebuild or rebuild.startswith('y'):
+            # HDF5 bundle
+            print("Building HDF5 bundle...")
+            h5_path = os.path.join(output_dir, f"{output_name}.h5")
+            build_h5_bundle_from_txt(output_dir, h5_path)
+            print(f"✓ HDF5: {h5_path}")
+            
+            # Flux cube
+            print("Building flux cube...")
+            cube_path = os.path.join(output_dir, "flux_cube.bin")
+            precompute_flux_cube(output_dir, cube_path)
+            print(f"✓ Flux cube: {cube_path}")
+        
+        print("\n" + "="*60)
+        print("EXTENSION COMPLETE!")
+        print("="*60)
+        print(f"Extended model: {output_dir}")
+        print(f"You can now use this in MESA with:")
+        print(f"  stellar_atm = '{output_dir}/'")
+    
+    else:
+        print("Invalid choice")
+
+
 
 
 
@@ -831,6 +1112,12 @@ def main():
     cp.add_argument("--non-interactive", action="store_true",
                     help="Combine all models without prompting")
 
+    # ml_completer
+    mp = sub.add_parser("ml_completer", help="Train/use ML SED completer")
+    mp.add_argument("--base", default=str(STELLAR_DIR_DEFAULT),
+                    help="Base models directory")
+    mp.add_argument("--models-dir", default="models",
+                    help="Directory for trained ML models")
 
     args = parser.parse_args()
 
@@ -860,6 +1147,12 @@ def main():
             interactive=not args.non_interactive
         )
 
+    elif args.cmd == "ml_completer":
+        run_ml_completer_flow(
+            base_dir=args.base,
+            models_dir=args.models_dir
+        )
+
     else:
         # Interactive mode
         while True:
@@ -870,8 +1163,10 @@ def main():
                 run_rebuild_flow()
             elif choice == "spectra":
                 run_spectra_flow(source="all")
-            elif choice == "combine":  # ← ADD THIS
-                run_combine_flow()     # ← ADD THIS
+            elif choice == "combine":
+                run_combine_flow()
+            elif choice == "ml_completer":
+                run_ml_completer_flow()
             else:
                 sys.exit(0)
 

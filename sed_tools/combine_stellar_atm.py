@@ -25,9 +25,6 @@ SPEED_OF_LIGHT_ANG_S = 2.99792458e18  # speed of light in Angstrom/s (for F_nu c
 
 def prepare_sed_with_scale(filepath, teff, scale_factor=1.0, model_dir=None):
     result = validate_and_clean(filepath, model_dir=model_dir)
-    if not result.usable:
-        raise ValueError(f"{filepath}: {result.reason}")
-
     wl = result.wavelength
     flux = result.flux
 
@@ -73,32 +70,26 @@ def validate_and_clean(filepath: str, model_dir: str) -> FileValidation:
     """
     
     # Stage 1: Check file format (skip XML)
-    try:
-        with open(filepath, 'r') as f:
-            first_line = f.readline()
-            if '<?xml' in first_line.lower():
-                return FileValidation(usable=False, reason="XML file")
-    except:
-        return FileValidation(usable=False, reason="Cannot read")
+    with open(filepath, 'r') as f:
+        first_line = f.readline()
+        if '<?xml' in first_line.lower():
+            print("XML file")
     
     # Stage 2: Load data
-    try:
-        data = np.loadtxt(filepath, unpack=True)
-        if data.ndim != 2 or data.shape[0] < 2:
-            return FileValidation(usable=False, reason="Wrong shape")
-        wl_raw = data[0].copy()
-        flux_raw = data[1].copy()
-    except Exception as e:
-        return FileValidation(usable=False, reason=f"Load failed: {str(e)[:30]}")
+    data = np.loadtxt(filepath, unpack=True)
+    if data.ndim != 2 or data.shape[0] < 2:
+        print("Wrong shape")
+    wl_raw = data[0].copy()
+    flux_raw = data[1].copy()
     
     # Stage 3: Basic quality checks
     if len(wl_raw) < 10:
-        return FileValidation(usable=False, reason="Too few points")
+        print("Too few points")
     
     # Stage 4: Remove NaN/inf from BOTH wavelength and flux
     good = np.isfinite(wl_raw) & np.isfinite(flux_raw)
     if np.sum(good) < 10:
-        return FileValidation(usable=False, reason="Too many NaN/inf values")
+        print("Too many NaN/inf values")
     wl_raw = wl_raw[good]
     flux_raw = flux_raw[good]
     
@@ -109,7 +100,7 @@ def validate_and_clean(filepath: str, model_dir: str) -> FileValidation:
         if fixed_wl is not None:
             wl_raw = fixed_wl
         else:
-            return FileValidation(usable=False, reason="Index grid, can't recover wavelength")
+            print("Index grid, can't recover wavelength")
     
     # Stage 6: Sort by wavelength
     order = np.argsort(wl_raw)
@@ -119,7 +110,7 @@ def validate_and_clean(filepath: str, model_dir: str) -> FileValidation:
     # Stage 7: Remove duplicate wavelengths
     unique_mask = np.concatenate([[True], np.diff(wl_raw) > 0])
     if np.sum(unique_mask) < 10:
-        return FileValidation(usable=False, reason="No unique wavelengths")
+        print("No unique wavelengths")
     wl_raw = wl_raw[unique_mask]
     flux_raw = flux_raw[unique_mask]
     
@@ -130,7 +121,7 @@ def validate_and_clean(filepath: str, model_dir: str) -> FileValidation:
     if wl_unit_factor is None:
         wl_unit_factor = _detect_wavelength_unit(wl_raw)
     if wl_unit_factor is None:
-        return FileValidation(usable=False, reason="Can't determine wavelength units")
+        print("Can't determine wavelength units")
     
     # Stage 8b: Detect flux units
     flux_unit = _detect_flux_unit_from_header(filepath)
@@ -160,16 +151,16 @@ def validate_and_clean(filepath: str, model_dir: str) -> FileValidation:
     # Stage 8f: Validate converted units make sense
     is_valid, validation_msg = _validate_standard_units(wl, flux)
     if not is_valid:
-        return FileValidation(usable=False, reason=f"Unit validation failed: {validation_msg}")
+        print(f"Unit validation failed: {validation_msg}")
     
     # Stage 9: Ensure wavelength is positive and finite (should be true but double-check)
     if not (np.all(wl > 0) and np.all(np.isfinite(wl))):
-        return FileValidation(usable=False, reason="Invalid wavelengths after conversion")
+        print("Invalid wavelengths after conversion")
     
     # Stage 10: Remove negative flux values
     positive = flux > 0
     if np.sum(positive) < 10:
-        return FileValidation(usable=False, reason="No positive flux values")
+        print("No positive flux values")
     wl = wl[positive]
     flux = flux[positive]
     
@@ -180,7 +171,7 @@ def validate_and_clean(filepath: str, model_dir: str) -> FileValidation:
         # Remove extreme outliers (>100 MAD from median)
         outlier_mask = np.abs(flux - flux_median) > 100 * flux_mad
         if np.sum(outlier_mask) > 0.5 * len(flux):
-            return FileValidation(usable=False, reason="Majority are outliers (corrupted)")
+            print("Majority are outliers (corrupted)")
         # Remove the outliers
         if np.sum(outlier_mask) > 0:
             wl = wl[~outlier_mask]
@@ -188,7 +179,7 @@ def validate_and_clean(filepath: str, model_dir: str) -> FileValidation:
     
     # Final check
     if len(wl) < 10 or len(flux) < 10:
-        return FileValidation(usable=False, reason="Too few valid points after cleaning")
+        print("Too few valid points after cleaning")
     
     # Build reason string with conversion info
     unit_info = f"wl_factor={wl_unit_factor}, flux_unit={flux_unit}"
@@ -486,12 +477,22 @@ def select_models_interactive(model_dirs):
         print(f"{idx}. {name} ({n_models} models)")
 
     print("\nEnter the numbers of models to combine (comma-separated):")
-    print("Example: 1,3,5 or 'all' for all models")
+    print("Example: 1,3,5 or 3-5 or 'all' for all models")
 
     user_input = input("> ").strip()
 
     if user_input.lower() == "all":
         return model_dirs
+
+    if '-' in user_input:
+        i = int(user_input.split("-")[0]) - 1
+        selected = []
+        while i < int(user_input.split("-")[1]):
+            selected.append(model_dirs[i])
+            i = i + 1
+
+        return selected
+
 
     try:
         indices = [int(x.strip()) - 1 for x in user_input.split(",")]
@@ -594,23 +595,19 @@ def create_common_wavelength_grid(all_models_data, sample_size=20):
 
         for idx in indices:
             filepath = os.path.join(model_data["model_dir"], model_data["files"][idx])
-            try:
-                wavelengths, _ = load_sed(filepath)
+            wavelengths, _ = load_sed(filepath)
 
-                if len(wavelengths) > 10:
-                    # Focus on optical/near-IR
-                    mask = (wavelengths >= 3000) & (wavelengths <= 25000)
-                    if mask.sum() > 10:
-                        wl_subset = wavelengths[mask]
-                        min_wave = min(min_wave, wl_subset.min())
-                        max_wave = max(max_wave, wl_subset.max())
+            if len(wavelengths) > 10:
+                # Focus on optical/near-IR
+                mask = (wavelengths >= 3000) & (wavelengths <= 25000)
+                if mask.sum() > 10:
+                    wl_subset = wavelengths[mask]
+                    min_wave = min(min_wave, wl_subset.min())
+                    max_wave = max(max_wave, wl_subset.max())
 
-                        # Estimate resolution
-                        resolution = np.median(np.diff(wl_subset))
-                        resolutions.append(resolution)
-
-            except (ValueError, IndexError, TypeError):
-                continue
+                    # Estimate resolution
+                    resolution = np.median(np.diff(wl_subset))
+                    resolutions.append(resolution)
 
     # Create wavelength grid
     typical_resolution = np.median(resolutions) if resolutions else 50.0
@@ -956,18 +953,14 @@ def detect_model_scale(model_data):
 
 
 
-
-
 def visualize_parameter_space(
     teff_grid, logg_grid, meta_grid, source_map, all_models_data, output_dir
 ):
     """Create visualizations of the parameter space coverage."""
     print("\nCreating parameter space visualizations...")
 
-    # Get model names
     model_names = [os.path.basename(data["model_dir"]) for data in all_models_data]
 
-    # Create color map for models
     cmap = plt.cm.tab10 if len(model_names) <= 10 else plt.cm.tab20
     colors = cmap(np.linspace(0, 1, len(model_names)))
 
@@ -980,7 +973,6 @@ def visualize_parameter_space(
         height_ratios=[1.0, 1.0],
     )
 
-    # ---------- Top row ----------
     # 1) 3D scatter
     ax1 = fig.add_subplot(gs[0, 0], projection="3d")
 
@@ -1002,12 +994,80 @@ def visualize_parameter_space(
     ax1.set_ylabel("log g")
     ax1.set_zlabel("[M/H]")
     ax1.set_title("3D Coverage")
-    #ax1.legend(bbox_to_anchor=(1.05, 1), loc="upper left", fontsize=8, frameon=False)
 
-    # 2) Normalisation check (span top middle + top right)
+    # 2) SED Comparison - Find overlapping parameter space
     ax2 = fig.add_subplot(gs[0, 1:3])
-    target = (5777, 4.44, 0.0)  # solar-like reference
+    
+    n_models = len(model_names)
 
+    # Get parameter ranges for each model
+    ranges = []
+    for idx in range(n_models):
+        data = all_models_data[idx]
+        valid_mask = (
+            np.isfinite(data["teff"])
+            & np.isfinite(data["logg"])
+            & np.isfinite(data["meta"])
+        )
+        vt = np.array(data["teff"])[valid_mask]
+        vg = np.array(data["logg"])[valid_mask]
+        vm = np.array(data["meta"])[valid_mask]
+
+        if len(vt) == 0:
+            ranges.append(None)
+            continue
+
+        ranges.append((
+            float(np.min(vt)), float(np.max(vt)),
+            float(np.min(vg)), float(np.max(vg)),
+            float(np.min(vm)), float(np.max(vm)),
+        ))
+
+    # Find largest overlapping subset
+    best = None
+    for mask in range(1, 1 << n_models):
+        subset = [i for i in range(n_models) if (mask >> i) & 1]
+        if len(subset) < 2:
+            continue
+
+        if any(ranges[i] is None for i in subset):
+            continue
+
+        tmin = max(ranges[i][0] for i in subset)
+        tmax = min(ranges[i][1] for i in subset)
+        gmin = max(ranges[i][2] for i in subset)
+        gmax = min(ranges[i][3] for i in subset)
+        mmin = max(ranges[i][4] for i in subset)
+        mmax = min(ranges[i][5] for i in subset)
+
+        tr = tmax - tmin
+        gr = gmax - gmin
+        mr = mmax - mmin
+
+        if tr <= 0 or gr <= 0 or mr <= 0:
+            continue
+
+        volume = tr * gr * mr
+        k = len(subset)
+
+        if (best is None) or (k > best[0]) or (k == best[0] and volume > best[1]):
+            best = (k, volume, subset, (tmin, tmax, gmin, gmax, mmin, mmax))
+
+    if best is None:
+        overlap_subset = []
+        tmin, tmax, gmin, gmax, mmin, mmax = (5777.0, 5777.0, 4.44, 4.44, 0.0, 0.0)
+        target = (5777.0, 4.44, 0.0)
+    else:
+        _, _, overlap_subset, (tmin, tmax, gmin, gmax, mmin, mmax) = best
+        target = ((tmin + tmax) / 2.0, (gmin + gmax) / 2.0, (mmin + mmax) / 2.0)
+
+    teff_rng = max(tmax - tmin, 1000.0)
+    logg_rng = max(gmax - gmin, 1.0)
+    meta_rng = max(mmax - mmin, 0.5)
+
+    included_names = [model_names[i] for i in overlap_subset]
+
+    # Plot ALL models (no skipping)
     for idx, model_name in enumerate(model_names):
         data = all_models_data[idx]
 
@@ -1016,76 +1076,70 @@ def visualize_parameter_space(
             & np.isfinite(data["logg"])
             & np.isfinite(data["meta"])
         )
-        if not valid_mask.any():
-            continue
 
         valid_teff = np.array(data["teff"])[valid_mask]
         valid_logg = np.array(data["logg"])[valid_mask]
         valid_meta = np.array(data["meta"])[valid_mask]
         valid_files = np.array(data["files"])[valid_mask]
 
-        dist = (
-            ((valid_teff - target[0]) / 1000) ** 2
-            + (valid_logg - target[1]) ** 2
-            + (valid_meta - target[2]) ** 2
-        )
+        # Find closest point to target
+        dx = (valid_teff - target[0]) / teff_rng
+        dy = (valid_logg - target[1]) / logg_rng
+        dz = (valid_meta - target[2]) / meta_rng
+        dist2 = dx * dx + dy * dy + dz * dz
 
-        if len(dist) == 0:
-            continue
-
-        j = np.argmin(dist)
+        j = int(np.argmin(dist2))
         fpath = os.path.join(data["model_dir"], valid_files[j])
 
-        # Quick guard against XML/FITS/binary junk
-        if not fpath.lower().endswith((".txt", ".dat", ".sed")):
-            continue
+        # Load and process SED (already in correct units from validate_and_clean)
+        wl, flux = prepare_sed_with_scale(fpath, valid_teff[j], scale_factor=1.0, model_dir=data["model_dir"])
 
-        try:
-            if not os.path.exists(fpath):
-                continue
+        # NO σT^4 normalization - models are already in consistent units after cleaning
+        # (This matches what happens in build_combined_flux_cube where norm_factors are all 1.0)
 
-            with open(fpath, "rb") as fh:
-                first = fh.read(256).lstrip()[:1]
-            if first == b"<":
-                continue
+        mask = (wl > 100) & (wl < 100000)
 
-            wl, fl = prepare_sed(fpath, valid_teff[j])
-            mask = (wl > 3000) & (wl < 10000)
-            ax2.plot(
-                wl[mask],
-                wl[mask] ** 2 * fl[mask],
-                label=model_name,
-                color=colors[idx],
-                alpha=0.85,
-                linewidth=1.2,
-            )
-
-        except Exception as e:
-            print(f"  ⚠ Skipping {model_name}: {e}")
-            continue
+        in_overlap = (idx in overlap_subset)
+        ax2.plot(
+            wl[mask],
+            wl[mask] ** 2 * flux[mask],
+            label=model_name,
+            color=colors[idx],
+            alpha=0.85 if in_overlap else 0.50,
+            linewidth=1.2,
+            linestyle="-" if in_overlap else ":",
+        )
 
     ax2.set_xscale("log")
     ax2.set_yscale("log")
     ax2.set_xlabel("Wavelength (Å)")
-    ax2.set_ylabel(r"$\lambda^2 F_\lambda$ (arb. units)")
-    ax2.set_title("Normalisation Check (closest-to-solar SED per model)")
+    ax2.set_ylabel(r"$\lambda^2 F_\lambda$ (erg s$^{-1}$ cm$^{-2}$)")
+
+    t, g, m = target
+    if included_names:
+        ax2.set_title(
+            f"Normalisation Check (target: Teff={t:.0f}K, logg={g:.2f}, [M/H]={m:.2f}) | overlap set: {', '.join(included_names)}"
+        )
+    else:
+        ax2.set_title(
+            f"Normalisation Check (target: Teff={t:.0f}K, logg={g:.2f}, [M/H]={m:.2f}) | no overlap"
+        )
+
     ax2.grid(True, alpha=0.25)
     ax2.legend(fontsize=8, frameon=False, ncol=2)
 
-    # ---------- Bottom row ----------
+    # Bottom row - density plots
     from matplotlib.colors import BoundaryNorm
 
     def _count_unique_models(arr):
         arr = arr[arr >= 0]
         return len(np.unique(arr))
 
-    # Quantized colormap + shared norm for all bottom panels (0..N unique models)
     n_levels = len(model_names) + 1
     dens_cmap = plt.get_cmap("YlOrRd", n_levels)
     bounds = np.arange(-0.5, n_levels + 0.5, 1.0)
     dens_norm = BoundaryNorm(bounds, dens_cmap.N)
 
-    # 3) Teff vs log g (marginalized over [M/H])
     ax4 = fig.add_subplot(gs[1, 0])
     dens_tg = np.zeros((len(teff_grid), len(logg_grid)))
     for i in range(len(teff_grid)):
@@ -1104,7 +1158,6 @@ def visualize_parameter_space(
     ax4.set_ylabel("log g")
     ax4.set_title("Model Density: Teff vs log g")
 
-    # 4) Teff vs [M/H] (marginalized over log g)
     ax5 = fig.add_subplot(gs[1, 1])
     dens_tm = np.zeros((len(teff_grid), len(meta_grid)))
     for i in range(len(teff_grid)):
@@ -1123,7 +1176,6 @@ def visualize_parameter_space(
     ax5.set_ylabel("[M/H]")
     ax5.set_title("Model Density: Teff vs [M/H]")
 
-    # 5) log g vs [M/H] (marginalized over Teff)
     ax6 = fig.add_subplot(gs[1, 2])
     dens_gm = np.zeros((len(logg_grid), len(meta_grid)))
     for j in range(len(logg_grid)):
@@ -1142,7 +1194,6 @@ def visualize_parameter_space(
     ax6.set_ylabel("[M/H]")
     ax6.set_title("Model Density: log g vs [M/H]")
 
-    # Single shared colorbar for bottom row
     fig.colorbar(
         im6,
         ax=[ax4, ax5, ax6],
@@ -1155,7 +1206,6 @@ def visualize_parameter_space(
     plt.savefig(plot_file, dpi=150, bbox_inches="tight")
     print(f"Saved visualization to: {plot_file}")
 
-    # Print summary statistics (unchanged)
     print("\n" + "=" * 60)
     print("COMBINED MODEL STATISTICS")
     print("=" * 60)
