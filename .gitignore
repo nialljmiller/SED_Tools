@@ -48,3 +48,16 @@ SED_tools/plots/
 *.txz
 *.dat
 *.csv
+# Trained models / artifacts
+models/*.keras
+models/*.params
+models/*training*.png
+models/*prediction*.png
+
+# Archives / data dumps
+*.tar
+*.tar.gz
+*.tgz
+
+# Random output images
+*.png
