@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
+"""
+Combine multiple stellar atmosphere models into a unified flux cube.
+"""
+
 import argparse
 import os
 import shutil
 import struct
-import sys
-from collections import Counter
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -13,452 +15,25 @@ from scipy.integrate import simpson as simps
 from scipy.interpolate import interp1d
 from scipy.spatial import KDTree
 from tqdm import tqdm
-from dataclasses import dataclass
-from typing import Optional
-import h5py
-import glob
 
-SIGMA = 5.670374419e-5  # erg s-1 cm-2 K-4
-SPEED_OF_LIGHT_ANG_S = 2.99792458e18  # speed of light in Angstrom/s (for F_nu conversion)
+SIGMA = 5.670374419e-5  # Stefan-Boltzmann constant (erg s-1 cm-2 K-4)
 
 
-
-def prepare_sed_with_scale(filepath, teff, scale_factor=1.0, model_dir=None):
-    result = validate_and_clean(filepath, model_dir=model_dir)
-    wl = result.wavelength
-    flux = result.flux
-
-    flux = flux * scale_factor
-
-    return wl, flux
-
-
-def load_sed(filepath):
-    return np.loadtxt(filepath, unpack=True)
-
-
-def prepare_sed(filepath, teff, correction=1.0):
-    wl, flux = load_sed(filepath)
-    flux = flux * correction  # Apply BEFORE normalization
-    return wl, flux
-
-
-
-
-@dataclass
-class FileValidation:
-    """Result of validating one spectrum file."""
-    usable: bool
-    reason: str
-    wavelength: Optional[np.ndarray] = None  # Cleaned wavelength (in Angstroms)
-    flux: Optional[np.ndarray] = None        # Cleaned flux (NOT scaled, just cleaned)
-
-
-def validate_and_clean(filepath: str, model_dir: str) -> FileValidation:
-    """
-    Validate and clean one spectrum file with comprehensive unit detection.
-    
-    Ensures output is:
-    - Wavelength: Angstroms (Å)
-    - Flux: erg/s/cm²/Å (F_lambda)
-    
-    Returns FileValidation with:
-    - usable: True if file can be used
-    - wavelength: Cleaned wavelength array in Angstroms
-    - flux: Cleaned flux array in erg/s/cm²/Å
-    - reason: Why file was skipped (if unusable) or conversion info
-    """
-    
-    # Stage 1: Check file format (skip XML)
-    with open(filepath, 'r') as f:
-        first_line = f.readline()
-        if '<?xml' in first_line.lower():
-            print("XML file")
-    
-    # Stage 2: Load data
-    data = np.loadtxt(filepath, unpack=True)
-    if data.ndim != 2 or data.shape[0] < 2:
-        print("Wrong shape")
-    wl_raw = data[0].copy()
-    flux_raw = data[1].copy()
-    
-    # Stage 3: Basic quality checks
-    if len(wl_raw) < 10:
-        print("Too few points")
-    
-    # Stage 4: Remove NaN/inf from BOTH wavelength and flux
-    good = np.isfinite(wl_raw) & np.isfinite(flux_raw)
-    if np.sum(good) < 10:
-        print("Too many NaN/inf values")
-    wl_raw = wl_raw[good]
-    flux_raw = flux_raw[good]
-    
-    # Stage 5: Check if wavelength is index grid (0, 1, 2, ...)
-    if _is_index_grid(wl_raw):
-        # Try to recover real wavelength from HDF5
-        fixed_wl = _try_recover_wavelength_from_h5(filepath, model_dir, len(wl_raw))
-        if fixed_wl is not None:
-            wl_raw = fixed_wl
-        else:
-            print("Index grid, can't recover wavelength")
-    
-    # Stage 6: Sort by wavelength
-    order = np.argsort(wl_raw)
-    wl_raw = wl_raw[order]
-    flux_raw = flux_raw[order]
-    
-    # Stage 7: Remove duplicate wavelengths
-    unique_mask = np.concatenate([[True], np.diff(wl_raw) > 0])
-    if np.sum(unique_mask) < 10:
-        print("No unique wavelengths")
-    wl_raw = wl_raw[unique_mask]
-    flux_raw = flux_raw[unique_mask]
-    
-    # === ENHANCED UNIT DETECTION AND CONVERSION ===
-    
-    # Stage 8a: Detect wavelength units
-    wl_unit_factor = _detect_wavelength_unit_from_header(filepath)
-    if wl_unit_factor is None:
-        wl_unit_factor = _detect_wavelength_unit(wl_raw)
-    if wl_unit_factor is None:
-        print("Can't determine wavelength units")
-    
-    # Stage 8b: Detect flux units
-    flux_unit = _detect_flux_unit_from_header(filepath)
-    if flux_unit is None:
-        # Default assumption: F_lambda (most common for stellar atmospheres)
-        flux_unit = 'flam'
-    
-    # Stage 8c: Convert wavelength to Angstroms
-    wl = wl_raw * wl_unit_factor
-    
-    # Stage 8d: Convert flux to F_lambda (erg/s/cm²/Å)
-    if flux_unit == 'fnu':
-        # Convert F_nu to F_lambda
-        flux = _convert_fnu_to_flam(flux_raw, wl)
-    elif flux_unit == 'jy':
-        # Convert Jansky to erg/s/cm²/Hz first, then to F_lambda
-        flux_fnu = flux_raw * 1e-23  # 1 Jy = 1e-23 erg/s/cm²/Hz
-        flux = _convert_fnu_to_flam(flux_fnu, wl)
-    else:
-        # Already F_lambda, just copy
-        flux = flux_raw.copy()
-    
-    # Stage 8e: Adjust flux for wavelength unit conversion
-    # F_lambda (per Å) = F_lambda (per original unit) / conversion_factor
-    flux = flux / wl_unit_factor
-    
-    # Stage 8f: Validate converted units make sense
-    is_valid, validation_msg = _validate_standard_units(wl, flux)
-    if not is_valid:
-        print(f"Unit validation failed: {validation_msg}")
-    
-    # Stage 9: Ensure wavelength is positive and finite (should be true but double-check)
-    if not (np.all(wl > 0) and np.all(np.isfinite(wl))):
-        print("Invalid wavelengths after conversion")
-    
-    # Stage 10: Remove negative flux values
-    positive = flux > 0
-    if np.sum(positive) < 10:
-        print("No positive flux values")
-    wl = wl[positive]
-    flux = flux[positive]
-    
-    # Stage 11: Remove catastrophic outliers (indicates corruption)
-    flux_median = np.median(flux)
-    flux_mad = np.median(np.abs(flux - flux_median))
-    if flux_mad > 0:
-        # Remove extreme outliers (>100 MAD from median)
-        outlier_mask = np.abs(flux - flux_median) > 100 * flux_mad
-        if np.sum(outlier_mask) > 0.5 * len(flux):
-            print("Majority are outliers (corrupted)")
-        # Remove the outliers
-        if np.sum(outlier_mask) > 0:
-            wl = wl[~outlier_mask]
-            flux = flux[~outlier_mask]
-    
-    # Final check
-    if len(wl) < 10 or len(flux) < 10:
-        print("Too few valid points after cleaning")
-    
-    # Build reason string with conversion info
-    unit_info = f"wl_factor={wl_unit_factor}, flux_unit={flux_unit}"
-    
-    # Return cleaned data (wavelength in Angstroms, flux in erg/s/cm²/Å)
-    return FileValidation(
-        usable=True,
-        reason=f"OK ({unit_info})",
-        wavelength=wl,
-        flux=flux
-    )
-
-
-def _is_index_grid(wl):
-    """Detect if wavelength is actually an index (0, 1, 2, ...) not physical units."""
-    if len(wl) < 10:
-        return False
-    
-    # Check if it starts near zero or one
-    if not (wl[0] < 2.0):
-        return False
-    
-    # Check if differences are close to 1
-    diffs = np.diff(wl)
-    median_diff = np.median(diffs)
-    
-    if 0.9 < median_diff < 1.1:
-        # Check if most differences are close to 1
-        close_to_one = np.abs(diffs - 1.0) < 0.1
-        if np.sum(close_to_one) > 0.9 * len(diffs):
-            return True
-    
-    return False
-
-
-def _try_recover_wavelength_from_h5(txt_filepath: str, model_dir: str, expected_len: int) -> Optional[np.ndarray]:
-    """
-    Try to recover wavelength grid from HDF5 source file.
-    
-    This handles the case where MSG extraction produced index grids.
-    """
-    # Parse header to find HDF5 source info
-    try:
-        with open(txt_filepath, 'r') as f:
-            spec_group = None
-            for line in f:
-                if not line.startswith('#'):
-                    break
-                if 'spec_group' in line and '=' in line:
-                    spec_group = line.split('=', 1)[1].strip()
-                    break
-            if spec_group is None:
-                return None
-    except:
-        return None
-    
-    # Find HDF5 file in model directory
-    h5_files = glob.glob(os.path.join(model_dir, "*.h5"))
-    
-    for h5_path in h5_files:
-        try:
-            with h5py.File(h5_path, 'r') as f:
-                if spec_group not in f:
-                    continue
-                
-                spec_g = f[spec_group]
-                wl = _recover_wavelengths_from_group(spec_g, expected_len)
-                
-                if wl is not None and len(wl) == expected_len:
-                    # Verify it's monotonic and positive
-                    if np.all(wl > 0) and np.all(np.diff(wl) > 0):
-                        return wl
-        except:
-            continue
-    
-    return None
-
-
-def _recover_wavelengths_from_group(spec_g, expected_len=None):
-    """Extract wavelength from HDF5 group."""
-    # Try direct dataset
-    KEYS = ("lambda", "wavelength", "wave", "wl", "wavelength_A")
-    for key in KEYS:
-        if key in spec_g and isinstance(spec_g[key], h5py.Dataset):
-            try:
-                wl = np.array(spec_g[key][()]).astype(float).squeeze()
-                if wl.size > 1 and np.all(np.diff(wl) > 0):
-                    return wl
-            except:
-                continue
-    
-    # Try range/x
-    if "range" in spec_g and isinstance(spec_g["range"], h5py.Group):
-        rg = spec_g["range"]
-        if "x" in rg and isinstance(rg["x"], h5py.Dataset):
-            try:
-                wl = np.array(rg["x"][()]).astype(float).ravel()
-                if wl.size > 1 and np.all(np.diff(wl) > 0):
-                    return wl
-            except:
-                pass
-    
-    return None
-
-
-def _detect_wavelength_unit(wl):
-    """
-    Infer wavelength units from data range.
-    Returns conversion factor to Angstroms, or None if uncertain.
-    """
-    wl_min, wl_max = wl.min(), wl.max()
-    
-    # Safety check for index grids (should be caught earlier)
-    if wl_min < 10 and wl_max < 1000:
-        # Could be index grid or valid data in m/cm
-        # Check if values look like indices
-        if np.allclose(np.diff(wl), 1.0, rtol=0.1):
-            return None  # Likely index grid, reject
-    
-    # Angstroms: typical range 1-100,000 Å (UV to far-IR)
-    # Most stellar spectra are 1000-100000 Å but bbody can start at 1 Å
-    if wl_min >= 1 and wl_max <= 1e6:
-        return 1.0
-    
-    # Nanometers: typical range 100-10,000 nm
-    if 10 < wl_max <= 50000 and wl_min > 5:
-        # If max is in hundreds to thousands, likely nm
-        if wl_max < 20000:  # Most stellar spectra don't exceed 20000 nm
-            return 10.0
-    
-    # Micrometers: typical range 0.1-1000 μm
-    if 0.05 < wl_max <= 5000 and wl_max > 0.1:
-        # If max is in tens to hundreds, likely μm
-        if wl_max < 1000:
-            return 1e4
-    
-    # Centimeters: rare but possible for radio
-    if 1e-6 < wl_max <= 10 and wl_max < 0.1:
-        return 1e8
-    
-    # Meters: also rare
-    if 1e-8 < wl_max <= 1 and wl_max < 0.01:
-        return 1e10
-    
-    # If we get here, units are ambiguous
-    return None
-
-
-def _detect_wavelength_unit_from_header(filepath: str) -> Optional[float]:
-    """
-    Parse header for wavelength unit hints.
-    Returns conversion factor to Angstroms, or None if not found.
-    """
-    try:
-        with open(filepath, "r", encoding='utf-8', errors='ignore') as f:
-            for _ in range(100):  # Check more lines
-                line = f.readline()
-                if not line:
-                    break
-                if not line.startswith("#"):
-                    break
-                u = line.lower()
-                
-                # Look for wavelength-related lines
-                if any(kw in u for kw in ['wavelength', 'lambda', 'wave']):
-                    # Check for unit indicators
-                    if 'angstrom' in u or '(a)' in u or '(å)' in u:
-                        return 1.0
-                    if 'nanometer' in u or '(nm)' in u:
-                        return 10.0
-                    if 'micron' in u or 'micrometer' in u or '(um)' in u or '(µm)' in u:
-                        return 1e4
-                    if '(cm)' in u:
-                        return 1e8
-                    if '(m)' in u and 'nm' not in u:  # meter but not nanometer
-                        return 1e10
-    except:
-        pass
-    return None
-
-
-def _detect_flux_unit_from_header(filepath: str) -> Optional[str]:
-    """
-    Parse header for flux unit hints.
-    Returns 'flam' (F_lambda), 'fnu' (F_nu), 'jy' (Jansky), or None.
-    """
-    try:
-        with open(filepath, "r", encoding='utf-8', errors='ignore') as f:
-            for _ in range(100):
-                line = f.readline()
-                if not line:
-                    break
-                if not line.startswith("#"):
-                    break
-                u = line.lower()
-                
-                # Look for flux-related lines
-                if any(kw in u for kw in ['flux', 'f_lambda', 'flam', 'f_nu', 'fnu', 'intensity']):
-                    # Check for F_nu indicators
-                    if any(kw in u for kw in ['f_nu', 'fnu', 'hz', 'frequency']):
-                        if 'jy' in u or 'jansky' in u:
-                            return 'jy'
-                        return 'fnu'
-                    
-                    # Check for F_lambda indicators (most common)
-                    if any(kw in u for kw in ['f_lambda', 'flam', 'f_lam', 'lambda']):
-                        return 'flam'
-                    
-                    # If it just says "flux" with wavelength context, assume F_lambda
-                    if 'wavelength' in u or 'angstrom' in u:
-                        return 'flam'
-    except:
-        pass
-    return None
-
-
-def _convert_fnu_to_flam(flux_fnu, wl_angstrom):
-    """
-    Convert F_nu (erg/s/cm²/Hz) to F_lambda (erg/s/cm²/Å).
-    
-    Formula: F_lambda = F_nu * (c / λ²)
-    where c = speed of light in Å/s, λ in Å
-    """
-    # Avoid division by zero
-    wl_safe = np.maximum(wl_angstrom, 1.0)
-    conversion_factor = SPEED_OF_LIGHT_ANG_S / (wl_safe ** 2)
-    return flux_fnu * conversion_factor
-
-
-def _validate_standard_units(wl, flux):
-    """
-    Validate that wavelength and flux are in reasonable ranges.
-    
-    Returns (is_valid: bool, reason: str)
-    """
-    # Wavelength checks (should be in Angstroms)
-    if wl.min() < 0.1:  # Allow down to X-ray range
-        return False, f"Wavelength too small: {wl.min():.2e} Å"
-    
-    if wl.max() > 1e7:  # Up to far-IR/radio
-        return False, f"Wavelength too large: {wl.max():.2e} Å"
-    
-    # Check wavelength span is reasonable
-    if wl.max() / max(wl.min(), 1e-10) < 1.1:
-        return False, f"Wavelength range too narrow: {wl.min():.1f} - {wl.max():.1f} Å"
-    
-    # Flux checks - ONLY check for obviously broken data, NOT absolute magnitudes
-    # (flux hasn't been normalized yet, so magnitude checks are premature)
-    flux_finite = flux[np.isfinite(flux)]
-    if len(flux_finite) == 0:
-        return False, "No finite flux values"
-    
-    # Check for all negative flux (sign error)
-    if np.all(flux_finite <= 0):
-        return False, "All flux values are negative or zero"
-    
-    # Check for all zero flux (empty/broken file)
-    if np.all(flux_finite == 0):
-        return False, "All flux values are zero"
-    
-    # Check fraction of negative values (some noise is OK)
-    neg_frac = np.sum(flux_finite < 0) / len(flux_finite)
-    if neg_frac > 0.5:  # Allow up to 50% negative (generous for noisy data)
-        return False, f"Too many negative flux values: {neg_frac:.1%}"
-    
-    return True, "OK"
+def renorm_to_sigmaT4(wl, flux, Teff):
+    """Renormalize flux so bolometric integral equals σT⁴."""
+    Fbol_model = simps(flux, wl)
+    Fbol_target = SIGMA * Teff**4
+    return flux * (Fbol_target / Fbol_model)
 
 
 def find_stellar_models(base_dir="../data/stellar_models/"):
-    """Find all stellar model directories containing lookup tables."""
+    """Find all model directories containing lookup tables."""
     model_dirs = []
-
     for item in os.listdir(base_dir):
         item_path = os.path.join(base_dir, item)
-        if os.path.isdir(item_path):
-            lookup_file = os.path.join(item_path, "lookup_table.csv")
-            if os.path.exists(lookup_file):
-                model_dirs.append((item, item_path))
-
+        lookup_file = os.path.join(item_path, "lookup_table.csv")
+        if os.path.isdir(item_path) and os.path.exists(lookup_file):
+            model_dirs.append((item, item_path))
     return model_dirs
 
 
@@ -467,37 +42,23 @@ def select_models_interactive(model_dirs):
     print("\nAvailable stellar atmosphere models:")
     print("-" * 50)
     for idx, (name, path) in enumerate(model_dirs, start=1):
-        # Count models in directory
         lookup_file = os.path.join(path, "lookup_table.csv")
         try:
             df = pd.read_csv(lookup_file, comment="#")
             n_models = len(df)
-        except (FileNotFoundError, pd.errors.EmptyDataError, ValueError):
+        except Exception:
             n_models = "?"
         print(f"{idx}. {name} ({n_models} models)")
 
-    print("\nEnter the numbers of models to combine (comma-separated):")
-    print("Example: 1,3,5 or 3-5 or 'all' for all models")
-
+    print("\nEnter model numbers (comma-separated) or 'all':")
     user_input = input("> ").strip()
 
     if user_input.lower() == "all":
         return model_dirs
 
-    if '-' in user_input:
-        i = int(user_input.split("-")[0]) - 1
-        selected = []
-        while i < int(user_input.split("-")[1]):
-            selected.append(model_dirs[i])
-            i = i + 1
-
-        return selected
-
-
     try:
         indices = [int(x.strip()) - 1 for x in user_input.split(",")]
-        selected = [model_dirs[i] for i in indices if 0 <= i < len(model_dirs)]
-        return selected
+        return [model_dirs[i] for i in indices if 0 <= i < len(model_dirs)]
     except (ValueError, IndexError):
         print("Invalid input. Using all models.")
         return model_dirs
@@ -507,24 +68,15 @@ def load_model_data(model_path):
     """Load lookup table and extract parameter information."""
     lookup_file = os.path.join(model_path, "lookup_table.csv")
 
-    # Read the CSV, handling the # comment character
     with open(lookup_file, "r") as f:
-        # Read header line
-        header = f.readline().strip()
-        if header.startswith("#"):
-            header = header[1:].strip()
+        header = f.readline().strip().lstrip("#").strip()
         columns = [col.strip() for col in header.split(",")]
 
-    # Read the data
     df = pd.read_csv(lookup_file, comment="#", names=columns, skiprows=1)
 
-    # Extract parameters
-    file_col = columns[0]  # Usually 'file_name' or 'filename'
-
-    # Find parameter columns (case-insensitive)
-    teff_col = None
-    logg_col = None
-    meta_col = None
+    # Find columns (case-insensitive)
+    file_col = columns[0]
+    teff_col = logg_col = meta_col = None
 
     for col in columns:
         col_lower = col.lower()
@@ -535,7 +87,7 @@ def load_model_data(model_path):
         elif "meta" in col_lower or "feh" in col_lower or "m/h" in col_lower:
             meta_col = col
 
-    data = {
+    return {
         "files": df[file_col].values,
         "teff": df[teff_col].values if teff_col else np.zeros(len(df)),
         "logg": df[logg_col].values if logg_col else np.zeros(len(df)),
@@ -543,28 +95,28 @@ def load_model_data(model_path):
         "model_dir": model_path,
     }
 
-    return data
+
+def load_sed(filepath):
+    """Load wavelength and flux from a spectrum file."""
+    return np.loadtxt(filepath, unpack=True)
+
+
+def prepare_sed(filepath, teff):
+    """Load and renormalize a spectrum."""
+    wl, flux = load_sed(filepath)
+    flux = renorm_to_sigmaT4(wl, flux, teff)
+    return wl, flux
 
 
 def create_unified_grid(all_models_data):
     """Create unified parameter grids from all models."""
-    # Collect all parameter values
-    all_teff = []
-    all_logg = []
-    all_meta = []
+    all_teff = np.concatenate([d["teff"] for d in all_models_data])
+    all_logg = np.concatenate([d["logg"] for d in all_models_data])
+    all_meta = np.concatenate([d["meta"] for d in all_models_data])
 
-    for data in all_models_data:
-        all_teff.extend(data["teff"])
-        all_logg.extend(data["logg"])
-        all_meta.extend(data["meta"])
-
-    # Get unique sorted values
-    teff_grid = np.unique(np.sort(all_teff))
-    logg_grid = np.unique(np.sort(all_logg))
-    meta_grid = np.unique(np.sort(all_meta))
-
-    # Remove values that are too close (within tolerance)
-    def clean_grid(grid, tol=1e-6):
+    # Get unique sorted values with tolerance cleaning
+    def clean_grid(values, tol):
+        grid = np.unique(np.sort(values))
         if len(grid) <= 1:
             return grid
         cleaned = [grid[0]]
@@ -573,654 +125,412 @@ def create_unified_grid(all_models_data):
                 cleaned.append(val)
         return np.array(cleaned)
 
-    teff_grid = clean_grid(teff_grid, tol=1.0)  # 1K tolerance for Teff
-    logg_grid = clean_grid(logg_grid, tol=0.01)  # 0.01 dex for log g
-    meta_grid = clean_grid(meta_grid, tol=0.01)  # 0.01 dex for [M/H]
+    teff_grid = clean_grid(all_teff, tol=1.0)
+    logg_grid = clean_grid(all_logg, tol=0.01)
+    meta_grid = clean_grid(all_meta, tol=0.01)
 
     return teff_grid, logg_grid, meta_grid
 
 
 def create_common_wavelength_grid(all_models_data, sample_size=20):
     """Create a common wavelength grid by sampling models."""
-    print("\nAnalyzing wavelength coverage across models...")
+    print("\nAnalyzing wavelength coverage...")
 
     min_wave = float("inf")
     max_wave = 0
     resolutions = []
 
     for model_data in all_models_data:
-        # Sample a few SEDs from this model
         n_sample = min(sample_size, len(model_data["files"]))
         indices = np.random.choice(len(model_data["files"]), n_sample, replace=False)
 
         for idx in indices:
             filepath = os.path.join(model_data["model_dir"], model_data["files"][idx])
-            wavelengths, _ = load_sed(filepath)
+            try:
+                wavelengths, _ = load_sed(filepath)
+                if len(wavelengths) > 10:
+                    mask = (wavelengths >= 3000) & (wavelengths <= 25000)
+                    if mask.sum() > 10:
+                        wl_subset = wavelengths[mask]
+                        min_wave = min(min_wave, wl_subset.min())
+                        max_wave = max(max_wave, wl_subset.max())
+                        resolutions.append(np.median(np.diff(wl_subset)))
+            except Exception:
+                continue
 
-            if len(wavelengths) > 10:
-                # Focus on optical/near-IR
-                mask = (wavelengths >= 3000) & (wavelengths <= 25000)
-                if mask.sum() > 10:
-                    wl_subset = wavelengths[mask]
-                    min_wave = min(min_wave, wl_subset.min())
-                    max_wave = max(max_wave, wl_subset.max())
-
-                    # Estimate resolution
-                    resolution = np.median(np.diff(wl_subset))
-                    resolutions.append(resolution)
-
-    # Create wavelength grid
     typical_resolution = np.median(resolutions) if resolutions else 50.0
     grid_resolution = max(50.0, typical_resolution * 2)
-
-    n_points = int((max_wave - min_wave) / grid_resolution) + 1
-    n_points = min(n_points, 5000)  # Cap at 5000 points
-
+    n_points = min(int((max_wave - min_wave) / grid_resolution) + 1, 5000)
     wavelength_grid = np.linspace(min_wave, max_wave, n_points)
 
-    print(f"  Wavelength range: {min_wave:.0f} - {max_wave:.0f} Å")
-    print(f"  Grid points: {len(wavelength_grid)}")
-    print(f"  Resolution: {grid_resolution:.1f} Å")
+    print(f"  Range: {min_wave:.0f} - {max_wave:.0f} Å")
+    print(f"  Points: {len(wavelength_grid)}, Resolution: {grid_resolution:.1f} Å")
 
     return wavelength_grid
 
 
+def identify_reference_model(all_models_data):
+    """Identify reference model (prefer Kurucz)."""
+    for i, model_data in enumerate(all_models_data):
+        if "kurucz" in os.path.basename(model_data["model_dir"]).lower():
+            print(f"Reference model: {os.path.basename(model_data['model_dir'])}")
+            return i
+    print(f"Reference model: {os.path.basename(all_models_data[0]['model_dir'])}")
+    return 0
 
-def build_combined_flux_cube(
-    all_models_data, teff_grid, logg_grid, meta_grid, wavelength_grid
-):
+
+def compute_normalization_factors(target_data, reference_data, wavelength_grid):
+    """Compute normalization factors to match target SEDs to reference model."""
+    print(f"  Normalizing to: {os.path.basename(reference_data['model_dir'])}")
+
+    if len(reference_data["files"]) == 0:
+        return np.ones(len(target_data["files"]))
+
+    # Build reference parameter array
+    ref_params = np.column_stack([
+        reference_data["teff"],
+        reference_data["logg"],
+        reference_data["meta"]
+    ])
+    valid_mask = np.isfinite(ref_params).all(axis=1)
+    ref_params = ref_params[valid_mask]
+    ref_files = np.array(reference_data["files"])[valid_mask]
+    ref_teff = np.array(reference_data["teff"])[valid_mask]
+
+    if len(ref_params) == 0:
+        return np.ones(len(target_data["files"]))
+
+    # Normalize parameters for distance calculation
+    ranges = ref_params.max(axis=0) - ref_params.min(axis=0)
+    ranges[ranges == 0] = 1.0
+    ref_params_norm = (ref_params - ref_params.min(axis=0)) / ranges
+
+    tree = KDTree(ref_params_norm)
+    norm_factors = []
+
+    for i, (file, teff, logg, meta) in enumerate(zip(
+        target_data["files"], target_data["teff"],
+        target_data["logg"], target_data["meta"]
+    )):
+        if not all(np.isfinite([teff, logg, meta])):
+            norm_factors.append(1.0)
+            continue
+
+        # Normalize query point
+        query = np.array([teff, logg, meta])
+        query_norm = (query - ref_params.min(axis=0)) / ranges
+
+        _, idx = tree.query(query_norm)
+
+        # Load and compare SEDs
+        file_target = os.path.join(target_data["model_dir"], file)
+        file_ref = os.path.join(reference_data["model_dir"], ref_files[idx])
+
+        try:
+            wl_tgt, flux_tgt = prepare_sed(file_target, teff)
+            wl_ref, flux_ref = prepare_sed(file_ref, ref_teff[idx])
+
+            # Find common wavelength range
+            wl_min = max(wl_tgt.min(), wl_ref.min(), wavelength_grid.min())
+            wl_max = min(wl_tgt.max(), wl_ref.max(), wavelength_grid.max())
+            mask = (wavelength_grid >= wl_min) & (wavelength_grid <= wl_max)
+
+            if mask.sum() < 100:
+                norm_factors.append(1.0)
+                continue
+
+            wl_common = wavelength_grid[mask]
+            interp_tgt = interp1d(wl_tgt, flux_tgt, bounds_error=False, fill_value=0)
+            interp_ref = interp1d(wl_ref, flux_ref, bounds_error=False, fill_value=0)
+
+            F_tgt = np.trapz(interp_tgt(wl_common), wl_common)
+            F_ref = np.trapz(interp_ref(wl_common), wl_common)
+
+            factor = F_ref / F_tgt if F_tgt > 0 else 1.0
+            norm_factors.append(factor if 0.01 < factor < 100 else 1.0)
+
+        except Exception:
+            norm_factors.append(1.0)
+
+    return np.array(norm_factors)
+
+
+def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, wavelength_grid):
     """Build the combined flux cube from all models."""
-    n_teff = len(teff_grid)
-    n_logg = len(logg_grid)
-    n_meta = len(meta_grid)
-    n_lambda = len(wavelength_grid)
+    n_teff, n_logg, n_meta, n_lambda = len(teff_grid), len(logg_grid), len(meta_grid), len(wavelength_grid)
 
-    # Initialize flux cube and tracking arrays
     flux_cube = np.zeros((n_teff, n_logg, n_meta, n_lambda))
     filled_map = np.zeros((n_teff, n_logg, n_meta), dtype=bool)
-    source_map = (
-        np.zeros((n_teff, n_logg, n_meta), dtype=int) - 1
-    )  # Which model filled each point
+    source_map = np.full((n_teff, n_logg, n_meta), -1, dtype=int)
 
-    print(f"\nBuilding combined flux cube: {flux_cube.shape}")
-    print(f"Memory requirement: {flux_cube.nbytes / (1024**2):.1f} MB")
+    print(f"\nBuilding flux cube: {flux_cube.shape}")
+    print(f"Memory: {flux_cube.nbytes / (1024**2):.1f} MB")
 
-    # All models are now in same units - no cross-normalization needed
-    normalization_factors = {}
+    # Get reference model and normalization factors
+    ref_idx = identify_reference_model(all_models_data)
+    ref_data = all_models_data[ref_idx]
+
+    norm_factors = {}
     for model_idx, model_data in enumerate(all_models_data):
-        normalization_factors[model_idx] = np.ones(len(model_data["files"]))
+        if model_idx == ref_idx:
+            norm_factors[model_idx] = np.ones(len(model_data["files"]))
+        else:
+            norm_factors[model_idx] = compute_normalization_factors(
+                model_data, ref_data, wavelength_grid
+            )
 
-
-    # Build KDTree for fast nearest neighbor searches
-    # Normalize parameters for distance calculation
-    teff_norm = (teff_grid - teff_grid.min()) / (teff_grid.max() - teff_grid.min())
-    logg_norm = (logg_grid - logg_grid.min()) / (logg_grid.max() - logg_grid.min())
-    meta_norm = (meta_grid - meta_grid.min()) / (meta_grid.max() - meta_grid.min())
-
-    # Process each model
+    # Fill the cube
     for model_idx, model_data in enumerate(all_models_data):
         model_name = os.path.basename(model_data["model_dir"])
         print(f"\nProcessing {model_name}...")
 
-        norm_factors = normalization_factors[model_idx]
-
-        for i, (file, teff, logg, meta) in enumerate(
-            tqdm(
-                zip(
-                    model_data["files"],
-                    model_data["teff"],
-                    model_data["logg"],
-                    model_data["meta"],
-                ),
-                total=len(model_data["files"]),
-                desc=f"Model {model_idx + 1}",
-            )
-        ):
-            # Find grid indices
-            i_teff = np.searchsorted(teff_grid, teff)
-            i_logg = np.searchsorted(logg_grid, logg)
-            i_meta = np.searchsorted(meta_grid, meta)
-
-            # Clip to valid range
-            i_teff = np.clip(i_teff, 0, n_teff - 1)
-            i_logg = np.clip(i_logg, 0, n_logg - 1)
-            i_meta = np.clip(i_meta, 0, n_meta - 1)
-
-            # Load and interpolate SED
+        for i, (file, teff, logg, meta) in enumerate(tqdm(
+            zip(model_data["files"], model_data["teff"],
+                model_data["logg"], model_data["meta"]),
+            total=len(model_data["files"]), desc=f"Model {model_idx + 1}"
+        )):
+            i_teff = np.clip(np.searchsorted(teff_grid, teff), 0, n_teff - 1)
+            i_logg = np.clip(np.searchsorted(logg_grid, logg), 0, n_logg - 1)
+            i_meta = np.clip(np.searchsorted(meta_grid, meta), 0, n_meta - 1)
 
             filepath = os.path.join(model_data["model_dir"], file)
-            scale = model_data.get("scale", 1.0)
+            try:
+                wl, fl = prepare_sed(filepath, teff)
+                fl *= norm_factors[model_idx][i]
 
-            if "fid0" not in filepath:
+                # Interpolate in log space
+                log_fl = np.log10(np.maximum(fl, 1e-50))
+                log_interp = np.interp(wavelength_grid, wl, log_fl,
+                                       left=log_fl[0], right=log_fl[-1])
 
-                model_wavelengths, model_fluxes = prepare_sed_with_scale(
-                    filepath, teff, scale, model_dir=model_data["model_dir"]
-                )
-
-                # Apply normalization factor
-                model_fluxes *= norm_factors[i]
-
-                # Interpolate to common grid (in log space for flux)
-                log_fluxes = np.log10(np.maximum(model_fluxes, 1e-50))
-                log_interpolated = np.interp(
-                    wavelength_grid,
-                    model_wavelengths,
-                    log_fluxes,
-                    left=log_fluxes[0],
-                    right=log_fluxes[-1],
-                )
-                interpolated_flux = 10**log_interpolated
-
-                # Store in cube
-                flux_cube[i_teff, i_logg, i_meta, :] = interpolated_flux
+                flux_cube[i_teff, i_logg, i_meta, :] = 10**log_interp
                 filled_map[i_teff, i_logg, i_meta] = True
                 source_map[i_teff, i_logg, i_meta] = model_idx
+            except Exception:
+                continue
 
-
-    # Fill gaps using nearest neighbor interpolation
-    empty_points = np.sum(~filled_map)
-    if empty_points > 0:
-        print(f"\nFilling {empty_points} empty grid points...")
-
-        # Get filled points
-        filled_indices = np.where(filled_map)
-        filled_points = np.column_stack(
-            [
-                teff_norm[filled_indices[0]],
-                logg_norm[filled_indices[1]],
-                meta_norm[filled_indices[2]],
-            ]
-        )
-
-        # Build KDTree
-        tree = KDTree(filled_points)
-
-        # Fill empty points
-        for i_teff in range(n_teff):
-            for i_logg in range(n_logg):
-                for i_meta in range(n_meta):
-                    if not filled_map[i_teff, i_logg, i_meta]:
-                        # Find nearest filled point
-                        query_point = [
-                            teff_norm[i_teff],
-                            logg_norm[i_logg],
-                            meta_norm[i_meta],
-                        ]
-                        dist, idx = tree.query(query_point, k=1)
-
-                        # Copy flux from nearest neighbor
-                        src_i = filled_indices[0][idx]
-                        src_j = filled_indices[1][idx]
-                        src_k = filled_indices[2][idx]
-
-                        flux_cube[i_teff, i_logg, i_meta, :] = flux_cube[
-                            src_i, src_j, src_k, :
-                        ]
-                        filled_map[i_teff, i_logg, i_meta] = True
-                        source_map[i_teff, i_logg, i_meta] = source_map[
-                            src_i, src_j, src_k
-                        ]
+    # Fill gaps with nearest neighbor
+    empty_count = np.sum(~filled_map)
+    if empty_count > 0:
+        print(f"\nFilling {empty_count} empty grid points...")
+        _fill_gaps(flux_cube, filled_map, source_map, teff_grid, logg_grid, meta_grid)
 
     return flux_cube, source_map
 
 
+def _fill_gaps(flux_cube, filled_map, source_map, teff_grid, logg_grid, meta_grid):
+    """Fill empty grid points using nearest neighbor interpolation."""
+    # Normalize grids
+    def norm(grid):
+        r = grid.max() - grid.min()
+        return (grid - grid.min()) / r if r > 0 else np.zeros_like(grid)
+
+    teff_norm = norm(teff_grid)
+    logg_norm = norm(logg_grid)
+    meta_norm = norm(meta_grid)
+
+    filled_indices = np.where(filled_map)
+    filled_points = np.column_stack([
+        teff_norm[filled_indices[0]],
+        logg_norm[filled_indices[1]],
+        meta_norm[filled_indices[2]]
+    ])
+    tree = KDTree(filled_points)
+
+    for i_t in range(len(teff_grid)):
+        for i_g in range(len(logg_grid)):
+            for i_m in range(len(meta_grid)):
+                if not filled_map[i_t, i_g, i_m]:
+                    query = [teff_norm[i_t], logg_norm[i_g], meta_norm[i_m]]
+                    _, idx = tree.query(query)
+                    src = (filled_indices[0][idx], filled_indices[1][idx], filled_indices[2][idx])
+                    flux_cube[i_t, i_g, i_m, :] = flux_cube[src]
+                    source_map[i_t, i_g, i_m] = source_map[src]
 
 
-
-def save_combined_data(
-    output_dir,
-    teff_grid,
-    logg_grid,
-    meta_grid,
-    wavelength_grid,
-    flux_cube,
-    all_models_data,
-):
+def save_combined_data(output_dir, teff_grid, logg_grid, meta_grid,
+                       wavelength_grid, flux_cube, all_models_data):
     """Save the combined data and create unified lookup table."""
     os.makedirs(output_dir, exist_ok=True)
 
-    # Save binary flux cube
+    # Save binary flux cube (transposed for Fortran compatibility)
     binary_file = os.path.join(output_dir, "flux_cube.bin")
     with open(binary_file, "wb") as f:
-        # Write dimensions
-        f.write(
-            struct.pack(
-                "4i",
-                len(teff_grid),
-                len(logg_grid),
-                len(meta_grid),
-                len(wavelength_grid),
-            )
-        )
-
-        # Write grid arrays
+        f.write(struct.pack("4i", len(teff_grid), len(logg_grid),
+                           len(meta_grid), len(wavelength_grid)))
         teff_grid.astype(np.float64).tofile(f)
         logg_grid.astype(np.float64).tofile(f)
         meta_grid.astype(np.float64).tofile(f)
         wavelength_grid.astype(np.float64).tofile(f)
+        # Transpose to (wavelength, meta, logg, teff) for Fortran column-major order
+        flux_cube.transpose(3, 2, 1, 0).astype(np.float64).tofile(f)
 
-        # Write flux cube
-        flux_cube.astype(np.float64).tofile(f)
+    print(f"\nSaved flux cube: {binary_file}")
 
-    print(f"\nSaved binary flux cube to: {binary_file}")
-
-    # Create combined lookup table
+    # Copy SED files and build lookup table
+    print("\nCopying SED files...")
     lookup_data = []
     file_counter = 0
-    copied_files = 0
 
-    print("\nCopying SED files to combined directory...")
-
-    for model_data in tqdm(all_models_data, desc="Copying models"):
+    for model_data in tqdm(all_models_data, desc="Copying"):
         model_name = os.path.basename(model_data["model_dir"])
-        for i, (orig_file, teff, logg, meta) in enumerate(
-            zip(
-                model_data["files"],
-                model_data["teff"],
-                model_data["logg"],
-                model_data["meta"],
-            )
+        for orig_file, teff, logg, meta in zip(
+            model_data["files"], model_data["teff"],
+            model_data["logg"], model_data["meta"]
         ):
-            # Create new filename that includes source model
             new_filename = f"{model_name}_{file_counter:06d}.txt"
-            lookup_data.append(
-                {
-                    "file_name": new_filename,
-                    "teff": teff,
-                    "logg": logg,
-                    "meta": meta,
-                    "source_model": model_name,
-                    "original_file": orig_file,
-                }
-            )
+            lookup_data.append({
+                "file_name": new_filename,
+                "teff": teff,
+                "logg": logg,
+                "meta": meta,
+                "source_model": model_name,
+                "original_file": orig_file,
+            })
 
-            # Copy the actual file instead of creating a symlink
             src_path = os.path.join(model_data["model_dir"], orig_file)
             dst_path = os.path.join(output_dir, new_filename)
-
             if os.path.exists(src_path) and not os.path.exists(dst_path):
                 try:
-                    # copy2 preserves metadata
                     shutil.copy2(src_path, dst_path)
-                    copied_files += 1
                 except Exception as e:
                     print(f"\nWarning: Could not copy {src_path}: {e}")
 
             file_counter += 1
 
-    print(f"Copied {copied_files} SED files to combined directory")
-
     # Save lookup table
     lookup_df = pd.DataFrame(lookup_data)
     lookup_file = os.path.join(output_dir, "lookup_table.csv")
-
     with open(lookup_file, "w") as f:
-        f.write("#file_name, teff, logg, meta, source_model, original_file\n")
+        f.write("#file_name,teff,logg,meta,source_model,original_file\n")
         lookup_df.to_csv(f, index=False, header=False)
 
-    print(f"Saved combined lookup table to: {lookup_file}")
-    print(f"Total models in combined set: {len(lookup_df)}")
-
-    # Calculate and display disk usage
-    total_size = 0
-    for f in os.listdir(output_dir):
-        if f.endswith(".txt"):
-            total_size += os.path.getsize(os.path.join(output_dir, f))
-
-    print(f"Total disk space used: {total_size / (1024**3):.2f} GB")
+    print(f"Saved lookup table: {lookup_file}")
+    print(f"Total models: {len(lookup_df)}")
 
     return lookup_df
 
 
+def visualize_parameter_space(teff_grid, logg_grid, meta_grid, source_map,
+                              all_models_data, output_dir):
+    """Create parameter space visualization."""
+    print("\nCreating visualization...")
 
-# After imports
-def detect_model_scale(model_data):
-    """Detect if model needs correction factor."""
-    
-    model_name = os.path.basename(model_data['model_dir'])
-    
-    n = min(15, len(model_data['files']))
-    indices = np.linspace(0, len(model_data['files'])-1, n, dtype=int)
-    
-    ratios = []
-    for idx in indices:
-        fp = os.path.join(model_data['model_dir'], model_data['files'][idx])
-        teff = model_data['teff'][idx]
-        
-        try:
-            wl, flux = load_sed(fp)
-            good = np.isfinite(flux) & (flux > 0) & (wl > 0)
-            if np.sum(good) < 10: continue
-            
-            wl, flux = wl[good], flux[good]
-            order = np.argsort(wl)
-            
-            Fbol = simps(flux[order], wl[order])
-            Fbol_expected = SIGMA * teff**4
-            
-            if Fbol > 0 and Fbol_expected > 0:
-                ratios.append(Fbol / Fbol_expected)
-        except: 
-            pass
-    
-    if not ratios: 
-        print(f"  [{model_name:20s}] WARNING: No valid samples, scale = 1.0")
-        return 1.0
-    
-    median = np.median(ratios)
-    
-    # Detect correction needed with TIGHT threshold around 1.0
-    if 0.8 < median < 1.25:
-        # Close to 1.0 - correct units
-        print(f"  [{model_name:20s}] ∫Fλ/σT⁴ = {median:.3f} → scale = 1.0 ✓")
-        return 1.0
-    
-    elif 0.25 < median < 0.8:
-        # Check if it's per-steradian (ratio ≈ 1/π ≈ 0.318)
-        test = median * np.pi
-        if 0.8 < test < 1.25:
-            print(f"  [{model_name:20s}] ∫Fλ/σT⁴ = {median:.3f} → scale = π (per-steradian, test={test:.3f})")
-            return np.pi
-        else:
-            # In range but not per-steradian - might need other correction
-            print(f"  [{model_name:20s}] ∫Fλ/σT⁴ = {median:.3f} → scale = 1.0 (unclear)")
-            return 1.0
-    
-    elif median < 0.25:
-        # Very low - probably missing scale factor
-        for factor in [10, 100, 1000, 10000]:
-            test = median * factor
-            if 0.8 < test < 1.25:
-                print(f"  [{model_name:20s}] ∫Fλ/σT⁴ = {median:.3e} → scale = {factor} (too low, test={test:.3f})")
-                return factor
-        print(f"  [{model_name:20s}] ∫Fλ/σT⁴ = {median:.3e} → scale = 10000 (way too low)")
-        return 10000
-    elif median > 1.25:
-        # Flux too high - try dividing
-        for factor in [0.1, 0.01, 0.001, 0.0001]:
-            test = median * factor
-            if 0.8 < test < 1.25:
-                print(f"  [{model_name:20s}] ∫Fλ/σT⁴ = {median:.3e} → scale = {factor} (too high, test={test:.3f})")
-                return factor
-        print(f"  [{model_name:20s}] ∫Fλ/σT⁴ = {median:.3e} → scale = 0.0001 (way too high)")
-        return 0.0001
-    
-    print(f"  [{model_name:20s}] ∫Fλ/σT⁴ = {median:.3f} → scale = 1.0 (default)")
-    return 1.0
+    model_names = [os.path.basename(d["model_dir"]) for d in all_models_data]
+    colors = plt.cm.tab10(np.linspace(0, 1, len(model_names)))
 
+    fig = plt.figure(figsize=(15, 10))
 
-
-
-
-
-def visualize_parameter_space(
-    teff_grid, logg_grid, meta_grid, source_map, all_models_data, output_dir
-):
-    """Create visualizations of the parameter space coverage."""
-    print("\nCreating parameter space visualizations...")
-
-    model_names = [os.path.basename(data["model_dir"]) for data in all_models_data]
-
-    cmap = plt.cm.tab10 if len(model_names) <= 10 else plt.cm.tab20
-    colors = cmap(np.linspace(0, 1, len(model_names)))
-
-    fig = plt.figure(figsize=(18, 10))
-    gs = fig.add_gridspec(
-        2, 3,
-        wspace=0.20,
-        hspace=0.20,
-        width_ratios=[1.0, 1.0, 1.0],
-        height_ratios=[1.0, 1.0],
-    )
-
-    # 1) 3D scatter
-    ax1 = fig.add_subplot(gs[0, 0], projection="3d")
-
-    for model_idx, model_name in enumerate(model_names):
-        mask = source_map == model_idx
-        if np.any(mask):
-            indices = np.where(mask)
-            ax1.scatter(
-                teff_grid[indices[0]],
-                logg_grid[indices[1]],
-                meta_grid[indices[2]],
-                c=[colors[model_idx]],
-                label=model_name,
-                alpha=0.6,
-                s=10,
-            )
-
+    # Teff vs logg
+    ax1 = fig.add_subplot(2, 2, 1)
+    for idx, (name, data) in enumerate(zip(model_names, all_models_data)):
+        ax1.scatter(data["teff"], data["logg"], c=[colors[idx]], label=name, alpha=0.6, s=10)
     ax1.set_xlabel("Teff (K)")
     ax1.set_ylabel("log g")
-    ax1.set_zlabel("[M/H]")
-    ax1.set_title("3D Coverage")
+    ax1.invert_yaxis()
+    ax1.grid(True, alpha=0.3)
+    ax1.legend(fontsize=8)
 
-    # 2) SED Comparison - Find overlapping parameter space
-    ax2 = fig.add_subplot(gs[0, 1:3])
-    
-    n_models = len(model_names)
+    # Teff vs [M/H]
+    ax2 = fig.add_subplot(2, 2, 2)
+    for idx, (name, data) in enumerate(zip(model_names, all_models_data)):
+        ax2.scatter(data["teff"], data["meta"], c=[colors[idx]], label=name, alpha=0.6, s=10)
+    ax2.set_xlabel("Teff (K)")
+    ax2.set_ylabel("[M/H]")
+    ax2.grid(True, alpha=0.3)
 
-    # Get parameter ranges for each model
-    ranges = []
-    for idx in range(n_models):
-        data = all_models_data[idx]
-        valid_mask = (
-            np.isfinite(data["teff"])
-            & np.isfinite(data["logg"])
-            & np.isfinite(data["meta"])
-        )
-        vt = np.array(data["teff"])[valid_mask]
-        vg = np.array(data["logg"])[valid_mask]
-        vm = np.array(data["meta"])[valid_mask]
+    # logg vs [M/H]
+    ax3 = fig.add_subplot(2, 2, 3)
+    for idx, (name, data) in enumerate(zip(model_names, all_models_data)):
+        ax3.scatter(data["logg"], data["meta"], c=[colors[idx]], label=name, alpha=0.6, s=10)
+    ax3.set_xlabel("log g")
+    ax3.set_ylabel("[M/H]")
+    ax3.grid(True, alpha=0.3)
 
-        if len(vt) == 0:
-            ranges.append(None)
-            continue
-
-        ranges.append((
-            float(np.min(vt)), float(np.max(vt)),
-            float(np.min(vg)), float(np.max(vg)),
-            float(np.min(vm)), float(np.max(vm)),
-        ))
-
-    # Find largest overlapping subset
-    best = None
-    for mask in range(1, 1 << n_models):
-        subset = [i for i in range(n_models) if (mask >> i) & 1]
-        if len(subset) < 2:
-            continue
-
-        if any(ranges[i] is None for i in subset):
-            continue
-
-        tmin = max(ranges[i][0] for i in subset)
-        tmax = min(ranges[i][1] for i in subset)
-        gmin = max(ranges[i][2] for i in subset)
-        gmax = min(ranges[i][3] for i in subset)
-        mmin = max(ranges[i][4] for i in subset)
-        mmax = min(ranges[i][5] for i in subset)
-
-        tr = tmax - tmin
-        gr = gmax - gmin
-        mr = mmax - mmin
-
-        if tr <= 0 or gr <= 0 or mr <= 0:
-            continue
-
-        volume = tr * gr * mr
-        k = len(subset)
-
-        if (best is None) or (k > best[0]) or (k == best[0] and volume > best[1]):
-            best = (k, volume, subset, (tmin, tmax, gmin, gmax, mmin, mmax))
-
-    if best is None:
-        overlap_subset = []
-        tmin, tmax, gmin, gmax, mmin, mmax = (5777.0, 5777.0, 4.44, 4.44, 0.0, 0.0)
-        target = (5777.0, 4.44, 0.0)
-    else:
-        _, _, overlap_subset, (tmin, tmax, gmin, gmax, mmin, mmax) = best
-        target = ((tmin + tmax) / 2.0, (gmin + gmax) / 2.0, (mmin + mmax) / 2.0)
-
-    teff_rng = max(tmax - tmin, 1000.0)
-    logg_rng = max(gmax - gmin, 1.0)
-    meta_rng = max(mmax - mmin, 0.5)
-
-    included_names = [model_names[i] for i in overlap_subset]
-
-    # Plot ALL models (no skipping)
-    for idx, model_name in enumerate(model_names):
-        data = all_models_data[idx]
-
-        valid_mask = (
-            np.isfinite(data["teff"])
-            & np.isfinite(data["logg"])
-            & np.isfinite(data["meta"])
-        )
-
-        valid_teff = np.array(data["teff"])[valid_mask]
-        valid_logg = np.array(data["logg"])[valid_mask]
-        valid_meta = np.array(data["meta"])[valid_mask]
-        valid_files = np.array(data["files"])[valid_mask]
-
-        # Find closest point to target
-        dx = (valid_teff - target[0]) / teff_rng
-        dy = (valid_logg - target[1]) / logg_rng
-        dz = (valid_meta - target[2]) / meta_rng
-        dist2 = dx * dx + dy * dy + dz * dz
-
-        j = int(np.argmin(dist2))
-        fpath = os.path.join(data["model_dir"], valid_files[j])
-
-        # Load and process SED (already in correct units from validate_and_clean)
-        wl, flux = prepare_sed_with_scale(fpath, valid_teff[j], scale_factor=1.0, model_dir=data["model_dir"])
-
-        # NO σT^4 normalization - models are already in consistent units after cleaning
-        # (This matches what happens in build_combined_flux_cube where norm_factors are all 1.0)
-
-        mask = (wl > 100) & (wl < 100000)
-
-        in_overlap = (idx in overlap_subset)
-        ax2.plot(
-            wl[mask],
-            wl[mask] ** 2 * flux[mask],
-            label=model_name,
-            color=colors[idx],
-            alpha=0.85 if in_overlap else 0.50,
-            linewidth=1.2,
-            linestyle="-" if in_overlap else ":",
-        )
-
-    ax2.set_xscale("log")
-    ax2.set_yscale("log")
-    ax2.set_xlabel("Wavelength (Å)")
-    ax2.set_ylabel(r"$\lambda^2 F_\lambda$ (erg s$^{-1}$ cm$^{-2}$)")
-
-    t, g, m = target
-    if included_names:
-        ax2.set_title(
-            f"Normalisation Check (target: Teff={t:.0f}K, logg={g:.2f}, [M/H]={m:.2f}) | overlap set: {', '.join(included_names)}"
-        )
-    else:
-        ax2.set_title(
-            f"Normalisation Check (target: Teff={t:.0f}K, logg={g:.2f}, [M/H]={m:.2f}) | no overlap"
-        )
-
-    ax2.grid(True, alpha=0.25)
-    ax2.legend(fontsize=8, frameon=False, ncol=2)
-
-    # Bottom row - density plots
-    from matplotlib.colors import BoundaryNorm
-
-    def _count_unique_models(arr):
-        arr = arr[arr >= 0]
-        return len(np.unique(arr))
-
-    n_levels = len(model_names) + 1
-    dens_cmap = plt.get_cmap("YlOrRd", n_levels)
-    bounds = np.arange(-0.5, n_levels + 0.5, 1.0)
-    dens_norm = BoundaryNorm(bounds, dens_cmap.N)
-
-    ax4 = fig.add_subplot(gs[1, 0])
-    dens_tg = np.zeros((len(teff_grid), len(logg_grid)))
+    # Model density heatmap
+    ax4 = fig.add_subplot(2, 2, 4)
+    density = np.zeros((len(teff_grid), len(logg_grid)))
     for i in range(len(teff_grid)):
         for j in range(len(logg_grid)):
-            dens_tg[i, j] = _count_unique_models(source_map[i, j, :])
+            density[i, j] = len(np.unique(source_map[i, j, :][source_map[i, j, :] >= 0]))
 
-    im4 = ax4.imshow(
-        dens_tg.T,
-        origin="lower",
-        aspect="auto",
-        extent=[teff_grid.min(), teff_grid.max(), logg_grid.min(), logg_grid.max()],
-        cmap=dens_cmap,
-        norm=dens_norm,
-    )
+    im = ax4.imshow(density.T, origin="lower", aspect="auto",
+                    extent=[teff_grid.min(), teff_grid.max(),
+                           logg_grid.min(), logg_grid.max()], cmap="YlOrRd")
     ax4.set_xlabel("Teff (K)")
     ax4.set_ylabel("log g")
-    ax4.set_title("Model Density: Teff vs log g")
+    ax4.set_title("Model density per grid point")
+    plt.colorbar(im, ax=ax4)
 
-    ax5 = fig.add_subplot(gs[1, 1])
-    dens_tm = np.zeros((len(teff_grid), len(meta_grid)))
-    for i in range(len(teff_grid)):
-        for k in range(len(meta_grid)):
-            dens_tm[i, k] = _count_unique_models(source_map[i, :, k])
-
-    im5 = ax5.imshow(
-        dens_tm.T,
-        origin="lower",
-        aspect="auto",
-        extent=[teff_grid.min(), teff_grid.max(), meta_grid.min(), meta_grid.max()],
-        cmap=dens_cmap,
-        norm=dens_norm,
-    )
-    ax5.set_xlabel("Teff (K)")
-    ax5.set_ylabel("[M/H]")
-    ax5.set_title("Model Density: Teff vs [M/H]")
-
-    ax6 = fig.add_subplot(gs[1, 2])
-    dens_gm = np.zeros((len(logg_grid), len(meta_grid)))
-    for j in range(len(logg_grid)):
-        for k in range(len(meta_grid)):
-            dens_gm[j, k] = _count_unique_models(source_map[:, j, k])
-
-    im6 = ax6.imshow(
-        dens_gm.T,
-        origin="lower",
-        aspect="auto",
-        extent=[logg_grid.min(), logg_grid.max(), meta_grid.min(), meta_grid.max()],
-        cmap=dens_cmap,
-        norm=dens_norm,
-    )
-    ax6.set_xlabel("log g")
-    ax6.set_ylabel("[M/H]")
-    ax6.set_title("Model Density: log g vs [M/H]")
-
-    fig.colorbar(
-        im6,
-        ax=[ax4, ax5, ax6],
-        fraction=0.046,
-        pad=0.04,
-        ticks=np.arange(0, n_levels, 1),
-    )
-
-    plot_file = os.path.join(output_dir, "parameter_space_visualization.png")
+    plt.tight_layout()
+    plot_file = os.path.join(output_dir, "parameter_space.png")
     plt.savefig(plot_file, dpi=150, bbox_inches="tight")
-    print(f"Saved visualization to: {plot_file}")
+    print(f"Saved: {plot_file}")
 
+    # Print summary
     print("\n" + "=" * 60)
-    print("COMBINED MODEL STATISTICS")
+    print("SUMMARY")
     print("=" * 60)
-    print(f"Total number of source models: {len(all_models_data)}")
-    print(
-        f"Total grid points: {len(teff_grid)} × {len(logg_grid)} × {len(meta_grid)} = "
-        f"{len(teff_grid) * len(logg_grid) * len(meta_grid):,}"
-    )
-    print("\nParameter ranges:")
-    print(f"  Teff: {teff_grid.min():.0f} - {teff_grid.max():.0f} K")
-    print(f"  log g: {logg_grid.min():.2f} - {logg_grid.max():.2f}")
-    print(f"  [M/H]: {meta_grid.min():.2f} - {meta_grid.max():.2f}")
+    print(f"Grid: {len(teff_grid)} × {len(logg_grid)} × {len(meta_grid)} = "
+          f"{len(teff_grid) * len(logg_grid) * len(meta_grid):,} points")
+    print(f"Teff: {teff_grid.min():.0f} - {teff_grid.max():.0f} K")
+    print(f"logg: {logg_grid.min():.2f} - {logg_grid.max():.2f}")
+    print(f"[M/H]: {meta_grid.min():.2f} - {meta_grid.max():.2f}")
+    print("\nContributions:")
+    for idx, name in enumerate(model_names):
+        n = np.sum(source_map == idx)
+        print(f"  {name}: {n:,} ({100 * n / source_map.size:.1f}%)")
 
-    print("\nPer-model contributions:")
-    for model_idx, model_name in enumerate(model_names):
-        n_points = np.sum(source_map == model_idx)
-        pct = 100 * n_points / source_map.size
-        print(f"  {model_name}: {n_points:,} grid points ({pct:.1f}%)")
+
+def main():
+    parser = argparse.ArgumentParser(description="Combine stellar atmosphere models")
+    parser.add_argument("--data_dir", default="../data/stellar_models/",
+                       help="Base directory containing stellar models")
+    parser.add_argument("--output", default="combined_models",
+                       help="Output directory name")
+    parser.add_argument("--interactive", action="store_true", default=True,
+                       help="Interactive model selection")
+    args = parser.parse_args()
+
+    model_dirs = find_stellar_models(args.data_dir)
+    if not model_dirs:
+        print(f"No stellar models found in {args.data_dir}")
+        return
+
+    selected = select_models_interactive(model_dirs) if args.interactive else model_dirs
+    if not selected:
+        print("No models selected.")
+        return
+
+    print(f"\nSelected {len(selected)} models:")
+    for name, _ in selected:
+        print(f"  - {name}")
+
+    # Load data
+    print("\nLoading model data...")
+    all_models_data = [load_model_data(path) for _, path in selected]
+
+    # Create grids
+    print("\nCreating parameter grids...")
+    teff_grid, logg_grid, meta_grid = create_unified_grid(all_models_data)
+    wavelength_grid = create_common_wavelength_grid(all_models_data)
+
+    # Build cube
+    flux_cube, source_map = build_combined_flux_cube(
+        all_models_data, teff_grid, logg_grid, meta_grid, wavelength_grid
+    )
+
+    # Save
+    output_dir = os.path.join(args.data_dir, args.output)
+    save_combined_data(output_dir, teff_grid, logg_grid, meta_grid,
+                      wavelength_grid, flux_cube, all_models_data)
+
+    # Visualize
+    visualize_parameter_space(teff_grid, logg_grid, meta_grid, source_map,
+                             all_models_data, output_dir)
+
+    print(f"\nDone! Output: {output_dir}")
+
+
+if __name__ == "__main__":
+    main()
