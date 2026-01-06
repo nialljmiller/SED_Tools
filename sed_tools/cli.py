@@ -198,7 +198,7 @@ def _prompt_choice(
         print(f"\n{BOLD}{label}{RESET} ({CYAN}{len(all_idx)}{RESET} total):")
         print("─" * min(80, width))
         for r in rows:
-            print("  ".join(x.ljust(col_w - 2) for x in r))
+            print("".join(x.ljust(col_w - 2) for x in r))
 
     all_idx = list(range(N))
     while True:
@@ -393,9 +393,8 @@ def run_spectra_flow(
     grabs = {}
     if "njm" in src_list:
         grabs["njm"] = NJMSpectraGrabber(base_dir=base_dir, max_workers=workers)
-        # Check if NJM is available, if not, remove it from src_list
         if not grabs["njm"].is_available():
-            print("[info] NJM mirror server not accessible, falling back to other sources...")
+            print("[njm] Mirror unavailable, using other sources")
             del grabs["njm"]
             if "njm" in src_list:
                 src_list.remove("njm")
@@ -408,7 +407,7 @@ def run_spectra_flow(
         grabs["mast"] = MASTSpectraGrabber(base_dir=base_dir, max_workers=workers)
 
     # Discover models from all sources
-    model_sources = {}  # model_name -> list of sources
+    model_sources = {}
     for s in src_list:
         if s in grabs:
             for model_name in grabs[s].discover_models():
@@ -420,12 +419,11 @@ def run_spectra_flow(
         print("No models discovered.")
         return
 
-    # Build display options with multiple source tags
+    # Build display options
     class ModelOption:
         def __init__(self, name, sources):
             self.name = name
             self.sources = sources
-            # Build label showing all available sources
             source_tags = "".join(f"[{s}]" for s in sources)
             self.label = f"{name} {source_tags}"
     
@@ -435,110 +433,210 @@ def run_spectra_flow(
     chosen = []
     if models is not None:
         if len(models) == 1 and models[0].lower() == "all":
-            chosen = [(opt.sources[0], opt.name) for opt in all_models]  # Use first source for each
+            chosen = [(opt.sources[0], opt.name) for opt in all_models]
         else:
             for m in models:
                 if ":" in m:
                     src, name = m.split(":", 1)
                     src, name = src.strip().lower(), name.strip()
                 else:
-                    # Find model and use first available source
                     name = m.strip()
                     matching = [opt for opt in all_models if opt.name == name]
                     if not matching:
                         print(f"[skip] Model '{name}' not found")
                         continue
-                    src = matching[0].sources[0]  # Use first (priority) source
-                
+                    src = matching[0].sources[0]
                 chosen.append((src, name))
     else:
-        # Interactive selection
         idxs = _prompt_choice(all_models, label="Spectral models", allow_back=True, multi=True)
         
-        if idxs is None:  # quit
+        if idxs is None:
             return
-        if idxs == -1:    # back
+        if idxs == -1:
             print("No model selected.")
             return
             
         if isinstance(idxs, int):
             idxs = [idxs]
 
-        # For each selected model, use the FIRST (priority) source
         chosen = [(all_models[i].sources[0], all_models[i].name) for i in idxs]
 
     # Download and process each selected model
     for src, name in chosen:
         print("\n" + "=" * 64)
-        print(f"[{src}] {name}")
+        print(f"[{src.upper()}] {name}")
+        print("=" * 64)
+        
         model_dir = os.path.join(base_dir, name)
         ensure_dir(model_dir)
 
         g = grabs.get(src)
         if not g:
-            print(f"Source {src} not initialized.")
+            print(f"Source '{src}' not initialized")
             continue
 
         meta = g.get_model_metadata(name)
         if not meta:
-            print(f"[{src}] No metadata for {name}; skipping.")
+            print(f"No metadata available")
             continue
         
-        # Check if this is pre-processed data from NJM
-        is_preprocessed = False
-        if isinstance(meta, dict):
-            is_preprocessed = meta.get("pre_processed", False)            
+        # Check if pre-processed (NJM)
+        is_preprocessed = isinstance(meta, dict) and meta.get("pre_processed", False)
 
         n_written = g.download_model_spectra(name, meta)
-        print(f"[{src}] wrote {n_written} files -> {model_dir}")
+        print(f"Downloaded {n_written} spectra{model_dir}")
 
-        # Skip cleaning and rebuilding for pre-processed NJM data
+        # Skip cleaning for pre-processed NJM data
         if is_preprocessed:
-            print(f"[{src}] Data is pre-processed, skipping cleaning and rebuilding steps.")
-            
-            # Verify essential files exist
-            essential_files = [
-                os.path.join(model_dir, "flux_cube.bin"),
-                os.path.join(model_dir, "lookup_table.csv"),
-            ]
-            missing = [f for f in essential_files if not os.path.exists(f)]
+            print(f"Pre-processed data (skipping cleaning)")
+            essential = ["flux_cube.bin", "lookup_table.csv"]
+            missing = [f for f in essential if not os.path.exists(os.path.join(model_dir, f))]
             if missing:
-                print(f"  [warning] Missing essential files: {missing}")
+                print(f"Missing: {', '.join(missing)}")
             else:
-                print(f"  [ok] All essential files present")
-            
-            continue  # Skip the cleaning/rebuilding steps below
-
-        # Standard processing for non-NJM sources
-        summary = clean_model_dir(model_dir, try_h5_recovery=True, backup=True, rebuild_lookup=True)
-        print(f"[clean] total={summary['total']} fixed={len(summary['fixed'])} "
-              f"recovered={len(summary['recovered'])} skipped={len(summary['skipped'])} "
-              f"deleted={len(summary['deleted'])}")
-
-        if not glob.glob(os.path.join(model_dir, "*.txt")):
-            print(f"[{src}] no .txt after cleaning; skip downstream.")
+                print(f"All essential files present")
             continue
 
+        # --- Cleaning ---
+        summary = clean_model_dir(model_dir, try_h5_recovery=True, backup=True, rebuild_lookup=True)
+        
+        # ─────────────────────────────────────────────────────────────
+        # DETAILED REPORTING
+        # ─────────────────────────────────────────────────────────────
+        
+        n_total = summary['total']
+        
+        # Get detection info
+        det_stats = summary.get('detection_stats', {})
+        cat_units = summary.get('catalog_units', {})
+        
+        # Determine detected units
+        detected_wl = cat_units.get('wavelength', 'unknown') if cat_units else 'unknown'
+        detected_flux = cat_units.get('flux', 'unknown') if cat_units else 'unknown'
+        confidence = cat_units.get('confidence', 'unknown') if cat_units else 'unknown'
+        
+        # Check if already standard (no conversion needed)
+        units_already_standard = (detected_wl == 'angstrom' and detected_flux == 'flam')
+        
+        # ── Unit Detection Report ──
+        
+        sample_size = det_stats.get('sample_size', '?')
+        wl_agree = det_stats.get('wavelength_agreement', '?')
+        fl_agree = det_stats.get('flux_agreement', '?')
+        det_status = det_stats.get('status', '')
+        
+        if det_status == 'already_standardized':
+            print(f" Method    : Sampled {sample_size}/{n_total} files")
+            print(f" Result    : All samples already standardized")
+            print(f" Wavelength: angstrom (Å)")
+            print(f" Flux      : F_lambda (erg/s/cm²/Å)")
+        elif cat_units:
+            print(f" Method    : Catalog consensus ({sample_size}/{n_total} files sampled)")
+            print(f" Wavelength: {detected_wl} ({wl_agree} agreement)")
+            print(f" Flux      : {detected_flux} ({fl_agree} agreement)")
+            print(f" Confidence: {confidence}")
+        else:
+            print(f" Status    : {det_status or 'No unit detection performed'}")
+            print(f" Wavelength: {detected_wl}")
+            print(f" Flux      : {detected_flux}")
+        
+        # ── Processing Report ──
+        # Extract counts - handle both old and new key names
+        n_converted = len(summary.get('converted', []))
+        n_tagged = len(summary.get('tagged', []))  # new: header-only tagging
+        n_recovered = len(summary.get('recovered', []))
+        n_skipped = len(summary.get('skipped_already', []) or summary.get('skipped', []))
+        n_invalid = len(summary.get('skipped_invalid', []) or summary.get('invalid', []))
+        n_index = len(summary.get('skipped_index', []))
+        n_error = len(summary.get('error', []))
+        
+        # If 'converted' is used but units were already standard, treat as 'tagged'
+        if n_converted > 0 and units_already_standard:
+            n_tagged = n_converted
+            n_converted = 0
+        
+        print(f" Total files: {n_total}")
+        
+        # Show what actually happened
+        if n_converted > 0:
+            # Actual unit conversion occurred
+            src_wl = detected_wl if detected_wl != 'angstrom' else 'original'
+            src_fl = detected_flux if detected_flux != 'flam' else 'original'
+            print(f"Converted     : {n_converted} files")
+            if detected_wl != 'angstrom':
+                print(f"   λ: {detected_wl}angstrom")
+            if detected_flux != 'flam':
+                print(f"   F: {detected_flux}F_lambda")
+        
+        if n_tagged > 0:
+            # No conversion, just cleaning + header tagging
+            print(f"Cleaned       : {n_tagged} files")
+            print(f"   (units already Å + F_λ, added standardized tag)")
+        
+        if n_recovered > 0:
+            print(f"Recovered     : {n_recovered} files")
+            print(f"   (wavelengths restored from HDF5)")
+        
+        if n_skipped > 0:
+            print(f" - Already done  : {n_skipped} files")
+            print(f"   (had units_standardized header)")
+        
+        if n_invalid > 0:
+            print(f"Invalid       : {n_invalid} files")
+            print(f"   (empty, corrupt, or λ ≤ 0)")
+        
+        if n_index > 0:
+            print(f"Index grids   : {n_index} files")
+            print(f"   (λ=0,1,2... without HDF5 source)")
+        
+        if n_error > 0:
+            print(f" Errors        : {n_error} files")
+        
+        # Summary line
+        n_usable = n_converted + n_tagged + n_recovered + n_skipped
+        print()
+        if n_usable == n_total:
+            print(f"All {n_usable} files ready for use")
+        elif n_usable > 0:
+            print(f"{n_usable}/{n_total} files usable")
+        else:
+            print(f"No usable files")
+
+        if not glob.glob(os.path.join(model_dir, "*.txt")):
+            print(f"\n  No spectra remaining after cleaning")
+            continue
+
+        # ── Data Products ──
+        
+        # HDF5 Bundle
         if src == "msg":
             out_h5 = os.path.join(model_dir, f"{name}_bundle.h5")
-            if force_bundle_h5 and not os.path.exists(out_h5):
-                build_h5_bundle_from_txt(model_dir, out_h5)
         else:
             out_h5 = os.path.join(model_dir, f"{name}.h5")
-            if force_bundle_h5 or not os.path.exists(out_h5):
-                build_h5_bundle_from_txt(model_dir, out_h5)
+        
+        if force_bundle_h5 or not os.path.exists(out_h5):
+            build_h5_bundle_from_txt(model_dir, out_h5)
+            print(f"HDF5 bundle   : {os.path.basename(out_h5)}")
+        else:
+            print(f" - HDF5 bundle   : {os.path.basename(out_h5)} (exists)")
 
-        print("[lookup] rebuilding lookup_table.csv")
+        # Lookup Table
         regenerate_lookup_table(model_dir)
+        print(f"Lookup table  : lookup_table.csv")
 
+        # Flux Cube
         if build_flux_cube:
             precompute_flux_cube(model_dir, os.path.join(model_dir, "flux_cube.bin"))
+            print(f"Flux cube     : flux_cube.bin")
 
-    print("\nDone.")
+    print("\n" + "─" * 64)
+    print("Done.")
+
+
 
 def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
     """
-    Interactive filter downloader with automatic NJM → SVO fallback.
+    Interactive filter downloader with automatic NJMSVO fallback.
     
     Shows full SVO catalog, user selects what they want, then automatically
     downloads from NJM mirror if available, falling back to SVO if not.
@@ -615,14 +713,14 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
                         print(f"\n[njm] Downloading from mirror...")
                         count = njm.download_filters(facility.key, instrument.key)
                         if count > 0:
-                            print(f"[njm] ✓ Downloaded {count} filters")
+                            print(f"[njm]  Downloaded {count} filters")
                             downloaded = True
             
             # Fall back to SVO if NJM didn't work
             if not downloaded:
                 print(f"\n[svo] Downloading from SVO...")
                 svo.download_filters(filters)
-                print(f"[svo] ✓ Downloaded {len(filters)} filters")
+                print(f"[svo]  Downloaded {len(filters)} filters")
             
             again = input("\nDownload another instrument? [y/N] ").strip().lower()
             if not again.startswith('y'):
@@ -631,12 +729,12 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
 
 def menu() -> str:
     print("\nWhat would you like to run?")
-    print("  1) Spectra (NJM / SVO / MSG / MAST)")
-    print("  2) Filters (NJM / SVO)")
-    print("  3) Rebuild (lookup + HDF5 + flux cube)")
-    print("  4) Combine grids into omni grid")
-    print("  5) ML SED Completer (train/extend incomplete SEDs)")
-    print("  0) Quit")
+    print("1) Spectra (NJM / SVO / MSG / MAST)")
+    print("2) Filters (NJM / SVO)")
+    print("3) Rebuild (lookup + HDF5 + flux cube)")
+    print("4) Combine grids into omni grid")
+    print("5) ML SED Completer (train/extend incomplete SEDs)")
+    print("0) Quit")
     choice = input("> ").strip()
     mapping = {
         "1": "spectra", 
@@ -706,12 +804,12 @@ def run_combine_flow(
 
     print(f"\nSelected {len(selected_models)} models to combine:")
     for name, _ in selected_models:
-        print(f"  - {name}")
+        print(f"- {name}")
 
     print("\nLoading model data...")
     all_models_data = []
     for name, path in selected_models:
-        print(f"  Loading {name}...")
+        print(f"Loading {name}...")
         all_models_data.append(load_model_data(path))
 
     print("\nCreating unified parameter grids...")
@@ -740,7 +838,7 @@ def run_combine_flow(
     print(f"\nSuccessfully combined {len(selected_models)} stellar atmosphere models!")
     print(f"Output saved to: {output_dir}")
     print("You can now use this combined model in MESA by setting:")
-    print(f"  stellar_atm = '{output_dir}/'")
+    print(f"stellar_atm = '{output_dir}/'")
 
 
 def run_ml_completer_flow(
@@ -748,321 +846,13 @@ def run_ml_completer_flow(
     models_dir: str = "models"
 ) -> None:
     """
-    Interactive ML SED Completer workflow.
+    Launch the interactive ML SED Completer workflow.
     
-    Allows user to:
-    1. Train new models on existing SED libraries
-    2. Load trained models and extend incomplete SEDs
+    This is a thin wrapper that delegates to ml_sed_completer.run_interactive_workflow().
+    All training and inference logic lives in the ml_sed_completer module.
     """
-    import pandas as pd
-    
-    ensure_dir(base_dir)
-    ensure_dir(models_dir)
-    
-    # Import ML completer
-    import sys
-    sys.path.insert(0, os.path.dirname(__file__))
-    from ml_sed_completer import SEDCompleter
-    
-    print("\n" + "="*60)
-    print("ML SED COMPLETER")
-    print("="*60)
-    print("\nExtend incomplete SEDs using trained neural networks")
-    
-    # Main choice: train or complete
-    print("\nWhat would you like to do?")
-    print("  1) Train new model")
-    print("  2) Complete/extend SEDs (inference)")
-    print("  0) Back")
-    
-    choice = input("> ").strip()
-    
-    if choice == "0":
-        return
-    
-    elif choice == "1":
-        # TRAINING MODE
-        print("\n" + "-"*60)
-        print("TRAIN NEW MODEL")
-        print("-"*60)
-        
-        # Discover available model libraries
-        available_models = []
-        for name in sorted(os.listdir(base_dir)):
-            model_path = os.path.join(base_dir, name)
-            if not os.path.isdir(model_path):
-                continue
-            
-            # Check for flux_cube.bin (required for training)
-            flux_cube = os.path.join(model_path, "flux_cube.bin")
-            if os.path.exists(flux_cube):
-                # Count SEDs in lookup table
-                lookup = os.path.join(model_path, "lookup_table.csv")
-                n_seds = "?"
-                if os.path.exists(lookup):
-                    df = pd.read_csv(lookup, comment='#')
-                    n_seds = len(df)
-                
-                available_models.append({
-                    'name': name,
-                    'path': model_path,
-                    'n_seds': n_seds
-                })
-        
-        if not available_models:
-            print(f"\nNo model libraries with flux_cube.bin found in {base_dir}")
-            print("Download some models first (option 1 in main menu)")
-            return
-        
-        # Display available models
-        print("\nAvailable model libraries for training:")
-        print("-"*60)
-        for i, model in enumerate(available_models, 1):
-            print(f"  {i:2d}) {model['name']:30s} ({model['n_seds']} SEDs)")
-        
-        # Select model
-        print("\nSelect library to train on (enter number):")
-        selection = input("> ").strip()
-        
-        idx = int(selection) - 1
-        selected = available_models[idx]
-        print(f"\nTraining on: {selected['name']}")
-        
-        # Training parameters
-        print("\nTraining parameters:")
-        epochs = input("  Epochs [100]: ").strip() or "100"
-        batch_size = input("  Batch size [32]: ").strip() or "32"
-        
-        epochs = int(epochs)
-        batch_size = int(batch_size)
-        
-        # Model name
-        default_name = f"sed_model_{selected['name']}"
-        model_name = input(f"  Model name [{default_name}]: ").strip() or default_name
-        output_path = os.path.join(models_dir, model_name)
-        
-        print(f"\nModel will be saved to: {output_path}.keras")
-        confirm = input("Start training? [Y/n]: ").strip().lower()
-        
-        if confirm and not confirm.startswith('y'):
-            print("Cancelled")
-            return
-        
-        # Train
-        print("\n" + "="*60)
-        print("TRAINING...")
-        print("="*60)
-        
-        completer = SEDCompleter()
-        history = completer.train_from_library(
-            selected['path'],
-            output_path,
-            epochs=epochs,
-            batch_size=batch_size
-        )
-        print("\n" + "="*60)
-        print("TRAINING COMPLETE!")
-        print("="*60)
-        print(f"Model saved: {output_path}.keras")
-        print(f"Parameters: {output_path}.params")
-        print(f"Plots: {output_path}_training_plots.png")
-        print(f"       {output_path}_prediction_examples.png")
-    
-    elif choice == "2":
-        # INFERENCE/COMPLETION MODE
-        print("\n" + "-"*60)
-        print("COMPLETE/EXTEND SEDs")
-        print("-"*60)
-        
-        # Discover trained models
-        trained_models = []
-        if os.path.exists(models_dir):
-            for fname in os.listdir(models_dir):
-                if fname.endswith('.keras'):
-                    model_name = fname[:-6]  # Remove .keras
-                    params_file = os.path.join(models_dir, model_name + '.params')
-                    if os.path.exists(params_file):
-                        trained_models.append({
-                            'name': model_name,
-                            'path': os.path.join(models_dir, model_name)
-                        })
-        
-        if not trained_models:
-            print(f"\nNo trained models found in {models_dir}/")
-            print("Train a model first (option 1)")
-            return
-        
-        # Select trained model
-        print("\nAvailable trained models:")
-        print("-"*60)
-        for i, model in enumerate(trained_models, 1):
-            print(f"  {i:2d}) {model['name']}")
-        
-        print("\nSelect model to use (enter number):")
-        selection = input("> ").strip()
-        
-        idx = int(selection) - 1
-        selected_model = trained_models[idx]
-        print(f"\nUsing model: {selected_model['name']}")
-        
-        # Load model
-        completer = SEDCompleter(model_path=selected_model['path'])
-        print("✓ Model loaded successfully")
-        
-        # Select source model set to complete
-        print("\n" + "-"*60)
-        print("SELECT MODEL SET TO EXTEND")
-        print("-"*60)
-        
-        available_models = []
-        for name in sorted(os.listdir(base_dir)):
-            model_path = os.path.join(base_dir, name)
-            if not os.path.isdir(model_path):
-                continue
-            
-            # Check for lookup table
-            lookup = os.path.join(model_path, "lookup_table.csv")
-            if os.path.exists(lookup):
-                df = pd.read_csv(lookup, comment='#')
-                n_seds = len(df)
-                available_models.append({
-                    'name': name,
-                    'path': model_path,
-                    'n_seds': n_seds
-                })
-        
-        if not available_models:
-            print(f"\nNo model sets found in {base_dir}")
-            return
-        
-        # Display models
-        print("\nAvailable model sets:")
-        print("-"*60)
-        for i, model in enumerate(available_models, 1):
-            print(f"  {i:2d}) {model['name']:30s} ({model['n_seds']} SEDs)")
-        
-        print("\nSelect model set to extend (enter number):")
-        selection = input("> ").strip()
-        
-        idx = int(selection) - 1
-        source_model = available_models[idx]
-        print(f"\nExtending: {source_model['name']}")
-        
-        # Output directory
-        output_name = source_model['name'] + "_ml_extended"
-        output_dir = os.path.join(base_dir, output_name)
-        
-        print(f"Output will be saved to: {output_name}/")
-        confirm = input("Start extension? [Y/n]: ").strip().lower()
-        
-        if confirm and not confirm.startswith('y'):
-            print("Cancelled")
-            return
-        
-        # Create output directory
-        ensure_dir(output_dir)
-        
-        # Load source lookup table
-        lookup_path = os.path.join(source_model['path'], "lookup_table.csv")
-        df = pd.read_csv(lookup_path, comment='#')
-        
-        # Process each SED
-        print("\n" + "="*60)
-        print("EXTENDING SEDs...")
-        print("="*60)
-        
-        from tqdm import tqdm
-        
-        extended_rows = []
-        
-        for idx, row in tqdm(df.iterrows(), total=len(df), desc="Processing SEDs"):
-            # Get SED filename and parameters
-            if 'file_name' in row:
-                sed_file = row['file_name']
-            elif 'filename' in row:
-                sed_file = row['filename']
-            else:
-                sed_file = row.iloc[0]
-            
-            # Get parameters
-            teff = float(row.get('teff', row.get('Teff', row.get('T_eff', 5777))))
-            logg = float(row.get('logg', row.get('Logg', row.get('log_g', 4.44))))
-            meta = float(row.get('meta', row.get('metallicity', row.get('[M/H]', row.get('feh', 0.0)))))
-            
-            # Load SED
-            sed_path = os.path.join(source_model['path'], sed_file)
-            data = np.loadtxt(sed_path, comments='#')
-            if data.ndim == 1:
-                data = data.reshape(-1, 1)
-            
-            wavelength = data[:, 0]
-            flux = data[:, 1]
-            
-            # Complete SED
-            wl_extended, flux_extended = completer.complete_sed(
-                wavelength, flux,
-                teff, logg, meta,
-                extension_range=(100.0, 100000.0)
-            )
-            
-            # Save extended SED
-            output_file = os.path.join(output_dir, sed_file)
-            np.savetxt(
-                output_file,
-                np.column_stack([wl_extended, flux_extended]),
-                header=f'wavelength_A flux_erg/s/cm2/A (ML extended)\nteff={teff} logg={logg} meta={meta}',
-                fmt='%.6e'
-            )
-            
-            # Track for lookup table
-            extended_rows.append({
-                'file_name': sed_file,
-                'teff': teff,
-                'logg': logg,
-                'meta': meta,
-                'source_model': source_model['name'],
-                'extended_by_ml': True
-            })
-        
-        print(f"\n✓ Successfully extended {len(extended_rows)} SEDs")
-        
-        # Save lookup table
-        if extended_rows:
-            lookup_df = pd.DataFrame(extended_rows)
-            output_lookup = os.path.join(output_dir, "lookup_table.csv")
-            with open(output_lookup, 'w') as f:
-                f.write("#file_name,teff,logg,meta,source_model,extended_by_ml\n")
-                lookup_df.to_csv(f, index=False, header=False)
-            print(f"✓ Saved lookup table: {output_lookup}")
-        
-        # Rebuild flux cube and HDF5
-        print("\n" + "-"*60)
-        print("REBUILDING DATA PRODUCTS")
-        print("-"*60)
-        
-        rebuild = input("Rebuild flux cube and HDF5? [Y/n]: ").strip().lower()
-        if not rebuild or rebuild.startswith('y'):
-            # HDF5 bundle
-            print("Building HDF5 bundle...")
-            h5_path = os.path.join(output_dir, f"{output_name}.h5")
-            build_h5_bundle_from_txt(output_dir, h5_path)
-            print(f"✓ HDF5: {h5_path}")
-            
-            # Flux cube
-            print("Building flux cube...")
-            cube_path = os.path.join(output_dir, "flux_cube.bin")
-            precompute_flux_cube(output_dir, cube_path)
-            print(f"✓ Flux cube: {cube_path}")
-        
-        print("\n" + "="*60)
-        print("EXTENSION COMPLETE!")
-        print("="*60)
-        print(f"Extended model: {output_dir}")
-        print(f"You can now use this in MESA with:")
-        print(f"  stellar_atm = '{output_dir}/'")
-    
-    else:
-        print("Invalid choice")
+    from .ml_sed_completer import run_interactive_workflow
+    run_interactive_workflow(base_dir, models_dir)
 
 
 
