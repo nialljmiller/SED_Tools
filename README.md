@@ -140,7 +140,7 @@ sed = SED()
 matches = sed.find_model(5777, 4.44, 0)  # Teff, logg, [Fe/H]
 model = sed.model(matches[0].name)
 spec = model(5777, 4.44, 0.0)            # Interpolate spectrum
-mags = spec.photometry("G", "Gbp", "Grp")  # GAIA filter names (no .dat extension)
+mags = spec.photometry("G", "Gbp", "Grp")  # GAIA filter names
 ```
 
 Filter specifications use the filename stem only. For `data/filters/GAIA/GAIA/G.dat`, use `"G"`.
