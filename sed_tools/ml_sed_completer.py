@@ -351,6 +351,7 @@ class SEDCompleter:
         """
         import struct
         from glob import glob
+
         import pandas as pd
         
         flux_cubes = glob(library_path + "/flux_cube.bin")
@@ -484,8 +485,9 @@ class SEDCompleter:
         For combined grids, individual SEDs may not cover the full wavelength range.
         This reads the actual SED files to determine true coverage.
         """
-        import pandas as pd
         from glob import glob
+
+        import pandas as pd
         
         coverage = {}
         
@@ -574,7 +576,7 @@ class SEDCompleter:
             Base path for saving plots
         """
         import matplotlib.pyplot as plt
-        
+
         # Create figure with subplots
         fig = plt.figure(figsize=(20, 12))
         
@@ -670,7 +672,7 @@ class SEDCompleter:
             Base path for saving plots
         """
         import matplotlib.pyplot as plt
-        
+
         # Select 6 examples
         n_examples = min(6, len(X_val))
         example_indices = np.random.choice(len(X_val), n_examples, replace=False)
@@ -962,8 +964,8 @@ def plot_extended_seds(output_dir: str, n_examples: int = 6) -> Optional[str]:
         Path to saved plot, or None if plotting failed
     """
     try:
-        import pandas as pd
         import matplotlib.pyplot as plt
+        import pandas as pd
     except ImportError as e:
         print(f"[Plot] Skipping (requires pandas & matplotlib): {e}")
         return None
@@ -1157,7 +1159,7 @@ def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> None:
     """
     import pandas as pd
     from tqdm import tqdm
-    
+
     # Ensure directories exist
     os.makedirs(base_dir, exist_ok=True)
     os.makedirs(models_dir, exist_ok=True)
@@ -1486,9 +1488,9 @@ def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> None:
         if not rebuild or rebuild.startswith('y'):
             try:
                 # Import these here to avoid circular imports
-                import sys
                 import importlib.util
-                
+                import sys
+
                 # Helper functions defined inline to avoid circular imports
                 def load_txt_spectrum(txt_path: str):
                     """Load wavelength and flux from text file."""

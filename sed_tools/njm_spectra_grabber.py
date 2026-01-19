@@ -5,15 +5,16 @@ Downloads ALL files: individual .txt spectra, flux_cube.bin, .h5 bundle, lookup_
 All files go through spectra_cleaner for unit standardization.
 """
 
-import os
 import json
-import requests
-from typing import List, Dict, Optional
-from urllib.parse import urljoin
+import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Dict, List, Optional
+from urllib.parse import urljoin
 
+import requests
 # Suppress SSL warnings when verification is disabled
 import urllib3
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 try:

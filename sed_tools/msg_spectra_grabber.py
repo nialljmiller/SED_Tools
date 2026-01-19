@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # msg_spectra_grabber.py — MSG extractor with correct (Teff, logg, [M/H]) for C3K and friends
 
-import csv, os, re
+import csv
+import os
+import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.parse import urljoin
 

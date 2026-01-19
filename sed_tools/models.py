@@ -5,23 +5,15 @@ import os
 import struct
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, Iterable, Iterator, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import (Dict, Iterable, Iterator, List, Mapping, Optional,
+                    Sequence, Tuple, Union)
 
 import numpy as np
 
-from ._flux import (
-    AB_ZERO_FLUX,
-    FILTER_EXTENSIONS,
-    FilterCurve,
-    FluxCube,
-    Spectrum,
-    VEGA_ZP_KEYS,
-    band_average_flux_lambda,
-    band_average_flux_lambda_from_arrays,
-    band_average_flux_nu,
-    load_filter_curve,
-    load_spectrum,
-)
+from ._flux import (AB_ZERO_FLUX, FILTER_EXTENSIONS, VEGA_ZP_KEYS, FilterCurve,
+                    FluxCube, Spectrum, band_average_flux_lambda,
+                    band_average_flux_lambda_from_arrays, band_average_flux_nu,
+                    load_filter_curve, load_spectrum)
 
 Number = Union[int, float, np.floating]
 FilterSpec = Union[str, os.PathLike[str], FilterCurve, Tuple[str, Union[str, os.PathLike[str]]]]

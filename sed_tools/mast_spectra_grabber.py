@@ -14,14 +14,15 @@ MASTSpectraGrabber
 """
 
 from __future__ import annotations
-import os
-import io
-import re
+
 import csv
 import gzip
+import io
+import os
+import re
 import string
 import urllib.parse
-from typing import List, Dict, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import requests

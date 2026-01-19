@@ -8,9 +8,10 @@ Ensures all SEDs are converted to:
 """
 
 import re
-import numpy as np
-from typing import Optional, Tuple, Dict
 from dataclasses import dataclass
+from typing import Dict, Optional, Tuple
+
+import numpy as np
 
 # Physical constants
 SPEED_OF_LIGHT = 2.99792458e18  # Angstroms/s

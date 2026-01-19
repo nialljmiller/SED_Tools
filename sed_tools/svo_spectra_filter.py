@@ -9,12 +9,13 @@ Lookup Table Filter Tool (robust to '#file_name' vs 'file_name' headers, etc.)
 Usage: python svo_spectra_filter.py
 """
 
+import glob
 import os
 import re
 import sys
-import glob
-import pandas as pd
 from datetime import datetime
+
+import pandas as pd
 
 # Try these roots automatically before prompting
 DEFAULT_BASE_DIRS = [

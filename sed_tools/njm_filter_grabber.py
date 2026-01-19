@@ -4,12 +4,13 @@ NJM Filter Grabber - Downloads filter profiles from nillmill.ddns.net mirror
 Complements the spectra grabber for complete data access
 """
 
-import os
 import json
-import requests
-from typing import List, Dict, Optional, Tuple
-from urllib.parse import urljoin
+import os
 from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+from urllib.parse import urljoin
+
+import requests
 
 
 class NJMFilterGrabber:
@@ -288,6 +289,7 @@ class NJMFilterGrabber:
 
 # Suppress SSL warnings when verification is disabled
 import urllib3
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 

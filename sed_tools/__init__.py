@@ -28,32 +28,27 @@ unchanged while pipelines can opt into the same functionality via imports.
 
 from __future__ import annotations
 
-from typing import Optional, Sequence, Union
-
 import os
 import sys
+from typing import Optional, Sequence, Union
+
 import h5py
 import numpy as np
 
-from .models import (
-    SED,
-    SEDModel,
-    EvaluatedSED,
-    PhotometryResult,
-    ModelMatch,
-    DATA_DIR_DEFAULT,
-    STELLAR_DIR_DEFAULT,
-    FILTER_DIR_DEFAULT,
-)
-
-from .svo_spectra_grabber import SVOSpectraGrabber  # SVO spectra → .txt + lookup_table.csv
-from .msg_spectra_grabber import MSGSpectraGrabber  # MSG (Townsend) .h5 → .txt + lookup_table.csv
-from .njm_spectra_grabber import NJMSpectraGrabber  # Niall J Miller
-from .precompute_flux_cube import precompute_flux_cube  # builds flux cube from lookup + .txt
-from .svo_regen_spectra_lookup import parse_metadata, regenerate_lookup_table
 from .mast_spectra_grabber import MASTSpectraGrabber
-from .spectra_cleaner import clean_model_dir
+from .models import (DATA_DIR_DEFAULT, FILTER_DIR_DEFAULT, SED,
+                     STELLAR_DIR_DEFAULT, EvaluatedSED, ModelMatch,
+                     PhotometryResult, SEDModel)
+from .msg_spectra_grabber import \
+    MSGSpectraGrabber  # MSG (Townsend) .h5 → .txt + lookup_table.csv
 from .njm_filter_grabber import NJMFilterGrabber
+from .njm_spectra_grabber import NJMSpectraGrabber  # Niall J Miller
+from .precompute_flux_cube import \
+    precompute_flux_cube  # builds flux cube from lookup + .txt
+from .spectra_cleaner import clean_model_dir
+from .svo_regen_spectra_lookup import parse_metadata, regenerate_lookup_table
+from .svo_spectra_grabber import \
+    SVOSpectraGrabber  # SVO spectra → .txt + lookup_table.csv
 
 __version__ = "0.1.0"
 
@@ -193,7 +188,8 @@ def run_rebuild_flow(base_dir: str = STELLAR_DIR_DEFAULT,
     # optional SVO lookup regen helper
     regen = None
     try:
-        from .svo_regen_spectra_lookup import regenerate_lookup_table as regen  # type: ignore
+        from .svo_regen_spectra_lookup import \
+            regenerate_lookup_table as regen  # type: ignore
     except Exception:
         regen = None
 
@@ -253,8 +249,10 @@ def run_rebuild_flow(base_dir: str = STELLAR_DIR_DEFAULT,
 
     print("\nRebuild complete.")
 
+import glob
+import os
 from typing import List, Tuple
-import os, glob
+
 # assumes in scope:
 # ensure_dir, STELLAR_DIR_DEFAULT
 # SVOSpectraGrabber, MSGSpectraGrabber, MASTSpectraGrabber
@@ -370,16 +368,12 @@ def run_combine_flow(
         output_name: Name for the output combined model directory  
         interactive: If True, prompt user to select models
     """
-    from .combine_stellar_atm import (
-        find_stellar_models,
-        select_models_interactive,
-        load_model_data,
-        create_unified_grid,
-        create_common_wavelength_grid,
-        build_combined_flux_cube,
-        save_combined_data,
-        visualize_parameter_space
-    )
+    from .combine_stellar_atm import (build_combined_flux_cube,
+                                      create_common_wavelength_grid,
+                                      create_unified_grid, find_stellar_models,
+                                      load_model_data, save_combined_data,
+                                      select_models_interactive,
+                                      visualize_parameter_space)
     
     ensure_dir(base_dir)
     
@@ -584,8 +578,13 @@ __all__ = [
 
 
 
-from typing import Sequence, Optional, Any, List, Tuple
-import re, math, shutil, sys, os
+import math
+import os
+import re
+import shutil
+import sys
+from typing import Any, List, Optional, Sequence, Tuple
+
 
 def _prompt_choice(
     options: Sequence,

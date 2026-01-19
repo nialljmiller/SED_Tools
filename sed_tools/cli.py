@@ -27,18 +27,17 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 import h5py
 import numpy as np
 
-# --- Standard Package Imports (The "Safe" Way) ---
-from .models import STELLAR_DIR_DEFAULT, FILTER_DIR_DEFAULT
-from .svo_spectra_grabber import SVOSpectraGrabber
-from .msg_spectra_grabber import MSGSpectraGrabber
 from .mast_spectra_grabber import MASTSpectraGrabber
+# --- Standard Package Imports (The "Safe" Way) ---
+from .models import FILTER_DIR_DEFAULT, STELLAR_DIR_DEFAULT
+from .msg_spectra_grabber import MSGSpectraGrabber
 from .njm_spectra_grabber import NJMSpectraGrabber
 from .precompute_flux_cube import precompute_flux_cube
-from .svo_regen_spectra_lookup import parse_metadata, regenerate_lookup_table
-from .svo_filter_grabber import run_interactive as _run_filter_cli
 from .spectra_cleaner import clean_model_dir
-
-
+from .svo_filter_grabber import run_interactive as _run_filter_cli
+from .svo_regen_spectra_lookup import parse_metadata, regenerate_lookup_table
+from .svo_spectra_grabber import SVOSpectraGrabber
+from .ui_utils import _prompt_choice
 # ------------ Small Utils ------------
 
 def ensure_dir(path: str) -> None:
@@ -645,7 +644,7 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
     
     from .njm_filter_grabber import NJMFilterGrabber
     from .svo_filter_grabber import SVOFilterBrowser
-    
+
     # Initialize both sources
     svo = SVOFilterBrowser(base_dir=base_dir)
     njm = NJMFilterGrabber(base_dir=base_dir)
@@ -772,16 +771,12 @@ def run_combine_flow(
         output_name: Name for the output combined model directory
         interactive: If True, prompt user to select models
     """
-    from .combine_stellar_atm import (
-        find_stellar_models,
-        select_models_interactive,
-        load_model_data,
-        create_unified_grid,
-        create_common_wavelength_grid,
-        build_combined_flux_cube,
-        save_combined_data,
-        visualize_parameter_space,
-    )
+    from .combine_stellar_atm import (build_combined_flux_cube,
+                                      create_common_wavelength_grid,
+                                      create_unified_grid, find_stellar_models,
+                                      load_model_data, save_combined_data,
+                                      select_models_interactive,
+                                      visualize_parameter_space)
 
     ensure_dir(base_dir)
 

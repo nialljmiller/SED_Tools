@@ -5,13 +5,13 @@ from __future__ import annotations
 import os
 import sys
 import textwrap
+import urllib.parse
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Sequence
-import urllib.parse
 
 import requests
-from bs4 import BeautifulSoup
 from astroquery.svo_fps import SvoFps
+from bs4 import BeautifulSoup
 
 from . import _prompt_choice
 

@@ -12,19 +12,12 @@ from __future__ import annotations
 from typing import Any
 
 try:  # pragma: no cover - import error path depends on user environment
-    from .flux_cube_tool import (  # type: ignore
-        AB_ZERO_FLUX,
-        FILTER_EXTENSIONS,
-        FilterCurve,
-        FluxCube,
-        Spectrum,
-        VEGA_ZP_KEYS,
-        band_average_flux_lambda,
-        band_average_flux_lambda_from_arrays,
-        band_average_flux_nu,
-        load_filter_curve,
-        load_spectrum,
-    )
+    from .flux_cube_tool import (AB_ZERO_FLUX,  # type: ignore
+                                 FILTER_EXTENSIONS, VEGA_ZP_KEYS, FilterCurve,
+                                 FluxCube, Spectrum, band_average_flux_lambda,
+                                 band_average_flux_lambda_from_arrays,
+                                 band_average_flux_nu, load_filter_curve,
+                                 load_spectrum)
 except Exception as exc:  # pragma: no cover - surfaced to users
     raise ImportError(
         "The sed_tools package requires the bundled 'flux_cube_tool' module. "
