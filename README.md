@@ -1,3 +1,4 @@
+![SED_Tools Logo](docs/SED_Tools_Logo.jpeg)
 # SED_Tools
 
 Python package for downloading, processing, and standardizing stellar atmosphere models for MESA's `colors` module.
