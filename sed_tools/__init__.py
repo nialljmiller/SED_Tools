@@ -50,6 +50,19 @@ from .svo_regen_spectra_lookup import parse_metadata, regenerate_lookup_table
 from .svo_spectra_grabber import \
     SVOSpectraGrabber  # SVO spectra → .txt + lookup_table.csv
 
+from .api import (
+    SED,  # This replaces/extends the existing SED from models
+    Catalog,
+    CatalogInfo,
+    Spectrum,
+    Filters,
+    MLCompleter,
+    query,
+    fetch,
+    local,
+)
+
+
 __version__ = "0.1.0"
 
 
@@ -556,12 +569,25 @@ def find_atm(**kwargs) -> list[ModelMatch]:
 
 
 __all__ = [
+    # Core API
     "SED",
+    "Catalog", 
+    "CatalogInfo",
+    "Spectrum",
+    "Filters",
+    "MLCompleter",
+    
+    # Convenience functions
+    "query",
+    "fetch", 
+    "local",
+    
+    # Existing exports (keep these)
     "SEDModel",
     "EvaluatedSED",
     "PhotometryResult",
-    "ModelMatch",    
-    "run_combine_flow",  # ← ADD THIS
+    "ModelMatch",
+    "run_combine_flow",
     "DATA_DIR_DEFAULT",
     "STELLAR_DIR_DEFAULT",
     "FILTER_DIR_DEFAULT",
@@ -569,7 +595,6 @@ __all__ = [
     "find_atm",
     "__version__",
 ]
-
 
 
 
