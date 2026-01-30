@@ -48,6 +48,9 @@ SED_tools/plots/
 *.txz
 *.dat
 *.csv
+*.json
+*.pt
+
 # Trained models / artifacts
 models/*.keras
 models/*.params

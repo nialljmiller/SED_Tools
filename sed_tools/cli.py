@@ -726,6 +726,18 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
                 break
 
 
+def run_ml_generator_flow(
+    base_dir: str = STELLAR_DIR_DEFAULT,
+    models_dir: str = "models"
+) -> None:
+    """Run ML SED Generator interactive workflow."""
+    from .ml_sed_generator import run_interactive_workflow
+    run_interactive_workflow(base_dir=base_dir, models_dir=models_dir)
+
+
+
+
+
 def menu() -> str:
     print("\nWhat would you like to run?")
     print("1) Spectra (NJM / SVO / MSG / MAST)")
@@ -733,6 +745,7 @@ def menu() -> str:
     print("3) Rebuild (lookup + HDF5 + flux cube)")
     print("4) Combine grids into omni grid")
     print("5) ML SED Completer (train/extend incomplete SEDs)")
+    print("6) ML SED Generator (generate SEDs from parameters)")  # NEW
     print("0) Quit")
     choice = input("> ").strip()
     mapping = {
@@ -741,6 +754,7 @@ def menu() -> str:
         "3": "rebuild",
         "4": "combine",
         "5": "ml_completer",
+        "6": "ml_generator",  # NEW
         "0": "quit"
     }
     return mapping.get(choice, "")
@@ -904,6 +918,15 @@ def main():
     mp.add_argument("--models-dir", default="models",
                     help="Directory for trained ML models")
 
+
+    # ml_generator
+    gp = sub.add_parser("ml_generator", help="Train/use ML SED generator")
+    gp.add_argument("--base", default=str(STELLAR_DIR_DEFAULT),
+                    help="Base models directory")
+    gp.add_argument("--models-dir", default="models",
+                    help="Directory for trained ML models")
+
+
     args = parser.parse_args()
 
     if args.cmd == "spectra":
@@ -938,6 +961,14 @@ def main():
             models_dir=args.models_dir
         )
 
+
+    elif args.cmd == "ml_generator":
+        run_ml_generator_flow(
+            base_dir=args.base,
+            models_dir=args.models_dir
+        )
+
+
     else:
         # Interactive mode
         while True:
@@ -952,6 +983,8 @@ def main():
                 run_combine_flow()
             elif choice == "ml_completer":
                 run_ml_completer_flow()
+            elif choice == "ml_generator":
+                run_ml_generator_flow()                
             else:
                 sys.exit(0)
 
