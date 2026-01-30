@@ -1,176 +1,253 @@
-![SED_Tools Logo](docs/SED_Tools_Logo.jpeg)
-# SED_Tools
+<p align="center">
+  <img src="docs/SED_Tools_Logo.jpeg" alt="SED_Tools Logo" width="200"/>
+</p>
 
-Python package for downloading, processing, and standardizing stellar atmosphere models for MESA's `colors` module.
+<h1 align="center">SED_Tools</h1>
 
-## What It Does
+<p align="center">
+  <strong>Download, process, and standardize stellar atmosphere models for MESA</strong>
+</p>
 
-- Downloads stellar atmosphere spectra from SVO, MSG (Townsend), MAST (BOSZ), and NJM mirror
-- Downloads photometric filter transmission curves from SVO Filter Profile Service
-- Converts spectra to standardized units (wavelength in Angstroms, flux in erg/cm²/s/Å)
-- Generates MESA-compatible binary flux cubes and HDF5 bundles
-- Combines multiple stellar libraries into unified "omni grids"
-- ML-powered extension of incomplete SEDs using neural networks
+<p align="center">
+  <a href="#installation">Installation</a> •
+  <a href="#quick-start">Quick Start</a> •
+  <a href="#cli-reference">CLI Reference</a> •
+  <a href="#python-api">Python API</a> •
+  <a href="#data-sources">Data Sources</a>
+</p>
+
+---
+
+## Overview
+
+SED_Tools is a Python package for working with stellar spectral energy distributions (SEDs). It provides unified access to multiple stellar atmosphere catalogs, standardizes spectral data to consistent units, and generates output files compatible with [MESA](https://docs.mesastar.org/)'s `colors` module.
+
+### Key Features
+
+- **Multi-source downloads** — Fetch stellar atmosphere spectra from SVO, MSG, MAST (BOSZ), and NJM mirror
+- **Photometric filters** — Download transmission curves from the SVO Filter Profile Service
+- **Unit standardization** — Convert all spectra to consistent units (wavelength in Å, flux in erg/cm²/s/Å)
+- **MESA integration** — Generate binary flux cubes, HDF5 bundles, and lookup tables
+- **Grid combination** — Merge multiple stellar libraries into unified "omni grids"
+- **ML completion** — Extend incomplete SEDs using neural networks with black body baselines
+
+---
 
 ## Installation
 
+### From Source
+
 ```bash
+git clone https://github.com/yourusername/SED_Tools.git
+cd SED_Tools
 pip install .
 ```
 
-Or for development:
+### Development Install
 
 ```bash
 pip install -e .
 ```
 
+### Requirements
+
+- Python ≥ 3.9
+- numpy, pandas, h5py, astropy, matplotlib
+- TensorFlow (required for ML completer only)
+
+See `pyproject.toml` for the complete dependency list.
+
+---
+
 ## Quick Start
 
-Interactive menu:
+### Interactive Mode
+
+Launch the interactive menu:
 
 ```bash
 sed-tools
 ```
 
-Direct commands:
+### Direct Commands
 
 ```bash
-sed-tools spectra          # Download stellar atmospheres
-sed-tools filters          # Download photometric filters
-sed-tools rebuild          # Build flux cubes and lookup tables
-sed-tools combine          # Merge multiple grids
-sed-tools ml_completer     # Train/use ML SED completer
-```
-
-## Workflow
-
-### 1. Download Spectra
-
-```bash
+# Download stellar atmosphere spectra
 sed-tools spectra
-```
 
-Select source (SVO/MSG/MAST/NJM) and models. Downloads spectra, cleans units, generates `lookup_table.csv`.
-
-### 2. Download Filters
-
-```bash
+# Download photometric filter transmission curves
 sed-tools filters
-```
 
-Browse SVO Filter Profile Service by Facility → Instrument → Filters. Downloads transmission curves.
-
-### 3. Build Data Cubes
-
-```bash
+# Build flux cubes and lookup tables from downloaded spectra
 sed-tools rebuild
-```
 
-Converts text spectra into:
-- Binary `flux_cube.bin` files (required by MESA)
-- HDF5 bundles
-- Updated lookup tables
-
-This step runs automatically after new spectra downloads.
-
-### 4. Install into MESA
-
-Copy or symlink the generated data:
-
-```bash
-# Copy
-cp -r data/stellar_models/Kurucz2003all $MESA_DIR/colors/data/stellar_models/
-
-# Or symlink
-ln -s $(pwd)/data/stellar_models/Kurucz2003all $MESA_DIR/colors/data/stellar_models/
-```
-
-Configure MESA inlist:
-
-```fortran
-stellar_atm = '/colors/data/stellar_models/Kurucz2003all/'
-instrument = '/colors/data/filters/Generic/Johnson'
-```
-
-## Advanced Features
-
-### Combine Multiple Libraries
-
-Create unified grids spanning multiple stellar atmosphere models:
-
-```bash
+# Combine multiple grids into a unified ensemble
 sed-tools combine
-```
 
-Select models interactively or combine all with `--non-interactive`.
-
-### ML SED Completer
-
-Extend incomplete SEDs to broader wavelength ranges using black body baseline + neural network refinement:
-
-```bash
+# Train or apply the ML SED completer
 sed-tools ml_completer
 ```
 
-Supports training on combined grids with varying wavelength coverage. Uses masked training to handle heterogeneous data.
+---
 
-## Directory Structure
+## CLI Reference
+
+### `sed-tools spectra`
+
+Download stellar atmosphere spectra from remote catalogs.
+
+```bash
+# Interactive source and model selection
+sed-tools spectra
+
+# Download specific models
+sed-tools spectra --models Kurucz2003all PHOENIX
+
+# Force a specific source
+sed-tools spectra --source svo --models Kurucz2003all
+
+# Parallel downloads
+sed-tools spectra --models Kurucz2003all --workers 8
+
+# Filter by stellar parameters
+sed-tools spectra --models Kurucz2003all \
+    --teff-min 4000 --teff-max 8000 \
+    --logg-min 3.0 --logg-max 5.0
+```
+
+**What it does:**
+
+1. Queries the selected source for available models
+2. Downloads spectrum files matching your criteria
+3. Standardizes units (wavelength → Å, flux → erg/cm²/s/Å)
+4. Generates `lookup_table.csv` with stellar parameters
+5. Automatically runs `rebuild` to create binary files
+
+**Sources:**
+
+| Source | Description |
+|--------|-------------|
+| `njm` | NJM mirror (default, fastest) |
+| `svo` | Spanish Virtual Observatory |
+| `msg` | MSG grids (Townsend) |
+| `mast` | MAST BOSZ library |
+
+---
+
+### `sed-tools filters`
+
+Download photometric filter transmission curves from the SVO Filter Profile Service.
+
+```bash
+# Interactive facility/instrument/filter selection
+sed-tools filters
+
+# Download specific filter set
+sed-tools filters --facility Generic --instrument Johnson
+```
+
+**Output structure:**
 
 ```
-data/
-├── stellar_models/
-│   └── Kurucz2003all/
-│       ├── flux_cube.bin       # Binary flux cube (MESA)
-│       ├── lookup_table.csv    # Parameter lookup (MESA)
-│       ├── *.txt               # Raw spectra
-│       └── *.h5                # HDF5 bundle
-└── filters/
-    └── Generic/
-        └── Johnson/
-            ├── B.dat           # Filter transmission
-            ├── V.dat
-            └── Johnson         # Index file (MESA)
+data/filters/Generic/Johnson/
+├── B.dat           # Filter transmission curve
+├── V.dat
+├── R.dat
+└── Johnson         # Index file for MESA
 ```
 
-# SED_Tools Python API
+---
 
-A programmatic Python interface that provides full parity with the CLI, plus additional capabilities for building data pipelines.
+### `sed-tools rebuild`
 
-## Quick Start
+Build MESA-compatible binary files from downloaded text spectra.
+
+```bash
+# Rebuild all local models
+sed-tools rebuild
+
+# Rebuild specific models
+sed-tools rebuild --models Kurucz2003all PHOENIX
+```
+
+**Generated files:**
+
+| File | Description |
+|------|-------------|
+| `flux_cube.bin` | Binary flux cube (required by MESA) |
+| `lookup_table.csv` | Parameter lookup table |
+| `*.h5` | HDF5 bundle with all spectra |
+
+---
+
+### `sed-tools combine`
+
+Merge multiple stellar atmosphere grids into a unified ensemble.
+
+```bash
+# Interactive model selection
+sed-tools combine
+
+# Combine specific models
+sed-tools combine --models Kurucz2003all PHOENIX NextGen
+
+# Combine all available local models
+sed-tools combine --non-interactive
+
+# Specify output name
+sed-tools combine --models Kurucz2003all PHOENIX --output my_combined_grid
+```
+
+**Use cases:**
+
+- Extend temperature coverage by combining hot and cool star models
+- Fill gaps in parameter space using complementary libraries
+- Create comprehensive grids for population synthesis
+
+---
+
+### `sed-tools ml_completer`
+
+Train and apply neural networks to extend incomplete SEDs.
+
+```bash
+# Interactive mode
+sed-tools ml_completer
+
+# Train on a combined grid
+sed-tools ml_completer train --grid combined_grid --epochs 200
+
+# Extend an incomplete model
+sed-tools ml_completer extend --model sparse_uv_model \
+    --wavelength-min 100 --wavelength-max 100000
+```
+
+**How it works:**
+
+1. Trains on complete SED libraries with full wavelength coverage
+2. Uses black body radiation as a physics-based baseline
+3. Neural network learns residuals from the black body approximation
+4. Masked training handles heterogeneous wavelength grids
+5. Extends sparse models to broader wavelength ranges
+
+---
+
+## Python API
+
+The Python API provides full parity with the CLI plus additional capabilities for building data pipelines.
+
+### `SED` — Main Entry Point
+
+#### Discovery
 
 ```python
-from sed_tools.api import SED, Filters
+from sed_tools.api import SED
 
-# Query available catalogs
-catalogs = SED.query()
-catalogs = SED.query(teff_min=5000, logg_min=4.0)  # Filter by coverage
-
-# Fetch and download data
-sed = SED.fetch('Kurucz2003all', teff_min=4000, teff_max=8000)
-sed.cat.write()  # Save to default path
-
-# Work with local data
-sed = SED.local('Kurucz2003all')
-spectrum = sed(5777, 4.44, 0.0)  # Interpolate
-```
-
-## API Reference
-
-### `SED` Class
-
-The main entry point for all functionality.
-
-#### Class Methods (Discovery & Fetching)
-
-##### `SED.query(**filters) -> List[CatalogInfo]`
-Query available stellar atmosphere catalogs.
-
-```python
-# All available catalogs
+# List all available catalogs
 catalogs = SED.query()
 
 # Filter by source
-catalogs = SED.query(source='svo')  # 'svo', 'msg', 'mast', 'njm', 'local'
+catalogs = SED.query(source='svo')
 
 # Filter by parameter coverage
 catalogs = SED.query(
@@ -180,21 +257,20 @@ catalogs = SED.query(
     metallicity_min=-1.0,
 )
 
-# Local only
+# Local catalogs only
 catalogs = SED.query(include_remote=False)
 ```
 
-##### `SED.fetch(catalog, **params) -> SED`
-Download a stellar atmosphere catalog.
+#### Downloading
 
 ```python
-# Basic fetch (tries NJM mirror first)
+# Basic fetch (tries NJM mirror first, falls back to other sources)
 sed = SED.fetch('Kurucz2003all')
 
 # Force specific source
 sed = SED.fetch('Kurucz2003all', source='svo')
 
-# Fetch with parameter filtering
+# Fetch with parameter filtering and parallel downloads
 sed = SED.fetch(
     'Kurucz2003all',
     teff_min=4000,
@@ -203,247 +279,350 @@ sed = SED.fetch(
     logg_max=5.0,
     metallicity_min=-1.0,
     metallicity_max=0.5,
-    workers=8,  # Parallel downloads
+    workers=8,
 )
 
-# The catalog is in sed.cat
-print(f"Downloaded {len(sed.cat)} spectra")
+# Save to disk (generates all MESA-compatible files)
+sed.cat.write()
+sed.cat.write('/custom/output/path')
 ```
 
-##### `SED.local(catalog) -> SED`
-Load an already-installed local catalog.
+#### Loading Local Data
 
 ```python
+# Load an installed catalog
 sed = SED.local('Kurucz2003all')
 
-# Ready for interpolation
-spectrum = sed(5777, 4.44, 0.0)
-```
-
-##### `SED.combine(catalogs, output) -> SED`
-Create ensemble grids from multiple catalogs.
-
-```python
-ensemble = SED.combine(
-    catalogs=['Kurucz2003all', 'PHOENIX'],
-    output='my_combined_grid',
-)
-```
-
-##### `SED.ml_completer() -> MLCompleter`
-Get the ML-based SED completion tool.
-
-```python
-completer = SED.ml_completer()
-completer.train(grid='combined_grid')
-completer.extend('sparse_model')
-```
-
-#### Instance Methods
-
-##### `sed(teff, logg, metallicity) -> EvaluatedSED`
-Interpolate a spectrum.
-
-```python
-sed = SED.local('Kurucz2003all')
-spectrum = sed(5777, 4.44, 0.0)
-
-print(spectrum.wavelength)  # Array of wavelengths
-print(spectrum.flux)        # Array of flux values
-```
-
-##### `sed.parameter_ranges() -> dict`
-Get the parameter space covered by the model.
-
-```python
+# Check parameter coverage
 ranges = sed.parameter_ranges()
 # {'teff': (3500.0, 50000.0), 'logg': (0.0, 5.0), 'metallicity': (-5.0, 1.0)}
 ```
 
-### `Catalog` Class
-
-Container for downloaded/loaded spectra.
+#### Interpolation
 
 ```python
-# Access via sed.cat after fetch or local
+sed = SED.local('Kurucz2003all')
+
+# Interpolate a spectrum at specific stellar parameters
+spectrum = sed(teff=5777, logg=4.44, metallicity=0.0)
+
+print(spectrum.wavelength)  # Array in Angstroms
+print(spectrum.flux)        # Array in erg/cm²/s/Å
+```
+
+#### Combining Grids
+
+```python
+ensemble = SED.combine(
+    catalogs=['Kurucz2003all', 'PHOENIX', 'NextGen'],
+    output='my_combined_grid',
+)
+```
+
+#### ML Completion
+
+```python
+completer = SED.ml_completer()
+
+# Train on a complete grid
+completer.train(grid='combined_grid', epochs=200)
+
+# Extend an incomplete model
+extended = completer.extend(
+    'sparse_model',
+    wavelength_range=(100, 100000),
+)
+extended.write()
+```
+
+---
+
+### `Catalog` — Spectrum Container
+
+```python
 catalog = sed.cat
 
 # Properties
-print(len(catalog))           # Number of spectra
-print(catalog.teff_grid)      # Unique Teff values
-print(catalog.logg_grid)      # Unique logg values
-print(catalog.parameters)     # DataFrame of all parameters
+len(catalog)              # Number of spectra
+catalog.teff_grid         # Unique Teff values
+catalog.logg_grid         # Unique logg values
+catalog.parameters        # DataFrame of all parameters
 
-# Iterate over spectra
+# Iteration
 for spec in catalog:
     print(spec.teff, spec.logg, spec.metallicity)
 
-# Filter catalog
-cool = catalog.filter(teff_max=5000)
+# Filtering
+cool_stars = catalog.filter(teff_max=5000)
 
-# Save to disk
-catalog.write()                    # Default path
-catalog.write('/custom/path')      # Custom path
+# Persistence
+catalog.write()
+catalog.write('/custom/path')
 ```
 
-### `Spectrum` Class
+---
 
-Individual spectrum data.
+### `Spectrum` — Individual SED
 
 ```python
 spec = catalog[0]
 
-print(spec.wavelength)    # np.ndarray (Angstroms)
-print(spec.flux)          # np.ndarray (erg/cm²/s/Å)
-print(spec.teff)          # Effective temperature
-print(spec.logg)          # Surface gravity
-print(spec.metallicity)   # [M/H]
-print(spec.filename)      # Original filename
+# Data arrays
+spec.wavelength    # np.ndarray (Angstroms)
+spec.flux          # np.ndarray (erg/cm²/s/Å)
+spec.wl            # Alias for wavelength
+spec.fl            # Alias for flux
 
-# Aliases
-print(spec.wl)  # Same as wavelength
-print(spec.fl)  # Same as flux
+# Stellar parameters
+spec.teff          # Effective temperature (K)
+spec.logg          # Surface gravity (log g)
+spec.metallicity   # [M/H]
+
+# Metadata
+spec.filename      # Original filename
 
 # Save individual spectrum
 spec.save('/path/to/spectrum.txt')
 ```
 
-### `Filters` Class
+---
 
-Work with photometric filter profiles.
+### `Filters` — Photometric Filters
 
 ```python
-# Query available filters
-filters = Filters.query()
-filters = Filters.query(facility='HST')
+from sed_tools.api import Filters
 
-# Download filters
-path = Filters.fetch('Generic', 'Johnson')
+# Query available filters
+all_filters = Filters.query()
+hst_filters = Filters.query(facility='HST')
+
+# Download a filter set
+path = Filters.fetch(facility='Generic', instrument='Johnson')
 ```
 
-### `CatalogInfo` Class
+---
 
-Information about available catalogs.
+### `CatalogInfo` — Catalog Metadata
 
 ```python
 info = SED.query()[0]
 
-print(info.name)              # 'Kurucz2003all'
-print(info.source)            # 'svo', 'local', etc.
-print(info.teff_range)        # (3500.0, 50000.0)
-print(info.logg_range)        # (0.0, 5.0)
-print(info.metallicity_range) # (-5.0, 1.0)
-print(info.n_spectra)         # Number of spectra
-print(info.is_local)          # True if installed
+info.name              # 'Kurucz2003all'
+info.source            # 'svo', 'njm', 'local', etc.
+info.teff_range        # (3500.0, 50000.0)
+info.logg_range        # (0.0, 5.0)
+info.metallicity_range # (-5.0, 1.0)
+info.n_spectra         # Number of spectra
+info.is_local          # True if already installed
 
-# Check coverage
-info.covers(teff=5777, logg=4.44)  # Point coverage
-info.covers_range(teff_min=5000, teff_max=6000)  # Range coverage
+# Coverage checks
+info.covers(teff=5777, logg=4.44)
+info.covers_range(teff_min=5000, teff_max=6000)
 ```
 
-## Comparison with CLI
+---
 
-| CLI Command | Python API |
-|-------------|------------|
-| `sed-tools spectra` (list models) | `SED.query()` |
+### CLI to API Mapping
+
+| CLI Command | Python API Equivalent |
+|-------------|----------------------|
+| `sed-tools spectra` (list) | `SED.query()` |
 | `sed-tools spectra --models X` | `SED.fetch('X')` |
 | `sed-tools rebuild --models X` | `sed.cat.write()` |
-| `sed-tools combine` | `SED.combine([...])` |
-| `sed-tools ml_completer` | `SED.ml_completer()` |
+| `sed-tools combine --models A B` | `SED.combine(['A', 'B'], output='...')` |
+| `sed-tools ml_completer train` | `SED.ml_completer().train(...)` |
 | `sed-tools filters` | `Filters.fetch(...)` |
 
-## Example Pipelines
+---
 
-### Batch Processing Stars
+## MESA Integration
+
+### Installing Downloaded Data
+
+Copy or symlink the generated data into your MESA installation:
+
+```bash
+# Copy
+cp -r data/stellar_models/Kurucz2003all $MESA_DIR/colors/data/stellar_models/
+
+# Or symlink (recommended for development)
+ln -s $(pwd)/data/stellar_models/Kurucz2003all $MESA_DIR/colors/data/stellar_models/
+```
+
+### MESA Inlist Configuration
+
+```fortran
+&controls
+    ! Stellar atmosphere model
+    stellar_atm = '/colors/data/stellar_models/Kurucz2003all/'
+    
+    ! Photometric filter set
+    instrument = '/colors/data/filters/Generic/Johnson'
+/
+```
+
+### Filter Specifications
+
+When referencing filters in MESA, use the filename stem only:
+
+- File: `data/filters/GAIA/GAIA/G.dat`
+- Reference: `"G"`
+
+---
+
+## Directory Structure
+
+```
+SED_Tools/
+├── sed_tools/              # Package source
+│   ├── __init__.py
+│   ├── api.py              # Python API
+│   ├── cli.py              # CLI entry point
+│   └── ...
+├── data/                   # Downloaded data (created at runtime)
+│   ├── stellar_models/
+│   │   └── Kurucz2003all/
+│   │       ├── flux_cube.bin
+│   │       ├── lookup_table.csv
+│   │       ├── spectra.h5
+│   │       └── *.txt
+│   └── filters/
+│       └── Generic/
+│           └── Johnson/
+│               ├── B.dat
+│               ├── V.dat
+│               └── Johnson
+├── docs/
+├── tests/
+├── pyproject.toml
+└── README.md
+```
+
+---
+
+## Data Sources
+
+| Source | URL | Description |
+|--------|-----|-------------|
+| NJM Mirror | [nillmill.ddns.net/sed_tools](https://nillmill.ddns.net/sed_tools/) | Pre-processed mirror (fastest) |
+| SVO | [svo2.cab.inta-csic.es](http://svo2.cab.inta-csic.es/theory/fps/) | Spanish Virtual Observatory |
+| MSG | [astro.wisc.edu/~townsend](http://user.astro.wisc.edu/~townsend/static.php?ref=msg-grids) | MSG Stellar Atmosphere Grids |
+| MAST | [archive.stsci.edu/prepds/bosz](https://archive.stsci.edu/prepds/bosz/) | BOSZ Spectral Library |
+
+---
+
+## Examples
+
+### Batch Processing a Star Catalog
 
 ```python
 from sed_tools.api import SED
-import numpy as np
 
-# Load model
 sed = SED.local('Kurucz2003all')
 
-# Process a catalog of stars
 stars = [
-    {'teff': 5777, 'logg': 4.44, 'met': 0.0},   # Sun
-    {'teff': 9940, 'logg': 4.30, 'met': 0.0},   # Vega
-    {'teff': 3850, 'logg': 4.79, 'met': -0.1},  # Proxima Cen
+    {'name': 'Sun',         'teff': 5777, 'logg': 4.44, 'met':  0.0},
+    {'name': 'Vega',        'teff': 9940, 'logg': 4.30, 'met':  0.0},
+    {'name': 'Proxima Cen', 'teff': 3050, 'logg': 5.20, 'met': -0.1},
 ]
 
 for star in stars:
-    spec = sed(star['teff'], star['logg'], star['met'])
-    # Do analysis...
+    spectrum = sed(star['teff'], star['logg'], star['met'])
+    spectrum.save(f"output/{star['name']}.txt")
 ```
 
-### Building Custom Grids
+### Building a Custom Temperature Grid
 
 ```python
 from sed_tools.api import SED
 
-# Fetch multiple catalogs with specific ranges
-kurucz = SED.fetch('Kurucz2003all', teff_min=3500, teff_max=10000)
-phoenix = SED.fetch('PHOENIX', teff_min=2500, teff_max=4000)
+# Hot stars from Kurucz
+hot = SED.fetch('Kurucz2003all', teff_min=7000, teff_max=50000)
+hot.cat.write()
 
-# Save both
-kurucz.cat.write()
-phoenix.cat.write()
+# Cool stars from PHOENIX
+cool = SED.fetch('PHOENIX', teff_min=2500, teff_max=7000)
+cool.cat.write()
 
 # Combine into unified grid
 combined = SED.combine(
     ['Kurucz2003all', 'PHOENIX'],
-    output='cool_to_warm_stars'
+    output='full_temperature_grid'
 )
 ```
 
-### Extending Incomplete SEDs
+### Extending UV Coverage with ML
 
 ```python
 from sed_tools.api import SED
 
-# Train ML model on complete grid
+# Train on a grid with complete wavelength coverage
 completer = SED.ml_completer()
-completer.train('combined_grid', epochs=200)
+completer.train('BOSZ', epochs=200)
 
-# Extend sparse model
+# Extend a model with limited UV coverage
 extended = completer.extend(
-    'sparse_uv_model',
-    wavelength_range=(100, 100000),
+    'optical_only_model',
+    wavelength_range=(912, 100000),  # Extend into UV
 )
-
-# Save extended grid
 extended.write()
 ```
 
-## Installation
+---
 
-Add to your `sed_tools/__init__.py`:
+## Troubleshooting
 
-```python
-from .api import (
-    SED, Catalog, CatalogInfo, Spectrum, Filters, MLCompleter,
-    query, fetch, local,
-)
+### Common Issues
+
+**Downloads fail or timeout**
+
+```bash
+# Use the NJM mirror (faster, more reliable)
+sed-tools spectra --source njm --models Kurucz2003all
+
+# Or reduce parallel workers
+sed-tools spectra --models Kurucz2003all --workers 2
 ```
 
-Then:
+**Missing TensorFlow for ML completer**
 
-```python
-from sed_tools import SED, query, fetch
+```bash
+pip install tensorflow
 ```
 
-Filter specifications use the filename stem only. For `data/filters/GAIA/GAIA/G.dat`, use `"G"`.
+**MESA cannot find flux cube**
 
-## Data Sources
+Verify the directory structure matches MESA expectations:
 
-- [NJM](https://nillmill.ddns.net/sed_tools/)
-- [SVO Filter Profile Service](http://svo2.cab.inta-csic.es/theory/fps/)
-- [MAST BOSZ Spectral Library](https://archive.stsci.edu/prepds/bosz/)
-- [MSG Stellar Atmosphere Grids](http://user.astro.wisc.edu/~townsend/static.php?ref=msg-grids)
+```
+$MESA_DIR/colors/data/stellar_models/Kurucz2003all/
+├── flux_cube.bin       # Must exist
+└── lookup_table.csv    # Must exist
+```
 
-## Requirements
+---
 
-- Python ≥3.9
-- numpy, pandas, h5py, astropy, matplotlib
-- TensorFlow (for ML completer)
+## Contributing
 
-See `pyproject.toml` for complete dependency list.
+Contributions are welcome. Please open an issue to discuss proposed changes before submitting a pull request.
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/my-feature`)
+3. Commit your changes (`git commit -am 'Add my feature'`)
+4. Push to the branch (`git push origin feature/my-feature`)
+5. Open a Pull Request
+
+---
+
+## License
+
+[MIT License](LICENSE)
+
+---
+
+## Acknowledgments
+
+- [MESA](https://docs.mesastar.org/) — Modules for Experiments in Stellar Astrophysics
+- [SVO Filter Profile Service](http://svo2.cab.inta-csic.es/theory/fps/) — Filter transmission curves
+- [MAST](https://archive.stsci.edu/) — Mikulski Archive for Space Telescopes
+- [MSG Grids](http://user.astro.wisc.edu/~townsend/static.php?ref=msg-grids) — Rich Townsend's stellar atmosphere grids
