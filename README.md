@@ -504,7 +504,7 @@ SED_Tools/
 
 | Source | URL | Description |
 |--------|-----|-------------|
-| NJM Mirror | [nillmill.ddns.net/sed_tools](https://nillmill.ddns.net/sed_tools/) | Pre-processed mirror (fastest) |
+| NJM Server | [nialljmiller.com/SED_Tools/]([https://nillmill.ddns.net/sed_tools/](https://nialljmiller.com/SED_Tools/)) | Pre-processed data host (fastest) |
 | SVO | [svo2.cab.inta-csic.es](http://svo2.cab.inta-csic.es/theory/fps/) | Spanish Virtual Observatory |
 | MSG | [astro.wisc.edu/~townsend](http://user.astro.wisc.edu/~townsend/static.php?ref=msg-grids) | MSG Stellar Atmosphere Grids |
 | MAST | [archive.stsci.edu/prepds/bosz](https://archive.stsci.edu/prepds/bosz/) | BOSZ Spectral Library |
