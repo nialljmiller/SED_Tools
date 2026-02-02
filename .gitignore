@@ -36,7 +36,7 @@ Thumbs.db
 /data/
 SED_tools/data/
 */data/**i
-
+data/*.txt
 
 /plots/
 SED_tools/plots/
@@ -50,7 +50,7 @@ SED_tools/plots/
 *.csv
 *.json
 *.pt
-
+*.json
 # Trained models / artifacts
 models/*.keras
 models/*.params
