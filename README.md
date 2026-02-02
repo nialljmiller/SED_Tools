@@ -29,7 +29,8 @@ SED_Tools is a Python package for working with stellar spectral energy distribut
 - **Unit standardization** — Convert all spectra to consistent units (wavelength in Å, flux in erg/cm²/s/Å)
 - **MESA integration** — Generate binary flux cubes, HDF5 bundles, and lookup tables
 - **Grid combination** — Merge multiple stellar libraries into unified "omni grids"
-- **ML completion** — Extend incomplete SEDs using neural networks with black body baselines
+- **ML completion** — Extend incomplete SEDs to broader wavelength ranges using neural networks
+- **ML generation** — Create complete SEDs from stellar parameters (Teff, logg, [M/H]) using neural networks
 
 ---
 
@@ -53,7 +54,7 @@ pip install -e .
 
 - Python ≥ 3.9
 - numpy, pandas, h5py, astropy, matplotlib
-- TensorFlow (required for ML completer only)
+- PyTorch (required for ML completer and generator)
 
 See `pyproject.toml` for the complete dependency list.
 
@@ -84,8 +85,11 @@ sed-tools rebuild
 # Combine multiple grids into a unified ensemble
 sed-tools combine
 
-# Train or apply the ML SED completer
+# Train or apply the ML SED completer (extends existing spectra)
 sed-tools ml_completer
+
+# Train or apply the ML SED generator (creates SEDs from parameters)
+sed-tools ml_generator
 ```
 
 ---
@@ -208,7 +212,9 @@ sed-tools combine --models Kurucz2003all PHOENIX --output my_combined_grid
 
 ### `sed-tools ml_completer`
 
-Train and apply neural networks to extend incomplete SEDs.
+Train and apply neural networks to extend incomplete SEDs to broader wavelength ranges.
+
+**Use case:** You have spectra with limited wavelength coverage (e.g., optical-only) and need to extend them into UV or IR.
 
 ```bash
 # Interactive mode
@@ -226,9 +232,49 @@ sed-tools ml_completer extend --model sparse_uv_model \
 
 1. Trains on complete SED libraries with full wavelength coverage
 2. Uses black body radiation as a physics-based baseline
-3. Neural network learns residuals from the black body approximation
+3. Neural network learns corrections to the black body approximation
 4. Masked training handles heterogeneous wavelength grids
-5. Extends sparse models to broader wavelength ranges
+5. Blends ML predictions with black body at extrapolation boundaries
+
+---
+
+### `sed-tools ml_generator`
+
+Train and apply neural networks to generate complete SEDs from stellar parameters alone.
+
+**Use case:** You need SEDs for arbitrary stellar parameters but don't have an input spectrum — just Teff, logg, and [M/H].
+
+```bash
+# Interactive mode
+sed-tools ml_generator
+
+# Train on a stellar atmosphere library
+sed-tools ml_generator train --grid Kurucz2003all --epochs 200
+
+# Generate a single SED with diagnostic plots
+sed-tools ml_generator generate --model sed_generator_Kurucz2003all \
+    --teff 5777 --logg 4.44 --meta 0.0
+
+# Batch generate a grid of SEDs
+sed-tools ml_generator batch --model sed_generator_Kurucz2003all \
+    --teff 5000,5500,6000 --logg 4.0,4.5 --meta 0.0
+```
+
+**How it works:**
+
+1. Trains on flux cubes mapping (Teff, logg, [M/H]) → full SED
+2. Network learns the complete spectral shape from 3 parameters
+3. Log-scaling and normalization handle flux dynamic range
+4. Generates diagnostic plots showing parameter space coverage
+
+**ML Completer vs Generator:**
+
+| Feature | Completer | Generator |
+|---------|-----------|-----------|
+| Input required | Partial SED + parameters | Parameters only |
+| Output | Extended SED | Complete SED |
+| Use case | Fill wavelength gaps | Create SEDs from scratch |
+| Physics baseline | Black body blending | None (pure ML) |
 
 ---
 
@@ -335,6 +381,35 @@ extended = completer.extend(
 extended.write()
 ```
 
+#### ML Generation
+
+```python
+generator = SED.ml_generator()
+
+# Train on a stellar atmosphere library
+generator.train(grid='Kurucz2003all', epochs=200)
+
+# Generate a single SED
+wl, flux = generator.generate(teff=5777, logg=4.44, metallicity=0.0)
+
+# Generate with diagnostic plots
+wl, flux = generator.generate_with_outputs(
+    teff=5777, 
+    logg=4.44, 
+    metallicity=0.0,
+    output_dir='output/sun_sed',
+)
+
+# Or load a pre-trained model
+generator = SED.ml_generator()
+generator.load('sed_generator_Kurucz2003all')
+wl, flux = generator.generate(teff=6000, logg=4.0, metallicity=-0.5)
+
+# Check parameter ranges
+ranges = generator.parameter_ranges()
+# {'teff': (3500.0, 50000.0), 'logg': (0.0, 5.0), 'metallicity': (-5.0, 1.0)}
+```
+
 ---
 
 ### `Catalog` — Spectrum Container
@@ -431,6 +506,8 @@ info.covers_range(teff_min=5000, teff_max=6000)
 | `sed-tools rebuild --models X` | `sed.cat.write()` |
 | `sed-tools combine --models A B` | `SED.combine(['A', 'B'], output='...')` |
 | `sed-tools ml_completer train` | `SED.ml_completer().train(...)` |
+| `sed-tools ml_generator train` | `SED.ml_generator().train(...)` |
+| `sed-tools ml_generator generate` | `SED.ml_generator().generate(...)` |
 | `sed-tools filters` | `Filters.fetch(...)` |
 
 ---
@@ -568,6 +645,33 @@ extended = completer.extend(
 extended.write()
 ```
 
+### Generating SEDs for Arbitrary Parameters
+
+```python
+from sed_tools.api import SED
+
+# Train a generator on a comprehensive grid
+generator = SED.ml_generator()
+generator.train('Kurucz2003all', epochs=200)
+
+# Generate SEDs for a list of stars
+stars = [
+    {'name': 'Sun',    'teff': 5777, 'logg': 4.44, 'met':  0.0},
+    {'name': 'Vega',   'teff': 9940, 'logg': 4.30, 'met':  0.0},
+    {'name': 'Sirius', 'teff': 9940, 'logg': 4.30, 'met':  0.5},
+]
+
+for star in stars:
+    wl, flux = generator.generate(
+        teff=star['teff'],
+        logg=star['logg'],
+        metallicity=star['met'],
+    )
+    # Save or process the SED
+    import numpy as np
+    np.savetxt(f"output/{star['name']}.txt", np.column_stack([wl, flux]))
+```
+
 ---
 
 ## Troubleshooting
@@ -584,10 +688,10 @@ sed-tools spectra --source njm --models Kurucz2003all
 sed-tools spectra --models Kurucz2003all --workers 2
 ```
 
-**Missing TensorFlow for ML completer**
+**Missing PyTorch for ML tools**
 
 ```bash
-pip install tensorflow
+pip install torch
 ```
 
 **MESA cannot find flux cube**
