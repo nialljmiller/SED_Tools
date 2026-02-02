@@ -374,13 +374,19 @@ class SEDGenerator:
         
         print(f"  Input: {params_norm.shape}, Output: {flux_norm.shape}")
         
-        # Split
-        p_train, p_val, f_train, f_val, m_train, m_val = train_test_split(
-            params_norm, flux_norm, masks, test_size=0.2, random_state=42
-        )
+        # Split - use indices to properly track validation data
+        indices = np.arange(len(params_norm))
+        idx_train, idx_val = train_test_split(indices, test_size=0.2, random_state=42)
         
-        # Store for plotting
-        self._val_params_raw = params[int(len(params)*0.8):]
+        p_train, p_val = params_norm[idx_train], params_norm[idx_val]
+        f_train, f_val = flux_norm[idx_train], flux_norm[idx_val]
+        m_train, m_val = masks[idx_train], masks[idx_val]
+        
+        # Store raw params for plotting (now correctly matched to validation set)
+        self._val_params_raw = params[idx_val]
+        
+        # Store all training params for parameter space visualization
+        self._train_params_raw = params[idx_train]
         
         train_dataset = TensorDataset(
             torch.from_numpy(p_train),
@@ -598,6 +604,17 @@ class SEDGenerator:
         
         torch.save(self.model.state_dict(), path / self.MODEL_FILE)
         
+        # Store training parameter samples for visualization (subsample if too many)
+        train_params = getattr(self, '_train_params_raw', None)
+        if train_params is not None:
+            # Keep at most 500 points for visualization
+            #if len(train_params) > 500:
+            #    idx = np.random.choice(len(train_params), 500, replace=False)
+            #    train_params = train_params[idx]
+            train_params_list = train_params.tolist()
+        else:
+            train_params_list = []
+        
         self.config = {
             'model_type': 'sed_generator',
             'architecture': {
@@ -612,6 +629,7 @@ class SEDGenerator:
                 'logg': [self.scaler_params['logg_min'], self.scaler_params['logg_max']],
                 'meta': [self.scaler_params['meta_min'], self.scaler_params['meta_max']],
             },
+            'training_params': train_params_list,
             'version': '1.0.0',
             'framework': 'pytorch',
         }
@@ -706,6 +724,173 @@ class SEDGenerator:
         flux = 10 ** flux_log
         
         return self.wavelength_grid.copy(), flux
+    
+    def generate_with_outputs(
+        self,
+        teff: float,
+        logg: float,
+        meta: float,
+        output_dir: str,
+        check_bounds: bool = True,
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Generate an SED and save data file plus diagnostic figures.
+        
+        Creates:
+            - sed_T{teff}_g{logg}_m{meta}.txt  - The SED data
+            - sed_T{teff}_g{logg}_m{meta}_spectrum.png - SED plot
+            - sed_T{teff}_g{logg}_m{meta}_params.png - Parameter space plot
+        
+        Parameters
+        ----------
+        teff : float
+            Effective temperature (K)
+        logg : float
+            Surface gravity (log cm/s²)
+        meta : float
+            Metallicity [M/H]
+        output_dir : str
+            Directory to save outputs
+        check_bounds : bool
+            Warn if parameters outside training range
+        
+        Returns
+        -------
+        wavelength : array (Angstroms)
+        flux : array (erg/s/cm²/Å)
+        """
+        import matplotlib.pyplot as plt
+        from mpl_toolkits.mplot3d import Axes3D
+        
+        # Generate the SED
+        wl, flux = self.generate(teff, logg, meta, check_bounds=check_bounds)
+        
+        # Create output directory
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # Base filename
+        base_name = f"sed_T{teff:.0f}_g{logg:.2f}_m{meta:+.2f}"
+        
+        # Save SED data
+        data_file = os.path.join(output_dir, f"{base_name}.txt")
+        np.savetxt(
+            data_file,
+            np.column_stack([wl, flux]),
+            header=f'wavelength_A flux_erg/s/cm2/A\n# Teff={teff} logg={logg} [M/H]={meta}',
+            fmt='%.6e',
+        )
+        print(f"  Saved SED data: {data_file}")
+        
+        # Get parameter ranges from config
+        ranges = self.config.get('parameter_ranges', {})
+        teff_range = ranges.get('teff', [3000, 50000])
+        logg_range = ranges.get('logg', [0, 5])
+        meta_range = ranges.get('meta', [-5, 1])
+        
+        # Check if outside training range
+        outside_range = (
+            teff < teff_range[0] or teff > teff_range[1] or
+            logg < logg_range[0] or logg > logg_range[1] or
+            meta < meta_range[0] or meta > meta_range[1]
+        )
+        
+        # ===== Plot 1: SED Spectrum =====
+        fig1, ax1 = plt.subplots(figsize=(12, 6))
+        
+        ax1.loglog(wl, flux, 'b-', linewidth=1.5, label='Generated SED')
+        
+        ax1.set_xlabel('Wavelength (Å)', fontsize=12)
+        ax1.set_ylabel('Flux (erg/s/cm²/Å)', fontsize=12)
+        ax1.set_title(f'Generated SED: Teff={teff:.0f} K, logg={logg:.2f}, [M/H]={meta:+.2f}', 
+                     fontsize=14, fontweight='bold')
+        ax1.grid(True, alpha=0.3, which='both')
+        ax1.legend(fontsize=10)
+        
+        # Add annotation if outside range
+        if outside_range:
+            ax1.annotate('⚠ Parameters outside training range', 
+                        xy=(0.02, 0.98), xycoords='axes fraction',
+                        fontsize=10, color='red', va='top',
+                        bbox=dict(boxstyle='round', facecolor='yellow', alpha=0.8))
+        
+        # Add wavelength region labels
+        ax1.axvspan(100, 912, alpha=0.1, color='purple', label='EUV')
+        ax1.axvspan(912, 4000, alpha=0.1, color='blue', label='UV')
+        ax1.axvspan(4000, 7000, alpha=0.1, color='green', label='Optical')
+        ax1.axvspan(7000, 25000, alpha=0.1, color='red', label='NIR')
+        ax1.axvspan(25000, 100000, alpha=0.1, color='darkred', label='MIR')
+        
+        plt.tight_layout()
+        spectrum_file = os.path.join(output_dir, f"{base_name}_spectrum.png")
+        fig1.savefig(spectrum_file, dpi=150, bbox_inches='tight')
+        plt.close(fig1)
+        print(f"  Saved SED plot: {spectrum_file}")
+        
+        # ===== Plot 2: Parameter Space =====
+        train_params = self.config.get('training_params', [])
+        
+        fig2 = plt.figure(figsize=(14, 5))
+        
+        # 3D scatter plot
+        ax3d = fig2.add_subplot(131, projection='3d')
+        
+        if train_params:
+            train_arr = np.array(train_params)
+            ax3d.scatter(train_arr[:, 0], train_arr[:, 1], train_arr[:, 2],
+                        c='blue', alpha=0.3, s=10, label='Training data')
+        
+        # Plot the generated point
+        ax3d.scatter([teff], [logg], [meta], c='red', s=200, marker='*', 
+                    edgecolors='black', linewidths=1.5, label='Generated', zorder=10)
+        
+        ax3d.set_xlabel('Teff (K)')
+        ax3d.set_ylabel('logg')
+        ax3d.set_zlabel('[M/H]')
+        ax3d.set_title('3D Parameter Space')
+        ax3d.legend(loc='upper left', fontsize=8)
+        
+        # 2D projection: Teff vs logg
+        ax2a = fig2.add_subplot(132)
+        if train_params:
+            ax2a.scatter(train_arr[:, 0], train_arr[:, 1], c='blue', alpha=0.3, s=10, label='Training')
+        ax2a.scatter(teff, logg, c='red', s=200, marker='*', edgecolors='black', 
+                    linewidths=1.5, label='Generated', zorder=10)
+        ax2a.axvline(teff_range[0], color='gray', linestyle='--', alpha=0.5)
+        ax2a.axvline(teff_range[1], color='gray', linestyle='--', alpha=0.5)
+        ax2a.axhline(logg_range[0], color='gray', linestyle='--', alpha=0.5)
+        ax2a.axhline(logg_range[1], color='gray', linestyle='--', alpha=0.5)
+        ax2a.set_xlabel('Teff (K)')
+        ax2a.set_ylabel('logg')
+        ax2a.set_title('Teff vs logg')
+        #ax2a.legend(fontsize=8)
+        ax2a.grid(True, alpha=0.3)
+        
+        # 2D projection: Teff vs [M/H]
+        ax2b = fig2.add_subplot(133)
+        if train_params:
+            ax2b.scatter(train_arr[:, 0], train_arr[:, 2], c='blue', alpha=0.3, s=10, label='Training')
+        ax2b.scatter(teff, meta, c='red', s=200, marker='*', edgecolors='black',
+                    linewidths=1.5, label='Generated', zorder=10)
+        ax2b.axvline(teff_range[0], color='gray', linestyle='--', alpha=0.5)
+        ax2b.axvline(teff_range[1], color='gray', linestyle='--', alpha=0.5)
+        ax2b.axhline(meta_range[0], color='gray', linestyle='--', alpha=0.5)
+        ax2b.axhline(meta_range[1], color='gray', linestyle='--', alpha=0.5)
+        ax2b.set_xlabel('Teff (K)')
+        ax2b.set_ylabel('[M/H]')
+        ax2b.set_title('Teff vs [M/H]')
+        #ax2b.legend(fontsize=8)
+        ax2b.grid(True, alpha=0.3)
+        
+        fig2.suptitle(f'Parameter Space: Teff={teff:.0f} K, logg={logg:.2f}, [M/H]={meta:+.2f}',
+                     fontsize=12, fontweight='bold')
+        
+        plt.tight_layout()
+        params_file = os.path.join(output_dir, f"{base_name}_params.png")
+        fig2.savefig(params_file, dpi=150, bbox_inches='tight')
+        plt.close(fig2)
+        print(f"  Saved parameter space plot: {params_file}")
+        
+        return wl, flux
     
     @staticmethod
     def list_models(models_dir: str = "models") -> List[Dict[str, Any]]:
@@ -863,20 +1048,16 @@ def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> None:
         logg = float(input("  logg: ").strip())
         meta = float(input("  [M/H]: ").strip())
         
-        print("\nGenerating...")
-        wl, flux = gen.generate(teff, logg, meta)
+        # Default output directory inside the model folder
+        default_output = os.path.join(selected['path'], "SED")
+        print(f"\nOutput directory [{default_output}]: ", end="")
+        output_dir = input().strip() or default_output
         
-        print(f"\nGenerated: {len(wl)} points, {wl.min():.0f}-{wl.max():.0f} Å")
+        print("\nGenerating SED with diagnostics...")
+        wl, flux = gen.generate_with_outputs(teff, logg, meta, output_dir)
         
-        output_file = input("Save to file (empty to skip): ").strip()
-        if output_file:
-            np.savetxt(
-                output_file,
-                np.column_stack([wl, flux]),
-                header=f'wavelength_A flux_erg/s/cm2/A\n# Teff={teff} logg={logg} [M/H]={meta}',
-                fmt='%.6e',
-            )
-            print(f"Saved: {output_file}")
+        print(f"\n✓ Generated: {len(wl)} points, {wl.min():.0f}-{wl.max():.0f} Å")
+        print(f"✓ All outputs saved to: {output_dir}/")
     
     elif choice == "3":
         # BATCH GENERATION
@@ -916,10 +1097,10 @@ def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> None:
         n_total = len(teff_vals) * len(logg_vals) * len(meta_vals)
         print(f"\nWill generate {n_total} SEDs")
         
-        output_dir = input("Output directory: ").strip()
-        if not output_dir:
-            print("Cancelled")
-            return
+        # Default output directory inside the model folder
+        default_output = os.path.join(selected['path'], "SED", "batch")
+        print(f"Output directory [{default_output}]: ", end="")
+        output_dir = input().strip() or default_output
         
         os.makedirs(output_dir, exist_ok=True)
         
