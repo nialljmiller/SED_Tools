@@ -345,7 +345,7 @@ def run_rebuild_flow(
         model_dir = os.path.join(base_dir, model_name)
 
         summary = clean_model_dir(model_dir, try_h5_recovery=True, backup=True, rebuild_lookup=True)
-        print(f"[clean] {model_name}: total={summary['total']}, ")
+        print(f"[clean] {model_name}: total={summary['total']}")
 
         txts = glob.glob(os.path.join(model_dir, "*.txt"))
         if not txts:
