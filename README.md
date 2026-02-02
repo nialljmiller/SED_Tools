@@ -113,10 +113,6 @@ sed-tools spectra --source svo --models Kurucz2003all
 # Parallel downloads
 sed-tools spectra --models Kurucz2003all --workers 8
 
-# Filter by stellar parameters
-sed-tools spectra --models Kurucz2003all \
-    --teff-min 4000 --teff-max 8000 \
-    --logg-min 3.0 --logg-max 5.0
 ```
 
 **What it does:**
@@ -145,9 +141,6 @@ Download photometric filter transmission curves from the SVO Filter Profile Serv
 ```bash
 # Interactive facility/instrument/filter selection
 sed-tools filters
-
-# Download specific filter set
-sed-tools filters --facility Generic --instrument Johnson
 ```
 
 **Output structure:**
