@@ -135,7 +135,7 @@ class SEDCompleterNetwork:
         for i, hidden_dim in enumerate(self.hidden_layers):
             layers.append(nn.Linear(prev_dim, hidden_dim))
             layers.append(nn.BatchNorm1d(hidden_dim))
-            layers.append(nn.ReLU())
+            layers.append(nn.LeakyReLU(0.1))
             if i < len(self.hidden_layers) - 1:  # No dropout on last hidden layer
                 layers.append(nn.Dropout(dropout))
             prev_dim = hidden_dim
@@ -335,12 +335,15 @@ class SEDCompleter:
         """
         Prepare training data from flux cube.
         
+        Uses randomized "known" regions to train the network to extend from
+        any part of the spectrum (UV-only, optical-only, IR-only, etc.).
+        
         Returns
         -------
         X_input : np.ndarray
-            Input SED (known region)
+            Input SED (known region, zero-padded to fixed size)
         y_output : np.ndarray
-            Output SED (extension region)
+            Output SED (full spectrum for extension)
         params : np.ndarray
             Stellar parameters (teff, logg, meta)
         masks : np.ndarray
@@ -360,19 +363,20 @@ class SEDCompleter:
         self.wavelength_grid = self._create_wavelength_grid()
         n_wl = len(self.wavelength_grid)
         
-        # Define known/extension regions (central 40% known, rest is extension)
-        mid = n_wl // 2
-        width = n_wl // 5
-        known_start, known_end = mid - width, mid + width
+        # Fixed input size for network (40% of grid - but position varies)
+        known_width = n_wl * 2 // 5  # 400 points for 1000-point grid
         
-        # Store region indices for later use
-        self._known_start = known_start
-        self._known_end = known_end
+        # Store for architecture (fixed size needed for network input)
+        self._known_width = known_width
+        # These will be set per-sample during training, but we need defaults for inference
+        self._known_start = (n_wl - known_width) // 2
+        self._known_end = self._known_start + known_width
         
         X_list = []
         y_list = []
         params_list = []
         masks_list = []
+        known_regions = []  # Store (start, end) for each sample
         
         # Get original wavelength coverage
         wl_orig_min = wavelengths.min()
@@ -412,38 +416,62 @@ class SEDCompleter:
                 (flux_interp > 0)
             )
             
-            # Check known region has enough valid data
-            known_valid = valid_mask[known_start:known_end].sum()
-            if known_valid < (known_end - known_start) * 0.8:  # Need 80% valid in known region
+            # Randomize known region position
+            # Ensure we stay within valid data regions
+            valid_indices = np.where(valid_mask)[0]
+            if len(valid_indices) < known_width:
                 continue
             
-            # Check extension regions have some valid data to learn from
-            ext_mask = np.concatenate([valid_mask[:known_start], valid_mask[known_end:]])
+            # Random start position within valid range
+            max_start = valid_indices[-1] - known_width
+            min_start = valid_indices[0]
+            if max_start <= min_start:
+                continue
+            
+            known_start = np.random.randint(min_start, max_start)
+            known_end = known_start + known_width
+            
+            # Check known region has enough valid data
+            known_valid = valid_mask[known_start:known_end].sum()
+            if known_valid < known_width * 0.8:  # Need 80% valid in known region
+                continue
+            
+            # Extension mask: everything outside known region that has valid data
+            ext_mask = valid_mask.copy()
+            ext_mask[known_start:known_end] = False
+            
             if ext_mask.sum() < 50:  # Need at least 50 valid extension points
                 continue
             
-            # Extract known and extension regions
+            # Extract known region
             X_known = flux_interp[known_start:known_end].copy()
-            y_extension = np.concatenate([flux_interp[:known_start], flux_interp[known_end:]])
+            
+            # Full spectrum as target (network learns to predict everything, masked loss handles rest)
+            y_full = flux_interp.copy()
             
             # Replace NaN/invalid with small positive value (will be masked during training)
-            X_known = np.where(np.isfinite(X_known) & (X_known > 0), X_known, 1e-30)
-            y_extension = np.where(np.isfinite(y_extension) & (y_extension > 0), y_extension, 1e-30)
+            X_known = np.where(np.isfinite(X_known) & (X_known > 0), X_known, 1e-20)
+            y_full = np.where(np.isfinite(y_full) & (y_full > 0), y_full, 1e-20)
             
             X_list.append(X_known)
-            y_list.append(y_extension)
+            y_list.append(y_full)
             params_list.append([teff[i_t], logg[i_l], meta[i_m]])
             masks_list.append(ext_mask.astype(np.float32))
+            known_regions.append((known_start, known_end))
         
         if len(X_list) == 0:
             raise ValueError("No valid training samples found")
         
         print(f"  Prepared {len(X_list)} valid samples")
+        print(f"  Known region width: {known_width} points (randomized position)")
         
         X = np.array(X_list, dtype=np.float32)
         y = np.array(y_list, dtype=np.float32)
         params = np.array(params_list, dtype=np.float32)
         masks = np.array(masks_list, dtype=np.float32)
+        
+        # Store known regions for potential debugging
+        self._training_known_regions = known_regions
         
         # Report coverage statistics
         avg_coverage = masks.mean() * 100
@@ -507,7 +535,7 @@ class SEDCompleter:
         print("Normalizing data...")
         
         # Use a floor value that won't create extreme outliers
-        FLUX_FLOOR = 1e-30
+        FLUX_FLOOR = 1e-20
         X_safe = np.maximum(X, FLUX_FLOOR)
         y_safe = np.maximum(y, FLUX_FLOOR)
         
@@ -785,19 +813,15 @@ class SEDCompleter:
             y_true_flux = 10 ** y_true_log
             y_pred_flux = 10 ** y_pred_log
             
-            # Extension wavelengths (UV + IR)
-            n_wl = len(self.wavelength_grid)
-            mid = n_wl // 2
-            width = n_wl // 5
-            known_start, known_end = mid - width, mid + width
-            wl_ext = np.concatenate([self.wavelength_grid[:known_start], self.wavelength_grid[known_end:]])
+            # Full wavelength grid (output is now full spectrum)
+            wl = self.wavelength_grid
             
-            # Only plot valid (masked) regions
+            # Only plot valid (masked) regions - these are the extension points
             valid = mask > 0.5
             
             if valid.sum() > 0:
-                ax.loglog(wl_ext[valid], y_true_flux[valid], 'b-', alpha=0.7, label='True', linewidth=1.5)
-                ax.loglog(wl_ext[valid], y_pred_flux[valid], 'r--', alpha=0.7, label='Predicted', linewidth=1.5)
+                ax.loglog(wl[valid], y_true_flux[valid], 'b-', alpha=0.7, label='True', linewidth=1.5)
+                ax.loglog(wl[valid], y_pred_flux[valid], 'r--', alpha=0.7, label='Predicted', linewidth=1.5)
                 
                 # Calculate errors only on valid points
                 rel_error = np.median(np.abs(y_pred[valid] - y_true[valid]) / (np.abs(y_true[valid]) + 1e-8)) * 100
@@ -938,6 +962,7 @@ class SEDCompleter:
             'regions': {
                 'known_start': getattr(self, '_known_start', None),
                 'known_end': getattr(self, '_known_end', None),
+                'known_width': getattr(self, '_known_width', None),
             },
             'version': '2.0.0',
             'framework': 'pytorch',
@@ -982,14 +1007,15 @@ class SEDCompleter:
         regions = self.config.get('regions', {})
         self._known_start = regions.get('known_start')
         self._known_end = regions.get('known_end')
+        self._known_width = regions.get('known_width')
         
-        # If not stored, compute from wavelength grid
+        # If not stored, compute from wavelength grid (backwards compatibility)
         if self._known_start is None or self._known_end is None:
             n_wl = len(self.wavelength_grid)
-            mid = n_wl // 2
-            width = n_wl // 5
-            self._known_start = mid - width
-            self._known_end = mid + width
+            width = n_wl * 2 // 5  # 40% of grid
+            self._known_width = width
+            self._known_start = (n_wl - width) // 2
+            self._known_end = self._known_start + width
         
         # Rebuild model architecture
         arch = self.config['architecture']
@@ -1071,9 +1097,9 @@ class SEDCompleter:
         flux_extended = bb_flux.copy()
         
         # Resample input to training grid
-        flux_safe = np.maximum(flux, 1e-30)
+        flux_safe = np.maximum(flux, 1e-20)
         flux_log = np.log10(flux_safe)
-        flux_on_grid = np.interp(self.wavelength_grid, wavelength, 10**flux_log, left=1e-30, right=1e-30)
+        flux_on_grid = np.interp(self.wavelength_grid, wavelength, 10**flux_log, left=1e-20, right=1e-20)
         
         # Use stored region indices
         known_start = self._known_start
@@ -1081,7 +1107,7 @@ class SEDCompleter:
         
         # Prepare model input
         flux_known = flux_on_grid[known_start:known_end]
-        flux_known_log = np.log10(np.maximum(flux_known, 1e-30))
+        flux_known_log = np.log10(np.maximum(flux_known, 1e-20))
         flux_known_norm = (flux_known_log - self.scaler_params['flux_log_mean']) / self.scaler_params['flux_log_std']
         
         # Handle any NaN/inf from normalization
@@ -1100,15 +1126,18 @@ class SEDCompleter:
         y_pred_log = y_pred_norm * self.scaler_params['ext_log_std'] + self.scaler_params['ext_log_mean']
         y_pred_flux = 10 ** y_pred_log
         
-        # Split prediction into UV and IR parts
-        n_uv = known_start
-        pred_low = y_pred_flux[:n_uv]
-        pred_high = y_pred_flux[n_uv:]
+        # Network now outputs full spectrum - extract UV and IR extension regions
+        pred_low = y_pred_flux[:known_start]
+        pred_high = y_pred_flux[known_end:]
         
         wl_pred_low = self.wavelength_grid[:known_start]
         wl_pred_high = self.wavelength_grid[known_end:]
         
-        # Blend ML predictions with black body
+        # Blend ML predictions with black body using log-wavelength distance
+        # This is physically motivated: stellar spectra behave more uniformly in log space
+        # blend_decades controls how far (in decades of wavelength) we trust ML before fading to BB
+        blend_decades = 0.5  # Trust ML for ~0.5 decades (factor of ~3), then blend toward BB
+        
         if need_low.any():
             idx_low = np.where(need_low)[0]
             wl_low = full_grid[idx_low]
@@ -1116,10 +1145,9 @@ class SEDCompleter:
             # Interpolate prediction to output grid
             pred_interp = np.interp(wl_low, wl_pred_low, pred_low, left=pred_low[0], right=pred_low[-1])
             
-            # Exponential blending weight (more ML near data, more BB far away)
-            dist_from_data = wl_min - wl_low
-            blend_scale = wl_min / 3
-            weight_ml = np.exp(-dist_from_data / blend_scale)
+            # Log-space distance from data edge (in decades)
+            log_dist = np.log10(wl_min) - np.log10(wl_low)
+            weight_ml = np.exp(-log_dist / blend_decades)
             weight_ml = np.clip(weight_ml, 0, 1)
             
             flux_extended[idx_low] = weight_ml * pred_interp + (1 - weight_ml) * bb_flux[idx_low]
@@ -1130,9 +1158,9 @@ class SEDCompleter:
             
             pred_interp = np.interp(wl_high, wl_pred_high, pred_high, left=pred_high[0], right=pred_high[-1])
             
-            dist_from_data = wl_high - wl_max
-            blend_scale = wl_max / 3
-            weight_ml = np.exp(-dist_from_data / blend_scale)
+            # Log-space distance from data edge (in decades)
+            log_dist = np.log10(wl_high) - np.log10(wl_max)
+            weight_ml = np.exp(-log_dist / blend_decades)
             weight_ml = np.clip(weight_ml, 0, 1)
             
             flux_extended[idx_high] = weight_ml * pred_interp + (1 - weight_ml) * bb_flux[idx_high]
