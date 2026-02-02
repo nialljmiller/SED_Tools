@@ -199,6 +199,11 @@ sed-tools combine --non-interactive
 
 ### `sed-tools ml_completer`
 
+<p>
+  <img src="docs/prediction_exampled.png" alt="Prediction examples" width="200"/>
+</p>
+
+
 Train and apply neural networks to extend incomplete SEDs to broader wavelength ranges.
 
 **Use case:** You have spectra with limited wavelength coverage (e.g., optical-only) and need to extend them into UV or IR.
