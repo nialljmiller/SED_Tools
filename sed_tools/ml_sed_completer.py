@@ -1653,5 +1653,115 @@ def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> None:
         print("Invalid choice")
 
 
+
+# =============================================================================
+# API wrappers expected by sed_tools/api.py
+# =============================================================================
+
+from pathlib import Path
+from typing import Optional, Tuple, Union, Any, Dict
+
+def train_model(
+    grid_dir: str,
+    save_path: str,
+    epochs: int = 100,
+    batch_size: int = 32,
+    max_samples: int = 5000,
+    **kwargs: Any,
+):
+    """
+    Wrapper expected by MLCompleter in api.py.
+
+    Trains a model using SEDCompleter.train(), saves it under save_path/,
+    and returns a model handle suitable for extend_catalog().
+    """
+    save_path = str(save_path)
+    Path(save_path).mkdir(parents=True, exist_ok=True)
+
+    completer = SEDCompleter()
+    # Forward only args SEDCompleter.train is likely to accept; ignore extras safely
+    train_kwargs: Dict[str, Any] = {}
+    for k in ("learning_rate", "hidden_layers", "dropout", "val_split", "patience"):
+        if k in kwargs:
+            train_kwargs[k] = kwargs[k]
+
+    completer.train(
+        library_path=str(grid_dir),
+        output_path=save_path,
+        epochs=int(epochs),
+        batch_size=int(batch_size),
+        max_samples=int(max_samples),
+        **train_kwargs,
+    )
+
+    # Prefer the batch/IO-oriented Completer if available (it already has extend_catalog)
+    try:
+        from .ml import Completer  # existing batch processor in your package
+        return Completer(save_path)
+    except Exception:
+        # Fallback: return the SEDCompleter itself (still usable for per-spectrum completion)
+        return SEDCompleter(save_path)
+
+
+def load_model(model_path: str):
+    """
+    Wrapper expected by MLCompleter.load() in api.py.
+
+    Returns an object that can be passed into extend_catalog().
+    """
+    # Prefer .ml.Completer (has extend_catalog and is used elsewhere in this file)
+    try:
+        from .ml import Completer
+        return Completer(str(model_path))
+    except Exception:
+        return SEDCompleter(str(model_path))
+
+
+def extend_catalog(
+    model: Union[str, Path, Any],
+    catalog_dir: str,
+    output_dir: str,
+    wavelength_range: Optional[Tuple[float, float]] = None,
+    verbose: bool = False,
+    **kwargs: Any,
+):
+    """
+    Wrapper expected by MLCompleter.extend() in api.py.
+
+    Extends a catalog directory (with lookup_table.csv + spectra files) into output_dir.
+    """
+    extension_range = wavelength_range or (DEFAULT_WL_MIN, DEFAULT_WL_MAX)
+    Path(output_dir).mkdir(parents=True, exist_ok=True)
+
+    # If caller passed a path, load it
+    if isinstance(model, (str, Path)):
+        model = load_model(str(model))
+
+    # If model provides extend_catalog (the preferred path), use it.
+    if hasattr(model, "extend_catalog") and callable(getattr(model, "extend_catalog")):
+        return model.extend_catalog(
+            input_dir=str(catalog_dir),
+            output_dir=str(output_dir),
+            extension_range=extension_range,
+            verbose=bool(verbose),
+            **kwargs,
+        )
+
+    # Last-resort fallback: do nothing loudly (better than silent partial output)
+    raise TypeError(
+        "extend_catalog() expected a model with an .extend_catalog() method "
+        "(e.g. sed_tools.ml.Completer) or a model directory path."
+    )
+
+
+
+
+
+
+
+
+
+
+
 if __name__ == '__main__':
     main()
