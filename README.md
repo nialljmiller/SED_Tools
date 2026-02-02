@@ -675,18 +675,6 @@ $MESA_DIR/colors/data/stellar_models/Kurucz2003all/
 
 ---
 
-## Contributing
-
-Contributions are welcome. Please open an issue to discuss proposed changes before submitting a pull request.
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/my-feature`)
-3. Commit your changes (`git commit -am 'Add my feature'`)
-4. Push to the branch (`git push origin feature/my-feature`)
-5. Open a Pull Request
-
----
-
 ## License
 
 [MIT License](LICENSE)
