@@ -608,9 +608,9 @@ class SEDGenerator:
         train_params = getattr(self, '_train_params_raw', None)
         if train_params is not None:
             # Keep at most 500 points for visualization
-            #if len(train_params) > 500:
-            #    idx = np.random.choice(len(train_params), 500, replace=False)
-            #    train_params = train_params[idx]
+            if len(train_params) > 500:
+                idx = np.random.choice(len(train_params), 500, replace=False)
+                train_params = train_params[idx]
             train_params_list = train_params.tolist()
         else:
             train_params_list = []
@@ -862,7 +862,6 @@ class SEDGenerator:
         ax2a.set_xlabel('Teff (K)')
         ax2a.set_ylabel('logg')
         ax2a.set_title('Teff vs logg')
-        #ax2a.legend(fontsize=8)
         ax2a.grid(True, alpha=0.3)
         
         # 2D projection: Teff vs [M/H]
@@ -878,7 +877,6 @@ class SEDGenerator:
         ax2b.set_xlabel('Teff (K)')
         ax2b.set_ylabel('[M/H]')
         ax2b.set_title('Teff vs [M/H]')
-        #ax2b.legend(fontsize=8)
         ax2b.grid(True, alpha=0.3)
         
         fig2.suptitle(f'Parameter Space: Teff={teff:.0f} K, logg={logg:.2f}, [M/H]={meta:+.2f}',
@@ -1118,10 +1116,13 @@ def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> None:
                 header=f'wavelength_A flux_erg/s/cm2/A\n# Teff={t} logg={g} [M/H]={m}',
                 fmt='%.6e',
             )
+                
+            wl, flux = gen.generate_with_outputs(t, g, m, output_dir)
+
             count += 1
             if count % 10 == 0:
                 print(f"  Generated {count}/{n_total}...")
-        
+
         print(f"\n✓ Generated {count} SEDs in {output_dir}/")
     
     elif choice == "4":

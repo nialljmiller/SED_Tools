@@ -351,6 +351,7 @@ class SED:
         SED.local() - Load a local catalog
         SED.combine() - Create ensemble grids
         SED.ml_completer() - Access ML completion tools
+        SED.ml_generator() - Access ML generation tools
     
     Instance methods (loaded data):
         sed(teff, logg, metallicity) - Interpolate a spectrum
@@ -370,6 +371,11 @@ class SED:
     >>> # Work with local data
     >>> sed = SED.local('Kurucz2003all')
     >>> spectrum = sed(5777, 4.44, 0.0)
+    
+    >>> # Generate SEDs from parameters (no input spectrum needed)
+    >>> generator = SED.ml_generator()
+    >>> generator.load('sed_generator_Kurucz2003all')
+    >>> wl, flux = generator.generate(teff=5777, logg=4.44, metallicity=0.0)
     """
     
     _model_root: Path = STELLAR_DIR_DEFAULT
@@ -976,6 +982,32 @@ class SED:
         base_dir = Path(model_root) if model_root else cls._model_root
         return MLCompleter(base_dir=base_dir, models_dir=models_dir)
     
+    @classmethod
+    def ml_generator(
+        cls,
+        model_root: Optional[Union[str, Path]] = None,
+        models_dir: str = "models",
+    ) -> 'MLGenerator':
+        """
+        Get the ML SED generator for creating SEDs from stellar parameters.
+        
+        Unlike the completer (which extends existing spectra), the generator
+        creates complete SEDs from scratch using only Teff, logg, and [M/H].
+        
+        Returns
+        -------
+        MLGenerator
+            ML generator instance with train() and generate() methods
+            
+        Example
+        -------
+        >>> generator = SED.ml_generator()
+        >>> generator.train(grid='Kurucz2003all', epochs=200)
+        >>> wl, flux = generator.generate(teff=5777, logg=4.44, metallicity=0.0)
+        """
+        base_dir = Path(model_root) if model_root else cls._model_root
+        return MLGenerator(base_dir=base_dir, models_dir=models_dir)
+    
     # =========================================================================
     # Instance Methods - Working with loaded data
     # =========================================================================
@@ -1143,6 +1175,247 @@ class MLCompleter:
         model_path = self.base_dir / self.models_dir / model_name
         self._model = load_model(str(model_path))
         return self
+
+
+# =============================================================================
+# ML Generator API
+# =============================================================================
+
+class MLGenerator:
+    """
+    ML-based SED generator for creating complete SEDs from stellar parameters.
+    
+    Unlike the completer (which extends existing spectra), the generator
+    creates complete SEDs from scratch using only Teff, logg, and [M/H].
+    
+    Usage::
+    
+        generator = SED.ml_generator()
+        generator.train(grid='Kurucz2003all', epochs=200)
+        wl, flux = generator.generate(teff=5777, logg=4.44, metallicity=0.0)
+        
+    Or load a pre-trained model::
+    
+        generator = SED.ml_generator()
+        generator.load('sed_generator_Kurucz2003all')
+        wl, flux = generator.generate(teff=5777, logg=4.44, metallicity=0.0)
+    """
+    
+    def __init__(self, base_dir: Path, models_dir: str = "models"):
+        self.base_dir = base_dir
+        self.models_dir = models_dir
+        self._generator = None
+    
+    def train(
+        self,
+        grid: str,
+        epochs: int = 200,
+        batch_size: int = 64,
+        save_name: Optional[str] = None,
+        max_samples: int = 10000,
+    ) -> 'MLGenerator':
+        """
+        Train the ML generator on a stellar atmosphere grid.
+        
+        Parameters
+        ----------
+        grid : str
+            Name of the grid to train on (must have flux_cube.bin)
+        epochs : int
+            Number of training epochs (default: 200)
+        batch_size : int
+            Batch size for training (default: 64)
+        save_name : str, optional
+            Name for the saved model. Default: '{grid}_generator'
+        max_samples : int
+            Maximum training samples to use (default: 10000)
+            
+        Returns
+        -------
+        MLGenerator
+            Self for method chaining
+        """
+        from .ml_sed_generator import SEDGenerator
+        
+        grid_dir = self.base_dir / grid
+        if not grid_dir.exists():
+            raise FileNotFoundError(f"Grid not found: {grid_dir}")
+        
+        flux_cube = grid_dir / "flux_cube.bin"
+        if not flux_cube.exists():
+            raise FileNotFoundError(
+                f"No flux_cube.bin found in {grid_dir}. "
+                "Run 'sed-tools rebuild' first."
+            )
+        
+        save_name = save_name or f"sed_generator_{grid}"
+        save_path = self.base_dir / self.models_dir / save_name
+        
+        self._generator = SEDGenerator()
+        self._generator.train(
+            library_path=str(grid_dir),
+            output_path=str(save_path),
+            epochs=epochs,
+            batch_size=batch_size,
+            max_samples=max_samples,
+        )
+        
+        return self
+    
+    def load(self, model_name: str) -> 'MLGenerator':
+        """
+        Load a previously trained generator model.
+        
+        Parameters
+        ----------
+        model_name : str
+            Name of the saved model directory
+            
+        Returns
+        -------
+        MLGenerator
+            Self for method chaining
+        """
+        from .ml_sed_generator import SEDGenerator
+        
+        model_path = self.base_dir / self.models_dir / model_name
+        if not model_path.exists():
+            raise FileNotFoundError(f"Model not found: {model_path}")
+        
+        self._generator = SEDGenerator(str(model_path))
+        return self
+    
+    def generate(
+        self,
+        teff: float,
+        logg: float,
+        metallicity: float,
+        check_bounds: bool = True,
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Generate a complete SED from stellar parameters.
+        
+        Parameters
+        ----------
+        teff : float
+            Effective temperature (K)
+        logg : float
+            Surface gravity (log cm/s²)
+        metallicity : float
+            Metallicity [M/H]
+        check_bounds : bool
+            Warn if parameters are outside training range (default: True)
+            
+        Returns
+        -------
+        wavelength : np.ndarray
+            Wavelength array in Angstroms
+        flux : np.ndarray
+            Flux array in erg/s/cm²/Å
+        """
+        if self._generator is None:
+            raise RuntimeError(
+                "No model loaded. Call train() or load() first."
+            )
+        
+        return self._generator.generate(
+            teff=teff,
+            logg=logg,
+            meta=metallicity,
+            check_bounds=check_bounds,
+        )
+    
+    def generate_with_outputs(
+        self,
+        teff: float,
+        logg: float,
+        metallicity: float,
+        output_dir: Optional[str] = None,
+        check_bounds: bool = True,
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Generate a complete SED and save data file plus diagnostic figures.
+        
+        Creates:
+            - sed_T{teff}_g{logg}_m{meta}.txt - The SED data
+            - sed_T{teff}_g{logg}_m{meta}_spectrum.png - SED plot
+            - sed_T{teff}_g{logg}_m{meta}_params.png - Parameter space plot
+        
+        Parameters
+        ----------
+        teff : float
+            Effective temperature (K)
+        logg : float
+            Surface gravity (log cm/s²)
+        metallicity : float
+            Metallicity [M/H]
+        output_dir : str, optional
+            Directory to save outputs. Default: model_dir/SED/
+        check_bounds : bool
+            Warn if parameters are outside training range (default: True)
+            
+        Returns
+        -------
+        wavelength : np.ndarray
+            Wavelength array in Angstroms
+        flux : np.ndarray
+            Flux array in erg/s/cm²/Å
+        """
+        if self._generator is None:
+            raise RuntimeError(
+                "No model loaded. Call train() or load() first."
+            )
+        
+        if output_dir is None:
+            # Default to SED subdirectory inside model directory
+            output_dir = str(Path(self._generator.config.get('_model_path', 'output')) / 'SED')
+        
+        return self._generator.generate_with_outputs(
+            teff=teff,
+            logg=logg,
+            meta=metallicity,
+            output_dir=output_dir,
+            check_bounds=check_bounds,
+        )
+    
+    def parameter_ranges(self) -> Dict[str, Tuple[float, float]]:
+        """
+        Get the parameter ranges the model was trained on.
+        
+        Returns
+        -------
+        dict
+            Dictionary with 'teff', 'logg', 'metallicity' keys
+            and (min, max) tuple values
+        """
+        if self._generator is None:
+            raise RuntimeError("No model loaded. Call train() or load() first.")
+        
+        ranges = self._generator.config.get('parameter_ranges', {})
+        return {
+            'teff': tuple(ranges.get('teff', [0, 0])),
+            'logg': tuple(ranges.get('logg', [0, 0])),
+            'metallicity': tuple(ranges.get('meta', [0, 0])),
+        }
+    
+    @staticmethod
+    def list_models(models_dir: str = "models") -> List[Dict[str, Any]]:
+        """
+        List available trained generator models.
+        
+        Parameters
+        ----------
+        models_dir : str
+            Directory containing trained models
+            
+        Returns
+        -------
+        list of dict
+            List of model info dictionaries with 'name', 'path', 
+            'parameter_ranges', and 'architecture' keys
+        """
+        from .ml_sed_generator import SEDGenerator
+        return SEDGenerator.list_models(models_dir)
 
 
 # =============================================================================
