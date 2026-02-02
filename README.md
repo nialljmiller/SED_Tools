@@ -185,14 +185,8 @@ Merge multiple stellar atmosphere grids into a unified ensemble.
 # Interactive model selection
 sed-tools combine
 
-# Combine specific models
-sed-tools combine --models Kurucz2003all PHOENIX NextGen
-
 # Combine all available local models
 sed-tools combine --non-interactive
-
-# Specify output name
-sed-tools combine --models Kurucz2003all PHOENIX --output my_combined_grid
 ```
 
 **Use cases:**
@@ -212,13 +206,6 @@ Train and apply neural networks to extend incomplete SEDs to broader wavelength 
 ```bash
 # Interactive mode
 sed-tools ml_completer
-
-# Train on a combined grid
-sed-tools ml_completer train --grid combined_grid --epochs 200
-
-# Extend an incomplete model
-sed-tools ml_completer extend --model sparse_uv_model \
-    --wavelength-min 100 --wavelength-max 100000
 ```
 
 **How it works:**
@@ -240,17 +227,6 @@ Train and apply neural networks to generate complete SEDs from stellar parameter
 ```bash
 # Interactive mode
 sed-tools ml_generator
-
-# Train on a stellar atmosphere library
-sed-tools ml_generator train --grid Kurucz2003all --epochs 200
-
-# Generate a single SED with diagnostic plots
-sed-tools ml_generator generate --model sed_generator_Kurucz2003all \
-    --teff 5777 --logg 4.44 --meta 0.0
-
-# Batch generate a grid of SEDs
-sed-tools ml_generator batch --model sed_generator_Kurucz2003all \
-    --teff 5000,5500,6000 --logg 4.0,4.5 --meta 0.0
 ```
 
 **How it works:**
