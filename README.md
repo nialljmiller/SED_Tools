@@ -200,7 +200,7 @@ sed-tools combine --non-interactive
 ### `sed-tools ml_completer`
 
 <p>
-  <img src="docs/prediction_exampled.png" alt="Prediction examples" width="200"/>
+  <img src="docs/prediction_examples.png" alt="Prediction examples" width="200"/>
 </p>
 
 
@@ -225,6 +225,11 @@ sed-tools ml_completer
 
 ### `sed-tools ml_generator`
 
+
+<p>
+  <img src="docs/prediction_examples.png" alt="Prediction examples" width="200"/>
+</p>
+
 Train and apply neural networks to generate complete SEDs from stellar parameters alone.
 
 **Use case:** You need SEDs for arbitrary stellar parameters but don't have an input spectrum — just Teff, logg, and [M/H].
@@ -241,14 +246,15 @@ sed-tools ml_generator
 3. Log-scaling and normalization handle flux dynamic range
 4. Generates diagnostic plots showing parameter space coverage
 
-**ML Completer vs Generator:**
+<p>
+  <img src="docs/sed_T6969_g4.20_m+0.02_params.png" alt="Prediction examples" width="200"/>
+</p>
 
-| Feature | Completer | Generator |
-|---------|-----------|-----------|
-| Input required | Partial SED + parameters | Parameters only |
-| Output | Extended SED | Complete SED |
-| Use case | Fill wavelength gaps | Create SEDs from scratch |
-| Physics baseline | Black body blending | None (pure ML) |
+<p>
+  <img src="docs/sed_T6969_g4.20_m+0.02_spectrum.png" alt="Prediction examples" width="200"/>
+</p>
+
+
 
 ---
 
