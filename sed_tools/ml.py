@@ -57,6 +57,7 @@ __all__ = [
     'complete_sed',
     'list_models',
     'model_info',
+    'auto_train_generator',
     # Classes
     'Completer',
 ]
@@ -268,6 +269,53 @@ def model_info(model_path: str) -> Dict[str, Any]:
     
     with open(config_file, 'r') as f:
         return json.load(f)
+
+
+def auto_train_generator(
+    library: str,
+    output: str,
+    n_trials: int = 20,
+    epochs: int = 100,
+) -> Any:
+    """
+    Train a generator using automated hyperparameter optimization and GPU acceleration.
+    
+    Parameters
+    ----------
+    library : str
+        Path to SED library directory
+    output : str
+        Output directory for the best model
+    n_trials : int
+        Number of hyperparameter optimization trials
+    epochs : int
+        Number of epochs for final training
+    """
+    from .ml_optimized import AutoTrainer
+    import json
+    import os
+    
+    os.makedirs(output, exist_ok=True)
+    
+    trainer = AutoTrainer(library, task="generator")
+    model, best_params = trainer.train_best(
+        library_path=library,
+        output_path=output,
+        n_trials=n_trials,
+        epochs=epochs
+    )
+    
+    # Save config
+    config = {
+        "architecture": "ResidualMLP",
+        "best_params": best_params,
+        "task": "generator",
+        "framework": "PyTorch-Optimized"
+    }
+    with open(os.path.join(output, "config.json"), "w") as f:
+        json.dump(config, f, indent=4)
+        
+    return model
 
 
 # =============================================================================

@@ -161,8 +161,8 @@ class SEDGenerator:
     @property
     def device(self):
         if self._device is None:
-            import torch
-            self._device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+            from .ml_utils import get_device
+            self._device = get_device()
         return self._device
     
     def _create_wavelength_grid(

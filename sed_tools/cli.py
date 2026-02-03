@@ -923,6 +923,10 @@ def main():
                     help="Base models directory")
     gp.add_argument("--models-dir", default="models",
                     help="Directory for trained ML models")
+    gp.add_argument("--auto", action="store_true",
+                    help="Run optimized auto-training with hyperparameter search")
+    gp.add_argument("--library", help="Library path for auto-training")
+    gp.add_argument("--output", help="Output directory for auto-training")
 
 
     args = parser.parse_args()
@@ -961,10 +965,17 @@ def main():
 
 
     elif args.cmd == "ml_generator":
-        run_ml_generator_flow(
-            base_dir=args.base,
-            models_dir=args.models_dir
-        )
+        if args.auto:
+            if not args.library or not args.output:
+                print("Error: --library and --output are required for --auto training.")
+                sys.exit(1)
+            from .ml import auto_train_generator
+            auto_train_generator(library=args.library, output=args.output)
+        else:
+            run_ml_generator_flow(
+                base_dir=args.base,
+                models_dir=args.models_dir
+            )
 
 
     else:
