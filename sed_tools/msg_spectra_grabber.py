@@ -329,6 +329,35 @@ class MSGSpectraGrabber:
             if gpath not in f: raise KeyError(f"missing {gpath}")
             spec_g = f[gpath]
             fx = _pick_flux(spec_g)
+
+            # Normalize fx to something we can write: 1-D flux vector
+            fx = np.array(fx)
+
+            # Case 1: dataset is (N, 1) -> flatten
+            if fx.ndim == 2 and fx.shape[1] == 1:
+                fx = fx[:, 0]
+
+            # Case 2: dataset is (N, 2) and looks like [wl, flux] pairs
+            # Use it directly rather than guessing wavelengths elsewhere.
+            elif fx.ndim == 2 and fx.shape[1] == 2:
+                wl_from_fx = fx[:, 0].astype(float)
+                fl_from_fx = fx[:, 1].astype(float)
+
+                # sanity: wl monotonic increasing-ish and length reasonable
+                if wl_from_fx.size > 1 and np.all(np.diff(wl_from_fx) > 0):
+                    wl = wl_from_fx
+                    fx = fl_from_fx
+                else:
+                    # fallback: take first column as flux if it doesn't look like wavelength
+                    fx = fx[:, 0]
+
+            # Case 3: anything higher-dim -> force ravel (last resort)
+            elif fx.ndim > 1:
+                fx = fx.ravel()
+
+
+
+            
             wl = _recover_wavelengths(spec_g, expected_len=len(fx))
             n = min(len(wl), len(fx))
             wl = wl[:n].astype(float); fx = fx[:n].astype(float)
@@ -370,9 +399,10 @@ class MSGSpectraGrabber:
                 if np.isfinite(logg): fh.write(f"# logg = {logg}\n")
                 if np.isfinite(meta): fh.write(f"# meta = {meta}\n")
                 fh.write("# columns = wavelength_A flux\n")
-                for x,y in zip(wl, fx):
-                    # Use float() to ensure x and y are scalars, avoiding TypeError with numpy arrays in f-strings
-                    fh.write(f"{float(x):.6f} {float(y):.8e}\n")
+                for x, y in zip(wl, fx):
+                    x = float(np.asarray(x).reshape(-1)[0])
+                    y = float(np.asarray(y).reshape(-1)[0])
+                    fh.write(f"{x:.6f} {y:.8e}\n")
 
             return (fname, {"teff":teff,"logg":logg,"meta":meta}, True)
 
