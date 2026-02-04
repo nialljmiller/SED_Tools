@@ -398,11 +398,12 @@ class MSGSpectraGrabber:
                 if np.isfinite(teff): fh.write(f"# teff = {teff}\n")
                 if np.isfinite(logg): fh.write(f"# logg = {logg}\n")
                 if np.isfinite(meta): fh.write(f"# meta = {meta}\n")
+                fh.write("# wavelength_unit = Angstrom\n")
+                fh.write("# flux_unit = erg/cm2/s/A\n")
                 fh.write("# columns = wavelength_A flux\n")
                 for x, y in zip(wl, fx):
-                    x = float(np.asarray(x).reshape(-1)[0])
-                    y = float(np.asarray(y).reshape(-1)[0])
-                    fh.write(f"{x:.6f} {y:.8e}\n")
+                    # Ensure x and y are Python scalars to avoid TypeError in f-strings
+                    fh.write(f"{float(x):.6f} {float(y):.8e}\n")
 
             return (fname, {"teff":teff,"logg":logg,"meta":meta}, True)
 
