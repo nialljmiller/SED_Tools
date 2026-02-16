@@ -288,6 +288,107 @@ def _prompt_choice(
         filt = ("substr", inp); page = 1
 
 
+
+
+def _parse_range(raw: str) -> Optional[Tuple[float, float]]:
+    """Parse a user-entered range string like '3500,8000' or '3500 8000' or '3500-8000'.
+    
+    Returns (min, max) tuple or None if empty/invalid.
+    """
+    raw = raw.strip()
+    if not raw:
+        return None
+    
+    # Try comma-separated
+    for sep in [',', ' ', '-', '..', ':']:
+        if sep in raw:
+            parts = [p.strip() for p in raw.split(sep, 1) if p.strip()]
+            if len(parts) == 2:
+                try:
+                    lo, hi = float(parts[0]), float(parts[1])
+                    if lo > hi:
+                        lo, hi = hi, lo
+                    return (lo, hi)
+                except ValueError:
+                    pass
+    
+    # Single value — no range
+    print(f"  Could not parse range from '{raw}' — need two values (e.g. '3500,8000')")
+    return None
+
+
+def prompt_njm_axis_cuts(
+    model_name: str,
+    grabber,  # NJMSpectraGrabber instance
+    model_url: Optional[str] = None,
+) -> Dict:
+    """Interactively prompt the user for axis cuts on an NJM download.
+    
+    Shows the available parameter ranges from the remote lookup table,
+    then asks if the user wants to cut on each axis.
+    
+    Returns a dict with keys: teff_range, logg_range, meta_range, wl_range
+    (each either a (min, max) tuple or None).
+    """
+    cuts = {
+        'teff_range': None,
+        'logg_range': None,
+        'meta_range': None,
+        'wl_range': None,
+    }
+    
+    print(f"\n  ── Axis Cuts for {model_name} ──")
+    print(f"  You can restrict the download to a subset of the grid.")
+    print(f"  Leave blank to download everything.\n")
+    
+    # Try to fetch grid info for context
+    info = grabber.get_grid_info(model_name, model_url=model_url)
+    
+    if info:
+        print(f"  Available grid ({info['n_spectra']} spectra):")
+        if 'teff_min' in info:
+            print(f"    Teff:  {info['teff_min']:.0f} – {info['teff_max']:.0f} K  ({info['teff_unique']} values)")
+        if 'logg_min' in info:
+            print(f"    logg:  {info['logg_min']:.2f} – {info['logg_max']:.2f}    ({info['logg_unique']} values)")
+        if 'meta_min' in info:
+            print(f"    [M/H]: {info['meta_min']:+.2f} – {info['meta_max']:+.2f}    ({info['meta_unique']} values)")
+        print()
+    else:
+        print("  (Could not fetch grid info — cuts will still work if lookup_table.csv is available)\n")
+    
+    # Ask about each axis
+    raw = input("  Teff range (e.g. '3500,8000') or blank for all: ").strip()
+    cuts['teff_range'] = _parse_range(raw)
+    
+    raw = input("  logg range (e.g. '3.5,5.0') or blank for all: ").strip()
+    cuts['logg_range'] = _parse_range(raw)
+    
+    raw = input("  [M/H] range (e.g. '-1.0,0.5') or blank for all: ").strip()
+    cuts['meta_range'] = _parse_range(raw)
+    
+    raw = input("  Wavelength range in Å (e.g. '3000,10000') or blank for all: ").strip()
+    cuts['wl_range'] = _parse_range(raw)
+    
+    # Summary
+    any_cuts = any(v is not None for v in cuts.values())
+    if any_cuts:
+        print(f"\n  Applied cuts:")
+        if cuts['teff_range']:
+            print(f"    Teff:       {cuts['teff_range'][0]:.0f} – {cuts['teff_range'][1]:.0f} K")
+        if cuts['logg_range']:
+            print(f"    logg:       {cuts['logg_range'][0]:.2f} – {cuts['logg_range'][1]:.2f}")
+        if cuts['meta_range']:
+            print(f"    [M/H]:      {cuts['meta_range'][0]:+.2f} – {cuts['meta_range'][1]:+.2f}")
+        if cuts['wl_range']:
+            print(f"    Wavelength: {cuts['wl_range'][0]:.1f} – {cuts['wl_range'][1]:.1f} Å")
+        print()
+    else:
+        print("\n  No cuts — downloading full grid.\n")
+    
+    return cuts
+
+
+
 # ------------ Workflow Runners ------------
 
 def run_rebuild_flow(
@@ -364,6 +465,77 @@ def run_rebuild_flow(
 
     print("\nRebuild complete.")
 
+
+
+
+
+
+def _parse_range(raw: str):
+    """Parse a user-entered range like '3500,8000' into (min, max) or None."""
+    raw = raw.strip()
+    if not raw:
+        return None
+    for sep in [',', ' ', '..', ':']:
+        if sep in raw:
+            parts = [p.strip() for p in raw.split(sep, 1) if p.strip()]
+            if len(parts) == 2:
+                try:
+                    lo, hi = float(parts[0]), float(parts[1])
+                    if lo > hi:
+                        lo, hi = hi, lo
+                    return (lo, hi)
+                except ValueError:
+                    pass
+    print(f"  Could not parse range from '{raw}' — need two values (e.g. '3500,8000')")
+    return None
+
+
+def _prompt_axis_cuts(name, grabber, model_url=None):
+    """Prompt user for axis cuts on an NJM download. Returns dict of ranges."""
+    cuts = {'teff_range': None, 'logg_range': None, 'meta_range': None, 'wl_range': None}
+
+    print(f"\n  ── Axis Cuts for {name} ──")
+    print(f"  Restrict the download to a subset of the grid.")
+    print(f"  Leave blank to download everything.\n")
+
+    info = grabber.get_grid_info(name, model_url=model_url)
+    if info:
+        print(f"  Available grid ({info['n_spectra']} spectra):")
+        if 'teff_min' in info:
+            print(f"    Teff:  {info['teff_min']:.0f} – {info['teff_max']:.0f} K  ({info['teff_unique']} values)")
+        if 'logg_min' in info:
+            print(f"    logg:  {info['logg_min']:.2f} – {info['logg_max']:.2f}    ({info['logg_unique']} values)")
+        if 'meta_min' in info:
+            print(f"    [M/H]: {info['meta_min']:+.2f} – {info['meta_max']:+.2f}    ({info['meta_unique']} values)")
+        print()
+    else:
+        print("  (Could not fetch grid info)\n")
+
+    cuts['teff_range'] = _parse_range(input("  Teff range (e.g. '3500,8000') or blank for all: "))
+    cuts['logg_range'] = _parse_range(input("  logg range (e.g. '3.5,5.0') or blank for all: "))
+    cuts['meta_range'] = _parse_range(input("  [M/H] range (e.g. '-1.0,0.5') or blank for all: "))
+    cuts['wl_range']   = _parse_range(input("  Wavelength range in Å (e.g. '3000,10000') or blank for all: "))
+
+    any_cuts = any(v is not None for v in cuts.values())
+    if any_cuts:
+        print(f"\n  Applied cuts:")
+        if cuts['teff_range']:
+            print(f"    Teff:       {cuts['teff_range'][0]:.0f} – {cuts['teff_range'][1]:.0f} K")
+        if cuts['logg_range']:
+            print(f"    logg:       {cuts['logg_range'][0]:.2f} – {cuts['logg_range'][1]:.2f}")
+        if cuts['meta_range']:
+            print(f"    [M/H]:      {cuts['meta_range'][0]:+.2f} – {cuts['meta_range'][1]:+.2f}")
+        if cuts['wl_range']:
+            print(f"    Wavelength: {cuts['wl_range'][0]:.1f} – {cuts['wl_range'][1]:.1f} Å")
+    else:
+        print("\n  No cuts — downloading full grid.")
+
+    return cuts
+
+
+
+
+
 def run_spectra_flow(
     source: str,
     base_dir: str = str(STELLAR_DIR_DEFAULT),
@@ -430,20 +602,20 @@ def run_spectra_flow(
     chosen = []
     if models is not None:
         if len(models) == 1 and models[0].lower() == "all":
-            chosen = [(opt.sources[0], opt.name) for opt in all_models]
+            chosen = [(opt.sources, opt.name) for opt in all_models]
         else:
             for m in models:
                 if ":" in m:
                     src, name = m.split(":", 1)
                     src, name = src.strip().lower(), name.strip()
+                    chosen.append(([src], name))
                 else:
                     name = m.strip()
                     matching = [opt for opt in all_models if opt.name == name]
                     if not matching:
                         print(f"[skip] Model '{name}' not found")
                         continue
-                    src = matching[0].sources[0]
-                chosen.append((src, name))
+                    chosen.append((matching[0].sources, name))
     else:
         idxs = _prompt_choice(all_models, label="Spectral models", allow_back=True, multi=True)
         
@@ -456,31 +628,53 @@ def run_spectra_flow(
         if isinstance(idxs, int):
             idxs = [idxs]
 
-        chosen = [(all_models[i].sources[0], all_models[i].name) for i in idxs]
+        chosen = [(all_models[i].sources, all_models[i].name) for i in idxs]
 
     # Download and process each selected model
-    for src, name in chosen:
-        print("\n" + "=" * 64)
-        print(f"[{src.upper()}] {name}")
+    for sources, name in chosen:
+        print("\\n" + "=" * 64)
+        source_tags = "".join(f"[{s}]" for s in sources)
+        print(f"{source_tags} {name}")
         print("=" * 64)
         
         model_dir = os.path.join(base_dir, name)
         ensure_dir(model_dir)
 
-        g = grabs.get(src)
-        if not g:
-            print(f"Source '{src}' not initialized")
+        # Try each source in order until one returns metadata
+        meta = None
+        g = None
+        src = None
+        for try_src in sources:
+            g = grabs.get(try_src)
+            if not g:
+                continue
+            meta = g.get_model_metadata(name)
+            if meta:
+                src = try_src
+                break
+            print(f"  [{try_src}] No metadata — trying next source...")
+        
+        if not meta or not g or not src:
+            print(f"No metadata available from any source")
             continue
-
-        meta = g.get_model_metadata(name)
-        if not meta:
-            print(f"No metadata available")
-            continue
+        
+        print(f"  Using source: {src}")
         
         # Check if pre-processed (NJM)
         is_preprocessed = isinstance(meta, dict) and meta.get("pre_processed", False)
 
-        n_written = g.download_model_spectra(name, meta)
+        # ── Axis cuts (NJM only) ──
+        njm_cuts = {}
+        if src == "njm":
+            njm_cuts = _prompt_axis_cuts(name, g, model_url=meta.get("model_url"))
+
+        n_written = g.download_model_spectra(
+            name, meta,
+            teff_range=njm_cuts.get('teff_range'),
+            logg_range=njm_cuts.get('logg_range'),
+            meta_range=njm_cuts.get('meta_range'),
+            wl_range=njm_cuts.get('wl_range'),
+        )
         print(f"Downloaded {n_written} spectra{model_dir}")
 
         # Skip cleaning for pre-processed NJM data
