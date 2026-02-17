@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Niall Millers SED Tools Data Archive - Stellar Atmosphere Library</title>
+    <style>
+        body {
+            background-color: #000080;
+            color: #00FF00;
+            font-family: "Courier New", Courier, monospace;
+            margin: 0;
+            padding: 20px;
+        }
+
+        a { color: #000080; }
+        a:visited { color: #FF00FF; }
+        a:hover { color: #00FFFF; background-color: #000000; }
+
+        .main-container {
+            border: 5px ridge #C0C0C0;
+            background-color: #C0C0C0;
+            color: #000000;
+            padding: 15px;
+            margin: 10px auto;
+            max-width: 9000px;
+        }
+
+        .header {
+            text-align: center;
+            background-color: #000080;
+            color: #FFFFFF;
+            padding: 10px;
+            border: 3px outset #808080;
+        }
+
+        .header h1 {
+            margin: 5px;
+            text-shadow: 2px 2px #000000;
+        }
+
+        .blink {
+            animation: blinker 1s linear infinite;
+            color: #FF0000;
+            font-weight: bold;
+        }
+        @keyframes blinker { 50% { opacity: 0; } }
+
+        .section {
+            border: 3px inset #808080;
+            background-color: #FFFFFF;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        .section-title {
+            background-color: #000080;
+            color: #FFFFFF;
+            padding: 5px 10px;
+            margin: -10px -10px 10px -10px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 12px;
+        }
+
+        th {
+            background-color: #000080;
+            color: #FFFFFF;
+            padding: 5px;
+            border: 2px outset #C0C0C0;
+            text-align: left;
+        }
+
+        td {
+            padding: 4px 8px;
+            border: 1px solid #808080;
+            background-color: #FFFFFF;
+        }
+
+        tr:nth-child(even) td {
+            background-color: #E0E0E0;
+        }
+
+        tr:hover td {
+            background-color: #FFFFC0;
+        }
+
+        .status-yes {
+            color: #008000;
+            font-weight: bold;
+        }
+
+        .status-no {
+            color: #FF0000;
+        }
+
+        .stats-box {
+            display: inline-block;
+            border: 3px outset #808080;
+            background-color: #FFFFC0;
+            padding: 10px 20px;
+            margin: 5px;
+            text-align: center;
+        }
+
+        .stats-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #000080;
+        }
+
+        .stats-label {
+            font-size: 11px;
+            color: #000000;
+        }
+
+        .button {
+            display: inline-block;
+            border: 3px outset #C0C0C0;
+            background-color: #C0C0C0;
+            padding: 5px 5px;
+            margin: 3px;
+            cursor: pointer;
+            font-family: "Courier New", monospace;
+            font-size: 30px;
+            text-decoration: none;
+            color: #000000;
+        }
+
+        .button:hover {
+            border-style: inset;
+            background-color: #A0A0A0;
+        }
+
+        .button:active {
+            border-style: inset;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 11px;
+            margin-top: 20px;
+            color: #00FF00;
+        }
+
+        .construction {
+            display: inline-block;
+        }
+
+        hr {
+            border: none;
+            border-top: 2px ridge #C0C0C0;
+            margin: 15px 0;
+        }
+
+        .guestbook-notice {
+            background-color: #FFFF00;
+            color: #000000;
+            border: 2px dashed #FF0000;
+            padding: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .filter-section {
+            margin-top: 5px;
+        }
+
+        .facility-name {
+            background-color: #008080;
+            color: #FFFFFF;
+            padding: 3px 8px;
+            cursor: pointer;
+            border: 2px outset #C0C0C0;
+            margin: 2px 0;
+        }
+
+        .facility-name:hover {
+            background-color: #00A0A0;
+        }
+
+        .instruments {
+            margin-left: 20px;
+            display: none;
+        }
+
+        .instrument-item {
+            padding: 2px 5px;
+            border-left: 3px solid #008080;
+            margin: 2px 0;
+            background-color: #F0F0F0;
+        }
+
+        .webring {
+            border: 3px double #FFD700;
+            background-color: #000000;
+            padding: 10px;
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .hit-counter {
+            border: 2px inset #808080;
+            background-color: #000000;
+            color: #00FF00;
+            padding: 5px 15px;
+            font-family: "Courier New", monospace;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+
+<!--
+<center>
+<marquee scrollamount="5" bgcolor="#000000" style="border: 2px solid #00FF00; padding: 5px;">
+    This is a WIP --- Please do not spam this server, it is in a garage in Wyoming --- SED SED SED SED SED SED SED SED SED SED SED SED SED SED --- Filters Filters Filters Filters Filters Filters Filters --- You are become astronomer, doer of photometry ---
+</marquee>
+</center>
+-->
+
+<br>
+
+<div class="main-container">
+    <div class="header">
+        <h1> Niall Miller's SED TOOLS DATA ARCHIVE </h1>
+        <font size="2">Stellar Atmosphere Models & Filter Profiles for MESA</font>
+        <font size="1"><span class="blink">●</span> ONLINE <span class="blink">●</span></font>
+    </div>
+
+    <center>
+        <img src="https://web.archive.org/web/20091027065852im_/http://geocities.com/SiliconValley/Haven/1901/ani_star.gif" width="30" onerror="this.style.display='none'">
+        <img src="https://web.archive.org/web/20091027065852im_/http://geocities.com/SiliconValley/Haven/1901/ani_star.gif" width="30" onerror="this.style.display='none'">
+        <img src="https://web.archive.org/web/20091027065852im_/http://geocities.com/SiliconValley/Haven/1901/ani_star.gif" width="30" onerror="this.style.display='none'">
+    </center>
+
+    <div class="section">
+        <div class="section-title">ARCHIVE STATISTICS</div>
+        <center>
+            <div class="stats-box">
+                <div class="stats-number" id="stat-models">--</div>
+                <div class="stats-label">STELLAR MODELS</div>
+            </div>
+            <div class="stats-box">
+                <div class="stats-number" id="stat-spectra">--</div>
+                <div class="stats-label">SPECTRA FILES</div>
+            </div>
+            <div class="stats-box">
+                <div class="stats-number" id="stat-filters">--</div>
+                <div class="stats-label">FILTER PROFILES</div>
+            </div>
+            <div class="stats-box">
+                <div class="stats-number" id="stat-size">--</div>
+                <div class="stats-label">TOTAL SIZE</div>
+            </div>
+        </center>
+    </div>
+
+    <div class="guestbook-notice">
+         This service is a WIP
+    </div>
+
+    <div class="section">
+        <div class="section-title"> STELLAR ATMOSPHERE MODELS</div>
+        <table id="models-table">
+            <thead>
+                <tr>
+                    <th>MODEL NAME</th>
+                    <th>SPECTRA</th>
+                    <th>FLUX CUBE</th>
+                    <th>LOOKUP</th>
+                    <th>HDF5</th>
+                    <th>SIZE</th>
+                </tr>
+            </thead>
+            <tbody id="models-tbody">
+                <tr><td colspan="6" align="center"><span class="blink">LOADING...</span></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <div class="section-title"> FILTER PROFILES BY FACILITY</div>
+        <div id="filters-container">
+            <center><span class="blink">LOADING...</span></center>
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="section">
+        <div class="section-title">📖 HOW TO USE</div>
+        <font face="Arial" size="2">
+        <b>For MESA Users:</b><br>
+        <ol>
+            <li>Download desired model folder (includes flux_cube.bin + lookup_table.csv)</li>
+            <li>Copy to <code>$MESA_DIR/colors/data/stellar_models/</code></li>
+            <li>Set in your inlist: <code>stellar_atm = 'ModelName/'</code></li>
+        </ol>
+        <b>For Filter Profiles:</b><br>
+        <ol>
+            <li>Download Facility/Instrument folder</li>
+            <li>Copy to <code>$MESA_DIR/colors/data/filters/</code></li>
+            <li>Set in your inlist: <code>instrument = 'Facility/Instrument'</code></li>
+        </ol>
+        </font>
+    </div>
+
+    <hr>
+
+    <center>
+        <a class="button" href="https://github.com/nialljmiller/SED_Tools" target="_blank">📁 GitHub Repo</a>
+        <a class="button" href="index.json">📄 Raw JSON Index</a>
+    </center>
+
+</div>
+
+<div class="footer">
+    <hr style="border-color: #00FF00; width: 100%;">
+    <img src="https://web.archive.org/web/20091026223340im_/http://www.geocities.com/SiliconValley/Horizon/1471/construct.gif" width="400" onerror="this.style.display='none'">
+    <span class="construction"> ALWAYS UNDER CONSTRUCTION </span>
+    <img src="https://web.archive.org/web/20091026223340im_/http://www.geocities.com/SiliconValley/Horizon/1471/construct.gif" width="400" onerror="this.style.display='none'">
+    <span class="hit-counter">VISITORS: <span id="visitor-count">000042</span></span>
+    <br>
+    <a href="https://nialljmiller.com"> Back to Niall J Miller Home</a>
+</div>
+
+<script>
+// Load index.json and populate the page
+fetch('index.json')
+    .then(response => response.json())
+    .then(data => {
+        // Update statistics
+        document.getElementById('stat-models').textContent = data.statistics.total_models || 0;
+        document.getElementById('stat-spectra').textContent = (data.statistics.total_spectra || 0).toLocaleString();
+        document.getElementById('stat-filters').textContent = (data.statistics.total_filters || 0).toLocaleString();
+        document.getElementById('stat-size').textContent = data.statistics.total_size_human || '0 B';
+
+        // Populate models table
+        const tbody = document.getElementById('models-tbody');
+        tbody.innerHTML = '';
+
+        if (data.models && data.models.length > 0) {
+            data.models.forEach(modelName => {
+                const model = data.models_detailed[modelName] || {};
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><a href="stellar_models/${modelName}/">${modelName}</a></td>
+                    <td align="center">${model.spectra_count || 0}</td>
+                    <td align="center" class="${model.has_flux_cube ? 'status-yes' : 'status-no'}">${model.has_flux_cube ? '✓ YES' : '✗ NO'}</td>
+                    <td align="center" class="${model.has_lookup_table ? 'status-yes' : 'status-no'}">${model.has_lookup_table ? '✓ YES' : '✗ NO'}</td>
+                    <td align="center" class="${model.has_h5_bundle ? 'status-yes' : 'status-no'}">${model.has_h5_bundle ? '✓ YES' : '✗ NO'}</td>
+                    <td align="right">${model.size_human || '--'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } else {
+            tbody.innerHTML = '<tr><td colspan="6" align="center">No models available</td></tr>';
+        }
+
+        // Populate filters
+        const filtersContainer = document.getElementById('filters-container');
+        filtersContainer.innerHTML = '';
+
+        if (data.filters && data.filters.facilities && data.filters.facilities.length > 0) {
+            data.filters.facilities.forEach((facilityName, idx) => {
+                const facility = data.filters.facilities_detailed[facilityName] || {};
+
+                const facilityDiv = document.createElement('div');
+                facilityDiv.className = 'filter-section';
+
+                let html = `<div class="facility-name" onclick="toggleInstruments('inst-${idx}')">
+                    📂 ${facilityName} (${facility.instrument_count || 0} instruments) [+]
+                </div>`;
+                html += `<div class="instruments" id="inst-${idx}">`;
+
+                if (facility.instruments) {
+                    Object.keys(facility.instruments).sort().forEach(instName => {
+                        const inst = facility.instruments[instName];
+                        html += `<div class="instrument-item">
+                            <a href="filters/${facilityName}/${instName}/">${instName}</a>
+                            - ${inst.filter_count} filters (${inst.size_human})
+                        </div>`;
+                    });
+                }
+
+                html += '</div>';
+                facilityDiv.innerHTML = html;
+                filtersContainer.appendChild(facilityDiv);
+            });
+        } else {
+            filtersContainer.innerHTML = '<center>No filter profiles available</center>';
+        }
+
+
+
+    })
+    .catch(err => {
+        console.error('Failed to load index.json:', err);
+        document.getElementById('models-tbody').innerHTML =
+            '<tr><td colspan="6" align="center" style="color:red;">ERROR LOADING DATA - Check console</td></tr>';
+        document.getElementById('filters-container').innerHTML =
+            '<center style="color:red;">ERROR LOADING FILTERS</center>';
+    });
+
+
+// Visitor counter (independent of index.json)
+fetch("counter.php")
+  .then(r => r.text())
+  .then(v => {
+    const el = document.getElementById('visitor-count');
+    if (el) el.textContent = v;
+  });
+
+
+
+function toggleInstruments(id) {
+    const elem = document.getElementById(id);
+    if (elem.style.display === 'block') {
+        elem.style.display = 'none';
+    } else {
+        elem.style.display = 'block';
+    }
+}
+</script>
+
+</body>
+</html>

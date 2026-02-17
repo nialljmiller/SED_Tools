@@ -1,0 +1,671 @@
+{
+  "version": "1.0",
+  "generated": "2026-02-17T06:41:36.470151",
+  "base_url": "http://nillmill.ddns.net/sed_tools",
+  "statistics": {
+    "total_models": 35,
+    "complete_models": 31,
+    "total_spectra": 65126,
+    "total_size_bytes": 295979661682,
+    "total_size_human": "275.65 GB",
+    "total_facilities": 9,
+    "total_filters": 129
+  },
+  "models": [
+    "Husfeld",
+    "Kurucz",
+    "Kurucz2003",
+    "Kurucz2003all",
+    "Kurucz2003alp",
+    "NextGen",
+    "NextGen2",
+    "atmo2020_ceq",
+    "atmo2020_neq_strong",
+    "atmo2020_neq_weak",
+    "bbody",
+    "bt-cond",
+    "bt-dusty",
+    "cond00",
+    "exogan",
+    "goyal_local",
+    "hres",
+    "koester2",
+    "pop_kroupa",
+    "saumon12",
+    "sedssp",
+    "sg-BSTAR2006-low",
+    "sg-BSTAR2006-medium",
+    "sg-BT-Settl",
+    "sg-SPHINX",
+    "tmap",
+    "tmap1",
+    "tmap2",
+    "tmap4",
+    "tpl_bayo",
+    "tpl_chiu06",
+    "tpl_keck",
+    "tpl_kesseli",
+    "tpl_mclean",
+    "tpl_miles"
+  ],
+  "models_detailed": {
+    "Husfeld": {
+      "name": "Husfeld",
+      "has_flux_cube": true,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 448,
+      "size_bytes": 35903540,
+      "size_human": "34.24 MB"
+    },
+    "Kurucz": {
+      "name": "Kurucz",
+      "has_flux_cube": true,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 3808,
+      "size_bytes": 281236588,
+      "size_human": "268.21 MB"
+    },
+    "Kurucz2003": {
+      "name": "Kurucz2003",
+      "has_flux_cube": true,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 3808,
+      "size_bytes": 275075322,
+      "size_human": "262.33 MB"
+    },
+    "Kurucz2003all": {
+      "name": "Kurucz2003all",
+      "has_flux_cube": true,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 8092,
+      "size_bytes": 520588986,
+      "size_human": "496.47 MB"
+    },
+    "Kurucz2003alp": {
+      "name": "Kurucz2003alp",
+      "has_flux_cube": true,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 4284,
+      "size_bytes": 309667092,
+      "size_human": "295.32 MB"
+    },
+    "NextGen": {
+      "name": "NextGen",
+      "has_flux_cube": true,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 272,
+      "size_bytes": 304073331,
+      "size_human": "289.99 MB"
+    },
+    "NextGen2": {
+      "name": "NextGen2",
+      "has_flux_cube": true,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 2712,
+      "size_bytes": 19979765163,
+      "size_human": "18.61 GB"
+    },
+    "atmo2020_ceq": {
+      "name": "atmo2020_ceq",
+      "has_flux_cube": true,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 231,
+      "size_bytes": 66430257,
+      "size_human": "63.35 MB"
+    },
+    "atmo2020_neq_strong": {
+      "name": "atmo2020_neq_strong",
+      "has_flux_cube": true,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 140,
+      "size_bytes": 40562389,
+      "size_human": "38.68 MB"
+    },
+    "atmo2020_neq_weak": {
+      "name": "atmo2020_neq_weak",
+      "has_flux_cube": true,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 139,
+      "size_bytes": 40314637,
+      "size_human": "38.45 MB"
+    },
+    "bbody": {
+      "name": "bbody",
+      "has_flux_cube": true,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 588,
+      "size_bytes": 41893614,
+      "size_human": "39.95 MB"
+    },
+    "bt-cond": {
+      "name": "bt-cond",
+      "has_flux_cube": false,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 6028,
+      "size_bytes": 115612612593,
+      "size_human": "107.67 GB"
+    },
+    "bt-dusty": {
+      "name": "bt-dusty",
+      "has_flux_cube": false,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 6029,
+      "size_bytes": 115190817066,
+      "size_human": "107.28 GB"
+    },
+    "cond00": {
+      "name": "cond00",
+      "has_flux_cube": true,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 317,
+      "size_bytes": 959972734,
+      "size_human": "915.50 MB"
+    },
+    "exogan": {
+      "name": "exogan",
+      "has_flux_cube": true,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 4941,
+      "size_bytes": 219022060,
+      "size_human": "208.88 MB"
+    },
+    "goyal_local": {
+      "name": "goyal_local",
+      "has_flux_cube": true,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 5464,
+      "size_bytes": 2137067348,
+      "size_human": "1.99 GB"
+    },
+    "hres": {
+      "name": "hres",
+      "has_flux_cube": true,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 1650,
+      "size_bytes": 2086211280,
+      "size_human": "1.94 GB"
+    },
+    "koester2": {
+      "name": "koester2",
+      "has_flux_cube": true,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 1066,
+      "size_bytes": 2965420423,
+      "size_human": "2.76 GB"
+    },
+    "pop_kroupa": {
+      "name": "pop_kroupa",
+      "has_flux_cube": true,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 1908,
+      "size_bytes": 186539277,
+      "size_human": "177.90 MB"
+    },
+    "saumon12": {
+      "name": "saumon12",
+      "has_flux_cube": true,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 149,
+      "size_bytes": 2188976536,
+      "size_human": "2.04 GB"
+    },
+    "sedssp": {
+      "name": "sedssp",
+      "has_flux_cube": true,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 452,
+      "size_bytes": 459514605,
+      "size_human": "438.23 MB"
+    },
+    "sg-BSTAR2006-low": {
+      "name": "sg-BSTAR2006-low",
+      "has_flux_cube": true,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 981,
+      "size_bytes": 950830313,
+      "size_human": "906.78 MB"
+    },
+    "sg-BSTAR2006-medium": {
+      "name": "sg-BSTAR2006-medium",
+      "has_flux_cube": false,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 981,
+      "size_bytes": 7935146635,
+      "size_human": "7.39 GB"
+    },
+    "sg-BT-Settl": {
+      "name": "sg-BT-Settl",
+      "has_flux_cube": true,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 147,
+      "size_bytes": 5659081381,
+      "size_human": "5.27 GB"
+    },
+    "sg-SPHINX": {
+      "name": "sg-SPHINX",
+      "has_flux_cube": true,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 5292,
+      "size_bytes": 647385544,
+      "size_human": "617.39 MB"
+    },
+    "tmap": {
+      "name": "tmap",
+      "has_flux_cube": true,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 1287,
+      "size_bytes": 3148168121,
+      "size_human": "2.93 GB"
+    },
+    "tmap1": {
+      "name": "tmap1",
+      "has_flux_cube": true,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 59,
+      "size_bytes": 240528427,
+      "size_human": "229.39 MB"
+    },
+    "tmap2": {
+      "name": "tmap2",
+      "has_flux_cube": true,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 1215,
+      "size_bytes": 11241273171,
+      "size_human": "10.47 GB"
+    },
+    "tmap3": {
+      "name": "tmap3",
+      "has_flux_cube": false,
+      "has_lookup_table": false,
+      "has_h5_bundle": false,
+      "spectra_count": 0,
+      "size_bytes": 0,
+      "size_human": "0.00 B"
+    },
+    "tmap4": {
+      "name": "tmap4",
+      "has_flux_cube": true,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 1040,
+      "size_bytes": 1181433751,
+      "size_human": "1.10 GB"
+    },
+    "tpl_bayo": {
+      "name": "tpl_bayo",
+      "has_flux_cube": true,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 27,
+      "size_bytes": 3335211,
+      "size_human": "3.18 MB"
+    },
+    "tpl_chiu06": {
+      "name": "tpl_chiu06",
+      "has_flux_cube": true,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 161,
+      "size_bytes": 11699187,
+      "size_human": "11.16 MB"
+    },
+    "tpl_keck": {
+      "name": "tpl_keck",
+      "has_flux_cube": true,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 49,
+      "size_bytes": 4728785,
+      "size_human": "4.51 MB"
+    },
+    "tpl_kesseli": {
+      "name": "tpl_kesseli",
+      "has_flux_cube": true,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 324,
+      "size_bytes": 860999394,
+      "size_human": "821.11 MB"
+    },
+    "tpl_mclean": {
+      "name": "tpl_mclean",
+      "has_flux_cube": true,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 52,
+      "size_bytes": 7613719,
+      "size_human": "7.26 MB"
+    },
+    "tpl_miles": {
+      "name": "tpl_miles",
+      "has_flux_cube": false,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 985,
+      "size_bytes": 185773202,
+      "size_human": "177.17 MB"
+    }
+  },
+  "filters": {
+    "facilities": [
+      "GAIA",
+      "GTC",
+      "Gemini",
+      "JCMT",
+      "JWST",
+      "Kepler",
+      "Liverpool",
+      "TESS",
+      "WMAP"
+    ],
+    "facilities_detailed": {
+      "GAIA": {
+        "name": "GAIA",
+        "instruments": {
+          "GAIA": {
+            "name": "GAIA",
+            "filter_count": 4,
+            "filters": [
+              "G",
+              "Gbp",
+              "Grp",
+              "Grvs"
+            ],
+            "size_bytes": 56039,
+            "size_human": "54.73 KB"
+          }
+        },
+        "instrument_count": 1
+      },
+      "GTC": {
+        "name": "GTC",
+        "instruments": {
+          "CanariCam": {
+            "name": "CanariCam",
+            "filter_count": 18,
+            "filters": [
+              "ArIII",
+              "N",
+              "NeII",
+              "NeII_2",
+              "PAH1",
+              "PAH2",
+              "Q1",
+              "Q4",
+              "Q8",
+              "QH2",
+              "SIV",
+              "Si1",
+              "Si2",
+              "Si3",
+              "Si4",
+              "Si5",
+              "Si6",
+              "SiC"
+            ],
+            "size_bytes": 566489,
+            "size_human": "553.21 KB"
+          }
+        },
+        "instrument_count": 1
+      },
+      "Gemini": {
+        "name": "Gemini",
+        "instruments": {
+          "AcqCam_N": {
+            "name": "AcqCam_N",
+            "filter_count": 3,
+            "filters": [
+              "I",
+              "R",
+              "V"
+            ],
+            "size_bytes": 16164,
+            "size_human": "15.79 KB"
+          }
+        },
+        "instrument_count": 1
+      },
+      "JCMT": {
+        "name": "JCMT",
+        "instruments": {
+          "SCUBA2": {
+            "name": "SCUBA2",
+            "filter_count": 2,
+            "filters": [
+              "450GHz",
+              "850GHz"
+            ],
+            "size_bytes": 76991,
+            "size_human": "75.19 KB"
+          }
+        },
+        "instrument_count": 1
+      },
+      "JWST": {
+        "name": "JWST",
+        "instruments": {
+          "MIRI": {
+            "name": "MIRI",
+            "filter_count": 13,
+            "filters": [
+              "F1000W",
+              "F1065C",
+              "F1130W",
+              "F1140C",
+              "F1280W",
+              "F1500W",
+              "F1550C",
+              "F1800W",
+              "F2100W",
+              "F2300C",
+              "F2550W",
+              "F560W",
+              "F770W"
+            ],
+            "size_bytes": 129242,
+            "size_human": "126.21 KB"
+          },
+          "NIRCam": {
+            "name": "NIRCam",
+            "filter_count": 29,
+            "filters": [
+              "F070W",
+              "F090W",
+              "F115W",
+              "F140M",
+              "F150W",
+              "F150W2",
+              "F162M",
+              "F164N",
+              "F182M",
+              "F187N",
+              "F200W",
+              "F210M",
+              "F212N",
+              "F250M",
+              "F277W",
+              "F300M",
+              "F322W2",
+              "F323N",
+              "F335M",
+              "F356W",
+              "F360M",
+              "F405N",
+              "F410M",
+              "F430M",
+              "F444W",
+              "F460M",
+              "F466N",
+              "F470N",
+              "F480M"
+            ],
+            "size_bytes": 228278,
+            "size_human": "222.93 KB"
+          },
+          "NIRISS": {
+            "name": "NIRISS",
+            "filter_count": 12,
+            "filters": [
+              "F090W",
+              "F115W",
+              "F140M",
+              "F150W",
+              "F158M",
+              "F200W",
+              "F277W",
+              "F356W",
+              "F380M",
+              "F430M",
+              "F444W",
+              "F480M"
+            ],
+            "size_bytes": 119878,
+            "size_human": "117.07 KB"
+          },
+          "NIRSPEC": {
+            "name": "NIRSPEC",
+            "filter_count": 5,
+            "filters": [
+              "G235H_F170LP",
+              "G235M_F170LP",
+              "G395H_F290LP",
+              "G395M_F290LP",
+              "Prism"
+            ],
+            "size_bytes": 93864,
+            "size_human": "91.66 KB"
+          }
+        },
+        "instrument_count": 4
+      },
+      "Kepler": {
+        "name": "Kepler",
+        "instruments": {
+          "Kepler": {
+            "name": "Kepler",
+            "filter_count": 1,
+            "filters": [
+              "K"
+            ],
+            "size_bytes": 8966,
+            "size_human": "8.76 KB"
+          }
+        },
+        "instrument_count": 1
+      },
+      "Liverpool": {
+        "name": "Liverpool",
+        "instruments": {
+          "RINGO": {
+            "name": "RINGO",
+            "filter_count": 1,
+            "filters": [
+              "VR"
+            ],
+            "size_bytes": 4249,
+            "size_human": "4.15 KB"
+          }
+        },
+        "instrument_count": 1
+      },
+      "TESS": {
+        "name": "TESS",
+        "instruments": {
+          "TESS": {
+            "name": "TESS",
+            "filter_count": 1,
+            "filters": [
+              "Red"
+            ],
+            "size_bytes": 8618,
+            "size_human": "8.42 KB"
+          }
+        },
+        "instrument_count": 1
+      },
+      "WMAP": {
+        "name": "WMAP",
+        "instruments": {
+          "WMAP": {
+            "name": "WMAP",
+            "filter_count": 40,
+            "filters": [
+              "K11_3",
+              "K11_4",
+              "K12_3",
+              "K12_4",
+              "Ka11_3",
+              "Ka11_4",
+              "Ka12_3",
+              "Ka12_4",
+              "Q11_3",
+              "Q11_4",
+              "Q12_3",
+              "Q12_4",
+              "Q21_3",
+              "Q21_4",
+              "Q22_3",
+              "Q22_4",
+              "V11_3",
+              "V11_4",
+              "V12_3",
+              "V12_4",
+              "V21_3",
+              "V21_4",
+              "V22_3",
+              "V22_4",
+              "W11_3",
+              "W11_4",
+              "W12_3",
+              "W12_4",
+              "W21_3",
+              "W21_4",
+              "W22_3",
+              "W22_4",
+              "W31_3",
+              "W31_4",
+              "W32_3",
+              "W32_4",
+              "W41_3",
+              "W41_4",
+              "W42_3",
+              "W42_4"
+            ],
+            "size_bytes": 114797,
+            "size_human": "112.11 KB"
+          }
+        },
+        "instrument_count": 1
+      }
+    }
+  }
+}
