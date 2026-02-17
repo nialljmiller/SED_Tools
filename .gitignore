@@ -64,3 +64,10 @@ models/*prediction*.png
 
 # Random output images
 *.png
+
+# server branch exceptions
+!data/count.txt
+!data/counter.php
+!data/index.html
+!data/index.json
+!data/wl_cut.php
