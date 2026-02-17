@@ -58,61 +58,117 @@ class NJMSpectraGrabber:
         self.session = requests.Session()
         self.session.headers.update({"User-Agent": "SED_Tools/1.0 (NJM Mirror)"})
         
+        # Cached index data (populated by _check_availability)
+        self._index_data = None
+        
         # Check if server is available
         self._available = self._check_availability()
         
     def _check_availability(self) -> bool:
-        """Check if the NJM mirror is available and responding."""
-        try:
-            response = self.session.head(self.base_url, timeout=5)
-            response.raise_for_status()
-            return True
-        except requests.exceptions.SSLError:
+        """Check if the NJM mirror is available.
+        
+        Tries multiple approaches in order:
+          1) GET index.json (HTTPS, verify → no-verify)
+          2) HEAD base URL  (HTTPS, verify → no-verify)
+          3) GET index.json (HTTP fallback)
+        Also caches index.json data if successfully fetched.
+        """
+        # URLs to try
+        index_url = f"{self.base_url}/index.json"
+        http_index_url = index_url.replace("https://", "http://")
+        
+        # Attempt 1: GET index.json (preferred — also caches data)
+        for verify in [True, False]:
             try:
-                response = self.session.head(self.base_url, timeout=5, verify=False)
-                response.raise_for_status()
+                resp = self.session.get(index_url, timeout=10, verify=verify)
+                if resp.status_code == 200:
+                    try:
+                        self._index_data = resp.json()
+                    except (ValueError, TypeError):
+                        pass  # response wasn't JSON, but server is alive
+                    if not verify:
+                        self.session.verify = False
+                    return True
+            except requests.exceptions.SSLError:
+                continue  # try next verify setting
+            except Exception as e:
+                break  # non-SSL failure, skip to next approach
+        
+        # Attempt 2: HEAD on base URL (lighter request)
+        for verify in [True, False]:
+            try:
+                resp = self.session.head(self.base_url, timeout=5, verify=verify)
+                if resp.status_code < 500:  # even 403 means server is alive
+                    if not verify:
+                        self.session.verify = False
+                    return True
+            except requests.exceptions.SSLError:
+                continue
+            except Exception as e:
+                break
+        
+        # Attempt 3: HTTP fallback (no SSL at all)
+        try:
+            resp = self.session.get(http_index_url, timeout=10, verify=False)
+            if resp.status_code == 200:
+                try:
+                    self._index_data = resp.json()
+                except (ValueError, TypeError):
+                    pass
+                # Switch base URLs to HTTP
+                self.base_url = self.base_url.replace("https://", "http://")
+                self.stellar_models_url = self.stellar_models_url.replace("https://", "http://")
                 self.session.verify = False
-                print("  [njm] Note: SSL verification disabled (certificate issue)")
+                print("  [njm] Using HTTP (HTTPS unavailable)")
                 return True
-            except Exception:
-                return False
-        except Exception:
-            return False
+        except Exception as e:
+            print(f"  [njm] All connection attempts failed (last error: {e})")
+        
+        return False
     
     def is_available(self) -> bool:
         """Return True if the mirror is available."""
         return self._available
     
     def discover_models(self) -> List[str]:
-        """Discover available models from the mirror."""
+        """Discover available models from the mirror using cached index."""
         if not self._available:
             return []
         
+        # Use cached index data from availability check
+        if self._index_data:
+            models = self._index_data.get("models", [])
+            if models:
+                return [m for m in models if not m.startswith('.')]
+        
+        # Fallback: re-fetch index.json
         try:
-            # Try to get the index.json first
             index_url = f"{self.base_url}/index.json"
             response = self.session.get(index_url, timeout=10)
             response.raise_for_status()
             
             data = response.json()
+            self._index_data = data
             models = data.get("models", [])
             if models:
-                return models
+                return [m for m in models if not m.startswith('.')]
             
         except Exception:
             pass
         
-        # Fallback: parse directory listing
+        # Last resort: parse directory listing
         try:
-            return self._parse_directory_listing(self.stellar_models_url)
+            raw = self._parse_directory_listing(self.stellar_models_url)
+            return [m for m in raw if not m.startswith('.')]
         except Exception as e:
             print(f"[njm] Could not fetch model list: {e}")
             return []
     
-    def _parse_directory_listing(self, url: str) -> List[str]:
+    def _parse_directory_listing(self, url: str, quiet: bool = False) -> List[str]:
         """Parse Apache directory listing HTML to extract subdirectories/files."""
         if not _HAS_BS4:
-            print("[njm] BeautifulSoup not available, cannot parse directory listing")
+            if not quiet:
+                print("[njm] BeautifulSoup not available, cannot parse directory listing")
             return []
         
         try:
@@ -136,14 +192,19 @@ class NJMSpectraGrabber:
             return items
             
         except Exception as e:
-            print(f"[njm] Directory listing failed: {e}")
+            if not quiet:
+                print(f"[njm] Directory listing failed: {e}")
             return []
     
     def _discover_model_files(self, model_name: str) -> Dict[str, List[str]]:
-        """Discover all files in a model directory, categorized by type."""
-        model_url = f"{self.stellar_models_url}/{model_name}/"
+        """Discover all files in a model directory, categorized by type.
         
-        all_files = self._parse_directory_listing(model_url)
+        Tries directory listing first. If that fails (e.g. 403 because
+        Apache has Options -Indexes), falls back to:
+          1) lookup_table.csv for txt filenames
+          2) probing known auxiliary files directly
+        """
+        model_url = f"{self.stellar_models_url}/{model_name}/"
         
         # Categorize files
         result = {
@@ -154,18 +215,50 @@ class NJMSpectraGrabber:
             'other_files': []
         }
         
-        for f in all_files:
-            f_lower = f.lower()
-            if f_lower.endswith('.txt'):
-                result['txt_files'].append(f)
-            elif f_lower.endswith('.bin'):
-                result['bin_files'].append(f)
-            elif f_lower.endswith('.h5'):
-                result['h5_files'].append(f)
-            elif f_lower.endswith('.csv'):
-                result['csv_files'].append(f)
-            else:
-                result['other_files'].append(f)
+        # Try directory listing first (quiet — we have a fallback)
+        all_files = self._parse_directory_listing(model_url, quiet=True)
+        
+        if all_files:
+            for f in all_files:
+                f_lower = f.lower()
+                if f_lower.endswith('.txt'):
+                    result['txt_files'].append(f)
+                elif f_lower.endswith('.bin'):
+                    result['bin_files'].append(f)
+                elif f_lower.endswith('.h5'):
+                    result['h5_files'].append(f)
+                elif f_lower.endswith('.csv'):
+                    result['csv_files'].append(f)
+                else:
+                    result['other_files'].append(f)
+            return result
+        
+        # Directory listing failed — fall back to lookup_table.csv + probing
+        print(f"    (Directory listing unavailable — using lookup_table.csv)")
+        # Get txt filenames from lookup_table.csv
+        lookup = self._fetch_remote_lookup(model_name, model_url)
+        if lookup:
+            result['txt_files'] = list(lookup.keys())
+        
+        # Probe for known auxiliary files
+        for aux_name, category in [
+            ("lookup_table.csv", 'csv_files'),
+            (f"{model_name}.h5", 'h5_files'),
+            ("flux_cube.bin", 'bin_files'),
+        ]:
+            try:
+                probe_url = urljoin(model_url, aux_name)
+                resp = self.session.head(probe_url, timeout=5)
+                if resp.status_code == 200:
+                    result[category].append(aux_name)
+            except Exception:
+                # HEAD might not work either — try a range GET for 1 byte
+                try:
+                    resp = self.session.get(probe_url, timeout=5, headers={"Range": "bytes=0-0"})
+                    if resp.status_code in (200, 206):
+                        result[category].append(aux_name)
+                except Exception:
+                    pass
         
         return result
     
@@ -492,7 +585,8 @@ class NJMSpectraGrabber:
             Only download spectra with [M/H] in this range.
         wl_range : tuple of (min, max), optional
             Trim downloaded spectra to this wavelength range (Angstroms).
-            Applied post-download since wavelength is within each file.
+            Uses server-side wl_cut.php if available, otherwise trims
+            client-side after download.
         
         Returns
         -------
@@ -548,10 +642,12 @@ class NJMSpectraGrabber:
             print(f"[njm] No files to download for {model_name}")
             return 0
         
-        # When cutting by params, skip downloading pre-built .bin and .h5
-        # since they contain the full grid and will be rebuilt from the
-        # filtered .txt files anyway
-        if has_param_cuts:
+        has_any_cuts = has_param_cuts or bool(wl_range)
+        
+        # When cutting by params or wavelength, skip downloading pre-built
+        # .bin and .h5 since they contain the full grid and will be rebuilt
+        # from the filtered .txt files anyway
+        if has_any_cuts:
             skipped_aux = []
             if bin_files:
                 skipped_aux.append(f"{len(bin_files)} .bin")
@@ -568,17 +664,44 @@ class NJMSpectraGrabber:
         skipped = 0
         failed = 0
         
-        def download_task(filename: str) -> tuple:
+        # ── Check if server supports server-side wavelength cuts ──
+        # Test by requesting a real .txt file with wl_min/wl_max params.
+        # If the server has the rewrite rule + wl_cut.php, the response
+        # will include an X-WL-Cut header. Without it, the raw file is
+        # served (no header). Each file URL is unique, so mod_evasive
+        # treats them as different pages — no rate-limit issues.
+        server_wl_cut = False
+        if wl_range and txt_files:
+            try:
+                probe_file = txt_files[0]
+                probe_url = (f"{self.stellar_models_url}/{model_name}/{probe_file}"
+                             f"?wl_min={wl_range[0]}&wl_max={wl_range[1]}")
+                resp = self.session.get(probe_url, timeout=10, stream=True)
+                if resp.status_code == 200 and 'X-WL-Cut' in resp.headers:
+                    server_wl_cut = True
+                    print(f"  [njm] Server-side wavelength cut active ({wl_range[0]:.1f} – {wl_range[1]:.1f} Å)")
+                resp.close()
+            except Exception:
+                pass
+        
+        def download_task(filename: str, force: bool = False) -> tuple:
             """Download a single file. Returns (status, filename)."""
-            url = urljoin(model_url, filename)
             output_path = os.path.join(model_dir, filename)
             
-            # Skip if already exists with reasonable size
-            if os.path.exists(output_path):
+            # Skip if already exists (unless forced for wl_cut re-downloads)
+            if not force and os.path.exists(output_path):
                 size = os.path.getsize(output_path)
                 min_size = 100 if filename.endswith('.csv') else 1024
                 if size > min_size:
                     return ('skip', filename)
+            
+            # Use server-side wl_cut for .txt files when available
+            # Append query params to normal file URL — Apache rewrites to PHP
+            if server_wl_cut and filename.endswith('.txt'):
+                url = (urljoin(model_url, filename)
+                       + f"?wl_min={wl_range[0]}&wl_max={wl_range[1]}")
+            else:
+                url = urljoin(model_url, filename)
             
             if self._download_one_file(url, output_path):
                 return ('ok', filename)
@@ -586,10 +709,13 @@ class NJMSpectraGrabber:
                 return ('fail', filename)
         
         # Download .txt files first (parallel) - these are the primary data
+        # Force re-download when server-side wl_cut is active (existing files
+        # may have a different wavelength range from a prior download)
+        force_txt = server_wl_cut
         if txt_files:
             print(f"  Downloading {len(txt_files)} spectrum files...")
             with ThreadPoolExecutor(max_workers=self.max_workers) as ex:
-                futures = {ex.submit(download_task, f): f for f in txt_files}
+                futures = {ex.submit(download_task, f, force_txt): f for f in txt_files}
                 
                 if _HAS_TQDM:
                     iterator = tqdm(as_completed(futures), total=len(futures), desc="  Spectra")
@@ -625,9 +751,9 @@ class NJMSpectraGrabber:
         
         print(f"[njm] {model_name}: {downloaded} downloaded, {skipped} skipped, {failed} failed")
         
-        # ── WAVELENGTH CUT: trim spectra post-download ──
-        if wl_range and txt_files:
-            print(f"  [njm] Applying wavelength cut: {wl_range[0]:.1f} – {wl_range[1]:.1f} Å")
+        # ── WAVELENGTH CUT: trim spectra post-download (only if server-side cut unavailable) ──
+        if wl_range and txt_files and not server_wl_cut:
+            print(f"  [njm] Applying wavelength cut (client-side): {wl_range[0]:.1f} – {wl_range[1]:.1f} Å")
             trimmed = self._apply_wavelength_cut(model_dir, txt_files, wl_range)
             if trimmed:
                 print(f"  [njm] Trimmed wavelength range in {trimmed} files")
