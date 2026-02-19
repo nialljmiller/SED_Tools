@@ -38,7 +38,7 @@ def _iter_datasets_recursive(g, prefix=""):
         elif isinstance(v, h5py.Group):
             yield from _iter_datasets_recursive(v, path)
 
-def _recover_wavelengths(spec_g, expected_len=None):
+def _recover_wavelengths(f, spec_g, expected_len=None):
     # 1) direct dataset
     WAVE_KEYS = ("lambda","wavelength","wave","wl","wavelength_A")
     ds = _dataset_if_exists(spec_g, WAVE_KEYS)
@@ -97,9 +97,8 @@ def _recover_wavelengths(spec_g, expected_len=None):
             if wl.size > 1 and np.all(np.diff(wl) >= 0):
                 return wl
 
-    # 4) any monotonic 1-D dataset matching expected_len
     if expected_len and expected_len > 1:
-        for path, d in _iter_datasets_recursive(spec_g):
+        for path, d in _iter_datasets_recursive(f):
             try:
                 arr = np.array(d[()]).astype(float).ravel()
             except Exception:
@@ -107,10 +106,8 @@ def _recover_wavelengths(spec_g, expected_len=None):
             if arr.ndim == 1 and arr.size == expected_len and np.all(np.diff(arr) > 0):
                 return arr
 
-    # 5) last resort
-    if expected_len and expected_len > 1:
-        return np.arange(int(expected_len), dtype=float)
     raise RuntimeError("Unable to recover wavelength grid")
+
 
 def _pick_flux(spec_g):
     FLUX_PREFS = ("flux","specific_intensity","intensity","F","H","I","c")
@@ -185,7 +182,7 @@ class MSGSpectraGrabber:
 
     def _load_axes_and_vlin(self, f: h5py.File, model_name: str):
         axes=[]
-        i=1
+        i=0
         while f"vgrid/axes[{i}]" in f:
             ax = f[f"vgrid/axes[{i}]"]
             if "x" in ax and isinstance(ax["x"], h5py.Dataset):
@@ -357,8 +354,8 @@ class MSGSpectraGrabber:
 
 
 
-            
-            wl = _recover_wavelengths(spec_g, expected_len=len(fx))
+
+            wl = _recover_wavelengths(f, spec_g, expected_len=len(fx))
             n = min(len(wl), len(fx))
             wl = wl[:n].astype(float); fx = fx[:n].astype(float)
         teff, logg, meta = self._params_from_index(model_name, order_index)
