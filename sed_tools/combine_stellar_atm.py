@@ -411,8 +411,102 @@ def save_combined_data(output_dir, teff_grid, logg_grid, meta_grid,
     return lookup_df
 
 
+
+
+def plot_sed_samples(teff_grid, logg_grid, meta_grid, wavelength_grid,
+                     flux_cube, source_map, all_models_data, output_dir):
+    """
+    Plot representative SED samples from different regions of the combined
+    parameter space, colour-coded by source model.
+
+    Saves sed_samples.png in output_dir.
+    """
+    model_names = [os.path.basename(d["model_dir"]) for d in all_models_data]
+    cmap_colors = plt.cm.tab10(np.linspace(0, 1, max(len(model_names), 1)))
+
+    def nearest_idx(arr, val):
+        return int(np.argmin(np.abs(arr - val)))
+
+    # Median metallicity index (prefer [M/H]=0, else midpoint)
+    if meta_grid.min() <= 0.0 <= meta_grid.max():
+        meta_idx = nearest_idx(meta_grid, 0.0)
+    else:
+        meta_idx = len(meta_grid) // 2
+
+    # Sample Teff at 5 quantiles, logg at 3 quantiles → up to 15 candidates
+    teff_samples = np.unique(
+        teff_grid[np.round(np.linspace(0, len(teff_grid) - 1, 5)).astype(int)]
+    )
+    logg_samples = np.unique(
+        logg_grid[np.round(np.linspace(0, len(logg_grid) - 1, 3)).astype(int)]
+    )
+
+    sample_points = []
+    for t_val in teff_samples:
+        for g_val in logg_samples:
+            ti = nearest_idx(teff_grid, t_val)
+            gi = nearest_idx(logg_grid, g_val)
+            flux = flux_cube[ti, gi, meta_idx, :]
+            if not np.any(flux > 0):
+                continue
+            src_idx = int(source_map[ti, gi, meta_idx])
+            src_name = model_names[src_idx] if 0 <= src_idx < len(model_names) else "unknown"
+            sample_points.append((
+                teff_grid[ti], logg_grid[gi], meta_grid[meta_idx],
+                flux, src_name, src_idx
+            ))
+
+    if not sample_points:
+        print("  Warning: no valid SED samples found — skipping sed_samples.png")
+        return
+
+    # Cap at 9 panels (3×3)
+    if len(sample_points) > 9:
+        indices = np.round(np.linspace(0, len(sample_points) - 1, 9)).astype(int)
+        sample_points = [sample_points[i] for i in indices]
+
+    n = len(sample_points)
+    ncols = 3
+    nrows = (n + ncols - 1) // ncols
+    fig, axes = plt.subplots(nrows, ncols, figsize=(15, 4 * nrows))
+    axes = np.array(axes).flatten()
+
+    for i, (teff, logg, meta, flux, src_name, src_idx) in enumerate(sample_points):
+        ax = axes[i]
+        color = cmap_colors[src_idx % len(cmap_colors)]
+        valid = flux > 0
+        if valid.sum() > 1:
+            ax.loglog(wavelength_grid[valid], flux[valid],
+                      color=color, linewidth=0.8, label=src_name)
+        ax.set_title(
+            f"Teff={teff:.0f} K  log g={logg:.2f}  [M/H]={meta:.2f}\n"
+            f"source: {src_name}",
+            fontsize=8
+        )
+        ax.set_xlabel("Wavelength (Å)", fontsize=7)
+        ax.set_ylabel("Flux (erg/cm²/s/Å)", fontsize=7)
+        ax.tick_params(labelsize=6)
+        ax.grid(True, alpha=0.3)
+
+    for j in range(n, len(axes)):
+        axes[j].set_visible(False)
+
+    plt.suptitle(
+        f"SED Samples Across Combined Parameter Space  ([M/H] ≈ {meta_grid[meta_idx]:.2f})",
+        fontsize=13, fontweight="bold"
+    )
+    plt.tight_layout()
+
+    plot_file = os.path.join(output_dir, "sed_samples.png")
+    plt.savefig(plot_file, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    print(f"Saved: {plot_file}")
+
+
+
 def visualize_parameter_space(teff_grid, logg_grid, meta_grid, source_map,
-                              all_models_data, output_dir):
+                              all_models_data, output_dir,
+                              wavelength_grid=None, flux_cube=None):
     """Create parameter space visualization."""
     print("\nCreating visualization...")
 
@@ -481,6 +575,11 @@ def visualize_parameter_space(teff_grid, logg_grid, meta_grid, source_map,
         n = np.sum(source_map == idx)
         print(f"  {name}: {n:,} ({100 * n / source_map.size:.1f}%)")
 
+    if wavelength_grid is not None and flux_cube is not None:
+        plot_sed_samples(teff_grid, logg_grid, meta_grid, wavelength_grid,
+                         flux_cube, source_map, all_models_data, output_dir)
+
+
 
 def main():
     parser = argparse.ArgumentParser(description="Combine stellar atmosphere models")
@@ -525,9 +624,10 @@ def main():
     save_combined_data(output_dir, teff_grid, logg_grid, meta_grid,
                       wavelength_grid, flux_cube, all_models_data)
 
-    # Visualize
+
     visualize_parameter_space(teff_grid, logg_grid, meta_grid, source_map,
-                             all_models_data, output_dir)
+                             all_models_data, output_dir,
+                             wavelength_grid=wavelength_grid, flux_cube=flux_cube)
 
     print(f"\nDone! Output: {output_dir}")
 

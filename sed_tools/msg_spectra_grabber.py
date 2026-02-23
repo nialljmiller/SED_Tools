@@ -361,7 +361,9 @@ class MSGSpectraGrabber:
         teff, logg, meta = self._params_from_index(model_name, order_index)
         return wl, fx, teff, logg, meta
 
-    def download_model_spectra(self, model_name, spectra_info):
+    def download_model_spectra(self, model_name, spectra_info,
+                               teff_range=None, logg_range=None,
+                               meta_range=None, wl_range=None):
         out_dir = os.path.join(self.base_dir, model_name)
         os.makedirs(out_dir, exist_ok=True)
         h5_path = os.path.join(out_dir, f"{model_name}.h5")
@@ -373,6 +375,15 @@ class MSGSpectraGrabber:
         print(f"Extracting {len(spectra_info)} spectra for {model_name}...")
 
         rows=[]; ok=0
+
+        def _in_range(val, rng):
+            """Return True if val is within rng (lo, hi), or if rng is None/val is nan."""
+            if rng is None:
+                return True
+            if not np.isfinite(val):
+                return True  # can't filter what we don't know
+            lo, hi = rng
+            return lo <= val <= hi
 
         def task(spec):
             fid = int(spec["fid"])
@@ -388,6 +399,23 @@ class MSGSpectraGrabber:
                 wl, fx, teff, logg, meta = self._extract_one(h5_path, gpath, model_name, idx)
             except Exception as e:
                 return (fname, {"error": str(e)}, False)
+
+            # Apply parameter range filters
+            if not _in_range(teff, teff_range):
+                return (fname, None, False)
+            if not _in_range(logg, logg_range):
+                return (fname, None, False)
+            if not _in_range(meta, meta_range):
+                return (fname, None, False)
+
+            # Apply wavelength range trim
+            if wl_range is not None:
+                wl_lo, wl_hi = wl_range
+                mask = (wl >= wl_lo) & (wl <= wl_hi)
+                wl = wl[mask]
+                fx = fx[mask]
+                if wl.size == 0:
+                    return (fname, None, False)
 
             with open(fpath, "w", encoding="utf-8") as fh:
                 fh.write("# source = MSG HDF5\n")
