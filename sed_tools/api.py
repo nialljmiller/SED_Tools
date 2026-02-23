@@ -955,10 +955,11 @@ class SED:
         
         # Visualize
         if visualization:
+
             visualize_parameter_space(
-                teff_grid, logg_grid, meta_grid, source_map, all_models_data, output_dir
-            )
-        
+                teff_grid, logg_grid, meta_grid, source_map, all_models_data, output_dir,
+                wavelength_grid=wavelength_grid, flux_cube=flux_cube)
+            
         print(f"\nSuccessfully combined {len(selected_models)} models!")
         print(f"Output: {output_dir}")
         

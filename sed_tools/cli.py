@@ -1033,9 +1033,10 @@ def run_combine_flow(
     )
 
     visualize_parameter_space(
-        teff_grid, logg_grid, meta_grid, source_map, all_models_data, output_dir
+        teff_grid, logg_grid, meta_grid, source_map, all_models_data, output_dir,
+        wavelength_grid=wavelength_grid, flux_cube=flux_cube
     )
-
+    
     print(f"\nSuccessfully combined {len(selected_models)} stellar atmosphere models!")
     print(f"Output saved to: {output_dir}")
     print("You can now use this combined model in MESA by setting:")
