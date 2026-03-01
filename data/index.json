@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-02-17T06:41:36.470151",
+  "generated": "2026-02-23T20:07:11.245384",
   "base_url": "http://nillmill.ddns.net/sed_tools",
   "statistics": {
     "total_models": 35,
@@ -8,8 +8,8 @@
     "total_spectra": 65126,
     "total_size_bytes": 295979661682,
     "total_size_human": "275.65 GB",
-    "total_facilities": 9,
-    "total_filters": 129
+    "total_facilities": 10,
+    "total_filters": 139
   },
   "models": [
     "Husfeld",
@@ -165,6 +165,24 @@
       "spectra_count": 6029,
       "size_bytes": 115190817066,
       "size_human": "107.28 GB"
+    },
+    "bt-settl": {
+      "name": "bt-settl",
+      "has_flux_cube": false,
+      "has_lookup_table": false,
+      "has_h5_bundle": false,
+      "spectra_count": 0,
+      "size_bytes": 0,
+      "size_human": "0.00 B"
+    },
+    "bt-settl-gns93": {
+      "name": "bt-settl-gns93",
+      "has_flux_cube": false,
+      "has_lookup_table": false,
+      "has_h5_bundle": false,
+      "spectra_count": 0,
+      "size_bytes": 0,
+      "size_human": "0.00 B"
     },
     "cond00": {
       "name": "cond00",
@@ -383,6 +401,7 @@
       "JWST",
       "Kepler",
       "Liverpool",
+      "Roman",
       "TESS",
       "WMAP"
     ],
@@ -593,6 +612,30 @@
             ],
             "size_bytes": 4249,
             "size_human": "4.15 KB"
+          }
+        },
+        "instrument_count": 1
+      },
+      "Roman": {
+        "name": "Roman",
+        "instruments": {
+          "WFI": {
+            "name": "WFI",
+            "filter_count": 10,
+            "filters": [
+              "F062",
+              "F087",
+              "F106",
+              "F129",
+              "F146",
+              "F158",
+              "F184",
+              "F213",
+              "Grism",
+              "Prism"
+            ],
+            "size_bytes": 18685,
+            "size_human": "18.25 KB"
           }
         },
         "instrument_count": 1
