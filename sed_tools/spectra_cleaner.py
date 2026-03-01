@@ -590,10 +590,6 @@ def validate_converted_spectrum(wl: np.ndarray, flux: np.ndarray) -> Tuple[bool,
     if wl.min() <= 0:
         return False, f"non-positive wavelength: {wl.min()}"
     
-    # Wavelength range check (1 Å to 10 million Å = 1mm)
-    if wl.min() < 1 or wl.max() > 1e7:
-        return False, f"wavelength out of range: {wl.min():.1f}-{wl.max():.1f}"
-    
     # Flux can have some issues but shouldn't be all bad
     flux_valid = np.isfinite(flux)
     if np.sum(flux_valid) < len(flux) * 0.5:
@@ -649,8 +645,8 @@ def write_standardized_spectrum(
     # Write file
     with open(filepath, 'w', encoding='utf-8') as f:
         f.write(header)
-        for w, fl in zip(wl, flux):
-            f.write(f"{w:.6f} {fl:.8e}\n")
+    with open(filepath, 'ab') as f:
+        np.savetxt(f, np.column_stack([wl, flux]), fmt='%.6f %.8e')
 
 
 # ============================================================================
@@ -961,23 +957,45 @@ def clean_model_dir(
     # =========================================================
     # STEP 2: Apply catalog units to ALL files
     # =========================================================
-    for filepath in txt_files:
+    import time as _time
+    from collections import Counter as _Counter
+    failure_reasons = _Counter()
+    n_total_files = len(txt_files)
+    t_start = _time.time()
+    for i, filepath in enumerate(txt_files):
         filename = os.path.basename(filepath)
         try:
             status, detail = clean_spectrum_file(
                 filepath,
-                catalog_units=catalog_units,  # Pass catalog-wide units
+                catalog_units=catalog_units,
                 try_h5_recovery=try_h5_recovery,
                 backup=backup
             )
-            
             if status in summary:
                 summary[status].append(filename)
             else:
                 summary['error'].append(filename)
-                
+            if status == 'skipped_invalid':
+                failure_reasons[detail] += 1
         except Exception as e:
             summary['error'].append(filename)
+            failure_reasons[f'exception: {type(e).__name__}: {e}'] += 1
+
+        done = i + 1
+        elapsed = _time.time() - t_start
+        rate = done / elapsed if elapsed > 0 else 1.0
+        eta = (n_total_files - done) / rate
+        print(
+            f"\r  [clean] {done}/{n_total_files} ({100*done/n_total_files:.1f}%)  "
+            f"elapsed {elapsed:.0f}s  ETA {eta:.0f}s   ",
+            end="", flush=True,
+        )
+    print()
+
+    if failure_reasons:
+        print("  [clean] Failure breakdown:")
+        for reason, count in failure_reasons.most_common(10):
+            print(f"    {count:>6}x  {reason}")
     
     # =========================================================
     # STEP 3: Rebuild lookup table
