@@ -2,9 +2,25 @@
 import argparse
 import os
 import struct
+import time
 
 import numpy as np
 from tqdm import tqdm
+
+try:
+    import psutil
+    def _available_ram_bytes():
+        return psutil.virtual_memory().available
+except ImportError:
+    def _available_ram_bytes():
+        try:
+            with open("/proc/meminfo") as f:
+                for line in f:
+                    if line.startswith("MemAvailable:"):
+                        return int(line.split()[1]) * 1024
+        except Exception:
+            pass
+        return 2 * (1024 ** 3)
 
 
 def load_sed(filepath):
@@ -104,11 +120,16 @@ def build_grids(teff_values, logg_values, meta_values):
     return teff_grid, logg_grid, meta_grid
 
 
-def initialize_flux_cube(teff_grid, logg_grid, meta_grid, wavelengths):
-    """Initialize the 4D flux cube (teff, logg, meta, wavelength)."""
-    shape = (len(teff_grid), len(logg_grid), len(meta_grid), len(wavelengths))
-    print(f"Initializing flux cube with shape: {shape}")
-    return np.zeros(shape, dtype=np.float64)
+def initialize_flux_cube(teff_grid, logg_grid, meta_grid, wavelengths, tmp_path=None):
+    """Allocate the 4D flux cube — in RAM if it fits, disk-backed memmap if not."""
+    shape    = (len(teff_grid), len(logg_grid), len(meta_grid), len(wavelengths))
+    size_gib = np.prod(shape) * 8 / (1024 ** 3)
+    if tmp_path:
+        print(f"Initializing flux cube with shape: {shape} ({size_gib:.1f} GiB, disk-backed memmap)")
+        return np.memmap(tmp_path, dtype=np.float64, mode="w+", shape=shape)
+    else:
+        print(f"Initializing flux cube with shape: {shape} ({size_gib:.1f} GiB, in RAM)")
+        return np.zeros(shape, dtype=np.float64)
 
 
 def populate_flux_cube(
@@ -119,89 +140,169 @@ def populate_flux_cube(
     logg_to_idx = {val: idx for idx, val in enumerate(logg_grid)}
     meta_to_idx = {val: idx for idx, val in enumerate(meta_grid)}
 
-    for i, file_name in enumerate(tqdm(file_names, desc="Populating flux cube")):
+    n       = len(file_names)
+    skipped = 0
+    t_start = time.time()
+
+    for i, file_name in enumerate(file_names):
         file_path = os.path.join(model_dir, file_name)
 
         if not os.path.exists(file_path):
-            print(f"Warning: File not found: {file_path}")
+            print(f"\nWarning: File not found: {file_path}")
+            skipped += 1
             continue
 
-        teff_idx = teff_to_idx.get(teff_values[i], None)
-        logg_idx = logg_to_idx.get(logg_values[i], None)
-        meta_idx = meta_to_idx.get(meta_values[i], None)
+        teff_idx = teff_to_idx.get(teff_values[i])
+        logg_idx = logg_to_idx.get(logg_values[i])
+        meta_idx = meta_to_idx.get(meta_values[i])
 
         if teff_idx is None or logg_idx is None or meta_idx is None:
-            print(f"Warning: Invalid indices for {file_name}, skipping...")
+            print(f"\nWarning: Invalid indices for {file_name}, skipping...")
+            skipped += 1
             continue
 
         file_wavelengths, file_fluxes = load_sed(file_path)
 
-        # Interpolate fluxes to match common wavelengths
         try:
             interpolated_fluxes = np.interp(wavelengths, file_wavelengths, file_fluxes)
         except Exception as e:
-            print(f"Interpolation failed for {file_name}: {e}")
+            print(f"\nInterpolation failed for {file_name}: {e}")
+            skipped += 1
             continue
 
-        # Store the interpolated fluxes in the flux cube
         flux_cube[teff_idx, logg_idx, meta_idx, :] = interpolated_fluxes
 
+        elapsed = time.time() - t_start
+        done    = i + 1
+        rate    = done / elapsed if elapsed > 0 else 1.0
+        eta     = (n - done) / rate
+        pct     = 100.0 * done / n
+        print(
+            f"\r  spectra {done}/{n} ({pct:.1f}%)  "
+            f"skipped {skipped}  "
+            f"elapsed {elapsed:.0f}s  ETA {eta:.0f}s   ",
+            end="", flush=True,
+        )
+
+    print(f"\n  Done — {n - skipped} spectra loaded, {skipped} skipped.")
     return flux_cube
 
 
-def compute_common_wavelengths(model_dir, file_names, sample=10_000):
+def compute_common_wavelengths(model_dir, file_names, n_sample=5):
     """
-    Compute a common wavelength grid by sampling files and taking the union
-    of available wavelengths, then sorting and (optionally) thinning.
+    Compute a common wavelength grid by reading a small fixed number of files.
+
+    Stellar atmosphere catalogs are uniform — every file shares the same
+    wavelength grid — so reading 5 files is sufficient to establish it.
+    Reading thousands of files (each potentially millions of lines) is
+    what caused the original all-night hang.
     """
-    wl = []
-    step = max(1, len(file_names) // max(1, min(len(file_names), sample)))
-    for i, file_name in enumerate(file_names[::step]):
+    if len(file_names) == 0:
+        raise RuntimeError("No files in lookup table.")
+
+    # Pick evenly spaced indices across the catalog, capped at n_sample
+    n      = len(file_names)
+    step   = max(1, n // n_sample)
+    subset = [file_names[i] for i in range(0, n, step)][:n_sample]
+
+    wl      = []
+    checked = 0
+    for file_name in subset:
         file_path = os.path.join(model_dir, file_name)
         if not os.path.exists(file_path):
             continue
         w, _ = load_sed(file_path)
         if w.size:
             wl.append(w)
+        checked += 1
+
     if not wl:
-        raise RuntimeError("Could not determine a wavelength grid from any SEDs.")
+        raise RuntimeError(
+            f"Could not determine a wavelength grid — sampled {checked} files, "
+            f"all were empty or unreadable. Check that the downloaded spectra are valid."
+        )
+
     grid = np.unique(np.concatenate(wl))
+    print(f"Wavelength grid: {len(grid)} points from {len(wl)}/{checked} sampled files "
+          f"(range {grid[0]:.1f}–{grid[-1]:.1f} Å)")
     return grid
 
 
-def write_flux_cube_binary(output_file, teff_grid, logg_grid, meta_grid, wavelengths, flux_cube):
-    """Write flux cube to a binary file with header metadata."""
-    print(f"Writing binary flux cube: {output_file}")
-    with open(output_file, "wb") as f:
-        # Header: number of teff, logg, meta, wavelength points
-        f.write(
-            struct.pack(
-                "4i", len(teff_grid), len(logg_grid), len(meta_grid), len(wavelengths)
-            )
-        )
+def write_flux_cube_binary(output_file, teff_grid, logg_grid, meta_grid, wavelengths, flux_cube, usable_ram_bytes=None):
+    """
+    Write flux cube to binary file with header metadata.
 
-        # Write grid arrays
+    Transposes (T,L,M,W) → (W,M,L,T) in wavelength chunks sized to available
+    RAM.  If the full array fits, it is done in one shot.
+    """
+    nteff = len(teff_grid)
+    nlogg = len(logg_grid)
+    nmeta = len(meta_grid)
+    nwave = len(wavelengths)
+    tlm   = nteff * nlogg * nmeta
+
+    if usable_ram_bytes is None:
+        usable_ram_bytes = int(_available_ram_bytes() * 0.75)
+
+    # ×2: hold source chunk + transposed copy simultaneously
+    w_chunk  = max(1, usable_ram_bytes // (tlm * 2 * 8))
+    n_chunks = (nwave + w_chunk - 1) // w_chunk
+    total_gib = nwave * tlm * 8 / (1024 ** 3)
+
+    if n_chunks == 1:
+        print(f"Writing binary flux cube (single-pass, {total_gib:.1f} GiB): {output_file}")
+    else:
+        chunk_gib = w_chunk * tlm * 8 / (1024 ** 3)
+        print(f"Writing binary flux cube ({total_gib:.1f} GiB, {n_chunks} chunks x {chunk_gib:.2f} GiB): {output_file}")
+        print( "  I/O bound — expect minutes to hours for large cubes.")
+
+    t_start = time.time()
+
+    with open(output_file, "wb") as f:
+        f.write(struct.pack("4i", nteff, nlogg, nmeta, nwave))
         teff_grid.astype(np.float64).tofile(f)
         logg_grid.astype(np.float64).tofile(f)
         meta_grid.astype(np.float64).tofile(f)
         wavelengths.astype(np.float64).tofile(f)
 
-        # FIXED: Transpose to match Fortran's column-major order expectations
-        # This swaps the dimension order to (wavelength, meta, logg, teff)
-        t_flux = np.transpose(flux_cube, (3, 2, 1, 0))
-        t_flux.astype(np.float64).tofile(f)
+        for chunk_i in range(n_chunks):
+            w0      = chunk_i * w_chunk
+            w1      = min(w0 + w_chunk, nwave)
+            chunk   = np.array(flux_cube[:, :, :, w0:w1])
+            chunk_t = np.ascontiguousarray(np.transpose(chunk, (3, 2, 1, 0)))
+            del chunk
+            chunk_t.astype(np.float64).tofile(f)
+            del chunk_t
+
+            if n_chunks > 1:
+                elapsed = time.time() - t_start
+                done    = chunk_i + 1
+                rate    = done / elapsed if elapsed > 0 else 1.0
+                eta     = (n_chunks - done) / rate
+                print(
+                    f"\r  chunk {done}/{n_chunks} ({100*done/n_chunks:.1f}%)  "
+                    f"elapsed {elapsed:.0f}s  ETA {eta:.0f}s   ",
+                    end="", flush=True,
+                )
+
+    if n_chunks > 1:
+        print()
     print("Binary flux cube writing completed.")
 
 
 def precompute_flux_cube(model_dir, output_file):
     """
-    Main function to precompute the flux cube from model files in a directory.
+    Precompute the flux cube from model files in a directory.
+
+    Scales automatically to available RAM:
+      - Cube fits in 75% of available RAM → allocated in RAM, one-shot.
+      - Cube too large                    → disk-backed memmap; transpose
+                                            chunked to available RAM.
     """
-    # Infer lookup table path
     lookup_file = os.path.join(model_dir, "lookup_table.csv")
     if not os.path.isfile(lookup_file):
-        # allow fallback to any file that looks like a lookup
-        cand = [p for p in os.listdir(model_dir) if p.lower().startswith("lookup_table") and p.lower().endswith(".csv")]
+        cand = [p for p in os.listdir(model_dir)
+                if p.lower().startswith("lookup_table") and p.lower().endswith(".csv")]
         if cand:
             lookup_file = os.path.join(model_dir, cand[0])
         else:
@@ -211,38 +312,53 @@ def precompute_flux_cube(model_dir, output_file):
     if len(file_names) == 0:
         raise RuntimeError("No entries in lookup table.")
 
-    # Build unique grids
     teff_grid, logg_grid, meta_grid = build_grids(teff_values, logg_values, meta_values)
-
-    # Common wavelength grid
     wavelengths = compute_common_wavelengths(model_dir, file_names)
 
-    # Initialize and populate flux cube
-    flux_cube = initialize_flux_cube(teff_grid, logg_grid, meta_grid, wavelengths)
-    flux_cube = populate_flux_cube(
-        model_dir,
-        file_names,
-        teff_values,
-        logg_values,
-        meta_values,
-        teff_grid,
-        logg_grid,
-        meta_grid,
-        wavelengths,
-        flux_cube,
-    )
+    cube_bytes    = len(teff_grid) * len(logg_grid) * len(meta_grid) * len(wavelengths) * 8
+    cube_gib      = cube_bytes / (1024 ** 3)
+    available     = _available_ram_bytes()
+    usable        = int(available * 0.75)
 
-    # Write to binary file
-    os.makedirs(os.path.dirname(output_file) or ".", exist_ok=True)
-    write_flux_cube_binary(output_file, teff_grid, logg_grid, meta_grid, wavelengths, flux_cube)
+    print(f"Cube size:      {cube_gib:.1f} GiB")
+    print(f"Available RAM:  {available / (1024**3):.1f} GiB  (using up to 75% = {usable / (1024**3):.1f} GiB)")
+
+    tmp_path = None
+    if cube_bytes <= usable:
+        print("Strategy:       in-RAM  (cube fits comfortably)")
+        flux_cube = initialize_flux_cube(teff_grid, logg_grid, meta_grid, wavelengths)
+    else:
+        print("Strategy:       disk-backed memmap  (cube exceeds available RAM)")
+        out_dir   = os.path.dirname(os.path.abspath(output_file))
+        os.makedirs(out_dir, exist_ok=True)
+        tmp_path  = output_file + ".memmap.tmp"
+        flux_cube = initialize_flux_cube(teff_grid, logg_grid, meta_grid, wavelengths, tmp_path)
+
+    try:
+        print("\nPopulating spectra:")
+        flux_cube = populate_flux_cube(
+            model_dir, file_names, teff_values, logg_values, meta_values,
+            teff_grid, logg_grid, meta_grid, wavelengths, flux_cube,
+        )
+
+        os.makedirs(os.path.dirname(output_file) or ".", exist_ok=True)
+        write_flux_cube_binary(
+            output_file, teff_grid, logg_grid, meta_grid, wavelengths, flux_cube,
+            usable_ram_bytes=usable,
+        )
+    finally:
+        del flux_cube
+        if tmp_path and os.path.exists(tmp_path):
+            print(f"Cleaning up temp file: {tmp_path}")
+            os.remove(tmp_path)
 
     print("Flux cube precomputation completed successfully.")
     print(f"Output file: {output_file}")
     print(f"Teff range: {teff_grid[0]} to {teff_grid[-1]}")
     print(f"logg range: {logg_grid[0]} to {logg_grid[-1]}")
     print(f"Metallicity range: {meta_grid[0]} to {meta_grid[-1]}")
-    print(f"Flux cube shape: {flux_cube.shape}")
-    print(f"Flux cube size: {flux_cube.nbytes / (1024 * 1024):.2f} MB")
+    print(f"Flux cube shape: ({len(teff_grid)}, {len(logg_grid)}, {len(meta_grid)}, {len(wavelengths)})")
+    print(f"Flux cube size: {cube_gib:.2f} GiB")
 
 
 if __name__ == "__main__":
