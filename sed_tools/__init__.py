@@ -221,7 +221,7 @@ def run_rebuild_flow(base_dir: str = STELLAR_DIR_DEFAULT,
         # 0) CLEAN FIRST (fix λ<=0, repair index grids via HDF5 when possible)
         if clean_model_dir:
             try:
-                summary = clean_model_dir(model_dir, try_h5_recovery=True, backup=True, rebuild_lookup=True)
+                summary = clean_model_dir(model_dir, try_h5_recovery=True, rebuild_lookup=True)
                 print(f"[clean] {model_name}: total={summary['total']}, "
                       f"fixed={len(summary['fixed'])}, recovered={len(summary['recovered'])}, "
                       f"skipped={len(summary['skipped'])}, deleted={len(summary['deleted'])}")
@@ -333,7 +333,7 @@ def run_spectra_flow(
         n_written = g.download_model_spectra(name, meta)
         print(f"[{src}] wrote {n_written} spectra -> {model_dir}")
 
-        summary = clean_model_dir(model_dir, try_h5_recovery=True, backup=True, rebuild_lookup=True)
+        summary = clean_model_dir(model_dir, try_h5_recovery=True, rebuild_lookup=True)
         print(f"[clean] total={summary['total']} fixed={len(summary['fixed'])} "
               f"recovered={len(summary['recovered'])} skipped={len(summary['skipped'])} "
               f"deleted={len(summary['deleted'])}")
