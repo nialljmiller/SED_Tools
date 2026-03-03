@@ -825,6 +825,32 @@ def run_spectra_flow(
 
 
 
+def _parse_multi_selection(spec: str, total: int) -> list[int]:
+    """Parse 1-based IDs like "1,3-5" into unique 0-based indexes."""
+    chosen: set[int] = set()
+    for chunk in (part.strip() for part in spec.split(",")):
+        if not chunk:
+            continue
+        if "-" in chunk:
+            bounds = [part.strip() for part in chunk.split("-", 1)]
+            if len(bounds) != 2 or not bounds[0].isdigit() or not bounds[1].isdigit():
+                raise ValueError(f"Invalid range: {chunk}")
+            start, end = int(bounds[0]), int(bounds[1])
+            if start > end:
+                start, end = end, start
+            if start < 1 or end > total:
+                raise ValueError(f"Range out of bounds: {chunk}")
+            chosen.update(range(start - 1, end))
+            continue
+        if not chunk.isdigit():
+            raise ValueError(f"Invalid item: {chunk}")
+        value = int(chunk)
+        if value < 1 or value > total:
+            raise ValueError(f"Selection out of bounds: {value}")
+        chosen.add(value - 1)
+    return sorted(chosen)
+
+
 def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
     """
     Interactive filter downloader with automatic NJMSVO fallback.
@@ -852,17 +878,75 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
     
     # Facility selection loop
     while True:
+        bulk_spec = input(
+            "Bulk telescope mode: enter facility IDs (e.g. 1,3-5) to download ALL instruments, "
+            "or press Enter for single-facility mode: "
+        ).strip()
+
+        if bulk_spec:
+            try:
+                facility_indexes = _parse_multi_selection(bulk_spec, len(facilities))
+            except ValueError as exc:
+                print(f"Invalid selection: {exc}")
+                continue
+            if not facility_indexes:
+                print("No facilities selected.")
+                continue
+
+            selected_facilities = [facilities[i] for i in facility_indexes]
+            confirm = input(
+                f"Download ALL instruments for {len(selected_facilities)} selected facilities? [Y/n] "
+            ).strip().lower()
+            if confirm and not confirm.startswith('y'):
+                continue
+
+            for facility in selected_facilities:
+                instruments = svo.list_instruments(facility.key)
+
+                if not instruments:
+                    print(f"No instruments found for {facility.label}.")
+                    continue
+
+                print(f"\n{facility.label}: {len(instruments)} instruments")
+                for instrument in instruments:
+                    filters = svo.list_filters(facility.key, instrument.key)
+
+                    if not filters:
+                        print(f"  [skip] {instrument.label}: no filters found")
+                        continue
+
+                    downloaded = False
+                    if njm_available:
+                        njm_facilities = njm.discover_facilities()
+                        if facility.key in njm_facilities:
+                            njm_instruments = njm.discover_instruments(facility.key)
+                            if instrument.key in njm_instruments:
+                                print(f"  [njm] Downloading {instrument.label}...")
+                                count = njm.download_filters(facility.key, instrument.key)
+                                if count > 0:
+                                    print(f"  [njm] Downloaded {count} filters")
+                                    downloaded = True
+
+                    if not downloaded:
+                        print(f"  [svo] Downloading {instrument.label} ({len(filters)} filters)...")
+                        svo.download_filters(filters)
+
+            again = input("\nBulk download another set of facilities? [y/N] ").strip().lower()
+            if again.startswith('y'):
+                continue
+            return
+
         fac_idx = _prompt_choice(facilities, "Filter Facilities")
         if fac_idx is None:
             return
-        
+
         facility = facilities[fac_idx]
         instruments = svo.list_instruments(facility.key)
-        
+
         if not instruments:
             print(f"No instruments found for {facility.label}.")
             continue
-        
+
         # Instrument selection loop
         while True:
             inst_idx = _prompt_choice(
@@ -870,30 +954,30 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
                 f"Instruments for {facility.label}",
                 allow_back=True
             )
-            
+
             if inst_idx is None:
                 return
             if inst_idx == -1:
                 break  # Back to facilities
-            
+
             instrument = instruments[inst_idx]
             filters = svo.list_filters(facility.key, instrument.key)
-            
+
             if not filters:
                 print(f"No filters found for {instrument.label}.")
                 continue
-            
+
             # Show selection
             print(f"\n{facility.label} / {instrument.label}")
             print(f"Found {len(filters)} filters")
-            
+
             confirm = input("Download all filters? [Y/n] ").strip().lower()
             if confirm and not confirm.startswith('y'):
                 continue
-            
+
             # Smart download: Try NJM first, fall back to SVO
             downloaded = False
-            
+
             if njm_available:
                 # Check if NJM has this facility/instrument
                 njm_facilities = njm.discover_facilities()
@@ -906,13 +990,13 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
                         if count > 0:
                             print(f"[njm]  Downloaded {count} filters")
                             downloaded = True
-            
+
             # Fall back to SVO if NJM didn't work
             if not downloaded:
                 print(f"\n[svo] Downloading from SVO...")
                 svo.download_filters(filters)
                 print(f"[svo]  Downloaded {len(filters)} filters")
-            
+
             again = input("\nDownload another instrument? [y/N] ").strip().lower()
             if not again.startswith('y'):
                 break
