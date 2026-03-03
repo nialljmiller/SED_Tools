@@ -445,7 +445,7 @@ def run_rebuild_flow(
         print(f"[rebuild] {model_name}")
         model_dir = os.path.join(base_dir, model_name)
 
-        summary = clean_model_dir(model_dir, try_h5_recovery=True, backup=True, rebuild_lookup=True)
+        summary = clean_model_dir(model_dir, try_h5_recovery=True, rebuild_lookup=True)
         print(f"[clean] {model_name}: total={summary['total']}")
 
         txts = glob.glob(os.path.join(model_dir, "*.txt"))
@@ -689,7 +689,7 @@ def run_spectra_flow(
             continue
 
         # --- Cleaning ---
-        summary = clean_model_dir(model_dir, try_h5_recovery=True, backup=True, rebuild_lookup=True)
+        summary = clean_model_dir(model_dir, try_h5_recovery=True, rebuild_lookup=True)
         
         # ─────────────────────────────────────────────────────────────
         # DETAILED REPORTING
