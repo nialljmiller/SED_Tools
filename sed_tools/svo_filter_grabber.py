@@ -7,7 +7,7 @@ import sys
 import textwrap
 import urllib.parse
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Sequence
+from typing import Dict, List, Optional, Sequence, Set
 
 import requests
 from astroquery.svo_fps import SvoFps
@@ -242,6 +242,34 @@ def _clean_filename(value: str) -> str:
     return _clean_path(value).replace(" ", "_")
 
 
+def parse_multi_selection(spec: str, total: int) -> List[int]:
+    """Parse a 1-based comma-separated/range selection into unique 0-based indices."""
+    chosen: Set[int] = set()
+    for chunk in (part.strip() for part in spec.split(",")):
+        if not chunk:
+            continue
+        if "-" in chunk:
+            bounds = [p.strip() for p in chunk.split("-", 1)]
+            if len(bounds) != 2 or not bounds[0].isdigit() or not bounds[1].isdigit():
+                raise ValueError(f"Invalid range: {chunk}")
+            start, end = int(bounds[0]), int(bounds[1])
+            if start > end:
+                start, end = end, start
+            if start < 1 or end > total:
+                raise ValueError(f"Range out of bounds: {chunk}")
+            chosen.update(range(start - 1, end))
+            continue
+
+        if not chunk.isdigit():
+            raise ValueError(f"Invalid item: {chunk}")
+        value = int(chunk)
+        if value < 1 or value > total:
+            raise ValueError(f"Selection out of bounds: {value}")
+        chosen.add(value - 1)
+
+    return sorted(chosen)
+
+
 
 
 def run_interactive(base_dir: str = DEFAULT_BASE_DIR) -> None:
@@ -253,7 +281,44 @@ def run_interactive(base_dir: str = DEFAULT_BASE_DIR) -> None:
         return
 
     while True:
-        
+        bulk_spec = input(
+            "Bulk telescope mode: enter facility IDs (e.g. 1,3-5) to download ALL instruments, "
+            "or press Enter for single-facility mode: "
+        ).strip()
+        if bulk_spec:
+            try:
+                facility_indexes = parse_multi_selection(bulk_spec, len(facilities))
+            except ValueError as exc:
+                print(f"Invalid selection: {exc}")
+                continue
+            if not facility_indexes:
+                print("No facilities selected.")
+                continue
+
+            selected = [facilities[i] for i in facility_indexes]
+            print(f"Selected {len(selected)} facilities for bulk download.")
+            confirm = input("Download ALL instruments for selected facilities? [Y/n] ").strip().lower()
+            if confirm and not confirm.startswith("y"):
+                continue
+
+            for facility in selected:
+                instruments = browser.list_instruments(facility.key)
+                if not instruments:
+                    print(f"No instruments found for {facility.label}.")
+                    continue
+                print(f"\nFacility: {facility.label} ({len(instruments)} instruments)")
+                for instrument in instruments:
+                    filters = browser.list_filters(facility.key, instrument.key)
+                    if not filters:
+                        print(f"  [skip] {instrument.label}: no filters found")
+                        continue
+                    print(f"  Downloading {len(filters)} filters for {instrument.label}")
+                    browser.download_filters(filters)
+            again = input("Bulk download another set of facilities? [y/N] ").strip().lower()
+            if again.startswith("y"):
+                continue
+            return
+
         fac_idx = _prompt_choice(facilities, "Facilities")
 
         if fac_idx is None:

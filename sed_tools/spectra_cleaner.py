@@ -608,18 +608,8 @@ def write_standardized_spectrum(
     flux: np.ndarray,
     meta: SpectrumMeta,
     unit_info: UnitInfo,
-    backup: bool = True
 ) -> None:
     """Write standardized spectrum with proper header."""
-    
-    # Create backup if requested
-    if backup:
-        backup_path = filepath + '.bak'
-        if not os.path.exists(backup_path):
-            try:
-                os.rename(filepath, backup_path)
-            except Exception:
-                pass
     
     # Build header
     header = STANDARD_HEADER_TEMPLATE.format(
@@ -748,7 +738,6 @@ def clean_spectrum_file(
     filepath: str,
     catalog_units: Optional[UnitInfo] = None,
     try_h5_recovery: bool = True,
-    backup: bool = True
 ) -> Tuple[str, str]:
     """
     Clean and standardize a single spectrum file.
@@ -758,7 +747,6 @@ def clean_spectrum_file(
         catalog_units: Pre-determined units for the catalog (from 10% sample).
                        If None, detects units per-file (legacy behavior).
         try_h5_recovery: Attempt HDF5 wavelength recovery for index grids
-        backup: Create .bak backup file
     
     Returns: (status, detail)
         status: 'skipped_already', 'skipped_index', 'skipped_invalid', 
@@ -837,7 +825,7 @@ def clean_spectrum_file(
         return 'skipped_invalid', f'validation failed: {msg}'
     
     # Write standardized file
-    write_standardized_spectrum(filepath, wl_std, flux_std, meta, unit_info, backup=backup)
+    write_standardized_spectrum(filepath, wl_std, flux_std, meta, unit_info)
     
     detail = f"{wl_std[0]:.0f}-{wl_std[-1]:.0f}Å, {unit_info.wavelength_unit}→Å, conf={unit_info.confidence}"
     return status, detail
@@ -896,7 +884,6 @@ def rebuild_lookup_table(model_dir: str) -> str:
 def clean_model_dir(
     model_dir: str,
     try_h5_recovery: bool = True,
-    backup: bool = True,
     rebuild_lookup: bool = True,
     sample_fraction: float = 0.10
 ) -> Dict:
@@ -908,7 +895,6 @@ def clean_model_dir(
     Args:
         model_dir: Directory containing *.txt spectrum files
         try_h5_recovery: Attempt HDF5 wavelength recovery for index grids
-        backup: Create .bak files before modifying
         rebuild_lookup: Rebuild lookup_table.csv after cleaning
         sample_fraction: Fraction of files to sample for unit detection (default 10%)
     
@@ -969,7 +955,6 @@ def clean_model_dir(
                 filepath,
                 catalog_units=catalog_units,
                 try_h5_recovery=try_h5_recovery,
-                backup=backup
             )
             if status in summary:
                 summary[status].append(filename)

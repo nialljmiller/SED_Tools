@@ -671,7 +671,7 @@ class SED:
         model_dir = base_dir / catalog
         if clean:
             from .spectra_cleaner import clean_model_dir
-            summary = clean_model_dir(str(model_dir), try_h5_recovery=True, backup=True, rebuild_lookup=True)
+            summary = clean_model_dir(str(model_dir), try_h5_recovery=True, rebuild_lookup=True)
             n_fixed = len(summary.get('fixed', []))
             n_total = summary.get('total', 0)
             print(f"[fetch] Cleaned: {n_total} total, {n_fixed} fixed")
