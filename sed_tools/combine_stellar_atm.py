@@ -11,19 +11,11 @@ import struct
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from scipy.integrate import simpson as simps
 from scipy.interpolate import interp1d
 from scipy.spatial import KDTree
 from tqdm import tqdm
 
 SIGMA = 5.670374419e-5  # Stefan-Boltzmann constant (erg s-1 cm-2 K-4)
-
-
-def renorm_to_sigmaT4(wl, flux, Teff):
-    """Renormalize flux so bolometric integral equals σT⁴."""
-    Fbol_model = simps(flux, wl)
-    Fbol_target = SIGMA * Teff**4
-    return flux * (Fbol_target / Fbol_model)
 
 
 def find_stellar_models(base_dir="../data/stellar_models/"):
@@ -97,14 +89,15 @@ def load_model_data(model_path):
 
 
 def load_sed(filepath):
-    """Load wavelength and flux from a spectrum file."""
-    return np.loadtxt(filepath, unpack=True)
+    """Load wavelength and flux from a spectrum file, skipping comment lines."""
+    return np.loadtxt(filepath, comments="#", unpack=True)
 
 
 def prepare_sed(filepath, teff):
-    """Load and renormalize a spectrum."""
+    """Load a spectrum. Spectra are expected to already be in standard units
+    (wavelength in Angstroms, flux in erg/cm²/s/Å) via spectra_cleaner.py.
+    No renormalization is applied here."""
     wl, flux = load_sed(filepath)
-    flux = renorm_to_sigmaT4(wl, flux, teff)
     return wl, flux
 
 
@@ -247,7 +240,10 @@ def compute_normalization_factors(target_data, reference_data, wavelength_grid):
             F_ref = np.trapz(interp_ref(wl_common), wl_common)
 
             factor = F_ref / F_tgt if F_tgt > 0 else 1.0
-            norm_factors.append(factor if 0.01 < factor < 100 else 1.0)
+            if not (0.01 < factor < 100):
+                print(f"  Warning: large normalization factor {factor:.3e} for {file} "
+                      f"(teff={teff:.0f}, logg={logg:.2f}, [M/H]={meta:.2f}) — check unit consistency")
+            norm_factors.append(factor)
 
         except Exception:
             norm_factors.append(1.0)
@@ -289,9 +285,9 @@ def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, w
                 model_data["logg"], model_data["meta"]),
             total=len(model_data["files"]), desc=f"Model {model_idx + 1}"
         )):
-            i_teff = np.clip(np.searchsorted(teff_grid, teff), 0, n_teff - 1)
-            i_logg = np.clip(np.searchsorted(logg_grid, logg), 0, n_logg - 1)
-            i_meta = np.clip(np.searchsorted(meta_grid, meta), 0, n_meta - 1)
+            i_teff = int(np.argmin(np.abs(teff_grid - teff)))
+            i_logg = int(np.argmin(np.abs(logg_grid - logg)))
+            i_meta = int(np.argmin(np.abs(meta_grid - meta)))
 
             filepath = os.path.join(model_data["model_dir"], file)
             try:

@@ -1011,37 +1011,12 @@ def run_ml_generator_flow(
     run_interactive_workflow(base_dir=base_dir, models_dir=models_dir)
 
 
+def run_grid_densifier_flow(base_dir: str = STELLAR_DIR_DEFAULT) -> None:
+    """Run Grid Densifier interactive workflow."""
+    from .grid_densifier import run_interactive_workflow
+    run_interactive_workflow(base_dir=base_dir)
 
 
-
-def menu() -> str:
-    print("\nWhat would you like to run?")
-    print("1) Spectra (NJM / SVO / MSG / MAST)")
-    print("2) Filters (NJM / SVO)")
-    print("3) Rebuild (lookup + HDF5 + flux cube)")
-    print("4) Combine grids into omni grid")
-    print("5) ML SED Completer (train/extend incomplete SEDs)")
-    print("6) ML SED Generator (generate SEDs from parameters)")  # NEW
-    print("0) Quit")
-    choice = input("> ").strip()
-    mapping = {
-        "1": "spectra", 
-        "2": "filters", 
-        "3": "rebuild",
-        "4": "combine",
-        "5": "ml_completer",
-        "6": "ml_generator",  # NEW
-        "0": "quit"
-    }
-    return mapping.get(choice, "")
-
-
-#!/usr/bin/env python3
-"""
-ADD THIS FUNCTION TO sed_tools/__init__.py or sed_tools/cli.py
-
-Place it after run_rebuild_flow() function.
-"""
 
 
 
@@ -1142,6 +1117,36 @@ def run_ml_completer_flow(
 
 
 
+def menu() -> str:
+    print("\nWhat would you like to run?")
+    print("1) Spectra (NJM / SVO / MSG / MAST)")
+    print("2) Filters (NJM / SVO)")
+    print("3) Rebuild (lookup + HDF5 + flux cube)")
+    print("4) Combine grids into omni grid")
+    print("5) ML SED Completer (train/extend incomplete SEDs)")
+    print("6) ML SED Generator (generate SEDs from parameters)")  # NEW
+    print("7) Grid Densifier (fill coarse Teff gaps)")
+    print("0) Quit")
+    choice = input("> ").strip()
+    mapping = {
+        "1": "spectra",
+        "2": "filters",
+        "3": "rebuild",
+        "4": "combine",
+        "5": "ml_completer",
+        "6": "ml_generator",  # NEW
+        "7": "grid_densifier",
+        "0": "quit"
+    }
+    return mapping.get(choice, "")
+
+
+#!/usr/bin/env python3
+"""
+ADD THIS FUNCTION TO sed_tools/__init__.py or sed_tools/cli.py
+
+Place it after run_rebuild_flow() function.
+"""
 
 
 # ------------ Main CLI ------------
@@ -1208,6 +1213,18 @@ def main():
     gp.add_argument("--output", help="Output directory for auto-training")
 
 
+
+    p_densify = subparsers.add_parser("densify",
+        help="Fill coarse Teff gaps in a flux_cube.bin")
+    p_densify.add_argument("--flux-cube",      required=True)
+    p_densify.add_argument("--output",         required=True)
+    p_densify.add_argument("--teff-spacing",   type=float, default=1000.0)
+    p_densify.add_argument("--method",         default="auto",
+                            choices=["auto", "interp", "ml", "blackbody"])
+    p_densify.add_argument("--ml-model",       default=None)
+    p_densify.add_argument("--ml-gap-threshold", type=float, default=5000.0)
+    p_densify.add_argument("--no-lookup",      action="store_true")
+
     args = parser.parse_args()
 
     if args.cmd == "spectra":
@@ -1256,6 +1273,18 @@ def main():
                 models_dir=args.models_dir
             )
 
+    elif args.cmd == "densify":
+        from .grid_densifier import densify_grid
+        densify_grid(
+            src=args.flux_cube,
+            dst=args.output,
+            teff_spacing=args.teff_spacing,
+            method=args.method,
+            ml_model=args.ml_model,
+            ml_gap_threshold=args.ml_gap_threshold,
+            write_lookup=not args.no_lookup,
+        )
+
 
     else:
         # Interactive mode
@@ -1272,7 +1301,9 @@ def main():
             elif choice == "ml_completer":
                 run_ml_completer_flow()
             elif choice == "ml_generator":
-                run_ml_generator_flow()                
+                run_ml_generator_flow()
+            elif choice == "grid_densifier":
+                run_grid_densifier_flow()
             else:
                 sys.exit(0)
 

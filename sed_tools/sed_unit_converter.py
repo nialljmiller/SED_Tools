@@ -233,7 +233,14 @@ def convert_to_standard_units(
     Standard units:
         - Wavelength: Angstroms (Å)
         - Flux: erg/s/cm²/Å (F_lambda)
-    
+
+    Flux contract (matches spectra_cleaner.py):
+        Stellar atmosphere models store F_lambda in erg/cm²/s/Å regardless
+        of what wavelength unit the wavelength axis uses. No per-wavelength-unit
+        rescaling of F_lambda is applied when converting the wavelength axis.
+        The only flux transformation performed is F_nu -> F_lambda (via c/lambda^2)
+        and any explicit scaling factor (e.g. Jansky -> cgs, SI -> cgs).
+
     Returns:
         (wavelength_angstrom, flux_flam, detection_result)
     """
@@ -255,7 +262,7 @@ def convert_to_standard_units(
     # Detect flux units
     flux_unit, flux_factor, flux_confidence = detect_flux_unit(flux, wl_angstrom, header_info)
     
-    # Apply flux scaling factor
+    # Apply flux scaling factor (unit system rescaling only, e.g. Jy->cgs, SI->cgs)
     flux_scaled = flux * flux_factor
     
     # Convert F_nu to F_lambda if needed
@@ -265,14 +272,14 @@ def convert_to_standard_units(
         # Keep normalized flux as-is (will need external info to scale properly)
         flux_flam = flux_scaled
     else:
-        # Already F_lambda
+        # Already F_lambda in erg/cm^2/s/A
         flux_flam = flux_scaled
     
-    # Also adjust flux for wavelength unit conversion
-    # If wavelength units changed, F_lambda changes inversely
-    # F_lambda (per Å) = F_lambda (per original unit) / conversion_factor
-    flux_flam = flux_flam / wl_factor
-    
+    # NOTE: No division by wl_factor here. F_lambda values from stellar atmosphere
+    # models are already in erg/cm^2/s/A independent of the wavelength axis unit.
+    # Applying / wl_factor would incorrectly rescale flux when wavelength is in nm/um.
+    # This matches the behaviour of spectra_cleaner.convert_to_standard_units exactly.
+
     # Create detection result
     overall_confidence = 'high' if (wl_confidence == 'high' and flux_confidence == 'high') else \
                         'medium' if (wl_confidence in ['high', 'medium'] and flux_confidence in ['high', 'medium']) else \
