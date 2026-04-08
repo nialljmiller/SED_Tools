@@ -49,28 +49,44 @@ import numpy as np
 # Binary cube I/O
 # ---------------------------------------------------------------------------
 
-def _read_cube(path):
+def _flux_offset(nt, nl, nm, nw):
+    """Byte offset where the flux data starts in a flux_cube.bin."""
+    return 16 + (nt + nl + nm + nw) * 8
+
+
+def _read_cube_header(path):
+    """Read grids and wavelengths only — does not load flux into RAM."""
     with open(path, "rb") as f:
         nt, nl, nm, nw = struct.unpack("iiii", f.read(16))
-        teff = np.frombuffer(f.read(8 * nt), dtype=np.float64)
-        logg = np.frombuffer(f.read(8 * nl), dtype=np.float64)
-        meta = np.frombuffer(f.read(8 * nm), dtype=np.float64)
-        wl   = np.frombuffer(f.read(8 * nw), dtype=np.float64)
-        flux = np.frombuffer(f.read(8 * nt * nl * nm * nw),
-                             dtype=np.float64).reshape(nt, nl, nm, nw).copy()
-    return teff, logg, meta, wl, flux
+        teff = np.frombuffer(f.read(8 * nt), dtype=np.float64).copy()
+        logg = np.frombuffer(f.read(8 * nl), dtype=np.float64).copy()
+        meta = np.frombuffer(f.read(8 * nm), dtype=np.float64).copy()
+        wl   = np.frombuffer(f.read(8 * nw), dtype=np.float64).copy()
+    return nt, nl, nm, nw, teff, logg, meta, wl
 
 
-def _write_cube(path, teff, logg, meta, wl, flux):
+def _open_flux_memmap(path, nt, nl, nm, nw, mode="r"):
+    """Return a memmap view of the flux data in an existing cube file."""
+    offset = _flux_offset(nt, nl, nm, nw)
+    return np.memmap(path, dtype=np.float64, mode=mode,
+                     offset=offset, shape=(nt, nl, nm, nw))
+
+
+def _init_output_cube(path, teff, logg, meta, wl, nt_new):
+    """Write header to dst and return a writable memmap over the flux region."""
+    nl, nm, nw = len(logg), len(meta), len(wl)
     os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
-    nt, nl, nm, nw = flux.shape
     with open(path, "wb") as f:
-        f.write(struct.pack("iiii", nt, nl, nm, nw))
+        f.write(struct.pack("iiii", nt_new, nl, nm, nw))
         f.write(teff.astype(np.float64).tobytes())
         f.write(logg.astype(np.float64).tobytes())
         f.write(meta.astype(np.float64).tobytes())
         f.write(wl.astype(np.float64).tobytes())
-        f.write(flux.astype(np.float64).tobytes())
+        # Pre-allocate flux region as zeros
+        f.write(b"\x00" * (nt_new * nl * nm * nw * 8))
+    offset = _flux_offset(nt_new, nl, nm, nw)
+    return np.memmap(path, dtype=np.float64, mode="r+",
+                     offset=offset, shape=(nt_new, nl, nm, nw))
 
 
 # ---------------------------------------------------------------------------
@@ -133,14 +149,16 @@ def densify_grid(
     print(f"  Spacing : {teff_spacing:.0f} K")
     print(f"  ML model: {ml_model or 'none (blackbody fallback)'}")
 
-    # Load source
-    print("\nLoading source cube...", end=" ", flush=True)
-    teff_orig, logg_grid, meta_grid, wavelengths, flux_orig = _read_cube(src)
-    nt_orig, nl, nm, nw = flux_orig.shape
+    # Read header only — no flux in RAM yet
+    print("\nReading source cube header...", end=" ", flush=True)
+    nt_orig, nl, nm, nw, teff_orig, logg_grid, meta_grid, wavelengths = _read_cube_header(src)
     print(f"done  ({nt_orig} × {nl} × {nm} × {nw})")
     gaps = np.diff(teff_orig)
     print(f"  Teff range : {teff_orig[0]:.0f} – {teff_orig[-1]:.0f} K")
     print(f"  Largest gap: {gaps.max():.0f} K  (mean {gaps.mean():.0f} K)")
+
+    # Source flux as read-only memmap — pages in from disk on demand
+    flux_orig = _open_flux_memmap(src, nt_orig, nl, nm, nw, mode="r")
 
     # Load ML model
     generator = None
@@ -156,28 +174,34 @@ def densify_grid(
     print(f"\nDense grid: {nt_orig} → {nt_new} Teff points "
           f"(+{nt_new - nt_orig} synthetic)")
 
-    # Pre-compute blackbody scale factors per original (teff, logg, meta) node
+    # Pre-compute bb_scale one original Teff row at a time — no (nt, nw) array
     print("Pre-computing blackbody scale factors...", end=" ", flush=True)
-    bb_orig  = np.array([_blackbody(wavelengths, t) for t in teff_orig])
-    bb_bol   = np.trapz(bb_orig, wavelengths, axis=-1)
     bb_scale = np.ones((nt_orig, nl, nm), dtype=np.float64)
     for i_t in range(nt_orig):
-        for i_l in range(nl):
-            for i_m in range(nm):
-                real_bol = np.trapz(flux_orig[i_t, i_l, i_m], wavelengths)
-                if bb_bol[i_t] > 0 and real_bol > 0:
-                    bb_scale[i_t, i_l, i_m] = real_bol / bb_bol[i_t]
+        bb_row = _blackbody(wavelengths, teff_orig[i_t])   # (nw,) only
+        bb_bol = np.trapezoid(bb_row, wavelengths)
+        if bb_bol > 0:
+            for i_l in range(nl):
+                for i_m in range(nm):
+                    real_bol = np.trapezoid(flux_orig[i_t, i_l, i_m], wavelengths)
+                    if real_bol > 0:
+                        bb_scale[i_t, i_l, i_m] = real_bol / bb_bol
     print("done")
 
-    # Build output cube — copy real points verbatim
-    flux_dense = np.zeros((nt_new, nl, nm, nw), dtype=np.float64)
-    real_mask  = np.zeros(nt_new, dtype=bool)
+    # Initialise output cube — writes header + zero-fills on disk, returns memmap
+    print(f"Initialising output cube on disk...", end=" ", flush=True)
+    flux_dense = _init_output_cube(dst, teff_dense, logg_grid, meta_grid,
+                                    wavelengths, nt_new)
+    print("done")
 
+    # Map original Teff indices into the dense grid and copy verbatim
+    real_mask = np.zeros(nt_new, dtype=bool)
     for i_orig, t in enumerate(teff_orig):
         idx_d = int(np.argmin(np.abs(teff_dense - t)))
         if np.abs(teff_dense[idx_d] - t) < 1.0:
             flux_dense[idx_d] = flux_orig[i_orig]
             real_mask[idx_d]  = True
+    flux_dense.flush()
 
     synthetic = np.where(~real_mask)[0]
     print(f"\nGenerating {len(synthetic)} synthetic Teff points...")
@@ -214,6 +238,8 @@ def densify_grid(
                     bb = _blackbody(wavelengths, t_new)
                     flux_dense[idx_d, i_l, i_m] = bb * bb_scale[i_near, i_l, i_m]
 
+        flux_dense.flush()
+
         elapsed = time.time() - t_start
         rate    = count / elapsed if elapsed > 0 else 1.0
         eta     = (len(synthetic) - count) / rate
@@ -222,9 +248,7 @@ def densify_grid(
               f"[{label}]  ETA {eta:.0f}s   ", end="", flush=True)
 
     print()
-
-    print(f"\nWriting dense cube to {dst}...")
-    _write_cube(dst, teff_dense, logg_grid, meta_grid, wavelengths, flux_dense)
+    del flux_dense  # close memmap
     size_mb = os.path.getsize(dst) / (1024**2)
     print(f"  Written: {nt_new} × {nl} × {nm} × {nw}  ({size_mb:.1f} MiB)")
     print(f"{'='*60}\n")
@@ -248,11 +272,12 @@ def run_interactive_workflow(base_dir: str = "data/stellar_models") -> None:
 
     print("\nAvailable flux cubes:")
     for i, c in enumerate(cubes, 1):
-        teff, _, _, _, _ = _read_cube(c)
+        _, _, _, _, teff, _, _, _ = _read_cube_header(c)
         gaps = np.diff(teff)
+        gap_str = f"max gap {gaps.max():.0f} K" if len(gaps) > 0 else "single point"
         print(f"  {i:2d}) {os.path.relpath(c, base_dir):<45s} "
               f"Teff {teff[0]:.0f}–{teff[-1]:.0f} K  "
-              f"max gap {gaps.max():.0f} K  ({len(teff)} pts)")
+              f"{gap_str}  ({len(teff)} pts)")
 
     sel = input("\nSelect cube: > ").strip()
     try:

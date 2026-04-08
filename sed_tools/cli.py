@@ -1214,8 +1214,9 @@ def main():
 
 
 
-    p_densify = subparsers.add_parser("densify",
+    p_densify = sub.add_parser("densify",
         help="Fill coarse Teff gaps in a flux_cube.bin")
+
     p_densify.add_argument("--flux-cube",      required=True)
     p_densify.add_argument("--output",         required=True)
     p_densify.add_argument("--teff-spacing",   type=float, default=1000.0)
