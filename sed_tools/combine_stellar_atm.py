@@ -15,6 +15,8 @@ from scipy.interpolate import interp1d
 from scipy.spatial import KDTree
 from tqdm import tqdm
 
+from ._resample import resample_to_grid
+
 SIGMA = 5.670374419e-5  # Stefan-Boltzmann constant (erg s-1 cm-2 K-4)
 
 
@@ -291,15 +293,12 @@ def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, w
 
             filepath = os.path.join(model_data["model_dir"], file)
             try:
+                
                 wl, fl = prepare_sed(filepath, teff)
                 fl *= norm_factors[model_idx][i]
 
-                # Interpolate in log space
-                log_fl = np.log10(np.maximum(fl, 1e-50))
-                log_interp = np.interp(wavelength_grid, wl, log_fl,
-                                       left=log_fl[0], right=log_fl[-1])
+                flux_cube[i_teff, i_logg, i_meta, :] = resample_to_grid(wl, fl, teff, wavelength_grid)
 
-                flux_cube[i_teff, i_logg, i_meta, :] = 10**log_interp
                 filled_map[i_teff, i_logg, i_meta] = True
                 source_map[i_teff, i_logg, i_meta] = model_idx
             except Exception:

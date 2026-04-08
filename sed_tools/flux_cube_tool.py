@@ -248,8 +248,8 @@ class FluxCube:
         # Flux cubes are written in native C-order with shape
         # (nt, nl, nm, nw), so a direct reshape recovers the original
         # axis ordering used during generation.
-        flux = flux_flat.reshape((nt, nl, nm, nw))
-
+        #flux = flux_flat.reshape((nt, nl, nm, nw))
+        flux = flux_flat.reshape((nw, nm, nl, nt)).transpose(3, 2, 1, 0)
         return cls(teff, logg, meta, wavelengths, flux)
 
     # ------------------------------------------------------------------

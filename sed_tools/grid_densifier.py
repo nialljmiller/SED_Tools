@@ -42,6 +42,8 @@ import struct
 import time
 from typing import Optional
 
+from ._resample import resample_to_grid
+
 import numpy as np
 
 
@@ -224,12 +226,9 @@ def densify_grid(
                             meta=float(meta_grid[i_m]),
                             check_bounds=False,
                         )
-                        log_fl = np.log10(np.maximum(fl_ml, 1e-50))
-                        log_interp = np.interp(
-                            wavelengths, wl_ml, log_fl,
-                            left=log_fl[0], right=log_fl[-1],
-                        )
-                        flux_dense[idx_d, i_l, i_m] = 10.0 ** log_interp
+
+                        flux_dense[idx_d, i_l, i_m] = resample_to_grid(wl_ml, fl_ml, t_new, wavelengths)
+
                         used_ml = True
                     except Exception:
                         pass

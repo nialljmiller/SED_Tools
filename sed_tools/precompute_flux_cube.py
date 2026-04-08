@@ -7,6 +7,8 @@ import time
 import numpy as np
 from tqdm import tqdm
 
+from ._resample import resample_to_grid
+
 try:
     import psutil
     def _available_ram_bytes():
@@ -164,9 +166,9 @@ def populate_flux_cube(
         file_wavelengths, file_fluxes = load_sed(file_path)
 
         try:
-            interpolated_fluxes = np.interp(wavelengths, file_wavelengths, file_fluxes)
+            interpolated_fluxes = resample_to_grid(file_wavelengths, file_fluxes, teff_values[i], wavelengths)
         except Exception as e:
-            print(f"\nInterpolation failed for {file_name}: {e}")
+            print(f"\nResampling failed for {file_name}: {e}")
             skipped += 1
             continue
 
