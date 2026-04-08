@@ -75,6 +75,28 @@ class EvaluatedSED:
     metadata: Dict[str, float]
     _model: "SEDModel"
 
+    @property
+    def teff(self) -> float:
+        return self.metadata["teff"]
+
+    @property
+    def logg(self) -> float:
+        return self.metadata["logg"]
+
+    @property
+    def metallicity(self) -> float:
+        return self.metadata["metallicity"]
+
+    @property
+    def wl(self) -> np.ndarray:
+        """Alias for wavelength."""
+        return self.wavelength
+
+    @property
+    def fl(self) -> np.ndarray:
+        """Alias for flux."""
+        return self.flux
+
     def photometry(
         self,
         *filters: FilterSpec,

@@ -38,21 +38,39 @@ def _iter_datasets_recursive(g, prefix=""):
         elif isinstance(v, h5py.Group):
             yield from _iter_datasets_recursive(v, path)
 
+def _is_physical_wavelength(arr: np.ndarray) -> bool:
+    """Return True if arr looks like a physical wavelength grid in Angstroms."""
+    if arr.size < 2:
+        return False
+    # Physical wavelengths start above 1 Å and end below 1e9 Å
+    if arr[0] < 1.0 or arr[-1] > 1e9:
+        return False
+    # Must not be a pure integer index sequence (0,1,2,... or 1,2,3,...)
+    if arr[0] < 2 and np.allclose(arr, np.arange(arr.size, dtype=float), atol=0.5):
+        return False
+    if arr[0] < 2 and np.allclose(arr, np.arange(1, arr.size + 1, dtype=float), atol=0.5):
+        return False
+    # Steps should not all be exactly 1 (dead giveaway for index grid)
+    if np.allclose(np.diff(arr), 1.0, atol=0.01):
+        return False
+    return True
+
+
 def _recover_wavelengths(f, spec_g, expected_len=None):
-    # 1) direct dataset
+    # 1) direct dataset within spectrum group
     WAVE_KEYS = ("lambda","wavelength","wave","wl","wavelength_A")
     ds = _dataset_if_exists(spec_g, WAVE_KEYS)
     if ds is not None:
         wl = np.array(ds[()]).astype(float).squeeze()
-        if wl.size > 1 and np.all(np.diff(wl) > 0):
+        if wl.size > 1 and np.all(np.diff(wl) > 0) and _is_physical_wavelength(wl):
             return wl
 
-    # 2) range/x
+    # 2) range/x within spectrum group
     if "range" in spec_g and isinstance(spec_g["range"], h5py.Group):
         rg = spec_g["range"]
         if "x" in rg and isinstance(rg["x"], h5py.Dataset):
             wl = np.array(rg["x"][()]).astype(float).ravel()
-            if wl.size > 1 and np.all(np.diff(wl) > 0):
+            if wl.size > 1 and np.all(np.diff(wl) > 0) and _is_physical_wavelength(wl):
                 return wl
 
         # 3) concatenated segments
@@ -94,9 +112,19 @@ def _recover_wavelengths(f, spec_g, expected_len=None):
                 if n >= 2: segs.append(np.linspace(start, stop, n, dtype=float))
         if segs:
             wl = np.concatenate(segs)
-            if wl.size > 1 and np.all(np.diff(wl) >= 0):
+            if wl.size > 1 and np.all(np.diff(wl) >= 0) and _is_physical_wavelength(wl):
                 return wl
 
+    # 4) Top-level wavelength arrays in the HDF5 root (MSG often stores here)
+    for key in WAVE_KEYS:
+        if key in f and isinstance(f[key], h5py.Dataset):
+            wl = np.array(f[key][()]).astype(float).ravel()
+            if wl.size > 1 and np.all(np.diff(wl) > 0) and _is_physical_wavelength(wl):
+                if expected_len is None or abs(wl.size - expected_len) <= 2:
+                    return wl[:expected_len] if expected_len and expected_len < wl.size else wl
+
+    # 5) Fallback: search entire file for a physically plausible wavelength array
+    #    Only accept arrays that pass physical wavelength validation.
     if expected_len and expected_len > 1:
         for path, d in _iter_datasets_recursive(f):
             try:
@@ -104,7 +132,8 @@ def _recover_wavelengths(f, spec_g, expected_len=None):
             except Exception:
                 continue
             if arr.ndim == 1 and arr.size == expected_len and np.all(np.diff(arr) > 0):
-                return arr
+                if _is_physical_wavelength(arr):
+                    return arr
 
     raise RuntimeError("Unable to recover wavelength grid")
 

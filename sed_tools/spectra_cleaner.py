@@ -645,6 +645,22 @@ def write_standardized_spectrum(
 
 WAVE_KEYS = ('lambda', 'wavelength', 'wave', 'wl', 'wavelength_A', 'x')
 
+def _is_physical_wavelength_array(wl: np.ndarray) -> bool:
+    """Return True if wl looks like a physical wavelength grid in Angstroms."""
+    if wl.size < 2:
+        return False
+    if wl[0] < 1.0 or wl[-1] > 1e9:
+        return False
+    # Reject pure integer index sequences
+    if wl[0] < 2 and np.allclose(wl, np.arange(wl.size, dtype=float), atol=0.5):
+        return False
+    if wl[0] < 2 and np.allclose(wl, np.arange(1, wl.size + 1, dtype=float), atol=0.5):
+        return False
+    if np.allclose(np.diff(wl), 1.0, atol=0.01):
+        return False
+    return True
+
+
 def recover_wavelengths_from_hdf5(
     model_dir: str,
     spec_group: str,
@@ -652,58 +668,95 @@ def recover_wavelengths_from_hdf5(
 ) -> Optional[np.ndarray]:
     """
     Attempt to recover wavelength array from HDF5 file for index grids.
+
+    Searches in priority order:
+      1. Direct wavelength dataset within spec_group
+      2. range/x structure within spec_group
+      3. Top-level wavelength arrays in the HDF5 root
+      4. Global search for any physically plausible array of the right length
+
+    Returns None if no physical wavelength grid is found.
     """
     if not HAS_H5PY:
         return None
-    
+
     h5_files = glob.glob(os.path.join(model_dir, "*.h5"))
-    
+
     for h5_path in h5_files:
         try:
             with h5py.File(h5_path, 'r') as f:
-                if spec_group not in f:
-                    continue
-                
-                group = f[spec_group]
-                
-                # Direct wavelength dataset
+                # ---- 1. Direct wavelength dataset within spec_group ----
+                if spec_group in f:
+                    group = f[spec_group]
+                    for key in WAVE_KEYS:
+                        if key in group and isinstance(group[key], h5py.Dataset):
+                            wl = np.array(group[key]).astype(float).ravel()
+                            if (wl.size >= expected_len and
+                                    np.all(np.diff(wl[:expected_len]) > 0) and
+                                    _is_physical_wavelength_array(wl[:expected_len])):
+                                return wl[:expected_len]
+
+                    # ---- 2. range/x structure ----
+                    if 'range' in group and isinstance(group['range'], h5py.Group):
+                        rg = group['range']
+                        if 'x' in rg and isinstance(rg['x'], h5py.Dataset):
+                            wl = np.array(rg['x']).astype(float).ravel()
+                            if (wl.size >= expected_len and
+                                    np.all(np.diff(wl[:expected_len]) > 0) and
+                                    _is_physical_wavelength_array(wl[:expected_len])):
+                                return wl[:expected_len]
+
+                        # Concatenated segments
+                        segs = []
+                        seg_names = sorted(
+                            [k for k in rg.keys() if 'range' in k.lower()],
+                            key=lambda s: int(re.search(r'\d+', s).group()) if re.search(r'\d+', s) else 0
+                        )
+                        for sn in seg_names:
+                            if not isinstance(rg[sn], h5py.Group):
+                                continue
+                            sg = rg[sn]
+                            for key in WAVE_KEYS:
+                                if key in sg and isinstance(sg[key], h5py.Dataset):
+                                    segs.append(np.array(sg[key]).astype(float).ravel())
+                                    break
+                        if segs:
+                            wl = np.concatenate(segs)
+                            if (wl.size >= expected_len and
+                                    _is_physical_wavelength_array(wl[:expected_len])):
+                                return wl[:expected_len]
+
+                # ---- 3. Top-level wavelength arrays (MSG often stores here) ----
                 for key in WAVE_KEYS:
-                    if key in group:
-                        wl = np.array(group[key]).astype(float).ravel()
-                        if wl.size >= expected_len and np.all(np.diff(wl[:expected_len]) > 0):
-                            return wl[:expected_len]
-                
-                # Check range/x structure
-                if 'range' in group and isinstance(group['range'], h5py.Group):
-                    rg = group['range']
-                    if 'x' in rg:
-                        wl = np.array(rg['x']).astype(float).ravel()
-                        if wl.size >= expected_len and np.all(np.diff(wl[:expected_len]) > 0):
-                            return wl[:expected_len]
-                    
-                    # Concatenated segments
-                    segs = []
-                    seg_names = sorted([k for k in rg.keys() if 'range' in k.lower()],
-                                       key=lambda s: int(re.search(r'\d+', s).group()) if re.search(r'\d+', s) else 0)
-                    
-                    for sn in seg_names:
-                        if not isinstance(rg[sn], h5py.Group):
-                            continue
-                        sg = rg[sn]
-                        
-                        for key in WAVE_KEYS:
-                            if key in sg:
-                                segs.append(np.array(sg[key]).astype(float).ravel())
-                                break
-                    
-                    if segs:
-                        wl = np.concatenate(segs)
-                        if wl.size >= expected_len:
-                            return wl[:expected_len]
-        
+                    if key in f and isinstance(f[key], h5py.Dataset):
+                        wl = np.array(f[key]).astype(float).ravel()
+                        if (wl.size >= 2 and np.all(np.diff(wl) > 0) and
+                                _is_physical_wavelength_array(wl)):
+                            if abs(wl.size - expected_len) <= 2:
+                                return wl[:expected_len] if wl.size > expected_len else wl
+
+                # ---- 4. Global search — physical validation required ----
+                def _iter_all(g, prefix=""):
+                    for k, v in g.items():
+                        path = f"{prefix}/{k}" if prefix else k
+                        if isinstance(v, h5py.Dataset):
+                            yield path, v
+                        elif isinstance(v, h5py.Group):
+                            yield from _iter_all(v, path)
+
+                for path, d in _iter_all(f):
+                    try:
+                        arr = np.array(d[()]).astype(float).ravel()
+                    except Exception:
+                        continue
+                    if (arr.ndim == 1 and arr.size == expected_len and
+                            np.all(np.diff(arr) > 0) and
+                            _is_physical_wavelength_array(arr)):
+                        return arr
+
         except Exception:
             continue
-    
+
     return None
 
 
@@ -823,6 +876,35 @@ def clean_spectrum_file(
     valid, msg = validate_converted_spectrum(wl_std, flux_std)
     if not valid:
         return 'skipped_invalid', f'validation failed: {msg}'
+
+    # Post-conversion bolometric sanity check.
+    # If the integrated flux deviates by more than 3x from the expected
+    # blackbody integral over the same wavelength range, renormalize.
+    # This catches cases where the source data has a wrong absolute flux scale
+    # (e.g. NJM NextGen T >= 5000K which is ~100x too large).
+    if np.isfinite(meta.teff) and meta.teff > 0:
+        SIGMA_SB = 5.670374419e-5
+        H_P  = 6.62607015e-27
+        C_CM = 2.99792458e10
+        HC_A = H_P * C_CM * 1e8
+        K_B  = 1.380649e-16
+        try:
+            wl_bb = np.linspace(max(float(wl_std[0]), 1.0), float(wl_std[-1]), 2000)
+            l_cm  = wl_bb * 1e-8
+            expon = np.minimum(HC_A / (wl_bb * K_B * meta.teff), 700.0)
+            bb    = np.pi * (2 * H_P * C_CM**2 / l_cm**5) / (np.exp(expon) - 1.0) * 1e-8
+            bol_expected = float(np.trapezoid(bb, wl_bb))
+            bol_actual   = float(np.trapezoid(np.maximum(flux_std, 0), wl_std))
+            # Only renorm when coverage is meaningful (>5% of total sigmaT4)
+            bol_total = SIGMA_SB * meta.teff**4
+            coverage = bol_expected / bol_total if bol_total > 0 else 0
+            if coverage >= 0.05 and bol_expected > 0:
+                ratio = bol_actual / bol_expected
+                if ratio > 3.0 or ratio < 0.1:
+                    flux_std = flux_std / ratio
+                    status = status + '_renormed'
+        except Exception:
+            pass  # renorm is best-effort, never block the write
     
     # Write standardized file
     write_standardized_spectrum(filepath, wl_std, flux_std, meta, unit_info)

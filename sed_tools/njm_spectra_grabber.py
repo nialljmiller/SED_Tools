@@ -763,3 +763,33 @@ class NJMSpectraGrabber:
         # Return count of txt files (consistent with other grabbers)
         # The cleaning pipeline will regenerate .h5, .bin, .csv from cleaned .txt files
         return len(txt_files)
+
+
+    def _try_bulk_download(self, model_name: str, out_dir: str) -> bool:
+        """
+        Attempt to download the whole model as a single tar.gz.
+        Returns True if successful, False to fall back to per-file download.
+        """
+        import tarfile, io
+
+        bulk_url = f"{self.base_url}/bulk_download.php?model={model_name}"
+        try:
+            resp = self.session.get(bulk_url, stream=True, timeout=60)
+            if resp.status_code != 200 or 'X-Bulk-Download' not in resp.headers:
+                return False
+
+            print(f"  [njm] Bulk download active for {model_name} — streaming tar.gz")
+            buf = io.BytesIO()
+            for chunk in resp.iter_content(chunk_size=1 << 20):  # 1 MiB chunks
+                buf.write(chunk)
+            buf.seek(0)
+
+            with tarfile.open(fileobj=buf, mode='r:gz') as tar:
+                tar.extractall(path=os.path.dirname(out_dir))
+
+            print(f"  [njm] Extracted to {out_dir}")
+            return True
+
+        except Exception as e:
+            print(f"  [njm] Bulk download failed ({e}), falling back to per-file")
+            return False
