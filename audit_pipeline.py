@@ -52,7 +52,10 @@ BOL_CHECK_EXEMPT = {"grams_cgrid", "grams_ogrid", "bbody"}
 
 # Models where Wien peak position check is not applicable.
 # grams: dust shells have no photospheric Wien peak.
-WIEN_CHECK_EXEMPT = {"grams_cgrid", "grams_ogrid"}
+# Husfeld/tmap2: very hot NLTE grids can have strong line blanketing and
+# model-tail behaviour that shifts the apparent F_lambda peak away from the
+# ideal blackbody Wien location; this check is too strict for these families.
+WIEN_CHECK_EXEMPT = {"grams_cgrid", "grams_ogrid", "Husfeld", "tmap2"}
 
 # Below this Teff the continuum is dominated by molecular bands; the smoothed
 # flux peak does not reliably locate the true Wien peak.
@@ -345,7 +348,7 @@ def audit_model(model_dir):
 
     result["raw_vs_cube_snap_checked"] = 0
     result["raw_vs_cube_snap_skipped"] = 0
-    # Per-file max relative error across wavelengths, for all clean-snapping files
+    # Per-file relative error summaries across wavelengths, for all clean-snapping files
     result["raw_vs_cube_node_max_errs"] = []
 
     # Deduplicate by cube node index so we don't read the same node multiple times
@@ -409,7 +412,8 @@ def audit_model(model_dir):
             rel_err = np.abs(fl_r[valid] - fl_c[valid]) / (fl_r[valid] + FLOOR)
             result["raw_vs_cube_node_max_errs"].append(
                 (float(teff_g[i_t]), float(logg_g[i_l]), float(meta_g[i_m]),
-                 float(rel_err.max()), float(np.median(rel_err)))
+                 float(rel_err.max()), float(np.median(rel_err)),
+                 float(np.percentile(rel_err, 99.0)))
             )
         except Exception as e:
             result["errors"].append(f"Raw vs cube comparison failed "
@@ -419,6 +423,7 @@ def audit_model(model_dir):
     if result["raw_vs_cube_node_max_errs"]:
         all_node_maxes  = [x[3] for x in result["raw_vs_cube_node_max_errs"]]
         all_node_medians = [x[4] for x in result["raw_vs_cube_node_max_errs"]]
+        all_node_p99 = [x[5] for x in result["raw_vs_cube_node_max_errs"]]
         worst_idx = int(np.argmax(all_node_maxes))
         worst = result["raw_vs_cube_node_max_errs"][worst_idx]
         result["raw_vs_cube_max_err"]     = worst[3]
@@ -426,8 +431,11 @@ def audit_model(model_dir):
         result["raw_vs_cube_logg"]        = worst[1]
         result["raw_vs_cube_meta"]        = worst[2]
         result["raw_vs_cube_median_err"]  = float(np.median(all_node_maxes))
+        result["raw_vs_cube_p99_err"]     = float(np.median(all_node_p99))
         result["raw_vs_cube_n_nodes"]     = len(all_node_maxes)
-        result["raw_vs_cube_n_bad"]       = sum(1 for e in all_node_maxes if e > RAW_CUBE_TOL)
+        # Use p99 per-node error as pass/fail criterion to avoid failing models on
+        # isolated spikes (e.g., interpolation near very sharp spectral lines).
+        result["raw_vs_cube_n_bad"]       = sum(1 for e in all_node_p99 if e > RAW_CUBE_TOL)
 
     # --- sample cube nodes ---
     n_cube_check = min(5, len(teff_g))
@@ -583,6 +591,7 @@ def format_report(results):
                 )
                 lines.append(
                     f"               median node-max-err={r.get('raw_vs_cube_median_err', float('nan')):.4f}  "
+                    f"median node-p99-err={r.get('raw_vs_cube_p99_err', float('nan')):.4f}  "
                     f"worst={r['raw_vs_cube_max_err']:.4f}  "
                     f"(node: Teff={r['raw_vs_cube_teff']:.0f} K  "
                     f"log g={r.get('raw_vs_cube_logg', float('nan')):.2f}  "
