@@ -55,6 +55,7 @@ class VariantInfo:
     wavelength_max: float
     wavelength_n: int
     flux_cube_path: Path                # path to the variant's .bin file
+    source_model_dir: Path              # original model directory (where .txt files live)
     lookup_rows: pd.DataFrame = field(repr=False)  # rows from the master lookup_table
 
 
@@ -101,7 +102,7 @@ def list_variants(model_dir: str | os.PathLike) -> List[VariantInfo]:
 
     # No extra axes — single uniform grid
     if not extra_cols:
-        return [_variant_from_rows(df, {}, model_dir / "flux_cube.bin", df)]
+        return [_variant_from_rows(df, {}, model_dir / "flux_cube.bin", df, model_dir)]
 
     # No fluxcube_library — model was built without variant cubes; fall back to master cube
     if not library_dir.exists():
@@ -110,12 +111,13 @@ def list_variants(model_dir: str | os.PathLike) -> List[VariantInfo]:
             raise FileNotFoundError(
                 f"No flux_cube.bin found in {model_dir}. Run 'sed-tools rebuild' first."
             )
+        axes_list = ", ".join(extra_cols)
         print(
             f"  Note: fluxcube_library/ not found. The master flux_cube.bin averages "
-            f"all extra-axis variants ({', '.join(extra_cols)})."
-            f"  To get per-variant cubes, run 'sed-tools rebuild' on this model."
+            f"all extra-axis variants ({axes_list})."
         )
-        return [_variant_from_rows(df, {}, master_cube, df)]
+        print("  To get per-variant cubes, run 'sed-tools rebuild' on this model.")
+        return [_variant_from_rows(df, {}, master_cube, df, model_dir)]
 
     # Group by unique combination of extra-axis values
     variants: List[VariantInfo] = []
@@ -128,7 +130,7 @@ def list_variants(model_dir: str | os.PathLike) -> List[VariantInfo]:
         label = "__".join(f"{k}_{v}" for k, v in axes.items())
 
         cube_path = _find_variant_cube(library_dir, label)
-        variants.append(_variant_from_rows(rows.reset_index(drop=True), axes, cube_path, df))
+        variants.append(_variant_from_rows(rows.reset_index(drop=True), axes, cube_path, df, model_dir))
 
     return variants
 
@@ -173,6 +175,7 @@ def _variant_from_rows(
     axes: Dict[str, str],
     cube_path: Path,
     _full_df: pd.DataFrame,
+    model_dir: Path,
 ) -> VariantInfo:
     """Build a :class:`VariantInfo` from a subset of lookup-table rows."""
     label = "__".join(f"{k}_{v}" for k, v in axes.items()) if axes else "full_grid"
@@ -208,6 +211,7 @@ def _variant_from_rows(
         meta_min=meta_min, meta_max=meta_max, meta_n=meta_n,
         wavelength_min=wave_min, wavelength_max=wave_max, wavelength_n=wave_n,
         flux_cube_path=cube_path,
+        source_model_dir=model_dir,
         lookup_rows=rows,
     )
 
@@ -288,10 +292,11 @@ def export_variant(
     """
     Write a clean MESA-ready folder for *variant*.
 
-    Creates *output_dir* containing:
+    Produces the same file structure as a normally downloaded/rebuilt model:
 
-    * ``flux_cube.bin``   — copied from the variant's pre-built cube
-    * ``lookup_table.csv`` — filtered to only the spectra in this variant
+    * One ``.txt`` spectrum file per SED (copied from the source model dir)
+    * ``lookup_table.csv`` — filtered to only this variant's spectra
+    * ``flux_cube.bin``    — copied from the variant's pre-built cube
 
     Parameters
     ----------
@@ -308,6 +313,7 @@ def export_variant(
     Path to the created output directory.
     """
     out = Path(output_dir)
+    src = variant.source_model_dir
 
     if out.exists() and not overwrite:
         raise FileExistsError(
@@ -317,21 +323,43 @@ def export_variant(
 
     out.mkdir(parents=True, exist_ok=True)
 
-    # 1. Flux cube
-    dest_cube = out / "flux_cube.bin"
-    print(f"  Copying flux cube → {dest_cube}")
-    shutil.copy2(variant.flux_cube_path, dest_cube)
+    # 1. Copy .txt spectrum files for this variant
+    file_col = next(
+        (c for c in variant.lookup_rows.columns if c.lower() == "file_name"), None
+    )
+    if file_col is None:
+        raise KeyError("lookup_rows has no 'file_name' column — cannot locate spectra.")
+
+    filenames = variant.lookup_rows[file_col].dropna().tolist()
+    print(f"  Copying {len(filenames)} spectrum files...")
+    n_copied = 0
+    n_missing = 0
+    for fname in filenames:
+        src_file = src / fname
+        if not src_file.exists():
+            n_missing += 1
+            continue
+        shutil.copy2(src_file, out / fname)
+        n_copied += 1
+
+    if n_missing:
+        print(f"  Warning: {n_missing} spectrum file(s) not found in {src} — skipped.")
+    print(f"  Copied {n_copied}/{len(filenames)} spectrum files.")
 
     # 2. Filtered lookup table
     dest_lookup = out / "lookup_table.csv"
-    print(f"  Writing lookup table ({len(variant.lookup_rows)} rows) → {dest_lookup}")
     variant.lookup_rows.to_csv(dest_lookup, index=False)
+    print(f"  Written lookup_table.csv ({len(variant.lookup_rows)} rows)")
 
-    # 3. Summary
+    # 3. Flux cube
+    dest_cube = out / "flux_cube.bin"
+    shutil.copy2(variant.flux_cube_path, dest_cube)
+    print(f"  Copied flux_cube.bin ({dest_cube.stat().st_size / 1024**2:.1f} MiB)")
+
+    # 4. Summary
     print(f"\n  Done. MESA-ready folder: {out}")
-    print(f"    flux_cube.bin   {dest_cube.stat().st_size / 1024**2:.1f} MiB")
-    print(f"    lookup_table.csv  {len(variant.lookup_rows)} spectra")
-    print(f"\n  To use in MESA inlist:")
+    print(f"    {n_copied} spectra  |  lookup_table.csv  |  flux_cube.bin")
+    print(f"\n  To use in MESA:")
     print(f"    stellar_atm = '{out}/'")
 
     return out
