@@ -187,6 +187,7 @@ def audit_model(model_dir):
         "max_files_per_node": 0,
         "collision_examples": [],
         "errors": [],
+        "diagnostics": [],
     }
 
     # --- collision check via lookup_table.csv ---
@@ -345,8 +346,18 @@ def audit_model(model_dir):
 
     result["raw_vs_cube_snap_checked"] = 0
     result["raw_vs_cube_snap_skipped"] = 0
+    result["raw_vs_cube_skip_reasons"] = {
+        "teff_off_grid": 0,
+        "logg_off_grid": 0,
+        "meta_off_grid": 0,
+        "duplicate_node": 0,
+        "zero_flux_cube_node": 0,
+        "no_overlap": 0,
+        "insufficient_signal": 0,
+    }
     # Per-file max relative error across wavelengths, for all clean-snapping files
     result["raw_vs_cube_node_max_errs"] = []
+    result["raw_vs_cube_bad_nodes"] = []
 
     # Deduplicate by cube node index so we don't read the same node multiple times
     # (many raw files share the same grid point).
@@ -358,12 +369,14 @@ def audit_model(model_dir):
         i_t = int(np.argmin(np.abs(teff_g - teff_raw)))
         if abs(teff_g[i_t] - teff_raw) > tol_t:
             result["raw_vs_cube_snap_skipped"] += 1
+            result["raw_vs_cube_skip_reasons"]["teff_off_grid"] += 1
             continue
 
         if logg_raw is not None:
             i_l = int(np.argmin(np.abs(logg_g - logg_raw)))
             if abs(logg_g[i_l] - logg_raw) > tol_l:
                 result["raw_vs_cube_snap_skipped"] += 1
+                result["raw_vs_cube_skip_reasons"]["logg_off_grid"] += 1
                 continue
         else:
             i_l = len(logg_g) // 2
@@ -372,6 +385,7 @@ def audit_model(model_dir):
             i_m = int(np.argmin(np.abs(meta_g - meta_raw)))
             if abs(meta_g[i_m] - meta_raw) > tol_m:
                 result["raw_vs_cube_snap_skipped"] += 1
+                result["raw_vs_cube_skip_reasons"]["meta_off_grid"] += 1
                 continue
         else:
             i_m = len(meta_g) // 2
@@ -380,6 +394,7 @@ def audit_model(model_dir):
         if node_key in seen_nodes:
             # Already compared this cube node with a different raw file; skip duplicate.
             result["raw_vs_cube_snap_skipped"] += 1
+            result["raw_vs_cube_skip_reasons"]["duplicate_node"] += 1
             continue
         seen_nodes.add(node_key)
 
@@ -392,11 +407,13 @@ def audit_model(model_dir):
                                      i_t, i_l, i_m)
             if fl_cube.max() <= 0:
                 result["raw_vs_cube_snap_skipped"] += 1
+                result["raw_vs_cube_skip_reasons"]["zero_flux_cube_node"] += 1
                 seen_nodes.discard(node_key)
                 continue
             wl_lo = max(float(wl_raw.min()), float(wl_g.min()))
             wl_hi = min(float(wl_raw.max()), float(wl_g.max()))
             if wl_hi <= wl_lo:
+                result["raw_vs_cube_skip_reasons"]["no_overlap"] += 1
                 continue
             mask_raw = (wl_raw >= wl_lo) & (wl_raw <= wl_hi)
             wl_r = wl_raw[mask_raw]
@@ -405,12 +422,24 @@ def audit_model(model_dir):
             thresh = fl_r.max() * 0.01
             valid = fl_r > thresh
             if valid.sum() < 10:
+                result["raw_vs_cube_skip_reasons"]["insufficient_signal"] += 1
                 continue
             rel_err = np.abs(fl_r[valid] - fl_c[valid]) / (fl_r[valid] + FLOOR)
+            node_max = float(rel_err.max())
+            node_median = float(np.median(rel_err))
             result["raw_vs_cube_node_max_errs"].append(
                 (float(teff_g[i_t]), float(logg_g[i_l]), float(meta_g[i_m]),
-                 float(rel_err.max()), float(np.median(rel_err)))
+                 node_max, node_median)
             )
+            if node_max > RAW_CUBE_TOL:
+                result["raw_vs_cube_bad_nodes"].append({
+                    "file": Path(fpath).name,
+                    "teff": float(teff_g[i_t]),
+                    "logg": float(logg_g[i_l]),
+                    "meta": float(meta_g[i_m]),
+                    "max_err": node_max,
+                    "median_err": node_median,
+                })
         except Exception as e:
             result["errors"].append(f"Raw vs cube comparison failed "
                                     f"(Teff={teff_g[i_t]:.0f}): {e}")
@@ -428,6 +457,11 @@ def audit_model(model_dir):
         result["raw_vs_cube_median_err"]  = float(np.median(all_node_maxes))
         result["raw_vs_cube_n_nodes"]     = len(all_node_maxes)
         result["raw_vs_cube_n_bad"]       = sum(1 for e in all_node_maxes if e > RAW_CUBE_TOL)
+        result["raw_vs_cube_bad_nodes"] = sorted(
+            result["raw_vs_cube_bad_nodes"],
+            key=lambda x: x["max_err"],
+            reverse=True
+        )[:3]
 
     # --- sample cube nodes ---
     n_cube_check = min(5, len(teff_g))
@@ -532,6 +566,8 @@ def format_report(results):
             if not (1 - WIEN_TOL < med_wd < 1 + WIEN_TOL):
                 lines.append(f"  *** WIEN PEAK RATIO OUT OF RANGE [{1-WIEN_TOL:.1f}, {1+WIEN_TOL:.1f}] "
                              f"— possible unit error or truncated wl range")
+                lines.append("      Diagnostic: compare plotted model peak vs blackbody peak;")
+                lines.append("      if shape is physics-like but shifted blue/red, suspect wavelength unit scaling.")
                 ok = False
         elif r.get("wien_peak_oor_count", 0) > 0:
             lines.append(f"  Wien peak   : skipped — peak wavelength below model's wl range "
@@ -594,6 +630,13 @@ def format_report(results):
                                      f"{RAW_CUBE_TOL*100:.0f}% (expected — mean cube, variants in fluxcube_library/)")
                     else:
                         lines.append(f"  *** RAW VS CUBE: {n_bad}/{n_nodes} NODES EXCEED {RAW_CUBE_TOL*100:.0f}% ERROR")
+                        for bad in r.get("raw_vs_cube_bad_nodes", [])[:3]:
+                            lines.append(
+                                "      Worst nodes: "
+                                f"{bad['file']} -> Teff={bad['teff']:.0f} K, "
+                                f"log g={bad['logg']:.2f}, [M/H]={bad['meta']:.2f}, "
+                                f"max_err={bad['max_err']:.3f}, med_err={bad['median_err']:.3f}"
+                            )
                         ok = False
             else:
                 if n_skipped == n_checked and n_checked > 0:
@@ -601,6 +644,14 @@ def format_report(results):
                                  f"land off-grid (gap-filled nodes only in sample)")
                 else:
                     lines.append("  Raw vs cube : comparison skipped (no suitable node found)")
+            skip_reasons = r.get("raw_vs_cube_skip_reasons", {})
+            if n_skipped > 0 and skip_reasons:
+                reason_parts = []
+                for k, v in skip_reasons.items():
+                    if v > 0:
+                        reason_parts.append(f"{k}={v}")
+                if reason_parts:
+                    lines.append("  Raw/cube skip reasons: " + ", ".join(reason_parts))
 
             if r["cube_neg_counts"]:
                 total_neg = sum(r["cube_neg_counts"])
