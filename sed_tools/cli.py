@@ -1017,6 +1017,19 @@ def run_grid_densifier_flow(base_dir: str = STELLAR_DIR_DEFAULT) -> None:
     run_interactive_workflow(base_dir=base_dir)
 
 
+def run_mesa_prepare_flow(
+    base_dir: str = str(STELLAR_DIR_DEFAULT),
+    model: Optional[str] = None,
+    output: Optional[str] = None,
+) -> None:
+    """
+    Export a single extra-axis sub-variant of a model as a clean MESA-ready folder.
+
+    Delegates to mesa_prepare.run_interactive(), which handles model selection,
+    variant display, and output directory creation.
+    """
+    from .mesa_prepare import run_interactive
+    run_interactive(base_dir=base_dir, model=model, output=output)
 
 
 
@@ -1124,8 +1137,9 @@ def menu() -> str:
     print("3) Rebuild (lookup + HDF5 + flux cube)")
     print("4) Combine grids into omni grid")
     print("5) ML SED Completer (train/extend incomplete SEDs)")
-    print("6) ML SED Generator (generate SEDs from parameters)")  # NEW
+    print("6) ML SED Generator (generate SEDs from parameters)")
     print("7) Grid Densifier (fill coarse Teff gaps)")
+    print("8) MESA Prepare (export a sub-variant for MESA)")
     print("0) Quit")
     choice = input("> ").strip()
     mapping = {
@@ -1134,19 +1148,12 @@ def menu() -> str:
         "3": "rebuild",
         "4": "combine",
         "5": "ml_completer",
-        "6": "ml_generator",  # NEW
+        "6": "ml_generator",
         "7": "grid_densifier",
+        "8": "mesa_prepare",
         "0": "quit"
     }
     return mapping.get(choice, "")
-
-
-#!/usr/bin/env python3
-"""
-ADD THIS FUNCTION TO sed_tools/__init__.py or sed_tools/cli.py
-
-Place it after run_rebuild_flow() function.
-"""
 
 
 # ------------ Main CLI ------------
@@ -1226,6 +1233,16 @@ def main():
     p_densify.add_argument("--ml-gap-threshold", type=float, default=5000.0)
     p_densify.add_argument("--no-lookup",      action="store_true")
 
+    # mesa_prepare
+    pp = sub.add_parser("mesa_prepare",
+        help="Export a single sub-variant of a model as a clean MESA-ready folder")
+    pp.add_argument("--base", default=str(STELLAR_DIR_DEFAULT),
+                    help="Base models directory")
+    pp.add_argument("--model", default=None,
+                    help="Model name (e.g. Kurucz2003all); prompted if omitted")
+    pp.add_argument("--output", default=None,
+                    help="Output directory for the exported variant; prompted if omitted")
+
     args = parser.parse_args()
 
     if args.cmd == "spectra":
@@ -1286,6 +1303,12 @@ def main():
             write_lookup=not args.no_lookup,
         )
 
+    elif args.cmd == "mesa_prepare":
+        run_mesa_prepare_flow(
+            base_dir=args.base,
+            model=args.model,
+            output=args.output,
+        )
 
     else:
         # Interactive mode
@@ -1305,6 +1328,8 @@ def main():
                 run_ml_generator_flow()
             elif choice == "grid_densifier":
                 run_grid_densifier_flow()
+            elif choice == "mesa_prepare":
+                run_mesa_prepare_flow()
             else:
                 sys.exit(0)
 

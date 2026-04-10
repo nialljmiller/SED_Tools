@@ -1,13 +1,43 @@
 #!/usr/bin/env python3
+"""
+precompute_flux_cube.py
+
+Builds a MESA-compatible flux_cube.bin from a directory of standardised
+SED .txt files and a lookup_table.csv.
+
+On-collision behaviour (multiple files at the same Teff/logg/[M/H] node)
+is controlled by CollisionConfig loaded from:
+    <root>/sed_tools.defaults          (global defaults)
+    <model_dir>/mesa_config.toml       (per-model override)
+    Python API override_dict argument  (highest priority)
+
+Strategies
+----------
+all-warn  Build mean cube in model_dir + one cube per extra-axis
+          combination in fluxcube_library/.  Warns about collisions.
+all       Same as all-warn but silent.
+mean      Build only the mean cube in model_dir.  No library.
+filter    Filter to a specific extra-axis slice, then build normally.
+"""
+
 import argparse
+import csv
 import os
 import struct
 import time
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
-from tqdm import tqdm
 
 from ._resample import resample_to_grid
+from .collision_config import (
+    CollisionConfig,
+    copy_global_config_to_model,
+    discover_extra_axes,
+    load_config,
+    write_default_config,
+)
 
 try:
     import psutil
@@ -25,392 +55,639 @@ except ImportError:
         return 2 * (1024 ** 3)
 
 
-def load_sed(filepath):
-    """Load a spectral energy distribution file."""
-    wavelengths = []
-    fluxes = []
+# ---------------------------------------------------------------------------
+# SED loading
+# ---------------------------------------------------------------------------
 
+def load_sed(filepath: str) -> Tuple[np.ndarray, np.ndarray]:
+    wl, fl = [], []
     with open(filepath, "r") as f:
-        # Skip header lines (comments)
         for line in f:
             line = line.strip()
-            if not line:
+            if not line or line.startswith("#"):
                 continue
-            if line.startswith("#"):
-                continue
-
             try:
-                values = line.split()
-                if len(values) >= 2:
-                    wavelengths.append(float(values[0]))
-                    fluxes.append(float(values[1]))
+                parts = line.split()
+                if len(parts) >= 2:
+                    wl.append(float(parts[0]))
+                    fl.append(float(parts[1]))
             except (ValueError, IndexError):
-                pass  # Skip any malformed lines
-
-    return np.array(wavelengths), np.array(fluxes)
-
-
-def load_lookup_table(lookup_file):
-    """Load the lookup table with model parameters."""
-    file_names = []
-    teff_values = []
-    logg_values = []
-    meta_values = []
-
-    with open(lookup_file, "r") as f:
-        # Skip header line
-        header = f.readline().strip().split(",")
-
-        # Find column indices
-        file_col = 0  # Assume first column is filename
-        teff_col = None
-        logg_col = None
-        meta_col = None
-
-        for i, col in enumerate(header):
-            col = col.strip().lower()
-            if col == "teff":
-                teff_col = i
-            elif col == "logg":
-                logg_col = i
-            elif col in ("meta", "metallicity", "[m/h]", "feh", "[fe/h]"):
-                meta_col = i
-            elif col in ("file_name", "filename", "file"):
-                file_col = i
-
-        # Read data rows
-        for line in f:
-            if line.strip():
-                values = line.strip().split(",")
-                if len(values) <= max(
-                    file_col, teff_col or 0, logg_col or 0, meta_col or 0
-                ):
-                    continue  # Skip lines that don't have enough values
-
-                file_names.append(values[file_col].strip())
-
-                try:
-                    teff = float(values[teff_col]) if teff_col is not None else 0.0
-                    logg = float(values[logg_col]) if logg_col is not None else 0.0
-                    meta = float(values[meta_col]) if meta_col is not None else 0.0
-
-                    teff_values.append(teff)
-                    logg_values.append(logg)
-                    meta_values.append(meta)
-                except (ValueError, IndexError):
-                    # Skip rows with invalid values
-                    file_names.pop()  # Remove the added filename
-
-    print(
-        f"Column indices found - teff: {teff_col}, logg: {logg_col}, meta: {meta_col}"
-    )
-    return (
-        file_names,
-        np.array(teff_values),
-        np.array(logg_values),
-        np.array(meta_values),
-    )
+                pass
+    return np.array(wl), np.array(fl)
 
 
-def build_grids(teff_values, logg_values, meta_values):
-    """Build unique sorted grids for Teff, logg, and metallicity."""
-    teff_grid = np.unique(teff_values)
-    logg_grid = np.unique(logg_values)
-    meta_grid = np.unique(meta_values)
+# ---------------------------------------------------------------------------
+# Lookup table loading — returns all columns
+# ---------------------------------------------------------------------------
 
-    print(f"Unique counts - Teff: {len(teff_grid)}, logg: {len(logg_grid)}, meta: {len(meta_grid)}")
+def load_lookup_table(lookup_file: str) -> Dict[str, List]:
+    """
+    Load lookup_table.csv and return a dict of {column_name: [values]}.
+    All columns are returned so callers can discover extra axes.
+    The header line may begin with '#'.
+    """
+    with open(lookup_file, "r", encoding="utf-8", errors="ignore") as f:
+        header_line = f.readline().lstrip("#").strip()
+        cols = [c.strip() for c in header_line.split(",")]
+        reader = csv.reader(f)
+        rows = [row for row in reader if row and not row[0].strip().startswith("#")]
+
+    result: Dict[str, List] = {c: [] for c in cols}
+    for row in rows:
+        for i, col in enumerate(cols):
+            result[col].append(row[i].strip() if i < len(row) else "")
+
+    print(f"Lookup table: {len(rows)} entries, columns: {', '.join(cols)}")
+    return result
+
+
+def _find_col(lookup: Dict[str, List], candidates: List[str]) -> Optional[str]:
+    """Find first matching column name (case-insensitive)."""
+    lc_lookup = {k.lower(): k for k in lookup}
+    for c in candidates:
+        if c.lower() in lc_lookup:
+            return lc_lookup[c.lower()]
+    return None
+
+
+def _float_col(lookup: Dict[str, List], col: Optional[str]) -> np.ndarray:
+    if col is None:
+        return np.zeros(len(next(iter(lookup.values()))))
+    vals = []
+    for v in lookup[col]:
+        try:
+            vals.append(float(v))
+        except (ValueError, TypeError):
+            vals.append(0.0)
+    return np.array(vals)
+
+
+# ---------------------------------------------------------------------------
+# Grid building
+# ---------------------------------------------------------------------------
+
+def build_grids(
+    teff_vals: np.ndarray,
+    logg_vals: np.ndarray,
+    meta_vals: np.ndarray,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    teff_grid = np.unique(teff_vals)
+    logg_grid = np.unique(logg_vals)
+    meta_grid = np.unique(meta_vals)
+    print(f"Grid: {len(teff_grid)} Teff × {len(logg_grid)} logg × {len(meta_grid)} meta")
     return teff_grid, logg_grid, meta_grid
 
 
-def initialize_flux_cube(teff_grid, logg_grid, meta_grid, wavelengths, tmp_path=None):
-    """Allocate the 4D flux cube — in RAM if it fits, disk-backed memmap if not."""
-    shape    = (len(teff_grid), len(logg_grid), len(meta_grid), len(wavelengths))
-    size_gib = np.prod(shape) * 8 / (1024 ** 3)
-    if tmp_path:
-        print(f"Initializing flux cube with shape: {shape} ({size_gib:.1f} GiB, disk-backed memmap)")
-        return np.memmap(tmp_path, dtype=np.float64, mode="w+", shape=shape)
-    else:
-        print(f"Initializing flux cube with shape: {shape} ({size_gib:.1f} GiB, in RAM)")
-        return np.zeros(shape, dtype=np.float64)
-
-
-def populate_flux_cube(
-    model_dir, file_names, teff_values, logg_values, meta_values, teff_grid, logg_grid, meta_grid, wavelengths, flux_cube
-):
-    """Populate the 4D flux cube with flux values from SED files."""
-    teff_to_idx = {val: idx for idx, val in enumerate(teff_grid)}
-    logg_to_idx = {val: idx for idx, val in enumerate(logg_grid)}
-    meta_to_idx = {val: idx for idx, val in enumerate(meta_grid)}
-
-    n       = len(file_names)
-    skipped = 0
-    t_start = time.time()
-
-    for i, file_name in enumerate(file_names):
-        file_path = os.path.join(model_dir, file_name)
-
-        if not os.path.exists(file_path):
-            print(f"\nWarning: File not found: {file_path}")
-            skipped += 1
-            continue
-
-        teff_idx = teff_to_idx.get(teff_values[i])
-        logg_idx = logg_to_idx.get(logg_values[i])
-        meta_idx = meta_to_idx.get(meta_values[i])
-
-        if teff_idx is None or logg_idx is None or meta_idx is None:
-            print(f"\nWarning: Invalid indices for {file_name}, skipping...")
-            skipped += 1
-            continue
-
-        file_wavelengths, file_fluxes = load_sed(file_path)
-
-        try:
-            interpolated_fluxes = resample_to_grid(file_wavelengths, file_fluxes, teff_values[i], wavelengths)
-        except Exception as e:
-            print(f"\nResampling failed for {file_name}: {e}")
-            skipped += 1
-            continue
-
-        flux_cube[teff_idx, logg_idx, meta_idx, :] = interpolated_fluxes
-
-        elapsed = time.time() - t_start
-        done    = i + 1
-        rate    = done / elapsed if elapsed > 0 else 1.0
-        eta     = (n - done) / rate
-        pct     = 100.0 * done / n
-        print(
-            f"\r  spectra {done}/{n} ({pct:.1f}%)  "
-            f"skipped {skipped}  "
-            f"elapsed {elapsed:.0f}s  ETA {eta:.0f}s   ",
-            end="", flush=True,
-        )
-
-    print(f"\n  Done — {n - skipped} spectra loaded, {skipped} skipped.")
-    return flux_cube
-
-
-def compute_common_wavelengths(model_dir, file_names, n_sample=5):
-    """
-    Compute a common wavelength grid by reading a small fixed number of files.
-
-    Stellar atmosphere catalogs are uniform — every file shares the same
-    wavelength grid — so reading 5 files is sufficient to establish it.
-    Reading thousands of files (each potentially millions of lines) is
-    what caused the original all-night hang.
-    """
-    if len(file_names) == 0:
-        raise RuntimeError("No files in lookup table.")
-
-    # Pick evenly spaced indices across the catalog, capped at n_sample
-    n      = len(file_names)
-    step   = max(1, n // n_sample)
+def compute_common_wavelengths(model_dir: str, file_names: List[str], n_sample: int = 5) -> np.ndarray:
+    n = len(file_names)
+    step = max(1, n // n_sample)
     subset = [file_names[i] for i in range(0, n, step)][:n_sample]
-
-    wl      = []
-    checked = 0
-    for file_name in subset:
-        file_path = os.path.join(model_dir, file_name)
-        if not os.path.exists(file_path):
+    wl = []
+    for fname in subset:
+        fpath = os.path.join(model_dir, fname)
+        if not os.path.exists(fpath):
             continue
-        w, _ = load_sed(file_path)
+        w, _ = load_sed(fpath)
         if w.size:
             wl.append(w)
-        checked += 1
-
     if not wl:
-        raise RuntimeError(
-            f"Could not determine a wavelength grid — sampled {checked} files, "
-            f"all were empty or unreadable. Check that the downloaded spectra are valid."
-        )
-
+        raise RuntimeError("Could not determine wavelength grid — all sampled files empty.")
     grid = np.unique(np.concatenate(wl))
-    print(f"Wavelength grid: {len(grid)} points from {len(wl)}/{checked} sampled files "
-          f"(range {grid[0]:.1f}–{grid[-1]:.1f} Å)")
+    print(f"Wavelength grid: {len(grid)} points ({grid[0]:.1f}–{grid[-1]:.1f} Å)")
     return grid
 
 
-def write_flux_cube_binary(output_file, teff_grid, logg_grid, meta_grid, wavelengths, flux_cube, usable_ram_bytes=None):
-    """
-    Write flux cube to binary file with header metadata.
+# ---------------------------------------------------------------------------
+# Flux cube allocation + writing
+# ---------------------------------------------------------------------------
 
-    Transposes (T,L,M,W) → (W,M,L,T) in wavelength chunks sized to available
-    RAM.  If the full array fits, it is done in one shot.
-    """
-    nteff = len(teff_grid)
-    nlogg = len(logg_grid)
-    nmeta = len(meta_grid)
-    nwave = len(wavelengths)
-    tlm   = nteff * nlogg * nmeta
+def _allocate_cube(
+    teff_grid, logg_grid, meta_grid, wavelengths, tmp_path=None
+) -> np.ndarray:
+    shape = (len(teff_grid), len(logg_grid), len(meta_grid), len(wavelengths))
+    size_gib = np.prod(shape) * 8 / 1024**3
+    if tmp_path:
+        print(f"  Allocating {shape} ({size_gib:.2f} GiB, disk-backed)")
+        return np.memmap(tmp_path, dtype=np.float64, mode="w+", shape=shape)
+    print(f"  Allocating {shape} ({size_gib:.2f} GiB, in RAM)")
+    return np.zeros(shape, dtype=np.float64)
 
-    if usable_ram_bytes is None:
-        usable_ram_bytes = int(_available_ram_bytes() * 0.75)
 
-    # ×2: hold source chunk + transposed copy simultaneously
-    w_chunk  = max(1, usable_ram_bytes // (tlm * 2 * 8))
-    n_chunks = (nwave + w_chunk - 1) // w_chunk
-    total_gib = nwave * tlm * 8 / (1024 ** 3)
+def _write_cube(
+    output_file: str,
+    teff_grid, logg_grid, meta_grid, wavelengths,
+    flux_cube: np.ndarray,
+    usable_ram: int,
+) -> None:
+    nt, nl, nm, nw = len(teff_grid), len(logg_grid), len(meta_grid), len(wavelengths)
+    tlm = nt * nl * nm
+    w_chunk = max(1, usable_ram // (tlm * 2 * 8))
+    n_chunks = (nw + w_chunk - 1) // w_chunk
+    total_gib = nw * tlm * 8 / 1024**3
 
-    if n_chunks == 1:
-        print(f"Writing binary flux cube (single-pass, {total_gib:.1f} GiB): {output_file}")
-    else:
-        chunk_gib = w_chunk * tlm * 8 / (1024 ** 3)
-        print(f"Writing binary flux cube ({total_gib:.1f} GiB, {n_chunks} chunks x {chunk_gib:.2f} GiB): {output_file}")
-        print( "  I/O bound — expect minutes to hours for large cubes.")
-
-    t_start = time.time()
-
+    os.makedirs(os.path.dirname(os.path.abspath(output_file)), exist_ok=True)
+    t0 = time.time()
+    print(f"Writing {output_file} ({total_gib:.2f} GiB, {n_chunks} chunk(s))...")
     with open(output_file, "wb") as f:
-        f.write(struct.pack("4i", nteff, nlogg, nmeta, nwave))
+        f.write(struct.pack("4i", nt, nl, nm, nw))
         teff_grid.astype(np.float64).tofile(f)
         logg_grid.astype(np.float64).tofile(f)
         meta_grid.astype(np.float64).tofile(f)
         wavelengths.astype(np.float64).tofile(f)
-
-        for chunk_i in range(n_chunks):
-            w0      = chunk_i * w_chunk
-            w1      = min(w0 + w_chunk, nwave)
-            chunk   = np.array(flux_cube[:, :, :, w0:w1])
+        for ci in range(n_chunks):
+            w0, w1 = ci * w_chunk, min((ci + 1) * w_chunk, nw)
+            chunk = np.array(flux_cube[:, :, :, w0:w1])
             chunk_t = np.ascontiguousarray(np.transpose(chunk, (3, 2, 1, 0)))
             del chunk
             chunk_t.astype(np.float64).tofile(f)
             del chunk_t
-
             if n_chunks > 1:
-                elapsed = time.time() - t_start
-                done    = chunk_i + 1
-                rate    = done / elapsed if elapsed > 0 else 1.0
-                eta     = (n_chunks - done) / rate
-                print(
-                    f"\r  chunk {done}/{n_chunks} ({100*done/n_chunks:.1f}%)  "
-                    f"elapsed {elapsed:.0f}s  ETA {eta:.0f}s   ",
-                    end="", flush=True,
-                )
-
+                elapsed = time.time() - t0
+                eta = (n_chunks - ci - 1) / ((ci + 1) / elapsed) if elapsed > 0 else 0
+                print(f"\r  chunk {ci+1}/{n_chunks}  ETA {eta:.0f}s   ", end="", flush=True)
     if n_chunks > 1:
         print()
-    print("Binary flux cube writing completed.")
+    print(f"  Done ({time.time()-t0:.1f}s)")
 
 
-def precompute_flux_cube(model_dir, output_file):
-    """
-    Precompute the flux cube from model files in a directory.
+# ---------------------------------------------------------------------------
+# Core population — builds one cube from a filtered/full file list
+# ---------------------------------------------------------------------------
 
-    Scales automatically to available RAM:
-      - Cube fits in 75% of available RAM → allocated in RAM, one-shot.
-      - Cube too large                    → disk-backed memmap; transpose
-                                            chunked to available RAM.
-    """
-    lookup_file = os.path.join(model_dir, "lookup_table.csv")
-    if not os.path.isfile(lookup_file):
-        cand = [p for p in os.listdir(model_dir)
-                if p.lower().startswith("lookup_table") and p.lower().endswith(".csv")]
-        if cand:
-            lookup_file = os.path.join(model_dir, cand[0])
-        else:
-            raise FileNotFoundError(f"lookup_table.csv not found in {model_dir}")
+def _populate_and_write(
+    model_dir:   str,
+    file_names:  List[str],
+    teff_vals:   np.ndarray,
+    logg_vals:   np.ndarray,
+    meta_vals:   np.ndarray,
+    wavelengths: np.ndarray,
+    output_file: str,
+    usable_ram:  int,
+    label:       str = "",
+) -> None:
+    """Build and write one flux cube from the given file list."""
+    teff_grid, logg_grid, meta_grid = build_grids(teff_vals, logg_vals, meta_vals)
 
-    file_names, teff_values, logg_values, meta_values = load_lookup_table(lookup_file)
-    if len(file_names) == 0:
-        raise RuntimeError("No entries in lookup table.")
-
-    teff_grid, logg_grid, meta_grid = build_grids(teff_values, logg_values, meta_values)
-    wavelengths = compute_common_wavelengths(model_dir, file_names)
-
-    cube_bytes    = len(teff_grid) * len(logg_grid) * len(meta_grid) * len(wavelengths) * 8
-    cube_gib      = cube_bytes / (1024 ** 3)
-    available     = _available_ram_bytes()
-    usable        = int(available * 0.75)
-
-    print(f"Cube size:      {cube_gib:.1f} GiB")
-    print(f"Available RAM:  {available / (1024**3):.1f} GiB  (using up to 75% = {usable / (1024**3):.1f} GiB)")
-
+    cube_bytes = len(teff_grid) * len(logg_grid) * len(meta_grid) * len(wavelengths) * 8
     tmp_path = None
-    if cube_bytes <= usable:
-        print("Strategy:       in-RAM  (cube fits comfortably)")
-        flux_cube = initialize_flux_cube(teff_grid, logg_grid, meta_grid, wavelengths)
-    else:
-        print("Strategy:       disk-backed memmap  (cube exceeds available RAM)")
-        out_dir   = os.path.dirname(os.path.abspath(output_file))
-        os.makedirs(out_dir, exist_ok=True)
-        tmp_path  = output_file + ".memmap.tmp"
-        flux_cube = initialize_flux_cube(teff_grid, logg_grid, meta_grid, wavelengths, tmp_path)
+    if cube_bytes > usable_ram:
+        tmp_path = output_file + ".tmp.memmap"
+
+    flux_cube = _allocate_cube(teff_grid, logg_grid, meta_grid, wavelengths, tmp_path)
+
+    # Build index maps — use dict for O(1) lookup
+    t2i = {v: i for i, v in enumerate(teff_grid)}
+    l2i = {v: i for i, v in enumerate(logg_grid)}
+    m2i = {v: i for i, v in enumerate(meta_grid)}
+
+    # Accumulator for mean: track sum and count per node
+    count_cube = np.zeros(
+        (len(teff_grid), len(logg_grid), len(meta_grid)), dtype=np.int32
+    )
+
+    n = len(file_names)
+    skipped = 0
+    t0 = time.time()
+    prefix = f"[{label}] " if label else ""
+
+    for i, fname in enumerate(file_names):
+        fpath = os.path.join(model_dir, fname)
+        if not os.path.exists(fpath):
+            skipped += 1
+            continue
+
+        # Snap to nearest grid point using round-trip through dict
+        teff_key = _snap(teff_vals[i], teff_grid)
+        logg_key = _snap(logg_vals[i], logg_grid)
+        meta_key = _snap(meta_vals[i], meta_grid)
+
+        i_t = t2i.get(teff_key)
+        i_l = l2i.get(logg_key)
+        i_m = m2i.get(meta_key)
+        if i_t is None or i_l is None or i_m is None:
+            skipped += 1
+            continue
+
+        wl, fl = load_sed(fpath)
+        try:
+            resampled = resample_to_grid(wl, fl, teff_vals[i], wavelengths)
+        except Exception:
+            skipped += 1
+            continue
+
+        # Accumulate for mean
+        flux_cube[i_t, i_l, i_m, :] += resampled
+        count_cube[i_t, i_l, i_m]   += 1
+
+        elapsed = time.time() - t0
+        done    = i + 1
+        rate    = done / elapsed if elapsed > 0 else 1.0
+        eta     = (n - done) / rate
+        print(
+            f"\r  {prefix}spectra {done}/{n} ({100*done/n:.1f}%)  "
+            f"skipped {skipped}  ETA {eta:.0f}s   ",
+            end="", flush=True,
+        )
+
+    print(f"\n  {prefix}Done — {n - skipped}/{n} loaded, {skipped} skipped.")
+
+    # Divide accumulated flux by count to get mean
+    nonzero = count_cube > 0
+    for axis_idx in range(len(wavelengths)):
+        flux_cube[:, :, :, axis_idx] = np.where(
+            nonzero,
+            flux_cube[:, :, :, axis_idx] / np.maximum(count_cube, 1),
+            0.0,
+        )
 
     try:
-        print("\nPopulating spectra:")
-        flux_cube = populate_flux_cube(
-            model_dir, file_names, teff_values, logg_values, meta_values,
-            teff_grid, logg_grid, meta_grid, wavelengths, flux_cube,
-        )
-
-        os.makedirs(os.path.dirname(output_file) or ".", exist_ok=True)
-        write_flux_cube_binary(
-            output_file, teff_grid, logg_grid, meta_grid, wavelengths, flux_cube,
-            usable_ram_bytes=usable,
-        )
+        _write_cube(output_file, teff_grid, logg_grid, meta_grid,
+                    wavelengths, flux_cube, usable_ram)
     finally:
         del flux_cube
         if tmp_path and os.path.exists(tmp_path):
-            print(f"Cleaning up temp file: {tmp_path}")
             os.remove(tmp_path)
 
-    print("Flux cube precomputation completed successfully.")
-    print(f"Output file: {output_file}")
-    print(f"Teff range: {teff_grid[0]} to {teff_grid[-1]}")
-    print(f"logg range: {logg_grid[0]} to {logg_grid[-1]}")
-    print(f"Metallicity range: {meta_grid[0]} to {meta_grid[-1]}")
-    print(f"Flux cube shape: ({len(teff_grid)}, {len(logg_grid)}, {len(meta_grid)}, {len(wavelengths)})")
-    print(f"Flux cube size: {cube_gib:.2f} GiB")
 
+def _snap(value: float, grid: np.ndarray) -> float:
+    """Return the nearest value in grid to value."""
+    idx = int(np.argmin(np.abs(grid - value)))
+    return float(grid[idx])
+
+
+# ---------------------------------------------------------------------------
+# Collision handling
+# ---------------------------------------------------------------------------
+
+def _group_by_extra_axes(
+    lookup:       Dict[str, List],
+    extra_cols:   List[str],
+    file_col:     str,
+    teff_col:     str,
+    logg_col:     str,
+    meta_col:     str,
+) -> Dict[Tuple, Dict]:
+    """
+    Group lookup rows by their unique extra-axis combination.
+
+    Returns {extra_key_tuple: {"file_names": [...], "teff": [...], ...}}
+    where extra_key_tuple is a tuple of (col_name, value) pairs sorted by
+    col_name for deterministic ordering.
+    """
+    n = len(lookup[file_col])
+    groups: Dict[Tuple, Dict] = {}
+
+    for i in range(n):
+        extra_key = tuple(
+            sorted((col, lookup[col][i]) for col in extra_cols)
+        )
+        if extra_key not in groups:
+            groups[extra_key] = {
+                "file_names": [], "teff": [], "logg": [], "meta": [],
+                "extra_vals": dict(extra_key),
+            }
+        g = groups[extra_key]
+        g["file_names"].append(lookup[file_col][i])
+        try:
+            g["teff"].append(float(lookup[teff_col][i]))
+        except (ValueError, KeyError):
+            g["teff"].append(0.0)
+        try:
+            g["logg"].append(float(lookup[logg_col][i]))
+        except (ValueError, KeyError):
+            g["logg"].append(0.0)
+        try:
+            g["meta"].append(float(lookup[meta_col][i]))
+        except (ValueError, KeyError):
+            g["meta"].append(0.0)
+
+    return groups
+
+
+def _extra_key_to_filename(extra_key: Tuple) -> str:
+    """Convert an extra-axis key tuple to a safe directory/filename fragment."""
+    parts = []
+    for col, val in extra_key:
+        safe_col = col.strip().replace("/", "_").replace("[", "").replace("]", "").replace(" ", "_")
+        safe_val = str(val).strip().replace(" ", "_").replace("/", "_")
+        parts.append(f"{safe_col}_{safe_val}")
+    return "__".join(parts) if parts else "default"
+
+
+def _write_library_index(
+    library_dir: Path,
+    entries: List[Dict[str, Any]],
+    extra_cols: List[str],
+) -> None:
+    """Write fluxcube_library/index.csv."""
+    index_path = library_dir / "index.csv"
+    fieldnames = ["cube_file"] + extra_cols + ["n_spectra", "teff_min", "teff_max",
+                                                "logg_min", "logg_max", "meta_min", "meta_max"]
+    with open(index_path, "w", newline="", encoding="utf-8") as f:
+        f.write("#" + ",".join(fieldnames) + "\n")
+        w = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
+        for e in entries:
+            w.writerow(e)
+    print(f"Library index written: {index_path}")
+
+
+# ---------------------------------------------------------------------------
+# Main entry point
+# ---------------------------------------------------------------------------
+
+def precompute_flux_cube(
+    model_dir:     str,
+    output_file:   str,
+    root_dir:      Optional[str] = None,
+    override_dict: Optional[Dict[str, Any]] = None,
+) -> None:
+    """
+    Build flux cube(s) for model_dir.
+
+    Parameters
+    ----------
+    model_dir     : directory containing .txt spectra and lookup_table.csv
+    output_file   : path for the primary (MESA-facing) flux_cube.bin
+    root_dir      : SED_Tools root (for sed_tools.defaults)
+    override_dict : Python-API config override (highest priority)
+    """
+    model_dir   = str(model_dir)
+    output_file = str(output_file)
+
+    # --- Config ---
+    cfg = load_config(
+        model_dir     = Path(model_dir),
+        root_dir      = Path(root_dir) if root_dir else None,
+        override_dict = override_dict,
+    )
+    print(f"On-collision strategy: {cfg.strategy}  (source: {cfg.source})")
+
+    # Copy global config into model dir for reproducibility
+    if root_dir:
+        copy_global_config_to_model(Path(root_dir), Path(model_dir))
+
+    # --- Lookup table ---
+    lookup_file = os.path.join(model_dir, "lookup_table.csv")
+    if not os.path.isfile(lookup_file):
+        cands = [p for p in os.listdir(model_dir)
+                 if p.lower().startswith("lookup_table") and p.lower().endswith(".csv")]
+        if cands:
+            lookup_file = os.path.join(model_dir, cands[0])
+        else:
+            raise FileNotFoundError(f"lookup_table.csv not found in {model_dir}")
+
+    lookup = load_lookup_table(lookup_file)
+
+    file_col = _find_col(lookup, ["file_name", "filename", "file"]) or list(lookup.keys())[0]
+    teff_col = _find_col(lookup, ["teff", "t_eff"])
+    logg_col = _find_col(lookup, ["logg", "log_g"])
+    meta_col = _find_col(lookup, ["metallicity", "meta", "feh", "[fe/h]", "[m/h]"])
+
+    if not lookup[file_col]:
+        raise RuntimeError("No entries in lookup table.")
+
+    # --- Discover extra axes ---
+    extra_cols = discover_extra_axes(list(lookup.keys()))
+    if extra_cols:
+        print(f"Extra axes detected: {', '.join(extra_cols)}")
+    else:
+        print("No extra axes detected — no collisions possible.")
+
+    # --- Wavelengths ---
+    wavelengths = compute_common_wavelengths(model_dir, lookup[file_col])
+
+    # --- RAM budget ---
+    available = _available_ram_bytes()
+    usable    = int(available * 0.75)
+    print(f"RAM: {available/1024**3:.1f} GiB available, using up to {usable/1024**3:.1f} GiB")
+
+    # ===================================================================
+    # No extra axes → build exactly as before, no collision handling needed
+    # ===================================================================
+    if not extra_cols:
+        file_names = lookup[file_col]
+        teff_vals  = _float_col(lookup, teff_col)
+        logg_vals  = _float_col(lookup, logg_col)
+        meta_vals  = _float_col(lookup, meta_col)
+        _populate_and_write(
+            model_dir, file_names, teff_vals, logg_vals, meta_vals,
+            wavelengths, output_file, usable,
+        )
+        _print_summary(output_file, teff_vals, logg_vals, meta_vals)
+        return
+
+    # ===================================================================
+    # Extra axes present — group files by extra-axis combination
+    # ===================================================================
+    groups = _group_by_extra_axes(
+        lookup, extra_cols, file_col,
+        teff_col or "", logg_col or "", meta_col or "",
+    )
+
+    n_groups    = len(groups)
+    n_colliding = sum(
+        1 for g in groups.values()
+        if len(set(zip(g["teff"], g["logg"], g["meta"]))) <
+           len(g["file_names"])   # more files than unique nodes within group
+    )
+
+    if n_groups == 1:
+        # All files share the same extra-axis values — no real collision
+        g = next(iter(groups.values()))
+        _populate_and_write(
+            model_dir,
+            g["file_names"],
+            np.array(g["teff"]),
+            np.array(g["logg"]),
+            np.array(g["meta"]),
+            wavelengths, output_file, usable,
+        )
+        _print_summary(output_file,
+                       np.array(g["teff"]),
+                       np.array(g["logg"]),
+                       np.array(g["meta"]))
+        return
+
+    # Multiple extra-axis groups
+    print(f"\n{n_groups} extra-axis variant(s) found across {sum(len(g['file_names']) for g in groups.values())} files.")
+
+    if cfg.strategy in ("all-warn", "all"):
+        if cfg.strategy == "all-warn":
+            print("\nWARNING: Multiple extra-axis variants will be averaged into the "
+                  "MESA cube. Individual variant cubes are being built in fluxcube_library/.")
+            for key, g in sorted(groups.items()):
+                print(f"  Variant: {dict(key)}  ({len(g['file_names'])} spectra)")
+
+        # Build mean cube (all files, mean over extra axes)
+        all_files = []
+        all_teff, all_logg, all_meta = [], [], []
+        for g in groups.values():
+            all_files.extend(g["file_names"])
+            all_teff.extend(g["teff"])
+            all_logg.extend(g["logg"])
+            all_meta.extend(g["meta"])
+
+        print(f"\nBuilding mean cube → {output_file}")
+        _populate_and_write(
+            model_dir, all_files,
+            np.array(all_teff), np.array(all_logg), np.array(all_meta),
+            wavelengths, output_file, usable, label="mean",
+        )
+
+        # Build per-variant library
+        library_dir = Path(model_dir) / "fluxcube_library"
+        library_dir.mkdir(exist_ok=True)
+        index_entries = []
+
+        for key, g in sorted(groups.items()):
+            variant_name = _extra_key_to_filename(key)
+            variant_file = str(library_dir / f"flux_cube__{variant_name}.bin")
+            print(f"\nBuilding variant cube: {variant_name}")
+            _populate_and_write(
+                model_dir,
+                g["file_names"],
+                np.array(g["teff"]),
+                np.array(g["logg"]),
+                np.array(g["meta"]),
+                wavelengths, variant_file, usable, label=variant_name,
+            )
+            entry = {"cube_file": os.path.basename(variant_file), "n_spectra": len(g["file_names"])}
+            entry.update(g["extra_vals"])
+            tarr = np.array(g["teff"])
+            larr = np.array(g["logg"])
+            marr = np.array(g["meta"])
+            entry.update({
+                "teff_min": float(tarr.min()), "teff_max": float(tarr.max()),
+                "logg_min": float(larr.min()), "logg_max": float(larr.max()),
+                "meta_min": float(marr.min()), "meta_max": float(marr.max()),
+            })
+            index_entries.append(entry)
+
+        _write_library_index(library_dir, index_entries, extra_cols)
+
+    elif cfg.strategy == "mean":
+        # Mean only — no library
+        all_files = []
+        all_teff, all_logg, all_meta = [], [], []
+        for g in groups.values():
+            all_files.extend(g["file_names"])
+            all_teff.extend(g["teff"])
+            all_logg.extend(g["logg"])
+            all_meta.extend(g["meta"])
+
+        print(f"Building mean cube (no library) → {output_file}")
+        _populate_and_write(
+            model_dir, all_files,
+            np.array(all_teff), np.array(all_logg), np.array(all_meta),
+            wavelengths, output_file, usable, label="mean",
+        )
+
+    elif cfg.strategy == "filter":
+        # Resolve filter specs against available extra-axis values
+        extra_unique: Dict[str, List] = {}
+        for col in extra_cols:
+            extra_unique[col] = sorted(set(lookup[col]))
+
+        resolved, errors = cfg.resolve_filter_values(extra_unique)
+        if errors:
+            raise ValueError(
+                "Filter config errors:\n" + "\n".join(f"  - {e}" for e in errors)
+            )
+
+        print(f"Filter: {resolved}")
+
+        # Find matching group
+        matched_group = None
+        for key, g in groups.items():
+            key_dict = dict(key)
+            match = True
+            for col, val in resolved.items():
+                if col not in key_dict:
+                    match = False
+                    break
+                # compare as strings (handles float/str uniformly)
+                if str(key_dict[col]).strip().lower() != str(val).strip().lower():
+                    match = False
+                    break
+            if match:
+                matched_group = g
+                break
+
+        if matched_group is None:
+            available_variants = "\n".join(
+                f"  {dict(k)}" for k in sorted(groups.keys())
+            )
+            raise ValueError(
+                f"No variant matches filter {resolved}.\n"
+                f"Available variants:\n{available_variants}"
+            )
+
+        print(f"Matched variant: {matched_group['extra_vals']} "
+              f"({len(matched_group['file_names'])} spectra)")
+        _populate_and_write(
+            model_dir,
+            matched_group["file_names"],
+            np.array(matched_group["teff"]),
+            np.array(matched_group["logg"]),
+            np.array(matched_group["meta"]),
+            wavelengths, output_file, usable,
+        )
+
+    _print_summary(output_file,
+                   _float_col(lookup, teff_col),
+                   _float_col(lookup, logg_col),
+                   _float_col(lookup, meta_col))
+
+
+def _print_summary(output_file, teff_vals, logg_vals, meta_vals):
+    print(f"\nFlux cube: {output_file}")
+    if teff_vals.size:
+        print(f"  Teff : {teff_vals.min():.0f} – {teff_vals.max():.0f} K")
+    if logg_vals.size:
+        print(f"  logg : {logg_vals.min():.2f} – {logg_vals.max():.2f}")
+    if meta_vals.size:
+        print(f"  [M/H]: {meta_vals.min():.2f} – {meta_vals.max():.2f}")
+
+
+# ---------------------------------------------------------------------------
+# CLI
+# ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    # Interactive-friendly CLI wrapper
     import sys
-    parser = argparse.ArgumentParser(
-        description="Precompute flux cube for stellar atmosphere models"
-    )
-    parser.add_argument("--model_dir", type=str, required=False,
-                        help="Directory containing stellar model files")
-    parser.add_argument("--output", type=str, default=None,
-                        help="Output binary file (default: <model_dir>/flux_cube.bin)")
+
+    parser = argparse.ArgumentParser(description="Precompute flux cube for stellar atmosphere models")
+    parser.add_argument("--model_dir", type=str, required=False)
+    parser.add_argument("--output",    type=str, default=None)
+    parser.add_argument("--root_dir",  type=str, default=None,
+                        help="SED_Tools root directory (for sed_tools.defaults)")
     args = parser.parse_args()
 
-    def discover_model_dirs(root="data/stellar_models"):
+    def _discover_model_dirs(root="data/stellar_models"):
         cands = []
-        for base in [root, "./"+root, "../"+root]:
+        for base in [root, "./" + root, "../" + root]:
             if os.path.isdir(base):
                 for name in sorted(os.listdir(base)):
                     p = os.path.join(base, name)
                     if not os.path.isdir(p):
                         continue
                     has_lookup = os.path.isfile(os.path.join(p, "lookup_table.csv"))
-                    has_txt = any(fn.lower().endswith(".txt") for fn in os.listdir(p))
-                    has_h5 = any(fn.lower().endswith(".h5") for fn in os.listdir(p))
-                    if has_lookup or has_txt or has_h5:
+                    has_txt    = any(fn.lower().endswith(".txt") for fn in os.listdir(p))
+                    if has_lookup or has_txt:
                         cands.append(p)
-        # also include current dir if it looks like a model folder
-        cur = os.getcwd()
-        try:
-            has_lookup = os.path.isfile(os.path.join(cur, "lookup_table.csv"))
-            has_txt = any(fn.lower().endswith(".txt") for fn in os.listdir(cur))
-            has_h5 = any(fn.lower().endswith(".h5") for fn in os.listdir(cur))
-            if has_lookup or has_txt or has_h5:
-                cands.append(cur)
-        except Exception:
-            pass
         return sorted(set(cands))
 
     if not args.model_dir:
         print("No --model_dir provided. Discovering local model directories…")
-        cands = discover_model_dirs()
+        cands = _discover_model_dirs()
         if not cands:
-            sys.exit("Could not find any model directories under data/stellar_models/*")
-        for i,p in enumerate(cands,1):
+            sys.exit("No model directories found.")
+        for i, p in enumerate(cands, 1):
             print(f"{i}. {p}")
         sel = input("Select a model directory by number: ").strip()
         if not sel.isdigit() or not (1 <= int(sel) <= len(cands)):
             sys.exit("Invalid selection.")
-        args.model_dir = cands[int(sel)-1]
+        args.model_dir = cands[int(sel) - 1]
 
     if not args.output:
         args.output = os.path.join(args.model_dir, "flux_cube.bin")
@@ -418,4 +695,4 @@ if __name__ == "__main__":
         if ans:
             args.output = ans
 
-    precompute_flux_cube(args.model_dir, args.output)
+    precompute_flux_cube(args.model_dir, args.output, root_dir=args.root_dir)

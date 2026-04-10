@@ -1,0 +1,21 @@
+# sed_tools.defaults
+# Global on-collision configuration for precompute_flux_cube.
+# Per-model overrides go in <model_dir>/mesa_config.toml (same schema).
+#
+# strategy options:
+#   all-warn  — build one cube per unique extra-axis combination in
+#               fluxcube_library/, AND build a mean cube in the model
+#               directory for MESA.  Warns about every collision.
+#   all       — same as all-warn but without the warnings.
+#   mean      — only build the mean cube (no fluxcube_library/).
+#   filter    — filter to a specific extra-axis slice before building.
+#               Requires [on_collision.filter] section below.
+
+[on_collision]
+strategy = "all-warn"
+
+# Uncomment and fill in when strategy = "filter":
+# [on_collision.filter]
+# alpha = "min"          # min | max | exact value e.g. "0.4"
+# f_sed = "2.0"
+# composition = "h-rich" # string: case-insensitive
