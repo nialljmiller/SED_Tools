@@ -1,0 +1,261 @@
+======================================================================
+SED_Tools Pipeline Audit Report
+======================================================================
+
+──────────────────────────────────────────────────────────────────────
+Model: Husfeld
+  Files       : 448 total, 30 sampled (30 with valid Teff headers)
+  Lookup      : 448 entries -> 64 unique nodes  (max 7 files/node)
+  Note: 64 collision nodes — handled (fluxcube_library/ present, mean cube built)
+       Teff=35000.0 logg=4.0 [M/H]=999.9 - 7 files: Husfeld_fid1.txt, Husfeld_fid2.txt, Husfeld_fid3.txt, Husfeld_fid4.txt
+       Teff=35000.0 logg=4.5 [M/H]=999.9 - 7 files: Husfeld_fid10.txt, Husfeld_fid11.txt, Husfeld_fid12.txt, Husfeld_fid13.txt
+       Teff=45000.0 logg=4.0 [M/H]=999.9 - 7 files: Husfeld_fid100.txt, Husfeld_fid101.txt, Husfeld_fid102.txt, Husfeld_fid103.txt
+  Units flag  : OK (units_standardized = True)
+  WL range    : 30.0 – 33310277.8 Å  (span = 33310248 Å)
+  Negative raw flux points: 3 (across sampled files)
+  Wien peak   : skipped — Wien peak < 1500 Å (UV/EUV opacity-dominated; 30 spectra)
+  Bolometric check skipped: wl coverage 0.1% of σT⁴ (<5% threshold)
+  Cube grid   : 10×7×1×1543  (0.001 GiB)
+  Cube Teff   : 35000 – 80000 K
+  Cube log g  : 4.00 – 7.00
+  Cube [M/H]  : 999.90 – 999.90
+  Cube wl     : 30.0 – 33310277.8 Å
+  Raw vs cube : 28 nodes compared  (28 clean snaps / 30 sampled)  27 nodes exceed 10% threshold
+               median node-max-err=0.2025  worst=0.8571  (node: Teff=55000 K  log g=6.00  [M/H]=999.90)
+  Note: RAW VS CUBE: 27/28 nodes exceed 10% (expected — mean cube, variants in fluxcube_library/)
+  Raw/cube skip reasons: duplicate_node=2
+  Cube neg pts: 0 across 5 sampled nodes
+  Bol ratio (cube): skipped (wl coverage <5% of σT⁴ for all nodes)
+  Status: PASS
+
+──────────────────────────────────────────────────────────────────────
+Model: Kurucz
+  Files       : 3808 total, 30 sampled (30 with valid Teff headers)
+  Lookup      : 3808 entries -> 3808 unique nodes  (max 1 files/node)
+  Units flag  : OK (units_standardized = True)
+  WL range    : 90.9 – 1600000.0 Å  (span = 1599909 Å)
+  Wien peak   : median ratio=0.948  min=0.510  max=1.306  (n=24, ideal=1.0)
+  Bol ratio (raw) : median=0.9998  std=0.0263  min=0.9418  max=1.1175  (wl coverage 100% of σT⁴)
+  Cube grid   : 76×11×8×1221  (0.065 GiB)
+  Cube Teff   : 3500 – 50000 K
+  Cube log g  : 0.00 – 5.00
+  Cube [M/H]  : -2.50 – 0.50
+  Cube wl     : 90.9 – 1600000.0 Å
+  Raw vs cube : 30 nodes compared  (30 clean snaps / 30 sampled)  0 nodes exceed 10% threshold
+               median node-max-err=0.0000  worst=0.0000  (node: Teff=10500 K  log g=3.00  [M/H]=0.00)
+  Cube neg pts: 0 across 5 sampled nodes
+  Bol ratio (cube): median=0.9983  std=0.4902  min=0.0000  max=1.0018
+  Note: 2 zero-flux cube nodes (zero-filled grid edges, expected)
+  Status: PASS
+
+──────────────────────────────────────────────────────────────────────
+Model: Kurucz2003
+  Files       : 3808 total, 30 sampled (30 with valid Teff headers)
+  Lookup      : 3808 entries -> 3808 unique nodes  (max 1 files/node)
+  Units flag  : OK (units_standardized = True)
+  WL range    : 147.2 – 1600000.0 Å  (span = 1599853 Å)
+  Wien peak   : median ratio=0.959  min=0.520  max=1.405  (n=23, ideal=1.0)
+  Bol ratio (raw) : median=1.0004  std=0.0506  min=0.9639  max=1.2197  (wl coverage 100% of σT⁴)
+  Cube grid   : 76×11×8×1199  (0.064 GiB)
+  Cube Teff   : 3500 – 50000 K
+  Cube log g  : 0.00 – 5.00
+  Cube [M/H]  : -2.50 – 0.50
+  Cube wl     : 147.2 – 1600000.0 Å
+  Raw vs cube : 30 nodes compared  (30 clean snaps / 30 sampled)  0 nodes exceed 10% threshold
+               median node-max-err=0.0000  worst=0.0000  (node: Teff=26000 K  log g=5.00  [M/H]=0.20)
+  Cube neg pts: 0 across 5 sampled nodes
+  Bol ratio (cube): median=0.9983  std=0.4903  min=0.0000  max=1.0024
+  Note: 2 zero-flux cube nodes (zero-filled grid edges, expected)
+  Status: PASS
+
+──────────────────────────────────────────────────────────────────────
+Model: Kurucz2003all
+  Files       : 8092 total, 30 sampled (30 with valid Teff headers)
+  Lookup      : 8092 entries -> 4284 unique nodes  (max 2 files/node)
+  Note: 3808 collision nodes — handled (fluxcube_library/ present, mean cube built)
+       Teff=10000.0 logg=2.0 [M/H]=-0.5 - 2 files: Kurucz2003all_fid16185.txt, Kurucz2003all_fid19993.txt
+       Teff=10000.0 logg=2.5 [M/H]=-0.5 - 2 files: Kurucz2003all_fid16186.txt, Kurucz2003all_fid19994.txt
+       Teff=10000.0 logg=3.0 [M/H]=-0.5 - 2 files: Kurucz2003all_fid16187.txt, Kurucz2003all_fid19995.txt
+  Units flag  : OK (units_standardized = True)
+  WL range    : 147.2 – 1600000.0 Å  (span = 1599853 Å)
+  Wien peak   : median ratio=0.958  min=0.548  max=1.370  (n=22, ideal=1.0)
+  Bol ratio (raw) : median=1.0002  std=0.0418  min=0.9549  max=1.2189  (wl coverage 100% of σT⁴)
+  Cube grid   : 76×11×9×1199  (0.072 GiB)
+  Cube Teff   : 3500 – 50000 K
+  Cube log g  : 0.00 – 5.00
+  Cube [M/H]  : -4.00 – 0.50
+  Cube wl     : 147.2 – 1600000.0 Å
+  Raw vs cube : 30 nodes compared  (30 clean snaps / 30 sampled)  20 nodes exceed 10% threshold
+               median node-max-err=0.1858  worst=0.7725  (node: Teff=5750 K  log g=4.00  [M/H]=0.00)
+  Note: RAW VS CUBE: 20/30 nodes exceed 10% (expected — mean cube, variants in fluxcube_library/)
+  Cube neg pts: 0 across 5 sampled nodes
+  Bol ratio (cube): median=0.9987  std=0.4905  min=0.0000  max=1.0028
+  Note: 2 zero-flux cube nodes (zero-filled grid edges, expected)
+  Status: PASS
+
+──────────────────────────────────────────────────────────────────────
+Model: Kurucz2003all__alpha_0.4__lh_1.25__vtur_2
+  Files       : 4284 total, 30 sampled (30 with valid Teff headers)
+  Lookup      : 4284 entries -> 4284 unique nodes  (max 1 files/node)
+  Units flag  : OK (units_standardized = True)
+  WL range    : 147.2 – 1600000.0 Å  (span = 1599853 Å)
+  Wien peak   : median ratio=0.953  min=0.547  max=1.370  (n=22, ideal=1.0)
+  Bol ratio (raw) : median=1.0002  std=0.0518  min=0.9578  max=1.2729  (wl coverage 100% of σT⁴)
+  Cube grid   : 76×11×9×1199  (0.072 GiB)
+  Cube Teff   : 3500 – 50000 K
+  Cube log g  : 0.00 – 5.00
+  Cube [M/H]  : -4.00 – 0.50
+  Cube wl     : 147.2 – 1600000.0 Å
+  Raw vs cube : 30 nodes compared  (30 clean snaps / 30 sampled)  0 nodes exceed 10% threshold
+               median node-max-err=0.0000  worst=0.0000  (node: Teff=13000 K  log g=4.50  [M/H]=-2.50)
+  Cube neg pts: 0 across 5 sampled nodes
+  Bol ratio (cube): median=0.9986  std=0.4904  min=0.0000  max=1.0027
+  Note: 2 zero-flux cube nodes (zero-filled grid edges, expected)
+  Status: PASS
+
+──────────────────────────────────────────────────────────────────────
+Model: Kurucz2003all__alpha_0__lh_1.25__vtur_2
+  Files       : 3808 total, 30 sampled (30 with valid Teff headers)
+  Lookup      : 3808 entries -> 3808 unique nodes  (max 1 files/node)
+  Units flag  : OK (units_standardized = True)
+  WL range    : 147.2 – 1600000.0 Å  (span = 1599853 Å)
+  Wien peak   : median ratio=0.966  min=0.549  max=1.439  (n=23, ideal=1.0)
+  Bol ratio (raw) : median=1.0004  std=0.0346  min=0.9575  max=1.1461  (wl coverage 100% of σT⁴)
+  Cube grid   : 76×11×8×1199  (0.064 GiB)
+  Cube Teff   : 3500 – 50000 K
+  Cube log g  : 0.00 – 5.00
+  Cube [M/H]  : -2.50 – 0.50
+  Cube wl     : 147.2 – 1600000.0 Å
+  Raw vs cube : 30 nodes compared  (30 clean snaps / 30 sampled)  0 nodes exceed 10% threshold
+               median node-max-err=0.0000  worst=0.0000  (node: Teff=18000 K  log g=3.00  [M/H]=-2.50)
+  Cube neg pts: 0 across 5 sampled nodes
+  Bol ratio (cube): median=0.9983  std=0.4903  min=0.0000  max=1.0024
+  Note: 2 zero-flux cube nodes (zero-filled grid edges, expected)
+  Status: PASS
+
+──────────────────────────────────────────────────────────────────────
+Model: Kurucz2003alp
+  Files       : 4284 total, 30 sampled (30 with valid Teff headers)
+  Lookup      : 4284 entries -> 4284 unique nodes  (max 1 files/node)
+  Units flag  : OK (units_standardized = True)
+  WL range    : 147.2 – 1600000.0 Å  (span = 1599853 Å)
+  Wien peak   : median ratio=0.921  min=0.499  max=1.369  (n=20, ideal=1.0)
+  Bol ratio (raw) : median=1.0005  std=0.0728  min=0.9638  max=1.3033  (wl coverage 100% of σT⁴)
+  Cube grid   : 76×11×9×1199  (0.072 GiB)
+  Cube Teff   : 3500 – 50000 K
+  Cube log g  : 0.00 – 5.00
+  Cube [M/H]  : -4.00 – 0.50
+  Cube wl     : 147.2 – 1600000.0 Å
+  Raw vs cube : 30 nodes compared  (30 clean snaps / 30 sampled)  0 nodes exceed 10% threshold
+               median node-max-err=0.0000  worst=0.0000  (node: Teff=39000 K  log g=4.00  [M/H]=-1.00)
+  Cube neg pts: 0 across 5 sampled nodes
+  Bol ratio (cube): median=0.9986  std=0.4904  min=0.0000  max=1.0027
+  Note: 2 zero-flux cube nodes (zero-filled grid edges, expected)
+  Status: PASS
+
+──────────────────────────────────────────────────────────────────────
+Model: NextGen2
+  Files       : 2712 total, 30 sampled (30 with valid Teff headers)
+  Lookup      : 2712 entries -> 2712 unique nodes  (max 1 files/node)
+  Units flag  : OK (units_standardized = True)
+  WL range    : 26.5 – 9707344.9 Å  (span = 9707318 Å)
+  Wien peak   : median ratio=0.993  min=0.553  max=1.223  (n=27, ideal=1.0)
+  Bol ratio (raw) : median=0.9884  std=0.0367  min=0.9130  max=1.0364  (wl coverage 101% of σT⁴)
+  Cube grid   : 67×9×10×27374  (1.321 GiB)
+  Cube Teff   : 900 – 10000 K
+  Cube log g  : 3.00 – 6.00
+  Cube [M/H]  : -4.00 – 0.00
+  Cube wl     : 26.5 – 9707344.9 Å
+  Raw vs cube : 30 nodes compared  (30 clean snaps / 30 sampled)  0 nodes exceed 10% threshold
+               median node-max-err=0.0000  worst=0.0000  (node: Teff=5200 K  log g=4.50  [M/H]=-1.00)
+  Cube neg pts: 0 across 5 sampled nodes
+  Bol ratio (cube): median=0.0000  std=0.0000  min=0.0000  max=0.0000
+  Note: 5 zero-flux cube nodes (zero-filled grid edges, expected)
+  Note: only 0/5 sampled nodes populated — sparse grid, cube bol check skipped
+  Status: PASS
+
+──────────────────────────────────────────────────────────────────────
+Model: bbody
+  Files       : 588 total, 30 sampled (30 with valid Teff headers)
+  Lookup      : 588 entries -> 588 unique nodes  (max 1 files/node)
+  Units flag  : OK (units_standardized = True)
+  WL range    : 1.0 – 9991809.0 Å  (span = 9991808 Å)
+  Wien peak   : median ratio=1.008  min=1.003  max=1.012  (n=18, ideal=1.0)
+  Bolometric check: EXEMPT (distance-calibrated model, σT⁴ not applicable)
+  Cube grid   : 588×1×1×1314  (0.006 GiB)
+  Cube Teff   : 10 – 200000 K
+  Cube log g  : 999.90 – 999.90
+  Cube [M/H]  : 999.90 – 999.90
+  Cube wl     : 1.0 – 9991809.0 Å
+  Raw vs cube : 30 nodes compared  (30 clean snaps / 30 sampled)  0 nodes exceed 10% threshold
+               median node-max-err=0.0000  worst=0.0000  (node: Teff=36000 K  log g=999.90  [M/H]=999.90)
+  Cube neg pts: 0 across 5 sampled nodes
+  Status: PASS
+
+──────────────────────────────────────────────────────────────────────
+Model: hres
+  Files       : 1650 total, 30 sampled (30 with valid Teff headers)
+  Lookup      : 1650 entries -> 1650 unique nodes  (max 1 files/node)
+  Units flag  : OK (units_standardized = True)
+  WL range    : 3000.2 – 6996.8 Å  (span = 3997 Å)
+  Wien peak   : median ratio=0.986  min=0.866  max=1.252  (n=14, ideal=1.0)
+  Bol ratio (raw) : median=0.8921  std=0.2113  min=0.2722  max=1.1284  (wl coverage 39% of σT⁴)
+  Cube grid   : 55×17×4×13323  (0.399 GiB)
+  Cube Teff   : 3000 – 55000 K
+  Cube log g  : -0.50 – 5.50
+  Cube [M/H]  : -10.00 – 3.00
+  Cube wl     : 3000.2 – 6996.8 Å
+  Raw vs cube : 30 nodes compared  (30 clean snaps / 30 sampled)  0 nodes exceed 10% threshold
+               median node-max-err=0.0000  worst=0.0000  (node: Teff=24000 K  log g=4.00  [M/H]=0.00)
+  Cube neg pts: 0 across 5 sampled nodes
+  Bol ratio (cube): median=0.0000  std=0.0000  min=0.0000  max=0.0000
+  Note: 4 zero-flux cube nodes (zero-filled grid edges, expected)
+  Note: only 0/4 sampled nodes populated — sparse grid, cube bol check skipped
+  Status: PASS
+
+──────────────────────────────────────────────────────────────────────
+Model: morley12
+  Files       : 182 total, 30 sampled (30 with valid Teff headers)
+  Lookup      : 182 entries -> 48 unique nodes  (max 4 files/node)
+  Note: 46 collision nodes — handled (fluxcube_library/ present, mean cube built)
+       Teff=1000.0 logg=5.0 [M/H]=0.0 - 4 files: morley12_fid1.txt, morley12_fid2.txt, morley12_fid3.txt, morley12_fid4.txt
+       Teff=1000.0 logg=5.5 [M/H]=0.0 - 4 files: morley12_fid10.txt, morley12_fid11.txt, morley12_fid12.txt, morley12_fid9.txt
+       Teff=550.0 logg=5.0 [M/H]=0.0 - 4 files: morley12_fid103.txt, morley12_fid104.txt, morley12_fid105.txt, morley12_fid106.txt
+  Units flag  : OK (units_standardized = True)
+  WL range    : 6000.0 – 299960.7 Å  (span = 293961 Å)
+  Wien peak   : skipped — all spectra below 1500 K (band-dominated continuum)
+  Bol ratio (raw) : median=1.0683  std=0.0326  min=0.9898  max=1.1076  (wl coverage 99% of σT⁴)
+  Cube grid   : 13×4×1×161324  (0.068 GiB)
+  Cube Teff   : 400 – 1300 K
+  Cube log g  : 4.00 – 5.50
+  Cube [M/H]  : 0.00 – 0.00
+  Cube wl     : 6000.0 – 299960.7 Å
+  Raw vs cube : 30 nodes compared  (30 clean snaps / 30 sampled)  21 nodes exceed 10% threshold
+               median node-max-err=0.4192  worst=1.9440  (node: Teff=450 K  log g=4.50  [M/H]=0.00)
+  Note: RAW VS CUBE: 21/30 nodes exceed 10% (expected — mean cube, variants in fluxcube_library/)
+  Cube neg pts: 0 across 5 sampled nodes
+  Bol ratio (cube): median=1.0716  std=0.0296  min=1.0025  max=1.0813
+  Status: PASS
+
+──────────────────────────────────────────────────────────────────────
+Model: tmap2
+  Files       : 1215 total, 30 sampled (30 with valid Teff headers)
+  Lookup      : 1215 entries -> 1215 unique nodes  (max 1 files/node)
+  Units flag  : OK (units_standardized = True)
+  WL range    : 2.0 – 400000.0 Å  (span = 399998 Å)
+  Wien peak   : skipped — Wien peak < 1500 Å (UV/EUV opacity-dominated; 30 spectra)
+  Bol ratio (raw) : median=1.0162  std=0.0382  min=0.9236  max=1.0287  (wl coverage 100% of σT⁴)
+  Cube grid   : 131×11×1×173543  (2.002 GiB)
+  Cube Teff   : 20000 – 150000 K
+  Cube log g  : 4.00 – 9.00
+  Cube [M/H]  : 999.90 – 999.90
+  Cube wl     : 2.0 – 400000.0 Å
+  Raw vs cube : 30 nodes compared  (30 clean snaps / 30 sampled)  0 nodes exceed 10% threshold
+               median node-max-err=0.0000  worst=0.0000  (node: Teff=67000 K  log g=8.50  [M/H]=999.90)
+  Cube neg pts: 0 across 5 sampled nodes
+  Bol ratio (cube): median=1.0119  std=0.0395  min=0.9295  max=1.0199
+  Status: PASS
+
+======================================================================
+SUMMARY: 12 PASS / 0 FAIL / 12 total
+======================================================================

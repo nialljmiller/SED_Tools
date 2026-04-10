@@ -58,6 +58,14 @@ WIEN_CHECK_EXEMPT = {"grams_cgrid", "grams_ogrid"}
 # flux peak does not reliably locate the true Wien peak.
 WIEN_BAND_DOMINATED_TEFF_MAX = 1500.0  # K
 
+# Below this Wien peak wavelength the continuum is dominated by UV/EUV
+# atmospheric opacity effects (Lyman continuum, He II, etc.) in hot compact
+# objects such as DA white dwarfs and hot subdwarfs.  The smoothed SED peak
+# no longer reliably locates the Planck Wien peak — it shifts redward by a
+# physically real but large factor that is not a unit error.
+# 1500 Å corresponds to roughly Teff > 19 000 K.
+WIEN_UV_OPACITY_WL_THRESHOLD = 1500.0  # Å
+
 # Minimum fraction of non-zero cube nodes required to trust the cube bol check.
 CUBE_MIN_NONZERO_FRAC = 0.5
 # ---------------------------------------------------------------------------
@@ -286,18 +294,22 @@ def audit_model(model_dir):
                     if frac >= 0.05 and expected_in_range > 0:
                         result["bol_ratios_raw"].append(bol / expected_in_range)
 
-                # Wien peak check — skip for exempt models and band-dominated Teffs
+                # Wien peak check — skip for exempt models, band-dominated Teffs,
+                # and UV/EUV opacity-dominated hot compact objects.
                 wl_wien = wien_peak_ang(teff)
                 fl_pos  = np.maximum(fl, 0)
-                wien_exempt      = name in WIEN_CHECK_EXEMPT or teff < WIEN_BAND_DOMINATED_TEFF_MAX
-                wien_in_range    = float(wl.min()) < wl_wien < float(wl.max())
-                if not wien_exempt and fl_pos.max() > 0 and wien_in_range:
+                wien_exempt       = name in WIEN_CHECK_EXEMPT or teff < WIEN_BAND_DOMINATED_TEFF_MAX
+                wien_uv_dominated = wl_wien < WIEN_UV_OPACITY_WL_THRESHOLD
+                wien_in_range     = float(wl.min()) < wl_wien < float(wl.max())
+                if not wien_exempt and not wien_uv_dominated and fl_pos.max() > 0 and wien_in_range:
                     window    = max(1, len(wl) // 50)
                     fl_smooth = np.convolve(fl_pos, np.ones(window)/window, mode="same")
                     actual_peak_wl = float(wl[np.argmax(fl_smooth)])
                     result["wien_deviations"].append(actual_peak_wl / wl_wien)
-                elif not wien_exempt and not wien_in_range and fl_pos.max() > 0:
+                elif not wien_exempt and not wien_uv_dominated and not wien_in_range and fl_pos.max() > 0:
                     result["wien_peak_oor_count"] = result.get("wien_peak_oor_count", 0) + 1
+                elif not wien_exempt and wien_uv_dominated:
+                    result["wien_uv_skip_count"] = result.get("wien_uv_skip_count", 0) + 1
 
         except Exception as e:
             result["errors"].append(f"Load error {s.name}: {e}")
@@ -415,16 +427,53 @@ def audit_model(model_dir):
             if wl_hi <= wl_lo:
                 result["raw_vs_cube_skip_reasons"]["no_overlap"] += 1
                 continue
+            # Compare only at wavelengths that exist in BOTH grids, using no
+            # interpolation on either side.
+            #
+            # The cube wavelength axis is the union of all raw files' native
+            # grids.  At positions that exist in one file but not another the
+            # cube was populated by interpolation during combine.  If we
+            # evaluate the raw file at those non-native cube positions via
+            # np.interp, we are comparing two independently-interpolated
+            # values of the same underlying spectrum — which can disagree
+            # badly at steep spectral features.  Similarly, interpolating the
+            # cube at raw positions that are not exactly on a cube grid point
+            # introduces artefacts at steep features.
+            #
+            # The only meaningful comparison is at wavelengths where both the
+            # raw file AND the cube have a native grid point (within a very
+            # tight tolerance — much less than the minimum grid spacing so no
+            # interpolation is involved on either side).
             mask_raw = (wl_raw >= wl_lo) & (wl_raw <= wl_hi)
             wl_r = wl_raw[mask_raw]
             fl_r = fl_raw[mask_raw]
-            fl_c = np.interp(wl_r, wl_g, fl_cube)
-            thresh = fl_r.max() * 0.01
-            valid = fl_r > thresh
+            if len(wl_r) == 0:
+                continue
+            raw_min_step = float(np.min(np.diff(wl_raw))) if len(wl_raw) > 1 else 1.0
+            # Allow at most 1% of the minimum raw grid step as matching tolerance.
+            match_tol = raw_min_step * 0.01
+            # For each raw point find the nearest cube grid point.
+            idx_near = np.searchsorted(wl_g, wl_r)
+            idx_left  = np.clip(idx_near - 1, 0, len(wl_g) - 1)
+            idx_right = np.clip(idx_near,     0, len(wl_g) - 1)
+            d_left  = np.abs(wl_g[idx_left]  - wl_r)
+            d_right = np.abs(wl_g[idx_right] - wl_r)
+            use_left = d_left < d_right
+            idx_best = np.where(use_left, idx_left, idx_right)
+            d_best   = np.where(use_left, d_left,   d_right)
+            # Keep only raw points that have an exact-matching cube point.
+            matched = d_best < match_tol
+            if matched.sum() < 10:
+                result["raw_vs_cube_skip_reasons"]["insufficient_signal"] += 1
+                continue
+            fl_r_m = fl_r[matched]
+            fl_c_m = fl_cube[idx_best[matched]]
+            thresh = fl_r_m.max() * 0.01
+            valid = fl_r_m > thresh
             if valid.sum() < 10:
                 result["raw_vs_cube_skip_reasons"]["insufficient_signal"] += 1
                 continue
-            rel_err = np.abs(fl_r[valid] - fl_c[valid]) / (fl_r[valid] + FLOOR)
+            rel_err = np.abs(fl_r_m[valid] - fl_c_m[valid]) / (fl_r_m[valid] + FLOOR)
             node_max = float(rel_err.max())
             node_median = float(np.median(rel_err))
             result["raw_vs_cube_node_max_errs"].append(
@@ -434,6 +483,7 @@ def audit_model(model_dir):
             if node_max > RAW_CUBE_TOL:
                 result["raw_vs_cube_bad_nodes"].append({
                     "file": Path(fpath).name,
+                    "fpath": str(fpath),
                     "teff": float(teff_g[i_t]),
                     "logg": float(logg_g[i_l]),
                     "meta": float(meta_g[i_m]),
@@ -569,6 +619,9 @@ def format_report(results):
                 lines.append("      Diagnostic: compare plotted model peak vs blackbody peak;")
                 lines.append("      if shape is physics-like but shifted blue/red, suspect wavelength unit scaling.")
                 ok = False
+        elif r.get("wien_uv_skip_count", 0) > 0 and not r["wien_deviations"]:
+            lines.append(f"  Wien peak   : skipped — Wien peak < {WIEN_UV_OPACITY_WL_THRESHOLD:.0f} Å "
+                         f"(UV/EUV opacity-dominated; {r['wien_uv_skip_count']} spectra)")
         elif r.get("wien_peak_oor_count", 0) > 0:
             lines.append(f"  Wien peak   : skipped — peak wavelength below model's wl range "
                          f"({r['wien_peak_oor_count']} files; Teff too hot for coverage)")
@@ -1044,6 +1097,133 @@ def make_sed_bb_overlay_plot(results, out_path):
     plt.close()
     print(f"Saved: {out_path}")
 
+def make_raw_cube_diag_plots(r, out_dir="."):
+    """
+    For a model result with raw-vs-cube bad nodes, generate one 3-panel
+    diagnostic plot per bad node (up to 3 worst).
+
+    Panels:
+      1. Raw SED vs cube SED (log-log), bad-error points marked in red
+      2. Relative error vs wavelength (log-log)
+      3. Distance from each raw wavelength to nearest cube grid point,
+         with bad-error points overlaid — confirms whether errors correlate
+         with wavelength-grid misalignment at steep spectral features.
+    """
+    model_dir = Path(r["model_dir"])
+    cube_path = model_dir / "flux_cube.bin"
+    if not cube_path.exists():
+        return
+
+    try:
+        teff_g, logg_g, meta_g, wl_g = read_cube_header(cube_path)
+    except Exception:
+        return
+
+    bad_nodes = r.get("raw_vs_cube_bad_nodes", [])
+    if not bad_nodes:
+        return
+
+    out_dir = Path(out_dir)
+
+    for node in bad_nodes[:3]:
+        fpath = Path(node.get("fpath", model_dir / node["file"]))
+        fname = node["file"]
+        teff_n, logg_n, meta_n = node["teff"], node["logg"], node["meta"]
+
+        try:
+            raw = np.loadtxt(fpath, comments="#")
+            if raw.ndim != 2 or raw.shape[1] < 2:
+                continue
+            wl_raw, fl_raw = raw[:, 0], raw[:, 1]
+
+            i_t = int(np.argmin(np.abs(teff_g - teff_n)))
+            i_l = int(np.argmin(np.abs(logg_g - logg_n)))
+            i_m = int(np.argmin(np.abs(meta_g - meta_n)))
+            fl_cube = read_cube_node(cube_path, teff_g, logg_g, meta_g, wl_g,
+                                     i_t, i_l, i_m)
+
+            wl_lo = max(float(wl_raw.min()), float(wl_g.min()))
+            wl_hi = min(float(wl_raw.max()), float(wl_g.max()))
+            mask_cube = (wl_g >= wl_lo) & (wl_g <= wl_hi)
+            wl_c      = wl_g[mask_cube]
+            fl_c_trim = fl_cube[mask_cube]
+            fl_r_at_cube = np.interp(wl_c, wl_raw, np.maximum(fl_raw, 0.0))
+
+            thresh = fl_r_at_cube.max() * 0.01
+            valid = fl_r_at_cube > thresh
+            rel_err = np.where(valid,
+                               np.abs(fl_r_at_cube - fl_c_trim) / (fl_r_at_cube + FLOOR),
+                               0.0)
+            bad_mask = rel_err > RAW_CUBE_TOL
+
+            # Distance from each raw wavelength to nearest cube grid point
+            idx_near = np.searchsorted(wl_g, wl_raw).clip(0, len(wl_g) - 1)
+            d_right  = np.abs(wl_g[idx_near.clip(0, len(wl_g)-1)]   - wl_raw)
+            d_left   = np.abs(wl_g[(idx_near - 1).clip(0, len(wl_g)-1)] - wl_raw)
+            dist_raw_to_cube = np.minimum(d_left, d_right)
+
+            fig, axes = plt.subplots(3, 1, figsize=(13, 10),
+                                     gridspec_kw={"height_ratios": [3, 1, 1]})
+            ax_sed, ax_err, ax_dist = axes
+
+            # — SED panel (on raw wavelength grid for visual clarity) —
+            fl_raw_pos  = np.where(fl_raw  > 0, fl_raw,  np.nan)
+            fl_cube_raw = np.interp(wl_raw, wl_g, fl_cube)
+            fl_cube_pos = np.where(fl_cube_raw > 0, fl_cube_raw, np.nan)
+
+            ax_sed.plot(wl_raw, fl_raw_pos,  lw=0.6, alpha=0.85,
+                        color="steelblue", label="Raw")
+            ax_sed.plot(wl_raw, fl_cube_pos, lw=0.6, alpha=0.75,
+                        color="orange", linestyle="--", label="Cube")
+            # Mark bad-error points (on the cube grid) back on the raw axis
+            if bad_mask.any():
+                bad_wl  = wl_c[bad_mask]
+                bad_raw = np.interp(bad_wl, wl_raw, np.maximum(fl_raw, 0.0))
+                ax_sed.scatter(bad_wl, np.where(bad_raw > 0, bad_raw, np.nan),
+                               color="red", s=8, zorder=5,
+                               label=f">{ RAW_CUBE_TOL*100:.0f}% err ({bad_mask.sum()} pts)")
+            ax_sed.set_xscale("log")
+            ax_sed.set_yscale("log")
+            ax_sed.set_ylabel("Flux (erg/cm²/s/Å)")
+            ax_sed.set_title(
+                f"{r['name']} — {fname}\n"
+                f"Teff={teff_n:.0f} K  log g={logg_n:.2f}  [M/H]={meta_n:.2f}  "
+                f"max_err={node['max_err']:.4f}"
+            )
+            ax_sed.legend(fontsize=8)
+            ax_sed.grid(True, alpha=0.15, which="both")
+
+            # — Relative error panel (on cube grid) —
+            rel_err_plot = np.where(rel_err > 0, rel_err, np.nan)
+            ax_err.plot(wl_c, rel_err_plot, lw=0.5, color="red", alpha=0.8)
+            ax_err.axhline(RAW_CUBE_TOL, color="k", lw=0.8, linestyle="--",
+                           label=f"{RAW_CUBE_TOL*100:.0f}% threshold")
+            ax_err.set_xscale("log")
+            ax_err.set_ylabel("Rel error")
+            ax_err.legend(fontsize=8)
+            ax_err.grid(True, alpha=0.15, which="both")
+
+            # — Distance to nearest cube wavelength (on raw grid) —
+            ax_dist.plot(wl_raw, dist_raw_to_cube, lw=0.5, color="purple", alpha=0.8,
+                         label="Dist raw→cube grid (Å)")
+            ax_dist.set_xscale("log")
+            ax_dist.set_xlabel("Wavelength (Å)")
+            ax_dist.set_ylabel("Dist to cube WL (Å)")
+            ax_dist.legend(fontsize=8)
+            ax_dist.grid(True, alpha=0.15, which="both")
+
+            plt.tight_layout()
+            stem = fname.replace(".txt", "")
+            out_path = out_dir / f"rawcube_diag_{r['name']}_{stem}.png"
+            plt.savefig(out_path, dpi=120)
+            plt.close()
+            print(f"Saved: {out_path}")
+
+        except Exception as e:
+            plt.close("all")
+            print(f"  Diag plot failed for {fname}: {e}")
+
+
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
     from sed_tools.models import STELLAR_DIR_DEFAULT
@@ -1083,6 +1263,11 @@ if __name__ == "__main__":
 
     make_summary_plot(results, "audit_summary.png")
     make_wl_coverage_plot(results, "wl_coverage.png")
+
+    # Generate raw-vs-cube diagnostic plots for any model with genuine bad nodes.
+    for r in results:
+        if r.get("raw_vs_cube_bad_nodes") and not r.get("library_exists"):
+            make_raw_cube_diag_plots(r, out_dir=".")
 
     # -----------------------------------------------------------------------
     # Determine hot / cold Teff targets from the actual data across all models
