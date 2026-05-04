@@ -772,7 +772,9 @@ def load_spectrum(path: str) -> Spectrum:
 
 def discover_flux_cube_files(hints: Sequence[str | os.PathLike[str]] | None = None) -> List[Path]:
     """Discover ``flux_cube.bin`` files from common locations and hints."""
-
+    
+    from .models import STELLAR_DIR_DEFAULT, DATA_DIR_DEFAULT
+    
     hints = list(hints or [])
     env_path = os.environ.get("SED_FLUX_CUBE")
     env_dir = os.environ.get("SED_FLUX_CUBE_DIR")
@@ -804,6 +806,7 @@ def discover_flux_cube_files(hints: Sequence[str | os.PathLike[str]] | None = No
         Path.cwd(),
         Path.cwd() / "data",
         Path.cwd() / "data" / "stellar_models",
+        DATA_DIR_DEFAULT / "stellar_models",
         this_dir,
         this_dir / "data",
         this_dir / "data" / "stellar_models",

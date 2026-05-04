@@ -1128,6 +1128,14 @@ def run_ml_completer_flow(
     from .ml_sed_completer import run_interactive_workflow
     run_interactive_workflow(base_dir, models_dir)
 
+def run_config_flow() -> None:
+    from .config import show_config, set_data_dir
+    show_config()
+    print("\nEnter new data directory path, or press Enter to keep current:")
+    raw = input("> ").strip()
+    if raw:
+        set_data_dir(raw)
+        print("Restart sed-tools for the change to take effect.")
 
 
 def menu() -> str:
@@ -1140,6 +1148,7 @@ def menu() -> str:
     print("6) ML SED Generator (generate SEDs from parameters)")
     print("7) Grid Densifier (fill coarse Teff gaps)")
     print("8) MESA Prepare (export a sub-variant for MESA)")
+    print("9) Config (show/set data directory)")
     print("0) Quit")
     choice = input("> ").strip()
     mapping = {
@@ -1151,6 +1160,7 @@ def menu() -> str:
         "6": "ml_generator",
         "7": "grid_densifier",
         "8": "mesa_prepare",
+        "9": "config",
         "0": "quit"
     }
     return mapping.get(choice, "")
@@ -1159,13 +1169,15 @@ def menu() -> str:
 # ------------ Main CLI ------------
 
 def main():
+    from .config import get_data_dir, show_config, set_data_dir
+
     parser = argparse.ArgumentParser(description="SED Tools — spectra & filters")
     sub = parser.add_subparsers(dest="cmd", required=False)
 
     # spectra
     sp = sub.add_parser("spectra", help="Download/build spectra products")
-    sp.add_argument("--source", 
-                    choices=["njm", "svo", "msg", "mast", "both", "all"], 
+    sp.add_argument("--source",
+                    choices=["njm", "svo", "msg", "mast", "both", "all"],
                     default="all",
                     help="Which provider(s) to use. NJM mirror is checked first when available.")
     sp.add_argument("--models", nargs="*", default=None,
@@ -1190,7 +1202,6 @@ def main():
     rp.add_argument("--no-h5", action="store_true", help="Skip HDF5 bundle")
     rp.add_argument("--no-cube", action="store_true", help="Skip flux cube")
 
-
     # combine
     cp = sub.add_parser("combine", help="Combine multiple grids into omni grid")
     cp.add_argument("--base", default=str(STELLAR_DIR_DEFAULT),
@@ -1207,7 +1218,6 @@ def main():
     mp.add_argument("--models-dir", default="models",
                     help="Directory for trained ML models")
 
-
     # ml_generator
     gp = sub.add_parser("ml_generator", help="Train/use ML SED generator")
     gp.add_argument("--base", default=str(STELLAR_DIR_DEFAULT),
@@ -1219,19 +1229,16 @@ def main():
     gp.add_argument("--library", help="Library path for auto-training")
     gp.add_argument("--output", help="Output directory for auto-training")
 
-
-
-    p_densify = sub.add_parser("densify",
-        help="Fill coarse Teff gaps in a flux_cube.bin")
-
-    p_densify.add_argument("--flux-cube",      required=True)
-    p_densify.add_argument("--output",         required=True)
-    p_densify.add_argument("--teff-spacing",   type=float, default=1000.0)
-    p_densify.add_argument("--method",         default="auto",
+    # densify
+    p_densify = sub.add_parser("densify", help="Fill coarse Teff gaps in a flux_cube.bin")
+    p_densify.add_argument("--flux-cube", required=True)
+    p_densify.add_argument("--output", required=True)
+    p_densify.add_argument("--teff-spacing", type=float, default=1000.0)
+    p_densify.add_argument("--method", default="auto",
                             choices=["auto", "interp", "ml", "blackbody"])
-    p_densify.add_argument("--ml-model",       default=None)
+    p_densify.add_argument("--ml-model", default=None)
     p_densify.add_argument("--ml-gap-threshold", type=float, default=5000.0)
-    p_densify.add_argument("--no-lookup",      action="store_true")
+    p_densify.add_argument("--no-lookup", action="store_true")
 
     # mesa_prepare
     pp = sub.add_parser("mesa_prepare",
@@ -1242,6 +1249,11 @@ def main():
                     help="Model name (e.g. Kurucz2003all); prompted if omitted")
     pp.add_argument("--output", default=None,
                     help="Output directory for the exported variant; prompted if omitted")
+
+    # config
+    cfg_p = sub.add_parser("config", help="Show or set the data directory")
+    cfg_p.add_argument("--set", metavar="PATH", default=None,
+                       help="Set data directory to PATH")
 
     args = parser.parse_args()
 
@@ -1263,21 +1275,17 @@ def main():
             rebuild_h5=not args.no_h5,
             rebuild_flux_cube=not args.no_cube
         )
-
     elif args.cmd == "combine":
         run_combine_flow(
             base_dir=args.base,
             output_name=args.output,
             interactive=not args.non_interactive
         )
-
     elif args.cmd == "ml_completer":
         run_ml_completer_flow(
             base_dir=args.base,
             models_dir=args.models_dir
         )
-
-
     elif args.cmd == "ml_generator":
         if args.auto:
             if not args.library or not args.output:
@@ -1290,7 +1298,6 @@ def main():
                 base_dir=args.base,
                 models_dir=args.models_dir
             )
-
     elif args.cmd == "densify":
         from .grid_densifier import densify_grid
         densify_grid(
@@ -1302,24 +1309,27 @@ def main():
             ml_gap_threshold=args.ml_gap_threshold,
             write_lookup=not args.no_lookup,
         )
-
     elif args.cmd == "mesa_prepare":
         run_mesa_prepare_flow(
             base_dir=args.base,
             model=args.model,
             output=args.output,
         )
-
+    elif args.cmd == "config":
+        if args.set:
+            set_data_dir(args.set)
+        else:
+            show_config()
     else:
         # Interactive mode
         while True:
             choice = menu()
-            if choice == "filters":
+            if choice == "spectra":
+                run_spectra_flow(source="all")
+            elif choice == "filters":
                 run_filters_flow()
             elif choice == "rebuild":
                 run_rebuild_flow()
-            elif choice == "spectra":
-                run_spectra_flow(source="all")
             elif choice == "combine":
                 run_combine_flow()
             elif choice == "ml_completer":
@@ -1330,6 +1340,8 @@ def main():
                 run_grid_densifier_flow()
             elif choice == "mesa_prepare":
                 run_mesa_prepare_flow()
+            elif choice == "config":
+                run_config_flow()
             else:
                 sys.exit(0)
 

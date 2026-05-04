@@ -257,8 +257,12 @@ def densify_grid(
 # Interactive workflow
 # ---------------------------------------------------------------------------
 
-def run_interactive_workflow(base_dir: str = "data/stellar_models") -> None:
+def run_interactive_workflow(base_dir: str = None):
     import glob
+
+    if base_dir is None:
+        from .models import STELLAR_DIR_DEFAULT
+        base_dir = str(STELLAR_DIR_DEFAULT)
 
     print("\n" + "=" * 60)
     print("GRID DENSIFIER")
