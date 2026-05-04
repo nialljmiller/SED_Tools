@@ -36,6 +36,12 @@ SED_Tools is a Python package for working with stellar spectral energy distribut
 
 ## Installation
 
+### From PIP
+
+```bash
+pip install sed-tools
+```
+
 ### From Source
 
 ```bash
