@@ -36,7 +36,7 @@ import h5py
 import numpy as np
 
 from .mast_spectra_grabber import MASTSpectraGrabber
-from .models import (DATA_DIR_DEFAULT, FILTER_DIR_DEFAULT, SED,
+from .models import (DATA_DIR_DEFAULT, FILTER_DIR_DEFAULT, SED as _SEDCore,
                      STELLAR_DIR_DEFAULT, EvaluatedSED, ModelMatch,
                      PhotometryResult, SEDModel)
 from .msg_spectra_grabber import \
@@ -547,7 +547,7 @@ def find_atmospheres(
 ) -> list[ModelMatch]:
     """Discover locally available model grids matching the requested ranges."""
 
-    sed = SED(model_root=model_root, filter_root=filter_root)
+    sed = _SEDCore(model_root=model_root, filter_root=filter_root)
     return sed.find_atmospheres(
         teff_range=teff_range,
         logg_range=logg_range,

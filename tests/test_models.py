@@ -8,8 +8,7 @@ if str(ROOT) not in sys.path:
 
 import numpy as np
 
-from sed_tools import SED
-
+from sed_tools.models import SED
 
 def _write_flux_cube(path: Path, teff, logg, meta, wavelengths) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)

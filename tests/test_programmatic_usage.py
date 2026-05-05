@@ -9,7 +9,7 @@ if str(ROOT) not in sys.path:
 
 import numpy as np
 import sed_tools
-from sed_tools import SED
+from sed_tools.models import SED as _SEDCore
 from sed_tools._flux import AB_ZERO_FLUX
 
 
@@ -53,7 +53,7 @@ def test_find_atm_alias(tmp_path):
     matches = sed_tools.find_atm(
         teff_range=(4500., 5500.),
         logg_range=(3.5, 4.5),
-        Z_range=(-0.5, 0.5),
+        Z_range=(-0.5, 0.0),  # within cube meta range [-1, 0]
         model_root=tmp_path,
     )
     assert len(matches) >= 1
@@ -62,11 +62,11 @@ def test_find_atm_alias(tmp_path):
 def test_find_atmospheres_returns_model_match(tmp_path):
     cube = tmp_path / "m1" / "flux_cube.bin"
     _write_flux_cube(cube, [4000., 6000.], [3.0, 5.0], [-1.0, 0.0], [4000., 5000.])
-    sed = SED(model_root=tmp_path)
+    sed = _SEDCore(model_root=tmp_path)
     matches = sed.find_atmospheres(
         teff_range=(4500., 5500.),
         logg_range=(3.5, 4.5),
-        metallicity_range=(-0.5, 0.5),
+        metallicity_range=(-0.5, 0.0),
     )
     assert len(matches) >= 1
     m = matches[0]
@@ -80,11 +80,11 @@ def test_find_atmospheres_returns_model_match(tmp_path):
 def test_find_atmospheres_no_match(tmp_path):
     cube = tmp_path / "m1" / "flux_cube.bin"
     _write_flux_cube(cube, [4000., 5000.], [3.0, 4.0], [-1.0, 0.0], [4000., 5000.])
-    sed = SED(model_root=tmp_path)
+    sed = _SEDCore(model_root=tmp_path)
     matches = sed.find_atmospheres(
         teff_range=(50000., 60000.),
         logg_range=(3.5, 4.5),
-        metallicity_range=(-0.5, 0.5),
+        metallicity_range=(-0.5, 0.0),
     )
     assert matches == []
 
@@ -102,14 +102,14 @@ def test_interpolation_returns_correct_shape(tmp_path):
     cube = tmp_path / "demo" / "flux_cube.bin"
     _write_flux_cube(cube, teff, logg, meta, wl, flux)
 
-    atm = sed_tools.find_atm(
+    sed = _SEDCore(model_root=tmp_path)
+    atm = sed.find_atmospheres(
         teff_range=(1000., 2000.),
         logg_range=(1.0, 2.0),
-        Z_range=(-1.0, 0.0),
-        model_root=tmp_path,
+        metallicity_range=(-1.0, 0.0),
     )
-    sed = SED(model_root=tmp_path, atm=atm[0])
-    result = sed(teff=1500., logg=1.5, z=-0.5)
+    model = sed.model(atm[0])
+    result = model(teff=1500., logg=1.5, metallicity=-0.5)
     assert result.wavelength.shape == wl.shape
     assert result.flux.shape == wl.shape
 
@@ -125,12 +125,14 @@ def test_interpolation_flat_field(tmp_path):
     cube = tmp_path / "demo" / "flux_cube.bin"
     _write_flux_cube(cube, teff, logg, meta, wl, flux)
 
-    atm = sed_tools.find_atm(
-        teff_range=(1000., 2000.), logg_range=(1.0, 2.0),
-        Z_range=(-1.0, 0.0), model_root=tmp_path,
+    sed = _SEDCore(model_root=tmp_path)
+    atm = sed.find_atmospheres(
+        teff_range=(1000., 2000.),
+        logg_range=(1.0, 2.0),
+        metallicity_range=(-1.0, 0.0),
     )
-    sed = SED(model_root=tmp_path, atm=atm[0])
-    result = sed(teff=1500., logg=1.5, z=-0.5)
+    model = sed.model(atm[0])
+    result = model(teff=1500., logg=1.5, metallicity=-0.5)
     assert np.allclose(result.flux, flux_value)
 
 
@@ -150,12 +152,14 @@ def test_photometry_ab_magnitude_finite(tmp_path):
     filter_file = tmp_path / "filters" / "GAIA" / "GAIA.dat"
     _write_filter(filter_file)
 
-    atm = sed_tools.find_atm(
-        teff_range=(1000., 2000.), logg_range=(1.0, 2.0),
-        Z_range=(-1.0, 0.0), model_root=tmp_path,
+    sed = _SEDCore(model_root=tmp_path, filter_root=tmp_path / "filters")
+    atm = sed.find_atmospheres(
+        teff_range=(1000., 2000.),
+        logg_range=(1.0, 2.0),
+        metallicity_range=(-1.0, 0.0),
     )
-    sed = SED(model_root=tmp_path, filter_root=tmp_path / "filters", atm=atm[0])
-    result = sed(teff=1500., logg=1.5, z=-0.5)
+    model = sed.model(atm[0])
+    result = model(teff=1500., logg=1.5, metallicity=-0.5)
     phot = result.photometry("Gaia")
     assert "GAIA" in phot
     assert math.isfinite(phot["GAIA"].magnitude)
@@ -176,12 +180,14 @@ def test_photometry_magnitude_formula(tmp_path):
     filter_file = tmp_path / "filters" / "GAIA" / "GAIA.dat"
     _write_filter(filter_file)
 
-    atm = sed_tools.find_atm(
-        teff_range=(1000., 2000.), logg_range=(1.0, 2.0),
-        Z_range=(-1.0, 0.0), model_root=tmp_path,
+    sed = _SEDCore(model_root=tmp_path, filter_root=tmp_path / "filters")
+    atm = sed.find_atmospheres(
+        teff_range=(1000., 2000.),
+        logg_range=(1.0, 2.0),
+        metallicity_range=(-1.0, 0.0),
     )
-    sed = SED(model_root=tmp_path, filter_root=tmp_path / "filters", atm=atm[0])
-    result = sed(teff=1500., logg=1.5, z=-0.5)
+    model = sed.model(atm[0])
+    result = model(teff=1500., logg=1.5, metallicity=-0.5)
     phot = result.photometry("Gaia")
     g = phot["GAIA"]
     expected = -2.5 * math.log10(g.flux_density / AB_ZERO_FLUX)
@@ -200,12 +206,14 @@ def test_evaluated_sed_property_aliases(tmp_path):
     cube = tmp_path / "demo" / "flux_cube.bin"
     _write_flux_cube(cube, teff, logg, meta, wl, flux)
 
-    atm = sed_tools.find_atm(
-        teff_range=(1000., 2000.), logg_range=(1.0, 2.0),
-        Z_range=(-1.0, 0.0), model_root=tmp_path,
+    sed = _SEDCore(model_root=tmp_path)
+    atm = sed.find_atmospheres(
+        teff_range=(1000., 2000.),
+        logg_range=(1.0, 2.0),
+        metallicity_range=(-1.0, 0.0),
     )
-    sed = SED(model_root=tmp_path, atm=atm[0])
-    result = sed(teff=1500., logg=1.5, z=-0.5)
+    model = sed.model(atm[0])
+    result = model(teff=1500., logg=1.5, metallicity=-0.5)
 
     assert np.array_equal(result.wl, result.wavelength)
     assert np.array_equal(result.fl, result.flux)
