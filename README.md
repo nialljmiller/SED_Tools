@@ -5,7 +5,7 @@
 <h1 align="center">SED_Tools</h1>
 
 <p align="center">
-  <strong>Download, process, and standardize stellar atmosphere models for MESA</strong>
+  <strong>Download, process, and standardize stellar atmosphere models for [SED_Model](https://github.com/nialljmiller/SED_Tools) and other codes, such as MESA</strong>
 </p>
 
 <p align="center">
@@ -27,7 +27,7 @@ SED_Tools is a Python package for working with stellar spectral energy distribut
 - **Multi-source downloads** — Fetch stellar atmosphere spectra from SVO, MSG, MAST (BOSZ), and NJM mirror
 - **Photometric filters** — Download transmission curves from the SVO Filter Profile Service
 - **Unit standardization** — Convert all spectra to consistent units (wavelength in Å, flux in erg/cm²/s/Å)
-- **MESA integration** — Generate binary flux cubes, HDF5 bundles, and lookup tables
+- **External integration** — Generate binary flux cubes, HDF5 bundles, and lookup tables. This is for [SED_Model](https://github.com/nialljmiller/SED_Tools) and other codes, such as MESA
 - **Grid combination** — Merge multiple stellar libraries into unified "omni grids"
 - **ML completion** — Extend incomplete SEDs to broader wavelength ranges using neural networks
 - **ML generation** — Create complete SEDs from stellar parameters (Teff, logg, [M/H]) using neural networks
@@ -177,7 +177,7 @@ sed-tools rebuild --models Kurucz2003all PHOENIX
 
 | File | Description |
 |------|-------------|
-| `flux_cube.bin` | Binary flux cube (required by MESA) |
+| `flux_cube.bin` | Binary flux cube (required by [SED_Model](https://github.com/nialljmiller/SED_Tools) and other codes, such as MESA)|
 | `lookup_table.csv` | Parameter lookup table |
 | `*.h5` | HDF5 bundle with all spectra |
 
@@ -314,7 +314,7 @@ sed = SED.fetch(
     workers=8,
 )
 
-# Save to disk (generates all MESA-compatible files)
+# Save to disk (generates all SED_Model/MESA-compatible files)
 sed.cat.write()
 sed.cat.write('/custom/output/path')
 ```
