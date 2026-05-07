@@ -5,7 +5,7 @@
 <h1 align="center">SED_Tools</h1>
 
 <p align="center">
-  <strong>Download, process, and standardize stellar atmosphere models for [SED_Model](https://github.com/nialljmiller/SED_Tools) and other codes, such as MESA</strong>
+  <strong>Download, process, and standardize stellar atmosphere models for SED_Model and MESA</strong>
 </p>
 
 <p align="center">
@@ -20,14 +20,14 @@
 
 ## Overview
 
-SED_Tools is a Python package for working with stellar spectral energy distributions (SEDs). It provides unified access to multiple stellar atmosphere catalogs, standardizes spectral data to consistent units, and generates output files compatible with [MESA](https://docs.mesastar.org/)'s `colors` module.
+SED_Tools is a Python package for working with stellar spectral energy distributions (SEDs). It provides unified access to multiple stellar atmosphere catalogs, standardizes spectral data to consistent units, and generates output files compatible with [MESA](https://docs.mesastar.org/)'s `colors` module, [SED_Model](https://github.com/nialljmiller/SED_Model) and other codes.
 
 ### Key Features
 
 - **Multi-source downloads** — Fetch stellar atmosphere spectra from SVO, MSG, MAST (BOSZ), and NJM mirror
 - **Photometric filters** — Download transmission curves from the SVO Filter Profile Service
 - **Unit standardization** — Convert all spectra to consistent units (wavelength in Å, flux in erg/cm²/s/Å)
-- **External integration** — Generate binary flux cubes, HDF5 bundles, and lookup tables. This is for [SED_Model](https://github.com/nialljmiller/SED_Tools) and other codes, such as MESA
+- **External integration** — Generate binary flux cubes, HDF5 bundles, and lookup tables. This is for [SED_Model](https://github.com/nialljmiller/SED_Tools) and [MESA](https://docs.mesastar.org/)'s `colors` module
 - **Grid combination** — Merge multiple stellar libraries into unified "omni grids"
 - **ML completion** — Extend incomplete SEDs to broader wavelength ranges using neural networks
 - **ML generation** — Create complete SEDs from stellar parameters (Teff, logg, [M/H]) using neural networks
