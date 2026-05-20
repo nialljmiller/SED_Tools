@@ -440,8 +440,8 @@ def precompute_flux_cube(
 
     file_col = _find_col(lookup, ["file_name", "filename", "file"]) or list(lookup.keys())[0]
     teff_col = _find_col(lookup, ["teff", "t_eff"])
-    logg_col = _find_col(lookup, ["logg", "log_g"])
-    meta_col = _find_col(lookup, ["metallicity", "meta", "feh", "[fe/h]", "[m/h]"])
+    logg_col = _find_col(lookup, ["logg", "log_g", "log(g)"])
+    meta_col = _find_col(lookup, ["metallicity", "meta", "feh", "[fe/h]", "[m/h]", "Z", "z"])
 
     if not lookup[file_col]:
         raise RuntimeError("No entries in lookup table.")
