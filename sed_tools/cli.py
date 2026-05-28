@@ -35,9 +35,10 @@ from .njm_spectra_grabber import NJMSpectraGrabber
 from .precompute_flux_cube import precompute_flux_cube
 from .spectra_cleaner import clean_model_dir
 from .svo_filter_grabber import run_interactive as _run_filter_cli
-from .svo_regen_spectra_lookup import parse_metadata, regenerate_lookup_table
+from .svo_regen_spectra_lookup import regenerate_lookup_table
 from .svo_spectra_grabber import SVOSpectraGrabber
 from .ui_utils import _prompt_choice
+from .header_parser import parse_header
 # ------------ Small Utils ------------
 
 def ensure_dir(path: str) -> None:
@@ -62,18 +63,6 @@ def load_txt_spectrum(txt_path: str) -> Tuple[np.ndarray, np.ndarray]:
     return np.asarray(wl, dtype=float), np.asarray(fl, dtype=float)
 
 
-def numeric_from(meta: Dict[str, str], key_candidates: List[str], default: float = np.nan) -> float:
-    """Extract first numeric token from any of the candidate keys (case-insensitive)."""
-    lower = {k.lower(): v for k, v in meta.items()}
-    for ck in key_candidates:
-        if ck.lower() in lower:
-            val = lower[ck.lower()]
-            m = re.search(r"[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?", val)
-            if m:
-                return float(m.group(0))
-    return default
-
-
 # ------------ HDF5 Bundling ------------
 
 def build_h5_bundle_from_txt(model_dir: str, out_h5: str) -> None:
@@ -93,10 +82,11 @@ def build_h5_bundle_from_txt(model_dir: str, out_h5: str) -> None:
             g.create_dataset("lambda", data=wl, dtype="f8")
             g.create_dataset("flux",   data=fl, dtype="f8")
 
-            meta = parse_metadata(path)
-            teff = numeric_from(meta, ["Teff", "teff", "T_eff"])
-            logg = numeric_from(meta, ["logg", "Logg", "log_g"])
-            feh = numeric_from(meta, ["FeH", "feh", "metallicity", "[Fe/H]", "meta"])
+            meta = parse_header(path)
+            teff = meta.get("teff", np.nan)
+            logg = meta.get("logg", np.nan)
+            feh  = meta.get("metallicity", np.nan)
+
             if not np.isnan(teff): g.attrs["teff"] = teff
             if not np.isnan(logg): g.attrs["logg"] = logg
             if not np.isnan(feh):  g.attrs["feh"] = feh

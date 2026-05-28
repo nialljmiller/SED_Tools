@@ -46,7 +46,12 @@ import numpy as np
 # MESA axes — everything else in the lookup table is a candidate extra axis
 # ---------------------------------------------------------------------------
 # Physical parameter axes MESA cares about
-_MESA_PARAM_AXES: Set[str] = {"teff", "Teff", "T_eff", "logg", "logG", "log g", "log_g", "log(g)", "LOGG", "metallicity", "meta", "feh", "z", "Z"}
+_MESA_PARAM_AXES: Set[str] = {
+    "teff", "Teff", "T_eff",
+    "logg", "logG", "log g", "log_g", "log(g)", "LOGG",
+    "metallicity", "meta", "feh",
+    "z", "Z", "zh", "zmet",
+}
 
 # Bookkeeping columns written by spectra_cleaner / regenerate_lookup_table
 _BOOKKEEPING_AXES: Set[str] = {
