@@ -45,6 +45,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, List, Sequence, Tuple
 
+from .io_utils import ensure_dir
+
 FILTER_EXTENSIONS = {".dat", ".txt", ".csv"}
 
 PC_TO_M = 3.085677581e16
@@ -478,11 +480,6 @@ def plot_sed(
         plt.show()
     plt.close()
 
-
-
-def ensure_dir(path: str) -> None:
-    if path:
-        os.makedirs(path, exist_ok=True)
 
 
 def save_sed(path: str, wavelength: np.ndarray, flux: np.ndarray) -> None:

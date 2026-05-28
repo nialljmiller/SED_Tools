@@ -180,3 +180,28 @@ def _prompt_choice(
 
         # Default to substring filter
         filt = ("substr", inp); page = 1
+
+def parse_multi_selection(spec: str, total: int) -> list[int]:
+    """Parse 1-based comma/range selections into unique 0-based indexes."""
+    chosen: set[int] = set()
+    for chunk in (part.strip() for part in spec.split(",")):
+        if not chunk:
+            continue
+        if "-" in chunk:
+            bounds = [part.strip() for part in chunk.split("-", 1)]
+            if len(bounds) != 2 or not bounds[0].isdigit() or not bounds[1].isdigit():
+                raise ValueError(f"Invalid range: {chunk}")
+            start, end = int(bounds[0]), int(bounds[1])
+            if start > end:
+                start, end = end, start
+            if start < 1 or end > total:
+                raise ValueError(f"Range out of bounds: {chunk}")
+            chosen.update(range(start - 1, end))
+            continue
+        if not chunk.isdigit():
+            raise ValueError(f"Invalid item: {chunk}")
+        value = int(chunk)
+        if value < 1 or value > total:
+            raise ValueError(f"Selection out of bounds: {value}")
+        chosen.add(value - 1)
+    return sorted(chosen)

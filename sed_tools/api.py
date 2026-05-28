@@ -39,19 +39,15 @@ Example usage::
 
 from __future__ import annotations
 
-import csv
-import os
-import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterator, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
 
 # Import existing infrastructure
 from .models import (
-    DATA_DIR_DEFAULT,
     FILTER_DIR_DEFAULT,
     STELLAR_DIR_DEFAULT,
     EvaluatedSED,
@@ -324,7 +320,7 @@ class Catalog:
         
         # Build H5 bundle
         if build_h5 and len(self.spectra) > 0:
-            from . import build_h5_bundle_from_txt
+            from .io_utils import build_h5_bundle_from_txt
             try:
                 build_h5_bundle_from_txt(str(path), str(path / f"{self.name}.h5"))
                 print(f"[write] Built {self.name}.h5")

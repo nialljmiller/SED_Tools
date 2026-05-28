@@ -16,16 +16,10 @@ Filters (SVO only):
 
 import argparse
 import glob
-import math
 import os
-import re
-import shutil
 import sys
-import textwrap
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Dict, List, Optional, Tuple
 
-import h5py
-import numpy as np
 
 from .mast_spectra_grabber import MASTSpectraGrabber
 # --- Standard Package Imports (The "Safe" Way) ---
@@ -34,69 +28,12 @@ from .msg_spectra_grabber import MSGSpectraGrabber
 from .njm_spectra_grabber import NJMSpectraGrabber
 from .precompute_flux_cube import precompute_flux_cube
 from .spectra_cleaner import clean_model_dir
-from .svo_filter_grabber import run_interactive as _run_filter_cli
 from .svo_regen_spectra_lookup import regenerate_lookup_table
 from .svo_spectra_grabber import SVOSpectraGrabber
-from .ui_utils import _prompt_choice
-from .header_parser import parse_header
-# ------------ Small Utils ------------
+from .ui_utils import _prompt_choice, parse_multi_selection
+from .io_utils import build_h5_bundle_from_txt, ensure_dir
 
-def ensure_dir(path: str) -> None:
-    os.makedirs(path, exist_ok=True)
-
-
-def list_txt_spectra(model_dir: str) -> List[str]:
-    return sorted([f for f in os.listdir(model_dir) if f.lower().endswith(".txt")])
-
-
-def load_txt_spectrum(txt_path: str) -> Tuple[np.ndarray, np.ndarray]:
-    wl, fl = [], []
-    with open(txt_path, "r", encoding="utf-8", errors="ignore") as f:
-        for line in f:
-            s = line.strip()
-            if not s or s.startswith("#"):
-                continue
-            parts = s.split()
-            if len(parts) >= 2:
-                wl.append(float(parts[0]))
-                fl.append(float(parts[1]))
-    return np.asarray(wl, dtype=float), np.asarray(fl, dtype=float)
-
-
-# ------------ HDF5 Bundling ------------
-
-def build_h5_bundle_from_txt(model_dir: str, out_h5: str) -> None:
-    """Create an HDF5 file bundling all .txt spectra."""
-    txt_files = list_txt_spectra(model_dir)
-    if not txt_files:
-        print(f"[H5 bundle] No .txt spectra found in {model_dir}; skipping.")
-        return
-
-    ensure_dir(os.path.dirname(out_h5))
-    with h5py.File(out_h5, "w") as h5:
-        spectra_grp = h5.create_group("spectra")
-        for fname in txt_files:
-            path = os.path.join(model_dir, fname)
-            wl, fl = load_txt_spectrum(path)
-            g = spectra_grp.create_group(fname)
-            g.create_dataset("lambda", data=wl, dtype="f8")
-            g.create_dataset("flux",   data=fl, dtype="f8")
-
-            meta = parse_header(path)
-            teff = meta.get("teff", np.nan)
-            logg = meta.get("logg", np.nan)
-            feh  = meta.get("metallicity", np.nan)
-
-            if not np.isnan(teff): g.attrs["teff"] = teff
-            if not np.isnan(logg): g.attrs["logg"] = logg
-            if not np.isnan(feh):  g.attrs["feh"] = feh
-            for k, v in meta.items():
-                g.attrs[f"raw:{k}"] = v
-
-    print(f"[H5 bundle] Wrote {out_h5}")
-
-
-# ------------ UI Helpers (Your Full Interactive Menu) ------------
+# ------------ UI Helpers ------------
 
 class _Opt:
     __slots__ = ("src", "name", "label")
@@ -104,180 +41,6 @@ class _Opt:
     def __init__(self, src, name):
         self.src, self.name = src, name
         self.label = f"{name} [{src}]"
-
-
-def _prompt_choice(
-    options: Sequence,
-    label: str,
-    allow_back: bool = False,
-    page_size: int = 100,
-    max_label: int = -1,
-    min_cols: int = 1,
-    max_cols: int = 3,
-    use_color: bool = True,
-    multi: bool = False,
-) -> Union[int, List[int], None]:
-    """
-    Plain-ASCII picker with stable IDs, paging, grid columns, and simple filters.
-    If multi=True, allows input like "1, 3-5" and returns a List[int] of indices.
-    Otherwise returns a single int.
-    Returns None for quit, -1 for back (if allowed).
-    """
-    if not options:
-        print(f"No {label} options available.")
-        return None
-
-    if max_label < 0:
-        max_label = max(len(getattr(x, "label", str(x))) for x in options) + 4
-
-    labels: List[str] = [getattr(o, "label", str(o)) for o in options]
-    N = len(labels)
-    page = 1
-    filt: Optional[Tuple[str, str]] = None
-
-    use_color = use_color and sys.stdout.isatty() and ("NO_COLOR" not in os.environ)
-    BOLD = "\x1b[1m" if use_color else ""
-    DIM = "\x1b[2m" if use_color else ""
-    CYAN = "\x1b[36m" if use_color else ""
-    YELL = "\x1b[33m" if use_color else ""
-    GREEN = "\x1b[32m" if use_color else ""
-    RESET = "\x1b[0m" if use_color else ""
-
-    def term_width() -> int:
-        return shutil.get_terminal_size().columns
-
-    def apply_filter(idx: List[int]) -> List[int]:
-        if filt is None: return idx
-        kind, patt = filt
-        if kind == "substr":
-            p = patt.lower()
-            return [i for i in idx if p in labels[i].lower()]
-        if kind == "neg":
-            p = patt.lower()
-            return [i for i in idx if p not in labels[i].lower()]
-        rx = re.compile(patt, re.I)
-        return [i for i in idx if rx.search(labels[i])]
-
-    def page_slice(total: int, p: int) -> slice:
-        pmax = max(1, math.ceil(total / page_size))
-        if p > pmax: p = pmax
-        if p < 1: p = 1
-        a = (p - 1) * page_size
-        b = min(a + page_size, total)
-        return slice(a, b)
-
-    def ellipsize(s: str) -> str:
-        return s if len(s) <= max_label else s[:max_label - 1] + "…"
-
-    def hl(s: str) -> str:
-        if not use_color or filt is None: return s
-        kind, patt = filt
-        if kind != "substr" or not patt: return s
-        rx = re.compile(re.escape(patt), re.I)
-        return rx.sub(lambda m: f"{YELL}{m.group(0)}{RESET}", s)
-
-    def grid_print(visible_ids: List[int]) -> None:
-        width = max(80, term_width())
-        names = [labels[i] for i in visible_ids]
-        col_w = 12 + max_label + 2
-        cols = max(min_cols, min(max_cols, max(1, width // col_w)))
-        cells = [f"[{GREEN}{i+1:4d}{RESET}] {hl(ellipsize(s))}" for i, s in zip(visible_ids, names)]
-        while len(cells) % cols: cells.append("")
-        rows = [cells[k:k+cols] for k in range(0, len(cells), cols)]
-        print(f"\n{BOLD}{label}{RESET} ({CYAN}{len(all_idx)}{RESET} total):")
-        print("─" * min(80, width))
-        for r in rows:
-            print("".join(x.ljust(col_w - 2) for x in r))
-
-    all_idx = list(range(N))
-    while True:
-        kept = apply_filter(all_idx)
-        sl = page_slice(len(kept), page)
-        view = kept[sl]
-        start, end = sl.start + 1, sl.stop
-        grid_print(view)
-
-        ftxt = ""
-        if filt:
-            kind, patt = filt
-            ftxt = f' {DIM}filter="/{patt}"{RESET}' if kind == "substr" else (
-                   f' {DIM}filter="!{patt}"{RESET}' if kind == "neg" else
-                   f' {DIM}filter="//{patt}"{RESET}')
-        
-        controls = f"{DIM}"
-        if end < len(kept):
-            print(f"{DIM}Showing {start}–{end} of {len(kept)}{ftxt}{RESET}")
-            controls += "n, p, g <page>, "
-        
-        controls += "/text, !text, //regex, "
-        if multi:
-            controls += "list (1,3) or range (1-5), "
-        else:
-            controls += "id <N> (or just N), "
-
-        controls += "clear"
-        if allow_back: controls += ", b"
-        controls += ", q" + RESET
-        print(controls)
-
-        inp = input("> ").strip()
-        if not inp: continue
-        low = inp.lower()
-
-        if low in ("q", "quit", "exit"): return None
-        if allow_back and low in ("b", "back"): return -1
-        if low == "n": page += 1; continue
-        if low == "p": page -= 1; continue
-        if low.startswith("g "):
-            parts = low.split()
-            if len(parts) == 2 and parts[1].isdigit(): page = int(parts[1])
-            continue
-        if low == "clear": filt = None; page = 1; continue
-        if low.startswith("//"): patt = inp[2:].strip(); filt = ("regex", patt) if patt else None; page = 1; continue
-        if low.startswith("!"):  patt = inp[1:].strip();  filt = ("neg", patt)   if patt else None; page = 1; continue
-        if low.startswith("/"):  patt = inp[1:].strip();  filt = ("substr", patt)if patt else None; page = 1; continue
-        if low.startswith("id "):
-            parts = low.split()
-            if len(parts) == 2 and parts[1].isdigit():
-                k = int(parts[1])
-                if 1 <= k <= N: return k - 1
-            continue
-
-        # --- Multi Selection Logic ---
-        if multi:
-            # Check if input looks like a numeric selection string (digits, comma, hyphen, space)
-            # This prevents treating search terms like "C3K" as a failed selection attempt
-            if re.match(r"^[\d\s,-]+$", inp):
-                selected_indices = []
-                parts = inp.split(',')
-                is_range = False
-                for p in parts:
-                    p = p.strip()
-                    if not p: continue
-                    if '-' in p:
-                        is_range = True
-                        a, b = p.split('-', 1)
-                        # Handle cases like "1 - 5" or "1-5"
-                        a, b = int(a), int(b)
-                        selected_indices.extend(range(a, b + 1))
-                    else:
-                        selected_indices.append(int(p))
-                
-                # Deduplicate and validate
-                valid = [x - 1 for x in sorted(list(set(selected_indices))) if 1 <= x <= N]
-                if valid:
-                    return valid
-
-        # --- Single Selection Logic ---
-        if not multi and inp.isdigit():
-            k = int(inp)
-            if 1 <= k <= N: return k - 1
-            continue
-
-        # Default to substring filter
-        filt = ("substr", inp); page = 1
-
-
 
 
 def _parse_range(raw: str) -> Optional[Tuple[float, float]]:
@@ -815,30 +578,8 @@ def run_spectra_flow(
 
 
 
-def _parse_multi_selection(spec: str, total: int) -> list[int]:
-    """Parse 1-based IDs like "1,3-5" into unique 0-based indexes."""
-    chosen: set[int] = set()
-    for chunk in (part.strip() for part in spec.split(",")):
-        if not chunk:
-            continue
-        if "-" in chunk:
-            bounds = [part.strip() for part in chunk.split("-", 1)]
-            if len(bounds) != 2 or not bounds[0].isdigit() or not bounds[1].isdigit():
-                raise ValueError(f"Invalid range: {chunk}")
-            start, end = int(bounds[0]), int(bounds[1])
-            if start > end:
-                start, end = end, start
-            if start < 1 or end > total:
-                raise ValueError(f"Range out of bounds: {chunk}")
-            chosen.update(range(start - 1, end))
-            continue
-        if not chunk.isdigit():
-            raise ValueError(f"Invalid item: {chunk}")
-        value = int(chunk)
-        if value < 1 or value > total:
-            raise ValueError(f"Selection out of bounds: {value}")
-        chosen.add(value - 1)
-    return sorted(chosen)
+# Backward-compatible shim for code that imported this private helper.
+_parse_multi_selection = parse_multi_selection
 
 
 def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
@@ -875,7 +616,7 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
 
         if bulk_spec:
             try:
-                facility_indexes = _parse_multi_selection(bulk_spec, len(facilities))
+                facility_indexes = parse_multi_selection(bulk_spec, len(facilities))
             except ValueError as exc:
                 print(f"Invalid selection: {exc}")
                 continue
@@ -1159,7 +900,7 @@ def menu() -> str:
 # ------------ Main CLI ------------
 
 def main():
-    from .config import get_data_dir, show_config, set_data_dir
+    from .config import show_config, set_data_dir
 
     parser = argparse.ArgumentParser(description="SED Tools — spectra & filters")
     sub = parser.add_subparsers(dest="cmd", required=False)
