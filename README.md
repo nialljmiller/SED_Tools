@@ -111,7 +111,7 @@ Download stellar atmosphere spectra from remote catalogs.
 sed-tools spectra
 
 # Download specific models
-sed-tools spectra --models Kurucz2003all PHOENIX
+sed-tools spectra --models Kurucz2003all
 
 # Force a specific source
 sed-tools spectra --source svo --models Kurucz2003all
