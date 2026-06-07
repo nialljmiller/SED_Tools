@@ -22,7 +22,7 @@ import os
 import re
 import string
 import urllib.parse
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 import requests
@@ -80,6 +80,54 @@ def _sanitize_filename(name: str) -> str:
 
 def _is_monotonic_increasing(a: np.ndarray) -> bool:
     return a.size > 1 and np.all(np.diff(a) > 0)
+
+def _in_range(value: float, bounds: Optional[Tuple[float, float]]) -> bool:
+    if bounds is None:
+        return True
+    lo, hi = bounds
+    if lo > hi:
+        lo, hi = hi, lo
+    return lo <= value <= hi
+
+def _metal_tag_to_float(tag: str) -> Optional[float]:
+    m = re.match(r"^m([+\-])(?P<val>\d\.\d{2})$", tag)
+    if not m:
+        return None
+    sign = -1.0 if m.group(1) == "-" else 1.0
+    return sign * float(m.group("val"))
+
+def _filter_metals_by_range(
+    metals: List[str],
+    meta_range: Optional[Tuple[float, float]],
+) -> List[str]:
+    if meta_range is None:
+        return metals
+    return [
+        met for met in metals
+        if (val := _metal_tag_to_float(met)) is not None and _in_range(val, meta_range)
+    ]
+
+def _filter_urls_by_params(
+    urls: List[str],
+    teff_range: Optional[Tuple[float, float]] = None,
+    logg_range: Optional[Tuple[float, float]] = None,
+) -> List[str]:
+    if teff_range is None and logg_range is None:
+        return urls
+
+    kept = []
+    for url in urls:
+        params = _parse_params_from_name(os.path.basename(urllib.parse.urlparse(url).path))
+        if not params:
+            continue
+        try:
+            teff = float(params["teff"])
+            logg = float(params["logg"])
+        except (KeyError, ValueError):
+            continue
+        if _in_range(teff, teff_range) and _in_range(logg, logg_range):
+            kept.append(url)
+    return kept
 
 # ----------------- parsing helpers -----------------
 def _parse_params_from_name(fname: str) -> Dict[str, str]:
@@ -172,6 +220,7 @@ def _detect_inline_wave(text: str) -> Tuple[bool, Optional[np.ndarray], Optional
 def _try_wave_urls(reskey: str, session: requests.Session) -> Tuple[Optional[np.ndarray], Optional[str]]:
     # Official locations under /hlsps/
     candidates = [
+        f"{DATA_BASE}/wavelength_grids/bosz2024_wave_{reskey}.txt",
         f"{DATA_BASE}/bosz2024_wave_{reskey}.txt",
         f"{DATA_BASE}/waves/bosz2024_wave_{reskey}.txt",
         f"{DATA_BASE}/{reskey}/bosz2024_wave_{reskey}.txt",
@@ -226,7 +275,7 @@ class MASTSpectraGrabber:
         print("Discovering available models from MAST (BOSZ 2024)...")
         return [f"BOSZ-2024-{rk}" for rk in RES_KEYS]
 
-    def get_model_metadata(self, model_name: str) -> Dict[str, any]:
+    def get_model_metadata(self, model_name: str) -> Dict[str, Any]:
         m = re.match(r"^BOSZ-2024-(r\d+|rorig)$", model_name)
         if not m:
             raise ValueError(f"Unrecognized BOSZ model name: {model_name}")
@@ -251,18 +300,38 @@ class MASTSpectraGrabber:
                 metals = sel
         return {"provider": "mast-bosz", "version": "2024", "reskey": reskey, "metals": metals}
 
-    def download_model_spectra(self, model_name: str, info: Dict[str, any]) -> int:
+    def download_model_spectra(
+        self,
+        model_name: str,
+        info: Dict[str, Any],
+        teff_range: Optional[Tuple[float, float]] = None,
+        logg_range: Optional[Tuple[float, float]] = None,
+        meta_range: Optional[Tuple[float, float]] = None,
+        wl_range: Optional[Tuple[float, float]] = None,
+        **_ignored: Any,
+    ) -> int:
         import concurrent.futures as cf
 
         reskey: str = info["reskey"]
         metals: List[str] = info["metals"]
+
+        metals = _filter_metals_by_range(metals, meta_range)
+        if not metals:
+            print(f"[MAST] No BOSZ metallicities match meta_range={meta_range}")
+            return 0
+
         model_dir = os.path.join(self.base_dir, model_name)
         _safe_makedirs(model_dir)
 
         # -------- harvest URLs from official scripts (no listings, no API) --------
         urls = _gather_urls_from_scripts(reskey, metals, self.session)
+        urls = _filter_urls_by_params(urls, teff_range=teff_range, logg_range=logg_range)
         if not urls:
-            print(f"[MAST] No BOSZ spectra URLs found for {reskey} via download scripts.")
+            print(
+                f"[MAST] No BOSZ spectra URLs found for {reskey} "
+                f"with teff_range={teff_range}, logg_range={logg_range}, "
+                f"meta_range={meta_range}"
+            )
             return 0
         print(f"[MAST] harvest = download_scripts ({len(urls)} urls)")
 
@@ -277,6 +346,21 @@ class MASTSpectraGrabber:
             if wave is None:
                 print(f"[MAST] failed to locate wavelength grid for {reskey}")
                 return 0
+
+        def apply_wl_range(
+            wl: np.ndarray,
+            fx: np.ndarray,
+            ct: Optional[np.ndarray],
+        ) -> Tuple[np.ndarray, np.ndarray, Optional[np.ndarray]]:
+            if wl_range is None:
+                return wl, fx, ct
+            lo, hi = wl_range
+            if lo > hi:
+                lo, hi = hi, lo
+            mask = (wl >= lo) & (wl <= hi)
+            if not np.any(mask):
+                return np.array([]), np.array([]), None
+            return wl[mask], fx[mask], (ct[mask] if ct is not None and ct.size == wl.size else ct)
 
         def write_txt(out_path: str, wl: np.ndarray, fx: np.ndarray, ct: Optional[np.ndarray],
                       src_url: str, params: Dict[str, str], wave_url_used: Optional[str]) -> None:
@@ -303,8 +387,13 @@ class MASTSpectraGrabber:
                     n = min(fx.size, inline_w.size)
                     return inline_w[:n], fx[:n], (ct[:n] if ct.size >= n else None)
                 if wave is not None:
-                    n = min(fx.size, wave.size)
-                    return wave[:n], fx[:n], (ct[:n] if ct.size >= n else None)
+                    if fx.size != wave.size:
+                        raise ValueError(
+                            f"BOSZ {reskey} wavelength-grid length mismatch: "
+                            f"wave={wave.size}, flux={fx.size}"
+                        )
+                    continuum = ct if ct.size == fx.size else None
+                    return wave, fx, continuum
             # last-ditch: 2-col (wave, flux)
             wl_guess, fx_guess = [], []
             for line in text.splitlines():
@@ -335,10 +424,14 @@ class MASTSpectraGrabber:
 
                 if has_inline and pre_text is not None and inline_w is not None and inline_f is not None:
                     ct = inline_c if inline_c is not None else np.ones_like(inline_f)
-                    write_txt(out_path, inline_w, inline_f, ct, u, params, None)
+                    wl, fx, ct = apply_wl_range(inline_w, inline_f, ct)
+                    if wl.size == 0 or fx.size == 0:
+                        return None
+                    write_txt(out_path, wl, fx, ct, u, params, None)
                     return oname
 
                 wl, fx, ct = parse_any(text)
+                wl, fx, ct = apply_wl_range(wl, fx, ct)
                 if wl.size == 0 or fx.size == 0: return None
                 write_txt(out_path, wl, fx, ct, u, params, wave_url)
                 return oname
