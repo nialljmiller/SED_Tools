@@ -25,9 +25,9 @@ SED_Tools is a Python package for working with stellar spectral energy distribut
 ### Key Features
 
 - **Multi-source downloads** — Fetch stellar atmosphere spectra from SVO, MSG, MAST (BOSZ), and NJM mirror
-- **Photometric filters** — Download transmission curves from the SVO Filter Profile Service
+- **Photometric filters** — Download transmission curves from the NJM mirror with SVO Filter Profile Service fallback
 - **Unit standardization** — Convert all spectra to consistent units (wavelength in Å, flux in erg/cm²/s/Å)
-- **External integration** — Generate binary flux cubes, HDF5 bundles, and lookup tables. This is for [SED_Model](https://github.com/nialljmiller/SED_Tools) and [MESA](https://docs.mesastar.org/)'s `colors` module
+- **External integration** — Generate binary flux cubes, HDF5 bundles, and lookup tables. This is for [SED_Model](https://github.com/nialljmiller/SED_Model) and [MESA](https://docs.mesastar.org/)'s `colors` module
 - **Grid combination** — Merge multiple stellar libraries into unified "omni grids"
 - **ML completion** — Extend incomplete SEDs to broader wavelength ranges using neural networks
 - **ML generation** — Create complete SEDs from stellar parameters (Teff, logg, [M/H]) using neural networks
@@ -142,7 +142,7 @@ sed-tools spectra --models Kurucz2003all --workers 8
 
 ### `sed-tools filters`
 
-Download photometric filter transmission curves from the SVO Filter Profile Service.
+Download photometric filter transmission curves from the NJM mirror when available, with automatic fallback to the SVO Filter Profile Service.
 
 ```bash
 # Interactive facility/instrument/filter selection
@@ -177,7 +177,7 @@ sed-tools rebuild --models Kurucz2003all PHOENIX
 
 | File | Description |
 |------|-------------|
-| `flux_cube.bin` | Binary flux cube (required by [SED_Model](https://github.com/nialljmiller/SED_Tools) and other codes, such as MESA)|
+| `flux_cube.bin` | Binary flux cube (required by [SED_Model](https://github.com/nialljmiller/SED_Model) and other codes, such as MESA)|
 | `lookup_table.csv` | Parameter lookup table |
 | `*.h5` | HDF5 bundle with all spectra |
 
@@ -341,6 +341,35 @@ spectrum = sed(teff=5777, logg=4.44, metallicity=0.0)
 print(spectrum.wavelength)  # Array in Angstroms
 print(spectrum.flux)        # Array in erg/cm²/s/Å
 ```
+
+#### Synthetic Photometry
+
+<!-- SED_TOOLS_FILTER_SET_PHOTOMETRY_DOC -->
+
+`EvaluatedSED.photometry(...)` accepts individual filter names, filter files, or a filter-set / instrument directory name. For example, with the standard MESA colors-data layout, `"GAIA"` expands to the files in `filters/GAIA/GAIA/`.
+
+```python
+import os
+from pathlib import Path
+from sed_tools.api import SED
+
+colors_data = Path(os.path.expandvars("$MESA_DIR")) / "data/colors_data"
+
+sed = SED.local(
+    "Kurucz2003all",
+    model_root=colors_data / "stellar_models",
+    filter_root=colors_data / "filters",
+)
+
+spec = sed(teff=6000, logg=2.0, metallicity=-1.0)
+phot = spec.photometry("GAIA", system="AB")
+
+mags = {res.filter_name: res.magnitude for res in phot.values()}
+bp_rp = mags["Gbp"] - mags["Grp"]
+print(bp_rp)
+```
+
+If a filter specification is ambiguous, pass a specific file path or a specific filter directory.
 
 #### Combining Grids
 
@@ -506,10 +535,10 @@ Copy or symlink the generated data into your MESA installation:
 
 ```bash
 # Copy
-cp -r data/stellar_models/Kurucz2003all $MESA_DIR/colors/data/stellar_models/
+cp -r data/stellar_models/Kurucz2003all $MESA_DIR/data/colors_data/stellar_models/
 
 # Or symlink (recommended for development)
-ln -s $(pwd)/data/stellar_models/Kurucz2003all $MESA_DIR/colors/data/stellar_models/
+ln -s $(pwd)/data/stellar_models/Kurucz2003all $MESA_DIR/data/colors_data/stellar_models/
 ```
 
 ### MESA Inlist Configuration
@@ -517,10 +546,10 @@ ln -s $(pwd)/data/stellar_models/Kurucz2003all $MESA_DIR/colors/data/stellar_mod
 ```fortran
 &controls
     ! Stellar atmosphere model
-    stellar_atm = '/colors/data/stellar_models/Kurucz2003all/'
+    stellar_atm = '/data/colors_data/stellar_models/Kurucz2003all/'
     
     ! Photometric filter set
-    instrument = '/colors/data/filters/Generic/Johnson'
+    instrument = '/data/colors_data/filters/Generic/Johnson'
 /
 ```
 
@@ -570,9 +599,16 @@ SED_Tools/
 | NJM Server | [nialljmiller.com/SED_Tools/](https://nialljmiller.com/SED_Tools/) | Pre-processed data host (fastest) |
 | SVO | [svo2.cab.inta-csic.es](http://svo2.cab.inta-csic.es/theory/fps/) | Spanish Virtual Observatory |
 | MSG | [astro.wisc.edu/~townsend](http://user.astro.wisc.edu/~townsend/static.php?ref=msg-grids) | MSG Stellar Atmosphere Grids |
-| MAST | [archive.stsci.edu/prepds/bosz](https://archive.stsci.edu/prepds/bosz/) | BOSZ Spectral Library |
+| MAST | [archive.stsci.edu/prepds/bosz](https://archive.stsci.edu/prepds/bosz/) | BOSZ Spectral Library, including BOSZ 2024 fixed-resolution and original-resolution grids |
 
 ---
+
+#### MAST BOSZ 2024 wavelength grids
+
+<!-- SED_TOOLS_BOSZ_WAVEGRID_DOC -->
+
+The BOSZ 2024 fixed-resolution products (`BOSZ-2024-r500` through `BOSZ-2024-r50000`) are resampled spectra. SED_Tools uses the official STScI wavelength grids distributed with the archive under `bosz2024/wavelength_grids/`; it does not synthesize or guess wavelength axes from row counts. The original-resolution product (`BOSZ-2024-rorig`) carries its wavelength column inline.
+
 
 ## Examples
 
@@ -685,10 +721,29 @@ pip install torch
 Verify the directory structure matches MESA expectations:
 
 ```
-$MESA_DIR/colors/data/stellar_models/Kurucz2003all/
+$MESA_DIR/data/colors_data/stellar_models/Kurucz2003all/
 ├── flux_cube.bin       # Must exist
 └── lookup_table.csv    # Must exist
 ```
+
+
+**Filter set cannot be resolved**
+
+<!-- SED_TOOLS_FILTER_SET_TROUBLESHOOTING -->
+
+For installed filter sets, pass either an individual filter stem (`"Gbp"`), a full file path, or a filter-set name/directory such as `"GAIA"` when the data are arranged as:
+
+```
+filters/GAIA/GAIA/G.dat
+filters/GAIA/GAIA/Gbp.dat
+filters/GAIA/GAIA/Grp.dat
+```
+
+If a short filter name matches more than one file, use a full path or a specific filter directory.
+
+**MAST BOSZ fixed-resolution download finds no wavelength grid**
+
+BOSZ 2024 fixed-resolution spectra require the official wavelength files in the archive's `wavelength_grids/` directory. If those files cannot be reached, SED_Tools should fail clearly rather than invent a wavelength axis. You can also try `BOSZ-2024-rorig`, whose files include wavelength, flux, and continuum columns directly.
 
 ---
 
