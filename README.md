@@ -170,7 +170,7 @@ Build MESA-compatible binary files from downloaded text spectra.
 sed-tools rebuild
 
 # Rebuild specific models
-sed-tools rebuild --models Kurucz2003all PHOENIX
+sed-tools rebuild --models Kurucz2003all
 ```
 
 **Generated files:**
@@ -375,7 +375,7 @@ If a filter specification is ambiguous, pass a specific file path or a specific 
 
 ```python
 ensemble = SED.combine(
-    catalogs=['Kurucz2003all', 'PHOENIX', 'NextGen'],
+    catalogs=['Kurucz2003all', 'NextGen'],
     output='my_combined_grid',
 )
 ```
