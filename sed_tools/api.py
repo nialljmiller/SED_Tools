@@ -1452,55 +1452,129 @@ class Filters:
     
     @classmethod
     def _query_local(cls, facility: Optional[str] = None) -> List[Dict[str, Any]]:
-        """Query locally installed filters."""
+        """Query locally installed filters.
+
+        Empty/incomplete filter directories are ignored. This avoids treating a
+        failed partial download, e.g. a directory containing only an index file,
+        as a valid local filter set.
+        """
         results = []
-        
+
         if not cls._filter_root.exists():
             return results
-        
+
         for fac_dir in sorted(cls._filter_root.iterdir()):
             if not fac_dir.is_dir():
                 continue
             if facility and fac_dir.name.lower() != facility.lower():
                 continue
-            
+
             for inst_dir in sorted(fac_dir.iterdir()):
                 if not inst_dir.is_dir():
                     continue
-                
-                filters = list(inst_dir.glob("*.dat"))
+
+                filters = sorted(inst_dir.glob("*.dat"))
+                if not filters:
+                    continue
+
                 results.append({
                     'facility': fac_dir.name,
                     'instrument': inst_dir.name,
                     'n_filters': len(filters),
                     'is_local': True,
                 })
-        
+
         return results
-    
+
     @classmethod
     def _query_remote(cls, facility: Optional[str] = None) -> List[Dict[str, Any]]:
-        """Query remote filter sources (SVO, NJM)."""
-        results = []
-        
+        """Query remote filter sources.
+
+        SVO is treated as the authoritative discovery catalogue. The NJM mirror
+        is also reported when available, but fetch() still validates actual .dat
+        files before accepting a download.
+        """
+        results: List[Dict[str, Any]] = []
+
+        # SVO catalogue
         try:
             from .svo_filter_grabber import SVOFilterBrowser
             browser = SVOFilterBrowser(base_dir=str(cls._filter_root))
             facilities = browser.list_facilities()
-            
+
             for fac in facilities:
-                if facility and fac.label.lower() != facility.lower():
+                names = {fac.label.lower(), fac.key.lower()}
+                if facility and facility.lower() not in names:
                     continue
                 results.append({
                     'facility': fac.label,
+                    'facility_key': fac.key,
                     'source': 'svo',
                     'is_local': False,
                 })
         except Exception:
             pass
-        
+
+        # NJM mirror catalogue, if available. Avoid exact duplicate rows.
+        try:
+            from .njm_filter_grabber import NJMFilterGrabber
+            njm = NJMFilterGrabber(base_dir=str(cls._filter_root))
+            if njm.is_available():
+                seen = {
+                    (r.get('facility', '').lower(), r.get('source', '').lower())
+                    for r in results
+                }
+                for fac in njm.discover_facilities():
+                    if facility and fac.lower() != facility.lower():
+                        continue
+                    key = (fac.lower(), 'njm')
+                    if key in seen:
+                        continue
+                    results.append({
+                        'facility': fac,
+                        'source': 'njm',
+                        'is_local': False,
+                    })
+                    seen.add(key)
+        except Exception:
+            pass
+
         return results
-    
+
+    @staticmethod
+    def _find_filter_dir(base_dir: Path, *candidates: Path) -> Optional[Path]:
+        """Return the first candidate directory containing .dat filter files."""
+        for candidate in candidates:
+            if candidate.exists() and candidate.is_dir():
+                if list(candidate.glob("*.dat")):
+                    return candidate
+        return None
+
+    @staticmethod
+    def _remove_empty_filter_dir(path: Path) -> None:
+        """Remove a partial filter directory only when it has no .dat files."""
+        if not path.exists() or not path.is_dir():
+            return
+        if list(path.glob("*.dat")):
+            return
+
+        # Failed NJM downloads can leave only an instrument index file. Remove
+        # files in the leaf directory, then prune empty parents cautiously.
+        for child in path.iterdir():
+            if child.is_file() and child.name == path.name:
+                try:
+                    child.unlink()
+                except OSError:
+                    pass
+
+        try:
+            path.rmdir()
+            parent = path.parent
+            if parent.exists() and parent.is_dir() and not any(parent.iterdir()):
+                parent.rmdir()
+        except OSError:
+            pass
+
     @classmethod
     def fetch(
         cls,
@@ -1510,68 +1584,96 @@ class Filters:
     ) -> Path:
         """
         Download filter profiles.
-        
-        Parameters
-        ----------
-        facility : str
-            Facility name (e.g., 'Generic', 'HST')
-        instrument : str
-            Instrument name (e.g., 'Johnson', 'WFC3')
-        filter_root : str or Path, optional
-            Base directory for filters
-            
-        Returns
-        -------
-        Path
-            Directory where filters were saved
+
+        Tries an existing local installation first, then the NJM mirror, then
+        SVO. A source is considered successful only if real ``*.dat`` files are
+        present in the final directory.
         """
         base_dir = Path(filter_root) if filter_root else cls._filter_root
+        base_dir.mkdir(parents=True, exist_ok=True)
         output_path = base_dir / facility / instrument
-        
-        # Check if already exists locally
-        if output_path.exists():
-            existing = list(output_path.glob("*.dat"))
-            if existing:
-                print(f"[filters] Already have {len(existing)} filters at {output_path}")
-                return output_path
-        
-        # Try NJM first
+
+        # Check if already exists locally and is complete enough to use.
+        existing_dir = cls._find_filter_dir(base_dir, output_path)
+        if existing_dir:
+            existing = list(existing_dir.glob("*.dat"))
+            print(f"[filters] Already have {len(existing)} filters at {existing_dir}")
+            return existing_dir
+
+        # Try NJM first.
         try:
             from .njm_filter_grabber import NJMFilterGrabber
             njm = NJMFilterGrabber(base_dir=str(base_dir))
             if njm.is_available():
-                njm.download_filters(facility, instrument)
-                # Check if files now exist
-                if output_path.exists():
-                    existing = list(output_path.glob("*.dat"))
-                    if existing:
-                        print(f"[filters] Got {len(existing)} filters from NJM")
-                        return output_path
+                count = njm.download_filters(facility, instrument)
+                existing_dir = cls._find_filter_dir(base_dir, output_path)
+                if existing_dir:
+                    existing = list(existing_dir.glob("*.dat"))
+                    print(f"[filters] Got {len(existing)} filters from NJM")
+                    return existing_dir
+                if count == 0:
+                    cls._remove_empty_filter_dir(output_path)
         except Exception as e:
             print(f"[filters] NJM failed: {e}")
-        
-        # Fall back to SVO
+
+        # Fall back to SVO. SVO uses facility/instrument *keys* for browsing,
+        # but writes output directories from the returned filter-row labels, so
+        # we check both the requested names and the actual row names.
         try:
-            from .svo_filter_grabber import SVOFilterBrowser
+            from .svo_filter_grabber import SVOFilterBrowser, _clean_path
             browser = SVOFilterBrowser(base_dir=str(base_dir))
-            
-            # Navigate and download
+
             facilities = browser.list_facilities()
-            fac = next((f for f in facilities if f.label.lower() == facility.lower()), None)
-            if fac:
-                instruments = browser.list_instruments(fac)
-                inst = next((i for i in instruments if i.label.lower() == instrument.lower()), None)
-                if inst:
-                    filters = browser.list_filters(inst)
-                    browser.download_filters(filters)
-                    if output_path.exists():
-                        existing = list(output_path.glob("*.dat"))
-                        if existing:
-                            print(f"[filters] Got {len(existing)} filters from SVO")
-                            return output_path
+            fac = next(
+                (
+                    f for f in facilities
+                    if f.label.lower() == facility.lower()
+                    or f.key.lower() == facility.lower()
+                ),
+                None,
+            )
+            if fac is None:
+                raise ValueError(f"SVO facility not found: {facility}")
+
+            instruments = browser.list_instruments(fac.key)
+            inst = next(
+                (
+                    i for i in instruments
+                    if i.label.lower() == instrument.lower()
+                    or i.key.lower() == instrument.lower()
+                ),
+                None,
+            )
+            if inst is None:
+                raise ValueError(f"SVO instrument not found: {facility}/{instrument}")
+
+            filters = browser.list_filters(fac.key, inst.key)
+            if not filters:
+                raise ValueError(f"SVO returned no filters for {facility}/{instrument}")
+
+            browser.download_filters(filters)
+
+            candidates = [
+                output_path,
+                base_dir / fac.label / inst.label,
+                base_dir / fac.key / inst.key,
+            ]
+
+            # SVO rows may contain their own display labels.
+            first = filters[0]
+            candidates.append(
+                base_dir / _clean_path(first.facility) / _clean_path(first.instrument)
+            )
+
+            existing_dir = cls._find_filter_dir(base_dir, *candidates)
+            if existing_dir:
+                existing = list(existing_dir.glob("*.dat"))
+                print(f"[filters] Got {len(existing)} filters from SVO")
+                return existing_dir
+
         except Exception as e:
             print(f"[filters] SVO failed: {e}")
-        
+
         raise ValueError(f"Could not download filters for {facility}/{instrument}")
 
 
