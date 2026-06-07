@@ -639,13 +639,13 @@ from sed_tools.api import SED
 hot = SED.fetch('Kurucz2003all', teff_min=7000, teff_max=50000)
 hot.cat.write()
 
-# Cool stars from PHOENIX
-cool = SED.fetch('PHOENIX', teff_min=2500, teff_max=7000)
+# Cool stars from BT-Settl
+cool = SED.fetch('bt-settl', teff_min=2500, teff_max=7000)
 cool.cat.write()
 
 # Combine into unified grid
 combined = SED.combine(
-    ['Kurucz2003all', 'PHOENIX'],
+    ['Kurucz2003all', 'bt-settl'],
     output='full_temperature_grid'
 )
 ```
