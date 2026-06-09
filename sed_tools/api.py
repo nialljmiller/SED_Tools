@@ -872,7 +872,166 @@ class SED:
             model_root=base_dir,
             filter_root=filter_root,
         )
-    
+
+    @classmethod
+    def coverage(
+        cls,
+        catalog: Union[str, Path],
+        model_root: Optional[Union[str, Path]] = None,
+        plot: bool = True,
+        out_path: Optional[Union[str, Path]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Report parameter-space coverage of a local grid (downloaded or built).
+
+        Prints per-axis ranges, unique grid values and spacing, the node count
+        vs. the full Teff x logg x [M/H] product (fill fraction), and an
+        Anderson-Darling normality stat per axis. Optionally writes a
+        Teff-logg + 3D coverage plot (defaults to <model_dir>/coverage.png).
+
+        Parameters
+        ----------
+        catalog : grid name (resolved under model_root) or a model directory.
+        model_root : base stellar_models dir for resolving a bare name.
+        plot : whether to write the coverage figure.
+        out_path : plot output path.
+
+        Returns the summary dict.
+        """
+        from .grid_coverage import grid_coverage
+
+        base = Path(model_root) if model_root else cls._model_root
+        return grid_coverage(catalog, base_dir=base, plot=plot, out_path=out_path)
+
+    @classmethod
+    def import_grid(
+        cls,
+        src: Union[str, Path],
+        name: Optional[str] = None,
+        model_root: Optional[Union[str, Path]] = None,
+        move: bool = False,
+        build_cube: bool = True,
+        build_h5: bool = True,
+        dry_run: bool = False,
+    ) -> Dict[str, Any]:
+        """
+        Ingest a local grid of .txt spectra into the SED_Tools pipeline.
+
+        The spectra must carry their parameters in the file header in any form
+        recognised by header_parser.parse_header (Teff, logg, [M/H]); if a grid
+        uses a header key the parser does not know, add it to ALIASES in
+        header_parser.py rather than mapping it here.
+
+        Files are copied (or moved with move=True) into
+        <model_root>/<name>/, then run through the standard
+        clean -> lookup -> HDF5 -> flux-cube pipeline, after which the grid is
+        usable via SED.local(name).
+
+        Parameters
+        ----------
+        src : a directory of .txt spectra, or a single .txt file.
+        name : model name (defaults to the source folder name).
+        model_root : base stellar_models dir (defaults to the configured one).
+        move : move files instead of copying.
+        build_cube : build flux_cube.bin.
+        build_h5 : build the HDF5 bundle.
+        dry_run : only report how many files have parseable headers; do not copy.
+
+        Returns a summary dict.
+        """
+        import math
+
+        from .header_parser import parse_header
+
+        src = Path(src).expanduser()
+        if not src.exists():
+            raise FileNotFoundError(f"Source path not found: {src}")
+
+        if src.is_dir():
+            files = sorted(src.glob("*.txt"))
+            src_dir = src
+        elif src.is_file() and src.suffix.lower() == ".txt":
+            files = [src]
+            src_dir = src.parent
+        else:
+            raise ValueError(f"Source must be a directory or a .txt file: {src}")
+
+        if not files:
+            raise RuntimeError(f"No .txt spectra found in {src}")
+
+        if name is None:
+            name = src_dir.name
+        base = Path(model_root) if model_root else cls._model_root
+        dest = Path(base) / name
+
+        # --- header check (also the dry-run report) ---
+        n_ok = 0
+        missing: List[str] = []
+        for f in files:
+            h = parse_header(str(f))
+            vals = [float(h.get(k, float("nan"))) for k in ("teff", "logg", "metallicity")]
+            if all(not math.isnan(v) for v in vals):
+                n_ok += 1
+            else:
+                missing.append(f.name)
+
+        print(f"[import] {len(files)} .txt files in {src_dir}")
+        print(f"[import] parseable Teff+logg+[M/H] headers: {n_ok}/{len(files)}")
+        if missing:
+            print(f"[import] missing one or more parameters: {len(missing)}")
+            for b in missing[:10]:
+                print(f"           {b}")
+            if len(missing) > 10:
+                print(f"           ... and {len(missing) - 10} more")
+            print("[import] If a key is merely unrecognised, add it to ALIASES "
+                  "in header_parser.py.")
+
+        if dry_run:
+            return {
+                "name": name,
+                "n_files": len(files),
+                "n_parseable": n_ok,
+                "n_missing": len(missing),
+                "dest": str(dest),
+                "dry_run": True,
+            }
+
+        # --- stage files into the data dir ---
+        dest.mkdir(parents=True, exist_ok=True)
+        for f in files:
+            target = dest / f.name
+            if move:
+                shutil.move(str(f), str(target))
+            else:
+                shutil.copy2(str(f), str(target))
+        print(f"[import] {'moved' if move else 'copied'} {len(files)} files -> {dest}")
+
+        # --- standard pipeline: clean -> lookup -> h5 -> cube ---
+        from .spectra_cleaner import clean_model_dir
+        from .svo_regen_spectra_lookup import regenerate_lookup_table
+
+        summary = clean_model_dir(str(dest), try_h5_recovery=True, rebuild_lookup=True)
+        print(f"[import] cleaned: total={summary['total']}")
+
+        regenerate_lookup_table(str(dest))
+
+        if build_h5:
+            from . import build_h5_bundle_from_txt
+            build_h5_bundle_from_txt(str(dest), str(dest / f"{name}.h5"))
+
+        if build_cube:
+            from .precompute_flux_cube import precompute_flux_cube
+            precompute_flux_cube(str(dest), str(dest / "flux_cube.bin"))
+
+        print(f"[import] done. Load with: SED.local('{name}')")
+        return {
+            "name": name,
+            "n_files": len(files),
+            "n_parseable": n_ok,
+            "dest": str(dest),
+            "dry_run": False,
+        }
+
     @classmethod
     def combine(
         cls,
