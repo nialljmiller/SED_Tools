@@ -1123,9 +1123,55 @@ def run_config_flow() -> None:
     show_config()
     print("\nEnter new data directory path, or press Enter to keep current:")
     raw = input("> ").strip()
-    if raw:
-        set_data_dir(raw)
-        print("Restart sed-tools for the change to take effect.")
+    if not raw:
+        return
+    # set_data_dir handles the "move existing data?" prompt itself.
+    set_data_dir(raw, interactive=True)
+    print("Restart sed-tools for the change to take effect.")
+
+
+def _discover_local_grids(base_dir: str) -> List[str]:
+    """Local model folders that have a lookup table or at least one .txt."""
+    base_dir = str(base_dir)
+    out = []
+    if not os.path.isdir(base_dir):
+        return out
+    for name in sorted(os.listdir(base_dir)):
+        p = os.path.join(base_dir, name)
+        if not os.path.isdir(p):
+            continue
+        if os.path.exists(os.path.join(p, "lookup_table.csv")) or any(
+            fn.lower().endswith(".txt") for fn in os.listdir(p)
+        ):
+            out.append(name)
+    return out
+
+
+def run_coverage_flow(base_dir: str = str(STELLAR_DIR_DEFAULT)) -> None:
+    """Interactive parameter-space coverage report for a local grid."""
+    from .api import SED
+
+    cands = _discover_local_grids(base_dir)
+    if not cands:
+        print(f"No local grids found under {base_dir}")
+        return
+    idx = _prompt_choice(cands, label="Local grids", allow_back=True)
+    if idx is None or idx == -1:
+        return
+    SED.coverage(cands[idx], model_root=base_dir, plot=True)
+
+
+def run_import_flow(base_dir: str = str(STELLAR_DIR_DEFAULT)) -> None:
+    """Interactive ingest of a local grid into the pipeline."""
+    from .api import SED
+
+    path = input("Path to your grid directory (or a .txt file): ").strip()
+    if not path:
+        print("No path given.")
+        return
+    name = input("Model name [blank = source folder name]: ").strip() or None
+    mv = input("Move files instead of copying? [y/N] ").strip().lower().startswith("y")
+    SED.import_grid(path, name=name, model_root=base_dir, move=mv)
 
 
 def menu() -> str:
@@ -1139,6 +1185,8 @@ def menu() -> str:
     print("7) Grid Densifier (fill coarse Teff gaps)")
     print("8) MESA Prepare (export a sub-variant for MESA)")
     print("9) Config (show/set data directory)")
+    print("10) Coverage (parameter-space summary + plot)")
+    print("11) Import a local grid into the pipeline")
     print("0) Quit")
     choice = input("> ").strip()
     mapping = {
@@ -1151,6 +1199,8 @@ def menu() -> str:
         "7": "grid_densifier",
         "8": "mesa_prepare",
         "9": "config",
+        "10": "coverage",
+        "11": "import",
         "0": "quit"
     }
     return mapping.get(choice, "")
@@ -1244,6 +1294,36 @@ def main():
     cfg_p = sub.add_parser("config", help="Show or set the data directory")
     cfg_p.add_argument("--set", metavar="PATH", default=None,
                        help="Set data directory to PATH")
+    cfg_p.add_argument("--move", action="store_true",
+                       help="With --set: move existing data to the new path")
+
+    # coverage
+    covp = sub.add_parser("coverage",
+        help="Report parameter-space coverage of a local grid")
+    covp.add_argument("--base", default=str(STELLAR_DIR_DEFAULT),
+                      help="Base models dir")
+    covp.add_argument("--models", nargs="*", default=None,
+                      help="Model folder name(s); prompted if omitted")
+    covp.add_argument("--no-plot", action="store_true",
+                      help="Skip the coverage plot")
+    covp.add_argument("--out", default=None,
+                      help="Output path for the plot PNG (single model only)")
+
+    # import
+    imp = sub.add_parser("import",
+        help="Ingest a local grid of .txt spectra into the pipeline")
+    imp.add_argument("--path", required=True,
+                     help="Directory of .txt spectra (or a single .txt file)")
+    imp.add_argument("--name", default=None,
+                     help="Model name (default: source folder name)")
+    imp.add_argument("--base", default=str(STELLAR_DIR_DEFAULT),
+                     help="Base models dir")
+    imp.add_argument("--move", action="store_true",
+                     help="Move files instead of copying")
+    imp.add_argument("--no-h5", action="store_true", help="Skip HDF5 bundle")
+    imp.add_argument("--no-cube", action="store_true", help="Skip flux cube")
+    imp.add_argument("--dry-run", action="store_true",
+                     help="Report parseable headers without importing")
 
     args = parser.parse_args()
 
@@ -1307,9 +1387,35 @@ def main():
         )
     elif args.cmd == "config":
         if args.set:
-            set_data_dir(args.set)
+            set_data_dir(args.set, move=args.move if args.move else None)
         else:
             show_config()
+    elif args.cmd == "coverage":
+        from .api import SED
+        names = args.models
+        if not names:
+            names = _discover_local_grids(args.base)
+            if not names:
+                print(f"No local grids found under {args.base}")
+                return
+        for nm in names:
+            SED.coverage(
+                nm,
+                model_root=args.base,
+                plot=not args.no_plot,
+                out_path=args.out if len(names) == 1 else None,
+            )
+    elif args.cmd == "import":
+        from .api import SED
+        SED.import_grid(
+            args.path,
+            name=args.name,
+            model_root=args.base,
+            move=args.move,
+            build_h5=not args.no_h5,
+            build_cube=not args.no_cube,
+            dry_run=args.dry_run,
+        )
     else:
         # Interactive mode
         while True:
@@ -1332,6 +1438,10 @@ def main():
                 run_mesa_prepare_flow()
             elif choice == "config":
                 run_config_flow()
+            elif choice == "coverage":
+                run_coverage_flow()
+            elif choice == "import":
+                run_import_flow()
             else:
                 sys.exit(0)
 
