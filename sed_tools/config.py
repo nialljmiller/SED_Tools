@@ -45,32 +45,54 @@ def has_content(data_dir: Path) -> bool:
     return False
 
 
-def _move_data(old: Path, new: Path) -> None:
-    """Move stellar_models/ and filters/ from old to new, merging if needed."""
+def _move_data(old: Path, new: Path) -> list[tuple[str, str]]:
+    """
+    Move stellar_models/ and filters/ from old to new, merging recursively.
+
+    Never overwrites an existing target file. Old files that are byte-identical
+    to their target are removed (duplicate cleanup); old files that differ from
+    an existing target are left in place and returned as conflicts so the caller
+    can report them. Emptied source directories are removed.
+
+    Returns a list of (old_path, target_path) conflict tuples.
+    """
+    import filecmp
+
     old, new = Path(old), Path(new)
     new.mkdir(parents=True, exist_ok=True)
-    for sub in _DATA_SUBDIRS:
-        src = old / sub
-        if not src.is_dir():
-            continue
-        dst = new / sub
+    conflicts: list[tuple[str, str]] = []
+
+    def _merge(src: Path, dst: Path) -> None:
+        if src.is_dir():
+            if not dst.exists():
+                shutil.move(str(src), str(dst))
+                print(f"  moved {src} -> {dst}")
+                return
+            dst.mkdir(parents=True, exist_ok=True)
+            for child in list(src.iterdir()):
+                _merge(child, dst / child.name)
+            try:
+                src.rmdir()  # only succeeds if fully drained
+            except OSError:
+                pass
+            return
+        # src is a file
         if not dst.exists():
             shutil.move(str(src), str(dst))
-            print(f"  moved {src} -> {dst}")
-            continue
-        # Merge child-by-child; never overwrite an existing target.
-        dst.mkdir(parents=True, exist_ok=True)
-        for child in list(src.iterdir()):
-            target = dst / child.name
-            if target.exists():
-                print(f"  skip (exists in target): {target}")
-                continue
-            shutil.move(str(child), str(target))
-            print(f"  moved {child} -> {target}")
-        try:
-            src.rmdir()
-        except OSError:
-            pass
+            return
+        if filecmp.cmp(str(src), str(dst), shallow=False):
+            src.unlink()
+            print(f"  duplicate identical, removed old: {src}")
+        else:
+            conflicts.append((str(src), str(dst)))
+            print(f"  CONFLICT differs, kept target, left old: {src}")
+
+    for sub in _DATA_SUBDIRS:
+        src = old / sub
+        if src.is_dir():
+            _merge(src, new / sub)
+
+    return conflicts
 
 
 def set_data_dir(path: str, move: bool | None = None, interactive: bool = False) -> None:
@@ -99,7 +121,24 @@ def set_data_dir(path: str, move: bool | None = None, interactive: bool = False)
 
     if relocate:
         print(f"Moving existing data: {old} -> {new}")
-        _move_data(old, new)
+        conflicts = _move_data(old, new)
+        if conflicts:
+            print(f"\n  {len(conflicts)} file(s) differ between old and target "
+                  "and were NOT moved (target kept). Reconcile by hand:")
+            for src_f, dst_f in conflicts:
+                print(f"    old:    {src_f}")
+                print(f"    target: {dst_f}")
+        # Report what, if anything, is still sitting at the old location.
+        leftover = []
+        for sub in _DATA_SUBDIRS:
+            p = old / sub
+            if p.is_dir():
+                leftover += [str(c) for c in p.rglob("*") if c.is_file()]
+        if leftover:
+            print(f"\n  {len(leftover)} file(s) remain under {old} "
+                  "(conflicts and/or non-empty dirs). Nothing was overwritten.")
+        else:
+            print(f"\n  Old data location {old} fully drained.")
 
     _CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     existing = {}

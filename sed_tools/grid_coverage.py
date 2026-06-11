@@ -247,7 +247,7 @@ def print_coverage(summary: Dict) -> None:
 def plot_coverage(
     df: pd.DataFrame, name: str, out_path: Union[str, Path]
 ) -> Path:
-    """Write a Teff-logg + 3D Teff/logg/[M/H] coverage figure to out_path."""
+    """Write a 2x2 coverage figure with all 2D pairings plus a 3D view."""
     import matplotlib
 
     matplotlib.use("Agg")
@@ -259,25 +259,43 @@ def plot_coverage(
     logg = sub["logg"].to_numpy()
     meta = sub["metallicity"].to_numpy()
 
-    fig = plt.figure(figsize=(13, 5.5))
+    fig = plt.figure(figsize=(14, 10), constrained_layout=True)
+    gs = fig.add_gridspec(2, 2)
 
-    ax1 = fig.add_subplot(1, 2, 1)
-    sc = ax1.scatter(teff, logg, c=meta, cmap="viridis", s=16, edgecolors="none")
+    # 1) Teff vs log g, coloured by [M/H]
+    ax1 = fig.add_subplot(gs[0, 0])
+    sc1 = ax1.scatter(teff, logg, c=meta, cmap="viridis", s=18, edgecolors="none")
     ax1.set_xlabel("Teff [K]")
     ax1.set_ylabel("log g")
+    ax1.set_title(f"{name}: Teff-log g")
     if logg.size:
         ax1.invert_yaxis()
-    ax1.set_title(f"{name}: Teff-log g")
-    fig.colorbar(sc, ax=ax1, label="[M/H]")
+    fig.colorbar(sc1, ax=ax1, label="[M/H]")
 
-    ax2 = fig.add_subplot(1, 2, 2, projection="3d")
-    ax2.scatter(teff, logg, meta, c=meta, cmap="viridis", s=12, edgecolors="none")
+    # 2) Teff vs [M/H], coloured by log g
+    ax2 = fig.add_subplot(gs[0, 1])
+    sc2 = ax2.scatter(teff, meta, c=logg, cmap="viridis", s=18, edgecolors="none")
     ax2.set_xlabel("Teff [K]")
-    ax2.set_ylabel("log g")
-    ax2.set_zlabel("[M/H]")
-    ax2.set_title("3D coverage")
+    ax2.set_ylabel("[M/H]")
+    ax2.set_title("Teff-[M/H]")
+    fig.colorbar(sc2, ax=ax2, label="log g")
 
-    fig.tight_layout()
+    # 3) log g vs [M/H], coloured by Teff
+    ax3 = fig.add_subplot(gs[1, 0])
+    sc3 = ax3.scatter(logg, meta, c=teff, cmap="viridis", s=18, edgecolors="none")
+    ax3.set_xlabel("log g")
+    ax3.set_ylabel("[M/H]")
+    ax3.set_title("log g-[M/H]")
+    fig.colorbar(sc3, ax=ax3, label="Teff [K]")
+
+    # 4) 3D coverage
+    ax4 = fig.add_subplot(gs[1, 1], projection="3d")
+    ax4.scatter(teff, logg, meta, c=meta, cmap="viridis", s=12, edgecolors="none")
+    ax4.set_xlabel("Teff [K]")
+    ax4.set_ylabel("log g")
+    ax4.set_zlabel("[M/H]")
+    ax4.set_title("3D coverage")
+
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out_path, dpi=130)
