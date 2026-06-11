@@ -1,463 +1,28 @@
 {
   "version": "1.0",
-  "generated": "2026-03-09T04:19:23.922169",
+  "generated": "2026-06-07T06:11:59.237460",
   "base_url": "http://nillmill.ddns.net/sed_tools",
   "statistics": {
-    "total_models": 40,
-    "complete_models": 36,
-    "total_spectra": 94871,
-    "total_size_bytes": 1245922342174,
-    "total_size_human": "1.13 TB",
-    "total_facilities": 68,
-    "total_filters": 3501
+    "total_models": 1,
+    "complete_models": 0,
+    "total_spectra": 6028,
+    "total_size_bytes": 142850198218,
+    "total_size_human": "133.04 GB",
+    "total_facilities": 70,
+    "total_filters": 3515
   },
   "models": [
-    "Husfeld",
-    "Kurucz",
-    "Kurucz2003",
-    "Kurucz2003all",
-    "Kurucz2003alp",
-    "NextGen",
-    "NextGen2",
-    "atmo2020_ceq",
-    "atmo2020_neq_strong",
-    "atmo2020_neq_weak",
-    "bbody",
-    "bt-cond",
-    "bt-dusty",
-    "bt-nextgen-agss2009",
-    "bt-settl",
-    "bt-settl-2014",
-    "bt-settl-agss",
-    "bt-settl-cifist",
-    "bt-settl-gns93",
-    "cond00",
-    "exogan",
-    "goyal_local",
-    "grams_cgrid",
-    "grams_ogrid",
-    "hres",
-    "koester2",
-    "pop_kroupa",
-    "saumon12",
-    "sedssp",
-    "sg-BT-Settl",
-    "tmap",
-    "tmap1",
-    "tmap2",
-    "tmap4",
-    "tpl_bayo",
-    "tpl_chiu06",
-    "tpl_keck",
-    "tpl_kesseli",
-    "tpl_mclean",
-    "tpl_miles"
+    "bt-cond"
   ],
   "models_detailed": {
-    "Husfeld": {
-      "name": "Husfeld",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 448,
-      "size_bytes": 35903540,
-      "size_human": "34.24 MB"
-    },
-    "Kurucz": {
-      "name": "Kurucz",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 3808,
-      "size_bytes": 281236588,
-      "size_human": "268.21 MB"
-    },
-    "Kurucz2003": {
-      "name": "Kurucz2003",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 3808,
-      "size_bytes": 275075322,
-      "size_human": "262.33 MB"
-    },
-    "Kurucz2003all": {
-      "name": "Kurucz2003all",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 8092,
-      "size_bytes": 520588986,
-      "size_human": "496.47 MB"
-    },
-    "Kurucz2003alp": {
-      "name": "Kurucz2003alp",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 4284,
-      "size_bytes": 309667092,
-      "size_human": "295.32 MB"
-    },
-    "NextGen": {
-      "name": "NextGen",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 272,
-      "size_bytes": 304073331,
-      "size_human": "289.99 MB"
-    },
-    "NextGen2": {
-      "name": "NextGen2",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 2712,
-      "size_bytes": 19979765163,
-      "size_human": "18.61 GB"
-    },
-    "atmo2020_ceq": {
-      "name": "atmo2020_ceq",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 231,
-      "size_bytes": 66430257,
-      "size_human": "63.35 MB"
-    },
-    "atmo2020_neq_strong": {
-      "name": "atmo2020_neq_strong",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 140,
-      "size_bytes": 40562389,
-      "size_human": "38.68 MB"
-    },
-    "atmo2020_neq_weak": {
-      "name": "atmo2020_neq_weak",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 139,
-      "size_bytes": 40314637,
-      "size_human": "38.45 MB"
-    },
-    "bbody": {
-      "name": "bbody",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 588,
-      "size_bytes": 41893614,
-      "size_human": "39.95 MB"
-    },
     "bt-cond": {
       "name": "bt-cond",
       "has_flux_cube": false,
       "has_lookup_table": true,
       "has_h5_bundle": true,
       "spectra_count": 6028,
-      "size_bytes": 115612612593,
-      "size_human": "107.67 GB"
-    },
-    "bt-dusty": {
-      "name": "bt-dusty",
-      "has_flux_cube": false,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 6029,
-      "size_bytes": 115190817066,
-      "size_human": "107.28 GB"
-    },
-    "bt-nextgen-agss2009": {
-      "name": "bt-nextgen-agss2009",
-      "has_flux_cube": false,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 6000,
-      "size_bytes": 115354987290,
-      "size_human": "107.43 GB"
-    },
-    "bt-settl": {
-      "name": "bt-settl",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 6489,
-      "size_bytes": 230389595333,
-      "size_human": "214.57 GB"
-    },
-    "bt-settl-2014": {
-      "name": "bt-settl-2014",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 20,
-      "size_bytes": 108945901,
-      "size_human": "103.90 MB"
-    },
-    "bt-settl-agss": {
-      "name": "bt-settl-agss",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 14195,
-      "size_bytes": 542594332330,
-      "size_human": "505.33 GB"
-    },
-    "bt-settl-cifist": {
-      "name": "bt-settl-cifist",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 446,
-      "size_bytes": 47530764031,
-      "size_human": "44.27 GB"
-    },
-    "bt-settl-gns93": {
-      "name": "bt-settl-gns93",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 3850,
-      "size_bytes": 17168881248,
-      "size_human": "15.99 GB"
-    },
-    "cond00": {
-      "name": "cond00",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 317,
-      "size_bytes": 959972734,
-      "size_human": "915.50 MB"
-    },
-    "exogan": {
-      "name": "exogan",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 4941,
-      "size_bytes": 219022060,
-      "size_human": "208.88 MB"
-    },
-    "goyal_local": {
-      "name": "goyal_local",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 5464,
-      "size_bytes": 2137067348,
-      "size_human": "1.99 GB"
-    },
-    "grams_cgrid": {
-      "name": "grams_cgrid",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 4774,
-      "size_bytes": 82818979,
-      "size_human": "78.98 MB"
-    },
-    "grams_ogrid": {
-      "name": "grams_ogrid",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 1225,
-      "size_bytes": 18539945,
-      "size_human": "17.68 MB"
-    },
-    "hres": {
-      "name": "hres",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 1650,
-      "size_bytes": 2086211280,
-      "size_human": "1.94 GB"
-    },
-    "koester2": {
-      "name": "koester2",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 1066,
-      "size_bytes": 2965420423,
-      "size_human": "2.76 GB"
-    },
-    "pop_kroupa": {
-      "name": "pop_kroupa",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 1908,
-      "size_bytes": 186539277,
-      "size_human": "177.90 MB"
-    },
-    "saumon12": {
-      "name": "saumon12",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 149,
-      "size_bytes": 2188976536,
-      "size_human": "2.04 GB"
-    },
-    "sedssp": {
-      "name": "sedssp",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 452,
-      "size_bytes": 459514605,
-      "size_human": "438.23 MB"
-    },
-    "sg-BSTAR2006-hig": {
-      "name": "sg-BSTAR2006-hig",
-      "has_flux_cube": false,
-      "has_lookup_table": false,
-      "has_h5_bundle": true,
-      "spectra_count": 0,
-      "size_bytes": 6880300504,
-      "size_human": "6.41 GB"
-    },
-    "sg-BSTAR2006-low": {
-      "name": "sg-BSTAR2006-low",
-      "has_flux_cube": false,
-      "has_lookup_table": false,
-      "has_h5_bundle": true,
-      "spectra_count": 0,
-      "size_bytes": 80130255,
-      "size_human": "76.42 MB"
-    },
-    "sg-BSTAR2006-medium": {
-      "name": "sg-BSTAR2006-medium",
-      "has_flux_cube": false,
-      "has_lookup_table": false,
-      "has_h5_bundle": true,
-      "spectra_count": 0,
-      "size_bytes": 726193161,
-      "size_human": "692.55 MB"
-    },
-    "sg-BT-Settl": {
-      "name": "sg-BT-Settl",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 147,
-      "size_bytes": 2668790774,
-      "size_human": "2.49 GB"
-    },
-    "sg-C3K-coarse": {
-      "name": "sg-C3K-coarse",
-      "has_flux_cube": false,
-      "has_lookup_table": false,
-      "has_h5_bundle": true,
-      "spectra_count": 0,
-      "size_bytes": 1530844614,
-      "size_human": "1.43 GB"
-    },
-    "tmap": {
-      "name": "tmap",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 1287,
-      "size_bytes": 3148168121,
-      "size_human": "2.93 GB"
-    },
-    "tmap1": {
-      "name": "tmap1",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 59,
-      "size_bytes": 240528427,
-      "size_human": "229.39 MB"
-    },
-    "tmap2": {
-      "name": "tmap2",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 1215,
-      "size_bytes": 11241273171,
-      "size_human": "10.47 GB"
-    },
-    "tmap3": {
-      "name": "tmap3",
-      "has_flux_cube": false,
-      "has_lookup_table": false,
-      "has_h5_bundle": false,
-      "spectra_count": 0,
-      "size_bytes": 0,
-      "size_human": "0.00 B"
-    },
-    "tmap4": {
-      "name": "tmap4",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 1040,
-      "size_bytes": 1181433751,
-      "size_human": "1.10 GB"
-    },
-    "tpl_bayo": {
-      "name": "tpl_bayo",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 27,
-      "size_bytes": 3335211,
-      "size_human": "3.18 MB"
-    },
-    "tpl_chiu06": {
-      "name": "tpl_chiu06",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 161,
-      "size_bytes": 11699187,
-      "size_human": "11.16 MB"
-    },
-    "tpl_keck": {
-      "name": "tpl_keck",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 49,
-      "size_bytes": 4728785,
-      "size_human": "4.51 MB"
-    },
-    "tpl_kesseli": {
-      "name": "tpl_kesseli",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 324,
-      "size_bytes": 860999394,
-      "size_human": "821.11 MB"
-    },
-    "tpl_mclean": {
-      "name": "tpl_mclean",
-      "has_flux_cube": true,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 52,
-      "size_bytes": 7613719,
-      "size_human": "7.26 MB"
-    },
-    "tpl_miles": {
-      "name": "tpl_miles",
-      "has_flux_cube": false,
-      "has_lookup_table": true,
-      "has_h5_bundle": true,
-      "spectra_count": 985,
-      "size_bytes": 185773202,
-      "size_human": "177.17 MB"
+      "size_bytes": 142850198218,
+      "size_human": "133.04 GB"
     }
   },
   "filters": {
@@ -527,8 +92,10 @@
       "Kepler",
       "Liverpool",
       "Roman",
+      "SLOAN",
       "TESS",
       "Teide",
+      "WISE",
       "WMAP"
     ],
     "facilities_detailed": {
@@ -6201,6 +5768,30 @@
         },
         "instrument_count": 1
       },
+      "SLOAN": {
+        "name": "SLOAN",
+        "instruments": {
+          "SDSS": {
+            "name": "SDSS",
+            "filter_count": 10,
+            "filters": [
+              "g",
+              "gprime_filter",
+              "i",
+              "iprime_filter",
+              "r",
+              "rprime_filter",
+              "u",
+              "uprime_filter",
+              "z",
+              "zprime_filter"
+            ],
+            "size_bytes": 217393,
+            "size_human": "212.30 KB"
+          }
+        },
+        "instrument_count": 1
+      },
       "TESS": {
         "name": "TESS",
         "instruments": {
@@ -6242,6 +5833,24 @@
           }
         },
         "instrument_count": 2
+      },
+      "WISE": {
+        "name": "WISE",
+        "instruments": {
+          "WISE": {
+            "name": "WISE",
+            "filter_count": 4,
+            "filters": [
+              "W1",
+              "W2",
+              "W3",
+              "W4"
+            ],
+            "size_bytes": 39834,
+            "size_human": "38.90 KB"
+          }
+        },
+        "instrument_count": 1
       },
       "WMAP": {
         "name": "WMAP",

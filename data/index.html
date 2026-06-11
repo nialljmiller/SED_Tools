@@ -347,14 +347,17 @@ fetch('index.json')
             data.models.forEach(modelName => {
                 const model = data.models_detailed[modelName] || {};
                 const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td><a href="stellar_models/${modelName}/">${modelName}</a></td>
-                    <td align="center">${model.spectra_count || 0}</td>
-                    <td align="center" class="${model.has_flux_cube ? 'status-yes' : 'status-no'}">${model.has_flux_cube ? '✓ YES' : '✗ NO'}</td>
-                    <td align="center" class="${model.has_lookup_table ? 'status-yes' : 'status-no'}">${model.has_lookup_table ? '✓ YES' : '✗ NO'}</td>
-                    <td align="center" class="${model.has_h5_bundle ? 'status-yes' : 'status-no'}">${model.has_h5_bundle ? '✓ YES' : '✗ NO'}</td>
-                    <td align="right">${model.size_human || '--'}</td>
-                `;
+
+		tr.innerHTML = `
+		    <td><a href="stellar_models/${modelName}/">${modelName}</a></td>
+		    <td align="center">${model.spectra_count || 0}</td>
+		    <td align="center" class="${model.has_flux_cube ? 'status-yes' : 'status-no'}">${model.has_flux_cube ? '✓ YES' : '✗ NO'}</td>
+		    <td align="center" class="${model.has_lookup_table ? 'status-yes' : 'status-no'}">${model.has_lookup_table ? '✓YES' : '✗ NO'}</td>
+		    <td align="center" class="${model.has_h5_bundle ? 'status-yes' : 'status-no'}">${model.has_h5_bundle ? '✓ YES' : '✗ NO'}</td>
+		    <td align="right">${model.size_human || '--'}</td>
+		    <td align="center"><a class="button" href="bulk_download.php?model=${modelName}" style="font-size:12px; padding:2px 6px;">⬇ TAR</a></td>
+		`;
+
                 tbody.appendChild(tr);
             });
         } else {
