@@ -102,62 +102,37 @@ class SpectrumMeta:
 # ============================================================================
 # HEADER PARSING
 # ============================================================================
+from .header_parser import parse_header as _parse_header_dict
 
-def parse_header(filepath: str) -> Tuple[SpectrumMeta, str]:
-    """
-    Parse header metadata from a spectrum file.
-    
-    Returns: (SpectrumMeta, raw_header_text)
-    """
-    meta = SpectrumMeta()
+def _load_header(filepath: str) -> Tuple[SpectrumMeta, str]:
+    """Internal adapter: calls header_parser and returns (SpectrumMeta, raw_header_text)."""
+    d = _parse_header_dict(filepath)
+    meta = SpectrumMeta(
+        source=d.get("source", "unknown"),
+        teff=d["teff"],
+        logg=d["logg"],
+        metallicity=d["metallicity"],
+        spec_group=d.get("spec_group", ""),
+        units_standardized=str(d.get("units_standardized", "")).lower() in ("true", "1", "yes"),
+    )
+    # everything not consumed above goes into extra
+    skip = {"teff", "logg", "metallicity", "source", "spec_group",
+            "units_standardized", "wavelength_unit", "flux_unit",
+            "original_wavelength_unit", "original_flux_unit", "conversion_confidence"}
+    meta.extra = {k: v for k, v in d.items() if k not in skip}
+
+    # re-read raw header text for unit detection
     header_lines = []
-    
     try:
-        with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
+        with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
             for line in f:
-                if not line.strip().startswith('#'):
+                if not line.strip().startswith("#"):
                     break
                 header_lines.append(line)
-                
-                # Parse key=value pairs
-                if '=' in line:
-                    key_part, _, value_part = line.partition('=')
-                    key = key_part.strip('#').strip().lower()
-                    value = value_part.strip()
-                    
-                    # Extract numeric part if present
-                    num_match = re.search(r'[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?', value)
-                    num_value = num_match.group(0) if num_match else value
-                    
-                    if key in ('teff', 't_eff', 'effective_temperature'):
-                        try:
-                            meta.teff = float(num_value)
-                        except ValueError:
-                            pass
-                    elif key in ('logg', 'log_g', 'log(g)', 'surface_gravity'):
-                        try:
-                            meta.logg = float(num_value)
-                        except ValueError:
-                            pass
-                    elif key in ('metallicity', 'meta', 'feh', '[fe/h]', '[m/h]', 'm/h'):
-                        try:
-                            meta.metallicity = float(num_value)
-                        except ValueError:
-                            pass
-                    elif key == 'source':
-                        meta.source = value
-                    elif key == 'spec_group':
-                        meta.spec_group = value
-                    elif key == 'units_standardized':
-                        meta.units_standardized = value.lower() in ('true', '1', 'yes')
-                    else:
-                        # Store other metadata
-                        meta.extra[key] = value
-    
     except Exception:
         pass
-    
-    return meta, ''.join(header_lines)
+
+    return meta, "".join(header_lines)
 
 
 def read_spectrum_data(filepath: str) -> Tuple[np.ndarray, np.ndarray]:
@@ -351,7 +326,7 @@ def detect_units_single_file(filepath: str) -> Optional[UnitInfo]:
     
     Returns UnitInfo or None if file is invalid/already standardized.
     """
-    meta, header_text = parse_header(filepath)
+    meta, header_text = _load_header(filepath)
     
     # Skip if already standardized
     if meta.units_standardized:
@@ -452,7 +427,7 @@ def detect_catalog_units(txt_files: List[str], sample_fraction: float = 0.10) ->
         
         if unit_info is None:
             # Check why it was skipped
-            meta, _ = parse_header(filepath)
+            meta, _ = _load_header(filepath)
             if meta.units_standardized:
                 skipped_standardized += 1
             else:
@@ -806,7 +781,7 @@ def clean_spectrum_file(
                 'converted', 'recovered', 'error'
     """
     # Parse header
-    meta, header_text = parse_header(filepath)
+    meta, header_text = _load_header(filepath)
     
     # Skip if already standardized
     if meta.units_standardized:
@@ -923,7 +898,7 @@ def rebuild_lookup_table(model_dir: str) -> str:
     all_keys = {'file_name'}
     
     for filepath in txt_files:
-        meta, _ = parse_header(filepath)
+        meta, _ = _load_header(filepath)
         row = {'file_name': os.path.basename(filepath)}
         
         if np.isfinite(meta.teff):

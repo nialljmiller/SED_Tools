@@ -46,7 +46,11 @@ class NJMSpectraGrabber:
         wl_range:    (min, max) or None  — applied post-download by trimming each spectrum
     """
     
-    def __init__(self, base_dir: str = "../data/stellar_models/", max_workers: int = 8):
+    def __init__(self, base_dir: str = None, max_workers: int = 8):
+        if base_dir is None:
+            from .models import STELLAR_DIR_DEFAULT
+            base_dir = str(STELLAR_DIR_DEFAULT)
+        
         self.base_dir = base_dir
         self.max_workers = max_workers
         os.makedirs(base_dir, exist_ok=True)

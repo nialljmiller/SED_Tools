@@ -1,47 +1,8 @@
 import csv
 import os
-import re
 from typing import Iterable, List, Optional
+from .header_parser import parse_header
 
-
-def clean_metadata_values(metadata):
-    """
-    Clean metadata values to retain only numerical parts, except for the file_name key.
-    Replace missing values with 999.9.
-    """
-    cleaned_metadata = {}
-    for key, value in metadata.items():
-        if key == "file_name":
-            cleaned_metadata[key] = value
-        else:
-            # Matches floats or integers
-            match = re.search(r"[-+]?\d*\.\d+|\d+", value)
-            cleaned_metadata[key] = (
-                match.group() if match else "999.9"
-            )  # Default to 999.9 if no match
-    return cleaned_metadata
-
-
-def parse_metadata(file_path):
-    """
-    Parse metadata from a file where metadata lines start with '#' and contain '='.
-    """
-    metadata = {}
-    try:
-        with open(file_path, "r") as file:
-            for line in file:
-                line = line.strip()
-                if line.startswith("#") and "=" in line:
-                    try:
-                        key, value = line.split("=", 1)
-                        key = key.strip("#").strip()
-                        value = value.split("(")[0].strip()
-                        metadata[key] = value
-                    except ValueError:
-                        continue
-    except Exception as e:
-        print(f"Error parsing metadata in {file_path}: {e}")
-    return metadata
 
 
 def scan_existing_files(base_dir):
@@ -79,27 +40,6 @@ def regenerate_lookup_table(
     files: Optional[Iterable[str]] = None,
     output_dir: Optional[str] = None,
 ):
-    """
-    Regenerate ``lookup_table.csv`` for a model directory.
-
-    Parameters
-    ----------
-    model
-        Either the model name or a direct path to the model directory when
-        ``files``/``output_dir`` are omitted (backwards compatibility with the
-        CLI tooling).
-    files
-        Iterable of absolute paths to ``.txt`` spectra files to parse.  When
-        omitted we will scan ``output_dir`` for ``.txt`` files.
-    output_dir
-        Directory where the lookup table should be written.  When not provided
-        but ``model`` points to an existing directory we assume it is the
-        output directory.
-    """
-
-    # Support legacy calls that only pass the model directory path.  In that
-    # case ``model`` is actually the directory and ``files``/``output_dir`` are
-    # omitted.
     if output_dir is None and isinstance(model, str) and os.path.isdir(model):
         output_dir = model
         model_name = os.path.basename(os.path.normpath(model))
@@ -123,28 +63,22 @@ def regenerate_lookup_table(
     metadata_rows = []
 
     for file_path in files:
-        metadata = parse_metadata(file_path)
-        metadata["file_name"] = os.path.basename(file_path)
-        metadata = clean_metadata_values(metadata)
-        metadata_rows.append(metadata)
-        all_keys.update(metadata.keys())
+        row = parse_header(file_path)
+        row["file_name"] = os.path.basename(file_path)
+        metadata_rows.append(row)
+        all_keys.update(row.keys())
 
     if metadata_rows:
         with open(lookup_table_path, mode="w", newline="") as csv_file:
-            # Generate a header dynamically with #
             header = ["file_name"] + sorted(all_keys - {"file_name"})
-            csv_file.write(
-                "#" + ", ".join(header) + "\n"
-            )  # Write the header prefixed with #
+            csv_file.write("#" + ", ".join(header) + "\n")
             writer = csv.DictWriter(csv_file, fieldnames=header)
             writer.writerows(metadata_rows)
-
         print(f"Lookup table regenerated: {lookup_table_path}")
 
-
 def main():
-    # Define the base directory
-    base_dir = "../../data/stellar_models/"
+    from .models import STELLAR_DIR_DEFAULT
+    base_dir = str(STELLAR_DIR_DEFAULT)
     os.makedirs(base_dir, exist_ok=True)
 
     # Scan for existing models and files

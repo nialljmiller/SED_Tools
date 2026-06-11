@@ -872,7 +872,166 @@ class SED:
             model_root=base_dir,
             filter_root=filter_root,
         )
-    
+
+    @classmethod
+    def coverage(
+        cls,
+        catalog: Union[str, Path],
+        model_root: Optional[Union[str, Path]] = None,
+        plot: bool = True,
+        out_path: Optional[Union[str, Path]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Report parameter-space coverage of a local grid (downloaded or built).
+
+        Prints per-axis ranges, unique grid values and spacing, the node count
+        vs. the full Teff x logg x [M/H] product (fill fraction), and an
+        Anderson-Darling normality stat per axis. Optionally writes a
+        Teff-logg + 3D coverage plot (defaults to <model_dir>/coverage.png).
+
+        Parameters
+        ----------
+        catalog : grid name (resolved under model_root) or a model directory.
+        model_root : base stellar_models dir for resolving a bare name.
+        plot : whether to write the coverage figure.
+        out_path : plot output path.
+
+        Returns the summary dict.
+        """
+        from .grid_coverage import grid_coverage
+
+        base = Path(model_root) if model_root else cls._model_root
+        return grid_coverage(catalog, base_dir=base, plot=plot, out_path=out_path)
+
+    @classmethod
+    def import_grid(
+        cls,
+        src: Union[str, Path],
+        name: Optional[str] = None,
+        model_root: Optional[Union[str, Path]] = None,
+        move: bool = False,
+        build_cube: bool = True,
+        build_h5: bool = True,
+        dry_run: bool = False,
+    ) -> Dict[str, Any]:
+        """
+        Ingest a local grid of .txt spectra into the SED_Tools pipeline.
+
+        The spectra must carry their parameters in the file header in any form
+        recognised by header_parser.parse_header (Teff, logg, [M/H]); if a grid
+        uses a header key the parser does not know, add it to ALIASES in
+        header_parser.py rather than mapping it here.
+
+        Files are copied (or moved with move=True) into
+        <model_root>/<name>/, then run through the standard
+        clean -> lookup -> HDF5 -> flux-cube pipeline, after which the grid is
+        usable via SED.local(name).
+
+        Parameters
+        ----------
+        src : a directory of .txt spectra, or a single .txt file.
+        name : model name (defaults to the source folder name).
+        model_root : base stellar_models dir (defaults to the configured one).
+        move : move files instead of copying.
+        build_cube : build flux_cube.bin.
+        build_h5 : build the HDF5 bundle.
+        dry_run : only report how many files have parseable headers; do not copy.
+
+        Returns a summary dict.
+        """
+        import math
+
+        from .header_parser import parse_header
+
+        src = Path(src).expanduser()
+        if not src.exists():
+            raise FileNotFoundError(f"Source path not found: {src}")
+
+        if src.is_dir():
+            files = sorted(src.glob("*.txt"))
+            src_dir = src
+        elif src.is_file() and src.suffix.lower() == ".txt":
+            files = [src]
+            src_dir = src.parent
+        else:
+            raise ValueError(f"Source must be a directory or a .txt file: {src}")
+
+        if not files:
+            raise RuntimeError(f"No .txt spectra found in {src}")
+
+        if name is None:
+            name = src_dir.name
+        base = Path(model_root) if model_root else cls._model_root
+        dest = Path(base) / name
+
+        # --- header check (also the dry-run report) ---
+        n_ok = 0
+        missing: List[str] = []
+        for f in files:
+            h = parse_header(str(f))
+            vals = [float(h.get(k, float("nan"))) for k in ("teff", "logg", "metallicity")]
+            if all(not math.isnan(v) for v in vals):
+                n_ok += 1
+            else:
+                missing.append(f.name)
+
+        print(f"[import] {len(files)} .txt files in {src_dir}")
+        print(f"[import] parseable Teff+logg+[M/H] headers: {n_ok}/{len(files)}")
+        if missing:
+            print(f"[import] missing one or more parameters: {len(missing)}")
+            for b in missing[:10]:
+                print(f"           {b}")
+            if len(missing) > 10:
+                print(f"           ... and {len(missing) - 10} more")
+            print("[import] If a key is merely unrecognised, add it to ALIASES "
+                  "in header_parser.py.")
+
+        if dry_run:
+            return {
+                "name": name,
+                "n_files": len(files),
+                "n_parseable": n_ok,
+                "n_missing": len(missing),
+                "dest": str(dest),
+                "dry_run": True,
+            }
+
+        # --- stage files into the data dir ---
+        dest.mkdir(parents=True, exist_ok=True)
+        for f in files:
+            target = dest / f.name
+            if move:
+                shutil.move(str(f), str(target))
+            else:
+                shutil.copy2(str(f), str(target))
+        print(f"[import] {'moved' if move else 'copied'} {len(files)} files -> {dest}")
+
+        # --- standard pipeline: clean -> lookup -> h5 -> cube ---
+        from .spectra_cleaner import clean_model_dir
+        from .svo_regen_spectra_lookup import regenerate_lookup_table
+
+        summary = clean_model_dir(str(dest), try_h5_recovery=True, rebuild_lookup=True)
+        print(f"[import] cleaned: total={summary['total']}")
+
+        regenerate_lookup_table(str(dest))
+
+        if build_h5:
+            from . import build_h5_bundle_from_txt
+            build_h5_bundle_from_txt(str(dest), str(dest / f"{name}.h5"))
+
+        if build_cube:
+            from .precompute_flux_cube import precompute_flux_cube
+            precompute_flux_cube(str(dest), str(dest / "flux_cube.bin"))
+
+        print(f"[import] done. Load with: SED.local('{name}')")
+        return {
+            "name": name,
+            "n_files": len(files),
+            "n_parseable": n_ok,
+            "dest": str(dest),
+            "dry_run": False,
+        }
+
     @classmethod
     def combine(
         cls,
@@ -1456,55 +1615,129 @@ class Filters:
     
     @classmethod
     def _query_local(cls, facility: Optional[str] = None) -> List[Dict[str, Any]]:
-        """Query locally installed filters."""
+        """Query locally installed filters.
+
+        Empty/incomplete filter directories are ignored. This avoids treating a
+        failed partial download, e.g. a directory containing only an index file,
+        as a valid local filter set.
+        """
         results = []
-        
+
         if not cls._filter_root.exists():
             return results
-        
+
         for fac_dir in sorted(cls._filter_root.iterdir()):
             if not fac_dir.is_dir():
                 continue
             if facility and fac_dir.name.lower() != facility.lower():
                 continue
-            
+
             for inst_dir in sorted(fac_dir.iterdir()):
                 if not inst_dir.is_dir():
                     continue
-                
-                filters = list(inst_dir.glob("*.dat"))
+
+                filters = sorted(inst_dir.glob("*.dat"))
+                if not filters:
+                    continue
+
                 results.append({
                     'facility': fac_dir.name,
                     'instrument': inst_dir.name,
                     'n_filters': len(filters),
                     'is_local': True,
                 })
-        
+
         return results
-    
+
     @classmethod
     def _query_remote(cls, facility: Optional[str] = None) -> List[Dict[str, Any]]:
-        """Query remote filter sources (SVO, NJM)."""
-        results = []
-        
+        """Query remote filter sources.
+
+        SVO is treated as the authoritative discovery catalogue. The NJM mirror
+        is also reported when available, but fetch() still validates actual .dat
+        files before accepting a download.
+        """
+        results: List[Dict[str, Any]] = []
+
+        # SVO catalogue
         try:
             from .svo_filter_grabber import SVOFilterBrowser
             browser = SVOFilterBrowser(base_dir=str(cls._filter_root))
             facilities = browser.list_facilities()
-            
+
             for fac in facilities:
-                if facility and fac.label.lower() != facility.lower():
+                names = {fac.label.lower(), fac.key.lower()}
+                if facility and facility.lower() not in names:
                     continue
                 results.append({
                     'facility': fac.label,
+                    'facility_key': fac.key,
                     'source': 'svo',
                     'is_local': False,
                 })
         except Exception:
             pass
-        
+
+        # NJM mirror catalogue, if available. Avoid exact duplicate rows.
+        try:
+            from .njm_filter_grabber import NJMFilterGrabber
+            njm = NJMFilterGrabber(base_dir=str(cls._filter_root))
+            if njm.is_available():
+                seen = {
+                    (r.get('facility', '').lower(), r.get('source', '').lower())
+                    for r in results
+                }
+                for fac in njm.discover_facilities():
+                    if facility and fac.lower() != facility.lower():
+                        continue
+                    key = (fac.lower(), 'njm')
+                    if key in seen:
+                        continue
+                    results.append({
+                        'facility': fac,
+                        'source': 'njm',
+                        'is_local': False,
+                    })
+                    seen.add(key)
+        except Exception:
+            pass
+
         return results
-    
+
+    @staticmethod
+    def _find_filter_dir(base_dir: Path, *candidates: Path) -> Optional[Path]:
+        """Return the first candidate directory containing .dat filter files."""
+        for candidate in candidates:
+            if candidate.exists() and candidate.is_dir():
+                if list(candidate.glob("*.dat")):
+                    return candidate
+        return None
+
+    @staticmethod
+    def _remove_empty_filter_dir(path: Path) -> None:
+        """Remove a partial filter directory only when it has no .dat files."""
+        if not path.exists() or not path.is_dir():
+            return
+        if list(path.glob("*.dat")):
+            return
+
+        # Failed NJM downloads can leave only an instrument index file. Remove
+        # files in the leaf directory, then prune empty parents cautiously.
+        for child in path.iterdir():
+            if child.is_file():
+                try:
+                    child.unlink()
+                except OSError:
+                    pass
+
+        try:
+            path.rmdir()
+            parent = path.parent
+            if parent.exists() and parent.is_dir() and not any(parent.iterdir()):
+                parent.rmdir()
+        except OSError:
+            pass
+
     @classmethod
     def fetch(
         cls,
@@ -1514,68 +1747,96 @@ class Filters:
     ) -> Path:
         """
         Download filter profiles.
-        
-        Parameters
-        ----------
-        facility : str
-            Facility name (e.g., 'Generic', 'HST')
-        instrument : str
-            Instrument name (e.g., 'Johnson', 'WFC3')
-        filter_root : str or Path, optional
-            Base directory for filters
-            
-        Returns
-        -------
-        Path
-            Directory where filters were saved
+
+        Tries an existing local installation first, then the NJM mirror, then
+        SVO. A source is considered successful only if real ``*.dat`` files are
+        present in the final directory.
         """
         base_dir = Path(filter_root) if filter_root else cls._filter_root
+        base_dir.mkdir(parents=True, exist_ok=True)
         output_path = base_dir / facility / instrument
-        
-        # Check if already exists locally
-        if output_path.exists():
-            existing = list(output_path.glob("*.dat"))
-            if existing:
-                print(f"[filters] Already have {len(existing)} filters at {output_path}")
-                return output_path
-        
-        # Try NJM first
+
+        # Check if already exists locally and is complete enough to use.
+        existing_dir = cls._find_filter_dir(base_dir, output_path)
+        if existing_dir:
+            existing = list(existing_dir.glob("*.dat"))
+            print(f"[filters] Already have {len(existing)} filters at {existing_dir}")
+            return existing_dir
+
+        # Try NJM first.
         try:
             from .njm_filter_grabber import NJMFilterGrabber
             njm = NJMFilterGrabber(base_dir=str(base_dir))
             if njm.is_available():
-                njm.download_filters(facility, instrument)
-                # Check if files now exist
-                if output_path.exists():
-                    existing = list(output_path.glob("*.dat"))
-                    if existing:
-                        print(f"[filters] Got {len(existing)} filters from NJM")
-                        return output_path
+                count = njm.download_filters(facility, instrument)
+                existing_dir = cls._find_filter_dir(base_dir, output_path)
+                if existing_dir:
+                    existing = list(existing_dir.glob("*.dat"))
+                    print(f"[filters] Got {len(existing)} filters from NJM")
+                    return existing_dir
+                if count == 0:
+                    cls._remove_empty_filter_dir(output_path)
         except Exception as e:
             print(f"[filters] NJM failed: {e}")
-        
-        # Fall back to SVO
+
+        # Fall back to SVO. SVO uses facility/instrument *keys* for browsing,
+        # but writes output directories from the returned filter-row labels, so
+        # we check both the requested names and the actual row names.
         try:
-            from .svo_filter_grabber import SVOFilterBrowser
+            from .svo_filter_grabber import SVOFilterBrowser, _clean_path
             browser = SVOFilterBrowser(base_dir=str(base_dir))
-            
-            # Navigate and download
+
             facilities = browser.list_facilities()
-            fac = next((f for f in facilities if f.label.lower() == facility.lower()), None)
-            if fac:
-                instruments = browser.list_instruments(fac)
-                inst = next((i for i in instruments if i.label.lower() == instrument.lower()), None)
-                if inst:
-                    filters = browser.list_filters(inst)
-                    browser.download_filters(filters)
-                    if output_path.exists():
-                        existing = list(output_path.glob("*.dat"))
-                        if existing:
-                            print(f"[filters] Got {len(existing)} filters from SVO")
-                            return output_path
+            fac = next(
+                (
+                    f for f in facilities
+                    if f.label.lower() == facility.lower()
+                    or f.key.lower() == facility.lower()
+                ),
+                None,
+            )
+            if fac is None:
+                raise ValueError(f"SVO facility not found: {facility}")
+
+            instruments = browser.list_instruments(fac.key)
+            inst = next(
+                (
+                    i for i in instruments
+                    if i.label.lower() == instrument.lower()
+                    or i.key.lower() == instrument.lower()
+                ),
+                None,
+            )
+            if inst is None:
+                raise ValueError(f"SVO instrument not found: {facility}/{instrument}")
+
+            filters = browser.list_filters(fac.key, inst.key)
+            if not filters:
+                raise ValueError(f"SVO returned no filters for {facility}/{instrument}")
+
+            browser.download_filters(filters)
+
+            candidates = [
+                output_path,
+                base_dir / fac.label / inst.label,
+                base_dir / fac.key / inst.key,
+            ]
+
+            # SVO rows may contain their own display labels.
+            first = filters[0]
+            candidates.append(
+                base_dir / _clean_path(first.facility) / _clean_path(first.instrument)
+            )
+
+            existing_dir = cls._find_filter_dir(base_dir, *candidates)
+            if existing_dir:
+                existing = list(existing_dir.glob("*.dat"))
+                print(f"[filters] Got {len(existing)} filters from SVO")
+                return existing_dir
+
         except Exception as e:
             print(f"[filters] SVO failed: {e}")
-        
+
         raise ValueError(f"Could not download filters for {facility}/{instrument}")
 
 

@@ -20,8 +20,11 @@ from ._resample import resample_to_grid
 SIGMA = 5.670374419e-5  # Stefan-Boltzmann constant (erg s-1 cm-2 K-4)
 
 
-def find_stellar_models(base_dir="../data/stellar_models/"):
-    """Find all model directories containing lookup tables."""
+def find_stellar_models(base_dir=None):
+    if base_dir is None:
+        from .models import STELLAR_DIR_DEFAULT
+        base_dir = str(STELLAR_DIR_DEFAULT)
+    
     model_dirs = []
     for item in os.listdir(base_dir):
         item_path = os.path.join(base_dir, item)

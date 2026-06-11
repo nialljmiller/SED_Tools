@@ -36,7 +36,7 @@ import h5py
 import numpy as np
 
 from .mast_spectra_grabber import MASTSpectraGrabber
-from .models import (DATA_DIR_DEFAULT, FILTER_DIR_DEFAULT, SED,
+from .models import (DATA_DIR_DEFAULT, FILTER_DIR_DEFAULT, SED as _SEDCore,
                      STELLAR_DIR_DEFAULT, EvaluatedSED, ModelMatch,
                      PhotometryResult, SEDModel)
 from .msg_spectra_grabber import \
@@ -46,9 +46,11 @@ from .njm_spectra_grabber import NJMSpectraGrabber  # Niall J Miller
 from .precompute_flux_cube import \
     precompute_flux_cube  # builds flux cube from lookup + .txt
 from .spectra_cleaner import clean_model_dir
-from .svo_regen_spectra_lookup import parse_metadata, regenerate_lookup_table
+from .svo_regen_spectra_lookup import regenerate_lookup_table
 from .svo_spectra_grabber import \
     SVOSpectraGrabber  # SVO spectra → .txt + lookup_table.csv
+
+from .header_parser import parse_header
 
 from .api import (
     SED,  # This replaces/extends the existing SED from models
@@ -63,7 +65,7 @@ from .api import (
 )
 
 
-__version__ = "0.1.0"
+__version__ = "0.1.4"
 
 
 def ensure_dir(path: str) -> None:
@@ -88,19 +90,6 @@ def load_txt_spectrum(txt_path: str) -> Tuple[np.ndarray, np.ndarray]:
                     continue
     return np.asarray(wl, dtype=float), np.asarray(fl, dtype=float)
 
-def numeric_from(meta: Dict[str, str], key_candidates: List[str], default: float = np.nan) -> float:
-    """Extract first numeric token from any of the candidate keys (case-insensitive)."""
-    lower = {k.lower(): v for k, v in meta.items()}
-    for ck in key_candidates:
-        if ck.lower() in lower:
-            m = re.search(r"[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?", lower[ck.lower()])
-            if m:
-                try:
-                    return float(m.group(0))
-                except ValueError:
-                    pass
-    return default
-# ------------ HDF5 bundling ------------
 
 def build_h5_bundle_from_txt(model_dir: str, out_h5: str) -> None:
     """
@@ -129,11 +118,10 @@ def build_h5_bundle_from_txt(model_dir: str, out_h5: str) -> None:
                 g.create_dataset("lambda", data=wl, dtype="f8")
                 g.create_dataset("flux",   data=fl, dtype="f8")
 
-                meta = parse_metadata(path)
-                # canonical numeric attrs
-                teff = numeric_from(meta, ["Teff", "teff", "T_eff"])
-                logg = numeric_from(meta, ["logg", "Logg", "log_g"])
-                feh  = numeric_from(meta, ["FeH", "feh", "metallicity", "[Fe/H]", "meta"])
+                meta = parse_header(path)
+                teff = meta.get("teff", np.nan)
+                logg = meta.get("logg", np.nan)
+                feh  = meta.get("metallicity", np.nan)
                 if not np.isnan(teff): g.attrs["teff"] = teff
                 if not np.isnan(logg): g.attrs["logg"] = logg
                 if not np.isnan(feh):  g.attrs["feh"]  = feh
@@ -547,7 +535,7 @@ def find_atmospheres(
 ) -> list[ModelMatch]:
     """Discover locally available model grids matching the requested ranges."""
 
-    sed = SED(model_root=model_root, filter_root=filter_root)
+    sed = _SEDCore(model_root=model_root, filter_root=filter_root)
     return sed.find_atmospheres(
         teff_range=teff_range,
         logg_range=logg_range,

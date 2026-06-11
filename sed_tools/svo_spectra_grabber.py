@@ -16,6 +16,8 @@ from bs4 import BeautifulSoup
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
+from .header_parser import parse_header
+
 try:
     from astropy.io.votable import parse_single_table as vot_parse_single_table
     _HAS_VOTABLE = True
@@ -311,7 +313,7 @@ class SVOSpectraGrabber:
                 done_count[0] += 1
                 done = done_count[0]
             if success:
-                meta = self._parse_header(fpath)
+                meta = parse_header(fpath)
                 meta["file_name"] = fname
                 with rows_lock:
                     rows.append(meta)
@@ -329,7 +331,7 @@ class SVOSpectraGrabber:
                 if os.path.exists(fpath) and os.path.getsize(fpath) > 1024:
                     # Validate cached file is actually spectral data
                     if _file_is_spectral(fpath):
-                        meta = self._parse_header(fpath)
+                        meta = parse_header(fpath)
                         meta["file_name"] = fname
                         with rows_lock:
                             rows.append(meta)
@@ -417,28 +419,6 @@ class SVOSpectraGrabber:
         print(f"    [fail] FID {fid} after {self.dl_max_retries + 1} attempts: {last_exc}")
         return False
 
-    # -------------------- helpers --------------------
-
-    def _parse_header(self, file_path):
-        meta = {}
-        try:
-            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-                for line in f:
-                    s = line.strip()
-                    if s.startswith("#") and "=" in s:
-                        try:
-                            key, val = s.split("=", 1)
-                            key = key.strip("#").strip()
-                            val = val.split("(")[0].strip()
-                            m = re.search(r"[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?", val)
-                            meta[key] = m.group(0) if m else val
-                        except Exception:
-                            continue
-                    elif not s.startswith("#"):
-                        break
-        except Exception:
-            pass
-        return meta
 
     def _write_lookup(self, out_dir, rows):
         path = os.path.join(out_dir, "lookup_table.csv")

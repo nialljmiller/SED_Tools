@@ -369,20 +369,23 @@ def export_variant(
 # Interactive CLI flow
 # ---------------------------------------------------------------------------
 
-def run_interactive(
-    base_dir: str = "data/stellar_models",
-    model: Optional[str] = None,
-    output: Optional[str] = None,
-) -> None:
+def run_interactive(base_dir: str = None, model=None, output=None):
+
     """
     Interactive MESA-prepare workflow.
 
     Prompts the user to pick a model (if not supplied), lists its variants,
     lets the user select one, and exports it to a clean folder.
     """
+
+    if base_dir is None:
+        from .models import STELLAR_DIR_DEFAULT
+        base_dir = str(STELLAR_DIR_DEFAULT)
+
     base_path = Path(base_dir)
 
     # --- Step 1: pick model ---
+
     if model is None:
         available = sorted(
             d.name for d in base_path.iterdir()

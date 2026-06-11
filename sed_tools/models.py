@@ -19,16 +19,11 @@ Number = Union[int, float, np.floating]
 FilterSpec = Union[str, os.PathLike[str], FilterCurve, Tuple[str, Union[str, os.PathLike[str]]]]
 
 PACKAGE_ROOT = Path(__file__).resolve().parent
-DATA_DIR_DEFAULT = Path(
-    os.environ.get("SED_DATA_DIR", PACKAGE_ROOT.parent / "data")
-).expanduser()
-STELLAR_DIR_DEFAULT = Path(
-    os.environ.get("SED_STELLAR_DIR", DATA_DIR_DEFAULT / "stellar_models")
-).expanduser()
-FILTER_DIR_DEFAULT = Path(
-    os.environ.get("SED_FILTER_DIR", DATA_DIR_DEFAULT / "filters")
-).expanduser()
 
+from .config import get_data_dir
+DATA_DIR_DEFAULT     = get_data_dir()
+STELLAR_DIR_DEFAULT  = Path(os.environ.get("SED_STELLAR_DIR", DATA_DIR_DEFAULT / "stellar_models")).expanduser()
+FILTER_DIR_DEFAULT   = Path(os.environ.get("SED_FILTER_DIR",  DATA_DIR_DEFAULT / "filters")).expanduser()
 
 @dataclass(order=True)
 class ModelMatch:
@@ -220,14 +215,14 @@ class SEDModel:
         self,
         name: str,
         flux_cube_path: Union[str, os.PathLike[str]],
-        filters_dir: Optional[Path] = None,
+        filters_dir: Optional[Union[str, os.PathLike[str]]] = None,
         *,
         interpolation: str = "hermite",
         fill_gaps: bool = True,
     ) -> None:
         self.name = name
         self.flux_cube_path = Path(flux_cube_path)
-        self.filters_dir = filters_dir
+        self.filters_dir = Path(filters_dir) if filters_dir is not None else None
         self.interpolation = interpolation.lower()
         if self.interpolation != "hermite":
             raise ValueError("Only Hermite interpolation is supported at present")
@@ -288,13 +283,27 @@ class SEDModel:
                 continue
 
             if isinstance(item, (str, os.PathLike)):
-                curve = self._load_filter(item)
-                resolved[curve.name] = curve
+                resolved.update(self._load_filter_group(item))
                 continue
 
             raise TypeError(f"Unsupported filter specification: {item!r}")
 
         return resolved
+
+    def _load_filter_group(
+        self,
+        spec: Union[str, os.PathLike[str]],
+    ) -> Dict[str, FilterCurve]:
+        curves: Dict[str, FilterCurve] = {}
+        for path in self._locate_filter_paths(spec):
+            key = (os.fspath(path), "")
+            if key in self._filter_cache:
+                curve = self._filter_cache[key]
+            else:
+                curve = load_filter_curve(str(path))
+                self._filter_cache[key] = curve
+            curves[curve.name] = curve
+        return curves
 
     def _load_filter(
         self,
@@ -311,32 +320,77 @@ class SEDModel:
         self._filter_cache[key] = curve
         return curve
 
-    def _locate_filter_path(self, spec: Union[str, os.PathLike[str]]) -> Path:
+    def _locate_filter_paths(self, spec: Union[str, os.PathLike[str]]) -> List[Path]:
         path = Path(spec)
         if path.is_file():
-            return path
+            return [path]
+
+        if path.is_dir():
+            files = _filter_files_in_dir(path)
+            if files:
+                return files
 
         if self.filters_dir is None:
             raise FileNotFoundError(
                 f"Filter '{spec}' could not be resolved because no filters directory is configured."
             )
 
+        filters_dir = Path(self.filters_dir)
+
+        candidate = filters_dir / path
+        if candidate.is_file():
+            return [candidate]
+        if candidate.is_dir():
+            files = _filter_files_in_dir(candidate)
+            if files:
+                return files
+
+        # Common SED_Tools/MESA layout:
+        #   filters/<Facility>/<Instrument>/*.dat
+        # This lets photometry("GAIA") resolve filters/GAIA/GAIA/*.dat,
+        # photometry("2MASS") resolve filters/2MASS/2MASS/*.dat, etc.
+        if not path.is_absolute() and len(path.parts) == 1:
+            lookup_dir = str(path).lower()
+            dir_matches: List[Path] = []
+            for candidate_dir in filters_dir.rglob("*"):
+                if not candidate_dir.is_dir():
+                    continue
+                if candidate_dir.name.lower() != lookup_dir:
+                    continue
+                files = _filter_files_in_dir(candidate_dir)
+                if files:
+                    dir_matches.extend(files)
+
+            if dir_matches:
+                unique = sorted({p.resolve(): p for p in dir_matches}.values())
+                return unique
+
         if self._filter_index is None:
-            self._filter_index = _build_filter_index(self.filters_dir)
+            self._filter_index = _build_filter_index(filters_dir)
 
         lookup = str(spec).lower()
         if lookup in self._filter_index and len(self._filter_index[lookup]) == 1:
-            return self._filter_index[lookup][0]
+            return [self._filter_index[lookup][0]]
 
         matches = [p for key, paths in self._filter_index.items() if lookup in key for p in paths]
         if not matches:
-            raise FileNotFoundError(f"No filter file matching '{spec}' was found under {self.filters_dir}")
+            raise FileNotFoundError(f"No filter file matching '{spec}' was found under {filters_dir}")
         if len(matches) > 1:
             options = ", ".join(str(p) for p in matches)
             raise FileExistsError(
                 f"Filter specification '{spec}' is ambiguous; matches: {options}"
             )
-        return matches[0]
+        return [matches[0]]
+
+    def _locate_filter_path(self, spec: Union[str, os.PathLike[str]]) -> Path:
+        paths = self._locate_filter_paths(spec)
+        if len(paths) != 1:
+            options = ", ".join(str(p) for p in paths)
+            raise FileExistsError(
+                f"Filter specification '{spec}' resolves to multiple filters; "
+                f"use photometry(...) without a custom name or pass one file. Matches: {options}"
+            )
+        return paths[0]
 
     # ------------------------------------------------------------------
     # Helpers
@@ -670,7 +724,25 @@ def _nearest_on_grid(value: float, grid: np.ndarray) -> float:
     return left if abs(value - left) <= abs(value - right) else right
 
 
-def _build_filter_index(root: Path) -> Dict[str, List[Path]]:
+def _filter_files_in_dir(directory: Union[str, os.PathLike[str]]) -> List[Path]:
+    directory = Path(directory)
+
+    direct = sorted(
+        p for p in directory.iterdir()
+        if p.is_file() and p.suffix.lower() in FILTER_EXTENSIONS
+    )
+    if direct:
+        return direct
+
+    child_dirs = sorted(p for p in directory.iterdir() if p.is_dir())
+    if len(child_dirs) == 1:
+        return _filter_files_in_dir(child_dirs[0])
+
+    return []
+
+
+def _build_filter_index(root: Union[str, os.PathLike[str]]) -> Dict[str, List[Path]]:
+    root = Path(root)
     index: Dict[str, List[Path]] = {}
     if not root.exists():
         return index
