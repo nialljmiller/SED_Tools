@@ -1256,33 +1256,33 @@ def run_import_flow(base_dir: str = str(STELLAR_DIR_DEFAULT)) -> None:
 
 def menu() -> str:
     print("\nWhat would you like to run?")
-    print("1) Spectra (NJM / SVO / MSG / MAST)")
-    print("2) Filters (NJM / SVO)")
-    print("3) Rebuild (lookup + HDF5 + flux cube)")
-    print("4) Combine grids into omni grid")
-    print("5) ML SED Completer (train/extend incomplete SEDs)")
-    print("6) ML SED Generator (generate SEDs from parameters)")
-    print("7) Grid Densifier (fill coarse Teff gaps)")
-    print("8) MESA Prepare (export a sub-variant for MESA)")
-    print("9) Config (show/set data directory)")
-    print("10) Coverage (parameter-space summary + plot)")
-    print("11) Import a local grid into the pipeline")
-    print("12) Combine filter sets")
+    print("1) Filters (NJM / SVO)")
+    print("2) Combine filter sets")
+    print("3) Spectra (NJM / SVO / MSG / MAST)")
+    print("4) Rebuild (lookup + HDF5 + flux cube)")
+    print("5) Combine grids into omni grid")
+    print("6) ML SED Completer (train/extend incomplete SEDs)")
+    print("7) ML SED Generator (generate SEDs from parameters)")
+    print("8) Grid Densifier (fill coarse Teff gaps)")
+    print("9) Coverage (parameter-space summary + plot)")
+    print("10) Import a local grid into the pipeline")
+    print("11) MESA Prepare (export a sub-variant for MESA)")
+    print("12) Config (show/set data directory)")
     print("0) Quit")
     choice = input("> ").strip()
     mapping = {
-        "1": "spectra",
-        "2": "filters",
-        "3": "rebuild",
-        "4": "combine",
-        "5": "ml_completer",
-        "6": "ml_generator",
-        "7": "grid_densifier",
-        "8": "mesa_prepare",
-        "9": "config",
-        "10": "coverage",
-        "11": "import",
-        "12": "filters_combine",
+        "1": "filters",
+        "2": "filters_combine",
+        "3": "spectra",
+        "4": "rebuild",
+        "5": "combine",
+        "6": "ml_completer",
+        "7": "ml_generator",
+        "8": "grid_densifier",
+        "9": "coverage",
+        "10": "import",
+        "11": "mesa_prepare",
+        "12": "config",
         "0": "quit"
     }
     return mapping.get(choice, "")

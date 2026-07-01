@@ -494,17 +494,17 @@ def run_combine_flow(
 
 def menu() -> str:
     print("\nWhat would you like to run?")
-    print("  1) Spectra (NJM / SVO / MSG / MAST)")
-    print("  2) Filters (NJM / SVO)")
+    print("  1) Filters (NJM / SVO)")
+    print("  2) Spectra (NJM / SVO / MSG / MAST)")
     print("  3) Rebuild (lookup + HDF5 + flux cube)")
-    print("  4) Combine grids into omni grid")  # ← ADD THIS LINE
+    print("  4) Combine grids into omni grid")
     print("  0) Quit")
     choice = input("> ").strip()
     mapping = {
-        "1": "spectra", 
-        "2": "filters", 
+        "1": "filters",
+        "2": "spectra",
         "3": "rebuild",
-        "4": "combine",  # ← ADD THIS LINE
+        "4": "combine",
         "0": "quit"
     }
     return mapping.get(choice, "")
