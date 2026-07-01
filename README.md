@@ -79,11 +79,14 @@ sed-tools
 ### Direct Commands
 
 ```bash
-# Download stellar atmosphere spectra
-sed-tools spectra
-
 # Download photometric filter transmission curves
 sed-tools filters
+
+# Combine installed filter sets
+sed-tools filters-combine Gaia2MASS GAIA/GAIA 2MASS/2MASS
+
+# Download stellar atmosphere spectra
+sed-tools spectra
 
 # Build flux cubes and lookup tables from downloaded spectra
 sed-tools rebuild
@@ -101,44 +104,6 @@ sed-tools ml_generator
 ---
 
 ## CLI Reference
-
-### `sed-tools spectra`
-
-Download stellar atmosphere spectra from remote catalogs.
-
-```bash
-# Interactive source and model selection
-sed-tools spectra
-
-# Download specific models
-sed-tools spectra --models Kurucz2003all
-
-# Force a specific source
-sed-tools spectra --source svo --models Kurucz2003all
-
-# Parallel downloads
-sed-tools spectra --models Kurucz2003all --workers 8
-
-```
-
-**What it does:**
-
-1. Queries the selected source for available models
-2. Downloads spectrum files matching your criteria
-3. Standardizes units (wavelength → Å, flux → erg/cm²/s/Å)
-4. Generates `lookup_table.csv` with stellar parameters
-5. Automatically runs `rebuild` to create binary files
-
-**Sources:**
-
-| Source | Description |
-|--------|-------------|
-| `njm` | NJM server (default, fastest) |
-| `svo` | Spanish Virtual Observatory |
-| `msg` | MSG grids (Townsend) |
-| `mast` | MAST BOSZ library |
-
----
 
 ### `sed-tools filters`
 
@@ -178,6 +143,45 @@ from sed_tools.api import Filters
 combined = Filters.combine("Gaia2MASS", "GAIA/GAIA", "2MASS/2MASS")
 print(combined)
 ```
+
+---
+
+
+### `sed-tools spectra`
+
+Download stellar atmosphere spectra from remote catalogs.
+
+```bash
+# Interactive source and model selection
+sed-tools spectra
+
+# Download specific models
+sed-tools spectra --models Kurucz2003all
+
+# Force a specific source
+sed-tools spectra --source svo --models Kurucz2003all
+
+# Parallel downloads
+sed-tools spectra --models Kurucz2003all --workers 8
+
+```
+
+**What it does:**
+
+1. Queries the selected source for available models
+2. Downloads spectrum files matching your criteria
+3. Standardizes units (wavelength → Å, flux → erg/cm²/s/Å)
+4. Generates `lookup_table.csv` with stellar parameters
+5. Automatically runs `rebuild` to create binary files
+
+**Sources:**
+
+| Source | Description |
+|--------|-------------|
+| `njm` | NJM server (default, fastest) |
+| `svo` | Spanish Virtual Observatory |
+| `msg` | MSG grids (Townsend) |
+| `mast` | MAST BOSZ library |
 
 ---
 
@@ -536,6 +540,7 @@ info.covers_range(teff_min=5000, teff_max=6000)
 
 | CLI Command | Python API Equivalent |
 |-------------|----------------------|
+| `sed-tools filters` | `Filters.fetch(...)` |
 | `sed-tools spectra` (list) | `SED.query()` |
 | `sed-tools spectra --models X` | `SED.fetch('X')` |
 | `sed-tools rebuild --models X` | `sed.cat.write()` |
@@ -543,7 +548,6 @@ info.covers_range(teff_min=5000, teff_max=6000)
 | `sed-tools ml_completer train` | `SED.ml_completer().train(...)` |
 | `sed-tools ml_generator train` | `SED.ml_generator().train(...)` |
 | `sed-tools ml_generator generate` | `SED.ml_generator().generate(...)` |
-| `sed-tools filters` | `Filters.fetch(...)` |
 
 ---
 

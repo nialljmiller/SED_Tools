@@ -118,10 +118,28 @@ def ascii_sed_continuum(
 
 
 # =============================================================================
-# 1. Query available catalogs
+# 1. Filter profiles
+# =============================================================================
+print("\n" + "=" * 60)
+print("1. Filters.query() and Filters.fetch()")
+print("=" * 60)
+
+# Query local filters
+local_filters = Filters.query(include_remote=False)
+print(f"Local filter systems: {len(local_filters)}")
+for f in local_filters:
+    print(f"  {f['facility']}/{f['instrument']}: {f.get('n_filters', '?')} filters")
+
+# Fetch filters
+output = Filters.fetch('GAIA', 'GAIA')  # or 'LSST', 'LSST' or 'Generic', 'Johnson'
+print(f"\nDownloaded Johnson filters to: {output}")
+
+
+# =============================================================================
+# 2. Query available catalogs
 # =============================================================================
 print("=" * 60)
-print("1. SED.query() - Discover catalogs")
+print("2. SED.query() - Discover catalogs")
 print("=" * 60)
 
 # Query all (local + remote)
@@ -144,10 +162,10 @@ print(f"SVO remote catalogs: {len(svo_cats)}")
 
 
 # =============================================================================
-# 2. Fetch from remote
+# 3. Fetch from remote
 # =============================================================================
 print("\n" + "=" * 60)
-print("2. SED.fetch() - Download catalog")
+print("3. SED.fetch() - Download catalog")
 print("=" * 60)
 
 # Fetch with parameter filtering
@@ -167,10 +185,10 @@ print(f"logg grid: {sed.cat.logg_grid}")
 
 
 # =============================================================================
-# 3. Catalog operations
+# 4. Catalog operations
 # =============================================================================
 print("\n" + "=" * 60)
-print("3. Catalog operations")
+print("4. Catalog operations")
 print("=" * 60)
 
 # Access parameters as DataFrame
@@ -193,10 +211,10 @@ print(f"\nWrote catalog to: {output_path}")
 
 
 # =============================================================================
-# 4. Load local and interpolate
+# 5. Load local and interpolate
 # =============================================================================
 print("\n" + "=" * 60)
-print("4. SED.local() - Load and interpolate")
+print("5. SED.local() - Load and interpolate")
 print("=" * 60)
 
 sed = SED.local('Kurucz2003all')
@@ -226,10 +244,10 @@ print(f"  Wavelength range: {spectrum.wavelength[0]:.1f} - {spectrum.wavelength[
 
 
 # =============================================================================
-# 5. Combine catalogs
+# 6. Combine catalogs
 # =============================================================================
 print("\n" + "=" * 60)
-print("5. SED.combine() - Create ensemble grid")
+print("6. SED.combine() - Create ensemble grid")
 print("=" * 60)
 
 ensemble = SED.combine(
@@ -255,24 +273,6 @@ ascii_sed_continuum(spectrum.wavelength, spectrum.flux,
 
 output_path = ensemble.cat.write()
 print(f"\nWrote catalog to: {output_path}")
-
-
-# =============================================================================
-# 6. Filter profiles
-# =============================================================================
-print("\n" + "=" * 60)
-print("6. Filters.query() and Filters.fetch()")
-print("=" * 60)
-
-# Query local filters
-local_filters = Filters.query(include_remote=False)
-print(f"Local filter systems: {len(local_filters)}")
-for f in local_filters:
-    print(f"  {f['facility']}/{f['instrument']}: {f.get('n_filters', '?')} filters")
-
-# Fetch filters
-output = Filters.fetch('GAIA', 'GAIA')  # or 'LSST', 'LSST' or 'Generic', 'Johnson'
-print(f"\nDownloaded Johnson filters to: {output}")
 
 
 # =============================================================================
