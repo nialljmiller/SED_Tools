@@ -1839,6 +1839,32 @@ class Filters:
 
         raise ValueError(f"Could not download filters for {facility}/{instrument}")
 
+    @classmethod
+    def combine(
+        cls,
+        output: Union[str, Path],
+        *inputs: Union[str, Path],
+        filter_root: Optional[Union[str, Path]] = None,
+        facility: Optional[str] = None,
+        instrument: Optional[str] = None,
+        on_conflict: str = "rename",
+    ) -> Path:
+        """Combine existing filter sets into one MESA-compatible set.
+
+        This is a convenience wrapper around
+        :func:`sed_tools.combine_filters.combine_filter_sets`.
+        """
+        from .combine_filters import combine_filter_sets
+
+        return combine_filter_sets(
+            output,
+            inputs,
+            filter_root=filter_root or cls._filter_root,
+            facility=facility,
+            instrument=instrument,
+            on_conflict=on_conflict,
+        )
+
 
 # =============================================================================
 # Convenience exports

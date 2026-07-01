@@ -1233,6 +1233,16 @@ def main():
     fp.add_argument("--base", default=str(FILTER_DIR_DEFAULT),
                     help="Output base for filters")
 
+    fcp = sub.add_parser("filters-combine", help="Combine filter sets into one MESA-compatible instrument")
+    fcp.add_argument("output", help="Output name or Facility/Instrument path for the combined filter set")
+    fcp.add_argument("inputs", nargs="+", help="Filter-set directories or .dat files to combine")
+    fcp.add_argument("--base", default=str(FILTER_DIR_DEFAULT),
+                     help="Base filter directory")
+    fcp.add_argument("--facility", default=None, help="Output facility label (default: Combined)")
+    fcp.add_argument("--instrument", default=None, help="Output instrument/index-file name")
+    fcp.add_argument("--on-conflict", choices=["rename", "overwrite", "error"], default="rename",
+                     help="How duplicate filter filenames are handled")
+
     # rebuild
     rp = sub.add_parser("rebuild", help="Rebuild lookup table + HDF5 + flux cube")
     rp.add_argument("--base", default=str(STELLAR_DIR_DEFAULT),
@@ -1338,6 +1348,17 @@ def main():
         )
     elif args.cmd == "filters":
         run_filters_flow(base_dir=args.base)
+    elif args.cmd == "filters-combine":
+        from .combine_filters import combine_filter_sets
+        out = combine_filter_sets(
+            args.output,
+            args.inputs,
+            filter_root=args.base,
+            facility=args.facility,
+            instrument=args.instrument,
+            on_conflict=args.on_conflict,
+        )
+        print(f"[filters] Combined filter set written to {out}")
     elif args.cmd == "rebuild":
         run_rebuild_flow(
             base_dir=args.base,
