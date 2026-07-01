@@ -22,6 +22,7 @@ import re
 import shutil
 import sys
 import textwrap
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import h5py
@@ -992,6 +993,85 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
                 break
 
 
+def run_filter_combine_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
+    """Interactive wizard for combining local filter sets."""
+    from .combine_filters import combine_filter_sets, find_filter_sets
+
+    print("\nCombine photometric filter sets")
+    print("This creates one MESA-compatible filter folder and index file from existing .dat files.")
+
+    chosen_base = input(f"Filter base directory [{base_dir}]: ").strip() or base_dir
+    filter_sets = find_filter_sets(chosen_base)
+    if not filter_sets:
+        print(f"No local filter sets containing .dat files were found under {chosen_base}.")
+        print("Download filters first with option 2, or run `sed-tools filters`.")
+        return
+
+    class _FilterSetOption:
+        def __init__(self, path: Path, root: Path) -> None:
+            self.path = path
+            try:
+                rel = path.relative_to(root)
+            except ValueError:
+                rel = path
+            n_filters = len(list(path.glob("*.dat")))
+            self.label = f"{rel} ({n_filters} filters)"
+
+    root = Path(chosen_base)
+    options = [_FilterSetOption(path, root) for path in filter_sets]
+    selected = _prompt_choice(
+        options,
+        "Local filter sets to combine",
+        multi=True,
+        page_size=50,
+        max_cols=2,
+    )
+    if selected is None or selected == []:
+        print("No filter sets selected.")
+        return
+    if isinstance(selected, int):
+        selected = [selected]
+
+    selected_paths = [options[i].path for i in selected]
+    print("\nSelected filter sets:")
+    for path in selected_paths:
+        print(f"  - {path}")
+
+    default_name = "_".join(path.name for path in selected_paths[:3]) or "CombinedFilters"
+    output = input(f"Combined instrument name [{default_name}]: ").strip() or default_name
+    facility = input("Output facility label [Combined]: ").strip() or None
+    instrument = input(f"Output index/instrument name [{output}]: ").strip() or None
+
+    conflict = input("Duplicate band names: rename, overwrite, or error? [rename]: ").strip().lower() or "rename"
+    while conflict not in {"rename", "overwrite", "error"}:
+        conflict = input("Please enter rename, overwrite, or error [rename]: ").strip().lower() or "rename"
+
+    print("\nAbout to create a combined filter set:")
+    print(f"  Base      : {chosen_base}")
+    print(f"  Output    : {output}")
+    print(f"  Facility  : {facility or 'Combined'}")
+    print(f"  Instrument: {instrument or output}")
+    print(f"  Conflicts : {conflict}")
+    confirm = input("Proceed? [Y/n] ").strip().lower()
+    if confirm and not confirm.startswith("y"):
+        print("Cancelled.")
+        return
+
+    out = combine_filter_sets(
+        output,
+        selected_paths,
+        filter_root=chosen_base,
+        facility=facility,
+        instrument=instrument,
+        on_conflict=conflict,
+    )
+    dat_count = len(list(out.glob("*.dat")))
+    index_name = instrument or out.name
+    print(f"\n[filters] Combined {dat_count} filters into {out}")
+    print(f"[filters] Wrote MESA index file: {out / index_name}")
+    print("Use this path as the MESA instrument/filter-set directory.")
+
+
 def run_ml_generator_flow(
     base_dir: str = STELLAR_DIR_DEFAULT,
     models_dir: str = "models"
@@ -1187,6 +1267,7 @@ def menu() -> str:
     print("9) Config (show/set data directory)")
     print("10) Coverage (parameter-space summary + plot)")
     print("11) Import a local grid into the pipeline")
+    print("12) Combine filter sets")
     print("0) Quit")
     choice = input("> ").strip()
     mapping = {
@@ -1201,6 +1282,7 @@ def menu() -> str:
         "9": "config",
         "10": "coverage",
         "11": "import",
+        "12": "filters_combine",
         "0": "quit"
     }
     return mapping.get(choice, "")
@@ -1445,6 +1527,8 @@ def main():
                 run_spectra_flow(source="all")
             elif choice == "filters":
                 run_filters_flow()
+            elif choice == "filters_combine":
+                run_filter_combine_flow()
             elif choice == "rebuild":
                 run_rebuild_flow()
             elif choice == "combine":
