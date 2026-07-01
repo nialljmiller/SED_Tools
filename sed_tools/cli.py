@@ -22,6 +22,7 @@ import re
 import shutil
 import sys
 import textwrap
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import h5py
@@ -992,6 +993,85 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
                 break
 
 
+def run_filter_combine_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
+    """Interactive wizard for combining local filter sets."""
+    from .combine_filters import combine_filter_sets, find_filter_sets
+
+    print("\nCombine photometric filter sets")
+    print("This creates one MESA-compatible filter folder and index file from existing .dat files.")
+
+    chosen_base = input(f"Filter base directory [{base_dir}]: ").strip() or base_dir
+    filter_sets = find_filter_sets(chosen_base)
+    if not filter_sets:
+        print(f"No local filter sets containing .dat files were found under {chosen_base}.")
+        print("Download filters first with option 2, or run `sed-tools filters`.")
+        return
+
+    class _FilterSetOption:
+        def __init__(self, path: Path, root: Path) -> None:
+            self.path = path
+            try:
+                rel = path.relative_to(root)
+            except ValueError:
+                rel = path
+            n_filters = len(list(path.glob("*.dat")))
+            self.label = f"{rel} ({n_filters} filters)"
+
+    root = Path(chosen_base)
+    options = [_FilterSetOption(path, root) for path in filter_sets]
+    selected = _prompt_choice(
+        options,
+        "Local filter sets to combine",
+        multi=True,
+        page_size=50,
+        max_cols=2,
+    )
+    if selected is None or selected == []:
+        print("No filter sets selected.")
+        return
+    if isinstance(selected, int):
+        selected = [selected]
+
+    selected_paths = [options[i].path for i in selected]
+    print("\nSelected filter sets:")
+    for path in selected_paths:
+        print(f"  - {path}")
+
+    default_name = "_".join(path.name for path in selected_paths[:3]) or "CombinedFilters"
+    output = input(f"Combined instrument name [{default_name}]: ").strip() or default_name
+    facility = input("Output facility label [Combined]: ").strip() or None
+    instrument = input(f"Output index/instrument name [{output}]: ").strip() or None
+
+    conflict = input("Duplicate band names: rename, overwrite, or error? [rename]: ").strip().lower() or "rename"
+    while conflict not in {"rename", "overwrite", "error"}:
+        conflict = input("Please enter rename, overwrite, or error [rename]: ").strip().lower() or "rename"
+
+    print("\nAbout to create a combined filter set:")
+    print(f"  Base      : {chosen_base}")
+    print(f"  Output    : {output}")
+    print(f"  Facility  : {facility or 'Combined'}")
+    print(f"  Instrument: {instrument or output}")
+    print(f"  Conflicts : {conflict}")
+    confirm = input("Proceed? [Y/n] ").strip().lower()
+    if confirm and not confirm.startswith("y"):
+        print("Cancelled.")
+        return
+
+    out = combine_filter_sets(
+        output,
+        selected_paths,
+        filter_root=chosen_base,
+        facility=facility,
+        instrument=instrument,
+        on_conflict=conflict,
+    )
+    dat_count = len(list(out.glob("*.dat")))
+    index_name = instrument or out.name
+    print(f"\n[filters] Combined {dat_count} filters into {out}")
+    print(f"[filters] Wrote MESA index file: {out / index_name}")
+    print("Use this path as the MESA instrument/filter-set directory.")
+
+
 def run_ml_generator_flow(
     base_dir: str = STELLAR_DIR_DEFAULT,
     models_dir: str = "models"
@@ -1176,35 +1256,39 @@ def run_import_flow(base_dir: str = str(STELLAR_DIR_DEFAULT)) -> None:
 
 def menu() -> str:
     print("\nWhat would you like to run?")
-    print("1) Spectra (NJM / SVO / MSG / MAST)")
-    print("2) Filters (NJM / SVO)")
-    print("3) Rebuild (lookup + HDF5 + flux cube)")
-    print("4) Combine grids into omni grid")
-    print("5) ML SED Completer (train/extend incomplete SEDs)")
-    print("6) ML SED Generator (generate SEDs from parameters)")
-    print("7) Grid Densifier (fill coarse Teff gaps)")
-    print("8) MESA Prepare (export a sub-variant for MESA)")
-    print("9) Config (show/set data directory)")
-    print("10) Coverage (parameter-space summary + plot)")
-    print("11) Import a local grid into the pipeline")
+    print("\nFilters")
+    print("1) Download filters (NJM / SVO)")
+    print("2) Combine filter sets")
+    print("\nAtmosphere grids")
+    print("3) Download/build spectra (NJM / SVO / MSG / MAST)")
+    print("4) Rebuild atmosphere products (lookup + HDF5 + flux cube)")
+    print("5) Combine atmosphere grids into omni grid")
+    print("6) Coverage (parameter-space summary + plot)")
+    print("7) Import a local atmosphere grid")
+    print("8) Grid Densifier (fill coarse Teff gaps)")
+    print("9) ML SED Completer (train/extend incomplete SEDs)")
+    print("10) ML SED Generator (generate SEDs from parameters)")
+    print("\nMisc / export")
+    print("11) MESA Prepare (export a sub-variant for MESA)")
+    print("12) Config (show/set data directory)")
     print("0) Quit")
     choice = input("> ").strip()
     mapping = {
-        "1": "spectra",
-        "2": "filters",
-        "3": "rebuild",
-        "4": "combine",
-        "5": "ml_completer",
-        "6": "ml_generator",
-        "7": "grid_densifier",
-        "8": "mesa_prepare",
-        "9": "config",
-        "10": "coverage",
-        "11": "import",
+        "1": "filters",
+        "2": "filters_combine",
+        "3": "spectra",
+        "4": "rebuild",
+        "5": "combine",
+        "6": "coverage",
+        "7": "import",
+        "8": "grid_densifier",
+        "9": "ml_completer",
+        "10": "ml_generator",
+        "11": "mesa_prepare",
+        "12": "config",
         "0": "quit"
     }
     return mapping.get(choice, "")
-
 
 # ------------ Main CLI ------------
 
@@ -1232,6 +1316,16 @@ def main():
     fp = sub.add_parser("filters", help="Download SVO filters")
     fp.add_argument("--base", default=str(FILTER_DIR_DEFAULT),
                     help="Output base for filters")
+
+    fcp = sub.add_parser("filters-combine", help="Combine filter sets into one MESA-compatible instrument")
+    fcp.add_argument("output", help="Output name or Facility/Instrument path for the combined filter set")
+    fcp.add_argument("inputs", nargs="+", help="Filter-set directories or .dat files to combine")
+    fcp.add_argument("--base", default=str(FILTER_DIR_DEFAULT),
+                     help="Base filter directory")
+    fcp.add_argument("--facility", default=None, help="Output facility label (default: Combined)")
+    fcp.add_argument("--instrument", default=None, help="Output instrument/index-file name")
+    fcp.add_argument("--on-conflict", choices=["rename", "overwrite", "error"], default="rename",
+                     help="How duplicate filter filenames are handled")
 
     # rebuild
     rp = sub.add_parser("rebuild", help="Rebuild lookup table + HDF5 + flux cube")
@@ -1338,6 +1432,17 @@ def main():
         )
     elif args.cmd == "filters":
         run_filters_flow(base_dir=args.base)
+    elif args.cmd == "filters-combine":
+        from .combine_filters import combine_filter_sets
+        out = combine_filter_sets(
+            args.output,
+            args.inputs,
+            filter_root=args.base,
+            facility=args.facility,
+            instrument=args.instrument,
+            on_conflict=args.on_conflict,
+        )
+        print(f"[filters] Combined filter set written to {out}")
     elif args.cmd == "rebuild":
         run_rebuild_flow(
             base_dir=args.base,
@@ -1424,6 +1529,8 @@ def main():
                 run_spectra_flow(source="all")
             elif choice == "filters":
                 run_filters_flow()
+            elif choice == "filters_combine":
+                run_filter_combine_flow()
             elif choice == "rebuild":
                 run_rebuild_flow()
             elif choice == "combine":

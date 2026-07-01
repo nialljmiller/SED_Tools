@@ -159,6 +159,26 @@ data/filters/Generic/Johnson/
 └── Johnson         # Index file for MESA
 ```
 
+Downloaded filter sets can be combined without rebuilding spectra or flux cubes, because a filter set is only a directory of ``*.dat`` curves plus the MESA index file whose lines list those curves. The helper below copies the selected curves into a new instrument folder and writes the matching index file automatically.
+
+```bash
+# Create data/filters/Combined/Gaia2MASS/ with a Gaia2MASS index file
+sed-tools filters-combine Gaia2MASS GAIA/GAIA 2MASS/2MASS
+
+# Pick custom MESA-facing labels and fail on duplicate band names
+sed-tools filters-combine optical_ir Generic/Johnson 2MASS/2MASS \
+  --facility Custom --instrument optical_ir --on-conflict error
+```
+
+The same operation is available from Python:
+
+```python
+from sed_tools.api import Filters
+
+combined = Filters.combine("Gaia2MASS", "GAIA/GAIA", "2MASS/2MASS")
+print(combined)
+```
+
 ---
 
 ### `sed-tools rebuild`
