@@ -21,14 +21,14 @@ The tag `# units_standardized = True` prevents reprocessing.
 from __future__ import annotations
 
 import glob
+import logging
 import os
 import random
 import re
+import time
 from collections import Counter
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
-
-import logging
 
 import numpy as np
 
@@ -988,11 +988,9 @@ def clean_model_dir(
     # =========================================================
     # STEP 2: Apply catalog units to ALL files
     # =========================================================
-    import time as _time
-    from collections import Counter as _Counter
-    failure_reasons = _Counter()
+    failure_reasons = Counter()
     n_total_files = len(txt_files)
-    t_start = _time.time()
+    t_start = time.time()
     for i, filepath in enumerate(txt_files):
         filename = os.path.basename(filepath)
         try:

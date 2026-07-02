@@ -13,7 +13,7 @@ import requests
 from astroquery.svo_fps import SvoFps
 from bs4 import BeautifulSoup
 
-from .ui_utils import _prompt_choice
+from .ui_utils import prompt_choice
 from .parsing import parse_multi_selection
 
 SvoFps.TIMEOUT = 300  # give SVO a generous timeout
@@ -290,7 +290,7 @@ def run_interactive(base_dir: str = DEFAULT_BASE_DIR) -> None:
                 continue
             return
 
-        fac_idx = _prompt_choice(facilities, "Facilities")
+        fac_idx = prompt_choice(facilities, "Facilities")
 
         if fac_idx is None:
             print("Exiting.")
@@ -303,7 +303,7 @@ def run_interactive(base_dir: str = DEFAULT_BASE_DIR) -> None:
             continue
 
         while True:
-            inst_idx = _prompt_choice(instruments, f"Instruments for {facility.label}", allow_back=True)
+            inst_idx = prompt_choice(instruments, f"Instruments for {facility.label}", allow_back=True)
             if inst_idx is None:
                 print("Exiting.")
                 return

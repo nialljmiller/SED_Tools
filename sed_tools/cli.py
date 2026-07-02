@@ -33,7 +33,7 @@ from .precompute_flux_cube import precompute_flux_cube
 from .spectra_cleaner import clean_model_dir
 from .svo_regen_spectra_lookup import regenerate_lookup_table
 from .svo_spectra_grabber import SVOSpectraGrabber
-from .ui_utils import _prompt_choice
+from .ui_utils import prompt_choice  # public, no leading underscore
 from .parsing import parse_multi_selection, parse_numeric_range
 from .spectrum_io import build_h5_bundle, list_text_spectra, read_text_spectrum
 from .terminal_plots import terminal_color_enabled
@@ -295,7 +295,7 @@ def run_spectra_flow(
                         continue
                     chosen.append((matching[0].sources, name))
     else:
-        idxs = _prompt_choice(all_models, label="Spectral models", allow_back=True, multi=True)
+        idxs = prompt_choice(all_models, label="Spectral models", allow_back=True, multi=True)
         
         if idxs is None:
             return
@@ -607,7 +607,7 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
                 continue
             return
 
-        fac_idx = _prompt_choice(facilities, "Filter Facilities")
+        fac_idx = prompt_choice(facilities, "Filter Facilities")
         if fac_idx is None:
             return
 
@@ -620,7 +620,7 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
 
         # Instrument selection loop
         while True:
-            inst_idx = _prompt_choice(
+            inst_idx = prompt_choice(
                 instruments,
                 f"Instruments for {facility.label}",
                 allow_back=True
@@ -699,7 +699,7 @@ def run_filter_combine_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
 
     root = Path(chosen_base)
     options = [_FilterSetOption(path, root) for path in filter_sets]
-    selected = _prompt_choice(
+    selected = prompt_choice(
         options,
         "Local filter sets to combine",
         multi=True,
@@ -914,7 +914,7 @@ def run_coverage_flow(base_dir: str = str(STELLAR_DIR_DEFAULT)) -> None:
     if not cands:
         print(f"No local grids found under {base_dir}")
         return
-    idx = _prompt_choice(cands, label="Local grids", allow_back=True)
+    idx = prompt_choice(cands, label="Local grids", allow_back=True)
     if idx is None or idx == -1:
         return
     SED.coverage(cands[idx], model_root=base_dir, plot=True)

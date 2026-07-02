@@ -29,8 +29,7 @@ from .cli import (
     run_spectra_flow,
 )
 from .spectrum_io import build_h5_bundle as build_h5_bundle_from_txt
-from .spectrum_io import list_text_spectra as _list_text_spectra
-from .spectrum_io import read_text_spectrum as load_txt_spectrum
+from .spectrum_io import list_text_spectra, read_text_spectrum as load_txt_spectrum
 from .mast_spectra_grabber import MASTSpectraGrabber
 from .models import (
     DATA_DIR_DEFAULT,
@@ -55,7 +54,7 @@ __version__ = "0.1.4"
 
 def list_txt_spectra(model_dir: str) -> list[str]:
     """Compatibility wrapper returning filenames rather than Path objects."""
-    return [path.name for path in _list_text_spectra(model_dir)]
+    return [path.name for path in list_text_spectra(model_dir)]
 
 
 def find_atmospheres(

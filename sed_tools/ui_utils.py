@@ -6,7 +6,7 @@ import re
 from .terminal_plots import terminal_color_enabled, terminal_width
 
 
-def _prompt_choice(
+def prompt_choice(
     options: Sequence,
     label: str,
     allow_back: bool = False,
