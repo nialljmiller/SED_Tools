@@ -52,7 +52,7 @@ logger = logging.getLogger(__name__)
 import numpy as np
 import pandas as pd
 
-# Import existing infrastructure
+from ._lookup_io import find_teff_column, find_logg_column, find_metallicity_column, find_file_column
 from .models import (
     DATA_DIR_DEFAULT,
     FILTER_DIR_DEFAULT,
@@ -780,15 +780,10 @@ class SED:
             df.columns = [c.lstrip('#').strip().lower() for c in df.columns]
             
             # Find column mappings
-            file_col = None
-            for c in ['file_name', 'filename', 'file']:
-                if c in df.columns:
-                    file_col = c
-                    break
-            
-            teff_col = next((c for c in df.columns if 'teff' in c), None)
-            logg_col = next((c for c in df.columns if 'logg' in c or 'log(g)' in c), None)
-            meta_col = next((c for c in df.columns if 'meta' in c or 'feh' in c or 'm/h' in c), None)
+            file_col = find_file_column(df.columns)
+            teff_col = find_teff_column(df.columns)
+            logg_col = find_logg_column(df.columns)
+            meta_col = find_metallicity_column(df.columns)
             
             for _, row in df.iterrows():
                 filename = row[file_col] if file_col else None

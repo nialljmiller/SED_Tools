@@ -98,17 +98,7 @@ def _init_output_cube(path, teff, logg, meta, wl, nt_new):
 # Blackbody fallback
 # ---------------------------------------------------------------------------
 
-_H  = 6.62607015e-27
-_C  = 2.99792458e10
-_KB = 1.380649e-16
-
-
-def _blackbody(wl_ang, teff):
-    """π·B_λ(T) in erg/cm²/s/Å."""
-    wl_cm = wl_ang * 1e-8
-    exp = np.minimum((_H * _C) / (wl_cm * _KB * teff), 709.0)
-    b = (2.0 * _H * _C**2 / wl_cm**5) / (np.exp(exp) - 1.0) / 1e8
-    return np.pi * b
+from ._constants import planck_flam as _blackbody
 
 
 # ---------------------------------------------------------------------------

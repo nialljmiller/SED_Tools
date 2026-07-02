@@ -45,11 +45,7 @@ logger = logging.getLogger(__name__)
 import numpy as np
 from scipy.integrate import simpson as simps
 
-# Physical constants
-PLANCK_H = 6.62607015e-27   # erg·s
-SPEED_C = 2.99792458e10     # cm/s
-BOLTZMANN_K = 1.380649e-16  # erg/K
-SIGMA = 5.670374419e-5      # Stefan-Boltzmann constant erg/s/cm²/K⁴
+from ._constants import H as PLANCK_H, C as SPEED_C, K as BOLTZMANN_K, SIGMA
 
 # Default wavelength grid parameters
 DEFAULT_WL_MIN = 100.0      # Angstroms
