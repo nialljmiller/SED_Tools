@@ -103,6 +103,7 @@ class SpectrumMeta:
 # HEADER PARSING
 # ============================================================================
 from .header_parser import parse_header as _parse_header_dict
+from .spectrum_io import read_text_spectrum
 
 def _load_header(filepath: str) -> Tuple[SpectrumMeta, str]:
     """Internal adapter: calls header_parser and returns (SpectrumMeta, raw_header_text)."""
@@ -137,26 +138,7 @@ def _load_header(filepath: str) -> Tuple[SpectrumMeta, str]:
 
 def read_spectrum_data(filepath: str) -> Tuple[np.ndarray, np.ndarray]:
     """Read wavelength and flux columns from a spectrum file."""
-    wl, flux = [], []
-    
-    try:
-        with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
-            for line in f:
-                s = line.strip()
-                if not s or s.startswith('#'):
-                    continue
-                
-                parts = s.replace(',', ' ').split()
-                if len(parts) >= 2:
-                    try:
-                        wl.append(float(parts[0]))
-                        flux.append(float(parts[1]))
-                    except ValueError:
-                        continue
-    except Exception:
-        pass
-    
-    return np.asarray(wl, dtype=float), np.asarray(flux, dtype=float)
+    return read_text_spectrum(filepath)
 
 
 # ============================================================================

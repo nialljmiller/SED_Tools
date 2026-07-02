@@ -28,19 +28,12 @@ built so the exact configuration used is reproducible alongside the data.
 from __future__ import annotations
 
 import re
-import shutil
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-try:
-    import tomllib  # Python 3.11+
-except ImportError:  # pragma: no cover
-    try:
-        import tomli as tomllib  # type: ignore
-    except ImportError:
-        tomllib = None  # type: ignore
-
 import numpy as np
+
+from .config import load_defaults_config, load_toml, merge_config
 
 # ---------------------------------------------------------------------------
 # MESA axes — everything else in the lookup table is a candidate extra axis
@@ -78,7 +71,7 @@ _BOOKKEEPING_AXES: Set[str] = {
 
 MESA_AXES: Set[str] = _MESA_PARAM_AXES | _BOOKKEEPING_AXES
 
-VALID_STRATEGIES = {"all-warn", "all", "mean", "filter"}
+VALID_STRATEGIES = {"split", "all-warn", "all", "mean", "filter"}
 
 # ---------------------------------------------------------------------------
 # Fuzzy key normalisation
@@ -252,19 +245,6 @@ class CollisionConfig:
         return resolved, errors
 
 
-# ---------------------------------------------------------------------------
-# TOML loading helpers
-# ---------------------------------------------------------------------------
-
-def _load_toml(path: Path) -> Dict[str, Any]:
-    if tomllib is None:
-        raise ImportError(
-            "TOML support requires Python 3.11+ (tomllib) or 'pip install tomli'"
-        )
-    with open(path, "rb") as f:
-        return tomllib.load(f)
-
-
 def _parse_config_dict(data: Dict[str, Any], source: str) -> CollisionConfig:
     """Parse a raw TOML dict into a CollisionConfig."""
     oc = data.get("on_collision", {})
@@ -307,14 +287,16 @@ def load_config(
 
     Any of the optional arguments may be None.
     """
-    cfg = CollisionConfig(strategy="all-warn", source="built-in default")
+    data: Dict[str, Any] = load_defaults_config()
+    source = "packaged sed_tools.defaults"
 
     # Global defaults
     if root_dir is not None:
         global_path = Path(root_dir) / _DEFAULTS_FILENAME
         if global_path.exists():
             try:
-                cfg = _parse_config_dict(_load_toml(global_path), str(global_path))
+                data = merge_config(data, load_toml(global_path, strict=True))
+                source = str(global_path)
             except Exception as e:
                 raise RuntimeError(f"Error reading {global_path}: {e}") from e
 
@@ -323,15 +305,17 @@ def load_config(
         model_path = Path(model_dir) / _MODEL_CFG_FILENAME
         if model_path.exists():
             try:
-                cfg = _parse_config_dict(_load_toml(model_path), str(model_path))
+                data = merge_config(data, load_toml(model_path, strict=True))
+                source = str(model_path)
             except Exception as e:
                 raise RuntimeError(f"Error reading {model_path}: {e}") from e
 
     # Python API dict override (highest priority)
     if override_dict is not None:
-        cfg = _parse_config_dict(override_dict, "Python API dict")
+        data = merge_config(data, override_dict)
+        source = "Python API dict"
 
-    return cfg
+    return _parse_config_dict(data, source)
 
 
 def copy_global_config_to_model(root_dir: Path, model_dir: Path) -> None:
@@ -343,7 +327,7 @@ def copy_global_config_to_model(root_dir: Path, model_dir: Path) -> None:
     src = Path(root_dir) / _DEFAULTS_FILENAME
     if src.exists():
         dst = Path(model_dir) / _DEFAULTS_FILENAME
-        shutil.copy2(src, dst)
+        dst.write_bytes(src.read_bytes())
 
 
 def write_default_config(root_dir: Path, overwrite: bool = False) -> Path:
@@ -361,16 +345,19 @@ def write_default_config(root_dir: Path, overwrite: bool = False) -> Path:
 # Per-model overrides go in <model_dir>/mesa_config.toml (same schema).
 #
 # strategy options:
-#   all-warn  — build one cube per unique extra-axis combination in
-#               fluxcube_library/, AND build a mean cube in the model
-#               directory for MESA.  Warns about every collision.
-#   all       — same as all-warn but without the warnings.
-#   mean      — only build the mean cube (no fluxcube_library/).
-#   filter    — filter to a specific extra-axis slice before building.
+#   split     — (default) split each extra physical axis into a separate
+#               MESA-ready subgrid directory.  Physically safe: no averaging.
+#               Subdirs are named {Model}_{axis}_{value}/.
+#               A variants_index.csv is written in the parent directory.
+#   all-warn  — alias for split (backward compatible).
+#   all       — alias for split (backward compatible).
+#   mean      — collapse extra axes by averaging into a single cube.
+#               Physically unsafe — produces a synthetic mean atmosphere.
+#   filter    — filter to one specific extra-axis slice, then build.
 #               Requires [on_collision.filter] section below.
 
 [on_collision]
-strategy = "all-warn"
+strategy = "split"
 
 # Uncomment and fill in when strategy = "filter":
 # [on_collision.filter]

@@ -16,6 +16,7 @@ from scipy.spatial import KDTree
 from tqdm import tqdm
 
 from ._resample import resample_to_grid
+from .spectrum_io import read_text_spectrum
 
 SIGMA = 5.670374419e-5  # Stefan-Boltzmann constant (erg s-1 cm-2 K-4)
 
@@ -95,7 +96,7 @@ def load_model_data(model_path):
 
 def load_sed(filepath):
     """Load wavelength and flux from a spectrum file, skipping comment lines."""
-    return np.loadtxt(filepath, comments="#", unpack=True)
+    return read_text_spectrum(filepath)
 
 
 def prepare_sed(filepath, teff):

@@ -14,6 +14,10 @@
 [on_collision]
 strategy = "all-warn"
 
+[ui]
+terminal_plots = "auto"
+terminal_color = "auto"
+
 # Uncomment and fill in when strategy = "filter":
 # [on_collision.filter]
 # alpha = "min"          # min | max | exact value e.g. "0.4"

@@ -11,6 +11,22 @@ def test_cli_importable():
     assert callable(cli.main)
 
 
+def test_cli_uses_shared_prompt_choice():
+    from sed_tools import cli, ui_utils
+
+    assert cli._prompt_choice is ui_utils._prompt_choice
+
+
+def test_top_level_workflows_are_cli_aliases():
+    import sed_tools
+    from sed_tools import cli
+
+    assert sed_tools.run_rebuild_flow is cli.run_rebuild_flow
+    assert sed_tools.run_spectra_flow is cli.run_spectra_flow
+    assert sed_tools.run_combine_flow is cli.run_combine_flow
+    assert sed_tools.menu is cli.menu
+
+
 def test_menu_valid_choices():
     from sed_tools.cli import menu
     import io

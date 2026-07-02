@@ -7,13 +7,14 @@ import sys
 import textwrap
 import urllib.parse
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Sequence, Set
+from typing import Dict, List, Optional, Sequence
 
 import requests
 from astroquery.svo_fps import SvoFps
 from bs4 import BeautifulSoup
 
-from . import _prompt_choice
+from .ui_utils import _prompt_choice
+from .parsing import parse_multi_selection
 
 SvoFps.TIMEOUT = 300  # give SVO a generous timeout
 
@@ -240,36 +241,6 @@ def _clean_path(value: str) -> str:
 
 def _clean_filename(value: str) -> str:
     return _clean_path(value).replace(" ", "_")
-
-
-def parse_multi_selection(spec: str, total: int) -> List[int]:
-    """Parse a 1-based comma-separated/range selection into unique 0-based indices."""
-    chosen: Set[int] = set()
-    for chunk in (part.strip() for part in spec.split(",")):
-        if not chunk:
-            continue
-        if "-" in chunk:
-            bounds = [p.strip() for p in chunk.split("-", 1)]
-            if len(bounds) != 2 or not bounds[0].isdigit() or not bounds[1].isdigit():
-                raise ValueError(f"Invalid range: {chunk}")
-            start, end = int(bounds[0]), int(bounds[1])
-            if start > end:
-                start, end = end, start
-            if start < 1 or end > total:
-                raise ValueError(f"Range out of bounds: {chunk}")
-            chosen.update(range(start - 1, end))
-            continue
-
-        if not chunk.isdigit():
-            raise ValueError(f"Invalid item: {chunk}")
-        value = int(chunk)
-        if value < 1 or value > total:
-            raise ValueError(f"Selection out of bounds: {value}")
-        chosen.add(value - 1)
-
-    return sorted(chosen)
-
-
 
 
 def run_interactive(base_dir: str = DEFAULT_BASE_DIR) -> None:
