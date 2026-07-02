@@ -242,8 +242,8 @@ def compute_normalization_factors(target_data, reference_data, wavelength_grid):
             interp_tgt = interp1d(wl_tgt, flux_tgt, bounds_error=False, fill_value=0)
             interp_ref = interp1d(wl_ref, flux_ref, bounds_error=False, fill_value=0)
 
-            F_tgt = np.trapz(interp_tgt(wl_common), wl_common)
-            F_ref = np.trapz(interp_ref(wl_common), wl_common)
+            F_tgt = np.trapezoid(interp_tgt(wl_common), wl_common)
+            F_ref = np.trapezoid(interp_ref(wl_common), wl_common)
 
             factor = F_ref / F_tgt if F_tgt > 0 else 1.0
             if not (0.01 < factor < 100):

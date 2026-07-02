@@ -23,14 +23,8 @@ def test_parse_numeric_range(raw, expected):
     assert parse_numeric_range(raw) == expected
 
 
-def test_selection_compatibility_aliases():
-    from sed_tools.cli import _parse_multi_selection
-    from sed_tools.svo_filter_grabber import parse_multi_selection as svo_parser
-
-    expected = parse_multi_selection("1,3-5,5", 6)
-    assert expected == [0, 2, 3, 4]
-    assert _parse_multi_selection("1,3-5,5", 6) == expected
-    assert svo_parser("1,3-5,5", 6) == expected
+def test_parse_multi_selection():
+    assert parse_multi_selection("1,3-5,5", 6) == [0, 2, 3, 4]
 
 
 def test_text_spectrum_compatibility_aliases(tmp_path):

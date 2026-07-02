@@ -15,6 +15,7 @@ Filters (SVO only):
 """
 
 import argparse
+import csv
 import glob
 import os
 import sys
@@ -23,8 +24,8 @@ from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
+from .config import set_data_dir, show_config
 from .mast_spectra_grabber import MASTSpectraGrabber
-# --- Standard Package Imports (The "Safe" Way) ---
 from .models import FILTER_DIR_DEFAULT, STELLAR_DIR_DEFAULT
 from .msg_spectra_grabber import MSGSpectraGrabber
 from .njm_spectra_grabber import NJMSpectraGrabber
@@ -35,6 +36,7 @@ from .svo_spectra_grabber import SVOSpectraGrabber
 from .ui_utils import _prompt_choice
 from .parsing import parse_multi_selection, parse_numeric_range
 from .spectrum_io import build_h5_bundle, list_text_spectra, read_text_spectrum
+from .terminal_plots import terminal_color_enabled
 # ------------ Small Utils ------------
 
 def ensure_dir(path: str) -> None:
@@ -72,32 +74,25 @@ def _parse_range(raw: str) -> Optional[Tuple[float, float]]:
 
 
 def prompt_njm_axis_cuts(
-    model_name: str,
+    name: str,
     grabber,  # NJMSpectraGrabber instance
     model_url: Optional[str] = None,
 ) -> Dict:
     """Interactively prompt the user for axis cuts on an NJM download.
-    
+
     Shows the available parameter ranges from the remote lookup table,
     then asks if the user wants to cut on each axis.
-    
+
     Returns a dict with keys: teff_range, logg_range, meta_range, wl_range
     (each either a (min, max) tuple or None).
     """
-    cuts = {
-        'teff_range': None,
-        'logg_range': None,
-        'meta_range': None,
-        'wl_range': None,
-    }
-    
-    print(f"\n  ── Axis Cuts for {model_name} ──")
+    cuts = {'teff_range': None, 'logg_range': None, 'meta_range': None, 'wl_range': None}
+
+    print(f"\n  ── Axis Cuts for {name} ──")
     print(f"  You can restrict the download to a subset of the grid.")
     print(f"  Leave blank to download everything.\n")
-    
-    # Try to fetch grid info for context
-    info = grabber.get_grid_info(model_name, model_url=model_url)
-    
+
+    info = grabber.get_grid_info(name, model_url=model_url)
     if info:
         print(f"  Available grid ({info['n_spectra']} spectra):")
         if 'teff_min' in info:
@@ -109,23 +104,13 @@ def prompt_njm_axis_cuts(
         print()
     else:
         print("  (Could not fetch grid info — cuts will still work if lookup_table.csv is available)\n")
-    
-    # Ask about each axis
-    raw = input("  Teff range (e.g. '3500,8000') or blank for all: ").strip()
-    cuts['teff_range'] = _parse_range(raw)
-    
-    raw = input("  logg range (e.g. '3.5,5.0') or blank for all: ").strip()
-    cuts['logg_range'] = _parse_range(raw)
-    
-    raw = input("  [M/H] range (e.g. '-1.0,0.5') or blank for all: ").strip()
-    cuts['meta_range'] = _parse_range(raw)
-    
-    raw = input("  Wavelength range in Å (e.g. '3000,10000') or blank for all: ").strip()
-    cuts['wl_range'] = _parse_range(raw)
-    
-    # Summary
-    any_cuts = any(v is not None for v in cuts.values())
-    if any_cuts:
+
+    cuts['teff_range'] = _parse_range(input("  Teff range (e.g. '3500,8000') or blank for all: ").strip())
+    cuts['logg_range'] = _parse_range(input("  logg range (e.g. '3.5,5.0') or blank for all: ").strip())
+    cuts['meta_range'] = _parse_range(input("  [M/H] range (e.g. '-1.0,0.5') or blank for all: ").strip())
+    cuts['wl_range']   = _parse_range(input("  Wavelength range in Å (e.g. '3000,10000') or blank for all: ").strip())
+
+    if any(v is not None for v in cuts.values()):
         print(f"\n  Applied cuts:")
         if cuts['teff_range']:
             print(f"    Teff:       {cuts['teff_range'][0]:.0f} – {cuts['teff_range'][1]:.0f} K")
@@ -138,7 +123,7 @@ def prompt_njm_axis_cuts(
         print()
     else:
         print("\n  No cuts — downloading full grid.\n")
-    
+
     return cuts
 
 
@@ -224,47 +209,6 @@ def run_rebuild_flow(
 
 
 
-def _prompt_axis_cuts(name, grabber, model_url=None):
-    """Prompt user for axis cuts on an NJM download. Returns dict of ranges."""
-    cuts = {'teff_range': None, 'logg_range': None, 'meta_range': None, 'wl_range': None}
-
-    print(f"\n  ── Axis Cuts for {name} ──")
-    print(f"  Restrict the download to a subset of the grid.")
-    print(f"  Leave blank to download everything.\n")
-
-    info = grabber.get_grid_info(name, model_url=model_url)
-    if info:
-        print(f"  Available grid ({info['n_spectra']} spectra):")
-        if 'teff_min' in info:
-            print(f"    Teff:  {info['teff_min']:.0f} – {info['teff_max']:.0f} K  ({info['teff_unique']} values)")
-        if 'logg_min' in info:
-            print(f"    logg:  {info['logg_min']:.2f} – {info['logg_max']:.2f}    ({info['logg_unique']} values)")
-        if 'meta_min' in info:
-            print(f"    [M/H]: {info['meta_min']:+.2f} – {info['meta_max']:+.2f}    ({info['meta_unique']} values)")
-        print()
-    else:
-        print("  (Could not fetch grid info)\n")
-
-    cuts['teff_range'] = _parse_range(input("  Teff range (e.g. '3500,8000') or blank for all: "))
-    cuts['logg_range'] = _parse_range(input("  logg range (e.g. '3.5,5.0') or blank for all: "))
-    cuts['meta_range'] = _parse_range(input("  [M/H] range (e.g. '-1.0,0.5') or blank for all: "))
-    cuts['wl_range']   = _parse_range(input("  Wavelength range in Å (e.g. '3000,10000') or blank for all: "))
-
-    any_cuts = any(v is not None for v in cuts.values())
-    if any_cuts:
-        print(f"\n  Applied cuts:")
-        if cuts['teff_range']:
-            print(f"    Teff:       {cuts['teff_range'][0]:.0f} – {cuts['teff_range'][1]:.0f} K")
-        if cuts['logg_range']:
-            print(f"    logg:       {cuts['logg_range'][0]:.2f} – {cuts['logg_range'][1]:.2f}")
-        if cuts['meta_range']:
-            print(f"    [M/H]:      {cuts['meta_range'][0]:+.2f} – {cuts['meta_range'][1]:+.2f}")
-        if cuts['wl_range']:
-            print(f"    Wavelength: {cuts['wl_range'][0]:.1f} – {cuts['wl_range'][1]:.1f} Å")
-    else:
-        print("\n  No cuts — downloading full grid.")
-
-    return cuts
 
 
 
@@ -366,7 +310,7 @@ def run_spectra_flow(
 
     # Download and process each selected model
     for sources, name in chosen:
-        print("\\n" + "=" * 64)
+        print("\n" + "=" * 64)
         source_tags = "".join(f"[{s}]" for s in sources)
         print(f"{source_tags} {name}")
         print("=" * 64)
@@ -400,7 +344,7 @@ def run_spectra_flow(
         # ── Axis cuts (NJM only) ──
         njm_cuts = {}
         if src == "njm":
-            njm_cuts = _prompt_axis_cuts(name, g, model_url=meta.get("model_url"))
+            njm_cuts = prompt_njm_axis_cuts(name, g, model_url=meta.get("model_url"))
 
         n_written = g.download_model_spectra(
             name, meta,
@@ -556,16 +500,15 @@ def run_spectra_flow(
             variants_index = os.path.join(model_dir, "variants_index.csv")
             if os.path.exists(variants_index):
                 # Extra axes were split into MESA-ready subgrid directories
-                import csv as _csv
-                with open(variants_index, "r") as _vf:
-                    _header = _vf.readline()  # skip #-prefixed header
-                    _vrows = list(_csv.DictReader(_vf, fieldnames=[
+                with open(variants_index, "r") as vf:
+                    header = vf.readline()
+                    vrows = list(csv.DictReader(vf, fieldnames=[
                         c.lstrip("#").strip()
-                        for c in _header.strip().split(",")
+                        for c in header.strip().split(",")
                     ]))
-                print(f"Flux cubes    : {len(_vrows)} MESA-ready subgrid(s) created")
-                for _row in _vrows:
-                    _vname = _row.get("variant_name", _row.get("path", "?"))
+                print(f"Flux cubes    : {len(vrows)} MESA-ready subgrid(s) created")
+                for row in vrows:
+                    _vname = row.get("variant_name", row.get("path", "?"))
                     print(f"  -> {os.path.join(model_dir, _vname)}/")
                 print(f"\n  Point MESA Colors to one of the above subdirectories.")
                 print(f"  See {variants_index} for the full inventory.")
@@ -577,10 +520,6 @@ def run_spectra_flow(
     print("\n" + "─" * 64)
     print("Done.")
 
-
-
-def _parse_multi_selection(spec: str, total: int) -> list[int]:
-    return parse_multi_selection(spec, total)
 
 
 def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
@@ -617,7 +556,7 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
 
         if bulk_spec:
             try:
-                facility_indexes = _parse_multi_selection(bulk_spec, len(facilities))
+                facility_indexes = parse_multi_selection(bulk_spec, len(facilities))
             except ValueError as exc:
                 print(f"Invalid selection: {exc}")
                 continue
@@ -940,7 +879,6 @@ def run_ml_completer_flow(
     run_interactive_workflow(base_dir, models_dir)
 
 def run_config_flow() -> None:
-    from .config import show_config, set_data_dir
     show_config()
     print("\nEnter new data directory path, or press Enter to keep current:")
     raw = input("> ").strip()
@@ -995,21 +933,58 @@ def run_import_flow(base_dir: str = str(STELLAR_DIR_DEFAULT)) -> None:
     SED.import_grid(path, name=name, model_root=base_dir, move=mv)
 
 
+
 def menu() -> str:
-    print("\nWhat would you like to run?")
-    print("1) Filters (NJM / SVO)")
-    print("2) Combine filter sets")
-    print("3) Spectra (NJM / SVO / MSG / MAST)")
-    print("4) Rebuild (lookup + HDF5 + flux cube)")
-    print("5) Combine grids into omni grid")
-    print("6) ML SED Completer (train/extend incomplete SEDs)")
-    print("7) ML SED Generator (generate SEDs from parameters)")
-    print("8) Grid Densifier (fill coarse Teff gaps)")
-    print("9) Coverage (parameter-space summary + plot)")
-    print("10) Import a local grid into the pipeline")
-    print("11) MESA Prepare (export a sub-variant for MESA)")
-    print("12) Config (show/set data directory)")
-    print("0) Quit")
+    use_color = terminal_color_enabled("auto")
+    BOLD = "\x1b[1m" if use_color else ""
+    DIM = "\x1b[2m" if use_color else ""
+    CYAN = "\x1b[36m" if use_color else ""
+    YELL = "\x1b[33m" if use_color else ""
+    RED = "\x1b[31m" if use_color else ""
+    BLUE = "\x1b[34m" if use_color else ""
+    GREEN = "\x1b[32m" if use_color else ""
+    RESET = "\x1b[0m" if use_color else ""
+
+    banner = (
+			"▄▖▄▖▄   ▄▖    ▜   ",
+			"▚ ▙▖▌▌  ▐ ▛▌▛▌▐ ▛▘",
+			"▄▌▙▖▙▘▄▖▐ ▙▌▙▌▐▖▄▌",
+			                      )
+
+    print()
+    print("\n" + BOLD + "=" * 50 + RESET)
+    
+    banner_colors = [RED, GREEN, BLUE]
+    for i, line in enumerate(banner):
+        print(f"{BOLD}{banner_colors[i]}{line}{RESET}")
+
+
+    print(BOLD + "=" * 50 + RESET)
+
+    print("\n" + YELL + "-- Filters " + "-" * 39 + RESET)
+    print(f"  {CYAN}1){RESET} Download Filters (NJM / SVO)")
+    print(f"  {CYAN}2){RESET} Combine filter sets")
+
+    print("\n" + YELL + "-- Spectra (Stellar Atmosphere Tables)" + "-" * 12 + RESET)
+    print(f"  {CYAN}3){RESET} Download Spectra (NJM / SVO / MSG / MAST)")
+    print(f"  {CYAN}4){RESET} Rebuild (lookup + HDF5 + flux cube)")
+    print(f"  {CYAN}5){RESET} Combine grids into omni grid")
+
+    print("\n" + YELL + "-- ML " + "-" * 44 + RESET)
+    print(f"  {CYAN}6){RESET} ML SED Completer (train/extend incomplete SEDs)")
+    print(f"  {CYAN}7){RESET} ML SED Generator (generate SEDs from parameters)")
+    print(f"  {CYAN}8){RESET} Grid Densifier (fill coarse Teff gaps)")
+
+    print("\n" + YELL + "-- Tools " + "-" * 41 + RESET)
+    print(f"  {CYAN}9){RESET} Coverage (parameter-space summary + plot)")
+    print(f" {CYAN}10){RESET} Load (Import a local stellar atm grid)")
+    print(f" {CYAN}11){RESET} MESA Prepare (Prepare stellar atm for MESA and SED_Tools)")
+    print(f" {CYAN}12){RESET} Config ")
+
+    print("\n" + DIM + "-" * 50 + RESET)
+    print(f"  {RED}0/q){RESET} Quit")
+    print(BOLD + "=" * 50 + RESET)
+
     choice = input("> ").strip()
     mapping = {
         "1": "filters",
@@ -1024,16 +999,18 @@ def menu() -> str:
         "10": "import",
         "11": "mesa_prepare",
         "12": "config",
-        "0": "quit"
+        "q": "quit",
+        "Q": "quit",
+        "quit": "quit",
+        "QUIT": "quit",
+        "Quit": "quit",
+        "0": "quit",
     }
     return mapping.get(choice, "")
-
 
 # ------------ Main CLI ------------
 
 def main():
-    from .config import get_data_dir, show_config, set_data_dir
-
     parser = argparse.ArgumentParser(description="SED Tools — spectra & filters")
     sub = parser.add_subparsers(dest="cmd", required=False)
 

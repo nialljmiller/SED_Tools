@@ -11,6 +11,13 @@ from typing import Dict, List, Optional, Tuple
 from urllib.parse import urljoin
 
 import requests
+import urllib3
+
+try:
+    from bs4 import BeautifulSoup as _BeautifulSoup
+    _HAS_BS4 = True
+except ImportError:
+    _HAS_BS4 = False
 
 
 class NJMFilterGrabber:
@@ -43,8 +50,7 @@ class NJMFilterGrabber:
             try:
                 response = self.session.head(self.base_url, timeout=5, verify=False)
                 response.raise_for_status()
-                # Disable SSL verification for this session
-                self.session.verify = False
+                self._disable_ssl_verification()
                 print("  [njm] Note: SSL verification disabled (certificate issue)")
                 return True
             except Exception:
@@ -52,10 +58,15 @@ class NJMFilterGrabber:
         except Exception:
             return False
     
+    def _disable_ssl_verification(self) -> None:
+        """Suppress SSL warnings and switch the session to skip certificate checks."""
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        self.session.verify = False
+
     def is_available(self) -> bool:
         """Return True if the mirror is available."""
         return self._available
-    
+
     def discover_facilities(self) -> List[str]:
         """Discover available filter facilities from the mirror."""
         if not self._available:
@@ -124,13 +135,12 @@ class NJMFilterGrabber:
     
     def _parse_directory_listing(self, url: str) -> List[str]:
         """Parse Apache directory listing HTML to extract subdirectories/files."""
+        if not _HAS_BS4:
+            return []
         try:
             response = self.session.get(url, timeout=10)
             response.raise_for_status()
-            
-            # Simple HTML parsing - look for links
-            from bs4 import BeautifulSoup
-            soup = BeautifulSoup(response.text, 'html.parser')
+            soup = _BeautifulSoup(response.text, 'html.parser')
             
             items = []
             for link in soup.find_all('a'):
@@ -285,12 +295,6 @@ class NJMFilterGrabber:
             "filters": filters,
             "url": f"{self.filters_url}/{facility}/{instrument}/",
         }
-
-
-# Suppress SSL warnings when verification is disabled
-import urllib3
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 def main():

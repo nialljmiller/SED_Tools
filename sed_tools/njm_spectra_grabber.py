@@ -16,12 +16,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Dict, List, Optional, Tuple
 from urllib.parse import urljoin
 
+import urllib3
 import numpy as np
 import requests
-# Suppress SSL warnings when verification is disabled
-import urllib3
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 try:
     from bs4 import BeautifulSoup
@@ -91,20 +88,20 @@ class NJMSpectraGrabber:
                     except (ValueError, TypeError):
                         pass  # response wasn't JSON, but server is alive
                     if not verify:
-                        self.session.verify = False
+                        self._disable_ssl_verification()
                     return True
             except requests.exceptions.SSLError:
                 continue  # try next verify setting
             except Exception as e:
                 break  # non-SSL failure, skip to next approach
-        
+
         # Attempt 2: HEAD on base URL (lighter request)
         for verify in [True, False]:
             try:
                 resp = self.session.head(self.base_url, timeout=5, verify=verify)
                 if resp.status_code < 500:  # even 403 means server is alive
                     if not verify:
-                        self.session.verify = False
+                        self._disable_ssl_verification()
                     return True
             except requests.exceptions.SSLError:
                 continue
@@ -122,7 +119,7 @@ class NJMSpectraGrabber:
                 # Switch base URLs to HTTP
                 self.base_url = self.base_url.replace("https://", "http://")
                 self.stellar_models_url = self.stellar_models_url.replace("https://", "http://")
-                self.session.verify = False
+                self._disable_ssl_verification()
                 print("  [njm] Using HTTP (HTTPS unavailable)")
                 return True
         except Exception as e:
@@ -130,6 +127,11 @@ class NJMSpectraGrabber:
         
         return False
     
+    def _disable_ssl_verification(self) -> None:
+        """Suppress SSL warnings and switch the session to skip certificate checks."""
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        self.session.verify = False
+
     def is_available(self) -> bool:
         """Return True if the mirror is available."""
         return self._available
@@ -769,31 +771,3 @@ class NJMSpectraGrabber:
         return len(txt_files)
 
 
-    def _try_bulk_download(self, model_name: str, out_dir: str) -> bool:
-        """
-        Attempt to download the whole model as a single tar.gz.
-        Returns True if successful, False to fall back to per-file download.
-        """
-        import tarfile, io
-
-        bulk_url = f"{self.base_url}/bulk_download.php?model={model_name}"
-        try:
-            resp = self.session.get(bulk_url, stream=True, timeout=60)
-            if resp.status_code != 200 or 'X-Bulk-Download' not in resp.headers:
-                return False
-
-            print(f"  [njm] Bulk download active for {model_name} — streaming tar.gz")
-            buf = io.BytesIO()
-            for chunk in resp.iter_content(chunk_size=1 << 20):  # 1 MiB chunks
-                buf.write(chunk)
-            buf.seek(0)
-
-            with tarfile.open(fileobj=buf, mode='r:gz') as tar:
-                tar.extractall(path=os.path.dirname(out_dir))
-
-            print(f"  [njm] Extracted to {out_dir}")
-            return True
-
-        except Exception as e:
-            print(f"  [njm] Bulk download failed ({e}), falling back to per-file")
-            return False

@@ -746,12 +746,6 @@ class SED:
         return sources
     
     @classmethod
-    def _detect_best_source(cls, catalog: str) -> str:
-        """Detect the best source for a catalog (NJM first, then others)."""
-        sources = cls._get_sources_for_catalog(catalog)
-        return sources[0] if sources else 'svo'
-    
-    @classmethod
     def _get_grabber(cls, source: str, base_dir: str, workers: int):
         """Get the appropriate grabber instance."""
         if source == 'svo':

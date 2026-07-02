@@ -4,7 +4,7 @@ sed_tools/header_parser.py
 Single source of truth for parsing spectrum file headers.
 
 All modules that need to read parameter metadata from .txt spectrum files
-(svo_spectra_grabber, svo_spectra_filter, svo_regen_spectra_lookup,
+(svo_spectra_grabber, svo_regen_spectra_lookup,
 spectra_cleaner, njm_spectra_grabber, precompute_flux_cube) should import
 parse_header() from here rather than implementing their own logic.
 
