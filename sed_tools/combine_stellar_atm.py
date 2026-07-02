@@ -4,9 +4,12 @@ Combine multiple stellar atmosphere models into a unified flux cube.
 """
 
 import argparse
+import logging
 import os
 import shutil
 import struct
+
+logger = logging.getLogger(__name__)
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -155,6 +158,7 @@ def create_common_wavelength_grid(all_models_data, sample_size=20):
                         max_wave = max(max_wave, wl_subset.max())
                         resolutions.append(np.median(np.diff(wl_subset)))
             except Exception:
+                logger.debug("Could not load SED for wavelength grid sampling: %s", filepath, exc_info=True)
                 continue
 
     typical_resolution = np.median(resolutions) if resolutions else 50.0
@@ -306,6 +310,7 @@ def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, w
                 filled_map[i_teff, i_logg, i_meta] = True
                 source_map[i_teff, i_logg, i_meta] = model_idx
             except Exception:
+                logger.debug("Could not load SED into flux cube: %s", filepath, exc_info=True)
                 continue
 
     # Fill gaps with nearest neighbor

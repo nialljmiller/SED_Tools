@@ -37,6 +37,7 @@ API
 from __future__ import annotations
 
 import argparse
+import logging
 import os
 import struct
 import time
@@ -45,6 +46,8 @@ from typing import Optional
 from ._resample import resample_to_grid
 
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
@@ -231,7 +234,7 @@ def densify_grid(
 
                         used_ml = True
                     except Exception:
-                        pass
+                        logger.warning("ML generation failed for Teff=%.0f logg=%.2f meta=%.2f", t_new, float(logg_grid[i_l]), float(meta_grid[i_m]), exc_info=True)
 
                 if not used_ml:
                     bb = _blackbody(wavelengths, t_new)

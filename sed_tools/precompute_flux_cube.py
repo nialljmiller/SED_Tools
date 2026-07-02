@@ -25,6 +25,7 @@ filter    Filter to a specific extra-axis slice, then build normally.
 
 import argparse
 import csv
+import logging
 import os
 import re
 import shutil
@@ -33,6 +34,8 @@ import sys
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+
+logger = logging.getLogger(__name__)
 
 # Auto-split when the number of extra-axis combinations is at or below this.
 # Above this threshold the user is prompted before creating many directories.
@@ -62,7 +65,7 @@ except ImportError:
                     if line.startswith("MemAvailable:"):
                         return int(line.split()[1]) * 1024
         except Exception:
-            pass
+            logger.debug("Could not read /proc/meminfo for RAM estimation", exc_info=True)
         return 2 * (1024 ** 3)
 
 
@@ -270,6 +273,7 @@ def _populate_and_write(
         try:
             resampled = resample_to_grid(wl, fl, teff_vals[i], wavelengths)
         except Exception:
+            logger.debug("Could not resample SED %s into flux cube", fpath, exc_info=True)
             skipped += 1
             continue
 

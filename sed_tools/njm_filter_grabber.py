@@ -5,6 +5,7 @@ Complements the spectra grabber for complete data access
 """
 
 import json
+import logging
 import os
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -12,6 +13,8 @@ from urllib.parse import urljoin
 
 import requests
 import urllib3
+
+logger = logging.getLogger(__name__)
 
 try:
     from bs4 import BeautifulSoup as _BeautifulSoup
@@ -121,8 +124,8 @@ class NJMFilterGrabber:
                               if line.strip() and not line.startswith('#')]
                     return filters
             except Exception:
-                pass
-            
+                logger.debug("Could not fetch instrument index file for %s/%s", facility, instrument, exc_info=True)
+
             # Fallback: parse directory listing
             all_files = self._parse_directory_listing(instrument_url)
             # Filter for .dat files and remove the extension

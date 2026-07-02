@@ -11,10 +11,13 @@ before/during download to avoid transferring unwanted data.
 import csv
 import io
 import json
+import logging
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Dict, List, Optional, Tuple
 from urllib.parse import urljoin
+
+logger = logging.getLogger(__name__)
 
 import urllib3
 import numpy as np
@@ -160,8 +163,8 @@ class NJMSpectraGrabber:
                 return [m for m in models if not m.startswith('.')]
             
         except Exception:
-            pass
-        
+            logger.debug("Could not fetch model index from NJM mirror", exc_info=True)
+
         # Last resort: parse directory listing
         try:
             raw = self._parse_directory_listing(self.stellar_models_url)
@@ -264,7 +267,7 @@ class NJMSpectraGrabber:
                     if resp.status_code in (200, 206):
                         result[category].append(aux_name)
                 except Exception:
-                    pass
+                    logger.debug("Could not probe auxiliary file %s", aux_name, exc_info=True)
         
         return result
     
@@ -502,6 +505,7 @@ class NJMSpectraGrabber:
                     trimmed += 1
                     
             except Exception:
+                logger.debug("Could not apply wavelength cut to %s", fname, exc_info=True)
                 continue  # Skip files that can't be read
         
         return trimmed
@@ -688,8 +692,8 @@ class NJMSpectraGrabber:
                     print(f"  [njm] Server-side wavelength cut active ({wl_range[0]:.1f} – {wl_range[1]:.1f} Å)")
                 resp.close()
             except Exception:
-                pass
-        
+                logger.debug("Could not probe server-side wavelength cut support", exc_info=True)
+
         def download_task(filename: str, force: bool = False) -> tuple:
             """Download a single file. Returns (status, filename)."""
             output_path = os.path.join(model_dir, filename)

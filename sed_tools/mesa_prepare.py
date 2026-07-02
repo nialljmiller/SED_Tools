@@ -20,6 +20,7 @@ Usage (API):
 
 from __future__ import annotations
 
+import logging
 import os
 import shutil
 import struct
@@ -29,6 +30,8 @@ from typing import Dict, List, Optional
 
 import numpy as np
 import pandas as pd
+
+logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
@@ -167,6 +170,7 @@ def _read_cube_header(path: Path) -> dict:
             wave = np.fromfile(fh, dtype=np.float64, count=nw)
         return {"teff": teff, "logg": logg, "meta": meta, "wave": wave}
     except Exception:
+        logger.debug("Could not read flux cube header from %s", path, exc_info=True)
         return {}
 
 

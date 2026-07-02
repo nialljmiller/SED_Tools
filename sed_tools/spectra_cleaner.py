@@ -28,6 +28,8 @@ from collections import Counter
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
+import logging
+
 import numpy as np
 
 try:
@@ -35,6 +37,8 @@ try:
     HAS_H5PY = True
 except ImportError:
     HAS_H5PY = False
+
+logger = logging.getLogger(__name__)
 
 
 # ============================================================================
@@ -131,7 +135,7 @@ def _load_header(filepath: str) -> Tuple[SpectrumMeta, str]:
                     break
                 header_lines.append(line)
     except Exception:
-        pass
+        logger.debug("Could not read header text from %s", filepath, exc_info=True)
 
     return meta, "".join(header_lines)
 
@@ -705,6 +709,7 @@ def recover_wavelengths_from_hdf5(
                     try:
                         arr = np.array(d[()]).astype(float).ravel()
                     except Exception:
+                        logger.debug("Could not read HDF5 dataset at path %s", path, exc_info=True)
                         continue
                     if (arr.ndim == 1 and arr.size == expected_len and
                             np.all(np.diff(arr) > 0) and
@@ -712,6 +717,7 @@ def recover_wavelengths_from_hdf5(
                         return arr
 
         except Exception:
+            logger.debug("Could not read HDF5 file %s for wavelength recovery", h5_path, exc_info=True)
             continue
 
     return None
@@ -861,7 +867,7 @@ def clean_spectrum_file(
                     flux_std = flux_std / ratio
                     status = status + '_renormed'
         except Exception:
-            pass  # renorm is best-effort, never block the write
+            logger.debug("Bolometric renorm failed for %s", filepath, exc_info=True)  # renorm is best-effort, never block the write
     
     # Write standardized file
     write_standardized_spectrum(filepath, wl_std, flux_std, meta, unit_info)

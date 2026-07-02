@@ -30,12 +30,15 @@ Usage
 """
 
 import json
+import logging
 import os
 import struct
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 # Default wavelength grid
 DEFAULT_WL_MIN = 100.0       # Angstroms
@@ -917,8 +920,8 @@ class SEDGenerator:
                             'architecture': config.get('architecture', {}),
                         })
                 except Exception:
-                    pass
-        
+                    logger.warning("Could not read ML generator model config in %s", subdir, exc_info=True)
+
         return models
 
 

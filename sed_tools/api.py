@@ -40,11 +40,14 @@ Example usage::
 from __future__ import annotations
 
 import csv
+import logging
 import os
 import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterator, List, Optional, Sequence, Tuple, Union
+
+logger = logging.getLogger(__name__)
 
 import numpy as np
 import pandas as pd
@@ -511,15 +514,15 @@ class SED:
                 info.metallicity_range = (float(meta['meta'][0]), float(meta['meta'][-1]))
                 info.wavelength_range = (float(meta['wavelengths'][0]), float(meta['wavelengths'][-1]))
             except Exception:
-                pass
-            
+                logger.debug("Could not read flux cube header for %s", entry.name, exc_info=True)
+
             # Count spectra from lookup table
             if lookup.exists():
                 try:
                     df = pd.read_csv(lookup)
                     info.n_spectra = len(df)
                 except Exception:
-                    pass
+                    logger.debug("Could not read lookup table for %s", entry.name, exc_info=True)
             
             catalogs.append(info)
         
@@ -537,9 +540,9 @@ class SED:
                 for m in models
             ]
         except Exception as e:
-            print(f"[query] SVO discovery failed: {e}")
+            logger.debug("[query] SVO discovery failed: %s", e, exc_info=True)
             return []
-    
+
     @classmethod
     def _query_msg(cls) -> List[CatalogInfo]:
         """Query MSG (Townsend) remote catalogs."""
@@ -552,9 +555,9 @@ class SED:
                 for m in models
             ]
         except Exception as e:
-            print(f"[query] MSG discovery failed: {e}")
+            logger.debug("[query] MSG discovery failed: %s", e, exc_info=True)
             return []
-    
+
     @classmethod
     def _query_mast(cls) -> List[CatalogInfo]:
         """Query MAST (BOSZ) remote catalogs."""
@@ -567,9 +570,9 @@ class SED:
                 for m in models
             ]
         except Exception as e:
-            print(f"[query] MAST discovery failed: {e}")
+            logger.debug("[query] MAST discovery failed: %s", e, exc_info=True)
             return []
-    
+
     @classmethod
     def _query_njm(cls) -> List[CatalogInfo]:
         """Query NJM mirror remote catalogs."""
@@ -584,7 +587,7 @@ class SED:
                 for m in models
             ]
         except Exception as e:
-            print(f"[query] NJM discovery failed: {e}")
+            logger.debug("[query] NJM discovery failed: %s", e, exc_info=True)
             return []
     
     @classmethod
@@ -707,8 +710,8 @@ class SED:
                 if catalog in models:
                     sources.append('njm')
         except Exception:
-            pass
-        
+            logger.debug("NJM source discovery failed for %s", catalog, exc_info=True)
+
         # Try SVO
         try:
             from .svo_spectra_grabber import SVOSpectraGrabber
@@ -717,8 +720,8 @@ class SED:
             if catalog in models:
                 sources.append('svo')
         except Exception:
-            pass
-        
+            logger.debug("SVO source discovery failed for %s", catalog, exc_info=True)
+
         # Try MSG
         try:
             from .msg_spectra_grabber import MSGSpectraGrabber
@@ -727,8 +730,8 @@ class SED:
             if catalog in models:
                 sources.append('msg')
         except Exception:
-            pass
-        
+            logger.debug("MSG source discovery failed for %s", catalog, exc_info=True)
+
         # Try MAST
         try:
             from .mast_spectra_grabber import MASTSpectraGrabber
@@ -737,7 +740,7 @@ class SED:
             if catalog in models:
                 sources.append('mast')
         except Exception:
-            pass
+            logger.debug("MAST source discovery failed for %s", catalog, exc_info=True)
         
         # Always include SVO as fallback if not already there
         if 'svo' not in sources:
@@ -803,8 +806,8 @@ class SED:
                         )
                         spectra.append(spec)
                     except Exception:
-                        pass
-        
+                        logger.debug("Could not load spectrum %s", filename, exc_info=True)
+
         return Catalog(
             name=name,
             source=source,
@@ -1670,7 +1673,7 @@ class Filters:
                     'is_local': False,
                 })
         except Exception:
-            pass
+            logger.debug("SVO filter query failed", exc_info=True)
 
         # NJM mirror catalogue, if available. Avoid exact duplicate rows.
         try:
@@ -1694,7 +1697,7 @@ class Filters:
                     })
                     seen.add(key)
         except Exception:
-            pass
+            logger.debug("NJM filter query failed", exc_info=True)
 
         return results
 

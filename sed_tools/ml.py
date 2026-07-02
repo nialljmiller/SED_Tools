@@ -45,10 +45,13 @@ Model Management::
     info = model_info('models/my_completer')
 """
 
+import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 __all__ = [
     # Functions

@@ -34,10 +34,13 @@ CLI
 """
 
 import json
+import logging
 import os
 import struct
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
+
+logger = logging.getLogger(__name__)
 
 import numpy as np
 from scipy.integrate import simpson as simps
@@ -323,8 +326,8 @@ class SEDCompleter:
                 if wl_min > 0 and wl_max > wl_min:
                     coverage[(t, g, m)] = (wl_min, wl_max)
         except Exception:
-            pass
-        
+            logger.debug("Could not build coverage map from %s", lookup_path, exc_info=True)
+
         return coverage
     
     def _prepare_training_data(
@@ -1213,8 +1216,8 @@ class SEDCompleter:
                         'architecture': config.get('architecture', {}),
                     })
                 except Exception:
-                    pass
-        
+                    logger.warning("Could not read ML completer model config in %s", subdir, exc_info=True)
+
         return models
 
 
