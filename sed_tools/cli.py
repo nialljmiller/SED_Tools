@@ -214,114 +214,196 @@ def run_rebuild_flow(
 
 
 
+class _ModelOption:
+    """Display wrapper for a discoverable model, used by run_spectra_flow."""
+    def __init__(self, name: str, sources: List[str]) -> None:
+        self.name = name
+        self.sources = sources
+        self.label = f"{name} {''.join(f'[{s}]' for s in sources)}"
+
+
+def _print_cleaning_report(summary: Dict) -> None:
+    """Print the unit-detection and per-file outcome report after clean_model_dir."""
+    n_total    = summary['total']
+    det_stats  = summary.get('detection_stats', {})
+    cat_units  = summary.get('catalog_units', {}) or {}
+    det_status = det_stats.get('status', '')
+    sample_size = det_stats.get('sample_size', '?')
+    detected_wl   = cat_units.get('wavelength', 'unknown')
+    detected_flux = cat_units.get('flux', 'unknown')
+
+    # Unit detection summary
+    if det_status == 'already_standardized':
+        print(f" Method    : Sampled {sample_size}/{n_total} files")
+        print(f" Result    : All samples already standardized")
+        print(f" Wavelength: angstrom (Å)")
+        print(f" Flux      : F_lambda (erg/s/cm²/Å)")
+    elif cat_units:
+        print(f" Method    : Catalog consensus ({sample_size}/{n_total} files sampled)")
+        print(f" Wavelength: {detected_wl} ({det_stats.get('wavelength_agreement', '?')} agreement)")
+        print(f" Flux      : {detected_flux} ({det_stats.get('flux_agreement', '?')} agreement)")
+        print(f" Confidence: {cat_units.get('confidence', 'unknown')}")
+    else:
+        print(f" Status    : {det_status or 'No unit detection performed'}")
+        print(f" Wavelength: {detected_wl}")
+        print(f" Flux      : {detected_flux}")
+
+    # Per-file outcome counts
+    units_already_standard = (detected_wl == 'angstrom' and detected_flux == 'flam')
+    n_converted = len(summary.get('converted', []))
+    n_tagged    = len(summary.get('tagged', []))
+    n_recovered = len(summary.get('recovered', []))
+    n_skipped   = len(summary.get('skipped_already', []) or summary.get('skipped', []))
+    n_invalid   = len(summary.get('skipped_invalid', []) or summary.get('invalid', []))
+    n_index     = len(summary.get('skipped_index', []))
+    n_error     = len(summary.get('error', []))
+
+    if n_converted > 0 and units_already_standard:
+        n_tagged, n_converted = n_converted, 0
+
+    print(f" Total files: {n_total}")
+    if n_converted > 0:
+        print(f"Converted     : {n_converted} files")
+        if detected_wl != 'angstrom':
+            print(f"   λ: {detected_wl} → angstrom")
+        if detected_flux != 'flam':
+            print(f"   F: {detected_flux} → F_lambda")
+    if n_tagged    > 0: print(f"Cleaned       : {n_tagged} files  (units already Å + F_λ)")
+    if n_recovered > 0: print(f"Recovered     : {n_recovered} files  (wavelengths from HDF5)")
+    if n_skipped   > 0: print(f"Already done  : {n_skipped} files  (units_standardized header)")
+    if n_invalid   > 0: print(f"Invalid       : {n_invalid} files  (empty, corrupt, or λ ≤ 0)")
+    if n_index     > 0: print(f"Index grids   : {n_index} files  (λ=0,1,2… no HDF5 source)")
+    if n_error     > 0: print(f"Errors        : {n_error} files")
+
+    n_usable = n_converted + n_tagged + n_recovered + n_skipped
+    print()
+    if   n_usable == n_total: print(f"All {n_usable} files ready for use")
+    elif n_usable  > 0:       print(f"{n_usable}/{n_total} files usable")
+    else:                     print("No usable files")
+
+
+def _build_data_products(
+    name: str,
+    model_dir: str,
+    src: str,
+    force_bundle_h5: bool,
+    build_flux_cube: bool,
+) -> None:
+    """Build HDF5 bundle, lookup table, and flux cube for a downloaded model."""
+    # HDF5 bundle
+    out_h5 = os.path.join(model_dir, f"{name}_bundle.h5" if src == "msg" else f"{name}.h5")
+    if force_bundle_h5 or not os.path.exists(out_h5):
+        build_h5_bundle_from_txt(model_dir, out_h5)
+        print(f"HDF5 bundle   : {os.path.basename(out_h5)}")
+    else:
+        print(f"HDF5 bundle   : {os.path.basename(out_h5)} (exists)")
+
+    # Lookup table
+    regenerate_lookup_table(model_dir)
+    print(f"Lookup table  : lookup_table.csv")
+
+    # Flux cube
+    if not build_flux_cube:
+        return
+    flux_cube_path = os.path.join(model_dir, "flux_cube.bin")
+    precompute_flux_cube(model_dir, flux_cube_path)
+    variants_index = os.path.join(model_dir, "variants_index.csv")
+    if os.path.exists(variants_index):
+        with open(variants_index) as vf:
+            header = vf.readline()
+            vrows = list(csv.DictReader(vf, fieldnames=[
+                c.lstrip("#").strip() for c in header.strip().split(",")
+            ]))
+        print(f"Flux cubes    : {len(vrows)} MESA-ready subgrid(s) created")
+        for row in vrows:
+            vname = row.get("variant_name", row.get("path", "?"))
+            print(f"  -> {os.path.join(model_dir, vname)}/")
+        print(f"\n  Point MESA Colors to one of the above subdirectories.")
+        print(f"  See {variants_index} for the full inventory.")
+    elif os.path.exists(flux_cube_path):
+        print(f"Flux cube     : flux_cube.bin")
+    else:
+        print(f"Flux cube     : not built")
+
+
 def run_spectra_flow(
     source: str,
     base_dir: str = str(STELLAR_DIR_DEFAULT),
     models: Optional[List[str]] = None,
     workers: int = 5,
     force_bundle_h5: bool = True,
-    build_flux_cube: bool = True
+    build_flux_cube: bool = True,
 ) -> None:
     ensure_dir(base_dir)
-    
-    # Parse source list - now includes 'njm'
-    src_list = []
+
+    # Parse source list
     if source.lower() == "all":
-        src_list = ["njm", "svo", "msg", "mast"]  # NJM first!
+        src_list = ["njm", "svo", "msg", "mast"]
     elif source.lower() == "both":
         src_list = ["njm", "svo", "msg"]
+    elif "," in source:
+        src_list = [s.strip().lower() for s in source.split(",")]
     else:
-        if "," in source:
-            src_list = [s.strip().lower() for s in source.split(",")]
-        else:
-            src_list = [source.lower()]
+        src_list = [source.lower()]
 
-    # Initialize grabbers - NJM first to check availability
-    grabs = {}
+    # Initialize grabbers (NJM first so availability is checked before discovery)
+    grabs: Dict = {}
     if "njm" in src_list:
         grabs["njm"] = NJMSpectraGrabber(base_dir=base_dir, max_workers=workers)
         if not grabs["njm"].is_available():
             print("[njm] Mirror unavailable, using other sources")
             del grabs["njm"]
-            if "njm" in src_list:
-                src_list.remove("njm")
-    
-    if "svo" in src_list:
-        grabs["svo"] = SVOSpectraGrabber(base_dir=base_dir, max_workers=workers)
-    if "msg" in src_list:
-        grabs["msg"] = MSGSpectraGrabber(base_dir=base_dir, max_workers=workers)
-    if "mast" in src_list:
-        grabs["mast"] = MASTSpectraGrabber(base_dir=base_dir, max_workers=workers)
+            src_list.remove("njm")
+    if "svo"  in src_list: grabs["svo"]  = SVOSpectraGrabber(base_dir=base_dir, max_workers=workers)
+    if "msg"  in src_list: grabs["msg"]  = MSGSpectraGrabber(base_dir=base_dir, max_workers=workers)
+    if "mast" in src_list: grabs["mast"] = MASTSpectraGrabber(base_dir=base_dir, max_workers=workers)
 
-    # Discover models from all sources
-    model_sources = {}
+    # Discover models from every active source
+    model_sources: Dict[str, List[str]] = {}
     for s in src_list:
         if s in grabs:
             for model_name in grabs[s].discover_models():
-                if model_name not in model_sources:
-                    model_sources[model_name] = []
-                model_sources[model_name].append(s)
-    
+                model_sources.setdefault(model_name, []).append(s)
     if not model_sources:
         print("No models discovered.")
         return
 
-    # Build display options
-    class ModelOption:
-        def __init__(self, name, sources):
-            self.name = name
-            self.sources = sources
-            source_tags = "".join(f"[{s}]" for s in sources)
-            self.label = f"{name} {source_tags}"
-    
-    all_models = [ModelOption(name, sources) for name, sources in sorted(model_sources.items())]
+    all_models = [_ModelOption(n, srcs) for n, srcs in sorted(model_sources.items())]
 
-    # Selection logic
-    chosen = []
+    # Resolve which models to process
     if models is not None:
         if len(models) == 1 and models[0].lower() == "all":
             chosen = [(opt.sources, opt.name) for opt in all_models]
         else:
+            chosen = []
             for m in models:
                 if ":" in m:
-                    src, name = m.split(":", 1)
-                    src, name = src.strip().lower(), name.strip()
-                    chosen.append(([src], name))
+                    s, n = m.split(":", 1)
+                    chosen.append(([s.strip().lower()], n.strip()))
                 else:
-                    name = m.strip()
-                    matching = [opt for opt in all_models if opt.name == name]
+                    matching = [opt for opt in all_models if opt.name == m.strip()]
                     if not matching:
-                        print(f"[skip] Model '{name}' not found")
-                        continue
-                    chosen.append((matching[0].sources, name))
+                        print(f"[skip] Model '{m.strip()}' not found")
+                    else:
+                        chosen.append((matching[0].sources, matching[0].name))
     else:
         idxs = prompt_choice(all_models, label="Spectral models", allow_back=True, multi=True)
-        
-        if idxs is None:
+        if idxs is None or idxs == -1:
             return
-        if idxs == -1:
-            print("No model selected.")
-            return
-            
         if isinstance(idxs, int):
             idxs = [idxs]
-
         chosen = [(all_models[i].sources, all_models[i].name) for i in idxs]
 
-    # Download and process each selected model
     for sources, name in chosen:
         print("\n" + "=" * 64)
-        source_tags = "".join(f"[{s}]" for s in sources)
-        print(f"{source_tags} {name}")
+        print(f"{''.join(f'[{s}]' for s in sources)} {name}")
         print("=" * 64)
-        
+
         model_dir = os.path.join(base_dir, name)
         ensure_dir(model_dir)
 
-        # Try each source in order until one returns metadata
-        meta = None
-        g = None
-        src = None
+        # Try sources in priority order until one supplies metadata
+        meta = g = src = None
         for try_src in sources:
             g = grabs.get(try_src)
             if not g:
@@ -331,18 +413,14 @@ def run_spectra_flow(
                 src = try_src
                 break
             print(f"  [{try_src}] No metadata — trying next source...")
-        
-        if not meta or not g or not src:
-            print(f"No metadata available from any source")
+        if not (meta and g and src):
+            print("No metadata available from any source")
             continue
-        
+
         print(f"  Using source: {src}")
-        
-        # Check if pre-processed (NJM)
         is_preprocessed = isinstance(meta, dict) and meta.get("pre_processed", False)
 
-        # ── Axis cuts (NJM only) ──
-        njm_cuts = {}
+        njm_cuts: Dict = {}
         if src == "njm":
             njm_cuts = prompt_njm_axis_cuts(name, g, model_url=meta.get("model_url"))
 
@@ -353,169 +431,23 @@ def run_spectra_flow(
             meta_range=njm_cuts.get('meta_range'),
             wl_range=njm_cuts.get('wl_range'),
         )
-        print(f"Downloaded {n_written} spectra{model_dir}")
+        print(f"Downloaded {n_written} spectra → {model_dir}")
 
-        # Skip cleaning for pre-processed NJM data
         if is_preprocessed:
-            print(f"Pre-processed data (skipping cleaning)")
+            print("Pre-processed data (skipping cleaning)")
             essential = ["flux_cube.bin", "lookup_table.csv"]
             missing = [f for f in essential if not os.path.exists(os.path.join(model_dir, f))]
-            if missing:
-                print(f"Missing: {', '.join(missing)}")
-            else:
-                print(f"All essential files present")
+            print(f"Missing: {', '.join(missing)}" if missing else "All essential files present")
             continue
 
-        # --- Cleaning ---
         summary = clean_model_dir(model_dir, try_h5_recovery=True, rebuild_lookup=True)
-        
-        # ─────────────────────────────────────────────────────────────
-        # DETAILED REPORTING
-        # ─────────────────────────────────────────────────────────────
-        
-        n_total = summary['total']
-        
-        # Get detection info
-        det_stats = summary.get('detection_stats', {})
-        cat_units = summary.get('catalog_units', {})
-        
-        # Determine detected units
-        detected_wl = cat_units.get('wavelength', 'unknown') if cat_units else 'unknown'
-        detected_flux = cat_units.get('flux', 'unknown') if cat_units else 'unknown'
-        confidence = cat_units.get('confidence', 'unknown') if cat_units else 'unknown'
-        
-        # Check if already standard (no conversion needed)
-        units_already_standard = (detected_wl == 'angstrom' and detected_flux == 'flam')
-        
-        # ── Unit Detection Report ──
-        
-        sample_size = det_stats.get('sample_size', '?')
-        wl_agree = det_stats.get('wavelength_agreement', '?')
-        fl_agree = det_stats.get('flux_agreement', '?')
-        det_status = det_stats.get('status', '')
-        
-        if det_status == 'already_standardized':
-            print(f" Method    : Sampled {sample_size}/{n_total} files")
-            print(f" Result    : All samples already standardized")
-            print(f" Wavelength: angstrom (Å)")
-            print(f" Flux      : F_lambda (erg/s/cm²/Å)")
-        elif cat_units:
-            print(f" Method    : Catalog consensus ({sample_size}/{n_total} files sampled)")
-            print(f" Wavelength: {detected_wl} ({wl_agree} agreement)")
-            print(f" Flux      : {detected_flux} ({fl_agree} agreement)")
-            print(f" Confidence: {confidence}")
-        else:
-            print(f" Status    : {det_status or 'No unit detection performed'}")
-            print(f" Wavelength: {detected_wl}")
-            print(f" Flux      : {detected_flux}")
-        
-        # ── Processing Report ──
-        # Extract counts - handle both old and new key names
-        n_converted = len(summary.get('converted', []))
-        n_tagged = len(summary.get('tagged', []))  # new: header-only tagging
-        n_recovered = len(summary.get('recovered', []))
-        n_skipped = len(summary.get('skipped_already', []) or summary.get('skipped', []))
-        n_invalid = len(summary.get('skipped_invalid', []) or summary.get('invalid', []))
-        n_index = len(summary.get('skipped_index', []))
-        n_error = len(summary.get('error', []))
-        
-        # If 'converted' is used but units were already standard, treat as 'tagged'
-        if n_converted > 0 and units_already_standard:
-            n_tagged = n_converted
-            n_converted = 0
-        
-        print(f" Total files: {n_total}")
-        
-        # Show what actually happened
-        if n_converted > 0:
-            # Actual unit conversion occurred
-            src_wl = detected_wl if detected_wl != 'angstrom' else 'original'
-            src_fl = detected_flux if detected_flux != 'flam' else 'original'
-            print(f"Converted     : {n_converted} files")
-            if detected_wl != 'angstrom':
-                print(f"   λ: {detected_wl}angstrom")
-            if detected_flux != 'flam':
-                print(f"   F: {detected_flux}F_lambda")
-        
-        if n_tagged > 0:
-            # No conversion, just cleaning + header tagging
-            print(f"Cleaned       : {n_tagged} files")
-            print(f"   (units already Å + F_λ, added standardized tag)")
-        
-        if n_recovered > 0:
-            print(f"Recovered     : {n_recovered} files")
-            print(f"   (wavelengths restored from HDF5)")
-        
-        if n_skipped > 0:
-            print(f" - Already done  : {n_skipped} files")
-            print(f"   (had units_standardized header)")
-        
-        if n_invalid > 0:
-            print(f"Invalid       : {n_invalid} files")
-            print(f"   (empty, corrupt, or λ ≤ 0)")
-        
-        if n_index > 0:
-            print(f"Index grids   : {n_index} files")
-            print(f"   (λ=0,1,2... without HDF5 source)")
-        
-        if n_error > 0:
-            print(f" Errors        : {n_error} files")
-        
-        # Summary line
-        n_usable = n_converted + n_tagged + n_recovered + n_skipped
-        print()
-        if n_usable == n_total:
-            print(f"All {n_usable} files ready for use")
-        elif n_usable > 0:
-            print(f"{n_usable}/{n_total} files usable")
-        else:
-            print(f"No usable files")
+        _print_cleaning_report(summary)
 
         if not glob.glob(os.path.join(model_dir, "*.txt")):
-            print(f"\n  No spectra remaining after cleaning")
+            print("\n  No spectra remaining after cleaning")
             continue
 
-        # ── Data Products ──
-        
-        # HDF5 Bundle
-        if src == "msg":
-            out_h5 = os.path.join(model_dir, f"{name}_bundle.h5")
-        else:
-            out_h5 = os.path.join(model_dir, f"{name}.h5")
-        
-        if force_bundle_h5 or not os.path.exists(out_h5):
-            build_h5_bundle_from_txt(model_dir, out_h5)
-            print(f"HDF5 bundle   : {os.path.basename(out_h5)}")
-        else:
-            print(f" - HDF5 bundle   : {os.path.basename(out_h5)} (exists)")
-
-        # Lookup Table
-        regenerate_lookup_table(model_dir)
-        print(f"Lookup table  : lookup_table.csv")
-
-        # Flux Cube
-        if build_flux_cube:
-            flux_cube_path = os.path.join(model_dir, "flux_cube.bin")
-            precompute_flux_cube(model_dir, flux_cube_path)
-            variants_index = os.path.join(model_dir, "variants_index.csv")
-            if os.path.exists(variants_index):
-                # Extra axes were split into MESA-ready subgrid directories
-                with open(variants_index, "r") as vf:
-                    header = vf.readline()
-                    vrows = list(csv.DictReader(vf, fieldnames=[
-                        c.lstrip("#").strip()
-                        for c in header.strip().split(",")
-                    ]))
-                print(f"Flux cubes    : {len(vrows)} MESA-ready subgrid(s) created")
-                for row in vrows:
-                    _vname = row.get("variant_name", row.get("path", "?"))
-                    print(f"  -> {os.path.join(model_dir, _vname)}/")
-                print(f"\n  Point MESA Colors to one of the above subdirectories.")
-                print(f"  See {variants_index} for the full inventory.")
-            elif os.path.exists(flux_cube_path):
-                print(f"Flux cube     : flux_cube.bin")
-            else:
-                print(f"Flux cube     : not built")
+        _build_data_products(name, model_dir, src, force_bundle_h5, build_flux_cube)
 
     print("\n" + "─" * 64)
     print("Done.")
@@ -673,6 +605,17 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
                 break
 
 
+class _FilterSetOption:
+    """Display wrapper for a local filter-set directory, used by run_filter_combine_flow."""
+    def __init__(self, path: Path, root: Path) -> None:
+        self.path = path
+        try:
+            rel = path.relative_to(root)
+        except ValueError:
+            rel = path
+        self.label = f"{rel} ({len(list(path.glob('*.dat')))} filters)"
+
+
 def run_filter_combine_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
     """Interactive wizard for combining local filter sets."""
     from .combine_filters import combine_filter_sets, find_filter_sets
@@ -686,16 +629,6 @@ def run_filter_combine_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
         print(f"No local filter sets containing .dat files were found under {chosen_base}.")
         print("Download filters first with option 2, or run `sed-tools filters`.")
         return
-
-    class _FilterSetOption:
-        def __init__(self, path: Path, root: Path) -> None:
-            self.path = path
-            try:
-                rel = path.relative_to(root)
-            except ValueError:
-                rel = path
-            n_filters = len(list(path.glob("*.dat")))
-            self.label = f"{rel} ({n_filters} filters)"
 
     root = Path(chosen_base)
     options = [_FilterSetOption(path, root) for path in filter_sets]
