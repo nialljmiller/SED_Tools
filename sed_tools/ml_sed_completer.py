@@ -152,11 +152,13 @@ class SEDCompleterNetwork:
     def __call__(self, x):
         return self.forward(x)
     
-    def train_mode(self):
-        self.model.train()
-    
-    def eval_mode(self):
+    def train(self, mode: bool = True):
+        self.model.train(mode)
+        return self
+
+    def eval(self):
         self.model.eval()
+        return self
     
     def parameters(self):
         return self.model.parameters()
@@ -658,7 +660,7 @@ class SEDCompleter:
         
         for epoch in range(epochs):
             # Training
-            self.model.train_mode()
+            self.model.train()
             train_losses = []
             
             for X_batch, y_batch, m_batch in train_loader:
@@ -681,7 +683,7 @@ class SEDCompleter:
                 train_losses.append(loss.item())
             
             # Validation
-            self.model.eval_mode()
+            self.model.eval()
             val_losses = []
             
             with torch.no_grad():
@@ -786,7 +788,7 @@ class SEDCompleter:
         import matplotlib.pyplot as plt
         import torch
         
-        self.model.eval_mode()
+        self.model.eval()
         
         # Select random examples
         indices = np.random.choice(len(X_val), min(n_examples, len(X_val)), replace=False)
@@ -1032,7 +1034,7 @@ class SEDCompleter:
         
         state_dict = torch.load(model_file, map_location=self.device, weights_only=True)
         self.model.load_state_dict(state_dict)
-        self.model.eval_mode()
+        self.model.eval()
         
         print(f"Loaded model from: {path}")
     
@@ -1075,7 +1077,7 @@ class SEDCompleter:
         if self.model is None:
             raise RuntimeError("No model loaded. Train or load a model first.")
         
-        self.model.eval_mode()
+        self.model.eval()
         
         # Create output wavelength grid
         full_grid = self._create_wavelength_grid(extension_range[0], extension_range[1])
