@@ -466,12 +466,11 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
     from .njm_filter_grabber import NJMFilterGrabber
     from .svo_filter_grabber import SVOFilterBrowser
 
-    # Initialize both sources
     svo = SVOFilterBrowser(base_dir=base_dir)
     njm = NJMFilterGrabber(base_dir=base_dir)
     njm_available = njm.is_available()
-    
-    # Browse SVO catalog (authoritative source)
+    print(f"  [njm] Mirror {'available — will prefer NJM for downloads' if njm_available else 'unavailable — using SVO only'}")
+
     print("\nBrowsing SVO Filter Profile Service...")
     
     facilities = svo.list_facilities()
@@ -520,12 +519,12 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
 
                     downloaded = False
                     if njm_available:
-                        njm_facilities = njm.discover_facilities()
-                        if facility.key in njm_facilities:
-                            njm_instruments = njm.discover_instruments(facility.key)
-                            if instrument.key in njm_instruments:
+                        njm_fac = njm.find_facility(facility.key)
+                        if njm_fac:
+                            njm_inst = njm.find_instrument(njm_fac, instrument.key)
+                            if njm_inst:
                                 print(f"  [njm] Downloading {instrument.label}...")
-                                count = njm.download_filters(facility.key, instrument.key)
+                                count = njm.download_filters(njm_fac, njm_inst)
                                 if count > 0:
                                     print(f"  [njm] Downloaded {count} filters")
                                     downloaded = True
@@ -578,27 +577,22 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
             if confirm and not confirm.startswith('y'):
                 continue
 
-            # Smart download: Try NJM first, fall back to SVO
             downloaded = False
-
             if njm_available:
-                # Check if NJM has this facility/instrument
-                njm_facilities = njm.discover_facilities()
-                if facility.key in njm_facilities:
-                    njm_instruments = njm.discover_instruments(facility.key)
-                    if instrument.key in njm_instruments:
-                        # NJM has it - download from there
-                        print(f"\n[njm] Downloading from mirror...")
-                        count = njm.download_filters(facility.key, instrument.key)
+                njm_fac = njm.find_facility(facility.key)
+                if njm_fac:
+                    njm_inst = njm.find_instrument(njm_fac, instrument.key)
+                    if njm_inst:
+                        print(f"\n[njm] Downloading from mirror ({njm_fac}/{njm_inst})...")
+                        count = njm.download_filters(njm_fac, njm_inst)
                         if count > 0:
-                            print(f"[njm]  Downloaded {count} filters")
+                            print(f"[njm] Downloaded {count} filters")
                             downloaded = True
 
-            # Fall back to SVO if NJM didn't work
             if not downloaded:
                 print(f"\n[svo] Downloading from SVO...")
                 svo.download_filters(filters)
-                print(f"[svo]  Downloaded {len(filters)} filters")
+                print(f"[svo] Downloaded {len(filters)} filters")
 
             again = input("\nDownload another instrument? [y/N] ").strip().lower()
             if not again.startswith('y'):

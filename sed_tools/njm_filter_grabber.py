@@ -7,6 +7,7 @@ Complements the spectra grabber for complete data access
 import json
 import logging
 import os
+import re
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 from urllib.parse import urljoin
@@ -30,15 +31,14 @@ class NJMFilterGrabber:
         self.base_dir = base_dir
         self.max_workers = max_workers
         os.makedirs(base_dir, exist_ok=True)
-        
-        # Use HTTPS (server redirects HTTP → HTTPS)
+
         self.base_url = "https://nillmill.ddns.net/sed_tools"
         self.filters_url = f"{self.base_url}/filters"
-        
+
         self.session = requests.Session()
         self.session.headers.update({"User-Agent": "SED_Tools/1.0 (NJM Mirror)"})
-        
-        # Check if server is available
+
+        self._cached_facilities: Optional[List[str]] = None
         self._available = self._check_availability()
         
     def _check_availability(self) -> bool:
@@ -70,29 +70,60 @@ class NJMFilterGrabber:
         """Return True if the mirror is available."""
         return self._available
 
+    @staticmethod
+    def _normalize_name(name: str) -> str:
+        """Lowercase and strip separators for fuzzy name comparison."""
+        return re.sub(r'[-_\s]', '', name).lower()
+
+    def find_facility(self, svo_key: str) -> Optional[str]:
+        """Return the NJM directory name that best matches an SVO facility key.
+
+        Tries exact match first, then normalized prefix match to handle
+        differences like 'Bepi-Colom' (SVO) vs 'Bepi_Colombo' (NJM).
+        """
+        facilities = self.discover_facilities()
+        if svo_key in facilities:
+            return svo_key
+        svo_norm = self._normalize_name(svo_key)
+        for name in facilities:
+            njm_norm = self._normalize_name(name)
+            if njm_norm.startswith(svo_norm) or svo_norm.startswith(njm_norm):
+                return name
+        return None
+
+    def find_instrument(self, njm_facility: str, svo_instrument: str) -> Optional[str]:
+        """Return the NJM instrument name that best matches an SVO instrument key."""
+        instruments = self.discover_instruments(njm_facility)
+        if svo_instrument in instruments:
+            return svo_instrument
+        svo_norm = self._normalize_name(svo_instrument)
+        for name in instruments:
+            njm_norm = self._normalize_name(name)
+            if njm_norm.startswith(svo_norm) or svo_norm.startswith(njm_norm):
+                return name
+        return None
+
     def discover_facilities(self) -> List[str]:
-        """Discover available filter facilities from the mirror."""
+        """Discover available filter facilities from the mirror (cached)."""
         if not self._available:
             return []
-        
+        if self._cached_facilities is not None:
+            return self._cached_facilities
+
         try:
-            # Try to get facilities from index.json
             index_url = f"{self.base_url}/index.json"
             response = self.session.get(index_url, timeout=10)
             response.raise_for_status()
-            
             data = response.json()
             facilities = data.get("filters", {}).get("facilities", [])
-            
-            if facilities:
-                return facilities
-            
-            # Fallback: try to parse directory listing
-            return self._parse_directory_listing(self.filters_url)
-            
+            if not facilities:
+                facilities = self._parse_directory_listing(self.filters_url)
         except Exception as e:
-            print(f"[njm] Could not fetch facility list: {e}")
-            return []
+            logger.debug("[njm] Could not fetch facility list: %s", e, exc_info=True)
+            facilities = self._parse_directory_listing(self.filters_url)
+
+        self._cached_facilities = facilities
+        return facilities
     
     def discover_instruments(self, facility: str) -> List[str]:
         """Discover available instruments for a facility."""
