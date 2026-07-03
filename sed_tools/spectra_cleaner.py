@@ -997,7 +997,7 @@ def clean_model_dir(
             failure_reasons[f'exception: {type(e).__name__}: {e}'] += 1
 
         done = i + 1
-        elapsed = _time.time() - t_start
+        elapsed = time.time() - t_start
         rate = done / elapsed if elapsed > 0 else 1.0
         eta = (n_total_files - done) / rate
         print(
