@@ -19,7 +19,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Astronomy",
 ]
 dependencies = [
-    "numpy>=1.22",
+    "numpy>=2.0",
     "pandas>=1.5",
     "tqdm>=4.66",
     "requests>=2.31",
