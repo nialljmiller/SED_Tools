@@ -9,6 +9,11 @@
 </p>
 
 <p align="center">
+  <a href="https://doi.org/10.5281/zenodo.19614010"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.19614010.svg" alt="DOI"></a>
+  <a href="https://github.com/nialljmiller/SED_Tools/actions/workflows/tests.yml"><img src="https://github.com/nialljmiller/SED_Tools/actions/workflows/tests.yml/badge.svg" alt="Tests"></a>
+</p>
+
+<p align="center">
   <a href="#installation">Installation</a> •
   <a href="#quick-start">Quick Start</a> •
   <a href="#cli-reference">CLI Reference</a> •
@@ -99,6 +104,21 @@ sed-tools ml_completer
 
 # Train or apply the ML SED generator (creates SEDs from parameters)
 sed-tools ml_generator
+
+# Fill coarse Teff gaps in a flux cube (eliminates MESA interpolation steps)
+sed-tools densify --flux-cube data/stellar_models/tmap2/flux_cube.bin \
+                  --output data/stellar_models/tmap2_dense/flux_cube.bin \
+                  --teff-spacing 1000
+
+# Ingest an external grid of .txt spectra into the pipeline
+sed-tools import --path /path/to/spectra/ --name MyGrid
+
+# Report parameter-space coverage of an installed grid
+sed-tools coverage --models Kurucz2003all
+
+# Show or set the data directory
+sed-tools config
+sed-tools config --set /path/to/data --move
 ```
 
 ---
@@ -107,7 +127,7 @@ sed-tools ml_generator
 
 ### `sed-tools filters`
 
-Download photometric filter transmission curves from the NJM mirror when available, with automatic fallback to the SVO Filter Profile Service.
+Download photometric filter transmission curves interactively. The browser merges the SVO Filter Profile Service catalogue with the NJM mirror: facilities that exist on SVO are listed first, and any facilities available **only** on the NJM mirror are surfaced alongside them (marked `[NJM]`). Filters are fetched from the NJM mirror when available (fastest), with automatic fallback to SVO for everything else.
 
 ```bash
 # Interactive facility/instrument/filter selection
@@ -284,7 +304,84 @@ sed-tools ml_generator
   <img src="docs/sed_T6969_g4.20_m+0.02_spectrum.png" alt="Prediction examples" width="200"/>
 </p>
 
+---
 
+### `sed-tools densify`
+
+Fill coarse Teff gaps in an existing flux cube to eliminate stair-stepping artefacts in MESA photometric outputs. New Teff nodes are filled with ML predictions (when a generator model is provided and the point is within its training range) or a Planck blackbody scaled to the nearest real SED's bolometric flux. The densifier never loads the full cube into RAM — it uses `np.memmap` throughout.
+
+```bash
+# Densify with blackbody fallback (no ML model)
+sed-tools densify \
+  --flux-cube data/stellar_models/tmap2/flux_cube.bin \
+  --output data/stellar_models/tmap2_dense/flux_cube.bin \
+  --teff-spacing 1000
+
+# Densify with ML generator for in-range points, blackbody elsewhere
+sed-tools densify \
+  --flux-cube data/stellar_models/tmap2/flux_cube.bin \
+  --output data/stellar_models/tmap2_dense/flux_cube.bin \
+  --teff-spacing 1000 \
+  --ml-model data/stellar_models/models/sed_generator_Kurucz2003all
+```
+
+See [notebook 10](jupyter_notebooks/10_grid_densification.ipynb) for a worked example including before/after comparison plots.
+
+---
+
+### `sed-tools import`
+
+Ingest an external directory of `.txt` spectra (with parameter headers) into the SED_Tools pipeline. Files are copied or moved into the configured model root, then processed through the standard clean → lookup → HDF5 → flux-cube pipeline.
+
+```bash
+# Import spectra, build all outputs
+sed-tools import --path /path/to/my_spectra/ --name MyGrid
+
+# Preview parseable headers without importing
+sed-tools import --path /path/to/my_spectra/ --name MyGrid --dry-run
+
+# Move files instead of copying; skip HDF5 bundle
+sed-tools import --path /path/to/my_spectra/ --name MyGrid --move --no-h5
+```
+
+---
+
+### `sed-tools coverage`
+
+Report parameter-space coverage statistics for one or more installed grids. Prints per-axis ranges, unique grid values, fill fraction, and optionally writes a Teff–logg + 3D scatter plot.
+
+```bash
+# Report and plot coverage for a single model
+sed-tools coverage --models Kurucz2003all
+
+# Report without generating a plot
+sed-tools coverage --models Kurucz2003all --no-plot
+```
+
+---
+
+### `sed-tools mesa_prepare`
+
+Export a specific extra-axis sub-variant (e.g. one alpha-enhancement, turbulent velocity, or mixing length combination) from a model that has multiple variants in its `fluxcube_library/`. Produces a clean, self-contained MESA-ready folder containing only the selected variant's flux cube.
+
+```bash
+# Interactive model and variant selection
+sed-tools mesa_prepare
+```
+
+---
+
+### `sed-tools config`
+
+Show or change the root data directory where SED_Tools stores stellar models and filters.
+
+```bash
+# Show current data directory
+sed-tools config
+
+# Change the data directory (and optionally move existing data)
+sed-tools config --set /new/data/path --move
+```
 
 ---
 
@@ -449,6 +546,31 @@ ranges = generator.parameter_ranges()
 # {'teff': (3500.0, 50000.0), 'logg': (0.0, 5.0), 'metallicity': (-5.0, 1.0)}
 ```
 
+#### Grid Coverage
+
+```python
+# Report parameter-space coverage and write a diagnostic plot
+report = SED.coverage('Kurucz2003all')
+# Keys: n_spectra, n_distinct_nodes, fill_fraction, axes (per-axis min/max/unique)
+
+# Skip the plot, or write it to a custom path
+report = SED.coverage('Kurucz2003all', plot=False)
+report = SED.coverage('Kurucz2003all', out_path='coverage.png')
+```
+
+#### Importing External Grids
+
+```python
+# Ingest a directory of .txt spectra into the pipeline
+result = SED.import_grid('/path/to/my_spectra/', name='MyGrid')
+
+# Preview parseable headers without actually importing
+result = SED.import_grid('/path/to/my_spectra/', name='MyGrid', dry_run=True)
+
+# Move files instead of copying; skip HDF5
+result = SED.import_grid('/path/to/my_spectra/', name='MyGrid', move=True, build_h5=False)
+```
+
 ---
 
 ### `Catalog` — Spectrum Container
@@ -541,10 +663,14 @@ info.covers_range(teff_min=5000, teff_max=6000)
 | CLI Command | Python API Equivalent |
 |-------------|----------------------|
 | `sed-tools filters` | `Filters.fetch(...)` |
+| `sed-tools filters-combine X A B` | `Filters.combine('X', 'A', 'B')` |
 | `sed-tools spectra` (list) | `SED.query()` |
 | `sed-tools spectra --models X` | `SED.fetch('X')` |
 | `sed-tools rebuild --models X` | `sed.cat.write()` |
 | `sed-tools combine --models A B` | `SED.combine(['A', 'B'], output='...')` |
+| `sed-tools densify --flux-cube F --output O` | `sed_tools.grid_densifier.densify_grid(src, dst)` |
+| `sed-tools import --path P --name N` | `SED.import_grid('/path/', name='N')` |
+| `sed-tools coverage --models X` | `SED.coverage('X')` |
 | `sed-tools ml_completer train` | `SED.ml_completer().train(...)` |
 | `sed-tools ml_generator train` | `SED.ml_generator().train(...)` |
 | `sed-tools ml_generator generate` | `SED.ml_generator().generate(...)` |
@@ -768,6 +894,23 @@ If a short filter name matches more than one file, use a full path or a specific
 **MAST BOSZ fixed-resolution download finds no wavelength grid**
 
 BOSZ 2024 fixed-resolution spectra require the official wavelength files in the archive's `wavelength_grids/` directory. If those files cannot be reached, SED_Tools should fail clearly rather than invent a wavelength axis. You can also try `BOSZ-2024-rorig`, whose files include wavelength, flux, and continuum columns directly.
+
+---
+
+## Citation
+
+If you use SED_Tools in your research, please cite the archived software release
+via its Zenodo DOI:
+
+> Miller, N. J. (2026). *SED_Tools* (Version 0.0.2) [Software]. Zenodo.
+> https://doi.org/10.5281/zenodo.19614010
+
+Machine-readable citation metadata is available in [`CITATION.cff`](CITATION.cff).
+
+SED_Tools is also the designated data-preparation pipeline for the
+[MESA](https://docs.mesastar.org/) `colors` module — see
+[`colors/README.rst`](https://github.com/MESAHub/mesa/blob/main/colors/README.rst)
+in the MESA repository.
 
 ---
 

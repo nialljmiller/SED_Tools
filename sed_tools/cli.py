@@ -464,7 +464,7 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
     ensure_dir(base_dir)
     
     from .njm_filter_grabber import NJMFilterGrabber
-    from .svo_filter_grabber import SVOFilterBrowser
+    from .svo_filter_grabber import Facility, Instrument, SVOFilterBrowser
 
     svo = SVOFilterBrowser(base_dir=base_dir)
     njm = NJMFilterGrabber(base_dir=base_dir)
@@ -472,11 +472,21 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
     print(f"  [njm] Mirror {'available — will prefer NJM for downloads' if njm_available else 'unavailable — using SVO only'}")
 
     print("\nBrowsing SVO Filter Profile Service...")
-    
-    facilities = svo.list_facilities()
+
+    facilities = list(svo.list_facilities())  # copy so we can append NJM-exclusive entries
     if not facilities:
         print("No facilities found.")
         return
+
+    # Merge NJM-exclusive facilities into the sorted list so they appear alphabetically
+    njm_only_keys: set = set()
+    if njm_available:
+        svo_keys = [f.key for f in facilities]
+        for njm_fac in njm.get_exclusive_facilities(svo_keys):
+            njm_only_keys.add(njm_fac)
+            facilities.append(Facility(key=njm_fac, label=f"{njm_fac} [NJM]"))
+        if njm_only_keys:
+            facilities.sort(key=lambda f: f.label.lower())
     
     # Facility selection loop
     while True:
@@ -503,7 +513,11 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
                 continue
 
             for facility in selected_facilities:
-                instruments = svo.list_instruments(facility.key)
+                if facility.key in njm_only_keys:
+                    inst_names = njm.discover_instruments(facility.key)
+                    instruments = [Instrument(facility_key=facility.key, key=n, label=n) for n in inst_names]
+                else:
+                    instruments = svo.list_instruments(facility.key)
 
                 if not instruments:
                     print(f"No instruments found for {facility.label}.")
@@ -511,6 +525,11 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
 
                 print(f"\n{facility.label}: {len(instruments)} instruments")
                 for instrument in instruments:
+                    if facility.key in njm_only_keys:
+                        print(f"  [njm] Downloading {instrument.label}...")
+                        njm.download_filters(facility.key, instrument.key)
+                        continue
+
                     filters = svo.list_filters(facility.key, instrument.key)
 
                     if not filters:
@@ -543,7 +562,12 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
             return
 
         facility = facilities[fac_idx]
-        instruments = svo.list_instruments(facility.key)
+
+        if facility.key in njm_only_keys:
+            inst_names = njm.discover_instruments(facility.key)
+            instruments = [Instrument(facility_key=facility.key, key=n, label=n) for n in inst_names]
+        else:
+            instruments = svo.list_instruments(facility.key)
 
         if not instruments:
             print(f"No instruments found for {facility.label}.")
@@ -563,36 +587,44 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
                 break  # Back to facilities
 
             instrument = instruments[inst_idx]
-            filters = svo.list_filters(facility.key, instrument.key)
-
-            if not filters:
-                print(f"No filters found for {instrument.label}.")
-                continue
 
             # Show selection
             print(f"\n{facility.label} / {instrument.label}")
-            print(f"Found {len(filters)} filters")
 
-            confirm = input("Download all filters? [Y/n] ").strip().lower()
-            if confirm and not confirm.startswith('y'):
-                continue
+            if facility.key in njm_only_keys:
+                confirm = input("Download all filters? [Y/n] ").strip().lower()
+                if confirm and not confirm.startswith('y'):
+                    continue
+                njm.download_filters(facility.key, instrument.key)
+            else:
+                filters = svo.list_filters(facility.key, instrument.key)
 
-            downloaded = False
-            if njm_available:
-                njm_fac = njm.find_facility(facility.key)
-                if njm_fac:
-                    njm_inst = njm.find_instrument(njm_fac, instrument.key)
-                    if njm_inst:
-                        print(f"\n[njm] Downloading from mirror ({njm_fac}/{njm_inst})...")
-                        count = njm.download_filters(njm_fac, njm_inst)
-                        if count > 0:
-                            print(f"[njm] Downloaded {count} filters")
-                            downloaded = True
+                if not filters:
+                    print(f"No filters found for {instrument.label}.")
+                    continue
 
-            if not downloaded:
-                print(f"\n[svo] Downloading from SVO...")
-                svo.download_filters(filters)
-                print(f"[svo] Downloaded {len(filters)} filters")
+                print(f"Found {len(filters)} filters")
+
+                confirm = input("Download all filters? [Y/n] ").strip().lower()
+                if confirm and not confirm.startswith('y'):
+                    continue
+
+                downloaded = False
+                if njm_available:
+                    njm_fac = njm.find_facility(facility.key)
+                    if njm_fac:
+                        njm_inst = njm.find_instrument(njm_fac, instrument.key)
+                        if njm_inst:
+                            print(f"\n[njm] Downloading from mirror ({njm_fac}/{njm_inst})...")
+                            count = njm.download_filters(njm_fac, njm_inst)
+                            if count > 0:
+                                print(f"[njm] Downloaded {count} filters")
+                                downloaded = True
+
+                if not downloaded:
+                    print(f"\n[svo] Downloading from SVO...")
+                    svo.download_filters(filters)
+                    print(f"[svo] Downloaded {len(filters)} filters")
 
             again = input("\nDownload another instrument? [y/N] ").strip().lower()
             if not again.startswith('y'):
@@ -871,20 +903,6 @@ def menu() -> str:
     BLUE = "\x1b[34m" if use_color else ""
     GREEN = "\x1b[32m" if use_color else ""
     RESET = "\x1b[0m" if use_color else ""
-
-    banner = (
-			"▄▖▄▖▄   ▄▖    ▜   ",
-			"▚ ▙▖▌▌  ▐ ▛▌▛▌▐ ▛▘",
-			"▄▌▙▖▙▘▄▖▐ ▙▌▙▌▐▖▄▌",
-			                      )
-
-    print()
-    print("\n" + BOLD + "=" * 50 + RESET)
-    
-    banner_colors = [RED, GREEN, BLUE]
-    for i, line in enumerate(banner):
-        print(f"{BOLD}{banner_colors[i]}{line}{RESET}")
-
 
     print(BOLD + "=" * 50 + RESET)
 
@@ -1166,6 +1184,29 @@ def main():
         )
     else:
         # Interactive mode
+        use_color = terminal_color_enabled("auto")
+        BOLD = "\x1b[1m" if use_color else ""
+        DIM = "\x1b[2m" if use_color else ""
+        CYAN = "\x1b[36m" if use_color else ""
+        YELL = "\x1b[33m" if use_color else ""
+        RED = "\x1b[31m" if use_color else ""
+        BLUE = "\x1b[34m" if use_color else ""
+        GREEN = "\x1b[32m" if use_color else ""
+        RESET = "\x1b[0m" if use_color else ""
+
+        banner = (
+                "▄▖▄▖▄   ▄▖    ▜   ",
+                "▚ ▙▖▌▌  ▐ ▛▌▛▌▐ ▛▘",
+                "▄▌▙▖▙▘▄▖▐ ▙▌▙▌▐▖▄▌",
+                                      )
+
+        print()
+        print("\n" + BOLD + "=" * 50 + RESET)
+        
+        banner_colors = [RED, GREEN, BLUE]
+        for i, line in enumerate(banner):
+            print(f"{BOLD}{banner_colors[i]}{line}{RESET}")
+
         while True:
             choice = menu()
             if choice == "spectra":

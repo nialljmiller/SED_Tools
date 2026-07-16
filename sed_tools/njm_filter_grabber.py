@@ -91,6 +91,25 @@ class NJMFilterGrabber:
                 return name
         return None
 
+    def get_exclusive_facilities(self, svo_keys: List[str]) -> List[str]:
+        """Return NJM facility names that have no matching SVO facility.
+
+        Uses the same normalized prefix match as find_facility so that, e.g.,
+        'Bepi_Colombo' (NJM) correctly matches 'Bepi-Colom' (SVO) and is NOT
+        returned as exclusive.
+        """
+        svo_norms = {self._normalize_name(k) for k in svo_keys}
+        exclusive = []
+        for fac in self.discover_facilities():
+            fac_norm = self._normalize_name(fac)
+            matched = any(
+                fac_norm.startswith(s) or s.startswith(fac_norm)
+                for s in svo_norms
+            )
+            if not matched:
+                exclusive.append(fac)
+        return exclusive
+
     def find_instrument(self, njm_facility: str, svo_instrument: str) -> Optional[str]:
         """Return the NJM instrument name that best matches an SVO instrument key."""
         instruments = self.discover_instruments(njm_facility)
