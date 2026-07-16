@@ -7,7 +7,7 @@ name = "sed-tools"
 version = "0.1.4"
 description = "Programmatic access to SED Tools stellar atmosphere grids and photometry helpers."
 readme = "README.md"
-authors = [{ name = "SED Tools Maintainers" }]
+authors = [{ name = "Niall Miller" }]
 requires-python = ">=3.9"
 keywords = ["astronomy", "spectra", "photometry", "sed"]
 classifiers = [
@@ -26,7 +26,7 @@ dependencies = [
     "beautifulsoup4>=4.12",
     "lxml>=4.9",
     "h5py>=3.10",
-    "astropy>=6.0",
+    "astropy>=6.1",
     "astroquery>=0.4.7",
     "matplotlib>=3.7",
     "tomli>=2.0; python_version < '3.11'",
