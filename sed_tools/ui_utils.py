@@ -6,7 +6,7 @@ import re
 from .terminal_plots import terminal_color_enabled, terminal_width
 
 
-def _prompt_choice(
+def prompt_choice(
     options: Sequence,
     label: str,
     allow_back: bool = False,
@@ -41,13 +41,7 @@ def _prompt_choice(
     BOLD = "\x1b[1m" if use_color else ""
     DIM = "\x1b[2m" if use_color else ""
     CYAN = "\x1b[36m" if use_color else ""
-    YELL = "\x1b[33m" if use_color else ""
     RED = "\x1b[31m" if use_color else ""
-    GREEN = "\x1b[32m" if use_color else ""
-    YELLOW = "\x1b[33m" if use_color else ""
-    BLUE = "\x1b[34m" if use_color else ""
-    MAGENTA = "\x1b[35m" if use_color else ""
-    WHITE = "\x1b[37m" if use_color else ""
     RESET = "\x1b[0m" if use_color else ""
 
     def term_width() -> int:

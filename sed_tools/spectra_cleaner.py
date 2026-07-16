@@ -21,14 +21,19 @@ The tag `# units_standardized = True` prevents reprocessing.
 from __future__ import annotations
 
 import glob
+import logging
 import os
 import random
 import re
+import time
 from collections import Counter
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
+
+from ._constants import C, H, K, SIGMA, planck_flam as _planck_flam
+from ._lookup_io import write_lookup_csv
 
 try:
     import h5py
@@ -36,12 +41,14 @@ try:
 except ImportError:
     HAS_H5PY = False
 
+logger = logging.getLogger(__name__)
+
 
 # ============================================================================
 # CONSTANTS
 # ============================================================================
 
-SPEED_OF_LIGHT_ANGSTROM = 2.99792458e18  # c in Å/s
+SPEED_OF_LIGHT_ANGSTROM = C * 1e8  # c in Å/s — from _constants
 
 # Wavelength conversion factors → Angstroms
 WAVELENGTH_FACTORS = {
@@ -131,7 +138,7 @@ def _load_header(filepath: str) -> Tuple[SpectrumMeta, str]:
                     break
                 header_lines.append(line)
     except Exception:
-        pass
+        logger.debug("Could not read header text from %s", filepath, exc_info=True)
 
     return meta, "".join(header_lines)
 
@@ -705,6 +712,7 @@ def recover_wavelengths_from_hdf5(
                     try:
                         arr = np.array(d[()]).astype(float).ravel()
                     except Exception:
+                        logger.debug("Could not read HDF5 dataset at path %s", path, exc_info=True)
                         continue
                     if (arr.ndim == 1 and arr.size == expected_len and
                             np.all(np.diff(arr) > 0) and
@@ -712,6 +720,7 @@ def recover_wavelengths_from_hdf5(
                         return arr
 
         except Exception:
+            logger.debug("Could not read HDF5 file %s for wavelength recovery", h5_path, exc_info=True)
             continue
 
     return None
@@ -840,16 +849,9 @@ def clean_spectrum_file(
     # This catches cases where the source data has a wrong absolute flux scale
     # (e.g. NJM NextGen T >= 5000K which is ~100x too large).
     if np.isfinite(meta.teff) and meta.teff > 0:
-        SIGMA_SB = 5.670374419e-5
-        H_P  = 6.62607015e-27
-        C_CM = 2.99792458e10
-        HC_A = H_P * C_CM * 1e8
-        K_B  = 1.380649e-16
         try:
             wl_bb = np.linspace(max(float(wl_std[0]), 1.0), float(wl_std[-1]), 2000)
-            l_cm  = wl_bb * 1e-8
-            expon = np.minimum(HC_A / (wl_bb * K_B * meta.teff), 700.0)
-            bb    = np.pi * (2 * H_P * C_CM**2 / l_cm**5) / (np.exp(expon) - 1.0) * 1e-8
+            bb    = _planck_flam(wl_bb, meta.teff)
             bol_expected = float(np.trapezoid(bb, wl_bb))
             bol_actual   = float(np.trapezoid(np.maximum(flux_std, 0), wl_std))
             # Only renorm when coverage is meaningful (>5% of total sigmaT4)
@@ -861,7 +863,7 @@ def clean_spectrum_file(
                     flux_std = flux_std / ratio
                     status = status + '_renormed'
         except Exception:
-            pass  # renorm is best-effort, never block the write
+            logger.debug("Bolometric renorm failed for %s", filepath, exc_info=True)  # renorm is best-effort, never block the write
     
     # Write standardized file
     write_standardized_spectrum(filepath, wl_std, flux_std, meta, unit_info)
@@ -899,20 +901,11 @@ def rebuild_lookup_table(model_dir: str) -> str:
         rows.append(row)
         all_keys.update(row.keys())
     
-    # Write CSV
     out_path = os.path.join(model_dir, "lookup_table.csv")
-    
-    # Ordered columns: file_name, teff, logg, metallicity first
     priority = ['file_name', 'teff', 'logg', 'metallicity', 'source', 'units_standardized']
     columns = [c for c in priority if c in all_keys]
     columns += sorted(k for k in all_keys if k not in priority)
-    
-    with open(out_path, 'w', encoding='utf-8') as f:
-        f.write('#' + ','.join(columns) + '\n')
-        for row in rows:
-            values = [str(row.get(c, '')) for c in columns]
-            f.write(','.join(values) + '\n')
-    
+    write_lookup_csv(rows, out_path, columns=columns)
     return out_path
 
 
@@ -982,11 +975,9 @@ def clean_model_dir(
     # =========================================================
     # STEP 2: Apply catalog units to ALL files
     # =========================================================
-    import time as _time
-    from collections import Counter as _Counter
-    failure_reasons = _Counter()
+    failure_reasons = Counter()
     n_total_files = len(txt_files)
-    t_start = _time.time()
+    t_start = time.time()
     for i, filepath in enumerate(txt_files):
         filename = os.path.basename(filepath)
         try:
@@ -1006,7 +997,7 @@ def clean_model_dir(
             failure_reasons[f'exception: {type(e).__name__}: {e}'] += 1
 
         done = i + 1
-        elapsed = _time.time() - t_start
+        elapsed = time.time() - t_start
         rate = done / elapsed if elapsed > 0 else 1.0
         eta = (n_total_files - done) / rate
         print(

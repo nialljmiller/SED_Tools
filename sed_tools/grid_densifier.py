@@ -37,6 +37,7 @@ API
 from __future__ import annotations
 
 import argparse
+import logging
 import os
 import struct
 import time
@@ -45,6 +46,8 @@ from typing import Optional
 from ._resample import resample_to_grid
 
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
@@ -95,17 +98,7 @@ def _init_output_cube(path, teff, logg, meta, wl, nt_new):
 # Blackbody fallback
 # ---------------------------------------------------------------------------
 
-_H  = 6.62607015e-27
-_C  = 2.99792458e10
-_KB = 1.380649e-16
-
-
-def _blackbody(wl_ang, teff):
-    """π·B_λ(T) in erg/cm²/s/Å."""
-    wl_cm = wl_ang * 1e-8
-    exp = np.minimum((_H * _C) / (wl_cm * _KB * teff), 709.0)
-    b = (2.0 * _H * _C**2 / wl_cm**5) / (np.exp(exp) - 1.0) / 1e8
-    return np.pi * b
+from ._constants import planck_flam as _blackbody
 
 
 # ---------------------------------------------------------------------------
@@ -231,7 +224,7 @@ def densify_grid(
 
                         used_ml = True
                     except Exception:
-                        pass
+                        logger.warning("ML generation failed for Teff=%.0f logg=%.2f meta=%.2f", t_new, float(logg_grid[i_l]), float(meta_grid[i_m]), exc_info=True)
 
                 if not used_ml:
                     bb = _blackbody(wavelengths, t_new)

@@ -30,12 +30,15 @@ Usage
 """
 
 import json
+import logging
 import os
 import struct
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 # Default wavelength grid
 DEFAULT_WL_MIN = 100.0       # Angstroms
@@ -102,11 +105,13 @@ class SEDGeneratorNetwork:
     def __call__(self, x):
         return self.forward(x)
     
-    def train_mode(self):
-        self.model.train()
-    
-    def eval_mode(self):
+    def train(self, mode: bool = True):
+        self.model.train(mode)
+        return self
+
+    def eval(self):
         self.model.eval()
+        return self
     
     def parameters(self):
         return self.model.parameters()
@@ -435,7 +440,7 @@ class SEDGenerator:
         print("-" * 60)
         
         for epoch in range(epochs):
-            self.model.train_mode()
+            self.model.train()
             train_losses = []
             
             for p_batch, f_batch, m_batch in train_loader:
@@ -455,7 +460,7 @@ class SEDGenerator:
                 optimizer.step()
                 train_losses.append(loss.item())
             
-            self.model.eval_mode()
+            self.model.eval()
             val_losses = []
             
             with torch.no_grad():
@@ -544,7 +549,7 @@ class SEDGenerator:
         import matplotlib.pyplot as plt
         import torch
         
-        self.model.eval_mode()
+        self.model.eval()
         
         indices = np.random.choice(len(p_val), min(n, len(p_val)), replace=False)
         
@@ -660,7 +665,7 @@ class SEDGenerator:
         
         state_dict = torch.load(path / self.MODEL_FILE, map_location=self.device, weights_only=True)
         self.model.load_state_dict(state_dict)
-        self.model.eval_mode()
+        self.model.eval()
         
         print(f"Loaded generator from: {path}")
     
@@ -708,7 +713,7 @@ class SEDGenerator:
                 if meta < ranges['meta'][0] or meta > ranges['meta'][1]:
                     print(f"  Warning: [M/H]={meta:.2f} outside range [{ranges['meta'][0]:.2f}, {ranges['meta'][1]:.2f}]")
         
-        self.model.eval_mode()
+        self.model.eval()
         
         params_norm = np.array([
             (teff - self.scaler_params['teff_mean']) / self.scaler_params['teff_std'],
@@ -917,8 +922,8 @@ class SEDGenerator:
                             'architecture': config.get('architecture', {}),
                         })
                 except Exception:
-                    pass
-        
+                    logger.warning("Could not read ML generator model config in %s", subdir, exc_info=True)
+
         return models
 
 

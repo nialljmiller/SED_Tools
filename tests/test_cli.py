@@ -14,7 +14,7 @@ def test_cli_importable():
 def test_cli_uses_shared_prompt_choice():
     from sed_tools import cli, ui_utils
 
-    assert cli._prompt_choice is ui_utils._prompt_choice
+    assert cli.prompt_choice is ui_utils.prompt_choice
 
 
 def test_top_level_workflows_are_cli_aliases():

@@ -34,19 +34,18 @@ CLI
 """
 
 import json
+import logging
 import os
 import struct
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+logger = logging.getLogger(__name__)
+
 import numpy as np
 from scipy.integrate import simpson as simps
 
-# Physical constants
-PLANCK_H = 6.62607015e-27   # erg·s
-SPEED_C = 2.99792458e10     # cm/s
-BOLTZMANN_K = 1.380649e-16  # erg/K
-SIGMA = 5.670374419e-5      # Stefan-Boltzmann constant erg/s/cm²/K⁴
+from ._constants import H as PLANCK_H, C as SPEED_C, K as BOLTZMANN_K, SIGMA
 
 # Default wavelength grid parameters
 DEFAULT_WL_MIN = 100.0      # Angstroms
@@ -153,11 +152,13 @@ class SEDCompleterNetwork:
     def __call__(self, x):
         return self.forward(x)
     
-    def train_mode(self):
-        self.model.train()
-    
-    def eval_mode(self):
+    def train(self, mode: bool = True):
+        self.model.train(mode)
+        return self
+
+    def eval(self):
         self.model.eval()
+        return self
     
     def parameters(self):
         return self.model.parameters()
@@ -323,8 +324,8 @@ class SEDCompleter:
                 if wl_min > 0 and wl_max > wl_min:
                     coverage[(t, g, m)] = (wl_min, wl_max)
         except Exception:
-            pass
-        
+            logger.debug("Could not build coverage map from %s", lookup_path, exc_info=True)
+
         return coverage
     
     def _prepare_training_data(
@@ -659,7 +660,7 @@ class SEDCompleter:
         
         for epoch in range(epochs):
             # Training
-            self.model.train_mode()
+            self.model.train()
             train_losses = []
             
             for X_batch, y_batch, m_batch in train_loader:
@@ -682,7 +683,7 @@ class SEDCompleter:
                 train_losses.append(loss.item())
             
             # Validation
-            self.model.eval_mode()
+            self.model.eval()
             val_losses = []
             
             with torch.no_grad():
@@ -787,7 +788,7 @@ class SEDCompleter:
         import matplotlib.pyplot as plt
         import torch
         
-        self.model.eval_mode()
+        self.model.eval()
         
         # Select random examples
         indices = np.random.choice(len(X_val), min(n_examples, len(X_val)), replace=False)
@@ -1033,7 +1034,7 @@ class SEDCompleter:
         
         state_dict = torch.load(model_file, map_location=self.device, weights_only=True)
         self.model.load_state_dict(state_dict)
-        self.model.eval_mode()
+        self.model.eval()
         
         print(f"Loaded model from: {path}")
     
@@ -1076,7 +1077,7 @@ class SEDCompleter:
         if self.model is None:
             raise RuntimeError("No model loaded. Train or load a model first.")
         
-        self.model.eval_mode()
+        self.model.eval()
         
         # Create output wavelength grid
         full_grid = self._create_wavelength_grid(extension_range[0], extension_range[1])
@@ -1213,8 +1214,8 @@ class SEDCompleter:
                         'architecture': config.get('architecture', {}),
                     })
                 except Exception:
-                    pass
-        
+                    logger.warning("Could not read ML completer model config in %s", subdir, exc_info=True)
+
         return models
 
 

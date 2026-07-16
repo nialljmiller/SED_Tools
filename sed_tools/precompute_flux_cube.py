@@ -25,6 +25,7 @@ filter    Filter to a specific extra-axis slice, then build normally.
 
 import argparse
 import csv
+import logging
 import os
 import re
 import shutil
@@ -34,12 +35,18 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+logger = logging.getLogger(__name__)
+
 # Auto-split when the number of extra-axis combinations is at or below this.
 # Above this threshold the user is prompted before creating many directories.
 SPLIT_THRESHOLD = 25
 
 import numpy as np
 
+from ._lookup_io import (
+    find_teff_column, find_logg_column, find_metallicity_column,
+    write_lookup_csv,
+)
 from ._resample import resample_to_grid
 from .collision_config import (
     CollisionConfig,
@@ -62,7 +69,7 @@ except ImportError:
                     if line.startswith("MemAvailable:"):
                         return int(line.split()[1]) * 1024
         except Exception:
-            pass
+            logger.debug("Could not read /proc/meminfo for RAM estimation", exc_info=True)
         return 2 * (1024 ** 3)
 
 
@@ -100,12 +107,9 @@ def load_lookup_table(lookup_file: str) -> Dict[str, List]:
 
 
 def _find_col(lookup: Dict[str, List], candidates: List[str]) -> Optional[str]:
-    """Find first matching column name (case-insensitive)."""
-    lc_lookup = {k.lower(): k for k in lookup}
-    for c in candidates:
-        if c.lower() in lc_lookup:
-            return lc_lookup[c.lower()]
-    return None
+    """Thin wrapper around _lookup_io.find_column for backward compatibility."""
+    from ._lookup_io import find_column
+    return find_column(lookup.keys(), candidates)
 
 
 def _float_col(lookup: Dict[str, List], col: Optional[str]) -> np.ndarray:
@@ -270,6 +274,7 @@ def _populate_and_write(
         try:
             resampled = resample_to_grid(wl, fl, teff_vals[i], wavelengths)
         except Exception:
+            logger.debug("Could not resample SED %s into flux cube", fpath, exc_info=True)
             skipped += 1
             continue
 
@@ -444,13 +449,7 @@ def _filter_lookup_by_files(
 
 def _write_lookup_csv(lookup: Dict[str, List], path: str) -> None:
     """Write a lookup dict to a CSV file with '#'-prefixed header."""
-    cols = list(lookup.keys())
-    n = len(lookup[cols[0]]) if cols else 0
-    with open(path, "w", newline="", encoding="utf-8") as f:
-        f.write("#" + ",".join(cols) + "\n")
-        for i in range(n):
-            f.write(",".join(str(lookup[col][i]) for col in cols) + "\n")
-    print(f"  Written lookup_table.csv ({n} rows)")
+    write_lookup_csv(lookup, path)
 
 
 def _write_variants_index(
@@ -632,9 +631,9 @@ def precompute_flux_cube(
     lookup = load_lookup_table(lookup_file)
 
     file_col = _find_col(lookup, ["file_name", "filename", "file"]) or list(lookup.keys())[0]
-    teff_col = _find_col(lookup, ["teff", "t_eff"])
-    logg_col = _find_col(lookup, ["logg", "log_g", "log(g)"])
-    meta_col = _find_col(lookup, ["metallicity", "meta", "feh", "[fe/h]", "[m/h]", "Z", "z"])
+    teff_col = find_teff_column(lookup.keys())
+    logg_col = find_logg_column(lookup.keys())
+    meta_col = find_metallicity_column(lookup.keys())
 
     if not lookup[file_col]:
         raise RuntimeError("No entries in lookup table.")
