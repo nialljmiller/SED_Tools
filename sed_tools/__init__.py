@@ -49,7 +49,7 @@ from .spectra_cleaner import clean_model_dir
 from .svo_regen_spectra_lookup import regenerate_lookup_table
 from .svo_spectra_grabber import SVOSpectraGrabber
 
-__version__ = "0.1.4"
+__version__ = "0.2.0"
 
 
 def list_txt_spectra(model_dir: str) -> list[str]:
