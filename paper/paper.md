@@ -11,160 +11,86 @@ authors:
   - name: Niall J. Miller
     orcid: 0000-0002-3780-0592
     affiliation: 1
-  - name: Meridith Joyce
+  - name: Meredith Joyce
     orcid: 0000-0002-8717-127X
     affiliation: 1
 affiliations:
-  - name: "University of Wyoming, 1000 E University Ave, Laramie, WY USA"
+  - name: "University of Wyoming, 1000 E University Ave, Laramie, WY, United States"
     index: 1
-date: 
+date:
 bibliography: paper.bib
 ---
 
 # Summary
 
-`SED_Tools` is an open-source Python package that downloads, validates, and standardizes stellar
-atmosphere spectral energy distribution (SED) grids from heterogeneous public archives, and
-converts them into the binary flux-cube and lookup-table format required for rapid runtime
-interpolation by stellar evolution codes. It ships a command-line interface (`sed-tools`) and a
-matching Python API (`SED`, `Catalog`, `Spectrum`, `Filters`, `CatalogInfo`) that together cover
-the full pipeline: spectra acquisition, filter transmission-curve acquisition and combination,
-flux-cube construction and rebuilding, grid densification via interpolation, target-directory
-preparation for stellar evolution codes, coverage diagnostics, and import of externally sourced
-grids. Supported source archives include the Spanish Virtual Observatory (SVO), the MAST/BOSZ
-synthetic library [@meszaros2024bosz], and the grid collection
-distributed by the MSG (Multidimensional Spectral Grids) project [@townsend2023], spanning
-model families such as Kurucz/ATLAS9 [@castelli2003], NextGen/NextGen2, BT-Settl, TLUSTY
-(OSTAR2002/BSTAR2006), TMAP, GRAMS, SPHINX, Husfeld, and blackbody references. Two PyTorch-based
-components extend the tool beyond format conversion: an SED completer that extends incomplete
-wavelength coverage, and an SED generator that synthesizes an SED directly from
-(*T*eff, log *g*, [M/H]) without requiring an existing grid node. All standardization funnels
-through two single-authority modules — a header parser and a unit-cleaning routine — that
-guarantee a consistent output representation regardless of the conventions used by the source
-archive.
+`SED_Tools` is an open-source Python package for acquiring, validating, and standardizing stellar atmosphere spectral energy distribution (SED) grids from public archives.
+It converts heterogeneous spectra and filter curves into common per-model files, HDF5 archives, binary flux cubes, and lookup tables for use by stellar-evolution and synthetic-photometry software.
+Supported sources include the Spanish Virtual Observatory (SVO), the MAST/BOSZ synthetic library [@meszaros2024bosz], and stellar atmosphere grids distributed by the MSG (Multidimensional Spectral Grids) project [@townsend2023], including model families such as Kurucz/ATLAS9 [@castelli2003], BT-Settl, TLUSTY, and TMAP.
+The package provides command-line and Python interfaces for acquisition, grid construction, interpolation-based densification, coverage diagnostics, and import of externally sourced grids.
+Two PyTorch-based components can extend incomplete wavelength coverage or generate an SED from (*T*eff, log *g*, [M/H]).
+Centralized header parsing and unit normalization produce a common representation across the supported source archives.
 
 # Statement of need
 
-Stellar evolution and synthetic-photometry codes need pre-computed grids of stellar atmosphere
-spectra spanning effective temperature, surface gravity, and metallicity. In practice, these
-grids are scattered across independent archives that differ in file formats, header-keyword
-conventions, flux and wavelength units, wavelength sampling, and axis conventions; some archives
-additionally encode extra physical axes — sedimentation efficiency, helium fraction, alpha
-enhancement — as separate files rather than as grid dimensions, which silently produces
-duplicate or colliding nodes if not accounted for. A researcher who wants to combine, for
-example, a hot-star TLUSTY grid with a cool-star BT-Settl grid for a single evolutionary track
-must hand-reconcile all of these inconsistencies before any interpolation is possible, and
-errors introduced during that reconciliation — unit mismatches, axis-order bugs, double-counted
-nodes — are difficult to detect after the fact and can silently bias downstream synthetic
-photometry rather than produce an obvious failure. `SED_Tools` automates the download of raw grids and filter curves, validates each
-file against its expected physical ranges, resolves duplicate or colliding grid nodes introduced
-by hidden axes, and writes a single standardized product — as flat per-model spectral files, an
-HDF5 archive, and a pre-computed binary flux cube with an accompanying lookup table — that a
-stellar evolution code can consume directly, with no additional user-side reformatting. This
-directly serves the MESA `colors` module, whose documentation designates `SED_Tools` as the tool
-that prepares its required data products, but the standardized output is equally usable by any
-downstream synthetic photometry, spectral energy distribution fitting, or population synthesis
-workflow that needs a self-consistent, science-ready stellar atmosphere grid.
+Stellar-evolution and synthetic-photometry codes require precomputed stellar atmosphere spectra spanning effective temperature, surface gravity, metallicity, and, in some cases, additional physical parameters.
+Available grids are distributed across independent archives that use different file formats, header conventions, wavelength and flux units, wavelength sampling, and axis ordering.
+Some archives encode parameters such as sedimentation efficiency, helium fraction, or alpha enhancement as separate files rather than explicit grid dimensions, which can produce duplicate or colliding nodes during grid construction.
+Combining grids from different sources therefore requires archive-specific parsing, unit conversion, collision handling, and validation, and errors in these steps can propagate into downstream interpolation and synthetic photometry.
+`SED_Tools` automates the acquisition of spectra and filter curves, validates inputs against expected physical ranges, resolves hidden-axis collisions, and writes standardized products as per-model spectra, HDF5 archives, binary flux cubes, and lookup tables.
+The package is intended for astronomers and scientific-software developers preparing atmosphere libraries for stellar evolution, synthetic photometry, SED fitting, or population-synthesis workflows.
+It directly supports the MESA `colors` module, whose documentation identifies `SED_Tools` as the data-preparation tool for its standard input products [@mesa_colors_readme].
 
 # State of the field
 
-Several existing tools address related but distinct problems. `synphot`/`pysynphot` (STScI)
-perform synthetic photometry given an already-prepared SED and bandpass, but do not download,
-standardize, or reconcile heterogeneous source archives into interpolation-ready grids.
-`specutils`, part of the Astropy ecosystem, provides general-purpose spectral-object handling and
-analysis but is not oriented toward multi-source stellar atmosphere grid curation or production
-of runtime-optimized binary grids for external codes; it operates one spectrum at a time rather
-than as a grid-construction pipeline. `gollum` [@shankar2024] provides programmatic access to
-specific precomputed synthetic grids (e.g. PHOENIX, Sonora) with an interactive comparison
-interface, but targets spectral inspection and model-data comparison rather than multi-archive
-standardization or production of evolution-code-ready binary grids. MSG [@townsend2023] provides compiled libraries and associated tools for interpolating, converting, and packaging stellar spectral grids in its own HDF5 data model. SED_Tools instead focuses on automated acquisition from heterogeneous external archives, archive-specific parsing, unit and header standardization, hidden-axis collision handling, validation, and production of several downstream representations, including products intended for stellar-evolution codes.
-Archive-side services such as the SVO Filter Profile Service [@rodrigo2020] and MAST
-provide raw data access but explicitly leave unit standardization, header reconciliation,
-collision handling, and target-code packaging to the user. 
-The distinguishing contribution of `SED_Tools` is treating grid
-acquisition, unit and header standardization, hidden-axis collision resolution, and
-stellar-evolution-code-ready packaging as a single reproducible, versioned pipeline spanning multiple
-source archives at once, rather than as a one-off per-grid conversion script maintained privately
-by individual research groups.
+Several existing packages address related parts of this workflow.
+`synphot` and its predecessor `pysynphot` perform synthetic photometry using prepared source spectra and bandpasses, but their documented scope does not include acquisition and standardization of heterogeneous atmosphere archives into interpolation-ready grids [@synphot; @pysynphot].
+`specutils` provides general-purpose representations and analysis tools for spectroscopic data, rather than an archive-to-grid construction pipeline [@specutils].
+`gollum` provides programmatic access to selected precomputed synthetic grids and tools for spectral inspection and model-data comparison [@shankar2024].
+MSG provides compiled libraries and associated tools for interpolating, converting, and packaging stellar spectral grids in its HDF5 data model [@townsend2023].
+`SED_Tools` instead focuses on archive-specific acquisition, header and unit standardization, hidden-axis collision handling, validation, and production of multiple downstream representations.
+Archive services such as the SVO Filter Profile Service [@rodrigo2020] and MAST provide access to source data, while preparation for a particular interpolation or stellar-evolution workflow remains a downstream task.
+The principal software contribution of `SED_Tools` is to combine these acquisition and standardization steps in a reproducible, versioned pipeline spanning SVO, MAST/BOSZ, MSG-hosted grids, and externally supplied models.
 
 # Software design
 
-`SED_Tools` separates concerns along two axes: a data-flow axis and an interface axis. On the
-data-flow axis, two modules act as sole authorities over specific transformations, so that
-behavior does not depend on call order or on which grid is processed first. A header-parsing
-module resolves the many historical header-key spellings used across archives against a single
-alias table, using a nan-guard so that a later, unparseable value can never silently overwrite an
-already-resolved one. A spectra-cleaning module performs the one-time conversion of every
-spectrum to a common wavelength/flux unit system (angstroms; erg s$^{-1}$ cm$^{-2}$ Å$^{-1}$), after which no
-downstream stage is permitted to renormalize — this constraint is enforced by design rather than
-by convention. Hidden physical axes that some archives encode as separate files rather than as grid
-dimensions are resolved by a dedicated collision-handling module that builds both a mean flux
-cube and a library of per-variant cubes, so that information distinguishing the colliding
-variants is preserved rather than discarded during standardization; the on-collision strategy
-(average everything into one cube, keep every variant, or filter to a specific variant) is a
-per-model, reproducible configuration rather than an implicit default. Large grids — the BT-Settl
-grid alone occupies roughly 174 GiB once expanded to a common wavelength grid — are handled via
-memory-mapped array allocation for both source and destination flux arrays, rather than in-RAM
-allocation, specifically to avoid exhausting system memory during cube construction. On the
-interface axis, every capability is available identically through the `sed-tools` command-line
-interface and the Python `SED`/`Catalog`/`Spectrum` API, so the package is usable both as an
-interactive or scriptable library and as a stage in shell-based data pipelines. A dedicated
-coverage-diagnostics command lets a user inspect the completeness of a standardized grid in
-parameter space before relying on it for interpolation, and the ML-based completer and generator
-modules provide a fallback in regions where empirical grid coverage is insufficient. Error
-handling throughout the pipeline is intentionally non-defensive: malformed input is designed to
-raise immediately rather than be silently caught and skipped, so that data-quality problems
-surface at the point of ingestion rather than as a difficult-to-trace downstream artifact in a
-stellar model.
+`SED_Tools` centralizes transformations that must remain consistent across source archives.
+A header-parsing module resolves historical header-key variants against a common alias table and prevents a later unparseable value from overwriting an already resolved value.
+A spectra-cleaning module converts each spectrum once to a common wavelength and flux representation (angstroms; erg s$^{-1}$ cm$^{-2}$ Å$^{-1}$), after which downstream stages operate on the normalized data.
 
-Correctness is checked at two levels. An automated `pytest` suite exercises the standardization
-utilities, configuration, CLI, and flux-cube loading and evaluation code paths directly. Separately, a dedicated audit
-pipeline performs physically motivated consistency checks on the standardized output itself:
-comparing each spectrum's flux-weighted peak wavelength against the Wien's-law prediction from
-its catalogued effective temperature, comparing bolometric flux against the blackbody integral
-over each file's actual wavelength coverage, and matching raw files against their corresponding
-flux-cube grid node under a tight distance tolerance to avoid false positives from molecular-band
-features. As of the most recent audit run, all installed models pass (12/12). 
+A collision-handling module addresses physical parameters that are encoded as separate files rather than explicit grid dimensions.
+It can construct a mean flux cube, preserve each colliding variant in a separate cube, or select a configured variant.
+This retains the information associated with hidden axes while making the chosen collision policy explicit and reproducible for each model family.
+
+Large expanded grids are constructed using memory-mapped source and destination arrays rather than requiring the full dataset to reside in memory.
+Core operations are exposed through both the `sed-tools` command-line interface and the Python API, allowing the same processing stages to be used interactively, from scripts, or in shell-based pipelines.
+Coverage diagnostics report the sampled parameter space before interpolation, while the optional ML modules extend wavelength coverage or generate spectra from atmospheric parameters.
+Malformed inputs raise errors rather than being silently skipped.
+
+Validation is performed at two levels.
+An automated `pytest` suite exercises configuration, standardization utilities, the command-line interface, and flux-cube loading and evaluation.
+A separate audit pipeline applies physical consistency checks to standardized products by comparing spectral peak locations with Wien-law expectations, comparing integrated fluxes with blackbody reference integrals over the available wavelength range, and matching raw spectra to their corresponding flux-cube nodes.
 
 # Research impact statement
 
-The most concrete evidence of `SED_Tools`'s research impact is its role as the designated
-data-preparation pipeline for the MESA `colors` module, a new module merged into the official
-Modules for Experiments in Stellar Astrophysics (MESA) code base, first shipped in release
-candidate r25.10.1-rc1 and included in stable releases from r25.12.1 onward
-[@mesa_release_r25101rc1]. MESA is a widely used, actively maintained open-source stellar
-evolution code with a large user base spanning asteroseismology, stellar population synthesis,
-and binary evolution research [@paxton2011; @paxton2013; @paxton2015; @paxton2018; @paxton2019;
-@jermyn2023]. The `colors` module's source documentation contains a dedicated data-preparation section
-naming `SED_Tools` as the tool that automates production of the module's inputs, and describes
-the pre-computed flux cube consumed by its fastest interpolation path as produced by
-`SED_Tools` [@mesa_colors_readme]; the Kurucz2003 atmosphere grids distributed with the module
-were themselves prepared with `SED_Tools`. Every MESA user who enables synthetic photometry via
-the `colors` module is therefore, in practice, a downstream consumer of `SED_Tools`'s output,
-independent of whether they interact with the `SED_Tools` repository directly. 
+`SED_Tools` is the designated data-preparation pipeline for the MESA `colors` module, which was first shipped in release candidate r25.10.1-rc1 and is included in stable MESA releases from r25.12.1 onward [@mesa_release_r25101rc1].
+MESA is an open-source stellar-evolution code used across asteroseismology, stellar-population studies, and binary-evolution research [@paxton2011; @paxton2013; @paxton2015; @paxton2018; @paxton2019; @jermyn2023].
+The `colors` module documentation names `SED_Tools` as the tool that prepares its input data and identifies its precomputed flux-cube products as generated by `SED_Tools` [@mesa_colors_readme].
+The Kurucz2003 atmosphere grids distributed for the module were also prepared with `SED_Tools`.
+Consequently, users of the standard atmosphere products distributed for the MESA `colors` module consume data products prepared by this package even when they do not run `SED_Tools` directly.
 
 # AI usage disclosure
 
-OpenAI Codex and Claude Code assisted with delinting/formatting during a codebase refactor, with
-constructing portions of the automated test suite, and with debugging flux-cube-construction
-performance issues; all such changes were reviewed and validated by the author before merging.
+OpenAI Codex and Claude Code assisted with formatting during a codebase refactor, construction of portions of the automated test suite, and investigation of flux-cube construction performance.
+Claude and OpenAI ChatGPT assisted with drafting and editing portions of this manuscript.
+All generated code and prose were reviewed by the authors, and code changes were checked using the automated test suite and relevant numerical validation procedures before merging.
 
 # Acknowledgements
 
-Computations were performed using the University of Wyoming (UW) Advance Research Computing
-Center MedicineBow HPC, a UW managed computational resource available to UW researchers
-including faculty, staff, students, and collaborators
-(<https://doi.org/10.15786/M2FY47>). 
-This research has made use of the Spanish Virtual Observatory (<https://svo.cab.inta-csic.es>) project funded by MCIN/AEI/10.13039/501100011033/
-through grant PID2023-146210NB-I00, including the SVO Filter Profile Service "Carlos Rodrigo"
-[@rodrigo2020] and the SVO theoretical model spectra services.
-
-This work has made use of data
-obtained from the Mikulski Archive for Space Telescopes (MAST), operated by the Space Telescope
-Science Institute (STScI), which is operated by the Association of Universities for Research in
-Astronomy, Inc., under NASA contract NAS5-26555. This work makes use of stellar atmosphere
-grids packaged and distributed by the MSG project [@townsend2023], and we thank R. H. D.
-Townsend for maintaining this resource. 
-The SED_Tools data mirror is currently hosted on computing infrastructure operated by N. J. Miller.
+Computations were performed using the University of Wyoming (UW) Advance Research Computing Center MedicineBow HPC, a UW managed computational resource available to UW researchers including faculty, staff, students, and collaborators (<https://doi.org/10.15786/M2FY47>).
+This research has made use of the SVO Filter Profile Service "Carlos Rodrigo", funded by MCIN/AEI/10.13039/501100011033/ through grant PID2023-146210NB-I00 [@rodrigo2020].
+This research has also made use of theoretical stellar spectra provided through the Spanish Virtual Observatory (<https://svo.cab.inta-csic.es>).
+This work has made use of data obtained from the Mikulski Archive for Space Telescopes (MAST), operated by the Space Telescope Science Institute (STScI), which is operated by the Association of Universities for Research in Astronomy, Inc., under NASA contract NAS5-26555.
+This work makes use of stellar atmosphere grids packaged and distributed by the MSG project [@townsend2023], and we thank R. H. D. Townsend for maintaining this resource.
+The `SED_Tools` data mirror is currently hosted on computing infrastructure operated by N. J. Miller.
 
 # References
