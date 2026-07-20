@@ -8,8 +8,8 @@ authors:
 repository-code: "https://github.com/nialljmiller/SED_Tools"
 url: "https://github.com/nialljmiller/SED_Tools"
 license: MIT
-version: "0.0.2"
-date-released: "2026-04-16"
+version: "0.2.0"
+date-released: "2026-07-20"
 doi: "10.5281/zenodo.19614010"
 identifiers:
   - type: doi
