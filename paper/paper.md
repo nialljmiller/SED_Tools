@@ -56,12 +56,7 @@ example, a hot-star TLUSTY grid with a cool-star BT-Settl grid for a single evol
 must hand-reconcile all of these inconsistencies before any interpolation is possible, and
 errors introduced during that reconciliation — unit mismatches, axis-order bugs, double-counted
 nodes — are difficult to detect after the fact and can silently bias downstream synthetic
-photometry rather than produce an obvious failure. This is not a hypothetical risk: during
-`SED_Tools`'s own development, a read/write axis-order mismatch in the flux-cube binary format
-produced exactly this kind of silent corruption, one that would have propagated undetected into
-every downstream synthetic photometric calculation had it not been caught by dedicated
-validation. `SED_Tools` exists to remove this class of manual, error-prone reconciliation from
-the workflow entirely. It automates the download of raw grids and filter curves, validates each
+photometry rather than produce an obvious failure. `SED_Tools` automates the download of raw grids and filter curves, validates each
 file against its expected physical ranges, resolves duplicate or colliding grid nodes introduced
 by hidden axes, and writes a single standardized product — as flat per-model spectral files, an
 HDF5 archive, and a pre-computed binary flux cube with an accompanying lookup table — that a
@@ -85,15 +80,12 @@ interface, but targets spectral inspection and model-data comparison rather than
 standardization or production of evolution-code-ready binary grids. MSG [@townsend2023] provides compiled libraries and associated tools for interpolating, converting, and packaging stellar spectral grids in its own HDF5 data model. SED_Tools instead focuses on automated acquisition from heterogeneous external archives, archive-specific parsing, unit and header standardization, hidden-axis collision handling, validation, and production of several downstream representations, including products intended for stellar-evolution codes.
 Archive-side services such as the SVO Filter Profile Service [@rodrigo2020] and MAST
 provide raw data access but explicitly leave unit standardization, header reconciliation,
-collision handling, and target-code packaging to the user. To the authors' knowledge, no existing
-public tool spans SVO, MAST/BOSZ, and MSG-hosted grids simultaneously behind a single
-collision-aware standardization layer. The distinguishing contribution of `SED_Tools` is treating grid
+collision handling, and target-code packaging to the user. 
+The distinguishing contribution of `SED_Tools` is treating grid
 acquisition, unit and header standardization, hidden-axis collision resolution, and
 stellar-evolution-code-ready packaging as a single reproducible, versioned pipeline spanning multiple
 source archives at once, rather than as a one-off per-grid conversion script maintained privately
-by individual research groups. The
-machine-learning-based SED completion and generation components are also, to the authors'
-knowledge, not offered by any comparable publicly available tool in this space.
+by individual research groups.
 
 # Software design
 
@@ -105,8 +97,7 @@ alias table, using a nan-guard so that a later, unparseable value can never sile
 already-resolved one. A spectra-cleaning module performs the one-time conversion of every
 spectrum to a common wavelength/flux unit system (angstroms; erg s$^{-1}$ cm$^{-2}$ Å$^{-1}$), after which no
 downstream stage is permitted to renormalize — this constraint is enforced by design rather than
-by convention, so that a unit bug can only be introduced, and only needs to be fixed, in one
-place. Hidden physical axes that some archives encode as separate files rather than as grid
+by convention. Hidden physical axes that some archives encode as separate files rather than as grid
 dimensions are resolved by a dedicated collision-handling module that builds both a mean flux
 cube and a library of per-variant cubes, so that information distinguishing the colliding
 variants is preserved rather than discarded during standardization; the on-collision strategy
@@ -133,16 +124,7 @@ comparing each spectrum's flux-weighted peak wavelength against the Wien's-law p
 its catalogued effective temperature, comparing bolometric flux against the blackbody integral
 over each file's actual wavelength coverage, and matching raw files against their corresponding
 flux-cube grid node under a tight distance tolerance to avoid false positives from molecular-band
-features. As of the most recent audit run, all installed models pass (12/12). The audit process
-has also been useful for separating genuine data problems from methodology artifacts: an
-initially suspected raw-versus-cube mismatch in the NextGen2 grid was traced to the comparison
-methodology itself (disagreement at molecular-band features introduced by interpolating onto a
-union wavelength grid) rather than to the data, and apparent Wien-peak violations in the Husfeld
-and tmap2 grids were confirmed to be a real, physically expected redward shift caused by UV/EUV
-atmospheric opacity in hot compact objects, not a unit error. Two smaller items remain open and
-are tracked rather than silently patched: a known 1/π flux-normalization discrepancy in the
-blackbody-reference generator, and a structural incompatibility between one MSG-hosted grid
-(`sg-BSTAR2006-low`) and the current HDF5 reader.
+features. As of the most recent audit run, all installed models pass (12/12). 
 
 # Research impact statement
 
@@ -159,19 +141,13 @@ the pre-computed flux cube consumed by its fastest interpolation path as produce
 `SED_Tools` [@mesa_colors_readme]; the Kurucz2003 atmosphere grids distributed with the module
 were themselves prepared with `SED_Tools`. Every MESA user who enables synthetic photometry via
 the `colors` module is therefore, in practice, a downstream consumer of `SED_Tools`'s output,
-independent of whether they interact with the `SED_Tools` repository directly. This is a stronger and more durable form of research impact than
-citation count alone, because MESA's release and documentation infrastructure make the
-dependency independently verifiable rather than self-reported. As a secondary, softer indicator,
-the repository has accumulated organic community interest without any promotional effort.
+independent of whether they interact with the `SED_Tools` repository directly. 
 
 # AI usage disclosure
 
 OpenAI Codex and Claude Code assisted with delinting/formatting during a codebase refactor, with
 constructing portions of the automated test suite, and with debugging flux-cube-construction
 performance issues; all such changes were reviewed and validated by the author before merging.
-All architectural decisions described in Software Design were made by the author, not the AI
-tools. This manuscript was drafted with Claude's assistance from author interviews and reviewed
-and edited by the author before submission.
 
 # Acknowledgements
 
@@ -181,7 +157,7 @@ including faculty, staff, students, and collaborators
 (<https://doi.org/10.15786/M2FY47>). 
 This research has made use of the Spanish Virtual Observatory (<https://svo.cab.inta-csic.es>) project funded by MCIN/AEI/10.13039/501100011033/
 through grant PID2023-146210NB-I00, including the SVO Filter Profile Service "Carlos Rodrigo"
-[@rodrigo2020] and the SVO theoretical model spectra services, funded by MCIN/AEI/10.13039/501100011033/ through grant PID2023-146210NB-I00.
+[@rodrigo2020] and the SVO theoretical model spectra services.
 
 This work has made use of data
 obtained from the Mikulski Archive for Space Telescopes (MAST), operated by the Space Telescope
