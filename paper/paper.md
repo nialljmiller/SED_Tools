@@ -67,8 +67,8 @@ file against its expected physical ranges, resolves duplicate or colliding grid 
 by hidden axes, and writes a single standardized product — as flat per-model spectral files, an
 HDF5 archive, and a pre-computed binary flux cube with an accompanying lookup table — that a
 stellar evolution code can consume directly, with no additional user-side reformatting. This
-directly serves the MESA `colors` module, which requires exactly this product and provides no
-other supported route to generating it, but the standardized output is equally usable by any
+directly serves the MESA `colors` module, whose documentation designates `SED_Tools` as the tool
+that prepares its required data products, but the standardized output is equally usable by any
 downstream synthetic photometry, spectral energy distribution fitting, or population synthesis
 workflow that needs a self-consistent, science-ready stellar atmosphere grid.
 
@@ -80,7 +80,10 @@ standardize, or reconcile heterogeneous source archives into interpolation-ready
 `specutils`, part of the Astropy ecosystem, provides general-purpose spectral-object handling and
 analysis but is not oriented toward multi-source stellar atmosphere grid curation or production
 of runtime-optimized binary grids for external codes; it operates one spectrum at a time rather
-than as a grid-construction pipeline. MSG ships its own compiled grid-access library together
+than as a grid-construction pipeline. `gollum` [@shankar2024] provides programmatic access to
+specific precomputed synthetic grids (e.g. PHOENIX, Sonora) with an interactive comparison
+interface, but targets spectral inspection and model-data comparison rather than multi-archive
+standardization or production of evolution-code-ready binary grids. MSG ships its own compiled grid-access library together
 with a defined set of packaged grids, but does not provide a general mechanism for ingesting and
 standardizing grids sourced from other archives such as SVO or MAST/BOSZ — a user who wants an
 MSG-format grid built from BOSZ or SVO data has no supported path to do so without custom
@@ -92,7 +95,7 @@ aware standardization layer. `SED_Tools`'s distinguishing contribution is treati
 acquisition, unit and header standardization, hidden-axis collision resolution, and stellar-
 evolution-code-ready packaging as a single reproducible, versioned pipeline spanning multiple
 source archives at once, rather than as a one-off per-grid conversion script maintained privately
-by individual research groups — which is the status quo this package was built to replace. The
+by individual research groups. The
 machine-learning-based SED completion and generation components are also, to the authors'
 knowledge, not offered by any comparable publicly available tool in this space.
 
@@ -127,8 +130,8 @@ raise immediately rather than be silently caught and skipped, so that data-quali
 surface at the point of ingestion rather than as a difficult-to-trace downstream artifact in a
 stellar model.
 
-Correctness is checked at two levels. An automated `pytest` suite exercises the standardization,
-configuration, CLI, and flux-cube-construction code paths directly. Separately, a dedicated audit
+Correctness is checked at two levels. An automated `pytest` suite exercises the standardization
+utilities, configuration, CLI, and flux-cube loading and evaluation code paths directly. Separately, a dedicated audit
 pipeline performs physically motivated consistency checks on the standardized output itself:
 comparing each spectrum's flux-weighted peak wavelength against the Wien's-law prediction from
 its catalogued effective temperature, comparing bolometric flux against the blackbody integral
@@ -148,23 +151,22 @@ blackbody-reference generator, and a structural incompatibility between one MSG-
 # Research impact statement
 
 The most concrete evidence of `SED_Tools`'s research impact is its role as the designated
-data-preparation pipeline for the MESA `colors` module, a new module (co-authored by N. J.
-Miller) that was merged into the official Modules for Experiments in Stellar Astrophysics (MESA)
-code base and shipped starting with release r25.10.1-rc1
+data-preparation pipeline for the MESA `colors` module, a new module merged into the official
+Modules for Experiments in Stellar Astrophysics (MESA) code base, first shipped in release
+candidate r25.10.1-rc1 and included in stable releases from r25.12.1 onward
 [@mesa_release_r25101rc1]. MESA is a widely used, actively maintained open-source stellar
 evolution code with a large user base spanning asteroseismology, stellar population synthesis,
 and binary evolution research [@paxton2011; @paxton2013; @paxton2015; @paxton2018; @paxton2019;
-@jermyn2023]. The `colors` module's own source documentation states explicitly that its required
-input files — a lookup table and a pre-computed flux cube — are produced by `SED_Tools`, and
-provides no other supported route to generating them [@mesa_colors_readme]. This means that
-every MESA user who enables synthetic photometry via the `colors` module is, in practice, a
-downstream consumer of `SED_Tools`'s output, independent of whether they interact with the
-`SED_Tools` repository directly. This is a stronger and more durable form of research impact than
+@jermyn2023]. The `colors` module's source documentation contains a dedicated data-preparation section
+naming `SED_Tools` as the tool that automates production of the module's inputs, and describes
+the pre-computed flux cube consumed by its fastest interpolation path as produced by
+`SED_Tools` [@mesa_colors_readme]; the Kurucz2003 atmosphere grids distributed with the module
+were themselves prepared with `SED_Tools`. Every MESA user who enables synthetic photometry via
+the `colors` module is therefore, in practice, a downstream consumer of `SED_Tools`'s output,
+independent of whether they interact with the `SED_Tools` repository directly. This is a stronger and more durable form of research impact than
 citation count alone, because MESA's release and documentation infrastructure make the
 dependency independently verifiable rather than self-reported. As a secondary, softer indicator,
-the repository has accumulated organic community interest — 34 GitHub stars at the time of
-writing — without any promotional effort. We consider the MESA integration the primary evidence
-for this section and the star count a minor supporting signal.
+the repository has accumulated organic community interest without any promotional effort.
 
 # AI usage disclosure
 
