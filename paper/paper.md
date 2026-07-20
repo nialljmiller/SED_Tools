@@ -9,17 +9,15 @@ tags:
   - MESA
 authors:
   - name: Niall J. Miller
-    orcid: 0000-0000-0000-0000
+    orcid: 0000-0002-3780-0592
     affiliation: 1
   - name: Meridith Joyce
-    orcid: 0000-0000-0000-0000
-    affiliation: 2
+    orcid: 0000-0002-8717-127X
+    affiliation: 1
 affiliations:
-  - name: "REPLACE WITH INSTITUTION AND DEPARTMENT"
+  - name: "University of Wyoming, 1000 E University Ave, Laramie, WY USA"
     index: 1
-  - name: "REPLACE WITH INSTITUTION AND DEPARTMENT"
-    index: 2
-date: 13 July 2026
+date: 
 bibliography: paper.bib
 ---
 
@@ -34,7 +32,8 @@ the full pipeline: spectra acquisition, filter transmission-curve acquisition an
 flux-cube construction and rebuilding, grid densification via interpolation, target-directory
 preparation for stellar evolution codes, coverage diagnostics, and import of externally sourced
 grids. Supported source archives include the Spanish Virtual Observatory (SVO), the MAST/BOSZ
-synthetic library [@meszaros2024bosz], and the Munari Stellar Grid (MSG) collection, spanning
+synthetic library [@meszaros2024bosz], and the grid collection
+distributed by the MSG (Multidimensional Spectral Grids) project [@townsend2023], spanning
 model families such as Kurucz/ATLAS9 [@castelli2003], NextGen/NextGen2, BT-Settl, TLUSTY
 (OSTAR2002/BSTAR2006), TMAP, GRAMS, SPHINX, Husfeld, and blackbody references. Two PyTorch-based
 components extend the tool beyond format conversion: an SED completer that extends incomplete
@@ -83,17 +82,14 @@ of runtime-optimized binary grids for external codes; it operates one spectrum a
 than as a grid-construction pipeline. `gollum` [@shankar2024] provides programmatic access to
 specific precomputed synthetic grids (e.g. PHOENIX, Sonora) with an interactive comparison
 interface, but targets spectral inspection and model-data comparison rather than multi-archive
-standardization or production of evolution-code-ready binary grids. MSG ships its own compiled grid-access library together
-with a defined set of packaged grids, but does not provide a general mechanism for ingesting and
-standardizing grids sourced from other archives such as SVO or MAST/BOSZ — a user who wants an
-MSG-format grid built from BOSZ or SVO data has no supported path to do so without custom
-scripting. Archive-side services such as the SVO Filter Profile Service [@rodrigo2020] and MAST
+standardization or production of evolution-code-ready binary grids. MSG [@townsend2023] provides compiled libraries and associated tools for interpolating, converting, and packaging stellar spectral grids in its own HDF5 data model. SED_Tools instead focuses on automated acquisition from heterogeneous external archives, archive-specific parsing, unit and header standardization, hidden-axis collision handling, validation, and production of several downstream representations, including products intended for stellar-evolution codes.
+Archive-side services such as the SVO Filter Profile Service [@rodrigo2020] and MAST
 provide raw data access but explicitly leave unit standardization, header reconciliation,
 collision handling, and target-code packaging to the user. To the authors' knowledge, no existing
-public tool spans SVO, MAST/BOSZ, and MSG-hosted grids simultaneously behind a single collision-
-aware standardization layer. `SED_Tools`'s distinguishing contribution is treating grid
-acquisition, unit and header standardization, hidden-axis collision resolution, and stellar-
-evolution-code-ready packaging as a single reproducible, versioned pipeline spanning multiple
+public tool spans SVO, MAST/BOSZ, and MSG-hosted grids simultaneously behind a single
+collision-aware standardization layer. The distinguishing contribution of `SED_Tools` is treating grid
+acquisition, unit and header standardization, hidden-axis collision resolution, and
+stellar-evolution-code-ready packaging as a single reproducible, versioned pipeline spanning multiple
 source archives at once, rather than as a one-off per-grid conversion script maintained privately
 by individual research groups. The
 machine-learning-based SED completion and generation components are also, to the authors'
@@ -107,7 +103,7 @@ behavior does not depend on call order or on which grid is processed first. A he
 module resolves the many historical header-key spellings used across archives against a single
 alias table, using a nan-guard so that a later, unparseable value can never silently overwrite an
 already-resolved one. A spectra-cleaning module performs the one-time conversion of every
-spectrum to a common wavelength/flux unit system (angstroms; erg s⁻¹ cm⁻² Å⁻¹), after which no
+spectrum to a common wavelength/flux unit system (angstroms; erg s$^{-1}$ cm$^{-2}$ Å$^{-1}$), after which no
 downstream stage is permitted to renormalize — this constraint is enforced by design rather than
 by convention, so that a unit bug can only be introduced, and only needs to be fixed, in one
 place. Hidden physical axes that some archives encode as separate files rather than as grid
@@ -179,7 +175,20 @@ and edited by the author before submission.
 
 # Acknowledgements
 
-*REPLACE: list any funding, grants, or institutional support here, if applicable. Leave this
-section out entirely if there is none to disclose.*
+Computations were performed using the University of Wyoming (UW) Advance Research Computing
+Center MedicineBow HPC, a UW managed computational resource available to UW researchers
+including faculty, staff, students, and collaborators
+(<https://doi.org/10.15786/M2FY47>). 
+This research has made use of the Spanish Virtual Observatory (<https://svo.cab.inta-csic.es>) project funded by MCIN/AEI/10.13039/501100011033/
+through grant PID2023-146210NB-I00, including the SVO Filter Profile Service "Carlos Rodrigo"
+[@rodrigo2020] and the SVO theoretical model spectra services, funded by MCIN/AEI/10.13039/501100011033/ through grant PID2023-146210NB-I00.
+
+This work has made use of data
+obtained from the Mikulski Archive for Space Telescopes (MAST), operated by the Space Telescope
+Science Institute (STScI), which is operated by the Association of Universities for Research in
+Astronomy, Inc., under NASA contract NAS5-26555. This work makes use of stellar atmosphere
+grids packaged and distributed by the MSG project [@townsend2023], and we thank R. H. D.
+Townsend for maintaining this resource. 
+The SED_Tools data mirror is currently hosted on computing infrastructure operated by N. J. Miller.
 
 # References
