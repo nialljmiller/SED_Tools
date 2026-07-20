@@ -9,7 +9,6 @@
 </p>
 
 <p align="center">
-  <a href="https://doi.org/10.5281/zenodo.19614010"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.19614010.svg" alt="DOI"></a>
   <a href="https://github.com/nialljmiller/SED_Tools/actions/workflows/tests.yml"><img src="https://github.com/nialljmiller/SED_Tools/actions/workflows/tests.yml/badge.svg" alt="Tests"></a>
 </p>
 
@@ -902,8 +901,7 @@ BOSZ 2024 fixed-resolution spectra require the official wavelength files in the 
 If you use SED_Tools in your research, please cite the archived software release
 via its Zenodo DOI:
 
-> Miller, N. J. (2026). *SED_Tools* (Version 0.0.2) [Software]. Zenodo.
-> https://doi.org/10.5281/zenodo.19614010
+A version-specific Zenodo DOI for Version 0.2.0 will be added following archival of this release.
 
 Machine-readable citation metadata is available in [`CITATION.cff`](CITATION.cff).
 
