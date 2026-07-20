@@ -64,3 +64,9 @@ models/*prediction*.png
 
 # Random output images
 *.png
+
+# Coverage artifacts
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
