@@ -40,7 +40,7 @@ SED_Tools is a Python package for working with stellar spectral energy distribut
 
 ## Installation
 
-### From PIP
+### From PyPI
 
 ```bash
 pip install sed-tools
@@ -62,7 +62,7 @@ pip install -e .
 
 ### Requirements
 
-- Python ≥ 3.9
+- Python ≥ 3.10
 - numpy, pandas, h5py, astropy, matplotlib
 - PyTorch (required for ML completer and generator)
 
@@ -104,7 +104,7 @@ sed-tools ml_completer
 # Train or apply the ML SED generator (creates SEDs from parameters)
 sed-tools ml_generator
 
-# Fill coarse Teff gaps in a flux cube (eliminates MESA interpolation steps)
+# Fill coarse Teff gaps in a flux cube to reduce interpolation stair-stepping
 sed-tools densify --flux-cube data/stellar_models/tmap2/flux_cube.bin \
                   --output data/stellar_models/tmap2_dense/flux_cube.bin \
                   --teff-spacing 1000
@@ -386,7 +386,7 @@ sed-tools config --set /new/data/path --move
 
 ## Python API
 
-The Python API provides full parity with the CLI plus additional capabilities for building data pipelines.
+The Python API exposes the core CLI capabilities together with additional building blocks for data pipelines.
 
 ### `SED` — Main Entry Point
 
