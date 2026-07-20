@@ -914,6 +914,12 @@ in the MESA repository.
 
 ---
 
+## Contributing
+
+Bug reports, feature requests, and pull requests are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). Please also review our [Code of Conduct](CODE_OF_CONDUCT.md) and [Security Policy](SECURITY.md) (for reporting vulnerabilities).
+
+---
+
 ## License
 
 [MIT License](LICENSE)
@@ -926,3 +932,11 @@ in the MESA repository.
 - [SVO Filter Profile Service](http://svo2.cab.inta-csic.es/theory/fps/) — Filter transmission curves
 - [MAST](https://archive.stsci.edu/) — Mikulski Archive for Space Telescopes
 - [MSG Grids](http://user.astro.wisc.edu/~townsend/static.php?ref=msg-grids) — Rich Townsend's stellar atmosphere grids
+
+## Community Contributions
+
+Thanks to everyone who has filed issues, suggested features, or reported bugs:
+
+- [@andysantarelli](https://github.com/andysantarelli) — feature suggestions (grid coverage view, custom atmosphere grids)
+- [@tianzhijia](https://github.com/tianzhijia) — bug report (BOSZ-2024 download issue)
+- [@rhdtownsend](https://github.com/rhdtownsend) — issue report (Jupyter notebook results)
