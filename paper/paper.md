@@ -80,9 +80,8 @@ Consequently, users of the standard atmosphere products distributed for the MESA
 
 # AI usage disclosure
 
-OpenAI Codex and Claude Code assisted with formatting during a codebase refactor, construction of portions of the automated test suite, and investigation of flux-cube construction performance.
-Claude and OpenAI ChatGPT assisted with drafting and editing portions of this manuscript.
-All generated code and prose were reviewed by the authors, and code changes were checked using the automated test suite and relevant numerical validation procedures before merging.
+Claude assisted with construction of portions of the automated test suite in `tests/`.
+All generated code was reviewed by the authors and checked using the automated test suite and relevant numerical validation procedures before merging.
 
 # Acknowledgements
 
