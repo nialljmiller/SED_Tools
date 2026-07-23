@@ -11,7 +11,7 @@ authors:
   - name: Niall J. Miller
     orcid: 0000-0002-3780-0592
     affiliation: 1
-  - name: Meredith Joyce
+  - name: Meridith Joyce
     orcid: 0000-0002-8717-127X
     affiliation: 1
 affiliations:
