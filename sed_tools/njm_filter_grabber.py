@@ -15,6 +15,8 @@ from urllib.parse import urljoin
 import requests
 import urllib3
 
+from .filter_metadata import SOURCE_ASSUMED, SVOMetadataClient, tag_filter_file
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -39,6 +41,7 @@ class NJMFilterGrabber:
         self.session.headers.update({"User-Agent": "SED_Tools/1.0 (NJM Mirror)"})
 
         self._cached_facilities: Optional[List[str]] = None
+        self._metadata_client = SVOMetadataClient()
         self._available = self._check_availability()
         
     def _check_availability(self) -> bool:
@@ -255,6 +258,7 @@ class NJMFilterGrabber:
             
             # Skip if already exists
             if os.path.exists(output_path):
+                tag_filter_file(output_path, client=self._metadata_client, facility=facility)
                 skipped += 1
                 continue
             
@@ -264,7 +268,14 @@ class NJMFilterGrabber:
                 
                 with open(output_path, 'w', encoding='utf-8') as f:
                     f.write(response.text)
-                
+
+                # Mirror files should already carry a DetectorType header; this
+                # is a no-op for those and resolves it against SVO otherwise.
+                result = tag_filter_file(output_path, client=self._metadata_client, facility=facility)
+                if result.source == SOURCE_ASSUMED:
+                    print(f"  [warn] {filter_name}: detector type unverified, assuming {result.detector_type}"
+                          + (f" ({result.note})" if result.note else ""))
+
                 downloaded += 1
                 
             except Exception as e:
@@ -293,6 +304,7 @@ class NJMFilterGrabber:
                 print(f"  [created] {instrument} index file")
         
         print(f"[njm] {facility}/{instrument}: {downloaded} downloaded, {skipped} skipped, {failed} failed")
+        self.download_components(facility, instrument)
         return downloaded
     
     def download_all_filters(self, facility: Optional[str] = None) -> int:
@@ -334,6 +346,85 @@ class NJMFilterGrabber:
         print(f"\n[njm] Total filters downloaded: {total_downloaded}")
         return total_downloaded
     
+    # ------------------------------------------------------------------
+    # Separable components (see sed_tools.filter_components)
+    # ------------------------------------------------------------------
+    def fetch_manifest(self, facility: str, instrument: str) -> Optional[Dict]:
+        """Return the remote ``manifest.json`` for an instrument, or ``None``."""
+        if not self._available:
+            return None
+        try:
+            response = self.session.get(f"{self.filters_url}/{facility}/{instrument}/manifest.json", timeout=15)
+            if response.status_code != 200:
+                return None
+            return response.json()
+        except Exception:
+            logger.debug("No NJM manifest for %s/%s", facility, instrument, exc_info=True)
+            return None
+
+    def download_components(self, facility: str, instrument: str) -> int:
+        """Download ``manifest.json`` and any component files it lists.
+
+        Returns the number of component files downloaded (0 if the mirror has
+        no components for this instrument).
+        """
+        manifest = self.fetch_manifest(facility, instrument)
+        if manifest is None:
+            return 0
+        output_dir = Path(self.base_dir) / facility / instrument
+        output_dir.mkdir(parents=True, exist_ok=True)
+        (output_dir / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+
+        rel_paths = sorted({
+            rel for entries in manifest.get("components", {}).values() for rel in entries.values()
+            if "/" in rel  # root-level entries are the published curves themselves
+        })
+        count = 0
+        for rel in rel_paths:
+            if Path(rel).is_absolute() or ".." in Path(rel).parts:
+                print(f"  [skip] component path outside the instrument: {rel}")
+                continue
+            target = output_dir / rel
+            if target.exists():
+                continue
+            try:
+                response = self.session.get(f"{self.filters_url}/{facility}/{instrument}/{rel}", timeout=30)
+                response.raise_for_status()
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text(response.text, encoding="utf-8")
+                count += 1
+            except Exception as exc:
+                print(f"  [error] component {rel}: {exc}")
+        if count:
+            print(f"[njm] {facility}/{instrument}: {count} component files downloaded")
+        return count
+
+    def download_atmosphere(self, atmosphere_root: str, site: str, filename: Optional[str] = None) -> bool:
+        """Fetch an atmosphere grid manifest (and optionally one grid file) for ``site``."""
+        if not self._available:
+            return False
+        site_dir = Path(atmosphere_root) / site
+        base = f"{self.base_url}/atmospheres/{site}"
+        try:
+            response = self.session.get(f"{base}/manifest.json", timeout=15)
+            if response.status_code != 200:
+                return False
+            site_dir.mkdir(parents=True, exist_ok=True)
+            (site_dir / "manifest.json").write_text(response.text, encoding="utf-8")
+            if filename and not (site_dir / filename).exists():
+                response = self.session.get(f"{base}/{filename}", timeout=120)
+                response.raise_for_status()
+                (site_dir / filename).write_text(response.text, encoding="utf-8")
+            return True
+        except Exception as exc:
+            print(f"[njm] atmosphere {site}: {exc}")
+            return False
+
+    def list_atmosphere_sites(self) -> List[str]:
+        if not self._available:
+            return []
+        return [s for s in self._parse_directory_listing(f"{self.base_url}/atmospheres/") if "." not in s]
+
     def get_filter_info(self, facility: str, instrument: str) -> Dict[str, any]:
         """Get information about available filters for an instrument."""
         if not self._available:

@@ -2,6 +2,64 @@
 Changelog
 =========
 
+Unreleased
+----------
+
+New Features
+~~~~~~~~~~~~
+
+**Photon- vs energy-counting filters** (``filter_metadata.py``, ``flux_cube_tool.py``)
+   Filter files now carry a ``# DetectorType: energy|photon`` header (with
+   ``FilterID``, ``DetectorTypeSource`` and ``WavelengthUnit``). SVO and NJM
+   downloads write it; ``sed-tools filters-detector`` /
+   ``Filters.tag_detector_types()`` backfill existing files by SVO filter ID or
+   by matching the curve against SVO records. Band averages and computed Vega
+   zero points weight photon-counting curves by ``T·λ`` (Bessell & Murphy 2012,
+   eq. A9). Previously every curve was treated as energy-counting, e.g. a
+   0.035 mag error in Gaia DR3 G. Synthetic Vega zero points now reproduce
+   SVO's to <1e-4 mag for Gaia G/BP/RP, JWST NIRCam, Johnson U/V and TESS.
+
+**Separable filter components** (``filter_components.py``, ``component_sources/``)
+   Filter bandpass, optics, detector QE and telluric atmosphere can now be
+   requested separately or combined (``Filters.fetch(..., components=...,
+   atmosphere=...)``, ``sed-tools filters-info`` / ``filters-compose``).
+   Published curves stay where MESA reads them; components live in
+   ``components/``, composed sets in ``products/<recipe>/`` (each a MESA
+   instrument directory), tellurics in ``atmospheres/<site>/``. Published
+   curves record their contents from SVO (``# Components:``). Builders:
+   Argus (reproduces ArgusSim to 2e-4 mag), Rubin/LSST (reproduces Rubin's
+   hardware and total curves exactly) and an ESO SkyCalc telluric grid.
+   Each instrument is composed only from its own components and its own
+   site's atmosphere (never another instrument's or site's); composition
+   also refuses to double count, to extrapolate components, and to add an
+   atmosphere to space/airborne instruments. ``build_all_products`` writes
+   every with/without variant.
+
+**Component sources** (``component_sources/``)
+   Builders for HST (synphot graph tables; ~340 bands), JWST NIRCam/NIRISS/
+   MIRI (Pandeia 4.0), Subaru HSC, DECam (DES), VISTA (ESO) and ZTF, plus
+   automatic use of SVO's filter-only sibling curves (57 instrument groups)
+   and an explicit record of instruments whose teams publish totals only.
+   Validated against SVO's curves (synthetic photometry of hot and cool
+   black bodies); differences are documented (e.g. SVO truncates HST UV red
+   leaks). Components are guarded against percent-scaled inputs, and each
+   source's own out-of-range convention ("zero"/"edge") is recorded.
+
+Bug Fixes
+~~~~~~~~~
+
+**Wavelength unit mis-inference** (``flux_cube_tool.py``)
+   Files without a unit header were read as nanometres whenever their largest
+   wavelength was below 50,000, so essentially every optical/NIR filter curve
+   in Angstrom (Gaia, Johnson, 2MASS, TESS, ...) and any spectrum ending below
+   5 microns was stretched by 10x in wavelength. Angstrom is now assumed
+   unless the reddest point lies below 1000 (then nm, um, m). Unit headers
+   accept common spellings (``Angstroms``, ``Å``, ``microns``, ``µm``); an
+   unrecognised unit falls back to inference instead of being silently
+   treated as Angstrom. ``load_filter_curve`` and ``load_spectrum`` take a
+   ``wavelength_unit=`` override, and a warning is logged whenever the unit
+   has to be guessed.
+
 Version 0.1.0 (March–April 2026)
 ----------------------------------
 

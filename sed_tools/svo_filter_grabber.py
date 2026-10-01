@@ -13,6 +13,8 @@ import requests
 from astroquery.svo_fps import SvoFps
 from bs4 import BeautifulSoup
 
+from .filter_metadata import (ENERGY, SOURCE_ASSUMED, SOURCE_SVO, SVOMetadataClient,
+                              svo_components_header, write_filter_file)
 from .ui_utils import prompt_choice
 from .parsing import parse_multi_selection
 
@@ -59,6 +61,7 @@ class SVOFilterBrowser:
         self._facility_cache: Optional[List[Facility]] = None
         self._instrument_cache: Dict[str, List[Instrument]] = {}
         self._filters_cache: Dict[tuple[str, str], List[FilterRow]] = {}
+        self.metadata_client = SVOMetadataClient(session=self.session, timeout=SvoFps.TIMEOUT)
 
     # -------------------- discovery helpers --------------------
     def list_facilities(self) -> List[Facility]:
@@ -175,12 +178,26 @@ class SVOFilterBrowser:
             touched_dirs[out_dir] = instrument_dir
 
             try:
-                table = SvoFps.get_transmission_data(row.filter_id)
-                if table is None or len(table) == 0:
+                record = self.metadata_client.get_filter(row.filter_id)
+                if record is None or record.wavelength.size == 0:
                     print(f"    [skip] No transmission data returned for {row.filter_id}")
                     continue
-                table.write(out_path, format="ascii.csv", overwrite=True)
-                print(f"    [saved] {out_path}")
+                if record.detector_type:
+                    detector_type, source = record.detector_type, SOURCE_SVO
+                else:
+                    detector_type, source = ENERGY, SOURCE_ASSUMED
+                    print(f"    [warn] SVO gives no DetectorType for {row.filter_id}; assuming energy")
+                write_filter_file(
+                    out_path,
+                    record.wavelength,
+                    record.transmission,
+                    detector_type=detector_type,
+                    source=source,
+                    filter_id=row.filter_id,
+                    wavelength_unit=record.wavelength_unit,
+                    extra=svo_components_header(record.components),
+                )
+                print(f"    [saved] {out_path} ({detector_type}-counting)")
             except Exception as exc:  # pragma: no cover - network issues
                 print(f"    [error] Failed to download {row.filter_id}: {exc}")
 

@@ -454,6 +454,72 @@ def run_spectra_flow(
 
 
 
+def print_filter_availability(info: dict) -> None:
+    """Print what a filter set contains and what can be composed from it."""
+    print(f"\n{info['facility']}/{info['instrument']}"
+          + (f"  ({len(info['bands'])} bands)" if info.get("bands") else ""))
+    src = f" [{info['published_source']}]" if info.get("published_source") else ""
+    print(f"  Published curves contain : {info['published'] or 'unknown'}{src}")
+    for band, recipe in (info.get("published_bands") or {}).items():
+        print(f"    {band}: {recipe}")
+    comps = info.get("components") or []
+    print(f"  Separate components      : {', '.join(comps) if comps else 'none published'}")
+    if info.get("buildable"):
+        print(f"  Can be built             : {', '.join(info['buildable'])}")
+    if info.get("component_status"):
+        print(f"  Note                     : {info['component_status']}")
+    for role, bands in (info.get("partial_components") or {}).items():
+        print(f"    {role} only for: {', '.join(bands)}")
+    if info.get("atmosphere"):
+        print(f"  Atmosphere               : can be added (own site: {info['atmosphere_site']})")
+    elif info.get("platform") in ("space", "airborne"):
+        print(f"  Atmosphere               : not applicable ({info['platform']}-based)")
+    else:
+        print("  Atmosphere               : not offered (no site of its own assigned)")
+    if info.get("detector_type"):
+        print(f"  Detector                 : {info['detector_type']}-counting")
+
+
+def _offer_composition(instrument_dir: Path) -> None:
+    """After a download, offer to build a composed product."""
+    from .api import Filters
+    from .component_sources.catalog import ensure_components
+    from .filter_components import ComponentError, InstrumentManifest
+
+    ensure_components(instrument_dir)  # the instrument's own factors, if its team publishes them
+    try:
+        info = InstrumentManifest.load(instrument_dir).describe()
+    except Exception:
+        return
+    print_filter_availability(info)
+    options = [r.replace("+", ",") for r in info.get("buildable") or []]
+    if info.get("published") not in ("", "unknown"):
+        options = options + ["published"]
+    can_atm = bool(info.get("atmosphere"))
+    if not info.get("buildable") and not can_atm:
+        return  # nothing beyond the published curves
+    if not input("Build a composed version (e.g. filter only, or with atmosphere)? [y/N] ").strip().lower().startswith("y"):
+        return
+    print("Variants of this instrument's own throughput:")
+    for i, opt in enumerate(options, 1):
+        print(f"  {i}. {opt}")
+    pick = input("Choose a variant [1]: ").strip() or "1"
+    chosen = options[int(pick) - 1] if pick.isdigit() and 0 < int(pick) <= len(options) else pick
+    atmosphere = None
+    if can_atm and input(f"Fold in the atmosphere at {info['atmosphere_site']}? [y/N] ").strip().lower().startswith("y"):
+        grid = Filters.atmospheres(filter_root=instrument_dir.parent.parent).get(info["atmosphere_site"])
+        if grid:
+            print(f"  airmass {grid['airmass']}" + (f", pwv {grid['pwv']} mm" if grid["pwv"] else ""))
+        airmass = float(input("Airmass [1.2]: ").strip() or 1.2)
+        pwv_txt = input("PWV mm (blank if not applicable): ").strip() if not grid or grid["pwv"] else ""
+        atmosphere = {"airmass": airmass, "pwv": float(pwv_txt) if pwv_txt else None}
+    try:
+        Filters.compose(instrument_dir, [c.strip() for c in chosen.split(",") if c.strip()],
+                        atmosphere=atmosphere, filter_root=instrument_dir.parent.parent)
+    except ComponentError as exc:
+        print(f"Cannot build: {exc}")
+
+
 def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
     """
     Interactive filter downloader with automatic NJMSVO fallback.
@@ -592,10 +658,16 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
             print(f"\n{facility.label} / {instrument.label}")
 
             if facility.key in njm_only_keys:
+                remote = njm.fetch_manifest(facility.key, instrument.key)
+                if remote:
+                    from .filter_components import InstrumentManifest
+                    known = set(InstrumentManifest.__dataclass_fields__)
+                    print_filter_availability(InstrumentManifest(**{k: v for k, v in remote.items() if k in known}).describe())
                 confirm = input("Download all filters? [Y/n] ").strip().lower()
                 if confirm and not confirm.startswith('y'):
                     continue
                 njm.download_filters(facility.key, instrument.key)
+                _offer_composition(Path(base_dir) / facility.key / instrument.key)
             else:
                 filters = svo.list_filters(facility.key, instrument.key)
 
@@ -604,6 +676,13 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
                     continue
 
                 print(f"Found {len(filters)} filters")
+                try:
+                    record = svo.metadata_client.get_filter(filters[0].filter_id)
+                    if record is not None and record.components:
+                        print(f"  Published curves contain: {record.components} "
+                              f"({record.detector_type or 'unknown'}-counting detector)")
+                except Exception:
+                    pass
 
                 confirm = input("Download all filters? [Y/n] ").strip().lower()
                 if confirm and not confirm.startswith('y'):
@@ -625,6 +704,11 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
                     print(f"\n[svo] Downloading from SVO...")
                     svo.download_filters(filters)
                     print(f"[svo] Downloaded {len(filters)} filters")
+                    from .svo_filter_grabber import _clean_path
+                    inst_dir = Path(base_dir) / _clean_path(filters[0].facility) / _clean_path(filters[0].instrument)
+                else:
+                    inst_dir = Path(base_dir) / njm_fac / njm_inst
+                _offer_composition(inst_dir)
 
             again = input("\nDownload another instrument? [y/N] ").strip().lower()
             if not again.startswith('y'):
@@ -988,6 +1072,43 @@ def main():
     fcp.add_argument("--on-conflict", choices=["rename", "overwrite", "error"], default="rename",
                      help="How duplicate filter filenames are handled")
 
+    fdp = sub.add_parser("filters-detector",
+                         help="Tag filter files as photon- or energy-counting (DetectorType header)")
+    fdp.add_argument("path", nargs="?", default=str(FILTER_DIR_DEFAULT),
+                     help="Filter root, instrument directory or single .dat file")
+    fdp.add_argument("--facility", default=None,
+                     help="SVO facility name when PATH is a single instrument directory or file")
+    fdp.add_argument("--force", action="store_true",
+                     help="Re-resolve files already tagged from SVO")
+    fdp.add_argument("--dry-run", action="store_true",
+                     help="Report without modifying files")
+
+    fip = sub.add_parser("filters-info",
+                         help="Show what a filter set contains and which components can be requested")
+    fip.add_argument("target", help="Facility/Instrument, e.g. SLOAN/SDSS")
+    fip.add_argument("--base", default=str(FILTER_DIR_DEFAULT), help="Base filter directory")
+
+    fcop = sub.add_parser("filters-compose",
+                          help="Build a filter set from separable components (filter, optics, QE, atmosphere)")
+    fcop.add_argument("target", help="Facility/Instrument, e.g. Argus/System")
+    fcop.add_argument("--components", default="filter",
+                      help="Comma-separated: filter, optics, qe, or published (default: filter)")
+    fcop.add_argument("--airmass", type=float, default=None,
+                      help="Add the instrument's own-site atmosphere at this airmass")
+    fcop.add_argument("--pwv", type=float, default=None, help="Precipitable water vapour (mm)")
+    fcop.add_argument("--allow-partial", action="store_true",
+                      help="Treat components as zero outside their tabulated range instead of failing")
+    fcop.add_argument("--base", default=str(FILTER_DIR_DEFAULT), help="Base filter directory")
+
+    fbp = sub.add_parser("filters-build-components",
+                         help="(Mirror curation) populate components/atmospheres from a published source")
+    fbp.add_argument("source", help="Component source (lsst, hst, jwst, hsc, decam, vista, ztf, skycalc, argus) or 'all'")
+    fbp.add_argument("--base", default=str(FILTER_DIR_DEFAULT), help="Base filter directory")
+    fbp.add_argument("--raw", default=None, help="Raw input directory (source specific)")
+    fbp.add_argument("--sites", nargs="+", default=None, help="SkyCalc sites")
+    fbp.add_argument("--airmass", nargs="+", type=float, default=None, help="SkyCalc airmass grid")
+    fbp.add_argument("--pwv", nargs="+", type=float, default=None, help="SkyCalc PWV grid (mm)")
+
     # rebuild
     rp = sub.add_parser("rebuild", help="Rebuild lookup table + HDF5 + flux cube")
     rp.add_argument("--base", default=str(STELLAR_DIR_DEFAULT),
@@ -1104,6 +1225,63 @@ def main():
             on_conflict=args.on_conflict,
         )
         print(f"[filters] Combined filter set written to {out}")
+    elif args.cmd == "filters-detector":
+        from collections import Counter
+
+        from .api import Filters
+        rows = Filters.tag_detector_types(
+            args.path, facility=args.facility, force=args.force, dry_run=args.dry_run
+        )
+        counts = Counter((r["detector_type"], r["source"]) for r in rows)
+        changed = sum(r["changed"] for r in rows)
+        verb = "would change" if args.dry_run else "changed"
+        print(f"\n[filters] {len(rows)} files, {changed} {verb}")
+        for (dtype, source), n in sorted(counts.items()):
+            print(f"  {dtype:6s} [{source}]: {n}")
+    elif args.cmd == "filters-info":
+        from .api import Filters
+        facility, _, instrument = args.target.strip("/").partition("/")
+        Filters._filter_root = Path(args.base)
+        print_filter_availability(Filters.available(facility, instrument, filter_root=args.base))
+    elif args.cmd == "filters-compose":
+        from .api import Filters
+        from .filter_components import ComponentError
+        atmosphere = None
+        if args.airmass is not None:
+            atmosphere = {"airmass": args.airmass, "pwv": args.pwv}
+        elif args.pwv is not None:
+            parser.error("--pwv needs --airmass")
+        try:
+            Filters.compose(args.target, [c for c in args.components.split(",") if c],
+                            atmosphere=atmosphere, filter_root=args.base, allow_partial=args.allow_partial)
+        except ComponentError as exc:
+            print(f"[filters] Cannot build: {exc}")
+            return 1
+    elif args.cmd == "filters-build-components":
+        from .component_sources import AUTOMATIC_BUILDERS, get_builder
+        if args.source == "all":
+            failed = []
+            for name in AUTOMATIC_BUILDERS:
+                kw = {"sites": args.sites or ["paranal", "lasilla"]} if name == "skycalc" else {}
+                print(f"[filters] === {name} ===")
+                try:
+                    get_builder(name)(args.base, **kw)
+                except Exception as exc:  # keep going; report at the end
+                    failed.append(f"{name}: {exc}")
+            for line in failed:
+                print(f"[filters] FAILED {line}")
+            return 1 if failed else 0
+        builder = get_builder(args.source)
+        kwargs = {}
+        if args.raw:
+            kwargs["raw"] = args.raw
+        if args.sites:
+            kwargs["sites"] = args.sites
+        if args.airmass:
+            kwargs["airmasses"] = args.airmass
+        if args.pwv:
+            kwargs["pwvs"] = args.pwv
+        print(f"[filters] Built {builder(args.base, **kwargs)}")
     elif args.cmd == "rebuild":
         run_rebuild_flow(
             base_dir=args.base,

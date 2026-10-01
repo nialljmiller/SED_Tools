@@ -163,6 +163,86 @@ combined = Filters.combine("Gaia2MASS", "GAIA/GAIA", "2MASS/2MASS")
 print(combined)
 ```
 
+#### Photon- vs energy-counting detectors
+
+A transmission curve is defined either for an energy-counting detector (e.g. Bessell's Johnson–Cousins curves) or for a photon-counting one (CCDs, e.g. Gaia DR3, JWST, 2MASS). Synthetic photometry weights the integrand by `T(λ)` in the first case and by `T(λ)·λ` in the second ([Bessell & Murphy 2012](https://ui.adsabs.harvard.edu/abs/2012PASP..124..140B/abstract), eq. A9); using the wrong one shifts Gaia G by ~0.035 mag.
+
+Every filter file carries a header recording which applies:
+
+```
+# FilterID: GAIA/GAIA3.G
+# DetectorType: photon
+# DetectorTypeSource: svo
+# WavelengthUnit: Angstrom
+Wavelength,Transmission
+...
+```
+
+`DetectorType` is `energy` or `photon`. `DetectorTypeSource` is `svo` (taken from the SVO record for `FilterID`), `svo-curve-match` (the file was identified by matching its curve point-by-point against SVO), or `assumed` (not identifiable — custom curves — written as `energy` and unverified). Downloads write the header automatically; existing files can be tagged in place:
+
+```bash
+sed-tools filters-detector                 # whole filter root
+sed-tools filters-detector GAIA/GAIA --dry-run
+```
+
+```python
+Filters.tag_detector_types()               # returns one row per file
+```
+
+`load_filter_curve` reads the header (`FilterCurve.detector_type`, `FilterCurve.weight`) and all band averages use it; untagged files are treated as energy-counting.
+
+`WavelengthUnit` is read the same way. Files without it are assumed to be in Angstrom unless their reddest point is below 1000 (then nm, µm or m), with a logged warning; pass `load_filter_curve(path, wavelength_unit="nm")` when a file is ambiguous.
+
+#### Filter, optics, QE and atmosphere as separate components
+
+A published passband is usually a product of several throughputs, and which ones varies: Gaia DR3 is filter + CCD + instrument, SDSS/2MASS/PS1 include the atmosphere, Johnson is the filter alone. Every filter file records what its published curve contains (`# Components: filter+qe+instrument`). Where an instrument's team publishes the factors separately, SED_Tools stores them alongside and generates that instrument's throughput with and without each one. Components are never mixed between instruments or sites: an instrument is only ever composed from its own filter, optics and QE, and only its own site's atmosphere.
+
+```
+filters/<Facility>/<Instrument>/
+  <Instrument>, <band>.dat     published curves — unchanged, what MESA reads by default
+  manifest.json                what is available, with provenance
+  components/<role>/*.dat      filter / optics / qe (or composites, e.g. filter+optics+qe)
+  products/<recipe>/           composed sets; each is itself a MESA instrument directory
+atmospheres/<site>/            telluric grids (ESO SkyCalc; team standards such as lsst_std)
+```
+
+```bash
+sed-tools filters-info LSST/LSST
+#   Published curves contain : filter+instrument+atmosphere [svo]
+#   Separate components      : filter, optics, qe
+#   Can be built             : filter, filter+optics, filter+qe, filter+optics+qe
+#   Atmosphere               : can be added (own site: lsst_std)
+sed-tools filters-compose LSST/LSST --components filter                      # bare filters
+sed-tools filters-compose LSST/LSST --components filter,optics,qe --airmass 1.2   # full system at its site
+```
+
+```python
+Filters.available("LSST", "LSST")
+Filters.fetch("LSST", "LSST", components=["filter"])                        # filter only
+Filters.fetch("LSST", "LSST", components=["filter", "optics", "qe"],
+              atmosphere={"airmass": 1.2})                                   # + its own atmosphere
+```
+
+Requests that cannot be met are refused with an explanation rather than approximated: components the team never published (e.g. Gaia's bare filters), an atmosphere from another site, adding an atmosphere to a curve that already includes one, or to a space/airborne instrument. A published curve that is the bare filter counts as the `filter` component automatically. Products containing QE are photon-counting; otherwise they inherit the instrument's detector type.
+
+An instrument's atmosphere is the one at its own site (`default_site` in its manifest), with the user choosing only airmass and PWV. Sites are either a team's own standard atmosphere (e.g. Rubin's `lsst_std`) or an [ESO SkyCalc](https://www.eso.org/observing/etc/skycalc/) grid (`lasilla`, `paranal`, `armazones`, `highanddry`), fetched at R=200000 and bin-averaged to R=20000 so unresolved lines are integrated correctly. SkyCalc models Cerro Paranal, so it is used only for ESO facilities there and at La Silla (FORS2, HAWK-I, SPHERE, ERIS, VISTA, La Silla instruments); other observatories are offered an atmosphere only once their team's own standard atmosphere is added.
+
+Where components come from:
+
+| Instruments | Source of the separate factors |
+|---|---|
+| HST ACS (WFC/HRC/SBC), WFC3 (UVIS1/2, IR), WFPC2, NICMOS 1–3 | STScI synphot component tables (graph-table walk per obsmode) |
+| JWST NIRCam, NIRISS, MIRI imaging | STScI Pandeia reference data 4.0 (in-flight) |
+| Rubin/LSST | `lsst/throughputs` (+ Rubin's standard atmosphere `lsst_std`) |
+| Subaru HSC | NAOJ/Subaru curves (+ HSC pipeline's Maunakea atmosphere `maunakea_hsc`) |
+| CTIO DECam | DES standard bandpasses ÷ DES atmosphere (+ `ctio_des`) |
+| VISTA/VIRCAM | ESO VIRCAM ETC curves (+ SkyCalc `paranal`) |
+| ZTF | `ztf_information` filters and CCD QE |
+| 57 SVO instrument groups (SDSS, Swift/UVOT, UKIRT/WFCAM, OmegaCAM, Suprime-Cam, ...) | SVO's own filter-only sibling curves (`g_filter`, `g_fil`, `gprime_filter`) |
+| Gaia, 2MASS, WISE, Spitzer, GALEX, TESS, Kepler, Hipparcos/Tycho | none — only totals are published (`filters-info` says so) |
+
+The njm mirror runs these ahead of time (`sed-tools filters-build-components all`); when curves come from SVO instead, SED_Tools runs the instrument's own builder locally on first use (JWST's ~4 GB reference data only on request).
+
 ---
 
 

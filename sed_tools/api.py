@@ -1736,6 +1736,45 @@ class Filters:
         facility: str,
         instrument: str,
         filter_root: Optional[Union[str, Path]] = None,
+        components: Optional[Union[str, Sequence[str]]] = None,
+        atmosphere: Optional[Dict[str, Any]] = None,
+    ) -> Path:
+        """Download filter profiles, optionally composing them from components.
+
+        With no ``components``/``atmosphere`` this returns the published curves
+        exactly as before (the directory MESA reads).  Otherwise the published
+        curves are downloaded, the instrument's components fetched, and a
+        product built under ``products/<recipe>/``, whose path is returned.
+
+        Parameters
+        ----------
+        components : str or list of str, optional
+            Any of ``filter``, ``optics``, ``qe``, or ``published`` (the
+            published curve as the base), e.g. ``["filter", "optics", "qe"]``
+            or ``"filter"`` for the bare bandpass.  See :meth:`available`.
+        atmosphere : dict, optional
+            Observing conditions, e.g. ``{"airmass": 1.2, "pwv": 2.5}``, to fold
+            in the telluric transmission at the instrument's *own* site
+            (ground-based instruments with a site only).  Components are never
+            taken from another instrument or site.
+        """
+        instrument_dir = cls._fetch_published(facility, instrument, filter_root=filter_root)
+        if components is None and atmosphere is None:
+            return instrument_dir
+        from .component_sources.catalog import ensure_components
+
+        # Components come from the njm mirror when available; otherwise run
+        # the instrument's own builder here (never another instrument's data).
+        ensure_components(instrument_dir)
+        return cls.compose(instrument_dir, components or ["published"], atmosphere=atmosphere,
+                           filter_root=filter_root)
+
+    @classmethod
+    def _fetch_published(
+        cls,
+        facility: str,
+        instrument: str,
+        filter_root: Optional[Union[str, Path]] = None,
     ) -> Path:
         """
         Download filter profiles.
@@ -1753,6 +1792,7 @@ class Filters:
         if existing_dir:
             existing = list(existing_dir.glob("*.dat"))
             print(f"[filters] Already have {len(existing)} filters at {existing_dir}")
+            cls.tag_detector_types(existing_dir, facility=facility, verbose=False)
             return existing_dir
 
         # Try NJM first.
@@ -1830,6 +1870,186 @@ class Filters:
             print(f"[filters] SVO failed: {e}")
 
         raise ValueError(f"Could not download filters for {facility}/{instrument}")
+
+    @classmethod
+    def tag_detector_types(
+        cls,
+        path: Optional[Union[str, Path]] = None,
+        *,
+        facility: Optional[str] = None,
+        force: bool = False,
+        dry_run: bool = False,
+        verbose: bool = True,
+    ) -> List[Dict[str, Any]]:
+        """Ensure every filter file under ``path`` declares its detector type.
+
+        Each ``.dat`` file gets a ``# DetectorType: energy|photon`` header
+        (plus ``FilterID`` and ``DetectorTypeSource``), resolved from SVO by
+        filter ID or by matching the curve against SVO's records. Files that
+        cannot be identified are written as ``energy`` with source
+        ``assumed``. See :mod:`sed_tools.filter_metadata`.
+
+        Parameters
+        ----------
+        path : str or Path, optional
+            Filter root, a facility/instrument directory, or a single file.
+            Defaults to the configured filter root.
+        facility : str, optional
+            SVO facility name, when ``path`` is a single instrument directory.
+        force : bool
+            Re-resolve files that are already tagged from SVO.
+        dry_run : bool
+            Report what would be written without modifying files.
+        """
+        from .filter_metadata import SVOMetadataClient, iter_filter_files, tag_filter_file, tag_filter_tree
+
+        target = Path(path) if path is not None else cls._filter_root
+        if facility is not None:
+            client = SVOMetadataClient()
+            results = [
+                tag_filter_file(p, client=client, facility=facility, force=force, dry_run=dry_run)
+                for p in iter_filter_files(target)
+            ]
+        else:
+            results = tag_filter_tree(target, force=force, dry_run=dry_run)
+
+        rows = []
+        for r in results:
+            rows.append({
+                "path": str(r.path),
+                "detector_type": r.detector_type,
+                "source": r.source,
+                "filter_id": r.filter_id,
+                "changed": r.changed,
+                "note": r.note,
+            })
+            if verbose or (r.changed and r.source == "assumed"):
+                flag = "*" if r.changed else " "
+                note = f"  ({r.note})" if r.note and r.source == "assumed" else ""
+                print(f"[filters]{flag} {r.path}: {r.detector_type} [{r.source}]{note}")
+        return rows
+
+    @classmethod
+    def _atmosphere_root(cls, filter_root: Optional[Union[str, Path]] = None) -> Path:
+        return (Path(filter_root) if filter_root else cls._filter_root).parent / "atmospheres"
+
+    @classmethod
+    def available(
+        cls,
+        facility: str,
+        instrument: str,
+        filter_root: Optional[Union[str, Path]] = None,
+    ) -> Dict[str, Any]:
+        """Describe what can be requested for an instrument.
+
+        Returns the published curve's contents (e.g. ``filter+instrument+atmosphere``),
+        the instrument's own separable components, the with/without variants
+        that can be built from them, whether (and at which site) a telluric
+        component can be added, and the detector type.  Uses the local copy if present,
+        otherwise the NJM mirror's manifest.
+        """
+        from .filter_components import InstrumentManifest
+
+        base_dir = Path(filter_root) if filter_root else cls._filter_root
+        local = base_dir / facility / instrument
+        if local.is_dir() and list(local.glob("*.dat")):
+            return InstrumentManifest.load(local).describe()
+        try:
+            from .njm_filter_grabber import NJMFilterGrabber
+
+            remote = NJMFilterGrabber(base_dir=str(base_dir)).fetch_manifest(facility, instrument)
+        except Exception:
+            remote = None
+        if remote:
+            known = set(InstrumentManifest.__dataclass_fields__)
+            return InstrumentManifest(**{k: v for k, v in remote.items() if k in known}).describe()
+        from .facility_sites import is_ground_based, platform
+
+        return {
+            "facility": facility, "instrument": instrument, "bands": [],
+            "published": "unknown (fetch to inspect)", "published_source": "",
+            "components": [], "partial_components": {},
+            "atmosphere": bool(is_ground_based(facility)), "default_site": None, "detector_type": None,
+            "platform": platform(facility),
+        }
+
+    @classmethod
+    def atmospheres(cls, filter_root: Optional[Union[str, Path]] = None) -> Dict[str, Any]:
+        """Telluric grids available locally and on the NJM mirror, by site."""
+        from .filter_components import MANIFEST_NAME, AtmosphereGrid
+
+        root = cls._atmosphere_root(filter_root)
+        out: Dict[str, Any] = {}
+        sites = set()
+        if root.is_dir():
+            sites.update(p.name for p in root.iterdir() if (p / MANIFEST_NAME).exists())
+        try:
+            from .njm_filter_grabber import NJMFilterGrabber
+
+            njm = NJMFilterGrabber(base_dir=str(Path(filter_root) if filter_root else cls._filter_root))
+            for site in njm.list_atmosphere_sites():
+                if site not in sites and njm.download_atmosphere(str(root), site):
+                    sites.add(site)
+        except Exception:
+            logger.debug("NJM atmosphere listing failed", exc_info=True)
+        for site in sorted(sites):
+            grid = AtmosphereGrid.load(root / site)
+            out[site] = {
+                "altitude_m": grid.altitude_m,
+                "airmass": sorted({float(e["airmass"]) for e in grid.entries}),
+                "pwv": sorted({float(e["pwv"]) for e in grid.entries if e.get("pwv") is not None}),
+                "source": grid.source,
+            }
+        return out
+
+    @classmethod
+    def compose(
+        cls,
+        instrument: Union[str, Path],
+        components: Union[str, Sequence[str]],
+        *,
+        atmosphere: Optional[Dict[str, Any]] = None,
+        filter_root: Optional[Union[str, Path]] = None,
+        allow_partial: bool = False,
+    ) -> Path:
+        """Build ``products/<recipe>/`` for a local instrument directory.
+
+        ``instrument`` is a path or ``"Facility/Instrument"`` under the filter
+        root.  Raises :class:`sed_tools.filter_components.ComponentError` with
+        an explanation when the request cannot be met (component not
+        published for this instrument, double counting, space-based
+        instrument with an atmosphere, ...).
+        """
+        from .filter_components import (AtmosphereSpec, InstrumentManifest, atmosphere_file,
+                                        build_product, resolve_atmosphere)
+
+        base_dir = Path(filter_root) if filter_root else cls._filter_root
+        instrument_dir = Path(instrument)
+        if not instrument_dir.is_dir():
+            instrument_dir = base_dir / instrument
+        atm_root = cls._atmosphere_root(filter_root)
+        spec = AtmosphereSpec.coerce(atmosphere)
+        if spec is not None:
+            # Always the instrument's own site; only airmass/PWV are chosen.
+            spec = resolve_atmosphere(InstrumentManifest.load(instrument_dir), spec)
+            try:
+                atmosphere_file(atm_root, spec)
+            except Exception:
+                # Not local yet: fetch the grid point from the NJM mirror.
+                from .filter_components import AtmosphereGrid
+                from .njm_filter_grabber import NJMFilterGrabber
+
+                njm = NJMFilterGrabber(base_dir=str(base_dir))
+                if njm.download_atmosphere(str(atm_root), spec.site):
+                    try:
+                        name = AtmosphereGrid.load(atm_root / spec.site).select(spec)
+                        njm.download_atmosphere(str(atm_root), spec.site, name)
+                    except Exception:
+                        pass
+        out = build_product(instrument_dir, components, atmosphere=spec, atmosphere_root=atm_root,
+                            allow_partial=allow_partial)
+        print(f"[filters] Built {out}")
+        return out
 
     @classmethod
     def combine(

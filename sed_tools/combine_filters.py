@@ -15,6 +15,7 @@ import shutil
 from pathlib import Path
 from typing import List, Optional, Sequence, Union
 
+from .filter_components import COMPONENTS_DIR, is_auxiliary_path
 from .models import FILTER_DIR_DEFAULT
 
 PathLike = Union[str, os.PathLike[str]]
@@ -28,7 +29,7 @@ def find_filter_sets(base_dir: Optional[PathLike] = None) -> List[Path]:
 
     filter_sets: List[Path] = []
     for path in sorted(root.rglob("*")):
-        if not path.is_dir():
+        if not path.is_dir() or is_auxiliary_path(path, root, dirs=(COMPONENTS_DIR,)):
             continue
         if any(child.is_file() and child.suffix.lower() == ".dat" for child in path.iterdir()):
             filter_sets.append(path)
