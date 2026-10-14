@@ -2,8 +2,34 @@
 Changelog
 =========
 
-Unreleased
-----------
+Version 0.3.0 (October 2026)
+---------------------------
+
+Optical Path and Detector Awareness
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Passbands now track the physical elements included along the optical path:
+the site's atmosphere, telescope/instrument optics, filter transmission and
+detector quantum efficiency (QE). Previously, downloaded curves were used
+as a single throughput and photometric integration treated every detector
+as energy-counting. The new metadata distinguishes the curve's included
+components from its photon- or energy-counting response convention.
+
+``Components`` headers and instrument manifests describe published contents,
+available factors and provenance; ``DetectorType`` and
+``DetectorTypeSource`` record the integration convention and how it was
+identified. Separate factors are available only where supported by the
+source data; unresolved instrument contributions and unknown contents are
+not presented as independently recoverable elements.
+
+Existing collections can be inspected with
+``sed-tools filters-detector --dry-run`` and tagged with
+``sed-tools filters-detector``. Unidentified curves remain explicitly
+``assumed`` energy-counting. Published passbands remain the default;
+automatic discovery skips component and product subdirectories, and a
+composed product must be selected explicitly. Tagging and composition do
+not require rebuilding flux cubes, but photometry must be recomputed to
+use corrected detector weights.
 
 New Features
 ~~~~~~~~~~~~

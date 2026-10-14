@@ -30,6 +30,8 @@ SED_Tools is a Python package for working with stellar spectral energy distribut
 
 - **Multi-source downloads** — Fetch stellar atmosphere spectra from SVO, MSG, MAST (BOSZ), and NJM mirror
 - **Photometric filters** — Download transmission curves from the NJM mirror with SVO Filter Profile Service fallback
+- **Optical path components** — Track which parts of the atmosphere, telescope/instrument optics, filter and detector QE are included in a passband; compose available factors for the same instrument and site
+- **Detector-aware photometry** — Record photon- or energy-counting response conventions and use the corresponding integration weights for synthetic photometry
 - **Unit standardization** — Convert all spectra to consistent units (wavelength in Å, flux in erg/cm²/s/Å)
 - **External integration** — Generate binary flux cubes, HDF5 bundles, and lookup tables. This is for [SED_Model](https://github.com/nialljmiller/SED_Model) and [MESA](https://docs.mesastar.org/)'s `colors` module
 - **Grid combination** — Merge multiple stellar libraries into unified "omni grids"
@@ -163,6 +165,19 @@ combined = Filters.combine("Gaia2MASS", "GAIA/GAIA", "2MASS/2MASS")
 print(combined)
 ```
 
+#### Understanding the optical path and detector response
+
+SED_Tools now describes a passband in terms of the elements along the light's path: the site's atmosphere (for ground-based observations), telescope and instrument optics, the bandpass filter, and the detector's quantum efficiency (QE). This makes it possible to inspect what a published transmission curve already includes before choosing which components to use in synthetic photometry.
+
+Two separate pieces of metadata describe the response:
+
+| Metadata | What it tells you |
+|---|---|
+| `Components` | Which physical throughput factors are already multiplied into the curve: `filter`, `optics`, `qe`, `atmosphere`, or a source's unresolved `instrument` contribution |
+| `DetectorType` | Whether photometric integration uses the energy-counting weight `T(λ)` or photon-counting weight `T(λ)·λ` |
+
+QE describes the detector's wavelength-dependent efficiency; detector type describes how the response is weighted during integration. Tracking both prevents counting a throughput factor twice or applying the wrong detector weighting. Component availability depends on what the source publishes: a total throughput does not imply that all of its factors can be recovered separately. Unknown contents and assumed detector types remain identified as such in the metadata.
+
 #### Photon- vs energy-counting detectors
 
 A transmission curve is defined either for an energy-counting detector (e.g. Bessell's Johnson–Cousins curves) or for a photon-counting one (CCDs, e.g. Gaia DR3, JWST, 2MASS). Synthetic photometry weights the integrand by `T(λ)` in the first case and by `T(λ)·λ` in the second ([Bessell & Murphy 2012](https://ui.adsabs.harvard.edu/abs/2012PASP..124..140B/abstract), eq. A9); using the wrong one shifts Gaia G by ~0.035 mag.
@@ -242,6 +257,12 @@ Where components come from:
 | Gaia, 2MASS, WISE, Spitzer, GALEX, TESS, Kepler, Hipparcos/Tycho | none — only totals are published (`filters-info` says so) |
 
 The njm mirror runs these ahead of time (`sed-tools filters-build-components all`); when curves come from SVO instead, SED_Tools runs the instrument's own builder locally on first use (JWST's ~4 GB reference data only on request).
+
+#### Updating an existing filter collection
+
+Run `sed-tools filters-detector --dry-run` to inspect proposed detector tags, then `sed-tools filters-detector` to write them. Review entries marked `assumed`: they retain the historical energy-counting convention until identified. Use `sed-tools filters-info Facility/Instrument` to inspect published contents, available components and the instrument's atmosphere before composing a new set.
+
+Published curves remain the default. Composed products have their own directories and MESA index files; select a product directory explicitly to use that recipe. Automatic filter discovery skips `components/` and `products/`, so adding component data does not silently replace a published passband. Existing flux cubes do not need rebuilding to tag filters or compose throughputs; recompute photometry to apply corrected detector weights.
 
 ---
 
@@ -981,7 +1002,7 @@ BOSZ 2024 fixed-resolution spectra require the official wavelength files in the 
 If you use SED_Tools in your research, please cite the archived software release
 via its Zenodo DOI:
 
-A version-specific Zenodo DOI for Version 0.2.0 will be added following archival of this release.
+A version-specific Zenodo DOI for Version 0.3.0 will be added following archival of this release.
 
 Machine-readable citation metadata is available in [`CITATION.cff`](CITATION.cff).
 
