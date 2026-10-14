@@ -11,13 +11,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # needed for setuptools-scm
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - run: pip install build twine
+
+      - name: Check release tag and version metadata
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: python scripts/bump_version.py --check --tag "$RELEASE_TAG"
 
       - run: python -m build
 

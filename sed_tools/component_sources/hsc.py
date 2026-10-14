@@ -1,0 +1,45 @@
+"""Subaru Hyper Suprime-Cam components (NAOJ/Subaru Telescope).
+
+* filter: area-weighted mean filter transmissions ``wHSC-<band>.txt``
+* optics: primary mirror (2010 recoating) x Primary Focus Unit x dewar window
+* qe:     ``qe_ccd_HSC.txt``
+* atmosphere (own site ``maunakea_hsc``): the MODTRAN Maunakea model used by
+  the HSC pipeline (airmass 1.2, PWV 1.5 mm)
+
+Vignetting is wavelength independent and is not included (it changes only
+the overall scale, not synthetic photometry).
+"""
+
+from __future__ import annotations
+
+from ._common import SimpleSource, SiteAtmosphere, Table, build_simple
+
+SUBARU = "https://subarutelescope.org/Observing/Instruments/HSC/txt"
+OBS_SUBARU = "https://raw.githubusercontent.com/lsst/obs_subaru/4db92921ce698fb2601955731e28970de943041f/hsc/transmission"
+BANDS = ("g", "r", "i", "z", "Y")
+
+SPEC = SimpleSource(
+    facility="Subaru",
+    instrument="HSC",
+    filters={b: Table(f"{SUBARU}/wHSC-{b}.txt", note="area-weighted mean") for b in BANDS},
+    optics=(
+        Table(f"{OBS_SUBARU}/M1-2010s.txt", wl_scale=10.0, note="primary mirror"),
+        Table(f"{SUBARU}/throughput_popt2.txt", note="Primary Focus Unit"),
+        Table(f"{SUBARU}/throughput_win.txt", note="dewar window"),
+    ),
+    qe=Table(f"{SUBARU}/qe_ccd_HSC.txt"),
+    svo_ids={b: f"Subaru/HSC.{b}" for b in BANDS},
+    site=SiteAtmosphere(
+        site="maunakea_hsc",
+        altitude_m=4139.0,
+        entries=[(1.2, 1.5, Table(f"{OBS_SUBARU}/modtran_maunakea_am12_pwv15_binned10ang.dat"))],
+        source="MODTRAN Maunakea model used by the HSC pipeline (N. Yasuda), lsst/obs_subaru",
+    ),
+    outside_range="edge",  # HSC pipeline convention: non-filter curves hold their edge values
+    references={"subaru": "https://subarutelescope.org/Observing/Instruments/HSC/sensitivity.html"},
+    notes="Vignetting (wavelength independent) is not included.",
+)
+
+
+def build(filter_root, **kwargs):
+    return build_simple(SPEC, filter_root, **kwargs)

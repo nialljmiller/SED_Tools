@@ -13,6 +13,8 @@ import requests
 from astroquery.svo_fps import SvoFps
 from bs4 import BeautifulSoup
 
+from .filter_metadata import (ENERGY, SOURCE_ASSUMED, SOURCE_SVO, SVOMetadataClient,
+                              svo_components_header, write_filter_file)
 from .ui_utils import prompt_choice
 from .parsing import parse_multi_selection
 
@@ -59,6 +61,7 @@ class SVOFilterBrowser:
         self._facility_cache: Optional[List[Facility]] = None
         self._instrument_cache: Dict[str, List[Instrument]] = {}
         self._filters_cache: Dict[tuple[str, str], List[FilterRow]] = {}
+        self.metadata_client = SVOMetadataClient(session=self.session, timeout=SvoFps.TIMEOUT)
 
     # -------------------- discovery helpers --------------------
     def list_facilities(self) -> List[Facility]:
@@ -110,6 +113,7 @@ class SVOFilterBrowser:
         if cache_key in self._filters_cache:
             return self._filters_cache[cache_key]
 
+        sibling_keys = [i.key for i in self.list_instruments(facility_key) if i.key != instrument_key]
         soup = self._fetch_index(
             {"mode": "browse", "gname": facility_key, "gname2": instrument_key, "asttype": ""}
         )
@@ -132,6 +136,11 @@ class SVOFilterBrowser:
                 band = _band_from_filter_id(filter_id)
                 facility = cells[-3].get_text(strip=True) if len(cells) >= 3 else facility_key
                 instrument = cells[-2].get_text(strip=True) if len(cells) >= 2 else instrument_key
+                if _would_collide(instrument, instrument_key, sibling_keys):
+                    # SVO lists several instruments under one name (every Gaia
+                    # release is "GAIA"); file them under their unique key
+                    # (GAIA/GAIA0, GAIA/GAIA3) so one never overwrites another.
+                    instrument = instrument_key
                 description = cells[-1].get_text(strip=True) if cells else ""
                 rows.append(
                     FilterRow(
@@ -175,12 +184,26 @@ class SVOFilterBrowser:
             touched_dirs[out_dir] = instrument_dir
 
             try:
-                table = SvoFps.get_transmission_data(row.filter_id)
-                if table is None or len(table) == 0:
+                record = self.metadata_client.get_filter(row.filter_id)
+                if record is None or record.wavelength.size == 0:
                     print(f"    [skip] No transmission data returned for {row.filter_id}")
                     continue
-                table.write(out_path, format="ascii.csv", overwrite=True)
-                print(f"    [saved] {out_path}")
+                if record.detector_type:
+                    detector_type, source = record.detector_type, SOURCE_SVO
+                else:
+                    detector_type, source = ENERGY, SOURCE_ASSUMED
+                    print(f"    [warn] SVO gives no DetectorType for {row.filter_id}; assuming energy")
+                write_filter_file(
+                    out_path,
+                    record.wavelength,
+                    record.transmission,
+                    detector_type=detector_type,
+                    source=source,
+                    filter_id=row.filter_id,
+                    wavelength_unit=record.wavelength_unit,
+                    extra=svo_components_header(record.components),
+                )
+                print(f"    [saved] {out_path} ({detector_type}-counting)")
             except Exception as exc:  # pragma: no cover - network issues
                 print(f"    [error] Failed to download {row.filter_id}: {exc}")
 
@@ -222,6 +245,18 @@ class SVOFilterBrowser:
             if titles and titles[0] == "filter id":
                 return table
         return None
+
+
+def _would_collide(instrument_name: str, instrument_key: str, other_keys: Sequence[str]) -> bool:
+    """True if filing ``instrument_key`` under ``instrument_name`` could clash
+    with another instrument of the same facility."""
+    def norm(value: str) -> str:
+        return "".join(ch for ch in value.lower() if ch.isalnum())
+
+    name = norm(instrument_name)
+    if not name or name == norm(instrument_key):
+        return False
+    return any(norm(k).startswith(name) for k in other_keys)
 
 
 # -------------------- CLI helpers --------------------

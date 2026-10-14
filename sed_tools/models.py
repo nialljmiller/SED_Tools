@@ -10,6 +10,7 @@ from typing import (Dict, Iterable, Iterator, List, Mapping, Optional,
 
 import numpy as np
 
+from .filter_components import is_auxiliary_path
 from ._flux import (AB_ZERO_FLUX, FILTER_EXTENSIONS, VEGA_ZP_KEYS, FilterCurve,
                     FluxCube, Spectrum, band_average_flux_lambda,
                     band_average_flux_lambda_from_arrays, band_average_flux_nu,
@@ -189,7 +190,7 @@ def _vega_zero_point(curve: FilterCurve, vega_curve: Optional[Spectrum]) -> floa
         right=0.0,
     )
     return band_average_flux_lambda_from_arrays(
-        curve.wavelength, interp_flux, curve.transmission
+        curve.wavelength, interp_flux, curve.transmission, curve.detector_type
     )
 
 
@@ -353,7 +354,7 @@ class SEDModel:
             lookup_dir = str(path).lower()
             dir_matches: List[Path] = []
             for candidate_dir in filters_dir.rglob("*"):
-                if not candidate_dir.is_dir():
+                if not candidate_dir.is_dir() or is_auxiliary_path(candidate_dir, filters_dir):
                     continue
                 if candidate_dir.name.lower() != lookup_dir:
                     continue
@@ -747,7 +748,7 @@ def _build_filter_index(root: Union[str, os.PathLike[str]]) -> Dict[str, List[Pa
     if not root.exists():
         return index
     for path in root.rglob("*"):
-        if not path.is_file():
+        if not path.is_file() or is_auxiliary_path(path, root):
             continue
         if path.suffix.lower() not in FILTER_EXTENSIONS:
             continue

@@ -37,6 +37,7 @@ output locations or exporting the interpolated spectrum to disk.
 from __future__ import annotations
 
 import argparse
+import logging
 import math
 import os
 import re
@@ -44,6 +45,13 @@ import struct
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, List, Sequence, Tuple
+
+try:
+    from .filter_metadata import ENERGY, PHOTON, normalize_detector_type
+except ImportError:  # pragma: no cover - executed as a standalone script
+    from filter_metadata import ENERGY, PHOTON, normalize_detector_type
+
+logger = logging.getLogger(__name__)
 
 FILTER_EXTENSIONS = {".dat", ".txt", ".csv"}
 
@@ -53,6 +61,8 @@ SPEED_OF_LIGHT_ANG_PER_S = 2.99792458e18  # speed of light in Angstrom/s
 AB_ZERO_FLUX = 3.631e-20  # 3631 Jy expressed in erg s^-1 cm^-2 Hz^-1
 UNIT_TO_ANGSTROM: Dict[str, float] = {
     "angstrom": 1.0,
+    "angstroms": 1.0,
+    "\u00e5": 1.0,
     "ang": 1.0,
     "a": 1.0,
     "aa": 1.0,
@@ -62,6 +72,9 @@ UNIT_TO_ANGSTROM: Dict[str, float] = {
     "micrometer": 1.0e4,
     "micrometre": 1.0e4,
     "micron": 1.0e4,
+    "microns": 1.0e4,
+    "\u00b5m": 1.0e4,
+    "\u03bcm": 1.0e4,
     "um": 1.0e4,
     "millimeter": 1.0e7,
     "millimetre": 1.0e7,
@@ -91,6 +104,12 @@ class FilterCurve:
     transmission: np.ndarray
     metadata: Dict[str, object]
     wavelength_unit: str = "angstrom"
+    detector_type: str = ENERGY
+
+    @property
+    def weight(self) -> np.ndarray:
+        """Integration weight: ``T`` (energy counting) or ``T*lambda`` (photon counting)."""
+        return filter_weight(self.wavelength, self.transmission, self.detector_type)
 
 
 @dataclass
@@ -117,14 +136,24 @@ def parse_metadata_value(value: str) -> object:
 
 
 def infer_unit_from_values(values: np.ndarray) -> str:
+    """Guess the wavelength unit of a filter curve or spectrum from its values.
+
+    Angstrom is assumed unless that reading is physically implausible: a curve
+    or spectrum whose reddest point lies below 1000 A would sit entirely in the
+    extreme UV, so such values are read as nm, then um, then m.
+
+    The guess is inherently ambiguous where units overlap (e.g. a K-band curve
+    tabulated in nm, 1950-2400, reads as a UV curve in A), so files should
+    declare ``# WavelengthUnit: ...`` and callers may pass an explicit unit.
+    """
     if values.size == 0:
         return "angstrom"
     max_value = float(np.max(values))
-    if max_value >= 5e4:
+    if max_value >= 1000:
         return "angstrom"
-    if max_value >= 50:
+    if max_value >= 100:
         return "nanometer"
-    if max_value >= 0.5:
+    if max_value >= 0.01:
         return "micrometer"
     return "meter"
 
@@ -140,7 +169,10 @@ def standardize_wavelength_array(
     unit_key = (unit_hint or "").strip().lower()
     if not unit_key:
         unit_key = infer_unit_from_values(arr)
-    factor = UNIT_TO_ANGSTROM.get(unit_key, 1.0)
+    if unit_key not in UNIT_TO_ANGSTROM:
+        logger.warning("Unrecognised wavelength unit %r; inferring from values instead", unit_hint)
+        unit_key = infer_unit_from_values(arr)
+    factor = UNIT_TO_ANGSTROM[unit_key]
     converted = arr * factor
     return converted, order, unit_key or "angstrom"
 
@@ -344,26 +376,84 @@ def bolometric_magnitude(
     return fbol, mag
 
 
-def load_filter_curve(path: str, name: str | None = None) -> FilterCurve:
-    """Load a filter throughput curve along with its metadata."""
-
-    raw_wavelengths, raw_transmission, metadata = load_two_column_file(path)
-    wavelength, order, unit_key = standardize_wavelength_array(
-        raw_wavelengths, metadata.get("wavelength_unit") or metadata.get("wavelengthunit")
-    )
-    transmission = np.asarray(raw_transmission, dtype=float)[order]
-
+def _standardize_file_wavelengths(
+    path: str,
+    raw_wavelengths: Sequence[float],
+    metadata: Dict[str, object],
+    wavelength_unit: str | None,
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Convert a file's wavelength column to Angstrom, recording how the unit was found."""
+    hint = wavelength_unit or metadata.get("wavelength_unit") or metadata.get("wavelengthunit")
+    hint = str(hint) if hint else None
+    wavelength, order, unit_key = standardize_wavelength_array(raw_wavelengths, hint)
+    if wavelength_unit:
+        metadata["wavelength_unit_source"] = "argument"
+    elif hint:
+        metadata["wavelength_unit_source"] = "header"
+    else:
+        metadata["wavelength_unit_source"] = "inferred"
+        logger.warning(
+            "%s declares no wavelength unit; assuming %s from its values. "
+            "Add a '# WavelengthUnit: ...' header or pass wavelength_unit= to be explicit.",
+            path,
+            unit_key,
+        )
     metadata["wavelength_unit_inferred"] = unit_key or "angstrom"
     metadata["wavelength_unit_resolved"] = "angstrom"
+    return wavelength, order
+
+
+def load_filter_curve(
+    path: str, name: str | None = None, wavelength_unit: str | None = None
+) -> FilterCurve:
+    """Load a filter throughput curve along with its metadata.
+
+    ``wavelength_unit`` overrides any ``WavelengthUnit`` header; without either
+    the unit is inferred from the values (see :func:`infer_unit_from_values`).
+    """
+
+    raw_wavelengths, raw_transmission, metadata = load_two_column_file(path)
+    wavelength, order = _standardize_file_wavelengths(path, raw_wavelengths, metadata, wavelength_unit)
+    transmission = np.asarray(raw_transmission, dtype=float)[order]
+    detector_type = normalize_detector_type(metadata.get("detectortype"))
+    if detector_type is None:
+        # Untagged file: keep the historical energy-counting behaviour.
+        detector_type = ENERGY
+        metadata.setdefault("detectortypesource", "assumed")
     curve_name = name or Path(path).stem
-    return FilterCurve(curve_name, wavelength, transmission, metadata, wavelength_unit="angstrom")
+    return FilterCurve(
+        curve_name, wavelength, transmission, metadata,
+        wavelength_unit="angstrom", detector_type=detector_type,
+    )
+
+
+def filter_weight(
+    wavelength: np.ndarray, transmission: np.ndarray, detector_type: str = ENERGY
+) -> np.ndarray:
+    """Return the synthetic-photometry weight for a transmission curve.
+
+    Photon-counting curves are weighted by ``T*lambda`` so the band average is
+    over photons rather than energy (Bessell & Murphy 2012, PASP 124, 140,
+    eq. A9).  Energy-counting curves use ``T`` directly.
+    """
+    resolved = normalize_detector_type(detector_type)
+    if resolved is None:
+        raise ValueError(f"Unknown detector type: {detector_type!r}")
+    transmission = np.asarray(transmission, dtype=float)
+    if resolved == PHOTON:
+        return transmission * np.asarray(wavelength, dtype=float)
+    return transmission
 
 
 def band_average_flux_lambda_from_arrays(
-    wavelength: np.ndarray, flux: np.ndarray, transmission: np.ndarray
+    wavelength: np.ndarray,
+    flux: np.ndarray,
+    transmission: np.ndarray,
+    detector_type: str = ENERGY,
 ) -> float:
-    numerator = np.trapezoid(flux * transmission, wavelength)
-    denom = np.trapezoid(transmission, wavelength)
+    weight = filter_weight(wavelength, transmission, detector_type)
+    numerator = np.trapezoid(flux * weight, wavelength)
+    denom = np.trapezoid(weight, wavelength)
     if denom == 0:
         raise ValueError("Filter transmission integrates to zero")
     return float(numerator / denom)
@@ -373,16 +463,19 @@ def band_average_flux_lambda(
     sed_wavelength: np.ndarray, sed_flux: np.ndarray, curve: FilterCurve
 ) -> float:
     interp_flux = np.interp(curve.wavelength, sed_wavelength, sed_flux, left=0.0, right=0.0)
-    return band_average_flux_lambda_from_arrays(curve.wavelength, interp_flux, curve.transmission)
+    return band_average_flux_lambda_from_arrays(
+        curve.wavelength, interp_flux, curve.transmission, curve.detector_type
+    )
 
 
 def band_average_flux_nu(
     sed_wavelength: np.ndarray, sed_flux: np.ndarray, curve: FilterCurve
 ) -> float:
     interp_flux = np.interp(curve.wavelength, sed_wavelength, sed_flux, left=0.0, right=0.0)
-    numerator = np.trapezoid(interp_flux * curve.transmission, curve.wavelength)
+    weight = curve.weight
+    numerator = np.trapezoid(interp_flux * weight, curve.wavelength)
     denom = np.trapezoid(
-        curve.transmission * SPEED_OF_LIGHT_ANG_PER_S / (curve.wavelength**2), curve.wavelength
+        weight * SPEED_OF_LIGHT_ANG_PER_S / (curve.wavelength**2), curve.wavelength
     )
     if denom == 0:
         raise ValueError("Filter transmission integrates to zero")
@@ -533,6 +626,15 @@ def infer_filter_directories(flux_cube_path: str) -> List[Path]:
     return candidates
 
 
+def _is_auxiliary(path: Path, root: Path) -> bool:
+    """Components/products sub-directories hold derived curves, not published ones."""
+    try:
+        parts = path.relative_to(root).parts
+    except ValueError:
+        parts = path.parts
+    return any(part in ("components", "products") for part in parts)
+
+
 def collect_filter_files(
     entries: Sequence[str] | None, flux_cube_path: str
 ) -> Tuple[List[Tuple[str, Path]], List[Path]]:
@@ -551,7 +653,8 @@ def collect_filter_files(
             if path.is_dir():
                 search_roots.append(path)
                 for file_path in sorted(path.rglob("*")):
-                    add_file(file_path)
+                    if not _is_auxiliary(file_path, path):
+                        add_file(file_path)
             elif path.is_file():
                 add_file(path)
             else:
@@ -560,7 +663,8 @@ def collect_filter_files(
         for directory in infer_filter_directories(flux_cube_path):
             search_roots.append(directory)
             for file_path in sorted(directory.rglob("*")):
-                add_file(file_path)
+                if not _is_auxiliary(file_path, directory):
+                    add_file(file_path)
 
     unique_files = list(dict.fromkeys(discovered))
     if not unique_files:
@@ -759,14 +863,10 @@ def resolve_vega_spectrum_path(
         print("Please select one of the listed Vega spectra.")
 
 
-def load_spectrum(path: str) -> Spectrum:
+def load_spectrum(path: str, wavelength_unit: str | None = None) -> Spectrum:
     wavelengths, fluxes, metadata = load_two_column_file(path)
-    wavelength, order, unit_key = standardize_wavelength_array(
-        wavelengths, metadata.get("wavelength_unit") or metadata.get("wavelengthunit")
-    )
+    wavelength, order = _standardize_file_wavelengths(path, wavelengths, metadata, wavelength_unit)
     flux = np.asarray(fluxes, dtype=float)[order]
-    metadata["wavelength_unit_inferred"] = unit_key or "angstrom"
-    metadata["wavelength_unit_resolved"] = "angstrom"
     return Spectrum(wavelength, flux, metadata, wavelength_unit="angstrom")
 
 
@@ -1054,7 +1154,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                             right=0.0,
                         )
                         vega_zero = band_average_flux_lambda_from_arrays(
-                            curve.wavelength, interp_flux, curve.transmission
+                            curve.wavelength, interp_flux, curve.transmission, curve.detector_type
                         )
                     if vega_zero <= 0:
                         raise ValueError(

@@ -30,6 +30,8 @@ SED_Tools is a Python package for working with stellar spectral energy distribut
 
 - **Multi-source downloads** — Fetch stellar atmosphere spectra from SVO, MSG, MAST (BOSZ), and NJM mirror
 - **Photometric filters** — Download transmission curves from the NJM mirror with SVO Filter Profile Service fallback
+- **Optical path components** — Track which parts of the atmosphere, telescope/instrument optics, filter and detector QE are included in a passband; compose available factors for the same instrument and site
+- **Detector-aware photometry** — Record photon- or energy-counting response conventions and use the corresponding integration weights for synthetic photometry
 - **Unit standardization** — Convert all spectra to consistent units (wavelength in Å, flux in erg/cm²/s/Å)
 - **External integration** — Generate binary flux cubes, HDF5 bundles, and lookup tables. This is for [SED_Model](https://github.com/nialljmiller/SED_Model) and [MESA](https://docs.mesastar.org/)'s `colors` module
 - **Grid combination** — Merge multiple stellar libraries into unified "omni grids"
@@ -162,6 +164,105 @@ from sed_tools.api import Filters
 combined = Filters.combine("Gaia2MASS", "GAIA/GAIA", "2MASS/2MASS")
 print(combined)
 ```
+
+#### Understanding the optical path and detector response
+
+SED_Tools now describes a passband in terms of the elements along the light's path: the site's atmosphere (for ground-based observations), telescope and instrument optics, the bandpass filter, and the detector's quantum efficiency (QE). This makes it possible to inspect what a published transmission curve already includes before choosing which components to use in synthetic photometry.
+
+Two separate pieces of metadata describe the response:
+
+| Metadata | What it tells you |
+|---|---|
+| `Components` | Which physical throughput factors are already multiplied into the curve: `filter`, `optics`, `qe`, `atmosphere`, or a source's unresolved `instrument` contribution |
+| `DetectorType` | Whether photometric integration uses the energy-counting weight `T(λ)` or photon-counting weight `T(λ)·λ` |
+
+QE describes the detector's wavelength-dependent efficiency; detector type describes how the response is weighted during integration. Tracking both prevents counting a throughput factor twice or applying the wrong detector weighting. Component availability depends on what the source publishes: a total throughput does not imply that all of its factors can be recovered separately. Unknown contents and assumed detector types remain identified as such in the metadata.
+
+#### Photon- vs energy-counting detectors
+
+A transmission curve is defined either for an energy-counting detector (e.g. Bessell's Johnson–Cousins curves) or for a photon-counting one (CCDs, e.g. Gaia DR3, JWST, 2MASS). Synthetic photometry weights the integrand by `T(λ)` in the first case and by `T(λ)·λ` in the second ([Bessell & Murphy 2012](https://ui.adsabs.harvard.edu/abs/2012PASP..124..140B/abstract), eq. A9); using the wrong one shifts Gaia G by ~0.035 mag.
+
+Every filter file carries a header recording which applies:
+
+```
+# FilterID: GAIA/GAIA3.G
+# DetectorType: photon
+# DetectorTypeSource: svo
+# WavelengthUnit: Angstrom
+Wavelength,Transmission
+...
+```
+
+`DetectorType` is `energy` or `photon`. `DetectorTypeSource` is `svo` (taken from the SVO record for `FilterID`), `svo-curve-match` (the file was identified by matching its curve point-by-point against SVO), or `assumed` (not identifiable — custom curves — written as `energy` and unverified). Downloads write the header automatically; existing files can be tagged in place:
+
+```bash
+sed-tools filters-detector                 # whole filter root
+sed-tools filters-detector GAIA/GAIA --dry-run
+```
+
+```python
+Filters.tag_detector_types()               # returns one row per file
+```
+
+`load_filter_curve` reads the header (`FilterCurve.detector_type`, `FilterCurve.weight`) and all band averages use it; untagged files are treated as energy-counting.
+
+`WavelengthUnit` is read the same way. Files without it are assumed to be in Angstrom unless their reddest point is below 1000 (then nm, µm or m), with a logged warning; pass `load_filter_curve(path, wavelength_unit="nm")` when a file is ambiguous.
+
+#### Filter, optics, QE and atmosphere as separate components
+
+A published passband is usually a product of several throughputs, and which ones varies: Gaia DR3 is filter + CCD + instrument, SDSS/2MASS/PS1 include the atmosphere, Johnson is the filter alone. Every filter file records what its published curve contains (`# Components: filter+qe+instrument`). Where an instrument's team publishes the factors separately, SED_Tools stores them alongside and generates that instrument's throughput with and without each one. Components are never mixed between instruments or sites: an instrument is only ever composed from its own filter, optics and QE, and only its own site's atmosphere.
+
+```
+filters/<Facility>/<Instrument>/
+  <Instrument>, <band>.dat     published curves — unchanged, what MESA reads by default
+  manifest.json                what is available, with provenance
+  components/<role>/*.dat      filter / optics / qe (or composites, e.g. filter+optics+qe)
+  products/<recipe>/           composed sets; each is itself a MESA instrument directory
+atmospheres/<site>/            telluric grids (ESO SkyCalc; team standards such as lsst_std)
+```
+
+```bash
+sed-tools filters-info LSST/LSST
+#   Published curves contain : filter+instrument+atmosphere [svo]
+#   Separate components      : filter, optics, qe
+#   Can be built             : filter, filter+optics, filter+qe, filter+optics+qe
+#   Atmosphere               : can be added (own site: lsst_std)
+sed-tools filters-compose LSST/LSST --components filter                      # bare filters
+sed-tools filters-compose LSST/LSST --components filter,optics,qe --airmass 1.2   # full system at its site
+```
+
+```python
+Filters.available("LSST", "LSST")
+Filters.fetch("LSST", "LSST", components=["filter"])                        # filter only
+Filters.fetch("LSST", "LSST", components=["filter", "optics", "qe"],
+              atmosphere={"airmass": 1.2})                                   # + its own atmosphere
+```
+
+Requests that cannot be met are refused with an explanation rather than approximated: components the team never published (e.g. Gaia's bare filters), an atmosphere from another site, adding an atmosphere to a curve that already includes one, or to a space/airborne instrument. A published curve that is the bare filter counts as the `filter` component automatically. Products containing QE are photon-counting; otherwise they inherit the instrument's detector type.
+
+An instrument's atmosphere is the one at its own site (`default_site` in its manifest), with the user choosing only airmass and PWV. Sites are either a team's own standard atmosphere (e.g. Rubin's `lsst_std`) or an [ESO SkyCalc](https://www.eso.org/observing/etc/skycalc/) grid (`lasilla`, `paranal`, `armazones`, `highanddry`), fetched at R=200000 and bin-averaged to R=20000 so unresolved lines are integrated correctly. SkyCalc models Cerro Paranal, so it is used only for ESO facilities there and at La Silla (FORS2, HAWK-I, SPHERE, ERIS, VISTA, La Silla instruments); other observatories are offered an atmosphere only once their team's own standard atmosphere is added.
+
+Where components come from:
+
+| Instruments | Source of the separate factors |
+|---|---|
+| HST ACS (WFC/HRC/SBC), WFC3 (UVIS1/2, IR), WFPC2, NICMOS 1–3 | STScI synphot component tables (graph-table walk per obsmode) |
+| JWST NIRCam, NIRISS, MIRI imaging | STScI Pandeia reference data 4.0 (in-flight) |
+| Rubin/LSST | `lsst/throughputs` (+ Rubin's standard atmosphere `lsst_std`) |
+| Subaru HSC | NAOJ/Subaru curves (+ HSC pipeline's Maunakea atmosphere `maunakea_hsc`) |
+| CTIO DECam | DES standard bandpasses ÷ DES atmosphere (+ `ctio_des`) |
+| VISTA/VIRCAM | ESO VIRCAM ETC curves (+ SkyCalc `paranal`) |
+| ZTF | `ztf_information` filters and CCD QE |
+| 57 SVO instrument groups (SDSS, Swift/UVOT, UKIRT/WFCAM, OmegaCAM, Suprime-Cam, ...) | SVO's own filter-only sibling curves (`g_filter`, `g_fil`, `gprime_filter`) |
+| Gaia, 2MASS, WISE, Spitzer, GALEX, TESS, Kepler, Hipparcos/Tycho | none — only totals are published (`filters-info` says so) |
+
+The njm mirror runs these ahead of time (`sed-tools filters-build-components all`); when curves come from SVO instead, SED_Tools runs the instrument's own builder locally on first use (JWST's ~4 GB reference data only on request).
+
+#### Updating an existing filter collection
+
+Run `sed-tools filters-detector --dry-run` to inspect proposed detector tags, then `sed-tools filters-detector` to write them. Review entries marked `assumed`: they retain the historical energy-counting convention until identified. Use `sed-tools filters-info Facility/Instrument` to inspect published contents, available components and the instrument's atmosphere before composing a new set.
+
+Published curves remain the default. Composed products have their own directories and MESA index files; select a product directory explicitly to use that recipe. Automatic filter discovery skips `components/` and `products/`, so adding component data does not silently replace a published passband. Existing flux cubes do not need rebuilding to tag filters or compose throughputs; recompute photometry to apply corrected detector weights.
 
 ---
 
@@ -901,7 +1002,7 @@ BOSZ 2024 fixed-resolution spectra require the official wavelength files in the 
 If you use SED_Tools in your research, please cite the archived software release
 via its Zenodo DOI:
 
-A version-specific Zenodo DOI for Version 0.2.0 will be added following archival of this release.
+A version-specific Zenodo DOI for Version 0.3.0 will be added following archival of this release.
 
 Machine-readable citation metadata is available in [`CITATION.cff`](CITATION.cff).
 
