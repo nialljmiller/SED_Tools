@@ -164,3 +164,36 @@ def test_total_only_instruments_explain_why(tmp_path):
     write_filter_file(inst / "G.dat", [4000.0, 9000.0], [1.0, 1.0], detector_type=PHOTON, source="svo",
                       wavelength_unit="Angstrom", extra={"Components": "filter+qe+instrument"})
     assert "only total passbands" in InstrumentManifest.load(inst).describe()["component_status"]
+
+
+# ---------------------------------------------------------------------------
+# Instrument selection (regressions from interactive testing)
+# ---------------------------------------------------------------------------
+@pytest.mark.parametrize("name,key,others,expected", [
+    ("GAIA", "GAIA0", ["GAIA2", "GAIA3", "Gaia2m"], True),   # every Gaia release is "GAIA" at SVO
+    ("GAIA", "GAIA3", ["GAIA0"], True),
+    ("Johnson", "Johnson", ["Bessell"], False),             # name == key: path unchanged
+    ("ACS_WFC", "ACS_WFC", ["ACS_HRC"], False),
+    ("Cousins", "Cousins_old", ["Bessell"], False),          # differs but nothing to clash with
+])
+def test_svo_instruments_that_share_a_name_get_their_own_directory(name, key, others, expected):
+    from sed_tools.svo_filter_grabber import _would_collide
+
+    assert _would_collide(name, key, others) is expected
+
+
+def test_njm_instrument_match_is_exact(monkeypatch):
+    from sed_tools.njm_filter_grabber import NJMFilterGrabber
+
+    monkeypatch.setattr(NJMFilterGrabber, "_check_availability", lambda self: True)
+    njm = NJMFilterGrabber(base_dir="/tmp/unused")
+    monkeypatch.setattr(njm, "discover_instruments", lambda fac: ["GAIA", "ACS_WFC"])
+    assert njm.find_instrument("GAIA", "GAIA0") is None        # was: prefix-matched to GAIA
+    assert njm.find_instrument("GAIA", "gaia") == "GAIA"
+    assert njm.find_instrument("HST", "ACS-WFC") == "ACS_WFC"
+
+
+def test_facility_wide_status_applies_to_every_instrument():
+    assert catalog.status_for("GAIA", "GAIA0")[0] == catalog.TOTAL_ONLY
+    assert catalog.status_for("GAIA", "GAIA3")[0] == catalog.TOTAL_ONLY
+    assert catalog.status_for("LSST", "LSST") is None

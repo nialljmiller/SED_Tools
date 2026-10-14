@@ -50,18 +50,18 @@ BUILDERS_FOR: Dict[Tuple[str, str], BuilderRef] = {
 TOTAL_ONLY = "total-only"
 BLOCKED = "blocked"
 
-#: (facility, instrument) -> (status, explanation)
+#: (facility, instrument or "*") -> (status, explanation)
 STATUS: Dict[Tuple[str, str], Tuple[str, str]] = {
-    ("GAIA", "GAIA"): (TOTAL_ONLY, "ESA publishes only total passbands (Riello et al. 2021)."),
-    ("2MASS", "2MASS"): (TOTAL_ONLY, "2MASS publishes only total relative spectral responses incl. atmosphere (Cohen et al. 2003)."),
-    ("WISE", "WISE"): (TOTAL_ONLY, "WISE publishes only total relative spectral responses (Wright et al. 2010)."),
+    ("GAIA", "*"): (TOTAL_ONLY, "ESA publishes only total passbands (Riello et al. 2021)."),
+    ("2MASS", "*"): (TOTAL_ONLY, "2MASS publishes only total relative spectral responses incl. atmosphere (Cohen et al. 2003)."),
+    ("WISE", "*"): (TOTAL_ONLY, "WISE publishes only total relative spectral responses (Wright et al. 2010)."),
     ("Spitzer", "IRAC"): (TOTAL_ONLY, "IRAC publishes only total spectral response curves."),
     ("Spitzer", "MIPS"): (TOTAL_ONLY, "MIPS publishes only total spectral response curves."),
-    ("GALEX", "GALEX"): (TOTAL_ONLY, "GALEX publishes only total effective areas."),
-    ("TESS", "TESS"): (TOTAL_ONLY, "TESS publishes only its total response function (filter x detector)."),
-    ("Kepler", "Kepler"): (TOTAL_ONLY, "Kepler publishes only its total response function."),
-    ("Hipparcos", "Hipparcos"): (TOTAL_ONLY, "Only total passbands are published."),
-    ("TYCHO", "TYCHO"): (TOTAL_ONLY, "Only total passbands are published."),
+    ("GALEX", "*"): (TOTAL_ONLY, "GALEX publishes only total effective areas."),
+    ("TESS", "*"): (TOTAL_ONLY, "TESS publishes only its total response function (filter x detector)."),
+    ("Kepler", "*"): (TOTAL_ONLY, "Kepler publishes only its total response function."),
+    ("Hipparcos", "*"): (TOTAL_ONLY, "Only total passbands are published."),
+    ("TYCHO", "*"): (TOTAL_ONLY, "Only total passbands are published."),
     ("PAN-STARRS", "PS1"): (BLOCKED, "Components are in Tonry et al. (2012) Table 3, which is not retrievable "
                                      "programmatically; the IPP wiki copy is the superseded 2010 version."),
 }
@@ -72,7 +72,8 @@ def builder_for(facility: str, instrument: str) -> Optional[BuilderRef]:
 
 
 def status_for(facility: str, instrument: str) -> Optional[Tuple[str, str]]:
-    return STATUS.get((facility, instrument))
+    """Status of an instrument; ``(facility, "*")`` entries cover every instrument of a facility."""
+    return STATUS.get((facility, instrument)) or STATUS.get((facility, "*"))
 
 
 def ensure_components(

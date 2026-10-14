@@ -118,10 +118,11 @@ class NJMFilterGrabber:
         instruments = self.discover_instruments(njm_facility)
         if svo_instrument in instruments:
             return svo_instrument
+        # Exact (normalised) matches only: a prefix match would hand back a
+        # different instrument, e.g. GAIA0 (DR1) -> the mirror's GAIA set.
         svo_norm = self._normalize_name(svo_instrument)
         for name in instruments:
-            njm_norm = self._normalize_name(name)
-            if njm_norm.startswith(svo_norm) or svo_norm.startswith(njm_norm):
+            if self._normalize_name(name) == svo_norm:
                 return name
         return None
 
@@ -201,7 +202,7 @@ class NJMFilterGrabber:
             items = []
             for link in soup.find_all('a'):
                 href = link.get('href', '')
-                if href and href not in ['..', '/', '../']:
+                if href and href not in ['..', '/', '../'] and not href.startswith('?'):
                     # Remove trailing slash for directories
                     item = href.rstrip('/')
                     # Skip parent directory links

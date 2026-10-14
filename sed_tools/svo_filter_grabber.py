@@ -113,6 +113,7 @@ class SVOFilterBrowser:
         if cache_key in self._filters_cache:
             return self._filters_cache[cache_key]
 
+        sibling_keys = [i.key for i in self.list_instruments(facility_key) if i.key != instrument_key]
         soup = self._fetch_index(
             {"mode": "browse", "gname": facility_key, "gname2": instrument_key, "asttype": ""}
         )
@@ -135,6 +136,11 @@ class SVOFilterBrowser:
                 band = _band_from_filter_id(filter_id)
                 facility = cells[-3].get_text(strip=True) if len(cells) >= 3 else facility_key
                 instrument = cells[-2].get_text(strip=True) if len(cells) >= 2 else instrument_key
+                if _would_collide(instrument, instrument_key, sibling_keys):
+                    # SVO lists several instruments under one name (every Gaia
+                    # release is "GAIA"); file them under their unique key
+                    # (GAIA/GAIA0, GAIA/GAIA3) so one never overwrites another.
+                    instrument = instrument_key
                 description = cells[-1].get_text(strip=True) if cells else ""
                 rows.append(
                     FilterRow(
@@ -239,6 +245,18 @@ class SVOFilterBrowser:
             if titles and titles[0] == "filter id":
                 return table
         return None
+
+
+def _would_collide(instrument_name: str, instrument_key: str, other_keys: Sequence[str]) -> bool:
+    """True if filing ``instrument_key`` under ``instrument_name`` could clash
+    with another instrument of the same facility."""
+    def norm(value: str) -> str:
+        return "".join(ch for ch in value.lower() if ch.isalnum())
+
+    name = norm(instrument_name)
+    if not name or name == norm(instrument_key):
+        return False
+    return any(norm(k).startswith(name) for k in other_keys)
 
 
 # -------------------- CLI helpers --------------------

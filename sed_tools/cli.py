@@ -629,11 +629,20 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
 
         facility = facilities[fac_idx]
 
+        njm_only_instruments: set = set()
         if facility.key in njm_only_keys:
             inst_names = njm.discover_instruments(facility.key)
             instruments = [Instrument(facility_key=facility.key, key=n, label=n) for n in inst_names]
         else:
-            instruments = svo.list_instruments(facility.key)
+            instruments = list(svo.list_instruments(facility.key))
+            # Sets curated on the mirror that SVO does not have (e.g. MESA's GAIA/GAIA).
+            njm_fac = njm.find_facility(facility.key) if njm_available else None
+            if njm_fac:
+                svo_keys = {njm._normalize_name(i.key) for i in instruments}
+                for name in njm.discover_instruments(njm_fac):
+                    if njm._normalize_name(name) not in svo_keys:
+                        instruments.append(Instrument(facility_key=njm_fac, key=name, label=f"{name} [NJM]"))
+                        njm_only_instruments.add(name)
 
         if not instruments:
             print(f"No instruments found for {facility.label}.")
@@ -657,8 +666,9 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
             # Show selection
             print(f"\n{facility.label} / {instrument.label}")
 
-            if facility.key in njm_only_keys:
-                remote = njm.fetch_manifest(facility.key, instrument.key)
+            if facility.key in njm_only_keys or instrument.key in njm_only_instruments:
+                njm_fac_key = instrument.facility_key if instrument.key in njm_only_instruments else facility.key
+                remote = njm.fetch_manifest(njm_fac_key, instrument.key)
                 if remote:
                     from .filter_components import InstrumentManifest
                     known = set(InstrumentManifest.__dataclass_fields__)
@@ -666,8 +676,8 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
                 confirm = input("Download all filters? [Y/n] ").strip().lower()
                 if confirm and not confirm.startswith('y'):
                     continue
-                njm.download_filters(facility.key, instrument.key)
-                _offer_composition(Path(base_dir) / facility.key / instrument.key)
+                njm.download_filters(njm_fac_key, instrument.key)
+                _offer_composition(Path(base_dir) / njm_fac_key / instrument.key)
             else:
                 filters = svo.list_filters(facility.key, instrument.key)
 
