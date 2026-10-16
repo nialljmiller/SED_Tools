@@ -1,0 +1,607 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">0</article-id>
+<article-id pub-id-type="doi">N/A</article-id>
+<title-group>
+<article-title>SED_Tools: A Unified Pipeline for Acquiring,
+Standardizing, and Interpolating Stellar Atmosphere Spectral Energy
+Distributions</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<name>
+<surname>Miller</surname>
+<given-names>Niall J.</given-names>
+</name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Joyce</surname>
+<given-names>Meridith</given-names>
+</name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>REPLACE WITH INSTITUTION AND DEPARTMENT</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>REPLACE WITH INSTITUTION AND DEPARTMENT</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2026-07-13">
+<day>13</day>
+<month>7</month>
+<year>2026</year>
+</pub-date>
+<volume>¿VOL?</volume>
+<issue>¿ISSUE?</issue>
+<fpage>¿PAGE?</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>1970</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Python</kwd>
+<kwd>astronomy</kwd>
+<kwd>stellar astrophysics</kwd>
+<kwd>spectral energy distributions</kwd>
+<kwd>stellar atmospheres</kwd>
+<kwd>MESA</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p><monospace>SED_Tools</monospace> is an open-source Python package
+  that downloads, validates, and standardizes stellar atmosphere
+  spectral energy distribution (SED) grids from heterogeneous public
+  archives, and converts them into the binary flux-cube and lookup-table
+  format required for rapid runtime interpolation by stellar evolution
+  codes. It ships a command-line interface
+  (<monospace>sed-tools</monospace>) and a matching Python API
+  (<monospace>SED</monospace>, <monospace>Catalog</monospace>,
+  <monospace>Spectrum</monospace>, <monospace>Filters</monospace>,
+  <monospace>CatalogInfo</monospace>) that together cover the full
+  pipeline: spectra acquisition, filter transmission-curve acquisition
+  and combination, flux-cube construction and rebuilding, grid
+  densification via interpolation, target-directory preparation for
+  stellar evolution codes, coverage diagnostics, and import of
+  externally sourced grids. Supported source archives include the
+  Spanish Virtual Observatory (SVO), the MAST/BOSZ synthetic library
+  (<xref alt="Mészáros et al., 2024" rid="ref-meszaros2024bosz" ref-type="bibr">Mészáros
+  et al., 2024</xref>), and the Munari Stellar Grid (MSG) collection,
+  spanning model families such as Kurucz/ATLAS9
+  (<xref alt="Castelli &amp; Kurucz, 2003" rid="ref-castelli2003" ref-type="bibr">Castelli
+  &amp; Kurucz, 2003</xref>), NextGen/NextGen2, BT-Settl, TLUSTY
+  (OSTAR2002/BSTAR2006), TMAP, GRAMS, SPHINX, Husfeld, and blackbody
+  references. Two PyTorch-based components extend the tool beyond format
+  conversion: an SED completer that extends incomplete wavelength
+  coverage, and an SED generator that synthesizes an SED directly from
+  (<italic>T</italic>eff, log <italic>g</italic>, [M/H]) without
+  requiring an existing grid node. All standardization funnels through
+  two single-authority modules — a header parser and a unit-cleaning
+  routine — that guarantee a consistent output representation regardless
+  of the conventions used by the source archive.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>Stellar evolution and synthetic-photometry codes need pre-computed
+  grids of stellar atmosphere spectra spanning effective temperature,
+  surface gravity, and metallicity. In practice, these grids are
+  scattered across independent archives that differ in file formats,
+  header-keyword conventions, flux and wavelength units, wavelength
+  sampling, and axis conventions; some archives additionally encode
+  extra physical axes — sedimentation efficiency, helium fraction, alpha
+  enhancement — as separate files rather than as grid dimensions, which
+  silently produces duplicate or colliding nodes if not accounted for. A
+  researcher who wants to combine, for example, a hot-star TLUSTY grid
+  with a cool-star BT-Settl grid for a single evolutionary track must
+  hand-reconcile all of these inconsistencies before any interpolation
+  is possible, and errors introduced during that reconciliation — unit
+  mismatches, axis-order bugs, double-counted nodes — are difficult to
+  detect after the fact and can silently bias downstream synthetic
+  photometry rather than produce an obvious failure. This is not a
+  hypothetical risk: during <monospace>SED_Tools</monospace>’s own
+  development, a read/write axis-order mismatch in the flux-cube binary
+  format produced exactly this kind of silent corruption, one that would
+  have propagated undetected into every downstream synthetic photometric
+  calculation had it not been caught by dedicated validation.
+  <monospace>SED_Tools</monospace> exists to remove this class of
+  manual, error-prone reconciliation from the workflow entirely. It
+  automates the download of raw grids and filter curves, validates each
+  file against its expected physical ranges, resolves duplicate or
+  colliding grid nodes introduced by hidden axes, and writes a single
+  standardized product — as flat per-model spectral files, an HDF5
+  archive, and a pre-computed binary flux cube with an accompanying
+  lookup table — that a stellar evolution code can consume directly,
+  with no additional user-side reformatting. This directly serves the
+  MESA <monospace>colors</monospace> module, whose documentation
+  designates <monospace>SED_Tools</monospace> as the tool that prepares
+  its required data products, but the standardized output is equally
+  usable by any downstream synthetic photometry, spectral energy
+  distribution fitting, or population synthesis workflow that needs a
+  self-consistent, science-ready stellar atmosphere grid.</p>
+</sec>
+<sec id="state-of-the-field">
+  <title>State of the field</title>
+  <p>Several existing tools address related but distinct problems.
+  <monospace>synphot</monospace>/<monospace>pysynphot</monospace>
+  (STScI) perform synthetic photometry given an already-prepared SED and
+  bandpass, but do not download, standardize, or reconcile heterogeneous
+  source archives into interpolation-ready grids.
+  <monospace>specutils</monospace>, part of the Astropy ecosystem,
+  provides general-purpose spectral-object handling and analysis but is
+  not oriented toward multi-source stellar atmosphere grid curation or
+  production of runtime-optimized binary grids for external codes; it
+  operates one spectrum at a time rather than as a grid-construction
+  pipeline. <monospace>gollum</monospace>
+  (<xref alt="Shankar et al., 2024" rid="ref-shankar2024" ref-type="bibr">Shankar
+  et al., 2024</xref>) provides programmatic access to specific
+  precomputed synthetic grids (e.g. PHOENIX, Sonora) with an interactive
+  comparison interface, but targets spectral inspection and model-data
+  comparison rather than multi-archive standardization or production of
+  evolution-code-ready binary grids. MSG ships its own compiled
+  grid-access library together with a defined set of packaged grids, but
+  does not provide a general mechanism for ingesting and standardizing
+  grids sourced from other archives such as SVO or MAST/BOSZ — a user
+  who wants an MSG-format grid built from BOSZ or SVO data has no
+  supported path to do so without custom scripting. Archive-side
+  services such as the SVO Filter Profile Service
+  (<xref alt="Rodrigo &amp; Solano, 2020" rid="ref-rodrigo2020" ref-type="bibr">Rodrigo
+  &amp; Solano, 2020</xref>) and MAST provide raw data access but
+  explicitly leave unit standardization, header reconciliation,
+  collision handling, and target-code packaging to the user. To the
+  authors’ knowledge, no existing public tool spans SVO, MAST/BOSZ, and
+  MSG-hosted grids simultaneously behind a single collision- aware
+  standardization layer. <monospace>SED_Tools</monospace>‘s
+  distinguishing contribution is treating grid acquisition, unit and
+  header standardization, hidden-axis collision resolution, and stellar-
+  evolution-code-ready packaging as a single reproducible, versioned
+  pipeline spanning multiple source archives at once, rather than as a
+  one-off per-grid conversion script maintained privately by individual
+  research groups. The machine-learning-based SED completion and
+  generation components are also, to the authors’ knowledge, not offered
+  by any comparable publicly available tool in this space.</p>
+</sec>
+<sec id="software-design">
+  <title>Software design</title>
+  <p><monospace>SED_Tools</monospace> separates concerns along two axes:
+  a data-flow axis and an interface axis. On the data-flow axis, two
+  modules act as sole authorities over specific transformations, so that
+  behavior does not depend on call order or on which grid is processed
+  first. A header-parsing module resolves the many historical header-key
+  spellings used across archives against a single alias table, using a
+  nan-guard so that a later, unparseable value can never silently
+  overwrite an already-resolved one. A spectra-cleaning module performs
+  the one-time conversion of every spectrum to a common wavelength/flux
+  unit system (angstroms; erg s⁻¹ cm⁻² Å⁻¹), after which no downstream
+  stage is permitted to renormalize — this constraint is enforced by
+  design rather than by convention, so that a unit bug can only be
+  introduced, and only needs to be fixed, in one place. Hidden physical
+  axes that some archives encode as separate files rather than as grid
+  dimensions are resolved by a dedicated collision-handling module that
+  builds both a mean flux cube and a library of per-variant cubes, so
+  that information distinguishing the colliding variants is preserved
+  rather than discarded during standardization; the on-collision
+  strategy (average everything into one cube, keep every variant, or
+  filter to a specific variant) is a per-model, reproducible
+  configuration rather than an implicit default. Large grids — the
+  BT-Settl grid alone occupies roughly 174 GiB once expanded to a common
+  wavelength grid — are handled via memory-mapped array allocation for
+  both source and destination flux arrays, rather than in-RAM
+  allocation, specifically to avoid exhausting system memory during cube
+  construction. On the interface axis, every capability is available
+  identically through the <monospace>sed-tools</monospace> command-line
+  interface and the Python
+  <monospace>SED</monospace>/<monospace>Catalog</monospace>/<monospace>Spectrum</monospace>
+  API, so the package is usable both as an interactive or scriptable
+  library and as a stage in shell-based data pipelines. A dedicated
+  coverage-diagnostics command lets a user inspect the completeness of a
+  standardized grid in parameter space before relying on it for
+  interpolation, and the ML-based completer and generator modules
+  provide a fallback in regions where empirical grid coverage is
+  insufficient. Error handling throughout the pipeline is intentionally
+  non-defensive: malformed input is designed to raise immediately rather
+  than be silently caught and skipped, so that data-quality problems
+  surface at the point of ingestion rather than as a difficult-to-trace
+  downstream artifact in a stellar model.</p>
+  <p>Correctness is checked at two levels. An automated
+  <monospace>pytest</monospace> suite exercises the standardization
+  utilities, configuration, CLI, and flux-cube loading and evaluation
+  code paths directly. Separately, a dedicated audit pipeline performs
+  physically motivated consistency checks on the standardized output
+  itself: comparing each spectrum’s flux-weighted peak wavelength
+  against the Wien’s-law prediction from its catalogued effective
+  temperature, comparing bolometric flux against the blackbody integral
+  over each file’s actual wavelength coverage, and matching raw files
+  against their corresponding flux-cube grid node under a tight distance
+  tolerance to avoid false positives from molecular-band features. As of
+  the most recent audit run, all installed models pass (12/12). The
+  audit process has also been useful for separating genuine data
+  problems from methodology artifacts: an initially suspected
+  raw-versus-cube mismatch in the NextGen2 grid was traced to the
+  comparison methodology itself (disagreement at molecular-band features
+  introduced by interpolating onto a union wavelength grid) rather than
+  to the data, and apparent Wien-peak violations in the Husfeld and
+  tmap2 grids were confirmed to be a real, physically expected redward
+  shift caused by UV/EUV atmospheric opacity in hot compact objects, not
+  a unit error. Two smaller items remain open and are tracked rather
+  than silently patched: a known 1/π flux-normalization discrepancy in
+  the blackbody-reference generator, and a structural incompatibility
+  between one MSG-hosted grid (<monospace>sg-BSTAR2006-low</monospace>)
+  and the current HDF5 reader.</p>
+</sec>
+<sec id="research-impact-statement">
+  <title>Research impact statement</title>
+  <p>The most concrete evidence of <monospace>SED_Tools</monospace>’s
+  research impact is its role as the designated data-preparation
+  pipeline for the MESA <monospace>colors</monospace> module, a new
+  module merged into the official Modules for Experiments in Stellar
+  Astrophysics (MESA) code base, first shipped in release candidate
+  r25.10.1-rc1 and included in stable releases from r25.12.1 onward
+  (<xref alt="Team, 2025" rid="ref-mesa_release_r25101rc1" ref-type="bibr">Team,
+  2025</xref>). MESA is a widely used, actively maintained open-source
+  stellar evolution code with a large user base spanning
+  asteroseismology, stellar population synthesis, and binary evolution
+  research
+  (<xref alt="Jermyn et al., 2023" rid="ref-jermyn2023" ref-type="bibr">Jermyn
+  et al., 2023</xref>;
+  <xref alt="Paxton et al., 2011" rid="ref-paxton2011" ref-type="bibr">Paxton
+  et al., 2011</xref>,
+  <xref alt="2013" rid="ref-paxton2013" ref-type="bibr">2013</xref>,
+  <xref alt="2015" rid="ref-paxton2015" ref-type="bibr">2015</xref>,
+  <xref alt="2018" rid="ref-paxton2018" ref-type="bibr">2018</xref>,
+  <xref alt="2019" rid="ref-paxton2019" ref-type="bibr">2019</xref>).
+  The <monospace>colors</monospace> module’s source documentation
+  contains a dedicated data-preparation section naming
+  <monospace>SED_Tools</monospace> as the tool that automates production
+  of the module’s inputs, and describes the pre-computed flux cube
+  consumed by its fastest interpolation path as produced by
+  <monospace>SED_Tools</monospace>
+  (<xref alt="The MESA Team, 2026" rid="ref-mesa_colors_readme" ref-type="bibr">The
+  MESA Team, 2026</xref>); the Kurucz2003 atmosphere grids distributed
+  with the module were themselves prepared with
+  <monospace>SED_Tools</monospace>. Every MESA user who enables
+  synthetic photometry via the <monospace>colors</monospace> module is
+  therefore, in practice, a downstream consumer of
+  <monospace>SED_Tools</monospace>’s output, independent of whether they
+  interact with the <monospace>SED_Tools</monospace> repository
+  directly. This is a stronger and more durable form of research impact
+  than citation count alone, because MESA’s release and documentation
+  infrastructure make the dependency independently verifiable rather
+  than self-reported. As a secondary, softer indicator, the repository
+  has accumulated organic community interest without any promotional
+  effort.</p>
+</sec>
+<sec id="ai-usage-disclosure">
+  <title>AI usage disclosure</title>
+  <p>OpenAI Codex and Claude Code assisted with delinting/formatting
+  during a codebase refactor, with constructing portions of the
+  automated test suite, and with debugging flux-cube-construction
+  performance issues; all such changes were reviewed and validated by
+  the author before merging. All architectural decisions described in
+  Software Design were made by the author, not the AI tools. This
+  manuscript was drafted with Claude’s assistance from author interviews
+  and reviewed and edited by the author before submission.</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p><italic>REPLACE: list any funding, grants, or institutional support
+  here, if applicable. Leave this section out entirely if there is none
+  to disclose.</italic></p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <title></title>
+  <ref id="ref-castelli2003">
+    <element-citation publication-type="paper-conference">
+      <person-group person-group-type="author">
+        <name><surname>Castelli</surname><given-names>F.</given-names></name>
+        <name><surname>Kurucz</surname><given-names>R. L.</given-names></name>
+      </person-group>
+      <article-title>New Grids of ATLAS9 Model Atmospheres</article-title>
+      <source>Modelling of stellar atmospheres</source>
+      <person-group person-group-type="editor">
+        <name><surname>Piskunov</surname><given-names>N.</given-names></name>
+        <name><surname>Weiss</surname><given-names>W. W.</given-names></name>
+        <name><surname>Gray</surname><given-names>D. F.</given-names></name>
+      </person-group>
+      <year iso-8601-date="2003-01">2003</year><month>01</month>
+      <volume>210</volume>
+      <uri>https://arxiv.org/abs/astro-ph/0405087</uri>
+      <pub-id pub-id-type="doi">10.48550/arXiv.astro-ph/0405087</pub-id>
+      <fpage>A20</fpage>
+      <lpage></lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-shankar2024">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Shankar</surname><given-names>Sujay</given-names></name>
+        <name><surname>Gully-Santiago</surname><given-names>Michael A.</given-names></name>
+        <name><surname>Morley</surname><given-names>Caroline V.</given-names></name>
+        <name><surname>Cao</surname><given-names>Jiayi</given-names></name>
+        <name><surname>Kaplan</surname><given-names>Kyle</given-names></name>
+        <name><surname>Kimani-Stewart</surname><given-names>Karina</given-names></name>
+        <name><surname>Gonzalez-Argúeta</surname><given-names>Diana</given-names></name>
+      </person-group>
+      <article-title>&lt;Code&gt;gollum&lt;/code&gt;: An intuitive programmatic and visual interface for precomputed synthetic spectral model grids</article-title>
+      <source>Journal of Open Source Software</source>
+      <publisher-name>The Open Journal</publisher-name>
+      <year iso-8601-date="2024">2024</year>
+      <volume>9</volume>
+      <issue>100</issue>
+      <uri>https://doi.org/10.21105/joss.06601</uri>
+      <pub-id pub-id-type="doi">10.21105/joss.06601</pub-id>
+      <fpage>6601</fpage>
+      <lpage></lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-jermyn2023">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Jermyn</surname><given-names>Adam S.</given-names></name>
+        <name><surname>Bauer</surname><given-names>Evan B.</given-names></name>
+        <name><surname>Schwab</surname><given-names>Josiah</given-names></name>
+        <name><surname>Farmer</surname><given-names>R.</given-names></name>
+        <name><surname>Ball</surname><given-names>Warrick H.</given-names></name>
+        <name><surname>Bellinger</surname><given-names>Earl P.</given-names></name>
+        <name><surname>Dotter</surname><given-names>Aaron</given-names></name>
+        <name><surname>Joyce</surname><given-names>Meridith</given-names></name>
+        <name><surname>Marchant</surname><given-names>Pablo</given-names></name>
+        <name><surname>Mombarg</surname><given-names>Joey S. G.</given-names></name>
+        <name><surname>Wolf</surname><given-names>William M.</given-names></name>
+        <name><surname>Sunny Wong</surname><given-names>Tin Long</given-names></name>
+        <name><surname>Cinquegrana</surname><given-names>Giulia C.</given-names></name>
+        <name><surname>Farrell</surname><given-names>Eoin</given-names></name>
+        <name><surname>Smolec</surname><given-names>R.</given-names></name>
+        <name><surname>Thoul</surname><given-names>Anne</given-names></name>
+        <name><surname>Cantiello</surname><given-names>Matteo</given-names></name>
+        <name><surname>Herwig</surname><given-names>Falk</given-names></name>
+        <name><surname>Toloza</surname><given-names>Odette</given-names></name>
+        <name><surname>Bildsten</surname><given-names>Lars</given-names></name>
+        <name><surname>Townsend</surname><given-names>Richard H. D.</given-names></name>
+        <name><surname>Timmes</surname><given-names>F. X.</given-names></name>
+      </person-group>
+      <article-title>Modules for Experiments in Stellar Astrophysics (MESA): Time-dependent Convection, Energy Conservation, Automatic Differentiation, and Infrastructure</article-title>
+      <source></source>
+      <year iso-8601-date="2023-03">2023</year><month>03</month>
+      <volume>265</volume>
+      <issue>1</issue>
+      <uri>https://arxiv.org/abs/2208.03651</uri>
+      <pub-id pub-id-type="doi">10.3847/1538-4365/acae8d</pub-id>
+      <fpage>15</fpage>
+      <lpage></lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-meszaros2024bosz">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Mészáros</surname><given-names>Szabolcs</given-names></name>
+        <name><surname>Bohlin</surname><given-names>Ralph</given-names></name>
+        <name><surname>Allende Prieto</surname><given-names>Carlos</given-names></name>
+        <name><surname>Cseh</surname><given-names>Borbála</given-names></name>
+        <name><surname>Kovács</surname><given-names>József</given-names></name>
+        <name><surname>Fleming</surname><given-names>Scott W.</given-names></name>
+        <name><surname>Dencs</surname><given-names>Zoltán</given-names></name>
+        <name><surname>Deustua</surname><given-names>Susana</given-names></name>
+        <name><surname>Gordon</surname><given-names>Karl D.</given-names></name>
+        <name><surname>Hubeny</surname><given-names>Ivan</given-names></name>
+        <name><surname>Mező</surname><given-names>György</given-names></name>
+        <name><surname>Truszek</surname><given-names>Márton</given-names></name>
+      </person-group>
+      <article-title>The updated BOSZ synthetic stellar spectral library</article-title>
+      <source></source>
+      <year iso-8601-date="2024-08">2024</year><month>08</month>
+      <volume>688</volume>
+      <uri>https://arxiv.org/abs/2407.10872</uri>
+      <pub-id pub-id-type="doi">10.1051/0004-6361/202449306</pub-id>
+      <fpage>A197</fpage>
+      <lpage></lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-paxton2011">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Paxton</surname><given-names>Bill</given-names></name>
+        <name><surname>Bildsten</surname><given-names>Lars</given-names></name>
+        <name><surname>Dotter</surname><given-names>Aaron</given-names></name>
+        <name><surname>Herwig</surname><given-names>Falk</given-names></name>
+        <name><surname>Lesaffre</surname><given-names>Pierre</given-names></name>
+        <name><surname>Timmes</surname><given-names>Frank</given-names></name>
+      </person-group>
+      <article-title>Modules for Experiments in Stellar Astrophysics (MESA)</article-title>
+      <source></source>
+      <year iso-8601-date="2011-01">2011</year><month>01</month>
+      <volume>192</volume>
+      <issue>1</issue>
+      <uri>https://arxiv.org/abs/1009.1622</uri>
+      <pub-id pub-id-type="doi">10.1088/0067-0049/192/1/3</pub-id>
+      <fpage>3</fpage>
+      <lpage></lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-paxton2013">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Paxton</surname><given-names>Bill</given-names></name>
+        <name><surname>Cantiello</surname><given-names>Matteo</given-names></name>
+        <name><surname>Arras</surname><given-names>Phil</given-names></name>
+        <name><surname>Bildsten</surname><given-names>Lars</given-names></name>
+        <name><surname>Brown</surname><given-names>Edward F.</given-names></name>
+        <name><surname>Dotter</surname><given-names>Aaron</given-names></name>
+        <name><surname>Mankovich</surname><given-names>Christopher</given-names></name>
+        <name><surname>Montgomery</surname><given-names>M. H.</given-names></name>
+        <name><surname>Stello</surname><given-names>Dennis</given-names></name>
+        <name><surname>Timmes</surname><given-names>F. X.</given-names></name>
+        <name><surname>Townsend</surname><given-names>Richard</given-names></name>
+      </person-group>
+      <article-title>Modules for Experiments in Stellar Astrophysics (MESA): Planets, Oscillations, Rotation, and Massive Stars</article-title>
+      <source></source>
+      <year iso-8601-date="2013-09">2013</year><month>09</month>
+      <volume>208</volume>
+      <issue>1</issue>
+      <uri>https://arxiv.org/abs/1301.0319</uri>
+      <pub-id pub-id-type="doi">10.1088/0067-0049/208/1/4</pub-id>
+      <fpage>4</fpage>
+      <lpage></lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-paxton2015">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Paxton</surname><given-names>Bill</given-names></name>
+        <name><surname>Marchant</surname><given-names>Pablo</given-names></name>
+        <name><surname>Schwab</surname><given-names>Josiah</given-names></name>
+        <name><surname>Bauer</surname><given-names>Evan B.</given-names></name>
+        <name><surname>Bildsten</surname><given-names>Lars</given-names></name>
+        <name><surname>Cantiello</surname><given-names>Matteo</given-names></name>
+        <name><surname>Dessart</surname><given-names>Luc</given-names></name>
+        <name><surname>Farmer</surname><given-names>R.</given-names></name>
+        <name><surname>Hu</surname><given-names>H.</given-names></name>
+        <name><surname>Langer</surname><given-names>N.</given-names></name>
+        <name><surname>Townsend</surname><given-names>R. H. D.</given-names></name>
+        <name><surname>Townsley</surname><given-names>Dean M.</given-names></name>
+        <name><surname>Timmes</surname><given-names>F. X.</given-names></name>
+      </person-group>
+      <article-title>Modules for Experiments in Stellar Astrophysics (MESA): Binaries, Pulsations, and Explosions</article-title>
+      <source></source>
+      <year iso-8601-date="2015-09">2015</year><month>09</month>
+      <volume>220</volume>
+      <issue>1</issue>
+      <uri>https://arxiv.org/abs/1506.03146</uri>
+      <pub-id pub-id-type="doi">10.1088/0067-0049/220/1/15</pub-id>
+      <fpage>15</fpage>
+      <lpage></lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-paxton2018">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Paxton</surname><given-names>Bill</given-names></name>
+        <name><surname>Schwab</surname><given-names>Josiah</given-names></name>
+        <name><surname>Bauer</surname><given-names>Evan B.</given-names></name>
+        <name><surname>Bildsten</surname><given-names>Lars</given-names></name>
+        <name><surname>Blinnikov</surname><given-names>Sergei</given-names></name>
+        <name><surname>Duffell</surname><given-names>Paul</given-names></name>
+        <name><surname>Farmer</surname><given-names>R.</given-names></name>
+        <name><surname>Goldberg</surname><given-names>Jared A.</given-names></name>
+        <name><surname>Marchant</surname><given-names>Pablo</given-names></name>
+        <name><surname>Sorokina</surname><given-names>Elena</given-names></name>
+        <name><surname>Thoul</surname><given-names>Anne</given-names></name>
+        <name><surname>Townsend</surname><given-names>Richard H. D.</given-names></name>
+        <name><surname>Timmes</surname><given-names>F. X.</given-names></name>
+      </person-group>
+      <article-title>Modules for Experiments in Stellar Astrophysics (MESA): Convective Boundaries, Element Diffusion, and Massive Star Explosions</article-title>
+      <source></source>
+      <year iso-8601-date="2018-02">2018</year><month>02</month>
+      <volume>234</volume>
+      <issue>2</issue>
+      <uri>https://arxiv.org/abs/1710.08424</uri>
+      <pub-id pub-id-type="doi">10.3847/1538-4365/aaa5a8</pub-id>
+      <fpage>34</fpage>
+      <lpage></lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-paxton2019">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Paxton</surname><given-names>Bill</given-names></name>
+        <name><surname>Smolec</surname><given-names>R.</given-names></name>
+        <name><surname>Schwab</surname><given-names>Josiah</given-names></name>
+        <name><surname>Gautschy</surname><given-names>A.</given-names></name>
+        <name><surname>Bildsten</surname><given-names>Lars</given-names></name>
+        <name><surname>Cantiello</surname><given-names>Matteo</given-names></name>
+        <name><surname>Dotter</surname><given-names>Aaron</given-names></name>
+        <name><surname>Farmer</surname><given-names>R.</given-names></name>
+        <name><surname>Goldberg</surname><given-names>Jared A.</given-names></name>
+        <name><surname>Jermyn</surname><given-names>Adam S.</given-names></name>
+        <name><surname>Kanbur</surname><given-names>S. M.</given-names></name>
+        <name><surname>Marchant</surname><given-names>Pablo</given-names></name>
+        <name><surname>Thoul</surname><given-names>Anne</given-names></name>
+        <name><surname>Townsend</surname><given-names>Richard H. D.</given-names></name>
+        <name><surname>Wolf</surname><given-names>William M.</given-names></name>
+        <name><surname>Zhang</surname><given-names>Michael</given-names></name>
+        <name><surname>Timmes</surname><given-names>F. X.</given-names></name>
+      </person-group>
+      <article-title>Modules for Experiments in Stellar Astrophysics (MESA): Pulsating Variable Stars, Rotation, Convective Boundaries, and Energy Conservation</article-title>
+      <source></source>
+      <year iso-8601-date="2019-07">2019</year><month>07</month>
+      <volume>243</volume>
+      <issue>1</issue>
+      <uri>https://arxiv.org/abs/1903.01426</uri>
+      <pub-id pub-id-type="doi">10.3847/1538-4365/ab2241</pub-id>
+      <fpage>10</fpage>
+      <lpage></lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-rodrigo2020">
+    <element-citation publication-type="paper-conference">
+      <person-group person-group-type="author">
+        <name><surname>Rodrigo</surname><given-names>C.</given-names></name>
+        <name><surname>Solano</surname><given-names>E.</given-names></name>
+      </person-group>
+      <article-title>The SVO Filter Profile Service</article-title>
+      <source>XIV.0 scientific meeting (virtual) of the spanish astronomical society</source>
+      <year iso-8601-date="2020-07">2020</year><month>07</month>
+      <fpage>182</fpage>
+      <lpage></lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-mesa_release_r25101rc1">
+    <element-citation publication-type="software">
+      <person-group person-group-type="author">
+        <name><surname>Team</surname><given-names>The MESA</given-names></name>
+      </person-group>
+      <article-title>Modules for experiments in stellar astrophysics (MESA) release candidate r25.10.1-rc1</article-title>
+      <publisher-name>Zenodo</publisher-name>
+      <year iso-8601-date="2025-10">2025</year><month>10</month>
+      <uri>https://doi.org/10.5281/zenodo.17426065</uri>
+      <pub-id pub-id-type="doi">10.5281/zenodo.17426065</pub-id>
+    </element-citation>
+  </ref>
+  <ref id="ref-mesa_colors_readme">
+    <element-citation>
+      <person-group person-group-type="author">
+        <string-name>The MESA Team</string-name>
+      </person-group>
+      <article-title>MESA colors module documentation</article-title>
+      <source>GitHub repository</source>
+      <publisher-name>GitHub</publisher-name>
+      <year iso-8601-date="2026">2026</year>
+      <uri>https://github.com/MESAHub/mesa/blob/08a30a014dbfdaa03e5e046fbd59e9b58a6b26ef/colors/README.rst</uri>
+    </element-citation>
+  </ref>
+</ref-list>
+</back>
+</article>

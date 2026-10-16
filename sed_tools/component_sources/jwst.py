@@ -1,0 +1,152 @@
+"""JWST imager components from STScI's Pandeia reference data (in-flight).
+
+Pandeia (the JWST ETC engine) keeps every throughput factor separately in
+``jwst/<instrument>/{filters,optical,qe}`` with ``config.json`` naming the
+files; the telescope (OTE) is in ``jwst/telescope``.  Imaging throughput is
+
+* NIRCam:  OTE x internal optics x dichroic (SW/LW) x filter x QE (SW/LW)
+* NIRISS:  OTE x internal optics x filter x QE
+* MIRI:    OTE x filter x imager QE
+
+``optics`` is the product of the non-filter, non-detector factors.  The
+reference data (a ~4 GB tarball, mostly PSFs) is streamed and only the
+throughput files are kept; pass ``raw`` to use an unpacked copy instead.
+"""
+
+from __future__ import annotations
+
+import json
+import logging
+import re
+import tarfile
+from pathlib import Path
+from typing import Dict, Iterable, List, Optional, Tuple, Union
+
+import numpy as np
+
+from ..filter_components import FILTER, OPTICS, QE, InstrumentManifest, add_component
+from ..filter_metadata import PHOTON
+
+logger = logging.getLogger(__name__)
+
+FACILITY = "JWST"
+REFDATA_VERSION = "4.0"
+REFDATA_URL = (
+    "https://stsci.app.box.com/index.php?rm=box_download_shared_file"
+    "&vanity_name=pandeia-refdata-v4p0-jwst&file_id=f_1606501134287"
+)
+INSTRUMENTS = {"NIRCam": "nircam", "NIRISS": "niriss", "MIRI": "miri"}
+_KEEP = re.compile(r"jwst/(telescope|nircam|miri|niriss)/(config\.json|filters/|optical/|qe/|[^/]*\.fits$)")
+
+
+def fetch_refdata(dest: Union[str, Path], url: str = REFDATA_URL, session=None) -> Path:
+    """Stream the Pandeia tarball, extracting only throughput-related files."""
+    if session is None:
+        import requests
+
+        session = requests.Session()
+    dest = Path(dest)
+    dest.mkdir(parents=True, exist_ok=True)
+    resp = session.get(url, stream=True, timeout=600)
+    resp.raise_for_status()
+    resp.raw.decode_content = True
+    root = None
+    with tarfile.open(fileobj=resp.raw, mode="r|gz") as tf:
+        for member in tf:
+            if member.isfile() and _KEEP.search(member.name) and "psf" not in member.name.lower():
+                tf.extract(member, dest)
+                root = root or member.name.split("/jwst/")[0]
+    if root is None:
+        raise RuntimeError("No JWST throughput files found in the Pandeia tarball")
+    return dest / root
+
+
+def _read(path: Path) -> Tuple[np.ndarray, np.ndarray]:
+    from astropy.io import fits
+
+    data = fits.open(path)[1].data
+    names = {n.lower(): n for n in data.columns.names}
+    wl = np.asarray(data[names["wavelength"]], dtype=float) * 1e4  # micron -> Angstrom
+    tr = np.asarray(data[names["throughput"]], dtype=float)
+    order = np.argsort(wl)
+    return wl[order], tr[order]
+
+
+def _product(curves: List[Tuple[np.ndarray, np.ndarray]]) -> Tuple[np.ndarray, np.ndarray]:
+    lo = max(c[0][0] for c in curves)
+    hi = min(c[0][-1] for c in curves)
+    grid = np.unique(np.concatenate([c[0][(c[0] >= lo) & (c[0] <= hi)] for c in curves]))
+    out = np.ones_like(grid)
+    for wl, tr in curves:
+        out *= np.interp(grid, wl, tr)
+    return grid, out
+
+
+def _band_factors(inst: str, band: str, paths: Dict[str, str]) -> Optional[Dict[str, List[str]]]:
+    """Reference-file keys per role for one imaging band (None if not imaging)."""
+    key = band.lower()
+    if key not in paths or not paths[key].startswith("filters/"):
+        return None
+    if inst == "nircam":
+        channel = "sw" if int(re.sub(r"\D", "", key)[:3]) < 240 else "lw"
+        return {FILTER: [key], OPTICS: ["internal", f"dbs_{channel}"], QE: [f"qe_{channel}"]}
+    if inst == "niriss":
+        return {FILTER: [key], OPTICS: ["internal"], QE: ["qe"]}
+    if inst == "miri":
+        return {FILTER: [key], OPTICS: [], QE: ["miri_imager_qe"]}
+    return None
+
+
+def build(
+    filter_root: Union[str, Path],
+    *,
+    raw: Union[str, Path, None] = None,
+    instruments: Optional[Iterable[str]] = None,
+    session=None,
+) -> List[Path]:
+    """Populate components for JWST NIRCam, NIRISS and MIRI imaging bands."""
+    filter_root = Path(filter_root)
+    refdata = Path(raw) if raw else fetch_refdata(filter_root.parent / "cache" / "pandeia", session=session)
+    if (refdata / "jwst").is_dir():
+        refdata = refdata / "jwst"
+    tel_cfg = json.loads((refdata / "telescope" / "config.json").read_text())
+    ote_file = refdata / "telescope" / tel_cfg["paths"]["otefile"]
+    ote = _read(ote_file)
+
+    built = []
+    for svo_inst in instruments or INSTRUMENTS:
+        inst = INSTRUMENTS[svo_inst]
+        inst_dir = filter_root / FACILITY / svo_inst
+        bands = sorted(p.stem for p in inst_dir.glob("*.dat"))
+        if not bands:
+            logger.warning("JWST/%s: no published curves present; fetch them first", svo_inst)
+            continue
+        paths = json.loads((refdata / inst / "config.json").read_text())["paths"]
+        manifest = InstrumentManifest.load(inst_dir)
+        manifest.components = {}
+        skipped = []
+        for band in bands:
+            factors = _band_factors(inst, band, paths)
+            if factors is None:
+                skipped.append(band)
+                continue
+            for role, keys in factors.items():
+                curves = [_read(refdata / inst / paths[k]) for k in keys]
+                sources = [f"Pandeia {REFDATA_VERSION} jwst/{inst}/{paths[k]}" for k in keys]
+                if role == OPTICS:
+                    curves.insert(0, ote)
+                    sources.insert(0, f"Pandeia {REFDATA_VERSION} jwst/telescope/{ote_file.name}")
+                wl, tr = _product(curves) if len(curves) > 1 else curves[0]
+                add_component(inst_dir, role, wl, tr, band=band, name=band,
+                              source="; ".join(sources), manifest=manifest)
+        manifest.detector_type = PHOTON
+        manifest.ground_based = False
+        manifest.outside_range = "zero"  # Pandeia's convention: factors are zero outside their tables
+        manifest.sources["pandeia"] = f"Pandeia reference data {REFDATA_VERSION} (JWST, in-flight)"
+        manifest.notes = (
+            "Optics = OTE x instrument internal optics (x dichroic for NIRCam). "
+            + (f"Not decomposed (not imaging filters in Pandeia): {', '.join(skipped)}." if skipped else "")
+        )
+        manifest.save(inst_dir)
+        built.append(inst_dir)
+    return built

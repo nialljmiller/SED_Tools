@@ -2,10 +2,13 @@
 # msg_spectra_grabber.py — MSG extractor with correct (Teff, logg, [M/H]) for C3K and friends
 
 import csv
+import logging
 import os
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.parse import urljoin
+
+logger = logging.getLogger(__name__)
 
 import h5py
 import numpy as np
@@ -84,13 +87,13 @@ def _recover_wavelengths(f, spec_g, expected_len=None):
             for k in keys:
                 if k in grp.attrs:
                     try: return float(np.array(grp.attrs[k]).ravel()[0])
-                    except Exception: pass
+                    except Exception: logger.debug("Could not parse HDF5 attr %s as float", k, exc_info=True)
             d = _dataset_if_exists(grp, keys)
             if d is not None:
                 arr = np.array(d[()]).ravel()
                 if arr.size:
                     try: return float(arr[0])
-                    except Exception: pass
+                    except Exception: logger.debug("Could not parse HDF5 dataset %s as float", keys, exc_info=True)
             return None
         for sn in seg_names:
             sgrp = seg_root[sn]
@@ -309,9 +312,9 @@ class MSGSpectraGrabber:
         # try both unravel orders, pick the one yielding plausible values
         coordsC = None; coordsF = None
         try: coordsC = np.unravel_index(flat, shape, order="C")
-        except Exception: pass
+        except Exception: logger.debug("unravel_index C-order failed for flat=%d shape=%s", flat, shape, exc_info=True)
         try: coordsF = np.unravel_index(flat, shape, order="F")
-        except Exception: pass
+        except Exception: logger.debug("unravel_index F-order failed for flat=%d shape=%s", flat, shape, exc_info=True)
 
         def vals_from_coords(coords):
             if coords is None: return None

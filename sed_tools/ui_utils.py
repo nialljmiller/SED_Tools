@@ -2,12 +2,11 @@
 
 from typing import Sequence, Optional, List, Union, Tuple
 import re
-import os
-import sys
-import shutil
+
+from .terminal_plots import terminal_color_enabled, terminal_width
 
 
-def _prompt_choice(
+def prompt_choice(
     options: Sequence,
     label: str,
     allow_back: bool = False,
@@ -38,22 +37,15 @@ def _prompt_choice(
     filt: Optional[Tuple[str, str]] = None  # ('substr'|'neg'|'regex', pattern)
 
     # color toggles
-    use_color = use_color and sys.stdout.isatty() and ("NO_COLOR" not in os.environ)
+    use_color = use_color and terminal_color_enabled("auto")
     BOLD = "\x1b[1m" if use_color else ""
     DIM = "\x1b[2m" if use_color else ""
     CYAN = "\x1b[36m" if use_color else ""
-    YELL = "\x1b[33m" if use_color else ""
     RED = "\x1b[31m" if use_color else ""
-    GREEN = "\x1b[32m" if use_color else ""
-    YELLOW = "\x1b[33m" if use_color else ""
-    BLUE = "\x1b[34m" if use_color else ""
-    MAGENTA = "\x1b[35m" if use_color else ""
-    WHITE = "\x1b[37m" if use_color else ""
     RESET = "\x1b[0m" if use_color else ""
 
     def term_width() -> int:
-        try: return shutil.get_terminal_size().columns
-        except: return 80
+        return terminal_width()
 
     def apply_filter(idx: List[int]) -> List[int]:
         if not filt: return idx

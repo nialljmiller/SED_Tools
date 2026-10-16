@@ -59,3 +59,36 @@ def test_stellar_dir_under_data_dir():
 def test_filter_dir_under_data_dir():
     from sed_tools.models import DATA_DIR_DEFAULT, FILTER_DIR_DEFAULT
     assert str(FILTER_DIR_DEFAULT).startswith(str(DATA_DIR_DEFAULT))
+
+
+def test_collision_config_uses_shared_loader_and_merges_layers(tmp_path):
+    from sed_tools.collision_config import load_config
+
+    (tmp_path / "sed_tools.defaults").write_text(
+        '[on_collision]\nstrategy = "mean"\n[ui]\nterminal_color = "never"\n'
+    )
+    model = tmp_path / "model"
+    model.mkdir()
+    (model / "mesa_config.toml").write_text(
+        '[on_collision]\nstrategy = "filter"\n'
+        '[on_collision.filter]\nalpha = "min"\n'
+    )
+
+    resolved = load_config(model_dir=model, root_dir=tmp_path)
+    assert resolved.strategy == "filter"
+    assert resolved.filter_specs == {"alpha": "min"}
+
+
+def test_collision_config_api_override_is_partial(tmp_path):
+    from sed_tools.collision_config import load_config
+
+    (tmp_path / "sed_tools.defaults").write_text(
+        '[on_collision]\nstrategy = "filter"\n'
+        '[on_collision.filter]\nalpha = "min"\nf_sed = "2.0"\n'
+    )
+    resolved = load_config(
+        root_dir=tmp_path,
+        override_dict={"on_collision": {"filter": {"alpha": "max"}}},
+    )
+    assert resolved.strategy == "filter"
+    assert resolved.filter_specs == {"alpha": "max", "f_sed": "2.0"}

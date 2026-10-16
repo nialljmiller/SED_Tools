@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sed-tools"
-version = "0.1.4"
+version = "0.3.0"
 description = "Programmatic access to SED Tools stellar atmosphere grids and photometry helpers."
 readme = "README.md"
-authors = [{ name = "SED Tools Maintainers" }]
-requires-python = ">=3.9"
+authors = [{ name = "Niall Miller" }]
+requires-python = ">=3.10"
 keywords = ["astronomy", "spectra", "photometry", "sed"]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -19,18 +19,25 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Astronomy",
 ]
 dependencies = [
-    "numpy>=1.22",
+    "numpy>=2.0",
     "pandas>=1.5",
     "tqdm>=4.66",
     "requests>=2.31",
     "beautifulsoup4>=4.12",
     "lxml>=4.9",
     "h5py>=3.10",
-    "astropy>=6.0",
+    "astropy>=6.1",
     "astroquery>=0.4.7",
     "matplotlib>=3.7",
     "tomli>=2.0; python_version < '3.11'",
 ]
+
+[project.optional-dependencies]
+full = [
+    "scipy>=1.14",
+    "scikit-learn",
+    "torch",
+    ]
 
 [project.urls]
 "Homepage" = "https://github.com/nialljmiller/SED_Tools"
@@ -40,6 +47,9 @@ include = ["sed_tools*"]
 
 [tool.setuptools]
 include-package-data = true
+
+[tool.setuptools.package-data]
+sed_tools = ["sed_tools.defaults"]
 
 [project.scripts]
 sed-tools = "sed_tools.cli:main"

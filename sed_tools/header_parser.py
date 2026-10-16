@@ -4,7 +4,7 @@ sed_tools/header_parser.py
 Single source of truth for parsing spectrum file headers.
 
 All modules that need to read parameter metadata from .txt spectrum files
-(svo_spectra_grabber, svo_spectra_filter, svo_regen_spectra_lookup,
+(svo_spectra_grabber, svo_regen_spectra_lookup,
 spectra_cleaner, njm_spectra_grabber, precompute_flux_cube) should import
 parse_header() from here rather than implementing their own logic.
 
@@ -17,6 +17,9 @@ from __future__ import annotations
 import re
 from typing import Dict, Optional
 import math
+import logging
+
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # ALIAS TABLE
@@ -122,5 +125,5 @@ def parse_header(filepath: str) -> Dict[str, object]:
                 else:
                     result[canonical] = val_clean
     except Exception:
-        pass
+        logger.debug("Could not parse header for %s", filepath, exc_info=True)
     return result

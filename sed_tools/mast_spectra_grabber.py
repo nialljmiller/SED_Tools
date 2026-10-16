@@ -18,11 +18,14 @@ from __future__ import annotations
 import csv
 import gzip
 import io
+import logging
 import os
 import re
 import string
 import urllib.parse
 from typing import Any, Dict, List, Optional, Tuple
+
+logger = logging.getLogger(__name__)
 
 import numpy as np
 import requests

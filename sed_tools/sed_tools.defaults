@@ -1,0 +1,8 @@
+# Shipped SED_Tools defaults.
+
+[on_collision]
+strategy = "all-warn"
+
+[ui]
+terminal_plots = "auto"
+terminal_color = "auto"

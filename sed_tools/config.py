@@ -1,7 +1,11 @@
 from __future__ import annotations
 import os
 import shutil
+import warnings
+from copy import deepcopy
+from importlib.resources import files
 from pathlib import Path
+from typing import Any, Dict, Union
 
 try:
     import tomllib
@@ -17,22 +21,109 @@ _DEFAULT_DATA_DIR = _CONFIG_DIR / "data"
 
 # Sub-directories that hold movable data under a data dir.
 _DATA_SUBDIRS = ("stellar_models", "filters")
+_UI_MODES = {"auto", "always", "never"}
+
+
+def load_toml(path: Union[str, Path], *, strict: bool = False) -> Dict[str, Any]:
+    """Load a TOML mapping through the package's single TOML implementation."""
+    if tomllib is None:
+        if strict:
+            raise ImportError("TOML support requires tomllib or tomli")
+        return {}
+    try:
+        with Path(path).open("rb") as handle:
+            return tomllib.load(handle)
+    except (FileNotFoundError, OSError, ValueError, TypeError):
+        if strict:
+            raise
+        return {}
+
+
+_load_toml = load_toml  # private compatibility alias
+
+
+def load_defaults_config() -> Dict[str, Any]:
+    """Load the defaults shipped inside the installed package."""
+    return load_toml(files("sed_tools").joinpath("sed_tools.defaults"))
+
+
+def load_user_config() -> Dict[str, Any]:
+    """Load the per-user configuration, returning an empty dict if absent."""
+    return load_toml(_CONFIG_FILE)
+
+
+def _merge_dicts(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
+    merged = deepcopy(base)
+    for key, value in override.items():
+        if isinstance(value, dict) and isinstance(merged.get(key), dict):
+            merged[key] = _merge_dicts(merged[key], value)
+        else:
+            merged[key] = deepcopy(value)
+    return merged
+
+
+merge_config = _merge_dicts
+
+
+def get_config() -> Dict[str, Any]:
+    """Return shipped defaults merged with user and environment settings."""
+    cfg = _merge_dicts(load_defaults_config(), load_user_config())
+    if os.environ.get("SED_DATA_DIR"):
+        cfg["data_dir"] = os.environ["SED_DATA_DIR"]
+    return cfg
+
+
+def get_ui_config() -> Dict[str, str]:
+    ui = get_config().get("ui", {})
+    return dict(ui) if isinstance(ui, dict) else {}
+
+
+def get_ui_setting(name: str, default: str = "auto") -> str:
+    value = str(get_ui_config().get(name, default)).strip().lower()
+    if value not in _UI_MODES:
+        warnings.warn(
+            f"Invalid ui.{name} value {value!r}; using 'auto'.",
+            UserWarning,
+            stacklevel=2,
+        )
+        return "auto"
+    return value
 
 
 def get_data_dir() -> Path:
-    env = os.environ.get("SED_DATA_DIR")
-    if env:
-        return Path(env).expanduser()
-    if _CONFIG_FILE.exists() and tomllib is not None:
-        try:
-            with open(_CONFIG_FILE, "rb") as f:
-                cfg = tomllib.load(f)
-            data_dir = cfg.get("data_dir")
-            if data_dir:
-                return Path(data_dir).expanduser()
-        except Exception:
-            pass
+    data_dir = get_config().get("data_dir")
+    if data_dir:
+        return Path(data_dir).expanduser()
     return _DEFAULT_DATA_DIR
+
+
+def _toml_value(value: Any) -> str:
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, (int, float)):
+        return str(value)
+    escaped = str(value).replace("\\", "\\\\").replace('"', '\\"')
+    return f'"{escaped}"'
+
+
+def _write_toml(path: Path, config: Dict[str, Any]) -> None:
+    """Write the scalar and nested-table shapes supported by SED_Tools."""
+    lines = []
+
+    def emit_table(table: Dict[str, Any], prefix: str = "") -> None:
+        scalars = [(key, value) for key, value in table.items() if not isinstance(value, dict)]
+        children = [(key, value) for key, value in table.items() if isinstance(value, dict)]
+        for key, value in scalars:
+            lines.append(f"{key} = {_toml_value(value)}")
+        for key, value in children:
+            if lines and lines[-1] != "":
+                lines.append("")
+            section = f"{prefix}.{key}" if prefix else key
+            lines.append(f"[{section}]")
+            emit_table(value, section)
+
+    emit_table(config)
+    path.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
 
 
 def has_content(data_dir: Path) -> bool:
@@ -141,17 +232,9 @@ def set_data_dir(path: str, move: bool | None = None, interactive: bool = False)
             print(f"\n  Old data location {old} fully drained.")
 
     _CONFIG_DIR.mkdir(parents=True, exist_ok=True)
-    existing = {}
-    if _CONFIG_FILE.exists() and tomllib is not None:
-        try:
-            with open(_CONFIG_FILE, "rb") as f:
-                existing = tomllib.load(f)
-        except Exception:
-            pass
+    existing = load_user_config()
     existing["data_dir"] = str(new)
-    with open(_CONFIG_FILE, "w") as f:
-        for k, v in existing.items():
-            f.write(f'{k} = "{v}"\n')
+    _write_toml(_CONFIG_FILE, existing)
     print(f"Data directory set to: {existing['data_dir']}")
     print(f"Config saved to: {_CONFIG_FILE}")
     if os.environ.get("SED_DATA_DIR"):

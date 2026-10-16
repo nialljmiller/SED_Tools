@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import math
 import os
+import re
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 
@@ -24,8 +25,14 @@ import numpy as np
 import pandas as pd
 
 from .header_parser import parse_header
+from .spectrum_io import read_text_spectrum
 
 _AXES = ("teff", "logg", "metallicity")
+_ANSI_ESCAPE = re.compile(r"\x1b\[[0-9;]*m")
+_PATH_COLUMNS = (
+    "filename", "file_name", "file", "path", "spectrum", "spectrum_file",
+    "sed", "sed_file", "model_file",
+)
 
 
 # ---------------------------------------------------------------------------
@@ -70,12 +77,22 @@ def read_grid_nodes(model_dir: Union[str, Path]) -> pd.DataFrame:
             (c for c in df.columns if "meta" in c or "feh" in c or "m/h" in c), None
         )
 
-        out = pd.DataFrame()
+        out = pd.DataFrame(index=df.index)
         out["teff"] = pd.to_numeric(df[teff_col], errors="coerce") if teff_col else np.nan
         out["logg"] = pd.to_numeric(df[logg_col], errors="coerce") if logg_col else np.nan
         out["metallicity"] = (
             pd.to_numeric(df[meta_col], errors="coerce") if meta_col else np.nan
         )
+        path_col = next((c for c in _PATH_COLUMNS if c in df.columns), None)
+        if path_col:
+            filenames = df[path_col].where(df[path_col].notna(), "").astype(str)
+            out["filename"] = filenames
+            out["path"] = filenames.map(
+                lambda value: str(
+                    (Path(value).expanduser() if Path(value).expanduser().is_absolute()
+                     else model_dir / value).resolve()
+                ) if value else ""
+            )
         return out
 
     txts = sorted(model_dir.glob("*.txt"))
@@ -92,9 +109,11 @@ def read_grid_nodes(model_dir: Union[str, Path]) -> pd.DataFrame:
                 "teff": float(h.get("teff", float("nan"))),
                 "logg": float(h.get("logg", float("nan"))),
                 "metallicity": float(h.get("metallicity", float("nan"))),
+                "filename": f.name,
+                "path": str(f.resolve()),
             }
         )
-    return pd.DataFrame(rows, columns=list(_AXES))
+    return pd.DataFrame(rows, columns=list(_AXES) + ["filename", "path"])
 
 
 # ---------------------------------------------------------------------------
@@ -241,6 +260,187 @@ def print_coverage(summary: Dict) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Terminal coverage plots
+# ---------------------------------------------------------------------------
+
+def _representative_nodes(df: pd.DataFrame) -> List[Dict]:
+    """Select deterministic corners plus center in normalized parameter space."""
+    usable = df[np.isfinite(pd.to_numeric(df["teff"], errors="coerce"))].copy()
+    if usable.empty:
+        return []
+    for axis in _AXES:
+        usable[axis] = pd.to_numeric(usable[axis], errors="coerce")
+
+    teff = usable["teff"].to_numpy(dtype=float)
+    logg = usable["logg"].to_numpy(dtype=float)
+    meta = usable["metallicity"].to_numpy(dtype=float)
+    finite_logg = logg[np.isfinite(logg)]
+    finite_meta = meta[np.isfinite(meta)]
+    tmin, tmax, tmed = float(np.min(teff)), float(np.max(teff)), float(np.median(teff))
+
+    if np.unique(finite_logg).size <= 1:
+        targets = [
+            ("A", "cool edge", {"teff": tmin}),
+            ("B", "center", {"teff": tmed}),
+            ("C", "hot edge", {"teff": tmax}),
+        ]
+    else:
+        gmin, gmax = float(np.min(finite_logg)), float(np.max(finite_logg))
+        mmed = float(np.median(finite_meta)) if finite_meta.size else float("nan")
+        targets = [
+            ("A", "cool/low-g corner", {"teff": tmin, "logg": gmin, "metallicity": mmed}),
+            ("B", "cool/high-g corner", {"teff": tmin, "logg": gmax, "metallicity": mmed}),
+            ("C", "hot/low-g corner", {"teff": tmax, "logg": gmin, "metallicity": mmed}),
+            ("D", "hot/high-g corner", {"teff": tmax, "logg": gmax, "metallicity": mmed}),
+            ("E", "center", {"teff": tmed, "logg": float(np.median(finite_logg)), "metallicity": mmed}),
+        ]
+
+    selected: List[Dict] = []
+    used = set()
+    for letter, description, target in targets:
+        distance = np.zeros(len(usable), dtype=float)
+        valid_target = np.ones(len(usable), dtype=bool)
+        dimensions = 0
+        for axis, wanted in target.items():
+            values = usable[axis].to_numpy(dtype=float)
+            finite = values[np.isfinite(values)]
+            if not np.isfinite(wanted) or finite.size == 0 or np.max(finite) == np.min(finite):
+                continue
+            valid_target &= np.isfinite(values)
+            distance += ((values - wanted) / (np.max(finite) - np.min(finite))) ** 2
+            dimensions += 1
+        if not dimensions or not np.any(valid_target):
+            continue
+        distance[~valid_target] = np.inf
+        pos = int(np.argmin(distance))
+        original_index = usable.index[pos]
+        identity = str(usable.iloc[pos].get("path", "")) or str(original_index)
+        if identity in used:
+            continue
+        used.add(identity)
+        selected.append({
+            "letter": letter, "description": description,
+            "index": original_index, "row": usable.iloc[pos],
+        })
+    return selected
+
+
+def _load_txt_spectrum(path: Union[str, Path]) -> Tuple[np.ndarray, np.ndarray]:
+    """Read the first two numeric columns from a text spectrum."""
+    return read_text_spectrum(path)
+
+
+def _node_parameters(item: Dict) -> str:
+    """Return a compact parameter label suitable for a half-width plot."""
+    row = item["row"]
+    parts = [f"T={row['teff']:g}"]
+    if np.isfinite(row["logg"]):
+        parts.append(f"g={row['logg']:g}")
+    if np.isfinite(row["metallicity"]):
+        parts.append(f"M/H={row['metallicity']:g}")
+    return " ".join(parts)
+
+
+def _plot_rows(plots: List[str], columns: int = 2, gap: int = 3) -> str:
+    """Arrange terminal plots in rows without coupling the renderers to layout."""
+    rendered_rows = []
+    for start in range(0, len(plots), columns):
+        blocks = [plot.splitlines() for plot in plots[start:start + columns]]
+        widths = [
+            max((_visible_width(line) for line in block), default=0)
+            for block in blocks
+        ]
+        row_height = max((len(block) for block in blocks), default=0)
+        lines = []
+        for line_number in range(row_height):
+            parts = [
+                _visible_ljust(
+                    block[line_number] if line_number < len(block) else "", width
+                )
+                for block, width in zip(blocks, widths)
+            ]
+            lines.append((" " * gap).join(parts).rstrip())
+        rendered_rows.append("\n".join(lines))
+    return "\n\n".join(rendered_rows)
+
+
+def _visible_width(text: str) -> int:
+    """Measure terminal text without counting ANSI color control sequences."""
+    return len(_ANSI_ESCAPE.sub("", text))
+
+
+def _visible_ljust(text: str, width: int) -> str:
+    return text + " " * max(0, width - _visible_width(text))
+
+
+def print_terminal_coverage(summary: Dict, *, color: str = "auto") -> None:
+    """Print parameter projections and representative normalized SEDs."""
+    from .terminal_plots import lineplot, scatter2d, terminal_width
+
+    df = summary["_df"]
+    selected = _representative_nodes(df)
+    palette = ["cyan", "yellow", "green", "magenta", "blue", "red", "white"]
+    labels = {df.index.get_loc(item["index"]): item["letter"] for item in selected}
+    colors = {
+        df.index.get_loc(item["index"]): palette[i % len(palette)]
+        for i, item in enumerate(selected)
+    }
+    projections = [
+        ("teff", "logg", "Teff [K]", "log g", True),
+        ("teff", "metallicity", "Teff [K]", "[M/H]", False),
+        ("logg", "metallicity", "log g", "[M/H]", False),
+    ]
+    # Each panel occupies roughly half an 80-column terminal and half the
+    # renderer's original height, allowing two useful plots per row.
+    plot_width = max(20, min(42, (terminal_width() - 30) // 2))
+    parameter_plots = []
+    for xaxis, yaxis, xlabel, ylabel, invert in projections:
+        parameter_plots.append(scatter2d(
+            df[xaxis], df[yaxis],
+            title=f"{xlabel} vs {ylabel}",
+            xlabel=xlabel, ylabel=ylabel, invert_y=invert,
+            point_labels=labels, point_colors=colors, color=color,
+            width=plot_width, height=9,
+        ))
+    print(f"\n{summary['name']}: parameter coverage\n")
+    print(_plot_rows(parameter_plots))
+
+    if "path" not in df.columns or not any(str(value).strip() for value in df["path"]):
+        print("\nTerminal SED plot skipped: lookup_table.csv does not identify spectrum files.")
+        return
+
+    sed_plots = []
+    for i, item in enumerate(selected):
+        path = Path(str(item["row"].get("path", "")))
+        if not path.is_file():
+            continue
+        try:
+            wavelength, flux = _load_txt_spectrum(path)
+        except OSError:
+            continue
+        good = np.isfinite(wavelength) & np.isfinite(flux) & (flux > 0)
+        wavelength, flux = wavelength[good], flux[good]
+        if wavelength.size < 2:
+            continue
+        normalized = np.log10(flux / np.max(flux))
+        series = [{
+            "x": wavelength, "y": normalized,
+            "label": _node_parameters(item), "char": item["letter"],
+            "color": palette[i % len(palette)],
+        }]
+        sed_plots.append(lineplot(
+            series, title=f"SED {item['letter']}: {item['description']}",
+            xlabel="Wavelength", ylabel="log10(Fλ / max Fλ)", color=color,
+            width=plot_width, height=8,
+        ))
+    if sed_plots:
+        print("\nRepresentative SEDs (individually normalized)\n")
+        print(_plot_rows(sed_plots))
+    else:
+        print("\nTerminal SED plot skipped: no readable representative spectra.")
+
+
+# ---------------------------------------------------------------------------
 # Plot
 # ---------------------------------------------------------------------------
 
@@ -329,6 +529,14 @@ def grid_coverage(
     model_dir = _resolve_dir(name_or_dir, base)
     summary = coverage_summary(model_dir)
     print_coverage(summary)
+
+    from .config import get_ui_setting
+    from .terminal_plots import terminal_plots_enabled
+
+    plot_mode = get_ui_setting("terminal_plots")
+    color_mode = get_ui_setting("terminal_color")
+    if terminal_plots_enabled(plot_mode):
+        print_terminal_coverage(summary, color=color_mode)
 
     if plot:
         target = Path(out_path) if out_path else (model_dir / "coverage.png")

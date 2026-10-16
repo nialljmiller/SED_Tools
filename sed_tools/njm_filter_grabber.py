@@ -5,12 +5,25 @@ Complements the spectra grabber for complete data access
 """
 
 import json
+import logging
 import os
+import re
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 from urllib.parse import urljoin
 
 import requests
+import urllib3
+
+from .filter_metadata import SOURCE_ASSUMED, SVOMetadataClient, tag_filter_file
+
+logger = logging.getLogger(__name__)
+
+try:
+    from bs4 import BeautifulSoup as _BeautifulSoup
+    _HAS_BS4 = True
+except ImportError:
+    _HAS_BS4 = False
 
 
 class NJMFilterGrabber:
@@ -20,15 +33,15 @@ class NJMFilterGrabber:
         self.base_dir = base_dir
         self.max_workers = max_workers
         os.makedirs(base_dir, exist_ok=True)
-        
-        # Use HTTPS (server redirects HTTP → HTTPS)
+
         self.base_url = "https://nillmill.ddns.net/sed_tools"
         self.filters_url = f"{self.base_url}/filters"
-        
+
         self.session = requests.Session()
         self.session.headers.update({"User-Agent": "SED_Tools/1.0 (NJM Mirror)"})
-        
-        # Check if server is available
+
+        self._cached_facilities: Optional[List[str]] = None
+        self._metadata_client = SVOMetadataClient()
         self._available = self._check_availability()
         
     def _check_availability(self) -> bool:
@@ -43,8 +56,7 @@ class NJMFilterGrabber:
             try:
                 response = self.session.head(self.base_url, timeout=5, verify=False)
                 response.raise_for_status()
-                # Disable SSL verification for this session
-                self.session.verify = False
+                self._disable_ssl_verification()
                 print("  [njm] Note: SSL verification disabled (certificate issue)")
                 return True
             except Exception:
@@ -52,33 +64,89 @@ class NJMFilterGrabber:
         except Exception:
             return False
     
+    def _disable_ssl_verification(self) -> None:
+        """Suppress SSL warnings and switch the session to skip certificate checks."""
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        self.session.verify = False
+
     def is_available(self) -> bool:
         """Return True if the mirror is available."""
         return self._available
-    
+
+    @staticmethod
+    def _normalize_name(name: str) -> str:
+        """Lowercase and strip separators for fuzzy name comparison."""
+        return re.sub(r'[-_\s]', '', name).lower()
+
+    def find_facility(self, svo_key: str) -> Optional[str]:
+        """Return the NJM directory name that best matches an SVO facility key.
+
+        Tries exact match first, then normalized prefix match to handle
+        differences like 'Bepi-Colom' (SVO) vs 'Bepi_Colombo' (NJM).
+        """
+        facilities = self.discover_facilities()
+        if svo_key in facilities:
+            return svo_key
+        svo_norm = self._normalize_name(svo_key)
+        for name in facilities:
+            njm_norm = self._normalize_name(name)
+            if njm_norm.startswith(svo_norm) or svo_norm.startswith(njm_norm):
+                return name
+        return None
+
+    def get_exclusive_facilities(self, svo_keys: List[str]) -> List[str]:
+        """Return NJM facility names that have no matching SVO facility.
+
+        Uses the same normalized prefix match as find_facility so that, e.g.,
+        'Bepi_Colombo' (NJM) correctly matches 'Bepi-Colom' (SVO) and is NOT
+        returned as exclusive.
+        """
+        svo_norms = {self._normalize_name(k) for k in svo_keys}
+        exclusive = []
+        for fac in self.discover_facilities():
+            fac_norm = self._normalize_name(fac)
+            matched = any(
+                fac_norm.startswith(s) or s.startswith(fac_norm)
+                for s in svo_norms
+            )
+            if not matched:
+                exclusive.append(fac)
+        return exclusive
+
+    def find_instrument(self, njm_facility: str, svo_instrument: str) -> Optional[str]:
+        """Return the NJM instrument name that best matches an SVO instrument key."""
+        instruments = self.discover_instruments(njm_facility)
+        if svo_instrument in instruments:
+            return svo_instrument
+        # Exact (normalised) matches only: a prefix match would hand back a
+        # different instrument, e.g. GAIA0 (DR1) -> the mirror's GAIA set.
+        svo_norm = self._normalize_name(svo_instrument)
+        for name in instruments:
+            if self._normalize_name(name) == svo_norm:
+                return name
+        return None
+
     def discover_facilities(self) -> List[str]:
-        """Discover available filter facilities from the mirror."""
+        """Discover available filter facilities from the mirror (cached)."""
         if not self._available:
             return []
-        
+        if self._cached_facilities is not None:
+            return self._cached_facilities
+
         try:
-            # Try to get facilities from index.json
             index_url = f"{self.base_url}/index.json"
             response = self.session.get(index_url, timeout=10)
             response.raise_for_status()
-            
             data = response.json()
             facilities = data.get("filters", {}).get("facilities", [])
-            
-            if facilities:
-                return facilities
-            
-            # Fallback: try to parse directory listing
-            return self._parse_directory_listing(self.filters_url)
-            
+            if not facilities:
+                facilities = self._parse_directory_listing(self.filters_url)
         except Exception as e:
-            print(f"[njm] Could not fetch facility list: {e}")
-            return []
+            logger.debug("[njm] Could not fetch facility list: %s", e, exc_info=True)
+            facilities = self._parse_directory_listing(self.filters_url)
+
+        self._cached_facilities = facilities
+        return facilities
     
     def discover_instruments(self, facility: str) -> List[str]:
         """Discover available instruments for a facility."""
@@ -110,8 +178,8 @@ class NJMFilterGrabber:
                               if line.strip() and not line.startswith('#')]
                     return filters
             except Exception:
-                pass
-            
+                logger.debug("Could not fetch instrument index file for %s/%s", facility, instrument, exc_info=True)
+
             # Fallback: parse directory listing
             all_files = self._parse_directory_listing(instrument_url)
             # Filter for .dat files and remove the extension
@@ -124,18 +192,17 @@ class NJMFilterGrabber:
     
     def _parse_directory_listing(self, url: str) -> List[str]:
         """Parse Apache directory listing HTML to extract subdirectories/files."""
+        if not _HAS_BS4:
+            return []
         try:
             response = self.session.get(url, timeout=10)
             response.raise_for_status()
-            
-            # Simple HTML parsing - look for links
-            from bs4 import BeautifulSoup
-            soup = BeautifulSoup(response.text, 'html.parser')
+            soup = _BeautifulSoup(response.text, 'html.parser')
             
             items = []
             for link in soup.find_all('a'):
                 href = link.get('href', '')
-                if href and href not in ['..', '/', '../']:
+                if href and href not in ['..', '/', '../'] and not href.startswith('?'):
                     # Remove trailing slash for directories
                     item = href.rstrip('/')
                     # Skip parent directory links
@@ -192,6 +259,7 @@ class NJMFilterGrabber:
             
             # Skip if already exists
             if os.path.exists(output_path):
+                tag_filter_file(output_path, client=self._metadata_client, facility=facility)
                 skipped += 1
                 continue
             
@@ -201,7 +269,14 @@ class NJMFilterGrabber:
                 
                 with open(output_path, 'w', encoding='utf-8') as f:
                     f.write(response.text)
-                
+
+                # Mirror files should already carry a DetectorType header; this
+                # is a no-op for those and resolves it against SVO otherwise.
+                result = tag_filter_file(output_path, client=self._metadata_client, facility=facility)
+                if result.source == SOURCE_ASSUMED:
+                    print(f"  [warn] {filter_name}: detector type unverified, assuming {result.detector_type}"
+                          + (f" ({result.note})" if result.note else ""))
+
                 downloaded += 1
                 
             except Exception as e:
@@ -230,6 +305,7 @@ class NJMFilterGrabber:
                 print(f"  [created] {instrument} index file")
         
         print(f"[njm] {facility}/{instrument}: {downloaded} downloaded, {skipped} skipped, {failed} failed")
+        self.download_components(facility, instrument)
         return downloaded
     
     def download_all_filters(self, facility: Optional[str] = None) -> int:
@@ -271,6 +347,85 @@ class NJMFilterGrabber:
         print(f"\n[njm] Total filters downloaded: {total_downloaded}")
         return total_downloaded
     
+    # ------------------------------------------------------------------
+    # Separable components (see sed_tools.filter_components)
+    # ------------------------------------------------------------------
+    def fetch_manifest(self, facility: str, instrument: str) -> Optional[Dict]:
+        """Return the remote ``manifest.json`` for an instrument, or ``None``."""
+        if not self._available:
+            return None
+        try:
+            response = self.session.get(f"{self.filters_url}/{facility}/{instrument}/manifest.json", timeout=15)
+            if response.status_code != 200:
+                return None
+            return response.json()
+        except Exception:
+            logger.debug("No NJM manifest for %s/%s", facility, instrument, exc_info=True)
+            return None
+
+    def download_components(self, facility: str, instrument: str) -> int:
+        """Download ``manifest.json`` and any component files it lists.
+
+        Returns the number of component files downloaded (0 if the mirror has
+        no components for this instrument).
+        """
+        manifest = self.fetch_manifest(facility, instrument)
+        if manifest is None:
+            return 0
+        output_dir = Path(self.base_dir) / facility / instrument
+        output_dir.mkdir(parents=True, exist_ok=True)
+        (output_dir / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+
+        rel_paths = sorted({
+            rel for entries in manifest.get("components", {}).values() for rel in entries.values()
+            if "/" in rel  # root-level entries are the published curves themselves
+        })
+        count = 0
+        for rel in rel_paths:
+            if Path(rel).is_absolute() or ".." in Path(rel).parts:
+                print(f"  [skip] component path outside the instrument: {rel}")
+                continue
+            target = output_dir / rel
+            if target.exists():
+                continue
+            try:
+                response = self.session.get(f"{self.filters_url}/{facility}/{instrument}/{rel}", timeout=30)
+                response.raise_for_status()
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text(response.text, encoding="utf-8")
+                count += 1
+            except Exception as exc:
+                print(f"  [error] component {rel}: {exc}")
+        if count:
+            print(f"[njm] {facility}/{instrument}: {count} component files downloaded")
+        return count
+
+    def download_atmosphere(self, atmosphere_root: str, site: str, filename: Optional[str] = None) -> bool:
+        """Fetch an atmosphere grid manifest (and optionally one grid file) for ``site``."""
+        if not self._available:
+            return False
+        site_dir = Path(atmosphere_root) / site
+        base = f"{self.base_url}/atmospheres/{site}"
+        try:
+            response = self.session.get(f"{base}/manifest.json", timeout=15)
+            if response.status_code != 200:
+                return False
+            site_dir.mkdir(parents=True, exist_ok=True)
+            (site_dir / "manifest.json").write_text(response.text, encoding="utf-8")
+            if filename and not (site_dir / filename).exists():
+                response = self.session.get(f"{base}/{filename}", timeout=120)
+                response.raise_for_status()
+                (site_dir / filename).write_text(response.text, encoding="utf-8")
+            return True
+        except Exception as exc:
+            print(f"[njm] atmosphere {site}: {exc}")
+            return False
+
+    def list_atmosphere_sites(self) -> List[str]:
+        if not self._available:
+            return []
+        return [s for s in self._parse_directory_listing(f"{self.base_url}/atmospheres/") if "." not in s]
+
     def get_filter_info(self, facility: str, instrument: str) -> Dict[str, any]:
         """Get information about available filters for an instrument."""
         if not self._available:
@@ -285,12 +440,6 @@ class NJMFilterGrabber:
             "filters": filters,
             "url": f"{self.filters_url}/{facility}/{instrument}/",
         }
-
-
-# Suppress SSL warnings when verification is disabled
-import urllib3
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 def main():

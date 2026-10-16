@@ -65,6 +65,11 @@ models/*prediction*.png
 # Random output images
 *.png
 
+# Coverage artifacts
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
 # server branch exceptions
 !data/count.txt
 !data/counter.php

@@ -7,13 +7,16 @@ import sys
 import textwrap
 import urllib.parse
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Sequence, Set
+from typing import Dict, List, Optional, Sequence
 
 import requests
 from astroquery.svo_fps import SvoFps
 from bs4 import BeautifulSoup
 
-from . import _prompt_choice
+from .filter_metadata import (ENERGY, SOURCE_ASSUMED, SOURCE_SVO, SVOMetadataClient,
+                              svo_components_header, write_filter_file)
+from .ui_utils import prompt_choice
+from .parsing import parse_multi_selection
 
 SvoFps.TIMEOUT = 300  # give SVO a generous timeout
 
@@ -58,6 +61,7 @@ class SVOFilterBrowser:
         self._facility_cache: Optional[List[Facility]] = None
         self._instrument_cache: Dict[str, List[Instrument]] = {}
         self._filters_cache: Dict[tuple[str, str], List[FilterRow]] = {}
+        self.metadata_client = SVOMetadataClient(session=self.session, timeout=SvoFps.TIMEOUT)
 
     # -------------------- discovery helpers --------------------
     def list_facilities(self) -> List[Facility]:
@@ -109,6 +113,7 @@ class SVOFilterBrowser:
         if cache_key in self._filters_cache:
             return self._filters_cache[cache_key]
 
+        sibling_keys = [i.key for i in self.list_instruments(facility_key) if i.key != instrument_key]
         soup = self._fetch_index(
             {"mode": "browse", "gname": facility_key, "gname2": instrument_key, "asttype": ""}
         )
@@ -131,6 +136,11 @@ class SVOFilterBrowser:
                 band = _band_from_filter_id(filter_id)
                 facility = cells[-3].get_text(strip=True) if len(cells) >= 3 else facility_key
                 instrument = cells[-2].get_text(strip=True) if len(cells) >= 2 else instrument_key
+                if _would_collide(instrument, instrument_key, sibling_keys):
+                    # SVO lists several instruments under one name (every Gaia
+                    # release is "GAIA"); file them under their unique key
+                    # (GAIA/GAIA0, GAIA/GAIA3) so one never overwrites another.
+                    instrument = instrument_key
                 description = cells[-1].get_text(strip=True) if cells else ""
                 rows.append(
                     FilterRow(
@@ -174,12 +184,26 @@ class SVOFilterBrowser:
             touched_dirs[out_dir] = instrument_dir
 
             try:
-                table = SvoFps.get_transmission_data(row.filter_id)
-                if table is None or len(table) == 0:
+                record = self.metadata_client.get_filter(row.filter_id)
+                if record is None or record.wavelength.size == 0:
                     print(f"    [skip] No transmission data returned for {row.filter_id}")
                     continue
-                table.write(out_path, format="ascii.csv", overwrite=True)
-                print(f"    [saved] {out_path}")
+                if record.detector_type:
+                    detector_type, source = record.detector_type, SOURCE_SVO
+                else:
+                    detector_type, source = ENERGY, SOURCE_ASSUMED
+                    print(f"    [warn] SVO gives no DetectorType for {row.filter_id}; assuming energy")
+                write_filter_file(
+                    out_path,
+                    record.wavelength,
+                    record.transmission,
+                    detector_type=detector_type,
+                    source=source,
+                    filter_id=row.filter_id,
+                    wavelength_unit=record.wavelength_unit,
+                    extra=svo_components_header(record.components),
+                )
+                print(f"    [saved] {out_path} ({detector_type}-counting)")
             except Exception as exc:  # pragma: no cover - network issues
                 print(f"    [error] Failed to download {row.filter_id}: {exc}")
 
@@ -223,6 +247,18 @@ class SVOFilterBrowser:
         return None
 
 
+def _would_collide(instrument_name: str, instrument_key: str, other_keys: Sequence[str]) -> bool:
+    """True if filing ``instrument_key`` under ``instrument_name`` could clash
+    with another instrument of the same facility."""
+    def norm(value: str) -> str:
+        return "".join(ch for ch in value.lower() if ch.isalnum())
+
+    name = norm(instrument_name)
+    if not name or name == norm(instrument_key):
+        return False
+    return any(norm(k).startswith(name) for k in other_keys)
+
+
 # -------------------- CLI helpers --------------------
 def _band_from_filter_id(filter_id: str) -> str:
     if "." in filter_id:
@@ -240,36 +276,6 @@ def _clean_path(value: str) -> str:
 
 def _clean_filename(value: str) -> str:
     return _clean_path(value).replace(" ", "_")
-
-
-def parse_multi_selection(spec: str, total: int) -> List[int]:
-    """Parse a 1-based comma-separated/range selection into unique 0-based indices."""
-    chosen: Set[int] = set()
-    for chunk in (part.strip() for part in spec.split(",")):
-        if not chunk:
-            continue
-        if "-" in chunk:
-            bounds = [p.strip() for p in chunk.split("-", 1)]
-            if len(bounds) != 2 or not bounds[0].isdigit() or not bounds[1].isdigit():
-                raise ValueError(f"Invalid range: {chunk}")
-            start, end = int(bounds[0]), int(bounds[1])
-            if start > end:
-                start, end = end, start
-            if start < 1 or end > total:
-                raise ValueError(f"Range out of bounds: {chunk}")
-            chosen.update(range(start - 1, end))
-            continue
-
-        if not chunk.isdigit():
-            raise ValueError(f"Invalid item: {chunk}")
-        value = int(chunk)
-        if value < 1 or value > total:
-            raise ValueError(f"Selection out of bounds: {value}")
-        chosen.add(value - 1)
-
-    return sorted(chosen)
-
-
 
 
 def run_interactive(base_dir: str = DEFAULT_BASE_DIR) -> None:
@@ -319,7 +325,7 @@ def run_interactive(base_dir: str = DEFAULT_BASE_DIR) -> None:
                 continue
             return
 
-        fac_idx = _prompt_choice(facilities, "Facilities")
+        fac_idx = prompt_choice(facilities, "Facilities")
 
         if fac_idx is None:
             print("Exiting.")
@@ -332,7 +338,7 @@ def run_interactive(base_dir: str = DEFAULT_BASE_DIR) -> None:
             continue
 
         while True:
-            inst_idx = _prompt_choice(instruments, f"Instruments for {facility.label}", allow_back=True)
+            inst_idx = prompt_choice(instruments, f"Instruments for {facility.label}", allow_back=True)
             if inst_idx is None:
                 print("Exiting.")
                 return
