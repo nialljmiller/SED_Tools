@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Combine multiple stellar atmosphere models into a unified flux cube.
+Combine multiple stellar spectral grids into a unified flux cube.
 """
 
 import argparse
@@ -39,8 +39,8 @@ def find_stellar_models(base_dir=None):
 
 
 def select_models_interactive(model_dirs):
-    """Present model options to user and get selection."""
-    print("\nAvailable stellar atmosphere models:")
+    """Present spectral grid options to user and get selection."""
+    print("\nAvailable stellar spectral grids:")
     print("-" * 50)
     for idx, (name, path) in enumerate(model_dirs, start=1):
         lookup_file = os.path.join(path, "lookup_table.csv")
@@ -49,9 +49,9 @@ def select_models_interactive(model_dirs):
             n_models = len(df)
         except Exception:
             n_models = "?"
-        print(f"{idx}. {name} ({n_models} models)")
+        print(f"{idx}. {name} ({n_models} model spectra)")
 
-    print("\nEnter model numbers (comma-separated) or 'all':")
+    print("\nEnter spectral grid numbers (comma-separated) or 'all':")
     user_input = input("> ").strip()
 
     if user_input.lower() == "all":
@@ -61,7 +61,7 @@ def select_models_interactive(model_dirs):
         indices = [int(x.strip()) - 1 for x in user_input.split(",")]
         return [model_dirs[i] for i in indices if 0 <= i < len(model_dirs)]
     except (ValueError, IndexError):
-        print("Invalid input. Using all models.")
+        print("Invalid input. Using all spectral grids.")
         return model_dirs
 
 
@@ -111,7 +111,7 @@ def prepare_sed(filepath, teff):
 
 
 def create_unified_grid(all_models_data):
-    """Create unified parameter grids from all models."""
+    """Create unified parameter grids from all spectral grids."""
     all_teff = np.concatenate([d["teff"] for d in all_models_data])
     all_logg = np.concatenate([d["logg"] for d in all_models_data])
     all_meta = np.concatenate([d["meta"] for d in all_models_data])
@@ -135,7 +135,7 @@ def create_unified_grid(all_models_data):
 
 
 def create_common_wavelength_grid(all_models_data, sample_size=20):
-    """Create a common wavelength grid by sampling models."""
+    """Create a common wavelength grid by sampling model spectra."""
     print("\nAnalyzing wavelength coverage...")
 
     min_wave = float("inf")
@@ -173,17 +173,17 @@ def create_common_wavelength_grid(all_models_data, sample_size=20):
 
 
 def identify_reference_model(all_models_data):
-    """Identify reference model (prefer Kurucz)."""
+    """Identify reference spectral grid (prefer Kurucz)."""
     for i, model_data in enumerate(all_models_data):
         if "kurucz" in os.path.basename(model_data["model_dir"]).lower():
-            print(f"Reference model: {os.path.basename(model_data['model_dir'])}")
+            print(f"Reference spectral grid: {os.path.basename(model_data['model_dir'])}")
             return i
-    print(f"Reference model: {os.path.basename(all_models_data[0]['model_dir'])}")
+    print(f"Reference spectral grid: {os.path.basename(all_models_data[0]['model_dir'])}")
     return 0
 
 
 def compute_normalization_factors(target_data, reference_data, wavelength_grid):
-    """Compute normalization factors to match target SEDs to reference model."""
+    """Compute normalization factors to match target SEDs to reference spectral grid."""
     print(f"  Normalizing to: {os.path.basename(reference_data['model_dir'])}")
 
     if len(reference_data["files"]) == 0:
@@ -262,7 +262,7 @@ def compute_normalization_factors(target_data, reference_data, wavelength_grid):
 
 
 def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, wavelength_grid):
-    """Build the combined flux cube from all models."""
+    """Build the combined flux cube from all spectral grids."""
     n_teff, n_logg, n_meta, n_lambda = len(teff_grid), len(logg_grid), len(meta_grid), len(wavelength_grid)
 
     flux_cube = np.zeros((n_teff, n_logg, n_meta, n_lambda))
@@ -293,7 +293,7 @@ def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, w
         for i, (file, teff, logg, meta) in enumerate(tqdm(
             zip(model_data["files"], model_data["teff"],
                 model_data["logg"], model_data["meta"]),
-            total=len(model_data["files"]), desc=f"Model {model_idx + 1}"
+            total=len(model_data["files"]), desc=f"Spectral grid {model_idx + 1}"
         )):
             i_teff = int(np.argmin(np.abs(teff_grid - teff)))
             i_logg = int(np.argmin(np.abs(logg_grid - logg)))
@@ -410,7 +410,7 @@ def save_combined_data(output_dir, teff_grid, logg_grid, meta_grid,
         lookup_df.to_csv(f, index=False, header=False)
 
     print(f"Saved lookup table: {lookup_file}")
-    print(f"Total models: {len(lookup_df)}")
+    print(f"Total model spectra: {len(lookup_df)}")
 
     return lookup_df
 
@@ -421,7 +421,7 @@ def plot_sed_samples(teff_grid, logg_grid, meta_grid, wavelength_grid,
                      flux_cube, source_map, all_models_data, output_dir):
     """
     Plot representative SED samples from different regions of the combined
-    parameter space, colour-coded by source model.
+    parameter space, colour-coded by source spectral grid.
 
     Saves sed_samples.png in output_dir.
     """
@@ -557,7 +557,7 @@ def visualize_parameter_space(teff_grid, logg_grid, meta_grid, source_map,
                            logg_grid.min(), logg_grid.max()], cmap="YlOrRd")
     ax4.set_xlabel("Teff (K)")
     ax4.set_ylabel("log g")
-    ax4.set_title("Model density per grid point")
+    ax4.set_title("Model spectrum density per grid point")
     plt.colorbar(im, ax=ax4)
 
     plt.tight_layout()
@@ -586,31 +586,31 @@ def visualize_parameter_space(teff_grid, logg_grid, meta_grid, source_map,
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Combine stellar atmosphere models")
+    parser = argparse.ArgumentParser(description="Combine stellar spectral grids")
     parser.add_argument("--data_dir", default="../data/stellar_models/",
-                       help="Base directory containing stellar models")
+                       help="Base directory containing spectral grids")
     parser.add_argument("--output", default="combined_models",
                        help="Output directory name")
     parser.add_argument("--interactive", action="store_true", default=True,
-                       help="Interactive model selection")
+                       help="Interactive spectral grid selection")
     args = parser.parse_args()
 
     model_dirs = find_stellar_models(args.data_dir)
     if not model_dirs:
-        print(f"No stellar models found in {args.data_dir}")
+        print(f"No spectral grids found in {args.data_dir}")
         return
 
     selected = select_models_interactive(model_dirs) if args.interactive else model_dirs
     if not selected:
-        print("No models selected.")
+        print("No spectral grids selected.")
         return
 
-    print(f"\nSelected {len(selected)} models:")
+    print(f"\nSelected {len(selected)} spectral grids:")
     for name, _ in selected:
         print(f"  - {name}")
 
     # Load data
-    print("\nLoading model data...")
+    print("\nLoading spectral grid data...")
     all_models_data = [load_model_data(path) for _, path in selected]
 
     # Create grids

@@ -1,0 +1,17 @@
+# Manager follow-up on unlinked ground entries
+
+Checked 2026-10-20. These are source-discovery leads after the Codex audit, not verified complete component sets. The owner review rows retain their original depth classifications. Do not assume that a facility page supplies every SVO band, or that a filter with the same name is physically identical across surveys.
+
+| Key | Original source and finding | Next retrieval check |
+|---|---|---|
+| INT/WFC | [ING WFC filter database](https://astro.ing.iac.es/filter/list.php?instrument=WFC&sort=system) lists measured throughput by serial number. The indexed [serial 220 g table](https://astro.ing.iac.es/filter/filtercurve.php?filter=220&format=txt) shows numeric wavelength in nm and throughput in percent. | Live table requests failed (HTTP 500 or timeout) in this pass. Retry and enumerate every relevant serial; compare names and hardware generations to each SVO identifier. |
+| INT/IPHAS, INT/UVEX | Same ING database has H-alpha #197, Sloan g #220, Sloan r #214, RGO U #204 and other candidate filters. The g entry explicitly mentions UVEX. | Confirm each survey's actual serial numbers and versions before using a WFC table. A shared instrument name alone is insufficient. |
+| OAJ/JPAS | [J-PAS JPCam instrumentation](https://www.j-pas.org/survey/jpcam) confirms the filter trays and camera architecture. | Find downloadable measured JPCam curves; do not substitute J-PLUS/T80Cam files. |
+| Paranal/NGTS | [Wheatley et al. original paper](https://academic.oup.com/mnras/article/475/4/4476/4597999) states that its online supplement contains a combined throughput data file and Figure 6 separates conceptual optics, measured filter and expected QE. | Retrieve the supplement and check its version, units and factor definition. The publisher redirect was inaccessible in this pass; none of the three separate numeric factors was opened. |
+| BOK/SCUSS | [Original SCUSS data-release paper](https://doi.org/10.3847/0004-6256/151/2/37) points to the survey's release site and describes its u filter. | Locate u and u_noatm numeric response files; a catalog or image release is not a response curve. |
+| UKIRT/UFTI | [UKIRT UFTI instrument page](https://about.ifa.hawaii.edu/ukirt/instruments/ukirt-fast-track-imager/) links the instrument's filter set. | Resolve historical filter generations and numeric files; do not silently borrow WFCAM curves. |
+| KPNO/Mosaic | [NOIRLab filter information](https://noirlab.edu/science/programs/kpno/filters) indexes Mosaic filters and says data accompany most lists. | Browser anti-bot page blocked the current fetch. Locate individual measured files and match Mosaic generation and filter IDs. |
+| LaSilla/EFOSC | [ESO EFOSC2 filter page](https://www.eso.org/sci/facilities/lasilla/instruments/efosc/inst/Efosc2Filters.html) gives the basic filter set, ESO serial numbers and plotted curves. | Locate numeric curves in ESO's filter database; the page's direct curve links are GIF plots, not ASCII tables. |
+| LCO/IMACS | [Carnegie IMACS project page](https://instrumentation.obs.carnegiescience.edu/imacs/) documents the two camera designs and filter hardware. | Find the current observatory filter database and numeric transmissions; the project page itself is not a curve file. |
+
+The DENIS original-source search still lacks a specific, verified landing page for filter response; only its SVO fallback link is retained. These leads reduce *unlinked* search records, not the count of completed optical-path characterizations.

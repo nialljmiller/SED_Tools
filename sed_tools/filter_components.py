@@ -38,6 +38,8 @@ import json
 import logging
 import os
 import re
+import tempfile
+from copy import deepcopy
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
@@ -46,6 +48,7 @@ import numpy as np
 
 from .filter_metadata import (ENERGY, PHOTON, normalize_detector_type,
                               read_filter_header, write_filter_file)
+from .facility_sites import is_ground_based, own_site, platform
 
 logger = logging.getLogger(__name__)
 
@@ -160,6 +163,16 @@ class AtmosphereSpec:
     airmass: float
     pwv: Optional[float] = None  # precipitable water vapour, mm
 
+    def __post_init__(self):
+        if not np.isfinite(self.airmass) or self.airmass < 1:
+            raise ComponentError("airmass must be finite and at least 1")
+        if self.pwv is not None and (not np.isfinite(self.pwv) or self.pwv < 0):
+            raise ComponentError("pwv must be finite and nonnegative")
+        if self.site is not None:
+            _require_inside(self.site, "atmosphere site")
+            if Path(self.site).name != self.site:
+                raise ComponentError("atmosphere site must be a single directory name")
+
     @classmethod
     def coerce(cls, value: Union["AtmosphereSpec", Mapping[str, object], None]) -> Optional["AtmosphereSpec"]:
         if value is None or isinstance(value, AtmosphereSpec):
@@ -196,6 +209,8 @@ class InstrumentManifest:
     published_bands: Dict[str, str] = field(default_factory=dict)  # band -> recipe of its published curve
     components: Dict[str, Dict[str, str]] = field(default_factory=dict)
     detector_type: str = ENERGY
+    detector_types: Dict[str, str] = field(default_factory=dict)
+    detector_type_sources: Dict[str, str] = field(default_factory=dict)
     ground_based: Optional[bool] = None
     default_site: Optional[str] = None
     sources: Dict[str, str] = field(default_factory=dict)
@@ -206,6 +221,14 @@ class InstrumentManifest:
     outside_range: str = "error"
     schema: int = MANIFEST_SCHEMA
 
+    def __post_init__(self):
+        for band in self.bands:
+            if Path(band).name != band or band in (".", ".."):
+                raise ComponentError(f"Invalid band name in manifest: {band!r}")
+        for entries in self.components.values():
+            for rel in entries.values():
+                _require_inside(rel, f"{self.facility}/{self.instrument}")
+
     # ---- persistence -------------------------------------------------
     @classmethod
     def load(cls, instrument_dir: PathLike) -> "InstrumentManifest":
@@ -213,10 +236,13 @@ class InstrumentManifest:
         instrument_dir = Path(instrument_dir)
         path = instrument_dir / MANIFEST_NAME
         if path.exists():
-            data = json.loads(path.read_text(encoding="utf-8"))
-            known = {f for f in cls.__dataclass_fields__}
-            return cls(**{k: v for k, v in data.items() if k in known})
+            return cls.from_dict(json.loads(path.read_text(encoding="utf-8")))
         return cls.from_published(instrument_dir)
+
+    @classmethod
+    def from_dict(cls, data: Mapping[str, object]) -> "InstrumentManifest":
+        """Read supported manifest fields, allowing metadata from newer versions."""
+        return cls(**{key: value for key, value in data.items() if key in cls.__dataclass_fields__})
 
     @classmethod
     def from_published(cls, instrument_dir: PathLike) -> "InstrumentManifest":
@@ -226,13 +252,23 @@ class InstrumentManifest:
         their own ``filter`` component (no copy is made).
         """
         instrument_dir = Path(instrument_dir)
-        bands = sorted(p.stem for p in instrument_dir.glob("*.dat"))
+        return cls.from_headers(instrument_dir.parent.name, instrument_dir.name, {
+            p.stem: read_filter_header(p) for p in sorted(instrument_dir.glob("*.dat"))
+        })
+
+    @classmethod
+    def from_headers(cls, facility: str, instrument: str,
+                     headers: Mapping[str, Mapping[str, str]]) -> "InstrumentManifest":
+        """Describe local headers or SVO metadata without downloading files."""
+        bands = sorted(headers)
         published_bands: Dict[str, str] = {}
         sources = set()
         detector_types = set()
+        band_detectors = {}
+        band_detector_sources = {}
         filter_components: Dict[str, str] = {}
         for band in bands:
-            header = read_filter_header(instrument_dir / f"{band}.dat")
+            header = headers[band]
             try:
                 roles = parse_components(header.get("Components"))
             except ComponentError:
@@ -244,8 +280,10 @@ class InstrumentManifest:
             if header.get("ComponentsSource"):
                 sources.add(header["ComponentsSource"])
             dtype = normalize_detector_type(header.get("DetectorType"))
+            band_detector_sources[band] = header.get("DetectorTypeSource", "unknown") if dtype else "assumed"
             if dtype:
                 detector_types.add(dtype)
+                band_detectors[band] = dtype
         # SVO publishes many filter-only curves as sibling bands of the total
         # (HSC.g_filter, ZTF.g_fil, SDSS.gprime_filter); they are that band's
         # own filter component.
@@ -265,18 +303,18 @@ class InstrumentManifest:
         published = {"components": summary} if summary else {}
         if len(sources) == 1:
             published["source"] = sources.pop()
-        from .facility_sites import is_ground_based, own_site
-
         return cls(
-            facility=instrument_dir.parent.name,
-            instrument=instrument_dir.name,
+            facility=facility,
+            instrument=instrument,
             bands=bands,
-            ground_based=is_ground_based(instrument_dir.parent.name),
-            default_site=own_site(instrument_dir.parent.name),
+            ground_based=is_ground_based(facility),
+            default_site=own_site(facility),
             published=published,
             published_bands=published_bands,
             components={FILTER: filter_components} if filter_components else {},
             detector_type=detector_types.pop() if len(detector_types) == 1 else ENERGY,
+            detector_types=band_detectors,
+            detector_type_sources=band_detector_sources,
         )
 
     def save(self, instrument_dir: PathLike) -> Path:
@@ -289,8 +327,6 @@ class InstrumentManifest:
         """File for a component key (a role or composite recipe) and band."""
         entries = self.components.get(role, {})
         rel = entries.get(band) or entries.get(SHARED)
-        if rel is not None:
-            _require_inside(rel, f"{self.facility}/{self.instrument}")
         return rel
 
     def pieces(self, band: str) -> List[Tuple[Tuple[str, ...], str]]:
@@ -362,26 +398,73 @@ class InstrumentManifest:
         """Primary bands that have a ``role`` component on its own."""
         return [b for b in self.primary_bands() if self.cover(b, (role,))]
 
-    def describe(self) -> Dict[str, object]:
+    def local(self, instrument_dir: PathLike) -> "InstrumentManifest":
+        """An availability view containing only files actually present locally."""
+        view = deepcopy(self)
+        root = Path(instrument_dir).resolve()
+        view.bands = [b for b in self.bands if (root / f"{b}.dat").is_file()]
+        for role, entries in view.components.items():
+            for band, rel in list(entries.items()):
+                path = (root / rel).resolve()
+                if not path.is_relative_to(root):
+                    raise ComponentError(f"{rel}: component resolves outside its instrument directory")
+                if not path.is_file():
+                    del entries[band]
+        return view
+
+    def missing_files(self, instrument_dir: PathLike) -> List[str]:
+        root = Path(instrument_dir)
+        paths = {f"{b}.dat" for b in self.bands}
+        for entries in self.components.values():
+            paths.update(entries.values())
+        return sorted(rel for rel in paths if not (root / rel).is_file())
+
+    def describe(self, instrument_dir: Optional[PathLike] = None) -> Dict[str, object]:
+        if instrument_dir is not None:
+            info = self.local(instrument_dir).describe()
+            info["missing_files"] = self.missing_files(instrument_dir)
+            info["expected_bands"] = list(self.bands)
+            return info
+        from .component_sources.catalog import component_availability
+
+        recipes = {}
+        primary_bands = self.primary_bands()
+        available_roles = self.available_roles()
+        role_bands = {role: self.bands_with(role) for role in (FILTER, OPTICS, QE)}
+        source_availability = component_availability(self.facility, self.instrument)
+        for extra in ((), (OPTICS,), (QE,), (OPTICS, QE)):
+            roles = (FILTER,) + extra
+            bands = [b for b in primary_bands if self.cover(b, roles)]
+            if bands:
+                recipes[recipe_name(roles)] = bands
+        dtypes = set(self.detector_types.get(b, self.detector_type) for b in self.bands)
+        detector_type = None
+        if dtypes:
+            detector_type = dtypes.pop() if len(dtypes) == 1 else "mixed"
         return {
             "facility": self.facility,
             "instrument": self.instrument,
             "bands": list(self.bands),
             "published": self.published.get("components") or "unknown",
             "published_source": self.published.get("source", ""),
-            "published_bands": dict(self.published_bands) if self.published.get("components") == "mixed" else {},
-            "components": list(self.available_roles()),
+            "published_bands": dict(self.published_bands),
+            "components": list(available_roles),
             "buildable": self.buildable(),
+            "recipes_by_band": recipes,
             "partial_components": {
-                r: self.bands_with(r) for r in (FILTER, OPTICS, QE)
-                if r not in self.available_roles() and self.bands_with(r)
+                role: bands for role, bands in role_bands.items()
+                if role not in available_roles and bands
             },
             "atmosphere": bool(self.ground_based and self.default_site),
             "atmosphere_site": self.default_site,
-            "platform": _platform_of(self.facility),
+            "platform": platform(self.facility),
             "default_site": self.default_site,
-            "detector_type": self.detector_type,
-            "component_status": _component_status(self.facility, self.instrument),
+            "detector_type": detector_type,
+            "detector_types": dict(self.detector_types),
+            "detector_type_sources": dict(self.detector_type_sources),
+            "component_status": source_availability["note"] or None,
+            "component_availability": source_availability,
+            "missing_files": [],
         }
 
 
@@ -405,14 +488,29 @@ class AtmosphereGrid:
         path.write_text(json.dumps(asdict(self), indent=2, sort_keys=True) + "\n", encoding="utf-8")
         return path
 
-    def select(self, spec: AtmosphereSpec) -> str:
-        """Return the file for an exact grid point, or explain what exists."""
+    def find(self, spec: AtmosphereSpec) -> Optional[str]:
+        """Look up exact observing conditions; return None when absent."""
+        candidates = []
         for entry in self.entries:
             if not math_isclose(float(entry["airmass"]), spec.airmass):
                 continue
             pwv = entry.get("pwv")
             if spec.pwv is None or (pwv is not None and math_isclose(float(pwv), spec.pwv)):
-                return str(entry["file"])
+                candidates.append(entry)
+        if len(candidates) > 1 and spec.pwv is None:
+            pwvs = sorted({float(e["pwv"]) for e in candidates if e.get("pwv") is not None})
+            raise ComponentError(f"{self.site}: choose pwv explicitly; available at this airmass: {pwvs}")
+        if candidates:
+            rel = str(candidates[0]["file"])
+            _require_inside(rel, f"atmosphere {self.site}")
+            return rel
+        return None
+
+    def select(self, spec: AtmosphereSpec) -> str:
+        """Require an exact grid point, or explain which conditions exist."""
+        filename = self.find(spec)
+        if filename is not None:
+            return filename
         airmasses = sorted({float(e["airmass"]) for e in self.entries})
         pwvs = sorted({float(e["pwv"]) for e in self.entries if e.get("pwv") is not None})
         raise ComponentError(
@@ -420,18 +518,6 @@ class AtmosphereGrid:
             + (f", pwv={spec.pwv:g} mm" if spec.pwv is not None else "")
             + f". Grid: airmass {airmasses}" + (f", pwv {pwvs} mm" if pwvs else "")
         )
-
-
-def _component_status(facility: str, instrument: str) -> Optional[str]:
-    from .component_sources.catalog import builder_for, status_for
-
-    status = status_for(facility, instrument)
-    if status:
-        return status[1]
-    ref = builder_for(facility, instrument)
-    if ref and ref.heavy:
-        return f"Components available via `sed-tools filters-build-components {ref.name}` (large download)."
-    return None
 
 
 def _require_inside(rel: str, owner: str) -> None:
@@ -443,12 +529,6 @@ def _require_inside(rel: str, owner: str) -> None:
     parts = Path(rel).parts
     if not parts or Path(rel).is_absolute() or ".." in parts:
         raise ComponentError(f"{owner}: component path {rel!r} is outside the instrument directory")
-
-
-def _platform_of(facility: str) -> Optional[str]:
-    from .facility_sites import platform
-
-    return platform(facility)
 
 
 def math_isclose(a: float, b: float) -> bool:
@@ -470,7 +550,13 @@ def read_curve(path: PathLike) -> Curve:
     """Load a component/filter file in Angstrom (honouring ``WavelengthUnit``)."""
     from .flux_cube_tool import load_filter_curve
 
+    if not Path(path).is_file():
+        raise ComponentError(f"Missing throughput file: {path}; fetch this instrument's components again")
     curve = load_filter_curve(str(path))
+    if (curve.wavelength.size < 2 or not np.all(np.isfinite(curve.wavelength))
+            or np.any(curve.wavelength <= 0) or np.any(np.diff(curve.wavelength) <= 0)
+            or not np.all(np.isfinite(curve.transmission)) or np.any(curve.transmission < 0)):
+        raise ComponentError(f"{path}: throughput needs increasing positive wavelengths and finite nonnegative values")
     return Curve(curve.wavelength, curve.transmission, read_filter_header(path), Path(path))
 
 
@@ -532,12 +618,28 @@ def multiply_curves(
 # --------------------------------------------------------------------------
 # Composition
 # --------------------------------------------------------------------------
-def atmosphere_file(atmosphere_root: PathLike, spec: AtmosphereSpec) -> Path:
+def find_atmosphere(atmosphere_root: PathLike, spec: AtmosphereSpec) -> Optional[Path]:
+    """Find a cached grid point without treating a cache miss as an error."""
     site_dir = Path(atmosphere_root) / spec.site
     if not (site_dir / MANIFEST_NAME).exists():
-        sites = sorted(p.name for p in Path(atmosphere_root).glob("*") if (p / MANIFEST_NAME).exists())
-        raise ComponentError(f"No atmosphere grid for site '{spec.site}'. Available: {sites or 'none'}")
-    return site_dir / AtmosphereGrid.load(site_dir).select(spec)
+        return None
+    grid = AtmosphereGrid.load(site_dir)
+    if grid.site != spec.site:
+        raise ComponentError(f"Atmosphere manifest site {grid.site!r} does not match {spec.site!r}")
+    filename = grid.find(spec)
+    if filename is None:
+        return None
+    path = site_dir / filename
+    if not path.resolve().is_relative_to(site_dir.resolve()):
+        raise ComponentError("Atmosphere file resolves outside its site directory")
+    return path if path.is_file() else None
+
+
+def atmosphere_file(atmosphere_root: PathLike, spec: AtmosphereSpec) -> Path:
+    path = find_atmosphere(atmosphere_root, spec)
+    if path is None:
+        raise ComponentError(f"No cached atmosphere for {spec.label}; fetch or generate the requested conditions")
+    return path
 
 
 def resolve_atmosphere(manifest: InstrumentManifest, spec: Optional[AtmosphereSpec]) -> AtmosphereSpec:
@@ -551,8 +653,6 @@ def resolve_atmosphere(manifest: InstrumentManifest, spec: Optional[AtmosphereSp
     if spec is None:
         raise ComponentError("Including the atmosphere needs atmosphere={'airmass': ..., 'pwv': ...}")
     if manifest.ground_based is False:
-        from .facility_sites import platform
-
         raise ComponentError(
             f"{manifest.facility} is {platform(manifest.facility) or 'not ground'}-based; "
             "a telluric component does not apply"
@@ -582,6 +682,8 @@ def _band_detector_type(instrument_dir: Path, band: str, roles: Sequence[str], m
         published = normalize_detector_type(read_filter_header(instrument_dir / f"{band}.dat").get("DetectorType"))
         if published:
             return published
+    if QE not in roles:
+        return manifest.detector_types.get(band) or product_detector_type(roles, manifest)
     return product_detector_type(roles, manifest)
 
 
@@ -621,12 +723,15 @@ def compose_band(
     covered: List[str] = []
     steps: List[Tuple[str, Path]] = []
     if PUBLISHED in roles:
-        if not manifest.published_bands.get(band):
+        if not manifest.published_bands.get(band) and roles != {PUBLISHED}:
             raise ComponentError(
                 f"The published {band} curve does not say what it contains; tag it first "
                 "(sed-tools filters-detector) so components are not double counted"
             )
         steps.append((PUBLISHED, instrument_dir / f"{band}.dat"))
+        if (INSTRUMENT in parse_components(manifest.published_bands.get(band))
+                and roles & {OPTICS, QE}):
+            raise ComponentError(f"{band}: published 'instrument' contribution is unresolved; adding optics/QE risks double counting")
     if instrument_roles:
         pieces = manifest.cover(band, instrument_roles)
         if pieces is None:
@@ -645,12 +750,16 @@ def compose_band(
     curves: List[Curve] = []
     sources: List[str] = []
     for key, path in steps:
+        if key != ATMOSPHERE and not path.resolve().is_relative_to(instrument_dir.resolve()):
+            raise ComponentError(f"{path}: component resolves outside its instrument directory")
         curve = read_curve(path)
         # A file may itself already include other factors; never count one twice.
         if key == PUBLISHED:
-            contains = parse_components(manifest.published_bands[band])
+            contains = parse_components(manifest.published_bands.get(band))
         else:
             contains = parse_components(curve.header.get("Components")) or parse_components(key)
+            if set(contains) != set(parse_components(key)):
+                raise ComponentError(f"{path.name}: component contents {contains} disagree with its manifest role {key!r}")
         overlap = set(contains) & set(covered)
         if overlap:
             raise ComponentError(f"{path.name} already includes {sorted(overlap)}; refusing to double count")
@@ -664,7 +773,7 @@ def compose_band(
     )
     recipe = recipe_name(ordered)
     header = {
-        "Components": recipe,
+        "Components": recipe_name(covered),
         "ComponentsSource": "composed",
         "Recipe": recipe + (f" @ {spec.label}" if spec else ""),
         "Sources": "; ".join(sources),
@@ -690,6 +799,7 @@ def build_product(
     bands: Optional[Sequence[str]] = None,
     allow_partial: bool = False,
     overwrite: bool = True,
+    detector_type: Optional[str] = None,
 ) -> Path:
     """Compose every (or the given) band into ``products/<recipe>/``.
 
@@ -704,29 +814,50 @@ def build_product(
     if spec is not None:
         spec = resolve_atmosphere(manifest, spec)
     roles = parse_components(components)
-    name = product_name(roles, spec)
+    override = normalize_detector_type(detector_type)
+    if detector_type is not None and override is None:
+        raise ComponentError(f"Unknown detector type: {detector_type!r}; choose energy or photon")
+    name = product_name(roles, spec) + (f"+detector_{override}" if override else "")
     out_dir = instrument_dir / "products" / name
     if out_dir.exists() and not overwrite:
         return out_dir
-    out_dir.mkdir(parents=True, exist_ok=True)
-
-    for band in bands or manifest.primary_bands():
-        detector_type = _band_detector_type(instrument_dir, band, roles, manifest)
-        curve = compose_band(
-            instrument_dir, band, roles,
-            atmosphere=spec, atmosphere_root=atmosphere_root,
-            allow_partial=allow_partial, manifest=manifest,
-        )
-        write_filter_file(
-            out_dir / f"{band}.dat",
-            curve.wavelength,
-            curve.transmission,
-            detector_type=detector_type,
-            source="composed",
-            wavelength_unit="Angstrom",
-            extra=curve.header,
-        )
-    write_filter_index(out_dir, name)
+    selected = list(manifest.primary_bands() if bands is None else bands)
+    if not selected:
+        raise ComponentError("No bands selected for composition")
+    out_dir.parent.mkdir(parents=True, exist_ok=True)
+    # Finish every band before replacing an existing product. A failed band
+    # must not leave a partial product or overwrite a previously valid one.
+    with tempfile.TemporaryDirectory(prefix=".compose-", dir=out_dir.parent) as tmp:
+        staging = Path(tmp) / "ready"
+        staging.mkdir()
+        for band in selected:
+            curve = compose_band(
+                instrument_dir, band, roles,
+                atmosphere=spec, atmosphere_root=atmosphere_root,
+                allow_partial=allow_partial, manifest=manifest,
+            )
+            original = _band_detector_type(instrument_dir, band, roles, manifest)
+            if override:
+                curve.header["DetectorTypeOriginal"] = original
+            write_filter_file(
+                staging / f"{band}.dat",
+                curve.wavelength,
+                curve.transmission,
+                detector_type=override or original,
+                source="user" if override else "composed",
+                wavelength_unit="Angstrom",
+                extra=curve.header,
+            )
+        write_filter_index(staging, name)
+        previous = Path(tmp) / "previous"
+        if out_dir.exists():
+            out_dir.rename(previous)
+        try:
+            staging.rename(out_dir)
+        except OSError:
+            if previous.exists():
+                previous.rename(out_dir)
+            raise
     return out_dir
 
 

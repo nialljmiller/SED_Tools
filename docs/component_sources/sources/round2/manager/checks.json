@@ -1,0 +1,56 @@
+{
+  "wise_w1": {
+    "url": "https://irsa.ipac.caltech.edu/data/WISE/docs/release/All-Sky/expsup/figures/RSR-W1.txt",
+    "final_url": "https://irsa.ipac.caltech.edu/data/WISE/docs/release/All-Sky/expsup/figures/RSR-W1.txt",
+    "bytes": 8468,
+    "sha256": "6ade5b074dc7652e08c4de7767969126b7e48fdf4b6295bbf7f44e22d33ec1e9",
+    "rows": 398,
+    "peak": 0.8798,
+    "header": [
+      "# Relative Spectral Response per photon; Wright et al. 2010",
+      "# W1     RSR     uncertainty (parts per thousand)",
+      " 2.53 6.920E-06  707",
+      " 2.54 4.564E-07 1000",
+      " 2.55 2.495E-07 1000"
+    ]
+  },
+  "mips_definition": {
+    "url": "https://irsa.ipac.caltech.edu/data/SPITZER/docs/mips/mipsinstrumenthandbook/6/",
+    "final_url": "https://irsa.ipac.caltech.edu/data/SPITZER/docs/mips/mipsinstrumenthandbook/6/",
+    "bytes": 14150,
+    "sha256": "3a208e3be3c3bb11dd3fba8af2a4546a74a24f2efcf9266fb5dce47ab9f66913"
+  },
+  "pacs_filters": {
+    "url": "https://archives.esac.esa.int/hsa/legacy/cal/PACS/user/PCalPhotometer_FilterTransmission_FM_v1.fits",
+    "final_url": "https://archives.esac.esa.int/hsa/legacy/cal/PACS/user/PCalPhotometer_FilterTransmission_FM_v1.fits",
+    "bytes": 411840,
+    "sha256": "eef8ae8cdba6efd693bded68870d3a77b78de8f2d3bf2c201aca2a6e8a9de2e1",
+    "columns": [
+      [
+        "transmission",
+        "1"
+      ],
+      [
+        "wavelength",
+        "micrometer"
+      ]
+    ],
+    "rows": 15902,
+    "info": null
+  },
+  "pacs_svo_blue": {
+    "url": "https://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=Herschel/Pacs.blue",
+    "final_url": "https://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=Herschel/Pacs.blue",
+    "bytes": 45756,
+    "sha256": "0c67d20b879d88f2490dc8819c0243f11d918dcf320d1a0eb6a9aff2d341e57e"
+  },
+  "pacs_comparison": {
+    "svo_rows": 405,
+    "svo_wavelength_unit": "Angstrom",
+    "compared": "Original blue curve interpolated onto all SVO rows; Angstrom to micrometre conversion",
+    "max_abs_difference": 5.00001288627908e-07,
+    "max_abs_difference_relative_to_svo_peak": 9.669054052346343e-07,
+    "caution": "Numerical equality does not alone establish whether calibration file includes detector response."
+  },
+  "scope": "Independent manager spot checks; other bands and complete component coverage not certified."
+}

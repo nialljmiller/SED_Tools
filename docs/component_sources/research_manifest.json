@@ -1,0 +1,73 @@
+{
+  "generated_utc": "2026-10-21T20:03:57.282778+00:00",
+  "baseline_keys": 649,
+  "reviewed_baseline_keys": 163,
+  "additional_keys": 1,
+  "by_owner": {
+    "claude": {
+      "assigned": 96,
+      "target": 24,
+      "reviewed": 24,
+      "basis": {
+        "original_files": 20,
+        "svo_only": 2,
+        "original_documentation": 1,
+        "mixed": 1
+      },
+      "sources": 79
+    },
+    "grok": {
+      "assigned": 280,
+      "target": 70,
+      "reviewed": 70,
+      "basis": {
+        "original_files": 53,
+        "svo_only": 1,
+        "original_documentation": 16
+      },
+      "sources": 130
+    },
+    "gemini": {
+      "assigned": 273,
+      "target": 69,
+      "reviewed": 69,
+      "basis": {
+        "original_files": 33,
+        "svo_only": 22,
+        "mixed": 14
+      },
+      "sources": 92
+    }
+  },
+  "source_sha256": {
+    "sources/round2/claude/reviews.csv": "3dca7070c781877792ec5308ddbd06bd3d2bdfbfdec3084ce25e6816910bfbd9",
+    "sources/round2/claude/report.md": "06a38bb1bfc033b7dbe20939bfb5a2d80930cd2b3dd722e77affb8c49c48c054",
+    "sources/round2/claude/sources.jsonl": "542dddfa6c590a81a3a601194317486aee2294bc410b19586c39274b232d27e6",
+    "sources/round2/claude/peer-review.md": "2c98e66dfd0b8b284f0ba6ca075db4a18786debcfc2aadb1ef24a9d2ccfb653f",
+    "sources/round2/claude/progress.json": "f8f0b5fceeced867a2af7a3fb30da5c08eff2c878a6ad3a696bf69a52b371d2f",
+    "sources/round2/grok/reviews.csv": "a5435e2b65b5531fa36977faebf04fcadc0184ecc73f893f0a068a5d52aefc56",
+    "sources/round2/grok/report.md": "2e625a39fb60701b01e31bf3e51e6df93dbd422e106daace3d54447aed36fe4f",
+    "sources/round2/grok/sources.jsonl": "eaa6be52d3b222d44b1f4cd6afa8a47563caef95b719b0e58de0c1d7032d9da4",
+    "sources/round2/grok/progress.json": "7cfef551ccc408e3df202968ac109eae3dce9b22096025044eb3dffd077c7ea2",
+    "sources/round2/gemini/reviews.csv": "f65fa148ac6910e023cddcb2c443d87f78bdcced98e1f62f5a4a2b9f9bd388b7",
+    "sources/round2/gemini/report.md": "bb4e141b23e64920d3dd7da1ba39da9580e8d488f9f3b676c03c9ae9b977913d",
+    "sources/round2/gemini/sources.jsonl": "fc884241bc457593c80d22636f62b688f61b5403766f18da83d7e850c476ce44",
+    "sources/round2/gemini/progress.json": "db51c5bc9dbc74a826a03f8cca9ce7293bb61d06666719de7d71c6d2afbf7c07",
+    "sources/round2/codex/issues.jsonl": "2fb0c1f6eefd6eeab5af89e20f7d9946a54e34509e22821b57d5fef8999e8ede",
+    "sources/round2/codex/focused-review.json": "c5193de8fe1621e8e269d196f7c21824ca9002bc9cfaee221fcacbf7e7cb1104",
+    "sources/round2/codex/focused-review.md": "a3d87c6b80e7c1b6285cd0e81fe4eeae9dc4370115d39e92f397c780699ab343",
+    "sources/round2/codex/report.md": "40f9eab79c69d24bc5669df7ce13a5df10ddd5bdac9d61ca1b4942b3cfa7cbb7",
+    "sources/round2/codex/coverage.json": "6eef31adbf17c0884231bf29cd5dc3f079daf9ac4bdcf822959812c469f26890",
+    "sources/round2/codex/final_audit.md": "fc3e3a3604961846850813e8185cd1b914687bd016f1e69c77886193b37d59bf",
+    "sources/round2/codex/final_audit.json": "71f119fef54e58950594c329debdb614c97234a5f6e2574b866bde0d3a3b29bd",
+    "sources/round2/manager/schema_corrections.md": "a6af78c6466df7c1355ef995af1426ffc328ba8b081d3a063b703df36df9d400",
+    "sources/round2/manager/report.md": "dac69632926dcc84cbc0fb45c65c708f09d0468938bcd7f3e9a52957d78b50e7",
+    "sources/round2/manager/codex_packet.json": "00726c8ff428233fa21de394b503c0a008960d256cefa44574ca740b786e71ae",
+    "sources/round2/manager/ground_source_followup.md": "b34c0e7d2bc63644e23ca7619241f06cca639c0049c1e84d4758d3f7a764ee55",
+    "sources/round2/manager/final_audit_packet.json": "431d57f91516e91a145286521d57b1ac6b8748f6979e753e9c9e9e646683d4fa",
+    "sources/round2/manager/checks.json": "a2486a37982650c392d4bc1226754a03e24285d0c1e572dba9c01dfccb00b812",
+    "sources/round2/manager/reconciliation.md": "8e88157874e17a7ad32598048a994de3b4b9e4069bb02b82f554d77a4c30344c",
+    "sources/round2/manager/hcam_check.md": "82b2dc1852628116984c6c75c5a362329bd787b51c00247b1aec428840fe38c6"
+  },
+  "validation_errors": []
+}

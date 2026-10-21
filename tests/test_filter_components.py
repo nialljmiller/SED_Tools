@@ -45,6 +45,7 @@ def _component_instrument(root, facility="Argus", instrument="System"):
     add_component(inst, OPTICS, [3000.0, 7000.0], [0.8, 0.8], name="optics", manifest=manifest)
     add_component(inst, QE, [3000.0, 7000.0], [0.6, 0.6], name="ccd", manifest=manifest)
     manifest.detector_type = ENERGY
+    manifest.detector_types = {}  # legacy manifest with one instrument-wide convention
     manifest.save(inst)
     return inst
 
@@ -262,7 +263,8 @@ def test_published_plus_atmosphere_keeps_published_detector_type(tmp_path):
     out = build_product(inst, ["published"], atmosphere=ATM, atmosphere_root=atm)
     header = read_filter_header(out / "V.dat")
     assert header["DetectorType"] == ENERGY
-    assert header["Components"] == "published+atmosphere"
+    assert header["Components"] == "filter+atmosphere"
+    assert header["Recipe"].startswith("published+atmosphere")
 
 
 def test_space_instrument_refuses_atmosphere(tmp_path):

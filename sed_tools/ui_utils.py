@@ -3,6 +3,8 @@
 from typing import Sequence, Optional, List, Union, Tuple
 import re
 
+from .parsing import parse_multi_selection
+
 from .terminal_plots import terminal_color_enabled, terminal_width
 
 
@@ -143,26 +145,19 @@ def prompt_choice(
             parts = low.split()
             if len(parts) == 2 and parts[1].isdigit():
                 k = int(parts[1])
-                if 1 <= k <= N: return k - 1
+                if 1 <= k <= N: return [k - 1] if multi else k - 1
             continue
 
         # --- Multi Selection Logic ---
-        if multi:
-            if re.match(r"^[\d\s,-]+$", inp):
-                selected_indices = []
-                parts = inp.split(',')
-                for p in parts:
-                    p = p.strip()
-                    if not p: continue
-                    if '-' in p:
-                        a, b = p.split('-', 1)
-                        selected_indices.extend(range(int(a), int(b) + 1))
-                    else:
-                        selected_indices.append(int(p))
-                
-                valid = [x - 1 for x in sorted(list(set(selected_indices))) if 1 <= x <= N]
-                if valid:
-                    return valid
+        if multi and re.fullmatch(r"[\d\s,-]+", inp):
+            try:
+                selected = parse_multi_selection(inp, N)
+            except ValueError as exc:
+                print(f"{RED}{exc}{RESET}")
+                continue
+            if selected:
+                return selected
+            continue
 
         # --- Single Selection Logic ---
         if not multi and inp.isdigit():

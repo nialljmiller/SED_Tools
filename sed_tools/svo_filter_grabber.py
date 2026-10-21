@@ -169,7 +169,7 @@ class SVOFilterBrowser:
         if not filters:
             print("No filters to download.")
             return
-        touched_dirs = {}  # out_dir -> instrument filename
+        touched_dirs = {}  # out_dir -> expected bands
         
         for idx, row in enumerate(filters, 1):
             print(f"  [{idx:3d}/{len(filters):3d}] {row.filter_id}")
@@ -181,7 +181,7 @@ class SVOFilterBrowser:
             out_dir = os.path.join(self.base_dir, facility_dir, instrument_dir)
             os.makedirs(out_dir, exist_ok=True)
             out_path = os.path.join(out_dir, f"{band_name}.dat")
-            touched_dirs[out_dir] = instrument_dir
+            touched_dirs.setdefault(out_dir, set()).add(band_name)
 
             try:
                 record = self.metadata_client.get_filter(row.filter_id)
@@ -204,11 +204,16 @@ class SVOFilterBrowser:
                     extra=svo_components_header(record.components),
                 )
                 print(f"    [saved] {out_path} ({detector_type}-counting)")
-            except Exception as exc:  # pragma: no cover - network issues
+            except (requests.RequestException, ValueError) as exc:  # malformed or unavailable source response
                 print(f"    [error] Failed to download {row.filter_id}: {exc}")
 
         # -------------------- final index files --------------------
-        for out_dir, instrument_dir in touched_dirs.items():
+        for out_dir, expected in touched_dirs.items():
+            from pathlib import Path
+            from .filter_components import InstrumentManifest
+
+            directory = Path(out_dir)
+            instrument_dir = directory.name
             index_path = os.path.join(out_dir, instrument_dir)  # e.g., .../Generic/Johnson/Johnson
             # list all .dat files in the folder (names only), sorted; exclude the index file itself if it ends with .dat (it won't)
             dat_files = sorted(
@@ -217,6 +222,19 @@ class SVOFilterBrowser:
             )
             with open(index_path, "w", encoding="utf-8") as fh:
                 fh.write("\n".join(dat_files) + ("\n" if dat_files else ""))
+            # Keep expected bands even after a partial download so a retry
+            # cannot mistake one successful curve for a complete instrument.
+            manifest = InstrumentManifest.load(directory)
+            headers = InstrumentManifest.from_published(directory)
+            manifest.bands = sorted(set(manifest.bands) | expected)
+            manifest.published = headers.published
+            manifest.published_bands.update(headers.published_bands)
+            manifest.detector_types.update(headers.detector_types)
+            manifest.detector_type_sources.update(headers.detector_type_sources)
+            for role, entries in headers.components.items():
+                for band, rel in entries.items():
+                    manifest.components.setdefault(role, {}).setdefault(band, rel)
+            manifest.save(directory)
 
 
 

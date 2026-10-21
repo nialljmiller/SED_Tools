@@ -145,7 +145,17 @@ def test_ensure_components_runs_own_builder_and_skips_heavy(tmp_path, monkeypatc
     monkeypatch.setitem(catalog.BUILDERS_FOR, ("Fac", "Cam"), catalog.BuilderRef("fake"))
     monkeypatch.setitem(catalog.BUILDERS_FOR, ("Fac", "Big"), catalog.BuilderRef("fake", heavy=True))
     import sed_tools.component_sources as cs
-    monkeypatch.setattr(cs, "get_builder", lambda name: lambda root, **kw: calls.append((name, root)))
+    from sed_tools import filter_library
+    monkeypatch.setattr(filter_library.NJMFilterGrabber, "_check_availability", lambda self: False)
+
+    def build(root, **kw):
+        calls.append(("fake", root))
+        inst = root / "Fac" / "Cam"
+        manifest = InstrumentManifest.load(inst)
+        add_component(inst, FILTER, [4000.0, 5000.0], [1.0, 1.0], band="g", manifest=manifest)
+        manifest.save(inst)
+
+    monkeypatch.setattr(filter_library, "get_builder", lambda name: build)
 
     for name in ("Cam", "Big", "None"):
         d = tmp_path / "Fac" / name

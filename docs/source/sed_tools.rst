@@ -4,6 +4,13 @@ sed\_tools package
 Submodules
 ----------
 
+Public Python API
+-----------------
+
+.. automodule:: sed_tools.api
+   :members: SED, SpectralGrid, SpectralGridInfo, Spectrum, Filters, MLCompleter, MLGenerator
+   :show-inheritance:
+
 sed\_tools.cli module
 ---------------------
 

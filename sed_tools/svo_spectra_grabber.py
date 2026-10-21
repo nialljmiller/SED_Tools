@@ -74,7 +74,7 @@ class SVOSpectraGrabber:
 
         # Budgets
         self.ssap_timeout    = 60          # seconds — SVO can be slow to start responding
-        self.ssap_max_bytes  = 52_428_800  # 50 MB — enough for the largest catalogs
+        self.ssap_max_bytes  = 52_428_800  # 50 MB — enough for the largest spectral grids
         self.head_timeout    = 10          # seconds per HEAD
         self.dl_timeout      = 90          # seconds per spectrum download
         self.dl_max_retries  = 4           # per-file retry attempts
@@ -90,12 +90,12 @@ class SVOSpectraGrabber:
     # -------------------- model list --------------------
 
     def discover_models(self):
-        print("Discovering available models from SVO...")
+        print("Discovering spectral grids from SVO...")
         try:
             r = self.session.get(self.model_index_url, timeout=20)
             r.raise_for_status()
         except requests.RequestException as e:
-            print(f"[SVO] model index failed: {e}")
+            print(f"[SVO] spectral grid index failed: {e}")
             return []
         soup = BeautifulSoup(r.text, "html.parser")
         models = set()
@@ -110,7 +110,7 @@ class SVOSpectraGrabber:
                 models.add(m)
         out = sorted(models)
         if not out:
-            print("  [warn] no models found on SVO index page.")
+            print("  [warn] no spectral grids found on SVO index page.")
         return out
 
     # -------------------- spectra discovery --------------------
@@ -183,7 +183,7 @@ class SVOSpectraGrabber:
                     total += len(chunk)
                     if total >= self.ssap_max_bytes:
                         print(f"    [SVO] SSAP response hit {self.ssap_max_bytes // 1_048_576}MB cap "
-                              f"— catalog may be very large")
+                              f"— spectral grid may be very large")
                         break
                 raw = buf.getvalue()
         except Exception as e:

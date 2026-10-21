@@ -1,0 +1,3 @@
+# Manager check: GTC/HiPERCAM
+
+The [original hcam_g.txt](https://raw.githubusercontent.com/StuartLittlefair/ucam_thruput/master/ucam_thruput/data/hcam_g.txt) was fetched on 2026-10-20. It is 100,050 bytes, SHA-256 `fb0ba0cb49c94582603bb6a8e626b873bfd28901eb7f0e0078f51688118c07dc`, with 2,001 strictly increasing two-column numeric rows. The first column runs 2021.0037–12021.0037; the second 2e-6–0.90961464. The earlier 80,071-byte save was truncated. The present file has no unit header, and this check did not validate other filters, atmosphere, optics or detector components. The URL follows a mutable branch; pin the file and its version when coding.

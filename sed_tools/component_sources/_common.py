@@ -60,7 +60,7 @@ class Table:
             except (ValueError, IndexError):
                 continue
         if not rows:
-            raise RuntimeError(f"No numeric rows in {self.url} {getattr(self, 'member', '')}".strip())
+            raise RuntimeError(f"No numeric rows in {self.url}")
         data = np.array(rows)
         wl = data[:, 0] * self.wl_scale
         tr = data[:, 1] * self.tr_scale

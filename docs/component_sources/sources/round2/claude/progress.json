@@ -1,0 +1,204 @@
+{
+ "reference": "sed-components-quarter-20261020",
+ "agent": "claude",
+ "target": 24,
+ "baseline_assigned": 96,
+ "previous_reviewed": 13,
+ "characterized_svo_keys": [
+  "JWST/NIRCam2025",
+  "JWST/NIRCam",
+  "JWST/MIRI",
+  "JWST/NIRISS",
+  "JWST/NIRSpec",
+  "HST/WFC3_UVIS1",
+  "HST/WFC3_UVIS2",
+  "HST/WFC3_IR",
+  "HST/ACS_WFC",
+  "HST/ACS_HRC",
+  "HST/ACS_SBC",
+  "GAIA/GAIA3",
+  "TESS/TESS",
+  "Kepler/Kepler",
+  "WISE/WISE",
+  "Spitzer/IRAC",
+  "Spitzer/MIPS",
+  "GALEX/GALEX",
+  "Swift/UVOT",
+  "Euclid/NISP",
+  "Euclid/VIS",
+  "Herschel/Pacs",
+  "Herschel/SPIRE",
+  "Roman/WFI"
+ ],
+ "characterized_count": 24,
+ "additional_non_baseline": [
+  "SPHEREx/SPHEREx"
+ ],
+ "distinct_families": [
+  "Euclid",
+  "GAIA",
+  "GALEX",
+  "HST",
+  "Herschel",
+  "JWST",
+  "Kepler",
+  "Roman",
+  "Spitzer",
+  "Swift",
+  "TESS",
+  "WISE"
+ ],
+ "remaining_priority_keys": [
+  "AKARI/FIS",
+  "AKARI/IRC",
+  "Astrosat/UVIT",
+  "CHEOPS/CHEOPS",
+  "COBE/DIRBE",
+  "GALEX (grism)",
+  "HST/STIS_CCD",
+  "HST/NICMOS1-3",
+  "HST/WFPC2-PC/WF",
+  "GAIA/GAIA0,2,2r,2Rev",
+  "Roman/WFIRST WFI",
+  "Euclid/NISP0",
+  "Swift (XRT not in SVO)"
+ ],
+ "depth_tiers": {
+  "component_level_original_files_verified": [
+   "HST/WFC3_UVIS1",
+   "HST/WFC3_UVIS2",
+   "HST/WFC3_IR",
+   "HST/ACS_WFC",
+   "HST/ACS_HRC",
+   "HST/ACS_SBC",
+   "Euclid/NISP",
+   "Swift/UVOT"
+  ],
+  "combined_original_files_verified": [
+   "JWST/NIRCam",
+   "JWST/NIRCam2025",
+   "JWST/NIRISS",
+   "GAIA/GAIA3",
+   "TESS/TESS",
+   "Kepler/Kepler",
+   "WISE/WISE",
+   "Spitzer/IRAC",
+   "Spitzer/MIPS",
+   "GALEX/GALEX",
+   "Herschel/Pacs",
+   "Herschel/SPIRE",
+   "Roman/WFI"
+  ],
+  "documented_but_not_retrieved": [
+   "JWST/MIRI",
+   "JWST/NIRSpec (system part)"
+  ],
+  "svo_only_or_blocked": [
+   "Euclid/VIS"
+  ]
+ },
+ "limitations": [
+  "One representative filter per HST camera was reproduced (UVIS1 F606W, UVIS2 resolved only, IR F160W, ACS WFC F606W, HRC F606W, SBC F122M); other filters not individually checked.",
+  "Pandeia JWST/Roman reference data (Box) could not be fetched by anonymous GET; MIRI Box folder listing/download blocked; JWST component split therefore unavailable except NIRISS (derived).",
+  "WebSearch tool was not permitted; discovery used direct page crawling only, so literature (Jordi+2010, Morrissey+2007, Cropper+2016, Hora+2008) was not opened.",
+  "NIRCam F200W only inspected for the v7.0 files; other bands/detectors assumed same format.",
+  "No redistribution licence evaluated except those already recorded in round 1.",
+  "SVO comparisons use a single representative filter per key and my default (no mjd) reference epoch.",
+  "Round 3 corrected: Roman WFI detector QE exists in roman-technical-information FPSPerformance; earlier \"no component curves\" meant no optics/filter tables.",
+  "Round 4: MIPS/GALEX/PACS/WISE/Roman claims reconciled; see claim_status in sources.jsonl and superseded_claims in reviews.csv."
+ ],
+ "last_update_utc": "2026-10-20T19:49:51Z",
+ "complete": false,
+ "completion_note": "Round 4 reconciliation: conflicting addenda replaced by explicit claim_status/superseded fields. Depth remains incomplete for keys in unknown_component_keys_incomplete_depth.",
+ "count_note": "24 baseline keys is a breadth milestone (identity/original source located), NOT 24 fully component-characterized. Full component level only for HST(6)+NISP+UVOT; SPHEREx excluded; round1 text \"14 rows/82 remaining\" counted SPHEREx: correct is 13 baseline +83.",
+ "unknown_component_keys_incomplete_depth": [
+  "MIRI",
+  "NIRSpec",
+  "Euclid/VIS",
+  "Pacs (detector inclusion; Observers Manual unopened)",
+  "SPIRE (Observers Manual unopened)",
+  "Kepler (Fig13/MAST model data not extracted)",
+  "Roman/WFI (mirror/filter tables not found; Roman papers unopened)",
+  "MIPS (Rieke+2004 unopened; SVO not numerically compared)"
+ ],
+ "audit_incorporated": "codex/issues.jsonl C09, C11 + Euclid (verify-a40b6bdf); round 3 incorporated reconciliation but C09 stays open",
+ "open_issues": {
+  "C09": "open: NIRCam original-release key unresolved; v5 not to be used as 2025",
+  "C11": "addressed in counts; VIS limited negative only"
+ },
+ "searched_not_found_components": {
+  "WISE": "combined-only by design (Wright+2010)",
+  "GAIA3": "combined passband.dat; components only as equation/figures",
+  "TESS": "combined CSV; components figure-only"
+ },
+ "round3_task": "3fe7267656",
+ "reconciliation_round4": {
+  "task": "305a606ae4",
+  "current_vs_superseded": {
+   "WISE": "IRSA RSR peaks 0.8798/0.750/0.420/0.300; 'peak 1' superseded",
+   "MIPS": "convention e-/energy detector+filter from handbook sec 2.2.4; 'unstated' superseded",
+   "GALEX": "effective-area URLs verified (PostLaunch*.htm, EA-*_im.tbl); 'not located' superseded",
+   "PACS": "full-array blue match 5e-7 (manager); peak-only reasoning superseded; detector inclusion unresolved",
+   "Roman": "QE published in FPSPerformance; 'no QE/no component curves' superseded; mirror/filter still not found"
+  }
+ },
+ "count_check": {
+  "characterized_count": 24,
+  "reviews_rows": 25,
+  "sources_records": 79
+ },
+ "superseded_timestamps": [
+  {
+   "value": "2026-10-20T15:30:00Z",
+   "status": "superseded",
+   "reason": "M03: value 15:30Z was in the future when the manager read the file (~15:01Z); it was a guessed timestamp, not datetime.now(timezone.utc)",
+   "superseded_by": "2026-10-20T19:49:51Z"
+  }
+ ],
+ "last_edit_utc": "2026-10-20T19:49:51Z",
+ "timestamp_semantics": "last_update_utc and last_edit_utc = actual datetime.now(timezone.utc) at report/file edit time (task 7a29b39159). Source inspection times are per-record checked_utc in sources.jsonl (many round-1..4 records carry rounded or date-only values); link_check_utc is the link validation time of records 63-79.",
+ "schema_audit_task_7a29b39159": {
+  "records": 79,
+  "csv_rows": 25,
+  "source_basis_retrieval_instructions_units_filled_for_records": 49,
+  "empty_unit_fields_before": 98,
+  "empty_unit_fields_after": 0,
+  "record_numbering": "1-based JSONL line numbers in unit_provenance texts",
+  "unit_values_by_kind": {
+   "stated_in_source": "see unit_provenance",
+   "assumed_or_inferred_labelled": [
+    8,
+    9,
+    10,
+    14,
+    15,
+    16,
+    17,
+    57,
+    58,
+    59
+   ],
+   "unknown_with_provenance_lines": [
+    7,
+    14,
+    15,
+    16,
+    17,
+    23,
+    24,
+    32,
+    34,
+    60
+   ],
+   "not_applicable_documentation_records": 16
+  },
+  "review_vocab": "combined_only removed from status columns; replaced by not_found + new column combined_product_only (yes for WISE, MIPS, GALEX, Pacs, SPIRE); shared round2_brief.md not edited",
+  "manager_actions": {
+   "M01": "peer-review.md C01 separates quotient systrans/(QE*optics)=filter1*filter2 (Codex C01) from systrans(BL1CL2)/systrans(CL1CL2)=BL1/CL1 (claude); Gemini round-2 records read, contain no quotient",
+   "M02": "peer-review.md C01 no longer forbids combining files across publication dates; requires camera/release applicability and provenance check",
+   "M03": "timestamp replaced with actual UTC; old value kept in superseded_timestamps"
+  },
+  "links_validated": "records 63-79 landing/data URLs: HTTP 200/206 with plausible content types (checked 2026-10-20T19:49:51Z)",
+  "remaining_unknown_units": "NIRCam v5 zip member header; NISP T_* fraction vs percent; TESS/Kepler records 23/24 fraction vs percent not stated in headers (peaks <1 in later records 49/50); NIRISS flight files; MIRI v4.0 folder; Euclid VIS; SPHEREx NormTransmission normalisation; WFC3 header units (assumed Angstrom/fraction)"
+ }
+}

@@ -275,7 +275,7 @@ class MASTSpectraGrabber:
 
     # API expected by SED_tools.py
     def discover_models(self) -> List[str]:
-        print("Discovering available models from MAST (BOSZ 2024)...")
+        print("Discovering spectral grids from MAST (BOSZ 2024)...")
         return [f"BOSZ-2024-{rk}" for rk in RES_KEYS]
 
     def get_model_metadata(self, model_name: str) -> Dict[str, Any]:

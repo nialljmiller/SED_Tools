@@ -14,13 +14,9 @@ told why only the published curve is offered.
 
 from __future__ import annotations
 
-import logging
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Optional, Tuple, Union
-
-logger = logging.getLogger(__name__)
-
 
 @dataclass(frozen=True)
 class BuilderRef:
@@ -76,31 +72,32 @@ def status_for(facility: str, instrument: str) -> Optional[Tuple[str, str]]:
     return STATUS.get((facility, instrument)) or STATUS.get((facility, "*"))
 
 
-def ensure_components(
-    instrument_dir: Union[str, Path], *, allow_heavy: bool = False
-) -> bool:
-    """Run the instrument's own builder if its components are not present.
+def component_availability(facility: str, instrument: str) -> Dict[str, object]:
+    """Source review status, distinct from which files are installed.
 
-    Returns True if components were (or already are) available.
+    An absent registry entry means unreviewed, not that a team's components
+    do not exist. This vocabulary also applies to newly discovered SVO sets.
     """
-    from . import get_builder
-    from ..filter_components import InstrumentManifest
-
-    instrument_dir = Path(instrument_dir)
-    facility, instrument = instrument_dir.parent.name, instrument_dir.name
-    manifest = InstrumentManifest.load(instrument_dir)
-    if any("/" in rel for entries in manifest.components.values() for rel in entries.values()):
-        return True  # already has downloaded/built components
     ref = builder_for(facility, instrument)
-    if ref is None:
-        return False
-    if ref.heavy and not allow_heavy:
-        logger.info("%s/%s: components need a large download; run "
-                    "`sed-tools filters-build-components %s` to fetch them", facility, instrument, ref.name)
-        return False
-    try:
-        get_builder(ref.name)(instrument_dir.parent.parent, **dict(ref.kwargs))
-        return True
-    except Exception as exc:  # network or source changes; the published curves still work
-        logger.warning("%s/%s: could not build components (%s)", facility, instrument, exc)
-        return False
+    status = status_for(facility, instrument)
+    review, note = status or ("unreviewed", "Separate upstream components have not yet been reviewed.")
+    if ref:
+        review, note = "supported", ""
+    return {
+        "status": review,
+        "builder": ref.name if ref else None,
+        "large_download": bool(ref and ref.heavy),
+        "note": note,
+    }
+
+
+def ensure_components(
+    instrument_dir: Union[str, Path], *, allow_heavy: bool = False,
+    components=None, bands=None,
+) -> bool:
+    """Compatibility entry point for the shared filter acquisition workflow."""
+    from ..filter_library import FilterLibrary
+
+    directory = Path(instrument_dir)
+    return FilterLibrary(directory.parent.parent).prepare_components(
+        directory, components=components, bands=bands, allow_heavy=allow_heavy)

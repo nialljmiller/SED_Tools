@@ -14,17 +14,11 @@ from urllib.parse import urljoin
 
 import requests
 import urllib3
+from bs4 import BeautifulSoup
 
 from .filter_metadata import SOURCE_ASSUMED, SVOMetadataClient, tag_filter_file
 
 logger = logging.getLogger(__name__)
-
-try:
-    from bs4 import BeautifulSoup as _BeautifulSoup
-    _HAS_BS4 = True
-except ImportError:
-    _HAS_BS4 = False
-
 
 class NJMFilterGrabber:
     """Grabber for filter profiles from NJM mirror server."""
@@ -59,9 +53,9 @@ class NJMFilterGrabber:
                 self._disable_ssl_verification()
                 print("  [njm] Note: SSL verification disabled (certificate issue)")
                 return True
-            except Exception:
+            except requests.RequestException:
                 return False
-        except Exception:
+        except requests.RequestException:
             return False
     
     def _disable_ssl_verification(self) -> None:
@@ -141,7 +135,7 @@ class NJMFilterGrabber:
             facilities = data.get("filters", {}).get("facilities", [])
             if not facilities:
                 facilities = self._parse_directory_listing(self.filters_url)
-        except Exception as e:
+        except (requests.RequestException, ValueError) as e:
             logger.debug("[njm] Could not fetch facility list: %s", e, exc_info=True)
             facilities = self._parse_directory_listing(self.filters_url)
 
@@ -153,51 +147,32 @@ class NJMFilterGrabber:
         if not self._available:
             return []
         
-        try:
-            facility_url = f"{self.filters_url}/{facility}/"
-            return self._parse_directory_listing(facility_url)
-        except Exception as e:
-            print(f"[njm] Could not fetch instruments for {facility}: {e}")
-            return []
+        return self._parse_directory_listing(f"{self.filters_url}/{facility}/")
     
     def discover_filters(self, facility: str, instrument: str) -> List[str]:
         """Discover available filters for a facility/instrument."""
         if not self._available:
             return []
         
+        instrument_url = f"{self.filters_url}/{facility}/{instrument}/"
         try:
-            instrument_url = f"{self.filters_url}/{facility}/{instrument}/"
-            
-            # Try to get instrument index file first
-            index_file_url = f"{instrument_url}{instrument}"
-            try:
-                response = self.session.get(index_file_url, timeout=10)
-                if response.status_code == 200:
-                    # Parse index file (one filter per line)
-                    filters = [line.strip() for line in response.text.splitlines() 
-                              if line.strip() and not line.startswith('#')]
-                    return filters
-            except Exception:
-                logger.debug("Could not fetch instrument index file for %s/%s", facility, instrument, exc_info=True)
+            response = self.session.get(f"{instrument_url}{instrument}", timeout=10)
+            response.raise_for_status()
+        except requests.RequestException:
+            logger.debug("No index for %s/%s; using directory listing", facility, instrument)
+        else:
+            return [line.strip() for line in response.text.splitlines()
+                    if line.strip() and not line.lstrip().startswith("#")]
 
-            # Fallback: parse directory listing
-            all_files = self._parse_directory_listing(instrument_url)
-            # Filter for .dat files and remove the extension
-            filters = [f.replace('.dat', '') for f in all_files if f.endswith('.dat')]
-            return filters
-            
-        except Exception as e:
-            print(f"[njm] Could not fetch filters for {facility}/{instrument}: {e}")
-            return []
-    
+        return [name.removesuffix(".dat") for name in self._parse_directory_listing(instrument_url)
+                if name.endswith(".dat")]
+
     def _parse_directory_listing(self, url: str) -> List[str]:
         """Parse Apache directory listing HTML to extract subdirectories/files."""
-        if not _HAS_BS4:
-            return []
         try:
             response = self.session.get(url, timeout=10)
             response.raise_for_status()
-            soup = _BeautifulSoup(response.text, 'html.parser')
+            soup = BeautifulSoup(response.text, 'html.parser')
             
             items = []
             for link in soup.find_all('a'):
@@ -211,7 +186,7 @@ class NJMFilterGrabber:
             
             return items
             
-        except Exception:
+        except requests.RequestException:
             return []
     
     def download_filters(self, facility: str, instrument: str, 
@@ -279,31 +254,25 @@ class NJMFilterGrabber:
 
                 downloaded += 1
                 
-            except Exception as e:
+            except requests.RequestException as e:
                 print(f"  [error] {filter_name}: {e}")
                 failed += 1
                 if os.path.exists(output_path):
                     os.remove(output_path)
         
-        # Download instrument index file
+        # Use the mirror's index when available, otherwise index the downloaded curves.
+        index_path = Path(output_dir) / instrument
         try:
-            index_url = f"{self.filters_url}/{facility}/{instrument}/{instrument}"
-            index_path = os.path.join(output_dir, instrument)
-            
-            response = self.session.get(index_url, timeout=10)
-            if response.status_code == 200:
-                with open(index_path, 'w', encoding='utf-8') as f:
-                    f.write(response.text)
-                print(f"  [saved] {instrument} index file")
-        except Exception:
-            # Create index file from downloaded filters
-            filter_files = sorted([f for f in os.listdir(output_dir) if f.endswith('.dat')])
-            if filter_files:
-                index_path = os.path.join(output_dir, instrument)
-                with open(index_path, 'w', encoding='utf-8') as f:
-                    f.write('\n'.join(filter_files) + '\n')
-                print(f"  [created] {instrument} index file")
-        
+            response = self.session.get(f"{self.filters_url}/{facility}/{instrument}/{instrument}", timeout=10)
+            response.raise_for_status()
+        except requests.RequestException:
+            from .combine_filters import write_filter_index
+
+            if list(Path(output_dir).glob("*.dat")):
+                write_filter_index(output_dir, instrument)
+        else:
+            index_path.write_text(response.text, encoding="utf-8")
+
         print(f"[njm] {facility}/{instrument}: {downloaded} downloaded, {skipped} skipped, {failed} failed")
         self.download_components(facility, instrument)
         return downloaded
@@ -358,8 +327,14 @@ class NJMFilterGrabber:
             response = self.session.get(f"{self.filters_url}/{facility}/{instrument}/manifest.json", timeout=15)
             if response.status_code != 200:
                 return None
-            return response.json()
-        except Exception:
+            manifest = response.json()
+            from .filter_components import InstrumentManifest
+
+            parsed = InstrumentManifest.from_dict(manifest)
+            if (parsed.facility, parsed.instrument) != (facility, instrument):
+                raise ValueError("NJM manifest identity does not match the requested instrument")
+            return manifest
+        except (requests.RequestException, ValueError, TypeError):
             logger.debug("No NJM manifest for %s/%s", facility, instrument, exc_info=True)
             return None
 
@@ -386,6 +361,9 @@ class NJMFilterGrabber:
                 print(f"  [skip] component path outside the instrument: {rel}")
                 continue
             target = output_dir / rel
+            if not target.resolve().is_relative_to(output_dir.resolve()):
+                print(f"  [skip] component resolves outside the instrument: {rel}")
+                continue
             if target.exists():
                 continue
             try:
@@ -394,7 +372,7 @@ class NJMFilterGrabber:
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_text(response.text, encoding="utf-8")
                 count += 1
-            except Exception as exc:
+            except requests.RequestException as exc:
                 print(f"  [error] component {rel}: {exc}")
         if count:
             print(f"[njm] {facility}/{instrument}: {count} component files downloaded")
@@ -417,7 +395,7 @@ class NJMFilterGrabber:
                 response.raise_for_status()
                 (site_dir / filename).write_text(response.text, encoding="utf-8")
             return True
-        except Exception as exc:
+        except requests.RequestException as exc:
             print(f"[njm] atmosphere {site}: {exc}")
             return False
 

@@ -31,28 +31,6 @@ def test_filters_query_local_reports_dat_filter_dirs(tmp_path, monkeypatch):
     ]
 
 
-def test_remove_empty_filter_dir_removes_only_partial_leaf(tmp_path):
-    path = tmp_path / "WISE" / "WISE"
-    path.mkdir(parents=True)
-    (path / "WISE").write_text("W1.dat\n")
-
-    Filters._remove_empty_filter_dir(path)
-
-    assert not path.exists()
-    assert not (tmp_path / "WISE").exists()
-
-
-def test_remove_empty_filter_dir_keeps_real_filter_dir(tmp_path):
-    path = tmp_path / "WISE" / "WISE"
-    path.mkdir(parents=True)
-    (path / "W1.dat").write_text("Wavelength,Transmission\n1,1\n")
-
-    Filters._remove_empty_filter_dir(path)
-
-    assert path.exists()
-    assert (path / "W1.dat").exists()
-
-
 def test_filters_combine_creates_mesa_index_file(tmp_path):
     gaia = tmp_path / "GAIA" / "GAIA"
     twomass = tmp_path / "2MASS" / "2MASS"

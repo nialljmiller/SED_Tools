@@ -1,6 +1,8 @@
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
@@ -9,6 +11,19 @@ if str(ROOT) not in sys.path:
 def test_cli_importable():
     from sed_tools import cli
     assert callable(cli.main)
+
+
+@pytest.mark.parametrize("command,option", [("grids", "--grids"), ("spectra", "--models"),
+                                           ("grids", "--models"), ("spectra", "--grids")])
+def test_spectral_grid_command_aliases_share_one_workflow(monkeypatch, command, option):
+    from sed_tools import cli
+
+    calls = []
+    monkeypatch.setattr(cli, "run_spectra_flow", lambda **kwargs: calls.append(kwargs))
+    monkeypatch.setattr(sys, "argv", ["sed-tools", command, option, "Kurucz2003all"])
+    cli.main()
+    assert len(calls) == 1
+    assert calls[0]["models"] == ["Kurucz2003all"]
 
 
 def test_cli_uses_shared_prompt_choice():
@@ -33,7 +48,7 @@ def test_menu_valid_choices():
     from unittest.mock import patch
 
     for key, expected in [
-        ("1", "filters"), ("2", "filters_combine"), ("3", "spectra"),
+        ("1", "filters"), ("2", "filters_combine"), ("3", "grids"),
         ("4", "rebuild"), ("5", "combine"), ("6", "ml_completer"),
         ("7", "ml_generator"), ("8", "grid_densifier"),
         ("9", "coverage"), ("10", "import"), ("11", "mesa_prepare"),

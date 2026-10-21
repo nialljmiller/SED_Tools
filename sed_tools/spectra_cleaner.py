@@ -7,10 +7,10 @@ Ensures all SEDs have:
   - Flux in erg/cm²/s/Å (F_lambda)
   - Consistent metadata tags alongside Teff/logg/[M/H]
 
-KEY PRINCIPLE: A catalog has ONE unit system, not per-file units.
+KEY PRINCIPLE: A spectral grid has ONE unit system, not per-file units.
 
 Processing:
-  1. Sample 10% of catalog to determine units (consensus)
+  1. Sample 10% of the spectral grid to determine units (consensus)
   2. Apply those units uniformly to ALL files
   3. Convert wavelength → Angstroms, flux → F_lambda
   4. Validate and write with standardized header
@@ -381,12 +381,12 @@ def detect_units_single_file(filepath: str) -> Optional[UnitInfo]:
 
 
 # ============================================================================
-# CATALOG-LEVEL UNIT DETECTION (10% SAMPLE)
+# SPECTRAL GRID UNIT DETECTION (10% SAMPLE)
 # ============================================================================
 
 def detect_catalog_units(txt_files: List[str], sample_fraction: float = 0.10) -> Tuple[Optional[UnitInfo], Dict]:
     """
-    Detect units from a sample of catalog files.
+    Detect units from a sample of model spectrum files.
     
     Samples 10% of files (min 1, max 100), determines consensus units.
     
@@ -438,7 +438,7 @@ def detect_catalog_units(txt_files: List[str], sample_fraction: float = 0.10) ->
         'index_grids': index_grids,
     }
     
-    # If all sampled files are already standardized, skip the catalog
+    # If all sampled files are already standardized, skip the spectral grid
     if skipped_standardized == n_sample:
         stats['status'] = 'already_standardized'
         return None, stats
@@ -763,7 +763,7 @@ def clean_spectrum_file(
     
     Args:
         filepath: Path to spectrum file
-        catalog_units: Pre-determined units for the catalog (from 10% sample).
+        catalog_units: Pre-determined units for the spectral grid (from 10% sample).
                        If None, detects units per-file (legacy behavior).
         try_h5_recovery: Attempt HDF5 wavelength recovery for index grids
     
@@ -964,13 +964,13 @@ def clean_model_dir(
             'flux': catalog_units.flux_type,
             'confidence': catalog_units.confidence,
         }
-        print(f"[clean] Catalog units (from {detection_stats.get('sample_size', '?')} samples): "
+        print(f"[clean] Spectral grid units (from {detection_stats.get('sample_size', '?')} samples): "
               f"λ={catalog_units.wavelength_unit} ({detection_stats.get('wavelength_agreement', '?')}), "
               f"flux={catalog_units.flux_type} ({detection_stats.get('flux_agreement', '?')})")
     elif detection_stats.get('status') == 'already_standardized':
-        print(f"[clean] Catalog already standardized (all {detection_stats.get('sample_size', '?')} samples)")
+        print(f"[clean] Spectral grid already standardized (all {detection_stats.get('sample_size', '?')} samples)")
     else:
-        print(f"[clean] Warning: Could not determine catalog units. Status: {detection_stats.get('status', 'unknown')}")
+        print(f"[clean] Warning: Could not determine spectral grid units. Status: {detection_stats.get('status', 'unknown')}")
     
     # =========================================================
     # STEP 2: Apply catalog units to ALL files

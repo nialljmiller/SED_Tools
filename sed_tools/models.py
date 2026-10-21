@@ -438,7 +438,8 @@ class SED:
     # Model discovery
     # ------------------------------------------------------------------
 
-    def available_models(self) -> List[str]:
+    def available_grids(self) -> List[str]:
+        """List locally installed spectral grids with a flux cube."""
         if not self.model_root.exists():
             return []
         models: List[str] = []
@@ -449,6 +450,8 @@ class SED:
             if cube.is_file():
                 models.append(entry.name)
         return models
+
+    available_models = available_grids
 
     def find_model(
         self,
@@ -494,7 +497,7 @@ class SED:
             return candidates[:limit]
         return candidates
 
-    def find_atmospheres(
+    def find_grids(
         self,
         *,
         teff_range: Optional[Sequence[Number]] = None,
@@ -503,7 +506,7 @@ class SED:
         limit: Optional[int] = None,
         allow_partial: bool = False,
     ) -> List[ModelMatch]:
-        """Discover flux cubes compatible with the provided parameter ranges.
+        """Discover local spectral grids compatible with the provided parameter ranges.
 
         Parameters
         ----------
@@ -512,9 +515,9 @@ class SED:
             parameter left as ``None`` will not be used for filtering.
         limit:
             Optional maximum number of matches to return after sorting by the
-            proximity of the requested range to the model grid.
+            proximity of the requested range to the spectral grid.
         allow_partial:
-            When ``False`` (default) only models that fully cover the supplied
+            When ``False`` (default) only spectral grids that fully cover the supplied
             ranges are returned. Set to ``True`` to also include partial overlaps
             which can be useful when exploring sparse grids.
         """
@@ -575,6 +578,8 @@ class SED:
         if limit is not None:
             return candidates[:limit]
         return candidates
+
+    find_atmospheres = find_grids
 
     # ------------------------------------------------------------------
     # Model loading
