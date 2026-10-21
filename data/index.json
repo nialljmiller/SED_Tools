@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-10-21T20:57:22.189247",
+  "generated": "2026-10-21T21:03:21.875127",
   "base_url": "http://nillmill.ddns.net/sed_tools",
   "statistics": {
     "total_models": 1,
@@ -127,8 +127,8 @@
               "J",
               "Ks"
             ],
-            "size_bytes": 5109,
-            "size_human": "4.99 KB"
+            "size_bytes": 5310,
+            "size_human": "5.19 KB"
           }
         },
         "instrument_count": 1
@@ -187,8 +187,8 @@
               "aao92",
               "aao93"
             ],
-            "size_bytes": 107807,
-            "size_human": "105.28 KB"
+            "size_bytes": 109877,
+            "size_human": "107.30 KB"
           },
           "GSC2": {
             "name": "GSC2",
@@ -198,8 +198,8 @@
               "In",
               "Rf"
             ],
-            "size_bytes": 12917,
-            "size_human": "12.61 KB"
+            "size_bytes": 13052,
+            "size_human": "12.75 KB"
           }
         },
         "instrument_count": 2
@@ -248,8 +248,8 @@
               "ch8",
               "ch9"
             ],
-            "size_bytes": 582997,
-            "size_human": "569.33 KB"
+            "size_bytes": 585013,
+            "size_human": "571.30 KB"
           },
           "OCTS": {
             "name": "OCTS",
@@ -264,8 +264,8 @@
               "band765",
               "band865"
             ],
-            "size_bytes": 17912,
-            "size_human": "17.49 KB"
+            "size_bytes": 18360,
+            "size_human": "17.93 KB"
           },
           "POLDER": {
             "name": "POLDER",
@@ -314,8 +314,8 @@
               "WIDE_L",
               "WIDE_S"
             ],
-            "size_bytes": 5864,
-            "size_human": "5.73 KB"
+            "size_bytes": 5976,
+            "size_human": "5.84 KB"
           },
           "IRC": {
             "name": "IRC",
@@ -331,8 +331,8 @@
               "S7",
               "S9W"
             ],
-            "size_bytes": 171184,
-            "size_human": "167.17 KB"
+            "size_bytes": 171688,
+            "size_human": "167.66 KB"
           }
         },
         "instrument_count": 2
@@ -346,8 +346,8 @@
             "filters": [
               "345GHz"
             ],
-            "size_bytes": 2161,
-            "size_human": "2.11 KB"
+            "size_bytes": 2217,
+            "size_human": "2.17 KB"
           },
           "SABOCA": {
             "name": "SABOCA",
@@ -355,8 +355,8 @@
             "filters": [
               "852GHz"
             ],
-            "size_bytes": 6631,
-            "size_human": "6.48 KB"
+            "size_bytes": 6687,
+            "size_human": "6.53 KB"
           }
         },
         "instrument_count": 2
@@ -373,8 +373,8 @@
               "417nm",
               "VR"
             ],
-            "size_bytes": 17348,
-            "size_human": "16.94 KB"
+            "size_bytes": 17528,
+            "size_human": "17.12 KB"
           },
           "Balzers": {
             "name": "Balzers",
@@ -393,8 +393,8 @@
               "ND8",
               "ND9"
             ],
-            "size_bytes": 160252,
-            "size_human": "156.50 KB"
+            "size_bytes": 160792,
+            "size_human": "157.02 KB"
           },
           "Blocking": {
             "name": "Blocking",
@@ -408,8 +408,8 @@
               "RG610",
               "RG850"
             ],
-            "size_bytes": 68808,
-            "size_human": "67.20 KB"
+            "size_bytes": 69123,
+            "size_human": "67.50 KB"
           },
           "Broad": {
             "name": "Broad",
@@ -421,8 +421,8 @@
               "R",
               "V"
             ],
-            "size_bytes": 21776,
-            "size_human": "21.27 KB"
+            "size_bytes": 22001,
+            "size_human": "21.49 KB"
           },
           "FNAL": {
             "name": "FNAL",
@@ -431,8 +431,8 @@
               "BG39",
               "KCR"
             ],
-            "size_bytes": 10239,
-            "size_human": "10.00 KB"
+            "size_bytes": 10329,
+            "size_human": "10.09 KB"
           },
           "Gunn": {
             "name": "Gunn",
@@ -443,8 +443,8 @@
               "r",
               "z"
             ],
-            "size_bytes": 24038,
-            "size_human": "23.47 KB"
+            "size_bytes": 24218,
+            "size_human": "23.65 KB"
           },
           "Hodge": {
             "name": "Hodge",
@@ -455,8 +455,8 @@
               "6607nm",
               "6629nm"
             ],
-            "size_bytes": 8271,
-            "size_human": "8.08 KB"
+            "size_bytes": 8451,
+            "size_human": "8.25 KB"
           },
           "MSSSO": {
             "name": "MSSSO",
@@ -468,8 +468,8 @@
               "U",
               "V"
             ],
-            "size_bytes": 19545,
-            "size_human": "19.09 KB"
+            "size_bytes": 19770,
+            "size_human": "19.31 KB"
           },
           "NICFPS": {
             "name": "NICFPS",
@@ -491,8 +491,8 @@
               "Y",
               "Z"
             ],
-            "size_bytes": 122714,
-            "size_human": "119.84 KB"
+            "size_bytes": 123389,
+            "size_human": "120.50 KB"
           },
           "NMSU": {
             "name": "NMSU",
@@ -522,8 +522,8 @@
               "Wash_C3",
               "Wash_M2"
             ],
-            "size_bytes": 91682,
-            "size_human": "89.53 KB"
+            "size_bytes": 92717,
+            "size_human": "90.54 KB"
           },
           "Narrow": {
             "name": "Narrow",
@@ -537,8 +537,8 @@
               "Halpha_661nm",
               "Semrock_857nm"
             ],
-            "size_bytes": 28049,
-            "size_human": "27.39 KB"
+            "size_bytes": 28364,
+            "size_human": "27.70 KB"
           },
           "SDSS": {
             "name": "SDSS",
@@ -550,8 +550,8 @@
               "u",
               "z"
             ],
-            "size_bytes": 208994,
-            "size_human": "204.10 KB"
+            "size_bytes": 209219,
+            "size_human": "204.32 KB"
           },
           "UCO": {
             "name": "UCO",
@@ -599,8 +599,8 @@
               "8140_4d",
               "8140_5d"
             ],
-            "size_bytes": 165947,
-            "size_human": "162.06 KB"
+            "size_bytes": 167792,
+            "size_human": "163.86 KB"
           },
           "York": {
             "name": "York",
@@ -623,8 +623,8 @@
               "8678",
               "9088"
             ],
-            "size_bytes": 13158,
-            "size_human": "12.85 KB"
+            "size_bytes": 13878,
+            "size_human": "13.55 KB"
           }
         },
         "instrument_count": 14
@@ -659,8 +659,8 @@
               "C",
               "D"
             ],
-            "size_bytes": 20189,
-            "size_human": "19.72 KB"
+            "size_bytes": 20413,
+            "size_human": "19.93 KB"
           }
         },
         "instrument_count": 1
@@ -677,8 +677,8 @@
               "900nm_night",
               "970nm"
             ],
-            "size_bytes": 33409,
-            "size_human": "32.63 KB"
+            "size_bytes": 33633,
+            "size_human": "32.84 KB"
           },
           "IR2": {
             "name": "IR2",
@@ -690,8 +690,8 @@
               "2260nm",
               "2320nm"
             ],
-            "size_bytes": 35867,
-            "size_human": "35.03 KB"
+            "size_bytes": 36147,
+            "size_human": "35.30 KB"
           },
           "LIR": {
             "name": "LIR",
@@ -701,8 +701,8 @@
               "10mic_135deg",
               "10mic_164deg"
             ],
-            "size_bytes": 23592,
-            "size_human": "23.04 KB"
+            "size_bytes": 23727,
+            "size_human": "23.17 KB"
           },
           "UVI": {
             "name": "UVI",
@@ -712,8 +712,8 @@
               "365nm",
               "diff"
             ],
-            "size_bytes": 20970,
-            "size_human": "20.48 KB"
+            "size_bytes": 21105,
+            "size_human": "20.61 KB"
           }
         },
         "instrument_count": 4
@@ -733,8 +733,8 @@
               "Red1",
               "Red2"
             ],
-            "size_bytes": 30547,
-            "size_human": "29.83 KB"
+            "size_bytes": 30817,
+            "size_human": "30.09 KB"
           }
         },
         "instrument_count": 1
@@ -891,8 +891,8 @@
               "VIS2",
               "VIS3"
             ],
-            "size_bytes": 31640,
-            "size_human": "30.90 KB"
+            "size_bytes": 32450,
+            "size_human": "31.69 KB"
           }
         },
         "instrument_count": 1
@@ -921,8 +921,8 @@
             "filters": [
               "95GHz"
             ],
-            "size_bytes": 4398,
-            "size_human": "4.29 KB"
+            "size_bytes": 4454,
+            "size_human": "4.35 KB"
           }
         },
         "instrument_count": 2
@@ -949,8 +949,8 @@
               "600GHz",
               "850GHz"
             ],
-            "size_bytes": 12268,
-            "size_human": "11.98 KB"
+            "size_bytes": 12436,
+            "size_human": "12.14 KB"
           },
           "BLAST_TNG": {
             "name": "BLAST_TNG",
@@ -990,8 +990,8 @@
               "sdss_u",
               "sdss_z"
             ],
-            "size_bytes": 33418,
-            "size_human": "32.63 KB"
+            "size_bytes": 33958,
+            "size_human": "33.16 KB"
           },
           "SCUSS": {
             "name": "SCUSS",
@@ -1000,8 +1000,8 @@
               "u",
               "u_noatm"
             ],
-            "size_bytes": 2717,
-            "size_human": "2.65 KB"
+            "size_bytes": 2851,
+            "size_human": "2.78 KB"
           }
         },
         "instrument_count": 2
@@ -1103,8 +1103,8 @@
               "sdss_z_filter",
               "sdss_z_noatm"
             ],
-            "size_bytes": 418555,
-            "size_human": "408.75 KB"
+            "size_bytes": 420739,
+            "size_human": "410.88 KB"
           },
           "BUSCA": {
             "name": "BUSCA",
@@ -1123,8 +1123,8 @@
               "v",
               "y"
             ],
-            "size_bytes": 14590,
-            "size_human": "14.25 KB"
+            "size_bytes": 15130,
+            "size_human": "14.78 KB"
           },
           "CAHA": {
             "name": "CAHA",
@@ -1309,8 +1309,8 @@
               "914_9",
               "954_5"
             ],
-            "size_bytes": 2234995,
-            "size_human": "2.13 MB"
+            "size_bytes": 2243005,
+            "size_human": "2.14 MB"
           },
           "LAICA": {
             "name": "LAICA",
@@ -1448,8 +1448,8 @@
               "SDSS_u",
               "SDSS_z"
             ],
-            "size_bytes": 477954,
-            "size_human": "466.75 KB"
+            "size_bytes": 478449,
+            "size_human": "467.24 KB"
           },
           "MUNICS": {
             "name": "MUNICS",
@@ -1461,8 +1461,8 @@
               "R",
               "V"
             ],
-            "size_bytes": 21775,
-            "size_human": "21.26 KB"
+            "size_bytes": 22015,
+            "size_human": "21.50 KB"
           },
           "Omega2000": {
             "name": "Omega2000",
@@ -1496,8 +1496,8 @@
               "Y",
               "z"
             ],
-            "size_bytes": 182887,
-            "size_human": "178.60 KB"
+            "size_bytes": 184102,
+            "size_human": "179.79 KB"
           },
           "PANIC": {
             "name": "PANIC",
@@ -1511,8 +1511,8 @@
               "Y",
               "Z"
             ],
-            "size_bytes": 99971,
-            "size_human": "97.63 KB"
+            "size_bytes": 100286,
+            "size_human": "97.94 KB"
           },
           "PlanetCam2": {
             "name": "PlanetCam2",
@@ -1569,8 +1569,8 @@
               "VIS_Vio",
               "VIS_Vio_filter"
             ],
-            "size_bytes": 395027,
-            "size_human": "385.77 KB"
+            "size_bytes": 397352,
+            "size_human": "388.04 KB"
           }
         },
         "instrument_count": 8
@@ -1614,8 +1614,8 @@
               "V",
               "Zprime"
             ],
-            "size_bytes": 41652,
-            "size_human": "40.68 KB"
+            "size_bytes": 42282,
+            "size_human": "41.29 KB"
           },
           "CFHT": {
             "name": "CFHT",
@@ -1965,8 +1965,8 @@
               "cfh9702",
               "cfh9801"
             ],
-            "size_bytes": 838941,
-            "size_human": "819.28 KB"
+            "size_bytes": 854376,
+            "size_human": "834.35 KB"
           },
           "MOCAM": {
             "name": "MOCAM",
@@ -1979,8 +1979,8 @@
               "V",
               "Vcfht"
             ],
-            "size_bytes": 9423,
-            "size_human": "9.20 KB"
+            "size_bytes": 9693,
+            "size_human": "9.47 KB"
           },
           "MegaCam": {
             "name": "MegaCam",
@@ -1999,8 +1999,8 @@
               "z",
               "z_1"
             ],
-            "size_bytes": 35469,
-            "size_human": "34.64 KB"
+            "size_bytes": 36393,
+            "size_human": "35.54 KB"
           },
           "Megaprime": {
             "name": "Megaprime",
@@ -2062,7 +2062,7 @@
               "zS_fil",
               "z_fil"
             ],
-            "size_bytes": 1110391,
+            "size_bytes": 1112767,
             "size_human": "1.06 MB"
           },
           "QUIRC": {
@@ -2114,8 +2114,8 @@
               "W",
               "Y"
             ],
-            "size_bytes": 115017,
-            "size_human": "112.32 KB"
+            "size_bytes": 115557,
+            "size_human": "112.85 KB"
           }
         },
         "instrument_count": 8
@@ -2129,8 +2129,8 @@
             "filters": [
               "band"
             ],
-            "size_bytes": 4164,
-            "size_human": "4.07 KB"
+            "size_bytes": 4223,
+            "size_human": "4.12 KB"
           }
         },
         "instrument_count": 1
@@ -2174,8 +2174,8 @@
               "4p9m",
               "60m"
             ],
-            "size_bytes": 13110,
-            "size_human": "12.80 KB"
+            "size_bytes": 13670,
+            "size_human": "13.35 KB"
           }
         },
         "instrument_count": 1
@@ -2196,8 +2196,8 @@
               "745nm",
               "865nm"
             ],
-            "size_bytes": 8662,
-            "size_human": "8.46 KB"
+            "size_bytes": 9110,
+            "size_human": "8.90 KB"
           }
         },
         "instrument_count": 1
@@ -2257,8 +2257,8 @@
               "F845M",
               "F960M"
             ],
-            "size_bytes": 34876,
-            "size_human": "34.06 KB"
+            "size_bytes": 35308,
+            "size_human": "34.48 KB"
           }
         },
         "instrument_count": 2
@@ -2297,8 +2297,8 @@
               "R_YALO",
               "V_KPNO"
             ],
-            "size_bytes": 20489,
-            "size_human": "20.01 KB"
+            "size_bytes": 20894,
+            "size_human": "20.40 KB"
           },
           "BLANK": {
             "name": "BLANK",
@@ -2346,8 +2346,8 @@
               "vStrom",
               "yStrom"
             ],
-            "size_bytes": 162709,
-            "size_human": "158.90 KB"
+            "size_bytes": 164464,
+            "size_human": "160.61 KB"
           },
           "CTIO": {
             "name": "CTIO",
@@ -2616,8 +2616,8 @@
               "z_filter",
               "z_old"
             ],
-            "size_bytes": 178015,
-            "size_human": "173.84 KB"
+            "size_bytes": 179885,
+            "size_human": "175.67 KB"
           },
           "Goodman": {
             "name": "Goodman",
@@ -2641,8 +2641,8 @@
               "y_Strom",
               "zp_SDSS"
             ],
-            "size_bytes": 109260,
-            "size_human": "106.70 KB"
+            "size_bytes": 110025,
+            "size_human": "107.45 KB"
           },
           "ISPI": {
             "name": "ISPI",
@@ -2677,8 +2677,8 @@
               "Y_id191B",
               "Y_id191C"
             ],
-            "size_bytes": 130909,
-            "size_human": "127.84 KB"
+            "size_bytes": 132169,
+            "size_human": "129.07 KB"
           },
           "MosaicII": {
             "name": "MosaicII",
@@ -2708,8 +2708,8 @@
               "uSDSS",
               "zSDSS"
             ],
-            "size_bytes": 127852,
-            "size_human": "124.86 KB"
+            "size_bytes": 128887,
+            "size_human": "125.87 KB"
           },
           "OSIRIS": {
             "name": "OSIRIS",
@@ -2722,8 +2722,8 @@
               "J",
               "K"
             ],
-            "size_bytes": 42145,
-            "size_human": "41.16 KB"
+            "size_bytes": 42415,
+            "size_human": "41.42 KB"
           },
           "SAMI": {
             "name": "SAMI",
@@ -2742,8 +2742,8 @@
               "sdss_r",
               "sdss_z"
             ],
-            "size_bytes": 51379,
-            "size_human": "50.17 KB"
+            "size_bytes": 51919,
+            "size_human": "50.70 KB"
           },
           "SMARTS": {
             "name": "SMARTS",
@@ -2762,8 +2762,8 @@
               "V2",
               "V3"
             ],
-            "size_bytes": 10053,
-            "size_human": "9.82 KB"
+            "size_bytes": 10593,
+            "size_human": "10.34 KB"
           },
           "SOI": {
             "name": "SOI",
@@ -2788,8 +2788,8 @@
               "strom_v",
               "strom_y"
             ],
-            "size_bytes": 112332,
-            "size_human": "109.70 KB"
+            "size_bytes": 113142,
+            "size_human": "110.49 KB"
           },
           "S_PLUS": {
             "name": "S_PLUS",
@@ -2846,8 +2846,8 @@
               "sdss_u",
               "sdss_z"
             ],
-            "size_bytes": 14526,
-            "size_human": "14.19 KB"
+            "size_bytes": 14931,
+            "size_human": "14.58 KB"
           }
         },
         "instrument_count": 14
@@ -3639,8 +3639,8 @@
               "UV2_UV3",
               "UV3"
             ],
-            "size_bytes": 685181,
-            "size_human": "669.12 KB"
+            "size_bytes": 687821,
+            "size_human": "671.70 KB"
           },
           "ISS_WAC": {
             "name": "ISS_WAC",
@@ -3667,8 +3667,8 @@
               "RED",
               "VIO"
             ],
-            "size_bytes": 390663,
-            "size_human": "381.51 KB"
+            "size_bytes": 391983,
+            "size_human": "382.80 KB"
           }
         },
         "instrument_count": 2
@@ -3685,8 +3685,8 @@
               "650nm",
               "750nm"
             ],
-            "size_bytes": 17421,
-            "size_human": "17.01 KB"
+            "size_bytes": 17657,
+            "size_human": "17.24 KB"
           },
           "NIR": {
             "name": "NIR",
@@ -3698,8 +3698,8 @@
               "2000nm",
               "2600nm"
             ],
-            "size_bytes": 21908,
-            "size_human": "21.39 KB"
+            "size_bytes": 22133,
+            "size_human": "21.61 KB"
           },
           "UVVIS": {
             "name": "UVVIS",
@@ -3711,8 +3711,8 @@
               "900nm",
               "950nm"
             ],
-            "size_bytes": 21598,
-            "size_human": "21.09 KB"
+            "size_bytes": 21823,
+            "size_human": "21.31 KB"
           }
         },
         "instrument_count": 3
@@ -3747,8 +3747,8 @@
               "band10oob",
               "clear_fil"
             ],
-            "size_bytes": 19287,
-            "size_human": "18.83 KB"
+            "size_bytes": 20445,
+            "size_human": "19.97 KB"
           },
           "CRISP": {
             "name": "CRISP",
@@ -3774,8 +3774,8 @@
               "band10_fil",
               "clear_fil"
             ],
-            "size_bytes": 24931,
-            "size_human": "24.35 KB"
+            "size_bytes": 25912,
+            "size_human": "25.30 KB"
           }
         },
         "instrument_count": 2
@@ -3790,8 +3790,8 @@
               "AS",
               "PF"
             ],
-            "size_bytes": 8586,
-            "size_human": "8.38 KB"
+            "size_bytes": 8704,
+            "size_human": "8.50 KB"
           }
         },
         "instrument_count": 1
@@ -3935,8 +3935,8 @@
               "PAH",
               "nbL"
             ],
-            "size_bytes": 35107,
-            "size_human": "34.28 KB"
+            "size_bytes": 35579,
+            "size_human": "34.75 KB"
           }
         },
         "instrument_count": 1
@@ -3959,8 +3959,8 @@
               "764nm",
               "779nm"
             ],
-            "size_bytes": 36091,
-            "size_human": "35.25 KB"
+            "size_bytes": 36651,
+            "size_human": "35.79 KB"
           }
         },
         "instrument_count": 1
@@ -3981,8 +3981,8 @@
               "F7",
               "F8"
             ],
-            "size_bytes": 32968,
-            "size_human": "32.20 KB"
+            "size_bytes": 33496,
+            "size_human": "32.71 KB"
           }
         },
         "instrument_count": 1
@@ -4065,8 +4065,8 @@
               "SW",
               "TOT"
             ],
-            "size_bytes": 79108,
-            "size_human": "77.25 KB"
+            "size_bytes": 79285,
+            "size_human": "77.43 KB"
           }
         },
         "instrument_count": 1
@@ -4129,8 +4129,8 @@
               "IR37",
               "V16"
             ],
-            "size_bytes": 3033,
-            "size_human": "2.96 KB"
+            "size_bytes": 3257,
+            "size_human": "3.18 KB"
           },
           "ATSR2": {
             "name": "ATSR2",
@@ -4144,8 +4144,8 @@
               "V659",
               "V870"
             ],
-            "size_bytes": 17880,
-            "size_human": "17.46 KB"
+            "size_bytes": 18272,
+            "size_human": "17.84 KB"
           }
         },
         "instrument_count": 2
@@ -4165,8 +4165,8 @@
               "V659",
               "V870"
             ],
-            "size_bytes": 25877,
-            "size_human": "25.27 KB"
+            "size_bytes": 26269,
+            "size_human": "25.65 KB"
           },
           "MERIS": {
             "name": "MERIS",
@@ -4188,8 +4188,8 @@
               "band14",
               "band15"
             ],
-            "size_bytes": 33785,
-            "size_human": "32.99 KB"
+            "size_bytes": 34670,
+            "size_human": "33.86 KB"
           }
         },
         "instrument_count": 2
@@ -4207,8 +4207,8 @@
               "Red",
               "Y"
             ],
-            "size_bytes": 46017,
-            "size_human": "44.94 KB"
+            "size_bytes": 46215,
+            "size_human": "45.13 KB"
           },
           "VIS": {
             "name": "VIS",
@@ -4216,8 +4216,8 @@
             "filters": [
               "vis"
             ],
-            "size_bytes": 14090,
-            "size_human": "13.76 KB"
+            "size_bytes": 14146,
+            "size_human": "13.81 KB"
           }
         },
         "instrument_count": 2
@@ -4238,8 +4238,8 @@
               "Red",
               "Red_fil"
             ],
-            "size_bytes": 34537,
-            "size_human": "33.73 KB"
+            "size_bytes": 34953,
+            "size_human": "34.13 KB"
           }
         },
         "instrument_count": 1
@@ -4281,8 +4281,8 @@
               "z",
               "z_old"
             ],
-            "size_bytes": 122999,
-            "size_human": "120.12 KB"
+            "size_bytes": 124214,
+            "size_human": "121.30 KB"
           },
           "MEarth": {
             "name": "MEarth",
@@ -4290,8 +4290,8 @@
             "filters": [
               "iz"
             ],
-            "size_bytes": 4311,
-            "size_human": "4.21 KB"
+            "size_bytes": 4377,
+            "size_human": "4.27 KB"
           }
         },
         "instrument_count": 2
@@ -4622,8 +4622,8 @@
               "Red",
               "RedEdge"
             ],
-            "size_bytes": 5254,
-            "size_human": "5.13 KB"
+            "size_bytes": 5534,
+            "size_human": "5.40 KB"
           }
         },
         "instrument_count": 2
@@ -4658,8 +4658,8 @@
               "FUV",
               "NUV"
             ],
-            "size_bytes": 25968,
-            "size_human": "25.36 KB"
+            "size_bytes": 26080,
+            "size_human": "25.47 KB"
           }
         },
         "instrument_count": 1
@@ -4937,8 +4937,8 @@
               "Si6",
               "SiC"
             ],
-            "size_bytes": 568400,
-            "size_human": "555.08 KB"
+            "size_bytes": 569210,
+            "size_human": "555.87 KB"
           }
         },
         "instrument_count": 1
@@ -4959,8 +4959,8 @@
               "Red",
               "Violet"
             ],
-            "size_bytes": 5285,
-            "size_human": "5.16 KB"
+            "size_bytes": 5813,
+            "size_human": "5.68 KB"
           }
         },
         "instrument_count": 1
@@ -5006,8 +5006,8 @@
               "u_sdss",
               "z_sdss"
             ],
-            "size_bytes": 28495,
-            "size_human": "27.83 KB"
+            "size_bytes": 28900,
+            "size_human": "28.22 KB"
           },
           "DSSI": {
             "name": "DSSI",
@@ -5022,8 +5022,8 @@
               "Red",
               "Red_filter"
             ],
-            "size_bytes": 34766,
-            "size_human": "33.95 KB"
+            "size_bytes": 35138,
+            "size_human": "34.31 KB"
           },
           "Flamingos2": {
             "name": "Flamingos2",
@@ -5115,8 +5115,8 @@
               "XD",
               "Y"
             ],
-            "size_bytes": 62720,
-            "size_human": "61.25 KB"
+            "size_bytes": 63170,
+            "size_human": "61.69 KB"
           },
           "GPI": {
             "name": "GPI",
@@ -5128,8 +5128,8 @@
               "K2",
               "Y"
             ],
-            "size_bytes": 168828,
-            "size_human": "164.87 KB"
+            "size_bytes": 169053,
+            "size_human": "165.09 KB"
           },
           "GSAOI": {
             "name": "GSAOI",
@@ -5158,8 +5158,8 @@
               "Kshort_cont",
               "Z"
             ],
-            "size_bytes": 287191,
-            "size_human": "280.46 KB"
+            "size_bytes": 288091,
+            "size_human": "281.34 KB"
           }
         },
         "instrument_count": 10
@@ -5224,7 +5224,7 @@
               "POL_V",
               "PR200L"
             ],
-            "size_bytes": 7776444,
+            "size_bytes": 7779015,
             "size_human": "7.42 MB"
           },
           "ACS_SBC": {
@@ -5240,8 +5240,8 @@
               "PR110L",
               "PR130L"
             ],
-            "size_bytes": 263588,
-            "size_human": "257.41 KB"
+            "size_bytes": 264430,
+            "size_human": "258.23 KB"
           },
           "ACS_WFC": {
             "name": "ACS_WFC",
@@ -5279,7 +5279,7 @@
               "POL_UV",
               "POL_V"
             ],
-            "size_bytes": 5669499,
+            "size_bytes": 5672560,
             "size_human": "5.41 MB"
           },
           "FGS": {
@@ -5293,8 +5293,8 @@
               "ND5",
               "PUPIL"
             ],
-            "size_bytes": 41107,
-            "size_human": "40.14 KB"
+            "size_bytes": 41461,
+            "size_human": "40.49 KB"
           },
           "FOC_F48": {
             "name": "FOC_F48",
@@ -5315,8 +5315,8 @@
               "PRISM2",
               "PRISM3"
             ],
-            "size_bytes": 885588,
-            "size_human": "864.83 KB"
+            "size_bytes": 886414,
+            "size_human": "865.64 KB"
           },
           "FOC_F96": {
             "name": "FOC_F96",
@@ -5367,7 +5367,7 @@
               "PRISM1",
               "PRISM2"
             ],
-            "size_bytes": 2387573,
+            "size_bytes": 2390169,
             "size_human": "2.28 MB"
           },
           "FOS_BLUE": {
@@ -5382,8 +5382,8 @@
               "MIRROR",
               "PRISM"
             ],
-            "size_bytes": 83957,
-            "size_human": "81.99 KB"
+            "size_bytes": 84370,
+            "size_human": "82.39 KB"
           },
           "FOS_RED": {
             "name": "FOS_RED",
@@ -5399,8 +5399,8 @@
               "MIRROR",
               "PRISM"
             ],
-            "size_bytes": 165574,
-            "size_human": "161.69 KB"
+            "size_bytes": 166105,
+            "size_human": "162.21 KB"
           },
           "HSP_POL": {
             "name": "HSP_POL",
@@ -5413,8 +5413,8 @@
               "F277M_0",
               "F327M_0"
             ],
-            "size_bytes": 86501,
-            "size_human": "84.47 KB"
+            "size_bytes": 86849,
+            "size_human": "84.81 KB"
           },
           "HSP_UV1": {
             "name": "HSP_UV1",
@@ -5445,8 +5445,8 @@
               "PRISM_BLUE",
               "PRISM_RED"
             ],
-            "size_bytes": 173263,
-            "size_human": "169.20 KB"
+            "size_bytes": 174679,
+            "size_human": "170.58 KB"
           },
           "HSP_UV2": {
             "name": "HSP_UV2",
@@ -5479,8 +5479,8 @@
               "PRISM_BLUE",
               "PRISM_RED"
             ],
-            "size_bytes": 190451,
-            "size_human": "185.99 KB"
+            "size_bytes": 191985,
+            "size_human": "187.49 KB"
           },
           "HSP_VIS": {
             "name": "HSP_VIS",
@@ -5509,8 +5509,8 @@
               "PRISM_BLUE",
               "PRISM_RED"
             ],
-            "size_bytes": 264731,
-            "size_human": "258.53 KB"
+            "size_bytes": 266029,
+            "size_human": "259.79 KB"
           },
           "NICMOS1": {
             "name": "NICMOS1",
@@ -5536,8 +5536,8 @@
               "POL120S",
               "POL240S"
             ],
-            "size_bytes": 339410,
-            "size_human": "331.46 KB"
+            "size_bytes": 341305,
+            "size_human": "333.31 KB"
           },
           "NICMOS2": {
             "name": "NICMOS2",
@@ -5563,8 +5563,8 @@
               "POL120L",
               "POL240L"
             ],
-            "size_bytes": 488140,
-            "size_human": "476.70 KB"
+            "size_bytes": 490035,
+            "size_human": "478.55 KB"
           },
           "NICMOS3": {
             "name": "NICMOS3",
@@ -5590,8 +5590,8 @@
               "G141",
               "G206"
             ],
-            "size_bytes": 467300,
-            "size_human": "456.35 KB"
+            "size_bytes": 469188,
+            "size_human": "458.19 KB"
           },
           "STIS_CCD": {
             "name": "STIS_CCD",
@@ -5625,7 +5625,7 @@
               "F28X50OII_G430L",
               "F28X50OII_G430M"
             ],
-            "size_bytes": 2722137,
+            "size_bytes": 2723730,
             "size_human": "2.60 MB"
           },
           "STIS_FUV": {
@@ -5663,8 +5663,8 @@
               "F25SRF2_G140L",
               "F25SRF2_G140M"
             ],
-            "size_bytes": 1035087,
-            "size_human": "1010.83 KB"
+            "size_bytes": 1036857,
+            "size_human": "1012.56 KB"
           },
           "STIS_NUV": {
             "name": "STIS_NUV",
@@ -5723,7 +5723,7 @@
               "F25SRF2_G230M",
               "F25SRF2_PRISM"
             ],
-            "size_bytes": 8124231,
+            "size_bytes": 8127299,
             "size_human": "7.75 MB"
           },
           "WFC3_IR": {
@@ -5748,8 +5748,8 @@
               "G102",
               "G141"
             ],
-            "size_bytes": 916213,
-            "size_human": "894.74 KB"
+            "size_bytes": 917910,
+            "size_human": "896.40 KB"
           },
           "WFC3_UVIS1": {
             "name": "WFC3_UVIS1",
@@ -5819,7 +5819,7 @@
               "FQ937N",
               "G280"
             ],
-            "size_bytes": 15118589,
+            "size_bytes": 15124727,
             "size_human": "14.42 MB"
           },
           "WFC3_UVIS2": {
@@ -5890,8 +5890,8 @@
               "FQ937N",
               "G280"
             ],
-            "size_bytes": 15120229,
-            "size_human": "14.42 MB"
+            "size_bytes": 15126367,
+            "size_human": "14.43 MB"
           },
           "WFPC1-PC": {
             "name": "WFPC1-PC",
@@ -5947,8 +5947,8 @@
               "POL120",
               "POL60"
             ],
-            "size_bytes": 487671,
-            "size_human": "476.24 KB"
+            "size_bytes": 490562,
+            "size_human": "479.06 KB"
           },
           "WFPC1-WF": {
             "name": "WFPC1-WF",
@@ -6004,8 +6004,8 @@
               "POL120",
               "POL60"
             ],
-            "size_bytes": 453973,
-            "size_human": "443.33 KB"
+            "size_bytes": 456864,
+            "size_human": "446.16 KB"
           },
           "WFPC2-PC": {
             "name": "WFPC2-PC",
@@ -6056,8 +6056,8 @@
               "FQUVN",
               "POLQ"
             ],
-            "size_bytes": 2918794,
-            "size_human": "2.78 MB"
+            "size_bytes": 2923091,
+            "size_human": "2.79 MB"
           },
           "WFPC2-WF": {
             "name": "WFPC2-WF",
@@ -6116,7 +6116,7 @@
               "POLQ_45",
               "POLQ_90"
             ],
-            "size_bytes": 2913200,
+            "size_bytes": 2918288,
             "size_human": "2.78 MB"
           }
         },
@@ -6132,8 +6132,8 @@
               "450GHz",
               "850GHz"
             ],
-            "size_bytes": 77205,
-            "size_human": "75.40 KB"
+            "size_bytes": 77317,
+            "size_human": "75.50 KB"
           }
         },
         "instrument_count": 1
@@ -6159,7 +6159,7 @@
               "F560W",
               "F770W"
             ],
-            "size_bytes": 2077658,
+            "size_bytes": 2078903,
             "size_human": "1.98 MB"
           },
           "NIRCam": {
@@ -6196,7 +6196,7 @@
               "F470N",
               "F480M"
             ],
-            "size_bytes": 4874305,
+            "size_bytes": 4876981,
             "size_human": "4.65 MB"
           },
           "NIRISS": {
@@ -6216,7 +6216,7 @@
               "F444W",
               "F480M"
             ],
-            "size_bytes": 4591434,
+            "size_bytes": 4592303,
             "size_human": "4.38 MB"
           },
           "NIRSPEC": {
@@ -6244,8 +6244,8 @@
             "filters": [
               "K"
             ],
-            "size_bytes": 9070,
-            "size_human": "8.86 KB"
+            "size_bytes": 9137,
+            "size_human": "8.92 KB"
           }
         },
         "instrument_count": 1
@@ -6279,8 +6279,8 @@
             "filters": [
               "VR"
             ],
-            "size_bytes": 4356,
-            "size_human": "4.25 KB"
+            "size_bytes": 4401,
+            "size_human": "4.30 KB"
           }
         },
         "instrument_count": 1
@@ -6342,8 +6342,8 @@
               "Grism",
               "Prism"
             ],
-            "size_bytes": 19717,
-            "size_human": "19.25 KB"
+            "size_bytes": 20307,
+            "size_human": "19.83 KB"
           }
         },
         "instrument_count": 1
@@ -6366,8 +6366,8 @@
               "z",
               "zprime_filter"
             ],
-            "size_bytes": 218463,
-            "size_human": "213.34 KB"
+            "size_bytes": 219023,
+            "size_human": "213.89 KB"
           }
         },
         "instrument_count": 1
@@ -6475,8 +6475,8 @@
             "filters": [
               "Red"
             ],
-            "size_bytes": 8720,
-            "size_human": "8.52 KB"
+            "size_bytes": 8776,
+            "size_human": "8.57 KB"
           }
         },
         "instrument_count": 1
@@ -6520,8 +6520,8 @@
               "W3",
               "W4"
             ],
-            "size_bytes": 40238,
-            "size_human": "39.29 KB"
+            "size_bytes": 40462,
+            "size_human": "39.51 KB"
           }
         },
         "instrument_count": 1
@@ -6574,8 +6574,8 @@
               "W42_3",
               "W42_4"
             ],
-            "size_bytes": 118961,
-            "size_human": "116.17 KB"
+            "size_bytes": 121201,
+            "size_human": "118.36 KB"
           }
         },
         "instrument_count": 1
