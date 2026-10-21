@@ -66,7 +66,10 @@ class Table:
         tr = data[:, 1] * self.tr_scale
         order = np.argsort(wl)
         wl, idx = np.unique(wl[order], return_index=True)
-        return wl, tr[order][idx]
+        # Published measurements can dip slightly below zero in the noise.
+        # A physical transmission cannot be negative, and the component
+        # loader requires nonnegative values.
+        return wl, np.maximum(tr[order][idx], 0.0)
 
 
 def product(curves: Sequence[Curve]) -> Curve:

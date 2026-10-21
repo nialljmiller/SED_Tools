@@ -43,6 +43,12 @@ def test_table_reads_nm_percent_and_gzip():
     np.testing.assert_allclose(tr, [0.5, 0.1, 0.0])
 
 
+def test_table_floors_negative_measured_transmission():
+    wl, tr = Table("u").parse(b"4000,-0.0001\n5000,0.8\n")
+    np.testing.assert_allclose(wl, [4000, 5000])
+    np.testing.assert_allclose(tr, [0.0, 0.8])
+
+
 def test_product_is_on_common_range():
     a = (np.array([1.0, 2.0, 3.0, 4.0]), np.array([1.0, 1.0, 1.0, 1.0]))
     b = (np.array([2.0, 5.0]), np.array([0.5, 0.5]))
@@ -127,6 +133,22 @@ def test_hst_graph_traversal():
 # ---------------------------------------------------------------------------
 # JWST
 # ---------------------------------------------------------------------------
+def test_jwst_reference_negative_tail_is_zero(tmp_path):
+    from astropy.io import fits
+    from sed_tools.component_sources.jwst import _read
+
+    columns = [
+        fits.Column(name="wavelength", format="D", array=[2.0, 1.0]),
+        fits.Column(name="throughput", format="D", array=[0.7, -0.02]),
+    ]
+    path = tmp_path / "throughput.fits"
+    fits.HDUList([fits.PrimaryHDU(), fits.BinTableHDU.from_columns(columns)]).writeto(path)
+
+    wl, tr = _read(path)
+    np.testing.assert_allclose(wl, [10000.0, 20000.0])
+    np.testing.assert_allclose(tr, [0.0, 0.7])
+
+
 def test_jwst_band_factors():
     from sed_tools.component_sources.jwst import _band_factors
 
