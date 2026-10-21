@@ -26,6 +26,7 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
+from requests import RequestException
 
 from ..filter_components import ATMOSPHERE, AtmosphereGrid, AtmosphereSpec
 from ..filter_metadata import ENERGY, write_filter_file
@@ -107,13 +108,13 @@ class SkyCalcClient:
                 if "rejected" in str(exc):
                     raise
                 last_error = exc
-            except Exception as exc:  # network errors
+            except (RequestException, OSError) as exc:
                 last_error = exc
             finally:
                 if tmpdir:
                     try:
                         self.session.get(f"{BASE_URL}/api/rmtmp", params={"d": tmpdir}, timeout=60)
-                    except Exception:
+                    except RequestException:
                         logger.debug("Could not delete SkyCalc tmpdir %s", tmpdir)
             time.sleep(5 * (attempt + 1))
         raise RuntimeError(f"SkyCalc request failed after {self.retries} attempts: {last_error}")

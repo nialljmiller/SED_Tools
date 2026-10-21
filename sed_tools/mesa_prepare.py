@@ -1,15 +1,15 @@
 """
 sed_tools/mesa_prepare.py
 
-Interactive tool for selecting a specific sub-variant of a stellar atmosphere
-model grid (e.g. a particular alpha-enhancement or microturbulence value) and
+Interactive tool for selecting a variant of a stellar spectral grid
+(e.g. a particular alpha-enhancement or microturbulence value) and
 exporting a clean, MESA-ready folder containing only that variant's flux cube
 and lookup table.
 
 Usage (CLI):
     sed-tools mesa_prepare
-    sed-tools mesa_prepare --model Kurucz2003all
-    sed-tools mesa_prepare --model Kurucz2003all --output /path/to/output
+    sed-tools mesa_prepare --grid Kurucz2003all
+    sed-tools mesa_prepare --grid Kurucz2003all --output /path/to/output
 
 Usage (API):
     from sed_tools.mesa_prepare import list_variants, export_variant
@@ -40,7 +40,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class VariantInfo:
-    """Metadata for a single extra-axis variant of a model grid."""
+    """Metadata for a single extra-axis variant of a spectral grid."""
 
     label: str                          # e.g. "alpha_0.4__lh_1.25__vtur_2"
     extra_axes: Dict[str, str]          # e.g. {"alpha": "0.4", "lh": "1.25", "vtur": "2"}
@@ -77,7 +77,7 @@ def list_variants(model_dir: str | os.PathLike) -> List[VariantInfo]:
     Parameters
     ----------
     model_dir:
-        Path to the model directory (must contain ``lookup_table.csv`` and
+        Path to the spectral grid directory (must contain ``lookup_table.csv`` and
         ``fluxcube_library/``).
 
     Returns
@@ -119,7 +119,7 @@ def list_variants(model_dir: str | os.PathLike) -> List[VariantInfo]:
             f"  Note: fluxcube_library/ not found. The master flux_cube.bin averages "
             f"all extra-axis variants ({axes_list})."
         )
-        print("  To get per-variant cubes, run 'sed-tools rebuild' on this model.")
+        print("  To get per-variant cubes, run 'sed-tools rebuild' on this spectral grid.")
         return [_variant_from_rows(df, {}, master_cube, df, model_dir)]
 
     # Group by unique combination of extra-axis values
@@ -296,9 +296,9 @@ def export_variant(
     """
     Write a clean MESA-ready folder for *variant*.
 
-    Produces the same file structure as a normally downloaded/rebuilt model:
+    Produces the same file structure as a normally downloaded/rebuilt spectral grid:
 
-    * One ``.txt`` spectrum file per SED (copied from the source model dir)
+    * One ``.txt`` spectrum file per SED (copied from the source spectral grid directory)
     * ``lookup_table.csv`` — filtered to only this variant's spectra
     * ``flux_cube.bin``    — copied from the variant's pre-built cube
 
@@ -378,7 +378,7 @@ def run_interactive(base_dir: str = None, model=None, output=None):
     """
     Interactive MESA-prepare workflow.
 
-    Prompts the user to pick a model (if not supplied), lists its variants,
+    Prompts the user to pick a spectral grid (if not supplied), lists its variants,
     lets the user select one, and exports it to a clean folder.
     """
 
@@ -396,13 +396,13 @@ def run_interactive(base_dir: str = None, model=None, output=None):
             if d.is_dir() and (d / "lookup_table.csv").exists()
         )
         if not available:
-            print(f"No models found in {base_path}. Run 'sed-tools spectra' first.")
+            print(f"No spectral grids found in {base_path}. Run 'sed-tools grids' first.")
             return
 
-        print("\nAvailable models:")
+        print("\nAvailable spectral grids:")
         for i, name in enumerate(available, 1):
             print(f"  [{i}] {name}")
-        raw = input("\nSelect model number (or type name): ").strip()
+        raw = input("\nSelect spectral grid number (or type name): ").strip()
 
         if raw.isdigit() and 1 <= int(raw) <= len(available):
             model = available[int(raw) - 1]
@@ -423,7 +423,7 @@ def run_interactive(base_dir: str = None, model=None, output=None):
         return
 
     if len(variants) == 1 and not variants[0].extra_axes:
-        print("This model has no extra-axis variants — it is a single uniform grid.")
+        print("This spectral grid has no extra-axis variants — it is a single uniform grid.")
         print("Nothing to select; the existing flux_cube.bin already covers the full grid.")
         return
 

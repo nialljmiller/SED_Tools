@@ -4,7 +4,7 @@ sed_tools/_resample.py
 Single authoritative function for resampling a spectrum onto a target
 wavelength grid.  Used by both precompute_flux_cube.py and
 combine_stellar_atm.py so the behaviour is identical for every stellar
-atmosphere model (Kurucz, BT-Settl, NextGen, SPHINX, tmap, bbody, …).
+spectral grid (Kurucz, BT-Settl, NextGen, SPHINX, tmap, bbody, …).
 
 Rule:
   - Inside the spectrum's actual wavelength coverage  → log-linear interp

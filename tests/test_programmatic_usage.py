@@ -45,6 +45,29 @@ def test_version_string():
     assert all(p.isdigit() for p in parts)
 
 
+def test_spectral_grid_names_preserve_api_compatibility():
+    from sed_tools import Catalog, CatalogInfo, SpectralGrid, SpectralGridInfo, find_grids, find_atmospheres
+    from sed_tools.api import SED
+
+    assert SpectralGrid is Catalog
+    assert SpectralGridInfo is CatalogInfo
+    assert find_grids is find_atmospheres
+    grid = SpectralGrid(name="example", source="local")
+    sed = SED(catalog=grid)
+    assert sed.grid is sed.cat is grid
+
+
+def test_spectral_grid_discovery_names(tmp_path):
+    from sed_tools import SED, find_grids
+
+    cube = tmp_path / "demo" / "flux_cube.bin"
+    _write_flux_cube(cube, [4000., 6000.], [3.0, 5.0], [-1.0, 0.0], [4000., 5000.])
+    sed = SED(model_root=tmp_path)
+    assert sed.available_grids() == sed.available_models() == ["demo"]
+    matches = find_grids(teff_range=(4500., 5500.), model_root=tmp_path)
+    assert [match.name for match in matches] == ["demo"]
+
+
 # --- find_atm / find_atmospheres ---
 
 def test_find_atm_alias(tmp_path):

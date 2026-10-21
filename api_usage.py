@@ -136,36 +136,36 @@ print(f"\nDownloaded Johnson filters to: {output}")
 
 
 # =============================================================================
-# 2. Query available catalogs
+# 2. Query available spectral grids
 # =============================================================================
 print("=" * 60)
-print("2. SED.query() - Discover catalogs")
+print("2. SED.query() - Discover spectral grids")
 print("=" * 60)
 
 # Query all (local + remote)
 all_cats = SED.query()
-print(f"Total catalogs found: {len(all_cats)}")
+print(f"Total spectral grids found: {len(all_cats)}")
 
 # Show first 5 local
 local_cats = SED.query(include_remote=False)
-print(f"\nLocal catalogs ({len(local_cats)}):")
+print(f"\nLocal spectral grids ({len(local_cats)}):")
 for cat in local_cats[:5]:
     print(f"  {cat.name}: Teff={cat.teff_range}, logg={cat.logg_range}")
 
 # Query by parameter coverage
 solar_cats = SED.query(teff_min=5500, teff_max=6000, logg_min=4.0, logg_max=4.5)
-print(f"\nCatalogs covering solar params: {len(solar_cats)}")
+print(f"\nSpectral grids covering solar params: {len(solar_cats)}")
 
 # Query specific source
 svo_cats = SED.query(source='svo', include_local=False)
-print(f"SVO remote catalogs: {len(svo_cats)}")
+print(f"SVO remote spectral grids: {len(svo_cats)}")
 
 
 # =============================================================================
 # 3. Fetch from remote
 # =============================================================================
 print("\n" + "=" * 60)
-print("3. SED.fetch() - Download catalog")
+print("3. SED.fetch() - Download spectral grid")
 print("=" * 60)
 
 # Fetch with parameter filtering
@@ -178,36 +178,36 @@ sed = SED.fetch(
     metallicity_min=-0.5,
     metallicity_max=0.5,
 )
-print(f"\nFetched catalog: {sed.cat.name}")
-print(f"Spectra count: {len(sed.cat)}")
-print(f"Teff grid: {sed.cat.teff_grid}")
-print(f"logg grid: {sed.cat.logg_grid}")
+print(f"\nFetched spectral grid: {sed.grid.name}")
+print(f"Spectra count: {len(sed.grid)}")
+print(f"Teff grid: {sed.grid.teff_grid}")
+print(f"logg grid: {sed.grid.logg_grid}")
 
 
 # =============================================================================
-# 4. Catalog operations
+# 4. Spectral grid operations
 # =============================================================================
 print("\n" + "=" * 60)
-print("4. Catalog operations")
+print("4. Spectral grid operations")
 print("=" * 60)
 
 # Access parameters as DataFrame
-df = sed.cat.parameters
+df = sed.grid.parameters
 print(f"Parameters DataFrame shape: {df.shape}")
 print(df.head())
 
-# Filter catalog
-cool = sed.cat.filter(teff_max=4000)
+# Filter the spectral grid
+cool = sed.grid.filter(teff_max=4000)
 print(f"\nFiltered (Teff < 4000): {len(cool)} spectra")
 
 # Iterate spectra
 print("\nFirst 3 spectra:")
-for spec in sed.cat[:3]:
+for spec in sed.grid[:3]:
     print(f"  Teff={spec.teff}, logg={spec.logg}, [M/H]={spec.metallicity}")
 
 # Write to disk
-output_path = sed.cat.write()
-print(f"\nWrote catalog to: {output_path}")
+output_path = sed.grid.write()
+print(f"\nWrote spectral grid to: {output_path}")
 
 
 # =============================================================================
@@ -218,7 +218,7 @@ print("5. SED.local() - Load and interpolate")
 print("=" * 60)
 
 sed = SED.local('Kurucz2003all')
-print(f"Loaded: {sed.cat.name}")
+print(f"Loaded: {sed.grid.name}")
 print(f"Parameter ranges: {sed.parameter_ranges()}")
 
 # Interpolate spectra
@@ -244,7 +244,7 @@ print(f"  Wavelength range: {spectrum.wavelength[0]:.1f} - {spectrum.wavelength[
 
 
 # =============================================================================
-# 6. Combine catalogs
+# 6. Combine spectral grids
 # =============================================================================
 print("\n" + "=" * 60)
 print("6. SED.combine() - Create ensemble grid")
@@ -254,7 +254,7 @@ ensemble = SED.combine(
     catalogs=['Kurucz2003all', 'NextGen'],
     output='api_test_combined',
 )
-print(f"\nCombined catalog: {ensemble.cat.name}")
+print(f"\nCombined spectral grid: {ensemble.grid.name}")
 print(f"Parameter ranges: {ensemble.parameter_ranges()}")
 
 # Interpolate from combined grid
@@ -271,8 +271,8 @@ ascii_sed_continuum(spectrum.wavelength, spectrum.flux,
 
 
 
-output_path = ensemble.cat.write()
-print(f"\nWrote catalog to: {output_path}")
+output_path = ensemble.grid.write()
+print(f"\nWrote spectral grid to: {output_path}")
 
 
 # =============================================================================

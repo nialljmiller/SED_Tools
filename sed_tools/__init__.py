@@ -16,6 +16,8 @@ from .api import (
     MLCompleter,
     SED,
     Spectrum,
+    SpectralGrid,
+    SpectralGridInfo,
     fetch,
     local,
     query,
@@ -57,7 +59,7 @@ def list_txt_spectra(model_dir: str) -> list[str]:
     return [path.name for path in list_text_spectra(model_dir)]
 
 
-def find_atmospheres(
+def find_grids(
     *,
     teff_range: Optional[Sequence[float]] = None,
     logg_range: Optional[Sequence[float]] = None,
@@ -67,8 +69,8 @@ def find_atmospheres(
     model_root: Optional[Union[str, os.PathLike[str]]] = None,
     filter_root: Optional[Union[str, os.PathLike[str]]] = None,
 ) -> list[ModelMatch]:
-    """Discover local model grids matching the requested parameter ranges."""
-    return _SEDCore(model_root=model_root, filter_root=filter_root).find_atmospheres(
+    """Discover local spectral grids matching the requested parameter ranges."""
+    return _SEDCore(model_root=model_root, filter_root=filter_root).find_grids(
         teff_range=teff_range,
         logg_range=logg_range,
         metallicity_range=metallicity_range,
@@ -77,14 +79,17 @@ def find_atmospheres(
     )
 
 
+find_atmospheres = find_grids
+
+
 def find_atm(**kwargs) -> list[ModelMatch]:
-    """Backward-compatible alias for :func:`find_atmospheres`."""
+    """Backward-compatible alias for :func:`find_grids`."""
     for legacy_key in ("Z_range", "z_range"):
         if legacy_key in kwargs and "metallicity_range" not in kwargs:
             kwargs["metallicity_range"] = kwargs.pop(legacy_key)
     if "logg_range" not in kwargs and "log_g_range" in kwargs:
         kwargs["logg_range"] = kwargs.pop("log_g_range")
-    return find_atmospheres(**kwargs)
+    return find_grids(**kwargs)
 
 
 __all__ = [
@@ -106,12 +111,15 @@ __all__ = [
     "STELLAR_DIR_DEFAULT",
     "SVOSpectraGrabber",
     "Spectrum",
+    "SpectralGrid",
+    "SpectralGridInfo",
     "build_h5_bundle_from_txt",
     "clean_model_dir",
     "ensure_dir",
     "fetch",
     "find_atm",
     "find_atmospheres",
+    "find_grids",
     "list_txt_spectra",
     "load_txt_spectrum",
     "local",

@@ -1,28 +1,28 @@
 """
-Python API for SED_Tools - Programmatic interface to stellar atmosphere models.
+Python API for SED_Tools - Programmatic interface to stellar spectral grids.
 
 This module provides a Pythonic interface that mirrors and extends the CLI functionality.
-Users can query available catalogs, fetch filtered data, and construct pipelines.
+Users can query available spectral grids, fetch filtered data, and construct pipelines.
 
 Example usage::
 
     from sed_tools.api import SED
     
-    # Query available remote catalogs
-    catalogs = SED.query()
-    catalogs = SED.query(teff_min=5000, teff_max=7000)  # Filter by coverage
+    # Query available remote spectral grids
+    grids = SED.query()
+    grids = SED.query(teff_min=5000, teff_max=7000)  # Filter by coverage
     
-    # Fetch data from a specific catalog
+    # Fetch data from a specific spectral grid
     sed = SED.fetch('Kurucz2003all', teff_min=4000, teff_max=7000, logg_min=3.0)
     
-    # Access the catalog data
-    print(sed.cat)
-    print(sed.cat.spectra)
-    print(sed.cat.parameters)
+    # Access the spectral grid data
+    print(sed.grid)
+    print(sed.grid.spectra)
+    print(sed.grid.parameters)
     
     # Save to disk (same structure as CLI)
-    sed.cat.write()
-    sed.cat.write('/custom/path')
+    sed.grid.write()
+    sed.grid.write('/custom/path')
     
     # Work with local data
     sed = SED.local('Kurucz2003all')
@@ -71,8 +71,8 @@ Number = Union[int, float, np.floating]
 # =============================================================================
 
 @dataclass
-class CatalogInfo:
-    """Information about an available stellar atmosphere catalog."""
+class SpectralGridInfo:
+    """Information about an available stellar spectral grid."""
     
     name: str
     source: str  # 'svo', 'msg', 'mast', 'njm', 'local'
@@ -91,7 +91,7 @@ class CatalogInfo:
         logg: Optional[float] = None,
         metallicity: Optional[float] = None,
     ) -> bool:
-        """Check if this catalog covers a specific point in parameter space."""
+        """Check if this spectral grid covers a specific point in parameter space."""
         if teff is not None and self.teff_range:
             if not (self.teff_range[0] <= teff <= self.teff_range[1]):
                 return False
@@ -112,7 +112,7 @@ class CatalogInfo:
         metallicity_min: Optional[float] = None,
         metallicity_max: Optional[float] = None,
     ) -> bool:
-        """Check if this catalog covers a parameter range (at least partial overlap)."""
+        """Check if this spectral grid covers a parameter range (at least partial overlap)."""
         if self.teff_range:
             if teff_min is not None and teff_min > self.teff_range[1]:
                 return False
@@ -131,7 +131,7 @@ class CatalogInfo:
         return True
     
     def __repr__(self) -> str:
-        parts = [f"CatalogInfo('{self.name}', source='{self.source}'"]
+        parts = [f"SpectralGridInfo('{self.name}', source='{self.source}'"]
         if self.teff_range:
             parts.append(f"teff={self.teff_range}")
         if self.logg_range:
@@ -143,7 +143,7 @@ class CatalogInfo:
 
 @dataclass
 class Spectrum:
-    """A single spectrum with wavelength, flux, and metadata."""
+    """An individual model spectrum with wavelength, flux and parameters."""
     
     wavelength: np.ndarray  # Angstroms
     flux: np.ndarray        # erg/cm²/s/Å
@@ -192,9 +192,9 @@ class Spectrum:
 
 
 @dataclass  
-class Catalog:
+class SpectralGrid:
     """
-    A collection of spectra from a stellar atmosphere model.
+    A spectral grid of model spectra and their parameters.
     
     This is the main data container returned by SED.fetch().
     """
@@ -222,17 +222,17 @@ class Catalog:
     
     @property
     def teff_grid(self) -> np.ndarray:
-        """Unique Teff values in the catalog."""
+        """Unique Teff values in the spectral grid."""
         return np.unique([s.teff for s in self.spectra])
     
     @property
     def logg_grid(self) -> np.ndarray:
-        """Unique logg values in the catalog."""
+        """Unique logg values in the spectral grid."""
         return np.unique([s.logg for s in self.spectra])
     
     @property
     def metallicity_grid(self) -> np.ndarray:
-        """Unique metallicity values in the catalog."""
+        """Unique metallicity values in the spectral grid."""
         return np.unique([s.metallicity for s in self.spectra])
     
     def filter(
@@ -243,8 +243,8 @@ class Catalog:
         logg_max: Optional[float] = None,
         metallicity_min: Optional[float] = None,
         metallicity_max: Optional[float] = None,
-    ) -> 'Catalog':
-        """Return a new Catalog with filtered spectra."""
+    ) -> 'SpectralGrid':
+        """Return a new SpectralGrid with filtered spectra."""
         filtered = []
         for spec in self.spectra:
             if teff_min is not None and spec.teff < teff_min:
@@ -261,7 +261,7 @@ class Catalog:
                 continue
             filtered.append(spec)
         
-        return Catalog(
+        return SpectralGrid(
             name=self.name,
             source=self.source,
             spectra=filtered,
@@ -284,7 +284,7 @@ class Catalog:
         build_h5: bool = True,
     ) -> Path:
         """
-        Write the catalog to disk in the standard SED_Tools structure.
+        Write the spectral grid to disk in the standard SED_Tools structure.
         
         Parameters
         ----------
@@ -337,6 +337,11 @@ class Catalog:
         return path
 
 
+# Existing imports continue to refer to the same classes.
+Catalog = SpectralGrid
+CatalogInfo = SpectralGridInfo
+
+
 # =============================================================================
 # Main SED API Class
 # =============================================================================
@@ -349,9 +354,9 @@ class SED:
     methods for working with loaded data.
     
     Class methods (discovery):
-        SED.query() - List available catalogs
-        SED.fetch() - Download and return a catalog
-        SED.local() - Load a local catalog
+        SED.query() - List available spectral grids
+        SED.fetch() - Download and return a spectral grid
+        SED.local() - Load a local spectral grid
         SED.combine() - Create ensemble grids
         SED.ml_completer() - Access ML completion tools
         SED.ml_generator() - Access ML generation tools
@@ -364,12 +369,12 @@ class SED:
     Examples
     --------
     >>> # Query what's available
-    >>> catalogs = SED.query()
-    >>> catalogs = SED.query(teff_min=5000)
+    >>> grids = SED.query()
+    >>> grids = SED.query(teff_min=5000)
     
     >>> # Fetch remote data
     >>> sed = SED.fetch('Kurucz2003all', teff_min=4000, teff_max=8000)
-    >>> sed.cat.write()
+    >>> sed.grid.write()
     
     >>> # Work with local data
     >>> sed = SED.local('Kurucz2003all')
@@ -386,7 +391,7 @@ class SED:
     
     def __init__(
         self,
-        catalog: Optional[Catalog] = None,
+        catalog: Optional[SpectralGrid] = None,
         model: Optional[SEDModel] = None,
         model_root: Optional[Union[str, Path]] = None,
         filter_root: Optional[Union[str, Path]] = None,
@@ -408,6 +413,11 @@ class SED:
         if filter_root:
             self._filter_root = Path(filter_root)
     
+    @property
+    def grid(self) -> Optional[SpectralGrid]:
+        """The loaded spectral grid; also available through the legacy ``cat`` attribute."""
+        return self.cat
+
     # =========================================================================
     # Class Methods - Discovery & Fetching
     # =========================================================================
@@ -424,29 +434,29 @@ class SED:
         metallicity_max: Optional[float] = None,
         include_local: bool = True,
         include_remote: bool = True,
-    ) -> List[CatalogInfo]:
+    ) -> List[SpectralGridInfo]:
         """
-        Query available stellar atmosphere catalogs.
+        Query available spectral grids.
         
         Parameters
         ----------
         source : str, optional
             Filter by source: 'svo', 'msg', 'mast', 'njm', 'local', or 'all'
         teff_min, teff_max : float, optional
-            Filter catalogs that cover this Teff range
+            Filter spectral grids that cover this Teff range
         logg_min, logg_max : float, optional
-            Filter catalogs that cover this logg range
+            Filter spectral grids that cover this logg range
         metallicity_min, metallicity_max : float, optional
-            Filter catalogs that cover this metallicity range
+            Filter spectral grids that cover this metallicity range
         include_local : bool
-            Include locally installed catalogs
+            Include locally installed spectral grids
         include_remote : bool
             Query remote sources (SVO, MSG, MAST, NJM)
             
         Returns
         -------
-        List[CatalogInfo]
-            Available catalogs matching the criteria
+        List[SpectralGridInfo]
+            Available spectral grids matching the criteria
         """
         catalogs = []
         
@@ -482,8 +492,8 @@ class SED:
         return catalogs
     
     @classmethod
-    def _query_local(cls) -> List[CatalogInfo]:
-        """Query locally installed catalogs."""
+    def _query_local(cls) -> List[SpectralGridInfo]:
+        """Query locally installed spectral grids."""
         catalogs = []
         
         if not cls._model_root.exists():
@@ -499,7 +509,7 @@ class SED:
             if not cube.is_file():
                 continue
             
-            info = CatalogInfo(
+            info = SpectralGridInfo(
                 name=entry.name,
                 source='local',
                 is_local=True,
@@ -529,14 +539,14 @@ class SED:
         return catalogs
     
     @classmethod
-    def _query_svo(cls) -> List[CatalogInfo]:
-        """Query SVO remote catalogs."""
+    def _query_svo(cls) -> List[SpectralGridInfo]:
+        """Query SVO remote spectral grids."""
         try:
             from .svo_spectra_grabber import SVOSpectraGrabber
             grabber = SVOSpectraGrabber(base_dir=str(cls._model_root))
             models = grabber.discover_models()
             return [
-                CatalogInfo(name=m, source='svo', url="http://svo2.cab.inta-csic.es/theory/newov2/")
+                SpectralGridInfo(name=m, source='svo', url="http://svo2.cab.inta-csic.es/theory/newov2/")
                 for m in models
             ]
         except Exception as e:
@@ -544,14 +554,14 @@ class SED:
             return []
 
     @classmethod
-    def _query_msg(cls) -> List[CatalogInfo]:
-        """Query MSG (Townsend) remote catalogs."""
+    def _query_msg(cls) -> List[SpectralGridInfo]:
+        """Query MSG (Townsend) remote spectral grids."""
         try:
             from .msg_spectra_grabber import MSGSpectraGrabber
             grabber = MSGSpectraGrabber(base_dir=str(cls._model_root))
             models = grabber.discover_models()
             return [
-                CatalogInfo(name=m, source='msg', description="MSG HDF5 format")
+                SpectralGridInfo(name=m, source='msg', description="MSG HDF5 format")
                 for m in models
             ]
         except Exception as e:
@@ -559,14 +569,14 @@ class SED:
             return []
 
     @classmethod
-    def _query_mast(cls) -> List[CatalogInfo]:
-        """Query MAST (BOSZ) remote catalogs."""
+    def _query_mast(cls) -> List[SpectralGridInfo]:
+        """Query MAST (BOSZ) remote spectral grids."""
         try:
             from .mast_spectra_grabber import MASTSpectraGrabber
             grabber = MASTSpectraGrabber(base_dir=str(cls._model_root))
             models = grabber.discover_models()
             return [
-                CatalogInfo(name=m, source='mast', description="BOSZ models")
+                SpectralGridInfo(name=m, source='mast', description="BOSZ spectral grids")
                 for m in models
             ]
         except Exception as e:
@@ -574,8 +584,8 @@ class SED:
             return []
 
     @classmethod
-    def _query_njm(cls) -> List[CatalogInfo]:
-        """Query NJM mirror remote catalogs."""
+    def _query_njm(cls) -> List[SpectralGridInfo]:
+        """Query NJM mirror remote spectral grids."""
         try:
             from .njm_spectra_grabber import NJMSpectraGrabber
             grabber = NJMSpectraGrabber(base_dir=str(cls._model_root))
@@ -583,7 +593,7 @@ class SED:
                 return []
             models = grabber.discover_models()
             return [
-                CatalogInfo(name=m, source='njm', description="NJM pre-processed mirror")
+                SpectralGridInfo(name=m, source='njm', description="NJM pre-processed mirror")
                 for m in models
             ]
         except Exception as e:
@@ -606,12 +616,12 @@ class SED:
         model_root: Optional[Union[str, Path]] = None,
     ) -> 'SED':
         """
-        Fetch and download a stellar atmosphere catalog.
+        Fetch and download a stellar spectral grid.
         
         Parameters
         ----------
         catalog : str
-            Name of the catalog to fetch (e.g., 'Kurucz2003all')
+            Name of the spectral grid to fetch (e.g., 'Kurucz2003all')
         source : str, optional
             Force a specific source: 'svo', 'msg', 'mast', 'njm'
             If None, tries NJM first (pre-processed), then others
@@ -626,12 +636,12 @@ class SED:
         clean : bool
             Whether to run unit standardization after download
         model_root : str or Path, optional
-            Base directory for stellar models
+            Base directory for spectral grids
             
         Returns
         -------
         SED
-            SED instance with the fetched catalog in sed.cat
+            SED instance with the fetched spectral grid in sed.grid
         """
         base_dir = Path(model_root) if model_root else cls._model_root
         base_dir.mkdir(parents=True, exist_ok=True)
@@ -664,7 +674,7 @@ class SED:
         
         if not metadata or grabber is None:
             tried = ", ".join(sources_to_try)
-            raise ValueError(f"Catalog '{catalog}' not found. Tried: {tried}")
+            raise ValueError(f"Spectral grid '{catalog}' not found. Tried: {tried}")
         
         print(f"[fetch] Downloading {catalog} from {used_source}...")
         n_downloaded = grabber.download_model_spectra(catalog, metadata)
@@ -679,7 +689,7 @@ class SED:
             n_total = summary.get('total', 0)
             print(f"[fetch] Cleaned: {n_total} total, {n_fixed} fixed")
         
-        # Load spectra into Catalog object
+        # Load spectra into SpectralGrid object
         cat = cls._load_catalog_from_dir(model_dir, catalog, source)
         
         # Apply parameter filters
@@ -698,7 +708,7 @@ class SED:
     
     @classmethod
     def _get_sources_for_catalog(cls, catalog: str) -> List[str]:
-        """Get ordered list of sources that might have this catalog."""
+        """Get ordered list of sources that might have this spectral grid."""
         sources = []
         
         # Try NJM first (pre-processed)
@@ -767,8 +777,8 @@ class SED:
             raise ValueError(f"Unknown source: {source}")
     
     @classmethod
-    def _load_catalog_from_dir(cls, model_dir: Path, name: str, source: str) -> Catalog:
-        """Load spectra from a local directory into a Catalog."""
+    def _load_catalog_from_dir(cls, model_dir: Path, name: str, source: str) -> SpectralGrid:
+        """Load spectra from a local directory into a SpectralGrid."""
         spectra = []
         
         # Read lookup table
@@ -803,7 +813,7 @@ class SED:
                     except Exception:
                         logger.debug("Could not load spectrum %s", filename, exc_info=True)
 
-        return Catalog(
+        return SpectralGrid(
             name=name,
             source=source,
             spectra=spectra,
@@ -819,14 +829,14 @@ class SED:
         fill_gaps: bool = True,
     ) -> 'SED':
         """
-        Load a local stellar atmosphere catalog.
+        Load a local stellar spectral grid.
         
         Parameters
         ----------
         catalog : str
-            Name of the catalog (directory name under model_root)
+            Name of the spectral grid (directory name under model_root)
         model_root : str or Path, optional
-            Base directory for stellar models
+            Base directory for spectral grids
         filter_root : str or Path, optional
             Base directory for filter profiles
         fill_gaps : bool
@@ -841,7 +851,7 @@ class SED:
         model_dir = base_dir / catalog
         
         if not model_dir.exists():
-            raise FileNotFoundError(f"Catalog '{catalog}' not found at {model_dir}")
+            raise FileNotFoundError(f"Spectral grid '{catalog}' not found at {model_dir}")
         
         cube_path = model_dir / "flux_cube.bin"
         if not cube_path.exists():
@@ -1033,23 +1043,23 @@ class SED:
         visualization: bool = True,
     ) -> 'SED':
         """
-        Combine multiple stellar atmosphere grids into a unified ensemble.
+        Combine multiple stellar spectral grids into a unified ensemble.
         
         Parameters
         ----------
         catalogs : list of str
-            Names of catalogs to combine
+            Names of spectral grids to combine
         output : str
-            Name for the combined output catalog
+            Name for the combined spectral grid
         model_root : str or Path, optional
-            Base directory for stellar models
+            Base directory for spectral grids
         visualization : bool
             Whether to generate parameter space visualization
             
         Returns
         -------
         SED
-            SED instance with the combined catalog
+            SED instance with the combined spectral grid
         """
         base_dir = Path(model_root) if model_root else cls._model_root
         
@@ -1067,10 +1077,10 @@ class SED:
         for cat in catalogs:
             cat_path = base_dir / cat
             if not cat_path.exists():
-                raise FileNotFoundError(f"Catalog directory not found: {cat_path}")
+                raise FileNotFoundError(f"SpectralGrid directory not found: {cat_path}")
             selected_models.append((cat, str(cat_path)))
         
-        print(f"\nCombining {len(selected_models)} models:")
+        print(f"\nCombining {len(selected_models)} spectral grids:")
         for name, _ in selected_models:
             print(f"  - {name}")
         
@@ -1111,7 +1121,7 @@ class SED:
                 teff_grid, logg_grid, meta_grid, source_map, all_models_data, output_dir,
                 wavelength_grid=wavelength_grid, flux_cube=flux_cube)
             
-        print(f"\nSuccessfully combined {len(selected_models)} models!")
+        print(f"\nSuccessfully combined {len(selected_models)} spectral grids!")
         print(f"Output: {output_dir}")
         
         # Load the result
@@ -1189,8 +1199,8 @@ class SED:
         """
         if self._model is None:
             raise RuntimeError(
-                "No model loaded for interpolation. "
-                "Use SED.local() to load a catalog with a flux cube."
+                "No spectral grid loaded for interpolation. "
+                "Use SED.local() to load a spectral grid with a flux cube."
             )
         return self._model(teff, logg, metallicity)
     
@@ -1202,9 +1212,11 @@ class SED:
             raise RuntimeError("No model loaded")
         return self._model
     
-    def available_models(self) -> List[str]:
-        """List locally available models."""
-        return self._core.available_models()
+    def available_grids(self) -> List[str]:
+        """List locally available spectral grids."""
+        return self._core.available_grids()
+
+    available_models = available_grids
     
     def find_model(
         self,
@@ -1213,7 +1225,7 @@ class SED:
         metallicity: Number,
         limit: Optional[int] = None,
     ) -> List[ModelMatch]:
-        """Find models covering a specific point in parameter space."""
+        """Find spectral grids covering a specific point in parameter space."""
         return self._core.find_model(teff, logg, metallicity, limit=limit)
     
     def parameter_ranges(self) -> Dict[str, Tuple[float, float]]:
@@ -1251,7 +1263,7 @@ class MLCompleter:
         save_name: Optional[str] = None,
     ) -> 'MLCompleter':
         """
-        Train the ML model on a stellar atmosphere grid.
+        Train the ML model on a stellar spectral grid.
         
         Parameters
         ----------
@@ -1286,14 +1298,14 @@ class MLCompleter:
         catalog: str,
         wavelength_range: Optional[Tuple[float, float]] = None,
         output: Optional[str] = None,
-    ) -> Catalog:
+    ) -> SpectralGrid:
         """
-        Extend an incomplete catalog using the trained model.
+        Extend an incomplete spectral grid using the trained model.
         
         Parameters
         ----------
         catalog : str
-            Name of the catalog to extend
+            Name of the spectral grid to extend
         wavelength_range : tuple, optional
             Target wavelength range (min, max) in Angstroms
         output : str, optional
@@ -1301,8 +1313,8 @@ class MLCompleter:
             
         Returns
         -------
-        Catalog
-            Extended catalog
+        SpectralGrid
+            Extended spectral grid
         """
         from .ml_sed_completer import extend_catalog
         
@@ -1367,7 +1379,7 @@ class MLGenerator:
         max_samples: int = 10000,
     ) -> 'MLGenerator':
         """
-        Train the ML generator on a stellar atmosphere grid.
+        Train the ML generator on a stellar spectral grid.
         
         Parameters
         ----------
@@ -1649,86 +1661,17 @@ class Filters:
         is also reported when available, but fetch() still validates actual .dat
         files before accepting a download.
         """
-        results: List[Dict[str, Any]] = []
+        from .filter_library import FilterLibrary
 
-        # SVO catalogue
-        try:
-            from .svo_filter_grabber import SVOFilterBrowser
-            browser = SVOFilterBrowser(base_dir=str(cls._filter_root))
-            facilities = browser.list_facilities()
-
-            for fac in facilities:
-                names = {fac.label.lower(), fac.key.lower()}
-                if facility and facility.lower() not in names:
-                    continue
-                results.append({
-                    'facility': fac.label,
-                    'facility_key': fac.key,
-                    'source': 'svo',
-                    'is_local': False,
-                })
-        except Exception:
-            logger.debug("SVO filter query failed", exc_info=True)
-
-        # NJM mirror catalogue, if available. Avoid exact duplicate rows.
-        try:
-            from .njm_filter_grabber import NJMFilterGrabber
-            njm = NJMFilterGrabber(base_dir=str(cls._filter_root))
-            if njm.is_available():
-                seen = {
-                    (r.get('facility', '').lower(), r.get('source', '').lower())
-                    for r in results
-                }
-                for fac in njm.discover_facilities():
-                    if facility and fac.lower() != facility.lower():
-                        continue
-                    key = (fac.lower(), 'njm')
-                    if key in seen:
-                        continue
-                    results.append({
-                        'facility': fac,
-                        'source': 'njm',
-                        'is_local': False,
-                    })
-                    seen.add(key)
-        except Exception:
-            logger.debug("NJM filter query failed", exc_info=True)
-
-        return results
-
-    @staticmethod
-    def _find_filter_dir(base_dir: Path, *candidates: Path) -> Optional[Path]:
-        """Return the first candidate directory containing .dat filter files."""
-        for candidate in candidates:
-            if candidate.exists() and candidate.is_dir():
-                if list(candidate.glob("*.dat")):
-                    return candidate
-        return None
-
-    @staticmethod
-    def _remove_empty_filter_dir(path: Path) -> None:
-        """Remove a partial filter directory only when it has no .dat files."""
-        if not path.exists() or not path.is_dir():
-            return
-        if list(path.glob("*.dat")):
-            return
-
-        # Failed NJM downloads can leave only an instrument index file. Remove
-        # files in the leaf directory, then prune empty parents cautiously.
-        for child in path.iterdir():
-            if child.is_file():
-                try:
-                    child.unlink()
-                except OSError:
-                    pass
-
-        try:
-            path.rmdir()
-            parent = path.parent
-            if parent.exists() and parent.is_dir() and not any(parent.iterdir()):
-                parent.rmdir()
-        except OSError:
-            pass
+        report = FilterLibrary(cls._filter_root).facilities()
+        for error in report["errors"]:
+            logger.info("Filter discovery: %s", error)
+        return [
+            {"facility": row["label"], "facility_key": row["key"], "source": source, "is_local": False}
+            for row in report["entries"]
+            if not facility or facility.casefold() in (row["key"].casefold(), row["label"].casefold())
+            for source in row["sources"] if source != "local"
+        ]
 
     @classmethod
     def fetch(
@@ -1738,6 +1681,11 @@ class Filters:
         filter_root: Optional[Union[str, Path]] = None,
         components: Optional[Union[str, Sequence[str]]] = None,
         atmosphere: Optional[Dict[str, Any]] = None,
+        *,
+        bands: Optional[Sequence[str]] = None,
+        detector_type: Optional[str] = None,
+        allow_heavy: bool = False,
+        allow_partial: bool = False,
     ) -> Path:
         """Download filter profiles, optionally composing them from components.
 
@@ -1757,119 +1705,28 @@ class Filters:
             in the telluric transmission at the instrument's *own* site
             (ground-based instruments with a site only).  Components are never
             taken from another instrument or site.
+        bands : sequence of str, optional
+            Compose only these bands, useful when components cover part of a set.
+        detector_type : str, optional
+            Explicit energy/photon integration convention for a derived copy.
+            This changes weighting, not the physical QE component.
+        allow_heavy : bool
+            Permit large original-source downloads such as JWST reference data.
+        allow_partial : bool
+            Explicitly allow zero transmission outside component coverage.
         """
         instrument_dir = cls._fetch_published(facility, instrument, filter_root=filter_root)
-        if components is None and atmosphere is None:
+        if components is None and atmosphere is None and detector_type is None and bands is None:
             return instrument_dir
-        from .component_sources.catalog import ensure_components
-
-        # Components come from the njm mirror when available; otherwise run
-        # the instrument's own builder here (never another instrument's data).
-        ensure_components(instrument_dir)
         return cls.compose(instrument_dir, components or ["published"], atmosphere=atmosphere,
-                           filter_root=filter_root)
+                           filter_root=filter_root, bands=bands, detector_type=detector_type,
+                           allow_heavy=allow_heavy, allow_partial=allow_partial)
 
     @classmethod
-    def _fetch_published(
-        cls,
-        facility: str,
-        instrument: str,
-        filter_root: Optional[Union[str, Path]] = None,
-    ) -> Path:
-        """
-        Download filter profiles.
+    def _fetch_published(cls, facility, instrument, filter_root=None) -> Path:
+        from .filter_library import FilterLibrary
 
-        Tries an existing local installation first, then the NJM mirror, then
-        SVO. A source is considered successful only if real ``*.dat`` files are
-        present in the final directory.
-        """
-        base_dir = Path(filter_root) if filter_root else cls._filter_root
-        base_dir.mkdir(parents=True, exist_ok=True)
-        output_path = base_dir / facility / instrument
-
-        # Check if already exists locally and is complete enough to use.
-        existing_dir = cls._find_filter_dir(base_dir, output_path)
-        if existing_dir:
-            existing = list(existing_dir.glob("*.dat"))
-            print(f"[filters] Already have {len(existing)} filters at {existing_dir}")
-            cls.tag_detector_types(existing_dir, facility=facility, verbose=False)
-            return existing_dir
-
-        # Try NJM first.
-        try:
-            from .njm_filter_grabber import NJMFilterGrabber
-            njm = NJMFilterGrabber(base_dir=str(base_dir))
-            if njm.is_available():
-                count = njm.download_filters(facility, instrument)
-                existing_dir = cls._find_filter_dir(base_dir, output_path)
-                if existing_dir:
-                    existing = list(existing_dir.glob("*.dat"))
-                    print(f"[filters] Got {len(existing)} filters from NJM")
-                    return existing_dir
-                if count == 0:
-                    cls._remove_empty_filter_dir(output_path)
-        except Exception as e:
-            print(f"[filters] NJM failed: {e}")
-
-        # Fall back to SVO. SVO uses facility/instrument *keys* for browsing,
-        # but writes output directories from the returned filter-row labels, so
-        # we check both the requested names and the actual row names.
-        try:
-            from .svo_filter_grabber import SVOFilterBrowser, _clean_path
-            browser = SVOFilterBrowser(base_dir=str(base_dir))
-
-            facilities = browser.list_facilities()
-            fac = next(
-                (
-                    f for f in facilities
-                    if f.label.lower() == facility.lower()
-                    or f.key.lower() == facility.lower()
-                ),
-                None,
-            )
-            if fac is None:
-                raise ValueError(f"SVO facility not found: {facility}")
-
-            instruments = browser.list_instruments(fac.key)
-            inst = next(
-                (
-                    i for i in instruments
-                    if i.label.lower() == instrument.lower()
-                    or i.key.lower() == instrument.lower()
-                ),
-                None,
-            )
-            if inst is None:
-                raise ValueError(f"SVO instrument not found: {facility}/{instrument}")
-
-            filters = browser.list_filters(fac.key, inst.key)
-            if not filters:
-                raise ValueError(f"SVO returned no filters for {facility}/{instrument}")
-
-            browser.download_filters(filters)
-
-            candidates = [
-                output_path,
-                base_dir / fac.label / inst.label,
-                base_dir / fac.key / inst.key,
-            ]
-
-            # SVO rows may contain their own display labels.
-            first = filters[0]
-            candidates.append(
-                base_dir / _clean_path(first.facility) / _clean_path(first.instrument)
-            )
-
-            existing_dir = cls._find_filter_dir(base_dir, *candidates)
-            if existing_dir:
-                existing = list(existing_dir.glob("*.dat"))
-                print(f"[filters] Got {len(existing)} filters from SVO")
-                return existing_dir
-
-        except Exception as e:
-            print(f"[filters] SVO failed: {e}")
-
-        raise ValueError(f"Could not download filters for {facility}/{instrument}")
+        return FilterLibrary(filter_root or cls._filter_root).published(facility, instrument)
 
     @classmethod
     def tag_detector_types(
@@ -1939,6 +1796,8 @@ class Filters:
         facility: str,
         instrument: str,
         filter_root: Optional[Union[str, Path]] = None,
+        *,
+        include_remote: bool = True,
     ) -> Dict[str, Any]:
         """Describe what can be requested for an instrument.
 
@@ -1946,61 +1805,33 @@ class Filters:
         the instrument's own separable components, the with/without variants
         that can be built from them, whether (and at which site) a telluric
         component can be added, and the detector type.  Uses the local copy if present,
-        otherwise the NJM mirror's manifest.
+        otherwise the NJM manifest or SVO metadata. ``include_remote=False``
+        inspects installed data and source registration without network access.
         """
-        from .filter_components import InstrumentManifest
+        from .filter_library import FilterLibrary
 
-        base_dir = Path(filter_root) if filter_root else cls._filter_root
-        local = base_dir / facility / instrument
-        if local.is_dir() and list(local.glob("*.dat")):
-            return InstrumentManifest.load(local).describe()
-        try:
-            from .njm_filter_grabber import NJMFilterGrabber
-
-            remote = NJMFilterGrabber(base_dir=str(base_dir)).fetch_manifest(facility, instrument)
-        except Exception:
-            remote = None
-        if remote:
-            known = set(InstrumentManifest.__dataclass_fields__)
-            return InstrumentManifest(**{k: v for k, v in remote.items() if k in known}).describe()
-        from .facility_sites import is_ground_based, platform
-
-        return {
-            "facility": facility, "instrument": instrument, "bands": [],
-            "published": "unknown (fetch to inspect)", "published_source": "",
-            "components": [], "partial_components": {},
-            "atmosphere": bool(is_ground_based(facility)), "default_site": None, "detector_type": None,
-            "platform": platform(facility),
-        }
+        return FilterLibrary(filter_root or cls._filter_root).available(
+            facility, instrument, remote=include_remote)
 
     @classmethod
-    def atmospheres(cls, filter_root: Optional[Union[str, Path]] = None) -> Dict[str, Any]:
-        """Telluric grids available locally and on the NJM mirror, by site."""
-        from .filter_components import MANIFEST_NAME, AtmosphereGrid
+    def inventory(cls, *, filter_root=None, include_remote=True, facility=None):
+        """List all discovered instruments and source-review status.
 
-        root = cls._atmosphere_root(filter_root)
-        out: Dict[str, Any] = {}
-        sites = set()
-        if root.is_dir():
-            sites.update(p.name for p in root.iterdir() if (p / MANIFEST_NAME).exists())
-        try:
-            from .njm_filter_grabber import NJMFilterGrabber
+        Includes SVO, NJM, local data and registered original-source builders.
+        Individual passbands are not downloaded. Discovery errors are returned
+        alongside the rows; unreviewed instruments are never called total-only.
+        """
+        from .filter_library import FilterLibrary
 
-            njm = NJMFilterGrabber(base_dir=str(Path(filter_root) if filter_root else cls._filter_root))
-            for site in njm.list_atmosphere_sites():
-                if site not in sites and njm.download_atmosphere(str(root), site):
-                    sites.add(site)
-        except Exception:
-            logger.debug("NJM atmosphere listing failed", exc_info=True)
-        for site in sorted(sites):
-            grid = AtmosphereGrid.load(root / site)
-            out[site] = {
-                "altitude_m": grid.altitude_m,
-                "airmass": sorted({float(e["airmass"]) for e in grid.entries}),
-                "pwv": sorted({float(e["pwv"]) for e in grid.entries if e.get("pwv") is not None}),
-                "source": grid.source,
-            }
-        return out
+        return FilterLibrary(filter_root or cls._filter_root).inventory(
+            remote=include_remote, facility=facility)
+
+    @classmethod
+    def atmospheres(cls, filter_root=None, *, include_remote=True):
+        """Describe cached and mirrored atmosphere grids, without generating models."""
+        from .filter_library import FilterLibrary
+
+        return FilterLibrary(filter_root or cls._filter_root).atmospheres(remote=include_remote)
 
     @classmethod
     def compose(
@@ -2011,6 +1842,9 @@ class Filters:
         atmosphere: Optional[Dict[str, Any]] = None,
         filter_root: Optional[Union[str, Path]] = None,
         allow_partial: bool = False,
+        bands: Optional[Sequence[str]] = None,
+        detector_type: Optional[str] = None,
+        allow_heavy: bool = False,
     ) -> Path:
         """Build ``products/<recipe>/`` for a local instrument directory.
 
@@ -2020,34 +1854,11 @@ class Filters:
         published for this instrument, double counting, space-based
         instrument with an atmosphere, ...).
         """
-        from .filter_components import (AtmosphereSpec, InstrumentManifest, atmosphere_file,
-                                        build_product, resolve_atmosphere)
+        from .filter_library import FilterLibrary
 
-        base_dir = Path(filter_root) if filter_root else cls._filter_root
-        instrument_dir = Path(instrument)
-        if not instrument_dir.is_dir():
-            instrument_dir = base_dir / instrument
-        atm_root = cls._atmosphere_root(filter_root)
-        spec = AtmosphereSpec.coerce(atmosphere)
-        if spec is not None:
-            # Always the instrument's own site; only airmass/PWV are chosen.
-            spec = resolve_atmosphere(InstrumentManifest.load(instrument_dir), spec)
-            try:
-                atmosphere_file(atm_root, spec)
-            except Exception:
-                # Not local yet: fetch the grid point from the NJM mirror.
-                from .filter_components import AtmosphereGrid
-                from .njm_filter_grabber import NJMFilterGrabber
-
-                njm = NJMFilterGrabber(base_dir=str(base_dir))
-                if njm.download_atmosphere(str(atm_root), spec.site):
-                    try:
-                        name = AtmosphereGrid.load(atm_root / spec.site).select(spec)
-                        njm.download_atmosphere(str(atm_root), spec.site, name)
-                    except Exception:
-                        pass
-        out = build_product(instrument_dir, components, atmosphere=spec, atmosphere_root=atm_root,
-                            allow_partial=allow_partial)
+        out = FilterLibrary(filter_root or cls._filter_root).compose(
+            instrument, components, atmosphere=atmosphere, bands=bands,
+            detector_type=detector_type, allow_heavy=allow_heavy, allow_partial=allow_partial)
         print(f"[filters] Built {out}")
         return out
 
@@ -2082,7 +1893,7 @@ class Filters:
 # Convenience exports
 # =============================================================================
 
-def query(*args, **kwargs) -> List[CatalogInfo]:
+def query(*args, **kwargs) -> List[SpectralGridInfo]:
     """Alias for SED.query()"""
     return SED.query(*args, **kwargs)
 

@@ -1,0 +1,1384 @@
+{
+  "reference": "sed-components-quarter-20261020",
+  "session": "verify-a40b6bdf",
+  "status": "focused_delta_incomplete_budget_overrun",
+  "audit_utc": "2026-10-20T14:01:54.738219+00:00",
+  "source_file_sha256": {
+    "results/grok.md": "10b8f2d7fe75f38311f68adc352c4e1d8a2e63fa7a18b4090136336de624d0fb",
+    "results/grok-reviews.csv": "cb37c69ea41fae2caa44afffc6d8e9b7b6d9d0d4f381dc03e49fb36010ba3875",
+    "results/grok.jsonl": "6c7b3d5c0826d64a9fe4e8f1fe59e3694b3b0d90738c6a4277ff2f65aff51647",
+    "results/claude.jsonl": "21bdd4aea68afa8089bb2631c4248a0429043af1d098253bb4f6a1a1f22fa1d6",
+    "results/claude-reviews.csv": "9e57d5b1373308afc225b91162f1635c6050b8a0514fc634d0a1cde7a9998eea",
+    "results/claude.md": "596b098624b6cb8a10978c4d37a8f609aa5225b8038a7563dafa272e046f63ce",
+    "results/gemini.jsonl": "b28c602a6aed3a5d715a546367967abe6f81ff0a8e9f406b6e251c4080a9f4df",
+    "results/gemini-reviews.csv": "9fd08dbc4fd13402149975acef012eb38ef171fa4a852069e8e444a444916aef",
+    "results/gemini.md": "dc642692042b9bd5584c00da772482dd6e20e5cdd7f4bee3c72bb7b932a3b4e2",
+    "round2_brief.md": "43e785350bd3c8291d424e67613cbf216f4cb72d4c02099a5864d4fca9aace01",
+    "round2_plan.json": "33f365ecaf37c25e53c0d7f5c003e9328e55d64b6704a141148533af4e24b529",
+    "instruments.csv": "a76fb00906e9ddd7e547dcb842e61fa6542b166ff9379bb5b8e8f9e5f9ec82b9",
+    "existing_builders/argus.py": "9b636fbcb536024a9e255d1b0261b931faad37025b382f5f51ce920614f1b5d7",
+    "existing_builders/lsst.py": "c0e1fb711833d6a0e774203ce2aab888ec5a87bcc1ea3cc896fbbcdc5f738523",
+    "existing_builders/hsc.py": "9c23cb87a692302b00cb0ad4db79b2631faad2ea191328f350d9e0a559bcdd01",
+    "existing_builders/vista.py": "924d1bfe3ab4ef5240189081afbb9296f01e144310dc527aca2a038889ae075f",
+    "existing_builders/ztf.py": "46ae172a0025eeac9cff064bdbb9e8c4295c71cf3a28a9665c4b92fd8431c88b"
+  },
+  "instrument_keys_substantively_audited": [
+    "2MASS/2MASS",
+    "LSST/LSST",
+    "LSST/LSSTv19",
+    "Subaru/HSC",
+    "Paranal/VISTA",
+    "Palomar/ZTF",
+    "JWST/NIRCam",
+    "JWST/NIRCam2025",
+    "Euclid/NISP",
+    "Euclid/VIS",
+    "Cassini/ISS_NAC",
+    "Cassini/ISS_WAC",
+    "Cameras/Sony",
+    "Generic/Bessell",
+    "Generic/Johnson"
+  ],
+  "historical_review_keys": {
+    "grok": [
+      "LSST/LSST",
+      "LSST/LSSTv19",
+      "Subaru/HSC",
+      "CTIO/DECam",
+      "Paranal/VISTA",
+      "Palomar/ZTF",
+      "PAN-STARRS/PS1",
+      "SLOAN/SDSS",
+      "CFHT/MegaCam",
+      "CFHT/Megaprime",
+      "Paranal/OmegaCAM",
+      "UKIRT/WFCAM",
+      "2MASS/2MASS",
+      "SkyMapper/SkyMapper"
+    ],
+    "claude": [
+      "JWST/NIRCam",
+      "JWST/NIRCam2025",
+      "HST/WFC3_UVIS1",
+      "HST/WFC3_UVIS2",
+      "HST/WFC3_IR",
+      "Euclid/NISP",
+      "Euclid/VIS",
+      "Roman/WFI",
+      "GAIA/GAIA3",
+      "TESS/TESS",
+      "Kepler/Kepler",
+      "Spitzer/IRAC",
+      "WISE/WISE",
+      "SPHEREx/SPHEREx"
+    ],
+    "gemini": [
+      "Aqua/MODIS",
+      "Cameras/Arriflex",
+      "Cameras/Canon",
+      "Cameras/Fujifilm",
+      "Cameras/Hasselblad",
+      "Cameras/Kodak",
+      "Cameras/Leica",
+      "Cameras/Lumix",
+      "Cameras/Nikon",
+      "Cameras/Nokia",
+      "Cameras/Olympus",
+      "Cameras/Panasonic",
+      "Cameras/Pentax",
+      "Cameras/PhaseOne",
+      "Cameras/PointGrey",
+      "Cameras/Samsung",
+      "Cameras/Sony",
+      "Cameras/SQM",
+      "Cassini/ISS_NAC",
+      "Cassini/ISS_WAC",
+      "Generic/Bessell",
+      "Generic/Bessell_JHKLM",
+      "Generic/Cousins",
+      "Generic/Johnson",
+      "Generic/Johnson_13col",
+      "Generic/Johnson_UBVRIJHKL",
+      "Generic/Stromgren",
+      "Generic/UCM",
+      "Landsat/MSS-1",
+      "Landsat/MSS-2",
+      "Landsat/MSS-3",
+      "Landsat/MSS-4",
+      "Landsat/MSS-5",
+      "Landsat/OLI",
+      "Landsat/TIRS",
+      "LRO/Diviner",
+      "LRO/LROC_NAC",
+      "LRO/LROC_WAC",
+      "Mars2020/MastCamZ",
+      "Mars2020/WATSON",
+      "MRO/CTX",
+      "MRO/HiRISE",
+      "OSIRIS-REX/MapCam",
+      "OSIRIS-REX/PolyCam",
+      "OSIRIS-REX/SamCam",
+      "Sentinel/MSI",
+      "Sentinel/OLCI-A",
+      "Sentinel/OLCI-B",
+      "Sentinel/SLSTR-A",
+      "Sentinel/SLSTR-B",
+      "Terra/MISR",
+      "Terra/MODIS"
+    ]
+  },
+  "historical_counts": {
+    "claude": {
+      "sources": 30,
+      "baseline_review_rows": 13,
+      "additional_review_rows": 1,
+      "target": 24
+    },
+    "grok": {
+      "sources": 58,
+      "baseline_review_rows": 14,
+      "target": 70
+    },
+    "gemini": {
+      "sources": 68,
+      "baseline_review_rows": 52,
+      "target": 69
+    }
+  },
+  "round2_researcher_checkpoints_observed": [],
+  "round2_researcher_checkpoints_audited": [],
+  "remote_retrievals": [
+    {
+      "url": "http://www.gujinwei.org/research/camspec/camspec_database.txt",
+      "sha256": "32a2700478d4f2b61d7018efebb399ad4f89a152f64a46831b58c1e44c2a8db2",
+      "size": 24473,
+      "local": "/tmp/sed-verify-a40/6dcd14862bc7c08b",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "http://www.gujinwei.org/research/camspec/db.html",
+      "sha256": "28e9a27ffb1482d03f985b3d2303445e415b6467e1b00fb723191ab27fbbdeed",
+      "size": 4198,
+      "local": "/tmp/sed-verify-a40/e54802e365a1977c",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://euclid.esac.esa.int/msp/refdata/data/NISP-PHOTO-PASSBANDS-V1-Y_throughput.dat",
+      "sha256": "bd838eb4ebf80188a91acb855329a6bd5fe19352dac7f9ab816359e8bb981b90",
+      "size": 17167,
+      "local": "/tmp/sed-verify-a40/d07f3997861a59c8",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://euclid.esac.esa.int/msp/refdata/nisp/NISP-PHOTO-PASSBANDS-V1",
+      "sha256": "a264bbc991090deda5d1fb0187a254cbfa6a71e42032bb50b60a661a650f3f80",
+      "size": 2843,
+      "local": "/tmp/sed-verify-a40/106888d625362288",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://gaia-dpci.github.io/GaiaXPy-website/",
+      "sha256": "142beb6f7b1a6622bdfa9230785b5c2bbcd8225b12a26b50e7c779934f6d32b7",
+      "size": 13724,
+      "local": "/tmp/sed-verify-a40/00b4b1e3cb9d6ff8",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://jwst-docs.stsci.edu/files/216457506/216457520/1/1762454205059/F200W_mean_system_throughput.txt",
+      "sha256": "9a607820a5cfec29965d9f6e1e956afbd3a32bfa439453fa18c0a8fac0eee7a5",
+      "size": 23244,
+      "local": "/tmp/sed-verify-a40/50be31fd2e83d695",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://jwst-docs.stsci.edu/files/216457506/216457550/1/1762454237820/nircam_throughputs_4Nov2022_v5.zip",
+      "sha256": "b6db5b02a512fa396145e140290d53edf7dc8b17066ecda7840db431b0a399ab",
+      "size": 1878741,
+      "local": "/tmp/sed-verify-a40/5323ed0a62fd44c6",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://jwst-docs.stsci.edu/jwst-exposure-time-calculator-overview/jwst-etc-pandeia-engine-tutorial/pandeia-reference-data",
+      "sha256": "59ebe3eb65c5b58acfe04b3810e09763cfd22e9d972a2bda5c78a8009e0c6b40",
+      "size": 511775,
+      "local": "/tmp/sed-verify-a40/a4373c4e350b3e5b",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters",
+      "sha256": "54c46240b4c6abbc93803780b9c40f89e12cea182635d0138ce812ffcbb06e28",
+      "size": 558613,
+      "local": "/tmp/sed-verify-a40/e68c24ae46ac6d9a",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://kolarivision.com/articles/internal-cut-filter-transmission/",
+      "sha256": "2fdf47203179d6c28685ee1690c74d8322d789e062aedeb284942a1fca210d6f",
+      "size": 521628,
+      "local": "/tmp/sed-verify-a40/0c314b5141648666",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://pds-rings.seti.org/cassini/iss/calibration.html",
+      "sha256": "e3877725a0df5a9f8ed4e31a8d1a101dc603ebd9bfbdbca275f4394d35af74a0",
+      "size": 836420,
+      "local": "/tmp/sed-verify-a40/96af4be2740cd54b",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://pds-rings.seti.org/holdings/volumes/COISS_0xxx/COISS_0011/calib/efficiency/ccdqe.tab",
+      "sha256": "56d698de504fda7aa18713cc4c044103add7477fc02073b402913a6cb89faf36",
+      "size": 37624,
+      "local": "/tmp/sed-verify-a40/a64b566aca8b3b62",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://pds-rings.seti.org/holdings/volumes/COISS_0xxx/COISS_0011/calib/efficiency/efficiency_info.txt",
+      "sha256": "07d6cba13e60e27ca92751a2dd912eae9d86b1592793a1a87462a19256f65f6a",
+      "size": 1657,
+      "local": "/tmp/sed-verify-a40/866d48de7dcfbf6a",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://pds-rings.seti.org/holdings/volumes/COISS_0xxx/COISS_0011/calib/efficiency/na_optics.tab",
+      "sha256": "c05cb22071beda6d8bf4bc86ce660bea28cc9b04664391f0daa2369921bbc591",
+      "size": 15330,
+      "local": "/tmp/sed-verify-a40/d9ef6b4b75e66d17",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://pds-rings.seti.org/holdings/volumes/COISS_0xxx/COISS_0011/calib/efficiency/systrans/",
+      "sha256": "61ba380af231308cb37cb03e96709c805acc40314dc2df9691bc42389889b11c",
+      "size": 79337,
+      "local": "/tmp/sed-verify-a40/1f99c12a85dd4f3f",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://pds-rings.seti.org/holdings/volumes/COISS_0xxx/COISS_0011/calib/efficiency/systrans/issnabl1cl2_systrans.tab",
+      "sha256": "4795edfce56a6ac60c069ebcdd8c939a13117b1581f6a71bbbe3bf66c85ce2d3",
+      "size": 280214,
+      "local": "/tmp/sed-verify-a40/c3e4fd9d784461a6",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://pds-rings.seti.org/holdings/volumes/COISS_0xxx/COISS_0011/calib/efficiency/wa_optics.tab",
+      "sha256": "a8d6e19236b0591f1a81771442cdcc6c5bde070ba02b5c7a45fba0520e196090",
+      "size": 8581,
+      "local": "/tmp/sed-verify-a40/a4f2afb24057755f",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/7c1d1ed1adeea47ee024272e797e77d7e65160d5/QE/e2v_ztf_singlelayer.csv",
+      "sha256": "d5f1877dfcc6a88408d748bea3bedc2d8ad41f4c05b1e9c5a5138118e39cc635",
+      "size": 8604,
+      "local": "/tmp/sed-verify-a40/e88a88480b4fdf86",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/7c1d1ed1adeea47ee024272e797e77d7e65160d5/filter_transmission/ZTF_g_band_test_data_pos1_0AOI.csv",
+      "sha256": "a57857143694592e6f6c766ccf5514c272fb09de5b1d316b93b87723cad5117b",
+      "size": 46370,
+      "local": "/tmp/sed-verify-a40/f1c3cfd7b1578208",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/lsst-pst/syseng_throughputs/main/README.md",
+      "sha256": "25612e3e07b32afbb415c9768f5b7c15ecb2e06724a1865ab469819fc6d52511",
+      "size": 9873,
+      "local": "/tmp/sed-verify-a40/ffd47e988eadc5e4",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/lsst/obs_subaru/4db92921ce698fb2601955731e28970de943041f/hsc/transmission/M1-2010s.txt",
+      "sha256": "9a55c4aad5a25d4eb1c264772b8c920dd88397edded81d732fa1cf8f7cba1b53",
+      "size": 8671,
+      "local": "/tmp/sed-verify-a40/b622a57a9271b521",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/lsst/obs_subaru/4db92921ce698fb2601955731e28970de943041f/hsc/transmission/modtran_maunakea_am12_pwv15_binned10ang.dat",
+      "sha256": "814338b73cd7461b6822bcaabee92f66f85b1b632029a291895c4ed92722ce72",
+      "size": 14300,
+      "local": "/tmp/sed-verify-a40/71837a1f85cc9246",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/lsst/throughputs/main/atmos/README.md",
+      "sha256": "fe0790f7f8ee609ff7769768a276a7a22859a05a9175fd2fec01475bd7a8df90",
+      "size": 1122,
+      "local": "/tmp/sed-verify-a40/fa3a0d40f14d9381",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/lsst/throughputs/main/baseline/README.md",
+      "sha256": "e1aed3baf367fe0a233f7b6137c3e71c011af17c9c0588ed62e613b70d91d5b6",
+      "size": 11033,
+      "local": "/tmp/sed-verify-a40/ac47047ac5980200",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/lsst/throughputs/main/baseline/atmos_10.dat",
+      "sha256": "11c56d8b84b1fbca7eaa071456415d28dec8a060798ede0bc8afec8d500f106b",
+      "size": 315285,
+      "local": "/tmp/sed-verify-a40/a1d0f757a1d30143",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/lsst/throughputs/main/baseline/atmos_std.dat",
+      "sha256": "65b64efa75b2c25af35b2d1fe723bdebe0aca2aeb30bd036ac48d766c74be4f3",
+      "size": 307669,
+      "local": "/tmp/sed-verify-a40/ded8894b7cf74a0b",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/lsst/throughputs/main/baseline/detector.dat",
+      "sha256": "188a4250613512bba8d77e79ace82e250215abefe0a4deaebc5b8f2d90abfdd2",
+      "size": 304547,
+      "local": "/tmp/sed-verify-a40/a8e3a819b32d5381",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/lsst/throughputs/main/baseline/filter_g.dat",
+      "sha256": "28cab8e563ad368965012fe84a4239afca9c51e4fff94d4901bc90a09f695445",
+      "size": 326772,
+      "local": "/tmp/sed-verify-a40/199f80167eb9838b",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/lsst/throughputs/main/baseline/hardware_g.dat",
+      "sha256": "3b9368cdbb63dcc87b3a9c18752d423bdfe70a124d12e2a33fd96362cf27f056",
+      "size": 323942,
+      "local": "/tmp/sed-verify-a40/e5afe8014ef699bc",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/lsst/throughputs/main/baseline/m1.dat",
+      "sha256": "369412babdba5209724a7dbd6e36d0679b14dc45b6d5cd73013d08f73164ee16",
+      "size": 306886,
+      "local": "/tmp/sed-verify-a40/d00050c23f1d331b",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/lsst/throughputs/main/baseline/total_g.dat",
+      "sha256": "f8935b3a5514e436aea45895369f568bfcc57a682852b0abe3292fd754a7094f",
+      "size": 325464,
+      "local": "/tmp/sed-verify-a40/9a56480869a3cb1a",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://stsci.app.box.com/index.php?rm=box_download_shared_file&vanity_name=pandeia-refdata-v4p0-jwst&file_id=f_1606501134287",
+      "unverified": "No completed saved body; interrupted collector. No archive content verification."
+    },
+    {
+      "url": "https://subarutelescope.org/Instruments/HSC/sensitivity.html",
+      "sha256": "a689029c52c455c0c117b0e9967e99b19952dc0528e9a2d0429a7402a9625b29",
+      "size": 69779,
+      "local": "/tmp/sed-verify-a40/bbf2144c205bec7a",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://subarutelescope.org/Instruments/HSC/txt/qe_ccd_HSC.txt",
+      "sha256": "d28106f39685554d88f3964518e94c02f9546e8c9467b93b0a2da64afd48a492",
+      "size": 603,
+      "local": "/tmp/sed-verify-a40/411383254f537087",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://subarutelescope.org/Instruments/HSC/txt/throughput_popt2.txt",
+      "sha256": "d9d053d5027e1a838a07587dc954d84b56f035494a3251926adb418c0add7945",
+      "size": 1382,
+      "local": "/tmp/sed-verify-a40/5921add7ab12d8be",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://subarutelescope.org/Instruments/HSC/txt/wHSC-g.txt",
+      "sha256": "da47410c6dbb061ef3ca7c79a9d8598bb28d89f1685d15631a98be2ff400412f",
+      "size": 4054,
+      "local": "/tmp/sed-verify-a40/d44d69aa27a0db51",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://subarutelescope.org/Instruments/HSC/txt/wHSC-r.txt",
+      "sha256": "893e37b1d942403bb0bda80f0efcdd37e3cb02b4439064e155232bea2636308c",
+      "size": 2054,
+      "local": "/tmp/sed-verify-a40/a8f4c816b468ef2c",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://subarutelescope.org/Instruments/HSC/txt/wHSC-r2.txt",
+      "sha256": "53798e45b99dbf952b650c8f30c9a0074f00d893097dd1f25f12e1ee677a14af",
+      "size": 9350,
+      "local": "/tmp/sed-verify-a40/f73c3b939423ebed",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://www.eso.org/sci/facilities/paranal/decommissioned/vircam/inst.html",
+      "sha256": "289018a80ecf368b9310d93b6d101b14462de0d607863466d855a22913566a02",
+      "size": 36750,
+      "local": "/tmp/sed-verify-a40/02140fab99e92767",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://www.eso.org/sci/facilities/paranal/decommissioned/vircam/inst/Filters_QE_Atm_curves.tar.gz",
+      "sha256": "4b6ceb74558bb3bbc486c0eb89d1f52158fb1d029c571eb27a625bc93562d89e",
+      "size": 448951,
+      "local": "/tmp/sed-verify-a40/32983d1c28d7964a",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec3_1b1.html",
+      "sha256": "ef560edc64728f33a52480a941f7386dccf72120f7cfbddc2815fe1d7b37cdf4",
+      "size": 13042,
+      "local": "/tmp/sed-verify-a40/0f6875f80dec8a63",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec3_1b1.tbl1.html",
+      "sha256": "ffe62228974a4d9e1077e17d4fc8f3d3f8d133601afa8c75bc14fa1e9aa7f63f",
+      "size": 1878,
+      "local": "/tmp/sed-verify-a40/93a5f903ead8dd0a",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec3_1b1.tbl11.html",
+      "sha256": "19db67da929c46b1c764410d43530feb52be8e0cf980ff0981872d4aaf4d1419",
+      "size": 10780,
+      "local": "/tmp/sed-verify-a40/a4469c59541f3369",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec3_1b1.tbl12.html",
+      "sha256": "fb03977bd43a3cd63f89aeeefd644e20fa63624a5a75363a15249a2b61de5d09",
+      "size": 4599,
+      "local": "/tmp/sed-verify-a40/b9268603e51eabe3",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec3_1b1.tbl15.html",
+      "sha256": "3f12b29ecf5b8519e6370fd862a3db57e283e315220c1ff089abe42dd109a75c",
+      "size": 150358,
+      "local": "/tmp/sed-verify-a40/5be274bececb52d7",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec3_1b1.tbl19.html",
+      "sha256": "764a1864f9b69f10afa1beea2f51054e5b0c50e12e8a2d9f7b2631b568d8dfe3",
+      "size": 134421,
+      "local": "/tmp/sed-verify-a40/dc65c7e502057b80",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec3_1b1.tbl5.html",
+      "sha256": "0557a7c9ff83b9276a15c34703a4217c3c8bf893ce9adb7392721c4d7fff11f2",
+      "size": 3036,
+      "local": "/tmp/sed-verify-a40/2b7c5aa0ce3273a2",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec6_4a.html",
+      "sha256": "df14c4fe5ab2116b7cca513125c76cc533ebe351e61ee5d57ec2b7213ec5ddb3",
+      "size": 5797,
+      "local": "/tmp/sed-verify-a40/37e8489ddae3d03f",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec6_4a.tbl1.html",
+      "sha256": "7a9762db125bc6c5e5988cbdaa4392abffbc576cc5cd93333de4f6d279e78d8c",
+      "size": 2105,
+      "local": "/tmp/sed-verify-a40/f3bf406e965fce67",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://www.sony-semicon.com/en/products/is/industry/gs-bsi.html",
+      "sha256": "5f5048ffa70be149b5c59fa5c124ea2ca7371aa4c5cd5df880006eeadf00421b",
+      "size": 95119,
+      "local": "/tmp/sed-verify-a40/0adbb71c7027e31f",
+      "http_status": "not retained (interrupted collector); content inspected separately"
+    },
+    {
+      "url": "https://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=Generic/Bessell.U",
+      "http_status": 200,
+      "size": 8486,
+      "sha256": "fa043a63db1c59e09fd44207a45cd9d09eb871e4b1a82c69399b0ab66bcfc77f",
+      "local": "/tmp/sed-verify-a40/370a046adc9112b6"
+    },
+    {
+      "url": "https://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=Generic/Johnson.U",
+      "http_status": 200,
+      "size": 7324,
+      "sha256": "d02040087cc9cf599b7919f576bcc5eeea1f8e64d472f02061718c3429cc8954",
+      "local": "/tmp/sed-verify-a40/1f8b077ab894919f"
+    },
+    {
+      "url": "https://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=LSST/LSST.g",
+      "http_status": 200,
+      "size": 163982,
+      "sha256": "e0333705f3f4fa68f21711321c74ce4c93ad9b3724ffc7af7d4a55dc7cdfb705",
+      "local": "/tmp/sed-verify-a40/208d223428e0609c"
+    },
+    {
+      "url": "https://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=Palomar/ZTF.g",
+      "http_status": 200,
+      "size": 207388,
+      "sha256": "93f3058382cab11609579f999178a527916a9f63f8be01dbca9ff1e46a9c0100",
+      "local": "/tmp/sed-verify-a40/8958368ea764251d"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/7c1d1ed1adeea47ee024272e797e77d7e65160d5/README.md",
+      "http_status": 200,
+      "size": 444,
+      "sha256": "34486dd4aa537490c4db21c0d46285788854f6a7267d427ae8005053790210fe",
+      "local": "/tmp/sed-verify-a40/63e9d35327978f9f"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/7c1d1ed1adeea47ee024272e797e77d7e65160d5/QE/e2v_ztf_multi2.csv",
+      "http_status": 200,
+      "size": 6708,
+      "sha256": "4ddf0beeaa12a071f251977fcf1e1fc8ee6f4060e60b3f14114c7df8ccce541f",
+      "local": "/tmp/sed-verify-a40/65b11094347d3215"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/7c1d1ed1adeea47ee024272e797e77d7e65160d5/LICENSE",
+      "http_status": 200,
+      "size": 1525,
+      "sha256": "50e2f26ec49c0f285fca8ad4b8e9a7b6e15a8e20f9e8d17ef3bfa81f5364d9a9",
+      "local": "/tmp/sed-verify-a40/4265292794ca31bd"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/lsst/obs_subaru/4db92921ce698fb2601955731e28970de943041f/hsc/transmission/README",
+      "http_status": 404,
+      "size": 14,
+      "sha256": "d5558cd419c8d46bdc958064cb97f963d1ea793866414c025906ec15033512ed",
+      "local": "/tmp/sed-verify-a40/92cbcb7735466562"
+    },
+    {
+      "url": "https://articles.adsabs.harvard.edu/pdf/1990PASP..102.1181B",
+      "http_status": 200,
+      "size": 2029901,
+      "sha256": "2ef2e7d2eada21def6851244fad1a6d354c15710d021f5b5519c004118a69b86",
+      "local": "/tmp/sed-verify-a40/642436b2855efefc"
+    }
+  ],
+  "limitations": [
+    "Whole evidence files read/parsed and hashed; independent primary source checks limited to named keys and representative files.",
+    "49 initial saved response bodies have no retained HTTP status because collector interrupted at unopened Box request; successful numeric parsing/archive checks establish content only. Later fetches retain status.",
+    "Box/Pandeia not downloaded or inspected. No multi-GB archive saved.",
+    "No completed-output milestone certification; no future or concurrent later files verified.",
+    "Provider account allowance not observable through this task tooling; no invented account percentages. No explicit task token budget supplied.",
+    "Generic sibling bands and original Johnson table convention remain unverified; VIS not independently re-searched beyond historical limited-search assessment.",
+    "Licence claims are reviewed as evidence assertions, not a redistribution clearance."
+  ],
+  "issue_count": 11,
+  "file_claims_released": true,
+  "delta_audit": {
+    "boundary_utc": "2026-10-20T14:48:01.349161+00:00",
+    "session": "codex-delta-78947a61",
+    "scope": "Structural delta and researcher-claim reconciliation only; no new remote evidence opened. Historical independent evidence retained.",
+    "files": {
+      "/home/nill/agent-share/projects/sed-tools-components/round2/claude/sources.jsonl": "e6a77e05e893f9e0094b4a689e81b8399ce3d89a9a5e848b16ceb13b4fa2901d",
+      "/home/nill/agent-share/projects/sed-tools-components/round2/claude/reviews.csv": "e5a2a9e02f9cfab4c868b1999ae1e684f76c718c27e352a6be2ea643356cf9c9",
+      "/home/nill/agent-share/projects/sed-tools-components/round2/claude/progress.json": "5dd00bbc01fca8a76bb5a71a0aa1d93e269bd4da60aa09c6944e9849af31d2de",
+      "/home/nill/agent-share/projects/sed-tools-components/round2/claude/report.md": "56f6c9ef7641b68d004ae026995b0371e80148b73f2badf4bc8a98a0ba643455",
+      "/home/nill/agent-share/projects/sed-tools-components/round2/grok/sources.jsonl": "a44963ca8d53c0839d2ddc0e455ca03d7f78eef832ef5a4751cc6ceb0f5262f6",
+      "/home/nill/agent-share/projects/sed-tools-components/round2/grok/reviews.csv": "fddb0ab8708dc15200e15c6c3a966edad8c3c754e4348f35c78da3580777ddf4",
+      "/home/nill/agent-share/projects/sed-tools-components/round2/grok/progress.json": "7cfef551ccc408e3df202968ac109eae3dce9b22096025044eb3dffd077c7ea2",
+      "/home/nill/agent-share/projects/sed-tools-components/round2/grok/report.md": "176b8126727daf2a93a0e7bb54b664af1e7ce9c9a6e37931aa030a0a1ed55b2b"
+    },
+    "researchers": {
+      "claude": {
+        "source_records": 63,
+        "review_rows": 25,
+        "baseline_count": 24,
+        "baseline_keys": [
+          "JWST/NIRCam2025",
+          "JWST/NIRCam",
+          "JWST/MIRI",
+          "JWST/NIRISS",
+          "JWST/NIRSpec",
+          "HST/WFC3_UVIS1",
+          "HST/WFC3_UVIS2",
+          "HST/WFC3_IR",
+          "HST/ACS_WFC",
+          "HST/ACS_HRC",
+          "HST/ACS_SBC",
+          "GAIA/GAIA3",
+          "TESS/TESS",
+          "Kepler/Kepler",
+          "WISE/WISE",
+          "Spitzer/IRAC",
+          "Spitzer/MIPS",
+          "GALEX/GALEX",
+          "Swift/UVOT",
+          "Euclid/NISP",
+          "Euclid/VIS",
+          "Herschel/Pacs",
+          "Herschel/SPIRE",
+          "Roman/WFI"
+        ],
+        "additional_keys": [
+          "SPHEREx/SPHEREx"
+        ],
+        "duplicate_keys": [],
+        "wrong_assignment": [],
+        "invalid_component_states": [],
+        "unknown_component_keys": [
+          "JWST/MIRI",
+          "WISE/WISE",
+          "Spitzer/MIPS",
+          "GALEX/GALEX",
+          "Euclid/VIS",
+          "Herschel/Pacs",
+          "Herschel/SPIRE",
+          "SPHEREx/SPHEREx"
+        ],
+        "independent_source_status_counts": {
+          "original_files": 20,
+          "svo_only": 2,
+          "original_documentation": 2,
+          "mixed": 1
+        },
+        "original_files_without_original_file_verified_record": [],
+        "empty_required_fields": [
+          {
+            "line": 1,
+            "key": "JWST/NIRCam",
+            "empty_or_missing": [
+              "wavelength_unit",
+              "response_unit"
+            ]
+          },
+          {
+            "line": 2,
+            "key": "JWST/NIRCam",
+            "empty_or_missing": [
+              "wavelength_unit",
+              "response_unit"
+            ]
+          },
+          {
+            "line": 3,
+            "key": "JWST/NIRCam",
+            "empty_or_missing": [
+              "wavelength_unit",
+              "response_unit"
+            ]
+          },
+          {
+            "line": 4,
+            "key": "JWST/NIRCam2025",
+            "empty_or_missing": [
+              "wavelength_unit",
+              "response_unit"
+            ]
+          },
+          {
+            "line": 5,
+            "key": "JWST/NIRCam2025",
+            "empty_or_missing": [
+              "wavelength_unit",
+              "response_unit"
+            ]
+          },
+          {
+            "line": 6,
+            "key": "JWST/NIRCam2025",
+            "empty_or_missing": [
+              "wavelength_unit",
+              "response_unit"
+            ]
+          },
+          {
+            "line": 7,
+            "key": "JWST/NIRCam",
+            "empty_or_missing": [
+              "wavelength_unit",
+              "response_unit"
+            ]
+          },
+          {
+            "line": 8,
+            "key": "HST/WFC3_UVIS1",
+            "empty_or_missing": [
+              "wavelength_unit",
+              "response_unit"
+            ]
+          },
+          {
+            "line": 9,
+            "key": "HST/WFC3_UVIS2",
+            "empty_or_missing": [
+              "wavelength_unit",
+              "response_unit"
+            ]
+          },
+          {
+            "line": 10,
+            "key": "HST/WFC3_IR",
+            "empty_or_missing": [
+              "wavelength_unit",
+              "response_unit"
+            ]
+          },
+          {
+            "line": 11,
+            "key": "HST/WFC3_UVIS1",
+            "empty_or_missing": [
+              "wavelength_unit",
+              "response_unit"
+            ]
+          },
+          {
+            "line": 12,
+            "key": "HST/WFC3_UVIS2",
+            "empty_or_missing": [
+              "wavelength_unit",
+              "response_unit"
+            ]
+          },
+          {
+            "line": 13,
+            "key": "HST/WFC3_IR",
+            "empty_or_missing": [
+              "wavelength_unit",
+              "response_unit"
+            ]
+          },
+          {
+            "line": 14,
+            "key": "Euclid/NISP",
+            "empty_or_missing": [
+              "wavelength_unit",
+              "response_unit"
+            ]
+          },
+          {
+            "line": 15,
+            "key": "Euclid/NISP",
+            "empty_or_missing": [
+              "wavelength_unit",
+              "response_unit"
+            ]
+          },
+          {
+            "line": 16,
+            "key": "Euclid/NISP",
+            "empty_or_missing": [
+              "wavelength_unit",
+              "response_unit"
+            ]
+          },
+          {
+            "line": 17,
+            "key": "Euclid/NISP",
+            "empty_or_missing": [
+              "wavelength_unit",
+              "response_unit"
+            ]
+          },
+          {
+            "line": 18,
+            "key": "Euclid/VIS",
+            "empty_or_missing": [
+              "wavelength_unit",
+              "response_unit"
+            ]
+          },
+          {
+            "line": 19,
+            "key": "Roman/WFI",
+            "empty_or_missing": [
+              "wavelength_unit",
+              "response_unit"
+            ]
+          },
+          {
+            "line": 20,
+            "key": "Roman/WFI",
+            "empty_or_missing": [
+              "wavelength_unit",
+              "response_unit"
+            ]
+          },
+          {
+            "line": 21,
+            "key": "GAIA/GAIA3",
+            "empty_or_missing": [
+              "wavelength_unit",
+              "response_unit"
+            ]
+          },
+          {
+            "line": 22,
+            "key": "GAIA/GAIA3",
+            "empty_or_missing": [
+              "wavelength_unit",
+              "response_unit"
+            ]
+          },
+          {
+            "line": 23,
+            "key": "TESS/TESS",
+            "empty_or_missing": [
+              "wavelength_unit",
+              "response_unit"
+            ]
+          },
+          {
+            "line": 24,
+            "key": "Kepler/Kepler",
+            "empty_or_missing": [
+              "wavelength_unit",
+              "response_unit"
+            ]
+          },
+          {
+            "line": 25,
+            "key": "Kepler/Kepler",
+            "empty_or_missing": [
+              "wavelength_unit",
+              "response_unit"
+            ]
+          },
+          {
+            "line": 26,
+            "key": "SPHEREx/SPHEREx",
+            "empty_or_missing": [
+              "wavelength_unit",
+              "response_unit"
+            ]
+          },
+          {
+            "line": 27,
+            "key": "SPHEREx/SPHEREx",
+            "empty_or_missing": [
+              "wavelength_unit",
+              "response_unit"
+            ]
+          },
+          {
+            "line": 28,
+            "key": "SPHEREx/SPHEREx",
+            "empty_or_missing": [
+              "wavelength_unit",
+              "response_unit"
+            ]
+          },
+          {
+            "line": 29,
+            "key": "Spitzer/IRAC",
+            "empty_or_missing": [
+              "wavelength_unit",
+              "response_unit"
+            ]
+          },
+          {
+            "line": 30,
+            "key": "WISE/WISE",
+            "empty_or_missing": [
+              "wavelength_unit",
+              "response_unit"
+            ]
+          },
+          {
+            "line": 32,
+            "key": "JWST/NIRISS",
+            "empty_or_missing": [
+              "wavelength_unit",
+              "response_unit"
+            ]
+          },
+          {
+            "line": 34,
+            "key": "JWST/MIRI",
+            "empty_or_missing": [
+              "wavelength_unit",
+              "response_unit"
+            ]
+          },
+          {
+            "line": 55,
+            "key": "Swift/UVOT",
+            "empty_or_missing": [
+              "search_notes"
+            ]
+          },
+          {
+            "line": 60,
+            "key": "Euclid/VIS",
+            "empty_or_missing": [
+              "wavelength_unit",
+              "response_unit"
+            ]
+          }
+        ],
+        "file_verified_risk_candidates_not_adjudicated": [
+          {
+            "line": 10,
+            "key": "HST/WFC3_IR",
+            "evidence": "Zip (0.55 MB) listed: 15 .fits + 15 .txt files for IR filters (e.g. wfc3_ir_f126n.fits, wfc3_ir_f127m.txt). FITS has empty primary HDU then BINTABLE (column names not read; no astropy here); .txt format not opened.",
+            "url": "https://www.stsci.edu/files/live/sites/www/files/home/hst/instrumentation/wfc3/performance/throughputs/_documents/IR.zip"
+          },
+          {
+            "line": 29,
+            "key": "Spitzer/IRAC",
+            "evidence": "Page: system response from in-flight measurements incl. beamsplitter, filter, ZnS/ZnSe coatings, mirror reflectance, BaF2/MgF2 coatings and detector QE; curve gives electrons per photon; three sets per channel (full-array average, subarray average, per-pixel cube). Inspected 201125ch1trans_full.txt header: 'Average Spectral response curve for IRAC 3.6 micron array', columns Wave (microns), Spectral Response (electrons/photon). Other files on page: 201125ch2..ch4trans_full.txt, 080924ch1..4trans_sub.txt, 080924ch*trans_3d.fits (names from page; ch2-4 not opened).",
+            "url": "https://irsa.ipac.caltech.edu/data/SPITZER/docs/irac/calibrationfiles/spectralresponse/201125ch1trans_full.txt"
+          },
+          {
+            "line": 36,
+            "key": "JWST/NIRCam2025",
+            "evidence": "Link set re-extracted from the live page this session (29 files, e.g. F070W .. F444W; hrefs carry time-stamped path components that change on re-publication, so resolve from the page each time). F200W re-downloaded in round 2 (618 data rows; SVO NIRCam2025.F200W / this file = 1.0000 over the band, i.e. SVO NIRCam2025 is exactly this release). Other bands not opened.",
+            "url": "https://jwst-docs.stsci.edu/files/216457506/216457534/1/1762454220116/F444W_mean_system_throughput.txt"
+          }
+        ],
+        "original_band_discovery": "Not independently established for all keys; per-instrument source enumeration and detector/release applicability still require focused checks.",
+        "complete_claim": true,
+        "limitations": [
+          "One representative filter per HST camera was reproduced (UVIS1 F606W, UVIS2 resolved only, IR F160W, ACS WFC F606W, HRC F606W, SBC F122M); other filters not individually checked.",
+          "Pandeia JWST/Roman reference data (Box) could not be fetched by anonymous GET; MIRI Box folder listing/download blocked; JWST component split therefore unavailable except NIRISS (derived).",
+          "WebSearch tool was not permitted; discovery used direct page crawling only, so literature (Jordi+2010, Morrissey+2007, Cropper+2016, Hora+2008) was not opened.",
+          "NIRCam F200W only inspected for the v7.0 files; other bands/detectors assumed same format.",
+          "MIPS, GALEX, Spitzer/WISE component curves: not found or not searched; recorded as unknown, not as nonexistent.",
+          "No redistribution licence evaluated except those already recorded in round 1.",
+          "SVO comparisons use a single representative filter per key and my default (no mjd) reference epoch."
+        ]
+      },
+      "grok": {
+        "source_records": 130,
+        "review_rows": 70,
+        "baseline_count": 70,
+        "baseline_keys": [
+          "SLOAN/SDSS",
+          "APO/SDSS",
+          "2MASS/2MASS",
+          "PAN-STARRS/PS1",
+          "CTIO/DECam",
+          "LSST/LSSTv19",
+          "LSST/LSST",
+          "Subaru/HSC",
+          "Subaru/Suprime",
+          "CFHT/MegaCam",
+          "CFHT/Megaprime",
+          "Paranal/VISTA",
+          "UKIRT/WFCAM",
+          "UKIRT/UKIDSS",
+          "Palomar/ZTF",
+          "SkyMapper/SkyMapper",
+          "Paranal/OmegaCAM",
+          "Gemini/GMOS-N",
+          "Gemini/GMOS-S",
+          "Gemini/NIRI",
+          "Gemini/GSAOI",
+          "Gemini/Flamingos2",
+          "Gemini/GPI",
+          "Gemini/GNIRS",
+          "Gemini/NIFS",
+          "Keck/LRIS",
+          "Keck/NIRC2",
+          "Keck/NIRSPEC",
+          "Keck/OSIRIS",
+          "Paranal/FORS2",
+          "Paranal/HAWKI",
+          "Paranal/SPHERE",
+          "Paranal/NACO",
+          "Paranal/VIMOS",
+          "Paranal/ISAAC",
+          "Paranal/ERIS",
+          "Paranal/VISIR",
+          "Paranal/FORS1",
+          "Paranal/NGTS",
+          "Subaru/MOIRCS",
+          "Subaru/IRCS",
+          "Subaru/FOCAS",
+          "CFHT/Wircam",
+          "CFHT/CFH12k",
+          "UKIRT/UFTI",
+          "DENIS/DENIS",
+          "INT/WFC",
+          "INT/IPHAS",
+          "INT/UVEX",
+          "OAJ/JPLUS",
+          "OAJ/JPAS",
+          "CTIO/S-PLUS",
+          "BOK/BASS",
+          "BOK/90prime",
+          "BOK/SCUSS",
+          "KPNO/MzLS",
+          "KPNO/Mosaic",
+          "KPNO/DESI",
+          "LaSilla/WFI",
+          "LaSilla/GROND",
+          "LaSilla/EFOSC",
+          "LaSilla/SOFI",
+          "LCO/IMACS",
+          "LCO/FourStar",
+          "LCO/OGLE-IV",
+          "LCO/CSP",
+          "LCO/CSP2",
+          "GTC/OSIRIS",
+          "GTC/HIPERCAM",
+          "LasCumbres/LasCumbres"
+        ],
+        "additional_keys": [],
+        "duplicate_keys": [],
+        "wrong_assignment": [],
+        "invalid_component_states": [],
+        "unknown_component_keys": [
+          "APO/SDSS",
+          "CTIO/DECam",
+          "CFHT/Megaprime",
+          "CTIO/S-PLUS",
+          "LaSilla/GROND"
+        ],
+        "independent_source_status_counts": {
+          "original_files": 53,
+          "svo_only": 1,
+          "original_documentation": 16
+        },
+        "original_files_without_original_file_verified_record": [
+          "GTC/HIPERCAM"
+        ],
+        "empty_required_fields": [],
+        "file_verified_risk_candidates_not_adjudicated": [
+          {
+            "line": 5,
+            "key": "LSST/LSSTv19",
+            "evidence": "README: m1.dat, m2.dat, m3.dat are mirror throughputs; lens1.dat, lens2.dat, lens3.dat are lens throughputs; all curves nm and throughput 0-1. Opened m1.dat and lens1.dat: same Version 1.9 / sha1 fcc05772 header and 'Wavelength(nm) Throughput(0-1)'. Contents API sizes: m1 306886, m2 306970, m3 306886, lens1 307336, lens2 307353, lens3 307262. m2, m3, lens2, lens3 not opened. syseng README Release 1.9: coatings move from Al-Ag-Al to Ag-Ag-Ag. The opened m1.dat does not itself name the coating.",
+            "url": "https://raw.githubusercontent.com/lsst/throughputs/main/baseline/m1.dat"
+          },
+          {
+            "line": 9,
+            "key": "LSST/LSSTv19",
+            "evidence": "README title 'v1.0 atmospheres from David Burke, MODTRAN, March 1, 2010.' Files without _aerosol have no aerosols; *_aerosol.dat include aerosols. 'conform to typical conditions expected at LSST's site at Cerro Pachon.' Airmass is the number in the filename: atmos_10.dat is 1.0, atmos_25.dat is 2.5. hiwater/lowater are 30 percent water scalings and the README says they should be redone. Individual atmos/*.dat curves were not opened.",
+            "url": "https://raw.githubusercontent.com/lsst/throughputs/main/atmos/README.md"
+          },
+          {
+            "line": 14,
+            "key": "Subaru/HSC",
+            "evidence": "Page table columns include Center and Area-weighted mean. Each broad and user filter has txt/HSC-<name>.txt and txt/wHSC-<name>.txt. Opened wHSC-g.txt and HSC-g.txt: header '# wavelength[angstrom]  transmittance', values are fractions. At 3580 A, wHSC-g is -0.0004. wHSC-g and HSC-g differ at the same wavelength. wHSC-r.txt starts at 7500.0 and decreases; wHSC-r2.txt starts at 5001.9. They are different filters. Other names were listed on the page and not opened. Also linked: HSC-MBQ1.zip, not opened, and 20161016HSC_filter_policy_en.pdf, not opened.",
+            "url": "https://subarutelescope.org/Instruments/HSC/txt/wHSC-g.txt"
+          },
+          {
+            "line": 32,
+            "key": "Palomar/ZTF",
+            "evidence": "README: theoretical and vendor CCD quantum-efficiency measurements are in QE. Northernmost and southernmost eight CCDs have a single-layer AR coating; the inner eight have a multi-layer coating. No headers. Full single-layer file: 230 rows, first column 301.65..1098.19, second 0.000311..0.91512. Full multi2 file: 180 rows, first column 301.68..1038.49, second 0.01351..0.92567. Multi URL: https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/7c1d1ed1adeea47ee024272e797e77d7e65160d5/QE/e2v_ztf_multi2.csv . QE/e2v_test_data.xlsx (51114 bytes) was listed and not opened.",
+            "url": "https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/7c1d1ed1adeea47ee024272e797e77d7e65160d5/QE/e2v_ztf_singlelayer.csv"
+          },
+          {
+            "line": 36,
+            "key": "SLOAN/SDSS",
+            "evidence": "u.dat is 2291 bytes and has a header for five columns: wavelength; sensitivity through airmass 1.3 for a point source; through airmass 1.3 for an extended source; through airmass 0.0 for an extended source; atmospheric extinction through 1.0 airmasses. First data row 2980 0.0000 0.0000 0.0000 0.0727. The file does not spell the wavelength unit. Page column list: (1) wavelength; (2) on-the-sky sensitivity through 1.3 airmasses at APO for a point source, which defines the survey photometric system; (3) the same for very large sources, different from column 2 only for ri because of infrared scattering; (4) the response of the third column with no atmosphere; (5) assumed atmospheric transparency at one airmass at Apache Point. Page also shows the survey curves as including 1.3 airmasses at APO. g.dat, r.dat, i.dat, z.dat are linked and were not opened.",
+            "url": "http://www.sdss.org/dr7/instruments/imager/filters/u.dat"
+          },
+          {
+            "line": 52,
+            "key": "2MASS/2MASS",
+            "evidence": "Opened table title '2MASS J-BAND FILTER TRANSMISSION'. Columns n, xlam, yval. First row 1 1.050 0.0000. No unit word. Parent page item 6 is J filter transmission. H and Ks filter tables are tbl8 and tbl10 and were not opened.",
+            "url": "https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec3_1b1.tbl5.html"
+          },
+          {
+            "line": 57,
+            "key": "2MASS/2MASS",
+            "evidence": "Opened J table title '2MASS J-band Relative Spectral Response Curve'. No column header. First rows 1.062 0. and 1.066 4.07068E-04. Page: Cohen et al. (2003 AJ 126 1090) determined photon-counting RSRs by combining the transmission and QE curves in section III.1.b1, peak-normalized, including atmospheric transmission modeled by PLEXUS. Quoted text: the curves are designed to be integrated directly over stellar spectra in F_lambda form; the QE-based component was converted to yield photon-counting RSRs by multiplying by wavelength and renormalized, as described by Bessel (2000). J values in Table 1 correspond to about 5.0 mm of water vapour and use PLEXUS rather than the simpler ATRAN figures. H and Ks RSR tables are sec6_4a.tbl2.html and tbl3.html and were not opened. Wavelength unit is not in the J table.",
+            "url": "https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec6_4a.tbl1.html"
+          },
+          {
+            "line": 68,
+            "key": "Gemini/NIRI",
+            "evidence": "J file header: scanned warm, Wavelength (nm), %T. n=2501 x=[800,3300] y=[0.0049538,91.485] peak 91.485 at x=1281. Y file header: room temp 298 K, 0 deg AOI, f/8, wl(nm), %T at center. n=1001 x=[900,1150] y=[-0.00464,80.724] peak 80.724 at x=1053. The NIRI component page links many additional .dat files, including cold traces. Those were not opened.",
+            "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-J-G0202.dat"
+          },
+          {
+            "line": 77,
+            "key": "UKIRT/UKIDSS",
+            "evidence": "Local tar README names the paper and says files follow the table numbers. Table 2 header: System throughput curve for the WFCAM Z filter, 1.0 mm water vapour, 1.3 airmass, wavelength microns, throughput. Tables 3-6 are Y, J, H and K with the same conditions. Measured n=461 x=[0.8,1.03] y=[0,0.1906] peak 0.1906 at x=0.915 for Z. Public FTP Table02 and the ReadMe returned HTTP 404 on 2026-10-20. The VizieR catalog URL returned an HTML shell. Re-fetched http://www.ukidss.org/technical/photom/hewett-ukidss-tables.tar on this date: HTTP 200, 189952 bytes, sha256 e59e55681a9931dbefd7a5d4abdcc43a1364dc5147139bf2848d7f8e3f69e539, byte-identical to the tar whose tables 2-6 were read. CDS FTP J/MNRAS/379/1599 returned 404.",
+            "url": "http://www.ukidss.org/technical/photom/hewett-ukidss-tables.tar"
+          },
+          {
+            "line": 78,
+            "key": "UKIRT/WFCAM",
+            "evidence": "IfA description page links per-filter HTML and says room-temperature filter data are not corrected for 120 K, 10-degree incidence or QE, and points to Hewett et al. for the corrected total. The j-filter HTML did not expose a numeric text URL. n=798 x=[1.051,1.4495] y=[0,0.2137] peak 0.2137 at x=1.2855 Re-fetched http://www.ukidss.org/technical/photom/hewett-ukidss-tables.tar on this date: HTTP 200, 189952 bytes, sha256 e59e55681a9931dbefd7a5d4abdcc43a1364dc5147139bf2848d7f8e3f69e539, byte-identical to the tar whose tables 2-6 were read. CDS FTP J/MNRAS/379/1599 returned 404.",
+            "url": "http://www.ukidss.org/technical/photom/hewett-ukidss-tables.tar"
+          },
+          {
+            "line": 80,
+            "key": "KPNO/MzLS",
+            "evidence": "kpzd.txt header: area-weighted transmission for the zd filter, DECam-style z for MOSAIC, k1038. No unit words. n=251 x=[8000,10500] peak 98.782 at 8960, so the response reaches about 99 near 8960 while wavelength starts at 8000. kpzdccdcorr3.txt has no header and a much smaller scale. DR10 text says the corrected file includes telescope, corrector, camera and atmosphere, and the opened DR10 HTML does not state that airmass.",
+            "url": "https://www.legacysurvey.org/dr10/files/kpzd.txt"
+          },
+          {
+            "line": 84,
+            "key": "CTIO/S-PLUS",
+            "evidence": "Header: wavelength,transmittance,std. n=230 x=[360,589] peak 0.632898 at 518. README says the package can calculate lab curves and curves convolved with atmosphere and instrument. This CSV does not say which product it is. README shows a GPLv3 badge; the LICENSE file was not read.",
+            "url": "https://raw.githubusercontent.com/splus-collab/splus_filters/master/gSDSS.csv"
+          },
+          {
+            "line": 85,
+            "key": "LCO/CSP",
+            "evidence": "No header in the file. n=101 x=[3740,5740] peak 0.717912 at 5380. Page: scans by Rheault, Marshall, Depoy and Villanueva of the relative throughput of the telescope and SiTE #3 CCD, also e2V later for CSP-II, monochromator 2.5 nm FWHM, filters B,V,u,g,r,i. The g link in the 2003-2013 table is this file and the instrument cell says Swope Site2 CCD. Effective-wavelength column is in Angstrom and the g value is 4765.1. The token ext_1.2 is not defined in the opened page text. CSP_filter_package.tgz is linked and was not opened. Three V filters exist because LC-3014 was damaged on 14 Jan 2006.",
+            "url": "https://csp.obs.carnegiescience.edu/data/g_tel_ccd_atm_ext_1.2.dat"
+          },
+          {
+            "line": 89,
+            "key": "Subaru/FOCAS",
+            "evidence": "No header. n=224 x=[357,580] peak 84.26 at 481. The filters HTML table of sensitivity uses Wavelength (A). B.txt runs 357-580 and peaks near 84, so it is not an Angstrom fraction. Do not copy the sensitivity table unit onto this file.",
+            "url": "https://subarutelescope.org/Instruments/FOCAS/camera/txt/B.txt"
+          },
+          {
+            "line": 94,
+            "key": "CFHT/Wircam",
+            "evidence": "The database row says J, cfh8101, central 1253, width 158, peak transmission 86.1, WIRCam, 2004. The .dat file has no header. n=1077 x=[1147,1362.2] peak 86.259 at 1267. The catalog peak 86.1 matches a percent-like file peak near 86. The file itself does not say nm or percent. Central wavelength in the HTML is consistent with nm.",
+            "url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh8101.dat"
+          },
+          {
+            "line": 98,
+            "key": "Paranal/NACO",
+            "evidence": "No header. n=22 x=[1.04,1.46] peak 0.78 at 1.34. Twenty-two points from 1.04 to 1.46, peak 0.78. Consistent with microns and a fraction, not stated. NACO is decommissioned. The characteristics page mentions transmission curves; most sibling files were not opened.",
+            "url": "local naco_j.dat"
+          },
+          {
+            "line": 99,
+            "key": "Paranal/VISIR",
+            "evidence": "Both headers: Absolute filter transmission measurement at cold using a FTS; lambda (microns); absolute transmission (%). PAH1 n=1000 x=[5.58,11.58] peak 75.9894 at 8.61303. Q1 n=1000 x=[14.65,20.65] peak 68.2177 at 17.677. Negative transmission samples are present. Some VISIR HTML URLs redirect to an ESO login; these two text files were readable without a login.",
+            "url": "local visir_pah1.txt and visir_q1.txt"
+          },
+          {
+            "line": 100,
+            "key": "Paranal/HAWKI",
+            "evidence": "Y header: Y filter curve at T=87 K, Y 3 (Iz881, SN003), Wavelength (nm), T (%). n=1251 x=[499.5,2997] peak 93.6957 at 1034.96. K header: T=90 K, Wavelength (nm), T (%). n=1251 x=[497,2982] peak 84.9992 at 2252.4. A second local K file advertised as the old K was byte-identical to this one, so two epochs were not compared. The HTML page describes Ks(1) before Jan 2008 and Ks(2) after. Detector pages give gain and read noise, not a QE curve.",
+            "url": "https://www.eso.org/sci/facilities/paranal/instruments/hawki/inst/filters/hawki_Y.dat"
+          },
+          {
+            "line": 103,
+            "key": "Paranal/SPHERE",
+            "evidence": "B_Y header names the filter and the 2015-04-16 update and has columns wavelength and B_Y with no unit words. n=2301 x=[400,2700] peak 0.960018 at 1059. ZIMPOL VBB header likewise has no unit words. n=2301 x=[400,2700] peak 1 at 710. ND file header lists ND0.0, ND1.0, ND2.0 and ND3.5. The HTML page quotes filter wavelengths in nm. A downloaded VBB .dat URL returned HTML; the .txt sibling was the numeric file.",
+            "url": "https://www.eso.org/sci/facilities/paranal/instruments/sphere/inst/filters/SPHERE_IRDIS_B_Y.dat"
+          },
+          {
+            "line": 105,
+            "key": "LaSilla/GROND",
+            "evidence": "Header columns: A, gBand, rBand, iBand, zBand, JBand, HBand, KBand. g column n=2151 x=[350,2500] peak 0.70636 at 436. The column name A and a g peak at 436 cannot both be Angstroms and a g filter. The file does not say nm. It does not say whether QE, optics or atmosphere are included. The page calls the file GROND filter curves. The PASP 2008 PDF was not opened.",
+            "url": "https://www.mpe.mpg.de/~jcg/GROND/GROND_filtercurves.txt"
+          },
+          {
+            "line": 106,
+            "key": "Keck/LRIS",
+            "evidence": "Neither file has a header. g n=2048 x=[3119.45,5623.31] peak 0.918793 at 5021.5. R n=2048 x=[5237.82,10267.9] peak 0.781162 at 5947.98. The filters page says integrals assume equal energy and neglect telescope and atmosphere, FWHM is the filter curve not convolved with the CCD, and the curves are based on the manufacturer curve. Filters sit behind the dichroic. I is an xls file and was not opened.",
+            "url": "https://www2.keck.hawaii.edu/inst/lris/data_files/g_blue.dat"
+          },
+          {
+            "line": 114,
+            "key": "Paranal/VIMOS",
+            "evidence": "Saved imaging HTML says: click the filter name to retrieve the transmission curve (filter only) and bandpass data (filter+CCD+telescope optics) for the four quadrants. The U-only href is filters_2007-04-04/U_only_transmission_q1_to_q4.dat. Local file header: wave, U1simple, U2simple, U3simple, U4simple. No unit words. Values start at 3300. B, V, R, I and z files linked on the same row pattern were not opened. HTTP status of the dat URL was not rechecked in the writer.",
+            "url": "https://www.eso.org/sci/facilities/paranal/instruments/vimos/inst/filters_2007-04-04/U_only_transmission_q1_to_q4.dat"
+          },
+          {
+            "line": 116,
+            "key": "Paranal/ISAAC",
+            "evidence": "Imaging HTML links the J name to FJ_BB.ASCII and says to click the filter name to download the transmission curve. The file has no header. It starts near wavelength 0.83 with values that hit -512 and +512. That rail is not a transmission. A later portion of the file near 1.2-1.4 is on a 0-1 scale. Units are not stated. Other ISAAC filters were not opened.",
+            "url": "https://www.eso.org/sci/facilities/paranal/decommissioned/isaac/inst/filters/FJ_BB.ASCII"
+          },
+          {
+            "line": 117,
+            "key": "BOK/90prime",
+            "evidence": "The opened bass-g.txt header says it is the 90Prime SDSS g filter curve: column 1 wavelength in Angstrom, column 2 pure filter transmission, column 3 filter plus CCD QE, column 4 filter plus CCD QE plus atmosphere at airmass 1.0. bass-r.txt says 90Prime bokr (DECam r) and the same three products. Peaks were measured on the BOK/BASS records. The other SVO 90prime filters (U, B, Washington, V, R, H-alpha, I, z and the rest) were not opened.",
+            "url": "https://www.legacysurvey.org/dr10/files/bass-g.txt"
+          }
+        ],
+        "original_band_discovery": "Not independently established for all keys; per-instrument source enumeration and detector/release applicability still require focused checks.",
+        "complete_claim": true,
+        "limitations": [
+          "Representative files only, except where a single table contains the whole set (PS1 table3, GROND ASCII, Hewett tables 2-6).",
+          "Unlabeled units were left unlabeled. FORS, F2 JH, FOCAS B, GTC OSIRIS Sloan g, Keck OSIRIS J, ERIS zip members and CFH12K catalog versus file units disagree or are unlabeled.",
+          "FORS and WFI SVO names were not mapped to ESO filter numbers.",
+          "HAWK-I K epoch files on disk were byte-identical, so both epochs were not compared.",
+          "J-PLUS full-efficiency numeric body and HiPERCAM hcam_g.txt and Gemini mktrans_zm_16_15.dat were truncated saves.",
+          "CDS FTP for J/MNRAS/379/1599 returned 404. The UKIDSS tar URL worked.",
+          "VISIR HTML login walls remain; two FTS text files were readable.",
+          "Las Cumbres zip returned 403 and the saved filter text was HTML.",
+          "NGTS, UFTI, DENIS, J-PAS, SCUSS, IPHAS, UVEX, INT/WFC, EFOSC and IMACS have no opened numeric curve.",
+          "Mosaic's large filter library, 90prime non-survey filters, CSP-II archive, DESI specter tables and WFCAM room-temperature scans were not opened.",
+          "No redistribution licence was reviewed.",
+          "SVO DetectorType was not used as the original counting convention.",
+          "Historical wavelength_unit and response_unit placeholders were replaced from each record's own evidence. Unlabeled files stayed unlabeled.",
+          "OmegaCAM with_ccd was downgraded to documented. Its numeric columns were not read.",
+          "The 2MASS QE row that says the table was not opened is historical. tbl11 is the file_verified QE row. The south atmosphere table is still unopened.",
+          "Search records were added for keys whose first write had a review and no sources.jsonl row. BOK/90prime points at the opened BASS g and r files only."
+        ]
+      }
+    },
+    "gemini_checkpoint_present": false,
+    "budget": {
+      "observable_context_capacity": 475000,
+      "quarter_ceiling_total_metered_tokens": 118750,
+      "latest_telemetry": {
+        "type": "token_count",
+        "info": {
+          "total_token_usage": {
+            "input_tokens": 120135,
+            "cached_input_tokens": 90240,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 856,
+            "reasoning_output_tokens": 60,
+            "total_tokens": 120991
+          },
+          "last_token_usage": {
+            "input_tokens": 41762,
+            "cached_input_tokens": 34176,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 415,
+            "reasoning_output_tokens": 15,
+            "total_tokens": 42177
+          },
+          "model_context_window": 475000
+        },
+        "rate_limits": {
+          "limit_id": "codex",
+          "limit_name": null,
+          "primary": {
+            "used_percent": 16.0,
+            "window_minutes": 300,
+            "resets_at": 1792525418
+          },
+          "secondary": {
+            "used_percent": 2.0,
+            "window_minutes": 10080,
+            "resets_at": 1793112218
+          },
+          "credits": {
+            "has_credits": false,
+            "unlimited": false,
+            "balance": "0E-10"
+          },
+          "individual_limit": null,
+          "spend_control_reached": null,
+          "plan_type": "plus",
+          "rate_limit_reached_type": null
+        }
+      },
+      "account_limit_in_tokens": "unobservable; percentage windows do not establish token allowance",
+      "constraint": "Cumulative metered input (including cached input), reasoning/output counts included. Checkpointing before further discretionary primary-source sampling; continuation requires permission if quarter ceiling would be exceeded."
+    },
+    "post_read_changes": {}
+  },
+  "resume_attempt": {
+    "task_id": "ad353073f8",
+    "session": "01a159cb-9c66-7b62-8add-1678c21ba090",
+    "audit_utc": "2026-10-20T14:52:22.832938+00:00",
+    "authorized_additional_metered_tokens": 60000,
+    "task_start_usage_baseline": 0,
+    "baseline_scope": "Fresh CLI session cumulative counters; user reset asserted, provider quota reset not independently established. Startup reading counts against authorization.",
+    "first_observable_telemetry": {
+      "type": "token_count",
+      "info": {
+        "total_token_usage": {
+          "input_tokens": 19227,
+          "cached_input_tokens": 12288,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 124,
+          "reasoning_output_tokens": 0,
+          "total_tokens": 19351
+        },
+        "last_token_usage": {
+          "input_tokens": 19227,
+          "cached_input_tokens": 12288,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 124,
+          "reasoning_output_tokens": 0,
+          "total_tokens": 19351
+        },
+        "model_context_window": 475000
+      },
+      "rate_limits": {
+        "limit_id": "codex",
+        "limit_name": null,
+        "primary": {
+          "used_percent": 39.0,
+          "window_minutes": 300,
+          "resets_at": 1792525418
+        },
+        "secondary": {
+          "used_percent": 6.0,
+          "window_minutes": 10080,
+          "resets_at": 1793112218
+        },
+        "credits": {
+          "has_credits": false,
+          "unlimited": false,
+          "balance": "0E-10"
+        },
+        "individual_limit": null,
+        "spend_control_reached": null,
+        "plan_type": "plus",
+        "rate_limit_reached_type": null
+      }
+    },
+    "latest_observable_telemetry": {
+      "type": "token_count",
+      "info": {
+        "total_token_usage": {
+          "input_tokens": 126168,
+          "cached_input_tokens": 91648,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 1069,
+          "reasoning_output_tokens": 329,
+          "total_tokens": 127237
+        },
+        "last_token_usage": {
+          "input_tokens": 46258,
+          "cached_input_tokens": 34688,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 580,
+          "reasoning_output_tokens": 329,
+          "total_tokens": 46838
+        },
+        "model_context_window": 475000
+      },
+      "rate_limits": {
+        "limit_id": "codex",
+        "limit_name": null,
+        "primary": {
+          "used_percent": 40.0,
+          "window_minutes": 300,
+          "resets_at": 1792525418
+        },
+        "secondary": {
+          "used_percent": 6.0,
+          "window_minutes": 10080,
+          "resets_at": 1793112218
+        },
+        "credits": {
+          "has_credits": false,
+          "unlimited": false,
+          "balance": "0E-10"
+        },
+        "individual_limit": null,
+        "spend_control_reached": null,
+        "plan_type": "plus",
+        "rate_limit_reached_type": null
+      }
+    },
+    "telemetry_path": "/home/nill/.codex/sessions/2026/10/20/rollout-2026-10-20T10-51-19-01a159cb-9c66-7b62-8add-1678c21ba090.jsonl",
+    "input_hashes_at_attempt_boundary": {
+      "round2/claude/sources.jsonl": "e6a77e05e893f9e0094b4a689e81b8399ce3d89a9a5e848b16ceb13b4fa2901d",
+      "round2/claude/reviews.csv": "e5a2a9e02f9cfab4c868b1999ae1e684f76c718c27e352a6be2ea643356cf9c9",
+      "round2/claude/progress.json": "5dd00bbc01fca8a76bb5a71a0aa1d93e269bd4da60aa09c6944e9849af31d2de",
+      "round2/claude/report.md": "56f6c9ef7641b68d004ae026995b0371e80148b73f2badf4bc8a98a0ba643455",
+      "round2/grok/sources.jsonl": "a44963ca8d53c0839d2ddc0e455ca03d7f78eef832ef5a4751cc6ceb0f5262f6",
+      "round2/grok/reviews.csv": "fddb0ab8708dc15200e15c6c3a966edad8c3c754e4348f35c78da3580777ddf4",
+      "round2/grok/progress.json": "7cfef551ccc408e3df202968ac109eae3dce9b22096025044eb3dffd077c7ea2",
+      "round2/grok/report.md": "176b8126727daf2a93a0e7bb54b664af1e7ce9c9a6e37931aa030a0a1ed55b2b"
+    },
+    "gemini_checkpoint_present": false,
+    "checks_completed": [
+      "Re-read current instructions and saved audit",
+      "Read Claude and Grok dossier limitations and correction addendum",
+      "Recorded current researcher input hashes"
+    ],
+    "new_primary_numeric_sampling_completed": false,
+    "new_original_band_discovery_completed": false,
+    "new_search_depth_certification_completed": false,
+    "status": "budget_overrun_stopped",
+    "limitation": "Mandatory startup and oversized saved-audit output exhausted the bounded authorization before new primary sampling. Metered cached input is included; reasoning is part of output, not added twice. No new correctness certification. Final write/final response usage may exceed latest observable event."
+  }
+}

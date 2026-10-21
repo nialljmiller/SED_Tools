@@ -5,7 +5,7 @@
 <h1 align="center">SED_Tools</h1>
 
 <p align="center">
-  <strong>Download, process, and standardize stellar atmosphere models for SED_Model and MESA</strong>
+  <strong>Download, process, and standardize stellar spectral grids for SED_Model and MESA</strong>
 </p>
 
 <p align="center">
@@ -24,19 +24,38 @@
 
 ## Overview
 
-SED_Tools is a Python package for working with stellar spectral energy distributions (SEDs). It provides unified access to multiple stellar atmosphere catalogs, standardizes spectral data to consistent units, and generates output files compatible with [MESA](https://docs.mesastar.org/)'s `colors` module, [SED_Model](https://github.com/nialljmiller/SED_Model) and other codes.
+SED_Tools is a Python package for working with stellar spectral energy distributions (SEDs). It provides unified access to multiple stellar spectral grids, standardizes spectral data to consistent units, and generates output files compatible with [MESA](https://docs.mesastar.org/)'s `colors` module, [SED_Model](https://github.com/nialljmiller/SED_Model) and other codes.
 
 ### Key Features
 
-- **Multi-source downloads** — Fetch stellar atmosphere spectra from SVO, MSG, MAST (BOSZ), and NJM mirror
+- **Multi-source downloads** — Fetch model spectra from SVO, MSG, MAST (BOSZ), and NJM mirror
 - **Photometric filters** — Download transmission curves from the NJM mirror with SVO Filter Profile Service fallback
 - **Optical path components** — Track which parts of the atmosphere, telescope/instrument optics, filter and detector QE are included in a passband; compose available factors for the same instrument and site
 - **Detector-aware photometry** — Record photon- or energy-counting response conventions and use the corresponding integration weights for synthetic photometry
 - **Unit standardization** — Convert all spectra to consistent units (wavelength in Å, flux in erg/cm²/s/Å)
 - **External integration** — Generate binary flux cubes, HDF5 bundles, and lookup tables. This is for [SED_Model](https://github.com/nialljmiller/SED_Model) and [MESA](https://docs.mesastar.org/)'s `colors` module
-- **Grid combination** — Merge multiple stellar libraries into unified "omni grids"
+- **Grid combination** — Merge multiple stellar spectral grids into unified "omni grids"
 - **ML completion** — Extend incomplete SEDs to broader wavelength ranges using neural networks
 - **ML generation** — Create complete SEDs from stellar parameters (Teff, logg, [M/H]) using neural networks
+
+### Terminology
+
+A **stellar spectral grid** is a collection of **model spectra** indexed by
+parameters such as effective temperature, surface gravity and metallicity.
+We use **spectral grids** in menus and commands. **Spectral libraries** is
+the broader term when discussing collections that also include observed
+templates, planetary spectra or stellar population spectra.
+
+Use `sed-tools grids` and `--grids` to discover and download spectral grids.
+The earlier `spectra` command and `--models` option remain supported aliases.
+In Python, `SpectralGrid`, `SpectralGridInfo`, `sed.grid`, `sed.available_grids()`
+and `find_grids` are the preferred names; `Catalog`, `CatalogInfo`, `sed.cat`,
+`sed.available_models()` and `find_atmospheres` remain compatible. Existing keyword arguments such as
+`catalog` and `model_root`, and the `stellar_models/` storage directory,
+retain their established names.
+
+Earth's **atmosphere transmission models**, used in ground-based optical
+paths, are separate from stellar spectral grids.
 
 ---
 
@@ -91,8 +110,8 @@ sed-tools filters
 # Combine installed filter sets
 sed-tools filters-combine Gaia2MASS GAIA/GAIA 2MASS/2MASS
 
-# Download stellar atmosphere spectra
-sed-tools spectra
+# Download model spectra
+sed-tools grids
 
 # Build flux cubes and lookup tables from downloaded spectra
 sed-tools rebuild
@@ -115,7 +134,7 @@ sed-tools densify --flux-cube data/stellar_models/tmap2/flux_cube.bin \
 sed-tools import --path /path/to/spectra/ --name MyGrid
 
 # Report parameter-space coverage of an installed grid
-sed-tools coverage --models Kurucz2003all
+sed-tools coverage --grids Kurucz2003all
 
 # Show or set the data directory
 sed-tools config
@@ -134,6 +153,10 @@ Download photometric filter transmission curves interactively. The browser merge
 # Interactive facility/instrument/filter selection
 sed-tools filters
 ```
+
+Enter a single facility number to browse its instruments. Enter several numbers
+or ranges, such as `1,3,5-7`, to download every instrument for those facilities
+directly, without instrument selection or component prompts.
 
 **Output structure:**
 
@@ -256,7 +279,46 @@ Where components come from:
 | 57 SVO instrument groups (SDSS, Swift/UVOT, UKIRT/WFCAM, OmegaCAM, Suprime-Cam, ...) | SVO's own filter-only sibling curves (`g_filter`, `g_fil`, `gprime_filter`) |
 | Gaia, 2MASS, WISE, Spitzer, GALEX, TESS, Kepler, Hipparcos/Tycho | none — only totals are published (`filters-info` says so) |
 
-The njm mirror runs these ahead of time (`sed-tools filters-build-components all`); when curves come from SVO instead, SED_Tools runs the instrument's own builder locally on first use (JWST's ~4 GB reference data only on request).
+The NJM mirror runs these ahead of time (`sed-tools filters-build-components all`). Component requests reuse installed files, try NJM, then run the instrument's original-source builder if needed. Large downloads, including JWST reference data, require `allow_heavy=True` in Python or `--allow-heavy` on the command line.
+
+#### Inspecting availability and requesting products
+
+The CLI and Python API use the same acquisition and composition workflow. Availability distinguishes installed component files from registered source support. Missing files are reported, and `recipes_by_band` identifies combinations available for only part of an instrument's band set. Instruments whose separate components have not been reviewed are marked `unreviewed`; they remain available through the generic SVO passband downloader.
+
+The [component-source research inventory](docs/component_sources/README.md)
+tracks every SVO facility/instrument entry, research ownership and the evidence
+needed to add original component sources. Research findings are reviewed before
+they become supported downloaders or NJM mirror data.
+
+```bash
+# Discover all SVO and NJM instruments, plus local and registered extra sources
+sed-tools filters-inventory --json
+
+# Inspect installed files without contacting any service
+sed-tools filters-info LSST/LSST --offline --json
+
+# Fetch an instrument directly and compose a subset of its bands
+sed-tools filters LSST/LSST --components filter,optics,qe --bands g r
+
+# Compare an energy-counting response in a separate derived product
+sed-tools filters-compose LSST/LSST --components filter,optics,qe \
+  --bands g r --detector-type energy
+```
+
+```python
+inventory = Filters.inventory()  # instruments and discovery errors; no bandpass downloads
+info = Filters.available("LSST", "LSST", include_remote=False)
+print(info["recipes_by_band"], info["missing_files"])
+
+product = Filters.fetch("LSST", "LSST", components="filter+optics+qe",
+                        bands=["g", "r"], detector_type="energy")
+```
+
+The detector override changes the integration convention applied to the selected throughput; replacing a physical detector's QE requires its actual QE component. An override records `DetectorTypeSource: user` and `DetectorTypeOriginal` in a separate `+detector_energy` or `+detector_photon` product directory. Source curves retain their original metadata. Without an override, each band's convention is preserved, including instruments with mixed detector conventions.
+
+Atmosphere requests use the instrument's own site and exact observing conditions. Installed grids are used first, followed by NJM. During an NJM outage, supported sites recover their own original standard atmosphere or generate the requested SkyCalc grid point. SkyCalc generation requires PWV; an existing grid with several PWV values requires an explicit choice. SED_Tools does not substitute another site's atmosphere or interpolate between grid points.
+
+Source failures remain visible in inventory and availability results. Published downloads check the expected bands recorded in manifests and index files; older installations without a catalogue declaration can only be checked against their existing contents. Product construction finishes every selected band before replacing a previous product, so a failed composition preserves the previous result.
 
 #### Updating an existing filter collection
 
@@ -267,28 +329,28 @@ Published curves remain the default. Composed products have their own directorie
 ---
 
 
-### `sed-tools spectra`
+### `sed-tools grids`
 
-Download stellar atmosphere spectra from remote catalogs.
+Download model spectra from remote spectral grids.
 
 ```bash
-# Interactive source and model selection
-sed-tools spectra
+# Interactive source and spectral grid selection
+sed-tools grids
 
-# Download specific models
-sed-tools spectra --models Kurucz2003all
+# Download specific spectral grids
+sed-tools grids --grids Kurucz2003all
 
 # Force a specific source
-sed-tools spectra --source svo --models Kurucz2003all
+sed-tools grids --source svo --grids Kurucz2003all
 
 # Parallel downloads
-sed-tools spectra --models Kurucz2003all --workers 8
+sed-tools grids --grids Kurucz2003all --workers 8
 
 ```
 
 **What it does:**
 
-1. Queries the selected source for available models
+1. Queries the selected source for available spectral grids
 2. Downloads spectrum files matching your criteria
 3. Standardizes units (wavelength → Å, flux → erg/cm²/s/Å)
 4. Generates `lookup_table.csv` with stellar parameters
@@ -310,11 +372,11 @@ sed-tools spectra --models Kurucz2003all --workers 8
 Build MESA-compatible binary files from downloaded text spectra.
 
 ```bash
-# Rebuild all local models
+# Rebuild all local spectral grids
 sed-tools rebuild
 
-# Rebuild specific models
-sed-tools rebuild --models Kurucz2003all
+# Rebuild specific spectral grids
+sed-tools rebuild --grids Kurucz2003all
 ```
 
 **Generated files:**
@@ -329,19 +391,19 @@ sed-tools rebuild --models Kurucz2003all
 
 ### `sed-tools combine`
 
-Merge multiple stellar atmosphere grids into a unified ensemble.
+Merge multiple stellar spectral grids into a unified ensemble.
 
 ```bash
-# Interactive model selection
+# Interactive spectral grid selection
 sed-tools combine
 
-# Combine all available local models
+# Combine all available local spectral grids
 sed-tools combine --non-interactive
 ```
 
 **Use cases:**
 
-- Extend temperature coverage by combining hot and cool star models
+- Extend temperature coverage by combining hot and cool stellar spectral grids
 - Fill gaps in parameter space using complementary libraries
 - Create comprehensive grids for population synthesis
 
@@ -431,7 +493,7 @@ See [notebook 10](jupyter_notebooks/10_grid_densification.ipynb) for a worked ex
 
 ### `sed-tools import`
 
-Ingest an external directory of `.txt` spectra (with parameter headers) into the SED_Tools pipeline. Files are copied or moved into the configured model root, then processed through the standard clean → lookup → HDF5 → flux-cube pipeline.
+Ingest an external directory of `.txt` spectra (with parameter headers) into the SED_Tools pipeline. Files are copied or moved into the configured spectral grid directory, then processed through the standard clean → lookup → HDF5 → flux-cube pipeline.
 
 ```bash
 # Import spectra, build all outputs
@@ -451,21 +513,21 @@ sed-tools import --path /path/to/my_spectra/ --name MyGrid --move --no-h5
 Report parameter-space coverage statistics for one or more installed grids. Prints per-axis ranges, unique grid values, fill fraction, and optionally writes a Teff–logg + 3D scatter plot.
 
 ```bash
-# Report and plot coverage for a single model
-sed-tools coverage --models Kurucz2003all
+# Report and plot coverage for a single spectral grid
+sed-tools coverage --grids Kurucz2003all
 
 # Report without generating a plot
-sed-tools coverage --models Kurucz2003all --no-plot
+sed-tools coverage --grids Kurucz2003all --no-plot
 ```
 
 ---
 
 ### `sed-tools mesa_prepare`
 
-Export a specific extra-axis sub-variant (e.g. one alpha-enhancement, turbulent velocity, or mixing length combination) from a model that has multiple variants in its `fluxcube_library/`. Produces a clean, self-contained MESA-ready folder containing only the selected variant's flux cube.
+Export a specific extra-axis sub-variant (e.g. one alpha-enhancement, turbulent velocity, or mixing length combination) from a spectral grid that has multiple variants in its `fluxcube_library/`. Produces a clean, self-contained MESA-ready folder containing only the selected variant's flux cube.
 
 ```bash
-# Interactive model and variant selection
+# Interactive spectral grid and variant selection
 sed-tools mesa_prepare
 ```
 
@@ -473,7 +535,7 @@ sed-tools mesa_prepare
 
 ### `sed-tools config`
 
-Show or change the root data directory where SED_Tools stores stellar models and filters.
+Show or change the root data directory where SED_Tools stores spectral grids and filters.
 
 ```bash
 # Show current data directory
@@ -496,22 +558,22 @@ The Python API exposes the core CLI capabilities together with additional buildi
 ```python
 from sed_tools.api import SED
 
-# List all available catalogs
-catalogs = SED.query()
+# List all available spectral grids
+grids = SED.query()
 
 # Filter by source
-catalogs = SED.query(source='svo')
+grids = SED.query(source='svo')
 
 # Filter by parameter coverage
-catalogs = SED.query(
+grids = SED.query(
     teff_min=5000,
     teff_max=7000,
     logg_min=3.5,
     metallicity_min=-1.0,
 )
 
-# Local catalogs only
-catalogs = SED.query(include_remote=False)
+# Local spectral grids only
+grids = SED.query(include_remote=False)
 ```
 
 #### Downloading
@@ -536,14 +598,14 @@ sed = SED.fetch(
 )
 
 # Save to disk (generates all SED_Model/MESA-compatible files)
-sed.cat.write()
-sed.cat.write('/custom/output/path')
+sed.grid.write()
+sed.grid.write('/custom/output/path')
 ```
 
 #### Loading Local Data
 
 ```python
-# Load an installed catalog
+# Load an installed spectral grid
 sed = SED.local('Kurucz2003all')
 
 # Check parameter coverage
@@ -596,7 +658,7 @@ If a filter specification is ambiguous, pass a specific file path or a specific 
 
 ```python
 ensemble = SED.combine(
-    catalogs=['Kurucz2003all', 'NextGen'],
+    ['Kurucz2003all', 'NextGen'],
     output='my_combined_grid',
 )
 ```
@@ -609,7 +671,7 @@ completer = SED.ml_completer()
 # Train on a complete grid
 completer.train(grid='combined_grid', epochs=200)
 
-# Extend an incomplete model
+# Extend an incomplete spectral grid
 extended = completer.extend(
     'sparse_model',
     wavelength_range=(100, 100000),
@@ -622,7 +684,7 @@ extended.write()
 ```python
 generator = SED.ml_generator()
 
-# Train on a stellar atmosphere library
+# Train on a stellar spectral grid
 generator.train(grid='Kurucz2003all', epochs=200)
 
 # Generate a single SED
@@ -673,35 +735,35 @@ result = SED.import_grid('/path/to/my_spectra/', name='MyGrid', move=True, build
 
 ---
 
-### `Catalog` — Spectrum Container
+### `SpectralGrid` — Model Spectra and Parameters
 
 ```python
-catalog = sed.cat
+grid = sed.grid
 
 # Properties
-len(catalog)              # Number of spectra
-catalog.teff_grid         # Unique Teff values
-catalog.logg_grid         # Unique logg values
-catalog.parameters        # DataFrame of all parameters
+len(grid)              # Number of spectra
+grid.teff_grid         # Unique Teff values
+grid.logg_grid         # Unique logg values
+grid.parameters        # DataFrame of all parameters
 
 # Iteration
-for spec in catalog:
+for spec in grid:
     print(spec.teff, spec.logg, spec.metallicity)
 
 # Filtering
-cool_stars = catalog.filter(teff_max=5000)
+cool_stars = grid.filter(teff_max=5000)
 
 # Persistence
-catalog.write()
-catalog.write('/custom/path')
+grid.write()
+grid.write('/custom/path')
 ```
 
 ---
 
-### `Spectrum` — Individual SED
+### `Spectrum` — Individual Model Spectrum
 
 ```python
-spec = catalog[0]
+spec = grid[0]
 
 # Data arrays
 spec.wavelength    # np.ndarray (Angstroms)
@@ -738,7 +800,7 @@ path = Filters.fetch(facility='Generic', instrument='Johnson')
 
 ---
 
-### `CatalogInfo` — Catalog Metadata
+### `SpectralGridInfo` — Spectral Grid Metadata
 
 ```python
 info = SED.query()[0]
@@ -764,13 +826,13 @@ info.covers_range(teff_min=5000, teff_max=6000)
 |-------------|----------------------|
 | `sed-tools filters` | `Filters.fetch(...)` |
 | `sed-tools filters-combine X A B` | `Filters.combine('X', 'A', 'B')` |
-| `sed-tools spectra` (list) | `SED.query()` |
-| `sed-tools spectra --models X` | `SED.fetch('X')` |
-| `sed-tools rebuild --models X` | `sed.cat.write()` |
-| `sed-tools combine --models A B` | `SED.combine(['A', 'B'], output='...')` |
+| `sed-tools grids` (list) | `SED.query()` |
+| `sed-tools grids --grids X` | `SED.fetch('X')` |
+| `sed-tools rebuild --grids X` | `sed.grid.write()` |
+| `sed-tools combine` | `SED.combine(['A', 'B'], output='...')` |
 | `sed-tools densify --flux-cube F --output O` | `sed_tools.grid_densifier.densify_grid(src, dst)` |
 | `sed-tools import --path P --name N` | `SED.import_grid('/path/', name='N')` |
-| `sed-tools coverage --models X` | `SED.coverage('X')` |
+| `sed-tools coverage --grids X` | `SED.coverage('X')` |
 | `sed-tools ml_completer train` | `SED.ml_completer().train(...)` |
 | `sed-tools ml_generator train` | `SED.ml_generator().train(...)` |
 | `sed-tools ml_generator generate` | `SED.ml_generator().generate(...)` |
@@ -795,7 +857,7 @@ ln -s $(pwd)/data/stellar_models/Kurucz2003all $MESA_DIR/data/colors_data/stella
 
 ```fortran
 &controls
-    ! Stellar atmosphere model
+    ! Stellar spectral grid
     stellar_atm = '/data/colors_data/stellar_models/Kurucz2003all/'
     
     ! Photometric filter set
@@ -848,7 +910,7 @@ SED_Tools/
 |--------|-----|-------------|
 | NJM Server | [nialljmiller.com/SED_Tools/](https://nialljmiller.com/SED_Tools/) | Pre-processed data host (fastest) |
 | SVO | [svo2.cab.inta-csic.es](http://svo2.cab.inta-csic.es/theory/fps/) | Spanish Virtual Observatory |
-| MSG | [astro.wisc.edu/~townsend](http://user.astro.wisc.edu/~townsend/static.php?ref=msg-grids) | MSG Stellar Atmosphere Grids |
+| MSG | [astro.wisc.edu/~townsend](http://user.astro.wisc.edu/~townsend/static.php?ref=msg-grids) | MSG Stellar spectral grids |
 | MAST | [archive.stsci.edu/prepds/bosz](https://archive.stsci.edu/prepds/bosz/) | BOSZ Spectral Library, including BOSZ 2024 fixed-resolution and original-resolution grids |
 
 ---
@@ -887,11 +949,11 @@ from sed_tools.api import SED
 
 # Hot stars from Kurucz
 hot = SED.fetch('Kurucz2003all', teff_min=7000, teff_max=50000)
-hot.cat.write()
+hot.grid.write()
 
 # Cool stars from BT-Settl
 cool = SED.fetch('bt-settl', teff_min=2500, teff_max=7000)
-cool.cat.write()
+cool.grid.write()
 
 # Combine into unified grid
 combined = SED.combine(
@@ -909,7 +971,7 @@ from sed_tools.api import SED
 completer = SED.ml_completer()
 completer.train('BOSZ', epochs=200)
 
-# Extend a model with limited UV coverage
+# Extend a spectral grid with limited UV coverage
 extended = completer.extend(
     'optical_only_model',
     wavelength_range=(912, 100000),  # Extend into UV
@@ -954,10 +1016,10 @@ for star in stars:
 
 ```bash
 # Use the NJM mirror (faster, more reliable)
-sed-tools spectra --source njm --models Kurucz2003all
+sed-tools grids --source njm --grids Kurucz2003all
 
 # Or reduce parallel workers
-sed-tools spectra --models Kurucz2003all --workers 2
+sed-tools grids --grids Kurucz2003all --workers 2
 ```
 
 **Missing PyTorch for ML tools**
@@ -1030,12 +1092,12 @@ Bug reports, feature requests, and pull requests are welcome — see [CONTRIBUTI
 - [MESA](https://docs.mesastar.org/) — Modules for Experiments in Stellar Astrophysics
 - [SVO Filter Profile Service](http://svo2.cab.inta-csic.es/theory/fps/) — Filter transmission curves
 - [MAST](https://archive.stsci.edu/) — Mikulski Archive for Space Telescopes
-- [MSG Grids](http://user.astro.wisc.edu/~townsend/static.php?ref=msg-grids) — Rich Townsend's stellar atmosphere grids
+- [MSG Grids](http://user.astro.wisc.edu/~townsend/static.php?ref=msg-grids) — Rich Townsend's stellar spectral grids
 
 ## Community Contributions
 
 Thanks to everyone who has filed issues, suggested features, or reported bugs:
 
-- [@andysantarelli](https://github.com/andysantarelli) — feature suggestions (grid coverage view, custom atmosphere grids)
+- [@andysantarelli](https://github.com/andysantarelli) — feature suggestions (grid coverage view, custom spectral grids)
 - [@tianzhijia](https://github.com/tianzhijia) — bug report (BOSZ-2024 download issue)
 - [@rhdtownsend](https://github.com/rhdtownsend) — issue report (Jupyter notebook results)

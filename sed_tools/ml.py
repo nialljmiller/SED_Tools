@@ -3,7 +3,7 @@
 Unified ML API for SED Tools
 =============================
 
-High-level API for machine learning operations on stellar atmosphere models.
+High-level API for machine learning operations on stellar spectral grids.
 
 This module provides a clean, unified interface for:
 - Training SED completion models
@@ -502,7 +502,7 @@ class Completer:
             verbose: bool = True,
         ) -> Dict[str, Any]:
             """
-            Extend all SEDs in a catalog directory.
+            Extend all model spectra in a spectral grid directory.
             """
             import os
             import glob

@@ -1,0 +1,596 @@
+{
+  "task_id": "f44b733715",
+  "session": "final-f44b733715",
+  "boundary_utc": "2026-10-20T19:55:21.348258+00:00",
+  "input_sha256": {
+    "instruments.csv": "a76fb00906e9ddd7e547dcb842e61fa6542b166ff9379bb5b8e8f9e5f9ec82b9",
+    "round2_plan.json": "33f365ecaf37c25e53c0d7f5c003e9328e55d64b6704a141148533af4e24b529",
+    "round2/manager/report.md": "dac69632926dcc84cbc0fb45c65c708f09d0468938bcd7f3e9a52957d78b50e7",
+    "round2/manager/checks.json": "a2486a37982650c392d4bc1226754a03e24285d0c1e572dba9c01dfccb00b812",
+    "round2/manager/codex_packet.json": "00726c8ff428233fa21de394b503c0a008960d256cefa44574ca740b786e71ae",
+    "round2/manager/review_actions.json": "e70fe56aa560720a8a54c0ed0a457d3667ea795f6d810dbc773648bdf476f9b9",
+    "round2/manager/final_audit_packet.json": "431d57f91516e91a145286521d57b1ac6b8748f6979e753e9c9e9e646683d4fa",
+    "round2/manager/schema_corrections.md": "74bbc6daca8766763c05cf1fbadde9e13e9bae86c1d8462c3186b64fddad63e5",
+    "round2/claude/peer-review.md": "2c98e66dfd0b8b284f0ba6ca075db4a18786debcfc2aadb1ef24a9d2ccfb653f",
+    "round2/codex/issues.jsonl": "2fb0c1f6eefd6eeab5af89e20f7d9946a54e34509e22821b57d5fef8999e8ede",
+    "round2/claude/report.md": "06a38bb1bfc033b7dbe20939bfb5a2d80930cd2b3dd722e77affb8c49c48c054",
+    "round2/claude/reviews.csv": "c58b228294b218169ee4a758cf67a0d8a1229b7cf606dbbb14afbfb7addcc0e0",
+    "round2/claude/sources.jsonl": "a35deb126c6c674aae6b60f2bec89ee829c9321f090f0286c5e9069452ac6956",
+    "round2/claude/progress.json": "f8f0b5fceeced867a2af7a3fb30da5c08eff2c878a6ad3a696bf69a52b371d2f",
+    "round2/grok/sources.jsonl": "a44963ca8d53c0839d2ddc0e455ca03d7f78eef832ef5a4751cc6ceb0f5262f6",
+    "round2/grok/reviews.csv": "fddb0ab8708dc15200e15c6c3a966edad8c3c754e4348f35c78da3580777ddf4",
+    "round2/grok/progress.json": "7cfef551ccc408e3df202968ac109eae3dce9b22096025044eb3dffd077c7ea2",
+    "round2/grok/report.md": "176b8126727daf2a93a0e7bb54b664af1e7ce9c9a6e37931aa030a0a1ed55b2b",
+    "round2/gemini/progress.json": "db51c5bc9dbc74a826a03f8cca9ce7293bb61d06666719de7d71c6d2afbf7c07",
+    "round2/gemini/sources.jsonl": "fc884241bc457593c80d22636f62b688f61b5403766f18da83d7e850c476ce44",
+    "round2/gemini/reviews.csv": "6750f387b1d5d8939a569a1f4788175b1e69d20b012caec18986a2836a8e9997",
+    "round2/gemini/report.md": "8bd5c5f6e0591142d147daaeeb383a2706c568417f1a9707464f9cd481197379"
+  },
+  "changed_during_audit": [
+    "round2/manager/schema_corrections.md",
+    "round2/claude/sources.jsonl"
+  ],
+  "structural_audit": {
+    "claude": {
+      "source_rows": 79,
+      "review_rows": 25,
+      "unique_review_keys": 25,
+      "duplicate_review_keys": [],
+      "assignment_errors": [
+        [
+          "SPHEREx",
+          "SPHEREx"
+        ]
+      ],
+      "source_keys_without_review": [],
+      "review_keys_without_source": [],
+      "errors": [
+        [
+          37,
+          "component",
+          "pandeia_refdata"
+        ],
+        [
+          38,
+          "component",
+          "components"
+        ],
+        [
+          40,
+          "component",
+          "components"
+        ],
+        [
+          42,
+          "component",
+          "components"
+        ],
+        [
+          44,
+          "component",
+          "components"
+        ],
+        [
+          45,
+          "component",
+          "components"
+        ],
+        [
+          46,
+          "component",
+          "components"
+        ],
+        [
+          57,
+          "component",
+          "components"
+        ],
+        [
+          58,
+          "component",
+          "components"
+        ],
+        [
+          59,
+          "component",
+          "components"
+        ]
+      ],
+      "null_units": {
+        "wavelength_unit": 0,
+        "response_unit": 0
+      },
+      "roles": {
+        "published": 59,
+        "optics": 3,
+        "filter": 5,
+        "qe": 2,
+        "pandeia_refdata": 1,
+        "components": 9
+      },
+      "status_values": {
+        "filter_status": {
+          "blocked": 2,
+          "documented": 7,
+          "available": 13,
+          "not_found": 1,
+          "unknown": 2
+        },
+        "optics_status": {
+          "blocked": 3,
+          "unknown": 3,
+          "derived": 1,
+          "available": 8,
+          "documented": 4,
+          "not_found": 6
+        },
+        "qe_status": {
+          "blocked": 3,
+          "unknown": 3,
+          "derived": 1,
+          "available": 8,
+          "documented": 5,
+          "not_found": 5
+        },
+        "atmosphere_status": {
+          "not_applicable": 25
+        },
+        "published_status": {
+          "available": 17,
+          "not_found": 1,
+          "documented": 2,
+          "blocked": 2,
+          "derived": 3
+        },
+        "independent_source_status": {
+          "original_files": 20,
+          "svo_only": 2,
+          "original_documentation": 2,
+          "mixed": 1
+        }
+      },
+      "redistribution": {
+        "not_reviewed": 62,
+        "CC0 1.0 per repository LICENSE.md": 1,
+        "None": 16
+      },
+      "role_schema_note": "Noncanonical component values are schema interoperability warnings, not proof of scientifically wrong role; brief requires role statuses in reviews.",
+      "breadth_baseline": 24,
+      "assignment_note": "SPHEREx is an explicitly permitted extra and excluded from baseline."
+    },
+    "grok": {
+      "source_rows": 130,
+      "review_rows": 70,
+      "unique_review_keys": 70,
+      "duplicate_review_keys": [],
+      "assignment_errors": [],
+      "source_keys_without_review": [],
+      "review_keys_without_source": [],
+      "errors": [
+        [
+          64,
+          "data_url",
+          "not absolute HTTP URL"
+        ],
+        [
+          65,
+          "data_url",
+          "not absolute HTTP URL"
+        ],
+        [
+          66,
+          "data_url",
+          "not absolute HTTP URL"
+        ],
+        [
+          67,
+          "data_url",
+          "not absolute HTTP URL"
+        ],
+        [
+          72,
+          "data_url",
+          "not absolute HTTP URL"
+        ],
+        [
+          75,
+          "data_url",
+          "not absolute HTTP URL"
+        ],
+        [
+          97,
+          "data_url",
+          "not absolute HTTP URL"
+        ],
+        [
+          98,
+          "data_url",
+          "not absolute HTTP URL"
+        ],
+        [
+          99,
+          "data_url",
+          "not absolute HTTP URL"
+        ],
+        [
+          107,
+          "data_url",
+          "not absolute HTTP URL"
+        ],
+        [
+          108,
+          "data_url",
+          "not absolute HTTP URL"
+        ],
+        [
+          109,
+          "data_url",
+          "not absolute HTTP URL"
+        ],
+        [
+          118,
+          "landing_url",
+          "missing/empty"
+        ],
+        [
+          119,
+          "landing_url",
+          "missing/empty"
+        ],
+        [
+          120,
+          "landing_url",
+          "missing/empty"
+        ],
+        [
+          121,
+          "landing_url",
+          "missing/empty"
+        ],
+        [
+          122,
+          "landing_url",
+          "missing/empty"
+        ],
+        [
+          123,
+          "landing_url",
+          "missing/empty"
+        ],
+        [
+          124,
+          "landing_url",
+          "missing/empty"
+        ],
+        [
+          125,
+          "landing_url",
+          "missing/empty"
+        ],
+        [
+          126,
+          "landing_url",
+          "missing/empty"
+        ],
+        [
+          127,
+          "landing_url",
+          "missing/empty"
+        ],
+        [
+          128,
+          "landing_url",
+          "missing/empty"
+        ]
+      ],
+      "null_units": {
+        "wavelength_unit": 0,
+        "response_unit": 0
+      },
+      "roles": {
+        "published": 51,
+        "filter": 50,
+        "optics": 8,
+        "qe": 11,
+        "atmosphere": 10
+      },
+      "status_values": {
+        "filter_status": {
+          "documented": 14,
+          "available": 44,
+          "not_found": 12
+        },
+        "optics_status": {
+          "documented": 13,
+          "unknown": 4,
+          "available": 8,
+          "not_found": 45
+        },
+        "qe_status": {
+          "documented": 13,
+          "unknown": 5,
+          "available": 11,
+          "not_found": 41
+        },
+        "atmosphere_status": {
+          "available": 9,
+          "unknown": 3,
+          "documented": 14,
+          "not_found": 44
+        },
+        "published_status": {
+          "available": 14,
+          "unknown": 3,
+          "documented": 11,
+          "not_found": 42
+        },
+        "independent_source_status": {
+          "original_files": 53,
+          "svo_only": 1,
+          "original_documentation": 16
+        }
+      },
+      "redistribution": {
+        "not_reviewed": 130
+      },
+      "role_schema_note": "Noncanonical component values are schema interoperability warnings, not proof of scientifically wrong role; brief requires role statuses in reviews.",
+      "breadth_baseline": 70,
+      "assignment_note": "All keys assigned to this owner."
+    },
+    "gemini": {
+      "source_rows": 92,
+      "review_rows": 69,
+      "unique_review_keys": 69,
+      "duplicate_review_keys": [],
+      "assignment_errors": [],
+      "source_keys_without_review": [],
+      "review_keys_without_source": [],
+      "errors": [],
+      "null_units": {
+        "wavelength_unit": 0,
+        "response_unit": 0
+      },
+      "roles": {
+        "published": 71,
+        "qe": 4,
+        "optics": 6,
+        "filter": 11
+      },
+      "status_values": {
+        "filter_status": {
+          "not_found": 28,
+          "available": 15,
+          "derived": 2,
+          "documented": 22,
+          "not_applicable": 2
+        },
+        "optics_status": {
+          "not_found": 39,
+          "available": 6,
+          "documented": 16,
+          "not_applicable": 8
+        },
+        "qe_status": {
+          "not_found": 37,
+          "documented": 17,
+          "available": 3,
+          "derived": 4,
+          "not_applicable": 8
+        },
+        "atmosphere_status": {
+          "not_applicable": 65,
+          "documented": 4
+        },
+        "published_status": {
+          "available": 67,
+          "not_found": 2
+        },
+        "independent_source_status": {
+          "original_files": 33,
+          "svo_only": 22,
+          "mixed": 14
+        }
+      },
+      "redistribution": {
+        "not_reviewed": 83,
+        "CC-BY-NC-SA-4.0": 9
+      },
+      "role_schema_note": "Noncanonical component values are schema interoperability warnings, not proof of scientifically wrong role; brief requires role statuses in reviews.",
+      "breadth_baseline": 69,
+      "assignment_note": "All keys assigned to this owner."
+    }
+  },
+  "issue_statuses": {
+    "C01": {
+      "status": "resolved_definition_only",
+      "evidence_scope": "Current Gemini NAC/WAC rows 19/22 explicitly recover filter1*filter2. Newly opened PDS definition confirms product. Clear-pair numbers, byte identity, extrapolation and archive-wide absence not independently certified."
+    },
+    "C02": {
+      "status": "resolved_downgrade_only",
+      "evidence_scope": "Gemini row 68 explicitly secondary_lead/unverified; vendor QE provenance remains unavailable. Old evidence text still describes builder digitization; notes qualify it."
+    },
+    "C03": {
+      "status": "resolved_blanket_claim_withdrawn",
+      "evidence_scope": "All 92 Gemini rows now not_reviewed (83) or CC-BY-NC-SA-4.0 (9), no public_domain. Nine licence claims remain independently unverified; no licence certification."
+    },
+    "C04": {
+      "status": "resolved_decomposition_withdrawn",
+      "evidence_scope": "Gemini Bessell/Johnson notes withdraw universal filter+optics+QE and identify abstract standards; numeric fallback remains SVO. Primary table correspondence and sibling conventions not independently checked."
+    },
+    "C05": {
+      "status": "partially_resolved",
+      "evidence_scope": "Current LSST source rows inspected; release-specific applicability and original atmosphere configuration remain unverified. No new numerical mapping."
+    },
+    "C06": {
+      "status": "partially_resolved",
+      "evidence_scope": "Current HSC records inspected; historical r/r2 distinction retained as prior audit finding. No new all-band epoch or i/i2 comparison."
+    },
+    "C07": {
+      "status": "partially_resolved",
+      "evidence_scope": "Current VISTA source records and Claude peer review inspected. Mixed wavelength/response scales and distinct supplied atmosphere conditions documented; model/version remains unknown. Peer-review two-line skip recipe not re-executed."
+    },
+    "C08": {
+      "status": "partially_resolved",
+      "evidence_scope": "Current ZTF source records inspected; detector mixture applicability and all-band unit evidence not independently revalidated."
+    },
+    "C09": {
+      "status": "partially_resolved",
+      "evidence_scope": "Current JWST source rows inspected. Original-key release mapping and all-band identity remain unverified; historical v5/2025 mismatch remains a constraint."
+    },
+    "C10": {
+      "status": "resolved_for_classification",
+      "evidence_scope": "Current 2MASS rows inspected; retain prior independently supported separate-components classification and wavelength-weighting caveats. No new numeric reconstruction."
+    },
+    "C11": {
+      "status": "resolved_counts_only",
+      "evidence_scope": "All source/review rows parsed: 24+70+69 assigned baseline review keys, plus separately excluded SPHEREx. Counts are breadth, not proof of full-depth dossiers."
+    },
+    "M01": {
+      "status": "resolved_text",
+      "evidence_scope": "Claude peer review now distinguishes filter-pair quotient from its own BL1/CL1 ratio; correctly limits attribution."
+    },
+    "M02": {
+      "status": "resolved_text",
+      "evidence_scope": "Claude peer review explicitly states publication dates alone do not prove incompatible calibration epochs."
+    },
+    "M03": {
+      "status": "partially_verified",
+      "evidence_scope": "Current Claude progress last_update_utc=2026-10-20T19:49:51Z, before this audit boundary. Cannot establish actual clock-generation procedure or historic inspection times from this field."
+    }
+  },
+  "new_primary_samples": {
+    "retrievals": [
+      {
+        "id": "wise",
+        "url": "https://irsa.ipac.caltech.edu/data/WISE/docs/release/All-Sky/expsup/figures/RSR-W1.txt",
+        "status": 200,
+        "bytes": 8468,
+        "sha256": "6ade5b074dc7652e08c4de7767969126b7e48fdf4b6295bbf7f44e22d33ec1e9"
+      },
+      {
+        "id": "cassini",
+        "url": "https://pds-rings.seti.org/holdings/volumes/COISS_0xxx/COISS_0011/calib/efficiency/efficiency_info.txt",
+        "status": 200,
+        "bytes": 1657,
+        "sha256": "07d6cba13e60e27ca92751a2dd912eae9d86b1592793a1a87462a19256f65f6a"
+      },
+      {
+        "id": "ps1readme",
+        "url": "https://cdsarc.cds.unistra.fr/ftp/J/ApJ/750/99/ReadMe",
+        "status": 200,
+        "bytes": 6487,
+        "sha256": "49c486808d018b20952687f142ae96e3d287e5cfbc2c3c7b08ae1fb20df19cf7"
+      },
+      {
+        "id": "ps1data",
+        "url": "https://cdsarc.cds.unistra.fr/ftp/J/ApJ/750/99/table3.dat",
+        "error": "HTTP Error 500: Internal Server Error"
+      },
+      {
+        "id": "abi",
+        "url": "https://nwp-saf.eumetsat.int/downloads/rtcoef_info/visir_srf/rtcoef_goes_16_abi_srf/rtcoef_goes_16_abi_srf.tar.gz",
+        "status": 200,
+        "bytes": 145869,
+        "sha256": "0138d296c79e4bd6e7d44ac4008228d2a5161ca551a2d36d6aab3182dc884fe2"
+      }
+    ],
+    "WISE_W1": {
+      "rows": 398,
+      "peak": 0.8798,
+      "header": "# Relative Spectral Response per photon; Wright et al. 2010\n# W1     RSR     uncertainty (parts per thousand)\n 2.53 6.920E-06  707\n 2.54 4.564E-07 1000\n 2.55 2.495E-07 1000\n 2.56 2.720E-07 1000\n 2.57 9.040E-06  707\n 2.58",
+      "scope": "W1 only; wavelength-weighted SVO comparison not repeated"
+    },
+    "Cassini": "Opened efficiency_info.txt: QE*optics*filter1*filter2, nm, column 2 Transmitted Flux; does not explicitly label column 2 electrons/photon. No numerical pair derivation repeated.",
+    "PS1": "Opened primary CDS ReadMe: table3 nm; capture cross section m2 with note m^2-e/photon including nominal 1.2 airmasses. table3 fetch HTTP500: no new numeric rows.",
+    "ABI": {
+      "member_header": "14, GOES-R 11.2um ABI SRF CWG processed version 3 March 10, 2016\nNumber of data points:\n1383\nWavenumber (cm-1)   Filter response\n      823.600000       0.001087\n      823.700000       0.001183\n      823.800000       0.001273\n      823.900000       0.001370\n      824.000000       0.001457\n      824.100000       0.001472\n      824.200000       0.001482\n      824.300000       0.001487",
+      "member_sha256": "69fb71df851a65c2663ca566f108977892a06071e55bf7d83b435a20ec928392",
+      "scope": "16 archive files listed, only ch14 opened. Combined SRF fallback, not separate vendor optics/QE. NCC not retried."
+    }
+  },
+  "unverified_high_risk": [
+    "GOES vendor workbook CH047 columns, responsivity and QE division are researcher assertions; workbook not opened here.",
+    "JPSS VIIRS-J1 DAWG V2.1/M9 applicability and release not independently opened.",
+    "Generic Bessell original-to-SVO numeric provenance not independently opened.",
+    "WISE W2-W4; PS1 numeric table; Cassini numeric derivations and sibling filters.",
+    "All-owner unsupported units, releases, licences and unavailable-component search completeness remain uncertified."
+  ],
+  "budget": {
+    "source": "/home/nill/.codex/sessions/2026/10/20/rollout-2026-10-20T15-53-04-01a15adf-dd89-79b3-b58d-920c389c4eac.jsonl",
+    "baseline_event_utc": "2026-10-20T19:53:09.796Z",
+    "baseline_rate_limits": {
+      "limit_id": "codex",
+      "limit_name": null,
+      "primary": {
+        "used_percent": 21.0,
+        "window_minutes": 300,
+        "resets_at": 1792543473
+      },
+      "secondary": {
+        "used_percent": 19.0,
+        "window_minutes": 10080,
+        "resets_at": 1793112218
+      },
+      "credits": {
+        "has_credits": false,
+        "unlimited": false,
+        "balance": "0E-10"
+      },
+      "individual_limit": null,
+      "spend_control_reached": null,
+      "plan_type": "plus",
+      "rate_limit_reached_type": null
+    },
+    "latest_event_utc": "2026-10-20T19:54:22.913Z",
+    "latest_rate_limits": {
+      "limit_id": "codex",
+      "limit_name": null,
+      "primary": {
+        "used_percent": 27.0,
+        "window_minutes": 300,
+        "resets_at": 1792543473
+      },
+      "secondary": {
+        "used_percent": 20.0,
+        "window_minutes": 10080,
+        "resets_at": 1793112218
+      },
+      "credits": {
+        "has_credits": false,
+        "unlimited": false,
+        "balance": "0E-10"
+      },
+      "individual_limit": null,
+      "spend_control_reached": null,
+      "plan_type": "plus",
+      "rate_limit_reached_type": null
+    },
+    "stop_threshold_used_percent": {
+      "primary": 26,
+      "secondary": 24
+    },
+    "policy": "min(5 percentage points,25% remaining headroom), independently for each window. Stop new work at primary 26%. Closing checkpoint incurs additional not-yet-reported usage.",
+    "first_metered_usage": {
+      "input_tokens": 17147,
+      "cached_input_tokens": 12288,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 124,
+      "reasoning_output_tokens": 0,
+      "total_tokens": 17271
+    },
+    "latest_metered_usage": {
+      "input_tokens": 309769,
+      "cached_input_tokens": 270336,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 3481,
+      "reasoning_output_tokens": 69,
+      "total_tokens": 313250
+    },
+    "accounting": "total_tokens already includes cached input; do not add cached tokens or reasoning subtotal again. Primary/secondary percentages reflect shared account usage, not isolated task attribution."
+  },
+  "end_sha256_changed_inputs": {
+    "round2/manager/schema_corrections.md": "a92f25cee327049611d58c698ee7a3f9906d9f20a2ac2e5159bab13b626968b3",
+    "round2/claude/sources.jsonl": "a170b29f6d70ad688250f42396c3d1b49867d897d85f56b7f5f161b5b24bef00"
+  },
+  "boundary_caveat": "Claude sources and manager schema log changed while audit ran. Structural conclusions apply to initial hashed snapshot only; final revisions were not re-audited because budget threshold was reached."
+}

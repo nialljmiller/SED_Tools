@@ -195,7 +195,7 @@ class MSGSpectraGrabber:
         self.model_axes = {}   # model -> dict(axes=list, shape=tuple, vlin=array, roles=dict)
 
     def discover_models(self):
-        print("Discovering available models from MSG grids...")
+        print("Discovering spectral grids from MSG...")
         try:
             r = self.session.get(self.index_url, timeout=30)
             r.raise_for_status()
@@ -494,11 +494,11 @@ class MSGSpectraGrabber:
     def discover_and_run(self, selected_models=None):
         avail = self.discover_models()
         if not avail:
-            print("No MSG models found."); return
+            print("No MSG spectral grids found."); return
         selected = selected_models or avail
         total=0
         for name in selected:
-            print(f"\n[msg] Processing model: {name}")
+            print(f"\n[msg] Processing spectral grid: {name}")
             meta = self.get_model_metadata(name)
             if not meta: continue
             total += self.download_model_spectra(name, meta)

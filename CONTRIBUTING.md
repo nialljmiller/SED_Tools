@@ -31,7 +31,7 @@ No strict requirements. Match the style of the surrounding code you are editing.
 Areas where contributions are most useful:
 
 - Bug fixes with a clear root cause
-- New stellar model grid support
+- New stellar spectral grid support
 - Performance improvements to processing or I/O (especially at large data scales)
 - Documentation corrections
 

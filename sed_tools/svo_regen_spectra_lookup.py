@@ -86,7 +86,7 @@ def main():
 
     # Regenerate lookup tables for each model
     for model, files in existing_files.items():
-        print(f"Processing model: {model}")
+        print(f"Processing spectral grid: {model}")
         output_dir = os.path.join(base_dir, model)
         regenerate_lookup_table(model, files, output_dir)
 

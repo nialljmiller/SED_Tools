@@ -305,7 +305,7 @@ class SEDGenerator:
         verbose: bool = True,
     ) -> Dict[str, List[float]]:
         """
-        Train the generator on stellar atmosphere models.
+        Train the generator on stellar spectral grids.
         
         Parameters
         ----------

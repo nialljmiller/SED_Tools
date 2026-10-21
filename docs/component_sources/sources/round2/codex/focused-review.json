@@ -1,0 +1,111 @@
+{
+  "task": "c133c375ee",
+  "session": "focused-c133c375ee",
+  "saved_utc": "2026-10-20T15:03:01.847179+00:00",
+  "status": "stopped_usage_threshold_exceeded_at_observation",
+  "input_sha256": {
+    "round2/manager/codex_packet.json": "00726c8ff428233fa21de394b503c0a008960d256cefa44574ca740b786e71ae",
+    "round2/manager/checks.json": "a2486a37982650c392d4bc1226754a03e24285d0c1e572dba9c01dfccb00b812",
+    "round2/grok/sources.jsonl": "a44963ca8d53c0839d2ddc0e455ca03d7f78eef832ef5a4751cc6ceb0f5262f6",
+    "round2/claude/sources.jsonl": "47c66c91c96d8e0e8cedb0c785c1832c4981748a4e5e5b0af006a4cfda6a8316"
+  },
+  "packet_claim_count": 5,
+  "expected_claim_count_from_assignment": 6,
+  "budget": {
+    "first_observed_primary_used_percent": 92,
+    "first_observed_secondary_used_percent": 14,
+    "stop_primary_used_percent": 94,
+    "stop_secondary_used_percent": 16,
+    "latest_rate_limits": {
+      "limit_id": "codex",
+      "limit_name": null,
+      "primary": {
+        "used_percent": 96.0,
+        "window_minutes": 300,
+        "resets_at": 1792525418
+      },
+      "secondary": {
+        "used_percent": 15.0,
+        "window_minutes": 10080,
+        "resets_at": 1793112218
+      },
+      "credits": {
+        "has_credits": false,
+        "unlimited": false,
+        "balance": "0E-10"
+      },
+      "individual_limit": null,
+      "spend_control_reached": null,
+      "plan_type": "plus",
+      "rate_limit_reached_type": null
+    },
+    "latest_timestamp": "2026-10-20T15:02:26.564Z",
+    "caution": "Usage rose between boundary observations; attribution to this session versus concurrent work is unavailable. No quota reset independently verified. No substantive retrieval after observing threshold breach.",
+    "session_first_token_event": {
+      "total_token_usage": {
+        "input_tokens": 19604,
+        "cached_input_tokens": 12288,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 122,
+        "reasoning_output_tokens": 0,
+        "total_tokens": 19726
+      },
+      "last_token_usage": {
+        "input_tokens": 19604,
+        "cached_input_tokens": 12288,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 122,
+        "reasoning_output_tokens": 0,
+        "total_tokens": 19726
+      },
+      "model_context_window": 475000
+    },
+    "session_latest_token_event": {
+      "total_token_usage": {
+        "input_tokens": 237503,
+        "cached_input_tokens": 210816,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 1728,
+        "reasoning_output_tokens": 69,
+        "total_tokens": 239231
+      },
+      "last_token_usage": {
+        "input_tokens": 37705,
+        "cached_input_tokens": 35200,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 238,
+        "reasoning_output_tokens": 22,
+        "total_tokens": 37943
+      },
+      "model_context_window": 475000
+    },
+    "token_accounting": "Provider total_tokens recorded separately from quota percentages; cached_input_tokens is a subset of input_tokens and is not added again. These observations exclude final artifact-writing and final reply usage."
+  },
+  "inspected_bodies": [
+    {
+      "path": "/tmp/sed-r2/confirm/ps1_readme.txt",
+      "sha256": "49c486808d018b20952687f142ae96e3d287e5cfbc2c3c7b08ae1fb20df19cf7",
+      "inspection": "table3 and table4 fixed-width definitions only",
+      "freshness": "Saved local evidence; no independent network retrieval or manager body-hash match available for this ReadMe."
+    }
+  ],
+  "verified_claims": [
+    {
+      "instrument": "PS1",
+      "scope": "definition only, saved ReadMe",
+      "wavelength_unit": "nm",
+      "published_response": "Open and gp1/rp1/ip1/zp1/yp1/wp1 capture cross-sections: m2 in columns, m^2^-e/photon in note (1); nominal 1.2 airmasses included",
+      "atmosphere": "Aero/Ray/Mol separate dimensionless transmission columns; nominal 1.2 airmasses",
+      "table4": "Ext is extinction at 1.2 airmasses in mag; ZP is AB mag at 1.2 airmasses",
+      "completeness": "No numeric bodies sampled; no full component-completeness certification."
+    }
+  ],
+  "remaining_uncertainty": [
+    "PS1 numeric row count, extrema and all columns unverified.",
+    "GMOS filter and historical QE bodies located but not read; units, values and detector applicability not certified.",
+    "UKIDSS archive located but not opened or hash-compared; numeric and release alias verification pending.",
+    "Claude WISE/MIPS corrections are saved; selected records were seen but no independent body verification completed. PACS correction not reviewed.",
+    "Packet contains five claim objects, not six; missing selection must be identified by manager.",
+    "Overall prior audit issue statuses remain unchanged."
+  ]
+}

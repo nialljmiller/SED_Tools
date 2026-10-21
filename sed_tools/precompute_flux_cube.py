@@ -491,7 +491,7 @@ def _print_split_announcement(
         for key in sorted(groups):
             print(f"  {_subdir_name(model_name, key)}/")
         print(f"\nThe parent directory will retain the full source grid.")
-        print(f"Use one of the subdirectories as the atmosphere grid in MESA Colors.")
+        print(f"Use one of the subdirectories as the spectral grid in MESA Colors.")
     else:
         print(f"\n{n_combos} combinations exceed the auto-split threshold ({threshold}).")
 
@@ -835,7 +835,7 @@ def _print_summary(output_file, teff_vals, logg_vals, meta_vals):
 if __name__ == "__main__":
     import sys
 
-    parser = argparse.ArgumentParser(description="Precompute flux cube for stellar atmosphere models")
+    parser = argparse.ArgumentParser(description="Precompute flux cube for stellar spectral grids")
     parser.add_argument("--model_dir", type=str, required=False)
     parser.add_argument("--output",    type=str, default=None)
     parser.add_argument("--root_dir",  type=str, default=None,

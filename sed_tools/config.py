@@ -249,6 +249,6 @@ def show_config() -> None:
     elif _CONFIG_FILE.exists():
         source = f"config file ({_CONFIG_FILE})"
     print(f"Data directory : {data_dir}  [{source}]")
-    print(f"Stellar models : {data_dir / 'stellar_models'}")
+    print(f"Spectral grids : {data_dir / 'stellar_models'}")
     print(f"Filters        : {data_dir / 'filters'}")
     print(f"Config file    : {_CONFIG_FILE}")

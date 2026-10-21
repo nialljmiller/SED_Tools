@@ -66,6 +66,7 @@ HEADER_KEYS = (
     "Recipe",
     "Atmosphere",
     "Sources",
+    "DetectorTypeOriginal",
 )
 DETECTOR_KEYS = HEADER_KEYS[:4]
 
@@ -240,24 +241,20 @@ class SVOMetadataClient:
         if filter_id in self._records:
             return self._records[filter_id]
         record: Optional[SVOFilterRecord] = None
-        try:
-            vot = self._get_votable({"ID": filter_id})
-            tables = list(vot.iter_tables())
-            if tables:
-                table = tables[0]
-                params = {p.name: p.value for p in table.params}
-                data = table.to_table()
-                record = SVOFilterRecord(
-                    filter_id=filter_id,
-                    detector_type=normalize_detector_type(_param_text(params.get("DetectorType"))),
-                    wavelength=np.asarray(data["Wavelength"], dtype=float),
-                    transmission=np.asarray(data["Transmission"], dtype=float),
-                    wavelength_unit=_param_text(params.get("WavelengthUnit")) or None,
-                    components=_param_text(params.get("components")) or None,
-                )
-        except Exception:
-            logger.debug("SVO lookup failed for %s", filter_id, exc_info=True)
-            raise
+        vot = self._get_votable({"ID": filter_id})
+        tables = list(vot.iter_tables())
+        if tables:
+            table = tables[0]
+            params = {p.name: p.value for p in table.params}
+            data = table.to_table()
+            record = SVOFilterRecord(
+                filter_id=filter_id,
+                detector_type=normalize_detector_type(_param_text(params.get("DetectorType"))),
+                wavelength=np.asarray(data["Wavelength"], dtype=float),
+                transmission=np.asarray(data["Transmission"], dtype=float),
+                wavelength_unit=_param_text(params.get("WavelengthUnit")) or None,
+                components=_param_text(params.get("components")) or None,
+            )
         self._records[filter_id] = record
         return record
 

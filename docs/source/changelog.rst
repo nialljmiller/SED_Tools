@@ -2,6 +2,47 @@
 Changelog
 =========
 
+Unreleased
+----------
+
+Public terminology
+~~~~~~~~~~~~~~~~~~
+
+Use "spectral grids" for parameterized collections and "model spectrum"
+for an individual synthetic spectrum across documentation, CLI help,
+menus and API descriptions. Add ``sed-tools grids``, ``--grids`` and
+``--grid`` as preferred CLI names, with the existing commands and options
+retained as aliases. Python exposes ``SpectralGrid``, ``SpectralGridInfo``,
+``sed.grid``, ``sed.available_grids()`` and ``find_grids`` alongside the existing names. Storage paths
+and established keyword arguments remain compatible.
+
+Filter availability and composition
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Accept comma-separated facility numbers and ranges directly in the facility
+  picker. Multiple facilities download all their instruments without further
+  selection, confirmation or component prompts; one facility opens its instruments.
+- Remove duplicate validation and blanket exception wrappers. Handle network
+  failures at source boundaries and let programming and file-write errors
+  reach the caller. Atmosphere cache lookup no longer uses exceptions for
+  ordinary cache misses.
+- Consolidate source selection, component recovery and atmosphere recovery
+  in a shared filter-library workflow used by the CLI and Python API.
+- Add ``Filters.inventory()`` / ``sed-tools filters-inventory`` to discover
+  the union of SVO, NJM, installed and registered instruments, retaining
+  source errors and explicit ``unreviewed`` component status.
+- Report missing component files and recipes available for individual bands;
+  inspect SVO metadata when NJM availability information is unavailable.
+- Support direct CLI instrument requests, selected bands, explicit detector
+  conventions and opt-in large original-source downloads through both interfaces.
+  Detector overrides create derived copies and preserve the original convention.
+- Validate component contents, reject additions to unresolved instrument
+  throughput, record physical factors separately from recipe selections, and
+  preserve existing products when a replacement cannot be completed.
+- Recover missing atmosphere data from registered original sources; restrict
+  SkyCalc recovery to the requested site and conditions and reject ambiguous
+  PWV selection. Track expected SVO bands across partial downloads.
+
 Version 0.3.0 (October 2026)
 ---------------------------
 
@@ -91,7 +132,7 @@ Version 0.1.0 (March–April 2026)
 
 Initial development sprint covering core pipeline construction, bug fixes,
 audit infrastructure, and data quality corrections across all installed
-stellar atmosphere models.
+stellar spectral grids.
 
 Bug Fixes
 ~~~~~~~~~
@@ -177,7 +218,7 @@ New Modules
    requested Teff falls outside the generator's training range.
 
 **``tests/audit_pipeline.py``**
-   Comprehensive pipeline audit script.  For every installed model, checks:
+   Comprehensive pipeline audit script.  For every installed spectral grid, checks:
 
    - ``units_standardized = True`` header flag on raw files
    - Correct wavelength unit (Å) and flux unit (erg cm⁻² s⁻¹ Å⁻¹)
@@ -202,7 +243,7 @@ New Modules
 
    Also generates ``make_raw_cube_diag_plots()``: a 3-panel diagnostic figure
    (SED overlay with bad points marked, relative error, distance from raw to
-   nearest cube grid point) for any model with genuine raw-vs-cube failures.
+   nearest cube grid point) for any spectral grid with genuine raw-vs-cube failures.
 
 Pipeline Changes
 ~~~~~~~~~~~~~~~~
@@ -217,7 +258,7 @@ Pipeline Changes
 Audit Results
 ~~~~~~~~~~~~~
 
-All installed stellar atmosphere models pass the full audit suite
+All installed stellar spectral grids pass the full audit suite
 (12 PASS / 0 FAIL).  Key findings from the audit process:
 
 - **Husfeld and tmap2 Wien failures** confirmed as false positives:

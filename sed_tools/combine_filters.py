@@ -2,7 +2,7 @@
 """
 Combine multiple photometric filter sets into one MESA-compatible set.
 
-Unlike stellar atmosphere combination, filter combination does not need a flux
+Unlike spectral grid combination, filter combination does not need a flux
 cube. A filter set is just a directory of ``*.dat`` transmission curves plus an
 index file whose contents list those curve filenames.
 """

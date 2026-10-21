@@ -1424,7 +1424,7 @@ def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> None:
         
         if not available_models:
             print(f"\nNo model libraries with flux_cube.bin found in {base_dir}")
-            print("Download some models first (option 1 in main menu)")
+            print("Download spectral grids first with 'sed-tools grids'")
             return
         
         # Display available models
@@ -1511,7 +1511,7 @@ def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> None:
             return
         
         # Select trained model
-        print("\nAvailable trained models:")
+        print("\nAvailable trained spectral grids:")
         print("-" * 60)
         for i, model in enumerate(trained_models, 1):
             arch = model.get('architecture', {})
@@ -1729,7 +1729,7 @@ def extend_catalog(
     """
     Wrapper expected by MLCompleter.extend() in api.py.
 
-    Extends a catalog directory (with lookup_table.csv + spectra files) into output_dir.
+    Extends a spectral grid directory (with lookup_table.csv + spectra files) into output_dir.
     """
     extension_range = wavelength_range or (DEFAULT_WL_MIN, DEFAULT_WL_MAX)
     Path(output_dir).mkdir(parents=True, exist_ok=True)

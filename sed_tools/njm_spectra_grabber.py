@@ -170,7 +170,7 @@ class NJMSpectraGrabber:
             raw = self._parse_directory_listing(self.stellar_models_url)
             return [m for m in raw if not m.startswith('.')]
         except Exception as e:
-            print(f"[njm] Could not fetch model list: {e}")
+            print(f"[njm] Could not fetch spectral grid list: {e}")
             return []
     
     def _parse_directory_listing(self, url: str, quiet: bool = False) -> List[str]:
