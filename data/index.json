@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-06-07T06:11:59.237460",
+  "generated": "2026-10-21T20:57:22.189247",
   "base_url": "http://nillmill.ddns.net/sed_tools",
   "statistics": {
     "total_models": 1,
@@ -8,13 +8,22 @@
     "total_spectra": 6028,
     "total_size_bytes": 142850198218,
     "total_size_human": "133.04 GB",
-    "total_facilities": 70,
-    "total_filters": 3515
+    "total_facilities": 78,
+    "total_filters": 3836
   },
   "models": [
     "bt-cond"
   ],
   "models_detailed": {
+    "BOSZ-2024-r1000": {
+      "name": "BOSZ-2024-r1000",
+      "has_flux_cube": false,
+      "has_lookup_table": false,
+      "has_h5_bundle": false,
+      "spectra_count": 0,
+      "size_bytes": 0,
+      "size_human": "0.00 B"
+    },
     "bt-cond": {
       "name": "bt-cond",
       "has_flux_cube": false,
@@ -60,15 +69,16 @@
       "Contour",
       "Corot",
       "DDO",
+      "DECam",
       "DENIS",
       "DOT",
       "DSCOVR",
       "Dawn",
       "DeepImpact",
       "ERBS",
+      "ERIS",
       "EROS",
       "ERS",
-      "ESO",
       "Envisat",
       "Euclid",
       "ExoMars",
@@ -87,12 +97,19 @@
       "GTC",
       "Galileo",
       "Gemini",
+      "HAWK-I",
+      "HST",
       "JCMT",
       "JWST",
       "Kepler",
+      "LSST",
       "Liverpool",
+      "Palomar",
+      "Paranal",
       "Roman",
       "SLOAN",
+      "SPHERE",
+      "Subaru",
       "TESS",
       "Teide",
       "WISE",
@@ -110,8 +127,8 @@
               "J",
               "Ks"
             ],
-            "size_bytes": 4802,
-            "size_human": "4.69 KB"
+            "size_bytes": 5109,
+            "size_human": "4.99 KB"
           }
         },
         "instrument_count": 1
@@ -170,8 +187,8 @@
               "aao92",
               "aao93"
             ],
-            "size_bytes": 103124,
-            "size_human": "100.71 KB"
+            "size_bytes": 107807,
+            "size_human": "105.28 KB"
           },
           "GSC2": {
             "name": "GSC2",
@@ -181,8 +198,8 @@
               "In",
               "Rf"
             ],
-            "size_bytes": 12617,
-            "size_human": "12.32 KB"
+            "size_bytes": 12917,
+            "size_human": "12.61 KB"
           }
         },
         "instrument_count": 2
@@ -231,8 +248,8 @@
               "ch8",
               "ch9"
             ],
-            "size_bytes": 579298,
-            "size_human": "565.72 KB"
+            "size_bytes": 582997,
+            "size_human": "569.33 KB"
           },
           "OCTS": {
             "name": "OCTS",
@@ -247,8 +264,8 @@
               "band765",
               "band865"
             ],
-            "size_bytes": 17056,
-            "size_human": "16.66 KB"
+            "size_bytes": 17912,
+            "size_human": "17.49 KB"
           },
           "POLDER": {
             "name": "POLDER",
@@ -279,8 +296,8 @@
               "910",
               "910NP"
             ],
-            "size_bytes": 42979,
-            "size_human": "41.97 KB"
+            "size_bytes": 47212,
+            "size_human": "46.11 KB"
           }
         },
         "instrument_count": 3
@@ -297,8 +314,8 @@
               "WIDE_L",
               "WIDE_S"
             ],
-            "size_bytes": 5313,
-            "size_human": "5.19 KB"
+            "size_bytes": 5864,
+            "size_human": "5.73 KB"
           },
           "IRC": {
             "name": "IRC",
@@ -314,8 +331,8 @@
               "S7",
               "S9W"
             ],
-            "size_bytes": 170269,
-            "size_human": "166.28 KB"
+            "size_bytes": 171184,
+            "size_human": "167.17 KB"
           }
         },
         "instrument_count": 2
@@ -329,8 +346,8 @@
             "filters": [
               "345GHz"
             ],
-            "size_bytes": 2054,
-            "size_human": "2.01 KB"
+            "size_bytes": 2161,
+            "size_human": "2.11 KB"
           },
           "SABOCA": {
             "name": "SABOCA",
@@ -338,8 +355,8 @@
             "filters": [
               "852GHz"
             ],
-            "size_bytes": 6524,
-            "size_human": "6.37 KB"
+            "size_bytes": 6631,
+            "size_human": "6.48 KB"
           }
         },
         "instrument_count": 2
@@ -356,8 +373,8 @@
               "417nm",
               "VR"
             ],
-            "size_bytes": 16931,
-            "size_human": "16.53 KB"
+            "size_bytes": 17348,
+            "size_human": "16.94 KB"
           },
           "Balzers": {
             "name": "Balzers",
@@ -376,8 +393,8 @@
               "ND8",
               "ND9"
             ],
-            "size_bytes": 159001,
-            "size_human": "155.27 KB"
+            "size_bytes": 160252,
+            "size_human": "156.50 KB"
           },
           "Blocking": {
             "name": "Blocking",
@@ -391,8 +408,8 @@
               "RG610",
               "RG850"
             ],
-            "size_bytes": 68061,
-            "size_human": "66.47 KB"
+            "size_bytes": 68808,
+            "size_human": "67.20 KB"
           },
           "Broad": {
             "name": "Broad",
@@ -404,8 +421,8 @@
               "R",
               "V"
             ],
-            "size_bytes": 21273,
-            "size_human": "20.77 KB"
+            "size_bytes": 21776,
+            "size_human": "21.27 KB"
           },
           "FNAL": {
             "name": "FNAL",
@@ -414,8 +431,8 @@
               "BG39",
               "KCR"
             ],
-            "size_bytes": 10036,
-            "size_human": "9.80 KB"
+            "size_bytes": 10239,
+            "size_human": "10.00 KB"
           },
           "Gunn": {
             "name": "Gunn",
@@ -426,8 +443,8 @@
               "r",
               "z"
             ],
-            "size_bytes": 23642,
-            "size_human": "23.09 KB"
+            "size_bytes": 24038,
+            "size_human": "23.47 KB"
           },
           "Hodge": {
             "name": "Hodge",
@@ -438,8 +455,8 @@
               "6607nm",
               "6629nm"
             ],
-            "size_bytes": 7851,
-            "size_human": "7.67 KB"
+            "size_bytes": 8271,
+            "size_human": "8.08 KB"
           },
           "MSSSO": {
             "name": "MSSSO",
@@ -451,8 +468,8 @@
               "U",
               "V"
             ],
-            "size_bytes": 19045,
-            "size_human": "18.60 KB"
+            "size_bytes": 19545,
+            "size_human": "19.09 KB"
           },
           "NICFPS": {
             "name": "NICFPS",
@@ -474,8 +491,8 @@
               "Y",
               "Z"
             ],
-            "size_bytes": 121121,
-            "size_human": "118.28 KB"
+            "size_bytes": 122714,
+            "size_human": "119.84 KB"
           },
           "NMSU": {
             "name": "NMSU",
@@ -505,8 +522,8 @@
               "Wash_C3",
               "Wash_M2"
             ],
-            "size_bytes": 89324,
-            "size_human": "87.23 KB"
+            "size_bytes": 91682,
+            "size_human": "89.53 KB"
           },
           "Narrow": {
             "name": "Narrow",
@@ -520,8 +537,8 @@
               "Halpha_661nm",
               "Semrock_857nm"
             ],
-            "size_bytes": 27264,
-            "size_human": "26.62 KB"
+            "size_bytes": 28049,
+            "size_human": "27.39 KB"
           },
           "SDSS": {
             "name": "SDSS",
@@ -533,8 +550,8 @@
               "u",
               "z"
             ],
-            "size_bytes": 208499,
-            "size_human": "203.61 KB"
+            "size_bytes": 208994,
+            "size_human": "204.10 KB"
           },
           "UCO": {
             "name": "UCO",
@@ -582,8 +599,8 @@
               "8140_4d",
               "8140_5d"
             ],
-            "size_bytes": 161683,
-            "size_human": "157.89 KB"
+            "size_bytes": 165947,
+            "size_human": "162.06 KB"
           },
           "York": {
             "name": "York",
@@ -606,8 +623,8 @@
               "8678",
               "9088"
             ],
-            "size_bytes": 11526,
-            "size_human": "11.26 KB"
+            "size_bytes": 13158,
+            "size_human": "12.85 KB"
           }
         },
         "instrument_count": 14
@@ -624,8 +641,8 @@
               "353GHz",
               "545GHz"
             ],
-            "size_bytes": 16588,
-            "size_human": "16.20 KB"
+            "size_bytes": 17293,
+            "size_human": "16.89 KB"
           }
         },
         "instrument_count": 1
@@ -642,8 +659,8 @@
               "C",
               "D"
             ],
-            "size_bytes": 19789,
-            "size_human": "19.33 KB"
+            "size_bytes": 20189,
+            "size_human": "19.72 KB"
           }
         },
         "instrument_count": 1
@@ -660,8 +677,8 @@
               "900nm_night",
               "970nm"
             ],
-            "size_bytes": 32970,
-            "size_human": "32.20 KB"
+            "size_bytes": 33409,
+            "size_human": "32.63 KB"
           },
           "IR2": {
             "name": "IR2",
@@ -673,8 +690,8 @@
               "2260nm",
               "2320nm"
             ],
-            "size_bytes": 35327,
-            "size_human": "34.50 KB"
+            "size_bytes": 35867,
+            "size_human": "35.03 KB"
           },
           "LIR": {
             "name": "LIR",
@@ -684,8 +701,8 @@
               "10mic_135deg",
               "10mic_164deg"
             ],
-            "size_bytes": 23257,
-            "size_human": "22.71 KB"
+            "size_bytes": 23592,
+            "size_human": "23.04 KB"
           },
           "UVI": {
             "name": "UVI",
@@ -695,8 +712,8 @@
               "365nm",
               "diff"
             ],
-            "size_bytes": 20650,
-            "size_human": "20.17 KB"
+            "size_bytes": 20970,
+            "size_human": "20.48 KB"
           }
         },
         "instrument_count": 4
@@ -716,8 +733,8 @@
               "Red1",
               "Red2"
             ],
-            "size_bytes": 29741,
-            "size_human": "29.04 KB"
+            "size_bytes": 30547,
+            "size_human": "29.83 KB"
           }
         },
         "instrument_count": 1
@@ -836,8 +853,8 @@
               "band869_8",
               "band869_9"
             ],
-            "size_bytes": 100524,
-            "size_human": "98.17 KB"
+            "size_bytes": 112058,
+            "size_human": "109.43 KB"
           }
         },
         "instrument_count": 1
@@ -874,8 +891,8 @@
               "VIS2",
               "VIS3"
             ],
-            "size_bytes": 29018,
-            "size_human": "28.34 KB"
+            "size_bytes": 31640,
+            "size_human": "30.90 KB"
           }
         },
         "instrument_count": 1
@@ -895,8 +912,8 @@
               "95GHz",
               "95GHz_rj"
             ],
-            "size_bytes": 19861,
-            "size_human": "19.40 KB"
+            "size_bytes": 21100,
+            "size_human": "20.61 KB"
           },
           "BICEP3": {
             "name": "BICEP3",
@@ -904,8 +921,8 @@
             "filters": [
               "95GHz"
             ],
-            "size_bytes": 4291,
-            "size_human": "4.19 KB"
+            "size_bytes": 4398,
+            "size_human": "4.29 KB"
           }
         },
         "instrument_count": 2
@@ -921,8 +938,8 @@
               "350mic",
               "500mic"
             ],
-            "size_bytes": 12036,
-            "size_human": "11.75 KB"
+            "size_bytes": 12567,
+            "size_human": "12.27 KB"
           },
           "BLASTPol": {
             "name": "BLASTPol",
@@ -932,8 +949,8 @@
               "600GHz",
               "850GHz"
             ],
-            "size_bytes": 11937,
-            "size_human": "11.66 KB"
+            "size_bytes": 12268,
+            "size_human": "11.98 KB"
           },
           "BLAST_TNG": {
             "name": "BLAST_TNG",
@@ -943,8 +960,8 @@
               "350min",
               "500min"
             ],
-            "size_bytes": 12469,
-            "size_human": "12.18 KB"
+            "size_bytes": 13006,
+            "size_human": "12.70 KB"
           }
         },
         "instrument_count": 3
@@ -973,8 +990,8 @@
               "sdss_u",
               "sdss_z"
             ],
-            "size_bytes": 31441,
-            "size_human": "30.70 KB"
+            "size_bytes": 33418,
+            "size_human": "32.63 KB"
           },
           "SCUSS": {
             "name": "SCUSS",
@@ -983,8 +1000,8 @@
               "u",
               "u_noatm"
             ],
-            "size_bytes": 2511,
-            "size_human": "2.45 KB"
+            "size_bytes": 2717,
+            "size_human": "2.65 KB"
           }
         },
         "instrument_count": 2
@@ -1001,8 +1018,8 @@
               "410GHz",
               "90GHz"
             ],
-            "size_bytes": 15378,
-            "size_human": "15.02 KB"
+            "size_bytes": 16085,
+            "size_human": "15.71 KB"
           }
         },
         "instrument_count": 1
@@ -1019,8 +1036,8 @@
               "F880",
               "FPAN"
             ],
-            "size_bytes": 16710,
-            "size_human": "16.32 KB"
+            "size_bytes": 17438,
+            "size_human": "17.03 KB"
           },
           "STC": {
             "name": "STC",
@@ -1033,8 +1050,8 @@
               "PANH",
               "PANL"
             ],
-            "size_bytes": 25653,
-            "size_human": "25.05 KB"
+            "size_bytes": 26743,
+            "size_human": "26.12 KB"
           }
         },
         "instrument_count": 2
@@ -1086,8 +1103,8 @@
               "sdss_z_filter",
               "sdss_z_noatm"
             ],
-            "size_bytes": 414240,
-            "size_human": "404.53 KB"
+            "size_bytes": 418555,
+            "size_human": "408.75 KB"
           },
           "BUSCA": {
             "name": "BUSCA",
@@ -1106,8 +1123,8 @@
               "v",
               "y"
             ],
-            "size_bytes": 13362,
-            "size_human": "13.05 KB"
+            "size_bytes": 14590,
+            "size_human": "14.25 KB"
           },
           "CAHA": {
             "name": "CAHA",
@@ -1292,8 +1309,8 @@
               "914_9",
               "954_5"
             ],
-            "size_bytes": 2216306,
-            "size_human": "2.11 MB"
+            "size_bytes": 2234995,
+            "size_human": "2.13 MB"
           },
           "LAICA": {
             "name": "LAICA",
@@ -1431,8 +1448,8 @@
               "SDSS_u",
               "SDSS_z"
             ],
-            "size_bytes": 456369,
-            "size_human": "445.67 KB"
+            "size_bytes": 477954,
+            "size_human": "466.75 KB"
           },
           "MUNICS": {
             "name": "MUNICS",
@@ -1444,8 +1461,8 @@
               "R",
               "V"
             ],
-            "size_bytes": 21264,
-            "size_human": "20.77 KB"
+            "size_bytes": 21775,
+            "size_human": "21.26 KB"
           },
           "Omega2000": {
             "name": "Omega2000",
@@ -1479,8 +1496,8 @@
               "Y",
               "z"
             ],
-            "size_bytes": 179954,
-            "size_human": "175.74 KB"
+            "size_bytes": 182887,
+            "size_human": "178.60 KB"
           },
           "PANIC": {
             "name": "PANIC",
@@ -1494,8 +1511,8 @@
               "Y",
               "Z"
             ],
-            "size_bytes": 99256,
-            "size_human": "96.93 KB"
+            "size_bytes": 99971,
+            "size_human": "97.63 KB"
           },
           "PlanetCam2": {
             "name": "PlanetCam2",
@@ -1552,8 +1569,8 @@
               "VIS_Vio",
               "VIS_Vio_filter"
             ],
-            "size_bytes": 389282,
-            "size_human": "380.16 KB"
+            "size_bytes": 395027,
+            "size_human": "385.77 KB"
           }
         },
         "instrument_count": 8
@@ -1569,8 +1586,8 @@
               "u",
               "uv"
             ],
-            "size_bytes": 11331,
-            "size_human": "11.07 KB"
+            "size_bytes": 11860,
+            "size_human": "11.58 KB"
           }
         },
         "instrument_count": 1
@@ -1597,8 +1614,8 @@
               "V",
               "Zprime"
             ],
-            "size_bytes": 40176,
-            "size_human": "39.23 KB"
+            "size_bytes": 41652,
+            "size_human": "40.68 KB"
           },
           "CFHT": {
             "name": "CFHT",
@@ -1948,8 +1965,8 @@
               "cfh9702",
               "cfh9801"
             ],
-            "size_bytes": 802613,
-            "size_human": "783.80 KB"
+            "size_bytes": 838941,
+            "size_human": "819.28 KB"
           },
           "MOCAM": {
             "name": "MOCAM",
@@ -1962,8 +1979,8 @@
               "V",
               "Vcfht"
             ],
-            "size_bytes": 8807,
-            "size_human": "8.60 KB"
+            "size_bytes": 9423,
+            "size_human": "9.20 KB"
           },
           "MegaCam": {
             "name": "MegaCam",
@@ -1982,8 +1999,8 @@
               "z",
               "z_1"
             ],
-            "size_bytes": 34219,
-            "size_human": "33.42 KB"
+            "size_bytes": 35469,
+            "size_human": "34.64 KB"
           },
           "Megaprime": {
             "name": "Megaprime",
@@ -2045,8 +2062,8 @@
               "zS_fil",
               "z_fil"
             ],
-            "size_bytes": 1103762,
-            "size_human": "1.05 MB"
+            "size_bytes": 1110391,
+            "size_human": "1.06 MB"
           },
           "QUIRC": {
             "name": "QUIRC",
@@ -2068,8 +2085,8 @@
               "N2131",
               "N2265"
             ],
-            "size_bytes": 14865,
-            "size_human": "14.52 KB"
+            "size_bytes": 16409,
+            "size_human": "16.02 KB"
           },
           "WFC": {
             "name": "WFC",
@@ -2077,8 +2094,8 @@
             "filters": [
               "J"
             ],
-            "size_bytes": 17137,
-            "size_human": "16.74 KB"
+            "size_bytes": 17296,
+            "size_human": "16.89 KB"
           },
           "Wircam": {
             "name": "Wircam",
@@ -2097,8 +2114,8 @@
               "W",
               "Y"
             ],
-            "size_bytes": 113752,
-            "size_human": "111.09 KB"
+            "size_bytes": 115017,
+            "size_human": "112.32 KB"
           }
         },
         "instrument_count": 8
@@ -2112,8 +2129,8 @@
             "filters": [
               "band"
             ],
-            "size_bytes": 4057,
-            "size_human": "3.96 KB"
+            "size_bytes": 4164,
+            "size_human": "4.07 KB"
           }
         },
         "instrument_count": 1
@@ -2133,8 +2150,8 @@
               "Rc",
               "V"
             ],
-            "size_bytes": 27177,
-            "size_human": "26.54 KB"
+            "size_bytes": 28329,
+            "size_human": "27.67 KB"
           }
         },
         "instrument_count": 1
@@ -2157,8 +2174,8 @@
               "4p9m",
               "60m"
             ],
-            "size_bytes": 12072,
-            "size_human": "11.79 KB"
+            "size_bytes": 13110,
+            "size_human": "12.80 KB"
           }
         },
         "instrument_count": 1
@@ -2179,8 +2196,8 @@
               "745nm",
               "865nm"
             ],
-            "size_bytes": 7830,
-            "size_human": "7.65 KB"
+            "size_bytes": 8662,
+            "size_human": "8.46 KB"
           }
         },
         "instrument_count": 1
@@ -2223,8 +2240,8 @@
               "z_ccd",
               "z_fil"
             ],
-            "size_bytes": 125615,
-            "size_human": "122.67 KB"
+            "size_bytes": 130779,
+            "size_human": "127.71 KB"
           },
           "MCI": {
             "name": "MCI",
@@ -2240,8 +2257,8 @@
               "F845M",
               "F960M"
             ],
-            "size_bytes": 33949,
-            "size_human": "33.15 KB"
+            "size_bytes": 34876,
+            "size_human": "34.06 KB"
           }
         },
         "instrument_count": 2
@@ -2257,8 +2274,8 @@
               "i",
               "r"
             ],
-            "size_bytes": 1241,
-            "size_human": "1.21 KB"
+            "size_bytes": 1721,
+            "size_human": "1.68 KB"
           }
         },
         "instrument_count": 1
@@ -2280,8 +2297,8 @@
               "R_YALO",
               "V_KPNO"
             ],
-            "size_bytes": 19532,
-            "size_human": "19.07 KB"
+            "size_bytes": 20489,
+            "size_human": "20.01 KB"
           },
           "BLANK": {
             "name": "BLANK",
@@ -2329,8 +2346,8 @@
               "vStrom",
               "yStrom"
             ],
-            "size_bytes": 158206,
-            "size_human": "154.50 KB"
+            "size_bytes": 162709,
+            "size_human": "158.90 KB"
           },
           "CTIO": {
             "name": "CTIO",
@@ -2572,8 +2589,8 @@
               "9900_z2x2",
               "9900_z3x3"
             ],
-            "size_bytes": 427655,
-            "size_human": "417.63 KB"
+            "size_bytes": 466129,
+            "size_human": "455.20 KB"
           },
           "DECam": {
             "name": "DECam",
@@ -2599,8 +2616,8 @@
               "z_filter",
               "z_old"
             ],
-            "size_bytes": 64697,
-            "size_human": "63.18 KB"
+            "size_bytes": 178015,
+            "size_human": "173.84 KB"
           },
           "Goodman": {
             "name": "Goodman",
@@ -2624,8 +2641,8 @@
               "y_Strom",
               "zp_SDSS"
             ],
-            "size_bytes": 107411,
-            "size_human": "104.89 KB"
+            "size_bytes": 109260,
+            "size_human": "106.70 KB"
           },
           "ISPI": {
             "name": "ISPI",
@@ -2660,8 +2677,8 @@
               "Y_id191B",
               "Y_id191C"
             ],
-            "size_bytes": 127917,
-            "size_human": "124.92 KB"
+            "size_bytes": 130909,
+            "size_human": "127.84 KB"
           },
           "MosaicII": {
             "name": "MosaicII",
@@ -2691,8 +2708,8 @@
               "uSDSS",
               "zSDSS"
             ],
-            "size_bytes": 125398,
-            "size_human": "122.46 KB"
+            "size_bytes": 127852,
+            "size_human": "124.86 KB"
           },
           "OSIRIS": {
             "name": "OSIRIS",
@@ -2705,8 +2722,8 @@
               "J",
               "K"
             ],
-            "size_bytes": 41509,
-            "size_human": "40.54 KB"
+            "size_bytes": 42145,
+            "size_human": "41.16 KB"
           },
           "SAMI": {
             "name": "SAMI",
@@ -2725,8 +2742,8 @@
               "sdss_r",
               "sdss_z"
             ],
-            "size_bytes": 50150,
-            "size_human": "48.97 KB"
+            "size_bytes": 51379,
+            "size_human": "50.17 KB"
           },
           "SMARTS": {
             "name": "SMARTS",
@@ -2745,8 +2762,8 @@
               "V2",
               "V3"
             ],
-            "size_bytes": 8814,
-            "size_human": "8.61 KB"
+            "size_bytes": 10053,
+            "size_human": "9.82 KB"
           },
           "SOI": {
             "name": "SOI",
@@ -2771,8 +2788,8 @@
               "strom_v",
               "strom_y"
             ],
-            "size_bytes": 110456,
-            "size_human": "107.87 KB"
+            "size_bytes": 112332,
+            "size_human": "109.70 KB"
           },
           "S_PLUS": {
             "name": "S_PLUS",
@@ -2791,8 +2808,8 @@
               "u",
               "z"
             ],
-            "size_bytes": 33055,
-            "size_human": "32.28 KB"
+            "size_bytes": 35284,
+            "size_human": "34.46 KB"
           },
           "Spartan": {
             "name": "Spartan",
@@ -2812,8 +2829,8 @@
               "K",
               "Y"
             ],
-            "size_bytes": 70338,
-            "size_human": "68.69 KB"
+            "size_bytes": 71703,
+            "size_human": "70.02 KB"
           },
           "Y4KCam": {
             "name": "Y4KCam",
@@ -2829,8 +2846,8 @@
               "sdss_u",
               "sdss_z"
             ],
-            "size_bytes": 13581,
-            "size_human": "13.26 KB"
+            "size_bytes": 14526,
+            "size_human": "14.19 KB"
           }
         },
         "instrument_count": 14
@@ -2846,8 +2863,8 @@
               "D21_G",
               "D21_R"
             ],
-            "size_bytes": 1710,
-            "size_human": "1.67 KB"
+            "size_bytes": 2256,
+            "size_human": "2.20 KB"
           },
           "Canon_10D": {
             "name": "Canon_10D",
@@ -2855,8 +2872,8 @@
             "filters": [
               "10D_Block"
             ],
-            "size_bytes": 4318,
-            "size_human": "4.22 KB"
+            "size_bytes": 4487,
+            "size_human": "4.38 KB"
           },
           "Canon_1DMarkII": {
             "name": "Canon_1DMarkII",
@@ -2866,8 +2883,8 @@
               "1DMarkII_G",
               "1DMarkII_R"
             ],
-            "size_bytes": 1486,
-            "size_human": "1.45 KB"
+            "size_bytes": 2038,
+            "size_human": "1.99 KB"
           },
           "Canon_1DMarkIII": {
             "name": "Canon_1DMarkIII",
@@ -2877,8 +2894,8 @@
               "1DMarkIII_G",
               "1DMarkIII_R"
             ],
-            "size_bytes": 1509,
-            "size_human": "1.47 KB"
+            "size_bytes": 2064,
+            "size_human": "2.02 KB"
           },
           "Canon_20D": {
             "name": "Canon_20D",
@@ -2889,8 +2906,8 @@
               "20D_G",
               "20D_R"
             ],
-            "size_bytes": 5882,
-            "size_human": "5.74 KB"
+            "size_bytes": 6588,
+            "size_human": "6.43 KB"
           },
           "Canon_300D": {
             "name": "Canon_300D",
@@ -2901,8 +2918,8 @@
               "300D_G",
               "300D_R"
             ],
-            "size_bytes": 5861,
-            "size_human": "5.72 KB"
+            "size_bytes": 6571,
+            "size_human": "6.42 KB"
           },
           "Canon_30D": {
             "name": "Canon_30D",
@@ -2910,8 +2927,8 @@
             "filters": [
               "30D_Block"
             ],
-            "size_bytes": 4265,
-            "size_human": "4.17 KB"
+            "size_bytes": 4434,
+            "size_human": "4.33 KB"
           },
           "Canon_350D": {
             "name": "Canon_350D",
@@ -2919,8 +2936,8 @@
             "filters": [
               "350D_Block"
             ],
-            "size_bytes": 4124,
-            "size_human": "4.03 KB"
+            "size_bytes": 4294,
+            "size_human": "4.19 KB"
           },
           "Canon_40D": {
             "name": "Canon_40D",
@@ -2930,8 +2947,8 @@
               "40D_G",
               "40D_R"
             ],
-            "size_bytes": 1575,
-            "size_human": "1.54 KB"
+            "size_bytes": 2112,
+            "size_human": "2.06 KB"
           },
           "Canon_450D_IR": {
             "name": "Canon_450D_IR",
@@ -2941,8 +2958,8 @@
               "450D_IR_G",
               "450D_IR_R"
             ],
-            "size_bytes": 1883,
-            "size_human": "1.84 KB"
+            "size_bytes": 2432,
+            "size_human": "2.38 KB"
           },
           "Canon_500D": {
             "name": "Canon_500D",
@@ -2952,8 +2969,8 @@
               "500D_G",
               "500D_R"
             ],
-            "size_bytes": 1572,
-            "size_human": "1.54 KB"
+            "size_bytes": 2112,
+            "size_human": "2.06 KB"
           },
           "Canon_50D": {
             "name": "Canon_50D",
@@ -2963,8 +2980,8 @@
               "50D_G",
               "50D_R"
             ],
-            "size_bytes": 1540,
-            "size_human": "1.50 KB"
+            "size_bytes": 2077,
+            "size_human": "2.03 KB"
           },
           "Canon_5D": {
             "name": "Canon_5D",
@@ -2972,8 +2989,8 @@
             "filters": [
               "5D_Block"
             ],
-            "size_bytes": 4106,
-            "size_human": "4.01 KB"
+            "size_bytes": 4274,
+            "size_human": "4.17 KB"
           },
           "Canon_5DII": {
             "name": "Canon_5DII",
@@ -2981,8 +2998,8 @@
             "filters": [
               "5DII_Block"
             ],
-            "size_bytes": 3103,
-            "size_human": "3.03 KB"
+            "size_bytes": 3273,
+            "size_human": "3.20 KB"
           },
           "Canon_600D": {
             "name": "Canon_600D",
@@ -2992,8 +3009,8 @@
               "600D_G",
               "600D_R"
             ],
-            "size_bytes": 1556,
-            "size_human": "1.52 KB"
+            "size_bytes": 2096,
+            "size_human": "2.05 KB"
           },
           "Canon_60D": {
             "name": "Canon_60D",
@@ -3004,8 +3021,8 @@
               "60D_G",
               "60D_R"
             ],
-            "size_bytes": 5538,
-            "size_human": "5.41 KB"
+            "size_bytes": 6244,
+            "size_human": "6.10 KB"
           },
           "Canon_G1X": {
             "name": "Canon_G1X",
@@ -3013,8 +3030,8 @@
             "filters": [
               "G1X_Block"
             ],
-            "size_bytes": 4068,
-            "size_human": "3.97 KB"
+            "size_bytes": 4237,
+            "size_human": "4.14 KB"
           },
           "Canon_T2i": {
             "name": "Canon_T2i",
@@ -3022,8 +3039,8 @@
             "filters": [
               "T2i_Block"
             ],
-            "size_bytes": 4138,
-            "size_human": "4.04 KB"
+            "size_bytes": 4307,
+            "size_human": "4.21 KB"
           },
           "Canon_XS": {
             "name": "Canon_XS",
@@ -3031,8 +3048,8 @@
             "filters": [
               "XS_Block"
             ],
-            "size_bytes": 4239,
-            "size_human": "4.14 KB"
+            "size_bytes": 4407,
+            "size_human": "4.30 KB"
           },
           "Canon_XSi": {
             "name": "Canon_XSi",
@@ -3040,8 +3057,8 @@
             "filters": [
               "XSi_Block"
             ],
-            "size_bytes": 4246,
-            "size_human": "4.15 KB"
+            "size_bytes": 4415,
+            "size_human": "4.31 KB"
           },
           "Fujifilm_S3": {
             "name": "Fujifilm_S3",
@@ -3049,8 +3066,8 @@
             "filters": [
               "S3_Block"
             ],
-            "size_bytes": 3923,
-            "size_human": "3.83 KB"
+            "size_bytes": 4094,
+            "size_human": "4.00 KB"
           },
           "Fujifilm_S5Pro": {
             "name": "Fujifilm_S5Pro",
@@ -3060,8 +3077,8 @@
               "S5Pro_G",
               "S5Pro_R"
             ],
-            "size_bytes": 1453,
-            "size_human": "1.42 KB"
+            "size_bytes": 2005,
+            "size_human": "1.96 KB"
           },
           "Fujifilm_X100": {
             "name": "Fujifilm_X100",
@@ -3069,8 +3086,8 @@
             "filters": [
               "X100_Block"
             ],
-            "size_bytes": 4038,
-            "size_human": "3.94 KB"
+            "size_bytes": 4211,
+            "size_human": "4.11 KB"
           },
           "Fujifilm_Xpro1": {
             "name": "Fujifilm_Xpro1",
@@ -3078,8 +3095,8 @@
             "filters": [
               "Xpro1_Block"
             ],
-            "size_bytes": 4187,
-            "size_human": "4.09 KB"
+            "size_bytes": 4361,
+            "size_human": "4.26 KB"
           },
           "Hasselblad_H2": {
             "name": "Hasselblad_H2",
@@ -3089,8 +3106,8 @@
               "H2_G",
               "H2_R"
             ],
-            "size_bytes": 1643,
-            "size_human": "1.60 KB"
+            "size_bytes": 2192,
+            "size_human": "2.14 KB"
           },
           "Hasselblad_H3D": {
             "name": "Hasselblad_H3D",
@@ -3100,8 +3117,8 @@
               "H3D_G",
               "H3D_R"
             ],
-            "size_bytes": 1664,
-            "size_human": "1.62 KB"
+            "size_bytes": 2216,
+            "size_human": "2.16 KB"
           },
           "Kodak_DCS200": {
             "name": "Kodak_DCS200",
@@ -3111,8 +3128,8 @@
               "DCS200_G",
               "DCS200_R"
             ],
-            "size_bytes": 3868,
-            "size_human": "3.78 KB"
+            "size_bytes": 4237,
+            "size_human": "4.14 KB"
           },
           "Kodak_DCS420": {
             "name": "Kodak_DCS420",
@@ -3122,8 +3139,8 @@
               "DCS420_G",
               "DCS420_R"
             ],
-            "size_bytes": 3747,
-            "size_human": "3.66 KB"
+            "size_bytes": 4293,
+            "size_human": "4.19 KB"
           },
           "Leica_M8": {
             "name": "Leica_M8",
@@ -3133,8 +3150,8 @@
               "M8_G",
               "M8_R"
             ],
-            "size_bytes": 1894,
-            "size_human": "1.85 KB"
+            "size_bytes": 2428,
+            "size_human": "2.37 KB"
           },
           "Lumix_G10": {
             "name": "Lumix_G10",
@@ -3142,8 +3159,8 @@
             "filters": [
               "G10_Block"
             ],
-            "size_bytes": 3968,
-            "size_human": "3.88 KB"
+            "size_bytes": 4137,
+            "size_human": "4.04 KB"
           },
           "Lumix_GF1": {
             "name": "Lumix_GF1",
@@ -3151,8 +3168,8 @@
             "filters": [
               "GF1_Block"
             ],
-            "size_bytes": 4343,
-            "size_human": "4.24 KB"
+            "size_bytes": 4512,
+            "size_human": "4.41 KB"
           },
           "Lumix_GF2": {
             "name": "Lumix_GF2",
@@ -3160,8 +3177,8 @@
             "filters": [
               "GF2_Block"
             ],
-            "size_bytes": 4377,
-            "size_human": "4.27 KB"
+            "size_bytes": 4546,
+            "size_human": "4.44 KB"
           },
           "Nikon_D100": {
             "name": "Nikon_D100",
@@ -3169,8 +3186,8 @@
             "filters": [
               "D100_Block"
             ],
-            "size_bytes": 4150,
-            "size_human": "4.05 KB"
+            "size_bytes": 4320,
+            "size_human": "4.22 KB"
           },
           "Nikon_D200": {
             "name": "Nikon_D200",
@@ -3181,8 +3198,8 @@
               "D200_G",
               "D200_R"
             ],
-            "size_bytes": 5460,
-            "size_human": "5.33 KB"
+            "size_bytes": 6170,
+            "size_human": "6.03 KB"
           },
           "Nikon_D3": {
             "name": "Nikon_D3",
@@ -3192,8 +3209,8 @@
               "D3_G",
               "D3_R"
             ],
-            "size_bytes": 1435,
-            "size_human": "1.40 KB"
+            "size_bytes": 1969,
+            "size_human": "1.92 KB"
           },
           "Nikon_D3000": {
             "name": "Nikon_D3000",
@@ -3201,8 +3218,8 @@
             "filters": [
               "D3000_Block"
             ],
-            "size_bytes": 4369,
-            "size_human": "4.27 KB"
+            "size_bytes": 4540,
+            "size_human": "4.43 KB"
           },
           "Nikon_D300s": {
             "name": "Nikon_D300s",
@@ -3212,8 +3229,8 @@
               "D300s_G",
               "D300s_R"
             ],
-            "size_bytes": 1550,
-            "size_human": "1.51 KB"
+            "size_bytes": 2093,
+            "size_human": "2.04 KB"
           },
           "Nikon_D3100": {
             "name": "Nikon_D3100",
@@ -3221,8 +3238,8 @@
             "filters": [
               "D3100_Block"
             ],
-            "size_bytes": 4214,
-            "size_human": "4.12 KB"
+            "size_bytes": 4385,
+            "size_human": "4.28 KB"
           },
           "Nikon_D3X": {
             "name": "Nikon_D3X",
@@ -3232,8 +3249,8 @@
               "D3X_G",
               "D3X_R"
             ],
-            "size_bytes": 1480,
-            "size_human": "1.45 KB"
+            "size_bytes": 2017,
+            "size_human": "1.97 KB"
           },
           "Nikon_D40": {
             "name": "Nikon_D40",
@@ -3244,8 +3261,8 @@
               "D40_G",
               "D40_R"
             ],
-            "size_bytes": 5721,
-            "size_human": "5.59 KB"
+            "size_bytes": 6427,
+            "size_human": "6.28 KB"
           },
           "Nikon_D40x": {
             "name": "Nikon_D40x",
@@ -3253,8 +3270,8 @@
             "filters": [
               "D40x_Block"
             ],
-            "size_bytes": 3977,
-            "size_human": "3.88 KB"
+            "size_bytes": 4147,
+            "size_human": "4.05 KB"
           },
           "Nikon_D50": {
             "name": "Nikon_D50",
@@ -3265,8 +3282,8 @@
               "D50_G",
               "D50_R"
             ],
-            "size_bytes": 5777,
-            "size_human": "5.64 KB"
+            "size_bytes": 6483,
+            "size_human": "6.33 KB"
           },
           "Nikon_D5100": {
             "name": "Nikon_D5100",
@@ -3276,8 +3293,8 @@
               "D5100_G",
               "D5100_R"
             ],
-            "size_bytes": 1551,
-            "size_human": "1.51 KB"
+            "size_bytes": 2094,
+            "size_human": "2.04 KB"
           },
           "Nikon_D60": {
             "name": "Nikon_D60",
@@ -3285,8 +3302,8 @@
             "filters": [
               "D60_Block"
             ],
-            "size_bytes": 4197,
-            "size_human": "4.10 KB"
+            "size_bytes": 4366,
+            "size_human": "4.26 KB"
           },
           "Nikon_D70": {
             "name": "Nikon_D70",
@@ -3294,8 +3311,8 @@
             "filters": [
               "D70_Block"
             ],
-            "size_bytes": 4158,
-            "size_human": "4.06 KB"
+            "size_bytes": 4327,
+            "size_human": "4.23 KB"
           },
           "Nikon_D700": {
             "name": "Nikon_D700",
@@ -3305,8 +3322,8 @@
               "D700_G",
               "D700_R"
             ],
-            "size_bytes": 1455,
-            "size_human": "1.42 KB"
+            "size_bytes": 1995,
+            "size_human": "1.95 KB"
           },
           "Nikon_D80": {
             "name": "Nikon_D80",
@@ -3317,8 +3334,8 @@
               "D80_G",
               "D80_R"
             ],
-            "size_bytes": 5755,
-            "size_human": "5.62 KB"
+            "size_bytes": 6461,
+            "size_human": "6.31 KB"
           },
           "Nikon_D90": {
             "name": "Nikon_D90",
@@ -3329,8 +3346,8 @@
               "D90_G",
               "D90_R"
             ],
-            "size_bytes": 5868,
-            "size_human": "5.73 KB"
+            "size_bytes": 6574,
+            "size_human": "6.42 KB"
           },
           "Nokia_N900": {
             "name": "Nokia_N900",
@@ -3340,8 +3357,8 @@
               "N900_G",
               "N900_R"
             ],
-            "size_bytes": 1649,
-            "size_human": "1.61 KB"
+            "size_bytes": 2189,
+            "size_human": "2.14 KB"
           },
           "Olympus_EP1": {
             "name": "Olympus_EP1",
@@ -3349,8 +3366,8 @@
             "filters": [
               "EP1_Block"
             ],
-            "size_bytes": 4207,
-            "size_human": "4.11 KB"
+            "size_bytes": 4378,
+            "size_human": "4.28 KB"
           },
           "Olympus_EPL2": {
             "name": "Olympus_EPL2",
@@ -3360,8 +3377,8 @@
               "EPL2_G",
               "EPL2_R"
             ],
-            "size_bytes": 1511,
-            "size_human": "1.48 KB"
+            "size_bytes": 2057,
+            "size_human": "2.01 KB"
           },
           "Panasonic_DML_LX3": {
             "name": "Panasonic_DML_LX3",
@@ -3371,8 +3388,8 @@
               "DML_LX3_G",
               "DML_LX3_R"
             ],
-            "size_bytes": 1477,
-            "size_human": "1.44 KB"
+            "size_bytes": 2038,
+            "size_human": "1.99 KB"
           },
           "Pentax_K100D": {
             "name": "Pentax_K100D",
@@ -3380,8 +3397,8 @@
             "filters": [
               "K100D_Block"
             ],
-            "size_bytes": 4140,
-            "size_human": "4.04 KB"
+            "size_bytes": 4312,
+            "size_human": "4.21 KB"
           },
           "Pentax_K10D": {
             "name": "Pentax_K10D",
@@ -3389,8 +3406,8 @@
             "filters": [
               "K10D_Block"
             ],
-            "size_bytes": 4100,
-            "size_human": "4.00 KB"
+            "size_bytes": 4271,
+            "size_human": "4.17 KB"
           },
           "Pentax_K5": {
             "name": "Pentax_K5",
@@ -3400,8 +3417,8 @@
               "K5_G",
               "K5_R"
             ],
-            "size_bytes": 1588,
-            "size_human": "1.55 KB"
+            "size_bytes": 2125,
+            "size_human": "2.08 KB"
           },
           "Pentax_Q": {
             "name": "Pentax_Q",
@@ -3411,8 +3428,8 @@
               "Q_G",
               "Q_R"
             ],
-            "size_bytes": 1638,
-            "size_human": "1.60 KB"
+            "size_bytes": 2172,
+            "size_human": "2.12 KB"
           },
           "Pentax_ist_D": {
             "name": "Pentax_ist_D",
@@ -3420,8 +3437,8 @@
             "filters": [
               "ist_D_Block"
             ],
-            "size_bytes": 4185,
-            "size_human": "4.09 KB"
+            "size_bytes": 4357,
+            "size_human": "4.25 KB"
           },
           "Pentax_ist_DL": {
             "name": "Pentax_ist_DL",
@@ -3429,8 +3446,8 @@
             "filters": [
               "ist_DL_Block"
             ],
-            "size_bytes": 4240,
-            "size_human": "4.14 KB"
+            "size_bytes": 4413,
+            "size_human": "4.31 KB"
           },
           "PhaseOne": {
             "name": "PhaseOne",
@@ -3440,8 +3457,8 @@
               "G",
               "R"
             ],
-            "size_bytes": 1594,
-            "size_human": "1.56 KB"
+            "size_bytes": 2128,
+            "size_human": "2.08 KB"
           },
           "PointGrey_Grasshopper2_14S5C": {
             "name": "PointGrey_Grasshopper2_14S5C",
@@ -3451,8 +3468,8 @@
               "Grasshopper2_14S5C_G",
               "Grasshopper2_14S5C_R"
             ],
-            "size_bytes": 1423,
-            "size_human": "1.39 KB"
+            "size_bytes": 2017,
+            "size_human": "1.97 KB"
           },
           "PointGrey_Grasshopper_50S5C": {
             "name": "PointGrey_Grasshopper_50S5C",
@@ -3462,8 +3479,8 @@
               "Grasshopper_50S5C_G",
               "Grasshopper_50S5C_R"
             ],
-            "size_bytes": 1686,
-            "size_human": "1.65 KB"
+            "size_bytes": 2277,
+            "size_human": "2.22 KB"
           },
           "SQM": {
             "name": "SQM",
@@ -3476,8 +3493,8 @@
               "V",
               "scotopic"
             ],
-            "size_bytes": 23012,
-            "size_human": "22.47 KB"
+            "size_bytes": 24058,
+            "size_human": "23.49 KB"
           },
           "Samsung_NX10": {
             "name": "Samsung_NX10",
@@ -3485,8 +3502,8 @@
             "filters": [
               "NX10_Block"
             ],
-            "size_bytes": 4280,
-            "size_human": "4.18 KB"
+            "size_bytes": 4452,
+            "size_human": "4.35 KB"
           },
           "Samsung_NX100": {
             "name": "Samsung_NX100",
@@ -3494,8 +3511,8 @@
             "filters": [
               "NX100_Block"
             ],
-            "size_bytes": 4216,
-            "size_human": "4.12 KB"
+            "size_bytes": 4389,
+            "size_human": "4.29 KB"
           },
           "Sony.A200": {
             "name": "Sony.A200",
@@ -3503,8 +3520,8 @@
             "filters": [
               "A200_Block"
             ],
-            "size_bytes": 4364,
-            "size_human": "4.26 KB"
+            "size_bytes": 4533,
+            "size_human": "4.43 KB"
           },
           "Sony.A55": {
             "name": "Sony.A55",
@@ -3512,8 +3529,8 @@
             "filters": [
               "A55_Block"
             ],
-            "size_bytes": 4113,
-            "size_human": "4.02 KB"
+            "size_bytes": 4281,
+            "size_human": "4.18 KB"
           },
           "Sony_A290": {
             "name": "Sony_A290",
@@ -3521,8 +3538,8 @@
             "filters": [
               "A290_Block"
             ],
-            "size_bytes": 4367,
-            "size_human": "4.26 KB"
+            "size_bytes": 4536,
+            "size_human": "4.43 KB"
           },
           "Sony_A300": {
             "name": "Sony_A300",
@@ -3530,8 +3547,8 @@
             "filters": [
               "A300_Block"
             ],
-            "size_bytes": 4062,
-            "size_human": "3.97 KB"
+            "size_bytes": 4231,
+            "size_human": "4.13 KB"
           },
           "Sony_A330": {
             "name": "Sony_A330",
@@ -3539,8 +3556,8 @@
             "filters": [
               "A330_Block"
             ],
-            "size_bytes": 4059,
-            "size_human": "3.96 KB"
+            "size_bytes": 4228,
+            "size_human": "4.13 KB"
           },
           "Sony_NEX5N": {
             "name": "Sony_NEX5N",
@@ -3550,8 +3567,8 @@
               "NEX5N_G",
               "NEX5N_R"
             ],
-            "size_bytes": 1561,
-            "size_human": "1.52 KB"
+            "size_bytes": 2101,
+            "size_human": "2.05 KB"
           },
           "Sony_NEX_5N": {
             "name": "Sony_NEX_5N",
@@ -3559,8 +3576,8 @@
             "filters": [
               "NEX_5N_Block"
             ],
-            "size_bytes": 4109,
-            "size_human": "4.01 KB"
+            "size_bytes": 4280,
+            "size_human": "4.18 KB"
           },
           "Sony_NEX_C3": {
             "name": "Sony_NEX_C3",
@@ -3568,8 +3585,8 @@
             "filters": [
               "NEX_C3_Block"
             ],
-            "size_bytes": 4114,
-            "size_human": "4.02 KB"
+            "size_bytes": 4285,
+            "size_human": "4.18 KB"
           }
         },
         "instrument_count": 72
@@ -3622,8 +3639,8 @@
               "UV2_UV3",
               "UV3"
             ],
-            "size_bytes": 680781,
-            "size_human": "664.83 KB"
+            "size_bytes": 685181,
+            "size_human": "669.12 KB"
           },
           "ISS_WAC": {
             "name": "ISS_WAC",
@@ -3650,8 +3667,8 @@
               "RED",
               "VIO"
             ],
-            "size_bytes": 388481,
-            "size_human": "379.38 KB"
+            "size_bytes": 390663,
+            "size_human": "381.51 KB"
           }
         },
         "instrument_count": 2
@@ -3668,8 +3685,8 @@
               "650nm",
               "750nm"
             ],
-            "size_bytes": 16977,
-            "size_human": "16.58 KB"
+            "size_bytes": 17421,
+            "size_human": "17.01 KB"
           },
           "NIR": {
             "name": "NIR",
@@ -3681,8 +3698,8 @@
               "2000nm",
               "2600nm"
             ],
-            "size_bytes": 21358,
-            "size_human": "20.86 KB"
+            "size_bytes": 21908,
+            "size_human": "21.39 KB"
           },
           "UVVIS": {
             "name": "UVVIS",
@@ -3694,8 +3711,8 @@
               "900nm",
               "950nm"
             ],
-            "size_bytes": 21042,
-            "size_human": "20.55 KB"
+            "size_bytes": 21598,
+            "size_human": "21.09 KB"
           }
         },
         "instrument_count": 3
@@ -3730,8 +3747,8 @@
               "band10oob",
               "clear_fil"
             ],
-            "size_bytes": 16885,
-            "size_human": "16.49 KB"
+            "size_bytes": 19287,
+            "size_human": "18.83 KB"
           },
           "CRISP": {
             "name": "CRISP",
@@ -3757,8 +3774,8 @@
               "band10_fil",
               "clear_fil"
             ],
-            "size_bytes": 22821,
-            "size_human": "22.29 KB"
+            "size_bytes": 24931,
+            "size_human": "24.35 KB"
           }
         },
         "instrument_count": 2
@@ -3773,8 +3790,8 @@
               "AS",
               "PF"
             ],
-            "size_bytes": 8380,
-            "size_human": "8.18 KB"
+            "size_bytes": 8586,
+            "size_human": "8.38 KB"
           }
         },
         "instrument_count": 1
@@ -3799,11 +3816,91 @@
               "m48",
               "m48_ADPS"
             ],
-            "size_bytes": 10341,
-            "size_human": "10.10 KB"
+            "size_bytes": 12399,
+            "size_human": "12.11 KB"
           }
         },
         "instrument_count": 1
+      },
+      "DECam": {
+        "name": "DECam",
+        "instruments": {
+          "Broad": {
+            "name": "Broad",
+            "filter_count": 7,
+            "filters": [
+              "VR",
+              "Y",
+              "g",
+              "i",
+              "r",
+              "u",
+              "z"
+            ],
+            "size_bytes": 146433,
+            "size_human": "143.00 KB"
+          },
+          "Medium": {
+            "name": "Medium",
+            "filter_count": 5,
+            "filters": [
+              "M411",
+              "M438",
+              "M464",
+              "M490",
+              "M517"
+            ],
+            "size_bytes": 67827,
+            "size_human": "66.24 KB"
+          },
+          "Narrow": {
+            "name": "Narrow",
+            "filter_count": 9,
+            "filters": [
+              "N1008",
+              "N395",
+              "N419",
+              "N501",
+              "N540",
+              "N662",
+              "N673",
+              "N708",
+              "N964"
+            ],
+            "size_bytes": 233856,
+            "size_human": "228.38 KB"
+          },
+          "all": {
+            "name": "all",
+            "filter_count": 21,
+            "filters": [
+              "M411",
+              "M438",
+              "M464",
+              "M490",
+              "M517",
+              "N1008",
+              "N395",
+              "N419",
+              "N501",
+              "N540",
+              "N662",
+              "N673",
+              "N708",
+              "N964",
+              "VR",
+              "Y",
+              "g",
+              "i",
+              "r",
+              "u",
+              "z"
+            ],
+            "size_bytes": 448116,
+            "size_human": "437.61 KB"
+          }
+        },
+        "instrument_count": 4
       },
       "DENIS": {
         "name": "DENIS",
@@ -3816,8 +3913,8 @@
               "J",
               "Ks"
             ],
-            "size_bytes": 1462,
-            "size_human": "1.43 KB"
+            "size_bytes": 2006,
+            "size_human": "1.96 KB"
           }
         },
         "instrument_count": 1
@@ -3838,8 +3935,8 @@
               "PAH",
               "nbL"
             ],
-            "size_bytes": 34280,
-            "size_human": "33.48 KB"
+            "size_bytes": 35107,
+            "size_human": "34.28 KB"
           }
         },
         "instrument_count": 1
@@ -3862,8 +3959,8 @@
               "764nm",
               "779nm"
             ],
-            "size_bytes": 35031,
-            "size_human": "34.21 KB"
+            "size_bytes": 36091,
+            "size_human": "35.25 KB"
           }
         },
         "instrument_count": 1
@@ -3884,8 +3981,8 @@
               "F7",
               "F8"
             ],
-            "size_bytes": 32176,
-            "size_human": "31.42 KB"
+            "size_bytes": 32968,
+            "size_human": "32.20 KB"
           }
         },
         "instrument_count": 1
@@ -3916,8 +4013,8 @@
               "Violet",
               "Violet_fil"
             ],
-            "size_bytes": 196819,
-            "size_human": "192.21 KB"
+            "size_bytes": 199934,
+            "size_human": "195.25 KB"
           },
           "ITS_VIS": {
             "name": "ITS_VIS",
@@ -3925,8 +4022,8 @@
             "filters": [
               "clear"
             ],
-            "size_bytes": 3443,
-            "size_human": "3.36 KB"
+            "size_bytes": 3616,
+            "size_human": "3.53 KB"
           },
           "MRI_VIS": {
             "name": "MRI_VIS",
@@ -3951,8 +4048,8 @@
               "Violet_cont",
               "Violet_cont_fil"
             ],
-            "size_bytes": 146232,
-            "size_human": "142.80 KB"
+            "size_bytes": 149353,
+            "size_human": "145.85 KB"
           }
         },
         "instrument_count": 3
@@ -3968,8 +4065,39 @@
               "SW",
               "TOT"
             ],
-            "size_bytes": 78804,
-            "size_human": "76.96 KB"
+            "size_bytes": 79108,
+            "size_human": "77.25 KB"
+          }
+        },
+        "instrument_count": 1
+      },
+      "ERIS": {
+        "name": "ERIS",
+        "instruments": {
+          "NIX": {
+            "name": "NIX",
+            "filter_count": 17,
+            "filters": [
+              "Br-a",
+              "Br-a-cont",
+              "Br-g",
+              "Fe-II",
+              "H",
+              "H2-1-0S",
+              "H2-cont",
+              "IB-2.42",
+              "IB-2.48",
+              "J",
+              "K-peak",
+              "Ks",
+              "L-Broad",
+              "Lp",
+              "Mp",
+              "Pa-b",
+              "Short-Lp"
+            ],
+            "size_bytes": 263069,
+            "size_human": "256.90 KB"
           }
         },
         "instrument_count": 1
@@ -3983,8 +4111,8 @@
             "filters": [
               "Pan"
             ],
-            "size_bytes": 102,
-            "size_human": "102.00 B"
+            "size_bytes": 274,
+            "size_human": "274.00 B"
           }
         },
         "instrument_count": 1
@@ -4001,8 +4129,8 @@
               "IR37",
               "V16"
             ],
-            "size_bytes": 2622,
-            "size_human": "2.56 KB"
+            "size_bytes": 3033,
+            "size_human": "2.96 KB"
           },
           "ATSR2": {
             "name": "ATSR2",
@@ -4016,576 +4144,11 @@
               "V659",
               "V870"
             ],
-            "size_bytes": 17160,
-            "size_human": "16.76 KB"
+            "size_bytes": 17880,
+            "size_human": "17.46 KB"
           }
         },
         "instrument_count": 2
-      },
-      "ESO": {
-        "name": "ESO",
-        "instruments": {
-          "ESO": {
-            "name": "ESO",
-            "filter_count": 551,
-            "filters": [
-              "0046",
-              "0047",
-              "0175",
-              "0203",
-              "0204",
-              "0205",
-              "0206",
-              "0207",
-              "0209",
-              "0210",
-              "0211",
-              "0212",
-              "0215",
-              "0216",
-              "0218",
-              "0219",
-              "0220",
-              "0221",
-              "0222",
-              "0226",
-              "0227",
-              "0228",
-              "0229",
-              "0230",
-              "0231",
-              "0236",
-              "0237",
-              "0239",
-              "0240",
-              "0242",
-              "0243",
-              "0244",
-              "0245",
-              "0247",
-              "0248",
-              "0253",
-              "0254",
-              "0256",
-              "0257",
-              "0258",
-              "0259",
-              "0270",
-              "0271",
-              "0279",
-              "0280",
-              "0281",
-              "0282",
-              "0284",
-              "0285",
-              "0286",
-              "0287",
-              "0289",
-              "0290",
-              "0291",
-              "0292",
-              "0293",
-              "0294",
-              "0295",
-              "0296",
-              "0301",
-              "0302",
-              "0303",
-              "0304",
-              "0307",
-              "0310",
-              "0311",
-              "0313",
-              "0314",
-              "0315",
-              "0316",
-              "0317",
-              "0318",
-              "0319",
-              "0320",
-              "0321",
-              "0328",
-              "0329",
-              "0330",
-              "0331",
-              "0332",
-              "0334",
-              "0335",
-              "0336",
-              "0338",
-              "0339",
-              "0340",
-              "0342",
-              "0343",
-              "0344",
-              "0345",
-              "0346",
-              "0347",
-              "0349",
-              "0350",
-              "0351",
-              "0354",
-              "0355",
-              "0356",
-              "0357",
-              "0358",
-              "0359",
-              "0360",
-              "0361",
-              "0362",
-              "0363",
-              "0364",
-              "0365",
-              "0366",
-              "0367",
-              "0368",
-              "0369",
-              "0370",
-              "0371",
-              "0372",
-              "0373",
-              "0374",
-              "0375",
-              "0376",
-              "0377",
-              "0378",
-              "0379",
-              "0380",
-              "0381",
-              "0382",
-              "0383",
-              "0384",
-              "0385",
-              "0386",
-              "0387",
-              "0389",
-              "0390",
-              "0391",
-              "0392",
-              "0393",
-              "0394",
-              "0395",
-              "0396",
-              "0397",
-              "0398",
-              "0399",
-              "0400",
-              "0401",
-              "0402",
-              "0403",
-              "0404",
-              "0405",
-              "0406",
-              "0407",
-              "0408",
-              "0409",
-              "0411",
-              "0412",
-              "0414",
-              "0415",
-              "0416",
-              "0418",
-              "0419",
-              "0420",
-              "0421",
-              "0423",
-              "0425",
-              "0427",
-              "0428",
-              "0430",
-              "0432",
-              "0433",
-              "0434",
-              "0435",
-              "0436",
-              "0437",
-              "0438",
-              "0439",
-              "0440",
-              "0441",
-              "0442",
-              "0443",
-              "0444",
-              "0445",
-              "0446",
-              "0447",
-              "0449",
-              "0450",
-              "0451",
-              "0452",
-              "0454",
-              "0455",
-              "0456",
-              "0457",
-              "0459",
-              "0460",
-              "0462",
-              "0463",
-              "0464",
-              "0465",
-              "0505",
-              "0509",
-              "0510",
-              "0511",
-              "0512",
-              "0513",
-              "0514",
-              "0515",
-              "0516",
-              "0525",
-              "0526",
-              "0533",
-              "0534",
-              "0535",
-              "0536",
-              "0537",
-              "0538",
-              "0539",
-              "0545",
-              "0546",
-              "0548",
-              "0549",
-              "0550",
-              "0552",
-              "0553",
-              "0554",
-              "0555",
-              "0556",
-              "0557",
-              "0568",
-              "0569",
-              "0570",
-              "0571",
-              "0572",
-              "0574",
-              "0575",
-              "0576",
-              "0577",
-              "0578",
-              "0579",
-              "0580",
-              "0581",
-              "0582",
-              "0583",
-              "0584",
-              "0585",
-              "0586",
-              "0587",
-              "0588",
-              "0589",
-              "0590",
-              "0591",
-              "0592",
-              "0593",
-              "0594",
-              "0595",
-              "0596",
-              "0597",
-              "0598",
-              "0599",
-              "0600",
-              "0601",
-              "0602",
-              "0603",
-              "0604",
-              "0605",
-              "0606",
-              "0608",
-              "0610",
-              "0611",
-              "0612",
-              "0613",
-              "0614",
-              "0616",
-              "0617",
-              "0618",
-              "0620",
-              "0621",
-              "0622",
-              "0623",
-              "0625",
-              "0626",
-              "0627",
-              "0628",
-              "0629",
-              "0630",
-              "0631",
-              "0632",
-              "0633",
-              "0634",
-              "0639",
-              "0640",
-              "0641",
-              "0642",
-              "0643",
-              "0644",
-              "0645",
-              "0646",
-              "0647",
-              "0648",
-              "0649",
-              "0650",
-              "0651",
-              "0652",
-              "0653",
-              "0654",
-              "0655",
-              "0656",
-              "0657",
-              "0658",
-              "0671",
-              "0672",
-              "0673",
-              "0674",
-              "0675",
-              "0676",
-              "0677",
-              "0678",
-              "0679",
-              "0680",
-              "0681",
-              "0682",
-              "0683",
-              "0684",
-              "0685",
-              "0686",
-              "0687",
-              "0688",
-              "0689",
-              "0690",
-              "0691",
-              "0692",
-              "0693",
-              "0694",
-              "0696",
-              "0697",
-              "0698",
-              "0699",
-              "0700",
-              "0701",
-              "0702",
-              "0703",
-              "0705",
-              "0707",
-              "0708",
-              "0709",
-              "0711",
-              "0712",
-              "0713",
-              "0714",
-              "0715",
-              "0716",
-              "0717",
-              "0718",
-              "0719",
-              "0720",
-              "0721",
-              "0722",
-              "0723",
-              "0724",
-              "0725",
-              "0726",
-              "0727",
-              "0728",
-              "0729",
-              "0730",
-              "0731",
-              "0732",
-              "0733",
-              "0734",
-              "0741",
-              "0742",
-              "0743",
-              "0744",
-              "0745",
-              "0746",
-              "0747",
-              "0748",
-              "0749",
-              "0750",
-              "0751",
-              "0752",
-              "0753",
-              "0754",
-              "0755",
-              "0756",
-              "0757",
-              "0758",
-              "0759",
-              "0760",
-              "0761",
-              "0762",
-              "0763",
-              "0764",
-              "0765",
-              "0766",
-              "0767",
-              "0768",
-              "0769",
-              "0770",
-              "0771",
-              "0772",
-              "0773",
-              "0774",
-              "0775",
-              "0776",
-              "0777",
-              "0778",
-              "0779",
-              "0780",
-              "0781",
-              "0782",
-              "0783",
-              "0784",
-              "0785",
-              "0786",
-              "0787",
-              "0788",
-              "0789",
-              "0791",
-              "0792",
-              "0793",
-              "0794",
-              "0795",
-              "0796",
-              "0798",
-              "0799",
-              "0800",
-              "0801",
-              "0802",
-              "0803",
-              "0804",
-              "0805",
-              "0810",
-              "0811",
-              "0812",
-              "0813",
-              "0814",
-              "0815",
-              "0816",
-              "0817",
-              "0818",
-              "0819",
-              "0820",
-              "0821",
-              "0824",
-              "0825",
-              "0830",
-              "0831",
-              "0835",
-              "0836",
-              "0837",
-              "0838",
-              "0839",
-              "0840",
-              "0841",
-              "0842",
-              "0843",
-              "0844",
-              "0846",
-              "0847",
-              "0848",
-              "0849",
-              "0850",
-              "0851",
-              "0852",
-              "0853",
-              "0854",
-              "0856",
-              "0857",
-              "0858",
-              "0859",
-              "0860",
-              "0861",
-              "0862",
-              "0863",
-              "0864",
-              "0865",
-              "0866",
-              "0867",
-              "0868",
-              "0869",
-              "0870",
-              "0871",
-              "0872",
-              "0873",
-              "0874",
-              "0875",
-              "0876",
-              "0877",
-              "0878",
-              "0879",
-              "0880",
-              "0881",
-              "0882",
-              "0883",
-              "0884",
-              "0885",
-              "0886",
-              "0887",
-              "0888",
-              "0889",
-              "0890",
-              "1033",
-              "1034",
-              "1035",
-              "1036",
-              "1037",
-              "1038",
-              "1039",
-              "1040",
-              "1041",
-              "1042",
-              "1043",
-              "1044",
-              "1045",
-              "1046",
-              "1047",
-              "1048",
-              "1049",
-              "1050",
-              "1051",
-              "1052",
-              "1053",
-              "1054",
-              "1055",
-              "1056",
-              "1057",
-              "1058",
-              "1060",
-              "1061",
-              "1062",
-              "1063",
-              "1064",
-              "1065",
-              "1066",
-              "1067",
-              "1068",
-              "1069",
-              "1070",
-              "1071",
-              "1073",
-              "1074",
-              "1075",
-              "1076",
-              "1077",
-              "1078",
-              "1082",
-              "1083",
-              "1084",
-              "1085",
-              "1086",
-              "1088",
-              "1112",
-              "1113",
-              "1114",
-              "1115"
-            ],
-            "size_bytes": 2104095,
-            "size_human": "2.01 MB"
-          }
-        },
-        "instrument_count": 1
       },
       "Envisat": {
         "name": "Envisat",
@@ -4602,8 +4165,8 @@
               "V659",
               "V870"
             ],
-            "size_bytes": 25129,
-            "size_human": "24.54 KB"
+            "size_bytes": 25877,
+            "size_human": "25.27 KB"
           },
           "MERIS": {
             "name": "MERIS",
@@ -4625,8 +4188,8 @@
               "band14",
               "band15"
             ],
-            "size_bytes": 32150,
-            "size_human": "31.40 KB"
+            "size_bytes": 33785,
+            "size_human": "32.99 KB"
           }
         },
         "instrument_count": 2
@@ -4644,8 +4207,8 @@
               "Red",
               "Y"
             ],
-            "size_bytes": 45364,
-            "size_human": "44.30 KB"
+            "size_bytes": 46017,
+            "size_human": "44.94 KB"
           },
           "VIS": {
             "name": "VIS",
@@ -4653,8 +4216,8 @@
             "filters": [
               "vis"
             ],
-            "size_bytes": 13987,
-            "size_human": "13.66 KB"
+            "size_bytes": 14090,
+            "size_human": "13.76 KB"
           }
         },
         "instrument_count": 2
@@ -4675,8 +4238,8 @@
               "Red",
               "Red_fil"
             ],
-            "size_bytes": 33663,
-            "size_human": "32.87 KB"
+            "size_bytes": 34537,
+            "size_human": "33.73 KB"
           }
         },
         "instrument_count": 1
@@ -4718,8 +4281,8 @@
               "z",
               "z_old"
             ],
-            "size_bytes": 119653,
-            "size_human": "116.85 KB"
+            "size_bytes": 122999,
+            "size_human": "120.12 KB"
           },
           "MEarth": {
             "name": "MEarth",
@@ -4727,8 +4290,8 @@
             "filters": [
               "iz"
             ],
-            "size_bytes": 4208,
-            "size_human": "4.11 KB"
+            "size_bytes": 4311,
+            "size_human": "4.21 KB"
           }
         },
         "instrument_count": 2
@@ -4748,8 +4311,8 @@
               "CH09",
               "CH10"
             ],
-            "size_bytes": 12558,
-            "size_human": "12.26 KB"
+            "size_bytes": 13839,
+            "size_human": "13.51 KB"
           }
         },
         "instrument_count": 1
@@ -4770,8 +4333,8 @@
               "IR4A",
               "IR4B"
             ],
-            "size_bytes": 18827,
-            "size_human": "18.39 KB"
+            "size_bytes": 20291,
+            "size_human": "19.82 KB"
           }
         },
         "instrument_count": 1
@@ -4792,8 +4355,8 @@
               "IR4A",
               "IR4B"
             ],
-            "size_bytes": 15625,
-            "size_human": "15.26 KB"
+            "size_bytes": 17089,
+            "size_human": "16.69 KB"
           }
         },
         "instrument_count": 1
@@ -4832,8 +4395,8 @@
               "CH25",
               "CH26"
             ],
-            "size_bytes": 228260,
-            "size_human": "222.91 KB"
+            "size_bytes": 232992,
+            "size_human": "227.53 KB"
           },
           "MERSI": {
             "name": "MERSI",
@@ -4860,8 +4423,8 @@
               "CH19",
               "CH20"
             ],
-            "size_bytes": 73774,
-            "size_human": "72.04 KB"
+            "size_bytes": 77434,
+            "size_human": "75.62 KB"
           }
         },
         "instrument_count": 2
@@ -4900,8 +4463,8 @@
               "CH25",
               "CH26"
             ],
-            "size_bytes": 332627,
-            "size_human": "324.83 KB"
+            "size_bytes": 337359,
+            "size_human": "329.45 KB"
           },
           "MERSI": {
             "name": "MERSI",
@@ -4927,8 +4490,8 @@
               "CH19",
               "CH20"
             ],
-            "size_bytes": 36838,
-            "size_human": "35.97 KB"
+            "size_bytes": 40315,
+            "size_human": "39.37 KB"
           },
           "VIRR": {
             "name": "VIRR",
@@ -4945,8 +4508,8 @@
               "CH09",
               "CH10"
             ],
-            "size_bytes": 32075,
-            "size_human": "31.32 KB"
+            "size_bytes": 33895,
+            "size_human": "33.10 KB"
           }
         },
         "instrument_count": 3
@@ -4985,8 +4548,8 @@
               "CH25",
               "CH26"
             ],
-            "size_bytes": 304569,
-            "size_human": "297.43 KB"
+            "size_bytes": 309301,
+            "size_human": "302.05 KB"
           },
           "MERSI": {
             "name": "MERSI",
@@ -5013,8 +4576,8 @@
               "CH19",
               "CH20"
             ],
-            "size_bytes": 26080,
-            "size_human": "25.47 KB"
+            "size_bytes": 29740,
+            "size_human": "29.04 KB"
           },
           "VIRR": {
             "name": "VIRR",
@@ -5028,8 +4591,8 @@
               "CH09",
               "CH10"
             ],
-            "size_bytes": 10828,
-            "size_human": "10.57 KB"
+            "size_bytes": 12102,
+            "size_human": "11.82 KB"
           }
         },
         "instrument_count": 3
@@ -5046,8 +4609,8 @@
               "NIR",
               "Red"
             ],
-            "size_bytes": 1611,
-            "size_human": "1.57 KB"
+            "size_bytes": 2298,
+            "size_human": "2.24 KB"
           },
           "SuperDove": {
             "name": "SuperDove",
@@ -5059,8 +4622,8 @@
               "Red",
               "RedEdge"
             ],
-            "size_bytes": 4707,
-            "size_human": "4.60 KB"
+            "size_bytes": 5254,
+            "size_human": "5.13 KB"
           }
         },
         "instrument_count": 2
@@ -5079,8 +4642,8 @@
               "Grp",
               "Grvs"
             ],
-            "size_bytes": 99633,
-            "size_human": "97.30 KB"
+            "size_bytes": 100685,
+            "size_human": "98.33 KB"
           }
         },
         "instrument_count": 1
@@ -5095,8 +4658,8 @@
               "FUV",
               "NUV"
             ],
-            "size_bytes": 25760,
-            "size_human": "25.16 KB"
+            "size_bytes": 25968,
+            "size_human": "25.36 KB"
           }
         },
         "instrument_count": 1
@@ -5150,8 +4713,8 @@
               "VR10",
               "VR11"
             ],
-            "size_bytes": 394276,
-            "size_human": "385.04 KB"
+            "size_bytes": 401367,
+            "size_human": "391.96 KB"
           }
         },
         "instrument_count": 1
@@ -5168,8 +4731,8 @@
               "Uc_ADPS",
               "V_ADPS"
             ],
-            "size_bytes": 2785,
-            "size_human": "2.72 KB"
+            "size_bytes": 3250,
+            "size_human": "3.17 KB"
           },
           "Cousins": {
             "name": "Cousins",
@@ -5180,8 +4743,8 @@
               "R",
               "R_ADPS"
             ],
-            "size_bytes": 3872,
-            "size_human": "3.78 KB"
+            "size_bytes": 4566,
+            "size_human": "4.46 KB"
           },
           "Eggen": {
             "name": "Eggen",
@@ -5190,8 +4753,8 @@
               "I",
               "R"
             ],
-            "size_bytes": 2616,
-            "size_human": "2.55 KB"
+            "size_bytes": 2842,
+            "size_human": "2.78 KB"
           },
           "Geneva": {
             "name": "Geneva",
@@ -5212,8 +4775,8 @@
               "V1_ADPS",
               "V_ADPS"
             ],
-            "size_bytes": 10714,
-            "size_human": "10.46 KB"
+            "size_bytes": 13135,
+            "size_human": "12.83 KB"
           },
           "JHKLMN": {
             "name": "JHKLMN",
@@ -5231,8 +4794,8 @@
               "U",
               "V"
             ],
-            "size_bytes": 3106,
-            "size_human": "3.03 KB"
+            "size_bytes": 4979,
+            "size_human": "4.86 KB"
           },
           "Johnson": {
             "name": "Johnson",
@@ -5259,8 +4822,8 @@
               "V_Mendoza",
               "V_Straizys"
             ],
-            "size_bytes": 15619,
-            "size_human": "15.25 KB"
+            "size_bytes": 19172,
+            "size_human": "18.72 KB"
           },
           "Stromgren": {
             "name": "Stromgren",
@@ -5275,8 +4838,8 @@
               "y",
               "y_ADPS"
             ],
-            "size_bytes": 6924,
-            "size_human": "6.76 KB"
+            "size_bytes": 7880,
+            "size_human": "7.70 KB"
           },
           "Vilnius": {
             "name": "Vilnius",
@@ -5297,8 +4860,8 @@
               "Z",
               "Z_ADPS"
             ],
-            "size_bytes": 11271,
-            "size_human": "11.01 KB"
+            "size_bytes": 13700,
+            "size_human": "13.38 KB"
           },
           "WBVR": {
             "name": "WBVR",
@@ -5313,8 +4876,8 @@
               "W",
               "W_ADPS"
             ],
-            "size_bytes": 7441,
-            "size_human": "7.27 KB"
+            "size_bytes": 8805,
+            "size_human": "8.60 KB"
           },
           "Walraven": {
             "name": "Walraven",
@@ -5326,8 +4889,8 @@
               "V",
               "W"
             ],
-            "size_bytes": 3397,
-            "size_human": "3.32 KB"
+            "size_bytes": 4257,
+            "size_human": "4.16 KB"
           },
           "Washington": {
             "name": "Washington",
@@ -5342,8 +4905,8 @@
               "T2_pe",
               "T2_ph"
             ],
-            "size_bytes": 2016,
-            "size_human": "1.97 KB"
+            "size_bytes": 3436,
+            "size_human": "3.36 KB"
           }
         },
         "instrument_count": 11
@@ -5374,8 +4937,8 @@
               "Si6",
               "SiC"
             ],
-            "size_bytes": 566489,
-            "size_human": "553.21 KB"
+            "size_bytes": 568400,
+            "size_human": "555.08 KB"
           }
         },
         "instrument_count": 1
@@ -5396,8 +4959,8 @@
               "Red",
               "Violet"
             ],
-            "size_bytes": 4438,
-            "size_human": "4.33 KB"
+            "size_bytes": 5285,
+            "size_human": "5.16 KB"
           }
         },
         "instrument_count": 1
@@ -5413,8 +4976,8 @@
               "R",
               "V"
             ],
-            "size_bytes": 16164,
-            "size_human": "15.79 KB"
+            "size_bytes": 16653,
+            "size_human": "16.26 KB"
           },
           "AcqCam_S": {
             "name": "AcqCam_S",
@@ -5426,8 +4989,8 @@
               "U",
               "V"
             ],
-            "size_bytes": 91944,
-            "size_human": "89.79 KB"
+            "size_bytes": 92759,
+            "size_human": "90.58 KB"
           },
           "Alopeke": {
             "name": "Alopeke",
@@ -5443,8 +5006,8 @@
               "u_sdss",
               "z_sdss"
             ],
-            "size_bytes": 27505,
-            "size_human": "26.86 KB"
+            "size_bytes": 28495,
+            "size_human": "27.83 KB"
           },
           "DSSI": {
             "name": "DSSI",
@@ -5459,8 +5022,8 @@
               "Red",
               "Red_filter"
             ],
-            "size_bytes": 33894,
-            "size_human": "33.10 KB"
+            "size_bytes": 34766,
+            "size_human": "33.95 KB"
           },
           "Flamingos2": {
             "name": "Flamingos2",
@@ -5480,8 +5043,8 @@
               "Ks",
               "Y"
             ],
-            "size_bytes": 156551,
-            "size_human": "152.88 KB"
+            "size_bytes": 158082,
+            "size_human": "154.38 KB"
           },
           "GMOS_N": {
             "name": "GMOS_N",
@@ -5507,8 +5070,8 @@
               "u",
               "z"
             ],
-            "size_bytes": 41603,
-            "size_human": "40.63 KB"
+            "size_bytes": 44694,
+            "size_human": "43.65 KB"
           },
           "GMOS_S": {
             "name": "GMOS_S",
@@ -5532,8 +5095,8 @@
               "u",
               "z"
             ],
-            "size_bytes": 106987,
-            "size_human": "104.48 KB"
+            "size_bytes": 109751,
+            "size_human": "107.18 KB"
           },
           "GNIRS": {
             "name": "GNIRS",
@@ -5552,8 +5115,8 @@
               "XD",
               "Y"
             ],
-            "size_bytes": 61360,
-            "size_human": "59.92 KB"
+            "size_bytes": 62720,
+            "size_human": "61.25 KB"
           },
           "GPI": {
             "name": "GPI",
@@ -5565,8 +5128,8 @@
               "K2",
               "Y"
             ],
-            "size_bytes": 168321,
-            "size_human": "164.38 KB"
+            "size_bytes": 168828,
+            "size_human": "164.87 KB"
           },
           "GSAOI": {
             "name": "GSAOI",
@@ -5595,11 +5158,969 @@
               "Kshort_cont",
               "Z"
             ],
-            "size_bytes": 284711,
-            "size_human": "278.04 KB"
+            "size_bytes": 287191,
+            "size_human": "280.46 KB"
           }
         },
         "instrument_count": 10
+      },
+      "HAWK-I": {
+        "name": "HAWK-I",
+        "instruments": {
+          "HAWK-I": {
+            "name": "HAWK-I",
+            "filter_count": 12,
+            "filters": [
+              "BrG",
+              "CH4",
+              "H",
+              "H2",
+              "J",
+              "Ks_2007",
+              "Ks_2008",
+              "NB0984",
+              "NB1060",
+              "NB1190",
+              "NB2090",
+              "Y"
+            ],
+            "size_bytes": 324387,
+            "size_human": "316.78 KB"
+          }
+        },
+        "instrument_count": 1
+      },
+      "HST": {
+        "name": "HST",
+        "instruments": {
+          "ACS_HRC": {
+            "name": "ACS_HRC",
+            "filter_count": 26,
+            "filters": [
+              "F220W",
+              "F250W",
+              "F330W",
+              "F344N",
+              "F435W",
+              "F475W",
+              "F502N",
+              "F550M",
+              "F555W",
+              "F606W",
+              "F625W",
+              "F658N",
+              "F660N",
+              "F775W",
+              "F814W",
+              "F850LP",
+              "F892N",
+              "FR388N",
+              "FR459M",
+              "FR505N",
+              "FR656N",
+              "FR914M",
+              "G800L",
+              "POL_UV",
+              "POL_V",
+              "PR200L"
+            ],
+            "size_bytes": 7776444,
+            "size_human": "7.42 MB"
+          },
+          "ACS_SBC": {
+            "name": "ACS_SBC",
+            "filter_count": 8,
+            "filters": [
+              "F115LP",
+              "F122M",
+              "F125LP",
+              "F140LP",
+              "F150LP",
+              "F165LP",
+              "PR110L",
+              "PR130L"
+            ],
+            "size_bytes": 263588,
+            "size_human": "257.41 KB"
+          },
+          "ACS_WFC": {
+            "name": "ACS_WFC",
+            "filter_count": 31,
+            "filters": [
+              "F435W",
+              "F475W",
+              "F502N",
+              "F550M",
+              "F555W",
+              "F606W",
+              "F625W",
+              "F658N",
+              "F660N",
+              "F775W",
+              "F814W",
+              "F850LP",
+              "F892N",
+              "FR1016N",
+              "FR388N",
+              "FR423N",
+              "FR459M",
+              "FR462N",
+              "FR505N",
+              "FR551N",
+              "FR601N",
+              "FR647M",
+              "FR656N",
+              "FR716N",
+              "FR782N",
+              "FR853N",
+              "FR914M",
+              "FR931N",
+              "G800L",
+              "POL_UV",
+              "POL_V"
+            ],
+            "size_bytes": 5669499,
+            "size_human": "5.41 MB"
+          },
+          "FGS": {
+            "name": "FGS",
+            "filter_count": 6,
+            "filters": [
+              "F550W",
+              "F583W",
+              "F605W",
+              "F650W",
+              "ND5",
+              "PUPIL"
+            ],
+            "size_bytes": 41107,
+            "size_human": "40.14 KB"
+          },
+          "FOC_F48": {
+            "name": "FOC_F48",
+            "filter_count": 14,
+            "filters": [
+              "F130LP",
+              "F140W",
+              "F150W",
+              "F175W",
+              "F180LP",
+              "F195W",
+              "F220W",
+              "F275W",
+              "F305LP",
+              "F342W",
+              "F430W",
+              "PRISM1",
+              "PRISM2",
+              "PRISM3"
+            ],
+            "size_bytes": 885588,
+            "size_human": "864.83 KB"
+          },
+          "FOC_F96": {
+            "name": "FOC_F96",
+            "filter_count": 44,
+            "filters": [
+              "F120M",
+              "F130LP",
+              "F130M",
+              "F140M",
+              "F140W",
+              "F152M",
+              "F165W",
+              "F170M",
+              "F175W",
+              "F190M",
+              "F195W",
+              "F1ND",
+              "F210M",
+              "F220W",
+              "F231M",
+              "F253M",
+              "F275W",
+              "F278M",
+              "F2ND",
+              "F307M",
+              "F320W",
+              "F342W",
+              "F346M",
+              "F370LP",
+              "F372M",
+              "F410M",
+              "F430W",
+              "F437M",
+              "F470M",
+              "F480LP",
+              "F486N",
+              "F4ND",
+              "F501N",
+              "F502M",
+              "F550M",
+              "F600M",
+              "F630M",
+              "F6ND",
+              "F8ND",
+              "POL0",
+              "POL120",
+              "POL60",
+              "PRISM1",
+              "PRISM2"
+            ],
+            "size_bytes": 2387573,
+            "size_human": "2.28 MB"
+          },
+          "FOS_BLUE": {
+            "name": "FOS_BLUE",
+            "filter_count": 7,
+            "filters": [
+              "G130H",
+              "G160L",
+              "G190H",
+              "G270H",
+              "G400H",
+              "MIRROR",
+              "PRISM"
+            ],
+            "size_bytes": 83957,
+            "size_human": "81.99 KB"
+          },
+          "FOS_RED": {
+            "name": "FOS_RED",
+            "filter_count": 9,
+            "filters": [
+              "G160L",
+              "G190H",
+              "G270H",
+              "G400H",
+              "G570H",
+              "G650L",
+              "G780H",
+              "MIRROR",
+              "PRISM"
+            ],
+            "size_bytes": 165574,
+            "size_human": "161.69 KB"
+          },
+          "HSP_POL": {
+            "name": "HSP_POL",
+            "filter_count": 6,
+            "filters": [
+              "F160LP_A",
+              "F160LP_T",
+              "F216M_0",
+              "F237M_0",
+              "F277M_0",
+              "F327M_0"
+            ],
+            "size_bytes": 86501,
+            "size_human": "84.47 KB"
+          },
+          "HSP_UV1": {
+            "name": "HSP_UV1",
+            "filter_count": 24,
+            "filters": [
+              "F122M_A",
+              "F122M_B",
+              "F135W_A",
+              "F135W_B",
+              "F140LP_A",
+              "F140LP_B",
+              "F145M_A",
+              "F145M_B",
+              "F152M_A",
+              "F152M_B",
+              "F184W_A",
+              "F184W_B",
+              "F218M_A",
+              "F218M_B",
+              "F220W_A",
+              "F220W_B",
+              "F240W_A",
+              "F240W_B",
+              "F248M_A",
+              "F248M_B",
+              "F278N_A",
+              "F278N_B",
+              "PRISM_BLUE",
+              "PRISM_RED"
+            ],
+            "size_bytes": 173263,
+            "size_human": "169.20 KB"
+          },
+          "HSP_UV2": {
+            "name": "HSP_UV2",
+            "filter_count": 26,
+            "filters": [
+              "F122M_A",
+              "F122M_B",
+              "F140LP_A",
+              "F140LP_B",
+              "F145M_A",
+              "F145M_B",
+              "F152M_A",
+              "F152M_B",
+              "F160LP_A",
+              "F160LP_B",
+              "F179M_A",
+              "F179M_B",
+              "F184W_A",
+              "F184W_B",
+              "F218M_A",
+              "F218M_B",
+              "F248M_A",
+              "F248M_B",
+              "F262M_A",
+              "F262M_B",
+              "F278N_A",
+              "F278N_B",
+              "F284M_A",
+              "F284M_B",
+              "PRISM_BLUE",
+              "PRISM_RED"
+            ],
+            "size_bytes": 190451,
+            "size_human": "185.99 KB"
+          },
+          "HSP_VIS": {
+            "name": "HSP_VIS",
+            "filter_count": 22,
+            "filters": [
+              "F160LP_A",
+              "F160LP_B",
+              "F184W_A",
+              "F184W_B",
+              "F240W_A",
+              "F240W_B",
+              "F262M_A",
+              "F262M_B",
+              "F355M_A",
+              "F355M_B",
+              "F400LP_A",
+              "F400LP_B",
+              "F419N_A",
+              "F419N_B",
+              "F450W_A",
+              "F450W_B",
+              "F551W_A",
+              "F551W_B",
+              "F620W_A",
+              "F620W_B",
+              "PRISM_BLUE",
+              "PRISM_RED"
+            ],
+            "size_bytes": 264731,
+            "size_human": "258.53 KB"
+          },
+          "NICMOS1": {
+            "name": "NICMOS1",
+            "filter_count": 19,
+            "filters": [
+              "F090M",
+              "F095N",
+              "F097N",
+              "F108N",
+              "F110M",
+              "F110W",
+              "F113N",
+              "F140W",
+              "F145M",
+              "F160W",
+              "F164N",
+              "F165M",
+              "F166N",
+              "F170M",
+              "F187N",
+              "F190N",
+              "POL0S",
+              "POL120S",
+              "POL240S"
+            ],
+            "size_bytes": 339410,
+            "size_human": "331.46 KB"
+          },
+          "NICMOS2": {
+            "name": "NICMOS2",
+            "filter_count": 19,
+            "filters": [
+              "F110W",
+              "F160W",
+              "F165M",
+              "F171M",
+              "F180M",
+              "F187N",
+              "F187W",
+              "F190N",
+              "F204M",
+              "F205W",
+              "F207M",
+              "F212N",
+              "F215N",
+              "F216N",
+              "F222M",
+              "F237M",
+              "POL0L",
+              "POL120L",
+              "POL240L"
+            ],
+            "size_bytes": 488140,
+            "size_human": "476.70 KB"
+          },
+          "NICMOS3": {
+            "name": "NICMOS3",
+            "filter_count": 19,
+            "filters": [
+              "F108N",
+              "F110W",
+              "F113N",
+              "F150W",
+              "F160W",
+              "F164N",
+              "F166N",
+              "F175W",
+              "F187N",
+              "F190N",
+              "F196N",
+              "F200N",
+              "F212N",
+              "F215N",
+              "F222M",
+              "F240M",
+              "G096",
+              "G141",
+              "G206"
+            ],
+            "size_bytes": 467300,
+            "size_human": "456.35 KB"
+          },
+          "STIS_CCD": {
+            "name": "STIS_CCD",
+            "filter_count": 27,
+            "filters": [
+              "50CCD",
+              "50CCD_G230LB",
+              "50CCD_G230MB",
+              "50CCD_G430L",
+              "50CCD_G430M",
+              "50CCD_G750L",
+              "50CCD_G750M",
+              "50CORON",
+              "50CORON_G230LB",
+              "50CORON_G230MB",
+              "50CORON_G430L",
+              "50CORON_G430M",
+              "50CORON_G750L",
+              "50CORON_G750M",
+              "F28X50LP",
+              "F28X50LP_G230LB",
+              "F28X50LP_G230MB",
+              "F28X50LP_G430L",
+              "F28X50LP_G430M",
+              "F28X50LP_G750L",
+              "F28X50LP_G750M",
+              "F28X50OII",
+              "F28X50OIII",
+              "F28X50OIII_G430L",
+              "F28X50OIII_G430M",
+              "F28X50OII_G430L",
+              "F28X50OII_G430M"
+            ],
+            "size_bytes": 2722137,
+            "size_human": "2.60 MB"
+          },
+          "STIS_FUV": {
+            "name": "STIS_FUV",
+            "filter_count": 30,
+            "filters": [
+              "25MAMA",
+              "25MAMA_G140L",
+              "25MAMA_G140M",
+              "F25LYA",
+              "F25LYA_G140L",
+              "F25LYA_G140M",
+              "F25ND3",
+              "F25ND3_G140L",
+              "F25ND3_G140M",
+              "F25ND5",
+              "F25ND5_G140L",
+              "F25ND5_G140M",
+              "F25NDQ1",
+              "F25NDQ1_G140L",
+              "F25NDQ1_G140M",
+              "F25NDQ2",
+              "F25NDQ2_G140L",
+              "F25NDQ2_G140M",
+              "F25NDQ3",
+              "F25NDQ3_G140L",
+              "F25NDQ3_G140M",
+              "F25NDQ4",
+              "F25NDQ4_G140L",
+              "F25NDQ4_G140M",
+              "F25QTZ",
+              "F25QTZ_G140L",
+              "F25QTZ_G140M",
+              "F25SRF2",
+              "F25SRF2_G140L",
+              "F25SRF2_G140M"
+            ],
+            "size_bytes": 1035087,
+            "size_human": "1010.83 KB"
+          },
+          "STIS_NUV": {
+            "name": "STIS_NUV",
+            "filter_count": 52,
+            "filters": [
+              "25MAMA",
+              "25MAMA_G230L",
+              "25MAMA_G230M",
+              "25MAMA_PRISM",
+              "F25CIII",
+              "F25CIII_G230L",
+              "F25CIII_G230M",
+              "F25CIII_PRISM",
+              "F25CN182",
+              "F25CN182_G230L",
+              "F25CN182_G230M",
+              "F25CN182_PRISM",
+              "F25CN270",
+              "F25CN270_G230L",
+              "F25CN270_G230M",
+              "F25CN270_PRISM",
+              "F25MGII",
+              "F25MGII_G230L",
+              "F25MGII_G230M",
+              "F25MGII_PRISM",
+              "F25ND3",
+              "F25ND3_G230L",
+              "F25ND3_G230M",
+              "F25ND3_PRISM",
+              "F25ND5",
+              "F25ND5_G230L",
+              "F25ND5_G230M",
+              "F25ND5_PRISM",
+              "F25NDQ1",
+              "F25NDQ1_G230L",
+              "F25NDQ1_G230M",
+              "F25NDQ1_PRISM",
+              "F25NDQ2",
+              "F25NDQ2_G230L",
+              "F25NDQ2_G230M",
+              "F25NDQ2_PRISM",
+              "F25NDQ3",
+              "F25NDQ3_G230L",
+              "F25NDQ3_G230M",
+              "F25NDQ3_PRISM",
+              "F25NDQ4",
+              "F25NDQ4_G230L",
+              "F25NDQ4_G230M",
+              "F25NDQ4_PRISM",
+              "F25QTZ",
+              "F25QTZ_G230L",
+              "F25QTZ_G230M",
+              "F25QTZ_PRISM",
+              "F25SRF2",
+              "F25SRF2_G230L",
+              "F25SRF2_G230M",
+              "F25SRF2_PRISM"
+            ],
+            "size_bytes": 8124231,
+            "size_human": "7.75 MB"
+          },
+          "WFC3_IR": {
+            "name": "WFC3_IR",
+            "filter_count": 17,
+            "filters": [
+              "F098M",
+              "F105W",
+              "F110W",
+              "F125W",
+              "F126N",
+              "F127M",
+              "F128N",
+              "F130N",
+              "F132N",
+              "F139M",
+              "F140W",
+              "F153M",
+              "F160W",
+              "F164N",
+              "F167N",
+              "G102",
+              "G141"
+            ],
+            "size_bytes": 916213,
+            "size_human": "894.74 KB"
+          },
+          "WFC3_UVIS1": {
+            "name": "WFC3_UVIS1",
+            "filter_count": 63,
+            "filters": [
+              "F200LP",
+              "F218W",
+              "F225W",
+              "F275W",
+              "F280N",
+              "F300X",
+              "F336W",
+              "F343N",
+              "F350LP",
+              "F373N",
+              "F390M",
+              "F390W",
+              "F395N",
+              "F410M",
+              "F438W",
+              "F467M",
+              "F469N",
+              "F475W",
+              "F475X",
+              "F487N",
+              "F502N",
+              "F547M",
+              "F555W",
+              "F600LP",
+              "F606W",
+              "F621M",
+              "F625W",
+              "F631N",
+              "F645N",
+              "F656N",
+              "F657N",
+              "F658N",
+              "F665N",
+              "F673N",
+              "F680N",
+              "F689M",
+              "F763M",
+              "F775W",
+              "F814W",
+              "F845M",
+              "F850LP",
+              "F953N",
+              "FQ232N",
+              "FQ243N",
+              "FQ378N",
+              "FQ387N",
+              "FQ422M",
+              "FQ436N",
+              "FQ437N",
+              "FQ492N",
+              "FQ508N",
+              "FQ575N",
+              "FQ619N",
+              "FQ634N",
+              "FQ672N",
+              "FQ674N",
+              "FQ727N",
+              "FQ750N",
+              "FQ889N",
+              "FQ906N",
+              "FQ924N",
+              "FQ937N",
+              "G280"
+            ],
+            "size_bytes": 15118589,
+            "size_human": "14.42 MB"
+          },
+          "WFC3_UVIS2": {
+            "name": "WFC3_UVIS2",
+            "filter_count": 63,
+            "filters": [
+              "F200LP",
+              "F218W",
+              "F225W",
+              "F275W",
+              "F280N",
+              "F300X",
+              "F336W",
+              "F343N",
+              "F350LP",
+              "F373N",
+              "F390M",
+              "F390W",
+              "F395N",
+              "F410M",
+              "F438W",
+              "F467M",
+              "F469N",
+              "F475W",
+              "F475X",
+              "F487N",
+              "F502N",
+              "F547M",
+              "F555W",
+              "F600LP",
+              "F606W",
+              "F621M",
+              "F625W",
+              "F631N",
+              "F645N",
+              "F656N",
+              "F657N",
+              "F658N",
+              "F665N",
+              "F673N",
+              "F680N",
+              "F689M",
+              "F763M",
+              "F775W",
+              "F814W",
+              "F845M",
+              "F850LP",
+              "F953N",
+              "FQ232N",
+              "FQ243N",
+              "FQ378N",
+              "FQ387N",
+              "FQ422M",
+              "FQ436N",
+              "FQ437N",
+              "FQ492N",
+              "FQ508N",
+              "FQ575N",
+              "FQ619N",
+              "FQ634N",
+              "FQ672N",
+              "FQ674N",
+              "FQ727N",
+              "FQ750N",
+              "FQ889N",
+              "FQ906N",
+              "FQ924N",
+              "FQ937N",
+              "G280"
+            ],
+            "size_bytes": 15120229,
+            "size_human": "14.42 MB"
+          },
+          "WFPC1-PC": {
+            "name": "WFPC1-PC",
+            "filter_count": 49,
+            "filters": [
+              "F1042M",
+              "F1083N",
+              "F122M",
+              "F128LP",
+              "F157W",
+              "F194W",
+              "F230W",
+              "F284W",
+              "F336W",
+              "F368M",
+              "F375N",
+              "F413M",
+              "F437N",
+              "F439W",
+              "F469N",
+              "F487N",
+              "F492M",
+              "F502N",
+              "F517N",
+              "F547M",
+              "F555W",
+              "F569W",
+              "F588N",
+              "F606W",
+              "F622W",
+              "F631N",
+              "F648M",
+              "F656N",
+              "F658N",
+              "F664N",
+              "F673N",
+              "F675W",
+              "F702W",
+              "F718M",
+              "F725LP",
+              "F785LP",
+              "F791W",
+              "F814W",
+              "F850LP",
+              "F875M",
+              "F889N",
+              "F8ND",
+              "G200",
+              "G200M2",
+              "G450",
+              "G800",
+              "POL0",
+              "POL120",
+              "POL60"
+            ],
+            "size_bytes": 487671,
+            "size_human": "476.24 KB"
+          },
+          "WFPC1-WF": {
+            "name": "WFPC1-WF",
+            "filter_count": 49,
+            "filters": [
+              "F1042M",
+              "F1083N",
+              "F122M",
+              "F128LP",
+              "F157W",
+              "F194W",
+              "F230W",
+              "F284W",
+              "F336W",
+              "F368M",
+              "F375N",
+              "F413M",
+              "F437N",
+              "F439W",
+              "F469N",
+              "F487N",
+              "F492M",
+              "F502N",
+              "F517N",
+              "F547M",
+              "F555W",
+              "F569W",
+              "F588N",
+              "F606W",
+              "F622W",
+              "F631N",
+              "F648M",
+              "F656N",
+              "F658N",
+              "F664N",
+              "F673N",
+              "F675W",
+              "F702W",
+              "F718M",
+              "F725LP",
+              "F785LP",
+              "F791W",
+              "F814W",
+              "F850LP",
+              "F875M",
+              "F889N",
+              "F8ND",
+              "G200",
+              "G200M2",
+              "G450",
+              "G800",
+              "POL0",
+              "POL120",
+              "POL60"
+            ],
+            "size_bytes": 453973,
+            "size_human": "443.33 KB"
+          },
+          "WFPC2-PC": {
+            "name": "WFPC2-PC",
+            "filter_count": 44,
+            "filters": [
+              "F1042M",
+              "F122M",
+              "F130LP",
+              "F157W",
+              "F160BW",
+              "F165LP",
+              "F170W",
+              "F185W",
+              "F218W",
+              "F255W",
+              "F300W",
+              "F336W",
+              "F343N",
+              "F375N",
+              "F380W",
+              "F390N",
+              "F410M",
+              "F437N",
+              "F439W",
+              "F450W",
+              "F467M",
+              "F469N",
+              "F487N",
+              "F502N",
+              "F547M",
+              "F555W",
+              "F569W",
+              "F588N",
+              "F606W",
+              "F622W",
+              "F631N",
+              "F656N",
+              "F658N",
+              "F673N",
+              "F675W",
+              "F702W",
+              "F785LP",
+              "F791W",
+              "F814W",
+              "F850LP",
+              "F953N",
+              "FQCH4N",
+              "FQUVN",
+              "POLQ"
+            ],
+            "size_bytes": 2918794,
+            "size_human": "2.78 MB"
+          },
+          "WFPC2-WF": {
+            "name": "WFPC2-WF",
+            "filter_count": 52,
+            "filters": [
+              "F1042M",
+              "F122M",
+              "F130LP",
+              "F157W",
+              "F160BW",
+              "F165LP",
+              "F170W",
+              "F185W",
+              "F218W",
+              "F255W",
+              "F300W",
+              "F336W",
+              "F343N",
+              "F375N",
+              "F380W",
+              "F390N",
+              "F410M",
+              "F437N",
+              "F439W",
+              "F450W",
+              "F467M",
+              "F469N",
+              "F487N",
+              "F502N",
+              "F547M",
+              "F555W",
+              "F569W",
+              "F588N",
+              "F606W",
+              "F622W",
+              "F631N",
+              "F656N",
+              "F658N",
+              "F673N",
+              "F675W",
+              "F702W",
+              "F785LP",
+              "F791W",
+              "F814W",
+              "F850LP",
+              "F953N",
+              "FQCH4N33",
+              "FQCH4N_B",
+              "FQCH4N_C",
+              "FQCH4N_D",
+              "FQUVN33",
+              "FQUVN_B",
+              "FQUVN_C",
+              "FQUVN_D",
+              "POLQ",
+              "POLQ_45",
+              "POLQ_90"
+            ],
+            "size_bytes": 2913200,
+            "size_human": "2.78 MB"
+          }
+        },
+        "instrument_count": 25
       },
       "JCMT": {
         "name": "JCMT",
@@ -5611,8 +6132,8 @@
               "450GHz",
               "850GHz"
             ],
-            "size_bytes": 76991,
-            "size_human": "75.19 KB"
+            "size_bytes": 77205,
+            "size_human": "75.40 KB"
           }
         },
         "instrument_count": 1
@@ -5638,8 +6159,8 @@
               "F560W",
               "F770W"
             ],
-            "size_bytes": 129242,
-            "size_human": "126.21 KB"
+            "size_bytes": 2077658,
+            "size_human": "1.98 MB"
           },
           "NIRCam": {
             "name": "NIRCam",
@@ -5675,8 +6196,8 @@
               "F470N",
               "F480M"
             ],
-            "size_bytes": 228278,
-            "size_human": "222.93 KB"
+            "size_bytes": 4874305,
+            "size_human": "4.65 MB"
           },
           "NIRISS": {
             "name": "NIRISS",
@@ -5695,8 +6216,8 @@
               "F444W",
               "F480M"
             ],
-            "size_bytes": 119878,
-            "size_human": "117.07 KB"
+            "size_bytes": 4591434,
+            "size_human": "4.38 MB"
           },
           "NIRSPEC": {
             "name": "NIRSPEC",
@@ -5708,8 +6229,8 @@
               "G395M_F290LP",
               "Prism"
             ],
-            "size_bytes": 93864,
-            "size_human": "91.66 KB"
+            "size_bytes": 94782,
+            "size_human": "92.56 KB"
           }
         },
         "instrument_count": 4
@@ -5723,8 +6244,28 @@
             "filters": [
               "K"
             ],
-            "size_bytes": 8966,
-            "size_human": "8.76 KB"
+            "size_bytes": 9070,
+            "size_human": "8.86 KB"
+          }
+        },
+        "instrument_count": 1
+      },
+      "LSST": {
+        "name": "LSST",
+        "instruments": {
+          "LSST": {
+            "name": "LSST",
+            "filter_count": 6,
+            "filters": [
+              "g",
+              "i",
+              "r",
+              "u",
+              "y",
+              "z"
+            ],
+            "size_bytes": 2726063,
+            "size_human": "2.60 MB"
           }
         },
         "instrument_count": 1
@@ -5738,8 +6279,47 @@
             "filters": [
               "VR"
             ],
-            "size_bytes": 4249,
-            "size_human": "4.15 KB"
+            "size_bytes": 4356,
+            "size_human": "4.25 KB"
+          }
+        },
+        "instrument_count": 1
+      },
+      "Palomar": {
+        "name": "Palomar",
+        "instruments": {
+          "ZTF": {
+            "name": "ZTF",
+            "filter_count": 3,
+            "filters": [
+              "g",
+              "i",
+              "r"
+            ],
+            "size_bytes": 449124,
+            "size_human": "438.60 KB"
+          }
+        },
+        "instrument_count": 1
+      },
+      "Paranal": {
+        "name": "Paranal",
+        "instruments": {
+          "VISTA": {
+            "name": "VISTA",
+            "filter_count": 8,
+            "filters": [
+              "H",
+              "J",
+              "Ks",
+              "NB118",
+              "NB980",
+              "NB990",
+              "Y",
+              "Z"
+            ],
+            "size_bytes": 506539,
+            "size_human": "494.67 KB"
           }
         },
         "instrument_count": 1
@@ -5762,8 +6342,8 @@
               "Grism",
               "Prism"
             ],
-            "size_bytes": 18685,
-            "size_human": "18.25 KB"
+            "size_bytes": 19717,
+            "size_human": "19.25 KB"
           }
         },
         "instrument_count": 1
@@ -5786,8 +6366,102 @@
               "z",
               "zprime_filter"
             ],
-            "size_bytes": 217393,
-            "size_human": "212.30 KB"
+            "size_bytes": 218463,
+            "size_human": "213.34 KB"
+          }
+        },
+        "instrument_count": 1
+      },
+      "SPHERE": {
+        "name": "SPHERE",
+        "instruments": {
+          "IRDIS": {
+            "name": "IRDIS",
+            "filter_count": 30,
+            "filters": [
+              "B_H",
+              "B_J",
+              "B_Ks",
+              "B_Y",
+              "D_H23_H2",
+              "D_H23_H3",
+              "D_H34_H3",
+              "D_H34_H4",
+              "D_J23_J2",
+              "D_J23_J3",
+              "D_K12_K1",
+              "D_K12_K2",
+              "D_ND_H23_H2",
+              "D_ND_H23_H3",
+              "D_Y23_Y2",
+              "D_Y23_Y3",
+              "ND0p0",
+              "ND1p0",
+              "ND2p0",
+              "ND3p5",
+              "N_BrG",
+              "N_CO",
+              "N_CntH",
+              "N_CntJ",
+              "N_CntK1",
+              "N_CntK2",
+              "N_FeII",
+              "N_H2",
+              "N_HeI",
+              "N_PaB"
+            ],
+            "size_bytes": 1538585,
+            "size_human": "1.47 MB"
+          },
+          "ZIMPOL": {
+            "name": "ZIMPOL",
+            "filter_count": 23,
+            "filters": [
+              "730_NB",
+              "B_Ha",
+              "CH4_727",
+              "Cnt748",
+              "Cnt820",
+              "Cnt_Ha",
+              "HeI",
+              "I_L",
+              "I_PRIM",
+              "KI",
+              "ND1p0",
+              "ND2p0",
+              "ND4p0",
+              "N_Ha",
+              "N_I",
+              "N_R",
+              "OI_630",
+              "R_PRIM",
+              "TiO_717",
+              "V",
+              "VBB",
+              "V_L",
+              "V_S"
+            ],
+            "size_bytes": 511202,
+            "size_human": "499.22 KB"
+          }
+        },
+        "instrument_count": 2
+      },
+      "Subaru": {
+        "name": "Subaru",
+        "instruments": {
+          "HSC": {
+            "name": "HSC",
+            "filter_count": 5,
+            "filters": [
+              "Y",
+              "g",
+              "i",
+              "r",
+              "z"
+            ],
+            "size_bytes": 39034,
+            "size_human": "38.12 KB"
           }
         },
         "instrument_count": 1
@@ -5801,8 +6475,8 @@
             "filters": [
               "Red"
             ],
-            "size_bytes": 8618,
-            "size_human": "8.42 KB"
+            "size_bytes": 8720,
+            "size_human": "8.52 KB"
           }
         },
         "instrument_count": 1
@@ -5846,8 +6520,8 @@
               "W3",
               "W4"
             ],
-            "size_bytes": 39834,
-            "size_human": "38.90 KB"
+            "size_bytes": 40238,
+            "size_human": "39.29 KB"
           }
         },
         "instrument_count": 1
@@ -5900,8 +6574,8 @@
               "W42_3",
               "W42_4"
             ],
-            "size_bytes": 114797,
-            "size_human": "112.11 KB"
+            "size_bytes": 118961,
+            "size_human": "116.17 KB"
           }
         },
         "instrument_count": 1
