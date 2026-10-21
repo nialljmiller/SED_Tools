@@ -67,7 +67,9 @@ def _read(path: Path) -> Tuple[np.ndarray, np.ndarray]:
     data = fits.open(path)[1].data
     names = {n.lower(): n for n in data.columns.names}
     wl = np.asarray(data[names["wavelength"]], dtype=float) * 1e4  # micron -> Angstrom
-    tr = np.asarray(data[names["throughput"]], dtype=float)
+    # Pandeia reference curves include small negative fit tails (notably the
+    # MIRI imager QE); transmission outside the physical range is zero.
+    tr = np.maximum(np.asarray(data[names["throughput"]], dtype=float), 0.0)
     order = np.argsort(wl)
     return wl[order], tr[order]
 
