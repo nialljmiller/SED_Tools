@@ -5,7 +5,7 @@ Now includes both stellar models and filter profiles
 """
 
 import json
-import os
+from collections import Counter
 from datetime import datetime
 from pathlib import Path
 
@@ -65,6 +65,38 @@ def scan_stellar_models(base_path: Path):
     return models, models_detailed
 
 
+def read_curve_metadata(path: Path):
+    """Read the short metadata header without loading the transmission samples."""
+    metadata = {}
+    with path.open(encoding="utf-8") as curve:
+        for line in curve:
+            if not line.startswith("#"):
+                break
+            key, separator, value = line[1:].partition(":")
+            if separator:
+                metadata[key.strip()] = value.strip()
+    return metadata
+
+
+def separate_component_coverage(instrument_dir: Path, bands):
+    """Count bands with a real, downloadable curve for each manifest role."""
+    manifest_path = instrument_dir / "manifest.json"
+    if not manifest_path.is_file():
+        return {}
+
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    coverage = {}
+    for role, files in manifest.get("components", {}).items():
+        available = {
+            band for band in bands
+            if (path := files.get(band, files.get("*")))
+            and (instrument_dir / path).is_file()
+        }
+        if available:
+            coverage[role] = len(available)
+    return coverage
+
+
 def scan_filters(base_path: Path):
     """Scan filters directory for facility/instrument information."""
     filters_dir = base_path / "filters"
@@ -95,6 +127,12 @@ def scan_filters(base_path: Path):
             filter_files = list(instrument_dir.glob("*.dat"))
             filter_count = len(filter_files)
             total_filters += filter_count
+            published_paths = Counter()
+            detector_types = Counter()
+            for curve in filter_files:
+                metadata = read_curve_metadata(curve)
+                published_paths[metadata.get("Components", "unspecified")] += 1
+                detector_types[metadata.get("DetectorType", "unclassified")] += 1
 
             # Calculate size
             total_size = 0
@@ -109,6 +147,12 @@ def scan_filters(base_path: Path):
                 "name": instrument_name,
                 "filter_count": filter_count,
                 "filters": sorted([f.stem for f in filter_files]),
+                "published_paths": dict(sorted(published_paths.items())),
+                "detector_types": dict(sorted(detector_types.items())),
+                "separate_components": separate_component_coverage(
+                    instrument_dir, [file.stem for file in filter_files]
+                ),
+                "has_component_manifest": (instrument_dir / "manifest.json").is_file(),
                 "size_bytes": total_size,
                 "size_human": format_size(total_size),
             }

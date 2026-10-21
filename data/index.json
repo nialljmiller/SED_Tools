@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-10-21T21:03:21.875127",
+  "generated": "2026-10-21T21:16:03.469414",
   "base_url": "http://nillmill.ddns.net/sed_tools",
   "statistics": {
     "total_models": 1,
@@ -8,7 +8,7 @@
     "total_spectra": 6028,
     "total_size_bytes": 142850198218,
     "total_size_human": "133.04 GB",
-    "total_facilities": 78,
+    "total_facilities": 73,
     "total_filters": 3836
   },
   "models": [
@@ -83,12 +83,7 @@
       "Euclid",
       "ExoMars",
       "FLWO",
-      "FY_1D",
-      "FY_2C",
-      "FY_2D",
-      "FY_3A",
-      "FY_3B",
-      "FY_3C",
+      "FengYun",
       "Flock",
       "GAIA",
       "GALEX",
@@ -127,6 +122,14 @@
               "J",
               "Ks"
             ],
+            "published_paths": {
+              "filter+instrument+atmosphere": 3
+            },
+            "detector_types": {
+              "photon": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 5310,
             "size_human": "5.19 KB"
           }
@@ -187,6 +190,14 @@
               "aao92",
               "aao93"
             ],
+            "published_paths": {
+              "filter": 46
+            },
+            "detector_types": {
+              "energy": 46
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 109877,
             "size_human": "107.30 KB"
           },
@@ -198,6 +209,14 @@
               "In",
               "Rf"
             ],
+            "published_paths": {
+              "filter": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 13052,
             "size_human": "12.75 KB"
           }
@@ -248,6 +267,14 @@
               "ch8",
               "ch9"
             ],
+            "published_paths": {
+              "filter+instrument": 36
+            },
+            "detector_types": {
+              "energy": 36
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 585013,
             "size_human": "571.30 KB"
           },
@@ -264,6 +291,14 @@
               "band765",
               "band865"
             ],
+            "published_paths": {
+              "filter+instrument": 8
+            },
+            "detector_types": {
+              "energy": 8
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 18360,
             "size_human": "17.93 KB"
           },
@@ -296,6 +331,14 @@
               "910",
               "910NP"
             ],
+            "published_paths": {
+              "filter+instrument": 24
+            },
+            "detector_types": {
+              "energy": 24
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 47212,
             "size_human": "46.11 KB"
           }
@@ -314,6 +357,14 @@
               "WIDE_L",
               "WIDE_S"
             ],
+            "published_paths": {
+              "filter+instrument": 4
+            },
+            "detector_types": {
+              "energy": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 5976,
             "size_human": "5.84 KB"
           },
@@ -331,6 +382,14 @@
               "S7",
               "S9W"
             ],
+            "published_paths": {
+              "filter+instrument": 9
+            },
+            "detector_types": {
+              "energy": 9
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 171688,
             "size_human": "167.66 KB"
           }
@@ -346,6 +405,14 @@
             "filters": [
               "345GHz"
             ],
+            "published_paths": {
+              "filter+instrument": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 2217,
             "size_human": "2.17 KB"
           },
@@ -355,6 +422,14 @@
             "filters": [
               "852GHz"
             ],
+            "published_paths": {
+              "filter+instrument": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 6687,
             "size_human": "6.53 KB"
           }
@@ -373,6 +448,14 @@
               "417nm",
               "VR"
             ],
+            "published_paths": {
+              "filter": 4
+            },
+            "detector_types": {
+              "photon": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 17528,
             "size_human": "17.12 KB"
           },
@@ -393,6 +476,14 @@
               "ND8",
               "ND9"
             ],
+            "published_paths": {
+              "filter": 12
+            },
+            "detector_types": {
+              "photon": 12
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 160792,
             "size_human": "157.02 KB"
           },
@@ -408,6 +499,14 @@
               "RG610",
               "RG850"
             ],
+            "published_paths": {
+              "filter": 7
+            },
+            "detector_types": {
+              "photon": 7
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 69123,
             "size_human": "67.50 KB"
           },
@@ -421,6 +520,14 @@
               "R",
               "V"
             ],
+            "published_paths": {
+              "filter": 5
+            },
+            "detector_types": {
+              "photon": 5
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 22001,
             "size_human": "21.49 KB"
           },
@@ -431,6 +538,14 @@
               "BG39",
               "KCR"
             ],
+            "published_paths": {
+              "filter": 2
+            },
+            "detector_types": {
+              "photon": 2
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 10329,
             "size_human": "10.09 KB"
           },
@@ -443,6 +558,14 @@
               "r",
               "z"
             ],
+            "published_paths": {
+              "filter": 4
+            },
+            "detector_types": {
+              "photon": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 24218,
             "size_human": "23.65 KB"
           },
@@ -455,6 +578,14 @@
               "6607nm",
               "6629nm"
             ],
+            "published_paths": {
+              "filter": 4
+            },
+            "detector_types": {
+              "photon": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 8451,
             "size_human": "8.25 KB"
           },
@@ -468,6 +599,14 @@
               "U",
               "V"
             ],
+            "published_paths": {
+              "filter": 5
+            },
+            "detector_types": {
+              "photon": 5
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 19770,
             "size_human": "19.31 KB"
           },
@@ -491,6 +630,14 @@
               "Y",
               "Z"
             ],
+            "published_paths": {
+              "filter": 15
+            },
+            "detector_types": {
+              "photon": 15
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 123389,
             "size_human": "120.50 KB"
           },
@@ -522,6 +669,14 @@
               "Wash_C3",
               "Wash_M2"
             ],
+            "published_paths": {
+              "filter": 23
+            },
+            "detector_types": {
+              "photon": 23
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 92717,
             "size_human": "90.54 KB"
           },
@@ -537,6 +692,14 @@
               "Halpha_661nm",
               "Semrock_857nm"
             ],
+            "published_paths": {
+              "filter": 7
+            },
+            "detector_types": {
+              "photon": 7
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 28364,
             "size_human": "27.70 KB"
           },
@@ -550,6 +713,14 @@
               "u",
               "z"
             ],
+            "published_paths": {
+              "filter": 5
+            },
+            "detector_types": {
+              "photon": 5
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 209219,
             "size_human": "204.32 KB"
           },
@@ -599,6 +770,14 @@
               "8140_4d",
               "8140_5d"
             ],
+            "published_paths": {
+              "filter": 41
+            },
+            "detector_types": {
+              "photon": 41
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 167792,
             "size_human": "163.86 KB"
           },
@@ -623,6 +802,14 @@
               "8678",
               "9088"
             ],
+            "published_paths": {
+              "filter": 16
+            },
+            "detector_types": {
+              "photon": 16
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 13878,
             "size_human": "13.55 KB"
           }
@@ -641,6 +828,15 @@
               "353GHz",
               "545GHz"
             ],
+            "published_paths": {
+              "filter": 1,
+              "filter+instrument": 3
+            },
+            "detector_types": {
+              "energy": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 17293,
             "size_human": "16.89 KB"
           }
@@ -659,6 +855,14 @@
               "C",
               "D"
             ],
+            "published_paths": {
+              "filter+instrument": 4
+            },
+            "detector_types": {
+              "energy": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 20413,
             "size_human": "19.93 KB"
           }
@@ -677,6 +881,14 @@
               "900nm_night",
               "970nm"
             ],
+            "published_paths": {
+              "filter+instrument": 4
+            },
+            "detector_types": {
+              "photon": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 33633,
             "size_human": "32.84 KB"
           },
@@ -690,6 +902,14 @@
               "2260nm",
               "2320nm"
             ],
+            "published_paths": {
+              "filter+instrument": 5
+            },
+            "detector_types": {
+              "photon": 5
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 36147,
             "size_human": "35.30 KB"
           },
@@ -701,6 +921,14 @@
               "10mic_135deg",
               "10mic_164deg"
             ],
+            "published_paths": {
+              "filter": 3
+            },
+            "detector_types": {
+              "photon": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 23727,
             "size_human": "23.17 KB"
           },
@@ -712,6 +940,14 @@
               "365nm",
               "diff"
             ],
+            "published_paths": {
+              "filter": 3
+            },
+            "detector_types": {
+              "photon": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 21105,
             "size_human": "20.61 KB"
           }
@@ -733,6 +969,14 @@
               "Red1",
               "Red2"
             ],
+            "published_paths": {
+              "filter": 7
+            },
+            "detector_types": {
+              "energy": 7
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 30817,
             "size_human": "30.09 KB"
           }
@@ -853,6 +1097,14 @@
               "band869_8",
               "band869_9"
             ],
+            "published_paths": {
+              "unspecified": 106
+            },
+            "detector_types": {
+              "energy": 106
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 112058,
             "size_human": "109.43 KB"
           }
@@ -891,6 +1143,15 @@
               "VIS2",
               "VIS3"
             ],
+            "published_paths": {
+              "filter": 18,
+              "unspecified": 6
+            },
+            "detector_types": {
+              "photon": 24
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 32450,
             "size_human": "31.69 KB"
           }
@@ -912,6 +1173,14 @@
               "95GHz",
               "95GHz_rj"
             ],
+            "published_paths": {
+              "filter+instrument": 7
+            },
+            "detector_types": {
+              "energy": 7
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 21100,
             "size_human": "20.61 KB"
           },
@@ -921,6 +1190,14 @@
             "filters": [
               "95GHz"
             ],
+            "published_paths": {
+              "filter+instrument": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4454,
             "size_human": "4.35 KB"
           }
@@ -938,6 +1215,14 @@
               "350mic",
               "500mic"
             ],
+            "published_paths": {
+              "filter+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 12567,
             "size_human": "12.27 KB"
           },
@@ -949,6 +1234,14 @@
               "600GHz",
               "850GHz"
             ],
+            "published_paths": {
+              "filter+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 12436,
             "size_human": "12.14 KB"
           },
@@ -960,6 +1253,14 @@
               "350min",
               "500min"
             ],
+            "published_paths": {
+              "filter+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 13006,
             "size_human": "12.70 KB"
           }
@@ -990,6 +1291,16 @@
               "sdss_u",
               "sdss_z"
             ],
+            "published_paths": {
+              "filter": 14,
+              "filter+optics+qe+instrument+atmosphere": 2
+            },
+            "detector_types": {
+              "energy": 12,
+              "photon": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 33958,
             "size_human": "33.16 KB"
           },
@@ -1000,6 +1311,14 @@
               "u",
               "u_noatm"
             ],
+            "published_paths": {
+              "filter+instrument+atmosphere": 2
+            },
+            "detector_types": {
+              "photon": 2
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 2851,
             "size_human": "2.78 KB"
           }
@@ -1018,6 +1337,14 @@
               "410GHz",
               "90GHz"
             ],
+            "published_paths": {
+              "filter+instrument": 4
+            },
+            "detector_types": {
+              "energy": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 16085,
             "size_human": "15.71 KB"
           }
@@ -1036,6 +1363,14 @@
               "F880",
               "FPAN"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 4
+            },
+            "detector_types": {
+              "photon": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 17438,
             "size_human": "17.03 KB"
           },
@@ -1050,6 +1385,14 @@
               "PANH",
               "PANL"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 6
+            },
+            "detector_types": {
+              "photon": 6
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 26743,
             "size_human": "26.12 KB"
           }
@@ -1103,6 +1446,16 @@
               "sdss_z_filter",
               "sdss_z_noatm"
             ],
+            "published_paths": {
+              "filter": 13,
+              "filter+instrument": 13,
+              "filter+instrument+atmosphere": 13
+            },
+            "detector_types": {
+              "photon": 39
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 420739,
             "size_human": "410.88 KB"
           },
@@ -1123,6 +1476,14 @@
               "v",
               "y"
             ],
+            "published_paths": {
+              "filter": 12
+            },
+            "detector_types": {
+              "energy": 12
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 15130,
             "size_human": "14.78 KB"
           },
@@ -1309,6 +1670,14 @@
               "914_9",
               "954_5"
             ],
+            "published_paths": {
+              "filter": 178
+            },
+            "detector_types": {
+              "energy": 178
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 2243005,
             "size_human": "2.14 MB"
           },
@@ -1448,6 +1817,15 @@
               "SDSS_u",
               "SDSS_z"
             ],
+            "published_paths": {
+              "filter": 111,
+              "filter+instrument+atmosphere": 20
+            },
+            "detector_types": {
+              "energy": 131
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 478449,
             "size_human": "467.24 KB"
           },
@@ -1461,6 +1839,14 @@
               "R",
               "V"
             ],
+            "published_paths": {
+              "filter+qe": 5
+            },
+            "detector_types": {
+              "photon": 5
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 22015,
             "size_human": "21.50 KB"
           },
@@ -1496,6 +1882,14 @@
               "Y",
               "z"
             ],
+            "published_paths": {
+              "filter": 27
+            },
+            "detector_types": {
+              "energy": 27
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 184102,
             "size_human": "179.79 KB"
           },
@@ -1511,6 +1905,14 @@
               "Y",
               "Z"
             ],
+            "published_paths": {
+              "filter": 7
+            },
+            "detector_types": {
+              "photon": 7
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 100286,
             "size_human": "97.94 KB"
           },
@@ -1569,6 +1971,15 @@
               "VIS_Vio",
               "VIS_Vio_filter"
             ],
+            "published_paths": {
+              "filter": 25,
+              "filter+qe": 25
+            },
+            "detector_types": {
+              "photon": 50
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 397352,
             "size_human": "388.04 KB"
           }
@@ -1586,6 +1997,14 @@
               "u",
               "uv"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "photon": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 11860,
             "size_human": "11.58 KB"
           }
@@ -1614,6 +2033,14 @@
               "V",
               "Zprime"
             ],
+            "published_paths": {
+              "filter": 14
+            },
+            "detector_types": {
+              "energy": 14
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 42282,
             "size_human": "41.29 KB"
           },
@@ -1965,6 +2392,14 @@
               "cfh9702",
               "cfh9801"
             ],
+            "published_paths": {
+              "filter": 343
+            },
+            "detector_types": {
+              "energy": 343
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 854376,
             "size_human": "834.35 KB"
           },
@@ -1979,6 +2414,14 @@
               "V",
               "Vcfht"
             ],
+            "published_paths": {
+              "filter": 6
+            },
+            "detector_types": {
+              "energy": 6
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 9693,
             "size_human": "9.47 KB"
           },
@@ -1999,6 +2442,15 @@
               "z",
               "z_1"
             ],
+            "published_paths": {
+              "filter+optics+qe+instrument+atmosphere": 12
+            },
+            "detector_types": {
+              "energy": 2,
+              "photon": 10
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 36393,
             "size_human": "35.54 KB"
           },
@@ -2062,6 +2514,17 @@
               "zS_fil",
               "z_fil"
             ],
+            "published_paths": {
+              "filter": 33,
+              "filter+optics+qe+instrument": 21,
+              "unspecified": 1
+            },
+            "detector_types": {
+              "energy": 11,
+              "photon": 44
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 1112767,
             "size_human": "1.06 MB"
           },
@@ -2085,6 +2548,14 @@
               "N2131",
               "N2265"
             ],
+            "published_paths": {
+              "unspecified": 15
+            },
+            "detector_types": {
+              "energy": 15
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 16409,
             "size_human": "16.02 KB"
           },
@@ -2094,6 +2565,14 @@
             "filters": [
               "J"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 17296,
             "size_human": "16.89 KB"
           },
@@ -2114,6 +2593,14 @@
               "W",
               "Y"
             ],
+            "published_paths": {
+              "filter": 12
+            },
+            "detector_types": {
+              "energy": 12
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 115557,
             "size_human": "112.85 KB"
           }
@@ -2129,6 +2616,14 @@
             "filters": [
               "band"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 1
+            },
+            "detector_types": {
+              "photon": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4223,
             "size_human": "4.12 KB"
           }
@@ -2150,6 +2645,14 @@
               "Rc",
               "V"
             ],
+            "published_paths": {
+              "filter+qe": 7
+            },
+            "detector_types": {
+              "photon": 7
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 28329,
             "size_human": "27.67 KB"
           }
@@ -2174,6 +2677,14 @@
               "4p9m",
               "60m"
             ],
+            "published_paths": {
+              "filter+instrument": 10
+            },
+            "detector_types": {
+              "photon": 10
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 13670,
             "size_human": "13.35 KB"
           }
@@ -2196,6 +2707,14 @@
               "745nm",
               "865nm"
             ],
+            "published_paths": {
+              "filter+instrument": 8
+            },
+            "detector_types": {
+              "energy": 8
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 9110,
             "size_human": "8.90 KB"
           }
@@ -2240,6 +2759,16 @@
               "z_ccd",
               "z_fil"
             ],
+            "published_paths": {
+              "filter": 7,
+              "filter+optics+qe+instrument": 10,
+              "filter+qe": 13
+            },
+            "detector_types": {
+              "photon": 30
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 130779,
             "size_human": "127.71 KB"
           },
@@ -2257,6 +2786,14 @@
               "F845M",
               "F960M"
             ],
+            "published_paths": {
+              "filter+qe": 9
+            },
+            "detector_types": {
+              "photon": 9
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 35308,
             "size_human": "34.48 KB"
           }
@@ -2274,6 +2811,14 @@
               "i",
               "r"
             ],
+            "published_paths": {
+              "filter": 3
+            },
+            "detector_types": {
+              "photon": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 1721,
             "size_human": "1.68 KB"
           }
@@ -2297,6 +2842,14 @@
               "R_YALO",
               "V_KPNO"
             ],
+            "published_paths": {
+              "filter": 9
+            },
+            "detector_types": {
+              "energy": 9
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 20894,
             "size_human": "20.40 KB"
           },
@@ -2346,6 +2899,14 @@
               "vStrom",
               "yStrom"
             ],
+            "published_paths": {
+              "filter": 41
+            },
+            "detector_types": {
+              "photon": 41
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 164464,
             "size_human": "160.61 KB"
           },
@@ -2589,6 +3150,14 @@
               "9900_z2x2",
               "9900_z3x3"
             ],
+            "published_paths": {
+              "filter": 235
+            },
+            "detector_types": {
+              "energy": 235
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 466129,
             "size_human": "455.20 KB"
           },
@@ -2616,6 +3185,17 @@
               "z_filter",
               "z_old"
             ],
+            "published_paths": {
+              "filter": 7,
+              "filter+instrument+atmosphere": 12
+            },
+            "detector_types": {
+              "photon": 19
+            },
+            "separate_components": {
+              "filter+optics+qe": 5
+            },
+            "has_component_manifest": true,
             "size_bytes": 179885,
             "size_human": "175.67 KB"
           },
@@ -2641,6 +3221,14 @@
               "y_Strom",
               "zp_SDSS"
             ],
+            "published_paths": {
+              "filter": 17
+            },
+            "detector_types": {
+              "photon": 17
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 110025,
             "size_human": "107.45 KB"
           },
@@ -2677,6 +3265,14 @@
               "Y_id191B",
               "Y_id191C"
             ],
+            "published_paths": {
+              "filter": 28
+            },
+            "detector_types": {
+              "energy": 28
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 132169,
             "size_human": "129.07 KB"
           },
@@ -2708,6 +3304,15 @@
               "uSDSS",
               "zSDSS"
             ],
+            "published_paths": {
+              "filter": 23
+            },
+            "detector_types": {
+              "energy": 2,
+              "photon": 21
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 128887,
             "size_human": "125.87 KB"
           },
@@ -2722,6 +3327,14 @@
               "J",
               "K"
             ],
+            "published_paths": {
+              "filter": 6
+            },
+            "detector_types": {
+              "energy": 6
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 42415,
             "size_human": "41.42 KB"
           },
@@ -2742,6 +3355,14 @@
               "sdss_r",
               "sdss_z"
             ],
+            "published_paths": {
+              "filter": 12
+            },
+            "detector_types": {
+              "photon": 12
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 51919,
             "size_human": "50.70 KB"
           },
@@ -2762,6 +3383,14 @@
               "V2",
               "V3"
             ],
+            "published_paths": {
+              "filter": 12
+            },
+            "detector_types": {
+              "photon": 12
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 10593,
             "size_human": "10.34 KB"
           },
@@ -2788,6 +3417,14 @@
               "strom_v",
               "strom_y"
             ],
+            "published_paths": {
+              "filter": 18
+            },
+            "detector_types": {
+              "energy": 18
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 113142,
             "size_human": "110.49 KB"
           },
@@ -2808,6 +3445,14 @@
               "u",
               "z"
             ],
+            "published_paths": {
+              "filter+qe+instrument+atmosphere": 12
+            },
+            "detector_types": {
+              "photon": 12
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 35284,
             "size_human": "34.46 KB"
           },
@@ -2829,6 +3474,14 @@
               "K",
               "Y"
             ],
+            "published_paths": {
+              "unspecified": 13
+            },
+            "detector_types": {
+              "energy": 13
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 71703,
             "size_human": "70.02 KB"
           },
@@ -2846,6 +3499,14 @@
               "sdss_u",
               "sdss_z"
             ],
+            "published_paths": {
+              "filter": 9
+            },
+            "detector_types": {
+              "energy": 9
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 14931,
             "size_human": "14.58 KB"
           }
@@ -2863,6 +3524,14 @@
               "D21_G",
               "D21_R"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 2256,
             "size_human": "2.20 KB"
           },
@@ -2872,6 +3541,14 @@
             "filters": [
               "10D_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4487,
             "size_human": "4.38 KB"
           },
@@ -2883,6 +3560,14 @@
               "1DMarkII_G",
               "1DMarkII_R"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 2038,
             "size_human": "1.99 KB"
           },
@@ -2894,6 +3579,14 @@
               "1DMarkIII_G",
               "1DMarkIII_R"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 2064,
             "size_human": "2.02 KB"
           },
@@ -2906,6 +3599,15 @@
               "20D_G",
               "20D_R"
             ],
+            "published_paths": {
+              "filter": 1,
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 6588,
             "size_human": "6.43 KB"
           },
@@ -2918,6 +3620,15 @@
               "300D_G",
               "300D_R"
             ],
+            "published_paths": {
+              "filter": 1,
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 6571,
             "size_human": "6.42 KB"
           },
@@ -2927,6 +3638,14 @@
             "filters": [
               "30D_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4434,
             "size_human": "4.33 KB"
           },
@@ -2936,6 +3655,14 @@
             "filters": [
               "350D_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4294,
             "size_human": "4.19 KB"
           },
@@ -2947,6 +3674,14 @@
               "40D_G",
               "40D_R"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 2112,
             "size_human": "2.06 KB"
           },
@@ -2958,6 +3693,14 @@
               "450D_IR_G",
               "450D_IR_R"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 2432,
             "size_human": "2.38 KB"
           },
@@ -2969,6 +3712,14 @@
               "500D_G",
               "500D_R"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 2112,
             "size_human": "2.06 KB"
           },
@@ -2980,6 +3731,14 @@
               "50D_G",
               "50D_R"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 2077,
             "size_human": "2.03 KB"
           },
@@ -2989,6 +3748,14 @@
             "filters": [
               "5D_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4274,
             "size_human": "4.17 KB"
           },
@@ -2998,6 +3765,14 @@
             "filters": [
               "5DII_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 3273,
             "size_human": "3.20 KB"
           },
@@ -3009,6 +3784,14 @@
               "600D_G",
               "600D_R"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 2096,
             "size_human": "2.05 KB"
           },
@@ -3021,6 +3804,15 @@
               "60D_G",
               "60D_R"
             ],
+            "published_paths": {
+              "filter": 1,
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 6244,
             "size_human": "6.10 KB"
           },
@@ -3030,6 +3822,14 @@
             "filters": [
               "G1X_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4237,
             "size_human": "4.14 KB"
           },
@@ -3039,6 +3839,14 @@
             "filters": [
               "T2i_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4307,
             "size_human": "4.21 KB"
           },
@@ -3048,6 +3856,14 @@
             "filters": [
               "XS_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4407,
             "size_human": "4.30 KB"
           },
@@ -3057,6 +3873,14 @@
             "filters": [
               "XSi_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4415,
             "size_human": "4.31 KB"
           },
@@ -3066,6 +3890,14 @@
             "filters": [
               "S3_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4094,
             "size_human": "4.00 KB"
           },
@@ -3077,6 +3909,14 @@
               "S5Pro_G",
               "S5Pro_R"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 2005,
             "size_human": "1.96 KB"
           },
@@ -3086,6 +3926,14 @@
             "filters": [
               "X100_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4211,
             "size_human": "4.11 KB"
           },
@@ -3095,6 +3943,14 @@
             "filters": [
               "Xpro1_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4361,
             "size_human": "4.26 KB"
           },
@@ -3106,6 +3962,14 @@
               "H2_G",
               "H2_R"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 2192,
             "size_human": "2.14 KB"
           },
@@ -3117,6 +3981,14 @@
               "H3D_G",
               "H3D_R"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 2216,
             "size_human": "2.16 KB"
           },
@@ -3128,6 +4000,14 @@
               "DCS200_G",
               "DCS200_R"
             ],
+            "published_paths": {
+              "unspecified": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4237,
             "size_human": "4.14 KB"
           },
@@ -3139,6 +4019,14 @@
               "DCS420_G",
               "DCS420_R"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4293,
             "size_human": "4.19 KB"
           },
@@ -3150,6 +4038,14 @@
               "M8_G",
               "M8_R"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 2428,
             "size_human": "2.37 KB"
           },
@@ -3159,6 +4055,14 @@
             "filters": [
               "G10_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4137,
             "size_human": "4.04 KB"
           },
@@ -3168,6 +4072,14 @@
             "filters": [
               "GF1_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4512,
             "size_human": "4.41 KB"
           },
@@ -3177,6 +4089,14 @@
             "filters": [
               "GF2_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4546,
             "size_human": "4.44 KB"
           },
@@ -3186,6 +4106,14 @@
             "filters": [
               "D100_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4320,
             "size_human": "4.22 KB"
           },
@@ -3198,6 +4126,15 @@
               "D200_G",
               "D200_R"
             ],
+            "published_paths": {
+              "filter": 1,
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 6170,
             "size_human": "6.03 KB"
           },
@@ -3209,6 +4146,14 @@
               "D3_G",
               "D3_R"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 1969,
             "size_human": "1.92 KB"
           },
@@ -3218,6 +4163,14 @@
             "filters": [
               "D3000_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4540,
             "size_human": "4.43 KB"
           },
@@ -3229,6 +4182,14 @@
               "D300s_G",
               "D300s_R"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 2093,
             "size_human": "2.04 KB"
           },
@@ -3238,6 +4199,14 @@
             "filters": [
               "D3100_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4385,
             "size_human": "4.28 KB"
           },
@@ -3249,6 +4218,14 @@
               "D3X_G",
               "D3X_R"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 2017,
             "size_human": "1.97 KB"
           },
@@ -3261,6 +4238,15 @@
               "D40_G",
               "D40_R"
             ],
+            "published_paths": {
+              "filter": 1,
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 6427,
             "size_human": "6.28 KB"
           },
@@ -3270,6 +4256,14 @@
             "filters": [
               "D40x_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4147,
             "size_human": "4.05 KB"
           },
@@ -3282,6 +4276,15 @@
               "D50_G",
               "D50_R"
             ],
+            "published_paths": {
+              "filter": 1,
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 6483,
             "size_human": "6.33 KB"
           },
@@ -3293,6 +4296,14 @@
               "D5100_G",
               "D5100_R"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 2094,
             "size_human": "2.04 KB"
           },
@@ -3302,6 +4313,14 @@
             "filters": [
               "D60_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4366,
             "size_human": "4.26 KB"
           },
@@ -3311,6 +4330,14 @@
             "filters": [
               "D70_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4327,
             "size_human": "4.23 KB"
           },
@@ -3322,6 +4349,14 @@
               "D700_G",
               "D700_R"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 1995,
             "size_human": "1.95 KB"
           },
@@ -3334,6 +4369,15 @@
               "D80_G",
               "D80_R"
             ],
+            "published_paths": {
+              "filter": 1,
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 6461,
             "size_human": "6.31 KB"
           },
@@ -3346,6 +4390,15 @@
               "D90_G",
               "D90_R"
             ],
+            "published_paths": {
+              "filter": 1,
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 6574,
             "size_human": "6.42 KB"
           },
@@ -3357,6 +4410,14 @@
               "N900_G",
               "N900_R"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 2189,
             "size_human": "2.14 KB"
           },
@@ -3366,6 +4427,14 @@
             "filters": [
               "EP1_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4378,
             "size_human": "4.28 KB"
           },
@@ -3377,6 +4446,14 @@
               "EPL2_G",
               "EPL2_R"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 2057,
             "size_human": "2.01 KB"
           },
@@ -3388,6 +4465,14 @@
               "DML_LX3_G",
               "DML_LX3_R"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 2038,
             "size_human": "1.99 KB"
           },
@@ -3397,6 +4482,14 @@
             "filters": [
               "K100D_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4312,
             "size_human": "4.21 KB"
           },
@@ -3406,6 +4499,14 @@
             "filters": [
               "K10D_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4271,
             "size_human": "4.17 KB"
           },
@@ -3417,6 +4518,14 @@
               "K5_G",
               "K5_R"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 2125,
             "size_human": "2.08 KB"
           },
@@ -3428,6 +4537,14 @@
               "Q_G",
               "Q_R"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 2172,
             "size_human": "2.12 KB"
           },
@@ -3437,6 +4554,14 @@
             "filters": [
               "ist_D_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4357,
             "size_human": "4.25 KB"
           },
@@ -3446,6 +4571,14 @@
             "filters": [
               "ist_DL_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4413,
             "size_human": "4.31 KB"
           },
@@ -3457,6 +4590,14 @@
               "G",
               "R"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 2128,
             "size_human": "2.08 KB"
           },
@@ -3468,6 +4609,14 @@
               "Grasshopper2_14S5C_G",
               "Grasshopper2_14S5C_R"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 2017,
             "size_human": "1.97 KB"
           },
@@ -3479,6 +4628,14 @@
               "Grasshopper_50S5C_G",
               "Grasshopper_50S5C_R"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 2277,
             "size_human": "2.22 KB"
           },
@@ -3493,6 +4650,15 @@
               "V",
               "scotopic"
             ],
+            "published_paths": {
+              "filter": 1,
+              "filter+qe+instrument": 5
+            },
+            "detector_types": {
+              "energy": 6
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 24058,
             "size_human": "23.49 KB"
           },
@@ -3502,6 +4668,14 @@
             "filters": [
               "NX10_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4452,
             "size_human": "4.35 KB"
           },
@@ -3511,6 +4685,14 @@
             "filters": [
               "NX100_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4389,
             "size_human": "4.29 KB"
           },
@@ -3520,6 +4702,14 @@
             "filters": [
               "A200_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4533,
             "size_human": "4.43 KB"
           },
@@ -3529,6 +4719,14 @@
             "filters": [
               "A55_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4281,
             "size_human": "4.18 KB"
           },
@@ -3538,6 +4736,14 @@
             "filters": [
               "A290_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4536,
             "size_human": "4.43 KB"
           },
@@ -3547,6 +4753,14 @@
             "filters": [
               "A300_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4231,
             "size_human": "4.13 KB"
           },
@@ -3556,6 +4770,14 @@
             "filters": [
               "A330_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4228,
             "size_human": "4.13 KB"
           },
@@ -3567,6 +4789,14 @@
               "NEX5N_G",
               "NEX5N_R"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 2101,
             "size_human": "2.05 KB"
           },
@@ -3576,6 +4806,14 @@
             "filters": [
               "NEX_5N_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4280,
             "size_human": "4.18 KB"
           },
@@ -3585,6 +4823,14 @@
             "filters": [
               "NEX_C3_Block"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4285,
             "size_human": "4.18 KB"
           }
@@ -3639,6 +4885,14 @@
               "UV2_UV3",
               "UV3"
             ],
+            "published_paths": {
+              "filter+optics+qe+instrument": 40
+            },
+            "detector_types": {
+              "photon": 40
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 687821,
             "size_human": "671.70 KB"
           },
@@ -3667,6 +4921,14 @@
               "RED",
               "VIO"
             ],
+            "published_paths": {
+              "filter+optics+qe+instrument": 20
+            },
+            "detector_types": {
+              "photon": 20
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 391983,
             "size_human": "382.80 KB"
           }
@@ -3685,6 +4947,14 @@
               "650nm",
               "750nm"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 4
+            },
+            "detector_types": {
+              "energy": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 17657,
             "size_human": "17.24 KB"
           },
@@ -3698,6 +4968,14 @@
               "2000nm",
               "2600nm"
             ],
+            "published_paths": {
+              "filter": 5
+            },
+            "detector_types": {
+              "photon": 5
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 22133,
             "size_human": "21.61 KB"
           },
@@ -3711,6 +4989,14 @@
               "900nm",
               "950nm"
             ],
+            "published_paths": {
+              "filter": 5
+            },
+            "detector_types": {
+              "photon": 5
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 21823,
             "size_human": "21.31 KB"
           }
@@ -3747,6 +5033,15 @@
               "band10oob",
               "clear_fil"
             ],
+            "published_paths": {
+              "filter": 10,
+              "filter+qe+instrument": 12
+            },
+            "detector_types": {
+              "photon": 22
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 20445,
             "size_human": "19.97 KB"
           },
@@ -3774,6 +5069,15 @@
               "band10_fil",
               "clear_fil"
             ],
+            "published_paths": {
+              "filter": 10,
+              "filter+qe+instrument": 9
+            },
+            "detector_types": {
+              "photon": 19
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 25912,
             "size_human": "25.30 KB"
           }
@@ -3790,6 +5094,14 @@
               "AS",
               "PF"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 2
+            },
+            "detector_types": {
+              "photon": 2
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 8704,
             "size_human": "8.50 KB"
           }
@@ -3816,6 +5128,14 @@
               "m48",
               "m48_ADPS"
             ],
+            "published_paths": {
+              "filter+instrument": 12
+            },
+            "detector_types": {
+              "energy": 12
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 12399,
             "size_human": "12.11 KB"
           }
@@ -3837,6 +5157,14 @@
               "u",
               "z"
             ],
+            "published_paths": {
+              "unspecified": 7
+            },
+            "detector_types": {
+              "unclassified": 7
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 146433,
             "size_human": "143.00 KB"
           },
@@ -3850,6 +5178,14 @@
               "M490",
               "M517"
             ],
+            "published_paths": {
+              "unspecified": 5
+            },
+            "detector_types": {
+              "unclassified": 5
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 67827,
             "size_human": "66.24 KB"
           },
@@ -3867,6 +5203,14 @@
               "N708",
               "N964"
             ],
+            "published_paths": {
+              "unspecified": 9
+            },
+            "detector_types": {
+              "unclassified": 9
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 233856,
             "size_human": "228.38 KB"
           },
@@ -3896,6 +5240,14 @@
               "u",
               "z"
             ],
+            "published_paths": {
+              "unspecified": 21
+            },
+            "detector_types": {
+              "unclassified": 21
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 448116,
             "size_human": "437.61 KB"
           }
@@ -3913,6 +5265,14 @@
               "J",
               "Ks"
             ],
+            "published_paths": {
+              "filter+instrument+atmosphere": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 2006,
             "size_human": "1.96 KB"
           }
@@ -3935,6 +5295,14 @@
               "PAH",
               "nbL"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 8
+            },
+            "detector_types": {
+              "photon": 8
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 35579,
             "size_human": "34.75 KB"
           }
@@ -3959,6 +5327,14 @@
               "764nm",
               "779nm"
             ],
+            "published_paths": {
+              "filter+instrument": 10
+            },
+            "detector_types": {
+              "energy": 10
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 36651,
             "size_human": "35.79 KB"
           }
@@ -3981,6 +5357,14 @@
               "F7",
               "F8"
             ],
+            "published_paths": {
+              "filter+optics+qe+instrument": 8
+            },
+            "detector_types": {
+              "energy": 8
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 33496,
             "size_human": "32.71 KB"
           }
@@ -4013,6 +5397,15 @@
               "Violet",
               "Violet_fil"
             ],
+            "published_paths": {
+              "filter": 9,
+              "filter+qe": 9
+            },
+            "detector_types": {
+              "photon": 18
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 199934,
             "size_human": "195.25 KB"
           },
@@ -4022,6 +5415,14 @@
             "filters": [
               "clear"
             ],
+            "published_paths": {
+              "filter+qe": 1
+            },
+            "detector_types": {
+              "photon": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 3616,
             "size_human": "3.53 KB"
           },
@@ -4048,6 +5449,15 @@
               "Violet_cont",
               "Violet_cont_fil"
             ],
+            "published_paths": {
+              "filter": 9,
+              "filter+qe": 9
+            },
+            "detector_types": {
+              "photon": 18
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 149353,
             "size_human": "145.85 KB"
           }
@@ -4065,6 +5475,14 @@
               "SW",
               "TOT"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 79285,
             "size_human": "77.43 KB"
           }
@@ -4096,6 +5514,15 @@
               "Pa-b",
               "Short-Lp"
             ],
+            "published_paths": {
+              "filter": 17
+            },
+            "detector_types": {
+              "photon": 10,
+              "unclassified": 7
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 263069,
             "size_human": "256.90 KB"
           }
@@ -4111,6 +5538,14 @@
             "filters": [
               "Pan"
             ],
+            "published_paths": {
+              "filter+instrument": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 274,
             "size_human": "274.00 B"
           }
@@ -4129,6 +5564,14 @@
               "IR37",
               "V16"
             ],
+            "published_paths": {
+              "filter+instrument": 4
+            },
+            "detector_types": {
+              "energy": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 3257,
             "size_human": "3.18 KB"
           },
@@ -4144,6 +5587,14 @@
               "V659",
               "V870"
             ],
+            "published_paths": {
+              "filter+instrument": 7
+            },
+            "detector_types": {
+              "energy": 7
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 18272,
             "size_human": "17.84 KB"
           }
@@ -4165,6 +5616,14 @@
               "V659",
               "V870"
             ],
+            "published_paths": {
+              "filter+instrument": 7
+            },
+            "detector_types": {
+              "energy": 7
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 26269,
             "size_human": "25.65 KB"
           },
@@ -4188,6 +5647,14 @@
               "band14",
               "band15"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 15
+            },
+            "detector_types": {
+              "energy": 15
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 34670,
             "size_human": "33.86 KB"
           }
@@ -4207,6 +5674,15 @@
               "Red",
               "Y"
             ],
+            "published_paths": {
+              "filter+instrument": 2,
+              "filter+optics+qe+instrument": 3
+            },
+            "detector_types": {
+              "photon": 5
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 46215,
             "size_human": "45.13 KB"
           },
@@ -4216,6 +5692,14 @@
             "filters": [
               "vis"
             ],
+            "published_paths": {
+              "filter+instrument": 1
+            },
+            "detector_types": {
+              "photon": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 14146,
             "size_human": "13.81 KB"
           }
@@ -4238,6 +5722,15 @@
               "Red",
               "Red_fil"
             ],
+            "published_paths": {
+              "filter": 4,
+              "filter+qe+instrument": 4
+            },
+            "detector_types": {
+              "photon": 8
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 34953,
             "size_human": "34.13 KB"
           }
@@ -4281,6 +5774,14 @@
               "z",
               "z_old"
             ],
+            "published_paths": {
+              "filter": 29
+            },
+            "detector_types": {
+              "photon": 29
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 124214,
             "size_human": "121.30 KB"
           },
@@ -4290,17 +5791,25 @@
             "filters": [
               "iz"
             ],
+            "published_paths": {
+              "filter+optics+qe+atmosphere": 1
+            },
+            "detector_types": {
+              "photon": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4377,
             "size_human": "4.27 KB"
           }
         },
         "instrument_count": 2
       },
-      "FY_1D": {
-        "name": "FY_1D",
+      "FengYun": {
+        "name": "FengYun",
         "instruments": {
-          "MVISR": {
-            "name": "MVISR",
+          "FY1D-MVISR": {
+            "name": "FY1D-MVISR",
             "filter_count": 7,
             "filters": [
               "CH01",
@@ -4311,17 +5820,19 @@
               "CH09",
               "CH10"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 7
+            },
+            "detector_types": {
+              "photon": 7
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 13839,
             "size_human": "13.51 KB"
-          }
-        },
-        "instrument_count": 1
-      },
-      "FY_2C": {
-        "name": "FY_2C",
-        "instruments": {
-          "VISSR": {
-            "name": "VISSR",
+          },
+          "FY2C-VISSR": {
+            "name": "FY2C-VISSR",
             "filter_count": 8,
             "filters": [
               "IR1A",
@@ -4333,17 +5844,19 @@
               "IR4A",
               "IR4B"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 8
+            },
+            "detector_types": {
+              "photon": 8
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 20291,
             "size_human": "19.82 KB"
-          }
-        },
-        "instrument_count": 1
-      },
-      "FY_2D": {
-        "name": "FY_2D",
-        "instruments": {
-          "VISSR": {
-            "name": "VISSR",
+          },
+          "FY2D-VISSR": {
+            "name": "FY2D-VISSR",
             "filter_count": 8,
             "filters": [
               "IR1A",
@@ -4355,17 +5868,19 @@
               "IR4A",
               "IR4B"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 8
+            },
+            "detector_types": {
+              "photon": 8
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 17089,
             "size_human": "16.69 KB"
-          }
-        },
-        "instrument_count": 1
-      },
-      "FY_3A": {
-        "name": "FY_3A",
-        "instruments": {
-          "IRAS": {
-            "name": "IRAS",
+          },
+          "FY3A-IRAS": {
+            "name": "FY3A-IRAS",
             "filter_count": 26,
             "filters": [
               "CH01",
@@ -4395,11 +5910,19 @@
               "CH25",
               "CH26"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 26
+            },
+            "detector_types": {
+              "photon": 26
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 232992,
             "size_human": "227.53 KB"
           },
-          "MERSI": {
-            "name": "MERSI",
+          "FY3A-MERSI": {
+            "name": "FY3A-MERSI",
             "filter_count": 20,
             "filters": [
               "CH01",
@@ -4423,17 +5946,19 @@
               "CH19",
               "CH20"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 20
+            },
+            "detector_types": {
+              "photon": 20
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 77434,
             "size_human": "75.62 KB"
-          }
-        },
-        "instrument_count": 2
-      },
-      "FY_3B": {
-        "name": "FY_3B",
-        "instruments": {
-          "IRAS": {
-            "name": "IRAS",
+          },
+          "FY3B-IRAS": {
+            "name": "FY3B-IRAS",
             "filter_count": 26,
             "filters": [
               "CH01",
@@ -4463,11 +5988,19 @@
               "CH25",
               "CH26"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 26
+            },
+            "detector_types": {
+              "photon": 26
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 337359,
             "size_human": "329.45 KB"
           },
-          "MERSI": {
-            "name": "MERSI",
+          "FY3B-MERSI": {
+            "name": "FY3B-MERSI",
             "filter_count": 19,
             "filters": [
               "CH01",
@@ -4490,11 +6023,19 @@
               "CH19",
               "CH20"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 19
+            },
+            "detector_types": {
+              "photon": 19
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 40315,
             "size_human": "39.37 KB"
           },
-          "VIRR": {
-            "name": "VIRR",
+          "FY3B-VIRR": {
+            "name": "FY3B-VIRR",
             "filter_count": 10,
             "filters": [
               "CH01",
@@ -4508,17 +6049,19 @@
               "CH09",
               "CH10"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 10
+            },
+            "detector_types": {
+              "photon": 10
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 33895,
             "size_human": "33.10 KB"
-          }
-        },
-        "instrument_count": 3
-      },
-      "FY_3C": {
-        "name": "FY_3C",
-        "instruments": {
-          "IRAS": {
-            "name": "IRAS",
+          },
+          "FY3C-IRAS": {
+            "name": "FY3C-IRAS",
             "filter_count": 26,
             "filters": [
               "CH01",
@@ -4548,11 +6091,19 @@
               "CH25",
               "CH26"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 26
+            },
+            "detector_types": {
+              "photon": 26
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 309301,
             "size_human": "302.05 KB"
           },
-          "MERSI": {
-            "name": "MERSI",
+          "FY3C-MERSI": {
+            "name": "FY3C-MERSI",
             "filter_count": 20,
             "filters": [
               "CH01",
@@ -4576,11 +6127,19 @@
               "CH19",
               "CH20"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 20
+            },
+            "detector_types": {
+              "photon": 20
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 29740,
             "size_human": "29.04 KB"
           },
-          "VIRR": {
-            "name": "VIRR",
+          "FY3C-VIRR": {
+            "name": "FY3C-VIRR",
             "filter_count": 7,
             "filters": [
               "CH01",
@@ -4591,11 +6150,19 @@
               "CH09",
               "CH10"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 7
+            },
+            "detector_types": {
+              "photon": 7
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 12102,
             "size_human": "11.82 KB"
           }
         },
-        "instrument_count": 3
+        "instrument_count": 11
       },
       "Flock": {
         "name": "Flock",
@@ -4609,6 +6176,14 @@
               "NIR",
               "Red"
             ],
+            "published_paths": {
+              "filter+instrument": 4
+            },
+            "detector_types": {
+              "energy": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 2298,
             "size_human": "2.24 KB"
           },
@@ -4622,6 +6197,14 @@
               "Red",
               "RedEdge"
             ],
+            "published_paths": {
+              "filter+instrument": 5
+            },
+            "detector_types": {
+              "energy": 5
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 5534,
             "size_human": "5.40 KB"
           }
@@ -4642,6 +6225,15 @@
               "Grp",
               "Grvs"
             ],
+            "published_paths": {
+              "filter+instrument": 2,
+              "filter+qe+instrument": 4
+            },
+            "detector_types": {
+              "photon": 6
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 100685,
             "size_human": "98.33 KB"
           }
@@ -4658,6 +6250,14 @@
               "FUV",
               "NUV"
             ],
+            "published_paths": {
+              "filter+instrument": 2
+            },
+            "detector_types": {
+              "photon": 2
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 26080,
             "size_human": "25.47 KB"
           }
@@ -4713,6 +6313,14 @@
               "VR10",
               "VR11"
             ],
+            "published_paths": {
+              "filter+instrument": 41
+            },
+            "detector_types": {
+              "energy": 41
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 401367,
             "size_human": "391.96 KB"
           }
@@ -4731,6 +6339,14 @@
               "Uc_ADPS",
               "V_ADPS"
             ],
+            "published_paths": {
+              "unspecified": 4
+            },
+            "detector_types": {
+              "energy": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 3250,
             "size_human": "3.17 KB"
           },
@@ -4743,6 +6359,14 @@
               "R",
               "R_ADPS"
             ],
+            "published_paths": {
+              "filter+instrument": 4
+            },
+            "detector_types": {
+              "energy": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4566,
             "size_human": "4.46 KB"
           },
@@ -4753,6 +6377,14 @@
               "I",
               "R"
             ],
+            "published_paths": {
+              "unspecified": 2
+            },
+            "detector_types": {
+              "energy": 2
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 2842,
             "size_human": "2.78 KB"
           },
@@ -4775,6 +6407,14 @@
               "V1_ADPS",
               "V_ADPS"
             ],
+            "published_paths": {
+              "filter+instrument": 14
+            },
+            "detector_types": {
+              "energy": 14
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 13135,
             "size_human": "12.83 KB"
           },
@@ -4794,6 +6434,14 @@
               "U",
               "V"
             ],
+            "published_paths": {
+              "filter+instrument": 11
+            },
+            "detector_types": {
+              "energy": 11
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4979,
             "size_human": "4.86 KB"
           },
@@ -4822,6 +6470,15 @@
               "V_Mendoza",
               "V_Straizys"
             ],
+            "published_paths": {
+              "filter+instrument": 19,
+              "filter+instrument+atmosphere": 1
+            },
+            "detector_types": {
+              "energy": 20
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 19172,
             "size_human": "18.72 KB"
           },
@@ -4838,6 +6495,14 @@
               "y",
               "y_ADPS"
             ],
+            "published_paths": {
+              "unspecified": 8
+            },
+            "detector_types": {
+              "energy": 8
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 7880,
             "size_human": "7.70 KB"
           },
@@ -4860,6 +6525,14 @@
               "Z",
               "Z_ADPS"
             ],
+            "published_paths": {
+              "filter+instrument": 14
+            },
+            "detector_types": {
+              "energy": 14
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 13700,
             "size_human": "13.38 KB"
           },
@@ -4876,6 +6549,14 @@
               "W",
               "W_ADPS"
             ],
+            "published_paths": {
+              "filter+instrument": 8
+            },
+            "detector_types": {
+              "energy": 8
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 8805,
             "size_human": "8.60 KB"
           },
@@ -4889,6 +6570,14 @@
               "V",
               "W"
             ],
+            "published_paths": {
+              "filter+instrument": 5
+            },
+            "detector_types": {
+              "energy": 5
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4257,
             "size_human": "4.16 KB"
           },
@@ -4905,6 +6594,14 @@
               "T2_pe",
               "T2_ph"
             ],
+            "published_paths": {
+              "filter+instrument": 8
+            },
+            "detector_types": {
+              "energy": 8
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 3436,
             "size_human": "3.36 KB"
           }
@@ -4937,6 +6634,14 @@
               "Si6",
               "SiC"
             ],
+            "published_paths": {
+              "filter": 18
+            },
+            "detector_types": {
+              "energy": 18
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 569210,
             "size_human": "555.87 KB"
           }
@@ -4959,6 +6664,14 @@
               "Red",
               "Violet"
             ],
+            "published_paths": {
+              "filter+optics+qe+instrument": 8
+            },
+            "detector_types": {
+              "photon": 8
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 5813,
             "size_human": "5.68 KB"
           }
@@ -4976,6 +6689,14 @@
               "R",
               "V"
             ],
+            "published_paths": {
+              "filter": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 16653,
             "size_human": "16.26 KB"
           },
@@ -4989,6 +6710,14 @@
               "U",
               "V"
             ],
+            "published_paths": {
+              "filter": 5
+            },
+            "detector_types": {
+              "energy": 5
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 92759,
             "size_human": "90.58 KB"
           },
@@ -5006,6 +6735,14 @@
               "u_sdss",
               "z_sdss"
             ],
+            "published_paths": {
+              "filter": 9
+            },
+            "detector_types": {
+              "energy": 9
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 28900,
             "size_human": "28.22 KB"
           },
@@ -5022,6 +6759,15 @@
               "Red",
               "Red_filter"
             ],
+            "published_paths": {
+              "filter": 4,
+              "filter+qe": 4
+            },
+            "detector_types": {
+              "photon": 8
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 35138,
             "size_human": "34.31 KB"
           },
@@ -5043,6 +6789,14 @@
               "Ks",
               "Y"
             ],
+            "published_paths": {
+              "unspecified": 13
+            },
+            "detector_types": {
+              "photon": 13
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 158082,
             "size_human": "154.38 KB"
           },
@@ -5070,6 +6824,14 @@
               "u",
               "z"
             ],
+            "published_paths": {
+              "filter": 19
+            },
+            "detector_types": {
+              "energy": 19
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 44694,
             "size_human": "43.65 KB"
           },
@@ -5095,6 +6857,14 @@
               "u",
               "z"
             ],
+            "published_paths": {
+              "filter": 17
+            },
+            "detector_types": {
+              "energy": 17
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 109751,
             "size_human": "107.18 KB"
           },
@@ -5115,6 +6885,14 @@
               "XD",
               "Y"
             ],
+            "published_paths": {
+              "filter": 12
+            },
+            "detector_types": {
+              "photon": 12
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 63170,
             "size_human": "61.69 KB"
           },
@@ -5128,6 +6906,14 @@
               "K2",
               "Y"
             ],
+            "published_paths": {
+              "filter": 5
+            },
+            "detector_types": {
+              "energy": 5
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 169053,
             "size_human": "165.09 KB"
           },
@@ -5158,6 +6944,14 @@
               "Kshort_cont",
               "Z"
             ],
+            "published_paths": {
+              "filter": 22
+            },
+            "detector_types": {
+              "energy": 22
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 288091,
             "size_human": "281.34 KB"
           }
@@ -5184,6 +6978,14 @@
               "NB2090",
               "Y"
             ],
+            "published_paths": {
+              "filter": 12
+            },
+            "detector_types": {
+              "unclassified": 12
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 324387,
             "size_human": "316.78 KB"
           }
@@ -5224,6 +7026,18 @@
               "POL_V",
               "PR200L"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 26
+            },
+            "detector_types": {
+              "photon": 26
+            },
+            "separate_components": {
+              "filter": 19,
+              "optics": 19,
+              "qe": 19
+            },
+            "has_component_manifest": true,
             "size_bytes": 7779015,
             "size_human": "7.42 MB"
           },
@@ -5240,6 +7054,14 @@
               "PR110L",
               "PR130L"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 8
+            },
+            "detector_types": {
+              "photon": 8
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
             "size_bytes": 264430,
             "size_human": "258.23 KB"
           },
@@ -5279,6 +7101,18 @@
               "POL_UV",
               "POL_V"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 31
+            },
+            "detector_types": {
+              "photon": 31
+            },
+            "separate_components": {
+              "filter": 16,
+              "optics": 16,
+              "qe": 16
+            },
+            "has_component_manifest": true,
             "size_bytes": 5672560,
             "size_human": "5.41 MB"
           },
@@ -5293,6 +7127,14 @@
               "ND5",
               "PUPIL"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 6
+            },
+            "detector_types": {
+              "photon": 6
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 41461,
             "size_human": "40.49 KB"
           },
@@ -5315,6 +7157,14 @@
               "PRISM2",
               "PRISM3"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 14
+            },
+            "detector_types": {
+              "photon": 14
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 886414,
             "size_human": "865.64 KB"
           },
@@ -5367,6 +7217,14 @@
               "PRISM1",
               "PRISM2"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 44
+            },
+            "detector_types": {
+              "photon": 44
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 2390169,
             "size_human": "2.28 MB"
           },
@@ -5382,6 +7240,14 @@
               "MIRROR",
               "PRISM"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 7
+            },
+            "detector_types": {
+              "photon": 7
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 84370,
             "size_human": "82.39 KB"
           },
@@ -5399,6 +7265,14 @@
               "MIRROR",
               "PRISM"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 9
+            },
+            "detector_types": {
+              "photon": 9
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 166105,
             "size_human": "162.21 KB"
           },
@@ -5413,6 +7287,15 @@
               "F277M_0",
               "F327M_0"
             ],
+            "published_paths": {
+              "filter+instrument": 2,
+              "filter+qe+instrument": 4
+            },
+            "detector_types": {
+              "photon": 6
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 86849,
             "size_human": "84.81 KB"
           },
@@ -5445,6 +7328,14 @@
               "PRISM_BLUE",
               "PRISM_RED"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 24
+            },
+            "detector_types": {
+              "photon": 24
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 174679,
             "size_human": "170.58 KB"
           },
@@ -5479,6 +7370,14 @@
               "PRISM_BLUE",
               "PRISM_RED"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 26
+            },
+            "detector_types": {
+              "photon": 26
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 191985,
             "size_human": "187.49 KB"
           },
@@ -5509,6 +7408,14 @@
               "PRISM_BLUE",
               "PRISM_RED"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 22
+            },
+            "detector_types": {
+              "photon": 22
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 266029,
             "size_human": "259.79 KB"
           },
@@ -5536,6 +7443,14 @@
               "POL120S",
               "POL240S"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 19
+            },
+            "detector_types": {
+              "photon": 19
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
             "size_bytes": 341305,
             "size_human": "333.31 KB"
           },
@@ -5563,6 +7478,14 @@
               "POL120L",
               "POL240L"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 19
+            },
+            "detector_types": {
+              "photon": 19
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
             "size_bytes": 490035,
             "size_human": "478.55 KB"
           },
@@ -5590,6 +7513,18 @@
               "G141",
               "G206"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 19
+            },
+            "detector_types": {
+              "photon": 19
+            },
+            "separate_components": {
+              "filter": 3,
+              "optics": 3,
+              "qe": 3
+            },
+            "has_component_manifest": true,
             "size_bytes": 469188,
             "size_human": "458.19 KB"
           },
@@ -5625,6 +7560,14 @@
               "F28X50OII_G430L",
               "F28X50OII_G430M"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 27
+            },
+            "detector_types": {
+              "photon": 27
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 2723730,
             "size_human": "2.60 MB"
           },
@@ -5663,6 +7606,14 @@
               "F25SRF2_G140L",
               "F25SRF2_G140M"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 30
+            },
+            "detector_types": {
+              "photon": 30
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 1036857,
             "size_human": "1012.56 KB"
           },
@@ -5723,6 +7674,14 @@
               "F25SRF2_G230M",
               "F25SRF2_PRISM"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 52
+            },
+            "detector_types": {
+              "photon": 52
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 8127299,
             "size_human": "7.75 MB"
           },
@@ -5748,6 +7707,18 @@
               "G102",
               "G141"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 17
+            },
+            "detector_types": {
+              "photon": 17
+            },
+            "separate_components": {
+              "filter": 15,
+              "optics": 15,
+              "qe": 15
+            },
+            "has_component_manifest": true,
             "size_bytes": 917910,
             "size_human": "896.40 KB"
           },
@@ -5819,6 +7790,18 @@
               "FQ937N",
               "G280"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 63
+            },
+            "detector_types": {
+              "photon": 63
+            },
+            "separate_components": {
+              "filter": 55,
+              "optics": 55,
+              "qe": 55
+            },
+            "has_component_manifest": true,
             "size_bytes": 15124727,
             "size_human": "14.42 MB"
           },
@@ -5890,6 +7873,18 @@
               "FQ937N",
               "G280"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 63
+            },
+            "detector_types": {
+              "photon": 63
+            },
+            "separate_components": {
+              "filter": 55,
+              "optics": 55,
+              "qe": 55
+            },
+            "has_component_manifest": true,
             "size_bytes": 15126367,
             "size_human": "14.43 MB"
           },
@@ -5947,6 +7942,14 @@
               "POL120",
               "POL60"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 49
+            },
+            "detector_types": {
+              "photon": 49
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 490562,
             "size_human": "479.06 KB"
           },
@@ -6004,6 +8007,14 @@
               "POL120",
               "POL60"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 49
+            },
+            "detector_types": {
+              "photon": 49
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 456864,
             "size_human": "446.16 KB"
           },
@@ -6056,6 +8067,18 @@
               "FQUVN",
               "POLQ"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 44
+            },
+            "detector_types": {
+              "photon": 44
+            },
+            "separate_components": {
+              "filter": 28,
+              "optics": 28,
+              "qe": 28
+            },
+            "has_component_manifest": true,
             "size_bytes": 2923091,
             "size_human": "2.79 MB"
           },
@@ -6116,6 +8139,18 @@
               "POLQ_45",
               "POLQ_90"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 52
+            },
+            "detector_types": {
+              "photon": 52
+            },
+            "separate_components": {
+              "filter": 27,
+              "optics": 27,
+              "qe": 27
+            },
+            "has_component_manifest": true,
             "size_bytes": 2918288,
             "size_human": "2.78 MB"
           }
@@ -6132,6 +8167,14 @@
               "450GHz",
               "850GHz"
             ],
+            "published_paths": {
+              "filter+instrument": 2
+            },
+            "detector_types": {
+              "energy": 2
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 77317,
             "size_human": "75.50 KB"
           }
@@ -6159,6 +8202,18 @@
               "F560W",
               "F770W"
             ],
+            "published_paths": {
+              "filter+instrument": 13
+            },
+            "detector_types": {
+              "photon": 13
+            },
+            "separate_components": {
+              "filter": 12,
+              "optics": 12,
+              "qe": 12
+            },
+            "has_component_manifest": true,
             "size_bytes": 2078903,
             "size_human": "1.98 MB"
           },
@@ -6196,6 +8251,18 @@
               "F470N",
               "F480M"
             ],
+            "published_paths": {
+              "filter+instrument": 29
+            },
+            "detector_types": {
+              "photon": 29
+            },
+            "separate_components": {
+              "filter": 25,
+              "optics": 25,
+              "qe": 25
+            },
+            "has_component_manifest": true,
             "size_bytes": 4876981,
             "size_human": "4.65 MB"
           },
@@ -6216,6 +8283,18 @@
               "F444W",
               "F480M"
             ],
+            "published_paths": {
+              "filter": 12
+            },
+            "detector_types": {
+              "photon": 12
+            },
+            "separate_components": {
+              "filter": 8,
+              "optics": 8,
+              "qe": 8
+            },
+            "has_component_manifest": true,
             "size_bytes": 4592303,
             "size_human": "4.38 MB"
           },
@@ -6229,6 +8308,14 @@
               "G395M_F290LP",
               "Prism"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 5
+            },
+            "detector_types": {
+              "photon": 5
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 94782,
             "size_human": "92.56 KB"
           }
@@ -6244,6 +8331,14 @@
             "filters": [
               "K"
             ],
+            "published_paths": {
+              "filter+instrument+atmosphere": 1
+            },
+            "detector_types": {
+              "photon": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 9137,
             "size_human": "8.92 KB"
           }
@@ -6264,6 +8359,18 @@
               "y",
               "z"
             ],
+            "published_paths": {
+              "filter+instrument+atmosphere": 6
+            },
+            "detector_types": {
+              "photon": 6
+            },
+            "separate_components": {
+              "filter": 6,
+              "optics": 6,
+              "qe": 6
+            },
+            "has_component_manifest": true,
             "size_bytes": 2726063,
             "size_human": "2.60 MB"
           }
@@ -6279,6 +8386,14 @@
             "filters": [
               "VR"
             ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "photon": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 4401,
             "size_human": "4.30 KB"
           }
@@ -6296,6 +8411,17 @@
               "i",
               "r"
             ],
+            "published_paths": {
+              "filter+qe": 3
+            },
+            "detector_types": {
+              "photon": 3
+            },
+            "separate_components": {
+              "filter": 3,
+              "qe": 3
+            },
+            "has_component_manifest": true,
             "size_bytes": 449124,
             "size_human": "438.60 KB"
           }
@@ -6318,6 +8444,20 @@
               "Y",
               "Z"
             ],
+            "published_paths": {
+              "filter+instrument+atmosphere": 1,
+              "filter+optics+instrument+atmosphere": 6,
+              "filter+optics+qe+atmosphere": 1
+            },
+            "detector_types": {
+              "photon": 8
+            },
+            "separate_components": {
+              "filter": 8,
+              "optics": 8,
+              "qe": 8
+            },
+            "has_component_manifest": true,
             "size_bytes": 506539,
             "size_human": "494.67 KB"
           }
@@ -6342,6 +8482,14 @@
               "Grism",
               "Prism"
             ],
+            "published_paths": {
+              "filter+qe+instrument": 10
+            },
+            "detector_types": {
+              "photon": 10
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 20307,
             "size_human": "19.83 KB"
           }
@@ -6366,6 +8514,15 @@
               "z",
               "zprime_filter"
             ],
+            "published_paths": {
+              "filter": 5,
+              "filter+instrument+atmosphere": 5
+            },
+            "detector_types": {
+              "photon": 10
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 219023,
             "size_human": "213.89 KB"
           }
@@ -6410,6 +8567,14 @@
               "N_HeI",
               "N_PaB"
             ],
+            "published_paths": {
+              "unspecified": 30
+            },
+            "detector_types": {
+              "unclassified": 30
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 1538585,
             "size_human": "1.47 MB"
           },
@@ -6441,6 +8606,14 @@
               "V_L",
               "V_S"
             ],
+            "published_paths": {
+              "unspecified": 23
+            },
+            "detector_types": {
+              "unclassified": 23
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 511202,
             "size_human": "499.22 KB"
           }
@@ -6460,6 +8633,18 @@
               "r",
               "z"
             ],
+            "published_paths": {
+              "filter+instrument+atmosphere": 5
+            },
+            "detector_types": {
+              "photon": 5
+            },
+            "separate_components": {
+              "filter": 5,
+              "optics": 5,
+              "qe": 5
+            },
+            "has_component_manifest": true,
             "size_bytes": 39034,
             "size_human": "38.12 KB"
           }
@@ -6475,6 +8660,14 @@
             "filters": [
               "Red"
             ],
+            "published_paths": {
+              "filter+instrument": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 8776,
             "size_human": "8.57 KB"
           }
@@ -6491,6 +8684,14 @@
               "Ch1",
               "Ch2"
             ],
+            "published_paths": {
+              "unspecified": 2
+            },
+            "detector_types": {
+              "unclassified": 2
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 12989,
             "size_human": "12.68 KB"
           },
@@ -6502,6 +8703,14 @@
               "15GHz",
               "17GHz"
             ],
+            "published_paths": {
+              "unspecified": 3
+            },
+            "detector_types": {
+              "unclassified": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 1433,
             "size_human": "1.40 KB"
           }
@@ -6520,6 +8729,14 @@
               "W3",
               "W4"
             ],
+            "published_paths": {
+              "filter+instrument": 4
+            },
+            "detector_types": {
+              "energy": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 40462,
             "size_human": "39.51 KB"
           }
@@ -6574,6 +8791,14 @@
               "W42_3",
               "W42_4"
             ],
+            "published_paths": {
+              "filter+instrument": 40
+            },
+            "detector_types": {
+              "energy": 40
+            },
+            "separate_components": {},
+            "has_component_manifest": false,
             "size_bytes": 121201,
             "size_human": "118.36 KB"
           }

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Niall Millers SED Tools Data Archive - Stellar Atmosphere Library</title>
+    <title>Niall Miller's SED Tools Data Archive</title>
     <style>
         body {
             background-color: #000080;
@@ -194,6 +194,35 @@
             background-color: #F0F0F0;
         }
 
+        .filter-explanation {
+            background-color: #FFFFC0;
+            border: 1px solid #808080;
+            padding: 8px;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+
+        .instrument-table {
+            margin: 5px 0 12px;
+        }
+
+        .instrument-table td {
+            vertical-align: top;
+        }
+
+        .component-badge {
+            display: inline-block;
+            border: 1px solid #008080;
+            background-color: #E5F5F5;
+            padding: 2px 4px;
+            margin: 1px;
+            white-space: nowrap;
+        }
+
+        .metadata-missing {
+            color: #666666;
+        }
+
         .webring {
             border: 3px double #FFD700;
             background-color: #000000;
@@ -284,6 +313,12 @@
 
     <div class="section">
         <div class="section-title"> FILTER PROFILES BY FACILITY</div>
+        <div class="filter-explanation">
+            <b>Published path</b> shows which optical-path elements are already included in each downloadable filter curve.
+            <b>Separate component curves</b> shows independently downloadable files by element and the number of bands covered.
+            These are distinct: a published curve can include optics or detector response even when no separate file is available.
+            Detector type describes photon or energy counting, not an additional optical component.
+        </div>
         <div id="filters-container">
             <center><span class="blink">LOADING...</span></center>
         </div>
@@ -329,6 +364,19 @@
 </div>
 
 <script>
+function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, character => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[character]);
+}
+
+function countLabels(counts) {
+    const entries = Object.entries(counts || {});
+    return entries.length
+        ? entries.map(([name, count]) => `${escapeHtml(name)} (${count})`).join('<br>')
+        : '<span class="metadata-missing">Not specified</span>';
+}
+
 // Load index.json and populate the page
 fetch('index.json')
     .then(response => response.json())
@@ -376,18 +424,36 @@ fetch('index.json')
                 facilityDiv.className = 'filter-section';
 
                 let html = `<div class="facility-name" onclick="toggleInstruments('inst-${idx}')">
-                    📂 ${facilityName} (${facility.instrument_count || 0} instruments) [+]
+                    📂 ${escapeHtml(facilityName)} (${facility.instrument_count || 0} instruments) [+]
                 </div>`;
                 html += `<div class="instruments" id="inst-${idx}">`;
 
                 if (facility.instruments) {
+                    html += `<table class="instrument-table"><thead><tr>
+                        <th>INSTRUMENT</th><th>FILTERS</th><th>PUBLISHED PATH</th>
+                        <th>SEPARATE COMPONENT CURVES</th><th>DETECTOR TYPE</th><th>SIZE</th>
+                    </tr></thead><tbody>`;
                     Object.keys(facility.instruments).sort().forEach(instName => {
                         const inst = facility.instruments[instName];
-                        html += `<div class="instrument-item">
-                            <a href="filters/${facilityName}/${instName}/">${instName}</a>
-                            - ${inst.filter_count} filters (${inst.size_human})
-                        </div>`;
+                        const folder = `filters/${encodeURIComponent(facilityName)}/${encodeURIComponent(instName)}/`;
+                        const components = Object.entries(inst.separate_components || {});
+                        const componentHtml = components.length
+                            ? components.map(([role, count]) =>
+                                `<span class="component-badge">${escapeHtml(role)} ${count}/${inst.filter_count}</span>`
+                              ).join(' ')
+                            : '<span class="metadata-missing">None available</span>';
+                        const manifestLink = inst.has_component_manifest
+                            ? ` <a href="${folder}manifest.json">manifest</a>` : '';
+                        html += `<tr>
+                            <td><a href="${folder}">${escapeHtml(instName)}</a></td>
+                            <td align="center">${inst.filter_count}</td>
+                            <td>${countLabels(inst.published_paths)}</td>
+                            <td>${componentHtml}${manifestLink}</td>
+                            <td>${countLabels(inst.detector_types)}</td>
+                            <td align="right">${escapeHtml(inst.size_human)}</td>
+                        </tr>`;
                     });
+                    html += '</tbody></table>';
                 }
 
                 html += '</div>';
