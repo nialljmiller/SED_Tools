@@ -82,8 +82,9 @@ GSAOI_FILES = (
 )
 GSAOI = SimpleSource(
     facility="Gemini", instrument="GSAOI",
-    filters={name: Table(f"{GEMINI}/gsaoi/data/{name}.dat", wl_scale=10,
-                         tr_scale=0.01, note="measured filter transmission")
+    filters={("JCont" if name == "Jcont_ED190" else name.split("_ED")[0].replace("-", "_")):
+             Table(f"{GEMINI}/gsaoi/data/{name}.dat", wl_scale=10,
+                   tr_scale=0.01, note="measured filter transmission")
              for name in GSAOI_FILES},
     published_from_filters=True,
     references={"gemini": "https://www.gemini.edu/instrumentation/gsaoi/components"},

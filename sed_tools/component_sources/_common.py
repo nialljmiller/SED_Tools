@@ -195,7 +195,8 @@ def build_simple(
 
         write_filter_index(inst_dir, spec.instrument)
 
-    manifest = InstrumentManifest.load(inst_dir)
+    manifest = (InstrumentManifest.from_published(inst_dir) if spec.published_from_filters
+                else InstrumentManifest.load(inst_dir))
     # Keep what the published curves already provide (e.g. SVO filter-only siblings).
     manifest.components = InstrumentManifest.from_published(inst_dir).components
     published = {p.stem for p in inst_dir.glob("*.dat")}
