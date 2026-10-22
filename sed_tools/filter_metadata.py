@@ -412,8 +412,9 @@ def tag_filter_file(
 
     detector_type, filter_id, source, note = resolve_detector_type(path, client=client, facility=facility)
     if detector_type is None:
-        if existing and existing_source != SOURCE_ASSUMED:
-            # Keep an authoritative value rather than downgrade it on a failed lookup.
+        if existing:
+            # An unavailable catalogue cannot replace an explicit source
+            # assumption with the historical energy default.
             return DetectorTypeResult(path, existing, existing_source or "header", header.get("FilterID"), note=note)
         detector_type, source = ENERGY, SOURCE_ASSUMED
     elif source == SOURCE_SVO and existing_source == SOURCE_SVO_MATCH:
