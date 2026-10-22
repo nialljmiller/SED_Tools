@@ -116,7 +116,7 @@ def test_original_filter_source_does_not_leave_partial_download(tmp_path):
 
 
 def test_eso_dual_band_channels_are_distinct():
-    from sed_tools.component_sources.eso_tables import SOURCES
+    from sed_tools.component_sources.tabular import SOURCES
 
     spec = SOURCES["SPHERE"]
     left = spec.filters["D_H23_H2"]
@@ -124,6 +124,17 @@ def test_eso_dual_band_channels_are_distinct():
     assert left.url == right.url
     np.testing.assert_allclose(left.parse(b"400 0.2 0.8\n500 0.3 0.7\n")[1], [0.2, 0.3])
     np.testing.assert_allclose(right.parse(b"400 0.2 0.8\n500 0.3 0.7\n")[1], [0.8, 0.7])
+
+
+def test_nifs_temperature_columns_are_distinct():
+    from sed_tools.component_sources.tabular import SOURCES
+
+    spec = SOURCES["NIFS"]
+    warm = spec.filters["HK_298K"]
+    cold = spec.filters["HK_77K"]
+    assert warm.url == cold.url
+    np.testing.assert_allclose(warm.parse(b"2.0 25 75\n2.1 50 90\n")[1], [0.25, 0.5])
+    np.testing.assert_allclose(cold.parse(b"2.0 25 75\n2.1 50 90\n")[1], [0.75, 0.9])
 
 
 # ---------------------------------------------------------------------------

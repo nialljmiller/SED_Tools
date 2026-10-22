@@ -91,7 +91,7 @@ class FilterLibrary:
                 return directory
 
         ref = builder_for(facility, instrument)
-        if ref is not None and ref.name == "eso_tables":
+        if ref is not None and ref.name == "tabular":
             try:
                 get_builder(ref.name)(self.root, **dict(ref.kwargs))
                 if self.published_complete(directory):
@@ -121,8 +121,8 @@ class FilterLibrary:
                 manifest = InstrumentManifest.from_dict(data)
                 return dict(manifest.describe(), availability_source="njm", errors=[])
         ref = builder_for(facility, instrument)
-        if ref is not None and ref.name == "eso_tables":
-            from .component_sources.eso_tables import SOURCES
+        if ref is not None and ref.name == "tabular":
+            from .component_sources.tabular import SOURCES
 
             spec = SOURCES[instrument]
             headers = {band: {"Components": FILTER, "ComponentsSource": "original",

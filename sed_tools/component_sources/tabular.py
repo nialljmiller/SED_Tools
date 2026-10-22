@@ -1,9 +1,9 @@
-"""ESO filter scans with an independently enumerable, two-column source.
+"""Original filter scans with independently enumerable tabular sources.
 
 These are measured *filters*, not a claim that the full optical path is known.
-The table list is deliberately explicit so a new ESO file cannot silently
-change a band, unit conversion, or observing mode. SPHERE dual-band tables
-carry two separate channels in columns 2 and 3.
+The table lists are explicit so a new upstream file cannot silently change a
+band, unit conversion, or observing mode. Multi-band or multi-temperature
+tables carry separate named channels.
 """
 
 from __future__ import annotations
@@ -71,11 +71,49 @@ SPHERE = SimpleSource(
     notes="ESO SPHERE/IRDIS filter transmissions, including separately indexed dual-band channels. ZIMPOL, neutral-density and instrument optics remain unmodelled; these curves are filter-only.",
 )
 
-SOURCES = {spec.instrument: spec for spec in (HAWKI, NACO, SPHERE)}
+GEMINI = "https://www.gemini.edu/sciops/instruments"
+GSAOI_FILES = (
+    "CH4long_ED151", "CH4short_ED144", "CO_ED187", "FeII_ED150",
+    "H2O_ED188", "H2_1-0_ED162", "H2_2-1_S1_ED164", "HIBrGamma_ED166",
+    "HIPaBeta_ED231", "HIPaGamma_ED186", "H_ED169-1", "Hcont_ED141",
+    "HeI2p2s_ED165", "HeI_ED185", "J_ED191-1", "Jcont_ED190",
+    "K_ED192-1", "Klong_cont_ED163", "Kprime_ED278-2", "Kshort_ED196-1",
+    "Kshort_cont_ED168", "Z_ED205-1",
+)
+GSAOI = SimpleSource(
+    facility="Gemini", instrument="GSAOI",
+    filters={name: Table(f"{GEMINI}/gsaoi/data/{name}.dat", wl_scale=10,
+                         tr_scale=0.01, note="measured filter transmission")
+             for name in GSAOI_FILES},
+    published_from_filters=True,
+    references={"gemini": "https://www.gemini.edu/instrumentation/gsaoi/components"},
+    notes="Gemini GSAOI filter scans in nm and percent; optical train and detector QE are not supplied here. No site atmosphere is assumed.",
+)
+
+_nifs = {}
+for name in ("HK", "JH", "ZJ"):
+    url = f"{GEMINI}/nifs/{name}.dat"
+    for temperature, column in (("298K", 1), ("77K", 2)):
+        _nifs[f"{name}_{temperature}"] = Table(url, wl_scale=10000,
+                                                tr_scale=0.01, cols=(0, column),
+                                                note=f"witness measurement at {temperature}")
+NIFS = SimpleSource(
+    facility="Gemini", instrument="NIFS", filters=_nifs,
+    published_from_filters=True,
+    references={"gemini": "https://www.gemini.edu/instrumentation/nifs/components"},
+    notes="Gemini NIFS ZJ/JH/HK witness filter scans. The 298 K and 77 K columns are separate variants; no optics, QE or site atmosphere is inferred.",
+)
+
+SOURCES = {spec.instrument: spec for spec in (HAWKI, NACO, SPHERE, GSAOI, NIFS)}
+RAW_GROUPS = {
+    "HAWKI": "eso2/eso_hawki", "NACO": "eso/eso_naco", "SPHERE": "eso/eso_sphere",
+    "GSAOI": "pages2/pg_www_gemini_edu_instrumentation_gsaoi_components",
+    "NIFS": "pages2/pg_www_gemini_edu_instrumentation_nifs_components",
+}
 
 
 def build(filter_root, *, instrument, raw=None, session=None, **kwargs) -> Path:
-    """Build one ESO instrument; ``raw`` may hold the saved research inventory."""
+    """Build one instrument; ``raw`` may hold the saved research inventory."""
     spec = SOURCES[instrument]
     if raw is not None:
         from requests import Response, Session
@@ -86,9 +124,7 @@ def build(filter_root, *, instrument, raw=None, session=None, **kwargs) -> Path:
 
             def get(self, url, **options):
                 filename = url.rsplit("/", 1)[-1]
-                groups = {"HAWKI": "eso2/eso_hawki", "NACO": "eso/eso_naco",
-                          "SPHERE": "eso/eso_sphere"}
-                path = self.root / groups[instrument] / filename
+                path = self.root / RAW_GROUPS[instrument] / filename
                 if path.is_file():
                     response = Response()
                     response.status_code = 200
