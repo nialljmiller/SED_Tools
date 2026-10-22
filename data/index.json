@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-10-21T21:16:03.469414",
+  "generated": "2026-10-22T20:53:07.670365",
   "base_url": "http://nillmill.ddns.net/sed_tools",
   "statistics": {
     "total_models": 1,
@@ -9,7 +9,7 @@
     "total_size_bytes": 142850198218,
     "total_size_human": "133.04 GB",
     "total_facilities": 73,
-    "total_filters": 3836
+    "total_filters": 3904
   },
   "models": [
     "bt-cond"
@@ -8431,6 +8431,128 @@
       "Paranal": {
         "name": "Paranal",
         "instruments": {
+          "HAWKI": {
+            "name": "HAWKI",
+            "filter_count": 11,
+            "filters": [
+              "BrGamma",
+              "CH4",
+              "H",
+              "H2",
+              "J",
+              "Knew",
+              "Kold",
+              "NB1060",
+              "NB1190",
+              "NB2090",
+              "Y"
+            ],
+            "published_paths": {
+              "filter": 11
+            },
+            "detector_types": {
+              "photon": 11
+            },
+            "separate_components": {
+              "filter": 11
+            },
+            "has_component_manifest": true,
+            "size_bytes": 197789,
+            "size_human": "193.15 KB"
+          },
+          "NACO": {
+            "name": "NACO",
+            "filter_count": 33,
+            "filters": [
+              "H_CONICA",
+              "IB_2.00",
+              "IB_2.03",
+              "IB_2.06",
+              "IB_2.09",
+              "IB_2.12",
+              "IB_2.15",
+              "IB_2.18",
+              "IB_2.21",
+              "IB_2.24",
+              "IB_2.27",
+              "IB_2.30",
+              "IB_2.33",
+              "IB_2.36",
+              "IB_2.39",
+              "IB_2.42",
+              "IB_2.45",
+              "IB_2.48",
+              "J_CONICA",
+              "Ks_CONICA",
+              "L_prime",
+              "M_prime",
+              "NB_1.04",
+              "NB_1.08",
+              "NB_1.09",
+              "NB_1.24",
+              "NB_1.26",
+              "NB_1.28",
+              "NB_1.64",
+              "NB_1.75",
+              "NB_2.12",
+              "NB_2.17",
+              "NB_3.74"
+            ],
+            "published_paths": {
+              "filter": 33
+            },
+            "detector_types": {
+              "photon": 33
+            },
+            "separate_components": {
+              "filter": 33
+            },
+            "has_component_manifest": true,
+            "size_bytes": 30901,
+            "size_human": "30.18 KB"
+          },
+          "SPHERE": {
+            "name": "SPHERE",
+            "filter_count": 24,
+            "filters": [
+              "B_H",
+              "B_J",
+              "B_Ks",
+              "B_Y",
+              "D_H23_H2",
+              "D_H23_H3",
+              "D_H34_H3",
+              "D_H34_H4",
+              "D_J23_J2",
+              "D_J23_J3",
+              "D_K12_K1",
+              "D_K12_K2",
+              "D_Y23_Y2",
+              "D_Y23_Y3",
+              "N_BrG",
+              "N_CO",
+              "N_CntH",
+              "N_CntJ",
+              "N_CntK1",
+              "N_CntK2",
+              "N_FeII",
+              "N_H2",
+              "N_HeI",
+              "N_PaB"
+            ],
+            "published_paths": {
+              "filter": 24
+            },
+            "detector_types": {
+              "photon": 24
+            },
+            "separate_components": {
+              "filter": 24
+            },
+            "has_component_manifest": true,
+            "size_bytes": 926519,
+            "size_human": "904.80 KB"
+          },
           "VISTA": {
             "name": "VISTA",
             "filter_count": 8,
@@ -8462,7 +8584,7 @@
             "size_human": "494.67 KB"
           }
         },
-        "instrument_count": 1
+        "instrument_count": 4
       },
       "Roman": {
         "name": "Roman",
