@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-10-22T20:56:19.375429",
+  "generated": "2026-10-22T21:00:10.714744",
   "base_url": "http://nillmill.ddns.net/sed_tools",
   "statistics": {
     "total_models": 1,
@@ -9,7 +9,7 @@
     "total_size_bytes": 142850198218,
     "total_size_human": "133.04 GB",
     "total_facilities": 73,
-    "total_filters": 3932
+    "total_filters": 3910
   },
   "models": [
     "bt-cond"
@@ -6919,66 +6919,43 @@
           },
           "GSAOI": {
             "name": "GSAOI",
-            "filter_count": 44,
+            "filter_count": 22,
             "filters": [
               "CH4long",
-              "CH4long_ED151",
               "CH4short",
-              "CH4short_ED144",
               "CO",
-              "CO_ED187",
               "FeII",
-              "FeII_ED150",
               "H",
               "H2O",
-              "H2O_ED188",
-              "H2_1-0_ED162",
               "H2_1_0",
-              "H2_2-1_S1_ED164",
               "H2_2_1_S1",
               "HIBrGamma",
-              "HIBrGamma_ED166",
               "HIPaBeta",
-              "HIPaBeta_ED231",
               "HIPaGamma",
-              "HIPaGamma_ED186",
-              "H_ED169-1",
               "Hcont",
-              "Hcont_ED141",
               "HeI",
               "HeI2p2s",
-              "HeI2p2s_ED165",
-              "HeI_ED185",
               "J",
               "JCont",
-              "J_ED191-1",
-              "Jcont_ED190",
               "K",
-              "K_ED192-1",
               "Klong_cont",
-              "Klong_cont_ED163",
               "Kprime",
-              "Kprime_ED278-2",
               "Kshort",
-              "Kshort_ED196-1",
               "Kshort_cont",
-              "Kshort_cont_ED168",
-              "Z",
-              "Z_ED205-1"
+              "Z"
             ],
             "published_paths": {
-              "filter": 44
+              "filter": 22
             },
             "detector_types": {
-              "energy": 22,
-              "photon": 22
+              "energy": 22
             },
             "separate_components": {
               "filter": 22
             },
             "has_component_manifest": true,
-            "size_bytes": 703254,
-            "size_human": "686.77 KB"
+            "size_bytes": 703110,
+            "size_human": "686.63 KB"
           },
           "NIFS": {
             "name": "NIFS",
