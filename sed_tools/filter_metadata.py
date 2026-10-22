@@ -407,6 +407,9 @@ def tag_filter_file(
     existing = normalize_detector_type(header.get("DetectorType"))
     existing_source = header.get("DetectorTypeSource", "")
     complete = not header.get("FilterID") or bool(header.get("WavelengthUnit") and header.get("Components"))
+    if (existing and existing_source == SOURCE_ASSUMED and
+            header.get("ComponentsSource") == "original" and not force):
+        return DetectorTypeResult(path, existing, SOURCE_ASSUMED, header.get("FilterID"))
     if existing and existing_source != SOURCE_ASSUMED and complete and not force:
         return DetectorTypeResult(path, existing, existing_source or "header", header.get("FilterID"))
 

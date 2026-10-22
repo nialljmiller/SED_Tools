@@ -261,10 +261,12 @@ def test_failed_lookup_keeps_original_source_assumption(tmp_path):
                       source=SOURCE_ASSUMED, wavelength_unit="Angstrom",
                       extra={"Components": "filter", "ComponentsSource": "original"})
 
-    result = tag_filter_file(path, client=FakeSVO({}, fail=True))
+    client = FakeSVO({}, fail=True)
+    result = tag_filter_file(path, client=client)
 
     assert (result.detector_type, result.source, result.changed) == (PHOTON, SOURCE_ASSUMED, False)
     assert read_filter_header(path)["DetectorType"] == PHOTON
+    assert client.calls == []
 
 
 def test_dry_run_leaves_file_untouched(tmp_path):
