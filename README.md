@@ -275,11 +275,12 @@ Where components come from:
 | Subaru HSC | NAOJ/Subaru curves (+ HSC pipeline's Maunakea atmosphere `maunakea_hsc`) |
 | CTIO DECam | DES standard bandpasses ÷ DES atmosphere (+ `ctio_des`) |
 | VISTA/VIRCAM | ESO VIRCAM ETC curves (+ SkyCalc `paranal`) |
+| HAWK-I, NACO, SPHERE/IRDIS | ESO filter scans (11, 33 and 24 independently named curves; filter-only, with optics and QE still unavailable) |
 | ZTF | `ztf_information` filters and CCD QE |
 | 57 SVO instrument groups (SDSS, Swift/UVOT, UKIRT/WFCAM, OmegaCAM, Suprime-Cam, ...) | SVO's own filter-only sibling curves (`g_filter`, `g_fil`, `gprime_filter`) |
 | Gaia, 2MASS, WISE, Spitzer, GALEX, TESS, Kepler, Hipparcos/Tycho | none — only totals are published (`filters-info` says so) |
 
-The NJM mirror runs these ahead of time (`sed-tools filters-build-components all`). Component requests reuse installed files, try NJM, then run the instrument's original-source builder if needed. Large downloads, including JWST reference data, require `allow_heavy=True` in Python or `--allow-heavy` on the command line.
+The NJM mirror runs the automatic builders ahead of time (`sed-tools filters-build-components all`). Component requests reuse installed files, try NJM, then run the instrument's original-source builder if needed. For the three ESO table sets, a curator can run `sed-tools filters-build-components eso_tables --instrument HAWKI` (or `NACO` or `SPHERE`); `--raw /path/to/evidence` reads the saved official files when ESO is unavailable. These filters can be discovered and downloaded without SVO. If both NJM and the original source are unavailable, the normal SVO fallback remains. Their root curves are the measured filters themselves, not full system throughput. Large downloads, including JWST reference data, require `allow_heavy=True` in Python or `--allow-heavy` on the command line.
 
 #### Inspecting availability and requesting products
 

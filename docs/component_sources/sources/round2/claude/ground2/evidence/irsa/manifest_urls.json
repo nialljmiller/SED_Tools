@@ -1,0 +1,44 @@
+[
+ {
+  "url": "https://heasarc.gsfc.nasa.gov/docs/tess/data/tess-response-function-v2.0.csv",
+  "ok": true,
+  "path": "evidence/irsa/misc/tess-response-function-v2.0.csv",
+  "bytes": 7700,
+  "sha256": "0751093d8e3384719ead1d1e82bc6423d97c52e602d80fa11176112d0b541928"
+ },
+ {
+  "url": "https://irsa.ipac.caltech.edu/data/SPITZER/docs/irac/calibrationfiles/spectralresponse/080924ch1trans_full.txt",
+  "ok": true,
+  "path": "evidence/irsa/misc/080924ch1trans_full.txt",
+  "bytes": 7551,
+  "sha256": "4d57bdec204c3b31a5508401fa1fb99eb2523ac520d483a08f60b4eee2431e04"
+ },
+ {
+  "url": "https://irsa.ipac.caltech.edu/data/SPITZER/docs/irac/calibrationfiles/spectralresponse/080924ch1trans_full.txt",
+  "ok": true,
+  "path": "evidence/irsa/misc/080924ch1trans_full.txt",
+  "bytes": 7551,
+  "sha256": "4d57bdec204c3b31a5508401fa1fb99eb2523ac520d483a08f60b4eee2431e04"
+ },
+ {
+  "url": "https://irsa.ipac.caltech.edu/data/SPITZER/docs/irac/calibrationfiles/spectralresponse/080924ch3trans_full.txt",
+  "ok": true,
+  "path": "evidence/irsa/misc/080924ch3trans_full.txt",
+  "bytes": 6031,
+  "sha256": "c9cabaeb073123a75de625a99fda35f3d759817dbad620e22a8bae8bb3742226"
+ },
+ {
+  "url": "https://irsa.ipac.caltech.edu/data/SPITZER/docs/irac/calibrationfiles/spectralresponse/080924ch2trans_full.txt",
+  "ok": true,
+  "path": "evidence/irsa/misc/080924ch2trans_full.txt",
+  "bytes": 7741,
+  "sha256": "995a4dc4e214a26f7b6341cefa98429fa6d62ec5c5562f438d3e2ecc0bcf7b5e"
+ },
+ {
+  "url": "https://irsa.ipac.caltech.edu/data/SPITZER/docs/irac/calibrationfiles/spectralresponse/080924ch4trans_full.txt",
+  "ok": true,
+  "path": "evidence/irsa/misc/080924ch4trans_full.txt",
+  "bytes": 6797,
+  "sha256": "7bf2a6f589ac7220e5737101a0d7b59d1609e994eb8dbc0c7e0ac2e91a2243da"
+ }
+]

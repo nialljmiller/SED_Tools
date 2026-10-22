@@ -1,0 +1,7 @@
+facility_key,instrument_key,review_status,filter_status,optics_status,qe_status,atmosphere_status,published_status,independent_source_status,notes
+LCO,CSP,upgraded,available,derived,derived,available,available,original_files,"Files in hand; curves include telescope+CCD+filter+atmosphere at 1.2 airmass; Telescope.txt and Telescope+Camera.txt components in CSP_filter_package.tgz"
+LCO,CSP2,upgraded,available,derived,derived,available,available,original_files,"CSPCSPII_passbands.tgz opened; 9 CSP2 FITS; same definition as CSP"
+LasCumbres,LasCumbres,upgraded,available,not_found,not_found,not_found,not_found,original_files,"lco_filter_curves.zip 200 OK; 18 filter files; filter-only assumed not documented"
+CTIO,DECam,upgraded,available,not_found,not_found,available,available,original_files,"scidoc1884 FITS decoded: atm column is atmosphere (0.31-0.96); grizY/atm gives i,z peaks >1 so validate. Legacy Survey decam.*.am1p4.dat.txt (X=1.4) retrieved at /files/ path. Components not separable."
+NGTS,NGTS,searched,not_found,not_found,not_found,not_found,documented,original_documentation,"Wheatley+2018 says combined system throughput is MNRAS online supplement; OUP 403 to scripts. Browser download needed."
+SkyMapper,SkyMapper,searched,third_party,not_found,not_found,documented,documented,third_party,"Only figure from ANU; coarse third-party table at mso.anu.edu.au/~brad/Filters; provenance unverified."

@@ -21,7 +21,7 @@ import numpy as np
 from ..filter_components import (ATMOSPHERE, FILTER, OPTICS, QE, SHARED, AtmosphereGrid,
                                  InstrumentManifest, add_component)
 from ..filter_metadata import (ENERGY, PHOTON, SOURCE_SVO, SVOMetadataClient,
-                               svo_components_header, write_filter_file)
+                               read_filter_header, svo_components_header, write_filter_file)
 
 logger = logging.getLogger(__name__)
 
@@ -110,6 +110,7 @@ class SimpleSource:
     outside_range: str = "error"
     references: Mapping[str, str] = field(default_factory=dict)
     notes: str = ""
+    published_from_filters: bool = False  # original filter scans can stand alone without SVO
 
 
 def ensure_published(inst_dir: Path, svo_ids: Mapping[str, str], client: SVOMetadataClient) -> None:
@@ -166,7 +167,33 @@ def build_simple(
         session = requests.Session()
     filter_root = Path(filter_root)
     inst_dir = filter_root / spec.facility / spec.instrument
-    ensure_published(inst_dir, spec.svo_ids, svo_client or SVOMetadataClient())
+    if not spec.published_from_filters:
+        ensure_published(inst_dir, spec.svo_ids, svo_client or SVOMetadataClient())
+
+    # Fetch every original band before changing the local library. A failed
+    # upstream request must not leave a seemingly complete partial instrument.
+    original_filters = {}
+    if spec.published_from_filters:
+        for band, table in spec.filters.items():
+            wl, tr = table.read(session)
+            if (len(wl) < 2 or not np.all(np.isfinite(wl)) or
+                    not np.all(np.isfinite(tr)) or np.any(np.diff(wl) <= 0) or
+                    np.any(tr > 1.001)):
+                raise ValueError(f"Invalid filter transmission from {table.url}")
+            original_filters[band] = (wl, tr)
+        inst_dir.mkdir(parents=True, exist_ok=True)
+        for band, curve in original_filters.items():
+            path = inst_dir / f"{band}.dat"
+            if not path.exists():
+                write_filter_file(
+                    path, *curve, detector_type=spec.detector_type, source="assumed",
+                    wavelength_unit="Angstrom",
+                    extra={"Components": FILTER, "ComponentsSource": "original",
+                           "Sources": spec.filters[band].url},
+                )
+        from ..combine_filters import write_filter_index
+
+        write_filter_index(inst_dir, spec.instrument)
 
     manifest = InstrumentManifest.load(inst_dir)
     # Keep what the published curves already provide (e.g. SVO filter-only siblings).
@@ -176,7 +203,10 @@ def build_simple(
         if band not in published:
             logger.info("%s/%s: no published %s curve; skipping its filter", spec.facility, spec.instrument, band)
             continue
-        wl, tr = table.read(session)
+        if (spec.published_from_filters and
+                read_filter_header(inst_dir / f"{band}.dat").get("ComponentsSource") == "original"):
+            continue  # the published filter scan is already this component
+        wl, tr = original_filters.get(band) or table.read(session)
         add_component(inst_dir, FILTER, wl, tr, band=band, name=band,
                       source=table.url + (f" ({table.note})" if table.note else ""), manifest=manifest)
     if spec.optics:

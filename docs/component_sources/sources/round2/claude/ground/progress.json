@@ -1,0 +1,35 @@
+{
+ "agent": "claude (continuing grok ground partition)",
+ "last_update_utc": "2026-10-20 (continuation 2)",
+ "complete": false,
+ "upgraded": [
+  "LCO/CSP",
+  "LCO/CSP2",
+  "LasCumbres/LasCumbres",
+  "CTIO/DECam"
+ ],
+ "partial": [],
+ "still_no_numeric_curve": [
+  "SkyMapper/SkyMapper",
+  "INT/WFC",
+  "INT/IPHAS",
+  "INT/UVEX",
+  "UKIRT/UFTI",
+  "DENIS/DENIS",
+  "OAJ/JPAS",
+  "BOK/SCUSS",
+  "Paranal/NGTS",
+  "LaSilla/EFOSC",
+  "LCO/IMACS"
+ ],
+ "limitations": [
+  "Grok files not edited",
+  "no licence review",
+  "WebSearch/direct fetch used in continuation 2"
+ ],
+ "leads": {
+  "Paranal/NGTS": "MNRAS 475 4476 online supplement (OUP 403)",
+  "SkyMapper": "third-party 100A table only",
+  "LaSilla/EFOSC": "GIF plots only"
+ }
+}
