@@ -51,8 +51,8 @@ several distinct factors. Its `includes` field identifies the factors; this
 does not imply that an inaccessible archive has been inspected.
 
 The first result of the supplemental audit is the shared
-[`eso_tables`](../../sed_tools/component_sources/eso_tables.py) builder: 11
-HAWK-I, 33 NACO and 24 SPHERE/IRDIS filter curves. Their original tables can
+[`tabular`](../../sed_tools/component_sources/tabular.py) builder: 11
+HAWK-I, 33 NACO, 24 SPHERE/IRDIS, 22 Gemini GSAOI and six NIFS filter curves. Their original tables can
 be enumerated without SVO; dual IRDIS channels are kept distinct. These are
 filter-only scans, and the builder does not infer missing optics or QE. The
 remaining evidence is retained here for source-by-source interpretation; a

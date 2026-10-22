@@ -27,7 +27,7 @@ BUILDERS: Dict[str, str] = {
     "decam": ".decam",
     "vista": ".vista",
     "ztf": ".ztf",
-    "eso_tables": ".eso_tables",
+    "tabular": ".tabular",
 }
 
 
