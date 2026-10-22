@@ -107,6 +107,24 @@ def test_original_filter_source_builds_without_svo_and_preserves_all_bands(tmp_p
     assert manifest.component_file(FILTER, "a") == "a.dat"
 
 
+def test_original_scan_augments_matching_svo_band_without_duplicate(tmp_path):
+    directory = tmp_path / "Gemini" / "Camera"
+    directory.mkdir(parents=True)
+    write_filter_file(directory / "J.dat", [4000., 5000.], [0.5, 0.7],
+                      detector_type=PHOTON, source="svo", extra={"Components": "filter"})
+    before = (directory / "J.dat").read_bytes()
+    spec = SimpleSource("Gemini", "Camera", filters={"J": Table("original")},
+                        published_from_filters=True)
+
+    build_simple(spec, tmp_path, session=_Session({"original": b"4000 0.51\n5000 0.71\n"}))
+
+    manifest = InstrumentManifest.load(directory)
+    assert (directory / "J.dat").read_bytes() == before
+    assert manifest.bands == ["J"]
+    assert manifest.component_file(FILTER, "J") == "components/filter/J.dat"
+    assert len(list(directory.glob("*.dat"))) == 1
+
+
 def test_original_filter_source_does_not_leave_partial_download(tmp_path):
     spec = SimpleSource("Fac", "Cam", filters={"a": Table("a"), "b": Table("missing")},
                         published_from_filters=True)
