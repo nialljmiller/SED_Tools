@@ -997,9 +997,10 @@ def main():
 
     fbp = sub.add_parser("filters-build-components",
                          help="(Mirror curation) populate components/atmospheres from a published source")
-    fbp.add_argument("source", help="Component source (lsst, hst, jwst, hsc, decam, vista, ztf, skycalc, argus) or 'all'")
+    fbp.add_argument("source", help="Component source (lsst, hst, jwst, hsc, decam, vista, ztf, eso_tables, skycalc, argus) or 'all'")
     fbp.add_argument("--base", default=str(FILTER_DIR_DEFAULT), help="Base filter directory")
     fbp.add_argument("--raw", default=None, help="Raw input directory (source specific)")
+    fbp.add_argument("--instrument", help="Instrument for a shared source (HAWKI, NACO or SPHERE for eso_tables)")
     fbp.add_argument("--sites", nargs="+", default=None, help="SkyCalc sites")
     fbp.add_argument("--airmass", nargs="+", type=float, default=None, help="SkyCalc airmass grid")
     fbp.add_argument("--pwv", nargs="+", type=float, default=None, help="SkyCalc PWV grid (mm)")
@@ -1199,6 +1200,8 @@ def main():
         kwargs = {}
         if args.raw:
             kwargs["raw"] = args.raw
+        if args.instrument:
+            kwargs["instrument"] = args.instrument
         if args.sites:
             kwargs["sites"] = args.sites
         if args.airmass:

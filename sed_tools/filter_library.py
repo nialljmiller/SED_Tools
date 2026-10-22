@@ -90,6 +90,15 @@ class FilterLibrary:
             if self.published_complete(directory):
                 return directory
 
+        ref = builder_for(facility, instrument)
+        if ref is not None and ref.name == "eso_tables":
+            try:
+                get_builder(ref.name)(self.root, **dict(ref.kwargs))
+                if self.published_complete(directory):
+                    return directory
+            except (RequestException, OSError, RuntimeError, ValueError) as exc:
+                logger.warning("Original source unavailable for %s/%s: %s", facility, instrument, exc)
+
         rows = self.svo_filters(facility, instrument)
         if not rows:
             raise ComponentError(f"SVO returned no filters for {facility}/{instrument}")
@@ -111,6 +120,17 @@ class FilterLibrary:
             if data:
                 manifest = InstrumentManifest.from_dict(data)
                 return dict(manifest.describe(), availability_source="njm", errors=[])
+        ref = builder_for(facility, instrument)
+        if ref is not None and ref.name == "eso_tables":
+            from .component_sources.eso_tables import SOURCES
+
+            spec = SOURCES[instrument]
+            headers = {band: {"Components": FILTER, "ComponentsSource": "original",
+                              "DetectorType": spec.detector_type,
+                              "DetectorTypeSource": "assumed"} for band in spec.filters}
+            manifest = InstrumentManifest.from_headers(facility, instrument, headers)
+            return dict(manifest.describe(), availability_source="original", errors=errors)
+        if remote:
             try:
                 rows = self.svo_filters(facility, instrument)
                 headers = {}

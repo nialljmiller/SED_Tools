@@ -284,6 +284,26 @@ def test_svo_fallback_tracks_and_recovers_partial_downloads(tmp_path, monkeypatc
     assert FilterLibrary.published_complete(directory)
 
 
+def test_original_source_failure_falls_back_to_svo(tmp_path, monkeypatch):
+    from requests import ConnectionError
+
+    library = FilterLibrary(tmp_path)
+    library.svo = SimpleNamespace(
+        list_facilities=lambda: [Facility("Paranal", "Paranal")],
+        list_instruments=lambda f: [Instrument("Paranal", "HAWKI", "HAWKI")],
+        list_filters=lambda f, i: [FilterRow("Paranal/HAWKI.J", "J", "Paranal", "HAWKI", "")],
+        download_filters=lambda rows: write_filter_file(
+            tmp_path / "Paranal" / "HAWKI" / "J.dat", [4000., 5000.], [0.5, 0.9],
+            detector_type=PHOTON, source="svo", extra={"Components": "filter"}),
+    )
+    monkeypatch.setattr(filter_library, "get_builder", lambda name:
+                        lambda root, **kwargs: (_ for _ in ()).throw(ConnectionError("ESO offline")))
+    directory = tmp_path / "Paranal" / "HAWKI"
+    directory.mkdir(parents=True)
+    assert library.published("Paranal", "HAWKI") == directory
+    assert read_filter_header(directory / "J.dat")["DetectorTypeSource"] == "svo"
+
+
 def test_svo_outage_keeps_njm_and_original_catalogues(tmp_path):
     library = FilterLibrary(tmp_path)
     library.svo = SimpleNamespace(list_facilities=lambda: (_ for _ in ()).throw(RuntimeError("offline")))

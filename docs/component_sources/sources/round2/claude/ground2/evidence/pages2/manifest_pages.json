@@ -1,0 +1,1115 @@
+[
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-BrG-G0218-cold.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-BrG-G0218-cold.dat",
+  "bytes": 11320,
+  "sha256": "4cee95b8420329ea06db1672936749c210d40c98c20c2701cc30bf032bde43ca"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/CH4ice2275-G0243.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/CH4ice2275-G0243.dat",
+  "bytes": 23964,
+  "sha256": "519bf6197128c222524a9826cdf062cd48a3c6d2a9b0ad3ef5e7784c26df201e"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-HeI2p2s-G0233.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-HeI2p2s-G0233.dat",
+  "bytes": 40218,
+  "sha256": "52646b22ecd44ef6ccd4dd20880af9b59208db194cf1d4f8d619245986db4da5"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-FeII-G0215.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-FeII-G0215.dat",
+  "bytes": 38999,
+  "sha256": "dd58e01a4360d088166df9ba184d440c50a79bd8565ceb1bac4812ed44e0242c"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/PaGamma-G0240.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/PaGamma-G0240.dat",
+  "bytes": 762,
+  "sha256": "3cb75d86a364bbb5405fa0d9c6c3af16d22b9db2a9defb0fa42855cb3ac4093b"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-Hsort-G0210.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-Hsort-G0210.dat",
+  "bytes": 34576,
+  "sha256": "746a1e15d4efbbf557c1f6d89d56150e9f62b58647d03ef03ab375ee6f9edebe"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-CO2-0bh-G0225-cold.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-CO2-0bh-G0225-cold.dat",
+  "bytes": 8824,
+  "sha256": "caa6e8785317ace6e1e1065d6083820192a2eb7ea5aa30960702f2136c8631b5"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-CH4short-G0228.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-CH4short-G0228.dat",
+  "bytes": 37624,
+  "sha256": "0b2c5ad808a22f6ea11fd585432ee7063abe7375397d140fadcdbf319a53108d"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-BrG-G0218.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-BrG-G0218.dat",
+  "bytes": 38408,
+  "sha256": "c74a07cac84410552128404ddb1609e6742b4e650a4f7d5679725ee7fe26ef12"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/PK50-G0201.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/PK50-G0201.dat",
+  "bytes": 32910,
+  "sha256": "087ee6deea03da17e1a70ff38412d0369d3513f39daeeb0ab8f7d3b8ce24a1b6"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/Y-G0241-cold-pk50.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/Y-G0241-cold-pk50.dat",
+  "bytes": 15848,
+  "sha256": "1365495f78506d0e771c807da1cecab82370da8b42aff7ff77ae6f0499556ca6"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-H-G0203.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-H-G0203.dat",
+  "bytes": 36113,
+  "sha256": "3965bfdf6c78727571c40b80e362be63b0d9c8e8cea003904685d38de3a6be10"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-H2S1v2-1-G0220-cold.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-H2S1v2-1-G0220-cold.dat",
+  "bytes": 8921,
+  "sha256": "3e7118bbc8a6aa9846466b376c63acd84d6e0b7ad2b76709e359866f38a5c6fd"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-K-G0204.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-K-G0204.dat",
+  "bytes": 37127,
+  "sha256": "2e30c44683f498ed410c7d3142a23a1ad0f20166446cd6c4834bbfa8614733c5"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-H2S1v2-1-G0220.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-H2S1v2-1-G0220.dat",
+  "bytes": 35987,
+  "sha256": "d8c6dde2152a9e7bea2b3189b646d2d468fa0dff287f3a11e1f150cc9a6c79a1"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/BrAlphaCont-G0237.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/BrAlphaCont-G0237.dat",
+  "bytes": 13083,
+  "sha256": "72cd0b7cc9ce4e6d53cf6724223b63bfffc5bbb9273c19ed179e6aae05c38a56"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-Kshort-G0205.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-Kshort-G0205.dat",
+  "bytes": 36333,
+  "sha256": "ffae3d53ec6674242741641c558b3d36374c131c5f522c6388eeb0ddd1afc6f9"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-PaBeta-G0221.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-PaBeta-G0221.dat",
+  "bytes": 32592,
+  "sha256": "34b368898330dea1a24b05c509d8a47f57143794633f2cfc64898e45a8b5fc8a"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-Hcont157-G0214-cold.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-Hcont157-G0214-cold.dat",
+  "bytes": 14966,
+  "sha256": "4b25af28048614f75664eea5b6f97adf42d0eee7c282ad5ae281a1fa5ce09509"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-Jcont1065-G0239.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-Jcont1065-G0239.dat",
+  "bytes": 400,
+  "sha256": "f513f2e1eb1eb496880619fb874089c25630783dd30d61410dc78b2163948c57"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-Ksort-G0211.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-Ksort-G0211.dat",
+  "bytes": 36361,
+  "sha256": "dcb0a1f8a87429d78d6975e701053faa5208ddf487bfa7686aca1d5a6c9e33d5"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-Kcont209-G0217.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-Kcont209-G0217.dat",
+  "bytes": 36395,
+  "sha256": "74c704bc75f135fa86189c7009491e41551be732d5a8fd1be196ab70dd17ef52"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/HKnotch-G0236.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/HKnotch-G0236.dat",
+  "bytes": 14072,
+  "sha256": "540226d172d59cf7b51563f6099e0f83b0254f53701abb415624344538f440bb"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-CH4long-G0229.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-CH4long-G0229.dat",
+  "bytes": 36953,
+  "sha256": "8061999ba68d5ccd548d5019d4457b144297c183405fa0cb71a27da6ebb82ab6"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-H2S1v1-0-G0216.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-H2S1v1-0-G0216.dat",
+  "bytes": 39149,
+  "sha256": "3ccd65a2caa78a354faad223b35472d9b97674f6c973367ad60b9797ceb2ff04"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-Kcont227-G0219.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-Kcont227-G0219.dat",
+  "bytes": 40172,
+  "sha256": "7c5ecc35902f19e97f1ca68bf270117bb3706a69e99b0dc9264fe1edfad89c51"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-Kcont209-G0217-cold.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-Kcont209-G0217-cold.dat",
+  "bytes": 11254,
+  "sha256": "b8bea41209e50a721121ac59628e52eeb041f1a936843b6f366bbd9023730f09"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-FeII-G0215-cold.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-FeII-G0215-cold.dat",
+  "bytes": 14889,
+  "sha256": "8fadd733272e8af8c97c863c8e2b7ef645ed78d5e8c86c76729e23679d4bfa96"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-CH4long-G0229-cold.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-CH4long-G0229-cold.dat",
+  "bytes": 18417,
+  "sha256": "42e93732d9e2be8dce2630d82855c2731fbddd38c3102518aafdf7123a7097a3"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/Lprime-G0207.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/Lprime-G0207.dat",
+  "bytes": 19566,
+  "sha256": "e5dfef86bfcc55a0c561d6e5e796c83a438ddd7fc67d0b3b79cfb700521fc137"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/Y-G0241.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/Y-G0241.dat",
+  "bytes": 16306,
+  "sha256": "546dfb09e7931a81b3ecd156617d2badcf34bc767af90166becdb73e2fad4fe9"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-Kprime-G0206.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-Kprime-G0206.dat",
+  "bytes": 36137,
+  "sha256": "0b51bf631629084db1765a89ae715dae68c385714144a39b03d8edddf953ec47"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/hydrocarbon-G0231.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/hydrocarbon-G0231.dat",
+  "bytes": 7363,
+  "sha256": "df8206e1e4bae4944018b0d70359d8d1e18cfb1690311b13ab2ba8d9df960483"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-CH4short-G0228-cold.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-CH4short-G0228-cold.dat",
+  "bytes": 18577,
+  "sha256": "a1b80f0aa4c1d8cf8b2bf1f348a9edfc98cbe13331da8598816be583eb7b5177"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/Jcont1207-G0232.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/Jcont1207-G0232.dat",
+  "bytes": 34632,
+  "sha256": "b4ca49c0bc31b6c0cc1d9598718adcbccbc9de11867931750d1057946dd60609"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/Y-G0241-cold.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/Y-G0241-cold.dat",
+  "bytes": 15780,
+  "sha256": "619bdb8a530a177614438f3ff087a7219cb87692255fc95a9d8d59343e02df7d"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-H2Oice-G0230.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-H2Oice-G0230.dat",
+  "bytes": 37971,
+  "sha256": "6934f2b2efa891d1310cc78390ed4318374e26182ba2a4aa666d79e7a8cc8609"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-Hcont157-G0214.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-Hcont157-G0214.dat",
+  "bytes": 39356,
+  "sha256": "8df0d1f671adb06de7d86b294c8511262adf055291b4a3f84a96f9ce70f66779"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/H2Oice2045-G0242.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/H2Oice2045-G0242.dat",
+  "bytes": 25328,
+  "sha256": "9dc96625cfdf4afb93996d2557f5753c7df74c5efbf872371f5e26e9c8de14a9"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/HeI-G0234.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/HeI-G0234.dat",
+  "bytes": 2663,
+  "sha256": "ccf2f567903631967e07912d30f857b4f9ea6ca800a4ca0866e7136a5e4d75aa"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/BrAlpha-G0238.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/BrAlpha-G0238.dat",
+  "bytes": 13073,
+  "sha256": "d1292f5b41c3974ed6ad7ef449cbcf2e8458313a14a83d71c23bfe31b25f5067"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-Lsort-G0212.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-Lsort-G0212.dat",
+  "bytes": 36157,
+  "sha256": "66b4764f62d8cfb6b407c4d90d1f06481a637c0ce1ff13455cf3c882eda7fa40"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-Kcont227-G0219-cold.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-Kcont227-G0219-cold.dat",
+  "bytes": 8829,
+  "sha256": "ee6ab67ae1b761accc22e3996eb14fe19a451619fe1ba3bff48c3cb624f7075b"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/Mprime-G0208.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/Mprime-G0208.dat",
+  "bytes": 15665,
+  "sha256": "370557c8eb54d6bbc60476c4a0ef9c6defae225b5613f92ba466ba74442f8771"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-PaBeta-G0221-cold.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-PaBeta-G0221-cold.dat",
+  "bytes": 9146,
+  "sha256": "b41024742e16a05fbdb4492655e64bf3128698a1f0204023cddc3479949c8535"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-H2S1v1-0-G0216-cold.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-H2S1v1-0-G0216-cold.dat",
+  "bytes": 11244,
+  "sha256": "258317c8590a457e6c96702bfc2f9ea74891ec09045e0cd654ebb19b8ad52db6"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/nirs/filters/ytrans.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gnirs_components/ytrans.dat",
+  "bytes": 5445,
+  "sha256": "e7c124fedd55fb3753247490edf8379ae83fcb97a18cea68040e3984632d07f2"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/nirs/filters/h_bl.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gnirs_components/h_bl.dat",
+  "bytes": 16290,
+  "sha256": "9b6ee1a244bd7d34fb7946791e650bf7cdc4b783acda5207247c5c644f26b69f"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-J-G0202.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-J-G0202.dat",
+  "bytes": 36487,
+  "sha256": "8a369e0576f4c2f992cc3d6f11457e08245db130e17fe4be74db783e9e8dd86c"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/nirs/filters/j_mk.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gnirs_components/j_mk.dat",
+  "bytes": 9094,
+  "sha256": "ac8b3b66c8ca86c667e394b77af065db3de260d3150971a45600fc5dc0c8fb06"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-Jsort-G0209.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-Jsort-G0209.dat",
+  "bytes": 37065,
+  "sha256": "c414e56d2c64e328906f213644bd639ee7d666ecc8449e3b82a21cde6aa265d1"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/niri/filters/niri-CO2-0bh-G0225.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_niri_components/niri-CO2-0bh-G0225.dat",
+  "bytes": 37868,
+  "sha256": "e7b3855163af35a479218e3530319d45f29700a6011425cd8182a27c4bfaf71f"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/nirs/filters/j_bl.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gnirs_components/j_bl.dat",
+  "bytes": 10741,
+  "sha256": "c3a3d0f4fbbb64a0b482d7f19b36dfa1d9864aec35399161d5bd1f0a4647d3c3"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/nirs/filters/h2.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gnirs_components/h2.dat",
+  "bytes": 4142,
+  "sha256": "f9bc1dfae6dcfef5d613f8756a65aad417adaa9fb501a35fdafc7a68e9695865"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/nirs/filters/x_bl.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gnirs_components/x_bl.dat",
+  "bytes": 9423,
+  "sha256": "4278c48653c37d41ab401c75df4d1e822e63890a80f091d5ec8eccb3b8f9eb94"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/nirs/filters/pah.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gnirs_components/pah.dat",
+  "bytes": 5464,
+  "sha256": "be20b3bd70f1fa8dcfafd111f30a957bfdf041688c9357d7d2990d2cc01fb8bf"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/nirs/filters/k_bl.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gnirs_components/k_bl.dat",
+  "bytes": 24632,
+  "sha256": "662fe8c346a7a62b3b7ed651b837b5c2bf1efccfbc3d87d663165b495e628da8"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/nirs/filters/k_mk.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gnirs_components/k_mk.dat",
+  "bytes": 20250,
+  "sha256": "3155fc4c5e9e0c20acb6fea444738bfb1219a3bd3609b458e7476ac696c9f22d"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/flamingos2/SystemTransmission_K-red_G0815_22Apr2019.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_flamingos_2_compone/SystemTransmission_K-red_G0815_22Apr2019.dat",
+  "bytes": 12958,
+  "sha256": "793f425db937f3e90e4b831235f58751174042127cdac7d6a13f8d2319611572"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/flamingos2/FilterTransmission_HK_G0817_2022.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_flamingos_2_compone/FilterTransmission_HK_G0817_2022.dat",
+  "bytes": 25118,
+  "sha256": "a2e3876e62d861578c1e0a8dc48136827a9c4f996d232a6fb2107f912a113ca2"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/flamingos2/SystemTransmission_J_G0802_22Apr2019.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_flamingos_2_compone/SystemTransmission_J_G0802_22Apr2019.dat",
+  "bytes": 10757,
+  "sha256": "da85e4aa5f85f1f937a61f131f673398ad94c4274ca33ea79c742db4b3a5456c"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/flamingos2/SystemTransmission_K-blue_G0814_22Apr2019.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_flamingos_2_compone/SystemTransmission_K-blue_G0814_22Apr2019.dat",
+  "bytes": 12976,
+  "sha256": "21132ddecf802d0f88b08ec445519caee9c70b588bebd2e2cdf07abdf83aeb0d"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/flamingos2/SystemTransmission_HK_G0806_22Apr2019.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_flamingos_2_compone/SystemTransmission_HK_G0806_22Apr2019.dat",
+  "bytes": 40724,
+  "sha256": "2e12db202fdb4d6ea9e298c761fb4870a911baeab8344d762cfde98074c78503"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/flamingos2/SystemTransmission_KLong_G0812_22Apr2019.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_flamingos_2_compone/SystemTransmission_KLong_G0812_22Apr2019.dat",
+  "bytes": 11357,
+  "sha256": "e520803a7bf7a1ff8a2eca6d9908b4299ed620eaca27ed44c7b39f9e13c5d8d9"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/flamingos2/FilterTransmission_JH_G0816_2022.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_flamingos_2_compone/FilterTransmission_JH_G0816_2022.dat",
+  "bytes": 19654,
+  "sha256": "f425c6fa13a4b95a2b091fdd7ae728d72f0381b9183e6c1ce2b728219b37718a"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/flamingos2/SystemTransmission_Ks_G0804_22Apr2019.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_flamingos_2_compone/SystemTransmission_Ks_G0804_22Apr2019.dat",
+  "bytes": 19207,
+  "sha256": "ebb6fdaaaab516c0517b49d0a9354ee6f490860dcba753cee9dc1b0239b2d178"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/flamingos2/SystemTransmission_H_G0803_22Apr2019.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_flamingos_2_compone/SystemTransmission_H_G0803_22Apr2019.dat",
+  "bytes": 15522,
+  "sha256": "a28651e0ff0d41eb94573c4922a9017631c6b1259e0b720a06335138d274f1bc"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/flamingos2/SystemTransmission_JH_G0809_22Apr2019.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_flamingos_2_compone/SystemTransmission_JH_G0809_22Apr2019.dat",
+  "bytes": 30926,
+  "sha256": "92fe733a0f0ae0b4e29ba7c672bb41c016cdc1987194f3477a7c01a0451e1892"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gsaoi/data/HIBrGamma_ED166.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gsaoi_components/HIBrGamma_ED166.dat",
+  "bytes": 7499,
+  "sha256": "b1560bce0d3b8f0a7a0b594e708b895ca572c3db9104c02a2498a83738556225"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gsaoi/data/Hcont_ED141.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gsaoi_components/Hcont_ED141.dat",
+  "bytes": 11296,
+  "sha256": "c0d29e868b9779aae43ccc214efb047c907aede8c74f72265639172a22eea278"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/flamingos2/SystemTransmission_Y_G0811_22Apr2019.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_flamingos_2_compone/SystemTransmission_Y_G0811_22Apr2019.dat",
+  "bytes": 7124,
+  "sha256": "99d7b31022fd60fdac8377a75ede33721cfa1f4b0b8014f65593227e8784d619"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gsaoi/data/H2_2-1_S1_ED164.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gsaoi_components/H2_2-1_S1_ED164.dat",
+  "bytes": 12303,
+  "sha256": "e8faa5723d09ebcc6c673666c717238ceb30db2533c58ef1f38333d5a0e357bc"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gsaoi/data/CH4short_ED144.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gsaoi_components/CH4short_ED144.dat",
+  "bytes": 28296,
+  "sha256": "7c60933a1fd18f18a8eaf12a195d8a8ebe52f0a4721a926ae839bd3f12e38c3b"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/flamingos2/SystemTransmission_Jlow_G0801_22Apr2019.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_flamingos_2_compone/SystemTransmission_Jlow_G0801_22Apr2019.dat",
+  "bytes": 11328,
+  "sha256": "ad184f19ac0fa83eb683e7ddbb62cb9836259acc1d8ddb6e0b9c52560269dbe7"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gsaoi/data/CO_ED187.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gsaoi_components/CO_ED187.dat",
+  "bytes": 19512,
+  "sha256": "435e829a013a125e56c1bce0ccb20bb00ee8b3b19438bc796aa6a43d6efbc3d6"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gsaoi/data/Kshort_cont_ED168.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gsaoi_components/Kshort_cont_ED168.dat",
+  "bytes": 13301,
+  "sha256": "c19129abc2da2d89bd6b02b76570143292c8963ea24c54ee96e2345a78a9898a"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gsaoi/data/HIPaGamma_ED186.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gsaoi_components/HIPaGamma_ED186.dat",
+  "bytes": 6294,
+  "sha256": "20a01ac38a2563b53b4b38979c3f2f51c5e6c0420a5dd6ac5bc1ba4ef05cb048"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gsaoi/data/H2O_ED188.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gsaoi_components/H2O_ED188.dat",
+  "bytes": 40299,
+  "sha256": "d966627b63f47921b125186c9e37c2b36f650a8c67ee741dc1613739c80ba962"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gsaoi/data/HeI_ED185.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gsaoi_components/HeI_ED185.dat",
+  "bytes": 7298,
+  "sha256": "dd34284a6ae4047ef088ca856cd002533c23b9ad9412b61c80a09b80146ff599"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gsaoi/data/CH4long_ED151.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gsaoi_components/CH4long_ED151.dat",
+  "bytes": 8295,
+  "sha256": "ebf3d6c36e2f16e572519c4245bb85688c00c59b4e71f40877e284df2efa2eb1"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gsaoi/data/Kshort_ED196-1.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gsaoi_components/Kshort_ED196-1.dat",
+  "bytes": 51501,
+  "sha256": "821e6ae00add3bb73a7ea9ea7b567c072e88bf52f154c78482250f76ac11d169"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gsaoi/data/Jcont_ED190.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gsaoi_components/Jcont_ED190.dat",
+  "bytes": 7496,
+  "sha256": "fd5a2a70700523ca3653eea243615fdd8e80d0ece1516f59f24a72ef1a93c984"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gsaoi/data/HIPaBeta_ED231.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gsaoi_components/HIPaBeta_ED231.dat",
+  "bytes": 9294,
+  "sha256": "bedc86211f2af1c6792c1d86243945f6953ee0ff9f6dc15950219830c4a87c3c"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gsaoi/data/FeII_ED150.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gsaoi_components/FeII_ED150.dat",
+  "bytes": 12292,
+  "sha256": "f544e7892358ec21f8e55847835932f318ffc24a29243d11d2a54912e875e5d4"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gsaoi/data/J_ED191-1.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gsaoi_components/J_ED191-1.dat",
+  "bytes": 16294,
+  "sha256": "efc02a62c2b2a4973642f74c255284b1dad3e9f72ad13488d4c20c2fd62d6785"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gsaoi/data/K_ED192-1.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gsaoi_components/K_ED192-1.dat",
+  "bytes": 16296,
+  "sha256": "6c62f022c50d1a30375cbeb2d196d2bcc639f3022c784ef08ff24d02e45c6701"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gsaoi/data/HeI2p2s_ED165.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gsaoi_components/HeI2p2s_ED165.dat",
+  "bytes": 9303,
+  "sha256": "c1fd45485a32a5083d171bb2a2b7179f4ed290a3cacd2742b82b48498ccade1e"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gsaoi/data/Klong_cont_ED163.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gsaoi_components/Klong_cont_ED163.dat",
+  "bytes": 16301,
+  "sha256": "c066bf150d6587d320336d4cfa79f688513dca4057f8e74e29dcf5bae17d559c"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gsaoi/data/H_ED169-1.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gsaoi_components/H_ED169-1.dat",
+  "bytes": 20294,
+  "sha256": "5ebec189cee36d5af7cf0a3888b833cba9cc1b2a4d16935b823e8e0ee5e80bd7"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gsaoi/data/Kprime_ED278-2.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gsaoi_components/Kprime_ED278-2.dat",
+  "bytes": 61101,
+  "sha256": "705e40c456b95797287ea53f99e339c2895aa8111daef0116f57ea3d6eca34e1"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gsaoi/data/H2_1-0_ED162.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gsaoi_components/H2_1-0_ED162.dat",
+  "bytes": 8303,
+  "sha256": "235977226028becab78a213930db808f2274df1f461ca196540a8b6afb2d662c"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gsaoi/data/Z_ED205-1.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gsaoi_components/Z_ED205-1.dat",
+  "bytes": 14294,
+  "sha256": "9693fdf73262509e9e0fbe33a5687f72e8cecaf762f77197fe216a486d77be71"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_s_i_G0327_jun2017.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_i_G0327_jun2017.txt",
+  "bytes": 114348,
+  "sha256": "c6bc14cc1bcbb2d47a4ca68ed590ee2115d3ddd5951c74687566fcc509fd4530"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/gratings/gmos_n_R831_G5302.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_R831_G5302.txt",
+  "bytes": 1272,
+  "sha256": "94d06cd13344ea61cd8fb6af5e677c6833fcc712b795b26deb49924e76c33cab"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/nifs//HK.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_nifs_components/HK.dat",
+  "bytes": 56862,
+  "sha256": "9f2f95404c7b9e5cfdfaa0b8e84040d7f81b7e89f555d0a410820147b59cce6e"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/gratings/gmos_n_R400_G5305.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_R400_G5305.txt",
+  "bytes": 1253,
+  "sha256": "e903b7451825315628fe2b4f67f01f8045fcb708104dbb2361f4a8fc55094675"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/nifs//ZJ.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_nifs_components/ZJ.dat",
+  "bytes": 55676,
+  "sha256": "1d71842a9eaa5b8add3bebb61a2f5b0cbf5be314a7dd98b7f21af6f3b2e9430b"
+ },
+ {
+  "url": "http://www.gemini.edu/sciops/instruments/nifs//JH.dat",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_nifs_components/JH.dat",
+  "bytes": 68095,
+  "sha256": "a495273cdddebf3e04c72994427c1a2a9d4073446a470a461b057cc7cc142bd7"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/gratings/gmos_n_B600_G5303.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_B600_G5303.txt",
+  "bytes": 1230,
+  "sha256": "7744a5e2f04b1e9d3dc343460c023c7b51717d5b671f800ce95d0c7dcaaba81b"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_n_rg610.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_rg610.txt",
+  "bytes": 11155,
+  "sha256": "d78848e9bc8f07932b02f25f0ce14aa204249db97e1d78490804660dee473074"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/gmos_n_ccd_hamamatsu_hsc.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_ccd_hamamatsu_hsc.txt",
+  "bytes": 677,
+  "sha256": "5f3ab9ca036d7093fbce713b5fe8c92bb2721cee59a28b1cd024943655928aeb"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_n_Ha_G0310.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_Ha_G0310.txt",
+  "bytes": 1628,
+  "sha256": "f58a2f970352bdc750a2e2ee55ea41aae31eae12c55fe8c09442fe5afeabe41d"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_s_SII_G0335_jun2017.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_SII_G0335_jun2017.txt",
+  "bytes": 114367,
+  "sha256": "52c0eb864faaba2e91770d56db8d79745304eecc3f182fb506ff55738e681234"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_s_GG455_G0329_jun2017.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_GG455_G0329_jun2017.txt",
+  "bytes": 114376,
+  "sha256": "9752c558b1631edfe12ff5d73dce3bf2ae2473515ca053bfb1070e6300551f9a"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_s_CaT_G0333_jun2017.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_CaT_G0333_jun2017.txt",
+  "bytes": 114363,
+  "sha256": "7319d95b8c719105220de5e5982f92a836f36bb0e6364dd65f7a1af065d45a0b"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_s_z_G0328_jun2017.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_z_G0328_jun2017.txt",
+  "bytes": 114358,
+  "sha256": "2014a264eee7bec7fbd2d0242a2efc6ce19eb2503a39971355694163531dc166"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_n_DS920_G0312.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_DS920_G0312.txt",
+  "bytes": 3803,
+  "sha256": "8d566e8b6a5929962de4434163d49b4b0bdc1cc762a1d6e12c6c0f04ebdc81bd"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_n_r_G0303.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_r_G0303.txt",
+  "bytes": 1242,
+  "sha256": "052d0a8586641b2d3c5b4cef647681ff7a23d2329718a58e87d899c9cdf65d7a"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_n_SII_G0317.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_SII_G0317.txt",
+  "bytes": 3303,
+  "sha256": "feca7f324b8f22b95800499ae75f49be777bc342fea631a48639aa44da772adb"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_s_OVIC_G0348_feb2018.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_OVIC_G0348_feb2018.txt",
+  "bytes": 119075,
+  "sha256": "78bedca92d21d89760fbef1235bb5f1302e614ffef1a5576ac8ccc6e096f278d"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_n_i_G0302.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_i_G0302.txt",
+  "bytes": 1306,
+  "sha256": "7f3e0ddbf1eff706be0d5c74b807cadd37352c8e73da7f60bb3b345c423b06dd"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_s_Z_G0343_jun2017.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_Z_G0343_jun2017.txt",
+  "bytes": 114358,
+  "sha256": "a0c6ec1fe27171dd2e1289e8afa29b5174ad0b8f98cf52d5b6617dafd0244166"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_s_g_G0325_jun2017.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_g_G0325_jun2017.txt",
+  "bytes": 114360,
+  "sha256": "6addf21d225c8aa4debd51851d899795dfcdc68dfbba8ca118965b69b378a4d3"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_s_u_G0332_jun2017.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_u_G0332_jun2017.txt",
+  "bytes": 114358,
+  "sha256": "19a1c1a44655458b4e892966a31cb5782a3252c191d837e6492ee825a4433ce4"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_n_z_G0304.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_z_G0304.txt",
+  "bytes": 1263,
+  "sha256": "0f59eb8b3f0b09a58ac81800d1ce637f802a0a6971f7ff2c30f9dc0f72195283"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/gratings/gmos_n_B480_G5309.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_B480_G5309.txt",
+  "bytes": 3116,
+  "sha256": "11458920a0b416a386eb55c069d934d3714702b1df466ac32b2abf04e0d01215"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/gmos_n_ccd_hamamatsu_sc.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_ccd_hamamatsu_sc.txt",
+  "bytes": 1131,
+  "sha256": "3e4740718e9fe8553bb87581c68f57906e8ec8238ff9c483a72784b4f4e9da29"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/gratings/gmos_n_R600_G5304.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_R600_G5304.txt",
+  "bytes": 3733,
+  "sha256": "a8b6dae83fb60dd0bed2096dbccfa0d7afb5b5b43868036141d0f6acf71cd8dd"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_n_HeIIC_G0321.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_HeIIC_G0321.txt",
+  "bytes": 2299,
+  "sha256": "9f23df9b0af0e22b33eaa2bbc46e06ffa37b8d03df85dae01f293c271d5fb255"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_s_HeIIC_G0341_jun2017.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_HeIIC_G0341_jun2017.txt",
+  "bytes": 114381,
+  "sha256": "b2aceb015cf03eae8dfa797b6f1bd326e3129826360e718921f3ce3a3bf64913"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_n_g_G0301.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_g_G0301.txt",
+  "bytes": 1241,
+  "sha256": "cc7a2dddd6ffddaaed27b76d0f0e408766b26dc17a0b73d38b7591c74c10f2b0"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/gmos_s_ccd_blue.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_ccd_blue.txt",
+  "bytes": 1074,
+  "sha256": "cbd851a7941f8feec0ef9743a33dee4f926cf67f7603dc2199d9cbc68a95b984"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_s_RG610_G0331_jun2017.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_RG610_G0331_jun2017.txt",
+  "bytes": 114377,
+  "sha256": "87e88d0e0e3ce0ebffd1696e4460e3b474f1527aed9d3f7d6ded94ae8273c458"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/gratings/gmos_n_R150_G5306.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_R150_G5306.txt",
+  "bytes": 1273,
+  "sha256": "54c4d528d749c5b142952d2e27c661303d100c545efaa714497b6742ffa60351"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_s_HeII_G0340_jun2017.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_HeII_G0340_jun2017.txt",
+  "bytes": 114358,
+  "sha256": "b66794ebeb29c65852494b47a94928f05cb758fc09b4f54a7ba26ead1c8a5ad6"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_s_HaC_G0337_jun2017.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_HaC_G0337_jun2017.txt",
+  "bytes": 114370,
+  "sha256": "9c0adee7c784fae0e8c1a69a6f7cfa12025db122bd336744798b0fe7abf8d2ae"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_s_OIIIC_G0339_jun2017.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_OIIIC_G0339_jun2017.txt",
+  "bytes": 0,
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_s_Ha_G0336_jun2017.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_Ha_G0336_jun2017.txt",
+  "bytes": 0,
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_s_OVI_G0347_feb2018.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_OVI_G0347_feb2018.txt",
+  "bytes": 0,
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_n_og515.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_og515.txt",
+  "bytes": 0,
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_s_Y_G0344_jun2017.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_Y_G0344_jun2017.txt",
+  "bytes": 0,
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_n_OIIIC_G0319.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_OIIIC_G0319.txt",
+  "bytes": 0,
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_n_OIII_G0318.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_OIII_G0318.txt",
+  "bytes": 0,
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_s_OG515_G0330_jun2017.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_OG515_G0330_jun2017.txt",
+  "bytes": 0,
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_s_r_G0326_jun2017.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_r_G0326_jun2017.txt",
+  "bytes": 0,
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_s_RG780_G0334_jun2017.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_RG780_G0334_jun2017.txt",
+  "bytes": 0,
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/gratings/gmos_n_B1200_G5301.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_B1200_G5301.txt",
+  "bytes": 0,
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_n_u_G0308.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_u_G0308.txt",
+  "bytes": 0,
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_n_HaC_G0311.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_HaC_G0311.txt",
+  "bytes": 0,
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_n_OVIC_G0346_feb2018.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_OVIC_G0346_feb2018.txt",
+  "bytes": 0,
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_n_OVI_G0345_feb2018.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_OVI_G0345_feb2018.txt",
+  "bytes": 0,
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_n_gg455.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_gg455.txt",
+  "bytes": 0,
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/gmos_n_ccd_red.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_ccd_red.txt",
+  "bytes": 0,
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_n_HeII_G0320.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_HeII_G0320.txt",
+  "bytes": 0,
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_n_CaT_G0309.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_CaT_G0309.txt",
+  "bytes": 0,
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_n_ri_G0349_feb2019.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_ri_G0349_feb2019.txt",
+  "bytes": 0,
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+ },
+ {
+  "url": "https://www.gemini.edu/sciops/instruments/gmos/filters/gmos_s_OIII_G0338_jun2017.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_OIII_G0338_jun2017.txt",
+  "bytes": 0,
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+ },
+ {
+  "url": "https://irsa.ipac.caltech.edu/data/SPITZER/docs/files/spitzer/MIPSfiltsumm.xls",
+  "ok": true,
+  "path": "evidence/pages2/pg_irsa_ipac_caltech_edu_data_SPITZER_docs_mips_calib/MIPSfiltsumm.xls",
+  "bytes": 46592,
+  "sha256": "df1a5b1396e205df9133f5c4d3e5f0d0cc5c6801f45107796b27c4ae283c825a"
+ },
+ {
+  "url": "https://irsa.ipac.caltech.edu/data/SPITZER/docs/files/spitzer/MIPSfiltsumm.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_irsa_ipac_caltech_edu_data_SPITZER_docs_mips_calib/MIPSfiltsumm.txt",
+  "bytes": 31003,
+  "sha256": "16ed486cc8f4b9ea82c7c796dc36fbbcbdcabe15d2f92b57f02ed54dae449a04"
+ },
+ {
+  "url": "https://wise2.ipac.caltech.edu/docs/release/allsky/expsup/figures/RSR-W2.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_wise2_ipac_caltech_edu_docs_release_allsky_expsup_/RSR-W2.txt",
+  "bytes": 11618,
+  "sha256": "b0a86a7e86b07713cecfe9c853292d56f19da6c385de45f6265b676cc1330f2a"
+ },
+ {
+  "url": "https://wise2.ipac.caltech.edu/docs/release/allsky/expsup/figures/RSR-W3.EE.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_wise2_ipac_caltech_edu_docs_release_allsky_expsup_/RSR-W3.EE.txt",
+  "bytes": 66658,
+  "sha256": "4f28e1b0fadd1b69c5cd417978dd80925974e815521067e710d9987e23cb3f1b"
+ },
+ {
+  "url": "https://wise2.ipac.caltech.edu/docs/release/allsky/expsup/figures/RSR-W2.EE.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_wise2_ipac_caltech_edu_docs_release_allsky_expsup_/RSR-W2.EE.txt",
+  "bytes": 14372,
+  "sha256": "1d6910ec0970dc838e6fed6f55ec4e5842c2d969d9b75bfa4ed62f38c81707fe"
+ },
+ {
+  "url": "https://wise2.ipac.caltech.edu/docs/release/allsky/expsup/figures/RSR-W1.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_wise2_ipac_caltech_edu_docs_release_allsky_expsup_/RSR-W1.txt",
+  "bytes": 8468,
+  "sha256": "6ade5b074dc7652e08c4de7767969126b7e48fdf4b6295bbf7f44e22d33ec1e9"
+ },
+ {
+  "url": "https://wise2.ipac.caltech.edu/docs/release/allsky/expsup/figures/RSR-W1.EE.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_wise2_ipac_caltech_edu_docs_release_allsky_expsup_/RSR-W1.EE.txt",
+  "bytes": 10472,
+  "sha256": "e253d8d40a9c830e23ea327ef039b164035a7f4e75b0ee9007fa34623bb366d3"
+ },
+ {
+  "url": "https://www.stsci.edu/files/live/sites/www/files/home/hst/instrumentation/wfc3/performance/throughputs/_documents/IR.zip",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_stsci_edu_hst_instrumentation_wfc3_performance/IR.zip",
+  "bytes": 552266,
+  "sha256": "4f7417eb3dc3b4b90ad095f0dabf305e7748264ac774a88fef9424d5cf99e4e2"
+ },
+ {
+  "url": "https://wise2.ipac.caltech.edu/docs/release/allsky/expsup/figures/RSR-W3.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_wise2_ipac_caltech_edu_docs_release_allsky_expsup_/RSR-W3.txt",
+  "bytes": 53849,
+  "sha256": "8b22f32cc64d82aaf2fa3e7360cea220fc808c62823c5220b6c88b46c74bdb8b"
+ },
+ {
+  "url": "https://wise2.ipac.caltech.edu/docs/release/allsky/expsup/figures/RSR-W4.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_wise2_ipac_caltech_edu_docs_release_allsky_expsup_/RSR-W4.txt",
+  "bytes": 53849,
+  "sha256": "4ca190e312c8eefba40f068e5443fe2e1a01389dfac03cc73ecf938aa38a7f8c"
+ },
+ {
+  "url": "https://wise2.ipac.caltech.edu/docs/release/allsky/expsup/figures/RSR-W4.EE.txt",
+  "ok": true,
+  "path": "evidence/pages2/pg_wise2_ipac_caltech_edu_docs_release_allsky_expsup_/RSR-W4.EE.txt",
+  "bytes": 66658,
+  "sha256": "1cfeda33bff95f55fcfff94e275ed5e9c6c10f5f753815e44c4010d3df02b0c7"
+ },
+ {
+  "url": "https://www.stsci.edu/files/live/sites/www/files/home/hst/instrumentation/wfc3/performance/throughputs/_documents/UVIS.zip",
+  "ok": true,
+  "path": "evidence/pages2/pg_www_stsci_edu_hst_instrumentation_wfc3_performance/UVIS.zip",
+  "bytes": 20364873,
+  "sha256": "573fa11667da5501801d2d4cd92f3a7686e8069b4a37bd8c80acc759dc792e8e"
+ }
+]

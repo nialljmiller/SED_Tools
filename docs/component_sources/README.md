@@ -14,11 +14,15 @@ owner; component-source review is a separate, ongoing task.
 ## Files
 
 - [Research report](report.md): current coverage, instrument index, evidence
-  links, limitations and instructions for the later implementation.
+  links, limitations and implementation priorities.
 - [Component matrix](review_matrix.csv): component and source availability from
   the saved research checkpoints; these are not blanket verification approvals.
 - [Source links](source_links.csv): original and fallback URLs, units, versions,
   retrieval instructions and component roles in a sortable table.
+- [Vega follow-up handoff](supplemental_handoff.md): later ESO, Gemini, Subaru,
+  Rubin and other source harvests, their corrected audit, provenance for
+  archive members and implementation priorities. Supplemental worker reviews
+  are evidence checkpoints, not automatic upgrades to the component matrix.
 - `research_manifest.json`: checkpoint hashes and structural validation results.
 - `build_report.py`: rebuilds the matrix, source-link table, report and manifest
   from the saved local checkpoints without making network requests.
@@ -45,6 +49,14 @@ are recorded separately.
 A source record may use `components` when one original table or archive holds
 several distinct factors. Its `includes` field identifies the factors; this
 does not imply that an inaccessible archive has been inspected.
+
+The first result of the supplemental audit is the shared
+[`eso_tables`](../../sed_tools/component_sources/eso_tables.py) builder: 11
+HAWK-I, 33 NACO and 24 SPHERE/IRDIS filter curves. Their original tables can
+be enumerated without SVO; dual IRDIS channels are kept distinct. These are
+filter-only scans, and the builder does not infer missing optics or QE. The
+remaining evidence is retained here for source-by-source interpretation; a
+numeric file in the harvest does not automatically become an enabled curve.
 
 Coordination lives on Vega at
 `/home/nill/agent-share/projects/sed-tools-components/`. Codex maintains the master

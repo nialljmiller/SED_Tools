@@ -93,6 +93,39 @@ def test_build_simple_writes_components_and_keeps_svo_siblings(tmp_path):
     assert m.primary_bands() == ["g"]
 
 
+def test_original_filter_source_builds_without_svo_and_preserves_all_bands(tmp_path):
+    files = {"a": b"400 50\n500 80\n", "b": b"400 20\n500 90\n"}
+    spec = SimpleSource("Fac", "Cam", filters={
+        "a": Table("a", wl_scale=10, tr_scale=0.01),
+        "b": Table("b", wl_scale=10, tr_scale=0.01),
+    }, published_from_filters=True)
+    directory = build_simple(spec, tmp_path, session=_Session(files), svo_client=object())
+    manifest = InstrumentManifest.load(directory)
+    assert manifest.bands == ["a", "b"]
+    assert manifest.published_bands == {"a": "filter", "b": "filter"}
+    assert (directory / "Cam").read_text().splitlines() == ["a.dat", "b.dat"]
+    assert manifest.component_file(FILTER, "a") == "a.dat"
+
+
+def test_original_filter_source_does_not_leave_partial_download(tmp_path):
+    spec = SimpleSource("Fac", "Cam", filters={"a": Table("a"), "b": Table("missing")},
+                        published_from_filters=True)
+    with pytest.raises(RuntimeError):
+        build_simple(spec, tmp_path, session=_Session({"a": b"4000 0.5\n5000 0.8\n"}))
+    assert not (tmp_path / "Fac" / "Cam").exists()
+
+
+def test_eso_dual_band_channels_are_distinct():
+    from sed_tools.component_sources.eso_tables import SOURCES
+
+    spec = SOURCES["SPHERE"]
+    left = spec.filters["D_H23_H2"]
+    right = spec.filters["D_H23_H3"]
+    assert left.url == right.url
+    np.testing.assert_allclose(left.parse(b"400 0.2 0.8\n500 0.3 0.7\n")[1], [0.2, 0.3])
+    np.testing.assert_allclose(right.parse(b"400 0.2 0.8\n500 0.3 0.7\n")[1], [0.8, 0.7])
+
+
 # ---------------------------------------------------------------------------
 # HST
 # ---------------------------------------------------------------------------

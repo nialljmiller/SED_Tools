@@ -1,0 +1,395 @@
+{
+  "timestamp": "2026-10-21T03:47:04.008569+00:00",
+  "scope": "All current owner CSV/JSONL structures, full ground2 inventory/hash checks, selected semantic and archive/numeric checks. Not every optical path certified.",
+  "owner_files": {
+    "claude/reviews.csv": {
+      "rows": 25,
+      "sha256": "c58b228294b218169ee4a758cf67a0d8a1229b7cf606dbbb14afbfb7addcc0e0",
+      "parse": "ok"
+    },
+    "claude/sources.jsonl": {
+      "rows": 79,
+      "sha256": "542dddfa6c590a81a3a601194317486aee2294bc410b19586c39274b232d27e6",
+      "parse": "ok"
+    },
+    "grok/sources.jsonl": {
+      "rows": 130,
+      "sha256": "f2db186a06c9d7260365197b8d741e04abf3e7ce7470200c46f8d8a4ebe83629",
+      "parse": "ok"
+    },
+    "grok/reviews.csv": {
+      "rows": 70,
+      "sha256": "0768646d089f33500d58a40ddf152f67bb13c29e6f9cc5d38a752258154b05c5",
+      "parse": "ok"
+    },
+    "gemini/sources.jsonl": {
+      "rows": 92,
+      "sha256": "fc884241bc457593c80d22636f62b688f61b5403766f18da83d7e850c476ce44",
+      "parse": "ok"
+    },
+    "gemini/reviews.csv": {
+      "rows": 69,
+      "sha256": "6750f387b1d5d8939a569a1f4788175b1e69d20b012caec18986a2836a8e9997",
+      "parse": "ok"
+    }
+  },
+  "inventory": {
+    "rows": 633,
+    "missing_source_urls": 190,
+    "missing_files": [],
+    "recomputed_stat_mismatches": [
+      "eso/eso_sphere/transmission_ND_filters.txt"
+    ],
+    "unique_byte_contents": 594,
+    "duplicate_groups": [
+      [
+        "eso2/eso_hawki/hawki_Knew.dat",
+        "eso2/eso_hawki/hawki_Kold.dat"
+      ],
+      [
+        "lsst_throughputs/baseline/m1.dat",
+        "lsst_throughputs/baseline/m3.dat"
+      ],
+      [
+        "lsst_throughputs/phosim/goal/atmos.dat",
+        "lsst_throughputs/phosim/goal/atmos_std.dat"
+      ],
+      [
+        "lsst_throughputs/phosim/goal/filter_y.dat",
+        "lsst_throughputs/phosim/goal/filter_y4.dat"
+      ],
+      [
+        "lsst_throughputs/phosim/goal/m1.dat",
+        "lsst_throughputs/phosim/goal/m2.dat",
+        "lsst_throughputs/phosim/goal/m3.dat"
+      ],
+      [
+        "lsst_throughputs/phosim/goal/m1_ProtAl_Aged.dat",
+        "lsst_throughputs/phosim/goal/m3_ProtAl_Aged.dat"
+      ],
+      [
+        "lsst_throughputs/phosim/goal/total_y.dat",
+        "lsst_throughputs/phosim/goal/total_y4.dat"
+      ],
+      [
+        "pages/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_B480_G5309.txt",
+        "pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_B480_G5309.txt"
+      ],
+      [
+        "pages/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_B600_G5303.txt",
+        "pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_B600_G5303.txt"
+      ],
+      [
+        "pages/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_DS920_G0312.txt",
+        "pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_DS920_G0312.txt"
+      ],
+      [
+        "pages/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_Ha_G0310.txt",
+        "pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_Ha_G0310.txt"
+      ],
+      [
+        "pages/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_HeIIC_G0321.txt",
+        "pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_HeIIC_G0321.txt"
+      ],
+      [
+        "pages/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_R150_G5306.txt",
+        "pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_R150_G5306.txt"
+      ],
+      [
+        "pages/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_R400_G5305.txt",
+        "pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_R400_G5305.txt"
+      ],
+      [
+        "pages/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_R600_G5304.txt",
+        "pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_R600_G5304.txt"
+      ],
+      [
+        "pages/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_R831_G5302.txt",
+        "pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_R831_G5302.txt"
+      ],
+      [
+        "pages/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_SII_G0317.txt",
+        "pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_SII_G0317.txt"
+      ],
+      [
+        "pages/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_ccd_hamamatsu_hsc.txt",
+        "pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_ccd_hamamatsu_hsc.txt"
+      ],
+      [
+        "pages/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_ccd_hamamatsu_sc.txt",
+        "pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_ccd_hamamatsu_sc.txt"
+      ],
+      [
+        "pages/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_g_G0301.txt",
+        "pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_g_G0301.txt"
+      ],
+      [
+        "pages/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_i_G0302.txt",
+        "pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_i_G0302.txt"
+      ],
+      [
+        "pages/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_r_G0303.txt",
+        "pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_r_G0303.txt"
+      ],
+      [
+        "pages/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_rg610.txt",
+        "pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_rg610.txt"
+      ],
+      [
+        "pages/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_z_G0304.txt",
+        "pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_n_z_G0304.txt"
+      ],
+      [
+        "pages/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_CaT_G0333_jun2017.txt",
+        "pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_CaT_G0333_jun2017.txt"
+      ],
+      [
+        "pages/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_GG455_G0329_jun2017.txt",
+        "pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_GG455_G0329_jun2017.txt"
+      ],
+      [
+        "pages/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_HaC_G0337_jun2017.txt",
+        "pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_HaC_G0337_jun2017.txt"
+      ],
+      [
+        "pages/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_HeIIC_G0341_jun2017.txt",
+        "pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_HeIIC_G0341_jun2017.txt"
+      ],
+      [
+        "pages/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_HeII_G0340_jun2017.txt",
+        "pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_HeII_G0340_jun2017.txt"
+      ],
+      [
+        "pages/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_OVIC_G0348_feb2018.txt",
+        "pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_OVIC_G0348_feb2018.txt"
+      ],
+      [
+        "pages/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_RG610_G0331_jun2017.txt",
+        "pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_RG610_G0331_jun2017.txt"
+      ],
+      [
+        "pages/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_SII_G0335_jun2017.txt",
+        "pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_SII_G0335_jun2017.txt"
+      ],
+      [
+        "pages/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_Z_G0343_jun2017.txt",
+        "pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_Z_G0343_jun2017.txt"
+      ],
+      [
+        "pages/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_ccd_blue.txt",
+        "pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_ccd_blue.txt"
+      ],
+      [
+        "pages/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_g_G0325_jun2017.txt",
+        "pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_g_G0325_jun2017.txt"
+      ],
+      [
+        "pages/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_i_G0327_jun2017.txt",
+        "pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_i_G0327_jun2017.txt"
+      ],
+      [
+        "pages/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_u_G0332_jun2017.txt",
+        "pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_u_G0332_jun2017.txt"
+      ],
+      [
+        "pages/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_z_G0328_jun2017.txt",
+        "pages2/pg_www_gemini_edu_instrumentation_gmos_components/gmos_s_z_G0328_jun2017.txt"
+      ]
+    ],
+    "groups": {
+      "eso/eso_naco": 34,
+      "eso/eso_sphere": 42,
+      "eso/eso_wfi": 1,
+      "eso2/eso_fors": 76,
+      "eso2/eso_hawki": 11,
+      "irsa/misc": 5,
+      "lsst_throughputs/2MASS": 3,
+      "lsst_throughputs/WISE": 4,
+      "lsst_throughputs/approximate_baseline": 6,
+      "lsst_throughputs/atmos": 36,
+      "lsst_throughputs/baseline": 28,
+      "lsst_throughputs/examples": 12,
+      "lsst_throughputs/hipparcos": 1,
+      "lsst_throughputs/johnson": 5,
+      "lsst_throughputs/megacam": 6,
+      "lsst_throughputs/panStarrs": 5,
+      "lsst_throughputs/phosim": 34,
+      "lsst_throughputs/sdss": 11,
+      "lsst_throughputs/tycho": 2,
+      "pages/pg_jwst_docs_stsci_edu_jwst_near_infrared_camera_nirc": 29,
+      "pages/pg_www_gemini_edu_instrumentation_gmos_components": 52,
+      "pages/pg_www_naoj_org_Observing_Instruments_HSC_sensitivity": 58,
+      "pages2/pg_irsa_ipac_caltech_edu_data_SPITZER_docs_mips_calib": 1,
+      "pages2/pg_wise2_ipac_caltech_edu_docs_release_allsky_expsup_": 8,
+      "pages2/pg_www_gemini_edu_instrumentation_flamingos_2_compone": 12,
+      "pages2/pg_www_gemini_edu_instrumentation_gmos_components": 31,
+      "pages2/pg_www_gemini_edu_instrumentation_gnirs_components": 9,
+      "pages2/pg_www_gemini_edu_instrumentation_gsaoi_components": 22,
+      "pages2/pg_www_gemini_edu_instrumentation_nifs_components": 3,
+      "pages2/pg_www_gemini_edu_instrumentation_niri_components": 49,
+      "x/eris_nix": 24,
+      "x/vircam": 13
+    }
+  },
+  "hash_manifests": {
+    "claude/ground/evidence": {
+      "pass": 14,
+      "fail": []
+    },
+    "claude/ground2/evidence": {
+      "pass": 704,
+      "fail": []
+    }
+  },
+  "vista": {
+    "VISTA_Filters_at80K_forETC_Z.dat.gz": {
+      "rows": 9801,
+      "xmin": 200.0,
+      "xmax": 10000.0,
+      "ymax": 95.01,
+      "header": "200.00   14.3900 \n201.00   15.5800 \n202.00   15.7000 \n203.00   12.9500 \n204.00   10.4900 \n205.00   9.4400  \n206.00   7.2800  \n207.00   5.5100  \n208.00   4.9600  \n209.00   3.1600  \n210.00   2.7700  \n211.00   3.2300  \n212.00   2.5400  \n213.00   1.9200 "
+    },
+    "trans_10_10.dat.gz": {
+      "rows": 9400,
+      "xmin": 0.9,
+      "xmax": 5.6,
+      "ymax": 1.0,
+      "header": "1.0mm H2O, airmass=1.0\n\n0.900000   0.973927\n0.900501   0.971604\n0.901002   0.975187\n0.901502   0.973288\n0.902003   0.969448\n0.902504   0.971296\n0.903005   0.978117\n0.903506   0.989906\n0.904007   0.994370\n 0.904508   0.993548\n 0.905008   0.993830\n 0.9"
+    },
+    "VISTA_Filters_at80K_forETC_Ks.dat.gz": {
+      "rows": 2176,
+      "xmin": 500.0,
+      "xmax": 3200.0,
+      "ymax": 94.18,
+      "header": "   500.00   0.0000\n   501.00   0.0000\n   502.00   0.0000\n   503.00   0.0003\n   504.00   0.0001\n   505.00   0.0001\n   506.00   0.0002\n   507.00   0.0002\n   508.00   0.0001\n   509.00   0.0002\n   510.00   0.0002\n   511.00   0.0001\n   512.00   0.0000\n   "
+    },
+    "qe.tab.gz": {
+      "rows": 2724,
+      "xmin": 806.0,
+      "xmax": 3529.0,
+      "ymax": 94.762,
+      "header": "806 68\n807 68.3707\n808 68.6278\n809 68.8885\n810 69.1502\n811 69.4103\n812 69.6706\n813 69.93\n814 70.1887\n815 70.4465\n816 70.7033\n817 70.9591\n818 71.2136\n819 71.4666\n820 71.7183\n821 71.9683\n822 72.2165\n823 72.463\n824 72.7075\n825 72.9498\n826 73.1899\n827 73"
+    },
+    "VISTA_Filters_forETC_NB980.dat.gz": {
+      "rows": 401,
+      "xmin": 900.0,
+      "xmax": 1100.0,
+      "ymax": 69.64,
+      "header": "900.00 0.075\n900.50 0.030\n901.00 0.050\n901.50 0.055\n902.00 0.005\n902.50 -0.030\n903.00 0.005\n903.50 0.025\n904.00 0.000\n904.50 0.015\n905.00 0.025\n905.50 0.050\n906.00 0.060\n906.50 0.055\n907.00 0.020\n907.50 0.015\n908.00 0.055\n908.50 0.060\n909.00 0.020\n90"
+    },
+    "VISTA_M2_Reflectivity_forETC_2007-Jun19.txt.gz": {
+      "rows": 1601,
+      "xmin": 300.0,
+      "xmax": 3000.0,
+      "ymax": 98.57,
+      "header": "300.0 15.54\n301.0 14.98\n302.0 14.33\n303.0 13.49\n304.0 13.12\n305.0 12.23\n306.0 11.43\n307.0 10.61\n308.0 10\n309.0 8.76\n310.0 8.52\n311.0 7.27\n312.0 6.95\n313.0 6.16\n314.0 6.13\n315.0 5.93\n316.0 5.18\n317.0 4.33\n318.0 4.54\n319.0 4.95\n320.0 4.69\n321.0 6.03\n32"
+    },
+    "trans_30_20.dat.gz": {
+      "rows": 9401,
+      "xmin": 0.9,
+      "xmax": 5.6,
+      "ymax": 1.0,
+      "header": "#3.0mm H2O, airmass=2.0\n#\n0.900000   0.906586\n0.900500   0.891105\n0.901000   0.896619\n0.901500   0.900469\n0.902000   0.897511\n0.902500   0.902651\n0.903000   0.920896\n0.903500   0.956994\n0.904000   0.971966\n 0.904500   0.967009\n 0.905000   0.969137\n 0"
+    },
+    "VISTA_Filters_forETC_NB118.dat.gz": {
+      "rows": 201,
+      "xmin": 1100.0,
+      "xmax": 1300.0,
+      "ymax": 67.195,
+      "header": "1100.00 0.000\n1101.00 -0.005\n1102.00 0.015\n1103.00 0.000\n1104.00 0.000\n1105.00 0.010\n1106.00 0.005\n1107.00 -0.015\n1108.00 0.000\n1109.00 0.030\n1110.00 0.005\n1111.00 0.005\n1112.00 0.030\n1113.00 -0.010\n1114.00 -0.015\n1115.00 0.000\n1116.00 0.010\n1117.00 "
+    },
+    "VISTA_Filters_at80K_forETC_H.dat.gz": {
+      "rows": 2176,
+      "xmin": 500.0,
+      "xmax": 3200.0,
+      "ymax": 95.465,
+      "header": "  500.00   0.0004\n  501.00   0.0004\n  502.00   0.0004\n  503.00   0.0004\n  504.00   0.0002\n  505.00   0.0000\n  506.00   0.0000\n  507.00   0.0001\n  508.00   0.0000\n  509.00   0.0000\n  510.00   0.0002\n  511.00   0.0003\n  512.00   0.0002\n  513.00   0.000"
+    },
+    "VISTA_Filters_forETC_NB990.dat.gz": {
+      "rows": 401,
+      "xmin": 900.0,
+      "xmax": 1100.0,
+      "ymax": 65.47,
+      "header": "900.00 -0.010\n900.50 0.030\n901.00 -0.010\n901.50 -0.020\n902.00 0.015\n902.50 0.000\n903.00 -0.025\n903.50 -0.015\n904.00 0.005\n904.50 -0.035\n905.00 -0.035\n905.50 -0.005\n906.00 -0.015\n906.50 -0.005\n907.00 0.020\n907.50 0.010\n908.00 0.005\n908.50 0.005\n909.00"
+    },
+    "VISTA_Filters_at80K_forETC_J.dat.gz": {
+      "rows": 2176,
+      "xmin": 500.0,
+      "xmax": 3200.0,
+      "ymax": 88.648,
+      "header": "     500.00     0.0001\n     501.00     0.0001\n     502.00     0.0001\n     503.00     0.0001\n     504.00     0.0001\n     505.00     0.0001\n     506.00     0.0000\n     507.00     0.0001\n     508.00     0.0001\n     509.00     0.0001\n     510.00     0.00"
+    },
+    "VISTA_Filters_at80K_forETC_Y.dat.gz": {
+      "rows": 2439,
+      "xmin": 500.0,
+      "xmax": 3201.02,
+      "ymax": 82.885,
+      "header": " 500.00     0.0006\n 501.00     0.0000\n 502.00     0.0012\n 503.00     0.0000\n 504.00     0.0017\n 505.00     0.0000\n 506.00     0.0014\n 507.00     0.0000\n 508.00     0.0006\n 509.00    -0.0010\n 510.00     0.0000\n 511.00     0.0000\n 512.00     0.0002\n 51"
+    },
+    "VISTA_M1_Reflectivity_forETC_2009-Sep12.txt.gz": {
+      "rows": 1601,
+      "xmin": 300.0,
+      "xmax": 3000.0,
+      "ymax": 98.52,
+      "header": "300.0 15.75\n301.0 15.07\n302.0 14.40\n303.0 13.69\n304.0 12.93\n305.0 12.16\n306.0 11.36\n307.0 10.54\n308.0 9.72\n309.0 8.90\n310.0 8.11\n311.0 7.36\n312.0 6.68\n313.0 6.09\n314.0 5.61\n315.0 5.22\n316.0 4.88\n317.0 4.56\n318.0 4.25\n319.0 3.97\n320.0 3.84\n321.0 4.13\n"
+    }
+  },
+  "archives": {
+    "CSPCSPII_passbands.tgz": {
+      "members": 24,
+      "fits_members": 21
+    },
+    "CSP_filter_package.tgz": {
+      "members": 75,
+      "fits_members": 0
+    },
+    "lco_filter_curves.zip": {
+      "members": 18
+    }
+  },
+  "decam": {
+    "LAMBDA": {
+      "min": 3800.0,
+      "max": 11000.0
+    },
+    "g": {
+      "min": 0.0,
+      "max": 0.6778513789176941
+    },
+    "r": {
+      "min": 0.0,
+      "max": 0.8457398414611816
+    },
+    "i": {
+      "min": 0.0,
+      "max": 0.9629335403442383
+    },
+    "z": {
+      "min": 0.0,
+      "max": 0.9768766164779663
+    },
+    "Y": {
+      "min": 0.0,
+      "max": 0.770442545413971
+    },
+    "atm": {
+      "min": 0.30679166316986084,
+      "max": 0.9570404291152954
+    },
+    "quotient_peaks": {
+      "g": 0.8124737985632111,
+      "r": 0.9319435986785357,
+      "i": 1.021746062645772,
+      "z": 1.0369931581986294,
+      "Y": 0.8606573067306863
+    }
+  },
+  "lsst_product_errors": {
+    "u": 0.0,
+    "g": 0.0,
+    "r": 0.0,
+    "i": 0.0,
+    "z": 0.0,
+    "y": 0.0
+  }
+}

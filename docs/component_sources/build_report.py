@@ -93,6 +93,14 @@ def build():
                 if path.is_file():
                     hashes[str(path.relative_to(ROOT))] = hashlib.sha256(path.read_bytes()).hexdigest()
 
+    # Preserve the exact supplemental evidence checkpoint without promoting its
+    # unreviewed role claims into the main component matrix.
+    for folder in (SOURCE_ROOT / "claude" / "ground", SOURCE_ROOT / "claude" / "ground2"):
+        if folder.exists():
+            for path in folder.rglob("*"):
+                if path.is_file():
+                    hashes[str(path.relative_to(ROOT))] = hashlib.sha256(path.read_bytes()).hexdigest()
+
     fields = ["agent", "origin", "facility_key", "instrument_key", "review_status",
               *(f"{role}_status" for role in ROLES), "independent_source_status",
               "release_mapping", "component_search_scope", "superseded_claims", "notes"]
@@ -166,6 +174,10 @@ def build():
         "[issues](sources/round2/codex/issues.jsonl) and "
         "[focused review](sources/round2/codex/focused-review.md). Each states its actual "
         "input hashes and verification boundary; structural checks do not certify all numeric claims.",
+        "- [Vega supplemental handoff](supplemental_handoff.md) combines Claude's later ground "
+        "harvest, per-file provenance and [Codex's current-work audit]"
+        "(sources/round2/codex/current_work_audit.md). Its additional worker reviews overlap "
+        "the baseline and are not promoted into the main matrix.",
         "- [Mac manager checks](sources/round2/manager/report.md) and "
         "[exact retrieval log](sources/round2/manager/checks.json): independent WISE W1 and "
         "PACS blue numerical checks plus MIPS documentation. "
