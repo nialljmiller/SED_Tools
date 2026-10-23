@@ -1,0 +1,86 @@
+[
+  {
+    "facility": "FLWO",
+    "url": "https://sncosmo.github.io/data/bandpasses/keplercam/Us_Keplercam.txt",
+    "http": 200,
+    "sha256_equal": true,
+    "bytes": 396
+  },
+  {
+    "facility": "LBT",
+    "url": "https://scienceops.lbto.org/wp-content/uploads/2022/01/BesselU_BP.txt",
+    "http": 200,
+    "sha256_equal": true,
+    "bytes": 5532
+  },
+  {
+    "facility": "Liverpool",
+    "url": "https://telescope.livjm.ac.uk/TelInst/Inst/IOO/IOO_SDSS-U.txt",
+    "http": 200,
+    "sha256_equal": true,
+    "bytes": 33287
+  },
+  {
+    "facility": "NOT",
+    "url": "https://www.not.iac.es/instruments/notcam/filters/ascii-data/1.dat",
+    "http": 200,
+    "sha256_equal": true,
+    "bytes": 7182
+  },
+  {
+    "facility": "AKARI",
+    "url": "https://www.ir.isas.jaxa.jp/AKARI/Observation/support/IRC/RSRF/n2.fad",
+    "http": 200,
+    "sha256_equal": true,
+    "bytes": 93739
+  },
+  {
+    "facility": "CHEOPS",
+    "url": "https://raw.githubusercontent.com/pmaxted/pycheops/master/pycheops/data/response_functions/response_functions.fits",
+    "http": 200,
+    "sha256_equal": true,
+    "bytes": 37440
+  },
+  {
+    "facility": "COBE",
+    "url": "https://lambda.gsfc.nasa.gov/data/cobe/dirbe/ancil/spec_resp/DIRBE_SYSTEM_SPECTRAL_RESPONSE_TABLE.ASC",
+    "http": 200,
+    "sha256_equal": true,
+    "bytes": 63101
+  },
+  {
+    "facility": "IRAS",
+    "url": "https://lambda.gsfc.nasa.gov/product/iras/docs/exp.sup/ch2/tabC5.html",
+    "http": 200,
+    "sha256_equal": true,
+    "bytes": 9083
+  },
+  {
+    "facility": "MSX",
+    "url": "https://irsa.ipac.caltech.edu/data/MSX/docs/rsr/msx_rsr_a.tbl",
+    "http": 200,
+    "sha256_equal": true,
+    "bytes": 13697
+  },
+  {
+    "facility": "PLANCK",
+    "url": "https://irsa.ipac.caltech.edu/data/Planck/release_2/ancillary-data/LFI_RIMO_R2.50.fits",
+    "http": 200,
+    "sha256_equal": true,
+    "bytes": 754560
+  },
+  {
+    "facility": "WMAP",
+    "url": "https://lambda.gsfc.nasa.gov/data/map/dr5/ancillary/response/wmap_bandpass_v5.tar.gz",
+    "http": 200,
+    "sha256_equal": true,
+    "bytes": 38783
+  },
+  {
+    "facility": "XMM",
+    "url": "https://heasarc.gsfc.nasa.gov/FTP/xmm/data/responses/OM/OM_response_081008.txt",
+    "http": 200,
+    "sha256_equal": true,
+    "bytes": 48842
+  }
+]

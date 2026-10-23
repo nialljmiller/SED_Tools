@@ -1,0 +1,2865 @@
+[
+  {
+    "team": "ground-agent",
+    "facility": "WHT",
+    "path": "ground-agent/WHT/ksbarr.warm.trans.html",
+    "sha256": "62aab16fa7bfb65de6d7d4a4aa2f537a07e13b03022f21e6b9c0397a89533243",
+    "physical_facility": "WHT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "WHT",
+    "path": "ground-agent/WHT/z.warm.trans.html",
+    "sha256": "fed6a329c8543141d6940f4efa7a6ccc86e95dcd6449d2e266b26ecccf16344d",
+    "physical_facility": "WHT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "WHT",
+    "path": "ground-agent/WHT/j.warm.trans.html",
+    "sha256": "d33489936f7e97aecd20458c0b60928f092493e6b9df7d956fcd14a67db8e1fb",
+    "physical_facility": "WHT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "WHT",
+    "path": "ground-agent/WHT/h.warm.trans.html",
+    "sha256": "953bd7356c8f40c0e4d3f3210da9ec70b4ec3bccab27dcef6efa1be3aa50f7c2",
+    "physical_facility": "WHT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "WHT",
+    "path": "ground-agent/WHT/k.warm.trans.html",
+    "sha256": "e98f599383c894b010bf09bc55839582d214f27a3ff1023ad8252a25b6590703",
+    "physical_facility": "WHT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "WHT",
+    "path": "ground-agent/WHT/ks.warm.trans.html",
+    "sha256": "f2a3bb1eba272bd92929f34c72619968c7cbe2efba3e001fcb1536a9c982c154",
+    "physical_facility": "WHT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "WHT",
+    "path": "ground-agent/WHT/brg.warm.trans.html",
+    "sha256": "c945866fa20137335e67e34685d12d25c137a2d454d9cc27ec2e6bf1426a8105",
+    "physical_facility": "WHT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "WHT",
+    "path": "ground-agent/WHT/brg.cold.trans.html",
+    "sha256": "bf1e65de6bc99d3ea0a008c0783085c081bf31c174820ec195b9b5a911f07c53",
+    "physical_facility": "WHT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "WHT",
+    "path": "ground-agent/WHT/h2v10.warm.trans.html",
+    "sha256": "35d89ebf105938218b2cda8449fa2b2e8e1be77fd51942a3f4e2df4b5db7cd4f",
+    "physical_facility": "WHT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "WHT",
+    "path": "ground-agent/WHT/h2v10.cold.trans.html",
+    "sha256": "33e42ebed1330e8c6cb0fa8b383b592bb32cd93d14a933b48f9bbf52590ba4cb",
+    "physical_facility": "WHT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "WHT",
+    "path": "ground-agent/WHT/feii.warm.trans.html",
+    "sha256": "4b4ae02aef6739033d6c2cb1a082b959455df613362505bf4772944dceb620ad",
+    "physical_facility": "WHT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "WHT",
+    "path": "ground-agent/WHT/feii.cold.trans.html",
+    "sha256": "7f5d64ae8712cd3435d095b5e3db235e71997f1ccd8ed607cd5bfb984da27e99",
+    "physical_facility": "WHT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "WHT",
+    "path": "ground-agent/WHT/hcont.warm.trans.html",
+    "sha256": "3179b0fafd81b7dee72839b1620cbb3e35b74fccf2aad944dc6ac8cfe2c53798",
+    "physical_facility": "WHT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "WHT",
+    "path": "ground-agent/WHT/hcont.cold.trans.html",
+    "sha256": "5b62c598518537a728c48650af0bdf5f2852f1c685a140bec4e7a1b2aaf41a09",
+    "physical_facility": "WHT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "WHT",
+    "path": "ground-agent/WHT/pab.warm.trans.html",
+    "sha256": "08e06ba6b3f5e2c08475d05306bd2657ceecf72bfc00649d0fadd36d533358f8",
+    "physical_facility": "WHT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "WHT",
+    "path": "ground-agent/WHT/jcont.warm.trans.html",
+    "sha256": "90cc3263bf1b1189c535adc5cc3a470ef891fabcbb44d123f184feb725041768",
+    "physical_facility": "WHT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "WHT",
+    "path": "ground-agent/WHT/kcont.warm.trans.html",
+    "sha256": "4d10e6f350b685796c6f861ad401bb79cf6be50d7589dd27c1337ef13cc3842b",
+    "physical_facility": "WHT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "WHT",
+    "path": "ground-agent/WHT/kcont.cold.trans.html",
+    "sha256": "662f99ea4ea4cfbca46c31e3a4d4d5ff65c630790682d1a0a4f1a2bc96c9a7cc",
+    "physical_facility": "WHT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "WHT",
+    "path": "ground-agent/WHT/h2v21.warm.trans.html",
+    "sha256": "8ebf5826b0b50662d3202845133051d69f8f79330400c3d26bf0ccc5b9d87aaf",
+    "physical_facility": "WHT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "WHT",
+    "path": "ground-agent/WHT/h2v21.cold.trans.html",
+    "sha256": "9d6475088ece5df4fcb8a43fc63bf07970c12ac48c1f96e84e0e08a31e2f6b9d",
+    "physical_facility": "WHT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_j_trans.dat",
+    "sha256": "625f426c0847268780a2bd71618938dc8e4097665a2fb70ce1801446047ec437",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_jblka_trans.dat",
+    "sha256": "7315dbba73dfa2753f5abac5835fddeb15fe1b969e0ffe5cc498e6bb1cbc4605",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_hblka_trans.dat",
+    "sha256": "407f7dfb00328c498360759b87586b7a0211f76df1044fddfd02a539854ed7e0",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_k_trans.dat",
+    "sha256": "97f63c6796de3cde51b42fa34990f6a707b75bfe79eeabe661574fac49111ba9",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_kp_trans.dat",
+    "sha256": "2544cf24a6b9e39c3b99f9f1bd9705f8a1a1285693029b3861689508e82f1d6e",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_kpblka_trans.dat",
+    "sha256": "d294840ada54a0982ba2cbf50fe9aa151eae28e888ed5cd0e70640f8c58012ea",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_ks_trans.dat",
+    "sha256": "9fadfbf6f8212faf3d56f05a531baf7eb29b979cc05630ed9aa47ad280c0ce43",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_ksblka_trans.dat",
+    "sha256": "468e8664018aa5019f00ca7f85925e8cc61193da5e245d4ec5ac08f4c5d3b8ec",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_l_trans.dat",
+    "sha256": "44ada3bf6b45701652b4c724657f1b73fb7100da38e33bad2c0e8f8d3db5a37f",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_lp_trans.dat",
+    "sha256": "71fdd3b2e4cd237b700ec86cdd7f02970d032c444c622125b4a33dcb079a6fa9",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_m_trans.dat",
+    "sha256": "0caa1481093e67a2b0d38e4161f8b5f7fc190065461f1c1be84c1710e1f0bf66",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_mp1_trans.dat",
+    "sha256": "4fa1dc5352047138328fb10d9cee37325bd8b8163ef6c00c3798b53378c8333a",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_blka_scale_trans.dat",
+    "sha256": "f6b2a332174f7886f0e72d0bf0d890fd1e46958e343c995a0d9a0c1394cf8f20",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_jmk_trans.dat",
+    "sha256": "208d4149b9f410d2c05143f5bb492adb2c9f81305ebcbc8ce311cb41b65fa7db",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_hmk_trans.dat",
+    "sha256": "9c58a391cb42bb7102969e4caffb91f24331fb2c3f0ae3e2b0f119b0461c94f2",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_kmk_trans.dat",
+    "sha256": "bc9fc59499fef80f4fe410a07f7fa8ada1d19984ae0e5ab550a533a48988322b",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_kpmk_trans.dat",
+    "sha256": "4f15b2e96ca9f0b7842a29b4416713ab67e97e2ef5d3eaa555a9ed6bf9290e67",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_ksmk_trans.dat",
+    "sha256": "6a3de0900737f513852328a88d5b38e885bfed2fe3b6a3cf50ae6f251f30d999",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_lpmk_trans.dat",
+    "sha256": "2b0f6ff4417b97dd5fd2da18c8098191491bc58cbfbdc379d5cf3ef553b0caa1",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_mpmk_trans.dat",
+    "sha256": "5a86a30212cd7cbde4f3604bd7fc714201c145fb899eab546170b69fd9d00022",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_pag_trans.dat",
+    "sha256": "32176e129a7579d3c8fbbb5668a1b91c96473a17f334a9e5d30bb9e5c8f08152",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_pagblka_trans.dat",
+    "sha256": "c8f0e2d29f08b20b72c31440248f9a84e3b73729606fcca87f2ef68bc7e35803",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_pab_trans.dat",
+    "sha256": "32e9d3650bbec26805caa9707520104448f52c6da5bd887c4a3d82bcb39059a4",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_pabblka_trans.dat",
+    "sha256": "90323b376e4bc1f1611c13f746efe95b7f6f6e68a624c308a924ffc9cce2ce4e",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_brg_trans.dat",
+    "sha256": "dca7e4e29a13e835b38920a6ddc6f2a8f0d917dff999ce83011c77861470c64d",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_hei_trans.dat",
+    "sha256": "7b4ee57f73a6b4c2b9f766a6d3ab3bc5a8b7641f676f92c4d173c45874e119fd",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_heiblka_trans.dat",
+    "sha256": "3fe687549cd71fee9ffcc27525e82c8491a14a593a8375e0e58a7751a169bc65",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_fe_trans.dat",
+    "sha256": "2108e72a58c3f8e8b4264abd6edcd3d49735364ed5b03bb0b2b2248c2c7d915d",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_feblka_trans.dat",
+    "sha256": "8b669f1650b1d7314802df79551815e2dfb28b1a0c344f1ab91be7986cb82213",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_h21_trans.dat",
+    "sha256": "6fbd4280ce5c69e3affe7f660565201eb1308fc5a0f2e50c1b439ff60ea41634",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_h21blka_trans.dat",
+    "sha256": "cfe260b3c5b906ed1e81dd5c942018061a32d3d57d33aaa00726eb6a7f43b051",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_h22_trans.dat",
+    "sha256": "5374793a47f8dd1c7ee7ded48bc68603d5a21829dc591283615d8c284003d847",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_h22blka_trans.dat",
+    "sha256": "82733ba501be54820e1313b10d5eb72106c4f37a1c3c43a20617a721be466d66",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_co_trans.dat",
+    "sha256": "9d71a8be845e0b4190d473371f74e0d0ed978a1628f4ae357b04e0189307fc45",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_coblka_trans.dat",
+    "sha256": "a0b6d9e02bb326a48f60ab45199af5c05a6019501fbf56fcbb4703d113fe289f",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_cont_trans.dat",
+    "sha256": "8066115a909b3093514eda256d7b534f4189117b82a506f99a23d4eb4a889bb4",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_contblka_trans.dat",
+    "sha256": "485904f1dfd2e59f72e7d2c7edd7fc7cf1f1fb80b2dae796c57cebc6ecf02bc7",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_s17_trans.dat",
+    "sha256": "46330d8226fb7cac693987a1cf31a8eed077b132b3b72b1e4512fe37c78d974e",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "IRTF",
+    "path": "ground-agent/IRTF/nsfcam_s23_trans.dat",
+    "sha256": "fb9271e040ab0cc2236bc14ba8ee460a7ed14117dfaad3337c9363325f1276b0",
+    "physical_facility": "IRTF"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "MMT",
+    "path": "ground-agent/MMT/u__filter_MMT.txt",
+    "sha256": "7408f691bc3e62670d55a67f1285cd46f54ee0dffc50b4b9d404fa725e063010",
+    "physical_facility": "MMT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "MMT",
+    "path": "ground-agent/MMT/filterthroughput.megacamu",
+    "sha256": "604b9018702a231ddf8c0615eb98b89e656a466f671d17e67d510b63c4dee0c3",
+    "physical_facility": "MMT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "MMT",
+    "path": "ground-agent/MMT/g__filter_MMT.txt",
+    "sha256": "a87cbf1633557dc0c9f6bdfc79ba53c62a7e94d248e7882122fac31eebe55d5d",
+    "physical_facility": "MMT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "MMT",
+    "path": "ground-agent/MMT/filterthroughput.megacamg",
+    "sha256": "f32828d3df3d399b2932fd605da84fdc608bb0e356e33a31b16e6ab1f1e06c50",
+    "physical_facility": "MMT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "MMT",
+    "path": "ground-agent/MMT/r__filter_MMT.txt",
+    "sha256": "0271820ffef17dc60e30ff142835a7d3fa31d021554c72d90d2ee228f180c182",
+    "physical_facility": "MMT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "MMT",
+    "path": "ground-agent/MMT/filterthroughput.megacamr",
+    "sha256": "461468f41ef1883147d69c8b153a880c3e39fad4a5c121088869b729dde548ef",
+    "physical_facility": "MMT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "MMT",
+    "path": "ground-agent/MMT/i__filter_MMT.txt",
+    "sha256": "007031d426a2456051eb1e3b3e886f5e821b61ce9ccd7e71486f2bb96cdb5c35",
+    "physical_facility": "MMT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "MMT",
+    "path": "ground-agent/MMT/filterthroughput.megacami",
+    "sha256": "cedb9c9ad51211dbd38748241199beb64b0a13233f4475b0cb76d5116e58ce66",
+    "physical_facility": "MMT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "MMT",
+    "path": "ground-agent/MMT/z__filter_MMT.txt",
+    "sha256": "c2cfbd6ba6c0320d2e8492b97a1d15030c6964b487bd130b4cd1255940fc45dd",
+    "physical_facility": "MMT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "MMT",
+    "path": "ground-agent/MMT/filterthroughput.megacamz",
+    "sha256": "04b0030b9c67b8ac63c3575532d3c81cdd2373b2e31c36cb2da4238048da4616",
+    "physical_facility": "MMT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "CAHA",
+    "path": "ground-agent/CAHA/ascii_Z.txt",
+    "sha256": "7611b4cda7f53ab626fbc4d000816844e39cab425564faa2ef4d893a12b6a9c6",
+    "physical_facility": "CAHA"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "CAHA",
+    "path": "ground-agent/CAHA/ascii_out_Z.txt",
+    "sha256": "50d99ce189388c9e962a57d51dc961c50c88da9b001d829aceb88743f6918946",
+    "physical_facility": "CAHA"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "CAHA",
+    "path": "ground-agent/CAHA/ascii_Y.txt",
+    "sha256": "c2c08bd6e38ffd4a2cf00091b692863c0d80bdce52dfbd9271364c0a3d6b593d",
+    "physical_facility": "CAHA"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "CAHA",
+    "path": "ground-agent/CAHA/ascii_out_Y.txt",
+    "sha256": "290f70cfe9a041e3c2fe7d34f24bf5d3694749a6bde784e7d80cd8943d061e97",
+    "physical_facility": "CAHA"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "CAHA",
+    "path": "ground-agent/CAHA/ascii_J.txt",
+    "sha256": "1b892d1ea7a87e182d3fad7702b092abb79d3916e91eb3e9fd067ab936d82cdf",
+    "physical_facility": "CAHA"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "CAHA",
+    "path": "ground-agent/CAHA/ascii_out_J.txt",
+    "sha256": "402a8a60e734d3a4e23e3011231833587e14f2f30dff47c52e22b00cdad872f2",
+    "physical_facility": "CAHA"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "CAHA",
+    "path": "ground-agent/CAHA/ascii_H.txt",
+    "sha256": "29a86b21477ab3b7468af64aacfdc362190daad927723f9621b903b3a4fd2a5a",
+    "physical_facility": "CAHA"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "CAHA",
+    "path": "ground-agent/CAHA/ascii_out_H.txt",
+    "sha256": "798d662a021ede4c5f9c60be14d8ca203306c5545f54a40bdb4db1bff154db07",
+    "physical_facility": "CAHA"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "CAHA",
+    "path": "ground-agent/CAHA/ascii_Ks.txt",
+    "sha256": "484397472ec62b9f32e3cb978bbdef4239f95863c0f9cd09e9c10fa198c92850",
+    "physical_facility": "CAHA"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "CAHA",
+    "path": "ground-agent/CAHA/br-gamma-inband.txt",
+    "sha256": "12d4511ad2b030dca9b8a2691b32f28b9178a7a52f1e27792aa81f6465bd61d4",
+    "physical_facility": "CAHA"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "CAHA",
+    "path": "ground-agent/CAHA/ascii_out_Br-g.txt",
+    "sha256": "df04221dd33cd3e454a0f9306e7715513a6715fc54f64aaa0080ea883b74999b",
+    "physical_facility": "CAHA"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "CAHA",
+    "path": "ground-agent/CAHA/H2-in20band.txt",
+    "sha256": "a2760ca6898fa29ce7a8ec19cca2086c587f60eb1f8e3df404694d7cb399b7b9",
+    "physical_facility": "CAHA"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "CAHA",
+    "path": "ground-agent/CAHA/ascii_out_H2.txt",
+    "sha256": "c12e7796b26a5dcf5131d0c8cd02747399a0311cba8acd89433436895664d5bc",
+    "physical_facility": "CAHA"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "CAHA-BUSCA",
+    "path": "ground-agent/CAHA-BUSCA/bands.txt",
+    "sha256": "de9b3df08a5e56ba81d93d6acea216ee21f3bec3fbdeccfb0c333da2b7de4117",
+    "physical_facility": "CAHA"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "CAHA-LAICA",
+    "path": "ground-agent/CAHA-LAICA/john_B",
+    "sha256": "96777fdbcefa37e3500190e7f98f8ee610984129f055ae9b17ce8b26ad265c34",
+    "physical_facility": "CAHA"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "CAHA-LAICA",
+    "path": "ground-agent/CAHA-LAICA/john_B2",
+    "sha256": "09f887502015e6e48f484be308babe4a6829b576172d72038fb3bec9a04a4bd5",
+    "physical_facility": "CAHA"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "CAHA-LAICA",
+    "path": "ground-agent/CAHA-LAICA/john_V",
+    "sha256": "e5194a4d09dbf95d6d5648226dfaba60962085b4eea14e0b7bb83f4c475cf36a",
+    "physical_facility": "CAHA"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "CAHA-LAICA",
+    "path": "ground-agent/CAHA-LAICA/john_R",
+    "sha256": "1681a28628dddb4f86f76e1659fa93599ebd5c71926846e2b364048696abe5b8",
+    "physical_facility": "CAHA"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "CAHA-LAICA",
+    "path": "ground-agent/CAHA-LAICA/john_I",
+    "sha256": "d05299ff664e5f5c66efca313253c10315365c164a311995fc36045088376921",
+    "physical_facility": "CAHA"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "CAHA-LAICA",
+    "path": "ground-agent/CAHA-LAICA/SDSS_u",
+    "sha256": "c91b581040e8dfd794e19a0aadcb0ffb0d38a370da8960ff37d2a2ed89aa2923",
+    "physical_facility": "CAHA"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "CAHA-LAICA",
+    "path": "ground-agent/CAHA-LAICA/SDSS_g",
+    "sha256": "6a70795439148d7ace86e7b1996397060cf2fe660775ec143eed9a0391daaed7",
+    "physical_facility": "CAHA"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "CAHA-LAICA",
+    "path": "ground-agent/CAHA-LAICA/SDSS_r",
+    "sha256": "40db2058d6986f45b3c0fece3622faae9a44430d195e8779433189bcd36be981",
+    "physical_facility": "CAHA"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "CAHA-LAICA",
+    "path": "ground-agent/CAHA-LAICA/SDSS_i",
+    "sha256": "dc0ea79d645d118bad865680fc1dbf925de83cf76985d59dd4c72adf081feab5",
+    "physical_facility": "CAHA"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "CAHA-LAICA",
+    "path": "ground-agent/CAHA-LAICA/SDSS_z",
+    "sha256": "fdf59ce4ead15e5c7da196a281c5613f8b21335ed0759d6a706c902d16e5c60a",
+    "physical_facility": "CAHA"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "JCMT",
+    "path": "ground-agent/JCMT/model850.pdf",
+    "sha256": "6018942fdd2e78090c4f07c0bd064b80ff2ede60a4e466d6074260dac7aa750a",
+    "physical_facility": "JCMT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "JCMT",
+    "path": "ground-agent/JCMT/model450.pdf",
+    "sha256": "f872963526709484aadc9e29d22e3b6c2c64b8b836624f47f02e1bd73682ca63",
+    "physical_facility": "JCMT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "JCMT",
+    "path": "ground-agent/JCMT/s8c20140313_00004-20140313_00002_SFP_scaled_spec_average_v2.pdf",
+    "sha256": "c7edd1ee0baf7050fcf2939b3a6fbf7d230434eb27af0274c3489ba2964d5e6f",
+    "physical_facility": "JCMT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "JCMT",
+    "path": "ground-agent/JCMT/s8d20140313_00004-20140313_00002_SFP_scaled_spec_average_v2.pdf",
+    "sha256": "2e30343825c6495e42e5f13f30bb9c1874eb161a23de7d54ace8cb7066d9cf23",
+    "physical_facility": "JCMT"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/B_kait1_shifted.txt",
+    "sha256": "03da0e6470afd4f78551b1198ac17747703e3e29e905d33b44100a355e30b8a3",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/B_kait2_shifted.txt",
+    "sha256": "028814b25cc7b7ee51ea357dc6dd431112e5a41850b0d5fbc0e0df26f2d30265",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/B_kait3.txt",
+    "sha256": "b7432346ab3a4eeffb33c6c79348fb2c96f8bb857228a90483d74f673c82a340",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/B_kait3_shifted.txt",
+    "sha256": "9df32ca0a2ffb34b42a019b759605fcf3b356f562acc2cb99d523e3fd397e979",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/B_kait4.txt",
+    "sha256": "549e056bc705797206c903422a34de5f089848074dc285326fc9bb39a7ba148e",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/B_kait4_shifted.txt",
+    "sha256": "549e056bc705797206c903422a34de5f089848074dc285326fc9bb39a7ba148e",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/B_nickel1.txt",
+    "sha256": "f365c798b5c719ed4dee3d4e3a44bd9dfc8d12a8ff1c0fa33e95c08cad94f5c7",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/B_nickel2.txt",
+    "sha256": "f31ced2a4b692ca26b4e74d715cf406707288219248602472206822c92ecd174",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/B_nickel_shifted.txt",
+    "sha256": "acf568e8c4d8a23033a50f96d636c826e7077a7688bd354fc4858de1c035bc3d",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/I_kait1_shifted.txt",
+    "sha256": "da791f445cb8b01ff8bebae68b7289ad5bfcd4311ed8753d963759f64d52acc7",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/I_kait2_shifted.txt",
+    "sha256": "544c150fed2621bd78811ffb867b79ae72e35ffb525d819ce16eecc499af0f99",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/I_kait3.txt",
+    "sha256": "d34a4f4b2f926b95ebb866ccc126691d40880319e74446fa81864714b5c02cc0",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/I_kait3_shifted.txt",
+    "sha256": "d34a4f4b2f926b95ebb866ccc126691d40880319e74446fa81864714b5c02cc0",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/I_kait4.txt",
+    "sha256": "29daef418c998fa264e2b6f4bd03dab5365f480f50a141b30849b4a6973a4be8",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/I_kait4_shifted.txt",
+    "sha256": "29daef418c998fa264e2b6f4bd03dab5365f480f50a141b30849b4a6973a4be8",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/I_nickel1.txt",
+    "sha256": "126bb7cbd41ec506d477630b20cad6ec26ff59f6e583c2f54cb32f13133d8469",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/I_nickel2.txt",
+    "sha256": "98038de424c8f95c7c611bc8033e10942b1e4999886519fd9f35765ba49ad9c5",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/I_nickel_shifted.txt",
+    "sha256": "d783924f0b13ac195b1ed045356ad5ba8c11cd819fe5e81873249d687ff76a39",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/R_kait1_shifted.txt",
+    "sha256": "1bac90425ca92d2cf4bcffced5196a889334e4d6b268ad9cd228f101350bde99",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/R_kait2_shifted.txt",
+    "sha256": "ea62c4bfa311da61ffef86d904e43e3e461ed72575ffa6d108ade27b3946f0a0",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/R_kait3.txt",
+    "sha256": "28923514d47a7f3bbebd09250a0f566e5097748182f106316997c82f96e6b41a",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/R_kait3_cut.txt",
+    "sha256": "da441a4e9f0bc12c5311f8b5155fbc2ffa491b41e250cf4db780007adb46a285",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/R_kait3_shifted.txt",
+    "sha256": "ba2abb56d9d61f5e2030632a37102ca0f6152498b15404c7807f16cb82f88e2e",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/R_kait4.txt",
+    "sha256": "8d0c25563513921c557d8cc0519b9f6eb6dab1168767b4756ed58c128acbae9b",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/R_kait4_shifted.txt",
+    "sha256": "0db150551cbaa056335f42c0299189b1bde7ec8d17a7172fd7cadc56017628c6",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/R_nickel1.txt",
+    "sha256": "2a1e23e610f27ef9f4abc4301d1cfc9ad793a4e7ecc967667ea80603b0742dc1",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/R_nickel2.txt",
+    "sha256": "2553887b4cfceb552498a951f9b4a98505d644ffc84d6c4d4c864f3d30765cfc",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/R_nickel_shifted.txt",
+    "sha256": "2a1e23e610f27ef9f4abc4301d1cfc9ad793a4e7ecc967667ea80603b0742dc1",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/V_kait1_shifted.txt",
+    "sha256": "3cbe9da60a3e3f59dddebc28143648d2e0527d193b2a1da8eabc797e119ae997",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/V_kait2_shifted.txt",
+    "sha256": "f3431d329221c73cfe00e7f43bcb9dc8ebf32c42a972c30e0860c3dd2d32d1d5",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/V_kait3.txt",
+    "sha256": "c0af1f018e3d4d3d60b48c9683827568544e84decdd158e5e2fcd17a5a014171",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/V_kait3_shifted.txt",
+    "sha256": "936c1d4d7e6221f0e2f2c1367d9321ef5e1957cd2c4c14faf1c505b22040bba1",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/V_kait4.txt",
+    "sha256": "e3a6c81d258ebd8682bd836890986a48e483f802098c107d0a3ed7acbd846419",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/V_kait4_shifted.txt",
+    "sha256": "e3a6c81d258ebd8682bd836890986a48e483f802098c107d0a3ed7acbd846419",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/V_nickel1.txt",
+    "sha256": "926c164bfd229ce88887788c129647be77f475bff340a77b673b5550f611f5e9",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/V_nickel2.txt",
+    "sha256": "80dc5ca1f182a6704405deace63bda927e2045d1a8b3a9c72447d577e302f2c2",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "ground-agent",
+    "facility": "LICK",
+    "path": "ground-agent/LICK/V_nickel_shifted.txt",
+    "sha256": "926c164bfd229ce88887788c129647be77f475bff340a77b673b5550f611f5e9",
+    "physical_facility": "LICK"
+  },
+  {
+    "team": "codex",
+    "facility": "NOT",
+    "path": "codex/evidence/NOT/1.dat",
+    "sha256": "c7aae30823bc12ee7870e3c430bd2b6aed622bc653a90a19efe593b592b2291e",
+    "physical_facility": "NOT"
+  },
+  {
+    "team": "codex",
+    "facility": "NOT",
+    "path": "codex/evidence/NOT/2.dat",
+    "sha256": "c7aae30823bc12ee7870e3c430bd2b6aed622bc653a90a19efe593b592b2291e",
+    "physical_facility": "NOT"
+  },
+  {
+    "team": "codex",
+    "facility": "NOT",
+    "path": "codex/evidence/NOT/3.dat",
+    "sha256": "a37f59ecb4c56ca9bd16aafcd1887f30ca519bc563a029728cc9a050bf0aadd3",
+    "physical_facility": "NOT"
+  },
+  {
+    "team": "codex",
+    "facility": "NOT",
+    "path": "codex/evidence/NOT/4.dat",
+    "sha256": "a37f59ecb4c56ca9bd16aafcd1887f30ca519bc563a029728cc9a050bf0aadd3",
+    "physical_facility": "NOT"
+  },
+  {
+    "team": "codex",
+    "facility": "NOT",
+    "path": "codex/evidence/NOT/5.dat",
+    "sha256": "c8e0324ae8e7b6840331f7c9dfbb3e7ef2576aecf82c634759fd9c744856ef11",
+    "physical_facility": "NOT"
+  },
+  {
+    "team": "codex",
+    "facility": "NOT",
+    "path": "codex/evidence/NOT/6.dat",
+    "sha256": "c8e0324ae8e7b6840331f7c9dfbb3e7ef2576aecf82c634759fd9c744856ef11",
+    "physical_facility": "NOT"
+  },
+  {
+    "team": "codex",
+    "facility": "NOT",
+    "path": "codex/evidence/NOT/7.dat",
+    "sha256": "b27ec93a06bcc71e8d691d5eb5d3ad89a3b3af0afdfb5715a20550ea73e72821",
+    "physical_facility": "NOT"
+  },
+  {
+    "team": "codex",
+    "facility": "NOT",
+    "path": "codex/evidence/NOT/8.dat",
+    "sha256": "9d90fc4e51f27a4b8345255a507c0c6db23aa75d95d2a4a889c5bf85e0c0b56f",
+    "physical_facility": "NOT"
+  },
+  {
+    "team": "codex",
+    "facility": "NOT",
+    "path": "codex/evidence/NOT/209.txt",
+    "sha256": "8de4e64dce23387c06c3310a5a7e657a55ac2d45a615837956f1bd2757aa6627",
+    "physical_facility": "NOT"
+  },
+  {
+    "team": "codex",
+    "facility": "NOT",
+    "path": "codex/evidence/NOT/210.txt",
+    "sha256": "9ddd4c67740bd7e1c29bf25d5702ef8ec86010627bee3edb96deec86669ede7e",
+    "physical_facility": "NOT"
+  },
+  {
+    "team": "codex",
+    "facility": "NOT",
+    "path": "codex/evidence/NOT/211.txt",
+    "sha256": "1cc68ef931b6284c3aa7f109d16251e9c59fbca92b0e1b347d8efd18728ec5b5",
+    "physical_facility": "NOT"
+  },
+  {
+    "team": "codex",
+    "facility": "NOT",
+    "path": "codex/evidence/NOT/212.txt",
+    "sha256": "6dd24898a9580d65ebd3a133bc196a9fe3110e10171be4b0af21eb22bcb12c13",
+    "physical_facility": "NOT"
+  },
+  {
+    "team": "codex",
+    "facility": "NOT",
+    "path": "codex/evidence/NOT/not213_iac_lab.txt",
+    "sha256": "0f6e346c73ae17153005ab75de93394fc58a1da3cd30570e8507df12638714c3",
+    "physical_facility": "NOT"
+  },
+  {
+    "team": "codex",
+    "facility": "NOT",
+    "path": "codex/evidence/NOT/not214_iac_lab.txt",
+    "sha256": "e36af178773ecac2a679b72f3e1eb7da42a61fad3479c5795660dfcb3c231c56",
+    "physical_facility": "NOT"
+  },
+  {
+    "team": "codex",
+    "facility": "NOT",
+    "path": "codex/evidence/NOT/215.txt",
+    "sha256": "7f0b81da1e6f4a1b5c35b302928d3830b0519cc0249bf48e89a13bfa43f2fa5f",
+    "physical_facility": "NOT"
+  },
+  {
+    "team": "codex",
+    "facility": "NOT",
+    "path": "codex/evidence/NOT/not215_iac_lab.txt",
+    "sha256": "989f0903c5fe867df7c30d03c9559dcf82e3269c9618e1ee7814edb55ecfe9b5",
+    "physical_facility": "NOT"
+  },
+  {
+    "team": "codex",
+    "facility": "NOT",
+    "path": "codex/evidence/NOT/216.txt",
+    "sha256": "03cd85514c12581c86eab91bd55d38ca5dbcdfd7a79f267621cd3f46a989b5b5",
+    "physical_facility": "NOT"
+  },
+  {
+    "team": "codex",
+    "facility": "NOT",
+    "path": "codex/evidence/NOT/not216_iac_lab.txt",
+    "sha256": "75f045650b5d50edede9a49edbd5f30e03b83a1ecddf11d182250f6efd41913a",
+    "physical_facility": "NOT"
+  },
+  {
+    "team": "codex",
+    "facility": "NOT",
+    "path": "codex/evidence/NOT/217.txt",
+    "sha256": "2f79daa1f1317aea2115d513c571ab70a19aa922a686b31f1da93a5a46ef642b",
+    "physical_facility": "NOT"
+  },
+  {
+    "team": "codex",
+    "facility": "NOT",
+    "path": "codex/evidence/NOT/218.txt",
+    "sha256": "e531281152407f9e5b3f93e64868d65dbad4ecbeff4fc44e713f07a4efd9f58b",
+    "physical_facility": "NOT"
+  },
+  {
+    "team": "codex",
+    "facility": "NOT",
+    "path": "codex/evidence/NOT/219.txt",
+    "sha256": "e5c560ceb89b7d33a77bab1da054ad671c02819c611ccc6d2e40f20066067003",
+    "physical_facility": "NOT"
+  },
+  {
+    "team": "codex",
+    "facility": "NOT",
+    "path": "codex/evidence/NOT/220.txt",
+    "sha256": "b806022811c004ff79a24fe0e8f11a5a5e96fb92aa2b54c8f18d068b5de922a9",
+    "physical_facility": "NOT"
+  },
+  {
+    "team": "codex",
+    "facility": "NOT",
+    "path": "codex/evidence/NOT/221.txt",
+    "sha256": "6270d0c16833eba77c8b8382857e4e899d37d0b131caad0de93087b18f69d598",
+    "physical_facility": "NOT"
+  },
+  {
+    "team": "codex",
+    "facility": "NOT",
+    "path": "codex/evidence/NOT/not222_iac_lab.txt",
+    "sha256": "ea1337000991b63e4727bdfb08a387620dd52604238129d0b1862ce55e7b3e33",
+    "physical_facility": "NOT"
+  },
+  {
+    "team": "codex",
+    "facility": "NOT",
+    "path": "codex/evidence/NOT/223.txt",
+    "sha256": "716658c580c6cecad5dda21bf0f24daa2ecd9df523506242d377a96d92ac8ea9",
+    "physical_facility": "NOT"
+  },
+  {
+    "team": "codex",
+    "facility": "NOT",
+    "path": "codex/evidence/NOT/224.txt",
+    "sha256": "0888290de3316b770720a2caf8900848a51266f19b993d9e5b69ec82af8f46dd",
+    "physical_facility": "NOT"
+  },
+  {
+    "team": "codex",
+    "facility": "NOT",
+    "path": "codex/evidence/NOT/228.txt",
+    "sha256": "672aa34d0322904d9ac931b222d95ace86ad81a3a76d23aad0ac0e472ea4791c",
+    "physical_facility": "NOT"
+  },
+  {
+    "team": "codex",
+    "facility": "NOT",
+    "path": "codex/evidence/NOT/230.txt",
+    "sha256": "55a4f8688ab254368aa02e1e22a9717bb72ad220605d405c46f35f760a085c9b",
+    "physical_facility": "NOT"
+  },
+  {
+    "team": "codex",
+    "facility": "NOT",
+    "path": "codex/evidence/NOT/236_ndc.txt",
+    "sha256": "e25b6cea4a6440a5dcf3f2d4a76c7bdacfc0eb62f2fa8ba7207ef461378a25fe",
+    "physical_facility": "NOT"
+  },
+  {
+    "team": "codex",
+    "facility": "NOT",
+    "path": "codex/evidence/NOT/not236_iac_lab.txt",
+    "sha256": "c4d9e700828556172701c5c92577e9b6f4b273c4c6f2b86291915c94174478ff",
+    "physical_facility": "NOT"
+  },
+  {
+    "team": "codex",
+    "facility": "NOT",
+    "path": "codex/evidence/NOT/237_ndc.txt",
+    "sha256": "01c435ebd7253023d42a3cd7389cb827e885e645a1f3d583f4b3f6d4e7e642ed",
+    "physical_facility": "NOT"
+  },
+  {
+    "team": "codex",
+    "facility": "NOT",
+    "path": "codex/evidence/NOT/not237_iac_lab.txt",
+    "sha256": "8f7fbbd1a6a6660c2a4c02f488a0b68a34e393c7c95d8b042523a25205ed7b21",
+    "physical_facility": "NOT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/BesselU_BP.txt",
+    "sha256": "9cc2cb7b28d992ab8134ed3986e8ebce3abbe692caf0e1856b1e9c2499843a96",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/BesselV_BP.txt",
+    "sha256": "e05d1e31105bcb088c0d4f1228f27fdcb1ff7a989f2fbfd1fc963ba18938ee56",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/USpec-15.txt",
+    "sha256": "4bdcb71c60e36a89e0a1268c919d8076bc10be1b0ea254c348355bfd41865d33",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/USpec-40.txt",
+    "sha256": "d6e71397068a169664af49992a2db3145d088621b8e404834b4f59ae8171c1d2",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/USpec-65.txt",
+    "sha256": "8f8c999e15d369bc25cb942c180fa3d0a1bbdeb7fa3acfb195604eb84b87d105",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/BesselB_BP.txt",
+    "sha256": "8a46a7c6ea8c427a513d57ad20a54788353152554f328ec669bf4639b4a88751",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCB_Sloan-r_1.txt",
+    "sha256": "d37f6e20a1ed24e69699d683e71927308c159b81da0618a0f9c780432183e0e2",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCB_Sloan-r_2.txt",
+    "sha256": "049b5d6b79cf97b93eeb0a5388e1a3fe02e1aabc7fcfab78ba8c6a13ba7517fc",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCB_Sloan-g_1.txt",
+    "sha256": "ad92a5e7acc37c1b354719f52e6f3856a332e883ade08e372ac2c6e979627988",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCB_Sloan-g_2.txt",
+    "sha256": "947a0ee37a03d95462f82e7575bed5a9dc2452c72b9b3e8e9d6f168472d21834",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCR_Sloan-r.txt",
+    "sha256": "2dde57ca9e1e56bb158d6fc3977c9bccd6207f5c0f818abffab22a41a3502490",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCR_Bessel-I_mod.txt",
+    "sha256": "16084be06f34e09a6e84e16921161066be3ad1a2b61358ba3ad48a7164e45a30",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCR_Sloan-i.txt",
+    "sha256": "77eec9c920c8d76bdaa117222a8771ce941a7379d703c1f84337da3b9ff072c6",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCR_Sloan-z.txt",
+    "sha256": "78731ba9e35af8e9d3b91799aef4227c0f298b2539ad9563ed0a38fdd73d7f5f",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCR_Bessel-R.txt",
+    "sha256": "fbb01c2b7cfd4dcf3a89ed0e6014e723bb1002cd4900c003fecde5e7755565ab",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCR_Bessel-V.txt",
+    "sha256": "b47d32f92e185fc3e9f1945b8555d8f6d384344c3b8914a1dc566b669201c6e2",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/F972_BP.txt",
+    "sha256": "b8eaad2d44b6b645479606e7bbb170c6ac487007a0e04f1665c617e63e217c44",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/F972N20.txt",
+    "sha256": "04577578680e4767481ad11bbab08f9f1cb7ed9bd0319206e5025480973d760c",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCR_Y.txt",
+    "sha256": "69dcbacea9c47ef1e8c6c6f0eddf0db78ef2b73ec45e4770c4e94d8a504c3e85",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCR_TiO.txt",
+    "sha256": "e7f0f5013f8806e6b57a85a51ed0e02ad8bcad8616a2cdcb1ef671332b8219a6",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCR_CN.txt",
+    "sha256": "eae1eb6a36e5766a316ce908d6dd16d64bc2719fabc544b673a90db545175693",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "Liverpool",
+    "path": "codex/evidence/Liverpool/IOO_SDSS-U.txt",
+    "sha256": "bf766fa4cff9a1ba7e73847923f965e4b598ca726b132d33c3ee13aa44dd51a5",
+    "physical_facility": "Liverpool"
+  },
+  {
+    "team": "codex",
+    "facility": "Liverpool",
+    "path": "codex/evidence/Liverpool/IOO_SDSS-G.txt",
+    "sha256": "efaba5109fadf9c4d87d9cdeeb5d4edcf9f096140af53704661abd6f64717c75",
+    "physical_facility": "Liverpool"
+  },
+  {
+    "team": "codex",
+    "facility": "Liverpool",
+    "path": "codex/evidence/Liverpool/IOO_SDSS-R.txt",
+    "sha256": "e7a08e7f07a4279be5b96c27f5aba7444899aff4942547648ce894cb28d1af51",
+    "physical_facility": "Liverpool"
+  },
+  {
+    "team": "codex",
+    "facility": "Liverpool",
+    "path": "codex/evidence/Liverpool/IOO_SDSS-I.txt",
+    "sha256": "bc8a58ef080a94c77c71a29694fcc6aa57577107431562c26bb7bb2b116697a9",
+    "physical_facility": "Liverpool"
+  },
+  {
+    "team": "codex",
+    "facility": "Liverpool",
+    "path": "codex/evidence/Liverpool/IOO_SDSS-Z.txt",
+    "sha256": "c0ebdffca91ec3af199d74316ea5acf0c36381c7be8f8521ea3b6cb3f92149c2",
+    "physical_facility": "Liverpool"
+  },
+  {
+    "team": "codex",
+    "facility": "Liverpool",
+    "path": "codex/evidence/Liverpool/IOO_Bessell-B.txt",
+    "sha256": "42ee23ac7bc8895cd6d10d2f7e956bec948d05d3b863e233e51b3bdd0bc3bb7a",
+    "physical_facility": "Liverpool"
+  },
+  {
+    "team": "codex",
+    "facility": "Liverpool",
+    "path": "codex/evidence/Liverpool/IOO_Bessell-V.txt",
+    "sha256": "5a9c84ab8759f72878b0fe084d0ae5a7db1b48817581b9a117da02a94eee6749",
+    "physical_facility": "Liverpool"
+  },
+  {
+    "team": "codex",
+    "facility": "Liverpool",
+    "path": "codex/evidence/Liverpool/IOO_H-alpha_rest.txt",
+    "sha256": "2c5c6baa959bdb4073482f9480c9c87c44311817509f8fee66892cb77b6a45c4",
+    "physical_facility": "Liverpool"
+  },
+  {
+    "team": "codex",
+    "facility": "Liverpool",
+    "path": "codex/evidence/Liverpool/IOO_H-alpha_6634.txt",
+    "sha256": "49fd6432649773da9ae087960a7b03a72b36543c1110f707b75ae39483d0cdde",
+    "physical_facility": "Liverpool"
+  },
+  {
+    "team": "codex",
+    "facility": "Liverpool",
+    "path": "codex/evidence/Liverpool/IOO_H-alpha_6705.txt",
+    "sha256": "ec3f74d776e22cb595e7c41b6b3e19a1fbfcedae752908ad58370a1ff6457342",
+    "physical_facility": "Liverpool"
+  },
+  {
+    "team": "codex",
+    "facility": "Liverpool",
+    "path": "codex/evidence/Liverpool/IOO_H-alpha_6755.txt",
+    "sha256": "8549b0ebded0993d4b9b383d957d49e18be6bcb658a7ab4e6654f589f9f68b81",
+    "physical_facility": "Liverpool"
+  },
+  {
+    "team": "codex",
+    "facility": "Liverpool",
+    "path": "codex/evidence/Liverpool/IOO_H-alpha_6822.txt",
+    "sha256": "8993fe0ce3114242f2bfedd7db51a99b7851b50633abb61ddffa2456eb08de4c",
+    "physical_facility": "Liverpool"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCB_U_Bessel_full.txt",
+    "sha256": "19b47c1511ab667a91a961197df18c83171cacff383270f5fd8136fead86dd89",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCB_U_Bessel_bandpass.txt",
+    "sha256": "8076da194caa66cad17b4fddc682f92bf5f34a6cb87de680e71273e9d461ab65",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCB_V_Bessel_full.txt",
+    "sha256": "50a7a7fad50187a2d8fcb6dc237a7500ca2ac1e22e3cdabe41d9ef1143d7922e",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCB_V_Bessel_bandpass.txt",
+    "sha256": "180f685b44c3df50d60ed3528615b906b8374bbb79f879a732a99ccd3d13c045",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCB_U_Spec_full.txt",
+    "sha256": "1c16f65fd7d73a8d9d628943382a7337cec325c34b26ffdb6c6f2065ec12d386",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCB_U_Spec_bandpass.txt",
+    "sha256": "bee3a5787de9a85a869c648ac183b1fd2c9094ccd888362f7e829a755e11914a",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCB_B_Bessel_full.txt",
+    "sha256": "d2598a9b10b1e13d1f2b8f28843944e3340039da401c00a123845fdd94df9131",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCB_B_Bessel_bandpass.txt",
+    "sha256": "bbfd726585d0325c3a08ad1224183477679b0d2893a2b775f1d7c49c252a64d9",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCB_r_Sloan_full.txt",
+    "sha256": "721dc4aab4ab3f77e313cdd7248ceb3a56a4f0c49f4792d66f823683d49f5397",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCB_r_Sloan_bandpass.txt",
+    "sha256": "1f25f39988bb68b697bc7728666df09a439903f247751ff5ccf22724e9e5794f",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCB_F338N10_full.txt",
+    "sha256": "6325db473937efc51ce63a40252c72e43a7737fe97539feae0f795d7cbc124f5",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCB_F338N10_bandpass.txt",
+    "sha256": "aa671f3f776b5cbe2387cda8934fd0ebe8c2a918b2605d97f380cce593c0961b",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCB_g_Sloan_full.txt",
+    "sha256": "9346e804f72c1e64dd2da69bdcc0074dc4d5d417cda47272937e95786bee5f22",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCB_g_Sloan_bandpass.txt",
+    "sha256": "59c6892502c0f148cb74350722e27098a1b82b6609c12ab6f5f44a17a3dd1159",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCR_r_Sloan_full.txt",
+    "sha256": "337f1d51769f50ec628be7ebb877556cb70c3f8d47729122a5ae0d09be2e572e",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCR_r_Sloan_bandpass.txt",
+    "sha256": "301a4da94d18ba4617dd5ae206f3dacf261d4d16728b17ab08433351ead20459",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCR_I_Bessel_full.txt",
+    "sha256": "080c6b85fb660141c94b7805e129b5cf59ae522118aa217039bb90ac43b68326",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCR_I_Bessel_bandpass.txt",
+    "sha256": "df3a14d4128df34a5f7dc9be1d16d12a8fe3437901fd8784f0313b0d0a405d97",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCR_i_Sloan_full.txt",
+    "sha256": "4f5578fa87c30ba0edd6738e542437211c7c16aded1a7d0cc6915c17d5746462",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCR_i_Sloan_bandpass.txt",
+    "sha256": "ea96bf759e1b1b62939ddfb4afaf0f0be3cec2bfac0525103f2a31651a7bf862",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCR_z_Sloan_full.txt",
+    "sha256": "38938acb7ad9ba9049430cddc0a285b25c72fff63c4bea3202784ae8402051a2",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCR_z_Sloan_bandpass.txt",
+    "sha256": "27be31e7b755502f89e87892fcaacc89087c14e459228eb9f7982c507883ca7b",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCR_R_Bessel_full.txt",
+    "sha256": "e6b7de641b0d4b4bda165e3c312fa7ecd22ffce3e238d38dfc6a22dc69b25036",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCR_R_Bessel_bandpass.txt",
+    "sha256": "eff6d40eaafe38b2ee5f9c3ae9e0302d0e5ebe3d32baf70b609143506f5fc769",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCR_V_Bessel_full.txt",
+    "sha256": "1b4bff144ea66744e9398c7d332c3a5cd47c7e673a1080bba7a41af532c84932",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCR_V_Bessel_bandpass.txt",
+    "sha256": "a913070aa29c8f188b631587c2938e669d64b0f611ba252cb26fd9584075e0d6",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCR_F972N20_full.txt",
+    "sha256": "aaa16a031d05c2c3c70b1327b9ab3117a2ae274c646160e8868e35b321f69bfc",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCR_F972N20_bandpass.txt",
+    "sha256": "d664803bcbb0f91a70ffc4980a57b85d540c645b3cd4dfd379e409063195ed9f",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCR_F972N20_bandpass_model.txt",
+    "sha256": "d05b2bd04aac6b30b13bc1065278e4810e1cfa8663f8807a21bc3b20568feb9c",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCR_Y_Fan_full.txt",
+    "sha256": "1c7bb218344d39bd246fae905402b027daf941798d3e71833cf28b064c709e0b",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCR_Y_Fan_bandpass.txt",
+    "sha256": "535ddf5b5481a05d1bec384cd3ff2e75dd07d794deb54bdc5098b36a83f818d3",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCR_TiO_784_full.txt",
+    "sha256": "431dca3c43a7db881ccddb2908c0c7a6609f97b97f5e8f98c9586ba169242a1b",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "LBT",
+    "path": "codex/evidence/LBT/LBCR_CN_817_full.txt",
+    "sha256": "c1a3b087174fd4b4711e65656c05df483018a99988b4e5217f71868ec234c22b",
+    "physical_facility": "LBT"
+  },
+  {
+    "team": "codex",
+    "facility": "FLWO",
+    "path": "codex/evidence/FLWO/Us_Keplercam.txt",
+    "sha256": "ab4ca4d00a96f3e18b63e23fef6073ea5cca149cd644978ffbdeede0649c29fa",
+    "physical_facility": "FLWO"
+  },
+  {
+    "team": "codex",
+    "facility": "FLWO",
+    "path": "codex/evidence/FLWO/B_Keplercam.txt",
+    "sha256": "eaac45c0ae3ec5ec15e718c8515cb26640b821c3c94f2d4ecbb66780431b47c2",
+    "physical_facility": "FLWO"
+  },
+  {
+    "team": "codex",
+    "facility": "FLWO",
+    "path": "codex/evidence/FLWO/V_Keplercam.txt",
+    "sha256": "952e3cfae1835b66008e8bc01ecaee6bf823a7eea46e5def90479c6c6193e881",
+    "physical_facility": "FLWO"
+  },
+  {
+    "team": "codex",
+    "facility": "FLWO",
+    "path": "codex/evidence/FLWO/r_Keplercam.txt",
+    "sha256": "4dbfe2840f5366c6ae24a44bafc5a10d86afddfc047d0a06613f91b4b9bc4e06",
+    "physical_facility": "FLWO"
+  },
+  {
+    "team": "codex",
+    "facility": "FLWO",
+    "path": "codex/evidence/FLWO/i_Keplercam.txt",
+    "sha256": "e339be41814dac515412f69cfd0979cf5ea7a3fcd5f93693d7916b2f3b1b037d",
+    "physical_facility": "FLWO"
+  },
+  {
+    "team": "codex",
+    "facility": "Liverpool",
+    "path": "codex/evidence/Liverpool/ioo_filter_throughput_and_qe.txt",
+    "sha256": "763ad5968373ad767ee1368cbd1db7ff529aef48023fad9df31bcdfd17f07f10",
+    "physical_facility": "Liverpool"
+  },
+  {
+    "team": "space",
+    "facility": "AKARI",
+    "path": "space/curves/AKARI/n3.csv",
+    "sha256": "c8161193f60ca46b610f207e35c59c19819cf4800a4cf95e8a707b4f4d905aae",
+    "physical_facility": "AKARI"
+  },
+  {
+    "team": "space",
+    "facility": "AKARI",
+    "path": "space/curves/AKARI/n2.csv",
+    "sha256": "c1c6d6c570011db89c36792b5e8d4fbfce6aebfcae822c965d34a4bbbb49b0f8",
+    "physical_facility": "AKARI"
+  },
+  {
+    "team": "space",
+    "facility": "AKARI",
+    "path": "space/curves/AKARI/s9w.csv",
+    "sha256": "a3fb32c3e62d74f694b16f4b11d81ee48637f46f149c325ca74498d21ce64345",
+    "physical_facility": "AKARI"
+  },
+  {
+    "team": "space",
+    "facility": "AKARI",
+    "path": "space/curves/AKARI/n4.csv",
+    "sha256": "b6a3b05bd5746b4e6e8683e2b4587b6b2e0dd0aac68a1ec5916f48ddae910290",
+    "physical_facility": "AKARI"
+  },
+  {
+    "team": "space",
+    "facility": "AKARI",
+    "path": "space/curves/AKARI/s7.csv",
+    "sha256": "80b398c7061de36643a2614774d0c8f76b6c09f0ce9f9374965ab214555884d5",
+    "physical_facility": "AKARI"
+  },
+  {
+    "team": "space",
+    "facility": "AKARI",
+    "path": "space/curves/AKARI/s11.csv",
+    "sha256": "db4a753d468e7bd6315eec318c6dcf36ad8a0429fa809d08896a663df4c96ab9",
+    "physical_facility": "AKARI"
+  },
+  {
+    "team": "space",
+    "facility": "AKARI",
+    "path": "space/curves/AKARI/l15.csv",
+    "sha256": "617e25dfc6408888543febdf65706247121bf320a4b203473e036d41d7683814",
+    "physical_facility": "AKARI"
+  },
+  {
+    "team": "space",
+    "facility": "AKARI",
+    "path": "space/curves/AKARI/l18w.csv",
+    "sha256": "c74f6290ea4c188ae6852ded14fab811cdfb4722c6d4f2a2736266c2b44dcee5",
+    "physical_facility": "AKARI"
+  },
+  {
+    "team": "space",
+    "facility": "AKARI",
+    "path": "space/curves/AKARI/l24.csv",
+    "sha256": "cb98a00397a30b5b2a364a7ec901f204814a6ae8a0a0eb1997a57b4299e7e532",
+    "physical_facility": "AKARI"
+  },
+  {
+    "team": "space",
+    "facility": "COBE",
+    "path": "space/curves/COBE/DIRBE_1.csv",
+    "sha256": "a1fff9ebc86ebe8616d58ac528022d0744afd09b17f0a8e61f076d16adea83a5",
+    "physical_facility": "COBE"
+  },
+  {
+    "team": "space",
+    "facility": "COBE",
+    "path": "space/curves/COBE/DIRBE_2.csv",
+    "sha256": "96b9008cbef8c4fc9aa57605bbcc744f161b7cdefdd265d2c97474320abcd362",
+    "physical_facility": "COBE"
+  },
+  {
+    "team": "space",
+    "facility": "COBE",
+    "path": "space/curves/COBE/DIRBE_3.csv",
+    "sha256": "2a3431054ccca24f9d49ef51012ca57c1f1ccdc71056e722c490f2451526662a",
+    "physical_facility": "COBE"
+  },
+  {
+    "team": "space",
+    "facility": "COBE",
+    "path": "space/curves/COBE/DIRBE_4.csv",
+    "sha256": "90f0e90ac7df3e8d1bce6f4b381fade652ce1c25d41d56cb6cedb8f652209ef1",
+    "physical_facility": "COBE"
+  },
+  {
+    "team": "space",
+    "facility": "COBE",
+    "path": "space/curves/COBE/DIRBE_5.csv",
+    "sha256": "61e84d6baecc7b4a30148f2bb5030692c7b44bfbc09827ca57d4092a8cf2c0e0",
+    "physical_facility": "COBE"
+  },
+  {
+    "team": "space",
+    "facility": "COBE",
+    "path": "space/curves/COBE/DIRBE_6.csv",
+    "sha256": "f6886de5bfdf7f79441fa92447f72ff3068af60c10ed974e6450f5569fdc217f",
+    "physical_facility": "COBE"
+  },
+  {
+    "team": "space",
+    "facility": "COBE",
+    "path": "space/curves/COBE/DIRBE_7.csv",
+    "sha256": "c2d5c4963618c30996997b04413b8e29af9aa66e633fa6dd1fdf2ce46f43a0da",
+    "physical_facility": "COBE"
+  },
+  {
+    "team": "space",
+    "facility": "COBE",
+    "path": "space/curves/COBE/DIRBE_8.csv",
+    "sha256": "f4667893a44413005760cf5db6c252666bc59eadce690742d494ca8543ce33f0",
+    "physical_facility": "COBE"
+  },
+  {
+    "team": "space",
+    "facility": "COBE",
+    "path": "space/curves/COBE/DIRBE_9.csv",
+    "sha256": "9549a6546191428e2078f37200453f7460cc9db6193f23f37009f6fd1eda28db",
+    "physical_facility": "COBE"
+  },
+  {
+    "team": "space",
+    "facility": "COBE",
+    "path": "space/curves/COBE/DIRBE_10.csv",
+    "sha256": "7357e8d822644c26ea2fbbcfdc9f80beaaee0381f4a89d837e240ca038d4440a",
+    "physical_facility": "COBE"
+  },
+  {
+    "team": "space",
+    "facility": "IRAS",
+    "path": "space/curves/IRAS/12_filter_transmission.csv",
+    "sha256": "fa6ae65a62880f4eb9d6856c23c2df8e046e86586164c7c14efffcd907afb298",
+    "physical_facility": "IRAS"
+  },
+  {
+    "team": "space",
+    "facility": "IRAS",
+    "path": "space/curves/IRAS/12_relative_detector_response.csv",
+    "sha256": "b20c5cfbce557b58f5acfb09efafc5cdeacd28ac177752ba9ccc62208fbd700a",
+    "physical_facility": "IRAS"
+  },
+  {
+    "team": "space",
+    "facility": "IRAS",
+    "path": "space/curves/IRAS/12_relative_system_response.csv",
+    "sha256": "0e943db7121262b813a8f33986ea41cb9ba5c5c689cbbed8bd04f8d4d4a62f50",
+    "physical_facility": "IRAS"
+  },
+  {
+    "team": "space",
+    "facility": "IRAS",
+    "path": "space/curves/IRAS/60_filter_transmission.csv",
+    "sha256": "7054e604f849f00bb6d285951e5951555fb4f6654a453d3d035f84df4fd69678",
+    "physical_facility": "IRAS"
+  },
+  {
+    "team": "space",
+    "facility": "IRAS",
+    "path": "space/curves/IRAS/60_relative_detector_response.csv",
+    "sha256": "578d1445b2fd09d3613c3d89c6c2ec65343f55bb5c1ef41358618504dc451ecd",
+    "physical_facility": "IRAS"
+  },
+  {
+    "team": "space",
+    "facility": "IRAS",
+    "path": "space/curves/IRAS/60_relative_system_response.csv",
+    "sha256": "74e290850908528c196c620d2c0f6cb948747527bdccc3d3de3c8c4f8d6afdd4",
+    "physical_facility": "IRAS"
+  },
+  {
+    "team": "space",
+    "facility": "IRAS",
+    "path": "space/curves/IRAS/25_filter_transmission.csv",
+    "sha256": "ebda2a9f6dc3d624615e9f3217074bb0e67cb428b85075ed7c8400b696801d63",
+    "physical_facility": "IRAS"
+  },
+  {
+    "team": "space",
+    "facility": "IRAS",
+    "path": "space/curves/IRAS/25_relative_detector_response.csv",
+    "sha256": "1c2590752bdaba830cd2194595c66a3380be184eb8ec6d193bddf30511d2d735",
+    "physical_facility": "IRAS"
+  },
+  {
+    "team": "space",
+    "facility": "IRAS",
+    "path": "space/curves/IRAS/25_relative_system_response.csv",
+    "sha256": "7238cdd09520bcd227997adc9b9e9d9729ac88a95d88779ee19bd2af508f632b",
+    "physical_facility": "IRAS"
+  },
+  {
+    "team": "space",
+    "facility": "IRAS",
+    "path": "space/curves/IRAS/100_filter_transmission.csv",
+    "sha256": "c32900f2b02818c42f8510efdce327d0cea43f14d525589170c6b78ceb370b52",
+    "physical_facility": "IRAS"
+  },
+  {
+    "team": "space",
+    "facility": "IRAS",
+    "path": "space/curves/IRAS/100_relative_detector_response.csv",
+    "sha256": "80ac3c89cafbc4ce13a53552af371db2c29e5f1ceefc7eb92d4a9a58a8e2228c",
+    "physical_facility": "IRAS"
+  },
+  {
+    "team": "space",
+    "facility": "IRAS",
+    "path": "space/curves/IRAS/100_relative_system_response.csv",
+    "sha256": "e04bf5ff46612d43bb7966804c8330cd63dd07bff7e317d0b3f8b0a3f7b21a12",
+    "physical_facility": "IRAS"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_K11_v5_det1.csv",
+    "sha256": "3ce6002aac8480516b12bd14378796cba195c821c38b74db624f356ad2c646b3",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_K11_v5_det2.csv",
+    "sha256": "001c23791290153147bd30a971ea5b12e1307a082bd005f469afb945b64a7315",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_K12_v5_det1.csv",
+    "sha256": "e4bf468a13c3cbf8203409e6fa9df411d1004506ca019c5904a126f5bfc8d6fb",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_K12_v5_det2.csv",
+    "sha256": "52020ab71c6617d16ba0ad965cb6a52f34e58434ecd39d03c501c78f2cceb612",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_Ka11_v5_det1.csv",
+    "sha256": "562abbc9fe51e601ee8d44d9df626120a00c0c55b6fadabd4c90c1628e457992",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_Ka11_v5_det2.csv",
+    "sha256": "444e2056c595b9c8c00c4dc44039fcc14e1957b0329d6fb72ca655311f33a53f",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_Ka12_v5_det1.csv",
+    "sha256": "42bd4da6452ad8f2294e128512009bea8278600492cd8486f859a53b7f0c6ecd",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_Ka12_v5_det2.csv",
+    "sha256": "ea39030fb62d086ccfa9536d8806876e6563f1fb8507e5c2de5666f3f5bff7fa",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_Q11_v5_det1.csv",
+    "sha256": "27435faa4bbc0432e2677cd78ae378946363f55d407f99022228ea8564e8b66d",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_Q11_v5_det2.csv",
+    "sha256": "8449d853e7658b07a21ba8fb6b87ed79a4d5fa5d74e3f5c6b5dcf9a40bc23a8c",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_Q12_v5_det1.csv",
+    "sha256": "05333bb20cd3a704f49d8441b5342a5cdbbacca266b0500f2886153ce6810166",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_Q12_v5_det2.csv",
+    "sha256": "dab4c2bddcdb0d45c1cafb35362e95e4510eec3c6aea2d34c73e5d08af0bce3e",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_Q21_v5_det1.csv",
+    "sha256": "2d1f1e05ea0d34b3c63765f39cb4ef016588ac2b47d3575c49bbe6143cd0d07f",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_Q21_v5_det2.csv",
+    "sha256": "1370942f5d89e291094af211a78e265435f1a4ce70b4056fb822cd73546f57d0",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_Q22_v5_det1.csv",
+    "sha256": "676645d1a1c7e00890b563024b2e32b29b613980f50b9e27f50056f2d81a64ce",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_Q22_v5_det2.csv",
+    "sha256": "c080bdae1f26b8740fe87d7ebdea950e1ecb082196f63ad6f34a486314648407",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_V11_v5_det1.csv",
+    "sha256": "8c8a15e05e0ace481cd5ef607febba966937689cca149a56e273917335cff2ea",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_V11_v5_det2.csv",
+    "sha256": "dcfe1492c089eec42f0c62a5c21bfd639fbaa2f2f34305a9484a45c5264ddd42",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_V12_v5_det1.csv",
+    "sha256": "d87f0664bacaebbcf6070f77087a93d0ba68b9503da6f5efcf5ad22fcd896b12",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_V12_v5_det2.csv",
+    "sha256": "5d80c7aef65f6552f2c44d566d04db9719c6225863966c74f72c22b937c6108e",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_V21_v5_det1.csv",
+    "sha256": "8c102735fa1d483f5709731827cedec5468316670cd163f2226794749605cd27",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_V21_v5_det2.csv",
+    "sha256": "7781f926aa3aad2f9e2e9fc9b2b05ec3d4e9ca9d57521ac61f6b190aeac1016f",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_V22_v5_det1.csv",
+    "sha256": "425ca36940abf18a6a9933e1fbf1ef638ad81fec347a7f8e9447e411ad26a3e4",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_V22_v5_det2.csv",
+    "sha256": "d6759d211022b35688d2f54f8c4220149ef4d68a39f04cbf0a38889020b53ac8",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_W11_v5_det1.csv",
+    "sha256": "d3946b233207278f9ea668b6bd8ef151a618f98be341423d54196ce46fa644e0",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_W11_v5_det2.csv",
+    "sha256": "65db1fe5feb3754984550bc174f23f1500bab8e7e9ef6c56e704fd5966a47c27",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_W12_v5_det1.csv",
+    "sha256": "e4c03a107fbb8d2d3197c8033d5604fe25276601bc1273252571848d2509cebb",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_W12_v5_det2.csv",
+    "sha256": "a9ba585d4609592170a586424950b98aa2dd6e4ca283a8bd9c30338ad7ebf279",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_W21_v5_det1.csv",
+    "sha256": "16e725dc0bfba3519ce4ff29773b47a114d9c5b869a93b7e712b16b1e4a430cf",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_W21_v5_det2.csv",
+    "sha256": "577753f84c8d900ec81407e1d6ea8cc27d1118195d429482aa97ea2c96dca77f",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_W22_v5_det1.csv",
+    "sha256": "c9a55af661e88186cd86b418ab8a09cffbcca07782f62503ea1c3935e07fccb0",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_W22_v5_det2.csv",
+    "sha256": "1d92b7cda5ce482eb149d75e72ef2ef9ef1ff94a15c43b4d505682e3ffee0b50",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_W31_v5_det1.csv",
+    "sha256": "7808100392dc3be771f12b095d711295239258080c2482d2a15b1f0d84fb62e0",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_W31_v5_det2.csv",
+    "sha256": "84878fc4e1f797710413694133a9473382ee15e9d38b846ccde157c977940cae",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_W32_v5_det1.csv",
+    "sha256": "b5e7dc18a071fa3bd3855d00edff8e6a789d5247828caacfaccd51f09e9f2ec9",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_W32_v5_det2.csv",
+    "sha256": "c78799359a454b23b035bea762d12efa965cdfeeadec115a80c11a9a4681fe5e",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_W41_v5_det1.csv",
+    "sha256": "a85f8b0e62715f07f7ee4d843a922efc5715226e3a887ebd0cc7cc9cf04a8744",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_W41_v5_det2.csv",
+    "sha256": "b8b84c8186981c3c715e40f5889164259cc388bad80705f95587dace47b69fc5",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_W42_v5_det1.csv",
+    "sha256": "8a82a5fde9d50ee739e82ba72790132e7217a69ae41dcb7864171d1c55e56353",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "WMAP",
+    "path": "space/curves/WMAP/wmap_bandpass_W42_v5_det2.csv",
+    "sha256": "560228e0144244e0ecf4bc0d56b8076ce50d5917b031b1fcf42dd7b25c70d567",
+    "physical_facility": "WMAP"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_100-1A.csv",
+    "sha256": "bef9ebba4d1b021e2a99f42f8421646b8b7465ba656eb6e43503639aba8322ba",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_100-1B.csv",
+    "sha256": "328f8aedcc2bf7880b0aa2d03bc9e568fc66e73c768417c1e952bc05bb257fbc",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_100-2A.csv",
+    "sha256": "6f2edc04fc12a250514f3ae0ed2a32c356aa1f4e0d6becf4b30f88abaa219a19",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_100-2B.csv",
+    "sha256": "f6d2c9d0592422b5fcfc8919ea839736ce93c160999f1dd03938358af9e73393",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_100-3A.csv",
+    "sha256": "ef4d8277f9c4d0cf9f0e0383d50183cd1c2498a45b48f49a36d883803c452f0b",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_100-3B.csv",
+    "sha256": "159246b5d9a6fd867f47bc3143ee88bf8dbd6abc0fd1c1289f200931947d7ff5",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_100-4A.csv",
+    "sha256": "9bbeb53aa4617e8359a0908188c118a4fa76ed73f64da3d8a301ea61807546e6",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_100-4B.csv",
+    "sha256": "765c70d39667a32bfec5dd2960e51e4a1ab6186acc914ae62f93ee0c483493a5",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-1A.csv",
+    "sha256": "95906081435be13b31e37f08d7f60da9070a21e10d51dd14ec37ff1df74b430d",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-1B.csv",
+    "sha256": "e2a9c1748d5072b9b394c87583948e43dcc0d83ef9adb1f625e32d5df92b4d30",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-2A.csv",
+    "sha256": "e0829b983fbb9f7cb17c7763e3df4e9709e567be495bdaa3f293777e27355c22",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-2B.csv",
+    "sha256": "0cfce92ce1b56548e65d0b45e46084766ed8ddf3fb4d2460837d685f34275b3b",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-3A.csv",
+    "sha256": "32a04f260bf547e5ed705d07a0de7e3290a7f37b0f18683bebe179cf37f918f1",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-3B.csv",
+    "sha256": "ef5055977ab1e2e815d02025c21b6a5c358914b9e8893546a96d53a348180d68",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-4A.csv",
+    "sha256": "9bcea9664c04ff6b626a830cdbe332020abe154c874469ad8114bc57ec640c1d",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-4B.csv",
+    "sha256": "ee429d555d211f9ee841de9632e6bae818f326be5b6efed6f595b944d485143d",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-5.csv",
+    "sha256": "e18e245c6fd3d8a1c10b461f1ab755b73e46dd31c9758459327d15506e513430",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-6.csv",
+    "sha256": "dd08fc3cc557fa267488162999b24219d59a61c2370782fba1e96ef24a66bc57",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-7.csv",
+    "sha256": "c8f16391e659e3d58fcc93f9170165baf37e0980e7fa491461790ed34ccc41b1",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-8.csv",
+    "sha256": "a61614908b4785fb0f4b02fdf32ee674e952abd6442cbaa437f73b51fd8a96cb",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-1.csv",
+    "sha256": "8890c747fd21e66d7cbb3407efb7fc41ce221290bb67da16b9741d4c123390e8",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-2.csv",
+    "sha256": "dc824b0812bf93da71a527d398f66939f8c98d5513cb685efbce236ac41d99bf",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-3.csv",
+    "sha256": "7db06075e309571fc326a074bf77362dceae0fb4c307b167bf17ee9e1fb2264d",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-4.csv",
+    "sha256": "b10d3ac8112e9832a98dafaa33a7f49d578fa2bffd6e88221e868d1980773270",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-5A.csv",
+    "sha256": "1bbb42af774c22cfb84a0185fa21e762a93de1b84ce5134129c274fc47d21ae8",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-5B.csv",
+    "sha256": "612f2d2e6ac9b02aade6e3c7d11217fc38805bcfc74aa85a4b34116214d0533f",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-6A.csv",
+    "sha256": "ea1941b08fd1529553fef9f689cf56f66ca15410178160b8113ab2b0e598e4fa",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-6B.csv",
+    "sha256": "674c9886d233474787df039d9fa41802e8d4e6f009b1c87dcaa35b8f4e64df8a",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-7A.csv",
+    "sha256": "6003eacdd9a89fdf780561e77d59a09b9c0a6d50c3be156e22756112fb4b7359",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-7B.csv",
+    "sha256": "9dc6647a1366f479256bd887b92f4c1a07a41c7dc68f229f96c8b892a08e2df2",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-8A.csv",
+    "sha256": "750db4dd2505009531cb6c2a31d92f5f56c06935e660de1c4f6e12d57172eeeb",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-8B.csv",
+    "sha256": "e4dbe5ca45ddd4dadd447e489523f1a365921e3e3e17ee3db948e968df003e90",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-1.csv",
+    "sha256": "50e85712b368c612b53c9784a6e8e6e84ef5f140c630588788090a816e9114ed",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-2.csv",
+    "sha256": "028f1d62c8a08696ddcb1997049e015e59fad2eb95b9283ece6e473a4ed9b660",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-3A.csv",
+    "sha256": "c5d72c75152a4f1823d08d89cecfe1a4e3ab68ff6f03e52491cbf31f8cb6f5e9",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-3B.csv",
+    "sha256": "0f270e836b60850b72a9a1e30f50ebc5c46e144008849c3f31642553a4a40bff",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-4A.csv",
+    "sha256": "7f2a154952685050a5666de201a08709d6e4afbdbb1e6e7d199c6da7b242bfae",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-4B.csv",
+    "sha256": "acb997abbc559fa0bf05f306a3db8cfd62b24fba7c69c6b86d08127fd0582c59",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-5A.csv",
+    "sha256": "51842770a93000a97817c75f57f537697729c7db58042447cf3f787cbc314cd3",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-5B.csv",
+    "sha256": "b51672871b5d911ff6688facd6056d027253c3e911cab6eafdf59583486449e4",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-6A.csv",
+    "sha256": "db5192c5c2e4fd99683a8b6d68c6ae7bb3047c720c5073816c0d9d4c49314f4d",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-6B.csv",
+    "sha256": "267a39047fe2bcdb3efd3850f29be0491a185734db05ff0a3d984b5e611d3af6",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-7.csv",
+    "sha256": "74a4f9eb9e2b5932e98cb2ed38c4f234a7207bc6844db9f5603a87ec4a45487c",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-8.csv",
+    "sha256": "475caec82472b3336da92390c241e5b6020d31b02ae9b28cb36c3d55ba8b4dbb",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_545-1.csv",
+    "sha256": "9ac1b9c2ccee2d5930e1fbea8a4f431af11c4aeb4f7235a09a06d787cb5e81ef",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_545-2.csv",
+    "sha256": "682548073319a31519c7b7ff512871ea7be28e9572d087b0e1ad64473e5fad1e",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_545-3.csv",
+    "sha256": "3f66f79dc27a1e40cb6bd049b36e002ab9ce01ada19d978c2311053f3abf497e",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_545-4.csv",
+    "sha256": "d471fdd03082458557eef75f7e30924fec39653fb2e09a1d6e3f014d4b6571da",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_857-1.csv",
+    "sha256": "e1be2365fe540dccbfd6c9772e0bf65837b84e936e32e88709b92b9b4b5a92f1",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_857-2.csv",
+    "sha256": "90a6f911858ea2ef962ee79052138e842abc787abafd4d0c2c698c035ef7f457",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_857-3.csv",
+    "sha256": "c9e555d27bfee8d9a15d759214a8d40e1a1f52a27e8f0f88d0560600be06667d",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_857-4.csv",
+    "sha256": "d1a84db4c95a11851a220cebcf3fcefc417f235a697d21b257d91071d39fc579",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_F100.csv",
+    "sha256": "b45b27ee8b4ecf63efa9bb30e46cd3d128677d1526bc6777df539e86b6fe9610",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_F143.csv",
+    "sha256": "39a8236ccf7c2695b32c8690de51c84b5c744d04b1df50205f8f4cc219aa6853",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_F217.csv",
+    "sha256": "4afab601450f573318a6396e2d70a5a61d5e28ac72eb65a8ec7f9628bd184b73",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_F353.csv",
+    "sha256": "d2713a868e350f8c0b344a8dcedbd4a53768d58dc0c2aede28bf92acd0a337c3",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_F545.csv",
+    "sha256": "e49c827099c82f79c95eefee01a00cf4a0c470381cea79bb72e8dd7cef62bb19",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_F857.csv",
+    "sha256": "0583b64b05c3721d9156f11b7c664d968cbdd6da13714d182ec03ca5dfcc4a36",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_PSB143.csv",
+    "sha256": "69de9dbfffa2ac7382226d46c0cd36d87619a097179f32efa3925bcc3c00e274",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_PSB217.csv",
+    "sha256": "0d98ff557496756da02e135d5857bab0f6c2900ceee5bd3c784960dee7e3e5a0",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_PSB353.csv",
+    "sha256": "15de226acae767299c2b8c6ac0edfd78a54f1bf03eaed2bace1e2681702d2910",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_030-28S.csv",
+    "sha256": "831b2a9be8d21d4ccf2c6ac55e2a61195b0c83cc81a0edfebb24e0e57b7f4a00",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_030-28M.csv",
+    "sha256": "f3fd826d10a142a1b5fae1633489130eba2ffe033b1b6003dcbd74abe4a4542b",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_030-27S.csv",
+    "sha256": "b197ab08f01af3f6692a097fa48ad6bf55f7dcaba606963caa9f9743e9e8340f",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_030-27M.csv",
+    "sha256": "2347b06dba4c21c4b872e6ce03fe5780f0a622f6182980efce76b9fecebbd5f9",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_044-26S.csv",
+    "sha256": "cead0ee6acecd482a679c9bd88a2df4477ce57dbd3300e8dc38544dc803265b4",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_044-26M.csv",
+    "sha256": "f3ba97110b8433933d81d30a24d9eb0b0bc5f664dba0d1e20acbeed194c551d4",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_044-25S.csv",
+    "sha256": "580abc9c5cbcc00b27d0f76e93216f5fb3502118bce31769c6f1d69deea0b828",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_044-25M.csv",
+    "sha256": "ec8be8efc6cc5f20bb4c61909d5da983e8dcc555bbd6c6716a76062ba3fddad3",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_044-24S.csv",
+    "sha256": "918a53816fa9095cd7b03f1c0dceb993af429ff5b374d05cdc57636eb720224e",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_044-24M.csv",
+    "sha256": "131b4803eb4cd1cfa752c0b3371432e7cd15e6d1f2f18b208a54bc4b7b4752a4",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-23S.csv",
+    "sha256": "d3844718d1ca708ef6b1fd2bd951f0f5c0e85a4f6a61567f7d1f6fb125ebcac7",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-23M.csv",
+    "sha256": "ea64a0c225f4eda2fd850256da0f16621997e39793a12512a80920301204b83d",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-22S.csv",
+    "sha256": "490b43aec2d1f8179fbfa5f3eb6d6e5ce5bfca6e3d8b1c5cc1060c685752d774",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-22M.csv",
+    "sha256": "564c91205f23d301e97090e996fab7347314864aecc9a5bdeab83159a66b363c",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-21S.csv",
+    "sha256": "423577ab638f5484256aae7d25c47ae45af3299820aa950dcca997b69f96cb72",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-21M.csv",
+    "sha256": "0c76e9a0c58fb3c4ab941f1dd0ef6d2906bf6223ed66f2e8d1d39621279a6117",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-20S.csv",
+    "sha256": "2166dc04bc1487d1d6fa21588d80f340f9c941c4fde3e0e4a4d44b6ffc27f7e4",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-20M.csv",
+    "sha256": "6dbbb203672b10b4ae32b51e803e7817329cc373097aad16cc43ec22c78b65e2",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-19S.csv",
+    "sha256": "72ff29f66fbd0834871772900f3270e12c597e80c35b78d473d505b17b7c2c48",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-19M.csv",
+    "sha256": "9bdfbab3d9c195d5e74449b4f886702c72575ef7826b7040403a5ecf8333dcd5",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-18S.csv",
+    "sha256": "f471d4cd85a8cfc5a92540f76b9734b4835deaadf50b44a501f35e9cbf0793f8",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-18M.csv",
+    "sha256": "af044cde113548ce5c855ee317dd67b751dc22a3eea094565add68189a4add40",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_030.csv",
+    "sha256": "4f052cb18ff056495cfb538bcb57117cf85eddebdae22d9ee0197144944297c5",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_044.csv",
+    "sha256": "a2d2455f2c041bab4c34c1f663af192afc1e014cbeeb7602f4832117736d806c",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "PLANCK",
+    "path": "space/curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070.csv",
+    "sha256": "3b63caf378239116985f563269c88f0e78d62918806dd16987c664795286edb4",
+    "physical_facility": "PLANCK"
+  },
+  {
+    "team": "space",
+    "facility": "MSX",
+    "path": "space/curves/MSX/msx_rsr_a.csv",
+    "sha256": "df19a5e59e078f701e1698933100dbfc25e5a4c07e66e118d5e7f5b7e817c7a7",
+    "physical_facility": "MSX"
+  },
+  {
+    "team": "space",
+    "facility": "MSX",
+    "path": "space/curves/MSX/msx_rsr_d.csv",
+    "sha256": "f0e5862764d9db2e01d25181ead9b08e1c9e7753a8480c6500be0411bd239850",
+    "physical_facility": "MSX"
+  },
+  {
+    "team": "space",
+    "facility": "MSX",
+    "path": "space/curves/MSX/msx_rsr_c.csv",
+    "sha256": "f35f7ef37a91184036d90be4aca50dcc845908d0973a8f7179359bece3d9c612",
+    "physical_facility": "MSX"
+  },
+  {
+    "team": "space",
+    "facility": "MSX",
+    "path": "space/curves/MSX/msx_rsr_e.csv",
+    "sha256": "dac601b14972888e6f8f293507529411baed62c59d726bcce8568610a234e342",
+    "physical_facility": "MSX"
+  },
+  {
+    "team": "space",
+    "facility": "CHEOPS",
+    "path": "space/curves/CHEOPS/CHEOPS.csv",
+    "sha256": "14e1ba5a5cd091a928485ce080257a7750422fca779f6e5a99a4a4c27f5f7f1d",
+    "physical_facility": "CHEOPS"
+  },
+  {
+    "team": "space",
+    "facility": "MOST",
+    "path": "space/curves/MOST/MOST.csv",
+    "sha256": "5cc80352597830e7f92c338d63a11af2b2d30c66df6b5ac97ced1d2c670be24f",
+    "physical_facility": "MOST"
+  },
+  {
+    "team": "space",
+    "facility": "Corot",
+    "path": "space/curves/Corot/CoRoT.csv",
+    "sha256": "0e500338b3c77f24242d1f9b38165f0fefda32cd3e3da5917fb97957c4caaf0c",
+    "physical_facility": "Corot"
+  },
+  {
+    "team": "space",
+    "facility": "PLATO",
+    "path": "space/curves/PLATO/PLATO.csv",
+    "sha256": "5fbe3841e0c3f1e3ae4fbc0a8b00084850e90010608a421703068490413f6936",
+    "physical_facility": "PLATO"
+  },
+  {
+    "team": "space",
+    "facility": "XMM",
+    "path": "space/curves/XMM/OM_UVW2.csv",
+    "sha256": "428880dcbcfef785588dae8b62debdbf3a76453002be6f99b1d33fcf1c657a0b",
+    "physical_facility": "XMM"
+  },
+  {
+    "team": "space",
+    "facility": "XMM",
+    "path": "space/curves/XMM/OM_UVM2.csv",
+    "sha256": "1ea85c58465227ce962f96b069b3a49aab27b31a4deb60f03906682d82a289a4",
+    "physical_facility": "XMM"
+  },
+  {
+    "team": "space",
+    "facility": "XMM",
+    "path": "space/curves/XMM/OM_UVW1.csv",
+    "sha256": "02504711b9820a014a017a13d01844390e0e6c5610dacadc570b27de8862ab7d",
+    "physical_facility": "XMM"
+  },
+  {
+    "team": "space",
+    "facility": "XMM",
+    "path": "space/curves/XMM/OM_U.csv",
+    "sha256": "1f7932cab5d13e3727c06af1182143e9441f00c4fad9df93002c31e96afac90d",
+    "physical_facility": "XMM"
+  },
+  {
+    "team": "space",
+    "facility": "XMM",
+    "path": "space/curves/XMM/OM_B.csv",
+    "sha256": "139d217c8fa35920f2df412cbf48dcbf08f8a2731acea7dd19aee1f81ae21a3c",
+    "physical_facility": "XMM"
+  },
+  {
+    "team": "space",
+    "facility": "XMM",
+    "path": "space/curves/XMM/OM_V.csv",
+    "sha256": "191f2ff9ff8255eb13f4f53b815de3003117ce456fb4d4216026a72cd56e0be5",
+    "physical_facility": "XMM"
+  }
+]

@@ -1,0 +1,162 @@
+[
+  {
+    "path": "evidence/NOT/1.dat",
+    "wavelength_unit": "micron (inferred from band identity and scale)",
+    "response_unit": "percent (inferred from scale)"
+  },
+  {
+    "path": "evidence/NOT/2.dat",
+    "wavelength_unit": "micron (inferred from band identity and scale)",
+    "response_unit": "percent (inferred from scale)"
+  },
+  {
+    "path": "evidence/NOT/3.dat",
+    "wavelength_unit": "micron (inferred from band identity and scale)",
+    "response_unit": "percent (inferred from scale)"
+  },
+  {
+    "path": "evidence/NOT/4.dat",
+    "wavelength_unit": "micron (inferred from band identity and scale)",
+    "response_unit": "percent (inferred from scale)"
+  },
+  {
+    "path": "evidence/NOT/5.dat",
+    "wavelength_unit": "micron (inferred from band identity and scale)",
+    "response_unit": "percent (inferred from scale)"
+  },
+  {
+    "path": "evidence/NOT/6.dat",
+    "wavelength_unit": "micron (inferred from band identity and scale)",
+    "response_unit": "percent (inferred from scale)"
+  },
+  {
+    "path": "evidence/NOT/7.dat",
+    "wavelength_unit": "micron (inferred from band identity and scale)",
+    "response_unit": "percent (inferred from scale)"
+  },
+  {
+    "path": "evidence/NOT/8.dat",
+    "wavelength_unit": "micron (inferred from band identity and scale)",
+    "response_unit": "percent (inferred from scale)"
+  },
+  {
+    "path": "evidence/NOT/209.txt",
+    "wavelength_unit": "Angstrom (inferred from band identity and scale; not explicit in header)",
+    "response_unit": "relative fraction (inferred from scale; normalization not certified)"
+  },
+  {
+    "path": "evidence/NOT/210.txt",
+    "wavelength_unit": "Angstrom (inferred from band identity and scale; not explicit in header)",
+    "response_unit": "relative fraction (inferred from scale; normalization not certified)"
+  },
+  {
+    "path": "evidence/NOT/211.txt",
+    "wavelength_unit": "Angstrom (inferred from band identity and scale; not explicit in header)",
+    "response_unit": "relative fraction (inferred from scale; normalization not certified)"
+  },
+  {
+    "path": "evidence/NOT/212.txt",
+    "wavelength_unit": "Angstrom (inferred from band identity and scale; not explicit in header)",
+    "response_unit": "relative fraction (inferred from scale; normalization not certified)"
+  },
+  {
+    "path": "evidence/NOT/not213_iac_lab.txt",
+    "wavelength_unit": "nm (explicit in header)",
+    "response_unit": "percent (inferred from scale; not explicit in header)"
+  },
+  {
+    "path": "evidence/NOT/not214_iac_lab.txt",
+    "wavelength_unit": "nm (explicit in header)",
+    "response_unit": "percent (inferred from scale; not explicit in header)"
+  },
+  {
+    "path": "evidence/NOT/215.txt",
+    "wavelength_unit": "Angstrom (inferred from band identity and scale; not explicit in header)",
+    "response_unit": "relative fraction (inferred from scale; normalization not certified)"
+  },
+  {
+    "path": "evidence/NOT/not215_iac_lab.txt",
+    "wavelength_unit": "nm (explicit in header)",
+    "response_unit": "percent (inferred from scale; not explicit in header)"
+  },
+  {
+    "path": "evidence/NOT/216.txt",
+    "wavelength_unit": "Angstrom (inferred from band identity and scale; not explicit in header)",
+    "response_unit": "relative fraction (inferred from scale; normalization not certified)"
+  },
+  {
+    "path": "evidence/NOT/not216_iac_lab.txt",
+    "wavelength_unit": "nm (explicit in header)",
+    "response_unit": "percent (inferred from scale; not explicit in header)"
+  },
+  {
+    "path": "evidence/NOT/217.txt",
+    "wavelength_unit": "Angstrom (inferred from band identity and scale; not explicit in header)",
+    "response_unit": "relative fraction (inferred from scale; normalization not certified)"
+  },
+  {
+    "path": "evidence/NOT/218.txt",
+    "wavelength_unit": "Angstrom (inferred from band identity and scale; not explicit in header)",
+    "response_unit": "relative fraction (inferred from scale; normalization not certified)"
+  },
+  {
+    "path": "evidence/NOT/219.txt",
+    "wavelength_unit": "Angstrom (inferred from band identity and scale; not explicit in header)",
+    "response_unit": "relative fraction (inferred from scale; normalization not certified)"
+  },
+  {
+    "path": "evidence/NOT/220.txt",
+    "wavelength_unit": "Angstrom (inferred from band identity and scale; not explicit in header)",
+    "response_unit": "relative fraction (inferred from scale; normalization not certified)"
+  },
+  {
+    "path": "evidence/NOT/221.txt",
+    "wavelength_unit": "Angstrom (inferred from band identity and scale; not explicit in header)",
+    "response_unit": "relative fraction (inferred from scale; normalization not certified)"
+  },
+  {
+    "path": "evidence/NOT/not222_iac_lab.txt",
+    "wavelength_unit": "nm (explicit in header)",
+    "response_unit": "percent (inferred from scale; not explicit in header)"
+  },
+  {
+    "path": "evidence/NOT/223.txt",
+    "wavelength_unit": "Angstrom (inferred from band identity and scale; not explicit in header)",
+    "response_unit": "relative fraction (inferred from scale; normalization not certified)"
+  },
+  {
+    "path": "evidence/NOT/224.txt",
+    "wavelength_unit": "Angstrom (inferred from band identity and scale; not explicit in header)",
+    "response_unit": "relative fraction (inferred from scale; normalization not certified)"
+  },
+  {
+    "path": "evidence/NOT/228.txt",
+    "wavelength_unit": "Angstrom (inferred from band identity and scale; not explicit in header)",
+    "response_unit": "relative fraction (inferred from scale; normalization not certified)"
+  },
+  {
+    "path": "evidence/NOT/230.txt",
+    "wavelength_unit": "Angstrom (inferred from band identity and scale; not explicit in header)",
+    "response_unit": "relative fraction (inferred from scale; normalization not certified)"
+  },
+  {
+    "path": "evidence/NOT/236_ndc.txt",
+    "wavelength_unit": "nm (explicit in header)",
+    "response_unit": "fraction (inferred from scale; not explicit in header)"
+  },
+  {
+    "path": "evidence/NOT/not236_iac_lab.txt",
+    "wavelength_unit": "nm (explicit in header)",
+    "response_unit": "percent (inferred from scale; not explicit in header)"
+  },
+  {
+    "path": "evidence/NOT/237_ndc.txt",
+    "wavelength_unit": "nm (explicit in header)",
+    "response_unit": "fraction (inferred from scale; not explicit in header)"
+  },
+  {
+    "path": "evidence/NOT/not237_iac_lab.txt",
+    "wavelength_unit": "nm (explicit in header)",
+    "response_unit": "percent (inferred from scale; not explicit in header)"
+  }
+]

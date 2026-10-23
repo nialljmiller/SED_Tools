@@ -1,0 +1,1646 @@
+{
+  "request": "9253fd2ba9540be0d9191916",
+  "generated_utc": "2026-10-22T23:57:02.789707+00:00",
+  "reviewed_facility_key_count": 56,
+  "reviewed_instrument_pair_count": 165,
+  "facilities": {
+    "JWST": [
+      {
+        "instrument": "NIRCam",
+        "status": "reviewed_sources_found",
+        "file": "results/claude-reviews.csv"
+      },
+      {
+        "instrument": "NIRCam2025",
+        "status": "reviewed_sources_found",
+        "file": "results/claude-reviews.csv"
+      },
+      {
+        "instrument": "NIRCam2025",
+        "status": "reviewed_sources_found",
+        "file": "round2/claude/reviews.csv"
+      },
+      {
+        "instrument": "NIRCam",
+        "status": "reviewed_sources_found",
+        "file": "round2/claude/reviews.csv"
+      },
+      {
+        "instrument": "MIRI",
+        "status": "reviewed_sources_found",
+        "file": "round2/claude/reviews.csv"
+      },
+      {
+        "instrument": "NIRISS",
+        "status": "reviewed_sources_found",
+        "file": "round2/claude/reviews.csv"
+      },
+      {
+        "instrument": "NIRSpec",
+        "status": "reviewed_sources_found",
+        "file": "round2/claude/reviews.csv"
+      },
+      {
+        "instrument": "NIRCam",
+        "status": "upgraded",
+        "file": "round2/claude/ground2/reviews.csv"
+      }
+    ],
+    "HST": [
+      {
+        "instrument": "WFC3_UVIS1",
+        "status": "reviewed_sources_found",
+        "file": "results/claude-reviews.csv"
+      },
+      {
+        "instrument": "WFC3_UVIS2",
+        "status": "reviewed_sources_found",
+        "file": "results/claude-reviews.csv"
+      },
+      {
+        "instrument": "WFC3_IR",
+        "status": "reviewed_sources_found",
+        "file": "results/claude-reviews.csv"
+      },
+      {
+        "instrument": "WFC3_UVIS1",
+        "status": "reviewed_sources_found",
+        "file": "round2/claude/reviews.csv"
+      },
+      {
+        "instrument": "WFC3_UVIS2",
+        "status": "reviewed_sources_found",
+        "file": "round2/claude/reviews.csv"
+      },
+      {
+        "instrument": "WFC3_IR",
+        "status": "reviewed_sources_found",
+        "file": "round2/claude/reviews.csv"
+      },
+      {
+        "instrument": "ACS_WFC",
+        "status": "reviewed_sources_found",
+        "file": "round2/claude/reviews.csv"
+      },
+      {
+        "instrument": "ACS_HRC",
+        "status": "reviewed_sources_found",
+        "file": "round2/claude/reviews.csv"
+      },
+      {
+        "instrument": "ACS_SBC",
+        "status": "reviewed_sources_found",
+        "file": "round2/claude/reviews.csv"
+      }
+    ],
+    "Euclid": [
+      {
+        "instrument": "NISP",
+        "status": "reviewed_sources_found",
+        "file": "results/claude-reviews.csv"
+      },
+      {
+        "instrument": "VIS",
+        "status": "searched_no_source_found",
+        "file": "results/claude-reviews.csv"
+      },
+      {
+        "instrument": "NISP",
+        "status": "reviewed_sources_found",
+        "file": "round2/claude/reviews.csv"
+      },
+      {
+        "instrument": "VIS",
+        "status": "searched_no_source_found",
+        "file": "round2/claude/reviews.csv"
+      }
+    ],
+    "Roman": [
+      {
+        "instrument": "WFI",
+        "status": "reviewed_sources_found",
+        "file": "results/claude-reviews.csv"
+      },
+      {
+        "instrument": "WFI",
+        "status": "reviewed_sources_found",
+        "file": "round2/claude/reviews.csv"
+      }
+    ],
+    "GAIA": [
+      {
+        "instrument": "GAIA3",
+        "status": "reviewed_sources_found",
+        "file": "results/claude-reviews.csv"
+      },
+      {
+        "instrument": "GAIA3",
+        "status": "reviewed_sources_found",
+        "file": "round2/claude/reviews.csv"
+      }
+    ],
+    "TESS": [
+      {
+        "instrument": "TESS",
+        "status": "reviewed_sources_found",
+        "file": "results/claude-reviews.csv"
+      },
+      {
+        "instrument": "TESS",
+        "status": "reviewed_sources_found",
+        "file": "round2/claude/reviews.csv"
+      }
+    ],
+    "Kepler": [
+      {
+        "instrument": "Kepler",
+        "status": "reviewed_sources_found",
+        "file": "results/claude-reviews.csv"
+      },
+      {
+        "instrument": "Kepler",
+        "status": "reviewed_sources_found",
+        "file": "round2/claude/reviews.csv"
+      }
+    ],
+    "Spitzer": [
+      {
+        "instrument": "IRAC",
+        "status": "reviewed_sources_found",
+        "file": "results/claude-reviews.csv"
+      },
+      {
+        "instrument": "IRAC",
+        "status": "reviewed_sources_found",
+        "file": "round2/claude/reviews.csv"
+      },
+      {
+        "instrument": "MIPS",
+        "status": "reviewed_sources_found",
+        "file": "round2/claude/reviews.csv"
+      },
+      {
+        "instrument": "IRAC",
+        "status": "upgraded",
+        "file": "round2/claude/ground2/reviews.csv"
+      }
+    ],
+    "WISE": [
+      {
+        "instrument": "WISE",
+        "status": "reviewed_sources_found",
+        "file": "results/claude-reviews.csv"
+      },
+      {
+        "instrument": "WISE",
+        "status": "reviewed_sources_found",
+        "file": "round2/claude/reviews.csv"
+      }
+    ],
+    "SPHEREx": [
+      {
+        "instrument": "SPHEREx",
+        "status": "reviewed_sources_found",
+        "file": "results/claude-reviews.csv"
+      },
+      {
+        "instrument": "SPHEREx",
+        "status": "reviewed_sources_found",
+        "file": "round2/claude/reviews.csv"
+      }
+    ],
+    "Aqua": [
+      {
+        "instrument": "MODIS",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "MODIS",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      }
+    ],
+    "Cameras": [
+      {
+        "instrument": "Arriflex",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "Canon",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "Fujifilm",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "Hasselblad",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "Kodak",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "Leica",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "Lumix",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "Nikon",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "Nokia",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "Olympus",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "Panasonic",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "Pentax",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "PhaseOne",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "PointGrey",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "Samsung",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "Sony",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "SQM",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "Arriflex",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "Canon",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "Fujifilm",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "Hasselblad",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "Kodak",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "Leica",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "Lumix",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "Nikon",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "Nokia",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "Olympus",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "Panasonic",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "Pentax",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "PhaseOne",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "PointGrey",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "SQM",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "Samsung",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "Sony",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      }
+    ],
+    "Cassini": [
+      {
+        "instrument": "ISS_NAC",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "ISS_WAC",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "ISS_NAC",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "ISS_WAC",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      }
+    ],
+    "Generic": [
+      {
+        "instrument": "Bessell",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "Bessell_JHKLM",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "Cousins",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "Johnson",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "Johnson_13col",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "Johnson_UBVRIJHKL",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "Stromgren",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "UCM",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "Bessell",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "Bessell_JHKLM",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "Cousins",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "Johnson",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "Johnson_13col",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "Johnson_UBVRIJHKL",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "Stromgren",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "UCM",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      }
+    ],
+    "Landsat": [
+      {
+        "instrument": "MSS-1",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "MSS-2",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "MSS-3",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "MSS-4",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "MSS-5",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "OLI",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "TIRS",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "MSS-1",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "MSS-2",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "MSS-3",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "MSS-4",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "MSS-5",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "OLI",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "TIRS",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      }
+    ],
+    "LRO": [
+      {
+        "instrument": "Diviner",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "LROC_NAC",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "LROC_WAC",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "Diviner",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "LROC_NAC",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "LROC_WAC",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      }
+    ],
+    "Mars2020": [
+      {
+        "instrument": "MastCamZ",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "WATSON",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "MastCamZ",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "WATSON",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      }
+    ],
+    "MRO": [
+      {
+        "instrument": "CTX",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "HiRISE",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "CTX",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "HiRISE",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      }
+    ],
+    "OSIRIS-REX": [
+      {
+        "instrument": "MapCam",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "PolyCam",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "SamCam",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "MapCam",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "PolyCam",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "SamCam",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      }
+    ],
+    "Sentinel": [
+      {
+        "instrument": "MSI",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "OLCI-A",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "OLCI-B",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "SLSTR-A",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "SLSTR-B",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "MSI",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "OLCI-A",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "OLCI-B",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "SLSTR-A",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "SLSTR-B",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      }
+    ],
+    "Terra": [
+      {
+        "instrument": "MISR",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "MODIS",
+        "status": "reviewed_sources_found",
+        "file": "results/gemini-reviews.csv"
+      },
+      {
+        "instrument": "MISR",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "MODIS",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      }
+    ],
+    "LSST": [
+      {
+        "instrument": "LSST",
+        "status": "reviewed_sources_found",
+        "file": "results/grok-reviews.csv"
+      },
+      {
+        "instrument": "LSSTv19",
+        "status": "reviewed_sources_found",
+        "file": "results/grok-reviews.csv"
+      },
+      {
+        "instrument": "LSSTv19",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "LSST",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "LSST",
+        "status": "upgraded",
+        "file": "round2/claude/ground2/reviews.csv"
+      }
+    ],
+    "Subaru": [
+      {
+        "instrument": "HSC",
+        "status": "reviewed_sources_found",
+        "file": "results/grok-reviews.csv"
+      },
+      {
+        "instrument": "HSC",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "Suprime",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "MOIRCS",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "IRCS",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "FOCAS",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "HSC",
+        "status": "upgraded",
+        "file": "round2/claude/ground2/reviews.csv"
+      }
+    ],
+    "CTIO": [
+      {
+        "instrument": "DECam",
+        "status": "reviewed_sources_found",
+        "file": "results/grok-reviews.csv"
+      },
+      {
+        "instrument": "DECam",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "S-PLUS",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "DECam",
+        "status": "upgraded",
+        "file": "round2/claude/ground/reviews.csv"
+      }
+    ],
+    "Paranal": [
+      {
+        "instrument": "VISTA",
+        "status": "reviewed_sources_found",
+        "file": "results/grok-reviews.csv"
+      },
+      {
+        "instrument": "OmegaCAM",
+        "status": "reviewed_sources_found",
+        "file": "results/grok-reviews.csv"
+      },
+      {
+        "instrument": "VISTA",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "OmegaCAM",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "FORS2",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "HAWKI",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "SPHERE",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "NACO",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "VIMOS",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "ISAAC",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "ERIS",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "VISIR",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "FORS1",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "NGTS",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "VISTA",
+        "status": "upgraded",
+        "file": "round2/claude/ground2/reviews.csv"
+      },
+      {
+        "instrument": "HAWKI",
+        "status": "upgraded",
+        "file": "round2/claude/ground2/reviews.csv"
+      },
+      {
+        "instrument": "NACO",
+        "status": "upgraded",
+        "file": "round2/claude/ground2/reviews.csv"
+      },
+      {
+        "instrument": "SPHERE",
+        "status": "upgraded",
+        "file": "round2/claude/ground2/reviews.csv"
+      },
+      {
+        "instrument": "ERIS",
+        "status": "upgraded",
+        "file": "round2/claude/ground2/reviews.csv"
+      },
+      {
+        "instrument": "FORS2",
+        "status": "upgraded",
+        "file": "round2/claude/ground2/reviews.csv"
+      },
+      {
+        "instrument": "FORS1",
+        "status": "upgraded",
+        "file": "round2/claude/ground2/reviews.csv"
+      }
+    ],
+    "Palomar": [
+      {
+        "instrument": "ZTF",
+        "status": "reviewed_sources_found",
+        "file": "results/grok-reviews.csv"
+      },
+      {
+        "instrument": "ZTF",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      }
+    ],
+    "PAN-STARRS": [
+      {
+        "instrument": "PS1",
+        "status": "reviewed_sources_found",
+        "file": "results/grok-reviews.csv"
+      },
+      {
+        "instrument": "PS1",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      }
+    ],
+    "SLOAN": [
+      {
+        "instrument": "SDSS",
+        "status": "reviewed_sources_found",
+        "file": "results/grok-reviews.csv"
+      },
+      {
+        "instrument": "SDSS",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "SDSS",
+        "status": "upgraded",
+        "file": "round2/claude/ground2/reviews.csv"
+      }
+    ],
+    "CFHT": [
+      {
+        "instrument": "MegaCam",
+        "status": "reviewed_sources_found",
+        "file": "results/grok-reviews.csv"
+      },
+      {
+        "instrument": "Megaprime",
+        "status": "reviewed_sources_found",
+        "file": "results/grok-reviews.csv"
+      },
+      {
+        "instrument": "MegaCam",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "Megaprime",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "Wircam",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "CFH12k",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "Megaprime",
+        "status": "derived",
+        "file": "round2/claude/ground2/reviews.csv"
+      }
+    ],
+    "UKIRT": [
+      {
+        "instrument": "WFCAM",
+        "status": "reviewed_sources_found",
+        "file": "results/grok-reviews.csv"
+      },
+      {
+        "instrument": "WFCAM",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "UKIDSS",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "UFTI",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      }
+    ],
+    "2MASS": [
+      {
+        "instrument": "2MASS",
+        "status": "reviewed_sources_found",
+        "file": "results/grok-reviews.csv"
+      },
+      {
+        "instrument": "2MASS",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "2MASS",
+        "status": "derived",
+        "file": "round2/claude/ground2/reviews.csv"
+      }
+    ],
+    "SkyMapper": [
+      {
+        "instrument": "SkyMapper",
+        "status": "reviewed_sources_found",
+        "file": "results/grok-reviews.csv"
+      },
+      {
+        "instrument": "SkyMapper",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "SkyMapper",
+        "status": "searched",
+        "file": "round2/claude/ground/reviews.csv"
+      }
+    ],
+    "GALEX": [
+      {
+        "instrument": "GALEX",
+        "status": "reviewed_sources_found",
+        "file": "round2/claude/reviews.csv"
+      }
+    ],
+    "Swift": [
+      {
+        "instrument": "UVOT",
+        "status": "reviewed_sources_found",
+        "file": "round2/claude/reviews.csv"
+      }
+    ],
+    "Herschel": [
+      {
+        "instrument": "Pacs",
+        "status": "reviewed_sources_found",
+        "file": "round2/claude/reviews.csv"
+      },
+      {
+        "instrument": "SPIRE",
+        "status": "reviewed_sources_found",
+        "file": "round2/claude/reviews.csv"
+      }
+    ],
+    "APO": [
+      {
+        "instrument": "SDSS",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      }
+    ],
+    "Gemini": [
+      {
+        "instrument": "GMOS-N",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "GMOS-S",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "NIRI",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "GSAOI",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "Flamingos2",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "GPI",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "GNIRS",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "NIFS",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "GMOS-N",
+        "status": "upgraded",
+        "file": "round2/claude/ground2/reviews.csv"
+      },
+      {
+        "instrument": "GMOS-S",
+        "status": "upgraded",
+        "file": "round2/claude/ground2/reviews.csv"
+      },
+      {
+        "instrument": "NIRI",
+        "status": "upgraded",
+        "file": "round2/claude/ground2/reviews.csv"
+      },
+      {
+        "instrument": "GSAOI",
+        "status": "upgraded",
+        "file": "round2/claude/ground2/reviews.csv"
+      },
+      {
+        "instrument": "Flamingos2",
+        "status": "upgraded",
+        "file": "round2/claude/ground2/reviews.csv"
+      },
+      {
+        "instrument": "GNIRS",
+        "status": "upgraded",
+        "file": "round2/claude/ground2/reviews.csv"
+      },
+      {
+        "instrument": "NIFS",
+        "status": "upgraded",
+        "file": "round2/claude/ground2/reviews.csv"
+      }
+    ],
+    "Keck": [
+      {
+        "instrument": "LRIS",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "NIRC2",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "NIRSPEC",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "OSIRIS",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      }
+    ],
+    "DENIS": [
+      {
+        "instrument": "DENIS",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      }
+    ],
+    "INT": [
+      {
+        "instrument": "WFC",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "IPHAS",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "UVEX",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      }
+    ],
+    "OAJ": [
+      {
+        "instrument": "JPLUS",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "JPAS",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      }
+    ],
+    "BOK": [
+      {
+        "instrument": "BASS",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "90prime",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "SCUSS",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      }
+    ],
+    "KPNO": [
+      {
+        "instrument": "MzLS",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "Mosaic",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "DESI",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      }
+    ],
+    "LaSilla": [
+      {
+        "instrument": "WFI",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "GROND",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "EFOSC",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "SOFI",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "WFI",
+        "status": "searched",
+        "file": "round2/claude/ground2/reviews.csv"
+      }
+    ],
+    "LCO": [
+      {
+        "instrument": "IMACS",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "FourStar",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "OGLE-IV",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "CSP",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "CSP2",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "CSP",
+        "status": "upgraded",
+        "file": "round2/claude/ground/reviews.csv"
+      },
+      {
+        "instrument": "CSP2",
+        "status": "upgraded",
+        "file": "round2/claude/ground/reviews.csv"
+      }
+    ],
+    "GTC": [
+      {
+        "instrument": "OSIRIS",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "HIPERCAM",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      }
+    ],
+    "LasCumbres": [
+      {
+        "instrument": "LasCumbres",
+        "status": "characterized",
+        "file": "round2/grok/reviews.csv"
+      },
+      {
+        "instrument": "LasCumbres",
+        "status": "upgraded",
+        "file": "round2/claude/ground/reviews.csv"
+      }
+    ],
+    "Envisat": [
+      {
+        "instrument": "MERIS",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      }
+    ],
+    "GCPD": [
+      {
+        "instrument": "Cousins",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "Johnson",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "Stromgren",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      }
+    ],
+    "GOES": [
+      {
+        "instrument": "ABI1",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "ABI2",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "ABI3",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "ABI4",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      }
+    ],
+    "Himawari": [
+      {
+        "instrument": "AHI8",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "AHI9",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      }
+    ],
+    "JPSS": [
+      {
+        "instrument": "VIIRS",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "VIIRS-J1",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "VIIRS-J2",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      }
+    ],
+    "METOP": [
+      {
+        "instrument": "AVHRR-A",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      }
+    ],
+    "Misc": [
+      {
+        "instrument": "APASS",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      },
+      {
+        "instrument": "Atlas",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      }
+    ],
+    "SeaStar": [
+      {
+        "instrument": "SeaWiFS",
+        "status": "reviewed_sources_found",
+        "file": "round2/gemini/reviews.csv"
+      }
+    ],
+    "NGTS": [
+      {
+        "instrument": "NGTS",
+        "status": "searched",
+        "file": "round2/claude/ground/reviews.csv"
+      }
+    ]
+  },
+  "unreviewed_facility_keys_by_partition": {
+    "grok": [
+      "AAO",
+      "APEX",
+      "BICEP",
+      "CAHA",
+      "CMO-SAI",
+      "COSMOSOMAS",
+      "CSTAR",
+      "DOT",
+      "EROS",
+      "ESO",
+      "FLWO",
+      "GOTO",
+      "Geneva",
+      "HCT",
+      "IAC80",
+      "ING",
+      "IRAM",
+      "IRSF",
+      "IRTF",
+      "JCMT",
+      "LBT",
+      "LICK",
+      "LMT",
+      "Liverpool",
+      "MKO",
+      "MMT",
+      "MOA",
+      "MT",
+      "McD",
+      "Mercator",
+      "NAOC",
+      "NIRT",
+      "NOAO",
+      "NOT",
+      "OAF",
+      "OAN-SPM",
+      "OAO",
+      "OHP",
+      "OLIMPO",
+      "OSN",
+      "OVRO",
+      "P200",
+      "QUIET",
+      "QUIJOTE",
+      "SALT",
+      "SAO",
+      "SPECULOOS",
+      "SPT",
+      "STELLA",
+      "Scorpio",
+      "Special",
+      "TCS",
+      "TJO",
+      "TNG",
+      "TNO",
+      "TNT",
+      "VATT",
+      "WASP",
+      "WHT",
+      "WIYN"
+    ],
+    "claude": [
+      "AKARI",
+      "ARCHEOPS",
+      "Astrosat",
+      "BLAST",
+      "BOOMERANG",
+      "CASTOR",
+      "CHEOPS",
+      "COBE",
+      "CSST",
+      "Corot",
+      "Hipparcos",
+      "IRAS",
+      "ISO",
+      "IUE",
+      "Integral",
+      "MAXIMA",
+      "MOST",
+      "MSX",
+      "PLANCK",
+      "SOFIA",
+      "SPIDER",
+      "TAUVEX",
+      "TD1",
+      "TYCHO",
+      "TopHat",
+      "WFIRST",
+      "WMAP",
+      "XMM"
+    ],
+    "gemini": [
+      "ADEOS",
+      "ARGO",
+      "Akatsuki",
+      "AlSat1",
+      "Beijing1",
+      "Bepi-Colombo",
+      "COMS",
+      "Clementine",
+      "Contour",
+      "DSCOVR",
+      "Dawn",
+      "DeepImpact",
+      "ERBS",
+      "ERS",
+      "ExoMars",
+      "FengYun",
+      "Flock",
+      "GCOM-C",
+      "Galileo",
+      "GeoEye",
+      "Giotto",
+      "Hayabusa2",
+      "IKONOS",
+      "INSAT",
+      "IRS",
+      "InSight",
+      "KOMPSTAT",
+      "LYRA",
+      "MER",
+      "MEX",
+      "MOM",
+      "Mariner10",
+      "Messenger",
+      "Meteosat",
+      "NEAR",
+      "NIMBUS",
+      "NOAA",
+      "NewHorizons",
+      "NigeriaSat1",
+      "Odyssey",
+      "PRIRODA",
+      "Parasol",
+      "Pathfinder",
+      "Pleiades",
+      "QuickBird",
+      "RapidEye",
+      "Rosetta",
+      "SEOSAT",
+      "SMART1",
+      "SOHO",
+      "SPOT",
+      "SSOT",
+      "Selene",
+      "SkySat",
+      "SolarOrbiter",
+      "Stardust",
+      "TIROS-N",
+      "TRMM",
+      "UK-DMC",
+      "VenusExpress",
+      "Viking",
+      "Voyager",
+      "WorldView",
+      "ZiYuan"
+    ]
+  },
+  "novelty_caveats": [
+    "Facility keys denote SVO groups, not necessarily physical facilities.",
+    "WFIRST aliases Roman; P200 aliases Palomar; NOAO/ESO are umbrellas; MKO is a filter standard.",
+    "A reviewed label does not establish that numeric files were retrieved.",
+    "All original results and round2 supplemental review CSVs included."
+  ]
+}
