@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-10-22T21:00:10.714744",
+  "generated": "2026-10-23T05:13:29.784955",
   "base_url": "http://nillmill.ddns.net/sed_tools",
   "statistics": {
     "total_models": 1,
@@ -8,8 +8,8 @@
     "total_spectra": 6028,
     "total_size_bytes": 142850198218,
     "total_size_human": "133.04 GB",
-    "total_facilities": 73,
-    "total_filters": 3910
+    "total_facilities": 75,
+    "total_filters": 3963
   },
   "models": [
     "bt-cond"
@@ -94,6 +94,7 @@
       "Gemini",
       "HAWK-I",
       "HST",
+      "IRTF",
       "JCMT",
       "JWST",
       "Kepler",
@@ -107,6 +108,7 @@
       "Subaru",
       "TESS",
       "Teide",
+      "WHT",
       "WISE",
       "WMAP"
     ],
@@ -1911,10 +1913,12 @@
             "detector_types": {
               "photon": 7
             },
-            "separate_components": {},
-            "has_component_manifest": false,
-            "size_bytes": 100286,
-            "size_human": "97.94 KB"
+            "separate_components": {
+              "filter": 7
+            },
+            "has_component_manifest": true,
+            "size_bytes": 295529,
+            "size_human": "288.60 KB"
           },
           "PlanetCam2": {
             "name": "PlanetCam2",
@@ -8183,6 +8187,56 @@
         },
         "instrument_count": 25
       },
+      "IRTF": {
+        "name": "IRTF",
+        "instruments": {
+          "NSFCam": {
+            "name": "NSFCam",
+            "filter_count": 26,
+            "filters": [
+              "BRG",
+              "CO",
+              "CONT",
+              "FE",
+              "H21",
+              "H22",
+              "HEI",
+              "HMK",
+              "J",
+              "JMK",
+              "K",
+              "KMK",
+              "KP",
+              "KPMK",
+              "KS",
+              "KSMK",
+              "L",
+              "LP",
+              "LPMK",
+              "M",
+              "MP1",
+              "MPMK",
+              "PAB",
+              "PAG",
+              "S17",
+              "S23"
+            ],
+            "published_paths": {
+              "filter": 26
+            },
+            "detector_types": {
+              "photon": 26
+            },
+            "separate_components": {
+              "filter": 26
+            },
+            "has_component_manifest": true,
+            "size_bytes": 1795856,
+            "size_human": "1.71 MB"
+          }
+        },
+        "instrument_count": 1
+      },
       "JCMT": {
         "name": "JCMT",
         "instruments": {
@@ -8406,6 +8460,33 @@
       "Liverpool": {
         "name": "Liverpool",
         "instruments": {
+          "IOO": {
+            "name": "IOO",
+            "filter_count": 7,
+            "filters": [
+              "B",
+              "V",
+              "g",
+              "i",
+              "r",
+              "u",
+              "z"
+            ],
+            "published_paths": {
+              "filter": 7
+            },
+            "detector_types": {
+              "photon": 7
+            },
+            "separate_components": {
+              "filter": 7,
+              "optics": 7,
+              "qe": 7
+            },
+            "has_component_manifest": true,
+            "size_bytes": 209380,
+            "size_human": "204.47 KB"
+          },
           "RINGO": {
             "name": "RINGO",
             "filter_count": 1,
@@ -8424,7 +8505,7 @@
             "size_human": "4.30 KB"
           }
         },
-        "instrument_count": 1
+        "instrument_count": 2
       },
       "Palomar": {
         "name": "Palomar",
@@ -8864,6 +8945,50 @@
           }
         },
         "instrument_count": 2
+      },
+      "WHT": {
+        "name": "WHT",
+        "instruments": {
+          "INGRID": {
+            "name": "INGRID",
+            "filter_count": 20,
+            "filters": [
+              "BRG_COLD",
+              "BRG_WARM",
+              "FEII_COLD",
+              "FEII_WARM",
+              "H2V10_COLD",
+              "H2V10_WARM",
+              "H2V21_COLD",
+              "H2V21_WARM",
+              "HCONT_COLD",
+              "HCONT_WARM",
+              "H_WARM",
+              "JCONT_WARM",
+              "J_WARM",
+              "KCONT_COLD",
+              "KCONT_WARM",
+              "KSBARR_WARM",
+              "KS_WARM",
+              "K_WARM",
+              "PAB_WARM",
+              "Z_WARM"
+            ],
+            "published_paths": {
+              "filter": 20
+            },
+            "detector_types": {
+              "photon": 20
+            },
+            "separate_components": {
+              "filter": 20
+            },
+            "has_component_manifest": true,
+            "size_bytes": 176493,
+            "size_human": "172.36 KB"
+          }
+        },
+        "instrument_count": 1
       },
       "WISE": {
         "name": "WISE",
