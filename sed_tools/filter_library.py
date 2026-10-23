@@ -64,21 +64,20 @@ class FilterLibrary:
 
     @staticmethod
     def published_complete(directory):
-        """Check declared bands and the MESA index, when supplied.
-
-        Legacy directories without either declaration can only be checked
-        for the presence of curves, not against the entire upstream catalogue.
-        """
+        """Check every declared band; undeclared partial downloads are unverified."""
         directory = Path(directory)
         if not list(directory.glob("*.dat")):
             return False
+        index = directory / directory.name
+        if not (directory / "manifest.json").is_file():
+            return False
         manifest = InstrumentManifest.load(directory)
         expected = {f"{b}.dat" for b in manifest.bands}
-        index = directory / directory.name
         if index.is_file():
             expected.update(line.strip() for line in index.read_text().splitlines()
                             if line.strip() and not line.lstrip().startswith("#"))
-        return all(Path(name).name == name and (directory / name).is_file() for name in expected)
+        return bool(expected) and all(Path(name).name == name and (directory / name).is_file()
+                                      for name in expected)
 
     def published(self, facility, instrument):
         directory = self.root / facility / instrument

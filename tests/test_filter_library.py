@@ -262,6 +262,87 @@ def test_declared_partial_download_is_not_accepted(tmp_path):
     assert not FilterLibrary.published_complete(directory)
 
 
+def test_undeclared_partial_download_is_not_accepted(tmp_path):
+    directory = tmp_path / "Test" / "Camera"
+    directory.mkdir(parents=True)
+    (directory / "g.dat").write_text("4000 1\n6000 1\n")
+    (directory / "Camera").write_text("g.dat\n")  # a legacy index may have been built after failures
+    assert not FilterLibrary.published_complete(directory)
+
+
+def test_mirror_does_not_certify_partial_download(tmp_path, monkeypatch):
+    import requests
+    from sed_tools.njm_filter_grabber import NJMFilterGrabber
+
+    grabber = NJMFilterGrabber(base_dir=str(tmp_path))
+    grabber._available = True
+    monkeypatch.setattr(grabber, "discover_filters", lambda facility, instrument: ["g", "r"])
+    monkeypatch.setattr(grabber, "download_components", lambda facility, instrument: 0)
+
+    def get(url, **kwargs):
+        if url.endswith("/g.dat"):
+            return SimpleNamespace(text="4000 1\n6000 1\n")
+        raise requests.ConnectionError("mirror unavailable")
+
+    monkeypatch.setattr(grabber, "_get", get)
+    monkeypatch.setattr("sed_tools.njm_filter_grabber.tag_filter_file", lambda *args, **kwargs:
+                        SimpleNamespace(source="header"))
+    assert grabber.download_filters("Test", "Camera") == 1
+    directory = tmp_path / "Test" / "Camera"
+    assert not (directory / "Camera").exists()
+    assert not FilterLibrary.published_complete(directory)
+
+
+def test_mirror_index_declares_complete_set_without_remote_manifest(tmp_path, monkeypatch):
+    from sed_tools.njm_filter_grabber import NJMFilterGrabber
+
+    grabber = NJMFilterGrabber(base_dir=str(tmp_path))
+    grabber._available = True
+    monkeypatch.setattr(grabber, "discover_filters", lambda facility, instrument: ["g", "r"])
+    monkeypatch.setattr(grabber, "download_components", lambda facility, instrument: 0)
+    monkeypatch.setattr("sed_tools.njm_filter_grabber.tag_filter_file", lambda *args, **kwargs:
+                        SimpleNamespace(source="header"))
+
+    def get(url, **kwargs):
+        return SimpleNamespace(text="g.dat\nr.dat\n" if url.endswith("/Camera") else "4000 1\n6000 1\n")
+
+    monkeypatch.setattr(grabber, "_get", get)
+    assert grabber.download_filters("Test", "Camera") == 2
+    directory = tmp_path / "Test" / "Camera"
+    assert InstrumentManifest.load(directory).bands == ["g", "r"]
+    assert FilterLibrary.published_complete(directory)
+
+
+def test_mirror_retries_temporary_forbidden(tmp_path, monkeypatch):
+    import requests
+    from sed_tools.njm_filter_grabber import NJMFilterGrabber
+
+    grabber = NJMFilterGrabber(base_dir=str(tmp_path))
+    delays = []
+    monkeypatch.setattr("sed_tools.njm_filter_grabber.time.sleep", delays.append)
+
+    class Response:
+        status_code = 403
+        headers = {}
+
+        def raise_for_status(self):
+            if self.status_code != 200:
+                raise requests.HTTPError("403", response=self)
+
+    response = Response()
+    calls = []
+
+    def get(url, **kwargs):
+        calls.append(url)
+        if len(calls) == 2:
+            response.status_code = 200
+        return response
+
+    grabber.session.get = get
+    assert grabber._get("https://example.invalid/filter.dat") is response
+    assert len(calls) == 2 and delays == [1]
+
+
 def test_svo_fallback_tracks_and_recovers_partial_downloads(tmp_path, monkeypatch):
     from sed_tools.svo_filter_grabber import SVOFilterBrowser
 
@@ -288,13 +369,16 @@ def test_original_source_failure_falls_back_to_svo(tmp_path, monkeypatch):
     from requests import ConnectionError
 
     library = FilterLibrary(tmp_path)
+    def download_svo(rows):
+        write_filter_file(tmp_path / "Paranal" / "HAWKI" / "J.dat", [4000., 5000.], [0.5, 0.9],
+                          detector_type=PHOTON, source="svo", extra={"Components": "filter"})
+        InstrumentManifest("Paranal", "HAWKI", ["J"]).save(tmp_path / "Paranal" / "HAWKI")
+
     library.svo = SimpleNamespace(
         list_facilities=lambda: [Facility("Paranal", "Paranal")],
         list_instruments=lambda f: [Instrument("Paranal", "HAWKI", "HAWKI")],
         list_filters=lambda f, i: [FilterRow("Paranal/HAWKI.J", "J", "Paranal", "HAWKI", "")],
-        download_filters=lambda rows: write_filter_file(
-            tmp_path / "Paranal" / "HAWKI" / "J.dat", [4000., 5000.], [0.5, 0.9],
-            detector_type=PHOTON, source="svo", extra={"Components": "filter"}),
+        download_filters=download_svo,
     )
     monkeypatch.setattr(filter_library, "get_builder", lambda name:
                         lambda root, **kwargs: (_ for _ in ()).throw(ConnectionError("ESO offline")))
