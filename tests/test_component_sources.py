@@ -165,6 +165,13 @@ def test_nsfcam_mk_percent_is_distinct_from_older_fraction_scans():
                                                      b"1.0 50\n1.1 90\n")[1], [0.5, 0.9])
 
 
+def test_panic_br_gamma_uses_existing_mirror_band_name():
+    from sed_tools.component_sources.tabular import SOURCES
+
+    assert "Brgamma" in SOURCES["PANIC"].filters
+    assert "BrGamma" not in SOURCES["PANIC"].filters
+
+
 def test_ioo_component_table_skips_unmeasured_qe_and_selects_columns():
     from sed_tools.component_sources.tabular import SOURCES
 

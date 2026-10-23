@@ -112,7 +112,7 @@ NIFS = SimpleSource(
 PANIC_FILES = {
     "Z": "ascii_Z.txt", "Y": "ascii_Y.txt", "J": "ascii_J.txt",
     "H": "ascii_H.txt", "Ks": "ascii_Ks.txt",
-    "BrGamma": "br-gamma-inband.txt", "H2": "H2-in20band.txt",
+    "Brgamma": "br-gamma-inband.txt", "H2": "H2-in20band.txt",
 }
 PANIC = SimpleSource(
     facility="CAHA", instrument="PANIC",
