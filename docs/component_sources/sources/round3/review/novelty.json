@@ -1,0 +1,34 @@
+{
+  "ground_physical_facilities": [
+    "CAHA",
+    "FLWO",
+    "IRTF",
+    "JCMT",
+    "LBT",
+    "LICK",
+    "Liverpool",
+    "MMT",
+    "NOT",
+    "WHT"
+  ],
+  "ground_count": 10,
+  "space_flown_facilities": [
+    "AKARI",
+    "CHEOPS",
+    "COBE",
+    "Corot",
+    "IRAS",
+    "MOST",
+    "MSX",
+    "PLANCK",
+    "WMAP",
+    "XMM"
+  ],
+  "space_flown_count": 10,
+  "ground_overlap_baseline": [],
+  "space_overlap_baseline": [],
+  "ground_numeric_files": 238,
+  "ground_unique_sha256": 229,
+  "space_numeric_csv_files": 171,
+  "space_unique_sha256": 171
+}

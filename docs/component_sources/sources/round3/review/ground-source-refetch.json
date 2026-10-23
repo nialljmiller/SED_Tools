@@ -1,0 +1,50 @@
+[
+  {
+    "facility": "CAHA",
+    "url": "https://www.caha.es/images/panic/ascii_Z.txt",
+    "http": 200,
+    "sha256_equal": true
+  },
+  {
+    "facility": "CAHA-BUSCA",
+    "url": "https://www.caha.es/guijarro/BUSCA/bands.txt",
+    "http": 200,
+    "sha256_equal": true
+  },
+  {
+    "facility": "CAHA-LAICA",
+    "url": "https://www.caha.es/CAHA/Instruments/LAICA/john_B",
+    "http": 200,
+    "sha256_equal": true
+  },
+  {
+    "facility": "IRTF",
+    "url": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters/nsfcam_j_trans.dat",
+    "http": 200,
+    "sha256_equal": true
+  },
+  {
+    "facility": "JCMT",
+    "url": "https://www.eaobservatory.org/jcmt/wp-content/uploads/sites/2/2015/12/model850.pdf",
+    "http": 200,
+    "sha256_equal": true
+  },
+  {
+    "facility": "LICK",
+    "url": "https://raw.githubusercontent.com/PantheonPlusSH0ES/DataRelease/c447f0fea703fcd0fff57de5000947b5ca81286b/Pantheon%2B_Data/2_CALIBRATION/filters/KAIT_2018/B_kait1_shifted.txt",
+    "http": 200,
+    "sha256_equal": true
+  },
+  {
+    "facility": "MMT",
+    "url": "https://lweb.cfa.harvard.edu/~bmcleod/Megacam/Filters/u__filter_MMT.txt",
+    "http": 200,
+    "sha256_equal": true
+  },
+  {
+    "facility": "WHT",
+    "url": "https://www.ing.iac.es/Astronomy/instruments/ingrid_new/filter/ksbarr.warm.trans.html",
+    "http": 200,
+    "sha256_equal": true
+  }
+]

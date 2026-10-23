@@ -1,0 +1,1 @@
+Codex delegated space researcher, session 9253fd2-space. Claims released. Completed round3/space packet: 10 flown facilities + planned PLATO bonus, 32 downloads, 171 curves, hashes/numeric/FITS checks passed. Awaiting independent parent/ground-team crosscheck; see report.md for provenance limits.

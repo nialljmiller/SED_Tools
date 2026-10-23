@@ -1,0 +1,1624 @@
+{
+  "files": 134,
+  "physical_facilities": [
+    "WHT",
+    "IRTF",
+    "MMT",
+    "JCMT",
+    "CAHA",
+    "LICK"
+  ],
+  "errors": [],
+  "results": [
+    {
+      "path": "WHT/ksbarr.warm.trans.html",
+      "rows": 1001,
+      "columns": [
+        2
+      ],
+      "min": 0.003501506,
+      "max": 94.5355072,
+      "increasing": false,
+      "decreasing": true,
+      "first_bytes": "<HTML>\n<BODY"
+    },
+    {
+      "path": "WHT/z.warm.trans.html",
+      "rows": 601,
+      "columns": [
+        2
+      ],
+      "min": -0.017571503,
+      "max": 88.34736633,
+      "increasing": false,
+      "decreasing": true,
+      "first_bytes": "<HTML>\n<BODY"
+    },
+    {
+      "path": "WHT/j.warm.trans.html",
+      "rows": 1001,
+      "columns": [
+        2
+      ],
+      "min": -0.016826887,
+      "max": 91.85562134,
+      "increasing": false,
+      "decreasing": true,
+      "first_bytes": "<HTML>\n<BODY"
+    },
+    {
+      "path": "WHT/h.warm.trans.html",
+      "rows": 1201,
+      "columns": [
+        2
+      ],
+      "min": -0.015076648,
+      "max": 88.74234009,
+      "increasing": false,
+      "decreasing": true,
+      "first_bytes": "<HTML>\n<BODY"
+    },
+    {
+      "path": "WHT/k.warm.trans.html",
+      "rows": 551,
+      "columns": [
+        2
+      ],
+      "min": -0.118001565,
+      "max": 95.84412384,
+      "increasing": false,
+      "decreasing": true,
+      "first_bytes": "<HTML>\n<BODY"
+    },
+    {
+      "path": "WHT/ks.warm.trans.html",
+      "rows": 551,
+      "columns": [
+        2
+      ],
+      "min": -0.061095763,
+      "max": 94.99284363,
+      "increasing": false,
+      "decreasing": true,
+      "first_bytes": "<HTML>\n<BODY"
+    },
+    {
+      "path": "WHT/brg.warm.trans.html",
+      "rows": 151,
+      "columns": [
+        2
+      ],
+      "min": -0.034614101,
+      "max": 70.95209503,
+      "increasing": false,
+      "decreasing": true,
+      "first_bytes": "<HTML>\n<BODY"
+    },
+    {
+      "path": "WHT/brg.cold.trans.html",
+      "rows": 151,
+      "columns": [
+        2
+      ],
+      "min": -0.034614101,
+      "max": 70.952095,
+      "increasing": false,
+      "decreasing": true,
+      "first_bytes": "<HTML>\n<BODY"
+    },
+    {
+      "path": "WHT/h2v10.warm.trans.html",
+      "rows": 201,
+      "columns": [
+        2
+      ],
+      "min": -0.0944165,
+      "max": 72.4401,
+      "increasing": false,
+      "decreasing": true,
+      "first_bytes": "<HTML>\n<BODY"
+    },
+    {
+      "path": "WHT/h2v10.cold.trans.html",
+      "rows": 201,
+      "columns": [
+        2
+      ],
+      "min": -0.0944165,
+      "max": 72.4401,
+      "increasing": false,
+      "decreasing": true,
+      "first_bytes": "<HTML>\n<BODY"
+    },
+    {
+      "path": "WHT/feii.warm.trans.html",
+      "rows": 201,
+      "columns": [
+        2
+      ],
+      "min": -0.012186227,
+      "max": 73.7779007,
+      "increasing": false,
+      "decreasing": true,
+      "first_bytes": "<HTML>\n<BODY"
+    },
+    {
+      "path": "WHT/feii.cold.trans.html",
+      "rows": 201,
+      "columns": [
+        2
+      ],
+      "min": -0.012186227,
+      "max": 73.777901,
+      "increasing": false,
+      "decreasing": true,
+      "first_bytes": "<HTML>\n<BODY"
+    },
+    {
+      "path": "WHT/hcont.warm.trans.html",
+      "rows": 151,
+      "columns": [
+        2
+      ],
+      "min": -0.013138277,
+      "max": 74.34104919,
+      "increasing": false,
+      "decreasing": true,
+      "first_bytes": "<HTML>\n<BODY"
+    },
+    {
+      "path": "WHT/hcont.cold.trans.html",
+      "rows": 151,
+      "columns": [
+        2
+      ],
+      "min": -0.013138277,
+      "max": 74.341049,
+      "increasing": false,
+      "decreasing": true,
+      "first_bytes": "<HTML>\n<BODY"
+    },
+    {
+      "path": "WHT/pab.warm.trans.html",
+      "rows": 201,
+      "columns": [
+        2
+      ],
+      "min": 0.015106197,
+      "max": 71.63935089,
+      "increasing": false,
+      "decreasing": true,
+      "first_bytes": "<HTML>\n<BODY"
+    },
+    {
+      "path": "WHT/jcont.warm.trans.html",
+      "rows": 201,
+      "columns": [
+        2
+      ],
+      "min": -0.00672997,
+      "max": 62.5783,
+      "increasing": false,
+      "decreasing": true,
+      "first_bytes": "<HTML>\n<BODY"
+    },
+    {
+      "path": "WHT/kcont.warm.trans.html",
+      "rows": 151,
+      "columns": [
+        2
+      ],
+      "min": -0.073210694,
+      "max": 71.10643005,
+      "increasing": false,
+      "decreasing": true,
+      "first_bytes": "<HTML>\n<BODY"
+    },
+    {
+      "path": "WHT/kcont.cold.trans.html",
+      "rows": 151,
+      "columns": [
+        2
+      ],
+      "min": -0.073210694,
+      "max": 71.10643,
+      "increasing": false,
+      "decreasing": true,
+      "first_bytes": "<HTML>\n<BODY"
+    },
+    {
+      "path": "WHT/h2v21.warm.trans.html",
+      "rows": 301,
+      "columns": [
+        2
+      ],
+      "min": -0.000794174,
+      "max": 55.52214813,
+      "increasing": false,
+      "decreasing": true,
+      "first_bytes": "<HTML>\n<BODY"
+    },
+    {
+      "path": "WHT/h2v21.cold.trans.html",
+      "rows": 301,
+      "columns": [
+        2
+      ],
+      "min": -0.000794174,
+      "max": 55.522148,
+      "increasing": false,
+      "decreasing": true,
+      "first_bytes": "<HTML>\n<BODY"
+    },
+    {
+      "path": "IRTF/nsfcam_j_trans.dat",
+      "rows": 3714,
+      "columns": [
+        2
+      ],
+      "min": -3.24249e-05,
+      "max": 0.917142,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "1.28205 0.85"
+    },
+    {
+      "path": "IRTF/nsfcam_jblka_trans.dat",
+      "rows": 3701,
+      "columns": [
+        2
+      ],
+      "min": -2.32284e-05,
+      "max": 0.871904,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "1.28205\t\t0.8"
+    },
+    {
+      "path": "IRTF/nsfcam_hblka_trans.dat",
+      "rows": 3714,
+      "columns": [
+        2
+      ],
+      "min": -2.20198e-08,
+      "max": 0.687418,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "1.28205\t\t0.0"
+    },
+    {
+      "path": "IRTF/nsfcam_k_trans.dat",
+      "rows": 3714,
+      "columns": [
+        2
+      ],
+      "min": -0.00136971,
+      "max": 0.804038,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "1.28205 0.00"
+    },
+    {
+      "path": "IRTF/nsfcam_kp_trans.dat",
+      "rows": 3714,
+      "columns": [
+        2
+      ],
+      "min": -9.5129e-05,
+      "max": 0.954158,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "1.28205 0.00"
+    },
+    {
+      "path": "IRTF/nsfcam_kpblka_trans.dat",
+      "rows": 3714,
+      "columns": [
+        2
+      ],
+      "min": -8.22615e-05,
+      "max": 0.671844,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "1.28205\t\t0.0"
+    },
+    {
+      "path": "IRTF/nsfcam_ks_trans.dat",
+      "rows": 3714,
+      "columns": [
+        2
+      ],
+      "min": -0.00027585,
+      "max": 0.929811,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "1.28205 0.00"
+    },
+    {
+      "path": "IRTF/nsfcam_ksblka_trans.dat",
+      "rows": 3714,
+      "columns": [
+        2
+      ],
+      "min": -0.00025828,
+      "max": 0.637768,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "1.28205\t\t0.0"
+    },
+    {
+      "path": "IRTF/nsfcam_l_trans.dat",
+      "rows": 3714,
+      "columns": [
+        2
+      ],
+      "min": -8.29697e-05,
+      "max": 0.940885,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "1.28205 0.00"
+    },
+    {
+      "path": "IRTF/nsfcam_lp_trans.dat",
+      "rows": 3714,
+      "columns": [
+        2
+      ],
+      "min": -0.000154972,
+      "max": 0.959569,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "1.28205 0.00"
+    },
+    {
+      "path": "IRTF/nsfcam_m_trans.dat",
+      "rows": 3714,
+      "columns": [
+        2
+      ],
+      "min": -9.08375e-05,
+      "max": 0.901808,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "1.28205 0.00"
+    },
+    {
+      "path": "IRTF/nsfcam_mp1_trans.dat",
+      "rows": 3714,
+      "columns": [
+        2
+      ],
+      "min": -4.50611e-05,
+      "max": 0.93192,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "1.28205 0.00"
+    },
+    {
+      "path": "IRTF/nsfcam_blka_scale_trans.dat",
+      "rows": 3701,
+      "columns": [
+        2
+      ],
+      "min": -1.04108e-05,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "1.28205\t\t0.9"
+    },
+    {
+      "path": "IRTF/nsfcam_jmk_trans.dat",
+      "rows": 2501,
+      "columns": [
+        2
+      ],
+      "min": -0.167796,
+      "max": 93.517464,
+      "increasing": false,
+      "decreasing": true,
+      "first_bytes": "WL (Micromet"
+    },
+    {
+      "path": "IRTF/nsfcam_hmk_trans.dat",
+      "rows": 1401,
+      "columns": [
+        2
+      ],
+      "min": -0.01678,
+      "max": 90.177917,
+      "increasing": false,
+      "decreasing": true,
+      "first_bytes": "WL (Micromet"
+    },
+    {
+      "path": "IRTF/nsfcam_kmk_trans.dat",
+      "rows": 1401,
+      "columns": [
+        2
+      ],
+      "min": -0.442791,
+      "max": 96.684006,
+      "increasing": false,
+      "decreasing": true,
+      "first_bytes": "WL (Micromet"
+    },
+    {
+      "path": "IRTF/nsfcam_kpmk_trans.dat",
+      "rows": 1401,
+      "columns": [
+        2
+      ],
+      "min": -0.262451,
+      "max": 96.810913,
+      "increasing": false,
+      "decreasing": true,
+      "first_bytes": "WL (Micromet"
+    },
+    {
+      "path": "IRTF/nsfcam_ksmk_trans.dat",
+      "rows": 1601,
+      "columns": [
+        2
+      ],
+      "min": -0.036621,
+      "max": 96.615601,
+      "increasing": false,
+      "decreasing": true,
+      "first_bytes": "WL (Micromet"
+    },
+    {
+      "path": "IRTF/nsfcam_lpmk_trans.dat",
+      "rows": 2020,
+      "columns": [
+        2
+      ],
+      "min": -0.881051,
+      "max": 95.55471,
+      "increasing": false,
+      "decreasing": false,
+      "first_bytes": "WL (Micromet"
+    },
+    {
+      "path": "IRTF/nsfcam_mpmk_trans.dat",
+      "rows": 1001,
+      "columns": [
+        2
+      ],
+      "min": -0.7806,
+      "max": 93.318604,
+      "increasing": false,
+      "decreasing": true,
+      "first_bytes": "WL (Micromet"
+    },
+    {
+      "path": "IRTF/nsfcam_pag_trans.dat",
+      "rows": 3714,
+      "columns": [
+        2
+      ],
+      "min": -2.21729e-05,
+      "max": 0.114232,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "1.28205 0.00"
+    },
+    {
+      "path": "IRTF/nsfcam_pagblka_trans.dat",
+      "rows": 3714,
+      "columns": [
+        2
+      ],
+      "min": -7.99925e-06,
+      "max": 0.0117038,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "1.28205\t\t0.0"
+    },
+    {
+      "path": "IRTF/nsfcam_pab_trans.dat",
+      "rows": 3714,
+      "columns": [
+        2
+      ],
+      "min": -4.07696e-05,
+      "max": 0.276208,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "1.28205 0.27"
+    },
+    {
+      "path": "IRTF/nsfcam_pabblka_trans.dat",
+      "rows": 3714,
+      "columns": [
+        2
+      ],
+      "min": -2.46197e-05,
+      "max": 0.265873,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "1.28205\t\t0.2"
+    },
+    {
+      "path": "IRTF/nsfcam_brg_trans.dat",
+      "rows": 3714,
+      "columns": [
+        2
+      ],
+      "min": -5.55515e-05,
+      "max": 0.825335,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "1.28205 0.00"
+    },
+    {
+      "path": "IRTF/nsfcam_hei_trans.dat",
+      "rows": 3714,
+      "columns": [
+        2
+      ],
+      "min": -0.000781775,
+      "max": 0.0906694,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "1.28205 0.00"
+    },
+    {
+      "path": "IRTF/nsfcam_heiblka_trans.dat",
+      "rows": 3714,
+      "columns": [
+        2
+      ],
+      "min": -0.000194687,
+      "max": 0.00744211,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "1.28205\t\t0.0"
+    },
+    {
+      "path": "IRTF/nsfcam_fe_trans.dat",
+      "rows": 3714,
+      "columns": [
+        2
+      ],
+      "min": -5.53131e-05,
+      "max": 0.778588,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "1.28205 0.00"
+    },
+    {
+      "path": "IRTF/nsfcam_feblka_trans.dat",
+      "rows": 3714,
+      "columns": [
+        2
+      ],
+      "min": -1.18667e-05,
+      "max": 0.629126,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "1.28205\t\t0.0"
+    },
+    {
+      "path": "IRTF/nsfcam_h21_trans.dat",
+      "rows": 3714,
+      "columns": [
+        2
+      ],
+      "min": -0.000113964,
+      "max": 0.700885,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "1.28205 0.00"
+    },
+    {
+      "path": "IRTF/nsfcam_h21blka_trans.dat",
+      "rows": 3714,
+      "columns": [
+        2
+      ],
+      "min": -8.41811e-05,
+      "max": 0.449412,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "1.28205\t\t0.0"
+    },
+    {
+      "path": "IRTF/nsfcam_h22_trans.dat",
+      "rows": 3714,
+      "columns": [
+        2
+      ],
+      "min": -0.000324249,
+      "max": 0.8062,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "1.28205 0.00"
+    },
+    {
+      "path": "IRTF/nsfcam_h22blka_trans.dat",
+      "rows": 3714,
+      "columns": [
+        2
+      ],
+      "min": -0.000271719,
+      "max": 0.501352,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "1.28205\t\t0.0"
+    },
+    {
+      "path": "IRTF/nsfcam_co_trans.dat",
+      "rows": 3714,
+      "columns": [
+        2
+      ],
+      "min": -5.96046e-05,
+      "max": 0.837504,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "1.28205 0.00"
+    },
+    {
+      "path": "IRTF/nsfcam_coblka_trans.dat",
+      "rows": 3714,
+      "columns": [
+        2
+      ],
+      "min": -4.3575e-05,
+      "max": 0.486815,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "1.28205\t\t0.0"
+    },
+    {
+      "path": "IRTF/nsfcam_cont_trans.dat",
+      "rows": 3714,
+      "columns": [
+        2
+      ],
+      "min": 1.93119e-05,
+      "max": 0.901295,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "1.28205 0.00"
+    },
+    {
+      "path": "IRTF/nsfcam_contblka_trans.dat",
+      "rows": 3714,
+      "columns": [
+        2
+      ],
+      "min": -3.38945e-06,
+      "max": 0.572479,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "1.28205\t\t0.0"
+    },
+    {
+      "path": "IRTF/nsfcam_s17_trans.dat",
+      "rows": 3714,
+      "columns": [
+        2
+      ],
+      "min": -0.00101399,
+      "max": 0.939719,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "1.28205 0.00"
+    },
+    {
+      "path": "IRTF/nsfcam_s23_trans.dat",
+      "rows": 3714,
+      "columns": [
+        2
+      ],
+      "min": -0.000237227,
+      "max": 0.619183,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "1.28205 0.00"
+    },
+    {
+      "path": "MMT/u__filter_MMT.txt",
+      "rows": 1601,
+      "columns": [
+        6
+      ],
+      "min": -0.047919365,
+      "max": 85.8014467,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "Radius\t0\t51\t"
+    },
+    {
+      "path": "MMT/filterthroughput.megacamu",
+      "rows": 4771,
+      "columns": [
+        10
+      ],
+      "min": -6090440000000.0,
+      "max": 9652590000000000.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "WAVE\tFLUX\tT\t"
+    },
+    {
+      "path": "MMT/g__filter_MMT.txt",
+      "rows": 1601,
+      "columns": [
+        6
+      ],
+      "min": 1.01045e-06,
+      "max": 94.7968865,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "Radius\t0\t51\t"
+    },
+    {
+      "path": "MMT/filterthroughput.megacamg",
+      "rows": 4771,
+      "columns": [
+        10
+      ],
+      "min": 0.0,
+      "max": 4.37438e+16,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "WAVE\tFLUX\tT\t"
+    },
+    {
+      "path": "MMT/r__filter_MMT.txt",
+      "rows": 1601,
+      "columns": [
+        6
+      ],
+      "min": 3.1051e-10,
+      "max": 96.15191148,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "Radius\t0\t51\t"
+    },
+    {
+      "path": "MMT/filterthroughput.megacamr",
+      "rows": 4771,
+      "columns": [
+        10
+      ],
+      "min": -9.30342e-09,
+      "max": 4.45341e+16,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "WAVE\tFLUX\tT\t"
+    },
+    {
+      "path": "MMT/i__filter_MMT.txt",
+      "rows": 1601,
+      "columns": [
+        6
+      ],
+      "min": -4.8949e-05,
+      "max": 91.95342258,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "Radius\t0\t51\t"
+    },
+    {
+      "path": "MMT/filterthroughput.megacami",
+      "rows": 4771,
+      "columns": [
+        10
+      ],
+      "min": -0.116245,
+      "max": 3.17897e+16,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "WAVE\tFLUX\tT\t"
+    },
+    {
+      "path": "MMT/z__filter_MMT.txt",
+      "rows": 1603,
+      "columns": [
+        6,
+        7,
+        9
+      ],
+      "min": -0.010558824,
+      "max": 850.0,
+      "increasing": false,
+      "decreasing": false,
+      "first_bytes": "Radius\t0\t51\t"
+    },
+    {
+      "path": "MMT/filterthroughput.megacamz",
+      "rows": 4771,
+      "columns": [
+        10
+      ],
+      "min": -3182010000000.0,
+      "max": 1.6458e+16,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "WAVE\tFLUX\tT\t"
+    },
+    {
+      "path": "CAHA/ascii_Z.txt",
+      "rows": 421,
+      "columns": [
+        2
+      ],
+      "min": -0.018954847,
+      "max": 91.52497864,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "# Z filter c"
+    },
+    {
+      "path": "CAHA/ascii_out_Z.txt",
+      "rows": 2826,
+      "columns": [
+        2
+      ],
+      "min": 0.009948931,
+      "max": 10.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "# Z filter B"
+    },
+    {
+      "path": "CAHA/ascii_Y.txt",
+      "rows": 1601,
+      "columns": [
+        2
+      ],
+      "min": 0.035713661,
+      "max": 80.4492569,
+      "increasing": false,
+      "decreasing": false,
+      "first_bytes": "# Y filter c"
+    },
+    {
+      "path": "CAHA/ascii_out_Y.txt",
+      "rows": 2796,
+      "columns": [
+        2
+      ],
+      "min": 0.09040653,
+      "max": 10.91176891,
+      "increasing": false,
+      "decreasing": false,
+      "first_bytes": "# Y filter B"
+    },
+    {
+      "path": "CAHA/ascii_J.txt",
+      "rows": 2201,
+      "columns": [
+        2
+      ],
+      "min": 0.009164129,
+      "max": 86.47689819,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "# J filter c"
+    },
+    {
+      "path": "CAHA/ascii_out_J.txt",
+      "rows": 2796,
+      "columns": [
+        2
+      ],
+      "min": 0.062850975,
+      "max": 10.0,
+      "increasing": false,
+      "decreasing": false,
+      "first_bytes": "# J filter B"
+    },
+    {
+      "path": "CAHA/ascii_H.txt",
+      "rows": 741,
+      "columns": [
+        2
+      ],
+      "min": 0.055347923,
+      "max": 94.81339264,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "# H filter c"
+    },
+    {
+      "path": "CAHA/ascii_out_H.txt",
+      "rows": 2796,
+      "columns": [
+        2
+      ],
+      "min": 0.023155969,
+      "max": 10.0,
+      "increasing": false,
+      "decreasing": false,
+      "first_bytes": "# H filter B"
+    },
+    {
+      "path": "CAHA/ascii_Ks.txt",
+      "rows": 2301,
+      "columns": [
+        2
+      ],
+      "min": 1e-08,
+      "max": 99.04807401,
+      "increasing": false,
+      "decreasing": true,
+      "first_bytes": "# Ks filter "
+    },
+    {
+      "path": "CAHA/br-gamma-inband.txt",
+      "rows": 481,
+      "columns": [
+        2
+      ],
+      "min": -0.053849425,
+      "max": 91.01274109,
+      "increasing": false,
+      "decreasing": true,
+      "first_bytes": "# Br-gamma f"
+    },
+    {
+      "path": "CAHA/ascii_out_Br-g.txt",
+      "rows": 2701,
+      "columns": [
+        2
+      ],
+      "min": 0.069399133,
+      "max": 10.18018627,
+      "increasing": false,
+      "decreasing": true,
+      "first_bytes": "# Br-gamma f"
+    },
+    {
+      "path": "CAHA/H2-in20band.txt",
+      "rows": 200,
+      "columns": [
+        2
+      ],
+      "min": 0.032311179,
+      "max": 92.87550354,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "# H2 filter "
+    },
+    {
+      "path": "CAHA/ascii_out_H2.txt",
+      "rows": 2795,
+      "columns": [
+        2
+      ],
+      "min": -0.005551184,
+      "max": 10.0,
+      "increasing": false,
+      "decreasing": false,
+      "first_bytes": "# H2 filter "
+    },
+    {
+      "path": "CAHA-BUSCA/bands.txt",
+      "rows": 321,
+      "columns": [
+        5
+      ],
+      "min": 0.0,
+      "max": 0.977623807,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "wavelength\tU"
+    },
+    {
+      "path": "CAHA-LAICA/john_B",
+      "rows": 34,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 74.5,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "300 0\n310 0\n"
+    },
+    {
+      "path": "CAHA-LAICA/john_B2",
+      "rows": 35,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 73.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "300 0.\n320 0"
+    },
+    {
+      "path": "CAHA-LAICA/john_V",
+      "rows": 28,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 79.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "350 0\n400 0\n"
+    },
+    {
+      "path": "CAHA-LAICA/john_R",
+      "rows": 47,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 92.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "500 0.0\n510 "
+    },
+    {
+      "path": "CAHA-LAICA/john_I",
+      "rows": 31,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 93.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "700 0.0\n710 "
+    },
+    {
+      "path": "CAHA-LAICA/SDSS_u",
+      "rows": 20,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 33.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "300 0.\n310 1"
+    },
+    {
+      "path": "CAHA-LAICA/SDSS_g",
+      "rows": 44,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 90.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "300 0.\n350 0"
+    },
+    {
+      "path": "CAHA-LAICA/SDSS_r",
+      "rows": 40,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 96.5,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "400 0.0\n450 "
+    },
+    {
+      "path": "CAHA-LAICA/SDSS_i",
+      "rows": 57,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 92.5,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "600 0.\n650 0"
+    },
+    {
+      "path": "CAHA-LAICA/SDSS_z",
+      "rows": 14,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 90.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "700 0.\n750 0"
+    },
+    {
+      "path": "JCMT/model850.pdf",
+      "rows": 1401,
+      "columns": [
+        15
+      ],
+      "min": 0.0,
+      "max": 1.005,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "270.0 0.972 "
+    },
+    {
+      "path": "JCMT/model450.pdf",
+      "rows": 3001,
+      "columns": [
+        16
+      ],
+      "min": 0.0,
+      "max": 1.01,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "500.00 0.97 "
+    },
+    {
+      "path": "JCMT/s8c20140313_00004-20140313_00002_SFP_scaled_spec_average_v2.pdf",
+      "rows": 400,
+      "columns": [
+        3
+      ],
+      "min": 0.02390249038902105,
+      "max": 0.9672438385330628,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "Mean filter "
+    },
+    {
+      "path": "JCMT/s8d20140313_00004-20140313_00002_SFP_scaled_spec_average_v2.pdf",
+      "rows": 400,
+      "columns": [
+        3
+      ],
+      "min": 0.02700789144293946,
+      "max": 0.9731528596891151,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "Mean filter "
+    },
+    {
+      "path": "LICK/B_kait1_shifted.txt",
+      "rows": 2701,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "3347.0  0.00"
+    },
+    {
+      "path": "LICK/B_kait2_shifted.txt",
+      "rows": 2701,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "3335.0  0.00"
+    },
+    {
+      "path": "LICK/B_kait3.txt",
+      "rows": 2701,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "3285.0  0.00"
+    },
+    {
+      "path": "LICK/B_kait3_shifted.txt",
+      "rows": 2526,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "3460.0  0.00"
+    },
+    {
+      "path": "LICK/B_kait4.txt",
+      "rows": 2701,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "3308.0  0.00"
+    },
+    {
+      "path": "LICK/B_kait4_shifted.txt",
+      "rows": 2701,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "3308.0  0.00"
+    },
+    {
+      "path": "LICK/B_nickel1.txt",
+      "rows": 590,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "3563.5  0.00"
+    },
+    {
+      "path": "LICK/B_nickel2.txt",
+      "rows": 2048,
+      "columns": [
+        2
+      ],
+      "min": 0.028303,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "3419.14  0.0"
+    },
+    {
+      "path": "LICK/B_nickel_shifted.txt",
+      "rows": 590,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "3562.6  0.00"
+    },
+    {
+      "path": "LICK/I_kait1_shifted.txt",
+      "rows": 3101,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "7040.0  0.00"
+    },
+    {
+      "path": "LICK/I_kait2_shifted.txt",
+      "rows": 2862,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "7138.0  0.00"
+    },
+    {
+      "path": "LICK/I_kait3.txt",
+      "rows": 2962,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "7018.0  0.00"
+    },
+    {
+      "path": "LICK/I_kait3_shifted.txt",
+      "rows": 2962,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "7018.0  0.00"
+    },
+    {
+      "path": "LICK/I_kait4.txt",
+      "rows": 2970,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "6972.0  0.00"
+    },
+    {
+      "path": "LICK/I_kait4_shifted.txt",
+      "rows": 2970,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "6972.0  0.00"
+    },
+    {
+      "path": "LICK/I_nickel1.txt",
+      "rows": 1111,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 1.006,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "6779.1  0.00"
+    },
+    {
+      "path": "LICK/I_nickel2.txt",
+      "rows": 450,
+      "columns": [
+        2
+      ],
+      "min": 1.9e-05,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "6500.0  0.00"
+    },
+    {
+      "path": "LICK/I_nickel_shifted.txt",
+      "rows": 1111,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 1.006,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "6779.1  0.00"
+    },
+    {
+      "path": "LICK/R_kait1_shifted.txt",
+      "rows": 4598,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "5402.0  0.00"
+    },
+    {
+      "path": "LICK/R_kait2_shifted.txt",
+      "rows": 4598,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "5402.0  0.00"
+    },
+    {
+      "path": "LICK/R_kait3.txt",
+      "rows": 4601,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "5387.0  0.00"
+    },
+    {
+      "path": "LICK/R_kait3_cut.txt",
+      "rows": 3614,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "5387.0  0.00"
+    },
+    {
+      "path": "LICK/R_kait3_shifted.txt",
+      "rows": 3081,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "5420.0  0.00"
+    },
+    {
+      "path": "LICK/R_kait4.txt",
+      "rows": 4601,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "5359.0  0.00"
+    },
+    {
+      "path": "LICK/R_kait4_shifted.txt",
+      "rows": 3797,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "5394.0  0.00"
+    },
+    {
+      "path": "LICK/R_nickel1.txt",
+      "rows": 900,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 1.022,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "5435.0  0.00"
+    },
+    {
+      "path": "LICK/R_nickel2.txt",
+      "rows": 2725,
+      "columns": [
+        2
+      ],
+      "min": 0.024952,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "4880.27  0.1"
+    },
+    {
+      "path": "LICK/R_nickel_shifted.txt",
+      "rows": 900,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 1.022,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "5435.0  0.00"
+    },
+    {
+      "path": "LICK/V_kait1_shifted.txt",
+      "rows": 2101,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "4704.0  0.00"
+    },
+    {
+      "path": "LICK/V_kait2_shifted.txt",
+      "rows": 2101,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "4712.0  0.00"
+    },
+    {
+      "path": "LICK/V_kait3.txt",
+      "rows": 2101,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "4703.0  0.00"
+    },
+    {
+      "path": "LICK/V_kait3_shifted.txt",
+      "rows": 1951,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "4800.0  0.00"
+    },
+    {
+      "path": "LICK/V_kait4.txt",
+      "rows": 2101,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "4681.0  0.00"
+    },
+    {
+      "path": "LICK/V_kait4_shifted.txt",
+      "rows": 2101,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "4681.0  0.00"
+    },
+    {
+      "path": "LICK/V_nickel1.txt",
+      "rows": 555,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "4744.1  0.00"
+    },
+    {
+      "path": "LICK/V_nickel2.txt",
+      "rows": 1532,
+      "columns": [
+        2
+      ],
+      "min": 0.023965,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "4744.35  0.0"
+    },
+    {
+      "path": "LICK/V_nickel_shifted.txt",
+      "rows": 555,
+      "columns": [
+        2
+      ],
+      "min": 0.0,
+      "max": 1.0,
+      "increasing": true,
+      "decreasing": false,
+      "first_bytes": "4744.1  0.00"
+    }
+  ]
+}

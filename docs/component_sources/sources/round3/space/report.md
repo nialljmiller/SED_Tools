@@ -1,0 +1,31 @@
+# Space facility expansion, request 9253fd2ba9540be0d9191916
+
+Codex delegated researcher, 2026-10-23 UTC. This packet adds numeric curves for **10 flown space facilities**, plus planned PLATO at no additional download cost. Newness means not in the previously characterized space facility set, not newly discovered globally. Parent independently checks novelty against the current files. No application/runtime integration.
+
+**32 original downloads (18,963,794 bytes; see downloads.json for authoritative total), 171 extracted two-column curves.** Curve count includes components, detectors and frequency-map averages; it is not a count of distinct filters. `inventory.csv` / `inventory.json` give each curve's source file, units, role, limits, rows, ordering and SHA-256. `downloads.json` records URLs, retrieval UTC and SHA-256 of untouched originals. `harvest.py` and `validate.py` reproduce retrieval/extraction.
+
+| Facility | Curves | Evidence and limits |
+|---|---:|---|
+| AKARI IRC | 9 | [JAXA RSRF](https://www.ir.isas.jaxa.jp/AKARI/Observation/support/IRC/RSRF/), N2/N3/N4/S7/S9W/S11/L15/L18W/L24 `.fad` tables. Filter + detector combined, normalized RSR with wavelength factor for photon-to-energy conversion per landing page. Wavelength micron inferred from values, absent from files. Separate optics/QE not obtained. |
+| COBE DIRBE | 10 | [NASA LAMBDA table](https://lambda.gsfc.nasa.gov/data/cobe/dirbe/ancil/spec_resp/DIRBE_SYSTEM_SPECTRAL_RESPONSE_TABLE.ASC), Pass 3B November 1996, 800 samples each, micron, normalized filter + detector response. |
+| IRAS | 12 | [IPAC Explanatory Supplement II.C.5](https://irsa.ipac.caltech.edu/IRASdocs/exp.sup/ch2/tabC5.html), 12/25/60/100 micron bands, **separate transmission, relative detector response, relative system response**. Three extracted series per band; transcription issues below. |
+| WMAP | 40 | [NASA DR5 bandpass archive](https://lambda.gsfc.nasa.gov/data/map/dr5/ancillary/response/wmap_bandpass_v5.tar.gz): 20 radiometer files, two detectors each, GHz, peak normalized linear Rayleigh-Jeans response. [Description](https://lambda.gsfc.nasa.gov/product/wmap/current/bandpass_info.html) gives the convention and mission-frequency-drift caveat. These detector curves are not separable optical-element QE. |
+| Planck | 86 | [IRSA LFI RIMO R2.50](https://irsa.ipac.caltech.edu/data/Planck/release_2/ancillary-data/LFI_RIMO_R2.50.fits), [HFI RIMO R2.00](https://irsa.ipac.caltech.edu/data/Planck/release_2/ancillary-data/HFI_RIMO_R2.00.fits): all BANDPASS extensions, detector and band/map responses. LFI `WAVENUMBER` actually GHz; HFI inverse cm. Raw uncertainty and flag columns retained in FITS. Do not impose common LFI/HFI normalization. |
+| MSX | 4 | [IRSA calibration page](https://irsa.ipac.caltech.edu/data/MSX/imageDescriptions.htm), bands A/C/D/E IPAC RSR tables, micron, whole-system response, PSC v1.2 provenance in file comments. |
+| CHEOPS | 1 | [Mission-team pycheops FITS](https://github.com/pmaxted/pycheops/blob/master/pycheops/data/response_functions/response_functions.fits), confirmed used by [`instrument.response`](https://github.com/pmaxted/pycheops/blob/master/pycheops/instrument.py). 171 rows, nm. Software instrument response; normalization/convention and calibration release not documented in FITS. |
+| MOST | 1 | Same pycheops FITS, named MOST column. **Secondary software host**; original MOST calibration provenance unresolved. 171 rows, nm. |
+| CoRoT | 1 | Same pycheops FITS, named CoRoT column. **Secondary software host**; original CoRoT calibration provenance unresolved. 171 rows, nm. |
+| XMM-Newton OM | 6 | [HEASARC directory](https://heasarc.gsfc.nasa.gov/FTP/xmm/data/responses/OM/), `OM_response_081008.txt` plus all six `om_effarea_*_v2.0.rsp` FITS responses. ASCII grid nm; published numerical area is **m² multiplied by 1000**, divided by 1000 in extracted CSVs. Largest area 0.004249 m². FITS are response matrices on keV bins, preserved separately and verified readable; not falsely treated as simple filter transmission. |
+| PLATO (extra, planned) | 1 | Same pycheops FITS, PLATO column, nm. Secondary software host, original calibration provenance unresolved. **Excluded from the 10 flown facilities.** |
+
+## Checks and cautions
+
+- `validate.py` passes 32 downloaded-file hashes, numeric finite-value checks on all 171 extracted series and FITS structural reads on all six XMM matrices. No silent clipping, sorting, peak normalization or deduplication is performed.
+- 54 curves contain negative response samples (WMAP and Planck measured bandpass artifacts); preserved. Five Planck HFI 857 extensions have non-strictly-increasing spectral coordinates; native ordering preserved and flagged. User-facing ingestion must handle these explicitly.
+- IRAS has useful separate component tables, but the 25 micron 29.0 micron row says detector=0.19 while its system response is 0.877. This is inconsistent with surrounding values and the filter-times-detector proportionality. **Possible source typo, left unchanged; do not use this row to validate component reconstruction.** LAMBDA's mirror also misprints 23.5 micron as 3.5; IPAC prints 23.5 correctly, so extracted IRAS curves use IPAC and retain both raw pages.
+- CHEOPS/MOST/CoRoT/PLATO software-host curves are useful numeric coverage, not proof of original per-mission provenance or component completeness. Unknown response units/conventions stay unknown.
+- Seven flown facilities have direct mission/archive sources; CHEOPS has team software; MOST and CoRoT have explicitly secondary software copies. No SVO data is included: both HTTP/HTTPS connections to SVO failed during this run, and the web tool could not retrieve its endpoint. Do not label this packet SVO fallback.
+
+## Next depth targets
+
+Locate original MOST and CoRoT response releases; obtain CHEOPS official current throughput/components and release mapping; resolve IRAS 25 micron transcription against scan/paper; obtain AKARI FIS alongside IRC and explicit IRC wavelength units; cross-check Planck flags/duplicate coordinates and calibration release against the required science use. AstroSat UVIT and ISO are next promising new flown facilities if originals are quickly accessible.

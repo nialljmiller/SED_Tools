@@ -1,0 +1,1224 @@
+{
+  "files": 134,
+  "unique_hashes": 128,
+  "facility_groups": {
+    "WHT": 20,
+    "IRTF": 39,
+    "MMT": 10,
+    "CAHA": 13,
+    "CAHA-BUSCA": 1,
+    "CAHA-LAICA": 10,
+    "JCMT": 4,
+    "LICK": 37
+  },
+  "checks": [
+    {
+      "path": "WHT/ksbarr.warm.trans.html",
+      "errors": [],
+      "numeric_rows": 1001,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "WHT/z.warm.trans.html",
+      "errors": [],
+      "numeric_rows": 601,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "WHT/j.warm.trans.html",
+      "errors": [],
+      "numeric_rows": 1001,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "WHT/h.warm.trans.html",
+      "errors": [],
+      "numeric_rows": 1201,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "WHT/k.warm.trans.html",
+      "errors": [],
+      "numeric_rows": 551,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "WHT/ks.warm.trans.html",
+      "errors": [],
+      "numeric_rows": 551,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "WHT/brg.warm.trans.html",
+      "errors": [],
+      "numeric_rows": 151,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "WHT/brg.cold.trans.html",
+      "errors": [],
+      "numeric_rows": 151,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "WHT/h2v10.warm.trans.html",
+      "errors": [],
+      "numeric_rows": 201,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "WHT/h2v10.cold.trans.html",
+      "errors": [],
+      "numeric_rows": 201,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "WHT/feii.warm.trans.html",
+      "errors": [],
+      "numeric_rows": 201,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "WHT/feii.cold.trans.html",
+      "errors": [],
+      "numeric_rows": 201,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "WHT/hcont.warm.trans.html",
+      "errors": [],
+      "numeric_rows": 151,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "WHT/hcont.cold.trans.html",
+      "errors": [],
+      "numeric_rows": 151,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "WHT/pab.warm.trans.html",
+      "errors": [],
+      "numeric_rows": 201,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "WHT/jcont.warm.trans.html",
+      "errors": [],
+      "numeric_rows": 201,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "WHT/kcont.warm.trans.html",
+      "errors": [],
+      "numeric_rows": 151,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "WHT/kcont.cold.trans.html",
+      "errors": [],
+      "numeric_rows": 151,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "WHT/h2v21.warm.trans.html",
+      "errors": [],
+      "numeric_rows": 301,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "WHT/h2v21.cold.trans.html",
+      "errors": [],
+      "numeric_rows": 301,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_j_trans.dat",
+      "errors": [],
+      "numeric_rows": 3714,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_jblka_trans.dat",
+      "errors": [],
+      "numeric_rows": 3701,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_hblka_trans.dat",
+      "errors": [],
+      "numeric_rows": 3714,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_k_trans.dat",
+      "errors": [],
+      "numeric_rows": 3714,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_kp_trans.dat",
+      "errors": [],
+      "numeric_rows": 3714,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_kpblka_trans.dat",
+      "errors": [],
+      "numeric_rows": 3714,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_ks_trans.dat",
+      "errors": [],
+      "numeric_rows": 3714,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_ksblka_trans.dat",
+      "errors": [],
+      "numeric_rows": 3714,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_l_trans.dat",
+      "errors": [],
+      "numeric_rows": 3714,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_lp_trans.dat",
+      "errors": [],
+      "numeric_rows": 3714,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_m_trans.dat",
+      "errors": [],
+      "numeric_rows": 3714,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_mp1_trans.dat",
+      "errors": [],
+      "numeric_rows": 3714,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_blka_scale_trans.dat",
+      "errors": [],
+      "numeric_rows": 3701,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_jmk_trans.dat",
+      "errors": [],
+      "numeric_rows": 2501,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_hmk_trans.dat",
+      "errors": [],
+      "numeric_rows": 1401,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_kmk_trans.dat",
+      "errors": [],
+      "numeric_rows": 1401,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_kpmk_trans.dat",
+      "errors": [],
+      "numeric_rows": 1401,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_ksmk_trans.dat",
+      "errors": [],
+      "numeric_rows": 1601,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_lpmk_trans.dat",
+      "errors": [],
+      "numeric_rows": 2020,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_mpmk_trans.dat",
+      "errors": [],
+      "numeric_rows": 1001,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_pag_trans.dat",
+      "errors": [],
+      "numeric_rows": 3714,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_pagblka_trans.dat",
+      "errors": [],
+      "numeric_rows": 3714,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_pab_trans.dat",
+      "errors": [],
+      "numeric_rows": 3714,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_pabblka_trans.dat",
+      "errors": [],
+      "numeric_rows": 3714,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_brg_trans.dat",
+      "errors": [],
+      "numeric_rows": 3714,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_hei_trans.dat",
+      "errors": [],
+      "numeric_rows": 3714,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_heiblka_trans.dat",
+      "errors": [],
+      "numeric_rows": 3714,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_fe_trans.dat",
+      "errors": [],
+      "numeric_rows": 3714,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_feblka_trans.dat",
+      "errors": [],
+      "numeric_rows": 3714,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_h21_trans.dat",
+      "errors": [],
+      "numeric_rows": 3714,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_h21blka_trans.dat",
+      "errors": [],
+      "numeric_rows": 3714,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_h22_trans.dat",
+      "errors": [],
+      "numeric_rows": 3714,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_h22blka_trans.dat",
+      "errors": [],
+      "numeric_rows": 3714,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_co_trans.dat",
+      "errors": [],
+      "numeric_rows": 3714,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_coblka_trans.dat",
+      "errors": [],
+      "numeric_rows": 3714,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_cont_trans.dat",
+      "errors": [],
+      "numeric_rows": 3714,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_contblka_trans.dat",
+      "errors": [],
+      "numeric_rows": 3714,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_s17_trans.dat",
+      "errors": [],
+      "numeric_rows": 3714,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "IRTF/nsfcam_s23_trans.dat",
+      "errors": [],
+      "numeric_rows": 3714,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "MMT/u__filter_MMT.txt",
+      "errors": [],
+      "numeric_rows": 1601,
+      "nonfinite_values": 0,
+      "columns": [
+        6
+      ]
+    },
+    {
+      "path": "MMT/filterthroughput.megacamu",
+      "errors": [],
+      "numeric_rows": 4771,
+      "nonfinite_values": 0,
+      "columns": [
+        10
+      ]
+    },
+    {
+      "path": "MMT/g__filter_MMT.txt",
+      "errors": [],
+      "numeric_rows": 1601,
+      "nonfinite_values": 0,
+      "columns": [
+        6
+      ]
+    },
+    {
+      "path": "MMT/filterthroughput.megacamg",
+      "errors": [],
+      "numeric_rows": 4771,
+      "nonfinite_values": 0,
+      "columns": [
+        10
+      ]
+    },
+    {
+      "path": "MMT/r__filter_MMT.txt",
+      "errors": [],
+      "numeric_rows": 1601,
+      "nonfinite_values": 0,
+      "columns": [
+        6
+      ]
+    },
+    {
+      "path": "MMT/filterthroughput.megacamr",
+      "errors": [],
+      "numeric_rows": 4771,
+      "nonfinite_values": 0,
+      "columns": [
+        10
+      ]
+    },
+    {
+      "path": "MMT/i__filter_MMT.txt",
+      "errors": [],
+      "numeric_rows": 1601,
+      "nonfinite_values": 0,
+      "columns": [
+        6
+      ]
+    },
+    {
+      "path": "MMT/filterthroughput.megacami",
+      "errors": [],
+      "numeric_rows": 4771,
+      "nonfinite_values": 0,
+      "columns": [
+        10
+      ]
+    },
+    {
+      "path": "MMT/z__filter_MMT.txt",
+      "errors": [],
+      "numeric_rows": 1603,
+      "nonfinite_values": 0,
+      "columns": [
+        6,
+        7,
+        9
+      ]
+    },
+    {
+      "path": "MMT/filterthroughput.megacamz",
+      "errors": [],
+      "numeric_rows": 4771,
+      "nonfinite_values": 0,
+      "columns": [
+        10
+      ]
+    },
+    {
+      "path": "CAHA/ascii_Z.txt",
+      "errors": [],
+      "numeric_rows": 421,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "CAHA/ascii_out_Z.txt",
+      "errors": [],
+      "numeric_rows": 2826,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "CAHA/ascii_Y.txt",
+      "errors": [],
+      "numeric_rows": 1601,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "CAHA/ascii_out_Y.txt",
+      "errors": [],
+      "numeric_rows": 2796,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "CAHA/ascii_J.txt",
+      "errors": [],
+      "numeric_rows": 2201,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "CAHA/ascii_out_J.txt",
+      "errors": [],
+      "numeric_rows": 2796,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "CAHA/ascii_H.txt",
+      "errors": [],
+      "numeric_rows": 741,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "CAHA/ascii_out_H.txt",
+      "errors": [],
+      "numeric_rows": 2796,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "CAHA/ascii_Ks.txt",
+      "errors": [],
+      "numeric_rows": 2301,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "CAHA/br-gamma-inband.txt",
+      "errors": [],
+      "numeric_rows": 481,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "CAHA/ascii_out_Br-g.txt",
+      "errors": [],
+      "numeric_rows": 2701,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "CAHA/H2-in20band.txt",
+      "errors": [],
+      "numeric_rows": 200,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "CAHA/ascii_out_H2.txt",
+      "errors": [],
+      "numeric_rows": 2795,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "CAHA-BUSCA/bands.txt",
+      "errors": [],
+      "numeric_rows": 321,
+      "nonfinite_values": 0,
+      "columns": [
+        5
+      ]
+    },
+    {
+      "path": "CAHA-LAICA/john_B",
+      "errors": [],
+      "numeric_rows": 34,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "CAHA-LAICA/john_B2",
+      "errors": [],
+      "numeric_rows": 35,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "CAHA-LAICA/john_V",
+      "errors": [],
+      "numeric_rows": 28,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "CAHA-LAICA/john_R",
+      "errors": [],
+      "numeric_rows": 47,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "CAHA-LAICA/john_I",
+      "errors": [],
+      "numeric_rows": 31,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "CAHA-LAICA/SDSS_u",
+      "errors": [],
+      "numeric_rows": 20,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "CAHA-LAICA/SDSS_g",
+      "errors": [],
+      "numeric_rows": 44,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "CAHA-LAICA/SDSS_r",
+      "errors": [],
+      "numeric_rows": 40,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "CAHA-LAICA/SDSS_i",
+      "errors": [],
+      "numeric_rows": 57,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "CAHA-LAICA/SDSS_z",
+      "errors": [],
+      "numeric_rows": 14,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "JCMT/model850.pdf",
+      "errors": [],
+      "numeric_rows": 1401,
+      "nonfinite_values": 0,
+      "columns": [
+        15
+      ]
+    },
+    {
+      "path": "JCMT/model450.pdf",
+      "errors": [],
+      "numeric_rows": 3001,
+      "nonfinite_values": 0,
+      "columns": [
+        16
+      ]
+    },
+    {
+      "path": "JCMT/s8c20140313_00004-20140313_00002_SFP_scaled_spec_average_v2.pdf",
+      "errors": [],
+      "numeric_rows": 400,
+      "nonfinite_values": 0,
+      "columns": [
+        3
+      ]
+    },
+    {
+      "path": "JCMT/s8d20140313_00004-20140313_00002_SFP_scaled_spec_average_v2.pdf",
+      "errors": [],
+      "numeric_rows": 400,
+      "nonfinite_values": 0,
+      "columns": [
+        3
+      ]
+    },
+    {
+      "path": "LICK/B_kait1_shifted.txt",
+      "errors": [],
+      "numeric_rows": 2701,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/B_kait2_shifted.txt",
+      "errors": [],
+      "numeric_rows": 2701,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/B_kait3.txt",
+      "errors": [],
+      "numeric_rows": 2701,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/B_kait3_shifted.txt",
+      "errors": [],
+      "numeric_rows": 2526,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/B_kait4.txt",
+      "errors": [],
+      "numeric_rows": 2701,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/B_kait4_shifted.txt",
+      "errors": [],
+      "numeric_rows": 2701,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/B_nickel1.txt",
+      "errors": [],
+      "numeric_rows": 590,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/B_nickel2.txt",
+      "errors": [],
+      "numeric_rows": 2048,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/B_nickel_shifted.txt",
+      "errors": [],
+      "numeric_rows": 590,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/I_kait1_shifted.txt",
+      "errors": [],
+      "numeric_rows": 3101,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/I_kait2_shifted.txt",
+      "errors": [],
+      "numeric_rows": 2862,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/I_kait3.txt",
+      "errors": [],
+      "numeric_rows": 2962,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/I_kait3_shifted.txt",
+      "errors": [],
+      "numeric_rows": 2962,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/I_kait4.txt",
+      "errors": [],
+      "numeric_rows": 2970,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/I_kait4_shifted.txt",
+      "errors": [],
+      "numeric_rows": 2970,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/I_nickel1.txt",
+      "errors": [],
+      "numeric_rows": 1111,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/I_nickel2.txt",
+      "errors": [],
+      "numeric_rows": 450,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/I_nickel_shifted.txt",
+      "errors": [],
+      "numeric_rows": 1111,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/R_kait1_shifted.txt",
+      "errors": [],
+      "numeric_rows": 4598,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/R_kait2_shifted.txt",
+      "errors": [],
+      "numeric_rows": 4598,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/R_kait3.txt",
+      "errors": [],
+      "numeric_rows": 4601,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/R_kait3_cut.txt",
+      "errors": [],
+      "numeric_rows": 3614,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/R_kait3_shifted.txt",
+      "errors": [],
+      "numeric_rows": 3081,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/R_kait4.txt",
+      "errors": [],
+      "numeric_rows": 4601,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/R_kait4_shifted.txt",
+      "errors": [],
+      "numeric_rows": 3797,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/R_nickel1.txt",
+      "errors": [],
+      "numeric_rows": 900,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/R_nickel2.txt",
+      "errors": [],
+      "numeric_rows": 2725,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/R_nickel_shifted.txt",
+      "errors": [],
+      "numeric_rows": 900,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/V_kait1_shifted.txt",
+      "errors": [],
+      "numeric_rows": 2101,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/V_kait2_shifted.txt",
+      "errors": [],
+      "numeric_rows": 2101,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/V_kait3.txt",
+      "errors": [],
+      "numeric_rows": 2101,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/V_kait3_shifted.txt",
+      "errors": [],
+      "numeric_rows": 1951,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/V_kait4.txt",
+      "errors": [],
+      "numeric_rows": 2101,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/V_kait4_shifted.txt",
+      "errors": [],
+      "numeric_rows": 2101,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/V_nickel1.txt",
+      "errors": [],
+      "numeric_rows": 555,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/V_nickel2.txt",
+      "errors": [],
+      "numeric_rows": 1532,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    },
+    {
+      "path": "LICK/V_nickel_shifted.txt",
+      "errors": [],
+      "numeric_rows": 555,
+      "nonfinite_values": 0,
+      "columns": [
+        2
+      ]
+    }
+  ]
+}

@@ -56,7 +56,9 @@ class Table:
                 continue
             parts = line.split(self.delimiter) if self.delimiter else line.replace(",", " ").split()
             try:
-                rows.append((float(parts[self.cols[0]]), float(parts[self.cols[1]])))
+                pair = (float(parts[self.cols[0]]), float(parts[self.cols[1]]))
+                if np.isfinite(pair).all():
+                    rows.append(pair)
             except (ValueError, IndexError):
                 continue
         if not rows:

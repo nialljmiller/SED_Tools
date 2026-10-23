@@ -1,0 +1,2675 @@
+{
+  "codex": {
+    "files": 104,
+    "unique_hashes": 101,
+    "facilities": {
+      "NOT": 32,
+      "LBT": 54,
+      "Liverpool": 13,
+      "FLWO": 5
+    },
+    "checks": [
+      {
+        "path": "evidence/NOT/1.dat",
+        "errors": [],
+        "column_counts": {
+          "2": 266
+        },
+        "rows": 266,
+        "finite_rows": 266,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/NOT/2.dat",
+        "errors": [],
+        "column_counts": {
+          "2": 266
+        },
+        "rows": 266,
+        "finite_rows": 266,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/NOT/3.dat",
+        "errors": [],
+        "column_counts": {
+          "2": 327
+        },
+        "rows": 327,
+        "finite_rows": 327,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/NOT/4.dat",
+        "errors": [],
+        "column_counts": {
+          "2": 327
+        },
+        "rows": 327,
+        "finite_rows": 327,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/NOT/5.dat",
+        "errors": [],
+        "column_counts": {
+          "2": 386
+        },
+        "rows": 386,
+        "finite_rows": 386,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/NOT/6.dat",
+        "errors": [],
+        "column_counts": {
+          "2": 386
+        },
+        "rows": 386,
+        "finite_rows": 386,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/NOT/7.dat",
+        "errors": [],
+        "column_counts": {
+          "2": 359
+        },
+        "rows": 359,
+        "finite_rows": 359,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/NOT/8.dat",
+        "errors": [],
+        "column_counts": {
+          "2": 385
+        },
+        "rows": 385,
+        "finite_rows": 385,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/NOT/209.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 219
+        },
+        "rows": 219,
+        "finite_rows": 219,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/NOT/210.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 231
+        },
+        "rows": 231,
+        "finite_rows": 231,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/NOT/211.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 210
+        },
+        "rows": 210,
+        "finite_rows": 210,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/NOT/212.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 238
+        },
+        "rows": 238,
+        "finite_rows": 238,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/NOT/not213_iac_lab.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 2301
+        },
+        "rows": 2301,
+        "finite_rows": 2301,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/NOT/not214_iac_lab.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 2301
+        },
+        "rows": 2301,
+        "finite_rows": 2301,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/NOT/215.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 204
+        },
+        "rows": 204,
+        "finite_rows": 204,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/NOT/not215_iac_lab.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 2301
+        },
+        "rows": 2301,
+        "finite_rows": 2301,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/NOT/216.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 286
+        },
+        "rows": 286,
+        "finite_rows": 286,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/NOT/not216_iac_lab.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 2301
+        },
+        "rows": 2301,
+        "finite_rows": 2301,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/NOT/217.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 232
+        },
+        "rows": 232,
+        "finite_rows": 232,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/NOT/218.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 208
+        },
+        "rows": 208,
+        "finite_rows": 208,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/NOT/219.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 194
+        },
+        "rows": 194,
+        "finite_rows": 194,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/NOT/220.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 241
+        },
+        "rows": 241,
+        "finite_rows": 241,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/NOT/221.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 218
+        },
+        "rows": 218,
+        "finite_rows": 218,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/NOT/not222_iac_lab.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 2301
+        },
+        "rows": 2301,
+        "finite_rows": 2301,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/NOT/223.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 874
+        },
+        "rows": 874,
+        "finite_rows": 874,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/NOT/224.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 918
+        },
+        "rows": 918,
+        "finite_rows": 918,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/NOT/228.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 191
+        },
+        "rows": 191,
+        "finite_rows": 191,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/NOT/230.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 193
+        },
+        "rows": 193,
+        "finite_rows": 193,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/NOT/236_ndc.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 2201
+        },
+        "rows": 2201,
+        "finite_rows": 2201,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/NOT/not236_iac_lab.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 2301
+        },
+        "rows": 2301,
+        "finite_rows": 2301,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/NOT/237_ndc.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 2301
+        },
+        "rows": 2301,
+        "finite_rows": 2301,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/NOT/not237_iac_lab.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 2301
+        },
+        "rows": 2301,
+        "finite_rows": 2301,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/BesselU_BP.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 241
+        },
+        "rows": 241,
+        "finite_rows": 241,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/BesselV_BP.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 601
+        },
+        "rows": 601,
+        "finite_rows": 601,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/USpec-15.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 551
+        },
+        "rows": 551,
+        "finite_rows": 551,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/USpec-40.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 551
+        },
+        "rows": 551,
+        "finite_rows": 551,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/USpec-65.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 551
+        },
+        "rows": 551,
+        "finite_rows": 551,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/BesselB_BP.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 421
+        },
+        "rows": 421,
+        "finite_rows": 421,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/LBCB_Sloan-r_1.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 1801
+        },
+        "rows": 1801,
+        "finite_rows": 1801,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/LBCB_Sloan-r_2.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 1801
+        },
+        "rows": 1801,
+        "finite_rows": 1801,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/LBCB_Sloan-g_1.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 1801
+        },
+        "rows": 1801,
+        "finite_rows": 1801,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/LBCB_Sloan-g_2.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 1801
+        },
+        "rows": 1801,
+        "finite_rows": 1801,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/LBCR_Sloan-r.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 1601
+        },
+        "rows": 1601,
+        "finite_rows": 1601,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/LBCR_Bessel-I_mod.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 1601
+        },
+        "rows": 1601,
+        "finite_rows": 1601,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/LBCR_Sloan-i.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 1601
+        },
+        "rows": 1601,
+        "finite_rows": 1601,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/LBCR_Sloan-z.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 1601
+        },
+        "rows": 1601,
+        "finite_rows": 1601,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/LBCR_Bessel-R.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 1601
+        },
+        "rows": 1601,
+        "finite_rows": 1601,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/LBCR_Bessel-V.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 1621
+        },
+        "rows": 1621,
+        "finite_rows": 1621,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/F972_BP.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 600
+        },
+        "rows": 600,
+        "finite_rows": 600,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/F972N20.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 33
+        },
+        "rows": 33,
+        "finite_rows": 33,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/LBCR_Y.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 1801
+        },
+        "rows": 1801,
+        "finite_rows": 1801,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/LBCR_TiO.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 4001
+        },
+        "rows": 4001,
+        "finite_rows": 4001,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/LBCR_CN.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 4001
+        },
+        "rows": 4001,
+        "finite_rows": 4001,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/Liverpool/IOO_SDSS-U.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 1801
+        },
+        "rows": 1801,
+        "finite_rows": 1801,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/Liverpool/IOO_SDSS-G.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 1601
+        },
+        "rows": 1601,
+        "finite_rows": 1601,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/Liverpool/IOO_SDSS-R.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 1601
+        },
+        "rows": 1601,
+        "finite_rows": 1601,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/Liverpool/IOO_SDSS-I.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 1601
+        },
+        "rows": 1601,
+        "finite_rows": 1601,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/Liverpool/IOO_SDSS-Z.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 1601
+        },
+        "rows": 1601,
+        "finite_rows": 1601,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/Liverpool/IOO_Bessell-B.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 71
+        },
+        "rows": 71,
+        "finite_rows": 71,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/Liverpool/IOO_Bessell-V.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 71
+        },
+        "rows": 71,
+        "finite_rows": 71,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/Liverpool/IOO_H-alpha_rest.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 4001
+        },
+        "rows": 4001,
+        "finite_rows": 4001,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/Liverpool/IOO_H-alpha_6634.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 4001
+        },
+        "rows": 4001,
+        "finite_rows": 4001,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/Liverpool/IOO_H-alpha_6705.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 4001
+        },
+        "rows": 4001,
+        "finite_rows": 4001,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/Liverpool/IOO_H-alpha_6755.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 4001
+        },
+        "rows": 4001,
+        "finite_rows": 4001,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/Liverpool/IOO_H-alpha_6822.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 4001
+        },
+        "rows": 4001,
+        "finite_rows": 4001,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/LBCB_U_Bessel_full.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 943
+        },
+        "rows": 943,
+        "finite_rows": 942,
+        "nonfinite_rows": 1,
+        "source_nonfinite_limitation": true
+      },
+      {
+        "path": "evidence/LBT/LBCB_U_Bessel_bandpass.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 121
+        },
+        "rows": 121,
+        "finite_rows": 121,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/LBCB_V_Bessel_full.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 943
+        },
+        "rows": 943,
+        "finite_rows": 942,
+        "nonfinite_rows": 1,
+        "source_nonfinite_limitation": true
+      },
+      {
+        "path": "evidence/LBT/LBCB_V_Bessel_bandpass.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 281
+        },
+        "rows": 281,
+        "finite_rows": 281,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/LBCB_U_Spec_full.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 943
+        },
+        "rows": 943,
+        "finite_rows": 942,
+        "nonfinite_rows": 1,
+        "source_nonfinite_limitation": true
+      },
+      {
+        "path": "evidence/LBT/LBCB_U_Spec_bandpass.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 121
+        },
+        "rows": 121,
+        "finite_rows": 121,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/LBCB_B_Bessel_full.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 943
+        },
+        "rows": 943,
+        "finite_rows": 942,
+        "nonfinite_rows": 1,
+        "source_nonfinite_limitation": true
+      },
+      {
+        "path": "evidence/LBT/LBCB_B_Bessel_bandpass.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 181
+        },
+        "rows": 181,
+        "finite_rows": 181,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/LBCB_r_Sloan_full.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 943
+        },
+        "rows": 943,
+        "finite_rows": 942,
+        "nonfinite_rows": 1,
+        "source_nonfinite_limitation": true
+      },
+      {
+        "path": "evidence/LBT/LBCB_r_Sloan_bandpass.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 211
+        },
+        "rows": 211,
+        "finite_rows": 211,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/LBCB_F338N10_full.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 4051
+        },
+        "rows": 4051,
+        "finite_rows": 4051,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/LBCB_F338N10_bandpass.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 501
+        },
+        "rows": 501,
+        "finite_rows": 501,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/LBCB_g_Sloan_full.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 943
+        },
+        "rows": 943,
+        "finite_rows": 942,
+        "nonfinite_rows": 1,
+        "source_nonfinite_limitation": true
+      },
+      {
+        "path": "evidence/LBT/LBCB_g_Sloan_bandpass.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 221
+        },
+        "rows": 221,
+        "finite_rows": 221,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/LBCR_r_Sloan_full.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 943
+        },
+        "rows": 943,
+        "finite_rows": 942,
+        "nonfinite_rows": 1,
+        "source_nonfinite_limitation": true
+      },
+      {
+        "path": "evidence/LBT/LBCR_r_Sloan_bandpass.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 211
+        },
+        "rows": 211,
+        "finite_rows": 211,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/LBCR_I_Bessel_full.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 943
+        },
+        "rows": 943,
+        "finite_rows": 942,
+        "nonfinite_rows": 1,
+        "source_nonfinite_limitation": true
+      },
+      {
+        "path": "evidence/LBT/LBCR_I_Bessel_bandpass.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 263
+        },
+        "rows": 263,
+        "finite_rows": 262,
+        "nonfinite_rows": 1,
+        "source_nonfinite_limitation": true
+      },
+      {
+        "path": "evidence/LBT/LBCR_i_Sloan_full.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 943
+        },
+        "rows": 943,
+        "finite_rows": 942,
+        "nonfinite_rows": 1,
+        "source_nonfinite_limitation": true
+      },
+      {
+        "path": "evidence/LBT/LBCR_i_Sloan_bandpass.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 232
+        },
+        "rows": 232,
+        "finite_rows": 232,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/LBCR_z_Sloan_full.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 943
+        },
+        "rows": 943,
+        "finite_rows": 942,
+        "nonfinite_rows": 1,
+        "source_nonfinite_limitation": true
+      },
+      {
+        "path": "evidence/LBT/LBCR_z_Sloan_bandpass.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 443
+        },
+        "rows": 443,
+        "finite_rows": 442,
+        "nonfinite_rows": 1,
+        "source_nonfinite_limitation": true
+      },
+      {
+        "path": "evidence/LBT/LBCR_R_Bessel_full.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 943
+        },
+        "rows": 943,
+        "finite_rows": 942,
+        "nonfinite_rows": 1,
+        "source_nonfinite_limitation": true
+      },
+      {
+        "path": "evidence/LBT/LBCR_R_Bessel_bandpass.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 452
+        },
+        "rows": 452,
+        "finite_rows": 451,
+        "nonfinite_rows": 1,
+        "source_nonfinite_limitation": true
+      },
+      {
+        "path": "evidence/LBT/LBCR_V_Bessel_full.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 943
+        },
+        "rows": 943,
+        "finite_rows": 942,
+        "nonfinite_rows": 1,
+        "source_nonfinite_limitation": true
+      },
+      {
+        "path": "evidence/LBT/LBCR_V_Bessel_bandpass.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 231
+        },
+        "rows": 231,
+        "finite_rows": 231,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/LBCR_F972N20_full.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 943
+        },
+        "rows": 943,
+        "finite_rows": 942,
+        "nonfinite_rows": 1,
+        "source_nonfinite_limitation": true
+      },
+      {
+        "path": "evidence/LBT/LBCR_F972N20_bandpass.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 451
+        },
+        "rows": 451,
+        "finite_rows": 451,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/LBCR_F972N20_bandpass_model.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 33
+        },
+        "rows": 33,
+        "finite_rows": 33,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/LBCR_Y_Fan_full.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 943
+        },
+        "rows": 943,
+        "finite_rows": 942,
+        "nonfinite_rows": 1,
+        "source_nonfinite_limitation": true
+      },
+      {
+        "path": "evidence/LBT/LBCR_Y_Fan_bandpass.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 282
+        },
+        "rows": 282,
+        "finite_rows": 282,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/LBCR_TiO_784_full.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 4001
+        },
+        "rows": 4001,
+        "finite_rows": 4001,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/LBT/LBCR_CN_817_full.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 4001
+        },
+        "rows": 4001,
+        "finite_rows": 4001,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/FLWO/Us_Keplercam.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 24
+        },
+        "rows": 24,
+        "finite_rows": 24,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/FLWO/B_Keplercam.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 50
+        },
+        "rows": 50,
+        "finite_rows": 50,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/FLWO/V_Keplercam.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 44
+        },
+        "rows": 44,
+        "finite_rows": 44,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/FLWO/r_Keplercam.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 45
+        },
+        "rows": 45,
+        "finite_rows": 45,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/FLWO/i_Keplercam.txt",
+        "errors": [],
+        "column_counts": {
+          "2": 55
+        },
+        "rows": 55,
+        "finite_rows": 55,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      },
+      {
+        "path": "evidence/Liverpool/ioo_filter_throughput_and_qe.txt",
+        "errors": [],
+        "column_counts": {
+          "10": 1641
+        },
+        "rows": 1641,
+        "finite_rows": 1641,
+        "nonfinite_rows": 0,
+        "source_nonfinite_limitation": false
+      }
+    ]
+  },
+  "space": {
+    "files": 171,
+    "unique_hashes": 171,
+    "facilities": {
+      "AKARI": 9,
+      "COBE": 10,
+      "IRAS": 12,
+      "WMAP": 40,
+      "PLANCK": 86,
+      "MSX": 4,
+      "CHEOPS": 1,
+      "MOST": 1,
+      "Corot": 1,
+      "PLATO": 1,
+      "XMM": 6
+    },
+    "checks": [
+      {
+        "path": "curves/AKARI/n3.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 4687
+        },
+        "rows": 4687
+      },
+      {
+        "path": "curves/AKARI/n2.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 4687
+        },
+        "rows": 4687
+      },
+      {
+        "path": "curves/AKARI/s9w.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 2076
+        },
+        "rows": 2076
+      },
+      {
+        "path": "curves/AKARI/n4.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 4687
+        },
+        "rows": 4687
+      },
+      {
+        "path": "curves/AKARI/s7.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 2076
+        },
+        "rows": 2076
+      },
+      {
+        "path": "curves/AKARI/s11.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 2076
+        },
+        "rows": 2076
+      },
+      {
+        "path": "curves/AKARI/l15.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 603
+        },
+        "rows": 603
+      },
+      {
+        "path": "curves/AKARI/l18w.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 678
+        },
+        "rows": 678
+      },
+      {
+        "path": "curves/AKARI/l24.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 678
+        },
+        "rows": 678
+      },
+      {
+        "path": "curves/COBE/DIRBE_1.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 800
+        },
+        "rows": 800
+      },
+      {
+        "path": "curves/COBE/DIRBE_2.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 800
+        },
+        "rows": 800
+      },
+      {
+        "path": "curves/COBE/DIRBE_3.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 800
+        },
+        "rows": 800
+      },
+      {
+        "path": "curves/COBE/DIRBE_4.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 800
+        },
+        "rows": 800
+      },
+      {
+        "path": "curves/COBE/DIRBE_5.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 800
+        },
+        "rows": 800
+      },
+      {
+        "path": "curves/COBE/DIRBE_6.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 800
+        },
+        "rows": 800
+      },
+      {
+        "path": "curves/COBE/DIRBE_7.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 800
+        },
+        "rows": 800
+      },
+      {
+        "path": "curves/COBE/DIRBE_8.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 800
+        },
+        "rows": 800
+      },
+      {
+        "path": "curves/COBE/DIRBE_9.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 800
+        },
+        "rows": 800
+      },
+      {
+        "path": "curves/COBE/DIRBE_10.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 800
+        },
+        "rows": 800
+      },
+      {
+        "path": "curves/IRAS/12_filter_transmission.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 18
+        },
+        "rows": 18
+      },
+      {
+        "path": "curves/IRAS/12_relative_detector_response.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 18
+        },
+        "rows": 18
+      },
+      {
+        "path": "curves/IRAS/12_relative_system_response.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 18
+        },
+        "rows": 18
+      },
+      {
+        "path": "curves/IRAS/60_filter_transmission.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 21
+        },
+        "rows": 21
+      },
+      {
+        "path": "curves/IRAS/60_relative_detector_response.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 21
+        },
+        "rows": 21
+      },
+      {
+        "path": "curves/IRAS/60_relative_system_response.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 21
+        },
+        "rows": 21
+      },
+      {
+        "path": "curves/IRAS/25_filter_transmission.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 32
+        },
+        "rows": 32
+      },
+      {
+        "path": "curves/IRAS/25_relative_detector_response.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 32
+        },
+        "rows": 32
+      },
+      {
+        "path": "curves/IRAS/25_relative_system_response.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 32
+        },
+        "rows": 32
+      },
+      {
+        "path": "curves/IRAS/100_filter_transmission.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 16
+        },
+        "rows": 16
+      },
+      {
+        "path": "curves/IRAS/100_relative_detector_response.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 16
+        },
+        "rows": 16
+      },
+      {
+        "path": "curves/IRAS/100_relative_system_response.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 16
+        },
+        "rows": 16
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_K11_v5_det1.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_K11_v5_det2.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_K12_v5_det1.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_K12_v5_det2.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_Ka11_v5_det1.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_Ka11_v5_det2.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_Ka12_v5_det1.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_Ka12_v5_det2.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_Q11_v5_det1.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_Q11_v5_det2.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_Q12_v5_det1.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_Q12_v5_det2.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_Q21_v5_det1.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_Q21_v5_det2.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_Q22_v5_det1.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_Q22_v5_det2.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_V11_v5_det1.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_V11_v5_det2.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_V12_v5_det1.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_V12_v5_det2.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_V21_v5_det1.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_V21_v5_det2.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_V22_v5_det1.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_V22_v5_det2.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_W11_v5_det1.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_W11_v5_det2.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_W12_v5_det1.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_W12_v5_det2.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_W21_v5_det1.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_W21_v5_det2.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_W22_v5_det1.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_W22_v5_det2.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_W31_v5_det1.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_W31_v5_det2.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_W32_v5_det1.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_W32_v5_det2.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_W41_v5_det1.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_W41_v5_det2.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_W42_v5_det1.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/WMAP/wmap_bandpass_W42_v5_det2.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 201
+        },
+        "rows": 201
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_100-1A.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12297
+        },
+        "rows": 12297
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_100-1B.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12297
+        },
+        "rows": 12297
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_100-2A.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12297
+        },
+        "rows": 12297
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_100-2B.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12297
+        },
+        "rows": 12297
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_100-3A.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12297
+        },
+        "rows": 12297
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_100-3B.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12297
+        },
+        "rows": 12297
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_100-4A.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12297
+        },
+        "rows": 12297
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_100-4B.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12297
+        },
+        "rows": 12297
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-1A.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12602
+        },
+        "rows": 12602
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-1B.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12602
+        },
+        "rows": 12602
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-2A.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12602
+        },
+        "rows": 12602
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-2B.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12602
+        },
+        "rows": 12602
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-3A.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12602
+        },
+        "rows": 12602
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-3B.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12602
+        },
+        "rows": 12602
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-4A.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12602
+        },
+        "rows": 12602
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-4B.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12602
+        },
+        "rows": 12602
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-5.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12602
+        },
+        "rows": 12602
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-6.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12602
+        },
+        "rows": 12602
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-7.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12602
+        },
+        "rows": 12602
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-8.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12602
+        },
+        "rows": 12602
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-1.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12600
+        },
+        "rows": 12600
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-2.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12600
+        },
+        "rows": 12600
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-3.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12600
+        },
+        "rows": 12600
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-4.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12600
+        },
+        "rows": 12600
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-5A.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12600
+        },
+        "rows": 12600
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-5B.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12600
+        },
+        "rows": 12600
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-6A.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12600
+        },
+        "rows": 12600
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-6B.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12600
+        },
+        "rows": 12600
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-7A.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12600
+        },
+        "rows": 12600
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-7B.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12600
+        },
+        "rows": 12600
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-8A.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12600
+        },
+        "rows": 12600
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-8B.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12600
+        },
+        "rows": 12600
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-1.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12930
+        },
+        "rows": 12930
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-2.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12930
+        },
+        "rows": 12930
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-3A.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12930
+        },
+        "rows": 12930
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-3B.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12930
+        },
+        "rows": 12930
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-4A.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12930
+        },
+        "rows": 12930
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-4B.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12930
+        },
+        "rows": 12930
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-5A.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12930
+        },
+        "rows": 12930
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-5B.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12930
+        },
+        "rows": 12930
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-6A.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12930
+        },
+        "rows": 12930
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-6B.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12930
+        },
+        "rows": 12930
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-7.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12930
+        },
+        "rows": 12930
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-8.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12930
+        },
+        "rows": 12930
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_545-1.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 13938
+        },
+        "rows": 13938
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_545-2.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 13938
+        },
+        "rows": 13938
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_545-3.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 13938
+        },
+        "rows": 13938
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_545-4.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 13938
+        },
+        "rows": 13938
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_857-1.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 16819
+        },
+        "rows": 16819
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_857-2.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 16819
+        },
+        "rows": 16819
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_857-3.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 16819
+        },
+        "rows": 16819
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_857-4.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 16819
+        },
+        "rows": 16819
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_F100.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12297
+        },
+        "rows": 12297
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_F143.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12602
+        },
+        "rows": 12602
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_F217.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12600
+        },
+        "rows": 12600
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_F353.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12930
+        },
+        "rows": 12930
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_F545.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 13938
+        },
+        "rows": 13938
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_F857.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 16819
+        },
+        "rows": 16819
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_PSB143.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12602
+        },
+        "rows": 12602
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_PSB217.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12600
+        },
+        "rows": 12600
+      },
+      {
+        "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_PSB353.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 12930
+        },
+        "rows": 12930
+      },
+      {
+        "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_030-28S.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 188
+        },
+        "rows": 188
+      },
+      {
+        "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_030-28M.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 188
+        },
+        "rows": 188
+      },
+      {
+        "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_030-27S.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 188
+        },
+        "rows": 188
+      },
+      {
+        "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_030-27M.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 188
+        },
+        "rows": 188
+      },
+      {
+        "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_044-26S.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 151
+        },
+        "rows": 151
+      },
+      {
+        "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_044-26M.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 151
+        },
+        "rows": 151
+      },
+      {
+        "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_044-25S.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 151
+        },
+        "rows": 151
+      },
+      {
+        "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_044-25M.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 151
+        },
+        "rows": 151
+      },
+      {
+        "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_044-24S.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 151
+        },
+        "rows": 151
+      },
+      {
+        "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_044-24M.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 151
+        },
+        "rows": 151
+      },
+      {
+        "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-23S.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 251
+        },
+        "rows": 251
+      },
+      {
+        "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-23M.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 251
+        },
+        "rows": 251
+      },
+      {
+        "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-22S.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 251
+        },
+        "rows": 251
+      },
+      {
+        "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-22M.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 251
+        },
+        "rows": 251
+      },
+      {
+        "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-21S.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 251
+        },
+        "rows": 251
+      },
+      {
+        "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-21M.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 251
+        },
+        "rows": 251
+      },
+      {
+        "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-20S.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 251
+        },
+        "rows": 251
+      },
+      {
+        "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-20M.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 251
+        },
+        "rows": 251
+      },
+      {
+        "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-19S.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 251
+        },
+        "rows": 251
+      },
+      {
+        "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-19M.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 251
+        },
+        "rows": 251
+      },
+      {
+        "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-18S.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 251
+        },
+        "rows": 251
+      },
+      {
+        "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-18M.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 251
+        },
+        "rows": 251
+      },
+      {
+        "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_030.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 188
+        },
+        "rows": 188
+      },
+      {
+        "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_044.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 151
+        },
+        "rows": 151
+      },
+      {
+        "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 251
+        },
+        "rows": 251
+      },
+      {
+        "path": "curves/MSX/msx_rsr_a.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 557
+        },
+        "rows": 557
+      },
+      {
+        "path": "curves/MSX/msx_rsr_d.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 348
+        },
+        "rows": 348
+      },
+      {
+        "path": "curves/MSX/msx_rsr_c.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 248
+        },
+        "rows": 248
+      },
+      {
+        "path": "curves/MSX/msx_rsr_e.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 987
+        },
+        "rows": 987
+      },
+      {
+        "path": "curves/CHEOPS/CHEOPS.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 171
+        },
+        "rows": 171
+      },
+      {
+        "path": "curves/MOST/MOST.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 171
+        },
+        "rows": 171
+      },
+      {
+        "path": "curves/Corot/CoRoT.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 171
+        },
+        "rows": 171
+      },
+      {
+        "path": "curves/PLATO/PLATO.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 171
+        },
+        "rows": 171
+      },
+      {
+        "path": "curves/XMM/OM_UVW2.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 601
+        },
+        "rows": 601
+      },
+      {
+        "path": "curves/XMM/OM_UVM2.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 601
+        },
+        "rows": 601
+      },
+      {
+        "path": "curves/XMM/OM_UVW1.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 601
+        },
+        "rows": 601
+      },
+      {
+        "path": "curves/XMM/OM_U.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 601
+        },
+        "rows": 601
+      },
+      {
+        "path": "curves/XMM/OM_B.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 601
+        },
+        "rows": 601
+      },
+      {
+        "path": "curves/XMM/OM_V.csv",
+        "errors": [],
+        "column_counts": {
+          "2": 601
+        },
+        "rows": 601
+      }
+    ],
+    "raw_hash_checks": [
+      {
+        "path": "raw/AKARI/n2.fad",
+        "ok": true
+      },
+      {
+        "path": "raw/AKARI/n3.fad",
+        "ok": true
+      },
+      {
+        "path": "raw/AKARI/n4.fad",
+        "ok": true
+      },
+      {
+        "path": "raw/AKARI/s7.fad",
+        "ok": true
+      },
+      {
+        "path": "raw/AKARI/s9w.fad",
+        "ok": true
+      },
+      {
+        "path": "raw/AKARI/s11.fad",
+        "ok": true
+      },
+      {
+        "path": "raw/AKARI/l15.fad",
+        "ok": true
+      },
+      {
+        "path": "raw/AKARI/l18w.fad",
+        "ok": true
+      },
+      {
+        "path": "raw/AKARI/l24.fad",
+        "ok": true
+      },
+      {
+        "path": "raw/AKARI/index.html",
+        "ok": true
+      },
+      {
+        "path": "raw/COBE/dirbe.asc",
+        "ok": true
+      },
+      {
+        "path": "raw/COBE/description.html",
+        "ok": true
+      },
+      {
+        "path": "raw/IRAS/tabC5.html",
+        "ok": true
+      },
+      {
+        "path": "raw/IRAS/tabC5-ipac.html",
+        "ok": true
+      },
+      {
+        "path": "raw/WMAP/wmap_bandpass_v5.tar.gz",
+        "ok": true
+      },
+      {
+        "path": "raw/WMAP/description.html",
+        "ok": true
+      },
+      {
+        "path": "raw/PLANCK/LFI_RIMO_R2.50.fits",
+        "ok": true
+      },
+      {
+        "path": "raw/PLANCK/HFI_RIMO_R2.00.fits",
+        "ok": true
+      },
+      {
+        "path": "raw/MSX/msx_rsr_a.tbl",
+        "ok": true
+      },
+      {
+        "path": "raw/MSX/msx_rsr_c.tbl",
+        "ok": true
+      },
+      {
+        "path": "raw/MSX/msx_rsr_d.tbl",
+        "ok": true
+      },
+      {
+        "path": "raw/MSX/msx_rsr_e.tbl",
+        "ok": true
+      },
+      {
+        "path": "raw/MSX/description.html",
+        "ok": true
+      },
+      {
+        "path": "raw/CHEOPS/response_functions.fits",
+        "ok": true
+      },
+      {
+        "path": "raw/CHEOPS/instrument.py",
+        "ok": true
+      },
+      {
+        "path": "raw/XMM/OM_response_081008.txt",
+        "ok": true
+      },
+      {
+        "path": "raw/XMM/om_effarea_b_v2.0.rsp",
+        "ok": true
+      },
+      {
+        "path": "raw/XMM/om_effarea_u_v2.0.rsp",
+        "ok": true
+      },
+      {
+        "path": "raw/XMM/om_effarea_v_v2.0.rsp",
+        "ok": true
+      },
+      {
+        "path": "raw/XMM/om_effarea_uvm2_v2.0.rsp",
+        "ok": true
+      },
+      {
+        "path": "raw/XMM/om_effarea_uvw1_v2.0.rsp",
+        "ok": true
+      },
+      {
+        "path": "raw/XMM/om_effarea_uvw2_v2.0.rsp",
+        "ok": true
+      }
+    ]
+  }
+}

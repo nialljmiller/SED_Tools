@@ -155,6 +155,29 @@ def test_nifs_temperature_columns_are_distinct():
     np.testing.assert_allclose(cold.parse(b"2.0 25 75\n2.1 50 90\n")[1], [0.75, 0.9])
 
 
+def test_nsfcam_mk_percent_is_distinct_from_older_fraction_scans():
+    from sed_tools.component_sources.tabular import SOURCES
+
+    filters = SOURCES["NSFCam"].filters
+    assert filters["J"].tr_scale == 1
+    assert filters["JMK"].tr_scale == 0.01
+    np.testing.assert_allclose(filters["JMK"].parse(b"WL (Micrometers) Transmission (%)\n"
+                                                     b"1.0 50\n1.1 90\n")[1], [0.5, 0.9])
+
+
+def test_ioo_component_table_skips_unmeasured_qe_and_selects_columns():
+    from sed_tools.component_sources.tabular import SOURCES
+
+    spec = SOURCES["IOO"]
+    raw = b"# wavelength u g r i z B V QE window\n2800 0 1 2 3 4 5 6 nan 80\n"
+    raw += b"3000 10 11 12 13 14 15 16 70 85\n4000 20 21 22 23 24 25 26 80 90\n"
+    np.testing.assert_allclose(spec.filters["g"].parse(raw)[1], [0.01, 0.11, 0.21])
+    qe_wl, qe = spec.qe.parse(raw)
+    np.testing.assert_allclose(qe_wl, [3000, 4000])
+    np.testing.assert_allclose(qe, [0.7, 0.8])
+    np.testing.assert_allclose(spec.optics[0].parse(raw)[1], [0.8, 0.85, 0.9])
+
+
 # ---------------------------------------------------------------------------
 # HST
 # ---------------------------------------------------------------------------

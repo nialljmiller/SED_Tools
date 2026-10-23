@@ -1,0 +1,686 @@
+[
+  {
+    "path": "curves/AKARI/n3.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/AKARI/n2.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/AKARI/s9w.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/AKARI/n4.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/AKARI/s7.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/AKARI/s11.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/AKARI/l15.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/AKARI/l18w.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/AKARI/l24.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/COBE/DIRBE_1.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/COBE/DIRBE_2.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/COBE/DIRBE_3.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/COBE/DIRBE_4.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/COBE/DIRBE_5.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/COBE/DIRBE_6.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/COBE/DIRBE_7.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/COBE/DIRBE_8.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/COBE/DIRBE_9.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/COBE/DIRBE_10.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/IRAS/12_filter_transmission.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/IRAS/12_relative_detector_response.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/IRAS/12_relative_system_response.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/IRAS/60_filter_transmission.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/IRAS/60_relative_detector_response.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/IRAS/60_relative_system_response.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/IRAS/25_filter_transmission.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/IRAS/25_relative_detector_response.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/IRAS/25_relative_system_response.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/IRAS/100_filter_transmission.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/IRAS/100_relative_detector_response.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/IRAS/100_relative_system_response.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_K11_v5_det1.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_K11_v5_det2.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_K12_v5_det1.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_K12_v5_det2.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_Ka11_v5_det1.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_Ka11_v5_det2.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_Ka12_v5_det1.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_Ka12_v5_det2.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_Q11_v5_det1.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_Q11_v5_det2.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_Q12_v5_det1.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_Q12_v5_det2.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_Q21_v5_det1.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_Q21_v5_det2.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_Q22_v5_det1.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_Q22_v5_det2.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_V11_v5_det1.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_V11_v5_det2.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_V12_v5_det1.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_V12_v5_det2.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_V21_v5_det1.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_V21_v5_det2.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_V22_v5_det1.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_V22_v5_det2.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_W11_v5_det1.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_W11_v5_det2.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_W12_v5_det1.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_W12_v5_det2.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_W21_v5_det1.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_W21_v5_det2.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_W22_v5_det1.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_W22_v5_det2.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_W31_v5_det1.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_W31_v5_det2.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_W32_v5_det1.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_W32_v5_det2.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_W41_v5_det1.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_W41_v5_det2.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_W42_v5_det1.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/WMAP/wmap_bandpass_W42_v5_det2.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_100-1A.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_100-1B.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_100-2A.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_100-2B.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_100-3A.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_100-3B.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_100-4A.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_100-4B.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-1A.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-1B.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-2A.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-2B.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-3A.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-3B.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-4A.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-4B.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-5.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-6.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-7.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-8.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-1.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-2.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-3.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-4.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-5A.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-5B.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-6A.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-6B.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-7A.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-7B.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-8A.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_217-8B.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-1.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-2.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-3A.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-3B.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-4A.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-4B.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-5A.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-5B.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-6A.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-6B.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-7.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_353-8.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_545-1.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_545-2.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_545-3.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_545-4.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_857-1.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_857-2.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_857-3.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_857-4.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_F100.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_F143.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_F217.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_F353.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_F545.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_F857.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_PSB143.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_PSB217.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_PSB353.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_030-28S.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_030-28M.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_030-27S.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_030-27M.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_044-26S.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_044-26M.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_044-25S.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_044-25M.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_044-24S.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_044-24M.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-23S.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-23M.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-22S.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-22M.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-21S.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-21M.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-20S.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-20M.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-19S.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-19M.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-18S.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070-18M.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_030.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_044.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLANCK/LFI_RIMO_R2.50_BANDPASS_070.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/MSX/msx_rsr_a.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/MSX/msx_rsr_d.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/MSX/msx_rsr_c.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/MSX/msx_rsr_e.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/CHEOPS/CHEOPS.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/MOST/MOST.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/Corot/CoRoT.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/PLATO/PLATO.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/XMM/OM_UVW2.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/XMM/OM_UVM2.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/XMM/OM_UVW1.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/XMM/OM_U.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/XMM/OM_B.csv",
+    "raw_source_match": true
+  },
+  {
+    "path": "curves/XMM/OM_V.csv",
+    "raw_source_match": true
+  }
+]

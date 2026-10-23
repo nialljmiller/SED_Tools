@@ -105,11 +105,82 @@ NIFS = SimpleSource(
     notes="Gemini NIFS ZJ/JH/HK witness filter scans. The 298 K and 77 K columns are separate variants; no optics, QE or site atmosphere is inferred.",
 )
 
-SOURCES = {spec.instrument: spec for spec in (HAWKI, NACO, SPHERE, GSAOI, NIFS)}
+# These inventories were checked against the original source tables in the
+# round-3 research packet. Only files with identified wavelength, response,
+# and physical role enter the library; blocking optical densities, combined
+# responses and unlabeled model columns stay in the research inventory.
+PANIC_FILES = {
+    "Z": "ascii_Z.txt", "Y": "ascii_Y.txt", "J": "ascii_J.txt",
+    "H": "ascii_H.txt", "Ks": "ascii_Ks.txt",
+    "BrGamma": "br-gamma-inband.txt", "H2": "H2-in20band.txt",
+}
+PANIC = SimpleSource(
+    facility="CAHA", instrument="PANIC",
+    filters={band: Table(f"https://www.caha.es/images/panic/{filename}",
+                         wl_scale=10, tr_scale=0.01, note="filter at 100 K")
+             for band, filename in PANIC_FILES.items()},
+    published_from_filters=True,
+    references={"caha": "https://www.caha.es/images/panic/"},
+    notes="PANIC in-band filter scans at 100 K. Separate out-of-band optical-density scans are archived as research evidence, not misread as transmission.",
+)
+
+INGRID_FILES = (
+    "ksbarr.warm", "z.warm", "j.warm", "h.warm", "k.warm", "ks.warm",
+    "brg.warm", "brg.cold", "h2v10.warm", "h2v10.cold",
+    "feii.warm", "feii.cold", "hcont.warm", "hcont.cold",
+    "pab.warm", "jcont.warm", "kcont.warm", "kcont.cold",
+    "h2v21.warm", "h2v21.cold",
+)
+INGRID = SimpleSource(
+    facility="WHT", instrument="INGRID",
+    filters={name.replace(".", "_").upper():
+             Table(f"https://www.ing.iac.es/Astronomy/instruments/ingrid_new/filter/{name}.trans.html",
+                   wl_scale=10, tr_scale=0.01,
+                   note="measured warm scan" if name.endswith("warm") else "estimated cold scan")
+             for name in INGRID_FILES},
+    published_from_filters=True,
+    references={"wht": "https://www.ing.iac.es/Astronomy/instruments/ingrid_new/filter/"},
+    notes="INGRID filter-only scans; WARM measurements and COLD estimates remain distinct named variants. Negative measurement noise is floored at zero in served curves; raw scans are preserved in the research packet.",
+)
+
+NSFCAM_FILTERS = (
+    "j", "k", "kp", "ks", "l", "lp", "m", "mp1", "jmk", "hmk",
+    "kmk", "kpmk", "ksmk", "lpmk", "mpmk", "pag", "pab", "brg",
+    "hei", "fe", "h21", "h22", "co", "cont", "s17", "s23",
+)
+NSFCAM = SimpleSource(
+    facility="IRTF", instrument="NSFCam",
+    filters={name.upper(): Table(f"https://irtfweb.ifa.hawaii.edu/~nsfcam/filters/nsfcam_{name}_trans.dat",
+                               wl_scale=10000, tr_scale=0.01 if name.endswith("mk") else 1)
+             for name in NSFCAM_FILTERS},
+    published_from_filters=True,
+    references={"irtf": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html"},
+    notes="Historical NSFCam filter-only transmissions. The seven MK scan headers use percent, whereas older scans use fractions. PK50 filter+blocker combinations and the separate blocker are retained in the research packet pending band-specific composition; these scans do not imply current installation.",
+)
+
+IOO_TABLE = "https://ndownloader.figshare.com/files/7599991"
+IOO = SimpleSource(
+    facility="Liverpool", instrument="IOO",
+    filters={name: Table(IOO_TABLE, cols=(0, column), tr_scale=0.01)
+             for column, name in enumerate(("u", "g", "r", "i", "z", "B", "V"), start=1)},
+    optics=(Table(IOO_TABLE, cols=(0, 9), tr_scale=0.01,
+                  note="cryostat window in the IO:O efficiency model"),),
+    qe=Table(IOO_TABLE, cols=(0, 8), tr_scale=0.01,
+             note="CCD QE in the IO:O efficiency model; unmeasured below 2900 Angstrom"),
+    published_from_filters=True,
+    references={"figshare": "https://doi.org/10.6084/m9.figshare.4659421",
+                "liverpool": "https://telescope.livjm.ac.uk/TelInst/Inst/IOO/"},
+    notes="Seven filter curves, CCD QE and cryostat-window transmission from the Liverpool Telescope IO:O efficiency-model table. This is a documented model epoch, not a complete telescope optical path; five separate H-alpha scans remain in the research packet.",
+)
+
+SOURCES = {spec.instrument: spec for spec in
+           (HAWKI, NACO, SPHERE, GSAOI, NIFS, PANIC, INGRID, NSFCAM, IOO)}
 RAW_GROUPS = {
     "HAWKI": "eso2/eso_hawki", "NACO": "eso/eso_naco", "SPHERE": "eso/eso_sphere",
     "GSAOI": "pages2/pg_www_gemini_edu_instrumentation_gsaoi_components",
     "NIFS": "pages2/pg_www_gemini_edu_instrumentation_nifs_components",
+    "PANIC": "round3/ground-agent/CAHA", "INGRID": "round3/ground-agent/WHT",
+    "NSFCam": "round3/ground-agent/IRTF", "IOO": "round3/codex/evidence/Liverpool",
 }
 
 
@@ -124,7 +195,8 @@ def build(filter_root, *, instrument, raw=None, session=None, **kwargs) -> Path:
                 self.root, self.fallback = Path(root), fallback
 
             def get(self, url, **options):
-                filename = url.rsplit("/", 1)[-1]
+                filename = ("ioo_filter_throughput_and_qe.txt" if instrument == "IOO"
+                            else url.rsplit("/", 1)[-1])
                 path = self.root / RAW_GROUPS[instrument] / filename
                 if path.is_file():
                     response = Response()

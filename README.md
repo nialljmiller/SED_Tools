@@ -277,11 +277,13 @@ Where components come from:
 | VISTA/VIRCAM | ESO VIRCAM ETC curves (+ SkyCalc `paranal`) |
 | HAWK-I, NACO, SPHERE/IRDIS | ESO filter scans (11, 33 and 24 independently named curves; filter-only, with optics and QE still unavailable) |
 | Gemini GSAOI, NIFS | Gemini filter scans (22 GSAOI bands and six NIFS temperature variants; filter-only) |
+| CAHA PANIC, WHT INGRID, IRTF NSFCam | Independently sourced in-band filter scans (7 PANIC, 20 INGRID warm/cold variants, 26 historical NSFCam); filter-only |
+| Liverpool IO:O | Seven filter scans plus the separately published CCD QE and cryostat-window transmission from the IO:O efficiency model; other telescope optics remain unavailable |
 | ZTF | `ztf_information` filters and CCD QE |
 | 57 SVO instrument groups (SDSS, Swift/UVOT, UKIRT/WFCAM, OmegaCAM, Suprime-Cam, ...) | SVO's own filter-only sibling curves (`g_filter`, `g_fil`, `gprime_filter`) |
 | Gaia, 2MASS, WISE, Spitzer, GALEX, TESS, Kepler, Hipparcos/Tycho | none — only totals are published (`filters-info` says so) |
 
-The NJM mirror runs the automatic builders ahead of time (`sed-tools filters-build-components all`). Component requests reuse installed files, try NJM, then run the instrument's original-source builder if needed. For these table sets, a curator can run `sed-tools filters-build-components tabular --instrument HAWKI` (or `NACO`, `SPHERE`, `GSAOI` or `NIFS`); `--raw /path/to/evidence` reads the saved official files when a source is unavailable. These filters can be discovered and downloaded without SVO. If both NJM and the original source are unavailable, the normal SVO fallback remains. Their root curves are the measured filters themselves, not full system throughput. Large downloads, including JWST reference data, require `allow_heavy=True` in Python or `--allow-heavy` on the command line.
+The NJM mirror runs the automatic builders ahead of time (`sed-tools filters-build-components all`). Component requests reuse installed files, try NJM, then run the instrument's original-source builder if needed. For these table sets, a curator can run `sed-tools filters-build-components tabular --instrument PANIC` (or `INGRID`, `NSFCam`, `IOO`, `HAWKI`, `NACO`, `SPHERE`, `GSAOI`, `NIFS`); `--raw /path/to/evidence` reads the saved official files when a source is unavailable. These filters can be discovered and downloaded without SVO. If both NJM and the original source are unavailable, the normal SVO fallback remains. Their root curves are measured filters, not full system throughput. Large downloads, including JWST reference data, require `allow_heavy=True` in Python or `--allow-heavy` on the command line.
 
 #### Inspecting availability and requesting products
 

@@ -1,0 +1,189 @@
+{
+  "downloads": 32,
+  "download_hashes_passed": 32,
+  "curves": 171,
+  "by_facility": {
+    "AKARI": 9,
+    "CHEOPS": 1,
+    "COBE": 10,
+    "Corot": 1,
+    "IRAS": 12,
+    "MOST": 1,
+    "MSX": 4,
+    "PLANCK": 86,
+    "PLATO": 1,
+    "WMAP": 40,
+    "XMM": 6
+  },
+  "flown_facilities": 10,
+  "planned_facilities": [
+    "PLATO"
+  ],
+  "non_increasing": [
+    "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_857-1.csv",
+    "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_857-2.csv",
+    "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_857-3.csv",
+    "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_857-4.csv",
+    "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_F857.csv"
+  ],
+  "negative_responses": [
+    "curves/WMAP/wmap_bandpass_K11_v5_det1.csv",
+    "curves/WMAP/wmap_bandpass_K11_v5_det2.csv",
+    "curves/WMAP/wmap_bandpass_K12_v5_det1.csv",
+    "curves/WMAP/wmap_bandpass_K12_v5_det2.csv",
+    "curves/WMAP/wmap_bandpass_Ka11_v5_det1.csv",
+    "curves/WMAP/wmap_bandpass_Ka11_v5_det2.csv",
+    "curves/WMAP/wmap_bandpass_Ka12_v5_det1.csv",
+    "curves/WMAP/wmap_bandpass_Ka12_v5_det2.csv",
+    "curves/WMAP/wmap_bandpass_Q11_v5_det1.csv",
+    "curves/WMAP/wmap_bandpass_Q11_v5_det2.csv",
+    "curves/WMAP/wmap_bandpass_Q12_v5_det1.csv",
+    "curves/WMAP/wmap_bandpass_Q12_v5_det2.csv",
+    "curves/WMAP/wmap_bandpass_Q21_v5_det1.csv",
+    "curves/WMAP/wmap_bandpass_Q21_v5_det2.csv",
+    "curves/WMAP/wmap_bandpass_Q22_v5_det1.csv",
+    "curves/WMAP/wmap_bandpass_Q22_v5_det2.csv",
+    "curves/WMAP/wmap_bandpass_V11_v5_det1.csv",
+    "curves/WMAP/wmap_bandpass_V11_v5_det2.csv",
+    "curves/WMAP/wmap_bandpass_V12_v5_det1.csv",
+    "curves/WMAP/wmap_bandpass_V12_v5_det2.csv",
+    "curves/WMAP/wmap_bandpass_V21_v5_det1.csv",
+    "curves/WMAP/wmap_bandpass_V21_v5_det2.csv",
+    "curves/WMAP/wmap_bandpass_V22_v5_det1.csv",
+    "curves/WMAP/wmap_bandpass_V22_v5_det2.csv",
+    "curves/WMAP/wmap_bandpass_W11_v5_det1.csv",
+    "curves/WMAP/wmap_bandpass_W11_v5_det2.csv",
+    "curves/WMAP/wmap_bandpass_W12_v5_det1.csv",
+    "curves/WMAP/wmap_bandpass_W12_v5_det2.csv",
+    "curves/WMAP/wmap_bandpass_W21_v5_det1.csv",
+    "curves/WMAP/wmap_bandpass_W21_v5_det2.csv",
+    "curves/WMAP/wmap_bandpass_W22_v5_det1.csv",
+    "curves/WMAP/wmap_bandpass_W22_v5_det2.csv",
+    "curves/WMAP/wmap_bandpass_W31_v5_det1.csv",
+    "curves/WMAP/wmap_bandpass_W31_v5_det2.csv",
+    "curves/WMAP/wmap_bandpass_W32_v5_det1.csv",
+    "curves/WMAP/wmap_bandpass_W32_v5_det2.csv",
+    "curves/WMAP/wmap_bandpass_W41_v5_det1.csv",
+    "curves/WMAP/wmap_bandpass_W41_v5_det2.csv",
+    "curves/WMAP/wmap_bandpass_W42_v5_det1.csv",
+    "curves/WMAP/wmap_bandpass_W42_v5_det2.csv",
+    "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-1A.csv",
+    "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-1B.csv",
+    "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-2A.csv",
+    "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-2B.csv",
+    "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-3A.csv",
+    "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-3B.csv",
+    "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-4A.csv",
+    "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-4B.csv",
+    "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-5.csv",
+    "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-6.csv",
+    "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-7.csv",
+    "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_143-8.csv",
+    "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_F143.csv",
+    "curves/PLANCK/HFI_RIMO_R2.00_BANDPASS_PSB143.csv"
+  ],
+  "fits_checks": [
+    {
+      "path": "raw/XMM/om_effarea_b_v2.0.rsp",
+      "extensions": [
+        {
+          "name": "PRIMARY",
+          "rows": 0
+        },
+        {
+          "name": "EBOUNDS",
+          "rows": 1
+        },
+        {
+          "name": "SPECTRESP MATRIX",
+          "rows": 286
+        }
+      ]
+    },
+    {
+      "path": "raw/XMM/om_effarea_u_v2.0.rsp",
+      "extensions": [
+        {
+          "name": "PRIMARY",
+          "rows": 0
+        },
+        {
+          "name": "EBOUNDS",
+          "rows": 1
+        },
+        {
+          "name": "SPECTRESP MATRIX",
+          "rows": 299
+        }
+      ]
+    },
+    {
+      "path": "raw/XMM/om_effarea_v_v2.0.rsp",
+      "extensions": [
+        {
+          "name": "PRIMARY",
+          "rows": 0
+        },
+        {
+          "name": "EBOUNDS",
+          "rows": 1
+        },
+        {
+          "name": "SPECTRESP MATRIX",
+          "rows": 314
+        }
+      ]
+    },
+    {
+      "path": "raw/XMM/om_effarea_uvm2_v2.0.rsp",
+      "extensions": [
+        {
+          "name": "PRIMARY",
+          "rows": 0
+        },
+        {
+          "name": "EBOUNDS",
+          "rows": 1
+        },
+        {
+          "name": "SPECTRESP MATRIX",
+          "rows": 379
+        }
+      ]
+    },
+    {
+      "path": "raw/XMM/om_effarea_uvw1_v2.0.rsp",
+      "extensions": [
+        {
+          "name": "PRIMARY",
+          "rows": 0
+        },
+        {
+          "name": "EBOUNDS",
+          "rows": 1
+        },
+        {
+          "name": "SPECTRESP MATRIX",
+          "rows": 502
+        }
+      ]
+    },
+    {
+      "path": "raw/XMM/om_effarea_uvw2_v2.0.rsp",
+      "extensions": [
+        {
+          "name": "PRIMARY",
+          "rows": 0
+        },
+        {
+          "name": "EBOUNDS",
+          "rows": 1
+        },
+        {
+          "name": "SPECTRESP MATRIX",
+          "rows": 493
+        }
+      ]
+    }
+  ]
+}
