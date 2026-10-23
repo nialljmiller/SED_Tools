@@ -466,7 +466,9 @@ def print_filter_availability(info: dict) -> None:
         for band, recipe in info["published_bands"].items():
             print(f"    {band}: {recipe}")
     comps = info["components"]
-    print(f"  Separate components      : {', '.join(comps) if comps else 'none identified'}")
+    component_summary = (', '.join(comps) if comps else
+                         'available for selected bands' if info['partial_components'] else 'none identified')
+    print(f"  Separate components      : {component_summary}")
     if info["buildable"]:
         print(f"  Can be built             : {', '.join(info['buildable'])}")
     if info["component_status"]:

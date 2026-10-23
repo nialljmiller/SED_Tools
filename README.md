@@ -328,7 +328,7 @@ Source failures remain visible in inventory and availability results. Published 
 
 Run `sed-tools filters-detector --dry-run` to inspect proposed detector tags, then `sed-tools filters-detector` to write them. Review entries marked `assumed`: they retain the historical energy-counting convention until identified. Use `sed-tools filters-info Facility/Instrument` to inspect published contents, available components and the instrument's atmosphere before composing a new set.
 
-Published curves remain the default. Composed products have their own directories and MESA index files; select a product directory explicitly to use that recipe. Automatic filter discovery skips `components/` and `products/`, so adding component data does not silently replace a published passband. Existing flux cubes do not need rebuilding to tag filters or compose throughputs; recompute photometry to apply corrected detector weights.
+Published curves remain the default. Composed products have their own directories and MESA index files; select a product directory explicitly to use that recipe. Automatic photometry lookup skips `components/` and `products/`, so adding component data does not silently replace a published passband. The filter-set combination menu includes composed products as selectable inputs. Existing flux cubes do not need rebuilding to tag filters or compose throughputs; recompute photometry to apply corrected detector weights.
 
 ---
 

@@ -8,6 +8,7 @@ import json
 import logging
 import os
 import re
+import time
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 from urllib.parse import urljoin
@@ -66,6 +67,27 @@ class NJMFilterGrabber:
     def is_available(self) -> bool:
         """Return True if the mirror is available."""
         return self._available
+
+    def _get(self, url: str, *, timeout: int = 30) -> requests.Response:
+        """Retry transient mirror failures, including Apache's temporary 403 block."""
+        for attempt in range(3):
+            try:
+                response = self.session.get(url, timeout=timeout)
+                response.raise_for_status()
+                return response
+            except requests.RequestException as exc:
+                status = getattr(getattr(exc, "response", None), "status_code", None)
+                if status is not None and status not in (403, 429, 500, 502, 503, 504):
+                    raise
+                if attempt == 2:
+                    raise
+                delay = (1, 60)[attempt] if status == 403 else (1, 3)[attempt]
+                if status == 429:
+                    retry_after = getattr(exc.response, "headers", {}).get("Retry-After")
+                    if retry_after and retry_after.isdigit():
+                        delay = min(int(retry_after), 60)
+                logger.warning("NJM request failed (%s); retrying in %s s: %s", status or type(exc).__name__, delay, url)
+                time.sleep(delay)
 
     @staticmethod
     def _normalize_name(name: str) -> str:
@@ -156,8 +178,7 @@ class NJMFilterGrabber:
         
         instrument_url = f"{self.filters_url}/{facility}/{instrument}/"
         try:
-            response = self.session.get(f"{instrument_url}{instrument}", timeout=10)
-            response.raise_for_status()
+            response = self._get(f"{instrument_url}{instrument}", timeout=10)
         except requests.RequestException:
             logger.debug("No index for %s/%s; using directory listing", facility, instrument)
         else:
@@ -170,8 +191,7 @@ class NJMFilterGrabber:
     def _parse_directory_listing(self, url: str) -> List[str]:
         """Parse Apache directory listing HTML to extract subdirectories/files."""
         try:
-            response = self.session.get(url, timeout=10)
-            response.raise_for_status()
+            response = self._get(url, timeout=10)
             soup = BeautifulSoup(response.text, 'html.parser')
             
             items = []
@@ -239,8 +259,7 @@ class NJMFilterGrabber:
                 continue
             
             try:
-                response = self.session.get(filter_url, timeout=30)
-                response.raise_for_status()
+                response = self._get(filter_url)
                 
                 with open(output_path, 'w', encoding='utf-8') as f:
                     f.write(response.text)
@@ -260,21 +279,26 @@ class NJMFilterGrabber:
                 if os.path.exists(output_path):
                     os.remove(output_path)
         
-        # Use the mirror's index when available, otherwise index the downloaded curves.
+        # Only the mirror (or its manifest) can declare the full filter set.
+        # An index built from the files seen so far would certify a partial set.
         index_path = Path(output_dir) / instrument
+        remote_index = None
         try:
-            response = self.session.get(f"{self.filters_url}/{facility}/{instrument}/{instrument}", timeout=10)
-            response.raise_for_status()
+            response = self._get(f"{self.filters_url}/{facility}/{instrument}/{instrument}", timeout=10)
         except requests.RequestException:
-            from .combine_filters import write_filter_index
-
-            if list(Path(output_dir).glob("*.dat")):
-                write_filter_index(output_dir, instrument)
+            logger.warning("NJM index unavailable for %s/%s; completeness cannot be verified", facility, instrument)
         else:
             index_path.write_text(response.text, encoding="utf-8")
+            remote_index = [line.strip() for line in response.text.splitlines() if line.strip()]
 
         print(f"[njm] {facility}/{instrument}: {downloaded} downloaded, {skipped} skipped, {failed} failed")
         self.download_components(facility, instrument)
+        if remote_index and not (Path(output_dir) / "manifest.json").is_file():
+            from .filter_components import InstrumentManifest
+
+            manifest = InstrumentManifest.from_published(output_dir)
+            manifest.bands = sorted(name.removesuffix(".dat") for name in remote_index if name.endswith(".dat"))
+            manifest.save(output_dir)
         return downloaded
     
     def download_all_filters(self, facility: Optional[str] = None) -> int:
@@ -324,7 +348,7 @@ class NJMFilterGrabber:
         if not self._available:
             return None
         try:
-            response = self.session.get(f"{self.filters_url}/{facility}/{instrument}/manifest.json", timeout=15)
+            response = self._get(f"{self.filters_url}/{facility}/{instrument}/manifest.json", timeout=15)
             if response.status_code != 200:
                 return None
             manifest = response.json()
@@ -367,8 +391,7 @@ class NJMFilterGrabber:
             if target.exists():
                 continue
             try:
-                response = self.session.get(f"{self.filters_url}/{facility}/{instrument}/{rel}", timeout=30)
-                response.raise_for_status()
+                response = self._get(f"{self.filters_url}/{facility}/{instrument}/{rel}")
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_text(response.text, encoding="utf-8")
                 count += 1

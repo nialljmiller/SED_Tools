@@ -6,6 +6,7 @@ import json
 
 import numpy as np
 import pytest
+import requests
 
 from sed_tools.combine_filters import write_filter_index
 from sed_tools.filter_components import (ATMOSPHERE, FILTER, OPTICS, PUBLISHED, QE,
@@ -381,7 +382,7 @@ class _Resp:
 
     def raise_for_status(self):
         if self.status_code != 200:
-            raise RuntimeError(self.status_code)
+            raise requests.HTTPError(str(self.status_code), response=self)
 
 
 def test_njm_downloads_manifest_and_components(tmp_path, monkeypatch):
