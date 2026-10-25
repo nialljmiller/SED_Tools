@@ -1071,7 +1071,9 @@ BOSZ 2024 fixed-resolution spectra require the official wavelength files in the 
 If you use SED_Tools in your research, please cite the archived software release
 via its Zenodo DOI:
 
-A version-specific Zenodo DOI for Version 0.4.1 will be added following archival of this release.
+All versions (resolves to the latest release): [10.5281/zenodo.18321943](https://doi.org/10.5281/zenodo.18321943)
+
+Version 0.4.1: [10.5281/zenodo.23634323](https://doi.org/10.5281/zenodo.23634323)
 
 Machine-readable citation metadata is available in [`CITATION.cff`](CITATION.cff).
 
