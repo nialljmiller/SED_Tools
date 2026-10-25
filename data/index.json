@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-10-25T15:38:06.010840",
+  "generated": "2026-10-25T16:57:13.245308",
   "base_url": "http://nillmill.ddns.net/sed_tools",
   "statistics": {
     "total_models": 1,
@@ -218,8 +218,8 @@
             },
             "separate_components": {},
             "has_component_manifest": false,
-            "size_bytes": 109049,
-            "size_human": "106.49 KB"
+            "size_bytes": 108836,
+            "size_human": "106.29 KB"
           },
           "GSC2": {
             "name": "GSC2",
@@ -1021,8 +1021,8 @@
             },
             "separate_components": {},
             "has_component_manifest": false,
-            "size_bytes": 30691,
-            "size_human": "29.97 KB"
+            "size_bytes": 30669,
+            "size_human": "29.95 KB"
           }
         },
         "instrument_count": 1
@@ -1196,8 +1196,8 @@
             },
             "separate_components": {},
             "has_component_manifest": false,
-            "size_bytes": 32054,
-            "size_human": "31.30 KB"
+            "size_bytes": 31996,
+            "size_human": "31.25 KB"
           }
         },
         "instrument_count": 1
@@ -1345,8 +1345,8 @@
             },
             "separate_components": {},
             "has_component_manifest": false,
-            "size_bytes": 33670,
-            "size_human": "32.88 KB"
+            "size_bytes": 33504,
+            "size_human": "32.72 KB"
           },
           "SCUSS": {
             "name": "SCUSS",
@@ -1722,8 +1722,8 @@
             },
             "separate_components": {},
             "has_component_manifest": false,
-            "size_bytes": 2239801,
-            "size_human": "2.14 MB"
+            "size_bytes": 2236268,
+            "size_human": "2.13 MB"
           },
           "LAICA": {
             "name": "LAICA",
@@ -2444,10 +2444,12 @@
             "detector_types": {
               "energy": 343
             },
-            "separate_components": {},
-            "has_component_manifest": false,
-            "size_bytes": 848202,
-            "size_human": "828.32 KB"
+            "separate_components": {
+              "filter": 343
+            },
+            "has_component_manifest": true,
+            "size_bytes": 920963,
+            "size_human": "899.38 KB"
           },
           "MOCAM": {
             "name": "MOCAM",
@@ -2569,10 +2571,12 @@
               "energy": 11,
               "photon": 44
             },
-            "separate_components": {},
-            "has_component_manifest": false,
-            "size_bytes": 1111783,
-            "size_human": "1.06 MB"
+            "separate_components": {
+              "filter": 55
+            },
+            "has_component_manifest": true,
+            "size_bytes": 1119217,
+            "size_human": "1.07 MB"
           },
           "QUIRC": {
             "name": "QUIRC",
@@ -2645,10 +2649,12 @@
             "detector_types": {
               "energy": 12
             },
-            "separate_components": {},
-            "has_component_manifest": false,
-            "size_bytes": 115341,
-            "size_human": "112.64 KB"
+            "separate_components": {
+              "filter": 12
+            },
+            "has_component_manifest": true,
+            "size_bytes": 117882,
+            "size_human": "115.12 KB"
           }
         },
         "instrument_count": 8
@@ -2699,8 +2705,8 @@
             },
             "separate_components": {},
             "has_component_manifest": false,
-            "size_bytes": 28203,
-            "size_human": "27.54 KB"
+            "size_bytes": 28176,
+            "size_human": "27.52 KB"
           }
         },
         "instrument_count": 1
@@ -2865,8 +2871,8 @@
             },
             "separate_components": {},
             "has_component_manifest": false,
-            "size_bytes": 1667,
-            "size_human": "1.63 KB"
+            "size_bytes": 1646,
+            "size_human": "1.61 KB"
           }
         },
         "instrument_count": 1
@@ -3204,8 +3210,8 @@
             },
             "separate_components": {},
             "has_component_manifest": false,
-            "size_bytes": 461899,
-            "size_human": "451.07 KB"
+            "size_bytes": 459260,
+            "size_human": "448.50 KB"
           },
           "DECam": {
             "name": "DECam",
@@ -3319,8 +3325,8 @@
             },
             "separate_components": {},
             "has_component_manifest": false,
-            "size_bytes": 131665,
-            "size_human": "128.58 KB"
+            "size_bytes": 124317,
+            "size_human": "121.40 KB"
           },
           "MosaicII": {
             "name": "MosaicII",
@@ -3437,8 +3443,8 @@
             },
             "separate_components": {},
             "has_component_manifest": false,
-            "size_bytes": 10377,
-            "size_human": "10.13 KB"
+            "size_bytes": 10321,
+            "size_human": "10.08 KB"
           },
           "SOI": {
             "name": "SOI",
@@ -3528,8 +3534,8 @@
             },
             "separate_components": {},
             "has_component_manifest": false,
-            "size_bytes": 71547,
-            "size_human": "69.87 KB"
+            "size_bytes": 71499,
+            "size_human": "69.82 KB"
           },
           "Y4KCam": {
             "name": "Y4KCam",
@@ -5204,15 +5210,17 @@
               "z"
             ],
             "published_paths": {
-              "unspecified": 7
+              "filter": 7
             },
             "detector_types": {
-              "unclassified": 7
+              "photon": 7
             },
-            "separate_components": {},
-            "has_component_manifest": false,
-            "size_bytes": 146433,
-            "size_human": "143.00 KB"
+            "separate_components": {
+              "filter": 7
+            },
+            "has_component_manifest": true,
+            "size_bytes": 116620,
+            "size_human": "113.89 KB"
           },
           "Medium": {
             "name": "Medium",
@@ -5225,15 +5233,17 @@
               "M517"
             ],
             "published_paths": {
-              "unspecified": 5
+              "filter": 5
             },
             "detector_types": {
-              "unclassified": 5
+              "photon": 5
             },
-            "separate_components": {},
-            "has_component_manifest": false,
-            "size_bytes": 67827,
-            "size_human": "66.24 KB"
+            "separate_components": {
+              "filter": 5
+            },
+            "has_component_manifest": true,
+            "size_bytes": 70207,
+            "size_human": "68.56 KB"
           },
           "Narrow": {
             "name": "Narrow",
@@ -5250,15 +5260,17 @@
               "N964"
             ],
             "published_paths": {
-              "unspecified": 9
+              "filter": 9
             },
             "detector_types": {
-              "unclassified": 9
+              "photon": 9
             },
-            "separate_components": {},
-            "has_component_manifest": false,
-            "size_bytes": 233856,
-            "size_human": "228.38 KB"
+            "separate_components": {
+              "filter": 9
+            },
+            "has_component_manifest": true,
+            "size_bytes": 205157,
+            "size_human": "200.35 KB"
           },
           "all": {
             "name": "all",
@@ -5287,15 +5299,17 @@
               "z"
             ],
             "published_paths": {
-              "unspecified": 21
+              "filter": 21
             },
             "detector_types": {
-              "unclassified": 21
+              "photon": 21
             },
-            "separate_components": {},
-            "has_component_manifest": false,
-            "size_bytes": 448116,
-            "size_human": "437.61 KB"
+            "separate_components": {
+              "filter": 21
+            },
+            "has_component_manifest": true,
+            "size_bytes": 390616,
+            "size_human": "381.46 KB"
           }
         },
         "instrument_count": 4
@@ -5349,8 +5363,8 @@
             },
             "separate_components": {},
             "has_component_manifest": false,
-            "size_bytes": 35435,
-            "size_human": "34.60 KB"
+            "size_bytes": 35391,
+            "size_human": "34.56 KB"
           }
         },
         "instrument_count": 1
@@ -5549,8 +5563,8 @@
               "H",
               "H2-1-0S",
               "H2-cont",
-              "IB-2.42",
-              "IB-2.48",
+              "IB-2p42",
+              "IB-2p48",
               "J",
               "K-peak",
               "Ks",
@@ -5564,13 +5578,12 @@
               "filter": 17
             },
             "detector_types": {
-              "photon": 10,
-              "unclassified": 7
+              "photon": 17
             },
             "separate_components": {},
             "has_component_manifest": false,
-            "size_bytes": 262724,
-            "size_human": "256.57 KB"
+            "size_bytes": 263060,
+            "size_human": "256.89 KB"
           }
         },
         "instrument_count": 1
@@ -6802,8 +6815,8 @@
             },
             "separate_components": {},
             "has_component_manifest": false,
-            "size_bytes": 92669,
-            "size_human": "90.50 KB"
+            "size_bytes": 92425,
+            "size_human": "90.26 KB"
           },
           "Alopeke": {
             "name": "Alopeke",
@@ -7163,12 +7176,12 @@
               "filter": 12
             },
             "detector_types": {
-              "unclassified": 12
+              "photon": 12
             },
             "separate_components": {},
             "has_component_manifest": false,
-            "size_bytes": 324207,
-            "size_human": "316.61 KB"
+            "size_bytes": 324783,
+            "size_human": "317.17 KB"
           }
         },
         "instrument_count": 1
@@ -9257,38 +9270,38 @@
             "filter_count": 33,
             "filters": [
               "H_CONICA",
-              "IB_2.00",
-              "IB_2.03",
-              "IB_2.06",
-              "IB_2.09",
-              "IB_2.12",
-              "IB_2.15",
-              "IB_2.18",
-              "IB_2.21",
-              "IB_2.24",
-              "IB_2.27",
-              "IB_2.30",
-              "IB_2.33",
-              "IB_2.36",
-              "IB_2.39",
-              "IB_2.42",
-              "IB_2.45",
-              "IB_2.48",
+              "IB_2p00",
+              "IB_2p03",
+              "IB_2p06",
+              "IB_2p09",
+              "IB_2p12",
+              "IB_2p15",
+              "IB_2p18",
+              "IB_2p21",
+              "IB_2p24",
+              "IB_2p27",
+              "IB_2p30",
+              "IB_2p33",
+              "IB_2p36",
+              "IB_2p39",
+              "IB_2p42",
+              "IB_2p45",
+              "IB_2p48",
               "J_CONICA",
               "Ks_CONICA",
               "L_prime",
               "M_prime",
-              "NB_1.04",
-              "NB_1.08",
-              "NB_1.09",
-              "NB_1.24",
-              "NB_1.26",
-              "NB_1.28",
-              "NB_1.64",
-              "NB_1.75",
-              "NB_2.12",
-              "NB_2.17",
-              "NB_3.74"
+              "NB_1p04",
+              "NB_1p08",
+              "NB_1p09",
+              "NB_1p24",
+              "NB_1p26",
+              "NB_1p28",
+              "NB_1p64",
+              "NB_1p75",
+              "NB_2p12",
+              "NB_2p17",
+              "NB_3p74"
             ],
             "published_paths": {
               "filter": 33
@@ -9557,11 +9570,11 @@
               "unspecified": 30
             },
             "detector_types": {
-              "unclassified": 30
+              "photon": 30
             },
             "separate_components": {},
             "has_component_manifest": false,
-            "size_bytes": 1538585,
+            "size_bytes": 1540025,
             "size_human": "1.47 MB"
           },
           "ZIMPOL": {
@@ -9596,12 +9609,12 @@
               "unspecified": 23
             },
             "detector_types": {
-              "unclassified": 23
+              "photon": 23
             },
             "separate_components": {},
             "has_component_manifest": false,
-            "size_bytes": 511202,
-            "size_human": "499.22 KB"
+            "size_bytes": 512306,
+            "size_human": "500.30 KB"
           }
         },
         "instrument_count": 2
@@ -9788,12 +9801,12 @@
               "unspecified": 2
             },
             "detector_types": {
-              "unclassified": 2
+              "energy": 2
             },
             "separate_components": {},
             "has_component_manifest": false,
-            "size_bytes": 12989,
-            "size_human": "12.68 KB"
+            "size_bytes": 13085,
+            "size_human": "12.78 KB"
           },
           "COSMO15": {
             "name": "COSMO15",
@@ -9807,12 +9820,12 @@
               "unspecified": 3
             },
             "detector_types": {
-              "unclassified": 3
+              "energy": 3
             },
             "separate_components": {},
             "has_component_manifest": false,
-            "size_bytes": 1433,
-            "size_human": "1.40 KB"
+            "size_bytes": 1577,
+            "size_human": "1.54 KB"
           }
         },
         "instrument_count": 2

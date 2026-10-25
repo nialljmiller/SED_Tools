@@ -1,0 +1,2002 @@
+[
+  {
+    "path": "data/filters/AAO/AAO/aao55.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/AAO/AAO/aao55.dat",
+    "operation": "clipped 3 negative transmissions (min -0.000742525) to 0; fxlib.clean_curve minimal curation; rows 42->42; pivot 5898.822->5898.804 A (-0.0003%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "05fe6f61da402082f88bd3497501af906227cf8cd171a2f35e7292d47614bd01",
+    "curated_sha256": "ff1cad9e2af0b0d0a54e22fa11f47d148fffe501fe1f73021af6ec27f68a08e2"
+  },
+  {
+    "path": "data/filters/AAO/AAO/aao56.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/AAO/AAO/aao56.dat",
+    "operation": "clipped 4 negative transmissions (min -0.000683278) to 0; fxlib.clean_curve minimal curation; rows 51->51; pivot 6309.023->6309.036 A (+0.0002%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "1a3f4225bfc51cbda8a3f5ba531a8725ac156e3a713b99da5cf9bdbdf428b6bd",
+    "curated_sha256": "ed22df7fff11a0a22b316541e560e17b9e9392446b29cfdf6362cd4cbbf94290"
+  },
+  {
+    "path": "data/filters/AAO/AAO/aao57.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/AAO/AAO/aao57.dat",
+    "operation": "clipped 1 negative transmissions (min -9.7847e-05) to 0; fxlib.clean_curve minimal curation; rows 24->24; pivot 6583.942->6583.941 A (-0.0000%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "5982056bfc9af5c9b511958e826720e0a7b4b0c516456b67a3c5d3c7f85e78fa",
+    "curated_sha256": "701e6d81d32ce7c395e32d4bf280f1019ff1b95914437283155a23a6ccb17a98"
+  },
+  {
+    "path": "data/filters/AAO/AAO/aao58.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/AAO/AAO/aao58.dat",
+    "operation": "clipped 1 negative transmissions (min -7.32803e-05) to 0; fxlib.clean_curve minimal curation; rows 30->30; pivot 6733.898->6733.898 A (+0.0000%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "99dd7b72e57b470f704ce432684bc7da3c0b7cb884b3f4d07295ad2233e7e50f",
+    "curated_sha256": "68ed9713e9f72dde75e85a4ae5c2b7f60f794457d2ff36fa3fd8f2da4d007a50"
+  },
+  {
+    "path": "data/filters/AAO/AAO/aao70.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/AAO/AAO/aao70.dat",
+    "operation": "clipped 4 negative transmissions (min -0.00456381) to 0; fxlib.clean_curve minimal curation; rows 58->58; pivot 3757.780->3757.771 A (-0.0003%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "fd56d4f2fffd13d9209742670c2e5b3a27896a79c49fa5ded35828f4fdc976fe",
+    "curated_sha256": "28d6a5e73407e637b14463aca729e58f8ed16ebef41b243ffb79c62540576a30"
+  },
+  {
+    "path": "data/filters/AAO/AAO/aao71.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/AAO/AAO/aao71.dat",
+    "operation": "clipped 2 negative transmissions (min -0.00114578) to 0; fxlib.clean_curve minimal curation; rows 34->34; pivot 3903.035->3903.041 A (+0.0001%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "1dcfb93a830da0d3a55ba240725e7168218c9193fac92dc530f22099b8243dee",
+    "curated_sha256": "e2d4085eb64a953ea45f04b8f64958e5b63b657fd238460c8b8a10e94099325a"
+  },
+  {
+    "path": "data/filters/AAO/AAO/aao74.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/AAO/AAO/aao74.dat",
+    "operation": "clipped 1 negative transmissions (min -0.000338211) to 0; fxlib.clean_curve minimal curation; rows 48->48; pivot 5817.668->5817.662 A (-0.0001%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "bc81aca13e1e2c1f74b4fc4a07a1bef36721415318d7843133bede354969d183",
+    "curated_sha256": "83043ee0524ad40a037aea60e9be57cc22cd877e065fa52059c9907579ffb864"
+  },
+  {
+    "path": "data/filters/AAO/AAO/aao80.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/AAO/AAO/aao80.dat",
+    "operation": "clipped 1 negative transmissions (min -0.000441971) to 0; fxlib.clean_curve minimal curation; rows 54->54; pivot 6681.841->6681.844 A (+0.0000%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "2189f7a2b9b7503a9e19fc2d5f227185d6a0a193dbf8ce1736e9190795076657",
+    "curated_sha256": "cf5bad522c86673e3f73a208191390be2a0741cd8c746e651dcadfa216426045"
+  },
+  {
+    "path": "data/filters/AAO/AAO/aao81.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/AAO/AAO/aao81.dat",
+    "operation": "clipped 2 negative transmissions (min -0.00261024) to 0; fxlib.clean_curve minimal curation; rows 30->30; pivot 7085.351->7085.387 A (+0.0005%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "2ffb441c33eb35ea3ee2a361cde1b64b175eb7d12bed93b8aaccf2a33bf7d680",
+    "curated_sha256": "b7d5c1d40f04bc47044640591b59ddb3ffe1867a05cbd1b1b2647cb403ed83fe"
+  },
+  {
+    "path": "data/filters/AAO/AAO/aao84.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/AAO/AAO/aao84.dat",
+    "operation": "clipped 2 negative transmissions (min -0.00135132) to 0; fxlib.clean_curve minimal curation; rows 33->33; pivot 8152.987->8152.973 A (-0.0002%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "da3e8e8e5dd0f62488f9734dac54dc4a6e7ee994e285c5b972ebebadfb9f84c9",
+    "curated_sha256": "52d72bcd58327f97f11fa31970a355a63c59d52aba8c09757112c4fe150b08fe"
+  },
+  {
+    "path": "data/filters/AAO/AAO/aao85.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/AAO/AAO/aao85.dat",
+    "operation": "clipped 2 negative transmissions (min -0.0017382) to 0; fxlib.clean_curve minimal curation; rows 41->41; pivot 8574.522->8574.500 A (-0.0003%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "43de56fa039b754c83a88156df8addfe928abee8dc3e96287f6a733aef14b12a",
+    "curated_sha256": "bf254792832daae4a4c773b32e493518ea74ff41b6fd7a6798fea923553e122f"
+  },
+  {
+    "path": "data/filters/AAO/AAO/aao86.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/AAO/AAO/aao86.dat",
+    "operation": "clipped 1 negative transmissions (min -0.00177956) to 0; fxlib.clean_curve minimal curation; rows 34->34; pivot 9100.865->9100.847 A (-0.0002%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "d30c39b3521db4c37ba658c570d3b583601e4680d86d984131a4a5026a52ad44",
+    "curated_sha256": "23a9c9373f4635081d231ed9f21837420b91ccac411afa3f175808d5b706ad52"
+  },
+  {
+    "path": "data/filters/AAO/AAO/aao90.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/AAO/AAO/aao90.dat",
+    "operation": "clipped 1 negative transmissions (min -0.00021843) to 0; fxlib.clean_curve minimal curation; rows 96->96; pivot 4703.313->4703.309 A (-0.0001%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "5587a5dda553f466a04593f5b759b8034583b5b179be5d35e8eec29d22c04231",
+    "curated_sha256": "26f7aefdcb9ac23dfa2dfe1c3563fc807c7f8b750dd1523ec1ac1f9b8ec50b6c"
+  },
+  {
+    "path": "data/filters/AlSat1/SLIM6/Green1.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/AlSat1/SLIM6/Green1.dat",
+    "operation": "clipped 1 negative transmissions (min -9.1773e-05) to 0; fxlib.clean_curve minimal curation; rows 200->200; pivot 5616.194->5616.194 A (-0.0000%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "175c4ea357afef92db8099539a7386d377e80a2c9fc5e398364f8691cbe68f37",
+    "curated_sha256": "5c9c915decb24540184ce63b418fbeb1c67cfdcb13875079a9bdbedd539ecd36"
+  },
+  {
+    "path": "data/filters/AlSat1/SLIM6/NIR2.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/AlSat1/SLIM6/NIR2.dat",
+    "operation": "clipped 1 negative transmissions (min -0.000254494) to 0; fxlib.clean_curve minimal curation; rows 200->200; pivot 8332.056->8332.056 A (-0.0000%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "2d43309f8d3f036b8572fd49db015a986971f6de9a6a262d90e32e373ed4c54a",
+    "curated_sha256": "9ea1c353724dac19790bce1e09f9d6b13a632a07c47427e4e1ac8e3bf72c0cfd"
+  },
+  {
+    "path": "data/filters/Astrosat/UVIT/F172M_old.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Astrosat/UVIT/F172M_old.dat",
+    "operation": "merged 1 duplicate wavelengths (exact repeated Wavelength values; transmissions averaged; no decreasing segments present); fxlib.clean_curve minimal curation; rows 10->9; pivot 1718.159->1718.691 A (+0.0309%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "7f8561274377b6a261d2ca4ef2701094c5efbfb744df353b4c1eb2ce60f94c50",
+    "curated_sha256": "f872e6adb5ac386206be72b9f798bfcb0f965f2e48356ddfd451da73a1a9bba9"
+  },
+  {
+    "path": "data/filters/Astrosat/UVIT/N242W_old.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Astrosat/UVIT/N242W_old.dat",
+    "operation": "merged 1 duplicate wavelengths (exact repeated Wavelength values; transmissions averaged; no decreasing segments present); fxlib.clean_curve minimal curation; rows 27->26; pivot 2414.411->2414.411 A (+0.0000%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "1609a2913b499a76abeff98d2ab83852140c95bbeac15c960fea164e7d1390a0",
+    "curated_sha256": "82191f85d1a5c8a00d02c2fd8aea5f858a4a3bde022618a5d1e7cbab2fd6607f"
+  },
+  {
+    "path": "data/filters/Astrosat/UVIT/N245M_old.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Astrosat/UVIT/N245M_old.dat",
+    "operation": "merged 1 duplicate wavelengths (exact repeated Wavelength values; transmissions averaged; no decreasing segments present); fxlib.clean_curve minimal curation; rows 49->48; pivot 2447.720->2447.720 A (+0.0000%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "4097c48a1a1acd403c2a3f18264e2db22ee499dbad1b48b01c1a22e6676a0842",
+    "curated_sha256": "15bba843433ed0207dfa73d4ede0f81d68f0bc0007eaec91e86fc5f07e94ddac"
+  },
+  {
+    "path": "data/filters/Astrosat/UVIT/N279N_old.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Astrosat/UVIT/N279N_old.dat",
+    "operation": "merged 1 duplicate wavelengths (exact repeated Wavelength values; transmissions averaged; no decreasing segments present); fxlib.clean_curve minimal curation; rows 77->76; pivot 2792.168->2792.168 A (-0.0000%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "3ae86d2ec5dd616006614837e561a76939039d13491495870701600902e3a79f",
+    "curated_sha256": "4b047b27358b95c8e730f3b2449069300e0e672da83491cbcfd313799f3c09d5"
+  },
+  {
+    "path": "data/filters/BOK/90prime/B.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/BOK/90prime/B.dat",
+    "operation": "merged 4 duplicate wavelengths (exact repeated Wavelength values; transmissions averaged; no decreasing segments present); fxlib.clean_curve minimal curation; rows 145->141; pivot 4294.270->4294.318 A (+0.0011%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "9825183bc23da02987321cfc7ec7438e8776fcc620e38655c859db5e44f1f15e",
+    "curated_sha256": "86074725be9fff04ff3cdd05086a1e1b6c9362b6bcd9229ca92450e7d08e036e"
+  },
+  {
+    "path": "data/filters/BOK/90prime/U.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/BOK/90prime/U.dat",
+    "operation": "merged 7 duplicate wavelengths (exact repeated Wavelength values; transmissions averaged; no decreasing segments present); fxlib.clean_curve minimal curation; rows 146->139; pivot 3600.940->3600.921 A (-0.0005%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "b0b884820fb7377285d59eee2e6630efa6fcee41a2cbc1da4fcafd54e5a49e2c",
+    "curated_sha256": "17ea2398eb10048aca6fff5b28f67452c734b452e3da8832a31ea822f9eea1f7"
+  },
+  {
+    "path": "data/filters/BOK/90prime/V.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/BOK/90prime/V.dat",
+    "operation": "merged 2 duplicate wavelengths (exact repeated Wavelength values; transmissions averaged; no decreasing segments present); fxlib.clean_curve minimal curation; rows 80->78; pivot 5316.874->5316.888 A (+0.0003%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "bdb626abe987c84082d0c3e349548907f5187f5ca47d60c6652a93f4f4dc433a",
+    "curated_sha256": "76d9ecc217d473a86badaec81deb26deeb61721ebf650e36006144159dd07345"
+  },
+  {
+    "path": "data/filters/CAHA/CAHA/385_8.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CAHA/CAHA/385_8.dat",
+    "operation": "clipped 129 negative transmissions (min -0.067547) to 0; fxlib.clean_curve minimal curation; rows 842->842; pivot 3841.897->3838.255 A (-0.0948%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "f86db8be6f4a83324757009519f00e483080251fdf9dffb95b480d1d68b4cea4",
+    "curated_sha256": "55082fb75390610cdeec56a7a6e077a7d18209d95b2a93e6516936befc2cb658"
+  },
+  {
+    "path": "data/filters/CAHA/CAHA/395_6.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CAHA/CAHA/395_6.dat",
+    "operation": "clipped 152 negative transmissions (min -0.045637) to 0; fxlib.clean_curve minimal curation; rows 858->858; pivot 3945.544->3943.149 A (-0.0607%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "4450e31eff58a702a74ddd0b41272f56063e37349d20b8a59e2e0b1cdc2f2bf8",
+    "curated_sha256": "1852d071a3a023bb32b0f5d62465ade0a31492d2430483a18660c7629ea5a653"
+  },
+  {
+    "path": "data/filters/CAHA/CAHA/402_9.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CAHA/CAHA/402_9.dat",
+    "operation": "clipped 147 negative transmissions (min -0.026456) to 0; fxlib.clean_curve minimal curation; rows 959->959; pivot 4015.082->4013.868 A (-0.0302%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "efc9251910a43a276129242d1f8837b02f4d24f35935ebac292bb77a8c6dd5d6",
+    "curated_sha256": "40c08a51231db1eb28cc9fc8fdcec6ab628c30ec544a23bde03163dd3954e45e"
+  },
+  {
+    "path": "data/filters/CAHA/CAHA/408_4.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CAHA/CAHA/408_4.dat",
+    "operation": "clipped 176 negative transmissions (min -0.022102) to 0; fxlib.clean_curve minimal curation; rows 671->671; pivot 4085.802->4083.774 A (-0.0496%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "db58b5a1152b4b030c2d1ac4dab4479c456fbb821bc3a2abffd20eb598fd2980",
+    "curated_sha256": "78a36ea2457a19d88f0aba3c78c86dc94b2be603964a017d015faf95aa7a3ec8"
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/I.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/I.dat",
+    "operation": "fxlib.clean_curve minimal curation: 39 negative samples (min -0.00078) set to 0",
+    "raw_sha256": "eb6473c9e94855ba33153f9b9540b8fb195805330a20ce1e53364c6531918396",
+    "curated_sha256": "80b11b284bb9935a930bc8b4d701b6197e13c50af5e9be7f693c477127f6ea40",
+    "pivot_current_A": 8154.818,
+    "pivot_new_A": 8154.973,
+    "pivot_shift_pct": 0.0019
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/R.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/R.dat",
+    "operation": "fxlib.clean_curve minimal curation: 129 negative samples (min -0.00098) set to 0",
+    "raw_sha256": "bd6a9f1f8f784bfb03fa4742b13478b315257a9360d8694aad01bd84e2223285",
+    "curated_sha256": "a6e019b5805e3d3f7d920c13c6d1b6a0dc4bf7082d1a7a9399d409adeec95581",
+    "pivot_current_A": 6549.975,
+    "pivot_new_A": 6550.34,
+    "pivot_shift_pct": 0.0056
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh1627.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh1627.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh1627.dat (CFHT filter 1627, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 ac2f58125b5d07a19a353f6c802ec2e5c338b37de913d70560ce83de0f1e8938): 108 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; no negatives. Replaces the SVO copy (47 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "0a01c7f1c6467cd9bade93372e743f6f68223c33ea20a5ec0be33bc80509a28f",
+    "curated_sha256": "c62ab410293695ff732bc7d53ee550bee16023c4aa8826d0ecdef6da52fb3675",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh1627.dat",
+    "pivot_current_A": 6577.451,
+    "pivot_new_A": 6577.51,
+    "pivot_shift_pct": 0.0009
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh1628.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh1628.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh1628.dat (CFHT filter 1628, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 1f63a60c2d889af8b7ba91707d0719cc947342a6a2c7e1b1f3173c397d95d42d): 108 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; no negatives. Replaces the SVO copy (48 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "6d169bee0f79ae63659b312928f0129123b8d20e44d5f201c5e4f60df9f74836",
+    "curated_sha256": "0ffe38472ff0689d5480d252f6c2e28c80ae41de44c4a12d48603904a3131810",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh1628.dat",
+    "pivot_current_A": 6606.854,
+    "pivot_new_A": 6606.888,
+    "pivot_shift_pct": 0.0005
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh1629.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh1629.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh1629.dat (CFHT filter 1629, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 cc89abaf4b22102f94fd963f0acb89fab3e5e87427c997babac8d53e8ea1ced1): 113 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; no negatives. Replaces the SVO copy (46 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "5b99487b8cc6b2a91f338a284dd1dd333694862cfc6a1e248a9b56257a41f83b",
+    "curated_sha256": "5f23dd0f3b7c048c3de8cb57f814f4f7acaea1c5b8d6736b30da555252f0428d",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh1629.dat",
+    "pivot_current_A": 6590.48,
+    "pivot_new_A": 6590.471,
+    "pivot_shift_pct": -0.0001
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh1630.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh1630.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh1630.dat (CFHT filter 1630, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 779670d07041c3ebfc5d2f5adb2a51a3429fccf29345f8377e2b0fb97e542e49): 108 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; no negatives. Replaces the SVO copy (48 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "cfc9d0ea07d29adb6940e8919a688bfea8c1fb678db6da9309ebdb8b4d0e8ced",
+    "curated_sha256": "55e3320bb4d533178e4f1eb1332b4f65578905d70be8d3de7463114735fa0601",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh1630.dat",
+    "pivot_current_A": 6581.749,
+    "pivot_new_A": 6581.693,
+    "pivot_shift_pct": -0.0008
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh1631.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh1631.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh1631.dat (CFHT filter 1631, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 8a644b2017346c6cd8ed9263e98cddab83d5053e93581224a15e3f6e71b8cf72): 113 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; 2 negative samples (min -0.0002) set to 0. Replaces the SVO copy (46 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "a6763e78e43ce42d1964ca151094e362eafccf9d0a0798b3947fd52074cc4a75",
+    "curated_sha256": "f86a8a9a384e981d20b4928d59d508f3cfc72bc2ea1c430aadbb5cb8a8317a6c",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh1631.dat",
+    "pivot_current_A": 6596.106,
+    "pivot_new_A": 6596.127,
+    "pivot_shift_pct": 0.0003
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh1632.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh1632.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh1632.dat (CFHT filter 1632, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 7d033032c27a4169f3592ddcf3a3c141223e56742bd05703ed4adacbdd09176f): 89 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; no negatives. Replaces the SVO copy (45 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "b64aef84e04adb860a23aa10de039484633fc7383e3d620385784b2f0a1993fc",
+    "curated_sha256": "3c566fab2eb273e5c9188392527d6227433db0b2498af19569b19bdea5ffe698",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh1632.dat",
+    "pivot_current_A": 6568.166,
+    "pivot_new_A": 6568.248,
+    "pivot_shift_pct": 0.0013
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh1633.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh1633.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh1633.dat (CFHT filter 1633, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 25d4ef6f60ca2d1967c180110e0dce10c975c5648a134b50c44b0dde17ff67fa): 326 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; no negatives. Replaces the SVO copy (229 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "85431116ef9c452c8d71b4552e78b81cd20388309a5bae1156dc5bf34ad1addd",
+    "curated_sha256": "7f89d47610a43ddf27815e10c132589bcf017befc3f36f9164376830d2fee633",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh1633.dat",
+    "pivot_current_A": 6570.172,
+    "pivot_new_A": 6570.176,
+    "pivot_shift_pct": 0.0
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh1634.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh1634.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh1634.dat (CFHT filter 1634, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 e8e4e989f9fef28e371d3ab19da318b3bb75a17feb57e020bc1bc0cf59e648b8): 342 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; no negatives. Replaces the SVO copy (251 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "77aff1e81b25ef703b488c76666a8630d724edcd73feebea1c5b4003413297cf",
+    "curated_sha256": "657ee8924b17b4a62472b4d06535edd127149313c5cfc45a4162e3458ddc3be1",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh1634.dat",
+    "pivot_current_A": 6735.247,
+    "pivot_new_A": 6735.254,
+    "pivot_shift_pct": 0.0001
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh4617.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh4617.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh4617.dat (CFHT filter 4617, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 10322beb4662354b3321e7558bb955599368f8a8b922486af7464200dc1e1c53): 164 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; no negatives. Replaces the SVO copy (108 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "aad04daae33750f2ab078b0eb8b1454a6a8c4619e1659752f40951c2e412ea5c",
+    "curated_sha256": "771b6b7d9b26398981aa262704a6dff427d06838a62a3694eec404d7682bc8c3",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh4617.dat",
+    "pivot_current_A": 6571.32,
+    "pivot_new_A": 6571.317,
+    "pivot_shift_pct": -0.0
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh4618.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh4618.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh4618.dat (CFHT filter 4618, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 deed4b2f7be85341a42c24d4d98eac6b9fc9237d00c1606a2f611ea388f5cae5): 383 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; no negatives. Replaces the SVO copy (381 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "19ac2d8c4c0d5b7bd93baba3e57ef1842d51aaa7d2722e976812bd65f21415f6",
+    "curated_sha256": "aaff27f37befdcfb1f02b271d9f81755323fd2850e0eaaae2cc58965025e4567",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh4618.dat",
+    "pivot_current_A": 6724.472,
+    "pivot_new_A": 6724.473,
+    "pivot_shift_pct": 0.0
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh5104.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh5104.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5104.dat (CFHT filter 5104, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 3450374f4634fb5e5d3643f5fbdde58a4cbcb74e79eaab9b6e1e13d48ba72e06): 709 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; 8 negative samples (min -0.00034) set to 0. Replaces the SVO copy (628 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "3266cbdb0796d653e34ba4ca1006e45d570ab4f179766567ceccd70f67a816fe",
+    "curated_sha256": "b9fe0bf553f8b3477bbc25562d0dbcbcca0f410e9031a20dbe2e32f31a797fa9",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5104.dat",
+    "pivot_current_A": 13547.727,
+    "pivot_new_A": 13547.875,
+    "pivot_shift_pct": 0.0011
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh5128.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh5128.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5128.dat (CFHT filter 5128, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 75afd8d70d59937c22a7d9ef5f92ecb5ae8cb2affedc761688567df73ebda15c): 395 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; no negatives. Replaces the SVO copy (369 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "39bd9ef19b5a0ce217333d00a6b35506298f77d744c864540e23f3ec37c56b20",
+    "curated_sha256": "d81dd7c0dbbfe9dd24f321355112190a5c76d39806a0653aa2cb8e9695d4f959",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5128.dat",
+    "pivot_current_A": 16736.366,
+    "pivot_new_A": 16736.389,
+    "pivot_shift_pct": 0.0001
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh5208.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh5208.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5208.dat (CFHT filter 5208, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 5c119356b278f6fa4c2b74efdbf1aee4304868e352c43135063900716b2d2575): 285 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; 1 negative samples (min -0.00089) set to 0. Replaces the SVO copy (234 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "1dd3383ac0056fe3a61a70068170c7d4af6739906546d7fd58f1903dd9c661b0",
+    "curated_sha256": "126ce8ebba807d074d306d85016ee4a8411ae94cf06874d69969421aa85010d4",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5208.dat",
+    "pivot_current_A": 19987.498,
+    "pivot_new_A": 19993.009,
+    "pivot_shift_pct": 0.0276
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh5303.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh5303.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5303.dat (CFHT filter 5303, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 fb870df25f927ed0ac4ae6ecc84cb4e66047c4f660d92e4a4bcba3b3c74b3b09): 217 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; 25 negative samples (min -0.00858) set to 0. Replaces the SVO copy (154 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "61167aafccee5d874efe2e1a7deee24f0feaa046683ae8a691c6cc605d2d94d6",
+    "curated_sha256": "5e294468b577f551e9e31c6efcc3d40921ddace55ea16c24a0535809d48971b7",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5303.dat",
+    "pivot_current_A": 21441.626,
+    "pivot_new_A": 21444.845,
+    "pivot_shift_pct": 0.015
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh5304.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh5304.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5304.dat (CFHT filter 5304, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 3d19280f62bd786e6004d8e0c02f8c7acbdecfa30fc92d91e45990c931e45e2a): 204 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; 12 negative samples (min -0.00403) set to 0. Replaces the SVO copy (139 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "0ee016fd26e600f63299cb1f892252b86ad00c9ff7eb3e08dcad31700c6404c1",
+    "curated_sha256": "6257e10a7b0a7364c4899f80bdf7e0b92badcf3e1e0fa49b3eceb604095b03bb",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5304.dat",
+    "pivot_current_A": 21799.309,
+    "pivot_new_A": 21801.754,
+    "pivot_shift_pct": 0.0112
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh5305.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh5305.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5305.dat (CFHT filter 5305, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 3c19594a96132c95ed229df8a5008bcaa9eeba72d847c078eb2cb98dd9d7bcf6): 244 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; 1 negative samples (min -0.00098) set to 0. Replaces the SVO copy (177 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "6846749678b9468fcf5b9a7e4cc7635451c8ab66c9172571cdb6d3d889d73f32",
+    "curated_sha256": "d5dcd06b2113526c09e7327d52d47815ef617ecb81de1862f30afeceb1320901",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5305.dat",
+    "pivot_current_A": 20693.552,
+    "pivot_new_A": 20697.522,
+    "pivot_shift_pct": 0.0192
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh5329.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh5329.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5329.dat (CFHT filter 5329, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 dc70ddced6f119137ac46eca274a96c9d737bbdfd7a1141dce5480ad9996e34c): 248 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; 2 negative samples (min -0.00124) set to 0. Replaces the SVO copy (248 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "65cf553ccd7cbf685d94146aaf7df7c274f99c46891d4cc9e1d1ecd2201238ab",
+    "curated_sha256": "94064ce850b2caf29df4eb9fe207da73d1b409640b3af54eda9421578e64a7b2",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5329.dat",
+    "pivot_current_A": 21972.081,
+    "pivot_new_A": 21972.033,
+    "pivot_shift_pct": -0.0002
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh5330.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh5330.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5330.dat (CFHT filter 5330, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 8528631b597d1516f0ffb026bf29b95a10471d846d8bf73a3b96cf8a0a2550bb): 265 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; 40 negative samples (min -0.00587) set to 0. Replaces the SVO copy (158 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "bcfe78b1fb0b58237f3910416e683938bd87cbc2fe2c2c081aec6bca1d54f081",
+    "curated_sha256": "b851046344990bbdc4369825f8749d809e3bd1277a9a2ebd35d65bd0a9bf2d4f",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5330.dat",
+    "pivot_current_A": 20502.794,
+    "pivot_new_A": 20504.83,
+    "pivot_shift_pct": 0.0099
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh5331.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh5331.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5331.dat (CFHT filter 5331, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 4fae256f1338b6ebadb8718b00d01f758eff09ebeb188ccd95e8cb8bffb816b3): 161 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; 11 negative samples (min -0.00383) set to 0. Replaces the SVO copy (122 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "ec510050caa855156f1e3292da4e59adb9be445491a3a1644ab38ffcbb42343c",
+    "curated_sha256": "3a742523421141576cd3c01eb676f59c107a714bcd6715b2a6b7cc00ad1340f2",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5331.dat",
+    "pivot_current_A": 21138.478,
+    "pivot_new_A": 21140.337,
+    "pivot_shift_pct": 0.0088
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh5332.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh5332.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5332.dat (CFHT filter 5332, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 e8b3d92de3039e784df94cc0a55ab16a7455c88003b3c3f24919009371342a37): 260 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; 20 negative samples (min -0.00854) set to 0. Replaces the SVO copy (189 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "3e84795e6726ba082200da4e356b3f37ceb169ec5823c0ce2c8e94ddf3a90f9d",
+    "curated_sha256": "aeb9e9b03fbfe240637babb8d7b3e1f2f7c3efe950be4b2b2906cb8db84b2020",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5332.dat",
+    "pivot_current_A": 21768.207,
+    "pivot_new_A": 21771.464,
+    "pivot_shift_pct": 0.015
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh5333.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh5333.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5333.dat (CFHT filter 5333, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 121261c348b03274b3fb95bfc6f3afe9b84950ed6f8ef9067a0d775145a292bd): 257 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; 3 negative samples (min -0.00151) set to 0. Replaces the SVO copy (196 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "8a4fcc0f4d0ce9992b50ded479dc2556b81d819d29d8e6fa5bcd0483d4f629af",
+    "curated_sha256": "cbad5bcd1229787e894ef4afde850221436af0c0c3d5850c119f9bb2652865e0",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5333.dat",
+    "pivot_current_A": 21557.969,
+    "pivot_new_A": 21564.559,
+    "pivot_shift_pct": 0.0306
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh5334.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh5334.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5334.dat (CFHT filter 5334, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 073cb37819e58ab8946fa0acbd70126dedc77b0e81a5d54b9660f4f3b7ecf50a): 270 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; 27 negative samples (min -0.00504) set to 0. Replaces the SVO copy (188 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "753f33282c8a4f389a5c0a64eca0f3fbd7d8424daba1500ac53360871be4a0ab",
+    "curated_sha256": "192fc7f8af9f68b48ba3f049b514c9e2e5028901bdcae67c5fb286c1e324e9b3",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5334.dat",
+    "pivot_current_A": 21777.844,
+    "pivot_new_A": 21779.784,
+    "pivot_shift_pct": 0.0089
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh5339.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh5339.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5339.dat (CFHT filter 5339, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 b3a8113665756947868f8250a90e5a527faf3979047f6c2e8d89e70b572537b7): 204 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; 12 negative samples (min -0.00383) set to 0. Replaces the SVO copy (154 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "5eb354204aa5c88ca85fc7821873667327c292e06ea7f4a8b9c61bd1181c0c73",
+    "curated_sha256": "71d80625070c49b85be4ad16e1ad32ee586c1eaadadd82746df06a83df094029",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5339.dat",
+    "pivot_current_A": 21297.34,
+    "pivot_new_A": 21299.453,
+    "pivot_shift_pct": 0.0099
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh5341.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh5341.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5341.dat (CFHT filter 5341, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 cc028806860f036f3eaa870e182c97b9c69da8b783ac53e281924dfcdf508296): 217 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; 115 negative samples (min -0.0112) set to 0. Replaces the SVO copy (119 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "9d92f37813328d04ec463182ebb983e3f704175c2c897d39f95d6963df8036f0",
+    "curated_sha256": "287ea18362f64dc8c0587023a03bb124448092ef07517c3df6310ffba6b8684d",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5341.dat",
+    "pivot_current_A": 22646.26,
+    "pivot_new_A": 22644.706,
+    "pivot_shift_pct": -0.0069
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh5343.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh5343.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5343.dat (CFHT filter 5343, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 e849d4b79ed71b1de1b901b0a507abee75f6104d6fe4f9e63b3c7e2996e65139): 217 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; 7 negative samples (min -0.00266) set to 0. Replaces the SVO copy (151 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "ffce57486b4e52710d95824b91eef8ecdbc20c2ff9444ec56ce87d2a5eddfb88",
+    "curated_sha256": "2cb8b88f4d371180aea5fbec75d7e468c7a615f705a8c3198d80b7cff5282bbc",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5343.dat",
+    "pivot_current_A": 23048.42,
+    "pivot_new_A": 23051.616,
+    "pivot_shift_pct": 0.0139
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh6213.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh6213.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh6213.dat (CFHT filter 6213, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 b3d7acc8e8a9900a5ac1cbcdc5a09915debf49135c2fcdcbc78947bd63a082b5): 161 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; 5 negative samples (min -0.00198) set to 0. Replaces the SVO copy (116 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "cace0bcd2197ecacfaa054ea0d4783f38babb6f8bfb64abdc939ae6ac3e6e176",
+    "curated_sha256": "d3913718dfea73d445686e8d713b035fb18d16b0873af586aabb4c253bc1f0fc",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh6213.dat",
+    "pivot_current_A": 17009.252,
+    "pivot_new_A": 17010.329,
+    "pivot_shift_pct": 0.0063
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh6214.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh6214.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh6214.dat (CFHT filter 6214, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 3170cea412cb3e8416dd934320393be52f8d8e49694674b7b097b5063ad37d88): 161 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; 8 negative samples (min -0.00116) set to 0. Replaces the SVO copy (108 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "a0f55b1e407518454e5a4990e817c7e01544e106a37e483cd714139c2da614a2",
+    "curated_sha256": "cc1393e90dc9bcb9e6e32b9d43bc2974bf8f2bd3fb4b2332414dcfd719538926",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh6214.dat",
+    "pivot_current_A": 17009.861,
+    "pivot_new_A": 17010.705,
+    "pivot_shift_pct": 0.005
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh6310.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh6310.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh6310.dat (CFHT filter 6310, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 dda203a656336253c76661b58e740f85bd3d31d6f32407290581dc32ccbb7e5e): 204 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; 30 negative samples (min -0.00706) set to 0. Replaces the SVO copy (141 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "6860969513405c9cae7f95e83dd4011062ef2dc4bb1656fb77567b0e0dd3e58d",
+    "curated_sha256": "de42e06a13df19387d51a47a86bea8f5b1b09c799c922bab6a6a9b5b40398da9",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh6310.dat",
+    "pivot_current_A": 21317.173,
+    "pivot_new_A": 21317.976,
+    "pivot_shift_pct": 0.0038
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh6311.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh6311.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh6311.dat (CFHT filter 6311, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 b03a4f71d05c045768baae2f728c8feb40ba6b6abeb71648e0cce039bf1cbb75): 217 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; 7 negative samples (min -0.00786) set to 0. Replaces the SVO copy (157 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "a6edb726807954d3e02210dbb3ce9d8de5c00adf831f7cd87e4173813e50f9fb",
+    "curated_sha256": "a6135ee31afa385f3c0c64f2523dd276cde27f5a0370873b99c88e77f8176b8a",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh6311.dat",
+    "pivot_current_A": 21828.997,
+    "pivot_new_A": 21832.067,
+    "pivot_shift_pct": 0.0141
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh6312.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh6312.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh6312.dat (CFHT filter 6312, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 65efecad1197aa9817af2ff48687614bbdeec626f7b8d9552ad8d1bd8eb7b1ac): 217 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; 86 negative samples (min -0.0153) set to 0. Replaces the SVO copy (91 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "b5b60ef74b5392317bfa062c3e2c8401c84a3d7cdc7c9018a59795d1f8e393f5",
+    "curated_sha256": "6482490d165dbbbb2291f3aae8e0ca00efbc571bb20086423d782ae0603535af",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh6312.dat",
+    "pivot_current_A": 22629.231,
+    "pivot_new_A": 22629.509,
+    "pivot_shift_pct": 0.0012
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh6314.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh6314.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh6314.dat (CFHT filter 6314, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 986754520c0356eebe7058208b87c367a65a0ce1d3e069683876b558f6e84ae5): 212 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; 61 negative samples (min -0.0101) set to 0. Replaces the SVO copy (123 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "a497ca35a795c4516c78f9bf7f78c06729fd393e18e1409f87cfa0846476bcaf",
+    "curated_sha256": "ec089ed5e681f077d3ee09d88dcbe447db0cf13de69c6521de53b686ad6e75b7",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh6314.dat",
+    "pivot_current_A": 23090.679,
+    "pivot_new_A": 23090.852,
+    "pivot_shift_pct": 0.0008
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh8102.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh8102.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh8102.dat (CFHT filter 8102, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 d2093971d3c1fd755763cc068f1278393bc90f444272390b37741211076b34a3): 512 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; no negatives. Replaces the SVO copy (507 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "4578f11b35fee9addae8af81662536632c6da346f4b19ba29346805a4c8989eb",
+    "curated_sha256": "e9b58f389cb5a2ec2b992a767896397c78156d4df191d7cf791181d17b4f5cee",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh8102.dat",
+    "pivot_current_A": 11892.09,
+    "pivot_new_A": 11892.098,
+    "pivot_shift_pct": 0.0001
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh8104.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh8104.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh8104.dat (CFHT filter 8104, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 e3d26ac4fd034f3206a471953d31b582c867f40188e49f84299515772291407c): 467 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; no negatives. Replaces the SVO copy (460 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "fc2d04f4541e16605e247f30ffa667e6a890f9d568c693f74fbbe1c74ff7ae00",
+    "curated_sha256": "3334b390cc1398afdd9cb053cff38ea97445e7f613b2bb64bbf6dd7d6c5c25c2",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh8104.dat",
+    "pivot_current_A": 10628.587,
+    "pivot_new_A": 10628.587,
+    "pivot_shift_pct": -0.0
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh8105.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh8105.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh8105.dat (CFHT filter 8105, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 040a58e22d177ff11c0dcba33c28fb647d5b81790015d2104ced9a597605b2a4): 400 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; 12 negative samples (min -0.000192) set to 0. Replaces the SVO copy (389 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "0517258444e63663a47d54a082e62c177631cf6c5fb828f35f1a7440ce7153f4",
+    "curated_sha256": "aecf9acce9b2c6c3a2c70e25a3b606ece3aee044d7c340a1b3fcd6d1a77f5e82",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh8105.dat",
+    "pivot_current_A": 14524.257,
+    "pivot_new_A": 14524.246,
+    "pivot_shift_pct": -0.0001
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh8301.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh8301.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh8301.dat (CFHT filter 8301, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 65f60c7568e090883fde8819ef3a5d07d74c582b0d8758e7c22c8363c5dd236b): 912 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; 6 negative samples (min -0.00143) set to 0. Replaces the SVO copy (860 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "fef165a437582125dd75fffaea26f64bc50b639c890ee9a6b22da28f2754547f",
+    "curated_sha256": "c136161c70703b0c5f614ebb7789c2facffb1c053757964336c63a8f33d5153f",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh8301.dat",
+    "pivot_current_A": 21454.164,
+    "pivot_new_A": 21454.457,
+    "pivot_shift_pct": 0.0014
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/cfh8304.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/CFHT/cfh8304.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh8304.dat (CFHT filter 8304, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 62a0c06211f46d548cc7b4f768afca8ce7f83b5c245175e0493f30d5511fdd82): 601 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; 1 negative samples (min -0.00073) set to 0. Replaces the SVO copy (601 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "42e01937638c168d9ef96f0f4e19e32b87cf4ca9a5d8dcdca3de7f5ec783f499",
+    "curated_sha256": "798e1b8f21ddc05b317b0cd015cb0543a99824f04f61bcd154031cd81571a3e0",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh8304.dat",
+    "pivot_current_A": 21299.468,
+    "pivot_new_A": 21299.467,
+    "pivot_shift_pct": -0.0
+  },
+  {
+    "path": "data/filters/CFHT/CFHT/manifest.json",
+    "raw_copy": null,
+    "operation": "created manifest.json (none existed) with InstrumentManifest.from_published of the staged curves",
+    "raw_sha256": null,
+    "curated_sha256": "9f77c72668a35273ce995be41b0f0d27186c395fba46f6be69e87e07a9b5cffe"
+  },
+  {
+    "path": "data/filters/CFHT/Megaprime/TiO.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/Megaprime/TiO.dat",
+    "operation": "fxlib.clean_curve minimal curation: 1 negative samples (min -0.000285) set to 0",
+    "raw_sha256": "b332c471cab5c5372fac54da70c151609dd1af5f73d63ae8f12c086968604763",
+    "curated_sha256": "be089b0b0f17d08f6b55ff5501bba39d2be7b25e459968837e30eebadef8c34e",
+    "pivot_current_A": 7776.268,
+    "pivot_new_A": 7776.269,
+    "pivot_shift_pct": 0.0
+  },
+  {
+    "path": "data/filters/CFHT/Megaprime/TiO_fil.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/Megaprime/TiO_fil.dat",
+    "operation": "fxlib.clean_curve minimal curation: 1 negative samples (min -0.00069) set to 0",
+    "raw_sha256": "c9d6bed938cc3fe9d4096fe76e86d10be9e9bf96277b0349eff6122410780a33",
+    "curated_sha256": "92ac00d4420ab4610e876ed3952626207f765d2da56f7c2c9b39cc29571bef18",
+    "pivot_current_A": 7777.537,
+    "pivot_new_A": 7777.537,
+    "pivot_shift_pct": 0.0
+  },
+  {
+    "path": "data/filters/CFHT/Megaprime/iS.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/Megaprime/iS.dat",
+    "operation": "fxlib.clean_curve minimal curation: 1 negative samples (min -0.000352) set to 0",
+    "raw_sha256": "efb3f5c44bbe7635d3d457cc2b9d06b89e853161598ffe3b6d5ae3c441cd2a6d",
+    "curated_sha256": "ef5a7890cc5e78f2a99b8522f2a3a08083d9f8d0107d9a9c599320ef4c3f49b9",
+    "pivot_current_A": 7676.989,
+    "pivot_new_A": 7676.996,
+    "pivot_shift_pct": 0.0001
+  },
+  {
+    "path": "data/filters/CFHT/Megaprime/iS_fil.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/Megaprime/iS_fil.dat",
+    "operation": "fxlib.clean_curve minimal curation: 1 negative samples (min -0.00174) set to 0",
+    "raw_sha256": "67525e42a7429e2397688a5237fe28e6c43e24be7280365f3278fc724d02188d",
+    "curated_sha256": "6f60586234a978ba13a5f66922cd7d56dde34e5dea470cd7a620d0df79a6ac9b",
+    "pivot_current_A": 7748.709,
+    "pivot_new_A": 7748.722,
+    "pivot_shift_pct": 0.0002
+  },
+  {
+    "path": "data/filters/CFHT/Megaprime/rS.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/Megaprime/rS.dat",
+    "operation": "fxlib.clean_curve minimal curation: 1 negative samples (min -0.000615) set to 0",
+    "raw_sha256": "feab00fba5c4941d803de37c00baef55134034df1e3b653e6223b5ec43374197",
+    "curated_sha256": "3de8462e7a9e6ce6dbcfd886261a63e71c674e6e30d4e146821144ae1c7c48c2",
+    "pivot_current_A": 6253.34,
+    "pivot_new_A": 6253.358,
+    "pivot_shift_pct": 0.0003
+  },
+  {
+    "path": "data/filters/CFHT/Megaprime/rS_fil.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/Megaprime/rS_fil.dat",
+    "operation": "fxlib.clean_curve minimal curation: 1 negative samples (min -0.00175) set to 0",
+    "raw_sha256": "6f1d43cb0267c5b50325ac77d2acb11dd5bee9cff6002ea47ccd550e1b66e4db",
+    "curated_sha256": "da3468fd061f599cf6d0c8800c32a1e754b16210cff8a8fc8a3d37268362fbf2",
+    "pivot_current_A": 6264.821,
+    "pivot_new_A": 6264.851,
+    "pivot_shift_pct": 0.0005
+  },
+  {
+    "path": "data/filters/CFHT/Megaprime/manifest.json",
+    "raw_copy": null,
+    "operation": "created manifest.json (none existed) with InstrumentManifest.from_published of the staged curves",
+    "raw_sha256": null,
+    "curated_sha256": "aedb4c350222c63f2d3060a42eb710fdecba1a05a76a67243f635cbf157d188f"
+  },
+  {
+    "path": "data/filters/CFHT/Wircam/H2.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/Wircam/H2.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh8304.dat (CFHT filter 8304, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 62a0c06211f46d548cc7b4f768afca8ce7f83b5c245175e0493f30d5511fdd82): 601 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; 1 negative samples (min -0.00073) set to 0. Replaces the SVO copy (601 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "4de1313ce630df0cf8d310655977fca677d847889055e861867930fbd7bb60fc",
+    "curated_sha256": "e2a530619de559d80178ce473a5299acd70bf55934e80f4dc01e1ead673d7cfc",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh8304.dat",
+    "pivot_current_A": 21299.468,
+    "pivot_new_A": 21299.467,
+    "pivot_shift_pct": -0.0
+  },
+  {
+    "path": "data/filters/CFHT/Wircam/LowOH1.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/Wircam/LowOH1.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh8104.dat (CFHT filter 8104, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 e3d26ac4fd034f3206a471953d31b582c867f40188e49f84299515772291407c): 467 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; no negatives. Replaces the SVO copy (460 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "dc91314b7c0ba439eaf6ebc6a3fad6cda25e2af33ba1e3a14088ffd7b37b7f4d",
+    "curated_sha256": "ba9f620f2396ef44ece3ca3ee0186f4c74c3df3d51eacecb0be15675127f3179",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh8104.dat",
+    "pivot_current_A": 10628.59,
+    "pivot_new_A": 10628.587,
+    "pivot_shift_pct": -0.0
+  },
+  {
+    "path": "data/filters/CFHT/Wircam/LowOH2.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/Wircam/LowOH2.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh8102.dat (CFHT filter 8102, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 d2093971d3c1fd755763cc068f1278393bc90f444272390b37741211076b34a3): 512 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; no negatives. Replaces the SVO copy (507 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "02826507a09f20b9e411bda46769cea1d57aff9943c8352c1791bb9131bbf750",
+    "curated_sha256": "ffe3f28f061b63cefb3198007f82aa2c42f4bd73549c4d010e186fbf540de956",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh8102.dat",
+    "pivot_current_A": 11892.09,
+    "pivot_new_A": 11892.098,
+    "pivot_shift_pct": 0.0001
+  },
+  {
+    "path": "data/filters/CFHT/Wircam/W.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CFHT/Wircam/W.dat",
+    "operation": "re-sourced from https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh8105.dat (CFHT filter 8105, listed in https://www.cfht.hawaii.edu/Instruments/Filters/complete.html; raw sha256 040a58e22d177ff11c0dcba33c28fb647d5b81790015d2104ced9a597605b2a4): 400 rows nm->Angstrom (x10), percent->fraction (/100), strictly descending scan reversed to increasing; 12 negative samples (min -0.000192) set to 0. Replaces the SVO copy (389 rows, wavelengths rounded to whole Angstrom). Header: ComponentsSource svo->original, Sources added; FilterID/DetectorType/DetectorTypeSource=svo/Components kept",
+    "raw_sha256": "30fc04a6dbdcfc6eccaf83f30171195249f180979c237b9adaea0c7a82120271",
+    "curated_sha256": "5572d8a34c95670fb75e8a446f810517f9aa3b80c95407a18641c3d80a599701",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh8105.dat",
+    "pivot_current_A": 14524.257,
+    "pivot_new_A": 14524.246,
+    "pivot_shift_pct": -0.0001
+  },
+  {
+    "path": "data/filters/CFHT/Wircam/manifest.json",
+    "raw_copy": null,
+    "operation": "created manifest.json (none existed) with InstrumentManifest.from_published of the staged curves",
+    "raw_sha256": null,
+    "curated_sha256": "67e7b2589789be6090a32611d9e6e14a566d6a559aa76603921c960db8ec7f46"
+  },
+  {
+    "path": "data/filters/CMP_SAI/SPP/625nm.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CMP_SAI/SPP/625nm.dat",
+    "operation": "clipped 1 negative transmissions (min -3.10744e-05) to 0; fxlib.clean_curve minimal curation; rows 200->200; pivot 6240.811->6240.811 A (-0.0000%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "0b8d5268e54fcdd83ede85ca6abe05075edec3631074e6d5b1473ba40c83063d",
+    "curated_sha256": "3f7bb1e103f6f16b8d1326cfd4f10d2f5afac1d1306202687d8da6416b02a044"
+  },
+  {
+    "path": "data/filters/CMP_SAI/SPP/Ic.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CMP_SAI/SPP/Ic.dat",
+    "operation": "clipped 1 negative transmissions (min -0.000134086) to 0; fxlib.clean_curve minimal curation; rows 200->200; pivot 8256.342->8256.340 A (-0.0000%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "f38711b6661f6714e583bf904090ebf899e7fe987d55cd5216fdc3eddef522d6",
+    "curated_sha256": "c45fc8604349e7d5e85a836ae25db0c12923cf823f49f1b54d8538239f731593"
+  },
+  {
+    "path": "data/filters/CMP_SAI/SPP/V.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CMP_SAI/SPP/V.dat",
+    "operation": "clipped 1 negative transmissions (min -0.000954047) to 0; fxlib.clean_curve minimal curation; rows 200->200; pivot 5358.864->5358.860 A (-0.0001%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "3bdbae158987287b4cafd9d5524d40e3533749382716179b4896df66ad717d4d",
+    "curated_sha256": "40455841e104723c8c9cdda3d39bec1be9de10c17add4383e45322c3151a552b"
+  },
+  {
+    "path": "data/filters/CSTAR/CSTAR/i.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CSTAR/CSTAR/i.dat",
+    "operation": "clipped 2 negative transmissions (min -0.0025189) to 0; fxlib.clean_curve minimal curation; rows 22->22; pivot 7752.932->7753.075 A (+0.0018%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "d61c02211b05d1d07657d1c0aad014094874c5b504e54c5d1818756a5ca6d59f",
+    "curated_sha256": "06f4c60a65793296d3aa17d5c5172cf846e7fa6dc8bfff6c097c9f370795bd49"
+  },
+  {
+    "path": "data/filters/CSTAR/CSTAR/r.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CSTAR/CSTAR/r.dat",
+    "operation": "clipped 1 negative transmissions (min -0.0010161) to 0; fxlib.clean_curve minimal curation; rows 16->16; pivot 6328.107->6328.025 A (-0.0013%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "8271e1140f59149cfe35dcba84942cd0099107ace683a76433df7e4f6716c286",
+    "curated_sha256": "a0f0f6608020da5c0b2834e025e861bf2595900765eced1f8f84a4554d8b5dd5"
+  },
+  {
+    "path": "data/filters/CTIO/CTIO/6130_590.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CTIO/CTIO/6130_590.dat",
+    "operation": "merged 150 duplicate wavelengths (exact repeated Wavelength values; transmissions averaged; no decreasing segments present); fxlib.clean_curve minimal curation; rows 583->433; pivot 6262.274->6262.274 A (+0.0000%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "4b033d8946be7c6ab6eb3abb60f2e7913f931f884014735f14e37d91a5fd0ac8",
+    "curated_sha256": "999eccd6dcad8d6480d4c56d9d60a545d4763505c5f459d06a8bbfd69b75828e"
+  },
+  {
+    "path": "data/filters/CTIO/CTIO/8123_1313.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CTIO/CTIO/8123_1313.dat",
+    "operation": "merged 65 duplicate wavelengths (exact repeated Wavelength values; transmissions averaged; no decreasing segments present); fxlib.clean_curve minimal curation; rows 276->211; pivot 8088.269->8088.269 A (-0.0000%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "6f50b6fd58be27067df1c5b86038e970cb81e8c7b70f0b3719057d6a16f5e975",
+    "curated_sha256": "ea285054cd30d173a84bd57888cbac832321b58fb416ed6f55fe75f7770845ad"
+  },
+  {
+    "path": "data/filters/CTIO/ISPI/FeII_id111.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CTIO/ISPI/FeII_id111.dat",
+    "operation": "merged 280 duplicate wavelengths (exact repeated Wavelength values; transmissions averaged; no decreasing segments present); fxlib.clean_curve minimal curation; rows 484->204; pivot 12582.510->12582.510 A (+0.0000%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "8f426f33fbb580091062028fae80a87b7e7b91a27d8a84e304517399613b69a2",
+    "curated_sha256": "824e27c78108f81a1300a601841d930d1ce4cd4e9c8c600e218288077b406513"
+  },
+  {
+    "path": "data/filters/CTIO/ISPI/H_id44.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CTIO/ISPI/H_id44.dat",
+    "operation": "merged 4 duplicate wavelengths (exact repeated Wavelength values; transmissions averaged; no decreasing segments present); fxlib.clean_curve minimal curation; rows 433->429; pivot 16389.794->16389.790 A (-0.0000%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "e1414647c98b4f07141fbe68a05dabc5e857082febc376b24d36aa50502a77e5",
+    "curated_sha256": "962ef8b923860fb259c28aff5ffc72242ae0d22a53c94f0e2dc403b90a1487b9"
+  },
+  {
+    "path": "data/filters/CTIO/ISPI/J_id40.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CTIO/ISPI/J_id40.dat",
+    "operation": "merged 2 duplicate wavelengths (exact repeated Wavelength values; transmissions averaged; no decreasing segments present); fxlib.clean_curve minimal curation; rows 311->309; pivot 12807.193->12807.293 A (+0.0008%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "118a7acaac3c24f3566350695674603d923b14034f52a3650845503da0ed7117",
+    "curated_sha256": "d0ce18615fd3c941e4aebe1e31de38b5f2b9d44e0cec4004bd101bfe5ff4d591"
+  },
+  {
+    "path": "data/filters/CTIO/ISPI/K_id50.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CTIO/ISPI/K_id50.dat",
+    "operation": "merged 3 duplicate wavelengths (exact repeated Wavelength values; transmissions averaged; no decreasing segments present); fxlib.clean_curve minimal curation; rows 566->563; pivot 22141.353->22141.354 A (+0.0000%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "ef98b71e2efebf423cc8a21975ac47327f03df39d3bce9f0a9736ae0ea178308",
+    "curated_sha256": "b890beed10a87b526c9461a7d4470a78d64c6cd4b3434f97d3bea17af09a0acd"
+  },
+  {
+    "path": "data/filters/CTIO/ISPI/Pa_id110.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CTIO/ISPI/Pa_id110.dat",
+    "operation": "merged 286 duplicate wavelengths (exact repeated Wavelength values; transmissions averaged; no decreasing segments present); fxlib.clean_curve minimal curation; rows 499->213; pivot 12814.480->12814.479 A (-0.0000%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "cdb495f81c469d40d9b77d4ea9e50979350f0afc92800e783ab3114634707a42",
+    "curated_sha256": "d2bb89b0c787fd91945b09ccdc3760cc78201ac5ef5cf024b424ce9708728ec3"
+  },
+  {
+    "path": "data/filters/CTIO/SMARTS/V1.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CTIO/SMARTS/V1.dat",
+    "operation": "merged 4 duplicate wavelengths (exact repeated Wavelength values; transmissions averaged; no decreasing segments present); fxlib.clean_curve minimal curation; rows 46->42; pivot 5509.655->5509.655 A (+0.0000%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "57d3103acf1d4eaf3eed3b68a8adc434d6258f005b4baaf2658c7318b8f240a6",
+    "curated_sha256": "61fa9674006b39884e8e9b435addd5236926b62a5dd10cc023050f8b79fb2195"
+  },
+  {
+    "path": "data/filters/CTIO/Spartan/Cont3.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CTIO/Spartan/Cont3.dat",
+    "operation": "clipped 7 negative transmissions (min -0.0006) to 0; fxlib.clean_curve minimal curation; rows 501->501; pivot 22079.346->22079.350 A (+0.0000%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "a01695b0532eec52c67c1ae69e51239be947896dabad0782e2f86ad63abc1cbd",
+    "curated_sha256": "5a0358bdb50702608e9464d803dbd4d08c7004812bb5650a3cc247d146b565b6"
+  },
+  {
+    "path": "data/filters/CTIO/Spartan/FeII.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/CTIO/Spartan/FeII.dat",
+    "operation": "clipped 5 negative transmissions (min -0.0001) to 0; fxlib.clean_curve minimal curation; rows 601->601; pivot 16404.050->16404.050 A (+0.0000%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "1e4d82a23d5a7df521656f071569d82bff2579d0ea2b4c4c78138a15c884cc95",
+    "curated_sha256": "44c34d9149d191fb475a997c63440d8ce8eb0483e7108277f9f16fb5e18be865"
+  },
+  {
+    "path": "data/filters/DECam/Broad/VR.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/Broad/VR.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc0472.txt (raw sha256 7783c9731ca4ed709b08153d1eac1807fd578016084e7d4036782f1dbc0f0c15; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/Broad.VR;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc0472.txt. Samples unchanged byte for byte (write_filter_header).",
+    "raw_sha256": "aa69a9d3532fdd7e9d326269eb912db57598bffc7888bd33566b629d49bc3664",
+    "curated_sha256": "51080c074665243a4895e92edf98bdce23fa128af4a119d6eb191eb1d59a5c54"
+  },
+  {
+    "path": "data/filters/DECam/Broad/Y.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/Broad/Y.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc0472.txt (raw sha256 7783c9731ca4ed709b08153d1eac1807fd578016084e7d4036782f1dbc0f0c15; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/Broad.Y;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc0472.txt. fxlib.clean_curve minimal curation: 83 negative samples (min -1.53e-05) set to 0",
+    "raw_sha256": "ad8dfbe77efb644cb5f3ee9a71860d94d6219940d60c992ce6e1c8e64b26d43f",
+    "curated_sha256": "ffa8e45b7a8233d596c3e915af61ade3f6642a70673d3074981eb8593768d35e",
+    "pivot_current_A": 10086.359,
+    "pivot_new_A": 10086.357,
+    "pivot_shift_pct": -0.0
+  },
+  {
+    "path": "data/filters/DECam/Broad/g.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/Broad/g.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc0472.txt (raw sha256 7783c9731ca4ed709b08153d1eac1807fd578016084e7d4036782f1dbc0f0c15; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/Broad.g;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc0472.txt. fxlib.clean_curve minimal curation: 79 negative samples (min -1.8e-05) set to 0",
+    "raw_sha256": "4aa82592a39d3f8d583d590067a6571446dfd16aa1a13e16c58a08985550e8de",
+    "curated_sha256": "f0d3cffb03096637406a9a3add70866fa975284296b0390c9e5a15f46b054616",
+    "pivot_current_A": 4714.305,
+    "pivot_new_A": 4714.307,
+    "pivot_shift_pct": 0.0
+  },
+  {
+    "path": "data/filters/DECam/Broad/i.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/Broad/i.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc0472.txt (raw sha256 7783c9731ca4ed709b08153d1eac1807fd578016084e7d4036782f1dbc0f0c15; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/Broad.i;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc0472.txt. fxlib.clean_curve minimal curation: 201 negative samples (min -0.000878) set to 0",
+    "raw_sha256": "dd41026837f5506c7a0499f75e192fe75b03ce2a6f3b229fb01bc207d6907b95",
+    "curated_sha256": "96ac67df95fab4dd4671d4b66f6a755277a15cd17dbdd0e8f02eea362b6efb29",
+    "pivot_current_A": 7821.192,
+    "pivot_new_A": 7823.5,
+    "pivot_shift_pct": 0.0295
+  },
+  {
+    "path": "data/filters/DECam/Broad/r.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/Broad/r.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc0472.txt (raw sha256 7783c9731ca4ed709b08153d1eac1807fd578016084e7d4036782f1dbc0f0c15; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/Broad.r;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc0472.txt. fxlib.clean_curve minimal curation: 124 negative samples (min -2.37e-05) set to 0",
+    "raw_sha256": "8c1a5d663262e4c8e5bdba203760033a4eecbe9728bdf5b3a3e609a75739fb3f",
+    "curated_sha256": "b3b31e4c9ad98fced5b12a19feadafd5f3a694e204864eaf9438df10a0af8240",
+    "pivot_current_A": 6401.539,
+    "pivot_new_A": 6401.547,
+    "pivot_shift_pct": 0.0001
+  },
+  {
+    "path": "data/filters/DECam/Broad/u.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/Broad/u.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc0472.txt (raw sha256 7783c9731ca4ed709b08153d1eac1807fd578016084e7d4036782f1dbc0f0c15; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/Broad.u;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc0472.txt. Samples unchanged byte for byte (write_filter_header).",
+    "raw_sha256": "f18e76670ee10f3be498e3ddf0723000f9f41dce3939a525d05b3ea56d13cbe1",
+    "curated_sha256": "7c741cc1c60197db7d765e39ea96ae02e1769069c627d2f1c4207459208574c2"
+  },
+  {
+    "path": "data/filters/DECam/Broad/z.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/Broad/z.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc0472.txt (raw sha256 7783c9731ca4ed709b08153d1eac1807fd578016084e7d4036782f1dbc0f0c15; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/Broad.z;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc0472.txt. fxlib.clean_curve minimal curation: 73 negative samples (min -0.000836) set to 0",
+    "raw_sha256": "822d85b8d115085bfde554e0eea4245a45d4a9358231c79e80faaf25d9ffcf3a",
+    "curated_sha256": "aba7bfd250cb32c494c97770d3c3fafd36a3cd903b249e4f38794f32db31b0b2",
+    "pivot_current_A": 9248.982,
+    "pivot_new_A": 9249.486,
+    "pivot_shift_pct": 0.0055
+  },
+  {
+    "path": "data/filters/DECam/Broad/manifest.json",
+    "raw_copy": null,
+    "operation": "created manifest.json (none existed) with InstrumentManifest.from_published of the staged curves",
+    "raw_sha256": null,
+    "curated_sha256": "2e2d0f234da4ce5793ecea1cda7f882572bd7a30230de2d76e62e0549883424a"
+  },
+  {
+    "path": "data/filters/DECam/Medium/M411.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/Medium/M411.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls (raw sha256 781fd88bb3ac905778950cc03f834f0597165c60a1813123c283df95f4919e22; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/Medium.M411;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls. Samples unchanged byte for byte (write_filter_header).",
+    "raw_sha256": "60f5351b83bdaea7be463df0d072938033b2f0931f6cb3e64b6d2888c1f11ddf",
+    "curated_sha256": "f9c4a6a4161fc33a98d565585600c5bb7dc804dd50c2c9ce3f24554892a14011"
+  },
+  {
+    "path": "data/filters/DECam/Medium/M438.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/Medium/M438.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls (raw sha256 781fd88bb3ac905778950cc03f834f0597165c60a1813123c283df95f4919e22; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/Medium.M438;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls. Samples unchanged byte for byte (write_filter_header).",
+    "raw_sha256": "166db8cfde9c13d5bad10906747db58c9537ddb9e002529db175019bdf60365c",
+    "curated_sha256": "38e0d714cd333e74e2aed10f11f5aca0a3bc063ea034e8e709de9616deef583d"
+  },
+  {
+    "path": "data/filters/DECam/Medium/M464.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/Medium/M464.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls (raw sha256 781fd88bb3ac905778950cc03f834f0597165c60a1813123c283df95f4919e22; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/Medium.M464;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls. Samples unchanged byte for byte (write_filter_header).",
+    "raw_sha256": "ecff6e3fdddd112b60bc6206892d1609a53f997330b7138948361bc31e2e00f4",
+    "curated_sha256": "272730571706bf51e8af971a2074006f216563fe0ea7b854953bf407da2a40e8"
+  },
+  {
+    "path": "data/filters/DECam/Medium/M490.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/Medium/M490.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls (raw sha256 781fd88bb3ac905778950cc03f834f0597165c60a1813123c283df95f4919e22; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/Medium.M490;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls. Samples unchanged byte for byte (write_filter_header).",
+    "raw_sha256": "b6cb7d231045e9c5b3998bc28dd05e3381598a903617af30ec5f416baeac9faa",
+    "curated_sha256": "f3687cdd7b26dd5bab281114ebba4609de435e2f80f7f491e7251b8864f79f8d"
+  },
+  {
+    "path": "data/filters/DECam/Medium/M517.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/Medium/M517.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls (raw sha256 781fd88bb3ac905778950cc03f834f0597165c60a1813123c283df95f4919e22; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/Medium.M517;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls. Samples unchanged byte for byte (write_filter_header).",
+    "raw_sha256": "63dce15f70ad97c93d694ee277d60376a64c11eaaf722cf0cce818d04c971331",
+    "curated_sha256": "c0603f125d2455b2296252643797b8688911576fd155597d81590f574165aa75"
+  },
+  {
+    "path": "data/filters/DECam/Medium/manifest.json",
+    "raw_copy": null,
+    "operation": "created manifest.json (none existed) with InstrumentManifest.from_published of the staged curves",
+    "raw_sha256": null,
+    "curated_sha256": "7d16a262a70e269918b71b7e428640e3081ce86a1a399fe7e0789bc8e71978c0"
+  },
+  {
+    "path": "data/filters/DECam/Narrow/N1008.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/Narrow/N1008.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls (raw sha256 781fd88bb3ac905778950cc03f834f0597165c60a1813123c283df95f4919e22; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/Narrow.N1008;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls. Samples unchanged byte for byte (write_filter_header).",
+    "raw_sha256": "76eef4040cc5868713cd527c687473ad3237d8cad93d2eccfefea469f1ee9e08",
+    "curated_sha256": "7e26cb2036ff03cb5bde5d9187e6c66a090d472981dfbd7b508911ce3a564ae7"
+  },
+  {
+    "path": "data/filters/DECam/Narrow/N395.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/Narrow/N395.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls (raw sha256 781fd88bb3ac905778950cc03f834f0597165c60a1813123c283df95f4919e22; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/Narrow.N395;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls. Samples unchanged byte for byte (write_filter_header).",
+    "raw_sha256": "dc36fd72996485bc796ab18fbbaf45bf07efba6ac3919742de2d575aebbb1722",
+    "curated_sha256": "cab0fe5986be489f7c1d2453bec28e285bb5f2cf64766758cb52bfb618fca4de"
+  },
+  {
+    "path": "data/filters/DECam/Narrow/N419.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/Narrow/N419.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls (raw sha256 781fd88bb3ac905778950cc03f834f0597165c60a1813123c283df95f4919e22; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/Narrow.N419;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls. Samples unchanged byte for byte (write_filter_header).",
+    "raw_sha256": "dee402459f4f0f40181756ebafa4974b1a9f447d2b3e386d7e376651532899ed",
+    "curated_sha256": "73629d436b1a978f4bac31da5a69a3405585827f82cf1e707bccebda54d0dd5b"
+  },
+  {
+    "path": "data/filters/DECam/Narrow/N501.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/Narrow/N501.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls (raw sha256 781fd88bb3ac905778950cc03f834f0597165c60a1813123c283df95f4919e22; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/Narrow.N501;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls. Samples unchanged byte for byte (write_filter_header).",
+    "raw_sha256": "c7bd4cef51d098852ac9abd897cdfa22e738c36bcf0970365695940816842b4a",
+    "curated_sha256": "0b026416ebc914776631921704cf8a6219de0ab4be59c169c273a4103d1ca86e"
+  },
+  {
+    "path": "data/filters/DECam/Narrow/N540.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/Narrow/N540.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls (raw sha256 781fd88bb3ac905778950cc03f834f0597165c60a1813123c283df95f4919e22; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/Narrow.N540;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls. Samples unchanged byte for byte (write_filter_header).",
+    "raw_sha256": "b66ed4ce72d024a0f0df9c644df931c169defa21d11d42c59e8ec7eddd515eae",
+    "curated_sha256": "f18b6c03f96e38bf3b8ebc25fbe288f875b14f767c0a09de80e453caf8e18090"
+  },
+  {
+    "path": "data/filters/DECam/Narrow/N662.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/Narrow/N662.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls (raw sha256 781fd88bb3ac905778950cc03f834f0597165c60a1813123c283df95f4919e22; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/Narrow.N662;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls. fxlib.clean_curve minimal curation: 75 negative samples (min -2.23e-05) set to 0",
+    "raw_sha256": "1ff6d60d54bef0bc5091d9f12351c28da099989de9ef6433d31c436cc74177bd",
+    "curated_sha256": "131e8edba2027885ebacbe3761930c1f1023cdf89343c5bd9f0ac11cbdc29728",
+    "pivot_current_A": 7620.828,
+    "pivot_new_A": 7620.826,
+    "pivot_shift_pct": -0.0
+  },
+  {
+    "path": "data/filters/DECam/Narrow/N673.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/Narrow/N673.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls (raw sha256 781fd88bb3ac905778950cc03f834f0597165c60a1813123c283df95f4919e22; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/Narrow.N673;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls. Samples unchanged byte for byte (write_filter_header).",
+    "raw_sha256": "40dd31fb7aecc629bff919605fd04bbc763f66fa98681e2217b8399fe7ff8115",
+    "curated_sha256": "03942efbd4bc2622c8620bd36917cc417ebce7d6c5d10c603f35d169bb4b9c84"
+  },
+  {
+    "path": "data/filters/DECam/Narrow/N708.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/Narrow/N708.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls (raw sha256 781fd88bb3ac905778950cc03f834f0597165c60a1813123c283df95f4919e22; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/Narrow.N708;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls. Samples unchanged byte for byte (write_filter_header).",
+    "raw_sha256": "442a68e98d118935cbbb29b657b099d00340f21201b477bec50584164d003204",
+    "curated_sha256": "03c882a82ef9a6f7e9ce109bab50e01d9e9fb0ac280587b1b830876b8aef6df4"
+  },
+  {
+    "path": "data/filters/DECam/Narrow/N964.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/Narrow/N964.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls (raw sha256 781fd88bb3ac905778950cc03f834f0597165c60a1813123c283df95f4919e22; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/Narrow.N964;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls. Samples unchanged byte for byte (write_filter_header).",
+    "raw_sha256": "a97aa0a3fc3b53175692780d8b845bd13921371c04475fc06b1bd39ce782a7fe",
+    "curated_sha256": "623ebc93426871ea9ea90923a1041a0a030eedbee3ddf4373acc1f262c409331"
+  },
+  {
+    "path": "data/filters/DECam/Narrow/manifest.json",
+    "raw_copy": null,
+    "operation": "created manifest.json (none existed) with InstrumentManifest.from_published of the staged curves",
+    "raw_sha256": null,
+    "curated_sha256": "5fca6989cdcc6d5639e5ddcff4603eb6552b2e788c139c2a7a9b629ce6a7ba43"
+  },
+  {
+    "path": "data/filters/DECam/all/M411.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/all/M411.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls (raw sha256 781fd88bb3ac905778950cc03f834f0597165c60a1813123c283df95f4919e22; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/all.M411;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls. Samples unchanged byte for byte (write_filter_header).",
+    "raw_sha256": "60f5351b83bdaea7be463df0d072938033b2f0931f6cb3e64b6d2888c1f11ddf",
+    "curated_sha256": "d2d7231804e2956e4864c5c233909dcb9367c16ca662f9413689d4e8651b2377"
+  },
+  {
+    "path": "data/filters/DECam/all/M438.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/all/M438.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls (raw sha256 781fd88bb3ac905778950cc03f834f0597165c60a1813123c283df95f4919e22; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/all.M438;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls. Samples unchanged byte for byte (write_filter_header).",
+    "raw_sha256": "166db8cfde9c13d5bad10906747db58c9537ddb9e002529db175019bdf60365c",
+    "curated_sha256": "1a2f74c944555baa2dce9ac545951aff38587089bd2bf1af19165eb9de5dc885"
+  },
+  {
+    "path": "data/filters/DECam/all/M464.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/all/M464.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls (raw sha256 781fd88bb3ac905778950cc03f834f0597165c60a1813123c283df95f4919e22; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/all.M464;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls. Samples unchanged byte for byte (write_filter_header).",
+    "raw_sha256": "ecff6e3fdddd112b60bc6206892d1609a53f997330b7138948361bc31e2e00f4",
+    "curated_sha256": "1246f1d4ed8685725f9f2f2b2a3d9c9676e6f66ad7965a159576ec2c6ba88539"
+  },
+  {
+    "path": "data/filters/DECam/all/M490.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/all/M490.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls (raw sha256 781fd88bb3ac905778950cc03f834f0597165c60a1813123c283df95f4919e22; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/all.M490;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls. Samples unchanged byte for byte (write_filter_header).",
+    "raw_sha256": "b6cb7d231045e9c5b3998bc28dd05e3381598a903617af30ec5f416baeac9faa",
+    "curated_sha256": "198ca74c72ad6113fdbd776644be39d1917358c30a7490d8f9f2ca3055bedbf3"
+  },
+  {
+    "path": "data/filters/DECam/all/M517.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/all/M517.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls (raw sha256 781fd88bb3ac905778950cc03f834f0597165c60a1813123c283df95f4919e22; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/all.M517;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls. Samples unchanged byte for byte (write_filter_header).",
+    "raw_sha256": "63dce15f70ad97c93d694ee277d60376a64c11eaaf722cf0cce818d04c971331",
+    "curated_sha256": "2b552722b725419b9cf079f14918d1a6e69515e4d2b13e9a13f3465a97a9630b"
+  },
+  {
+    "path": "data/filters/DECam/all/N1008.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/all/N1008.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls (raw sha256 781fd88bb3ac905778950cc03f834f0597165c60a1813123c283df95f4919e22; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/all.N1008;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls. Samples unchanged byte for byte (write_filter_header).",
+    "raw_sha256": "76eef4040cc5868713cd527c687473ad3237d8cad93d2eccfefea469f1ee9e08",
+    "curated_sha256": "5b76a5ceeba0c5ca5886f29c9994f0299dc067f3f29efad41d21ea5a1726ed6e"
+  },
+  {
+    "path": "data/filters/DECam/all/N395.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/all/N395.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls (raw sha256 781fd88bb3ac905778950cc03f834f0597165c60a1813123c283df95f4919e22; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/all.N395;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls. Samples unchanged byte for byte (write_filter_header).",
+    "raw_sha256": "dc36fd72996485bc796ab18fbbaf45bf07efba6ac3919742de2d575aebbb1722",
+    "curated_sha256": "8655bde3dbcae8700b9637b816dc208401b2a3546d28f7a37deca9dc45d293aa"
+  },
+  {
+    "path": "data/filters/DECam/all/N419.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/all/N419.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls (raw sha256 781fd88bb3ac905778950cc03f834f0597165c60a1813123c283df95f4919e22; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/all.N419;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls. Samples unchanged byte for byte (write_filter_header).",
+    "raw_sha256": "dee402459f4f0f40181756ebafa4974b1a9f447d2b3e386d7e376651532899ed",
+    "curated_sha256": "320d6534f79a64ecd46c3e23afd6bbfb2901c971859a5fda3bf50f47b459d2ff"
+  },
+  {
+    "path": "data/filters/DECam/all/N501.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/all/N501.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls (raw sha256 781fd88bb3ac905778950cc03f834f0597165c60a1813123c283df95f4919e22; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/all.N501;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls. Samples unchanged byte for byte (write_filter_header).",
+    "raw_sha256": "c7bd4cef51d098852ac9abd897cdfa22e738c36bcf0970365695940816842b4a",
+    "curated_sha256": "43ef7f752a78fcd8796577aa450809064f46653ab592a3af8794b4a46455bc6d"
+  },
+  {
+    "path": "data/filters/DECam/all/N540.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/all/N540.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls (raw sha256 781fd88bb3ac905778950cc03f834f0597165c60a1813123c283df95f4919e22; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/all.N540;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls. Samples unchanged byte for byte (write_filter_header).",
+    "raw_sha256": "b66ed4ce72d024a0f0df9c644df931c169defa21d11d42c59e8ec7eddd515eae",
+    "curated_sha256": "c91588e4fafd3f7528217e791b5c8b135f2442c7cbc2a139324cb8d1ad139764"
+  },
+  {
+    "path": "data/filters/DECam/all/N662.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/all/N662.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls (raw sha256 781fd88bb3ac905778950cc03f834f0597165c60a1813123c283df95f4919e22; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/all.N662;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls. fxlib.clean_curve minimal curation: 75 negative samples (min -2.23e-05) set to 0",
+    "raw_sha256": "1ff6d60d54bef0bc5091d9f12351c28da099989de9ef6433d31c436cc74177bd",
+    "curated_sha256": "f1a27fe32959ed145300bd18b00bfcb8602a97a6304a0adb7affcf35f1d0a9b6",
+    "pivot_current_A": 7620.828,
+    "pivot_new_A": 7620.826,
+    "pivot_shift_pct": -0.0
+  },
+  {
+    "path": "data/filters/DECam/all/N673.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/all/N673.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls (raw sha256 781fd88bb3ac905778950cc03f834f0597165c60a1813123c283df95f4919e22; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/all.N673;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls. Samples unchanged byte for byte (write_filter_header).",
+    "raw_sha256": "40dd31fb7aecc629bff919605fd04bbc763f66fa98681e2217b8399fe7ff8115",
+    "curated_sha256": "4020f47f77ad90d218a98a63353b7d21ccac769d4ae4a006a9fb15cc2ad70e04"
+  },
+  {
+    "path": "data/filters/DECam/all/N708.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/all/N708.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls (raw sha256 781fd88bb3ac905778950cc03f834f0597165c60a1813123c283df95f4919e22; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/all.N708;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls. Samples unchanged byte for byte (write_filter_header).",
+    "raw_sha256": "442a68e98d118935cbbb29b657b099d00340f21201b477bec50584164d003204",
+    "curated_sha256": "63234d10925c2fbbafa39773e69af2aa65baccdf7681471727c7cf6d04480b50"
+  },
+  {
+    "path": "data/filters/DECam/all/N964.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/all/N964.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls (raw sha256 781fd88bb3ac905778950cc03f834f0597165c60a1813123c283df95f4919e22; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/all.N964;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls. Samples unchanged byte for byte (write_filter_header).",
+    "raw_sha256": "a97aa0a3fc3b53175692780d8b845bd13921371c04475fc06b1bd39ce782a7fe",
+    "curated_sha256": "8117342aeb21ee36d3747586d37ee7327dafe71ec5f93398bd24a59c2370b6fb"
+  },
+  {
+    "path": "data/filters/DECam/all/VR.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/all/VR.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc0472.txt (raw sha256 7783c9731ca4ed709b08153d1eac1807fd578016084e7d4036782f1dbc0f0c15; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/all.VR;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc0472.txt. Samples unchanged byte for byte (write_filter_header).",
+    "raw_sha256": "aa69a9d3532fdd7e9d326269eb912db57598bffc7888bd33566b629d49bc3664",
+    "curated_sha256": "26aed6ff23d06a6c366e1b082c4c10af9309fc3dfb03f1aea81f0bbba574b127"
+  },
+  {
+    "path": "data/filters/DECam/all/Y.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/all/Y.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc0472.txt (raw sha256 7783c9731ca4ed709b08153d1eac1807fd578016084e7d4036782f1dbc0f0c15; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/all.Y;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc0472.txt. fxlib.clean_curve minimal curation: 83 negative samples (min -1.53e-05) set to 0",
+    "raw_sha256": "ad8dfbe77efb644cb5f3ee9a71860d94d6219940d60c992ce6e1c8e64b26d43f",
+    "curated_sha256": "c056cca9aa32cd0cfe4e9b641a454e5b7fd3f4ee2608e975a851bcfd982ab410",
+    "pivot_current_A": 10086.359,
+    "pivot_new_A": 10086.357,
+    "pivot_shift_pct": -0.0
+  },
+  {
+    "path": "data/filters/DECam/all/g.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/all/g.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc0472.txt (raw sha256 7783c9731ca4ed709b08153d1eac1807fd578016084e7d4036782f1dbc0f0c15; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/all.g;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc0472.txt. fxlib.clean_curve minimal curation: 79 negative samples (min -1.8e-05) set to 0",
+    "raw_sha256": "4aa82592a39d3f8d583d590067a6571446dfd16aa1a13e16c58a08985550e8de",
+    "curated_sha256": "21d2c15191c5801c520c75d5a3fa245981759f0966d67d070715fabe30ad0f67",
+    "pivot_current_A": 4714.305,
+    "pivot_new_A": 4714.307,
+    "pivot_shift_pct": 0.0
+  },
+  {
+    "path": "data/filters/DECam/all/i.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/all/i.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc0472.txt (raw sha256 7783c9731ca4ed709b08153d1eac1807fd578016084e7d4036782f1dbc0f0c15; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/all.i;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc0472.txt. fxlib.clean_curve minimal curation: 201 negative samples (min -0.000878) set to 0",
+    "raw_sha256": "dd41026837f5506c7a0499f75e192fe75b03ce2a6f3b229fb01bc207d6907b95",
+    "curated_sha256": "9f33f74407722f8f4242c80a6d1b5d63cc514ef0a760847f2d92135215b701a7",
+    "pivot_current_A": 7821.192,
+    "pivot_new_A": 7823.5,
+    "pivot_shift_pct": 0.0295
+  },
+  {
+    "path": "data/filters/DECam/all/r.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/all/r.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc0472.txt (raw sha256 7783c9731ca4ed709b08153d1eac1807fd578016084e7d4036782f1dbc0f0c15; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/all.r;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc0472.txt. fxlib.clean_curve minimal curation: 124 negative samples (min -2.37e-05) set to 0",
+    "raw_sha256": "8c1a5d663262e4c8e5bdba203760033a4eecbe9728bdf5b3a3e609a75739fb3f",
+    "curated_sha256": "64efc66087fc44dcecaf95c29a2c113c2d93252e39248e8fb3518cbc45fe374a",
+    "pivot_current_A": 6401.539,
+    "pivot_new_A": 6401.547,
+    "pivot_shift_pct": 0.0001
+  },
+  {
+    "path": "data/filters/DECam/all/u.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/all/u.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc0472.txt (raw sha256 7783c9731ca4ed709b08153d1eac1807fd578016084e7d4036782f1dbc0f0c15; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/all.u;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc0472.txt. Samples unchanged byte for byte (write_filter_header).",
+    "raw_sha256": "f18e76670ee10f3be498e3ddf0723000f9f41dce3939a525d05b3ea56d13cbe1",
+    "curated_sha256": "26c9b6e39310550bec3a10ff57127423c9816b28dfcac8446ef6f257523d1ab1"
+  },
+  {
+    "path": "data/filters/DECam/all/z.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DECam/all/z.dat",
+    "operation": "verified sample-for-sample identical to the original https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc0472.txt (raw sha256 7783c9731ca4ed709b08153d1eac1807fd578016084e7d4036782f1dbc0f0c15; nm x10, percent /100). DetectorType=photon tagged from NOIRLab DECam documentation (https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera; https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera: DECam is a CCD camera, photon-counting), DetectorTypeSource=original; header added (none before): FilterID=DECam/all.z;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc0472.txt. fxlib.clean_curve minimal curation: 73 negative samples (min -0.000836) set to 0",
+    "raw_sha256": "822d85b8d115085bfde554e0eea4245a45d4a9358231c79e80faaf25d9ffcf3a",
+    "curated_sha256": "1dda022ddba6ded7d483979de60a06270d1f9e2f63e23d9a93ebcb4cf3ee5c89",
+    "pivot_current_A": 9248.982,
+    "pivot_new_A": 9249.486,
+    "pivot_shift_pct": 0.0055
+  },
+  {
+    "path": "data/filters/DECam/all/manifest.json",
+    "raw_copy": null,
+    "operation": "created manifest.json (none existed) with InstrumentManifest.from_published of the staged curves",
+    "raw_sha256": null,
+    "curated_sha256": "fde11e12f65c88c5ddba7263d2eb54c2a3201c839795a258685ab8808b85b14b"
+  },
+  {
+    "path": "data/filters/DOT/TIRCAM2/H2.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DOT/TIRCAM2/H2.dat",
+    "operation": "clipped 2 negative transmissions (min -0.000618722) to 0; fxlib.clean_curve minimal curation; rows 200->200; pivot 21233.977->21233.974 A (-0.0000%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "cc130e095f623fe3046372aeecb4f6bf40cfab8e06578d9353cb5c10288399b4",
+    "curated_sha256": "d94111531aa50387c727a63c8e3f67a172424026e3d78500af8b3199f92cad35"
+  },
+  {
+    "path": "data/filters/DOT/TIRCAM2/Kcont.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DOT/TIRCAM2/Kcont.dat",
+    "operation": "clipped 1 negative transmissions (min -0.000921023) to 0; fxlib.clean_curve minimal curation; rows 200->200; pivot 22745.992->22745.989 A (-0.0000%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "d7244c62d9b47e498546d59d123a65796e8b41eef4e82496ebad87146976e97b",
+    "curated_sha256": "37b619d642cfce6494389b2bfb7ecff902932754ada8d13a9a95e4093c491040"
+  },
+  {
+    "path": "data/filters/DOT/TIRCAM2/PAH.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/DOT/TIRCAM2/PAH.dat",
+    "operation": "clipped 1 negative transmissions (min -0.000325102) to 0; fxlib.clean_curve minimal curation; rows 200->200; pivot 32770.597->32770.599 A (+0.0000%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "a76b7d7d942634db1670e540ede3a209d8e2b7c7e8cc133649060a787b50ec30",
+    "curated_sha256": "822911b75fc6776c16c1aa5420234e730c2587eacb73345254dfd770ba9e8e20"
+  },
+  {
+    "path": "data/filters/ERIS/NIX/NIX",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/ERIS/NIX/NIX",
+    "operation": "Index file: renamed 2 dotted entries (inner '.' -> 'p') to match renamed curves",
+    "raw_sha256": "f5165371e734afa08748f2b359b4e6fc4bada6ebadbbec17f45d685a826cda23",
+    "curated_sha256": "c0d653fb758bf2232d5f3bb7a0a483f6f4d0aacf784b328195d4ec57c25e58e5"
+  },
+  {
+    "path": "data/filters/ERIS/NIX/Br-a-cont.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/ERIS/NIX/Br-a-cont.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/eris/doc/ERIS_User_Manual_v118.0.pdf (ERIS User Manual v118.0, sect. 2.4.1.1, p. 14: 'NIX is equipped with a science grade Teledyne Hawaii 2RG detector (2Kx2K)'; HgCdTe IR array, photon counting); doc sha256 b87d7a36f04f6a77a72702731d53b1f5745c5e1c9791590de29991add88478b0",
+    "raw_sha256": "9ea3b690f70cf4f978eeb834eaf921d4be109a3c4721f196373f4e58dfbae542",
+    "curated_sha256": "f7ece4677f97086e5b8c4badf3086016f5fb20f275b250a09534cdcea0a83982"
+  },
+  {
+    "path": "data/filters/ERIS/NIX/Br-a.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/ERIS/NIX/Br-a.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/eris/doc/ERIS_User_Manual_v118.0.pdf (ERIS User Manual v118.0, sect. 2.4.1.1, p. 14: 'NIX is equipped with a science grade Teledyne Hawaii 2RG detector (2Kx2K)'; HgCdTe IR array, photon counting); doc sha256 b87d7a36f04f6a77a72702731d53b1f5745c5e1c9791590de29991add88478b0",
+    "raw_sha256": "dbd265b1e8a60afd629d217a0ca569ff51db00bc2f534031023aa04906c7e808",
+    "curated_sha256": "917f62bf39e0a36a943d1cd38beed5ef9bc08e4b01e42cbdd7d709f8a6bddec2"
+  },
+  {
+    "path": "data/filters/ERIS/NIX/Br-g.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/ERIS/NIX/Br-g.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/eris/doc/ERIS_User_Manual_v118.0.pdf (ERIS User Manual v118.0, sect. 2.4.1.1, p. 14: 'NIX is equipped with a science grade Teledyne Hawaii 2RG detector (2Kx2K)'; HgCdTe IR array, photon counting); doc sha256 b87d7a36f04f6a77a72702731d53b1f5745c5e1c9791590de29991add88478b0",
+    "raw_sha256": "97e64728c61b3e2e6581660a173dcde6dbf01aa8ea62caeaa19874cd9ae618d5",
+    "curated_sha256": "7c084d16e46f90ac2e79381ac7bd3662fe1caf3fffb87c5a2a4956feb9aa2d0f"
+  },
+  {
+    "path": "data/filters/ERIS/NIX/H2-1-0S.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/ERIS/NIX/H2-1-0S.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/eris/doc/ERIS_User_Manual_v118.0.pdf (ERIS User Manual v118.0, sect. 2.4.1.1, p. 14: 'NIX is equipped with a science grade Teledyne Hawaii 2RG detector (2Kx2K)'; HgCdTe IR array, photon counting); doc sha256 b87d7a36f04f6a77a72702731d53b1f5745c5e1c9791590de29991add88478b0",
+    "raw_sha256": "1750892facde06ca620e7bcd249a59ab61d4cf0b55134fc875ece1c2691b7203",
+    "curated_sha256": "b35926858fc3188cb5359cca8a1f164cea8a68d7ed18b348f4c0409e37963cd4"
+  },
+  {
+    "path": "data/filters/ERIS/NIX/H2-cont.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/ERIS/NIX/H2-cont.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/eris/doc/ERIS_User_Manual_v118.0.pdf (ERIS User Manual v118.0, sect. 2.4.1.1, p. 14: 'NIX is equipped with a science grade Teledyne Hawaii 2RG detector (2Kx2K)'; HgCdTe IR array, photon counting); doc sha256 b87d7a36f04f6a77a72702731d53b1f5745c5e1c9791590de29991add88478b0",
+    "raw_sha256": "0f20e272320ddcebfaf8b529d02dcc4689d5722b4d607f50b0b530ecb405c2dd",
+    "curated_sha256": "4efbe07bf37e44ca0df567ec25fb6d68a687bfb49770c2ba0678e6c4edab9f62"
+  },
+  {
+    "path": "data/filters/ERIS/NIX/IB-2p42.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/ERIS/NIX/IB-2.42.dat",
+    "operation": "renamed from IB-2.42.dat (MESA names history columns by the text before the first dot); curve and header unchanged; DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/eris/doc/ERIS_User_Manual_v118.0.pdf (ERIS User Manual v118.0, sect. 2.4.1.1, p. 14: 'NIX is equipped with a science grade Teledyne Hawaii 2RG detector (2Kx2K)'; HgCdTe IR array, photon counting); doc sha256 b87d7a36f04f6a77a72702731d53b1f5745c5e1c9791590de29991add88478b0",
+    "raw_sha256": "ab5fb68c3e5d5672d1b1a43c5f313b37bf7561a4470611830c72a3ca342f341b",
+    "curated_sha256": "72ca7d30aed503aa25d9b0a19fcb9b35a6d2b29fda41755ae74b41ac11ed2bff",
+    "renamed_from": "data/filters/ERIS/NIX/IB-2.42.dat"
+  },
+  {
+    "path": "data/filters/ERIS/NIX/IB-2p48.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/ERIS/NIX/IB-2.48.dat",
+    "operation": "renamed from IB-2.48.dat (MESA names history columns by the text before the first dot); curve and header unchanged; DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/eris/doc/ERIS_User_Manual_v118.0.pdf (ERIS User Manual v118.0, sect. 2.4.1.1, p. 14: 'NIX is equipped with a science grade Teledyne Hawaii 2RG detector (2Kx2K)'; HgCdTe IR array, photon counting); doc sha256 b87d7a36f04f6a77a72702731d53b1f5745c5e1c9791590de29991add88478b0",
+    "raw_sha256": "fc3e88263f95bfa8e4ff0c30072e6afdf7b71bc783e22782c3213ea68d5815e8",
+    "curated_sha256": "ac73b452349fb1c2256b24d576ca4358144a9ba1294cfc44316ab3d855beb5d4",
+    "renamed_from": "data/filters/ERIS/NIX/IB-2.48.dat"
+  },
+  {
+    "path": "data/filters/Gemini/AcqCam_S/I.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Gemini/AcqCam_S/I.dat",
+    "operation": "clipped 63 negative transmissions (min -0.0943) to 0; fxlib.clean_curve minimal curation; rows 1693->1693; pivot 8701.881->8703.652 A (+0.0204%); header line unchanged; untouched rows byte-identical",
+    "raw_sha256": "5d20e0a57e43630ed9fb0dc34686d6d3ee28afe8b24a705945f810185befcde8",
+    "curated_sha256": "2b2352e686e501c01309a992bc746876a1c6e5b26df0b8d4d454986fd5dde2b1"
+  },
+  {
+    "path": "data/filters/HAWK-I/HAWK-I/BrG.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/HAWK-I/HAWK-I/BrG.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/hawki.html ('four HAWAII 2RG 2048x2048 pixels detectors'; HgCdTe IR arrays, photon counting); page sha256 7524df18885c1fca32d5a7dda42a07dae3fece1bc28cbbfa267502875b1021ee",
+    "raw_sha256": "6b2ba983568e47f324464d16a0279a9bb3bca2a68abc897e6ef8ae2445265164",
+    "curated_sha256": "88726ea0351ebc783bf7ebb94a85995074852eb33fec29f4665df1ea4643514a"
+  },
+  {
+    "path": "data/filters/HAWK-I/HAWK-I/CH4.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/HAWK-I/HAWK-I/CH4.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/hawki.html ('four HAWAII 2RG 2048x2048 pixels detectors'; HgCdTe IR arrays, photon counting); page sha256 7524df18885c1fca32d5a7dda42a07dae3fece1bc28cbbfa267502875b1021ee",
+    "raw_sha256": "1572e0f10aaa46fda1e27929c637ba6dcabd9170aac5bdd968d2952d059b7287",
+    "curated_sha256": "4bd0581a7616480793176273ee75f9cc5a33adf7db32304c91a8de829ffe4185"
+  },
+  {
+    "path": "data/filters/HAWK-I/HAWK-I/H.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/HAWK-I/HAWK-I/H.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/hawki.html ('four HAWAII 2RG 2048x2048 pixels detectors'; HgCdTe IR arrays, photon counting); page sha256 7524df18885c1fca32d5a7dda42a07dae3fece1bc28cbbfa267502875b1021ee",
+    "raw_sha256": "f7a1e1a0fc0b72afddb378b4154c060cdec562c0d4a21a5e2d541c32ed241b43",
+    "curated_sha256": "5b8066460bb29e2d5fa89941c5de17ee0fe6522a5563c11f386388a4f605574b"
+  },
+  {
+    "path": "data/filters/HAWK-I/HAWK-I/H2.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/HAWK-I/HAWK-I/H2.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/hawki.html ('four HAWAII 2RG 2048x2048 pixels detectors'; HgCdTe IR arrays, photon counting); page sha256 7524df18885c1fca32d5a7dda42a07dae3fece1bc28cbbfa267502875b1021ee",
+    "raw_sha256": "7413ae167dc19772ab3353a4e185a06d3b591a6b931f15fcaa7cdd5a2ff438ac",
+    "curated_sha256": "013165402546404fea5bf5a7fe9f0f4ddb93a3cb998c8c4b2ae6aedc2af1e891"
+  },
+  {
+    "path": "data/filters/HAWK-I/HAWK-I/J.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/HAWK-I/HAWK-I/J.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/hawki.html ('four HAWAII 2RG 2048x2048 pixels detectors'; HgCdTe IR arrays, photon counting); page sha256 7524df18885c1fca32d5a7dda42a07dae3fece1bc28cbbfa267502875b1021ee",
+    "raw_sha256": "839ed1a77932f3b0ca7f7ed12d92055782f4e060d3f28d5678633cf2d9ccf7af",
+    "curated_sha256": "80b5aaee065058213312c9bbaafbe34a5891ebd154f65bb40cacb0f377052a11"
+  },
+  {
+    "path": "data/filters/HAWK-I/HAWK-I/Ks_2007.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/HAWK-I/HAWK-I/Ks_2007.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/hawki.html ('four HAWAII 2RG 2048x2048 pixels detectors'; HgCdTe IR arrays, photon counting); page sha256 7524df18885c1fca32d5a7dda42a07dae3fece1bc28cbbfa267502875b1021ee",
+    "raw_sha256": "ab64999c35008f8e7d0225e5bfe539286a8b1b75fcea9cabf50e301e75f06c53",
+    "curated_sha256": "374be676d7f256cfd7628f1299be3ab6375a6cfa74676b5b692f36502605b9e7"
+  },
+  {
+    "path": "data/filters/HAWK-I/HAWK-I/Ks_2008.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/HAWK-I/HAWK-I/Ks_2008.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/hawki.html ('four HAWAII 2RG 2048x2048 pixels detectors'; HgCdTe IR arrays, photon counting); page sha256 7524df18885c1fca32d5a7dda42a07dae3fece1bc28cbbfa267502875b1021ee",
+    "raw_sha256": "9be3ca36b95b595668bd5e18a92012c4a9b53c95b2646fd5d22207115abcee26",
+    "curated_sha256": "95073a8f173898ad3a652084c80b4d414ef74a46a47c8256c936af1eed2b3dcc"
+  },
+  {
+    "path": "data/filters/HAWK-I/HAWK-I/NB0984.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/HAWK-I/HAWK-I/NB0984.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/hawki.html ('four HAWAII 2RG 2048x2048 pixels detectors'; HgCdTe IR arrays, photon counting); page sha256 7524df18885c1fca32d5a7dda42a07dae3fece1bc28cbbfa267502875b1021ee",
+    "raw_sha256": "6fe585e9fbab0412407f37b87b0567ad0bcbd44e8f6ae2a6ddf7e28bc35ed37d",
+    "curated_sha256": "1bf39ca34e0e8a727d3a0c77174ffd7fcbca8a541c5faa9cb6472846bf237967"
+  },
+  {
+    "path": "data/filters/HAWK-I/HAWK-I/NB1060.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/HAWK-I/HAWK-I/NB1060.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/hawki.html ('four HAWAII 2RG 2048x2048 pixels detectors'; HgCdTe IR arrays, photon counting); page sha256 7524df18885c1fca32d5a7dda42a07dae3fece1bc28cbbfa267502875b1021ee",
+    "raw_sha256": "c4f672eba1cd5610abc67865c46145713749efe39eb1bf3588175f820e2cdac3",
+    "curated_sha256": "227c8b982b8ace439a1cc483aebc0402995db59c6383c1a8eb70cbe2d4793703"
+  },
+  {
+    "path": "data/filters/HAWK-I/HAWK-I/NB1190.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/HAWK-I/HAWK-I/NB1190.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/hawki.html ('four HAWAII 2RG 2048x2048 pixels detectors'; HgCdTe IR arrays, photon counting); page sha256 7524df18885c1fca32d5a7dda42a07dae3fece1bc28cbbfa267502875b1021ee",
+    "raw_sha256": "87a005a8992318b77d87adcdbb6fea5bd4eeb82ca19740bce942d2728d275df2",
+    "curated_sha256": "baa7516dccb8836732dff4a18934fcfdb6c855d199a906f1d9008d1e2d9c0c3c"
+  },
+  {
+    "path": "data/filters/HAWK-I/HAWK-I/NB2090.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/HAWK-I/HAWK-I/NB2090.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/hawki.html ('four HAWAII 2RG 2048x2048 pixels detectors'; HgCdTe IR arrays, photon counting); page sha256 7524df18885c1fca32d5a7dda42a07dae3fece1bc28cbbfa267502875b1021ee",
+    "raw_sha256": "d17435e415c08652f82430a070888eacc77c4798d3ffda8a8be759168276a111",
+    "curated_sha256": "79d5399b3f045c48f35bbf30ca00e5e3324e5f87cfb0c48882b2113b03dfd661"
+  },
+  {
+    "path": "data/filters/HAWK-I/HAWK-I/Y.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/HAWK-I/HAWK-I/Y.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/hawki.html ('four HAWAII 2RG 2048x2048 pixels detectors'; HgCdTe IR arrays, photon counting); page sha256 7524df18885c1fca32d5a7dda42a07dae3fece1bc28cbbfa267502875b1021ee",
+    "raw_sha256": "f3d0080e0538a497fee035c9b038b39f038fad853f043ba2e25cc1008c972bd6",
+    "curated_sha256": "e9d04fa9c754365e72e3b59595cce258f2ae811621d7cbd8b39ec6c237d004d1"
+  },
+  {
+    "path": "data/filters/Paranal/NACO/NACO",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Paranal/NACO/NACO",
+    "operation": "Index file: renamed 28 dotted entries (inner '.' -> 'p') to match renamed curves",
+    "raw_sha256": "978ed46cac757d5647a7555b49e0d503a66cebaae11e78ed13c2b398fa2f662b",
+    "curated_sha256": "6dbef6d7d63ccb78f9343e9cb19c5155130819a6090eb23cf8562f788664668c"
+  },
+  {
+    "path": "data/filters/Paranal/NACO/manifest.json",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Paranal/NACO/manifest.json",
+    "operation": "manifest.json: renamed 28 dotted band keys (bands, components.filter, detector_types, detector_type_sources, published_bands) and their .dat filenames; nothing else changed",
+    "raw_sha256": "057c1e7fae49847deea737f0b1f246b506238faf8f241f9268d475310efb3823",
+    "curated_sha256": "00fc890fcebbe77417f3dbfc57a9b2c012e726beded37222316f4cd05ea537fc"
+  },
+  {
+    "path": "data/filters/Paranal/NACO/IB_2p00.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Paranal/NACO/IB_2.00.dat",
+    "operation": "renamed from IB_2.00.dat (MESA names history columns by the text before the first dot); curve and header unchanged",
+    "raw_sha256": "a55b9e947ced615cd86369b00430033994de2f602298401ada21d02a4119f1bb",
+    "curated_sha256": "a55b9e947ced615cd86369b00430033994de2f602298401ada21d02a4119f1bb",
+    "renamed_from": "data/filters/Paranal/NACO/IB_2.00.dat"
+  },
+  {
+    "path": "data/filters/Paranal/NACO/IB_2p03.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Paranal/NACO/IB_2.03.dat",
+    "operation": "renamed from IB_2.03.dat (MESA names history columns by the text before the first dot); curve and header unchanged",
+    "raw_sha256": "f8fc347f6ae4a4d7ba4be8c5c0771aebf4e2a3facff0b9ccc87aedfd271994e5",
+    "curated_sha256": "f8fc347f6ae4a4d7ba4be8c5c0771aebf4e2a3facff0b9ccc87aedfd271994e5",
+    "renamed_from": "data/filters/Paranal/NACO/IB_2.03.dat"
+  },
+  {
+    "path": "data/filters/Paranal/NACO/IB_2p06.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Paranal/NACO/IB_2.06.dat",
+    "operation": "renamed from IB_2.06.dat (MESA names history columns by the text before the first dot); curve and header unchanged",
+    "raw_sha256": "5243629ff9356a03b9156f8b73dc4d6447f29c43db808d45b0bbb5926dbc84d1",
+    "curated_sha256": "5243629ff9356a03b9156f8b73dc4d6447f29c43db808d45b0bbb5926dbc84d1",
+    "renamed_from": "data/filters/Paranal/NACO/IB_2.06.dat"
+  },
+  {
+    "path": "data/filters/Paranal/NACO/IB_2p09.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Paranal/NACO/IB_2.09.dat",
+    "operation": "renamed from IB_2.09.dat (MESA names history columns by the text before the first dot); curve and header unchanged",
+    "raw_sha256": "d8f39a187220f9720e387e9ad71d45d1eb8181d6ad00f96c7727594fbab8d06e",
+    "curated_sha256": "d8f39a187220f9720e387e9ad71d45d1eb8181d6ad00f96c7727594fbab8d06e",
+    "renamed_from": "data/filters/Paranal/NACO/IB_2.09.dat"
+  },
+  {
+    "path": "data/filters/Paranal/NACO/IB_2p12.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Paranal/NACO/IB_2.12.dat",
+    "operation": "renamed from IB_2.12.dat (MESA names history columns by the text before the first dot); curve and header unchanged",
+    "raw_sha256": "3a66c582bd87341434f819c154b5c9bca6980b2b0699892e9c47515881f1967f",
+    "curated_sha256": "3a66c582bd87341434f819c154b5c9bca6980b2b0699892e9c47515881f1967f",
+    "renamed_from": "data/filters/Paranal/NACO/IB_2.12.dat"
+  },
+  {
+    "path": "data/filters/Paranal/NACO/IB_2p15.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Paranal/NACO/IB_2.15.dat",
+    "operation": "renamed from IB_2.15.dat (MESA names history columns by the text before the first dot); curve and header unchanged",
+    "raw_sha256": "21e78398a3f7c892b4ecdd393b158f03aebb42259b5014d19b50e768a2b2d36a",
+    "curated_sha256": "21e78398a3f7c892b4ecdd393b158f03aebb42259b5014d19b50e768a2b2d36a",
+    "renamed_from": "data/filters/Paranal/NACO/IB_2.15.dat"
+  },
+  {
+    "path": "data/filters/Paranal/NACO/IB_2p18.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Paranal/NACO/IB_2.18.dat",
+    "operation": "renamed from IB_2.18.dat (MESA names history columns by the text before the first dot); curve and header unchanged",
+    "raw_sha256": "513bbefdd62043c169276e6371bf59a482df435dab21825098f8abf2ab424815",
+    "curated_sha256": "513bbefdd62043c169276e6371bf59a482df435dab21825098f8abf2ab424815",
+    "renamed_from": "data/filters/Paranal/NACO/IB_2.18.dat"
+  },
+  {
+    "path": "data/filters/Paranal/NACO/IB_2p21.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Paranal/NACO/IB_2.21.dat",
+    "operation": "renamed from IB_2.21.dat (MESA names history columns by the text before the first dot); curve and header unchanged",
+    "raw_sha256": "9c7af9025b53a30278dc10fd913a1c2f3a953d31f93acf57b272d963e4b4508b",
+    "curated_sha256": "9c7af9025b53a30278dc10fd913a1c2f3a953d31f93acf57b272d963e4b4508b",
+    "renamed_from": "data/filters/Paranal/NACO/IB_2.21.dat"
+  },
+  {
+    "path": "data/filters/Paranal/NACO/IB_2p24.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Paranal/NACO/IB_2.24.dat",
+    "operation": "renamed from IB_2.24.dat (MESA names history columns by the text before the first dot); curve and header unchanged",
+    "raw_sha256": "3eaecf1ec3a53f28d9a06548d55cadbf17d06abc31003b5856d579a8695ff51f",
+    "curated_sha256": "3eaecf1ec3a53f28d9a06548d55cadbf17d06abc31003b5856d579a8695ff51f",
+    "renamed_from": "data/filters/Paranal/NACO/IB_2.24.dat"
+  },
+  {
+    "path": "data/filters/Paranal/NACO/IB_2p27.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Paranal/NACO/IB_2.27.dat",
+    "operation": "renamed from IB_2.27.dat (MESA names history columns by the text before the first dot); curve and header unchanged",
+    "raw_sha256": "17c5c115cf2d1a4c9ba3281a586f6ef288f865c1534f007b6e04e87dec60bfdd",
+    "curated_sha256": "17c5c115cf2d1a4c9ba3281a586f6ef288f865c1534f007b6e04e87dec60bfdd",
+    "renamed_from": "data/filters/Paranal/NACO/IB_2.27.dat"
+  },
+  {
+    "path": "data/filters/Paranal/NACO/IB_2p30.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Paranal/NACO/IB_2.30.dat",
+    "operation": "renamed from IB_2.30.dat (MESA names history columns by the text before the first dot); curve and header unchanged",
+    "raw_sha256": "bc6ca755bf5d3a76b3138bb09071e74e1e8887d396e2b8989fee9490e3eb1612",
+    "curated_sha256": "bc6ca755bf5d3a76b3138bb09071e74e1e8887d396e2b8989fee9490e3eb1612",
+    "renamed_from": "data/filters/Paranal/NACO/IB_2.30.dat"
+  },
+  {
+    "path": "data/filters/Paranal/NACO/IB_2p33.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Paranal/NACO/IB_2.33.dat",
+    "operation": "renamed from IB_2.33.dat (MESA names history columns by the text before the first dot); curve and header unchanged",
+    "raw_sha256": "15ae0a915d4134b0168c622cbbd22b2d2e3c51f9a3dce8b13750eb885af78d4d",
+    "curated_sha256": "15ae0a915d4134b0168c622cbbd22b2d2e3c51f9a3dce8b13750eb885af78d4d",
+    "renamed_from": "data/filters/Paranal/NACO/IB_2.33.dat"
+  },
+  {
+    "path": "data/filters/Paranal/NACO/IB_2p36.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Paranal/NACO/IB_2.36.dat",
+    "operation": "renamed from IB_2.36.dat (MESA names history columns by the text before the first dot); curve and header unchanged",
+    "raw_sha256": "5079b0b6154b5a71a461128c3e266e22b27877f47449b3634467f3f5f61607b7",
+    "curated_sha256": "5079b0b6154b5a71a461128c3e266e22b27877f47449b3634467f3f5f61607b7",
+    "renamed_from": "data/filters/Paranal/NACO/IB_2.36.dat"
+  },
+  {
+    "path": "data/filters/Paranal/NACO/IB_2p39.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Paranal/NACO/IB_2.39.dat",
+    "operation": "renamed from IB_2.39.dat (MESA names history columns by the text before the first dot); curve and header unchanged",
+    "raw_sha256": "0edf6d10347c68ecc7b4bbdb2f0bca308cefa74a5f88576e77cd7eafee644a79",
+    "curated_sha256": "0edf6d10347c68ecc7b4bbdb2f0bca308cefa74a5f88576e77cd7eafee644a79",
+    "renamed_from": "data/filters/Paranal/NACO/IB_2.39.dat"
+  },
+  {
+    "path": "data/filters/Paranal/NACO/IB_2p42.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Paranal/NACO/IB_2.42.dat",
+    "operation": "renamed from IB_2.42.dat (MESA names history columns by the text before the first dot); curve and header unchanged",
+    "raw_sha256": "0bb9eb74b08858199f05386bffd11a087110d8f0c8a26b4feb472b90b93568d1",
+    "curated_sha256": "0bb9eb74b08858199f05386bffd11a087110d8f0c8a26b4feb472b90b93568d1",
+    "renamed_from": "data/filters/Paranal/NACO/IB_2.42.dat"
+  },
+  {
+    "path": "data/filters/Paranal/NACO/IB_2p45.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Paranal/NACO/IB_2.45.dat",
+    "operation": "renamed from IB_2.45.dat (MESA names history columns by the text before the first dot); curve and header unchanged",
+    "raw_sha256": "3b6d5f64bd5e9ea37d057030ef36063649540044da5361cff926c5d67d8a3d83",
+    "curated_sha256": "3b6d5f64bd5e9ea37d057030ef36063649540044da5361cff926c5d67d8a3d83",
+    "renamed_from": "data/filters/Paranal/NACO/IB_2.45.dat"
+  },
+  {
+    "path": "data/filters/Paranal/NACO/IB_2p48.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Paranal/NACO/IB_2.48.dat",
+    "operation": "renamed from IB_2.48.dat (MESA names history columns by the text before the first dot); curve and header unchanged",
+    "raw_sha256": "2bc50c07da6a1cc022fdc0bf5c0a5cff71883e7f83b4595ad0f14012f06d0c2f",
+    "curated_sha256": "2bc50c07da6a1cc022fdc0bf5c0a5cff71883e7f83b4595ad0f14012f06d0c2f",
+    "renamed_from": "data/filters/Paranal/NACO/IB_2.48.dat"
+  },
+  {
+    "path": "data/filters/Paranal/NACO/NB_1p04.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Paranal/NACO/NB_1.04.dat",
+    "operation": "renamed from NB_1.04.dat (MESA names history columns by the text before the first dot); curve and header unchanged",
+    "raw_sha256": "06b377ed43680ed349d046f5385b9ec18b81a835a94ffa703d6f98c42ac59a00",
+    "curated_sha256": "06b377ed43680ed349d046f5385b9ec18b81a835a94ffa703d6f98c42ac59a00",
+    "renamed_from": "data/filters/Paranal/NACO/NB_1.04.dat"
+  },
+  {
+    "path": "data/filters/Paranal/NACO/NB_1p08.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Paranal/NACO/NB_1.08.dat",
+    "operation": "renamed from NB_1.08.dat (MESA names history columns by the text before the first dot); curve and header unchanged",
+    "raw_sha256": "effb583d02e5b9a45b2bff4087673a766c7c7a8cfd20d5d532c9d8b05b9ad245",
+    "curated_sha256": "effb583d02e5b9a45b2bff4087673a766c7c7a8cfd20d5d532c9d8b05b9ad245",
+    "renamed_from": "data/filters/Paranal/NACO/NB_1.08.dat"
+  },
+  {
+    "path": "data/filters/Paranal/NACO/NB_1p09.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Paranal/NACO/NB_1.09.dat",
+    "operation": "renamed from NB_1.09.dat (MESA names history columns by the text before the first dot); curve and header unchanged",
+    "raw_sha256": "99a260a8a7dbf72d5a5fd2efc5c4413b680e597dec43bff5c95036929ceb64e5",
+    "curated_sha256": "99a260a8a7dbf72d5a5fd2efc5c4413b680e597dec43bff5c95036929ceb64e5",
+    "renamed_from": "data/filters/Paranal/NACO/NB_1.09.dat"
+  },
+  {
+    "path": "data/filters/Paranal/NACO/NB_1p24.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Paranal/NACO/NB_1.24.dat",
+    "operation": "renamed from NB_1.24.dat (MESA names history columns by the text before the first dot); curve and header unchanged",
+    "raw_sha256": "d2d78ff0474dbebcc6e11fc070d639f82312cbfe1d7f1186e2c43bc53649d3f0",
+    "curated_sha256": "d2d78ff0474dbebcc6e11fc070d639f82312cbfe1d7f1186e2c43bc53649d3f0",
+    "renamed_from": "data/filters/Paranal/NACO/NB_1.24.dat"
+  },
+  {
+    "path": "data/filters/Paranal/NACO/NB_1p26.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Paranal/NACO/NB_1.26.dat",
+    "operation": "renamed from NB_1.26.dat (MESA names history columns by the text before the first dot); curve and header unchanged",
+    "raw_sha256": "226eef55e10bd08d3a3d77ef3e4a7b03dde1d21ab287866150c6995984da83f2",
+    "curated_sha256": "226eef55e10bd08d3a3d77ef3e4a7b03dde1d21ab287866150c6995984da83f2",
+    "renamed_from": "data/filters/Paranal/NACO/NB_1.26.dat"
+  },
+  {
+    "path": "data/filters/Paranal/NACO/NB_1p28.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Paranal/NACO/NB_1.28.dat",
+    "operation": "renamed from NB_1.28.dat (MESA names history columns by the text before the first dot); curve and header unchanged",
+    "raw_sha256": "c70f96ea400674ac9dbdb5e01a2f2c853db471c95ec4610300150396718ce9ef",
+    "curated_sha256": "c70f96ea400674ac9dbdb5e01a2f2c853db471c95ec4610300150396718ce9ef",
+    "renamed_from": "data/filters/Paranal/NACO/NB_1.28.dat"
+  },
+  {
+    "path": "data/filters/Paranal/NACO/NB_1p64.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Paranal/NACO/NB_1.64.dat",
+    "operation": "renamed from NB_1.64.dat (MESA names history columns by the text before the first dot); curve and header unchanged",
+    "raw_sha256": "d12f4b49e5a89e4d05f4719647be0b7ba69aa95223db2273b4d23a503b9d4514",
+    "curated_sha256": "d12f4b49e5a89e4d05f4719647be0b7ba69aa95223db2273b4d23a503b9d4514",
+    "renamed_from": "data/filters/Paranal/NACO/NB_1.64.dat"
+  },
+  {
+    "path": "data/filters/Paranal/NACO/NB_1p75.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Paranal/NACO/NB_1.75.dat",
+    "operation": "renamed from NB_1.75.dat (MESA names history columns by the text before the first dot); curve and header unchanged",
+    "raw_sha256": "8c9b8465f54f606ae9bae4e08fc6bf7edb04bf36a1f3f4febd7eddf9fcfcfebc",
+    "curated_sha256": "8c9b8465f54f606ae9bae4e08fc6bf7edb04bf36a1f3f4febd7eddf9fcfcfebc",
+    "renamed_from": "data/filters/Paranal/NACO/NB_1.75.dat"
+  },
+  {
+    "path": "data/filters/Paranal/NACO/NB_2p12.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Paranal/NACO/NB_2.12.dat",
+    "operation": "renamed from NB_2.12.dat (MESA names history columns by the text before the first dot); curve and header unchanged",
+    "raw_sha256": "6fb27780569bf6238690ce4b457f6dec9fb5a28924a09f2c48def46a723c607b",
+    "curated_sha256": "6fb27780569bf6238690ce4b457f6dec9fb5a28924a09f2c48def46a723c607b",
+    "renamed_from": "data/filters/Paranal/NACO/NB_2.12.dat"
+  },
+  {
+    "path": "data/filters/Paranal/NACO/NB_2p17.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Paranal/NACO/NB_2.17.dat",
+    "operation": "renamed from NB_2.17.dat (MESA names history columns by the text before the first dot); curve and header unchanged",
+    "raw_sha256": "ce93768b08834394a9b8f80501dc509f66ae8d3a4698d2e4b6a7e29816f4dac9",
+    "curated_sha256": "ce93768b08834394a9b8f80501dc509f66ae8d3a4698d2e4b6a7e29816f4dac9",
+    "renamed_from": "data/filters/Paranal/NACO/NB_2.17.dat"
+  },
+  {
+    "path": "data/filters/Paranal/NACO/NB_3p74.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Paranal/NACO/NB_3.74.dat",
+    "operation": "renamed from NB_3.74.dat (MESA names history columns by the text before the first dot); curve and header unchanged",
+    "raw_sha256": "d1cced160f0e21831945b2458ba58cbe596173aeb7aaf7945a7b99abf368e952",
+    "curated_sha256": "d1cced160f0e21831945b2458ba58cbe596173aeb7aaf7945a7b99abf368e952",
+    "renamed_from": "data/filters/Paranal/NACO/NB_3.74.dat"
+  },
+  {
+    "path": "data/filters/SPHERE/IRDIS/B_H.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/IRDIS/B_H.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, instrument tables p. 11: IRDIS detector type 'Hawaii II RG'; HgCdTe IR array, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "e3c672a92a10687c6b8ea1d2f4d652e05886e704cf33ffe6b77b572010c43077",
+    "curated_sha256": "489f860f6a37a1df8781c655573f8697ddbded8ef0b7d55d9566d78aa4949838"
+  },
+  {
+    "path": "data/filters/SPHERE/IRDIS/B_J.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/IRDIS/B_J.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, instrument tables p. 11: IRDIS detector type 'Hawaii II RG'; HgCdTe IR array, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "be6d9af704b2bc2741035a6a7f9d8e9971bf3c347695893b5e79112de2f84d06",
+    "curated_sha256": "0a3a40fe37a1d8f9df542c4bbd2b7822f174f6ec4de5f3382729b3f499ed4cbc"
+  },
+  {
+    "path": "data/filters/SPHERE/IRDIS/B_Ks.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/IRDIS/B_Ks.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, instrument tables p. 11: IRDIS detector type 'Hawaii II RG'; HgCdTe IR array, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "995d88591d3f314d4a633f1f548fa7da5ee0235b2d1214004966b322cc0387d5",
+    "curated_sha256": "40856cb046654799951a8911c7c41db1d534378f6e5a41a8b096efa0191cb86e"
+  },
+  {
+    "path": "data/filters/SPHERE/IRDIS/B_Y.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/IRDIS/B_Y.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, instrument tables p. 11: IRDIS detector type 'Hawaii II RG'; HgCdTe IR array, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "ea25807c0e663dcabbba9ef5ccb0fe7f8c17eb77620504654a6490e9587cbd14",
+    "curated_sha256": "8601612b8b488b399886c27046e2365a724a923e67499ffa65362b1890c81b3a"
+  },
+  {
+    "path": "data/filters/SPHERE/IRDIS/D_H23_H2.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/IRDIS/D_H23_H2.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, instrument tables p. 11: IRDIS detector type 'Hawaii II RG'; HgCdTe IR array, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "ac75b2d72d058e7f08fc7ca53db9d62911038f78f57e1c350834d85a21118320",
+    "curated_sha256": "46a3e9cdc23ba29b30f0d5e500f7450c8b98d350518cb6d5f4e0863eaa3bbab3"
+  },
+  {
+    "path": "data/filters/SPHERE/IRDIS/D_H23_H3.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/IRDIS/D_H23_H3.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, instrument tables p. 11: IRDIS detector type 'Hawaii II RG'; HgCdTe IR array, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "8d403e0488c41d704fe0231274b30b010f513a9dfbf4ae21da1aa07232a98e11",
+    "curated_sha256": "ca54039e3e61ed3e8194bd14fffbe0df90e3fb8586a610069545569a4fbdeaaa"
+  },
+  {
+    "path": "data/filters/SPHERE/IRDIS/D_H34_H3.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/IRDIS/D_H34_H3.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, instrument tables p. 11: IRDIS detector type 'Hawaii II RG'; HgCdTe IR array, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "b312c48fd335dbe8e8ab7f3c178285b5da6a22172179b9e2c03c8a6e7d8b5ed3",
+    "curated_sha256": "77b73adb8a14da324293396f38905ba6fc9ae6f165c7f53b96a40dab998c6330"
+  },
+  {
+    "path": "data/filters/SPHERE/IRDIS/D_H34_H4.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/IRDIS/D_H34_H4.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, instrument tables p. 11: IRDIS detector type 'Hawaii II RG'; HgCdTe IR array, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "44a826e7fdd1176c896f4ee9aea49d1cff88fdc193f20102e274ea17cd5da5ed",
+    "curated_sha256": "39c684e326fad8cb5819979e543e44c42eff72b1933a4004908bc1f4ecbf9680"
+  },
+  {
+    "path": "data/filters/SPHERE/IRDIS/D_J23_J2.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/IRDIS/D_J23_J2.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, instrument tables p. 11: IRDIS detector type 'Hawaii II RG'; HgCdTe IR array, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "a4751b828cfcef88f9a577bd0840d0418c786fcd12759c14ac91af6f42f4f656",
+    "curated_sha256": "61767591034acdb6ed9a1a2fea4f665cc018fefcbf950133c7559f34e6a04098"
+  },
+  {
+    "path": "data/filters/SPHERE/IRDIS/D_J23_J3.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/IRDIS/D_J23_J3.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, instrument tables p. 11: IRDIS detector type 'Hawaii II RG'; HgCdTe IR array, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "3d305f59909eb321903e62583296063208a9aaf5c8b72655a4ae1c7cc798c3f1",
+    "curated_sha256": "d71820e5bb7cb54536445d22eece4fd39df7c203161d313392a04e4829e28516"
+  },
+  {
+    "path": "data/filters/SPHERE/IRDIS/D_K12_K1.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/IRDIS/D_K12_K1.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, instrument tables p. 11: IRDIS detector type 'Hawaii II RG'; HgCdTe IR array, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "64f87bb969ebe36bd8e1a247fc98c4793dc6bc669576c0be4956a45786a5b0f6",
+    "curated_sha256": "f9f890f2ef6027d02978f2839af009f13ccfc523bb7f6fb33f74e10819184e18"
+  },
+  {
+    "path": "data/filters/SPHERE/IRDIS/D_K12_K2.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/IRDIS/D_K12_K2.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, instrument tables p. 11: IRDIS detector type 'Hawaii II RG'; HgCdTe IR array, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "602fb332010e8811b2dab54a4dc18694a4a5e3130dfb6de31937612837569990",
+    "curated_sha256": "fe6f32669e25d421010569557d745a2c8e3f65f4b3acb85aa9fca226e8b6fd35"
+  },
+  {
+    "path": "data/filters/SPHERE/IRDIS/D_ND_H23_H2.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/IRDIS/D_ND_H23_H2.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, instrument tables p. 11: IRDIS detector type 'Hawaii II RG'; HgCdTe IR array, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "48cd45f2799448ee46dde09cec018f0c5f6d5d00fa3cbf4beac36540b2c6e14c",
+    "curated_sha256": "97d987d6268778df002db224a51794b254c021cadb7c6c1f5582fef2847e837c"
+  },
+  {
+    "path": "data/filters/SPHERE/IRDIS/D_ND_H23_H3.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/IRDIS/D_ND_H23_H3.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, instrument tables p. 11: IRDIS detector type 'Hawaii II RG'; HgCdTe IR array, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "ee9ae4ae92efb99bf6293979f11de4edf9b0d6f5f350d71e5525128b6ad4b8d2",
+    "curated_sha256": "eaee95d887a53167b665667a4374816a713af771f05e9bb146c32a90cb764890"
+  },
+  {
+    "path": "data/filters/SPHERE/IRDIS/D_Y23_Y2.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/IRDIS/D_Y23_Y2.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, instrument tables p. 11: IRDIS detector type 'Hawaii II RG'; HgCdTe IR array, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "a6b6e703980e597712e551d9beffbea150c1f4d24224a822a58d7de4f6f554dd",
+    "curated_sha256": "41d5ba26eaa30a1452744912a56446ac6d7fa1bb06de4dfdc0c6874678b0344b"
+  },
+  {
+    "path": "data/filters/SPHERE/IRDIS/D_Y23_Y3.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/IRDIS/D_Y23_Y3.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, instrument tables p. 11: IRDIS detector type 'Hawaii II RG'; HgCdTe IR array, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "a0c6fa12aa6709a866abb295161574739106f770a57ab9d4fdd3fbcbc483e73d",
+    "curated_sha256": "9a9c5a9730eb73bce063cd67cfc1e3695b88d3901ca309625d3b1de4f6ec67af"
+  },
+  {
+    "path": "data/filters/SPHERE/IRDIS/ND0p0.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/IRDIS/ND0p0.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, instrument tables p. 11: IRDIS detector type 'Hawaii II RG'; HgCdTe IR array, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "b54d2539fe27960c5db9952c3a2b1b14ba22c468c71920d538923abccfb6d7a7",
+    "curated_sha256": "9b8906d49fb79b61aa282b6a50e4357daf991bdfc871f1ffe39e75ec55f8223d"
+  },
+  {
+    "path": "data/filters/SPHERE/IRDIS/ND1p0.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/IRDIS/ND1p0.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, instrument tables p. 11: IRDIS detector type 'Hawaii II RG'; HgCdTe IR array, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "3fcba386445c702e54423ae0bc25e260f70491c4bdcd45f57e8432c388216b60",
+    "curated_sha256": "d78370e8db1473154a28f23f38ce190b0f6463d848ec45dd3d093a37ca8f8a83"
+  },
+  {
+    "path": "data/filters/SPHERE/IRDIS/ND2p0.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/IRDIS/ND2p0.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, instrument tables p. 11: IRDIS detector type 'Hawaii II RG'; HgCdTe IR array, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "68ff038a91b99090b7a4c1610809ac4a9731fb81cb9c8424ea99993cc80a9db6",
+    "curated_sha256": "3ea4560d21f123271a96e8a106c5291065ad955f73a54a5a5734ae011bf31615"
+  },
+  {
+    "path": "data/filters/SPHERE/IRDIS/ND3p5.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/IRDIS/ND3p5.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, instrument tables p. 11: IRDIS detector type 'Hawaii II RG'; HgCdTe IR array, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "4e53bcf427fb80508470542f84d8c92d358fa4c95879a24788682b5e0f2d7c47",
+    "curated_sha256": "a241c4edcf3325c2257c0928781f96ff909228a6cae3053afb12c89110d07496"
+  },
+  {
+    "path": "data/filters/SPHERE/IRDIS/N_BrG.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/IRDIS/N_BrG.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, instrument tables p. 11: IRDIS detector type 'Hawaii II RG'; HgCdTe IR array, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "0753b4aea6144b03de2425372b94f7597922b3e75af399f88a026a59f0125b5f",
+    "curated_sha256": "b0aa4408b72f2ef54285f4c5eb105f1fc2f10df3536ee8239afc8529509b61fe"
+  },
+  {
+    "path": "data/filters/SPHERE/IRDIS/N_CO.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/IRDIS/N_CO.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, instrument tables p. 11: IRDIS detector type 'Hawaii II RG'; HgCdTe IR array, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "2876b0271edd1acdaaedb0ba861aca1873e5ff9dc780a8107ee1b3ffa769030e",
+    "curated_sha256": "64159e112c38d6d9f1265c55efb7ed908b4c32e597ae3ca134dd1eec21dc1833"
+  },
+  {
+    "path": "data/filters/SPHERE/IRDIS/N_CntH.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/IRDIS/N_CntH.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, instrument tables p. 11: IRDIS detector type 'Hawaii II RG'; HgCdTe IR array, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "5cce1ebc79a86f0a44425c86804932da825e9a1989986a4ac48ea5387d9a474f",
+    "curated_sha256": "a9b743a0a8233dd7507ecfbcf78db230d9eb1d409e5dd9e3ca3f8b039980f167"
+  },
+  {
+    "path": "data/filters/SPHERE/IRDIS/N_CntJ.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/IRDIS/N_CntJ.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, instrument tables p. 11: IRDIS detector type 'Hawaii II RG'; HgCdTe IR array, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "e65564c072f773d885f03bf11da95cdd23555e86c4a2085e43a948c7a31cd1fd",
+    "curated_sha256": "6c0ade8d678f8c849b3570e3ba844aeda252c011d3948851d2341cbc6eae55f0"
+  },
+  {
+    "path": "data/filters/SPHERE/IRDIS/N_CntK1.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/IRDIS/N_CntK1.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, instrument tables p. 11: IRDIS detector type 'Hawaii II RG'; HgCdTe IR array, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "fe4521aca0d10b3a54bd49e257c814a44267d758726a6e28280fc309cdccbba1",
+    "curated_sha256": "975d65660f6d0f63f881e9371f780affc4de9f3d86c811bebc24250d3b186a9a"
+  },
+  {
+    "path": "data/filters/SPHERE/IRDIS/N_CntK2.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/IRDIS/N_CntK2.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, instrument tables p. 11: IRDIS detector type 'Hawaii II RG'; HgCdTe IR array, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "730674ad886e54743ba39d29f3113521d63d0ad7572a285fac415fd52e140388",
+    "curated_sha256": "f91c038301df47cfeb05f49c8305df84ebdbe0a5c4f82e7c745a6a5867159d06"
+  },
+  {
+    "path": "data/filters/SPHERE/IRDIS/N_FeII.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/IRDIS/N_FeII.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, instrument tables p. 11: IRDIS detector type 'Hawaii II RG'; HgCdTe IR array, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "f19b9752c2b6731da50e32dd50bd3db09db0279158773d30244befa57a739178",
+    "curated_sha256": "89056ce06324c88be19f2317d1b9fc12b3c04a1272e2f26b8dd37d5045331df7"
+  },
+  {
+    "path": "data/filters/SPHERE/IRDIS/N_H2.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/IRDIS/N_H2.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, instrument tables p. 11: IRDIS detector type 'Hawaii II RG'; HgCdTe IR array, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "501d0c64a160a50311cd9f56643ed688dd89605de65c705930f3fa6cac874d8a",
+    "curated_sha256": "d43587a4cc64f837f586958f40b4636f262444770cd4a3d766ac3da0d35b8411"
+  },
+  {
+    "path": "data/filters/SPHERE/IRDIS/N_HeI.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/IRDIS/N_HeI.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, instrument tables p. 11: IRDIS detector type 'Hawaii II RG'; HgCdTe IR array, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "02fe847120603a78e1d4be4c3db9ace23ba36fbb7c9299268f6ddae417a115c6",
+    "curated_sha256": "7e3f3c3fb7d9452e4fb2876b197b7b429d3c6edf11561fecfe1110050c3dab65"
+  },
+  {
+    "path": "data/filters/SPHERE/IRDIS/N_PaB.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/IRDIS/N_PaB.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, instrument tables p. 11: IRDIS detector type 'Hawaii II RG'; HgCdTe IR array, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "a7c4dc12fe70d6fd796dde6338e406089da0f74f4e541ac65456ad04a4665b58",
+    "curated_sha256": "dcccdf0f3c2cf09371538d90463862da091a31c2b942910731e81c127d996571"
+  },
+  {
+    "path": "data/filters/SPHERE/ZIMPOL/730_NB.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/ZIMPOL/730_NB.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, Table 3 p. 11: ZIMPOL detectors 'Two 4k x 2k pixel, back-illuminated, frame transfer CCD 220 (e2v CCD 44-82)'; CCDs, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "a7e1c4569ded14610382153c76ff04c0c2b2a0f7e28652cdf43a81633af9762b",
+    "curated_sha256": "56ef2feb8cbcf5ed8cfd98bef441739021e988213f94aa85263f2aefe673487a"
+  },
+  {
+    "path": "data/filters/SPHERE/ZIMPOL/B_Ha.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/ZIMPOL/B_Ha.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, Table 3 p. 11: ZIMPOL detectors 'Two 4k x 2k pixel, back-illuminated, frame transfer CCD 220 (e2v CCD 44-82)'; CCDs, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "0adeae8348f8c56cf5e96cc3e88cde2a5e127fe1cda989770533c02104dec2dc",
+    "curated_sha256": "d4bfef7aede33c1090cec7fa57f3113b57978acdf6285e7b710881d19c6e4317"
+  },
+  {
+    "path": "data/filters/SPHERE/ZIMPOL/CH4_727.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/ZIMPOL/CH4_727.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, Table 3 p. 11: ZIMPOL detectors 'Two 4k x 2k pixel, back-illuminated, frame transfer CCD 220 (e2v CCD 44-82)'; CCDs, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "3c9041ed61ddca68130387493ff4ae6f1639277c5537f46de8a58f8d35479ee8",
+    "curated_sha256": "2fb76bf0f35d5f37a49552748b2b5c944e3b2252277d35dd933db173a2dca223"
+  },
+  {
+    "path": "data/filters/SPHERE/ZIMPOL/Cnt748.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/ZIMPOL/Cnt748.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, Table 3 p. 11: ZIMPOL detectors 'Two 4k x 2k pixel, back-illuminated, frame transfer CCD 220 (e2v CCD 44-82)'; CCDs, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "15e26866a009593481845d6a0a1b314eda9b6da7638ca371fa4453ab4c303957",
+    "curated_sha256": "6c9dd6f060eed2de2baeba6212c03063de1ac66559145f9033967101e5c05acc"
+  },
+  {
+    "path": "data/filters/SPHERE/ZIMPOL/Cnt820.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/ZIMPOL/Cnt820.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, Table 3 p. 11: ZIMPOL detectors 'Two 4k x 2k pixel, back-illuminated, frame transfer CCD 220 (e2v CCD 44-82)'; CCDs, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "b79f6b956dd4f05f2aea0ea9c686d2e9158b671e0c13024c53f4eba4d691e9a6",
+    "curated_sha256": "d04edcaecfa90322506e665fc14d05fce34769b1edbaeb367a720bcc5da21533"
+  },
+  {
+    "path": "data/filters/SPHERE/ZIMPOL/Cnt_Ha.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/ZIMPOL/Cnt_Ha.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, Table 3 p. 11: ZIMPOL detectors 'Two 4k x 2k pixel, back-illuminated, frame transfer CCD 220 (e2v CCD 44-82)'; CCDs, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "35fb39e7426d3eb1c76b4a540cbd71413b086fc899c6b84021e6a6376643a7fa",
+    "curated_sha256": "df00342118ff15ddbf2a8e14501244a2322541360f05b4d4b35271030c8c03aa"
+  },
+  {
+    "path": "data/filters/SPHERE/ZIMPOL/HeI.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/ZIMPOL/HeI.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, Table 3 p. 11: ZIMPOL detectors 'Two 4k x 2k pixel, back-illuminated, frame transfer CCD 220 (e2v CCD 44-82)'; CCDs, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "ced8e6c1431c18475076d779ac4e102f590625190d1bd10a056153a49ecafa5e",
+    "curated_sha256": "fa89f82d5f3c42046a3a41a1f936713e4f6c0f4f3d2d157a8fe2b07105e8f5ed"
+  },
+  {
+    "path": "data/filters/SPHERE/ZIMPOL/I_L.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/ZIMPOL/I_L.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, Table 3 p. 11: ZIMPOL detectors 'Two 4k x 2k pixel, back-illuminated, frame transfer CCD 220 (e2v CCD 44-82)'; CCDs, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "7270a60ee53170db5d806ecf776e34863d990ccb61824213b4c09d1e46baf942",
+    "curated_sha256": "d622b5de1b89db40d327851ce0026fe44789be81fd0bca6b5707cbe4a4bec784"
+  },
+  {
+    "path": "data/filters/SPHERE/ZIMPOL/I_PRIM.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/ZIMPOL/I_PRIM.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, Table 3 p. 11: ZIMPOL detectors 'Two 4k x 2k pixel, back-illuminated, frame transfer CCD 220 (e2v CCD 44-82)'; CCDs, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "22f666f1420d824a94662b128a9112169a536701d7c333d3e35aa9d64a079dc7",
+    "curated_sha256": "ff56c557eb3fd29767ee689cf3f03c44ae69bb5987077359ef64e8aa8129b441"
+  },
+  {
+    "path": "data/filters/SPHERE/ZIMPOL/KI.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/ZIMPOL/KI.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, Table 3 p. 11: ZIMPOL detectors 'Two 4k x 2k pixel, back-illuminated, frame transfer CCD 220 (e2v CCD 44-82)'; CCDs, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "49490b5a0e8a9a8e540430df1dc7318d4b27b4ee7ceec6e66ef7c71acc0d205d",
+    "curated_sha256": "6028a0f22beb4100928e5bbeaa3c7a972fe65c07105d33ea4a18c5f5b9c5d19e"
+  },
+  {
+    "path": "data/filters/SPHERE/ZIMPOL/ND1p0.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/ZIMPOL/ND1p0.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, Table 3 p. 11: ZIMPOL detectors 'Two 4k x 2k pixel, back-illuminated, frame transfer CCD 220 (e2v CCD 44-82)'; CCDs, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "9304fd359330b54eeb3b676d61b9f4b3c4fc674a64eaeaf44026802d307ee0bc",
+    "curated_sha256": "51371a1a4ab7fa63ef11bc2e20e13fd849008ddadded1eb6499b5389719f7853"
+  },
+  {
+    "path": "data/filters/SPHERE/ZIMPOL/ND2p0.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/ZIMPOL/ND2p0.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, Table 3 p. 11: ZIMPOL detectors 'Two 4k x 2k pixel, back-illuminated, frame transfer CCD 220 (e2v CCD 44-82)'; CCDs, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "aaee05fe5603dfa43247bc69b885c99c9413976969d96d5daca5dcb886ade79f",
+    "curated_sha256": "bd9074902e018ab968fa9e475bc36575670b70a9764172b34eb7fbe9e93627be"
+  },
+  {
+    "path": "data/filters/SPHERE/ZIMPOL/ND4p0.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/ZIMPOL/ND4p0.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, Table 3 p. 11: ZIMPOL detectors 'Two 4k x 2k pixel, back-illuminated, frame transfer CCD 220 (e2v CCD 44-82)'; CCDs, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "a2ef3c3b9c0943e17f73983d2504ff0138ad5b5fe90ceca20ac5fa4b7018bf56",
+    "curated_sha256": "21d29d680b6a4f239cf0f9dff5d754a0c9fb0b1a2ff663043b1d862f9cfa2f19"
+  },
+  {
+    "path": "data/filters/SPHERE/ZIMPOL/N_Ha.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/ZIMPOL/N_Ha.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, Table 3 p. 11: ZIMPOL detectors 'Two 4k x 2k pixel, back-illuminated, frame transfer CCD 220 (e2v CCD 44-82)'; CCDs, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "04338dade1f78473b270d0c7833111c93f879c6a2e9d276bbeae27b48a0a9db3",
+    "curated_sha256": "18d807fe7a9804a6edb25428909add8b63bddc4b945c1bfa407d7f51becf41fb"
+  },
+  {
+    "path": "data/filters/SPHERE/ZIMPOL/N_I.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/ZIMPOL/N_I.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, Table 3 p. 11: ZIMPOL detectors 'Two 4k x 2k pixel, back-illuminated, frame transfer CCD 220 (e2v CCD 44-82)'; CCDs, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "8518648c3016c18400ea8a88132f5b8ef8e68feadb2ae712fa763b346f3c34c9",
+    "curated_sha256": "f245db71a384e4d8971334e9afef5d41701bd8c0082923127cf1945f1be8d3cc"
+  },
+  {
+    "path": "data/filters/SPHERE/ZIMPOL/N_R.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/ZIMPOL/N_R.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, Table 3 p. 11: ZIMPOL detectors 'Two 4k x 2k pixel, back-illuminated, frame transfer CCD 220 (e2v CCD 44-82)'; CCDs, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "c86caa28c68789a70384fc3de5dd1be4bacebd6ca6047ff2dd3390cfff20e1df",
+    "curated_sha256": "a36012b2c59b925a78b76bdf4fc3ca8b6c71144fe846e3e78082c6b9d679a0f1"
+  },
+  {
+    "path": "data/filters/SPHERE/ZIMPOL/OI_630.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/ZIMPOL/OI_630.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, Table 3 p. 11: ZIMPOL detectors 'Two 4k x 2k pixel, back-illuminated, frame transfer CCD 220 (e2v CCD 44-82)'; CCDs, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "46c376925fb8cbdb3feccef1179f2c911428bb96d5146fd59c18326caa95fa2f",
+    "curated_sha256": "00f28f759e2c9ac38644c5428d73117768cde301862950218b2f079050516937"
+  },
+  {
+    "path": "data/filters/SPHERE/ZIMPOL/R_PRIM.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/ZIMPOL/R_PRIM.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, Table 3 p. 11: ZIMPOL detectors 'Two 4k x 2k pixel, back-illuminated, frame transfer CCD 220 (e2v CCD 44-82)'; CCDs, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "823cfeb8e5fc182de23374c1013ba0416e9de2150cd098970aee2c6f2ab8ed28",
+    "curated_sha256": "8a24ca38124a9603d62e3533d72078960a51effc549c3f5440e9271c74b6acc5"
+  },
+  {
+    "path": "data/filters/SPHERE/ZIMPOL/TiO_717.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/ZIMPOL/TiO_717.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, Table 3 p. 11: ZIMPOL detectors 'Two 4k x 2k pixel, back-illuminated, frame transfer CCD 220 (e2v CCD 44-82)'; CCDs, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "20edc1828680ed3e605ce6a88726cb002d0c28cbe7404a433e2ebcb24c048b8b",
+    "curated_sha256": "58ade048d1c97a088f309ed1aa9175d2575a03ea72a26f8af0158b826772168d"
+  },
+  {
+    "path": "data/filters/SPHERE/ZIMPOL/V.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/ZIMPOL/V.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, Table 3 p. 11: ZIMPOL detectors 'Two 4k x 2k pixel, back-illuminated, frame transfer CCD 220 (e2v CCD 44-82)'; CCDs, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "4a5cf2e1d9646aa836b09ab5a2ac00c33197b69225591a5a0f3246593928ea29",
+    "curated_sha256": "b9390ef709a6745843ceab119a9a2d9aa91b5fa4bb25b2697593de420be66d91"
+  },
+  {
+    "path": "data/filters/SPHERE/ZIMPOL/VBB.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/ZIMPOL/VBB.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, Table 3 p. 11: ZIMPOL detectors 'Two 4k x 2k pixel, back-illuminated, frame transfer CCD 220 (e2v CCD 44-82)'; CCDs, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "b16eec0106b1981200eed07a476c73aa5829c2040f2e2231d35d6d042573f166",
+    "curated_sha256": "feb703c20951596cbe609d7080ff8c69de2533716fbbe8512da5a6c563836819"
+  },
+  {
+    "path": "data/filters/SPHERE/ZIMPOL/V_L.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/ZIMPOL/V_L.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, Table 3 p. 11: ZIMPOL detectors 'Two 4k x 2k pixel, back-illuminated, frame transfer CCD 220 (e2v CCD 44-82)'; CCDs, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "af7b509b326c0c6cda97fd1ec8a17cf5daa0abadaefadbbae53ef81da6bfa62c",
+    "curated_sha256": "b737baa62ee0def17db6be51aedea49a08387323fab41e2cbcdb1e1d2e7100e4"
+  },
+  {
+    "path": "data/filters/SPHERE/ZIMPOL/V_S.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/SPHERE/ZIMPOL/V_S.dat",
+    "operation": "DetectorType tagged photon from https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf (SPHERE User Manual P114, Table 3 p. 11: ZIMPOL detectors 'Two 4k x 2k pixel, back-illuminated, frame transfer CCD 220 (e2v CCD 44-82)'; CCDs, photon counting); doc sha256 cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "raw_sha256": "eeae224e9dc5c8ae0b191b28fdc30e9ac082e074eb73ba18c562dad20eecf7ba",
+    "curated_sha256": "0a950433fc86b8924bae1cd60cdeda62b881fe45906a121be4e4bd99fe1cad29"
+  },
+  {
+    "path": "data/filters/Teide/COSMO11/Ch1.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Teide/COSMO11/Ch1.dat",
+    "operation": "DetectorType tagged energy from https://arxiv.org/abs/0706.1873 (Hildebrandt et al. 2007, sect. 2: 'The COSMO11 receiver is a polarimeter ... 2 total power channels'; 'direct detection chains whereby a matched square-law detector is used'; square-law output is proportional to received power, as for the Planck LFI HEMT+diode precedent); pdf sha256 4daa3fbac6f63678b635205ea1e7ba657e1a066b2a75fad65f74221141155bc1",
+    "raw_sha256": "9b658be67e4b6ddab328d23dfacf528b686c38c14cc087dc5f302b59a315a40b",
+    "curated_sha256": "6ed5d2c7d4cb5fb09b34d58e6c665c625315a6e01475db48353d76034293e91a"
+  },
+  {
+    "path": "data/filters/Teide/COSMO11/Ch2.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Teide/COSMO11/Ch2.dat",
+    "operation": "DetectorType tagged energy from https://arxiv.org/abs/0706.1873 (Hildebrandt et al. 2007, sect. 2: 'The COSMO11 receiver is a polarimeter ... 2 total power channels'; 'direct detection chains whereby a matched square-law detector is used'; square-law output is proportional to received power, as for the Planck LFI HEMT+diode precedent); pdf sha256 4daa3fbac6f63678b635205ea1e7ba657e1a066b2a75fad65f74221141155bc1",
+    "raw_sha256": "b2f598677fdfd888009534e70b69a22a29cb042d4f24eeb7c753033fcad49a2a",
+    "curated_sha256": "3b4a7369b70647591e7944df296c6f44141945c7cdc6f0a626f6563ce5f3d4a4"
+  },
+  {
+    "path": "data/filters/Teide/COSMO15/13GHz.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Teide/COSMO15/13GHz.dat",
+    "operation": "DetectorType tagged energy from https://arxiv.org/abs/astro-ph/0108020 (Gallegos et al., COSMOSOMAS instrument paper: 'two ground-based total power receivers'; Fig. 2: signal 'amplified by a broad-band HEMT amplifier ... separated into three frequency bands and square-law detectors'; square-law detector output is proportional to received power, as for the Planck LFI HEMT+diode precedent); pdf sha256 89a33092dfb024a9a4993bb42c2f372e1c9ca54261561745098772cea2a178d1",
+    "raw_sha256": "8416917b8ddcdc2a973ab9ca52d4b87d51dc9d30d580323d9d0308c2e88dbcf2",
+    "curated_sha256": "4a12a2b3160ea34cd6dcf42042a6f57d8a02c16aaf99249fa146aeb527516cbe"
+  },
+  {
+    "path": "data/filters/Teide/COSMO15/15GHz.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Teide/COSMO15/15GHz.dat",
+    "operation": "DetectorType tagged energy from https://arxiv.org/abs/astro-ph/0108020 (Gallegos et al., COSMOSOMAS instrument paper: 'two ground-based total power receivers'; Fig. 2: signal 'amplified by a broad-band HEMT amplifier ... separated into three frequency bands and square-law detectors'; square-law detector output is proportional to received power, as for the Planck LFI HEMT+diode precedent); pdf sha256 89a33092dfb024a9a4993bb42c2f372e1c9ca54261561745098772cea2a178d1",
+    "raw_sha256": "bf98d89815e990792d2f8081b38aed8927fdede1dba8fbc9d5267bb5297da5dd",
+    "curated_sha256": "6e10b98e7727a5cd8e039ee8767f0a7c5165815db19561b659befa69ab13bfb8"
+  },
+  {
+    "path": "data/filters/Teide/COSMO15/17GHz.dat",
+    "raw_copy": "source_evidence/filters/2026-10-25-fixes/Teide/COSMO15/17GHz.dat",
+    "operation": "DetectorType tagged energy from https://arxiv.org/abs/astro-ph/0108020 (Gallegos et al., COSMOSOMAS instrument paper: 'two ground-based total power receivers'; Fig. 2: signal 'amplified by a broad-band HEMT amplifier ... separated into three frequency bands and square-law detectors'; square-law detector output is proportional to received power, as for the Planck LFI HEMT+diode precedent); pdf sha256 89a33092dfb024a9a4993bb42c2f372e1c9ca54261561745098772cea2a178d1",
+    "raw_sha256": "3bc6436701e991e944090c46649185524857c38fc2b8f8bd54b9616ce150e982",
+    "curated_sha256": "06a3c52a80ad124828c0e54013df5abb87d4a004b02dbb2be52d20374b7f886c"
+  }
+]

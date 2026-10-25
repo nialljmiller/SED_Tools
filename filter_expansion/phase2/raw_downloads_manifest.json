@@ -1,0 +1,311 @@
+[
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh1627.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh1627.dat",
+    "sha256": "ac2f58125b5d07a19a353f6c802ec2e5c338b37de913d70560ce83de0f1e8938",
+    "bytes": 2052,
+    "retrieved_utc": "2026-10-25T16:45:07Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh1628.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh1628.dat",
+    "sha256": "1f63a60c2d889af8b7ba91707d0719cc947342a6a2c7e1b1f3173c397d95d42d",
+    "bytes": 2052,
+    "retrieved_utc": "2026-10-25T16:45:08Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh1629.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh1629.dat",
+    "sha256": "cc89abaf4b22102f94fd963f0acb89fab3e5e87427c997babac8d53e8ea1ced1",
+    "bytes": 2147,
+    "retrieved_utc": "2026-10-25T16:45:08Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh1630.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh1630.dat",
+    "sha256": "779670d07041c3ebfc5d2f5adb2a51a3429fccf29345f8377e2b0fb97e542e49",
+    "bytes": 2052,
+    "retrieved_utc": "2026-10-25T16:45:09Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh1631.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh1631.dat",
+    "sha256": "8a644b2017346c6cd8ed9263e98cddab83d5053e93581224a15e3f6e71b8cf72",
+    "bytes": 2147,
+    "retrieved_utc": "2026-10-25T16:45:09Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh1632.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh1632.dat",
+    "sha256": "7d033032c27a4169f3592ddcf3a3c141223e56742bd05703ed4adacbdd09176f",
+    "bytes": 1691,
+    "retrieved_utc": "2026-10-25T16:45:10Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh1633.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh1633.dat",
+    "sha256": "25d4ef6f60ca2d1967c180110e0dce10c975c5648a134b50c44b0dde17ff67fa",
+    "bytes": 6194,
+    "retrieved_utc": "2026-10-25T16:45:10Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh1634.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh1634.dat",
+    "sha256": "e8e4e989f9fef28e371d3ab19da318b3bb75a17feb57e020bc1bc0cf59e648b8",
+    "bytes": 6498,
+    "retrieved_utc": "2026-10-25T16:45:11Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh4617.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh4617.dat",
+    "sha256": "10322beb4662354b3321e7558bb955599368f8a8b922486af7464200dc1e1c53",
+    "bytes": 3116,
+    "retrieved_utc": "2026-10-25T16:45:11Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh4618.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh4618.dat",
+    "sha256": "deed4b2f7be85341a42c24d4d98eac6b9fc9237d00c1606a2f611ea388f5cae5",
+    "bytes": 7277,
+    "retrieved_utc": "2026-10-25T16:45:12Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh5104.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5104.dat",
+    "sha256": "3450374f4634fb5e5d3643f5fbdde58a4cbcb74e79eaab9b6e1e13d48ba72e06",
+    "bytes": 13471,
+    "retrieved_utc": "2026-10-25T16:45:13Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh5128.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5128.dat",
+    "sha256": "75afd8d70d59937c22a7d9ef5f92ecb5ae8cb2affedc761688567df73ebda15c",
+    "bytes": 7505,
+    "retrieved_utc": "2026-10-25T16:45:13Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh5208.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5208.dat",
+    "sha256": "5c119356b278f6fa4c2b74efdbf1aee4304868e352c43135063900716b2d2575",
+    "bytes": 5415,
+    "retrieved_utc": "2026-10-25T16:45:14Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh5303.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5303.dat",
+    "sha256": "fb870df25f927ed0ac4ae6ecc84cb4e66047c4f660d92e4a4bcba3b3c74b3b09",
+    "bytes": 4123,
+    "retrieved_utc": "2026-10-25T16:45:14Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh5304.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5304.dat",
+    "sha256": "3d19280f62bd786e6004d8e0c02f8c7acbdecfa30fc92d91e45990c931e45e2a",
+    "bytes": 3876,
+    "retrieved_utc": "2026-10-25T16:45:15Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh5305.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5305.dat",
+    "sha256": "3c19594a96132c95ed229df8a5008bcaa9eeba72d847c078eb2cb98dd9d7bcf6",
+    "bytes": 4636,
+    "retrieved_utc": "2026-10-25T16:45:15Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh5329.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5329.dat",
+    "sha256": "dc70ddced6f119137ac46eca274a96c9d737bbdfd7a1141dce5480ad9996e34c",
+    "bytes": 4712,
+    "retrieved_utc": "2026-10-25T16:45:16Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh5330.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5330.dat",
+    "sha256": "8528631b597d1516f0ffb026bf29b95a10471d846d8bf73a3b96cf8a0a2550bb",
+    "bytes": 5035,
+    "retrieved_utc": "2026-10-25T16:45:16Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh5331.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5331.dat",
+    "sha256": "4fae256f1338b6ebadb8718b00d01f758eff09ebeb188ccd95e8cb8bffb816b3",
+    "bytes": 3059,
+    "retrieved_utc": "2026-10-25T16:45:17Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh5332.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5332.dat",
+    "sha256": "e8b3d92de3039e784df94cc0a55ab16a7455c88003b3c3f24919009371342a37",
+    "bytes": 4940,
+    "retrieved_utc": "2026-10-25T16:45:18Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh5333.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5333.dat",
+    "sha256": "121261c348b03274b3fb95bfc6f3afe9b84950ed6f8ef9067a0d775145a292bd",
+    "bytes": 4883,
+    "retrieved_utc": "2026-10-25T16:45:19Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh5334.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5334.dat",
+    "sha256": "073cb37819e58ab8946fa0acbd70126dedc77b0e81a5d54b9660f4f3b7ecf50a",
+    "bytes": 5130,
+    "retrieved_utc": "2026-10-25T16:45:19Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh5339.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5339.dat",
+    "sha256": "b3a8113665756947868f8250a90e5a527faf3979047f6c2e8d89e70b572537b7",
+    "bytes": 3876,
+    "retrieved_utc": "2026-10-25T16:45:20Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh5341.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5341.dat",
+    "sha256": "cc028806860f036f3eaa870e182c97b9c69da8b783ac53e281924dfcdf508296",
+    "bytes": 4123,
+    "retrieved_utc": "2026-10-25T16:45:20Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh5343.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh5343.dat",
+    "sha256": "e849d4b79ed71b1de1b901b0a507abee75f6104d6fe4f9e63b3c7e2996e65139",
+    "bytes": 4123,
+    "retrieved_utc": "2026-10-25T16:45:21Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh6213.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh6213.dat",
+    "sha256": "b3d7acc8e8a9900a5ac1cbcdc5a09915debf49135c2fcdcbc78947bd63a082b5",
+    "bytes": 3059,
+    "retrieved_utc": "2026-10-25T16:45:21Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh6214.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh6214.dat",
+    "sha256": "3170cea412cb3e8416dd934320393be52f8d8e49694674b7b097b5063ad37d88",
+    "bytes": 3059,
+    "retrieved_utc": "2026-10-25T16:45:22Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh6310.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh6310.dat",
+    "sha256": "dda203a656336253c76661b58e740f85bd3d31d6f32407290581dc32ccbb7e5e",
+    "bytes": 3876,
+    "retrieved_utc": "2026-10-25T16:45:22Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh6311.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh6311.dat",
+    "sha256": "b03a4f71d05c045768baae2f728c8feb40ba6b6abeb71648e0cce039bf1cbb75",
+    "bytes": 4123,
+    "retrieved_utc": "2026-10-25T16:45:23Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh6312.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh6312.dat",
+    "sha256": "65efecad1197aa9817af2ff48687614bbdeec626f7b8d9552ad8d1bd8eb7b1ac",
+    "bytes": 4123,
+    "retrieved_utc": "2026-10-25T16:45:24Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh6314.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh6314.dat",
+    "sha256": "986754520c0356eebe7058208b87c367a65a0ce1d3e069683876b558f6e84ae5",
+    "bytes": 4028,
+    "retrieved_utc": "2026-10-25T16:45:24Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh8102.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh8102.dat",
+    "sha256": "d2093971d3c1fd755763cc068f1278393bc90f444272390b37741211076b34a3",
+    "bytes": 9728,
+    "retrieved_utc": "2026-10-25T16:45:25Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh8104.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh8104.dat",
+    "sha256": "e3d26ac4fd034f3206a471953d31b582c867f40188e49f84299515772291407c",
+    "bytes": 8873,
+    "retrieved_utc": "2026-10-25T16:45:25Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh8105.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh8105.dat",
+    "sha256": "040a58e22d177ff11c0dcba33c28fb647d5b81790015d2104ced9a597605b2a4",
+    "bytes": 27420,
+    "retrieved_utc": "2026-10-25T16:45:26Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh8301.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh8301.dat",
+    "sha256": "65f60c7568e090883fde8819ef3a5d07d74c582b0d8758e7c22c8363c5dd236b",
+    "bytes": 17328,
+    "retrieved_utc": "2026-10-25T16:45:27Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/CFHT/cfh8304.dat",
+    "source_url": "https://www.cfht.hawaii.edu/Instruments/Filters/curves/cfh8304.dat",
+    "sha256": "62a0c06211f46d548cc7b4f768afca8ce7f83b5c245175e0493f30d5511fdd82",
+    "bytes": 11419,
+    "retrieved_utc": "2026-10-25T16:45:27Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/DECam/scidoc0472.txt",
+    "source_url": "https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc0472.txt",
+    "sha256": "7783c9731ca4ed709b08153d1eac1807fd578016084e7d4036782f1dbc0f0c15",
+    "bytes": 89026,
+    "retrieved_utc": "2026-10-25T16:48:29Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/DECam/scidoc0473.xlsx",
+    "source_url": "https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc0473.xlsx",
+    "sha256": "cb074adf1e5b1bec1c2492dc62815e2c1185531eea5546d7552517a41470221c",
+    "bytes": 129954,
+    "retrieved_utc": "2026-10-25T16:48:30Z",
+    "note": "fetched for review; not used; URL inferred from sibling, not re-fetched"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/DECam/scidoc3138.xls",
+    "source_url": "https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls",
+    "sha256": "781fd88bb3ac905778950cc03f834f0597165c60a1813123c283df95f4919e22",
+    "bytes": 2299904,
+    "retrieved_utc": "2026-10-25T16:47:30Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/_docs_phase2_claude/ERIS_User_Manual_v118.0.pdf",
+    "source_url": "https://www.eso.org/sci/facilities/paranal/instruments/eris/doc/ERIS_User_Manual_v118.0.pdf",
+    "sha256": "b87d7a36f04f6a77a72702731d53b1f5745c5e1c9791590de29991add88478b0",
+    "bytes": 11052680,
+    "retrieved_utc": "2026-10-25T16:48:29Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/_docs_phase2_claude/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf",
+    "source_url": "https://www.eso.org/sci/facilities/paranal/instruments/sphere/doc/VLT-MAN-SPH-14690-0430_P114_july_2024_zwa.pdf",
+    "sha256": "cadb61ddb0f691ae6c5480c53fe9ecfb32d03f6f7d7cd398f40cdbdaf8363ebb",
+    "bytes": 13418963,
+    "retrieved_utc": "2026-10-25T16:48:29Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/_docs_phase2_claude/arXiv_0706.1873v1.pdf",
+    "source_url": "https://arxiv.org/pdf/0706.1873",
+    "sha256": "4daa3fbac6f63678b635205ea1e7ba657e1a066b2a75fad65f74221141155bc1",
+    "bytes": 796330,
+    "retrieved_utc": "2026-10-25T16:48:29Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/_docs_phase2_claude/arXiv_astro-ph_0108020.pdf",
+    "source_url": "https://arxiv.org/pdf/astro-ph/0108020",
+    "sha256": "89a33092dfb024a9a4993bb42c2f372e1c9ca54261561745098772cea2a178d1",
+    "bytes": 229115,
+    "retrieved_utc": "2026-10-25T16:48:29Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-fixes/raw_downloads/_docs_phase2_claude/eso_hawki.html",
+    "source_url": "https://www.eso.org/sci/facilities/paranal/instruments/hawki.html",
+    "sha256": "7524df18885c1fca32d5a7dda42a07dae3fece1bc28cbbfa267502875b1021ee",
+    "bytes": 41117,
+    "retrieved_utc": "2026-10-25T16:48:29Z"
+  }
+]
