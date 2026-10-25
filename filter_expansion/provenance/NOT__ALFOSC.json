@@ -1,0 +1,138 @@
+{
+  "facility": "NOT",
+  "instrument": "ALFOSC",
+  "notes": "NOT ALFOSC imaging filters, filter-only transmission from the NOT filter database (curves-ascii/<id>.txt): U=#7 U_Bes 362_60; B=#74 B_Bes 440_100; V=#75 V_Bes 530_80; R=#76 R_Bes 650_130; i_int=#12 i_int 797_157; up=#109 u'_SDSS 353_55; gp=#120 g'_SDSS 480_145; rp=#110 r'_SDSS 618_148; ip=#111 i'_SDSS 771_171. Bessell/interference-i: lab scans in nm and percent (converted to Angstrom, /100). SDSS u'g'r'i'z' (FASU standard set-up, ALFOSC/MOSCA): in-situ scans in ALFOSC with grisms (J. Naranen 2004-05), Angstrom and fraction. No telescope, CCD QE (e2v CCD231-42, photon counting) or atmosphere. Caveats: the u' scan starts at 3176 A with T~0.1-0.19 (blue wing truncated by the measurement range). HELD: z' #112, a long-pass whose scan ends at 10988 A with T=0.33 (red edge set by the CCD QE, not included). Negative noise values set to 0. No published pivot (the database gives centre/FWHM only).",
+  "bands": {
+    "U": {
+      "sources": "https://www.not.iac.es/instruments/filters/curves-ascii/7.txt | https://www.not.iac.es/instruments/filters/filters.php",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "66 negative samples (min -0.000499) set to 0",
+      "ref_pivot": null,
+      "n": 387,
+      "pivot_A": 3612.39
+    },
+    "B": {
+      "sources": "https://www.not.iac.es/instruments/filters/curves-ascii/74.txt | https://www.not.iac.es/instruments/filters/filters.php",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 862,
+      "pivot_A": 4333.48
+    },
+    "V": {
+      "sources": "https://www.not.iac.es/instruments/filters/curves-ascii/75.txt | https://www.not.iac.es/instruments/filters/filters.php",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 742,
+      "pivot_A": 5408.29
+    },
+    "R": {
+      "sources": "https://www.not.iac.es/instruments/filters/curves-ascii/76.txt | https://www.not.iac.es/instruments/filters/filters.php",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 1002,
+      "pivot_A": 6443.4
+    },
+    "i_int": {
+      "sources": "https://www.not.iac.es/instruments/filters/curves-ascii/12.txt | https://www.not.iac.es/instruments/filters/filters.php",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "1 negative samples (min -3.4e-07) set to 0",
+      "ref_pivot": null,
+      "n": 440,
+      "pivot_A": 7953.5
+    },
+    "up": {
+      "sources": "https://www.not.iac.es/instruments/filters/curves-ascii/109.txt | https://www.not.iac.es/instruments/filters/filters.php",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 607,
+      "pivot_A": 3528.89
+    },
+    "gp": {
+      "sources": "https://www.not.iac.es/instruments/filters/curves-ascii/120.txt | https://www.not.iac.es/instruments/filters/filters.php",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 598,
+      "pivot_A": 4667.89
+    },
+    "rp": {
+      "sources": "https://www.not.iac.es/instruments/filters/curves-ascii/110.txt | https://www.not.iac.es/instruments/filters/filters.php",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "138 negative samples (min -0.00149) set to 0",
+      "ref_pivot": null,
+      "n": 1711,
+      "pivot_A": 6157.62
+    },
+    "ip": {
+      "sources": "https://www.not.iac.es/instruments/filters/curves-ascii/111.txt | https://www.not.iac.es/instruments/filters/filters.php",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 756,
+      "pivot_A": 7691.27
+    }
+  },
+  "raw_files": {
+    "downloads/NOT/ALFOSC_7.txt": "0a93b1d9564f11db225d7e238aea3354ac53364810dd93bdc48d5fa522b14f8b",
+    "downloads/NOT/ALFOSC_74.txt": "f032084b619dea130da5edaa91055a55ecb9c682b1f2597ff19e7ec783f69732",
+    "downloads/NOT/ALFOSC_75.txt": "6871e130b375b4961317f7b440694daf63634539489a63cb507cff25caf5315b",
+    "downloads/NOT/ALFOSC_76.txt": "2a79113d27ffb38df396d0535ea99228625738e8a2ac0fb9f6811eca32168bb3",
+    "downloads/NOT/ALFOSC_12.txt": "18f0b68bdda724e6d027f3e10b28aa01a2c11e703d4aaa55fb288457384dad41",
+    "downloads/NOT/ALFOSC_109.txt": "981f297e3c88f34711b53cf4e31a64df0a116ff0a6a483023b1a3383dc06cc73",
+    "downloads/NOT/ALFOSC_120.txt": "6dcdc3106a99958f9e16b498e2f5f71c1de107e505135cc71f69b969596a2d91",
+    "downloads/NOT/ALFOSC_110.txt": "ec0d59e5aba711ff07b625978bf5bf6ab93ae687ed43c9bfd2f4782971291f37",
+    "downloads/NOT/ALFOSC_111.txt": "34a6f9e4013a9fe987d480cd9ec10ed352e282f7b76309af44035ed89d2d5d6b"
+  },
+  "detector_evidence": "https://www.not.iac.es/instruments/detectors/CCD14/",
+  "filter_ids": {
+    "U": 7,
+    "B": 74,
+    "V": 75,
+    "R": 76,
+    "i_int": 12,
+    "up": 109,
+    "gp": 120,
+    "rp": 110,
+    "ip": 111
+  }
+}

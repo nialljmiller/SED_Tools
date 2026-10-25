@@ -1,0 +1,46 @@
+{
+  "facility": "ATLAS",
+  "instrument": "ATLAS",
+  "notes": "Tonry et al. (2018) ATLAS c and o system bandpasses, Table 2 of the arXiv 1802.00879 source (atlas_defn.tex), 5 nm sampling. Includes 1.2 airmasses of atmosphere, mirror reflection (0.92 overcoated Al), AR coatings, filter transmission for the f/2 beam (from manufacturer curves, effective index 2; no in-situ measurement) and measured CCD QE. Photon convention (count-rate definition in the paper); SVO's DetectorType=energy label for Misc/Atlas is not inherited. o is o(1) (Haleakala); o(2) at Mauna Loa and the later southern units are not tabulated. Components are only plotted (raster), so none are published separately. No true pivot published: Table 3's 'pivot' is int T dl / int T/l dl, reproduced to <0.5 % (provenance).",
+  "bands": {
+    "c": {
+      "sources": "https://arxiv.org/e-print/1802.00879 (atlas_defn.tex Table 2) | https://ui.adsabs.harvard.edu/abs/2018PASP..130f4505T",
+      "svo_id": "Misc/Atlas.cyan",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe+atmosphere",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 57,
+      "pivot_A": 5368.35
+    },
+    "o": {
+      "sources": "https://arxiv.org/e-print/1802.00879 (atlas_defn.tex Table 2) | https://ui.adsabs.harvard.edu/abs/2018PASP..130f4505T",
+      "svo_id": "Misc/Atlas.orange",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe+atmosphere",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 57,
+      "pivot_A": 6827.32
+    }
+  },
+  "raw_files": {
+    "downloads/ATLAS/tonry_1802.00879.eprint": "d3e964fc95d3ef79d3a54954f3bf928ea10016196aad0c67958ec7efe3b77a4f"
+  },
+  "table3_stat_check": {
+    "c": {
+      "computed_A": 5328.3,
+      "table3_A": 5330.0,
+      "diff_pct": -0.033
+    },
+    "o": {
+      "computed_A": 6788.6,
+      "table3_A": 6790.0,
+      "diff_pct": -0.02
+    }
+  }
+}

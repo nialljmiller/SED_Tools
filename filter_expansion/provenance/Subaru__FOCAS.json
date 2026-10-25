@@ -1,0 +1,89 @@
+{
+  "facility": "Subaru",
+  "instrument": "FOCAS",
+  "notes": "Subaru FOCAS broad-band U, B, V, R, I filter-only transmission lists from https://www.naoj.org/Instruments/FOCAS/camera/filters.html (percent converted to fractions). No QE, optics or atmosphere included. Detector: CCD (Hamamatsu fully-depleted), photon counting (https://www.naoj.org/Instruments/FOCAS/ccdinfo.html).",
+  "bands": {
+    "U": {
+      "sources": "https://www.naoj.org/Instruments/FOCAS/camera/txt/U.txt | https://www.naoj.org/Instruments/FOCAS/camera/filters.html",
+      "svo_id": "Subaru/FOCAS.U",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        3600.0,
+        "FOCAS filters page Centre wavelength (https://www.naoj.org/Instruments/FOCAS/camera/filters.html)"
+      ],
+      "n": 217,
+      "pivot_A": 3586.52
+    },
+    "B": {
+      "sources": "https://www.naoj.org/Instruments/FOCAS/camera/txt/B.txt | https://www.naoj.org/Instruments/FOCAS/camera/filters.html",
+      "svo_id": "Subaru/FOCAS.B",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        4400.0,
+        "FOCAS filters page Centre wavelength (https://www.naoj.org/Instruments/FOCAS/camera/filters.html)"
+      ],
+      "n": 224,
+      "pivot_A": 4397.81
+    },
+    "V": {
+      "sources": "https://www.naoj.org/Instruments/FOCAS/camera/txt/V.txt | https://www.naoj.org/Instruments/FOCAS/camera/filters.html",
+      "svo_id": "Subaru/FOCAS.V",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "2 negative samples (min -1.5e-05) set to 0",
+      "ref_pivot": [
+        5500.0,
+        "FOCAS filters page Centre wavelength (https://www.naoj.org/Instruments/FOCAS/camera/filters.html)"
+      ],
+      "n": 534,
+      "pivot_A": 5492.24
+    },
+    "R": {
+      "sources": "https://www.naoj.org/Instruments/FOCAS/camera/txt/R.txt | https://www.naoj.org/Instruments/FOCAS/camera/filters.html",
+      "svo_id": "Subaru/FOCAS.R",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        6600.0,
+        "FOCAS filters page Centre wavelength (https://www.naoj.org/Instruments/FOCAS/camera/filters.html)"
+      ],
+      "n": 423,
+      "pivot_A": 6580.7
+    },
+    "I": {
+      "sources": "https://www.naoj.org/Instruments/FOCAS/camera/txt/I.txt | https://www.naoj.org/Instruments/FOCAS/camera/filters.html",
+      "svo_id": "Subaru/FOCAS.I",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        8050.0,
+        "FOCAS filters page Centre wavelength (https://www.naoj.org/Instruments/FOCAS/camera/filters.html)"
+      ],
+      "n": 302,
+      "pivot_A": 8061.52
+    }
+  },
+  "raw_files": {
+    "downloads/Subaru/FOCAS_U.txt": "ceac7a4901709c947dc4f476d6b5de9010e10db8ca5bd6ccd19b12e46463fac9",
+    "downloads/Subaru/FOCAS_B.txt": "51b02220632cd266679c47b1b877cc096a3e1a42d5b04763c2af9c1c47a0682a",
+    "downloads/Subaru/FOCAS_V.txt": "45a55190a2fc33d67133bebcc81d2a0e213cd3f3b21ac68e62b6e37c008299b4",
+    "downloads/Subaru/FOCAS_R.txt": "ff5880fddbf86a03b9e5c3705d9c67622523c7820b0a460a6a883e7eaa9bc489",
+    "downloads/Subaru/FOCAS_I.txt": "a8af59337139fa25a592a00c235b9786345e4c831e2f449cf963864df8df9a10"
+  }
+}

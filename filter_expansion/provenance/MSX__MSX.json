@@ -1,0 +1,61 @@
+{
+  "facility": "MSX",
+  "instrument": "MSX",
+  "notes": "MSX SPIRIT III relative spectral response (RSR) curves, IRSA IPAC tables from the MSX Point Source Catalog V1.2 (Egan, Price et al. 1999); whole-system relative response. DetectorType=energy although the Si:As BIB detectors are photoconductors: the RSR is applied as an energy weighting. IRSA imageDescriptions gives images in in-band radiance (W m-2 sr-1) and radiance-to-Jy/sr factors for S_nu ~ nu^-1 (A 7.133e12, C 2.863e13, D 3.216e13, E 2.476e13). lambda_iso/(c*Int RSR/lambda dlambda) from these tables reproduces C/D/E to 4 digits and A to 1.1%; the photon-weighted alternative is off by 0.3-4.6%. Peak-normalised (normalize=True; already 1). B1/B2 held: no RSR table in the IRSA rsr directory.",
+  "bands": {
+    "A": {
+      "sources": "https://irsa.ipac.caltech.edu/data/MSX/docs/rsr/msx_rsr_a.tbl | https://irsa.ipac.caltech.edu/data/MSX/imageDescriptions.htm",
+      "svo_id": "MSX/MSX.A",
+      "detector_type": "energy",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "scaled by 1.00131 (peak normalised)",
+      "ref_pivot": null,
+      "n": 557,
+      "pivot_A": 84802.99
+    },
+    "C": {
+      "sources": "https://irsa.ipac.caltech.edu/data/MSX/docs/rsr/msx_rsr_c.tbl | https://irsa.ipac.caltech.edu/data/MSX/imageDescriptions.htm",
+      "svo_id": "MSX/MSX.C",
+      "detector_type": "energy",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "scaled by 1.00045 (peak normalised)",
+      "ref_pivot": null,
+      "n": 248,
+      "pivot_A": 121516.1
+    },
+    "D": {
+      "sources": "https://irsa.ipac.caltech.edu/data/MSX/docs/rsr/msx_rsr_d.tbl | https://irsa.ipac.caltech.edu/data/MSX/imageDescriptions.htm",
+      "svo_id": "MSX/MSX.D",
+      "detector_type": "energy",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "scaled by 1.00016 (peak normalised)",
+      "ref_pivot": null,
+      "n": 348,
+      "pivot_A": 146782.96
+    },
+    "E": {
+      "sources": "https://irsa.ipac.caltech.edu/data/MSX/docs/rsr/msx_rsr_e.tbl | https://irsa.ipac.caltech.edu/data/MSX/imageDescriptions.htm",
+      "svo_id": "MSX/MSX.E",
+      "detector_type": "energy",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "scaled by 1.00003 (peak normalised)",
+      "ref_pivot": null,
+      "n": 987,
+      "pivot_A": 214972.92
+    }
+  },
+  "raw_files": {
+    "downloads/MSX/msx_rsr_a.tbl": "dcdb6d607ecd983fa0e8fbdac12c31cc2f4cd92175d77b718a9cfd18ea170f99",
+    "downloads/MSX/msx_rsr_c.tbl": "55abc0027286771e674245da3d6efcffc78ba9648927daa8cc0ad5f6da36ad83",
+    "downloads/MSX/msx_rsr_d.tbl": "935461d3c1dc7c54d0cd52c23d7acc4d6cb5699eb7ed18ec391f353ad56ab3a0",
+    "downloads/MSX/msx_rsr_e.tbl": "fff30ea8aa95316e2a1613f54b2b2b860f03597eb56845ab2bd8db3f4452b795"
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "facility": "Keck",
+  "instrument": "LRIS",
+  "notes": "Keck LRIS imaging filters, filter-only transmission from the LRIS filter page. g is the blue-arm filter (g_blue.dat, manufacturer curve); B, V, R, Rs and I are red-arm filters. I is the vendor test report I.xls (centre position, nm, percent). No CCD QE, optics or atmosphere. Photon-counting CCDs (e2v blue, LBNL red). Page FWHM for g is 1082 A; the file gives 980 A. u' (no ASCII) and RG850 (truncated long-pass) are not included.",
+  "bands": {
+    "g": {
+      "sources": "http://www2.keck.hawaii.edu/inst/lris/data_files/g_blue.dat | http://www2.keck.hawaii.edu/inst/lris/filters.html",
+      "svo_id": "Keck/LRIS.g",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        4731.0,
+        "http://www2.keck.hawaii.edu/inst/lris/filters.html lambda_eff (filter x CCD QE, flat f_lambda)"
+      ],
+      "n": 2048,
+      "pivot_A": 4742.1
+    },
+    "B": {
+      "sources": "http://www2.keck.hawaii.edu/inst/lris/data_files/B.dat | http://www2.keck.hawaii.edu/inst/lris/filters.html",
+      "svo_id": "Keck/LRIS.B",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "3 negative samples (min -0.0128) set to 0",
+      "ref_pivot": [
+        4377.0,
+        "http://www2.keck.hawaii.edu/inst/lris/filters.html lambda_eff (filter x CCD QE, flat f_lambda)"
+      ],
+      "n": 2048,
+      "pivot_A": 4322.52
+    },
+    "V": {
+      "sources": "http://www2.keck.hawaii.edu/inst/lris/data_files/V.dat | http://www2.keck.hawaii.edu/inst/lris/filters.html",
+      "svo_id": "Keck/LRIS.V",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "13 negative samples (min -0.00015) set to 0",
+      "ref_pivot": [
+        5473.0,
+        "http://www2.keck.hawaii.edu/inst/lris/filters.html lambda_eff (filter x CCD QE, flat f_lambda)"
+      ],
+      "n": 2048,
+      "pivot_A": 5457.4
+    },
+    "R": {
+      "sources": "http://www2.keck.hawaii.edu/inst/lris/data_files/R.dat | http://www2.keck.hawaii.edu/inst/lris/filters.html",
+      "svo_id": "Keck/LRIS.R",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "5 negative samples (min -0.000593) set to 0",
+      "ref_pivot": [
+        6417.0,
+        "http://www2.keck.hawaii.edu/inst/lris/filters.html lambda_eff (filter x CCD QE, flat f_lambda)"
+      ],
+      "n": 2048,
+      "pivot_A": 6412.84
+    },
+    "Rs": {
+      "sources": "http://www2.keck.hawaii.edu/inst/lris/data_files/Rs.dat | http://www2.keck.hawaii.edu/inst/lris/filters.html",
+      "svo_id": "Keck/LRIS.Rs",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        6809.0,
+        "http://www2.keck.hawaii.edu/inst/lris/filters.html lambda_eff (filter x CCD QE, flat f_lambda)"
+      ],
+      "n": 2048,
+      "pivot_A": 6821.36
+    },
+    "I": {
+      "sources": "http://www2.keck.hawaii.edu/inst/lris/data_files/I.xls#test data, center column | http://www2.keck.hawaii.edu/inst/lris/filters.html",
+      "svo_id": "Keck/LRIS.I",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "nm -> A, percent /100, vendor centre position",
+      "ref_pivot": [
+        7599.0,
+        "http://www2.keck.hawaii.edu/inst/lris/filters.html lambda_eff (filter x CCD QE, flat f_lambda)"
+      ],
+      "n": 1201,
+      "pivot_A": 7593.91
+    }
+  },
+  "raw_files": {
+    "downloads/Keck/g_blue.dat": "232f01c94f981a1e31b896a85413b7b9a222f4e8dad396e0ba135ad04c757e81",
+    "downloads/Keck/B.dat": "ab0a8067610bef95f19c6054b11a0f2dd1bd6534c00d56ef954bd81a3bf3fb52",
+    "downloads/Keck/V.dat": "04b0714e2f7f73edd906be24adf65a6c9cc060965fde5680156859cde00dc04b",
+    "downloads/Keck/R.dat": "e3ba49aedfbfa2cc42d8f43c3b890bc879996fbf56d1988f8e9afc50489a8c50",
+    "downloads/Keck/Rs.dat": "08f597c973753348c2c141decba1fa6e7b4f383093fb8cd0518d0d009c9fb7e8",
+    "downloads/Keck/I.xls": "52fa075ef3fca7b5167d1bb2a2fb27b2c0443aefb2a580f6caf06e445882e389"
+  }
+}

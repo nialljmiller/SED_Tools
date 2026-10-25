@@ -1,0 +1,48 @@
+{
+  "facility": "Herschel",
+  "instrument": "PACS",
+  "notes": "PACS photometer filter transmission curves (HSA legacy ADP, from PacsCal_FM_FilterTransmission; FITS BAND keyword BS/BL/R = 70/100/160 um). Filter only: telescope, optics and bolometer absorption not included. DetectorType=energy because PACS photometry uses bolometer arrays (power detectors). Native transmission scale kept.",
+  "bands": {
+    "70": {
+      "sources": "http://archives.esac.esa.int/hsa/legacy/ADP/PACS/PACS-P_filter_curves/PACS_phot_filterTrans_blue.fits.gz | https://www.herschel.caltech.edu/page/instruments",
+      "svo_id": "Herschel/Pacs.blue",
+      "detector_type": "energy",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 15902,
+      "pivot_A": 707700.63
+    },
+    "100": {
+      "sources": "http://archives.esac.esa.int/hsa/legacy/ADP/PACS/PACS-P_filter_curves/PACS_phot_filterTrans_green.fits.gz | https://www.herschel.caltech.edu/page/instruments",
+      "svo_id": "Herschel/Pacs.green",
+      "detector_type": "energy",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 15897,
+      "pivot_A": 1007889.19
+    },
+    "160": {
+      "sources": "http://archives.esac.esa.int/hsa/legacy/ADP/PACS/PACS-P_filter_curves/PACS_phot_filterTrans_red.fits.gz | https://www.herschel.caltech.edu/page/instruments",
+      "svo_id": "Herschel/Pacs.red",
+      "detector_type": "energy",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 15829,
+      "pivot_A": 1619161.59
+    }
+  },
+  "raw_files": {
+    "downloads/Herschel/PACS_phot_filterTrans_blue.fits.gz": "1c2ae19542b7741fb534fe9ef23bd925ac60b003200822d54bcddc810139dd8f",
+    "downloads/Herschel/PACS_phot_filterTrans_green.fits.gz": "7500b860f45603e7bb40fa15858b8852fceee7cbc214d45885d7502c2470a68e",
+    "downloads/Herschel/PACS_phot_filterTrans_red.fits.gz": "5aa770b2622bb272f28e67581edbd5b2567deca2e85fc2be232f5c4cb15ac449"
+  }
+}

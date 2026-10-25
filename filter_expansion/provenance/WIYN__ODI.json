@@ -1,0 +1,75 @@
+{
+  "facility": "WIYN",
+  "instrument": "ODI",
+  "notes": "WIYN 3.5 m ODI filter-only throughputs from wiynodifilters.html: u=odi_u.dat, r=odi_r.txt, NB695=odi_NB695.txt (Angstrom, fraction) and NB422=NB_422.txt (nm, percent 'in a parallel beam at AOI 5 deg', although the page calls it the field-averaged filter-only throughput). No telescope, corrector, CCD QE (STA OTA CCDs, photon counting) or atmosphere. r keeps a small published red leak (T 0.024 at 12000 A, ~1 % of the photon-weighted response, pivot +0.3 %). odi_NB695.txt repeats its first 752 rows (3000-6755 A) identically before the full scan; the duplicates are merged (no change). Negative noise values set to 0. g, i, z, NB659 and NB746 are HELD: their filter-only scans transmit 0.2-0.6 beyond 11000 A (past the CCD cutoff), which moves the filter-only pivot badly (g 6223 vs 4786 A), and no ODI QE curve is published as data. No published pivots.",
+  "bands": {
+    "u": {
+      "sources": "https://www.wiyn.org/ODI/Observe/odi_u.dat | https://www.wiyn.org/ODI/Observe/wiynodifilters.html",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 801,
+      "pivot_A": 3583.58
+    },
+    "r": {
+      "sources": "https://www.wiyn.org/ODI/Observe/odi_r.txt | https://www.wiyn.org/ODI/Observe/wiynodifilters.html",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 1701,
+      "pivot_A": 6222.85
+    },
+    "NB695": {
+      "sources": "https://www.wiyn.org/ODI/Observe/odi_NB695.txt | https://www.wiyn.org/ODI/Observe/wiynodifilters.html",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "344 negative samples (min -5.01e-05) set to 0; 752 duplicate wavelengths averaged",
+      "ref_pivot": null,
+      "n": 2515,
+      "pivot_A": 6958.11
+    },
+    "NB422": {
+      "sources": "https://www.wiyn.org/ODI/Observe/NB_422.txt | https://www.wiyn.org/ODI/Observe/wiynodifilters.html",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 1601,
+      "pivot_A": 4225.0
+    }
+  },
+  "raw_files": {
+    "downloads/WIYN/ODI_odi_u.dat": "470d7c38cf32b2d05fc5bffff269d23ea4b0d3e9d0ef596630b2456b2d29cfa8",
+    "downloads/WIYN/ODI_odi_r.txt": "073018ff69ea378c189ff319da88cf6fc21caf5db46ef0f67add03d1f0e162f5",
+    "downloads/WIYN/ODI_odi_NB695.txt": "c3e3c7d31b633827470eaf5561a84ccc61b15664ea469e7b633940f5c633a99a",
+    "downloads/WIYN/ODI_NB_422.txt": "fb907296827ff90c0c0a358fc86e709038ee61ed32ff99f5f439642ae8156700"
+  },
+  "detector_evidence": "https://www.wiyn.org/ODI/wiynODI.html",
+  "fraction_of_photon_response_above_10500A": {
+    "u": 0.0011,
+    "r": 0.0076,
+    "NB695": 0.0005,
+    "NB422": 0.0002
+  },
+  "held": {
+    "g": "https://www.wiyn.org/ODI/Observe/odi_g.txt",
+    "i": "https://www.wiyn.org/ODI/Observe/odi_i.txt",
+    "z": "https://www.wiyn.org/ODI/Observe/odi_z.txt",
+    "NB659": "https://www.wiyn.org/ODI/Observe/NB659.txt",
+    "NB746": "https://www.wiyn.org/ODI/Observe/NB746.txt"
+  }
+}

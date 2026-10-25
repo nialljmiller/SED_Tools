@@ -1,0 +1,58 @@
+{
+  "facility": "IRAS",
+  "instrument": "IRAS",
+  "notes": "IRAS Explanatory Supplement Table II.C.5, 'Relative System Response' column as printed (including the 25 um 29.0 um row, whose detector value 0.19 is inconsistent with its system value 0.877; possible source typo, kept unchanged). DetectorType=energy: sect. II.C.4 Fig. II.C.9 caption gives the detector response 'to constant energy input', and sect. VI.C.3 eqs. VI.C.4-6 integrate f_nu*R over frequency with the nu*f_nu=const quoting convention. System response peak-normalised (normalize=True). Components: optical transmission (filters and field lenses, role filter+optics) and relative detector response (role qe, scaled to peak 1); pre-flight measurements of sample/spare parts.",
+  "bands": {
+    "12": {
+      "sources": "https://irsa.ipac.caltech.edu/IRASdocs/exp.sup/ch2/tabC5.html | https://irsa.ipac.caltech.edu/IRASdocs/exp.sup/ch2/C4.html | https://irsa.ipac.caltech.edu/IRASdocs/exp.sup/ch6/C3.html",
+      "svo_id": "IRAS/IRAS.12mu",
+      "detector_type": "energy",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 18,
+      "pivot_A": 110356.6
+    },
+    "60": {
+      "sources": "https://irsa.ipac.caltech.edu/IRASdocs/exp.sup/ch2/tabC5.html | https://irsa.ipac.caltech.edu/IRASdocs/exp.sup/ch2/C4.html | https://irsa.ipac.caltech.edu/IRASdocs/exp.sup/ch6/C3.html",
+      "svo_id": "IRAS/IRAS.60mu",
+      "detector_type": "energy",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 21,
+      "pivot_A": 581903.91
+    },
+    "25": {
+      "sources": "https://irsa.ipac.caltech.edu/IRASdocs/exp.sup/ch2/tabC5.html | https://irsa.ipac.caltech.edu/IRASdocs/exp.sup/ch2/C4.html | https://irsa.ipac.caltech.edu/IRASdocs/exp.sup/ch6/C3.html",
+      "svo_id": "IRAS/IRAS.25mu",
+      "detector_type": "energy",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 32,
+      "pivot_A": 230723.75
+    },
+    "100": {
+      "sources": "https://irsa.ipac.caltech.edu/IRASdocs/exp.sup/ch2/tabC5.html | https://irsa.ipac.caltech.edu/IRASdocs/exp.sup/ch2/C4.html | https://irsa.ipac.caltech.edu/IRASdocs/exp.sup/ch6/C3.html",
+      "svo_id": "IRAS/IRAS.100mu",
+      "detector_type": "energy",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 16,
+      "pivot_A": 995192.58
+    }
+  },
+  "raw_files": {
+    "downloads/IRAS/tabC5-ipac.html": "5f17cd77ede1511b493be38ae89fbd2890429c9d7c4cba9bd74043263e075fe0"
+  }
+}

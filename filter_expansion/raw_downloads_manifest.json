@@ -1,0 +1,1200 @@
+[
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/ATLAS/tonry_1802.00879.eprint",
+    "source_url": "https://arxiv.org/e-print/1802.00879",
+    "sha256": "d3e964fc95d3ef79d3a54954f3bf928ea10016196aad0c67958ec7efe3b77a4f",
+    "bytes": 2215621,
+    "retrieved_utc": "2026-10-25T07:40:18Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/ATLAS/tonry_eprint_tex/atlas_defn.tex",
+    "source_url": "https://arxiv.org/e-print/1802.00879",
+    "extracted_from": "source_evidence/filters/2026-10-25-expansion/ATLAS/tonry_1802.00879.eprint",
+    "sha256": "7ccd10fcca4ac0ca369a703d7061e079ea5f3d2c1fb6d7329be5b1a3c73ceb84",
+    "bytes": 86436,
+    "retrieved_utc": "2026-10-25T07:40:24Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/GAIA/GaiaDR2_Passbands_ZeroPoints/GaiaDR2_Passbands.dat",
+    "source_url": "https://www.cosmos.esa.int/documents/29201/1645651/GaiaDR2_Passbands_ZeroPoints.zip/49cdce41-8eee-655d-7ed2-4e7a83598c1d",
+    "extracted_from": "source_evidence/filters/2026-10-25-expansion/GAIA/GaiaDR2_Passbands_ZeroPoints.zip",
+    "sha256": "ba3e1edec4d596d88d82bd01e3c72cb38b8b4d687a9488914aa466c2aba7700f",
+    "bytes": 336105,
+    "retrieved_utc": "2026-10-25T07:40:43Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/GAIA/GaiaDR2_Passbands_ZeroPoints/GaiaDR2_ReadMe",
+    "source_url": "https://www.cosmos.esa.int/documents/29201/1645651/GaiaDR2_Passbands_ZeroPoints.zip/49cdce41-8eee-655d-7ed2-4e7a83598c1d",
+    "extracted_from": "source_evidence/filters/2026-10-25-expansion/GAIA/GaiaDR2_Passbands_ZeroPoints.zip",
+    "sha256": "4aff9ad59780ddeee6b9e96f7b37ef234be24de48ea2ea856a11050e72456c24",
+    "bytes": 6164,
+    "retrieved_utc": "2026-10-25T07:40:43Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/GAIA/GaiaDR2_Passbands_ZeroPoints.zip",
+    "source_url": "https://www.cosmos.esa.int/documents/29201/1645651/GaiaDR2_Passbands_ZeroPoints.zip/49cdce41-8eee-655d-7ed2-4e7a83598c1d",
+    "sha256": "c1957bf892dfab3db066d964625c52f1bed1ada373f141af0c06ce18f2667da0",
+    "bytes": 89156,
+    "retrieved_utc": "2026-10-25T07:38:51Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/GAIA/GaiaDR2_Revised_Passbands_ZeroPoints/GaiaDR2_ReadMe",
+    "source_url": "https://www.cosmos.esa.int/documents/29201/1645651/GaiaDR2_Revised_Passbands_ZeroPoints.zip/54db454f-69cb-ea0c-15be-f1b1f597f191",
+    "extracted_from": "source_evidence/filters/2026-10-25-expansion/GAIA/GaiaDR2_Revised_Passbands_ZeroPoints.zip",
+    "sha256": "4aff9ad59780ddeee6b9e96f7b37ef234be24de48ea2ea856a11050e72456c24",
+    "bytes": 6164,
+    "retrieved_utc": "2026-10-25T07:40:43Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/GAIA/GaiaDR2_Revised_Passbands_ZeroPoints/GaiaDR2_RevisedPassbands.dat",
+    "source_url": "https://www.cosmos.esa.int/documents/29201/1645651/GaiaDR2_Revised_Passbands_ZeroPoints.zip/54db454f-69cb-ea0c-15be-f1b1f597f191",
+    "extracted_from": "source_evidence/filters/2026-10-25-expansion/GAIA/GaiaDR2_Revised_Passbands_ZeroPoints.zip",
+    "sha256": "1dbb5280b42f266d6e18b6f332f726d44ec20f007c384a73c4edd7d30b17c1d8",
+    "bytes": 336105,
+    "retrieved_utc": "2026-10-25T07:40:43Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/GAIA/GaiaDR2_Revised_Passbands_ZeroPoints.zip",
+    "source_url": "https://www.cosmos.esa.int/documents/29201/1645651/GaiaDR2_Revised_Passbands_ZeroPoints.zip/54db454f-69cb-ea0c-15be-f1b1f597f191",
+    "sha256": "639ac78aeac40349e51a9e214065b62dac372cd3274fdb60a7c9a2c07a3b8c05",
+    "bytes": 94201,
+    "retrieved_utc": "2026-10-25T07:38:52Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Generic/ReadMe",
+    "source_url": "https://cdsarc.cds.unistra.fr/ftp/cats/J/PASP/124/140/ReadMe",
+    "sha256": "c3e65291204876ca879c4a30e16cb7884abd804411ca66d2abffece1db70d7b8",
+    "bytes": 3829,
+    "retrieved_utc": "2026-10-25T15:20:00Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Generic/mirror_IRTF_NSFCam_HMK.dat",
+    "source_url": "https://nillmill.ddns.net/sed_tools/filters/IRTF/NSFCam/HMK.dat",
+    "sha256": "b5de1132803f86968116b312e86837e4b1e603527777bde9095d81d05cae8451",
+    "bytes": 31232,
+    "retrieved_utc": "2026-10-25T15:22:52Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Generic/mirror_IRTF_NSFCam_JMK.dat",
+    "source_url": "https://nillmill.ddns.net/sed_tools/filters/IRTF/NSFCam/JMK.dat",
+    "sha256": "8135a25c8d250d561b9057451d6f4ec299223f48092d6cc18396f2a207e18ab6",
+    "bytes": 54464,
+    "retrieved_utc": "2026-10-25T15:22:52Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Generic/mirror_IRTF_NSFCam_KMK.dat",
+    "source_url": "https://nillmill.ddns.net/sed_tools/filters/IRTF/NSFCam/KMK.dat",
+    "sha256": "64f06fd315eded2d1ab74da7af29706478784224d80e9b792328fb294891bf39",
+    "bytes": 31212,
+    "retrieved_utc": "2026-10-25T15:22:52Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Generic/mirror_IRTF_NSFCam_LPMK.dat",
+    "source_url": "https://nillmill.ddns.net/sed_tools/filters/IRTF/NSFCam/LPMK.dat",
+    "sha256": "42476544be4ebb3c83de3250d41c897022ce4b05cb7c12a48ec38346afe870fa",
+    "bytes": 42281,
+    "retrieved_utc": "2026-10-25T15:22:52Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Generic/mirror_IRTF_NSFCam_MPMK.dat",
+    "source_url": "https://nillmill.ddns.net/sed_tools/filters/IRTF/NSFCam/MPMK.dat",
+    "sha256": "69ed734dee9c98ea16b8ac6d13181c0405ebb3dce51b6df803088987dd377788",
+    "bytes": 20102,
+    "retrieved_utc": "2026-10-25T15:22:52Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Generic/nsfcam_hmk_trans.dat",
+    "source_url": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters/nsfcam_hmk_trans.dat",
+    "sha256": "9c58a391cb42bb7102969e4caffb91f24331fb2c3f0ae3e2b0f119b0461c94f2",
+    "bytes": 21935,
+    "retrieved_utc": "2026-10-25T15:20:20Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Generic/nsfcam_jmk_trans.dat",
+    "source_url": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters/nsfcam_jmk_trans.dat",
+    "sha256": "208d4149b9f410d2c05143f5bb492adb2c9f81305ebcbc8ce311cb41b65fa7db",
+    "bytes": 40347,
+    "retrieved_utc": "2026-10-25T15:20:19Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Generic/nsfcam_kmk_trans.dat",
+    "source_url": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters/nsfcam_kmk_trans.dat",
+    "sha256": "bc9fc59499fef80f4fe410a07f7fa8ada1d19984ae0e5ab550a533a48988322b",
+    "bytes": 22373,
+    "retrieved_utc": "2026-10-25T15:20:21Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Generic/nsfcam_lpmk_trans.dat",
+    "source_url": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters/nsfcam_lpmk_trans.dat",
+    "sha256": "2b0f6ff4417b97dd5fd2da18c8098191491bc58cbfbdc379d5cf3ef553b0caa1",
+    "bytes": 33278,
+    "retrieved_utc": "2026-10-25T15:20:21Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Generic/nsfcam_mpmk_trans.dat",
+    "source_url": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters/nsfcam_mpmk_trans.dat",
+    "sha256": "5a86a30212cd7cbde4f3604bd7fc714201c145fb899eab546170b69fd9d00022",
+    "bytes": 14649,
+    "retrieved_utc": "2026-10-25T15:20:22Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Generic/table1.dat",
+    "source_url": "https://cdsarc.cds.unistra.fr/ftp/cats/J/PASP/124/140/table1.dat",
+    "sha256": "2af9c19c397ddf3800e55791cabfb484dea170b4947a891d150da4f0fe51295e",
+    "bytes": 1979,
+    "retrieved_utc": "2026-10-25T15:19:59Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Generic/usno_g.res",
+    "source_url": "https://web.archive.org/web/20210319132508id_/https://www-star.fnal.gov/ugriz/Filters/usno_g.res",
+    "sha256": "5748831fadddfe3c0aa1774c094ffa3ba3a9847b8afd7b19d72bd1cefdddf485",
+    "bytes": 2570,
+    "retrieved_utc": "2026-10-25T15:22:55Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Generic/usno_i.res",
+    "source_url": "https://web.archive.org/web/20210319071508id_/https://www-star.fnal.gov/ugriz/Filters/usno_i.res",
+    "sha256": "62ec5897d961fbe9da38c76c30d79fb8cf025e7f8dc130d877c5c3e7191abb1e",
+    "bytes": 2570,
+    "retrieved_utc": "2026-10-25T15:22:58Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Generic/usno_r.res",
+    "source_url": "https://web.archive.org/web/20210319053959id_/https://www-star.fnal.gov/ugriz/Filters/usno_r.res",
+    "sha256": "e0b6f2f8b7f3862e1570ed83fd5695d970ba840b049315b25a32353d16f193b6",
+    "bytes": 2362,
+    "retrieved_utc": "2026-10-25T15:22:57Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Generic/usno_readme.txt",
+    "source_url": "https://web.archive.org/web/20210319075936id_/https://www-star.fnal.gov/ugriz/Filters/readme.txt",
+    "sha256": "6b4b063692d517b234f0bddccb1d2cc52e70bfaaed4100ddb6c9d20c4f1a5f16",
+    "bytes": 2700,
+    "retrieved_utc": "2026-10-25T15:22:53Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Generic/usno_u.res",
+    "source_url": "https://web.archive.org/web/20210319150010id_/https://www-star.fnal.gov/ugriz/Filters/usno_u.res",
+    "sha256": "466c000076fe28dde72ff4118a46b06ba3855db23dad2b78a1ce7bf970f4603d",
+    "bytes": 2674,
+    "retrieved_utc": "2026-10-25T15:22:54Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Generic/usno_z.res",
+    "source_url": "https://web.archive.org/web/20210319124657id_/https://www-star.fnal.gov/ugriz/Filters/usno_z.res",
+    "sha256": "1ff99dd3b2c722a363e3ddb6770e5aa52e0bcd57dba02304e6aa5e07da6e40d3",
+    "bytes": 2882,
+    "retrieved_utc": "2026-10-25T15:22:59Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Herschel/PACS_phot_filterTrans_blue.fits.gz",
+    "source_url": "http://archives.esac.esa.int/hsa/legacy/ADP/PACS/PACS-P_filter_curves/PACS_phot_filterTrans_blue.fits.gz",
+    "sha256": "1c2ae19542b7741fb534fe9ef23bd925ac60b003200822d54bcddc810139dd8f",
+    "bytes": 118398,
+    "retrieved_utc": "2026-10-25T07:38:54Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Herschel/PACS_phot_filterTrans_green.fits.gz",
+    "source_url": "http://archives.esac.esa.int/hsa/legacy/ADP/PACS/PACS-P_filter_curves/PACS_phot_filterTrans_green.fits.gz",
+    "sha256": "7500b860f45603e7bb40fa15858b8852fceee7cbc214d45885d7502c2470a68e",
+    "bytes": 118333,
+    "retrieved_utc": "2026-10-25T07:38:56Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Herschel/PACS_phot_filterTrans_red.fits.gz",
+    "source_url": "http://archives.esac.esa.int/hsa/legacy/ADP/PACS/PACS-P_filter_curves/PACS_phot_filterTrans_red.fits.gz",
+    "sha256": "5aa770b2622bb272f28e67581edbd5b2567deca2e85fc2be232f5c4cb15ac449",
+    "bytes": 117916,
+    "retrieved_utc": "2026-10-25T07:38:58Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Herschel/SPIRE_phot_RSRF_14_3.fits",
+    "source_url": "http://archives.esac.esa.int/hsa/legacy/ADP/SPIRE/SPIRE-P_filter_curves/SPIRE_phot_RSRF_14_3.fits",
+    "sha256": "de53a0434baccff469cf85e4036b685c83eb30e833601581ef4eb666cd8bc153",
+    "bytes": 34560,
+    "retrieved_utc": "2026-10-25T07:38:58Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Hipparcos/ReadMe",
+    "source_url": "https://cdsarc.cds.unistra.fr/ftp/cats/J/PASP/124/140/ReadMe",
+    "sha256": "c3e65291204876ca879c4a30e16cb7884abd804411ca66d2abffece1db70d7b8",
+    "bytes": 3829,
+    "retrieved_utc": "2026-10-25T07:29:39Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Hipparcos/table2.dat",
+    "source_url": "https://cdsarc.cds.unistra.fr/ftp/cats/J/PASP/124/140/table2.dat",
+    "sha256": "c63abfe8980e5ad93646991a583f2b012f267e63175cbde86ce0f5325bf4dc5b",
+    "bytes": 1804,
+    "retrieved_utc": "2026-10-25T07:29:39Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/IRAS/tabC5-ipac.html",
+    "source_url": "https://irsa.ipac.caltech.edu/IRASdocs/exp.sup/ch2/tabC5.html",
+    "sha256": "5f17cd77ede1511b493be38ae89fbd2890429c9d7c4cba9bd74043263e075fe0",
+    "bytes": 9891,
+    "retrieved_utc": "2026-10-25T07:38:23Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/IRAS/tabC5.html",
+    "source_url": "https://irsa.ipac.caltech.edu/IRASdocs/exp.sup/ch2/tabC5.html",
+    "note": "earlier copy of the same page; differs from the 2026-10-25 fetch; the recipe uses tabC5-ipac.html",
+    "sha256": "248ac1611855c3514419c4a06ea6263710f43161d93f6a4d74deb8ac89ea45be",
+    "bytes": 9083,
+    "retrieved_utc": "2026-10-25T07:38:23Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/KPNO/Mosaic_k1002bp_jul04.txt",
+    "source_url": "https://noirlab.edu/science/sites/default/files/media/archives/documents/k1002bp_jul04.txt",
+    "sha256": "c9b1864348cb81015c0adfe9eb6be9f0868414696b553eb89eb118b3667c8487",
+    "bytes": 25718,
+    "retrieved_utc": "2026-10-25T15:36:53Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/KPNO/Mosaic_k1003bp_jul04.txt",
+    "source_url": "https://noirlab.edu/science/sites/default/files/media/archives/documents/k1003bp_jul04.txt",
+    "sha256": "66a9250fe8298876ace9f7dbe2546197456b491a94dd1ef77079a99c2b323793",
+    "bytes": 27819,
+    "retrieved_utc": "2026-10-25T15:36:54Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/KPNO/Mosaic_k1004bp_aug04.txt",
+    "source_url": "https://noirlab.edu/science/sites/default/files/media/archives/documents/k1004bp_aug04.txt",
+    "sha256": "36837f6a28af6bf3e3d80233b3516b263179dc8dd0aaf5859f8db920d6b080d5",
+    "bytes": 25724,
+    "retrieved_utc": "2026-10-25T15:36:55Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/KPNO/Mosaic_k1005bp_aug04.txt",
+    "source_url": "https://noirlab.edu/science/sites/default/files/media/archives/documents/k1005bp_aug04.txt",
+    "sha256": "8adbf90fe02d024ea3adc353868de836639683a08e96789b69bfe7f42059bd15",
+    "bytes": 7873,
+    "retrieved_utc": "2026-10-25T15:36:55Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/KPNO/Mosaic_k1018.txt",
+    "source_url": "https://noirlab.edu/science/sites/default/files/media/archives/documents/k1018.txt",
+    "sha256": "a91f0193dec6c48a27e434ec04911124db17f7e5b138eab5cda112f8268c2728",
+    "bytes": 8299,
+    "retrieved_utc": "2026-10-25T15:36:56Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/KPNO/Mosaic_k1019.txt",
+    "source_url": "https://noirlab.edu/science/sites/default/files/media/archives/documents/k1019.txt",
+    "sha256": "d22d406b0fce7002fa7f74a9e59e80b94d85d6d38e215e63031d8b5078f19bda",
+    "bytes": 9299,
+    "retrieved_utc": "2026-10-25T15:36:57Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/KPNO/Mosaic_k1020.txt",
+    "source_url": "https://noirlab.edu/science/sites/default/files/media/archives/documents/k1020.txt",
+    "sha256": "d5117a9e63c764aaf467d4e9cc9cba1b632e23cb0749858ac7ef77fb52b2e2af",
+    "bytes": 16501,
+    "retrieved_utc": "2026-10-25T15:36:58Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/KPNO/Mosaic_k1044bp.txt",
+    "source_url": "https://noirlab.edu/science/sites/default/files/media/archives/documents/k1044bp.txt",
+    "sha256": "062795b4d78f4b7ec07b41c2e7496e6a8abc3995071555b33ed877a3a61f43f3",
+    "bytes": 18379,
+    "retrieved_utc": "2026-10-25T15:36:52Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Keck/B.dat",
+    "source_url": "http://www2.keck.hawaii.edu/inst/lris/data_files/B.dat",
+    "sha256": "ab0a8067610bef95f19c6054b11a0f2dd1bd6534c00d56ef954bd81a3bf3fb52",
+    "bytes": 41517,
+    "retrieved_utc": "2026-10-25T15:20:25Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Keck/Bfaber13norm.txt",
+    "source_url": "http://www2.keck.hawaii.edu/inst/deimos/Bfaber13norm.txt",
+    "sha256": "689ee153b33e9bb88be73f2d5f97f604fd164d0e8518117e54e45e068a09a6a7",
+    "bytes": 410316,
+    "retrieved_utc": "2026-10-25T15:20:34Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Keck/H1_center_corr.txt",
+    "source_url": "http://www2.keck.hawaii.edu/inst/mosfire/data/filter/H1_center_corr.txt",
+    "sha256": "65ab19a33851bc1ff58fabe81efdfb9d86991c3c08608e5901326f85fbd5eddd",
+    "bytes": 6806,
+    "retrieved_utc": "2026-10-25T15:20:33Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Keck/H2_center_corr.txt",
+    "source_url": "http://www2.keck.hawaii.edu/inst/mosfire/data/filter/H2_center_corr.txt",
+    "sha256": "03a1b036ea28939c5b7f6d9d7b6437b569b7fd16520df692186c36424262d9d2",
+    "bytes": 5786,
+    "retrieved_utc": "2026-10-25T15:20:33Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Keck/I.xls",
+    "source_url": "http://www2.keck.hawaii.edu/inst/lris/data_files/I.xls",
+    "sha256": "52fa075ef3fca7b5167d1bb2a2fb27b2c0443aefb2a580f6caf06e445882e389",
+    "bytes": 413696,
+    "retrieved_utc": "2026-10-25T15:20:28Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Keck/Ibess2norm.txt",
+    "source_url": "http://www2.keck.hawaii.edu/inst/deimos/Ibess2norm.txt",
+    "sha256": "26f4cdb5cf763c9c7a0eacb16561f6ea04eb52262304b6ad5720267b7729fa60",
+    "bytes": 368426,
+    "retrieved_utc": "2026-10-25T15:20:39Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Keck/J2_center_corr.txt",
+    "source_url": "http://www2.keck.hawaii.edu/inst/mosfire/data/filter/J2_center_corr.txt",
+    "sha256": "3e3fe8ba1b53eb3814d611156f26169c07aee1009e0b4993e3527f7c06b6966e",
+    "bytes": 6613,
+    "retrieved_utc": "2026-10-25T15:20:32Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Keck/J3_center_corr.txt",
+    "source_url": "http://www2.keck.hawaii.edu/inst/mosfire/data/filter/J3_center_corr.txt",
+    "sha256": "9c8cd6013706673fc10ca816b44653c13d92dc550a0e954a93aebc9e32a4333f",
+    "bytes": 9441,
+    "retrieved_utc": "2026-10-25T15:20:32Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Keck/R.dat",
+    "source_url": "http://www2.keck.hawaii.edu/inst/lris/data_files/R.dat",
+    "sha256": "e3ba49aedfbfa2cc42d8f43c3b890bc879996fbf56d1988f8e9afc50489a8c50",
+    "bytes": 40986,
+    "retrieved_utc": "2026-10-25T15:20:26Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Keck/RG850.dat",
+    "source_url": "http://www2.keck.hawaii.edu/inst/lris/data_files/RG850.dat",
+    "note": "held: long-pass, needs CCD QE red edge",
+    "sha256": "fa6fac8a995123a2d00964edc58881c7bf790eae2e243890fe2152683ad9a6bd",
+    "bytes": 40552,
+    "retrieved_utc": "2026-10-25T15:20:29Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Keck/RlrisDredonorm.txt",
+    "source_url": "http://www2.keck.hawaii.edu/inst/deimos/RlrisDredonorm.txt",
+    "sha256": "2a5c620274a22fb395bb07e43431ff0ac69884cb2892e3db983247ac899e4d81",
+    "bytes": 384738,
+    "retrieved_utc": "2026-10-25T15:20:37Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Keck/Rs.dat",
+    "source_url": "http://www2.keck.hawaii.edu/inst/lris/data_files/Rs.dat",
+    "sha256": "08f597c973753348c2c141decba1fa6e7b4f383093fb8cd0518d0d009c9fb7e8",
+    "bytes": 41255,
+    "retrieved_utc": "2026-10-25T15:20:27Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Keck/V.dat",
+    "source_url": "http://www2.keck.hawaii.edu/inst/lris/data_files/V.dat",
+    "sha256": "04b0714e2f7f73edd906be24adf65a6c9cc060965fde5680156859cde00dc04b",
+    "bytes": 41582,
+    "retrieved_utc": "2026-10-25T15:20:26Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Keck/Vbess3redonorm.txt",
+    "source_url": "http://www2.keck.hawaii.edu/inst/deimos/Vbess3redonorm.txt",
+    "note": "fetched for review; not used",
+    "sha256": "10f8c385f9fb4d432564e19b652c9de626599905f84345caacba28b594d9b153",
+    "bytes": 406152,
+    "retrieved_utc": "2026-10-25T15:20:35Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Keck/Zsdssredonorm.txt",
+    "source_url": "http://www2.keck.hawaii.edu/inst/deimos/Zsdssredonorm.txt",
+    "sha256": "9c1323d040f772830bba98691adb4f2b9158711438d2bc71326dd6e38842ce08",
+    "bytes": 406478,
+    "retrieved_utc": "2026-10-25T15:20:40Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Keck/filter_passbands.xls",
+    "source_url": "http://www2.keck.hawaii.edu/inst/nirc2/filter_passbands.xls",
+    "sha256": "455a4fec35264ee72f458fc93436b37f4ebf6c9a5c7ce9cbee9fd1feb56b0a94",
+    "bytes": 2065920,
+    "retrieved_utc": "2026-10-25T15:20:24Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Keck/g_blue.dat",
+    "source_url": "http://www2.keck.hawaii.edu/inst/lris/data_files/g_blue.dat",
+    "sha256": "232f01c94f981a1e31b896a85413b7b9a222f4e8dad396e0ba135ad04c757e81",
+    "bytes": 48804,
+    "retrieved_utc": "2026-10-25T15:20:25Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Keck/mosfire_H.txt",
+    "source_url": "http://www2.keck.hawaii.edu/inst/mosfire/data/filter/mosfire_H.txt",
+    "sha256": "919daf2bd9242b9805cdbf19b4c94d8358092ec8b4513ad64fec94066392a41c",
+    "bytes": 25350,
+    "retrieved_utc": "2026-10-25T15:20:30Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Keck/mosfire_J.txt",
+    "source_url": "http://www2.keck.hawaii.edu/inst/mosfire/data/filter/mosfire_J.txt",
+    "sha256": "5410e4e790afb5ebd520d0ad80697697782a71f475c33d7dd896f2298dee984f",
+    "bytes": 41450,
+    "retrieved_utc": "2026-10-25T15:20:30Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Keck/mosfire_K.txt",
+    "source_url": "http://www2.keck.hawaii.edu/inst/mosfire/data/filter/mosfire_K.txt",
+    "sha256": "cce475d988d553f337d82476c87bb8667515cbe9c440152d5b9fb5f4958e9e31",
+    "bytes": 29950,
+    "retrieved_utc": "2026-10-25T15:20:31Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Keck/mosfire_Ks.txt",
+    "source_url": "http://www2.keck.hawaii.edu/inst/mosfire/data/filter/mosfire_Ks.txt",
+    "sha256": "465207a58c406366c928f8a66fd1b550285d00c7c4b008bc817fa78dfd76ffda",
+    "bytes": 23050,
+    "retrieved_utc": "2026-10-25T15:20:32Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Keck/mosfire_Y.txt",
+    "source_url": "http://www2.keck.hawaii.edu/inst/mosfire/data/filter/mosfire_Y.txt",
+    "sha256": "062fe47e9c3f4dfe0230463fc0554bb42363fca3590d2b4e471c688113e7df40",
+    "bytes": 27627,
+    "retrieved_utc": "2026-10-25T15:20:29Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/LasCumbres/lco_filter_curves.zip",
+    "source_url": "https://lco.global/documents/2/lco_filter_curves.zip",
+    "sha256": "4e9ecf215af1d1210c43342dd7604492d07cea588239b148836eff6f1bf727f0",
+    "bytes": 545526,
+    "retrieved_utc": "2026-10-25T07:42:45Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/MSX/msx_rsr_a.tbl",
+    "source_url": "https://irsa.ipac.caltech.edu/data/MSX/docs/rsr/msx_rsr_a.tbl",
+    "sha256": "dcdb6d607ecd983fa0e8fbdac12c31cc2f4cd92175d77b718a9cfd18ea170f99",
+    "bytes": 13697,
+    "retrieved_utc": "2026-10-25T07:38:23Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/MSX/msx_rsr_c.tbl",
+    "source_url": "https://irsa.ipac.caltech.edu/data/MSX/docs/rsr/msx_rsr_c.tbl",
+    "sha256": "55abc0027286771e674245da3d6efcffc78ba9648927daa8cc0ad5f6da36ad83",
+    "bytes": 6282,
+    "retrieved_utc": "2026-10-25T07:38:23Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/MSX/msx_rsr_d.tbl",
+    "source_url": "https://irsa.ipac.caltech.edu/data/MSX/docs/rsr/msx_rsr_d.tbl",
+    "sha256": "935461d3c1dc7c54d0cd52c23d7acc4d6cb5699eb7ed18ec391f353ad56ab3a0",
+    "bytes": 8682,
+    "retrieved_utc": "2026-10-25T07:38:23Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/MSX/msx_rsr_e.tbl",
+    "source_url": "https://irsa.ipac.caltech.edu/data/MSX/docs/rsr/msx_rsr_e.tbl",
+    "sha256": "fff30ea8aa95316e2a1613f54b2b2b860f03597eb56845ab2bd8db3f4452b795",
+    "bytes": 24018,
+    "retrieved_utc": "2026-10-25T07:38:23Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Magellan/FourStar_FS118_convolve.txt",
+    "source_url": "https://instrumentation.obs.carnegiescience.edu/FourStar/OPTICS/curves/FS118_convolve.txt",
+    "sha256": "2d155c165ba428d5a951690356a3ce19289285534993250818e9e99e48a447db",
+    "bytes": 1863,
+    "retrieved_utc": "2026-10-25T15:34:47Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Magellan/FourStar_FS209_convolve.txt",
+    "source_url": "https://instrumentation.obs.carnegiescience.edu/FourStar/OPTICS/curves/FS209_convolve.txt",
+    "sha256": "35c5aedf99b747f673698b025930357999d0b4857086561d37365dc132a7cd15",
+    "bytes": 3703,
+    "retrieved_utc": "2026-10-25T15:34:48Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Magellan/FourStar_HST_STD_FS118.txt",
+    "source_url": "https://instrumentation.obs.carnegiescience.edu/FourStar/OPTICS/curves/HST_STD/FS118.txt",
+    "sha256": "35f70ced9919f7ff47d79327da3855fd1ca4ec527cafeeb480a2114b78e7fd94",
+    "bytes": 1539,
+    "retrieved_utc": "2026-10-25T15:34:47Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Magellan/FourStar_HST_STD_FS209.txt",
+    "source_url": "https://instrumentation.obs.carnegiescience.edu/FourStar/OPTICS/curves/HST_STD/FS209.txt",
+    "sha256": "a567dd33e18215ff5580f550253fb37f45ab68f32046cbdb71681aa631bcc8da",
+    "bytes": 3059,
+    "retrieved_utc": "2026-10-25T15:34:47Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Magellan/FourStar_HST_STD_H.txt",
+    "source_url": "https://instrumentation.obs.carnegiescience.edu/FourStar/OPTICS/curves/HST_STD/H.txt",
+    "sha256": "fa8cf40dc2a60c0729638f9c5490bbc7dc04e2eb4b45bf356d8b9d37910d1c4a",
+    "bytes": 7429,
+    "retrieved_utc": "2026-10-25T15:34:42Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Magellan/FourStar_HST_STD_Hlong.txt",
+    "source_url": "https://instrumentation.obs.carnegiescience.edu/FourStar/OPTICS/curves/HST_STD/Hlong.txt",
+    "sha256": "5b5a51e73303fe138e97a1a9d2189af50d1b0d39c39993438242e8e6958b92f1",
+    "bytes": 4503,
+    "retrieved_utc": "2026-10-25T15:34:46Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Magellan/FourStar_HST_STD_Hshort.txt",
+    "source_url": "https://instrumentation.obs.carnegiescience.edu/FourStar/OPTICS/curves/HST_STD/Hshort.txt",
+    "sha256": "4f87f19c29b6b1cd113792833abeb93e4a27c84e83f294bdbf158c3c793afbc8",
+    "bytes": 5149,
+    "retrieved_utc": "2026-10-25T15:34:45Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Magellan/FourStar_HST_STD_J.txt",
+    "source_url": "https://instrumentation.obs.carnegiescience.edu/FourStar/OPTICS/curves/HST_STD/J.txt",
+    "sha256": "9cc852da74a8cb9108f918ed59c8a45b2ff8be8e39dcb24186186fbcd6bfc361",
+    "bytes": 5909,
+    "retrieved_utc": "2026-10-25T15:34:41Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Magellan/FourStar_HST_STD_J1.txt",
+    "source_url": "https://instrumentation.obs.carnegiescience.edu/FourStar/OPTICS/curves/HST_STD/J1.txt",
+    "sha256": "f12a2b01fbd27e111b6ca18264244e149a84d89b8845c773e073547f21eb7f97",
+    "bytes": 5643,
+    "retrieved_utc": "2026-10-25T15:34:44Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Magellan/FourStar_HST_STD_J2.txt",
+    "source_url": "https://instrumentation.obs.carnegiescience.edu/FourStar/OPTICS/curves/HST_STD/J2.txt",
+    "sha256": "71ac593be1d7dfdfdd50e23f15af00900a90aa38af89b2841be34024ceef0783",
+    "bytes": 6479,
+    "retrieved_utc": "2026-10-25T15:34:44Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Magellan/FourStar_HST_STD_J3.txt",
+    "source_url": "https://instrumentation.obs.carnegiescience.edu/FourStar/OPTICS/curves/HST_STD/J3.txt",
+    "sha256": "258f4728a384c0989ded26b0f45962d9b4b0f59d6b14d296f26b480e6957f3e3",
+    "bytes": 3952,
+    "retrieved_utc": "2026-10-25T15:34:45Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Magellan/FourStar_HST_STD_Ks.txt",
+    "source_url": "https://instrumentation.obs.carnegiescience.edu/FourStar/OPTICS/curves/HST_STD/Ks.txt",
+    "sha256": "1ac89b52f64af25b10bac482296664f0975e0a5f48791dc0708ae5a72da65c60",
+    "bytes": 9519,
+    "retrieved_utc": "2026-10-25T15:34:43Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Magellan/FourStar_H_cam_optics.txt",
+    "source_url": "https://instrumentation.obs.carnegiescience.edu/FourStar/OPTICS/curves/H_cam_optics.txt",
+    "sha256": "ca6b66c051f4b452e6134f7363bf4c99f02fa4c4ad121776879afb96df680e42",
+    "bytes": 5865,
+    "retrieved_utc": "2026-10-25T15:34:42Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Magellan/FourStar_Hlong_cam_optics.txt",
+    "source_url": "https://instrumentation.obs.carnegiescience.edu/FourStar/OPTICS/curves/Hlong_cam_optics.txt",
+    "sha256": "dfe0faa0e6d548e6fec3e427b3d9bd2d2215abc3985b6601d22d0eefce98eb92",
+    "bytes": 3555,
+    "retrieved_utc": "2026-10-25T15:34:46Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Magellan/FourStar_Hshort_cam_optics.txt",
+    "source_url": "https://instrumentation.obs.carnegiescience.edu/FourStar/OPTICS/curves/Hshort_cam_optics.txt",
+    "sha256": "53897d927ea8895dad844cb7909ae351e4a095f638146f52ae867db67d7b77c5",
+    "bytes": 4065,
+    "retrieved_utc": "2026-10-25T15:34:46Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Magellan/FourStar_J1_cam_optics.txt",
+    "source_url": "https://instrumentation.obs.carnegiescience.edu/FourStar/OPTICS/curves/J1_cam_optics.txt",
+    "sha256": "f20ae0ff9db61735c0aa8572294c1c7df4961dd0b3efb57bf3d52408826783c3",
+    "bytes": 4255,
+    "retrieved_utc": "2026-10-25T15:34:44Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Magellan/FourStar_J2_cam_optics.txt",
+    "source_url": "https://instrumentation.obs.carnegiescience.edu/FourStar/OPTICS/curves/J2_cam_optics.txt",
+    "sha256": "70a677455faf4d6231f8665bd4e12434e1aea7f23502e68d7b898c3708cbd51c",
+    "bytes": 5055,
+    "retrieved_utc": "2026-10-25T15:34:44Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Magellan/FourStar_J3_cam_optics.txt",
+    "source_url": "https://instrumentation.obs.carnegiescience.edu/FourStar/OPTICS/curves/J3_cam_optics.txt",
+    "sha256": "ed2b5663d03a64c8296fe5e2424d78ff1f37f0ba97df17041ec1c9a054b19ee3",
+    "bytes": 3120,
+    "retrieved_utc": "2026-10-25T15:34:45Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Magellan/FourStar_J_cam_optics.txt",
+    "source_url": "https://instrumentation.obs.carnegiescience.edu/FourStar/OPTICS/curves/J_cam_optics.txt",
+    "sha256": "8c8b3e7e94b1277751b1147f8e7f4de68dca192b04c7dbbb4350a845a9df50ad",
+    "bytes": 4665,
+    "retrieved_utc": "2026-10-25T15:34:42Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Magellan/FourStar_Ks_cam_optics.txt",
+    "source_url": "https://instrumentation.obs.carnegiescience.edu/FourStar/OPTICS/curves/Ks_cam_optics.txt",
+    "sha256": "056ae6b9aafa10752178ddee6a61391faacc77e795e1e29a129655ad2d41fa8f",
+    "bytes": 7515,
+    "retrieved_utc": "2026-10-25T15:34:43Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Magellan/MegaCam_filterthroughput.magg",
+    "source_url": "https://lweb.cfa.harvard.edu/~bmcleod/Megacam/Filters/filterthroughput.magg",
+    "sha256": "01df91c79dc3551ba3ce1416c3875dfe782cc15b5ccc84e9dfcc07da2b4a0fc3",
+    "bytes": 170752,
+    "retrieved_utc": "2026-10-25T15:34:49Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Magellan/MegaCam_filterthroughput.magi",
+    "source_url": "https://lweb.cfa.harvard.edu/~bmcleod/Megacam/Filters/filterthroughput.magi",
+    "sha256": "4819f33aa565ea9c5b8e1e87999de7a1b2c21376b0f72766742d487270e8d695",
+    "bytes": 171231,
+    "retrieved_utc": "2026-10-25T15:34:51Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Magellan/MegaCam_filterthroughput.magr",
+    "source_url": "https://lweb.cfa.harvard.edu/~bmcleod/Megacam/Filters/filterthroughput.magr",
+    "sha256": "d228adc97418c2dd700b2537e8f86152f0acbc062ba0dfe969234545ac09ec4c",
+    "bytes": 171822,
+    "retrieved_utc": "2026-10-25T15:34:50Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Magellan/MegaCam_filterthroughput.magu",
+    "source_url": "https://lweb.cfa.harvard.edu/~bmcleod/Megacam/Filters/filterthroughput.magu",
+    "sha256": "0969dbaf4ce53822d965a2b98cb6fbaeeb700dfbe9903292eacff00f22f28546",
+    "bytes": 168713,
+    "retrieved_utc": "2026-10-25T15:34:48Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Magellan/MegaCam_filterthroughput.magz",
+    "source_url": "https://lweb.cfa.harvard.edu/~bmcleod/Megacam/Filters/filterthroughput.magz",
+    "sha256": "c9922955872cd1ad686a2f9d56065fcd95d1260ea9204c1293b203acfb394bab",
+    "bytes": 185311,
+    "retrieved_utc": "2026-10-25T15:34:51Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Magellan/MegaCam_magg.tab",
+    "source_url": "https://lweb.cfa.harvard.edu/~bmcleod/Megacam/Filters/magg.tab",
+    "sha256": "82f4032f8df0e54e67a87244a541e5d1b3df3e3d17459b9eefbcbf885181a543",
+    "bytes": 23396,
+    "retrieved_utc": "2026-10-25T15:34:49Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Magellan/MegaCam_magi.tab",
+    "source_url": "https://lweb.cfa.harvard.edu/~bmcleod/Megacam/Filters/magi.tab",
+    "sha256": "2bc1aef6106477fd7c2bdea804d89b9bc594518850b6f79dbf9e4247037fc265",
+    "bytes": 25051,
+    "retrieved_utc": "2026-10-25T15:34:51Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Magellan/MegaCam_magr.tab",
+    "source_url": "https://lweb.cfa.harvard.edu/~bmcleod/Megacam/Filters/magr.tab",
+    "sha256": "6282e1614a8eef2e08aae3c2eaac6d3cf3feb222513b874ddaec4fa057331d62",
+    "bytes": 24537,
+    "retrieved_utc": "2026-10-25T15:34:50Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Magellan/MegaCam_magz.tab",
+    "source_url": "https://lweb.cfa.harvard.edu/~bmcleod/Megacam/Filters/magz.tab",
+    "sha256": "021bc3d671ea613d3f01e522ce1219ea13b9b53d044578924bde426b5eb45245",
+    "bytes": 24551,
+    "retrieved_utc": "2026-10-25T15:34:51Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/NOT/ALFOSC_109.txt",
+    "source_url": "https://www.not.iac.es/instruments/filters/curves-ascii/109.txt",
+    "sha256": "981f297e3c88f34711b53cf4e31a64df0a116ff0a6a483023b1a3383dc06cc73",
+    "bytes": 17082,
+    "retrieved_utc": "2026-10-25T15:35:29Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/NOT/ALFOSC_110.txt",
+    "source_url": "https://www.not.iac.es/instruments/filters/curves-ascii/110.txt",
+    "sha256": "ec0d59e5aba711ff07b625978bf5bf6ab93ae687ed43c9bfd2f4782971291f37",
+    "bytes": 49920,
+    "retrieved_utc": "2026-10-25T15:35:31Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/NOT/ALFOSC_111.txt",
+    "source_url": "https://www.not.iac.es/instruments/filters/curves-ascii/111.txt",
+    "sha256": "34a6f9e4013a9fe987d480cd9ec10ed352e282f7b76309af44035ed89d2d5d6b",
+    "bytes": 21340,
+    "retrieved_utc": "2026-10-25T15:35:32Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/NOT/ALFOSC_112.txt",
+    "source_url": "https://www.not.iac.es/instruments/filters/curves-ascii/112.txt",
+    "sha256": "63529467432ab90c244e09419e4adaf1c125c0a2bcc939b67058c4190a642476",
+    "bytes": 8357,
+    "retrieved_utc": "2026-10-25T15:35:42Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/NOT/ALFOSC_12.txt",
+    "source_url": "https://www.not.iac.es/instruments/filters/curves-ascii/12.txt",
+    "sha256": "18f0b68bdda724e6d027f3e10b28aa01a2c11e703d4aaa55fb288457384dad41",
+    "bytes": 8690,
+    "retrieved_utc": "2026-10-25T15:35:28Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/NOT/ALFOSC_120.txt",
+    "source_url": "https://www.not.iac.es/instruments/filters/curves-ascii/120.txt",
+    "sha256": "6dcdc3106a99958f9e16b498e2f5f71c1de107e505135cc71f69b969596a2d91",
+    "bytes": 16834,
+    "retrieved_utc": "2026-10-25T15:35:30Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/NOT/ALFOSC_7.txt",
+    "source_url": "https://www.not.iac.es/instruments/filters/curves-ascii/7.txt",
+    "sha256": "0a93b1d9564f11db225d7e238aea3354ac53364810dd93bdc48d5fa522b14f8b",
+    "bytes": 10526,
+    "retrieved_utc": "2026-10-25T15:35:25Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/NOT/ALFOSC_74.txt",
+    "source_url": "https://www.not.iac.es/instruments/filters/curves-ascii/74.txt",
+    "sha256": "f032084b619dea130da5edaa91055a55ecb9c682b1f2597ff19e7ec783f69732",
+    "bytes": 11115,
+    "retrieved_utc": "2026-10-25T15:35:26Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/NOT/ALFOSC_75.txt",
+    "source_url": "https://www.not.iac.es/instruments/filters/curves-ascii/75.txt",
+    "sha256": "6871e130b375b4961317f7b440694daf63634539489a63cb507cff25caf5315b",
+    "bytes": 9384,
+    "retrieved_utc": "2026-10-25T15:35:26Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/NOT/ALFOSC_76.txt",
+    "source_url": "https://www.not.iac.es/instruments/filters/curves-ascii/76.txt",
+    "sha256": "2a79113d27ffb38df396d0535ea99228625738e8a2ac0fb9f6811eca32168bb3",
+    "bytes": 11805,
+    "retrieved_utc": "2026-10-25T15:35:27Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/OGLE/OGLE-IV-I-filter-transmission.dat",
+    "source_url": "https://www.astrouw.edu.pl/~jskowron/pub/ogle/OGLE-IV/OGLE-IV-I-filter-transmission.dat",
+    "sha256": "23823c2621c18dd60d0a290effdb458fe172055e1a8447338e63da9037a6011e",
+    "bytes": 115687,
+    "retrieved_utc": "2026-10-25T07:42:57Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/OGLE/OGLE-IV-QE-curve-from-specification.dat",
+    "source_url": "https://www.astrouw.edu.pl/~jskowron/pub/ogle/OGLE-IV/OGLE-IV-QE-curve-from-specification.dat",
+    "sha256": "b9815d84fff9691c4bab87bfdb1337389c6dcc1bf02e1b629bbd2497144cbf49",
+    "bytes": 2017,
+    "retrieved_utc": "2026-10-25T07:43:14Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/OGLE/OGLE-IV-QE-measured-min-max-curves.dat",
+    "source_url": "https://www.astrouw.edu.pl/~jskowron/pub/ogle/OGLE-IV/OGLE-IV-QE-measured-min-max-curves.dat",
+    "sha256": "a1328df02a82ced13f2591444714967ed259552525a20d1fba0b829021eea407",
+    "bytes": 2795,
+    "retrieved_utc": "2026-10-25T07:42:59Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/OGLE/OGLE-IV-V-filter-transmission.dat",
+    "source_url": "https://www.astrouw.edu.pl/~jskowron/pub/ogle/OGLE-IV/OGLE-IV-V-filter-transmission.dat",
+    "sha256": "37390d596f40e2cb187c23377ea8f9489cbe6fc402c638e1d06c0211bcfc3eea",
+    "bytes": 115687,
+    "retrieved_utc": "2026-10-25T07:42:55Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/PAN-STARRS/ReadMe",
+    "source_url": "https://cdsarc.cds.unistra.fr/ftp/J/ApJ/750/99/ReadMe",
+    "sha256": "49c486808d018b20952687f142ae96e3d287e5cfbc2c3c7b08ae1fb20df19cf7",
+    "bytes": 6487,
+    "retrieved_utc": "2026-10-25T07:38:40Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/PAN-STARRS/table3.dat",
+    "source_url": "https://cdsarc.cds.unistra.fr/ftp/J/ApJ/750/99/table3.dat",
+    "sha256": "d210565b661b8a68c22a3ba74c4ebfa57b2b2d986d8d41428a8118e51c2211aa",
+    "bytes": 46865,
+    "retrieved_utc": "2026-10-25T07:38:39Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/PAN-STARRS/table4.dat",
+    "source_url": "https://cdsarc.cds.unistra.fr/ftp/J/ApJ/750/99/table4.dat",
+    "sha256": "e0d8561651dab65a44a08ec71b35d853f2410d65db666de343af044814bfbd23",
+    "bytes": 336,
+    "retrieved_utc": "2026-10-25T07:39:04Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Paranal/I_BESS_77COLL_SR.ascii",
+    "source_url": "https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/I_BESS+77COLL_SR.ascii",
+    "sha256": "bce64c2454d577ff529024617ac1501d61285930bd7e7b21edcf48e4409149c9",
+    "bytes": 31484,
+    "retrieved_utc": "2026-10-25T15:26:50Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Paranal/M_BESS_B.txt",
+    "source_url": "https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/M_BESS_B.txt",
+    "sha256": "3db64c0d1e30ec12a24d51db7b1c8a216a98129292071a89edab1a154a7b2629",
+    "bytes": 2045,
+    "retrieved_utc": "2026-10-25T15:26:38Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Paranal/M_BESS_I.txt",
+    "source_url": "https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/M_BESS_I.txt",
+    "sha256": "9c24fb55edbd910e32f8fa9846fb75b1171b2a5cebdb9d7fad5ddd47e5f55870",
+    "bytes": 2045,
+    "retrieved_utc": "2026-10-25T15:26:40Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Paranal/M_BESS_R.txt",
+    "source_url": "https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/M_BESS_R.txt",
+    "sha256": "71f36d7cb3eacc59c755bd649cebcd3ac154708f3db71873aa165a88cd30d534",
+    "bytes": 2045,
+    "retrieved_utc": "2026-10-25T15:26:39Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Paranal/M_BESS_U.txt",
+    "source_url": "https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/M_BESS_U.txt",
+    "sha256": "a414899f75ecd703ddab55f095f89ae7280d76dc1302152baa2ba2a24146522f",
+    "bytes": 2045,
+    "retrieved_utc": "2026-10-25T15:26:37Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Paranal/M_BESS_V.txt",
+    "source_url": "https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/M_BESS_V.txt",
+    "sha256": "a40dc33f9e5e0bb2c7cf926a231a0967850c62bd32382b0c6a7b326ea2c41b49",
+    "bytes": 2037,
+    "retrieved_utc": "2026-10-25T15:26:39Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Paranal/M_GUNN_G.txt",
+    "source_url": "https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/M_GUNN_G.txt",
+    "sha256": "69fd3cc8bf01f76972cedb2952ac88dabc326242203c7c38bd5a261b021b4306",
+    "bytes": 246,
+    "retrieved_utc": "2026-10-25T15:26:42Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Paranal/M_GUNN_R.txt",
+    "source_url": "https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/M_GUNN_R.txt",
+    "sha256": "b2e0729a806885dca2d825e183e04af6366611c84a60fb0ff69583ae85dab027",
+    "bytes": 2039,
+    "retrieved_utc": "2026-10-25T15:26:43Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Paranal/M_GUNN_U.txt",
+    "source_url": "https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/M_GUNN_U.txt",
+    "sha256": "571b7cef30650e0f31cb81344305198471fb3f472c4d1756e7f1c02cfff4cb3b",
+    "bytes": 2045,
+    "retrieved_utc": "2026-10-25T15:26:40Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Paranal/M_GUNN_V.txt",
+    "source_url": "https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/M_GUNN_V.txt",
+    "sha256": "66fcc74ba003167fbad52a5f304ce4a30e9924c53af7a10fc79e84c9a86c57f4",
+    "bytes": 2045,
+    "retrieved_utc": "2026-10-25T15:26:41Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Paranal/OmegaCAM_transmission.tar.gz",
+    "source_url": "https://www.eso.org/sci/facilities/paranal/instruments/omegacam/tools/OmegaCAM_transmission.tar.gz",
+    "sha256": "e56cfd7aa637e220cfc4ecc4bba7170f2f9a550923858235059e340ccff61120",
+    "bytes": 758218,
+    "retrieved_utc": "2026-10-25T15:26:54Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Paranal/R_SPECIAL_76COLL_SR.ascii",
+    "source_url": "https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/R_SPECIAL+76COLL_SR.ascii",
+    "sha256": "0179bed8041ab89ef993e03da02cd0aa1fa9f6aa7918c00e150ca11010266492",
+    "bytes": 24683,
+    "retrieved_utc": "2026-10-25T15:26:48Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Paranal/b_HIGH_113COLL_SR.ascii",
+    "source_url": "https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/b_HIGH+113COLL_SR.ascii",
+    "sha256": "7cff600400ffc9181ddfe92affee507df78426d45b81100dd7afca6c88e4ba92",
+    "bytes": 38705,
+    "retrieved_utc": "2026-10-25T15:26:46Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Paranal/g_HIGH.txt",
+    "source_url": "https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/g_HIGH.txt",
+    "sha256": "d4f837f319fc7c4416bd639c637d33d34aaad02fa8767d5f649f7bb89df74625",
+    "bytes": 9846,
+    "retrieved_utc": "2026-10-25T15:26:47Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Paranal/u_HIGH.txt",
+    "source_url": "https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/u_HIGH.txt",
+    "sha256": "e8873f1d85a057b121818c077ba0682bb6e62d42183d78381c86453ffad9e069",
+    "bytes": 9822,
+    "retrieved_utc": "2026-10-25T15:26:44Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Paranal/v_HIGH_114COLL_SR.ascii",
+    "source_url": "https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/v_HIGH+114COLL_SR.ascii",
+    "sha256": "f866c9fdbbeeba9814006e3c4f8f30ea5f16e766d49beff64f470c3b1c13f668",
+    "bytes": 19040,
+    "retrieved_utc": "2026-10-25T15:26:47Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Planck/HFI_RIMO_R2.00.fits",
+    "source_url": "https://irsa.ipac.caltech.edu/data/Planck/release_2/ancillary-data/HFI_RIMO_R2.00.fits",
+    "sha256": "0331c1c5090849628ae6eb9c92a0e610dc02c6a47ada6746e5591b915e99fedd",
+    "bytes": 17199360,
+    "retrieved_utc": "2026-10-25T07:38:23Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Planck/LFI_RIMO_R2.50.fits",
+    "source_url": "https://irsa.ipac.caltech.edu/data/Planck/release_2/ancillary-data/LFI_RIMO_R2.50.fits",
+    "sha256": "f9858e4b2973fc9c3f1fcdd387124489a4c2b53cead8c0d5349402836f43733f",
+    "bytes": 754560,
+    "retrieved_utc": "2026-10-25T07:38:23Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Spitzer/201125ch1trans_full.txt",
+    "source_url": "https://irsa.ipac.caltech.edu/data/SPITZER/docs/irac/calibrationfiles/spectralresponse/201125ch1trans_full.txt",
+    "sha256": "d0a078093e0927bc5d2b861c9d8b1fedb33177b78fb43523f4aaf0bd89df5ed2",
+    "bytes": 9894,
+    "retrieved_utc": "2026-10-25T07:38:44Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Spitzer/201125ch2trans_full.txt",
+    "source_url": "https://irsa.ipac.caltech.edu/data/SPITZER/docs/irac/calibrationfiles/spectralresponse/201125ch2trans_full.txt",
+    "sha256": "91eb54c866c3550cc5898c0622ea35a860bfb00d40a3c58dbddafcdad9790a22",
+    "bytes": 10144,
+    "retrieved_utc": "2026-10-25T07:38:45Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Spitzer/201125ch3trans_full.txt",
+    "source_url": "https://irsa.ipac.caltech.edu/data/SPITZER/docs/irac/calibrationfiles/spectralresponse/201125ch3trans_full.txt",
+    "sha256": "894deebd8cfe0425baa470a1fc92b4566454d22926632ada66d79f7878322895",
+    "bytes": 7894,
+    "retrieved_utc": "2026-10-25T07:38:45Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Spitzer/201125ch4trans_full.txt",
+    "source_url": "https://irsa.ipac.caltech.edu/data/SPITZER/docs/irac/calibrationfiles/spectralresponse/201125ch4trans_full.txt",
+    "sha256": "9ee66bd110c68a37bee82d23912f70a941cf1d3f9216948fd27ec781f4208722",
+    "bytes": 7894,
+    "retrieved_utc": "2026-10-25T07:38:46Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Spitzer/MIPSfiltsumm.txt",
+    "source_url": "https://irsa.ipac.caltech.edu/data/SPITZER/docs/files/spitzer/MIPSfiltsumm.txt",
+    "sha256": "16ed486cc8f4b9ea82c7c796dc36fbbcbdcabe15d2f92b57f02ed54dae449a04",
+    "bytes": 31003,
+    "retrieved_utc": "2026-10-25T07:38:47Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Spitzer/bluePUtrans.txt",
+    "source_url": "https://irsa.ipac.caltech.edu/data/SPITZER/docs/files/spitzer/bluePUtrans.txt",
+    "sha256": "83264085f75513103d142f600490fb12169873edb22c3761c13e26c2e47454ee",
+    "bytes": 8651,
+    "retrieved_utc": "2026-10-25T07:38:48Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Spitzer/redPUtrans.txt",
+    "source_url": "https://irsa.ipac.caltech.edu/data/SPITZER/docs/files/spitzer/redPUtrans.txt",
+    "sha256": "ab1859f7fb2095a302db9dc394ddddc72e8db6b788da1e274ebb1669974da1f9",
+    "bytes": 5109,
+    "retrieved_utc": "2026-10-25T07:38:49Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Subaru/FOCAS_B.txt",
+    "source_url": "https://www.naoj.org/Instruments/FOCAS/camera/txt/B.txt",
+    "sha256": "51b02220632cd266679c47b1b877cc096a3e1a42d5b04763c2af9c1c47a0682a",
+    "bytes": 2991,
+    "retrieved_utc": "2026-10-25T15:28:12Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Subaru/FOCAS_I.txt",
+    "source_url": "https://www.naoj.org/Instruments/FOCAS/camera/txt/I.txt",
+    "sha256": "a8af59337139fa25a592a00c235b9786345e4c831e2f449cf963864df8df9a10",
+    "bytes": 4032,
+    "retrieved_utc": "2026-10-25T15:28:14Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Subaru/FOCAS_R.txt",
+    "source_url": "https://www.naoj.org/Instruments/FOCAS/camera/txt/R.txt",
+    "sha256": "ff5880fddbf86a03b9e5c3705d9c67622523c7820b0a460a6a883e7eaa9bc489",
+    "bytes": 5763,
+    "retrieved_utc": "2026-10-25T15:28:14Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Subaru/FOCAS_U.txt",
+    "source_url": "https://www.naoj.org/Instruments/FOCAS/camera/txt/U.txt",
+    "sha256": "ceac7a4901709c947dc4f476d6b5de9010e10db8ca5bd6ccd19b12e46463fac9",
+    "bytes": 2934,
+    "retrieved_utc": "2026-10-25T15:28:12Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Subaru/FOCAS_V.txt",
+    "source_url": "https://www.naoj.org/Instruments/FOCAS/camera/txt/V.txt",
+    "sha256": "45a55190a2fc33d67133bebcc81d2a0e213cd3f3b21ac68e62b6e37c008299b4",
+    "bytes": 7342,
+    "retrieved_utc": "2026-10-25T15:28:13Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Subaru/SCam_B.txt",
+    "source_url": "https://subarutelescope.org/Archive/Instruments/SCam/txt/B.txt",
+    "sha256": "811f6f39afe18d44223160a9e808fc0b497d94fdc5ad874913a699b88cf050fc",
+    "bytes": 3400,
+    "retrieved_utc": "2026-10-25T15:28:02Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Subaru/SCam_I.txt",
+    "source_url": "https://subarutelescope.org/Archive/Instruments/SCam/txt/I.txt",
+    "sha256": "8ea559e1294559c73e5186f46becb14b68aa5000d0bc7a477e5a6080558ee105",
+    "bytes": 3400,
+    "retrieved_utc": "2026-10-25T15:28:05Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Subaru/SCam_QE_Hamamatsu.txt",
+    "source_url": "https://subarutelescope.org/Archive/Instruments/SCam/txt/QE_Hamamatsu.txt",
+    "sha256": "c24ed439a766168334add268d153c038c8e967291c7a872500d0e7e7f879e4ab",
+    "bytes": 388,
+    "retrieved_utc": "2026-10-25T15:28:11Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Subaru/SCam_R.txt",
+    "source_url": "https://subarutelescope.org/Archive/Instruments/SCam/txt/R.txt",
+    "sha256": "e9ff806e4436c0b5dbe1bceacb095320572b875d541d6e08968dd9289bd0a9a3",
+    "bytes": 3400,
+    "retrieved_utc": "2026-10-25T15:28:04Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Subaru/SCam_V.txt",
+    "source_url": "https://subarutelescope.org/Archive/Instruments/SCam/txt/V.txt",
+    "sha256": "0eb14841e31bee323ce60930bdc6632c3dc73e0390abcc8eab5c5978586c35a7",
+    "bytes": 3400,
+    "retrieved_utc": "2026-10-25T15:28:03Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Subaru/SCam_Y.txt",
+    "source_url": "https://subarutelescope.org/Archive/Instruments/SCam/txt/Y.txt",
+    "sha256": "4f99fe884a5e218d17d2fd3b3224989656e638f1931f9126155436a614b3234f",
+    "bytes": 9519,
+    "retrieved_utc": "2026-10-25T15:28:10Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Subaru/SCam_g.txt",
+    "source_url": "https://subarutelescope.org/Archive/Instruments/SCam/txt/g.txt",
+    "sha256": "7d0d437926468844a7083187a061b397865bdbbd132c8cf56e131d141bf3f0d4",
+    "bytes": 3400,
+    "retrieved_utc": "2026-10-25T15:28:06Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Subaru/SCam_i.txt",
+    "source_url": "https://subarutelescope.org/Archive/Instruments/SCam/txt/i.txt",
+    "sha256": "a6f12fc43a403bb6c610e49c4f09aa4858620ca9eb582d97b566ff8d93b85347",
+    "bytes": 3400,
+    "retrieved_utc": "2026-10-25T15:28:08Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Subaru/SCam_r.txt",
+    "source_url": "https://subarutelescope.org/Archive/Instruments/SCam/txt/r.txt",
+    "sha256": "cc34c6070cd8221609652fa5be70ede833d1201156e98d2e16f0b11047040c5c",
+    "bytes": 3400,
+    "retrieved_utc": "2026-10-25T15:28:07Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/Subaru/SCam_z.txt",
+    "source_url": "https://subarutelescope.org/Archive/Instruments/SCam/txt/z.txt",
+    "sha256": "03a9b546f21aa4a17c88eb41b1ba83cd3f303f0c4952346f3e30077fd8f6ded3",
+    "bytes": 3400,
+    "retrieved_utc": "2026-10-25T15:28:09Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/UKIRT/hewett-ukidss-tables.tar",
+    "source_url": "http://www.ukidss.org/technical/photom/hewett-ukidss-tables.tar",
+    "sha256": "e59e55681a9931dbefd7a5d4abdcc43a1364dc5147139bf2848d7f8e3f69e539",
+    "bytes": 189952,
+    "retrieved_utc": "2026-10-25T07:39:57Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/UKIRT/hewett_astro-ph_0601592.eprint",
+    "source_url": "https://arxiv.org/e-print/astro-ph/0601592",
+    "sha256": "77c4d77415ef9ba56810d7850908371f6f324451724444fa8cc7463f0828fbb6",
+    "bytes": 66776,
+    "retrieved_utc": "2026-10-25T07:40:16Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/UKIRT/hewett_eprint_tex/photpap_aph.tex",
+    "source_url": "https://arxiv.org/e-print/astro-ph/0601592",
+    "extracted_from": "source_evidence/filters/2026-10-25-expansion/UKIRT/hewett_astro-ph_0601592.eprint",
+    "sha256": "6b7bb36dbe44c8ce954d8ec2ebdc73d3166bc621a7cc83ad87b24b79a698a1cd",
+    "bytes": 69450,
+    "retrieved_utc": "2026-10-25T07:40:24Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/UKIRT/hewett_tables/README",
+    "source_url": "http://www.ukidss.org/technical/photom/hewett-ukidss-tables.tar",
+    "extracted_from": "source_evidence/filters/2026-10-25-expansion/UKIRT/hewett-ukidss-tables.tar",
+    "sha256": "bec782423afc604555387dd7393f27e6b5042c3d9a4c68898efdf3c4fe63aed1",
+    "bytes": 1116,
+    "retrieved_utc": "2026-10-25T07:40:03Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/UKIRT/hewett_tables/Table02_online.dat",
+    "source_url": "http://www.ukidss.org/technical/photom/hewett-ukidss-tables.tar",
+    "extracted_from": "source_evidence/filters/2026-10-25-expansion/UKIRT/hewett-ukidss-tables.tar",
+    "sha256": "1faac3fbf14e7962e228576355af207273cde76285d7d436b26e41ef09f3d89e",
+    "bytes": 7058,
+    "retrieved_utc": "2026-10-25T07:40:03Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/UKIRT/hewett_tables/Table03_online.dat",
+    "source_url": "http://www.ukidss.org/technical/photom/hewett-ukidss-tables.tar",
+    "extracted_from": "source_evidence/filters/2026-10-25-expansion/UKIRT/hewett-ukidss-tables.tar",
+    "sha256": "3c37687703f998516c350ae0710f793e73699f63297bf5f04f4ba5e28e71b160",
+    "bytes": 9113,
+    "retrieved_utc": "2026-10-25T07:40:03Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/UKIRT/hewett_tables/Table04_online.dat",
+    "source_url": "http://www.ukidss.org/technical/photom/hewett-ukidss-tables.tar",
+    "extracted_from": "source_evidence/filters/2026-10-25-expansion/UKIRT/hewett-ukidss-tables.tar",
+    "sha256": "12e83ef2e979b78f87253c7e1c857210b0a20b62701faf6786e8787fa1b4d024",
+    "bytes": 12113,
+    "retrieved_utc": "2026-10-25T07:40:03Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/UKIRT/hewett_tables/Table05_online.dat",
+    "source_url": "http://www.ukidss.org/technical/photom/hewett-ukidss-tables.tar",
+    "extracted_from": "source_evidence/filters/2026-10-25-expansion/UKIRT/hewett-ukidss-tables.tar",
+    "sha256": "e6184d33734f9597e28d255d8d9a76cc42b2f2f8f65d9c2ba00e98290973a97f",
+    "bytes": 18128,
+    "retrieved_utc": "2026-10-25T07:40:03Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/UKIRT/hewett_tables/Table06_online.dat",
+    "source_url": "http://www.ukidss.org/technical/photom/hewett-ukidss-tables.tar",
+    "extracted_from": "source_evidence/filters/2026-10-25-expansion/UKIRT/hewett-ukidss-tables.tar",
+    "sha256": "6d25472bb150f2b45ab09bfc4cd2bbdcb7775802807be9e9e20d09c4d9ee023b",
+    "bytes": 18113,
+    "retrieved_utc": "2026-10-25T07:40:03Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/WIYN/ODI_NB_422.txt",
+    "source_url": "https://www.wiyn.org/ODI/Observe/NB_422.txt",
+    "sha256": "fb907296827ff90c0c0a358fc86e709038ee61ed32ff99f5f439642ae8156700",
+    "bytes": 20799,
+    "retrieved_utc": "2026-10-25T15:36:06Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/WIYN/ODI_odi_NB695.txt",
+    "source_url": "https://www.wiyn.org/ODI/Observe/odi_NB695.txt",
+    "sha256": "c3e3c7d31b633827470eaf5561a84ccc61b15664ea469e7b633940f5c633a99a",
+    "bytes": 56208,
+    "retrieved_utc": "2026-10-25T15:36:05Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/WIYN/ODI_odi_r.txt",
+    "source_url": "https://www.wiyn.org/ODI/Observe/odi_r.txt",
+    "sha256": "073018ff69ea378c189ff319da88cf6fc21caf5db46ef0f67add03d1f0e162f5",
+    "bytes": 26406,
+    "retrieved_utc": "2026-10-25T15:36:05Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/WIYN/ODI_odi_u.dat",
+    "source_url": "https://www.wiyn.org/ODI/Observe/odi_u.dat",
+    "sha256": "470d7c38cf32b2d05fc5bffff269d23ea4b0d3e9d0ef596630b2456b2d29cfa8",
+    "bytes": 40050,
+    "retrieved_utc": "2026-10-25T15:36:04Z"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-25-expansion/XMM/OM_response_081008.txt",
+    "source_url": "https://heasarc.gsfc.nasa.gov/FTP/xmm/data/responses/OM/OM_response_081008.txt",
+    "sha256": "7cc39b6689401fe0e9e28e6b336e10054813cfce64a9dbbc21d046d9cc0a88d5",
+    "bytes": 48842,
+    "retrieved_utc": "2026-10-25T07:38:23Z"
+  }
+]

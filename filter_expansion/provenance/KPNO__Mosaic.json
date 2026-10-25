@@ -1,0 +1,152 @@
+{
+  "facility": "KPNO",
+  "instrument": "Mosaic",
+  "notes": "KPNO Mayall 4 m Mosaic filters, NOAO Lambda 9 lab scans from the NOIRLab KPNO filter pages (U=k1044 Us solid U (k1044bp.txt); B=k1002 B Harris (k1002bp_jul04.txt); V=k1003 V Harris (k1003bp_jul04.txt); R=k1004 R Harris (k1004bp_aug04.txt); I=k1005 I Nearly-Mould (k1005bp_aug04.txt); r_SDSS=k1018 r SDSS (k1018.txt); i_SDSS=k1019 i SDSS (k1019.txt)). Angstrom, percent -> fraction (data peak checked against header Tmax). Filter only: no telescope/corrector, CCD QE (photon-counting CCDs) or atmosphere. Lab scans at normal incidence; NOIRLab notes a small blue shift in the f/3.1 beam (~12 A for narrow bands). Negative noise values set to 0. Header cwl/fwhm (FWHM centre, not pivot) are in provenance. HELD: g SDSS k1017 (NOIRLab's kp1017 file is a different 9556 A filter) and 815_v1 k1026 (conflicting f/3.1 curves), and z SDSS k1020 (long-pass, T=0.97 where the scan ends at 11000 A; its red edge is the CCD QE, which is not published as data).",
+  "bands": {
+    "U": {
+      "sources": "https://noirlab.edu/science/sites/default/files/media/archives/documents/k1044bp.txt | https://noirlab.edu/science/filters/kp1044",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "107 negative samples (min -0.0001) set to 0",
+      "ref_pivot": null,
+      "n": 851,
+      "pivot_A": 3648.81
+    },
+    "B": {
+      "sources": "https://noirlab.edu/science/sites/default/files/media/archives/documents/k1002bp_jul04.txt | https://noirlab.edu/science/filters/kp1002",
+      "svo_id": "KPNO/Mosaic.B",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 1201,
+      "pivot_A": 4380.51
+    },
+    "V": {
+      "sources": "https://noirlab.edu/science/sites/default/files/media/archives/documents/k1003bp_jul04.txt | https://noirlab.edu/science/filters/kp1003",
+      "svo_id": "KPNO/Mosaic.V",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "5 negative samples (min -5e-05) set to 0",
+      "ref_pivot": null,
+      "n": 1301,
+      "pivot_A": 5413.63
+    },
+    "R": {
+      "sources": "https://noirlab.edu/science/sites/default/files/media/archives/documents/k1004bp_aug04.txt | https://noirlab.edu/science/filters/kp1004",
+      "svo_id": "KPNO/Mosaic.R",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "16 negative samples (min -0.0007) set to 0",
+      "ref_pivot": null,
+      "n": 1201,
+      "pivot_A": 6618.48
+    },
+    "I": {
+      "sources": "https://noirlab.edu/science/sites/default/files/media/archives/documents/k1005bp_aug04.txt | https://noirlab.edu/science/filters/kp1005",
+      "svo_id": "KPNO/Mosaic.I",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "26 negative samples (min -0.0002) set to 0",
+      "ref_pivot": null,
+      "n": 351,
+      "pivot_A": 8188.76
+    },
+    "r_SDSS": {
+      "sources": "https://noirlab.edu/science/sites/default/files/media/archives/documents/k1018.txt | https://noirlab.edu/science/filters/kp1018",
+      "svo_id": "KPNO/Mosaic.r",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "9 negative samples (min -5e-05) set to 0",
+      "ref_pivot": null,
+      "n": 391,
+      "pivot_A": 6273.25
+    },
+    "i_SDSS": {
+      "sources": "https://noirlab.edu/science/sites/default/files/media/archives/documents/k1019.txt | https://noirlab.edu/science/filters/kp1019",
+      "svo_id": "KPNO/Mosaic.i",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "6 negative samples (min -5e-05) set to 0",
+      "ref_pivot": null,
+      "n": 441,
+      "pivot_A": 7701.75
+    }
+  },
+  "raw_files": {
+    "downloads/KPNO/Mosaic_k1044bp.txt": "062795b4d78f4b7ec07b41c2e7496e6a8abc3995071555b33ed877a3a61f43f3",
+    "downloads/KPNO/Mosaic_k1002bp_jul04.txt": "c9b1864348cb81015c0adfe9eb6be9f0868414696b553eb89eb118b3667c8487",
+    "downloads/KPNO/Mosaic_k1003bp_jul04.txt": "66a9250fe8298876ace9f7dbe2546197456b491a94dd1ef77079a99c2b323793",
+    "downloads/KPNO/Mosaic_k1004bp_aug04.txt": "36837f6a28af6bf3e3d80233b3516b263179dc8dd0aaf5859f8db920d6b080d5",
+    "downloads/KPNO/Mosaic_k1005bp_aug04.txt": "8adbf90fe02d024ea3adc353868de836639683a08e96789b69bfe7f42059bd15",
+    "downloads/KPNO/Mosaic_k1018.txt": "a91f0193dec6c48a27e434ec04911124db17f7e5b138eab5cda112f8268c2728",
+    "downloads/KPNO/Mosaic_k1019.txt": "d22d406b0fce7002fa7f74a9e59e80b94d85d6d38e215e63031d8b5078f19bda"
+  },
+  "lab_headers": {
+    "U": {
+      "k": 1044,
+      "title": "Us solid U",
+      "header_cwl_A": 3658.03,
+      "header_fwhm_A": 594.75,
+      "header_tmax_pct": 82.04
+    },
+    "B": {
+      "k": 1002,
+      "title": "B Harris",
+      "header_cwl_A": 4357.5,
+      "header_fwhm_A": 993.46,
+      "header_tmax_pct": 69.37
+    },
+    "V": {
+      "k": 1003,
+      "title": "V Harris",
+      "header_cwl_A": 5375.14,
+      "header_fwhm_A": 945.2,
+      "header_tmax_pct": 87.73
+    },
+    "R": {
+      "k": 1004,
+      "title": "R Harris",
+      "header_cwl_A": 6425.5,
+      "header_fwhm_A": 1474.04,
+      "header_tmax_pct": 86.49
+    },
+    "I": {
+      "k": 1005,
+      "title": "I Nearly-Mould",
+      "header_cwl_A": 8222.48,
+      "header_fwhm_A": 1920.94,
+      "header_tmax_pct": 94.54
+    },
+    "r_SDSS": {
+      "k": 1018,
+      "title": "r SDSS",
+      "header_cwl_A": 6292.28,
+      "header_fwhm_A": 1475.17,
+      "header_tmax_pct": 92.83
+    },
+    "i_SDSS": {
+      "k": 1019,
+      "title": "i SDSS",
+      "header_cwl_A": 7726.28,
+      "header_fwhm_A": 1539.89,
+      "header_tmax_pct": 95.17
+    }
+  },
+  "filter_page": "https://noirlab.edu/science/programs/kpno/filters/mosaic"
+}

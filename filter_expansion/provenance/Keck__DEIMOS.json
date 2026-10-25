@@ -1,0 +1,73 @@
+{
+  "facility": "Keck",
+  "instrument": "DEIMOS",
+  "notes": "Keck DEIMOS imaging filters: column 2 (THROUGHPUT) of the synphot tables linked from the DEIMOS filter list. The synphot EXPR is dmr * ccd_lot14 * filter glasses. These are theoretical glass filter curves x the MIT/LL CCD QE x 'dmr', presumably the DEIMOS imaging mirror (that name is not documented), so components are filter+optics+qe. No telescope and no atmosphere. Column 3 is not a filter-only curve: it is column 2 scaled to a peak of 1. The pivots equal the header PIVWV and the page values. V is not included, because its ASCII is the retired, scratched filter and the 2015 replacement has only a PDF.",
+  "bands": {
+    "B": {
+      "sources": "http://www2.keck.hawaii.edu/inst/deimos/Bfaber13norm.txt#col2 THROUGHPUT | http://www2.keck.hawaii.edu/inst/deimos/filter_list.html",
+      "svo_id": "Keck/DEIMOS.B",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        4416.138,
+        "http://www2.keck.hawaii.edu/inst/deimos/Bfaber13norm.txt PIVWV (= http://www2.keck.hawaii.edu/inst/deimos/filter_list.html pivot 4416 A)"
+      ],
+      "n": 10000,
+      "pivot_A": 4416.14
+    },
+    "R": {
+      "sources": "http://www2.keck.hawaii.edu/inst/deimos/RlrisDredonorm.txt#col2 THROUGHPUT | http://www2.keck.hawaii.edu/inst/deimos/filter_list.html",
+      "svo_id": "Keck/DEIMOS.R",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        6487.462,
+        "http://www2.keck.hawaii.edu/inst/deimos/RlrisDredonorm.txt PIVWV (= http://www2.keck.hawaii.edu/inst/deimos/filter_list.html pivot 6487 A)"
+      ],
+      "n": 10000,
+      "pivot_A": 6487.46
+    },
+    "I": {
+      "sources": "http://www2.keck.hawaii.edu/inst/deimos/Ibess2norm.txt#col2 THROUGHPUT | http://www2.keck.hawaii.edu/inst/deimos/filter_list.html",
+      "svo_id": "Keck/DEIMOS.I",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        8390.44,
+        "http://www2.keck.hawaii.edu/inst/deimos/Ibess2norm.txt PIVWV (= http://www2.keck.hawaii.edu/inst/deimos/filter_list.html pivot 8390 A)"
+      ],
+      "n": 10000,
+      "pivot_A": 8390.44
+    },
+    "Z": {
+      "sources": "http://www2.keck.hawaii.edu/inst/deimos/Zsdssredonorm.txt#col2 THROUGHPUT | http://www2.keck.hawaii.edu/inst/deimos/filter_list.html",
+      "svo_id": "Keck/DEIMOS.Z",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        9085.439,
+        "http://www2.keck.hawaii.edu/inst/deimos/Zsdssredonorm.txt PIVWV (= http://www2.keck.hawaii.edu/inst/deimos/filter_list.html pivot 9085 A)"
+      ],
+      "n": 10000,
+      "pivot_A": 9085.44
+    }
+  },
+  "raw_files": {
+    "downloads/Keck/Bfaber13norm.txt": "689ee153b33e9bb88be73f2d5f97f604fd164d0e8518117e54e45e068a09a6a7",
+    "downloads/Keck/RlrisDredonorm.txt": "2a5c620274a22fb395bb07e43431ff0ac69884cb2892e3db983247ac899e4d81",
+    "downloads/Keck/Ibess2norm.txt": "26f4cdb5cf763c9c7a0eacb16561f6ea04eb52262304b6ad5720267b7729fa60",
+    "downloads/Keck/Zsdssredonorm.txt": "9c1323d040f772830bba98691adb4f2b9158711438d2bc71326dd6e38842ce08"
+  }
+}

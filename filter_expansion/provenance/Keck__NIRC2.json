@@ -1,0 +1,115 @@
+{
+  "facility": "Keck",
+  "instrument": "NIRC2",
+  "notes": "Keck NIRC2 broad-band filter transmission from the Keck spreadsheet filter_passbands.xls (micron, percent -> fraction). Filter only: no telescope or AO optics, no InSb QE, no atmosphere. The scan temperature is not stated; the curves reproduce the page's 50% points, which the page says are manufacturer room-temperature specs. Aladdin-3 InSb array (photon counting). z and Y have no numeric curve (PDF only); the narrow-band sheets disagree with the page's cold-measured passbands and are not included.",
+  "bands": {
+    "J": {
+      "sources": "http://www2.keck.hawaii.edu/inst/nirc2/filter_passbands.xls#J | http://www2.keck.hawaii.edu/inst/nirc2/filters.html",
+      "svo_id": "Keck/NIRC2.J",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "percent /100; 346 negative samples (min -0.00124) set to 0; 152 duplicate wavelengths averaged",
+      "ref_pivot": [
+        12480.0,
+        "http://www2.keck.hawaii.edu/inst/nirc2/filters.html central wavelength (50% points midpoint)"
+      ],
+      "n": 1668,
+      "pivot_A": 12474.2
+    },
+    "H": {
+      "sources": "http://www2.keck.hawaii.edu/inst/nirc2/filter_passbands.xls#H | http://www2.keck.hawaii.edu/inst/nirc2/filters.html",
+      "svo_id": "Keck/NIRC2.H",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "percent /100; 293 negative samples (min -0.00132) set to 0; 1 duplicate wavelengths averaged",
+      "ref_pivot": [
+        16330.0,
+        "http://www2.keck.hawaii.edu/inst/nirc2/filters.html central wavelength (50% points midpoint)"
+      ],
+      "n": 1903,
+      "pivot_A": 16288.1
+    },
+    "K": {
+      "sources": "http://www2.keck.hawaii.edu/inst/nirc2/filter_passbands.xls#K | http://www2.keck.hawaii.edu/inst/nirc2/filters.html",
+      "svo_id": "Keck/NIRC2.K",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "percent /100; 54 negative samples (min -0.000581) set to 0; 1 duplicate wavelengths averaged",
+      "ref_pivot": [
+        21960.0,
+        "http://www2.keck.hawaii.edu/inst/nirc2/filters.html central wavelength (50% points midpoint)"
+      ],
+      "n": 2246,
+      "pivot_A": 21959.62
+    },
+    "Ks": {
+      "sources": "http://www2.keck.hawaii.edu/inst/nirc2/filter_passbands.xls#Ks | http://www2.keck.hawaii.edu/inst/nirc2/filters.html",
+      "svo_id": "Keck/NIRC2.Ks",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "percent /100; 267 negative samples (min -0.00118) set to 0; 1 duplicate wavelengths averaged",
+      "ref_pivot": [
+        21460.0,
+        "http://www2.keck.hawaii.edu/inst/nirc2/filters.html central wavelength (50% points midpoint)"
+      ],
+      "n": 2177,
+      "pivot_A": 21442.67
+    },
+    "Kp": {
+      "sources": "http://www2.keck.hawaii.edu/inst/nirc2/filter_passbands.xls#Kp | http://www2.keck.hawaii.edu/inst/nirc2/filters.html",
+      "svo_id": "Keck/NIRC2.Kp",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "percent /100; 257 negative samples (min -0.000813) set to 0; 1 duplicate wavelengths averaged",
+      "ref_pivot": [
+        21240.0,
+        "http://www2.keck.hawaii.edu/inst/nirc2/filters.html central wavelength (50% points midpoint)"
+      ],
+      "n": 2257,
+      "pivot_A": 21196.34
+    },
+    "Lp": {
+      "sources": "http://www2.keck.hawaii.edu/inst/nirc2/filter_passbands.xls#Lp | http://www2.keck.hawaii.edu/inst/nirc2/filters.html",
+      "svo_id": "Keck/NIRC2.Lp",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "percent /100; 289 negative samples (min -0.000984) set to 0; 1 duplicate wavelengths averaged",
+      "ref_pivot": [
+        37760.0,
+        "http://www2.keck.hawaii.edu/inst/nirc2/filters.html central wavelength (50% points midpoint)"
+      ],
+      "n": 2298,
+      "pivot_A": 37700.41
+    },
+    "Ms": {
+      "sources": "http://www2.keck.hawaii.edu/inst/nirc2/filter_passbands.xls#Ms | http://www2.keck.hawaii.edu/inst/nirc2/filters.html",
+      "svo_id": "Keck/NIRC2.Ms",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "percent /100; 1 duplicate wavelengths averaged",
+      "ref_pivot": [
+        46700.0,
+        "http://www2.keck.hawaii.edu/inst/nirc2/filters.html central wavelength (50% points midpoint)"
+      ],
+      "n": 1596,
+      "pivot_A": 46684.49
+    }
+  },
+  "raw_files": {
+    "downloads/Keck/filter_passbands.xls": "455a4fec35264ee72f458fc93436b37f4ebf6c9a5c7ce9cbee9fd1feb56b0a94"
+  }
+}

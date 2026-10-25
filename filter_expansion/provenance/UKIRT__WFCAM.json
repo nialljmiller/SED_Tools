@@ -1,0 +1,71 @@
+{
+  "facility": "UKIRT",
+  "instrument": "WFCAM",
+  "notes": "Hewett et al. (2006) UKIDSS/WFCAM ZYJHK system throughput, tables 2-6 of hewett-ukidss-tables.tar, for the default 1.0 mm water vapour and 1.3 airmasses. Includes atmosphere, 3 Al mirror reflections, other optics (flat), filter scans corrected to 120 K, and Hawaii-II QE; normalised to the measured photon count rate (photon-counting HgCdTe arrays). These are the corrected total-system curves, not the room-temperature filter-only scans. Single filter per band (4 per band in WFCAM; <=0.01 mag differences per the paper). Component: array QE (paper Table 1, 8 points, constant beyond 2.2 um per the paper). No published pivot wavelength (Hewett Table 7 lambda_eff is Vega-weighted), so none is checked.",
+  "bands": {
+    "Z": {
+      "sources": "http://www.ukidss.org/technical/photom/hewett-ukidss-tables.tar#Table02_online.dat | https://ui.adsabs.harvard.edu/abs/2006MNRAS.367..454H",
+      "svo_id": "UKIRT/UKIDSS.Z",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe+atmosphere",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 461,
+      "pivot_A": 8826.23
+    },
+    "Y": {
+      "sources": "http://www.ukidss.org/technical/photom/hewett-ukidss-tables.tar#Table03_online.dat | https://ui.adsabs.harvard.edu/abs/2006MNRAS.367..454H",
+      "svo_id": "UKIRT/UKIDSS.Y",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe+atmosphere",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 598,
+      "pivot_A": 10314.54
+    },
+    "J": {
+      "sources": "http://www.ukidss.org/technical/photom/hewett-ukidss-tables.tar#Table04_online.dat | https://ui.adsabs.harvard.edu/abs/2006MNRAS.367..454H",
+      "svo_id": "UKIRT/UKIDSS.J",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe+atmosphere",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 798,
+      "pivot_A": 12501.53
+    },
+    "H": {
+      "sources": "http://www.ukidss.org/technical/photom/hewett-ukidss-tables.tar#Table05_online.dat | https://ui.adsabs.harvard.edu/abs/2006MNRAS.367..454H",
+      "svo_id": "UKIRT/UKIDSS.H",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe+atmosphere",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 1199,
+      "pivot_A": 16359.69
+    },
+    "K": {
+      "sources": "http://www.ukidss.org/technical/photom/hewett-ukidss-tables.tar#Table06_online.dat | https://ui.adsabs.harvard.edu/abs/2006MNRAS.367..454H",
+      "svo_id": "UKIRT/UKIDSS.K",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe+atmosphere",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 1198,
+      "pivot_A": 22059.98
+    }
+  },
+  "raw_files": {
+    "downloads/UKIRT/hewett-ukidss-tables.tar": "e59e55681a9931dbefd7a5d4abdcc43a1364dc5147139bf2848d7f8e3f69e539",
+    "downloads/UKIRT/hewett_astro-ph_0601592.eprint": "77c4d77415ef9ba56810d7850908371f6f324451724444fa8cc7463f0828fbb6"
+  }
+}

@@ -1,0 +1,144 @@
+{
+  "facility": "Paranal",
+  "instrument": "FORS1",
+  "notes": "VLT FORS1 broad-band filter-only transmission curves from the ESO FORS filter page (https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/curves.html); original FORS1 Bessell and Gunn set, optical-bench lab scans (M_*.txt); B/V/I_BESS existed in both FORS1 (+34/+35/+37) and FORS2 (+74/+75/+77), and the page does not say which unit was scanned. u/b/v/g_HIGH (FORS1 2007-2009) are in Paranal/FORS2. Curves cut at 1100 nm (end of the FORS 330-1100 nm range, manual P117 sec. 2.1) to drop the scans' spurious 1200 nm point and the >1.1 um leak of the u/g_HIGH lab scans. No detector QE, optics or atmosphere included (ESO publishes no QE table). z_GUNN and H_Alpha held (see recipe c_eso.py). Detector: CCD, photon counting (https://www.eso.org/sci/facilities/paranal/instruments/fors/doc/VLT-MAN-ESO-13100-1543_P117_3.pdf).",
+  "bands": {
+    "U_BESS": {
+      "sources": "https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/M_BESS_U.txt | https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/curves.html",
+      "svo_id": "Paranal/FORS1.U_BESS",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 78,
+      "pivot_A": 3578.15
+    },
+    "B_BESS": {
+      "sources": "https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/M_BESS_B.txt | https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/curves.html",
+      "svo_id": "Paranal/FORS1.B_BESS",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        4290.0,
+        "FORS User Manual 82.1 Table B.1 lambda0 (https://www.eso.org/sci/facilities/paranal/instruments/fors/doc/VLT-MAN-ESO-13100-1543_v82.pdf)"
+      ],
+      "n": 78,
+      "pivot_A": 4244.27
+    },
+    "V_BESS": {
+      "sources": "https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/M_BESS_V.txt | https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/curves.html",
+      "svo_id": "Paranal/FORS1.V_BESS",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        5540.0,
+        "FORS User Manual 82.1 Table B.1 lambda0 (https://www.eso.org/sci/facilities/paranal/instruments/fors/doc/VLT-MAN-ESO-13100-1543_v82.pdf)"
+      ],
+      "n": 78,
+      "pivot_A": 5516.53
+    },
+    "R_BESS": {
+      "sources": "https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/M_BESS_R.txt | https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/curves.html",
+      "svo_id": "Paranal/FORS1.R_BESS",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        6570.0,
+        "FORS User Manual 82.1 Table B.1 lambda0 (https://www.eso.org/sci/facilities/paranal/instruments/fors/doc/VLT-MAN-ESO-13100-1543_v82.pdf)"
+      ],
+      "n": 78,
+      "pivot_A": 6644.42
+    },
+    "I_BESS": {
+      "sources": "https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/M_BESS_I.txt | https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/curves.html",
+      "svo_id": "Paranal/FORS1.I_BESS",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 78,
+      "pivot_A": 7942.94
+    },
+    "u_GUNN": {
+      "sources": "https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/M_GUNN_U.txt | https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/curves.html",
+      "svo_id": "Paranal/FORS1.u_GUNN",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 78,
+      "pivot_A": 3524.55
+    },
+    "v_GUNN": {
+      "sources": "https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/M_GUNN_V.txt | https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/curves.html",
+      "svo_id": "Paranal/FORS1.v_GUNN",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        3980.0,
+        "FORS User Manual 82.1 Table B.1 lambda0 (https://www.eso.org/sci/facilities/paranal/instruments/fors/doc/VLT-MAN-ESO-13100-1543_v82.pdf)"
+      ],
+      "n": 78,
+      "pivot_A": 3925.89
+    },
+    "g_GUNN": {
+      "sources": "https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/M_GUNN_G.txt | https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/curves.html",
+      "svo_id": "Paranal/FORS1.g_GUNN",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        5060.0,
+        "FORS User Manual 82.1 Table B.1 lambda0 (https://www.eso.org/sci/facilities/paranal/instruments/fors/doc/VLT-MAN-ESO-13100-1543_v82.pdf)"
+      ],
+      "n": 19,
+      "pivot_A": 5057.49
+    },
+    "r_GUNN": {
+      "sources": "https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/M_GUNN_R.txt | https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/curves.html",
+      "svo_id": "Paranal/FORS1.r_GUNN",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        6530.0,
+        "FORS User Manual 82.1 Table B.1 lambda0 (https://www.eso.org/sci/facilities/paranal/instruments/fors/doc/VLT-MAN-ESO-13100-1543_v82.pdf)"
+      ],
+      "n": 78,
+      "pivot_A": 6564.36
+    }
+  },
+  "raw_files": {
+    "downloads/Paranal/M_BESS_U.txt": "a414899f75ecd703ddab55f095f89ae7280d76dc1302152baa2ba2a24146522f",
+    "downloads/Paranal/M_BESS_B.txt": "3db64c0d1e30ec12a24d51db7b1c8a216a98129292071a89edab1a154a7b2629",
+    "downloads/Paranal/M_BESS_V.txt": "a40dc33f9e5e0bb2c7cf926a231a0967850c62bd32382b0c6a7b326ea2c41b49",
+    "downloads/Paranal/M_BESS_R.txt": "71f36d7cb3eacc59c755bd649cebcd3ac154708f3db71873aa165a88cd30d534",
+    "downloads/Paranal/M_BESS_I.txt": "9c24fb55edbd910e32f8fa9846fb75b1171b2a5cebdb9d7fad5ddd47e5f55870",
+    "downloads/Paranal/M_GUNN_U.txt": "571b7cef30650e0f31cb81344305198471fb3f472c4d1756e7f1c02cfff4cb3b",
+    "downloads/Paranal/M_GUNN_V.txt": "66fcc74ba003167fbad52a5f304ce4a30e9924c53af7a10fc79e84c9a86c57f4",
+    "downloads/Paranal/M_GUNN_G.txt": "69fd3cc8bf01f76972cedb2952ac88dabc326242203c7c38bd5a261b021b4306",
+    "downloads/Paranal/M_GUNN_R.txt": "b2e0729a806885dca2d825e183e04af6366611c84a60fb0ff69583ae85dab027"
+  }
+}

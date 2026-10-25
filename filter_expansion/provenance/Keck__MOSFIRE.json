@@ -1,0 +1,153 @@
+{
+  "facility": "Keck",
+  "instrument": "MOSFIRE",
+  "notes": "Keck MOSFIRE filter transmission curves from the MOSFIRE filter page (micron, fraction). Filter only: no telescope optics, H2RG QE or atmosphere. Y, J, H, K and Ks are the order-sorting filters; the page says K is not intended for imaging. J2, J3, H1 and H2 are the intermediate bands (*_center_corr files). mosfire_Y.txt's column header reads 'xZ yZ', but its passband matches the page's Y. Teledyne Hawaii-2RG HgCdTe array (photon counting).",
+  "bands": {
+    "Y": {
+      "sources": "http://www2.keck.hawaii.edu/inst/mosfire/data/filter/mosfire_Y.txt | http://www2.keck.hawaii.edu/inst/mosfire/filters.html",
+      "svo_id": "Keck/MOSFIRE.Y",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        10480.0,
+        "http://www2.keck.hawaii.edu/inst/mosfire/filters.html lambda_C (50% points midpoint)"
+      ],
+      "n": 1200,
+      "pivot_A": 10473.71
+    },
+    "J": {
+      "sources": "http://www2.keck.hawaii.edu/inst/mosfire/data/filter/mosfire_J.txt | http://www2.keck.hawaii.edu/inst/mosfire/filters.html",
+      "svo_id": "Keck/MOSFIRE.J",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        12529.999999999998,
+        "http://www2.keck.hawaii.edu/inst/mosfire/filters.html lambda_C (50% points midpoint)"
+      ],
+      "n": 1801,
+      "pivot_A": 12516.65
+    },
+    "H": {
+      "sources": "http://www2.keck.hawaii.edu/inst/mosfire/data/filter/mosfire_H.txt | http://www2.keck.hawaii.edu/inst/mosfire/filters.html",
+      "svo_id": "Keck/MOSFIRE.H",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "24 negative samples (min -8.2e-05) set to 0",
+      "ref_pivot": [
+        16370.0,
+        "http://www2.keck.hawaii.edu/inst/mosfire/filters.html lambda_C (50% points midpoint)"
+      ],
+      "n": 1101,
+      "pivot_A": 16339.86
+    },
+    "K": {
+      "sources": "http://www2.keck.hawaii.edu/inst/mosfire/data/filter/mosfire_K.txt | http://www2.keck.hawaii.edu/inst/mosfire/filters.html",
+      "svo_id": "Keck/MOSFIRE.K",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        21620.0,
+        "http://www2.keck.hawaii.edu/inst/mosfire/filters.html lambda_C (50% points midpoint)"
+      ],
+      "n": 1301,
+      "pivot_A": 21595.08
+    },
+    "Ks": {
+      "sources": "http://www2.keck.hawaii.edu/inst/mosfire/data/filter/mosfire_Ks.txt | http://www2.keck.hawaii.edu/inst/mosfire/filters.html",
+      "svo_id": "Keck/MOSFIRE.Ks",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "3 negative samples (min -2.3e-05) set to 0",
+      "ref_pivot": [
+        21469.999999999996,
+        "http://www2.keck.hawaii.edu/inst/mosfire/filters.html lambda_C (50% points midpoint)"
+      ],
+      "n": 1001,
+      "pivot_A": 21468.11
+    },
+    "J2": {
+      "sources": "http://www2.keck.hawaii.edu/inst/mosfire/data/filter/J2_center_corr.txt | http://www2.keck.hawaii.edu/inst/mosfire/filters.html",
+      "svo_id": "Keck/MOSFIRE.J2",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "22 negative samples (min -0.00011) set to 0",
+      "ref_pivot": [
+        11810.0,
+        "http://www2.keck.hawaii.edu/inst/mosfire/filters.html lambda_C (50% points midpoint)"
+      ],
+      "n": 341,
+      "pivot_A": 11816.08
+    },
+    "J3": {
+      "sources": "http://www2.keck.hawaii.edu/inst/mosfire/data/filter/J3_center_corr.txt | http://www2.keck.hawaii.edu/inst/mosfire/filters.html",
+      "svo_id": "Keck/MOSFIRE.J3",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "20 negative samples (min -0.000135) set to 0",
+      "ref_pivot": [
+        12880.0,
+        "http://www2.keck.hawaii.edu/inst/mosfire/filters.html lambda_C (50% points midpoint)"
+      ],
+      "n": 501,
+      "pivot_A": 12880.86
+    },
+    "H1": {
+      "sources": "http://www2.keck.hawaii.edu/inst/mosfire/data/filter/H1_center_corr.txt | http://www2.keck.hawaii.edu/inst/mosfire/filters.html",
+      "svo_id": "Keck/MOSFIRE.H1",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "8 negative samples (min -6.61e-05) set to 0",
+      "ref_pivot": [
+        15560.0,
+        "http://www2.keck.hawaii.edu/inst/mosfire/filters.html lambda_C (50% points midpoint)"
+      ],
+      "n": 376,
+      "pivot_A": 15557.73
+    },
+    "H2": {
+      "sources": "http://www2.keck.hawaii.edu/inst/mosfire/data/filter/H2_center_corr.txt | http://www2.keck.hawaii.edu/inst/mosfire/filters.html",
+      "svo_id": "Keck/MOSFIRE.H2",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        17090.0,
+        "http://www2.keck.hawaii.edu/inst/mosfire/filters.html lambda_C (50% points midpoint)"
+      ],
+      "n": 326,
+      "pivot_A": 17089.03
+    }
+  },
+  "raw_files": {
+    "downloads/Keck/mosfire_Y.txt": "062fe47e9c3f4dfe0230463fc0554bb42363fca3590d2b4e471c688113e7df40",
+    "downloads/Keck/mosfire_J.txt": "5410e4e790afb5ebd520d0ad80697697782a71f475c33d7dd896f2298dee984f",
+    "downloads/Keck/mosfire_H.txt": "919daf2bd9242b9805cdbf19b4c94d8358092ec8b4513ad64fec94066392a41c",
+    "downloads/Keck/mosfire_K.txt": "cce475d988d553f337d82476c87bb8667515cbe9c440152d5b9fb5f4958e9e31",
+    "downloads/Keck/mosfire_Ks.txt": "465207a58c406366c928f8a66fd1b550285d00c7c4b008bc817fa78dfd76ffda",
+    "downloads/Keck/J2_center_corr.txt": "3e3fe8ba1b53eb3814d611156f26169c07aee1009e0b4993e3527f7c06b6966e",
+    "downloads/Keck/J3_center_corr.txt": "9c8cd6013706673fc10ca816b44653c13d92dc550a0e954a93aebc9e32a4333f",
+    "downloads/Keck/H1_center_corr.txt": "65ab19a33851bc1ff58fabe81efdfb9d86991c3c08608e5901326f85fbd5eddd",
+    "downloads/Keck/H2_center_corr.txt": "03a1b036ea28939c5b7f6d9d7b6437b569b7fd16520df692186c36424262d9d2"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "facility": "Spitzer",
+  "instrument": "MIPS",
+  "notes": "MIPS imaging filter bandpasses (MIPSfiltsumm.txt, 21 March 2000), combined detector plus filter spectral response. The MIPS Instrument Handbook (sect. 6) defines R in electrons per unit energy, so DetectorType=energy (the file header itself says only 'response'). Relative response: peak-normalised (normalize=True). 70 um is the NB-labelled column of the file. Telescope optics not stated as included.",
+  "bands": {
+    "24": {
+      "sources": "https://irsa.ipac.caltech.edu/data/SPITZER/docs/files/spitzer/MIPSfiltsumm.txt | https://irsa.ipac.caltech.edu/data/SPITZER/docs/mips/mipsinstrumenthandbook/6/",
+      "svo_id": "Spitzer/MIPS.24mu",
+      "detector_type": "energy",
+      "detector_source": "original",
+      "components": "filter+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 128,
+      "pivot_A": 235934.77
+    },
+    "70": {
+      "sources": "https://irsa.ipac.caltech.edu/data/SPITZER/docs/files/spitzer/MIPSfiltsumm.txt | https://irsa.ipac.caltech.edu/data/SPITZER/docs/mips/mipsinstrumenthandbook/6/",
+      "svo_id": "Spitzer/MIPS.70mu",
+      "detector_type": "energy",
+      "detector_source": "original",
+      "components": "filter+qe",
+      "components_source": "original",
+      "cleaning": "1 negative samples (min -0.00029) set to 0; scaled by 0.999355 (peak normalised)",
+      "ref_pivot": null,
+      "n": 111,
+      "pivot_A": 708907.71
+    },
+    "160": {
+      "sources": "https://irsa.ipac.caltech.edu/data/SPITZER/docs/files/spitzer/MIPSfiltsumm.txt | https://irsa.ipac.caltech.edu/data/SPITZER/docs/mips/mipsinstrumenthandbook/6/",
+      "svo_id": "Spitzer/MIPS.160mu",
+      "detector_type": "energy",
+      "detector_source": "original",
+      "components": "filter+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 400,
+      "pivot_A": 1553530.66
+    }
+  },
+  "raw_files": {
+    "downloads/Spitzer/MIPSfiltsumm.txt": "16ed486cc8f4b9ea82c7c796dc36fbbcbdcabe15d2f92b57f02ed54dae449a04"
+  }
+}

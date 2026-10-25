@@ -1,0 +1,35 @@
+{
+  "facility": "Spitzer",
+  "instrument": "IRS",
+  "notes": "IRS blue/red peak-up RQExT curves at 2.0 V (IRSA/SSC; same as SMART). Header: RQExT = detector responsive QE (QE x photoconductive gain) x filter transmission; multiplying photons/s gives electrons/s, so DetectorType=photon. Telescope optics not included. Native scale kept; negative noise samples set to 0.",
+  "bands": {
+    "PU_blue": {
+      "sources": "https://irsa.ipac.caltech.edu/data/SPITZER/docs/files/spitzer/bluePUtrans.txt",
+      "svo_id": "Spitzer/IRS.blue",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+qe",
+      "components_source": "original",
+      "cleaning": "79 negative samples (min -0.00701) set to 0",
+      "ref_pivot": null,
+      "n": 371,
+      "pivot_A": 159192.5
+    },
+    "PU_red": {
+      "sources": "https://irsa.ipac.caltech.edu/data/SPITZER/docs/files/spitzer/redPUtrans.txt",
+      "svo_id": "Spitzer/IRS.red",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+qe",
+      "components_source": "original",
+      "cleaning": "29 negative samples (min -0.0132) set to 0",
+      "ref_pivot": null,
+      "n": 215,
+      "pivot_A": 224729.32
+    }
+  },
+  "raw_files": {
+    "downloads/Spitzer/bluePUtrans.txt": "83264085f75513103d142f600490fb12169873edb22c3761c13e26c2e47454ee",
+    "downloads/Spitzer/redPUtrans.txt": "ab1859f7fb2095a302db9dc394ddddc72e8db6b788da1e274ebb1669974da1f9"
+  }
+}

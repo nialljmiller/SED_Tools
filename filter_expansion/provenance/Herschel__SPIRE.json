@@ -1,0 +1,46 @@
+{
+  "facility": "Herschel",
+  "instrument": "SPIRE",
+  "notes": "SPIRE photometer Relative Spectral Response Functions (SCalPhotRsrf v3, FM; HSA legacy ADP SPIRE_phot_RSRF_14_3.fits, ext 'rsrf'), PSW/PMW/PLW = 250/350/500 um. Frequency grid in GHz converted to Angstrom and sorted. Instrument RSRF (filters, feedhorn/optics, bolometer absorption); telescope and aperture efficiency not included. DetectorType=energy (bolometers). Relative response: tiny negative samples set to 0, then peak-normalised (normalize=True).",
+  "bands": {
+    "250": {
+      "sources": "http://archives.esac.esa.int/hsa/legacy/ADP/SPIRE/SPIRE-P_filter_curves/SPIRE_phot_RSRF_14_3.fits | https://www.herschel.caltech.edu/page/instruments",
+      "svo_id": "Herschel/SPIRE.PSW",
+      "detector_type": "energy",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "8 negative samples (min -0.000147) set to 0; scaled by 1.4652 (peak normalised)",
+      "ref_pivot": null,
+      "n": 512,
+      "pivot_A": 2482886.58
+    },
+    "350": {
+      "sources": "http://archives.esac.esa.int/hsa/legacy/ADP/SPIRE/SPIRE-P_filter_curves/SPIRE_phot_RSRF_14_3.fits | https://www.herschel.caltech.edu/page/instruments",
+      "svo_id": "Herschel/SPIRE.PMW",
+      "detector_type": "energy",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "2 negative samples (min -2.96e-06) set to 0; scaled by 1.58303 (peak normalised)",
+      "ref_pivot": null,
+      "n": 512,
+      "pivot_A": 3484377.79
+    },
+    "500": {
+      "sources": "http://archives.esac.esa.int/hsa/legacy/ADP/SPIRE/SPIRE-P_filter_curves/SPIRE_phot_RSRF_14_3.fits | https://www.herschel.caltech.edu/page/instruments",
+      "svo_id": "Herschel/SPIRE.PLW",
+      "detector_type": "energy",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "96 negative samples (min -1.23e-07) set to 0; scaled by 1.63292 (peak normalised)",
+      "ref_pivot": null,
+      "n": 512,
+      "pivot_A": 5004186.37
+    }
+  },
+  "raw_files": {
+    "downloads/Herschel/SPIRE_phot_RSRF_14_3.fits": "de53a0434baccff469cf85e4036b685c83eb30e833601581ef4eb666cd8bc153"
+  }
+}

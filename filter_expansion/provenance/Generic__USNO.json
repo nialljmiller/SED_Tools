@@ -1,0 +1,83 @@
+{
+  "facility": "Generic",
+  "instrument": "USNO",
+  "notes": "USNO 40-inch u'g'r'i'z' standard-star system (Smith et al. 2002, AJ 123, 2121): J. Gunn's 2001-12-18 response functions usno_[ugriz].res for the USNO 40-in telescope + SITe 1024^2 UV-coated CCD (https://www-star.fnal.gov/ugriz/Filters/response.html, https://www-star.fnal.gov/ugriz/Filters/readme.txt). Column 4 = 1.3 airmasses, the natural-system median airmass: response includes filter, CCD QE (corrected for IR scattering; point sources), telescope and atmosphere. Photon-counting CCD QE functions. z' response is quite uncertain (no USNO CCD measurement, per the readme). The site returns HTTP 403 to scripts; payload from Wayback Machine raw snapshots (2021-03-19). Not the SDSS 2.5 m ugriz responses; USNO->AB offsets are in the readme.",
+  "bands": {
+    "up": {
+      "sources": "https://www-star.fnal.gov/ugriz/Filters/usno_u.res (via https://web.archive.org/web/20210319150010id_/https://www-star.fnal.gov/ugriz/Filters/usno_u.res) | https://www-star.fnal.gov/ugriz/Filters/response.html | https://ui.adsabs.harvard.edu/abs/2002AJ....123.2121S",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe+atmosphere",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 47,
+      "pivot_A": 3551.91
+    },
+    "gp": {
+      "sources": "https://www-star.fnal.gov/ugriz/Filters/usno_g.res (via https://web.archive.org/web/20210319132508id_/https://www-star.fnal.gov/ugriz/Filters/usno_g.res) | https://www-star.fnal.gov/ugriz/Filters/response.html | https://ui.adsabs.harvard.edu/abs/2002AJ....123.2121S",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe+atmosphere",
+      "components_source": "original",
+      "cleaning": "1 negative samples (min -0.0001) set to 0",
+      "ref_pivot": null,
+      "n": 45,
+      "pivot_A": 4766.01
+    },
+    "rp": {
+      "sources": "https://www-star.fnal.gov/ugriz/Filters/usno_r.res (via https://web.archive.org/web/20210319053959id_/https://www-star.fnal.gov/ugriz/Filters/usno_r.res) | https://www-star.fnal.gov/ugriz/Filters/response.html | https://ui.adsabs.harvard.edu/abs/2002AJ....123.2121S",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe+atmosphere",
+      "components_source": "original",
+      "cleaning": "1 negative samples (min -1e-05) set to 0",
+      "ref_pivot": null,
+      "n": 41,
+      "pivot_A": 6226.12
+    },
+    "ip": {
+      "sources": "https://www-star.fnal.gov/ugriz/Filters/usno_i.res (via https://web.archive.org/web/20210319071508id_/https://www-star.fnal.gov/ugriz/Filters/usno_i.res) | https://www-star.fnal.gov/ugriz/Filters/response.html | https://ui.adsabs.harvard.edu/abs/2002AJ....123.2121S",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe+atmosphere",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 45,
+      "pivot_A": 7597.99
+    },
+    "zp": {
+      "sources": "https://www-star.fnal.gov/ugriz/Filters/usno_z.res (via https://web.archive.org/web/20210319124657id_/https://www-star.fnal.gov/ugriz/Filters/usno_z.res) | https://www-star.fnal.gov/ugriz/Filters/response.html | https://ui.adsabs.harvard.edu/abs/2002AJ....123.2121S",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe+atmosphere",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 51,
+      "pivot_A": 8931.24
+    }
+  },
+  "raw_files": {
+    "downloads/Generic/usno_readme.txt": "6b4b063692d517b234f0bddccb1d2cc52e70bfaaed4100ddb6c9d20c4f1a5f16",
+    "downloads/Generic/usno_u.res": "466c000076fe28dde72ff4118a46b06ba3855db23dad2b78a1ce7bf970f4603d",
+    "downloads/Generic/usno_g.res": "5748831fadddfe3c0aa1774c094ffa3ba3a9847b8afd7b19d72bd1cefdddf485",
+    "downloads/Generic/usno_r.res": "e0b6f2f8b7f3862e1570ed83fd5695d970ba840b049315b25a32353d16f193b6",
+    "downloads/Generic/usno_i.res": "62ec5897d961fbe9da38c76c30d79fb8cf025e7f8dc130d877c5c3e7191abb1e",
+    "downloads/Generic/usno_z.res": "1ff99dd3b2c722a363e3ddb6770e5aa52e0bcd57dba02304e6aa5e07da6e40d3"
+  },
+  "column_used": "air1.3 (4th column)",
+  "wayback_snapshots": {
+    "u": "20210319150010",
+    "g": "20210319132508",
+    "r": "20210319053959",
+    "i": "20210319071508",
+    "z": "20210319124657"
+  }
+}

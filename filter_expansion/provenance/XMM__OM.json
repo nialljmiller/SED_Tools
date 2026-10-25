@@ -1,0 +1,82 @@
+{
+  "facility": "XMM",
+  "instrument": "OM",
+  "notes": "XMM-Newton OM effective area for all filters (HEASARC OM_response_081008.txt; header: nm, m^2 x 1000). Effective area includes telescope, filter and the photon-counting MCP-intensified detector, so DetectorType=photon. Peak-normalised (normalize=True), since the absolute area scale does not affect synthetic photometry. Zero-padded 100-700 nm grid kept as published (UV filters keep their red-leak tails).",
+  "bands": {
+    "V": {
+      "sources": "https://heasarc.gsfc.nasa.gov/FTP/xmm/data/responses/OM/OM_response_081008.txt",
+      "svo_id": "XMM/OM.V",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "scaled by 0.441891 (peak normalised)",
+      "ref_pivot": null,
+      "n": 601,
+      "pivot_A": 5424.75
+    },
+    "B": {
+      "sources": "https://heasarc.gsfc.nasa.gov/FTP/xmm/data/responses/OM/OM_response_081008.txt",
+      "svo_id": "XMM/OM.B",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "scaled by 0.253743 (peak normalised)",
+      "ref_pivot": null,
+      "n": 601,
+      "pivot_A": 4337.59
+    },
+    "U": {
+      "sources": "https://heasarc.gsfc.nasa.gov/FTP/xmm/data/responses/OM/OM_response_081008.txt",
+      "svo_id": "XMM/OM.U",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "scaled by 0.235349 (peak normalised)",
+      "ref_pivot": null,
+      "n": 601,
+      "pivot_A": 3477.4
+    },
+    "UVW1": {
+      "sources": "https://heasarc.gsfc.nasa.gov/FTP/xmm/data/responses/OM/OM_response_081008.txt",
+      "svo_id": "XMM/OM.UVW1",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "scaled by 0.506842 (peak normalised)",
+      "ref_pivot": null,
+      "n": 601,
+      "pivot_A": 2931.59
+    },
+    "UVM2": {
+      "sources": "https://heasarc.gsfc.nasa.gov/FTP/xmm/data/responses/OM/OM_response_081008.txt",
+      "svo_id": "XMM/OM.UVM2",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "scaled by 1.21286 (peak normalised)",
+      "ref_pivot": null,
+      "n": 601,
+      "pivot_A": 2327.61
+    },
+    "UVW2": {
+      "sources": "https://heasarc.gsfc.nasa.gov/FTP/xmm/data/responses/OM/OM_response_081008.txt",
+      "svo_id": "XMM/OM.UVW2",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "scaled by 2.98597 (peak normalised)",
+      "ref_pivot": null,
+      "n": 601,
+      "pivot_A": 2135.72
+    }
+  },
+  "raw_files": {
+    "downloads/XMM/OM_response_081008.txt": "7cc39b6689401fe0e9e28e6b336e10054813cfce64a9dbbc21d046d9cc0a88d5"
+  }
+}

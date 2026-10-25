@@ -1,0 +1,23 @@
+{
+  "facility": "Hipparcos",
+  "instrument": "Hipparcos",
+  "notes": "Bessell & Murphy (2012) table 2 normalised photonic responses (CDS J/PASP/124/140), for photon-counting synthetic photometry. Wavelength column is 0.1 nm = Angstrom.",
+  "bands": {
+    "Hp": {
+      "sources": "https://cdsarc.cds.unistra.fr/ftp/cats/J/PASP/124/140/table2.dat | https://ui.adsabs.harvard.edu/abs/2012PASP..124..140B",
+      "svo_id": "Hipparcos/Hipparcos.Hp",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 56,
+      "pivot_A": 5347.52
+    }
+  },
+  "raw_files": {
+    "downloads/Hipparcos/table2.dat": "c63abfe8980e5ad93646991a583f2b012f267e63175cbde86ce0f5325bf4dc5b",
+    "downloads/Hipparcos/ReadMe": "c3e65291204876ca879c4a30e16cb7884abd804411ca66d2abffece1db70d7b8"
+  }
+}

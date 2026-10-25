@@ -1,0 +1,82 @@
+{
+  "facility": "Planck",
+  "instrument": "HFI",
+  "notes": "Planck HFI RIMO R2.00 (PR2) band-averaged spectral transmission, extensions BANDPASS_F100..F857 ('weighted combination of the individual detector bandpasses'). Wavenumber in cm^-1 converted to Angstrom and sorted; the 60 samples below 1 cm^-1 (lambda > 1 cm, incl. 0 cm^-1; max transmission <= 4e-7, <= 5e-8 of the band integral) dropped; FLAG column (marks the in-band region) ignored, all samples kept. Ground-measured instrument response (feedhorns, filters, bolometers), telescope not included. DetectorType=energy (bolometers; band-averaged fluxes integrate tau(nu) I_nu dnu). Peak-normalised (already 1).",
+  "bands": {
+    "100": {
+      "sources": "https://irsa.ipac.caltech.edu/data/Planck/release_2/ancillary-data/HFI_RIMO_R2.00.fits | https://arxiv.org/abs/1101.2039",
+      "svo_id": "Planck/HFI.100",
+      "detector_type": "energy",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 12237,
+      "pivot_A": 30013453.46
+    },
+    "143": {
+      "sources": "https://irsa.ipac.caltech.edu/data/Planck/release_2/ancillary-data/HFI_RIMO_R2.00.fits | https://arxiv.org/abs/1101.2039",
+      "svo_id": "Planck/HFI.143",
+      "detector_type": "energy",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "20 negative samples (min -0.000398) set to 0",
+      "ref_pivot": null,
+      "n": 12542,
+      "pivot_A": 21299775.65
+    },
+    "217": {
+      "sources": "https://irsa.ipac.caltech.edu/data/Planck/release_2/ancillary-data/HFI_RIMO_R2.00.fits | https://arxiv.org/abs/1101.2039",
+      "svo_id": "Planck/HFI.217",
+      "detector_type": "energy",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 12540,
+      "pivot_A": 13675810.68
+    },
+    "353": {
+      "sources": "https://irsa.ipac.caltech.edu/data/Planck/release_2/ancillary-data/HFI_RIMO_R2.00.fits | https://arxiv.org/abs/1101.2039",
+      "svo_id": "Planck/HFI.353",
+      "detector_type": "energy",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 12870,
+      "pivot_A": 8393105.78
+    },
+    "545": {
+      "sources": "https://irsa.ipac.caltech.edu/data/Planck/release_2/ancillary-data/HFI_RIMO_R2.00.fits | https://arxiv.org/abs/1101.2039",
+      "svo_id": "Planck/HFI.545",
+      "detector_type": "energy",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 13878,
+      "pivot_A": 5456627.04
+    },
+    "857": {
+      "sources": "https://irsa.ipac.caltech.edu/data/Planck/release_2/ancillary-data/HFI_RIMO_R2.00.fits | https://arxiv.org/abs/1101.2039",
+      "svo_id": "Planck/HFI.857",
+      "detector_type": "energy",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "1 duplicate wavelengths averaged",
+      "ref_pivot": null,
+      "n": 16758,
+      "pivot_A": 3525231.94
+    }
+  },
+  "raw_files": {
+    "downloads/Planck/HFI_RIMO_R2.00.fits": "0331c1c5090849628ae6eb9c92a0e610dc02c6a47ada6746e5591b915e99fedd"
+  }
+}

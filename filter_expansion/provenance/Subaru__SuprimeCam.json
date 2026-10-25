@@ -1,0 +1,127 @@
+{
+  "facility": "Subaru",
+  "instrument": "SuprimeCam",
+  "notes": "Subaru Suprime-Cam general broad-band filters (B, V, Rc, Ic, SDSS g' r' i' z', Y): filter-only transmission lists from https://subarutelescope.org/Archive/Instruments/SCam/sensitivity.html. The page advises applying the CCD QE, Primary Focus Unit transmittance and primary-mirror reflectivity separately; the Hamamatsu FDCCD QE (2008-2017 detectors) is attached as a qe component (360-1040 nm). Pre-2008 MIT/LL CCD QE not included. Detector: CCD, photon counting (https://subarutelescope.org/Archive/Instruments/SCam/ccd.html).",
+  "bands": {
+    "B": {
+      "sources": "https://subarutelescope.org/Archive/Instruments/SCam/txt/B.txt | https://subarutelescope.org/Archive/Instruments/SCam/sensitivity.html",
+      "svo_id": "Subaru/Suprime.B",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 200,
+      "pivot_A": 4360.93
+    },
+    "V": {
+      "sources": "https://subarutelescope.org/Archive/Instruments/SCam/txt/V.txt | https://subarutelescope.org/Archive/Instruments/SCam/sensitivity.html",
+      "svo_id": "Subaru/Suprime.V",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 200,
+      "pivot_A": 5440.31
+    },
+    "Rc": {
+      "sources": "https://subarutelescope.org/Archive/Instruments/SCam/txt/R.txt | https://subarutelescope.org/Archive/Instruments/SCam/sensitivity.html",
+      "svo_id": "Subaru/Suprime.Rc",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 200,
+      "pivot_A": 6499.24
+    },
+    "Ic": {
+      "sources": "https://subarutelescope.org/Archive/Instruments/SCam/txt/I.txt | https://subarutelescope.org/Archive/Instruments/SCam/sensitivity.html",
+      "svo_id": "Subaru/Suprime.Ic",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 200,
+      "pivot_A": 7961.95
+    },
+    "g": {
+      "sources": "https://subarutelescope.org/Archive/Instruments/SCam/txt/g.txt | https://subarutelescope.org/Archive/Instruments/SCam/sensitivity.html",
+      "svo_id": "Subaru/Suprime.g",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 200,
+      "pivot_A": 4687.73
+    },
+    "r": {
+      "sources": "https://subarutelescope.org/Archive/Instruments/SCam/txt/r.txt | https://subarutelescope.org/Archive/Instruments/SCam/sensitivity.html",
+      "svo_id": "Subaru/Suprime.r",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 200,
+      "pivot_A": 6239.61
+    },
+    "i": {
+      "sources": "https://subarutelescope.org/Archive/Instruments/SCam/txt/i.txt | https://subarutelescope.org/Archive/Instruments/SCam/sensitivity.html",
+      "svo_id": "Subaru/Suprime.i",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 200,
+      "pivot_A": 7662.5
+    },
+    "z": {
+      "sources": "https://subarutelescope.org/Archive/Instruments/SCam/txt/z.txt | https://subarutelescope.org/Archive/Instruments/SCam/sensitivity.html",
+      "svo_id": "Subaru/Suprime.z",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 200,
+      "pivot_A": 9184.56
+    },
+    "Y": {
+      "sources": "https://subarutelescope.org/Archive/Instruments/SCam/txt/Y.txt | https://subarutelescope.org/Archive/Instruments/SCam/sensitivity.html",
+      "svo_id": "Subaru/Suprime.Y",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 501,
+      "pivot_A": 10202.43
+    }
+  },
+  "raw_files": {
+    "downloads/Subaru/SCam_B.txt": "811f6f39afe18d44223160a9e808fc0b497d94fdc5ad874913a699b88cf050fc",
+    "downloads/Subaru/SCam_V.txt": "0eb14841e31bee323ce60930bdc6632c3dc73e0390abcc8eab5c5978586c35a7",
+    "downloads/Subaru/SCam_R.txt": "e9ff806e4436c0b5dbe1bceacb095320572b875d541d6e08968dd9289bd0a9a3",
+    "downloads/Subaru/SCam_I.txt": "8ea559e1294559c73e5186f46becb14b68aa5000d0bc7a477e5a6080558ee105",
+    "downloads/Subaru/SCam_g.txt": "7d0d437926468844a7083187a061b397865bdbbd132c8cf56e131d141bf3f0d4",
+    "downloads/Subaru/SCam_r.txt": "cc34c6070cd8221609652fa5be70ede833d1201156e98d2e16f0b11047040c5c",
+    "downloads/Subaru/SCam_i.txt": "a6f12fc43a403bb6c610e49c4f09aa4858620ca9eb582d97b566ff8d93b85347",
+    "downloads/Subaru/SCam_z.txt": "03a9b546f21aa4a17c88eb41b1ba83cd3f303f0c4952346f3e30077fd8f6ded3",
+    "downloads/Subaru/SCam_Y.txt": "4f99fe884a5e218d17d2fd3b3224989656e638f1931f9126155436a614b3234f",
+    "downloads/Subaru/SCam_QE_Hamamatsu.txt": "c24ed439a766168334add268d153c038c8e967291c7a872500d0e7e7f879e4ab"
+  }
+}

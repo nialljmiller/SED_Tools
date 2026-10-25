@@ -1,0 +1,46 @@
+{
+  "facility": "Planck",
+  "instrument": "LFI",
+  "notes": "Planck LFI RIMO R2.50 (PR2) band-averaged bandpasses, extensions BANDPASS_044/070 (030 held: its 7.5e7-1.4e8 A range exceeds the validator's 1e8 A plausibility limit) (the per-radiometer BANDPASS_0xx-NNS/M curves are not used). Column named WAVENUMBER is in GHz (TUNIT), converted to Angstrom and sorted. Modelled radiometer-chain response (feedhorn, OMT, HEMT amplifiers, filters, detector diode), telescope not included. DetectorType=energy (coherent radiometers measure power; band integrals of tau(nu) I_nu dnu). Peak-normalised (normalize=True).",
+  "bands": {
+    "30": {
+      "sources": "https://irsa.ipac.caltech.edu/data/Planck/release_2/ancillary-data/LFI_RIMO_R2.50.fits | https://arxiv.org/abs/1001.3321",
+      "svo_id": "Planck/LFI.30",
+      "detector_type": "energy",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "scaled by 2.77371 (peak normalised)",
+      "ref_pivot": null,
+      "n": 188,
+      "pivot_A": 106355733.07
+    },
+    "44": {
+      "sources": "https://irsa.ipac.caltech.edu/data/Planck/release_2/ancillary-data/LFI_RIMO_R2.50.fits | https://arxiv.org/abs/1001.3321",
+      "svo_id": "Planck/LFI.44",
+      "detector_type": "energy",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "scaled by 3.15439 (peak normalised)",
+      "ref_pivot": null,
+      "n": 151,
+      "pivot_A": 68301714.89
+    },
+    "70": {
+      "sources": "https://irsa.ipac.caltech.edu/data/Planck/release_2/ancillary-data/LFI_RIMO_R2.50.fits | https://arxiv.org/abs/1001.3321",
+      "svo_id": "Planck/LFI.70",
+      "detector_type": "energy",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "scaled by 11.6094 (peak normalised)",
+      "ref_pivot": null,
+      "n": 251,
+      "pivot_A": 42968624.76
+    }
+  },
+  "raw_files": {
+    "downloads/Planck/LFI_RIMO_R2.50.fits": "f9858e4b2973fc9c3f1fcdd387124489a4c2b53cead8c0d5349402836f43733f"
+  }
+}

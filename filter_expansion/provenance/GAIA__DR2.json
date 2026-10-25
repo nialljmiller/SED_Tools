@@ -1,0 +1,48 @@
+{
+  "facility": "GAIA",
+  "instrument": "DR2",
+  "notes": "Gaia DR2 passbands used to generate the released DR2 magnitudes and astrophysical parameters (Evans et al. 2018, A&A 616, A4; ESA zip GaiaDR2_Passbands_ZeroPoints.zip). Wavelength nm; 99.99 = undefined (ReadMe note 1), dropped as sentinel. Whole-instrument (telescope, optics, CCD QE) photon-counting transmissivities for CCD photometry -> DetectorType=photon. Uncertainty columns not used. Distinct from GAIA/GAIA (EDR3/DR3, Gaia2m BP bright/faint).",
+  "bands": {
+    "G": {
+      "sources": "https://www.cosmos.esa.int/documents/29201/1645651/GaiaDR2_Passbands_ZeroPoints.zip/49cdce41-8eee-655d-7ed2-4e7a83598c1d | https://www.cosmos.esa.int/web/gaia/iow_20180316",
+      "svo_id": "GAIA/GAIA2.G",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "280 undefined samples dropped",
+      "ref_pivot": null,
+      "n": 2921,
+      "pivot_A": 6231.59
+    },
+    "BP": {
+      "sources": "https://www.cosmos.esa.int/documents/29201/1645651/GaiaDR2_Passbands_ZeroPoints.zip/49cdce41-8eee-655d-7ed2-4e7a83598c1d | https://www.cosmos.esa.int/web/gaia/iow_20180316",
+      "svo_id": "GAIA/GAIA2.Gbp",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "1500 undefined samples dropped",
+      "ref_pivot": null,
+      "n": 1701,
+      "pivot_A": 5051.52
+    },
+    "RP": {
+      "sources": "https://www.cosmos.esa.int/documents/29201/1645651/GaiaDR2_Passbands_ZeroPoints.zip/49cdce41-8eee-655d-7ed2-4e7a83598c1d | https://www.cosmos.esa.int/web/gaia/iow_20180316",
+      "svo_id": "GAIA/GAIA2.Grp",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "1320 undefined samples dropped",
+      "ref_pivot": null,
+      "n": 1881,
+      "pivot_A": 7725.97
+    }
+  },
+  "raw_files": {
+    "downloads/GAIA/GaiaDR2_Passbands_ZeroPoints.zip": "c1957bf892dfab3db066d964625c52f1bed1ada373f141af0c06ce18f2667da0",
+    "downloads/GAIA/GaiaDR2_Passbands_ZeroPoints/GaiaDR2_Passbands.dat": "ba3e1edec4d596d88d82bd01e3c72cb38b8b4d687a9488914aa466c2aba7700f",
+    "downloads/GAIA/GaiaDR2_Passbands_ZeroPoints/GaiaDR2_ReadMe": "4aff9ad59780ddeee6b9e96f7b37ef234be24de48ea2ea856a11050e72456c24"
+  }
+}

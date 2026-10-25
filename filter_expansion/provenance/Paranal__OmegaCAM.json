@@ -1,0 +1,103 @@
+{
+  "facility": "Paranal",
+  "instrument": "OmegaCAM",
+  "notes": "VST OmegaCAM ugriz (SDSS, monolithic) and Johnson B, V (segmented) from ESO's OmegaCAM_transmission.tar.gz (2011): lab scans at the filter centre multiplied by the CCD QE (*_with_ccd members); B/V are the mean of their 4 segment-centre scans. Filter-only scans attached as filter components. No telescope mirrors, corrector or atmosphere included. Negative scan noise set to 0. Detector: 32 E2V 44-82 CCDs, photon counting (https://www.eso.org/sci/facilities/paranal/instruments/omegacam/inst.html).",
+  "bands": {
+    "u_SDSS": {
+      "sources": "https://www.eso.org/sci/facilities/paranal/instruments/omegacam/tools/OmegaCAM_transmission.tar.gz#u_modified_transmission_data_with_ccd (centre scan) | https://www.eso.org/sci/facilities/paranal/instruments/omegacam/inst.html",
+      "svo_id": "Paranal/OmegaCAM.u_SDSS",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+qe",
+      "components_source": "original",
+      "cleaning": "2 negative samples (min -3.8e-05) set to 0",
+      "ref_pivot": null,
+      "n": 301,
+      "pivot_A": 3571.23
+    },
+    "g_SDSS": {
+      "sources": "https://www.eso.org/sci/facilities/paranal/instruments/omegacam/tools/OmegaCAM_transmission.tar.gz#g_modified_transmission_data_with_ccd (centre scan) | https://www.eso.org/sci/facilities/paranal/instruments/omegacam/inst.html",
+      "svo_id": "Paranal/OmegaCAM.g_SDSS",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 301,
+      "pivot_A": 4712.08
+    },
+    "r_SDSS": {
+      "sources": "https://www.eso.org/sci/facilities/paranal/instruments/omegacam/tools/OmegaCAM_transmission.tar.gz#r_modified_transmission_data_with_ccd (centre scan) | https://www.eso.org/sci/facilities/paranal/instruments/omegacam/inst.html",
+      "svo_id": "Paranal/OmegaCAM.r_SDSS",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+qe",
+      "components_source": "original",
+      "cleaning": "21 negative samples (min -6.4e-05) set to 0",
+      "ref_pivot": [
+        6250.0,
+        "OmegaCAM filter table Lambda (https://www.eso.org/sci/facilities/paranal/instruments/omegacam/inst.html)"
+      ],
+      "n": 301,
+      "pivot_A": 6285.69
+    },
+    "i_SDSS": {
+      "sources": "https://www.eso.org/sci/facilities/paranal/instruments/omegacam/tools/OmegaCAM_transmission.tar.gz#i_modified_transmission_data_with_ccd (centre scan) | https://www.eso.org/sci/facilities/paranal/instruments/omegacam/inst.html",
+      "svo_id": "Paranal/OmegaCAM.i_SDSS",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+qe",
+      "components_source": "original",
+      "cleaning": "4 negative samples (min -8e-06) set to 0",
+      "ref_pivot": null,
+      "n": 301,
+      "pivot_A": 7555.13
+    },
+    "z_SDSS": {
+      "sources": "https://www.eso.org/sci/facilities/paranal/instruments/omegacam/tools/OmegaCAM_transmission.tar.gz#z_modified_transmission_data_with_ccd (centre scan) | https://www.eso.org/sci/facilities/paranal/instruments/omegacam/inst.html",
+      "svo_id": "Paranal/OmegaCAM.z_SDSS",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+qe",
+      "components_source": "original",
+      "cleaning": "15 negative samples (min -1.6e-05) set to 0",
+      "ref_pivot": null,
+      "n": 301,
+      "pivot_A": 8888.36
+    },
+    "B_JOHN": {
+      "sources": "https://www.eso.org/sci/facilities/paranal/instruments/omegacam/tools/OmegaCAM_transmission.tar.gz#B-partA_modified_transmission_data_with_ccd + B-partB_modified_transmission_data_with_ccd + B-partC_modified_transmission_data_with_ccd + B-partD_modified_transmission_data_with_ccd (mean of the 4 segment-centre scans) | https://www.eso.org/sci/facilities/paranal/instruments/omegacam/inst.html",
+      "svo_id": "Paranal/OmegaCAM.B_JOHN",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+qe",
+      "components_source": "original",
+      "cleaning": "16 negative samples (min -8.25e-06) set to 0",
+      "ref_pivot": [
+        4400.0,
+        "OmegaCAM filter table Lambda (https://www.eso.org/sci/facilities/paranal/instruments/omegacam/inst.html)"
+      ],
+      "n": 301,
+      "pivot_A": 4404.4
+    },
+    "V_JOHN": {
+      "sources": "https://www.eso.org/sci/facilities/paranal/instruments/omegacam/tools/OmegaCAM_transmission.tar.gz#V-partA_modified_transmission_data_with_ccd + V-partB_modified_transmission_data_with_ccd + V-partC_modified_transmission_data_with_ccd + V-partD_modified_transmission_data_with_ccd (mean of the 4 segment-centre scans) | https://www.eso.org/sci/facilities/paranal/instruments/omegacam/inst.html",
+      "svo_id": "Paranal/OmegaCAM.V_JOHN",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+qe",
+      "components_source": "original",
+      "cleaning": "10 negative samples (min -3.47e-05) set to 0",
+      "ref_pivot": [
+        5500.0,
+        "OmegaCAM filter table Lambda (https://www.eso.org/sci/facilities/paranal/instruments/omegacam/inst.html)"
+      ],
+      "n": 301,
+      "pivot_A": 5505.18
+    }
+  },
+  "raw_files": {
+    "downloads/Paranal/OmegaCAM_transmission.tar.gz": "e56cfd7aa637e220cfc4ecc4bba7170f2f9a550923858235059e340ccff61120"
+  }
+}

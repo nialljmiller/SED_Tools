@@ -1,0 +1,71 @@
+{
+  "facility": "Generic",
+  "instrument": "Bessell",
+  "notes": "Bessell & Murphy (2012, PASP 124, 140) table 1 (CDS J/PASP/124/140): the 2012 revised UBVRI passbands, normalised PHOTONIC responses for photon-counting synthetic photometry. This is NOT the Bessell (1990, PASP 102, 1181) energy-response realization (held). Wavelength unit 0.1 nm = Angstrom. Abstract standard-system responses (whole system; not separable into filter/optics/QE); the ReadMe does not state whether atmospheric extinction is included.",
+  "bands": {
+    "U": {
+      "sources": "https://cdsarc.cds.unistra.fr/ftp/cats/J/PASP/124/140/table1.dat | https://ui.adsabs.harvard.edu/abs/2012PASP..124..140B",
+      "svo_id": "Generic/Bessell.U",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 25,
+      "pivot_A": 3596.81
+    },
+    "B": {
+      "sources": "https://cdsarc.cds.unistra.fr/ftp/cats/J/PASP/124/140/table1.dat | https://ui.adsabs.harvard.edu/abs/2012PASP..124..140B",
+      "svo_id": "Generic/Bessell.B",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 21,
+      "pivot_A": 4376.89
+    },
+    "V": {
+      "sources": "https://cdsarc.cds.unistra.fr/ftp/cats/J/PASP/124/140/table1.dat | https://ui.adsabs.harvard.edu/abs/2012PASP..124..140B",
+      "svo_id": "Generic/Bessell.V",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 28,
+      "pivot_A": 5487.54
+    },
+    "R": {
+      "sources": "https://cdsarc.cds.unistra.fr/ftp/cats/J/PASP/124/140/table1.dat | https://ui.adsabs.harvard.edu/abs/2012PASP..124..140B",
+      "svo_id": "Generic/Bessell.R",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 37,
+      "pivot_A": 6515.72
+    },
+    "I": {
+      "sources": "https://cdsarc.cds.unistra.fr/ftp/cats/J/PASP/124/140/table1.dat | https://ui.adsabs.harvard.edu/abs/2012PASP..124..140B",
+      "svo_id": "Generic/Bessell.I",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 23,
+      "pivot_A": 7980.81
+    }
+  },
+  "raw_files": {
+    "downloads/Generic/table1.dat": "2af9c19c397ddf3800e55791cabfb484dea170b4947a891d150da4f0fe51295e",
+    "downloads/Generic/ReadMe": "c3e65291204876ca879c4a30e16cb7884abd804411ca66d2abffece1db70d7b8"
+  }
+}

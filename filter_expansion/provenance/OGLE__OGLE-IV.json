@@ -1,0 +1,51 @@
+{
+  "facility": "OGLE",
+  "instrument": "OGLE-IV",
+  "notes": "OGLE-IV (Warsaw 1.3 m, Las Campanas) V and I. Published curve = Asahi filter transmission (mean of 9 spots, OGLE-IV-{V,I}-filter-transmission.dat) x e2v CCD44-82 specification QE (OGLE-IV-QE-curve-from-specification.dat, set to 0 outside 3032-10787 A); photon-counting CCDs. No telescope optics or atmosphere included. Components: filter (per band) and qe (shared). The measured QE min/max envelope (OGLE-IV-QE-measured-min-max-curves.dat, columns verified as min<=max) is not used; the pivot with its midpoint is in provenance. Caveat: the filter scans have a low-signal noise floor below ~3500 A (quantised spot values, up to 0.1 in V and 0.29 in I) kept as published apart from negatives set to 0; after the QE (0 below 3032 A) it carries ~0.2 % of the photon-weighted response and shifts the pivot by ~0.2-0.5 % vs zeroing below 3500 A. No published pivot.",
+  "bands": {
+    "V": {
+      "sources": "https://www.astrouw.edu.pl/~jskowron/pub/ogle/OGLE-IV/OGLE-IV-V-filter-transmission.dat | https://www.astrouw.edu.pl/~jskowron/pub/ogle/OGLE-IV/OGLE-IV-QE-curve-from-specification.dat",
+      "svo_id": "OGLE/OGLE-IV.V",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+qe",
+      "components_source": "original",
+      "cleaning": "filter: 73 negative samples (min -0.00491) set to 0",
+      "ref_pivot": null,
+      "n": 682,
+      "pivot_A": 5350.45
+    },
+    "I": {
+      "sources": "https://www.astrouw.edu.pl/~jskowron/pub/ogle/OGLE-IV/OGLE-IV-I-filter-transmission.dat | https://www.astrouw.edu.pl/~jskowron/pub/ogle/OGLE-IV/OGLE-IV-QE-curve-from-specification.dat",
+      "svo_id": "OGLE/OGLE-IV.I",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 682,
+      "pivot_A": 7888.44
+    }
+  },
+  "raw_files": {
+    "downloads/OGLE/OGLE-IV-V-filter-transmission.dat": "37390d596f40e2cb187c23377ea8f9489cbe6fc402c638e1d06c0211bcfc3eea",
+    "downloads/OGLE/OGLE-IV-I-filter-transmission.dat": "23823c2621c18dd60d0a290effdb458fe172055e1a8447338e63da9037a6011e",
+    "downloads/OGLE/OGLE-IV-QE-curve-from-specification.dat": "b9815d84fff9691c4bab87bfdb1337389c6dcc1bf02e1b629bbd2497144cbf49",
+    "downloads/OGLE/OGLE-IV-QE-measured-min-max-curves.dat": "a1328df02a82ced13f2591444714967ed259552525a20d1fba0b829021eea407"
+  },
+  "qe_choice_check": {
+    "V": {
+      "pivot_spec_qe_A": 5350.5,
+      "pivot_measured_mid_qe_A": 5352.7,
+      "pivot_filter_only_A": 5278.7,
+      "uv_noise_mean_2495_3500A": 0.0242
+    },
+    "I": {
+      "pivot_spec_qe_A": 7888.4,
+      "pivot_measured_mid_qe_A": 7897.0,
+      "pivot_filter_only_A": 7528.1,
+      "uv_noise_mean_2495_3500A": 0.0733
+    }
+  }
+}

@@ -1,0 +1,131 @@
+{
+  "facility": "Generic",
+  "instrument": "MKO",
+  "notes": "MKO-NIR J H K L' M' (Tokunaga, Simons & Vacca 2002, PASP 114, 180): IRTF NSFCam cold filter scans (https://irtfweb.ifa.hawaii.edu/~nsfcam2/Filter_Profiles.html). FILTER ONLY: no detector QE, optics or atmosphere. Source header gives percent (divided by 100); microns converted to Angstrom; negative baseline noise set to 0; L' duplicate wavelengths averaged. Photon convention: NSFCam uses a Hawaii-2RG IR array (https://irtfweb.ifa.hawaii.edu/~nsfcam2/Welcome.html). Numerically identical (atol 1e-7) to the mirror's IRTF/NSFCam JMK/HMK/KMK/LPMK/MPMK, which come from the same files; provided here under standard-system names.",
+  "bands": {
+    "J": {
+      "sources": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters/nsfcam_jmk_trans.dat | https://irtfweb.ifa.hawaii.edu/~nsfcam2/Filter_Profiles.html | https://ui.adsabs.harvard.edu/abs/2002PASP..114..180T",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "percent / 100; 490 negative samples (min -0.00168) set to 0",
+      "ref_pivot": [
+        12500.0,
+        "Tokunaga & Vacca 2005 isophotal wavelength (Vega), https://irtfweb.ifa.hawaii.edu/IRrefdata/iwafdv.html"
+      ],
+      "n": 2501,
+      "pivot_A": 12475.12
+    },
+    "H": {
+      "sources": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters/nsfcam_hmk_trans.dat | https://irtfweb.ifa.hawaii.edu/~nsfcam2/Filter_Profiles.html | https://ui.adsabs.harvard.edu/abs/2002PASP..114..180T",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "percent / 100; 32 negative samples (min -0.000168) set to 0",
+      "ref_pivot": [
+        16440.0,
+        "Tokunaga & Vacca 2005 isophotal wavelength (Vega), https://irtfweb.ifa.hawaii.edu/IRrefdata/iwafdv.html"
+      ],
+      "n": 1401,
+      "pivot_A": 16275.4
+    },
+    "K": {
+      "sources": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters/nsfcam_kmk_trans.dat | https://irtfweb.ifa.hawaii.edu/~nsfcam2/Filter_Profiles.html | https://ui.adsabs.harvard.edu/abs/2002PASP..114..180T",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "percent / 100; 139 negative samples (min -0.00443) set to 0",
+      "ref_pivot": [
+        21980.0,
+        "Tokunaga & Vacca 2005 isophotal wavelength (Vega), https://irtfweb.ifa.hawaii.edu/IRrefdata/iwafdv.html"
+      ],
+      "n": 1401,
+      "pivot_A": 21982.43
+    },
+    "Lp": {
+      "sources": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters/nsfcam_lpmk_trans.dat | https://irtfweb.ifa.hawaii.edu/~nsfcam2/Filter_Profiles.html | https://ui.adsabs.harvard.edu/abs/2002PASP..114..180T",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "percent / 100; 379 negative samples (min -0.00881) set to 0; 4 duplicate wavelengths averaged",
+      "ref_pivot": [
+        37540.0,
+        "Tokunaga & Vacca 2005 isophotal wavelength (Vega), https://irtfweb.ifa.hawaii.edu/IRrefdata/iwafdv.html"
+      ],
+      "n": 2016,
+      "pivot_A": 37684.04
+    },
+    "Mp": {
+      "sources": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters/nsfcam_mpmk_trans.dat | https://irtfweb.ifa.hawaii.edu/~nsfcam2/Filter_Profiles.html | https://ui.adsabs.harvard.edu/abs/2002PASP..114..180T",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "percent / 100; 315 negative samples (min -0.00781) set to 0",
+      "ref_pivot": [
+        47020.0,
+        "Tokunaga & Vacca 2005 isophotal wavelength (Vega), https://irtfweb.ifa.hawaii.edu/IRrefdata/iwafdv.html"
+      ],
+      "n": 1001,
+      "pivot_A": 46843.28
+    }
+  },
+  "raw_files": {
+    "downloads/Generic/nsfcam_jmk_trans.dat": "208d4149b9f410d2c05143f5bb492adb2c9f81305ebcbc8ce311cb41b65fa7db",
+    "downloads/Generic/nsfcam_hmk_trans.dat": "9c58a391cb42bb7102969e4caffb91f24331fb2c3f0ae3e2b0f119b0461c94f2",
+    "downloads/Generic/nsfcam_kmk_trans.dat": "bc9fc59499fef80f4fe410a07f7fa8ada1d19984ae0e5ab550a533a48988322b",
+    "downloads/Generic/nsfcam_lpmk_trans.dat": "2b0f6ff4417b97dd5fd2da18c8098191491bc58cbfbdc379d5cf3ef553b0caa1",
+    "downloads/Generic/nsfcam_mpmk_trans.dat": "5a86a30212cd7cbde4f3604bd7fc714201c145fb899eab546170b69fd9d00022"
+  },
+  "mirror_check_IRTF_NSFCam": {
+    "J": {
+      "mirror": "https://nillmill.ddns.net/sed_tools/filters/IRTF/NSFCam/JMK.dat",
+      "raw_samples": 2501,
+      "out_samples": 2501,
+      "mirror_samples": 2501,
+      "max_abs_diff": 1.1102230246251565e-16,
+      "identical_within_1e-7": true
+    },
+    "H": {
+      "mirror": "https://nillmill.ddns.net/sed_tools/filters/IRTF/NSFCam/HMK.dat",
+      "raw_samples": 1401,
+      "out_samples": 1401,
+      "mirror_samples": 1401,
+      "max_abs_diff": 1.1102230246251565e-16,
+      "identical_within_1e-7": true
+    },
+    "K": {
+      "mirror": "https://nillmill.ddns.net/sed_tools/filters/IRTF/NSFCam/KMK.dat",
+      "raw_samples": 1401,
+      "out_samples": 1401,
+      "mirror_samples": 1401,
+      "max_abs_diff": 1.1102230246251565e-16,
+      "identical_within_1e-7": true
+    },
+    "Lp": {
+      "mirror": "https://nillmill.ddns.net/sed_tools/filters/IRTF/NSFCam/LPMK.dat",
+      "raw_samples": 2020,
+      "out_samples": 2016,
+      "mirror_samples": 2016,
+      "max_abs_diff": 1.1102230246251565e-16,
+      "identical_within_1e-7": true
+    },
+    "Mp": {
+      "mirror": "https://nillmill.ddns.net/sed_tools/filters/IRTF/NSFCam/MPMK.dat",
+      "raw_samples": 1001,
+      "out_samples": 1001,
+      "mirror_samples": 1001,
+      "max_abs_diff": 1.1102230246251565e-16,
+      "identical_within_1e-7": true
+    }
+  }
+}

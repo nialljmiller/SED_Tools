@@ -1,0 +1,142 @@
+{
+  "facility": "LasCumbres",
+  "instrument": "Sinistro",
+  "notes": "LCO Sinistro filters from LCO's lco_filter_curves.zip (wavelength nm -> Angstrom). Laboratory filter transmission scans only: no telescope, detector QE or atmosphere, so these are filter-only curves (DetectorType photon for the CCD imager; a total response needs the detector generation, which changed over time). Band names follow LCO filter codes to avoid case collisions: U=bssl-ux-022.txt (codex band U); B=bssl-bx-004.txt (codex band B); V=bssl-vx-022.txt (codex band V); R=bssl-rx-007.txt (codex band R); I=bssl-ix-023.txt (codex band I); up=SDSS.up.txt (codex band u); gp=SDSS.gp.txt (codex band g); rp=SDSS.rp.txt (codex band r); ip=SDSS.ip.txt (codex band i); zs=PSTR-ZS-avg.txt (codex band zs); Y=PSTR-YX-avg.txt (codex band Y). Cleaning (measurement noise below 0 set to 0): up: 711 negative samples (min -3.27e-05) set to 0; gp: 1787 negative samples (min -0.000328) set to 0; rp: 1913 negative samples (min -0.000333) set to 0; ip: 2173 negative samples (min -0.000316) set to 0; zs: 473 negative samples (min -1.22e-05) set to 0; Y: 599 negative samples (min -1.3e-05) set to 0. No published pivot wavelengths. The w filter on LCO's filter page is not in this zip and is not substituted.",
+  "bands": {
+    "U": {
+      "sources": "https://lco.global/documents/2/lco_filter_curves.zip#bssl-ux-022.txt | https://lco.global/observatory/instruments/filters/",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 5501,
+      "pivot_A": 3599.57
+    },
+    "B": {
+      "sources": "https://lco.global/documents/2/lco_filter_curves.zip#bssl-bx-004.txt | https://lco.global/observatory/instruments/filters/",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 5501,
+      "pivot_A": 4364.89
+    },
+    "V": {
+      "sources": "https://lco.global/documents/2/lco_filter_curves.zip#bssl-vx-022.txt | https://lco.global/observatory/instruments/filters/",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 5501,
+      "pivot_A": 5361.83
+    },
+    "R": {
+      "sources": "https://lco.global/documents/2/lco_filter_curves.zip#bssl-rx-007.txt | https://lco.global/observatory/instruments/filters/",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 5501,
+      "pivot_A": 6432.58
+    },
+    "I": {
+      "sources": "https://lco.global/documents/2/lco_filter_curves.zip#bssl-ix-023.txt | https://lco.global/observatory/instruments/filters/",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 5501,
+      "pivot_A": 8837.56
+    },
+    "up": {
+      "sources": "https://lco.global/documents/2/lco_filter_curves.zip#SDSS.up.txt | https://lco.global/observatory/instruments/filters/",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "711 negative samples (min -3.27e-05) set to 0",
+      "ref_pivot": null,
+      "n": 4666,
+      "pivot_A": 3547.18
+    },
+    "gp": {
+      "sources": "https://lco.global/documents/2/lco_filter_curves.zip#SDSS.gp.txt | https://lco.global/observatory/instruments/filters/",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "1787 negative samples (min -0.000328) set to 0",
+      "ref_pivot": null,
+      "n": 4666,
+      "pivot_A": 4736.44
+    },
+    "rp": {
+      "sources": "https://lco.global/documents/2/lco_filter_curves.zip#SDSS.rp.txt | https://lco.global/observatory/instruments/filters/",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "1913 negative samples (min -0.000333) set to 0",
+      "ref_pivot": null,
+      "n": 4666,
+      "pivot_A": 6230.99
+    },
+    "ip": {
+      "sources": "https://lco.global/documents/2/lco_filter_curves.zip#SDSS.ip.txt | https://lco.global/observatory/instruments/filters/",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "2173 negative samples (min -0.000316) set to 0",
+      "ref_pivot": null,
+      "n": 4666,
+      "pivot_A": 7525.79
+    },
+    "zs": {
+      "sources": "https://lco.global/documents/2/lco_filter_curves.zip#PSTR-ZS-avg.txt | https://lco.global/observatory/instruments/filters/",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "473 negative samples (min -1.22e-05) set to 0",
+      "ref_pivot": null,
+      "n": 1601,
+      "pivot_A": 8687.59
+    },
+    "Y": {
+      "sources": "https://lco.global/documents/2/lco_filter_curves.zip#PSTR-YX-avg.txt | https://lco.global/observatory/instruments/filters/",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter",
+      "components_source": "original",
+      "cleaning": "599 negative samples (min -1.3e-05) set to 0",
+      "ref_pivot": null,
+      "n": 1601,
+      "pivot_A": 10033.09
+    }
+  },
+  "raw_files": {
+    "downloads/LasCumbres/lco_filter_curves.zip": "4e9ecf215af1d1210c43342dd7604492d07cea588239b148836eff6f1bf727f0"
+  }
+}

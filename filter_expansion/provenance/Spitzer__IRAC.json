@@ -1,0 +1,61 @@
+{
+  "facility": "Spitzer",
+  "instrument": "IRAC",
+  "notes": "IRAC full-array average spectral response curves (IRSA/SSC, 201125ch*trans_full). File header gives microns and electrons/photon, so DetectorType=photon; the response includes telescope, optics, filters and detector QE. Native e-/photon scale kept (not normalised).",
+  "bands": {
+    "I1": {
+      "sources": "https://irsa.ipac.caltech.edu/data/SPITZER/docs/irac/calibrationfiles/spectralresponse/201125ch1trans_full.txt",
+      "svo_id": "Spitzer/IRAC.I1",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 391,
+      "pivot_A": 35504.45
+    },
+    "I2": {
+      "sources": "https://irsa.ipac.caltech.edu/data/SPITZER/docs/irac/calibrationfiles/spectralresponse/201125ch2trans_full.txt",
+      "svo_id": "Spitzer/IRAC.I2",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 401,
+      "pivot_A": 44953.18
+    },
+    "I3": {
+      "sources": "https://irsa.ipac.caltech.edu/data/SPITZER/docs/irac/calibrationfiles/spectralresponse/201125ch3trans_full.txt",
+      "svo_id": "Spitzer/IRAC.I3",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 311,
+      "pivot_A": 57247.75
+    },
+    "I4": {
+      "sources": "https://irsa.ipac.caltech.edu/data/SPITZER/docs/irac/calibrationfiles/spectralresponse/201125ch4trans_full.txt",
+      "svo_id": "Spitzer/IRAC.I4",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 311,
+      "pivot_A": 78853.05
+    }
+  },
+  "raw_files": {
+    "downloads/Spitzer/201125ch1trans_full.txt": "d0a078093e0927bc5d2b861c9d8b1fedb33177b78fb43523f4aaf0bd89df5ed2",
+    "downloads/Spitzer/201125ch2trans_full.txt": "91eb54c866c3550cc5898c0622ea35a860bfb00d40a3c58dbddafcdad9790a22",
+    "downloads/Spitzer/201125ch3trans_full.txt": "894deebd8cfe0425baa470a1fc92b4566454d22926632ada66d79f7878322895",
+    "downloads/Spitzer/201125ch4trans_full.txt": "9ee66bd110c68a37bee82d23912f70a941cf1d3f9216948fd27ec781f4208722"
+  }
+}
