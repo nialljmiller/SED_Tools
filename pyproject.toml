@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sed-tools"
-version = "0.3.0"
+version = "0.4.0"
 description = "Programmatic access to SED Tools stellar spectral grids and photometry helpers."
 readme = "README.md"
 authors = [{ name = "Niall Miller" }]

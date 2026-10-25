@@ -47,9 +47,9 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Sequence, Tuple
 
 try:
-    from .filter_metadata import ENERGY, PHOTON, normalize_detector_type
+    from .filter_metadata import ENERGY, PHOTON, normalize_detector_type, read_filter_header
 except ImportError:  # pragma: no cover - executed as a standalone script
-    from filter_metadata import ENERGY, PHOTON, normalize_detector_type
+    from filter_metadata import ENERGY, PHOTON, normalize_detector_type, read_filter_header
 
 logger = logging.getLogger(__name__)
 
@@ -144,7 +144,8 @@ def infer_unit_from_values(values: np.ndarray) -> str:
 
     The guess is inherently ambiguous where units overlap (e.g. a K-band curve
     tabulated in nm, 1950-2400, reads as a UV curve in A), so files should
-    declare ``# WavelengthUnit: ...`` and callers may pass an explicit unit.
+    declare ``WavelengthUnit`` (on a filter curve's column row, see
+    :mod:`sed_tools.filter_metadata`) and callers may pass an explicit unit.
     """
     if values.size == 0:
         return "angstrom"
@@ -394,7 +395,8 @@ def _standardize_file_wavelengths(
         metadata["wavelength_unit_source"] = "inferred"
         logger.warning(
             "%s declares no wavelength unit; assuming %s from its values. "
-            "Add a '# WavelengthUnit: ...' header or pass wavelength_unit= to be explicit.",
+            "Declare WavelengthUnit (filter curves: on the column row, via "
+            "sed_tools.filter_metadata.write_filter_header) or pass wavelength_unit= to be explicit.",
             path,
             unit_key,
         )
@@ -413,6 +415,9 @@ def load_filter_curve(
     """
 
     raw_wavelengths, raw_transmission, metadata = load_two_column_file(path)
+    # SED_Tools metadata sits on the column row, which the sample parser skips.
+    metadata.update({normalize_metadata_key(key): parse_metadata_value(value)
+                     for key, value in read_filter_header(path).items()})
     wavelength, order = _standardize_file_wavelengths(path, raw_wavelengths, metadata, wavelength_unit)
     transmission = np.asarray(raw_transmission, dtype=float)[order]
     detector_type = normalize_detector_type(metadata.get("detectortype"))

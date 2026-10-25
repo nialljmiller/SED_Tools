@@ -104,14 +104,14 @@ def test_unresolved_instrument_rejects_extra_detector_or_optics(instrument):
 def test_manifest_role_must_match_component_header(instrument):
     manifest = InstrumentManifest.load(instrument)
     path = instrument / manifest.component_file("filter", "g")
-    path.write_text(path.read_text().replace("# Components: filter", "# Components: filter+qe"))
+    path.write_text(path.read_text().replace("Components=filter", "Components=filter+qe"))
     with pytest.raises(ComponentError, match="disagree"):
         build_product(instrument, "filter", bands=["g"])
 
 
 def test_mixed_detector_conventions_are_preserved(instrument):
     path = instrument / "r.dat"
-    path.write_text(path.read_text().replace("# DetectorType: photon", "# DetectorType: energy"))
+    path.write_text(path.read_text().replace("DetectorType=photon", "DetectorType=energy"))
     manifest = InstrumentManifest.from_published(instrument)
     manifest.save(instrument)
     assert manifest.describe()["detector_type"] == "mixed"

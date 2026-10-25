@@ -130,19 +130,6 @@ def test_loader_defaults_untagged_files_to_energy(tmp_path):
     assert curve.metadata["detectortypesource"] == SOURCE_ASSUMED
 
 
-def test_written_header_precedes_csv_body(tmp_path):
-    path = tmp_path / "G.dat"
-    write_filter_file(path, [1.0], [1.0], detector_type=PHOTON, source=SOURCE_SVO,
-                      filter_id="GAIA/GAIA3.G", wavelength_unit="Angstrom")
-    assert path.read_text().splitlines()[:5] == [
-        "# FilterID: GAIA/GAIA3.G",
-        "# DetectorType: photon",
-        "# DetectorTypeSource: svo",
-        "# WavelengthUnit: Angstrom",
-        "Wavelength,Transmission",
-    ]
-
-
 # ---------------------------------------------------------------------------
 # Resolution / tagging
 # ---------------------------------------------------------------------------

@@ -2,8 +2,29 @@
 Changelog
 =========
 
-Unreleased
-----------
+Version 0.4.0 (October 2026)
+----------------------------
+
+Legacy-safe filter metadata
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Filter metadata (``FilterID``, ``DetectorType``, ``Components`` and the
+  rest) is written as a third field of the ``Wavelength,Transmission`` column
+  row, e.g. ``Wavelength,Transmission,FilterID=GAIA/GAIA3.G;DetectorType=photon``,
+  with no whitespace and percent-escaped values. Version 0.3.0 wrote it as
+  leading ``#`` lines; released MESA (25.12.1, 26.4.1) sizes its arrays from
+  every line after the first, so each of those lines left an uninitialised
+  sample at the end of the curve and corrupted zero points without a nonzero
+  exit. MESA discards the column row, so curves now load exactly as before.
+- Files written by 0.3.0 are still read. Downloading, tagging, combining or
+  fetching a cached set moves their metadata onto the column row, keeping
+  every sample row byte for byte. ``sed-tools filters-migrate`` /
+  ``Filters.migrate_metadata()`` repairs a whole tree offline. A curve with
+  no column row is left as it is (or restored, if 0.3.0 tagged it), since
+  MESA would otherwise read a sample it has always discarded.
+- Regression tests transcribe MESA 26.4.1's ``load_filter`` and its
+  ``plot_unit_test`` loader and check the output of every writer against them
+  and against pandas, ``csv``, ``np.loadtxt`` and astropy.
 
 Public terminology
 ~~~~~~~~~~~~~~~~~~

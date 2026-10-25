@@ -1740,8 +1740,8 @@ class Filters:
     ) -> List[Dict[str, Any]]:
         """Ensure every filter file under ``path`` declares its detector type.
 
-        Each ``.dat`` file gets a ``# DetectorType: energy|photon`` header
-        (plus ``FilterID`` and ``DetectorTypeSource``), resolved from SVO by
+        Each ``.dat`` file gets ``DetectorType=energy|photon`` on its column
+        row (plus ``FilterID`` and ``DetectorTypeSource``), resolved from SVO by
         filter ID or by matching the curve against SVO's records. Files that
         cannot be identified are written as ``energy`` with source
         ``assumed``. See :mod:`sed_tools.filter_metadata`.
@@ -1778,6 +1778,7 @@ class Filters:
                 "source": r.source,
                 "filter_id": r.filter_id,
                 "changed": r.changed,
+                "migrated": r.migrated,
                 "note": r.note,
             })
             if verbose or (r.changed and r.source == "assumed"):
@@ -1785,6 +1786,41 @@ class Filters:
                 note = f"  ({r.note})" if r.note and r.source == "assumed" else ""
                 print(f"[filters]{flag} {r.path}: {r.detector_type} [{r.source}]{note}")
         return rows
+
+    @classmethod
+    def migrate_metadata(
+        cls,
+        path: Optional[Union[str, Path]] = None,
+        *,
+        dry_run: bool = False,
+    ) -> List[str]:
+        """Move SED_Tools 0.3.0 ``#`` metadata lines onto each curve's column row.
+
+        SED_Tools 0.3.0 wrote metadata as leading ``#`` lines in each ``.dat``
+        curve, which released MESA misreads as extra samples.  This rewrites
+        only those lines and the column row, without contacting any source; it
+        is idempotent.  A curve with no column row is restored to its form
+        before tagging, without metadata.  Returns the curves that had such lines.
+
+        Parameters
+        ----------
+        path : str or Path, optional
+            Filter root, instrument directory or single file, either as given
+            or relative to the filter root (e.g. ``"GAIA/GAIA"``).  Defaults to
+            the configured filter root and its sibling ``atmospheres`` directory.
+        dry_run : bool
+            Report the affected files without modifying them.
+        """
+        from .filter_metadata import migrate_filter_tree
+
+        if path is None:
+            roots = [cls._filter_root, cls._atmosphere_root()]
+        else:
+            target = next((p for p in (Path(path), cls._filter_root / path) if p.exists()), None)
+            if target is None:
+                raise FileNotFoundError(f"No filter file or directory at {path}")
+            roots = [target]
+        return [str(p) for root in roots for p in migrate_filter_tree(root, dry_run=dry_run)]
 
     @classmethod
     def _atmosphere_root(cls, filter_root: Optional[Union[str, Path]] = None) -> Path:

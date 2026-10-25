@@ -17,7 +17,7 @@ import requests
 import urllib3
 from bs4 import BeautifulSoup
 
-from .filter_metadata import SOURCE_ASSUMED, SVOMetadataClient, tag_filter_file
+from .filter_metadata import SOURCE_ASSUMED, SVOMetadataClient, migrate_filter_file, tag_filter_file
 
 logger = logging.getLogger(__name__)
 
@@ -88,6 +88,13 @@ class NJMFilterGrabber:
                         delay = min(int(retry_after), 60)
                 logger.warning("NJM request failed (%s); retrying in %s s: %s", status or type(exc).__name__, delay, url)
                 time.sleep(delay)
+
+    def _save_curve(self, url: str, target: Path, *, timeout: int = 30) -> None:
+        """Save a mirror curve, moving any 0.3.0 ``#`` metadata lines onto its column row."""
+        response = self._get(url, timeout=timeout)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(response.text, encoding="utf-8")
+        migrate_filter_file(target)
 
     @staticmethod
     def _normalize_name(name: str) -> str:
@@ -259,13 +266,10 @@ class NJMFilterGrabber:
                 continue
             
             try:
-                response = self._get(filter_url)
-                
-                with open(output_path, 'w', encoding='utf-8') as f:
-                    f.write(response.text)
+                self._save_curve(filter_url, Path(output_path))
 
-                # Mirror files should already carry a DetectorType header; this
-                # is a no-op for those and resolves it against SVO otherwise.
+                # Mirror files should already carry a DetectorType; this is a
+                # no-op for those and resolves it against SVO otherwise.
                 result = tag_filter_file(output_path, client=self._metadata_client, facility=facility)
                 if result.source == SOURCE_ASSUMED:
                     print(f"  [warn] {filter_name}: detector type unverified, assuming {result.detector_type}"
@@ -389,11 +393,10 @@ class NJMFilterGrabber:
                 print(f"  [skip] component resolves outside the instrument: {rel}")
                 continue
             if target.exists():
+                migrate_filter_file(target)
                 continue
             try:
-                response = self._get(f"{self.filters_url}/{facility}/{instrument}/{rel}")
-                target.parent.mkdir(parents=True, exist_ok=True)
-                target.write_text(response.text, encoding="utf-8")
+                self._save_curve(f"{self.filters_url}/{facility}/{instrument}/{rel}", target)
                 count += 1
             except requests.RequestException as exc:
                 print(f"  [error] component {rel}: {exc}")
@@ -414,9 +417,9 @@ class NJMFilterGrabber:
             site_dir.mkdir(parents=True, exist_ok=True)
             (site_dir / "manifest.json").write_text(response.text, encoding="utf-8")
             if filename and not (site_dir / filename).exists():
-                response = self.session.get(f"{base}/{filename}", timeout=120)
-                response.raise_for_status()
-                (site_dir / filename).write_text(response.text, encoding="utf-8")
+                self._save_curve(f"{base}/{filename}", site_dir / filename, timeout=120)
+            elif filename:
+                migrate_filter_file(site_dir / filename)
             return True
         except requests.RequestException as exc:
             print(f"[njm] atmosphere {site}: {exc}")
