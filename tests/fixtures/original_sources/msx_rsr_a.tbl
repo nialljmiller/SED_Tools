@@ -1,0 +1,15 @@
+\catalog = MSX
+\datatype = RSR
+\band = A
+\isophotalwave = 8.28 microns
+\ Relative Spectral Response curve from Midcourse Space Experiment
+\ Point Source Catalog V1.2 AFRL-VS-TR-1999-1522
+\ Egan, M.P, Price, S.D., et al. 1999
+| wavelength | response |
+| double     | double   |
+| microns    |          |
+|    null    |  null    |
+   5.80        0.000000
+   8.69        0.729787
+   8.70        0.735895
+   8.71        0.752735
