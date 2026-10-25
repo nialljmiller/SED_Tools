@@ -215,12 +215,7 @@ Wavelength,Transmission,FilterID=GAIA/GAIA3.G;DetectorType=photon;DetectorTypeSo
 
 The metadata is a third CSV field with no whitespace (`%`, spaces, tabs, line breaks, `,`, `;`, `"` and `#` in values are percent-escaped, e.g. `Atmosphere=site=ctio_des%20airmass=1.2`). Released MESA, pandas, `csv`, `np.loadtxt(skiprows=1)` and astropy's csv reader therefore see the same `Wavelength` and `Transmission` columns and samples as before; a curve without metadata keeps the bare `Wavelength,Transmission` row. Readers that require exactly two header names, such as `np.genfromtxt(names=True)`, see the extra field.
 
-SED_Tools 0.3.0 wrote these fields as `#` lines above the column row instead, which released MESA (25.12.1, 26.4.1) misreads as extra samples. SED_Tools still reads such files and moves their fields onto the column row whenever it touches them; repair a whole tree offline with:
-
-```bash
-sed-tools filters-migrate                  # filter root and atmospheres
-sed-tools filters-migrate GAIA/GAIA --dry-run
-```
+SED_Tools 0.3.0 wrote these fields as `#` lines above the column row instead, which released MESA (25.12.1, 26.4.1) misreads as extra samples. SED_Tools still reads such files, and moves their fields onto the column row whenever it fetches a cached set, downloads, tags or combines them. The NJM mirror has been converted.
 
 A curve with no column-name row (its first line is a sample) has no free line, so SED_Tools leaves it as it is and stores no metadata in it.
 
