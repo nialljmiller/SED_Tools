@@ -6,15 +6,24 @@ or for a *photon-counting* detector (CCDs; e.g. Gaia DR3).  Synthetic
 photometry must weight the integrand by ``T(λ)`` in the first case and by
 ``T(λ)·λ`` in the second (Bessell & Murphy 2012, PASP 124, 140, eq. A9).
 
-Every filter ``.dat`` file managed by SED_Tools carries this information in a
-small comment header placed before the CSV body::
+Every filter ``.dat`` file managed by SED_Tools carries this information as
+a third field of its column-name row, the one line released MESA (25.12.1,
+26.4.1) discards before reading samples::
 
-    # FilterID: GAIA/GAIA3.G
-    # DetectorType: photon
-    # DetectorTypeSource: svo
-    # WavelengthUnit: Angstrom
-    Wavelength,Transmission
+    Wavelength,Transmission,FilterID=GAIA/GAIA3.G;DetectorType=photon;DetectorTypeSource=svo;WavelengthUnit=Angstrom
+    3200.0,2.37366962e-08
     ...
+
+The field holds no whitespace and no raw commas (``%``, space, tab, CR, LF,
+``,``, ``;``, ``"`` and ``#`` in values are percent-escaped), so CSV readers still see
+the ``Wavelength`` and ``Transmission`` columns, and line-splitting readers see
+a single token.  A curve without metadata has the bare ``Wavelength,Transmission``
+row of earlier releases.
+
+SED_Tools 0.3.0 wrote these fields as leading ``# Key: value`` lines instead.
+MESA sizes its arrays from every line after the first, so each of those lines
+left an uninitialised sample at the end of the curve.  Such files are still
+read, and :func:`migrate_filter_file` moves their fields onto the column row.
 
 ``DetectorType`` is ``energy`` or ``photon``.  ``DetectorTypeSource`` records
 how it was established:
@@ -38,9 +47,11 @@ import io
 import logging
 import os
 import re
-from dataclasses import dataclass
+import shutil
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Callable, Dict, Iterable, List, Optional, Sequence, Tuple, Union
+from typing import Callable, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
+from urllib.parse import unquote
 
 import numpy as np
 
@@ -96,42 +107,137 @@ def normalize_detector_type(value: object) -> Optional[str]:
 # --------------------------------------------------------------------------
 # Header I/O
 # --------------------------------------------------------------------------
+#: The column-name row of every curve SED_Tools writes.
+COLUMN_ROW = "Wavelength,Transmission"
+
 _HEADER_RE = re.compile(r"^#\s*([A-Za-z]+)\s*[:=]\s*(.*?)\s*$")
+# Characters that would split the metadata field, or the line, for some reader.
+_ESCAPES = {c: f"%{ord(c):02X}" for c in '% \t\r\n,;"#'}
 
 
-def read_filter_header(path: PathLike) -> Dict[str, str]:
-    """Return the SED_Tools header fields (``HEADER_KEYS``) present in a filter file."""
+def format_metadata_field(fields: Mapping[str, Optional[str]]) -> str:
+    """Return the ``Key=value;...`` field SED_Tools appends to a column row."""
+    return ";".join(
+        f"{key}={''.join(_ESCAPES.get(c, c) for c in str(fields[key]))}"
+        for key in HEADER_KEYS if fields.get(key)
+    )
+
+
+def _parse_metadata_field(text: str) -> Optional[Dict[str, str]]:
+    """Fields encoded in ``text``, or ``None`` when it is not a metadata field."""
     fields: Dict[str, str] = {}
-    with open(path, "r", encoding="utf-8") as fh:
-        for line in fh:
-            stripped = line.strip()
-            if not stripped:
-                continue
-            if not stripped.startswith("#"):
-                break
-            match = _HEADER_RE.match(stripped)
-            if match and match.group(1) in HEADER_KEYS:
-                fields[match.group(1)] = match.group(2)
+    for item in text.split(";"):
+        key, sep, value = item.partition("=")
+        if not sep or key not in HEADER_KEYS:
+            return None
+        fields[key] = unquote(value)
     return fields
 
 
-def write_filter_header(path: PathLike, fields: Dict[str, Optional[str]]) -> None:
-    """Rewrite ``path`` with ``fields`` as its leading header, keeping everything else."""
-    with open(path, "r", encoding="utf-8") as fh:
-        lines = fh.readlines()
+def _is_sample_row(text: str) -> bool:
+    parts = text.replace(",", " ").split()
+    try:
+        float(parts[0])
+        float(parts[1])
+    except (IndexError, ValueError):
+        return False
+    return True
 
-    body = []
-    for line in lines:
-        match = _HEADER_RE.match(line.strip())
-        if match and match.group(1) in HEADER_KEYS:
+
+@dataclass
+class _Layout:
+    """Where SED_Tools metadata sits in a curve file."""
+
+    lines: List[bytes]                      # the file, line endings kept
+    legacy: Dict[str, str]                  # fields on leading "#" lines (SED_Tools 0.3.0)
+    legacy_rows: List[int]
+    column_row: Optional[int] = None        # None when the first other line is a sample
+    columns: str = ""                       # the column names, without metadata
+    fields: Dict[str, str] = field(default_factory=dict)  # metadata on the column row
+
+
+def _layout(path: PathLike) -> _Layout:
+    with open(path, "rb") as fh:
+        lines = fh.read().splitlines(keepends=True)
+    layout = _Layout(lines, {}, [])
+    for i, raw in enumerate(lines):
+        text = raw.decode("utf-8", "replace").strip()
+        if not text:
             continue
-        body.append(line)
+        if text.startswith("#"):
+            match = _HEADER_RE.match(text)
+            if match and match.group(1) in HEADER_KEYS:
+                layout.legacy[match.group(1)] = match.group(2)
+                layout.legacy_rows.append(i)
+            continue
+        if not _is_sample_row(text):
+            layout.column_row = i
+            columns, sep, last = text.rpartition(",")
+            fields = _parse_metadata_field(last) if sep else None
+            layout.columns, layout.fields = (columns, fields) if fields else (text, {})
+        break
+    return layout
 
-    header = [f"# {key}: {fields[key]}\n" for key in HEADER_KEYS if fields.get(key)]
-    tmp_path = f"{path}.tmp"
-    with open(tmp_path, "w", encoding="utf-8") as fh:
-        fh.writelines(header + body)
-    os.replace(tmp_path, path)
+
+def read_filter_header(path: PathLike) -> Dict[str, str]:
+    """Return the SED_Tools metadata fields (``HEADER_KEYS``) of a filter file.
+
+    Fields come from the column row, with leading ``#`` lines written by
+    SED_Tools 0.3.0 as a fallback.
+    """
+    layout = _layout(path)
+    return {**layout.legacy, **layout.fields}
+
+
+def has_column_row(path: PathLike) -> bool:
+    """Whether ``path`` has a column row, the only place metadata can be stored."""
+    return _layout(path).column_row is not None
+
+
+def write_filter_header(path: PathLike, fields: Mapping[str, Optional[str]]) -> bool:
+    """Store ``fields`` on the column row of ``path``, replacing what it had.
+
+    Leading ``#`` lines written by SED_Tools 0.3.0 are removed and every
+    sample row is kept byte for byte.  A curve without a column row has no
+    free line (MESA discards line 1, which is then a sample), so its metadata
+    is not stored and ``False`` is returned.
+    """
+    layout = _layout(path)
+    lines = list(layout.lines)
+    if layout.column_row is not None:
+        raw = lines[layout.column_row]
+        ending = raw[len(raw.rstrip(b"\r\n")):] or b"\n"
+        meta = format_metadata_field(fields)
+        lines[layout.column_row] = (layout.columns + ("," + meta if meta else "")).encode("utf-8") + ending
+    elif any(fields.values()):
+        logger.warning("%s has no column-name row to hold SED_Tools metadata; left as it is", path)
+    for i in reversed(layout.legacy_rows):
+        del lines[i]
+    if lines != layout.lines:
+        tmp_path = f"{path}.tmp"
+        with open(tmp_path, "wb") as fh:
+            fh.writelines(lines)
+        shutil.copymode(path, tmp_path)
+        os.replace(tmp_path, path)
+    return layout.column_row is not None
+
+
+def migrate_filter_file(path: PathLike, *, dry_run: bool = False) -> bool:
+    """Move metadata from leading ``#`` lines (SED_Tools 0.3.0) onto the column row.
+
+    Returns whether ``path`` had such lines.  A curve without a column row is
+    restored to its form before tagging; :func:`has_column_row` tells the two apart.
+    """
+    layout = _layout(path)
+    if layout.legacy and not dry_run:
+        write_filter_header(path, {**layout.legacy, **layout.fields})
+    return bool(layout.legacy)
+
+
+def copy_filter_file(source: PathLike, target: PathLike) -> None:
+    """Copy a curve with its metadata, repairing a 0.3.0 layout in the copy."""
+    shutil.copy2(source, target)
+    migrate_filter_file(target)
 
 
 def write_filter_file(
@@ -145,7 +251,7 @@ def write_filter_file(
     wavelength_unit: Optional[str] = None,
     extra: Optional[Dict[str, Optional[str]]] = None,
 ) -> None:
-    """Write a filter curve in the SED_Tools ``.dat`` format, header included.
+    """Write a filter curve in the SED_Tools ``.dat`` format, metadata included.
 
     ``extra`` holds further header fields (``Role``, ``Components``, ...);
     keys must be listed in ``HEADER_KEYS``.
@@ -160,11 +266,9 @@ def write_filter_file(
         if key not in HEADER_KEYS:
             raise ValueError(f"Unknown filter header key: {key}")
         fields[key] = value
+    meta = format_metadata_field(fields)
     with open(path, "w", encoding="utf-8") as fh:
-        for key in HEADER_KEYS:
-            if fields.get(key):
-                fh.write(f"# {key}: {fields[key]}\n")
-        fh.write("Wavelength,Transmission\n")
+        fh.write(COLUMN_ROW + ("," + meta if meta else "") + "\n")
         for wl, tr in zip(wavelength, transmission):
             fh.write(f"{float(wl)!r},{float(tr)!r}\n")
 
@@ -306,6 +410,7 @@ class DetectorTypeResult:
     filter_id: Optional[str] = None
     changed: bool = False
     note: str = ""
+    migrated: bool = False  # 0.3.0 "#" lines moved onto the column row
 
 
 def resolve_detector_type(
@@ -400,8 +505,11 @@ def tag_filter_file(
 
     Files already tagged from an authoritative source are left alone unless
     ``force`` is set.  Files previously tagged ``assumed`` are always retried.
+    Leading ``#`` metadata lines (SED_Tools 0.3.0) are always moved onto the
+    column row first.
     """
     path = Path(path)
+    migrated = migrate_filter_file(path, dry_run=dry_run)
     client = client or SVOMetadataClient()
     header = read_filter_header(path)
     existing = normalize_detector_type(header.get("DetectorType"))
@@ -409,16 +517,18 @@ def tag_filter_file(
     complete = not header.get("FilterID") or bool(header.get("WavelengthUnit") and header.get("Components"))
     if (existing and existing_source == SOURCE_ASSUMED and
             header.get("ComponentsSource") == "original" and not force):
-        return DetectorTypeResult(path, existing, SOURCE_ASSUMED, header.get("FilterID"))
+        return DetectorTypeResult(path, existing, SOURCE_ASSUMED, header.get("FilterID"), migrated=migrated)
     if existing and existing_source != SOURCE_ASSUMED and complete and not force:
-        return DetectorTypeResult(path, existing, existing_source or "header", header.get("FilterID"))
+        return DetectorTypeResult(path, existing, existing_source or "header", header.get("FilterID"),
+                                  migrated=migrated)
 
     detector_type, filter_id, source, note = resolve_detector_type(path, client=client, facility=facility)
     if detector_type is None:
         if existing:
             # An unavailable catalogue cannot replace an explicit source
             # assumption with the historical energy default.
-            return DetectorTypeResult(path, existing, existing_source or "header", header.get("FilterID"), note=note)
+            return DetectorTypeResult(path, existing, existing_source or "header", header.get("FilterID"),
+                                      note=note, migrated=migrated)
         detector_type, source = ENERGY, SOURCE_ASSUMED
     elif source == SOURCE_SVO and existing_source == SOURCE_SVO_MATCH:
         # The FilterID itself came from a curve match; keep that provenance.
@@ -448,9 +558,13 @@ def tag_filter_file(
         (header.get(k) or None) != (new_fields.get(k) or None)
         for k in DETECTOR_KEYS + ("Components", "ComponentsSource")
     )
-    if changed and not dry_run:
+    if changed and not has_column_row(path):
+        changed = False
+        note = "; ".join(filter(None, [note, "no column-name row to hold metadata; file left as it is"]))
+    elif changed and not dry_run:
         write_filter_header(path, new_fields)
-    return DetectorTypeResult(path, detector_type, source, filter_id, changed=changed, note=note)
+    return DetectorTypeResult(path, detector_type, source, filter_id, changed=changed, note=note,
+                              migrated=migrated)
 
 
 def iter_filter_files(root: PathLike) -> Iterable[Path]:
@@ -485,3 +599,11 @@ def tag_filter_tree(
         if progress is not None:
             progress(result)
     return results
+
+
+def migrate_filter_tree(root: PathLike, *, dry_run: bool = False) -> List[Path]:
+    """Move 0.3.0 ``#`` metadata lines onto the column row of every curve below ``root``, offline.
+
+    Returns the curves that carried metadata; see :func:`migrate_filter_file`.
+    """
+    return [path for path in iter_filter_files(root) if migrate_filter_file(path, dry_run=dry_run)]

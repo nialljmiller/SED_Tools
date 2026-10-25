@@ -21,7 +21,7 @@ from .filter_components import (
     InstrumentManifest, atmosphere_file, build_product, find_atmosphere, parse_components,
     resolve_atmosphere,
 )
-from .filter_metadata import svo_components_header
+from .filter_metadata import migrate_filter_tree, svo_components_header
 from .njm_filter_grabber import NJMFilterGrabber
 from .svo_filter_grabber import SVOFilterBrowser, _clean_path
 
@@ -82,6 +82,8 @@ class FilterLibrary:
     def published(self, facility, instrument):
         directory = self.root / facility / instrument
         if self.published_complete(directory):
+            # Sets downloaded by SED_Tools 0.3.0 carry metadata on leading '#' lines.
+            migrate_filter_tree(directory)
             return directory
 
         if self.mirror.is_available():

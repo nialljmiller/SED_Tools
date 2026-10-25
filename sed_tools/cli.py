@@ -979,6 +979,13 @@ def main():
     fdp.add_argument("--dry-run", action="store_true",
                      help="Report without modifying files")
 
+    fmp = sub.add_parser("filters-migrate",
+                         help="Move SED_Tools 0.3.0 '#' filter metadata onto each curve's column row (offline)")
+    fmp.add_argument("path", nargs="?", default=None,
+                     help="Filter root, instrument directory or single .dat file "
+                          "(default: filter root and atmospheres)")
+    fmp.add_argument("--dry-run", action="store_true", help="Report without modifying files")
+
     fip = sub.add_parser("filters-info",
                          help="Show what a filter set contains and which components can be requested")
     fip.add_argument("target", help="Facility/Instrument, e.g. SLOAN/SDSS")
@@ -1158,9 +1165,23 @@ def main():
         counts = Counter((r["detector_type"], r["source"]) for r in rows)
         changed = sum(r["changed"] for r in rows)
         verb = "would change" if args.dry_run else "changed"
-        print(f"\n[filters] {len(rows)} files, {changed} {verb}")
+        migrated = sum(r["migrated"] for r in rows)
+        moved = "would move" if args.dry_run else "moved"
+        print(f"\n[filters] {len(rows)} files, {changed} {verb}, {migrated} {moved} 0.3.0 '#' metadata to the column row")
         for (dtype, source), n in sorted(counts.items()):
             print(f"  {dtype:6s} [{source}]: {n}")
+    elif args.cmd == "filters-migrate":
+        from .api import Filters
+        from .filter_metadata import has_column_row
+        moved = Filters.migrate_metadata(args.path, dry_run=args.dry_run)
+        for path in moved:
+            print(f"[filters] {path}")
+        verb = "would move" if args.dry_run else "moved"
+        print(f"[filters] {len(moved)} curves: {verb} 0.3.0 '#' metadata to the column row")
+        bare = [path for path in moved if not has_column_row(path)]
+        if bare:
+            dropped = "would be removed" if args.dry_run else "were removed"
+            print(f"[filters] {len(bare)} have no column-name row: their '#' lines {dropped} without keeping the metadata")
     elif args.cmd == "filters-info":
         from .api import Filters
         target = args.target.strip("/").split("/")

@@ -205,16 +205,24 @@ QE describes the detector's wavelength-dependent efficiency; detector type descr
 
 A transmission curve is defined either for an energy-counting detector (e.g. Bessell's Johnson–Cousins curves) or for a photon-counting one (CCDs, e.g. Gaia DR3, JWST, 2MASS). Synthetic photometry weights the integrand by `T(λ)` in the first case and by `T(λ)·λ` in the second ([Bessell & Murphy 2012](https://ui.adsabs.harvard.edu/abs/2012PASP..124..140B/abstract), eq. A9); using the wrong one shifts Gaia G by ~0.035 mag.
 
-Every filter file carries a header recording which applies:
+Every filter file records which applies on its column-name row, the one line MESA discards before reading samples:
 
 ```
-# FilterID: GAIA/GAIA3.G
-# DetectorType: photon
-# DetectorTypeSource: svo
-# WavelengthUnit: Angstrom
-Wavelength,Transmission
+Wavelength,Transmission,FilterID=GAIA/GAIA3.G;DetectorType=photon;DetectorTypeSource=svo;WavelengthUnit=Angstrom
+3200.0,2.37366962e-08
 ...
 ```
+
+The metadata is a third CSV field with no whitespace (`%`, spaces, tabs, line breaks, `,`, `;`, `"` and `#` in values are percent-escaped, e.g. `Atmosphere=site=ctio_des%20airmass=1.2`). Released MESA, pandas, `csv`, `np.loadtxt(skiprows=1)` and astropy's csv reader therefore see the same `Wavelength` and `Transmission` columns and samples as before; a curve without metadata keeps the bare `Wavelength,Transmission` row. Readers that require exactly two header names, such as `np.genfromtxt(names=True)`, see the extra field.
+
+SED_Tools 0.3.0 wrote these fields as `#` lines above the column row instead, which released MESA (25.12.1, 26.4.1) misreads as extra samples. SED_Tools still reads such files and moves their fields onto the column row whenever it touches them; repair a whole tree offline with:
+
+```bash
+sed-tools filters-migrate                  # filter root and atmospheres
+sed-tools filters-migrate GAIA/GAIA --dry-run
+```
+
+A curve with no column-name row (its first line is a sample) has no free line, so SED_Tools leaves it as it is and stores no metadata in it.
 
 `DetectorType` is `energy` or `photon`. `DetectorTypeSource` is `svo` (taken from the SVO record for `FilterID`), `svo-curve-match` (the file was identified by matching its curve point-by-point against SVO), or `assumed` (not identifiable — custom curves — written as `energy` and unverified). Downloads write the header automatically; existing files can be tagged in place:
 
@@ -233,7 +241,7 @@ Filters.tag_detector_types()               # returns one row per file
 
 #### Filter, optics, QE and atmosphere as separate components
 
-A published passband is usually a product of several throughputs, and which ones varies: Gaia DR3 is filter + CCD + instrument, SDSS/2MASS/PS1 include the atmosphere, Johnson is the filter alone. Every filter file records what its published curve contains (`# Components: filter+qe+instrument`). Where an instrument's team publishes the factors separately, SED_Tools stores them alongside and generates that instrument's throughput with and without each one. Components are never mixed between instruments or sites: an instrument is only ever composed from its own filter, optics and QE, and only its own site's atmosphere.
+A published passband is usually a product of several throughputs, and which ones varies: Gaia DR3 is filter + CCD + instrument, SDSS/2MASS/PS1 include the atmosphere, Johnson is the filter alone. Every filter file records what its published curve contains (`Components=filter+qe+instrument`). Where an instrument's team publishes the factors separately, SED_Tools stores them alongside and generates that instrument's throughput with and without each one. Components are never mixed between instruments or sites: an instrument is only ever composed from its own filter, optics and QE, and only its own site's atmosphere.
 
 ```
 filters/<Facility>/<Instrument>/
@@ -1068,7 +1076,7 @@ BOSZ 2024 fixed-resolution spectra require the official wavelength files in the 
 If you use SED_Tools in your research, please cite the archived software release
 via its Zenodo DOI:
 
-A version-specific Zenodo DOI for Version 0.3.0 will be added following archival of this release.
+A version-specific Zenodo DOI for Version 0.4.0 will be added following archival of this release.
 
 Machine-readable citation metadata is available in [`CITATION.cff`](CITATION.cff).
 

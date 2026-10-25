@@ -11,11 +11,11 @@ from __future__ import annotations
 
 import argparse
 import os
-import shutil
 from pathlib import Path
 from typing import List, Optional, Sequence, Union
 
 from .filter_components import COMPONENTS_DIR, is_auxiliary_path
+from .filter_metadata import copy_filter_file, migrate_filter_file
 from .models import FILTER_DIR_DEFAULT
 
 PathLike = Union[str, os.PathLike[str]]
@@ -137,7 +137,9 @@ def combine_filter_sets(
                     target = unique_filter_target(output_dir, source_file)
 
             if target.resolve() != source_file.resolve():
-                shutil.copy2(source_file, target)
+                copy_filter_file(source_file, target)
+            else:
+                migrate_filter_file(target)
             copied.append(target.name)
 
     if not copied:
