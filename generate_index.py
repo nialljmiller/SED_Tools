@@ -8,6 +8,7 @@ import json
 from collections import Counter
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import unquote
 
 
 def scan_stellar_models(base_path: Path):
@@ -66,15 +67,25 @@ def scan_stellar_models(base_path: Path):
 
 
 def read_curve_metadata(path: Path):
-    """Read the short metadata header without loading the transmission samples."""
+    """Read a curve's metadata without loading the transmission samples.
+
+    SED_Tools writes it as a third field of the column row
+    (``Wavelength,Transmission,Key=value;...``); curves written by 0.3.0 carry
+    it as leading ``# Key: value`` lines instead.
+    """
     metadata = {}
     with path.open(encoding="utf-8") as curve:
         for line in curve:
-            if not line.startswith("#"):
-                break
-            key, separator, value = line[1:].partition(":")
-            if separator:
-                metadata[key.strip()] = value.strip()
+            if line.startswith("#"):
+                key, separator, value = line[1:].partition(":")
+                if separator:
+                    metadata[key.strip()] = value.strip()
+                continue
+            columns, separator, field = line.strip().rpartition(",")
+            items = [item.partition("=") for item in field.split(";")] if separator else []
+            if items and all(sep and key.isalpha() for key, sep, _ in items):
+                metadata.update((key, unquote(value)) for key, _, value in items)
+            break
     return metadata
 
 
