@@ -2,8 +2,8 @@
 Changelog
 =========
 
-Unreleased
-----------
+Version 0.4.1 (October 2026)
+----------------------------
 
 Filter metadata robustness
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
