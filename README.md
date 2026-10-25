@@ -1029,6 +1029,16 @@ sed-tools grids --source njm --grids Kurucz2003all
 sed-tools grids --grids Kurucz2003all --workers 2
 ```
 
+**SVO Filter Profile Service unreachable**
+
+SVO filter requests give up after a 10 s connect timeout. Use the NJM mirror
+or the original-source builders (`sed-tools filters-build-components`), or
+point SED_Tools at another FPS endpoint:
+
+```bash
+export SED_SVO_FPS_URL=https://svo2.cab.inta-csic.es/theory/fps/fps.php
+```
+
 **Missing PyTorch for ML tools**
 
 ```bash
