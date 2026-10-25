@@ -19,14 +19,13 @@ import pytest
 import requests
 from astropy.io import ascii
 
-from sed_tools import cli
 from sed_tools._flux import load_filter_curve
-from sed_tools.api import Filters
 from sed_tools.combine_filters import combine_filter_sets
 from sed_tools.filter_components import InstrumentManifest, add_component, build_product
 from sed_tools.filter_library import FilterLibrary
-from sed_tools.filter_metadata import (PHOTON, SOURCE_SVO, SOURCE_SVO_MATCH, has_column_row,
-                                       migrate_filter_file, read_filter_header, tag_filter_file,
+from sed_tools.filter_metadata import (PHOTON, SOURCE_SVO, SOURCE_SVO_MATCH, format_metadata_field,
+                                       has_column_row, migrate_filter_file, migrate_filter_tree,
+                                       read_filter_header, released_mesa_reads, tag_filter_file,
                                        write_filter_file, write_filter_header)
 from sed_tools.flux_cube_tool import load_two_column_file
 
@@ -159,11 +158,52 @@ def test_migration_moves_fields_and_keeps_samples_byte_for_byte(tmp_path):
     assert_legacy_readers(path)
 
 
-def test_migration_keeps_foreign_lines_and_crlf(tmp_path):
+def test_migration_keeps_foreign_lines_and_crlf(tmp_path, caplog):
     path = tmp_path / "X.dat"
     path.write_bytes(b"# DetectorType: energy\r\n# measured by hand\r\nWavelength,Transmission\r\n1,2\r\n")
+    assert not released_mesa_reads(path, after_migration=True)
     migrate_filter_file(path)
     assert path.read_bytes() == b"# measured by hand\r\nWavelength,Transmission,DetectorType=energy\r\n1,2\r\n"
+    # The foreign comment is the user's to remove; the migration must not call the curve fixed.
+    assert not released_mesa_reads(path)
+    assert "released MESA miscounts" in caplog.text
+
+
+@pytest.mark.parametrize("text, ok", [
+    ("Wavelength,Transmission,DetectorType=photon\n1,2\n3,4\n", True),
+    ("Wavelength,Transmission\n1,2\n3,4", True),
+    ("1,2\n3,4\n", True),  # MESA drops the first sample, as it always has, but allocates correctly
+    ("# c\nWavelength,Transmission\n1,2\n", False),
+    ("\nWavelength,Transmission\n1,2\n", False),
+    ("Wavelength,Transmission\n1,2\n\n", False),
+    ("Wavelength,Transmission\n1,2\n\n3,4\n", False),
+])
+def test_released_mesa_check_matches_the_released_reader(tmp_path, text, ok):
+    path = tmp_path / "C.dat"
+    path.write_text(text)
+    allocated, samples = released_mesa_load_filter(path)
+    assert released_mesa_reads(path) is ok is (allocated == len(samples))
+
+
+def test_keys_from_newer_writers_are_kept(tmp_path):
+    path = tmp_path / "GAIA" / "GAIA" / "G.dat"
+    path.parent.mkdir(parents=True)
+    path.write_text("Wavelength,Transmission,FilterID=GAIA/GAIA3.G;DetectorType=photon;DetectorTypeSource=svo;"
+                    "WavelengthUnit=Angstrom;Components=filter;Future_Key2=a%20b\n3200.0,0.1\n6000.0,0.75\n")
+    assert read_filter_header(path)["Future_Key2"] == "a b"
+    assert read_filter_header(path)["DetectorType"] == PHOTON
+    client = SimpleNamespace(get_filter=lambda fid: pytest.fail("an authoritative tag needs no lookup"))
+    assert tag_filter_file(path, client=client).detector_type == PHOTON
+    write_filter_header(path, {**read_filter_header(path), "DetectorType": "energy"})
+    row = path.read_text().splitlines()[0]
+    assert row.endswith(";Components=filter;Future_Key2=a%20b") and len(row.split(",")) == 3
+    assert read_filter_header(path)["DetectorType"] == "energy"
+    assert_legacy_readers(path)
+
+
+def test_invalid_metadata_keys_are_refused():
+    with pytest.raises(ValueError):
+        format_metadata_field({"bad key": "x"})
 
 
 def test_curve_without_column_row_is_never_given_one(tmp_path):
@@ -304,33 +344,15 @@ def test_cached_030_set_is_repaired_before_use(tmp_path):
         assert read_filter_header(path) == fields
 
 
-def test_migrate_command_is_offline_and_reports(tmp_path, monkeypatch, capsys):
+def test_tree_migration_is_offline_and_idempotent(tmp_path, monkeypatch):
     root = tmp_path / "filters" / "GAIA" / "GAIA"
     root.mkdir(parents=True)
     (root / "G.dat").write_text(TAGGED_030)
     (root / "Bp.dat").write_text("Wavelength,Transmission\n1,1\n2,1\n")
-    (root / "raw.dat").write_text("# DetectorType: photon\n3830 0\n4000 1\n")
     monkeypatch.setattr(requests.Session, "request", lambda *a, **k: pytest.fail("migration is offline"))
 
-    assert Filters.migrate_metadata(tmp_path / "filters", dry_run=True) == [str(root / "G.dat"), str(root / "raw.dat")]
+    assert migrate_filter_tree(tmp_path / "filters", dry_run=True) == [root / "G.dat"]
     assert (root / "G.dat").read_text() == TAGGED_030
-
-    monkeypatch.setattr("sys.argv", ["sed-tools", "filters-migrate", str(tmp_path / "filters")])
-    assert cli.main() in (0, None)
-    out = capsys.readouterr().out
-    assert "2 curves: moved 0.3.0 '#' metadata to the column row" in out
-    assert "1 have no column-name row" in out
+    assert migrate_filter_tree(tmp_path / "filters") == [root / "G.dat"]
     assert_legacy_readers(root / "G.dat")
-    assert (root / "raw.dat").read_text() == "3830 0\n4000 1\n"
-    assert Filters.migrate_metadata(tmp_path / "filters") == []
-
-
-def test_migrate_resolves_paths_against_the_filter_root(tmp_path, monkeypatch):
-    root = tmp_path / "filters"
-    (root / "GAIA" / "GAIA").mkdir(parents=True)
-    (root / "GAIA" / "GAIA" / "G.dat").write_text(TAGGED_030)
-    monkeypatch.setattr(Filters, "_filter_root", root)
-    monkeypatch.chdir(tmp_path)
-    with pytest.raises(FileNotFoundError):
-        Filters.migrate_metadata("GAIA/Missing")
-    assert Filters.migrate_metadata("GAIA/GAIA") == [str(root / "GAIA" / "GAIA" / "G.dat")]
+    assert migrate_filter_tree(tmp_path / "filters") == []

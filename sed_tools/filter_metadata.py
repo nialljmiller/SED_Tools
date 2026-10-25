@@ -111,24 +111,36 @@ def normalize_detector_type(value: object) -> Optional[str]:
 COLUMN_ROW = "Wavelength,Transmission"
 
 _HEADER_RE = re.compile(r"^#\s*([A-Za-z]+)\s*[:=]\s*(.*?)\s*$")
+# A metadata key on the column row; keys beyond ``HEADER_KEYS`` come from newer writers.
+_KEY_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_]*$")
 # Characters that would split the metadata field, or the line, for some reader.
 _ESCAPES = {c: f"%{ord(c):02X}" for c in '% \t\r\n,;"#'}
 
 
 def format_metadata_field(fields: Mapping[str, Optional[str]]) -> str:
-    """Return the ``Key=value;...`` field SED_Tools appends to a column row."""
-    return ";".join(
-        f"{key}={''.join(_ESCAPES.get(c, c) for c in str(fields[key]))}"
-        for key in HEADER_KEYS if fields.get(key)
-    )
+    """Return the ``Key=value;...`` field SED_Tools appends to a column row.
+
+    Known keys come first, in ``HEADER_KEYS`` order; any others (read from a
+    file written by a newer version) follow as given, so a rewrite keeps them.
+    """
+    keys = [key for key in HEADER_KEYS if fields.get(key)]
+    keys += [key for key in fields if key not in HEADER_KEYS and fields.get(key)]
+    for key in keys:
+        if not _KEY_RE.match(key):
+            raise ValueError(f"Invalid filter metadata key: {key!r}")
+    return ";".join(f"{key}={''.join(_ESCAPES.get(c, c) for c in str(fields[key]))}" for key in keys)
 
 
 def _parse_metadata_field(text: str) -> Optional[Dict[str, str]]:
-    """Fields encoded in ``text``, or ``None`` when it is not a metadata field."""
+    """Fields encoded in ``text``, or ``None`` when it is not a metadata field.
+
+    Keys outside ``HEADER_KEYS`` are kept: a newer SED_Tools may add fields,
+    and dropping the whole field for one unknown key would lose them all.
+    """
     fields: Dict[str, str] = {}
     for item in text.split(";"):
         key, sep, value = item.partition("=")
-        if not sep or key not in HEADER_KEYS:
+        if not sep or not _KEY_RE.match(key):
             return None
         fields[key] = unquote(value)
     return fields
@@ -180,7 +192,7 @@ def _layout(path: PathLike) -> _Layout:
 
 
 def read_filter_header(path: PathLike) -> Dict[str, str]:
-    """Return the SED_Tools metadata fields (``HEADER_KEYS``) of a filter file.
+    """Return the SED_Tools metadata fields of a filter file.
 
     Fields come from the column row, with leading ``#`` lines written by
     SED_Tools 0.3.0 as a fallback.
@@ -203,16 +215,9 @@ def write_filter_header(path: PathLike, fields: Mapping[str, Optional[str]]) -> 
     is not stored and ``False`` is returned.
     """
     layout = _layout(path)
-    lines = list(layout.lines)
-    if layout.column_row is not None:
-        raw = lines[layout.column_row]
-        ending = raw[len(raw.rstrip(b"\r\n")):] or b"\n"
-        meta = format_metadata_field(fields)
-        lines[layout.column_row] = (layout.columns + ("," + meta if meta else "")).encode("utf-8") + ending
-    elif any(fields.values()):
+    if layout.column_row is None and any(fields.values()):
         logger.warning("%s has no column-name row to hold SED_Tools metadata; left as it is", path)
-    for i in reversed(layout.legacy_rows):
-        del lines[i]
+    lines = _rewritten(layout, fields)
     if lines != layout.lines:
         tmp_path = f"{path}.tmp"
         with open(tmp_path, "wb") as fh:
@@ -222,15 +227,62 @@ def write_filter_header(path: PathLike, fields: Mapping[str, Optional[str]]) -> 
     return layout.column_row is not None
 
 
+def _rewritten(layout: _Layout, fields: Mapping[str, Optional[str]]) -> List[bytes]:
+    """The lines of ``layout`` with ``fields`` on the column row and no 0.3.0 lines."""
+    lines = list(layout.lines)
+    if layout.column_row is not None:
+        raw = lines[layout.column_row]
+        ending = raw[len(raw.rstrip(b"\r\n")):] or b"\n"
+        meta = format_metadata_field(fields)
+        lines[layout.column_row] = (layout.columns + ("," + meta if meta else "")).encode("utf-8") + ending
+    for i in reversed(layout.legacy_rows):
+        del lines[i]
+    return lines
+
+
+def _released_mesa_reads_lines(lines: Sequence[bytes]) -> bool:
+    text = [line.decode("utf-8", "replace").rstrip("\r\n") for line in lines]
+    i = 0
+    while i < len(text) and text[i][:1] == "#":
+        i += 1
+    read = 0
+    for line in text[i + 1:]:
+        if not _is_sample_row(line):
+            break
+        read += 1
+    return len(text) - 1 == read
+
+
+def released_mesa_reads(path: PathLike, *, after_migration: bool = False) -> bool:
+    """Whether released MESA colors (25.10.1rc1 to 26.4.1) reads ``path`` without junk samples.
+
+    Its ``load_filter`` discards line 1, sizes its arrays from every later
+    line, then skips leading ``#`` lines plus the first other line before
+    reading samples, so any comment or blank line other than a single column
+    row leaves uninitialised samples.  ``after_migration`` judges the file as
+    :func:`migrate_filter_file` would leave it.
+    """
+    layout = _layout(path)
+    lines = _rewritten(layout, {**layout.legacy, **layout.fields}) if after_migration else layout.lines
+    return _released_mesa_reads_lines(lines)
+
+
 def migrate_filter_file(path: PathLike, *, dry_run: bool = False) -> bool:
     """Move metadata from leading ``#`` lines (SED_Tools 0.3.0) onto the column row.
 
     Returns whether ``path`` had such lines.  A curve without a column row is
     restored to its form before tagging; :func:`has_column_row` tells the two apart.
+    Other comment or blank lines are kept, with a warning when released MESA
+    would still misread the curve.
     """
     layout = _layout(path)
-    if layout.legacy and not dry_run:
-        write_filter_header(path, {**layout.legacy, **layout.fields})
+    if layout.legacy:
+        fields = {**layout.legacy, **layout.fields}
+        if not dry_run:
+            write_filter_header(path, fields)
+        if not _released_mesa_reads_lines(_rewritten(layout, fields)):
+            logger.warning("%s keeps lines that released MESA miscounts as samples "
+                           "(comments or blank lines around the column row); remove them by hand", path)
     return bool(layout.legacy)
 
 

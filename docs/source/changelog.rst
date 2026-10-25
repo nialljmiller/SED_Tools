@@ -2,6 +2,25 @@
 Changelog
 =========
 
+Unreleased
+----------
+
+Filter metadata robustness
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Keep metadata keys this version does not know. 0.4.0 treated a column-row
+  field containing any unknown key as a column name, so a file written by a
+  newer SED_Tools read as untagged and re-tagging appended a second field.
+  Unknown keys now read normally and are written back after the known ones.
+- Remove the ``filters-migrate`` command and ``Filters.migrate_metadata()``.
+  Converting a whole tree of 0.3.0 files is mirror maintenance and lives with
+  the NJM server tooling; SED_Tools still converts a 0.3.0 file whenever it
+  fetches a cached set, downloads, tags or combines it.
+- Warn when a converted curve keeps comment or blank lines that released MESA
+  counts as samples, instead of treating it as repaired; the lines are left
+  for the user to remove. ``filter_metadata.released_mesa_reads()`` runs the
+  same check.
+
 Version 0.4.0 (October 2026)
 ----------------------------
 
