@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-10-26T20:03:54.535893",
+  "generated": "2026-10-26T20:21:16.319576",
   "base_url": "http://nillmill.ddns.net/sed_tools",
   "statistics": {
     "total_models": 1,
@@ -8,8 +8,8 @@
     "total_spectra": 6028,
     "total_size_bytes": 142850198218,
     "total_size_human": "133.04 GB",
-    "total_facilities": 112,
-    "total_filters": 6434
+    "total_facilities": 124,
+    "total_filters": 6778
   },
   "models": [
     "bt-cond"
@@ -93,6 +93,7 @@
       "GCOM_C",
       "GCPD",
       "GOES",
+      "GOTO",
       "GTC",
       "Galileo",
       "Gemini",
@@ -100,13 +101,24 @@
       "GeoEye",
       "Giotto",
       "HAWK-I",
+      "HCT",
       "HST",
+      "Hayabusa2",
       "Herschel",
       "Himawari",
       "Hipparcos",
+      "IAC80",
       "IKONOS",
+      "ING",
+      "INSAT",
+      "INT",
+      "IRAM",
       "IRAS",
+      "IRS",
+      "IRSF",
       "IRTF",
+      "InSight",
+      "Integral",
       "JCMT",
       "JPSS",
       "JWST",
@@ -9008,9 +9020,64 @@
         },
         "instrument_count": 22
       },
+      "GOTO": {
+        "name": "GOTO",
+        "instruments": {
+          "GOTO": {
+            "name": "GOTO",
+            "filter_count": 5,
+            "filters": [
+              "B",
+              "B_filter",
+              "G_filter",
+              "G_noatm",
+              "R_noatm"
+            ],
+            "published_paths": {
+              "filter": 2,
+              "filter+optics+qe+instrument": 2,
+              "filter+optics+qe+instrument+atmosphere": 1
+            },
+            "detector_types": {
+              "photon": 5
+            },
+            "separate_components": {
+              "filter": 3
+            },
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 60396,
+            "size_human": "58.98 KB"
+          }
+        },
+        "instrument_count": 1
+      },
       "GTC": {
         "name": "GTC",
         "instruments": {
+          "CIRCE": {
+            "name": "CIRCE",
+            "filter_count": 2,
+            "filters": [
+              "J",
+              "Ks"
+            ],
+            "published_paths": {
+              "filter": 2
+            },
+            "detector_types": {
+              "photon": 2
+            },
+            "separate_components": {
+              "filter": 2
+            },
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 30606,
+            "size_human": "29.89 KB"
+          },
           "CanariCam": {
             "name": "CanariCam",
             "filter_count": 18,
@@ -9046,9 +9113,116 @@
             "info": "info.json",
             "size_bytes": 618070,
             "size_human": "603.58 KB"
+          },
+          "EMIR": {
+            "name": "EMIR",
+            "filter_count": 11,
+            "filters": [
+              "BrG",
+              "Cont_FeII",
+              "H",
+              "H2_1-0",
+              "H2_1-1",
+              "HK",
+              "J",
+              "K",
+              "K-short",
+              "K-spec",
+              "YJ"
+            ],
+            "published_paths": {
+              "filter": 11
+            },
+            "detector_types": {
+              "energy": 11
+            },
+            "separate_components": {
+              "filter": 11
+            },
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 145461,
+            "size_human": "142.05 KB"
+          },
+          "HIPERCAM": {
+            "name": "HIPERCAM",
+            "filter_count": 7,
+            "filters": [
+              "g",
+              "g_s_filter",
+              "i_filter",
+              "i_s",
+              "r_filter",
+              "r_s_filter",
+              "u_s_noatm"
+            ],
+            "published_paths": {
+              "filter": 4,
+              "filter+instrument": 1,
+              "filter+instrument+atmosphere": 2
+            },
+            "detector_types": {
+              "photon": 7
+            },
+            "separate_components": {
+              "filter": 4
+            },
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 82417,
+            "size_human": "80.49 KB"
+          },
+          "OSIRIS": {
+            "name": "OSIRIS",
+            "filter_count": 26,
+            "filters": [
+              "F643",
+              "F648",
+              "F648_filter",
+              "F657",
+              "F657_filter",
+              "F666",
+              "F680",
+              "F680_filter",
+              "F709_filter",
+              "F723_filter",
+              "F738",
+              "F754_filter",
+              "F770",
+              "F785_filter",
+              "F802_filter",
+              "F838",
+              "F838_filter",
+              "F893",
+              "F893_filter",
+              "F902_filter",
+              "F911",
+              "F911_filter",
+              "F919",
+              "F924_filter",
+              "F932",
+              "F936"
+            ],
+            "published_paths": {
+              "filter": 13,
+              "filter+instrument+atmosphere": 13
+            },
+            "detector_types": {
+              "photon": 26
+            },
+            "separate_components": {
+              "filter": 19
+            },
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 136639,
+            "size_human": "133.44 KB"
           }
         },
-        "instrument_count": 1
+        "instrument_count": 5
       },
       "Galileo": {
         "name": "Galileo",
@@ -9864,6 +10038,54 @@
           }
         },
         "instrument_count": 1
+      },
+      "HCT": {
+        "name": "HCT",
+        "instruments": {
+          "HFOSC": {
+            "name": "HFOSC",
+            "filter_count": 1,
+            "filters": [
+              "Bessell_V"
+            ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "photon": 1
+            },
+            "separate_components": {
+              "filter": 1
+            },
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 13533,
+            "size_human": "13.22 KB"
+          },
+          "TIRSPEC": {
+            "name": "TIRSPEC",
+            "filter_count": 1,
+            "filters": [
+              "YOS"
+            ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "photon": 1
+            },
+            "separate_components": {
+              "filter": 1
+            },
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 20313,
+            "size_human": "19.84 KB"
+          }
+        },
+        "instrument_count": 2
       },
       "HST": {
         "name": "HST",
@@ -11092,6 +11314,45 @@
         },
         "instrument_count": 25
       },
+      "Hayabusa2": {
+        "name": "Hayabusa2",
+        "instruments": {
+          "ONC-T": {
+            "name": "ONC-T",
+            "filter_count": 12,
+            "filters": [
+              "Na",
+              "b",
+              "b_fil",
+              "p",
+              "p_fil",
+              "v",
+              "v_fil",
+              "w",
+              "w_fil",
+              "wide",
+              "x",
+              "x_fil"
+            ],
+            "published_paths": {
+              "filter": 5,
+              "filter+qe+instrument": 7
+            },
+            "detector_types": {
+              "photon": 12
+            },
+            "separate_components": {
+              "filter": 10
+            },
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 96966,
+            "size_human": "94.69 KB"
+          }
+        },
+        "instrument_count": 1
+      },
       "Herschel": {
         "name": "Herschel",
         "instruments": {
@@ -11147,9 +11408,10 @@
         "instruments": {
           "AHI8": {
             "name": "AHI8",
-            "filter_count": 16,
+            "filter_count": 17,
             "filters": [
               "Band01",
+              "Band01_svo",
               "Band02",
               "Band03",
               "Band04",
@@ -11167,17 +11429,19 @@
               "Band16"
             ],
             "published_paths": {
-              "filter+optics+qe": 16
+              "filter+optics+qe": 16,
+              "filter+qe+instrument": 1
             },
             "detector_types": {
-              "energy": 16
+              "energy": 16,
+              "photon": 1
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 898065,
-            "size_human": "877.02 KB"
+            "size_bytes": 952117,
+            "size_human": "929.80 KB"
           },
           "AHI9": {
             "name": "AHI9",
@@ -11212,21 +11476,15 @@
             "info": "info.json",
             "size_bytes": 971609,
             "size_human": "948.84 KB"
-          }
-        },
-        "instrument_count": 2
-      },
-      "Hipparcos": {
-        "name": "Hipparcos",
-        "instruments": {
-          "Hipparcos": {
-            "name": "Hipparcos",
+          },
+          "GMS1": {
+            "name": "GMS1",
             "filter_count": 1,
             "filters": [
-              "Hp"
+              "IR"
             ],
             "published_paths": {
-              "filter+optics+qe": 1
+              "filter+qe+instrument": 1
             },
             "detector_types": {
               "photon": 1
@@ -11235,28 +11493,216 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 16212,
-            "size_human": "15.83 KB"
+            "size_bytes": 14515,
+            "size_human": "14.17 KB"
+          },
+          "GMS3": {
+            "name": "GMS3",
+            "filter_count": 1,
+            "filters": [
+              "Vis"
+            ],
+            "published_paths": {
+              "filter+qe+instrument": 1
+            },
+            "detector_types": {
+              "photon": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 14380,
+            "size_human": "14.04 KB"
+          },
+          "GMS5": {
+            "name": "GMS5",
+            "filter_count": 1,
+            "filters": [
+              "IR1"
+            ],
+            "published_paths": {
+              "filter+qe+instrument": 1
+            },
+            "detector_types": {
+              "photon": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 14705,
+            "size_human": "14.36 KB"
+          },
+          "MTSAT2": {
+            "name": "MTSAT2",
+            "filter_count": 4,
+            "filters": [
+              "IR1",
+              "IR2",
+              "IR4",
+              "Vis"
+            ],
+            "published_paths": {
+              "filter+qe+instrument": 4
+            },
+            "detector_types": {
+              "photon": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 128669,
+            "size_human": "125.65 KB"
+          }
+        },
+        "instrument_count": 6
+      },
+      "Hipparcos": {
+        "name": "Hipparcos",
+        "instruments": {
+          "Hipparcos": {
+            "name": "Hipparcos",
+            "filter_count": 3,
+            "filters": [
+              "Hp",
+              "Hp_bes",
+              "Hp_svo"
+            ],
+            "published_paths": {
+              "filter+instrument": 2,
+              "filter+optics+qe": 1
+            },
+            "detector_types": {
+              "energy": 2,
+              "photon": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 26161,
+            "size_human": "25.55 KB"
           },
           "Tycho": {
             "name": "Tycho",
-            "filter_count": 2,
+            "filter_count": 3,
             "filters": [
               "BT",
-              "VT"
+              "VT",
+              "V_bes"
             ],
             "published_paths": {
+              "filter+instrument": 1,
               "filter+optics+qe": 2
             },
             "detector_types": {
+              "energy": 1,
               "photon": 2
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 13059,
-            "size_human": "12.75 KB"
+            "size_bytes": 20820,
+            "size_human": "20.33 KB"
+          }
+        },
+        "instrument_count": 2
+      },
+      "IAC80": {
+        "name": "IAC80",
+        "instruments": {
+          "CAMELOT": {
+            "name": "CAMELOT",
+            "filter_count": 48,
+            "filters": [
+              "B",
+              "Brg",
+              "I",
+              "IZ1",
+              "IZ2",
+              "R",
+              "U",
+              "V",
+              "iac01",
+              "iac02",
+              "iac03",
+              "iac04",
+              "iac06",
+              "iac07",
+              "iac09",
+              "iac13",
+              "iac14",
+              "iac16",
+              "iac17",
+              "iac18",
+              "iac19",
+              "iac20",
+              "iac22",
+              "iac24",
+              "iac25",
+              "iac27",
+              "iac29",
+              "iac33",
+              "iac34",
+              "iac35",
+              "iac36",
+              "iac38",
+              "iac39",
+              "iac40",
+              "iac74",
+              "iac77",
+              "iac78",
+              "iac80",
+              "iac81",
+              "sdss_g",
+              "sdss_i",
+              "sdss_r",
+              "sdss_u",
+              "sdss_z",
+              "stromgren_b",
+              "stromgren_u",
+              "stromgren_v",
+              "stromgren_y"
+            ],
+            "published_paths": {
+              "filter": 48
+            },
+            "detector_types": {
+              "energy": 17,
+              "photon": 31
+            },
+            "separate_components": {
+              "filter": 48
+            },
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 479510,
+            "size_human": "468.27 KB"
+          },
+          "TCP": {
+            "name": "TCP",
+            "filter_count": 1,
+            "filters": [
+              "I"
+            ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {
+              "filter": 1
+            },
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 40259,
+            "size_human": "39.32 KB"
           }
         },
         "instrument_count": 2
@@ -11266,16 +11712,227 @@
         "instruments": {
           "OSA": {
             "name": "OSA",
-            "filter_count": 5,
+            "filter_count": 9,
             "filters": [
               "Blue",
+              "Blue_svo",
               "Green",
               "NIR",
+              "NIR_svo",
               "Pan",
-              "Red"
+              "Pan_svo",
+              "Red",
+              "Red_svo"
             ],
             "published_paths": {
+              "filter+instrument": 4,
               "filter+optics+qe": 5
+            },
+            "detector_types": {
+              "energy": 9
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 68552,
+            "size_human": "66.95 KB"
+          }
+        },
+        "instrument_count": 1
+      },
+      "ING": {
+        "name": "ING",
+        "instruments": {
+          "ING": {
+            "name": "ING",
+            "filter_count": 151,
+            "filters": [
+              "001",
+              "003",
+              "005",
+              "007",
+              "008",
+              "017",
+              "023",
+              "024",
+              "025",
+              "026",
+              "027",
+              "029",
+              "031",
+              "033",
+              "036",
+              "037",
+              "038",
+              "041",
+              "042",
+              "044",
+              "045",
+              "046",
+              "047",
+              "048",
+              "049",
+              "051",
+              "052",
+              "053",
+              "055",
+              "056",
+              "057",
+              "061",
+              "062",
+              "063",
+              "069",
+              "072",
+              "073",
+              "074",
+              "075",
+              "078",
+              "079",
+              "080",
+              "081",
+              "083",
+              "084",
+              "085",
+              "086",
+              "087",
+              "091",
+              "092",
+              "093",
+              "094",
+              "095",
+              "097",
+              "098",
+              "099",
+              "100",
+              "102",
+              "103",
+              "104",
+              "105",
+              "107",
+              "108",
+              "109",
+              "112",
+              "113",
+              "117",
+              "118",
+              "119",
+              "120",
+              "121",
+              "122",
+              "127",
+              "128",
+              "130",
+              "133",
+              "134",
+              "135",
+              "136",
+              "139",
+              "140",
+              "141",
+              "142",
+              "144",
+              "146",
+              "147",
+              "151",
+              "152",
+              "153",
+              "156",
+              "158",
+              "159",
+              "161",
+              "162",
+              "164",
+              "166",
+              "168",
+              "169",
+              "170",
+              "171",
+              "174",
+              "175",
+              "176",
+              "180",
+              "182",
+              "183",
+              "186",
+              "187",
+              "188",
+              "189",
+              "191",
+              "194",
+              "195",
+              "199",
+              "201",
+              "202",
+              "204",
+              "207",
+              "209",
+              "210",
+              "212",
+              "213",
+              "216",
+              "221",
+              "223",
+              "226",
+              "228",
+              "231",
+              "237",
+              "238",
+              "239",
+              "581",
+              "582",
+              "583",
+              "584",
+              "585",
+              "586",
+              "590",
+              "591",
+              "593",
+              "594",
+              "608",
+              "609",
+              "610",
+              "612",
+              "614",
+              "700",
+              "701",
+              "702",
+              "703",
+              "704"
+            ],
+            "published_paths": {
+              "filter": 151
+            },
+            "detector_types": {
+              "energy": 151
+            },
+            "separate_components": {
+              "filter": 151
+            },
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 1403901,
+            "size_human": "1.34 MB"
+          }
+        },
+        "instrument_count": 1
+      },
+      "INSAT": {
+        "name": "INSAT",
+        "instruments": {
+          "INSAT-3D-SND": {
+            "name": "INSAT-3D-SND",
+            "filter_count": 5,
+            "filters": [
+              "ch04",
+              "ch05",
+              "ch06",
+              "ch11",
+              "ch18"
+            ],
+            "published_paths": {
+              "filter+qe+instrument": 5
             },
             "detector_types": {
               "energy": 5
@@ -11284,11 +11941,144 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 40578,
-            "size_human": "39.63 KB"
+            "size_bytes": 33705,
+            "size_human": "32.92 KB"
           }
         },
         "instrument_count": 1
+      },
+      "INT": {
+        "name": "INT",
+        "instruments": {
+          "IPHAS": {
+            "name": "IPHAS",
+            "filter_count": 2,
+            "filters": [
+              "gI",
+              "gR"
+            ],
+            "published_paths": {
+              "filter": 2
+            },
+            "detector_types": {
+              "energy": 2
+            },
+            "separate_components": {
+              "filter": 2
+            },
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 27218,
+            "size_human": "26.58 KB"
+          },
+          "OASIS": {
+            "name": "OASIS",
+            "filter_count": 12,
+            "filters": [
+              "HR502",
+              "HR530",
+              "HR638",
+              "LR951",
+              "MR454",
+              "MR516",
+              "MR591",
+              "MR661",
+              "MR735",
+              "MR807",
+              "MR875",
+              "MR952"
+            ],
+            "published_paths": {
+              "filter": 12
+            },
+            "detector_types": {
+              "energy": 12
+            },
+            "separate_components": {
+              "filter": 12
+            },
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 67241,
+            "size_human": "65.67 KB"
+          },
+          "WFC": {
+            "name": "WFC",
+            "filter_count": 9,
+            "filters": [
+              "B",
+              "Gunn_g",
+              "Gunn_r",
+              "Halpha",
+              "Halpha8160",
+              "RGO_i",
+              "RGO_u",
+              "SII",
+              "Strom_b"
+            ],
+            "published_paths": {
+              "filter": 9
+            },
+            "detector_types": {
+              "energy": 9
+            },
+            "separate_components": {
+              "filter": 9
+            },
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 82696,
+            "size_human": "80.76 KB"
+          }
+        },
+        "instrument_count": 3
+      },
+      "IRAM": {
+        "name": "IRAM",
+        "instruments": {
+          "MAMBO2": {
+            "name": "MAMBO2",
+            "filter_count": 1,
+            "filters": [
+              "250GHz"
+            ],
+            "published_paths": {
+              "filter+instrument": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 20730,
+            "size_human": "20.24 KB"
+          },
+          "NIKA2": {
+            "name": "NIKA2",
+            "filter_count": 1,
+            "filters": [
+              "1mm_1"
+            ],
+            "published_paths": {
+              "filter+optics+instrument": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 15742,
+            "size_human": "15.37 KB"
+          }
+        },
+        "instrument_count": 2
       },
       "IRAS": {
         "name": "IRAS",
@@ -11321,21 +12111,89 @@
         },
         "instrument_count": 1
       },
+      "IRS": {
+        "name": "IRS",
+        "instruments": {
+          "MOS": {
+            "name": "MOS",
+            "filter_count": 10,
+            "filters": [
+              "band1010",
+              "band408",
+              "band443",
+              "band485",
+              "band520",
+              "band615",
+              "band650",
+              "band685",
+              "band750",
+              "band815"
+            ],
+            "published_paths": {
+              "filter+instrument": 10
+            },
+            "detector_types": {
+              "energy": 10
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 49979,
+            "size_human": "48.81 KB"
+          }
+        },
+        "instrument_count": 1
+      },
+      "IRSF": {
+        "name": "IRSF",
+        "instruments": {
+          "Sirius": {
+            "name": "Sirius",
+            "filter_count": 1,
+            "filters": [
+              "Ks"
+            ],
+            "published_paths": {
+              "filter": 1
+            },
+            "detector_types": {
+              "photon": 1
+            },
+            "separate_components": {
+              "filter": 1
+            },
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 18205,
+            "size_human": "17.78 KB"
+          }
+        },
+        "instrument_count": 1
+      },
       "IRTF": {
         "name": "IRTF",
         "instruments": {
           "NSFCam": {
             "name": "NSFCam",
-            "filter_count": 26,
+            "filter_count": 41,
             "filters": [
               "BRG",
               "CO",
               "CONT",
+              "Co_blk",
               "FE",
+              "FeII",
+              "FeII_blk",
+              "H2-2",
               "H21",
+              "H21_blk",
               "H22",
+              "H22_blk",
               "HEI",
               "HMK",
+              "HeI_blk",
               "J",
               "JMK",
               "K",
@@ -11344,21 +12202,30 @@
               "KPMK",
               "KS",
               "KSMK",
+              "Kcont",
               "L",
               "LP",
               "LPMK",
               "M",
               "MP1",
               "MPMK",
+              "NSFCam_Brg",
+              "NSFCam_H21",
+              "NSFCam_HeI",
+              "NSFCam_Pag",
               "PAB",
               "PAG",
+              "Pag_blk",
               "S17",
-              "S23"
+              "S23",
+              "Sp17",
+              "Sp23"
             ],
             "published_paths": {
-              "filter": 26
+              "filter": 41
             },
             "detector_types": {
+              "energy": 15,
               "photon": 26
             },
             "separate_components": {
@@ -11367,8 +12234,85 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 1839046,
-            "size_human": "1.75 MB"
+            "size_bytes": 1952015,
+            "size_human": "1.86 MB"
+          }
+        },
+        "instrument_count": 1
+      },
+      "InSight": {
+        "name": "InSight",
+        "instruments": {
+          "ICC": {
+            "name": "ICC",
+            "filter_count": 4,
+            "filters": [
+              "Blue",
+              "Blue_nocut",
+              "Red",
+              "Red_nocut"
+            ],
+            "published_paths": {
+              "filter+qe+instrument": 4
+            },
+            "detector_types": {
+              "photon": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 41342,
+            "size_human": "40.37 KB"
+          },
+          "IDC": {
+            "name": "IDC",
+            "filter_count": 2,
+            "filters": [
+              "Blue_nocut",
+              "Green_nocut"
+            ],
+            "published_paths": {
+              "filter+qe+instrument": 2
+            },
+            "detector_types": {
+              "photon": 2
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 26179,
+            "size_human": "25.57 KB"
+          }
+        },
+        "instrument_count": 2
+      },
+      "Integral": {
+        "name": "Integral",
+        "instruments": {
+          "OMC": {
+            "name": "OMC",
+            "filter_count": 2,
+            "filters": [
+              "V_filter",
+              "V_opt"
+            ],
+            "published_paths": {
+              "filter": 1,
+              "filter+optics": 1
+            },
+            "detector_types": {
+              "photon": 2
+            },
+            "separate_components": {
+              "filter": 1
+            },
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 18456,
+            "size_human": "18.02 KB"
           }
         },
         "instrument_count": 1
@@ -15138,7 +16082,7 @@
         "ids": 8340,
         "sha256": "0d0994b1f308fe35e7531c16b400a75c9536de26653f31aa349ca107c3a9e8f9"
       },
-      "references": 337,
+      "references": 341,
       "unresolved_references": 0,
       "svo_fields": {
         "Fsun": {

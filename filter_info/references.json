@@ -2613,6 +2613,25 @@
   "volume": "120",
   "year": 2000
  },
+ "bibcode:2000PASP..112..961B": {
+  "authors": [
+   "Bessell, Michael\u00a0S."
+  ],
+  "bibcode": "2000PASP..112..961B",
+  "bibtex": "@article{2000PASP..112..961B, title={The\n                    \\textit{Hipparcos}\n                    and\n                    \\textit{Tycho}\n                    Photometric System Passbands}, volume={112}, ISSN={1538-3873}, url={http://dx.doi.org/10.1086/316598}, DOI={10.1086/316598}, number={773}, journal={Publications of the Astronomical Society of the Pacific}, publisher={IOP Publishing}, author={Bessell, Michael\u00a0S.}, year={2000}, month=July, pages={961\u2013965} }",
+  "doi": "10.1086/316598",
+  "journal": "PUBL ASTRON SOC PAC",
+  "key": "bibcode:2000PASP..112..961B",
+  "page": "961-965",
+  "resolved": "2026-10-26",
+  "resolved_by": "doi.org",
+  "short": "Bessell 2000",
+  "title": "The\n                    Hipparcos\n                    and\n                    Tycho\n                    Photometric System Passbands",
+  "type": "article",
+  "url": "https://ui.adsabs.harvard.edu/abs/2000PASP..112..961B",
+  "volume": "112",
+  "year": 2000
+ },
  "bibcode:2000SPIE.4008..999S": {
   "authors": [
    "Starr, Barry M.",
@@ -3237,6 +3256,32 @@
   "type": "article",
   "url": "https://ui.adsabs.harvard.edu/abs/2003A&A...401..781F",
   "volume": "401",
+  "year": 2003
+ },
+ "bibcode:2003A&A...411L.269M": {
+  "authors": [
+   "Mazy, E.",
+   "Defise, J. M.",
+   "Plesseria, J. Y.",
+   "Renotte, E.",
+   "Rochus, P.",
+   "Belenguer, T.",
+   "D\u00edaz, E.",
+   "Mas-Hesse, J. M."
+  ],
+  "bibcode": "2003A&A...411L.269M",
+  "bibtex": "@article{2003A\\&A...411L.269M, title={Optical design of the Optical Monitoring Camera (OMC) of INTEGRAL}, volume={411}, ISSN={1432-0746}, url={http://dx.doi.org/10.1051/0004-6361:20031480}, DOI={10.1051/0004-6361:20031480}, number={1}, journal={Astronomy \\& Astrophysics}, publisher={EDP Sciences}, author={Mazy, E. and Defise, J. M. and Plesseria, J. Y. and Renotte, E. and Rochus, P. and Belenguer, T. and D\u00edaz, E. and Mas-Hesse, J. M.}, year={2003}, month=Nov, pages={L269\u2013L273} }",
+  "doi": "10.1051/0004-6361:20031480",
+  "journal": "A&A",
+  "key": "bibcode:2003A&A...411L.269M",
+  "page": "L269-L273",
+  "resolved": "2026-10-26",
+  "resolved_by": "doi.org",
+  "short": "Mazy et al. 2003",
+  "title": "Optical design of the Optical Monitoring Camera (OMC) of INTEGRAL",
+  "type": "article",
+  "url": "https://ui.adsabs.harvard.edu/abs/2003A&A...411L.269M",
+  "volume": "411",
   "year": 2003
  },
  "bibcode:2003AJ....126.1090C": {
@@ -8813,6 +8858,34 @@
   "volume": "10",
   "year": 2018
  },
+ "bibcode:2018SSRv..214..105M": {
+  "authors": [
+   "Maki, J. N.",
+   "Golombek, M.",
+   "Deen, R.",
+   "Abarca, H.",
+   "Sorice, C.",
+   "Goodsall, T.",
+   "Schwochert, M.",
+   "Lemmon, M.",
+   "Trebi-Ollennu, A.",
+   "Banerdt, W. B."
+  ],
+  "bibcode": "2018SSRv..214..105M",
+  "bibtex": "@article{2018SSRv..214..105M, title={The Color Cameras on the InSight Lander}, volume={214}, ISSN={1572-9672}, url={http://dx.doi.org/10.1007/s11214-018-0536-z}, DOI={10.1007/s11214-018-0536-z}, number={6}, journal={Space Science Reviews}, publisher={Springer Science and Business Media LLC}, author={Maki, J. N. and Golombek, M. and Deen, R. and Abarca, H. and Sorice, C. and Goodsall, T. and Schwochert, M. and Lemmon, M. and Trebi-Ollennu, A. and Banerdt, W. B.}, year={2018}, month=Aug }",
+  "doi": "10.1007/s11214-018-0536-z",
+  "journal": "Space Sci Rev",
+  "key": "bibcode:2018SSRv..214..105M",
+  "page": "105",
+  "resolved": "2026-10-26",
+  "resolved_by": "doi.org",
+  "short": "Maki et al. 2018",
+  "title": "The Color Cameras on the InSight Lander",
+  "type": "article",
+  "url": "https://ui.adsabs.harvard.edu/abs/2018SSRv..214..105M",
+  "volume": "214",
+  "year": 2018
+ },
  "bibcode:2019A&A...631A.155B": {
   "authors": [
    "Beuzit, J.-L.",
@@ -8966,6 +9039,44 @@
   "type": "article",
   "url": "https://ui.adsabs.harvard.edu/abs/2019ApOpt..58.4059Z",
   "volume": "58",
+  "year": 2019
+ },
+ "bibcode:2019Icar..325..153T": {
+  "authors": [
+   "Tatsumi, Eri",
+   "Kouyama, Toru",
+   "Suzuki, Hidehiko",
+   "Yamada, Manabu",
+   "Sakatani, Naoya",
+   "Kameda, Shingo",
+   "Yokota, Yasuhiro",
+   "Honda, Rie",
+   "Morota, Tomokatsu",
+   "Moroi, Keiichi",
+   "Tanabe, Naoya",
+   "Kamiyoshihara, Hiroaki",
+   "Ishida, Marika",
+   "Yoshioka, Kazuo",
+   "Sato, Hiroyuki",
+   "Honda, Chikatoshi",
+   "Hayakawa, Masahiko",
+   "Kitazato, Kohei",
+   "Sawada, Hirotaka",
+   "Sugita, Seiji"
+  ],
+  "bibcode": "2019Icar..325..153T",
+  "bibtex": "@article{2019Icar..325..153T, title={Updated inflight calibration of Hayabusa2\u2019s optical navigation camera (ONC) for scientific observations during the cruise phase}, volume={325}, ISSN={0019-1035}, url={http://dx.doi.org/10.1016/j.icarus.2019.01.015}, DOI={10.1016/j.icarus.2019.01.015}, journal={Icarus}, publisher={Elsevier BV}, author={Tatsumi, Eri and Kouyama, Toru and Suzuki, Hidehiko and Yamada, Manabu and Sakatani, Naoya and Kameda, Shingo and Yokota, Yasuhiro and Honda, Rie and Morota, Tomokatsu and Moroi, Keiichi and Tanabe, Naoya and Kamiyoshihara, Hiroaki and Ishida, Marika and Yoshioka, Kazuo and Sato, Hiroyuki and Honda, Chikatoshi and Hayakawa, Masahiko and Kitazato, Kohei and Sawada, Hirotaka and Sugita, Seiji}, year={2019}, month=June, pages={153\u2013195} }",
+  "doi": "10.1016/j.icarus.2019.01.015",
+  "journal": "Icarus",
+  "key": "bibcode:2019Icar..325..153T",
+  "page": "153-195",
+  "resolved": "2026-10-26",
+  "resolved_by": "doi.org",
+  "short": "Tatsumi et al. 2019",
+  "title": "Updated inflight calibration of Hayabusa2's optical navigation camera (ONC) for scientific observations during the cruise phase",
+  "type": "article",
+  "url": "https://ui.adsabs.harvard.edu/abs/2019Icar..325..153T",
+  "volume": "325",
   "year": 2019
  },
  "bibcode:2019MNRAS.489..241M": {
