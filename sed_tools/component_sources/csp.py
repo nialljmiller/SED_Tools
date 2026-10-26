@@ -20,13 +20,17 @@ from typing import Dict, Tuple
 
 import numpy as np
 
-from ._original import Band, Component, Fetcher, Instrument, clean_curve, make_band, make_builder, safe_member
+from ..filter_components import InstrumentManifest
+from ._original import Component, Fetcher, Instrument, clean_curve, make_band, make_builder, safe_member
 
 PHOTON = "photon"
 PAGE = "https://csp.obs.carnegiescience.edu/data/filters"
 DATA = "https://csp.obs.carnegiescience.edu/data/"
 PACKAGE = DATA + "CSP_filter_package.tgz"
 KRISCIUNAS = "https://ui.adsabs.harvard.edu/abs/2017AJ....154..211K"
+#: The CSP atmosphere (atm_ext_ctio.dat ** airmass x atm_ext_lines.dat), registered
+#: as a named site by the team-atmospheres builder; only airmass 1.2 is provided.
+CSP_SITE = "lco_csp"
 
 #: CSP-I optical bands (Swope + SITe CCD): band -> file stem in the package.
 CSP1_OPTICAL = {b: b for b in ("u", "g", "r", "i", "B", "V_LC3014", "V_LC3009", "V_LC9844")}
@@ -161,7 +165,9 @@ def csp1(fetch: Fetcher) -> Instrument:
         "(+-scatter) where the final exceeds 10 % of peak: " + ", ".join(checks)
         + "; i.e. the finals are the raw scans times this atmosphere at airmass 1.2 (atm_ext_ctio.dat read as "
         "the transmission at airmass 1, an inference), with V_LC3014 and V_LC3009 carrying an additional "
-        "achromatic factor of about 0.93. The atmosphere files are not registered here. DetectorType=photon: "
+        "achromatic factor of about 0.93. Composition with the atmosphere uses the site "
+        f"'{CSP_SITE}' (registered separately from atm_ext_ctio.dat, the transmission through one airmass, "
+        "and atm_ext_lines.dat; airmass 1.2 only) on the raw scans. DetectorType=photon: "
         "the README defines zero points with F = (1/ch) Int S_X f_lambda lambda dlambda and the page calls F "
         "'the photon flux through filter S_X'. Not included: K_DUP_TAM_scan_atm.dat (the page says the K "
         "scan is 'still a work in progress' and the file stops at 23996 A at about 6 % of peak), kfilter (abandoned K, "
@@ -201,4 +207,14 @@ def csp2(fetch: Fetcher) -> Instrument:
 
 RECIPES = {"CSP": ("LCO", csp1), "CSP2": ("LCO", csp2)}
 
-build = make_builder(RECIPES)
+_build = make_builder(RECIPES)
+
+
+def build(filter_root, *, instrument, **kwargs):
+    """Build an instrument; CSP-I composes with the CSP atmosphere site."""
+    out = _build(filter_root, instrument=instrument, **kwargs)
+    if instrument == "CSP":
+        manifest = InstrumentManifest.load(out)
+        manifest.default_site = CSP_SITE
+        manifest.save(out)
+    return out

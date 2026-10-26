@@ -36,7 +36,8 @@ def _tabular(instrument: str) -> BuilderRef:
 
 
 #: Instruments rebuilt from their teams' original files (``component_sources``
-#: modules ``surveys``, ``space``, ``observatories``, ``standards``, ``swift`` and ``csp``), as
+#: modules ``surveys``, ``space``, ``observatories``, ``standards``, ``swift``,
+#: ``csp`` and ``cassini``), as
 #: (facility, instrument, separate components published?).
 ORIGINAL_SOURCES: Dict[str, Tuple[Tuple[str, str, bool], ...]] = {
     "surveys": (
@@ -62,6 +63,7 @@ ORIGINAL_SOURCES: Dict[str, Tuple[Tuple[str, str, bool], ...]] = {
     ),
     "swift": (("Swift", "UVOT", True),),
     "csp": (("LCO", "CSP", True), ("LCO", "CSP2", False)),
+    "cassini": (("Cassini", "ISS_NAC", True), ("Cassini", "ISS_WAC", True)),
 }
 
 
@@ -96,9 +98,6 @@ BUILDERS_FOR: Dict[Tuple[str, str], BuilderRef] = {
     ("JWST", "MIRI"): BuilderRef("jwst", (("instruments", ("MIRI",)),), heavy=True),
     **_hst(),
     **_original(),
-    # Components only: the published curves come from the mirror or SVO.
-    ("Cassini", "ISS_NAC"): BuilderRef("cassini", (("instrument", "ISS_NAC"),)),
-    ("Cassini", "ISS_WAC"): BuilderRef("cassini", (("instrument", "ISS_WAC"),)),
 }
 
 TOTAL_ONLY = "total-only"

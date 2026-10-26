@@ -17,7 +17,7 @@ import pytest
 
 from sed_tools import filter_library
 from sed_tools.component_sources import BUILDERS, get_builder, catalog
-from sed_tools.component_sources import csp, observatories, space, standards, surveys, swift
+from sed_tools.component_sources import cassini, csp, observatories, space, standards, surveys, swift
 from sed_tools.component_sources._original import (Fetcher, clean_curve, make_band, to_angstrom)
 from sed_tools.filter_components import InstrumentManifest
 from sed_tools.filter_library import FilterLibrary
@@ -25,7 +25,7 @@ from sed_tools.filter_metadata import read_filter_header
 
 FIX = Path(__file__).parent / "fixtures" / "original_sources"
 MODULES = {"surveys": surveys, "space": space, "observatories": observatories, "standards": standards,
-           "swift": swift, "csp": csp}
+           "swift": swift, "csp": csp, "cassini": cassini}
 
 
 def fx(name: str) -> str:
@@ -77,7 +77,7 @@ def _zip(members) -> bytes:
 # ---------------------------------------------------------------------------
 def test_every_original_source_instrument_resolves():
     keys = [(fac, inst) for entries in catalog.ORIGINAL_SOURCES.values() for fac, inst, _ in entries]
-    assert len(keys) == len(set(keys)) == 40
+    assert len(keys) == len(set(keys)) == 42
     for module, entries in catalog.ORIGINAL_SOURCES.items():
         assert module in BUILDERS and callable(get_builder(module))
         recipes = MODULES[module].RECIPES

@@ -181,6 +181,7 @@ def test_csp1_epochs_atmosphere_and_per_band_components(tmp_path):
     assert set(m.components["optics+qe"]) == set(csp.CSP1_OPTICAL)
     assert m.components["optics"]["u"] == "components/optics/telescope.dat"
     assert m.buildable() == []  # no filter-only curve is published
+    assert m.default_site == csp.CSP_SITE
     comp = compose_band(out, "g", "filter+optics+qe")
     assert read_filter_header(out / m.components["filter+optics+qe"]["g"])["Components"] == "filter+optics+qe"
     assert comp.transmission.max() == pytest.approx(0.8, rel=1e-6)
@@ -207,39 +208,69 @@ def _pds(rows):
     return "PDS_VERSION_ID = PDS3\nEND\n\\begindata\n" + "".join(" ".join(f"{x:.6f}" for x in r) + "\n" for r in rows)
 
 
-def test_cassini_pairs_are_derived_gated_and_published_curves_untouched(tmp_path):
-    inst = tmp_path / "Cassini" / "ISS_NAC"
-    inst.mkdir(parents=True)
+def _cassini_files(camera):
     nm = np.arange(200.0, 1057.05, 0.1)
     qe = np.clip(0.5 - np.abs(nm - 650.0) / 1000.0, 0.01, None)
     optics = np.full(nm.size, 0.6)
-    pair = {"BL1": 0.9 * np.exp(-0.5 * ((nm - 450.0) / 20.0) ** 2),
-            "IR4": 0.9 * np.exp(-0.5 * ((nm - 1000.0) / 25.0) ** 2)}
-    files = {cassini.QE_URL: _pds(np.c_[np.arange(200.0, 1101.0), np.interp(np.arange(200.0, 1101.0), nm, qe),
-                                        np.interp(np.arange(200.0, 1101.0), nm, qe)]),
-             cassini.EFFICIENCY + "na_optics.tab": _pds(np.c_[np.arange(200.0, 1100.1, 2.5),
-                                                              np.full(361, 0.6)])}
-    before = {}
-    for band, p in pair.items():
-        system = qe * optics * p
-        files[cassini.systrans_url("ISS_NAC", band)] = _pds(np.c_[nm, system, system])
-        keep = system > 1e-6
-        write_filter_file(inst / f"{band}.dat", nm[keep] * 10, system[keep], detector_type="photon",
-                          source="svo", filter_id=f"Cassini/ISS_NAC.{band}", wavelength_unit="Angstrom",
-                          extra={"Components": "filter+optics+qe+instrument", "ComponentsSource": "svo"})
-        before[band] = (inst / f"{band}.dat").read_bytes()
+    grid = np.arange(200.0, 1101.0)
+    files = {cassini.QE_URL: _pds(np.c_[grid, np.interp(grid, nm, qe), np.interp(grid, nm, qe)]),
+             cassini.EFFICIENCY + cassini.CAMERAS[camera][1]: _pds(np.c_[np.arange(200.0, 1100.1, 2.5),
+                                                                          np.full(361, 0.6)])}
+    pairs = {}
+    for i, band in enumerate(cassini.BANDS[camera]):
+        centre = 1000.0 if band == "IR4" else 300.0 + 15.0 * i
+        pairs[band] = 0.9 * np.exp(-0.5 * ((nm - centre) / 20.0) ** 2)
+        system = qe * optics * pairs[band]
+        files[cassini.systrans_url(camera, band)] = _pds(np.c_[nm, system, system])
+    return files, nm, pairs
+
+
+def test_cassini_publishes_pds_curves_and_keeps_svo_copies_apart(tmp_path):
+    files, nm, pairs = _cassini_files("ISS_NAC")
+    inst = tmp_path / "Cassini" / "ISS_NAC"
+    inst.mkdir(parents=True)
+    # An SVO copy (a window of the PDS curve) kept as <band>_svo, as on the njm mirror.
+    sys_bl1 = np.loadtxt(io.StringIO(files[cassini.systrans_url("ISS_NAC", "BL1")].split("\\begindata\n")[1]))
+    window = (sys_bl1[:, 0] > 400) & (sys_bl1[:, 0] < 450)
+    write_filter_file(inst / "BL1_svo.dat", sys_bl1[window, 0] * 10, sys_bl1[window, 1], detector_type="photon",
+                      source="svo", filter_id="Cassini/ISS_NAC.BL1", wavelength_unit="Angstrom",
+                      extra={"Components": "filter+optics+qe+instrument", "ComponentsSource": "svo"})
+    svo_before = (inst / "BL1_svo.dat").read_bytes()
     out = cassini.build(tmp_path, instrument="ISS_NAC", session=_Session(files))
-    assert {b: (out / f"{b}.dat").read_bytes() for b in pair} == before
+    assert (out / "BL1_svo.dat").read_bytes() == svo_before
+    assert (out / "ISS_NAC").read_text().split() == [f"{b}.dat" for b in sorted(cassini.BANDS["ISS_NAC"])]
+    h = read_filter_header(out / "BL1.dat")
+    assert h["FilterID"] == "Cassini/ISS_NAC.BL1" and h["DetectorType"] == "photon"
+    assert h["Components"] == "filter+optics+qe" and h["ComponentsSource"] == "original"
+    assert cassini.systrans_url("ISS_NAC", "BL1") in h["Sources"]
+    pub = np.loadtxt(out / "BL1.dat", delimiter=",", skiprows=1)
+    assert np.allclose(pub[:, 0], nm * 10) and np.allclose(pub[:, 1], sys_bl1[:, 1])
     m = json.loads((out / "manifest.json").read_text())
-    assert m["components"]["filter"] == {"BL1": "components/filter/BL1.dat"}  # IR4 extends past 1000 nm
+    assert m["bands"] == sorted(cassini.BANDS["ISS_NAC"]) and "BL1_svo" not in m["detector_types"]
+    assert m["published"] == {"components": "filter+optics+qe", "source": "original"}
+    assert "IR4" not in m["components"]["filter"]  # IR4 extends past 1000 nm
     assert m["components"]["qe"] == {"*": "components/qe/qe.dat"}
-    assert set(m["detector_type_sources"].values()) == {"svo"}
-    h = read_filter_header(out / "components/filter/BL1.dat")
-    assert h["Sources"].startswith("DERIVED filter pair T(BL1)*T(CL2)")
+    assert read_filter_header(out / "components/filter/BL1.dat")["Sources"].startswith(
+        "DERIVED filter pair T(BL1)*T(CL2)")
     f = np.loadtxt(out / "components/filter/BL1.dat", delimiter=",", skiprows=1)
-    assert f[-1, 0] == pytest.approx(10000.0) and np.allclose(
-        f[:, 1], np.interp(f[:, 0] / 10, nm, pair["BL1"]), atol=2e-3)
-    assert "IR4 (IR4xCL2" in m["notes"]
+    assert f[-1, 0] == pytest.approx(10000.0)
+    assert np.allclose(f[:, 1], np.interp(f[:, 0] / 10, nm, pairs["BL1"]), atol=2e-3)
+    comp = compose_band(out, "BL1", "filter+optics+qe")
+    assert np.allclose(np.interp(comp.wavelength, pub[:, 0], pub[:, 1]), comp.transmission, rtol=1e-9, atol=1e-15)
+    assert "IR4 (IR4xCL2" in m["notes"] and "1 SVO copies equal the PDS curve" in m["notes"]
+    assert all(released_mesa_reads(p) for p in out.rglob("*.dat"))
+
+
+def test_cassini_keeps_existing_published_curves(tmp_path):
+    files, _nm, _pairs = _cassini_files("ISS_WAC")
+    inst = tmp_path / "Cassini" / "ISS_WAC"
+    inst.mkdir(parents=True)
+    write_filter_file(inst / "GRN.dat", [5000.0, 5500.0, 6000.0], [0.0, 0.2, 0.0], detector_type="photon",
+                      source="svo", filter_id="Cassini/ISS_WAC.GRN")
+    before = (inst / "GRN.dat").read_bytes()
+    out = cassini.build(tmp_path, instrument="ISS_WAC", session=_Session(files))
+    assert (out / "GRN.dat").read_bytes() == before
+    assert "(not for GRN)" in json.loads((out / "manifest.json").read_text())["notes"]
 
 
 def test_cassini_band_names_map_to_filter_pairs():
@@ -251,9 +282,4 @@ def test_cassini_band_names_map_to_filter_pairs():
     with pytest.raises(ValueError):
         cassini.filter_pair("ISS_WAC", "UV3")
     ref = catalog.builder_for("Cassini", "ISS_WAC")
-    assert ref.name == "cassini" and not ref.publishes and ref.components
-
-
-def test_cassini_needs_published_curves(tmp_path):
-    with pytest.raises(ValueError, match="no published curves"):
-        cassini.build(tmp_path, instrument="ISS_WAC", session=_Session({}))
+    assert ref.name == "cassini" and ref.publishes and ref.components
