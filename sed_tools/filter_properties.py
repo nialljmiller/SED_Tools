@@ -21,17 +21,41 @@ ZeroPoint*_flam    band-averaged f_λ of the reference source, erg s⁻¹ cm⁻�
 ZeroPoint*_Jy      band-averaged f_ν of the reference source, Jy
 ABminusVega        m_AB − m_Vega for any source: −2.5 log₁₀(ZeroPointVega_Jy / 3631 Jy)
 STminusVega        m_ST − m_Vega: −2.5 log₁₀(ZeroPointVega_flam / 3.631e-9)
+Fsun               ∫ W S dλ / ∫ W dλ, S the Sun's spectrum at 1 AU: the Sun's
+                   band-averaged f_λ, erg s⁻¹ cm⁻² Å⁻¹ (SVO's ``Fsun``)
+AfAv               A(λ)/A(V) at λ = WavelengthPivot, from the Fitzpatrick (1999)
+                   extinction law with R_V = 3.1 (SVO's ``Af/AV``, which uses a
+                   different law)
 =================  ==============================================================
 
 The references are Vega (a supplied spectrum), AB (3631 Jy) and ST
-(3.631e-9 erg s⁻¹ cm⁻² Å⁻¹).  As in SED_Tools photometry, the Vega spectrum is
-taken as zero outside its range.  Vega quantities are ``None`` when no spectrum is
-given or it does not cover WavelengthMin to WavelengthMax.
+(3.631e-9 erg s⁻¹ cm⁻² Å⁻¹).  As in SED_Tools photometry, a supplied spectrum
+(Vega or the Sun) is taken as zero outside its range.  Vega quantities are
+``None`` when no Vega spectrum is given or it does not cover WavelengthMin to
+WavelengthMax; ``Fsun`` follows the same rule with the solar spectrum.  The
+NJM mirror uses CALSPEC's ``sun_reference_stis_002`` below 9600 Å and
+``sun_mod_001`` above (Bohlin, Gordon & Tremblay 2014, PASP 126, 711), the
+composite SVO describes; switching at 9600 Å reproduces SVO's values.
+
+``AfAv`` is evaluated with the ``F99`` class of the optional package
+``dust_extinction`` (Gordon 2024, JOSS 9(100), 7023, doi:10.21105/joss.07023;
+install with ``pip install "sed-tools[extinction]"``); the law is Fitzpatrick
+1999, PASP 111, 63 (1999PASP..111...63F, doi:10.1086/316293).  A(V) is the
+law's own normalisation, the extinction averaged over the V band, so
+A(λ)/A(V) = 1 at 5414 Å and 0.978 at 5500 Å (dust_extinction's "Normalization
+Details" page).  ``AfAv`` is ``None`` where the pivot lies outside the range
+the implementation defines for the law (``F99.x_range``: 0.3–10 µm⁻¹, i.e.
+1000 Å to 3.33 µm), which is never extrapolated, and ``None``, with a warning,
+when ``dust_extinction`` is not installed.  dust_extinction 1.6 changed the
+law's optical–infrared spline (by up to 1 % near 3.3 µm), so 1.6 or later is
+required.
 """
 
 from __future__ import annotations
 
 import math
+import warnings
+from importlib import metadata
 from pathlib import Path
 from typing import Dict, Optional, Tuple, Union
 
@@ -58,6 +82,23 @@ UNITS = {
     "ZeroPointAB_flam": "erg/s/cm2/Angstrom", "ZeroPointAB_Jy": "Jy",
     "ZeroPointST_flam": "erg/s/cm2/Angstrom", "ZeroPointST_Jy": "Jy",
     "ABminusVega": "mag", "STminusVega": "mag",
+    "Fsun": "erg/s/cm2/Angstrom", "AfAv": "dimensionless",
+}
+
+EXTINCTION_RV = 3.1
+EXTINCTION_LAW = {
+    "quantity": "AfAv = A(lambda)/A(V) at the pivot wavelength",
+    "law": "Fitzpatrick (1999) Milky Way R(V)-dependent extinction curve",
+    "R_V": EXTINCTION_RV,
+    "implementation": "dust_extinction.parameter_averages.F99 (dust_extinction >= 1.6)",
+    "normalisation": ("A(V) is the law's own normalisation, the extinction averaged over the V band: "
+                      "A(lambda)/A(V) = 1 at 5414 Angstrom and 0.978 at 5500 Angstrom "
+                      "(https://dust-extinction.readthedocs.io/en/latest/dust_extinction/normalization_details.html)"),
+    "out_of_range": "null where the pivot lies outside the implementation's F99.x_range; never extrapolated",
+    "references": [
+        "Fitzpatrick 1999, PASP 111, 63 (1999PASP..111...63F, doi:10.1086/316293): the law",
+        "Gordon 2024, JOSS 9(100), 7023 (doi:10.21105/joss.07023): dust_extinction",
+    ],
 }
 
 PathLike = Union[str, Path]
@@ -81,15 +122,86 @@ def _half_maximum_points(wavelength: np.ndarray, transmission: np.ndarray) -> Tu
     return blue, red
 
 
+_f99_model = None  # the F99 model once built; False when dust_extinction cannot be imported
+
+
+def _extinction_model():
+    """dust_extinction's F99 model at R_V = 3.1, or None (with a warning) when it is not installed."""
+    global _f99_model
+    if _f99_model is None:
+        try:
+            from dust_extinction.parameter_averages import F99
+        except ImportError:
+            warnings.warn(
+                "AfAv needs the optional package dust_extinction (pip install \"sed-tools[extinction]\"); "
+                "AfAv is None without it",
+                stacklevel=3,
+            )
+            _f99_model = False
+        else:
+            _f99_model = F99(Rv=EXTINCTION_RV)
+    return _f99_model or None
+
+
+def extinction_ratio(wavelength: float) -> Optional[float]:
+    """A(λ)/A(V) of Fitzpatrick (1999) with R_V = 3.1 at ``wavelength`` (Å), from dust_extinction.
+
+    ``None`` outside the law's valid range (``F99.x_range``, in µm⁻¹) or without dust_extinction.
+    """
+    model = _extinction_model()
+    if model is None:
+        return None
+    lo, hi = model.x_range
+    if not lo <= 1e4 / wavelength <= hi:
+        return None
+    import astropy.units as u
+
+    return float(np.squeeze(model(wavelength * u.AA)))
+
+
+def extinction_law() -> dict:
+    """:data:`EXTINCTION_LAW` with the installed dust_extinction version and the law's range in Å.
+
+    ``dust_extinction_version`` is ``None`` when the package is not installed (``AfAv`` is then ``None``).
+    """
+    law = dict(EXTINCTION_LAW)
+    try:
+        law["dust_extinction_version"] = metadata.version("dust_extinction")
+    except metadata.PackageNotFoundError:
+        law["dust_extinction_version"] = None
+    model = _extinction_model()
+    if model is not None:
+        lo, hi = model.x_range
+        law["valid_range_per_micron"] = [float(lo), float(hi)]
+        law["valid_range_angstrom"] = [1e4 / hi, 1e4 / lo]
+    return law
+
+
+def _on_curve(spectrum: Optional[Spectrum], lam: np.ndarray, lo: float, hi: float) -> Optional[np.ndarray]:
+    """A reference spectrum interpolated onto the curve's samples, or None if it misses lo..hi.
+
+    Like SED_Tools photometry, the spectrum is zero outside its range; it must still
+    cover every wavelength where T is at least 1 % of its maximum (lo..hi).
+    """
+    if spectrum is None:
+        return None
+    sl, sf = (np.asarray(a, dtype=float) for a in spectrum)
+    if sl[0] > lo or sl[-1] < hi:
+        return None
+    return np.interp(lam, sl, sf, left=0.0, right=0.0)
+
+
 def filter_properties(
     wavelength,
     transmission,
     detector_type: str = "energy",
     vega: Optional[Spectrum] = None,
+    sun: Optional[Spectrum] = None,
 ) -> Dict[str, Optional[float]]:
     """Return the properties of one curve (Angstrom, transmission) as a dict.
 
-    ``vega`` is ``(wavelength in Å, f_λ)``; without it the Vega quantities are ``None``.
+    ``vega`` and ``sun`` are ``(wavelength in Å, f_λ in erg/s/cm²/Å)``, the Sun's at 1 AU;
+    without them the Vega quantities and ``Fsun`` are ``None``.
     """
     lam = np.asarray(wavelength, dtype=float)
     t = np.asarray(transmission, dtype=float)
@@ -128,23 +240,25 @@ def filter_properties(
         "ZeroPointST_Jy": ST_FLAM * nu_factor / JY,
         "ABminusVega": None,
         "STminusVega": None,
+        "Fsun": None,
+        "AfAv": extinction_ratio(pivot),
     }
-    if vega is not None:
-        vl, vf = (np.asarray(a, dtype=float) for a in vega)
-        # Like SED_Tools photometry, the spectrum is zero outside its range; it must
-        # still cover every wavelength where T is at least 1 % of its maximum.
-        if vl[0] <= props["WavelengthMin"] and vl[-1] >= props["WavelengthMax"]:
-            f = np.interp(lam, vl, vf, left=0.0, right=0.0)
-            flam = float(np.trapezoid(f * w, lam) / area_w)
-            props.update({
-                "WavelengthEff": float(np.trapezoid(lam * t * f, lam) / np.trapezoid(t * f, lam)),
-                "WavelengthPhot": float(np.trapezoid(lam**2 * t * f, lam) / np.trapezoid(lam * t * f, lam)),
-                "ZeroPointVega_flam": flam,
-                "ZeroPointVega_Jy": flam * nu_factor / JY,
-            })
-            if flam > 0:
-                props["ABminusVega"] = -2.5 * math.log10(flam * nu_factor / JY / AB_JY)
-                props["STminusVega"] = -2.5 * math.log10(flam / ST_FLAM)
+    lo, hi = props["WavelengthMin"], props["WavelengthMax"]
+    f = _on_curve(vega, lam, lo, hi)
+    if f is not None:
+        flam = float(np.trapezoid(f * w, lam) / area_w)
+        props.update({
+            "WavelengthEff": float(np.trapezoid(lam * t * f, lam) / np.trapezoid(t * f, lam)),
+            "WavelengthPhot": float(np.trapezoid(lam**2 * t * f, lam) / np.trapezoid(lam * t * f, lam)),
+            "ZeroPointVega_flam": flam,
+            "ZeroPointVega_Jy": flam * nu_factor / JY,
+        })
+        if flam > 0:
+            props["ABminusVega"] = -2.5 * math.log10(flam * nu_factor / JY / AB_JY)
+            props["STminusVega"] = -2.5 * math.log10(flam / ST_FLAM)
+    solar = _on_curve(sun, lam, lo, hi)
+    if solar is not None:
+        props["Fsun"] = float(np.trapezoid(solar * w, lam) / area_w)
     return props
 
 
@@ -154,13 +268,20 @@ def load_vega(path: PathLike, wavelength_unit: str = "angstrom") -> Spectrum:
     return spectrum.wavelength, spectrum.flux
 
 
-def curve_properties(path: PathLike, vega: Optional[Spectrum] = None) -> Dict[str, Optional[float]]:
+def load_sun(path: PathLike, wavelength_unit: str = "angstrom") -> Spectrum:
+    """Read a solar spectrum at 1 AU (wavelength, f_λ in erg/s/cm²/Å), e.g. NJM's sun/sun_flam.csv (Å)."""
+    return load_vega(path, wavelength_unit)
+
+
+def curve_properties(path: PathLike, vega: Optional[Spectrum] = None,
+                     sun: Optional[Spectrum] = None) -> Dict[str, Optional[float]]:
     """Properties of a filter file, using its WavelengthUnit and DetectorType metadata."""
     curve = load_filter_curve(str(path))
-    return filter_properties(curve.wavelength, curve.transmission, curve.detector_type, vega)
+    return filter_properties(curve.wavelength, curve.transmission, curve.detector_type, vega, sun)
 
 
-def instrument_properties(instrument_dir: PathLike, vega: Optional[Spectrum] = None) -> Dict[str, dict]:
+def instrument_properties(instrument_dir: PathLike, vega: Optional[Spectrum] = None,
+                          sun: Optional[Spectrum] = None) -> Dict[str, dict]:
     """Properties of every published ``<band>.dat`` curve of an instrument, keyed by band.
 
     Each entry also records the ``DetectorType`` the values were computed with.
@@ -169,7 +290,7 @@ def instrument_properties(instrument_dir: PathLike, vega: Optional[Spectrum] = N
     for path in sorted(Path(instrument_dir).glob("*.dat")):
         curve = load_filter_curve(str(path))
         props: Dict[str, object] = dict(filter_properties(curve.wavelength, curve.transmission,
-                                                          curve.detector_type, vega))
+                                                          curve.detector_type, vega, sun))
         props["DetectorType"] = curve.detector_type
         props["DetectorTypeSource"] = read_filter_header(path).get("DetectorTypeSource", "assumed")
         out[path.stem] = props
