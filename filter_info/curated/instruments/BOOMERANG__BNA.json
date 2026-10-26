@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"arXiv.org has a perpetual, non-exclusive license to distribute this article.\"",
+    "url": "http://arxiv.org/licenses/assumed-1991-2003/",
+    "scope": "Article licence of arXiv:astro-ph/0105148 (Piacentini et al. 2002, ApJS 138, 315), as listed on its abstract page: submitted before January 2004, so arXiv assumes a non-exclusive distribution licence. It does not address the published numbers. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

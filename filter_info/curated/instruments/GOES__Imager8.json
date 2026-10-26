@@ -13,5 +13,11 @@
   ],
   "bands": {},
   "evidence": [],
-  "notes": "OSPO: 'All of them were provided by ITT (the instruments' manufacturer), except those noted as modified by STAR.' Band names follow SVO's GOES/Imager IDs (VIS_dK, IR<ch>_d<det>s<side>); pivots agree with SVO's archived records to <=0.01 %. DetectorType energy is assumed."
+  "notes": "OSPO: 'All of them were provided by ITT (the instruments' manufacturer), except those noted as modified by STAR.' Band names follow SVO's GOES/Imager IDs (VIS_dK, IR<ch>_d<det>s<side>); pivots agree with SVO's archived records to <=0.01 %. DetectorType energy is assumed.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "",
+    "url": "https://www.ospo.noaa.gov/Operations_/GOES/goes-imager-srfs.html",
+    "scope": "No owner statement verified. The NOAA NESDIS OSPO page that distributes the SRF archives carries no terms; its footer only links NOAA's disclaimer (https://www.noaa.gov/disclaimer), which refused the request (CloudFront 403) and was not verified. The page says the SRFs 'were provided by ITT (the instruments' manufacturer), except those noted as modified by STAR'; the archived imager bundles (goes8_img.tar to GOES-15_img_operational_srf.zip) carry no notice. Bands taken from SVO rather than OSPO: The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json. The NOAA STAR disclaimer used for GOES ABI covers STAR/NCC pages, not OSPO."
+  }
 }

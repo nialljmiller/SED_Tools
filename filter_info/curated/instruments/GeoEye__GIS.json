@@ -11,5 +11,11 @@
   "references": [],
   "bands": {},
   "evidence": [],
-  "notes": "File RSR_GE1.txt in Maxar_Spectral_Response_2023.zip, distributed by the reseller Apollo Mapping (not hosted by Maxar). SVO's archived records cite the same page. No instrument paper reference verified. DetectorType energy assumed."
+  "notes": "File RSR_GE1.txt in Maxar_Spectral_Response_2023.zip, distributed by the reseller Apollo Mapping (not hosted by Maxar). SVO's archived records cite the same page. No instrument paper reference verified. DetectorType energy assumed.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "",
+    "url": "https://wp-cdn.apollomapping.com/web_assets/user_uploads/2023/04/21154742/Maxar_Spectral_Response_2023.zip",
+    "scope": "Owner Maxar Technologies. Blue, Green, Red, NIR and Pan are Maxar's 'Constellation Spectral Response Values (January 2023)' (RSR_GE1.txt in this zip, on the CDN of the reseller Apollo Mapping); no file in the zip carries a notice. The reseller page that links it (https://apollomapping.com/about-us/whitepapers) served a Cloudflare bot challenge and was not verified; Maxar's own terms were not checked. Green_svo and Pan_svo are SVO records recovered from Internet Archive captures (SVO states no licence)."
+  }
 }

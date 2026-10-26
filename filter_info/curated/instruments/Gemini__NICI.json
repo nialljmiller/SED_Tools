@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the Creative Commons Attribution 4.0 International License and can not be used for non-NOIRLab products.\"",
+    "url": "https://noirlab.edu/public/copyright/",
+    "scope": "Outreach-site licence; the NOIRLab/Gemini filter pages carry no statement on the curve files (page SVO cites: http://www.gemini.edu/sciops/instruments/nici/imaging/filters (now redirected to webarchive.gemini.edu)). The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "International Gemini Observatory",
+      "text": "Based on observations obtained at the international Gemini Observatory, a program of NSF NOIRLab [ include additional acknowledgment here, see section below ], which is managed by the Association of Universities for Research in Astronomy (AURA) under a cooperative agreement with the U.S. National Science Foundation on behalf of the Gemini Observatory partnership: the U.S. National Science Foundation (United States), National Research Council (Canada), Agencia Nacional de Investigación y Desarrollo (Chile), Ministerio de Ciencia, Tecnología e Innovación (Argentina), Ministério da Ciência, Tecnologia, Inovações e Comunicações (Brazil), and Korea Astronomy and Space Science Institute (Republic of Korea).",
+      "url": "https://noirlab.edu/science/about/scientific-acknowledgments",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

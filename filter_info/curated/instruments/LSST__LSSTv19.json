@@ -1,0 +1,19 @@
+{
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "",
+    "url": "https://github.com/lsst/throughputs/tree/v1.9.2",
+    "scope": "No licence: the repository has no LICENSE file at tag v1.9.2 and GitHub reports none (GET /repos/lsst/throughputs/license: 404); README.md states no terms. Rubin documentation footer: '© Copyright 2025 Association of Universities for Research in Astronomy, Inc. (AURA).' (https://lsstcam.lsst.io/)."
+  },
+  "acknowledgements": [
+    {
+      "for": "LSSTCam instrument citation",
+      "text": "SLAC National Accelerator Laboratory & NSF-DOE Vera C. Rubin Observatory, The LSST Camera (LSSTCam) (2025)",
+      "url": "https://lsstcam.lsst.io/",
+      "references": [
+        "doi:10.71929/rubin/2571927"
+      ],
+      "applies_to": "all bands"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"Data hosted in the ESA Space Science Archives are distributed under the CC BY-NC 3.0 IGO licence.\" … \"Prior to any commercial use by the User of any Data or Data Product, including any use or application that directly or indirectly generates a financial gain, a detailed request for authorisation/licence shall be made by the User by sending email to data.licences@esa.int.\"",
+    "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
+    "scope": "CC BY-NC 3.0 IGO: non-commercial reuse with the credit line 'Credit: ESA, Gaia DPAC'; commercial use needs ESA authorisation. Gaia also: https://www.cosmos.esa.int/web/gaia-users/license ('Gaia data are distributed under the CC BY-NC 3.0 IGO license.'). GAIA0 holds the pre-launch nominal passbands of Jordi et al. (2010). ESA distributes pre-launch passbands at https://www.cosmos.esa.int/web/gaia/transmissionwithoriginal (normalisedPassbands.txt carries no notice); NJM's curves were not compared with that file, and VizieR J/A+A/523/A48 does not contain them. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "European Space Agency (ESA) and Gaia DPAC",
+      "text": "Credit: ESA, Gaia DPAC",
+      "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

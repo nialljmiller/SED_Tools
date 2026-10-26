@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"These images are freely available for noncommercial use with proper attribution.\"",
+    "url": "https://www.ssec.wisc.edu/disclaimer/",
+    "scope": "SSEC website disclaimer ('The following disclaimers apply to all content on our website, unless specified otherwise'); its usage sentence names images, not data. The SRFs SVO cites are on SSEC's anonymous FTP (ftp://ftp.ssec.wisc.edu/paulv/SRF_Data/netCDF/vas_g07.srf.nc), which has no statement; the netCDF attributes carry no notice ('Interpolated SRFs for transmittance production; Data obtained from HMW'). The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "Space Science and Engineering Center (SSEC), University of Wisconsin-Madison",
+      "text": "Provided courtesy of Space Science and Engineering Center, University of Wisconsin-Madison.",
+      "url": "https://www.ssec.wisc.edu/disclaimer/",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

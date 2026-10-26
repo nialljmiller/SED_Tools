@@ -5,7 +5,8 @@
   "licence": {
     "redistribution": "public",
     "terms": "\"This work is marked with CC0 1.0 Universal. To view a copy of this license, visit https://creativecommons.org/publicdomain/zero/1.0/\"",
-    "url": "https://github.com/RomanSpaceTelescope/roman-technical-information/blob/main/LICENSE.md"
+    "url": "https://github.com/RomanSpaceTelescope/roman-technical-information/blob/main/LICENSE.md",
+    "scope": "CC0 1.0 dedication in LICENSE.md of RomanSpaceTelescope/roman-technical-information, identical on main and at commit 14a9b0c, from which the per-SCA effective-area tables were taken."
   },
   "references": [
     "bibcode:2024SPIE13092E..0SS"

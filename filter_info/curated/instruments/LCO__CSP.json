@@ -4,7 +4,8 @@
   "licence": {
     "redistribution": "unknown",
     "terms": "No licence or usage terms are stated on the CSP filters page or in the CSP_filter_package.tgz README (checked 2026-10-26); the page's footer covers only the Plone software.",
-    "url": "https://csp.obs.carnegiescience.edu/data/filters"
+    "url": "https://csp.obs.carnegiescience.edu/data/filters",
+    "scope": "No statement (category d). The Carnegie Supernova Project observed at Las Campanas Observatory (Carnegie Science); Las Cumbres Observatory's CC BY-NC 4.0 (the LCO records' namesake) does not apply. The filters page footer covers only the site software: 'The Plone® Open Source CMS/WCM is © 2000-2026 by the Plone Foundation and friends. Distributed under the GNU GPL license.'"
   },
   "references": [
     "doi:10.1088/0004-6256/142/5/156",
