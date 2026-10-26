@@ -1,0 +1,27 @@
+{
+  "description": "The POLDER instrument on PARASOL: relative spectral responses of its nine channels (443, 490, 565, 670, 763, 765, 865, 910, 1020 nm) from CNES's workbook PARASOL_spectral_response.xls.",
+  "facility_description": "PARASOL (CNES); per the CNES archive page it measured in coincidence with the CALIPSO lidar.",
+  "links": [
+    {
+      "url": "https://www.icare.univ-lille.fr/parasol/?p=76",
+      "label": "ICARE PARASOL instrument page (spectral responses)",
+      "source": "AERIS/ICARE"
+    },
+    {
+      "url": "https://web.archive.org/web/20240510230250id_/https://parasol.cnes.fr/sites/default/files/migration/smsc/parasol/PARASOL_spectral_response.xls",
+      "label": "CNES workbook (Internet Archive capture; the CNES URL now redirects)",
+      "source": "CNES"
+    }
+  ],
+  "references": [],
+  "acknowledgements": [],
+  "licence": {
+    "redistribution": "restricted",
+    "url": "https://www.icare.univ-lille.fr/parasol/?p=76",
+    "terms": "\"© Copyright AERIS/ICARE Data and Services Center 2021 SEDOO (Service de Données OMP)\" (footer of the ICARE PARASOL instrument page that links the CNES workbook; the workbook and the CNES URL state no terms)",
+    "scope": "Site-wide footer of the AERIS/ICARE page; the CNES workbook itself carries no licence statement. Hosted under Nill's 2026-10-26 'host everything' decision."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "Pivots identical to SVO's archived records. DetectorType energy assumed."
+}

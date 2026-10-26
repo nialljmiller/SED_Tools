@@ -1,0 +1,22 @@
+{
+  "description": "The imager of SkySat-12 (Planet): relative spectral responses of the Blue, Green, Red, NIR and Pan bands from Planet's per-satellite file Skysat_RSR_Skysat12.csv.",
+  "facility_description": "SkySat: Planet's SkySat satellites (one RSR file per satellite).",
+  "links": [
+    {
+      "url": "https://support.planet.com/hc/en-us/articles/360014290293",
+      "label": "Relative Spectral Response Curves (RSRs) for Planet satellites",
+      "source": "Planet Labs support"
+    }
+  ],
+  "references": [],
+  "acknowledgements": [],
+  "licence": {
+    "redistribution": "restricted",
+    "url": "https://www.planet.com/terms-of-use/",
+    "terms": "\"You understand that Planet owns the Services. You won't modify, publish, transmit, participate in the transfer or sale of, reproduce (except as expressly provided in this section), create derivative works based on, or otherwise exploit any of the Services. The Services may allow you to copy or download certain materials or information; please remember that just because this functionality exists, doesn't mean that all the restrictions above don't apply – they do! The Services, including the Platform Materials, are protected by copyright and/or other intellectual property laws. You agree to abide by all copyright notices, trademark rules, information, and restrictions contained in the Services, and you won't use, copy, reproduce, modify, translate, publish, broadcast, transmit, distribute, perform, upload, display, license, sell or otherwise exploit for any purpose any information or material not owned by you, (i) without the prior consent of the owner of that information or material or (ii) in a way that violates someone else's (including Planet's) rights.\" (Planet Terms of Use, section \"Your Rights In The Platform\", \"Published and effective as of September 1, 2026\"; https://www.planet.com/terms-of-use/)",
+    "scope": "Site-wide Terms of Use of Planet's services; the RSR support article and CSV files carry no licence of their own. Hosted under Nill's 2026-10-26 'host everything' decision (Planet ToS explicitly ignored)."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "Planet's SkySat-1..13 values are not peak-normalised (peaks about 0.27-0.44) and are kept as published. Attachments read through the Zendesk Help Center API (the HTML article answers 403 to scripts). Pivots agree with SVO's archived records to <= 0.3 % where available. DetectorType energy assumed."
+}

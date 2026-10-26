@@ -1,0 +1,22 @@
+{
+  "description": "AEISS-A imager of KOMPSAT-3A: relative spectral responses of four multispectral bands from the KOMPSAT pack's 'K3A-Spectral Response.xls' (band01-band04).",
+  "facility_description": "KOMPSAT satellites (SVO facility name KOMPSTAT).",
+  "links": [
+    {
+      "url": "https://apollomapping.com/about-us/whitepapers",
+      "label": "Apollo Mapping technical documents (vendor spectral response files)",
+      "source": "Apollo Mapping (reseller)"
+    }
+  ],
+  "references": [],
+  "acknowledgements": [],
+  "licence": {
+    "redistribution": "restricted",
+    "url": "https://apollomapping.com/about-us/whitepapers",
+    "terms": "\"Copyright © 2026 All Rights Reserved - Privacy Policy\" (footer of the Apollo Mapping Technical Documents page; no other terms found for the files)",
+    "scope": "Site-wide footer of the reseller page that distributes the vendor files; the files carry no licence statement. Hosted under Nill's 2026-10-26 'host everything' decision."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "SVO has no ID for KOMPSAT-3A. The file does not name the bands; Blue/Green/Red/NIR assigned by wavelength order. No Pan curve in the file. DetectorType energy assumed."
+}

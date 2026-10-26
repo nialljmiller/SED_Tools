@@ -1,0 +1,22 @@
+{
+  "description": "OSMI (KOMPSAT): relative spectral responses of the six bands 412-865 nm from NASA OBPG's table OSMI_RSRs.txt.",
+  "facility_description": "KOMPSAT satellites (SVO facility name KOMPSTAT).",
+  "links": [
+    {
+      "url": "https://oceandata.sci.gsfc.nasa.gov/rsr_tables/",
+      "label": "OBPG Sensor Spectral Characterization (RSR tables)",
+      "source": "NASA GSFC Ocean Biology Processing Group"
+    }
+  ],
+  "references": [],
+  "acknowledgements": [],
+  "licence": {
+    "redistribution": "public",
+    "url": "https://science.nasa.gov/researchers/science-information-policy/",
+    "terms": "\"The information produced as part of NASA’s scientific research activities represents a significant public investment. NASA holds this information, including publications, data, and software, as a public trust to increase knowledge and serve the public good. It is Science Mission Directorate (SMD) policy, consistent with NASA and Federal policies, that information produced from SMD-funded scientific research activities be made publicly available. SMD has released SPD-41a: Scientific Information Policy for the Science Mission Directorate to provide guidance on the open sharing of publications, data, and software created in the pursuit of scientific knowledge. The principles of the scientific information policy include: Peer-reviewed publications are made openly available with no embargo period. Research data and software are shared at the time of publication or the end of the funding award. Mission data are released as soon as possible, and unrestricted mission software is developed openly. Science workshops and meetings are held openly to enable broad participation.\" (https://science.nasa.gov/researchers/science-information-policy/; linked as \"Data & Information Policy\" from the OBPG RSR tables page)",
+    "scope": "NASA Science Mission Directorate information policy (agency-wide page linked from the OB.DAAC footer); the OBPG RSR tables page and files state no terms of their own; the MISR NetCDF file's 'license' attribute points to NASA's earth-science data-information policy."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "OBPG file OSMI_RSRs.txt (1 nm, 380-1100 nm; -999 rows dropped). Pivots agree with SVO's archived records to <= 0.05 %. DetectorType energy assumed."
+}

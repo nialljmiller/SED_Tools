@@ -4,5 +4,19 @@
     "terms": "\"You understand that Planet owns the Services. You won't modify, publish, transmit, participate in the transfer or sale of, reproduce (except as expressly provided in this section), create derivative works based on, or otherwise exploit any of the Services.\"",
     "url": "https://www.planet.com/terms-of-use/",
     "scope": "Commercial platform ToS (Planet Labs owns the PlanetScope Dove sensors); no explicit grant. SVO cites Apollo Mapping's whitepapers page (https://apollomapping.com/about-us/whitepapers), which served a Cloudflare bot challenge and was not verified, so the reseller's terms and the file SVO used are unknown. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
-  }
+  },
+  "links": [
+    {
+      "url": "https://apollomapping.com/about-us/whitepapers",
+      "label": "Apollo Mapping technical documents (vendor spectral response files)",
+      "source": "Apollo Mapping (reseller)"
+    },
+    {
+      "url": "https://support.planet.com/hc/en-us/articles/360014290293",
+      "label": "Relative Spectral Response Curves (RSRs) for Planet satellites",
+      "source": "Planet Labs support"
+    }
+  ],
+  "references": [],
+  "notes": "Original-source curves (2026-10-26): Header column order 'R,G,B' contradicted by the data; read as B,G,R. Pivots vs SVO: Blue +0.33 %, Green +0.14 %, Red +0.15 %, NIR -0.59 %. Planet's file distributed by Apollo Mapping. DetectorType energy assumed."
 }

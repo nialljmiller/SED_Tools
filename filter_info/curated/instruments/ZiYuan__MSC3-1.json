@@ -1,0 +1,22 @@
+{
+  "description": "The multispectral camera of ZY-3 01 (ZiYuan-3): normalised relative spectral responses of bands B1-B4 from the ZY3_01_02_Spectral_Response_Values.zip pack.",
+  "facility_description": "ZiYuan-3 (ZY-3) satellites 01 and 02 (SVO facility ZiYuan).",
+  "links": [
+    {
+      "url": "https://apollomapping.com/about-us/whitepapers",
+      "label": "Apollo Mapping technical documents (vendor spectral response files)",
+      "source": "Apollo Mapping (reseller)"
+    }
+  ],
+  "references": [],
+  "acknowledgements": [],
+  "licence": {
+    "redistribution": "restricted",
+    "url": "https://apollomapping.com/about-us/whitepapers",
+    "terms": "\"Copyright © 2026 All Rights Reserved - Privacy Policy\" (footer of the Apollo Mapping Technical Documents page; no other terms found for the files)",
+    "scope": "Site-wide footer of the reseller page that distributes the vendor files; the files carry no licence statement. Hosted under Nill's 2026-10-26 'host everything' decision."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "Read from an unlabelled PDF table (column 2, a broad band, not published); pivots agree with SVO's MSC3-1 to <= 0.04 %. DetectorType energy assumed."
+}

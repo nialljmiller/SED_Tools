@@ -1,0 +1,22 @@
+{
+  "description": "SeaWiFS: relative spectral responses of the eight bands 412-865 nm from NASA OBPG's table seawifs_rsrs.txt.",
+  "facility_description": "SeaStar (OrbView-2) carried SeaWiFS; OBPG names its NetCDF table orbview-2_seawifs_RSR.nc.",
+  "links": [
+    {
+      "url": "https://oceandata.sci.gsfc.nasa.gov/rsr_tables/",
+      "label": "OBPG Sensor Spectral Characterization (RSR tables)",
+      "source": "NASA GSFC Ocean Biology Processing Group"
+    }
+  ],
+  "references": [],
+  "acknowledgements": [],
+  "licence": {
+    "redistribution": "public",
+    "url": "https://science.nasa.gov/researchers/science-information-policy/",
+    "terms": "\"The information produced as part of NASA’s scientific research activities represents a significant public investment. NASA holds this information, including publications, data, and software, as a public trust to increase knowledge and serve the public good. It is Science Mission Directorate (SMD) policy, consistent with NASA and Federal policies, that information produced from SMD-funded scientific research activities be made publicly available. SMD has released SPD-41a: Scientific Information Policy for the Science Mission Directorate to provide guidance on the open sharing of publications, data, and software created in the pursuit of scientific knowledge. The principles of the scientific information policy include: Peer-reviewed publications are made openly available with no embargo period. Research data and software are shared at the time of publication or the end of the funding award. Mission data are released as soon as possible, and unrestricted mission software is developed openly. Science workshops and meetings are held openly to enable broad participation.\" (https://science.nasa.gov/researchers/science-information-policy/; linked as \"Data & Information Policy\" from the OBPG RSR tables page)",
+    "scope": "NASA Science Mission Directorate information policy (agency-wide page linked from the OB.DAAC footer); the OBPG RSR tables page and files state no terms of their own; the MISR NetCDF file's 'license' attribute points to NASA's earth-science data-information policy."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "OBPG's columns are not peak-normalised (peaks 8.2-26.2); each band is divided by its maximum. Rows with -999 dropped. Pivots agree with SVO's archived SeaWiFS records to <= 0.16 % except band865 (-0.76 %). DetectorType energy assumed."
+}

@@ -1,0 +1,22 @@
+{
+  "description": "The HRG1 imager of SPOT 5: spectral sensitivities of its bands from the table SPOT_spectral_sensitivity.xls ('Spectral sensitivities & Normal solar equivalent irradiances').",
+  "facility_description": "SPOT: the French Earth-observation satellite series (SPOT 1-5 in this table).",
+  "links": [
+    {
+      "url": "https://apollomapping.com/about-us/whitepapers",
+      "label": "Apollo Mapping technical documents (vendor spectral response files)",
+      "source": "Apollo Mapping (reseller)"
+    }
+  ],
+  "references": [],
+  "acknowledgements": [],
+  "licence": {
+    "redistribution": "restricted",
+    "url": "https://apollomapping.com/about-us/whitepapers",
+    "terms": "\"Copyright © 2026 All Rights Reserved - Privacy Policy\" (footer of the Apollo Mapping Technical Documents page; no other terms found for the files)",
+    "scope": "Site-wide footer of the reseller page that distributes the vendor files; the files carry no licence statement. Hosted under Nill's 2026-10-26 'host everything' decision."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "Band names are the table's labels (Pa, B1-B3, MIR); SVO has no IDs for this instrument. File from Apollo Mapping's SPOT_irradiance_docs.zip. DetectorType energy assumed."
+}
