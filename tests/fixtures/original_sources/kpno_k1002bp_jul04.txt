@@ -1,0 +1,19 @@
+== Filter Data - Lambda 9 Spectrophotometer ==
+  Kitt Peak National Observatory - NOAO
+------------------------------------------------
+Filter: K1002 .2NM/15NMPERMIN/1S  360-600NM
+Date: 07/22/04   Time: 15:05:19  Operator: HS
+cwl=  4357.50A  fwhm= 993.46A  Tmax= 69.37% at  4418.00A
+Tcutoff=  2.00 %  Slitsize = 20 A
+fwhm spans 3860.77A to 4854.23A
+90%  spans 4121.65A to 4626.21A
+bw90 is  0.508; Tmin90/Tmax is  0.899
+No data smoothing
+
+Npts= 1201     Disp=  2.00A/Interval
+*****
+  4414.00    69.115
+  4416.00    68.820
+  4418.00    69.370
+  4420.00    68.975
+  3600.00     1.975
