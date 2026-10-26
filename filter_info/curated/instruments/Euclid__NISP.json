@@ -1,7 +1,7 @@
 {
   "description": "NISP on Euclid has three photometric passbands, Y, J and H, and slitless grisms. ESA's NISP-PHOTO-PASSBANDS-V1 product gives the effective Y, J and H throughput at the centre of the focal plane, as the product of telescope, NISP optics, filter and quantum efficiency. Blue and Red are the blue grism BGE and the red grism RGE, not additional imaging filters.",
   "facility_description": "Euclid is an ESA visible and near-infrared space survey, launched on 1 July 2023, with a 1.20 m Korsch off-axis three-mirror telescope.",
-  "notes": "The NISP-PHOTO-PASSBANDS-V1 page publishes Y, J and H total-throughput files and the Euclid Consortium acknowledgement copied above. That page does not itself state a licence. The numerical files are Euclid reference data hosted by ESA, so the licence class follows the ESA Space Science Archives terms (CC BY-NC 3.0 IGO), which also require the Euclid credit line. Schirmer et al. 2022 on arXiv is separately marked CC BY 4.0; that article licence is not used here as the licence of the archive files. The reference-data index lists NISP photometric passbands and a planetary-nebula atlas, not Blue or Red grism curves. A NISP-SPECTRO-PASSBANDS page was not used: its DOI placeholder was not a real release. Wavelength edges for Y, J and H are quoted from the Euclid Consortium overview, which attributes them to Schirmer+2022 Table 3. The Y ASCII product header (opened this session) is '# WAVE T_TOTAL T_FILTER T_TELESCOPE T_NI-OA T_QE'.",
+  "notes": "The NISP-PHOTO-PASSBANDS-V1 page publishes Y, J and H total-throughput files and the Euclid Consortium acknowledgement copied above. That page does not itself state a licence. The numerical files are Euclid reference data hosted by ESA, so the licence class follows the ESA Space Science Archives terms (CC BY-NC 3.0 IGO), which also require the Euclid credit line. Schirmer et al. 2022 on arXiv is separately marked CC BY 4.0; that article licence is not used here as the licence of the archive files. The reference-data index lists NISP photometric passbands and a planetary-nebula atlas, not Blue or Red grism curves. A NISP-SPECTRO-PASSBANDS page was not used: its DOI placeholder was not a real release. Wavelength edges for Y, J and H are quoted from the Euclid Consortium overview, which attributes them to Schirmer+2022 Table 3. The Y ASCII product header (opened this session) is '# WAVE T_TOTAL T_FILTER T_TELESCOPE T_NI-OA T_QE'. Since 2026-10-26 Y, J and H are ESA's NISP-PHOTO-PASSBANDS V1.0 T_TOTAL (the original source), with ESA's filter, optics and QE factors as components; the previously served SVO copies are kept as Y_svo, J_svo and H_svo (rename map filter_expansion/renamed_filters_20261026_euclid.csv). Those copies have the pivot wavelengths of SVO's Euclid/NISP0 'approximate filter' records, not of the V1.0 passbands.",
   "licence": {
     "redistribution": "attribution",
     "terms": "\"Data hosted in the ESA Space Science Archives are distributed under the CC BY-NC 3.0 IGO licence.\" … \"Prior to any commercial use by the User of any Data or Data Product, including any use or application that directly or indirectly generates a financial gain, a detailed request for authorisation/licence shall be made by the User by sending email to data.licences@esa.int.\"",
@@ -91,15 +91,33 @@
     },
     "Y": {
       "Band": "Y_E",
-      "MagSys": "AB"
+      "MagSys": "AB",
+      "svo_filterID": null,
+      "Comments": "ESA NISP-PHOTO-PASSBANDS V1.0 (2021-11-01; DOI 10.5270/esa-kx8w57c; Schirmer et al. 2022) T_TOTAL for Y at the centre of the NISP focal plane: the product of T_TELESCOPE (all mirrors and the dichroic), T_NI-OA (NISP optical assembly), T_FILTER and T_QE, 1 nm grid. WAVE is in nm (the files state no unit; inferred from the values). Photon-counting: T_TOTAL includes the detector quantum efficiency T_QE, so it is a photon detection probability. Pivot 10785.4 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as Y_svo. Its separate filter, optics and QE factors are in components/ and multiply back to this curve.",
+      "references": [
+        "bibcode:2022A&A...662A..92E",
+        "doi:10.5270/esa-kx8w57c"
+      ]
     },
     "J": {
       "Band": "J_E",
-      "MagSys": "AB"
+      "MagSys": "AB",
+      "svo_filterID": null,
+      "Comments": "ESA NISP-PHOTO-PASSBANDS V1.0 (2021-11-01; DOI 10.5270/esa-kx8w57c; Schirmer et al. 2022) T_TOTAL for J at the centre of the NISP focal plane: the product of T_TELESCOPE (all mirrors and the dichroic), T_NI-OA (NISP optical assembly), T_FILTER and T_QE, 1 nm grid. WAVE is in nm (the files state no unit; inferred from the values). Photon-counting: T_TOTAL includes the detector quantum efficiency T_QE, so it is a photon detection probability. 11 negative noise samples set to 0. Pivot 13620.7 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as J_svo. Its separate filter, optics and QE factors are in components/ and multiply back to this curve.",
+      "references": [
+        "bibcode:2022A&A...662A..92E",
+        "doi:10.5270/esa-kx8w57c"
+      ]
     },
     "H": {
       "Band": "H_E",
-      "MagSys": "AB"
+      "MagSys": "AB",
+      "svo_filterID": null,
+      "Comments": "ESA NISP-PHOTO-PASSBANDS V1.0 (2021-11-01; DOI 10.5270/esa-kx8w57c; Schirmer et al. 2022) T_TOTAL for H at the centre of the NISP focal plane: the product of T_TELESCOPE (all mirrors and the dichroic), T_NI-OA (NISP optical assembly), T_FILTER and T_QE, 1 nm grid. WAVE is in nm (the files state no unit; inferred from the values). Photon-counting: T_TOTAL includes the detector quantum efficiency T_QE, so it is a photon detection probability. 20 negative noise samples set to 0. Pivot 17648.8 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as H_svo. Its separate filter, optics and QE factors are in components/ and multiply back to this curve.",
+      "references": [
+        "bibcode:2022A&A...662A..92E",
+        "doi:10.5270/esa-kx8w57c"
+      ]
     },
     "Blue": {
       "Description": "NISP blue slitless grism BGE (BGS000, orientation 0°). The instrument paper gives 926–1366 nm and R > 400. The Euclid Consortium lists the same 50% edges for BG_E and R~400.",
@@ -108,6 +126,24 @@
     "Red": {
       "Description": "NISP red slitless grism RGE. The instrument paper gives 1206–1892 nm and R > 480, with grisms at different dispersion orientations. The Euclid Consortium lists RG_E from RGS000 and RGS180 (0° and 180°); RGS270 is unused.",
       "Band": "RGE"
+    },
+    "Y_svo": {
+      "Band": "Y_E",
+      "MagSys": "AB",
+      "svo_filterID": "Euclid/NISP0.Y",
+      "Comments": "Previous NJM curve for Y, kept on 2026-10-26: an SVO Filter Profile Service copy whose header FilterID reads Euclid/NISP.Y. Its pivot wavelength (10718.85 Å) agrees to 0.01 Å with that of SVO's archived Euclid/NISP0.Y record ('NISP Y approximate filter'; Maciaszek et al. 2016, SPIE 9904; pivot 10718.85 Å), so it is matched to that record; SVO's curve itself is not archived, so identity is not verified. Pivot 10785.4 Å for the current Y curve. Not listed in the MESA instrument index."
+    },
+    "J_svo": {
+      "Band": "J_E",
+      "MagSys": "AB",
+      "svo_filterID": "Euclid/NISP0.J",
+      "Comments": "Previous NJM curve for J, kept on 2026-10-26: an SVO Filter Profile Service copy whose header FilterID reads Euclid/NISP.J. Its pivot wavelength (13580.17 Å) agrees to 0.01 Å with that of SVO's archived Euclid/NISP0.J record ('NISP J approximate filter'; Maciaszek et al. 2016, SPIE 9904; pivot 13580.16 Å), so it is matched to that record; SVO's curve itself is not archived, so identity is not verified. Pivot 13620.7 Å for the current J curve. Not listed in the MESA instrument index."
+    },
+    "H_svo": {
+      "Band": "H_E",
+      "MagSys": "AB",
+      "svo_filterID": "Euclid/NISP0.H",
+      "Comments": "Previous NJM curve for H, kept on 2026-10-26: an SVO Filter Profile Service copy whose header FilterID reads Euclid/NISP.H. Its pivot wavelength (17588.51 Å) agrees to 0.01 Å with that of SVO's archived Euclid/NISP0.H record ('NISP H approximate filter'; Maciaszek et al. 2016, SPIE 9904; pivot 17588.51 Å), so it is matched to that record; SVO's curve itself is not archived, so identity is not verified. Pivot 17648.8 Å for the current H curve. Not listed in the MESA instrument index."
     }
   }
 }
