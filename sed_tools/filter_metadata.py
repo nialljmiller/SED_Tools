@@ -33,9 +33,19 @@ how it was established:
 ``svo-curve-match``
     The file had no ``FilterID``; its curve was matched point-by-point against
     the SVO candidates with the same facility and band.
+``original``
+    Stated by the curve's own publisher (paper, instrument page or data file).
+``inferred``
+    Not stated by the publisher, but established from documented facts: for
+    example a filter-only transmission (no QE, no wavelength factor) used with
+    a documented photon-counting detector.
 ``assumed``
     No authoritative source could be found; ``energy`` is written so that
     every file is explicit, but the value is unverified.
+
+Only ``assumed`` files are re-resolved by default; ``force`` re-resolves the
+others too and can replace ``original`` or ``inferred`` evidence with an SVO
+label, so review a forced run before keeping it.
 
 ``WavelengthUnit`` is copied from SVO whenever the curve is identified, so
 the loader never has to guess the unit from the values.
