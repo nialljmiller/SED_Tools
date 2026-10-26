@@ -1,16 +1,25 @@
 {
  "bibcode:2012ivoa.rept.1015R": {
-  "authors": ["Rodrigo, C.", "Solano, E.", "Bayo, A."],
+  "authors": [
+   "Rodrigo, C.",
+   "Solano, E.",
+   "Bayo, A."
+  ],
+  "bibtex": "@techreport{2012ivoa.rept.1015R,\n  author = {Rodrigo, C. and Solano, E. and Bayo, A.},\n  title = {SVO Filter Profile Service Version 1.0},\n  institution = {International Virtual Observatory Alliance},\n  type = {IVOA Working Draft},\n  year = {2012},\n  month = oct,\n  url = {http://www.ivoa.net/documents/Notes/SVOFPS/index.html}\n}",
   "journal": "IVOA Working Draft, 15 October 2012",
-  "note": "Authors from SVO's acknowledgement text (Internet Archive capture of svo2.cab.inta-csic.es/svo/theory/fps3, 2024-12-13); title and date from the IVOA page ADS links to.",
+  "note": "Authors from SVO's acknowledgement text (Internet Archive capture of svo2.cab.inta-csic.es/svo/theory/fps3, 2024-12-13); title and date from the IVOA page ADS links to. BibTeX assembled from these verified fields only (no venue recorded for the 2020 abstract).",
   "publisher_url": "http://www.ivoa.net/documents/Notes/SVOFPS/index.html",
   "title": "SVO Filter Profile Service Version 1.0",
   "type": "techreport",
   "year": 2012
  },
  "bibcode:2020sea..confE.182R": {
-  "authors": ["Rodrigo, C.", "Solano, E."],
-  "note": "As SVO's acknowledgement text lists it (Internet Archive capture of svo2.cab.inta-csic.es/svo/theory/fps3, 2024-12-13).",
+  "authors": [
+   "Rodrigo, C.",
+   "Solano, E."
+  ],
+  "bibtex": "@inproceedings{2020sea..confE.182R,\n  author = {Rodrigo, C. and Solano, E.},\n  title = {The SVO Filter Profile Service},\n  year = {2020},\n  url = {https://ui.adsabs.harvard.edu/abs/2020sea..confE.182R}\n}",
+  "note": "As SVO's acknowledgement text lists it (Internet Archive capture of svo2.cab.inta-csic.es/svo/theory/fps3, 2024-12-13). BibTeX assembled from these verified fields only (no venue recorded for the 2020 abstract).",
   "title": "The SVO Filter Profile Service",
   "type": "inproceedings",
   "year": 2020

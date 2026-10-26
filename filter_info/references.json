@@ -906,7 +906,7 @@
    "Wu, W. L. K.",
    "Yoon, K. W."
   ],
-  "bibtex": "@inproceedings{arXiv:1407.5928, title={BICEP3: a 95GHz refracting telescope for degree-scale CMB polarization}, volume={9153}, ISSN={0277-786X}, url={http://dx.doi.org/10.1117/12.2057224}, DOI={10.1117/12.2057224}, booktitle={Millimeter, Submillimeter, and Far-Infrared Detectors and Instrumentation for Astronomy VII}, publisher={SPIE}, author={Ahmed, Z. and Amiri, M. and Benton, S. J. and Bock, J. J. and Bowens-Rubin, R. and Buder, I. and Bullock, E. and Connors, J. and Filippini, J. P. and Grayson, J. A. and Halpern, M. and Hilton, G. C. and Hristov, V. V. and Hui, H. and Irwin, K. D. and Kang, J. and Karkare, K. S. and Karpel, E. and Kovac, J. M. and Kuo, C. L. and Netterfield, C. B. and Nguyen, H. T. and O\u00e2\u20ac\u2122Brient, R. and Ogburn, R. W. and Pryke, C. and Reintsema, C. D. and Richter, S. and Thompson, K. L. and Turner, A. D. and Vieregg, A. G. and Wu, W. L. K. and Yoon, K. W.}, editor={Holland, Wayne S. and Zmuidzinas, Jonas}, year={2014}, month=Aug, pages={91531N} }",
+  "bibtex": "@inproceedings{arXiv:1407.5928, title={BICEP3: a 95GHz refracting telescope for degree-scale CMB polarization}, volume={9153}, ISSN={0277-786X}, url={http://dx.doi.org/10.1117/12.2057224}, DOI={10.1117/12.2057224}, booktitle={Millimeter, Submillimeter, and Far-Infrared Detectors and Instrumentation for Astronomy VII}, publisher={SPIE}, author={Ahmed, Z. and Amiri, M. and Benton, S. J. and Bock, J. J. and Bowens-Rubin, R. and Buder, I. and Bullock, E. and Connors, J. and Filippini, J. P. and Grayson, J. A. and Halpern, M. and Hilton, G. C. and Hristov, V. V. and Hui, H. and Irwin, K. D. and Kang, J. and Karkare, K. S. and Karpel, E. and Kovac, J. M. and Kuo, C. L. and Netterfield, C. B. and Nguyen, H. T. and O\u2019Brient, R. and Ogburn, R. W. and Pryke, C. and Reintsema, C. D. and Richter, S. and Thompson, K. L. and Turner, A. D. and Vieregg, A. G. and Wu, W. L. K. and Yoon, K. W.}, editor={Holland, Wayne S. and Zmuidzinas, Jonas}, year={2014}, month=Aug, pages={91531N} }",
   "doi": "10.1117/12.2057224",
   "journal": "SPIE Proceedings",
   "key": "arxiv:1407.5928",
@@ -985,7 +985,7 @@
    "Mann, Andrew W.",
    "von Braun, Kaspar"
   ],
-  "bibtex": "@article{arXiv:1412.1474, title={Revised Filter Profiles and Zero Points for Broadband Photometry}, volume={127}, ISSN={1538-3873}, url={http://dx.doi.org/10.1086/680012}, DOI={10.1086/680012}, number={948}, journal={Publications of the Astronomical Society of the Pacific}, publisher={IOP Publishing}, author={Mann, Andrew W. and von Braun, Kaspar}, year={2015}, month=Feb, pages={102\u00e2\u20ac\u201c125} }",
+  "bibtex": "@article{arXiv:1412.1474, title={Revised Filter Profiles and Zero Points for Broadband Photometry}, volume={127}, ISSN={1538-3873}, url={http://dx.doi.org/10.1086/680012}, DOI={10.1086/680012}, number={948}, journal={Publications of the Astronomical Society of the Pacific}, publisher={IOP Publishing}, author={Mann, Andrew W. and von Braun, Kaspar}, year={2015}, month=Feb, pages={102\u2013125} }",
   "doi": "10.1086/680012",
   "journal": "Publications of the Astronomical Society of the Pacific",
   "key": "arxiv:1412.1474",
@@ -1247,7 +1247,7 @@
    "Safonov, B. S.",
    "Cheryasov, D. V."
   ],
-  "bibtex": "@article{arXiv:2305.00451, title={Speckle Interferometry with CMOS Detector}, volume={78}, ISSN={1990-3421}, url={http://dx.doi.org/10.1134/S1990341323020104}, DOI={10.1134/s1990341323020104}, number={2}, journal={Astrophysical Bulletin}, publisher={Pleiades Publishing Ltd}, author={Strakhov, I. A. and Safonov, B. S. and Cheryasov, D. V.}, year={2023}, month=June, pages={234\u00e2\u20ac\u201c258} }",
+  "bibtex": "@article{arXiv:2305.00451, title={Speckle Interferometry with CMOS Detector}, volume={78}, ISSN={1990-3421}, url={http://dx.doi.org/10.1134/s1990341323020104}, DOI={10.1134/s1990341323020104}, number={2}, journal={Astrophysical Bulletin}, publisher={Pleiades Publishing Ltd}, author={Strakhov, I. A. and Safonov, B. S. and Cheryasov, D. V.}, year={2023}, month=June, pages={234\u2013258} }",
   "doi": "10.1134/s1990341323020104",
   "journal": "Astrophys. Bull.",
   "key": "arxiv:2305.00451",
@@ -1460,7 +1460,7 @@
    "Heber, Uli",
    "Mebold, Ulrich"
   ],
-  "bibtex": "@inproceedings{arXiv:astro-ph/9903177, title={BUSCA: a telescope instrumentation for simultaneous imaging in four optical bands}, volume={3649}, ISSN={0277-786X}, url={http://dx.doi.org/10.1117/12.347066}, DOI={10.1117/12.347066}, booktitle={Sensors, Cameras, and Systems for Scientific/Industrial Applications}, publisher={SPIE}, author={Reif, Klaus and Bagschik, Klaus and de Boer, Klaas S. and Schmoll, Juergen and Mueller, Philipp and Poschmann, Henning and Klink, Guenther and Kohley, Ralf and Heber, Uli and Mebold, Ulrich}, editor={Blouke, Morley M. and Williams, Jr., George M.}, year={1999}, month=Apr, pages={109\u00e2\u20ac\u201c120} }",
+  "bibtex": "@inproceedings{arXiv:astro-ph/9903177, title={BUSCA: a telescope instrumentation for simultaneous imaging in four optical bands}, volume={3649}, ISSN={0277-786X}, url={http://dx.doi.org/10.1117/12.347066}, DOI={10.1117/12.347066}, booktitle={Sensors, Cameras, and Systems for Scientific/Industrial Applications}, publisher={SPIE}, author={Reif, Klaus and Bagschik, Klaus and de Boer, Klaas S. and Schmoll, Juergen and Mueller, Philipp and Poschmann, Henning and Klink, Guenther and Kohley, Ralf and Heber, Uli and Mebold, Ulrich}, editor={Blouke, Morley M. and Williams, Jr., George M.}, year={1999}, month=Apr, pages={109\u2013120} }",
   "doi": "10.1117/12.347066",
   "journal": "SPIE Proceedings",
   "key": "arxiv:astro-ph/9903177",
@@ -1635,7 +1635,7 @@
    "Golay, Marcel"
   ],
   "bibcode": "1972VA.....14...13G",
-  "bibtex": "@article{1972VA.....14...13G, title={Spectral classification through seven-colour photometry}, volume={14}, ISSN={0083-6656}, url={http://dx.doi.org/10.1016/0083-6656(72)90023-2}, DOI={10.1016/0083-6656(72)90023-2}, journal={Vistas in Astronomy}, publisher={Elsevier BV}, author={Golay, Marcel}, year={1972}, month=Jan, pages={13\u00e2\u20ac\u201c51} }",
+  "bibtex": "@article{1972VA.....14...13G, title={Spectral classification through seven-colour photometry}, volume={14}, ISSN={0083-6656}, url={http://dx.doi.org/10.1016/0083-6656(72)90023-2}, DOI={10.1016/0083-6656(72)90023-2}, journal={Vistas in Astronomy}, publisher={Elsevier BV}, author={Golay, Marcel}, year={1972}, month=Jan, pages={13\u201351} }",
   "doi": "10.1016/0083-6656(72)90023-2",
   "journal": "Vistas in Astronomy",
   "key": "bibcode:1972VA.....14...13G",
@@ -1713,7 +1713,7 @@
    "Morton, Donald C."
   ],
   "bibcode": "1977VA.....21..191W",
-  "bibtex": "@article{1977VA.....21..191W, title={The Anglo-Australian Telescope}, volume={21}, ISSN={0083-6656}, url={http://dx.doi.org/10.1016/0083-6656(77)90030-7}, DOI={10.1016/0083-6656(77)90030-7}, journal={Vistas in Astronomy}, publisher={Elsevier BV}, author={Joseph Wampler, E. and Morton, Donald C.}, year={1977}, month=Jan, pages={191\u00e2\u20ac\u201c207} }",
+  "bibtex": "@article{1977VA.....21..191W, title={The Anglo-Australian Telescope}, volume={21}, ISSN={0083-6656}, url={http://dx.doi.org/10.1016/0083-6656(77)90030-7}, DOI={10.1016/0083-6656(77)90030-7}, journal={Vistas in Astronomy}, publisher={Elsevier BV}, author={Joseph Wampler, E. and Morton, Donald C.}, year={1977}, month=Jan, pages={191\u2013207} }",
   "doi": "10.1016/0083-6656(77)90030-7",
   "journal": "Vistas in Astronomy",
   "key": "bibcode:1977VA.....21..191W",
@@ -1870,7 +1870,7 @@
    "O'Brien, Thomas P."
   ],
   "bibcode": "1993SPIE.1946..667D",
-  "bibtex": "@inproceedings{1993SPIE.1946..667D, title={Ohio State Infrared Imager/Spectrometer (OSIRIS)}, volume={1946}, ISSN={0277-786X}, url={http://dx.doi.org/10.1117/12.158725}, DOI={10.1117/12.158725}, booktitle={Infrared Detectors and Instrumentation}, publisher={SPIE}, author={DePoy, Darren L. and Atwood, Bruce and Byard, Paul L. and Frogel, J. and O\u00e2\u20ac\u2122Brien, Thomas P.}, editor={Fowler, Albert M.}, year={1993}, month=Oct, pages={667} }",
+  "bibtex": "@inproceedings{1993SPIE.1946..667D, title={Ohio State Infrared Imager/Spectrometer (OSIRIS)}, volume={1946}, ISSN={0277-786X}, url={http://dx.doi.org/10.1117/12.158725}, DOI={10.1117/12.158725}, booktitle={Infrared Detectors and Instrumentation}, publisher={SPIE}, author={DePoy, Darren L. and Atwood, Bruce and Byard, Paul L. and Frogel, J. and O\u2019Brien, Thomas P.}, editor={Fowler, Albert M.}, year={1993}, month=Oct, pages={667} }",
   "doi": "10.1117/12.158725",
   "journal": "SPIE Proceedings",
   "key": "bibcode:1993SPIE.1946..667D",
@@ -1893,7 +1893,7 @@
    "Denault, Anthony J."
   ],
   "bibcode": "1994SPIE.2198..614S",
-  "bibtex": "@inproceedings{1994SPIE.2198..614S, title={NSFCAM: a new infrared array camera for the NASA Infrared Telescope Facility}, volume={2198}, ISSN={0277-786X}, url={http://dx.doi.org/10.1117/12.176769}, DOI={10.1117/12.176769}, booktitle={Instrumentation in Astronomy VIII}, publisher={SPIE}, author={Shure, Mark A. and Toomey, Douglas W. and Rayner, John T. and Onaka, Peter M. and Denault, Anthony J.}, editor={Crawford, David L. and Craine, Eric R.}, year={1994}, month=June, pages={614\u00e2\u20ac\u201c622} }",
+  "bibtex": "@inproceedings{1994SPIE.2198..614S, title={NSFCAM: a new infrared array camera for the NASA Infrared Telescope Facility}, volume={2198}, ISSN={0277-786X}, url={http://dx.doi.org/10.1117/12.176769}, DOI={10.1117/12.176769}, booktitle={Instrumentation in Astronomy VIII}, publisher={SPIE}, author={Shure, Mark A. and Toomey, Douglas W. and Rayner, John T. and Onaka, Peter M. and Denault, Anthony J.}, editor={Crawford, David L. and Craine, Eric R.}, year={1994}, month=June, pages={614\u2013622} }",
   "doi": "10.1117/12.176769",
   "journal": "SPIE Proceedings",
   "key": "bibcode:1994SPIE.2198..614S",
@@ -1945,7 +1945,7 @@
    "Zuber, M. T."
   ],
   "bibcode": "1994Sci...266.1835N",
-  "bibtex": "@article{1994Sci...266.1835N, title={The Clementine Mission to the Moon: Scientific Overview}, volume={266}, ISSN={1095-9203}, url={http://dx.doi.org/10.1126/science.266.5192.1835}, DOI={10.1126/science.266.5192.1835}, number={5192}, journal={Science}, publisher={American Association for the Advancement of Science (AAAS)}, author={Nozette, Stewart and Rustan, P. and Pleasance, L. P. and Kordas, J. F. and Lewis, I. T. and Park, H. S. and Priest, R. E. and Horan, D. M. and Regeon, P. and Lichtenberg, C. L. and Shoemaker, E. M. and Eliason, E. M. and McEwen, A. S. and Robinson, M. S. and Spudis, P. D. and Acton, C. H. and Buratti, B. J. and Duxbury, T. C. and Baker, D. N. and Jakosky, B. M. and Blamont, J. E. and Corson, M. P. and Resnick, J. H. and Rollins, C. J. and Davies, M. E. and Lucey, P. G. and Malaret, E. and Massie, M. A. and Pieters, C. M. and Reisse, R. A. and Smith, D. E. and Sorenson, T. C. and Breugge, R. W. Vorder and Zuber, M. T.}, year={1994}, month=Dec, pages={1835\u00e2\u20ac\u201c1839} }",
+  "bibtex": "@article{1994Sci...266.1835N, title={The Clementine Mission to the Moon: Scientific Overview}, volume={266}, ISSN={1095-9203}, url={http://dx.doi.org/10.1126/science.266.5192.1835}, DOI={10.1126/science.266.5192.1835}, number={5192}, journal={Science}, publisher={American Association for the Advancement of Science (AAAS)}, author={Nozette, Stewart and Rustan, P. and Pleasance, L. P. and Kordas, J. F. and Lewis, I. T. and Park, H. S. and Priest, R. E. and Horan, D. M. and Regeon, P. and Lichtenberg, C. L. and Shoemaker, E. M. and Eliason, E. M. and McEwen, A. S. and Robinson, M. S. and Spudis, P. D. and Acton, C. H. and Buratti, B. J. and Duxbury, T. C. and Baker, D. N. and Jakosky, B. M. and Blamont, J. E. and Corson, M. P. and Resnick, J. H. and Rollins, C. J. and Davies, M. E. and Lucey, P. G. and Malaret, E. and Massie, M. A. and Pieters, C. M. and Reisse, R. A. and Smith, D. E. and Sorenson, T. C. and Breugge, R. W. Vorder and Zuber, M. T.}, year={1994}, month=Dec, pages={1835\u20131839} }",
   "doi": "10.1126/science.266.5192.1835",
   "journal": "Science",
   "key": "bibcode:1994Sci...266.1835N",
@@ -2036,7 +2036,7 @@
    "Hauck, B."
   ],
   "bibcode": "1997A&AS..124..349M",
-  "bibtex": "@article{1997A\\&AS..124..349M, title={The General Catalogue of Photometric Data (GCPD). II.}, volume={124}, ISSN={1286-4846}, url={http://dx.doi.org/10.1051/aas:1997197}, DOI={10.1051/aas:1997197}, number={2}, journal={Astronomy and Astrophysics Supplement Series}, publisher={EDP Sciences}, author={Mermilliod, J.-C. and Mermilliod, M. and Hauck, B.}, year={1997}, month=Aug, pages={349\u00e2\u20ac\u201c352} }",
+  "bibtex": "@article{1997A&AS..124..349M, title={The General Catalogue of Photometric Data (GCPD). II.}, volume={124}, ISSN={1286-4846}, url={http://dx.doi.org/10.1051/aas:1997197}, DOI={10.1051/aas:1997197}, number={2}, journal={Astronomy and Astrophysics Supplement Series}, publisher={EDP Sciences}, author={Mermilliod, J.-C. and Mermilliod, M. and Hauck, B.}, year={1997}, month=Aug, pages={349\u2013352} }",
   "doi": "10.1051/aas:1997197",
   "journal": "Astron. Astrophys. Suppl. Ser.",
   "key": "bibcode:1997A&AS..124..349M",
@@ -2057,7 +2057,7 @@
    "Kurz, Richard"
   ],
   "bibcode": "1997SPIE.2871...15M",
-  "bibtex": "@inproceedings{1997SPIE.2871...15M, title={Gemini 8-m Telescopes Project}, volume={2871}, ISSN={0277-786X}, url={http://dx.doi.org/10.1117/12.269047}, DOI={10.1117/12.269047}, booktitle={Optical Telescopes of Today and Tomorrow}, publisher={SPIE}, author={Mountain, C. Matt and Gillett, Fred C. and Kurz, Richard}, editor={Ardeberg, Arne L.}, year={1997}, month=Mar, pages={15\u00e2\u20ac\u201c23} }",
+  "bibtex": "@inproceedings{1997SPIE.2871...15M, title={Gemini 8-m Telescopes Project}, volume={2871}, ISSN={0277-786X}, url={http://dx.doi.org/10.1117/12.269047}, DOI={10.1117/12.269047}, booktitle={Optical Telescopes of Today and Tomorrow}, publisher={SPIE}, author={Mountain, C. Matt and Gillett, Fred C. and Kurz, Richard}, editor={Ardeberg, Arne L.}, year={1997}, month=Mar, pages={15\u201323} }",
   "doi": "10.1117/12.269047",
   "journal": "SPIE Proceedings",
   "key": "bibcode:1997SPIE.2871...15M",
@@ -2211,7 +2211,7 @@
    "Marcout, J."
   ],
   "bibcode": "2000A&AS..143...23O",
-  "bibtex": "@article{2000A\\&AS..143...23O, title={The VizieR database of astronomical catalogues}, volume={143}, ISSN={1286-4846}, url={http://dx.doi.org/10.1051/aas:2000169}, DOI={10.1051/aas:2000169}, number={1}, journal={Astronomy and Astrophysics Supplement Series}, publisher={EDP Sciences}, author={Ochsenbein, F. and Bauer, P. and Marcout, J.}, year={2000}, month=Apr, pages={23\u00e2\u20ac\u201c32} }",
+  "bibtex": "@article{2000A&AS..143...23O, title={The VizieR database of astronomical catalogues}, volume={143}, ISSN={1286-4846}, url={http://dx.doi.org/10.1051/aas:2000169}, DOI={10.1051/aas:2000169}, number={1}, journal={Astronomy and Astrophysics Supplement Series}, publisher={EDP Sciences}, author={Ochsenbein, F. and Bauer, P. and Marcout, J.}, year={2000}, month=Apr, pages={23\u201332} }",
   "doi": "10.1051/aas:2000169",
   "journal": "Astron. Astrophys. Suppl. Ser.",
   "key": "bibcode:2000A&AS..143...23O",
@@ -2231,7 +2231,7 @@
    "Munari, U."
   ],
   "bibcode": "2000A&AS..147..361M",
-  "bibtex": "@article{2000A\\&AS..147..361M, title={The Asiago Database on Photometric Systems\n(ADPS): I. Census parameters for 167 photometric systems}, volume={147}, ISSN={1286-4846}, url={http://dx.doi.org/10.1051/aas:2000370}, DOI={10.1051/aas:2000370}, number={3}, journal={Astronomy and Astrophysics Supplement Series}, publisher={EDP Sciences}, author={Moro, D. and Munari, U.}, year={2000}, month=Dec, pages={361\u00e2\u20ac\u201c628} }",
+  "bibtex": "@article{2000A&AS..147..361M, title={The Asiago Database on Photometric Systems\n(ADPS): I. Census parameters for 167 photometric systems}, volume={147}, ISSN={1286-4846}, url={http://dx.doi.org/10.1051/aas:2000370}, DOI={10.1051/aas:2000370}, number={3}, journal={Astronomy and Astrophysics Supplement Series}, publisher={EDP Sciences}, author={Moro, D. and Munari, U.}, year={2000}, month=Dec, pages={361\u2013628} }",
   "doi": "10.1051/aas:2000370",
   "journal": "Astron. Astrophys. Suppl. Ser.",
   "key": "bibcode:2000A&AS..147..361M",
@@ -2415,7 +2415,7 @@
    "Patterson, Richard J."
   ],
   "bibcode": "2000AJ....120.2550M",
-  "bibtex": "@article{2000AJ....120.2550M, title={Exploring Halo Substructure with Giant Stars. I. Survey Description and Calibration of the Photometric Search Technique}, volume={120}, ISSN={0004-6256}, url={http://dx.doi.org/10.1086/316836}, DOI={10.1086/316836}, number={5}, journal={The Astronomical Journal}, publisher={American Astronomical Society}, author={Majewski, Steven R. and Ostheimer, James C. and Kunkel, William E. and Patterson, Richard J.}, year={2000}, month=Nov, pages={2550\u00e2\u20ac\u201c2568} }",
+  "bibtex": "@article{2000AJ....120.2550M, title={Exploring Halo Substructure with Giant Stars. I. Survey Description and Calibration of the Photometric Search Technique}, volume={120}, ISSN={0004-6256}, url={http://dx.doi.org/10.1086/316836}, DOI={10.1086/316836}, number={5}, journal={The Astronomical Journal}, publisher={American Astronomical Society}, author={Majewski, Steven R. and Ostheimer, James C. and Kunkel, William E. and Patterson, Richard J.}, year={2000}, month=Nov, pages={2550\u20132568} }",
   "doi": "10.1086/316836",
   "journal": "The Astronomical Journal",
   "key": "bibcode:2000AJ....120.2550M",
@@ -2511,7 +2511,7 @@
    "Kuchar, Thomas A."
   ],
   "bibcode": "2001AJ....121.2819P",
-  "bibtex": "@article{2001AJ....121.2819P, title={[ITAL]MIDCOURSE SPACE EXPERIMENT[/ITAL][ITAL]Midcourse Space Experiment[/ITAL] Survey of the Galactic Plane}, volume={121}, ISSN={0004-6256}, url={http://dx.doi.org/10.1086/320404}, DOI={10.1086/320404}, number={5}, journal={The Astronomical Journal}, publisher={American Astronomical Society}, author={Price, Stephan D. and Egan, Michael P. and Carey, Sean J. and Mizuno, Donald R. and Kuchar, Thomas A.}, year={2001}, month=May, pages={2819\u00e2\u20ac\u201c2842} }",
+  "bibtex": "@article{2001AJ....121.2819P, title={[ITAL]MIDCOURSE SPACE EXPERIMENT[/ITAL][ITAL]Midcourse Space Experiment[/ITAL] Survey of the Galactic Plane}, volume={121}, ISSN={0004-6256}, url={http://dx.doi.org/10.1086/320404}, DOI={10.1086/320404}, number={5}, journal={The Astronomical Journal}, publisher={American Astronomical Society}, author={Price, Stephan D. and Egan, Michael P. and Carey, Sean J. and Mizuno, Donald R. and Kuchar, Thomas A.}, year={2001}, month=May, pages={2819\u20132842} }",
   "doi": "10.1086/320404",
   "journal": "The Astronomical Journal",
   "key": "bibcode:2001AJ....121.2819P",
@@ -2537,7 +2537,7 @@
    "Snigula, J."
   ],
   "bibcode": "2001MNRAS.325..550D",
-  "bibtex": "@article{2001MNRAS.325..550D, title={The Munich Near-Infrared Cluster Survey - I. Field selection, object extraction and photometry}, volume={325}, ISSN={1365-2966}, url={http://dx.doi.org/10.1046/j.1365-8711.2001.04452.x}, DOI={10.1046/j.1365-8711.2001.04452.x}, number={2}, journal={Monthly Notices of the Royal Astronomical Society}, publisher={Oxford University Press (OUP)}, author={Drory, N. and Feulner, G. and Bender, R. and Botzler, C. S. and Hopp, U. and Maraston, C. and Mendes de Oliveira, C. and Snigula, J.}, year={2001}, month=Aug, pages={550\u00e2\u20ac\u201c562} }",
+  "bibtex": "@article{2001MNRAS.325..550D, title={The Munich Near-Infrared Cluster Survey - I. Field selection, object extraction and photometry}, volume={325}, ISSN={1365-2966}, url={http://dx.doi.org/10.1046/j.1365-8711.2001.04452.x}, DOI={10.1046/j.1365-8711.2001.04452.x}, number={2}, journal={Monthly Notices of the Royal Astronomical Society}, publisher={Oxford University Press (OUP)}, author={Drory, N. and Feulner, G. and Bender, R. and Botzler, C. S. and Hopp, U. and Maraston, C. and Mendes de Oliveira, C. and Snigula, J.}, year={2001}, month=Aug, pages={550\u2013562} }",
   "doi": "10.1046/j.1365-8711.2001.04452.x",
   "journal": "Monthly Notices of the Royal Astronomical Society",
   "key": "bibcode:2001MNRAS.325..550D",
@@ -2562,7 +2562,7 @@
    "Fernandez-Cerezo, S."
   ],
   "bibcode": "2001MNRAS.327.1178G",
-  "bibtex": "@article{2001MNRAS.327.1178G, title={COSMOSOMAS: a circular scanning instrument to map the sky at centimetric wavelengths}, volume={327}, ISSN={1365-2966}, url={http://dx.doi.org/10.1046/j.1365-8711.2001.04876.x}, DOI={10.1046/j.1365-8711.2001.04876.x}, number={4}, journal={Monthly Notices of the Royal Astronomical Society}, publisher={Oxford University Press (OUP)}, author={Gallegos, J. E. and Macias-Perez, J. F. and Gutierrez, C. M. and Rebolo, R. and Watson, R. A. and Hoyland, R. J. and Fernandez-Cerezo, S.}, year={2001}, month=Nov, pages={1178\u00e2\u20ac\u201c1186} }",
+  "bibtex": "@article{2001MNRAS.327.1178G, title={COSMOSOMAS: a circular scanning instrument to map the sky at centimetric wavelengths}, volume={327}, ISSN={1365-2966}, url={http://dx.doi.org/10.1046/j.1365-8711.2001.04876.x}, DOI={10.1046/j.1365-8711.2001.04876.x}, number={4}, journal={Monthly Notices of the Royal Astronomical Society}, publisher={Oxford University Press (OUP)}, author={Gallegos, J. E. and Macias-Perez, J. F. and Gutierrez, C. M. and Rebolo, R. and Watson, R. A. and Hoyland, R. J. and Fernandez-Cerezo, S.}, year={2001}, month=Nov, pages={1178\u20131186} }",
   "doi": "10.1046/j.1365-8711.2001.04876.x",
   "journal": "Monthly Notices of the Royal Astronomical Society",
   "key": "bibcode:2001MNRAS.327.1178G",
@@ -2921,7 +2921,7 @@
    "Yoshida, Michitoshi"
   ],
   "bibcode": "2002PASJ...54..819K",
-  "bibtex": "@article{2002PASJ...54..819K, title={FOCAS: The Faint Object Camera and Spectrograph for the Subaru Telescope}, volume={54}, ISSN={0004-6264}, url={http://dx.doi.org/10.1093/pasj/54.6.819}, DOI={10.1093/pasj/54.6.819}, number={6}, journal={Publications of the Astronomical Society of Japan}, publisher={Oxford University Press (OUP)}, author={Kashikawa, Nobunari and Aoki, Kentaro and Asai, Ryo and Ebizuka, Noboru and Inata, Motoko and Iye, Masanori and Kawabata, Koji S. and Kosugi, George and Ohyama, Youichi and Okita, Kiichi and Ozawa, Tomohiko and Saito, Yoshihiko and Sasaki, Toshiyuki and Sekiguchi, Kazuhiro and Shimizu, Yasuhiro and Taguchi, Hiroko and Takata, Tadafumi and Yadoumaru, Yasushi and Yoshida, Michitoshi}, year={2002}, month=Dec, pages={819\u00e2\u20ac\u201c832} }",
+  "bibtex": "@article{2002PASJ...54..819K, title={FOCAS: The Faint Object Camera and Spectrograph for the Subaru Telescope}, volume={54}, ISSN={0004-6264}, url={http://dx.doi.org/10.1093/pasj/54.6.819}, DOI={10.1093/pasj/54.6.819}, number={6}, journal={Publications of the Astronomical Society of Japan}, publisher={Oxford University Press (OUP)}, author={Kashikawa, Nobunari and Aoki, Kentaro and Asai, Ryo and Ebizuka, Noboru and Inata, Motoko and Iye, Masanori and Kawabata, Koji S. and Kosugi, George and Ohyama, Youichi and Okita, Kiichi and Ozawa, Tomohiko and Saito, Yoshihiko and Sasaki, Toshiyuki and Sekiguchi, Kazuhiro and Shimizu, Yasuhiro and Taguchi, Hiroko and Takata, Tadafumi and Yadoumaru, Yasushi and Yoshida, Michitoshi}, year={2002}, month=Dec, pages={819\u2013832} }",
   "doi": "10.1093/pasj/54.6.819",
   "journal": "Publications of the Astronomical Society of Japan",
   "key": "bibcode:2002PASJ...54..819K",
@@ -3017,7 +3017,7 @@
    "Munari, U."
   ],
   "bibcode": "2003A&A...401..781F",
-  "bibtex": "@article{2003A\\&A...401..781F, title={The Asiago Database on Photometric Systems (ADPS): II. Band and reddening parameters}, volume={401}, ISSN={1432-0746}, url={http://dx.doi.org/10.1051/0004-6361:20030075}, DOI={10.1051/0004-6361:20030075}, number={2}, journal={Astronomy \\& Astrophysics}, publisher={EDP Sciences}, author={Fiorucci, M. and Munari, U.}, year={2003}, month=Mar, pages={781\u00e2\u20ac\u201c796} }",
+  "bibtex": "@article{2003A&A...401..781F, title={The Asiago Database on Photometric Systems (ADPS): II. Band and reddening parameters}, volume={401}, ISSN={1432-0746}, url={http://dx.doi.org/10.1051/0004-6361:20030075}, DOI={10.1051/0004-6361:20030075}, number={2}, journal={Astronomy \\& Astrophysics}, publisher={EDP Sciences}, author={Fiorucci, M. and Munari, U.}, year={2003}, month=Mar, pages={781\u2013796} }",
   "doi": "10.1051/0004-6361:20030075",
   "journal": "A&A",
   "key": "bibcode:2003A&A...401..781F",
@@ -3220,7 +3220,7 @@
    "Teiga, Edward J."
   ],
   "bibcode": "2003SPIE.4841..827D",
-  "bibtex": "@inproceedings{2003SPIE.4841..827D, title={A Novel Double Imaging Camera (ANDICAM)}, volume={4841}, ISSN={0277-786X}, url={http://dx.doi.org/10.1117/12.459907}, DOI={10.1117/12.459907}, booktitle={Instrument Design and Performance for Optical/Infrared Ground-based Telescopes}, publisher={SPIE}, author={DePoy, Darren L. and Atwood, Bruce and Belville, Stanley R. and Brewer, David F. and Byard, Paul L. and Gould, Andrew and Mason, Jerry A. and O\u00e2\u20ac\u2122Brien, Thomas P. and Pappalardo, Daniel P. and Pogge, Richard W. and Steinbrecher, David P. and Teiga, Edward J.}, editor={Iye, Masanori and Moorwood, Alan F. M.}, year={2003}, month=Mar, pages={827} }",
+  "bibtex": "@inproceedings{2003SPIE.4841..827D, title={A Novel Double Imaging Camera (ANDICAM)}, volume={4841}, ISSN={0277-786X}, url={http://dx.doi.org/10.1117/12.459907}, DOI={10.1117/12.459907}, booktitle={Instrument Design and Performance for Optical/Infrared Ground-based Telescopes}, publisher={SPIE}, author={DePoy, Darren L. and Atwood, Bruce and Belville, Stanley R. and Brewer, David F. and Byard, Paul L. and Gould, Andrew and Mason, Jerry A. and O\u2019Brien, Thomas P. and Pappalardo, Daniel P. and Pogge, Richard W. and Steinbrecher, David P. and Teiga, Edward J.}, editor={Iye, Masanori and Moorwood, Alan F. M.}, year={2003}, month=Mar, pages={827} }",
   "doi": "10.1117/12.459907",
   "journal": "SPIE Proceedings",
   "key": "bibcode:2003SPIE.4841..827D",
@@ -3353,7 +3353,7 @@
    "Cruikshank, D. P."
   ],
   "bibcode": "2004ApJS..154....1W",
-  "bibtex": "@article{2004ApJS..154....1W, title={The\n                    \\textit{Spitzer Space Telescope}\n                    Mission}, volume={154}, ISSN={1538-4365}, url={http://dx.doi.org/10.1086/422992}, DOI={10.1086/422992}, number={1}, journal={The Astrophysical Journal Supplement Series}, publisher={American Astronomical Society}, author={Werner, M. W. and Roellig, T. L. and Low, F. J. and Rieke, G. H. and Rieke, M. and Hoffmann, W. F. and Young, E. and Houck, J. R. and Brandl, B. and Fazio, G. G. and Hora, J. L. and Gehrz, R. D. and Helou, G. and Soifer, B. T. and Stauffer, J. and Keene, J. and Eisenhardt, P. and Gallagher, D. and Gautier, T. N. and Irace, W. and Lawrence, C. R. and Simmons, L. and Van Cleve, J. E. and Jura, M. and Wright, E. L. and Cruikshank, D. P.}, year={2004}, month=Sept, pages={1\u00e2\u20ac\u201c9} }",
+  "bibtex": "@article{2004ApJS..154....1W, title={The\n                    \\textit{Spitzer Space Telescope}\n                    Mission}, volume={154}, ISSN={1538-4365}, url={http://dx.doi.org/10.1086/422992}, DOI={10.1086/422992}, number={1}, journal={The Astrophysical Journal Supplement Series}, publisher={American Astronomical Society}, author={Werner, M. W. and Roellig, T. L. and Low, F. J. and Rieke, G. H. and Rieke, M. and Hoffmann, W. F. and Young, E. and Houck, J. R. and Brandl, B. and Fazio, G. G. and Hora, J. L. and Gehrz, R. D. and Helou, G. and Soifer, B. T. and Stauffer, J. and Keene, J. and Eisenhardt, P. and Gallagher, D. and Gautier, T. N. and Irace, W. and Lawrence, C. R. and Simmons, L. and Van Cleve, J. E. and Jura, M. and Wright, E. L. and Cruikshank, D. P.}, year={2004}, month=Sept, pages={1\u20139} }",
   "doi": "10.1086/422992",
   "journal": "ASTROPHYS J SUPPL S",
   "key": "bibcode:2004ApJS..154....1W",
@@ -3906,7 +3906,7 @@
    "Wyder, Ted K."
   ],
   "bibcode": "2005ApJ...619L...7M",
-  "bibtex": "@article{2005ApJ...619L...7M, title={The On-Orbit Performance of the\n                    \\textit{Galaxy Evolution Explorer}}, volume={619}, ISSN={1538-4357}, url={http://dx.doi.org/10.1086/424734}, DOI={10.1086/424734}, number={1}, journal={The Astrophysical Journal}, publisher={American Astronomical Society}, author={Morrissey, Patrick and Schiminovich, David and Barlow, Tom A. and Martin, D. Christopher and Blakkolb, Brian and Conrow, Tim and Cooke, Brian and Erickson, Kerry and Fanson, James and Friedman, Peter G. and Grange, Robert and Jelinsky, Patrick N. and Lee, Siu-Chun and Liu, Dankai and Mazer, Alan and McLean, Ryan and Milliard, Bruno and Randall, David and Schmitigal, Wes and Sen, Amit and Siegmund, Oswald H. W. and Surber, Frank and Vaughan, Arthur and Viton, Maurice and Welsh, Barry Y. and Bianchi, Luciana and Byun, Yong-Ik and Donas, Jose and Forster, Karl and Heckman, Timothy M. and Lee, Young-Wook and Madore, Barry F. and Malina, Roger F. and Neff, Susan G. and Rich, R. Michael and Small, Todd and Szalay, Alex S. and Wyder, Ted K.}, year={2005}, month=Jan, pages={L7\u00e2\u20ac\u201cL10} }",
+  "bibtex": "@article{2005ApJ...619L...7M, title={The On-Orbit Performance of the\n                    \\textit{Galaxy Evolution Explorer}}, volume={619}, ISSN={1538-4357}, url={http://dx.doi.org/10.1086/424734}, DOI={10.1086/424734}, number={1}, journal={The Astrophysical Journal}, publisher={American Astronomical Society}, author={Morrissey, Patrick and Schiminovich, David and Barlow, Tom A. and Martin, D. Christopher and Blakkolb, Brian and Conrow, Tim and Cooke, Brian and Erickson, Kerry and Fanson, James and Friedman, Peter G. and Grange, Robert and Jelinsky, Patrick N. and Lee, Siu-Chun and Liu, Dankai and Mazer, Alan and McLean, Ryan and Milliard, Bruno and Randall, David and Schmitigal, Wes and Sen, Amit and Siegmund, Oswald H. W. and Surber, Frank and Vaughan, Arthur and Viton, Maurice and Welsh, Barry Y. and Bianchi, Luciana and Byun, Yong-Ik and Donas, Jose and Forster, Karl and Heckman, Timothy M. and Lee, Young-Wook and Madore, Barry F. and Malina, Roger F. and Neff, Susan G. and Rich, R. Michael and Small, Todd and Szalay, Alex S. and Wyder, Ted K.}, year={2005}, month=Jan, pages={L7\u2013L10} }",
   "doi": "10.1086/424734",
   "journal": "ApJ",
   "key": "bibcode:2005ApJ...619L...7M",
@@ -3987,7 +3987,7 @@
    "Wheelock, S."
   ],
   "bibcode": "2006AJ....131.1163S",
-  "bibtex": "@article{2006AJ....131.1163S, title={The Two Micron All Sky Survey (2MASS)}, volume={131}, ISSN={1538-3881}, url={http://dx.doi.org/10.1086/498708}, DOI={10.1086/498708}, number={2}, journal={The Astronomical Journal}, publisher={American Astronomical Society}, author={Skrutskie, M. F. and Cutri, R. M. and Stiening, R. and Weinberg, M. D. and Schneider, S. and Carpenter, J. M. and Beichman, C. and Capps, R. and Chester, T. and Elias, J. and Huchra, J. and Liebert, J. and Lonsdale, C. and Monet, D. G. and Price, S. and Seitzer, P. and Jarrett, T. and Kirkpatrick, J. D. and Gizis, J. E. and Howard, E. and Evans, T. and Fowler, J. and Fullmer, L. and Hurt, R. and Light, R. and Kopan, E. L. and Marsh, K. A. and McCallon, H. L. and Tam, R. and Van Dyk, S. and Wheelock, S.}, year={2006}, month=Feb, pages={1163\u00e2\u20ac\u201c1183} }",
+  "bibtex": "@article{2006AJ....131.1163S, title={The Two Micron All Sky Survey (2MASS)}, volume={131}, ISSN={1538-3881}, url={http://dx.doi.org/10.1086/498708}, DOI={10.1086/498708}, number={2}, journal={The Astronomical Journal}, publisher={American Astronomical Society}, author={Skrutskie, M. F. and Cutri, R. M. and Stiening, R. and Weinberg, M. D. and Schneider, S. and Carpenter, J. M. and Beichman, C. and Capps, R. and Chester, T. and Elias, J. and Huchra, J. and Liebert, J. and Lonsdale, C. and Monet, D. G. and Price, S. and Seitzer, P. and Jarrett, T. and Kirkpatrick, J. D. and Gizis, J. E. and Howard, E. and Evans, T. and Fowler, J. and Fullmer, L. and Hurt, R. and Light, R. and Kopan, E. L. and Marsh, K. A. and McCallon, H. L. and Tam, R. and Van Dyk, S. and Wheelock, S.}, year={2006}, month=Feb, pages={1163\u20131183} }",
   "doi": "10.1086/498708",
   "journal": "AJ",
   "key": "bibcode:2006AJ....131.1163S",
@@ -4170,7 +4170,7 @@
    "van Leeuwen, F."
   ],
   "bibcode": "2007A&A...474..653V",
-  "bibtex": "@article{2007A\\&A...474..653V, title={Validation of the new Hipparcos reduction}, volume={474}, ISSN={1432-0746}, url={http://dx.doi.org/10.1051/0004-6361:20078357}, DOI={10.1051/0004-6361:20078357}, number={2}, journal={Astronomy \\& Astrophysics}, publisher={EDP Sciences}, author={van Leeuwen, F.}, year={2007}, month=Aug, pages={653\u00e2\u20ac\u201c664} }",
+  "bibtex": "@article{2007A&A...474..653V, title={Validation of the new Hipparcos reduction}, volume={474}, ISSN={1432-0746}, url={http://dx.doi.org/10.1051/0004-6361:20078357}, DOI={10.1051/0004-6361:20078357}, number={2}, journal={Astronomy \\& Astrophysics}, publisher={EDP Sciences}, author={van Leeuwen, F.}, year={2007}, month=Aug, pages={653\u2013664} }",
   "doi": "10.1051/0004-6361:20078357",
   "journal": "A&A",
   "key": "bibcode:2007A&A...474..653V",
@@ -4251,7 +4251,7 @@
    "Folger, M."
   ],
   "bibcode": "2007MNRAS.379.1599L",
-  "bibtex": "@article{2007MNRAS.379.1599L, title={The UKIRT Infrared Deep Sky Survey (UKIDSS)}, volume={379}, ISSN={1365-2966}, url={http://dx.doi.org/10.1111/j.1365-2966.2007.12040.x}, DOI={10.1111/j.1365-2966.2007.12040.x}, number={4}, journal={Monthly Notices of the Royal Astronomical Society}, publisher={Oxford University Press (OUP)}, author={Lawrence, A. and Warren, S. J. and Almaini, O. and Edge, A. C. and Hambly, N. C. and Jameson, R. F. and Lucas, P. and Casali, M. and Adamson, A. and Dye, S. and Emerson, J. P. and Foucaud, S. and Hewett, P. and Hirst, P. and Hodgkin, S. T. and Irwin, M. J. and Lodieu, N. and McMahon, R. G. and Simpson, C. and Smail, I. and Mortlock, D. and Folger, M.}, year={2007}, month=Aug, pages={1599\u00e2\u20ac\u201c1617} }",
+  "bibtex": "@article{2007MNRAS.379.1599L, title={The UKIRT Infrared Deep Sky Survey (UKIDSS)}, volume={379}, ISSN={1365-2966}, url={http://dx.doi.org/10.1111/j.1365-2966.2007.12040.x}, DOI={10.1111/j.1365-2966.2007.12040.x}, number={4}, journal={Monthly Notices of the Royal Astronomical Society}, publisher={Oxford University Press (OUP)}, author={Lawrence, A. and Warren, S. J. and Almaini, O. and Edge, A. C. and Hambly, N. C. and Jameson, R. F. and Lucas, P. and Casali, M. and Adamson, A. and Dye, S. and Emerson, J. P. and Foucaud, S. and Hewett, P. and Hirst, P. and Hodgkin, S. T. and Irwin, M. J. and Lodieu, N. and McMahon, R. G. and Simpson, C. and Smail, I. and Mortlock, D. and Folger, M.}, year={2007}, month=Aug, pages={1599\u20131617} }",
   "doi": "10.1111/j.1365-2966.2007.12040.x",
   "journal": "Monthly Notices of the Royal Astronomical Society",
   "key": "bibcode:2007MNRAS.379.1599L",
@@ -4276,7 +4276,7 @@
    "Battistelli, E. S."
   ],
   "bibcode": "2007MNRAS.382..594H",
-  "bibtex": "@article{2007MNRAS.382..594H, title={COSMOSOMAS observations of the cosmic microwave background and Galactic foregrounds at 11 GHz: evidence for anomalous microwave emission at high Galactic latitude}, volume={382}, ISSN={1365-2966}, url={http://dx.doi.org/10.1111/j.1365-2966.2007.12380.x}, DOI={10.1111/j.1365-2966.2007.12380.x}, number={2}, journal={Monthly Notices of the Royal Astronomical Society}, publisher={Oxford University Press (OUP)}, author={Hildebrandt, S. R. and Rebolo, R. and Rubino-Martin, J. A. and Watson, R. A. and Gutierrez, C. M. and Hoyland, R. J. and Battistelli, E. S.}, year={2007}, month=Dec, pages={594\u00e2\u20ac\u201c608} }",
+  "bibtex": "@article{2007MNRAS.382..594H, title={COSMOSOMAS observations of the cosmic microwave background and Galactic foregrounds at 11 GHz: evidence for anomalous microwave emission at high Galactic latitude}, volume={382}, ISSN={1365-2966}, url={http://dx.doi.org/10.1111/j.1365-2966.2007.12380.x}, DOI={10.1111/j.1365-2966.2007.12380.x}, number={2}, journal={Monthly Notices of the Royal Astronomical Society}, publisher={Oxford University Press (OUP)}, author={Hildebrandt, S. R. and Rebolo, R. and Rubino-Martin, J. A. and Watson, R. A. and Gutierrez, C. M. and Hoyland, R. J. and Battistelli, E. S.}, year={2007}, month=Dec, pages={594\u2013608} }",
   "doi": "10.1111/j.1365-2966.2007.12380.x",
   "journal": "Monthly Notices of the Royal Astronomical Society",
   "key": "bibcode:2007MNRAS.382..594H",
@@ -4543,7 +4543,7 @@
    "Willmer, Christopher N. A."
   ],
   "bibcode": "2008AJ....135.2245R",
-  "bibtex": "@article{2008AJ....135.2245R, title={ABSOLUTE PHYSICAL CALIBRATION IN THE INFRARED}, volume={135}, ISSN={1538-3881}, url={http://dx.doi.org/10.1088/0004-6256/135/6/2245}, DOI={10.1088/0004-6256/135/6/2245}, number={6}, journal={The Astronomical Journal}, publisher={American Astronomical Society}, author={Rieke, G. H. and Blaylock, M. and Decin, L. and Engelbracht, C. and Ogle, P. and Avrett, E. and Carpenter, J. and Cutri, R. M. and Armus, L. and Gordon, K. and Gray, R. O. and Hinz, J. and Su, K. and Willmer, Christopher N. A.}, year={2008}, month=May, pages={2245\u00e2\u20ac\u201c2263} }",
+  "bibtex": "@article{2008AJ....135.2245R, title={ABSOLUTE PHYSICAL CALIBRATION IN THE INFRARED}, volume={135}, ISSN={1538-3881}, url={http://dx.doi.org/10.1088/0004-6256/135/6/2245}, DOI={10.1088/0004-6256/135/6/2245}, number={6}, journal={The Astronomical Journal}, publisher={American Astronomical Society}, author={Rieke, G. H. and Blaylock, M. and Decin, L. and Engelbracht, C. and Ogle, P. and Avrett, E. and Carpenter, J. and Cutri, R. M. and Armus, L. and Gordon, K. and Gray, R. O. and Hinz, J. and Su, K. and Willmer, Christopher N. A.}, year={2008}, month=May, pages={2245\u20132263} }",
   "doi": "10.1088/0004-6256/135/6/2245",
   "journal": "The Astronomical Journal",
   "key": "bibcode:2008AJ....135.2245R",
@@ -4587,7 +4587,7 @@
    "Zacchei, Andrea"
   ],
   "bibcode": "2008AJ....136..735L",
-  "bibtex": "@article{2008AJ....136..735L, title={THE SECOND-GENERATION GUIDE STAR CATALOG: DESCRIPTION AND PROPERTIES}, volume={136}, ISSN={1538-3881}, url={http://dx.doi.org/10.1088/0004-6256/136/2/735}, DOI={10.1088/0004-6256/136/2/735}, number={2}, journal={The Astronomical Journal}, publisher={American Astronomical Society}, author={Lasker, Barry M. and Lattanzi, Mario G. and McLean, Brian J. and Bucciarelli, Beatrice and Drimmel, Ronald and Garcia, Jorge and Greene, Gretchen and Guglielmetti, Fabrizia and Hanley, Christopher and Hawkins, George and Laidler, Victoria G. and Loomis, Charles and Meakes, Michael and Mignani, Roberto and Morbidelli, Roberto and Morrison, Jane and Pannunzio, Renato and Rosenberg, Amy and Sarasso, Maria and Smart, Richard L. and Spagna, Alessandro and Sturch, Conrad R. and Volpicelli, Antonio and White, Richard L. and Wolfe, David and Zacchei, Andrea}, year={2008}, month=July, pages={735\u00e2\u20ac\u201c766} }",
+  "bibtex": "@article{2008AJ....136..735L, title={THE SECOND-GENERATION GUIDE STAR CATALOG: DESCRIPTION AND PROPERTIES}, volume={136}, ISSN={1538-3881}, url={http://dx.doi.org/10.1088/0004-6256/136/2/735}, DOI={10.1088/0004-6256/136/2/735}, number={2}, journal={The Astronomical Journal}, publisher={American Astronomical Society}, author={Lasker, Barry M. and Lattanzi, Mario G. and McLean, Brian J. and Bucciarelli, Beatrice and Drimmel, Ronald and Garcia, Jorge and Greene, Gretchen and Guglielmetti, Fabrizia and Hanley, Christopher and Hawkins, George and Laidler, Victoria G. and Loomis, Charles and Meakes, Michael and Mignani, Roberto and Morbidelli, Roberto and Morrison, Jane and Pannunzio, Renato and Rosenberg, Amy and Sarasso, Maria and Smart, Richard L. and Spagna, Alessandro and Sturch, Conrad R. and Volpicelli, Antonio and White, Richard L. and Wolfe, David and Zacchei, Andrea}, year={2008}, month=July, pages={735\u2013766} }",
   "doi": "10.1088/0004-6256/136/2/735",
   "journal": "The Astronomical Journal",
   "key": "bibcode:2008AJ....136..735L",
@@ -4670,7 +4670,7 @@
    "Warren, S. J."
   ],
   "bibcode": "2008MNRAS.384..637H",
-  "bibtex": "@article{2008MNRAS.384..637H, title={The WFCAM Science Archive: The WFCAM Science Archive}, volume={384}, ISSN={1365-2966}, url={http://dx.doi.org/10.1111/j.1365-2966.2007.12700.x}, DOI={10.1111/j.1365-2966.2007.12700.x}, number={2}, journal={Monthly Notices of the Royal Astronomical Society}, publisher={Oxford University Press (OUP)}, author={Hambly, N. C. and Collins, R. S. and Cross, N. J. G. and Mann, R. G. and Read, M. A. and Sutorius, E. T. W. and Bond, I. and Bryant, J. and Emerson, J. P. and Lawrence, A. and Rimoldini, L. and Stewart, J. M. and Williams, P. M. and Adamson, A. and Hirst, P. and Dye, S. and Warren, S. J.}, year={2008}, month=Jan, pages={637\u00e2\u20ac\u201c662} }",
+  "bibtex": "@article{2008MNRAS.384..637H, title={The WFCAM Science Archive: The WFCAM Science Archive}, volume={384}, ISSN={1365-2966}, url={http://dx.doi.org/10.1111/j.1365-2966.2007.12700.x}, DOI={10.1111/j.1365-2966.2007.12700.x}, number={2}, journal={Monthly Notices of the Royal Astronomical Society}, publisher={Oxford University Press (OUP)}, author={Hambly, N. C. and Collins, R. S. and Cross, N. J. G. and Mann, R. G. and Read, M. A. and Sutorius, E. T. W. and Bond, I. and Bryant, J. and Emerson, J. P. and Lawrence, A. and Rimoldini, L. and Stewart, J. M. and Williams, P. M. and Adamson, A. and Hirst, P. and Dye, S. and Warren, S. J.}, year={2008}, month=Jan, pages={637\u2013662} }",
   "doi": "10.1111/j.1365-2966.2007.12700.x",
   "journal": "Monthly Notices of the Royal Astronomical Society",
   "key": "bibcode:2008MNRAS.384..637H",
@@ -4689,7 +4689,7 @@
    "Gwyn, Stephen D. J."
   ],
   "bibcode": "2008PASP..120..212G",
-  "bibtex": "@article{2008PASP..120..212G, title={MegaPipe: The MegaCam Image Stacking Pipeline at the Canadian Astronomical Data Centre}, volume={120}, ISSN={1538-3873}, url={http://dx.doi.org/10.1086/526794}, DOI={10.1086/526794}, number={864}, journal={Publications of the Astronomical Society of the Pacific}, publisher={IOP Publishing}, author={Gwyn, Stephen D. J.}, year={2008}, month=Feb, pages={212\u00e2\u20ac\u201c223} }",
+  "bibtex": "@article{2008PASP..120..212G, title={MegaPipe: The MegaCam Image Stacking Pipeline at the Canadian Astronomical Data Centre}, volume={120}, ISSN={1538-3873}, url={http://dx.doi.org/10.1086/526794}, DOI={10.1086/526794}, number={864}, journal={Publications of the Astronomical Society of the Pacific}, publisher={IOP Publishing}, author={Gwyn, Stephen D. J.}, year={2008}, month=Feb, pages={212\u2013223} }",
   "doi": "10.1086/526794",
   "journal": "PUBL ASTRON SOC PAC",
   "key": "bibcode:2008PASP..120..212G",
@@ -4709,7 +4709,7 @@
    "Charbonneau, David"
   ],
   "bibcode": "2008PASP..120..317N",
-  "bibtex": "@article{2008PASP..120..317N, title={Design Considerations for a Ground-Based Transit Search for Habitable Planets Orbiting M Dwarfs}, volume={120}, ISSN={1538-3873}, url={http://dx.doi.org/10.1086/533420}, DOI={10.1086/533420}, number={865}, journal={Publications of the Astronomical Society of the Pacific}, publisher={IOP Publishing}, author={Nutzman, Philip and Charbonneau, David}, year={2008}, month=Mar, pages={317\u00e2\u20ac\u201c327} }",
+  "bibtex": "@article{2008PASP..120..317N, title={Design Considerations for a Ground-Based Transit Search for Habitable Planets Orbiting M Dwarfs}, volume={120}, ISSN={1538-3873}, url={http://dx.doi.org/10.1086/533420}, DOI={10.1086/533420}, number={865}, journal={Publications of the Astronomical Society of the Pacific}, publisher={IOP Publishing}, author={Nutzman, Philip and Charbonneau, David}, year={2008}, month=Mar, pages={317\u2013327} }",
   "doi": "10.1086/533420",
   "journal": "PUBL ASTRON SOC PAC",
   "key": "bibcode:2008PASP..120..317N",
@@ -4743,7 +4743,7 @@
    "Quijada, Manuel"
   ],
   "bibcode": "2008PASP..120.1233H",
-  "bibtex": "@article{2008PASP..120.1233H, title={Photometry using the Infrared Array Camera on the\\textit{Spitzer Space Telescope}}, volume={120}, ISSN={1538-3873}, url={http://dx.doi.org/10.1086/593217}, DOI={10.1086/593217}, number={873}, journal={Publications of the Astronomical Society of the Pacific}, publisher={IOP Publishing}, author={Hora, Joseph L. and Carey, Sean and Surace, Jason and Marengo, Massimo and Lowrance, Patrick and Glaccum, William J. and Lacy, Mark and Reach, William T. and Hoffmann, William F. and Barmby, Pauline and Willner, S. P. and Fazio, Giovanni G. and Megeath, S. Thomas and Allen, Lori E. and Bhattacharya, Bidushi and Quijada, Manuel}, year={2008}, month=Nov, pages={1233\u00e2\u20ac\u201c1243} }",
+  "bibtex": "@article{2008PASP..120.1233H, title={Photometry using the Infrared Array Camera on the\\textit{Spitzer Space Telescope}}, volume={120}, ISSN={1538-3873}, url={http://dx.doi.org/10.1086/593217}, DOI={10.1086/593217}, number={873}, journal={Publications of the Astronomical Society of the Pacific}, publisher={IOP Publishing}, author={Hora, Joseph L. and Carey, Sean and Surace, Jason and Marengo, Massimo and Lowrance, Patrick and Glaccum, William J. and Lacy, Mark and Reach, William T. and Hoffmann, William F. and Barmby, Pauline and Willner, S. P. and Fazio, Giovanni G. and Megeath, S. Thomas and Allen, Lori E. and Bhattacharya, Bidushi and Quijada, Manuel}, year={2008}, month=Nov, pages={1233\u20131243} }",
   "doi": "10.1086/593217",
   "journal": "PUBL ASTRON SOC PAC",
   "key": "bibcode:2008PASP..120.1233H",
@@ -5019,7 +5019,7 @@
    "Pritchet, C. J."
   ],
   "bibcode": "2009A&A...506..999R",
-  "bibtex": "@article{2009A\\&A...506..999R, title={Photometric calibration of the Supernova Legacy Survey fields}, volume={506}, ISSN={1432-0746}, url={http://dx.doi.org/10.1051/0004-6361/200912446}, DOI={10.1051/0004-6361/200912446}, number={2}, journal={Astronomy \\& Astrophysics}, publisher={EDP Sciences}, author={Regnault, N. and Conley, A. and Guy, J. and Sullivan, M. and Cuillandre, J.-C. and Astier, P. and Balland, C. and Basa, S. and Carlberg, R. G. and Fouchez, D. and Hardin, D. and Hook, I. M. and Howell, D. A. and Pain, R. and Perrett, K. and Pritchet, C. J.}, year={2009}, month=Aug, pages={999\u00e2\u20ac\u201c1042} }",
+  "bibtex": "@article{2009A&A...506..999R, title={Photometric calibration of the Supernova Legacy Survey fields}, volume={506}, ISSN={1432-0746}, url={http://dx.doi.org/10.1051/0004-6361/200912446}, DOI={10.1051/0004-6361/200912446}, number={2}, journal={Astronomy \\& Astrophysics}, publisher={EDP Sciences}, author={Regnault, N. and Conley, A. and Guy, J. and Sullivan, M. and Cuillandre, J.-C. and Astier, P. and Balland, C. and Basa, S. and Carlberg, R. G. and Fouchez, D. and Hardin, D. and Hook, I. M. and Howell, D. A. and Pain, R. and Perrett, K. and Pritchet, C. J.}, year={2009}, month=Aug, pages={999\u20131042} }",
   "doi": "10.1051/0004-6361/200912446",
   "journal": "A&A",
   "key": "bibcode:2009A&A...506..999R",
@@ -5045,7 +5045,7 @@
    "Everett, Mark E."
   ],
   "bibcode": "2009AJ....137.4911F",
-  "bibtex": "@article{2009AJ....137.4911F, title={THE TRANSIT LIGHT CURVE PROJECT. XII. SIX TRANSITS OF THE EXOPLANET XO-2b}, volume={137}, ISSN={1538-3881}, url={http://dx.doi.org/10.1088/0004-6256/137/6/4911}, DOI={10.1088/0004-6256/137/6/4911}, number={6}, journal={The Astronomical Journal}, publisher={American Astronomical Society}, author={Fernandez, Jose M. and Holman, Matthew J. and Winn, Joshua N. and Torres, Guillermo and Shporer, Avi and Mazeh, Tsevi and Esquerdo, Gilbert A. and Everett, Mark E.}, year={2009}, month=May, pages={4911\u00e2\u20ac\u201c4916} }",
+  "bibtex": "@article{2009AJ....137.4911F, title={THE TRANSIT LIGHT CURVE PROJECT. XII. SIX TRANSITS OF THE EXOPLANET XO-2b}, volume={137}, ISSN={1538-3881}, url={http://dx.doi.org/10.1088/0004-6256/137/6/4911}, DOI={10.1088/0004-6256/137/6/4911}, number={6}, journal={The Astronomical Journal}, publisher={American Astronomical Society}, author={Fernandez, Jose M. and Holman, Matthew J. and Winn, Joshua N. and Torres, Guillermo and Shporer, Avi and Mazeh, Tsevi and Esquerdo, Gilbert A. and Everett, Mark E.}, year={2009}, month=May, pages={4911\u20134916} }",
   "doi": "10.1088/0004-6256/137/6/4911",
   "journal": "The Astronomical Journal",
   "key": "bibcode:2009AJ....137.4911F",
@@ -5096,7 +5096,7 @@
    "Cai, Bin"
   ],
   "bibcode": "2009BAMS...90.1531D",
-  "bibtex": "@article{2009BAMS...90.1531D, title={An Overview of a New Chinese Weather Satellite FY-3A}, volume={90}, ISSN={1520-0477}, url={http://dx.doi.org/10.1175/2009bams2798.1}, DOI={10.1175/2009bams2798.1}, number={10}, journal={Bulletin of the American Meteorological Society}, publisher={American Meteorological Society}, author={Dong, Chaohua and Yang, Jun and Zhang, Wenjian and Yang, Zhongdong and Lu, Naimeng and Shi, Jinming and Zhang, Peng and Liu, Yujie and Cai, Bin}, year={2009}, month=Oct, pages={1531\u00e2\u20ac\u201c1544} }",
+  "bibtex": "@article{2009BAMS...90.1531D, title={An Overview of a New Chinese Weather Satellite FY-3A}, volume={90}, ISSN={1520-0477}, url={http://dx.doi.org/10.1175/2009bams2798.1}, DOI={10.1175/2009bams2798.1}, number={10}, journal={Bulletin of the American Meteorological Society}, publisher={American Meteorological Society}, author={Dong, Chaohua and Yang, Jun and Zhang, Wenjian and Yang, Zhongdong and Lu, Naimeng and Shi, Jinming and Zhang, Peng and Liu, Yujie and Cai, Bin}, year={2009}, month=Oct, pages={1531\u20131544} }",
   "doi": "10.1175/2009bams2798.1",
   "journal": "Bull. Amer. Meteor. Soc.",
   "key": "bibcode:2009BAMS...90.1531D",
@@ -5118,7 +5118,7 @@
    "Warren, S. J."
   ],
   "bibcode": "2009MNRAS.394..675H",
-  "bibtex": "@article{2009MNRAS.394..675H, title={The UKIRT wide field camera\\textit{ZYJHK}photometric system: calibration from 2MASS}, volume={394}, ISSN={1365-2966}, url={http://dx.doi.org/10.1111/j.1365-2966.2008.14387.x}, DOI={10.1111/j.1365-2966.2008.14387.x}, number={2}, journal={Monthly Notices of the Royal Astronomical Society}, publisher={Oxford University Press (OUP)}, author={Hodgkin, S. T. and Irwin, M. J. and Hewett, P. C. and Warren, S. J.}, year={2009}, month=Apr, pages={675\u00e2\u20ac\u201c692} }",
+  "bibtex": "@article{2009MNRAS.394..675H, title={The UKIRT wide field camera\\textit{ZYJHK}photometric system: calibration from 2MASS}, volume={394}, ISSN={1365-2966}, url={http://dx.doi.org/10.1111/j.1365-2966.2008.14387.x}, DOI={10.1111/j.1365-2966.2008.14387.x}, number={2}, journal={Monthly Notices of the Royal Astronomical Society}, publisher={Oxford University Press (OUP)}, author={Hodgkin, S. T. and Irwin, M. J. and Hewett, P. C. and Warren, S. J.}, year={2009}, month=Apr, pages={675\u2013692} }",
   "doi": "10.1111/j.1365-2966.2008.14387.x",
   "journal": "Monthly Notices of the Royal Astronomical Society",
   "key": "bibcode:2009MNRAS.394..675H",
@@ -5570,7 +5570,7 @@
    "Tsai, Chao-Wei"
   ],
   "bibcode": "2010AJ....140.1868W",
-  "bibtex": "@article{2010AJ....140.1868W, title={THE WIDE-FIELD INFRARED SURVEY EXPLORER (WISE): MISSION DESCRIPTION AND INITIAL ON-ORBIT PERFORMANCE}, volume={140}, ISSN={1538-3881}, url={http://dx.doi.org/10.1088/0004-6256/140/6/1868}, DOI={10.1088/0004-6256/140/6/1868}, number={6}, journal={The Astronomical Journal}, publisher={American Astronomical Society}, author={Wright, Edward L. and Eisenhardt, Peter R. M. and Mainzer, Amy K. and Ressler, Michael E. and Cutri, Roc M. and Jarrett, Thomas and Kirkpatrick, J. Davy and Padgett, Deborah and McMillan, Robert S. and Skrutskie, Michael and Stanford, S. A. and Cohen, Martin and Walker, Russell G. and Mather, John C. and Leisawitz, David and Gautier, Thomas N. and McLean, Ian and Benford, Dominic and Lonsdale, Carol J. and Blain, Andrew and Mendez, Bryan and Irace, William R. and Duval, Valerie and Liu, Fengchuan and Royer, Don and Heinrichsen, Ingolf and Howard, Joan and Shannon, Mark and Kendall, Martha and Walsh, Amy L. and Larsen, Mark and Cardon, Joel G. and Schick, Scott and Schwalm, Mark and Abid, Mohamed and Fabinsky, Beth and Naes, Larry and Tsai, Chao-Wei}, year={2010}, month=Nov, pages={1868\u00e2\u20ac\u201c1881} }",
+  "bibtex": "@article{2010AJ....140.1868W, title={THE WIDE-FIELD INFRARED SURVEY EXPLORER (WISE): MISSION DESCRIPTION AND INITIAL ON-ORBIT PERFORMANCE}, volume={140}, ISSN={1538-3881}, url={http://dx.doi.org/10.1088/0004-6256/140/6/1868}, DOI={10.1088/0004-6256/140/6/1868}, number={6}, journal={The Astronomical Journal}, publisher={American Astronomical Society}, author={Wright, Edward L. and Eisenhardt, Peter R. M. and Mainzer, Amy K. and Ressler, Michael E. and Cutri, Roc M. and Jarrett, Thomas and Kirkpatrick, J. Davy and Padgett, Deborah and McMillan, Robert S. and Skrutskie, Michael and Stanford, S. A. and Cohen, Martin and Walker, Russell G. and Mather, John C. and Leisawitz, David and Gautier, Thomas N. and McLean, Ian and Benford, Dominic and Lonsdale, Carol J. and Blain, Andrew and Mendez, Bryan and Irace, William R. and Duval, Valerie and Liu, Fengchuan and Royer, Don and Heinrichsen, Ingolf and Howard, Joan and Shannon, Mark and Kendall, Martha and Walsh, Amy L. and Larsen, Mark and Cardon, Joel G. and Schick, Scott and Schwalm, Mark and Abid, Mohamed and Fabinsky, Beth and Naes, Larry and Tsai, Chao-Wei}, year={2010}, month=Nov, pages={1868\u20131881} }",
   "doi": "10.1088/0004-6256/140/6/1868",
   "journal": "The Astronomical Journal",
   "key": "bibcode:2010AJ....140.1868W",
@@ -5672,7 +5672,7 @@
    "Zhu, Zhen-Xi"
   ],
   "bibcode": "2010RAA....10..279Z",
-  "bibtex": "@article{2010RAA....10..279Z, title={Testing and data reduction of the Chinese Small Telescope Array (CSTAR) for Dome A, Antarctica}, volume={10}, ISSN={1674-4527}, url={http://dx.doi.org/10.1088/1674-4527/10/3/009}, DOI={10.1088/1674-4527/10/3/009}, number={3}, journal={Research in Astronomy and Astrophysics}, publisher={IOP Publishing}, author={Zhou, Xu and Wu, Zhen-Yu and Jiang, Zhao-Ji and Cui, Xiang-Qun and Feng, Long-Long and Gong, Xue-Fei and Hu, Jing-Yao and Li, Qi-Sheng and Liu, Gen-Rong and Ma, Jun and Wang, Jia-Li and Wang, Li-Fan and Wu, Jiang-Hua and Xia, Li-Rong and Yan, Jun and Yuan, Xiang-Yan and Zhai, Feng-Xiang and Zhang, Ru and Zhu, Zhen-Xi}, year={2010}, month=Feb, pages={279\u00e2\u20ac\u201c290} }",
+  "bibtex": "@article{2010RAA....10..279Z, title={Testing and data reduction of the Chinese Small Telescope Array (CSTAR) for Dome A, Antarctica}, volume={10}, ISSN={1674-4527}, url={http://dx.doi.org/10.1088/1674-4527/10/3/009}, DOI={10.1088/1674-4527/10/3/009}, number={3}, journal={Research in Astronomy and Astrophysics}, publisher={IOP Publishing}, author={Zhou, Xu and Wu, Zhen-Yu and Jiang, Zhao-Ji and Cui, Xiang-Qun and Feng, Long-Long and Gong, Xue-Fei and Hu, Jing-Yao and Li, Qi-Sheng and Liu, Gen-Rong and Ma, Jun and Wang, Jia-Li and Wang, Li-Fan and Wu, Jiang-Hua and Xia, Li-Rong and Yan, Jun and Yuan, Xiang-Yan and Zhai, Feng-Xiang and Zhang, Ru and Zhu, Zhen-Xi}, year={2010}, month=Feb, pages={279\u2013290} }",
   "doi": "10.1088/1674-4527/10/3/009",
   "journal": "Res. Astron. Astrophys.",
   "key": "bibcode:2010RAA....10..279Z",
@@ -5897,7 +5897,7 @@
    "Pipher, J. L."
   ],
   "bibcode": "2012AJ....144..101G",
-  "bibtex": "@article{2012AJ....144..101G, title={IRAS 20050+2720: ANATOMY OF A YOUNG STELLAR CLUSTER}, volume={144}, ISSN={1538-3881}, url={http://dx.doi.org/10.1088/0004-6256/144/4/101}, DOI={10.1088/0004-6256/144/4/101}, number={4}, journal={The Astronomical Journal}, publisher={American Astronomical Society}, author={G\u00c3\u00bcnther, H. M. and Wolk, S. J. and Spitzbart, B. and Gutermuth, R. A. and Forbrich, J. and Wright, N. J. and Allen, L. and Bourke, T. L. and Megeath, S. T. and Pipher, J. L.}, year={2012}, month=Sept, pages={101} }",
+  "bibtex": "@article{2012AJ....144..101G, title={IRAS 20050+2720: ANATOMY OF A YOUNG STELLAR CLUSTER}, volume={144}, ISSN={1538-3881}, url={http://dx.doi.org/10.1088/0004-6256/144/4/101}, DOI={10.1088/0004-6256/144/4/101}, number={4}, journal={The Astronomical Journal}, publisher={American Astronomical Society}, author={G\u00fcnther, H. M. and Wolk, S. J. and Spitzbart, B. and Gutermuth, R. A. and Forbrich, J. and Wright, N. J. and Allen, L. and Bourke, T. L. and Megeath, S. T. and Pipher, J. L.}, year={2012}, month=Sept, pages={101} }",
   "doi": "10.1088/0004-6256/144/4/101",
   "journal": "The Astronomical Journal",
   "key": "bibcode:2012AJ....144..101G",
@@ -6029,7 +6029,7 @@
    "Chen, Lin"
   ],
   "bibcode": "2012ITGRS..50.4915H",
-  "bibtex": "@article{2012ITGRS..50.4915H, title={Calibration for the Solar Reflective Bands of Medium Resolution Spectral Imager Onboard FY-3A}, volume={50}, ISSN={1558-0644}, url={http://dx.doi.org/10.1109/tgrs.2012.2214226}, DOI={10.1109/tgrs.2012.2214226}, number={12}, journal={IEEE Transactions on Geoscience and Remote Sensing}, publisher={Institute of Electrical and Electronics Engineers (IEEE)}, author={Hu, Xiuqing and Sun, Ling and Liu, Jingjng and Ding, Lei and Wang, Xianghua and Li, Yuan and Zhang, Yong and Xu, Na and Chen, Lin}, year={2012}, month=Dec, pages={4915\u00e2\u20ac\u201c4928} }",
+  "bibtex": "@article{2012ITGRS..50.4915H, title={Calibration for the Solar Reflective Bands of Medium Resolution Spectral Imager Onboard FY-3A}, volume={50}, ISSN={1558-0644}, url={http://dx.doi.org/10.1109/tgrs.2012.2214226}, DOI={10.1109/tgrs.2012.2214226}, number={12}, journal={IEEE Transactions on Geoscience and Remote Sensing}, publisher={Institute of Electrical and Electronics Engineers (IEEE)}, author={Hu, Xiuqing and Sun, Ling and Liu, Jingjng and Ding, Lei and Wang, Xianghua and Li, Yuan and Zhang, Yong and Xu, Na and Chen, Lin}, year={2012}, month=Dec, pages={4915\u20134928} }",
   "doi": "10.1109/tgrs.2012.2214226",
   "journal": "IEEE Trans. Geosci. Remote Sensing",
   "key": "bibcode:2012ITGRS..50.4915H",
@@ -6132,7 +6132,7 @@
    "Zhang, Peng"
   ],
   "bibcode": "2013ITGRS..51.5008H",
-  "bibtex": "@article{2013ITGRS..51.5008H, title={Long-Term Monitoring and Correction of FY-2 Infrared Channel Calibration Using AIRS and IASI}, volume={51}, ISSN={1558-0644}, url={http://dx.doi.org/10.1109/tgrs.2013.2275871}, DOI={10.1109/tgrs.2013.2275871}, number={10}, journal={IEEE Transactions on Geoscience and Remote Sensing}, publisher={Institute of Electrical and Electronics Engineers (IEEE)}, author={Hu, Xiuqing and Xu, Na and Weng, Fuzhong and Zhang, Yong and Chen, Lin and Zhang, Peng}, year={2013}, month=Oct, pages={5008\u00e2\u20ac\u201c5018} }",
+  "bibtex": "@article{2013ITGRS..51.5008H, title={Long-Term Monitoring and Correction of FY-2 Infrared Channel Calibration Using AIRS and IASI}, volume={51}, ISSN={1558-0644}, url={http://dx.doi.org/10.1109/tgrs.2013.2275871}, DOI={10.1109/tgrs.2013.2275871}, number={10}, journal={IEEE Transactions on Geoscience and Remote Sensing}, publisher={Institute of Electrical and Electronics Engineers (IEEE)}, author={Hu, Xiuqing and Xu, Na and Weng, Fuzhong and Zhang, Yong and Chen, Lin and Zhang, Peng}, year={2013}, month=Oct, pages={5008\u20135018} }",
   "doi": "10.1109/tgrs.2013.2275871",
   "journal": "IEEE Trans. Geosci. Remote Sensing",
   "key": "bibcode:2013ITGRS..51.5008H",
@@ -6199,7 +6199,7 @@
    "Thomas, H. S."
   ],
   "bibcode": "2013MNRAS.430.2513H",
-  "bibtex": "@article{2013MNRAS.430.2513H, title={SCUBA-2: the 10 000 pixel bolometer camera on the James Clerk Maxwell Telescope}, volume={430}, ISSN={0035-8711}, url={http://dx.doi.org/10.1093/mnras/sts612}, DOI={10.1093/mnras/sts612}, number={4}, journal={Monthly Notices of the Royal Astronomical Society}, publisher={Oxford University Press (OUP)}, author={Holland, W. S. and Bintley, D. and Chapin, E. L. and Chrysostomou, A. and Davis, G. R. and Dempsey, J. T. and Duncan, W. D. and Fich, M. and Friberg, P. and Halpern, M. and Irwin, K. D. and Jenness, T. and Kelly, B. D. and MacIntosh, M. J. and Robson, E. I. and Scott, D. and Ade, P. A. R. and Atad-Ettedgui, E. and Berry, D. S. and Craig, S. C. and Gao, X. and Gibb, A. G. and Hilton, G. C. and Hollister, M. I. and Kycia, J. B. and Lunney, D. W. and McGregor, H. and Montgomery, D. and Parkes, W. and Tilanus, R. P. J. and Ullom, J. N. and Walther, C. A. and Walton, A. J. and Woodcraft, A. L. and Amiri, M. and Atkinson, D. and Burger, B. and Chuter, T. and Coulson, I. M. and Doriese, W. B. and Dunare, C. and Economou, F. and Niemack, M. D. and Parsons, H. A. L. and Reintsema, C. D. and Sibthorpe, B. and Smail, I. and Sudiwala, R. and Thomas, H. S.}, year={2013}, month=Mar, pages={2513\u00e2\u20ac\u201c2533} }",
+  "bibtex": "@article{2013MNRAS.430.2513H, title={SCUBA-2: the 10 000 pixel bolometer camera on the James Clerk Maxwell Telescope}, volume={430}, ISSN={0035-8711}, url={http://dx.doi.org/10.1093/mnras/sts612}, DOI={10.1093/mnras/sts612}, number={4}, journal={Monthly Notices of the Royal Astronomical Society}, publisher={Oxford University Press (OUP)}, author={Holland, W. S. and Bintley, D. and Chapin, E. L. and Chrysostomou, A. and Davis, G. R. and Dempsey, J. T. and Duncan, W. D. and Fich, M. and Friberg, P. and Halpern, M. and Irwin, K. D. and Jenness, T. and Kelly, B. D. and MacIntosh, M. J. and Robson, E. I. and Scott, D. and Ade, P. A. R. and Atad-Ettedgui, E. and Berry, D. S. and Craig, S. C. and Gao, X. and Gibb, A. G. and Hilton, G. C. and Hollister, M. I. and Kycia, J. B. and Lunney, D. W. and McGregor, H. and Montgomery, D. and Parkes, W. and Tilanus, R. P. J. and Ullom, J. N. and Walther, C. A. and Walton, A. J. and Woodcraft, A. L. and Amiri, M. and Atkinson, D. and Burger, B. and Chuter, T. and Coulson, I. M. and Doriese, W. B. and Dunare, C. and Economou, F. and Niemack, M. D. and Parsons, H. A. L. and Reintsema, C. D. and Sibthorpe, B. and Smail, I. and Sudiwala, R. and Thomas, H. S.}, year={2013}, month=Mar, pages={2513\u20132533} }",
   "doi": "10.1093/mnras/sts612",
   "journal": "Monthly Notices of the Royal Astronomical Society",
   "key": "bibcode:2013MNRAS.430.2513H",
@@ -6371,7 +6371,7 @@
    "Wolff, Schuyler"
   ],
   "bibcode": "2014PNAS..11112661M",
-  "bibtex": "@article{2014PNAS..11112661M, title={First light of the Gemini Planet Imager}, volume={111}, ISSN={1091-6490}, url={http://dx.doi.org/10.1073/pnas.1304215111}, DOI={10.1073/pnas.1304215111}, number={35}, journal={Proceedings of the National Academy of Sciences}, publisher={National Academy of Sciences}, author={Macintosh, Bruce and Graham, James R. and Ingraham, Patrick and Konopacky, Quinn and Marois, Christian and Perrin, Marshall and Poyneer, Lisa and Bauman, Brian and Barman, Travis and Burrows, Adam S. and Cardwell, Andrew and Chilcote, Jeffrey and De Rosa, Robert J. and Dillon, Daren and Doyon, Rene and Dunn, Jennifer and Erikson, Darren and Fitzgerald, Michael P. and Gavel, Donald and Goodsell, Stephen and Hartung, Markus and Hibon, Pascale and Kalas, Paul and Larkin, James and Maire, Jerome and Marchis, Franck and Marley, Mark S. and McBride, James and Millar-Blanchaer, Max and Morzinski, Katie and Norton, Andrew and Oppenheimer, B. R. and Palmer, David and Patience, Jennifer and Pueyo, Laurent and Rantakyro, Fredrik and Sadakuni, Naru and Saddlemyer, Leslie and Savransky, Dmitry and Serio, Andrew and Soummer, Remi and Sivaramakrishnan, Anand and Song, Inseok and Thomas, Sandrine and Wallace, J. Kent and Wiktorowicz, Sloane and Wolff, Schuyler}, year={2014}, month=May, pages={12661\u00e2\u20ac\u201c12666} }",
+  "bibtex": "@article{2014PNAS..11112661M, title={First light of the Gemini Planet Imager}, volume={111}, ISSN={1091-6490}, url={http://dx.doi.org/10.1073/pnas.1304215111}, DOI={10.1073/pnas.1304215111}, number={35}, journal={Proceedings of the National Academy of Sciences}, publisher={National Academy of Sciences}, author={Macintosh, Bruce and Graham, James R. and Ingraham, Patrick and Konopacky, Quinn and Marois, Christian and Perrin, Marshall and Poyneer, Lisa and Bauman, Brian and Barman, Travis and Burrows, Adam S. and Cardwell, Andrew and Chilcote, Jeffrey and De Rosa, Robert J. and Dillon, Daren and Doyon, Rene and Dunn, Jennifer and Erikson, Darren and Fitzgerald, Michael P. and Gavel, Donald and Goodsell, Stephen and Hartung, Markus and Hibon, Pascale and Kalas, Paul and Larkin, James and Maire, Jerome and Marchis, Franck and Marley, Mark S. and McBride, James and Millar-Blanchaer, Max and Morzinski, Katie and Norton, Andrew and Oppenheimer, B. R. and Palmer, David and Patience, Jennifer and Pueyo, Laurent and Rantakyro, Fredrik and Sadakuni, Naru and Saddlemyer, Leslie and Savransky, Dmitry and Serio, Andrew and Soummer, Remi and Sivaramakrishnan, Anand and Song, Inseok and Thomas, Sandrine and Wallace, J. Kent and Wiktorowicz, Sloane and Wolff, Schuyler}, year={2014}, month=May, pages={12661\u201312666} }",
   "doi": "10.1073/pnas.1304215111",
   "journal": "Proc. Natl. Acad. Sci. U.S.A.",
   "key": "bibcode:2014PNAS..11112661M",
@@ -6668,7 +6668,7 @@
    "von Braun, Kaspar"
   ],
   "bibcode": "2015PASP..127..102M",
-  "bibtex": "@article{2015PASP..127..102M, title={Revised Filter Profiles and Zero Points for Broadband Photometry}, volume={127}, ISSN={1538-3873}, url={http://dx.doi.org/10.1086/680012}, DOI={10.1086/680012}, number={948}, journal={Publications of the Astronomical Society of the Pacific}, publisher={IOP Publishing}, author={Mann, Andrew W. and von Braun, Kaspar}, year={2015}, month=Feb, pages={102\u00e2\u20ac\u201c125} }",
+  "bibtex": "@article{2015PASP..127..102M, title={Revised Filter Profiles and Zero Points for Broadband Photometry}, volume={127}, ISSN={1538-3873}, url={http://dx.doi.org/10.1086/680012}, DOI={10.1086/680012}, number={948}, journal={Publications of the Astronomical Society of the Pacific}, publisher={IOP Publishing}, author={Mann, Andrew W. and von Braun, Kaspar}, year={2015}, month=Feb, pages={102\u2013125} }",
   "doi": "10.1086/680012",
   "journal": "Publications of the Astronomical Society of the Pacific",
   "key": "bibcode:2015PASP..127..102M",
@@ -6705,7 +6705,7 @@
    "Osip, David"
   ],
   "bibcode": "2015PASP..127..366M",
-  "bibtex": "@article{2015PASP..127..366M, title={Megacam: A Wide-Field CCD Imager for the MMT and Magellan}, volume={127}, ISSN={1538-3873}, url={http://dx.doi.org/10.1086/680687}, DOI={10.1086/680687}, number={950}, journal={Publications of the Astronomical Society of the Pacific}, publisher={IOP Publishing}, author={McLeod, Brian and Geary, John and Conroy, Maureen and Fabricant, Daniel and Ordway, Mark and Szentgyorgyi, Andrew and Amato, Stephen and Ashby, Matthew and Caldwell, Nelson and Curley, Dylan and Gauron, Thomas and Holman, Matthew and Norton, Timothy and Pieri, Mario and Roll, John and Weaver, David and Zajac, Joseph and Palunas, Povilas and Osip, David}, year={2015}, month=Apr, pages={366\u00e2\u20ac\u201c382} }",
+  "bibtex": "@article{2015PASP..127..366M, title={Megacam: A Wide-Field CCD Imager for the MMT and Magellan}, volume={127}, ISSN={1538-3873}, url={http://dx.doi.org/10.1086/680687}, DOI={10.1086/680687}, number={950}, journal={Publications of the Astronomical Society of the Pacific}, publisher={IOP Publishing}, author={McLeod, Brian and Geary, John and Conroy, Maureen and Fabricant, Daniel and Ordway, Mark and Szentgyorgyi, Andrew and Amato, Stephen and Ashby, Matthew and Caldwell, Nelson and Curley, Dylan and Gauron, Thomas and Holman, Matthew and Norton, Timothy and Pieri, Mario and Roll, John and Weaver, David and Zajac, Joseph and Palunas, Povilas and Osip, David}, year={2015}, month=Apr, pages={366\u2013382} }",
   "doi": "10.1086/680687",
   "journal": "Publications of the Astronomical Society of the Pacific",
   "key": "bibcode:2015PASP..127..366M",
@@ -6925,7 +6925,7 @@
    "Wright, G. S."
   ],
   "bibcode": "2015PASP..127..633B",
-  "bibtex": "@article{2015PASP..127..633B, title={The Mid-Infrared Instrument for the\\textit{James Webb Space Telescope}, V: Predicted Performance of the MIRI Coronagraphs}, volume={127}, ISSN={1538-3873}, url={http://dx.doi.org/10.1086/682256}, DOI={10.1086/682256}, number={953}, journal={Publications of the Astronomical Society of the Pacific}, publisher={IOP Publishing}, author={Boccaletti, A. and Lagage, P.-O. and Baudoz, P. and Beichman, C. and Bouchet, P. and Cavarroc, C. and Dubreuil, D. and Glasse, Alistair and Glauser, A. M. and Hines, D. C. and Lajoie, C.-P. and Lebreton, J. and Perrin, M. D. and Pueyo, L. and Reess, J. M. and Rieke, G. H. and Ronayette, S. and Rouan, D. and Soummer, R. and Wright, G. S.}, year={2015}, month=July, pages={633\u00e2\u20ac\u201c645} }",
+  "bibtex": "@article{2015PASP..127..633B, title={The Mid-Infrared Instrument for the\\textit{James Webb Space Telescope}, V: Predicted Performance of the MIRI Coronagraphs}, volume={127}, ISSN={1538-3873}, url={http://dx.doi.org/10.1086/682256}, DOI={10.1086/682256}, number={953}, journal={Publications of the Astronomical Society of the Pacific}, publisher={IOP Publishing}, author={Boccaletti, A. and Lagage, P.-O. and Baudoz, P. and Beichman, C. and Bouchet, P. and Cavarroc, C. and Dubreuil, D. and Glasse, Alistair and Glauser, A. M. and Hines, D. C. and Lajoie, C.-P. and Lebreton, J. and Perrin, M. D. and Pueyo, L. and Reess, J. M. and Rieke, G. H. and Ronayette, S. and Rouan, D. and Soummer, R. and Wright, G. S.}, year={2015}, month=July, pages={633\u2013645} }",
   "doi": "10.1086/682256",
   "journal": "Publications of the Astronomical Society of the Pacific",
   "key": "bibcode:2015PASP..127..633B",
@@ -7766,7 +7766,7 @@
    "Dodin, A. V."
   ],
   "bibcode": "2017AstL...43..344S",
-  "bibtex": "@article{2017AstL...43..344S, title={The speckle polarimeter of the 2.5-m telescope: Design and calibration}, volume={43}, ISSN={1562-6873}, url={http://dx.doi.org/10.1134/s1063773717050036}, DOI={10.1134/s1063773717050036}, number={5}, journal={Astronomy Letters}, publisher={Pleiades Publishing Ltd}, author={Safonov, B. S. and Lysenko, P. A. and Dodin, A. V.}, year={2017}, month=May, pages={344\u00e2\u20ac\u201c364} }",
+  "bibtex": "@article{2017AstL...43..344S, title={The speckle polarimeter of the 2.5-m telescope: Design and calibration}, volume={43}, ISSN={1562-6873}, url={http://dx.doi.org/10.1134/s1063773717050036}, DOI={10.1134/s1063773717050036}, number={5}, journal={Astronomy Letters}, publisher={Pleiades Publishing Ltd}, author={Safonov, B. S. and Lysenko, P. A. and Dodin, A. V.}, year={2017}, month=May, pages={344\u2013364} }",
   "doi": "10.1134/s1063773717050036",
   "journal": "Astron. Lett.",
   "key": "bibcode:2017AstL...43..344S",
@@ -8287,7 +8287,7 @@
    "Chand, H."
   ],
   "bibcode": "2018JAI.....750003B",
-  "bibtex": "@article{2018JAI.....750003B, title={TIFR Near Infrared Imaging Camera-II on the 3.6 m Devasthal Optical Telescope}, volume={07}, ISSN={2251-1725}, url={http://dx.doi.org/10.1142/s2251171718500034}, DOI={10.1142/s2251171718500034}, number={01}, journal={Journal of Astronomical Instrumentation}, publisher={World Scientific Pub Co Pte Ltd}, author={Baug, T. and Ojha, D. K. and Ghosh, S. K. and Sharma, S. and Pandey, A. K. and Kumar, Brijesh and Ghosh, Arpan and Ninan, J. P. and Naik, M. B. and D\u00e2\u20ac\u2122Costa, S. L. A. and Poojary, S. S. and Sandimani, P. R. and Shah, H. and Krishna Reddy, B. and Pandey, S. B. and Chand, H.}, year={2018}, month=Mar }",
+  "bibtex": "@article{2018JAI.....750003B, title={TIFR Near Infrared Imaging Camera-II on the 3.6 m Devasthal Optical Telescope}, volume={07}, ISSN={2251-1725}, url={http://dx.doi.org/10.1142/s2251171718500034}, DOI={10.1142/s2251171718500034}, number={01}, journal={Journal of Astronomical Instrumentation}, publisher={World Scientific Pub Co Pte Ltd}, author={Baug, T. and Ojha, D. K. and Ghosh, S. K. and Sharma, S. and Pandey, A. K. and Kumar, Brijesh and Ghosh, Arpan and Ninan, J. P. and Naik, M. B. and D\u2019Costa, S. L. A. and Poojary, S. S. and Sandimani, P. R. and Shah, H. and Krishna Reddy, B. and Pandey, S. B. and Chand, H.}, year={2018}, month=Mar }",
   "doi": "10.1142/s2251171718500034",
   "journal": "J. Astron. Instrum.",
   "key": "bibcode:2018JAI.....750003B",
@@ -8973,7 +8973,7 @@
    "Jia, Xu"
   ],
   "bibcode": "2021AdAtS..38.1267X",
-  "bibtex": "@article{2021AdAtS..38.1267X, title={Fengyun Meteorological Satellite Products for Earth System Science Applications}, volume={38}, ISSN={1861-9533}, url={http://dx.doi.org/10.1007/s00376-021-0425-3}, DOI={10.1007/s00376-021-0425-3}, number={8}, journal={Advances in Atmospheric Sciences}, publisher={Springer Science and Business Media LLC}, author={Xian, Di and Zhang, Peng and Gao, Ling and Sun, Ruijing and Zhang, Haizhen and Jia, Xu}, year={2021}, month=Apr, pages={1267\u00e2\u20ac\u201c1284} }",
+  "bibtex": "@article{2021AdAtS..38.1267X, title={Fengyun Meteorological Satellite Products for Earth System Science Applications}, volume={38}, ISSN={1861-9533}, url={http://dx.doi.org/10.1007/s00376-021-0425-3}, DOI={10.1007/s00376-021-0425-3}, number={8}, journal={Advances in Atmospheric Sciences}, publisher={Springer Science and Business Media LLC}, author={Xian, Di and Zhang, Peng and Gao, Ling and Sun, Ruijing and Zhang, Haizhen and Jia, Xu}, year={2021}, month=Apr, pages={1267\u20131284} }",
   "doi": "10.1007/s00376-021-0425-3",
   "journal": "Adv. Atmos. Sci.",
   "key": "bibcode:2021AdAtS..38.1267X",
@@ -9984,7 +9984,7 @@
    "Cheryasov, D. V."
   ],
   "bibcode": "2023AstBu..78..234S",
-  "bibtex": "@article{2023AstBu..78..234S, title={Speckle Interferometry with CMOS Detector}, volume={78}, ISSN={1990-3421}, url={http://dx.doi.org/10.1134/s1990341323020104}, DOI={10.1134/s1990341323020104}, number={2}, journal={Astrophysical Bulletin}, publisher={Pleiades Publishing Ltd}, author={Strakhov, I. A. and Safonov, B. S. and Cheryasov, D. V.}, year={2023}, month=June, pages={234\u00e2\u20ac\u201c258} }",
+  "bibtex": "@article{2023AstBu..78..234S, title={Speckle Interferometry with CMOS Detector}, volume={78}, ISSN={1990-3421}, url={http://dx.doi.org/10.1134/s1990341323020104}, DOI={10.1134/s1990341323020104}, number={2}, journal={Astrophysical Bulletin}, publisher={Pleiades Publishing Ltd}, author={Strakhov, I. A. and Safonov, B. S. and Cheryasov, D. V.}, year={2023}, month=June, pages={234\u2013258} }",
   "doi": "10.1134/s1990341323020104",
   "journal": "Astrophys. Bull.",
   "key": "bibcode:2023AstBu..78..234S",
@@ -12042,7 +12042,7 @@
    "Djupvik, Anlaug Amanda",
    "Andersen, Johannes"
   ],
-  "bibtex": "@inbook{10.1007/978-3-642-11250-8_21, title={The Nordic Optical Telescope}, ISBN={9783642112508}, ISSN={1570-6605}, url={http://dx.doi.org/10.1007/978-3-642-11250-8_21}, DOI={10.1007/978-3-642-11250-8_21}, booktitle={Highlights of Spanish Astrophysics V}, publisher={Springer Berlin Heidelberg}, author={Djupvik, Anlaug Amanda and Andersen, Johannes}, year={2010}, pages={211\u00e2\u20ac\u201c218} }",
+  "bibtex": "@inbook{10.1007/978-3-642-11250-8_21, title={The Nordic Optical Telescope}, ISBN={9783642112508}, ISSN={1570-6605}, url={http://dx.doi.org/10.1007/978-3-642-11250-8_21}, DOI={10.1007/978-3-642-11250-8_21}, booktitle={Highlights of Spanish Astrophysics V}, publisher={Springer Berlin Heidelberg}, author={Djupvik, Anlaug Amanda and Andersen, Johannes}, year={2010}, pages={211\u2013218} }",
   "doi": "10.1007/978-3-642-11250-8_21",
   "journal": "Astrophysics and Space Science Proceedings",
   "key": "doi:10.1007/978-3-642-11250-8_21",
@@ -12081,7 +12081,7 @@
    "Morrison, David",
    "Pollack, James B."
   ],
-  "bibtex": "@article{10.1007/bf00216864, title={The Galileo Solid-State Imaging experiment}, volume={60}, ISSN={1572-9672}, url={http://dx.doi.org/10.1007/bf00216864}, DOI={10.1007/bf00216864}, number={1-4}, journal={Space Science Reviews}, publisher={Springer Science and Business Media LLC}, author={Belton, Michael J. S. and Klaasen, Kenneth P. and Clary, Maurice C. and Anderson, James L. and Anger, Clifford D. and Carr, Michael H. and Chapman, Clark R. and Davies, Merton E. and Greeley, Ronald and Anderson, Donald and Bolef, Lawrence K. and Townsend, Timothy E. and Greenberg, Richard and Head, James W. and Neukum, Gerhard and Pilcher, Carl B. and Veverka, Joseph and Gierasch, Peter J. and Fanale, Fraser P. and Ingersoll, Andrew P. and Masursky, Harold and Morrison, David and Pollack, James B.}, year={1992}, month=May, pages={413\u00e2\u20ac\u201c455} }",
+  "bibtex": "@article{10.1007/bf00216864, title={The Galileo Solid-State Imaging experiment}, volume={60}, ISSN={1572-9672}, url={http://dx.doi.org/10.1007/bf00216864}, DOI={10.1007/bf00216864}, number={1-4}, journal={Space Science Reviews}, publisher={Springer Science and Business Media LLC}, author={Belton, Michael J. S. and Klaasen, Kenneth P. and Clary, Maurice C. and Anderson, James L. and Anger, Clifford D. and Carr, Michael H. and Chapman, Clark R. and Davies, Merton E. and Greeley, Ronald and Anderson, Donald and Bolef, Lawrence K. and Townsend, Timothy E. and Greenberg, Richard and Head, James W. and Neukum, Gerhard and Pilcher, Carl B. and Veverka, Joseph and Gierasch, Peter J. and Fanale, Fraser P. and Ingersoll, Andrew P. and Masursky, Harold and Morrison, David and Pollack, James B.}, year={1992}, month=May, pages={413\u2013455} }",
   "doi": "10.1007/bf00216864",
   "journal": "Space Sci Rev",
   "key": "doi:10.1007/bf00216864",
@@ -12118,7 +12118,7 @@
    "Beurle, Kevin",
    "Owen, William"
   ],
-  "bibtex": "@article{10.1007/s11214-004-1456-7, title={Cassini Imaging Science: Instrument Characteristics And Anticipated Scientific Investigations At Saturn}, volume={115}, ISSN={1572-9672}, url={http://dx.doi.org/10.1007/s11214-004-1456-7}, DOI={10.1007/s11214-004-1456-7}, number={1-4}, journal={Space Science Reviews}, publisher={Springer Science and Business Media LLC}, author={Porco, Carolyn C. and West, Robert A. and Squyres, Steven and Mcewen, Alfred and Thomas, Peter and Murray, Carl D. and Delgenio, Anthony and Ingersoll, Andrew P. and Johnson, Torrence V. and Neukum, Gerhard and Veverka, Joseph and Dones, Luke and Brahic, Andre and Burns, Joseph A. and Haemmerle, Vance and Knowles, Benjamin and Dawson, Douglas and Roatsch, Thomas and Beurle, Kevin and Owen, William}, year={2004}, month=Nov, pages={363\u00e2\u20ac\u201c497} }",
+  "bibtex": "@article{10.1007/s11214-004-1456-7, title={Cassini Imaging Science: Instrument Characteristics And Anticipated Scientific Investigations At Saturn}, volume={115}, ISSN={1572-9672}, url={http://dx.doi.org/10.1007/s11214-004-1456-7}, DOI={10.1007/s11214-004-1456-7}, number={1-4}, journal={Space Science Reviews}, publisher={Springer Science and Business Media LLC}, author={Porco, Carolyn C. and West, Robert A. and Squyres, Steven and Mcewen, Alfred and Thomas, Peter and Murray, Carl D. and Delgenio, Anthony and Ingersoll, Andrew P. and Johnson, Torrence V. and Neukum, Gerhard and Veverka, Joseph and Dones, Luke and Brahic, Andre and Burns, Joseph A. and Haemmerle, Vance and Knowles, Benjamin and Dawson, Douglas and Roatsch, Thomas and Beurle, Kevin and Owen, William}, year={2004}, month=Nov, pages={363\u2013497} }",
   "doi": "10.1007/s11214-004-1456-7",
   "journal": "Space Sci Rev",
   "key": "doi:10.1007/s11214-004-1456-7",
@@ -12534,7 +12534,7 @@
    "Joseph Wampler, E.",
    "Morton, Donald C."
   ],
-  "bibtex": "@article{10.1016/0083-6656(77)90030-7, title={The Anglo-Australian Telescope}, volume={21}, ISSN={0083-6656}, url={http://dx.doi.org/10.1016/0083-6656(77)90030-7}, DOI={10.1016/0083-6656(77)90030-7}, journal={Vistas in Astronomy}, publisher={Elsevier BV}, author={Joseph Wampler, E. and Morton, Donald C.}, year={1977}, month=Jan, pages={191\u00e2\u20ac\u201c207} }",
+  "bibtex": "@article{10.1016/0083-6656(77)90030-7, title={The Anglo-Australian Telescope}, volume={21}, ISSN={0083-6656}, url={http://dx.doi.org/10.1016/0083-6656(77)90030-7}, DOI={10.1016/0083-6656(77)90030-7}, journal={Vistas in Astronomy}, publisher={Elsevier BV}, author={Joseph Wampler, E. and Morton, Donald C.}, year={1977}, month=Jan, pages={191\u2013207} }",
   "doi": "10.1016/0083-6656(77)90030-7",
   "journal": "Vistas in Astronomy",
   "key": "doi:10.1016/0083-6656(77)90030-7",
@@ -12550,7 +12550,7 @@
   "year": 1977
  },
  "doi:10.1016/S0094-5765(99)00143-5": {
-  "bibtex": "@article{10.1016/s0094-5765(99)00143-5, volume={45}, ISSN={0094-5765}, url={http://dx.doi.org/10.1016/S0094-5765(99)00143-5}, DOI={10.1016/s0094-5765(99)00143-5}, number={4-9}, journal={Acta Astronautica}, publisher={Elsevier BV}, year={1999}, month=Aug, pages={267\u00e2\u20ac\u201c274} }",
+  "bibtex": "@article{10.1016/s0094-5765(99)00143-5, volume={45}, ISSN={0094-5765}, url={http://dx.doi.org/10.1016/s0094-5765(99)00143-5}, DOI={10.1016/s0094-5765(99)00143-5}, number={4-9}, journal={Acta Astronautica}, publisher={Elsevier BV}, year={1999}, month=Aug, pages={267\u2013274} }",
   "doi": "10.1016/s0094-5765(99)00143-5",
   "journal": "Acta Astronautica",
   "key": "doi:10.1016/S0094-5765(99)00143-5",
@@ -13004,7 +13004,7 @@
    "Smith, P.",
    "Vreux, J.-M."
   ],
-  "bibtex": "@article{10.1051/0004-6361:20000044, title={The XMM-Newton optical/UV monitor telescope}, volume={365}, ISSN={1432-0746}, url={http://dx.doi.org/10.1051/0004-6361:20000044}, DOI={10.1051/0004-6361:20000044}, number={1}, journal={Astronomy \\& Astrophysics}, publisher={EDP Sciences}, author={Mason, K. O. and Breeveld, A. and Much, R. and Carter, M. and Cordova, F. A. and Cropper, M. S. and Fordham, J. and Huckle, H. and Ho, C. and Kawakami, H. and Kennea, J. and Kennedy, T. and Mittaz, J. and Pandel, D. and Priedhorsky, W. C. and Sasseen, T. and Shirey, R. and Smith, P. and Vreux, J.-M.}, year={2001}, month=Jan, pages={L36\u00e2\u20ac\u201cL44} }",
+  "bibtex": "@article{10.1051/0004-6361:20000044, title={The XMM-Newton optical/UV monitor telescope}, volume={365}, ISSN={1432-0746}, url={http://dx.doi.org/10.1051/0004-6361:20000044}, DOI={10.1051/0004-6361:20000044}, number={1}, journal={Astronomy \\& Astrophysics}, publisher={EDP Sciences}, author={Mason, K. O. and Breeveld, A. and Much, R. and Carter, M. and Cordova, F. A. and Cropper, M. S. and Fordham, J. and Huckle, H. and Ho, C. and Kawakami, H. and Kennea, J. and Kennedy, T. and Mittaz, J. and Pandel, D. and Priedhorsky, W. C. and Sasseen, T. and Shirey, R. and Smith, P. and Vreux, J.-M.}, year={2001}, month=Jan, pages={L36\u2013L44} }",
   "doi": "10.1051/0004-6361:20000044",
   "journal": "A&A",
   "key": "doi:10.1051/0004-6361:20000044",
@@ -13051,7 +13051,7 @@
    "Warren, S.",
    "Woodward, B."
   ],
-  "bibtex": "@article{10.1051/0004-6361:20066514, title={The UKIRT wide-field camera}, volume={467}, ISSN={1432-0746}, url={http://dx.doi.org/10.1051/0004-6361:20066514}, DOI={10.1051/0004-6361:20066514}, number={2}, journal={Astronomy \\& Astrophysics}, publisher={EDP Sciences}, author={Casali, M. and Adamson, A. and Alves de Oliveira, C. and Almaini, O. and Burch, K. and Chuter, T. and Elliot, J. and Folger, M. and Foucaud, S. and Hambly, N. and Hastie, M. and Henry, D. and Hirst, P. and Irwin, M. and Ives, D. and Lawrence, A. and Laidlaw, K. and Lee, D. and Lewis, J. and Lunney, D. and McLay, S. and Montgomery, D. and Pickup, A. and Read, M. and Rees, N. and Robson, I. and Sekiguchi, K. and Vick, A. and Warren, S. and Woodward, B.}, year={2007}, month=Feb, pages={777\u00e2\u20ac\u201c784} }",
+  "bibtex": "@article{10.1051/0004-6361:20066514, title={The UKIRT wide-field camera}, volume={467}, ISSN={1432-0746}, url={http://dx.doi.org/10.1051/0004-6361:20066514}, DOI={10.1051/0004-6361:20066514}, number={2}, journal={Astronomy \\& Astrophysics}, publisher={EDP Sciences}, author={Casali, M. and Adamson, A. and Alves de Oliveira, C. and Almaini, O. and Burch, K. and Chuter, T. and Elliot, J. and Folger, M. and Foucaud, S. and Hambly, N. and Hastie, M. and Henry, D. and Hirst, P. and Irwin, M. and Ives, D. and Lawrence, A. and Laidlaw, K. and Lee, D. and Lewis, J. and Lunney, D. and McLay, S. and Montgomery, D. and Pickup, A. and Read, M. and Rees, N. and Robson, I. and Sekiguchi, K. and Vick, A. and Warren, S. and Woodward, B.}, year={2007}, month=Feb, pages={777\u2013784} }",
   "doi": "10.1051/0004-6361:20066514",
   "journal": "A&A",
   "key": "doi:10.1051/0004-6361:20066514",
@@ -13094,7 +13094,7 @@
    "Selman, F.",
    "Stegmeier, J."
   ],
-  "bibtex": "@article{10.1051/0004-6361:200809910, title={HAWK-I: the high-acuity wide-field\\textit{K}-band imager for the ESO Very Large Telescope}, volume={491}, ISSN={1432-0746}, url={http://dx.doi.org/10.1051/0004-6361:200809910}, DOI={10.1051/0004-6361:200809910}, number={3}, journal={Astronomy \\& Astrophysics}, publisher={EDP Sciences}, author={Kissler-Patig, M. and Pirard, J.-F. and Casali, M. and Moorwood, A. and Ageorges, N. and Alves De Oliveira, C. and Baksai, P. and Bedin, L. R. and Bendek, E. and Biereichel, P. and Delabre, B. and Dorn, R. and Esteves, R. and Finger, G. and Gojak, D. and Huster, G. and Jung, Y. and Kiekebush, M. and Klein, B. and Koch, F. and Lizon, J.-L. and Mehrgan, L. and Petr-Gotzens, M. and Pritchard, J. and Selman, F. and Stegmeier, J.}, year={2008}, month=Oct, pages={941\u00e2\u20ac\u201c950} }",
+  "bibtex": "@article{10.1051/0004-6361:200809910, title={HAWK-I: the high-acuity wide-field\\textit{K}-band imager for the ESO Very Large Telescope}, volume={491}, ISSN={1432-0746}, url={http://dx.doi.org/10.1051/0004-6361:200809910}, DOI={10.1051/0004-6361:200809910}, number={3}, journal={Astronomy \\& Astrophysics}, publisher={EDP Sciences}, author={Kissler-Patig, M. and Pirard, J.-F. and Casali, M. and Moorwood, A. and Ageorges, N. and Alves De Oliveira, C. and Baksai, P. and Bedin, L. R. and Bendek, E. and Biereichel, P. and Delabre, B. and Dorn, R. and Esteves, R. and Finger, G. and Gojak, D. and Huster, G. and Jung, Y. and Kiekebush, M. and Klein, B. and Koch, F. and Lizon, J.-L. and Mehrgan, L. and Petr-Gotzens, M. and Pritchard, J. and Selman, F. and Stegmeier, J.}, year={2008}, month=Oct, pages={941\u2013950} }",
   "doi": "10.1051/0004-6361:200809910",
   "journal": "A&A",
   "key": "doi:10.1051/0004-6361:200809910",
@@ -13181,7 +13181,7 @@
    "Thomas, Peter",
    "Wellnitz, Dennis"
   ],
-  "bibtex": "@article{10.1063/1.2972112, title={Invited Article: Deep Impact instrument calibration}, volume={79}, ISSN={1089-7623}, url={http://dx.doi.org/10.1063/1.2972112}, DOI={10.1063/1.2972112}, number={9}, journal={Review of Scientific Instruments}, publisher={AIP Publishing}, author={Klaasen, Kenneth P. and A\u00e2\u20ac\u2122Hearn, Michael F. and Baca, Michael and Delamere, Alan and Desnoyer, Mark and Farnham, Tony and Groussin, Olivier and Hampton, Donald and Ipatov, Sergei and Li, Jianyang and Lisse, Carey and Mastrodemos, Nickolaos and McLaughlin, Stephanie and Sunshine, Jessica and Thomas, Peter and Wellnitz, Dennis}, year={2008}, month=Sept }",
+  "bibtex": "@article{10.1063/1.2972112, title={Invited Article: Deep Impact instrument calibration}, volume={79}, ISSN={1089-7623}, url={http://dx.doi.org/10.1063/1.2972112}, DOI={10.1063/1.2972112}, number={9}, journal={Review of Scientific Instruments}, publisher={AIP Publishing}, author={Klaasen, Kenneth P. and A\u2019Hearn, Michael F. and Baca, Michael and Delamere, Alan and Desnoyer, Mark and Farnham, Tony and Groussin, Olivier and Hampton, Donald and Ipatov, Sergei and Li, Jianyang and Lisse, Carey and Mastrodemos, Nickolaos and McLaughlin, Stephanie and Sunshine, Jessica and Thomas, Peter and Wellnitz, Dennis}, year={2008}, month=Sept }",
   "doi": "10.1063/1.2972112",
   "journal": "Review of Scientific Instruments",
   "key": "doi:10.1063/1.2972112",
@@ -13385,7 +13385,7 @@
    "Mizuno, Donald R.",
    "Kuchar, Thomas A."
   ],
-  "bibtex": "@article{10.1086/320404, title={[ITAL]MIDCOURSE SPACE EXPERIMENT[/ITAL][ITAL]Midcourse Space Experiment[/ITAL] Survey of the Galactic Plane}, volume={121}, ISSN={0004-6256}, url={http://dx.doi.org/10.1086/320404}, DOI={10.1086/320404}, number={5}, journal={The Astronomical Journal}, publisher={American Astronomical Society}, author={Price, Stephan D. and Egan, Michael P. and Carey, Sean J. and Mizuno, Donald R. and Kuchar, Thomas A.}, year={2001}, month=May, pages={2819\u00e2\u20ac\u201c2842} }",
+  "bibtex": "@article{10.1086/320404, title={[ITAL]MIDCOURSE SPACE EXPERIMENT[/ITAL][ITAL]Midcourse Space Experiment[/ITAL] Survey of the Galactic Plane}, volume={121}, ISSN={0004-6256}, url={http://dx.doi.org/10.1086/320404}, DOI={10.1086/320404}, number={5}, journal={The Astronomical Journal}, publisher={American Astronomical Society}, author={Price, Stephan D. and Egan, Michael P. and Carey, Sean J. and Mizuno, Donald R. and Kuchar, Thomas A.}, year={2001}, month=May, pages={2819\u20132842} }",
   "doi": "10.1086/320404",
   "journal": "The Astronomical Journal",
   "key": "doi:10.1086/320404",
@@ -13546,7 +13546,7 @@
    "Wolfe, David",
    "Zacchei, Andrea"
   ],
-  "bibtex": "@article{10.1088/0004-6256/136/2/735, title={THE SECOND-GENERATION GUIDE STAR CATALOG: DESCRIPTION AND PROPERTIES}, volume={136}, ISSN={1538-3881}, url={http://dx.doi.org/10.1088/0004-6256/136/2/735}, DOI={10.1088/0004-6256/136/2/735}, number={2}, journal={The Astronomical Journal}, publisher={American Astronomical Society}, author={Lasker, Barry M. and Lattanzi, Mario G. and McLean, Brian J. and Bucciarelli, Beatrice and Drimmel, Ronald and Garcia, Jorge and Greene, Gretchen and Guglielmetti, Fabrizia and Hanley, Christopher and Hawkins, George and Laidler, Victoria G. and Loomis, Charles and Meakes, Michael and Mignani, Roberto and Morbidelli, Roberto and Morrison, Jane and Pannunzio, Renato and Rosenberg, Amy and Sarasso, Maria and Smart, Richard L. and Spagna, Alessandro and Sturch, Conrad R. and Volpicelli, Antonio and White, Richard L. and Wolfe, David and Zacchei, Andrea}, year={2008}, month=July, pages={735\u00e2\u20ac\u201c766} }",
+  "bibtex": "@article{10.1088/0004-6256/136/2/735, title={THE SECOND-GENERATION GUIDE STAR CATALOG: DESCRIPTION AND PROPERTIES}, volume={136}, ISSN={1538-3881}, url={http://dx.doi.org/10.1088/0004-6256/136/2/735}, DOI={10.1088/0004-6256/136/2/735}, number={2}, journal={The Astronomical Journal}, publisher={American Astronomical Society}, author={Lasker, Barry M. and Lattanzi, Mario G. and McLean, Brian J. and Bucciarelli, Beatrice and Drimmel, Ronald and Garcia, Jorge and Greene, Gretchen and Guglielmetti, Fabrizia and Hanley, Christopher and Hawkins, George and Laidler, Victoria G. and Loomis, Charles and Meakes, Michael and Mignani, Roberto and Morbidelli, Roberto and Morrison, Jane and Pannunzio, Renato and Rosenberg, Amy and Sarasso, Maria and Smart, Richard L. and Spagna, Alessandro and Sturch, Conrad R. and Volpicelli, Antonio and White, Richard L. and Wolfe, David and Zacchei, Andrea}, year={2008}, month=July, pages={735\u2013766} }",
   "doi": "10.1088/0004-6256/136/2/735",
   "journal": "The Astronomical Journal",
   "key": "doi:10.1088/0004-6256/136/2/735",
@@ -13656,7 +13656,7 @@
    "Sudiwala, R.",
    "Thomas, H. S."
   ],
-  "bibtex": "@article{10.1093/mnras/sts612, title={SCUBA-2: the 10 000 pixel bolometer camera on the James Clerk Maxwell Telescope}, volume={430}, ISSN={0035-8711}, url={http://dx.doi.org/10.1093/mnras/sts612}, DOI={10.1093/mnras/sts612}, number={4}, journal={Monthly Notices of the Royal Astronomical Society}, publisher={Oxford University Press (OUP)}, author={Holland, W. S. and Bintley, D. and Chapin, E. L. and Chrysostomou, A. and Davis, G. R. and Dempsey, J. T. and Duncan, W. D. and Fich, M. and Friberg, P. and Halpern, M. and Irwin, K. D. and Jenness, T. and Kelly, B. D. and MacIntosh, M. J. and Robson, E. I. and Scott, D. and Ade, P. A. R. and Atad-Ettedgui, E. and Berry, D. S. and Craig, S. C. and Gao, X. and Gibb, A. G. and Hilton, G. C. and Hollister, M. I. and Kycia, J. B. and Lunney, D. W. and McGregor, H. and Montgomery, D. and Parkes, W. and Tilanus, R. P. J. and Ullom, J. N. and Walther, C. A. and Walton, A. J. and Woodcraft, A. L. and Amiri, M. and Atkinson, D. and Burger, B. and Chuter, T. and Coulson, I. M. and Doriese, W. B. and Dunare, C. and Economou, F. and Niemack, M. D. and Parsons, H. A. L. and Reintsema, C. D. and Sibthorpe, B. and Smail, I. and Sudiwala, R. and Thomas, H. S.}, year={2013}, month=Mar, pages={2513\u00e2\u20ac\u201c2533} }",
+  "bibtex": "@article{10.1093/mnras/sts612, title={SCUBA-2: the 10 000 pixel bolometer camera on the James Clerk Maxwell Telescope}, volume={430}, ISSN={0035-8711}, url={http://dx.doi.org/10.1093/mnras/sts612}, DOI={10.1093/mnras/sts612}, number={4}, journal={Monthly Notices of the Royal Astronomical Society}, publisher={Oxford University Press (OUP)}, author={Holland, W. S. and Bintley, D. and Chapin, E. L. and Chrysostomou, A. and Davis, G. R. and Dempsey, J. T. and Duncan, W. D. and Fich, M. and Friberg, P. and Halpern, M. and Irwin, K. D. and Jenness, T. and Kelly, B. D. and MacIntosh, M. J. and Robson, E. I. and Scott, D. and Ade, P. A. R. and Atad-Ettedgui, E. and Berry, D. S. and Craig, S. C. and Gao, X. and Gibb, A. G. and Hilton, G. C. and Hollister, M. I. and Kycia, J. B. and Lunney, D. W. and McGregor, H. and Montgomery, D. and Parkes, W. and Tilanus, R. P. J. and Ullom, J. N. and Walther, C. A. and Walton, A. J. and Woodcraft, A. L. and Amiri, M. and Atkinson, D. and Burger, B. and Chuter, T. and Coulson, I. M. and Doriese, W. B. and Dunare, C. and Economou, F. and Niemack, M. D. and Parsons, H. A. L. and Reintsema, C. D. and Sibthorpe, B. and Smail, I. and Sudiwala, R. and Thomas, H. S.}, year={2013}, month=Mar, pages={2513\u20132533} }",
   "doi": "10.1093/mnras/sts612",
   "journal": "Monthly Notices of the Royal Astronomical Society",
   "key": "doi:10.1093/mnras/sts612",
@@ -13681,7 +13681,7 @@
    "Buriez, J.-C.",
    "Seze, G."
   ],
-  "bibtex": "@article{10.1109/36.297978, title={The POLDER mission: instrument characteristics and scientific objectives}, volume={32}, ISSN={0196-2892}, url={http://dx.doi.org/10.1109/36.297978}, DOI={10.1109/36.297978}, number={3}, journal={IEEE Transactions on Geoscience and Remote Sensing}, publisher={Institute of Electrical and Electronics Engineers (IEEE)}, author={Deschamps, P.-Y. and Breon, F.-M. and Leroy, M. and Podaire, A. and Bricaud, A. and Buriez, J.-C. and Seze, G.}, year={1994}, month=May, pages={598\u00e2\u20ac\u201c615} }",
+  "bibtex": "@article{10.1109/36.297978, title={The POLDER mission: instrument characteristics and scientific objectives}, volume={32}, ISSN={0196-2892}, url={http://dx.doi.org/10.1109/36.297978}, DOI={10.1109/36.297978}, number={3}, journal={IEEE Transactions on Geoscience and Remote Sensing}, publisher={Institute of Electrical and Electronics Engineers (IEEE)}, author={Deschamps, P.-Y. and Breon, F.-M. and Leroy, M. and Podaire, A. and Bricaud, A. and Buriez, J.-C. and Seze, G.}, year={1994}, month=May, pages={598\u2013615} }",
   "doi": "10.1109/36.297978",
   "journal": "IEEE Trans. Geosci. Remote Sensing",
   "key": "doi:10.1109/36.297978",
@@ -13725,7 +13725,7 @@
    "Wolfe, Robert",
    "Weng, Fuzhong"
   ],
-  "bibtex": "@article{10.1109/tgrs.2013.2247768, title={Early On-Orbit Performance of the Visible Infrared Imaging Radiometer Suite Onboard the Suomi National Polar-Orbiting Partnership (S-NPP) Satellite}, volume={52}, ISSN={1558-0644}, url={http://dx.doi.org/10.1109/TGRS.2013.2247768}, DOI={10.1109/tgrs.2013.2247768}, number={2}, journal={IEEE Transactions on Geoscience and Remote Sensing}, publisher={Institute of Electrical and Electronics Engineers (IEEE)}, author={Cao, Changyong and De Luccia, Frank J. and Xiong, Xiaoxiong and Wolfe, Robert and Weng, Fuzhong}, year={2014}, month=Feb, pages={1142\u00e2\u20ac\u201c1156} }",
+  "bibtex": "@article{10.1109/tgrs.2013.2247768, title={Early On-Orbit Performance of the Visible Infrared Imaging Radiometer Suite Onboard the Suomi National Polar-Orbiting Partnership (S-NPP) Satellite}, volume={52}, ISSN={1558-0644}, url={http://dx.doi.org/10.1109/tgrs.2013.2247768}, DOI={10.1109/tgrs.2013.2247768}, number={2}, journal={IEEE Transactions on Geoscience and Remote Sensing}, publisher={Institute of Electrical and Electronics Engineers (IEEE)}, author={Cao, Changyong and De Luccia, Frank J. and Xiong, Xiaoxiong and Wolfe, Robert and Weng, Fuzhong}, year={2014}, month=Feb, pages={1142\u20131156} }",
   "doi": "10.1109/tgrs.2013.2247768",
   "journal": "IEEE Trans. Geosci. Remote Sensing",
   "key": "doi:10.1109/TGRS.2013.2247768",
@@ -13750,7 +13750,7 @@
    "Xu, Na",
    "Zhang, Peng"
   ],
-  "bibtex": "@article{10.1109/tgrs.2024.3376580, title={A Novel Intercalibration Method for Fengyun(FY)-3 VIRR Using MERSI Onboard the Same Satellite Based on Pseudo-Invariant Pixels}, volume={62}, ISSN={1558-0644}, url={http://dx.doi.org/10.1109/TGRS.2024.3376580}, DOI={10.1109/tgrs.2024.3376580}, journal={IEEE Transactions on Geoscience and Remote Sensing}, publisher={Institute of Electrical and Electronics Engineers (IEEE)}, author={Wang, Junwei and Hu, Xiuqing and Gao, Kun and He, Yuqing and Wang, Ling and Li, Guorong and Xu, Na and Zhang, Peng}, year={2024}, pages={1\u00e2\u20ac\u201c17} }",
+  "bibtex": "@article{10.1109/tgrs.2024.3376580, title={A Novel Intercalibration Method for Fengyun(FY)-3 VIRR Using MERSI Onboard the Same Satellite Based on Pseudo-Invariant Pixels}, volume={62}, ISSN={1558-0644}, url={http://dx.doi.org/10.1109/tgrs.2024.3376580}, DOI={10.1109/tgrs.2024.3376580}, journal={IEEE Transactions on Geoscience and Remote Sensing}, publisher={Institute of Electrical and Electronics Engineers (IEEE)}, author={Wang, Junwei and Hu, Xiuqing and Gao, Kun and He, Yuqing and Wang, Ling and Li, Guorong and Xu, Na and Zhang, Peng}, year={2024}, pages={1\u201317} }",
   "doi": "10.1109/tgrs.2024.3376580",
   "journal": "IEEE Trans. Geosci. Remote Sensing",
   "key": "doi:10.1109/TGRS.2024.3376580",
@@ -13777,7 +13777,7 @@
    "Qi, Yonggang",
    "Zhang, Peng"
   ],
-  "bibtex": "@article{10.1109/tgrs.2024.3432899, title={Recalibration and Reprocessing of the Long-Term FY-3 MERSI Historical Data}, volume={62}, ISSN={1558-0644}, url={http://dx.doi.org/10.1109/TGRS.2024.3432899}, DOI={10.1109/tgrs.2024.3432899}, journal={IEEE Transactions on Geoscience and Remote Sensing}, publisher={Institute of Electrical and Electronics Engineers (IEEE)}, author={Xu, Na and He, Xingwei and Hu, Xiuqing and Xu, Hanlie and Wang, Ling and Wu, Ronghua and Sun, Ling and Chen, Lin and Qi, Yonggang and Zhang, Peng}, year={2024}, pages={1\u00e2\u20ac\u201c15} }",
+  "bibtex": "@article{10.1109/tgrs.2024.3432899, title={Recalibration and Reprocessing of the Long-Term FY-3 MERSI Historical Data}, volume={62}, ISSN={1558-0644}, url={http://dx.doi.org/10.1109/tgrs.2024.3432899}, DOI={10.1109/tgrs.2024.3432899}, journal={IEEE Transactions on Geoscience and Remote Sensing}, publisher={Institute of Electrical and Electronics Engineers (IEEE)}, author={Xu, Na and He, Xingwei and Hu, Xiuqing and Xu, Hanlie and Wang, Ling and Wu, Ronghua and Sun, Ling and Chen, Lin and Qi, Yonggang and Zhang, Peng}, year={2024}, pages={1\u201315} }",
   "doi": "10.1109/tgrs.2024.3432899",
   "journal": "IEEE Trans. Geosci. Remote Sensing",
   "key": "doi:10.1109/TGRS.2024.3432899",
@@ -13798,7 +13798,7 @@
    "Gu, Jinwei",
    "Susstrunk, Sabine"
   ],
-  "bibtex": "@inproceedings{10.1109/wacv.2013.6475015, title={What is the space of spectral sensitivity functions for digital color cameras?}, url={http://dx.doi.org/10.1109/WACV.2013.6475015}, DOI={10.1109/wacv.2013.6475015}, booktitle={2013 IEEE Workshop on Applications of Computer Vision (WACV)}, publisher={IEEE}, author={Jiang, Jun and Liu, Dengyu and Gu, Jinwei and Susstrunk, Sabine}, year={2013}, month=Jan, pages={168\u00e2\u20ac\u201c179} }",
+  "bibtex": "@inproceedings{10.1109/wacv.2013.6475015, title={What is the space of spectral sensitivity functions for digital color cameras?}, url={http://dx.doi.org/10.1109/wacv.2013.6475015}, DOI={10.1109/wacv.2013.6475015}, booktitle={2013 IEEE Workshop on Applications of Computer Vision (WACV)}, publisher={IEEE}, author={Jiang, Jun and Liu, Dengyu and Gu, Jinwei and Susstrunk, Sabine}, year={2013}, month=Jan, pages={168\u2013179} }",
   "doi": "10.1109/wacv.2013.6475015",
   "journal": "2013 IEEE Workshop on Applications of Computer Vision (WACV)",
   "key": "doi:10.1109/WACV.2013.6475015",
@@ -13818,7 +13818,7 @@
    "Leggett, S. K.",
    "Hodgkin, S. T."
   ],
-  "bibtex": "@article{10.1111/j.1365-2966.2005.09969.x, title={The UKIRT Infrared Deep Sky Survey ZY JHK photometric system: passbands and synthetic colours}, volume={367}, ISSN={0035-8711}, url={http://dx.doi.org/10.1111/j.1365-2966.2005.09969.x}, DOI={10.1111/j.1365-2966.2005.09969.x}, number={2}, journal={Monthly Notices of the Royal Astronomical Society}, publisher={Oxford University Press (OUP)}, author={Hewett, P. C. and Warren, S. J. and Leggett, S. K. and Hodgkin, S. T.}, year={2006}, month=Apr, pages={454\u00e2\u20ac\u201c468} }",
+  "bibtex": "@article{10.1111/j.1365-2966.2005.09969.x, title={The UKIRT Infrared Deep Sky Survey ZY JHK photometric system: passbands and synthetic colours}, volume={367}, ISSN={0035-8711}, url={http://dx.doi.org/10.1111/j.1365-2966.2005.09969.x}, DOI={10.1111/j.1365-2966.2005.09969.x}, number={2}, journal={Monthly Notices of the Royal Astronomical Society}, publisher={Oxford University Press (OUP)}, author={Hewett, P. C. and Warren, S. J. and Leggett, S. K. and Hodgkin, S. T.}, year={2006}, month=Apr, pages={454\u2013468} }",
   "doi": "10.1111/j.1365-2966.2005.09969.x",
   "journal": "Monthly Notices of the Royal Astronomical Society",
   "key": "doi:10.1111/j.1365-2966.2005.09969.x",
@@ -13852,7 +13852,7 @@
    "Helfenstein, Paul",
    "Colvin, Timothy"
   ],
-  "bibtex": "@article{10.1117/1.601525, title={Inflight performance characteristics, calibration, and utilization of the Galileo solid state imaging camera}, volume={36}, ISSN={1560-2303}, url={http://dx.doi.org/10.1117/1.601525}, DOI={10.1117/1.601525}, number={11}, journal={Optical Engineering}, publisher={SPIE-Intl Soc Optical Eng}, author={Klaasen, Kenneth P. and Belton, Michael J. and Breneman, H. H. and McEwen, Alfred S. and Davies, Merton and Sullivan, Robert J. and Chapman, Clark R. and Neukum, Gerhard and Heffernan, Catherine M. and Harch, Ann P. and Kaufman, James M. and Merline, William J. and Gaddis, Lisa R. and Cunningham, William F. and Helfenstein, Paul and Colvin, Timothy}, year={1997}, month=Nov, pages={3001\u00e2\u20ac\u201c3027} }",
+  "bibtex": "@article{10.1117/1.601525, title={Inflight performance characteristics, calibration, and utilization of the Galileo solid state imaging camera}, volume={36}, ISSN={1560-2303}, url={http://dx.doi.org/10.1117/1.601525}, DOI={10.1117/1.601525}, number={11}, journal={Optical Engineering}, publisher={SPIE-Intl Soc Optical Eng}, author={Klaasen, Kenneth P. and Belton, Michael J. and Breneman, H. H. and McEwen, Alfred S. and Davies, Merton and Sullivan, Robert J. and Chapman, Clark R. and Neukum, Gerhard and Heffernan, Catherine M. and Harch, Ann P. and Kaufman, James M. and Merline, William J. and Gaddis, Lisa R. and Cunningham, William F. and Helfenstein, Paul and Colvin, Timothy}, year={1997}, month=Nov, pages={3001\u20133027} }",
   "doi": "10.1117/1.601525",
   "journal": "Opt. Eng.",
   "key": "doi:10.1117/1.601525",
@@ -13901,7 +13901,7 @@
    "Wu, W. L. K.",
    "Yoon, K. W."
   ],
-  "bibtex": "@inproceedings{10.1117/12.2057224, title={BICEP3: a 95GHz refracting telescope for degree-scale CMB polarization}, volume={9153}, ISSN={0277-786X}, url={http://dx.doi.org/10.1117/12.2057224}, DOI={10.1117/12.2057224}, booktitle={Millimeter, Submillimeter, and Far-Infrared Detectors and Instrumentation for Astronomy VII}, publisher={SPIE}, author={Ahmed, Z. and Amiri, M. and Benton, S. J. and Bock, J. J. and Bowens-Rubin, R. and Buder, I. and Bullock, E. and Connors, J. and Filippini, J. P. and Grayson, J. A. and Halpern, M. and Hilton, G. C. and Hristov, V. V. and Hui, H. and Irwin, K. D. and Kang, J. and Karkare, K. S. and Karpel, E. and Kovac, J. M. and Kuo, C. L. and Netterfield, C. B. and Nguyen, H. T. and O\u00e2\u20ac\u2122Brient, R. and Ogburn, R. W. and Pryke, C. and Reintsema, C. D. and Richter, S. and Thompson, K. L. and Turner, A. D. and Vieregg, A. G. and Wu, W. L. K. and Yoon, K. W.}, editor={Holland, Wayne S. and Zmuidzinas, Jonas}, year={2014}, month=Aug, pages={91531N} }",
+  "bibtex": "@inproceedings{10.1117/12.2057224, title={BICEP3: a 95GHz refracting telescope for degree-scale CMB polarization}, volume={9153}, ISSN={0277-786X}, url={http://dx.doi.org/10.1117/12.2057224}, DOI={10.1117/12.2057224}, booktitle={Millimeter, Submillimeter, and Far-Infrared Detectors and Instrumentation for Astronomy VII}, publisher={SPIE}, author={Ahmed, Z. and Amiri, M. and Benton, S. J. and Bock, J. J. and Bowens-Rubin, R. and Buder, I. and Bullock, E. and Connors, J. and Filippini, J. P. and Grayson, J. A. and Halpern, M. and Hilton, G. C. and Hristov, V. V. and Hui, H. and Irwin, K. D. and Kang, J. and Karkare, K. S. and Karpel, E. and Kovac, J. M. and Kuo, C. L. and Netterfield, C. B. and Nguyen, H. T. and O\u2019Brient, R. and Ogburn, R. W. and Pryke, C. and Reintsema, C. D. and Richter, S. and Thompson, K. L. and Turner, A. D. and Vieregg, A. G. and Wu, W. L. K. and Yoon, K. W.}, editor={Holland, Wayne S. and Zmuidzinas, Jonas}, year={2014}, month=Aug, pages={91531N} }",
   "doi": "10.1117/12.2057224",
   "journal": "SPIE Proceedings",
   "key": "doi:10.1117/12.2057224",
@@ -13973,7 +13973,7 @@
    "Ledebuhr, Arno G.",
    "Pleasance, Lyn D."
   ],
-  "bibtex": "@inproceedings{10.1117/12.210943, title={UV/visible camera for the Clementine mission}, volume={2478}, ISSN={0277-786X}, url={http://dx.doi.org/10.1117/12.210943}, DOI={10.1117/12.210943}, booktitle={Space Telescopes and Instruments}, publisher={SPIE}, author={Kordas, Joseph F. and Lewis, Isabella T. and Priest, Robert E. and White III, W. Travis and Nielsen, Darron P. and Park, Hye-Sook and Wilson, Bruce A. and Shannon, Michael J. and Ledebuhr, Arno G. and Pleasance, Lyn D.}, editor={Bely, Pierre Y. and Breckinridge, James B.}, year={1995}, month=June, pages={175\u00e2\u20ac\u201c186} }",
+  "bibtex": "@inproceedings{10.1117/12.210943, title={UV/visible camera for the Clementine mission}, volume={2478}, ISSN={0277-786X}, url={http://dx.doi.org/10.1117/12.210943}, DOI={10.1117/12.210943}, booktitle={Space Telescopes and Instruments}, publisher={SPIE}, author={Kordas, Joseph F. and Lewis, Isabella T. and Priest, Robert E. and White III, W. Travis and Nielsen, Darron P. and Park, Hye-Sook and Wilson, Bruce A. and Shannon, Michael J. and Ledebuhr, Arno G. and Pleasance, Lyn D.}, editor={Bely, Pierre Y. and Breckinridge, James B.}, year={1995}, month=June, pages={175\u2013186} }",
   "doi": "10.1117/12.210943",
   "journal": "SPIE Proceedings",
   "key": "doi:10.1117/12.210943",
@@ -14065,7 +14065,7 @@
    "Placco, Vinicius",
    "Murowinski, Richard"
   ],
-  "bibtex": "@inproceedings{10.1117/12.2233883, title={On-sky commissioning of Hamamatsu CCDs in GMOS-S}, volume={9908}, ISSN={0277-786X}, url={http://dx.doi.org/10.1117/12.2233883}, DOI={10.1117/12.2233883}, booktitle={Ground-based and Airborne Instrumentation for Astronomy VI}, publisher={SPIE}, author={Gimeno, German and Roth, Katherine and Chiboucas, Kristin and Hibon, Pascale and Boucher, Luc and White, John and Rippa, Matthew and Labrie, Kathleen and Turner, James and Hanna, Kevin and Lazo, Manuel and P\u00c3\u00a9rez, Gabriel and Rogers, Rolando and Rojas, Roberto and Placco, Vinicius and Murowinski, Richard}, editor={Evans, Christopher J. and Simard, Luc and Takami, Hideki}, year={2016}, month=Aug, pages={99082S} }",
+  "bibtex": "@inproceedings{10.1117/12.2233883, title={On-sky commissioning of Hamamatsu CCDs in GMOS-S}, volume={9908}, ISSN={0277-786X}, url={http://dx.doi.org/10.1117/12.2233883}, DOI={10.1117/12.2233883}, booktitle={Ground-based and Airborne Instrumentation for Astronomy VI}, publisher={SPIE}, author={Gimeno, German and Roth, Katherine and Chiboucas, Kristin and Hibon, Pascale and Boucher, Luc and White, John and Rippa, Matthew and Labrie, Kathleen and Turner, James and Hanna, Kevin and Lazo, Manuel and P\u00e9rez, Gabriel and Rogers, Rolando and Rojas, Roberto and Placco, Vinicius and Murowinski, Richard}, editor={Evans, Christopher J. and Simard, Luc and Takami, Hideki}, year={2016}, month=Aug, pages={99082S} }",
   "doi": "10.1117/12.2233883",
   "journal": "SPIE Proceedings",
   "key": "doi:10.1117/12.2233883",
@@ -14206,7 +14206,7 @@
   "authors": [
    "Gillespie, Bruce"
   ],
-  "bibtex": "@inproceedings{10.1117/12.316525, title={Apache Point Observatory 3.5-m telescope: operational design and issues}, volume={3349}, ISSN={0277-786X}, url={http://dx.doi.org/10.1117/12.316525}, DOI={10.1117/12.316525}, booktitle={Observatory Operations to Optimize Scientific Return}, publisher={SPIE}, author={Gillespie, Bruce}, editor={Quinn, Peter J.}, year={1998}, month=July, pages={466\u00e2\u20ac\u201c477} }",
+  "bibtex": "@inproceedings{10.1117/12.316525, title={Apache Point Observatory 3.5-m telescope: operational design and issues}, volume={3349}, ISSN={0277-786X}, url={http://dx.doi.org/10.1117/12.316525}, DOI={10.1117/12.316525}, booktitle={Observatory Operations to Optimize Scientific Return}, publisher={SPIE}, author={Gillespie, Bruce}, editor={Quinn, Peter J.}, year={1998}, month=July, pages={466\u2013477} }",
   "doi": "10.1117/12.316525",
   "journal": "SPIE Proceedings",
   "key": "doi:10.1117/12.316525",
@@ -14280,7 +14280,7 @@
    "Kuijken, Konrad",
    "Valentijn, Edwin A."
   ],
-  "bibtex": "@inproceedings{10.1117/12.456694, title={OmegaCAM: the 16k \u00c3\u2014 16k Survey Camera for the VLT Survey Telescope}, volume={4836}, ISSN={0277-786X}, url={http://dx.doi.org/10.1117/12.456694}, DOI={10.1117/12.456694}, booktitle={Survey and Other Telescope Technologies and Discoveries}, publisher={SPIE}, author={Deul, Erik and Kuijken, Konrad and Valentijn, Edwin A.}, editor={Tyson, J. Anthony and Wolff, Sidney}, year={2002}, month=Dec, pages={189} }",
+  "bibtex": "@inproceedings{10.1117/12.456694, title={OmegaCAM: the 16k \u00d7 16k Survey Camera for the VLT Survey Telescope}, volume={4836}, ISSN={0277-786X}, url={http://dx.doi.org/10.1117/12.456694}, DOI={10.1117/12.456694}, booktitle={Survey and Other Telescope Technologies and Discoveries}, publisher={SPIE}, author={Deul, Erik and Kuijken, Konrad and Valentijn, Edwin A.}, editor={Tyson, J. Anthony and Wolff, Sidney}, year={2002}, month=Dec, pages={189} }",
   "doi": "10.1117/12.456694",
   "journal": "SPIE Proceedings",
   "key": "doi:10.1117/12.456694",
@@ -14786,7 +14786,7 @@
    "Li, Jun",
    "Bachmeier, A. Scott"
   ],
-  "bibtex": "@article{10.1175/bams-86-8-1079, title={INTRODUCING THE NEXT-GENERATION ADVANCED BASELINE IMAGER ON GOES-R}, volume={86}, ISSN={1520-0477}, url={http://dx.doi.org/10.1175/BAMS-86-8-1079}, DOI={10.1175/bams-86-8-1079}, number={8}, journal={Bulletin of the American Meteorological Society}, publisher={American Meteorological Society}, author={Schmit, Timothy J. and Gunshor, Mathew M. and Menzel, W. Paul and Gurka, James J. and Li, Jun and Bachmeier, A. Scott}, year={2005}, month=Aug, pages={1079\u00e2\u20ac\u201c1096} }",
+  "bibtex": "@article{10.1175/bams-86-8-1079, title={INTRODUCING THE NEXT-GENERATION ADVANCED BASELINE IMAGER ON GOES-R}, volume={86}, ISSN={1520-0477}, url={http://dx.doi.org/10.1175/bams-86-8-1079}, DOI={10.1175/bams-86-8-1079}, number={8}, journal={Bulletin of the American Meteorological Society}, publisher={American Meteorological Society}, author={Schmit, Timothy J. and Gunshor, Mathew M. and Menzel, W. Paul and Gurka, James J. and Li, Jun and Bachmeier, A. Scott}, year={2005}, month=Aug, pages={1079\u20131096} }",
   "doi": "10.1175/bams-86-8-1079",
   "journal": "Bull. Amer. Meteor. Soc.",
   "key": "doi:10.1175/BAMS-86-8-1079",
@@ -14809,7 +14809,7 @@
    "Goodman, Steven J.",
    "Lebair, William J."
   ],
-  "bibtex": "@article{10.1175/bams-d-15-00230.1, title={A Closer Look at the ABI on the GOES-R Series}, volume={98}, ISSN={1520-0477}, url={http://dx.doi.org/10.1175/BAMS-D-15-00230.1}, DOI={10.1175/bams-d-15-00230.1}, number={4}, journal={Bulletin of the American Meteorological Society}, publisher={American Meteorological Society}, author={Schmit, Timothy J. and Griffith, Paul and Gunshor, Mathew M. and Daniels, Jaime M. and Goodman, Steven J. and Lebair, William J.}, year={2017}, month=Apr, pages={681\u00e2\u20ac\u201c698} }",
+  "bibtex": "@article{10.1175/bams-d-15-00230.1, title={A Closer Look at the ABI on the GOES-R Series}, volume={98}, ISSN={1520-0477}, url={http://dx.doi.org/10.1175/bams-d-15-00230.1}, DOI={10.1175/bams-d-15-00230.1}, number={4}, journal={Bulletin of the American Meteorological Society}, publisher={American Meteorological Society}, author={Schmit, Timothy J. and Griffith, Paul and Gunshor, Mathew M. and Daniels, Jaime M. and Goodman, Steven J. and Lebair, William J.}, year={2017}, month=Apr, pages={681\u2013698} }",
   "doi": "10.1175/bams-d-15-00230.1",
   "journal": "Bulletin of the American Meteorological Society",
   "key": "doi:10.1175/BAMS-D-15-00230.1",
@@ -14965,7 +14965,7 @@
    "YOKOTA, Hironobu",
    "YOSHIDA, Ryo"
   ],
-  "bibtex": "@article{10.2151/jmsj.2016-009, title={An Introduction to Himawari-8/9\\&mdash; Japan\\&rsquo;s New-Generation Geostationary Meteorological Satellites}, volume={94}, ISSN={2186-9057}, url={http://dx.doi.org/10.2151/jmsj.2016-009}, DOI={10.2151/jmsj.2016-009}, number={2}, journal={Journal of the Meteorological Society of Japan. Ser. II}, publisher={Springer Science and Business Media LLC}, author={BESSHO, Kotaro and DATE, Kenji and HAYASHI, Masahiro and IKEDA, Akio and IMAI, Takahito and INOUE, Hidekazu and KUMAGAI, Yukihiro and MIYAKAWA, Takuya and MURATA, Hidehiko and OHNO, Tomoo and OKUYAMA, Arata and OYAMA, Ryo and SASAKI, Yukio and SHIMAZU, Yoshio and SHIMOJI, Kazuki and SUMIDA, Yasuhiko and SUZUKI, Masuo and TANIGUCHI, Hidetaka and TSUCHIYAMA, Hiroaki and UESAWA, Daisaku and YOKOTA, Hironobu and YOSHIDA, Ryo}, year={2016}, pages={151\u00e2\u20ac\u201c183} }",
+  "bibtex": "@article{10.2151/jmsj.2016-009, title={An Introduction to Himawari-8/9\\&mdash; Japan\\&rsquo;s New-Generation Geostationary Meteorological Satellites}, volume={94}, ISSN={2186-9057}, url={http://dx.doi.org/10.2151/jmsj.2016-009}, DOI={10.2151/jmsj.2016-009}, number={2}, journal={Journal of the Meteorological Society of Japan. Ser. II}, publisher={Springer Science and Business Media LLC}, author={BESSHO, Kotaro and DATE, Kenji and HAYASHI, Masahiro and IKEDA, Akio and IMAI, Takahito and INOUE, Hidekazu and KUMAGAI, Yukihiro and MIYAKAWA, Takuya and MURATA, Hidehiko and OHNO, Tomoo and OKUYAMA, Arata and OYAMA, Ryo and SASAKI, Yukio and SHIMAZU, Yoshio and SHIMOJI, Kazuki and SUMIDA, Yasuhiko and SUZUKI, Masuo and TANIGUCHI, Hidetaka and TSUCHIYAMA, Hiroaki and UESAWA, Daisaku and YOKOTA, Hironobu and YOSHIDA, Ryo}, year={2016}, pages={151\u2013183} }",
   "doi": "10.2151/jmsj.2016-009",
   "journal": "Journal of the Meteorological Society of Japan",
   "key": "doi:10.2151/jmsj.2016-009",
@@ -14989,7 +14989,7 @@
    "TABATA, Tasuku",
    "YOSHINO, Ryoko"
   ],
-  "bibtex": "@article{10.2151/jmsj.2018-033, title={Validation of Himawari-8/AHI Radiometric Calibration Based on Two Years of In-Orbit Data}, volume={96B}, ISSN={2186-9057}, url={http://dx.doi.org/10.2151/jmsj.2018-033}, DOI={10.2151/jmsj.2018-033}, number={0}, journal={Journal of the Meteorological Society of Japan. Ser. II}, publisher={Springer Science and Business Media LLC}, author={OKUYAMA, Arata and TAKAHASHI, Masaya and DATE, Kenji and HOSAKA, Keita and MURATA, Hidehiko and TABATA, Tasuku and YOSHINO, Ryoko}, year={2018}, pages={91\u00e2\u20ac\u201c109} }",
+  "bibtex": "@article{10.2151/jmsj.2018-033, title={Validation of Himawari-8/AHI Radiometric Calibration Based on Two Years of In-Orbit Data}, volume={96B}, ISSN={2186-9057}, url={http://dx.doi.org/10.2151/jmsj.2018-033}, DOI={10.2151/jmsj.2018-033}, number={0}, journal={Journal of the Meteorological Society of Japan. Ser. II}, publisher={Springer Science and Business Media LLC}, author={OKUYAMA, Arata and TAKAHASHI, Masaya and DATE, Kenji and HOSAKA, Keita and MURATA, Hidehiko and TABATA, Tasuku and YOSHINO, Ryoko}, year={2018}, pages={91\u2013109} }",
   "doi": "10.2151/jmsj.2018-033",
   "journal": "Journal of the Meteorological Society of Japan",
   "key": "doi:10.2151/jmsj.2018-033",
@@ -15688,7 +15688,7 @@
    "Ando, Hiroki",
    "Futaguchi, Masahiko"
   ],
-  "bibtex": "@article{10.5047/eps.2011.06.019, title={LIR: Longwave Infrared Camera onboard the Venus orbiter Akatsuki}, volume={63}, ISSN={1880-5981}, url={http://dx.doi.org/10.5047/eps.2011.06.019}, DOI={10.5047/eps.2011.06.019}, number={9}, journal={Earth, Planets and Space}, publisher={Springer Science and Business Media LLC}, author={Fukuhara, Tetsuya and Taguchi, Makoto and Imamura, Takeshi and Nakamura, Masato and Ueno, Munetaka and Suzuki, Makoto and Iwagami, Naomoto and Sato, Mitsuteru and Mitsuyama, Kazuaki and Hashimoto, George L. and Ohshima, Ryo and Kouyama, Toru and Ando, Hiroki and Futaguchi, Masahiko}, year={2011}, month=Sept, pages={1009\u00e2\u20ac\u201c1018} }",
+  "bibtex": "@article{10.5047/eps.2011.06.019, title={LIR: Longwave Infrared Camera onboard the Venus orbiter Akatsuki}, volume={63}, ISSN={1880-5981}, url={http://dx.doi.org/10.5047/eps.2011.06.019}, DOI={10.5047/eps.2011.06.019}, number={9}, journal={Earth, Planets and Space}, publisher={Springer Science and Business Media LLC}, author={Fukuhara, Tetsuya and Taguchi, Makoto and Imamura, Takeshi and Nakamura, Masato and Ueno, Munetaka and Suzuki, Makoto and Iwagami, Naomoto and Sato, Mitsuteru and Mitsuyama, Kazuaki and Hashimoto, George L. and Ohshima, Ryo and Kouyama, Toru and Ando, Hiroki and Futaguchi, Masahiko}, year={2011}, month=Sept, pages={1009\u20131018} }",
   "doi": "10.5047/eps.2011.06.019",
   "journal": "Earth Planet Sp",
   "key": "doi:10.5047/eps.2011.06.019",
@@ -15709,7 +15709,7 @@
    "Delis, P.",
    "Grochala, A."
   ],
-  "bibtex": "@article{10.5194/isprs-archives-xli-b7-647-2016, title={SOME ASPECTS OF SATELLITE IMAGERY INTEGRATION FROM EROS B AND LANDSAT 8}, volume={XLI-B7}, ISSN={2194-9034}, url={http://dx.doi.org/10.5194/isprs-archives-XLI-B7-647-2016}, DOI={10.5194/isprs-archives-xli-b7-647-2016}, journal={The International Archives of the Photogrammetry, Remote Sensing and Spatial Information Sciences}, publisher={Copernicus GmbH}, author={Fryskowska, A. and Wojtkowska, M. and Delis, P. and Grochala, A.}, year={2016}, month=June, pages={647\u00e2\u20ac\u201c652} }",
+  "bibtex": "@article{10.5194/isprs-archives-xli-b7-647-2016, title={SOME ASPECTS OF SATELLITE IMAGERY INTEGRATION FROM EROS B AND LANDSAT 8}, volume={XLI-B7}, ISSN={2194-9034}, url={http://dx.doi.org/10.5194/isprs-archives-xli-b7-647-2016}, DOI={10.5194/isprs-archives-xli-b7-647-2016}, journal={The International Archives of the Photogrammetry, Remote Sensing and Spatial Information Sciences}, publisher={Copernicus GmbH}, author={Fryskowska, A. and Wojtkowska, M. and Delis, P. and Grochala, A.}, year={2016}, month=June, pages={647\u2013652} }",
   "doi": "10.5194/isprs-archives-xli-b7-647-2016",
   "journal": "Int. Arch. Photogramm. Remote Sens. Spatial Inf. Sci.",
   "key": "doi:10.5194/isprs-archives-XLI-B7-647-2016",

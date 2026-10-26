@@ -213,7 +213,8 @@ class _Lookup:
         }
         bib = self.get(f"https://doi.org/{doi}", headers={"Accept": "application/x-bibtex"})
         if bib is not None:
-            entry["bibtex"] = bib.text.strip()
+            # doi.org sends BibTeX without a charset; it is UTF-8 (requests would guess otherwise).
+            entry["bibtex"] = bib.content.decode("utf-8", errors="replace").strip()
         return entry
 
     def arxiv(self, arxiv_id):
