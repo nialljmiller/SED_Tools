@@ -1,0 +1,47 @@
+{
+  "description": "The Visible Infrared Imaging Radiometer Suite (VIIRS) on NOAA-20 (JPSS-1, J1): 22 bands (M1-M16 with M16A/M16B, I1-I5, Day/Night Band low- and mid-gain stages) from 0.41 to 12.5 um. The curves are the VIIRS Data Analysis Working Group (DAWG) at-launch band-averaged relative spectral responses, V2.1 (Nov 2016; README dated 2017-10-03), the 'Final prelaunch version' published by NOAA NCC, used to populate the VIIRS SDR look-up tables.",
+  "facility_description": "The Joint Polar Satellite System (JPSS) is NOAA's series of polar-orbiting weather satellites (Suomi NPP, NOAA-20/J1, NOAA-21/J2, ...); VIIRS is its visible/infrared imager.",
+  "links": [
+    {
+      "url": "https://ncc.nesdis.noaa.gov/NOAA-20/J1VIIRS_NOAA20_SpectralResponseFunctions.php",
+      "label": "NOAA NCC VIIRS-J1 VIIRS relative spectral response functions",
+      "source": "NOAA NESDIS NCC"
+    },
+    {
+      "url": "https://ncc.nesdis.noaa.gov/NOAA-20/docs/J1_VIIRS_RSR_DAWG_At-Launch_Public_Release_V2.1_Nov2016.zip",
+      "label": "DAWG at-launch RSR release (zip with README)",
+      "source": "VIIRS DAWG / NOAA NCC"
+    },
+    {
+      "url": "https://ncc.nesdis.noaa.gov/NOAA-20/docs/NOAA-20-VIIRS-on-OrbitPerformanceTable.pdf",
+      "label": "NOAA-20 VIIRS on-orbit performance table (band spectral ranges)",
+      "source": "NOAA NESDIS NCC"
+    },
+    {
+      "url": "https://ncc.nesdis.noaa.gov/VIIRS/VIIRSSpectralResponseFunctions.php",
+      "label": "NOAA NCC VIIRS RSR page (Suomi NPP)",
+      "source": "NOAA NESDIS NCC"
+    }
+  ],
+  "references": [
+    "doi:10.1109/TGRS.2013.2247768",
+    "doi:10.3390/rs8010041"
+  ],
+  "acknowledgements": [
+    {
+      "for": "NOAA NESDIS STAR (host of the NCC VIIRS RSR pages)",
+      "text": "as long as credit is given to the NOAA / NESDIS Center for Satellite Applications and Research",
+      "url": "https://www.star.nesdis.noaa.gov/star/productdisclaimer.php",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ],
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"Users are free to use the images or information hosted on this site as they wish, as long as credit is given to the NOAA / NESDIS Center for Satellite Applications and Research.\" (STAR disclaimer, linked as 'Link & product disclaimers' from the footer of the NCC page that hosts the RSR zip; 'Website owner: STAR')",
+    "url": "https://www.star.nesdis.noaa.gov/star/productdisclaimer.php"
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "V2.1 changes only M9 ('to correct and update the spectral position of the M9 RSR', ~0.7 nm shorter in-band); M8, M10-M12, M14-M16(A,B), I3-I5 and DNBMGS are the V1 RSR 'repeated in V2' (README). Calibration reference: Oudrari et al. 2016, cited by NOAA's NOAA-20 performance table. Curves are the DAWG band-average files; README quotes: 'The RSR are stitched IB+OOB RSR with all RSR normalized at the peak of 1.0' and low-quality response 'is set to 1E-10 in the band average RSR'. Some V1-derived file headers label the wavelength column 'wvl_um' although the values are nm (verified: each band's peak lies inside its NOAA specification spectral range). 'RSR are provided for M16A, M16B and an average of M16A and M16B referred to as M16 ... VIIRS on-orbit M16 SDR radiances consist of a time delay integration of M16A and M16B observations' (README). DNBLGS/DNBMGS are the Day/Night Band low- and mid-gain stages. Photon/energy weighting is not stated by the owner; the staged DetectorType=energy is tagged 'assumed'. Pivot check: NOAA publishes spectral ranges, not central wavelengths (NOAA-20 VIIRS On-orbit Performance table, https://ncc.nesdis.noaa.gov/NOAA-20/docs/NOAA-20-VIIRS-on-OrbitPerformanceTable.pdf); every M/I band pivot lies inside its range. Facility/instrument IDs follow SVO's JPSS/VIIRS-J1 and JPSS/VIIRS-J2 (no SVO record was available locally to confirm the mapping; the J1/J2 suffixes are NOAA's own flight designations). Instrument paper cited is the Suomi NPP VIIRS on-orbit performance paper (same instrument design)."
+}

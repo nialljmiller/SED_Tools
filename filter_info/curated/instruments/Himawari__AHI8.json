@@ -1,0 +1,42 @@
+{
+  "description": "The Advanced Himawari Imager (AHI) flight model AHI-08 on Himawari-8, a 16-band imager from the visible and shortwave infrared to the thermal infrared (0.47-13.3 um) for JMA's geostationary meteorological mission. The curves are the band relative spectral responsivities released by JMA (September 2013, provided by ITT Exelis); each is the whole-instrument band response, peak 1.",
+  "facility_description": "Himawari-8 and Himawari-9 are Japan Meteorological Agency geostationary meteorological satellites carrying the Advanced Himawari Imager, which succeeded the imagers of the MTSAT series.",
+  "links": [
+    {
+      "url": "https://www.data.jma.go.jp/mscweb/en/himawari89/space_segment/spsg_ahi.html",
+      "label": "JMA MSC: Himawari-8/9 Imager (AHI) - imaging bands, central wavelengths and SRFs",
+      "source": "JMA Meteorological Satellite Center"
+    },
+    {
+      "url": "https://www.data.jma.go.jp/mscweb/en/himawari89/space_segment/srf_201309/AHI-08_SpectralResponsivity.zip",
+      "label": "AHI-08 spectral responsivity workbook (update September 2013; provided by ITT Exelis)",
+      "source": "JMA Meteorological Satellite Center"
+    },
+    {
+      "url": "https://www.data.jma.go.jp/mscweb/en/himawari89/space_segment/fig/AHI8_performance_test_en.pdf",
+      "label": "AHI-8 performance test results (centre wavelength, FWHM bandwidth, SNR, out-of-band response)",
+      "source": "JMA Meteorological Satellite Center"
+    }
+  ],
+  "references": [
+    "doi:10.2151/jmsj.2016-009",
+    "doi:10.2151/jmsj.2018-033"
+  ],
+  "acknowledgements": [
+    {
+      "for": "Japan Meteorological Agency (owner of the MSC AHI SRF page and workbooks)",
+      "text": "Source: Japan Meteorological Agency website (URL of relevant page)",
+      "url": "https://www.jma.go.jp/jma/en/copyright.html",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ],
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"Information made available on the Japan Meteorological Agency website (hereinafter referred to as “Content”) may be used in accordance with the terms and conditions of use stipulated in Public Data License (Version 1.0), unless otherwise indicated by a specific rights notice.\" ... \"The user must cite the source when using the Content. Sources should be cited in the following manner: (Examples of source citation) Source: Japan Meteorological Agency website (URL of relevant page)\" ... \"The Terms of Use are compatible with the Creative Commons Attribution License 4.0 (hereinafter referred to as the CC License). This means that Content based on the Terms of Use may be used under the CC License in lieu of the Terms of Use.\" (JMA Website Terms of Use)",
+    "url": "https://www.jma.go.jp/jma/en/copyright.html"
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "Description and facility text paraphrase https://www.data.jma.go.jp/mscweb/en/himawari89/space_segment/spsg_ahi.html: 'Himawari-8 and Himawari-9 have a new payload called the Advanced Himawari Imager (AHI) for dedicated meteorological mission ... The functions and specifications are notably improved from those of the imagers on board MTSATs'. Satellite mapping from the workbook header 'Flight Model: AHI-08', the workbook Title note 'Advance Himawari Imager (AHI-8) on Himawari-8', and SVO's archived Himawari/AHI8 records (Facility 'Himawari-8'). The page credits the SRF files as 'provided by ITT Exelis'; JMA's terms say third-party rights may apply where indicated, and no restriction is stated for these files. The workbook's Title sheet keeps an older note calling the SRFs 'estimated' and 'cited from the document AHI-12-177' with 'tentative' central wavelengths, followed by a newer note that 'The center wavelengths have been updated to match these curves.' Photon/energy weighting is not stated by the owner; the staged DetectorType=energy is tagged 'assumed' (SVO uses DetectorType 1, photon counter, for these IDs; pivots differ by <=0.16 %). SVO's archived Himawari/AHI8.Band01 VOTable actually holds the 0.51 um curve (4781-5351 A, pivot 5099 A, same as its Band02); the staged Band01 is JMA's 0.47 um band. doi:10.2151/jmsj.2018-033 validates the in-orbit calibration of Himawari-8/AHI."
+}
