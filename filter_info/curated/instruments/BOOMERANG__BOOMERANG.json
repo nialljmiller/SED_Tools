@@ -4,9 +4,9 @@
   "notes": "No requested acknowledgement was found. The only reuse terms opened for the article are the arXiv non-exclusive licence, which does not grant further reuse and says to contact the author. That is not a grant to redistribute a separate numeric curve. No magnitude system was recorded.",
   "licence": {
     "redistribution": "unknown",
-    "terms": "\"I grant arXiv.org a perpetual, non-exclusive license to distribute this article.\"",
-    "url": "https://arxiv.org/licenses/nonexclusive-distrib/1.0/license.html",
-    "scope": "Article licence; it does not address the published numbers."
+    "terms": "\"arXiv.org has a perpetual, non-exclusive license to distribute this article.\"",
+    "url": "http://arxiv.org/licenses/assumed-1991-2003/",
+    "scope": "Article licence of arXiv:astro-ph/0206254, as linked from its abstract page (checked 2026-10-26): submitted before January 2004, so arXiv assumes a non-exclusive distribution licence equivalent to nonexclusive-distrib 1.0. It does not address the published numbers."
   },
   "references": [
     "bibcode:2003ApJS..148..527C",

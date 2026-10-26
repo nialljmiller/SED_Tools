@@ -4,7 +4,8 @@
   "licence": {
     "redistribution": "public",
     "terms": "\"All SDSS data released in our public data releases are considered in the public domain.\"",
-    "url": "https://www.sdss.org/collaboration/"
+    "url": "https://www.sdss.org/collaboration/",
+    "scope": "SDSS public data releases. classic.sdss.org (https://classic.sdss.org/collaboration/credits.php, 'Acknowledging SDSS: Commercial Use') adds for the SDSS-I/II archive: \"Data from the SDSS public archive may not be used for any commercial publication or other commercial purpose except with explicit approval by the Astrophysical Research Consortium (ARC).\""
   },
   "links": [
     {

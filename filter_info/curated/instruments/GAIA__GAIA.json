@@ -45,7 +45,7 @@
     },
     {
       "for": "Gaia mission data credit line",
-      "text": "Gaia all Credit: ESA, Gaia DPAC",
+      "text": "Credit: ESA, Gaia DPAC",
       "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
       "references": [],
       "applies_to": "all bands"

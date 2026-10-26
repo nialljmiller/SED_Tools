@@ -1668,6 +1668,25 @@
   "volume": "63",
   "year": 1958
  },
+ "bibcode:1961ApJ...133..869A": {
+  "authors": [
+   "Arp, Halton"
+  ],
+  "bibcode": "1961ApJ...133..869A",
+  "bibtex": "@article{1961ApJ...133..869A, title={Transformation of Photographic Magnitudes.}, volume={133}, ISSN={1538-4357}, url={http://dx.doi.org/10.1086/147089}, DOI={10.1086/147089}, journal={The Astrophysical Journal}, publisher={American Astronomical Society}, author={Arp, Halton}, year={1961}, month=May, pages={869} }",
+  "doi": "10.1086/147089",
+  "journal": "ApJ",
+  "key": "bibcode:1961ApJ...133..869A",
+  "page": "869",
+  "resolved": "2026-10-26",
+  "resolved_by": "doi.org",
+  "short": "Arp 1961",
+  "title": "Transformation of Photographic Magnitudes.",
+  "type": "article",
+  "url": "https://ui.adsabs.harvard.edu/abs/1961ApJ...133..869A",
+  "volume": "133",
+  "year": 1961
+ },
  "bibcode:1965AJ.....70...19E": {
   "authors": [
    "Eggen, O. J."
@@ -3443,6 +3462,28 @@
   "volume": "108",
   "year": 2003
  },
+ "bibcode:2003JGRE..108.5115S": {
+  "authors": [
+   "Smith, Michael D.",
+   "Bandfield, Joshua L.",
+   "Christensen, Philip R.",
+   "Richardson, Mark I."
+  ],
+  "bibcode": "2003JGRE..108.5115S",
+  "bibtex": "@article{2003JGRE..108.5115S, title={Thermal Emission Imaging System (THEMIS) infrared observations of atmospheric dust and water ice cloud optical depth}, volume={108}, ISSN={0148-0227}, url={http://dx.doi.org/10.1029/2003je002115}, DOI={10.1029/2003je002115}, number={E11}, journal={Journal of Geophysical Research: Planets}, publisher={American Geophysical Union (AGU)}, author={Smith, Michael D. and Bandfield, Joshua L. and Christensen, Philip R. and Richardson, Mark I.}, year={2003}, month=Nov }",
+  "doi": "10.1029/2003je002115",
+  "journal": "J. Geophys. Res.",
+  "key": "bibcode:2003JGRE..108.5115S",
+  "page": "2003JE002115",
+  "resolved": "2026-10-26",
+  "resolved_by": "doi.org",
+  "short": "Smith et al. 2003",
+  "title": "Thermal Emission Imaging System (THEMIS) infrared observations of atmospheric dust and water ice cloud optical depth",
+  "type": "article",
+  "url": "https://ui.adsabs.harvard.edu/abs/2003JGRE..108.5115S",
+  "volume": "108",
+  "year": 2003
+ },
  "bibcode:2003JGRE..108.8063B": {
   "authors": [
    "Bell, J. F.",
@@ -4583,6 +4624,38 @@
   "volume": "173",
   "year": 2007
  },
+ "bibcode:2007JGRE..112.5S04M": {
+  "authors": [
+   "Malin, Michael C.",
+   "Bell, James F.",
+   "Cantor, Bruce A.",
+   "Caplinger, Michael A.",
+   "Calvin, Wendy M.",
+   "Clancy, R. Todd",
+   "Edgett, Kenneth S.",
+   "Edwards, Lawrence",
+   "Haberle, Robert M.",
+   "James, Philip B.",
+   "Lee, Steven W.",
+   "Ravine, Michael A.",
+   "Thomas, Peter C.",
+   "Wolff, Michael J."
+  ],
+  "bibcode": "2007JGRE..112.5S04M",
+  "bibtex": "@article{2007JGRE..112.5S04M, title={Context Camera Investigation on board the Mars Reconnaissance Orbiter}, volume={112}, ISSN={0148-0227}, url={http://dx.doi.org/10.1029/2006je002808}, DOI={10.1029/2006je002808}, number={E5}, journal={Journal of Geophysical Research: Planets}, publisher={American Geophysical Union (AGU)}, author={Malin, Michael C. and Bell, James F. and Cantor, Bruce A. and Caplinger, Michael A. and Calvin, Wendy M. and Clancy, R. Todd and Edgett, Kenneth S. and Edwards, Lawrence and Haberle, Robert M. and James, Philip B. and Lee, Steven W. and Ravine, Michael A. and Thomas, Peter C. and Wolff, Michael J.}, year={2007}, month=May }",
+  "doi": "10.1029/2006je002808",
+  "journal": "J. Geophys. Res.",
+  "key": "bibcode:2007JGRE..112.5S04M",
+  "page": "2006JE002808",
+  "resolved": "2026-10-26",
+  "resolved_by": "doi.org",
+  "short": "Malin et al. 2007",
+  "title": "Context Camera Investigation on board the Mars Reconnaissance Orbiter",
+  "type": "article",
+  "url": "https://ui.adsabs.harvard.edu/abs/2007JGRE..112.5S04M",
+  "volume": "112",
+  "year": 2007
+ },
  "bibcode:2007MNRAS.379.1599L": {
   "authors": [
    "Lawrence, A.",
@@ -4925,6 +4998,17 @@
   "type": "article",
   "url": "https://ui.adsabs.harvard.edu/abs/2007PASJ...59S.401O",
   "volume": "59",
+  "year": 2007
+ },
+ "bibcode:2007PhDT.........1M": {
+  "bibcode": "2007PhDT.........1M",
+  "journal": "PhDT",
+  "key": "bibcode:2007PhDT.........1M",
+  "publisher_url": "http://proquest.umi.com/pqdweb?did=1288668231&Fmt=6&clientId=11201&RQT=309&VName=PQD",
+  "resolved": "2026-10-26",
+  "short": "2007PhDT.........1M",
+  "type": "article",
+  "url": "https://ui.adsabs.harvard.edu/abs/2007PhDT.........1M",
   "year": 2007
  },
  "bibcode:2008AJ....135.2245R": {
@@ -6078,6 +6162,40 @@
   "type": "article",
   "url": "https://ui.adsabs.harvard.edu/abs/2010ApJ...713L..79K",
   "volume": "713",
+  "year": 2010
+ },
+ "bibcode:2010Icar..205...38D": {
+  "authors": [
+   "Delamere, W. Alan",
+   "Tornabene, Livio L.",
+   "McEwen, Alfred S.",
+   "Becker, Kris",
+   "Bergstrom, James W.",
+   "Bridges, Nathan T.",
+   "Eliason, Eric M.",
+   "Gallagher, Dennis",
+   "Herkenhoff, Kenneth E.",
+   "Keszthelyi, Laszlo",
+   "Mattson, Sarah",
+   "McArthur, Guy K.",
+   "Mellon, Michael T.",
+   "Milazzo, Moses",
+   "Russell, Patrick S.",
+   "Thomas, Nicolas"
+  ],
+  "bibcode": "2010Icar..205...38D",
+  "bibtex": "@article{2010Icar..205...38D, title={Color imaging of Mars by the High Resolution Imaging Science Experiment (HiRISE)}, volume={205}, ISSN={0019-1035}, url={http://dx.doi.org/10.1016/j.icarus.2009.03.012}, DOI={10.1016/j.icarus.2009.03.012}, number={1}, journal={Icarus}, publisher={Elsevier BV}, author={Delamere, W. Alan and Tornabene, Livio L. and McEwen, Alfred S. and Becker, Kris and Bergstrom, James W. and Bridges, Nathan T. and Eliason, Eric M. and Gallagher, Dennis and Herkenhoff, Kenneth E. and Keszthelyi, Laszlo and Mattson, Sarah and McArthur, Guy K. and Mellon, Michael T. and Milazzo, Moses and Russell, Patrick S. and Thomas, Nicolas}, year={2010}, month=Jan, pages={38\u201352} }",
+  "doi": "10.1016/j.icarus.2009.03.012",
+  "journal": "Icarus",
+  "key": "bibcode:2010Icar..205...38D",
+  "page": "38-52",
+  "resolved": "2026-10-26",
+  "resolved_by": "doi.org",
+  "short": "Delamere et al. 2010",
+  "title": "Color imaging of Mars by the High Resolution Imaging Science Experiment (HiRISE)",
+  "type": "article",
+  "url": "https://ui.adsabs.harvard.edu/abs/2010Icar..205...38D",
+  "volume": "205",
   "year": 2010
  },
  "bibcode:2010RAA....10..279Z": {
@@ -9300,6 +9418,42 @@
   "volume": "325",
   "year": 2019
  },
+ "bibcode:2019JCAP...01..039P": {
+  "authors": [
+   "Paiella, A.",
+   "Coppolecchia, A.",
+   "Lamagna, L.",
+   "Ade, P.A.R.",
+   "Battistelli, E.S.",
+   "Castellano, M. G.",
+   "Colantoni, I.",
+   "Columbro, F.",
+   "D'Alessandro, G.",
+   "de Bernardis, P.",
+   "Gordon, S.",
+   "Masi, S.",
+   "Mauskopf, P.",
+   "Pettinari, G.",
+   "Piacentini, F.",
+   "Pisano, G.",
+   "Presta, G.",
+   "Tucker, C."
+  ],
+  "bibcode": "2019JCAP...01..039P",
+  "bibtex": "@article{2019JCAP...01..039P, title={Kinetic inductance detectors for the OLIMPO experiment: design and pre-flight characterization}, volume={2019}, ISSN={1475-7516}, url={http://dx.doi.org/10.1088/1475-7516/2019/01/039}, DOI={10.1088/1475-7516/2019/01/039}, number={01}, journal={Journal of Cosmology and Astroparticle Physics}, publisher={IOP Publishing}, author={Paiella, A. and Coppolecchia, A. and Lamagna, L. and Ade, P.A.R. and Battistelli, E.S. and Castellano, M. G. and Colantoni, I. and Columbro, F. and D\u2019Alessandro, G. and de Bernardis, P. and Gordon, S. and Masi, S. and Mauskopf, P. and Pettinari, G. and Piacentini, F. and Pisano, G. and Presta, G. and Tucker, C.}, year={2019}, month=Jan, pages={039\u2013039} }",
+  "doi": "10.1088/1475-7516/2019/01/039",
+  "journal": "J. Cosmol. Astropart. Phys.",
+  "key": "bibcode:2019JCAP...01..039P",
+  "page": "039-039",
+  "resolved": "2026-10-26",
+  "resolved_by": "doi.org",
+  "short": "Paiella et al. 2019",
+  "title": "Kinetic inductance detectors for the OLIMPO experiment: design and pre-flight characterization",
+  "type": "article",
+  "url": "https://ui.adsabs.harvard.edu/abs/2019JCAP...01..039P",
+  "volume": "2019",
+  "year": 2019
+ },
  "bibcode:2019MNRAS.489..241M": {
   "authors": [
    "Mendes\u00a0de\u00a0Oliveira, C",
@@ -10496,6 +10650,54 @@
   "type": "article",
   "url": "https://ui.adsabs.harvard.edu/abs/2022MNRAS.511.5158S",
   "volume": "511",
+  "year": 2022
+ },
+ "bibcode:2022MNRAS.tmp..670C": {
+  "authors": [
+   "Cordwell, A J",
+   "Rattenbury, N J",
+   "Bannister, M T",
+   "Cowan, P",
+   "Abe, Fumio",
+   "Barry, Richard",
+   "Bennett, David P",
+   "Bhattacharya, Aparna",
+   "Bond, Ian A",
+   "Fujii, Hirosane",
+   "Fukui, Akihiko",
+   "Itow, Yoshitaka",
+   "Silva, Stela Ishitani",
+   "Hirao, Yuki",
+   "Kirikawa, Rintaro",
+   "Kondo, Iona",
+   "Koshimoto, Naoki",
+   "Matsubara, Yutaka",
+   "Matsumoto, Sho",
+   "Muraki, Yasushi",
+   "Miyazaki, Shota",
+   "Okamura, Arisa",
+   "Ranc, Cl\u00e9ment",
+   "Satoh, Yuki",
+   "Sumi, Takahiro",
+   "Suzuki, Daisuke",
+   "Tristram, Paul J",
+   "Toda, Taiga",
+   "Yama, Hibiki",
+   "Yonehara, Atsunori"
+  ],
+  "bibcode": "2022MNRAS.tmp..670C",
+  "bibtex": "@article{2022MNRAS.tmp..670C, title={Asteroid Lightcurves from the MOA-II Survey: a pilot study}, volume={514}, ISSN={1365-2966}, url={http://dx.doi.org/10.1093/mnras/stac674}, DOI={10.1093/mnras/stac674}, number={2}, journal={Monthly Notices of the Royal Astronomical Society}, publisher={Oxford University Press (OUP)}, author={Cordwell, A J and Rattenbury, N J and Bannister, M T and Cowan, P and Abe, Fumio and Barry, Richard and Bennett, David P and Bhattacharya, Aparna and Bond, Ian A and Fujii, Hirosane and Fukui, Akihiko and Itow, Yoshitaka and Silva, Stela Ishitani and Hirao, Yuki and Kirikawa, Rintaro and Kondo, Iona and Koshimoto, Naoki and Matsubara, Yutaka and Matsumoto, Sho and Muraki, Yasushi and Miyazaki, Shota and Okamura, Arisa and Ranc, Cl\u00e9ment and Satoh, Yuki and Sumi, Takahiro and Suzuki, Daisuke and Tristram, Paul J and Toda, Taiga and Yama, Hibiki and Yonehara, Atsunori}, year={2022}, month=Mar, pages={3098\u20133112} }",
+  "doi": "10.1093/mnras/stac674",
+  "journal": "Monthly Notices of the Royal Astronomical Society",
+  "key": "bibcode:2022MNRAS.tmp..670C",
+  "page": "3098-3112",
+  "resolved": "2026-10-26",
+  "resolved_by": "doi.org",
+  "short": "Cordwell et al. 2022",
+  "title": "Asteroid Lightcurves from the MOA-II Survey: a pilot study",
+  "type": "article",
+  "url": "https://ui.adsabs.harvard.edu/abs/2022MNRAS.tmp..670C",
+  "volume": "514",
   "year": 2022
  },
  "bibcode:2022PASP..134b5002W": {
