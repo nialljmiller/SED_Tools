@@ -1,0 +1,22 @@
+{
+  "description": "Wide Field Imager on the MPG/ESO 2.2 m: filter-only transmission of the permanently mounted filters, measured by the La Silla opticians, named by ESO filter number.",
+  "facility_description": "ESO La Silla Observatory, Chile.",
+  "links": [
+    {
+      "url": "https://www.eso.org/sci/facilities/lasilla/instruments/wfi/inst/filters.html",
+      "label": "WFI filter characteristics",
+      "source": "ESO"
+    }
+  ],
+  "references": [],
+  "acknowledgements": [],
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"© ESO La Silla Instrument Team\" (page footer of https://www.eso.org/sci/facilities/lasilla/instruments/wfi/inst/filters.html; no data licence found on the page)",
+    "url": "https://www.eso.org/sci/facilities/lasilla/instruments/wfi/inst/filters.html",
+    "scope": "Site-wide page footer, not a data licence. Hosted under Nill's 2026-10-26 'host everything' decision."
+  },
+  "notes": "WFI page: 'The transmission data and characteristics given in the below table for the WFI filters were measured by the opticians at La Silla.' Its TEXT links (http://www.ls.eso.org/...) answer over https. Red leaks kept (page column 'Leak'). SVO's WFI IDs without '_filter' are compositions and are not built.",
+  "bands": {},
+  "evidence": []
+}

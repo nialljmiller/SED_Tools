@@ -1,0 +1,27 @@
+{
+  "description": "EFOSC2 (ESO Faint Object Spectrograph and Camera): filter-only lab transmission of the basic set, by ESO filter number, from the ESO filter database (ESO-MIDAS XFilter).",
+  "facility_description": "ESO La Silla Observatory, Chile.",
+  "links": [
+    {
+      "url": "https://www.eso.org/sci/facilities/lasilla/instruments/efosc/inst/Efosc2Filters.html",
+      "label": "EFOSC2 imaging filters",
+      "source": "ESO"
+    },
+    {
+      "url": "https://ftp.eso.org/pub/midaspub/25MAY/sources/calib_src.tar.gz",
+      "label": "ESO-MIDAS calibration sources (ESO filter database)",
+      "source": "ESO"
+    }
+  ],
+  "references": [],
+  "acknowledgements": [],
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"ESO-MIDAS is available under the GNU General Public License (GPL), and can be implemented on UNIX/Linux and Mac OSX systems.\" (https://www.eso.org/sci/software/esomidas.html; the curves are the XFilter database distributed in ESO-MIDAS's calib_src.tar.gz, which carries no separate licence file)",
+    "url": "https://www.eso.org/sci/software/esomidas.html",
+    "scope": "Statement about the ESO-MIDAS system on ESO's MIDAS page; applied here to the filter tables shipped in the MIDAS calibration tarball. Hosted under Nill's 2026-10-26 'host everything' decision."
+  },
+  "notes": "EFOSC2 page: 'The entire filter set for La Silla may be obtained by invoking in ESO-MIDAS >create/gui filters'; its basic-set table gives the ESO numbers. SVO's EFOSC curves (not marked filter-only) differ by 0.2-1.7 % in pivot; these are the filter-only curves.",
+  "bands": {},
+  "evidence": []
+}

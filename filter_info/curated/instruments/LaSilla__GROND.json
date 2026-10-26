@@ -1,0 +1,29 @@
+{
+  "description": "GROND, 7-channel simultaneous imager (g'r'i'z'JHK) of MPE on the MPG 2.2 m at La Silla: filter curves published by the instrument PI.",
+  "facility_description": "ESO La Silla Observatory, Chile.",
+  "links": [
+    {
+      "url": "https://www.mpe.mpg.de/~jcg/GROND/",
+      "label": "GROND home page (GROND filter curves (ASCII))",
+      "source": "MPE"
+    },
+    {
+      "url": "https://www.mpe.mpg.de/~jcg/GROND/GROND_filtercurves.txt",
+      "label": "GROND_filtercurves.txt",
+      "source": "MPE"
+    }
+  ],
+  "references": [
+    "doi:10.1086/587032"
+  ],
+  "acknowledgements": [],
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "No licence or terms statement for the filter curves on https://www.mpe.mpg.de/~jcg/GROND/. The page says \"GROND data are not publicly available - please contact the PI (jcg@mpe.mpg.de).\" (about observational data; the filter-curve file is linked publicly under 'GROND Documentation').",
+    "url": "https://www.mpe.mpg.de/~jcg/GROND/",
+    "scope": "No data licence found. Hosted under Nill's 2026-10-26 'host everything' decision."
+  },
+  "notes": "GROND home page: 'GROND has been built by the high-energy group of MPE in collaboration with the LSW Tautenburg and ESO. GROND is operated as a PI-instrument at the MPI/ESO 2.2m telescope on La Silla (Chile).' The curve file's first column is labelled 'A' but is in nm.",
+  "bands": {},
+  "evidence": []
+}

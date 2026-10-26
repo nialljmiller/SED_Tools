@@ -1,0 +1,22 @@
+{
+  "description": "DFOSC on the Danish 1.54 m telescope: filter-only lab transmission of its ESO-numbered filters from the ESO filter database (ESO-MIDAS XFilter).",
+  "facility_description": "ESO La Silla Observatory, Chile.",
+  "links": [
+    {
+      "url": "https://ftp.eso.org/pub/midaspub/25MAY/sources/calib_src.tar.gz",
+      "label": "ESO-MIDAS calibration sources (ESO filter database)",
+      "source": "ESO"
+    }
+  ],
+  "references": [],
+  "acknowledgements": [],
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"ESO-MIDAS is available under the GNU General Public License (GPL), and can be implemented on UNIX/Linux and Mac OSX systems.\" (https://www.eso.org/sci/software/esomidas.html; the curves are the XFilter database distributed in ESO-MIDAS's calib_src.tar.gz, which carries no separate licence file)",
+    "url": "https://www.eso.org/sci/software/esomidas.html",
+    "scope": "Statement about the ESO-MIDAS system on ESO's MIDAS page; applied here to the filter tables shipped in the MIDAS calibration tarball. Hosted under Nill's 2026-10-26 'host everything' decision."
+  },
+  "notes": "Only SVO's '_filter' DFOSC IDs are built (ESO numbers from SVO's descriptions; pivots agree within 0.12 % on SVO's window). ESO #799 and #835-840 are not in the MIDAS database.",
+  "bands": {},
+  "evidence": []
+}

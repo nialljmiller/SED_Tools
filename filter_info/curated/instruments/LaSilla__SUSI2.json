@@ -1,0 +1,24 @@
+{
+  "description": "SUSI2 (SUperb Seeing Imager 2) on the NTT: filter-only transmission of its 18 ESO-numbered filters.",
+  "facility_description": "ESO La Silla Observatory, Chile.",
+  "links": [
+    {
+      "url": "https://www.ls.eso.org/sci/facilities/lasilla/instruments/susi/docs/SUSIfilters.html",
+      "label": "SUSI2 filters",
+      "source": "ESO"
+    }
+  ],
+  "references": [
+    "bibcode:1998SPIE.3355..507D"
+  ],
+  "acknowledgements": [],
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "No licence, copyright or terms statement on https://www.ls.eso.org/sci/facilities/lasilla/instruments/susi/docs/SUSIfilters.html or in the curve files.",
+    "url": "https://www.ls.eso.org/sci/facilities/lasilla/instruments/susi/docs/SUSIfilters.html",
+    "scope": "Nothing found. Hosted under Nill's 2026-10-26 'host everything' decision."
+  },
+  "notes": "The reference is the SUSI2 commissioning paper linked from the SUSI2 home page (esoads bibcode 1998SPIE.3355..507D). SVO's broad-band SUSI2 curves are not filter-only (0.2-1.1 % pivot difference); narrow-band ones match.",
+  "bands": {},
+  "evidence": []
+}

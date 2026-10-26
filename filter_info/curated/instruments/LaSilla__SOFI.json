@@ -1,0 +1,27 @@
+{
+  "description": "SOFI (Son OF ISAAC) near-IR imager on the NTT: filter transmission curves of its broad- and narrow-band filters.",
+  "facility_description": "ESO La Silla Observatory, Chile.",
+  "links": [
+    {
+      "url": "https://www.eso.org/sci/facilities/lasilla/instruments/sofi/inst/Imaging.html",
+      "label": "SOFI imaging: filters and objectives",
+      "source": "ESO"
+    },
+    {
+      "url": "https://www.eso.org/sci/facilities/lasilla/instruments/sofi/inst/sofi_filters.tar.gz",
+      "label": "SOFI filter curves and plot script (tar.gz)",
+      "source": "ESO"
+    }
+  ],
+  "references": [],
+  "acknowledgements": [],
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"© ESO La Silla Instrument Team\" (page footer of https://www.eso.org/sci/facilities/lasilla/instruments/sofi/inst/Imaging.html; no data licence found on the page)",
+    "url": "https://www.eso.org/sci/facilities/lasilla/instruments/sofi/inst/Imaging.html",
+    "scope": "Site-wide page footer, not a data licence. Hosted under Nill's 2026-10-26 'host everything' decision."
+  },
+  "notes": "Js.dat is in Angstrom with repeated wavelengths (averaged); ten narrow-band files are in percent.",
+  "bands": {},
+  "evidence": []
+}

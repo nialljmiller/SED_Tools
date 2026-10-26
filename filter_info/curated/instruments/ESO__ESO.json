@@ -4,5 +4,39 @@
     "terms": "\"All data in the ESO archive retain ESO’s copyright, and are distributed according to the terms of the Creative Commons Attribution 4.0 International license (CC BY 4.0).\" \"ESO data files (both raw and processed data) may be distributed by third parties, and disseminated via other services, according to the terms of the Creative Commons Attribution 4.0 International license. Credit to the ESO provenance of the data must be acknowledged, and the file headers preserved.\"",
     "url": "https://archive.eso.org/cms/eso-data-access-policy.html",
     "scope": "Archive data policy; no statement names these curves. SVO cites the ESO Filter Database at La Silla (http://filters.ls.eso.org/efs/efs_fi.htm), whose host no longer resolves (2026-10-26). Change to attribution if the archive policy is judged to apply by analogy. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
-  }
+  },
+  "links": [
+    {
+      "url": "https://ftp.eso.org/pub/midaspub/25MAY/sources/calib_src.tar.gz",
+      "label": "ESO-MIDAS calibration sources (calib/raw/datatrans/filters)",
+      "source": "ESO"
+    },
+    {
+      "url": "https://ftp.eso.org/scisoft/scisoft4/sources/midas/02FEB/gui/XFilter/DESCRIPTION",
+      "label": "ESO-MIDAS XFilter context description",
+      "source": "ESO"
+    },
+    {
+      "url": "https://www.eso.org/sci/facilities/lasilla/instruments/efosc/inst/Efosc2Filters.html",
+      "label": "EFOSC2 imaging filters (refers to the La Silla filter database)",
+      "source": "ESO"
+    },
+    {
+      "url": "https://www.eso.org/sci/facilities/lasilla/instruments/wfi/inst/filters.html",
+      "label": "WFI filter characteristics",
+      "source": "ESO"
+    },
+    {
+      "url": "https://www.ls.eso.org/sci/facilities/lasilla/instruments/susi/docs/SUSIfilters.html",
+      "label": "SUSI2 filters",
+      "source": "ESO"
+    },
+    {
+      "url": "https://www.ls.eso.org/lasilla/sciops/ntt/emmi/emmiFilters.html",
+      "label": "EMMI filters",
+      "source": "ESO"
+    }
+  ],
+  "references": [],
+  "notes": "Original-source curves (2026-10-26): XFilter DESCRIPTION: 'This Context allows to display the transmission of all ESO filters and the quantum efficiency of the ESO CCD ... Alain Gilliotte maintains up to date the filters database'. The .mt files are numbered sequentially; the ESO number is the FITS keyword FILENAME. Curves keep the full measured range (leaks, 1e-4 floor); SVO's copies are trimmed to the main passband. Licence/acknowledgements left to the Mac agent (see REPORT.md for the terms found)."
 }

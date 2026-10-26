@@ -1,0 +1,22 @@
+{
+  "description": "Isaac Newton Group of Telescopes (La Palma) filter database: throughput scans of ING-owned broad- and narrow-band filters used at the INT, WHT and JKT, by ING serial number.",
+  "facility_description": "Isaac Newton Group of Telescopes (INT, WHT, JKT), Roque de los Muchachos, La Palma.",
+  "links": [
+    {
+      "url": "https://astro.ing.iac.es/filter/",
+      "label": "ING Filter Database",
+      "source": "ING"
+    }
+  ],
+  "references": [],
+  "acknowledgements": [],
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"Filter Database © 2006 Isaac Newton Group of Telescopes Developed by Robert Greimel, Samantha Rix, Javier Méndez\" (footer of https://astro.ing.iac.es/filter/; no data licence found)",
+    "url": "https://astro.ing.iac.es/filter/",
+    "scope": "Footer of the filter-database page, not a data licence. Hosted under Nill's 2026-10-26 'host everything' decision."
+  },
+  "notes": "The ING page: 'The ING owns a large collection of broad and narrow band filters'. Per-filter text files (catserver.ing.iac.es/filter/filtercurve.php?format=txt&filter=N) no longer answer (HTTP 500 at astro.ing.iac.es); Internet Archive snapshots (2010-2011) were used. Each file records the filter name, system, passband, FWHM, cosmetics and scan date. SVO lists these as energy counters; here DetectorType=photon is assumed (CCD imaging).",
+  "bands": {},
+  "evidence": []
+}
