@@ -22,8 +22,9 @@ ZeroPoint*_Jy      band-averaged f_ν of the reference source, Jy
 =================  ==============================================================
 
 The references are Vega (a supplied spectrum), AB (3631 Jy) and ST
-(3.631e-9 erg s⁻¹ cm⁻² Å⁻¹).  Vega quantities are ``None`` when no spectrum is
-given or it does not cover the whole curve.
+(3.631e-9 erg s⁻¹ cm⁻² Å⁻¹).  As in SED_Tools photometry, the Vega spectrum is
+taken as zero outside its range.  Vega quantities are ``None`` when no spectrum is
+given or it does not cover WavelengthMin to WavelengthMax.
 """
 
 from __future__ import annotations
@@ -125,8 +126,10 @@ def filter_properties(
     }
     if vega is not None:
         vl, vf = (np.asarray(a, dtype=float) for a in vega)
-        if vl[0] <= lam[0] and vl[-1] >= lam[-1]:
-            f = np.interp(lam, vl, vf)
+        # Like SED_Tools photometry, the spectrum is zero outside its range; it must
+        # still cover every wavelength where T is at least 1 % of its maximum.
+        if vl[0] <= props["WavelengthMin"] and vl[-1] >= props["WavelengthMax"]:
+            f = np.interp(lam, vl, vf, left=0.0, right=0.0)
             flam = float(np.trapezoid(f * w, lam) / area_w)
             props.update({
                 "WavelengthEff": float(np.trapezoid(lam * t * f, lam) / np.trapezoid(t * f, lam)),
