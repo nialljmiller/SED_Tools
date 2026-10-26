@@ -154,6 +154,7 @@ class Band:
     detector_source: str = ORIGINAL
     components_source: str = ORIGINAL
     clean_note: str = ""            # what clean_curve changed (for notes and logs)
+    atmosphere: str = ""            # conditions of an included atmosphere, e.g. "airmass=1.2"
 
     def __post_init__(self):
         if self.detector_type not in DETECTOR_TYPES:
@@ -168,6 +169,7 @@ class Component:
     transmission: np.ndarray        # fraction
     band: str = "*"                 # band name or "*" (shared)
     source: str = ""
+    name: Optional[str] = None      # file stem; lets several bands share one file
 
 
 def make_band(name, wl, tr, *, unit, detector_type, components, sources,
@@ -219,7 +221,7 @@ def write_instrument(filter_root: Union[str, Path], spec: Instrument) -> Path:
             filter_id=f"{spec.facility}/{spec.instrument}.{b.name}",
             wavelength_unit="Angstrom",
             extra={"Components": b.components, "ComponentsSource": b.components_source,
-                   "Sources": b.sources})
+                   "Atmosphere": b.atmosphere or None, "Sources": b.sources})
     index = inst_dir / spec.instrument
     if not index.exists():
         index.write_text("".join(f"{n}.dat\n" for n in sorted(names)), encoding="utf-8")
@@ -228,7 +230,7 @@ def write_instrument(filter_root: Union[str, Path], spec: Instrument) -> Path:
     manifest.ground_based = spec.ground_based
     for c in spec.components:
         add_component(inst_dir, c.role, c.wavelength, c.transmission, band=c.band,
-                      source=c.source, manifest=manifest)
+                      name=c.name, source=c.source, manifest=manifest)
     manifest.notes = spec.notes
     manifest.outside_range = spec.outside_range
     manifest.detector_type_sources = {b.name: b.detector_source for b in spec.bands}
