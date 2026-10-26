@@ -19,3 +19,4 @@ source_evidence/svo-archive/ia-2026-10-26-b17-rest-browse/manifest.jsonl
 source_evidence/svo-archive/ia-2026-10-26-b18-rest-browse/manifest.jsonl
 source_evidence/svo-archive/ia-2026-10-26-b19-rest-browse/manifest.jsonl
 source_evidence/svo-archive/ia-2026-10-26-b20-rest-browse/manifest.jsonl
+source_evidence/svo-archive/ia-2026-10-26-b21-rest-browse/manifest.jsonl
