@@ -288,14 +288,28 @@ def compose_info(sources, instrument_dir, curves, properties=None):
     instrument_refs = [sources.key(k) for k in curated.get("references", [])]
     for entry in bands.values():
         instrument_refs += entry["references"]
+    # Data providers' own requested acknowledgements (2MASS, SDSS, Gaia, ESO, ...) come first.
+    acknowledgements = []
+    for ack in curated.get("acknowledgements", []):
+        entry = {"for": ack["for"], "text": ack["text"], "applies_to": ack.get("applies_to", "curves"),
+                 "references": [sources.key(k) for k in ack.get("references", [])]}
+        if ack.get("url"):
+            entry["url"] = ack["url"]
+        acknowledgements.append(entry)
+        instrument_refs += entry["references"]
     if (svo_groups or svo_curves) and sources.service:
         # SVO asks to be acknowledged; its papers are citations only when the curves came from SVO.
         svo_refs = [sources.key(f"bibcode:{b}") for b in sources.service.get("references", [])]
-        info["acknowledgements"] = [{"text": sources.service["acknowledgement"], "for": "SVO Filter Profile Service",
-                                     "applies_to": "curves and metadata" if svo_curves else "metadata",
-                                     "references": svo_refs}]
+        acknowledgements.append({"text": sources.service["acknowledgement"], "for": "SVO Filter Profile Service",
+                                 "applies_to": "curves and metadata" if svo_curves else "metadata",
+                                 "references": svo_refs})
         if svo_curves:
             instrument_refs += svo_refs
+    if acknowledgements:
+        info["acknowledgements"] = acknowledgements
+    # Terms under which the curves are redistributed: {redistribution, terms, url}.
+    if curated.get("licence"):
+        info["licence"] = curated["licence"]
     info["references"] = list(dict.fromkeys(instrument_refs))
     info["bands"] = bands
     if unmatched:

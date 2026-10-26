@@ -628,8 +628,13 @@ function renderDetails(record, info, props) {
         (info.acknowledgements || []).forEach(ack => {
             const refs = (ack.references || []).map(key => citeLink(key, bibliography)).join(', ');
             html += `<p><b>${escapeHtml(ack.for)}</b> (used here for ${escapeHtml(ack.applies_to || 'this instrument')}) asks for this acknowledgement:
-                <i>${escapeHtml(ack.text)}</i>${refs ? `, and for these references: ${refs}` : ''}.</p>`;
+                <i>${escapeHtml(ack.text)}</i>${refs ? `, and for these references: ${refs}` : ''}.${ack.url ? ` [<a href="${safeUrl(ack.url)}" target="_blank">source</a>]` : ''}</p>`;
         });
+        if (info.licence) {
+            const terms = info.licence;
+            html += `<p><b>Terms of the curves:</b> ${escapeHtml(terms.terms || terms.redistribution || '')}` +
+                `${terms.url ? ` [<a href="${safeUrl(terms.url)}" target="_blank">terms</a>]` : ''}</p>`;
+        }
         const keys = Object.keys(bibliography);
         if (keys.length) {
             html += '<ul class="ref-list">' + keys.map(key => bibliographyItem(key, bibliography[key])).join('') + '</ul>';

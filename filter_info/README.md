@@ -49,7 +49,9 @@ Each key is looked up once. `--retry` tries the unresolved ones again.
    When several archived versions exist, the one whose curve is identical to NJM's is used.
 2. **NJM provenance overrides SVO:** the header row, `manifest.json`, `filter_expansion/provenance/`.
 3. **Hand-checked files override both:**
-   - `curated/instruments/<Facility>__<Instrument>.json` holds `description`, `facility_description`, `notes`, `links`, `references`, and `bands.<band>.<field>`;
+   - `curated/instruments/<Facility>__<Instrument>.json` holds `description`, `facility_description`, `notes`, `links`, `references`, `bands.<band>.<field>`,
+     `acknowledgements` (the provider's requested text: `[{for, text, url, references, applies_to}]`) and `licence`
+     (`{redistribution: public|attribution|permission|restricted|unknown, terms, url}`);
    - `curated/references.json` holds entries no service resolves.
 
 The curve header row stays authoritative for `DetectorType`. SVO's value is only reported, under `svo`, with a note when it disagrees.
@@ -60,7 +62,8 @@ The curve header row stays authoritative for `DetectorType`. SVO's value is only
 schema, facility, instrument
 description, facility_description, links[{url, label, source}], notes
 references[key]             everything to cite for this instrument
-acknowledgements[{text, for, references}]   e.g. SVO's requested acknowledgement
+acknowledgements[{for, text, url, references, applies_to}]   providers' requested texts, then SVO's
+licence{redistribution, terms, url}   terms under which the curves are redistributed
 bands.<band>:
   Description, Comments, PhotSystem, Band, MagSys, PhotCalID, ZeroPointType   (SVO PARAM names)
   ProfileReference[{ref, label}], CalibrationReference[{ref, label}]

@@ -195,3 +195,23 @@ def test_tidy_removes_crossref_html():
                   "bibtex": "@article{x, title={<i>Planck</i> results}, journal={Astronomy &amp; Astrophysics}}"})
     assert entry["journal"] == "A&A" and entry["title"] == "The Gaia passbands"
     assert entry["bibtex"] == r"@article{x, title={\textit{Planck} results}, journal={Astronomy \& Astrophysics}}"
+
+
+def test_curated_acknowledgements_and_licence_come_through(tmp_path):
+    svo_dir = _archive(tmp_path)
+    curated = tmp_path / "curated"
+    curated.mkdir()
+    (curated / "Test__Cam.json").write_text(json.dumps({
+        "acknowledgements": [{"for": "Test Survey", "text": "This publication makes use of data from Test.",
+                              "url": "https://example.org/ack", "references": ["bibcode:2003AJ....126.1090C"]}],
+        "licence": {"redistribution": "attribution", "terms": "Free with credit", "url": "https://example.org/terms"}}))
+    inst = tmp_path / "data" / "filters" / "Test" / "Cam"
+    inst.mkdir(parents=True)
+    curve = inst / "R.dat"
+    curve.write_text(_curve_text("FilterID=Test/Cam.R;ComponentsSource=svo"))
+    sources = InfoSources(tmp_path, svo_dir=svo_dir, curated_dir=curated, references={})
+    info = compose_info(sources, inst, [curve], {"R": {"WavelengthPivot": 6000.0}})
+    assert [a["for"] for a in info["acknowledgements"]] == ["Test Survey", "SVO Filter Profile Service"]
+    assert info["acknowledgements"][0]["url"] == "https://example.org/ack"
+    assert info["licence"]["redistribution"] == "attribution"
+    assert "bibcode:2003AJ....126.1090C" in info["references"]
