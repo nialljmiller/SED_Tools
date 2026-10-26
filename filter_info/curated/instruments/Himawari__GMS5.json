@@ -1,0 +1,37 @@
+{
+  "description": "The VISSR on GMS-5 (Himawari-5), with a split-window and a water-vapour channel. Curves from the EUMETSAT NWP SAF RTTOV SRF collection, which credits the original JMA files.",
+  "facility_description": "Japan Meteorological Agency (JMA) geostationary meteorological satellites (GMS / MTSAT / Himawari series).",
+  "links": [
+    {
+      "url": "https://nwp-saf.eumetsat.int/downloads/rtcoef_info/visir_srf/rtcoef_gms_5_imager_srf.html",
+      "label": "NWP SAF SRF page (README and channel files)",
+      "source": "EUMETSAT NWP SAF"
+    },
+    {
+      "url": "https://nwp-saf.eumetsat.int/site/software/rttov/download/coefficients/spectral-response-functions/",
+      "label": "NWP SAF RTTOV spectral response functions",
+      "source": "EUMETSAT NWP SAF"
+    }
+  ],
+  "references": [
+    "doi:10.5194/gmd-11-2717-2018"
+  ],
+  "notes": "Spectral response functions of the VISSR on GMS-5 (Himawari-5) (Japan Meteorological Agency (JMA)), from the EUMETSAT NWP SAF RTTOV spectral-response-function page rtcoef_gms_5_imager_srf.html (https://nwp-saf.eumetsat.int/site/software/rttov/download/coefficients/spectral-response-functions/); the owner's own file is not available online (see Sources). NWP SAF README: 'This file generated: 15/10/2019 README SRF: README file for GMS 5 VISSR imager filter response Last update March 1st 2017 SRF available at: http://www.data.jma.go.jp/mscweb/en/operation/response/gms5.txt README file for GMS_IMAGER filter response Last update March 25th 2011 GMS-5 SRFs are available at: http://isccp.giss.nasa.gov/response/gms-5i.html Water Vapour channel 3 is corrected according to JM Breon paper in JAOT 1999: NOVEMBER 1999 NOTES AND CORRESPONDENCE 1851 Evidence of Atmospheric Contamination on the Measurement of the Spectral Response of the GMS-5 Water Vapor Channel FRANCOIS-MARIE BREON AND DARREN JACKSON Cooperative Institute for Research in Environmental Sciences, University of Colorado, Boulder, Colorado JOHN BATES Climate Diagnostic Center, NOAA/ERL, Boulder, Colorado ABSTRACT The GMS-5 geostationary satellite carries a channel centered at 6.7 mm for the measurement o'. Converted from wavenumber (cm-1) to wavelength (Angstrom, lambda = 1e8/sigma) and sorted; negative samples set to 0; scaled to peak 1. DetectorType=energy is assumed: the owner gives a normalised (relative) spectral response",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"Material on this page is © EUMETSAT 2026\" (NWP SAF RTTOV spectral response functions page footer, https://nwp-saf.eumetsat.int/site/software/rttov/download/coefficients/spectral-response-functions/)",
+    "url": "https://nwp-saf.eumetsat.int/site/software/rttov/download/coefficients/spectral-response-functions/",
+    "scope": "Site-wide footer of nwp-saf.eumetsat.int; no licence grant is stated."
+  },
+  "acknowledgements": [
+    {
+      "for": "Japan Meteorological Agency (original SRFs) and the EUMETSAT NWP SAF (RTTOV SRF collection)",
+      "text": "© EUMETSAT 2026",
+      "url": "https://nwp-saf.eumetsat.int/site/software/rttov/download/coefficients/spectral-response-functions/",
+      "references": [
+        "doi:10.5194/gmd-11-2717-2018"
+      ],
+      "applies_to": "all bands"
+    }
+  ]
+}

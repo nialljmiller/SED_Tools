@@ -1,0 +1,24 @@
+{
+  "description": "The Meteosat Visible and InfraRed Imager (MVIRI) on Meteosat-5: water-vapour (6.3 um) and thermal infrared (11.5 um) detectors, nominal and backup (WV1, WV2, IR1, IR2).",
+  "facility_description": "EUMETSAT geostationary Meteosat satellites.",
+  "links": [
+    {
+      "url": "ftp://ftp.ssec.wisc.edu/paulv/SRF_Data/netCDF/mviriNOM_m05.srf.nc",
+      "label": "Nominal-configuration SRF file (SSEC)",
+      "source": "CIMSS/SSEC"
+    },
+    {
+      "url": "ftp://ftp.ssec.wisc.edu/paulv/SRF_Data/netCDF/mviriBKUP_m05.srf.nc",
+      "label": "Backup-configuration SRF file (SSEC)",
+      "source": "CIMSS/SSEC"
+    }
+  ],
+  "references": [],
+  "notes": "Meteosat Visible and InfraRed Imager (MVIRI) on Meteosat-5: water-vapour (WV1, WV2) and thermal infrared (IR1, IR2) detector SRFs from Paul van Delst's SRF archive (ftp://ftp.ssec.wisc.edu/paulv/SRF_Data/netCDF/mviriNOM_m05.srf.nc and mviriBKUP_m05.srf.nc, the 'NOMINAL' and 'BACKUP' spectral configurations; the file comment names the detectors, e.g. 'NOMINAL spectral configuration IR-1 and WV-2'). The visible-channel curves (SVO VIS, VIS1-4) are not in this archive and are not included. IR/WV: wavenumber grid rebuilt from begin/end frequency and point count (checked against summation_srf), converted to Angstrom, sorted; negative samples set to 0; scaled to peak 1. DetectorType=energy is assumed: the owner gives a normalised (relative) spectral response without stating photon or energy weighting; meteorological imager SRFs are applied as weights on spectral radiance (energy convention). SVO's archived records for these instruments carry DetectorType 0 (energy). Source: EUMETSAT MVIRI characterisation via the CIMSS/SSEC SRF archive (P. van Delst; data from HMW).",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "No licence or terms statement found: the anonymous-FTP directory ftp://ftp.ssec.wisc.edu/paulv/SRF_Data/netCDF/ (listing saved 2026-10-26) holds only the netCDF files; their global attributes carry no licence.",
+    "url": "ftp://ftp.ssec.wisc.edu/paulv/SRF_Data/netCDF/"
+  },
+  "acknowledgements": []
+}

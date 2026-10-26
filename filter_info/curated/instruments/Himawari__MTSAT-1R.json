@@ -1,0 +1,37 @@
+{
+  "description": "The Japanese Advanced Meteorological Imager (JAMI) on MTSAT-1R (Himawari-6). Curves from the EUMETSAT NWP SAF RTTOV SRF collection, which credits the original JMA files.",
+  "facility_description": "Japan Meteorological Agency (JMA) geostationary meteorological satellites (GMS / MTSAT / Himawari series).",
+  "links": [
+    {
+      "url": "https://nwp-saf.eumetsat.int/downloads/rtcoef_info/visir_srf/rtcoef_mtsat_1_imager_srf.html",
+      "label": "NWP SAF SRF page (README and channel files)",
+      "source": "EUMETSAT NWP SAF"
+    },
+    {
+      "url": "https://nwp-saf.eumetsat.int/site/software/rttov/download/coefficients/spectral-response-functions/",
+      "label": "NWP SAF RTTOV spectral response functions",
+      "source": "EUMETSAT NWP SAF"
+    }
+  ],
+  "references": [
+    "doi:10.5194/gmd-11-2717-2018"
+  ],
+  "notes": "Spectral response functions of the Japanese Advanced Meteorological Imager (JAMI) on MTSAT-1R (Himawari-6) (Japan Meteorological Agency (JMA)), from the EUMETSAT NWP SAF RTTOV spectral-response-function page rtcoef_mtsat_1_imager_srf.html (https://nwp-saf.eumetsat.int/site/software/rttov/download/coefficients/spectral-response-functions/); the owner's own file is not available online (see Sources). NWP SAF README: 'This file generated: 15/10/2019 README SRF: README file for MTSAT-1R filter functions 08 Nov 2004 Original Excel file Tabular_Summary_JAMI_SRF.xls provided by N. Uekiyo uekiyo@met.kishou.go.jp Values are based on Primary Focal Plane data Some negative values removed 3.9mu channel truncated at 3000cm-1 Channel order as requested by ECMWF and JMA: 1 11mu 2 12mu 3 6.7mu 4 3.7mu 5 visible band README file for MTSAT-1R filter functions 08 Nov 2004 Original Excel file Tabular_Summary_JAMI_SRF.xls provided by N. Uekiyo uekiyo@met.kishou.go.jp Values are based on Primary Focal Plane data Some negative values removed 3.9mu channel truncated at 3000cm-1 Channel order as requested by ECMWF and JMA: 1 11mu 2 12mu 3 6.7mu 4 3.7mu'. Converted from wavenumber (cm-1) to wavelength (Angstrom, lambda = 1e8/sigma) and sorted; negative samples set to 0; scaled to peak 1. DetectorType=energy is assumed: the owner gives a normalised (relative) spectral response without stating photon or energy weighting; meteorological imager SRFs are applied as weights on spectral radiance (energy conv",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"Material on this page is © EUMETSAT 2026\" (NWP SAF RTTOV spectral response functions page footer, https://nwp-saf.eumetsat.int/site/software/rttov/download/coefficients/spectral-response-functions/)",
+    "url": "https://nwp-saf.eumetsat.int/site/software/rttov/download/coefficients/spectral-response-functions/",
+    "scope": "Site-wide footer of nwp-saf.eumetsat.int; no licence grant is stated."
+  },
+  "acknowledgements": [
+    {
+      "for": "Japan Meteorological Agency (original SRFs) and the EUMETSAT NWP SAF (RTTOV SRF collection)",
+      "text": "© EUMETSAT 2026",
+      "url": "https://nwp-saf.eumetsat.int/site/software/rttov/download/coefficients/spectral-response-functions/",
+      "references": [
+        "doi:10.5194/gmd-11-2717-2018"
+      ],
+      "applies_to": "all bands"
+    }
+  ]
+}

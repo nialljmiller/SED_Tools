@@ -1,0 +1,37 @@
+{
+  "description": "METimage, the Visible/Infrared Imager (VII) on Metop-SG A1: 20 channels from 0.443 to 13.345 um. Curves from the EUMETSAT NWP SAF RTTOV SRF collection, which credits the original EUMETSAT files.",
+  "facility_description": "EUMETSAT Metop polar-orbiting meteorological satellites.",
+  "links": [
+    {
+      "url": "https://nwp-saf.eumetsat.int/downloads/rtcoef_info/visir_srf/rtcoef_metopsg_1_metimage_srf.html",
+      "label": "NWP SAF SRF page (README and channel files)",
+      "source": "EUMETSAT NWP SAF"
+    },
+    {
+      "url": "https://nwp-saf.eumetsat.int/site/software/rttov/download/coefficients/spectral-response-functions/",
+      "label": "NWP SAF RTTOV spectral response functions",
+      "source": "EUMETSAT NWP SAF"
+    }
+  ],
+  "references": [
+    "doi:10.5194/gmd-11-2717-2018"
+  ],
+  "notes": "Spectral response functions of METimage (Visible/Infrared Imager, VII) on Metop-SG A1 (EUMETSAT), from the EUMETSAT NWP SAF RTTOV spectral-response-function page rtcoef_metopsg_1_metimage_srf.html (https://nwp-saf.eumetsat.int/site/software/rttov/download/coefficients/spectral-response-functions/); the owner's own file is not available online (see Sources). NWP SAF README: 'This file generated: 02/09/2026 README SRF: README file for METimage SRFs for METimage for MetOP-SG A1 Date: August 2026 file EPS-SGA1-METIMAGE_SRF_V10.nc (Low_Res) Pre-processing of SRFs: SRFs values normalized with between 0. and 1. Visible channel : 0.443 0.555 0.668 0.752 0.763 0.865 0.914 1.240 1.375 1.630 2.250 IR channel: 3.740 micron 3.959 micron 4.050 micron 6.725 micron 7.325 micron 8.540 micron 10.690 micron 12.020 micron 13.345 micron'. Converted from wavenumber (cm-1) to wavelength (Angstrom, lambda = 1e8/sigma) and sorted; negative samples set to 0; scaled to peak 1. DetectorType=energy is assumed: the owner gives a normalised (relative) spectral response without stating photon or energy weighting; meteorological imager SRFs are applied as weights on spectral radiance (energy convention). SVO's archived records for these instruments carry DetectorType 0 (energy). Source: EUMETSAT, via the EUMETSAT NWP SAF.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"Material on this page is © EUMETSAT 2026\" (NWP SAF RTTOV spectral response functions page footer, https://nwp-saf.eumetsat.int/site/software/rttov/download/coefficients/spectral-response-functions/)",
+    "url": "https://nwp-saf.eumetsat.int/site/software/rttov/download/coefficients/spectral-response-functions/",
+    "scope": "Site-wide footer of nwp-saf.eumetsat.int; no licence grant is stated."
+  },
+  "acknowledgements": [
+    {
+      "for": "EUMETSAT (original SRFs) and the EUMETSAT NWP SAF (RTTOV SRF collection)",
+      "text": "© EUMETSAT 2026",
+      "url": "https://nwp-saf.eumetsat.int/site/software/rttov/download/coefficients/spectral-response-functions/",
+      "references": [
+        "doi:10.5194/gmd-11-2717-2018"
+      ],
+      "applies_to": "all bands"
+    }
+  ]
+}

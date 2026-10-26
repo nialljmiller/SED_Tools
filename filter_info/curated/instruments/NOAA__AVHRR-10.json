@@ -1,0 +1,33 @@
+{
+  "description": "The Advanced Very High Resolution Radiometer (AVHRR/1, serial A101) on NOAA-10. Curves: the vendor-measured (ITT) normalised spectral response functions collected by NOAA/NESDIS STAR.",
+  "facility_description": "NOAA polar-orbiting operational environmental satellites (POES).",
+  "links": [
+    {
+      "url": "https://www.star.nesdis.noaa.gov/smcd/spb/fwu/homepage/AVHRR/spec_resp_func/index.html",
+      "label": "NOAA STAR AVHRR spectral response functions (offline since 2026)",
+      "source": "NOAA/NESDIS STAR"
+    },
+    {
+      "url": "https://web.archive.org/web/20250215082141/https://www.star.nesdis.noaa.gov/smcd/spb/fwu/homepage/AVHRR/spec_resp_func/SRFcontent.html",
+      "label": "STAR AVHRR SRF table (Internet Archive)",
+      "source": "Internet Archive"
+    }
+  ],
+  "references": [],
+  "notes": "AVHRR/1 instrument S/N A101 on NOAA-10: normalised spectral response functions of channels Ch1, Ch2, Ch3, Ch4 as measured by the instrument vendor (ITT) and published by NOAA NESDIS STAR (AVHRR SRF page, https://www.star.nesdis.noaa.gov/smcd/spb/fwu/homepage/AVHRR/spec_resp_func/index.html, now offline; files taken from Internet Archive snapshots of the owner URLs). STAR: 'Measured: The spectral response function as determined by the instrument vendor (ITT industries). These are the most original data available to NOAA'. Negative values (measurement noise) are set to 0 and each curve is scaled to peak 1. DetectorType=energy is assumed: the owner gives a normalised (relative) spectral response without stating photon or energy weighting; meteorological imager SRFs are applied as weights on spectral radiance (energy convention). SVO's archived records for these instruments carry DetectorType 0 (energy). Source: NOAA/NESDIS STAR (X. Wu), data from ITT.",
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"Users are free to use the images or information hosted on this site as they wish, as long as credit is given to the NOAA / NESDIS Center for Satellite Applications and Research.\" (STAR Disclaimers & Notices, https://www.star.nesdis.noaa.gov/star/productdisclaimer.php)",
+    "url": "https://www.star.nesdis.noaa.gov/star/productdisclaimer.php",
+    "scope": "Site-wide notice of www.star.nesdis.noaa.gov, which hosted the AVHRR SRF files (the SRF page itself is now offline; files from Internet Archive snapshots)."
+  },
+  "acknowledgements": [
+    {
+      "for": "NOAA/NESDIS STAR (AVHRR SRF collection; data from the instrument vendor ITT)",
+      "text": "as long as credit is given to the NOAA / NESDIS Center for Satellite Applications and Research",
+      "url": "https://www.star.nesdis.noaa.gov/star/productdisclaimer.php",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

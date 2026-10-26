@@ -1,0 +1,38 @@
+{
+  "description": "The Meteosat Visible and InfraRed Imager (MVIRI) on Meteosat-7: water-vapour (6.3 um) and thermal infrared (11.5 um) detectors, nominal and backup (WV1, WV2, IR1, IR2).",
+  "facility_description": "EUMETSAT geostationary Meteosat satellites.",
+  "links": [
+    {
+      "url": "ftp://ftp.ssec.wisc.edu/paulv/SRF_Data/netCDF/mviriNOM_m07.srf.nc",
+      "label": "Nominal-configuration SRF file (SSEC)",
+      "source": "CIMSS/SSEC"
+    },
+    {
+      "url": "ftp://ftp.ssec.wisc.edu/paulv/SRF_Data/netCDF/mviriBKUP_m07.srf.nc",
+      "label": "Backup-configuration SRF file (SSEC)",
+      "source": "CIMSS/SSEC"
+    },
+    {
+      "url": "https://web.archive.org/web/20191214231443/https://www.eumetsat.int/website/home/Data/Products/Calibration/MFGCalibration/index.html",
+      "label": "EUMETSAT MFG calibration page (Internet Archive)",
+      "source": "EUMETSAT"
+    }
+  ],
+  "references": [],
+  "notes": "Meteosat Visible and InfraRed Imager (MVIRI) on Meteosat-7: water-vapour (WV1, WV2) and thermal infrared (IR1, IR2) detector SRFs from Paul van Delst's SRF archive (ftp://ftp.ssec.wisc.edu/paulv/SRF_Data/netCDF/mviriNOM_m07.srf.nc and mviriBKUP_m07.srf.nc, the 'NOMINAL' and 'BACKUP' spectral configurations; the file comment names the detectors, e.g. 'NOMINAL spectral configuration IR-1 and WV-2'). Visible detectors VIS1-VIS4 and the averaged visible responses of the nominal and backup configurations (VIS_nominal_avg, VIS_backup_avg; EUMETSAT's 'Av. Response') are from EUMETSAT's tables 'Meteosat Normalised Spectral Responses Met-7' (MFG calibration page; PDF fetched from an Internet Archive snapshot of the owner URL, now HTTP 404), 0.30-1.05 um, values unchanged. SVO's single 'VIS' curve (Loew & Govaerts 2010) is not reproduced. IR/WV: wavenumber grid rebuilt from begin/end frequency and point count (checked against summation_srf), converted to Angstrom, sorted; negative samples set to 0; scaled to peak 1. DetectorType=energy is assumed: the owner gives a normalised (relative) spectral response without stating photon or energy weighting; meteorological imager SRFs are applied as weights on spectral radiance (energy convention). SVO's archived records for these instruments carry DetectorType 0 (energy). Source: EUMETSAT MVIRI characterisation via the CIMSS/SSEC SRF archive (P. van Delst; data from HMW).",
+  "licence": {
+    "redistribution": "permission",
+    "terms": "VIS1-4 and VIS averages (EUMETSAT PDF): \"Information, images, software, documents and materials ('content') accessible and visible on the EUMETSAT website(s) are protected by copyrights, trademarks or other intellectual property rights of EUMETSAT, or the party credited as the provider of the content. Copyright Unless otherwise noted, you may download and copy content from the EUMETSAT website(s) for your own personal and non-commercial use. For any other use of the content, you must request authorisation from EUMETSAT. When using content of the EUMETSAT website(s), you are required to credit it appropriately as EUMETSAT property or the property of the credited provider. For EUMETSAT property, the copyright credit should read “©EUMETSAT [year]”.\" (EUMETSAT Terms of Use, Ownership and Intellectual Property, http://www.eumetsat.int/website/home/AboutUs/TermsofUse/index.html as archived 2019-12-08) IR/WV (SSEC files): No licence or terms statement found: the anonymous-FTP directory ftp://ftp.ssec.wisc.edu/paulv/SRF_Data/netCDF/ (listing saved 2026-10-26) holds only the netCDF files; their global attributes carry no licence.",
+    "url": "https://web.archive.org/web/20191208182252/https://www.eumetsat.int/website/home/AboutUs/TermsofUse/index.html",
+    "scope": "Site-wide Terms of Use of www.eumetsat.int, which hosted the MVIRI spectral-response PDF (owner URL now HTTP 404)."
+  },
+  "acknowledgements": [
+    {
+      "for": "EUMETSAT (Meteosat Normalised Spectral Responses)",
+      "text": "©EUMETSAT",
+      "url": "https://web.archive.org/web/20191208182252/https://www.eumetsat.int/website/home/AboutUs/TermsofUse/index.html",
+      "references": [],
+      "applies_to": "VIS bands"
+    }
+  ]
+}

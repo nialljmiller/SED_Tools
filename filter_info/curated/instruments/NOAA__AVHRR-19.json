@@ -1,0 +1,38 @@
+{
+  "description": "The Advanced Very High Resolution Radiometer (AVHRR/3, serial A308) on NOAA-19. Curves: the vendor-measured (ITT) normalised spectral response functions collected by NOAA/NESDIS STAR.",
+  "facility_description": "NOAA polar-orbiting operational environmental satellites (POES).",
+  "links": [
+    {
+      "url": "https://www.star.nesdis.noaa.gov/smcd/spb/fwu/homepage/AVHRR/spec_resp_func/index.html",
+      "label": "NOAA STAR AVHRR spectral response functions (offline since 2026)",
+      "source": "NOAA/NESDIS STAR"
+    },
+    {
+      "url": "https://web.archive.org/web/20250215082141/https://www.star.nesdis.noaa.gov/smcd/spb/fwu/homepage/AVHRR/spec_resp_func/SRFcontent.html",
+      "label": "STAR AVHRR SRF table (Internet Archive)",
+      "source": "Internet Archive"
+    },
+    {
+      "url": "https://nwp-saf.eumetsat.int/site/software/rttov/download/coefficients/spectral-response-functions/",
+      "label": "EUMETSAT NWP SAF RTTOV spectral response functions (channels missing from the archive)",
+      "source": "EUMETSAT NWP SAF"
+    }
+  ],
+  "references": [],
+  "notes": "AVHRR/3 instrument S/N A308 on NOAA-19: normalised spectral response functions of channels Ch1, Ch2, Ch3A, Ch3B, Ch5 as measured by the instrument vendor (ITT) and published by NOAA NESDIS STAR (AVHRR SRF page, https://www.star.nesdis.noaa.gov/smcd/spb/fwu/homepage/AVHRR/spec_resp_func/index.html, now offline; files taken from Internet Archive snapshots of the owner URLs). STAR: 'Measured: The spectral response function as determined by the instrument vendor (ITT industries). These are the most original data available to NOAA'. Negative values (measurement noise) are set to 0 and each curve is scaled to peak 1. Channels Ch4 were not in the archived STAR files and are taken from the EUMETSAT NWP SAF RTTOV SRF page rtcoef_noaa_19_avhrr_srf.html, whose README reads: 'This file generated: 15/10/2019 README SRF: README file for NOAA-19 AVHRR (A308) filter functions October 2008 The original filters obtained from following website http://www.star.nesdis.noaa.gov/smcd/spb/fwu/solar_cal/spec_resp_func/index.html Contact are is heidinger@ssec.wisc.edu and Xiangqian.Wu@noaa.gov Filters have been reduced, due to very large wings: 3microns: 2447-2935cm-1 (SRF > 0.001) 11microns: 859-1000cm-1 (SRF > 0.001) 12microns: 786-877cm-1 (SRF > 0.001) + negative values set to 0.'. DetectorType=energy is assumed: the owner gives a normalised (relative) spectral response without stating photon or energy weighting; meteorological imager SRFs are applied as weights on spectral radiance (energy convent",
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"Users are free to use the images or information hosted on this site as they wish, as long as credit is given to the NOAA / NESDIS Center for Satellite Applications and Research.\" (STAR Disclaimers & Notices, https://www.star.nesdis.noaa.gov/star/productdisclaimer.php)",
+    "url": "https://www.star.nesdis.noaa.gov/star/productdisclaimer.php",
+    "scope": "Site-wide notice of www.star.nesdis.noaa.gov, which hosted the AVHRR SRF files (the SRF page itself is now offline; files from Internet Archive snapshots)."
+  },
+  "acknowledgements": [
+    {
+      "for": "NOAA/NESDIS STAR (AVHRR SRF collection; data from the instrument vendor ITT)",
+      "text": "as long as credit is given to the NOAA / NESDIS Center for Satellite Applications and Research",
+      "url": "https://www.star.nesdis.noaa.gov/star/productdisclaimer.php",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "description": "The Spinning Enhanced Visible and InfraRed Imager (SEVIRI) on Meteosat-8 (MSG-1), SEVIRI PFM: 12 channels from 0.6 to 13.4 um; the cold IR channels at 85 K and 95 K focal-plane temperature.",
+  "facility_description": "EUMETSAT geostationary Meteosat satellites.",
+  "links": [
+    {
+      "url": "https://web.archive.org/web/20191208183440/https://www.eumetsat.int/website/home/Data/Products/Calibration/MSGCalibration/index.html",
+      "label": "EUMETSAT MSG calibration page (Internet Archive)",
+      "source": "EUMETSAT"
+    }
+  ],
+  "references": [],
+  "notes": "Spinning Enhanced Visible and InfraRed Imager (SEVIRI) PFM on Meteosat-8 (MSG-1): the 12 channel spectral response curves of EUMETSAT's 'MSG SEVIRI Spectral Response Characterisation' workbook (EUM/MSG/TEN/06/0010 Issue 2, 30 October 2012), derived from the SEVIRI characterisation reports and on-ground characterisation data (EUM/MSG/TEN/06/0011). The cold IR channels (3.9-13.4 um) are given for both focal-plane temperatures measured, 85 K and 95 K (bands _85K, _95K; the workbook's 'ls'/'Dls' values, central wavelength and bandwidth for a scene, are given only for 95 K). HRV is the normal 0.45-1.05 um measurement; HRV_extended is EUMETSAT's extension to 0.3-1.302 um using the scaled FM3 measurements. Values are the workbook's normalised response 'tn' (peak about 1), unchanged apart from setting negative noise samples to 0 and dropping empty cells. EUMETSAT recommends linear interpolation in the wavenumber domain (Info sheet). DetectorType=energy is assumed: the owner gives a normalised (relative) spectral response without stating photon or energy weighting; meteorological imager SRFs are applied as weights on spectral radiance (energy convention). SVO's archived records for these instruments carry DetectorType 0 (energy). Source: EUMETSAT; file fetched from an Internet Archive snapshot of the owner URL (the owner URL now returns HTTP 404).",
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"Information, images, software, documents and materials ('content') accessible and visible on the EUMETSAT website(s) are protected by copyrights, trademarks or other intellectual property rights of EUMETSAT, or the party credited as the provider of the content. Copyright Unless otherwise noted, you may download and copy content from the EUMETSAT website(s) for your own personal and non-commercial use. For any other use of the content, you must request authorisation from EUMETSAT. When using content of the EUMETSAT website(s), you are required to credit it appropriately as EUMETSAT property or the property of the credited provider. For EUMETSAT property, the copyright credit should read “©EUMETSAT [year]”.\" (EUMETSAT Terms of Use, Ownership and Intellectual Property, http://www.eumetsat.int/website/home/AboutUs/TermsofUse/index.html as archived 2019-12-08)",
+    "url": "https://web.archive.org/web/20191208182252/https://www.eumetsat.int/website/home/AboutUs/TermsofUse/index.html",
+    "scope": "Site-wide Terms of Use of www.eumetsat.int, which hosted the SEVIRI SRF workbook (owner URL now HTTP 404)."
+  },
+  "acknowledgements": [
+    {
+      "for": "EUMETSAT (MSG SEVIRI Spectral Response Characterisation, EUM/MSG/TEN/06/0010)",
+      "text": "©EUMETSAT 2012",
+      "url": "https://web.archive.org/web/20191208182252/https://www.eumetsat.int/website/home/AboutUs/TermsofUse/index.html",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "description": "The VISSR Atmospheric Sounder (VAS) on GOES-6: 12 infrared sounding channels (3.9-14.7 um).",
+  "facility_description": "NOAA Geostationary Operational Environmental Satellites (GOES).",
+  "links": [
+    {
+      "url": "ftp://ftp.ssec.wisc.edu/paulv/SRF_Data/netCDF/vas_g06.srf.nc",
+      "label": "SRF netCDF file (P. van Delst SRF archive, SSEC)",
+      "source": "CIMSS/SSEC"
+    }
+  ],
+  "references": [],
+  "notes": "VISSR Atmospheric Sounder (VAS) on GOES-6: normalised spectral response functions of the 12 sounding channels from Paul van Delst's SRF archive (ftp://ftp.ssec.wisc.edu/paulv/SRF_Data/netCDF/vas_g06.srf.nc; title 'Normalised VAS SRFs for GOES-06', comment 'Interpolated SRFs for transmittance production; Data obtained from HMW'), the source SVO cites as 'Paul Van Delst SRFs'. Channel n of the file is Chnn. Wavenumber grid rebuilt from begin/end frequency and the point count (checked against the file's summation_srf), converted to Angstrom (1e8/sigma), sorted; negative samples set to 0; scaled to peak 1. DetectorType=energy is assumed: the owner gives a normalised (relative) spectral response without stating photon or energy weighting; meteorological imager SRFs are applied as weights on spectral radiance (energy convention). SVO's archived records for these instruments carry DetectorType 0 (energy). Source: NOAA/NESDIS (CIMSS/SSEC SRF archive, P. van Delst; data from HMW)."
+}
