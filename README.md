@@ -241,16 +241,21 @@ Filters.tag_detector_types()               # returns one row per file
 - FWHM and effective width;
 - the Vega-weighted effective and photon wavelengths;
 - Vega, AB and ST zero points, in f_λ and in Jy;
-- the AB−Vega and ST−Vega magnitude offsets (2MASS Ks: m_AB − m_Vega ≈ 1.85).
+- the AB−Vega and ST−Vega magnitude offsets (2MASS Ks: m_AB − m_Vega ≈ 1.85);
+- `Fsun`, the Sun's band-averaged f_λ at 1 AU (erg s⁻¹ cm⁻² Å⁻¹), when you supply a solar spectrum;
+- `AfAv`, the extinction ratio A(λ)/A(V) at the pivot wavelength, from the [Fitzpatrick (1999)](https://ui.adsabs.harvard.edu/abs/1999PASP..111...63F) law with R_V = 3.1.
 
-The pivot and zero points use the same detector-aware weights as SED_Tools photometry, so band-averaged f_λ and f_ν convert exactly. Definitions are in the module docstring. The NJM mirror serves these values precomputed in each instrument's `properties.json`, listed in `index.json`. It uses MESA's `vega_flam.csv` for the Vega quantities, so they match MESA colors.
+The pivot, zero points and `Fsun` use the same detector-aware weights as SED_Tools photometry, so band-averaged f_λ and f_ν convert exactly. Definitions are in the module docstring. The NJM mirror serves these values precomputed in each instrument's `properties.json`, listed in `index.json`. It uses MESA's `vega_flam.csv` for the Vega quantities, so they match MESA colors. For `Fsun` it uses CALSPEC's solar spectrum (`sun_reference_stis_002` below 9600 Å, `sun_mod_001` above), the composite the SVO Filter Profile Service uses.
+
+`AfAv` is computed by the `F99` class of [dust_extinction](https://github.com/karllark/dust_extinction) (Gordon 2024, [JOSS 9(100), 7023](https://doi.org/10.21105/joss.07023)), an optional dependency: `pip install "sed-tools[extinction]"`. Without it, `AfAv` is `None` and a warning says why. It is also `None` where the pivot lies outside the range dust_extinction defines for the law (1000 Å to 3.33 µm); the law is never extrapolated. A(V) is the law's own normalisation (V-band averaged), so `AfAv` is 1 at 5414 Å, not at 5500 Å. SVO's `Af/AV` uses a different law, so the two differ.
 
 ```python
-from sed_tools.filter_properties import instrument_properties, load_vega
+from sed_tools.filter_properties import instrument_properties, load_sun, load_vega
 
 vega = load_vega("vega_flam.csv")                 # wavelength in Å, f_λ in erg/s/cm²/Å
-props = instrument_properties("data/filters/2MASS/2MASS", vega)
-props["Ks"]["WavelengthPivot"], props["Ks"]["ZeroPointVega_Jy"]
+sun = load_sun("sun_flam.csv")                    # the Sun at 1 AU, same units
+props = instrument_properties("data/filters/2MASS/2MASS", vega, sun)
+props["Ks"]["WavelengthPivot"], props["Ks"]["ZeroPointVega_Jy"], props["Ks"]["Fsun"], props["Ks"]["AfAv"]
 ```
 
 `sed_tools.filter_colors` gives each band a colour for plotting, computed from its curve rather than guessed from its name:

@@ -3,15 +3,21 @@
 from __future__ import annotations
 
 import math
+import sys
 
 import numpy as np
 import pytest
 
+import sed_tools.filter_properties as fp
 from sed_tools.filter_metadata import write_filter_file
 from sed_tools.filter_properties import (
     AB_JY,
+    EXTINCTION_RV,
     ST_FLAM,
+    UNITS,
     curve_properties,
+    extinction_law,
+    extinction_ratio,
     filter_properties,
     instrument_properties,
 )
@@ -138,3 +144,101 @@ def test_file_and_instrument_helpers_use_the_curve_metadata(tmp_path):
     assert sorted(props) == ["B", "V"]
     assert (props["V"]["DetectorType"], props["B"]["DetectorType"]) == ("photon", "energy")
     assert props["B"]["DetectorTypeSource"] == "original"
+
+
+def test_every_property_has_a_unit():
+    assert set(filter_properties(*gaussian()).keys()) == set(UNITS)
+
+
+@pytest.mark.parametrize("detector", ["photon", "energy"])
+def test_fsun_is_the_band_average_with_the_detector_weight(detector):
+    lo, hi = 4000.0, 6000.0
+    grid = np.linspace(1000.0, 30000.0, 290001)
+    sun = (grid, 2.0e9 / grid**2)  # f_lambda = A / lambda^2
+    p = filter_properties(*box(lo, hi), detector, sun=sun)
+    if detector == "photon":  # W = T lambda: A ln(hi/lo) / ((hi^2 - lo^2) / 2)
+        expected = 2.0e9 * math.log(hi / lo) / ((hi**2 - lo**2) / 2)
+    else:  # W = T: A (1/lo - 1/hi) / (hi - lo)
+        expected = 2.0e9 * (1 / lo - 1 / hi) / (hi - lo)
+    assert p["Fsun"] == pytest.approx(expected, rel=1e-5)
+    # A flat spectrum averages to itself whatever the weight.
+    assert filter_properties(*box(lo, hi), detector, sun=(grid, np.full_like(grid, 1.9e2)))["Fsun"] \
+        == pytest.approx(1.9e2, rel=1e-12)
+
+
+@pytest.mark.parametrize("detector", ["photon", "energy"])
+def test_fsun_uses_the_vega_zero_point_definition(detector):
+    lam, t = gaussian(7000.0, 900.0)
+    grid = np.linspace(900.0, 30000.0, 20000)
+    spectrum = (grid, 3.6e-9 * (5556.0 / grid) ** 4)
+    p = filter_properties(lam, t, detector, vega=spectrum, sun=spectrum)
+    assert p["Fsun"] == p["ZeroPointVega_flam"]
+    assert filter_properties(lam, t, detector, vega=spectrum)["Fsun"] is None
+
+
+def test_fsun_needs_coverage_where_the_filter_transmits():
+    lam, t = gaussian(50000.0, 3000.0)
+    sun = (np.array([1195.0, 30000.0]), np.array([1.0, 1.0]))
+    p = filter_properties(lam, t, "photon", sun=sun)
+    assert p["Fsun"] is None and p["WavelengthPivot"] > 0
+    assert filter_properties(*gaussian(5500.0, 300.0), "photon", sun=sun)["Fsun"] == pytest.approx(1.0)
+
+
+def test_afav_is_dust_extinction_f99_at_the_pivot():
+    pytest.importorskip("dust_extinction")
+    import astropy.units as u
+    from dust_extinction.parameter_averages import F99
+
+    law = F99(Rv=3.1)
+    for curve, detector in ((gaussian(5500.0, 300.0), "photon"), (box(12000.0, 13500.0), "energy"),
+                            (gaussian(2200.0, 150.0), "energy")):
+        p = filter_properties(*curve, detector)
+        assert p["AfAv"] == pytest.approx(float(law(p["WavelengthPivot"] * u.AA)), rel=1e-12)
+    assert EXTINCTION_RV == 3.1
+
+
+def test_afav_follows_the_definition_of_r_v():
+    pytest.importorskip("dust_extinction")
+    # dust_extinction's normalisation notes put A(lambda)/A(V) = 1 at 0.5414 micron and
+    # 1 + 1/R(V) (the B band, since E(B-V) = A(V)/R(V)) at 0.4354 micron for F99.
+    assert extinction_ratio(5414.0) == pytest.approx(1.0, abs=1e-4)
+    assert extinction_ratio(4354.0) == pytest.approx(1 + 1 / 3.1, abs=1e-3)
+    # Extinction falls with wavelength across the optical and near-infrared.
+    lam = np.geomspace(3000.0, 33000.0, 50)
+    assert np.all(np.diff([extinction_ratio(x) for x in lam]) < 0)
+
+
+def test_afav_is_none_outside_the_laws_range():
+    pytest.importorskip("dust_extinction")
+    from dust_extinction.parameter_averages import F99
+
+    lo, hi = F99.x_range  # inverse microns: 1000 A to 33333 A
+    assert extinction_ratio(1e4 / hi * 1.001) is not None
+    assert extinction_ratio(1e4 / hi * 0.999) is None
+    assert extinction_ratio(1e4 / lo * 0.999) is not None
+    assert extinction_ratio(1e4 / lo * 1.001) is None
+    assert filter_properties(*gaussian(50000.0, 3000.0), "photon")["AfAv"] is None  # WISE W2-like
+    law = extinction_law()
+    assert law["valid_range_angstrom"] == pytest.approx([1000.0, 1e5 / 3])
+    assert law["dust_extinction_version"] and law["R_V"] == 3.1
+
+
+def test_afav_is_none_without_dust_extinction(monkeypatch):
+    monkeypatch.setitem(sys.modules, "dust_extinction", None)  # makes the import fail
+    monkeypatch.setitem(sys.modules, "dust_extinction.parameter_averages", None)
+    monkeypatch.setattr(fp, "_f99_model", None)  # forget a model built by an earlier test
+    with pytest.warns(UserWarning, match="dust_extinction"):
+        p = filter_properties(*gaussian(5500.0, 300.0), "photon")
+    assert p["AfAv"] is None and p["WavelengthPivot"] > 0
+    assert extinction_ratio(5500.0) is None
+    assert "valid_range_angstrom" not in extinction_law()
+
+
+def test_helpers_pass_the_sun_through(tmp_path):
+    inst = tmp_path / "Test" / "Camera"
+    inst.mkdir(parents=True)
+    lam, t = gaussian(5500.0, 300.0)
+    write_filter_file(inst / "V.dat", lam, t, detector_type="photon", source="svo")
+    sun = (np.linspace(1000.0, 30000.0, 100), np.full(100, 185.0))
+    assert curve_properties(inst / "V.dat", sun=sun)["Fsun"] == pytest.approx(185.0)
+    assert instrument_properties(inst, sun=sun)["V"]["Fsun"] == pytest.approx(185.0)

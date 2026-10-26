@@ -37,7 +37,10 @@ full = [
     "scipy>=1.14",
     "scikit-learn",
     "torch",
+    "dust_extinction>=1.6",
     ]
+# A(lambda)/A(V) (AfAv) in sed_tools.filter_properties: the Fitzpatrick (1999) law.
+extinction = ["dust_extinction>=1.6"]
 
 [project.urls]
 "Homepage" = "https://github.com/nialljmiller/SED_Tools"

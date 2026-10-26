@@ -15,12 +15,21 @@ Filter properties
   - FWHM and effective width;
   - Vega-weighted effective and photon wavelengths;
   - Vega, AB and ST zero points, in f_lambda and Jy;
-  - AB-Vega and ST-Vega magnitude offsets.
+  - AB-Vega and ST-Vega magnitude offsets;
+  - ``Fsun``, the Sun's band-averaged f_lambda at 1 AU, from a supplied solar
+    spectrum (``load_sun()``);
+  - ``AfAv``, A(lambda)/A(V) at the pivot wavelength from the Fitzpatrick
+    (1999, PASP 111, 63) law with R_V = 3.1.
 
-  The pivot and zero points share the detector-aware weights of SED_Tools
-  photometry. ``curve_properties()`` and ``instrument_properties()`` read
-  filter files with their metadata. The NJM mirror serves the values
+  The pivot, zero points and ``Fsun`` share the detector-aware weights of
+  SED_Tools photometry. ``curve_properties()`` and ``instrument_properties()``
+  read filter files with their metadata. The NJM mirror serves the values
   precomputed in each instrument's ``properties.json``.
+- ``AfAv`` is evaluated by ``dust_extinction`` (Gordon 2024, JOSS 9, 7023), a
+  new optional dependency: ``pip install "sed-tools[extinction]"`` (also in
+  ``full``). Without it ``AfAv`` is ``None``, with a warning. It is also
+  ``None`` outside the range the package defines for the law (1000 Angstrom to
+  3.33 micron); the law is not extrapolated.
 - Add ``sed_tools.filter_colors`` to give each band a plotting colour from its
   curve. Mostly-visible bands get their true colour (CIE 1931 2-degree observer
   and illuminant D65, from the CIE's published tables, now shipped in
