@@ -274,7 +274,7 @@ Where components come from:
 |---|---|
 | HST ACS (WFC/HRC/SBC), WFC3 (UVIS1/2, IR), WFPC2, NICMOS 1–3 | STScI synphot component tables (graph-table walk per obsmode); ACS/SBC's time-dependent sensitivity is pinned to the release (2021-04-25) its published curves were computed with |
 | JWST NIRCam, NIRISS, MIRI imaging | STScI Pandeia reference data 2026.7 (in-flight; 21.6 MB without the PSF library) |
-| Euclid NISP Y, J, H | ESA NISP-PHOTO-PASSBANDS V1.0: filter, telescope × NISP optics, and QE. They multiply to ESA's V1.0 total, a different release from the published SVO curves (the manifest notes give the difference) |
+| Euclid NISP Y, J, H | Not attached: ESA's NISP-PHOTO-PASSBANDS V1.0 factors (filter, telescope × NISP optics, QE; `sed-tools filters-build-components euclid`) multiply to ESA's V1.0 total, a different release from the published SVO curves |
 | Roman WFI | Detector QE only: the mean of the 18 flight detectors (Roman technical information repository) |
 | Rubin/LSST | `lsst/throughputs` (+ Rubin's standard atmosphere `lsst_std`) |
 | Subaru HSC | NAOJ/Subaru curves (+ HSC pipeline's Maunakea atmosphere `maunakea_hsc`) |

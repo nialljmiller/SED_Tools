@@ -79,7 +79,6 @@ BUILDERS_FOR: Dict[Tuple[str, str], BuilderRef] = {
     ("Subaru", "HSC"): BuilderRef("hsc"),
     ("CTIO", "DECam"): BuilderRef("decam"),
     ("Paranal", "VISTA"): BuilderRef("vista"),
-    ("Euclid", "NISP"): BuilderRef("euclid"),
     ("Roman", "WFI"): BuilderRef("roman"),
     ("Palomar", "ZTF"): BuilderRef("ztf"),
     ("Paranal", "HAWKI"): _tabular("HAWKI"),
@@ -118,6 +117,10 @@ STATUS: Dict[Tuple[str, str], Tuple[str, str]] = {
     ("Kepler", "*"): (TOTAL_ONLY, "Kepler publishes only its total response function."),
     ("Hipparcos", "*"): (TOTAL_ONLY, "Only total passbands are published."),
     ("TYCHO", "*"): (TOTAL_ONLY, "Only total passbands are published."),
+    ("Euclid", "NISP"): (NOT_BUILT, "ESA's NISP-PHOTO-PASSBANDS V1.0 gives Y, J and H filter, telescope, NISP "
+                                   "optics and QE factors (builder 'euclid'), but they multiply to ESA's V1.0 "
+                                   "total, not to the published Y/J/H here (SVO's copy, which cites "
+                                   "2025A&A...697A...3E), so they are not attached to those curves."),
     ("PAN-STARRS", "PS1"): (NOT_BUILT, "Tonry et al. (2012) Table 3 (CDS J/ApJ/750/99, table3.dat) gives each "
                                        "band's capture cross-section and the open (no filter) one, both through "
                                        "1.2 airmasses, and that atmosphere as Aero, Ray and Mol. It has no separate "

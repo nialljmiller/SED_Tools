@@ -121,6 +121,10 @@ def test_euclid_build_needs_published_curves(tmp_path):
 
     with pytest.raises(FileNotFoundError):
         euclid.build(tmp_path, session=_Session({}))
+    inst = tmp_path / "Euclid" / "NISP"
+    _published(inst, "Blue", np.array([9000.0, 9500.0]), np.array([0.1, 0.2]))
+    with pytest.raises(FileNotFoundError):  # grism bands have no ESA factors to fetch
+        euclid.build(tmp_path, bands=["Blue"], session=_Session({}))
 
 
 # ---------------------------------------------------------------------------
@@ -274,6 +278,8 @@ def test_status_of_2mass_and_ps1_and_new_builders():
         assert info["status"] == catalog.NOT_BUILT, (fac, info)
     assert "Table 3" in catalog.status_for("PAN-STARRS", "PS1")[1]
     assert "only total" not in catalog.status_for("2MASS", "2MASS")[1]
-    for fac, inst, name in (("Euclid", "NISP", "euclid"), ("Roman", "WFI", "roman")):
-        info = catalog.component_availability(fac, inst)
-        assert info["status"] == "supported" and info["builder"] == name
+    info = catalog.component_availability("Roman", "WFI")
+    assert info["status"] == "supported" and info["builder"] == "roman"
+    # ESA's V1.0 factors do not multiply to the served Y/J/H, so clients do not build them.
+    assert catalog.builder_for("Euclid", "NISP") is None
+    assert catalog.component_availability("Euclid", "NISP")["status"] == catalog.NOT_BUILT

@@ -183,6 +183,13 @@ def _pin_note(tables: SynphotTables, pins: Mapping[str, str], used: Iterable[str
     return "; ".join(parts)
 
 
+def _tail_beyond_published(path: Path, wl: np.ndarray, total: np.ndarray) -> float:
+    """Largest total outside the published curve's wavelength range, relative to its peak."""
+    pw, pt = np.loadtxt(path, delimiter=",", skiprows=1, usecols=(0, 1), unpack=True)
+    out = (wl < pw.min()) | (wl > pw.max())
+    return float(total[out].max() / pt.max()) if out.any() and pt.max() > 0 else 0.0
+
+
 def _product(tables: SynphotTables, comps: Sequence[str],
              pins: Optional[Mapping[str, str]] = None) -> Tuple[np.ndarray, np.ndarray]:
     """Product of components on their merged grid, over their common range."""
@@ -222,6 +229,7 @@ def build(
         skipped = {}
         pins = PINNED.get(inst, {})
         used = set()
+        tails = {}
         for band in bands:
             try:
                 comps = tables.chain(f"{prefix},{band.lower()}")
@@ -243,6 +251,10 @@ def build(
                     inst_dir, role, wl, tr, band=band, name=band,
                     source="; ".join(tables.source(c, pins) for c in comps_for_role), manifest=manifest,
                 )
+            try:
+                tails[band] = _tail_beyond_published(inst_dir / f"{band}.dat", *_product(tables, comps, pins))
+            except (OSError, ValueError, IndexError):
+                pass
         manifest.detector_type = PHOTON
         manifest.ground_based = False
         manifest.outside_range = "zero"  # synphot evaluates throughput tables as zero outside their range
@@ -252,6 +264,13 @@ def build(
             "detector-side corrections (*_cor, *_tds*) so filter+optics+qe reproduces synphot's total."
             + (f" Not decomposed: {', '.join(sorted(skipped))}." if skipped else "")
         )
+        widest = max(tails, key=tails.get) if tails else None
+        if widest and tails[widest] > 0:
+            manifest.notes += (
+                " The components extend beyond the wavelength range of the published curves, which "
+                f"omit that tail; there the composed product reaches up to {tails[widest]:.1e} of the "
+                f"published peak ({widest}), which matters for sources much brighter there."
+            )
         if pins and used & set(pins):
             manifest.notes += (
                 " Pinned to the release the published curves were computed with: "

@@ -109,7 +109,7 @@ def build(
     """Add ESA's NISP filter, optics and QE factors to ``Euclid/NISP``."""
     inst_dir = Path(filter_root) / FACILITY / INSTRUMENT
     present = {p.stem for p in inst_dir.glob("*.dat")}
-    wanted = [b for b in (bands or BANDS) if b in present]
+    wanted = [b for b in (bands or BANDS) if b in BANDS and b in present]
     if not wanted:
         raise FileNotFoundError(f"{inst_dir}: no published Y/J/H curves; fetch them first")
     fetch = Fetcher(session)

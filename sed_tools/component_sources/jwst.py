@@ -11,8 +11,9 @@ files; the telescope (OTE) is in ``jwst/telescope``.  Imaging throughput is
 ``optics`` is the product of the non-filter, non-detector factors (MIRI's
 imager has none besides the OTE: its ``mirror_eff`` is 1).  Wavelengths are
 in microns (``TUNIT`` MICRONS in every throughput table).  The QE tables
-also carry a ``CONVERSION`` (quantum yield) column, which Pandeia keeps
-apart from the throughput; it is not included here.
+also carry a ``CONVERSION`` column (electrons per photon, up to 1.84 for
+NIRISS); it is not applied here, and whether Pandeia applies it to the
+throughput has not been checked.
 
 The reference data is the current release, 2026.7 (``-delivered-for-
 version-`` in every ``config.json``): a 21.6 MB tarball without the PSF
