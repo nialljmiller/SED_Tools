@@ -1,0 +1,67 @@
+{
+  "description": "Detector SCA17 of the Roman Wide Field Instrument only: the owner's effective areas for this sensor chip assembly, for the eight imaging filters, the prism and the grism (first and zeroth order). The detector-averaged curves are Roman/WFI.",
+  "facility_description": "The Nancy Grace Roman Space Telescope is a NASA mission whose primary science instrument is the Wide Field Instrument.",
+  "notes": "Curves: Roman_effarea_v8_SCA17_20240301.ecsv ('Effective area for Roman (m^2) - parameters as of 2024 03 01'), https://github.com/RomanSpaceTelescope/roman-technical-information at commit 14a9b0c; byte-identical to the member of Roman_effarea_tables_20240327.zip. Transmission is the effective area divided by 4.374354 m^2, the area of the 2.36 m aperture stop given in the repository's MissionandObservatory.yaml; the central obscuration is not removed. Grism is the Grism_1stOrder column. Pivots reproduce the owner's synphot zero-point table (Roman_zeropoints_20240301.ecsv) for the imaging filters. DetectorType photon: the owner's zero points are count-rate unit responses (hc divided by the integral of P lambda dlambda).",
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"This work is marked with CC0 1.0 Universal. To view a copy of this license, visit https://creativecommons.org/publicdomain/zero/1.0/\"",
+    "url": "https://github.com/RomanSpaceTelescope/roman-technical-information/blob/main/LICENSE.md"
+  },
+  "references": [
+    "bibcode:2024SPIE13092E..0SS"
+  ],
+  "links": [
+    {
+      "url": "https://github.com/RomanSpaceTelescope/roman-technical-information/tree/14a9b0c98b0da723d0f2e4c6277956183c1fdd06/roman_technical_information/data/WideFieldInstrument/Imaging/EffectiveAreas",
+      "label": "WFI imaging effective areas (per SCA)",
+      "source": "Roman technical information repository"
+    },
+    {
+      "url": "https://science.nasa.gov/mission/roman-space-telescope/roman-technical-information/",
+      "label": "Roman technical information",
+      "source": "NASA Science"
+    },
+    {
+      "url": "https://science.nasa.gov/mission/roman-space-telescope/wfi-technical/",
+      "label": "WFI reference information",
+      "source": "NASA Science"
+    },
+    {
+      "url": "https://www.stsci.edu/roman/observatory",
+      "label": "Roman observatory and WFI filter table",
+      "source": "STScI"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/RomanSpaceTelescope/roman-technical-information/main/roman_technical_information/data/WideFieldInstrument/Imaging/FiltersSummary/filter_parameters.ecsv",
+      "label": "WFI filter parameter table",
+      "source": "Roman technical information repository"
+    },
+    {
+      "url": "https://archive.stsci.edu/publishing/mission-acknowledgements",
+      "label": "MAST Roman acknowledgement",
+      "source": "MAST"
+    },
+    {
+      "url": "https://www.stsci.edu/copyright",
+      "label": "STScI content use policy",
+      "source": "STScI"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "MAST / Nancy Grace Roman Space Telescope",
+      "text": "This work is based [in part] on observations made with the NASA Nancy Grace Roman Space Telescope. The data were obtained from the Mikulski Archive for Space Telescopes at the Space Telescope Science Institute, which is operated by the Association of Universities for Research in Astronomy, Inc., under NASA contract NAS5-26555 for Roman.  These observations are associated with the [insert survey name], [PID #].",
+      "url": "https://archive.stsci.edu/publishing/mission-acknowledgements",
+      "applies_to": "all bands",
+      "references": []
+    }
+  ],
+  "bands": {
+    "Grism": {
+      "Description": "WFI slitless grism, first order"
+    },
+    "Grism_0thOrder": {
+      "Description": "WFI grism, zeroth-order image"
+    }
+  }
+}

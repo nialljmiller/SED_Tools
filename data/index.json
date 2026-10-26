@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-10-26T18:00:19.957411",
+  "generated": "2026-10-26T18:12:46.127768",
   "base_url": "http://nillmill.ddns.net/sed_tools",
   "statistics": {
     "total_models": 1,
@@ -9,7 +9,7 @@
     "total_size_bytes": 142850198218,
     "total_size_human": "133.04 GB",
     "total_facilities": 101,
-    "total_filters": 4994
+    "total_filters": 5000
   },
   "models": [
     "bt-cond"
@@ -156,12 +156,16 @@
             "detector_types": {
               "energy": 3
             },
-            "separate_components": {},
-            "has_component_manifest": false,
+            "separate_components": {
+              "filter": 3,
+              "optics": 3,
+              "qe": 3
+            },
+            "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 28385,
-            "size_human": "27.72 KB"
+            "size_bytes": 65574,
+            "size_human": "64.04 KB"
           }
         },
         "instrument_count": 1
@@ -2678,12 +2682,16 @@
               "energy": 2,
               "photon": 10
             },
-            "separate_components": {},
-            "has_component_manifest": false,
+            "separate_components": {
+              "filter": 12,
+              "optics": 12,
+              "qe": 12
+            },
+            "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 78067,
-            "size_human": "76.24 KB"
+            "size_bytes": 699902,
+            "size_human": "683.50 KB"
           },
           "Megaprime": {
             "name": "Megaprime",
@@ -2755,13 +2763,15 @@
               "photon": 44
             },
             "separate_components": {
-              "filter": 55
+              "filter": 55,
+              "optics": 55,
+              "qe": 55
             },
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 1226942,
-            "size_human": "1.17 MB"
+            "size_bytes": 1962887,
+            "size_human": "1.87 MB"
           },
           "QUIRC": {
             "name": "QUIRC",
@@ -6000,12 +6010,15 @@
             "detector_types": {
               "photon": 17
             },
-            "separate_components": {},
-            "has_component_manifest": false,
+            "separate_components": {
+              "filter": 17,
+              "optics": 17
+            },
+            "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 296461,
-            "size_human": "289.51 KB"
+            "size_bytes": 624867,
+            "size_human": "610.22 KB"
           }
         },
         "instrument_count": 1
@@ -8882,12 +8895,16 @@
             "detector_types": {
               "photon": 8
             },
-            "separate_components": {},
+            "separate_components": {
+              "filter": 8,
+              "optics": 8,
+              "qe": 8
+            },
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 294702,
-            "size_human": "287.79 KB"
+            "size_bytes": 1925323,
+            "size_human": "1.84 MB"
           },
           "ACS_WFC": {
             "name": "ACS_WFC",
@@ -9293,12 +9310,16 @@
             "detector_types": {
               "photon": 19
             },
-            "separate_components": {},
+            "separate_components": {
+              "filter": 19,
+              "optics": 19,
+              "qe": 19
+            },
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 396244,
-            "size_human": "386.96 KB"
+            "size_bytes": 1269488,
+            "size_human": "1.21 MB"
           },
           "NICMOS2": {
             "name": "NICMOS2",
@@ -9330,12 +9351,16 @@
             "detector_types": {
               "photon": 19
             },
-            "separate_components": {},
+            "separate_components": {
+              "filter": 19,
+              "optics": 19,
+              "qe": 19
+            },
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 537856,
-            "size_human": "525.25 KB"
+            "size_bytes": 1557820,
+            "size_human": "1.49 MB"
           },
           "NICMOS3": {
             "name": "NICMOS3",
@@ -10812,11 +10837,39 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 2769004,
-            "size_human": "2.64 MB"
+            "size_bytes": 4653674,
+            "size_human": "4.44 MB"
+          },
+          "LSSTv19": {
+            "name": "LSSTv19",
+            "filter_count": 6,
+            "filters": [
+              "g",
+              "i",
+              "r",
+              "u",
+              "y",
+              "z"
+            ],
+            "published_paths": {
+              "filter+optics+qe+atmosphere": 6
+            },
+            "detector_types": {
+              "photon": 6
+            },
+            "separate_components": {
+              "filter": 6,
+              "optics": 6,
+              "qe": 6
+            },
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 4442651,
+            "size_human": "4.24 MB"
           }
         },
-        "instrument_count": 1
+        "instrument_count": 2
       },
       "LasCumbres": {
         "name": "LasCumbres",
@@ -11487,12 +11540,14 @@
             "detector_types": {
               "photon": 21
             },
-            "separate_components": {},
-            "has_component_manifest": false,
+            "separate_components": {
+              "qe": 21
+            },
+            "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 274996,
-            "size_human": "268.55 KB"
+            "size_bytes": 291544,
+            "size_human": "284.71 KB"
           },
           "WFI_SCA01": {
             "name": "WFI_SCA01",

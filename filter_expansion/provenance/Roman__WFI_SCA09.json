@@ -1,0 +1,183 @@
+{
+  "facility": "Roman",
+  "instrument": "WFI_SCA09",
+  "notes": "Roman Wide Field Instrument, detector SCA09 only: the owner's per-SCA effective areas (Roman_effarea_v8_SCA09_20240301.ecsv, parameters as of 2024-03-01; CC0, https://github.com/RomanSpaceTelescope/roman-technical-information at 14a9b0c). Transmission = effective area in m^2 divided by 4.374354 m^2 = pi*(2.36 m/2)^2 aperture-stop area (owner MissionandObservatory.yaml); central obscuration not removed. Grism = Grism_1stOrder column; Grism_0thOrder is the zeroth-order image. Leading/trailing zero samples trimmed to one bounding zero. DetectorType photon from the owner's count-rate zero-point definition; components inferred (effective area = whole system). The detector-averaged set is Roman/WFI.",
+  "bands": {
+    "F062": {
+      "sources": "https://raw.githubusercontent.com/RomanSpaceTelescope/roman-technical-information/14a9b0c98b0da723d0f2e4c6277956183c1fdd06/roman_technical_information/data/WideFieldInstrument/Imaging/EffectiveAreas/Roman_effarea_v8_SCA09_20240301.ecsv (effective area m^2 divided by 4.374354 m^2: pi x (2.36 m aperture stop / 2)^2) | https://github.com/RomanSpaceTelescope/roman-technical-information | https://raw.githubusercontent.com/RomanSpaceTelescope/roman-technical-information/14a9b0c98b0da723d0f2e4c6277956183c1fdd06/roman_technical_information/data/Observatory/MissionandObservatoryTechnicalOverview/MissionandObservatory.yaml",
+      "svo_id": "Roman/WFI.F062",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "inferred",
+      "cleaning": "",
+      "ref_pivot": [
+        6262.4314446646995,
+        "https://raw.githubusercontent.com/RomanSpaceTelescope/roman-technical-information/14a9b0c98b0da723d0f2e4c6277956183c1fdd06/roman_technical_information/data/WideFieldInstrument/Imaging/ZeroPoints/Roman_zeropoints_20240301.ecsv (WFI09 F062: sqrt(c FNU/FLAM), synphot)"
+      ],
+      "n": 299,
+      "pivot_A": 6262.43
+    },
+    "F087": {
+      "sources": "https://raw.githubusercontent.com/RomanSpaceTelescope/roman-technical-information/14a9b0c98b0da723d0f2e4c6277956183c1fdd06/roman_technical_information/data/WideFieldInstrument/Imaging/EffectiveAreas/Roman_effarea_v8_SCA09_20240301.ecsv (effective area m^2 divided by 4.374354 m^2: pi x (2.36 m aperture stop / 2)^2) | https://github.com/RomanSpaceTelescope/roman-technical-information | https://raw.githubusercontent.com/RomanSpaceTelescope/roman-technical-information/14a9b0c98b0da723d0f2e4c6277956183c1fdd06/roman_technical_information/data/Observatory/MissionandObservatoryTechnicalOverview/MissionandObservatory.yaml",
+      "svo_id": "Roman/WFI.F087",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "inferred",
+      "cleaning": "",
+      "ref_pivot": [
+        8692.969567849137,
+        "https://raw.githubusercontent.com/RomanSpaceTelescope/roman-technical-information/14a9b0c98b0da723d0f2e4c6277956183c1fdd06/roman_technical_information/data/WideFieldInstrument/Imaging/ZeroPoints/Roman_zeropoints_20240301.ecsv (WFI09 F087: sqrt(c FNU/FLAM), synphot)"
+      ],
+      "n": 240,
+      "pivot_A": 8692.97
+    },
+    "F106": {
+      "sources": "https://raw.githubusercontent.com/RomanSpaceTelescope/roman-technical-information/14a9b0c98b0da723d0f2e4c6277956183c1fdd06/roman_technical_information/data/WideFieldInstrument/Imaging/EffectiveAreas/Roman_effarea_v8_SCA09_20240301.ecsv (effective area m^2 divided by 4.374354 m^2: pi x (2.36 m aperture stop / 2)^2) | https://github.com/RomanSpaceTelescope/roman-technical-information | https://raw.githubusercontent.com/RomanSpaceTelescope/roman-technical-information/14a9b0c98b0da723d0f2e4c6277956183c1fdd06/roman_technical_information/data/Observatory/MissionandObservatoryTechnicalOverview/MissionandObservatory.yaml",
+      "svo_id": "Roman/WFI.F106",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "inferred",
+      "cleaning": "",
+      "ref_pivot": [
+        10592.708134290642,
+        "https://raw.githubusercontent.com/RomanSpaceTelescope/roman-technical-information/14a9b0c98b0da723d0f2e4c6277956183c1fdd06/roman_technical_information/data/WideFieldInstrument/Imaging/ZeroPoints/Roman_zeropoints_20240301.ecsv (WFI09 F106: sqrt(c FNU/FLAM), synphot)"
+      ],
+      "n": 288,
+      "pivot_A": 10592.71
+    },
+    "F129": {
+      "sources": "https://raw.githubusercontent.com/RomanSpaceTelescope/roman-technical-information/14a9b0c98b0da723d0f2e4c6277956183c1fdd06/roman_technical_information/data/WideFieldInstrument/Imaging/EffectiveAreas/Roman_effarea_v8_SCA09_20240301.ecsv (effective area m^2 divided by 4.374354 m^2: pi x (2.36 m aperture stop / 2)^2) | https://github.com/RomanSpaceTelescope/roman-technical-information | https://raw.githubusercontent.com/RomanSpaceTelescope/roman-technical-information/14a9b0c98b0da723d0f2e4c6277956183c1fdd06/roman_technical_information/data/Observatory/MissionandObservatoryTechnicalOverview/MissionandObservatory.yaml",
+      "svo_id": "Roman/WFI.F129",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "inferred",
+      "cleaning": "",
+      "ref_pivot": [
+        12811.874206807988,
+        "https://raw.githubusercontent.com/RomanSpaceTelescope/roman-technical-information/14a9b0c98b0da723d0f2e4c6277956183c1fdd06/roman_technical_information/data/WideFieldInstrument/Imaging/ZeroPoints/Roman_zeropoints_20240301.ecsv (WFI09 F129: sqrt(c FNU/FLAM), synphot)"
+      ],
+      "n": 347,
+      "pivot_A": 12811.87
+    },
+    "F158": {
+      "sources": "https://raw.githubusercontent.com/RomanSpaceTelescope/roman-technical-information/14a9b0c98b0da723d0f2e4c6277956183c1fdd06/roman_technical_information/data/WideFieldInstrument/Imaging/EffectiveAreas/Roman_effarea_v8_SCA09_20240301.ecsv (effective area m^2 divided by 4.374354 m^2: pi x (2.36 m aperture stop / 2)^2) | https://github.com/RomanSpaceTelescope/roman-technical-information | https://raw.githubusercontent.com/RomanSpaceTelescope/roman-technical-information/14a9b0c98b0da723d0f2e4c6277956183c1fdd06/roman_technical_information/data/Observatory/MissionandObservatoryTechnicalOverview/MissionandObservatory.yaml",
+      "svo_id": "Roman/WFI.F158",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "inferred",
+      "cleaning": "",
+      "ref_pivot": [
+        15760.111079291873,
+        "https://raw.githubusercontent.com/RomanSpaceTelescope/roman-technical-information/14a9b0c98b0da723d0f2e4c6277956183c1fdd06/roman_technical_information/data/WideFieldInstrument/Imaging/ZeroPoints/Roman_zeropoints_20240301.ecsv (WFI09 F158: sqrt(c FNU/FLAM), synphot)"
+      ],
+      "n": 431,
+      "pivot_A": 15760.11
+    },
+    "F184": {
+      "sources": "https://raw.githubusercontent.com/RomanSpaceTelescope/roman-technical-information/14a9b0c98b0da723d0f2e4c6277956183c1fdd06/roman_technical_information/data/WideFieldInstrument/Imaging/EffectiveAreas/Roman_effarea_v8_SCA09_20240301.ecsv (effective area m^2 divided by 4.374354 m^2: pi x (2.36 m aperture stop / 2)^2) | https://github.com/RomanSpaceTelescope/roman-technical-information | https://raw.githubusercontent.com/RomanSpaceTelescope/roman-technical-information/14a9b0c98b0da723d0f2e4c6277956183c1fdd06/roman_technical_information/data/Observatory/MissionandObservatoryTechnicalOverview/MissionandObservatory.yaml",
+      "svo_id": "Roman/WFI.F184",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "inferred",
+      "cleaning": "",
+      "ref_pivot": [
+        18337.283303105363,
+        "https://raw.githubusercontent.com/RomanSpaceTelescope/roman-technical-information/14a9b0c98b0da723d0f2e4c6277956183c1fdd06/roman_technical_information/data/WideFieldInstrument/Imaging/ZeroPoints/Roman_zeropoints_20240301.ecsv (WFI09 F184: sqrt(c FNU/FLAM), synphot)"
+      ],
+      "n": 363,
+      "pivot_A": 18337.28
+    },
+    "F146": {
+      "sources": "https://raw.githubusercontent.com/RomanSpaceTelescope/roman-technical-information/14a9b0c98b0da723d0f2e4c6277956183c1fdd06/roman_technical_information/data/WideFieldInstrument/Imaging/EffectiveAreas/Roman_effarea_v8_SCA09_20240301.ecsv (effective area m^2 divided by 4.374354 m^2: pi x (2.36 m aperture stop / 2)^2) | https://github.com/RomanSpaceTelescope/roman-technical-information | https://raw.githubusercontent.com/RomanSpaceTelescope/roman-technical-information/14a9b0c98b0da723d0f2e4c6277956183c1fdd06/roman_technical_information/data/Observatory/MissionandObservatoryTechnicalOverview/MissionandObservatory.yaml",
+      "svo_id": "Roman/WFI.F146",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "inferred",
+      "cleaning": "",
+      "ref_pivot": [
+        14304.419710655178,
+        "https://raw.githubusercontent.com/RomanSpaceTelescope/roman-technical-information/14a9b0c98b0da723d0f2e4c6277956183c1fdd06/roman_technical_information/data/WideFieldInstrument/Imaging/ZeroPoints/Roman_zeropoints_20240301.ecsv (WFI09 F146: sqrt(c FNU/FLAM), synphot)"
+      ],
+      "n": 1098,
+      "pivot_A": 14304.42
+    },
+    "F213": {
+      "sources": "https://raw.githubusercontent.com/RomanSpaceTelescope/roman-technical-information/14a9b0c98b0da723d0f2e4c6277956183c1fdd06/roman_technical_information/data/WideFieldInstrument/Imaging/EffectiveAreas/Roman_effarea_v8_SCA09_20240301.ecsv (effective area m^2 divided by 4.374354 m^2: pi x (2.36 m aperture stop / 2)^2) | https://github.com/RomanSpaceTelescope/roman-technical-information | https://raw.githubusercontent.com/RomanSpaceTelescope/roman-technical-information/14a9b0c98b0da723d0f2e4c6277956183c1fdd06/roman_technical_information/data/Observatory/MissionandObservatoryTechnicalOverview/MissionandObservatory.yaml",
+      "svo_id": "Roman/WFI.F213",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "inferred",
+      "cleaning": "",
+      "ref_pivot": [
+        21259.003852988862,
+        "https://raw.githubusercontent.com/RomanSpaceTelescope/roman-technical-information/14a9b0c98b0da723d0f2e4c6277956183c1fdd06/roman_technical_information/data/WideFieldInstrument/Imaging/ZeroPoints/Roman_zeropoints_20240301.ecsv (WFI09 F213: sqrt(c FNU/FLAM), synphot)"
+      ],
+      "n": 393,
+      "pivot_A": 21259.0
+    },
+    "Prism": {
+      "sources": "https://raw.githubusercontent.com/RomanSpaceTelescope/roman-technical-information/14a9b0c98b0da723d0f2e4c6277956183c1fdd06/roman_technical_information/data/WideFieldInstrument/Imaging/EffectiveAreas/Roman_effarea_v8_SCA09_20240301.ecsv (effective area m^2 divided by 4.374354 m^2: pi x (2.36 m aperture stop / 2)^2) | https://github.com/RomanSpaceTelescope/roman-technical-information | https://raw.githubusercontent.com/RomanSpaceTelescope/roman-technical-information/14a9b0c98b0da723d0f2e4c6277956183c1fdd06/roman_technical_information/data/Observatory/MissionandObservatoryTechnicalOverview/MissionandObservatory.yaml",
+      "svo_id": "Roman/WFI.Prism",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "inferred",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 1089,
+      "pivot_A": 12540.94
+    },
+    "Grism": {
+      "sources": "https://raw.githubusercontent.com/RomanSpaceTelescope/roman-technical-information/14a9b0c98b0da723d0f2e4c6277956183c1fdd06/roman_technical_information/data/WideFieldInstrument/Imaging/EffectiveAreas/Roman_effarea_v8_SCA09_20240301.ecsv (effective area m^2 divided by 4.374354 m^2: pi x (2.36 m aperture stop / 2)^2) | https://github.com/RomanSpaceTelescope/roman-technical-information | https://raw.githubusercontent.com/RomanSpaceTelescope/roman-technical-information/14a9b0c98b0da723d0f2e4c6277956183c1fdd06/roman_technical_information/data/Observatory/MissionandObservatoryTechnicalOverview/MissionandObservatory.yaml",
+      "svo_id": "Roman/WFI.Grism",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "inferred",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 958,
+      "pivot_A": 14204.13
+    },
+    "Grism_0thOrder": {
+      "sources": "https://raw.githubusercontent.com/RomanSpaceTelescope/roman-technical-information/14a9b0c98b0da723d0f2e4c6277956183c1fdd06/roman_technical_information/data/WideFieldInstrument/Imaging/EffectiveAreas/Roman_effarea_v8_SCA09_20240301.ecsv (effective area m^2 divided by 4.374354 m^2: pi x (2.36 m aperture stop / 2)^2) | https://github.com/RomanSpaceTelescope/roman-technical-information | https://raw.githubusercontent.com/RomanSpaceTelescope/roman-technical-information/14a9b0c98b0da723d0f2e4c6277956183c1fdd06/roman_technical_information/data/Observatory/MissionandObservatoryTechnicalOverview/MissionandObservatory.yaml",
+      "svo_id": null,
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "inferred",
+      "cleaning": "",
+      "ref_pivot": null,
+      "n": 947,
+      "pivot_A": 17438.71
+    }
+  },
+  "raw_files": {
+    "downloads/Roman/effarea_20240327/LICENSE.md": "2ba3284fc018d8896dd39ead3c17a746692ea6001843cfa3413d1dfd3091fcd3",
+    "downloads/Roman/effarea_20240327/MissionandObservatory.yaml": "e2ca6522815a9f7e29621eee97a92ec60bd6e6877c06a43edfa1f877eae78d5e",
+    "downloads/Roman/effarea_20240327/Roman_zeropoints_20240301.ecsv": "c43973428cf65cacf7f513c7b1771de8c93cb1d8b097e1071eebf43ed48d50f9",
+    "downloads/Roman/effarea_20240327/EffectiveAreas_README.md": "40a3542c8563db2b092dd7440af21123181509e46e0bc6b14b40412637a40ba0",
+    "downloads/Roman/effarea_20240327/filter_parameters.ecsv": "7bed62d00f9020f02b72766abb859f8d8a8528f21237240a135d59bae8ff47c7",
+    "downloads/Roman/effarea_20240327/Roman_effarea_tables_20240327.zip": "4c7404f292be5528252297fc17bdde2c2159f4c38dc6b65deb5a957c4119bfc4",
+    "downloads/Roman/effarea_20240327/sca_14a9b0c/Roman_effarea_v8_SCA01_20240301.ecsv": "d116839810b69fa7e641ef70ed8d43789deb3e41c8c266914460ed0fc6b2d4cb",
+    "downloads/Roman/effarea_20240327/sca_14a9b0c/Roman_effarea_v8_SCA02_20240301.ecsv": "f45b5e87ab87d9defd6f1b7d10b1dd275906217ffa08a0442fe4de200cc7aa33",
+    "downloads/Roman/effarea_20240327/sca_14a9b0c/Roman_effarea_v8_SCA03_20240301.ecsv": "2b9de1de61f4e337c1dd89d3e2c11a6a25777e3504f88d4a21c7e98d2eb9b097",
+    "downloads/Roman/effarea_20240327/sca_14a9b0c/Roman_effarea_v8_SCA04_20240301.ecsv": "4d24cbcb79ff681251f5dbcf19d1f18d49a8bfba12a6f22b122b3b8c6260ec78",
+    "downloads/Roman/effarea_20240327/sca_14a9b0c/Roman_effarea_v8_SCA05_20240301.ecsv": "06fef6f8a71240a41f4da630304072664fb6cbd1186e14f35c366aa17ce3b17b",
+    "downloads/Roman/effarea_20240327/sca_14a9b0c/Roman_effarea_v8_SCA06_20240301.ecsv": "a8c241c978e16e87a67236862203e1ede032de246ac3eccb3bb3910ce6085ffc",
+    "downloads/Roman/effarea_20240327/sca_14a9b0c/Roman_effarea_v8_SCA07_20240301.ecsv": "3454da062e5eb2c9f1b150593c9f08290783debf8508c9a6f4b41693c9a79823",
+    "downloads/Roman/effarea_20240327/sca_14a9b0c/Roman_effarea_v8_SCA08_20240301.ecsv": "32e80e6917d47565487527e87cdbdc4f9e2c16278961db907378fdcbc49d6a0e",
+    "downloads/Roman/effarea_20240327/sca_14a9b0c/Roman_effarea_v8_SCA09_20240301.ecsv": "8bff8cdb679bec081152e6c10837081ca5574a84896c2fa2c271744e186ba703"
+  },
+  "retrieved": "2026-10-26",
+  "commit": "14a9b0c98b0da723d0f2e4c6277956183c1fdd06",
+  "aperture_m2": 4.374353610858427
+}

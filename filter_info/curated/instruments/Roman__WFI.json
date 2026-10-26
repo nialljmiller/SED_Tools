@@ -53,10 +53,80 @@
   ],
   "bands": {
     "Grism": {
-      "Description": "WFI slitless grism with a bandpass spanning 1.0 to 1.93 microns."
+      "Description": "WFI slitless grism with a bandpass spanning 1.0 to 1.93 microns.",
+      "Comments": "Mean over the 18 SCAs of the Grism_1stOrder column of the Roman technical-information effective-area tables (Roman_effarea_v8_SCA01..18_20240301.ecsv; CC0), divided by the 4.374354 m^2 area of the 2.36 m aperture stop, so values are a throughput relative to that area (central obscuration not removed). Pivot 14225.0 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as Grism_old. Per-detector curves: Roman/WFI_SCA01..WFI_SCA18."
     },
     "Prism": {
-      "Description": "WFI slitless prism with a bandpass spanning 0.75 to 1.80 microns."
+      "Description": "WFI slitless prism with a bandpass spanning 0.75 to 1.80 microns.",
+      "Comments": "Mean over the 18 SCAs of the Prism column of the Roman technical-information effective-area tables (Roman_effarea_v8_SCA01..18_20240301.ecsv; CC0), divided by the 4.374354 m^2 area of the 2.36 m aperture stop, so values are a throughput relative to that area (central obscuration not removed). Pivot 12572.9 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as Prism_old. Per-detector curves: Roman/WFI_SCA01..WFI_SCA18."
+    },
+    "F062": {
+      "Comments": "Mean over the 18 SCAs of the F062 column of the Roman technical-information effective-area tables (Roman_effarea_v8_SCA01..18_20240301.ecsv; CC0), divided by the 4.374354 m^2 area of the 2.36 m aperture stop, so values are a throughput relative to that area (central obscuration not removed). Pivot 6275.0 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F062_old. Per-detector curves: Roman/WFI_SCA01..WFI_SCA18."
+    },
+    "F062_old": {
+      "Description": "Roman WFI F062, previous NJM curve",
+      "Comments": "Previous NJM curve for F062, kept on 2026-10-26: an SVO Filter Profile Service copy (Roman/WFI.F062) of an earlier owner release, 50 Å grid, values are effective area in m^2 (not a fraction). Pivot 6290.8 Å, against 6275.0 Å for the current F062 curve. Not listed in the MESA instrument index."
+    },
+    "F087": {
+      "Comments": "Mean over the 18 SCAs of the F087 column of the Roman technical-information effective-area tables (Roman_effarea_v8_SCA01..18_20240301.ecsv; CC0), divided by the 4.374354 m^2 area of the 2.36 m aperture stop, so values are a throughput relative to that area (central obscuration not removed). Pivot 8717.3 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F087_old. Per-detector curves: Roman/WFI_SCA01..WFI_SCA18."
+    },
+    "F087_old": {
+      "Description": "Roman WFI F087, previous NJM curve",
+      "Comments": "Previous NJM curve for F087, kept on 2026-10-26: an SVO Filter Profile Service copy (Roman/WFI.F087) of an earlier owner release, 50 Å grid, values are effective area in m^2 (not a fraction). Pivot 8696.0 Å, against 8717.3 Å for the current F087 curve. Not listed in the MESA instrument index."
+    },
+    "F106": {
+      "Comments": "Mean over the 18 SCAs of the F106 column of the Roman technical-information effective-area tables (Roman_effarea_v8_SCA01..18_20240301.ecsv; CC0), divided by the 4.374354 m^2 area of the 2.36 m aperture stop, so values are a throughput relative to that area (central obscuration not removed). Pivot 10617.6 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F106_old. Per-detector curves: Roman/WFI_SCA01..WFI_SCA18."
+    },
+    "F106_old": {
+      "Description": "Roman WFI F106, previous NJM curve",
+      "Comments": "Previous NJM curve for F106, kept on 2026-10-26: an SVO Filter Profile Service copy (Roman/WFI.F106) of an earlier owner release, 50 Å grid, values are effective area in m^2 (not a fraction). Pivot 10566.5 Å, against 10617.6 Å for the current F106 curve. Not listed in the MESA instrument index."
+    },
+    "F129": {
+      "Comments": "Mean over the 18 SCAs of the F129 column of the Roman technical-information effective-area tables (Roman_effarea_v8_SCA01..18_20240301.ecsv; CC0), divided by the 4.374354 m^2 area of the 2.36 m aperture stop, so values are a throughput relative to that area (central obscuration not removed). Pivot 12840.6 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F129_old. Per-detector curves: Roman/WFI_SCA01..WFI_SCA18."
+    },
+    "F129_old": {
+      "Description": "Roman WFI F129, previous NJM curve",
+      "Comments": "Previous NJM curve for F129, kept on 2026-10-26: an SVO Filter Profile Service copy (Roman/WFI.F129) of an earlier owner release, 50 Å grid, values are effective area in m^2 (not a fraction). Pivot 12901.3 Å, against 12840.6 Å for the current F129 curve. Not listed in the MESA instrument index."
+    },
+    "F146": {
+      "Comments": "Mean over the 18 SCAs of the F146 column of the Roman technical-information effective-area tables (Roman_effarea_v8_SCA01..18_20240301.ecsv; CC0), divided by the 4.374354 m^2 area of the 2.36 m aperture stop, so values are a throughput relative to that area (central obscuration not removed). Pivot 14338.3 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F146_old. Per-detector curves: Roman/WFI_SCA01..WFI_SCA18."
+    },
+    "F146_old": {
+      "Description": "Roman WFI F146, previous NJM curve",
+      "Comments": "Previous NJM curve for F146, kept on 2026-10-26: an SVO Filter Profile Service copy (Roman/WFI.F146) of an earlier owner release, 50 Å grid, values are effective area in m^2 (not a fraction). Pivot 14377.8 Å, against 14338.3 Å for the current F146 curve. Not listed in the MESA instrument index."
+    },
+    "F158": {
+      "Comments": "Mean over the 18 SCAs of the F158 column of the Roman technical-information effective-area tables (Roman_effarea_v8_SCA01..18_20240301.ecsv; CC0), divided by the 4.374354 m^2 area of the 2.36 m aperture stop, so values are a throughput relative to that area (central obscuration not removed). Pivot 15800.0 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F158_old. Per-detector curves: Roman/WFI_SCA01..WFI_SCA18."
+    },
+    "F158_old": {
+      "Description": "Roman WFI F158, previous NJM curve",
+      "Comments": "Previous NJM curve for F158, kept on 2026-10-26: an SVO Filter Profile Service copy (Roman/WFI.F158) of an earlier owner release, 50 Å grid, values are effective area in m^2 (not a fraction). Pivot 15748.7 Å, against 15800.0 Å for the current F158 curve. Not listed in the MESA instrument index."
+    },
+    "F184": {
+      "Comments": "Mean over the 18 SCAs of the F184 column of the Roman technical-information effective-area tables (Roman_effarea_v8_SCA01..18_20240301.ecsv; CC0), divided by the 4.374354 m^2 area of the 2.36 m aperture stop, so values are a throughput relative to that area (central obscuration not removed). Pivot 18383.1 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F184_old. Per-detector curves: Roman/WFI_SCA01..WFI_SCA18."
+    },
+    "F184_old": {
+      "Description": "Roman WFI F184, previous NJM curve",
+      "Comments": "Previous NJM curve for F184, kept on 2026-10-26: an SVO Filter Profile Service copy (Roman/WFI.F184) of an earlier owner release, 50 Å grid, values are effective area in m^2 (not a fraction). Pivot 18394.1 Å, against 18383.1 Å for the current F184 curve. Not listed in the MESA instrument index."
+    },
+    "F213": {
+      "Comments": "Mean over the 18 SCAs of the F213 column of the Roman technical-information effective-area tables (Roman_effarea_v8_SCA01..18_20240301.ecsv; CC0), divided by the 4.374354 m^2 area of the 2.36 m aperture stop, so values are a throughput relative to that area (central obscuration not removed). Pivot 21311.0 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F213_old. Per-detector curves: Roman/WFI_SCA01..WFI_SCA18."
+    },
+    "F213_old": {
+      "Description": "Roman WFI F213, previous NJM curve",
+      "Comments": "Previous NJM curve for F213, kept on 2026-10-26: an SVO Filter Profile Service copy (Roman/WFI.F213) of an earlier owner release, 50 Å grid, values are effective area in m^2 (not a fraction). Pivot 21230.0 Å, against 21311.0 Å for the current F213 curve. Not listed in the MESA instrument index."
+    },
+    "Grism_old": {
+      "Description": "Roman WFI Grism, previous NJM curve",
+      "Comments": "Previous NJM curve for Grism, kept on 2026-10-26: an SVO Filter Profile Service copy (Roman/WFI.Grism) of an earlier owner release, 50 Å grid, values are effective area in m^2 (not a fraction). Pivot 14246.7 Å, against 14225.0 Å for the current Grism curve. Not listed in the MESA instrument index."
+    },
+    "Grism_0thOrder": {
+      "Description": "WFI grism, zeroth-order image",
+      "Comments": "Mean over the 18 SCAs of the Grism_0thOrder column of the Roman technical-information effective-area tables (v8, parameters as of 2024-03-01), divided by the 4.374354 m^2 area of the 2.36 m aperture stop (central obscuration not removed). New band, added 2026-10-26."
+    },
+    "Prism_old": {
+      "Description": "Roman WFI Prism, previous NJM curve",
+      "Comments": "Previous NJM curve for Prism, kept on 2026-10-26: an SVO Filter Profile Service copy (Roman/WFI.Prism) of an earlier owner release, 50 Å grid, values are effective area in m^2 (not a fraction). Pivot 12499.1 Å, against 12572.9 Å for the current Prism curve. Not listed in the MESA instrument index."
     }
   }
 }

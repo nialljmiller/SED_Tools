@@ -1,0 +1,508 @@
+{
+  "facility": "JWST",
+  "instrument": "NIRCam",
+  "notes": "JWST/NIRCam detector-averaged total system throughputs from JDox (NIRCam Filters page, https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters, Tables 2 and 3 links, files uploaded 2025-11-06; page calls them version 7.0 data). JDox: 'Total system throughput for each NIRCam filter, including contributions from the JWST Optical Telescope Element (OTE), NIRCam optical train, dichroics, filters, and detector quantum efficiency (QE). Throughput refers to photon-to-electron conversion efficiency. Averages across all detectors are plotted.' Pupil-wheel filters (F162M, F164N, F323N, F405N, F466N, F470N) include their filter-wheel blocking filter. Values as published (microns converted to \u00c5, no rescaling). Replaced on 2026-10-26 the previous NJM curves (SVO FPS copies of an earlier JDox release), which are kept as <band>_old.",
+  "bands": {
+    "F070W": {
+      "sources": "https://jwst-docs.stsci.edu/files/216457506/216457510/1/1762454197210/F070W_mean_system_throughput.txt | https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters",
+      "svo_id": "JWST/NIRCam.F070W",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        7050.0,
+        "https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters Tables 2-3 (Pivot, module-average)"
+      ],
+      "n": 304,
+      "pivot_A": 7047.11
+    },
+    "F090W": {
+      "sources": "https://jwst-docs.stsci.edu/files/216457506/216457511/1/1762454197925/F090W_mean_system_throughput.txt | https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters",
+      "svo_id": "JWST/NIRCam.F090W",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        9020.0,
+        "https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters Tables 2-3 (Pivot, module-average)"
+      ],
+      "n": 326,
+      "pivot_A": 9024.0
+    },
+    "F115W": {
+      "sources": "https://jwst-docs.stsci.edu/files/216457506/216457512/1/1762454198697/F115W_mean_system_throughput.txt | https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters",
+      "svo_id": "JWST/NIRCam.F115W",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        11540.0,
+        "https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters Tables 2-3 (Pivot, module-average)"
+      ],
+      "n": 389,
+      "pivot_A": 11540.78
+    },
+    "F140M": {
+      "sources": "https://jwst-docs.stsci.edu/files/216457506/216457513/1/1762454199403/F140M_mean_system_throughput.txt | https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters",
+      "svo_id": "JWST/NIRCam.F140M",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        14050.0,
+        "https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters Tables 2-3 (Pivot, module-average)"
+      ],
+      "n": 305,
+      "pivot_A": 14053.42
+    },
+    "F150W": {
+      "sources": "https://jwst-docs.stsci.edu/files/216457506/216457514/1/1762454200105/F150W_mean_system_throughput.txt | https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters",
+      "svo_id": "JWST/NIRCam.F150W",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        15009.999999999998,
+        "https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters Tables 2-3 (Pivot, module-average)"
+      ],
+      "n": 504,
+      "pivot_A": 15008.99
+    },
+    "F150W2": {
+      "sources": "https://jwst-docs.stsci.edu/files/216457506/216457515/1/1762454200799/F150W2_mean_system_throughput.txt | https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters",
+      "svo_id": "JWST/NIRCam.F150W2",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "2 negative samples (min -0.000339) set to 0",
+      "ref_pivot": [
+        16720.0,
+        "https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters Tables 2-3 (Pivot, module-average)"
+      ],
+      "n": 1985,
+      "pivot_A": 16717.77
+    },
+    "F162M": {
+      "sources": "https://jwst-docs.stsci.edu/files/216457506/216457516/1/1762454201511/F162M_mean_system_throughput.txt | https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters",
+      "svo_id": "JWST/NIRCam.F162M",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        16270.0,
+        "https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters Tables 2-3 (Pivot, module-average)"
+      ],
+      "n": 475,
+      "pivot_A": 16272.25
+    },
+    "F164N": {
+      "sources": "https://jwst-docs.stsci.edu/files/216457506/216457517/1/1762454202226/F164N_mean_system_throughput.txt | https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters",
+      "svo_id": "JWST/NIRCam.F164N",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        16450.0,
+        "https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters Tables 2-3 (Pivot, module-average)"
+      ],
+      "n": 205,
+      "pivot_A": 16445.09
+    },
+    "F182M": {
+      "sources": "https://jwst-docs.stsci.edu/files/216457506/216457518/1/1762454202966/F182M_mean_system_throughput.txt | https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters",
+      "svo_id": "JWST/NIRCam.F182M",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        18450.0,
+        "https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters Tables 2-3 (Pivot, module-average)"
+      ],
+      "n": 505,
+      "pivot_A": 18452.16
+    },
+    "F187N": {
+      "sources": "https://jwst-docs.stsci.edu/files/216457506/216457519/1/1762454204021/F187N_mean_system_throughput.txt | https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters",
+      "svo_id": "JWST/NIRCam.F187N",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        18740.0,
+        "https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters Tables 2-3 (Pivot, module-average)"
+      ],
+      "n": 255,
+      "pivot_A": 18740.53
+    },
+    "F200W": {
+      "sources": "https://jwst-docs.stsci.edu/files/216457506/216457520/1/1762454205059/F200W_mean_system_throughput.txt | https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters",
+      "svo_id": "JWST/NIRCam.F200W",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        19880.0,
+        "https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters Tables 2-3 (Pivot, module-average)"
+      ],
+      "n": 618,
+      "pivot_A": 19876.01
+    },
+    "F210M": {
+      "sources": "https://jwst-docs.stsci.edu/files/216457506/216457521/1/1762454206063/F210M_mean_system_throughput.txt | https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters",
+      "svo_id": "JWST/NIRCam.F210M",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        20960.0,
+        "https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters Tables 2-3 (Pivot, module-average)"
+      ],
+      "n": 406,
+      "pivot_A": 20955.95
+    },
+    "F212N": {
+      "sources": "https://jwst-docs.stsci.edu/files/216457506/216457522/1/1762454207252/F212N_mean_system_throughput.txt | https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters",
+      "svo_id": "JWST/NIRCam.F212N",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        21210.0,
+        "https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters Tables 2-3 (Pivot, module-average)"
+      ],
+      "n": 205,
+      "pivot_A": 21212.47
+    },
+    "F250M": {
+      "sources": "https://jwst-docs.stsci.edu/files/216457506/216457523/1/1762454208375/F250M_mean_system_throughput.txt | https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters",
+      "svo_id": "JWST/NIRCam.F250M",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        25030.0,
+        "https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters Tables 2-3 (Pivot, module-average)"
+      ],
+      "n": 338,
+      "pivot_A": 25031.35
+    },
+    "F277W": {
+      "sources": "https://jwst-docs.stsci.edu/files/216457506/216457524/1/1762454209446/F277W_mean_system_throughput.txt | https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters",
+      "svo_id": "JWST/NIRCam.F277W",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        27759.999999999996,
+        "https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters Tables 2-3 (Pivot, module-average)"
+      ],
+      "n": 1010,
+      "pivot_A": 27762.3
+    },
+    "F300M": {
+      "sources": "https://jwst-docs.stsci.edu/files/216457506/216457525/1/1762454210508/F300M_mean_system_throughput.txt | https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters",
+      "svo_id": "JWST/NIRCam.F300M",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        29960.0,
+        "https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters Tables 2-3 (Pivot, module-average)"
+      ],
+      "n": 523,
+      "pivot_A": 29960.86
+    },
+    "F322W2": {
+      "sources": "https://jwst-docs.stsci.edu/files/216457506/216457526/1/1762454211570/F322W2_mean_system_throughput.txt | https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters",
+      "svo_id": "JWST/NIRCam.F322W2",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        32470.0,
+        "https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters Tables 2-3 (Pivot, module-average)"
+      ],
+      "n": 1425,
+      "pivot_A": 32467.83
+    },
+    "F323N": {
+      "sources": "https://jwst-docs.stsci.edu/files/216457506/216457527/1/1762454212639/F323N_mean_system_throughput.txt | https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters",
+      "svo_id": "JWST/NIRCam.F323N",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        32370.0,
+        "https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters Tables 2-3 (Pivot, module-average)"
+      ],
+      "n": 153,
+      "pivot_A": 32367.56
+    },
+    "F335M": {
+      "sources": "https://jwst-docs.stsci.edu/files/216457506/216457528/1/1762454213710/F335M_mean_system_throughput.txt | https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters",
+      "svo_id": "JWST/NIRCam.F335M",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        33620.0,
+        "https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters Tables 2-3 (Pivot, module-average)"
+      ],
+      "n": 708,
+      "pivot_A": 33622.53
+    },
+    "F356W": {
+      "sources": "https://jwst-docs.stsci.edu/files/216457506/216457529/1/1762454214750/F356W_mean_system_throughput.txt | https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters",
+      "svo_id": "JWST/NIRCam.F356W",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        35650.0,
+        "https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters Tables 2-3 (Pivot, module-average)"
+      ],
+      "n": 949,
+      "pivot_A": 35654.89
+    },
+    "F360M": {
+      "sources": "https://jwst-docs.stsci.edu/files/216457506/216457530/1/1762454215820/F360M_mean_system_throughput.txt | https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters",
+      "svo_id": "JWST/NIRCam.F360M",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        36230.0,
+        "https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters Tables 2-3 (Pivot, module-average)"
+      ],
+      "n": 745,
+      "pivot_A": 36233.38
+    },
+    "F405N": {
+      "sources": "https://jwst-docs.stsci.edu/files/216457506/216457531/1/1762454216868/F405N_mean_system_throughput.txt | https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters",
+      "svo_id": "JWST/NIRCam.F405N",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        40530.0,
+        "https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters Tables 2-3 (Pivot, module-average)"
+      ],
+      "n": 153,
+      "pivot_A": 40531.19
+    },
+    "F410M": {
+      "sources": "https://jwst-docs.stsci.edu/files/216457506/216457532/1/1762454217942/F410M_mean_system_throughput.txt | https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters",
+      "svo_id": "JWST/NIRCam.F410M",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        40830.0,
+        "https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters Tables 2-3 (Pivot, module-average)"
+      ],
+      "n": 672,
+      "pivot_A": 40829.88
+    },
+    "F430M": {
+      "sources": "https://jwst-docs.stsci.edu/files/216457506/216457533/1/1762454219039/F430M_mean_system_throughput.txt | https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters",
+      "svo_id": "JWST/NIRCam.F430M",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        42810.0,
+        "https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters Tables 2-3 (Pivot, module-average)"
+      ],
+      "n": 411,
+      "pivot_A": 42812.95
+    },
+    "F444W": {
+      "sources": "https://jwst-docs.stsci.edu/files/216457506/216457534/1/1762454220116/F444W_mean_system_throughput.txt | https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters",
+      "svo_id": "JWST/NIRCam.F444W",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        44020.0,
+        "https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters Tables 2-3 (Pivot, module-average)"
+      ],
+      "n": 1149,
+      "pivot_A": 44017.43
+    },
+    "F460M": {
+      "sources": "https://jwst-docs.stsci.edu/files/216457506/216457535/1/1762454221175/F460M_mean_system_throughput.txt | https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters",
+      "svo_id": "JWST/NIRCam.F460M",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        46300.0,
+        "https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters Tables 2-3 (Pivot, module-average)"
+      ],
+      "n": 560,
+      "pivot_A": 46296.17
+    },
+    "F466N": {
+      "sources": "https://jwst-docs.stsci.edu/files/216457506/216457536/1/1762454222272/F466N_mean_system_throughput.txt | https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters",
+      "svo_id": "JWST/NIRCam.F466N",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        46540.0,
+        "https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters Tables 2-3 (Pivot, module-average)"
+      ],
+      "n": 191,
+      "pivot_A": 46544.07
+    },
+    "F470N": {
+      "sources": "https://jwst-docs.stsci.edu/files/216457506/216457537/1/1762454223375/F470N_mean_system_throughput.txt | https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters",
+      "svo_id": "JWST/NIRCam.F470N",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        47080.0,
+        "https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters Tables 2-3 (Pivot, module-average)"
+      ],
+      "n": 191,
+      "pivot_A": 47077.83
+    },
+    "F480M": {
+      "sources": "https://jwst-docs.stsci.edu/files/216457506/216457538/1/1762454224496/F480M_mean_system_throughput.txt | https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters",
+      "svo_id": "JWST/NIRCam.F480M",
+      "detector_type": "photon",
+      "detector_source": "original",
+      "components": "filter+optics+qe",
+      "components_source": "original",
+      "cleaning": "",
+      "ref_pivot": [
+        48170.0,
+        "https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters Tables 2-3 (Pivot, module-average)"
+      ],
+      "n": 449,
+      "pivot_A": 48165.46
+    }
+  },
+  "raw_files": {
+    "downloads/JWST/page/nircam-filters.html": "51640a5e4ff5c3d04e26e70b871b4c3c54896e479017d46d36e1e975eb468e25",
+    "downloads/JWST/nircam_jdox_20251106/F070W_mean_system_throughput.txt": "82b0283c9b3d3e60e0cec904bf756d1058fdd8c394c38bbaaae3518a44303d68",
+    "downloads/JWST/nircam_jdox_20251106/F090W_mean_system_throughput.txt": "47368629ad8e35f5dd2050f1570645ce341335e37848c666c8282c11780e93f1",
+    "downloads/JWST/nircam_jdox_20251106/F115W_mean_system_throughput.txt": "0ed11483342bb380928a1ac5a912706983dadaa6bc8d16b406522b19de4cded6",
+    "downloads/JWST/nircam_jdox_20251106/F140M_mean_system_throughput.txt": "df2981c96ffb9c66a2b1815778412ae7968952b04513caa60d666af35e630316",
+    "downloads/JWST/nircam_jdox_20251106/F150W_mean_system_throughput.txt": "d13a549b8f3df2848ecaa8072a0cd296c76322114e971a2c4aa682c95d39e5a0",
+    "downloads/JWST/nircam_jdox_20251106/F150W2_mean_system_throughput.txt": "af0fe8d9e49f6371a803680200897c111c08e9138e14d234b8a911158754ff29",
+    "downloads/JWST/nircam_jdox_20251106/F162M_mean_system_throughput.txt": "7603a811194d8e3c2a56c9ce4802d4cd4ea030c856e7ceeb7d0825acd67a839e",
+    "downloads/JWST/nircam_jdox_20251106/F164N_mean_system_throughput.txt": "0c6b0e8f6970a4b9a149c8c0a8e0340361453f74d5633d3b43b9e3f5971232fd",
+    "downloads/JWST/nircam_jdox_20251106/F182M_mean_system_throughput.txt": "f5abda48b6f265b9a77e0a77ec931a73dc9442810b758426b274903ba66a59a3",
+    "downloads/JWST/nircam_jdox_20251106/F187N_mean_system_throughput.txt": "15728f9c3458cdb18191ce1fef03adefef5851cc01e497766aa64e2faabc3888",
+    "downloads/JWST/nircam_jdox_20251106/F200W_mean_system_throughput.txt": "9a607820a5cfec29965d9f6e1e956afbd3a32bfa439453fa18c0a8fac0eee7a5",
+    "downloads/JWST/nircam_jdox_20251106/F210M_mean_system_throughput.txt": "10471feeae2fa351aac1865f8d8a352afae066bc77ca5d34f78bdb18383c6a6e",
+    "downloads/JWST/nircam_jdox_20251106/F212N_mean_system_throughput.txt": "4f61f240106b180a1fdcf8513b84541931a238a7ce0346f84795b3c0c15b185e",
+    "downloads/JWST/nircam_jdox_20251106/F250M_mean_system_throughput.txt": "f0605677dc2490875fbe7dc70c38a789b21b3142fc2a483b5974291ba1c28cef",
+    "downloads/JWST/nircam_jdox_20251106/F277W_mean_system_throughput.txt": "8980999603464cf59ad6cea7f31c83ff8553f131d8b6d32b8e4dac81d7ebcfec",
+    "downloads/JWST/nircam_jdox_20251106/F300M_mean_system_throughput.txt": "20e254cdf99cd01f4358f0767f0aba5ffb1a72f762869cad1bdd53dccd7637f7",
+    "downloads/JWST/nircam_jdox_20251106/F322W2_mean_system_throughput.txt": "015ab2b43413a132535e98b4fc4246fdff8c85f49076ad9255c916d696d3ee50",
+    "downloads/JWST/nircam_jdox_20251106/F323N_mean_system_throughput.txt": "b1df2335d45cb8efce377bbbf2f8d3d75437564fd3bb7418acee437c2a9b64e0",
+    "downloads/JWST/nircam_jdox_20251106/F335M_mean_system_throughput.txt": "232e27f7379fa6adcefd83602fbaeece8c3ea2541464a5a3f102656ab80f8e7c",
+    "downloads/JWST/nircam_jdox_20251106/F356W_mean_system_throughput.txt": "bb07502801e884f2d8feee946401d3f1b7ed7327d8345d04acb8aa17bc576a00",
+    "downloads/JWST/nircam_jdox_20251106/F360M_mean_system_throughput.txt": "95c3f24bb923956cb4abeae8c3e15d3d4194ae1dc1cd42cf1afd236b982f4c99",
+    "downloads/JWST/nircam_jdox_20251106/F405N_mean_system_throughput.txt": "4833007ed06885a775bc115632c6a69dc037688c909899efb75eee070029c1ac",
+    "downloads/JWST/nircam_jdox_20251106/F410M_mean_system_throughput.txt": "319a034ae856e0aea8832603f28d0d3f116932356e1d3df658598b4e7383b9fd",
+    "downloads/JWST/nircam_jdox_20251106/F430M_mean_system_throughput.txt": "07083bb699783c47a1d802aa6cd8c930b124405ec2d7a83eca486e57dd0566da",
+    "downloads/JWST/nircam_jdox_20251106/F444W_mean_system_throughput.txt": "97c148048ed0239b417c494c4cb5663c6d108f2197cee4f650aa0bfec87c3aa1",
+    "downloads/JWST/nircam_jdox_20251106/F460M_mean_system_throughput.txt": "17c9d1f1f0e2541ef0d357021a9273210191d6ad7d16002d0089c213bbbcaedf",
+    "downloads/JWST/nircam_jdox_20251106/F466N_mean_system_throughput.txt": "5b579ea68348ae27969b057f306a4ff34bd97332c2e374eb21bd5f384efb44bf",
+    "downloads/JWST/nircam_jdox_20251106/F470N_mean_system_throughput.txt": "7383c3d182b01f23bf4e329379d470f1410f9e7d72fe0b69dd194c52409e8857",
+    "downloads/JWST/nircam_jdox_20251106/F480M_mean_system_throughput.txt": "d0df11209dfe6c5c80f3c447621969fbda0799bff1040c05826f6686eccc16b1"
+  },
+  "retrieved": "2026-10-26",
+  "page": "https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters",
+  "jdox_upload_utc": "2025-11-06",
+  "renamed": {
+    "F070W.dat": "F070W_old.dat",
+    "F090W.dat": "F090W_old.dat",
+    "F115W.dat": "F115W_old.dat",
+    "F140M.dat": "F140M_old.dat",
+    "F150W.dat": "F150W_old.dat",
+    "F162M.dat": "F162M_old.dat",
+    "F164N.dat": "F164N_old.dat",
+    "F150W2.dat": "F150W2_old.dat",
+    "F182M.dat": "F182M_old.dat",
+    "F187N.dat": "F187N_old.dat",
+    "F200W.dat": "F200W_old.dat",
+    "F210M.dat": "F210M_old.dat",
+    "F212N.dat": "F212N_old.dat",
+    "F250M.dat": "F250M_old.dat",
+    "F277W.dat": "F277W_old.dat",
+    "F300M.dat": "F300M_old.dat",
+    "F322W2.dat": "F322W2_old.dat",
+    "F323N.dat": "F323N_old.dat",
+    "F335M.dat": "F335M_old.dat",
+    "F356W.dat": "F356W_old.dat",
+    "F360M.dat": "F360M_old.dat",
+    "F405N.dat": "F405N_old.dat",
+    "F410M.dat": "F410M_old.dat",
+    "F430M.dat": "F430M_old.dat",
+    "F444W.dat": "F444W_old.dat",
+    "F460M.dat": "F460M_old.dat",
+    "F466N.dat": "F466N_old.dat",
+    "F470N.dat": "F470N_old.dat",
+    "F480M.dat": "F480M_old.dat"
+  }
+}
