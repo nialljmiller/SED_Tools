@@ -12,6 +12,8 @@ from datetime import datetime
 from pathlib import Path
 from urllib.parse import unquote
 
+from filter_info.compose import SCHEMA as INFO_SCHEMA, InfoSources, write_info
+from filter_info.references import UNRESOLVED
 from sed_tools import __version__ as SED_TOOLS_VERSION
 from sed_tools.filter_properties import UNITS, curve_properties, load_vega
 from sed_tools.filter_metadata import read_filter_header
@@ -158,7 +160,7 @@ def write_properties(instrument_dir: Path, filter_files, vega, reference):
     return True
 
 
-def scan_filters(base_path: Path, vega=None, reference=None):
+def scan_filters(base_path: Path, vega=None, reference=None, info_sources=None):
     """Scan filters directory for facility/instrument information."""
     filters_dir = base_path / "filters"
 
@@ -196,6 +198,10 @@ def scan_filters(base_path: Path, vega=None, reference=None):
                 detector_types[metadata.get("DetectorType", "unclassified")] += 1
             has_properties = reference is not None and write_properties(
                 instrument_dir, filter_files, vega, reference)
+            band_properties = json.loads(
+                (instrument_dir / "properties.json").read_text())["bands"] if has_properties else None
+            has_info = info_sources is not None and write_info(
+                info_sources, instrument_dir, filter_files, band_properties)
 
             # Calculate size
             total_size = 0
@@ -217,6 +223,7 @@ def scan_filters(base_path: Path, vega=None, reference=None):
                 ),
                 "has_component_manifest": (instrument_dir / "manifest.json").is_file(),
                 "properties": "properties.json" if has_properties else None,
+                "info": "info.json" if has_info else None,
                 "size_bytes": total_size,
                 "size_human": format_size(total_size),
             }
@@ -284,7 +291,17 @@ def generate_index(data_dir: str = None):
         "vega_spectrum": vega_source,
         "note": "Vega quantities are null when the Vega spectrum does not cover the curve.",
     }
-    facilities, filters_detailed, total_filters = scan_filters(data_dir, vega, reference)
+    info_sources = InfoSources(Path(__file__).resolve().parent)
+    facilities, filters_detailed, total_filters = scan_filters(data_dir, vega, reference, info_sources)
+    # Reference keys info.json uses but references.json lacks:
+    # `python -m filter_info.references resolve` looks them up for the next run.
+    UNRESOLVED.write_text("".join(f"{k}\n" for k in sorted(info_sources.unresolved)))
+    info_definitions = {
+        "schema": INFO_SCHEMA,
+        "svo_records": info_sources.svo_records,
+        "references": len(info_sources.references),
+        "unresolved_references": len(info_sources.unresolved),
+    }
 
     # Build index structure
     index = {
@@ -306,6 +323,7 @@ def generate_index(data_dir: str = None):
             "facilities": facilities,
             "facilities_detailed": filters_detailed,
             "properties_definitions": reference,
+            "info_definitions": info_definitions,
         },
     }
 

@@ -1,0 +1,18 @@
+{
+ "bibcode:2012ivoa.rept.1015R": {
+  "authors": ["Rodrigo, C.", "Solano, E.", "Bayo, A."],
+  "journal": "IVOA Working Draft, 15 October 2012",
+  "note": "Authors from SVO's acknowledgement text (Internet Archive capture of svo2.cab.inta-csic.es/svo/theory/fps3, 2024-12-13); title and date from the IVOA page ADS links to.",
+  "publisher_url": "http://www.ivoa.net/documents/Notes/SVOFPS/index.html",
+  "title": "SVO Filter Profile Service Version 1.0",
+  "type": "techreport",
+  "year": 2012
+ },
+ "bibcode:2020sea..confE.182R": {
+  "authors": ["Rodrigo, C.", "Solano, E."],
+  "note": "As SVO's acknowledgement text lists it (Internet Archive capture of svo2.cab.inta-csic.es/svo/theory/fps3, 2024-12-13).",
+  "title": "The SVO Filter Profile Service",
+  "type": "inproceedings",
+  "year": 2020
+ }
+}

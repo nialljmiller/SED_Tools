@@ -76,3 +76,6 @@ htmlcov/
 !data/index.html
 !data/index.json
 !data/wl_cut.php
+!filter_info/references.json
+!filter_info/curated/*.json
+!filter_info/curated/instruments/*.json
