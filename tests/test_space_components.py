@@ -285,11 +285,12 @@ def test_jwst_band_factors_ignore_config_metadata():
 # Catalog
 # ---------------------------------------------------------------------------
 def test_status_of_2mass_and_ps1_and_new_builders():
-    for fac, inst in (("2MASS", "2MASS"), ("PAN-STARRS", "PS1")):
-        info = catalog.component_availability(fac, inst)
-        assert info["status"] == catalog.NOT_BUILT, (fac, info)
+    info = catalog.component_availability("PAN-STARRS", "PS1")
+    assert info["status"] == catalog.NOT_BUILT, info
     assert "Table 3" in catalog.status_for("PAN-STARRS", "PS1")[1]
-    assert "only total" not in catalog.status_for("2MASS", "2MASS")[1]
+    # 2MASS's separate tables are built since PR #48 (component_sources.twomass).
+    info = catalog.component_availability("2MASS", "2MASS")
+    assert info["status"] == "supported" and info["builder"] == "twomass", info
     info = catalog.component_availability("Roman", "WFI")
     assert info["status"] == "supported" and info["builder"] == "roman"
     info = catalog.component_availability("Euclid", "NISP")
