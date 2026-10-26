@@ -5,7 +5,8 @@
   "licence": {
     "redistribution": "permission",
     "terms": "\"Independientemente de la finalidad para la que fueran destinados, la reproducción total o parcial, uso, explotación, distribución y comercialización de los contenidos de este sitio web, requiere en todo caso de la autorización escrita previa por parte del prestador.\"",
-    "url": "https://www.caha.es/es/?option=com_content&view=article&id=14725"
+    "url": "https://www.caha.es/es/?option=com_content&view=article&id=14725",
+    "scope": "Site-wide legal notice (Aviso legal) of www.caha.es; not a data licence written for the filter curves."
   },
   "references": [
     "arxiv:astro-ph/9903177"

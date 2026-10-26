@@ -4,8 +4,9 @@
   "notes": "NJM names the grating bands with an underscore; JDox prints a slash. The quote for the shared comment stops before an HTML link, at the words 'as shown in '. F070LP, F100LP, F110W, F140X and CLEAR alone are not NJM bands. Jakobsen et al. 2022 and Böker et al. 2023 are the instrument papers named on the NIRSpec page; arXiv:2301.13766 is the Böker preprint and was not repeated. DetectorType was left unchanged. The MAST acknowledgement and STScI content-use policy match the other JWST instruments.",
   "licence": {
     "redistribution": "public",
-    "terms": "\"no claim to copyright is being asserted by STScI and material on this site may be freely used as in the public domain\"",
-    "url": "https://www.stsci.edu/copyright"
+    "terms": "\"Unless otherwise specifically stated, no claim to copyright is being asserted by STScI and material on this site may be freely used as in the public domain in accordance with NASA's contract.\"",
+    "url": "https://www.stsci.edu/copyright",
+    "scope": "Site-wide Content Use Policy of www.stsci.edu; not a data licence written for the filter curves."
   },
   "references": [
     "bibcode:2022A&A...661A..80J",

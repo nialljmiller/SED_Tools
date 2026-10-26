@@ -4,8 +4,9 @@
   "notes": "FLAMINGOS-2 filter profiles incorporate the optical train (entrance window, filter, nine lenses, two flat mirrors) excluding detector, grisms, telescope and atmosphere. Raw laboratory scan data are published on Gemini instrumentation pages; general redistribution rights are not explicitly specified under NOIRLab policy.",
   "licence": {
     "redistribution": "unknown",
-    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the Creative Commons Attribution 4.0 International License\"",
-    "url": "https://noirlab.edu/public/copyright/"
+    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the Creative Commons Attribution 4.0 International License and can not be used for non-NOIRLab products.\"",
+    "url": "https://noirlab.edu/public/copyright/",
+    "scope": "Site-wide copyright and image-use policy of noirlab.edu (website content); not a data licence written for the filter curves."
   },
   "references": [
     "bibcode:2004SPIE.5492.1196E",

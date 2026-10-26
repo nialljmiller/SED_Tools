@@ -5,7 +5,8 @@
   "licence": {
     "redistribution": "permission",
     "terms": "\"Copyright © 2026 All Rights Reserved\"",
-    "url": "https://apollomapping.com/about-us/whitepapers"
+    "url": "https://apollomapping.com/about-us/whitepapers",
+    "scope": "Site-wide footer of apollomapping.com (a reseller's website); not a data licence written for the filter curves."
   },
   "references": [
     "doi:10.5194/isprs-archives-XLI-B7-647-2016",

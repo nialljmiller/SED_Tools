@@ -5,7 +5,8 @@
   "licence": {
     "redistribution": "permission",
     "terms": "\"© Copyright 2020, ARIES Nainital, Uttarakhand, India.\"",
-    "url": "https://www.aries.res.in/facilities/astronomical-telescopes/360cm-telescope"
+    "url": "https://www.aries.res.in/facilities/astronomical-telescopes/360cm-telescope",
+    "scope": "Site-wide footer of www.aries.res.in; not a data licence written for the filter curves."
   },
   "references": [
     "bibcode:2018JAI.....750003B",

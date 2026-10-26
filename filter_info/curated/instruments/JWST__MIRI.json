@@ -4,8 +4,9 @@
   "notes": "JDox says MIRI imaging uses 9 photometric bands and coronagraphy uses 4 filters; the filter wheel also holds a redundant F2550WR, which is not an NJM band. The wheel-figure caption is marked with a copyright sign and links Wright et al. 2015. Photon-conversion efficiencies are the curves JDox points to; DetectorType was left unchanged. The MAST acknowledgement is the text required for refereed papers based on JWST data, and the program blank is printed as #____. The same STScI policy paragraph asks that NASA and STScI be acknowledged. JDox itself does not repeat a licence. doi:10.1086/682259 is the Glasse et al. 2015 sensitivity paper linked from the MIRI page. No single paper opened here tabulates every current flight curve, so band references were not set.",
   "licence": {
     "redistribution": "public",
-    "terms": "\"no claim to copyright is being asserted by STScI and material on this site may be freely used as in the public domain\"",
-    "url": "https://www.stsci.edu/copyright"
+    "terms": "\"Unless otherwise specifically stated, no claim to copyright is being asserted by STScI and material on this site may be freely used as in the public domain in accordance with NASA's contract.\"",
+    "url": "https://www.stsci.edu/copyright",
+    "scope": "Site-wide Content Use Policy of www.stsci.edu; not a data licence written for the filter curves."
   },
   "references": [
     "bibcode:2023PASP..135d8003W",

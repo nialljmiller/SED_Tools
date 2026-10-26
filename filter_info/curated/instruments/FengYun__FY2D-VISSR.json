@@ -5,7 +5,8 @@
   "licence": {
     "redistribution": "permission",
     "terms": "\"Copyright © NSMC(NCSW). All Rights Reserved.\"",
-    "url": "http://gsics.nsmc.org.cn/portal/share/footer.html"
+    "url": "http://gsics.nsmc.org.cn/portal/share/footer.html",
+    "scope": "Site-wide footer (footer.html, included on the GSICS/NSMC portal pages); not a data licence written for the filter curves."
   },
   "references": [
     "bibcode:2021AdAtS..38.1267X",

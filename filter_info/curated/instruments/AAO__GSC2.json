@@ -4,8 +4,9 @@
   "notes": "GSC2 southern photographic survey plates were obtained using the UK Schmidt Telescope at Siding Spring Observatory. Catalog construction and distribution was led by STScI in collaboration with Osservatorio Astronomico di Torino. Terms and requested citations follow STScI / MAST guidelines.",
   "licence": {
     "redistribution": "public",
-    "terms": "\"unless otherwise specifically stated, no claim to copyright is being asserted by stsci and material on this site may be freely used as in the public domain in accordance with nasa's contract.\"",
-    "url": "https://www.stsci.edu/copyright"
+    "terms": "\"Unless otherwise specifically stated, no claim to copyright is being asserted by STScI and material on this site may be freely used as in the public domain in accordance with NASA's contract.\"",
+    "url": "https://www.stsci.edu/copyright",
+    "scope": "Site-wide Content Use Policy of www.stsci.edu; not a data licence written for the filter curves."
   },
   "references": [
     "bibcode:2008AJ....136..735L",

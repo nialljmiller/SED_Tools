@@ -4,8 +4,9 @@
   "notes": "The filter page labels the archive link 'version 7.0: Jan 2025', but the file name on that link is nircam_throughputs_4Nov2022_v5.tar.gz. Pupil-wheel filters F162M, F164N, F323N, F405N, F466N and F470N are used with a second filter. Rieke et al. 2008 is cited there for the bandwidth definition, not as a JWST filter list. Tokunaga & Vacca 2005 is also cited, for the Mauna Kea set, and was not used as a NIRCam reference. No magnitude system is stated on the filter page. DetectorType was left unchanged. The curves include detector QE. The MAST acknowledgement and STScI content-use policy are the same as for the other JWST instruments; JDox does not repeat a licence.",
   "licence": {
     "redistribution": "public",
-    "terms": "\"no claim to copyright is being asserted by STScI and material on this site may be freely used as in the public domain\"",
-    "url": "https://www.stsci.edu/copyright"
+    "terms": "\"Unless otherwise specifically stated, no claim to copyright is being asserted by STScI and material on this site may be freely used as in the public domain in accordance with NASA's contract.\"",
+    "url": "https://www.stsci.edu/copyright",
+    "scope": "Site-wide Content Use Policy of www.stsci.edu; not a data licence written for the filter curves."
   },
   "references": [
     "bibcode:2023PASP..135b8001R",
@@ -61,6 +62,209 @@
   "bands": {
     "*": {
       "Comments": "The JDox tables are total system throughputs, including the telescope, NIRCam optics and detector quantum efficiency. The tabulated values are based on commissioning flight data."
+    },
+    "F070W": {
+      "Comments": "Detector-averaged total system throughput (OTE, NIRCam optics, dichroic, filter and detector QE) from the JDox NIRCam Filters page, file F070W_mean_system_throughput.txt (uploaded 2025-11-06; the page calls the data version 7.0). Pivot 7047.1 Å; JDox table pivot 7050 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F070W_old."
+    },
+    "F070W_old": {
+      "Description": "NIRCam F070W filter, previous NJM curve",
+      "Comments": "Previous NJM curve for F070W, kept on 2026-10-26 when the JDox detector-averaged throughput of November 2025 replaced it: an SVO Filter Profile Service copy (JWST/NIRCam.F070W) of an earlier JDox release, on a 10 Å grid. Its pivot is 7039.1 Å, against 7047.1 Å for the current F070W curve and 7050 Å in the JDox table. Not listed in the MESA instrument index."
+    },
+    "F090W": {
+      "Comments": "Detector-averaged total system throughput (OTE, NIRCam optics, dichroic, filter and detector QE) from the JDox NIRCam Filters page, file F090W_mean_system_throughput.txt (uploaded 2025-11-06; the page calls the data version 7.0). Pivot 9024.0 Å; JDox table pivot 9020 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F090W_old."
+    },
+    "F090W_old": {
+      "Description": "NIRCam F090W filter, previous NJM curve",
+      "Comments": "Previous NJM curve for F090W, kept on 2026-10-26 when the JDox detector-averaged throughput of November 2025 replaced it: an SVO Filter Profile Service copy (JWST/NIRCam.F090W) of an earlier JDox release, on a 10 Å grid. Its pivot is 9021.5 Å, against 9024.0 Å for the current F090W curve and 9020 Å in the JDox table. Not listed in the MESA instrument index."
+    },
+    "F115W": {
+      "Comments": "Detector-averaged total system throughput (OTE, NIRCam optics, dichroic, filter and detector QE) from the JDox NIRCam Filters page, file F115W_mean_system_throughput.txt (uploaded 2025-11-06; the page calls the data version 7.0). Pivot 11540.8 Å; JDox table pivot 11540 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F115W_old."
+    },
+    "F115W_old": {
+      "Description": "NIRCam F115W filter, previous NJM curve",
+      "Comments": "Previous NJM curve for F115W, kept on 2026-10-26 when the JDox detector-averaged throughput of November 2025 replaced it: an SVO Filter Profile Service copy (JWST/NIRCam.F115W) of an earlier JDox release, on a 10 Å grid. Its pivot is 11542.6 Å, against 11540.8 Å for the current F115W curve and 11540 Å in the JDox table. Not listed in the MESA instrument index."
+    },
+    "F140M": {
+      "Comments": "Detector-averaged total system throughput (OTE, NIRCam optics, dichroic, filter and detector QE) from the JDox NIRCam Filters page, file F140M_mean_system_throughput.txt (uploaded 2025-11-06; the page calls the data version 7.0). Pivot 14053.4 Å; JDox table pivot 14050 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F140M_old."
+    },
+    "F140M_old": {
+      "Description": "NIRCam F140M filter, previous NJM curve",
+      "Comments": "Previous NJM curve for F140M, kept on 2026-10-26 when the JDox detector-averaged throughput of November 2025 replaced it: an SVO Filter Profile Service copy (JWST/NIRCam.F140M) of an earlier JDox release, on a 10 Å grid. Its pivot is 14053.2 Å, against 14053.4 Å for the current F140M curve and 14050 Å in the JDox table. Not listed in the MESA instrument index."
+    },
+    "F150W": {
+      "Comments": "Detector-averaged total system throughput (OTE, NIRCam optics, dichroic, filter and detector QE) from the JDox NIRCam Filters page, file F150W_mean_system_throughput.txt (uploaded 2025-11-06; the page calls the data version 7.0). Pivot 15009.0 Å; JDox table pivot 15010 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F150W_old."
+    },
+    "F150W_old": {
+      "Description": "NIRCam F150W filter, previous NJM curve",
+      "Comments": "Previous NJM curve for F150W, kept on 2026-10-26 when the JDox detector-averaged throughput of November 2025 replaced it: an SVO Filter Profile Service copy (JWST/NIRCam.F150W) of an earlier JDox release, on a 10 Å grid. Its pivot is 15007.4 Å, against 15009.0 Å for the current F150W curve and 15010 Å in the JDox table. Not listed in the MESA instrument index."
+    },
+    "F150W2": {
+      "Comments": "Detector-averaged total system throughput (OTE, NIRCam optics, dichroic, filter and detector QE) from the JDox NIRCam Filters page, file F150W2_mean_system_throughput.txt (uploaded 2025-11-06; the page calls the data version 7.0). Pivot 16717.8 Å; JDox table pivot 16720 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F150W2_old."
+    },
+    "F150W2_old": {
+      "Description": "NIRCam F150W2 filter, previous NJM curve",
+      "Comments": "Previous NJM curve for F150W2, kept on 2026-10-26 when the JDox detector-averaged throughput of November 2025 replaced it: an SVO Filter Profile Service copy (JWST/NIRCam.F150W2) of an earlier JDox release, on a 10 Å grid. Its pivot is 16592.1 Å, against 16717.8 Å for the current F150W2 curve and 16720 Å in the JDox table. Not listed in the MESA instrument index."
+    },
+    "F162M": {
+      "Comments": "Detector-averaged total system throughput (OTE, NIRCam optics, dichroic, filter and detector QE) from the JDox NIRCam Filters page, file F162M_mean_system_throughput.txt (uploaded 2025-11-06; the page calls the data version 7.0). Pivot 16272.2 Å; JDox table pivot 16270 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F162M_old. The pupil-wheel filter is tabulated in combination with its filter-wheel blocking filter."
+    },
+    "F162M_old": {
+      "Description": "NIRCam F162M filter, previous NJM curve",
+      "Comments": "Previous NJM curve for F162M, kept on 2026-10-26 when the JDox detector-averaged throughput of November 2025 replaced it: an SVO Filter Profile Service copy (JWST/NIRCam.F162M) of an earlier JDox release, on a 10 Å grid. Its pivot is 16272.5 Å, against 16272.2 Å for the current F162M curve and 16270 Å in the JDox table. Not listed in the MESA instrument index."
+    },
+    "F164N": {
+      "Comments": "Detector-averaged total system throughput (OTE, NIRCam optics, dichroic, filter and detector QE) from the JDox NIRCam Filters page, file F164N_mean_system_throughput.txt (uploaded 2025-11-06; the page calls the data version 7.0). Pivot 16445.1 Å; JDox table pivot 16450 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F164N_old. The pupil-wheel filter is tabulated in combination with its filter-wheel blocking filter."
+    },
+    "F164N_old": {
+      "Description": "NIRCam F164N filter, previous NJM curve",
+      "Comments": "Previous NJM curve for F164N, kept on 2026-10-26 when the JDox detector-averaged throughput of November 2025 replaced it: an SVO Filter Profile Service copy (JWST/NIRCam.F164N) of an earlier JDox release, on a 10 Å grid. Its pivot is 16445.4 Å, against 16445.1 Å for the current F164N curve and 16450 Å in the JDox table. Not listed in the MESA instrument index."
+    },
+    "F182M": {
+      "Comments": "Detector-averaged total system throughput (OTE, NIRCam optics, dichroic, filter and detector QE) from the JDox NIRCam Filters page, file F182M_mean_system_throughput.txt (uploaded 2025-11-06; the page calls the data version 7.0). Pivot 18452.2 Å; JDox table pivot 18450 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F182M_old."
+    },
+    "F182M_old": {
+      "Description": "NIRCam F182M filter, previous NJM curve",
+      "Comments": "Previous NJM curve for F182M, kept on 2026-10-26 when the JDox detector-averaged throughput of November 2025 replaced it: an SVO Filter Profile Service copy (JWST/NIRCam.F182M) of an earlier JDox release, on a 10 Å grid. Its pivot is 18451.7 Å, against 18452.2 Å for the current F182M curve and 18450 Å in the JDox table. Not listed in the MESA instrument index."
+    },
+    "F187N": {
+      "Comments": "Detector-averaged total system throughput (OTE, NIRCam optics, dichroic, filter and detector QE) from the JDox NIRCam Filters page, file F187N_mean_system_throughput.txt (uploaded 2025-11-06; the page calls the data version 7.0). Pivot 18740.5 Å; JDox table pivot 18740 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F187N_old."
+    },
+    "F187N_old": {
+      "Description": "NIRCam F187N filter, previous NJM curve",
+      "Comments": "Previous NJM curve for F187N, kept on 2026-10-26 when the JDox detector-averaged throughput of November 2025 replaced it: an SVO Filter Profile Service copy (JWST/NIRCam.F187N) of an earlier JDox release, on a 10 Å grid. Its pivot is 18739.0 Å, against 18740.5 Å for the current F187N curve and 18740 Å in the JDox table. Not listed in the MESA instrument index."
+    },
+    "F200W": {
+      "Comments": "Detector-averaged total system throughput (OTE, NIRCam optics, dichroic, filter and detector QE) from the JDox NIRCam Filters page, file F200W_mean_system_throughput.txt (uploaded 2025-11-06; the page calls the data version 7.0). Pivot 19876.0 Å; JDox table pivot 19880 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F200W_old."
+    },
+    "F200W_old": {
+      "Description": "NIRCam F200W filter, previous NJM curve",
+      "Comments": "Previous NJM curve for F200W, kept on 2026-10-26 when the JDox detector-averaged throughput of November 2025 replaced it: an SVO Filter Profile Service copy (JWST/NIRCam.F200W) of an earlier JDox release, on a 10 Å grid. Its pivot is 19886.5 Å, against 19876.0 Å for the current F200W curve and 19880 Å in the JDox table. Not listed in the MESA instrument index."
+    },
+    "F210M": {
+      "Comments": "Detector-averaged total system throughput (OTE, NIRCam optics, dichroic, filter and detector QE) from the JDox NIRCam Filters page, file F210M_mean_system_throughput.txt (uploaded 2025-11-06; the page calls the data version 7.0). Pivot 20956.0 Å; JDox table pivot 20960 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F210M_old."
+    },
+    "F210M_old": {
+      "Description": "NIRCam F210M filter, previous NJM curve",
+      "Comments": "Previous NJM curve for F210M, kept on 2026-10-26 when the JDox detector-averaged throughput of November 2025 replaced it: an SVO Filter Profile Service copy (JWST/NIRCam.F210M) of an earlier JDox release, on a 10 Å grid. Its pivot is 20954.5 Å, against 20956.0 Å for the current F210M curve and 20960 Å in the JDox table. Not listed in the MESA instrument index."
+    },
+    "F212N": {
+      "Comments": "Detector-averaged total system throughput (OTE, NIRCam optics, dichroic, filter and detector QE) from the JDox NIRCam Filters page, file F212N_mean_system_throughput.txt (uploaded 2025-11-06; the page calls the data version 7.0). Pivot 21212.5 Å; JDox table pivot 21210 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F212N_old."
+    },
+    "F212N_old": {
+      "Description": "NIRCam F212N filter, previous NJM curve",
+      "Comments": "Previous NJM curve for F212N, kept on 2026-10-26 when the JDox detector-averaged throughput of November 2025 replaced it: an SVO Filter Profile Service copy (JWST/NIRCam.F212N) of an earlier JDox release, on a 10 Å grid. Its pivot is 21213.2 Å, against 21212.5 Å for the current F212N curve and 21210 Å in the JDox table. Not listed in the MESA instrument index."
+    },
+    "F250M": {
+      "Comments": "Detector-averaged total system throughput (OTE, NIRCam optics, dichroic, filter and detector QE) from the JDox NIRCam Filters page, file F250M_mean_system_throughput.txt (uploaded 2025-11-06; the page calls the data version 7.0). Pivot 25031.3 Å; JDox table pivot 25030 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F250M_old."
+    },
+    "F250M_old": {
+      "Description": "NIRCam F250M filter, previous NJM curve",
+      "Comments": "Previous NJM curve for F250M, kept on 2026-10-26 when the JDox detector-averaged throughput of November 2025 replaced it: an SVO Filter Profile Service copy (JWST/NIRCam.F250M) of an earlier JDox release, on a 10 Å grid. Its pivot is 25032.3 Å, against 25031.3 Å for the current F250M curve and 25030 Å in the JDox table. Not listed in the MESA instrument index."
+    },
+    "F277W": {
+      "Comments": "Detector-averaged total system throughput (OTE, NIRCam optics, dichroic, filter and detector QE) from the JDox NIRCam Filters page, file F277W_mean_system_throughput.txt (uploaded 2025-11-06; the page calls the data version 7.0). Pivot 27762.3 Å; JDox table pivot 27760 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F277W_old."
+    },
+    "F277W_old": {
+      "Description": "NIRCam F277W filter, previous NJM curve",
+      "Comments": "Previous NJM curve for F277W, kept on 2026-10-26 when the JDox detector-averaged throughput of November 2025 replaced it: an SVO Filter Profile Service copy (JWST/NIRCam.F277W) of an earlier JDox release, on a 10 Å grid. Its pivot is 27617.4 Å, against 27762.3 Å for the current F277W curve and 27760 Å in the JDox table. Not listed in the MESA instrument index."
+    },
+    "F300M": {
+      "Comments": "Detector-averaged total system throughput (OTE, NIRCam optics, dichroic, filter and detector QE) from the JDox NIRCam Filters page, file F300M_mean_system_throughput.txt (uploaded 2025-11-06; the page calls the data version 7.0). Pivot 29960.9 Å; JDox table pivot 29960 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F300M_old."
+    },
+    "F300M_old": {
+      "Description": "NIRCam F300M filter, previous NJM curve",
+      "Comments": "Previous NJM curve for F300M, kept on 2026-10-26 when the JDox detector-averaged throughput of November 2025 replaced it: an SVO Filter Profile Service copy (JWST/NIRCam.F300M) of an earlier JDox release, on a 10 Å grid. Its pivot is 29891.2 Å, against 29960.9 Å for the current F300M curve and 29960 Å in the JDox table. Not listed in the MESA instrument index."
+    },
+    "F322W2": {
+      "Comments": "Detector-averaged total system throughput (OTE, NIRCam optics, dichroic, filter and detector QE) from the JDox NIRCam Filters page, file F322W2_mean_system_throughput.txt (uploaded 2025-11-06; the page calls the data version 7.0). Pivot 32467.8 Å; JDox table pivot 32470 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F322W2_old."
+    },
+    "F322W2_old": {
+      "Description": "NIRCam F322W2 filter, previous NJM curve",
+      "Comments": "Previous NJM curve for F322W2, kept on 2026-10-26 when the JDox detector-averaged throughput of November 2025 replaced it: an SVO Filter Profile Service copy (JWST/NIRCam.F322W2) of an earlier JDox release, on a 10 Å grid. Its pivot is 32319.8 Å, against 32467.8 Å for the current F322W2 curve and 32470 Å in the JDox table. Not listed in the MESA instrument index."
+    },
+    "F323N": {
+      "Comments": "Detector-averaged total system throughput (OTE, NIRCam optics, dichroic, filter and detector QE) from the JDox NIRCam Filters page, file F323N_mean_system_throughput.txt (uploaded 2025-11-06; the page calls the data version 7.0). Pivot 32367.6 Å; JDox table pivot 32370 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F323N_old. The pupil-wheel filter is tabulated in combination with its filter-wheel blocking filter."
+    },
+    "F323N_old": {
+      "Description": "NIRCam F323N filter, previous NJM curve",
+      "Comments": "Previous NJM curve for F323N, kept on 2026-10-26 when the JDox detector-averaged throughput of November 2025 replaced it: an SVO Filter Profile Service copy (JWST/NIRCam.F323N) of an earlier JDox release, on a 10 Å grid. Its pivot is 32368.5 Å, against 32367.6 Å for the current F323N curve and 32370 Å in the JDox table. Not listed in the MESA instrument index."
+    },
+    "F335M": {
+      "Comments": "Detector-averaged total system throughput (OTE, NIRCam optics, dichroic, filter and detector QE) from the JDox NIRCam Filters page, file F335M_mean_system_throughput.txt (uploaded 2025-11-06; the page calls the data version 7.0). Pivot 33622.5 Å; JDox table pivot 33620 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F335M_old."
+    },
+    "F335M_old": {
+      "Description": "NIRCam F335M filter, previous NJM curve",
+      "Comments": "Previous NJM curve for F335M, kept on 2026-10-26 when the JDox detector-averaged throughput of November 2025 replaced it: an SVO Filter Profile Service copy (JWST/NIRCam.F335M) of an earlier JDox release, on a 10 Å grid. Its pivot is 33620.7 Å, against 33622.5 Å for the current F335M curve and 33620 Å in the JDox table. Not listed in the MESA instrument index."
+    },
+    "F356W": {
+      "Comments": "Detector-averaged total system throughput (OTE, NIRCam optics, dichroic, filter and detector QE) from the JDox NIRCam Filters page, file F356W_mean_system_throughput.txt (uploaded 2025-11-06; the page calls the data version 7.0). Pivot 35654.9 Å; JDox table pivot 35650 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F356W_old."
+    },
+    "F356W_old": {
+      "Description": "NIRCam F356W filter, previous NJM curve",
+      "Comments": "Previous NJM curve for F356W, kept on 2026-10-26 when the JDox detector-averaged throughput of November 2025 replaced it: an SVO Filter Profile Service copy (JWST/NIRCam.F356W) of an earlier JDox release, on a 10 Å grid. Its pivot is 35683.6 Å, against 35654.9 Å for the current F356W curve and 35650 Å in the JDox table. Not listed in the MESA instrument index."
+    },
+    "F360M": {
+      "Comments": "Detector-averaged total system throughput (OTE, NIRCam optics, dichroic, filter and detector QE) from the JDox NIRCam Filters page, file F360M_mean_system_throughput.txt (uploaded 2025-11-06; the page calls the data version 7.0). Pivot 36233.4 Å; JDox table pivot 36230 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F360M_old."
+    },
+    "F360M_old": {
+      "Description": "NIRCam F360M filter, previous NJM curve",
+      "Comments": "Previous NJM curve for F360M, kept on 2026-10-26 when the JDox detector-averaged throughput of November 2025 replaced it: an SVO Filter Profile Service copy (JWST/NIRCam.F360M) of an earlier JDox release, on a 10 Å grid. Its pivot is 36241.8 Å, against 36233.4 Å for the current F360M curve and 36230 Å in the JDox table. Not listed in the MESA instrument index."
+    },
+    "F405N": {
+      "Comments": "Detector-averaged total system throughput (OTE, NIRCam optics, dichroic, filter and detector QE) from the JDox NIRCam Filters page, file F405N_mean_system_throughput.txt (uploaded 2025-11-06; the page calls the data version 7.0). Pivot 40531.2 Å; JDox table pivot 40530 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F405N_old. The pupil-wheel filter is tabulated in combination with its filter-wheel blocking filter."
+    },
+    "F405N_old": {
+      "Description": "NIRCam F405N filter, previous NJM curve",
+      "Comments": "Previous NJM curve for F405N, kept on 2026-10-26 when the JDox detector-averaged throughput of November 2025 replaced it: an SVO Filter Profile Service copy (JWST/NIRCam.F405N) of an earlier JDox release, on a 10 Å grid. Its pivot is 40516.5 Å, against 40531.2 Å for the current F405N curve and 40530 Å in the JDox table. Not listed in the MESA instrument index."
+    },
+    "F410M": {
+      "Comments": "Detector-averaged total system throughput (OTE, NIRCam optics, dichroic, filter and detector QE) from the JDox NIRCam Filters page, file F410M_mean_system_throughput.txt (uploaded 2025-11-06; the page calls the data version 7.0). Pivot 40829.9 Å; JDox table pivot 40830 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F410M_old."
+    },
+    "F410M_old": {
+      "Description": "NIRCam F410M filter, previous NJM curve",
+      "Comments": "Previous NJM curve for F410M, kept on 2026-10-26 when the JDox detector-averaged throughput of November 2025 replaced it: an SVO Filter Profile Service copy (JWST/NIRCam.F410M) of an earlier JDox release, on a 10 Å grid. Its pivot is 40822.4 Å, against 40829.9 Å for the current F410M curve and 40830 Å in the JDox table. Not listed in the MESA instrument index."
+    },
+    "F430M": {
+      "Comments": "Detector-averaged total system throughput (OTE, NIRCam optics, dichroic, filter and detector QE) from the JDox NIRCam Filters page, file F430M_mean_system_throughput.txt (uploaded 2025-11-06; the page calls the data version 7.0). Pivot 42812.9 Å; JDox table pivot 42810 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F430M_old."
+    },
+    "F430M_old": {
+      "Description": "NIRCam F430M filter, previous NJM curve",
+      "Comments": "Previous NJM curve for F430M, kept on 2026-10-26 when the JDox detector-averaged throughput of November 2025 replaced it: an SVO Filter Profile Service copy (JWST/NIRCam.F430M) of an earlier JDox release, on a 10 Å grid. Its pivot is 42812.6 Å, against 42812.9 Å for the current F430M curve and 42810 Å in the JDox table. Not listed in the MESA instrument index."
+    },
+    "F444W": {
+      "Comments": "Detector-averaged total system throughput (OTE, NIRCam optics, dichroic, filter and detector QE) from the JDox NIRCam Filters page, file F444W_mean_system_throughput.txt (uploaded 2025-11-06; the page calls the data version 7.0). Pivot 44017.4 Å; JDox table pivot 44020 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F444W_old."
+    },
+    "F444W_old": {
+      "Description": "NIRCam F444W filter, previous NJM curve",
+      "Comments": "Previous NJM curve for F444W, kept on 2026-10-26 when the JDox detector-averaged throughput of November 2025 replaced it: an SVO Filter Profile Service copy (JWST/NIRCam.F444W) of an earlier JDox release, on a 10 Å grid. Its pivot is 44043.2 Å, against 44017.4 Å for the current F444W curve and 44020 Å in the JDox table. Not listed in the MESA instrument index."
+    },
+    "F460M": {
+      "Comments": "Detector-averaged total system throughput (OTE, NIRCam optics, dichroic, filter and detector QE) from the JDox NIRCam Filters page, file F460M_mean_system_throughput.txt (uploaded 2025-11-06; the page calls the data version 7.0). Pivot 46296.2 Å; JDox table pivot 46300 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F460M_old."
+    },
+    "F460M_old": {
+      "Description": "NIRCam F460M filter, previous NJM curve",
+      "Comments": "Previous NJM curve for F460M, kept on 2026-10-26 when the JDox detector-averaged throughput of November 2025 replaced it: an SVO Filter Profile Service copy (JWST/NIRCam.F460M) of an earlier JDox release, on a 10 Å grid. Its pivot is 46299.3 Å, against 46296.2 Å for the current F460M curve and 46300 Å in the JDox table. Not listed in the MESA instrument index."
+    },
+    "F466N": {
+      "Comments": "Detector-averaged total system throughput (OTE, NIRCam optics, dichroic, filter and detector QE) from the JDox NIRCam Filters page, file F466N_mean_system_throughput.txt (uploaded 2025-11-06; the page calls the data version 7.0). Pivot 46544.1 Å; JDox table pivot 46540 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F466N_old. The pupil-wheel filter is tabulated in combination with its filter-wheel blocking filter."
+    },
+    "F466N_old": {
+      "Description": "NIRCam F466N filter, previous NJM curve",
+      "Comments": "Previous NJM curve for F466N, kept on 2026-10-26 when the JDox detector-averaged throughput of November 2025 replaced it: an SVO Filter Profile Service copy (JWST/NIRCam.F466N) of an earlier JDox release, on a 10 Å grid. Its pivot is 46544.3 Å, against 46544.1 Å for the current F466N curve and 46540 Å in the JDox table. Not listed in the MESA instrument index."
+    },
+    "F470N": {
+      "Comments": "Detector-averaged total system throughput (OTE, NIRCam optics, dichroic, filter and detector QE) from the JDox NIRCam Filters page, file F470N_mean_system_throughput.txt (uploaded 2025-11-06; the page calls the data version 7.0). Pivot 47077.8 Å; JDox table pivot 47080 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F470N_old. The pupil-wheel filter is tabulated in combination with its filter-wheel blocking filter."
+    },
+    "F470N_old": {
+      "Description": "NIRCam F470N filter, previous NJM curve",
+      "Comments": "Previous NJM curve for F470N, kept on 2026-10-26 when the JDox detector-averaged throughput of November 2025 replaced it: an SVO Filter Profile Service copy (JWST/NIRCam.F470N) of an earlier JDox release, on a 10 Å grid. Its pivot is 47077.9 Å, against 47077.8 Å for the current F470N curve and 47080 Å in the JDox table. Not listed in the MESA instrument index."
+    },
+    "F480M": {
+      "Comments": "Detector-averaged total system throughput (OTE, NIRCam optics, dichroic, filter and detector QE) from the JDox NIRCam Filters page, file F480M_mean_system_throughput.txt (uploaded 2025-11-06; the page calls the data version 7.0). Pivot 48165.5 Å; JDox table pivot 48170 Å. It replaced the earlier SVO-copied curve on 2026-10-26; that curve is kept as F480M_old."
+    },
+    "F480M_old": {
+      "Description": "NIRCam F480M filter, previous NJM curve",
+      "Comments": "Previous NJM curve for F480M, kept on 2026-10-26 when the JDox detector-averaged throughput of November 2025 replaced it: an SVO Filter Profile Service copy (JWST/NIRCam.F480M) of an earlier JDox release, on a 10 Å grid. Its pivot is 48181.9 Å, against 48165.5 Å for the current F480M curve and 48170 Å in the JDox table. Not listed in the MESA instrument index."
     }
   }
 }

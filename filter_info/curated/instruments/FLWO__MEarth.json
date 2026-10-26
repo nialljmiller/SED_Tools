@@ -4,8 +4,9 @@
   "notes": "MEarth-North operates eight 40 cm f/9 Ritchey-Chretien telescopes equipped with Apogee Alta U42 CCDs and Schott RG715 longpass filters defining the custom iz bandpass. Data and site policies fall under the Smithsonian/CfA Open Access public domain terms.",
   "licence": {
     "redistribution": "public",
-    "terms": "\"our digital assets are in the public domain and are thus free of copyright restrictions and may be used for any purpose, free of charge, without further permission.\"",
-    "url": "https://www.cfa.harvard.edu/news/image-use-policy"
+    "terms": "\"Our digital assets are in the public domain and are thus free of copyright restrictions and may be used for any purpose, free of charge, without further permission.\"",
+    "url": "https://www.cfa.harvard.edu/news/image-use-policy",
+    "scope": "Site-wide image use policy of www.cfa.harvard.edu; not a data licence written for the filter curves."
   },
   "references": [
     "bibcode:2008PASP..120..317N",

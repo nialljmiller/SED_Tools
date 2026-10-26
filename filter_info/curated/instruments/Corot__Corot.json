@@ -4,7 +4,7 @@
   "notes": "CoRoT bandpass data cover the Asteroseismology channel (AS) and the Exoplanet / Planetary Field channel (PF). In-flight instrument performance and design are described in Auvergne et al. (2009). Data products are available through the VizieR catalogue service (catalogue B/corot). DetectorType is left unchanged.",
   "licence": {
     "redistribution": "attribution",
-    "terms": "\"The data retrieved with VizieR are free of usage in a scientific context ; however, as it is the usage in scientific publication, the original authors and publication references including the publisher have to be explicitely cited\"",
+    "terms": "\"The data retrieved with VizieR are free of usage in a scientific context; however, as it is the usage in scientific publication, the original authors and publication references including the publisher have to be explicitely cited (see section Code of conduct of scientific research).\"",
     "url": "https://cds.unistra.fr/vizier-org/licences_vizier.html"
   },
   "references": [

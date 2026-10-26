@@ -5,7 +5,8 @@
   "licence": {
     "redistribution": "unknown",
     "terms": "\"The whole site and all works (text, photographs, illustrations, videos, audio files, etc.) contained in the Subaru Telescope website are owned by the National Astronomical Observatory of Japan (NAOJ) or their respective copyright holders.\"",
-    "url": "https://subarutelescope.org/Information/copyright.html"
+    "url": "https://subarutelescope.org/Information/copyright.html",
+    "scope": "Site policy of the Subaru Telescope website (this URL redirects to https://subarutelescope.org/en/sitepolicy/); not a data licence written for the filter curves."
   },
   "references": [
     "bibcode:2002PASJ...54..819K"

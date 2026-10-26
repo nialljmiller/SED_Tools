@@ -4,7 +4,7 @@
   "notes": "Gaia DR2 passbands used to generate the released DR2 magnitudes and astrophysical parameters (Evans et al. 2018, A&A 616, A4). Whole-instrument (telescope optics, filter/prisms, CCD QE) transmissivities for CCD photometry (DetectorType=photon). DetectorType is left unchanged. Distinct from GAIA/DR2r (revised curves) and GAIA/GAIA (EDR3/DR3, Gaia2m BP bright/faint).",
   "licence": {
     "redistribution": "attribution",
-    "terms": "\"raw and calibrated data (hereafter data) deriving from satellites flown in the framework of an agency programme and contained in the esa space science archives, as well as analysed data and higher-level science products (hereafter data products) contained in the esa space science archives, are open and free to use by the user subject to proper acknowledgment to be given in accordance with the credit lines provided below.\"",
+    "terms": "\"Raw and Calibrated Data (hereafter Data) deriving from satellites flown in the framework of an Agency Programme and contained in the ESA Space Science Archives, as well as analysed data and higher-level science products (hereafter Data Products) contained in the ESA Space Science Archives, are open and free to use by the User subject to proper acknowledgment to be given in accordance with the credit lines provided below.\"",
     "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions"
   },
   "references": [

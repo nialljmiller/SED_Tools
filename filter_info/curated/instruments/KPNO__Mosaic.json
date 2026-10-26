@@ -4,8 +4,9 @@
   "notes": "The Mosaic list is paginated. Harris B/R, I, and i SDSS were read on page=1 sorted by title; U, V Harris, and r SDSS on page=2. Each band has more than one physical filter (KPNO k-numbers and former CTIO c-numbers). The page says that as of 24 April 2012 all CTIO Mosaic-2 filters were transferred to KPNO for Mosaic-1, and that KPNO Mosaic filters were measured at NOAO. The NOIRLab Kitt Peak acknowledgement is for observations, not these curves, so it is not stored. The public copyright page does not place filter scans under CC BY 4.0 and does not say the work is a US government work, so redistribution is unknown. No magnitude system is stated. Fukugita 1996 is not cited: the table names the filters i SDSS and r SDSS but does not cite that paper.",
   "licence": {
     "redistribution": "unknown",
-    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the\"",
-    "url": "https://noirlab.edu/public/copyright/"
+    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the Creative Commons Attribution 4.0 International License and can not be used for non-NOIRLab products.\"",
+    "url": "https://noirlab.edu/public/copyright/",
+    "scope": "Site-wide copyright and image-use policy of noirlab.edu (website content); not a data licence written for the filter curves."
   },
   "links": [
     {

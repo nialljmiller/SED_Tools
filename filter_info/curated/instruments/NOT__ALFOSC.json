@@ -89,7 +89,8 @@
   },
   "licence": {
     "redistribution": "unknown",
-    "terms": "\"2005 Nordic Optical Telescope, Apartado 474, E-38700 S/C de La Palma, Spain\"",
-    "url": "https://www.not.iac.es/"
+    "terms": "\"©2005 Nordic Optical Telescope, Apartado 474, E-38700 S/C de La Palma, Spain\"",
+    "url": "https://www.not.iac.es/",
+    "scope": "Copyright line in the footer of the NOT home page (www.not.iac.es); not a data licence written for the filter curves."
   }
 }

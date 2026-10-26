@@ -125,8 +125,9 @@
   },
   "licence": {
     "redistribution": "unknown",
-    "terms": "\"music, scientific papers, code, and text other than press releases, announcements, pictures of the week, blog posts and captions on this site are not released under the Creative Commons Attribution 4.0 International License and can not be used for non-ESO products.\"",
-    "url": "https://www.eso.org/public/copyright/"
+    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, pictures of the week, blog posts and captions on this site are not released under the Creative Commons Attribution 4.0 International License and can not be used for non-ESO products.\"",
+    "url": "https://www.eso.org/public/copyright/",
+    "scope": "Site-wide copyright notice of www.eso.org (public website content); not a data licence written for the filter curves."
   },
   "acknowledgements": [
     {

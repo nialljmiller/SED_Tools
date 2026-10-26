@@ -4,7 +4,7 @@
   "notes": "The abstract quote is taken from the arXiv abstract page, including its backslash-tilde before 100muK. No requested user acknowledgement was found. The only reuse terms opened for the article are the arXiv non-exclusive licence, which does not grant further reuse and says to contact the author. That is not a grant to redistribute a separate numeric curve. No magnitude system was recorded.",
   "licence": {
     "redistribution": "permission",
-    "terms": "\"which does not grant further reuse permissions directly. In these cases you will need to contact the author directly with your request.\"",
+    "terms": "\"The overwhelming majority of e-prints are submitted using the arXiv perpetual non-exclusive license, which does not grant further reuse permissions directly. In these cases you will need to contact the author directly with your request.\"",
     "url": "https://info.arxiv.org/help/license/reuse.html"
   },
   "references": [

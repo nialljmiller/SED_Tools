@@ -4,8 +4,9 @@
   "notes": "Balzers neutral density filters (50x50x2 mm) in the APO 3.5m instrument pool. Numerical transmission curves are provided by the APO filter database without an open redistribution grant.",
   "licence": {
     "redistribution": "permission",
-    "terms": "\"reproduction of any content-text, images, photographs, etc.-requires permission.\"",
-    "url": "https://www.nmsu.edu/copyright.html"
+    "terms": "\"Reproduction of any content—text, images, photographs, etc.—requires permission.\"",
+    "url": "https://www.nmsu.edu/copyright.html",
+    "scope": "Copyright statement for all official New Mexico State University websites; not a data licence written for the filter curves."
   },
   "references": [
     "doi:10.1117/12.316525"
