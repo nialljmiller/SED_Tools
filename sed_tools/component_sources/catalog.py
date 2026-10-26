@@ -79,6 +79,8 @@ BUILDERS_FOR: Dict[Tuple[str, str], BuilderRef] = {
     ("Subaru", "HSC"): BuilderRef("hsc"),
     ("CTIO", "DECam"): BuilderRef("decam"),
     ("Paranal", "VISTA"): BuilderRef("vista"),
+    ("Euclid", "NISP"): BuilderRef("euclid"),
+    ("Roman", "WFI"): BuilderRef("roman"),
     ("Palomar", "ZTF"): BuilderRef("ztf"),
     ("Paranal", "HAWKI"): _tabular("HAWKI"),
     ("Paranal", "NACO"): _tabular("NACO"),
@@ -98,11 +100,16 @@ BUILDERS_FOR: Dict[Tuple[str, str], BuilderRef] = {
 
 TOTAL_ONLY = "total-only"
 BLOCKED = "blocked"
+#: The team publishes separate factors, but no builder uses them yet.
+NOT_BUILT = "not-built"
 
 #: (facility, instrument or "*") -> (status, explanation)
 STATUS: Dict[Tuple[str, str], Tuple[str, str]] = {
     ("GAIA", "*"): (TOTAL_ONLY, "ESA publishes only total passbands (Riello et al. 2021)."),
-    ("2MASS", "*"): (TOTAL_ONLY, "2MASS publishes only total relative spectral responses incl. atmosphere (Cohen et al. 2003)."),
+    ("2MASS", "*"): (NOT_BUILT, "2MASS publishes separate mirror, dewar-window, lens-coating, dichroic, J/H/Ks "
+                                "filter, NICMOS3 QE and PLEXUS north/south atmosphere tables (Explanatory "
+                                "Supplement III.1.b1); its relative spectral responses (VI.4a; Cohen et al. 2003) "
+                                "are built from them. No builder uses the separate tables yet."),
     ("WISE", "*"): (TOTAL_ONLY, "WISE publishes only total relative spectral responses (Wright et al. 2010)."),
     ("Spitzer", "IRAC"): (TOTAL_ONLY, "IRAC publishes only total spectral response curves."),
     ("Spitzer", "MIPS"): (TOTAL_ONLY, "MIPS publishes only total spectral response curves."),
@@ -111,8 +118,10 @@ STATUS: Dict[Tuple[str, str], Tuple[str, str]] = {
     ("Kepler", "*"): (TOTAL_ONLY, "Kepler publishes only its total response function."),
     ("Hipparcos", "*"): (TOTAL_ONLY, "Only total passbands are published."),
     ("TYCHO", "*"): (TOTAL_ONLY, "Only total passbands are published."),
-    ("PAN-STARRS", "PS1"): (BLOCKED, "Components are in Tonry et al. (2012) Table 3, which is not retrievable "
-                                     "programmatically; the IPP wiki copy is the superseded 2010 version."),
+    ("PAN-STARRS", "PS1"): (NOT_BUILT, "Tonry et al. (2012) Table 3 (CDS J/ApJ/750/99, table3.dat) gives each "
+                                       "band's capture cross-section and the open (no filter) one, both through "
+                                       "1.2 airmasses, and that atmosphere as Aero, Ray and Mol. It has no separate "
+                                       "filter, optics or QE curves, and no builder registers its atmosphere yet."),
 }
 
 

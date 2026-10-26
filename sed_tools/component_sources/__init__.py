@@ -32,6 +32,8 @@ BUILDERS: Dict[str, str] = {
     "space": ".space",
     "observatories": ".observatories",
     "standards": ".standards",
+    "euclid": ".euclid",
+    "roman": ".roman",
 }
 
 

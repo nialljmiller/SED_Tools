@@ -8,13 +8,24 @@ files; the telescope (OTE) is in ``jwst/telescope``.  Imaging throughput is
 * NIRISS:  OTE x internal optics x filter x QE
 * MIRI:    OTE x filter x imager QE
 
-``optics`` is the product of the non-filter, non-detector factors.  The
-reference data (a ~4 GB tarball, mostly PSFs) is streamed and only the
-throughput files are kept; pass ``raw`` to use an unpacked copy instead.
+``optics`` is the product of the non-filter, non-detector factors (MIRI's
+imager has none besides the OTE: its ``mirror_eff`` is 1).  Wavelengths are
+in microns (``TUNIT`` MICRONS in every throughput table).  The QE tables
+also carry a ``CONVERSION`` (quantum yield) column, which Pandeia keeps
+apart from the throughput; it is not included here.
+
+The reference data is the current release, 2026.7 (``-delivered-for-
+version-`` in every ``config.json``): a 21.6 MB tarball without the PSF
+library, which is a separate ~4 GB download and is not needed.  It is
+downloaded once, checked against the SHA-1 that STScI's Box share lists,
+and only the throughput files are extracted; pass ``raw`` to use an
+unpacked copy instead.
 """
 
 from __future__ import annotations
 
+import hashlib
+import io
 import json
 import logging
 import re
@@ -26,35 +37,48 @@ import numpy as np
 
 from ..filter_components import FILTER, OPTICS, QE, InstrumentManifest, add_component
 from ..filter_metadata import PHOTON
+from ._original import safe_member
 
 logger = logging.getLogger(__name__)
 
 FACILITY = "JWST"
-REFDATA_VERSION = "4.0"
+REFDATA_VERSION = "2026.7"
+#: STScI's Box share of ``pandeia_data-2026.7-jwst.tar.gz`` (21,622,533 bytes).
+REFDATA_PAGE = "https://stsci.box.com/v/pandeia-data-v2026p7-jwst"
 REFDATA_URL = (
     "https://stsci.app.box.com/index.php?rm=box_download_shared_file"
-    "&vanity_name=pandeia-refdata-v4p0-jwst&file_id=f_1606501134287"
+    "&vanity_name=pandeia-data-v2026p7-jwst&file_id=f_2351491837746"
 )
+#: SHA-1 listed by the Box share (SHA-256 1666cb3e...7582692).
+REFDATA_SHA1 = "e5c2507c42b10e8e1cf86310cb7a81c925bf9a70"
+_MICRONS = {"micron", "microns", "um"}
 INSTRUMENTS = {"NIRCam": "nircam", "NIRISS": "niriss", "MIRI": "miri"}
 _KEEP = re.compile(r"jwst/(telescope|nircam|miri|niriss)/(config\.json|filters/|optical/|qe/|[^/]*\.fits$)")
 
 
-def fetch_refdata(dest: Union[str, Path], url: str = REFDATA_URL, session=None) -> Path:
-    """Stream the Pandeia tarball, extracting only throughput-related files."""
+def fetch_refdata(dest: Union[str, Path], url: str = REFDATA_URL, session=None,
+                  sha1: Optional[str] = REFDATA_SHA1) -> Path:
+    """Download the Pandeia tarball, check it, and extract only the throughput files."""
     if session is None:
         import requests
 
         session = requests.Session()
     dest = Path(dest)
     dest.mkdir(parents=True, exist_ok=True)
-    resp = session.get(url, stream=True, timeout=600)
+    resp = session.get(url, timeout=600)
     resp.raise_for_status()
-    resp.raw.decode_content = True
+    data = resp.content
+    if sha1 and hashlib.sha1(data).hexdigest() != sha1:
+        raise RuntimeError(f"Pandeia reference data from {url} does not match SHA-1 {sha1}")
     root = None
-    with tarfile.open(fileobj=resp.raw, mode="r|gz") as tf:
+    with tarfile.open(fileobj=io.BytesIO(data), mode="r:gz") as tf:
         for member in tf:
             if member.isfile() and _KEEP.search(member.name) and "psf" not in member.name.lower():
-                tf.extract(member, dest)
+                safe_member(member.name)
+                if hasattr(tarfile, "data_filter"):
+                    tf.extract(member, dest, filter="data")
+                else:  # Python without extraction filters; the name was checked above
+                    tf.extract(member, dest)
                 root = root or member.name.split("/jwst/")[0]
     if root is None:
         raise RuntimeError("No JWST throughput files found in the Pandeia tarball")
@@ -64,8 +88,12 @@ def fetch_refdata(dest: Union[str, Path], url: str = REFDATA_URL, session=None) 
 def _read(path: Path) -> Tuple[np.ndarray, np.ndarray]:
     from astropy.io import fits
 
-    data = fits.open(path)[1].data
+    hdu = fits.open(path)[1]
+    data = hdu.data
     names = {n.lower(): n for n in data.columns.names}
+    unit = (hdu.columns[names["wavelength"]].unit or "").strip().lower()
+    if unit and unit not in _MICRONS:
+        raise ValueError(f"{path}: wavelength unit {unit!r}, expected microns")
     wl = np.asarray(data[names["wavelength"]], dtype=float) * 1e4  # micron -> Angstrom
     # Pandeia reference curves include small negative fit tails (notably the
     # MIRI imager QE); transmission outside the physical range is zero.
@@ -87,7 +115,7 @@ def _product(curves: List[Tuple[np.ndarray, np.ndarray]]) -> Tuple[np.ndarray, n
 def _band_factors(inst: str, band: str, paths: Dict[str, str]) -> Optional[Dict[str, List[str]]]:
     """Reference-file keys per role for one imaging band (None if not imaging)."""
     key = band.lower()
-    if key not in paths or not paths[key].startswith("filters/"):
+    if not isinstance(paths.get(key), str) or not paths[key].startswith("filters/"):
         return None
     if inst == "nircam":
         channel = "sw" if int(re.sub(r"\D", "", key)[:3]) < 240 else "lw"
@@ -144,7 +172,7 @@ def build(
         manifest.detector_type = PHOTON
         manifest.ground_based = False
         manifest.outside_range = "zero"  # Pandeia's convention: factors are zero outside their tables
-        manifest.sources["pandeia"] = f"Pandeia reference data {REFDATA_VERSION} (JWST, in-flight)"
+        manifest.sources["pandeia"] = f"Pandeia reference data {REFDATA_VERSION} (JWST, in-flight; {REFDATA_PAGE})"
         manifest.notes = (
             "Optics = OTE x instrument internal optics (x dichroic for NIRCam). "
             + (f"Not decomposed (not imaging filters in Pandeia): {', '.join(skipped)}." if skipped else "")
