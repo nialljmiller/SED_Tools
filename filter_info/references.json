@@ -1,4 +1,82 @@
 {
+ "2013,": {
+  "key": "2013,",
+  "resolved": "2026-10-26",
+  "short": "2013,",
+  "type": "misc"
+ },
+ "2017,": {
+  "key": "2017,",
+  "resolved": "2026-10-26",
+  "short": "2017,",
+  "type": "misc"
+ },
+ "2018": {
+  "key": "2018",
+  "resolved": "2026-10-26",
+  "short": "2018",
+  "type": "misc"
+ },
+ "559,": {
+  "key": "559,",
+  "resolved": "2026-10-26",
+  "short": "559,",
+  "type": "misc"
+ },
+ "9147": {
+  "key": "9147",
+  "resolved": "2026-10-26",
+  "short": "9147",
+  "type": "misc"
+ },
+ "A&A": {
+  "key": "A&A",
+  "resolved": "2026-10-26",
+  "short": "A&A",
+  "type": "misc"
+ },
+ "A26": {
+  "key": "A26",
+  "resolved": "2026-10-26",
+  "short": "A26",
+  "type": "misc"
+ },
+ "Eikenberry": {
+  "key": "Eikenberry",
+  "resolved": "2026-10-26",
+  "short": "Eikenberry",
+  "type": "misc"
+ },
+ "Garner": {
+  "key": "Garner",
+  "resolved": "2026-10-26",
+  "short": "Garner",
+  "type": "misc"
+ },
+ "Proc.": {
+  "key": "Proc.",
+  "resolved": "2026-10-26",
+  "short": "Proc.",
+  "type": "misc"
+ },
+ "Raskin": {
+  "key": "Raskin",
+  "resolved": "2026-10-26",
+  "short": "Raskin",
+  "type": "misc"
+ },
+ "SPIE": {
+  "key": "SPIE",
+  "resolved": "2026-10-26",
+  "short": "SPIE",
+  "type": "misc"
+ },
+ "al.": {
+  "key": "al.",
+  "resolved": "2026-10-26",
+  "short": "al.",
+  "type": "misc"
+ },
  "arxiv:0708.2259": {
   "arxiv": "0708.2259",
   "authors": [
@@ -5356,6 +5434,16 @@
   "volume": "384",
   "year": 2008
  },
+ "bibcode:2008PASP..120..127K": {
+  "bibcode": "2008PASP..120..127K",
+  "journal": "PASP",
+  "key": "bibcode:2008PASP..120..127K",
+  "resolved": "2026-10-26",
+  "short": "2008PASP..120..127K",
+  "type": "article",
+  "url": "https://ui.adsabs.harvard.edu/abs/2008PASP..120..127K",
+  "year": 2008
+ },
  "bibcode:2008PASP..120..212G": {
   "authors": [
    "Gwyn, Stephen D. J."
@@ -6936,6 +7024,46 @@
   "volume": "124",
   "year": 2012
  },
+ "bibcode:2012PASP..124.1318M": {
+  "authors": [
+   "McLeod, Brian",
+   "Fabricant, Daniel",
+   "Nystrom, George",
+   "McCracken, Ken",
+   "Amato, Stephen",
+   "Bergner, Henry",
+   "Brown, Warren",
+   "Burke, Michael",
+   "Chilingarian, Igor",
+   "Conroy, Maureen",
+   "Curley, Dylan",
+   "Furesz, Gabor",
+   "Geary, John",
+   "Hertz, Edward",
+   "Holwell, Justin",
+   "Matthews, Anne",
+   "Norton, Tim",
+   "Park, Sang",
+   "Roll, John",
+   "Zajac, Joseph",
+   "Epps, Harland",
+   "Martini, Paul"
+  ],
+  "bibcode": "2012PASP..124.1318M",
+  "bibtex": "@article{2012PASP..124.1318M, title={MMT and Magellan Infrared Spectrograph}, volume={124}, ISSN={1538-3873}, url={http://dx.doi.org/10.1086/669044}, DOI={10.1086/669044}, number={922}, journal={Publications of the Astronomical Society of the Pacific}, publisher={IOP Publishing}, author={McLeod, Brian and Fabricant, Daniel and Nystrom, George and McCracken, Ken and Amato, Stephen and Bergner, Henry and Brown, Warren and Burke, Michael and Chilingarian, Igor and Conroy, Maureen and Curley, Dylan and Furesz, Gabor and Geary, John and Hertz, Edward and Holwell, Justin and Matthews, Anne and Norton, Tim and Park, Sang and Roll, John and Zajac, Joseph and Epps, Harland and Martini, Paul}, year={2012}, month=Dec, pages={1318\u20131335} }",
+  "doi": "10.1086/669044",
+  "journal": "Publications of the Astronomical Society of the Pacific",
+  "key": "bibcode:2012PASP..124.1318M",
+  "page": "1318-1335",
+  "resolved": "2026-10-26",
+  "resolved_by": "doi.org",
+  "short": "McLeod et al. 2012",
+  "title": "MMT and Magellan Infrared Spectrograph",
+  "type": "article",
+  "url": "https://ui.adsabs.harvard.edu/abs/2012PASP..124.1318M",
+  "volume": "124",
+  "year": 2012
+ },
  "bibcode:2012SPIE.8447E..0NC": {
   "authors": [
    "Carrasco, Eleazar R.",
@@ -7624,6 +7752,30 @@
   "title": "Megacam: A Wide-Field CCD Imager for the MMT and Magellan",
   "type": "article",
   "url": "https://ui.adsabs.harvard.edu/abs/2015PASP..127..366M",
+  "volume": "127",
+  "year": 2015
+ },
+ "bibcode:2015PASP..127..406C": {
+  "authors": [
+   "Chilingarian, Igor",
+   "Beletsky, Yuri",
+   "Moran, Sean",
+   "Brown, Warren",
+   "McLeod, Brian",
+   "Fabricant, Daniel"
+  ],
+  "bibcode": "2015PASP..127..406C",
+  "bibtex": "@article{2015PASP..127..406C, title={Data Reduction Pipeline for the MMT and Magellan Infrared Spectrograph}, volume={127}, ISSN={1538-3873}, url={http://dx.doi.org/10.1086/680598}, DOI={10.1086/680598}, number={950}, journal={Publications of the Astronomical Society of the Pacific}, publisher={IOP Publishing}, author={Chilingarian, Igor and Beletsky, Yuri and Moran, Sean and Brown, Warren and McLeod, Brian and Fabricant, Daniel}, year={2015}, month=Apr, pages={406\u2013420} }",
+  "doi": "10.1086/680598",
+  "journal": "Publications of the Astronomical Society of the Pacific",
+  "key": "bibcode:2015PASP..127..406C",
+  "page": "406-420",
+  "resolved": "2026-10-26",
+  "resolved_by": "doi.org",
+  "short": "Chilingarian et al. 2015",
+  "title": "Data Reduction Pipeline for the MMT and Magellan Infrared Spectrograph",
+  "type": "article",
+  "url": "https://ui.adsabs.harvard.edu/abs/2015PASP..127..406C",
   "volume": "127",
   "year": 2015
  },
@@ -18034,5 +18186,11 @@
   "type": "misc",
   "url": "https://doi.org/10.71929/rubin/2571927",
   "year": 2025
+ },
+ "et": {
+  "key": "et",
+  "resolved": "2026-10-26",
+  "short": "et",
+  "type": "misc"
  }
 }
