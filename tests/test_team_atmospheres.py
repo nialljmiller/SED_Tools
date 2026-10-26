@@ -464,3 +464,18 @@ def test_coverage_tolerance_allows_faint_wings_only(tmp_path):
                                          coverage_tolerance=1e-4), None)
     with pytest.raises(ComponentCoverageError, match="lies beyond it"):
         compose_band(inst, "g", [FILTER], atmosphere={"airmass": 1.2}, atmosphere_root=tmp_path / "tight")
+
+
+def test_skycalc_auto_mode_switches_to_the_form_when_the_api_host_is_down():
+    from requests.exceptions import ConnectTimeout
+
+    class Down(_FormSession):
+        def post(self, url, data=None, json=None, timeout=None, **kw):
+            assert timeout[0] <= 30  # connect fails fast; the model run may take minutes
+            if json is not None:
+                raise ConnectTimeout("api host down")
+            return super().post(url, data=data, timeout=timeout)
+
+    client = skycalc.SkyCalcClient(session=Down(), interface="auto", pause=0)
+    assert client.fetch("paranal", 1.0, 2.5, 1000.0, 1100.0, 2000).interface == "form"
+    assert client.interface == "form"

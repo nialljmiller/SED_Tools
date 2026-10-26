@@ -206,7 +206,7 @@ class SkyCalcClient:
 
     def __init__(self, session=None, timeout: float = 600.0, retries: int = 4,
                  base_url: str = BASE_URL, form_url: str = FORM_URL, interface: str = "auto",
-                 pause: float = 1.0):
+                 pause: float = 1.0, connect_timeout: float = 30.0):
         if session is None:
             import requests
 
@@ -214,7 +214,9 @@ class SkyCalcClient:
         if interface not in ("auto", "api", "form"):
             raise ValueError("interface must be 'auto', 'api' or 'form'")
         self.session = session
-        self.timeout = timeout
+        # A dead host must fail fast (then "auto" switches to the form); the
+        # model run itself may take minutes.
+        self.timeout = (connect_timeout, timeout)
         self.retries = retries
         self.base_url = base_url.rstrip("/")
         self.form_url = form_url
