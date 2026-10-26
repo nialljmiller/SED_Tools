@@ -1,0 +1,22 @@
+{
+  "description": "The imager of Pleiades 1A (Airbus Defence and Space): normalised relative spectral responses of the blue, green, red, NIR and panchromatic bands.",
+  "facility_description": "Pleiades 1A/1B are Airbus' 0.5 m-class optical Earth-observation satellites.",
+  "links": [
+    {
+      "url": "https://apollomapping.com/about-us/whitepapers",
+      "label": "Apollo Mapping technical documents (Pleiades 1A/1B and SPOT 6/7 relative spectral response values)",
+      "source": "Apollo Mapping (reseller)"
+    }
+  ],
+  "references": [],
+  "acknowledgements": [],
+  "licence": {
+    "redistribution": "restricted",
+    "terms": "\"Copyright © 2026 All Rights Reserved\" (footer of the Apollo Mapping Technical Documents page; no other terms found for the spreadsheets)",
+    "url": "https://apollomapping.com/about-us/whitepapers",
+    "scope": "Site-wide footer of the reseller page that distributes the vendor spreadsheets; the files carry no licence statement; the vendor (Maxar / Airbus) terms were not checked. Hosted under Nill's 2026-10-26 'host everything' decision."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "Spreadsheet SpectralValues_Normalized_PHR1A_PHR1B_SPOT6_SPOT7.xlsx (column 'Lambda(mm)' holds micrometres), distributed by the reseller Apollo Mapping (not hosted by Airbus). Band names follow SVO's IDs. SVO's archived Pleiades/HIRI-1A records have wavelengths 10 times too large. No instrument paper reference verified. DetectorType energy assumed."
+}

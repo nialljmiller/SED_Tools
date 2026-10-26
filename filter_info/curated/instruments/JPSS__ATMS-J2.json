@@ -1,0 +1,32 @@
+{
+  "description": "The Advanced Technology Microwave Sounder (ATMS, serial SN304) on NOAA-21 (JPSS-2). The curves are the measured channel SRFs at +20 C for the primary and redundant LO from NOAA STAR's updated public dataset, converted from frequency to wavelength.",
+  "facility_description": "The Joint Polar Satellite System (JPSS) is NOAA's polar-orbiting series (Suomi NPP, NOAA-20, NOAA-21, ...).",
+  "links": [
+    {
+      "url": "https://www.star.nesdis.noaa.gov/jpss/ATMS.php",
+      "label": "STAR JPSS ATMS page (public SRF datasets)",
+      "source": "NOAA NESDIS STAR"
+    }
+  ],
+  "references": [
+    "doi:10.1029/2012JD018144"
+  ],
+  "acknowledgements": [
+    {
+      "for": "NOAA/NESDIS STAR (host of the SRF files)",
+      "text": "as long as credit is given to the NOAA / NESDIS Center for Satellite Applications and Research",
+      "url": "https://www.star.nesdis.noaa.gov/star/productdisclaimer.php",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ],
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"Users are free to use the images or information hosted on this site as they wish, as long as credit is given to the NOAA / NESDIS Center for Satellite Applications and Research.\" (STAR Disclaimers & Notices)",
+    "url": "https://www.star.nesdis.noaa.gov/star/productdisclaimer.php",
+    "scope": "Site-wide notice of www.star.nesdis.noaa.gov (linked from the page footer), which hosts the SRF files."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "Dataset 'NOAA-21 ATMS Spectral Response Function (SRF) Dataset (Update)' (J2_ATMS_SRFs_17July2026.zip, listed 10/13/2026); columns 'Frequency (GHz)', 'SRF (dB)'; converted to Angstrom (c/nu) and 10**(dB/10), peak 1. Band names ch<nn>_PRI / ch<nn>_RED. The reference is the S-NPP ATMS overview (heritage instrument). DetectorType energy assumed."
+}

@@ -1,0 +1,24 @@
+{
+  "description": "SPT-3G, the third-generation camera of the 10 m South Pole Telescope, observing at 95, 150 and 220 GHz. The curves are the measured band-average bandpasses (Fourier transform spectrometer, 2019) released with the SPT-3G instrument paper, converted from frequency to wavelength.",
+  "facility_description": "The South Pole Telescope (SPT) is a 10 m millimetre-wave telescope at the Amundsen-Scott South Pole Station.",
+  "links": [
+    {
+      "url": "https://pole.uchicago.edu/public/data/sobrin22/",
+      "label": "SPT: Data for Sobrin et al. 2022 (instrument bandpasses)",
+      "source": "SPT collaboration"
+    }
+  ],
+  "references": [
+    "doi:10.3847/1538-4365/ac374f"
+  ],
+  "acknowledgements": [],
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "No terms of use are stated on the data page; it says: \"If you have any questions regarding this data set or its use please contact Joshua Sobrin (jsobrin_at_fnal.gov).\"",
+    "url": "https://pole.uchicago.edu/public/data/sobrin22/",
+    "scope": "Public data-release page of the SPT collaboration; no licence statement found. Hosted under Nill's 2026-10-26 'host everything' decision."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "'Response-like' bandpasses including the etendue factor, 'Sky corrected (nu^4)', peak-normalised by the owner. Wavelength in Angstrom = c/nu of the tabulated GHz. DetectorType energy assumed."
+}

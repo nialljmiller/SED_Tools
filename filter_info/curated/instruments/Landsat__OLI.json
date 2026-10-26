@@ -1,0 +1,37 @@
+{
+  "description": "The Operational Land Imager (OLI) on Landsat 8, a nine-band pushbroom imager (coastal aerosol to SWIR, plus panchromatic and cirrus bands). The curves are the in-band band-average relative spectral responses from the USGS RSR workbook.",
+  "facility_description": "Landsat is the joint NASA/USGS series of Earth-observing satellites (Landsat 1-9, since 1972); USGS operates the missions and distributes the data.",
+  "links": [
+    {
+      "url": "https://landsat.usgs.gov/spectral-characteristics-viewer",
+      "label": "USGS Landsat Spectral Characteristics Viewer (RSR downloads)",
+      "source": "USGS Landsat Missions"
+    },
+    {
+      "url": "https://landsat.usgs.gov/landsat/spectral_viewer/bands/L8_OLI_RSR.xlsx",
+      "label": "Landsat 8 OLI RSR workbook",
+      "source": "USGS"
+    }
+  ],
+  "references": [
+    "doi:10.3390/rs61010232"
+  ],
+  "acknowledgements": [
+    {
+      "for": "U.S. Geological Survey (host of the Landsat RSR workbooks)",
+      "text": "Credit: U.S. Geological Survey",
+      "url": "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ],
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"USGS-authored or produced data and information are considered to be in the U.S. Public Domain. While the content of most USGS websites is in the U.S. Public Domain, not all information, illustrations, or photographs on our site are. Some non-USGS photographs, images, and/or graphics that appear on USGS websites are used by the USGS with permission from the copyright holder (as required by USGS policy on the use of copyrighted material). These materials are generally marked as being copyrighted. To use these copyrighted materials, you must obtain permission from the copyright holder under copyright law.\" ... \"When using information from USGS information products, publications, or websites, we ask that proper credit be given. Credit can be provided by including a citation such as the following: Credit: U.S. Geological Survey\" (USGS Copyrights and Credits)",
+    "url": "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits",
+    "scope": "USGS-wide copyright policy (not a statement on the Spectral Characteristics Viewer page itself); the RSR workbooks are hosted by USGS Landsat Missions."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "Band names follow SVO's Landsat/OLI IDs (Coastal, Blue, Green, Red, NIR, SWIR1, SWIR2, Pan, Cirrus = OLI bands 1-9); SVO's records cite the NASA 'preliminary' OLI RSR page and agree with these curves to <0.1 % in pivot. DetectorType energy is assumed."
+}

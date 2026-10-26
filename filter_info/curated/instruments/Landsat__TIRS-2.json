@@ -1,0 +1,37 @@
+{
+  "description": "The Thermal Infrared Sensor-2 (TIRS-2) on Landsat 9, with bands 10 and 11. The curves are the band-average relative spectral responses measured in instrument-level thermal vacuum testing (USGS RSR workbook).",
+  "facility_description": "Landsat is the joint NASA/USGS series of Earth-observing satellites (Landsat 1-9, since 1972); USGS operates the missions and distributes the data.",
+  "links": [
+    {
+      "url": "https://landsat.usgs.gov/spectral-characteristics-viewer",
+      "label": "USGS Landsat Spectral Characteristics Viewer (RSR downloads)",
+      "source": "USGS Landsat Missions"
+    },
+    {
+      "url": "https://landsat.usgs.gov/landsat/spectral_viewer/bands/L9_TIRS2_RSR.xlsx",
+      "label": "Landsat 9 TIRS-2 RSR workbook",
+      "source": "USGS"
+    }
+  ],
+  "references": [
+    "doi:10.3390/rs61111607"
+  ],
+  "acknowledgements": [
+    {
+      "for": "U.S. Geological Survey (host of the Landsat RSR workbooks)",
+      "text": "Credit: U.S. Geological Survey",
+      "url": "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ],
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"USGS-authored or produced data and information are considered to be in the U.S. Public Domain. While the content of most USGS websites is in the U.S. Public Domain, not all information, illustrations, or photographs on our site are. Some non-USGS photographs, images, and/or graphics that appear on USGS websites are used by the USGS with permission from the copyright holder (as required by USGS policy on the use of copyrighted material). These materials are generally marked as being copyrighted. To use these copyrighted materials, you must obtain permission from the copyright holder under copyright law.\" ... \"When using information from USGS information products, publications, or websites, we ask that proper credit be given. Credit can be provided by including a citation such as the following: Credit: U.S. Geological Survey\" (USGS Copyrights and Credits)",
+    "url": "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits",
+    "scope": "USGS-wide copyright policy (not a statement on the Spectral Characteristics Viewer page itself); the RSR workbooks are hosted by USGS Landsat Missions."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "Workbook description: 'the relative in-band spectral response at the given wavelength (response has been normalized to the peak response)' and STD of '15 spectral measurements across the band acquired in instrument-level TVAC'. Band names as for Landsat/TIRS (1080nm = band 10, 1200nm = band 11). The TIRS reference is the Landsat 8 TIRS calibration paper (heritage instrument). DetectorType energy assumed."
+}

@@ -1,0 +1,29 @@
+{
+  "description": "BICEP/Keck BK18 band-average bandpasses: BICEP3 at 95 GHz and the Keck Array at 95, 150 and 220 GHz, from the collaboration's June 2021 data release (BICEP/Keck XIII), converted from frequency to wavelength.",
+  "facility_description": "BICEP/Keck is a series of CMB polarization experiments at the South Pole (BICEP1-3, Keck Array, BICEP Array).",
+  "links": [
+    {
+      "url": "https://lambda.gsfc.nasa.gov/product/bicepkeck/bicep2k_bandpass21_get.html",
+      "label": "LAMBDA BICEP/Keck BK18 bandpasses",
+      "source": "NASA LAMBDA / BICEP-Keck"
+    },
+    {
+      "url": "http://bicepkeck.org/",
+      "label": "BICEP/Keck collaboration",
+      "source": "BICEP/Keck"
+    }
+  ],
+  "references": [
+    "doi:10.1103/PhysRevLett.127.151301"
+  ],
+  "acknowledgements": [],
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "No terms of use are stated on the LAMBDA product page or in the files.",
+    "url": "https://lambda.gsfc.nasa.gov/product/bicepkeck/bicep2k_bandpass21_get.html",
+    "scope": "NASA LAMBDA distribution of a collaboration data release; LAMBDA's About page states no data terms. Hosted under Nill's 2026-10-26 'host everything' decision."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "Column 2 ('response to a source with uniform spectra radiance', Planck RIMO convention) is used. BK18_220 column 2 peaks at 0.01281 although the header says 'peak-normalized' (column 3 peaks at 1): scaled to peak 1 here. DetectorType energy assumed."
+}

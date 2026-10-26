@@ -1,7 +1,7 @@
 {
   "description": "MODIS is a 36-band spectroradiometer measuring visible and infrared radiation. Its bands support observations of vegetation, ocean chlorophyll, clouds, aerosols, fire, snow and sea ice.",
   "facility_description": "Aqua is a NASA Earth-observation satellite launched in May 2002 with the second MODIS instrument.",
-  "notes": "Owner description opened successfully at the NASA Science replacement page. Legacy MODIS page failed on subsequent retrieval and local certificate validation; Ocean Color RSR URL redirected to an Earthdata page returning HTTP 403. Earthdata data-use policy also returned 403, so its search excerpt was not used as licence evidence. NJM includes individual-detector variants; no per-detector mapping or magnitude system is inferred. Curve provenance, applicable terms, acknowledgement and passband/calibration papers remain to verify.",
+  "notes": "Owner description opened successfully at the NASA Science replacement page. Legacy MODIS page failed on subsequent retrieval and local certificate validation; Ocean Color RSR URL redirected to an Earthdata page returning HTTP 403. Earthdata data-use policy also returned 403, so its search excerpt was not used as licence evidence. NJM includes individual-detector variants; no per-detector mapping or magnitude system is inferred. Curve provenance, applicable terms, acknowledgement and passband/calibration papers remain to verify. | Original-source curves (2026-10-26): Band curves are the equal-weight mean of MCST's per-channel (detector) RSRs, built for NJM (see manifest notes and the recipe tools/recipes/d6_modis.py); MCST publishes per-channel curves only. Bands 1-16 keep NJM's existing names (band645, band859, band469, band555, band1240, band1640, band2130, band412, band443, band488, band531, band551, band667, band678, band748, band869); the earlier SVO copies of NASA OBPG's tables agree with these MCST band averages to <=0.03 % in pivot and become <band>_svo. Bands 17-36 are added as Band17-Band36. DetectorType energy is assumed.",
   "licence": {
     "redistribution": "public",
     "terms": "\"Unless the data file is marked with a restrictive notice or license, data that is provided from a NASA-led mission including observations, engineering, calibration, and auxiliary data are licensed as Creative Commons Zero. There are no restrictions on the usage of these data.\"",
@@ -13,6 +13,19 @@
       "url": "https://science.nasa.gov/mission/aqua/modis/",
       "label": "Aqua MODIS instrument and spectral characteristics",
       "source": "NASA"
+    },
+    {
+      "url": "https://mcst.gsfc.nasa.gov/calibration/parameters",
+      "label": "MCST calibration parameters (RSR tables)",
+      "source": "NASA GSFC MCST"
+    },
+    {
+      "url": "https://mcst.gsfc.nasa.gov/sites/default/files/file_attachments/Aqua_RSR_in-band.xlsx",
+      "label": "MCST in-band RSR workbook (Aqua_RSR_in-band.xlsx)",
+      "source": "NASA GSFC MCST"
     }
+  ],
+  "references": [
+    "doi:10.1109/36.700993"
   ]
 }

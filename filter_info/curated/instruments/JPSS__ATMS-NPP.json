@@ -1,0 +1,38 @@
+{
+  "description": "The Advanced Technology Microwave Sounder (ATMS) on Suomi NPP, a 22-channel cross-track microwave sounder (23.8-183.3 GHz). The curves are the 196 measured channel spectral response functions of the public-release dataset for each tested receiver temperature, LO bias and LO unit, converted from frequency to wavelength.",
+  "facility_description": "The Joint Polar Satellite System (JPSS) is NOAA's polar-orbiting series (Suomi NPP, NOAA-20, NOAA-21, ...).",
+  "links": [
+    {
+      "url": "https://www.star.nesdis.noaa.gov/jpss/ATMS.php",
+      "label": "STAR JPSS ATMS page (public SRF datasets)",
+      "source": "NOAA NESDIS STAR"
+    },
+    {
+      "url": "https://www.star.nesdis.noaa.gov/jpss/documents/ATMS_SRF/SNPP_ATMS_SRF_ReadMe.pdf",
+      "label": "S-NPP ATMS SRF dataset README",
+      "source": "NASA GSFC / NOAA STAR"
+    }
+  ],
+  "references": [
+    "doi:10.1029/2012JD018144",
+    "doi:10.1002/2013JD020483"
+  ],
+  "acknowledgements": [
+    {
+      "for": "NOAA/NESDIS STAR (host of the SRF files)",
+      "text": "as long as credit is given to the NOAA / NESDIS Center for Satellite Applications and Research",
+      "url": "https://www.star.nesdis.noaa.gov/star/productdisclaimer.php",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ],
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"Users are free to use the images or information hosted on this site as they wish, as long as credit is given to the NOAA / NESDIS Center for Satellite Applications and Research.\" (STAR Disclaimers & Notices)",
+    "url": "https://www.star.nesdis.noaa.gov/star/productdisclaimer.php",
+    "scope": "Site-wide notice of www.star.nesdis.noaa.gov (linked from the page footer), which hosts the SRF files."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "Wavelengths in Angstrom are c/nu of the owner's RF frequencies (Hz); response 10**(dBm/10) scaled to peak 1. The operational configuration since November 8 2011 is 'Primary LO, nominal LO bias' (README), i.e. the ch<nn>_Pri_VN_* files. For channels 3-22 each file covers the RF range as tabulated (README: consider 'the receiver sideband configuration'). SVO's archived ATMS-NPP records have pivots 10 times larger than c/nu of these channels (e.g. ch01 1.26e9 A for 23.8 GHz); the NJM curves use the correct conversion. DetectorType energy is assumed."
+}

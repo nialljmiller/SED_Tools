@@ -1,0 +1,35 @@
+{
+  "description": "The Advanced Microwave Sounding Unit-A (AMSU-A) on NOAA-19, a 15-channel microwave temperature sounder (23.8-89 GHz). The curves are the measured channel SRFs (both sidebands) in NOAA's CRTM oSRF format, converted from frequency to wavelength.",
+  "facility_description": "NOAA-19 is the last of NOAA's POES series of polar-orbiting weather satellites.",
+  "links": [
+    {
+      "url": "https://www.star.nesdis.noaa.gov/smcd/GCC/instrInfo-srf.php",
+      "label": "NOAA STAR GSICS Coordination Center instrument SRF page",
+      "source": "NOAA NESDIS STAR"
+    },
+    {
+      "url": "https://www.star.nesdis.noaa.gov/smcd/GCC/data/amsu_ab_srf.tgz",
+      "label": "AMSU-A/B SRF archive",
+      "source": "NOAA NESDIS STAR"
+    }
+  ],
+  "references": [],
+  "acknowledgements": [
+    {
+      "for": "NOAA/NESDIS STAR (host of the SRF files)",
+      "text": "as long as credit is given to the NOAA / NESDIS Center for Satellite Applications and Research",
+      "url": "https://www.star.nesdis.noaa.gov/star/productdisclaimer.php",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ],
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"Users are free to use the images or information hosted on this site as they wish, as long as credit is given to the NOAA / NESDIS Center for Satellite Applications and Research.\" (STAR Disclaimers & Notices)",
+    "url": "https://www.star.nesdis.noaa.gov/star/productdisclaimer.php",
+    "scope": "Site-wide notice of www.star.nesdis.noaa.gov (linked from the page footer), which hosts the SRF files."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "File amsua_n19.sdl.T20_Vnom_LOpri.osrf.nc (data from Lynn Chidester, SDL/USU; +20 C, nominal bias, primary LO); the archive's other AMSU files are boxcar models and are not used. No instrument paper reference verified yet. DetectorType energy assumed."
+}

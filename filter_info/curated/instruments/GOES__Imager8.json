@@ -1,0 +1,17 @@
+{
+  "description": "The five-channel GOES Imager on GOES-8 (0.65, 3.9, 6.5/6.7, 10.7, 12.0 or 13.3 um). The curves are the operational per-detector, per-scan-side spectral response functions distributed by NOAA OSPO.",
+  "facility_description": "GOES-8 to GOES-15 were NOAA's third-generation geostationary weather satellites (GOES I-M and N-P series).",
+  "links": [
+    {
+      "url": "https://www.ospo.noaa.gov/Operations_/GOES/goes-imager-srfs.html",
+      "label": "OSPO GOES-8 through GOES-15 Imager Spectral Response Functions",
+      "source": "NOAA NESDIS OSPO"
+    }
+  ],
+  "references": [
+    "doi:10.1175/1520-0477(1994)075<0757:IGITFO>2.0.CO;2"
+  ],
+  "bands": {},
+  "evidence": [],
+  "notes": "OSPO: 'All of them were provided by ITT (the instruments' manufacturer), except those noted as modified by STAR.' Band names follow SVO's GOES/Imager IDs (VIS_dK, IR<ch>_d<det>s<side>); pivots agree with SVO's archived records to <=0.01 %. DetectorType energy is assumed."
+}

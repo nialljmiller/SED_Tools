@@ -1,0 +1,32 @@
+{
+  "description": "The Ocean and Land Colour Instrument (OLCI) on Sentinel-3B, a 21-band (Oa01-Oa21, 0.4-1.02 um) pushbroom imaging spectrometer. The curves are ESA's mean relative spectral response function per band.",
+  "facility_description": "Sentinel-3 is the Copernicus ocean and land monitoring mission (ESA/EUMETSAT), with satellites Sentinel-3A (2016) and Sentinel-3B (2018).",
+  "links": [
+    {
+      "url": "https://sentiwiki.copernicus.eu/web/s3-documents",
+      "label": "SentiWiki Sentinel-3 document library (OLCI SRF files)",
+      "source": "ESA"
+    }
+  ],
+  "references": [
+    "doi:10.1016/j.rse.2011.07.024"
+  ],
+  "acknowledgements": [
+    {
+      "for": "European Space Agency (owner of SentiWiki and the SRF files)",
+      "text": "European Space Agency - ESA",
+      "url": "https://sentiwiki.copernicus.eu/web/terms-and-conditions",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ],
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"The contents of ESA's SentiWiki website are intended for non-commercial use. ESA grants permission to users to visit the site, and to download and copy information, images, documents and materials from the website for non-commercial use. ESA does not grant the right to resell or redistribute any information, documents, images or material from its website or to compile or create derivative works from material on its website. All material published on the ESA SentiWiki website is protected by copyright and owned or controlled by ESA or the party credited as the provider of the content, software or other material. Copyright in the material must be recognised by an appropriate on-screen credit in a form such as \"European Space Agency - ESA\". If a remote sensing product is being used, the credit \"produced from ESA remote sensing data\" must be added, plus, if applicable, \"image processed by (name of the institution as indicated on the Internet Server)\". Users may not modify, publish, transmit, participate in the transfer or sale of, reproduce, create derivative works from, distribute, perform, display or in any way exploit any of the content, software, material or services, in whole or in part, without obtaining prior written authorisation.\" (SentiWiki Terms and Conditions, section 'Copyrights', complete)",
+    "url": "https://sentiwiki.copernicus.eu/web/terms-and-conditions",
+    "scope": "Site-wide terms of ESA SentiWiki, which hosts the SRF files; the netCDF files carry no licence of their own. Hosted under Nill's 2026-10-26 'host everything' decision; class as for the Sentinel-2 MSI SRFs (CB4)."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "File: S3B_OL_SRF_0_20180109_mean_rsr.nc4 ('Created from bilinear interpolation of the preflight instrument characterisation'). Pivots agree with the file's srf_centre_wavelength to <0.03 % and with SVO's archived records to <0.01 %. DetectorType energy is assumed."
+}

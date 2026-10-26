@@ -1,0 +1,29 @@
+{
+  "description": "The Moderate Resolution Imaging Spectroradiometer (MODIS) protoflight model (PFM) on Terra, a 36-band imager from 0.41 to 14.4 um. The MCST curves are band averages of the in-band, channel-dependent relative spectral responses that MCST uses in the calibration look-up tables.",
+  "facility_description": "Terra is a NASA Earth Observing System satellite carrying MODIS.",
+  "links": [
+    {
+      "url": "https://mcst.gsfc.nasa.gov/calibration/parameters",
+      "label": "MCST calibration parameters (RSR tables)",
+      "source": "NASA GSFC MCST"
+    },
+    {
+      "url": "https://mcst.gsfc.nasa.gov/sites/default/files/file_attachments/Terra_RSR_in-band.xlsx",
+      "label": "MCST in-band RSR workbook (Terra_RSR_in-band.xlsx)",
+      "source": "NASA GSFC MCST"
+    }
+  ],
+  "references": [
+    "doi:10.1109/36.700993"
+  ],
+  "acknowledgements": [],
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"NASA promotes full and open sharing of data with research and applications communities, private industry, academia, and the general public.\" ... \"NASA commits to the full and open sharing of Earth science data obtained from NASA Earth observing platforms, sub-orbital platforms, and field campaigns with all users as soon as these data become available\" ... \"NASA will make available all NASA-generated standard products along with the source code for algorithm software, coefficients, and ancillary data used to generate these products\" (NASA Earthdata, Data and Information Guidance; in this policy 'the term 'data' includes observation data, metadata, products, information, algorithms, scientific source code, documentation, models, images, and research results')",
+    "url": "https://www.earthdata.nasa.gov/engage/open-data-services-software/data-information-policy",
+    "scope": "NASA Earth Science data policy (agency-wide); the MCST calibration page itself states no terms."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "Band curves are the equal-weight mean of MCST's per-channel (detector) RSRs, built for NJM (see manifest notes and the recipe tools/recipes/d6_modis.py); MCST publishes per-channel curves only. SVO's Terra/MODIS.BandNN records cite the MCST page and agree in pivot to <=0.05 % for most bands (Band35 +0.25 %, Band36 +0.54 %). DetectorType energy is assumed."
+}

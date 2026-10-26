@@ -1,0 +1,17 @@
+{
+  "description": "The 19-channel GOES Sounder on GOES-11 (18 infrared channels from 3.7 to 14.7 um and one visible channel, four detectors each). The curves are the operational per-detector spectral response functions distributed by NOAA OSPO.",
+  "facility_description": "GOES-8 to GOES-15 were NOAA's third-generation geostationary weather satellites (GOES I-M and N-P series).",
+  "links": [
+    {
+      "url": "https://www.ospo.noaa.gov/Operations_/GOES/goes-sounder-srfs.html",
+      "label": "OSPO GOES Sounder Spectral Response Functions",
+      "source": "NOAA NESDIS OSPO"
+    }
+  ],
+  "references": [
+    "doi:10.1175/1520-0477(1994)075<0757:IGITFO>2.0.CO;2"
+  ],
+  "bands": {},
+  "evidence": [],
+  "notes": "Operational SRF set per the OSPO table; file-to-channel/detector mapping from each archive's README. Band names follow SVO's GOES/Sounder IDs (IR<ch>_d<det>, VIS_d<det>); pivots agree with SVO's archived records to <0.01 %. DetectorType energy is assumed."
+}

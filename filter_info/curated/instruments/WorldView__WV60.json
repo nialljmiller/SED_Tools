@@ -1,0 +1,22 @@
+{
+  "description": "The imager of WorldView-1 (camera WV60, Maxar): relative spectral responses of the panchromatic band, from Maxar's January 2023 constellation spectral response values.",
+  "facility_description": "Commercial very-high-resolution Earth-observation satellite operated by Maxar Technologies (formerly DigitalGlobe / GeoEye / Space Imaging).",
+  "links": [
+    {
+      "url": "https://apollomapping.com/about-us/whitepapers",
+      "label": "Apollo Mapping technical documents (Maxar Constellation Spectral Response Values, January 2023)",
+      "source": "Apollo Mapping (reseller)"
+    }
+  ],
+  "references": [],
+  "acknowledgements": [],
+  "licence": {
+    "redistribution": "restricted",
+    "terms": "\"Copyright © 2026 All Rights Reserved\" (footer of the Apollo Mapping Technical Documents page; no other terms found for the spreadsheets)",
+    "url": "https://apollomapping.com/about-us/whitepapers",
+    "scope": "Site-wide footer of the reseller page that distributes the vendor spreadsheets; the files carry no licence statement; the vendor (Maxar / Airbus) terms were not checked. Hosted under Nill's 2026-10-26 'host everything' decision."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "File RSR_WV1.txt in Maxar_Spectral_Response_2023.zip, distributed by the reseller Apollo Mapping (not hosted by Maxar). SVO's archived records cite the same page. No instrument paper reference verified. DetectorType energy assumed."
+}

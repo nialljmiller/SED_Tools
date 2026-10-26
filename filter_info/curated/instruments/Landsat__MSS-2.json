@@ -1,0 +1,38 @@
+{
+  "description": "The Multispectral Scanner System (MSS) on Landsat 2, a four-band visible/near-infrared scanner. The curves are the band-average relative spectral responses (band4-band7) published by USGS in the Landsat Spectral Characteristics Viewer.",
+  "facility_description": "Landsat is the joint NASA/USGS series of Earth-observing satellites (Landsat 1-9, since 1972); USGS operates the missions and distributes the data.",
+  "links": [
+    {
+      "url": "https://landsat.usgs.gov/spectral-characteristics-viewer",
+      "label": "USGS Landsat Spectral Characteristics Viewer (RSR downloads)",
+      "source": "USGS Landsat Missions"
+    },
+    {
+      "url": "https://landsat.usgs.gov/landsat/spectral_viewer/bands/L2_MSS_RSR.xls",
+      "label": "Landsat 2 MSS RSR workbook (L2_MSS_RSR.xls)",
+      "source": "USGS"
+    }
+  ],
+  "references": [
+    "doi:10.1016/j.rse.2011.06.026",
+    "doi:10.1016/j.rse.2009.01.007"
+  ],
+  "acknowledgements": [
+    {
+      "for": "U.S. Geological Survey (host of the Landsat RSR workbooks)",
+      "text": "Credit: U.S. Geological Survey",
+      "url": "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ],
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"USGS-authored or produced data and information are considered to be in the U.S. Public Domain. While the content of most USGS websites is in the U.S. Public Domain, not all information, illustrations, or photographs on our site are. Some non-USGS photographs, images, and/or graphics that appear on USGS websites are used by the USGS with permission from the copyright holder (as required by USGS policy on the use of copyrighted material). These materials are generally marked as being copyrighted. To use these copyrighted materials, you must obtain permission from the copyright holder under copyright law.\" ... \"When using information from USGS information products, publications, or websites, we ask that proper credit be given. Credit can be provided by including a citation such as the following: Credit: U.S. Geological Survey\" (USGS Copyrights and Credits)",
+    "url": "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits",
+    "scope": "USGS-wide copyright policy (not a statement on the Spectral Characteristics Viewer page itself); the RSR workbooks are hosted by USGS Landsat Missions."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "Band numbering as in the USGS workbook and in SVO's Landsat/MSS-2 IDs (Landsat 1-3 MSS bands 4-7; Landsat 4-5 MSS bands 1-4). DetectorType energy is assumed (USGS gives a relative response without photon/energy statement)."
+}

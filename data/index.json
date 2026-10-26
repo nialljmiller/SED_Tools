@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-10-26T19:29:33.432668",
+  "generated": "2026-10-26T20:03:54.535893",
   "base_url": "http://nillmill.ddns.net/sed_tools",
   "statistics": {
     "total_models": 1,
@@ -8,8 +8,8 @@
     "total_spectra": 6028,
     "total_size_bytes": 142850198218,
     "total_size_human": "133.04 GB",
-    "total_facilities": 103,
-    "total_filters": 5123
+    "total_facilities": 112,
+    "total_filters": 6434
   },
   "models": [
     "bt-cond"
@@ -104,6 +104,7 @@
       "Herschel",
       "Himawari",
       "Hipparcos",
+      "IKONOS",
       "IRAS",
       "IRTF",
       "JCMT",
@@ -114,30 +115,38 @@
       "Kepler",
       "LCO",
       "LSST",
+      "Landsat",
       "LasCumbres",
       "Liverpool",
       "MSX",
       "Magellan",
+      "NOAA",
       "NOT",
       "OGLE",
       "PAN-STARRS",
       "Palomar",
       "Paranal",
       "Planck",
+      "Pleiades",
+      "QuickBird",
       "Roman",
       "SLOAN",
       "SPHERE",
+      "SPOT",
+      "SPT",
       "Sentinel",
       "Spitzer",
       "Subaru",
       "Swift",
       "TESS",
       "Teide",
+      "Terra",
       "UKIRT",
       "WHT",
       "WISE",
       "WIYN",
       "WMAP",
+      "WorldView",
       "XMM"
     ],
     "facilities_detailed": {
@@ -1116,11 +1125,34 @@
         "instruments": {
           "MODIS": {
             "name": "MODIS",
-            "filter_count": 106,
+            "filter_count": 142,
             "filters": [
+              "Band17",
+              "Band18",
+              "Band19",
+              "Band20",
+              "Band21",
+              "Band22",
+              "Band23",
+              "Band24",
+              "Band25",
+              "Band26",
+              "Band27",
+              "Band28",
+              "Band29",
+              "Band30",
+              "Band31",
+              "Band32",
+              "Band33",
+              "Band34",
+              "Band35",
+              "Band36",
               "band1240",
+              "band1240_svo",
               "band1640",
+              "band1640_svo",
               "band2130",
+              "band2130_svo",
               "band412",
               "band412_1",
               "band412_10",
@@ -1132,6 +1164,7 @@
               "band412_7",
               "band412_8",
               "band412_9",
+              "band412_svo",
               "band443",
               "band443_1",
               "band443_10",
@@ -1143,7 +1176,9 @@
               "band443_7",
               "band443_8",
               "band443_9",
+              "band443_svo",
               "band469",
+              "band469_svo",
               "band488",
               "band488_1",
               "band488_10",
@@ -1155,6 +1190,7 @@
               "band488_7",
               "band488_8",
               "band488_9",
+              "band488_svo",
               "band531",
               "band531_1",
               "band531_10",
@@ -1166,6 +1202,7 @@
               "band531_7",
               "band531_8",
               "band531_9",
+              "band531_svo",
               "band551",
               "band551_1",
               "band551_10",
@@ -1177,8 +1214,11 @@
               "band551_7",
               "band551_8",
               "band551_9",
+              "band551_svo",
               "band555",
+              "band555_svo",
               "band645",
+              "band645_svo",
               "band667",
               "band667_1",
               "band667_10",
@@ -1190,6 +1230,7 @@
               "band667_7",
               "band667_8",
               "band667_9",
+              "band667_svo",
               "band678",
               "band678_1",
               "band678_10",
@@ -1201,6 +1242,7 @@
               "band678_7",
               "band678_8",
               "band678_9",
+              "band678_svo",
               "band748",
               "band748_1",
               "band748_10",
@@ -1212,7 +1254,9 @@
               "band748_7",
               "band748_8",
               "band748_9",
+              "band748_svo",
               "band859",
+              "band859_svo",
               "band869",
               "band869_1",
               "band869_10",
@@ -1223,20 +1267,22 @@
               "band869_6",
               "band869_7",
               "band869_8",
-              "band869_9"
+              "band869_9",
+              "band869_svo"
             ],
             "published_paths": {
+              "filter+optics+qe": 36,
               "unspecified": 106
             },
             "detector_types": {
-              "energy": 106
+              "energy": 142
             },
             "separate_components": {},
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 333496,
-            "size_human": "325.68 KB"
+            "size_bytes": 794368,
+            "size_human": "775.75 KB"
           }
         },
         "instrument_count": 1
@@ -1336,9 +1382,31 @@
             "info": "info.json",
             "size_bytes": 22437,
             "size_human": "21.91 KB"
+          },
+          "BK18": {
+            "name": "BK18",
+            "filter_count": 4,
+            "filters": [
+              "150GHz",
+              "220GHz",
+              "B95GHz",
+              "K95GHz"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 4
+            },
+            "detector_types": {
+              "energy": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 46646,
+            "size_human": "45.55 KB"
           }
         },
-        "instrument_count": 2
+        "instrument_count": 3
       },
       "BLAST": {
         "name": "BLAST",
@@ -7652,172 +7720,646 @@
           },
           "Imager10": {
             "name": "Imager10",
-            "filter_count": 2,
-            "filters": [
-              "VIS_d2",
-              "VIS_d3"
-            ],
-            "published_paths": {
-              "filter+instrument": 2
-            },
-            "detector_types": {
-              "energy": 2
-            },
-            "separate_components": {},
-            "has_component_manifest": true,
-            "properties": "properties.json",
-            "info": "info.json",
-            "size_bytes": 25662,
-            "size_human": "25.06 KB"
-          },
-          "Imager11": {
-            "name": "Imager11",
-            "filter_count": 11,
+            "filter_count": 24,
             "filters": [
               "IR2_d1s1",
+              "IR2_d1s2",
+              "IR2_d2s1",
               "IR2_d2s2",
               "IR3_d1s1",
               "IR3_d1s2",
               "IR4_d1s1",
+              "IR4_d1s2",
+              "IR4_d2s1",
+              "IR4_d2s2",
+              "IR5_d1s1",
               "IR5_d1s2",
               "IR5_d2s1",
+              "IR5_d2s2",
               "VIS_d1",
+              "VIS_d2",
+              "VIS_d2_svo",
+              "VIS_d3",
+              "VIS_d3_svo",
+              "VIS_d4",
+              "VIS_d5",
+              "VIS_d6",
+              "VIS_d7",
+              "VIS_d8"
+            ],
+            "published_paths": {
+              "filter+instrument": 2,
+              "filter+optics+qe": 22
+            },
+            "detector_types": {
+              "energy": 24
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 653542,
+            "size_human": "638.22 KB"
+          },
+          "Imager11": {
+            "name": "Imager11",
+            "filter_count": 33,
+            "filters": [
+              "IR2_d1s1",
+              "IR2_d1s1_svo",
+              "IR2_d1s2",
+              "IR2_d2s1",
+              "IR2_d2s2",
+              "IR2_d2s2_svo",
+              "IR3_d1s1",
+              "IR3_d1s1_svo",
+              "IR3_d1s2",
+              "IR3_d1s2_svo",
+              "IR4_d1s1",
+              "IR4_d1s1_svo",
+              "IR4_d1s2",
+              "IR4_d2s1",
+              "IR4_d2s2",
+              "IR5_d1s1",
+              "IR5_d1s2",
+              "IR5_d1s2_svo",
+              "IR5_d2s1",
+              "IR5_d2s1_svo",
+              "IR5_d2s2",
+              "VIS_d1",
+              "VIS_d1_svo",
+              "VIS_d2",
+              "VIS_d2_svo",
+              "VIS_d3",
+              "VIS_d3_svo",
+              "VIS_d4",
+              "VIS_d4_svo",
+              "VIS_d5",
+              "VIS_d6",
+              "VIS_d7",
+              "VIS_d8"
+            ],
+            "published_paths": {
+              "filter+instrument": 11,
+              "filter+optics+qe": 22
+            },
+            "detector_types": {
+              "energy": 33
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 855234,
+            "size_human": "835.19 KB"
+          },
+          "Imager12": {
+            "name": "Imager12",
+            "filter_count": 23,
+            "filters": [
+              "IR2_d1s1",
+              "IR2_d1s2",
+              "IR2_d2s1",
+              "IR2_d2s2",
+              "IR3_d1s1",
+              "IR3_d1s2",
+              "IR3_d2s1",
+              "IR3_d2s2",
+              "IR4_d1s1",
+              "IR4_d1s2",
+              "IR4_d2s1",
+              "IR4_d2s2",
+              "IR6_d1s1",
+              "IR6_d1s2",
+              "VIS_d1",
+              "VIS_d2",
+              "VIS_d3",
+              "VIS_d4",
+              "VIS_d5",
+              "VIS_d6",
+              "VIS_d7",
+              "VIS_d8",
+              "VIS_d8_svo"
+            ],
+            "published_paths": {
+              "filter+instrument": 1,
+              "filter+optics+qe": 22
+            },
+            "detector_types": {
+              "energy": 23
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 1181631,
+            "size_human": "1.13 MB"
+          },
+          "Imager13": {
+            "name": "Imager13",
+            "filter_count": 32,
+            "filters": [
+              "IR2_d1s1",
+              "IR2_d1s1_svo",
+              "IR2_d1s2",
+              "IR2_d2s1",
+              "IR2_d2s2",
+              "IR2_d2s2_svo",
+              "IR3_d1s1",
+              "IR3_d1s1_svo",
+              "IR3_d1s2",
+              "IR3_d2s1",
+              "IR3_d2s2",
+              "IR4_d1s1",
+              "IR4_d1s1_svo",
+              "IR4_d1s2",
+              "IR4_d2s1",
+              "IR4_d2s2",
+              "IR4_d2s2_svo",
+              "IR6_d1s1",
+              "IR6_d1s1v1",
+              "IR6_d1s2",
+              "VIS_d1",
+              "VIS_d1_svo",
+              "VIS_d2",
+              "VIS_d3",
+              "VIS_d4",
+              "VIS_d4_svo",
+              "VIS_d5",
+              "VIS_d5_svo",
+              "VIS_d6",
+              "VIS_d7",
+              "VIS_d8",
+              "VIS_d8_svo"
+            ],
+            "published_paths": {
+              "filter+instrument": 10,
+              "filter+optics+qe": 22
+            },
+            "detector_types": {
+              "energy": 32
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 3187615,
+            "size_human": "3.04 MB"
+          },
+          "Imager14": {
+            "name": "Imager14",
+            "filter_count": 24,
+            "filters": [
+              "IR2_d1s1",
+              "IR2_d1s2",
+              "IR2_d2s1",
+              "IR2_d2s2",
+              "IR3_d1s1",
+              "IR3_d1s2",
+              "IR3_d2s1",
+              "IR3_d2s2",
+              "IR4_d1s1",
+              "IR4_d1s2",
+              "IR4_d2s1",
+              "IR4_d2s2",
+              "IR6_d1s1",
+              "IR6_d1s2",
+              "IR6_d2s1",
+              "IR6_d2s2",
+              "VIS_d1",
+              "VIS_d2",
+              "VIS_d3",
+              "VIS_d4",
+              "VIS_d5",
+              "VIS_d6",
+              "VIS_d7",
+              "VIS_d8"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 24
+            },
+            "detector_types": {
+              "energy": 24
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 3503214,
+            "size_human": "3.34 MB"
+          },
+          "Imager15": {
+            "name": "Imager15",
+            "filter_count": 26,
+            "filters": [
+              "IR2_d1s1",
+              "IR2_d1s2",
+              "IR2_d2s1",
+              "IR2_d2s2",
+              "IR3_d1s1",
+              "IR3_d1s2",
+              "IR3_d2s1",
+              "IR3_d2s2",
+              "IR4_d1s1",
+              "IR4_d1s2",
+              "IR4_d2s1",
+              "IR4_d2s2",
+              "IR6_d1s1",
+              "IR6_d1s2",
+              "IR6_d1s2_svo",
+              "IR6_d2s1",
+              "IR6_d2s2",
+              "VIS_d1",
+              "VIS_d2",
+              "VIS_d3",
+              "VIS_d4",
+              "VIS_d4_svo",
+              "VIS_d5",
+              "VIS_d6",
+              "VIS_d7",
+              "VIS_d8"
+            ],
+            "published_paths": {
+              "filter+instrument": 2,
+              "filter+optics+qe": 24
+            },
+            "detector_types": {
+              "energy": 26
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 3286004,
+            "size_human": "3.13 MB"
+          },
+          "Imager8": {
+            "name": "Imager8",
+            "filter_count": 24,
+            "filters": [
+              "IR2_d1s1",
+              "IR2_d1s2",
+              "IR2_d2s1",
+              "IR2_d2s2",
+              "IR3_d1s1",
+              "IR3_d1s2",
+              "IR4_d1s1",
+              "IR4_d1s2",
+              "IR4_d2s1",
+              "IR4_d2s2",
+              "IR5_d1s1",
+              "IR5_d1s2",
+              "IR5_d2s1",
+              "IR5_d2s2",
+              "VIS_d1",
+              "VIS_d2",
+              "VIS_d3",
+              "VIS_d3_svo",
+              "VIS_d4",
+              "VIS_d5",
+              "VIS_d6",
+              "VIS_d7",
+              "VIS_d7_svo",
+              "VIS_d8"
+            ],
+            "published_paths": {
+              "filter+instrument": 2,
+              "filter+optics+qe": 22
+            },
+            "detector_types": {
+              "energy": 24
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 851162,
+            "size_human": "831.21 KB"
+          },
+          "Imager9": {
+            "name": "Imager9",
+            "filter_count": 33,
+            "filters": [
+              "IR2_d1s1",
+              "IR2_d1s1_svo",
+              "IR2_d1s2",
+              "IR2_d2s1",
+              "IR2_d2s2",
+              "IR3_d1s1",
+              "IR3_d1s1_svo",
+              "IR3_d1s2",
+              "IR4_d1s1",
+              "IR4_d1s1_svo",
+              "IR4_d1s2",
+              "IR4_d2s1",
+              "IR4_d2s1_svo",
+              "IR4_d2s2",
+              "IR4_d2s2_svo",
+              "IR5_d1s1",
+              "IR5_d1s1_svo",
+              "IR5_d1s2",
+              "IR5_d1s2_svo",
+              "IR5_d2s1",
+              "IR5_d2s2",
+              "IR5_d2s2_svo",
+              "VIS_d1",
+              "VIS_d2",
+              "VIS_d3",
+              "VIS_d3_svo",
+              "VIS_d4",
+              "VIS_d4_svo",
+              "VIS_d5",
+              "VIS_d6",
+              "VIS_d7",
+              "VIS_d7_svo",
+              "VIS_d8"
+            ],
+            "published_paths": {
+              "filter+instrument": 11,
+              "filter+optics+qe": 22
+            },
+            "detector_types": {
+              "energy": 33
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 1130143,
+            "size_human": "1.08 MB"
+          },
+          "Sounder10": {
+            "name": "Sounder10",
+            "filter_count": 133,
+            "filters": [
+              "IR10_d1",
+              "IR10_d1_svo",
+              "IR10_d2",
+              "IR10_d2_svo",
+              "IR10_d3",
+              "IR10_d3_svo",
+              "IR10_d4",
+              "IR10_d4_svo",
+              "IR11_d1",
+              "IR11_d1_svo",
+              "IR11_d2",
+              "IR11_d2_svo",
+              "IR11_d3",
+              "IR11_d3_svo",
+              "IR11_d4",
+              "IR11_d4_svo",
+              "IR12_d1",
+              "IR12_d1_svo",
+              "IR12_d2",
+              "IR12_d3",
+              "IR12_d3_svo",
+              "IR12_d4",
+              "IR13_d1",
+              "IR13_d1_svo",
+              "IR13_d2",
+              "IR13_d2_svo",
+              "IR13_d3",
+              "IR13_d4",
+              "IR14_d1",
+              "IR14_d1_svo",
+              "IR14_d2",
+              "IR14_d3",
+              "IR14_d3_svo",
+              "IR14_d4",
+              "IR15_d1",
+              "IR15_d2",
+              "IR15_d2_svo",
+              "IR15_d3",
+              "IR15_d3_svo",
+              "IR15_d4",
+              "IR16_d1",
+              "IR16_d1_svo",
+              "IR16_d2",
+              "IR16_d3",
+              "IR16_d3_svo",
+              "IR16_d4",
+              "IR16_d4_svo",
+              "IR17_d1",
+              "IR17_d1_svo",
+              "IR17_d2",
+              "IR17_d2_svo",
+              "IR17_d3",
+              "IR17_d3_svo",
+              "IR17_d4",
+              "IR18_d1",
+              "IR18_d1_svo",
+              "IR18_d2",
+              "IR18_d2_svo",
+              "IR18_d3",
+              "IR18_d3_svo",
+              "IR18_d4",
+              "IR1_d1",
+              "IR1_d2",
+              "IR1_d3",
+              "IR1_d4",
+              "IR1_d4_svo",
+              "IR2_d1",
+              "IR2_d1_svo",
+              "IR2_d2",
+              "IR2_d2_svo",
+              "IR2_d3",
+              "IR2_d3_svo",
+              "IR2_d4",
+              "IR2_d4_svo",
+              "IR3_d1",
+              "IR3_d1_svo",
+              "IR3_d2",
+              "IR3_d2_svo",
+              "IR3_d3",
+              "IR3_d3_svo",
+              "IR3_d4",
+              "IR3_d4_svo",
+              "IR4_d1",
+              "IR4_d2",
+              "IR4_d2_svo",
+              "IR4_d3",
+              "IR4_d3_svo",
+              "IR4_d4",
+              "IR4_d4_svo",
+              "IR5_d1",
+              "IR5_d1_svo",
+              "IR5_d2",
+              "IR5_d2_svo",
+              "IR5_d3",
+              "IR5_d3_svo",
+              "IR5_d4",
+              "IR5_d4_svo",
+              "IR6_d1",
+              "IR6_d1_svo",
+              "IR6_d2",
+              "IR6_d2_svo",
+              "IR6_d3",
+              "IR6_d3_svo",
+              "IR6_d4",
+              "IR6_d4_svo",
+              "IR7_d1",
+              "IR7_d1_svo",
+              "IR7_d2",
+              "IR7_d2_svo",
+              "IR7_d3",
+              "IR7_d4",
+              "IR7_d4_svo",
+              "IR8_d1",
+              "IR8_d1_svo",
+              "IR8_d2",
+              "IR8_d2_svo",
+              "IR8_d3",
+              "IR8_d4",
+              "IR8_d4_svo",
+              "IR9_d1",
+              "IR9_d1_svo",
+              "IR9_d2",
+              "IR9_d2_svo",
+              "IR9_d3",
+              "IR9_d3_svo",
+              "IR9_d4",
+              "IR9_d4_svo",
+              "VIS_d1",
+              "VIS_d1_svo",
+              "VIS_d2",
+              "VIS_d3",
+              "VIS_d3_svo",
+              "VIS_d4"
+            ],
+            "published_paths": {
+              "filter+instrument": 57,
+              "filter+optics+qe": 76
+            },
+            "detector_types": {
+              "energy": 133
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 3048329,
+            "size_human": "2.91 MB"
+          },
+          "Sounder11": {
+            "name": "Sounder11",
+            "filter_count": 98,
+            "filters": [
+              "IR10_d1",
+              "IR10_d1_svo",
+              "IR10_d2",
+              "IR10_d3",
+              "IR10_d4",
+              "IR10_d4_svo",
+              "IR11_d1",
+              "IR11_d2",
+              "IR11_d3",
+              "IR11_d4",
+              "IR11_d4_svo",
+              "IR12_d1",
+              "IR12_d1_svo",
+              "IR12_d2",
+              "IR12_d3",
+              "IR12_d4",
+              "IR13_d1",
+              "IR13_d2",
+              "IR13_d3",
+              "IR13_d3_svo",
+              "IR13_d4",
+              "IR13_d4_svo",
+              "IR14_d1",
+              "IR14_d2",
+              "IR14_d3",
+              "IR14_d4",
+              "IR15_d1",
+              "IR15_d2",
+              "IR15_d2_svo",
+              "IR15_d3",
+              "IR15_d4",
+              "IR16_d1",
+              "IR16_d2",
+              "IR16_d3",
+              "IR16_d4",
+              "IR17_d1",
+              "IR17_d2",
+              "IR17_d3",
+              "IR17_d3_svo",
+              "IR17_d4",
+              "IR18_d1",
+              "IR18_d2",
+              "IR18_d2_svo",
+              "IR18_d3",
+              "IR18_d3_svo",
+              "IR18_d4",
+              "IR1_d1",
+              "IR1_d2",
+              "IR1_d3",
+              "IR1_d4",
+              "IR1_d4_svo",
+              "IR2_d1",
+              "IR2_d2",
+              "IR2_d3",
+              "IR2_d3_svo",
+              "IR2_d4",
+              "IR2_d4_svo",
+              "IR3_d1",
+              "IR3_d2",
+              "IR3_d2_svo",
+              "IR3_d3",
+              "IR3_d4",
+              "IR3_d4_svo",
+              "IR4_d1",
+              "IR4_d2",
+              "IR4_d3",
+              "IR4_d3_svo",
+              "IR4_d4",
+              "IR4_d4_svo",
+              "IR5_d1",
+              "IR5_d2",
+              "IR5_d3",
+              "IR5_d4",
+              "IR6_d1",
+              "IR6_d2",
+              "IR6_d3",
+              "IR6_d4",
+              "IR7_d1",
+              "IR7_d2",
+              "IR7_d3",
+              "IR7_d3_svo",
+              "IR7_d4",
+              "IR8_d1",
+              "IR8_d2",
+              "IR8_d3",
+              "IR8_d4",
+              "IR9_d1",
+              "IR9_d1_svo",
+              "IR9_d2",
+              "IR9_d2_svo",
+              "IR9_d3",
+              "IR9_d3_svo",
+              "IR9_d4",
+              "VIS_d1",
+              "VIS_d1_svo",
               "VIS_d2",
               "VIS_d3",
               "VIS_d4"
             ],
             "published_paths": {
-              "filter+instrument": 11
+              "filter+instrument": 22,
+              "filter+optics+qe": 76
             },
             "detector_types": {
-              "energy": 11
+              "energy": 98
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 232873,
-            "size_human": "227.42 KB"
+            "size_bytes": 2235163,
+            "size_human": "2.13 MB"
           },
-          "Imager12": {
-            "name": "Imager12",
-            "filter_count": 1,
-            "filters": [
-              "VIS_d8"
-            ],
-            "published_paths": {
-              "filter+instrument": 1
-            },
-            "detector_types": {
-              "energy": 1
-            },
-            "separate_components": {},
-            "has_component_manifest": true,
-            "properties": "properties.json",
-            "info": "info.json",
-            "size_bytes": 18341,
-            "size_human": "17.91 KB"
-          },
-          "Imager13": {
-            "name": "Imager13",
-            "filter_count": 10,
-            "filters": [
-              "IR2_d1s1",
-              "IR2_d2s2",
-              "IR3_d1s1",
-              "IR4_d1s1",
-              "IR4_d2s2",
-              "IR6_d1s1v1",
-              "VIS_d1",
-              "VIS_d4",
-              "VIS_d5",
-              "VIS_d8"
-            ],
-            "published_paths": {
-              "filter+instrument": 10
-            },
-            "detector_types": {
-              "energy": 10
-            },
-            "separate_components": {},
-            "has_component_manifest": true,
-            "properties": "properties.json",
-            "info": "info.json",
-            "size_bytes": 396731,
-            "size_human": "387.43 KB"
-          },
-          "Imager15": {
-            "name": "Imager15",
-            "filter_count": 2,
-            "filters": [
-              "IR6_d1s2",
-              "VIS_d4"
-            ],
-            "published_paths": {
-              "filter+instrument": 2
-            },
-            "detector_types": {
-              "energy": 2
-            },
-            "separate_components": {},
-            "has_component_manifest": true,
-            "properties": "properties.json",
-            "info": "info.json",
-            "size_bytes": 37957,
-            "size_human": "37.07 KB"
-          },
-          "Imager8": {
-            "name": "Imager8",
-            "filter_count": 2,
-            "filters": [
-              "VIS_d3",
-              "VIS_d7"
-            ],
-            "published_paths": {
-              "filter+instrument": 2
-            },
-            "detector_types": {
-              "energy": 2
-            },
-            "separate_components": {},
-            "has_component_manifest": true,
-            "properties": "properties.json",
-            "info": "info.json",
-            "size_bytes": 29923,
-            "size_human": "29.22 KB"
-          },
-          "Imager9": {
-            "name": "Imager9",
-            "filter_count": 11,
-            "filters": [
-              "IR2_d1s1",
-              "IR3_d1s1",
-              "IR4_d1s1",
-              "IR4_d2s1",
-              "IR4_d2s2",
-              "IR5_d1s1",
-              "IR5_d1s2",
-              "IR5_d2s2",
-              "VIS_d3",
-              "VIS_d4",
-              "VIS_d7"
-            ],
-            "published_paths": {
-              "filter+instrument": 11
-            },
-            "detector_types": {
-              "energy": 11
-            },
-            "separate_components": {},
-            "has_component_manifest": true,
-            "properties": "properties.json",
-            "info": "info.json",
-            "size_bytes": 277659,
-            "size_human": "271.15 KB"
-          },
-          "Sounder10": {
-            "name": "Sounder10",
-            "filter_count": 57,
+          "Sounder12": {
+            "name": "Sounder12",
+            "filter_count": 76,
             "filters": [
               "IR10_d1",
               "IR10_d2",
@@ -7828,22 +8370,36 @@
               "IR11_d3",
               "IR11_d4",
               "IR12_d1",
+              "IR12_d2",
               "IR12_d3",
+              "IR12_d4",
               "IR13_d1",
               "IR13_d2",
+              "IR13_d3",
+              "IR13_d4",
               "IR14_d1",
+              "IR14_d2",
               "IR14_d3",
+              "IR14_d4",
+              "IR15_d1",
               "IR15_d2",
               "IR15_d3",
+              "IR15_d4",
               "IR16_d1",
+              "IR16_d2",
               "IR16_d3",
               "IR16_d4",
               "IR17_d1",
               "IR17_d2",
               "IR17_d3",
+              "IR17_d4",
               "IR18_d1",
               "IR18_d2",
               "IR18_d3",
+              "IR18_d4",
+              "IR1_d1",
+              "IR1_d2",
+              "IR1_d3",
               "IR1_d4",
               "IR2_d1",
               "IR2_d2",
@@ -7853,6 +8409,7 @@
               "IR3_d2",
               "IR3_d3",
               "IR3_d4",
+              "IR4_d1",
               "IR4_d2",
               "IR4_d3",
               "IR4_d4",
@@ -7866,179 +8423,545 @@
               "IR6_d4",
               "IR7_d1",
               "IR7_d2",
+              "IR7_d3",
               "IR7_d4",
               "IR8_d1",
               "IR8_d2",
+              "IR8_d3",
               "IR8_d4",
               "IR9_d1",
               "IR9_d2",
               "IR9_d3",
               "IR9_d4",
               "VIS_d1",
-              "VIS_d3"
+              "VIS_d2",
+              "VIS_d3",
+              "VIS_d4"
             ],
             "published_paths": {
-              "filter+instrument": 57
+              "filter+optics+qe": 76
             },
             "detector_types": {
-              "energy": 57
+              "energy": 76
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 992649,
-            "size_human": "969.38 KB"
-          },
-          "Sounder11": {
-            "name": "Sounder11",
-            "filter_count": 22,
-            "filters": [
-              "IR10_d1",
-              "IR10_d4",
-              "IR11_d4",
-              "IR12_d1",
-              "IR13_d3",
-              "IR13_d4",
-              "IR15_d2",
-              "IR17_d3",
-              "IR18_d2",
-              "IR18_d3",
-              "IR1_d4",
-              "IR2_d3",
-              "IR2_d4",
-              "IR3_d2",
-              "IR3_d4",
-              "IR4_d3",
-              "IR4_d4",
-              "IR7_d3",
-              "IR9_d1",
-              "IR9_d2",
-              "IR9_d3",
-              "VIS_d1"
-            ],
-            "published_paths": {
-              "filter+instrument": 22
-            },
-            "detector_types": {
-              "energy": 22
-            },
-            "separate_components": {},
-            "has_component_manifest": true,
-            "properties": "properties.json",
-            "info": "info.json",
-            "size_bytes": 403316,
-            "size_human": "393.86 KB"
+            "size_bytes": 1839584,
+            "size_human": "1.75 MB"
           },
           "Sounder13": {
             "name": "Sounder13",
-            "filter_count": 13,
+            "filter_count": 89,
             "filters": [
+              "IR10_d1",
+              "IR10_d2",
+              "IR10_d3",
               "IR10_d4",
+              "IR10_d4_svo",
+              "IR11_d1",
+              "IR11_d2",
+              "IR11_d3",
+              "IR11_d4",
+              "IR12_d1",
+              "IR12_d2",
+              "IR12_d3",
+              "IR12_d4",
               "IR13_d1",
+              "IR13_d1_svo",
+              "IR13_d2",
+              "IR13_d3",
+              "IR13_d4",
+              "IR14_d1",
+              "IR14_d2",
+              "IR14_d3",
+              "IR14_d4",
+              "IR15_d1",
+              "IR15_d2",
+              "IR15_d3",
               "IR15_d4",
+              "IR15_d4_svo",
+              "IR16_d1",
+              "IR16_d2",
+              "IR16_d3",
               "IR16_d4",
+              "IR16_d4_svo",
+              "IR17_d1",
+              "IR17_d2",
               "IR17_d3",
+              "IR17_d3_svo",
               "IR17_d4",
+              "IR17_d4_svo",
+              "IR18_d1",
+              "IR18_d2",
+              "IR18_d3",
               "IR18_d4",
+              "IR18_d4_svo",
+              "IR1_d1",
+              "IR1_d2",
               "IR1_d3",
+              "IR1_d3_svo",
+              "IR1_d4",
+              "IR2_d1",
+              "IR2_d2",
+              "IR2_d3",
+              "IR2_d4",
+              "IR3_d1",
+              "IR3_d2",
+              "IR3_d3",
+              "IR3_d4",
+              "IR4_d1",
+              "IR4_d2",
+              "IR4_d3",
+              "IR4_d4",
+              "IR5_d1",
+              "IR5_d2",
+              "IR5_d3",
+              "IR5_d4",
               "IR6_d1",
+              "IR6_d1_svo",
+              "IR6_d2",
+              "IR6_d3",
+              "IR6_d4",
+              "IR7_d1",
               "IR7_d2",
+              "IR7_d2_svo",
+              "IR7_d3",
               "IR7_d4",
+              "IR7_d4_svo",
+              "IR8_d1",
               "IR8_d2",
-              "VIS_d3"
+              "IR8_d2_svo",
+              "IR8_d3",
+              "IR8_d4",
+              "IR9_d1",
+              "IR9_d2",
+              "IR9_d3",
+              "IR9_d4",
+              "VIS_d1",
+              "VIS_d2",
+              "VIS_d3",
+              "VIS_d3_svo",
+              "VIS_d4"
             ],
             "published_paths": {
-              "filter+instrument": 13
+              "filter+instrument": 13,
+              "filter+optics+qe": 76
             },
             "detector_types": {
-              "energy": 13
+              "energy": 89
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 266912,
-            "size_human": "260.66 KB"
+            "size_bytes": 2438973,
+            "size_human": "2.33 MB"
           },
           "Sounder14": {
             "name": "Sounder14",
-            "filter_count": 6,
+            "filter_count": 82,
             "filters": [
-              "IR14_d1",
-              "IR15_d4",
-              "IR1_d3",
-              "IR2_d1",
-              "IR3_d2",
-              "IR3_d3"
-            ],
-            "published_paths": {
-              "filter+instrument": 6
-            },
-            "detector_types": {
-              "energy": 6
-            },
-            "separate_components": {},
-            "has_component_manifest": true,
-            "properties": "properties.json",
-            "info": "info.json",
-            "size_bytes": 78711,
-            "size_human": "76.87 KB"
-          },
-          "Sounder15": {
-            "name": "Sounder15",
-            "filter_count": 15,
-            "filters": [
+              "IR10_d1",
               "IR10_d2",
+              "IR10_d3",
+              "IR10_d4",
+              "IR11_d1",
               "IR11_d2",
+              "IR11_d3",
+              "IR11_d4",
+              "IR12_d1",
+              "IR12_d2",
+              "IR12_d3",
+              "IR12_d4",
               "IR13_d1",
               "IR13_d2",
               "IR13_d3",
+              "IR13_d4",
+              "IR14_d1",
+              "IR14_d1_svo",
+              "IR14_d2",
+              "IR14_d3",
+              "IR14_d4",
               "IR15_d1",
+              "IR15_d2",
+              "IR15_d3",
               "IR15_d4",
+              "IR15_d4_svo",
+              "IR16_d1",
               "IR16_d2",
+              "IR16_d3",
+              "IR16_d4",
+              "IR17_d1",
               "IR17_d2",
+              "IR17_d3",
+              "IR17_d4",
               "IR18_d1",
+              "IR18_d2",
+              "IR18_d3",
+              "IR18_d4",
+              "IR1_d1",
               "IR1_d2",
+              "IR1_d3",
+              "IR1_d3_svo",
+              "IR1_d4",
+              "IR2_d1",
+              "IR2_d1_svo",
+              "IR2_d2",
+              "IR2_d3",
+              "IR2_d4",
               "IR3_d1",
               "IR3_d2",
+              "IR3_d2_svo",
+              "IR3_d3",
+              "IR3_d3_svo",
+              "IR3_d4",
+              "IR4_d1",
+              "IR4_d2",
+              "IR4_d3",
+              "IR4_d4",
+              "IR5_d1",
+              "IR5_d2",
+              "IR5_d3",
+              "IR5_d4",
+              "IR6_d1",
+              "IR6_d2",
               "IR6_d3",
-              "IR9_d2"
+              "IR6_d4",
+              "IR7_d1",
+              "IR7_d2",
+              "IR7_d3",
+              "IR7_d4",
+              "IR8_d1",
+              "IR8_d2",
+              "IR8_d3",
+              "IR8_d4",
+              "IR9_d1",
+              "IR9_d2",
+              "IR9_d3",
+              "IR9_d4",
+              "VIS_d1",
+              "VIS_d2",
+              "VIS_d3",
+              "VIS_d4"
             ],
             "published_paths": {
-              "filter+instrument": 15
+              "filter+instrument": 6,
+              "filter+optics+qe": 76
             },
             "detector_types": {
-              "energy": 15
+              "energy": 82
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 314425,
-            "size_human": "307.06 KB"
+            "size_bytes": 2193419,
+            "size_human": "2.09 MB"
+          },
+          "Sounder15": {
+            "name": "Sounder15",
+            "filter_count": 91,
+            "filters": [
+              "IR10_d1",
+              "IR10_d2",
+              "IR10_d2_svo",
+              "IR10_d3",
+              "IR10_d4",
+              "IR11_d1",
+              "IR11_d2",
+              "IR11_d2_svo",
+              "IR11_d3",
+              "IR11_d4",
+              "IR12_d1",
+              "IR12_d2",
+              "IR12_d3",
+              "IR12_d4",
+              "IR13_d1",
+              "IR13_d1_svo",
+              "IR13_d2",
+              "IR13_d2_svo",
+              "IR13_d3",
+              "IR13_d3_svo",
+              "IR13_d4",
+              "IR14_d1",
+              "IR14_d2",
+              "IR14_d3",
+              "IR14_d4",
+              "IR15_d1",
+              "IR15_d1_svo",
+              "IR15_d2",
+              "IR15_d3",
+              "IR15_d4",
+              "IR15_d4_svo",
+              "IR16_d1",
+              "IR16_d2",
+              "IR16_d2_svo",
+              "IR16_d3",
+              "IR16_d4",
+              "IR17_d1",
+              "IR17_d2",
+              "IR17_d2_svo",
+              "IR17_d3",
+              "IR17_d4",
+              "IR18_d1",
+              "IR18_d1_svo",
+              "IR18_d2",
+              "IR18_d3",
+              "IR18_d4",
+              "IR1_d1",
+              "IR1_d2",
+              "IR1_d2_svo",
+              "IR1_d3",
+              "IR1_d4",
+              "IR2_d1",
+              "IR2_d2",
+              "IR2_d3",
+              "IR2_d4",
+              "IR3_d1",
+              "IR3_d1_svo",
+              "IR3_d2",
+              "IR3_d2_svo",
+              "IR3_d3",
+              "IR3_d4",
+              "IR4_d1",
+              "IR4_d2",
+              "IR4_d3",
+              "IR4_d4",
+              "IR5_d1",
+              "IR5_d2",
+              "IR5_d3",
+              "IR5_d4",
+              "IR6_d1",
+              "IR6_d2",
+              "IR6_d3",
+              "IR6_d3_svo",
+              "IR6_d4",
+              "IR7_d1",
+              "IR7_d2",
+              "IR7_d3",
+              "IR7_d4",
+              "IR8_d1",
+              "IR8_d2",
+              "IR8_d3",
+              "IR8_d4",
+              "IR9_d1",
+              "IR9_d2",
+              "IR9_d2_svo",
+              "IR9_d3",
+              "IR9_d4",
+              "VIS_d1",
+              "VIS_d2",
+              "VIS_d3",
+              "VIS_d4"
+            ],
+            "published_paths": {
+              "filter+instrument": 15,
+              "filter+optics+qe": 76
+            },
+            "detector_types": {
+              "energy": 91
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 2449695,
+            "size_human": "2.34 MB"
           },
           "Sounder8": {
             "name": "Sounder8",
-            "filter_count": 4,
+            "filter_count": 80,
             "filters": [
+              "IR10_d1",
+              "IR10_d2",
+              "IR10_d3",
+              "IR10_d4",
               "IR11_d1",
+              "IR11_d1_svo",
+              "IR11_d2",
+              "IR11_d3",
+              "IR11_d4",
+              "IR12_d1",
+              "IR12_d2",
+              "IR12_d3",
+              "IR12_d4",
               "IR13_d1",
+              "IR13_d1_svo",
+              "IR13_d2",
+              "IR13_d3",
+              "IR13_d4",
+              "IR14_d1",
+              "IR14_d2",
+              "IR14_d3",
+              "IR14_d4",
+              "IR15_d1",
+              "IR15_d2",
+              "IR15_d3",
+              "IR15_d4",
+              "IR16_d1",
+              "IR16_d2",
+              "IR16_d3",
+              "IR16_d4",
+              "IR17_d1",
+              "IR17_d2",
+              "IR17_d3",
+              "IR17_d4",
+              "IR18_d1",
+              "IR18_d2",
+              "IR18_d3",
               "IR18_d4",
-              "IR3_d4"
+              "IR18_d4_svo",
+              "IR1_d1",
+              "IR1_d2",
+              "IR1_d3",
+              "IR1_d4",
+              "IR2_d1",
+              "IR2_d2",
+              "IR2_d3",
+              "IR2_d4",
+              "IR3_d1",
+              "IR3_d2",
+              "IR3_d3",
+              "IR3_d4",
+              "IR3_d4_svo",
+              "IR4_d1",
+              "IR4_d2",
+              "IR4_d3",
+              "IR4_d4",
+              "IR5_d1",
+              "IR5_d2",
+              "IR5_d3",
+              "IR5_d4",
+              "IR6_d1",
+              "IR6_d2",
+              "IR6_d3",
+              "IR6_d4",
+              "IR7_d1",
+              "IR7_d2",
+              "IR7_d3",
+              "IR7_d4",
+              "IR8_d1",
+              "IR8_d2",
+              "IR8_d3",
+              "IR8_d4",
+              "IR9_d1",
+              "IR9_d2",
+              "IR9_d3",
+              "IR9_d4",
+              "VIS_d1",
+              "VIS_d2",
+              "VIS_d3",
+              "VIS_d4"
             ],
             "published_paths": {
-              "filter+instrument": 4
+              "filter+instrument": 4,
+              "filter+optics+qe": 76
             },
             "detector_types": {
-              "energy": 4
+              "energy": 80
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 162125,
-            "size_human": "158.33 KB"
+            "size_bytes": 3057407,
+            "size_human": "2.92 MB"
+          },
+          "Sounder9": {
+            "name": "Sounder9",
+            "filter_count": 76,
+            "filters": [
+              "IR10_d1",
+              "IR10_d2",
+              "IR10_d3",
+              "IR10_d4",
+              "IR11_d1",
+              "IR11_d2",
+              "IR11_d3",
+              "IR11_d4",
+              "IR12_d1",
+              "IR12_d2",
+              "IR12_d3",
+              "IR12_d4",
+              "IR13_d1",
+              "IR13_d2",
+              "IR13_d3",
+              "IR13_d4",
+              "IR14_d1",
+              "IR14_d2",
+              "IR14_d3",
+              "IR14_d4",
+              "IR15_d1",
+              "IR15_d2",
+              "IR15_d3",
+              "IR15_d4",
+              "IR16_d1",
+              "IR16_d2",
+              "IR16_d3",
+              "IR16_d4",
+              "IR17_d1",
+              "IR17_d2",
+              "IR17_d3",
+              "IR17_d4",
+              "IR18_d1",
+              "IR18_d2",
+              "IR18_d3",
+              "IR18_d4",
+              "IR1_d1",
+              "IR1_d2",
+              "IR1_d3",
+              "IR1_d4",
+              "IR2_d1",
+              "IR2_d2",
+              "IR2_d3",
+              "IR2_d4",
+              "IR3_d1",
+              "IR3_d2",
+              "IR3_d3",
+              "IR3_d4",
+              "IR4_d1",
+              "IR4_d2",
+              "IR4_d3",
+              "IR4_d4",
+              "IR5_d1",
+              "IR5_d2",
+              "IR5_d3",
+              "IR5_d4",
+              "IR6_d1",
+              "IR6_d2",
+              "IR6_d3",
+              "IR6_d4",
+              "IR7_d1",
+              "IR7_d2",
+              "IR7_d3",
+              "IR7_d4",
+              "IR8_d1",
+              "IR8_d2",
+              "IR8_d3",
+              "IR8_d4",
+              "IR9_d1",
+              "IR9_d2",
+              "IR9_d3",
+              "IR9_d4",
+              "VIS_d1",
+              "VIS_d2",
+              "VIS_d3",
+              "VIS_d4"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 76
+            },
+            "detector_types": {
+              "energy": 76
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 1883385,
+            "size_human": "1.80 MB"
           },
           "VAS5": {
             "name": "VAS5",
@@ -8083,7 +9006,7 @@
             "size_human": "204.95 KB"
           }
         },
-        "instrument_count": 19
+        "instrument_count": 22
       },
       "GTC": {
         "name": "GTC",
@@ -8844,23 +9767,29 @@
         "instruments": {
           "GIS": {
             "name": "GIS",
-            "filter_count": 2,
+            "filter_count": 7,
             "filters": [
+              "Blue",
               "Green",
-              "Pan"
+              "Green_svo",
+              "NIR",
+              "Pan",
+              "Pan_svo",
+              "Red"
             ],
             "published_paths": {
-              "filter+instrument": 2
+              "filter+instrument": 2,
+              "filter+optics+qe": 5
             },
             "detector_types": {
-              "energy": 2
+              "energy": 7
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 24514,
-            "size_human": "23.94 KB"
+            "size_bytes": 107181,
+            "size_human": "104.67 KB"
           }
         },
         "instrument_count": 1
@@ -10332,6 +11261,35 @@
         },
         "instrument_count": 2
       },
+      "IKONOS": {
+        "name": "IKONOS",
+        "instruments": {
+          "OSA": {
+            "name": "OSA",
+            "filter_count": 5,
+            "filters": [
+              "Blue",
+              "Green",
+              "NIR",
+              "Pan",
+              "Red"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 5
+            },
+            "detector_types": {
+              "energy": 5
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 40578,
+            "size_human": "39.63 KB"
+          }
+        },
+        "instrument_count": 1
+      },
       "IRAS": {
         "name": "IRAS",
         "instruments": {
@@ -10444,6 +11402,280 @@
       "JPSS": {
         "name": "JPSS",
         "instruments": {
+          "ATMS-J2": {
+            "name": "ATMS-J2",
+            "filter_count": 42,
+            "filters": [
+              "ch01_PRI",
+              "ch02_PRI",
+              "ch03_PRI",
+              "ch03_RED",
+              "ch04_PRI",
+              "ch04_RED",
+              "ch05_PRI",
+              "ch05_RED",
+              "ch06_PRI",
+              "ch06_RED",
+              "ch07_PRI",
+              "ch07_RED",
+              "ch08_PRI",
+              "ch08_RED",
+              "ch09_PRI",
+              "ch09_RED",
+              "ch10_PRI",
+              "ch10_RED",
+              "ch11_PRI",
+              "ch11_RED",
+              "ch12_PRI",
+              "ch12_RED",
+              "ch13_PRI",
+              "ch13_RED",
+              "ch14_PRI",
+              "ch14_RED",
+              "ch15_PRI",
+              "ch15_RED",
+              "ch16_PRI",
+              "ch16_RED",
+              "ch17_PRI",
+              "ch17_RED",
+              "ch18_PRI",
+              "ch18_RED",
+              "ch19_PRI",
+              "ch19_RED",
+              "ch20_PRI",
+              "ch20_RED",
+              "ch21_PRI",
+              "ch21_RED",
+              "ch22_PRI",
+              "ch22_RED"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 42
+            },
+            "detector_types": {
+              "energy": 42
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 2860080,
+            "size_human": "2.73 MB"
+          },
+          "ATMS-NPP": {
+            "name": "ATMS-NPP",
+            "filter_count": 196,
+            "filters": [
+              "ch01_Pri_VH_p20",
+              "ch01_Pri_VL_p20",
+              "ch01_Pri_VN_m10",
+              "ch01_Pri_VN_p20",
+              "ch01_Pri_VN_p50",
+              "ch02_Pri_VH_p20",
+              "ch02_Pri_VL_p20",
+              "ch02_Pri_VN_m10",
+              "ch02_Pri_VN_p20",
+              "ch02_Pri_VN_p50",
+              "ch03_Pri_VH_p20",
+              "ch03_Pri_VL_p20",
+              "ch03_Pri_VN_m10",
+              "ch03_Pri_VN_p20",
+              "ch03_Pri_VN_p50",
+              "ch03_Sec_VH_p20",
+              "ch03_Sec_VL_p20",
+              "ch03_Sec_VN_m10",
+              "ch03_Sec_VN_p20",
+              "ch03_Sec_VN_p50",
+              "ch04_Pri_VH_p20",
+              "ch04_Pri_VL_p20",
+              "ch04_Pri_VN_m10",
+              "ch04_Pri_VN_p20",
+              "ch04_Pri_VN_p50",
+              "ch04_Sec_VH_p20",
+              "ch04_Sec_VL_p20",
+              "ch04_Sec_VN_m10",
+              "ch04_Sec_VN_p20",
+              "ch04_Sec_VN_p50",
+              "ch05_Pri_VH_p20",
+              "ch05_Pri_VL_p20",
+              "ch05_Pri_VN_m10",
+              "ch05_Pri_VN_p20",
+              "ch05_Pri_VN_p50",
+              "ch05_Sec_VH_p20",
+              "ch05_Sec_VL_p20",
+              "ch05_Sec_VN_m10",
+              "ch05_Sec_VN_p20",
+              "ch05_Sec_VN_p50",
+              "ch06_Pri_VH_p20",
+              "ch06_Pri_VL_p20",
+              "ch06_Pri_VN_m10",
+              "ch06_Pri_VN_p20",
+              "ch06_Pri_VN_p50",
+              "ch06_Sec_VH_p20",
+              "ch06_Sec_VL_p20",
+              "ch06_Sec_VN_m10",
+              "ch06_Sec_VN_p20",
+              "ch06_Sec_VN_p50",
+              "ch07_Pri_VH_p20",
+              "ch07_Pri_VL_p20",
+              "ch07_Pri_VN_m10",
+              "ch07_Pri_VN_p20",
+              "ch07_Pri_VN_p50",
+              "ch07_Sec_VH_p20",
+              "ch07_Sec_VL_p20",
+              "ch07_Sec_VN_m10",
+              "ch07_Sec_VN_p20",
+              "ch07_Sec_VN_p50",
+              "ch08_Pri_VH_p20",
+              "ch08_Pri_VL_p20",
+              "ch08_Pri_VN_m10",
+              "ch08_Pri_VN_p20",
+              "ch08_Pri_VN_p50",
+              "ch08_Sec_VH_p20",
+              "ch08_Sec_VL_p20",
+              "ch08_Sec_VN_m10",
+              "ch08_Sec_VN_p20",
+              "ch08_Sec_VN_p50",
+              "ch09_Pri_VH_p20",
+              "ch09_Pri_VL_p20",
+              "ch09_Pri_VN_m10",
+              "ch09_Pri_VN_p20",
+              "ch09_Pri_VN_p50",
+              "ch09_Sec_VH_p20",
+              "ch09_Sec_VL_p20",
+              "ch09_Sec_VN_m10",
+              "ch09_Sec_VN_p20",
+              "ch09_Sec_VN_p50",
+              "ch10_Pri_VH_p20",
+              "ch10_Pri_VL_p20",
+              "ch10_Pri_VN_m10",
+              "ch10_Pri_VN_p20",
+              "ch10_Pri_VN_p50",
+              "ch10_Sec_VH_p20",
+              "ch10_Sec_VL_p20",
+              "ch10_Sec_VN_m10",
+              "ch10_Sec_VN_p20",
+              "ch10_Sec_VN_p50",
+              "ch11_Pri_VH_p20",
+              "ch11_Pri_VL_p20",
+              "ch11_Pri_VN_m10",
+              "ch11_Pri_VN_p20",
+              "ch11_Pri_VN_p50",
+              "ch11_Sec_VH_p20",
+              "ch11_Sec_VL_p20",
+              "ch11_Sec_VN_m10",
+              "ch11_Sec_VN_p20",
+              "ch11_Sec_VN_p50",
+              "ch12_Pri_VH_p20",
+              "ch12_Pri_VL_p20",
+              "ch12_Pri_VN_m10",
+              "ch12_Pri_VN_p20",
+              "ch12_Pri_VN_p50",
+              "ch12_Sec_VH_p20",
+              "ch12_Sec_VL_p20",
+              "ch12_Sec_VN_m10",
+              "ch12_Sec_VN_p20",
+              "ch12_Sec_VN_p50",
+              "ch13_Pri_VH_p20",
+              "ch13_Pri_VL_p20",
+              "ch13_Pri_VN_m10",
+              "ch13_Pri_VN_p20",
+              "ch13_Pri_VN_p50",
+              "ch13_Sec_VH_p20",
+              "ch13_Sec_VL_p20",
+              "ch13_Sec_VN_m10",
+              "ch13_Sec_VN_p20",
+              "ch13_Sec_VN_p50",
+              "ch14_Pri_VH_p20",
+              "ch14_Pri_VL_p20",
+              "ch14_Pri_VN_m10",
+              "ch14_Pri_VN_p20",
+              "ch14_Pri_VN_p50",
+              "ch14_Sec_VH_p20",
+              "ch14_Sec_VL_p20",
+              "ch14_Sec_VN_m10",
+              "ch14_Sec_VN_p20",
+              "ch14_Sec_VN_p50",
+              "ch15_Pri_VH_p20",
+              "ch15_Pri_VL_p20",
+              "ch15_Pri_VN_m10",
+              "ch15_Pri_VN_p20",
+              "ch15_Pri_VN_p50",
+              "ch15_Sec_VH_p20",
+              "ch15_Sec_VL_p20",
+              "ch15_Sec_VN_m10",
+              "ch15_Sec_VN_p20",
+              "ch15_Sec_VN_p50",
+              "ch16_Pri_VH_p20",
+              "ch16_Pri_VL_p20",
+              "ch16_Pri_VN_m10",
+              "ch16_Pri_VN_p20",
+              "ch16_Pri_VN_p50",
+              "ch16_Sec_VN_m10",
+              "ch16_Sec_VN_p20",
+              "ch16_Sec_VN_p50",
+              "ch17_Pri_VH_p20",
+              "ch17_Pri_VL_p20",
+              "ch17_Pri_VN_m10",
+              "ch17_Pri_VN_p20",
+              "ch17_Pri_VN_p50",
+              "ch17_Sec_VN_m10",
+              "ch17_Sec_VN_p20",
+              "ch17_Sec_VN_p50",
+              "ch18_Pri_VH_p20",
+              "ch18_Pri_VL_p20",
+              "ch18_Pri_VN_m10",
+              "ch18_Pri_VN_p20",
+              "ch18_Pri_VN_p50",
+              "ch18_Sec_VN_m10",
+              "ch18_Sec_VN_p20",
+              "ch18_Sec_VN_p50",
+              "ch19_Pri_VH_p20",
+              "ch19_Pri_VL_p20",
+              "ch19_Pri_VN_m10",
+              "ch19_Pri_VN_p20",
+              "ch19_Pri_VN_p50",
+              "ch19_Sec_VN_m10",
+              "ch19_Sec_VN_p20",
+              "ch19_Sec_VN_p50",
+              "ch20_Pri_VH_p20",
+              "ch20_Pri_VL_p20",
+              "ch20_Pri_VN_m10",
+              "ch20_Pri_VN_p20",
+              "ch20_Pri_VN_p50",
+              "ch20_Sec_VN_m10",
+              "ch20_Sec_VN_p20",
+              "ch20_Sec_VN_p50",
+              "ch21_Pri_VH_p20",
+              "ch21_Pri_VL_p20",
+              "ch21_Pri_VN_m10",
+              "ch21_Pri_VN_p20",
+              "ch21_Pri_VN_p50",
+              "ch21_Sec_VN_m10",
+              "ch21_Sec_VN_p20",
+              "ch21_Sec_VN_p50",
+              "ch22_Pri_VH_p20",
+              "ch22_Pri_VL_p20",
+              "ch22_Pri_VN_m10",
+              "ch22_Pri_VN_p20",
+              "ch22_Pri_VN_p50",
+              "ch22_Sec_VN_m10",
+              "ch22_Sec_VN_p20",
+              "ch22_Sec_VN_p50"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 196
+            },
+            "detector_types": {
+              "energy": 196
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 15941339,
+            "size_human": "15.20 MB"
+          },
           "VIIRS": {
             "name": "VIIRS",
             "filter_count": 22,
@@ -10571,7 +11803,7 @@
             "size_human": "304.15 KB"
           }
         },
-        "instrument_count": 3
+        "instrument_count": 5
       },
       "JWST": {
         "name": "JWST",
@@ -11073,6 +12305,292 @@
         },
         "instrument_count": 2
       },
+      "Landsat": {
+        "name": "Landsat",
+        "instruments": {
+          "ETM-7": {
+            "name": "ETM-7",
+            "filter_count": 8,
+            "filters": [
+              "band1",
+              "band2",
+              "band3",
+              "band4",
+              "band5",
+              "band6",
+              "band7",
+              "band8"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 8
+            },
+            "detector_types": {
+              "energy": 8
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 40687,
+            "size_human": "39.73 KB"
+          },
+          "MSS-1": {
+            "name": "MSS-1",
+            "filter_count": 4,
+            "filters": [
+              "band4",
+              "band5",
+              "band6",
+              "band7"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 4
+            },
+            "detector_types": {
+              "energy": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 57314,
+            "size_human": "55.97 KB"
+          },
+          "MSS-2": {
+            "name": "MSS-2",
+            "filter_count": 4,
+            "filters": [
+              "band4",
+              "band5",
+              "band6",
+              "band7"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 4
+            },
+            "detector_types": {
+              "energy": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 52883,
+            "size_human": "51.64 KB"
+          },
+          "MSS-3": {
+            "name": "MSS-3",
+            "filter_count": 4,
+            "filters": [
+              "band4",
+              "band5",
+              "band6",
+              "band7"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 4
+            },
+            "detector_types": {
+              "energy": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 54040,
+            "size_human": "52.77 KB"
+          },
+          "MSS-4": {
+            "name": "MSS-4",
+            "filter_count": 4,
+            "filters": [
+              "band1",
+              "band2",
+              "band3",
+              "band4"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 4
+            },
+            "detector_types": {
+              "energy": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 40645,
+            "size_human": "39.69 KB"
+          },
+          "MSS-5": {
+            "name": "MSS-5",
+            "filter_count": 4,
+            "filters": [
+              "band1",
+              "band2",
+              "band3",
+              "band4"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 4
+            },
+            "detector_types": {
+              "energy": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 37112,
+            "size_human": "36.24 KB"
+          },
+          "OLI": {
+            "name": "OLI",
+            "filter_count": 9,
+            "filters": [
+              "Blue",
+              "Cirrus",
+              "Coastal",
+              "Green",
+              "NIR",
+              "Pan",
+              "Red",
+              "SWIR1",
+              "SWIR2"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 9
+            },
+            "detector_types": {
+              "energy": 9
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 60756,
+            "size_human": "59.33 KB"
+          },
+          "OLI-2": {
+            "name": "OLI-2",
+            "filter_count": 9,
+            "filters": [
+              "Blue",
+              "Cirrus",
+              "Coastal",
+              "Green",
+              "NIR",
+              "Pan",
+              "Red",
+              "SWIR1",
+              "SWIR2"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 9
+            },
+            "detector_types": {
+              "energy": 9
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 44634,
+            "size_human": "43.59 KB"
+          },
+          "TIRS": {
+            "name": "TIRS",
+            "filter_count": 2,
+            "filters": [
+              "1080nm",
+              "1200nm"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 2
+            },
+            "detector_types": {
+              "energy": 2
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 25387,
+            "size_human": "24.79 KB"
+          },
+          "TIRS-2": {
+            "name": "TIRS-2",
+            "filter_count": 2,
+            "filters": [
+              "1080nm",
+              "1200nm"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 2
+            },
+            "detector_types": {
+              "energy": 2
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 13541,
+            "size_human": "13.22 KB"
+          },
+          "TM-4": {
+            "name": "TM-4",
+            "filter_count": 7,
+            "filters": [
+              "band1",
+              "band2",
+              "band3",
+              "band4",
+              "band5",
+              "band6",
+              "band7"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 7
+            },
+            "detector_types": {
+              "energy": 7
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 37864,
+            "size_human": "36.98 KB"
+          },
+          "TM-5": {
+            "name": "TM-5",
+            "filter_count": 7,
+            "filters": [
+              "band1",
+              "band2",
+              "band3",
+              "band4",
+              "band5",
+              "band6",
+              "band7"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 7
+            },
+            "detector_types": {
+              "energy": 7
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 37734,
+            "size_human": "36.85 KB"
+          }
+        },
+        "instrument_count": 12
+      },
       "LasCumbres": {
         "name": "LasCumbres",
         "instruments": {
@@ -11282,6 +12800,45 @@
           }
         },
         "instrument_count": 2
+      },
+      "NOAA": {
+        "name": "NOAA",
+        "instruments": {
+          "AMSUA-19": {
+            "name": "AMSUA-19",
+            "filter_count": 15,
+            "filters": [
+              "Ch01",
+              "Ch02",
+              "Ch03",
+              "Ch04",
+              "Ch05",
+              "Ch06",
+              "Ch07",
+              "Ch08",
+              "Ch09",
+              "Ch10",
+              "Ch11",
+              "Ch12",
+              "Ch13",
+              "Ch14",
+              "Ch15"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 15
+            },
+            "detector_types": {
+              "energy": 15
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 1929635,
+            "size_human": "1.84 MB"
+          }
+        },
+        "instrument_count": 1
       },
       "NOT": {
         "name": "NOT",
@@ -11705,6 +13262,87 @@
           }
         },
         "instrument_count": 2
+      },
+      "Pleiades": {
+        "name": "Pleiades",
+        "instruments": {
+          "HIRI-1A": {
+            "name": "HIRI-1A",
+            "filter_count": 5,
+            "filters": [
+              "NIR",
+              "blue",
+              "green",
+              "pan",
+              "red"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 5
+            },
+            "detector_types": {
+              "energy": 5
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 50333,
+            "size_human": "49.15 KB"
+          },
+          "HIRI-1B": {
+            "name": "HIRI-1B",
+            "filter_count": 5,
+            "filters": [
+              "blue",
+              "green",
+              "nir",
+              "pan",
+              "red"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 5
+            },
+            "detector_types": {
+              "energy": 5
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 51419,
+            "size_human": "50.21 KB"
+          }
+        },
+        "instrument_count": 2
+      },
+      "QuickBird": {
+        "name": "QuickBird",
+        "instruments": {
+          "BGIS2": {
+            "name": "BGIS2",
+            "filter_count": 5,
+            "filters": [
+              "Blue",
+              "Green",
+              "NIR",
+              "Pan",
+              "Red"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 5
+            },
+            "detector_types": {
+              "energy": 5
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 36264,
+            "size_human": "35.41 KB"
+          }
+        },
+        "instrument_count": 1
       },
       "Roman": {
         "name": "Roman",
@@ -12410,6 +14048,85 @@
         },
         "instrument_count": 2
       },
+      "SPOT": {
+        "name": "SPOT",
+        "instruments": {
+          "NAOMI6": {
+            "name": "NAOMI6",
+            "filter_count": 5,
+            "filters": [
+              "Blue",
+              "Green",
+              "NIR",
+              "Pan",
+              "Red"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 5
+            },
+            "detector_types": {
+              "energy": 5
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 104587,
+            "size_human": "102.14 KB"
+          },
+          "NAOMI7": {
+            "name": "NAOMI7",
+            "filter_count": 5,
+            "filters": [
+              "Blue",
+              "Green",
+              "NIR",
+              "Pan",
+              "Red"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 5
+            },
+            "detector_types": {
+              "energy": 5
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 102607,
+            "size_human": "100.20 KB"
+          }
+        },
+        "instrument_count": 2
+      },
+      "SPT": {
+        "name": "SPT",
+        "instruments": {
+          "SPT-3G": {
+            "name": "SPT-3G",
+            "filter_count": 3,
+            "filters": [
+              "150GHz",
+              "220GHz",
+              "95GHz"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 21438,
+            "size_human": "20.94 KB"
+          }
+        },
+        "instrument_count": 1
+      },
       "Sentinel": {
         "name": "Sentinel",
         "instruments": {
@@ -12505,9 +14222,141 @@
             "info": "info.json",
             "size_bytes": 392252,
             "size_human": "383.06 KB"
+          },
+          "OLCI-A": {
+            "name": "OLCI-A",
+            "filter_count": 21,
+            "filters": [
+              "Oa01",
+              "Oa02",
+              "Oa03",
+              "Oa04",
+              "Oa05",
+              "Oa06",
+              "Oa07",
+              "Oa08",
+              "Oa09",
+              "Oa10",
+              "Oa11",
+              "Oa12",
+              "Oa13",
+              "Oa14",
+              "Oa15",
+              "Oa16",
+              "Oa17",
+              "Oa18",
+              "Oa19",
+              "Oa20",
+              "Oa21"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 21
+            },
+            "detector_types": {
+              "energy": 21
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 223308,
+            "size_human": "218.07 KB"
+          },
+          "OLCI-B": {
+            "name": "OLCI-B",
+            "filter_count": 21,
+            "filters": [
+              "Oa01",
+              "Oa02",
+              "Oa03",
+              "Oa04",
+              "Oa05",
+              "Oa06",
+              "Oa07",
+              "Oa08",
+              "Oa09",
+              "Oa10",
+              "Oa11",
+              "Oa12",
+              "Oa13",
+              "Oa14",
+              "Oa15",
+              "Oa16",
+              "Oa17",
+              "Oa18",
+              "Oa19",
+              "Oa20",
+              "Oa21"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 21
+            },
+            "detector_types": {
+              "energy": 21
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 225485,
+            "size_human": "220.20 KB"
+          },
+          "SLSTR-A": {
+            "name": "SLSTR-A",
+            "filter_count": 9,
+            "filters": [
+              "S1",
+              "S2",
+              "S3",
+              "S4",
+              "S5",
+              "S6",
+              "S7",
+              "S8",
+              "S9"
+            ],
+            "published_paths": {
+              "filter+qe": 9
+            },
+            "detector_types": {
+              "energy": 9
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 413289,
+            "size_human": "403.60 KB"
+          },
+          "SLSTR-B": {
+            "name": "SLSTR-B",
+            "filter_count": 9,
+            "filters": [
+              "S1",
+              "S2",
+              "S3",
+              "S4",
+              "S5",
+              "S6",
+              "S7",
+              "S8",
+              "S9"
+            ],
+            "published_paths": {
+              "filter+qe": 9
+            },
+            "detector_types": {
+              "energy": 9
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 464106,
+            "size_human": "453.23 KB"
           }
         },
-        "instrument_count": 3
+        "instrument_count": 7
       },
       "Spitzer": {
         "name": "Spitzer",
@@ -12798,6 +14647,66 @@
         },
         "instrument_count": 2
       },
+      "Terra": {
+        "name": "Terra",
+        "instruments": {
+          "MODIS": {
+            "name": "MODIS",
+            "filter_count": 36,
+            "filters": [
+              "Band01",
+              "Band02",
+              "Band03",
+              "Band04",
+              "Band05",
+              "Band06",
+              "Band07",
+              "Band08",
+              "Band09",
+              "Band10",
+              "Band11",
+              "Band12",
+              "Band13",
+              "Band14",
+              "Band15",
+              "Band16",
+              "Band17",
+              "Band18",
+              "Band19",
+              "Band20",
+              "Band21",
+              "Band22",
+              "Band23",
+              "Band24",
+              "Band25",
+              "Band26",
+              "Band27",
+              "Band28",
+              "Band29",
+              "Band30",
+              "Band31",
+              "Band32",
+              "Band33",
+              "Band34",
+              "Band35",
+              "Band36"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 36
+            },
+            "detector_types": {
+              "energy": 36
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 382630,
+            "size_human": "373.66 KB"
+          }
+        },
+        "instrument_count": 1
+      },
       "UKIRT": {
         "name": "UKIRT",
         "instruments": {
@@ -12997,6 +14906,116 @@
         },
         "instrument_count": 1
       },
+      "WorldView": {
+        "name": "WorldView",
+        "instruments": {
+          "SW110": {
+            "name": "SW110",
+            "filter_count": 5,
+            "filters": [
+              "Blue",
+              "Green",
+              "NIR",
+              "Pan",
+              "Red"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 5
+            },
+            "detector_types": {
+              "energy": 5
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 93006,
+            "size_human": "90.83 KB"
+          },
+          "WV110": {
+            "name": "WV110",
+            "filter_count": 9,
+            "filters": [
+              "Blue",
+              "Coastal",
+              "Green",
+              "NIR1",
+              "NIR2",
+              "Pan",
+              "Red",
+              "RedEdge",
+              "Yellow"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 9
+            },
+            "detector_types": {
+              "energy": 9
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 158258,
+            "size_human": "154.55 KB"
+          },
+          "WV3": {
+            "name": "WV3",
+            "filter_count": 17,
+            "filters": [
+              "Blue",
+              "Coastal",
+              "Green",
+              "NIR1",
+              "NIR2",
+              "Pan",
+              "Red",
+              "RedEdge",
+              "SWIR1",
+              "SWIR2",
+              "SWIR3",
+              "SWIR4",
+              "SWIR5",
+              "SWIR6",
+              "SWIR7",
+              "SWIR8",
+              "Yellow"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 17
+            },
+            "detector_types": {
+              "energy": 17
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 533565,
+            "size_human": "521.06 KB"
+          },
+          "WV60": {
+            "name": "WV60",
+            "filter_count": 1,
+            "filters": [
+              "Pan"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 11108,
+            "size_human": "10.85 KB"
+          }
+        },
+        "instrument_count": 4
+      },
       "XMM": {
         "name": "XMM",
         "instruments": {
@@ -13119,7 +15138,7 @@
         "ids": 8340,
         "sha256": "0d0994b1f308fe35e7531c16b400a75c9536de26653f31aa349ca107c3a9e8f9"
       },
-      "references": 325,
+      "references": 337,
       "unresolved_references": 0,
       "svo_fields": {
         "Fsun": {
