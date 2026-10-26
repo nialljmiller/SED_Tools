@@ -20,6 +20,7 @@ from typing import Callable, Dict
 BUILDERS: Dict[str, str] = {
     "argus": ".argus",
     "skycalc": ".skycalc",
+    "team_atmospheres": ".team_atmospheres",
     "lsst": ".lsst",
     "hst": ".hst",
     "jwst": ".jwst",
@@ -28,11 +29,26 @@ BUILDERS: Dict[str, str] = {
     "vista": ".vista",
     "ztf": ".ztf",
     "tabular": ".tabular",
+    "surveys": ".surveys",
+    "space": ".space",
+    "observatories": ".observatories",
+    "standards": ".standards",
+    "cfht": ".cfht",
+    "eris": ".eris",
+    "twomass": ".twomass",
+    "legacy_surveys": ".legacy_surveys",
+    "gmos": ".gmos",
+    "sdss": ".sdss",
+    "euclid": ".euclid",
+    "roman": ".roman",
+    "swift": ".swift",
+    "csp": ".csp",
+    "cassini": ".cassini",
 }
 
 
 #: Builders that need no local input (``argus`` needs its raw directory).
-AUTOMATIC_BUILDERS = ("lsst", "hst", "jwst", "hsc", "decam", "vista", "ztf", "skycalc")
+AUTOMATIC_BUILDERS = ("lsst", "hst", "jwst", "hsc", "decam", "vista", "ztf", "skycalc", "team_atmospheres")
 
 
 def get_builder(name: str) -> Callable[..., Path]:

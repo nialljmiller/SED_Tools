@@ -18,8 +18,15 @@ files and the ``<Instrument>`` index that MESA reads are untouched)::
             <recipe>, <band>.dat
 
     atmospheres/<site>/
-        manifest.json                   airmass/PWV grid (ESO SkyCalc)
+        manifest.json                   airmass/PWV grid with its provenance
         <file>.dat
+
+An atmosphere *site* is either a standard atmosphere published by an
+instrument team (``kind="team"``: DES, Rubin, HSC, Pan-STARRS, ...) or a
+grid SED_Tools computes from a model (``kind="derived"``: ESO SkyCalc).
+An instrument may use only atmospheres of its own location: its
+``default_site``, its ``atmosphere_sites``, and the team sites registered
+for it in :mod:`sed_tools.facility_sites`.
 
 Component roles
 ---------------
@@ -48,7 +55,7 @@ import numpy as np
 
 from .filter_metadata import (ENERGY, PHOTON, normalize_detector_type,
                               read_filter_header, write_filter_file)
-from .facility_sites import is_ground_based, own_site, platform
+from .facility_sites import instrument_sites, is_ground_based, own_site, platform
 
 logger = logging.getLogger(__name__)
 
@@ -85,9 +92,23 @@ def is_auxiliary_path(path: PathLike, root: Optional[PathLike] = None, dirs: Seq
 
 MANIFEST_NAME = "manifest.json"
 #: Suffixes SVO uses for the filter-only sibling of a total passband.
-FILTER_SIBLING_SUFFIXES = ("_filter", "_fil", "prime_filter")
+#: SVO's SDSS ``uprime_filter`` ... ``zprime_filter`` are not siblings of
+#: ``u`` ... ``z``: they are the USNO 40-in filters of the primed system,
+#: kept in air, whereas the 2.5 m camera's filters sit in vacuum, which
+#: moves their red edges about 2.5 per cent blueward (SDSS DR7 "Photometric
+#: flux calibration", classic.sdss.org/dr7/algorithms/fluxcal.html).
+FILTER_SIBLING_SUFFIXES = ("_filter", "_fil")
+#: Variant names: letters, digits, ``_`` and ``-`` (they appear in product names).
+_VARIANT_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]*")
 MANIFEST_SCHEMA = 1
 SHARED = "*"  # component key meaning "applies to every band"
+
+#: Atmosphere site kinds: published by an instrument team, or computed by
+#: SED_Tools from a model (e.g. ESO SkyCalc).  Atmosphere ``.dat`` headers
+#: carry the same word as ``ComponentsSource`` (``original`` for team data
+#: stored as published, ``derived`` for anything SED_Tools computed).
+TEAM, DERIVED = "team", "derived"
+ATMOSPHERE_KINDS = (TEAM, DERIVED)
 
 _SVO_TOKENS = {
     "filter": FILTER,
@@ -154,17 +175,24 @@ def recipe_name(roles: Iterable[str]) -> str:
 class AtmosphereSpec:
     """Observing conditions for the telluric component.
 
-    ``site`` is always the instrument's own site (``manifest.default_site``);
-    it may be omitted, and is only accepted if it matches.  Atmospheres are
-    never borrowed from another site.
+    ``site`` is one of the instrument's own sites (``manifest.default_site``
+    when omitted); any other site is refused.  Atmospheres are never
+    borrowed from another location.
+
+    ``airmass=None`` selects a site's atmosphere *as published* when the
+    source does not state its airmass (e.g. the 2MASS PLEXUS models); it
+    must be passed explicitly, ``{"site": ..., "airmass": None}``.
     """
 
     site: Optional[str]
-    airmass: float
+    airmass: Optional[float]
     pwv: Optional[float] = None  # precipitable water vapour, mm
 
     def __post_init__(self):
-        if not np.isfinite(self.airmass) or self.airmass < 1:
+        if self.airmass is None:
+            if self.pwv is not None:
+                raise ComponentError("an atmosphere of unstated airmass has no pwv to choose")
+        elif not np.isfinite(self.airmass) or self.airmass < 1:
             raise ComponentError("airmass must be finite and at least 1")
         if self.pwv is not None and (not np.isfinite(self.pwv) or self.pwv < 0):
             raise ComponentError("pwv must be finite and nonnegative")
@@ -181,14 +209,20 @@ class AtmosphereSpec:
             raise ComponentError("atmosphere needs at least 'airmass' (and 'pwv' for SkyCalc sites)")
         return cls(
             site=None if value.get("site") is None else str(value["site"]),
-            airmass=float(value["airmass"]),  # type: ignore[arg-type]
+            airmass=None if value["airmass"] is None else float(value["airmass"]),  # type: ignore[arg-type]
             pwv=None if value.get("pwv") is None else float(value["pwv"]),  # type: ignore[arg-type]
         )
 
     @property
     def label(self) -> str:
         pwv = "" if self.pwv is None else f"_pwv{self.pwv:g}"
-        return f"{self.site}_am{self.airmass:g}{pwv}"
+        airmass = "unstated" if self.airmass is None else f"{self.airmass:g}"
+        return f"{self.site}_am{airmass}{pwv}"
+
+    def describe(self) -> str:
+        """``site=... airmass=... [pwv=...]`` for curve headers."""
+        airmass = "unstated" if self.airmass is None else f"{self.airmass:g}"
+        return f"site={self.site} airmass={airmass}" + (f" pwv={self.pwv:g}" if self.pwv is not None else "")
 
 
 # --------------------------------------------------------------------------
@@ -213,6 +247,10 @@ class InstrumentManifest:
     detector_type_sources: Dict[str, str] = field(default_factory=dict)
     ground_based: Optional[bool] = None
     default_site: Optional[str] = None
+    #: Further atmosphere sites at the instrument's own location, e.g. a
+    #: team's standard atmosphere next to a derived SkyCalc grid.  Saved
+    #: only when set, so existing manifests are written unchanged.
+    atmosphere_sites: List[str] = field(default_factory=list)
     sources: Dict[str, str] = field(default_factory=dict)
     notes: str = ""
     #: How non-filter components are treated outside their tabulated range:
@@ -220,6 +258,14 @@ class InstrumentManifest:
     #: "edge" (hold the edge value).
     outside_range: str = "error"
     schema: int = MANIFEST_SCHEMA
+    #: Alternative curves for a component key (a role or composite recipe)
+    #: that are used only when selected, e.g. QE per detector coating or
+    #: epoch: key -> variant name -> {"files": {band or "*": path},
+    #: "description": ..., "source": ..., optional "epoch", "derived",
+    #: "default"}.  The curve in ``components`` stays the default; a
+    #: variant never replaces it unless asked for.  Saved only when set,
+    #: so existing manifests are written unchanged.
+    variants: Dict[str, Dict[str, Dict[str, object]]] = field(default_factory=dict)
 
     def __post_init__(self):
         for band in self.bands:
@@ -228,6 +274,12 @@ class InstrumentManifest:
         for entries in self.components.values():
             for rel in entries.values():
                 _require_inside(rel, f"{self.facility}/{self.instrument}")
+        for key, named in self.variants.items():
+            for name, entry in named.items():
+                if not _VARIANT_NAME.fullmatch(name):
+                    raise ComponentError(f"Invalid {key} variant name: {name!r}")
+                for rel in dict(entry.get("files") or {}).values():
+                    _require_inside(str(rel), f"{self.facility}/{self.instrument} {key} variant {name}")
 
     # ---- persistence -------------------------------------------------
     @classmethod
@@ -319,10 +371,56 @@ class InstrumentManifest:
 
     def save(self, instrument_dir: PathLike) -> Path:
         path = Path(instrument_dir) / MANIFEST_NAME
-        path.write_text(json.dumps(asdict(self), indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        data = asdict(self)
+        if not data["variants"]:
+            del data["variants"]
+        if not data["atmosphere_sites"]:
+            del data["atmosphere_sites"]
+        path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         return path
 
+    # ---- variants ----------------------------------------------------
+    def variant_files(self) -> List[str]:
+        """Every file referenced by a variant."""
+        return sorted({str(rel) for named in self.variants.values() for entry in named.values()
+                       for rel in dict(entry.get("files") or {}).values()})
+
+    def with_variants(self, selection: Optional[Mapping[str, str]]) -> "InstrumentManifest":
+        """A copy whose components use the selected variants.
+
+        ``selection`` maps a component key (``"qe"``, ``"filter+optics+qe"``)
+        to a variant name.  The variant's files replace that key's default
+        entries; bands the variant does not cover keep no entry for the key,
+        so composing them fails rather than silently using the default.
+        """
+        if not selection:
+            return self
+        view = deepcopy(self)
+        for key, name in selection.items():
+            canonical = recipe_name(parse_components(key))
+            named = self.variants.get(canonical, {})
+            if name not in named:
+                have = ", ".join(sorted(named)) or "none"
+                raise ComponentError(f"{self.facility}/{self.instrument} has no {canonical} variant "
+                                     f"{name!r} (available: {have})")
+            view.components[canonical] = {str(b): str(rel) for b, rel in dict(named[name]["files"]).items()}
+        return view
+
     # ---- queries -----------------------------------------------------
+    def sites(self) -> List[str]:
+        """Every atmosphere site of the instrument's own location, default first.
+
+        That is ``default_site``, then ``atmosphere_sites``, then the team
+        sites registered for this instrument in :mod:`facility_sites`.
+        """
+        names = [self.default_site, *self.atmosphere_sites,
+                 *instrument_sites(self.facility, self.instrument)]
+        out: List[str] = []
+        for name in names:
+            if name and name not in out:
+                out.append(name)
+        return out
+
     def component_file(self, role: str, band: str) -> Optional[str]:
         """File for a component key (a role or composite recipe) and band."""
         entries = self.components.get(role, {})
@@ -410,6 +508,16 @@ class InstrumentManifest:
                     raise ComponentError(f"{rel}: component resolves outside its instrument directory")
                 if not path.is_file():
                     del entries[band]
+        for named in view.variants.values():
+            for entry in named.values():
+                files = dict(entry.get("files") or {})
+                for band, rel in list(files.items()):
+                    path = (root / str(rel)).resolve()
+                    if not path.is_relative_to(root):
+                        raise ComponentError(f"{rel}: variant resolves outside its instrument directory")
+                    if not path.is_file():
+                        del files[band]
+                entry["files"] = files
         return view
 
     def missing_files(self, instrument_dir: PathLike) -> List[str]:
@@ -417,6 +525,7 @@ class InstrumentManifest:
         paths = {f"{b}.dat" for b in self.bands}
         for entries in self.components.values():
             paths.update(entries.values())
+        paths.update(self.variant_files())
         return sorted(rel for rel in paths if not (root / rel).is_file())
 
     def describe(self, instrument_dir: Optional[PathLike] = None) -> Dict[str, object]:
@@ -455,8 +564,9 @@ class InstrumentManifest:
                 role: bands for role, bands in role_bands.items()
                 if role not in available_roles and bands
             },
-            "atmosphere": bool(self.ground_based and self.default_site),
+            "atmosphere": bool(self.ground_based and self.sites()),
             "atmosphere_site": self.default_site,
+            "atmosphere_sites": self.sites() if self.ground_based else [],
             "platform": platform(self.facility),
             "default_site": self.default_site,
             "detector_type": detector_type,
@@ -465,17 +575,64 @@ class InstrumentManifest:
             "component_status": source_availability["note"] or None,
             "component_availability": source_availability,
             "missing_files": [],
+            "variants": {
+                key: {name: {k: v for k, v in entry.items() if k != "files"}
+                      | {"bands": sorted(dict(entry.get("files") or {}))}
+                      for name, entry in named.items()}
+                for key, named in self.variants.items()
+            },
         }
 
 
 @dataclass
 class AtmosphereGrid:
+    """An atmosphere site: its grid of observing conditions and provenance.
+
+    ``entries`` rows always carry a numeric ``airmass`` (released SED_Tools
+    reads every served row that way); they may add their own ``source`` and
+    ``derivation``.  Atmospheres whose source does not state the airmass are
+    listed under ``unstated`` instead and selected with ``airmass=None``.
+
+    The provenance fields (``kind`` onwards) are optional and only written
+    when set, so manifests saved by earlier builders keep their bytes.
+    """
+
     site: str
     entries: List[Dict[str, object]]  # {"airmass": float, "pwv": float|None, "file": str}
     source: str = ""
     altitude_m: Optional[float] = None
     notes: str = ""
     schema: int = MANIFEST_SCHEMA
+    #: "team" (published by an instrument team) or "derived" (computed by SED_Tools)
+    kind: Optional[str] = None
+    model: Optional[str] = None            # e.g. "MODTRAN", "ATRAN", "ESO SkyCalc ..."
+    model_version: Optional[str] = None    # as the source states it
+    citation: Optional[str] = None         # papers / DOIs / bibcodes
+    parameters: Optional[Dict[str, object]] = None  # fixed model inputs, derivation choices
+    location: Optional[str] = None         # the observatory the atmosphere describes
+    terms: Optional[str] = None            # usage/credit terms, verbatim where published
+    #: How composition treats wavelengths beyond this atmosphere's table:
+    #: "error", "zero" or "edge"; unset = the instrument's own policy.
+    outside_range: Optional[str] = None
+    #: With outside_range "error": the largest fraction of a band's throughput
+    #: (the product of its other factors) allowed beyond the table, where the
+    #: edge values are then held; e.g. a filter's faint leak wing.
+    coverage_tolerance: Optional[float] = None
+    #: [{"file": str, "source": str, ...}] atmospheres of unstated airmass
+    unstated: Optional[List[Dict[str, object]]] = None
+
+    _OPTIONAL = ("kind", "model", "model_version", "citation", "parameters", "location", "terms",
+                 "outside_range", "coverage_tolerance", "unstated")
+
+    def __post_init__(self):
+        if self.kind is not None and self.kind not in ATMOSPHERE_KINDS:
+            raise ComponentError(f"{self.site}: atmosphere kind must be one of {ATMOSPHERE_KINDS}")
+        if self.outside_range not in (None, "error", "zero", "edge"):
+            raise ComponentError(f"{self.site}: unknown outside-range policy {self.outside_range!r}")
+        for entry in self.entries:
+            if entry.get("airmass") is None:
+                raise ComponentError(f"{self.site}: grid entries need a numeric airmass; "
+                                     "list atmospheres of unstated airmass under 'unstated'")
 
     @classmethod
     def load(cls, site_dir: PathLike) -> "AtmosphereGrid":
@@ -483,13 +640,34 @@ class AtmosphereGrid:
         known = {f for f in cls.__dataclass_fields__}
         return cls(**{k: v for k, v in data.items() if k in known})
 
+    def to_dict(self) -> Dict[str, object]:
+        data = asdict(self)
+        for key in self._OPTIONAL:
+            if data.get(key) in (None, "", [], {}):
+                data.pop(key, None)
+        return data
+
     def save(self, site_dir: PathLike) -> Path:
         path = Path(site_dir) / MANIFEST_NAME
-        path.write_text(json.dumps(asdict(self), indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        path.write_text(json.dumps(self.to_dict(), indent=2, sort_keys=True) + "\n", encoding="utf-8")
         return path
+
+    def files(self) -> List[str]:
+        """Every data file the site lists."""
+        return [str(e["file"]) for e in self.entries] + [str(e["file"]) for e in (self.unstated or [])]
 
     def find(self, spec: AtmosphereSpec) -> Optional[str]:
         """Look up exact observing conditions; return None when absent."""
+        if spec.airmass is None:
+            unstated = list(self.unstated or [])
+            if len(unstated) > 1:
+                raise ComponentError(f"{self.site}: {len(unstated)} atmospheres of unstated airmass; "
+                                     "the site manifest must name one")
+            if not unstated:
+                return None
+            rel = str(unstated[0]["file"])
+            _require_inside(rel, f"atmosphere {self.site}")
+            return rel
         candidates = []
         for entry in self.entries:
             if not math_isclose(float(entry["airmass"]), spec.airmass):
@@ -513,10 +691,12 @@ class AtmosphereGrid:
             return filename
         airmasses = sorted({float(e["airmass"]) for e in self.entries})
         pwvs = sorted({float(e["pwv"]) for e in self.entries if e.get("pwv") is not None})
+        asked = "unstated airmass" if spec.airmass is None else f"airmass={spec.airmass:g}"
         raise ComponentError(
-            f"No {self.site} atmosphere at airmass={spec.airmass:g}"
+            f"No {self.site} atmosphere at {asked}"
             + (f", pwv={spec.pwv:g} mm" if spec.pwv is not None else "")
             + f". Grid: airmass {airmasses}" + (f", pwv {pwvs} mm" if pwvs else "")
+            + (" (and one of unstated airmass: airmass=None)" if self.unstated else "")
         )
 
 
@@ -574,6 +754,8 @@ def multiply_curves(
     *,
     allow_partial: bool = False,
     outside: str = "error",
+    policies: Optional[Sequence[Optional[str]]] = None,
+    tolerances: Optional[Sequence[Optional[float]]] = None,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """Multiply component curves on a merged grid spanning the first curve.
 
@@ -582,21 +764,34 @@ def multiply_curves(
     range a component is otherwise unknown, so this raises
     :class:`ComponentCoverageError`, unless the source team's convention says
     otherwise: ``outside="zero"`` (or ``allow_partial``) treats it as zero,
-    ``outside="edge"`` holds its edge value.
+    ``outside="edge"`` holds its edge value.  ``policies`` may override
+    ``outside`` per curve (``None`` entries keep it), e.g. for an atmosphere
+    whose own manifest sets ``outside_range``.  ``tolerances`` (per curve)
+    relax an ``"error"`` rule: the curve may miss at most that fraction of
+    the throughput accumulated so far, and holds its edge values there.
     """
     if allow_partial and outside == "error":
         outside = "zero"
-    if outside not in ("error", "zero", "edge"):
-        raise ComponentError(f"Unknown outside-range policy {outside!r}")
     if not curves:
         raise ComponentError("Nothing to compose")
+    rules = [outside if p is None else p for p in (policies or [None] * len(curves))]
+    if len(rules) != len(curves):
+        raise ComponentError("one outside-range policy per curve")
+    if allow_partial:
+        rules = ["zero" if r == "error" else r for r in rules]
+    for rule in [outside, *rules]:
+        if rule not in ("error", "zero", "edge"):
+            raise ComponentError(f"Unknown outside-range policy {rule!r}")
+    tols = list(tolerances or [None] * len(curves))
+    if len(tols) != len(curves):
+        raise ComponentError("one coverage tolerance per curve")
     base = curves[0]
     lo, hi = float(base.wavelength[0]), float(base.wavelength[-1])
     band_lo, band_hi = _support(base)
 
-    for other in curves[1:]:
+    for other, rule, tol in zip(curves[1:], rules[1:], tols[1:]):
         o_lo, o_hi = float(other.wavelength[0]), float(other.wavelength[-1])
-        if (o_lo > band_lo or o_hi < band_hi) and outside == "error":
+        if (o_lo > band_lo or o_hi < band_hi) and rule == "error" and tol is None:
             raise ComponentCoverageError(
                 f"{other.path.name if other.path else 'component'} covers {o_lo:.0f}-{o_hi:.0f} A "
                 f"but the band spans {band_lo:.0f}-{band_hi:.0f} A"
@@ -606,8 +801,18 @@ def multiply_curves(
         [base.wavelength] + [c.wavelength[(c.wavelength > lo) & (c.wavelength < hi)] for c in curves[1:]]
     ))
     product = np.interp(grid, base.wavelength, base.transmission)
-    for other in curves[1:]:
-        if outside == "edge":
+    for other, rule, tol in zip(curves[1:], rules[1:], tols[1:]):
+        o_lo, o_hi = float(other.wavelength[0]), float(other.wavelength[-1])
+        if rule == "error" and tol is not None:
+            total = float(np.trapezoid(product, grid))
+            beyond = float(np.trapezoid(np.where((grid < o_lo) | (grid > o_hi), product, 0.0), grid))
+            if total <= 0 or beyond > tol * total:
+                raise ComponentCoverageError(
+                    f"{other.path.name if other.path else 'component'} covers {o_lo:.0f}-{o_hi:.0f} A but "
+                    f"{beyond / total if total > 0 else 1:.2%} of the band lies beyond it (tolerance {tol:g})"
+                )
+            rule = "edge"
+        if rule == "edge":
             factor = np.interp(grid, other.wavelength, other.transmission)
         else:
             factor = np.interp(grid, other.wavelength, other.transmission, left=0.0, right=0.0)
@@ -618,14 +823,23 @@ def multiply_curves(
 # --------------------------------------------------------------------------
 # Composition
 # --------------------------------------------------------------------------
-def find_atmosphere(atmosphere_root: PathLike, spec: AtmosphereSpec) -> Optional[Path]:
-    """Find a cached grid point without treating a cache miss as an error."""
-    site_dir = Path(atmosphere_root) / spec.site
+def atmosphere_grid(atmosphere_root: PathLike, site: str) -> Optional[AtmosphereGrid]:
+    """The cached manifest of ``site``, or None."""
+    site_dir = Path(atmosphere_root) / site
     if not (site_dir / MANIFEST_NAME).exists():
         return None
     grid = AtmosphereGrid.load(site_dir)
-    if grid.site != spec.site:
-        raise ComponentError(f"Atmosphere manifest site {grid.site!r} does not match {spec.site!r}")
+    if grid.site != site:
+        raise ComponentError(f"Atmosphere manifest site {grid.site!r} does not match {site!r}")
+    return grid
+
+
+def find_atmosphere(atmosphere_root: PathLike, spec: AtmosphereSpec) -> Optional[Path]:
+    """Find a cached grid point without treating a cache miss as an error."""
+    site_dir = Path(atmosphere_root) / spec.site
+    grid = atmosphere_grid(atmosphere_root, spec.site)
+    if grid is None:
+        return None
     filename = grid.find(spec)
     if filename is None:
         return None
@@ -643,11 +857,13 @@ def atmosphere_file(atmosphere_root: PathLike, spec: AtmosphereSpec) -> Path:
 
 
 def resolve_atmosphere(manifest: InstrumentManifest, spec: Optional[AtmosphereSpec]) -> AtmosphereSpec:
-    """Pin ``spec`` to the instrument's own site, refusing anything else.
+    """Pin ``spec`` to one of the instrument's own sites, refusing anything else.
 
     Products are the instrument's own throughput with or without each
-    perturber, so the atmosphere is the one at the instrument's site; only
-    the observing conditions (airmass, PWV) are chosen by the user.
+    perturber, so the atmosphere is one at the instrument's location: its
+    ``default_site`` unless another of its own sites (a team's standard
+    atmosphere, say) is named.  Only the observing conditions (airmass, PWV)
+    are otherwise chosen by the user.
     """
     owner = f"{manifest.facility}/{manifest.instrument}"
     if spec is None:
@@ -657,13 +873,18 @@ def resolve_atmosphere(manifest: InstrumentManifest, spec: Optional[AtmosphereSp
             f"{manifest.facility} is {platform(manifest.facility) or 'not ground'}-based; "
             "a telluric component does not apply"
         )
-    site = manifest.default_site
-    if not site:
+    sites = manifest.sites()
+    if not sites:
         raise ComponentError(f"{owner} has no atmosphere site of its own, so no telluric component is offered")
-    if spec.site and spec.site != site:
+    if spec.site and spec.site not in sites:
+        where = f"'{sites[0]}'" if len(sites) == 1 else f"{sites}"
         raise ComponentError(
-            f"{owner} observes from '{site}'; atmospheres from other sites ('{spec.site}') are not mixed in"
+            f"{owner} observes from {where}; atmospheres from other sites ('{spec.site}') are not mixed in"
         )
+    site = spec.site or manifest.default_site or (sites[0] if len(sites) == 1 else None)
+    if site is None:
+        raise ComponentError(f"{owner} has several atmosphere sites {sites}; choose one with "
+                             "atmosphere={'site': ..., 'airmass': ...}")
     return AtmosphereSpec(site, spec.airmass, spec.pwv)
 
 
@@ -696,10 +917,15 @@ def compose_band(
     atmosphere_root: Optional[PathLike] = None,
     allow_partial: bool = False,
     manifest: Optional[InstrumentManifest] = None,
+    variants: Optional[Mapping[str, str]] = None,
 ) -> Curve:
-    """Compose one band from its components (see module docstring)."""
+    """Compose one band from its components (see module docstring).
+
+    ``variants`` selects alternative curves for component keys, e.g.
+    ``{"qe": "single_layer"}`` (see :meth:`InstrumentManifest.with_variants`).
+    """
     instrument_dir = Path(instrument_dir)
-    manifest = manifest or InstrumentManifest.load(instrument_dir)
+    manifest = (manifest or InstrumentManifest.load(instrument_dir)).with_variants(variants)
     roles = set(parse_components(components))
     spec = AtmosphereSpec.coerce(atmosphere)
     if spec is not None:
@@ -749,7 +975,15 @@ def compose_band(
 
     curves: List[Curve] = []
     sources: List[str] = []
+    policies: List[Optional[str]] = []
+    tolerances: List[Optional[float]] = []
     for key, path in steps:
+        policies.append(None)
+        tolerances.append(None)
+        if key == ATMOSPHERE:
+            grid = atmosphere_grid(atmosphere_root, spec.site)  # type: ignore[arg-type,union-attr]
+            if grid is not None:
+                policies[-1], tolerances[-1] = grid.outside_range, grid.coverage_tolerance
         if key != ATMOSPHERE and not path.resolve().is_relative_to(instrument_dir.resolve()):
             raise ComponentError(f"{path}: component resolves outside its instrument directory")
         curve = read_curve(path)
@@ -769,24 +1003,35 @@ def compose_band(
             str(path.relative_to(path.parents[2])) if len(path.parents) > 2 else path.name))
 
     wavelength, transmission = multiply_curves(
-        curves, allow_partial=allow_partial, outside=manifest.outside_range
+        curves, allow_partial=allow_partial, outside=manifest.outside_range, policies=policies,
+        tolerances=tolerances,
     )
     recipe = recipe_name(ordered)
     header = {
         "Components": recipe_name(covered),
         "ComponentsSource": "composed",
-        "Recipe": recipe + (f" @ {spec.label}" if spec else ""),
+        "Recipe": recipe + "".join(f" [{k}={v}]" for k, v in sorted((variants or {}).items()))
+                  + (f" @ {spec.label}" if spec else ""),
         "Sources": "; ".join(sources),
     }
     if spec is not None:
-        header["Atmosphere"] = f"site={spec.site} airmass={spec.airmass:g}" + (
-            f" pwv={spec.pwv:g}" if spec.pwv is not None else "")
+        header["Atmosphere"] = spec.describe()
     return Curve(wavelength, transmission, header)
 
 
-def product_name(components: Iterable[str], atmosphere: Optional[AtmosphereSpec] = None) -> str:
+def product_name(components: Iterable[str], atmosphere: Optional[AtmosphereSpec] = None,
+                 variants: Optional[Mapping[str, str]] = None) -> str:
+    """Directory name of a product; selected variants are part of it.
+
+    ``filter+qe`` with ``{"qe": "single_layer"}`` is ``filter+qe+qe_single_layer``,
+    so products of different variants never replace each other.
+    """
     roles = [r for r in parse_components(list(components)) if r != ATMOSPHERE]
     name = recipe_name(roles)
+    for key, value in sorted((variants or {}).items()):
+        if not _VARIANT_NAME.fullmatch(str(value)):
+            raise ComponentError(f"Invalid {key} variant name: {value!r}")
+        name += f"+{recipe_name(parse_components(key))}_{value}"
     return f"{name}+atm_{atmosphere.label}" if atmosphere else name
 
 
@@ -800,11 +1045,14 @@ def build_product(
     allow_partial: bool = False,
     overwrite: bool = True,
     detector_type: Optional[str] = None,
+    variants: Optional[Mapping[str, str]] = None,
 ) -> Path:
     """Compose every (or the given) band into ``products/<recipe>/``.
 
     The output directory is a self-contained MESA instrument: ``.dat`` files
-    plus an index file named after the directory.
+    plus an index file named after the directory.  ``variants`` selects
+    alternative component curves (:meth:`InstrumentManifest.with_variants`);
+    the choice is part of the product name.
     """
     from .combine_filters import write_filter_index
 
@@ -817,10 +1065,11 @@ def build_product(
     override = normalize_detector_type(detector_type)
     if detector_type is not None and override is None:
         raise ComponentError(f"Unknown detector type: {detector_type!r}; choose energy or photon")
-    name = product_name(roles, spec) + (f"+detector_{override}" if override else "")
+    name = product_name(roles, spec, variants) + (f"+detector_{override}" if override else "")
     out_dir = instrument_dir / "products" / name
     if out_dir.exists() and not overwrite:
         return out_dir
+    manifest.with_variants(variants)  # refuse unknown variants before writing anything
     selected = list(manifest.primary_bands() if bands is None else bands)
     if not selected:
         raise ComponentError("No bands selected for composition")
@@ -834,7 +1083,7 @@ def build_product(
             curve = compose_band(
                 instrument_dir, band, roles,
                 atmosphere=spec, atmosphere_root=atmosphere_root,
-                allow_partial=allow_partial, manifest=manifest,
+                allow_partial=allow_partial, manifest=manifest, variants=variants,
             )
             original = _band_detector_type(instrument_dir, band, roles, manifest)
             if override:
@@ -909,21 +1158,38 @@ def add_component(
     name: Optional[str] = None,
     source: str = "",
     manifest: Optional[InstrumentManifest] = None,
+    variant: Optional[str] = None,
+    variant_info: Optional[Mapping[str, object]] = None,
 ) -> str:
     """Write a component curve and register it in the manifest (not saved).
 
     ``role`` is ``filter``, ``optics`` or ``qe``, or a composite such as
     ``filter+optics+qe`` when the source only publishes the product.
+
+    With ``variant`` the curve is registered as that named alternative of
+    ``role`` (``manifest.variants``) instead of as the default component;
+    ``variant_info`` adds its description, epoch, etc.  A band-specific
+    curve's source is recorded under ``"<role>:<band>"`` so each band
+    cites its own file.
     """
+    if variant is not None and not _VARIANT_NAME.fullmatch(variant):
+        raise ComponentError(f"Invalid variant name: {variant!r}")
     roles = parse_components(role)
     if not roles or not set(roles) <= {FILTER, OPTICS, QE}:
-        raise ComponentError(f"Instrument components are filter/optics/qe (or composites), not {role!r}")
+        hint = ("; an atmosphere is a site of its own: register it with "
+                "component_sources._common.SiteAtmosphere (see write_site)" if ATMOSPHERE in roles else "")
+        raise ComponentError(f"Instrument components are filter/optics/qe (or composites), not {role!r}{hint}")
     role = recipe_name(roles)
     peak = float(np.nanmax(np.asarray(transmission, dtype=float)))
     if not np.isfinite(peak) or peak > 1.5:
         raise ComponentError(f"{role} component peaks at {peak:g}; expected a fraction (is it in percent?)")
     instrument_dir = Path(instrument_dir)
     stem = name or (band if band != SHARED else role)
+    if peak > 1.0:
+        # Kept as published, not clipped: clipping would change the shape.
+        # Builders record why in the manifest notes (e.g. DECam's quotients).
+        logger.warning("%s: %s component %s peaks at %.6g > 1 (written unclipped)",
+                       instrument_dir, role, stem, peak)
     rel = f"components/{role}/{stem}.dat"
     path = instrument_dir / rel
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -934,8 +1200,17 @@ def add_component(
         wavelength_unit="Angstrom",
         extra={"Role": role, "Components": role, "Sources": source or None},
     )
-    if manifest is not None:
+    if manifest is not None and variant is not None:
+        entry = manifest.variants.setdefault(role, {}).setdefault(variant, {"files": {}})
+        entry.setdefault("files", {})[band] = rel
+        if source:
+            entry.setdefault("sources", {})[band] = source
+        entry.update(dict(variant_info or {}))
+    elif manifest is not None:
         manifest.components.setdefault(role, {})[band] = rel
         if source:
-            manifest.sources.setdefault(role, source)
+            if band == SHARED:
+                manifest.sources[role] = source
+            else:
+                manifest.sources[f"{role}:{band}"] = source
     return rel

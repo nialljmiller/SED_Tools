@@ -2,8 +2,38 @@
 Changelog
 =========
 
-Unreleased
-----------
+Version 0.4.2 (unreleased)
+--------------------------
+
+Rebuild from original sources
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- 37 more instruments can be rebuilt from their teams' original files when
+  the NJM mirror is unavailable (``component_sources`` modules ``surveys``,
+  ``space``, ``observatories`` and ``standards``, registered in
+  ``catalog.BUILDERS_FOR``): ATLAS, PAN-STARRS, OGLE-IV, UKIRT/WFCAM, LCO,
+  Gaia DR2, Herschel, Hipparcos/Tycho, IRAS, MSX, Planck, Spitzer, XMM-OM,
+  FORS1/2, OmegaCAM, Keck NIRC2/LRIS/MOSFIRE/DEIMOS, KPNO Mosaic, Magellan
+  FourStar/MegaCam, NOT/ALFOSC, Subaru Suprime-Cam/FOCAS, WIYN/ODI and the
+  Bessell, MKO and USNO standard systems. ``FilterLibrary.published`` tries
+  NJM, then these builders, then SVO. Keck spreadsheets need ``xlrd``
+  (``full`` extra).
+- Paranal/NACO bands are published as ``IB_2p00`` etc. instead of
+  ``IB_2.00``, matching the NJM mirror: MESA names history columns by the
+  text before the first dot.
+
+SVO fails fast
+~~~~~~~~~~~~~~
+
+- SVO Filter Profile Service requests use a 10 s connect timeout (read
+  timeouts unchanged), so an unreachable SVO host is reported within seconds
+  instead of after 120-300 s per request. The first connection failure raises
+  ``filter_metadata.SVOUnreachableError`` with the URL tried and the
+  alternatives (the NJM mirror, the original-source builders); later requests
+  from the same client and the rest of an SVO download stop at once.
+- The FPS endpoint can be overridden with ``SED_SVO_FPS_URL`` (default
+  ``https://svo2.cab.inta-csic.es/theory/fps/fps.php``); the browse index is
+  taken from the same location.
 
 Filter properties
 ~~~~~~~~~~~~~~~~~
@@ -35,6 +65,69 @@ Filter properties
   and illuminant D65, from the CIE's published tables, now shipped in
   ``sed_tools/cie``). Ultraviolet and infrared bands get false colours in
   wavelength order.
+
+NJM catalogue: search, descriptions and citations without SVO
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Add ``Filters.search()`` and ``sed-tools filters-search`` to find bands in
+  NJM's catalogue by facility, instrument or band name, by wavelength (bands
+  covering a wavelength or overlapping a range), by pivot or FWHM range, by
+  detector type, or by any column of ``properties.json``. The result is a
+  pandas DataFrame with one row per band. Names are matched in
+  ``index.json`` first, so ``properties.json`` is fetched only for
+  instruments that can still match, at most six requests at a time.
+- Add ``Filters.properties()`` and ``Filters.info()`` for an instrument's
+  ``properties.json`` and ``info.json``. Files are cached in
+  ``cache/njm/`` beside the filter root and revalidated by ETag when
+  ``index.json`` changes; cached copies are used when the mirror is
+  unreachable or with ``offline=True``.
+- ``sed-tools filters-info`` also prints the instrument's description,
+  licence and a per-band table of pivot, FWHM, detector type and photometric
+  system; ``--json`` adds them under ``catalogue``.
+- Add ``Filters.citations()``, ``Filters.cite()`` and ``sed-tools
+  filters-cite`` to list the references (with BibTeX), the providers'
+  acknowledgement texts and the licences for chosen instruments or bands, or
+  for everything installed. References are merged across instruments by work.
+  Entries with no BibTeX on NJM are given as ``%`` comments rather than
+  invented.
+- Add ``Filters.plot()`` (``sed_tools.filter_plot``) to draw an
+  instrument's or a selection's curves in their ``filter_colors`` colours,
+  optionally normalised and with NJM's Vega spectrum overlaid.
+- NJM downloads keep ``properties.json`` and ``info.json`` beside the curves
+  they describe. The MESA index file still lists only the curves.
+- The NJM availability check no longer reports the mirror as down during
+  NJM's temporary 403 block on a burst of requests from one address (or a
+  429/5xx). It confirms by fetching ``index.json`` with the usual retries,
+  which wait out the block (up to about a minute). No answer, or a 404, still
+  means the mirror is down. ``Filters.fetch()`` therefore keeps using NJM
+  instead of falling back to SVO, and the catalogue keeps working.
+
+Detector-type precedence
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+- ``DetectorTypeSource`` values now have an order of precedence, strongest
+  evidence first: ``original`` > ``inferred`` > ``svo`` > ``svo-curve-match``
+  > ``assumed`` (``filter_metadata.DETECTOR_SOURCE_PRECEDENCE``).
+  ``sed-tools filters-detector`` and ``Filters.tag_detector_types()`` replace
+  an existing type only with a resolution of equal or higher precedence, with
+  or without ``--force``. Previously ``--force`` replaced a type stated by the
+  curve's publisher (``original``) or established from documented facts
+  (``inferred``) with SVO's label. For example, Generic/Bessell B (Bessell &
+  Murphy 2012 photon-counting passband, ``FilterID=Generic/Bessell.B``) would
+  have taken SVO's ``energy``. A weaker resolution is now reported and not
+  written: the command lists each kept file with SVO's answer and the
+  reason, and the returned rows carry ``kept``, ``resolved_type`` and
+  ``resolved_source``. ``user``, ``composed`` and ``component`` types are
+  never replaced.
+- Default runs re-resolve the same files as before. The one difference: an
+  ``original`` or ``inferred`` tag (or a ``user``, ``composed`` or
+  ``component`` one) with a ``FilterID`` but no ``WavelengthUnit`` or
+  ``Components`` is now left as it is instead of taking SVO's type and
+  fields.
+- Documented ``original`` and ``inferred``, and corrected the description of
+  ``assumed``: it marks an unverified type, which is ``energy`` only for files
+  that had none (the original-source builders write the convention set for
+  the instrument, ``photon`` by default).
 
 Version 0.4.1 (October 2026)
 ----------------------------

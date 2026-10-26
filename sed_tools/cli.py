@@ -496,6 +496,89 @@ def print_filter_availability(info: dict) -> None:
         print(f"  Detector unverified for  : {', '.join(assumed)}")
 
 
+SEARCH_COLUMNS = ["facility", "instrument", "band", "WavelengthPivot", "FWHM",
+                  "WavelengthMin", "WavelengthMax", "DetectorType"]
+
+
+def _catalogue_entry(facility: str, instrument: str, base: str, *, offline: bool) -> dict:
+    """NJM's info.json and properties.json for ``filters-info``; errors are reported, not raised."""
+    from .api import Filters
+    from .filter_catalogue import CatalogueError
+
+    entry = {"info": None, "properties": None, "errors": []}
+    for kind in ("info", "properties"):
+        try:
+            entry[kind] = getattr(Filters, kind)(facility, instrument, filter_root=base, offline=offline)
+        except (CatalogueError, OSError, ValueError) as exc:
+            if str(exc) not in entry["errors"]:
+                entry["errors"].append(str(exc))
+    return entry
+
+
+def print_catalogue_entry(target: str, entry: dict) -> None:
+    """Print the NJM description, licence and per-band properties of an instrument."""
+    import textwrap
+
+    info, props = entry["info"] or {}, (entry["properties"] or {}).get("bands", {})
+    width, indent = 100, " " * 29
+
+    def field(name, text):
+        print(textwrap.fill(" ".join(str(text).split()), width, initial_indent=f"  {name:<25}: ",
+                            subsequent_indent=indent))
+
+    if info.get("description"):
+        field("Description", info["description"])
+    licence = info.get("licence") or {}
+    if licence:
+        field("Licence", f"{licence.get('redistribution', 'unknown')}"
+              + (f". {licence['terms']}" if licence.get("terms") else "")
+              + (f" {licence['url']}" if licence.get("url") else ""))
+    if info.get("references"):
+        field("Cite", f"{len(info['references'])} references; sed-tools filters-cite {target}")
+    bands = sorted(set(props) | set(info.get("bands", {})),
+                   key=lambda b: (props.get(b, {}).get("WavelengthPivot") or float("inf"), b))
+    if bands:
+        print(f"  {'Band':<16}{'Pivot (Å)':>11}{'FWHM (Å)':>11}  {'Detector':<9}{'MagSys':<8}Description")
+        for band in bands:
+            p, i = props.get(band, {}), info.get("bands", {}).get(band, {})
+            num = lambda v: f"{v:>11.1f}" if isinstance(v, (int, float)) else f"{'-':>11}"
+            print(f"  {band:<16}{num(p.get('WavelengthPivot'))}{num(p.get('FWHM'))}  "
+                  f"{p.get('DetectorType', '-'):<9}{i.get('MagSys') or '-':<8}{i.get('Description') or ''}")
+    for error in entry["errors"]:
+        print(f"  NJM catalogue            : {error}")
+
+
+def _bound(text: str) -> Optional[float]:
+    """A range end from the command line: a number, or '-'/'' for an open end."""
+    return None if text.strip().lower() in ("", "-", "none", "inf", "-inf") else float(text)
+
+
+def _where(items: Optional[List[str]]) -> Dict[str, object]:
+    """``KEY=LOW:HIGH`` (either end may be empty) or ``KEY=VALUE`` criteria for filters-search."""
+    criteria: Dict[str, object] = {}
+    for item in items or []:
+        key, sep, value = item.partition("=")
+        if not sep or not key:
+            raise ValueError(f"--where expects KEY=VALUE or KEY=LOW:HIGH, got {item!r}")
+        if ":" in value:
+            lo, _, hi = value.partition(":")
+            criteria[key] = (_bound(lo), _bound(hi))
+        else:
+            try:
+                criteria[key] = float(value)
+            except ValueError:
+                criteria[key] = value
+    return criteria
+
+
+_UNSTATED = "unstated"
+
+
+def _airmass_arg(text):
+    """An airmass, or 'unstated' for an atmosphere published without one."""
+    return _UNSTATED if str(text).strip().lower() == _UNSTATED else float(text)
+
+
 def _add_filter_product_options(parser, *, components=None):
     """Keep filter fetch and composition options identical."""
     parser.add_argument("--base", default=str(FILTER_DIR_DEFAULT), help="Base filter directory")
@@ -504,8 +587,12 @@ def _add_filter_product_options(parser, *, components=None):
     parser.add_argument("--bands", nargs="+", help="Compose only these bands")
     parser.add_argument("--detector-type", choices=["energy", "photon"],
                         help="Override integration weighting in a derived copy; preserves published curves")
-    parser.add_argument("--airmass", type=float, help="Add the instrument's own-site atmosphere")
+    parser.add_argument("--airmass", type=_airmass_arg,
+                        help="Add the instrument's own-site atmosphere at this airmass ('unstated' for a "
+                             "team atmosphere whose source gives none)")
     parser.add_argument("--pwv", type=float, help="Atmospheric precipitable water vapour (mm)")
+    parser.add_argument("--atmosphere-site",
+                        help="One of the instrument's own atmosphere sites (default: its default site)")
     parser.add_argument("--allow-heavy", action="store_true", help="Permit large original-source downloads")
     parser.add_argument("--allow-partial", action="store_true", help="Use zero outside component wavelength coverage")
 
@@ -535,14 +622,21 @@ def _offer_composition(instrument_dir: Path) -> None:
     allow_heavy = bool(review["large_download"] and
                        input("Allow a large original-source download if needed? [y/N] ").strip().lower().startswith("y"))
     atmosphere = None
-    if can_atm and input(f"Fold in the atmosphere at {info['atmosphere_site']}? [y/N] ").strip().lower().startswith("y"):
-        grid = Filters.atmospheres(filter_root=instrument_dir.parent.parent).get(info["atmosphere_site"])
+    sites = info.get("atmosphere_sites") or ([info["atmosphere_site"]] if info["atmosphere_site"] else [])
+    if can_atm and sites and input(
+            f"Fold in the atmosphere ({', '.join(sites)})? [y/N] ").strip().lower().startswith("y"):
+        site = info["atmosphere_site"] or sites[0]
+        if len(sites) > 1:
+            site = input(f"Site [{site}]: ").strip() or site
+        grid = Filters.atmospheres(filter_root=instrument_dir.parent.parent).get(site)
         if grid:
-            print(f"  airmass {grid['airmass']}" + (f", pwv {grid['pwv']} mm" if grid["pwv"] else ""))
+            print(f"  airmass {grid['airmass']}" + (f", pwv {grid['pwv']} mm" if grid["pwv"] else "")
+                  + (" or 'unstated' (as published)" if grid.get("unstated_airmass") else ""))
         try:
-            airmass = float(input("Airmass [1.2]: ").strip() or 1.2)
+            airmass = _airmass_arg(input("Airmass [1.2]: ").strip() or 1.2)
             pwv_txt = input("PWV mm (blank if not applicable): ").strip() if not grid or grid["pwv"] else ""
-            atmosphere = {"airmass": airmass, "pwv": float(pwv_txt) if pwv_txt else None}
+            atmosphere = {"site": site, "airmass": None if airmass == _UNSTATED else airmass,
+                          "pwv": float(pwv_txt) if pwv_txt else None}
         except ValueError:
             print("Airmass and PWV must be numbers.")
             return
@@ -975,7 +1069,8 @@ def main():
     fdp.add_argument("--facility", default=None,
                      help="SVO facility name when PATH is a single instrument directory or file")
     fdp.add_argument("--force", action="store_true",
-                     help="Re-resolve files already tagged from SVO")
+                     help="Re-resolve files that are already tagged; a result never replaces a type "
+                          "from a stronger source (original > inferred > svo > svo-curve-match > assumed)")
     fdp.add_argument("--dry-run", action="store_true",
                      help="Report without modifying files")
 
@@ -986,6 +1081,36 @@ def main():
 
     fip.add_argument("--offline", action="store_true", help="Inspect local data without contacting sources")
     fip.add_argument("--json", action="store_true", help="Emit availability as JSON")
+
+    fsp = sub.add_parser("filters-search",
+                         help="Search NJM's filter catalogue by name, wavelength and properties (no SVO)")
+    fsp.add_argument("text", nargs="?", help="Case-insensitive substring of Facility/Instrument/Band")
+    fsp.add_argument("--facility", help="Facility name contains this")
+    fsp.add_argument("--instrument", help="Instrument name contains this")
+    fsp.add_argument("--band", help="Band name contains this")
+    fsp.add_argument("--wavelength", nargs="+", type=_bound, metavar="Å",
+                     help="One value: bands covering it; two: bands overlapping that range")
+    fsp.add_argument("--pivot", nargs=2, type=_bound, metavar=("LOW", "HIGH"),
+                     help="Pivot wavelength range in Å ('-' leaves an end open)")
+    fsp.add_argument("--fwhm", nargs=2, type=_bound, metavar=("LOW", "HIGH"), help="FWHM range in Å")
+    fsp.add_argument("--detector-type", choices=["energy", "photon"])
+    fsp.add_argument("--where", action="append", metavar="KEY=VALUE|KEY=LOW:HIGH",
+                     help="Any properties.json column, e.g. ABminusVega=:0.5 or ColorMethod=true; repeatable")
+    fsp.add_argument("--columns", help="Comma-separated columns to show (default: %s)" % ",".join(SEARCH_COLUMNS))
+    fsp.add_argument("--names-only", action="store_true", help="Match names in index.json only; fetch no properties")
+    fsp.add_argument("--format", choices=["table", "csv", "json"], default="table")
+    fsp.add_argument("--base", default=str(FILTER_DIR_DEFAULT), help="Base filter directory (cache beside it)")
+    fsp.add_argument("--refresh", action="store_true", help="Ask NJM again instead of using the cache")
+    fsp.add_argument("--offline", action="store_true", help="Use the cached catalogue only")
+
+    fcip = sub.add_parser("filters-cite",
+                          help="Print references (BibTeX), acknowledgements and licences for instruments")
+    fcip.add_argument("targets", nargs="*",
+                      help="Facility/Instrument or Facility/Instrument/Band; default: every installed instrument")
+    fcip.add_argument("--format", choices=["text", "bibtex", "json"], default="text")
+    fcip.add_argument("--base", default=str(FILTER_DIR_DEFAULT), help="Base filter directory")
+    fcip.add_argument("--refresh", action="store_true", help="Use NJM's current info.json, not installed copies")
+    fcip.add_argument("--offline", action="store_true", help="Use installed and cached info.json only")
 
     fcop = sub.add_parser("filters-compose", help="Compose optical-path components")
     fcop.add_argument("target", help="Facility/Instrument or installed instrument directory")
@@ -999,11 +1124,14 @@ def main():
 
     fbp = sub.add_parser("filters-build-components",
                          help="(Mirror curation) populate components/atmospheres from a published source")
-    fbp.add_argument("source", help="Component source (lsst, hst, jwst, hsc, decam, vista, ztf, tabular, skycalc, argus) or 'all'")
+    fbp.add_argument("source", help="Component source (lsst, hst, jwst, hsc, decam, vista, ztf, tabular, skycalc, "
+                                    "team_atmospheres, argus) or 'all'")
     fbp.add_argument("--base", default=str(FILTER_DIR_DEFAULT), help="Base filter directory")
     fbp.add_argument("--raw", default=None, help="Raw input directory (source specific)")
     fbp.add_argument("--instrument", help="Instrument for a shared tabular source (HAWKI, NACO, SPHERE, GSAOI or NIFS)")
-    fbp.add_argument("--sites", nargs="+", default=None, help="SkyCalc sites")
+    fbp.add_argument("--sites", nargs="+", default=None, help="SkyCalc or team atmosphere sites")
+    fbp.add_argument("--archive", default=None,
+                     help="Keep every raw download here with its URL, time and SHA-256 (skycalc, team_atmospheres)")
     fbp.add_argument("--airmass", nargs="+", type=float, default=None, help="SkyCalc airmass grid")
     fbp.add_argument("--pwv", nargs="+", type=float, default=None, help="SkyCalc PWV grid (mm)")
 
@@ -1116,13 +1244,19 @@ def main():
 
         if not args.target:
             if any((args.components, args.bands, args.detector_type, args.airmass is not None,
-                    args.pwv is not None, args.allow_heavy, args.allow_partial)):
+                    args.pwv is not None, args.atmosphere_site, args.allow_heavy, args.allow_partial)):
                 parser.error("component options require a Facility/Instrument target")
             run_filters_flow(base_dir=args.base)
             return 0
         if args.pwv is not None and args.airmass is None:
             parser.error("--pwv needs --airmass")
-        atmosphere = {"airmass": args.airmass, "pwv": args.pwv} if args.airmass is not None else None
+        if args.atmosphere_site and args.airmass is None:
+            parser.error("--atmosphere-site needs --airmass (a number, or 'unstated')")
+        atmosphere = None
+        if args.airmass is not None:
+            atmosphere = {"airmass": None if args.airmass == _UNSTATED else args.airmass, "pwv": args.pwv}
+            if args.atmosphere_site:
+                atmosphere["site"] = args.atmosphere_site
         options = dict(filter_root=args.base, components=args.components, atmosphere=atmosphere,
                        bands=args.bands, detector_type=args.detector_type,
                        allow_heavy=args.allow_heavy, allow_partial=args.allow_partial)
@@ -1163,17 +1297,84 @@ def main():
         print(f"\n[filters] {len(rows)} files, {changed} {verb}, {migrated} {moved} 0.3.0 '#' metadata to the column row")
         for (dtype, source), n in sorted(counts.items()):
             print(f"  {dtype:6s} [{source}]: {n}")
+        kept = [r for r in rows if r["kept"]]
+        if kept:
+            differ = sum(r["resolved_type"] != r["detector_type"] for r in kept)
+            print(f"[filters] {len(kept)} kept their DetectorType: the new resolution does not outrank "
+                  f"their DetectorTypeSource and was not written ({differ} of them resolve to the other type)")
+            for r in kept:
+                print(f"  {r['path']}: {r['note']}")
     elif args.cmd == "filters-info":
         from .api import Filters
         target = args.target.strip("/").split("/")
         if len(target) != 2:
             parser.error("target must be Facility/Instrument")
         info = Filters.available(*target, filter_root=args.base, include_remote=not args.offline)
+        catalogue = _catalogue_entry(*target, args.base, offline=args.offline)
         if args.json:
-            print(json.dumps(info, indent=2))
+            print(json.dumps(dict(info, catalogue=catalogue), indent=2))
         else:
             print_filter_availability(info)
+            print_catalogue_entry("/".join(target), catalogue)
         return 1 if info.get("availability_source") == "unknown" and info.get("errors") else 0
+    elif args.cmd == "filters-search":
+        from .api import Filters
+        from .filter_catalogue import CatalogueError
+
+        wavelength = args.wavelength
+        if wavelength is not None and (len(wavelength) > 2 or wavelength == [None]):
+            parser.error("--wavelength takes one value or a LOW HIGH range")
+        try:
+            result = Filters.search(
+                args.text, facility=args.facility, instrument=args.instrument, band=args.band,
+                wavelength=(wavelength[0] if len(wavelength) == 1 else tuple(wavelength)) if wavelength else None,
+                pivot=tuple(args.pivot) if args.pivot else None, fwhm=tuple(args.fwhm) if args.fwhm else None,
+                detector_type=args.detector_type, where=_where(args.where), properties=not args.names_only,
+                filter_root=args.base, refresh=args.refresh, offline=args.offline)
+        except (CatalogueError, ValueError) as exc:
+            print(f"[filters] {exc}")
+            return 1
+        columns = args.columns.split(",") if args.columns else SEARCH_COLUMNS
+        unknown = [c for c in columns if c not in result.columns and c not in SEARCH_COLUMNS]
+        if unknown:
+            parser.error(f"unknown columns: {', '.join(unknown)}")
+        shown = result[[c for c in columns if c in result.columns]]
+        if args.format == "csv":
+            print(shown.to_csv(index=False), end="")
+        elif args.format == "json":
+            print(json.dumps({"bands": json.loads(shown.to_json(orient="records")),
+                              "units": result.attrs.get("units", {}),
+                              "errors": result.attrs.get("errors", [])}, indent=2))
+        else:
+            if shown.empty:
+                print("No bands match.")
+            else:
+                print(shown.to_string(index=False, na_rep="-", float_format=lambda v: f"{v:.6g}"))
+                n_inst = len(result[["facility", "instrument"]].drop_duplicates())
+                print(f"\n{len(result)} band{'s' * (len(result) != 1)} in "
+                      f"{n_inst} instrument{'s' * (n_inst != 1)}")
+        if args.format != "json":
+            for error in result.attrs.get("errors", []):
+                print(f"[filters] {error}")
+        return 0
+    elif args.cmd == "filters-cite":
+        from .api import Filters
+
+        try:
+            result = Filters.citations(*args.targets, filter_root=args.base,
+                                       refresh=args.refresh, offline=args.offline)
+        except ValueError as exc:
+            parser.error(str(exc))
+        if args.format == "json":
+            print(json.dumps(result, indent=2))
+        else:
+            from .filter_catalogue import format_bibtex, format_citations
+
+            print(format_bibtex(result) if args.format == "bibtex" else format_citations(result), end="")
+            if args.format == "bibtex":
+                for error in result["errors"]:
+                    print(f"[filters] {error}", file=sys.stderr)
+        return 1 if result["errors"] and not result["references"] else 0
     elif args.cmd == "filters-inventory":
         from .api import Filters
         result = Filters.inventory(filter_root=args.base, include_remote=not args.offline, facility=args.facility)
@@ -1212,6 +1413,8 @@ def main():
             kwargs["airmasses"] = args.airmass
         if args.pwv:
             kwargs["pwvs"] = args.pwv
+        if args.archive:
+            kwargs["archive_dir"] = args.archive
         print(f"[filters] Built {builder(args.base, **kwargs)}")
     elif args.cmd == "rebuild":
         run_rebuild_flow(

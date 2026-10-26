@@ -66,7 +66,9 @@ schema, facility, instrument
 description, facility_description, links[{url, label, source}], notes
 references[key]             everything to cite for this instrument
 acknowledgements[{for, text, url, references, applies_to}]   providers' requested texts, then SVO's
-licence{redistribution, terms, url}   terms under which the curves are redistributed
+licence{redistribution, terms, url, scope}   terms under which the curves are redistributed: class as found
+                            (public|attribution|permission|restricted|unknown), the verbatim operative sentences in quotes,
+                            their URL, and what the statement governs (e.g. a site-wide footer rather than a data licence)
 bands.<band>:
   Description, Comments, PhotSystem, Band, MagSys, PhotCalID, ZeroPointType   (SVO PARAM names)
   ProfileReference[{ref, label}], CalibrationReference[{ref, label}]
