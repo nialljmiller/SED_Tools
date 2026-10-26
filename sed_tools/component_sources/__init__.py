@@ -38,6 +38,8 @@ BUILDERS: Dict[str, str] = {
     "legacy_surveys": ".legacy_surveys",
     "gmos": ".gmos",
     "sdss": ".sdss",
+    "euclid": ".euclid",
+    "roman": ".roman",
 }
 
 

@@ -1022,6 +1022,11 @@ def add_component(
         raise ComponentError(f"{role} component peaks at {peak:g}; expected a fraction (is it in percent?)")
     instrument_dir = Path(instrument_dir)
     stem = name or (band if band != SHARED else role)
+    if peak > 1.0:
+        # Kept as published, not clipped: clipping would change the shape.
+        # Builders record why in the manifest notes (e.g. DECam's quotients).
+        logger.warning("%s: %s component %s peaks at %.6g > 1 (written unclipped)",
+                       instrument_dir, role, stem, peak)
     rel = f"components/{role}/{stem}.dat"
     path = instrument_dir / rel
     path.parent.mkdir(parents=True, exist_ok=True)
