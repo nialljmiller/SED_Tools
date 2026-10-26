@@ -70,3 +70,6 @@ models/*prediction*.png
 .coverage.*
 coverage.xml
 htmlcov/
+
+# Official CIE colour tables shipped with sed_tools.filter_colors
+!sed_tools/cie/*.csv

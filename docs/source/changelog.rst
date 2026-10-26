@@ -2,6 +2,76 @@
 Changelog
 =========
 
+Unreleased
+----------
+
+Filter properties
+~~~~~~~~~~~~~~~~~
+
+- Add ``sed_tools.filter_properties`` to compute the characteristics the SVO
+  Filter Profile Service lists for a curve:
+
+  - mean, pivot, peak, central, minimum and maximum wavelengths;
+  - FWHM and effective width;
+  - Vega-weighted effective and photon wavelengths;
+  - Vega, AB and ST zero points, in f_lambda and Jy;
+  - AB-Vega and ST-Vega magnitude offsets;
+  - ``Fsun``, the Sun's band-averaged f_lambda at 1 AU, from a supplied solar
+    spectrum (``load_sun()``);
+  - ``AfAv``, A(lambda)/A(V) at the pivot wavelength from the Fitzpatrick
+    (1999, PASP 111, 63) law with R_V = 3.1.
+
+  The pivot, zero points and ``Fsun`` share the detector-aware weights of
+  SED_Tools photometry. ``curve_properties()`` and ``instrument_properties()``
+  read filter files with their metadata. The NJM mirror serves the values
+  precomputed in each instrument's ``properties.json``.
+- ``AfAv`` is evaluated by ``dust_extinction`` (Gordon 2024, JOSS 9, 7023), a
+  new optional dependency: ``pip install "sed-tools[extinction]"`` (also in
+  ``full``). Without it ``AfAv`` is ``None``, with a warning. It is also
+  ``None`` outside the range the package defines for the law (1000 Angstrom to
+  3.33 micron); the law is not extrapolated.
+- Add ``sed_tools.filter_colors`` to give each band a plotting colour from its
+  curve. Mostly-visible bands get their true colour (CIE 1931 2-degree observer
+  and illuminant D65, from the CIE's published tables, now shipped in
+  ``sed_tools/cie``). Ultraviolet and infrared bands get false colours in
+  wavelength order.
+
+NJM catalogue: search, descriptions and citations without SVO
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Add ``Filters.search()`` and ``sed-tools filters-search`` to find bands in
+  NJM's catalogue by facility, instrument or band name, by wavelength (bands
+  covering a wavelength or overlapping a range), by pivot or FWHM range, by
+  detector type, or by any column of ``properties.json``. The result is a
+  pandas DataFrame with one row per band. Names are matched in
+  ``index.json`` first, so ``properties.json`` is fetched only for
+  instruments that can still match, at most six requests at a time.
+- Add ``Filters.properties()`` and ``Filters.info()`` for an instrument's
+  ``properties.json`` and ``info.json``. Files are cached in
+  ``cache/njm/`` beside the filter root and revalidated by ETag when
+  ``index.json`` changes; cached copies are used when the mirror is
+  unreachable or with ``offline=True``.
+- ``sed-tools filters-info`` also prints the instrument's description,
+  licence and a per-band table of pivot, FWHM, detector type and photometric
+  system; ``--json`` adds them under ``catalogue``.
+- Add ``Filters.citations()``, ``Filters.cite()`` and ``sed-tools
+  filters-cite`` to list the references (with BibTeX), the providers'
+  acknowledgement texts and the licences for chosen instruments or bands, or
+  for everything installed. References are merged across instruments by work.
+  Entries with no BibTeX on NJM are given as ``%`` comments rather than
+  invented.
+- Add ``Filters.plot()`` (``sed_tools.filter_plot``) to draw an
+  instrument's or a selection's curves in their ``filter_colors`` colours,
+  optionally normalised and with NJM's Vega spectrum overlaid.
+- NJM downloads keep ``properties.json`` and ``info.json`` beside the curves
+  they describe. The MESA index file still lists only the curves.
+- The NJM availability check no longer reports the mirror as down during
+  NJM's temporary 403 block on a burst of requests from one address (or a
+  429/5xx). It confirms by fetching ``index.json`` with the usual retries,
+  which wait out the block (up to about a minute). No answer, or a 404, still
+  means the mirror is down. ``Filters.fetch()`` therefore keeps using NJM
+  instead of falling back to SVO, and the catalogue keeps working.
+
 Version 0.4.1 (October 2026)
 ----------------------------
 

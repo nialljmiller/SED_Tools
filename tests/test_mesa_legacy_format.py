@@ -316,6 +316,7 @@ def test_mirror_download_is_legacy_either_way(tmp_path, monkeypatch, served):
             return SimpleNamespace(text="G.dat\n")
         raise requests.HTTPError(response=SimpleNamespace(status_code=404))
 
+    monkeypatch.setattr(NJMFilterGrabber, "_check_availability", lambda self: True)  # no network
     grabber = NJMFilterGrabber(base_dir=str(tmp_path))
     grabber._available = True
     monkeypatch.setattr(grabber, "_get", get)

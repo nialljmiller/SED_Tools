@@ -234,6 +234,90 @@ Filters.tag_detector_types()               # returns one row per file
 
 `WavelengthUnit` is read the same way. Files without it are assumed to be in Angstrom unless their reddest point is below 1000 (then nm, µm or m), with a logged warning; pass `load_filter_curve(path, wavelength_unit="nm")` when a file is ambiguous.
 
+#### Filter properties
+
+`sed_tools.filter_properties` computes the characteristics the SVO Filter Profile Service lists for a curve:
+- mean, pivot, peak, central, minimum and maximum wavelengths;
+- FWHM and effective width;
+- the Vega-weighted effective and photon wavelengths;
+- Vega, AB and ST zero points, in f_λ and in Jy;
+- the AB−Vega and ST−Vega magnitude offsets (2MASS Ks: m_AB − m_Vega ≈ 1.85);
+- `Fsun`, the Sun's band-averaged f_λ at 1 AU (erg s⁻¹ cm⁻² Å⁻¹), when you supply a solar spectrum;
+- `AfAv`, the extinction ratio A(λ)/A(V) at the pivot wavelength, from the [Fitzpatrick (1999)](https://ui.adsabs.harvard.edu/abs/1999PASP..111...63F) law with R_V = 3.1.
+
+The pivot, zero points and `Fsun` use the same detector-aware weights as SED_Tools photometry, so band-averaged f_λ and f_ν convert exactly. Definitions are in the module docstring. The NJM mirror serves these values precomputed in each instrument's `properties.json`, listed in `index.json`. It uses MESA's `vega_flam.csv` for the Vega quantities, so they match MESA colors. For `Fsun` it uses CALSPEC's solar spectrum (`sun_reference_stis_002` below 9600 Å, `sun_mod_001` above), the composite the SVO Filter Profile Service uses.
+
+`AfAv` is computed by the `F99` class of [dust_extinction](https://github.com/karllark/dust_extinction) (Gordon 2024, [JOSS 9(100), 7023](https://doi.org/10.21105/joss.07023)), an optional dependency: `pip install "sed-tools[extinction]"`. Without it, `AfAv` is `None` and a warning says why. It is also `None` where the pivot lies outside the range dust_extinction defines for the law (1000 Å to 3.33 µm); the law is never extrapolated. A(V) is the law's own normalisation (V-band averaged), so `AfAv` is 1 at 5414 Å, not at 5500 Å. SVO's `Af/AV` uses a different law, so the two differ.
+
+```python
+from sed_tools.filter_properties import instrument_properties, load_sun, load_vega
+
+vega = load_vega("vega_flam.csv")                 # wavelength in Å, f_λ in erg/s/cm²/Å
+sun = load_sun("sun_flam.csv")                    # the Sun at 1 AU, same units
+props = instrument_properties("data/filters/2MASS/2MASS", vega, sun)
+props["Ks"]["WavelengthPivot"], props["Ks"]["ZeroPointVega_Jy"], props["Ks"]["Fsun"], props["Ks"]["AfAv"]
+```
+
+`sed_tools.filter_colors` gives each band a colour for plotting, computed from its curve rather than guessed from its name:
+- **Mostly-visible bands** (at least half the throughput between 380 and 750 nm) get their true colour: daylight (CIE D65) seen through the curve, using the CIE 1931 colour-matching functions shipped with the package.
+- **Ultraviolet and infrared bands** get false colours in wavelength order. Next to visible bands they continue bluer or redder; in an all-infrared or all-ultraviolet instrument they span a rainbow shifted toward that regime.
+
+NJM serves the colours in `properties.json` (`DisplayColor`), and its website plots each instrument's curves with them.
+
+```python
+from pathlib import Path
+from sed_tools.filter_colors import instrument_colors
+
+colors = instrument_colors(sorted(Path("data/filters/2MASS/2MASS").glob("*.dat")))
+colors["J"]["DisplayColor"]                       # "#6cee2b"
+```
+
+#### Searching, describing and citing filters without SVO
+
+NJM serves, beside the curves, a catalogue that SED_Tools reads directly, so SVO is not needed to find a band, look up its characteristics or cite it:
+- `index.json` lists every facility, instrument and band;
+- each instrument's `properties.json` holds the values above, computed from its curves;
+- each instrument's `info.json` holds descriptions, the references to cite (with BibTeX where a service supplied it), the providers' requested acknowledgements, the licence and what SVO recorded about each band.
+
+```bash
+# Bands covering 2.15 µm with an FWHM of 1000-5000 Å (wavelengths in Å; '-' leaves an end open)
+sed-tools filters-search --wavelength 21500 --fwhm 1000 5000
+# By name (substring of Facility/Instrument/Band), pivot range and detector type
+sed-tools filters-search SDSS --pivot 4000 7000 --detector-type photon
+# Any properties.json column, as a range or a value; csv or json output
+sed-tools filters-search --where ABminusVega=:0.5 --where ColorMethod=true --format csv
+
+# Description, licence and a per-band table, after the component report
+sed-tools filters-info 2MASS/2MASS
+
+# References, BibTeX, acknowledgements and licences: named instruments or bands, or everything installed
+sed-tools filters-cite 2MASS/2MASS GAIA/GAIA/G
+sed-tools filters-cite --format bibtex > filters.bib
+```
+
+```python
+from sed_tools.api import Filters
+
+bands = Filters.search(wavelength=21500, fwhm=(1000, 5000))     # pandas DataFrame, one row per band
+bands[["facility", "instrument", "band", "WavelengthPivot", "FWHM", "DetectorType"]]
+Filters.search(facility="HST", pivot=(5000, 6000), where={"ABminusVega": (None, 0.2)})
+
+Filters.properties("2MASS", "2MASS")["bands"]["Ks"]["ZeroPointVega_Jy"]
+Filters.info("2MASS", "2MASS")["acknowledgements"]
+print(Filters.cite("2MASS/2MASS", "GAIA/GAIA/G"))             # or format="bibtex"
+
+ax = Filters.plot("2MASS/2MASS", normalize="peak", vega=True)   # matplotlib Axes
+Filters.plot(bands)                                              # a search result
+```
+
+- **Search.** Name criteria are matched in `index.json` first. `properties.json` is then fetched only for instruments that can still match, at most six requests at a time, retrying when NJM briefly blocks a burst.
+  - A single `wavelength` keeps bands whose span (`WavelengthMin`–`WavelengthMax`, where T is at least 1 % of its peak) covers it; a range keeps bands overlapping it.
+  - Astropy quantities are accepted. A band with a missing value, such as a Vega quantity where the Vega spectrum does not cover it, never matches a criterion on that value.
+- **Caching.** Catalogue files are cached in `cache/njm/` beside the filter root (next to `atmospheres/`). `index.json` is rechecked daily; the other files are revalidated, by ETag, only when `index.json` changes. Without the mirror the cached copies are used (`--offline` / `offline=True` never contacts it; `--refresh` / `refresh=True` asks again).
+- **Downloads.** A downloaded instrument keeps `properties.json` and `info.json` beside its curves, and these copies are preferred because they describe exactly those curves. The MESA index file still lists only the curves.
+- **Citations.** References are merged across instruments, one per work (bibcode form). For chosen bands, the instrument-wide references plus those bands' own are given. Acknowledgement texts are quoted as the providers ask. References for which NJM has no BibTeX appear in the `.bib` output as `%` comments with what is known; nothing is made up.
+- **Plots.** Curves use `sed_tools.filter_colors`: true colours for visible bands and ordered false colours otherwise. One instrument's bands keep its own colours; a selection across instruments is coloured as one set. Instruments not yet installed are downloaded first. `normalize` is `"peak"` or `"area"`; `vega=True` overlays NJM's `vega/vega_flam.csv`, scaled to the curves.
+
 #### Filter, optics, QE and atmosphere as separate components
 
 A published passband is usually a product of several throughputs, and which ones varies: Gaia DR3 is filter + CCD + instrument, SDSS/2MASS/PS1 include the atmosphere, Johnson is the filter alone. Every filter file records what its published curve contains (`Components=filter+qe+instrument`). Where an instrument's team publishes the factors separately, SED_Tools stores them alongside and generates that instrument's throughput with and without each one. Components are never mixed between instruments or sites: an instrument is only ever composed from its own filter, optics and QE, and only its own site's atmosphere.
@@ -803,6 +887,13 @@ hst_filters = Filters.query(facility='HST')
 
 # Download a filter set
 path = Filters.fetch(facility='Generic', instrument='Johnson')
+
+# NJM's catalogue: search, properties, descriptions, citations and plots
+bands = Filters.search(wavelength=5500, fwhm=(500, 1500))
+props = Filters.properties('Generic', 'Johnson')
+info = Filters.info('Generic', 'Johnson')
+print(Filters.cite('Generic/Johnson'))
+Filters.plot('Generic/Johnson', normalize='peak', vega=True)
 ```
 
 ---
@@ -833,6 +924,9 @@ info.covers_range(teff_min=5000, teff_max=6000)
 |-------------|----------------------|
 | `sed-tools filters` | `Filters.fetch(...)` |
 | `sed-tools filters-combine X A B` | `Filters.combine('X', 'A', 'B')` |
+| `sed-tools filters-search --wavelength W` | `Filters.search(wavelength=W)` |
+| `sed-tools filters-info F/I` | `Filters.available('F', 'I')`, `Filters.info('F', 'I')`, `Filters.properties('F', 'I')` |
+| `sed-tools filters-cite F/I` | `Filters.cite('F/I')` |
 | `sed-tools grids` (list) | `SED.query()` |
 | `sed-tools grids --grids X` | `SED.fetch('X')` |
 | `sed-tools rebuild --grids X` | `sed.grid.write()` |
