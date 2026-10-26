@@ -4,9 +4,9 @@
   "notes": "AAO filters originate from the AAO Master Filter Catalog for the 3.9m Anglo-Australian Telescope at Siding Spring Observatory. Operation of the AAT was transferred to the Australian National University (ANU). Terms follow ANU website copyright policy restricting reproduction without permission.",
   "licence": {
     "redistribution": "permission",
-    "terms": "\"For personal, non-commercial purposes, you may view or make copies of material contained on this site without express permission, where ANU owns the copyright, provided the material is not altered and ANU is appropriately acknowledged as the source. Except as permitted by law or as stated above, material on this website must not be reproduced, communicated, modified or used for commercial purposes without the prior written permission of the University or the relevant rights holder.\"",
+    "terms": "\"For personal, non-commercial purposes, you may view or make copies of material contained on this site without express permission, where ANU owns the copyright, provided the material is not altered and ANU is appropriately acknowledged as the source.\" \"Except as permitted by law or as stated above, material on this website must not be reproduced, communicated, modified or used for commercial purposes without the prior written permission of the University or the relevant rights holder.\"",
     "url": "https://www.anu.edu.au/copyright",
-    "scope": "Site-wide copyright notice of the ANU website (www.anu.edu.au); not a data licence written for the filter curves."
+    "scope": "University site copyright."
   },
   "references": [
     "bibcode:1977VA.....21..191W",

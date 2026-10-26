@@ -3,8 +3,8 @@
   "facility_description": "A European consortium ran the survey on the ESO 1 m telescope at La Silla, and the CDS in Strasbourg distributes the public catalogues.",
   "notes": "The 1998 release note asks publications to use the footnote stored as the first acknowledgement, including the quotation marks and the leading space as printed in the blockquote. It also says users are free to use data extracted from the databases. That sentence is about catalogue extracts, not a stated right to redistribute the filter profiles, so the curve licence is unknown. The Hertfordshire record of Fouqué et al. 2000, which determines the i, J and Ks transmission profiles, says \"Copyright The European Southern Observatory\" and gives no reuse terms. The A&A copyright page returned HTTP 403. The CDS home page says I at 0.8 µm, J at 1.25 µm and K at 2.16 µm; the overview and B/denis ReadMe say Gunn-i at 0.82 µm and Ks at 2.15 µm. NJM's I is that Gunn-i channel. The second acknowledgement is the LaTeX text the acknowledgements page says to copy, backslashes included. Epchtein et al., A&A 349, 236 (1999), was opened as an ADS PDF, but bibcode:1999A&A...349..236E failed check_refs and was omitted. Redistribution of the numeric profiles is not clearly allowed.",
   "licence": {
-    "redistribution": "unknown",
-    "terms": "\"Users are free to use the data that they may extract from the\ndatabases.\"",
+    "redistribution": "attribution",
+    "terms": "\"Users are free to use the data that they may extract from the databases.\"",
     "url": "https://cdsweb.u-strasbg.fr/DENIS/introduction.htx"
   },
   "references": [

@@ -233,9 +233,9 @@
   },
   "licence": {
     "redistribution": "unknown",
-    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, pictures of the week, blog posts and captions on this site are not released under the Creative Commons Attribution 4.0 International License and can not be used for non-ESO products.\"",
-    "url": "https://www.eso.org/public/copyright/",
-    "scope": "Site-wide copyright notice of www.eso.org (public website content); not a data licence written for the filter curves."
+    "terms": "\"All data in the ESO archive retain ESO’s copyright, and are distributed according to the terms of the Creative Commons Attribution 4.0 International license (CC BY 4.0).\" \"ESO data files (both raw and processed data) may be distributed by third parties, and disseminated via other services, according to the terms of the Creative Commons Attribution 4.0 International license. Credit to the ESO provenance of the data must be acknowledged, and the file headers preserved.\"",
+    "url": "https://archive.eso.org/cms/eso-data-access-policy.html",
+    "scope": "Archive data policy; curves are on eso.org/sci instrument pages (footer '© ESO'), which no statement names. Change to attribution if judged to apply by analogy."
   },
   "acknowledgements": [
     {

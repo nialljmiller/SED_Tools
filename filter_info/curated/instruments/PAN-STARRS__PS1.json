@@ -3,9 +3,10 @@
   "facility_description": "Pan-STARRS1 is a sky-survey facility whose public archive provides observations in its natural photometric system.",
   "notes": "Curve-specific redistribution rights remain unresolved. The general MAST data-use policy is contextual, not a demonstrated licence for the published Tonry et al. passband table or manufacturer measurements. The PS1 owner filter page links published overall throughputs and describes the six passbands; it describes capture cross-section per incident photon at a standard airmass of 1.2. The acknowledgement is copied from the explicitly requested reusable MAST acknowledgement. No DetectorType change is proposed.",
   "licence": {
-    "redistribution": "unknown",
-    "terms": "\"Most data hosted at MAST are in the public domain (see: open data), and therefore do not have restrictions on use. There are, however, expectations (or in some cases, requirements) that researchers acknowledge the originating mission and (usually) STScI in all scholarly publications. See MAST Data Attributions for details.\"",
-    "url": "https://stdatu.stsci.edu/publishing/data-use"
+    "redistribution": "attribution",
+    "terms": "\"The data retrieved with VizieR are free of usage in a scientific context; however, as it is the usage in scientific publication, the original authors and publication references including the publisher have to be explicitely cited\"",
+    "url": "https://cds.unistra.fr/vizier-org/licences_vizier.html",
+    "scope": "Curve from VizieR J/ApJ/750/99 (Tonry et al. 2012)."
   },
   "references": [
     "bibcode:2012ApJ...750...99T",

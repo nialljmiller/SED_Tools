@@ -3,10 +3,10 @@
   "facility_description": "AKARI was Japan's second infrared astronomy satellite, with a 68.5 cm telescope cooled to 6 K, observing from 1.7 to 180 μm in a Sun-synchronous polar orbit until operations ended on 24 November 2011.",
   "notes": "The IRC RSRF page (last update 15 January 2007) defines FAD as Filter and Detector and says the curves include photon-to-energy conversion by multiplying by wavelength, so they can be integrated over F_λ spectra. Posted tables are n2.fad, n3.fad, n4.fad, s7.fad, s9w.fad, s11.fad, l15.fad, l18w.fad, and l24.fad. The older index http://www.ir.isas.jaxa.jp/AKARI/Observation/RSRF/IRC_FAD/index.html redirects to https and returns HTTP 404. Onaka et al. say the imaging throughput was estimated from laboratory measurements of each optic, then scaled by the in-flight absolute calibration (their Figure 7), and that N2 and N3 have small red leaks around 5 μm. Onaka et al. Table 1, as rendered on ar5iv, lists reference wavelengths N2 2.4, N3 3.2, N4 4.1, S7 7.0, S9W 9.0, S11 11.0, L15 15.0, L18W 18.0, and L24 24.0 μm, with the wavelength column defined as where the responsivity is larger than 1/e of the peak. Those table cells are split across lines in the HTML conversion, so they are not copied into per-band fields. The Murakami quotes keep the ar5iv \\\\micron escapes. The acknowledgement text includes the quotation marks printed inside the italic sentence on the publishing page. Licence quote is section 6 of the ISAS Data Policy. That section also says the rules are compatible with CC BY 4.0 and that third parties may impose other restrictions. The RSRF page credits Martin Cohen and the page footer says \"Copyright © ISAS/JAXA. All Rights Reserved.\" The policy does not label these RSRF files as open data. Bibcodes are the ADS links on the ISAS citation list. Recorded licence class is permission because this footer is on the AKARI pages that were opened, and the ISAS Data Policy copy grant applies to data judged open. Those pages do not say the response curves are open data.",
   "licence": {
-    "redistribution": "permission",
-    "terms": "\"Copyright © ISAS/JAXA. All Rights Reserved.\"",
-    "url": "https://www.ir.isas.jaxa.jp/AKARI/Observation/support/IRC/RSRF/",
-    "scope": "Footer of the AKARI pages at www.ir.isas.jaxa.jp (shown on this RSRF page); not a data licence written for the filter curves."
+    "redistribution": "attribution",
+    "terms": "\"In principle, open data can be used free of charge, either for commercial or non-commercial purposes. They may be copied, forwarded or modified.\" \"When using data, please indicate origin of the data as \"ISAS/JAXA\".\"",
+    "url": "https://www.isas.jaxa.jp/en/researchers/data-policy/",
+    "scope": "ISAS data policy (stated compatible with CC BY 4.0); AKARI pages also carry 'Copyright © ISAS/JAXA. All Rights Reserved.'"
   },
   "references": [
     "bibcode:2007PASJ...59S.401O",

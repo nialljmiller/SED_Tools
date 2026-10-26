@@ -70,9 +70,10 @@
     }
   },
   "licence": {
-    "redistribution": "restricted",
-    "terms": "\"All images and data derived from observations made at LCO facilities are made available for scientific or educational use, subject to the Creative Commons license BY-NC 4.0 and in the case of science data, subject to an additional proprietary period.\"",
-    "url": "https://lco.global/observatory/acknowledgments/"
+    "redistribution": "attribution",
+    "terms": "\"All images and data derived from observations made at LCO facilities are made available for scientific or educational use, subject to the Creative Commons license BY-NC 4.0…\" \"Any use of LCO images and data not for scientific or educational purposes, e.g. for commercial purposes, is not permitted unless through an explicit arrangement.\"",
+    "url": "https://lco.global/observatory/acknowledgments/",
+    "scope": "CC BY-NC 4.0 (non-commercial); written for observational data."
   },
   "acknowledgements": [
     {

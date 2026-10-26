@@ -1,5 +1,11 @@
 {
   "description": "Kodak DCS420 digital camera: R, G and B spectral responses of the Kodak DCS-420 reported in the HP Labs technical report 'Digital color cameras - 2 - Spectral response' (Vora, Farrell, Tietz & Brainard 1997, HPL-97-54).",
   "facility_description": "Digital cameras (DSLRs, mirrorless, compact, industrial, cinema and phone cameras) whose RGB channel spectral sensitivities or internal IR/UV-cut filter transmissions have been measured.",
-  "notes": "SVO ProfileReference is https://www.researchgate.net/publication/2263571_Digital_color_cameras_-_2_-_Spectral_response (HTTP 403 for me, so not linked). Report title/number from a web search; no DOI/bibcode found. Licence unknown: report not opened."
+  "notes": "SVO ProfileReference is https://www.researchgate.net/publication/2263571_Digital_color_cameras_-_2_-_Spectral_response (HTTP 403 for me, so not linked). Report title/number from a web search; no DOI/bibcode found. Licence unknown: report not opened.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "",
+    "url": "https://www.researchgate.net/publication/2263571_Digital_color_cameras_-_2_-_Spectral_response",
+    "scope": "Published paper; no statement."
+  }
 }

@@ -3,9 +3,10 @@
   "facility_description": "The China Space Station Telescope is a 2 m telescope intended to operate in the same orbit as the China Manned Space Station. The MCI splits the beam into near-UV, optical-blue and optical-red channels with a 7.5 by 7.5 arcmin field.",
   "notes": "No CSST or NAOC data-policy page was opened (NAOC overview curl HTTP 000; Meng PDF HTTP 500). The arXiv record links to the non-exclusive distribution licence, which lets arXiv.org distribute the article and does not say that third parties may redistribute numerical filter curves. The IOP journal page was not opened, so the journal licence is unknown. Figure 1 states that dotted curves are detector quantum efficiency and that dashed and solid lines are intrinsic and total transmission. That split is not given as separate NJM filenames. No requested user acknowledgement was found. The limiting magnitudes in the paper are AB; the MagSys value uses the sentence that the three channels can be stacked to 29-30 AB mag. Author funding text was not copied.",
   "licence": {
-    "redistribution": "permission",
+    "redistribution": "unknown",
     "terms": "\"I grant arXiv.org a perpetual, non-exclusive license to distribute this article.\"",
-    "url": "https://arxiv.org/licenses/nonexclusive-distrib/1.0/license.html"
+    "url": "https://arxiv.org/licenses/nonexclusive-distrib/1.0/license.html",
+    "scope": "Article licence; it does not address the published numbers."
   },
   "references": [
     "bibcode:2022RAA....22b5019C",

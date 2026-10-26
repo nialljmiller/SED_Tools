@@ -4,8 +4,9 @@
   "notes": "GAIA/GAIA contains the revised Gaia DR2 photometric sensitivity curves from Maíz Apellániz & Weiler (2018, A&A 619, A180), which separated Gbp into bright (G < 10.87) and faint regimes to account for charge transfer effects, as well as the RVS transmission profile. Pre-launch and nominal bandpasses are described in Jordi et al. (2010). The owner documentation explicitly describes these as photon response functions (quantum efficiency). DetectorType is left unchanged.",
   "licence": {
     "redistribution": "attribution",
-    "terms": "\"Raw and Calibrated Data (hereafter Data) deriving from satellites flown in the framework of an Agency Programme and contained in the ESA Space Science Archives, as well as analysed data and higher-level science products (hereafter Data Products) contained in the ESA Space Science Archives, are open and free to use by the User subject to proper acknowledgment to be given in accordance with the credit lines provided below.\"",
-    "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions"
+    "terms": "\"Data hosted in the ESA Space Science Archives are distributed under the CC BY-NC 3.0 IGO licence.\" … \"Prior to any commercial use by the User of any Data or Data Product, including any use or application that directly or indirectly generates a financial gain, a detailed request for authorisation/licence shall be made by the User by sending email to data.licences@esa.int.\"",
+    "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
+    "scope": "CC BY-NC 3.0 IGO: non-commercial reuse with the mission credit line (Gaia: 'Credit: ESA, Gaia DPAC'; Euclid: 'Credit: ESA Euclid, Euclid Consortium, NASA'); commercial use needs ESA authorisation. Gaia also: https://www.cosmos.esa.int/web/gaia-users/license"
   },
   "references": [
     "bibcode:2018A&A...619A.180M",

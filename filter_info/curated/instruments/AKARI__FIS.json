@@ -3,10 +3,10 @@
   "facility_description": "AKARI was Japan's second infrared astronomy satellite, with a 68.5 cm telescope cooled to 6 K, observing from 1.7 to 180 μm in a Sun-synchronous polar orbit until operations ended on 24 November 2011.",
   "notes": "NJM names WIDE_S and WIDE_L are Kawada et al.'s WIDE-S and WIDE-L (Murakami et al. also write Wide-S and Wide-L). The candidate FIS RSRF index http://www.ir.isas.jaxa.jp/AKARI/Observation/RSRF/FIS_FAD/index.html redirects to https and returns HTTP 404, so no public FIS FAD table was opened. Kawada et al. Figure 4 is the system spectral response, normalized at the peak; the text says in-orbit blackbody spectra agree with the laboratory curves to within 10% after responsivity scaling. The acknowledgement text is the italic sentence in the acknowledgement section of the ISAS publishing page, including the quotation marks that surround it on that page. The licence quote is section 6 of the ISAS Data Policy (14 March 2018), which also says these rules follow the Government of Japan Standard Terms of Use (Version 2.0) and are compatible with CC BY 4.0, and that users should indicate the origin as \"ISAS/JAXA\". The same section says third parties involved in production may impose other restrictions. AKARI HTML footers say \"Copyright © ISAS/JAXA. All Rights Reserved.\" The data policy does not state that the FIS response curves are classified as open data. Kawada et al. list Martin Cohen as a coauthor; no separate Cohen licence was found. The Murakami band-list quote is taken from the ar5iv HTML, which escapes micron as \\\\micron. Recorded licence class is permission because this footer is on the AKARI pages that were opened, and the ISAS Data Policy copy grant applies to data judged open. Those pages do not say the response curves are open data.",
   "licence": {
-    "redistribution": "permission",
-    "terms": "\"Copyright © ISAS/JAXA. All Rights Reserved.\"",
-    "url": "https://www.ir.isas.jaxa.jp/AKARI/about/",
-    "scope": "Footer of the AKARI pages at www.ir.isas.jaxa.jp; not a data licence written for the filter curves."
+    "redistribution": "attribution",
+    "terms": "\"In principle, open data can be used free of charge, either for commercial or non-commercial purposes. They may be copied, forwarded or modified.\" \"When using data, please indicate origin of the data as \"ISAS/JAXA\".\"",
+    "url": "https://www.isas.jaxa.jp/en/researchers/data-policy/",
+    "scope": "ISAS data policy (stated compatible with CC BY 4.0); AKARI pages also carry 'Copyright © ISAS/JAXA. All Rights Reserved.'"
   },
   "references": [
     "bibcode:2007PASJ...59S.389K",

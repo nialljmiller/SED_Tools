@@ -4,8 +4,9 @@
   "notes": "NJM bands are A, B, C and D. The LAMBDA page fetched this session says the 1993 flight wavelengths were 2.2, 1.2, 0.8 and 0.5 mm and cites de Bernardis et al., Astronomy and Astrophysics, 271, 683 (1993). That page does not define the letters A, B, C and D, so no per-band fields were set. bibcode:1993A&A...271..683D did not resolve. The NASA sentence applies to data shared via NASA repositories. No ARGO transmission curve was opened there, so that sentence is not a grant for these filter curves and redistribution is unknown. No requested acknowledgement was found.",
   "licence": {
     "redistribution": "unknown",
-    "terms": "\"There are no restrictions on the usage of these data.\"",
-    "url": "https://science.data.nasa.gov/about/license"
+    "terms": "",
+    "url": "",
+    "scope": "No owner statement found."
   },
   "links": [
     {

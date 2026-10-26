@@ -3,9 +3,10 @@
   "facility_description": "Euclid is an ESA visible and near-infrared space survey, launched on 1 July 2023, with a 1.20 m Korsch off-axis three-mirror telescope.",
   "notes": "The NISP-PHOTO-PASSBANDS-V1 page publishes Y, J and H total-throughput files and the Euclid Consortium acknowledgement copied above. That page does not itself state a licence. The numerical files are Euclid reference data hosted by ESA, so the licence class follows the ESA Space Science Archives terms (CC BY-NC 3.0 IGO), which also require the Euclid credit line. Schirmer et al. 2022 on arXiv is separately marked CC BY 4.0; that article licence is not used here as the licence of the archive files. The reference-data index lists NISP photometric passbands and a planetary-nebula atlas, not Blue or Red grism curves. A NISP-SPECTRO-PASSBANDS page was not used: its DOI placeholder was not a real release. Wavelength edges for Y, J and H are quoted from the Euclid Consortium overview, which attributes them to Schirmer+2022 Table 3. The Y ASCII product header (opened this session) is '# WAVE T_TOTAL T_FILTER T_TELESCOPE T_NI-OA T_QE'.",
   "licence": {
-    "redistribution": "restricted",
-    "terms": "\"Data hosted in the ESA Space Science Archives are distributed under the CC BY-NC 3.0 IGO licence.\"",
-    "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions"
+    "redistribution": "attribution",
+    "terms": "\"Data hosted in the ESA Space Science Archives are distributed under the CC BY-NC 3.0 IGO licence.\" … \"Prior to any commercial use by the User of any Data or Data Product, including any use or application that directly or indirectly generates a financial gain, a detailed request for authorisation/licence shall be made by the User by sending email to data.licences@esa.int.\"",
+    "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
+    "scope": "CC BY-NC 3.0 IGO: non-commercial reuse with the mission credit line (Gaia: 'Credit: ESA, Gaia DPAC'; Euclid: 'Credit: ESA Euclid, Euclid Consortium, NASA'); commercial use needs ESA authorisation. Gaia also: https://www.cosmos.esa.int/web/gaia-users/license"
   },
   "references": [
     "bibcode:2022A&A...662A..92E",

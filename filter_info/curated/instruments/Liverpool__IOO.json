@@ -96,10 +96,10 @@
     }
   },
   "licence": {
-    "redistribution": "restricted",
-    "terms": "\"In accessing the University webpages, you agree that any content you download is for personal, non-commercial use only.\"",
-    "url": "https://www.ljmu.ac.uk/legal/copyright-notice",
-    "scope": "Site-wide copyright notice of the Liverpool John Moores University website; not a data licence written for the filter curves."
+    "redistribution": "attribution",
+    "terms": "\"CC BY 4.0\"",
+    "url": "https://doi.org/10.6084/m9.figshare.4659421",
+    "scope": "figshare 'LT Telescope and IO:O Throughput' by Robert Smith and Iain Steele."
   },
   "acknowledgements": [
     {

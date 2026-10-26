@@ -3,9 +3,10 @@
   "facility_description": "BICEP observes from the South Pole.",
   "notes": "NJM also lists 95GHz, 95GHz_rj, 150GHz_rj and 220GHz_rj. Takahashi et al. name 100, 150 and 220 GHz and do not define an _rj variant or a 95 GHz BICEP band, so those four keys have no Description. No requested acknowledgement was found. The only reuse terms opened for the article are the arXiv non-exclusive licence, which does not grant further reuse and says to contact the author. That is not a grant to redistribute a separate numeric curve. No magnitude system was recorded.",
   "licence": {
-    "redistribution": "permission",
-    "terms": "\"The overwhelming majority of e-prints are submitted using the arXiv perpetual non-exclusive license, which does not grant further reuse permissions directly. In these cases you will need to contact the author directly with your request.\"",
-    "url": "https://info.arxiv.org/help/license/reuse.html"
+    "redistribution": "unknown",
+    "terms": "\"I grant arXiv.org a perpetual, non-exclusive license to distribute this article.\"",
+    "url": "https://arxiv.org/licenses/nonexclusive-distrib/1.0/license.html",
+    "scope": "Article licence; it does not address the published numbers."
   },
   "references": [
     "bibcode:2008SPIE.7020E..1DT",

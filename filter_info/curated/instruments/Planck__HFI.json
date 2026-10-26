@@ -3,9 +3,10 @@
   "facility_description": "Planck is ESA's mission to observe the first light in the Universe, designed to image the temperature and polarisation anisotropies of the cosmic microwave background over the whole sky.",
   "notes": "The acknowledgement is the footnote ESA asks for papers that use Planck data. The licence sentence is the ESA archive terms. Those terms do not name the filter curves. The instrument papers are also on arXiv under the non-exclusive licence, which does not grant further reuse. Commercial use of ESA archive data needs a separate authorisation. No magnitude system was recorded.",
   "licence": {
-    "redistribution": "restricted",
-    "terms": "\"Data hosted in the ESA Space Science Archives are distributed under the CC BY-NC 3.0 IGO licence.\"",
-    "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions"
+    "redistribution": "attribution",
+    "terms": "\"Data hosted in the ESA Space Science Archives are distributed under the CC BY-NC 3.0 IGO licence.\" … \"Prior to any commercial use by the User of any Data or Data Product, including any use or application that directly or indirectly generates a financial gain, a detailed request for authorisation/licence shall be made by the User by sending email to data.licences@esa.int.\"",
+    "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
+    "scope": "CC BY-NC 3.0 IGO: non-commercial reuse with the mission credit line (Gaia: 'Credit: ESA, Gaia DPAC'; Euclid: 'Credit: ESA Euclid, Euclid Consortium, NASA'); commercial use needs ESA authorisation. Gaia also: https://www.cosmos.esa.int/web/gaia-users/license"
   },
   "references": [
     "arxiv:1101.2039"

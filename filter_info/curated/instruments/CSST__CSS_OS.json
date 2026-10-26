@@ -3,9 +3,10 @@
   "facility_description": "The China Space Station Telescope is an off-axis three-mirror anastigmat with a 2 m primary mirror, scheduled to launch in 2027 and to co-orbit with the China Space Station.",
   "notes": "No CSST or NAOC data-policy page was opened. https://www.nao.cas.cn/csst/mission/overview/ did not return (curl HTTP 000). The Meng PDF https://www.issibern.ch/teams/weakgravlense/wp-content/uploads/2019/11/X.M.-Meng.pdf returned HTTP 500. Both arXiv records (1706.09586 and 2507.04618) link only to the arXiv non-exclusive distribution licence, which is a grant by the submitter to arXiv.org, not a grant to redistribute numerical curves. Journal HTML for MNRAS was not opened. NJM names ending _fil and _ccd, and wNUV, wg and wi, are not used as filenames or band names on the pages opened. Cao et al. (2018) Figure 1 separates intrinsic transmission from total transmission including detector quantum efficiency. Cao et al. (2022) Figure 1, for the survey-camera filters, says the dotted curves are detector quantum efficiency, the dashed lines intrinsic transmission, and the solid lines total transmission including quantum efficiency. Those captions do not name _fil or _ccd files, so no component band is described here. Gong et al. (2025) Table 1 prints GI with an asterisk; the extracted text has no footnote for it. Author funding acknowledgements in Gong et al. are not a requested user citation, so acknowledgements is omitted. The numerical curves, if taken from these papers, do not have an owner statement that clearly allows redistribution.",
   "licence": {
-    "redistribution": "permission",
+    "redistribution": "unknown",
     "terms": "\"I grant arXiv.org a perpetual, non-exclusive license to distribute this article.\"",
-    "url": "https://arxiv.org/licenses/nonexclusive-distrib/1.0/license.html"
+    "url": "https://arxiv.org/licenses/nonexclusive-distrib/1.0/license.html",
+    "scope": "Article licence; it does not address the published numbers."
   },
   "references": [
     "bibcode:2018MNRAS.480.2178C",

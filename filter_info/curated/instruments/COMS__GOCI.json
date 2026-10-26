@@ -2,6 +2,12 @@
   "description": "The Geostationary Ocean Color Imager (GOCI) observed ocean colour in eight bands between 412 and 865 nm. Its repeated daytime observations support studies of sediment, water properties and coastal ocean changes.",
   "facility_description": "COMS was a South Korean communications, ocean and meteorological satellite carrying GOCI.",
   "notes": "The KIOST repository describes mission and band coverage but its article copyright notice is not a licence for the filter curves. Existing NJM curve source is an IOCCG spreadsheet; redistribution permission and requested provider acknowledgement remain unverified.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"© 2026 IOCCG. All Rights Reserved.\"",
+    "url": "https://ioccg.org/",
+    "scope": "Host-site footer; KIOST terms not checked."
+  },
   "references": [
     "doi:10.1364/OE.21.003835"
   ],

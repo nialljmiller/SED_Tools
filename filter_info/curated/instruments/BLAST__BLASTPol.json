@@ -3,9 +3,10 @@
   "facility_description": "BLASTPol flew from Antarctica, including a December 2012 flight.",
   "notes": "The paper centres the wavebands at 250, 350 and 500 microns. NJM's keys are 1200GHz, 600GHz and 850GHz. Those numbers were not printed on the opened abstract, so no per-band Description was attached. bibcode:2016PhDT.......113G was not opened. No requested acknowledgement was found. The only reuse terms opened for the article are the arXiv non-exclusive licence, which does not grant further reuse and says to contact the author. That is not a grant to redistribute a separate numeric curve. No magnitude system was recorded.",
   "licence": {
-    "redistribution": "permission",
-    "terms": "\"The overwhelming majority of e-prints are submitted using the arXiv perpetual non-exclusive license, which does not grant further reuse permissions directly. In these cases you will need to contact the author directly with your request.\"",
-    "url": "https://info.arxiv.org/help/license/reuse.html"
+    "redistribution": "unknown",
+    "terms": "\"I grant arXiv.org a perpetual, non-exclusive license to distribute this article.\"",
+    "url": "https://arxiv.org/licenses/nonexclusive-distrib/1.0/license.html",
+    "scope": "Article licence; it does not address the published numbers."
   },
   "references": [
     "arxiv:1407.3815"

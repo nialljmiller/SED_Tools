@@ -4,9 +4,9 @@
   "notes": "NJM's only band key is 852GHz. The ESO instrument page says SABOCA observed wavelengths of around 350 micrometres and lists wavelength coverage 352 μm. The ESO public page does not print 852 GHz. A Messenger PDF opened in this session contains the words 852 GHz (352 μm), about 120 GHz wide in a broken text extraction, and it does not print an ADS bibcode. That PDF's public URL was not confirmed, so 852GHz has no Description field. bibcode:2010Msngr.139...20S did not resolve. The APEX acknowledgement is required for APEX observational data and keeps the programme-ID placeholders. It was not shown to cover a filter curve. The ESO archive CC BY 4.0 grant is for data files. The public copyright page excludes scientific papers and other site text. No numeric transmission table was found, so redistribution of the curve is unknown. No magnitude system is stated.",
   "licence": {
     "redistribution": "unknown",
-    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, pictures of the week, blog posts and captions on this site are not released under the Creative Commons Attribution 4.0 International License and can not be used for non-ESO products.\"",
-    "url": "https://www.eso.org/public/copyright/",
-    "scope": "Site-wide copyright notice of www.eso.org (public website content); not a data licence written for the filter curves."
+    "terms": "\"All data in the ESO archive retain ESO’s copyright, and are distributed according to the terms of the Creative Commons Attribution 4.0 International license (CC BY 4.0).\" \"ESO data files (both raw and processed data) may be distributed by third parties, and disseminated via other services, according to the terms of the Creative Commons Attribution 4.0 International license. Credit to the ESO provenance of the data must be acknowledged, and the file headers preserved.\"",
+    "url": "https://archive.eso.org/cms/eso-data-access-policy.html",
+    "scope": "Archive data policy; curves are on eso.org/sci instrument pages (footer '© ESO'), which no statement names. Change to attribution if judged to apply by analogy."
   },
   "links": [
     {

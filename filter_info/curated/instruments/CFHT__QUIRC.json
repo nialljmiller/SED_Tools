@@ -3,9 +3,10 @@
   "facility_description": "The Canada-France-Hawaii Telescope (CFHT) is a 3.6-meter optical and infrared telescope operated by NRC (Canada), CNRS/INSU (France), and the University of Hawaii, located on Maunakea in Hawaii.",
   "notes": "QUIRC was developed by Klaus Hodapp and the University of Hawaii Institute for Astronomy (IfA) around the Rockwell 1024x1024 HAWAII focal plane array, operating in the 1 to 2.5 micron near-infrared window (J, H, K, Kp, Ks, and narrowband lines). At CFHT, it served as science camera behind the Hokupaʻa curvature adaptive optics system.",
   "licence": {
-    "redistribution": "permission",
-    "terms": "\"The Canada-France-Hawaii Telescope Corporation owns the copyright of all contents of this web site unless stated otherwise.\"",
-    "url": "https://www.cfht.hawaii.edu/hawaiianstarlight/CFHT_WWW_Copyright.html"
+    "redistribution": "unknown",
+    "terms": "",
+    "url": "https://www.cfht.hawaii.edu/Instruments/Filters/",
+    "scope": "No statement on the CFHT filter pages; MegaCam curves via CADC MegaPipe (Canada.ca terms not verified)."
   },
   "references": [
     "bibcode:2024A&A...689A..93R"

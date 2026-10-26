@@ -2,6 +2,12 @@
   "description": "Generic Johnson broad-band passbands (U, B, V, R, I, J, M) as held in the SVO Filter Profile Service 'Generic/Johnson' group.",
   "facility_description": "Generic photometric-system passbands, not tied to a single telescope or instrument.",
   "notes": "SVO gives no ProfileReference for this group in the archived VOTables, so the original source of these curves is not identified; Johnson & Morgan (1953) is the defining paper of the UBV system only, not a confirmed source of these tables. Description values are copied verbatim from SVO VOTables via Wayback captures (svo2.cab.inta-csic.es timed out all session). Licence unknown: SVO's own terms page could not be reached; the SVO acknowledgement already on NJM was not re-verified. No archived VOTable for: R, V.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "",
+    "url": "https://ui.adsabs.harvard.edu/abs/1953ApJ...117..313J",
+    "scope": "Published paper; no statement."
+  },
   "references": [
     "bibcode:1953ApJ...117..313J"
   ]

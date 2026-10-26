@@ -3,10 +3,10 @@
   "facility_description": "The Liverpool Telescope is a 2.0-meter fully robotic telescope operated by Liverpool John Moores University at Roque de los Muchachos Observatory on La Palma.",
   "notes": "RINGO was decommissioned in June 2009 and replaced by RINGO2 and later RINGO3. Its VR passband covers 460-720 nm using cemented Schott GG475 and KG3 filters. Downloaded materials are subject to the LJMU copyright policy restricting use to personal, non-commercial purposes. Observations should cite the Liverpool Telescope acknowledgement and instrument papers (Steele et al. 2004, 2006).",
   "licence": {
-    "redistribution": "restricted",
+    "redistribution": "permission",
     "terms": "\"In accessing the University webpages, you agree that any content you download is for personal, non-commercial use only.\"",
     "url": "https://www.ljmu.ac.uk/legal/copyright-notice",
-    "scope": "Site-wide copyright notice of the Liverpool John Moores University website; not a data licence written for the filter curves."
+    "scope": "University site footer."
   },
   "references": [
     "bibcode:2004SPIE.5489..679S",

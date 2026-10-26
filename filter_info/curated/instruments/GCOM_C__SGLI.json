@@ -2,6 +2,12 @@
   "description": "The Second-Generation Global Imager (SGLI) is a multichannel optical sensor on GCOM-C observing from near ultraviolet to thermal infrared. Its channels support environmental observations including vegetation and aerosols.",
   "facility_description": "GCOM-C is the Japanese Earth-observation mission carrying SGLI, successor to GLI on ADEOS-II.",
   "notes": "Prelaunch characterization page explains left, nadir and right VNR telescopes and supplies their response functions. These match the VL/VN/VR naming structure in NJM, but individual passband files have not been compared. General JAXA website policy has restrictions; standard-product reuse terms must not automatically be applied to calibration files. General site-policy credit example is “Courtesy of JAXA”; commercial use requires prior permission and modifications are limited. No assumption is made that low-resolution standard satellite product terms cover instrument characterization tables.",
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"…you may use the Materials without obtaining permission of the copyright holder (JAXA) to the extent that your use is for the purpose of press (media) activity/scientific research/educational activity/ and/or private use…\" \"No modification is allowed to any of the Materials, except for a modification needed for indicating their source.\"",
+    "url": "https://global.jaxa.jp/policy.html",
+    "scope": "JAXA site terms; research use allowed; commercial use prohibited without permission; unit conversion may count as modification (uncertain)."
+  },
   "references": [
     "doi:10.1117/12.2068558",
     "doi:10.1117/12.2073597"

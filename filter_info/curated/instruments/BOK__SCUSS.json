@@ -4,7 +4,9 @@
   "notes": "SCUSS utilized a dedicated high-throughput u-band filter on 90Prime at the Bok telescope. Survey data and profiles were prepared under NAOC and Steward collaboration; redistribution terms for raw profile files are not explicitly released under an open copyright license.",
   "licence": {
     "redistribution": "unknown",
-    "url": "https://arxiv.org/abs/1511.07575"
+    "terms": "\"I grant arXiv.org a perpetual, non-exclusive license to distribute this article.\"",
+    "url": "https://arxiv.org/licenses/nonexclusive-distrib/1.0/license.html",
+    "scope": "Article licence; it does not address the published numbers."
   },
   "references": [
     "bibcode:2015AJ....150..104Z",

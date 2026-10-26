@@ -3,9 +3,10 @@
   "facility_description": "Herschel is ESA's fourth cornerstone mission, launched on 14 May 2009 with a 3.5 m Cassegrain telescope for photometry and spectroscopy at about 55–671 µm.",
   "notes": "The NJM PACS filter-curve URL did not resolve (curl exit 6, HTTP 000). Numeric transmissions are the HSA ancillary product PACS-P Filter Transmissions (listed Available from HSA: Yes), extracted from PCalPhotometer_FilterTransmission_FM_v1.fits; that README states no licence. ESA archive terms put data hosted in the ESA Space Science Archives under CC BY-NC 3.0 IGO and require a separate authorisation before commercial use. Those terms do not name filter-transmission tables. Coverage of the curves is inferred because the ADP page says the files are available from the HSA, not because a clause identifies calibration tables as observations. Non-commercial redistribution with the required credit is the grant named on the terms page; commercial redistribution is not allowed without permission. IRSA says most IRSA-served data are public with no usage restrictions, but that page does not identify these filter tables, so that statement is not applied here. No magnitude system is recorded. The PACS consortium acknowledgement is compulsory for consortium guaranteed-time papers and optional otherwise. Bibcodes were not printed as ADS strings; the publishing-rules page cites Poglitsch et al. 2010, A&A, 518, L2 and Pilbratt et al. 2010, A&A, 518, L1, and check_refs resolved those keys. The arXiv abstract and the instrument paper use slightly different short-wavelength edges (85–125 µm versus 85–130 µm); band text here uses only the stated reference wavelengths.",
   "licence": {
-    "redistribution": "restricted",
-    "terms": "\"Data hosted in the ESA Space Science Archives are distributed under the CC BY-NC 3.0 IGO licence.\"",
-    "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions"
+    "redistribution": "attribution",
+    "terms": "\"Data hosted in the ESA Space Science Archives are distributed under the CC BY-NC 3.0 IGO licence.\" … \"Prior to any commercial use by the User of any Data or Data Product, including any use or application that directly or indirectly generates a financial gain, a detailed request for authorisation/licence shall be made by the User by sending email to data.licences@esa.int.\"",
+    "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
+    "scope": "CC BY-NC 3.0 IGO: non-commercial reuse with the mission credit line (Gaia: 'Credit: ESA, Gaia DPAC'; Euclid: 'Credit: ESA Euclid, Euclid Consortium, NASA'); commercial use needs ESA authorisation. Gaia also: https://www.cosmos.esa.int/web/gaia-users/license"
   },
   "references": [
     "bibcode:2010A&A...518L...2P",

@@ -3,9 +3,10 @@
   "facility_description": "The Canada-France-Hawaii Telescope (CFHT) is a 3.6-meter optical and infrared telescope operated by NRC (Canada), CNRS/INSU (France), and the University of Hawaii, located on Maunakea in Hawaii.",
   "notes": "CFH12K was a 12k x 8k mosaic of 12 MIT/Lincoln Labs CCDs at the prime focus of CFHT, operating prior to MegaCam. Filter transmission curves for CFH12K filters are distributed via CFHT filter documentation and SVO.",
   "licence": {
-    "redistribution": "permission",
-    "terms": "\"The Canada-France-Hawaii Telescope Corporation owns the copyright of all contents of this web site unless stated otherwise.\"",
-    "url": "https://www.cfht.hawaii.edu/hawaiianstarlight/CFHT_WWW_Copyright.html"
+    "redistribution": "unknown",
+    "terms": "",
+    "url": "https://www.cfht.hawaii.edu/Instruments/Filters/",
+    "scope": "No statement on the CFHT filter pages; MegaCam curves via CADC MegaPipe (Canada.ca terms not verified)."
   },
   "references": [
     "bibcode:2000SPIE.4008.1010C",

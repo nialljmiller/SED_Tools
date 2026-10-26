@@ -4,8 +4,9 @@
   "notes": "RGB curves checked this session: NJM values are identical (max abs diff 0) to the 'Nikon D50' entry of http://www.gujinwei.org/research/camspec/camspec_database.txt. Block band: Kolari page has a chart titled 'Nikon D50 ICF Transmission' (image chart only; the NJM curve is a digitization, attributed here by camera name only since SVO gives no ProfileReference). Licence set to the stricter source (Kolari: no redistribution grant) because the Block band comes from Kolari; the RGB bands alone are CC BY-NC-SA 4.0 (RIT).",
   "licence": {
     "redistribution": "permission",
-    "terms": "\"We make no garuntees on the accuracy of this data, provided as a reference only.\" (no redistribution grant; Kolari Vision terms-and-conditions page covers user submissions only)",
-    "url": "https://kolarivision.com/articles/internal-cut-filter-transmission/"
+    "terms": "\"We have started measuring the transmission of some of the filters we have removed during conversions and are providing them for general reference.\" \"We make no garuntees on the accuracy of this data, provided as a reference only.\" \"© Kolari Vision 2026\"",
+    "url": "https://kolarivision.com/articles/internal-cut-filter-transmission/",
+    "scope": "Vendor page with chart images only; NJM curves are SVO digitisations; site T&C cover user submissions only."
   },
   "references": [
     "doi:10.1109/WACV.2013.6475015"

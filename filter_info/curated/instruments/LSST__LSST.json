@@ -4,7 +4,9 @@
   "notes": "Owner pages opened in this session: LSSTCam documentation, lsst/throughputs and lsst-pst/syseng_throughputs. No explicit curve redistribution licence was found there. Public GitHub visibility is not a licence; no software or documentation licence has been applied to curve data. Current LSSTCam documentation and repository revisions need not match the historical NJM profiles; no band-level reference or numerical metadata is asserted. The owner instrument page describes total throughput including atmosphere at airmass 1.2, optics and detector sensitivity. The acknowledgement entry is the owner-requested instrument citation string rather than a dataset acknowledgement.",
   "licence": {
     "redistribution": "unknown",
-    "url": "https://lsstcam.lsst.io/"
+    "terms": "",
+    "url": "https://github.com/lsst/throughputs",
+    "scope": "Repository has no licence (GitHub license: null); docs footer '© Copyright 2025 Association of Universities for Research in Astronomy, Inc. (AURA).'"
   },
   "references": [
     "doi:10.71929/rubin/2571927",

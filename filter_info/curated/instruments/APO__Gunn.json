@@ -4,9 +4,9 @@
   "notes": "Gunn-Thuan g, r, i, z filters in the APO filter pool. Transmission scans are published on the APO filter server without an open redistribution licence.",
   "licence": {
     "redistribution": "permission",
-    "terms": "\"Reproduction of any content—text, images, photographs, etc.—requires permission.\"",
+    "terms": "\"All text, images, logos and information contained on official University websites are the intellectual property of New Mexico State University unless otherwise indicated. U.S. copyright law provides protection for all content, with or without this statement. Reproduction of any content—text, images, photographs, etc.—requires permission.\"",
     "url": "https://www.nmsu.edu/copyright.html",
-    "scope": "Copyright statement for all official New Mexico State University websites; not a data licence written for the filter curves."
+    "scope": "Generic NMSU website copyright; filters.apo.nmsu.edu itself has no statement."
   },
   "references": [
     "bibcode:1976PASP...88..543T",

@@ -3,10 +3,10 @@
   "facility_description": "Subaru Telescope is an 8.2-metre optical-infrared telescope near the summit of Maunakea, Hawaiʻi, operated by the National Astronomical Observatory of Japan.",
   "notes": "The current filters page lists broad-band U, B, V, R and I, with centres and widths 3600/560, 4400/1080, 5500/1000, 6600/1170 and 8050/1460 angstroms, and says those sensitivities are preliminary as of 8/5/2010. The same centres and widths appear in the users'-guide filter list. The older imaging-sensitivity page instead labels the two red filters Rc and Ic and, in a separate conversion section, defines the AB system and gives AB-to-Johnson offsets for B, V, Rc and Ic, citing Frei & Gunn 1995, plus a Johnson-Cousins photon table referenced to Bessel (1979). That page does not say which magnitude system the FOCAS sensitivity numbers themselves use, so MagSys is omitted. The Johnson assignment is the SPIE 2000 postscript linked from the FOCAS page: the words were read from the PostScript text stream as one sentence, 'A set of standard FOCAS filters are also available for broad-band filters (Johnson's UBVRI), narrow-band filters, and order-cut filters.' The instrument page asks authors to cite Kashikawa, N., et al. 2002, PASJ, 54, 819, and check_refs resolves bibcode:2002PASJ...54..819K. The PASJ article URL returned HTTP 403, so the paper is not attached to individual bands. Bessell 1990 and Fukugita 1996 are not named on these FOCAS pages. NAOJ's copyright page allows some free uses of website works and does not clearly license redistribution of the numeric transmission tables, so the class is unknown. The acknowledgement sentence is copied from the FOCAS instrument page.",
   "licence": {
-    "redistribution": "unknown",
-    "terms": "\"The whole site and all works (text, photographs, illustrations, videos, audio files, etc.) contained in the Subaru Telescope website are owned by the National Astronomical Observatory of Japan (NAOJ) or their respective copyright holders.\"",
-    "url": "https://subarutelescope.org/Information/copyright.html",
-    "scope": "Site policy of the Subaru Telescope website (this URL redirects to https://subarutelescope.org/en/sitepolicy/); not a data licence written for the filter curves."
+    "redistribution": "attribution",
+    "terms": "\"Among works copyrighted solely by NAOJ, those that are not subject to the portrait and publicity rights of identifiable individuals can be used without prior permission within the following scope:\" … \"Academic research, education, and learning activities\" \"We only ask you to give appropriate credit whenever you use these works.\"",
+    "url": "https://www.nao.ac.jp/en/terms/copyright.html",
+    "scope": "NAOJ free-use scope; credit 'NAOJ'; site policy https://subarutelescope.org/en/sitepolicy/. The HSC M1 component comes from lsst/obs_subaru (GPL-3.0)."
   },
   "references": [
     "bibcode:2002PASJ...54..819K"

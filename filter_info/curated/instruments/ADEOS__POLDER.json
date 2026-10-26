@@ -2,6 +2,12 @@
   "description": "POLDER combines spectral, directional and polarization measurements to investigate clouds, aerosols and the biosphere. The ADEOS version used a wide-field camera with spectral filters and polarizers.",
   "facility_description": "ADEOS-I was a Japanese Earth-observation satellite carrying the first POLDER instrument developed by CNES and the University of Lille.",
   "notes": "CNES distinguishes POLDER-1/ADEOS-I, POLDER-2/ADEOS-II and POLDER-3/PARASOL. Do not apply PARASOL curve provenance to ADEOS without checking. Existing ICARE mission link failed in the web tool but returned HTTP 200 via terminal retrieval; it describes PARASOL, not ADEOS. No curve redistribution grant or requested acknowledgement found on the opened CNES page.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"© Copyright AERIS/ICARE Data and Services Center 2021\"",
+    "url": "https://www.icare.univ-lille.fr/parasol/mission/",
+    "scope": "Site footer."
+  },
   "references": [
     "doi:10.1109/36.297978"
   ],

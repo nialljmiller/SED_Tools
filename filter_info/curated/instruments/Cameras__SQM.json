@@ -45,7 +45,8 @@
   },
   "licence": {
     "redistribution": "unknown",
-    "terms": "",
-    "url": "https://arxiv.org/abs/1701.05019"
+    "terms": "\"I grant arXiv.org a perpetual, non-exclusive license to distribute this article.\"",
+    "url": "https://arxiv.org/licenses/nonexclusive-distrib/1.0/license.html",
+    "scope": "Article licence; it does not address the published numbers."
   }
 }

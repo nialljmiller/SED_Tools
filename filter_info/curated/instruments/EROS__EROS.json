@@ -4,9 +4,9 @@
   "notes": "EROS/EROS catalogs the commercial Earth observation satellite EROS-B panchromatic response curve published by imagery reseller Apollo Mapping. Terms are reserved under Apollo Mapping copyright.",
   "licence": {
     "redistribution": "permission",
-    "terms": "\"Copyright © 2026 All Rights Reserved\"",
+    "terms": "\"Copyright © 2026 All Rights Reserved\" (unverified; page 403)",
     "url": "https://apollomapping.com/about-us/whitepapers",
-    "scope": "Site-wide footer of apollomapping.com (a reseller's website); not a data licence written for the filter curves."
+    "scope": "Commercial reseller page."
   },
   "references": [
     "doi:10.5194/isprs-archives-XLI-B7-647-2016",

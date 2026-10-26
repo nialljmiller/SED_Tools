@@ -2,6 +2,12 @@
   "description": "The Advanced Along Track Scanning Radiometer (AATSR) continued the ATSR series of climate-quality sea-surface temperature measurements. Dual views and onboard calibration targets supported accurate thermal observations, with visible and near-infrared channels calibrated using sunlight.",
   "facility_description": "Envisat was an ESA Earth-observation satellite carrying AATSR and nine other instruments.",
   "notes": "Instrument description supported also by ESA Envisat instruments page. Exact NJM response source, redistribution terms and requested acknowledgement remain unresolved. General Sentinel data terms have not been applied to this pre-Sentinel mission.",
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"ESA grants permission to users to visit the sites, and to download and copy information, images, documents and materials from the websites for non-commercial use. ESA does not grant the right to resell or redistribute any information, documents, images or material from its websites or to compile or create derivative works from material on its websites.\"",
+    "url": "https://earth.esa.int/eogateway/terms-and-conditions",
+    "scope": "ESA website terms, not a data licence; same clause as SentiWiki (Sentinel-2 held); SRFs also on SVO and NWP SAF; actual upstream page unverified."
+  },
   "links": [
     {
       "url": "https://atsrsensors.org/aatsr.htm",

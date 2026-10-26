@@ -3,9 +3,10 @@
   "facility_description": "BLAST-TNG is a stratospheric balloon telescope that follows BLASTPol.",
   "notes": "The paper says 250, 350 and 500 microns. NJM's keys are 250min, 350min and 500min. The spelling min was not found on the opened abstract, so no per-band Description was attached and the keys were not renamed. bibcode:2019PhDT........69G was not opened. No requested acknowledgement was found. The only reuse terms opened for the article are the arXiv non-exclusive licence, which does not grant further reuse and says to contact the author. That is not a grant to redistribute a separate numeric curve. No magnitude system was recorded.",
   "licence": {
-    "redistribution": "permission",
-    "terms": "\"The overwhelming majority of e-prints are submitted using the arXiv perpetual non-exclusive license, which does not grant further reuse permissions directly. In these cases you will need to contact the author directly with your request.\"",
-    "url": "https://info.arxiv.org/help/license/reuse.html"
+    "redistribution": "unknown",
+    "terms": "\"I grant arXiv.org a perpetual, non-exclusive license to distribute this article.\"",
+    "url": "https://arxiv.org/licenses/nonexclusive-distrib/1.0/license.html",
+    "scope": "Article licence; it does not address the published numbers."
   },
   "references": [
     "arxiv:1409.7084"

@@ -1,4 +1,10 @@
 {
   "facility_description": "AlSat-1 was an Algerian microsatellite built using SSTL platform modules.",
-  "notes": "Owner ASAL page was opened in the web tool, but later requests timed out. The WMO instrument registry opened at https://space.oscar.wmo.int/instruments/view/slim6 describes two side-by-side three-channel VNIR radiometers for land/disaster monitoring. Instrument description withheld pending access to owner specifications or original DMC manual; the existing ESA manual URL could not be retrieved. No redistribution grant or requested acknowledgement was located. SLIM6/Disaster Monitoring Constellation has commercial participants; do not infer public rights from public download availability."
+  "notes": "Owner ASAL page was opened in the web tool, but later requests timed out. The WMO instrument registry opened at https://space.oscar.wmo.int/instruments/view/slim6 describes two side-by-side three-channel VNIR radiometers for land/disaster monitoring. Instrument description withheld pending access to owner specifications or original DMC manual; the existing ESA manual URL could not be retrieved. No redistribution grant or requested acknowledgement was located. SLIM6/Disaster Monitoring Constellation has commercial participants; do not infer public rights from public download availability.",
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"ESA grants permission to users to visit the sites, and to download and copy information, images, documents and materials from the websites for non-commercial use. ESA does not grant the right to resell or redistribute any information, documents, images or material from its websites or to compile or create derivative works from material on its websites.\"",
+    "url": "https://earth.esa.int/eogateway/terms-and-conditions",
+    "scope": "ESA website terms, not a data licence; same clause as SentiWiki (Sentinel-2 held); SRFs also on SVO and NWP SAF; actual upstream page unverified."
+  }
 }
