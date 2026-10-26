@@ -31,6 +31,24 @@
             color: #FFFFFF;
             padding: 10px;
             border: 3px outset #808080;
+            position: relative;
+            overflow: hidden;
+            touch-action: pan-y;
+        }
+
+        .header > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .header > canvas.banner-trail {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
         }
 
         .header h1 {
@@ -977,6 +995,68 @@ fetch('index.json')
             '<center style="color:red;">ERROR LOADING FILTERS</center>';
     });
 
+
+// Banner: moving the pointer across it leaves a fading ribbon striped like a spectrum,
+// red on one edge to violet on the other. Off for visitors who prefer reduced motion.
+(function bannerTrail() {
+    const header = document.querySelector('.header');
+    if (!header || !window.matchMedia || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext && canvas.getContext('2d');
+    if (!ctx) return;
+    canvas.className = 'banner-trail';
+    canvas.setAttribute('aria-hidden', 'true');
+    header.prepend(canvas);
+    const SPECTRUM = ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#00ffff', '#0080ff', '#8f00ff'];
+    const STRIPE = 3;   // px per colour
+    const FADE = 0.025; // life lost per frame (~0.7 s)
+    let points = [], frame = null;
+
+    function resize() {
+        const box = header.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+        canvas.width = Math.round(box.width * dpr);
+        canvas.height = Math.round(box.height * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        points.forEach(p => { p.life -= FADE; });
+        points = points.filter(p => p.life > 0);
+        ctx.lineCap = 'round';
+        ctx.shadowBlur = 8;
+        for (let i = 1; i < points.length; i++) {
+            const a = points[i - 1], b = points[i];
+            if (b.start) continue;
+            const dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1;
+            const nx = -dy / len, ny = dx / len;
+            ctx.globalAlpha = Math.min(a.life, b.life);
+            SPECTRUM.forEach((color, k) => {
+                const off = (k - (SPECTRUM.length - 1) / 2) * STRIPE * b.life;
+                ctx.strokeStyle = ctx.shadowColor = color;
+                ctx.lineWidth = STRIPE * b.life + 0.5;
+                ctx.beginPath();
+                ctx.moveTo(a.x + nx * off, a.y + ny * off);
+                ctx.lineTo(b.x + nx * off, b.y + ny * off);
+                ctx.stroke();
+            });
+        }
+        ctx.globalAlpha = 1;
+        frame = points.length ? requestAnimationFrame(draw) : null;
+    }
+
+    let lifted = true;
+    header.addEventListener('pointermove', event => {
+        const box = header.getBoundingClientRect();
+        if (canvas.width !== Math.round(box.width * (window.devicePixelRatio || 1))) resize();
+        points.push({x: event.clientX - box.left, y: event.clientY - box.top, life: 1, start: lifted});
+        lifted = false;
+        if (!frame) frame = requestAnimationFrame(draw);
+    });
+    header.addEventListener('pointerleave', () => { lifted = true; });
+    window.addEventListener('resize', resize);
+    resize();
+})();
 
 // Visitor counter (independent of index.json)
 fetch("counter.php")
