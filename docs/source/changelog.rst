@@ -2,6 +2,25 @@
 Changelog
 =========
 
+Unreleased
+----------
+
+Filter properties
+~~~~~~~~~~~~~~~~~
+
+- Add ``sed_tools.filter_properties`` to compute the characteristics the SVO
+  Filter Profile Service lists for a curve:
+
+  - mean, pivot, peak, central, minimum and maximum wavelengths;
+  - FWHM and effective width;
+  - Vega-weighted effective and photon wavelengths;
+  - Vega, AB and ST zero points, in f_lambda and Jy.
+
+  The pivot and zero points share the detector-aware weights of SED_Tools
+  photometry. ``curve_properties()`` and ``instrument_properties()`` read
+  filter files with their metadata. The NJM mirror serves the values
+  precomputed in ``index.json``.
+
 Version 0.4.1 (October 2026)
 ----------------------------
 

@@ -234,6 +234,24 @@ Filters.tag_detector_types()               # returns one row per file
 
 `WavelengthUnit` is read the same way. Files without it are assumed to be in Angstrom unless their reddest point is below 1000 (then nm, µm or m), with a logged warning; pass `load_filter_curve(path, wavelength_unit="nm")` when a file is ambiguous.
 
+#### Filter properties
+
+`sed_tools.filter_properties` computes the characteristics the SVO Filter Profile Service lists for a curve:
+- mean, pivot, peak, central, minimum and maximum wavelengths;
+- FWHM and effective width;
+- the Vega-weighted effective and photon wavelengths;
+- Vega, AB and ST zero points, in f_λ and in Jy.
+
+The pivot and zero points use the same detector-aware weights as SED_Tools photometry, so band-averaged f_λ and f_ν convert exactly. Definitions are in the module docstring. The NJM mirror serves these values precomputed for every published curve in `index.json`, using MESA's `vega_flam.csv` for the Vega quantities, so they match MESA colors.
+
+```python
+from sed_tools.filter_properties import instrument_properties, load_vega
+
+vega = load_vega("vega_flam.csv")                 # wavelength in Å, f_λ in erg/s/cm²/Å
+props = instrument_properties("data/filters/2MASS/2MASS", vega)
+props["Ks"]["WavelengthPivot"], props["Ks"]["ZeroPointVega_Jy"]
+```
+
 #### Filter, optics, QE and atmosphere as separate components
 
 A published passband is usually a product of several throughputs, and which ones varies: Gaia DR3 is filter + CCD + instrument, SDSS/2MASS/PS1 include the atmosphere, Johnson is the filter alone. Every filter file records what its published curve contains (`Components=filter+qe+instrument`). Where an instrument's team publishes the factors separately, SED_Tools stores them alongside and generates that instrument's throughput with and without each one. Components are never mixed between instruments or sites: an instrument is only ever composed from its own filter, optics and QE, and only its own site's atmosphere.
