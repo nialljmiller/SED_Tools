@@ -571,6 +571,14 @@ def _where(items: Optional[List[str]]) -> Dict[str, object]:
     return criteria
 
 
+_UNSTATED = "unstated"
+
+
+def _airmass_arg(text):
+    """An airmass, or 'unstated' for an atmosphere published without one."""
+    return _UNSTATED if str(text).strip().lower() == _UNSTATED else float(text)
+
+
 def _add_filter_product_options(parser, *, components=None):
     """Keep filter fetch and composition options identical."""
     parser.add_argument("--base", default=str(FILTER_DIR_DEFAULT), help="Base filter directory")
@@ -579,8 +587,12 @@ def _add_filter_product_options(parser, *, components=None):
     parser.add_argument("--bands", nargs="+", help="Compose only these bands")
     parser.add_argument("--detector-type", choices=["energy", "photon"],
                         help="Override integration weighting in a derived copy; preserves published curves")
-    parser.add_argument("--airmass", type=float, help="Add the instrument's own-site atmosphere")
+    parser.add_argument("--airmass", type=_airmass_arg,
+                        help="Add the instrument's own-site atmosphere at this airmass ('unstated' for a "
+                             "team atmosphere whose source gives none)")
     parser.add_argument("--pwv", type=float, help="Atmospheric precipitable water vapour (mm)")
+    parser.add_argument("--atmosphere-site",
+                        help="One of the instrument's own atmosphere sites (default: its default site)")
     parser.add_argument("--allow-heavy", action="store_true", help="Permit large original-source downloads")
     parser.add_argument("--allow-partial", action="store_true", help="Use zero outside component wavelength coverage")
 
@@ -610,14 +622,21 @@ def _offer_composition(instrument_dir: Path) -> None:
     allow_heavy = bool(review["large_download"] and
                        input("Allow a large original-source download if needed? [y/N] ").strip().lower().startswith("y"))
     atmosphere = None
-    if can_atm and input(f"Fold in the atmosphere at {info['atmosphere_site']}? [y/N] ").strip().lower().startswith("y"):
-        grid = Filters.atmospheres(filter_root=instrument_dir.parent.parent).get(info["atmosphere_site"])
+    sites = info.get("atmosphere_sites") or ([info["atmosphere_site"]] if info["atmosphere_site"] else [])
+    if can_atm and sites and input(
+            f"Fold in the atmosphere ({', '.join(sites)})? [y/N] ").strip().lower().startswith("y"):
+        site = info["atmosphere_site"] or sites[0]
+        if len(sites) > 1:
+            site = input(f"Site [{site}]: ").strip() or site
+        grid = Filters.atmospheres(filter_root=instrument_dir.parent.parent).get(site)
         if grid:
-            print(f"  airmass {grid['airmass']}" + (f", pwv {grid['pwv']} mm" if grid["pwv"] else ""))
+            print(f"  airmass {grid['airmass']}" + (f", pwv {grid['pwv']} mm" if grid["pwv"] else "")
+                  + (" or 'unstated' (as published)" if grid.get("unstated_airmass") else ""))
         try:
-            airmass = float(input("Airmass [1.2]: ").strip() or 1.2)
+            airmass = _airmass_arg(input("Airmass [1.2]: ").strip() or 1.2)
             pwv_txt = input("PWV mm (blank if not applicable): ").strip() if not grid or grid["pwv"] else ""
-            atmosphere = {"airmass": airmass, "pwv": float(pwv_txt) if pwv_txt else None}
+            atmosphere = {"site": site, "airmass": None if airmass == _UNSTATED else airmass,
+                          "pwv": float(pwv_txt) if pwv_txt else None}
         except ValueError:
             print("Airmass and PWV must be numbers.")
             return
@@ -1105,11 +1124,14 @@ def main():
 
     fbp = sub.add_parser("filters-build-components",
                          help="(Mirror curation) populate components/atmospheres from a published source")
-    fbp.add_argument("source", help="Component source (lsst, hst, jwst, hsc, decam, vista, ztf, tabular, skycalc, argus) or 'all'")
+    fbp.add_argument("source", help="Component source (lsst, hst, jwst, hsc, decam, vista, ztf, tabular, skycalc, "
+                                    "team_atmospheres, argus) or 'all'")
     fbp.add_argument("--base", default=str(FILTER_DIR_DEFAULT), help="Base filter directory")
     fbp.add_argument("--raw", default=None, help="Raw input directory (source specific)")
     fbp.add_argument("--instrument", help="Instrument for a shared tabular source (HAWKI, NACO, SPHERE, GSAOI or NIFS)")
-    fbp.add_argument("--sites", nargs="+", default=None, help="SkyCalc sites")
+    fbp.add_argument("--sites", nargs="+", default=None, help="SkyCalc or team atmosphere sites")
+    fbp.add_argument("--archive", default=None,
+                     help="Keep every raw download here with its URL, time and SHA-256 (skycalc, team_atmospheres)")
     fbp.add_argument("--airmass", nargs="+", type=float, default=None, help="SkyCalc airmass grid")
     fbp.add_argument("--pwv", nargs="+", type=float, default=None, help="SkyCalc PWV grid (mm)")
 
@@ -1222,13 +1244,19 @@ def main():
 
         if not args.target:
             if any((args.components, args.bands, args.detector_type, args.airmass is not None,
-                    args.pwv is not None, args.allow_heavy, args.allow_partial)):
+                    args.pwv is not None, args.atmosphere_site, args.allow_heavy, args.allow_partial)):
                 parser.error("component options require a Facility/Instrument target")
             run_filters_flow(base_dir=args.base)
             return 0
         if args.pwv is not None and args.airmass is None:
             parser.error("--pwv needs --airmass")
-        atmosphere = {"airmass": args.airmass, "pwv": args.pwv} if args.airmass is not None else None
+        if args.atmosphere_site and args.airmass is None:
+            parser.error("--atmosphere-site needs --airmass (a number, or 'unstated')")
+        atmosphere = None
+        if args.airmass is not None:
+            atmosphere = {"airmass": None if args.airmass == _UNSTATED else args.airmass, "pwv": args.pwv}
+            if args.atmosphere_site:
+                atmosphere["site"] = args.atmosphere_site
         options = dict(filter_root=args.base, components=args.components, atmosphere=atmosphere,
                        bands=args.bands, detector_type=args.detector_type,
                        allow_heavy=args.allow_heavy, allow_partial=args.allow_partial)
@@ -1385,6 +1413,8 @@ def main():
             kwargs["airmasses"] = args.airmass
         if args.pwv:
             kwargs["pwvs"] = args.pwv
+        if args.archive:
+            kwargs["archive_dir"] = args.archive
         print(f"[filters] Built {builder(args.base, **kwargs)}")
     elif args.cmd == "rebuild":
         run_rebuild_flow(

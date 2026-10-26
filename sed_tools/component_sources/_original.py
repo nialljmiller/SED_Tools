@@ -188,6 +188,11 @@ class Instrument:
     ground_based: bool
     components: Sequence[Component] = ()
     outside_range: str = "zero"
+    #: Atmospheres the team published (``_common.SiteAtmosphere``), written as
+    #: named sites; ``default_site`` (one of them, or a SkyCalc site) is the
+    #: one composition uses when none is named.
+    sites: Sequence["SiteAtmosphere"] = ()
+    default_site: Optional[str] = None
 
 
 Recipe = Callable[[Fetcher], Instrument]
@@ -196,12 +201,27 @@ Recipe = Callable[[Fetcher], Instrument]
 # --------------------------------------------------------------------------
 # Writing
 # --------------------------------------------------------------------------
-def write_instrument(filter_root: Union[str, Path], spec: Instrument) -> Path:
+def write_instrument(filter_root: Union[str, Path], spec: Instrument, *,
+                     atmosphere_root: Union[str, Path, None] = None, session=None) -> Path:
     """Write the published curves, index, components and manifest of ``spec``.
 
     Existing published ``.dat`` files and MESA index files are kept as they
-    are; only missing curves are written.
+    are; only missing curves are written.  The team's atmospheres
+    (``spec.sites``) are written under ``atmosphere_root`` (default
+    ``<filter_root>/../atmospheres``) before anything else, so a failed
+    download leaves the instrument untouched.
     """
+    if spec.sites:
+        from ._common import write_site
+
+        if session is None:
+            import requests
+
+            session = requests.Session()
+            session.headers["User-Agent"] = USER_AGENT
+        root = Path(atmosphere_root) if atmosphere_root else Path(filter_root).parent / "atmospheres"
+        for site in spec.sites:
+            write_site(root, site, session)
     names = [b.name for b in spec.bands]
     if len({n.lower() for n in names}) != len(names):
         raise ValueError(f"{spec.facility}/{spec.instrument}: duplicate band names {names}")
@@ -233,6 +253,10 @@ def write_instrument(filter_root: Union[str, Path], spec: Instrument) -> Path:
                       name=c.name, source=c.source, manifest=manifest)
     manifest.notes = spec.notes
     manifest.outside_range = spec.outside_range
+    if spec.sites or spec.default_site:
+        from ._common import register_sites
+
+        register_sites(manifest, spec.default_site, spec.sites)
     manifest.detector_type_sources = {b.name: b.detector_source for b in spec.bands}
     for b in spec.bands:
         manifest.sources.setdefault("published", b.sources.split(" | ")[0])
@@ -243,7 +267,8 @@ def write_instrument(filter_root: Union[str, Path], spec: Instrument) -> Path:
 def make_builder(recipes: Mapping[str, Tuple[str, Recipe]]):
     """``build(filter_root, *, instrument, session=None)`` for one source module."""
 
-    def build(filter_root, *, instrument, session=None, facility=None, **_ignored) -> Path:
+    def build(filter_root, *, instrument, session=None, facility=None, atmosphere_root=None,
+              **_ignored) -> Path:
         try:
             fac, recipe = recipes[instrument]
         except KeyError:
@@ -251,10 +276,11 @@ def make_builder(recipes: Mapping[str, Tuple[str, Recipe]]):
                              f"available: {sorted(recipes)}") from None
         if facility is not None and facility != fac:
             raise ValueError(f"{instrument} belongs to {fac}, not {facility}")
-        spec = recipe(Fetcher(session))
+        fetcher = Fetcher(session)
+        spec = recipe(fetcher)
         if (spec.facility, spec.instrument) != (fac, instrument):
             raise RuntimeError(f"recipe for {fac}/{instrument} built {spec.facility}/{spec.instrument}")
-        return write_instrument(filter_root, spec)
+        return write_instrument(filter_root, spec, atmosphere_root=atmosphere_root, session=fetcher.session)
 
     return build
 

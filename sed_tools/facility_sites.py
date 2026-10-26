@@ -9,7 +9,7 @@ grabbers (``Bepi_Colombo`` for ``Bepi-Colombo``) match.
 from __future__ import annotations
 
 import re
-from typing import Optional
+from typing import Optional, Tuple
 
 GROUND, SPACE, AIRBORNE = "ground", "space", "airborne"
 
@@ -78,3 +78,28 @@ _SITE_OF = {_key(name): site for site, names in _OWN_SITES.items() for name in n
 def own_site(facility: str) -> Optional[str]:
     """The atmosphere site a facility actually observes from, if we model it."""
     return _SITE_OF.get(_key(facility))
+
+
+#: Standard atmospheres published by an instrument's own team, registered as
+#: named sites (built by ``component_sources.team_atmospheres``).  They are
+#: offered next to the instrument's ``default_site``; the first one is the
+#: default when the manifest has none.  An instrument is listed only when the
+#: atmosphere describes the location it observed from; instruments that moved
+#: between sites (GPI, GNIRS) are deliberately absent.
+_INSTRUMENT_SITES = {
+    ("PAN-STARRS", "PS1"): ("haleakala_ps1",),
+    ("Paranal", "VISTA"): ("paranal_vircam",),
+    ("2MASS", "2MASS"): ("hopkins_2mass", "ctio_2mass"),
+    ("SLOAN", "SDSS"): ("apo_sdss",),
+    ("BOK", "BASS"): ("kpno_bass",),
+    ("LCO", "CSP"): ("lco_csp",),
+    ("Gemini", "NIFS"): ("maunakea_gemini",),
+    ("Gemini", "GSAOI"): ("cpachon_gemini",),
+    ("Gemini", "Flamingos2"): ("cpachon_gemini",),
+}
+_SITES_OF = {(_key(f), _key(i)): sites for (f, i), sites in _INSTRUMENT_SITES.items()}
+
+
+def instrument_sites(facility: str, instrument: str) -> Tuple[str, ...]:
+    """Team atmosphere sites registered for one instrument (may be empty)."""
+    return _SITES_OF.get((_key(facility), _key(instrument)), ())
