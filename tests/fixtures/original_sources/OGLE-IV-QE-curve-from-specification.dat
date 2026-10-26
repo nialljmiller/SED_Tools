@@ -1,0 +1,15 @@
+# Quantum efficiency curve for
+# e2v CCD44-82 with Astro Process Broadband Coating
+# from the manufacturer's manual
+# This kind of chips are used in OGLE-IV camera
+# however the true measured QEs differ from those
+#
+#    1        2
+# Angstroms  QE
+#
+3032.08   0.401664
+3770.37    0.72505
+4912.01   0.839885
+6561.05   0.773228
+8171.76   0.669283
+9383.67   0.332367
