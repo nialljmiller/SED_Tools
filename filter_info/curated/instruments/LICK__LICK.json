@@ -1,0 +1,34 @@
+{
+  "description": "Filters of the Lick Observatory (Mount Hamilton) filter collection: narrow-, medium- and broad-band filters kept at the 3-meter and 1-meter telescopes and available for borrowing (Mount Hamilton Filter List). The curves are the measured transmission tables published by the observatory (techdocs/filters/data/); the broad filters 3300_1150, 3500_800, 3600_600, 4000_650 and 7400hp are labelled 'Measured December 2010 at UCSC' and cover 200-2000 nm. B, V, R, I and Rs come from the observatory's 'Transmission tables for our B, V, R, I, and Rs filters' (phot_filt_curves.html), whose values 'were read off by eye i(not ours) from spectrophotometer tracings' [sic] (owner's caveat: 'We do not guarantee their accuracy.'); the page says the BVRI filters 'were made according to the prescription given by Bessel (PASP 1990, 102, 1181)' and Rs 'is the Spinrad night-sky suppression filter'.",
+  "facility_description": "Lick Observatory on Mount Hamilton, California (University of California Observatories / Lick Observatory, as headed on the filter-list page).",
+  "links": [
+    {
+      "url": "https://mthamilton.ucolick.org/techdocs/filters/filterlist.html",
+      "label": "Mount Hamilton Filter List: General Information (host not responding 26 Oct 2026; Internet Archive capture 2026-06-06)",
+      "source": "UC Observatories / Lick Observatory"
+    },
+    {
+      "url": "https://web.archive.org/web/2015*/mthamilton.ucolick.org/techdocs/filters/data/*",
+      "label": "Internet Archive captures of the Lick filter data files",
+      "source": "Internet Archive"
+    },
+    {
+      "url": "https://mthamilton.ucolick.org/techdocs/filters/phot_filt_curves.html",
+      "label": "Lick: Transmission tables for our B, V, R, I, and Rs filters (Internet Archive capture 2002-08-30)",
+      "source": "UC Observatories / Lick Observatory"
+    }
+  ],
+  "references": [
+    "doi:10.1086/132749"
+  ],
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "No terms of use are stated on the Lick filter pages fetched (https://mthamilton.ucolick.org/techdocs/filters/filterlist.html, Internet Archive capture 20260606171304) or in the data files. The page says: \"The values given are generally those provided by the manufacturer.\" and \"The majority belong to individual astronomers within the UC system who generously make them available to the rest of us.\"",
+    "url": "https://mthamilton.ucolick.org/techdocs/filters/filterlist.html",
+    "scope": "Observatory technical pages; no licence statement found. Hosted under Nill's 2026-10-26 'host everything' decision."
+  },
+  "acknowledgements": [],
+  "bands": {},
+  "evidence": [],
+  "notes": "Owner host mthamilton.ucolick.org timed out on 26 Oct 2026 (http and https); each data file is a single Internet Archive id_ capture (timestamps in the band Sources and in R7/X4/downloads/LICK/cdx_*.txt). Wavelengths in Angstrom (2010 UCSC files converted from nm, % to fraction). The 2010 broad-band files include the measured infrared transmission to 2000 nm (e.g. 4000_650 rises to 57 % at 2000 nm); SVO's copies stop near 750 nm, so pivot wavelengths differ from SVO for these bands. DetectorType photon assumed; filter transmission only."
+}

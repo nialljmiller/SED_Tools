@@ -1,0 +1,40 @@
+{
+  "description": "ISOPHOT PHT-P multi-band photometer: relative system responses of the 14 filters of detectors P1 (Si:Ga, 3.3-16 micron), P2 (Si:B, 20 and 25 micron) and P3 (Ge:Ga, 60 and 100 micron), from the ISO Handbook Vol. IV.",
+  "facility_description": "The Infrared Space Observatory (ISO) was an ESA infrared space telescope; ISOPHOT, the Imaging Photo-Polarimeter, was one of its four instruments (ISO Handbook Vol. IV: 'PHT - The Imaging Photo-Polarimeter', Laureijs, Klaas, Richards, Schulz & Abraham, ESA SP-1262, Version 2.0.1, June 2003; ISOPHOT Instrument Consortium, PI D. Lemke, MPI Astronomie, Heidelberg).",
+  "links": [
+    {
+      "url": "http://iso.esac.esa.int/manuals/HANDBOOK/pht_hb/pht_hb.pdf",
+      "label": "The ISO Handbook, Volume IV: PHT (ESA SP-1262), Appendix A.2 Filter Transmission Data",
+      "source": "ESA ISO Data Centre"
+    },
+    {
+      "url": "https://www.cosmos.esa.int/web/iso/iso-handbook",
+      "label": "ISO Handbook (ESA Cosmos)",
+      "source": "ESA"
+    },
+    {
+      "url": "https://ui.adsabs.harvard.edu/abs/1996A&A...315L..64L",
+      "label": "Lemke D., Klaas U., Abolins J. et al. 1996, ISOPHOT - capabilities and performance, A&A 315, L64",
+      "source": "ADS"
+    }
+  ],
+  "references": [],
+  "acknowledgements": [
+    {
+      "for": "ESA Infrared Space Observatory (ISO)",
+      "text": "Credit: ESA",
+      "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ],
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "ESA Space Science Archives, Terms and Conditions (https://www.cosmos.esa.int/web/esdc/terms-and-conditions): \"Terms and Conditions for the use of data in the ESA Space Science Archives Data hosted in the ESA Space Science Archives are distributed under the CC BY-NC 3.0 IGO licence. Access to, and use of, these data constitute acceptance by you (hereinafter the User) of the following Terms and Conditions: Raw and Calibrated Data (hereafter Data) deriving from satellites flown in the framework of an Agency Programme and contained in the ESA Space Science Archives, as well as analysed data and higher-level science products (hereafter Data Products) contained in the ESA Space Science Archives, are open and free to use by the User subject to proper acknowledgment to be given in accordance with the credit lines provided below. Prior to any commercial use by the User of any Data or Data Product, including any use or application that directly or indirectly generates a financial gain, a detailed request for authorisation/licence shall be made by the User by sending email to data.licences@esa.int . The User shall not use Data or Data Products to state or imply the endorsement by ESA or by any ESA employee of a commercial product, service, or activity, or used in any misleading manner. ESA does not provide any warranties to the User with respect to the accuracy of information contained in Data and/or Data Products nor that such Data or Data Product are suitable for the required use. ESA does not indemnify, hold harmless, nor release the User of any Data or Data Products from copyright infringement, nor grant exclusive rights to use with respect to Data or Data Products. ESA assumes no liability in respect of the use of Data and Data Products, contained in the ESA Science Archives and shall be held harmless for any and all direct and indirect alleged damages deriving from access to or use of such Data and Data Products. Without any prejudice to the ESA Convention , especially its Annex I on Privileges and Immunities, these Terms and Conditions shall be governed and interpreted in accordance with the laws of France. Any dispute arising out of, or in connection with these Terms and Conditions that cannot be settled amicably within thirty days from the notification of the dispute by one party to the other shall be finally settled under the Rules of Arbitration of the International Chamber of Commerce by an arbitrator appointed in accordance with the said Rules. The language of arbitration shall be English. The place of arbitration shall be Paris, France. The Terms and Conditions for the use of data in the ESA Space Science Archives require users to acknowledge ESA and other providers of the data by means of mission-specific credit lines as indicated below.\" Credit line for ISO: \"ISO All Credit: ESA, Name of Proposal PI\".",
+    "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
+    "scope": "Terms for data in the ESA Space Science Archives (CC BY-NC 3.0 IGO, non-commercial; commercial use needs authorisation from data.licences@esa.int). The curves here are read from figures of the ISO Handbook Vol. IV PDF, which itself carries no copyright statement; no other terms were found on the ISO pages fetched. Hosted under Nill's 2026-10-26 'host everything' decision."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "Curves read from the vector figures (Figures A.1-A.6, PDF pages 248-251) of the ISO Handbook Vol. IV Appendix A.2: each curve is the plotted polyline (no smoothing or resampling), mapped to wavelength and response with the axis tick labels (fit residual <= 0.01 % of the axis span). The handbook's numeric Cal-G tables PPFILTRAN/PCFILTRAN (Sect. 14.24) are not publicly downloadable. Response scale is the handbook's 'System Response' (filter and field lens transmission x relative detector response). Pivot wavelengths agree with SVO's ISO/PHT-* copies within 0.04 %. DetectorType energy from the handbook's in-band power definition (Appendix C.2.1, Eq. C.2)."
+}

@@ -1,0 +1,35 @@
+{
+  "description": "ISOCAM, the ISO camera: spectral transmission R = T x Q (filter transmission x detector quantum efficiency) of the 11 short-wave (SW1-SW11) and 10 long-wave (LW1-LW10) broad-band filters, from the ISO Handbook Vol. II (CAM), Appendix A, Figures A.1 and A.2.",
+  "facility_description": "The Infrared Space Observatory (ISO) was an ESA infrared space telescope; ISOCAM was its camera (ISO Handbook Vol. II: 'CAM - The ISO Camera', Blommaert, Siebenmorgen, Coulais et al., ESA SP-1262, SAI-99-057/Dc Version 2.0, June 2003).",
+  "links": [
+    {
+      "url": "http://iso.esac.esa.int/manuals/HANDBOOK/cam_hb/cam_hb.pdf",
+      "label": "The ISO Handbook, Volume II: CAM (ESA SP-1262), Appendix A Colour Corrections, Figures A.1-A.2",
+      "source": "ESA ISO Data Centre"
+    },
+    {
+      "url": "https://www.cosmos.esa.int/web/iso/iso-handbook",
+      "label": "ISO Handbook (ESA Cosmos)",
+      "source": "ESA"
+    }
+  ],
+  "references": [],
+  "acknowledgements": [
+    {
+      "for": "ESA Infrared Space Observatory (ISO)",
+      "text": "Credit: ESA",
+      "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ],
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "ESA Space Science Archives, Terms and Conditions (https://www.cosmos.esa.int/web/esdc/terms-and-conditions): \"Terms and Conditions for the use of data in the ESA Space Science Archives Data hosted in the ESA Space Science Archives are distributed under the CC BY-NC 3.0 IGO licence. Access to, and use of, these data constitute acceptance by you (hereinafter the User) of the following Terms and Conditions: Raw and Calibrated Data (hereafter Data) deriving from satellites flown in the framework of an Agency Programme and contained in the ESA Space Science Archives, as well as analysed data and higher-level science products (hereafter Data Products) contained in the ESA Space Science Archives, are open and free to use by the User subject to proper acknowledgment to be given in accordance with the credit lines provided below. Prior to any commercial use by the User of any Data or Data Product, including any use or application that directly or indirectly generates a financial gain, a detailed request for authorisation/licence shall be made by the User by sending email to data.licences@esa.int . The User shall not use Data or Data Products to state or imply the endorsement by ESA or by any ESA employee of a commercial product, service, or activity, or used in any misleading manner. ESA does not provide any warranties to the User with respect to the accuracy of information contained in Data and/or Data Products nor that such Data or Data Product are suitable for the required use. ESA does not indemnify, hold harmless, nor release the User of any Data or Data Products from copyright infringement, nor grant exclusive rights to use with respect to Data or Data Products. ESA assumes no liability in respect of the use of Data and Data Products, contained in the ESA Science Archives and shall be held harmless for any and all direct and indirect alleged damages deriving from access to or use of such Data and Data Products. Without any prejudice to the ESA Convention , especially its Annex I on Privileges and Immunities, these Terms and Conditions shall be governed and interpreted in accordance with the laws of France. Any dispute arising out of, or in connection with these Terms and Conditions that cannot be settled amicably within thirty days from the notification of the dispute by one party to the other shall be finally settled under the Rules of Arbitration of the International Chamber of Commerce by an arbitrator appointed in accordance with the said Rules. The language of arbitration shall be English. The place of arbitration shall be Paris, France. The Terms and Conditions for the use of data in the ESA Space Science Archives require users to acknowledge ESA and other providers of the data by means of mission-specific credit lines as indicated below.\" Credit line for ISO: \"ISO All Credit: ESA, Name of Proposal PI\".",
+    "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
+    "scope": "Terms for data in the ESA Space Science Archives (CC BY-NC 3.0 IGO, non-commercial; commercial use needs authorisation from data.licences@esa.int). The curves here are read from figures of the ISO Handbook Vol. II PDF, which itself carries no copyright statement; no other terms were found on the ISO pages fetched. Hosted under Nill's 2026-10-26 'host everything' decision."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "Curves read from the vector figures A.1 (SW) and A.2 (LW) on PDF page 114 of the ISO Handbook Vol. II: IDL plots whose labels are stroked lines, so the x-axis end values of each panel were read from the rendered page and checked against the positions of the major tick marks in code; the y axis is 0-1 between the frame edges. Each curve is the plotted polyline (no smoothing or resampling). The handbook says the numeric curves are in the CAL-G files CCGSWSPEC/CCGLWSPEC, which are not publicly downloadable. Pivot wavelengths agree with SVO's ISO/ISO.* copies within 0.02 %, except LW1 (+0.48 %) whose curve agrees with SVO's point by point; the difference is in SVO's recorded pivot. DetectorType photon from the handbook's colour correction (Eq. A.1 weights R(lambda) by lambda). ISOCAM CVF curves are not in the handbook in numeric or vector form and are not built here."
+}

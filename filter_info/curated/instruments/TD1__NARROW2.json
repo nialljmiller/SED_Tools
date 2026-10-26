@@ -1,0 +1,46 @@
+{
+  "description": "Nine 110 A wide narrow passbands of the TD1 S2/68 spectrophotometer, centred at 1455, 1565, 1675, 1855, 1965, 2075, 2255, 2365 and 2475 A, used by Carnochan (1982) (group (2) of the II/91 ReadMe; its prose says 2465A, its byte table and IWAVE data say 2475).",
+  "facility_description": "TD1 (ESRO TD-1A) carried the S2/68 Ultraviolet Sky Survey Telescope (UVSST), which measured the absolute ultraviolet flux distribution between 2740 A and 1350 A; the first observation period lasted from 19 March 1972 to 31 October 1972 (CDS III/39A ReadMe). The experiment is described by Boksenberg et al. (1973).",
+  "links": [
+    {
+      "url": "https://cdsarc.cds.unistra.fr/ftp/II/91/ReadMe",
+      "label": "CDS II/91 ReadMe: Intrinsic Colours of Stars in the Ultraviolet (Carnochan 1982), passband centres and widths",
+      "source": "CDS"
+    },
+    {
+      "url": "https://cdsarc.cds.unistra.fr/ftp/II/59B/ReadMe",
+      "label": "CDS II/59B ReadMe: Catalogue of stellar UV fluxes (TD1) (Thompson+ 1978)",
+      "source": "CDS"
+    },
+    {
+      "url": "https://cdsarc.cds.unistra.fr/ftp/II/86/ReadMe",
+      "label": "CDS II/86 ReadMe: Supplement to the UVBS Photometric Catalogue (2740 A photometer passband)",
+      "source": "CDS"
+    }
+  ],
+  "references": [
+    "bibcode:1982MNRAS.201.1139C",
+    "bibcode:1973MNRAS.163..291B",
+    "doi:10.26093/cds/vizier"
+  ],
+  "acknowledgements": [
+    {
+      "for": "VizieR catalogue access tool (CDS)",
+      "text": "This research has made use of the VizieR catalogue access tool, CDS, Strasbourg, France (DOI : 10.26093/cds/vizier). The original description of the VizieR service was published in 2000, A&AS 143, 23",
+      "url": "https://cds.unistra.fr/vizier-org/licences_vizier.html",
+      "references": [
+        "doi:10.26093/cds/vizier"
+      ],
+      "applies_to": "all bands"
+    }
+  ],
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "Rules of usage of VizieR data, section 'Licence' (https://cds.unistra.fr/vizier-org/licences_vizier.html): \"The VizieR Information System provides a standardized description of astronomical catalogues, and generally a free access to the data contained therein, essentially dedicated to a scientific usage. The data retrieved with VizieR are free of usage in a scientific context ; however, as it is the usage in scientific publication, the original authors and publication references including the publisher have to be explicitely cited (see section Code of conduct of scientific research ). An acknowledgment of the usage of VizieR, as described below , would be appreciated. The commercial usage of the data is subject to rules depending of the origin (see section How to search Copyright information ). The Information system including the metadata is private and reserved to the CDS.\"",
+    "url": "https://cds.unistra.fr/vizier-org/licences_vizier.html",
+    "scope": "Site-wide VizieR usage rules for catalogue data retrieved from CDS; the passband definitions used here are published in the II/91 ReadMe. Hosted under Nill's 2026-10-26 'host everything' decision."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "Constructed from the published specification: rectangles of the centres (IWAVE) and widths (IWIDTH) given by Carnochan (1982) in the CDS II/91 ReadMe; no measured response of these synthetic bands is published numerically. Pivots agree with the SVO copies within 0.002 %. DetectorType energy assumed (bands are mean absolute fluxes F_lambda)."
+}
