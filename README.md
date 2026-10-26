@@ -252,6 +252,20 @@ props = instrument_properties("data/filters/2MASS/2MASS", vega)
 props["Ks"]["WavelengthPivot"], props["Ks"]["ZeroPointVega_Jy"]
 ```
 
+`sed_tools.filter_colors` gives each band a colour for plotting, computed from its curve rather than guessed from its name:
+- **Mostly-visible bands** (at least half the throughput between 380 and 750 nm) get their true colour: daylight (CIE D65) seen through the curve, using the CIE 1931 colour-matching functions shipped with the package.
+- **Ultraviolet and infrared bands** get false colours in wavelength order. Next to visible bands they continue bluer or redder; in an all-infrared or all-ultraviolet instrument they span a rainbow shifted toward that regime.
+
+NJM serves the colours in `properties.json` (`DisplayColor`), and its website plots each instrument's curves with them.
+
+```python
+from pathlib import Path
+from sed_tools.filter_colors import instrument_colors
+
+colors = instrument_colors(sorted(Path("data/filters/2MASS/2MASS").glob("*.dat")))
+colors["J"]["DisplayColor"]                       # "#6cee2b"
+```
+
 #### Filter, optics, QE and atmosphere as separate components
 
 A published passband is usually a product of several throughputs, and which ones varies: Gaia DR3 is filter + CCD + instrument, SDSS/2MASS/PS1 include the atmosphere, Johnson is the filter alone. Every filter file records what its published curve contains (`Components=filter+qe+instrument`). Where an instrument's team publishes the factors separately, SED_Tools stores them alongside and generates that instrument's throughput with and without each one. Components are never mixed between instruments or sites: an instrument is only ever composed from its own filter, optics and QE, and only its own site's atmosphere.
