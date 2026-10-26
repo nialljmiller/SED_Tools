@@ -1,0 +1,43 @@
+{
+  "description": "OmegaCAM is the 32-CCD, one-square-degree imager on the VLT Survey Telescope. The two bands without an SVO record are the segmented Johnson B and V coloured-glass filters.",
+  "facility_description": "The VLT Survey Telescope is the 2.6 m survey telescope at ESO's Paranal Observatory, and OmegaCAM is its camera.",
+  "links": [
+    {
+      "url": "https://www.eso.org/sci/facilities/paranal/instruments/omegacam/inst.html",
+      "label": "OmegaCAM instrument description",
+      "source": "ESO"
+    },
+    {
+      "url": "https://www.eso.org/sci/facilities/paranal/instruments/omegacam/tools/OmegaCAM_transmission.tar.gz",
+      "label": "OmegaCAM transmission archive",
+      "source": "ESO"
+    }
+  ],
+  "references": [
+    "doi:10.1117/12.456694",
+    "bibcode:1990PASP..102.1181B"
+  ],
+  "notes": "The instrument page lists Sloan ugriz, Johnson B and V, a Stromgren v, H-alpha mosaics and a calibration filter. Johnson B and V are coloured glass and segmented (comment code CG,S); the page's cross-shaped vignetting note applies to them. Lambda and DLambda are 440 and 100 for B, and 550 and 100 for V. The page does not label those units. Footnote a says DLambda is the FWHM of filter throughput times mean CCD QE. Footnote b gives April/May 2011 commissioning zeropoints in ADU and does not name Vega or AB, so MagSys is left unset. Kuijken 2011, The Messenger 146, 8 and Kuijken et al. 2002, The Messenger 110, 15 did not resolve in check_refs. Deul, Kuijken & Valentijn 2002 is the SPIE camera paper that did resolve. Bessell 1990 is the UBVRI passband paper, not the source of these lab scans.",
+  "bands": {
+    "B_JOHN": {
+      "Description": "OmegaCAM Johnson B",
+      "PhotSystem": "Johnson",
+      "Band": "B",
+      "Comments": "Segmented coloured-glass filter. ESO table: system Johnson, Lambda 440, DLambda 100, P2PP ID B_JOHN. The transmission file is the centre-of-segment scan times CCD QE in OmegaCAM_transmission.tar.gz.",
+      "references": [
+        "doi:10.1117/12.456694",
+        "bibcode:1990PASP..102.1181B"
+      ]
+    },
+    "V_JOHN": {
+      "Description": "OmegaCAM Johnson V",
+      "PhotSystem": "Johnson",
+      "Band": "V",
+      "Comments": "Segmented coloured-glass filter. ESO table: system Johnson, Lambda 550, DLambda 100, P2PP ID V_JOHN.",
+      "references": [
+        "doi:10.1117/12.456694",
+        "bibcode:1990PASP..102.1181B"
+      ]
+    }
+  }
+}

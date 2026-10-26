@@ -1,0 +1,90 @@
+{
+  "description": "MOSFIRE is the cryogenic multi-object spectrometer and imager at the Cassegrain focus of Keck I. It images and takes spectra from 0.97 to 2.41 μm. Y, J, H and Ks are the imaging filters; K is the wide spectroscopic order sorter; J2, J3, H1 and H2 are intermediate bands.",
+  "facility_description": "The W. M. Keck Observatory operates the two 10 m Keck telescopes on Maunakea. MOSFIRE is on Keck I.",
+  "links": [
+    {
+      "url": "https://www2.keck.hawaii.edu/inst/mosfire/filters.html",
+      "label": "MOSFIRE filters",
+      "source": "Keck"
+    },
+    {
+      "url": "https://www2.keck.hawaii.edu/inst/mosfire/",
+      "label": "MOSFIRE home",
+      "source": "Keck"
+    }
+  ],
+  "references": [
+    "doi:10.1117/12.924794"
+  ],
+  "notes": "Central wavelengths and FWHMs are from the Keck MOSFIRE filter page, which also links the ASCII transmission files. The page does not identify the filters with the Mauna Kea Observatories set, so that photometric-system paper is not cited. McLean et al. 2012, Proc. SPIE 8446, is the as-built instrument paper and describes the order-sorting filters. The detector is a Teledyne HAWAII-2RG. No magnitude system is stated on the filter page. The winter 2012 Keck newsletter states which filters are for imaging and which for spectroscopy.",
+  "bands": {
+    "Y": {
+      "Description": "MOSFIRE Y",
+      "Band": "Y",
+      "Comments": "Keck filter page: central wavelength 1.048 μm, FWHM 0.152 μm. Order-sorting filter, also used for imaging.",
+      "references": [
+        "doi:10.1117/12.924794"
+      ]
+    },
+    "J": {
+      "Description": "MOSFIRE J",
+      "Band": "J",
+      "Comments": "Keck filter page: central wavelength 1.253 μm, FWHM 0.200 μm. Order-sorting filter, also used for imaging. The filter page notes that J2 covers a region J does not.",
+      "references": [
+        "doi:10.1117/12.924794"
+      ]
+    },
+    "H": {
+      "Description": "MOSFIRE H",
+      "Band": "H",
+      "Comments": "Keck filter page: central wavelength 1.637 μm, FWHM 0.341 μm. Order-sorting filter, also used for imaging.",
+      "references": [
+        "doi:10.1117/12.924794"
+      ]
+    },
+    "K": {
+      "Description": "MOSFIRE K",
+      "Band": "K",
+      "Comments": "Keck filter page: central wavelength 2.162 μm, FWHM 0.483 μm. Wide K filter. The Keck filter page says it is not intended for imaging.",
+      "references": [
+        "doi:10.1117/12.924794"
+      ]
+    },
+    "Ks": {
+      "Description": "MOSFIRE Ks",
+      "Band": "Ks",
+      "Comments": "Keck filter page: central wavelength 2.147 μm, FWHM 0.314 μm. Ks imaging filter. The Keck newsletter (winter 2012) says Ks is the imaging filter while the wide K filter is for spectroscopy.",
+      "references": [
+        "doi:10.1117/12.924794"
+      ]
+    },
+    "J2": {
+      "Description": "MOSFIRE J2",
+      "Comments": "Keck filter page: central wavelength 1.181 μm, FWHM 0.129 μm. Intermediate-band filter, about half the J bandwidth.",
+      "references": [
+        "doi:10.1117/12.924794"
+      ]
+    },
+    "J3": {
+      "Description": "MOSFIRE J3",
+      "Comments": "Keck filter page: central wavelength 1.288 μm, FWHM 0.122 μm. Intermediate-band filter.",
+      "references": [
+        "doi:10.1117/12.924794"
+      ]
+    },
+    "H1": {
+      "Description": "MOSFIRE H1",
+      "Comments": "Keck filter page: central wavelength 1.556 μm, FWHM 0.165 μm. Intermediate-band filter.",
+      "references": [
+        "doi:10.1117/12.924794"
+      ]
+    },
+    "H2": {
+      "Description": "MOSFIRE H2",
+      "Comments": "Keck filter page: central wavelength 1.709 μm, FWHM 0.167 μm. Intermediate-band filter.",
+      "references": [
+        "doi:10.1117/12.924794"
+      ]
+    }
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "description": "The USNO 40-inch u'g'r'i'z' standard-star photometric system establishing the primary standard star network for the Sloan Digital Sky Survey (SDSS).",
+  "facility_description": "The USNO 40-inch telescope is an optical telescope located at the United States Naval Observatory Flagstaff Station (NOFS) in Arizona.",
+  "links": [
+    {
+      "url": "https://web.archive.org/web/20210319075936id_/https://www-star.fnal.gov/ugriz/Filters/readme.txt",
+      "label": "USNO ugriz response-function readme (Internet Archive copy; live Fermilab page returns 403)",
+      "source": "Fermilab / USNO"
+    }
+  ],
+  "references": [
+    "bibcode:2002AJ....123.2121S"
+  ],
+  "notes": "Response functions (J. Gunn, 2001-12-18) for the USNO 40-inch telescope and SITe 1024x1024 UV-coated CCD, including 1.3 airmasses (the natural-system median airmass). The readme states the system 'is NOT an AB system, quite': to reach the USNO AB system add -0.04, 0, 0, 0, -0.01 mag to u'g'r'i'z'. MagSys is therefore left unset.",
+  "bands": {
+    "gp": {
+      "Description": "USNO g' standard passband",
+      "PhotSystem": "USNO u'g'r'i'z'",
+      "ProfileReference": [
+        {
+          "ref": "bibcode:2002AJ....123.2121S",
+          "label": "Smith et al. (2002)"
+        }
+      ],
+      "CalibrationReference": [
+        {
+          "ref": "bibcode:2002AJ....123.2121S",
+          "label": "Smith et al. (2002)"
+        }
+      ]
+    },
+    "ip": {
+      "Description": "USNO i' standard passband",
+      "PhotSystem": "USNO u'g'r'i'z'",
+      "ProfileReference": [
+        {
+          "ref": "bibcode:2002AJ....123.2121S",
+          "label": "Smith et al. (2002)"
+        }
+      ],
+      "CalibrationReference": [
+        {
+          "ref": "bibcode:2002AJ....123.2121S",
+          "label": "Smith et al. (2002)"
+        }
+      ]
+    },
+    "rp": {
+      "Description": "USNO r' standard passband",
+      "PhotSystem": "USNO u'g'r'i'z'",
+      "ProfileReference": [
+        {
+          "ref": "bibcode:2002AJ....123.2121S",
+          "label": "Smith et al. (2002)"
+        }
+      ],
+      "CalibrationReference": [
+        {
+          "ref": "bibcode:2002AJ....123.2121S",
+          "label": "Smith et al. (2002)"
+        }
+      ]
+    },
+    "up": {
+      "Description": "USNO u' standard passband",
+      "PhotSystem": "USNO u'g'r'i'z'",
+      "ProfileReference": [
+        {
+          "ref": "bibcode:2002AJ....123.2121S",
+          "label": "Smith et al. (2002)"
+        }
+      ],
+      "CalibrationReference": [
+        {
+          "ref": "bibcode:2002AJ....123.2121S",
+          "label": "Smith et al. (2002)"
+        }
+      ]
+    },
+    "zp": {
+      "Description": "USNO z' standard passband",
+      "PhotSystem": "USNO u'g'r'i'z'",
+      "ProfileReference": [
+        {
+          "ref": "bibcode:2002AJ....123.2121S",
+          "label": "Smith et al. (2002)"
+        }
+      ],
+      "CalibrationReference": [
+        {
+          "ref": "bibcode:2002AJ....123.2121S",
+          "label": "Smith et al. (2002)"
+        }
+      ]
+    }
+  }
+}

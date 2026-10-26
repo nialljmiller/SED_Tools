@@ -1,0 +1,71 @@
+{
+  "description": "INGRID is the 1024x1024 HAWAII near-infrared camera for 0.8-2.5 micron imaging on the William Herschel Telescope (WHT).",
+  "facility_description": "The William Herschel Telescope (WHT) is a 4.2-meter optical/near-infrared telescope at Roque de los Muchachos Observatory on La Palma, operated by the Isaac Newton Group of Telescopes (ING).",
+  "links": [],
+  "references": [
+    "doi:10.1046/j.1365-8711.2003.06982.x"
+  ],
+  "notes": "INGRID filter-only scans; warm laboratory measurements and cold estimates remain distinct named variants. The ING filter pages (www.ing.iac.es) did not respond during verification, so no links are kept.",
+  "bands": {
+    "BRG_COLD": {
+      "Description": "INGRID BRG_COLD near-infrared filter"
+    },
+    "BRG_WARM": {
+      "Description": "INGRID BRG_WARM near-infrared filter"
+    },
+    "FEII_COLD": {
+      "Description": "INGRID FEII_COLD near-infrared filter"
+    },
+    "FEII_WARM": {
+      "Description": "INGRID FEII_WARM near-infrared filter"
+    },
+    "H2V10_COLD": {
+      "Description": "INGRID H2V10_COLD near-infrared filter"
+    },
+    "H2V10_WARM": {
+      "Description": "INGRID H2V10_WARM near-infrared filter"
+    },
+    "H2V21_COLD": {
+      "Description": "INGRID H2V21_COLD near-infrared filter"
+    },
+    "H2V21_WARM": {
+      "Description": "INGRID H2V21_WARM near-infrared filter"
+    },
+    "HCONT_COLD": {
+      "Description": "INGRID HCONT_COLD near-infrared filter"
+    },
+    "HCONT_WARM": {
+      "Description": "INGRID HCONT_WARM near-infrared filter"
+    },
+    "H_WARM": {
+      "Description": "INGRID H_WARM near-infrared filter"
+    },
+    "JCONT_WARM": {
+      "Description": "INGRID JCONT_WARM near-infrared filter"
+    },
+    "J_WARM": {
+      "Description": "INGRID J_WARM near-infrared filter"
+    },
+    "KCONT_COLD": {
+      "Description": "INGRID KCONT_COLD near-infrared filter"
+    },
+    "KCONT_WARM": {
+      "Description": "INGRID KCONT_WARM near-infrared filter"
+    },
+    "KSBARR_WARM": {
+      "Description": "INGRID KSBARR_WARM near-infrared filter"
+    },
+    "KS_WARM": {
+      "Description": "INGRID KS_WARM near-infrared filter"
+    },
+    "K_WARM": {
+      "Description": "INGRID K_WARM near-infrared filter"
+    },
+    "PAB_WARM": {
+      "Description": "INGRID PAB_WARM near-infrared filter"
+    },
+    "Z_WARM": {
+      "Description": "INGRID Z_WARM near-infrared filter"
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "description": "FNAL Harris broad-band filters in the Apache Point Observatory inventory, available only for ARCTIC and Agile. NJM holds the V (trace file BG39.dat) and R (trace file KCR.dat) curves.",
+  "facility_description": "The ARC 3.5-meter Telescope is an optical/infrared telescope at Apache Point Observatory (APO) in New Mexico, operated by the Astrophysical Research Consortium.",
+  "links": [
+    {
+      "url": "http://filters.apo.nmsu.edu/",
+      "label": "APO Filter Inventory",
+      "source": "Apache Point Observatory"
+    },
+    {
+      "url": "http://filters.apo.nmsu.edu/curves/Harris/",
+      "label": "FNAL Harris filters",
+      "source": "Apache Point Observatory"
+    }
+  ],
+  "references": [
+    "doi:10.1117/12.2234214"
+  ],
+  "notes": "On the APO FNAL Harris page the V row links BG39.gif/BG39.dat and the R row links KCR.gif/KCR.dat; the B row has no trace.",
+  "bands": {
+    "BG39": {
+      "Description": "FNAL Harris V filter (APO trace BG39.dat; centre 544.8 nm, FWHM 100.3 nm)"
+    },
+    "KCR": {
+      "Description": "FNAL Harris R filter (APO trace KCR.dat; centre 647.2 nm, FWHM 145.8 nm)"
+    }
+  }
+}

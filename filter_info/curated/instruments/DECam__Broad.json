@@ -1,0 +1,127 @@
+{
+  "description": "The Dark Energy Camera (DECam) broad-band filter set comprising u, g, r, i, z, Y, and VR on the CTIO Blanco 4m telescope, used primarily for the Dark Energy Survey (DES).",
+  "facility_description": "The Víctor M. Blanco 4-meter Telescope is an optical reflecting telescope at Cerro Tololo Inter-American Observatory (CTIO) in Chile, operated by NSF NOIRLab.",
+  "links": [
+    {
+      "url": "https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera",
+      "label": "NOIRLab DECam Instrument Page",
+      "source": "NOIRLab"
+    },
+    {
+      "url": "https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera",
+      "label": "NOIRLab DECam Filter Documentation",
+      "source": "NOIRLab"
+    },
+    {
+      "url": "https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc0472.txt",
+      "label": "DECam Broad-Band Transmission Scans (scidoc0472)",
+      "source": "NOIRLab"
+    }
+  ],
+  "references": [
+    "bibcode:2015AJ....150..150F",
+    "bibcode:2018ApJS..239...18A",
+    "bibcode:2021ApJS..255...20A"
+  ],
+  "notes": "Broad-band filter transmission scans from NOIRLab scidoc0472.",
+  "bands": {
+    "VR": {
+      "Description": "DECam VR broad bandpass",
+      "ProfileReference": [
+        {
+          "ref": "bibcode:2015AJ....150..150F",
+          "label": "Flaugher et al. (2015)"
+        }
+      ]
+    },
+    "Y": {
+      "Description": "DECam Y broad bandpass",
+      "ProfileReference": [
+        {
+          "ref": "bibcode:2015AJ....150..150F",
+          "label": "Flaugher et al. (2015)"
+        }
+      ],
+      "MagSys": "AB",
+      "CalibrationReference": [
+        {
+          "ref": "bibcode:2018ApJS..239...18A",
+          "label": "Abbott et al. (2018)"
+        }
+      ]
+    },
+    "g": {
+      "Description": "DECam g broad bandpass",
+      "ProfileReference": [
+        {
+          "ref": "bibcode:2015AJ....150..150F",
+          "label": "Flaugher et al. (2015)"
+        }
+      ],
+      "MagSys": "AB",
+      "CalibrationReference": [
+        {
+          "ref": "bibcode:2018ApJS..239...18A",
+          "label": "Abbott et al. (2018)"
+        }
+      ]
+    },
+    "i": {
+      "Description": "DECam i broad bandpass",
+      "ProfileReference": [
+        {
+          "ref": "bibcode:2015AJ....150..150F",
+          "label": "Flaugher et al. (2015)"
+        }
+      ],
+      "MagSys": "AB",
+      "CalibrationReference": [
+        {
+          "ref": "bibcode:2018ApJS..239...18A",
+          "label": "Abbott et al. (2018)"
+        }
+      ]
+    },
+    "r": {
+      "Description": "DECam r broad bandpass",
+      "ProfileReference": [
+        {
+          "ref": "bibcode:2015AJ....150..150F",
+          "label": "Flaugher et al. (2015)"
+        }
+      ],
+      "MagSys": "AB",
+      "CalibrationReference": [
+        {
+          "ref": "bibcode:2018ApJS..239...18A",
+          "label": "Abbott et al. (2018)"
+        }
+      ]
+    },
+    "u": {
+      "Description": "DECam u broad bandpass",
+      "ProfileReference": [
+        {
+          "ref": "bibcode:2015AJ....150..150F",
+          "label": "Flaugher et al. (2015)"
+        }
+      ]
+    },
+    "z": {
+      "Description": "DECam z broad bandpass",
+      "ProfileReference": [
+        {
+          "ref": "bibcode:2015AJ....150..150F",
+          "label": "Flaugher et al. (2015)"
+        }
+      ],
+      "MagSys": "AB",
+      "CalibrationReference": [
+        {
+          "ref": "bibcode:2018ApJS..239...18A",
+          "label": "Abbott et al. (2018)"
+        }
+      ]
+    }
+  }
+}

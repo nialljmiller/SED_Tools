@@ -1,0 +1,68 @@
+{
+  "description": "MegaCam is the wide-field CCD imager used at the MMT and at Magellan. This set is the Magellan Sloan u'g'r'i'z' filter set, not the earlier MMT filters and not the CFHT MegaCam.",
+  "facility_description": "This MegaCam is the wide-field CCD imager McLeod et al. 2015 describe for the MMT and the Magellan telescopes at Las Campanas Observatory.",
+  "links": [
+    {
+      "url": "https://lweb.cfa.harvard.edu/~bmcleod/Megacam/Filters/",
+      "label": "MegaCam filter curves",
+      "source": "CFA"
+    }
+  ],
+  "references": [
+    "bibcode:2015PASP..127..366M",
+    "bibcode:1996AJ....111.1748F"
+  ],
+  "notes": "The filter page says the Magellan filters are Sloan bandpasses and keeps a separate table for the MMT-era MegaCam filters. Fukugita et al. 1996 is the SDSS photometric-system paper; the measured curves are the CFA tables. The page does not state Vega or AB. McLeod et al. 2015, PASP 127, 366 is the instrument paper. Narrow-band filters listed on the same page are not in this NJM instrument.",
+  "bands": {
+    "u": {
+      "Description": "Magellan MegaCam Sloan u'",
+      "PhotSystem": "Sloan",
+      "Band": "u'",
+      "Comments": "The CFA filter page calls these the Magellan Sloan bandpass filters and links a filter-only table and a total-throughput table. Total throughput on that page includes CCD QE, primary and secondary reflectivity, corrector and window transmission, and the atmosphere at 1.2 airmasses.",
+      "references": [
+        "bibcode:2015PASP..127..366M",
+        "bibcode:1996AJ....111.1748F"
+      ]
+    },
+    "g": {
+      "Description": "Magellan MegaCam Sloan g'",
+      "PhotSystem": "Sloan",
+      "Band": "g'",
+      "Comments": "The CFA filter page calls these the Magellan Sloan bandpass filters and links a filter-only table and a total-throughput table. Total throughput on that page includes CCD QE, primary and secondary reflectivity, corrector and window transmission, and the atmosphere at 1.2 airmasses.",
+      "references": [
+        "bibcode:2015PASP..127..366M",
+        "bibcode:1996AJ....111.1748F"
+      ]
+    },
+    "r": {
+      "Description": "Magellan MegaCam Sloan r'",
+      "PhotSystem": "Sloan",
+      "Band": "r'",
+      "Comments": "The CFA filter page calls these the Magellan Sloan bandpass filters and links a filter-only table and a total-throughput table. Total throughput on that page includes CCD QE, primary and secondary reflectivity, corrector and window transmission, and the atmosphere at 1.2 airmasses.",
+      "references": [
+        "bibcode:2015PASP..127..366M",
+        "bibcode:1996AJ....111.1748F"
+      ]
+    },
+    "i": {
+      "Description": "Magellan MegaCam Sloan i'",
+      "PhotSystem": "Sloan",
+      "Band": "i'",
+      "Comments": "The CFA filter page calls these the Magellan Sloan bandpass filters and links a filter-only table and a total-throughput table. Total throughput on that page includes CCD QE, primary and secondary reflectivity, corrector and window transmission, and the atmosphere at 1.2 airmasses.",
+      "references": [
+        "bibcode:2015PASP..127..366M",
+        "bibcode:1996AJ....111.1748F"
+      ]
+    },
+    "z": {
+      "Description": "Magellan MegaCam Sloan z'",
+      "PhotSystem": "Sloan",
+      "Band": "z'",
+      "Comments": "The CFA filter page calls these the Magellan Sloan bandpass filters and links a filter-only table and a total-throughput table. Total throughput on that page includes CCD QE, primary and secondary reflectivity, corrector and window transmission, and the atmosphere at 1.2 airmasses.",
+      "references": [
+        "bibcode:2015PASP..127..366M",
+        "bibcode:1996AJ....111.1748F"
+      ]
+    }
+  }
+}

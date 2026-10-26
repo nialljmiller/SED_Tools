@@ -1,0 +1,98 @@
+{
+  "description": "HAWK-I is the VLT High-Acuity Wide-field K-band Imager. Kissler-Patig et al. 2008 describe it as a 0.9–2.4 μm camera with four 2k×2k arrays over a 7.5×7.5 arcmin field. These bands are ESO's filter-transmission scans.",
+  "facility_description": "The ESO Very Large Telescope stands at the Paranal Observatory in Chile.",
+  "links": [
+    {
+      "url": "https://www.eso.org/sci/facilities/paranal/instruments/hawki/",
+      "label": "HAWK-I instrument pages",
+      "source": "ESO"
+    }
+  ],
+  "references": [
+    "doi:10.1051/0004-6361:200809910",
+    "doi:10.1117/12.578293"
+  ],
+  "notes": "The public filters.html page and the filters/ directory URL now redirect to an ESO login. The individual .dat files are still public, and their headers give the scan temperature. Both hawki_Knew.dat and hawki_Kold.dat are labeled simply 'K filter curve'. Kissler-Patig et al. 2008, A&A 491, 941 is the instrument paper; the usual bibcode 2008A&A...491..941K did not resolve in check_refs, so the DOI is used. Pirard et al. 2004 is the design paper. No magnitude system is stated in the file headers. The current ESO directory listing used here has no NB0984 file; that scan is only in the HAWK-I/HAWK-I set.",
+  "bands": {
+    "BrGamma": {
+      "Description": "HAWK-I BrGamma",
+      "Comments": "Brackett-gamma filter. The ESO file header reads 'BrGamma filter curve @ T=90K'. Wavelength column is nanometres and transmission is percent.",
+      "references": [
+        "doi:10.1051/0004-6361:200809910"
+      ]
+    },
+    "CH4": {
+      "Description": "HAWK-I CH4",
+      "Comments": "Methane filter. The ESO file header reads 'CH4 filter curve @ T=90K'. Wavelength column is nanometres and transmission is percent.",
+      "references": [
+        "doi:10.1051/0004-6361:200809910"
+      ]
+    },
+    "H": {
+      "Description": "HAWK-I H",
+      "Band": "H",
+      "Comments": "H-band filter. The ESO file header reads 'H filter curve @ T=87K' and 'H 2 (S5-235-1)'. Wavelength column is nanometres and transmission is percent.",
+      "references": [
+        "doi:10.1051/0004-6361:200809910"
+      ]
+    },
+    "H2": {
+      "Description": "HAWK-I H2",
+      "Comments": "H2 filter. The ESO file header reads 'H2 filter curve @ T=90K'. Wavelength column is nanometres and transmission is percent.",
+      "references": [
+        "doi:10.1051/0004-6361:200809910"
+      ]
+    },
+    "J": {
+      "Description": "HAWK-I J",
+      "Band": "J",
+      "Comments": "J-band filter. The ESO file header reads 'J filter curve @ T=87K' and 'J 2 (X1-3778-P1,S1-334-P1,SN012)'. Wavelength column is nanometres and transmission is percent.",
+      "references": [
+        "doi:10.1051/0004-6361:200809910"
+      ]
+    },
+    "Knew": {
+      "Description": "HAWK-I Knew",
+      "Comments": "The file ESO names hawki_Knew.dat. Its header reads 'K filter curve @ T=90K' and does not use the word Knew. Wavelength column is nanometres and transmission is percent.",
+      "references": [
+        "doi:10.1051/0004-6361:200809910"
+      ]
+    },
+    "Kold": {
+      "Description": "HAWK-I Kold",
+      "Comments": "The file ESO names hawki_Kold.dat. Its header also reads 'K filter curve @ T=90K'. Wavelength column is nanometres and transmission is percent.",
+      "references": [
+        "doi:10.1051/0004-6361:200809910"
+      ]
+    },
+    "NB1060": {
+      "Description": "HAWK-I NB1060",
+      "Comments": "Narrow-band filter NB1060. The ESO file header reads 'NB1060 filter curve @ T=90K'. Wavelength column is nanometres and transmission is percent.",
+      "references": [
+        "doi:10.1051/0004-6361:200809910"
+      ]
+    },
+    "NB1190": {
+      "Description": "HAWK-I NB1190",
+      "Comments": "Narrow-band filter NB1190. The ESO file header reads 'NB1190 filter curve @ T=90K'. Wavelength column is nanometres and transmission is percent.",
+      "references": [
+        "doi:10.1051/0004-6361:200809910"
+      ]
+    },
+    "NB2090": {
+      "Description": "HAWK-I NB2090",
+      "Comments": "Narrow-band filter NB2090. The ESO file header reads 'NB2090 filter curve @ T=90K'. Wavelength column is nanometres and transmission is percent.",
+      "references": [
+        "doi:10.1051/0004-6361:200809910"
+      ]
+    },
+    "Y": {
+      "Description": "HAWK-I Y",
+      "Band": "Y",
+      "Comments": "Y-band filter. The ESO file header reads 'Y filter curve @ T=87K' and 'Y 3 (Iz881,SN003)'. Wavelength column is nanometres and transmission is percent.",
+      "references": [
+        "doi:10.1051/0004-6361:200809910"
+      ]
+    }
+  }
+}

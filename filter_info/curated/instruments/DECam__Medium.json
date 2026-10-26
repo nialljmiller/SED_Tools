@@ -1,0 +1,42 @@
+{
+  "description": "The Dark Energy Camera (DECam) medium-band filter set (M411, M438, M464, M490, M517) on the Blanco 4m telescope, designed for intermediate-band mapping of Lyman-alpha emitters and Lyman break galaxies.",
+  "facility_description": "The Víctor M. Blanco 4-meter Telescope is an optical reflecting telescope at Cerro Tololo Inter-American Observatory (CTIO) in Chile, operated by NSF NOIRLab.",
+  "links": [
+    {
+      "url": "https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera",
+      "label": "NOIRLab DECam Instrument Page",
+      "source": "NOIRLab"
+    },
+    {
+      "url": "https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera",
+      "label": "NOIRLab DECam Filter Documentation",
+      "source": "NOIRLab"
+    },
+    {
+      "url": "https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls",
+      "label": "DECam Medium and Narrow Band Filter Curves (scidoc3138)",
+      "source": "NOIRLab"
+    }
+  ],
+  "references": [
+    "bibcode:2015AJ....150..150F"
+  ],
+  "notes": "Filter scans from NOIRLab scidoc3138.",
+  "bands": {
+    "M411": {
+      "Description": "DECam M411 medium bandpass centered ~411 nm"
+    },
+    "M438": {
+      "Description": "DECam M438 medium bandpass centered ~438 nm"
+    },
+    "M464": {
+      "Description": "DECam M464 medium bandpass centered ~464 nm"
+    },
+    "M490": {
+      "Description": "DECam M490 medium bandpass centered ~490 nm"
+    },
+    "M517": {
+      "Description": "DECam M517 medium bandpass centered ~517 nm"
+    }
+  }
+}

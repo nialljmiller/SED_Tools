@@ -1,0 +1,81 @@
+{
+  "description": "The Goodman High Throughput Spectrograph (Goodman HTS) on the 4.1-meter SOAR Telescope provides optical imaging and spectroscopy using Bessell, SDSS, Stromgren, and custom narrow-band filters.",
+  "facility_description": "The Southern Astrophysical Research (SOAR) 4.1-meter Telescope is an optical/near-infrared telescope located on Cerro Pachón, Chile, operated by NSF NOIRLab and CTIO.",
+  "links": [
+    {
+      "url": "https://noirlab.edu/science/programs/ctio/instruments/goodman-high-throughput-spectrograph",
+      "label": "Goodman HTS instrument page",
+      "source": "NOIRLab / SOAR"
+    }
+  ],
+  "references": [
+    "bibcode:2004SPIE.5492..331C"
+  ],
+  "notes": "Goodman uses filter wheels in the collimated beam. PhotSystem is given only where the filter name itself names the system (Bessell, SDSS, Stromgren).",
+  "bands": {
+    "B_Bessell": {
+      "Description": "Goodman HTS B_Bessell filter",
+      "PhotSystem": "Bessell"
+    },
+    "CN": {
+      "Description": "Goodman HTS CN filter"
+    },
+    "Halpha": {
+      "Description": "Goodman HTS Halpha filter"
+    },
+    "I_Bessell": {
+      "Description": "Goodman HTS I_Bessell filter",
+      "PhotSystem": "Bessell"
+    },
+    "R_Bessell": {
+      "Description": "Goodman HTS R_Bessell filter",
+      "PhotSystem": "Bessell"
+    },
+    "SII": {
+      "Description": "Goodman HTS SII filter"
+    },
+    "TiO": {
+      "Description": "Goodman HTS TiO filter"
+    },
+    "U_Bessell": {
+      "Description": "Goodman HTS U_Bessell filter",
+      "PhotSystem": "Bessell"
+    },
+    "V_Bessell": {
+      "Description": "Goodman HTS V_Bessell filter",
+      "PhotSystem": "Bessell"
+    },
+    "gp_SDSS": {
+      "Description": "Goodman HTS gp_SDSS filter",
+      "PhotSystem": "SDSS"
+    },
+    "ip_SDSS": {
+      "Description": "Goodman HTS ip_SDSS filter",
+      "PhotSystem": "SDSS"
+    },
+    "rp_SDSS": {
+      "Description": "Goodman HTS rp_SDSS filter",
+      "PhotSystem": "SDSS"
+    },
+    "u_Strom": {
+      "Description": "Goodman HTS u_Strom filter",
+      "PhotSystem": "Stromgren"
+    },
+    "up_SDSS": {
+      "Description": "Goodman HTS up_SDSS filter",
+      "PhotSystem": "SDSS"
+    },
+    "v_Strom": {
+      "Description": "Goodman HTS v_Strom filter",
+      "PhotSystem": "Stromgren"
+    },
+    "y_Strom": {
+      "Description": "Goodman HTS y_Strom filter",
+      "PhotSystem": "Stromgren"
+    },
+    "zp_SDSS": {
+      "Description": "Goodman HTS zp_SDSS filter",
+      "PhotSystem": "SDSS"
+    }
+  }
+}

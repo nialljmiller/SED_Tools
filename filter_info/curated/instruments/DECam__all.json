@@ -1,0 +1,178 @@
+{
+  "description": "The Dark Energy Camera (DECam) is a 570-megapixel wide-field prime-focus optical imager on the CTIO Blanco 4m telescope. This instrument entry compiles all 21 available DECam passbands including broad, medium, and narrow filter sets.",
+  "facility_description": "The Víctor M. Blanco 4-meter Telescope is an optical reflecting telescope at Cerro Tololo Inter-American Observatory (CTIO) in Chile, operated by NSF NOIRLab.",
+  "links": [
+    {
+      "url": "https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera",
+      "label": "NOIRLab DECam Instrument Page",
+      "source": "NOIRLab"
+    },
+    {
+      "url": "https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera",
+      "label": "NOIRLab DECam Filter Documentation",
+      "source": "NOIRLab"
+    },
+    {
+      "url": "https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc0472.txt",
+      "label": "DECam Broad-Band Transmission Scans (scidoc0472)",
+      "source": "NOIRLab"
+    },
+    {
+      "url": "https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls",
+      "label": "DECam Medium and Narrow Band Filter Curves (scidoc3138)",
+      "source": "NOIRLab"
+    }
+  ],
+  "references": [
+    "bibcode:2015AJ....150..150F",
+    "bibcode:2018ApJS..239...18A",
+    "bibcode:2021ApJS..255...20A",
+    "bibcode:2017ApJ...842L..22Z"
+  ],
+  "notes": "Filter curves are laboratory transmission scans. The detector is a mosaic of 62 2k x 4k back-illuminated fully depleted CCDs.",
+  "bands": {
+    "VR": {
+      "Description": "DECam VR broad bandpass",
+      "ProfileReference": [
+        {
+          "ref": "bibcode:2015AJ....150..150F",
+          "label": "Flaugher et al. (2015)"
+        }
+      ]
+    },
+    "Y": {
+      "Description": "DECam Y broad bandpass",
+      "ProfileReference": [
+        {
+          "ref": "bibcode:2015AJ....150..150F",
+          "label": "Flaugher et al. (2015)"
+        }
+      ],
+      "MagSys": "AB",
+      "CalibrationReference": [
+        {
+          "ref": "bibcode:2018ApJS..239...18A",
+          "label": "Abbott et al. (2018)"
+        }
+      ]
+    },
+    "g": {
+      "Description": "DECam g broad bandpass",
+      "ProfileReference": [
+        {
+          "ref": "bibcode:2015AJ....150..150F",
+          "label": "Flaugher et al. (2015)"
+        }
+      ],
+      "MagSys": "AB",
+      "CalibrationReference": [
+        {
+          "ref": "bibcode:2018ApJS..239...18A",
+          "label": "Abbott et al. (2018)"
+        }
+      ]
+    },
+    "i": {
+      "Description": "DECam i broad bandpass",
+      "ProfileReference": [
+        {
+          "ref": "bibcode:2015AJ....150..150F",
+          "label": "Flaugher et al. (2015)"
+        }
+      ],
+      "MagSys": "AB",
+      "CalibrationReference": [
+        {
+          "ref": "bibcode:2018ApJS..239...18A",
+          "label": "Abbott et al. (2018)"
+        }
+      ]
+    },
+    "r": {
+      "Description": "DECam r broad bandpass",
+      "ProfileReference": [
+        {
+          "ref": "bibcode:2015AJ....150..150F",
+          "label": "Flaugher et al. (2015)"
+        }
+      ],
+      "MagSys": "AB",
+      "CalibrationReference": [
+        {
+          "ref": "bibcode:2018ApJS..239...18A",
+          "label": "Abbott et al. (2018)"
+        }
+      ]
+    },
+    "u": {
+      "Description": "DECam u broad bandpass",
+      "ProfileReference": [
+        {
+          "ref": "bibcode:2015AJ....150..150F",
+          "label": "Flaugher et al. (2015)"
+        }
+      ]
+    },
+    "z": {
+      "Description": "DECam z broad bandpass",
+      "ProfileReference": [
+        {
+          "ref": "bibcode:2015AJ....150..150F",
+          "label": "Flaugher et al. (2015)"
+        }
+      ],
+      "MagSys": "AB",
+      "CalibrationReference": [
+        {
+          "ref": "bibcode:2018ApJS..239...18A",
+          "label": "Abbott et al. (2018)"
+        }
+      ]
+    },
+    "M411": {
+      "Description": "DECam M411 medium bandpass centered ~411 nm"
+    },
+    "M438": {
+      "Description": "DECam M438 medium bandpass centered ~438 nm"
+    },
+    "M464": {
+      "Description": "DECam M464 medium bandpass centered ~464 nm"
+    },
+    "M490": {
+      "Description": "DECam M490 medium bandpass centered ~490 nm"
+    },
+    "M517": {
+      "Description": "DECam M517 medium bandpass centered ~517 nm"
+    },
+    "N1008": {
+      "Description": "DECam N1008 narrow bandpass centered ~1008 nm"
+    },
+    "N395": {
+      "Description": "DECam N395 narrow bandpass centered ~395 nm"
+    },
+    "N419": {
+      "Description": "DECam N419 narrow bandpass centered ~419 nm"
+    },
+    "N501": {
+      "Description": "DECam N501 narrow bandpass centered ~501 nm ([OIII])"
+    },
+    "N540": {
+      "Description": "DECam N540 narrow bandpass centered ~540 nm"
+    },
+    "N662": {
+      "Description": "DECam N662 narrow bandpass centered ~662 nm (Halpha + [NII])"
+    },
+    "N673": {
+      "Description": "DECam N673 narrow bandpass centered ~673 nm ([SII])"
+    },
+    "N708": {
+      "Description": "DECam N708 narrow bandpass centered ~708 nm"
+    },
+    "N964": {
+      "Description": "DECam N964 narrow bandpass centered ~964 nm (LAGER Ly-alpha)",
+      "references": [
+        "bibcode:2017ApJ...842L..22Z"
+      ]
+    }
+  }
+}

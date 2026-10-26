@@ -1,0 +1,31 @@
+{
+  "description": "COSMO15 is the first (13-17 GHz) radiometer of the COSMOSOMAS circular-scanning experiment at Teide Observatory, mapping CMB anisotropies and diffuse Galactic foregrounds.",
+  "facility_description": "Teide Observatory (Observatorio del Teide) is an astronomical observatory located on Mount Teide in Tenerife, Canary Islands, operated by the Instituto de Astrofísica de Canarias (IAC).",
+  "links": [
+    {
+      "url": "https://www.iac.es/en/observatorios-de-canarias/teide-observatory",
+      "label": "Teide Observatory Page",
+      "source": "IAC"
+    },
+    {
+      "url": "https://www.iac.es/en/projects/cosmosomas",
+      "label": "COSMOSOMAS Project Page",
+      "source": "IAC"
+    }
+  ],
+  "references": [
+    "bibcode:2001MNRAS.327.1178G"
+  ],
+  "notes": "Radio total-power channels; channel edges and receiver details were not verified against Gallegos et al. (2001).",
+  "bands": {
+    "13GHz": {
+      "Description": "COSMO15 13 GHz channel"
+    },
+    "15GHz": {
+      "Description": "COSMO15 15 GHz channel"
+    },
+    "17GHz": {
+      "Description": "COSMO15 17 GHz channel"
+    }
+  }
+}

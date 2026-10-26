@@ -1,0 +1,109 @@
+{
+  "description": "FORS1 was the first FOcal Reducer and low-dispersion Spectrograph on the VLT. These bands are the original Bessell and Gunn broad-band set, as ESO optical-bench transmission scans.",
+  "facility_description": "The ESO Very Large Telescope stands at the Paranal Observatory in Chile.",
+  "links": [
+    {
+      "url": "https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/curves.html",
+      "label": "FORS filter transmission curves",
+      "source": "ESO"
+    },
+    {
+      "url": "https://www.eso.org/sci/facilities/paranal/instruments/fors/",
+      "label": "FORS instrument pages",
+      "source": "ESO"
+    }
+  ],
+  "references": [
+    "doi:10.1117/12.316782",
+    "bibcode:1990PASP..102.1181B"
+  ],
+  "notes": "ESO's filter page still serves the M_BESS and M_GUNN lab scans and says the later u/b/v/g_HIGH filters were bought in 2007 for the FORS1 blue-sensitive mosaic; NJM keeps those HIGH scans, plus R_SPECIAL and the I_BESS+77 collimator scan, under Paranal/FORS2. The page says B/V/I_BESS existed on both FORS1 and FORS2 and does not say which unit was scanned. Curves are filter-only. Appenzeller et al. 1998, The Messenger 94, 1 (1998Msngr..94....1A) is the commissioning article; check_refs did not resolve that bibcode, so it is not listed. No magnitude system is stated on the filter page.",
+  "bands": {
+    "B_BESS": {
+      "Description": "FORS1 Bessell B",
+      "PhotSystem": "Bessell",
+      "Band": "B",
+      "Comments": "ESO optical-bench scan M_BESS_B.txt. The FORS filter page labels it BESS_B. The scan is not Bessell's 1990 tabulated passband.",
+      "references": [
+        "doi:10.1117/12.316782",
+        "bibcode:1990PASP..102.1181B"
+      ]
+    },
+    "I_BESS": {
+      "Description": "FORS1 Bessell I",
+      "PhotSystem": "Bessell",
+      "Band": "I",
+      "Comments": "ESO optical-bench scan M_BESS_I.txt. The same page also links a separate I_BESS+77 collimator scan, which NJM files under Paranal/FORS2.",
+      "references": [
+        "doi:10.1117/12.316782",
+        "bibcode:1990PASP..102.1181B"
+      ]
+    },
+    "R_BESS": {
+      "Description": "FORS1 Bessell R",
+      "PhotSystem": "Bessell",
+      "Band": "R",
+      "Comments": "ESO optical-bench scan M_BESS_R.txt.",
+      "references": [
+        "doi:10.1117/12.316782",
+        "bibcode:1990PASP..102.1181B"
+      ]
+    },
+    "U_BESS": {
+      "Description": "FORS1 Bessell U",
+      "PhotSystem": "Bessell",
+      "Band": "U",
+      "Comments": "ESO optical-bench scan M_BESS_U.txt.",
+      "references": [
+        "doi:10.1117/12.316782",
+        "bibcode:1990PASP..102.1181B"
+      ]
+    },
+    "V_BESS": {
+      "Description": "FORS1 Bessell V",
+      "PhotSystem": "Bessell",
+      "Band": "V",
+      "Comments": "ESO optical-bench scan M_BESS_V.txt.",
+      "references": [
+        "doi:10.1117/12.316782",
+        "bibcode:1990PASP..102.1181B"
+      ]
+    },
+    "g_GUNN": {
+      "Description": "FORS1 Gunn g",
+      "PhotSystem": "Gunn",
+      "Band": "g",
+      "Comments": "ESO optical-bench scan M_GUNN_G.txt. The page labels the set GUNN.",
+      "references": [
+        "doi:10.1117/12.316782"
+      ]
+    },
+    "r_GUNN": {
+      "Description": "FORS1 Gunn r",
+      "PhotSystem": "Gunn",
+      "Band": "r",
+      "Comments": "ESO optical-bench scan M_GUNN_R.txt.",
+      "references": [
+        "doi:10.1117/12.316782"
+      ]
+    },
+    "u_GUNN": {
+      "Description": "FORS1 Gunn u",
+      "PhotSystem": "Gunn",
+      "Band": "u",
+      "Comments": "ESO optical-bench scan M_GUNN_U.txt.",
+      "references": [
+        "doi:10.1117/12.316782"
+      ]
+    },
+    "v_GUNN": {
+      "Description": "FORS1 Gunn v",
+      "PhotSystem": "Gunn",
+      "Band": "v",
+      "Comments": "ESO optical-bench scan M_GUNN_V.txt.",
+      "references": [
+        "doi:10.1117/12.316782"
+      ]
+    }
+  }
+}

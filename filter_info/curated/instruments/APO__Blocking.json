@@ -1,0 +1,41 @@
+{
+  "description": "Long-pass blocking filters (GG, OG and RG coloured glass) in the Apache Point Observatory filter inventory.",
+  "facility_description": "The ARC 3.5-meter Telescope is an optical/infrared telescope at Apache Point Observatory (APO) in New Mexico, operated by the Astrophysical Research Consortium.",
+  "links": [
+    {
+      "url": "http://filters.apo.nmsu.edu/",
+      "label": "APO Filter Inventory",
+      "source": "Apache Point Observatory"
+    },
+    {
+      "url": "http://filters.apo.nmsu.edu/curves/blocking/",
+      "label": "APO blocking filters",
+      "source": "Apache Point Observatory"
+    }
+  ],
+  "references": [],
+  "notes": "Cut-on wavelengths, peak transmission and sizes are from the APO blocking-filter page (76 mm square filters).",
+  "bands": {
+    "GG385": {
+      "Description": "GG-385 long-pass blocking filter (APO lists cutoff 382 nm)"
+    },
+    "GG475": {
+      "Description": "GG-475 long-pass blocking filter (APO lists cutoff 466 nm)"
+    },
+    "GG495": {
+      "Description": "GG-495 long-pass blocking filter (APO lists cutoff 499 nm)"
+    },
+    "OG530": {
+      "Description": "OG-530 long-pass blocking filter (APO lists cutoff 534 nm)"
+    },
+    "RG5": {
+      "Description": "RG-5 long-pass blocking filter (APO lists cutoff 668 nm)"
+    },
+    "RG610": {
+      "Description": "RG-610 long-pass blocking filter (APO lists cutoff 605 nm)"
+    },
+    "RG850": {
+      "Description": "RG-850 long-pass blocking filter (APO lists cutoff 847 nm)"
+    }
+  }
+}

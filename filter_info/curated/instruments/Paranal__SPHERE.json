@@ -1,0 +1,219 @@
+{
+  "description": "These are the SPHERE/IRDIS filter transmissions published by ESO: broad-band, dual-band and narrow-band filters. Each dual-band entry is one channel of the filter ESO lists as a pair.",
+  "facility_description": "The ESO Very Large Telescope stands at the Paranal Observatory in Chile.",
+  "links": [
+    {
+      "url": "https://www.eso.org/sci/facilities/paranal/instruments/sphere/inst/filters.html",
+      "label": "SPHERE filters",
+      "source": "ESO"
+    },
+    {
+      "url": "https://www.eso.org/sci/facilities/paranal/instruments/sphere/",
+      "label": "SPHERE instrument pages",
+      "source": "ESO"
+    }
+  ],
+  "references": [
+    "bibcode:2019A&A...631A.155B",
+    "doi:10.1117/12.789786"
+  ],
+  "notes": "Neutral-density filters and ZIMPOL are separate NJM instruments (SPHERE/IRDIS and SPHERE/ZIMPOL). ESO does not label which dual-band peak belongs to which channel name, so no single central wavelength is assigned to Y2 versus Y3 and the other split channels. Beuzit et al. 2019 is the SPHERE instrument paper. Dohlen et al. 2008 is the IRDIS design-and-performance paper. No magnitude system is stated on the filter page.",
+  "bands": {
+    "B_Y": {
+      "Description": "SPHERE/IRDIS broad-band B_Y",
+      "Band": "Y",
+      "Comments": "ESO filter table: central wavelength 1043 nm, width 140 nm.",
+      "references": [
+        "bibcode:2019A&A...631A.155B",
+        "doi:10.1117/12.789786"
+      ]
+    },
+    "B_J": {
+      "Description": "SPHERE/IRDIS broad-band B_J",
+      "Band": "J",
+      "Comments": "ESO filter table: central wavelength 1245 nm, width 240 nm.",
+      "references": [
+        "bibcode:2019A&A...631A.155B",
+        "doi:10.1117/12.789786"
+      ]
+    },
+    "B_H": {
+      "Description": "SPHERE/IRDIS broad-band B_H",
+      "Band": "H",
+      "Comments": "ESO filter table: central wavelength 1625 nm, width 290 nm.",
+      "references": [
+        "bibcode:2019A&A...631A.155B",
+        "doi:10.1117/12.789786"
+      ]
+    },
+    "B_Ks": {
+      "Description": "SPHERE/IRDIS broad-band B_Ks",
+      "Band": "Ks",
+      "Comments": "ESO filter table: central wavelength 2182 nm, width 300 nm.",
+      "references": [
+        "bibcode:2019A&A...631A.155B",
+        "doi:10.1117/12.789786"
+      ]
+    },
+    "D_Y23_Y2": {
+      "Description": "SPHERE/IRDIS dual-band D_Y23, one channel",
+      "Comments": "ESO lists the two channels of this filter at 1022 and 1076 nm (widths 49 and 50 nm) and does not say which peak is which file.",
+      "references": [
+        "bibcode:2019A&A...631A.155B",
+        "doi:10.1117/12.789786"
+      ]
+    },
+    "D_Y23_Y3": {
+      "Description": "SPHERE/IRDIS dual-band D_Y23, one channel",
+      "Comments": "ESO lists the two channels of this filter at 1022 and 1076 nm (widths 49 and 50 nm) and does not say which peak is which file.",
+      "references": [
+        "bibcode:2019A&A...631A.155B",
+        "doi:10.1117/12.789786"
+      ]
+    },
+    "D_J23_J2": {
+      "Description": "SPHERE/IRDIS dual-band D_J23, one channel",
+      "Comments": "ESO lists the two channels of this filter at 1190 and 1273 nm (widths 42 and 46 nm) and does not say which peak is which file.",
+      "references": [
+        "bibcode:2019A&A...631A.155B",
+        "doi:10.1117/12.789786"
+      ]
+    },
+    "D_J23_J3": {
+      "Description": "SPHERE/IRDIS dual-band D_J23, one channel",
+      "Comments": "ESO lists the two channels of this filter at 1190 and 1273 nm (widths 42 and 46 nm) and does not say which peak is which file.",
+      "references": [
+        "bibcode:2019A&A...631A.155B",
+        "doi:10.1117/12.789786"
+      ]
+    },
+    "D_H23_H2": {
+      "Description": "SPHERE/IRDIS dual-band D_H23, one channel",
+      "Comments": "ESO lists the two channels of this filter at 1593 and 1667 nm (widths 52 and 54 nm) and does not say which peak is which file.",
+      "references": [
+        "bibcode:2019A&A...631A.155B",
+        "doi:10.1117/12.789786"
+      ]
+    },
+    "D_H23_H3": {
+      "Description": "SPHERE/IRDIS dual-band D_H23, one channel",
+      "Comments": "ESO lists the two channels of this filter at 1593 and 1667 nm (widths 52 and 54 nm) and does not say which peak is which file.",
+      "references": [
+        "bibcode:2019A&A...631A.155B",
+        "doi:10.1117/12.789786"
+      ]
+    },
+    "D_H34_H3": {
+      "Description": "SPHERE/IRDIS dual-band D_H34, one channel",
+      "Comments": "ESO lists the two channels of this filter at 1667 and 1733 nm (widths 54 and 57 nm) and does not say which peak is which file.",
+      "references": [
+        "bibcode:2019A&A...631A.155B",
+        "doi:10.1117/12.789786"
+      ]
+    },
+    "D_H34_H4": {
+      "Description": "SPHERE/IRDIS dual-band D_H34, one channel",
+      "Comments": "ESO lists the two channels of this filter at 1667 and 1733 nm (widths 54 and 57 nm) and does not say which peak is which file.",
+      "references": [
+        "bibcode:2019A&A...631A.155B",
+        "doi:10.1117/12.789786"
+      ]
+    },
+    "D_K12_K1": {
+      "Description": "SPHERE/IRDIS dual-band D_K12, one channel",
+      "Comments": "ESO lists the two channels of this filter at 2110 and 2251 nm (widths 102 and 109 nm) and does not say which peak is which file.",
+      "references": [
+        "bibcode:2019A&A...631A.155B",
+        "doi:10.1117/12.789786"
+      ]
+    },
+    "D_K12_K2": {
+      "Description": "SPHERE/IRDIS dual-band D_K12, one channel",
+      "Comments": "ESO lists the two channels of this filter at 2110 and 2251 nm (widths 102 and 109 nm) and does not say which peak is which file.",
+      "references": [
+        "bibcode:2019A&A...631A.155B",
+        "doi:10.1117/12.789786"
+      ]
+    },
+    "N_HeI": {
+      "Description": "SPHERE/IRDIS narrow-band N_HeI",
+      "Comments": "ESO filter table: central wavelength 1085 nm, width 14 nm.",
+      "references": [
+        "bibcode:2019A&A...631A.155B",
+        "doi:10.1117/12.789786"
+      ]
+    },
+    "N_CntJ": {
+      "Description": "SPHERE/IRDIS narrow-band N_CntJ",
+      "Comments": "ESO filter table: central wavelength 1213 nm, width 17 nm.",
+      "references": [
+        "bibcode:2019A&A...631A.155B",
+        "doi:10.1117/12.789786"
+      ]
+    },
+    "N_PaB": {
+      "Description": "SPHERE/IRDIS narrow-band N_PaB",
+      "Comments": "ESO filter table: central wavelength 1283 nm, width 18 nm.",
+      "references": [
+        "bibcode:2019A&A...631A.155B",
+        "doi:10.1117/12.789786"
+      ]
+    },
+    "N_CntH": {
+      "Description": "SPHERE/IRDIS narrow-band N_CntH",
+      "Comments": "ESO filter table: central wavelength 1573 nm, width 23 nm.",
+      "references": [
+        "bibcode:2019A&A...631A.155B",
+        "doi:10.1117/12.789786"
+      ]
+    },
+    "N_FeII": {
+      "Description": "SPHERE/IRDIS narrow-band N_FeII",
+      "Comments": "ESO filter table: central wavelength 1642 nm, width 24 nm.",
+      "references": [
+        "bibcode:2019A&A...631A.155B",
+        "doi:10.1117/12.789786"
+      ]
+    },
+    "N_CntK1": {
+      "Description": "SPHERE/IRDIS narrow-band N_CntK1",
+      "Comments": "ESO filter table: central wavelength 2091 nm, width 34 nm.",
+      "references": [
+        "bibcode:2019A&A...631A.155B",
+        "doi:10.1117/12.789786"
+      ]
+    },
+    "N_H2": {
+      "Description": "SPHERE/IRDIS narrow-band N_H2",
+      "Comments": "ESO filter table: central wavelength 2124 nm, width 31 nm.",
+      "references": [
+        "bibcode:2019A&A...631A.155B",
+        "doi:10.1117/12.789786"
+      ]
+    },
+    "N_BrG": {
+      "Description": "SPHERE/IRDIS narrow-band N_BrG",
+      "Comments": "ESO filter table: central wavelength 2170 nm, width 31 nm.",
+      "references": [
+        "bibcode:2019A&A...631A.155B",
+        "doi:10.1117/12.789786"
+      ]
+    },
+    "N_CntK2": {
+      "Description": "SPHERE/IRDIS narrow-band N_CntK2",
+      "Comments": "ESO filter table: central wavelength 2266 nm, width 32 nm.",
+      "references": [
+        "bibcode:2019A&A...631A.155B",
+        "doi:10.1117/12.789786"
+      ]
+    },
+    "N_CO": {
+      "Description": "SPHERE/IRDIS narrow-band N_CO",
+      "Comments": "ESO filter table: central wavelength 2290 nm, width 33 nm.",
+      "references": [
+        "bibcode:2019A&A...631A.155B",
+        "doi:10.1117/12.789786"
+      ]
+    }
+  }
+}

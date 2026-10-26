@@ -1,0 +1,110 @@
+{
+  "description": "This set is the HAWK-I cryogenic filter scans, including both K files and the NB0984 scan kept only in the Internet Archive. It is the same camera as Paranal/HAWKI, with NJM's band names.",
+  "facility_description": "HAWK-I is the wide-field near-infrared imager on ESO's VLT at Paranal.",
+  "links": [
+    {
+      "url": "https://www.eso.org/sci/facilities/paranal/instruments/hawki/",
+      "label": "HAWK-I instrument pages",
+      "source": "ESO"
+    },
+    {
+      "url": "https://web.archive.org/web/20130623151949id_/http://www.eso.org/sci/facilities/paranal/instruments/hawki/inst/filters/hawki_NB0984.dat",
+      "label": "Archived NB0984 scan",
+      "source": "ESO"
+    }
+  ],
+  "references": [
+    "doi:10.1051/0004-6361:200809910",
+    "doi:10.1117/12.578293"
+  ],
+  "notes": "NJM's Ks_2007 and Ks_2008 names are not in the ESO file headers. Those headers call both files a K filter scanned at 90 K. The 2007/2008 dates are therefore not taken from the scans. NB0984 is absent from the live directory and comes from the 2013 archive capture. No magnitude system is stated.",
+  "bands": {
+    "BrG": {
+      "Description": "HAWK-I BrG",
+      "Comments": "Same scan as ESO hawki_BrGamma.dat. Header: BrGamma filter curve at 90 K.",
+      "references": [
+        "doi:10.1051/0004-6361:200809910"
+      ]
+    },
+    "CH4": {
+      "Description": "HAWK-I CH4",
+      "Comments": "Same scan as ESO hawki_CH4.dat. Header: CH4 filter curve at 90 K.",
+      "references": [
+        "doi:10.1051/0004-6361:200809910"
+      ]
+    },
+    "H": {
+      "Description": "HAWK-I H",
+      "Band": "H",
+      "Comments": "Same scan as ESO hawki_H.dat. Header: H filter curve at 87 K, 'H 2 (S5-235-1)'.",
+      "references": [
+        "doi:10.1051/0004-6361:200809910"
+      ]
+    },
+    "H2": {
+      "Description": "HAWK-I H2",
+      "Comments": "Same scan as ESO hawki_H2.dat. Header: H2 filter curve at 90 K.",
+      "references": [
+        "doi:10.1051/0004-6361:200809910"
+      ]
+    },
+    "J": {
+      "Description": "HAWK-I J",
+      "Band": "J",
+      "Comments": "Same scan as ESO hawki_J.dat. Header: J filter curve at 87 K.",
+      "references": [
+        "doi:10.1051/0004-6361:200809910"
+      ]
+    },
+    "Ks_2007": {
+      "Description": "HAWK-I Ks_2007",
+      "Comments": "NJM points this band at ESO hawki_Kold.dat. That file's own header says 'K filter curve @ T=90K' and does not give a year.",
+      "references": [
+        "doi:10.1051/0004-6361:200809910"
+      ]
+    },
+    "Ks_2008": {
+      "Description": "HAWK-I Ks_2008",
+      "Comments": "NJM points this band at ESO hawki_Knew.dat. That file's own header also says 'K filter curve @ T=90K' and does not give a year.",
+      "references": [
+        "doi:10.1051/0004-6361:200809910"
+      ]
+    },
+    "NB0984": {
+      "Description": "HAWK-I NB0984",
+      "Comments": "Not in the current ESO filter directory. The curve NJM uses is the 23 June 2013 Internet Archive capture of hawki_NB0984.dat. Its header is only '#Wavelength %T(R)'.",
+      "references": [
+        "doi:10.1051/0004-6361:200809910"
+      ]
+    },
+    "NB1060": {
+      "Description": "HAWK-I NB1060",
+      "Comments": "Same scan as ESO hawki_NB1060.dat. Header: NB1060 filter curve at 90 K.",
+      "references": [
+        "doi:10.1051/0004-6361:200809910"
+      ]
+    },
+    "NB1190": {
+      "Description": "HAWK-I NB1190",
+      "Comments": "Same scan as ESO hawki_NB1190.dat. Header: NB1190 filter curve at 90 K.",
+      "references": [
+        "doi:10.1051/0004-6361:200809910"
+      ]
+    },
+    "NB2090": {
+      "Description": "HAWK-I NB2090",
+      "Comments": "Same scan as ESO hawki_NB2090.dat. Header: NB2090 filter curve at 90 K.",
+      "references": [
+        "doi:10.1051/0004-6361:200809910"
+      ]
+    },
+    "Y": {
+      "Description": "HAWK-I Y",
+      "Band": "Y",
+      "Comments": "Same scan as ESO hawki_Y.dat. Header: Y filter curve at 87 K, 'Y 3 (Iz881,SN003)'.",
+      "references": [
+        "doi:10.1051/0004-6361:200809910"
+      ]
+    }
+  }
+}

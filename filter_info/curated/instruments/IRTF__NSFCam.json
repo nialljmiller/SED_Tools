@@ -1,0 +1,195 @@
+{
+  "description": "NSFCam is a facility 1-5 micron near-infrared array camera on the NASA Infrared Telescope Facility (IRTF), housing broad-band, MKO-NIR, and narrow-band emission line filters.",
+  "facility_description": "The NASA Infrared Telescope Facility (IRTF) is a 3.2-meter infrared-optimized telescope located at the summit of Mauna Kea in Hawaii.",
+  "links": [
+    {
+      "url": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html",
+      "label": "NSFCam Filter Documentation",
+      "source": "IRTF"
+    }
+  ],
+  "references": [
+    "bibcode:1994SPIE.2198..614S",
+    "bibcode:2002PASP..114..180T",
+    "doi:10.1086/429382"
+  ],
+  "notes": "Transmission profiles from the IRTF NSFCam filter page (absolute transmission, filter only). The page says the H and Br-gamma profiles include a sandwiched blocker, many other filters are used with a PK50 blocker (profiles with and without it are given), and the older broad-band filters were replaced by Mauna Kea (MK) versions.",
+  "bands": {
+    "HMK": {
+      "Description": "NSFCam MKO HMK filter",
+      "PhotSystem": "MKO-NIR",
+      "MagSys": "Vega",
+      "ProfileReference": [
+        {
+          "ref": "bibcode:2002PASP..114..180T",
+          "label": "Tokunaga, Simons & Vacca (2002)"
+        }
+      ],
+      "CalibrationReference": [
+        {
+          "ref": "doi:10.1086/429382",
+          "label": "Tokunaga & Vacca (2005)"
+        }
+      ]
+    },
+    "KSMK": {
+      "Description": "NSFCam MKO KSMK filter",
+      "PhotSystem": "MKO-NIR",
+      "MagSys": "Vega",
+      "ProfileReference": [
+        {
+          "ref": "bibcode:2002PASP..114..180T",
+          "label": "Tokunaga, Simons & Vacca (2002)"
+        }
+      ],
+      "CalibrationReference": [
+        {
+          "ref": "doi:10.1086/429382",
+          "label": "Tokunaga & Vacca (2005)"
+        }
+      ]
+    },
+    "JMK": {
+      "Description": "NSFCam MKO JMK filter",
+      "PhotSystem": "MKO-NIR",
+      "MagSys": "Vega",
+      "ProfileReference": [
+        {
+          "ref": "bibcode:2002PASP..114..180T",
+          "label": "Tokunaga, Simons & Vacca (2002)"
+        }
+      ],
+      "CalibrationReference": [
+        {
+          "ref": "doi:10.1086/429382",
+          "label": "Tokunaga & Vacca (2005)"
+        }
+      ]
+    },
+    "KMK": {
+      "Description": "NSFCam MKO KMK filter",
+      "PhotSystem": "MKO-NIR",
+      "MagSys": "Vega",
+      "ProfileReference": [
+        {
+          "ref": "bibcode:2002PASP..114..180T",
+          "label": "Tokunaga, Simons & Vacca (2002)"
+        }
+      ],
+      "CalibrationReference": [
+        {
+          "ref": "doi:10.1086/429382",
+          "label": "Tokunaga & Vacca (2005)"
+        }
+      ]
+    },
+    "LPMK": {
+      "Description": "NSFCam MKO LPMK filter",
+      "PhotSystem": "MKO-NIR",
+      "MagSys": "Vega",
+      "ProfileReference": [
+        {
+          "ref": "bibcode:2002PASP..114..180T",
+          "label": "Tokunaga, Simons & Vacca (2002)"
+        }
+      ],
+      "CalibrationReference": [
+        {
+          "ref": "doi:10.1086/429382",
+          "label": "Tokunaga & Vacca (2005)"
+        }
+      ]
+    },
+    "MPMK": {
+      "Description": "NSFCam MKO MPMK filter",
+      "PhotSystem": "MKO-NIR",
+      "MagSys": "Vega",
+      "ProfileReference": [
+        {
+          "ref": "bibcode:2002PASP..114..180T",
+          "label": "Tokunaga, Simons & Vacca (2002)"
+        }
+      ],
+      "CalibrationReference": [
+        {
+          "ref": "doi:10.1086/429382",
+          "label": "Tokunaga & Vacca (2005)"
+        }
+      ]
+    },
+    "KPMK": {
+      "Description": "NSFCam MKO KPMK filter",
+      "PhotSystem": "MKO-NIR",
+      "MagSys": "Vega",
+      "ProfileReference": [
+        {
+          "ref": "bibcode:2002PASP..114..180T",
+          "label": "Tokunaga, Simons & Vacca (2002)"
+        }
+      ],
+      "CalibrationReference": [
+        {
+          "ref": "doi:10.1086/429382",
+          "label": "Tokunaga & Vacca (2005)"
+        }
+      ]
+    },
+    "KS": {
+      "Description": "NSFCam KS broad-band filter"
+    },
+    "M": {
+      "Description": "NSFCam M broad-band filter"
+    },
+    "LP": {
+      "Description": "NSFCam LP broad-band filter"
+    },
+    "J": {
+      "Description": "NSFCam J broad-band filter"
+    },
+    "KP": {
+      "Description": "NSFCam KP broad-band filter"
+    },
+    "L": {
+      "Description": "NSFCam L broad-band filter"
+    },
+    "MP1": {
+      "Description": "NSFCam MP1 broad-band filter"
+    },
+    "K": {
+      "Description": "NSFCam K broad-band filter"
+    },
+    "PAG": {
+      "Description": "NSFCam PAG narrow-band filter"
+    },
+    "BRG": {
+      "Description": "NSFCam BRG narrow-band filter"
+    },
+    "H21": {
+      "Description": "NSFCam H21 narrow-band filter"
+    },
+    "CONT": {
+      "Description": "NSFCam CONT narrow-band filter"
+    },
+    "FE": {
+      "Description": "NSFCam FE narrow-band filter"
+    },
+    "CO": {
+      "Description": "NSFCam CO narrow-band filter"
+    },
+    "PAB": {
+      "Description": "NSFCam PAB narrow-band filter"
+    },
+    "S17": {
+      "Description": "NSFCam S17 narrow-band filter"
+    },
+    "S23": {
+      "Description": "NSFCam S23 narrow-band filter"
+    },
+    "H22": {
+      "Description": "NSFCam H22 narrow-band filter"
+    },
+    "HEI": {
+      "Description": "NSFCam HEI narrow-band filter"
+    }
+  }
+}

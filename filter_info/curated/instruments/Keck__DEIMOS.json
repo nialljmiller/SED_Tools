@@ -1,0 +1,54 @@
+{
+  "description": "DEIMOS is the Deep Extragalactic Imaging Multi-Object Spectrograph on Keck II. It also images through broadband filters that sit in the converging beam between the camera and the CCD window.",
+  "facility_description": "The W. M. Keck Observatory operates the two 10 m Keck telescopes on Maunakea. DEIMOS is on Keck II.",
+  "links": [
+    {
+      "url": "https://www2.keck.hawaii.edu/inst/deimos/filter_list.html",
+      "label": "DEIMOS filter list",
+      "source": "Keck"
+    },
+    {
+      "url": "https://www2.keck.hawaii.edu/inst/deimos/",
+      "label": "DEIMOS home",
+      "source": "Keck"
+    }
+  ],
+  "references": [
+    "doi:10.1117/12.460346"
+  ],
+  "notes": "Pivots, equivalent widths, glass stacks and vendors are from the Keck DEIMOS filter list. The list also has a V filter, commissioned in December 2015, whose curve is only a PDF; NJM does not include V. The page does not state a magnitude system. Faber et al. 2003, Proc. SPIE 4841, is the integration-and-testing paper. Filenames containing 'bess' or 'sdss' are not treated as a photometric-system statement, because the filter list does not use those words.",
+  "bands": {
+    "B": {
+      "Description": "DEIMOS B",
+      "Band": "B",
+      "Comments": "Keck filter list: glass stack 2GG385+1BG12+3S8612, pivot 4416 Å, equivalent width 373 Å, vendor Andover. The ASCII file linked for the response curve is Bfaber13norm.txt. The page says the response curves show a theoretical glass profile and that profile convolved with the CCD QE.",
+      "references": [
+        "doi:10.1117/12.460346"
+      ]
+    },
+    "I": {
+      "Description": "DEIMOS I",
+      "Band": "I",
+      "Comments": "Keck filter list: glass stack 3RG9+3clear, pivot 8390 Å, equivalent width 1689 Å, vendor Lick. The ASCII file is Ibess2norm.txt. The filter list itself does not call this filter Bessell. The page says the response curves show a theoretical glass profile and that profile convolved with the CCD QE.",
+      "references": [
+        "doi:10.1117/12.460346"
+      ]
+    },
+    "R": {
+      "Description": "DEIMOS R",
+      "Band": "R",
+      "Comments": "Keck filter list: glass stack 3OG570+3KG3, pivot 6487 Å, equivalent width 810 Å, vendor Andover. The ASCII file is RlrisDredonorm.txt. The page says the response curves show a theoretical glass profile and that profile convolved with the CCD QE.",
+      "references": [
+        "doi:10.1117/12.460346"
+      ]
+    },
+    "Z": {
+      "Description": "DEIMOS Z",
+      "Band": "Z",
+      "Comments": "Keck filter list: glass stack 4RG830+2clear, pivot 9085 Å, equivalent width 969 Å, vendor Lick. The ASCII file is Zsdssredonorm.txt. The filter list itself does not call this filter SDSS. The page says the response curves show a theoretical glass profile and that profile convolved with the CCD QE.",
+      "references": [
+        "doi:10.1117/12.460346"
+      ]
+    }
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "description": "The Dark Energy Camera (DECam) narrow-band filter set on the Blanco 4m telescope, isolating specific emission lines (such as [OIII], H-alpha, [SII], and z~7 Ly-alpha).",
+  "facility_description": "The Víctor M. Blanco 4-meter Telescope is an optical reflecting telescope at Cerro Tololo Inter-American Observatory (CTIO) in Chile, operated by NSF NOIRLab.",
+  "links": [
+    {
+      "url": "https://noirlab.edu/science/programs/ctio/instruments/Dark-Energy-Camera",
+      "label": "NOIRLab DECam Instrument Page",
+      "source": "NOIRLab"
+    },
+    {
+      "url": "https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera",
+      "label": "NOIRLab DECam Filter Documentation",
+      "source": "NOIRLab"
+    },
+    {
+      "url": "https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc3138.xls",
+      "label": "DECam Medium and Narrow Band Filter Curves (scidoc3138)",
+      "source": "NOIRLab"
+    }
+  ],
+  "references": [
+    "bibcode:2015AJ....150..150F",
+    "bibcode:2017ApJ...842L..22Z"
+  ],
+  "notes": "Filter scans from NOIRLab scidoc3138.",
+  "bands": {
+    "N1008": {
+      "Description": "DECam N1008 narrow bandpass centered ~1008 nm"
+    },
+    "N395": {
+      "Description": "DECam N395 narrow bandpass centered ~395 nm"
+    },
+    "N419": {
+      "Description": "DECam N419 narrow bandpass centered ~419 nm"
+    },
+    "N501": {
+      "Description": "DECam N501 narrow bandpass centered ~501 nm ([OIII])"
+    },
+    "N540": {
+      "Description": "DECam N540 narrow bandpass centered ~540 nm"
+    },
+    "N662": {
+      "Description": "DECam N662 narrow bandpass centered ~662 nm (Halpha + [NII])"
+    },
+    "N673": {
+      "Description": "DECam N673 narrow bandpass centered ~673 nm ([SII])"
+    },
+    "N708": {
+      "Description": "DECam N708 narrow bandpass centered ~708 nm"
+    },
+    "N964": {
+      "Description": "DECam N964 narrow bandpass centered ~964 nm (LAGER Ly-alpha)",
+      "references": [
+        "bibcode:2017ApJ...842L..22Z"
+      ]
+    }
+  }
+}

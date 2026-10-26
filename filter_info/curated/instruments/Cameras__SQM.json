@@ -1,0 +1,41 @@
+{
+  "description": "The Unihedron Sky Quality Meter (SQM) is a compact photometer widely used for measuring night-sky brightness and light pollution in visual magnitudes per square arcsecond.",
+  "facility_description": "The Sky Quality Meter is a portable commercial and observatory-mounted night-sky photometer manufactured by Unihedron.",
+  "links": [
+    {
+      "url": "https://unihedron.com/projects/darksky/cd/SQM/",
+      "label": "SQM instruction sheet (directory listing)",
+      "source": "Unihedron"
+    }
+  ],
+  "references": [
+    "bibcode:2017MNRAS.467.2966S"
+  ],
+  "notes": "Sanchez de Miguel et al. (2017) describe the SQM sensor as a TAOS TSL237S light-to-frequency converter partly covered by a HOYA CM-500 near-infrared cut-off filter, and work in AB magnitudes for SQM readings (not Vega); they compare SQM with Johnson B and V and the scotopic/photopic eye responses.",
+  "bands": {
+    "V": {},
+    "B": {},
+    "CM500": {
+      "Description": "SQM response with the HOYA CM-500 near-infrared cut-off filter",
+      "ProfileReference": [
+        {
+          "ref": "bibcode:2017MNRAS.467.2966S",
+          "label": "Sánchez de Miguel et al. (2017)"
+        }
+      ]
+    },
+    "CM500_fil": {
+      "Description": "HOYA CM-500 near-infrared cut-off filter transmission",
+      "ProfileReference": [
+        {
+          "ref": "bibcode:2017MNRAS.467.2966S",
+          "label": "Sánchez de Miguel et al. (2017)"
+        }
+      ]
+    },
+    "G28V": {},
+    "scotopic": {
+      "Description": "CIE scotopic human eye sensitivity curve"
+    }
+  }
+}

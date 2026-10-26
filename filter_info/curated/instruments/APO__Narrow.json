@@ -1,0 +1,41 @@
+{
+  "description": "Narrow-band filters in the Apache Point Observatory filter inventory: H-alpha filters and a Semrock 857 nm filter.",
+  "facility_description": "The ARC 3.5-meter Telescope is an optical/infrared telescope at Apache Point Observatory (APO) in New Mexico, operated by the Astrophysical Research Consortium.",
+  "links": [
+    {
+      "url": "http://filters.apo.nmsu.edu/",
+      "label": "APO Filter Inventory",
+      "source": "Apache Point Observatory"
+    },
+    {
+      "url": "http://filters.apo.nmsu.edu/curves/narrow-band/",
+      "label": "APO narrow-band filters",
+      "source": "Apache Point Observatory"
+    }
+  ],
+  "references": [],
+  "notes": "From the APO narrow-band filter page (bandpass < 10 nm section), which also links Semrock filter details.",
+  "bands": {
+    "Halpha_655nm": {
+      "Description": "APO narrow H-alpha filter centered ~655 nm"
+    },
+    "Halpha_657nm": {
+      "Description": "APO narrow H-alpha filter centered ~657 nm"
+    },
+    "Halpha_658nm": {
+      "Description": "APO narrow H-alpha filter centered ~658 nm"
+    },
+    "Halpha_659nm": {
+      "Description": "APO narrow H-alpha filter centered ~659 nm"
+    },
+    "Halpha_660nm": {
+      "Description": "APO narrow H-alpha filter centered ~660 nm"
+    },
+    "Halpha_661nm": {
+      "Description": "APO narrow H-alpha filter centered ~661 nm"
+    },
+    "Semrock_857nm": {
+      "Description": "APO Semrock narrow-band filter (APO lists centre 857 nm, FWHM 37.8 nm)"
+    }
+  }
+}

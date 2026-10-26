@@ -1,0 +1,100 @@
+{
+  "description": "FourStar is the near-infrared imager built for the Magellan Baade telescope, with four HAWAII-2RG detectors covering a 10.9 by 10.9 arcmin field through J, H and Ks plus medium and narrow bands.",
+  "facility_description": "The Magellan Baade telescope is a 6.5 m telescope at Las Campanas Observatory. FourStar is its near-infrared camera.",
+  "links": [
+    {
+      "url": "https://instrumentation.obs.carnegiescience.edu/FourStar/OPTICS/filters.html",
+      "label": "FourStar filters",
+      "source": "Carnegie"
+    },
+    {
+      "url": "https://instrumentation.obs.carnegiescience.edu/FourStar/OPTICS/curves/plot.sm",
+      "label": "FourStar curve script plot.sm",
+      "source": "Carnegie"
+    },
+    {
+      "url": "https://instrumentation.obs.carnegiescience.edu/FourStar/",
+      "label": "FourStar home",
+      "source": "Carnegie"
+    }
+  ],
+  "references": [
+    "bibcode:2013PASP..125..654P"
+  ],
+  "notes": "The filters page, last updated in 2010 while the camera was still being built, names broad-band J, H and Ks, medium-band J1, J2, J3, Hshort and Hlong, and narrow bands at 1.18 and 2.09 μm. plot.sm, credited to files from SEP, says the *_cam_optics.txt products are the filter transmission times 0.995^16, with no detector, atmosphere or telescope, where 0.995 is the average transmission per surface. Persson et al. 2013, PASP 125, 654 is the instrument paper. The filters page does not state a magnitude system.",
+  "bands": {
+    "J": {
+      "Description": "FourStar Broad-band J",
+      "Band": "J",
+      "Comments": "Named on the Carnegie FourStar filters page.",
+      "references": [
+        "bibcode:2013PASP..125..654P"
+      ]
+    },
+    "H": {
+      "Description": "FourStar Broad-band H",
+      "Band": "H",
+      "Comments": "Named on the Carnegie FourStar filters page.",
+      "references": [
+        "bibcode:2013PASP..125..654P"
+      ]
+    },
+    "Ks": {
+      "Description": "FourStar Broad-band Ks",
+      "Band": "Ks",
+      "Comments": "Named on the Carnegie FourStar filters page. plot.sm multiplies the Ks curve by a glass-absorption roll-off, (1.714 - 0.380*lambda_um), which the script says is negligible in the other broad and medium bands.",
+      "references": [
+        "bibcode:2013PASP..125..654P"
+      ]
+    },
+    "J1": {
+      "Description": "FourStar Medium-band J1",
+      "Comments": "Named on the Carnegie FourStar filters page.",
+      "references": [
+        "bibcode:2013PASP..125..654P"
+      ]
+    },
+    "J2": {
+      "Description": "FourStar Medium-band J2",
+      "Comments": "Named on the Carnegie FourStar filters page.",
+      "references": [
+        "bibcode:2013PASP..125..654P"
+      ]
+    },
+    "J3": {
+      "Description": "FourStar Medium-band J3",
+      "Comments": "Named on the Carnegie FourStar filters page.",
+      "references": [
+        "bibcode:2013PASP..125..654P"
+      ]
+    },
+    "Hshort": {
+      "Description": "FourStar Medium-band Hshort",
+      "Comments": "Named on the Carnegie FourStar filters page.",
+      "references": [
+        "bibcode:2013PASP..125..654P"
+      ]
+    },
+    "Hlong": {
+      "Description": "FourStar Medium-band Hlong",
+      "Comments": "Named on the Carnegie FourStar filters page.",
+      "references": [
+        "bibcode:2013PASP..125..654P"
+      ]
+    },
+    "NB118": {
+      "Description": "FourStar Narrow-band 1.18",
+      "Comments": "Named on the Carnegie FourStar filters page. plot.sm builds FS118 from FS118_convolve.txt, which Janice Lee's note in that script says was convolved with the J2 blocking filter and already includes the 0.995^16 surface factor.",
+      "references": [
+        "bibcode:2013PASP..125..654P"
+      ]
+    },
+    "NB209": {
+      "Description": "FourStar Narrow-band 2.09",
+      "Comments": "Named on the Carnegie FourStar filters page. plot.sm builds FS209 from FS209_convolve.txt, convolved with the Ks blocking filter. The script applies the Ks absorption roll-off only to the Ks broadband file, and says the convolve files do not include that Ks absorption.",
+      "references": [
+        "bibcode:2013PASP..125..654P"
+      ]
+    }
+  }
+}

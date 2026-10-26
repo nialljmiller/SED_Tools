@@ -1,0 +1,205 @@
+{
+  "description": "ZIMPOL is the visible Zurich Imaging Polarimeter inside SPHERE, used for imaging and imaging polarimetry from about 500 to 900 nm. These are the ZIMPOL filters and neutral densities on ESO's filter page.",
+  "facility_description": "SPHERE is the VLT high-contrast imager at Paranal; ZIMPOL is its visible science camera.",
+  "links": [
+    {
+      "url": "https://www.eso.org/sci/facilities/paranal/instruments/sphere/inst/filters.html",
+      "label": "SPHERE filters, including ZIMPOL",
+      "source": "ESO"
+    },
+    {
+      "url": "https://www.eso.org/sci/facilities/paranal/instruments/sphere/inst/filters/transmission_ND_filters.txt",
+      "label": "ZIMPOL neutral-density curves",
+      "source": "ESO"
+    }
+  ],
+  "references": [
+    "bibcode:2018A&A...619A...9S",
+    "bibcode:2019A&A...631A.155B"
+  ],
+  "notes": "NJM's info.json for SPHERE/ZIMPOL records no curve URL. Central wavelengths and widths are copied from the ESO ZIMPOL tables. The page also lists an Ha_NB filter with no transmission file; it is not an NJM band. Schmid et al. 2018 is the ZIMPOL system paper. No magnitude system is stated on the filter page.",
+  "bands": {
+    "VBB": {
+      "Description": "SPHERE/ZIMPOL Very broad-band VBB",
+      "Comments": "ESO ZIMPOL filter table: central wavelength 735.4 nm, width 290.5 nm.",
+      "references": [
+        "bibcode:2018A&A...619A...9S",
+        "bibcode:2019A&A...631A.155B"
+      ]
+    },
+    "R_PRIM": {
+      "Description": "SPHERE/ZIMPOL Broad-band R_PRIM",
+      "Comments": "ESO ZIMPOL filter table: central wavelength 626.3 nm, width 148.6 nm.",
+      "references": [
+        "bibcode:2018A&A...619A...9S",
+        "bibcode:2019A&A...631A.155B"
+      ]
+    },
+    "I_PRIM": {
+      "Description": "SPHERE/ZIMPOL Broad-band I_PRIM",
+      "Comments": "ESO ZIMPOL filter table: central wavelength 789.7 nm, width 152.7 nm.",
+      "references": [
+        "bibcode:2018A&A...619A...9S",
+        "bibcode:2019A&A...631A.155B"
+      ]
+    },
+    "V": {
+      "Description": "SPHERE/ZIMPOL V",
+      "Band": "V",
+      "Comments": "ESO ZIMPOL filter table: central wavelength 554 nm, width 80.6 nm.",
+      "references": [
+        "bibcode:2018A&A...619A...9S",
+        "bibcode:2019A&A...631A.155B"
+      ]
+    },
+    "V_S": {
+      "Description": "SPHERE/ZIMPOL Medium-band V_S",
+      "Comments": "ESO ZIMPOL filter table: central wavelength 531.6 nm, width 37.2 nm.",
+      "references": [
+        "bibcode:2018A&A...619A...9S",
+        "bibcode:2019A&A...631A.155B"
+      ]
+    },
+    "V_L": {
+      "Description": "SPHERE/ZIMPOL Medium-band V_L",
+      "Comments": "ESO ZIMPOL filter table: central wavelength 581.5 nm, width 41.1 nm.",
+      "references": [
+        "bibcode:2018A&A...619A...9S",
+        "bibcode:2019A&A...631A.155B"
+      ]
+    },
+    "N_R": {
+      "Description": "SPHERE/ZIMPOL Medium-band N_R",
+      "Comments": "ESO ZIMPOL filter table: central wavelength 645.9 nm, width 56.7 nm.",
+      "references": [
+        "bibcode:2018A&A...619A...9S",
+        "bibcode:2019A&A...631A.155B"
+      ]
+    },
+    "730_NB": {
+      "Description": "SPHERE/ZIMPOL Medium-band 730_NB",
+      "Comments": "ESO ZIMPOL filter table: central wavelength 733 nm, width 54.9 nm.",
+      "references": [
+        "bibcode:2018A&A...619A...9S",
+        "bibcode:2019A&A...631A.155B"
+      ]
+    },
+    "N_I": {
+      "Description": "SPHERE/ZIMPOL Medium-band N_I",
+      "Comments": "ESO ZIMPOL filter table: central wavelength 816.8 nm, width 80.5 nm.",
+      "references": [
+        "bibcode:2018A&A...619A...9S",
+        "bibcode:2019A&A...631A.155B"
+      ]
+    },
+    "I_L": {
+      "Description": "SPHERE/ZIMPOL Medium-band I_L",
+      "Comments": "ESO ZIMPOL filter table: central wavelength 870.6 nm, width 56.4 nm.",
+      "references": [
+        "bibcode:2018A&A...619A...9S",
+        "bibcode:2019A&A...631A.155B"
+      ]
+    },
+    "KI": {
+      "Description": "SPHERE/ZIMPOL KI",
+      "Comments": "ESO ZIMPOL filter table: central wavelength 770.2 nm, width 21.2 nm.",
+      "references": [
+        "bibcode:2018A&A...619A...9S",
+        "bibcode:2019A&A...631A.155B"
+      ]
+    },
+    "TiO_717": {
+      "Description": "SPHERE/ZIMPOL TiO_717",
+      "Comments": "ESO ZIMPOL filter table: central wavelength 716.8 nm, width 19.7 nm.",
+      "references": [
+        "bibcode:2018A&A...619A...9S",
+        "bibcode:2019A&A...631A.155B"
+      ]
+    },
+    "CH4_727": {
+      "Description": "SPHERE/ZIMPOL CH4_727",
+      "Comments": "ESO ZIMPOL filter table: central wavelength 730.3 nm, width 20.5 nm.",
+      "references": [
+        "bibcode:2018A&A...619A...9S",
+        "bibcode:2019A&A...631A.155B"
+      ]
+    },
+    "Cnt748": {
+      "Description": "SPHERE/ZIMPOL Cnt748",
+      "Comments": "ESO ZIMPOL filter table: central wavelength 747.4 nm, width 20.6 nm.",
+      "references": [
+        "bibcode:2018A&A...619A...9S",
+        "bibcode:2019A&A...631A.155B"
+      ]
+    },
+    "Cnt820": {
+      "Description": "SPHERE/ZIMPOL Cnt820",
+      "Comments": "ESO ZIMPOL filter table: central wavelength 817.3 nm, width 19.8 nm.",
+      "references": [
+        "bibcode:2018A&A...619A...9S",
+        "bibcode:2019A&A...631A.155B"
+      ]
+    },
+    "B_Ha": {
+      "Description": "SPHERE/ZIMPOL Broad H-alpha B_Ha",
+      "Comments": "ESO ZIMPOL filter table: central wavelength 655.6 nm, width 5.5 nm.",
+      "references": [
+        "bibcode:2018A&A...619A...9S",
+        "bibcode:2019A&A...631A.155B"
+      ]
+    },
+    "Cnt_Ha": {
+      "Description": "SPHERE/ZIMPOL H-alpha continuum Cnt_Ha",
+      "Comments": "ESO ZIMPOL filter table: central wavelength 644.9 nm, width 4.1 nm.",
+      "references": [
+        "bibcode:2018A&A...619A...9S",
+        "bibcode:2019A&A...631A.155B"
+      ]
+    },
+    "HeI": {
+      "Description": "SPHERE/ZIMPOL He I",
+      "Comments": "ESO ZIMPOL filter table: central wavelength 588 nm, width 5.4 nm.",
+      "references": [
+        "bibcode:2018A&A...619A...9S",
+        "bibcode:2019A&A...631A.155B"
+      ]
+    },
+    "OI_630": {
+      "Description": "SPHERE/ZIMPOL O I 630",
+      "Comments": "ESO ZIMPOL filter table: central wavelength 629.5 nm, width 5.4 nm.",
+      "references": [
+        "bibcode:2018A&A...619A...9S",
+        "bibcode:2019A&A...631A.155B"
+      ]
+    },
+    "N_Ha": {
+      "Description": "SPHERE/ZIMPOL Narrow H-alpha N_Ha",
+      "Comments": "ESO ZIMPOL filter table: central wavelength 656.34 nm, width 0.97 nm.",
+      "references": [
+        "bibcode:2018A&A...619A...9S",
+        "bibcode:2019A&A...631A.155B"
+      ]
+    },
+    "ND1p0": {
+      "Description": "SPHERE/ZIMPOL neutral density ND1.0",
+      "Comments": "Column in transmission_ND_filters.txt. The header calls these SPHERE/ZIMPOL ND filters and says the values were updated on 2015-04-16 by Julien Milli.",
+      "references": [
+        "bibcode:2018A&A...619A...9S"
+      ]
+    },
+    "ND2p0": {
+      "Description": "SPHERE/ZIMPOL neutral density ND2.0",
+      "Comments": "Column in transmission_ND_filters.txt. The header calls these SPHERE/ZIMPOL ND filters and says the values were updated on 2015-04-16 by Julien Milli.",
+      "references": [
+        "bibcode:2018A&A...619A...9S"
+      ]
+    },
+    "ND4p0": {
+      "Description": "SPHERE/ZIMPOL neutral density ND4.0",
+      "Comments": "Column in transmission_ND_filters.txt. The header calls these SPHERE/ZIMPOL ND filters and says the values were updated on 2015-04-16 by Julien Milli.",
+      "references": [
+        "bibcode:2018A&A...619A...9S"
+      ]
+    }
+  }
+}

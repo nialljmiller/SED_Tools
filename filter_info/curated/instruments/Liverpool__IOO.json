@@ -1,0 +1,88 @@
+{
+  "description": "IO:O (Infrared-Optical: Optical) is the facility wide-field optical CCD camera on the 2.0-meter robotic Liverpool Telescope, equipped with Bessell and SDSS filter sets.",
+  "facility_description": "The Liverpool Telescope is a 2.0-meter fully robotic telescope operated by Liverpool John Moores University at Roque de los Muchachos Observatory on La Palma.",
+  "links": [
+    {
+      "url": "https://telescope.livjm.ac.uk/TelInst/Inst/IOO/",
+      "label": "Liverpool Telescope IO:O Instrument Page",
+      "source": "Liverpool Telescope"
+    }
+  ],
+  "references": [
+    "bibcode:2004SPIE.5489..679S",
+    "doi:10.6084/m9.figshare.4659421"
+  ],
+  "notes": "Filter transmission curves from the IO:O efficiency-model table (Smith & Steele 2017, figshare). The IO:O page lists Sloan u'g'r'i'z', Bessell B and V and H-alpha filters, and says the e2v CCD231-84 replaced the original Fairchild 486 in June 2012.",
+  "bands": {
+    "B": {
+      "Description": "IO:O Bessell B filter",
+      "PhotSystem": "Bessell",
+      "ProfileReference": [
+        {
+          "ref": "doi:10.6084/m9.figshare.4659421",
+          "label": "Smith & Steele (2017)"
+        }
+      ]
+    },
+    "V": {
+      "Description": "IO:O Bessell V filter",
+      "PhotSystem": "Bessell",
+      "ProfileReference": [
+        {
+          "ref": "doi:10.6084/m9.figshare.4659421",
+          "label": "Smith & Steele (2017)"
+        }
+      ]
+    },
+    "g": {
+      "Description": "IO:O SDSS g filter",
+      "PhotSystem": "SDSS",
+      "ProfileReference": [
+        {
+          "ref": "doi:10.6084/m9.figshare.4659421",
+          "label": "Smith & Steele (2017)"
+        }
+      ]
+    },
+    "i": {
+      "Description": "IO:O SDSS i filter",
+      "PhotSystem": "SDSS",
+      "ProfileReference": [
+        {
+          "ref": "doi:10.6084/m9.figshare.4659421",
+          "label": "Smith & Steele (2017)"
+        }
+      ]
+    },
+    "r": {
+      "Description": "IO:O SDSS r filter",
+      "PhotSystem": "SDSS",
+      "ProfileReference": [
+        {
+          "ref": "doi:10.6084/m9.figshare.4659421",
+          "label": "Smith & Steele (2017)"
+        }
+      ]
+    },
+    "u": {
+      "Description": "IO:O SDSS u filter",
+      "PhotSystem": "SDSS",
+      "ProfileReference": [
+        {
+          "ref": "doi:10.6084/m9.figshare.4659421",
+          "label": "Smith & Steele (2017)"
+        }
+      ]
+    },
+    "z": {
+      "Description": "IO:O SDSS z filter",
+      "PhotSystem": "SDSS",
+      "ProfileReference": [
+        {
+          "ref": "doi:10.6084/m9.figshare.4659421",
+          "label": "Smith & Steele (2017)"
+        }
+      ]
+    }
+  }
+}

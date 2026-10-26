@@ -1,0 +1,32 @@
+{
+  "description": "The Hodge on/off H-alpha narrow-band filters (6563, 6585, 6607, 6629), listed in the Apache Point Observatory filter inventory as not on site but available on loan from Paul Hodge (University of Washington).",
+  "facility_description": "The ARC 3.5-meter Telescope is an optical/infrared telescope at Apache Point Observatory (APO) in New Mexico, operated by the Astrophysical Research Consortium.",
+  "links": [
+    {
+      "url": "http://filters.apo.nmsu.edu/",
+      "label": "APO Filter Inventory",
+      "source": "Apache Point Observatory"
+    },
+    {
+      "url": "http://filters.apo.nmsu.edu/curves/Hodge/",
+      "label": "Hodge on/off H-alpha filters",
+      "source": "Apache Point Observatory"
+    }
+  ],
+  "references": [],
+  "notes": "Centres and FWHMs are from the APO Hodge page, which gives a high-resolution trace near peak and a 300-1200 nm trace for each filter.",
+  "bands": {
+    "6563nm": {
+      "Description": "Hodge 6563 H-alpha narrow-band filter (APO lists centre 656.2 nm, FWHM 2.3 nm)"
+    },
+    "6585nm": {
+      "Description": "Hodge 6585 H-alpha narrow-band filter (APO lists centre 658.6 nm, FWHM 2.23 nm)"
+    },
+    "6607nm": {
+      "Description": "Hodge 6607 H-alpha narrow-band filter (APO lists centre 660.8 nm, FWHM 2.42 nm)"
+    },
+    "6629nm": {
+      "Description": "Hodge 6629 H-alpha narrow-band filter (APO lists centre 662.8 nm, FWHM 2.63 nm)"
+    }
+  }
+}

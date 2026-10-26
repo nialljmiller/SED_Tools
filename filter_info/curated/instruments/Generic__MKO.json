@@ -1,0 +1,108 @@
+{
+  "description": "The Mauna Kea Observatories Near-Infrared (MKO-NIR) filter system (J, H, K, L', M') defined to optimize atmospheric transmission windows and minimize background emission for 1-5 micron astronomy.",
+  "facility_description": "Mauna Kea Observatories is a consortium of astronomical research facilities located at the summit of Mauna Kea on the island of Hawaii.",
+  "links": [
+    {
+      "url": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html",
+      "label": "NSFCam filter transmission profiles, including the Mauna Kea (MK) filters",
+      "source": "IRTF"
+    },
+    {
+      "url": "https://irtfweb.ifa.hawaii.edu/IRrefdata/iwafdv.html",
+      "label": "IRTF Near-Infrared Photometric Reference Data",
+      "source": "IRTF"
+    }
+  ],
+  "references": [
+    "bibcode:2002PASP..114..180T",
+    "doi:10.1086/429382"
+  ],
+  "notes": "Filter-only transmission profiles (no detector QE or atmosphere) for the MKO-NIR set; the IRTF profiles page lists the Mauna Kea filters as needing no PK50 blocker. Tokunaga & Vacca (2005) give the Vega-based calibration of the set.",
+  "bands": {
+    "H": {
+      "Description": "MKO-NIR H bandpass",
+      "PhotSystem": "MKO-NIR",
+      "MagSys": "Vega",
+      "ProfileReference": [
+        {
+          "ref": "bibcode:2002PASP..114..180T",
+          "label": "Tokunaga, Simons & Vacca (2002)"
+        }
+      ],
+      "CalibrationReference": [
+        {
+          "ref": "doi:10.1086/429382",
+          "label": "Tokunaga & Vacca (2005)"
+        }
+      ]
+    },
+    "J": {
+      "Description": "MKO-NIR J bandpass",
+      "PhotSystem": "MKO-NIR",
+      "MagSys": "Vega",
+      "ProfileReference": [
+        {
+          "ref": "bibcode:2002PASP..114..180T",
+          "label": "Tokunaga, Simons & Vacca (2002)"
+        }
+      ],
+      "CalibrationReference": [
+        {
+          "ref": "doi:10.1086/429382",
+          "label": "Tokunaga & Vacca (2005)"
+        }
+      ]
+    },
+    "K": {
+      "Description": "MKO-NIR K bandpass",
+      "PhotSystem": "MKO-NIR",
+      "MagSys": "Vega",
+      "ProfileReference": [
+        {
+          "ref": "bibcode:2002PASP..114..180T",
+          "label": "Tokunaga, Simons & Vacca (2002)"
+        }
+      ],
+      "CalibrationReference": [
+        {
+          "ref": "doi:10.1086/429382",
+          "label": "Tokunaga & Vacca (2005)"
+        }
+      ]
+    },
+    "Lp": {
+      "Description": "MKO-NIR L' bandpass",
+      "PhotSystem": "MKO-NIR",
+      "MagSys": "Vega",
+      "ProfileReference": [
+        {
+          "ref": "bibcode:2002PASP..114..180T",
+          "label": "Tokunaga, Simons & Vacca (2002)"
+        }
+      ],
+      "CalibrationReference": [
+        {
+          "ref": "doi:10.1086/429382",
+          "label": "Tokunaga & Vacca (2005)"
+        }
+      ]
+    },
+    "Mp": {
+      "Description": "MKO-NIR M' bandpass",
+      "PhotSystem": "MKO-NIR",
+      "MagSys": "Vega",
+      "ProfileReference": [
+        {
+          "ref": "bibcode:2002PASP..114..180T",
+          "label": "Tokunaga, Simons & Vacca (2002)"
+        }
+      ],
+      "CalibrationReference": [
+        {
+          "ref": "doi:10.1086/429382",
+          "label": "Tokunaga & Vacca (2005)"
+        }
+      ]
+    }
+  }
+}

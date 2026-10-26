@@ -1,0 +1,71 @@
+{
+  "description": "Sinistro is the facility optical imager on the Las Cumbres Observatory (LCO) 1.0-meter telescope network, equipped with standard Bessell and SDSS filter sets for robotic time-domain astronomy.",
+  "facility_description": "Las Cumbres Observatory (LCO) is a globally distributed network of robotic telescopes operated for time-domain astronomy.",
+  "links": [
+    {
+      "url": "https://lco.global/observatory/instruments/sinistro/",
+      "label": "Sinistro Instrument Page",
+      "source": "LCO"
+    },
+    {
+      "url": "https://lco.global/observatory/instruments/filters/",
+      "label": "LCO Optical Filters Page",
+      "source": "LCO"
+    },
+    {
+      "url": "https://lco.global/documents/2/lco_filter_curves.zip",
+      "label": "LCO Filter Curves Archive",
+      "source": "LCO"
+    }
+  ],
+  "references": [
+    "bibcode:2013PASP..125.1031B"
+  ],
+  "notes": "Curves are LCO filter transmission scans (lco_filter_curves.zip). The LCO filters page lists the 1 m standard loadout as Johnson-Cousins/Bessell UBVRI plus SDSS/Pan-STARRS u'g'r'i'z_s Y w.",
+  "bands": {
+    "B": {
+      "Description": "Sinistro Bessell B filter",
+      "PhotSystem": "Johnson-Cousins"
+    },
+    "I": {
+      "Description": "Sinistro Bessell I filter",
+      "PhotSystem": "Johnson-Cousins"
+    },
+    "R": {
+      "Description": "Sinistro Bessell R filter",
+      "PhotSystem": "Johnson-Cousins"
+    },
+    "U": {
+      "Description": "Sinistro Bessell U filter",
+      "PhotSystem": "Johnson-Cousins"
+    },
+    "V": {
+      "Description": "Sinistro Bessell V filter",
+      "PhotSystem": "Johnson-Cousins"
+    },
+    "Y": {
+      "Description": "Sinistro Pan-STARRS Y filter",
+      "PhotSystem": "Pan-STARRS"
+    },
+    "gp": {
+      "Description": "Sinistro SDSS g' filter",
+      "PhotSystem": "SDSS"
+    },
+    "ip": {
+      "Description": "Sinistro SDSS i' filter",
+      "PhotSystem": "SDSS"
+    },
+    "rp": {
+      "Description": "Sinistro SDSS r' filter",
+      "PhotSystem": "SDSS"
+    },
+    "up": {
+      "Description": "Sinistro SDSS u' filter",
+      "PhotSystem": "SDSS"
+    },
+    "zs": {
+      "Description": "Sinistro Pan-STARRS z-short filter",
+      "PhotSystem": "Pan-STARRS"
+    }
+  }
+}

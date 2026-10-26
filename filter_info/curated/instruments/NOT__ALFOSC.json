@@ -1,0 +1,57 @@
+{
+  "description": "ALFOSC (Andalucia Faint Object Spectrograph and Camera) is the primary optical instrument on the 2.56-meter Nordic Optical Telescope (NOT), providing imaging in Bessell, interference, and SDSS filters.",
+  "facility_description": "The Nordic Optical Telescope (NOT) is a 2.56-meter optical/infrared telescope located at Roque de los Muchachos Observatory on La Palma, Canary Islands.",
+  "links": [
+    {
+      "url": "https://www.not.iac.es/instruments/alfosc/",
+      "label": "NOT ALFOSC Instrument Page",
+      "source": "NOT"
+    },
+    {
+      "url": "https://www.not.iac.es/instruments/filters/filters.php",
+      "label": "NOT Filter Database",
+      "source": "NOT"
+    }
+  ],
+  "references": [
+    "doi:10.1007/978-3-642-11250-8_21"
+  ],
+  "notes": "Filter-only transmissions from the NOT filter database (filter numbers as listed there for the ALFOSC set-ups). Telescope, detector and atmosphere are not included.",
+  "bands": {
+    "B": {
+      "Description": "ALFOSC Bessell B filter (#74)",
+      "PhotSystem": "Bessell"
+    },
+    "R": {
+      "Description": "ALFOSC Bessell R filter (#76)",
+      "PhotSystem": "Bessell"
+    },
+    "U": {
+      "Description": "ALFOSC Bessell U filter (#7)",
+      "PhotSystem": "Bessell"
+    },
+    "V": {
+      "Description": "ALFOSC Bessell V filter (#75)",
+      "PhotSystem": "Bessell"
+    },
+    "i_int": {
+      "Description": "ALFOSC interference i filter (#12)"
+    },
+    "gp": {
+      "Description": "ALFOSC SDSS g' filter (#120)",
+      "PhotSystem": "SDSS"
+    },
+    "ip": {
+      "Description": "ALFOSC SDSS i' filter (#111)",
+      "PhotSystem": "SDSS"
+    },
+    "rp": {
+      "Description": "ALFOSC SDSS r' filter (#110)",
+      "PhotSystem": "SDSS"
+    },
+    "up": {
+      "Description": "ALFOSC SDSS u' filter (#109)",
+      "PhotSystem": "SDSS"
+    }
+  }
+}

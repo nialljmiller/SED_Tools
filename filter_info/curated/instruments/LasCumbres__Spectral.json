@@ -1,0 +1,67 @@
+{
+  "description": "Spectral Instruments optical cameras deployed on the Las Cumbres Observatory 2.0-meter Faulkes Telescopes (FTN and FTS), providing optical imaging in Johnson-Cousins, SDSS, and Pan-STARRS filters.",
+  "facility_description": "Las Cumbres Observatory (LCO) operates twin 2.0-meter Faulkes Telescopes at Haleakala Observatory (FTN) and Siding Spring Observatory (FTS).",
+  "links": [
+    {
+      "url": "https://lco.global/observatory/instruments/spectral/",
+      "label": "Spectral Instruments CCD Page",
+      "source": "LCO"
+    },
+    {
+      "url": "https://lco.global/observatory/instruments/filters/",
+      "label": "LCO Optical Filters Page",
+      "source": "LCO"
+    },
+    {
+      "url": "https://lco.global/documents/2/lco_filter_curves.zip",
+      "label": "LCO Filter Curves Archive",
+      "source": "LCO"
+    }
+  ],
+  "references": [
+    "bibcode:2013PASP..125.1031B"
+  ],
+  "notes": "Curves are LCO filter transmission scans (lco_filter_curves.zip). The LCO Spectral page says the Spectral camera on Faulkes Telescope North has been permanently replaced by MuSCAT3.",
+  "bands": {
+    "B": {
+      "Description": "Spectral Bessell B filter",
+      "PhotSystem": "Johnson-Cousins"
+    },
+    "I": {
+      "Description": "Spectral Bessell I filter",
+      "PhotSystem": "Johnson-Cousins"
+    },
+    "R": {
+      "Description": "Spectral Bessell R filter",
+      "PhotSystem": "Johnson-Cousins"
+    },
+    "V": {
+      "Description": "Spectral Bessell V filter",
+      "PhotSystem": "Johnson-Cousins"
+    },
+    "Y": {
+      "Description": "Spectral Pan-STARRS Y filter",
+      "PhotSystem": "Pan-STARRS"
+    },
+    "gp": {
+      "Description": "Spectral SDSS g' filter",
+      "PhotSystem": "SDSS"
+    },
+    "ip": {
+      "Description": "Spectral SDSS i' filter",
+      "PhotSystem": "SDSS"
+    },
+    "rp": {
+      "Description": "Spectral SDSS r' filter",
+      "PhotSystem": "SDSS"
+    },
+    "up": {
+      "Description": "Spectral SDSS u' filter",
+      "PhotSystem": "SDSS"
+    },
+    "zs": {
+      "Description": "Spectral Pan-STARRS z-short filter",
+      "PhotSystem": "Pan-STARRS"
+    }
+  }
+}

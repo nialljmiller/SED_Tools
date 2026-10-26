@@ -1,0 +1,138 @@
+{
+  "description": "NIX is the imaging arm of ERIS, the Enhanced Resolution Imager and Spectrograph on VLT UT4. It images from J through M, with coronagraphy from K through M and long-slit spectroscopy in L. These are the filters in ESO's nix-filters.zip.",
+  "facility_description": "ERIS is mounted at the Cassegrain focus of UT4 at the ESO VLT and uses the Adaptive Optics Facility.",
+  "links": [
+    {
+      "url": "https://www.eso.org/sci/facilities/paranal/instruments/eris/",
+      "label": "ERIS instrument pages",
+      "source": "ESO"
+    },
+    {
+      "url": "https://www.eso.org/sci/facilities/paranal/instruments/eris/img/nix-filters.zip",
+      "label": "NIX filter-curve zip",
+      "source": "ESO"
+    }
+  ],
+  "references": [
+    "bibcode:2023A&A...674A.207D"
+  ],
+  "notes": "ESO asks authors to cite Davies et al. 2023, A&A 674, 207. The zip headers name the parent text files and say the tables were written by cleantrim.pro; they do not label the wavelength unit. Sample ranges above assume metres. NJM also has a Ks band. The zip contains filter_K.dat, whose samples run from 1.859e-6 to 2.488e-6, and no file named Ks, so Ks is not given its own entry. research_bands.tsv listed seven NIX bands; the live info.json has no SVO match for any of the 17, so the unambiguous zip members are all included.",
+  "bands": {
+    "Br-a": {
+      "Description": "ERIS/NIX Br-a",
+      "Comments": "The zip member is named Br-a. The sampled column runs from 3.986e-6 to 4.114e-6, which is 3.986–4.114 μm if that column is metres. The header does not label the unit. The quoted span is the range of samples in the file, not a measured FWHM.",
+      "references": [
+        "bibcode:2023A&A...674A.207D"
+      ]
+    },
+    "Br-a-cont": {
+      "Description": "ERIS/NIX Br-a-cont",
+      "Comments": "Zip member Br-a-cont.dat. Samples span 3.845e-6 to 4.081e-6. The quoted span is the range of samples in the file, not a measured FWHM.",
+      "references": [
+        "bibcode:2023A&A...674A.207D"
+      ]
+    },
+    "Br-g": {
+      "Description": "ERIS/NIX Br-g",
+      "Comments": "Zip member Br-g.dat. Samples span 2.130e-6 to 2.216e-6. The quoted span is the range of samples in the file, not a measured FWHM.",
+      "references": [
+        "bibcode:2023A&A...674A.207D"
+      ]
+    },
+    "H2-1-0S": {
+      "Description": "ERIS/NIX H2-1-0S",
+      "Comments": "The zip names this file H2-1-OS.dat, from NB_filters/H2-1-OS.txt. It is the only H2 line filter in the zip. Samples span 2.068e-6 to 2.179e-6. The quoted span is the range of samples in the file, not a measured FWHM.",
+      "references": [
+        "bibcode:2023A&A...674A.207D"
+      ]
+    },
+    "H2-cont": {
+      "Description": "ERIS/NIX H2-cont",
+      "Comments": "Zip member H2-cont.dat. Samples span 1.983e-6 to 2.160e-6. The quoted span is the range of samples in the file, not a measured FWHM.",
+      "references": [
+        "bibcode:2023A&A...674A.207D"
+      ]
+    },
+    "IB-2p42": {
+      "Description": "ERIS/NIX IB-2p42",
+      "Comments": "Zip member IB-2.42.dat. Samples span 2.335e-6 to 2.511e-6. The quoted span is the range of samples in the file, not a measured FWHM.",
+      "references": [
+        "bibcode:2023A&A...674A.207D"
+      ]
+    },
+    "IB-2p48": {
+      "Description": "ERIS/NIX IB-2p48",
+      "Comments": "Zip member IB-2.48.dat. Samples span 2.385e-6 to 2.564e-6. The quoted span is the range of samples in the file, not a measured FWHM.",
+      "references": [
+        "bibcode:2023A&A...674A.207D"
+      ]
+    },
+    "J": {
+      "Description": "ERIS/NIX J",
+      "Band": "J",
+      "Comments": "Zip member filter_J.dat. Samples span 1.122e-6 to 1.436e-6. The quoted span is the range of samples in the file, not a measured FWHM.",
+      "references": [
+        "bibcode:2023A&A...674A.207D"
+      ]
+    },
+    "H": {
+      "Description": "ERIS/NIX H",
+      "Band": "H",
+      "Comments": "Zip member filter_H.dat. Samples span 1.423e-6 to 1.901e-6. The quoted span is the range of samples in the file, not a measured FWHM.",
+      "references": [
+        "bibcode:2023A&A...674A.207D"
+      ]
+    },
+    "K-peak": {
+      "Description": "ERIS/NIX K-peak",
+      "Comments": "Zip member K-peak.dat. Samples span 2.090e-6 to 2.295e-6. The quoted span is the range of samples in the file, not a measured FWHM.",
+      "references": [
+        "bibcode:2023A&A...674A.207D"
+      ]
+    },
+    "Fe-II": {
+      "Description": "ERIS/NIX Fe-II",
+      "Comments": "Zip member Fe-II.dat. Samples span 1.617e-6 to 1.671e-6. The quoted span is the range of samples in the file, not a measured FWHM.",
+      "references": [
+        "bibcode:2023A&A...674A.207D"
+      ]
+    },
+    "Pa-b": {
+      "Description": "ERIS/NIX Pa-b",
+      "Comments": "Zip member Pa-b.dat. Samples span 1.238e-6 to 1.328e-6. The quoted span is the range of samples in the file, not a measured FWHM.",
+      "references": [
+        "bibcode:2023A&A...674A.207D"
+      ]
+    },
+    "Lp": {
+      "Description": "ERIS/NIX Lp",
+      "Band": "L'",
+      "Comments": "Zip member filter_Lp.dat. Samples span 3.342e-6 to 4.324e-6. The quoted span is the range of samples in the file, not a measured FWHM.",
+      "references": [
+        "bibcode:2023A&A...674A.207D"
+      ]
+    },
+    "Mp": {
+      "Description": "ERIS/NIX Mp",
+      "Band": "M'",
+      "Comments": "Zip member filter_Mp.dat. Samples span 4.283e-6 to 5.359e-6. The quoted span is the range of samples in the file, not a measured FWHM.",
+      "references": [
+        "bibcode:2023A&A...674A.207D"
+      ]
+    },
+    "L-Broad": {
+      "Description": "ERIS/NIX L-Broad",
+      "Comments": "Zip member filter_L-Broad.dat. Samples span 2.919e-6 to 4.387e-6. The quoted span is the range of samples in the file, not a measured FWHM.",
+      "references": [
+        "bibcode:2023A&A...674A.207D"
+      ]
+    },
+    "Short-Lp": {
+      "Description": "ERIS/NIX Short-Lp",
+      "Comments": "Zip member filter_Short-Lp.dat. Samples span 2.993e-6 to 3.681e-6. The quoted span is the range of samples in the file, not a measured FWHM.",
+      "references": [
+        "bibcode:2023A&A...674A.207D"
+      ]
+    }
+  }
+}

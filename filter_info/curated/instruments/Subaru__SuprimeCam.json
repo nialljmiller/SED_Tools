@@ -1,0 +1,121 @@
+{
+  "description": "Suprime-Cam was the wide-field prime-focus camera on the Subaru Telescope. These are its general broad-band filters: Johnson-Cousins B, V, Rc and Ic, SDSS g', r', i' and z', and Y.",
+  "facility_description": "Suprime-Cam was the prime-focus camera of the Subaru Telescope, operated by the National Astronomical Observatory of Japan.",
+  "links": [
+    {
+      "url": "https://subarutelescope.org/Archive/Instruments/SCam/sensitivity.html",
+      "label": "Suprime-Cam sensitivities and filter lists",
+      "source": "Subaru"
+    },
+    {
+      "url": "https://subarutelescope.org/Archive/Instruments/SCam/ccd.html",
+      "label": "Suprime-Cam CCDs",
+      "source": "Subaru"
+    }
+  ],
+  "references": [
+    "bibcode:2002PASJ...54..833M",
+    "bibcode:1990PASP..102.1181B",
+    "bibcode:1996AJ....111.1748F"
+  ],
+  "notes": "The sensitivity page states the magnitude systems explicitly: Vega for Johnson-Cousins, AB for the SDSS filters and for Y. It also says a throughput estimate should fold in the FDCCD quantum efficiency, the Primary Focus Unit transmittance and the primary-mirror reflectivity; those are not in the filter-only lists. Miyazaki et al. 2002 is the camera paper and predates the Y filter, so Y is not given that paper as a profile reference. Bessell 1990 and Fukugita et al. 1996 are the photometric-system papers, not the scan sources.",
+  "bands": {
+    "B": {
+      "Description": "Suprime-Cam Johnson-Cousins B",
+      "PhotSystem": "Johnson-Cousins",
+      "MagSys": "Vega",
+      "Band": "B",
+      "Comments": "Subaru sensitivity page: magnitudes for the Johnson-Cousins filters are on the Vega system. The transmission list is the filter-only ASCII file linked from that page.",
+      "references": [
+        "bibcode:2002PASJ...54..833M",
+        "bibcode:1990PASP..102.1181B"
+      ]
+    },
+    "V": {
+      "Description": "Suprime-Cam Johnson-Cousins V",
+      "PhotSystem": "Johnson-Cousins",
+      "MagSys": "Vega",
+      "Band": "V",
+      "Comments": "Subaru sensitivity page: magnitudes for the Johnson-Cousins filters are on the Vega system. The transmission list is the filter-only ASCII file linked from that page.",
+      "references": [
+        "bibcode:2002PASJ...54..833M",
+        "bibcode:1990PASP..102.1181B"
+      ]
+    },
+    "Rc": {
+      "Description": "Suprime-Cam Johnson-Cousins Rc",
+      "PhotSystem": "Johnson-Cousins",
+      "MagSys": "Vega",
+      "Band": "Rc",
+      "Comments": "Subaru sensitivity page: magnitudes for the Johnson-Cousins filters are on the Vega system. The transmission list is the filter-only ASCII file linked from that page.",
+      "references": [
+        "bibcode:2002PASJ...54..833M",
+        "bibcode:1990PASP..102.1181B"
+      ]
+    },
+    "Ic": {
+      "Description": "Suprime-Cam Johnson-Cousins Ic",
+      "PhotSystem": "Johnson-Cousins",
+      "MagSys": "Vega",
+      "Band": "Ic",
+      "Comments": "Subaru sensitivity page: magnitudes for the Johnson-Cousins filters are on the Vega system. The transmission list is the filter-only ASCII file linked from that page.",
+      "references": [
+        "bibcode:2002PASJ...54..833M",
+        "bibcode:1990PASP..102.1181B"
+      ]
+    },
+    "g": {
+      "Description": "Suprime-Cam SDSS g'",
+      "PhotSystem": "SDSS",
+      "MagSys": "AB",
+      "Band": "g'",
+      "Comments": "Subaru sensitivity page: the SDSS filters are on the AB system. Fukugita et al. 1996 defines that photometric system; it is not the source of these filter scans.",
+      "references": [
+        "bibcode:2002PASJ...54..833M",
+        "bibcode:1996AJ....111.1748F"
+      ]
+    },
+    "r": {
+      "Description": "Suprime-Cam SDSS r'",
+      "PhotSystem": "SDSS",
+      "MagSys": "AB",
+      "Band": "r'",
+      "Comments": "Subaru sensitivity page: the SDSS filters are on the AB system. Fukugita et al. 1996 defines that photometric system; it is not the source of these filter scans.",
+      "references": [
+        "bibcode:2002PASJ...54..833M",
+        "bibcode:1996AJ....111.1748F"
+      ]
+    },
+    "i": {
+      "Description": "Suprime-Cam SDSS i'",
+      "PhotSystem": "SDSS",
+      "MagSys": "AB",
+      "Band": "i'",
+      "Comments": "Subaru sensitivity page: the SDSS filters are on the AB system. Fukugita et al. 1996 defines that photometric system; it is not the source of these filter scans.",
+      "references": [
+        "bibcode:2002PASJ...54..833M",
+        "bibcode:1996AJ....111.1748F"
+      ]
+    },
+    "z": {
+      "Description": "Suprime-Cam SDSS z'",
+      "PhotSystem": "SDSS",
+      "MagSys": "AB",
+      "Band": "z'",
+      "Comments": "Subaru sensitivity page: the SDSS filters are on the AB system. Fukugita et al. 1996 defines that photometric system; it is not the source of these filter scans.",
+      "references": [
+        "bibcode:2002PASJ...54..833M",
+        "bibcode:1996AJ....111.1748F"
+      ]
+    },
+    "Y": {
+      "Description": "Suprime-Cam Y",
+      "MagSys": "AB",
+      "Band": "Y",
+      "Comments": "Subaru sensitivity page groups Y with the SDSS filters for the AB magnitude system and lists it with the broad-band general filters. It does not name a separate Y photometric system.",
+      "references": [
+        "bibcode:2002PASJ...54..833M"
+      ]
+    }
+  }
+}

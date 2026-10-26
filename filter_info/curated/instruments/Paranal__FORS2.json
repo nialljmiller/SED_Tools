@@ -1,0 +1,73 @@
+{
+  "description": "FORS2 is the FOcal Reducer and low-dispersion Spectrograph still offered on the VLT. These bands are its broad-band filters: Bessell I, the special R, and the high-throughput u, b, v and g set.",
+  "facility_description": "The ESO Very Large Telescope stands at the Paranal Observatory in Chile.",
+  "links": [
+    {
+      "url": "https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters/curves.html",
+      "label": "FORS filter transmission curves",
+      "source": "ESO"
+    },
+    {
+      "url": "https://www.eso.org/sci/facilities/paranal/instruments/fors/",
+      "label": "FORS instrument pages",
+      "source": "ESO"
+    },
+    {
+      "url": "https://www.eso.org/sci/facilities/paranal/instruments/fors/doc/VLT-MAN-ESO-13100-1543_P117_3.pdf",
+      "label": "FORS user manual P117",
+      "source": "ESO"
+    }
+  ],
+  "references": [
+    "doi:10.1117/12.316782",
+    "bibcode:1990PASP..102.1181B"
+  ],
+  "notes": "The ESO filter page says the HIGH curves are laboratory measurements bought in 2007 for FORS1, and it links the collimator scans used for b_HIGH, v_HIGH, R_SPECIAL and I_BESS. NJM's instrument note places this set in the current FORS2 configuration (manual P117, Table 2.1). Bessell 1990 applies to the filter ESO names BESS, not to R_SPECIAL or the HIGH set. No magnitude system is stated on the filter page. DetectorType is left unchanged; the manual describes a CCD.",
+  "bands": {
+    "I_BESS": {
+      "Description": "FORS Bessell I, collimator scan",
+      "PhotSystem": "Bessell",
+      "Band": "I",
+      "Comments": "ESO file I_BESS+77COLL_SR.ascii, linked from the FORS filter-curve page next to the BESS_I lab scan. Not Bessell's 1990 tabulated passband.",
+      "references": [
+        "doi:10.1117/12.316782",
+        "bibcode:1990PASP..102.1181B"
+      ]
+    },
+    "R_SPECIAL": {
+      "Description": "FORS special R",
+      "Comments": "ESO labels this SPECIAL_R and links R_SPECIAL+76COLL_SR.ascii. No photometric-system name is given beyond that label.",
+      "references": [
+        "doi:10.1117/12.316782"
+      ]
+    },
+    "b_HIGH": {
+      "Description": "FORS high-throughput b",
+      "Comments": "ESO says u/b/v/g_HIGH were purchased in 2007 for the FORS1 blue-sensitive mosaic and that the tabulated curves are laboratory measurements. This band uses b_HIGH+113COLL_SR.ascii.",
+      "references": [
+        "doi:10.1117/12.316782"
+      ]
+    },
+    "g_HIGH": {
+      "Description": "FORS high-throughput g",
+      "Comments": "Laboratory scan g_HIGH.txt. ESO says the HIGH-set curves are lab measurements and that new on-site measurements were still pending when the page was written.",
+      "references": [
+        "doi:10.1117/12.316782"
+      ]
+    },
+    "u_HIGH": {
+      "Description": "FORS high-throughput u",
+      "Comments": "Laboratory scan u_HIGH.txt, part of the 2007 HIGH set described on the ESO filter page.",
+      "references": [
+        "doi:10.1117/12.316782"
+      ]
+    },
+    "v_HIGH": {
+      "Description": "FORS high-throughput v",
+      "Comments": "ESO file v_HIGH+114COLL_SR.ascii, from the 2007 HIGH set.",
+      "references": [
+        "doi:10.1117/12.316782"
+      ]
+    }
+  }
+}
