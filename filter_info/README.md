@@ -50,7 +50,9 @@ Each key is looked up once. `--retry` tries the unresolved ones again.
 2. **NJM provenance overrides SVO:** the header row, `manifest.json`, `filter_expansion/provenance/`.
 3. **Hand-checked files override both:**
    - `curated/instruments/<Facility>__<Instrument>.json` holds `description`, `facility_description`, `notes`, `links`, `references`, `bands.<band>.<field>`
-     (`bands.*.<field>` applies to every band unless the band sets its own),
+     (`bands.*.<field>` applies to every band unless the band sets its own; `bands.<band>.svo_filterID` re-points
+     the band's SVO match, or clears it with `null`; `bands.<band>.DetectorType_note` replaces the generated note,
+     or clears it with `""`),
      `acknowledgements` (the provider's requested text: `[{for, text, url, references, applies_to}]`) and `licence`
      (`{redistribution: public|attribution|permission|restricted|unknown, terms, url}`);
    - `curated/references.json` holds entries no service resolves.
