@@ -5,3 +5,4 @@
 source_evidence/svo-archive/2026-10-26-pilot/manifest.jsonl
 source_evidence/svo-archive/ia-snapshot-2026-10-26/manifest.jsonl
 source_evidence/svo-archive/ia-2026-10-26-b00-missing-tail/manifest.jsonl
+source_evidence/svo-archive/ia-2026-10-26-b01-njm-votable/manifest.jsonl
