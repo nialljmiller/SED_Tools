@@ -1,0 +1,9 @@
+# number of points on sci filter + aux + bad z = 49
+# number of points on sci filter               = 47
+# number of positions in lambda                = 301
+# x_pos 0.000000 2.000000 -2.000000
+# y_pos 0.000000 0.000000 0.000000
+#
+479.916  0.000042  0.000042  0.000040
+482.905  0.000015  0.000014  0.000016
+485.894  0.000009  0.000011  0.000011

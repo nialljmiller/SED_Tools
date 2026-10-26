@@ -35,6 +35,7 @@ dependencies = [
 [project.optional-dependencies]
 full = [
     "scipy>=1.14",
+    "xlrd>=2.0",  # Keck NIRC2/LRIS filter workbooks (original-source builders)
     "scikit-learn",
     "torch",
     ]
