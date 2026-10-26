@@ -1,0 +1,42 @@
+{
+  "description": "The MultiSpectral Instrument (MSI) on Sentinel-2C, a 13-band imager from 443 to 2190 nm (bands B01-B12 and B8A). The curves are ESA's band-averaged spectral responses for Sentinel-2C from the Sentinel-2 Spectral Response Functions workbook (COPE-GSEG-EOPG-TN-15-0007, v5.0), measured on the ground during the MSI assembly, integration and test campaign; each is the whole-instrument band response, peak 1.",
+  "facility_description": "Sentinel-2 is ESA's optical high-resolution Earth-observation mission for the Copernicus (formerly GMES) programme; Sentinel-2A, -2B and -2C each carry an MSI.",
+  "links": [
+    {
+      "url": "https://sentiwiki.copernicus.eu/web/s2-documents",
+      "label": "SentiWiki Sentinel-2 document library (spectral response function workbooks)",
+      "source": "ESA SentiWiki"
+    },
+    {
+      "url": "https://sentiwiki.copernicus.eu/__attachments/a_ad595cc9fa0018a4e9eb28e1e234124a751149b5933b0b8b1f6b80612eaab586/sentinel-2-spectral-response-functions-v5.xlsx",
+      "label": "Sentinel-2 Spectral Response Functions workbook v5.0 (COPE-GSEG-EOPG-TN-15-0007)",
+      "source": "ESA SentiWiki"
+    },
+    {
+      "url": "https://sentiwiki.copernicus.eu/web/terms-and-conditions",
+      "label": "SentiWiki terms and conditions",
+      "source": "ESA SentiWiki"
+    }
+  ],
+  "references": [
+    "doi:10.1016/j.rse.2011.11.026"
+  ],
+  "acknowledgements": [
+    {
+      "for": "European Space Agency (owner of SentiWiki and the SRF workbook)",
+      "text": "European Space Agency - ESA",
+      "url": "https://sentiwiki.copernicus.eu/web/terms-and-conditions",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ],
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"The contents of ESA's SentiWiki website are intended for non-commercial use. ESA grants permission to users to visit the site, and to download and copy information, images, documents and materials from the website for non-commercial use. ESA does not grant the right to resell or redistribute any information, documents, images or material from its website or to compile or create derivative works from material on its website. Use of material on the website is subject to the terms and conditions outlined below. All material published on the ESA SentiWiki website is protected by copyright and owned or controlled by ESA or the party credited as the provider of the content, software or other material. Copyright in the material must be recognised by an appropriate on-screen credit in a form such as \"European Space Agency - ESA\". If a remote sensing product is being used, the credit \"produced from ESA remote sensing data\" must be added, plus, if applicable, \"image processed by (name of the institution as indicated on the Internet Server)\". Users may not modify, publish, transmit, participate in the transfer or sale of, reproduce, create derivative works from, distribute, perform, display or in any way exploit any of the content, software, material or services, in whole or in part, without obtaining prior written authorisation.\" (SentiWiki Terms and Conditions, section \"Copyrights\")",
+    "url": "https://sentiwiki.copernicus.eu/web/terms-and-conditions",
+    "scope": "Site-wide terms and conditions of ESA's SentiWiki website (section 'Copyrights'); they cover all material on the site, including the SRF workbook attachment, and are not a data licence written for the curves. Published on NJM under Nill's hosting decision of 2026-10-26."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "Published 2026-10-26 under Nill's hosting decision (built with FX_MSI_PUBLISH=1). The SRF workbook is a SentiWiki attachment; SentiWiki's terms (https://sentiwiki.copernicus.eu/web/terms-and-conditions) do not grant redistribution or derivative works without prior written authorisation, and the workbook itself carries no licence statement. The Copernicus Sentinel data licence (https://ads.atmosphere.copernicus.eu/licences/ec-sentinel: 'EU law grants free access to Copernicus Sentinel Data and Service Information for the purpose of the following use ... b. distribution') would allow redistribution with the notice 'Contains modified Copernicus Sentinel data [Year]' if ESA confirms the SRFs count as Sentinel data; that is not stated anywhere seen. Description paraphrases the workbook Overview sheet: 'This spreadsheet contains the measured spectral responses for each band of Sentinel-2A and Sentinel-2B MultiSpectral Instrument (MSI).' (the text predates S2C; S2C sheet added in v4.0), 'The values in the SR_AV_Bx columns represent the average spectral response determined through ground-based testing of the MSI' and 'Data are based on ground measurements performed in the frame of the Assembly, Integration and Test (AIT) campaign of the MSI.' Sentinel-2C averages taken from S2C_OPER_MSI_SPECT___20201110T000000_0001.xml (within S2C ICCDB version 1.0 ) (Overview sheet). Band range 443-2190 nm from the workbook Overview band table centre wavelengths (B01 to B12). Facility text from the title of doi:10.1016/j.rse.2011.11.026 ('Sentinel-2: ESA's Optical High-Resolution Mission for GMES Operational Services') and the workbook sheets for S2A/S2B/S2C. Photon/energy weighting is not stated by the owner; DetectorType=energy is tagged 'assumed'. Pivots agree with ESA's 'Equivalent Wavelengths' sheet (int(lambda S)/int(S)) to <=0.25 %. Naming: Facility 'Sentinel' as in SVO's Sentinel/MSI IDs; SVO's MSI.Bxx-A/-B suffixes are likely S2A/S2B but no archived SVO record was available to confirm, so instruments use the owner's satellite names."
+}

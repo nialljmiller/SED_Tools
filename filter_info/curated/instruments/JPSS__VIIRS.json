@@ -1,0 +1,49 @@
+{
+  "description": "The Visible Infrared Imaging Radiometer Suite (VIIRS) on Suomi NPP (flight model F1, 'the VIIRS sensor model flying on the Suomi NPP platform'): 22 bands, M1-M15, M16A, M16B and I1-I5. The curves are the Northrop Grumman October 2011 band-averaged relative spectral responses that NOAA NCC lists as the 'VIIRS Band-Averaged Relative Spectral Response Functions officially used in the IDPS (provided by Northrop Grumman)', with the Government Team's modifications (I5 cutoff extended to 13.036 um, I3 out-of-band response replaced from NG's Nov 2011 update, peak normalised to 1.0), which the Government Team 'deemed acceptable ... to represent the NPP VIIRS At-Launch RSR'.",
+  "facility_description": "The Joint Polar Satellite System (JPSS) is NOAA's series of polar-orbiting weather satellites (Suomi NPP, NOAA-20/J1, NOAA-21/J2, ...); VIIRS is its visible/infrared imager.",
+  "links": [
+    {
+      "url": "https://ncc.nesdis.noaa.gov/VIIRS/VIIRSSpectralResponseFunctions.php",
+      "label": "NOAA NCC VIIRS RSR page (Suomi NPP)",
+      "source": "NOAA NESDIS NCC"
+    },
+    {
+      "url": "https://ncc.nesdis.noaa.gov/documents/documentation/NG_VIIRS_NPP_RSR_filtered_Oct2011_BA.zip",
+      "label": "NG band-averaged RSRs, October 2011 (zip with NG_Oct_2011_README.txt)",
+      "source": "Northrop Grumman / NOAA NCC"
+    },
+    {
+      "url": "https://www.star.nesdis.noaa.gov/star/productdisclaimer.php",
+      "label": "NOAA STAR link and product disclaimers (linked from the NCC page footer)",
+      "source": "NOAA NESDIS STAR"
+    }
+  ],
+  "references": [
+    "doi:10.1109/TGRS.2013.2247768"
+  ],
+  "acknowledgements": [
+    {
+      "for": "Northrop Grumman (provider of the RSRs)",
+      "text": "This data is provided by Northrop Grumman under the NPOESS contract (F04701-02-0502, NPOESS A&O).",
+      "url": "https://ncc.nesdis.noaa.gov/documents/documentation/NG_VIIRS_NPP_RSR_filtered_Oct2011_BA.zip",
+      "references": [],
+      "applies_to": "all bands"
+    },
+    {
+      "for": "NOAA NESDIS STAR (host of the NCC VIIRS RSR pages)",
+      "text": "as long as credit is given to the NOAA / NESDIS Center for Satellite Applications and Research",
+      "url": "https://www.star.nesdis.noaa.gov/star/productdisclaimer.php",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ],
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"Copyright 2011, Northrop Grumman Systems Corporation. All Rights Reserved.\" (NG_Oct_2011_README.txt in NG_VIIRS_NPP_RSR_filtered_Oct2011_BA.zip)",
+    "url": "https://ncc.nesdis.noaa.gov/documents/documentation/NG_VIIRS_NPP_RSR_filtered_Oct2011_BA.zip",
+    "scope": "Vendor copyright notice in the README of the zip that NOAA NCC distributes; it grants no licence. The NCC page that links the zip is covered by NOAA STAR's disclaimer (see notes). Published on NJM under Nill's hosting decision of 2026-10-26."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "Published 2026-10-26 under Nill's hosting decision; until then the set was held because of the Northrop Grumman notice. The NCC page footer reads 'Website owner: STAR' and links 'Link & product disclaimers' to https://www.star.nesdis.noaa.gov/star/productdisclaimer.php, which says: 'Users are free to use the images or information hosted on this site as they wish, as long as credit is given to the NOAA / NESDIS Center for Satellite Applications and Research.' The README inside the zip says 'This data is provided by Northrop Grumman under the NPOESS contract (F04701-02-0502, NPOESS A&O).' and ends the NG section with 'Copyright 2011, Northrop Grumman Systems Corporation. All Rights Reserved.'; whether STAR's statement covers a vendor file hosted on the NCC site is not stated, so the licence class stays 'permission' and both statements are recorded. Curves are column 2 ('detector average RSR (aka \"band averaged\")') of the *_BA.dat files; I3 uses NPP_VIIRS_NG_RSR_I3_filtered_Oct2011f_BA_Mod.dat (Government Team NOTE 2). Wavelength in nm, converted to Angstrom; response not rescaled (NOTE 3: 'normalized to a peak response of 1.0 by the Govt Team'). VisNIR M1-M7 are NG 'Fused' RSRs (T-SIRCUS and Tvac), I1-I2 'Effective' RSRs, and the SMWIR/LWIR bands 'true RSR', with NG's recommended wavelength limits applied by the Government Team (NOTE 4). The zip has no DNB and no combined M16 curve. Photon/energy weighting is not stated by the owner; DetectorType=energy is tagged 'assumed', as for VIIRS-J1/J2. Pivot check: every band's pivot lies inside its specification spectral range from NOAA's NOAA-20 VIIRS On-orbit Performance table (https://ncc.nesdis.noaa.gov/NOAA-20/docs/NOAA-20-VIIRS-on-OrbitPerformanceTable.pdf; same band specification). Facility/instrument ID follows SVO's JPSS/VIIRS IDs (no SVO record was available locally to confirm the mapping). Instrument paper cited: Cao et al., early on-orbit performance of VIIRS on Suomi NPP."
+}
