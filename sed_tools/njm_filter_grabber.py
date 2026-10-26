@@ -68,11 +68,12 @@ class NJMFilterGrabber:
         """Return True if the mirror is available."""
         return self._available
 
-    def _get(self, url: str, *, timeout: int = 30) -> requests.Response:
+    def _get(self, url: str, *, timeout: int = 30, headers: Optional[Dict[str, str]] = None) -> requests.Response:
         """Retry transient mirror failures, including Apache's temporary 403 block."""
         for attempt in range(3):
             try:
-                response = self.session.get(url, timeout=timeout)
+                response = (self.session.get(url, timeout=timeout, headers=headers) if headers
+                            else self.session.get(url, timeout=timeout))
                 response.raise_for_status()
                 return response
             except requests.RequestException as exc:
@@ -296,6 +297,9 @@ class NJMFilterGrabber:
             remote_index = [line.strip() for line in response.text.splitlines() if line.strip()]
 
         print(f"[njm] {facility}/{instrument}: {downloaded} downloaded, {skipped} skipped, {failed} failed")
+        if downloaded:
+            # Only beside curves fetched now: the mirror's files describe its current curves.
+            self.download_catalogue_files(facility, instrument)
         self.download_components(facility, instrument)
         if remote_index and not (Path(output_dir) / "manifest.json").is_file():
             from .filter_components import InstrumentManifest
@@ -344,6 +348,39 @@ class NJMFilterGrabber:
         print(f"\n[njm] Total filters downloaded: {total_downloaded}")
         return total_downloaded
     
+    # ------------------------------------------------------------------
+    # Catalogue files (see sed_tools.filter_catalogue)
+    # ------------------------------------------------------------------
+    CATALOGUE_FILES = ("properties.json", "info.json")
+
+    def download_catalogue_files(self, facility: str, instrument: str) -> List[str]:
+        """Save the instrument's ``properties.json`` and ``info.json`` beside its curves.
+
+        Best effort: a file the mirror does not serve is skipped. Returns the names saved.
+        """
+        if not self._available:
+            return []
+        output_dir = Path(self.base_dir) / facility / instrument
+        saved = []
+        for name in self.CATALOGUE_FILES:
+            try:
+                response = self._get(f"{self.filters_url}/{facility}/{instrument}/{name}", timeout=30)
+                content = getattr(response, "content", None)
+                if not isinstance(content, bytes):
+                    content = response.text.encode("utf-8")
+                data = json.loads(content.decode("utf-8"))
+                if not isinstance(data, dict) or not isinstance(data.get("bands"), dict):
+                    raise ValueError(f"not an NJM {name}")
+            except (requests.RequestException, ValueError, AttributeError, TypeError) as exc:
+                logger.debug("No NJM %s for %s/%s: %s", name, facility, instrument, exc)
+                continue
+            output_dir.mkdir(parents=True, exist_ok=True)
+            tmp = output_dir / f".{name}.part"
+            tmp.write_bytes(content)
+            os.replace(tmp, output_dir / name)
+            saved.append(name)
+        return saved
+
     # ------------------------------------------------------------------
     # Separable components (see sed_tools.filter_components)
     # ------------------------------------------------------------------

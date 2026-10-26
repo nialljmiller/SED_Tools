@@ -36,6 +36,36 @@ Filter properties
   ``sed_tools/cie``). Ultraviolet and infrared bands get false colours in
   wavelength order.
 
+NJM catalogue: search, descriptions and citations without SVO
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Add ``Filters.search()`` and ``sed-tools filters-search`` to find bands in
+  NJM's catalogue by facility, instrument or band name, by wavelength (bands
+  covering a wavelength or overlapping a range), by pivot or FWHM range, by
+  detector type, or by any column of ``properties.json``. The result is a
+  pandas DataFrame with one row per band. Names are matched in
+  ``index.json`` first, so ``properties.json`` is fetched only for
+  instruments that can still match, at most six requests at a time.
+- Add ``Filters.properties()`` and ``Filters.info()`` for an instrument's
+  ``properties.json`` and ``info.json``. Files are cached in
+  ``cache/njm/`` beside the filter root and revalidated by ETag when
+  ``index.json`` changes; cached copies are used when the mirror is
+  unreachable or with ``offline=True``.
+- ``sed-tools filters-info`` also prints the instrument's description,
+  licence and a per-band table of pivot, FWHM, detector type and photometric
+  system; ``--json`` adds them under ``catalogue``.
+- Add ``Filters.citations()``, ``Filters.cite()`` and ``sed-tools
+  filters-cite`` to list the references (with BibTeX), the providers'
+  acknowledgement texts and the licences for chosen instruments or bands, or
+  for everything installed. References are merged across instruments by work.
+  Entries with no BibTeX on NJM are given as ``%`` comments rather than
+  invented.
+- Add ``Filters.plot()`` (``sed_tools.filter_plot``) to draw an
+  instrument's or a selection's curves in their ``filter_colors`` colours,
+  optionally normalised and with NJM's Vega spectrum overlaid.
+- NJM downloads keep ``properties.json`` and ``info.json`` beside the curves
+  they describe. The MESA index file still lists only the curves.
+
 Version 0.4.1 (October 2026)
 ----------------------------
 

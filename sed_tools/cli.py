@@ -496,6 +496,81 @@ def print_filter_availability(info: dict) -> None:
         print(f"  Detector unverified for  : {', '.join(assumed)}")
 
 
+SEARCH_COLUMNS = ["facility", "instrument", "band", "WavelengthPivot", "FWHM",
+                  "WavelengthMin", "WavelengthMax", "DetectorType"]
+
+
+def _catalogue_entry(facility: str, instrument: str, base: str, *, offline: bool) -> dict:
+    """NJM's info.json and properties.json for ``filters-info``; errors are reported, not raised."""
+    from .api import Filters
+    from .filter_catalogue import CatalogueError
+
+    entry = {"info": None, "properties": None, "errors": []}
+    for kind in ("info", "properties"):
+        try:
+            entry[kind] = getattr(Filters, kind)(facility, instrument, filter_root=base, offline=offline)
+        except (CatalogueError, OSError, ValueError) as exc:
+            if str(exc) not in entry["errors"]:
+                entry["errors"].append(str(exc))
+    return entry
+
+
+def print_catalogue_entry(target: str, entry: dict) -> None:
+    """Print the NJM description, licence and per-band properties of an instrument."""
+    import textwrap
+
+    info, props = entry["info"] or {}, (entry["properties"] or {}).get("bands", {})
+    width, indent = 100, " " * 29
+
+    def field(name, text):
+        print(textwrap.fill(" ".join(str(text).split()), width, initial_indent=f"  {name:<25}: ",
+                            subsequent_indent=indent))
+
+    if info.get("description"):
+        field("Description", info["description"])
+    licence = info.get("licence") or {}
+    if licence:
+        field("Licence", f"{licence.get('redistribution', 'unknown')}"
+              + (f". {licence['terms']}" if licence.get("terms") else "")
+              + (f" {licence['url']}" if licence.get("url") else ""))
+    if info.get("references"):
+        field("Cite", f"{len(info['references'])} references; sed-tools filters-cite {target}")
+    bands = sorted(set(props) | set(info.get("bands", {})),
+                   key=lambda b: (props.get(b, {}).get("WavelengthPivot") or float("inf"), b))
+    if bands:
+        print(f"  {'Band':<16}{'Pivot (Å)':>11}{'FWHM (Å)':>11}  {'Detector':<9}{'MagSys':<8}Description")
+        for band in bands:
+            p, i = props.get(band, {}), info.get("bands", {}).get(band, {})
+            num = lambda v: f"{v:>11.1f}" if isinstance(v, (int, float)) else f"{'-':>11}"
+            print(f"  {band:<16}{num(p.get('WavelengthPivot'))}{num(p.get('FWHM'))}  "
+                  f"{p.get('DetectorType', '-'):<9}{i.get('MagSys') or '-':<8}{i.get('Description') or ''}")
+    for error in entry["errors"]:
+        print(f"  NJM catalogue            : {error}")
+
+
+def _bound(text: str) -> Optional[float]:
+    """A range end from the command line: a number, or '-'/'' for an open end."""
+    return None if text.strip().lower() in ("", "-", "none", "inf", "-inf") else float(text)
+
+
+def _where(items: Optional[List[str]]) -> Dict[str, object]:
+    """``KEY=LOW:HIGH`` (either end may be empty) or ``KEY=VALUE`` criteria for filters-search."""
+    criteria: Dict[str, object] = {}
+    for item in items or []:
+        key, sep, value = item.partition("=")
+        if not sep or not key:
+            raise ValueError(f"--where expects KEY=VALUE or KEY=LOW:HIGH, got {item!r}")
+        if ":" in value:
+            lo, _, hi = value.partition(":")
+            criteria[key] = (_bound(lo), _bound(hi))
+        else:
+            try:
+                criteria[key] = float(value)
+            except ValueError:
+                criteria[key] = value
+    return criteria
+
+
 def _add_filter_product_options(parser, *, components=None):
     """Keep filter fetch and composition options identical."""
     parser.add_argument("--base", default=str(FILTER_DIR_DEFAULT), help="Base filter directory")
@@ -987,6 +1062,36 @@ def main():
     fip.add_argument("--offline", action="store_true", help="Inspect local data without contacting sources")
     fip.add_argument("--json", action="store_true", help="Emit availability as JSON")
 
+    fsp = sub.add_parser("filters-search",
+                         help="Search NJM's filter catalogue by name, wavelength and properties (no SVO)")
+    fsp.add_argument("text", nargs="?", help="Case-insensitive substring of Facility/Instrument/Band")
+    fsp.add_argument("--facility", help="Facility name contains this")
+    fsp.add_argument("--instrument", help="Instrument name contains this")
+    fsp.add_argument("--band", help="Band name contains this")
+    fsp.add_argument("--wavelength", nargs="+", type=_bound, metavar="Å",
+                     help="One value: bands covering it; two: bands overlapping that range")
+    fsp.add_argument("--pivot", nargs=2, type=_bound, metavar=("LOW", "HIGH"),
+                     help="Pivot wavelength range in Å ('-' leaves an end open)")
+    fsp.add_argument("--fwhm", nargs=2, type=_bound, metavar=("LOW", "HIGH"), help="FWHM range in Å")
+    fsp.add_argument("--detector-type", choices=["energy", "photon"])
+    fsp.add_argument("--where", action="append", metavar="KEY=VALUE|KEY=LOW:HIGH",
+                     help="Any properties.json column, e.g. ABminusVega=:0.5 or ColorMethod=true; repeatable")
+    fsp.add_argument("--columns", help="Comma-separated columns to show (default: %s)" % ",".join(SEARCH_COLUMNS))
+    fsp.add_argument("--names-only", action="store_true", help="Match names in index.json only; fetch no properties")
+    fsp.add_argument("--format", choices=["table", "csv", "json"], default="table")
+    fsp.add_argument("--base", default=str(FILTER_DIR_DEFAULT), help="Base filter directory (cache beside it)")
+    fsp.add_argument("--refresh", action="store_true", help="Ask NJM again instead of using the cache")
+    fsp.add_argument("--offline", action="store_true", help="Use the cached catalogue only")
+
+    fcip = sub.add_parser("filters-cite",
+                          help="Print references (BibTeX), acknowledgements and licences for instruments")
+    fcip.add_argument("targets", nargs="*",
+                      help="Facility/Instrument or Facility/Instrument/Band; default: every installed instrument")
+    fcip.add_argument("--format", choices=["text", "bibtex", "json"], default="text")
+    fcip.add_argument("--base", default=str(FILTER_DIR_DEFAULT), help="Base filter directory")
+    fcip.add_argument("--refresh", action="store_true", help="Use NJM's current info.json, not installed copies")
+    fcip.add_argument("--offline", action="store_true", help="Use installed and cached info.json only")
+
     fcop = sub.add_parser("filters-compose", help="Compose optical-path components")
     fcop.add_argument("target", help="Facility/Instrument or installed instrument directory")
     _add_filter_product_options(fcop, components="filter")
@@ -1169,11 +1274,71 @@ def main():
         if len(target) != 2:
             parser.error("target must be Facility/Instrument")
         info = Filters.available(*target, filter_root=args.base, include_remote=not args.offline)
+        catalogue = _catalogue_entry(*target, args.base, offline=args.offline)
         if args.json:
-            print(json.dumps(info, indent=2))
+            print(json.dumps(dict(info, catalogue=catalogue), indent=2))
         else:
             print_filter_availability(info)
+            print_catalogue_entry("/".join(target), catalogue)
         return 1 if info.get("availability_source") == "unknown" and info.get("errors") else 0
+    elif args.cmd == "filters-search":
+        from .api import Filters
+        from .filter_catalogue import CatalogueError
+
+        wavelength = args.wavelength
+        if wavelength is not None and (len(wavelength) > 2 or wavelength == [None]):
+            parser.error("--wavelength takes one value or a LOW HIGH range")
+        try:
+            result = Filters.search(
+                args.text, facility=args.facility, instrument=args.instrument, band=args.band,
+                wavelength=(wavelength[0] if len(wavelength) == 1 else tuple(wavelength)) if wavelength else None,
+                pivot=tuple(args.pivot) if args.pivot else None, fwhm=tuple(args.fwhm) if args.fwhm else None,
+                detector_type=args.detector_type, where=_where(args.where), properties=not args.names_only,
+                filter_root=args.base, refresh=args.refresh, offline=args.offline)
+        except (CatalogueError, ValueError) as exc:
+            print(f"[filters] {exc}")
+            return 1
+        columns = args.columns.split(",") if args.columns else SEARCH_COLUMNS
+        unknown = [c for c in columns if c not in result.columns and c not in SEARCH_COLUMNS]
+        if unknown:
+            parser.error(f"unknown columns: {', '.join(unknown)}")
+        shown = result[[c for c in columns if c in result.columns]]
+        if args.format == "csv":
+            print(shown.to_csv(index=False), end="")
+        elif args.format == "json":
+            print(json.dumps({"bands": json.loads(shown.to_json(orient="records")),
+                              "units": result.attrs.get("units", {}),
+                              "errors": result.attrs.get("errors", [])}, indent=2))
+        else:
+            if shown.empty:
+                print("No bands match.")
+            else:
+                print(shown.to_string(index=False, na_rep="-", float_format=lambda v: f"{v:.6g}"))
+                n_inst = len(result[["facility", "instrument"]].drop_duplicates())
+                print(f"\n{len(result)} band{'s' * (len(result) != 1)} in "
+                      f"{n_inst} instrument{'s' * (n_inst != 1)}")
+        if args.format != "json":
+            for error in result.attrs.get("errors", []):
+                print(f"[filters] {error}")
+        return 0
+    elif args.cmd == "filters-cite":
+        from .api import Filters
+
+        try:
+            result = Filters.citations(*args.targets, filter_root=args.base,
+                                       refresh=args.refresh, offline=args.offline)
+        except ValueError as exc:
+            parser.error(str(exc))
+        if args.format == "json":
+            print(json.dumps(result, indent=2))
+        else:
+            from .filter_catalogue import format_bibtex, format_citations
+
+            print(format_bibtex(result) if args.format == "bibtex" else format_citations(result), end="")
+            if args.format == "bibtex":
+                for error in result["errors"]:
+                    print(f"[filters] {error}", file=sys.stderr)
+        return 1 if result["errors"] and not result["references"] else 0
     elif args.cmd == "filters-inventory":
         from .api import Filters
         result = Filters.inventory(filter_root=args.base, include_remote=not args.offline, facility=args.facility)
