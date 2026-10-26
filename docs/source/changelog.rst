@@ -2,6 +2,36 @@
 Changelog
 =========
 
+Version 0.4.2 (unreleased)
+--------------------------
+
+Detector-type precedence
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+- ``DetectorTypeSource`` values now have an order of precedence, strongest
+  evidence first: ``original`` > ``inferred`` > ``svo`` > ``svo-curve-match``
+  > ``assumed`` (``filter_metadata.DETECTOR_SOURCE_PRECEDENCE``).
+  ``sed-tools filters-detector`` and ``Filters.tag_detector_types()`` replace
+  an existing type only with a resolution of equal or higher precedence, with
+  or without ``--force``. Previously ``--force`` replaced a type stated by the
+  curve's publisher (``original``) or established from documented facts
+  (``inferred``) with SVO's label. For example, Generic/Bessell B (Bessell &
+  Murphy 2012 photon-counting passband, ``FilterID=Generic/Bessell.B``) would
+  have taken SVO's ``energy``, and so would NACO or NIFS curves that match
+  SVO's arrays. A weaker resolution is now reported and not written: the
+  command lists each kept file with SVO's answer and the reason, and the
+  returned rows carry ``kept``, ``resolved_type`` and ``resolved_source``.
+  ``user``, ``composed`` and ``component`` types are never replaced.
+- Default runs re-resolve the same files as before. The one difference: an
+  ``original`` or ``inferred`` tag (or a ``user``, ``composed`` or
+  ``component`` one) with a ``FilterID`` but no ``WavelengthUnit`` or
+  ``Components`` is now left as it is instead of taking SVO's type and
+  fields.
+- Documented ``original`` and ``inferred``, and corrected the description of
+  ``assumed``: it marks an unverified type, which is ``energy`` only for files
+  that had none (the original-source builders write the convention set for
+  the instrument, ``photon`` by default).
+
 Version 0.4.1 (October 2026)
 ----------------------------
 

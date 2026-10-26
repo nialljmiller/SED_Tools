@@ -219,16 +219,27 @@ SED_Tools 0.3.0 wrote these fields as `#` lines above the column row instead, wh
 
 A curve with no column-name row (its first line is a sample) has no free line, so SED_Tools leaves it as it is and stores no metadata in it.
 
-`DetectorType` is `energy` or `photon`. `DetectorTypeSource` is `svo` (taken from the SVO record for `FilterID`), `svo-curve-match` (the file was identified by matching its curve point-by-point against SVO), or `assumed` (not identifiable — custom curves — written as `energy` and unverified). Downloads write the header automatically; existing files can be tagged in place:
+`DetectorType` is `energy` or `photon`. `DetectorTypeSource` says how it was established. From the strongest evidence to the weakest:
+
+1. `original`: stated by the curve's publisher (paper, instrument page or data file).
+2. `inferred`: not stated by the publisher, but established from documented facts, such as a filter-only curve used with a documented photon-counting detector.
+3. `svo`: taken from the SVO record for `FilterID`.
+4. `svo-curve-match`: the file was identified by matching its curve point-by-point against SVO.
+5. `assumed`: unverified. `filters-detector` writes `energy` with this source when a file has no `DetectorType` and cannot be identified; the original-source builders write the convention set for the instrument (`photon` by default) with it.
+
+Downloads write the header automatically; existing files can be tagged in place:
 
 ```bash
 sed-tools filters-detector                 # whole filter root
 sed-tools filters-detector GAIA/GAIA --dry-run
+sed-tools filters-detector Paranal/NACO --force --dry-run
 ```
 
 ```python
 Filters.tag_detector_types()               # returns one row per file
 ```
+
+By default `filters-detector` resolves untagged files, retries `assumed` ones (except curves built from original sources) and completes tags that lack `WavelengthUnit` or `Components`; `--force` re-resolves every file. In both modes an existing type is replaced only by a resolution of equal or higher precedence in the list above, so SVO's label never overrides an `original` or `inferred` type. A weaker resolution is not written: the file is left as it is, and the run lists it as kept, with the SVO answer and the reason (`kept photon [inferred]: inferred outranks svo-curve-match; svo-curve-match gives energy (Paranal/NACO.H_CONICA)`). The returned rows carry `kept`, `resolved_type` and `resolved_source`. Types set by SED_Tools' composition tools (`user` overrides, `composed` products and `component` files) are outside this order and are never replaced.
 
 `load_filter_curve` reads the header (`FilterCurve.detector_type`, `FilterCurve.weight`) and all band averages use it; untagged files are treated as energy-counting.
 
@@ -329,7 +340,7 @@ Source failures remain visible in inventory and availability results. Published 
 
 #### Updating an existing filter collection
 
-Run `sed-tools filters-detector --dry-run` to inspect proposed detector tags, then `sed-tools filters-detector` to write them. Review entries marked `assumed`: they retain the historical energy-counting convention until identified. Use `sed-tools filters-info Facility/Instrument` to inspect published contents, available components and the instrument's atmosphere before composing a new set.
+Run `sed-tools filters-detector --dry-run` to inspect proposed detector tags, then `sed-tools filters-detector` to write them. Review entries marked `assumed`: their type is unverified (files that had none keep the historical energy-counting convention until identified). `--force` re-resolves tagged files too, but never replaces an `original` or `inferred` type; review the kept list it prints. Use `sed-tools filters-info Facility/Instrument` to inspect published contents, available components and the instrument's atmosphere before composing a new set.
 
 Published curves remain the default. Composed products have their own directories and MESA index files; select a product directory explicitly to use that recipe. Automatic photometry lookup skips `components/` and `products/`, so adding component data does not silently replace a published passband. The filter-set combination menu includes composed products as selectable inputs. Existing flux cubes do not need rebuilding to tag filters or compose throughputs; recompute photometry to apply corrected detector weights.
 

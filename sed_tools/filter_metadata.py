@@ -26,16 +26,32 @@ left an uninitialised sample at the end of the curve.  Such files are still
 read, and :func:`migrate_filter_file` moves their fields onto the column row.
 
 ``DetectorType`` is ``energy`` or ``photon``.  ``DetectorTypeSource`` records
-how it was established:
+how it was established, listed here from the strongest evidence to the
+weakest (:data:`DETECTOR_SOURCE_PRECEDENCE`):
 
+``original``
+    Stated by the curve's own publisher (paper, instrument page or data file).
+``inferred``
+    Not stated by the publisher, but established from documented facts: for
+    example a filter-only transmission (no QE, no wavelength factor) used with
+    a documented photon-counting detector.
 ``svo``
     Read from the SVO Filter Profile Service record for ``FilterID``.
 ``svo-curve-match``
     The file had no ``FilterID``; its curve was matched point-by-point against
     the SVO candidates with the same facility and band.
 ``assumed``
-    No authoritative source could be found; ``energy`` is written so that
-    every file is explicit, but the value is unverified.
+    Unverified.  :func:`tag_filter_file` writes ``energy`` with this source
+    when a file has no ``DetectorType`` and nothing resolves; the
+    original-source builders write the convention set for the instrument
+    (``photon`` by default) with this source.
+
+:func:`tag_filter_file` replaces an existing ``DetectorType`` only with a
+resolution of equal or higher precedence, with or without ``force``; a
+weaker resolution is reported in the result and not written.  Types set by
+SED_Tools' composition tools (``user`` overrides, ``composed`` products and
+``component`` files, see :mod:`sed_tools.filter_components`) are outside
+this order and are never replaced by an SVO resolution.
 
 ``WavelengthUnit`` is copied from SVO whenever the curve is identified, so
 the loader never has to guess the unit from the values.
@@ -61,9 +77,14 @@ ENERGY = "energy"
 PHOTON = "photon"
 DETECTOR_TYPES = (ENERGY, PHOTON)
 
+SOURCE_ORIGINAL = "original"
+SOURCE_INFERRED = "inferred"
 SOURCE_SVO = "svo"
 SOURCE_SVO_MATCH = "svo-curve-match"
 SOURCE_ASSUMED = "assumed"
+
+#: ``DetectorTypeSource`` values in order of precedence, strongest evidence first.
+DETECTOR_SOURCE_PRECEDENCE = (SOURCE_ORIGINAL, SOURCE_INFERRED, SOURCE_SVO, SOURCE_SVO_MATCH, SOURCE_ASSUMED)
 
 HEADER_KEYS = (
     "FilterID",
@@ -463,6 +484,26 @@ class DetectorTypeResult:
     changed: bool = False
     note: str = ""
     migrated: bool = False  # 0.3.0 "#" lines moved onto the column row
+    # Set when a resolution was found but not written because the existing
+    # DetectorTypeSource outranks it (see detector_source_may_replace).
+    kept: bool = False
+    resolved_type: Optional[str] = None
+    resolved_source: Optional[str] = None
+
+
+def detector_source_may_replace(existing: Optional[str], new: str) -> bool:
+    """Whether a type resolved from source ``new`` may replace one recorded with source ``existing``.
+
+    Only a source of equal or higher precedence in
+    :data:`DETECTOR_SOURCE_PRECEDENCE` may replace an existing one; a missing
+    source counts as ``assumed``.  Sources outside that order (``user``,
+    ``composed``, ``component`` or any unknown value) are never replaced.
+    """
+    existing = (existing or "").strip().lower() or SOURCE_ASSUMED
+    new = (new or "").strip().lower()
+    if existing not in DETECTOR_SOURCE_PRECEDENCE or new not in DETECTOR_SOURCE_PRECEDENCE:
+        return False
+    return DETECTOR_SOURCE_PRECEDENCE.index(new) <= DETECTOR_SOURCE_PRECEDENCE.index(existing)
 
 
 def resolve_detector_type(
@@ -556,9 +597,17 @@ def tag_filter_file(
     """Ensure ``path`` has a ``DetectorType`` header, resolving it if necessary.
 
     Files already tagged from an authoritative source are left alone unless
-    ``force`` is set.  Files previously tagged ``assumed`` are always retried.
-    Leading ``#`` metadata lines (SED_Tools 0.3.0) are always moved onto the
-    column row first.
+    ``force`` is set.  Files previously tagged ``assumed`` are retried, except
+    original-source curves (``ComponentsSource=original``), which are retried
+    only with ``force``.  Leading ``#`` metadata lines (SED_Tools 0.3.0) are
+    always moved onto the column row first.
+
+    A resolution replaces an existing ``DetectorType`` only if its source has
+    equal or higher precedence (:func:`detector_source_may_replace`), so even
+    with ``force`` an ``original`` or ``inferred`` type is never replaced by
+    SVO's label.  A weaker resolution leaves the file unchanged and is
+    reported through ``kept``, ``resolved_type``, ``resolved_source`` and
+    ``note``.
     """
     path = Path(path)
     migrated = migrate_filter_file(path, dry_run=dry_run)
@@ -585,6 +634,19 @@ def tag_filter_file(
     elif source == SOURCE_SVO and existing_source == SOURCE_SVO_MATCH:
         # The FilterID itself came from a curve match; keep that provenance.
         source = SOURCE_SVO_MATCH
+
+    if existing and not detector_source_may_replace(existing_source, source):
+        # Evidence outranks the catalogue: report SVO's answer, write nothing
+        # (no FilterID, WavelengthUnit or Components taken from that record).
+        if existing_source.strip().lower() in DETECTOR_SOURCE_PRECEDENCE:
+            reason = f"{existing_source} outranks {source}"
+        else:
+            reason = f"{existing_source} types are not replaced from SVO"
+        found = f"{source} gives {detector_type}" + (f" ({filter_id})" if filter_id else "")
+        return DetectorTypeResult(path, existing, existing_source, header.get("FilterID"),
+                                  note=f"kept {existing} [{existing_source}]: {reason}; {found}",
+                                  migrated=migrated, kept=True, resolved_type=detector_type,
+                                  resolved_source=source)
 
     wavelength_unit = header.get("WavelengthUnit")
     published_components = None
