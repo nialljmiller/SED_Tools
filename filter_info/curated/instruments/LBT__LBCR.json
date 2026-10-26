@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "restricted",
+    "terms": "\"Large Binocular Telescope Observatory (LBTO). All rights reserved.\"",
+    "url": "https://scienceops.lbto.org/observing-with-the-lbt/policies-and-guidelines/",
+    "scope": "Site-wide footer (rule 3) of the LBTO Science Operations site, which covers the whole site; no data, filter or archive licence is stated on that page or on the LBTO pages checked (lbto.org policies page is a privacy policy only). It does not say whether the LBC filter curves may be redistributed, so the class is restricted. The page also holds LBTO's requested publication acknowledgement. SVO's cited source page: http://abell.as.arizona.edu/~lbtsci/Instruments/LBC/lbc_description.html. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "Large Binocular Telescope Observatory (LBTO)",
+      "text": "The LBT is an international collaboration among institutions in the United States and Europe. At the time data were acquired for this research, LBT Corporation Members were the University of Arizona on behalf of the Arizona Board of Regents; Istituto Nazionale di Astrofisica, Italy; LBT Beteiligungsgesellschaft, Germany, representing the Max-Planck Society, the Leibniz Institute for Astrophysics Potsdam, and Heidelberg University; and The Ohio State University, representing The Ohio State University, University of Notre Dame, University of Minnesota, and University of Virginia. This research used the facilities of the Italian Center for Astronomical Archives (IA2) operated by INAF at the Astronomical Observatory of Trieste.",
+      "url": "https://scienceops.lbto.org/observing-with-the-lbt/policies-and-guidelines/",
+      "references": [],
+      "applies_to": "all bands (LBTO lists variants by observation date; this is the 2019-2025 text, and the page gives the 2016-2018 and 2026-onward texts)"
+    }
+  ]
+}

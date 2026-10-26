@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "restricted",
+    "terms": "\"The information on this page is the property of the W.\" \"be copied or otherwise reproduced or transferred to other documents or\" \"used or disclosed to others for any purpose other than observing\" \"publication of scientific data obtained from observations conducted at\" \"Observatory. All rights reserved.\"",
+    "url": "https://www2.keck.hawaii.edu/inst/web_docs/scripts/include_end.js",
+    "scope": "Site-wide footer written into every www2.keck.hawaii.edu HTML page (step 3); followed sibling Keck__DEIMOS. The quoted passages are consecutive fragments of one string in the script, which the browser renders as: 'The information on this page is the property of the W. M. Keck Observatory. The contents of this page or any part thereof shall not be copied or otherwise reproduced or transferred to other documents or used or disclosed to others for any purpose other than observing support at the W. M. Keck Observatory and the subsequent analysis and publication of scientific data obtained from observations conducted at the W. M. Keck Observatory. All rights reserved. © W. M. Keck Observatory.' The curve files carry no notice. Source page SVO cites: https://www2.keck.hawaii.edu/inst/nirspec/ (filters page https://www2.keck.hawaii.edu/inst/nirspec/filters.html). The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "papers based on Keck data",
+      "text": "Some of the data presented herein were obtained at Keck Observatory, which is a private 501(c)3 non-profit organization operated as a scientific partnership among the California Institute of Technology, the University of California, and the National Aeronautics and Space Administration. The Observatory was made possible by the generous financial support of the W. M. Keck Foundation.",
+      "url": "https://www2.keck.hawaii.edu/observing/keck_authors.html",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

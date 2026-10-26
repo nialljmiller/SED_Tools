@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "",
+    "url": "https://www.southampton.ac.uk/opticam/index.page",
+    "scope": "The OPTICAM team (University of Southampton, with OAN-SPM/UNAM) publishes no statement: checked https://www.southampton.ac.uk/opticam/index.page, /opticam/project/instrument.page (page SVO cites), /opticam/about/index.page and the Southampton site footer (only a generated '© University of Southampton' line; the footer 'Terms & conditions' link leads to a regulations index with no website copyright terms); https://www.astrossp.unam.mx/en/ was not fetched. Southampton /legal/copyright and /legal/terms-and-conditions returned 404. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

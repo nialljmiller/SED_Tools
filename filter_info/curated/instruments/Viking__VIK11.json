@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"generally are not subject to copyright in the United States\" \"NASA should be acknowledged as the source of the material.\"",
+    "url": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+    "scope": "Option (2): NASA Images and Media Usage Guidelines, which cover NASA content generally; they are not a statement on the Viking Lander PDS calibration files themselves. The PDS volume SVO cites (https://pdsimage2.wr.usgs.gov/cdroms/Viking_Lander/vl_0001/calib/) is a JavaScript page that gives no text to curl, and pds.nasa.gov / pds-imaging.jpl.nasa.gov showed no data-use statement. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "NASA (Viking Lander mission data via the Planetary Data System)",
+      "text": "NASA should be acknowledged as the source of the material.",
+      "url": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

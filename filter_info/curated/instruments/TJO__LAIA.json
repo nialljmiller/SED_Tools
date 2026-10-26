@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"you need to obtain our prior written consent\" \"not to directly or indirectly carry out any type of commercial exploitation of the contents\"",
+    "url": "https://www.ieec.cat/en/legal-notice/",
+    "scope": "Site-wide legal notice of the Institut d'Estudis Espacials de Catalunya (IEEC), operator of the Telescopi Joan Oró and LAIA (level 3: the page SVO cites, https://www.ieec.cat/content/18/laia/, carries no terms). It covers the IEEC website and its contents and requires prior written consent for exploitation beyond the Intellectual Property Law; it does not name the filter curves. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "Joan Oró Telescope (TJO), Montsec Observatory, IEEC",
+      "text": "The Joan Oró Telescope (TJO) at the Montsec Observatory (OdM) is owned by the Catalan Government and operated by the Institute of Space Studies of Catalonia (IEEC).",
+      "url": "https://mur.ieec.cat/en/intranet-content/73/data-retrieval",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "",
+    "url": "https://mcdonaldobservatory.org/",
+    "scope": "No owner statement found. Checked: https://mcdonaldobservatory.org/ and /legal (403 to curl), https://mcdonaldobservatory.org/for-researchers/observer-tools/telescope-scheduling-policies-procedures/publication-credits (403), the SVO-cited mcdonald.utexas.edu DIAFI page (404), http://www.as.utexas.edu/mcdonald/mcdonald.html (no response). The only credit text found (UT Mt Locke wiki 'Publication Credits') is for the Otto Struve Telescope, not the 2.7 m Harlan J. Smith Telescope that hosted DIAFI, so no acknowledgement is recorded. Source page SVO cites: http://www.as.utexas.edu/mcdonald/facilities/2.7m/diafi_filters.html. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"use them to give credit to the people whose hard work created these data products\"",
+    "url": "http://web.archive.org/web/2020/http://www.astro.yale.edu/MUSYC/data.html",
+    "scope": "MUSYC data page (step 1: the page SVO cites, http://www.astro.yale.edu/MUSYC/data.html), read from the Internet Archive capture of 2020 because the live yale.edu pages return 404 on 2026-10-26. The page asks users to cite each catalogue's reference and describes the filter curves as 'total filter curves (filter*atmosphere*QE)'; it states no licence beyond that credit request. No credit line is given, so no acknowledgement is recorded. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

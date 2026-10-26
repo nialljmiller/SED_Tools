@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"Data hosted in the ESA Space Science Archives are distributed under the CC BY-NC 3.0 IGO licence.\" \"are open and free to use by the User subject to proper acknowledgment to be given in accordance with the credit lines provided below.\" \"Prior to any commercial use by the User of any Data or Data Product, including any use or application that directly or indirectly generates a financial gain, a detailed request for authorisation/licence shall be made by the User by sending email to data.licences@esa.int .\"",
+    "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
+    "scope": "ESA Science Data Centre terms for the ESA Space Science Archives, level 2 (owner's data terms), applied by analogy: IUE is not in the page's credit-line table and no statement names the IUE camera sensitivity curve. The IUE page SVO cites (http://sci.esa.int/iue/ -> https://sci.esa.int/web/iue/) has only the site-wide Terms and Conditions link (non-commercial personal use, https://sci.esa.int/terms-and-conditions) and no data terms. Non-commercial (CC BY-NC) with commercial use needing ESA authorisation, hence attribution, as in GAIA__GAIA; no IUE credit line is given in the credit table, so no acknowledgement is recorded. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

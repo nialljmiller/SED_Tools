@@ -1,0 +1,19 @@
+{
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "",
+    "url": "https://www.cfa.harvard.edu/mirsi/",
+    "scope": "No licence or reuse statement was found for the curves. Checked: the MIRSI instrument page at CfA (https://www.cfa.harvard.edu/mirsi/, redirects to lweb.cfa.harvard.edu/mirsi/; its footer has only an NSF grant sentence and a last-modified date), and https://www.cfa.harvard.edu/privacy-policy and /terms-use (both 404). The MKO site https://www.ifa.hawaii.edu/mko/ was not fetched. The MIRSI page is the one SVO cites. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "MIRSI instrument team (CfA / Boston University)",
+      "text": "When writing papers based on MIRSI data, please cite the following instrument papers:",
+      "url": "https://www.cfa.harvard.edu/mirsi/",
+      "references": [
+        "bibcode:2008PASP..120..127K"
+      ],
+      "applies_to": "all bands"
+    }
+  ]
+}

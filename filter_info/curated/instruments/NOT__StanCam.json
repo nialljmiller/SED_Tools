@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"Nordic Optical Telescope, Apartado 474, E-38700 S/C de La Palma, Spain\"",
+    "url": "https://www.not.iac.es/",
+    "scope": "Site-wide footer (option 3) of the NOT home page: a copyright notice naming the Nordic Optical Telescope, with no redistribution terms; nothing stated on the instrument pages. Followed the NOT/ALFOSC record. The credit line asked by NOT for papers is in acknowledgements. SVO cites http://www.not.iac.es/instruments/filters/filters.php. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "Nordic Optical Telescope",
+      "text": "Based on observations made with the Nordic Optical Telescope, owned in collaboration by the University of Turku and Aarhus University, and operated jointly by Aarhus University, the University of Turku and the University of Oslo, representing Denmark, Finland and Norway, the University of Iceland and Stockholm University at the Observatorio del Roque de los Muchachos, La Palma, Spain, of the Instituto de Astrofisica de Canarias. The NOT data were obtained under program ID Pnn-nnn.",
+      "url": "https://www.not.iac.es/observing/guide/",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

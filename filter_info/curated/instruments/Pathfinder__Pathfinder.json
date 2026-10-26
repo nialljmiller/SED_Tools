@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"data that is provided from a NASA-led mission including observations, engineering, calibration, and auxiliary data are licensed as Creative Commons Zero\" \"There are no restrictions on the usage of these data.\"",
+    "url": "https://science.data.nasa.gov/about/license",
+    "scope": "Level 2, NASA Science Data Portal licence, as applied to Cassini/ISS_NAC on NJM. Mars Pathfinder (IMP camera) is a NASA-led mission and the filter responses are calibration data; the statement is applied by analogy, since it says data 'marked with a restrictive notice or license' are excepted and no Pathfinder page was found to carry one. SVO's info.json is empty; the SVO records cite JGR 102, 3989, 1997 (bibcode 1997JGR...102.3989M, https://ui.adsabs.harvard.edu/abs/1997JGR...102.3989M/); the paper's own licence (AGU/Wiley) was not read. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "NASA",
+      "text": "NASA should be acknowledged as the source of the material.",
+      "url": "https://www.nasa.gov/multimedia/guidelines/index.html",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

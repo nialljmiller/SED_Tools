@@ -1,0 +1,27 @@
+{
+  "licence": {
+    "redistribution": "restricted",
+    "terms": "\"The distribution, modification, transfer or public communication of the contents and any other act that has not been expressly authorized by GRAN TELESCOPIO DE CANARIAS S.A. is prohibited.\"",
+    "url": "https://www.gtc.iac.es/gtc/legal.php",
+    "scope": "GTC website legal notice (site-wide, level 3 in the brief's order); the instrument page (http://www.gtc.iac.es/instruments/circe/circe.php, the page SVO cites) carries no licence statement, only the acknowledgement request listed here. Followed the sibling record GTC/CanariCam, same statement. The notice covers the GTC website contents and does not mention the filter curves specifically. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "Gran Telescopio Canarias (GTC)",
+      "text": "Based on observations made with the Gran Telescopio Canarias (GTC), installed at the Spanish Observatorio del Roque de los Muchachos of the Instituto de Astrofísica de Canarias, on the island of La Palma.",
+      "url": "https://www.gtc.iac.es/observing/observing.php",
+      "references": [],
+      "applies_to": "all bands"
+    },
+    {
+      "for": "CIRCE instrument (University of Florida / NSF)",
+      "text": "Development of CIRCE was supported by the University of Florida and the National Science Foundation (grant AST-0352664), in collaboration with IUCAA",
+      "url": "https://www.gtc.iac.es/instruments/circe/circe.php",
+      "references": [
+        "doi:10.1117/12.2057019",
+        "doi:10.1142/S2251171718500022"
+      ],
+      "applies_to": "all bands"
+    }
+  ]
+}

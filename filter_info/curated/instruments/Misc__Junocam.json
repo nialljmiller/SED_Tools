@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"Unless the data file is marked with a restrictive notice or license, data that is provided from a NASA-led mission including observations, engineering, calibration, and auxiliary data are licensed as Creative Commons Zero\" \"There are no restrictions on the usage of these data.\"",
+    "url": "https://science.data.nasa.gov/about/license",
+    "scope": "NASA science data licence (NASA-led mission data), as followed for Cassini__ISS_NAC and Aqua__MODIS. The JunoCam mission page (https://www.missionjuno.swri.edu/junocam) carries no terms of its own and its footer 'Legal' link leads to NASA's site policy; the page SVO cites is the Hansen et al. 2014 JunoCam paper PDF (https://www.missionjuno.swri.edu/pub/e/downloads/JunoCam_Junos_Outreach_Camera.pdf). The licence covers NASA-led mission data; whether the curve file is marked otherwise was not seen. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "NASA content",
+      "text": "NASA should be acknowledged as the source of the material.",
+      "url": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

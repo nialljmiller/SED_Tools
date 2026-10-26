@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"Personal use of text, data and information contained in these pages is permitted.\" \"permission of CSIC is required for publication in any form or for use, distribution or inclusion in other contexts accessible to third parties.\"",
+    "url": "https://www.osn.iaa.csic.es/en",
+    "scope": "Site-wide footer ('© CSIC') of the Observatorio de Sierra Nevada (IAA-CSIC) website, which serves the 'Available filters' page (https://www.osn.iaa.csic.es/en/page/available-filters) that SVO cites; that page itself shows no footer or licence text, so the statement was taken from the OSN home page (option 3). It is a website statement, not a data licence; it requires CSIC permission for publication or redistribution. No sibling record existed. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

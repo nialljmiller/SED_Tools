@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"Please contact the following address if you wish to use the images on this page.\"",
+    "url": "http://www-ir.u.phys.nagoya-u.ac.jp/~irsf/sirius/index_e.html",
+    "scope": "SIRIUS home page of Nagoya University / NAOJ (developers of SIRIUS), level 3 (nearest statement, on the instrument home page, not the page that serves the curves): the sentence is about images, and the contact address is not given in the text served to curl. The technical page SVO cites (http://www-ir.u.phys.nagoya-u.ac.jp/~irsf/sirius/tech/index_e.html) has no terms. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

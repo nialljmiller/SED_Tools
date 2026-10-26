@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"ESA grants permission to users to visit the sites, and to download and copy information, images, documents and materials from the websites for non-commercial use.\" \"ESA does not grant the right to resell or redistribute any information, documents, images or material from its websites\"",
+    "url": "https://earth.esa.int/eogateway/terms-and-conditions",
+    "scope": "ESA website terms, not a data licence; same record as Beijing1 SLIM6 (followed Beijing1__SLIM6). SVO cites the DMC Data Product Manual on earth.esa.int (https://earth.esa.int/documents/10174/1987716/DMC-Data-Product-Manual.pdf); the terms of the UK-DMC operator (DMC International Imaging / Surrey) were not found. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

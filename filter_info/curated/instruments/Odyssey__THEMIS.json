@@ -1,0 +1,24 @@
+{
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"Acknowledgement of the THEMIS site and its resources will help ensure the continuing support necessary for the validation, archiving, and distribution of THEMIS images.\" \"please credit THEMIS images as: NASA/JPL-Caltech/Arizona State University.\"",
+    "url": "https://themis.asu.edu/terms",
+    "scope": "Level 2, owner's website terms (THEMIS team, Arizona State University, Mars Odyssey mission): a citation and credit policy, with no restriction on use stated. It covers THEMIS images and products; no sentence names the filter curves, which are instrument documentation. SVO cites Smith et al. 2003 (https://ui.adsabs.harvard.edu/abs/2003JGRE..108.5115S/abstract) and https://mars.nasa.gov/mars-exploration/missions/odyssey/. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "THEMIS (Mars Odyssey) credit line",
+      "text": "For news media or educational purposes, please credit THEMIS images as: NASA/JPL-Caltech/Arizona State University.",
+      "url": "https://themis.asu.edu/terms",
+      "references": [],
+      "applies_to": "all bands"
+    },
+    {
+      "for": "THEMIS instrument citation",
+      "text": "If you mention the THEMIS instrument in a research work, please cite it as follows in your references: Christensen, P.R., B.M. Jakosky, H.H. Kieffer, M.C. Malin, H.Y. McSween, Jr., K. Nealson, G.L. Mehall, S.H. Silverman, S. Ferry, M. Caplinger, and M. Ravine, The Thermal Emission Imaging System (THEMIS) for the Mars 2001 Odyssey Mission, Space Science Reviews, 110, 85-130, 2004.",
+      "url": "https://themis.asu.edu/terms",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

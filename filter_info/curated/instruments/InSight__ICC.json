@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"generally are not subject to copyright in the United States\" \"NASA content used in a factual manner that does not imply endorsement may be used without needing explicit permission\" \"NASA should be acknowledged as the source of the material.\"",
+    "url": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+    "scope": "Owner is NASA (InSight, JPL; Instrument Context Camera). Terms are NASA's Images and Media usage guidelines (the owner's website terms, step 2); the page serving the curves carried no statement. They cover NASA content (images, audio, video and media files), not curve files by name, and say 'generally', so third-party material is not covered. Source page SVO cites: https://mars.nasa.gov/insight/spacecraft/about-the-lander/ (now redirects to https://science.nasa.gov/planetary-science/programs/mars-exploration/mission-timeline/, which was not searched). NASA's data licence https://science.data.nasa.gov/about/license (CC0 for calibrated science data) was not used because it covers archive science data, not these curves. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "NASA (InSight)",
+      "text": "NASA should be acknowledged as the source of the material.",
+      "url": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

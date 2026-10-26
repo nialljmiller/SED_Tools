@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "",
+    "url": "https://www.tifr.res.in/~daa/tirspec/",
+    "scope": "No licence statement found. Checked: the TIRSPEC page SVO cites (now at https://www.tifr.res.in/~daa/tirspec/; web.tifr.res.in did not answer) offers filter scans 'in ascii format' with no terms; the TIFR home page links a Website Policy (website_policy.php) and Disclaimer whose URLs returned 404; the IIAP copyright policy covers IIAP's site, not TIFR's, and was not applied. The page asks only for the instrument acknowledgement recorded here. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "TIFR Near Infrared Spectrometer and Imager (TIRSPEC)",
+      "text": "The authors using TIRSPEC data are requested to acknowledge the use of TIFR Near Infrared Spectrometer and Imager (TIRSPEC) in their acknowledgements.",
+      "url": "https://www.tifr.res.in/~daa/tirspec/",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

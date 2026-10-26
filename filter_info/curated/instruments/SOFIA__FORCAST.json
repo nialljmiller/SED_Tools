@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"Authors who utilize SOFIA data should provide the following acknowledgement in their publications\"",
+    "url": "https://irsa.ipac.caltech.edu/data/SOFIA/docs/publications/information-authors/index.html",
+    "scope": "Owner is the SOFIA mission (NASA/DLR; SOFIA Science Center at IRSA/IPAC, USRA, DSI). Statement from the SOFIA Science Center 'Information for Authors' page (owner's publication terms, level 2); it conditions use of SOFIA data on an acknowledgement but gives no formal licence, and covers SOFIA data generally, not the filter-profile files specifically. The sofia.usra.edu site did not answer to curl (connection timeout) on 2026-10-26, so the IRSA-hosted SOFIA Science Center copy was used. Source page SVO cites: not recorded in info.json (empty). The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "NASA/DLR SOFIA",
+      "text": "Based [in part] on observations made with the NASA/DLR Stratospheric Observatory for Infrared Astronomy (SOFIA). SOFIA is jointly operated by the Universities Space Research Association, Inc. (USRA) under a NASA contract and the Deutsches SOFIA Institut (DSI) under DLR contract 50 OK 2002 to the University of Stuttgart.",
+      "url": "https://irsa.ipac.caltech.edu/data/SOFIA/docs/publications/information-authors/index.html",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

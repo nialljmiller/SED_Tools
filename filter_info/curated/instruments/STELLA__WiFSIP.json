@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"All papers with data obtained partly or exclusively with the STELLA instruments should place the following sentence as a footnote to the paper title\" \"The allocation of storage and tools is provided for scientific uses.\" \"reserves the right to remove the allocated storage if this is used for illegal, commercial or other private purposes\"",
+    "url": "https://stella.aip.de/accounts/terms_of_use/",
+    "scope": "Owner is the Leibniz Institute for Astrophysics Potsdam (AIP), which operates STELLA with the IAC. Terms come from the STELLA data-service Terms of Use (owner's data terms, level 2; the page is linked from every STELLA site footer). The credit-line sentence applies to papers using STELLA data. The storage and commercial-use sentences govern registered accounts and their allocated storage on the web service, not the WiFSIP filter transmission curves as such; the page states no redistribution licence for the curves. SVO does not cite a source page for this instrument (info.json is empty). The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "STELLA robotic telescopes (AIP/IAC)",
+      "text": "Based (partly) on data obtained with the STELLA robotic telescopes in Tenerife, an AIP facility jointly operated by AIP and IAC.",
+      "url": "https://stella.aip.de/accounts/terms_of_use/",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

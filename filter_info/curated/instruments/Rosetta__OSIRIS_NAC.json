@@ -1,0 +1,24 @@
+{
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"Data hosted in the ESA Space Science Archives are distributed under the CC BY-NC 3.0 IGO licence.\" \"Prior to any commercial use by the User of any Data or Data Product, including any use or application that directly or indirectly generates a financial gain, a detailed request for authorisation/licence shall be made by the User\"",
+    "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
+    "scope": "Level 2, ESA ESDC terms (Space Science Archives; Rosetta data are archived in the ESA Planetary Science Archive), class attribution as for GAIA__GAIA: CC BY-NC 3.0 IGO, non-commercial reuse with the mission credit line; commercial use needs ESA authorisation. The statement covers archive data products; the OSIRIS narrow-angle filter curves are SVO records whose profile reference is Magrin et al. 2015, A&A 574, A123 (bibcode 2015A&A...574A.123M); no SVO page link is in info.json (empty). New research, no sibling. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "ESA, Rosetta OSIRIS",
+      "text": "Rosetta OSIRIS Credit: ESA, H. Sierks",
+      "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
+      "references": [],
+      "applies_to": "all bands"
+    },
+    {
+      "for": "ESA Space Science Archives",
+      "text": "The terms and conditions for the use of data in the ESA Space Science Archives require users to acknowledge ESA and other providers of the data by means of mission-specific credit lines as indicated below.",
+      "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

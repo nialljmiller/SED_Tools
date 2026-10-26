@@ -1,0 +1,26 @@
+{
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"In accessing the University webpages, you agree that any content you download is for personal, non-commercial use only.\"",
+    "url": "https://www.ljmu.ac.uk/legal/copyright-notice",
+    "scope": "University (LJMU) website terms (level 3, owner's site-wide notice), as for Liverpool/RINGO; the instrument page cited by SVO (http://telescope.livjm.ac.uk/TelInst/Inst/RISE/#filter) carries only the footer 'Copyright © 2004-2026 Astrophysics Research Institute, Liverpool John Moores University, UK' and no terms. The figshare CC BY 4.0 record used for Liverpool/IOO covers the IO:O throughput only, not this instrument. Credit line from the Liverpool Telescope acknowledgements page. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "Liverpool Telescope",
+      "text": "The Liverpool Telescope is operated on the island of La Palma by Liverpool John Moores University in the Spanish Observatorio del Roque de los Muchachos of the Instituto de Astrofisica de Canarias with financial support from the UK Science and Technology Facilities Council.",
+      "url": "https://telescope.livjm.ac.uk/Ack/",
+      "references": [],
+      "applies_to": "all bands"
+    },
+    {
+      "for": "Liverpool Telescope (citation requested)",
+      "text": "The Liverpool Telescope: performance and first results",
+      "url": "https://telescope.livjm.ac.uk/Ack/",
+      "references": [
+        "bibcode:2004SPIE.5489..679S"
+      ],
+      "applies_to": "all bands"
+    }
+  ]
+}

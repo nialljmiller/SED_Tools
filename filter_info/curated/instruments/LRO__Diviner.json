@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"generally are not subject to copyright in the United States\" \"You may use this material for educational or informational purposes\" \"NASA should be acknowledged as the source of the material.\"",
+    "url": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+    "scope": "NASA Images and Media Usage Guidelines (level 3, agency-wide; no Diviner-specific statement found - the JPL mission page cited by SVO (https://www.jpl.nasa.gov/missions/diviner-lunar-radiometer-experiment-dlre) returned no usable text via curl, and the PDS Diviner page only links the NASA copyright/image-use policy). Covers NASA content, not third-party material; the numbers derive from the Diviner filter paper (ResearchGate, cited by SVO). The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "NASA / LRO Diviner",
+      "text": "NASA should be acknowledged as the source of the material.",
+      "url": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

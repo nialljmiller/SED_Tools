@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"arXiv.org has a perpetual, non-exclusive license to distribute this article.\"",
+    "url": "http://arxiv.org/licenses/assumed-1991-2003/",
+    "scope": "Paper-only curves from Lee et al. 1999 (arXiv:astro-ph/9903249, https://arxiv.org/pdf/astro-ph/9903249.pdf); the abstract page links this assumed-1991-2003 licence. It covers the article, not the numbers. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

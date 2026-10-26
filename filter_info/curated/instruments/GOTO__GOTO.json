@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"GOTO resources and data files for public release\"",
+    "url": "https://github.com/GOTO-OBS/public_resources",
+    "scope": "Repository description of GOTO-OBS/public_resources, which holds the throughput data SVO cites (https://github.com/GOTO-OBS/public_resources/tree/main/throughput/data). It says the files are for public release but names no licence (no LICENSE file: raw LICENSE and the GitHub licence API returned 404), so reuse terms beyond public release are unstated. https://goto-observatory.org/ shows no copyright or terms statement. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

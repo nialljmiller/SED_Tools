@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"There are no restrictions on the usage of these data.\"",
+    "url": "https://science.data.nasa.gov/about/license",
+    "scope": "Owner is NASA (Stardust-NExT mission; NAVCAM data archived at the NASA Planetary Data System Small Bodies Node). Terms are NASA's Science Data Licenses page, which applies Creative Commons Zero to NASA-led mission data not marked with a restrictive notice (owner's data terms, level 2); followed the sibling records Dawn__FC and Cassini__ISS_NAC. The statement covers mission data in NASA repositories; it does not itself say the filter-transmission curves are such data, and the page asks users to cite the original source. Credit line taken from the PDS SBN dataset page. SVO cites no source page (info.json is empty). The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "Stardust-NExT NAVCAM (NASA PDS Small Bodies Node)",
+      "text": "Veverka, J.F., et al., STARDUST RDR NAVCAM IMAGES OF 9P/TEMPEL 1, SDU-C/CAL-NAVCAM-3-NEXT-TEMPEL1-V1.0, NASA Planetary Data System, 2011.",
+      "url": "https://pds-smallbodies.astro.umd.edu/holdings/sdu-c_cal-navcam-3-next-tempel1-v1.0/dataset.shtml",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

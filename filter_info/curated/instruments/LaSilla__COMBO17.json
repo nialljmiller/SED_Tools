@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "restricted",
+    "terms": "\"sonstigen Inhalte der Internetpräsenz der Max-Planck-Gesellschaft sind urheberrechtlich geschützt\" \"Alle Rechte vorbehalten\"",
+    "url": "https://www.mpia.de/impressum",
+    "scope": "MPIA/Max-Planck-Gesellschaft site-wide copyright notice (level 3; German: 'the other contents of the Max Planck Society web presence are protected by copyright ... All rights reserved'). The COMBO-17 pages cited by SVO (https://www2.mpia-hd.mpg.de/COMBO/, https://www.mpia.de/COMBO/) return 404, so no COMBO-specific terms or credit line could be checked. Source paper: Wolf et al. 2001 (https://ui.adsabs.harvard.edu/abs/2001A%26A...365..660W). The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

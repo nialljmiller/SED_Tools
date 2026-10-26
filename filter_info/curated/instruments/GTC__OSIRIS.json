@@ -1,0 +1,24 @@
+{
+  "licence": {
+    "redistribution": "restricted",
+    "terms": "\"The distribution, modification, transfer or public communication of the contents and any other act that has not been expressly authorized by GRAN TELESCOPIO DE CANARIAS S.A. is prohibited.\"",
+    "url": "https://www.gtc.iac.es/gtc/legal.php",
+    "scope": "GTC website legal notice (site-wide, level 3 in the brief's order); the instrument page (http://www.gtc.iac.es/instruments/osiris/osiris.php) says only that the SHARDS filters 'are available for its public use without any restrictions'; that applies to the SHARDS filter set, not to the whole instrument, so the site legal notice is recorded as the governing statement for the instrument. Followed the sibling record GTC/CanariCam, same statement. The notice covers the GTC website contents and does not mention the filter curves specifically. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "Gran Telescopio Canarias (GTC)",
+      "text": "Based on observations made with the Gran Telescopio Canarias (GTC), installed at the Spanish Observatorio del Roque de los Muchachos of the Instituto de Astrofísica de Canarias, on the island of La Palma.",
+      "url": "https://www.gtc.iac.es/observing/observing.php",
+      "references": [],
+      "applies_to": "all bands"
+    },
+    {
+      "for": "SHARDS filter set (Universidad Complutense de Madrid)",
+      "text": "This work is (partly) based on data obtained with the SHARDS filter set, purchased by Universidad Complutense de Madrid (UCM). SHARDS was funded by the Spanish Government through grant AYA2012-31277.",
+      "url": "https://www.gtc.iac.es/instruments/osiris/osiris.php",
+      "references": [],
+      "applies_to": "SHARDS filters"
+    }
+  ]
+}

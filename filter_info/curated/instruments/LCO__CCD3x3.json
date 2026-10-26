@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "restricted",
+    "terms": "\"Copyright © 2020 Carnegie Science. All rights reserved.\"",
+    "url": "https://www.lco.cl/",
+    "scope": "Site-wide footer (rule 3) of the Las Campanas Observatory website, operated by Carnegie Science, the owner of the observatory; the footer is the only terms statement found there (https://www.lco.cl/ is the LCO page cited or linked for CCD3x3). It says nothing specific about filter curves, so the class is restricted. SVO's cited source page: http://www.lco.cl/telescopes-information/Members/hrojas/website/direct-ccd-manuals/3x3-filters-for-ccd-imaging/ (now 404; the lco.cl home page is used instead). The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

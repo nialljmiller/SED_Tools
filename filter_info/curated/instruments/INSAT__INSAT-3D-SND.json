@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"Material featured on this site belongs to the DOS/ISRO and the same may be reproduced free of charge in any format or media without requiring specific permission.\" \"This is subject to the material being reproduced accurately and not being used in a derogatory manner or in a misleading context.\" \"Wherever the material is being published or issued to others, the source must be prominently acknowledged\"",
+    "url": "https://www.isro.gov.in/Website_Policy.html",
+    "scope": "ISRO (DOS) website copyright policy, level 2 (owner's website terms): it covers material on isro.gov.in and does not name the INSAT-3D sounder response functions, and third-party material is excluded. No statement was found on the pages that serve the curves: the NWP SAF RTTOV spectral-response-function page (https://nwp-saf.eumetsat.int/site/software/rttov/download/coefficients/spectral-response-functions/) lists the INSAT-3D sounder files with no terms, and the WMO OSCAR instrument page (https://space.oscar.wmo.int/instruments/view/sounder_insat) shows only a WMO copyright line; the SVO-cited ISRO page https://www.isro.gov.in/spacecraft/communication-satellites returned 404. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

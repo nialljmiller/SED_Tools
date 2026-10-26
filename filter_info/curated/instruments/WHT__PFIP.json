@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"the reproduction, distribution and public communication, including the method of making available, of all or part of the contents of this website on any medium and by any technical means, without the authorisation of UNITED KINGDOM RESEARCH AND INNOVATION and/or its respective authors or rights holders, is expressly prohibited.\" \"The user may view, print, copy and store the elements of this website provided that it is solely and exclusively for personal and private use.\"",
+    "url": "https://www.ing.iac.es/legal-notice.html",
+    "scope": "ING site-wide legal notice (step 3; ING operates the WHT and its pages link this notice in their footer). Sibling WHT/INGRID was recorded against the IAC legal notice (https://www.iac.es/en/legal-notice, same permission class); the ING notice is the operator's own and is used here instead. It covers the website contents and does not mention the curve files. Source page SVO cites: http://www.ing.iac.es/Astronomy/instruments/pfip/pfip_filters.html (fetched, HTTP 200, carries no licence statement). The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "William Herschel Telescope / Isaac Newton Group of Telescopes",
+      "text": "Based on observations made with the William Herschel Telescope operated on the island of La Palma by the Isaac Newton Group of Telescopes in the Spanish Observatorio del Roque de los Muchachos of the Instituto de Astrofísica de Canarias.",
+      "url": "https://www.ing.iac.es/astronomy/observing/INGinfo_ack.html",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

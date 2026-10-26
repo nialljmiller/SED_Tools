@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"can be used without prior permission within the following scope:\" \"Academic research, education, and learning activities\" \"We only ask you to give appropriate credit whenever you use these works.\"",
+    "url": "https://www.nao.ac.jp/en/terms/copyright.html",
+    "scope": "Sibling Subaru/FOCAS followed: NAOJ free-use scope (owner's website terms, tier 2; no statement was found on a page serving the curves). Subaru Telescope is operated by NAOJ and its site policy https://subarutelescope.org/en/sitepolicy/ defers to this NAOJ page; credit 'NAOJ'. The statement covers works copyrighted solely by NAOJ and excludes portrait/publicity rights and merchandise; it does not name filter curves explicitly. No SVO-cited source page is listed in info.json. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "MOIRCS",
+      "text": "Please cite the following papers when you refer to MOIRCS in your publication.",
+      "url": "https://subarutelescope.org/Observing/Instruments/MOIRCS/index.html",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

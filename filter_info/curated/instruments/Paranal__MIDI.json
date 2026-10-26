@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"All data in the ESO archive retain ESO’s copyright, and are distributed according to the terms of the Creative Commons Attribution 4.0 International license (CC BY 4.0).\" \"ESO data files (both raw and processed data) may be distributed by third parties, and disseminated via other services, according to the terms of the Creative Commons Attribution 4.0 International license. Credit to the ESO provenance of the data must be acknowledged, and the file headers preserved.\"",
+    "url": "https://archive.eso.org/cms/eso-data-access-policy.html",
+    "scope": "Level 2, ESO archive data access policy, following the sibling Paranal/FORS1 record. It covers data in the ESO archive; the curves are on the eso.org/sci instrument page https://www.eso.org/sci/facilities/paranal/decommissioned/midi.html (footer '© ESO'), which names no statement, so class is kept 'unknown' as for FORS1 (change to attribution if judged to apply by analogy). The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "ESO",
+      "text": "Publications based on data obtained with the MIDI instrument should quote the following reference paper: Leinert, Ch, et al., \"MIDI - the 10 mum instrument on the VLTI\", 2003, Ap&SS 286, 73",
+      "url": "https://www.eso.org/sci/facilities/paranal/decommissioned/midi.html",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "",
+    "url": "https://link.springer.com/article/10.1023/A:1008178000236",
+    "scope": "No licence statement was found. Checked: the MOA site http://www2.phys.canterbury.ac.nz/moa/ (does not resolve; www.phys.canterbury.ac.nz/moa redirects to it) and its Internet Archive capture of data_files.html (https://web.archive.org/web/20200118190315/http://www.phys.canterbury.ac.nz/moa/data_files.html), which has no licence text. The curve comes from the instrument paper (Yanagisawa et al. 2000, Experimental Astronomy, 'Wide-Field Camera for Gravitational Microlensing Survey: MOA-cam2'); Springer's page answers curl with a bot-challenge page and Crossref lists only a text-and-data-mining link, so no article licence could be quoted. Any licence would cover the article, not the numbers. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

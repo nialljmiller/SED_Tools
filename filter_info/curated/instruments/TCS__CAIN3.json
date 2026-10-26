@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "restricted",
+    "terms": "\"it is expressly forbidden to reproduce, distribute, or publicly communicate, in whatever form, the totality or part of the contents of this website for commercial purposes\" \"without the express permission of the IAC\" \"All rights are reserved.\"",
+    "url": "https://www.iac.es/en/legal-notice",
+    "scope": "Site-wide legal notice of the Instituto de Astrofísica de Canarias (IAC), owner/operator of the Telescopio Carlos Sánchez (level 3: neither the TCS filter page nor the IAC instrumentation page carries a statement on the curve files). It covers the IAC website contents and bars commercial reproduction without IAC permission; it does not name the filter curves. Page SVO cites: http://vivaldi.ll.iac.es/OOCC/iac-managed-telescopes/telescopio-carlos-sanchez/tcs-filters/ (also http://www.iac.es/telescopes/tcs/filtros.htm). The IAC acknowledgement page for Teide telescopes (https://ocan.iac.es/?p=2366) serves an empty body to curl, so no credit line could be verified. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

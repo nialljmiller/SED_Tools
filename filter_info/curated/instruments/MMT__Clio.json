@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "restricted",
+    "terms": "\"Welcome to the MMT Observatory. All rights reserved.\"",
+    "url": "https://www.mmto.org/after-your-run/",
+    "scope": "Site-wide footer of the MMT Observatory website (step 3), which says 'All rights reserved' with no reuse terms; no statement on the page that serves the curves was reachable (SVO cites dns.mmto.arizona.edu/node/63, which does not resolve, and https://caao.as.arizona.edu/wiki/pages/M455W4a/Filters.html). Same record as the other MMT instruments with the footer. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "MMT Observatory",
+      "text": "Observations reported here were obtained at the MMT Observatory, a joint facility of the Smithsonian Institution and the University of Arizona.",
+      "url": "https://www.mmto.org/after-your-run/",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

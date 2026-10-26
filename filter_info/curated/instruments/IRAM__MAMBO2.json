@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "",
+    "url": "https://astro.uni-bonn.de/~bertoldi/projects/mambo/",
+    "scope": "No owner statement found. Checked on 2026-10-26: the MAMBO page SVO cites (https://astro.uni-bonn.de/~bertoldi/projects/mambo/, MPIfR Bonn) serves no visible text to curl and only a meta tag 'copyright: MPIfR'; the IRAM institute site (https://www.iram-institute.org/) footer says only 'Copyright IRAM 2026' with no terms. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

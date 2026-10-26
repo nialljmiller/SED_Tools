@@ -1,0 +1,19 @@
+{
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"Images available on the LROC website, including but not limited to Featured Images, Featured Sites, curated products, downloads and non-PDS interfaces listed above, are copyrighted.\" \"All commercial use of LROC images not downloaded from the LROC PDS archive require prior permission.\" \"Data products available through the LROC Data Node of the PDS or through NASA PDS interfaces are in the public domain\"",
+    "url": "https://lroc.im-ldi.com/about/terms",
+    "scope": "LROC Terms of Use & Citation Policy (level 2, owner's terms; the LROC team at Arizona State University). The statement covers LROC images and PDS data products; it does not name filter response curves. Classed permission because the SVO curve is not shown to be a PDS product; if it is, the PDS data are public domain. Source cited by SVO: Robinson et al. 2010 (https://ui.adsabs.harvard.edu/abs/2010SSRv..150...81R). The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "LROC",
+      "text": "NASA/GSFC/Arizona State University",
+      "url": "https://lroc.im-ldi.com/about/terms",
+      "references": [
+        "bibcode:2010SSRv..150...81R"
+      ],
+      "applies_to": "all bands"
+    }
+  ]
+}

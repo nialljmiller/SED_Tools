@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"it is expressly forbidden to reproduce, distribute, or publicly communicate, in whatever form, the totality or part of the contents of this website for commercial purposes\" \"without the express permission of the IAC.\"",
+    "url": "https://www.iac.es/en/legal-notice",
+    "scope": "IAC website legal notice (site-wide, level 3); it forbids commercial reproduction without IAC permission and allows personal use. Same statement as IAC80/CAMELOT, which was followed. The page SVO cites (http://vivaldi.ll.iac.es/OOCC/iac-managed-telescopes/iac80/tcp/) did not answer. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

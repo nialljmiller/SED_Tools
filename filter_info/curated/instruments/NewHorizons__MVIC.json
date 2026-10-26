@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"generally are not subject to copyright in the United States\" \"You may use this material for educational or informational purposes\" \"NASA should be acknowledged as the source of the material\"",
+    "url": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+    "scope": "NASA website media usage guidelines (owner's website terms, option 2; the page does not serve the curves). They cover NASA images, audio, video and media files, not filter-transmission tables explicitly; they say such NASA material is generally not subject to copyright in the US and asks that NASA be acknowledged. SVO cites Reuter et al. 2008 (arXiv:0709.4281, whose abstract page links http://arxiv.org/licenses/assumed-1991-2003/; that covers the article, not the numbers) and the New Horizons PDS calibration files (pds-smallbodies.astro.umd.edu, nh-p-mvic-3-pluto-v3.0/calib/spectra); the NASA terms were used as the owner's statement. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "NASA",
+      "text": "NASA should be acknowledged as the source of the material",
+      "url": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

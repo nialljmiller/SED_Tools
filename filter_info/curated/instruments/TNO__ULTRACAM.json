@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "",
+    "url": "https://vikdhillon.staff.shef.ac.uk/ultracam/filters/filters.html",
+    "scope": "No owner statement found. The HiPERCAM/ULTRACAM/ULTRASPEC filter database (Vik Dhillon, University of Sheffield), which SVO cites (http://www.vikdhillon.staff.shef.ac.uk/ultracam/filters/filters.html, now https://vikdhillon.staff.shef.ac.uk/ultracam/filters/filters.html), and the ULTRACAM homepage carry no copyright, licence or credit text; the Sheffield university copyright pages concern the library and were not taken as covering this site. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "Thai National Observatory (TNO), NARIT",
+      "text": "This work has made use of data obtained at the Thai National Observatory on Doi Inthanon, operated by NARIT.",
+      "url": "https://indico.narit.or.th/event/97/page/25-authorship-and-publication-rules-tnt-only",
+      "references": [],
+      "applies_to": "all bands (NARIT asks for this line on publications using TNT data; its 2018 call page says nothing about filter curves)"
+    }
+  ]
+}

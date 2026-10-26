@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"You should also acknowledge APASS with the following credit line\"",
+    "url": "https://web.archive.org/web/2023/https://www.aavso.org/apass",
+    "scope": "AAVSO APASS page (step 1: the page SVO cites, https://www.aavso.org/apass), read from the Internet Archive capture of 20 Jan 2024 because the live aavso.org returns 403 to curl on 2026-10-26. The page asks for a credit line but states no licence terms; it covers the APASS survey, not explicitly the filter curves. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "AAVSO Photometric All-Sky Survey (APASS)",
+      "text": "This research was made possible through the use of the AAVSO Photometric All-Sky Survey (APASS), funded by the Robert Martin Ayers Sciences Fund and NSF AST-1412587.",
+      "url": "https://web.archive.org/web/2023/https://www.aavso.org/apass",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

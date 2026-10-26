@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"SOHO has an open data policy.\" \"When publishing a paper using SOHO data, please acknowledge SOHO as follows\"",
+    "url": "https://soho.nascom.nasa.gov/publications/acknowledgment.html",
+    "scope": "Owner is the SOHO project (ESA/NASA). Statement taken from the SOHO project's own publications-acknowledgment page (owner's data/publication terms, level 2); it states an open data policy plus a request for credit, not a formal licence text, and covers SOHO data in general rather than the filter-profile files specifically. Source page SVO cites: not recorded in info.json (empty). The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "SOHO project (ESA and NASA)",
+      "text": "SOHO is a project of international cooperation between ESA and NASA.",
+      "url": "https://soho.nascom.nasa.gov/publications/acknowledgment.html",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

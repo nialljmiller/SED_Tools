@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"is prerequisite in the publication\" \"It is also necessary to include the information on the telescope operation financial support as given below.\"",
+    "url": "https://www.sao.ru/Doc-en/Science/acknowledgments_publ/index.html",
+    "scope": "Owner is the Special Astrophysical Observatory of the Russian Academy of Sciences (SAO RAS; SCORPIO is a BTA 6-m instrument). Statement from the SAO RAS 'Acknowledgments for publications' page (owner's publication terms, level 2); it requires reference to the telescope and equipment plus a funding acknowledgement, is not a formal licence, and does not cover the filter-profile files specifically. Source page SVO cites: not recorded in info.json (empty). The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "SAO RAS (BTA-6m)",
+      "text": "Observations with the SAO RAS telescopes are supported by the Ministry of Science and Higher Education of the Russian Federation.",
+      "url": "https://www.sao.ru/Doc-en/Science/acknowledgments_publ/index.html",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

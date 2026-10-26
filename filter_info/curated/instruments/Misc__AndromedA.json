@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "restricted",
+    "terms": "\"Astronomical Association Sofia. All rights reserved.\"",
+    "url": "http://aas.bg/en/observatory.html",
+    "scope": "Site footer (step 3) of the AndromedA observatory page SVO cites (http://aas.bg/en/observatory.html), preceded by '© 2019'; it covers the page, and the curve files carry no notice. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

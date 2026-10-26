@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"Data hosted in the ESA Space Science Archives are distributed under the CC BY-NC 3.0 IGO licence.\" \"Prior to any commercial use by the User of any Data or Data Product, including any use or application that directly or indirectly generates a financial gain, a detailed request for authorisation/licence shall be made by the User by sending email to data.licences@esa.int.\"",
+    "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
+    "scope": "Owner is ESA/NASA (Solar Orbiter; SoloHI built by the US Naval Research Laboratory, PI R. Colaninno). Terms are the ESA ESDC Terms and Conditions for the ESA Space Science Archives (owner's archive terms, level 2), which cover data in the Solar Orbiter Archive; CC BY-NC 3.0 IGO with mission credit line, class attribution as in GAIA__GAIA. Commercial use needs ESA authorisation. The statement covers archive data and products, not explicitly the SoloHI filter curve. SVO cites no source page (info.json is empty). The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "Solar Orbiter SoloHI (ESA ESDC)",
+      "text": "Credit: ESA, NASA, R. Colaninno",
+      "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

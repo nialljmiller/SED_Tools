@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"Material featured on this site may be reproduced free of charge in any format or media without requiring specific permission.\" \"the source must be prominently acknowledged.\"",
+    "url": "https://www.iiap.res.in/footer/website-policies/",
+    "scope": "Indian Institute of Astrophysics (IIAP, operator of the Himalayan Chandra Telescope) site Copyright Policy, site-wide (level 3); it excludes material identified as third-party copyright. The page SVO cites (https://www.iiap.res.in/iao/hfosc.html) now returns 404; the current HFOSC page https://www.iiap.res.in/centers/iao/facilities/hct/hfosc/ carries no licence statement and no acknowledgement request. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

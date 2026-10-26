@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "",
+    "url": "https://www.usno.navy.mil/USNO/astrometry/optical-IR-prod/ucac",
+    "scope": "No owner statement found. The USNO UCAC page SVO cites returns 403 to curl on 2026-10-26 (redirects to cnmoc.usff.navy.mil, 403); the Internet Archive capture of 17 Feb 2024 carries no licence, copyright or credit text; usno.navy.mil itself also returned 403. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

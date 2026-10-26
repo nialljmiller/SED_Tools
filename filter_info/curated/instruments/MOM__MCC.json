@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"Material featured on this site belongs to the DOS/ISRO and the same may be reproduced free of charge in any format or media without requiring specific permission.\" \"Wherever the material is being published or issued to others, the source must be prominently acknowledged\"",
+    "url": "https://www.isro.gov.in/Copyright_Policy.html",
+    "scope": "Step 2 (owner's website terms): ISRO Copyright Policy, which covers material on isro.gov.in, subject to accurate reproduction and no derogatory or misleading use; it excludes material marked as third-party copyright. The page does not give a specific credit line, so no acknowledgement is recorded. Source page SVO cites: https://www.isro.gov.in/Spacecraft/mars-orbiter-mission-spacecraft (and Arya et al. 2015 on ResearchGate). The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

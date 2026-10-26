@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"The SWAP and LYRA instruments follow an open data policy which means that you can freely use the SWAP and LYRA data.\"",
+    "url": "https://proba2.sidc.be/data/termsOfUse",
+    "scope": "PROBA2 Science Center (Royal Observatory of Belgium) terms of use (level 2, owner's data terms) for LYRA/SWAP data; does not name the filter curves explicitly. Source cited by SVO: Mironov et al. 2016 (https://ui.adsabs.harvard.edu/abs/2016ASPC..503..123M). The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "LYRA team",
+      "text": "LYRA is a project of the Centre Spatial de Liege, the Physikalisch-Meteorologisches Observatorium Davos and the Royal Observatory of Belgium funded by the Belgian Federal Science Policy Office (BELSPO) and by the Swiss Bundesamt für Bildung und Wissenschaft.",
+      "url": "https://proba2.sidc.be/data/termsOfUse",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

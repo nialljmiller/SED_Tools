@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"all data are published under a Creative Commons BY license\" \"granting right to distribute, remix and build upon the work provided the authors are credited for the original creation\"",
+    "url": "https://csp.obs.carnegiescience.edu/data",
+    "scope": "Carnegie Supernova Project data-products page (level 2, owner's data terms); it lists 'Filter definitions and zero-points' among its general information, so it is read to cover the CSP filter curves, but it does not name the e2v scans explicitly. The filters page cited by SVO (https://csp.obs.carnegiescience.edu/data/filters) states no terms (footer covers only the Plone software); sibling LCO/CSP recorded unknown from that page alone and should be revisited. Las Cumbres Observatory's CC BY-NC does not apply (LCO here is Las Campanas). No credit line is requested beyond crediting the authors. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

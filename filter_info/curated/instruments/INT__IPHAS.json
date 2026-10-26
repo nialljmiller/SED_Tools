@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "restricted",
+    "terms": "\"the reproduction, distribution and public communication, including the method of making available, of all or part of the contents of this website on any medium and by any technical means, without the authorisation of UNITED KINGDOM RESEARCH AND INNOVATION and/or its respective authors or rights holders, is expressly prohibited.\" \"The user may view, print, copy and store the elements of this website provided that it is solely and exclusively for personal and private use.\"",
+    "url": "https://www.ing.iac.es/legal-notice.html",
+    "scope": "Isaac Newton Group (ING) site-wide Legal Notice, level 3 (footer link), applied by analogy: IPHAS images the INT with the Wide Field Camera, the same ING owner as INT__WFC and INT__OASIS (same record followed). It covers the contents of the ING website and does not name the IPHAS curves. The IPHAS site SVO cites (https://www.iphas.org/, University of Hertfordshire) carries no licence or terms statement; on 2026-10-26 the page served to curl was cluttered with unrelated casino spam links, so it was not used. The ING filter database (http://catserver.ing.iac.es/filter/) did not answer with curl. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

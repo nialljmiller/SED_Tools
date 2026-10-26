@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "restricted",
+    "terms": "\"the reproduction, distribution and public communication, including the method of making available, of all or part of the contents of this website on any medium and by any technical means, without the authorisation of UNITED KINGDOM RESEARCH AND INNOVATION and/or its respective authors or rights holders, is expressly prohibited.\" \"The user may view, print, copy and store the elements of this website provided that it is solely and exclusively for personal and private use.\"",
+    "url": "https://www.ing.iac.es/legal-notice.html",
+    "scope": "Isaac Newton Group (ING) site-wide Legal Notice, level 3 (footer link): it covers the contents of the ING website and does not name the filter curves. The ING filter database cited by SVO (http://catserver.ing.iac.es/filter/, list.php?instrument=OASIS&filtersystem=BroadAndNarrowBand&availability=Both) did not answer with curl on 2026-10-26 (no HTTP response), so no page-level statement could be checked. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

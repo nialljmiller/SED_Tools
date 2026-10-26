@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "restricted",
+    "terms": "\"Copyright(c) 1994- Okayama Astrophysical Observatory, NAOJ, All rights reserved.\"",
+    "url": "https://www.oao.nao.ac.jp/en/",
+    "scope": "Site-wide footer of the Okayama Astrophysical Observatory (NAOJ) website; the page SVO cites, http://www.oao.nao.ac.jp/~kools/spec/index.html (returns 404 now), could not be used. The OAO site's conditions, proposal, telescope and data-archive pages carry no further licence or acknowledgement text. The notice is a general copyright reservation, not a data licence. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

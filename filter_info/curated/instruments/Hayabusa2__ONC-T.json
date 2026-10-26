@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"I grant arXiv.org a perpetual, non-exclusive license to distribute this article.\"",
+    "url": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/",
+    "scope": "Paper-only curves: article licence of arXiv:1810.11065 (Tatsumi et al. 2019, Icarus 325, 153), linked from its abstract page. It covers the article, not the numbers. JAXA/ISAS publish a general ISAS contents policy (https://www.isas.jaxa.jp/en/imagepolicy/) that is not a data licence for these curves. SVO cites the Tatsumi et al. 2019, Suzuki et al. 2018 and Ho et al. 2021 papers. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "Hayabusa2 / ISAS, JAXA",
+      "text": "(c) ISAS/JAXA",
+      "url": "https://www.isas.jaxa.jp/en/imagepolicy/",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

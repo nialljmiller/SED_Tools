@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"Permission is hereby granted, free of charge, to any person obtaining a copy of this software\" \"The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\"",
+    "url": "https://raw.githubusercontent.com/StuartLittlefair/ucam_thruput/master/LICENSE",
+    "scope": "Repository licence (MIT, Copyright (c) 2016) of StuartLittlefair/ucam_thruput, the ULTRACAM/HiperCAM/ULTRASPEC throughput models by S. Littlefair, which is the source SVO cites (https://github.com/StuartLittlefair/ucam_thruput). Option (2): the owner's repository terms; the licence covers the repository's software and files, and the README states no separate data licence or citation request. The TNT/ULTRASPEC pages carry no other statement. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

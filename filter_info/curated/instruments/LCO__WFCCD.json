@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "restricted",
+    "terms": "\"Copyright © 2020 Carnegie Science. All rights reserved.\"",
+    "url": "https://www.lco.cl/?epkb_post_type_1=wfccd",
+    "scope": "Site-wide footer (rule 3) of the Las Campanas Observatory website, operated by Carnegie Science, the owner of the observatory; the footer is the only terms statement found there (https://www.lco.cl/?epkb_post_type_1=wfccd is the LCO page cited or linked for WFCCD). It says nothing specific about filter curves, so the class is restricted. SVO's cited source page: http://www.lco.cl/telescopes-information/lco/telescopes-information/irenee-du-pont/instruments/website/wfccd/wfccd-manuals (now 404). The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files\" \"The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\"",
+    "url": "https://raw.githubusercontent.com/StuartLittlefair/ucam_thruput/master/LICENSE",
+    "scope": "MIT licence in the repository SVO cites (https://github.com/StuartLittlefair/ucam_thruput, step 1: the repository that serves the throughput models); the licence file has 'Copyright (c) 2016' with no holder named. It covers the repository's software and associated documentation files; the data files are not named separately. The README (README.rst) asks for no citation or acknowledgement. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

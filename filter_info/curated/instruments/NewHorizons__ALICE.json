@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"generally are not subject to copyright in the United States\" \"You may use this material for educational or informational purposes\" \"NASA should be acknowledged as the source of the material\"",
+    "url": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+    "scope": "NASA website media usage guidelines (owner's website terms, option 2; the page does not serve the curves). They cover NASA images, audio, video and media files, not filter-transmission tables explicitly; they say such NASA material is generally not subject to copyright in the US and asks that NASA be acknowledged. SVO cites Stern et al. 2008 and the New Horizons PDS calibration files (pds-smallbodies.astro.umd.edu, nh-p-alice-3-pluto-v3.0/calib); the PDS Small Bodies Node page footer links 'Privacy / Copyright' to NASA's policy and holds no separate statement. Mission pages pluto.jhuapl.edu and nasa.gov/newhorizons carry no data terms. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "NASA",
+      "text": "NASA should be acknowledged as the source of the material",
+      "url": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

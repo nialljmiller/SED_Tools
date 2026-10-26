@@ -1,0 +1,19 @@
+{
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "",
+    "url": "https://www.mercator.iac.es/",
+    "scope": "No owner statement found. Checked https://www.mercator.iac.es/ and /instruments/maia/ and /observing/acknowledgment (all 200): only a bare footer '© Mercator Observatory', which states no terms. The Mercator acknowledgement is recorded. Source page SVO cites: http://www.mercator.iac.es/static/doc/maia-aa.pdf (Raskin et al. 2013). The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "Mercator Telescope (MAIA)",
+      "text": "Based on observations made with the Mercator Telescope, operated on the island of La Palma by the Flemish Community, at the Spanish Observatorio del Roque de los Muchachos of the Instituto de Astrofísica de Canarias.",
+      "url": "https://www.mercator.iac.es/observing/acknowledgment",
+      "references": [
+        "doi:10.1051/0004-6361/201322471"
+      ],
+      "applies_to": "all bands"
+    }
+  ]
+}

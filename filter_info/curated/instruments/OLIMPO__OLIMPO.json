@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "",
+    "url": "http://arxiv.org/licenses/nonexclusive-distrib/1.0/",
+    "scope": "Paper-only curve: Paiella et al. 2019, JCAP 01, 039 (arXiv:1810.00598, page SVO cites https://ui.adsabs.harvard.edu/abs/2019JCAP...01..039P). The arXiv abstract page links the non-exclusive licence to distribute, which gives arXiv a distribution right and does not grant reuse; it covers the article, not the numbers. The OLIMPO project site (olimpo.roma1.infn.it) carries no licence statement. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

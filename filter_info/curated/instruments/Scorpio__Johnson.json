@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"When publishing research results obtained from telescopes, a reference in the publication to the telescope and scientific equipment is a prerequisite.\" \"It is also necessary to insert information on support for the operation of telescopes, which is given below.\"",
+    "url": "https://www.sao.ru/hq/Komitet/acknowledgments-en.html",
+    "scope": "Owner is the Special Astrophysical Observatory of the Russian Academy of Sciences (SAO RAS), which operates the BTA 6-m telescope and its SCORPIO focal reducer. Terms are from the Russian Telescope Time Allocation Committee 'Acknowledgments for publications' page, linked from the SAO RAS Telescopes page (owner's publication terms, level 2; no statement was found on the page serving the curve, and SVO cites no source page since info.json is empty). The statement covers publications using BTA-6m observations; it states no redistribution licence for filter curves. Same record as the other Scorpio instruments (Scorpio/Comet, Cousins, Johnson, SED) in this chunk. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "BTA-6m (SAO RAS)",
+      "text": "Observations with the SAO RAS telescopes are supported by the Ministry of Science and Higher Education of the Russian Federation. The renovation of telescope equipment is currently provided within the national project ''Science and universities.''",
+      "url": "https://www.sao.ru/hq/Komitet/acknowledgments-en.html",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

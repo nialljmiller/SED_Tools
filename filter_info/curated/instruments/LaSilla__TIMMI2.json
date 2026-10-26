@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"All data in the ESO archive retain ESO’s copyright, and are distributed according to the terms of the Creative Commons Attribution 4.0 International license (CC BY 4.0).\" \"ESO data files (both raw and processed data) may be distributed by third parties, and disseminated via other services, according to the terms of the Creative Commons Attribution 4.0 International license. Credit to the ESO provenance of the data must be acknowledged, and the file headers preserved.\"",
+    "url": "https://archive.eso.org/cms/eso-data-access-policy.html",
+    "scope": "ESO archive data policy (level 2), followed by analogy from ESO/ESO; no statement names these curves. SVO cites the ESO TIMMI2 page (https://www.eso.org/public/teles-instr/lasilla/36/timmi2/) and the old WFI filters page, which carry no terms (404/no text). Class attribution because the policy states CC BY 4.0 (sibling ESO/ESO is recorded unknown with the same quotes; align the two). The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "ESO",
+      "text": "Based on observations collected at the European Southern Observatory under ESO programme(s) TP.C-NNNN(R) 1 or PPP.AAAA.nnn 2",
+      "url": "https://archive.eso.org/cms/eso-data-access-policy.html",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

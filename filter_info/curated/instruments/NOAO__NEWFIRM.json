@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "restricted",
+    "terms": "\"may on a non-exclusive basis be reproduced without fee provided the credit is clear and visible\" \"music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the\" \"can not be used for non-NOIRLab products\"",
+    "url": "https://noirlab.edu/public/copyright/",
+    "scope": "NOIRLab (successor to NOAO) usage statement for its public website (owner's website terms, option 2; the NOAO filter page www.noao.edu/ets/newfirm/filters.html cited by SVO did not answer with curl). It licenses images, videos and press-release text under CC BY 4.0 and excludes other site material (scientific papers, code, other text) from that licence and from use in non-NOIRLab products; filter curves are not named, so they are treated as covered by the exclusion. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "NSF Kitt Peak National Observatory / NSF NOIRLab (NEWFIRM was on the Mayall 4-m)",
+      "text": "Based on observations at NSF Kitt Peak National Observatory, NSF NOIRLab (NOIRLab Prop. ID XXXXX-XXXX; PI: first initial last name), which is managed by the Association of Universities for Research in Astronomy (AURA) under a cooperative agreement with the U.S. National Science Foundation.",
+      "url": "https://noirlab.edu/science/about/scientific-acknowledgments/",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

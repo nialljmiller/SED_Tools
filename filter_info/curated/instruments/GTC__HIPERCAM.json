@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files\" \"The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\"",
+    "url": "https://raw.githubusercontent.com/StuartLittlefair/ucam_thruput/master/LICENSE",
+    "scope": "MIT licence of the HiPERCAM/ULTRACAM team's throughput repository https://github.com/StuartLittlefair/ucam_thruput, the source SVO cites (level 2, owner's own repository); it licenses the repository's software and associated files and does not name the curve files individually. The GTC website legal notice (https://www.gtc.iac.es/gtc/legal.php, as for GTC/CanariCam) reserves GTC website contents and the GTC instrument page http://www.gtc.iac.es/instruments/hipercam/hipercam.php carries no licence statement. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "Gran Telescopio Canarias (GTC)",
+      "text": "Based on observations made with the Gran Telescopio Canarias (GTC), installed at the Spanish Observatorio del Roque de los Muchachos of the Instituto de Astrofísica de Canarias, on the island of La Palma.",
+      "url": "https://www.gtc.iac.es/observing/observing.php",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

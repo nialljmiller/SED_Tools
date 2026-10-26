@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"Authors are required to include the following acknowledgement paragraph in the paper\" \"The use of all SkyMapper data is governed by the policies outlined on this website.\"",
+    "url": "https://skymapper.anu.edu.au/how-to-cite/",
+    "scope": "Owner is the SkyMapper Team at the Australian National University (RSAA). Terms are on the owner's Cite & Acknowledge page (owner's data terms, level 2), not on a page that serves the curve; the same sentence is the site footer. The statement covers use of SkyMapper Southern Survey data and requires the acknowledgement paragraph in published papers; it does not grant or name a redistribution licence for the filter curves, and the linked policies page (https://skymapper.anu.edu.au/policies/) only lists historical protected-science projects. Filter curves are cited by SVO from the SkyMapper site (no instrument-level info.json links). The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "SkyMapper Southern Survey (ANU RSAA)",
+      "text": "The national facility capability for SkyMapper has been funded through ARC LIEF grant LE130100104 from the Australian Research Council, awarded to the University of Sydney, the Australian National University, Swinburne University of Technology, the University of Queensland, the University of Western Australia, the University of Melbourne, Curtin University of Technology, Monash University and the Australian Astronomical Observatory. SkyMapper is owned and operated by The Australian National University's Research School of Astronomy and Astrophysics. The survey data were processed and provided by the SkyMapper Team at ANU. The SkyMapper node of the All-Sky Virtual Observatory (ASVO) is hosted at the National Computational Infrastructure (NCI). Development and support of the SkyMapper node of the ASVO has been funded in part by Astronomy Australia Limited (AAL) and the Australian Government through the Commonwealth's Education Investment Fund (EIF) and National Collaborative Research Infrastructure Strategy (NCRIS), particularly the National eResearch Collaboration Tools and Resources (NeCTAR) and the Australian National Data Service Projects (ANDS).",
+      "url": "https://skymapper.anu.edu.au/how-to-cite/",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "licence": {
+    "redistribution": "restricted",
+    "terms": "\"The distribution, modification, transfer or public communication of the contents and any other act that has not been expressly authorized by GRAN TELESCOPIO DE CANARIAS S.A. is prohibited.\"",
+    "url": "https://www.gtc.iac.es/gtc/legal.php",
+    "scope": "GTC website legal notice (site-wide, level 3 in the brief's order); the instrument page (http://www.gtc.iac.es/instruments/emir/emir.php) carries no licence statement for the curves, only the acknowledgement request for the medium-band filters. Followed the sibling record GTC/CanariCam, same statement. The notice covers the GTC website contents and does not mention the filter curves specifically. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "Gran Telescopio Canarias (GTC)",
+      "text": "Based on observations made with the Gran Telescopio Canarias (GTC), installed at the Spanish Observatorio del Roque de los Muchachos of the Instituto de Astrofísica de Canarias, on the island of La Palma.",
+      "url": "https://www.gtc.iac.es/observing/observing.php",
+      "references": [],
+      "applies_to": "all bands"
+    },
+    {
+      "for": "EMIR medium-band filters (Spanish Government grants)",
+      "text": "This work is (partly) based on observations carried out with EMIR and medium-band filters purchased with funds from Spanish Government grants AYA2015-63650-P and AYA2015-70498-C2-1-R",
+      "url": "https://www.gtc.iac.es/instruments/emir/emir.php",
+      "references": [],
+      "applies_to": "medium-band filters"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "",
+    "url": "https://ui.adsabs.harvard.edu/abs/1976A%26A....49..389H/abstract",
+    "scope": "Paper-only: the curves come from Humphries et al. 1976, A&A 49, 389 (bibcode 1976A&A....49..389H) via SVO. The journal page (aanda.org) returned 403 to curl and ADS carries no licence text, so no licence for the article could be verified; any journal licence would cover the article, not the numbers. The TD-1 S2/68 experiment was an ESRO satellite payload; no ESA/ESRO statement on the curves was found. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "",
+    "url": "https://doi.org/10.1093/mnras/stac674",
+    "scope": "No licence statement was found. Checked: the MOA site http://www2.phys.canterbury.ac.nz/moa/ (does not resolve; www.phys.canterbury.ac.nz/moa redirects to it) and its Internet Archive capture of data_files.html (https://web.archive.org/web/20200118190315/http://www.phys.canterbury.ac.nz/moa/data_files.html), which has no licence text. The curve comes from Cordwell et al. 2022, MNRAS (doi 10.1093/mnras/stac674, ADS 2022MNRAS.tmp..670C). Crossref records that article as CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), but academic.oup.com returns 403 to curl and the paper is not on arXiv, so no passage could be quoted from a page. That licence would cover the article, not the numbers. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

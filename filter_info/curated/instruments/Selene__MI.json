@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"When you publish your work on SELENE(KAGUYA) data, we would like to ask you to acknowledge the appropriate instrument team(s) and the SELENE Data Archive as follows.\" \"On publication of your papers using SELENE(KAGUYA) data, it would be particularly helpful if you could inform us the reference\"",
+    "url": "https://darts.isas.jaxa.jp/en/datasets/sln-l-mi-3-vis-level2b2-v1.0",
+    "scope": "Owner is JAXA (SELENE/Kaguya, Lunar Imager and SpectroMeter Multiband Imager), distributed by the DARTS archive at ISAS/JAXA. Terms are on the DARTS dataset page for the MI-VIS Level2B2 radiance data (a page serving MI data, level 1; the same 'Request for using this data' text is on the other SELENE MI dataset pages). The statement is a request for acknowledgement and for notification of publications; it names no redistribution licence and covers the MI image data, not explicitly the filter curves. The sample credit line is written for the TC camera; MI users substitute the MI team. SVO cites no source page (info.json is empty). The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "SELENE (KAGUYA) data (JAXA); sample wording is for the TC team, substitute the MI team",
+      "text": "We thank the SELENE(KAGUYA) TC team and the SELENE Data Archive for providing the SELENE(KAGUYA) data. SELENE is a Japanese mission developed and operated by JAXA.",
+      "url": "https://darts.isas.jaxa.jp/en/datasets/sln-l-mi-3-vis-level2b2-v1.0",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

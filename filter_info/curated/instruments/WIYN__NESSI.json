@@ -1,0 +1,24 @@
+{
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the\" \"can not be used for non-NOIRLab products.\"",
+    "url": "https://noirlab.edu/public/copyright/",
+    "scope": "NOIRLab outreach-site copyright page (step 3); same statement and class as sibling WIYN/ODI. It says scientific papers, code and other text are not under CC BY 4.0; it does not mention the curve files and no filter page grants terms. Page SVO cites: https://www.noao.edu/noao/staff/everett/nessi/Speckle_with_NESSI.html (no connection on 2026-10-26, not checked). The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "WIYN Observatory",
+      "text": "The WIYN Observatory is a joint facility of the NSF's National Optical-Infrared Astronomy Research Laboratory, Indiana University, the University of Wisconsin-Madison, Pennsylvania State University, Purdue University and Princeton University.",
+      "url": "https://www.wiyn.org/Observe/wiyncredit.html",
+      "references": [],
+      "applies_to": "all bands"
+    },
+    {
+      "for": "Kitt Peak National Observatory (NOIRLab)",
+      "text": "Based on observations at Kitt Peak National Observatory, NSF's National Optical-Infrared Astronomy Research Laboratory (NOIRLab Prop. ID:; PI:), which is operated by the Association of Universities for Research in Astronomy (AURA) under a cooperative agreement with the National Science Foundation.",
+      "url": "https://www.wiyn.org/Observe/wiyncredit.html",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

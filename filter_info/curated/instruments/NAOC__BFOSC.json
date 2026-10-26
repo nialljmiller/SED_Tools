@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "restricted",
+    "terms": "\"National Astronomical Observatories, Chinese Academy of Sciences\"",
+    "url": "http://english.nao.cas.cn/",
+    "scope": "Site footer (step 3) of the NAOC English website, which reads 'Copyright © National Astronomical Observatories, Chinese Academy of Sciences' (only the owner name is quoted so the passage survives HTML entities). The page SVO cites, http://www.xinglong-naoc.org/html/en/gcyq/216/detail-18.html, now shows a domain-for-sale page with no BFOSC content or terms. The footer covers the NAOC website; the curve files carry no notice. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

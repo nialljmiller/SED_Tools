@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"generally are not subject to copyright in the United States\" \"You may use this material for educational or informational purposes\" \"NASA should be acknowledged as the source of the material\"",
+    "url": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+    "scope": "NASA website media usage guidelines (owner's website terms, option 2; the page does not serve the curves). They cover NASA images, audio, video and media files, not filter-transmission tables explicitly; they say such NASA material is generally not subject to copyright in the US and asks that NASA be acknowledged. SVO cites the Nimbus III User's Guide (NimbusIIIUG.pdf) on docserver.gesdisc.eosdis.nasa.gov (NASA GES DISC); no GES DISC-specific statement was fetchable with curl. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "NASA",
+      "text": "NASA should be acknowledged as the source of the material",
+      "url": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

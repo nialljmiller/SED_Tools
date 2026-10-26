@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "",
+    "url": "https://www.tng.iac.es/instruments/filters/",
+    "scope": "No owner statement found. Checked the TNG filters page (http://www.tng.iac.es/instruments/filters/), the TNG home page, the acknowledgement page (credit line only), the transparency page and the privacy notice (https://www.tng.iac.es/lopd/gdpr-web-privacy.html): none states copyright or reuse terms for the filter data, and www.inaf.it did not answer curl. Page SVO cites: http://www.tng.iac.es/instruments/filters/. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "Telescopio Nazionale Galileo (TNG), Fundación Galileo Galilei - INAF",
+      "text": "Based on observations made with the Italian Telescopio Nazionale Galileo (TNG) operated on the island of La Palma by the Fundación Galileo Galilei of the INAF (Istituto Nazionale di Astrofisica) at the Spanish Observatorio del Roque de los Muchachos of the Instituto de Astrofisica de Canarias",
+      "url": "https://www.tng.iac.es/observing/acknowledgement.html",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

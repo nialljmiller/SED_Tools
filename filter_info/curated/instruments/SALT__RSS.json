@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"All science papers that include SALT data which are submitted for publication in refereed science journals must include the following words of acknowledgment\" \"based on observations made with the Southern African Large Telescope (SALT)\"",
+    "url": "https://web.archive.org/web/20250214195833/https://astronomers.salt.ac.za/data/acknowledgements/",
+    "scope": "Owner is the SALT Foundation (Southern African Large Telescope). Statement from SALT's 'Science Paper Acknowledgements' page on astronomers.salt.ac.za (owner's data/publication terms, level 2); it requires acknowledgement in papers using SALT data but is not a formal licence, and does not cover the filter-profile files specifically. The live salt.ac.za and astronomers.salt.ac.za hosts timed out from curl on 2026-10-26, so the URL is the Internet Archive capture of 2025-02-14 of that page. Source page SVO cites: not recorded in info.json (empty). The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "SALT Foundation",
+      "text": "All/some [choose whichever is appropriate] of the observations reported in this paper were obtained with the Southern African Large Telescope (SALT).",
+      "url": "https://web.archive.org/web/20250214195833/https://astronomers.salt.ac.za/data/acknowledgements/",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"Unless the data file is marked with a restrictive notice or license, data that is provided from a NASA-led mission including observations, engineering, calibration, and auxiliary data are licensed as Creative Commons Zero. There are no restrictions on the usage of these data.\"",
+    "url": "https://science.data.nasa.gov/about/license",
+    "scope": "NASA science data licence (same statement as Aqua__MODIS and Cassini__ISS_NAC), applied to the NASA-led OSIRIS-REx mission; the page SVO cites (https://www.asteroidmission.org/objectives/ and Rizk et al. 2018, Space Sci. Rev. doi:10.1007/s11214-017-0460-7) has a certificate that plain curl rejects and states no licence. The licence does not cover files marked with a restrictive notice. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

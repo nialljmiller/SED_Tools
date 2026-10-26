@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"The copyrights to all copyrighted content contained in this public online presence\" \"In each individual case and before using the material, the indicated copyright holders must be asked for permission (for a license) to use the material.\"",
+    "url": "https://www.dlr.de/en/imprint",
+    "scope": "DLR website terms of use (images and video, copyright and terms of use), level 2 (owner's website terms): DLR built the MOS (Modular Optoelectronic Scanner on IRS-P3); the statement is about DLR web content, not the MOS response curves. The SVO-cited DLR paper (https://www.dlr.de/os/Portaldata/48/Resources/dokumente/Paper_Noordwijk10_04.pdf) now returns 404 and carries no checked terms. The NASA OB.DAAC RSR-tables page SVO also lists (https://oceancolor.gsfc.nasa.gov/docs/rsr/rsr_tables/) shows no MOS entry and no terms. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

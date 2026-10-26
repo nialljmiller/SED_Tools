@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "restricted",
+    "terms": "\"sont formellement et strictement interdits en dehors du cadre strictement limité à l’exception de copie privée ou à visée éducative\" \"Sauf mention explicite de propriété intellectuelle détenue par des tiers, les contenus de ce site sont proposés sous Licence Etalab-2.0\"",
+    "url": "https://cnes.fr/mentions-legales",
+    "scope": "Step 2 (owner's website terms): CNES legal notice (Droits accordés), which forbids reproduction, extraction and derivative works of site content except private or educational copying; the same page's footer says site content is offered under Licence Etalab-2.0 unless third-party rights are marked, so the page is internally inconsistent and the stricter clause sets the class. ScaRaB is a CNES instrument on the CNES/ISRO Megha-Tropiques mission; ISRO's own copyright policy (https://www.isro.gov.in/Copyright_Policy.html) is more permissive. Source page SVO cites: https://megha-tropiques.cnes.fr/en/MEGHAT/lien3_sat.htm. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "CNES (Megha-Tropiques)",
+      "text": "Ce document est extrait du site Internet du CNES. Informations protégées - Tous droits réservés © CNES",
+      "url": "https://cnes.fr/mentions-legales",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

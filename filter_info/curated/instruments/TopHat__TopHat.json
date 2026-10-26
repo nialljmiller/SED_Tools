@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "",
+    "url": "https://iopscience.iop.org/article/10.1086/432117",
+    "scope": "Paper-only source: Silverstone et al. 2005, ApJS 160, 59 (The TopHat Experiment, DOI 10.1086/432117), which SVO cites. It is not on arXiv (title and author searches found nothing). iopscience.iop.org returns a bot-check page to plain curl, so no licence passage could be verified; any journal licence would cover the article, not the numbers. No TopHat project page with terms was found. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

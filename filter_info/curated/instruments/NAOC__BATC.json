@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"The data retrieved with VizieR are free of usage in a scientific context\" \"the original authors and publication references including the publisher have to be explicitely cited\"",
+    "url": "https://cds.unistra.fr/vizier-org/licences_vizier.html",
+    "scope": "CDS VizieR rules of usage (step 2: the distributor's data terms, as for DENIS__DENIS); the filter curves are filters.dat of VizieR catalogue II/262 (BATC DR1, Zhou et al., NAOC), whose ReadMe (https://cdsarc.cds.unistra.fr/ftp/II/262/ReadMe) states no copyright or licence of its own. The VizieR text says commercial usage depends on the data origin and does not settle it for II/262. NAOC's own site (http://english.nao.cas.cn/) shows only a general copyright footer. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "VizieR / CDS",
+      "text": "This research has made use of the VizieR catalogue access tool, CDS, Strasbourg, France (DOI : 10.26093/cds/vizier). The original description of the VizieR service was published in 2000, A&AS 143, 23",
+      "url": "https://cds.unistra.fr/vizier-org/licences_vizier.html",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

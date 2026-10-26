@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"you may download and copy content from the EUMETSAT website(s) for your own personal and non-commercial use\" \"you must request authorisation from EUMETSAT\"",
+    "url": "https://www.eumetsat.int/about-us/terms-use",
+    "scope": "EUMETSAT website terms of use (step 2: the owner's website terms), the same statement class as Beijing1__SLIM6 (ESA website terms, permission). GERB-2 flies on Meteosat Second Generation; the GERB Ground Segment Processing System page SVO cites (https://ggsps.rl.ac.uk/information.html#Spectral, RAL Space / STFC) carries no copyright or licence statement and no credit request, so it is not the licence source. The terms cover EUMETSAT website content, not explicitly the curve numbers; the page SVO cites for the instrument is the Harries et al. 2005 BAMS paper. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "EUMETSAT website content",
+      "text": "you are required to credit it appropriately as EUMETSAT property or the property of the credited provider",
+      "url": "https://www.eumetsat.int/about-us/terms-use",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

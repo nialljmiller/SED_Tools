@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "",
+    "url": "https://lweb.cfa.harvard.edu/~bmcleod/Megacam/Filters/",
+    "scope": "No licence or reuse statement was found on the CfA-hosted page that serves the curves or on the CfA site pages checked (https://www.cfa.harvard.edu/ footer has only a Mailchimp terms link; /privacy-policy and /terms-use returned 404). The MMT Observatory site footer (https://www.mmto.org/after-your-run/) says 'All rights reserved' but belongs to the telescope's site, not the instrument team's page, so it is not taken as the owner's statement. The MMT credit line is recorded because the instrument runs at the MMT. Follows the sibling record Magellan__MegaCam (same filter page, unknown). That record's citation line (McLeod et al. 2015, PASP 127, 366) lives in a PDF that curl cannot grep, so it is not repeated here. Page cited by SVO: https://www.cfa.harvard.edu/~bmcleod/Megacam/Filters/. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "MMT Observatory",
+      "text": "Observations reported here were obtained at the MMT Observatory, a joint facility of the Smithsonian Institution and the University of Arizona.",
+      "url": "https://www.mmto.org/after-your-run/",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

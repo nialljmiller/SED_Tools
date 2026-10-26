@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "",
+    "url": "http://www.iram.es/IRAMES/mainWiki/Continuum/NIKA2/Main",
+    "scope": "No owner statement found. Checked on 2026-10-26: the NIKA2 wiki page SVO cites (http://www.iram.es/IRAMES/mainWiki/Continuum/NIKA2/Main) and the measured-bandpasses page it links (https://publicwiki.iram.es/SpectralBands) have no terms (only the MoinMoin 'GPL licensed' wiki-software badge); the IRAM institute site (https://www.iram-institute.org/) footer says only 'Copyright IRAM 2026' with no terms, and its privacy-policy page has no reuse terms. http://www.iram.es/IRAMES/mainWiki/Spectral gave no terms either. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "licence": {
+    "redistribution": "restricted",
+    "terms": "\"Copyright 2026, Extreme Wavefront Control Lab, The University of Arizona.\"",
+    "url": "https://www.magao-x.org/docs/handbook/observers/geninfo.html",
+    "scope": "Footer of the MagAO-X instrument handbook (rule 3), the same page that lists the filters' acknowledgement; the handbook's filters page https://www.magao-x.org/docs/handbook/observers/filters.html carries the same footer and is SVO's cited source page. The footer is a copyright notice and no licence is given for the filter curves, so the class is restricted. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "MagAO-X team (Extreme Wavefront Control Lab, University of Arizona)",
+      "text": "We are very grateful for support from the NSF MRI Award #1625441. The Phase II upgrade program is made possible by the generous support of the Heising-Simons Foundation. MagAO-X uses the CACAO software package, which is supported by NSF Award #2410616.",
+      "url": "https://www.magao-x.org/docs/handbook/observers/geninfo.html",
+      "references": [],
+      "applies_to": "papers with data obtained using MagAO-X, on-sky or in the lab"
+    },
+    {
+      "for": "Magellan Council / Las Campanas Observatory (Carnegie Science)",
+      "text": "This paper includes data gathered with the 6.5 meter Magellan Telescopes located at Las Campanas Observatory, Chile.",
+      "url": "https://www.magao-x.org/docs/handbook/observers/geninfo.html",
+      "references": [],
+      "applies_to": "papers with on-sky MagAO-X data; the handbook asks for it as a footnote to the paper title"
+    }
+  ]
+}

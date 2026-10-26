@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"Data hosted in the ESA Space Science Archives are distributed under the CC BY-NC 3.0 IGO licence.\" \"Prior to any commercial use by the User of any Data or Data Product, including any use or application that directly or indirectly generates a financial gain, a detailed request for authorisation/licence shall be made by the User by sending email to data.licences@esa.int.\"",
+    "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
+    "scope": "ESA Space Science Archives terms (owner's data terms, step 2), the same statement as GAIA__GAIA: CC BY-NC 3.0 IGO, non-commercial reuse with the mission credit line; commercial use needs ESA authorisation. HRSC is hosted in the ESA Planetary Science Archive; the DLR / FU Berlin instrument team's own terms were not checked. SVO cites http://www.esa.int/Science_Exploration/Space_Science/Mars_Express/Mars_Express_instruments (now redirects to Mars_Express_orbiter_instruments), which carries only the ESA website terms. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "Mars Express HRSC (ESA Space Science Archives credit line)",
+      "text": "Credit: ESA, T. Roatsch, D. Tirsch",
+      "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

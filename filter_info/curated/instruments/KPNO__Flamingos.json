@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the\" \"and can not be used for non-NOIRLab products.\"",
+    "url": "https://noirlab.edu/public/copyright/",
+    "scope": "Outreach-site licence of NOIRLab (owner of Kitt Peak National Observatory), the owner's website terms (step 2); followed sibling KPNO__Mosaic. The sentence reads '...not released under the Creative Commons Attribution 4.0 International License and can not be used for non-NOIRLab products.'; it is quoted in two parts because the page has non-breaking-space markup between them. The filter pages carry no statement on the curve files. Source page SVO cites: https://www.noao.edu/kpno/manuals/flmn/; the host does not resolve (curl exit 6, 2026-10-26), so no statement could be read there. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "NSF Kitt Peak National Observatory (NOIRLab)",
+      "text": "Based on observations at NSF Kitt Peak National Observatory, NSF NOIRLab (NOIRLab Prop. ID XXXXX-XXXX; PI: first initial last name), which is managed by the Association of Universities for Research in Astronomy (AURA) under a cooperative agreement with the U.S. National Science Foundation. The authors are honored to be permitted to conduct astronomical research on I'oligam Du’ag (Kitt Peak), a mountain with particular significance to the Tohono O’odham.",
+      "url": "https://noirlab.edu/science/about/scientific-acknowledgments",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

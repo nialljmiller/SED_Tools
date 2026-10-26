@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"Data hosted in the ESA Space Science Archives are distributed under the CC BY-NC 3.0 IGO licence.\" \"acknowledgment to be given in accordance with the credit lines provided below\" \"Prior to any commercial use by the User of any Data or Data Product, including any use or application that directly or indirectly generates a financial gain, a detailed request for authorisation/licence shall be made by the User by sending email to data.licences@esa.int\"",
+    "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
+    "scope": "Owner is ESA (INTEGRAL Optical Monitoring Camera). ESA ESDC archive terms (step 2; followed GAIA__GAIA): CC BY-NC 3.0 IGO, non-commercial reuse with the mission credit line; commercial use needs ESA authorisation. The ESDC page covers data hosted in the ESA Space Science Archives and does not name the filter curves; the page SVO cites (https://www.cosmos.esa.int/web/integral/instruments-omc) carries no licence statement. Source page SVO cites: https://www.cosmos.esa.int/web/integral/instruments-omc. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "INTEGRAL (OMC)",
+      "text": "Credit: ESA, Name of Proposal PI",
+      "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

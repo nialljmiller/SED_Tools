@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"Unless the data file is marked with a restrictive notice or license, data that is provided from a NASA-led mission including observations, engineering, calibration, and auxiliary data are licensed as Creative Commons Zero\" \"There are no restrictions on the usage of these data.\"",
+    "url": "https://science.data.nasa.gov/about/license",
+    "scope": "NASA science data licence (NASA-led mission data), as followed for Cassini__ISS_NAC and Aqua__MODIS. The pages SVO cites (http://www.msss.com/small_bodies/near_new/msi.html and .../index.html, Malin Space Science Systems) and the PDS volume https://sbnarchive.psi.edu/pds3/near/NEAR_MSI_6_RDR_INSTRUMENT_INFO_V1_0/ carry no terms; NEAR was a NASA Discovery mission run by JHU/APL. The licence covers NASA-led mission data; whether the curve file is marked otherwise was not seen. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "NASA content",
+      "text": "NASA should be acknowledged as the source of the material.",
+      "url": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

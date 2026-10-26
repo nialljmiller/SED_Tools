@@ -1,0 +1,17 @@
+{
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"You might use and publish the calculated curves for your purposes, but the curves must remain unmodified.\" \"The origin of published curves must be identifiable by a direct link to our online calculator\" \"All measurement data used for the calculation of the filter curves are the property of SCHOTT AG.\"",
+    "url": "https://www.pgo-online.com/intl/curves/optical_glassfilters/GG475.html",
+    "scope": "Level 1: the page that serves the curve. The one TFRM band is the GG475 glass-filter transmission from Präzisions Glas & Optik (PGO), which computes it from SCHOTT AG data; the owner is PGO/SCHOTT, not the TJO/TFRM telescope. Terms allow use and publication of unmodified curves with a direct link to the calculator; the page also bars copying or commercial exploitation of the calculator program without written permission. This page is the one SVO cites (it redirects to https://www.pgo-online.com/intl/schott-filter-calculator.html?filters=GG475&thickness=3). Whether a 3 mm thickness or SVO's own sampling matches is not verified. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  },
+  "acknowledgements": [
+    {
+      "for": "Präzisions Glas & Optik GmbH (PGO) / SCHOTT AG",
+      "text": "The origin of published curves must be identifiable by a direct link to our online calculator.",
+      "url": "https://www.pgo-online.com/intl/curves/optical_glassfilters/GG475.html",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

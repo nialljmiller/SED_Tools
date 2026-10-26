@@ -1,0 +1,8 @@
+{
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"There are no restrictions on the usage of these data.\" \"data that is provided from a NASA-led mission including observations, engineering, calibration, and auxiliary data are licensed as Creative Commons Zero\"",
+    "url": "https://science.data.nasa.gov/about/license",
+    "scope": "Step 2 (owner's data terms): NASA Science Data Portal licence statement for data from NASA-led missions, applied to the MESSENGER Mercury Dual Imaging System wide-angle camera (NASA mission, JHU/APL). No MESSENGER-specific credit line was found on the PDS Geosciences MESSENGER page or messenger.jhuapl.edu, so no acknowledgement is recorded. ; it does not cover third-party material marked with a restrictive notice. Same statement and class as Cassini__ISS_NAC, Dawn__FC, Galileo__SSI. Source page SVO cites: https://solarsystem.nasa.gov/missions/messenger/in-depth/ (curves from the PDS archive https://pdsimage2.wr.usgs.gov/archive/mess-e_v_h-mdis-4-cdr-caldata-v1.0/MSGRMDS_2001/). The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
+  }
+}
