@@ -282,8 +282,8 @@ The default is the manifest's `default_site`. Further sites at the same location
 | `paranal_vircam` | team | X = 1.0 / PWV 1 mm; X = 2.0 / PWV 3 mm | unnamed model in ESO's VIRCAM ETC curves (0.9–5.6 µm) | VISTA (beside SkyCalc `paranal`) |
 | `hopkins_2mass`, `ctio_2mass` | team | airmass not stated | PLEXUS (Cohen et al. 2003; Explanatory Supplement III.1.b1, tables 15/16) | 2MASS |
 | `apo_sdss` | team | X = 1.0; X = 1.3 derived (power 1.3) | DR7 imager tables, column 5 | SDSS |
-| `lco_csp` | team | X = 1.2, derived | CSP filter package: one-airmass CTIO extinction ^1.2 × telluric lines | CSP (once on NJM) |
-| `kpno_bass` | team | X = 1.0, derived, in-band only | BASS `bass-g/r.txt` column 4 / column 3 | BASS (once on NJM) |
+| `lco_csp` | team | X = 1.2, derived | CSP filter package: one-airmass CTIO extinction ^1.2 × telluric lines | LCO/CSP |
+| `kpno_bass` | team | X = 1.0, derived, in-band only | BASS `bass-g/r.txt` column 4 / column 3 | BOK/BASS |
 | `maunakea_gemini` | team | X = 1.0, 1.5, 2.0 × PWV 1.0, 1.6, 3.0, 5.0 mm | Gemini ATRAN (Lord 1992), 0.9–5.6 µm | NIFS |
 | `cpachon_gemini` | team | X = 1.0, 1.5, 2.0 × PWV 2.3, 4.3, 7.6, 10 mm | Gemini ATRAN (Lord 1992), 0.9–5.6 µm | GSAOI, Flamingos-2 |
 | `paranal`, `lasilla` | derived | X = 1.0–3.0 × PWV 0.5–20 mm (9 × 9) | ESO SkyCalc 2.0.9 (Noll et al. 2012; Jones et al. 2013) | ESO instruments |

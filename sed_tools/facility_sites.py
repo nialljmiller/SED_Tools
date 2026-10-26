@@ -91,6 +91,8 @@ _INSTRUMENT_SITES = {
     ("Paranal", "VISTA"): ("paranal_vircam",),
     ("2MASS", "2MASS"): ("hopkins_2mass", "ctio_2mass"),
     ("SLOAN", "SDSS"): ("apo_sdss",),
+    ("BOK", "BASS"): ("kpno_bass",),
+    ("LCO", "CSP"): ("lco_csp",),
     ("Gemini", "NIFS"): ("maunakea_gemini",),
     ("Gemini", "GSAOI"): ("cpachon_gemini",),
     ("Gemini", "Flamingos2"): ("cpachon_gemini",),
