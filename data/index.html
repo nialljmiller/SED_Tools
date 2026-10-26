@@ -508,7 +508,17 @@
         under which the curves are shared; please cite the original work as well as this archive. Curves taken from the
         <a href="http://svo2.cab.inta-csic.es/theory/fps/" target="_blank">SVO Filter Profile Service</a> are credited to it.
         Vega quantities use CALSPEC's model of Vega (<a href="vega/">vega/</a>), and true colours use the CIE's
-        published colour-matching functions.</p>
+        published colour-matching functions. The Sun's band-averaged flux (SUN F&#955;) uses CALSPEC's solar spectrum
+        (<a href="sun/">sun/</a>): <code>sun_reference_stis_002</code> below 9600 &#197;
+        (<a href="https://doi.org/10.1086/118016" target="_blank">Colina, Bohlin &amp; Castelli 1996</a>) and the Kurucz model
+        <code>sun_mod_001</code> above, from CALSPEC
+        (<a href="https://ui.adsabs.harvard.edu/abs/2014PASP..126..711B" target="_blank">Bohlin, Gordon &amp; Tremblay 2014</a>).
+        The extinction ratio A/A<sub>V</sub> at each band's pivot wavelength uses the
+        <a href="https://ui.adsabs.harvard.edu/abs/1999PASP..111...63F" target="_blank">Fitzpatrick (1999)</a> law with
+        R<sub>V</sub> = 3.1, as implemented in
+        <a href="https://github.com/karllark/dust_extinction" target="_blank">dust_extinction</a>
+        (<a href="https://doi.org/10.21105/joss.07023" target="_blank">Gordon 2024</a>); it is left blank outside the
+        law's range (0.1 to 3.3 &#181;m).</p>
         <p><b>Data providers and authors:</b> if you would like your data credited differently, corrected or removed,
         please email <a href="#" id="contact-link">[show address]</a><noscript>niall.j.miller [at] gmail [dot] com</noscript>.</p>
         </font>
@@ -621,6 +631,8 @@ function renderDetails(record, info, props) {
         <th><input type="checkbox" class="select-all-bands" data-key="${escapeHtml(`${facility}/${instrument}`)}" title="Select every band for download"></th>
         <th>BAND</th><th>DESCRIPTION</th><th>DETECTOR</th><th>\u{3bb} PIVOT (\u{c5})</th><th>\u{3bb} EFF, VEGA (\u{c5})</th>
         <th>FWHM (\u{c5})</th><th>\u{3bb} MIN\u{2013}MAX (\u{c5})</th><th>VEGA ZP (Jy)</th><th>AB\u{2212}VEGA (mag)</th>
+        <th title="The Sun's band-averaged flux density at 1 AU (CALSPEC solar spectrum)">SUN F\u{3bb} (erg s\u{207b}\u{b9} cm\u{207b}\u{b2} \u{c5}\u{207b}\u{b9})</th>
+        <th title="Extinction at the pivot wavelength relative to A(V): Fitzpatrick (1999), R(V) = 3.1">A/A<sub>V</sub> (F99, R<sub>V</sub>=3.1)</th>
         <th>CITE</th><th>SVO RECORD</th>
     </tr></thead><tbody>`;
     const notes = [];
@@ -662,6 +674,8 @@ function renderDetails(record, info, props) {
             <td>${fmt(p.WavelengthMin)}\u{2013}${fmt(p.WavelengthMax)}</td>
             <td align="right">${fmt(p.ZeroPointVega_Jy, 5)}</td>
             <td align="right">${p.ABminusVega === null || p.ABminusVega === undefined ? fmt(null) : escapeHtml(p.ABminusVega.toFixed(3))}</td>
+            <td align="right">${fmt(p.Fsun, 5)}</td>
+            <td align="right">${fmt(p.AfAv, 4)}</td>
             <td class="wrap">${cite || '<span class="metadata-missing">\u{2014}</span>'}</td>
             <td>${svoHtml}</td>
         </tr>`;

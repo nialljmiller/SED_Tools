@@ -16,7 +16,7 @@ from filter_info.compose import SCHEMA as INFO_SCHEMA, InfoSources, write_info
 from filter_info.references import UNRESOLVED
 from sed_tools import __version__ as SED_TOOLS_VERSION
 from sed_tools.filter_colors import instrument_colors
-from sed_tools.filter_properties import UNITS, curve_properties, load_vega
+from sed_tools.filter_properties import UNITS, curve_properties, extinction_law, load_sun, load_vega
 from sed_tools.filter_metadata import read_filter_header
 
 # Vega spectrum for the Vega-weighted filter properties: data/vega/vega_flam.csv, which is
@@ -29,6 +29,31 @@ VEGA_CANDIDATES = [
     os.path.join(os.environ.get("MESA_DIR", ""), "data/colors_data/stellar_models/vega_flam.csv"),
     "/media/data3/MESA/mesa/data/colors_data/stellar_models/vega_flam.csv",
 ]
+# Solar spectrum for Fsun: data/sun/sun_flam.csv, CALSPEC sun_reference_stis_002 below 9600 A and
+# sun_mod_001 from 9600 A, the composite SVO uses (data/sun/README.md). SED_SUN_SPECTRUM overrides it.
+REPO_SUN = Path(__file__).resolve().parent / "data" / "sun" / "sun_flam.csv"
+SUN_CANDIDATES = [os.environ.get("SED_SUN_SPECTRUM", ""), str(REPO_SUN)]
+# SVO's own Fsun and AfAv, which info.json copies under "svo"; the units are SVO's.
+SVO_FIELDS = {
+    "Fsun": {
+        "unit": "erg/s/cm2/Angstrom",
+        "meaning": "SVO's band-averaged f_lambda of the Sun (CALSPEC sun_reference_stis_002 composed with "
+                   "sun_mod_001), the quantity NJM's properties.json gives as Fsun",
+        "unit_source": ('SVO\'s VOTable: <PARAM name="Fsun" value="22.596337946016" unit="erg/cm2/s/A" '
+                        'ucd="phot.flux.density" datatype="double" > (2MASS/2MASS.H, Internet Archive capture '
+                        '20250323174315 of http://svo2.cab.inta-csic.es/svo/theory/fps3/fps.php?ID=2MASS/2MASS.H); '
+                        'SVO\'s browse page: "Unit :erg/cm2/s/A UCD :phot.flux.density"'),
+        "precision": "rounded as SVO's browse page displays it: 2 decimals from 1 up, 3 significant figures below 1",
+    },
+    "AfAv": {
+        "unit": "dimensionless",
+        "meaning": ("SVO's A_f/A_V at its reference wavelength (the pivot): k(lambda)/k_V with k_V = 211.4, from SVO's "
+                    "opacity table for 'the extinction law by Fitzpatrick (1999) improved by Indebetouw et al (2005) "
+                    "in the infrared'. Not the law of NJM's AfAv (properties_definitions.extinction), so the two differ."),
+        "unit_source": "SVO's browse page shows the unit as ()",
+        "precision": "rounded as SVO's browse page displays it, to 3 significant figures",
+    },
+}
 
 
 def scan_stellar_models(base_path: Path):
@@ -142,16 +167,39 @@ def find_vega():
     return None, None
 
 
+def find_sun():
+    """Return (spectrum, description) for the solar spectrum, or (None, None)."""
+    for candidate in SUN_CANDIDATES:
+        path = Path(candidate) if candidate else None
+        if path and path.is_file():
+            digest = hashlib.sha256(path.read_bytes()).hexdigest()
+            spectrum = load_sun(path)
+            source = {"file": str(path), "sha256": digest,
+                      "range_angstrom": [float(spectrum[0][0]), float(spectrum[0][-1])]}
+            if path.resolve() == REPO_SUN:
+                source.update(
+                    file="data/sun/sun_flam.csv", url="sun/sun_flam.csv",
+                    spectrum=("CALSPEC sun_reference_stis_002 below 9600 Angstrom, sun_mod_001 from 9600 Angstrom "
+                              "(sun/README.md)"),
+                    units="WAVELENGTH Angstrom (vacuum), FLUX erg/s/cm2/Angstrom at 1 AU",
+                    references=["Bohlin, Gordon & Tremblay 2014, PASP 126, 711 (2014PASP..126..711B, "
+                                "doi:10.1086/677655): CALSPEC",
+                                "Colina, Bohlin & Castelli 1996, AJ 112, 307 (doi:10.1086/118016): "
+                                "the solar reference spectrum"])
+            return spectrum, source
+    return None, None
+
+
 def _rounded(value):
     return float(f"{value:.7g}") if isinstance(value, float) else value
 
 
-def write_properties(instrument_dir: Path, filter_files, vega, reference):
+def write_properties(instrument_dir: Path, filter_files, vega, reference, sun=None):
     """Write the instrument's properties.json (published curves only); True when written."""
     bands = {}
     for curve in sorted(filter_files):
         try:
-            props = {k: _rounded(v) for k, v in curve_properties(curve, vega).items()}
+            props = {k: _rounded(v) for k, v in curve_properties(curve, vega, sun).items()}
         except ValueError as exc:  # an unusable curve is reported, not fatal
             props = {"error": str(exc)}
         header = read_filter_header(curve)
@@ -171,7 +219,7 @@ def write_properties(instrument_dir: Path, filter_files, vega, reference):
     return True
 
 
-def scan_filters(base_path: Path, vega=None, reference=None, info_sources=None):
+def scan_filters(base_path: Path, vega=None, reference=None, info_sources=None, sun=None):
     """Scan filters directory for facility/instrument information."""
     filters_dir = base_path / "filters"
 
@@ -208,7 +256,7 @@ def scan_filters(base_path: Path, vega=None, reference=None, info_sources=None):
                 published_paths[metadata.get("Components", "unspecified")] += 1
                 detector_types[metadata.get("DetectorType", "unclassified")] += 1
             has_properties = reference is not None and write_properties(
-                instrument_dir, filter_files, vega, reference)
+                instrument_dir, filter_files, vega, reference, sun)
             band_properties = json.loads(
                 (instrument_dir / "properties.json").read_text())["bands"] if has_properties else None
             has_info = info_sources is not None and write_info(
@@ -296,18 +344,29 @@ def generate_index(data_dir: str = None):
     # Scan filters
     print("Scanning filters/...")
     vega, vega_source = find_vega()
+    sun, sun_source = find_sun()
     reference = {
         "module": f"sed_tools.filter_properties (SED_Tools {SED_TOOLS_VERSION})",
         "units": UNITS,
         "vega_spectrum": vega_source,
-        "note": "Vega quantities are null when the Vega spectrum does not cover the curve.",
+        "sun_spectrum": sun_source,
+        "extinction": extinction_law(),
+        "Fsun": ("band-averaged f_lambda of the Sun at 1 AU, integral(W S) / integral(W) with S the sun_spectrum "
+                 "and W the curve's detector-aware weight (T energy-counting, T*lambda photon-counting), "
+                 "trapezoidal rule on the curve's samples: the weight of ZeroPointVega_flam"),
+        "AfAv": ("A(lambda)/A(V) at lambda = WavelengthPivot from the extinction law (see extinction); "
+                 "dimensionless"),
+        "note": ("Vega quantities are null when the Vega spectrum does not cover the curve (where it transmits at "
+                 "least 1 % of its peak), Fsun likewise with the sun_spectrum. AfAv is null where the pivot lies "
+                 "outside the extinction law's valid range, or when dust_extinction is not installed "
+                 "(extinction.dust_extinction_version is then null)."),
         "colors": ("DisplayColor is an sRGB hex for plotting (sed_tools.filter_colors). ColorMethod "
                    "'true': CIE D65 daylight seen through the curve, for bands with VisibleFraction "
                    "(share of the throughput between 380 and 750 nm) of at least 0.5; 'false': "
                    "ordered false colour for ultraviolet and infrared bands."),
     }
     info_sources = InfoSources(Path(__file__).resolve().parent)
-    facilities, filters_detailed, total_filters = scan_filters(data_dir, vega, reference, info_sources)
+    facilities, filters_detailed, total_filters = scan_filters(data_dir, vega, reference, info_sources, sun)
     # Reference keys info.json uses but references.json lacks:
     # `python -m filter_info.references resolve` looks them up for the next run.
     UNRESOLVED.write_text("".join(f"{k}\n" for k in sorted(info_sources.unresolved)))
@@ -316,6 +375,7 @@ def generate_index(data_dir: str = None):
         "svo_records": info_sources.svo_records,
         "references": len(info_sources.references),
         "unresolved_references": len(info_sources.unresolved),
+        "svo_fields": SVO_FIELDS,
     }
 
     # Build index structure
