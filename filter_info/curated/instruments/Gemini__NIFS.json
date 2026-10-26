@@ -37,14 +37,14 @@
   "bands": {
     "ZJ_298K": {
       "Description": "NIFS ZJ blocking filter at 298 K",
-      "Comments": "Gemini filter table: ZJ, Gemini ID G0601, central wavelength 1.11 μm, coverage 0.77-1.44 μm. ZJ.dat's header names it the Z-J filter and gives two transmission columns, labelled 298 K and 77 K; this band is the 298 K column. The components page says the gratings are used with one dual blocking filter: Z-J, J-H or H-K.",
+      "Comments": "Gemini filter table: ZJ, Gemini ID G0601, central wavelength 1.11 μm, coverage 0.77-1.44 μm. ZJ.dat's header names it the Z-J filter and gives two transmission columns, labelled 298 K and 77 K; this band is the 298 K column. The components page says the gratings are used with one dual blocking filter: Z-J, J-H or H-K. Checked 2026-10-26 against https://www.gemini.edu/sciops/instruments/nifs/ZJ.dat (SHA-256 1d71842a...e9430b): the header row '298K 77K' orders the two %T columns, and its summary lines give 'Cut-on wl : 772.5 766 6.5' and 'Cut-off wl : 1440.75 1439.5 1.25'. The data reproduce this: column 2 has 50 % points 772.4/1440.8 nm, column 3 766.1/1439.4 nm (cooling shifts the edges blueward). NJM ZJ_298K equals column 2 and ZJ_77K column 3 exactly, so the labels are right. SVO's Gemini/NIFS.ZJ, described as 'NIFS Z-J filter at 77K' (capture 2022-11-30), is the 298 K column (ratio to NJM ZJ_298K 0.9999-1.0001) and lists the same wavelengths as SVO's NIFS.ZJ_298K, so SVO's description is wrong, not NJM's.",
       "references": [
         "doi:10.1117/12.459448"
       ]
     },
     "ZJ_77K": {
       "Description": "NIFS ZJ blocking filter at 77 K",
-      "Comments": "Gemini filter table: ZJ, Gemini ID G0601, central wavelength 1.11 μm, coverage 0.77-1.44 μm. ZJ.dat's header names it the Z-J filter and gives two transmission columns, labelled 298 K and 77 K; this band is the 77 K column. The components page says the gratings are used with one dual blocking filter: Z-J, J-H or H-K.",
+      "Comments": "Gemini filter table: ZJ, Gemini ID G0601, central wavelength 1.11 μm, coverage 0.77-1.44 μm. ZJ.dat's header names it the Z-J filter and gives two transmission columns, labelled 298 K and 77 K; this band is the 77 K column. The components page says the gratings are used with one dual blocking filter: Z-J, J-H or H-K. Checked 2026-10-26 against https://www.gemini.edu/sciops/instruments/nifs/ZJ.dat (SHA-256 1d71842a...e9430b): the header row '298K 77K' orders the two %T columns, and its summary lines give 'Cut-on wl : 772.5 766 6.5' and 'Cut-off wl : 1440.75 1439.5 1.25'. The data reproduce this: column 2 has 50 % points 772.4/1440.8 nm, column 3 766.1/1439.4 nm (cooling shifts the edges blueward). NJM ZJ_298K equals column 2 and ZJ_77K column 3 exactly, so the labels are right. SVO's Gemini/NIFS.ZJ, described as 'NIFS Z-J filter at 77K' (capture 2022-11-30), is the 298 K column (ratio to NJM ZJ_298K 0.9999-1.0001) and lists the same wavelengths as SVO's NIFS.ZJ_298K, so SVO's description is wrong, not NJM's.",
       "references": [
         "doi:10.1117/12.459448"
       ]

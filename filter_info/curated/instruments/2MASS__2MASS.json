@@ -52,6 +52,9 @@
       "references": [
         "bibcode:2003AJ....126.1090C"
       ]
+    },
+    "J": {
+      "DetectorType_note": "SVO's 2MASS/2MASS.J (captured 2025-10-11) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak) but is labelled photon, while SVO's archived H and Ks records (2025-03-23, 2023-10-04) label the same kind of curve energy. NJM follows Cohen, Wheaton & Megeath (2003, AJ 126, 1090, §3): the RSRs 'are designed to be integrated directly over stellar spectra in Fλ form' with the wavelength factor already folded in, which is energy in SED_Tools' convention. SVO's J label is not used."
     }
   }
 }

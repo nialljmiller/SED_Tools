@@ -50,5 +50,10 @@
       "references": [],
       "applies_to": "all bands"
     }
-  ]
+  ],
+  "bands": {
+    "70": {
+      "Comments": "Label checked 2026-10-26 against the MIPS Instrument Handbook §2 (https://irsa.ipac.caltech.edu/data/SPITZER/docs/mips/mipsinstrumenthandbook/6/), Table 2.2 'MIPS spectral response summary': '70 micron 71.42 71.9 140 55 61 80 92' (cut-on 10 %/50 % 55/61 µm, cut-off 50 %/10 % 80/92 µm); the SED mode is a separate row (53/55/96/100 µm). NJM's 70 curve has 10 %/50 % points 55.1/61.0 and 80.0/91.6 µm, so it is the 70 µm imaging band ('Pre-launch response of the 70 micron band including detector and filter spectral response', Figure 2.4), not the SED mode. The 'NB' in MIPSfiltsumm.txt's column heading '70 microns NB' is not explained by the handbook; the curve and the band name agree."
+    }
+  }
 }

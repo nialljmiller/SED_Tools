@@ -74,14 +74,14 @@
     },
     "Ks_2007": {
       "Description": "HAWK-I Ks_2007",
-      "Comments": "NJM points this band at ESO hawki_Kold.dat. That file's own header says 'K filter curve @ T=90K' and does not give a year.",
+      "Comments": "NJM points this band at ESO hawki_Kold.dat. That file's own header says 'K filter curve @ T=90K' and does not give a year. ESO's hawki_Knew.dat and hawki_Kold.dat are byte-identical (SHA-256 6a7a8850...59a5a1, both headed '# K filter curve @ T=90K', fetched 2026-10-26), although ESO's filter table (https://www.eso.org/sci/facilities/paranal/instruments/hawki/inst.html) lists them as two filters: 'Ks (1)' = hawki_Kold.dat, '(1) Filter used from Aug 2007 until Dec 3, 2007. Showed some structure for the Nov 2007 Science Verification run.', and 'Ks (2)' = hawki_Knew.dat, '(2) New Ks filter, used starting Jan 2008.' NJM's Ks_2007 and Ks_2008 therefore carry the same curve (sample rows identical); ESO has not published a separate curve for the 2007 filter.",
       "references": [
         "doi:10.1051/0004-6361:200809910"
       ]
     },
     "Ks_2008": {
       "Description": "HAWK-I Ks_2008",
-      "Comments": "NJM points this band at ESO hawki_Knew.dat. That file's own header also says 'K filter curve @ T=90K' and does not give a year.",
+      "Comments": "NJM points this band at ESO hawki_Knew.dat. That file's own header also says 'K filter curve @ T=90K' and does not give a year. ESO's hawki_Knew.dat and hawki_Kold.dat are byte-identical (SHA-256 6a7a8850...59a5a1, both headed '# K filter curve @ T=90K', fetched 2026-10-26), although ESO's filter table (https://www.eso.org/sci/facilities/paranal/instruments/hawki/inst.html) lists them as two filters: 'Ks (1)' = hawki_Kold.dat, '(1) Filter used from Aug 2007 until Dec 3, 2007. Showed some structure for the Nov 2007 Science Verification run.', and 'Ks (2)' = hawki_Knew.dat, '(2) New Ks filter, used starting Jan 2008.' NJM's Ks_2007 and Ks_2008 therefore carry the same curve (sample rows identical); ESO has not published a separate curve for the 2007 filter.",
       "references": [
         "doi:10.1051/0004-6361:200809910"
       ]

@@ -27,13 +27,19 @@
       "Description": "INGRID BRG_COLD near-infrared filter"
     },
     "BRG_WARM": {
-      "Description": "INGRID BRG_WARM near-infrared filter"
+      "Description": "INGRID BRG_WARM near-infrared filter",
+      "svo_filterID": "WHT/INGRID.Brg_w",
+      "DetectorType_note": "SVO's WHT/INGRID.Brg_w (captured 2023-03-23) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ING's filter %T scans and INGRID's HAWAII photon-counting detector (see the instrument notes).",
+      "Comments": "SVO match set to WHT/INGRID.Brg_w (2026-10-26). It had no SVO match. SVO's WHT/INGRID.Brg_w (captured 2023-03-23) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak)."
     },
     "FEII_COLD": {
-      "Description": "INGRID FEII_COLD near-infrared filter"
+      "Description": "INGRID FEII_COLD near-infrared filter",
+      "DetectorType_note": "SVO's WHT/INGRID.FeII (captured 2023-03-26) is the same curve as NJM's within resampling (SVO/NJM ratio 0.999-1.002 where both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ING's filter %T scans and INGRID's HAWAII photon-counting detector (see the instrument notes)."
     },
     "FEII_WARM": {
-      "Description": "INGRID FEII_WARM near-infrared filter"
+      "Description": "INGRID FEII_WARM near-infrared filter",
+      "svo_filterID": "WHT/INGRID.FeII_w",
+      "Comments": "Temp=77K, tilted 5 deg\r\ncalculated from data at room temperature and O deg incidence SVO match set to WHT/INGRID.FeII_w (2026-10-26). It had been matched by name and pivot to WHT/INGRID.FeII, a spectrally shifted scan (the array of NJM's FEII_COLD). SVO lists this ID but no capture is archived yet; the warm records Jcont_w, Kcont_w and Pab_w are each identical to NJM's matching WARM band, so FeII_w is the expected counterpart (unverified until harvested)."
     },
     "H2V10_COLD": {
       "Description": "INGRID H2V10_COLD near-infrared filter"
@@ -42,7 +48,10 @@
       "Description": "INGRID H2V10_WARM near-infrared filter"
     },
     "H2V21_COLD": {
-      "Description": "INGRID H2V21_COLD near-infrared filter"
+      "Description": "INGRID H2V21_COLD near-infrared filter",
+      "svo_filterID": "WHT/INGRID.H2-2",
+      "DetectorType_note": "SVO's WHT/INGRID.H2-2 (captured 2022-11-30) is the same curve as NJM's within resampling (SVO/NJM ratio 0.999-1.001 where both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ING's filter %T scans and INGRID's HAWAII photon-counting detector (see the instrument notes).",
+      "Comments": "SVO match set to WHT/INGRID.H2-2 (2026-10-26). It had no SVO match. SVO's WHT/INGRID.H2-2 (captured 2022-11-30) is the same curve as NJM's within resampling (SVO/NJM ratio 0.999-1.001 where both exceed 5 % of peak)."
     },
     "H2V21_WARM": {
       "Description": "INGRID H2V21_WARM near-infrared filter"
@@ -54,22 +63,31 @@
       "Description": "INGRID HCONT_WARM near-infrared filter"
     },
     "H_WARM": {
-      "Description": "INGRID H_WARM near-infrared filter"
+      "Description": "INGRID H_WARM near-infrared filter",
+      "DetectorType_note": "SVO's WHT/INGRID.H (captured 2024-11-07) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ING's filter %T scans and INGRID's HAWAII photon-counting detector (see the instrument notes)."
     },
     "JCONT_WARM": {
-      "Description": "INGRID JCONT_WARM near-infrared filter"
+      "Description": "INGRID JCONT_WARM near-infrared filter",
+      "svo_filterID": "WHT/INGRID.Jcont_w",
+      "DetectorType_note": "SVO's WHT/INGRID.Jcont_w (captured 2026-03-14) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ING's filter %T scans and INGRID's HAWAII photon-counting detector (see the instrument notes).",
+      "Comments": "Temp=77K, tilted 5 deg\r\ncalculated from data at room temperature and O deg incidence SVO match set to WHT/INGRID.Jcont_w (2026-10-26). It had been matched by name and pivot to WHT/INGRID.Jcont, a spectrally shifted scan. SVO's WHT/INGRID.Jcont_w (captured 2026-03-14) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak)."
     },
     "J_WARM": {
       "Description": "INGRID J_WARM near-infrared filter"
     },
     "KCONT_COLD": {
-      "Description": "INGRID KCONT_COLD near-infrared filter"
+      "Description": "INGRID KCONT_COLD near-infrared filter",
+      "DetectorType_note": "SVO's WHT/INGRID.Kcont (captured 2023-03-31) is the same curve as NJM's within resampling (SVO/NJM ratio 0.999-1.001 where both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ING's filter %T scans and INGRID's HAWAII photon-counting detector (see the instrument notes)."
     },
     "KCONT_WARM": {
-      "Description": "INGRID KCONT_WARM near-infrared filter"
+      "Description": "INGRID KCONT_WARM near-infrared filter",
+      "svo_filterID": "WHT/INGRID.Kcont_w",
+      "DetectorType_note": "SVO's WHT/INGRID.Kcont_w (captured 2023-03-25) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ING's filter %T scans and INGRID's HAWAII photon-counting detector (see the instrument notes).",
+      "Comments": "Temp=77K, tilted 5 deg\r\ncalculated from data at room temperature and O deg incidence SVO match set to WHT/INGRID.Kcont_w (2026-10-26). It had been matched by name and pivot to WHT/INGRID.Kcont, a spectrally shifted scan (the array of NJM's KCONT_COLD). SVO's WHT/INGRID.Kcont_w (captured 2023-03-25) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak)."
     },
     "KSBARR_WARM": {
-      "Description": "INGRID KSBARR_WARM near-infrared filter"
+      "Description": "INGRID KSBARR_WARM near-infrared filter",
+      "DetectorType_note": "SVO's WHT/INGRID.Ksbarr (captured 2023-04-02) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ING's filter %T scans and INGRID's HAWAII photon-counting detector (see the instrument notes)."
     },
     "KS_WARM": {
       "Description": "INGRID KS_WARM near-infrared filter"
@@ -78,10 +96,14 @@
       "Description": "INGRID K_WARM near-infrared filter"
     },
     "PAB_WARM": {
-      "Description": "INGRID PAB_WARM near-infrared filter"
+      "Description": "INGRID PAB_WARM near-infrared filter",
+      "svo_filterID": "WHT/INGRID.Pab_w",
+      "DetectorType_note": "SVO's WHT/INGRID.Pab_w (captured 2026-03-11) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ING's filter %T scans and INGRID's HAWAII photon-counting detector (see the instrument notes).",
+      "Comments": "Temp=77K, tilted 5 deg\r\ncalculated from data at room temperature and O deg incidence SVO match set to WHT/INGRID.Pab_w (2026-10-26). It had been matched by name and pivot to WHT/INGRID.Pab, a spectrally shifted scan. SVO's WHT/INGRID.Pab_w (captured 2026-03-11) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak)."
     },
     "Z_WARM": {
-      "Description": "INGRID Z_WARM near-infrared filter"
+      "Description": "INGRID Z_WARM near-infrared filter",
+      "DetectorType_note": "SVO's WHT/INGRID.Z (captured 2023-03-31) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ING's filter %T scans and INGRID's HAWAII photon-counting detector (see the instrument notes)."
     }
   },
   "licence": {

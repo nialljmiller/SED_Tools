@@ -32,7 +32,7 @@
     "bibcode:2019A&A...631A.155B",
     "doi:10.1117/12.789786"
   ],
-  "notes": "NJM's info.json for SPHERE/IRDIS records no curve URL. The band names match the ESO filter page and, for the ND set, the columns of SPHERE_CPI_ND.dat. ND3.5 is a column name in that file, not a magnitude.",
+  "notes": "NJM's info.json for SPHERE/IRDIS records no curve URL. The band names match the ESO filter page and, for the ND set, the columns of SPHERE_CPI_ND.dat. ND3.5 is a column name in that file, not a magnitude. SPHERE/IRDIS headers (2026-10-26): these 24 curves are numerically identical (same 2301-point grid, ratio 1.00000) to Paranal/SPHERE, which carries ESO's SPHERE_IRDIS_*.dat files (https://www.eso.org/sci/facilities/paranal/instruments/sphere/inst/filters.html). FilterID, WavelengthUnit, Components=filter (original) and the ESO Sources URL were copied from the Paranal/SPHERE counterpart, and DetectorTypeSource original was changed to inferred, matching Paranal/SPHERE: no owner statement of the integration convention exists, the photon label rests on the filter-only curve and the IRDIS Hawaii II RG detector (block B review, phase4/reports/B-detectortype.md).",
   "bands": {
     "B_Y": {
       "Description": "SPHERE/IRDIS broad-band B_Y",

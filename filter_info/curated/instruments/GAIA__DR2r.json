@@ -54,12 +54,14 @@
     "BP": {
       "references": [
         "bibcode:2018A&A...616A...4E"
-      ]
+      ],
+      "DetectorType_note": "SVO's GAIA/GAIA2r.Gbp (captured 2023-01-27) is NJM's curve multiplied by wavelength (SVO/NJM ∝ λ^1.000, rms 0.0000), i.e. the energy form of the same passband, and SVO labels it energy. NJM keeps Evans et al. (2018, A&A 616, A4, Eq. 2; doi:10.1051/0004-6361/201832756) photonic passband, which integrates as photon. The two labels are consistent; no conflict."
     },
     "G": {
       "references": [
         "bibcode:2018A&A...616A...4E"
-      ]
+      ],
+      "DetectorType_note": "SVO's GAIA/GAIA2r.G (captured 2022-10-01) is NJM's curve multiplied by wavelength (SVO/NJM ∝ λ^1.000, rms 0.0000), i.e. the energy form of the same passband, and SVO labels it energy. NJM keeps Evans et al. (2018, A&A 616, A4, Eq. 2; doi:10.1051/0004-6361/201832756) photonic passband, which integrates as photon. The two labels are consistent; no conflict."
     },
     "RP": {
       "references": [

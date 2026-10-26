@@ -50,7 +50,8 @@
       "Comments": "H-band filter. The ESO file header reads 'H filter curve @ T=87K' and 'H 2 (S5-235-1)'. Wavelength column is nanometres and transmission is percent.",
       "references": [
         "doi:10.1051/0004-6361:200809910"
-      ]
+      ],
+      "DetectorType_note": "SVO's Paranal/HAWKI.H (captured 2025-09-06) is the same curve as NJM's within resampling (SVO/NJM ratio 0.996-1.004 where both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only curve files and HAWK-I's Hawaii 2RG photon-counting detectors (see the instrument notes)."
     },
     "H2": {
       "Description": "HAWK-I H2",
@@ -65,18 +66,19 @@
       "Comments": "J-band filter. The ESO file header reads 'J filter curve @ T=87K' and 'J 2 (X1-3778-P1,S1-334-P1,SN012)'. Wavelength column is nanometres and transmission is percent.",
       "references": [
         "doi:10.1051/0004-6361:200809910"
-      ]
+      ],
+      "DetectorType_note": "SVO's Paranal/HAWKI.J (captured 2025-11-17) is close to NJM's curve, probably the same scan resampled (SVO/NJM ratio 1.000-1.010 where both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only curve files and HAWK-I's Hawaii 2RG photon-counting detectors (see the instrument notes)."
     },
     "Knew": {
       "Description": "HAWK-I Knew",
-      "Comments": "The file ESO names hawki_Knew.dat. Its header reads 'K filter curve @ T=90K' and does not use the word Knew. Wavelength column is nanometres and transmission is percent.",
+      "Comments": "The file ESO names hawki_Knew.dat. Its header reads 'K filter curve @ T=90K' and does not use the word Knew. Wavelength column is nanometres and transmission is percent. ESO's hawki_Knew.dat and hawki_Kold.dat are byte-identical (SHA-256 6a7a8850...59a5a1, both headed '# K filter curve @ T=90K', fetched 2026-10-26), although ESO's filter table (https://www.eso.org/sci/facilities/paranal/instruments/hawki/inst.html) lists them as two filters: 'Ks (1)' = hawki_Kold.dat, '(1) Filter used from Aug 2007 until Dec 3, 2007. Showed some structure for the Nov 2007 Science Verification run.', and 'Ks (2)' = hawki_Knew.dat, '(2) New Ks filter, used starting Jan 2008.' NJM's Knew and Kold therefore carry the same curve (sample rows identical); ESO has not published a separate curve for the 2007 filter.",
       "references": [
         "doi:10.1051/0004-6361:200809910"
       ]
     },
     "Kold": {
       "Description": "HAWK-I Kold",
-      "Comments": "The file ESO names hawki_Kold.dat. Its header also reads 'K filter curve @ T=90K'. Wavelength column is nanometres and transmission is percent.",
+      "Comments": "The file ESO names hawki_Kold.dat. Its header also reads 'K filter curve @ T=90K'. Wavelength column is nanometres and transmission is percent. ESO's hawki_Knew.dat and hawki_Kold.dat are byte-identical (SHA-256 6a7a8850...59a5a1, both headed '# K filter curve @ T=90K', fetched 2026-10-26), although ESO's filter table (https://www.eso.org/sci/facilities/paranal/instruments/hawki/inst.html) lists them as two filters: 'Ks (1)' = hawki_Kold.dat, '(1) Filter used from Aug 2007 until Dec 3, 2007. Showed some structure for the Nov 2007 Science Verification run.', and 'Ks (2)' = hawki_Knew.dat, '(2) New Ks filter, used starting Jan 2008.' NJM's Knew and Kold therefore carry the same curve (sample rows identical); ESO has not published a separate curve for the 2007 filter.",
       "references": [
         "doi:10.1051/0004-6361:200809910"
       ]
@@ -86,7 +88,8 @@
       "Comments": "Narrow-band filter NB1060. The ESO file header reads 'NB1060 filter curve @ T=90K'. Wavelength column is nanometres and transmission is percent.",
       "references": [
         "doi:10.1051/0004-6361:200809910"
-      ]
+      ],
+      "DetectorType_note": "SVO's Paranal/HAWKI.NB1060 (captured 2022-09-26) is close to NJM's curve, probably the same scan resampled (SVO/NJM ratio 0.970-1.055 where both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only curve files and HAWK-I's Hawaii 2RG photon-counting detectors (see the instrument notes)."
     },
     "NB1190": {
       "Description": "HAWK-I NB1190",
@@ -100,7 +103,8 @@
       "Comments": "Narrow-band filter NB2090. The ESO file header reads 'NB2090 filter curve @ T=90K'. Wavelength column is nanometres and transmission is percent.",
       "references": [
         "doi:10.1051/0004-6361:200809910"
-      ]
+      ],
+      "DetectorType_note": "SVO's Paranal/HAWKI.NB2090 (captured 2022-10-06) is close to NJM's curve, probably the same scan resampled (SVO/NJM ratio 1.000-1.029 where both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only curve files and HAWK-I's Hawaii 2RG photon-counting detectors (see the instrument notes)."
     },
     "Y": {
       "Description": "HAWK-I Y",

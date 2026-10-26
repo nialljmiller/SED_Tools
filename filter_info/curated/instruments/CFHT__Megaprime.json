@@ -53,5 +53,71 @@
       "applies_to": "all bands",
       "references": []
     }
-  ]
+  ],
+  "bands": {
+    "CaHK": {
+      "svo_filterID": "CFHT/Megaprime.CaHK",
+      "DetectorType_note": "The only archived capture of SVO's CFHT/Megaprime.CaHK (2022-09-29, 'Megaprime CaHK, cfh9303', components 'Filter', energy) predates SVO's split: its array is NJM's CaHK_fil exactly (ratio 1.000). SVO's current records are split: Megaprime.X is the full system curve and Megaprime.X_fil the filter-only curve, both DetectorType 1 (photon), e.g. Megaprime.u 2026-01-12 and z 2025-12-08 ('(full)'), CaHK_fil 2025-11-18 and gri_fil 2026-01-20 ('(filter only)'). NJM's CaHK is the full curve (filter+optics+qe+instrument, photon), so the flag is a version difference, not a detector-type conflict. Refresh once a current capture of this ID is archived."
+    },
+    "Halpha": {
+      "svo_filterID": "CFHT/Megaprime.Halpha",
+      "DetectorType_note": "The only archived capture of SVO's CFHT/Megaprime.Halpha (2021-10-21, 'Megaprime Halpha, cfh9603', components 'Filter', energy) predates SVO's split: its array is an older filter scan that matches neither NJM Halpha nor Halpha_fil. SVO's current records are split: Megaprime.X is the full system curve and Megaprime.X_fil the filter-only curve, both DetectorType 1 (photon), e.g. Megaprime.u 2026-01-12 and z 2025-12-08 ('(full)'), CaHK_fil 2025-11-18 and gri_fil 2026-01-20 ('(filter only)'). NJM's Halpha is the full curve (filter+optics+qe+instrument, photon), so the flag is a version difference, not a detector-type conflict. Refresh once a current capture of this ID is archived."
+    },
+    "Halpha_on": {
+      "svo_filterID": "CFHT/Megaprime.Halpha_on",
+      "DetectorType_note": "The only archived capture of SVO's CFHT/Megaprime.Halpha_on (2021-10-15, 'Megaprime Halpha on, cfh7605', components 'Filter', energy) predates SVO's split: its array is NJM's Halpha_on_fil exactly (ratio 1.000). SVO's current records are split: Megaprime.X is the full system curve and Megaprime.X_fil the filter-only curve, both DetectorType 1 (photon), e.g. Megaprime.u 2026-01-12 and z 2025-12-08 ('(full)'), CaHK_fil 2025-11-18 and gri_fil 2026-01-20 ('(filter only)'). NJM's Halpha_on is the full curve (filter+optics+qe+instrument, photon), so the flag is a version difference, not a detector-type conflict. Refresh once a current capture of this ID is archived."
+    },
+    "NB920": {
+      "svo_filterID": "CFHT/Megaprime.NB920",
+      "DetectorType_note": "The only archived capture of SVO's CFHT/Megaprime.NB920 (2021-10-21, 'Megaprime NB920, cfh7902', components 'Filter', energy) predates SVO's split: its array is NJM's NB920_fil exactly (ratio 1.000). SVO's current records are split: Megaprime.X is the full system curve and Megaprime.X_fil the filter-only curve, both DetectorType 1 (photon), e.g. Megaprime.u 2026-01-12 and z 2025-12-08 ('(full)'), CaHK_fil 2025-11-18 and gri_fil 2026-01-20 ('(filter only)'). NJM's NB920 is the full curve (filter+optics+qe+instrument, photon), so the flag is a version difference, not a detector-type conflict. Refresh once a current capture of this ID is archived."
+    },
+    "OIII": {
+      "svo_filterID": "CFHT/Megaprime.OIII",
+      "DetectorType_note": "The only archived capture of SVO's CFHT/Megaprime.OIII (2022-09-29, 'Megaprime OIII, cfh9501', components 'Filter', energy) predates SVO's split: its array is close to NJM's OIII_fil (ratio 0.92-1.08), a resampled or revised filter scan. SVO's current records are split: Megaprime.X is the full system curve and Megaprime.X_fil the filter-only curve, both DetectorType 1 (photon), e.g. Megaprime.u 2026-01-12 and z 2025-12-08 ('(full)'), CaHK_fil 2025-11-18 and gri_fil 2026-01-20 ('(filter only)'). NJM's OIII is the full curve (filter+optics+qe+instrument, photon), so the flag is a version difference, not a detector-type conflict. Refresh once a current capture of this ID is archived."
+    },
+    "OIII_off": {
+      "svo_filterID": "CFHT/Megaprime.OIII_off",
+      "DetectorType_note": "The only archived capture of SVO's CFHT/Megaprime.OIII_off (2021-10-21, 'Megaprime OIII off, cfh9502', components 'Filter', energy) predates SVO's split: its array is close to NJM's OIII_off_fil (ratio 0.93-1.04), a resampled or revised filter scan. SVO's current records are split: Megaprime.X is the full system curve and Megaprime.X_fil the filter-only curve, both DetectorType 1 (photon), e.g. Megaprime.u 2026-01-12 and z 2025-12-08 ('(full)'), CaHK_fil 2025-11-18 and gri_fil 2026-01-20 ('(filter only)'). NJM's OIII_off is the full curve (filter+optics+qe+instrument, photon), so the flag is a version difference, not a detector-type conflict. Refresh once a current capture of this ID is archived."
+    },
+    "TiO": {
+      "svo_filterID": "CFHT/Megaprime.TiO",
+      "DetectorType_note": "The only archived capture of SVO's CFHT/Megaprime.TiO (2022-09-26, 'Megaprime TiO, cfh7701', components 'Filter', energy) predates SVO's split: its array is NJM's TiO_fil exactly (ratio 1.000). SVO's current records are split: Megaprime.X is the full system curve and Megaprime.X_fil the filter-only curve, both DetectorType 1 (photon), e.g. Megaprime.u 2026-01-12 and z 2025-12-08 ('(full)'), CaHK_fil 2025-11-18 and gri_fil 2026-01-20 ('(filter only)'). NJM's TiO is the full curve (filter+optics+qe+instrument, photon), so the flag is a version difference, not a detector-type conflict. Refresh once a current capture of this ID is archived."
+    },
+    "g": {
+      "svo_filterID": "CFHT/Megaprime.g",
+      "DetectorType_note": "The only archived capture of SVO's CFHT/Megaprime.g (2021-10-16, 'Megaprime G', cfh9401', components 'Filter', energy) predates SVO's split: its array is an older filter scan that matches neither NJM g nor g_fil. SVO's current records are split: Megaprime.X is the full system curve and Megaprime.X_fil the filter-only curve, both DetectorType 1 (photon), e.g. Megaprime.u 2026-01-12 and z 2025-12-08 ('(full)'), CaHK_fil 2025-11-18 and gri_fil 2026-01-20 ('(filter only)'). NJM's g is the full curve (filter+optics+qe+instrument, photon), so the flag is a version difference, not a detector-type conflict. Refresh once a current capture of this ID is archived."
+    },
+    "gri": {
+      "svo_filterID": "CFHT/Megaprime.gri",
+      "DetectorType_note": "The only archived capture of SVO's CFHT/Megaprime.gri (2021-10-16, 'Megaprime gri, cfh9605', components 'Filter', energy) predates SVO's split: its array is an older filter scan that matches neither NJM gri nor gri_fil. SVO's current records are split: Megaprime.X is the full system curve and Megaprime.X_fil the filter-only curve, both DetectorType 1 (photon), e.g. Megaprime.u 2026-01-12 and z 2025-12-08 ('(full)'), CaHK_fil 2025-11-18 and gri_fil 2026-01-20 ('(filter only)'). NJM's gri is the full curve (filter+optics+qe+instrument, photon), so the flag is a version difference, not a detector-type conflict. Refresh once a current capture of this ID is archived."
+    },
+    "i": {
+      "svo_filterID": "CFHT/Megaprime.i",
+      "DetectorType_note": "The only archived capture of SVO's CFHT/Megaprime.i (2021-10-15, 'Megaprime I' #2, cfh9702', components 'Filter', energy) predates SVO's split: its array is an older filter scan that matches neither NJM i nor i_fil. SVO's current records are split: Megaprime.X is the full system curve and Megaprime.X_fil the filter-only curve, both DetectorType 1 (photon), e.g. Megaprime.u 2026-01-12 and z 2025-12-08 ('(full)'), CaHK_fil 2025-11-18 and gri_fil 2026-01-20 ('(filter only)'). NJM's i is the full curve (filter+optics+qe+instrument, photon), so the flag is a version difference, not a detector-type conflict. Refresh once a current capture of this ID is archived."
+    },
+    "r": {
+      "svo_filterID": "CFHT/Megaprime.r",
+      "DetectorType_note": "The only archived capture of SVO's CFHT/Megaprime.r (2021-10-21, 'Megaprime R', cfh9601', components 'Filter', energy) predates SVO's split: its array is an older filter scan that matches neither NJM r nor r_fil. SVO's current records are split: Megaprime.X is the full system curve and Megaprime.X_fil the filter-only curve, both DetectorType 1 (photon), e.g. Megaprime.u 2026-01-12 and z 2025-12-08 ('(full)'), CaHK_fil 2025-11-18 and gri_fil 2026-01-20 ('(filter only)'). NJM's r is the full curve (filter+optics+qe+instrument, photon), so the flag is a version difference, not a detector-type conflict. Refresh once a current capture of this ID is archived."
+    },
+    "NB920_fil": {
+      "svo_filterID": "CFHT/Megaprime.NB920_fil",
+      "Comments": "SVO match re-pointed (2026-10-26) to CFHT/Megaprime.NB920_fil, SVO's filter-only record for this filter; it was matched by band name and pivot to a 2021-22 capture of CFHT/Megaprime.NB920 taken before SVO split X (full) from X_fil (filter only). CFHT/Megaprime.NB920_fil is in SVO's ID list but has no archived capture yet, so this band shows no SVO record until one is harvested."
+    },
+    "OIII_fil": {
+      "svo_filterID": "CFHT/Megaprime.OIII_fil",
+      "Comments": "SVO match re-pointed (2026-10-26) to CFHT/Megaprime.OIII_fil, SVO's filter-only record for this filter; it was matched by band name and pivot to a 2021-22 capture of CFHT/Megaprime.OIII taken before SVO split X (full) from X_fil (filter only). CFHT/Megaprime.OIII_fil is in SVO's ID list but has no archived capture yet, so this band shows no SVO record until one is harvested."
+    },
+    "OIII_off_fil": {
+      "svo_filterID": "CFHT/Megaprime.OIII_off_fil",
+      "Comments": "SVO match re-pointed (2026-10-26) to CFHT/Megaprime.OIII_off_fil, SVO's filter-only record for this filter; it was matched by band name and pivot to a 2021-22 capture of CFHT/Megaprime.OIII_off taken before SVO split X (full) from X_fil (filter only). CFHT/Megaprime.OIII_off_fil is in SVO's ID list but has no archived capture yet, so this band shows no SVO record until one is harvested."
+    },
+    "TiO_fil": {
+      "svo_filterID": "CFHT/Megaprime.TiO_fil",
+      "Comments": "SVO match re-pointed (2026-10-26) to CFHT/Megaprime.TiO_fil, SVO's filter-only record for this filter; it was matched by band name and pivot to a 2021-22 capture of CFHT/Megaprime.TiO taken before SVO split X (full) from X_fil (filter only). CFHT/Megaprime.TiO_fil is in SVO's ID list but has no archived capture yet, so this band shows no SVO record until one is harvested."
+    },
+    "i_fil": {
+      "svo_filterID": "CFHT/Megaprime.i_fil",
+      "Comments": "SVO match re-pointed (2026-10-26) to CFHT/Megaprime.i_fil, SVO's filter-only record for this filter; it was matched by band name and pivot to a 2021-22 capture of CFHT/Megaprime.i taken before SVO split X (full) from X_fil (filter only). CFHT/Megaprime.i_fil is in SVO's ID list but has no archived capture yet, so this band shows no SVO record until one is harvested."
+    }
+  }
 }

@@ -27,5 +27,10 @@
       "label": "Bok 90 Telescope Overview",
       "source": "Steward Observatory MOON Wiki"
     }
-  ]
+  ],
+  "bands": {
+    "R_Bessell": {
+      "Comments": "Renamed from R (2026-10-26) because R and r collided case-insensitively (map: filter_expansion/renamed_filters_20261026_bok.csv). This is SVO's BOK/90prime.R, '90prime R filter' (array identical to SVO's 2025-04-22 capture), the 90Prime broadband R glass filter: the owner's filter page lists 'UBVRI Cousins/Bessel ... R: OG570(2mm) KG3(2mm) Peak-700nm FWHM-220nm' (https://lavinia.as.arizona.edu/~tscopewiki/doku.php?id=public:kitt_peak:bok_90:90prime:filters). The band r is a different curve, the BASS survey r (SVO BOK/BASS.r, full system response)."
+    }
+  }
 }

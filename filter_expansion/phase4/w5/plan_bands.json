@@ -1,0 +1,547 @@
+{
+ "bands": {
+  "Paranal/NACO": {
+   "H_CONICA": {
+    "DetectorType_note": "SVO's Paranal/NACO.H (captured 2026-04-20) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+   },
+   "IB_2p00": {
+    "DetectorType_note": "SVO's Paranal/NACO.IB200 array is not archived here, so the curves were not compared. SVO's energy label comes with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+   },
+   "IB_2p12": {
+    "DetectorType_note": "SVO's Paranal/NACO.IB212 (captured 2026-04-20) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+   },
+   "IB_2p15": {
+    "DetectorType_note": "SVO's Paranal/NACO.IB215 (captured 2026-04-20) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+   },
+   "IB_2p21": {
+    "DetectorType_note": "SVO's Paranal/NACO.IB221 (captured 2022-09-26) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+   },
+   "IB_2p24": {
+    "DetectorType_note": "SVO's Paranal/NACO.IB224 (captured 2026-04-20) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+   },
+   "IB_2p27": {
+    "DetectorType_note": "SVO's Paranal/NACO.IB227 (captured 2021-12-05) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+   },
+   "IB_2p30": {
+    "DetectorType_note": "SVO's Paranal/NACO.IB230 (captured 2022-09-28) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+   },
+   "IB_2p33": {
+    "DetectorType_note": "SVO's Paranal/NACO.IB233 (captured 2021-12-05) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+   },
+   "IB_2p39": {
+    "DetectorType_note": "SVO's Paranal/NACO.IB239 (captured 2026-04-17) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+   },
+   "IB_2p45": {
+    "DetectorType_note": "SVO's Paranal/NACO.IB245 (captured 2026-04-20) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+   },
+   "IB_2p48": {
+    "DetectorType_note": "SVO's Paranal/NACO.IB248 (captured 2026-04-20) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+   },
+   "J_CONICA": {
+    "DetectorType_note": "SVO's Paranal/NACO.J (captured 2026-04-20) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+   },
+   "L_prime": {
+    "DetectorType_note": "SVO's Paranal/NACO.Lp array is not archived here, so the curves were not compared. SVO's energy label comes with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+   },
+   "NB_1p04": {
+    "DetectorType_note": "SVO's Paranal/NACO.NB104 (captured 2020-09-27) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+   },
+   "NB_1p09": {
+    "DetectorType_note": "SVO's Paranal/NACO.NB109 (captured 2026-04-20) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+   },
+   "NB_1p26": {
+    "DetectorType_note": "SVO's Paranal/NACO.NB126 (captured 2021-12-05) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+   },
+   "NB_1p28": {
+    "DetectorType_note": "SVO's Paranal/NACO.NB128 (captured 2021-12-05) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+   },
+   "NB_1p64": {
+    "DetectorType_note": "SVO's Paranal/NACO.NB164 (captured 2022-01-21) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+   },
+   "NB_1p75": {
+    "DetectorType_note": "SVO's Paranal/NACO.NB175 (captured 2021-12-04) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+   },
+   "NB_2p12": {
+    "DetectorType_note": "SVO's Paranal/NACO.NB212 (captured 2021-12-09) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+   },
+   "NB_3p74": {
+    "DetectorType_note": "SVO's Paranal/NACO.NB374 (captured 2021-12-09) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+   }
+  },
+  "Paranal/HAWKI": {
+   "H": {
+    "DetectorType_note": "SVO's Paranal/HAWKI.H (captured 2025-09-06) is the same curve as NJM's within resampling (SVO/NJM ratio 0.996-1.004 where both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only curve files and HAWK-I's Hawaii 2RG photon-counting detectors (see the instrument notes)."
+   },
+   "J": {
+    "DetectorType_note": "SVO's Paranal/HAWKI.J (captured 2025-11-17) is close to NJM's curve, probably the same scan resampled (SVO/NJM ratio 1.000-1.010 where both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only curve files and HAWK-I's Hawaii 2RG photon-counting detectors (see the instrument notes)."
+   },
+   "NB1060": {
+    "DetectorType_note": "SVO's Paranal/HAWKI.NB1060 (captured 2022-09-26) is close to NJM's curve, probably the same scan resampled (SVO/NJM ratio 0.970-1.055 where both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only curve files and HAWK-I's Hawaii 2RG photon-counting detectors (see the instrument notes)."
+   },
+   "NB2090": {
+    "DetectorType_note": "SVO's Paranal/HAWKI.NB2090 (captured 2022-10-06) is close to NJM's curve, probably the same scan resampled (SVO/NJM ratio 1.000-1.029 where both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only curve files and HAWK-I's Hawaii 2RG photon-counting detectors (see the instrument notes)."
+   }
+  },
+  "WHT/INGRID": {
+   "FEII_COLD": {
+    "DetectorType_note": "SVO's WHT/INGRID.FeII (captured 2023-03-26) is the same curve as NJM's within resampling (SVO/NJM ratio 0.999-1.002 where both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ING's filter %T scans and INGRID's HAWAII photon-counting detector (see the instrument notes)."
+   },
+   "FEII_WARM": {
+    "svo_filterID": "WHT/INGRID.FeII_w"
+   },
+   "H_WARM": {
+    "DetectorType_note": "SVO's WHT/INGRID.H (captured 2024-11-07) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ING's filter %T scans and INGRID's HAWAII photon-counting detector (see the instrument notes)."
+   },
+   "JCONT_WARM": {
+    "svo_filterID": "WHT/INGRID.Jcont_w",
+    "DetectorType_note": "SVO's WHT/INGRID.Jcont_w (captured 2026-03-14) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ING's filter %T scans and INGRID's HAWAII photon-counting detector (see the instrument notes)."
+   },
+   "KCONT_COLD": {
+    "DetectorType_note": "SVO's WHT/INGRID.Kcont (captured 2023-03-31) is the same curve as NJM's within resampling (SVO/NJM ratio 0.999-1.001 where both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ING's filter %T scans and INGRID's HAWAII photon-counting detector (see the instrument notes)."
+   },
+   "KCONT_WARM": {
+    "svo_filterID": "WHT/INGRID.Kcont_w",
+    "DetectorType_note": "SVO's WHT/INGRID.Kcont_w (captured 2023-03-25) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ING's filter %T scans and INGRID's HAWAII photon-counting detector (see the instrument notes)."
+   },
+   "KSBARR_WARM": {
+    "DetectorType_note": "SVO's WHT/INGRID.Ksbarr (captured 2023-04-02) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ING's filter %T scans and INGRID's HAWAII photon-counting detector (see the instrument notes)."
+   },
+   "PAB_WARM": {
+    "svo_filterID": "WHT/INGRID.Pab_w",
+    "DetectorType_note": "SVO's WHT/INGRID.Pab_w (captured 2026-03-11) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ING's filter %T scans and INGRID's HAWAII photon-counting detector (see the instrument notes)."
+   },
+   "Z_WARM": {
+    "DetectorType_note": "SVO's WHT/INGRID.Z (captured 2023-03-31) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ING's filter %T scans and INGRID's HAWAII photon-counting detector (see the instrument notes)."
+   },
+   "BRG_WARM": {
+    "svo_filterID": "WHT/INGRID.Brg_w",
+    "DetectorType_note": "SVO's WHT/INGRID.Brg_w (captured 2023-03-23) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ING's filter %T scans and INGRID's HAWAII photon-counting detector (see the instrument notes)."
+   },
+   "H2V21_COLD": {
+    "svo_filterID": "WHT/INGRID.H2-2",
+    "DetectorType_note": "SVO's WHT/INGRID.H2-2 (captured 2022-11-30) is the same curve as NJM's within resampling (SVO/NJM ratio 0.999-1.001 where both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ING's filter %T scans and INGRID's HAWAII photon-counting detector (see the instrument notes)."
+   }
+  },
+  "GAIA/DR2": {
+   "BP": {
+    "DetectorType_note": "SVO's GAIA/GAIA2.Gbp (captured 2023-03-24) is NJM's curve multiplied by wavelength (SVO/NJM ∝ λ^1.000, rms 0.0000), i.e. the energy form of the same passband, and SVO labels it energy. NJM keeps Evans et al. (2018, A&A 616, A4, Eq. 2; doi:10.1051/0004-6361/201832756) photonic passband, which integrates as photon. The two labels are consistent; no conflict."
+   },
+   "G": {
+    "DetectorType_note": "SVO's GAIA/GAIA2.G (captured 2023-03-23) is NJM's curve multiplied by wavelength (SVO/NJM ∝ λ^1.000, rms 0.0000), i.e. the energy form of the same passband, and SVO labels it energy. NJM keeps Evans et al. (2018, A&A 616, A4, Eq. 2; doi:10.1051/0004-6361/201832756) photonic passband, which integrates as photon. The two labels are consistent; no conflict."
+   }
+  },
+  "GAIA/DR2r": {
+   "BP": {
+    "DetectorType_note": "SVO's GAIA/GAIA2r.Gbp (captured 2023-01-27) is NJM's curve multiplied by wavelength (SVO/NJM ∝ λ^1.000, rms 0.0000), i.e. the energy form of the same passband, and SVO labels it energy. NJM keeps Evans et al. (2018, A&A 616, A4, Eq. 2; doi:10.1051/0004-6361/201832756) photonic passband, which integrates as photon. The two labels are consistent; no conflict."
+   },
+   "G": {
+    "DetectorType_note": "SVO's GAIA/GAIA2r.G (captured 2022-10-01) is NJM's curve multiplied by wavelength (SVO/NJM ∝ λ^1.000, rms 0.0000), i.e. the energy form of the same passband, and SVO labels it energy. NJM keeps Evans et al. (2018, A&A 616, A4, Eq. 2; doi:10.1051/0004-6361/201832756) photonic passband, which integrates as photon. The two labels are consistent; no conflict."
+   }
+  },
+  "2MASS/2MASS": {
+   "J": {
+    "DetectorType_note": "SVO's 2MASS/2MASS.J (captured 2025-10-11) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak) but is labelled photon, while SVO's archived H and Ks records (2025-03-23, 2023-10-04) label the same kind of curve energy. NJM follows Cohen, Wheaton & Megeath (2003, AJ 126, 1090, §3): the RSRs 'are designed to be integrated directly over stellar spectra in Fλ form' with the wavelength factor already folded in, which is energy in SED_Tools' convention. SVO's J label is not used."
+   }
+  },
+  "ATLAS/ATLAS": {
+   "c": {
+    "DetectorType_note": "SVO's Misc/Atlas.cyan (captured 2026-07-11) is a different array from NJM's (SVO/NJM ratio 0.78-1.12), labelled energy with no stated basis. NJM's curve is Tonry et al. (2018, PASP 130, 064505) Table 1, a product of transmissions and detector QE with no wavelength factor, which integrates as photon (inferred in the phase-3 review)."
+   },
+   "o": {
+    "DetectorType_note": "SVO's Misc/Atlas.orange array is not archived here, so the curves were not compared; SVO labels it energy with no stated basis. NJM's curve is Tonry et al. (2018, PASP 130, 064505) Table 1, a product of transmissions and detector QE with no wavelength factor, which integrates as photon (inferred in the phase-3 review)."
+   }
+  },
+  "Generic/Bessell": {
+   "B": {
+    "DetectorType_note": "SVO's Generic/Bessell.B (captured 2025-11-17, 'Bessell B generic filter', no reference given) is a different array from NJM's (SVO/NJM ∝ λ^0.76, rms 0.013). NJM's curve is Bessell & Murphy (2012, PASP 124, 140; doi:10.1086/664083) Table 1, their 'normalized photon-counting passbands'. The labels describe different curves, so there is no conflict."
+   },
+   "I": {
+    "DetectorType_note": "SVO's Generic/Bessell.I (captured 2023-03-31, 'Bessell I generic filter', no reference given) is a different array from NJM's (SVO/NJM ratio 0.65-2.14, not a power of λ). NJM's curve is Bessell & Murphy (2012, PASP 124, 140; doi:10.1086/664083) Table 1, their 'normalized photon-counting passbands'. The labels describe different curves, so there is no conflict."
+   },
+   "R": {
+    "DetectorType_note": "SVO's Generic/Bessell.R (captured 2012-07-06, 'Bessell R generic filter', no reference given) is a different array from NJM's (SVO/NJM ∝ λ^0.94, rms 0.033). NJM's curve is Bessell & Murphy (2012, PASP 124, 140; doi:10.1086/664083) Table 1, their 'normalized photon-counting passbands'. The labels describe different curves, so there is no conflict."
+   },
+   "U": {
+    "DetectorType_note": "SVO's Generic/Bessell.U (captured 2012-07-06, 'Bessell U generic filter', no reference given) is a different array from NJM's (SVO/NJM ∝ λ^0.26, rms 0.052). NJM's curve is Bessell & Murphy (2012, PASP 124, 140; doi:10.1086/664083) Table 1, their 'normalized photon-counting passbands'. The labels describe different curves, so there is no conflict."
+   },
+   "V": {
+    "DetectorType_note": "SVO's Generic/Bessell.V (captured 2012-07-06, 'Bessell V generic filter', no reference given) is a different array from NJM's (SVO/NJM ∝ λ^0.60, rms 0.015). NJM's curve is Bessell & Murphy (2012, PASP 124, 140; doi:10.1086/664083) Table 1, their 'normalized photon-counting passbands'. The labels describe different curves, so there is no conflict."
+   }
+  },
+  "CFHT/Megaprime": {
+   "CaHK": {
+    "svo_filterID": "CFHT/Megaprime.CaHK",
+    "DetectorType_note": "The only archived capture of SVO's CFHT/Megaprime.CaHK (2022-09-29, 'Megaprime CaHK, cfh9303', components 'Filter', energy) predates SVO's split: its array is NJM's CaHK_fil exactly (ratio 1.000). SVO's current records are split: Megaprime.X is the full system curve and Megaprime.X_fil the filter-only curve, both DetectorType 1 (photon), e.g. Megaprime.u 2026-01-12 and z 2025-12-08 ('(full)'), CaHK_fil 2025-11-18 and gri_fil 2026-01-20 ('(filter only)'). NJM's CaHK is the full curve (filter+optics+qe+instrument, photon), so the flag is a version difference, not a detector-type conflict. Refresh once a current capture of this ID is archived."
+   },
+   "Halpha": {
+    "svo_filterID": "CFHT/Megaprime.Halpha",
+    "DetectorType_note": "The only archived capture of SVO's CFHT/Megaprime.Halpha (2021-10-21, 'Megaprime Halpha, cfh9603', components 'Filter', energy) predates SVO's split: its array is an older filter scan that matches neither NJM Halpha nor Halpha_fil. SVO's current records are split: Megaprime.X is the full system curve and Megaprime.X_fil the filter-only curve, both DetectorType 1 (photon), e.g. Megaprime.u 2026-01-12 and z 2025-12-08 ('(full)'), CaHK_fil 2025-11-18 and gri_fil 2026-01-20 ('(filter only)'). NJM's Halpha is the full curve (filter+optics+qe+instrument, photon), so the flag is a version difference, not a detector-type conflict. Refresh once a current capture of this ID is archived."
+   },
+   "Halpha_on": {
+    "svo_filterID": "CFHT/Megaprime.Halpha_on",
+    "DetectorType_note": "The only archived capture of SVO's CFHT/Megaprime.Halpha_on (2021-10-15, 'Megaprime Halpha on, cfh7605', components 'Filter', energy) predates SVO's split: its array is NJM's Halpha_on_fil exactly (ratio 1.000). SVO's current records are split: Megaprime.X is the full system curve and Megaprime.X_fil the filter-only curve, both DetectorType 1 (photon), e.g. Megaprime.u 2026-01-12 and z 2025-12-08 ('(full)'), CaHK_fil 2025-11-18 and gri_fil 2026-01-20 ('(filter only)'). NJM's Halpha_on is the full curve (filter+optics+qe+instrument, photon), so the flag is a version difference, not a detector-type conflict. Refresh once a current capture of this ID is archived."
+   },
+   "NB920": {
+    "svo_filterID": "CFHT/Megaprime.NB920",
+    "DetectorType_note": "The only archived capture of SVO's CFHT/Megaprime.NB920 (2021-10-21, 'Megaprime NB920, cfh7902', components 'Filter', energy) predates SVO's split: its array is NJM's NB920_fil exactly (ratio 1.000). SVO's current records are split: Megaprime.X is the full system curve and Megaprime.X_fil the filter-only curve, both DetectorType 1 (photon), e.g. Megaprime.u 2026-01-12 and z 2025-12-08 ('(full)'), CaHK_fil 2025-11-18 and gri_fil 2026-01-20 ('(filter only)'). NJM's NB920 is the full curve (filter+optics+qe+instrument, photon), so the flag is a version difference, not a detector-type conflict. Refresh once a current capture of this ID is archived."
+   },
+   "OIII": {
+    "svo_filterID": "CFHT/Megaprime.OIII",
+    "DetectorType_note": "The only archived capture of SVO's CFHT/Megaprime.OIII (2022-09-29, 'Megaprime OIII, cfh9501', components 'Filter', energy) predates SVO's split: its array is close to NJM's OIII_fil (ratio 0.92-1.08), a resampled or revised filter scan. SVO's current records are split: Megaprime.X is the full system curve and Megaprime.X_fil the filter-only curve, both DetectorType 1 (photon), e.g. Megaprime.u 2026-01-12 and z 2025-12-08 ('(full)'), CaHK_fil 2025-11-18 and gri_fil 2026-01-20 ('(filter only)'). NJM's OIII is the full curve (filter+optics+qe+instrument, photon), so the flag is a version difference, not a detector-type conflict. Refresh once a current capture of this ID is archived."
+   },
+   "OIII_off": {
+    "svo_filterID": "CFHT/Megaprime.OIII_off",
+    "DetectorType_note": "The only archived capture of SVO's CFHT/Megaprime.OIII_off (2021-10-21, 'Megaprime OIII off, cfh9502', components 'Filter', energy) predates SVO's split: its array is close to NJM's OIII_off_fil (ratio 0.93-1.04), a resampled or revised filter scan. SVO's current records are split: Megaprime.X is the full system curve and Megaprime.X_fil the filter-only curve, both DetectorType 1 (photon), e.g. Megaprime.u 2026-01-12 and z 2025-12-08 ('(full)'), CaHK_fil 2025-11-18 and gri_fil 2026-01-20 ('(filter only)'). NJM's OIII_off is the full curve (filter+optics+qe+instrument, photon), so the flag is a version difference, not a detector-type conflict. Refresh once a current capture of this ID is archived."
+   },
+   "TiO": {
+    "svo_filterID": "CFHT/Megaprime.TiO",
+    "DetectorType_note": "The only archived capture of SVO's CFHT/Megaprime.TiO (2022-09-26, 'Megaprime TiO, cfh7701', components 'Filter', energy) predates SVO's split: its array is NJM's TiO_fil exactly (ratio 1.000). SVO's current records are split: Megaprime.X is the full system curve and Megaprime.X_fil the filter-only curve, both DetectorType 1 (photon), e.g. Megaprime.u 2026-01-12 and z 2025-12-08 ('(full)'), CaHK_fil 2025-11-18 and gri_fil 2026-01-20 ('(filter only)'). NJM's TiO is the full curve (filter+optics+qe+instrument, photon), so the flag is a version difference, not a detector-type conflict. Refresh once a current capture of this ID is archived."
+   },
+   "g": {
+    "svo_filterID": "CFHT/Megaprime.g",
+    "DetectorType_note": "The only archived capture of SVO's CFHT/Megaprime.g (2021-10-16, 'Megaprime G', cfh9401', components 'Filter', energy) predates SVO's split: its array is an older filter scan that matches neither NJM g nor g_fil. SVO's current records are split: Megaprime.X is the full system curve and Megaprime.X_fil the filter-only curve, both DetectorType 1 (photon), e.g. Megaprime.u 2026-01-12 and z 2025-12-08 ('(full)'), CaHK_fil 2025-11-18 and gri_fil 2026-01-20 ('(filter only)'). NJM's g is the full curve (filter+optics+qe+instrument, photon), so the flag is a version difference, not a detector-type conflict. Refresh once a current capture of this ID is archived."
+   },
+   "gri": {
+    "svo_filterID": "CFHT/Megaprime.gri",
+    "DetectorType_note": "The only archived capture of SVO's CFHT/Megaprime.gri (2021-10-16, 'Megaprime gri, cfh9605', components 'Filter', energy) predates SVO's split: its array is an older filter scan that matches neither NJM gri nor gri_fil. SVO's current records are split: Megaprime.X is the full system curve and Megaprime.X_fil the filter-only curve, both DetectorType 1 (photon), e.g. Megaprime.u 2026-01-12 and z 2025-12-08 ('(full)'), CaHK_fil 2025-11-18 and gri_fil 2026-01-20 ('(filter only)'). NJM's gri is the full curve (filter+optics+qe+instrument, photon), so the flag is a version difference, not a detector-type conflict. Refresh once a current capture of this ID is archived."
+   },
+   "i": {
+    "svo_filterID": "CFHT/Megaprime.i",
+    "DetectorType_note": "The only archived capture of SVO's CFHT/Megaprime.i (2021-10-15, 'Megaprime I' #2, cfh9702', components 'Filter', energy) predates SVO's split: its array is an older filter scan that matches neither NJM i nor i_fil. SVO's current records are split: Megaprime.X is the full system curve and Megaprime.X_fil the filter-only curve, both DetectorType 1 (photon), e.g. Megaprime.u 2026-01-12 and z 2025-12-08 ('(full)'), CaHK_fil 2025-11-18 and gri_fil 2026-01-20 ('(filter only)'). NJM's i is the full curve (filter+optics+qe+instrument, photon), so the flag is a version difference, not a detector-type conflict. Refresh once a current capture of this ID is archived."
+   },
+   "r": {
+    "svo_filterID": "CFHT/Megaprime.r",
+    "DetectorType_note": "The only archived capture of SVO's CFHT/Megaprime.r (2021-10-21, 'Megaprime R', cfh9601', components 'Filter', energy) predates SVO's split: its array is an older filter scan that matches neither NJM r nor r_fil. SVO's current records are split: Megaprime.X is the full system curve and Megaprime.X_fil the filter-only curve, both DetectorType 1 (photon), e.g. Megaprime.u 2026-01-12 and z 2025-12-08 ('(full)'), CaHK_fil 2025-11-18 and gri_fil 2026-01-20 ('(filter only)'). NJM's r is the full curve (filter+optics+qe+instrument, photon), so the flag is a version difference, not a detector-type conflict. Refresh once a current capture of this ID is archived."
+   },
+   "NB920_fil": {
+    "svo_filterID": "CFHT/Megaprime.NB920_fil"
+   },
+   "OIII_fil": {
+    "svo_filterID": "CFHT/Megaprime.OIII_fil"
+   },
+   "OIII_off_fil": {
+    "svo_filterID": "CFHT/Megaprime.OIII_off_fil"
+   },
+   "TiO_fil": {
+    "svo_filterID": "CFHT/Megaprime.TiO_fil"
+   },
+   "i_fil": {
+    "svo_filterID": "CFHT/Megaprime.i_fil"
+   }
+  },
+  "Himawari/AHI8": {
+   "Band01": {
+    "DetectorType_note": "SVO's Himawari/AHI8.Band01 (captured 2025-12-07) holds the band-2 curve, not band 1: it is the same array as NJM's Band02 (ratio 0.9997-1.0003), pivot 5099 Å against NJM Band01's 4705 Å. That SVO record is wrong; it is labelled photon. JMA's workbook column is 'Relative Responsivity [-]' and JMA states no photon/energy convention for it; its GSICS page says only that 'The Planck function and sensor spectral response functions are used to compute brightness temperature [K] from radiance [mW.m-2.sr-1.cm] and vice-versa' (https://www.data.jma.go.jp/mscweb/data/monitoring/gsics/ir/techinfo_geoleoir.html), which weights radiance (the energy form). NOAA states the energy form explicitly for the analogous VIIRS RSRs (ATBD 474-00027 Eq. 9) and GOES-R ABI SRFs (doi:10.1117/12.2238090 Eq. 1-2), but no JMA document found says it for AHI, so NJM's energy stays assumed."
+   },
+   "Band02": {
+    "DetectorType_note": "SVO's Himawari/AHI8.Band02 (captured 2026-01-22) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak) but labelled photon. JMA's workbook column is 'Relative Responsivity [-]' and JMA states no photon/energy convention for it; its GSICS page says only that 'The Planck function and sensor spectral response functions are used to compute brightness temperature [K] from radiance [mW.m-2.sr-1.cm] and vice-versa' (https://www.data.jma.go.jp/mscweb/data/monitoring/gsics/ir/techinfo_geoleoir.html), which weights radiance (the energy form). NOAA states the energy form explicitly for the analogous VIIRS RSRs (ATBD 474-00027 Eq. 9) and GOES-R ABI SRFs (doi:10.1117/12.2238090 Eq. 1-2), but no JMA document found says it for AHI, so NJM's energy stays assumed."
+   },
+   "Band03": {
+    "DetectorType_note": "SVO's Himawari/AHI8.Band03 (captured 2025-06-14) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak) but labelled photon. JMA's workbook column is 'Relative Responsivity [-]' and JMA states no photon/energy convention for it; its GSICS page says only that 'The Planck function and sensor spectral response functions are used to compute brightness temperature [K] from radiance [mW.m-2.sr-1.cm] and vice-versa' (https://www.data.jma.go.jp/mscweb/data/monitoring/gsics/ir/techinfo_geoleoir.html), which weights radiance (the energy form). NOAA states the energy form explicitly for the analogous VIIRS RSRs (ATBD 474-00027 Eq. 9) and GOES-R ABI SRFs (doi:10.1117/12.2238090 Eq. 1-2), but no JMA document found says it for AHI, so NJM's energy stays assumed."
+   },
+   "Band04": {
+    "DetectorType_note": "SVO's Himawari/AHI8.Band04 (captured 2022-08-15) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak) but labelled photon. JMA's workbook column is 'Relative Responsivity [-]' and JMA states no photon/energy convention for it; its GSICS page says only that 'The Planck function and sensor spectral response functions are used to compute brightness temperature [K] from radiance [mW.m-2.sr-1.cm] and vice-versa' (https://www.data.jma.go.jp/mscweb/data/monitoring/gsics/ir/techinfo_geoleoir.html), which weights radiance (the energy form). NOAA states the energy form explicitly for the analogous VIIRS RSRs (ATBD 474-00027 Eq. 9) and GOES-R ABI SRFs (doi:10.1117/12.2238090 Eq. 1-2), but no JMA document found says it for AHI, so NJM's energy stays assumed."
+   },
+   "Band05": {
+    "DetectorType_note": "SVO's Himawari/AHI8.Band05 (captured 2025-11-13) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak) but labelled photon. JMA's workbook column is 'Relative Responsivity [-]' and JMA states no photon/energy convention for it; its GSICS page says only that 'The Planck function and sensor spectral response functions are used to compute brightness temperature [K] from radiance [mW.m-2.sr-1.cm] and vice-versa' (https://www.data.jma.go.jp/mscweb/data/monitoring/gsics/ir/techinfo_geoleoir.html), which weights radiance (the energy form). NOAA states the energy form explicitly for the analogous VIIRS RSRs (ATBD 474-00027 Eq. 9) and GOES-R ABI SRFs (doi:10.1117/12.2238090 Eq. 1-2), but no JMA document found says it for AHI, so NJM's energy stays assumed."
+   },
+   "Band06": {
+    "DetectorType_note": "SVO's Himawari/AHI8.Band06 array is not archived here; its record labels the band photon. JMA's workbook column is 'Relative Responsivity [-]' and JMA states no photon/energy convention for it; its GSICS page says only that 'The Planck function and sensor spectral response functions are used to compute brightness temperature [K] from radiance [mW.m-2.sr-1.cm] and vice-versa' (https://www.data.jma.go.jp/mscweb/data/monitoring/gsics/ir/techinfo_geoleoir.html), which weights radiance (the energy form). NOAA states the energy form explicitly for the analogous VIIRS RSRs (ATBD 474-00027 Eq. 9) and GOES-R ABI SRFs (doi:10.1117/12.2238090 Eq. 1-2), but no JMA document found says it for AHI, so NJM's energy stays assumed."
+   },
+   "Band07": {
+    "DetectorType_note": "SVO's Himawari/AHI8.Band07 array is not archived here; its record labels the band photon. JMA's workbook column is 'Relative Responsivity [-]' and JMA states no photon/energy convention for it; its GSICS page says only that 'The Planck function and sensor spectral response functions are used to compute brightness temperature [K] from radiance [mW.m-2.sr-1.cm] and vice-versa' (https://www.data.jma.go.jp/mscweb/data/monitoring/gsics/ir/techinfo_geoleoir.html), which weights radiance (the energy form). NOAA states the energy form explicitly for the analogous VIIRS RSRs (ATBD 474-00027 Eq. 9) and GOES-R ABI SRFs (doi:10.1117/12.2238090 Eq. 1-2), but no JMA document found says it for AHI, so NJM's energy stays assumed."
+   },
+   "Band08": {
+    "DetectorType_note": "SVO's Himawari/AHI8.Band08 (captured 2026-05-10) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak) but labelled photon. JMA's workbook column is 'Relative Responsivity [-]' and JMA states no photon/energy convention for it; its GSICS page says only that 'The Planck function and sensor spectral response functions are used to compute brightness temperature [K] from radiance [mW.m-2.sr-1.cm] and vice-versa' (https://www.data.jma.go.jp/mscweb/data/monitoring/gsics/ir/techinfo_geoleoir.html), which weights radiance (the energy form). NOAA states the energy form explicitly for the analogous VIIRS RSRs (ATBD 474-00027 Eq. 9) and GOES-R ABI SRFs (doi:10.1117/12.2238090 Eq. 1-2), but no JMA document found says it for AHI, so NJM's energy stays assumed."
+   },
+   "Band09": {
+    "DetectorType_note": "SVO's Himawari/AHI8.Band09 array is not archived here; its record labels the band photon. JMA's workbook column is 'Relative Responsivity [-]' and JMA states no photon/energy convention for it; its GSICS page says only that 'The Planck function and sensor spectral response functions are used to compute brightness temperature [K] from radiance [mW.m-2.sr-1.cm] and vice-versa' (https://www.data.jma.go.jp/mscweb/data/monitoring/gsics/ir/techinfo_geoleoir.html), which weights radiance (the energy form). NOAA states the energy form explicitly for the analogous VIIRS RSRs (ATBD 474-00027 Eq. 9) and GOES-R ABI SRFs (doi:10.1117/12.2238090 Eq. 1-2), but no JMA document found says it for AHI, so NJM's energy stays assumed."
+   },
+   "Band10": {
+    "DetectorType_note": "SVO's Himawari/AHI8.Band10 (captured 2026-05-19) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak) but labelled photon. JMA's workbook column is 'Relative Responsivity [-]' and JMA states no photon/energy convention for it; its GSICS page says only that 'The Planck function and sensor spectral response functions are used to compute brightness temperature [K] from radiance [mW.m-2.sr-1.cm] and vice-versa' (https://www.data.jma.go.jp/mscweb/data/monitoring/gsics/ir/techinfo_geoleoir.html), which weights radiance (the energy form). NOAA states the energy form explicitly for the analogous VIIRS RSRs (ATBD 474-00027 Eq. 9) and GOES-R ABI SRFs (doi:10.1117/12.2238090 Eq. 1-2), but no JMA document found says it for AHI, so NJM's energy stays assumed."
+   },
+   "Band11": {
+    "DetectorType_note": "SVO's Himawari/AHI8.Band11 (captured 2025-12-12) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak) but labelled photon. JMA's workbook column is 'Relative Responsivity [-]' and JMA states no photon/energy convention for it; its GSICS page says only that 'The Planck function and sensor spectral response functions are used to compute brightness temperature [K] from radiance [mW.m-2.sr-1.cm] and vice-versa' (https://www.data.jma.go.jp/mscweb/data/monitoring/gsics/ir/techinfo_geoleoir.html), which weights radiance (the energy form). NOAA states the energy form explicitly for the analogous VIIRS RSRs (ATBD 474-00027 Eq. 9) and GOES-R ABI SRFs (doi:10.1117/12.2238090 Eq. 1-2), but no JMA document found says it for AHI, so NJM's energy stays assumed."
+   },
+   "Band12": {
+    "DetectorType_note": "SVO's Himawari/AHI8.Band12 (captured 2025-06-23) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak) but labelled photon. JMA's workbook column is 'Relative Responsivity [-]' and JMA states no photon/energy convention for it; its GSICS page says only that 'The Planck function and sensor spectral response functions are used to compute brightness temperature [K] from radiance [mW.m-2.sr-1.cm] and vice-versa' (https://www.data.jma.go.jp/mscweb/data/monitoring/gsics/ir/techinfo_geoleoir.html), which weights radiance (the energy form). NOAA states the energy form explicitly for the analogous VIIRS RSRs (ATBD 474-00027 Eq. 9) and GOES-R ABI SRFs (doi:10.1117/12.2238090 Eq. 1-2), but no JMA document found says it for AHI, so NJM's energy stays assumed."
+   },
+   "Band13": {
+    "DetectorType_note": "SVO's Himawari/AHI8.Band13 (captured 2023-06-08) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak) but labelled photon. JMA's workbook column is 'Relative Responsivity [-]' and JMA states no photon/energy convention for it; its GSICS page says only that 'The Planck function and sensor spectral response functions are used to compute brightness temperature [K] from radiance [mW.m-2.sr-1.cm] and vice-versa' (https://www.data.jma.go.jp/mscweb/data/monitoring/gsics/ir/techinfo_geoleoir.html), which weights radiance (the energy form). NOAA states the energy form explicitly for the analogous VIIRS RSRs (ATBD 474-00027 Eq. 9) and GOES-R ABI SRFs (doi:10.1117/12.2238090 Eq. 1-2), but no JMA document found says it for AHI, so NJM's energy stays assumed."
+   },
+   "Band14": {
+    "DetectorType_note": "SVO's Himawari/AHI8.Band14 (captured 2025-07-11) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak) but labelled photon. JMA's workbook column is 'Relative Responsivity [-]' and JMA states no photon/energy convention for it; its GSICS page says only that 'The Planck function and sensor spectral response functions are used to compute brightness temperature [K] from radiance [mW.m-2.sr-1.cm] and vice-versa' (https://www.data.jma.go.jp/mscweb/data/monitoring/gsics/ir/techinfo_geoleoir.html), which weights radiance (the energy form). NOAA states the energy form explicitly for the analogous VIIRS RSRs (ATBD 474-00027 Eq. 9) and GOES-R ABI SRFs (doi:10.1117/12.2238090 Eq. 1-2), but no JMA document found says it for AHI, so NJM's energy stays assumed."
+   },
+   "Band15": {
+    "DetectorType_note": "SVO's Himawari/AHI8.Band15 (captured 2025-09-12) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak) but labelled photon. JMA's workbook column is 'Relative Responsivity [-]' and JMA states no photon/energy convention for it; its GSICS page says only that 'The Planck function and sensor spectral response functions are used to compute brightness temperature [K] from radiance [mW.m-2.sr-1.cm] and vice-versa' (https://www.data.jma.go.jp/mscweb/data/monitoring/gsics/ir/techinfo_geoleoir.html), which weights radiance (the energy form). NOAA states the energy form explicitly for the analogous VIIRS RSRs (ATBD 474-00027 Eq. 9) and GOES-R ABI SRFs (doi:10.1117/12.2238090 Eq. 1-2), but no JMA document found says it for AHI, so NJM's energy stays assumed."
+   },
+   "Band16": {
+    "DetectorType_note": "SVO's Himawari/AHI8.Band16 (captured 2026-05-10) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak) but labelled photon. JMA's workbook column is 'Relative Responsivity [-]' and JMA states no photon/energy convention for it; its GSICS page says only that 'The Planck function and sensor spectral response functions are used to compute brightness temperature [K] from radiance [mW.m-2.sr-1.cm] and vice-versa' (https://www.data.jma.go.jp/mscweb/data/monitoring/gsics/ir/techinfo_geoleoir.html), which weights radiance (the energy form). NOAA states the energy form explicitly for the analogous VIIRS RSRs (ATBD 474-00027 Eq. 9) and GOES-R ABI SRFs (doi:10.1117/12.2238090 Eq. 1-2), but no JMA document found says it for AHI, so NJM's energy stays assumed."
+   }
+  },
+  "Himawari/AHI9": {
+   "Band01": {
+    "DetectorType_note": "SVO's Himawari/AHI9.Band01 array is not archived here; its record labels the band photon. JMA's workbook column is 'Relative Responsivity [-]' and JMA states no photon/energy convention for it; its GSICS page says only that 'The Planck function and sensor spectral response functions are used to compute brightness temperature [K] from radiance [mW.m-2.sr-1.cm] and vice-versa' (https://www.data.jma.go.jp/mscweb/data/monitoring/gsics/ir/techinfo_geoleoir.html), which weights radiance (the energy form). NOAA states the energy form explicitly for the analogous VIIRS RSRs (ATBD 474-00027 Eq. 9) and GOES-R ABI SRFs (doi:10.1117/12.2238090 Eq. 1-2), but no JMA document found says it for AHI, so NJM's energy stays assumed."
+   },
+   "Band02": {
+    "DetectorType_note": "SVO's Himawari/AHI9.Band02 array is not archived here; its record labels the band photon. JMA's workbook column is 'Relative Responsivity [-]' and JMA states no photon/energy convention for it; its GSICS page says only that 'The Planck function and sensor spectral response functions are used to compute brightness temperature [K] from radiance [mW.m-2.sr-1.cm] and vice-versa' (https://www.data.jma.go.jp/mscweb/data/monitoring/gsics/ir/techinfo_geoleoir.html), which weights radiance (the energy form). NOAA states the energy form explicitly for the analogous VIIRS RSRs (ATBD 474-00027 Eq. 9) and GOES-R ABI SRFs (doi:10.1117/12.2238090 Eq. 1-2), but no JMA document found says it for AHI, so NJM's energy stays assumed."
+   },
+   "Band03": {
+    "DetectorType_note": "SVO's Himawari/AHI9.Band03 (captured 2026-02-19) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak) but labelled photon. JMA's workbook column is 'Relative Responsivity [-]' and JMA states no photon/energy convention for it; its GSICS page says only that 'The Planck function and sensor spectral response functions are used to compute brightness temperature [K] from radiance [mW.m-2.sr-1.cm] and vice-versa' (https://www.data.jma.go.jp/mscweb/data/monitoring/gsics/ir/techinfo_geoleoir.html), which weights radiance (the energy form). NOAA states the energy form explicitly for the analogous VIIRS RSRs (ATBD 474-00027 Eq. 9) and GOES-R ABI SRFs (doi:10.1117/12.2238090 Eq. 1-2), but no JMA document found says it for AHI, so NJM's energy stays assumed."
+   },
+   "Band04": {
+    "DetectorType_note": "SVO's Himawari/AHI9.Band04 (captured 2025-10-18) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak) but labelled photon. JMA's workbook column is 'Relative Responsivity [-]' and JMA states no photon/energy convention for it; its GSICS page says only that 'The Planck function and sensor spectral response functions are used to compute brightness temperature [K] from radiance [mW.m-2.sr-1.cm] and vice-versa' (https://www.data.jma.go.jp/mscweb/data/monitoring/gsics/ir/techinfo_geoleoir.html), which weights radiance (the energy form). NOAA states the energy form explicitly for the analogous VIIRS RSRs (ATBD 474-00027 Eq. 9) and GOES-R ABI SRFs (doi:10.1117/12.2238090 Eq. 1-2), but no JMA document found says it for AHI, so NJM's energy stays assumed."
+   },
+   "Band05": {
+    "DetectorType_note": "SVO's Himawari/AHI9.Band05 array is not archived here; its record labels the band photon. JMA's workbook column is 'Relative Responsivity [-]' and JMA states no photon/energy convention for it; its GSICS page says only that 'The Planck function and sensor spectral response functions are used to compute brightness temperature [K] from radiance [mW.m-2.sr-1.cm] and vice-versa' (https://www.data.jma.go.jp/mscweb/data/monitoring/gsics/ir/techinfo_geoleoir.html), which weights radiance (the energy form). NOAA states the energy form explicitly for the analogous VIIRS RSRs (ATBD 474-00027 Eq. 9) and GOES-R ABI SRFs (doi:10.1117/12.2238090 Eq. 1-2), but no JMA document found says it for AHI, so NJM's energy stays assumed."
+   },
+   "Band06": {
+    "DetectorType_note": "SVO's Himawari/AHI9.Band06 array is not archived here; its record labels the band photon. JMA's workbook column is 'Relative Responsivity [-]' and JMA states no photon/energy convention for it; its GSICS page says only that 'The Planck function and sensor spectral response functions are used to compute brightness temperature [K] from radiance [mW.m-2.sr-1.cm] and vice-versa' (https://www.data.jma.go.jp/mscweb/data/monitoring/gsics/ir/techinfo_geoleoir.html), which weights radiance (the energy form). NOAA states the energy form explicitly for the analogous VIIRS RSRs (ATBD 474-00027 Eq. 9) and GOES-R ABI SRFs (doi:10.1117/12.2238090 Eq. 1-2), but no JMA document found says it for AHI, so NJM's energy stays assumed."
+   },
+   "Band07": {
+    "DetectorType_note": "SVO's Himawari/AHI9.Band07 array is not archived here; its record labels the band photon. JMA's workbook column is 'Relative Responsivity [-]' and JMA states no photon/energy convention for it; its GSICS page says only that 'The Planck function and sensor spectral response functions are used to compute brightness temperature [K] from radiance [mW.m-2.sr-1.cm] and vice-versa' (https://www.data.jma.go.jp/mscweb/data/monitoring/gsics/ir/techinfo_geoleoir.html), which weights radiance (the energy form). NOAA states the energy form explicitly for the analogous VIIRS RSRs (ATBD 474-00027 Eq. 9) and GOES-R ABI SRFs (doi:10.1117/12.2238090 Eq. 1-2), but no JMA document found says it for AHI, so NJM's energy stays assumed."
+   },
+   "Band08": {
+    "DetectorType_note": "SVO's Himawari/AHI9.Band08 (captured 2026-01-18) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak) but labelled photon. JMA's workbook column is 'Relative Responsivity [-]' and JMA states no photon/energy convention for it; its GSICS page says only that 'The Planck function and sensor spectral response functions are used to compute brightness temperature [K] from radiance [mW.m-2.sr-1.cm] and vice-versa' (https://www.data.jma.go.jp/mscweb/data/monitoring/gsics/ir/techinfo_geoleoir.html), which weights radiance (the energy form). NOAA states the energy form explicitly for the analogous VIIRS RSRs (ATBD 474-00027 Eq. 9) and GOES-R ABI SRFs (doi:10.1117/12.2238090 Eq. 1-2), but no JMA document found says it for AHI, so NJM's energy stays assumed."
+   },
+   "Band09": {
+    "DetectorType_note": "SVO's Himawari/AHI9.Band09 array is not archived here; its record labels the band photon. JMA's workbook column is 'Relative Responsivity [-]' and JMA states no photon/energy convention for it; its GSICS page says only that 'The Planck function and sensor spectral response functions are used to compute brightness temperature [K] from radiance [mW.m-2.sr-1.cm] and vice-versa' (https://www.data.jma.go.jp/mscweb/data/monitoring/gsics/ir/techinfo_geoleoir.html), which weights radiance (the energy form). NOAA states the energy form explicitly for the analogous VIIRS RSRs (ATBD 474-00027 Eq. 9) and GOES-R ABI SRFs (doi:10.1117/12.2238090 Eq. 1-2), but no JMA document found says it for AHI, so NJM's energy stays assumed."
+   },
+   "Band10": {
+    "DetectorType_note": "SVO's Himawari/AHI9.Band10 array is not archived here; its record labels the band photon. JMA's workbook column is 'Relative Responsivity [-]' and JMA states no photon/energy convention for it; its GSICS page says only that 'The Planck function and sensor spectral response functions are used to compute brightness temperature [K] from radiance [mW.m-2.sr-1.cm] and vice-versa' (https://www.data.jma.go.jp/mscweb/data/monitoring/gsics/ir/techinfo_geoleoir.html), which weights radiance (the energy form). NOAA states the energy form explicitly for the analogous VIIRS RSRs (ATBD 474-00027 Eq. 9) and GOES-R ABI SRFs (doi:10.1117/12.2238090 Eq. 1-2), but no JMA document found says it for AHI, so NJM's energy stays assumed."
+   },
+   "Band11": {
+    "DetectorType_note": "SVO's Himawari/AHI9.Band11 array is not archived here; its record labels the band photon. JMA's workbook column is 'Relative Responsivity [-]' and JMA states no photon/energy convention for it; its GSICS page says only that 'The Planck function and sensor spectral response functions are used to compute brightness temperature [K] from radiance [mW.m-2.sr-1.cm] and vice-versa' (https://www.data.jma.go.jp/mscweb/data/monitoring/gsics/ir/techinfo_geoleoir.html), which weights radiance (the energy form). NOAA states the energy form explicitly for the analogous VIIRS RSRs (ATBD 474-00027 Eq. 9) and GOES-R ABI SRFs (doi:10.1117/12.2238090 Eq. 1-2), but no JMA document found says it for AHI, so NJM's energy stays assumed."
+   },
+   "Band12": {
+    "DetectorType_note": "SVO's Himawari/AHI9.Band12 array is not archived here; its record labels the band photon. JMA's workbook column is 'Relative Responsivity [-]' and JMA states no photon/energy convention for it; its GSICS page says only that 'The Planck function and sensor spectral response functions are used to compute brightness temperature [K] from radiance [mW.m-2.sr-1.cm] and vice-versa' (https://www.data.jma.go.jp/mscweb/data/monitoring/gsics/ir/techinfo_geoleoir.html), which weights radiance (the energy form). NOAA states the energy form explicitly for the analogous VIIRS RSRs (ATBD 474-00027 Eq. 9) and GOES-R ABI SRFs (doi:10.1117/12.2238090 Eq. 1-2), but no JMA document found says it for AHI, so NJM's energy stays assumed."
+   },
+   "Band13": {
+    "DetectorType_note": "SVO's Himawari/AHI9.Band13 array is not archived here; its record labels the band photon. JMA's workbook column is 'Relative Responsivity [-]' and JMA states no photon/energy convention for it; its GSICS page says only that 'The Planck function and sensor spectral response functions are used to compute brightness temperature [K] from radiance [mW.m-2.sr-1.cm] and vice-versa' (https://www.data.jma.go.jp/mscweb/data/monitoring/gsics/ir/techinfo_geoleoir.html), which weights radiance (the energy form). NOAA states the energy form explicitly for the analogous VIIRS RSRs (ATBD 474-00027 Eq. 9) and GOES-R ABI SRFs (doi:10.1117/12.2238090 Eq. 1-2), but no JMA document found says it for AHI, so NJM's energy stays assumed."
+   },
+   "Band14": {
+    "DetectorType_note": "SVO's Himawari/AHI9.Band14 array is not archived here; its record labels the band photon. JMA's workbook column is 'Relative Responsivity [-]' and JMA states no photon/energy convention for it; its GSICS page says only that 'The Planck function and sensor spectral response functions are used to compute brightness temperature [K] from radiance [mW.m-2.sr-1.cm] and vice-versa' (https://www.data.jma.go.jp/mscweb/data/monitoring/gsics/ir/techinfo_geoleoir.html), which weights radiance (the energy form). NOAA states the energy form explicitly for the analogous VIIRS RSRs (ATBD 474-00027 Eq. 9) and GOES-R ABI SRFs (doi:10.1117/12.2238090 Eq. 1-2), but no JMA document found says it for AHI, so NJM's energy stays assumed."
+   },
+   "Band15": {
+    "DetectorType_note": "SVO's Himawari/AHI9.Band15 array is not archived here; its record labels the band photon. JMA's workbook column is 'Relative Responsivity [-]' and JMA states no photon/energy convention for it; its GSICS page says only that 'The Planck function and sensor spectral response functions are used to compute brightness temperature [K] from radiance [mW.m-2.sr-1.cm] and vice-versa' (https://www.data.jma.go.jp/mscweb/data/monitoring/gsics/ir/techinfo_geoleoir.html), which weights radiance (the energy form). NOAA states the energy form explicitly for the analogous VIIRS RSRs (ATBD 474-00027 Eq. 9) and GOES-R ABI SRFs (doi:10.1117/12.2238090 Eq. 1-2), but no JMA document found says it for AHI, so NJM's energy stays assumed."
+   },
+   "Band16": {
+    "DetectorType_note": "SVO's Himawari/AHI9.Band16 array is not archived here; its record labels the band photon. JMA's workbook column is 'Relative Responsivity [-]' and JMA states no photon/energy convention for it; its GSICS page says only that 'The Planck function and sensor spectral response functions are used to compute brightness temperature [K] from radiance [mW.m-2.sr-1.cm] and vice-versa' (https://www.data.jma.go.jp/mscweb/data/monitoring/gsics/ir/techinfo_geoleoir.html), which weights radiance (the energy form). NOAA states the energy form explicitly for the analogous VIIRS RSRs (ATBD 474-00027 Eq. 9) and GOES-R ABI SRFs (doi:10.1117/12.2238090 Eq. 1-2), but no JMA document found says it for AHI, so NJM's energy stays assumed."
+   }
+  }
+ },
+ "notes_append": {},
+ "comments_append": {
+  "WHT/INGRID": {
+   "JCONT_WARM": "SVO match set to WHT/INGRID.Jcont_w (2026-10-26). It had been matched by name and pivot to WHT/INGRID.Jcont, a spectrally shifted scan. SVO's WHT/INGRID.Jcont_w (captured 2026-03-14) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak).",
+   "KCONT_WARM": "SVO match set to WHT/INGRID.Kcont_w (2026-10-26). It had been matched by name and pivot to WHT/INGRID.Kcont, a spectrally shifted scan (the array of NJM's KCONT_COLD). SVO's WHT/INGRID.Kcont_w (captured 2023-03-25) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak).",
+   "PAB_WARM": "SVO match set to WHT/INGRID.Pab_w (2026-10-26). It had been matched by name and pivot to WHT/INGRID.Pab, a spectrally shifted scan. SVO's WHT/INGRID.Pab_w (captured 2026-03-11) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak).",
+   "BRG_WARM": "SVO match set to WHT/INGRID.Brg_w (2026-10-26). It had no SVO match. SVO's WHT/INGRID.Brg_w (captured 2023-03-23) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak).",
+   "H2V21_COLD": "SVO match set to WHT/INGRID.H2-2 (2026-10-26). It had no SVO match. SVO's WHT/INGRID.H2-2 (captured 2022-11-30) is the same curve as NJM's within resampling (SVO/NJM ratio 0.999-1.001 where both exceed 5 % of peak).",
+   "FEII_WARM": "SVO match set to WHT/INGRID.FeII_w (2026-10-26). It had been matched by name and pivot to WHT/INGRID.FeII, a spectrally shifted scan (the array of NJM's FEII_COLD). SVO lists this ID but no capture is archived yet; the warm records Jcont_w, Kcont_w and Pab_w are each identical to NJM's matching WARM band, so FeII_w is the expected counterpart (unverified until harvested)."
+  },
+  "CFHT/Megaprime": {
+   "NB920_fil": "SVO match re-pointed (2026-10-26) to CFHT/Megaprime.NB920_fil, SVO's filter-only record for this filter; it was matched by band name and pivot to a 2021-22 capture of CFHT/Megaprime.NB920 taken before SVO split X (full) from X_fil (filter only). CFHT/Megaprime.NB920_fil is in SVO's ID list but has no archived capture yet, so this band shows no SVO record until one is harvested.",
+   "OIII_fil": "SVO match re-pointed (2026-10-26) to CFHT/Megaprime.OIII_fil, SVO's filter-only record for this filter; it was matched by band name and pivot to a 2021-22 capture of CFHT/Megaprime.OIII taken before SVO split X (full) from X_fil (filter only). CFHT/Megaprime.OIII_fil is in SVO's ID list but has no archived capture yet, so this band shows no SVO record until one is harvested.",
+   "OIII_off_fil": "SVO match re-pointed (2026-10-26) to CFHT/Megaprime.OIII_off_fil, SVO's filter-only record for this filter; it was matched by band name and pivot to a 2021-22 capture of CFHT/Megaprime.OIII_off taken before SVO split X (full) from X_fil (filter only). CFHT/Megaprime.OIII_off_fil is in SVO's ID list but has no archived capture yet, so this band shows no SVO record until one is harvested.",
+   "TiO_fil": "SVO match re-pointed (2026-10-26) to CFHT/Megaprime.TiO_fil, SVO's filter-only record for this filter; it was matched by band name and pivot to a 2021-22 capture of CFHT/Megaprime.TiO taken before SVO split X (full) from X_fil (filter only). CFHT/Megaprime.TiO_fil is in SVO's ID list but has no archived capture yet, so this band shows no SVO record until one is harvested.",
+   "i_fil": "SVO match re-pointed (2026-10-26) to CFHT/Megaprime.i_fil, SVO's filter-only record for this filter; it was matched by band name and pivot to a 2021-22 capture of CFHT/Megaprime.i taken before SVO split X (full) from X_fil (filter only). CFHT/Megaprime.i_fil is in SVO's ID list but has no archived capture yet, so this band shows no SVO record until one is harvested."
+  },
+  "Paranal/HAWKI": {
+   "Knew": "ESO's hawki_Knew.dat and hawki_Kold.dat are byte-identical (SHA-256 6a7a8850...59a5a1, both headed '# K filter curve @ T=90K', fetched 2026-10-26), although ESO's filter table (https://www.eso.org/sci/facilities/paranal/instruments/hawki/inst.html) lists them as two filters: 'Ks (1)' = hawki_Kold.dat, '(1) Filter used from Aug 2007 until Dec 3, 2007. Showed some structure for the Nov 2007 Science Verification run.', and 'Ks (2)' = hawki_Knew.dat, '(2) New Ks filter, used starting Jan 2008.' NJM's Knew and Kold therefore carry the same curve (sample rows identical); ESO has not published a separate curve for the 2007 filter.",
+   "Kold": "ESO's hawki_Knew.dat and hawki_Kold.dat are byte-identical (SHA-256 6a7a8850...59a5a1, both headed '# K filter curve @ T=90K', fetched 2026-10-26), although ESO's filter table (https://www.eso.org/sci/facilities/paranal/instruments/hawki/inst.html) lists them as two filters: 'Ks (1)' = hawki_Kold.dat, '(1) Filter used from Aug 2007 until Dec 3, 2007. Showed some structure for the Nov 2007 Science Verification run.', and 'Ks (2)' = hawki_Knew.dat, '(2) New Ks filter, used starting Jan 2008.' NJM's Knew and Kold therefore carry the same curve (sample rows identical); ESO has not published a separate curve for the 2007 filter."
+  },
+  "HAWK-I/HAWK-I": {
+   "Ks_2007": "ESO's hawki_Knew.dat and hawki_Kold.dat are byte-identical (SHA-256 6a7a8850...59a5a1, both headed '# K filter curve @ T=90K', fetched 2026-10-26), although ESO's filter table (https://www.eso.org/sci/facilities/paranal/instruments/hawki/inst.html) lists them as two filters: 'Ks (1)' = hawki_Kold.dat, '(1) Filter used from Aug 2007 until Dec 3, 2007. Showed some structure for the Nov 2007 Science Verification run.', and 'Ks (2)' = hawki_Knew.dat, '(2) New Ks filter, used starting Jan 2008.' NJM's Ks_2007 and Ks_2008 therefore carry the same curve (sample rows identical); ESO has not published a separate curve for the 2007 filter.",
+   "Ks_2008": "ESO's hawki_Knew.dat and hawki_Kold.dat are byte-identical (SHA-256 6a7a8850...59a5a1, both headed '# K filter curve @ T=90K', fetched 2026-10-26), although ESO's filter table (https://www.eso.org/sci/facilities/paranal/instruments/hawki/inst.html) lists them as two filters: 'Ks (1)' = hawki_Kold.dat, '(1) Filter used from Aug 2007 until Dec 3, 2007. Showed some structure for the Nov 2007 Science Verification run.', and 'Ks (2)' = hawki_Knew.dat, '(2) New Ks filter, used starting Jan 2008.' NJM's Ks_2007 and Ks_2008 therefore carry the same curve (sample rows identical); ESO has not published a separate curve for the 2007 filter."
+  },
+  "Gemini/NIFS": {
+   "ZJ_298K": "Checked 2026-10-26 against https://www.gemini.edu/sciops/instruments/nifs/ZJ.dat (SHA-256 1d71842a...e9430b): the header row '298K 77K' orders the two %T columns, and its summary lines give 'Cut-on wl : 772.5 766 6.5' and 'Cut-off wl : 1440.75 1439.5 1.25'. The data reproduce this: column 2 has 50 % points 772.4/1440.8 nm, column 3 766.1/1439.4 nm (cooling shifts the edges blueward). NJM ZJ_298K equals column 2 and ZJ_77K column 3 exactly, so the labels are right. SVO's Gemini/NIFS.ZJ, described as 'NIFS Z-J filter at 77K' (capture 2022-11-30), is the 298 K column (ratio to NJM ZJ_298K 0.9999-1.0001) and lists the same wavelengths as SVO's NIFS.ZJ_298K, so SVO's description is wrong, not NJM's.",
+   "ZJ_77K": "Checked 2026-10-26 against https://www.gemini.edu/sciops/instruments/nifs/ZJ.dat (SHA-256 1d71842a...e9430b): the header row '298K 77K' orders the two %T columns, and its summary lines give 'Cut-on wl : 772.5 766 6.5' and 'Cut-off wl : 1440.75 1439.5 1.25'. The data reproduce this: column 2 has 50 % points 772.4/1440.8 nm, column 3 766.1/1439.4 nm (cooling shifts the edges blueward). NJM ZJ_298K equals column 2 and ZJ_77K column 3 exactly, so the labels are right. SVO's Gemini/NIFS.ZJ, described as 'NIFS Z-J filter at 77K' (capture 2022-11-30), is the 298 K column (ratio to NJM ZJ_298K 0.9999-1.0001) and lists the same wavelengths as SVO's NIFS.ZJ_298K, so SVO's description is wrong, not NJM's."
+  },
+  "Spitzer/MIPS": {
+   "70": "Label checked 2026-10-26 against the MIPS Instrument Handbook §2 (https://irsa.ipac.caltech.edu/data/SPITZER/docs/mips/mipsinstrumenthandbook/6/), Table 2.2 'MIPS spectral response summary': '70 micron 71.42 71.9 140 55 61 80 92' (cut-on 10 %/50 % 55/61 µm, cut-off 50 %/10 % 80/92 µm); the SED mode is a separate row (53/55/96/100 µm). NJM's 70 curve has 10 %/50 % points 55.1/61.0 and 80.0/91.6 µm, so it is the 70 µm imaging band ('Pre-launch response of the 70 micron band including detector and filter spectral response', Figure 2.4), not the SED mode. The 'NB' in MIPSfiltsumm.txt's column heading '70 microns NB' is not explained by the handbook; the curve and the band name agree."
+  },
+  "BOK/90prime": {
+   "R_Bessell": "Renamed from R (2026-10-26) because R and r collided case-insensitively (map: filter_expansion/renamed_filters_20261026_bok.csv). This is SVO's BOK/90prime.R, '90prime R filter' (array identical to SVO's 2025-04-22 capture), the 90Prime broadband R glass filter: the owner's filter page lists 'UBVRI Cousins/Bessel ... R: OG570(2mm) KG3(2mm) Peak-700nm FWHM-220nm' (https://lavinia.as.arizona.edu/~tscopewiki/doku.php?id=public:kitt_peak:bok_90:90prime:filters). The band r is a different curve, the BASS survey r (SVO BOK/BASS.r, full system response)."
+  }
+ },
+ "filterid_add": [
+  "ERIS/NIX/Br-a-cont",
+  "ERIS/NIX/Br-a",
+  "ERIS/NIX/Br-g",
+  "ERIS/NIX/H2-1-0S",
+  "ERIS/NIX/H2-cont",
+  "ERIS/NIX/IB-2p42",
+  "ERIS/NIX/IB-2p48",
+  "Gemini/NIFS/HK_77K",
+  "Gemini/NIFS/JH_77K",
+  "Gemini/NIFS/ZJ_77K",
+  "HAWK-I/HAWK-I/BrG",
+  "HAWK-I/HAWK-I/CH4",
+  "HAWK-I/HAWK-I/H",
+  "HAWK-I/HAWK-I/H2",
+  "HAWK-I/HAWK-I/J",
+  "HAWK-I/HAWK-I/Ks_2007",
+  "HAWK-I/HAWK-I/Ks_2008",
+  "HAWK-I/HAWK-I/NB0984",
+  "HAWK-I/HAWK-I/NB1060",
+  "HAWK-I/HAWK-I/NB1190",
+  "HAWK-I/HAWK-I/NB2090",
+  "HAWK-I/HAWK-I/Y",
+  "IRTF/NSFCam/BRG",
+  "IRTF/NSFCam/CO",
+  "IRTF/NSFCam/CONT",
+  "IRTF/NSFCam/FE",
+  "IRTF/NSFCam/H21",
+  "IRTF/NSFCam/H22",
+  "IRTF/NSFCam/HEI",
+  "IRTF/NSFCam/HMK",
+  "IRTF/NSFCam/J",
+  "IRTF/NSFCam/JMK",
+  "IRTF/NSFCam/K",
+  "IRTF/NSFCam/KMK",
+  "IRTF/NSFCam/KP",
+  "IRTF/NSFCam/KPMK",
+  "IRTF/NSFCam/KS",
+  "IRTF/NSFCam/KSMK",
+  "IRTF/NSFCam/L",
+  "IRTF/NSFCam/LP",
+  "IRTF/NSFCam/LPMK",
+  "IRTF/NSFCam/M",
+  "IRTF/NSFCam/MP1",
+  "IRTF/NSFCam/MPMK",
+  "IRTF/NSFCam/PAB",
+  "IRTF/NSFCam/PAG",
+  "IRTF/NSFCam/S17",
+  "IRTF/NSFCam/S23",
+  "Liverpool/IOO/g",
+  "Liverpool/IOO/i",
+  "Liverpool/IOO/r",
+  "Liverpool/IOO/u",
+  "Liverpool/IOO/z",
+  "Paranal/HAWKI/Knew",
+  "Paranal/HAWKI/Kold",
+  "Paranal/NACO/H_CONICA",
+  "Paranal/NACO/IB_2p00",
+  "Paranal/NACO/IB_2p03",
+  "Paranal/NACO/IB_2p06",
+  "Paranal/NACO/IB_2p09",
+  "Paranal/NACO/IB_2p12",
+  "Paranal/NACO/IB_2p15",
+  "Paranal/NACO/IB_2p18",
+  "Paranal/NACO/IB_2p21",
+  "Paranal/NACO/IB_2p24",
+  "Paranal/NACO/IB_2p27",
+  "Paranal/NACO/IB_2p30",
+  "Paranal/NACO/IB_2p33",
+  "Paranal/NACO/IB_2p36",
+  "Paranal/NACO/IB_2p39",
+  "Paranal/NACO/IB_2p42",
+  "Paranal/NACO/IB_2p45",
+  "Paranal/NACO/IB_2p48",
+  "Paranal/NACO/J_CONICA",
+  "Paranal/NACO/Ks_CONICA",
+  "Paranal/NACO/L_prime",
+  "Paranal/NACO/M_prime",
+  "Paranal/NACO/NB_1p04",
+  "Paranal/NACO/NB_1p08",
+  "Paranal/NACO/NB_1p09",
+  "Paranal/NACO/NB_1p24",
+  "Paranal/NACO/NB_1p26",
+  "Paranal/NACO/NB_1p28",
+  "Paranal/NACO/NB_1p64",
+  "Paranal/NACO/NB_1p75",
+  "Paranal/NACO/NB_2p12",
+  "Paranal/NACO/NB_2p17",
+  "Paranal/NACO/NB_3p74",
+  "Paranal/SPHERE/B_H",
+  "Paranal/SPHERE/B_J",
+  "Paranal/SPHERE/B_Ks",
+  "Paranal/SPHERE/B_Y",
+  "Paranal/SPHERE/D_H23_H2",
+  "Paranal/SPHERE/D_H23_H3",
+  "Paranal/SPHERE/D_H34_H3",
+  "Paranal/SPHERE/D_H34_H4",
+  "Paranal/SPHERE/D_J23_J2",
+  "Paranal/SPHERE/D_J23_J3",
+  "Paranal/SPHERE/D_K12_K1",
+  "Paranal/SPHERE/D_K12_K2",
+  "Paranal/SPHERE/D_Y23_Y2",
+  "Paranal/SPHERE/D_Y23_Y3",
+  "Paranal/SPHERE/N_BrG",
+  "Paranal/SPHERE/N_CO",
+  "Paranal/SPHERE/N_CntH",
+  "Paranal/SPHERE/N_CntJ",
+  "Paranal/SPHERE/N_CntK1",
+  "Paranal/SPHERE/N_CntK2",
+  "Paranal/SPHERE/N_FeII",
+  "Paranal/SPHERE/N_H2",
+  "Paranal/SPHERE/N_HeI",
+  "Paranal/SPHERE/N_PaB",
+  "SPHERE/ZIMPOL/730_NB",
+  "SPHERE/ZIMPOL/B_Ha",
+  "SPHERE/ZIMPOL/CH4_727",
+  "SPHERE/ZIMPOL/Cnt748",
+  "SPHERE/ZIMPOL/Cnt820",
+  "SPHERE/ZIMPOL/Cnt_Ha",
+  "SPHERE/ZIMPOL/HeI",
+  "SPHERE/ZIMPOL/I_L",
+  "SPHERE/ZIMPOL/I_PRIM",
+  "SPHERE/ZIMPOL/KI",
+  "SPHERE/ZIMPOL/ND1p0",
+  "SPHERE/ZIMPOL/ND2p0",
+  "SPHERE/ZIMPOL/ND4p0",
+  "SPHERE/ZIMPOL/N_Ha",
+  "SPHERE/ZIMPOL/N_I",
+  "SPHERE/ZIMPOL/N_R",
+  "SPHERE/ZIMPOL/OI_630",
+  "SPHERE/ZIMPOL/R_PRIM",
+  "SPHERE/ZIMPOL/TiO_717",
+  "SPHERE/ZIMPOL/V",
+  "SPHERE/ZIMPOL/VBB",
+  "SPHERE/ZIMPOL/V_L",
+  "SPHERE/ZIMPOL/V_S",
+  "Teide/COSMO11/Ch1",
+  "Teide/COSMO11/Ch2",
+  "Teide/COSMO15/13GHz",
+  "Teide/COSMO15/15GHz",
+  "Teide/COSMO15/17GHz",
+  "WHT/INGRID/BRG_COLD",
+  "WHT/INGRID/BRG_WARM",
+  "WHT/INGRID/FEII_COLD",
+  "WHT/INGRID/FEII_WARM",
+  "WHT/INGRID/H2V10_COLD",
+  "WHT/INGRID/H2V10_WARM",
+  "WHT/INGRID/H2V21_COLD",
+  "WHT/INGRID/H2V21_WARM",
+  "WHT/INGRID/HCONT_COLD",
+  "WHT/INGRID/HCONT_WARM",
+  "WHT/INGRID/H_WARM",
+  "WHT/INGRID/JCONT_WARM",
+  "WHT/INGRID/J_WARM",
+  "WHT/INGRID/KCONT_COLD",
+  "WHT/INGRID/KCONT_WARM",
+  "WHT/INGRID/KSBARR_WARM",
+  "WHT/INGRID/KS_WARM",
+  "WHT/INGRID/K_WARM",
+  "WHT/INGRID/PAB_WARM",
+  "WHT/INGRID/Z_WARM"
+ ],
+ "filterid_skipped_svo_collision": [
+  "Gemini/NIFS/HK_298K",
+  "Gemini/NIFS/JH_298K",
+  "Gemini/NIFS/ZJ_298K",
+  "Liverpool/IOO/B",
+  "Liverpool/IOO/V",
+  "Paranal/HAWKI/BrGamma",
+  "Paranal/HAWKI/CH4",
+  "Paranal/HAWKI/H",
+  "Paranal/HAWKI/H2",
+  "Paranal/HAWKI/J",
+  "Paranal/HAWKI/NB1060",
+  "Paranal/HAWKI/NB1190",
+  "Paranal/HAWKI/NB2090",
+  "Paranal/HAWKI/Y"
+ ]
+}

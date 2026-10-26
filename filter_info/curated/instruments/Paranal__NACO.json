@@ -69,7 +69,8 @@
       "Comments": "ESO imaging-filter table: central wavelength 2.33 μm, width 0.06 μm. The line column is '-'.",
       "references": [
         "doi:10.1117/12.460044"
-      ]
+      ],
+      "DetectorType_note": "SVO's Paranal/NACO.IB233 (captured 2021-12-05) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
     },
     "IB_2p36": {
       "Description": "NACO IB_2.36",
@@ -90,14 +91,16 @@
       "Comments": "ESO imaging-filter table: central wavelength 2.45 μm, width 0.06 μm. The line column is '-'.",
       "references": [
         "doi:10.1117/12.460044"
-      ]
+      ],
+      "DetectorType_note": "SVO's Paranal/NACO.IB245 (captured 2026-04-20) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
     },
     "IB_2p48": {
       "Description": "NACO IB_2.48",
       "Comments": "ESO imaging-filter table: central wavelength 2.48 μm, width 0.06 μm. The line column is '-'.",
       "references": [
         "doi:10.1117/12.460044"
-      ]
+      ],
+      "DetectorType_note": "SVO's Paranal/NACO.IB248 (captured 2026-04-20) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
     },
     "J_CONICA": {
       "Description": "NACO J",
@@ -105,7 +108,8 @@
       "Comments": "ESO imaging-filter table: central wavelength 1.265 μm, width 0.25 μm. The line column is '-'.",
       "references": [
         "doi:10.1117/12.460044"
-      ]
+      ],
+      "DetectorType_note": "SVO's Paranal/NACO.J (captured 2026-04-20) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
     },
     "Ks_CONICA": {
       "Description": "NACO Ks",
@@ -127,7 +131,8 @@
       "Comments": "ESO imaging-filter table: central wavelength 1.094 μm, width 0.015 μm. Line column: P_gamma.",
       "references": [
         "doi:10.1117/12.460044"
-      ]
+      ],
+      "DetectorType_note": "SVO's Paranal/NACO.NB109 (captured 2026-04-20) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
     },
     "NB_1p24": {
       "Description": "NACO NB_1.24",
@@ -141,14 +146,16 @@
       "Comments": "ESO imaging-filter table: central wavelength 1.282 μm, width 0.014 μm. Line column: P_beta.",
       "references": [
         "doi:10.1117/12.460044"
-      ]
+      ],
+      "DetectorType_note": "SVO's Paranal/NACO.NB128 (captured 2021-12-05) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
     },
     "NB_2p12": {
       "Description": "NACO NB_2.12, H2 (1-0) S(1)",
       "Comments": "ESO imaging-filter table: central wavelength 2.122 μm, width 0.022 μm. Line column: H2 (1-0) S(1).",
       "references": [
         "doi:10.1117/12.460044"
-      ]
+      ],
+      "DetectorType_note": "SVO's Paranal/NACO.NB212 (captured 2021-12-09) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
     },
     "NB_2p17": {
       "Description": "NACO NB_2.17, Br_gamma",
@@ -162,7 +169,50 @@
       "Comments": "ESO imaging-filter table: central wavelength 3.740 μm, width 0.02 μm. Line column: Pf_gamma.",
       "references": [
         "doi:10.1117/12.460044"
-      ]
+      ],
+      "DetectorType_note": "SVO's Paranal/NACO.NB374 (captured 2021-12-09) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+    },
+    "H_CONICA": {
+      "DetectorType_note": "SVO's Paranal/NACO.H (captured 2026-04-20) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+    },
+    "IB_2p00": {
+      "DetectorType_note": "SVO's Paranal/NACO.IB200 array is not archived here, so the curves were not compared. SVO's energy label comes with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+    },
+    "IB_2p12": {
+      "DetectorType_note": "SVO's Paranal/NACO.IB212 (captured 2026-04-20) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+    },
+    "IB_2p15": {
+      "DetectorType_note": "SVO's Paranal/NACO.IB215 (captured 2026-04-20) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+    },
+    "IB_2p21": {
+      "DetectorType_note": "SVO's Paranal/NACO.IB221 (captured 2022-09-26) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+    },
+    "IB_2p24": {
+      "DetectorType_note": "SVO's Paranal/NACO.IB224 (captured 2026-04-20) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+    },
+    "IB_2p27": {
+      "DetectorType_note": "SVO's Paranal/NACO.IB227 (captured 2021-12-05) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+    },
+    "IB_2p30": {
+      "DetectorType_note": "SVO's Paranal/NACO.IB230 (captured 2022-09-28) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+    },
+    "IB_2p39": {
+      "DetectorType_note": "SVO's Paranal/NACO.IB239 (captured 2026-04-17) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+    },
+    "L_prime": {
+      "DetectorType_note": "SVO's Paranal/NACO.Lp array is not archived here, so the curves were not compared. SVO's energy label comes with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+    },
+    "NB_1p04": {
+      "DetectorType_note": "SVO's Paranal/NACO.NB104 (captured 2020-09-27) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+    },
+    "NB_1p26": {
+      "DetectorType_note": "SVO's Paranal/NACO.NB126 (captured 2021-12-05) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+    },
+    "NB_1p64": {
+      "DetectorType_note": "SVO's Paranal/NACO.NB164 (captured 2022-01-21) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
+    },
+    "NB_1p75": {
+      "DetectorType_note": "SVO's Paranal/NACO.NB175 (captured 2021-12-04) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak); only the label differs. SVO gives energy with no stated basis; NJM's photon (inferred) rests on ESO's filter-only transmission and CONICA's photon-counting InSb Aladdin array (see the instrument notes)."
     }
   },
   "licence": {

@@ -44,6 +44,21 @@
       "references": [
         "bibcode:2012PASP..124..140B"
       ]
+    },
+    "B": {
+      "DetectorType_note": "SVO's Generic/Bessell.B (captured 2025-11-17, 'Bessell B generic filter', no reference given) is a different array from NJM's (SVO/NJM ∝ λ^0.76, rms 0.013). NJM's curve is Bessell & Murphy (2012, PASP 124, 140; doi:10.1086/664083) Table 1, their 'normalized photon-counting passbands'. The labels describe different curves, so there is no conflict."
+    },
+    "I": {
+      "DetectorType_note": "SVO's Generic/Bessell.I (captured 2023-03-31, 'Bessell I generic filter', no reference given) is a different array from NJM's (SVO/NJM ratio 0.65-2.14, not a power of λ). NJM's curve is Bessell & Murphy (2012, PASP 124, 140; doi:10.1086/664083) Table 1, their 'normalized photon-counting passbands'. The labels describe different curves, so there is no conflict."
+    },
+    "R": {
+      "DetectorType_note": "SVO's Generic/Bessell.R (captured 2012-07-06, 'Bessell R generic filter', no reference given) is a different array from NJM's (SVO/NJM ∝ λ^0.94, rms 0.033). NJM's curve is Bessell & Murphy (2012, PASP 124, 140; doi:10.1086/664083) Table 1, their 'normalized photon-counting passbands'. The labels describe different curves, so there is no conflict."
+    },
+    "U": {
+      "DetectorType_note": "SVO's Generic/Bessell.U (captured 2012-07-06, 'Bessell U generic filter', no reference given) is a different array from NJM's (SVO/NJM ∝ λ^0.26, rms 0.052). NJM's curve is Bessell & Murphy (2012, PASP 124, 140; doi:10.1086/664083) Table 1, their 'normalized photon-counting passbands'. The labels describe different curves, so there is no conflict."
+    },
+    "V": {
+      "DetectorType_note": "SVO's Generic/Bessell.V (captured 2012-07-06, 'Bessell V generic filter', no reference given) is a different array from NJM's (SVO/NJM ∝ λ^0.60, rms 0.015). NJM's curve is Bessell & Murphy (2012, PASP 124, 140; doi:10.1086/664083) Table 1, their 'normalized photon-counting passbands'. The labels describe different curves, so there is no conflict."
     }
   }
 }

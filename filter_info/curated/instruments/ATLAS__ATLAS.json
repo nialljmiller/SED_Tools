@@ -17,5 +17,13 @@
       "label": "ATLAS data use policy",
       "source": "ATLAS Project"
     }
-  ]
+  ],
+  "bands": {
+    "c": {
+      "DetectorType_note": "SVO's Misc/Atlas.cyan (captured 2026-07-11) is a different array from NJM's (SVO/NJM ratio 0.78-1.12), labelled energy with no stated basis. NJM's curve is Tonry et al. (2018, PASP 130, 064505) Table 1, a product of transmissions and detector QE with no wavelength factor, which integrates as photon (inferred in the phase-3 review)."
+    },
+    "o": {
+      "DetectorType_note": "SVO's Misc/Atlas.orange array is not archived here, so the curves were not compared; SVO labels it energy with no stated basis. NJM's curve is Tonry et al. (2018, PASP 130, 064505) Table 1, a product of transmissions and detector QE with no wavelength factor, which integrates as photon (inferred in the phase-3 review)."
+    }
+  }
 }
