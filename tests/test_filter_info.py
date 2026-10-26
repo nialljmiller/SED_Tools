@@ -215,3 +215,25 @@ def test_curated_acknowledgements_and_licence_come_through(tmp_path):
     assert info["acknowledgements"][0]["url"] == "https://example.org/ack"
     assert info["licence"]["redistribution"] == "attribution"
     assert "bibcode:2003AJ....126.1090C" in info["references"]
+
+
+def test_curated_star_band_fields_apply_to_every_band(tmp_path):
+    svo_dir = _archive(tmp_path)
+    curated = tmp_path / "curated"
+    curated.mkdir()
+    (curated / "Test__Cam.json").write_text(json.dumps({"bands": {
+        "*": {"references": ["bibcode:2003AJ....126.1090C"], "PhotSystem": "Test"},
+        "R": {"PhotSystem": "Test R"}}}))
+    inst = tmp_path / "data" / "filters" / "Test" / "Cam"
+    inst.mkdir(parents=True)
+    curves = []
+    for band in ("R", "I"):
+        curve = inst / f"{band}.dat"
+        curve.write_text(_curve_text(f"FilterID=Test/Cam.{band};ComponentsSource=original"))
+        curves.append(curve)
+    sources = InfoSources(tmp_path, svo_dir=svo_dir, curated_dir=curated, references={})
+    info = compose_info(sources, inst, curves, {"R": {"WavelengthPivot": 6000.0}, "I": {"WavelengthPivot": 8000.0}})
+    assert "*" not in info["bands"]
+    assert info["bands"]["R"]["PhotSystem"] == "Test R"
+    assert info["bands"]["I"]["PhotSystem"] == "Test"
+    assert "bibcode:2003AJ....126.1090C" in info["bands"]["I"]["references"]

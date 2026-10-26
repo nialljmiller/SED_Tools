@@ -255,7 +255,11 @@ def compose_info(sources, instrument_dir, curves, properties=None):
             curve_info["cleaning"] = prov_band["cleaning"]
         entry["curve"] = curve_info
         svo_curves |= header.get("ComponentsSource") == "svo"
-        entry.update((curated.get("bands") or {}).get(band, {}))
+        # Curated "*" fields apply to every band (e.g. the paper that publishes the whole set);
+        # a band's own curated fields override them.
+        curated_bands = curated.get("bands") or {}
+        entry.update(curated_bands.get("*", {}))
+        entry.update(curated_bands.get(band, {}))
         # To cite: SVO's references (papers and documentation pages), the papers among the
         # curve's sources, and curated ones. Data-file URLs stay under curve.sources only.
         cited = [r["ref"] for name in ("CalibrationReference", "ProfileReference") for r in entry.get(name, [])]
