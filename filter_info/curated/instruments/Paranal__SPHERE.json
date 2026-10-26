@@ -17,7 +17,7 @@
     "bibcode:2019A&A...631A.155B",
     "doi:10.1117/12.789786"
   ],
-  "notes": "Neutral-density filters and ZIMPOL are separate NJM instruments (SPHERE/IRDIS and SPHERE/ZIMPOL). ESO does not label which dual-band peak belongs to which channel name, so no single central wavelength is assigned to Y2 versus Y3 and the other split channels. Beuzit et al. 2019 is the SPHERE instrument paper. Dohlen et al. 2008 is the IRDIS design-and-performance paper. No magnitude system is stated on the filter page.",
+  "notes": "Neutral-density filters and ZIMPOL are separate NJM instruments (SPHERE/IRDIS and SPHERE/ZIMPOL). ESO does not label which dual-band peak belongs to which channel name, so no single central wavelength is assigned to Y2 versus Y3 and the other split channels. Beuzit et al. 2019 is the SPHERE instrument paper. Dohlen et al. 2008 is the IRDIS design-and-performance paper. No magnitude system is stated on the filter page. DetectorType photon, DetectorTypeSource inferred (2026-10-26): no owner states the integration convention for the curve file, but the IRDIS .dat files are filter transmissions ('SPHERE/IRDIS BB B_H filter transmission'), and the IRDIS detector is a 'Hawaii II RG 2048 x 1024' (https://www.eso.org/sci/facilities/paranal/instruments/sphere/overview.html), so the curves integrate as photon counters. The source is 'inferred' because this rests on the published curve content and the documented detector, not on an explicit owner statement.",
   "bands": {
     "B_Y": {
       "Description": "SPHERE/IRDIS broad-band B_Y",

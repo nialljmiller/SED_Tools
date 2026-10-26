@@ -5,7 +5,7 @@
   "references": [
     "doi:10.1046/j.1365-8711.2003.06982.x"
   ],
-  "notes": "INGRID filter-only scans; warm laboratory measurements and cold estimates remain distinct named variants. The ING filter pages (www.ing.iac.es) did not respond during verification, so no links are kept.",
+  "notes": "INGRID filter-only scans; warm laboratory measurements and cold estimates remain distinct named variants. The ING filter pages (www.ing.iac.es) did not respond during verification, so no links are kept. DetectorType photon, DetectorTypeSource inferred (2026-10-26): no owner states the integration convention for the curve file, but the ING files are filter %T scans ('Filter Brg Temp=77K', https://www.ing.iac.es/Astronomy/instruments/ingrid_new/filter/brg.cold.trans.html), and INGRID 'uses a 1k x 1k HAWAII detector' (https://www.ing.iac.es/Astronomy/instruments/ingrid_new/), so the curves integrate as photon counters. The source is 'inferred' because this rests on the published curve content and the documented detector, not on an explicit owner statement.",
   "bands": {
     "BRG_COLD": {
       "Description": "INGRID BRG_COLD near-infrared filter"

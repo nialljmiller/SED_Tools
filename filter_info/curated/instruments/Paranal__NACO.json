@@ -17,7 +17,7 @@
     "doi:10.1117/12.460044",
     "doi:10.1117/12.459332"
   ],
-  "notes": "The ESO table is headed Filter Name, Line, Central Wavelength (μm), Width (μm). Bands that already carry an SVO record in info.json are not repeated here. The page does not state a magnitude system for these filters. Lenzen et al. 2003 is the CONICA on-sky paper; Rousset et al. 2003 is the NAOS paper. NACO is decommissioned.",
+  "notes": "The ESO table is headed Filter Name, Line, Central Wavelength (μm), Width (μm). Bands that already carry an SVO record in info.json are not repeated here. The page does not state a magnitude system for these filters. Lenzen et al. 2003 is the CONICA on-sky paper; Rousset et al. 2003 is the NAOS paper. NACO is decommissioned. DetectorType photon, DetectorTypeSource inferred (2026-10-26): no owner states the integration convention for the curve file, but eSO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis. The source is 'inferred' because this rests on the published curve content and the documented detector, not on an explicit owner statement.",
   "bands": {
     "IB_2p03": {
       "Description": "NACO IB_2.03",

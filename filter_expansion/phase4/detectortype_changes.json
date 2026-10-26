@@ -1,0 +1,976 @@
+{
+  "date": "2026-10-26",
+  "evidence": "phase4/reports/B-detectortype.md (request cf1ebced)",
+  "archive": "source_evidence/filters/2026-10-26-detectortype",
+  "curated_notes_updated": [
+    "filter_info/curated/instruments/Paranal__NACO.json",
+    "filter_info/curated/instruments/Paranal__HAWKI.json",
+    "filter_info/curated/instruments/Paranal__SPHERE.json",
+    "filter_info/curated/instruments/IRTF__NSFCam.json",
+    "filter_info/curated/instruments/WHT__INGRID.json",
+    "filter_info/curated/instruments/Gemini__NIFS.json",
+    "filter_info/curated/instruments/Liverpool__IOO.json",
+    "filter_info/curated/instruments/2MASS__2MASS.json"
+  ],
+  "changes": [
+    {
+      "path": "data/filters/Paranal/NACO/H_CONICA.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/H_CONICA.dat",
+      "raw_sha256": "94770ae72d2ca9e53f44e4547b4af9664f9240b7ca087a7a153b82637fa98578",
+      "curated_sha256": "ce30e47b7d1176893b3b3fc48ac2b6027a65276c1424e46bd957f37c9777f297",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: ESO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis."
+    },
+    {
+      "path": "data/filters/Paranal/NACO/IB_2p00.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/IB_2p00.dat",
+      "raw_sha256": "a55b9e947ced615cd86369b00430033994de2f602298401ada21d02a4119f1bb",
+      "curated_sha256": "88497ea0b677a68b35acaca0c4127db618f07f65537f6c6ee3cea42b2c63330d",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: ESO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis."
+    },
+    {
+      "path": "data/filters/Paranal/NACO/IB_2p03.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/IB_2p03.dat",
+      "raw_sha256": "f8fc347f6ae4a4d7ba4be8c5c0771aebf4e2a3facff0b9ccc87aedfd271994e5",
+      "curated_sha256": "4b5eb84df7871cb43c3a2b53bdb28a3088af4f4b5f85745f9f90d3fe46165209",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: ESO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis."
+    },
+    {
+      "path": "data/filters/Paranal/NACO/IB_2p06.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/IB_2p06.dat",
+      "raw_sha256": "5243629ff9356a03b9156f8b73dc4d6447f29c43db808d45b0bbb5926dbc84d1",
+      "curated_sha256": "62fad4c90ef8ec9013892b44f5e14e3b9e0515bc21930ad956b4ad40fa60410e",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: ESO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis."
+    },
+    {
+      "path": "data/filters/Paranal/NACO/IB_2p09.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/IB_2p09.dat",
+      "raw_sha256": "d8f39a187220f9720e387e9ad71d45d1eb8181d6ad00f96c7727594fbab8d06e",
+      "curated_sha256": "c8beab4c5656296492be2c16c6e4c7769da7516afb45e87a2154337a9141aff3",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: ESO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis."
+    },
+    {
+      "path": "data/filters/Paranal/NACO/IB_2p12.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/IB_2p12.dat",
+      "raw_sha256": "3a66c582bd87341434f819c154b5c9bca6980b2b0699892e9c47515881f1967f",
+      "curated_sha256": "d119aabd2f2942571e6842b2b0abccbd1042988d6847ca2615c47bcbe7b1d4d1",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: ESO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis."
+    },
+    {
+      "path": "data/filters/Paranal/NACO/IB_2p15.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/IB_2p15.dat",
+      "raw_sha256": "21e78398a3f7c892b4ecdd393b158f03aebb42259b5014d19b50e768a2b2d36a",
+      "curated_sha256": "c000e6c81900cf47d5b6759a91bc7cacf2981fbaf50eac8439563a7051e6c6e5",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: ESO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis."
+    },
+    {
+      "path": "data/filters/Paranal/NACO/IB_2p18.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/IB_2p18.dat",
+      "raw_sha256": "513bbefdd62043c169276e6371bf59a482df435dab21825098f8abf2ab424815",
+      "curated_sha256": "23d2f8be49f143c02ed0c2278085c855b3b9309227ec16a24743385b50be426b",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: ESO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis."
+    },
+    {
+      "path": "data/filters/Paranal/NACO/IB_2p21.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/IB_2p21.dat",
+      "raw_sha256": "9c7af9025b53a30278dc10fd913a1c2f3a953d31f93acf57b272d963e4b4508b",
+      "curated_sha256": "d4bea57e05bdaa27fad7cb4cb16e55834ac8337bbe376b3e0adedd62aa2536d9",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: ESO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis."
+    },
+    {
+      "path": "data/filters/Paranal/NACO/IB_2p24.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/IB_2p24.dat",
+      "raw_sha256": "3eaecf1ec3a53f28d9a06548d55cadbf17d06abc31003b5856d579a8695ff51f",
+      "curated_sha256": "504bdc0d7b488e32fc34e219eab5ee4ae576ee8e6fc023c8d92fc6185db915ce",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: ESO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis."
+    },
+    {
+      "path": "data/filters/Paranal/NACO/IB_2p27.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/IB_2p27.dat",
+      "raw_sha256": "17c5c115cf2d1a4c9ba3281a586f6ef288f865c1534f007b6e04e87dec60bfdd",
+      "curated_sha256": "894a4b4e602a88eeb9775fc20d8f8817b9df9943c3ea374e0fec4efd12374aa9",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: ESO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis."
+    },
+    {
+      "path": "data/filters/Paranal/NACO/IB_2p30.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/IB_2p30.dat",
+      "raw_sha256": "bc6ca755bf5d3a76b3138bb09071e74e1e8887d396e2b8989fee9490e3eb1612",
+      "curated_sha256": "5866f1a04633fd065a617d98f2dfce6f21c4d78b52c13aef8996149a1be07c5d",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: ESO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis."
+    },
+    {
+      "path": "data/filters/Paranal/NACO/IB_2p33.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/IB_2p33.dat",
+      "raw_sha256": "15ae0a915d4134b0168c622cbbd22b2d2e3c51f9a3dce8b13750eb885af78d4d",
+      "curated_sha256": "ac1d48f19c9deaf4e5d9996b8c9568c61642b25c3b98fd91a0ecd5a7be7318e6",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: ESO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis."
+    },
+    {
+      "path": "data/filters/Paranal/NACO/IB_2p36.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/IB_2p36.dat",
+      "raw_sha256": "5079b0b6154b5a71a461128c3e266e22b27877f47449b3634467f3f5f61607b7",
+      "curated_sha256": "37cdd5081fb6cabe7991f8bf8a33c8aa55a03d95ff33a2d3036516ccd95de2fb",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: ESO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis."
+    },
+    {
+      "path": "data/filters/Paranal/NACO/IB_2p39.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/IB_2p39.dat",
+      "raw_sha256": "0edf6d10347c68ecc7b4bbdb2f0bca308cefa74a5f88576e77cd7eafee644a79",
+      "curated_sha256": "04468120c24523e5db3594628739e9fd0fe9a8b9bd541d4b22fa15bf42aeff24",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: ESO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis."
+    },
+    {
+      "path": "data/filters/Paranal/NACO/IB_2p42.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/IB_2p42.dat",
+      "raw_sha256": "0bb9eb74b08858199f05386bffd11a087110d8f0c8a26b4feb472b90b93568d1",
+      "curated_sha256": "0d59e9e8cfa0ca92ee9d9d1073a375913749322b5a8e5bf0de287e24ca68cd4e",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: ESO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis."
+    },
+    {
+      "path": "data/filters/Paranal/NACO/IB_2p45.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/IB_2p45.dat",
+      "raw_sha256": "3b6d5f64bd5e9ea37d057030ef36063649540044da5361cff926c5d67d8a3d83",
+      "curated_sha256": "b1daf1bdfecf427e9241324986f82e224e7d543e19fff8a3329d074c5a7dba61",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: ESO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis."
+    },
+    {
+      "path": "data/filters/Paranal/NACO/IB_2p48.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/IB_2p48.dat",
+      "raw_sha256": "2bc50c07da6a1cc022fdc0bf5c0a5cff71883e7f83b4595ad0f14012f06d0c2f",
+      "curated_sha256": "28e92ea690887e51858a67bbc73389b623398fa4f4f42346612c3385019ebfd5",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: ESO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis."
+    },
+    {
+      "path": "data/filters/Paranal/NACO/J_CONICA.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/J_CONICA.dat",
+      "raw_sha256": "ff60d4a0409fde816f086d7319a7d6e3db3980c6dc9bdd325dd5fdab3b1cc7ff",
+      "curated_sha256": "373c86e0133ee5becbdb0248ad39b0c76ca411f41bc402ce2052e8ddadd0d420",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: ESO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis."
+    },
+    {
+      "path": "data/filters/Paranal/NACO/Ks_CONICA.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/Ks_CONICA.dat",
+      "raw_sha256": "713d774c041c4ff0f336336f428f28c2f12bde187a92f7c74e07552a799b8754",
+      "curated_sha256": "d256cc57f7cd6e9cbab86cb30e70f4827648d4014934e27947a6da64792dc8bf",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: ESO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis."
+    },
+    {
+      "path": "data/filters/Paranal/NACO/L_prime.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/L_prime.dat",
+      "raw_sha256": "e39b2401c934c44aa89b12d03db4fc15ea3d32d5f0f908cbc9200f20662966c8",
+      "curated_sha256": "3b51cf4bd752137459b47ae1e30061d656387d3561b7d76c85efd88557da72d5",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: ESO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis."
+    },
+    {
+      "path": "data/filters/Paranal/NACO/M_prime.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/M_prime.dat",
+      "raw_sha256": "02accc336a2db50aea7801e7c7a4e86b0ed0c5d70dd8ba9f00602912b701d323",
+      "curated_sha256": "7ebf761a60db1356905b1958b5f44aaa0e40d88c31ea7ceb1230defb7fd278fa",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: ESO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis."
+    },
+    {
+      "path": "data/filters/Paranal/NACO/NB_1p04.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/NB_1p04.dat",
+      "raw_sha256": "06b377ed43680ed349d046f5385b9ec18b81a835a94ffa703d6f98c42ac59a00",
+      "curated_sha256": "c55a6e8daff31eb68baf23cf65bca229d30ff46ffcc9c364e7de0b497ce9a493",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: ESO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis."
+    },
+    {
+      "path": "data/filters/Paranal/NACO/NB_1p08.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/NB_1p08.dat",
+      "raw_sha256": "effb583d02e5b9a45b2bff4087673a766c7c7a8cfd20d5d532c9d8b05b9ad245",
+      "curated_sha256": "e5be6cd18ac4d7146ec03f499a59a663defbabfa9a123f412f9fa46e994916c3",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: ESO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis."
+    },
+    {
+      "path": "data/filters/Paranal/NACO/NB_1p09.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/NB_1p09.dat",
+      "raw_sha256": "99a260a8a7dbf72d5a5fd2efc5c4413b680e597dec43bff5c95036929ceb64e5",
+      "curated_sha256": "531c235a2523ec77bd916f8ff8c761c39d1323896f451103bfabc642f423b798",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: ESO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis."
+    },
+    {
+      "path": "data/filters/Paranal/NACO/NB_1p24.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/NB_1p24.dat",
+      "raw_sha256": "d2d78ff0474dbebcc6e11fc070d639f82312cbfe1d7f1186e2c43bc53649d3f0",
+      "curated_sha256": "86bced332335803c702be00d32115290a3d280b7f580d2e1ccd5cf67b3d819a9",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: ESO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis."
+    },
+    {
+      "path": "data/filters/Paranal/NACO/NB_1p26.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/NB_1p26.dat",
+      "raw_sha256": "226eef55e10bd08d3a3d77ef3e4a7b03dde1d21ab287866150c6995984da83f2",
+      "curated_sha256": "168bc8d7afb067ad6c12f4e53b2c060f021f66cbcaab74f14723c13f796684b3",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: ESO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis."
+    },
+    {
+      "path": "data/filters/Paranal/NACO/NB_1p28.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/NB_1p28.dat",
+      "raw_sha256": "c70f96ea400674ac9dbdb5e01a2f2c853db471c95ec4610300150396718ce9ef",
+      "curated_sha256": "a6ff1949dd4e832e9a84d2e637f8481d7f0d44d63dcc3c34d87dc877d5986187",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: ESO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis."
+    },
+    {
+      "path": "data/filters/Paranal/NACO/NB_1p64.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/NB_1p64.dat",
+      "raw_sha256": "d12f4b49e5a89e4d05f4719647be0b7ba69aa95223db2273b4d23a503b9d4514",
+      "curated_sha256": "c326795e0eb7606514d73d5b73e7d8ec98404c914f275e4a1b615e91f6d2b69a",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: ESO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis."
+    },
+    {
+      "path": "data/filters/Paranal/NACO/NB_1p75.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/NB_1p75.dat",
+      "raw_sha256": "8c9b8465f54f606ae9bae4e08fc6bf7edb04bf36a1f3f4febd7eddf9fcfcfebc",
+      "curated_sha256": "df52f2fbc5ad5a5f92e869b082511c30170253f444d4b386d6fd10f03f43c525",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: ESO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis."
+    },
+    {
+      "path": "data/filters/Paranal/NACO/NB_2p12.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/NB_2p12.dat",
+      "raw_sha256": "6fb27780569bf6238690ce4b457f6dec9fb5a28924a09f2c48def46a723c607b",
+      "curated_sha256": "790e8c5c21f74cb43538cf9128b42f657fbece7deb15022c9e3dd8104b889c5c",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: ESO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis."
+    },
+    {
+      "path": "data/filters/Paranal/NACO/NB_2p17.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/NB_2p17.dat",
+      "raw_sha256": "ce93768b08834394a9b8f80501dc509f66ae8d3a4698d2e4b6a7e29816f4dac9",
+      "curated_sha256": "9eea03bb9172a52a503e5d3d242d8f72e87e6fd58a700b2c389851666745e15a",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: ESO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis."
+    },
+    {
+      "path": "data/filters/Paranal/NACO/NB_3p74.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/NB_3p74.dat",
+      "raw_sha256": "d1cced160f0e21831945b2458ba58cbe596173aeb7aaf7945a7b99abf368e952",
+      "curated_sha256": "061ead4d6b1c11e0f2f8daa8962fd4ebbf70ab1826493d72917415a6db83fba2",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: ESO publishes filter-only transmissions with no QE or wavelength factor (NACO manual VLT-MAN-ESO-14200-2761 §8), and CONICA's InSb Aladdin array counts photons (manual Table 5-1), so the curves integrate as photon counters. SVO's energy label sits on arrays identical to these (14 bands compared, ratio 1) and gives no basis."
+    },
+    {
+      "path": "data/filters/Paranal/NACO/manifest.json",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/NACO/manifest.json",
+      "raw_sha256": "00fc890fcebbe77417f3dbfc57a9b2c012e726beded37222316f4cd05ea537fc",
+      "curated_sha256": "a185c960155fd166e6fe53385918d22339528b8383fcc3071b189d11fba00c0a",
+      "operation": "manifest.json: detector_type_sources assumed -> inferred for 33 bands; nothing else changed"
+    },
+    {
+      "path": "data/filters/Paranal/HAWKI/BrGamma.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/HAWKI/BrGamma.dat",
+      "raw_sha256": "24e3aad035b9b6d1a93620d1765a96fb7800bc9c12d8dce1f6fdda96bfddff4a",
+      "curated_sha256": "948a4a9f1b979b20af0ab7c2255703927ec7037e6c23057ade6eac172c8b45e4",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The ESO .dat files are filter curves only ('BrGamma filter curve @ T=90K', Wavelength (nm), T (%)), and HAWK-I's detectors are 'a mosaic of four Hawaii 2RG 2048 * 2048 pixels detectors' (https://www.eso.org/sci/facilities/paranal/instruments/hawki/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/HAWKI/CH4.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/HAWKI/CH4.dat",
+      "raw_sha256": "4c1fc1deb0a17ee40f8c155683d5efe8c030432655fc9073f5a25fb8b847cb7e",
+      "curated_sha256": "d1ee380004b0e318f57f1029535bf19c8f4200988575eab509c9bf212cceb0c6",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The ESO .dat files are filter curves only ('BrGamma filter curve @ T=90K', Wavelength (nm), T (%)), and HAWK-I's detectors are 'a mosaic of four Hawaii 2RG 2048 * 2048 pixels detectors' (https://www.eso.org/sci/facilities/paranal/instruments/hawki/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/HAWKI/H.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/HAWKI/H.dat",
+      "raw_sha256": "8f64c73a628f09177124a15b20c2376678d1703a11e0249174c6630aa42184cd",
+      "curated_sha256": "aa8ecae39ed917f2e4d34a21ef534063d849718533ff13beed6173af9db4e039",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The ESO .dat files are filter curves only ('BrGamma filter curve @ T=90K', Wavelength (nm), T (%)), and HAWK-I's detectors are 'a mosaic of four Hawaii 2RG 2048 * 2048 pixels detectors' (https://www.eso.org/sci/facilities/paranal/instruments/hawki/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/HAWKI/H2.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/HAWKI/H2.dat",
+      "raw_sha256": "9050f1b78cf5e2b8738df9c7e85c788919ef84f85b3c6bb14f206d8195f50f50",
+      "curated_sha256": "d211cfbc9b49a431e5fc045172f3c63d5f265b00cc0636703a776dd55db415d0",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The ESO .dat files are filter curves only ('BrGamma filter curve @ T=90K', Wavelength (nm), T (%)), and HAWK-I's detectors are 'a mosaic of four Hawaii 2RG 2048 * 2048 pixels detectors' (https://www.eso.org/sci/facilities/paranal/instruments/hawki/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/HAWKI/J.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/HAWKI/J.dat",
+      "raw_sha256": "b69b3184ec773a9843a403c142a900d64e51d70dc24bad1a9f608c0d05a72da4",
+      "curated_sha256": "991b8922ff07704ecebda99d6eccde51185ba609e114af4073a3bec1516d4a9f",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The ESO .dat files are filter curves only ('BrGamma filter curve @ T=90K', Wavelength (nm), T (%)), and HAWK-I's detectors are 'a mosaic of four Hawaii 2RG 2048 * 2048 pixels detectors' (https://www.eso.org/sci/facilities/paranal/instruments/hawki/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/HAWKI/Knew.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/HAWKI/Knew.dat",
+      "raw_sha256": "14fd9e3c44dd58a86614d3dc04e8ac4f25b7db3d1b5b19d007cd157c3816f275",
+      "curated_sha256": "aad76cca6dffcf0e722bb29c70cde08c211d6dd156c1626dbae60b36484525a3",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The ESO .dat files are filter curves only ('BrGamma filter curve @ T=90K', Wavelength (nm), T (%)), and HAWK-I's detectors are 'a mosaic of four Hawaii 2RG 2048 * 2048 pixels detectors' (https://www.eso.org/sci/facilities/paranal/instruments/hawki/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/HAWKI/Kold.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/HAWKI/Kold.dat",
+      "raw_sha256": "b19eb4bbb137d807f11c24959364a8482ddd8d5080a256b6f1f9c43b3131152c",
+      "curated_sha256": "1fc7d0370e4861a0203ff854ac32c1f1bb0565f660f6a0a14726cf5a581f257b",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The ESO .dat files are filter curves only ('BrGamma filter curve @ T=90K', Wavelength (nm), T (%)), and HAWK-I's detectors are 'a mosaic of four Hawaii 2RG 2048 * 2048 pixels detectors' (https://www.eso.org/sci/facilities/paranal/instruments/hawki/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/HAWKI/NB1060.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/HAWKI/NB1060.dat",
+      "raw_sha256": "611e1f3ce32bed506d745d4979476d1959c1406306878742cbdc13b3b4caf01c",
+      "curated_sha256": "1ef5d61a1a2def7f66a933cce9a7f30b060c499ce03e415b469022282db82c89",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The ESO .dat files are filter curves only ('BrGamma filter curve @ T=90K', Wavelength (nm), T (%)), and HAWK-I's detectors are 'a mosaic of four Hawaii 2RG 2048 * 2048 pixels detectors' (https://www.eso.org/sci/facilities/paranal/instruments/hawki/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/HAWKI/NB1190.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/HAWKI/NB1190.dat",
+      "raw_sha256": "970e75010989455e1a1934de322eaef1b9dd825825a2c43df0fdfaf6448d4cba",
+      "curated_sha256": "2e3c99e54ed87cba5c042d118363894ea61d9181602c56aba5977f205f476412",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The ESO .dat files are filter curves only ('BrGamma filter curve @ T=90K', Wavelength (nm), T (%)), and HAWK-I's detectors are 'a mosaic of four Hawaii 2RG 2048 * 2048 pixels detectors' (https://www.eso.org/sci/facilities/paranal/instruments/hawki/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/HAWKI/NB2090.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/HAWKI/NB2090.dat",
+      "raw_sha256": "9e4f2d5f0d8d54b470dc09aaae4157b6ba5f468bf93c8e398221d7647906d7e7",
+      "curated_sha256": "05abfa9cfd7e8bd1113f1bccf0901f0657f887185fc9623d6cabbba592983bf3",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The ESO .dat files are filter curves only ('BrGamma filter curve @ T=90K', Wavelength (nm), T (%)), and HAWK-I's detectors are 'a mosaic of four Hawaii 2RG 2048 * 2048 pixels detectors' (https://www.eso.org/sci/facilities/paranal/instruments/hawki/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/HAWKI/Y.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/HAWKI/Y.dat",
+      "raw_sha256": "fe77b04100dfe959d60d597fc5fdab9125bc30a37c26dda379557c72b314a552",
+      "curated_sha256": "d01b1a7e7a92783755994862b94d3faaeadfd98e4bd543dfc4ce71f33de74cf0",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The ESO .dat files are filter curves only ('BrGamma filter curve @ T=90K', Wavelength (nm), T (%)), and HAWK-I's detectors are 'a mosaic of four Hawaii 2RG 2048 * 2048 pixels detectors' (https://www.eso.org/sci/facilities/paranal/instruments/hawki/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/HAWKI/manifest.json",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/HAWKI/manifest.json",
+      "raw_sha256": "49d7bdfa0f657d43583445a8a51af70685a35e51cdf34986c82e0c709e04d1bb",
+      "curated_sha256": "ac0aca6a074ba44c01088eb21b808ea4f675f81dd92b5ec4f9ad063af10c1540",
+      "operation": "manifest.json: detector_type_sources assumed -> inferred for 11 bands; nothing else changed"
+    },
+    {
+      "path": "data/filters/Paranal/SPHERE/B_H.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/SPHERE/B_H.dat",
+      "raw_sha256": "2da5fd7f3fbfeebf86fc7e03210a65f8dd16c345fce736323357f6f70031c859",
+      "curated_sha256": "9bae09f531e53e17a094112abda3bf8e37253af1b76db25a272afd7bfa1306e3",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The IRDIS .dat files are filter transmissions ('SPHERE/IRDIS BB B_H filter transmission'), and the IRDIS detector is a 'Hawaii II RG 2048 x 1024' (https://www.eso.org/sci/facilities/paranal/instruments/sphere/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/SPHERE/B_J.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/SPHERE/B_J.dat",
+      "raw_sha256": "b86f8a6c31b53ea53e4c9144fe52d640c66f6c33624242309d9135ede31813c9",
+      "curated_sha256": "62802bf5d795d8f286406304dc93ea5f70b0cabf715839c659b1df84331f1d25",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The IRDIS .dat files are filter transmissions ('SPHERE/IRDIS BB B_H filter transmission'), and the IRDIS detector is a 'Hawaii II RG 2048 x 1024' (https://www.eso.org/sci/facilities/paranal/instruments/sphere/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/SPHERE/B_Ks.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/SPHERE/B_Ks.dat",
+      "raw_sha256": "b687406c6020b3e2a6632bbf0fe933e68f1776a5e985a014d3b1567e86ef13cb",
+      "curated_sha256": "a43b4a8c5a0dbe4d7eec5985e4a98c23ba74b8126b198b061fc8e1c45085c649",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The IRDIS .dat files are filter transmissions ('SPHERE/IRDIS BB B_H filter transmission'), and the IRDIS detector is a 'Hawaii II RG 2048 x 1024' (https://www.eso.org/sci/facilities/paranal/instruments/sphere/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/SPHERE/B_Y.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/SPHERE/B_Y.dat",
+      "raw_sha256": "3be72de4f1802dba8945b3e8e80c7ddc420d267fad7b069a352e677ae5e00539",
+      "curated_sha256": "845d1013cce988a1c26d6816038bea8cf3bc4f4de302a0852dd43dc81f47f253",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The IRDIS .dat files are filter transmissions ('SPHERE/IRDIS BB B_H filter transmission'), and the IRDIS detector is a 'Hawaii II RG 2048 x 1024' (https://www.eso.org/sci/facilities/paranal/instruments/sphere/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/SPHERE/D_H23_H2.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/SPHERE/D_H23_H2.dat",
+      "raw_sha256": "1d15768ef23e0b7d10f8cd8f82a4f4a0757849d98e7d53684fbef1327774b6d0",
+      "curated_sha256": "2b9f8cdf9750e434821e1dc59536e4ce92b7144b7af43190bd9e395409b5ae83",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The IRDIS .dat files are filter transmissions ('SPHERE/IRDIS BB B_H filter transmission'), and the IRDIS detector is a 'Hawaii II RG 2048 x 1024' (https://www.eso.org/sci/facilities/paranal/instruments/sphere/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/SPHERE/D_H23_H3.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/SPHERE/D_H23_H3.dat",
+      "raw_sha256": "90addc2266b28f75fd0f27889802c5e190eb74f075c067fc74ec826a2149748c",
+      "curated_sha256": "deb38a2014f645f4462096af5d9559707e6a277b8fccaa8f7f0357e43b363a75",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The IRDIS .dat files are filter transmissions ('SPHERE/IRDIS BB B_H filter transmission'), and the IRDIS detector is a 'Hawaii II RG 2048 x 1024' (https://www.eso.org/sci/facilities/paranal/instruments/sphere/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/SPHERE/D_H34_H3.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/SPHERE/D_H34_H3.dat",
+      "raw_sha256": "da053c41b8a8ea38068edce33065b0e5febb9ae52a8f71d2a3c9b21a487a5061",
+      "curated_sha256": "91a00c4add165c5937345437a9f80a87c93dc84b41c39eab44072102ff7409a0",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The IRDIS .dat files are filter transmissions ('SPHERE/IRDIS BB B_H filter transmission'), and the IRDIS detector is a 'Hawaii II RG 2048 x 1024' (https://www.eso.org/sci/facilities/paranal/instruments/sphere/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/SPHERE/D_H34_H4.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/SPHERE/D_H34_H4.dat",
+      "raw_sha256": "80d7dffb22459f7a8a1dceba55cf708660c62ba30630dfd755a65bfab6708fdb",
+      "curated_sha256": "b8f2a705cfeaa276a4c3c2adf2e2ef5a1be1e09ce1005b147c1e332f5dda2783",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The IRDIS .dat files are filter transmissions ('SPHERE/IRDIS BB B_H filter transmission'), and the IRDIS detector is a 'Hawaii II RG 2048 x 1024' (https://www.eso.org/sci/facilities/paranal/instruments/sphere/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/SPHERE/D_J23_J2.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/SPHERE/D_J23_J2.dat",
+      "raw_sha256": "991dad40859873fd5d7d2276adb7b062256d8426828cfd8a49f4caef89ca8308",
+      "curated_sha256": "c220d96886ef733442d2ee2f891b8d6fbbc3c41ad51397d8eace155277f8835b",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The IRDIS .dat files are filter transmissions ('SPHERE/IRDIS BB B_H filter transmission'), and the IRDIS detector is a 'Hawaii II RG 2048 x 1024' (https://www.eso.org/sci/facilities/paranal/instruments/sphere/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/SPHERE/D_J23_J3.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/SPHERE/D_J23_J3.dat",
+      "raw_sha256": "a741aac66bad8cd9c7cf707ec9d4215f8ec3b437656362768bd40e0ba76c5fb8",
+      "curated_sha256": "2f5d002557e5aedc1a1cdd5c01b9eda57f2daad64012612ab4b251d3d69c7077",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The IRDIS .dat files are filter transmissions ('SPHERE/IRDIS BB B_H filter transmission'), and the IRDIS detector is a 'Hawaii II RG 2048 x 1024' (https://www.eso.org/sci/facilities/paranal/instruments/sphere/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/SPHERE/D_K12_K1.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/SPHERE/D_K12_K1.dat",
+      "raw_sha256": "62c1153337b2fa3ef4442334fb3728e66ad050427b0b85e9f9fdbb6e566e9230",
+      "curated_sha256": "d4c45e6647ddbdda2c3709715c9f1158e1bbe8bedb8d369db21b384c113d87ce",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The IRDIS .dat files are filter transmissions ('SPHERE/IRDIS BB B_H filter transmission'), and the IRDIS detector is a 'Hawaii II RG 2048 x 1024' (https://www.eso.org/sci/facilities/paranal/instruments/sphere/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/SPHERE/D_K12_K2.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/SPHERE/D_K12_K2.dat",
+      "raw_sha256": "860bbc35b500986b12313f8622c425913da8288d19ca083cfd1dcb3416605657",
+      "curated_sha256": "377cfb6d571787663e9ee08cbdb1334586a47a441d90894db091278d166e65af",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The IRDIS .dat files are filter transmissions ('SPHERE/IRDIS BB B_H filter transmission'), and the IRDIS detector is a 'Hawaii II RG 2048 x 1024' (https://www.eso.org/sci/facilities/paranal/instruments/sphere/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/SPHERE/D_Y23_Y2.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/SPHERE/D_Y23_Y2.dat",
+      "raw_sha256": "d828d19f26fb6543d73a635a1a3955561dabaa8dce5015970ba649c16189b947",
+      "curated_sha256": "a6f0f6ec1c63da5fb19ea01890676acaeb6f7f5519fc4cf39b1ccd1b66ff8bc4",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The IRDIS .dat files are filter transmissions ('SPHERE/IRDIS BB B_H filter transmission'), and the IRDIS detector is a 'Hawaii II RG 2048 x 1024' (https://www.eso.org/sci/facilities/paranal/instruments/sphere/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/SPHERE/D_Y23_Y3.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/SPHERE/D_Y23_Y3.dat",
+      "raw_sha256": "fb5e87370157e1099fc9859f728ccaa44de549518d63de3076fb3feefda1d604",
+      "curated_sha256": "d338867ee63c77290c408cfe05fbdafe56f5a89e8fd96c926e87c877f4def3bf",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The IRDIS .dat files are filter transmissions ('SPHERE/IRDIS BB B_H filter transmission'), and the IRDIS detector is a 'Hawaii II RG 2048 x 1024' (https://www.eso.org/sci/facilities/paranal/instruments/sphere/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/SPHERE/N_BrG.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/SPHERE/N_BrG.dat",
+      "raw_sha256": "2054e791d8920715f186ea3814280dcf9fd75f91d4271607d5f516d052971a24",
+      "curated_sha256": "c8d11687c31cd7353ab1697d8573453d261b1a89b2b688ef8421fc3f5a6fe80b",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The IRDIS .dat files are filter transmissions ('SPHERE/IRDIS BB B_H filter transmission'), and the IRDIS detector is a 'Hawaii II RG 2048 x 1024' (https://www.eso.org/sci/facilities/paranal/instruments/sphere/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/SPHERE/N_CO.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/SPHERE/N_CO.dat",
+      "raw_sha256": "5e3389d822fb4b773033fcfed0e03bd6945252c09cb9ff5cb92f05a19e99e24c",
+      "curated_sha256": "1922f4360763ed6e31ca6932d5644db971e2eb3fc64c2eafbb0ed9cf594f3002",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The IRDIS .dat files are filter transmissions ('SPHERE/IRDIS BB B_H filter transmission'), and the IRDIS detector is a 'Hawaii II RG 2048 x 1024' (https://www.eso.org/sci/facilities/paranal/instruments/sphere/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/SPHERE/N_CntH.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/SPHERE/N_CntH.dat",
+      "raw_sha256": "a2670a100891a3d609bdd6f11847345f7d9c1b9ac934f37615190083dbe4b216",
+      "curated_sha256": "12c480a73da1914759bb236aebbc11d063115d8669f4c1bd3af766257ce3be27",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The IRDIS .dat files are filter transmissions ('SPHERE/IRDIS BB B_H filter transmission'), and the IRDIS detector is a 'Hawaii II RG 2048 x 1024' (https://www.eso.org/sci/facilities/paranal/instruments/sphere/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/SPHERE/N_CntJ.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/SPHERE/N_CntJ.dat",
+      "raw_sha256": "32ba0867eb441d9b00ba43cc56dbb509a78067d88b2a791a602b6d12d8f68a90",
+      "curated_sha256": "1fb955632022f1a5c8d4521babeea1e6583fed701790c8a5affa078d1ad899fb",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The IRDIS .dat files are filter transmissions ('SPHERE/IRDIS BB B_H filter transmission'), and the IRDIS detector is a 'Hawaii II RG 2048 x 1024' (https://www.eso.org/sci/facilities/paranal/instruments/sphere/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/SPHERE/N_CntK1.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/SPHERE/N_CntK1.dat",
+      "raw_sha256": "e7d393a9a323865032f55f5ce9f0e9b1bf5c94eb9fb21b13289cbac4278d800a",
+      "curated_sha256": "bc1386f6d66e9df1a51137606ce00b8d99ddf170751ce1a7e40b9072c0e8d9e2",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The IRDIS .dat files are filter transmissions ('SPHERE/IRDIS BB B_H filter transmission'), and the IRDIS detector is a 'Hawaii II RG 2048 x 1024' (https://www.eso.org/sci/facilities/paranal/instruments/sphere/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/SPHERE/N_CntK2.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/SPHERE/N_CntK2.dat",
+      "raw_sha256": "d713bf9d08ce8a8dcbf2ee16a53e83ecdd2b3ce7506aa4969e598976efa3a20d",
+      "curated_sha256": "09639b4f424174273d1416f12639f5e55d643df33d2ccf6ec2ef262e83dbb042",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The IRDIS .dat files are filter transmissions ('SPHERE/IRDIS BB B_H filter transmission'), and the IRDIS detector is a 'Hawaii II RG 2048 x 1024' (https://www.eso.org/sci/facilities/paranal/instruments/sphere/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/SPHERE/N_FeII.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/SPHERE/N_FeII.dat",
+      "raw_sha256": "f00873c0d885fdc34e716aea8ea43466c0005092e5d149058ef5990d57ab6b7b",
+      "curated_sha256": "d39e7213e0ffeb76f7c59cdc1be403468641656802728aea5aca86783112f699",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The IRDIS .dat files are filter transmissions ('SPHERE/IRDIS BB B_H filter transmission'), and the IRDIS detector is a 'Hawaii II RG 2048 x 1024' (https://www.eso.org/sci/facilities/paranal/instruments/sphere/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/SPHERE/N_H2.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/SPHERE/N_H2.dat",
+      "raw_sha256": "4678492eb0f78a48455fa12812aed7a5fc3536fe20e86eac1cc6d83a5379aa60",
+      "curated_sha256": "c38515e4f4068abb0e90d08b9035a9be2a78f5ad2f92028f28c61e469cf7cdda",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The IRDIS .dat files are filter transmissions ('SPHERE/IRDIS BB B_H filter transmission'), and the IRDIS detector is a 'Hawaii II RG 2048 x 1024' (https://www.eso.org/sci/facilities/paranal/instruments/sphere/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/SPHERE/N_HeI.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/SPHERE/N_HeI.dat",
+      "raw_sha256": "05244498e35bf59822a6ebb1fff9dec010a7d9fe72132ea5b7eec6d0a04ff4d8",
+      "curated_sha256": "560a54c583c7207364a95b0072f54007b56c0237b596e508fa4fe66b0b4833b6",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The IRDIS .dat files are filter transmissions ('SPHERE/IRDIS BB B_H filter transmission'), and the IRDIS detector is a 'Hawaii II RG 2048 x 1024' (https://www.eso.org/sci/facilities/paranal/instruments/sphere/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/SPHERE/N_PaB.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/SPHERE/N_PaB.dat",
+      "raw_sha256": "9188b7fe516e6724c7f4378b45277bd83faa180851a30c6e7a9cd9fae4f7dec0",
+      "curated_sha256": "a8d0f317194c978565281304cdf8bb5d09cb797ac387af4cd1509811ab0c5eda",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The IRDIS .dat files are filter transmissions ('SPHERE/IRDIS BB B_H filter transmission'), and the IRDIS detector is a 'Hawaii II RG 2048 x 1024' (https://www.eso.org/sci/facilities/paranal/instruments/sphere/overview.html), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Paranal/SPHERE/manifest.json",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Paranal/SPHERE/manifest.json",
+      "raw_sha256": "b4944016e66c51977b8a32be052535a4f7ff63e1088a1630d7968c6dcb2a0641",
+      "curated_sha256": "b31f2a2562c4d5a712167d903c9f9e0ffc0a0a8b185053ad2dab66a38c2d6815",
+      "operation": "manifest.json: detector_type_sources assumed -> inferred for 24 bands; nothing else changed"
+    },
+    {
+      "path": "data/filters/IRTF/NSFCam/BRG.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/IRTF/NSFCam/BRG.dat",
+      "raw_sha256": "434229c75d2d5b6c82a7602a7c8e59700c48baee08f01284f3a302974cd4c52e",
+      "curated_sha256": "afa64616ce8d57b68be4405fbcf524815c68a29a28ea2d2cae0ea8657b66055a",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The filter page gives 'absolute transmissions (on a scale of 0 to 1)' and 'only the transmission of the filter itself' (https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html), and NSFCam has 'a 256x256 InSb detector' (https://irtfweb.ifa.hawaii.edu/~nsfcam/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/IRTF/NSFCam/CO.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/IRTF/NSFCam/CO.dat",
+      "raw_sha256": "128f906d27c153fc00ed9c0e9ff40a0a3eba1cb9710d03f752ae7937b55a3823",
+      "curated_sha256": "a277ffd82aaee2e92b72e618aeece6c87f13fbaa5a4435c0dde368c1b868e875",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The filter page gives 'absolute transmissions (on a scale of 0 to 1)' and 'only the transmission of the filter itself' (https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html), and NSFCam has 'a 256x256 InSb detector' (https://irtfweb.ifa.hawaii.edu/~nsfcam/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/IRTF/NSFCam/CONT.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/IRTF/NSFCam/CONT.dat",
+      "raw_sha256": "528829ba5fe96425e8e8b8218ed6ed4ac8e0259d49bccf68ea94de58d6704c1a",
+      "curated_sha256": "612c34c0f41357daaf4b1b680181275e560c1cc1179eacb8cd786670f43ef7e1",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The filter page gives 'absolute transmissions (on a scale of 0 to 1)' and 'only the transmission of the filter itself' (https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html), and NSFCam has 'a 256x256 InSb detector' (https://irtfweb.ifa.hawaii.edu/~nsfcam/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/IRTF/NSFCam/FE.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/IRTF/NSFCam/FE.dat",
+      "raw_sha256": "12f9637708e344335715bc51c5302fc3d9399ffc2d0a0bd22190ab2c5f19bdc2",
+      "curated_sha256": "09cf959a49848d81fa7be57a97ddded0ac48dda4e9e1f5b824733c22b6e9c392",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The filter page gives 'absolute transmissions (on a scale of 0 to 1)' and 'only the transmission of the filter itself' (https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html), and NSFCam has 'a 256x256 InSb detector' (https://irtfweb.ifa.hawaii.edu/~nsfcam/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/IRTF/NSFCam/H21.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/IRTF/NSFCam/H21.dat",
+      "raw_sha256": "1cb87f2223c9f1b3eb20fed6f87f718c9da66a6258f06efbfdac13f687cde511",
+      "curated_sha256": "bb26db4c299ff695921318e5127d52949be6096308132e386c5f443c76b3d79d",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The filter page gives 'absolute transmissions (on a scale of 0 to 1)' and 'only the transmission of the filter itself' (https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html), and NSFCam has 'a 256x256 InSb detector' (https://irtfweb.ifa.hawaii.edu/~nsfcam/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/IRTF/NSFCam/H22.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/IRTF/NSFCam/H22.dat",
+      "raw_sha256": "1a1de4b59a7f15b705dea43f155a17f320b6b461d0ee72a30c943e4cc499303e",
+      "curated_sha256": "306313bed7ae49553cb64ec3e2e8660e275b0d83b39747be57224081fef85ec9",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The filter page gives 'absolute transmissions (on a scale of 0 to 1)' and 'only the transmission of the filter itself' (https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html), and NSFCam has 'a 256x256 InSb detector' (https://irtfweb.ifa.hawaii.edu/~nsfcam/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/IRTF/NSFCam/HEI.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/IRTF/NSFCam/HEI.dat",
+      "raw_sha256": "9ba95df867f10df83ccb02b554b7ffbc9174e7c1aac12850cabfda675a917ed5",
+      "curated_sha256": "47739bb0dfaf64b68b0334763d5d0fd1add3efbd5041b85722aed4d15a436c12",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The filter page gives 'absolute transmissions (on a scale of 0 to 1)' and 'only the transmission of the filter itself' (https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html), and NSFCam has 'a 256x256 InSb detector' (https://irtfweb.ifa.hawaii.edu/~nsfcam/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/IRTF/NSFCam/HMK.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/IRTF/NSFCam/HMK.dat",
+      "raw_sha256": "b5de1132803f86968116b312e86837e4b1e603527777bde9095d81d05cae8451",
+      "curated_sha256": "2b0e3318387c03956cac258fa3c755ac1e860d7e5dc735b5f3be933edffb857d",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The filter page gives 'absolute transmissions (on a scale of 0 to 1)' and 'only the transmission of the filter itself' (https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html), and NSFCam has 'a 256x256 InSb detector' (https://irtfweb.ifa.hawaii.edu/~nsfcam/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/IRTF/NSFCam/J.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/IRTF/NSFCam/J.dat",
+      "raw_sha256": "b075f5ee08650883c7fd2340dba8e417452d00785e68c01ac564c060a7eff0f6",
+      "curated_sha256": "1f37cb2b7f50a5fac3f255632182969c26180fabf6af32e5b6bb54d05bb47727",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The filter page gives 'absolute transmissions (on a scale of 0 to 1)' and 'only the transmission of the filter itself' (https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html), and NSFCam has 'a 256x256 InSb detector' (https://irtfweb.ifa.hawaii.edu/~nsfcam/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/IRTF/NSFCam/JMK.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/IRTF/NSFCam/JMK.dat",
+      "raw_sha256": "8135a25c8d250d561b9057451d6f4ec299223f48092d6cc18396f2a207e18ab6",
+      "curated_sha256": "263f5d6f3e948f8056670a69ffe4dc0dd4dbfe13418985ce2484cd9d46aa4848",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The filter page gives 'absolute transmissions (on a scale of 0 to 1)' and 'only the transmission of the filter itself' (https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html), and NSFCam has 'a 256x256 InSb detector' (https://irtfweb.ifa.hawaii.edu/~nsfcam/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/IRTF/NSFCam/K.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/IRTF/NSFCam/K.dat",
+      "raw_sha256": "8f609e6b804538bc2d1675d7bc3d5ca8fd18595b4b8ead6a7d829c6e6ae81d35",
+      "curated_sha256": "e07f68bc954f7e6d541f99b8087839687cdd2c6700f7bfd6e81231b426740209",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The filter page gives 'absolute transmissions (on a scale of 0 to 1)' and 'only the transmission of the filter itself' (https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html), and NSFCam has 'a 256x256 InSb detector' (https://irtfweb.ifa.hawaii.edu/~nsfcam/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/IRTF/NSFCam/KMK.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/IRTF/NSFCam/KMK.dat",
+      "raw_sha256": "64f06fd315eded2d1ab74da7af29706478784224d80e9b792328fb294891bf39",
+      "curated_sha256": "581503b997f90f9d6680ee36706b87bdd786fb9c6c270be43978db1c63955854",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The filter page gives 'absolute transmissions (on a scale of 0 to 1)' and 'only the transmission of the filter itself' (https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html), and NSFCam has 'a 256x256 InSb detector' (https://irtfweb.ifa.hawaii.edu/~nsfcam/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/IRTF/NSFCam/KP.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/IRTF/NSFCam/KP.dat",
+      "raw_sha256": "8eed44eb3fe9ceeb4c654dadd26e2debbb8e5473f6abc4f9984d60cccb3134fd",
+      "curated_sha256": "a9c23125336a2b35ac16acb8893134949a75e0e2caeaf8daf3cf2d01ef1cb901",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The filter page gives 'absolute transmissions (on a scale of 0 to 1)' and 'only the transmission of the filter itself' (https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html), and NSFCam has 'a 256x256 InSb detector' (https://irtfweb.ifa.hawaii.edu/~nsfcam/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/IRTF/NSFCam/KPMK.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/IRTF/NSFCam/KPMK.dat",
+      "raw_sha256": "4d33deeb9da856b9f46d0f8d2a290c5e7ef7e2b92c54e594c1e8d93a0f39b40a",
+      "curated_sha256": "277f8b9221fdb555923aa6f1c65e679437e4905af2628d106c925f8f293c24b8",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The filter page gives 'absolute transmissions (on a scale of 0 to 1)' and 'only the transmission of the filter itself' (https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html), and NSFCam has 'a 256x256 InSb detector' (https://irtfweb.ifa.hawaii.edu/~nsfcam/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/IRTF/NSFCam/KS.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/IRTF/NSFCam/KS.dat",
+      "raw_sha256": "a29ecc1482f83631b3e9ac7640a80f2a5a9353d1353f45829e968fe377754246",
+      "curated_sha256": "5f65deceac2e5ad1fa4aa717e654e2b4838fa4493a442fab4f4b33a837814325",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The filter page gives 'absolute transmissions (on a scale of 0 to 1)' and 'only the transmission of the filter itself' (https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html), and NSFCam has 'a 256x256 InSb detector' (https://irtfweb.ifa.hawaii.edu/~nsfcam/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/IRTF/NSFCam/KSMK.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/IRTF/NSFCam/KSMK.dat",
+      "raw_sha256": "929616969e4b4e9f273a5aef08225169af2cc847a1446b5b0ef5f90bcd6cb3c9",
+      "curated_sha256": "458730e00a5545b2c15122613ba583eff8b7f9653dba26035a9816bcfcff32ce",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The filter page gives 'absolute transmissions (on a scale of 0 to 1)' and 'only the transmission of the filter itself' (https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html), and NSFCam has 'a 256x256 InSb detector' (https://irtfweb.ifa.hawaii.edu/~nsfcam/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/IRTF/NSFCam/L.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/IRTF/NSFCam/L.dat",
+      "raw_sha256": "a660c42d8a32534bfc8d89957ae8d106a104950a89385a01136e5f89562402cb",
+      "curated_sha256": "10cf64be30f8f2338ab6b468f2b922e520983b31aa9002865468230f3579ad2e",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The filter page gives 'absolute transmissions (on a scale of 0 to 1)' and 'only the transmission of the filter itself' (https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html), and NSFCam has 'a 256x256 InSb detector' (https://irtfweb.ifa.hawaii.edu/~nsfcam/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/IRTF/NSFCam/LP.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/IRTF/NSFCam/LP.dat",
+      "raw_sha256": "5430a9c6e66dd737355d01e1e3115051c5d11fa15e616e6f24bff220b08f2e12",
+      "curated_sha256": "a8ecb1b2e3f15040a85199cfbce9cf659af916865e669d4a093dede3c6bd32b4",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The filter page gives 'absolute transmissions (on a scale of 0 to 1)' and 'only the transmission of the filter itself' (https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html), and NSFCam has 'a 256x256 InSb detector' (https://irtfweb.ifa.hawaii.edu/~nsfcam/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/IRTF/NSFCam/LPMK.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/IRTF/NSFCam/LPMK.dat",
+      "raw_sha256": "42476544be4ebb3c83de3250d41c897022ce4b05cb7c12a48ec38346afe870fa",
+      "curated_sha256": "285d8a0abe1c832f431fd542257ccabafe060c63b5fe108d16b6749fed2e26bf",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The filter page gives 'absolute transmissions (on a scale of 0 to 1)' and 'only the transmission of the filter itself' (https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html), and NSFCam has 'a 256x256 InSb detector' (https://irtfweb.ifa.hawaii.edu/~nsfcam/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/IRTF/NSFCam/M.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/IRTF/NSFCam/M.dat",
+      "raw_sha256": "57a59fe751f5e98de96bbcb1145901a5dedf5f154154a9921511c322d5ce5315",
+      "curated_sha256": "ccccf1823ece48c3cd1ba8e9a91a500e1e2f3e378ddcf01cea4f69d9751675fb",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The filter page gives 'absolute transmissions (on a scale of 0 to 1)' and 'only the transmission of the filter itself' (https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html), and NSFCam has 'a 256x256 InSb detector' (https://irtfweb.ifa.hawaii.edu/~nsfcam/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/IRTF/NSFCam/MP1.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/IRTF/NSFCam/MP1.dat",
+      "raw_sha256": "ae1d6a20ff4a065e9f70bbb9b892ca5ae54d469a58450652f151b4ebd1b3323c",
+      "curated_sha256": "24e655f0e3baf52c3662422e35182ff27dd65edb05737134b4bca82f19243aa4",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The filter page gives 'absolute transmissions (on a scale of 0 to 1)' and 'only the transmission of the filter itself' (https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html), and NSFCam has 'a 256x256 InSb detector' (https://irtfweb.ifa.hawaii.edu/~nsfcam/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/IRTF/NSFCam/MPMK.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/IRTF/NSFCam/MPMK.dat",
+      "raw_sha256": "69ed734dee9c98ea16b8ac6d13181c0405ebb3dce51b6df803088987dd377788",
+      "curated_sha256": "6b54ff99fa8568bb8a477766a4a35154052950b3b2aba57871a51dc027b48255",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The filter page gives 'absolute transmissions (on a scale of 0 to 1)' and 'only the transmission of the filter itself' (https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html), and NSFCam has 'a 256x256 InSb detector' (https://irtfweb.ifa.hawaii.edu/~nsfcam/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/IRTF/NSFCam/PAB.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/IRTF/NSFCam/PAB.dat",
+      "raw_sha256": "451b80bb55bb24c18e2cfd56c3a5fcb59ded96f43fa426ce47bb266837f987d9",
+      "curated_sha256": "59fbd4c018097bfb8ba2384299e64935017e1a54d4ea74e4b2678e967b695696",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The filter page gives 'absolute transmissions (on a scale of 0 to 1)' and 'only the transmission of the filter itself' (https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html), and NSFCam has 'a 256x256 InSb detector' (https://irtfweb.ifa.hawaii.edu/~nsfcam/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/IRTF/NSFCam/PAG.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/IRTF/NSFCam/PAG.dat",
+      "raw_sha256": "01fab4d1d76cd453fc4bc60642cb71ba2e8c60df7081fca136da9d4c9f488ed7",
+      "curated_sha256": "92e865acd10729a6d91765ae44f03a553933a9c83ba00cb5703f2144e79c6af4",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The filter page gives 'absolute transmissions (on a scale of 0 to 1)' and 'only the transmission of the filter itself' (https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html), and NSFCam has 'a 256x256 InSb detector' (https://irtfweb.ifa.hawaii.edu/~nsfcam/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/IRTF/NSFCam/S17.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/IRTF/NSFCam/S17.dat",
+      "raw_sha256": "160631ee12de244b45b8687b940f2fcc1a902a3eb3d722623bea0f5093a1acf1",
+      "curated_sha256": "291ddb01c5ce83676089fb32cb5adc83a7923b1693415cd64134d5cdfc2b4f2e",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The filter page gives 'absolute transmissions (on a scale of 0 to 1)' and 'only the transmission of the filter itself' (https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html), and NSFCam has 'a 256x256 InSb detector' (https://irtfweb.ifa.hawaii.edu/~nsfcam/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/IRTF/NSFCam/S23.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/IRTF/NSFCam/S23.dat",
+      "raw_sha256": "c66ca2abbe7a262ba1749c655570220482793cacbf752a5b51b5439c85c21ea5",
+      "curated_sha256": "f1e84bc6c7dfd4232f3e1d3d061b4e9b59cb396b62f0ed63f50c249b77281c0b",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The filter page gives 'absolute transmissions (on a scale of 0 to 1)' and 'only the transmission of the filter itself' (https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html), and NSFCam has 'a 256x256 InSb detector' (https://irtfweb.ifa.hawaii.edu/~nsfcam/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/IRTF/NSFCam/manifest.json",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/IRTF/NSFCam/manifest.json",
+      "raw_sha256": "7f6955c2c2dbbc97bbeddacb0fc0b4486a70bb0e9edc76fa3bcc2f2e20d452e3",
+      "curated_sha256": "5f8ad556f57776e7ff69e9892664ea9c96e3bb7e56c8ab516ebf06f769c1c229",
+      "operation": "manifest.json: detector_type_sources assumed -> inferred for 26 bands; nothing else changed"
+    },
+    {
+      "path": "data/filters/WHT/INGRID/BRG_COLD.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/WHT/INGRID/BRG_COLD.dat",
+      "raw_sha256": "297e8bf808ae123fff5d52f87c62592f7f396109038d348454dcff12e7d6e0d7",
+      "curated_sha256": "88d1b21d171e34e60a7e5febff6521ea0c0496da56da71002733b166061e471f",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The ING files are filter %T scans ('Filter Brg Temp=77K', https://www.ing.iac.es/Astronomy/instruments/ingrid_new/filter/brg.cold.trans.html), and INGRID 'uses a 1k x 1k HAWAII detector' (https://www.ing.iac.es/Astronomy/instruments/ingrid_new/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/WHT/INGRID/BRG_WARM.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/WHT/INGRID/BRG_WARM.dat",
+      "raw_sha256": "03016cd3cb90390a493a58a4823506d2dce1a93e36359864240134425e896295",
+      "curated_sha256": "a79b55cc57d35a9311b4bba2fc90b781186bee0e07d9edec2543081518b65562",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The ING files are filter %T scans ('Filter Brg Temp=77K', https://www.ing.iac.es/Astronomy/instruments/ingrid_new/filter/brg.cold.trans.html), and INGRID 'uses a 1k x 1k HAWAII detector' (https://www.ing.iac.es/Astronomy/instruments/ingrid_new/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/WHT/INGRID/FEII_COLD.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/WHT/INGRID/FEII_COLD.dat",
+      "raw_sha256": "e666cddee2ae4be8ff8af5bfbc2653d8f343a1422c52aeb7ea01294db6c7c95d",
+      "curated_sha256": "61ae9902e99ad6cedecfe5b23e7172031630cc59683ac0c86bb5f98e300afdf1",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The ING files are filter %T scans ('Filter Brg Temp=77K', https://www.ing.iac.es/Astronomy/instruments/ingrid_new/filter/brg.cold.trans.html), and INGRID 'uses a 1k x 1k HAWAII detector' (https://www.ing.iac.es/Astronomy/instruments/ingrid_new/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/WHT/INGRID/FEII_WARM.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/WHT/INGRID/FEII_WARM.dat",
+      "raw_sha256": "37c52583d08d2d1f3a553d93eeffced10b4e8bac8326b72829c6984ee126b9af",
+      "curated_sha256": "7257b0f7f8f268f17852cab527289c1cd3b7952a22ffdc29f492556cd3935e44",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The ING files are filter %T scans ('Filter Brg Temp=77K', https://www.ing.iac.es/Astronomy/instruments/ingrid_new/filter/brg.cold.trans.html), and INGRID 'uses a 1k x 1k HAWAII detector' (https://www.ing.iac.es/Astronomy/instruments/ingrid_new/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/WHT/INGRID/H2V10_COLD.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/WHT/INGRID/H2V10_COLD.dat",
+      "raw_sha256": "25ca04442d7fce6d3801ae672b36e14ac7902c103ef052f905f5776e7a1eca73",
+      "curated_sha256": "9e4975282c637c5c2092557f4e0dd1890f6b07a7fb8004c11dc164438024a448",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The ING files are filter %T scans ('Filter Brg Temp=77K', https://www.ing.iac.es/Astronomy/instruments/ingrid_new/filter/brg.cold.trans.html), and INGRID 'uses a 1k x 1k HAWAII detector' (https://www.ing.iac.es/Astronomy/instruments/ingrid_new/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/WHT/INGRID/H2V10_WARM.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/WHT/INGRID/H2V10_WARM.dat",
+      "raw_sha256": "b720d9c01921a31e7dfd8e04e960e523fabc1b40eb57c52368cc3b2419a0bab8",
+      "curated_sha256": "cb7ce57ea6c2ce5437fefa9eee4f62ecf497f627ae10271b14894693bb8f054e",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The ING files are filter %T scans ('Filter Brg Temp=77K', https://www.ing.iac.es/Astronomy/instruments/ingrid_new/filter/brg.cold.trans.html), and INGRID 'uses a 1k x 1k HAWAII detector' (https://www.ing.iac.es/Astronomy/instruments/ingrid_new/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/WHT/INGRID/H2V21_COLD.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/WHT/INGRID/H2V21_COLD.dat",
+      "raw_sha256": "dacc677ad7e076b571f004983e58f7ac992811d5422337df4b659c1f6226f995",
+      "curated_sha256": "ecf483366454d99f041c416f4ba53e68d7481ba4b887cb05eecfbf4d1d4e7a2b",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The ING files are filter %T scans ('Filter Brg Temp=77K', https://www.ing.iac.es/Astronomy/instruments/ingrid_new/filter/brg.cold.trans.html), and INGRID 'uses a 1k x 1k HAWAII detector' (https://www.ing.iac.es/Astronomy/instruments/ingrid_new/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/WHT/INGRID/H2V21_WARM.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/WHT/INGRID/H2V21_WARM.dat",
+      "raw_sha256": "0016bf189e81316d4497a1f166302b77f9699ff05ba6ce0dfa9afd1ee4d8ebdd",
+      "curated_sha256": "87304740d0250680a19b84e97d16c0752c69e77c2b0ccdf10a71df3bf805cc1d",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The ING files are filter %T scans ('Filter Brg Temp=77K', https://www.ing.iac.es/Astronomy/instruments/ingrid_new/filter/brg.cold.trans.html), and INGRID 'uses a 1k x 1k HAWAII detector' (https://www.ing.iac.es/Astronomy/instruments/ingrid_new/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/WHT/INGRID/HCONT_COLD.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/WHT/INGRID/HCONT_COLD.dat",
+      "raw_sha256": "762d5a8a05d75b80ffb0d24ec5d87109c14a40d1aba8bdee903ecdef22c9ab1c",
+      "curated_sha256": "19d62ae70764fe4806d1fb2f330a7881615fab4a60b7dd9a09f590bd1d87e87b",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The ING files are filter %T scans ('Filter Brg Temp=77K', https://www.ing.iac.es/Astronomy/instruments/ingrid_new/filter/brg.cold.trans.html), and INGRID 'uses a 1k x 1k HAWAII detector' (https://www.ing.iac.es/Astronomy/instruments/ingrid_new/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/WHT/INGRID/HCONT_WARM.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/WHT/INGRID/HCONT_WARM.dat",
+      "raw_sha256": "eaebc4fbfbbc3721bd09dd4b896d7fe7e0b0a23bd3980c115e89adbb419512c8",
+      "curated_sha256": "fb2218e2a5c16dd212559d479fc2defb7128b5e6edc51e04ffe60be63f0b367e",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The ING files are filter %T scans ('Filter Brg Temp=77K', https://www.ing.iac.es/Astronomy/instruments/ingrid_new/filter/brg.cold.trans.html), and INGRID 'uses a 1k x 1k HAWAII detector' (https://www.ing.iac.es/Astronomy/instruments/ingrid_new/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/WHT/INGRID/H_WARM.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/WHT/INGRID/H_WARM.dat",
+      "raw_sha256": "bf23f26ad214482820c7a4b0948d291a4676581127ab1976991b9a315498a275",
+      "curated_sha256": "4b475db88f6d3dd063a77a15e71eb9fedd92b99d79ee80df0d19ceb0f8240935",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The ING files are filter %T scans ('Filter Brg Temp=77K', https://www.ing.iac.es/Astronomy/instruments/ingrid_new/filter/brg.cold.trans.html), and INGRID 'uses a 1k x 1k HAWAII detector' (https://www.ing.iac.es/Astronomy/instruments/ingrid_new/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/WHT/INGRID/JCONT_WARM.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/WHT/INGRID/JCONT_WARM.dat",
+      "raw_sha256": "d1c49dbc56e94fdce5a68c59a8e630c9d21f9d34b88232e9ddd9907cdbc3b8e1",
+      "curated_sha256": "bc3b8db48802ad4d327821e63b1aa310dabb910adc0b2b3f145bda2f22c5f917",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The ING files are filter %T scans ('Filter Brg Temp=77K', https://www.ing.iac.es/Astronomy/instruments/ingrid_new/filter/brg.cold.trans.html), and INGRID 'uses a 1k x 1k HAWAII detector' (https://www.ing.iac.es/Astronomy/instruments/ingrid_new/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/WHT/INGRID/J_WARM.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/WHT/INGRID/J_WARM.dat",
+      "raw_sha256": "6ed63a4c2ad6645d127199b0b87bef8c137df3134244eabc637694befbae6906",
+      "curated_sha256": "c34d5c43949d5921801760caf9ae20acc85d20169a4f7cdde80cfa2ee6e2d430",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The ING files are filter %T scans ('Filter Brg Temp=77K', https://www.ing.iac.es/Astronomy/instruments/ingrid_new/filter/brg.cold.trans.html), and INGRID 'uses a 1k x 1k HAWAII detector' (https://www.ing.iac.es/Astronomy/instruments/ingrid_new/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/WHT/INGRID/KCONT_COLD.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/WHT/INGRID/KCONT_COLD.dat",
+      "raw_sha256": "a59b297b5755e40e50b065b619d0333bc5f3a0339e78315c638675e70cf2bf0a",
+      "curated_sha256": "7b8c0526f16f53a992068b764e43f41730c7a2261549fedf773188a8da8b8aaf",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The ING files are filter %T scans ('Filter Brg Temp=77K', https://www.ing.iac.es/Astronomy/instruments/ingrid_new/filter/brg.cold.trans.html), and INGRID 'uses a 1k x 1k HAWAII detector' (https://www.ing.iac.es/Astronomy/instruments/ingrid_new/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/WHT/INGRID/KCONT_WARM.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/WHT/INGRID/KCONT_WARM.dat",
+      "raw_sha256": "734c3294dfd7a7fc75bd372ce256028fe491fa5ff41b2fe4cb7f72c71cade73b",
+      "curated_sha256": "e355b75cc0526b6434b078cf0e9216be1c3412aa69cea246be517775b57d9c6d",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The ING files are filter %T scans ('Filter Brg Temp=77K', https://www.ing.iac.es/Astronomy/instruments/ingrid_new/filter/brg.cold.trans.html), and INGRID 'uses a 1k x 1k HAWAII detector' (https://www.ing.iac.es/Astronomy/instruments/ingrid_new/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/WHT/INGRID/KSBARR_WARM.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/WHT/INGRID/KSBARR_WARM.dat",
+      "raw_sha256": "6f696f3327610a47a44b9ca254ed16ad93aa74cd0cefacca578be9df249c7964",
+      "curated_sha256": "dbd9006e7181f2e1145c03f6ec0faca5ca06f5a2097944b08bfcf64e16051539",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The ING files are filter %T scans ('Filter Brg Temp=77K', https://www.ing.iac.es/Astronomy/instruments/ingrid_new/filter/brg.cold.trans.html), and INGRID 'uses a 1k x 1k HAWAII detector' (https://www.ing.iac.es/Astronomy/instruments/ingrid_new/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/WHT/INGRID/KS_WARM.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/WHT/INGRID/KS_WARM.dat",
+      "raw_sha256": "8e683b8b14897487877fd89ce4ede34e67694a0243e7b90097e8048bd545f046",
+      "curated_sha256": "d4be44cc48d143ae4780981b7082d26da9be71119c5a7c2f3b6b9a190ad7de21",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The ING files are filter %T scans ('Filter Brg Temp=77K', https://www.ing.iac.es/Astronomy/instruments/ingrid_new/filter/brg.cold.trans.html), and INGRID 'uses a 1k x 1k HAWAII detector' (https://www.ing.iac.es/Astronomy/instruments/ingrid_new/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/WHT/INGRID/K_WARM.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/WHT/INGRID/K_WARM.dat",
+      "raw_sha256": "05336d752812d1923079d297d588e40cce9c53c13883df88ea44b2ff9b9bb5d4",
+      "curated_sha256": "93605cb955358a879db5c9bee564db0cc7d92bda993c81b3c3447044741d7c98",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The ING files are filter %T scans ('Filter Brg Temp=77K', https://www.ing.iac.es/Astronomy/instruments/ingrid_new/filter/brg.cold.trans.html), and INGRID 'uses a 1k x 1k HAWAII detector' (https://www.ing.iac.es/Astronomy/instruments/ingrid_new/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/WHT/INGRID/PAB_WARM.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/WHT/INGRID/PAB_WARM.dat",
+      "raw_sha256": "e8ef66bb88b93cb9816b1950296e94386db8f1841fffcb3bea8a2f81482d84de",
+      "curated_sha256": "241ed27d42f6d6400dd3b3ff5917bc56303e61448b9ff47d54611fa21e3a37c7",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The ING files are filter %T scans ('Filter Brg Temp=77K', https://www.ing.iac.es/Astronomy/instruments/ingrid_new/filter/brg.cold.trans.html), and INGRID 'uses a 1k x 1k HAWAII detector' (https://www.ing.iac.es/Astronomy/instruments/ingrid_new/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/WHT/INGRID/Z_WARM.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/WHT/INGRID/Z_WARM.dat",
+      "raw_sha256": "39aa05e094afd3568144e77fe46f72ae5a297c2bdf11e67a58f39fc98ce6de16",
+      "curated_sha256": "d90bd71dcf621357a02d8d533b80080da887601933a38f2bd1e021a0f7edaa86",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The ING files are filter %T scans ('Filter Brg Temp=77K', https://www.ing.iac.es/Astronomy/instruments/ingrid_new/filter/brg.cold.trans.html), and INGRID 'uses a 1k x 1k HAWAII detector' (https://www.ing.iac.es/Astronomy/instruments/ingrid_new/), so the curves integrate as photon counters."
+    },
+    {
+      "path": "data/filters/WHT/INGRID/manifest.json",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/WHT/INGRID/manifest.json",
+      "raw_sha256": "8eb64fce9afedd7dfb1d835a05c11ceacfc62a4f9ff1fb3d39043b092da12ada",
+      "curated_sha256": "ae02d833f3af759e5bce22a43977e119254afdc7642e1b583cefe2d510645c80",
+      "operation": "manifest.json: detector_type_sources assumed -> inferred for 20 bands; nothing else changed"
+    },
+    {
+      "path": "data/filters/Gemini/NIFS/HK_298K.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Gemini/NIFS/HK_298K.dat",
+      "raw_sha256": "0a21c99694dd6932726bc14f0b399484f379ceb7c0be9852d9a3057b84c8e40f",
+      "curated_sha256": "46fa0cde9f6ee14c53c4efd12d04ca422d835cdce6f97e5893e5f2f31006ac2c",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The Gemini .dat files are witness scans of the blocking filters (HK.dat '#ED052-W H-K filter'), and the NIFS detector is a 'Rockwell HAWAII-2RG (H2RG)' HgCdTe device (https://www.gemini.edu/instrumentation/nifs/components), so the curves integrate as photon counters. SVO's energy label for HK and ZJ sits on identical arrays and gives no basis."
+    },
+    {
+      "path": "data/filters/Gemini/NIFS/HK_77K.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Gemini/NIFS/HK_77K.dat",
+      "raw_sha256": "86427f28337849e48003b73c4ba05460e15f3edcb4b3c285266c22212b44ba55",
+      "curated_sha256": "fc6377f3d16d936e188758dbba9dd0a3aeb80eda142ab15597bc33c236bbf319",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The Gemini .dat files are witness scans of the blocking filters (HK.dat '#ED052-W H-K filter'), and the NIFS detector is a 'Rockwell HAWAII-2RG (H2RG)' HgCdTe device (https://www.gemini.edu/instrumentation/nifs/components), so the curves integrate as photon counters. SVO's energy label for HK and ZJ sits on identical arrays and gives no basis."
+    },
+    {
+      "path": "data/filters/Gemini/NIFS/JH_298K.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Gemini/NIFS/JH_298K.dat",
+      "raw_sha256": "5c0172eb61ccf308ce5b9252acb0b7d201398a72e55483d2b68637e456a093dd",
+      "curated_sha256": "dfa63872923d8bb1a51ccbe3779a1c7c06f64e7c45a670043aa0c2a8120c6113",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The Gemini .dat files are witness scans of the blocking filters (HK.dat '#ED052-W H-K filter'), and the NIFS detector is a 'Rockwell HAWAII-2RG (H2RG)' HgCdTe device (https://www.gemini.edu/instrumentation/nifs/components), so the curves integrate as photon counters. SVO's energy label for HK and ZJ sits on identical arrays and gives no basis."
+    },
+    {
+      "path": "data/filters/Gemini/NIFS/JH_77K.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Gemini/NIFS/JH_77K.dat",
+      "raw_sha256": "9d1465d5358694ff1d709126069b7300768b44a0f906b39b1cf2e4f0ff20446a",
+      "curated_sha256": "7fe658f9855772e097b8a3a24faed7f5f8b70f4d934f5f1dc699a19b87325877",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The Gemini .dat files are witness scans of the blocking filters (HK.dat '#ED052-W H-K filter'), and the NIFS detector is a 'Rockwell HAWAII-2RG (H2RG)' HgCdTe device (https://www.gemini.edu/instrumentation/nifs/components), so the curves integrate as photon counters. SVO's energy label for HK and ZJ sits on identical arrays and gives no basis."
+    },
+    {
+      "path": "data/filters/Gemini/NIFS/ZJ_298K.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Gemini/NIFS/ZJ_298K.dat",
+      "raw_sha256": "da7fb18678de9b070e7f165193edf5f19048c5c5836469f6c821ab1f2de4d722",
+      "curated_sha256": "588e579dff7d5ada58665dad431ff45db42b0bf7370aed3dd8bcb6bcffe5ee35",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The Gemini .dat files are witness scans of the blocking filters (HK.dat '#ED052-W H-K filter'), and the NIFS detector is a 'Rockwell HAWAII-2RG (H2RG)' HgCdTe device (https://www.gemini.edu/instrumentation/nifs/components), so the curves integrate as photon counters. SVO's energy label for HK and ZJ sits on identical arrays and gives no basis."
+    },
+    {
+      "path": "data/filters/Gemini/NIFS/ZJ_77K.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Gemini/NIFS/ZJ_77K.dat",
+      "raw_sha256": "4bc60118eb09c2bf0acd827e7ca00bf1d59ec2ff5ab5ec84cea77601cbc331dc",
+      "curated_sha256": "5c1264243eaaef2886763613806e0fd67bb059e16c1156811cfc24507998bca5",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: The Gemini .dat files are witness scans of the blocking filters (HK.dat '#ED052-W H-K filter'), and the NIFS detector is a 'Rockwell HAWAII-2RG (H2RG)' HgCdTe device (https://www.gemini.edu/instrumentation/nifs/components), so the curves integrate as photon counters. SVO's energy label for HK and ZJ sits on identical arrays and gives no basis."
+    },
+    {
+      "path": "data/filters/Gemini/NIFS/manifest.json",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Gemini/NIFS/manifest.json",
+      "raw_sha256": "e817f24a6d6c5c2da979706d7d6768da3f7a72dc1c777c6beda6a9bd5a91a383",
+      "curated_sha256": "341878557fd7874cc7157a1a599e5c55b1fcd9069dea2355057f0be2a9d2e718",
+      "operation": "manifest.json: detector_type_sources assumed -> inferred for 6 bands; nothing else changed"
+    },
+    {
+      "path": "data/filters/Liverpool/IOO/B.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Liverpool/IOO/B.dat",
+      "raw_sha256": "6002fd578cf420b11364984cc230f0756449161227bf5fb99fba6a3ae9532f33",
+      "curated_sha256": "d6c6acd2b34883549545337383de5a27aa7304a7704e59e0c39a9ee7cdfd11ad",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: These are the filter columns of the IO:O efficiency-model table (doi:10.6084/m9.figshare.4659421), whose Technical Note 1 measures 'the absolute photon efficiency' with each filter 'multiplied by the CCD QE'; the detector is an e2v CCD 231 (https://telescope.livjm.ac.uk/TelInst/Inst/IOO/). The curves therefore integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Liverpool/IOO/V.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Liverpool/IOO/V.dat",
+      "raw_sha256": "3c74a90052e3bc672925c208416a4dec8d4abe2f252f0e421b8ec0e46ede73e2",
+      "curated_sha256": "78fc1ad55c6b17ccd41d219abc2a1d9e60630dea63202be0c3606e5aa4d219cf",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: These are the filter columns of the IO:O efficiency-model table (doi:10.6084/m9.figshare.4659421), whose Technical Note 1 measures 'the absolute photon efficiency' with each filter 'multiplied by the CCD QE'; the detector is an e2v CCD 231 (https://telescope.livjm.ac.uk/TelInst/Inst/IOO/). The curves therefore integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Liverpool/IOO/g.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Liverpool/IOO/g.dat",
+      "raw_sha256": "8569e6085be7f9157d82702964c2c97803969ef6b48acb0ea18b7aa0cb49bff0",
+      "curated_sha256": "5db7ea98744d1122c3a33bac9da74dfd65132530a6ceb7e5b2d74712751e4aba",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: These are the filter columns of the IO:O efficiency-model table (doi:10.6084/m9.figshare.4659421), whose Technical Note 1 measures 'the absolute photon efficiency' with each filter 'multiplied by the CCD QE'; the detector is an e2v CCD 231 (https://telescope.livjm.ac.uk/TelInst/Inst/IOO/). The curves therefore integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Liverpool/IOO/i.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Liverpool/IOO/i.dat",
+      "raw_sha256": "3719c66da472cc1d28ab3ffe3b224a991d6ad1385e25867a5144a4797e75e16d",
+      "curated_sha256": "e624b71411177e42fc4ff5911a05d99ec57cf1e232e04adae056b0e00468db51",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: These are the filter columns of the IO:O efficiency-model table (doi:10.6084/m9.figshare.4659421), whose Technical Note 1 measures 'the absolute photon efficiency' with each filter 'multiplied by the CCD QE'; the detector is an e2v CCD 231 (https://telescope.livjm.ac.uk/TelInst/Inst/IOO/). The curves therefore integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Liverpool/IOO/r.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Liverpool/IOO/r.dat",
+      "raw_sha256": "fdf63e89e62f67e0816c26948099e580d04c5c4e048afcd2aa72c2f8d41fb6ed",
+      "curated_sha256": "d82aaea0203a9f25786290a296453cea9aa3f359bc8523f1b65536db0b0fa755",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: These are the filter columns of the IO:O efficiency-model table (doi:10.6084/m9.figshare.4659421), whose Technical Note 1 measures 'the absolute photon efficiency' with each filter 'multiplied by the CCD QE'; the detector is an e2v CCD 231 (https://telescope.livjm.ac.uk/TelInst/Inst/IOO/). The curves therefore integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Liverpool/IOO/u.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Liverpool/IOO/u.dat",
+      "raw_sha256": "b38a5549123b4ed3f426bf25bcf8c0d991c11db12b0177d9440cd5cc54885a79",
+      "curated_sha256": "1b497cec251a7fc1abcb24c9b2761685a71d85dd0e390503de2f57322ec5dcac",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: These are the filter columns of the IO:O efficiency-model table (doi:10.6084/m9.figshare.4659421), whose Technical Note 1 measures 'the absolute photon efficiency' with each filter 'multiplied by the CCD QE'; the detector is an e2v CCD 231 (https://telescope.livjm.ac.uk/TelInst/Inst/IOO/). The curves therefore integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Liverpool/IOO/z.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Liverpool/IOO/z.dat",
+      "raw_sha256": "138176eb16b055d9f5380d6dc9d02bd405063adbc5fa08fa3c797c2fab296f4a",
+      "curated_sha256": "07381569ff51cbc1824a860b7df72c26ce12cf8b0928fca1a790a82dd18c7a92",
+      "operation": "header row: DetectorTypeSource=assumed -> DetectorTypeSource=inferred; curve unchanged. Evidence: These are the filter columns of the IO:O efficiency-model table (doi:10.6084/m9.figshare.4659421), whose Technical Note 1 measures 'the absolute photon efficiency' with each filter 'multiplied by the CCD QE'; the detector is an e2v CCD 231 (https://telescope.livjm.ac.uk/TelInst/Inst/IOO/). The curves therefore integrate as photon counters."
+    },
+    {
+      "path": "data/filters/Liverpool/IOO/manifest.json",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/Liverpool/IOO/manifest.json",
+      "raw_sha256": "4fdbb3391ec7f22170763b0c0c4ced205604239f38e7312e63801e3394c0d2b2",
+      "curated_sha256": "c562acd39e3a5972c21a4167d2bffe1e9873e46b57b4bb00bbc78b63c5807636",
+      "operation": "manifest.json: detector_type_sources assumed -> inferred for 7 bands; nothing else changed"
+    },
+    {
+      "path": "data/filters/2MASS/2MASS/H.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/2MASS/2MASS/H.dat",
+      "raw_sha256": "65de987fd85d14df7d51d106aab9180ed391c31f223f50bfb7f37ab1c967b930",
+      "curated_sha256": "166220555c3e793116ff98a08bfc336d6abfd7278ae3d3cae17e220995dd19bb",
+      "operation": "header row: DetectorType=photon;DetectorTypeSource=svo -> DetectorType=energy;DetectorTypeSource=original; curve unchanged. Evidence: DetectorType changed to energy, DetectorTypeSource original (2026-10-26): Cohen, Wheaton & Megeath (2003) §3, quoted on the Explanatory Supplement VI.4a page, say these RSRs 'are designed to be integrated directly over stellar spectra in Fλ form' because the wavelength factor is already folded in ('The QE-based component was converted to yield photon-counting RSRs by multiplying by wavelength and renormalized'). In SED_Tools' convention that is an energy integration; NJM's earlier photon label came from SVO's 2025 relabelling of 2MASS.J and is not used."
+    },
+    {
+      "path": "data/filters/2MASS/2MASS/J.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/2MASS/2MASS/J.dat",
+      "raw_sha256": "ea1865d6d1764feb506dec5664d0da61e02f2511c0e3fdb05d05c5568eac6ce3",
+      "curated_sha256": "4590f6e5c1e1b41feac8390190d7527618a883edbe1d83c9984eb6750c44500b",
+      "operation": "header row: DetectorType=photon;DetectorTypeSource=svo -> DetectorType=energy;DetectorTypeSource=original; curve unchanged. Evidence: DetectorType changed to energy, DetectorTypeSource original (2026-10-26): Cohen, Wheaton & Megeath (2003) §3, quoted on the Explanatory Supplement VI.4a page, say these RSRs 'are designed to be integrated directly over stellar spectra in Fλ form' because the wavelength factor is already folded in ('The QE-based component was converted to yield photon-counting RSRs by multiplying by wavelength and renormalized'). In SED_Tools' convention that is an energy integration; NJM's earlier photon label came from SVO's 2025 relabelling of 2MASS.J and is not used."
+    },
+    {
+      "path": "data/filters/2MASS/2MASS/Ks.dat",
+      "raw_copy": "source_evidence/filters/2026-10-26-detectortype/2MASS/2MASS/Ks.dat",
+      "raw_sha256": "043cb302940900d9c328da506567b549219980e56f366820a16da12bd0509c7c",
+      "curated_sha256": "fbc4999961019ee5d2569738d08ad057bc3035cc3e36f4dc2e1b34cc1f4623d9",
+      "operation": "header row: DetectorType=photon;DetectorTypeSource=svo -> DetectorType=energy;DetectorTypeSource=original; curve unchanged. Evidence: DetectorType changed to energy, DetectorTypeSource original (2026-10-26): Cohen, Wheaton & Megeath (2003) §3, quoted on the Explanatory Supplement VI.4a page, say these RSRs 'are designed to be integrated directly over stellar spectra in Fλ form' because the wavelength factor is already folded in ('The QE-based component was converted to yield photon-counting RSRs by multiplying by wavelength and renormalized'). In SED_Tools' convention that is an energy integration; NJM's earlier photon label came from SVO's 2025 relabelling of 2MASS.J and is not used."
+    }
+  ]
+}

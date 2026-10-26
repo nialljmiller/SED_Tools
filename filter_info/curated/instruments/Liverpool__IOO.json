@@ -12,7 +12,7 @@
     "bibcode:2004SPIE.5489..679S",
     "doi:10.6084/m9.figshare.4659421"
   ],
-  "notes": "Filter transmission curves from the IO:O efficiency-model table (Smith & Steele 2017, figshare). The IO:O page lists Sloan u'g'r'i'z', Bessell B and V and H-alpha filters, and says the e2v CCD231-84 replaced the original Fairchild 486 in June 2012.",
+  "notes": "Filter transmission curves from the IO:O efficiency-model table (Smith & Steele 2017, figshare). The IO:O page lists Sloan u'g'r'i'z', Bessell B and V and H-alpha filters, and says the e2v CCD231-84 replaced the original Fairchild 486 in June 2012. DetectorType photon, DetectorTypeSource inferred (2026-10-26): no owner states the integration convention for the curve file, but these are the filter columns of the IO:O efficiency-model table (doi:10.6084/m9.figshare.4659421), whose Technical Note 1 measures 'the absolute photon efficiency' with each filter 'multiplied by the CCD QE'; the detector is an e2v CCD 231 (https://telescope.livjm.ac.uk/TelInst/Inst/IOO/). The curves therefore integrate as photon counters. The source is 'inferred' because this rests on the published curve content and the documented detector, not on an explicit owner statement.",
   "bands": {
     "B": {
       "Description": "IO:O Bessell B filter",

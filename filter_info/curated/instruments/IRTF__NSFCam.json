@@ -13,7 +13,7 @@
     "bibcode:2002PASP..114..180T",
     "doi:10.1086/429382"
   ],
-  "notes": "Transmission profiles from the IRTF NSFCam filter page (absolute transmission, filter only). The page says the H and Br-gamma profiles include a sandwiched blocker, many other filters are used with a PK50 blocker (profiles with and without it are given), and the older broad-band filters were replaced by Mauna Kea (MK) versions.",
+  "notes": "Transmission profiles from the IRTF NSFCam filter page (absolute transmission, filter only). The page says the H and Br-gamma profiles include a sandwiched blocker, many other filters are used with a PK50 blocker (profiles with and without it are given), and the older broad-band filters were replaced by Mauna Kea (MK) versions. DetectorType photon, DetectorTypeSource inferred (2026-10-26): no owner states the integration convention for the curve file, but the filter page gives 'absolute transmissions (on a scale of 0 to 1)' and 'only the transmission of the filter itself' (https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html), and NSFCam has 'a 256x256 InSb detector' (https://irtfweb.ifa.hawaii.edu/~nsfcam/), so the curves integrate as photon counters. The source is 'inferred' because this rests on the published curve content and the documented detector, not on an explicit owner statement.",
   "bands": {
     "HMK": {
       "Description": "NSFCam MKO HMK filter",
