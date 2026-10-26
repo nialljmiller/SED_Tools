@@ -1050,7 +1050,8 @@ def main():
     fdp.add_argument("--facility", default=None,
                      help="SVO facility name when PATH is a single instrument directory or file")
     fdp.add_argument("--force", action="store_true",
-                     help="Re-resolve files already tagged from SVO")
+                     help="Re-resolve files that are already tagged; a result never replaces a type "
+                          "from a stronger source (original > inferred > svo > svo-curve-match > assumed)")
     fdp.add_argument("--dry-run", action="store_true",
                      help="Report without modifying files")
 
@@ -1268,6 +1269,13 @@ def main():
         print(f"\n[filters] {len(rows)} files, {changed} {verb}, {migrated} {moved} 0.3.0 '#' metadata to the column row")
         for (dtype, source), n in sorted(counts.items()):
             print(f"  {dtype:6s} [{source}]: {n}")
+        kept = [r for r in rows if r["kept"]]
+        if kept:
+            differ = sum(r["resolved_type"] != r["detector_type"] for r in kept)
+            print(f"[filters] {len(kept)} kept their DetectorType: the new resolution does not outrank "
+                  f"their DetectorTypeSource and was not written ({differ} of them resolve to the other type)")
+            for r in kept:
+                print(f"  {r['path']}: {r['note']}")
     elif args.cmd == "filters-info":
         from .api import Filters
         target = args.target.strip("/").split("/")
