@@ -92,7 +92,7 @@ class FilterLibrary:
                 return directory
 
         ref = builder_for(facility, instrument)
-        if ref is not None and ref.name == "tabular":
+        if ref is not None and ref.publishes:
             try:
                 get_builder(ref.name)(self.root, **dict(ref.kwargs))
                 if self.published_complete(directory):
@@ -177,7 +177,7 @@ class FilterLibrary:
             if self.components_ready(directory, components, bands):
                 return True
         ref = builder_for(facility, instrument)
-        if ref is None:
+        if ref is None or not ref.components:
             return False
         if ref.heavy and not allow_heavy:
             logger.warning("%s/%s requires a large source download; use allow_heavy=True or --allow-heavy",
@@ -202,12 +202,17 @@ class FilterLibrary:
         # Only registered site models may be recovered. Never substitute a
         # different observatory or invent weather conditions for a standard.
         from .component_sources.skycalc import SITES
+        from .component_sources.team_atmospheres import SITES as TEAM_SITES
 
         if spec.site in SITES:
-            if spec.pwv is None:
-                raise ComponentError(f"{spec.site}: specify pwv to generate a SkyCalc atmosphere")
+            if spec.pwv is None or spec.airmass is None:
+                raise ComponentError(f"{spec.site}: specify airmass and pwv to generate a SkyCalc atmosphere")
             get_builder("skycalc")(self.root, atmosphere_root=self.atmosphere_root,
                                    sites=[spec.site], airmasses=[spec.airmass], pwvs=[spec.pwv])
+        elif spec.site in TEAM_SITES:
+            # A team's published atmosphere: rebuild the whole site from its source.
+            get_builder("team_atmospheres")(self.root, atmosphere_root=self.atmosphere_root,
+                                            sites=[spec.site], overwrite=True)
         else:
             ref = builder_for(manifest.facility, manifest.instrument)
             if ref is not None and (allow_heavy or not ref.heavy):
@@ -227,7 +232,12 @@ class FilterLibrary:
                 "altitude_m": grid.altitude_m,
                 "airmass": sorted({float(e["airmass"]) for e in grid.entries}),
                 "pwv": sorted({float(e["pwv"]) for e in grid.entries if e.get("pwv") is not None}),
+                "unstated_airmass": bool(grid.unstated),
                 "source": grid.source,
+                "kind": grid.kind,
+                "model": grid.model,
+                "model_version": grid.model_version,
+                "citation": grid.citation,
             }
         return result
 

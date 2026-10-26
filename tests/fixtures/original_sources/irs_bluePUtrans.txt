@@ -1,0 +1,6 @@
+;*** IRS Blue-Peakup Filter
+;*** RQExTransmission at 2.0 volts USED IN NOMINAL OPERATIONS
+;*** 
+11.3218	    -1.12E-03
+11.3466	    -3.17E-04
+11.3715	    -5.89E-04

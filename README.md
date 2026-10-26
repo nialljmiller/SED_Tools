@@ -244,7 +244,7 @@ filters/<Facility>/<Instrument>/
   manifest.json                what is available, with provenance
   components/<role>/*.dat      filter / optics / qe (or composites, e.g. filter+optics+qe)
   products/<recipe>/           composed sets; each is itself a MESA instrument directory
-atmospheres/<site>/            telluric grids (ESO SkyCalc; team standards such as lsst_std)
+atmospheres/<site>/            telluric sites: team standards (lsst_std, ...) or derived SkyCalc grids
 ```
 
 ```bash
@@ -266,7 +266,36 @@ Filters.fetch("LSST", "LSST", components=["filter", "optics", "qe"],
 
 Requests that cannot be met are refused with an explanation rather than approximated: components the team never published (e.g. Gaia's bare filters), an atmosphere from another site, adding an atmosphere to a curve that already includes one, or to a space/airborne instrument. A published curve that is the bare filter counts as the `filter` component automatically. Products containing QE are photon-counting; otherwise they inherit the instrument's detector type.
 
-An instrument's atmosphere is the one at its own site (`default_site` in its manifest), with the user choosing only airmass and PWV. Sites are either a team's own standard atmosphere (e.g. Rubin's `lsst_std`) or an [ESO SkyCalc](https://www.eso.org/observing/etc/skycalc/) grid (`lasilla`, `paranal`, `armazones`, `highanddry`), fetched at R=200000 and bin-averaged to R=20000 so unresolved lines are integrated correctly. SkyCalc models Cerro Paranal, so it is used only for ESO facilities there and at La Silla (FORS2, HAWK-I, SPHERE, ERIS, VISTA, La Silla instruments); other observatories are offered an atmosphere only once their team's own standard atmosphere is added.
+An instrument's atmosphere is one at its own location, with the user choosing only airmass and PWV. Each site directory has a `manifest.json` recording its kind, observing conditions, model, model version, parameters, citation and any usage terms:
+
+- **Team** sites (`kind: team`) hold the standard atmosphere an instrument team published, stored as published (wavelengths converted to Å) unless the entry records a `derivation`; such curves carry `ComponentsSource=derived`.
+- **Derived** sites (`kind: derived`) are grids SED_Tools computes with the [ESO SkyCalc](https://www.eso.org/observing/etc/skycalc/) sky model (`lasilla`, `paranal`, `armazones`, `highanddry`), fetched at R=200000 and bin-averaged to R=20000 so unresolved lines are integrated correctly. SkyCalc models Cerro Paranal, so it is used only for ESO facilities there and at La Silla (FORS2, HAWK-I, SPHERE, ERIS, VISTA, La Silla instruments). Other observatories are offered only their team's own atmospheres.
+
+The default is the manifest's `default_site`. Further sites at the same location are listed in the manifest's `atmosphere_sites` or registered for the instrument in `sed_tools/facility_sites.py`, and are chosen by name. Builders register a team atmosphere with `component_sources._common.SiteAtmosphere` (written by `write_site`; `SimpleSource.site`/`sites`, or `Instrument.sites` for original-source recipes); `component_sources/team_atmospheres.py` holds the registered ones.
+
+| Site | Kind | Conditions | Model and source | Instruments |
+|---|---|---|---|---|
+| `lsst_std` | team | X = 1.0, 1.2 | Rubin MODTRAN, `lsst/throughputs` v1.9.2 | LSST |
+| `ctio_des` | team | X = 1.2 | DES standard bandpass table | DECam |
+| `maunakea_hsc` | team | X = 1.2, PWV 1.5 mm | MODTRAN (N. Yasuda), `lsst/obs_subaru` | HSC |
+| `haleakala_ps1` | team | X = 1.2 | MODTRAN; Aero × Ray × Mol of Tonry et al. 2012, table 3 | PS1 |
+| `paranal_vircam` | team | X = 1.0 / PWV 1 mm; X = 2.0 / PWV 3 mm | unnamed model in ESO's VIRCAM ETC curves (0.9–5.6 µm) | VISTA (beside SkyCalc `paranal`) |
+| `hopkins_2mass`, `ctio_2mass` | team | airmass not stated | PLEXUS (Cohen et al. 2003; Explanatory Supplement III.1.b1, tables 15/16) | 2MASS |
+| `apo_sdss` | team | X = 1.0; X = 1.3 derived (power 1.3) | DR7 imager tables, column 5 | SDSS |
+| `lco_csp` | team | X = 1.2, derived | CSP filter package: one-airmass CTIO extinction ^1.2 × telluric lines | LCO/CSP |
+| `kpno_bass` | team | X = 1.0, derived, in-band only | BASS `bass-g/r.txt` column 4 / column 3 | BOK/BASS |
+| `maunakea_gemini` | team | X = 1.0, 1.5, 2.0 × PWV 1.0, 1.6, 3.0, 5.0 mm | Gemini ATRAN (Lord 1992), 0.9–5.6 µm | NIFS |
+| `cpachon_gemini` | team | X = 1.0, 1.5, 2.0 × PWV 2.3, 4.3, 7.6, 10 mm | Gemini ATRAN (Lord 1992), 0.9–5.6 µm | GSAOI, Flamingos-2 |
+| `paranal`, `lasilla` | derived | X = 1.0–3.0 × PWV 0.5–20 mm (9 × 9) | ESO SkyCalc 2.0.9 (Noll et al. 2012; Jones et al. 2013) | ESO instruments |
+
+Some sources do not state their airmass (2MASS's PLEXUS models). Those atmospheres are kept as published and selected explicitly with `airmass=None`, or `--airmass unstated` on the command line; they are never relabelled with an assumed airmass. A site may set its own `outside_range` and `coverage_tolerance`. Most team sites use `error` with a tolerance of 0.1%: composition is refused when more than 0.1% of a band's throughput lies beyond the atmosphere's table, and the edge values are held only over fainter leak wings.
+
+```bash
+sed-tools filters-compose Paranal/VISTA --components filter,optics,qe --airmass 1.2 --pwv 2.5   # SkyCalc paranal
+sed-tools filters-compose Paranal/VISTA --components filter,optics,qe \
+  --atmosphere-site paranal_vircam --airmass 1.0                                            # ESO's own model
+sed-tools filters-build-components team_atmospheres --sites haleakala_ps1 --archive evidence/  # curation
+```
 
 Where components come from:
 
@@ -277,7 +306,7 @@ Where components come from:
 | Rubin/LSST | `lsst/throughputs` (+ Rubin's standard atmosphere `lsst_std`) |
 | Subaru HSC | NAOJ/Subaru curves (+ HSC pipeline's Maunakea atmosphere `maunakea_hsc`) |
 | CTIO DECam | DES standard bandpasses ÷ DES atmosphere (+ `ctio_des`) |
-| VISTA/VIRCAM | ESO VIRCAM ETC curves (+ SkyCalc `paranal`) |
+| VISTA/VIRCAM | ESO VIRCAM ETC curves (+ SkyCalc `paranal`, ESO's own `paranal_vircam`) |
 | HAWK-I, NACO, SPHERE/IRDIS | ESO filter scans (11, 33 and 24 independently named curves; filter-only, with optics and QE still unavailable) |
 | Gemini GSAOI, NIFS | Gemini filter scans (22 GSAOI bands and six NIFS temperature variants; filter-only) |
 | CAHA PANIC, WHT INGRID, IRTF NSFCam | Independently sourced in-band filter scans (7 PANIC, 20 INGRID warm/cold variants, 26 historical NSFCam); filter-only |
@@ -323,7 +352,7 @@ product = Filters.fetch("LSST", "LSST", components="filter+optics+qe",
 
 The detector override changes the integration convention applied to the selected throughput; replacing a physical detector's QE requires its actual QE component. An override records `DetectorTypeSource: user` and `DetectorTypeOriginal` in a separate `+detector_energy` or `+detector_photon` product directory. Source curves retain their original metadata. Without an override, each band's convention is preserved, including instruments with mixed detector conventions.
 
-Atmosphere requests use the instrument's own site and exact observing conditions. Installed grids are used first, followed by NJM. During an NJM outage, supported sites recover their own original standard atmosphere or generate the requested SkyCalc grid point. SkyCalc generation requires PWV; an existing grid with several PWV values requires an explicit choice. SED_Tools does not substitute another site's atmosphere or interpolate between grid points.
+Atmosphere requests use one of the instrument's own sites and exact observing conditions. Installed grids are used first, followed by NJM. During an NJM outage, team sites are rebuilt from their original files (`team_atmospheres`, or the instrument's own builder for `lsst_std` and `ctio_des`), and SkyCalc sites generate the requested grid point (through ESO's API, or its web form when the API host does not answer). SkyCalc generation requires PWV; an existing grid with several PWV values requires an explicit choice. SED_Tools does not substitute another site's atmosphere or interpolate between grid points.
 
 Source failures remain visible in inventory and availability results. Published downloads check the expected bands recorded in manifests and index files; older installations without a catalogue declaration can only be checked against their existing contents. Product construction finishes every selected band before replacing a previous product, so a failed composition preserves the previous result.
 
@@ -1027,6 +1056,16 @@ sed-tools grids --source njm --grids Kurucz2003all
 
 # Or reduce parallel workers
 sed-tools grids --grids Kurucz2003all --workers 2
+```
+
+**SVO Filter Profile Service unreachable**
+
+SVO filter requests give up after a 10 s connect timeout. Use the NJM mirror
+or the original-source builders (`sed-tools filters-build-components`), or
+point SED_Tools at another FPS endpoint:
+
+```bash
+export SED_SVO_FPS_URL=https://svo2.cab.inta-csic.es/theory/fps/fps.php
 ```
 
 **Missing PyTorch for ML tools**
