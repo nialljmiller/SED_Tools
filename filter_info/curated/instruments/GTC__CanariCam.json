@@ -1,0 +1,53 @@
+{
+  "description": "CanariCam is the mid-infrared camera and spectrograph built for the Gran Telescopio CANARIAS, with imaging, spectroscopy, coronagraphy and polarimetry. GTC lists silicate filters and VISIR-consortium filters from about 8 to 25 microns and transmission plots and ASCII files for each.",
+  "facility_description": "The Gran Telescopio CANARIAS is a segmented-mirror optical and infrared telescope at the Roque de los Muchachos Observatory on La Palma, with a collecting area equivalent to a 10.4-metre mirror, operated by GRANTECAN.",
+  "notes": "The filter table on the CanariCam page gives central wavelength and width for Si1-7.8, PAH1-8.6, Si2-8.7, ArIII-8.99, Si3-9.8, Si4-10.3, N-10.36, SIV-10.5, PAH2-11.3, Si5-11.6, SiC-11.75, Si6-12.5, NeII-12.8, NeII_ref2-13.1, QH2-17.0, Q1-17.65, Q4-20.5, Qw-20.8 and Q8-24.5. Qw is not in this NJM set. NeII_ref2-13.1 is the NJM key NeII_2. Those numbers sit in a table, not in a sentence, so they are not copied into band fields. The page's Acknowledgements section thanks Gemini staff for material reused on the web page; it does not ask observers for a publication acknowledgement, so no acknowledgement is stored. The instrumentation overview says CanariCam was removed from Nasmyth A in April 2016, returned at Folded Cass-E in 2019-2020, and was decommissioned in February 2021. Telesco et al., Proc. SPIE 4841, 913 (2003), doi:10.1117/12.458979, is the design paper named on the IAC bibliography and the SPIE abstract page; it describes the camera before the final filter table and is not attached to individual bands. The legal-notice sentence prohibits redistribution of website contents without authorisation. The quoted licence sentence is copied from that page, and the filter sentence is copied in the evidence.",
+  "licence": {
+    "redistribution": "restricted",
+    "terms": "\"The distribution, modification, transfer or public communication of the contents and any other act that has not been expressly authorized by GRAN TELESCOPIO DE CANARIAS S.A. is prohibited.\"",
+    "url": "https://www.gtc.iac.es/gtc/legal.php"
+  },
+  "references": [
+    "doi:10.1117/12.458979",
+    "bibcode:2003SPIE.4841..913T"
+  ],
+  "links": [
+    {
+      "url": "https://www.gtc.iac.es/instruments/canaricam/",
+      "label": "CanariCam instrument page",
+      "source": "GTC"
+    },
+    {
+      "url": "https://www.gtc.iac.es/instruments/",
+      "label": "GTC instrumentation overview",
+      "source": "GTC"
+    },
+    {
+      "url": "https://www.gtc.iac.es/gtc/presentation.php",
+      "label": "Gran Telescopio CANARIAS",
+      "source": "GTC"
+    },
+    {
+      "url": "https://www.gtc.iac.es/gtc/legal.php",
+      "label": "GTC legal notice",
+      "source": "GTC"
+    }
+  ],
+  "bands": {
+    "*": {
+      "Description": "CanariCam imaging filter from the silicate and VISIR-consortium set published on the GTC instrument page."
+    },
+    "N": {
+      "Comments": "In imaging, N should be used only in low-background conditions, precipitable water vapour below 3 mm, or the image can saturate at the shortest standard frame time."
+    },
+    "SiC": {
+      "Comments": "In imaging, SiC should be used only when precipitable water vapour is below 5 mm, or the image can saturate at the shortest standard frame time."
+    },
+    "Q4": {
+      "Comments": "GTC says an extra 1 mm of precipitable water vapour degrades Q4 sensitivity by a factor close to 3."
+    },
+    "Q8": {
+      "Comments": "GTC says an extra 1 mm of precipitable water vapour degrades Q8 sensitivity by a factor of more than 2."
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "description": "Nikon D70 digital camera: the transmission of the camera's internal UV/IR-cut ('hot mirror') filter as measured by Kolari Vision on filters removed during full-spectrum conversions.",
+  "facility_description": "Digital cameras (DSLRs, mirrorless, compact, industrial, cinema and phone cameras) whose RGB channel spectral sensitivities or internal IR/UV-cut filter transmissions have been measured.",
+  "notes": "Block band: Kolari page has a chart titled 'Nikon D70 ICF Transmission' (image chart only; the NJM curve is a digitization, attributed here by camera name only since SVO gives no ProfileReference).",
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"We make no garuntees on the accuracy of this data, provided as a reference only.\" (no redistribution grant; Kolari Vision terms-and-conditions page covers user submissions only)",
+    "url": "https://kolarivision.com/articles/internal-cut-filter-transmission/"
+  },
+  "links": [
+    {
+      "url": "https://kolarivision.com/articles/internal-cut-filter-transmission/",
+      "label": "DSLR internal cut filter transmission curves",
+      "source": "Kolari Vision"
+    }
+  ]
+}

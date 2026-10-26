@@ -1,0 +1,60 @@
+{
+  "description": "CaSSIS (Colour and Stereo Surface Imaging System) is the push-frame colour and stereo camera on ESA's ExoMars Trace Gas Orbiter. Four bandpass filters on a filter strip assembly are called BLU (Blue-Green), PAN, RED and IR in Thomas et al. (2017); the NJM keys Blue, Pan, Red and NIR are those filters.",
+  "facility_description": "The ExoMars Trace Gas Orbiter is the first mission of ESA's ExoMars programme. Thomas et al. (2017) state that it was launched on 14 March 2016, and the ESA ExoMars page states that the Trace Gas Orbiter launched in 2016.",
+  "notes": "Blue_fil, Pan_fil, Red_fil and NIR_fil are omitted. Thomas et al. (2017) distinguish filter transmission curves (Fig. 12) from system effective wavelengths (Table 2) but do not define *_fil names, and the Fig. 12 central wavelengths are not printed as text. SVO (one request to svo2.cab.inta-csic.es) timed out, so the filter-only versus total-throughput naming was not taken from SVO. The SPICE IK v0.9 repeats the Table 2 nominal column (675/250, 485/165, 840/100, 985/220 nm), not the measured column used above.",
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"If You Share the Licensed Material (including in modified\n                    form), You must:\"",
+    "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en"
+  },
+  "references": [
+    "doi:10.1007/s11214-017-0421-1",
+    "bibcode:2017SSRv..212.1897T"
+  ],
+  "links": [
+    {
+      "url": "https://www.esa.int/Science_Exploration/Human_and_Robotic_Exploration/Exploration/ExoMars",
+      "label": "ESA ExoMars programme page",
+      "source": "ESA"
+    },
+    {
+      "url": "https://www.esa.int/Science_Exploration/Human_and_Robotic_Exploration/Exploration/ExoMars/Trace_Gas_Orbiter_instruments",
+      "label": "ESA Trace Gas Orbiter instruments",
+      "source": "ESA"
+    },
+    {
+      "url": "https://doi.org/10.1007/s11214-017-0421-1",
+      "label": "Thomas et al. 2017, Space Science Reviews",
+      "source": "publisher"
+    },
+    {
+      "url": "https://www.research.unipd.it/bitstream/11577/3251978/2/s11214-017-0421-1.pdf",
+      "label": "Thomas et al. 2017 PDF (University of Padua)",
+      "source": "university"
+    },
+    {
+      "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/ik/em16_tgo_cassis_v09.ti",
+      "label": "ExoMars 2016 CaSSIS SPICE IK v0.9",
+      "source": "NASA"
+    }
+  ],
+  "bands": {
+    "*": {
+      "references": [
+        "doi:10.1007/s11214-017-0421-1"
+      ]
+    },
+    "Blue": {
+      "Description": "CaSSIS filter called Blue-Green in Thomas et al. (2017) Table 2, stored here as Blue. The table columns are nominal value and latest measured value. The system effective wavelength and equivalent bandwidth are 485 nm / 165 nm (nominal) and 499.9 nm / 118.0 nm (measured)."
+    },
+    "Pan": {
+      "Description": "CaSSIS filter called Pan in Thomas et al. (2017) Table 2, stored here as Pan. The table columns are nominal value and latest measured value. The system effective wavelength and equivalent bandwidth are 675 nm / 250 nm (nominal) and 675.0 nm / 229.4 nm (measured)."
+    },
+    "Red": {
+      "Description": "CaSSIS filter called Red in Thomas et al. (2017) Table 2, stored here as Red. The table columns are nominal value and latest measured value. The system effective wavelength and equivalent bandwidth are 840 nm / 100 nm (nominal) and 836.2 nm / 94.3 nm (measured)."
+    },
+    "NIR": {
+      "Description": "CaSSIS filter called IR in Thomas et al. (2017) Table 2, stored here as NIR. The table columns are nominal value and latest measured value. The system effective wavelength and equivalent bandwidth are 985 nm / 220 nm (nominal) and 936.7 nm / 113.7 nm (measured). The paper's Fig. 12 caption says a central wavelength defined from the 50% transmission edges is not defined for the NIR filter because the long-wavelength edge is set by the detector silicon cut-off; the numbers here are the Table 2 system effective wavelength and equivalent bandwidth, not that undefined filter-edge centre."
+    }
+  }
+}

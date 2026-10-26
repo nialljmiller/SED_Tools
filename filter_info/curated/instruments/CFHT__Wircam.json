@@ -1,0 +1,54 @@
+{
+  "description": "WIRCam is a wide-field near-infrared mosaic imager at the CFHT prime focus with four HAWAII-2RG detectors, offering broad-band Y, J, H, Ks and narrow-band filters.",
+  "facility_description": "The Canada-France-Hawaii Telescope (CFHT) is a 3.6-meter optical and infrared telescope operated by NRC (Canada), CNRS/INSU (France), and the University of Hawaii, located on Maunakea in Hawaii.",
+  "notes": "WIRCam was built by an international consortium led by CFHT, Canada, France, Taiwan, and Korea. The focal plane comprises four 2048x2048 Teledyne HAWAII-2RG arrays. Complete filter transmission functions factoring in primary mirror reflection, camera optics, detector QE, and atmospheric transmission are documented at CADC/WIRwolf.",
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"The Canada-France-Hawaii Telescope Corporation owns the copyright of all contents of this web site unless stated otherwise.\"",
+    "url": "https://www.cfht.hawaii.edu/hawaiianstarlight/CFHT_WWW_Copyright.html"
+  },
+  "references": [
+    "bibcode:2004SPIE.5492..978P",
+    "bibcode:2024A&A...689A..93R"
+  ],
+  "links": [
+    {
+      "url": "https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/en/wirwolf/docs/filt.html",
+      "label": "CADC WIRCam Filter Set and Transmission Curves",
+      "source": "CADC"
+    },
+    {
+      "url": "https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/en/wirwolf/",
+      "label": "CADC WIRwolf Image Stacking Pipeline",
+      "source": "CADC"
+    },
+    {
+      "url": "https://www.cfht.hawaii.edu/en/science/Publications/",
+      "label": "CFHT Publications and WIRCam Acknowledgement",
+      "source": "CFHT"
+    },
+    {
+      "url": "https://www.cfht.hawaii.edu/hawaiianstarlight/CFHT_WWW_Copyright.html",
+      "label": "CFHT Copyright Policy",
+      "source": "CFHT"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "WIRCam at CFHT",
+      "text": "Based on observations obtained at the Canada-France-Hawaiʻi Telescope (CFHT) which is operated by the National Research Council of Canada, the Institut National des Sciences de l'Univers of the Centre National de la Recherche Scientifique of France, and the University of Hawaiʻi. CFHT is located on Maunakea on Hawaiʻi Island, a mountain of considerable cultural, natural, and ecological significance. Maunakea is a sacred site to Native Hawaiians, also known as Kānaka ʻŌiwi. Quality observations are made possible by relentless effort of the entire staff at Canada-France-Hawaiʻi Telescope. Based on observations obtained with WIRCam, a joint project of CFHT, Taiwan, Korea, Canada, France.",
+      "url": "https://www.cfht.hawaii.edu/en/science/Publications/",
+      "references": [
+        "bibcode:2004SPIE.5492..978P"
+      ],
+      "applies_to": "all bands"
+    },
+    {
+      "for": "Canadian Astronomy Data Centre",
+      "text": "This research used the facilities of the Canadian Astronomy Data Centre operated by the National Research Council of Canada with the support of the Canadian Space Agency.",
+      "url": "https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/en/cfht/credits.html",
+      "applies_to": "all bands",
+      "references": []
+    }
+  ]
+}

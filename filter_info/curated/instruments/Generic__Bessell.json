@@ -1,0 +1,49 @@
+{
+  "description": "Bessell & Murphy (2012) revised UBVRI standard passbands, tabulated as normalised photonic (photon-counting) responses for synthetic photometry on the Johnson-Cousins system.",
+  "facility_description": "Generic standard-system passbands, not tied to a single telescope; these are distributed through the CDS (Strasbourg) catalogue J/PASP/124/140.",
+  "notes": "VizieR's rules say data are free for scientific use with citation of the original authors and publication, and that commercial use depends on the data origin; this catalogue comes from PASP (not AAS, not A&A) and its ReadMe states no copyright. Bessell (1990) is listed for context only: NJM's notes say these curves are the 2012 photonic set, not the 1990 energy-response passbands. The VizieR acknowledgement text is copied verbatim from the VizieR rules page; it is a request ('would be appreciated'). DetectorType unchanged (NJM already records photon).",
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"The data retrieved with VizieR are free of usage in a scientific context\"",
+    "url": "https://cds.unistra.fr/vizier-org/licences_vizier.html"
+  },
+  "references": [
+    "bibcode:2012PASP..124..140B",
+    "bibcode:1990PASP..102.1181B"
+  ],
+  "links": [
+    {
+      "url": "https://cdsarc.cds.unistra.fr/ftp/cats/J/PASP/124/140/ReadMe",
+      "label": "J/PASP/124/140 ReadMe",
+      "source": "CDS"
+    },
+    {
+      "url": "https://cdsarc.cds.unistra.fr/viz-bin/cat/J/PASP/124/140",
+      "label": "J/PASP/124/140 catalogue page",
+      "source": "CDS"
+    },
+    {
+      "url": "https://cds.unistra.fr/vizier-org/licences_vizier.html",
+      "label": "VizieR rules of usage",
+      "source": "CDS"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "VizieR / CDS",
+      "text": "This research has made use of the VizieR catalogue access tool, CDS, Strasbourg, France (DOI : 10.26093/cds/vizier). The original description of the VizieR service was published in 2000, A&AS 143, 23",
+      "url": "https://cds.unistra.fr/vizier-org/licences_vizier.html",
+      "references": [
+        "bibcode:2000A&AS..143...23O"
+      ],
+      "applies_to": "curves retrieved from CDS"
+    }
+  ],
+  "bands": {
+    "*": {
+      "references": [
+        "bibcode:2012PASP..124..140B"
+      ]
+    }
+  }
+}

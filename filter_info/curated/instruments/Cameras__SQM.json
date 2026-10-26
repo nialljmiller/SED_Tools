@@ -6,6 +6,11 @@
       "url": "https://unihedron.com/projects/darksky/cd/SQM/",
       "label": "SQM instruction sheet (directory listing)",
       "source": "Unihedron"
+    },
+    {
+      "url": "https://arxiv.org/abs/1701.05019",
+      "label": "Sanchez de Miguel et al. (2017) Sky Quality Meter measurements in a colour-changing world",
+      "source": "arXiv"
     }
   ],
   "references": [
@@ -37,5 +42,10 @@
     "scotopic": {
       "Description": "CIE scotopic human eye sensitivity curve"
     }
+  },
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "",
+    "url": "https://arxiv.org/abs/1701.05019"
   }
 }

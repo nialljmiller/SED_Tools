@@ -1,0 +1,51 @@
+{
+  "description": "DIRBE, on NASA's COBE satellite, made absolute sky-brightness maps in ten infrared bands from 1.25 to 240 microns to search for the cosmic infrared background. NASA LAMBDA distributes the normalized system response, combining filter and detector, for each of those bands.",
+  "facility_description": "The Cosmic Background Explorer was a NASA Goddard Space Flight Center satellite. LAMBDA says it was launched November 18, 1989 and carried DIRBE to search for the cosmic infrared background.",
+  "notes": "The older URL https://lambda.gsfc.nasa.gov/product/cobe/c_spectral_res.cfm returns HTTP 301 to https://lambda.gsfc.nasa.gov/product/cobe/c_spectral_res.html. LAMBDA states that quoted DIRBE bandwidths assume a source spectrum nu*I(nu) = constant, and that flux densities follow the IRAS convention of nu*I(nu) = constant, so color corrections are required for other spectra. Hauser et al. 1998 list the detectors as InSb, Si:Ga BIB, Ge:Ga, and Si/diamond bolometers and store surface brightness as I_nu in MJy sr^-1; this is absolute radiometry, not photon counting. The NASA Science Data Portal licences unmarked NASA-led mission calibration and auxiliary data as CC0. That page encourages citation but does not give a required acknowledgement sentence, so no acknowledgements key is included. ADS abstract pages returned a human-verification challenge; the bibcode 1998ApJ...508...25H is taken from the Hauser et al. (1998) link on https://lambda.gsfc.nasa.gov/product/cobe/about_dirbe.html, and doi:10.1086/306379 is the related DOI on https://arxiv.org/abs/astro-ph/9806167. Silverberg et al. (1993) is cited in the Hauser HTML but the SPIE record was not opened, so it is not listed. The spectral-response quote on the LAMBDA page is LAMBDA's wording.",
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"There are no restrictions on the usage of these data.\"",
+    "url": "https://science.data.nasa.gov/about/license"
+  },
+  "references": [
+    "bibcode:1998ApJ...508...25H",
+    "doi:10.1086/306379"
+  ],
+  "links": [
+    {
+      "url": "https://lambda.gsfc.nasa.gov/product/cobe/",
+      "label": "COBE overview",
+      "source": "NASA LAMBDA"
+    },
+    {
+      "url": "https://lambda.gsfc.nasa.gov/product/cobe/about_dirbe.html",
+      "label": "DIRBE instrument and photometric bands",
+      "source": "NASA LAMBDA"
+    },
+    {
+      "url": "https://lambda.gsfc.nasa.gov/product/cobe/c_spectral_res.html",
+      "label": "DIRBE system spectral response",
+      "source": "NASA LAMBDA"
+    },
+    {
+      "url": "https://lambda.gsfc.nasa.gov/product/cobe/dirbe_products.html",
+      "label": "DIRBE data products and color corrections",
+      "source": "NASA LAMBDA"
+    },
+    {
+      "url": "https://lambda.gsfc.nasa.gov/product/cobe/dirbe_ancil_sr_get.html",
+      "label": "DIRBE system spectral response table",
+      "source": "NASA LAMBDA"
+    },
+    {
+      "url": "https://science.data.nasa.gov/about/license",
+      "label": "NASA science data licences",
+      "source": "NASA Science Data Portal"
+    },
+    {
+      "url": "https://arxiv.org/abs/astro-ph/9806167",
+      "label": "Hauser et al. 1998, DIRBE CIB search",
+      "source": "arXiv"
+    }
+  ]
+}

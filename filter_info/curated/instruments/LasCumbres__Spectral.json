@@ -16,6 +16,11 @@
       "url": "https://lco.global/documents/2/lco_filter_curves.zip",
       "label": "LCO Filter Curves Archive",
       "source": "LCO"
+    },
+    {
+      "url": "https://lco.global/observatory/acknowledgments/",
+      "label": "LCO Acknowledgments and Terms",
+      "source": "LCO"
     }
   ],
   "references": [
@@ -63,5 +68,21 @@
       "Description": "Spectral Pan-STARRS z-short filter",
       "PhotSystem": "Pan-STARRS"
     }
-  }
+  },
+  "licence": {
+    "redistribution": "restricted",
+    "terms": "\"All images and data derived from observations made at LCO facilities are made available for scientific or educational use, subject to the Creative Commons license BY-NC 4.0 and in the case of science data, subject to an additional proprietary period.\"",
+    "url": "https://lco.global/observatory/acknowledgments/"
+  },
+  "acknowledgements": [
+    {
+      "for": "Las Cumbres Observatory",
+      "text": "This work makes use of observations from the Las Cumbres Observatory global telescope network.",
+      "url": "https://lco.global/observatory/acknowledgments/",
+      "references": [
+        "bibcode:2013PASP..125.1031B"
+      ],
+      "applies_to": "all bands"
+    }
+  ]
 }

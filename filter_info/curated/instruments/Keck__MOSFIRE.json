@@ -11,10 +11,46 @@
       "url": "https://www2.keck.hawaii.edu/inst/mosfire/",
       "label": "MOSFIRE home",
       "source": "Keck"
+    },
+    {
+      "url": "https://www2.keck.hawaii.edu/inst/mosfire/home.html",
+      "label": "MOSFIRE instrument home",
+      "source": "Keck"
+    },
+    {
+      "url": "https://www2.keck.hawaii.edu/inst/mosfire/refs.html",
+      "label": "MOSFIRE requested references",
+      "source": "Keck"
+    },
+    {
+      "url": "https://www2.keck.hawaii.edu/inst/mosfire/docs/MOSFIRE_McLean_SPIE_2012.pdf",
+      "label": "McLean et al. 2012 MOSFIRE SPIE paper",
+      "source": "Keck"
+    },
+    {
+      "url": "https://www2.keck.hawaii.edu/inst/mosfire/docs/MOSFIRE_McLean_SPIE_2010.pdf",
+      "label": "McLean et al. 2010 MOSFIRE design paper",
+      "source": "Keck"
+    },
+    {
+      "url": "https://doi.org/10.1117/12.924794",
+      "label": "doi for McLean et al. 2012",
+      "source": "Keck"
+    },
+    {
+      "url": "https://www2.keck.hawaii.edu/observing/keck_authors.html",
+      "label": "Publishing papers with Keck data",
+      "source": "Keck"
+    },
+    {
+      "url": "https://www2.keck.hawaii.edu/inst/web_docs/scripts/include_end.js",
+      "label": "Keck instrument-page copyright footer",
+      "source": "Keck"
     }
   ],
   "references": [
-    "doi:10.1117/12.924794"
+    "doi:10.1117/12.924794",
+    "bibcode:2010SPIE.7735E..1EM"
   ],
   "notes": "Central wavelengths and FWHMs are from the Keck MOSFIRE filter page, which also links the ASCII transmission files. The page does not identify the filters with the Mauna Kea Observatories set, so that photometric-system paper is not cited. McLean et al. 2012, Proc. SPIE 8446, is the as-built instrument paper and describes the order-sorting filters. The detector is a Teledyne HAWAII-2RG. No magnitude system is stated on the filter page. The winter 2012 Keck newsletter states which filters are for imaging and which for spectroscopy.",
   "bands": {
@@ -85,6 +121,35 @@
       "references": [
         "doi:10.1117/12.924794"
       ]
+    },
+    "*": {
+      "references": [
+        "doi:10.1117/12.924794"
+      ]
     }
-  }
+  },
+  "licence": {
+    "redistribution": "restricted",
+    "terms": "\"The contents of this page or any part thereof shall not\"",
+    "url": "https://www2.keck.hawaii.edu/inst/web_docs/scripts/include_end.js"
+  },
+  "acknowledgements": [
+    {
+      "for": "papers based on Keck data",
+      "text": "Some of the data presented herein were obtained at Keck Observatory, which is a private 501(c)3 non-profit organization operated as a scientific partnership among the California Institute of Technology, the University of California, and the National Aeronautics and Space Administration. The Observatory was made possible by the generous financial support of the W. M. Keck Foundation.",
+      "url": "https://www2.keck.hawaii.edu/observing/keck_authors.html",
+      "references": [],
+      "applies_to": "all bands"
+    },
+    {
+      "for": "articles referencing MOSFIRE data",
+      "text": "In all articles referencing MOSFIRE data, please acknowledge the instrument team by including the following two references in your publication.",
+      "url": "https://www2.keck.hawaii.edu/inst/mosfire/refs.html",
+      "references": [
+        "doi:10.1117/12.924794",
+        "bibcode:2010SPIE.7735E..1EM"
+      ],
+      "applies_to": "all bands"
+    }
+  ]
 }

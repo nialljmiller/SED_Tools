@@ -1,0 +1,34 @@
+{
+  "description": "Mosaic II was a wide-field optical camera mounted at the prime focus of the Blanco 4-meter telescope at CTIO, employing an 8192x8192 pixel CCD mosaic array and a wide variety of broad-band and narrow-band filters.",
+  "facility_description": "The Víctor M. Blanco 4-meter Telescope is operated at Cerro Tololo Inter-American Observatory (CTIO) in Chile as part of NSF NOIRLab.",
+  "notes": "Mosaic II prime-focus imager operated at CTIO from 1999 until DECam commissioning. Filter curves were measured at CTIO.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the Creative Commons Attribution 4.0 International License\"",
+    "url": "https://noirlab.edu/public/copyright/"
+  },
+  "references": [
+    "bibcode:1998SPIE.3355..577M"
+  ],
+  "links": [
+    {
+      "url": "https://noirlab.edu/science/programs/ctio/filters/MOSAIC-Filters",
+      "label": "Mosaic Filter Transmission Curves",
+      "source": "NSF NOIRLab"
+    },
+    {
+      "url": "https://noirlab.edu/science/programs/ctio/filters",
+      "label": "CTIO Filter Directory",
+      "source": "NSF NOIRLab"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "Cerro Tololo Inter-American Observatory",
+      "text": "Based on observations made at NSF Cerro Tololo Inter-American Observatory, NSF NOIRLab (NOIRLab Prop. ID; PI: first initial last name), which is managed by the Association of Universities for Research in Astronomy (AURA) under a cooperative agreement with the U.S. National Science Foundation.",
+      "url": "https://noirlab.edu/science/about/scientific-acknowledgments",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "description": "The seven-colour Vilnius intermediate-band system (U, P, X, Y, Z, V, S), designed for two-dimensional classification of stars in the presence of reddening.",
+  "facility_description": "The General Catalogue of Photometric Data (GCPD, Mermilliod, Hauck & Mermilliod; now hosted at Masaryk University, Brno) compiles stellar photometry in more than 80 photometric systems together with system descriptions and filter transmission curves.",
+  "notes": "NJM's curves for this instrument were taken from the SVO Filter Profile Service (GCPD group). Band Description values are copied verbatim from SVO VOTables, cited via Wayback Machine captures because svo2.cab.inta-csic.es timed out all session; the SVO acknowledgement already on NJM was not re-verified. Bands without the _ADPS suffix whose SVO ProfileReference is arXiv:1412.1474 are the Mann & von Braun (2015) revisions of the GCPD curves; _ADPS bands are the Asiago Database on Photometric Systems versions (Moro & Munari 2000; Fiorucci & Munari 2003), for which SVO's ProfileReference is the GCPD system page. Licence: GCPD publishes no explicit redistribution licence, only a citation request; classed 'attribution' on that basis. GCPD's basic reference is Kakaras G., Straizys V., Sudzius J., Zdanavicius K. 1966, Bull. Vilnius Obs. 22, 3; no bibcode passed check_refs (1966BVilO..22....3K failed). No archived SVO VOTable was available for: S, V_ADPS, X_ADPS, so those bands carry no per-band fields.",
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"We would appreciate that you mention the use of the database in your papers if it has been useful.\"",
+    "url": "https://gcpd.physics.muni.cz/"
+  },
+  "references": [
+    "bibcode:1997A&AS..124..349M",
+    "bibcode:2000A&AS..147..361M",
+    "bibcode:2003A&A...401..781F",
+    "bibcode:2015PASP..127..102M"
+  ],
+  "links": [
+    {
+      "url": "https://gcpd.physics.muni.cz/ph21.html",
+      "label": "GCPD Vilnius system page",
+      "source": "GCPD"
+    },
+    {
+      "url": "https://gcpd.physics.muni.cz/filters/fil21.html",
+      "label": "GCPD Vilnius transmission curves",
+      "source": "GCPD"
+    },
+    {
+      "url": "https://gcpd.physics.muni.cz/",
+      "label": "GCPD home page (citation request)",
+      "source": "GCPD"
+    },
+    {
+      "url": "https://arxiv.org/abs/1412.1474",
+      "label": "Mann & von Braun revised GCPD filter profiles (ancillary tables)",
+      "source": "arXiv"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "General Catalogue of Photometric Data (GCPD)",
+      "text": "We would appreciate that you mention the use of the database in your papers if it has been useful.",
+      "url": "https://gcpd.physics.muni.cz/",
+      "references": [
+        "bibcode:1997A&AS..124..349M"
+      ],
+      "applies_to": "all bands"
+    }
+  ]
+}

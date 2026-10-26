@@ -1,7 +1,23 @@
 {
   "description": "INGRID is the 1024x1024 HAWAII near-infrared camera for 0.8-2.5 micron imaging on the William Herschel Telescope (WHT).",
   "facility_description": "The William Herschel Telescope (WHT) is a 4.2-meter optical/near-infrared telescope at Roque de los Muchachos Observatory on La Palma, operated by the Isaac Newton Group of Telescopes (ING).",
-  "links": [],
+  "links": [
+    {
+      "url": "https://www.iac.es/en/observatorios-de-canarias/telescopes-and-experiments/william-herschel-telescope",
+      "label": "William Herschel Telescope Overview",
+      "source": "IAC"
+    },
+    {
+      "url": "https://www.iac.es/en/observatorios-de-canarias/roque-de-los-muchachos-observatory",
+      "label": "Roque de los Muchachos Observatory",
+      "source": "IAC"
+    },
+    {
+      "url": "https://www.iac.es/en/legal-notice",
+      "label": "IAC Legal Notice",
+      "source": "IAC"
+    }
+  ],
   "references": [
     "doi:10.1046/j.1365-8711.2003.06982.x"
   ],
@@ -67,5 +83,10 @@
     "Z_WARM": {
       "Description": "INGRID Z_WARM near-infrared filter"
     }
+  },
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"All rights are reserved. In accordance with the terms laid down in the Intellectual Property Law, it is expressly forbidden to reproduce, distribute, or publicly communicate, in whatever form, the totality or part of the contents of this website for commercial purposes on any kind of support or using any technical medium without the express permission of the IAC.\"",
+    "url": "https://www.iac.es/en/legal-notice"
   }
 }

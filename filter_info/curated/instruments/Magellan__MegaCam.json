@@ -6,6 +6,16 @@
       "url": "https://lweb.cfa.harvard.edu/~bmcleod/Megacam/Filters/",
       "label": "MegaCam filter curves",
       "source": "CFA"
+    },
+    {
+      "url": "https://lweb.cfa.harvard.edu/mmti/megacam/MegacamObsManual.pdf",
+      "label": "Megacam observers manual",
+      "source": "CfA / MMT"
+    },
+    {
+      "url": "https://iopscience.iop.org/article/10.1086/680687",
+      "label": "McLeod et al. 2015, PASP, Megacam instrument paper",
+      "source": "IOP Science"
     }
   ],
   "references": [
@@ -22,7 +32,8 @@
       "references": [
         "bibcode:2015PASP..127..366M",
         "bibcode:1996AJ....111.1748F"
-      ]
+      ],
+      "MagSys": "AB"
     },
     "g": {
       "Description": "Magellan MegaCam Sloan g'",
@@ -32,7 +43,8 @@
       "references": [
         "bibcode:2015PASP..127..366M",
         "bibcode:1996AJ....111.1748F"
-      ]
+      ],
+      "MagSys": "AB"
     },
     "r": {
       "Description": "Magellan MegaCam Sloan r'",
@@ -42,7 +54,8 @@
       "references": [
         "bibcode:2015PASP..127..366M",
         "bibcode:1996AJ....111.1748F"
-      ]
+      ],
+      "MagSys": "AB"
     },
     "i": {
       "Description": "Magellan MegaCam Sloan i'",
@@ -52,7 +65,8 @@
       "references": [
         "bibcode:2015PASP..127..366M",
         "bibcode:1996AJ....111.1748F"
-      ]
+      ],
+      "MagSys": "AB"
     },
     "z": {
       "Description": "Magellan MegaCam Sloan z'",
@@ -62,7 +76,24 @@
       "references": [
         "bibcode:2015PASP..127..366M",
         "bibcode:1996AJ....111.1748F"
-      ]
+      ],
+      "MagSys": "AB"
     }
-  }
+  },
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"We will not collect personal information about you when you visit our website unless you choose to provide that information to us.\"",
+    "url": "https://www.cfa.harvard.edu/privacy-statement"
+  },
+  "acknowledgements": [
+    {
+      "for": "Megacam",
+      "text": "Megacam: a wide-field imager for the MMT and Magellan, McLeod et al. 2015, PASP, 127, 366.",
+      "url": "https://lweb.cfa.harvard.edu/mmti/megacam/MegacamObsManual.pdf",
+      "references": [
+        "bibcode:2015PASP..127..366M"
+      ],
+      "applies_to": "all bands"
+    }
+  ]
 }

@@ -11,6 +11,11 @@
       "url": "https://www.iac.es/en/projects/cosmosomas",
       "label": "COSMOSOMAS Project Page",
       "source": "IAC"
+    },
+    {
+      "url": "https://www.iac.es/en/legal-notice",
+      "label": "IAC Legal Notice",
+      "source": "IAC"
     }
   ],
   "references": [
@@ -36,5 +41,10 @@
         }
       ]
     }
+  },
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"All rights are reserved. In accordance with the terms laid down in the Intellectual Property Law, it is expressly forbidden to reproduce, distribute, or publicly communicate, in whatever form, the totality or part of the contents of this website for commercial purposes on any kind of support or using any technical medium without the express permission of the IAC.\"",
+    "url": "https://www.iac.es/en/legal-notice"
   }
 }

@@ -1,0 +1,35 @@
+{
+  "description": "FLAMINGOS-2 is a near-infrared wide-field imager and multi-object spectrograph mounted at the Cassegrain focus of Gemini South. Its filter wheels contain broad-band and narrow-band near-infrared filters covering the 0.9 to 2.5 micron spectral region for imaging and spectroscopic order sorting.",
+  "facility_description": "The International Gemini Observatory operates twin 8.1-meter optical and infrared telescopes atop Maunakea in Hawai'i (Gemini North) and Cerro Pachón in Chile (Gemini South), managed by NSF NOIRLab.",
+  "notes": "FLAMINGOS-2 filter profiles incorporate the optical train (entrance window, filter, nine lenses, two flat mirrors) excluding detector, grisms, telescope and atmosphere. Raw laboratory scan data are published on Gemini instrumentation pages; general redistribution rights are not explicitly specified under NOIRLab policy.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the Creative Commons Attribution 4.0 International License\"",
+    "url": "https://noirlab.edu/public/copyright/"
+  },
+  "references": [
+    "bibcode:2004SPIE.5492.1196E",
+    "bibcode:1997SPIE.2871...15M"
+  ],
+  "links": [
+    {
+      "url": "https://www.gemini.edu/instrumentation/flamingos-2",
+      "label": "FLAMINGOS-2 instrument page",
+      "source": "Gemini Observatory"
+    },
+    {
+      "url": "https://www.gemini.edu/instrumentation/flamingos-2/components",
+      "label": "FLAMINGOS-2 filters and transmission data",
+      "source": "Gemini Observatory"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "International Gemini Observatory",
+      "text": "Based on observations obtained at the international Gemini Observatory, a program of NSF NOIRLab [ include additional acknowledgment here, see section below ], which is managed by the Association of Universities for Research in Astronomy (AURA) under a cooperative agreement with the U.S. National Science Foundation on behalf of the Gemini Observatory partnership: the U.S. National Science Foundation (United States), National Research Council (Canada), Agencia Nacional de Investigación y Desarrollo (Chile), Ministerio de Ciencia, Tecnología e Innovación (Argentina), Ministério da Ciência, Tecnologia, Inovações e Comunicações (Brazil), and Korea Astronomy and Space Science Institute (Republic of Korea).",
+      "url": "https://noirlab.edu/science/about/scientific-acknowledgments",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

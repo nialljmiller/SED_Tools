@@ -11,6 +11,31 @@
       "url": "https://www.eso.org/sci/facilities/paranal/instruments/omegacam/tools/OmegaCAM_transmission.tar.gz",
       "label": "OmegaCAM transmission archive",
       "source": "ESO"
+    },
+    {
+      "url": "https://www.eso.org/sci/facilities/paranal/instruments/omegacam/",
+      "label": "OmegaCAM instrument page",
+      "source": "ESO"
+    },
+    {
+      "url": "https://www.eso.org/sci/facilities/paranal/instruments/omegacam/tools.html",
+      "label": "OmegaCAM tools and transmission-file link",
+      "source": "ESO"
+    },
+    {
+      "url": "https://www.eso.org/sci/facilities/paranal/instruments/omegacam/doc/VST-MAN-OCM-23100-3110_p109_v1.pdf",
+      "label": "OmegaCAM user manual, period 109",
+      "source": "ESO"
+    },
+    {
+      "url": "https://www.eso.org/sci/facilities/paranal/telescopes/vst.html",
+      "label": "VLT Survey Telescope",
+      "source": "ESO"
+    },
+    {
+      "url": "https://www.eso.org/public/copyright/",
+      "label": "ESO copyright and reuse terms",
+      "source": "ESO"
     }
   ],
   "references": [
@@ -38,6 +63,35 @@
         "doi:10.1117/12.456694",
         "bibcode:1990PASP..102.1181B"
       ]
+    },
+    "u_SDSS": {
+      "PhotSystem": "Sloan"
+    },
+    "g_SDSS": {
+      "PhotSystem": "SDSS"
+    },
+    "r_SDSS": {
+      "PhotSystem": "SDSS"
+    },
+    "i_SDSS": {
+      "PhotSystem": "SDSS"
+    },
+    "z_SDSS": {
+      "PhotSystem": "SDSS"
     }
-  }
+  },
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, pictures of the week, blog posts and captions on this site are not released under the Creative Commons Attribution 4.0 International License and can not be used for non-ESO products.\"",
+    "url": "https://www.eso.org/public/copyright/"
+  },
+  "acknowledgements": [
+    {
+      "for": "ESO",
+      "text": "Publications based on data using the VST and Omegacam should reference Arnaboldi et al. 1998 (Arnaboldi, M., Capaccioli, M., Mancini, D.,\nRafanelli, P., Scaranella, R., Sedmak, G. and Vettolani, G. P., 1998. The Messenger 93, 30),  Kuijken et al. 2002 (The Messenger,  110, p. 15, 2002) and Kuijken 2011 (The Messenger, vol. 146, p. 8, 2011).",
+      "url": "https://www.eso.org/sci/facilities/paranal/instruments/omegacam/",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
 }

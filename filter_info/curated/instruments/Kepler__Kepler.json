@@ -1,0 +1,55 @@
+{
+  "description": "The Kepler Space Telescope is a NASA Discovery mission designed to detect transiting Earth-size planets in the habitable zone of solar-like stars. Its photometer consists of a 0.95-meter Schmidt telescope and a 42-CCD focal plane array observing in a single wide optical passband (K) covering 430 to 890 nm.",
+  "facility_description": "Kepler was a NASA space observatory operating in an Earth-trailing heliocentric orbit from 2009 to 2018.",
+  "notes": "The Kepler instrument passband is defined from 430 to 890 nm by the combined throughput of the Schmidt corrector, primary mirror reflection, and CCD quantum efficiency (Koch et al. 2010, Borucki et al. 2010). Data products and calibration files are hosted at MAST under NASA contract NAS5-26555 with public domain status. DetectorType is left unchanged.",
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"Unless otherwise specifically stated, no claim to copyright is being asserted by STScI and material on this site may be freely used as in the public domain in accordance with NASA's contract.\"",
+    "url": "https://www.stsci.edu/copyright"
+  },
+  "references": [
+    "bibcode:2010Sci...327..977B",
+    "bibcode:2010ApJ...713L..79K"
+  ],
+  "links": [
+    {
+      "url": "https://archive.stsci.edu/missions-and-data/kepler",
+      "label": "MAST Kepler mission and archive documentation",
+      "source": "STScI / MAST"
+    },
+    {
+      "url": "https://archive.stsci.edu/publishing/mission-acknowledgements",
+      "label": "MAST mission acknowledgement guidelines",
+      "source": "STScI / MAST"
+    },
+    {
+      "url": "https://www.stsci.edu/copyright",
+      "label": "STScI content use policy",
+      "source": "STScI / MAST"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "NASA / MAST Kepler mission data acknowledgement",
+      "text": "This paper includes data collected by the Kepler mission and obtained from the MAST data archive at the Space Telescope Science Institute (STScI). Funding to US Institutions for the Kepler mission was provided by the NASA Science Mission Directorate. STScI is operated by the Association of Universities for Research in Astronomy, Inc., under NASA contract NAS5–26555.",
+      "url": "https://archive.stsci.edu/publishing/mission-acknowledgements",
+      "references": [],
+      "applies_to": "all bands"
+    },
+    {
+      "for": "NASA and STScI reuse credit request",
+      "text": "However, it is requested that in any subsequent use of this work, NASA and STScI be given appropriate acknowledgement.",
+      "url": "https://www.stsci.edu/copyright",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ],
+  "bands": {
+    "K": {
+      "references": [
+        "bibcode:2010Sci...327..977B",
+        "bibcode:2010ApJ...713L..79K"
+      ]
+    }
+  }
+}

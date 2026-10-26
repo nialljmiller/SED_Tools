@@ -1,0 +1,41 @@
+{
+  "description": "SMARTS filters include the standard Johnson-Cousins optical filter sets deployed on SMARTS consortium telescopes (such as the CTIO 0.9m and 1.5m telescopes) for long-term stellar and astronomical monitoring.",
+  "facility_description": "The Small and Moderate Aperture Research Telescope System (SMARTS) operates telescopes at Cerro Tololo Inter-American Observatory (CTIO) in Chile.",
+  "notes": "Filter curves correspond to the Tek 2K CCD and facility filters at the SMARTS 0.9m telescope.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the Creative Commons Attribution 4.0 International License\"",
+    "url": "https://noirlab.edu/public/copyright/"
+  },
+  "references": [
+    "bibcode:2005AJ....130.1658S"
+  ],
+  "links": [
+    {
+      "url": "http://www.astro.gsu.edu/~thenry/SMARTS/",
+      "label": "SMARTS Consortium Pages",
+      "source": "SMARTS / GSU"
+    },
+    {
+      "url": "https://noirlab.edu/science/programs/ctio/filters",
+      "label": "CTIO Filter Directory",
+      "source": "NSF NOIRLab"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "SMARTS Consortium",
+      "text": "This research has used data from the SMARTS [1.5m/1.3m/1.0m/0.9m] telescope, which is operated as part of the SMARTS Consortium.",
+      "url": "https://noirlab.edu/science/about/scientific-acknowledgments",
+      "references": [],
+      "applies_to": "all bands"
+    },
+    {
+      "for": "Cerro Tololo Inter-American Observatory",
+      "text": "Based on observations at NSF Cerro Tololo Inter-American Observatory, NSF NOIRLab (NOIRLab Prop. ID xxxxx-xxxx; PI: first initial last name), which is managed by the Association of Universities for Research in Astronomy (AURA) under a cooperative agreement with the U.S. National Science Foundation.",
+      "url": "https://noirlab.edu/science/about/scientific-acknowledgments",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

@@ -1,0 +1,142 @@
+{
+  "description": "UVIT is an AstroSat payload with two 375 mm telescopes and filter wheels for a far-ultraviolet channel (1300–1800 Å), a near-ultraviolet channel (2000–3000 Å), and a visible channel (3200–5500 Å). Tandon et al. (2017) publish ground-calibration effective-area curves and in-orbit zero points for the named FUV and NUV filters; the VIS filters are used for aspect correction and are not photometrically calibrated for science. A 2020 calibration paper rescales those ground effective areas by wavelength-independent factors derived from in-orbit observations of HZ 4.",
+  "facility_description": "AstroSat is India’s first dedicated astronomy satellite, operated by ISRO in a 650 km near-equatorial orbit, for simultaneous X-ray, ultraviolet, and limited optical observations.",
+  "notes": "The 2017 and 2020 journal versions were not opened: doi.org redirects to iopscience.iop.org, and curl -L ends on a Radware bot-check page rather than the article, so AAS copyright text was not read. arXiv abs pages give the related DOIs 10.3847/1538-3881/aa8451 (2017) and 10.3847/1538-3881/ab72a3 (2020). ADS abstract pages returned a human-verification wall, so bibcodes 2017AJ....154..128T and 2020AJ....159..158T are not copied from a page opened here. http://uvit.iiap.res.in/ and http://uvit.iiap.res.in/Instrument/Filters returned no HTTP status (curl exit without a code). The licence quote is the arXiv non-exclusive distribution grant to arXiv.org. It does not state terms for third-party reuse of the filter curves. The ISSDC guidelines govern observational data (12-month proprietary period, then a public archive) and are not a licence for the published effective-area curves. The acknowledgement text is the PDF extract, including the curly quotes, the line breaks, and the period that follows the closing quote. A second, optional sentence in the same section is for already-published results and is not the requested data acknowledgement. NJM names *_old do not appear in either opened paper (the 2020 PDF text has no 'old'). The 2020 paper says ground effective areas are multiplied by Table 5 correction factors under a wavelength-independent transmission change; that is not a named old curve set, and the two-column pdftotext split Table 4 and Table 5 so the numeric factors are not quoted. The 2017 paper also lists N242Wa (Silica-2), which is not an NJM band name. VIS1, VIS2, VIS3, BK7, and ND1 are the Table 3 glass column for V347M, V391M, V461W, V420W, and V435ND. Figure 1 caption: \"The effective area curves are shown for the filters in FUV, NUV and VIS channels of the UVIT. These are based on ground calibrations.\" Table quotes are the pdftotext lines, including their internal spaces.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"I grant arXiv.org a perpetual, non-exclusive license to distribute this article.\"",
+    "url": "https://arxiv.org/licenses/nonexclusive-distrib/1.0/"
+  },
+  "references": [
+    "doi:10.3847/1538-3881/aa8451",
+    "doi:10.3847/1538-3881/ab72a3"
+  ],
+  "links": [
+    {
+      "url": "https://www.issdc.gov.in/astro.html",
+      "label": "ISSDC AstroSat mission page",
+      "source": "ISSDC"
+    },
+    {
+      "url": "https://www.issdc.gov.in/docs/as1/astrosat-data-guidelines.pdf",
+      "label": "AstroSat data-usage guidelines",
+      "source": "ISSDC"
+    },
+    {
+      "url": "https://arxiv.org/abs/1705.03715",
+      "label": "Tandon et al. 2017 arXiv abstract",
+      "source": "arXiv"
+    },
+    {
+      "url": "https://arxiv.org/pdf/1705.03715.pdf",
+      "label": "Tandon et al. 2017 arXiv PDF",
+      "source": "arXiv"
+    },
+    {
+      "url": "https://arxiv.org/abs/2002.01159",
+      "label": "Tandon et al. 2020 arXiv abstract",
+      "source": "arXiv"
+    },
+    {
+      "url": "https://arxiv.org/pdf/2002.01159.pdf",
+      "label": "Tandon et al. 2020 arXiv PDF",
+      "source": "arXiv"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "Indian Space Science Data Centre (ISSDC) / ISRO",
+      "text": "“This publication uses the data from the AstroSat mission of the Indian Space\nResearch Organisation (ISRO), archived at the Indian Space Science Data\nCentre (ISSDC)”.",
+      "url": "https://www.issdc.gov.in/docs/as1/astrosat-data-guidelines.pdf",
+      "applies_to": "all bands",
+      "references": []
+    }
+  ],
+  "bands": {
+    "F148W": {
+      "Description": "FUV filter CaF2-1. Table 3 of Tandon et al. 2017 lists mean wavelength 1481 Å and bandwidth 500 Å.",
+      "MagSys": "AB",
+      "references": [
+        "doi:10.3847/1538-3881/aa8451"
+      ]
+    },
+    "F148Wa": {
+      "Description": "FUV filter CaF2-2. Table 3 of Tandon et al. 2017 lists mean wavelength 1485 Å and bandwidth 500 Å.",
+      "MagSys": "AB",
+      "references": [
+        "doi:10.3847/1538-3881/aa8451"
+      ]
+    },
+    "F154W": {
+      "Description": "FUV filter BaF2. Table 3 of Tandon et al. 2017 lists mean wavelength 1541 Å and bandwidth 380 Å.",
+      "MagSys": "AB",
+      "references": [
+        "doi:10.3847/1538-3881/aa8451"
+      ]
+    },
+    "F169M": {
+      "Description": "FUV filter Sapphire. Table 3 of Tandon et al. 2017 lists mean wavelength 1608 Å and bandwidth 290 Å.",
+      "MagSys": "AB",
+      "references": [
+        "doi:10.3847/1538-3881/aa8451"
+      ]
+    },
+    "F172M": {
+      "Description": "FUV filter Silica. Table 3 of Tandon et al. 2017 lists mean wavelength 1717 Å and bandwidth 125 Å.",
+      "MagSys": "AB",
+      "references": [
+        "doi:10.3847/1538-3881/aa8451"
+      ]
+    },
+    "N219M": {
+      "Description": "NUV filter NUVB15. Table 3 of Tandon et al. 2017 lists mean wavelength 2196 Å and bandwidth 270 Å.",
+      "MagSys": "AB",
+      "references": [
+        "doi:10.3847/1538-3881/aa8451"
+      ]
+    },
+    "N242W": {
+      "Description": "NUV filter Silica-1. Table 3 of Tandon et al. 2017 lists mean wavelength 2418 Å and bandwidth 785 Å.",
+      "MagSys": "AB",
+      "references": [
+        "doi:10.3847/1538-3881/aa8451"
+      ]
+    },
+    "N245M": {
+      "Description": "NUV filter NUVB13. Table 3 of Tandon et al. 2017 lists mean wavelength 2447 Å and bandwidth 280 Å.",
+      "MagSys": "AB",
+      "references": [
+        "doi:10.3847/1538-3881/aa8451"
+      ]
+    },
+    "N263M": {
+      "Description": "NUV filter NUVB4. Table 3 of Tandon et al. 2017 lists mean wavelength 2632 Å and bandwidth 275 Å.",
+      "MagSys": "AB",
+      "references": [
+        "doi:10.3847/1538-3881/aa8451"
+      ]
+    },
+    "N279N": {
+      "Description": "NUV filter NUVN2. Table 3 of Tandon et al. 2017 lists mean wavelength 2792 Å and bandwidth 90 Å.",
+      "MagSys": "AB",
+      "references": [
+        "doi:10.3847/1538-3881/aa8451"
+      ]
+    },
+    "VIS1": {
+      "Description": "VIS filter named V347M in Tandon et al. 2017 Table 3, with the glass listed as VIS1, mean wavelength 3466 Å and bandwidth 400 Å. VIS-channel photometry is not calibrated for science."
+    },
+    "VIS2": {
+      "Description": "VIS filter named V391M in Tandon et al. 2017 Table 3, with the glass listed as VIS2, mean wavelength 3909 Å and bandwidth 400 Å. VIS-channel photometry is not calibrated for science."
+    },
+    "VIS3": {
+      "Description": "VIS filter named V461W in Tandon et al. 2017 Table 3, with the glass listed as VIS3, mean wavelength 4614 Å and bandwidth 1300 Å. VIS-channel photometry is not calibrated for science."
+    },
+    "BK7": {
+      "Description": "VIS filter named V420W in Tandon et al. 2017 Table 3, with the glass listed as BK7, mean wavelength 4200 Å and bandwidth 2200 Å. VIS-channel photometry is not calibrated for science."
+    },
+    "ND1": {
+      "Description": "VIS filter named V435ND in Tandon et al. 2017 Table 3, with the glass listed as ND1, mean wavelength 4354 Å and bandwidth 2200 Å. VIS-channel photometry is not calibrated for science."
+    }
+  }
+}

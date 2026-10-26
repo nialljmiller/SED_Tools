@@ -1,0 +1,47 @@
+{
+  "description": "Canon 60D digital camera: normalized R, G and B channel spectral sensitivities (400-720 nm, 10 nm steps) from the RIT Camera Spectral Sensitivity Database (Jiang et al. 2013); plus the transmission of the camera's internal UV/IR-cut ('hot mirror') filter as measured by Kolari Vision on filters removed during full-spectrum conversions.",
+  "facility_description": "Digital cameras (DSLRs, mirrorless, compact, industrial, cinema and phone cameras) whose RGB channel spectral sensitivities or internal IR/UV-cut filter transmissions have been measured.",
+  "notes": "RGB curves checked this session: NJM values are identical (max abs diff 0) to the 'Canon 60D' entry of http://www.gujinwei.org/research/camspec/camspec_database.txt. Block band: Kolari page has a chart titled 'Canon D60 ICF Transmission' (image chart only; the NJM curve is a digitization). Caution: Kolari's chart is captioned 'Canon D60' (the 2002 EOS D60), not the EOS 60D; NJM's 60D_Block may be mislabelled. The 60D_R/G/B bands are genuine EOS 60D (RIT database). Licence set to the stricter source (Kolari: no redistribution grant) because the Block band comes from Kolari; the RGB bands alone are CC BY-NC-SA 4.0 (RIT).",
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"We make no garuntees on the accuracy of this data, provided as a reference only.\" (no redistribution grant; Kolari Vision terms-and-conditions page covers user submissions only)",
+    "url": "https://kolarivision.com/articles/internal-cut-filter-transmission/"
+  },
+  "references": [
+    "doi:10.1109/WACV.2013.6475015"
+  ],
+  "links": [
+    {
+      "url": "http://www.gujinwei.org/research/camspec/db.html",
+      "label": "Camera Spectral Sensitivity Database (28 cameras, 400-720 nm)",
+      "source": "Rochester Institute of Technology (J. Gu)"
+    },
+    {
+      "url": "https://infoscience.epfl.ch/record/182538/files/egpaper_final.pdf",
+      "label": "Jiang et al. (2013) WACV paper",
+      "source": "EPFL Infoscience"
+    },
+    {
+      "url": "https://kolarivision.com/articles/internal-cut-filter-transmission/",
+      "label": "DSLR internal cut filter transmission curves",
+      "source": "Kolari Vision"
+    }
+  ],
+  "bands": {
+    "60D_B": {
+      "references": [
+        "doi:10.1109/WACV.2013.6475015"
+      ]
+    },
+    "60D_G": {
+      "references": [
+        "doi:10.1109/WACV.2013.6475015"
+      ]
+    },
+    "60D_R": {
+      "references": [
+        "doi:10.1109/WACV.2013.6475015"
+      ]
+    }
+  }
+}

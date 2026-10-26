@@ -11,6 +11,16 @@
       "url": "https://www.eso.org/sci/facilities/paranal/instruments/eris/img/nix-filters.zip",
       "label": "NIX filter-curve zip",
       "source": "ESO"
+    },
+    {
+      "url": "https://www.eso.org/public/copyright/",
+      "label": "ESO public-website copyright",
+      "source": "ESO"
+    },
+    {
+      "url": "https://archive.eso.org/cms/eso-data-access-policy.html",
+      "label": "ESO Science Archive data access policy",
+      "source": "ESO"
     }
   ],
   "references": [
@@ -134,5 +144,21 @@
         "bibcode:2023A&A...674A.207D"
       ]
     }
-  }
+  },
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"music, scientific papers, code, and text other than press releases, announcements, pictures of the week, blog posts and captions on this site are not released under the Creative Commons Attribution 4.0 International License and can not be used for non-ESO products.\"",
+    "url": "https://www.eso.org/public/copyright/"
+  },
+  "acknowledgements": [
+    {
+      "for": "ERIS (ESO)",
+      "text": "Publications based on data obtained with ERIS should quote the following reference paper: Davies, R. et al. 2023, A&A 674, 207",
+      "url": "https://www.eso.org/sci/facilities/paranal/instruments/eris/",
+      "references": [
+        "bibcode:2023A&A...674A.207D"
+      ],
+      "applies_to": "all bands"
+    }
+  ]
 }

@@ -1,0 +1,49 @@
+{
+  "description": "The Midcourse Space Experiment carried the SPIRIT III infrared telescope and produced survey images and source catalogs. IRSA lists four mid-infrared bands, A, C, D, and E, at 8.28, 12.13, 14.65, and 21.3 microns.",
+  "facility_description": "MSX operated in 1996-1997; its infrared instrument was the 33-cm SPIRIT III telescope with solid-hydrogen-cooled line-scanned focal-plane arrays.",
+  "notes": "IRSA's mission page lists the wavelengths as A (8.28 µm), C (12.13 µm), D (14.65 µm), and E (21.3 µm). Those four are the mid-infrared bands in Price et al. 2001 and Cohen et al. 2000; the same Cohen abstract separates them from two narrower bands near 4.3 µm, which are not NJM bands and are not given per-band records here. The explanatory-guide PDF (Egan et al. 2003, AFRL-VS-TR-2003-1589) was downloaded, but its embedded font drops characters in pdftotext, so no sentence from that PDF is quoted. No ADS bibcode for the technical report was found on a page opened this session. Bibcodes 2000AJ....120.3362C and 2001AJ....121.2819P appear in the NASA ADS links on the IOP abstract pages. IRSA's newer general acknowledgement on https://irsa.ipac.caltech.edu/ack.html uses a different IRSA sentence than the MSX mission page; the acknowledgement copied here is the MSX page text. The terms page says public data have no usage restrictions, so redistribution is public even though the mission page asks for an acknowledgement in published material. No separate MSX filter-curve copyright was found. The IOP abstract URLs were opened with a page fetch, but curl -sI -L -A Mozilla/5.0 follows them to a bot-check host, so they are evidence URLs only and are not in links.",
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"Most data served by IRSA is public, with no usage restrictions.\"",
+    "url": "https://irsa.ipac.caltech.edu/data_use_terms.html"
+  },
+  "references": [
+    "bibcode:2000AJ....120.3362C",
+    "bibcode:2001AJ....121.2819P",
+    "doi:10.1086/316867",
+    "doi:10.1086/320404"
+  ],
+  "links": [
+    {
+      "url": "https://irsa.ipac.caltech.edu/Missions/msx.html",
+      "label": "IRSA MSX mission page",
+      "source": "IRSA"
+    },
+    {
+      "url": "https://irsa.ipac.caltech.edu/data/MSX/",
+      "label": "MSX data access",
+      "source": "IRSA"
+    },
+    {
+      "url": "https://irsa.ipac.caltech.edu/data_use_terms.html",
+      "label": "IRSA data terms of use",
+      "source": "IRSA"
+    },
+    {
+      "url": "https://irsa.ipac.caltech.edu/data/MSX/docs/msxpsc2.3_explguide.pdf",
+      "label": "MSX PSC v2.3 explanatory guide (Egan et al. 2003)",
+      "source": "IRSA"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "IRSA / Midcourse Space Experiment",
+      "text": "This research made use of data products from the Midcourse Space Experiment. Processing of the data was funded by the Ballistic Missile Defense Organization with additional support from NASA Office of Space Science. This research has also made use of the NASA/IPAC Infrared Science Archive, which is operated by the Jet Propulsion Laboratory, California Institute of Technology, under contract with the National Aeronautics and Space Administration.",
+      "url": "https://irsa.ipac.caltech.edu/Missions/msx.html",
+      "references": [
+        "bibcode:2001AJ....121.2819P"
+      ],
+      "applies_to": "all bands"
+    }
+  ]
+}

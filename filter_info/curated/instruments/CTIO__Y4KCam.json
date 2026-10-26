@@ -1,0 +1,46 @@
+{
+  "description": "Y4KCam (Yale 4K x 4K Camera) was an optical imager mounted on the SMARTS 1.0-meter (formerly Yale 1m) telescope at CTIO, utilizing a 4096x4096 CCD and standard broad-band optical filters.",
+  "facility_description": "The SMARTS 1.0-meter telescope is located at Cerro Tololo Inter-American Observatory (CTIO) in Chile, operated by the SMARTS consortium.",
+  "notes": "Y4KCam operated on the 1.0m telescope. Curves from OSU/SMARTS lack explicit open redistribution licences.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the Creative Commons Attribution 4.0 International License\"",
+    "url": "https://noirlab.edu/public/copyright/"
+  },
+  "references": [
+    "doi:10.5303/jkas.2016.49.6.289"
+  ],
+  "links": [
+    {
+      "url": "https://www.astronomy.ohio-state.edu/Y4KCam/filters.html",
+      "label": "Y4KCam Filters and Throughputs",
+      "source": "Ohio State University"
+    },
+    {
+      "url": "http://www.astro.gsu.edu/~thenry/SMARTS/",
+      "label": "SMARTS Consortium Home",
+      "source": "SMARTS / GSU"
+    },
+    {
+      "url": "https://noirlab.edu/science/programs/ctio/filters",
+      "label": "CTIO Filter Directory",
+      "source": "NSF NOIRLab"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "SMARTS Consortium",
+      "text": "This research has used data from the SMARTS [1.5m/1.3m/1.0m/0.9m] telescope, which is operated as part of the SMARTS Consortium.",
+      "url": "https://noirlab.edu/science/about/scientific-acknowledgments",
+      "references": [],
+      "applies_to": "all bands"
+    },
+    {
+      "for": "Cerro Tololo Inter-American Observatory",
+      "text": "Based on observations at NSF Cerro Tololo Inter-American Observatory, NSF NOIRLab (NOIRLab Prop. ID xxxxx-xxxx; PI: first initial last name), which is managed by the Association of Universities for Research in Astronomy (AURA) under a cooperative agreement with the U.S. National Science Foundation.",
+      "url": "https://noirlab.edu/science/about/scientific-acknowledgments",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

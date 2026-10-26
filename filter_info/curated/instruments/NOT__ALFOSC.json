@@ -11,6 +11,21 @@
       "url": "https://www.not.iac.es/instruments/filters/filters.php",
       "label": "NOT Filter Database",
       "source": "NOT"
+    },
+    {
+      "url": "https://www.not.iac.es/instruments/filters/",
+      "label": "NOT optical and near-IR filters",
+      "source": "Nordic Optical Telescope"
+    },
+    {
+      "url": "https://www.not.iac.es/instruments/filters/filterlistlambda.html",
+      "label": "NOT filters ordered by wavelength",
+      "source": "Nordic Optical Telescope"
+    },
+    {
+      "url": "https://www.not.iac.es/instruments/alfosc/alfosc-acknowledgement.html",
+      "label": "ALFOSC acknowledgement for publications",
+      "source": "Nordic Optical Telescope"
     }
   ],
   "references": [
@@ -20,38 +35,61 @@
   "bands": {
     "B": {
       "Description": "ALFOSC Bessell B filter (#74)",
-      "PhotSystem": "Bessell"
+      "PhotSystem": "Bessell",
+      "Band": "B",
+      "Comments": "Edge marking on the list is B-BAND 16888. Other B filters are also catalogued."
     },
     "R": {
       "Description": "ALFOSC Bessell R filter (#76)",
-      "PhotSystem": "Bessell"
+      "PhotSystem": "Bessell",
+      "Band": "R",
+      "Comments": "Edge marking on the list is R-BAND 19237. NOT #10 is a separate Bessell R entry."
     },
     "U": {
       "Description": "ALFOSC Bessell U filter (#7)",
-      "PhotSystem": "Bessell"
+      "PhotSystem": "Bessell",
+      "Band": "U",
+      "Comments": "The list comment is Bessell U with a red-leak block. A second Bessell U (NOT #6) is also listed."
     },
     "V": {
       "Description": "ALFOSC Bessell V filter (#75)",
-      "PhotSystem": "Bessell"
+      "PhotSystem": "Bessell",
+      "Band": "V",
+      "Comments": "Edge marking on the list is V-BAND 16889."
     },
     "i_int": {
-      "Description": "ALFOSC interference i filter (#12)"
+      "Description": "ALFOSC interference i filter (#12)",
+      "Band": "i",
+      "Comments": "The list comment for these entries is interference i, not a Bessell or SDSS i filter."
     },
     "gp": {
       "Description": "ALFOSC SDSS g' filter (#120)",
-      "PhotSystem": "SDSS"
+      "PhotSystem": "SDSS",
+      "Band": "g'",
+      "Comments": "The 60 mm g' copy, NOT #83, is also an SDSS-set filter but the list says it does not fit in ALFOSC."
     },
     "ip": {
       "Description": "ALFOSC SDSS i' filter (#111)",
-      "PhotSystem": "SDSS"
+      "PhotSystem": "SDSS",
+      "Band": "i'",
+      "Comments": "The 60 mm i' copy, NOT #85, is an SDSS-set filter but the list says it does not fit in ALFOSC."
     },
     "rp": {
       "Description": "ALFOSC SDSS r' filter (#110)",
-      "PhotSystem": "SDSS"
+      "PhotSystem": "SDSS",
+      "Band": "r'",
+      "Comments": "The 60 mm r' copy, NOT #84, is an SDSS-set filter but the list says it does not fit in ALFOSC."
     },
     "up": {
       "Description": "ALFOSC SDSS u' filter (#109)",
-      "PhotSystem": "SDSS"
+      "PhotSystem": "SDSS",
+      "Band": "u'",
+      "Comments": "NOT #82 is marked as part of the SDSS set."
     }
+  },
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"2005 Nordic Optical Telescope, Apartado 474, E-38700 S/C de La Palma, Spain\"",
+    "url": "https://www.not.iac.es/"
   }
 }

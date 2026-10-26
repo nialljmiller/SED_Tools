@@ -1,0 +1,51 @@
+{
+  "description": "The UV1 channel of Hubble’s High Speed Photometer measured rapid brightness variations through ultraviolet filters, with aperture and prism-beam selections.",
+  "facility_description": "These instruments were operated on the Hubble Space Telescope.",
+  "notes": "Sources opened 2026-10-26. Descriptions paraphrase STScI legacy-instrument and pysynphot documentation; NJM configuration identifiers follow the assigned inventory. The STScI public-domain policy excludes separately marked third-party works; it is not a provenance audit of the existing NJM curve bytes. The HST observing-program acknowledgement is conditional and must not imply that filter calibration curves are science observations. No band-specific magnitude system or detector type is inferred. No inherited SVO references are promoted. Bibliography/passband coverage and configuration-specific provenance remain incomplete; see REPORT.md. HSP performance-paper title/authors/DOI verified by the reference resolver; full publisher text was inaccessible (ADS 403/JSTOR 420), so it supports no per-band fields.",
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"Unless otherwise specifically stated, no claim to copyright is being asserted by STScI and material on this site may be freely used as in the public domain in accordance with NASA's contract.\"",
+    "url": "https://www.stsci.edu/copyright"
+  },
+  "references": [
+    "doi:10.1086/316334"
+  ],
+  "links": [
+    {
+      "url": "https://www.stsci.edu/hst/instrumentation/legacy",
+      "label": "STScI legacy instrument descriptions and handbooks",
+      "source": "STScI"
+    },
+    {
+      "url": "https://pysynphot.readthedocs.io/en/latest/appendixb.html#hsp",
+      "label": "Synthetic photometry configuration keywords",
+      "source": "STScI pysynphot documentation"
+    },
+    {
+      "url": "https://www.stsci.edu/copyright",
+      "label": "Content use policy",
+      "source": "STScI"
+    },
+    {
+      "url": "https://archive.stsci.edu/publishing/mission-acknowledgements",
+      "label": "Mission acknowledgement templates",
+      "source": "MAST / STScI"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "NASA and STScI: reuse of STScI-produced material",
+      "text": "However, it is requested that in any subsequent use of this work, NASA and STScI be given appropriate acknowledgement.",
+      "url": "https://www.stsci.edu/copyright",
+      "references": [],
+      "applies_to": "all bands: STScI-produced material unless otherwise marked"
+    },
+    {
+      "for": "NASA/ESA Hubble Space Telescope observations",
+      "text": "This research is based on observations made with the NASA/ESA Hubble Space Telescope obtained from the Space Telescope Science Institute, which is operated by the Association of Universities for Research in Astronomy, Inc., under NASA contract NAS5–26555. These observations are associated with program(s) __________.",
+      "url": "https://archive.stsci.edu/publishing/mission-acknowledgements",
+      "references": [],
+      "applies_to": "HST observations obtained from STScI; observational-use template, conditional on use of observations"
+    }
+  ]
+}

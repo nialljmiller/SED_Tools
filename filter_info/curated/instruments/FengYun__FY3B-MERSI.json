@@ -1,0 +1,37 @@
+{
+  "description": "The Medium Resolution Spectral Imager (MERSI) on FY-3B is a 20-channel optical imaging spectrometer covering the visible, near-infrared, and thermal-infrared spectral range. Its bands are designed for global monitoring of ocean color, aerosol optical depth, cloud parameters, and land surface vegetation.",
+  "facility_description": "FengYun-3B is China’s second-generation polar-orbiting meteorological satellite in afternoon sun-synchronous orbit, launched in November 2010 and operated by the National Satellite Meteorological Center (NSMC) of the China Meteorological Administration (CMA).",
+  "notes": "FY-3B MERSI filter response functions originate from the NSMC GSICS portal (http://gsics.nsmc.org.cn/portal/en/fycv/srf.html). Note that NJM catalogs 19 bands (excluding CH05). Portal footer states Copyright © NSMC(NCSW). All Rights Reserved., with redistribution terms governed by CMA policy. DetectorType is left unchanged.",
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"Copyright © NSMC(NCSW). All Rights Reserved.\"",
+    "url": "http://gsics.nsmc.org.cn/portal/share/footer.html"
+  },
+  "references": [
+    "bibcode:2021AdAtS..38.1267X",
+    "doi:10.1109/TGRS.2024.3432899",
+    "doi:10.1109/TGRS.2024.3376580"
+  ],
+  "links": [
+    {
+      "url": "https://www.nsmc.org.cn/nsmc/en/instrument/MERSI-1.html",
+      "label": "NSMC MERSI-1 instrument overview",
+      "source": "NSMC"
+    },
+    {
+      "url": "https://www.nsmc.org.cn/nsmc/en/satellite/FY3B.html",
+      "label": "NSMC FY-3B satellite overview",
+      "source": "NSMC"
+    },
+    {
+      "url": "http://gsics.nsmc.org.cn/portal/en/fycv/srf.html",
+      "label": "NSMC Spectral Response Functions portal",
+      "source": "NSMC"
+    },
+    {
+      "url": "https://space.oscar.wmo.int/instruments/view/mersi_1",
+      "label": "WMO OSCAR MERSI-1 instrument entry",
+      "source": "WMO"
+    }
+  ]
+}

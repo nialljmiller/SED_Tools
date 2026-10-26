@@ -1,0 +1,51 @@
+{
+  "description": "CoRoT (Convection, Rotation and planetary Transits) is a space telescope developed by CNES with ESA and international partners to perform high-precision stellar seismology and search for transiting extrasolar planets. Its wide-field camera contains four CCD detectors observing in an asteroseismology channel (AS) and an exoplanetary transit channel (PF).",
+  "facility_description": "CoRoT was a French and European space observatory operating in a polar low-Earth orbit from 2006 to 2014.",
+  "notes": "CoRoT bandpass data cover the Asteroseismology channel (AS) and the Exoplanet / Planetary Field channel (PF). In-flight instrument performance and design are described in Auvergne et al. (2009). Data products are available through the VizieR catalogue service (catalogue B/corot). DetectorType is left unchanged.",
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"The data retrieved with VizieR are free of usage in a scientific context ; however, as it is the usage in scientific publication, the original authors and publication references including the publisher have to be explicitely cited\"",
+    "url": "https://cds.unistra.fr/vizier-org/licences_vizier.html"
+  },
+  "references": [
+    "bibcode:2009A&A...506..411A"
+  ],
+  "links": [
+    {
+      "url": "https://sci.esa.int/web/corot",
+      "label": "CoRoT mission fact sheet and overview",
+      "source": "ESA"
+    },
+    {
+      "url": "https://cdsarc.cds.unistra.fr/viz-bin/cite/B/corot",
+      "label": "CoRoT observation log catalogue B/corot citation",
+      "source": "CDS / VizieR"
+    },
+    {
+      "url": "https://cds.unistra.fr/vizier-org/licences_vizier.html",
+      "label": "VizieR data rules of usage and licence",
+      "source": "CDS / VizieR"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "CDS VizieR catalogue access tool",
+      "text": "This research has made use of the VizieR catalogue access tool, CDS, Strasbourg, France (DOI : 10.26093/cds/vizier). The original description of the VizieR service was published in 2000, A&AS 143, 23",
+      "url": "https://cdsarc.cds.unistra.fr/viz-bin/cite/B/corot",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ],
+  "bands": {
+    "AS": {
+      "references": [
+        "bibcode:2009A&A...506..411A"
+      ]
+    },
+    "PF": {
+      "references": [
+        "bibcode:2009A&A...506..411A"
+      ]
+    }
+  }
+}

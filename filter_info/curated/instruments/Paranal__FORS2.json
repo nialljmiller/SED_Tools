@@ -16,6 +16,21 @@
       "url": "https://www.eso.org/sci/facilities/paranal/instruments/fors/doc/VLT-MAN-ESO-13100-1543_P117_3.pdf",
       "label": "FORS user manual P117",
       "source": "ESO"
+    },
+    {
+      "url": "https://www.eso.org/sci/facilities/paranal/instruments/fors/inst/Filters.html",
+      "label": "FORS2 standard filter list",
+      "source": "ESO"
+    },
+    {
+      "url": "https://www.eso.org/sci/facilities/paranal/telescopes/ut.html",
+      "label": "VLT unit telescopes",
+      "source": "ESO"
+    },
+    {
+      "url": "https://www.eso.org/public/copyright/",
+      "label": "ESO copyright and reuse terms",
+      "source": "ESO"
     }
   ],
   "references": [
@@ -69,5 +84,19 @@
         "doi:10.1117/12.316782"
       ]
     }
-  }
+  },
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, pictures of the week, blog posts and captions on this site are not released under the Creative Commons Attribution 4.0 International License and can not be used for non-ESO products.\"",
+    "url": "https://www.eso.org/public/copyright/"
+  },
+  "acknowledgements": [
+    {
+      "for": "ESO",
+      "text": "Publications based on data obtained with the FORS instruments should quote the following reference paper: Appenzeller, I. et al. 1998, The Messenger 94, 1",
+      "url": "https://www.eso.org/sci/facilities/paranal/instruments/fors.html",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
 }

@@ -1,0 +1,34 @@
+{
+  "description": "The SOAR Optical Imager (SOI) is an optical mini-mosaic imager mounted at the bent Cassegrain focus of the 4.1-meter SOAR telescope, utilizing two 2k x 4k CCDs and a wide complement of broad-band and narrow-band filters.",
+  "facility_description": "The Southern Astrophysical Research (SOAR) 4.1-meter Telescope is situated atop Cerro Pachón in Chile, operated by NSF NOIRLab.",
+  "notes": "SOI was the first-light optical imager for SOAR. Filter curves are distributed on NOIRLab/SOAR websites without an open licence grant.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the Creative Commons Attribution 4.0 International License\"",
+    "url": "https://noirlab.edu/public/copyright/"
+  },
+  "references": [
+    "bibcode:2004SPIE.5492..564S"
+  ],
+  "links": [
+    {
+      "url": "https://noirlab.edu/science/programs/ctio/telescopes/soar-telescope/filters",
+      "label": "SOAR Filters",
+      "source": "NSF NOIRLab"
+    },
+    {
+      "url": "https://noirlab.edu/science/programs/ctio/filters",
+      "label": "CTIO Filter Directory",
+      "source": "NSF NOIRLab"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "Southern Astrophysical Research (SOAR) Telescope",
+      "text": "Based on observations obtained at the Southern Astrophysical Research (SOAR) Telescope, which is a joint project of the Ministério da Ciência, Tecnologia e Inovações (MCTI/LNA) do Brasil, the U.S. National Science Foundation NOIRLab, the University of North Carolina at Chapel Hill (UNC), and Michigan State University (MSU).",
+      "url": "https://noirlab.edu/science/about/scientific-acknowledgments",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

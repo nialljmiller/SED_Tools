@@ -1,0 +1,36 @@
+{
+  "description": "The Infra-Red Atmospheric Sounder (IRAS) on FY-3B is a 26-channel scanning radiometer observing infrared radiation from 0.69 to 15.5 µm. It retrieves atmospheric vertical profiles of temperature and moisture, surface skin temperature, and total column ozone.",
+  "facility_description": "FengYun-3B is the second polar-orbiting satellite in China’s FY-3 series (afternoon sun-synchronous orbit), launched in November 2010 and operated by the National Satellite Meteorological Center (NSMC) of the China Meteorological Administration (CMA).",
+  "notes": "FY-3B IRAS filter response curves are distributed via the NSMC GSICS portal (http://gsics.nsmc.org.cn/portal/en/fycv/srf.html). Portal terms assert Copyright © NSMC(NCSW). All Rights Reserved., and commercial redistribution is restricted without CMA permission. DetectorType is left unchanged.",
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"Copyright © NSMC(NCSW). All Rights Reserved.\"",
+    "url": "http://gsics.nsmc.org.cn/portal/share/footer.html"
+  },
+  "references": [
+    "bibcode:2021AdAtS..38.1267X",
+    "bibcode:2026RemS...18.2506H"
+  ],
+  "links": [
+    {
+      "url": "https://www.nsmc.org.cn/nsmc/en/instrument/IRAS.html",
+      "label": "NSMC IRAS instrument overview",
+      "source": "NSMC"
+    },
+    {
+      "url": "https://www.nsmc.org.cn/nsmc/en/satellite/FY3B.html",
+      "label": "NSMC FY-3B satellite overview",
+      "source": "NSMC"
+    },
+    {
+      "url": "http://gsics.nsmc.org.cn/portal/en/fycv/srf.html",
+      "label": "NSMC Spectral Response Functions portal",
+      "source": "NSMC"
+    },
+    {
+      "url": "https://space.oscar.wmo.int/instruments/view/iras",
+      "label": "WMO OSCAR IRAS instrument entry",
+      "source": "WMO"
+    }
+  ]
+}

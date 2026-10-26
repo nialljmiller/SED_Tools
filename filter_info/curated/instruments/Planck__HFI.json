@@ -1,0 +1,60 @@
+{
+  "description": "HFI, the Planck High Frequency Instrument, was a bolometer instrument for the temperature and polarisation of the cosmic microwave background and Galactic foregrounds in six wide bands from 100 to 857 GHz.",
+  "facility_description": "Planck is ESA's mission to observe the first light in the Universe, designed to image the temperature and polarisation anisotropies of the cosmic microwave background over the whole sky.",
+  "notes": "The acknowledgement is the footnote ESA asks for papers that use Planck data. The licence sentence is the ESA archive terms. Those terms do not name the filter curves. The instrument papers are also on arXiv under the non-exclusive licence, which does not grant further reuse. Commercial use of ESA archive data needs a separate authorisation. No magnitude system was recorded.",
+  "licence": {
+    "redistribution": "restricted",
+    "terms": "\"Data hosted in the ESA Space Science Archives are distributed under the CC BY-NC 3.0 IGO licence.\"",
+    "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions"
+  },
+  "references": [
+    "arxiv:1101.2039"
+  ],
+  "links": [
+    {
+      "url": "https://www.cosmos.esa.int/web/planck",
+      "label": "Planck",
+      "source": "ESA"
+    },
+    {
+      "url": "https://www.cosmos.esa.int/web/planck/planck-data-use",
+      "label": "Planck data-use acknowledgement",
+      "source": "ESA"
+    },
+    {
+      "url": "https://arxiv.org/abs/1101.2039",
+      "label": "Instrument paper abstract",
+      "source": "arXiv"
+    },
+    {
+      "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
+      "label": "ESA Space Science Archives terms",
+      "source": "ESA"
+    }
+  ],
+  "bands": {
+    "*": {
+      "references": [
+        "arxiv:1101.2039"
+      ]
+    },
+    "100": {
+      "Description": "HFI band centred at 100 GHz."
+    },
+    "143": {
+      "Description": "HFI band centred at 143 GHz."
+    },
+    "217": {
+      "Description": "HFI band centred at 217 GHz."
+    },
+    "353": {
+      "Description": "HFI band centred at 353 GHz."
+    },
+    "545": {
+      "Description": "HFI band centred at 545 GHz."
+    },
+    "857": {
+      "Description": "HFI band centred at 857 GHz."
+    }
+  }
+}

@@ -11,6 +11,31 @@
       "url": "https://subarutelescope.org/Archive/Instruments/SCam/ccd.html",
       "label": "Suprime-Cam CCDs",
       "source": "Subaru"
+    },
+    {
+      "url": "https://subarutelescope.org/Archive/Instruments/SCam/index.html",
+      "label": "Suprime-Cam instrument page",
+      "source": "Subaru"
+    },
+    {
+      "url": "https://subarutelescope.org/Science/Publish/instruments.html",
+      "label": "Subaru instrument citations",
+      "source": "Subaru"
+    },
+    {
+      "url": "https://arxiv.org/abs/astro-ph/0211006",
+      "label": "Miyazaki et al. 2002, Suprime-Cam",
+      "source": "Subaru"
+    },
+    {
+      "url": "https://subarutelescope.org/en/",
+      "label": "Subaru Telescope",
+      "source": "Subaru"
+    },
+    {
+      "url": "https://subarutelescope.org/Information/copyright.html",
+      "label": "Subaru Telescope website terms",
+      "source": "Subaru"
     }
   ],
   "references": [
@@ -117,5 +142,10 @@
         "bibcode:2002PASJ...54..833M"
       ]
     }
+  },
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"The whole site and all works (text, photographs, illustrations, videos, audio files, etc.) contained in the Subaru Telescope website are owned by the National Astronomical Observatory of Japan (NAOJ) or their respective copyright holders.\"",
+    "url": "https://subarutelescope.org/Information/copyright.html"
   }
 }

@@ -6,6 +6,16 @@
       "url": "https://telescope.livjm.ac.uk/TelInst/Inst/IOO/",
       "label": "Liverpool Telescope IO:O Instrument Page",
       "source": "Liverpool Telescope"
+    },
+    {
+      "url": "https://telescope.livjm.ac.uk/Ack/",
+      "label": "Liverpool Telescope Acknowledgements",
+      "source": "Liverpool Telescope"
+    },
+    {
+      "url": "https://www.ljmu.ac.uk/legal/copyright-notice",
+      "label": "LJMU Copyright Notice",
+      "source": "Liverpool John Moores University"
     }
   ],
   "references": [
@@ -84,5 +94,19 @@
         }
       ]
     }
-  }
+  },
+  "licence": {
+    "redistribution": "restricted",
+    "terms": "\"In accessing the University webpages, you agree that any content you download is for personal, non-commercial use only.\"",
+    "url": "https://www.ljmu.ac.uk/legal/copyright-notice"
+  },
+  "acknowledgements": [
+    {
+      "for": "Liverpool Telescope",
+      "text": "The Liverpool Telescope is operated on the island of La Palma by Liverpool John Moores University in the Spanish Observatorio del Roque de los Muchachos of the Instituto de Astrofisica de Canarias with financial support from the UK Science and Technology Facilities Council.",
+      "url": "https://telescope.livjm.ac.uk/Ack/",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
 }

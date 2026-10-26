@@ -1,0 +1,36 @@
+{
+  "description": "The Multi-channel Visible and Infrared Scanning Radiometer (MVISR) was the primary optical imaging payload on FY-1D, featuring 10 spectral channels from visible to thermal infrared wavelengths. Its filters support cloud imaging, sea surface temperature, vegetation monitoring, and environmental hazard tracking.",
+  "facility_description": "FengYun-1D was the fourth satellite in China’s first-generation polar-orbiting meteorological satellite series, operated by the National Satellite Meteorological Center (NSMC) of the China Meteorological Administration (CMA).",
+  "notes": "Filter spectral response functions originate from the NSMC GSICS portal (http://gsics.nsmc.org.cn/portal/en/fycv/srf.html). Portal footer asserts Copyright © NSMC(NCSW). All Rights Reserved., and CMA policy restricts non-essential data and commercial redistribution without authorization. DetectorType is left unchanged.",
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"Copyright © NSMC(NCSW). All Rights Reserved.\"",
+    "url": "http://gsics.nsmc.org.cn/portal/share/footer.html"
+  },
+  "references": [
+    "bibcode:2021AdAtS..38.1267X",
+    "bibcode:2022RemS...14..411P"
+  ],
+  "links": [
+    {
+      "url": "https://www.nsmc.org.cn/nsmc/en/instrument/MVISR.html",
+      "label": "NSMC MVISR instrument overview",
+      "source": "NSMC"
+    },
+    {
+      "url": "https://www.nsmc.org.cn/nsmc/en/satellite/FY1D.html",
+      "label": "NSMC FY-1D satellite overview",
+      "source": "NSMC"
+    },
+    {
+      "url": "http://gsics.nsmc.org.cn/portal/en/fycv/srf.html",
+      "label": "NSMC Spectral Response Functions portal",
+      "source": "NSMC"
+    },
+    {
+      "url": "https://space.oscar.wmo.int/instruments/view/mvisr",
+      "label": "WMO OSCAR MVISR instrument entry",
+      "source": "WMO"
+    }
+  ]
+}

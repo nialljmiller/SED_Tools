@@ -1,0 +1,32 @@
+{
+  "description": "The AAO filter set catalogs optical broad-band and narrow-band filters historically offered for CCD direct imaging and focal plane instruments at the Anglo-Australian Telescope (AAT).",
+  "facility_description": "The Anglo-Australian Telescope (AAT) is a 3.9-meter equatorially mounted optical telescope at Siding Spring Observatory in New South Wales, operated by the Australian National University (ANU).",
+  "notes": "AAO filters originate from the AAO Master Filter Catalog for the 3.9m Anglo-Australian Telescope at Siding Spring Observatory. Operation of the AAT was transferred to the Australian National University (ANU). Terms follow ANU website copyright policy restricting reproduction without permission.",
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"material on this website must not be reproduced, communicated, modified or used for commercial purposes without the prior written permission of the university or the relevant rights holder.\"",
+    "url": "https://www.anu.edu.au/copyright"
+  },
+  "references": [
+    "bibcode:1977VA.....21..191W",
+    "doi:10.1016/0083-6656(77)90030-7",
+    "bibcode:1979PASP...91..589B"
+  ],
+  "links": [
+    {
+      "url": "https://rsaa.anu.edu.au/observatories/telescopes/anglo-australian-telescope",
+      "label": "Anglo-Australian Telescope overview",
+      "source": "ANU RSAA"
+    },
+    {
+      "url": "https://rsaa.anu.edu.au/observatories/siding-spring-observatory",
+      "label": "Siding Spring Observatory",
+      "source": "ANU RSAA"
+    },
+    {
+      "url": "https://www.anu.edu.au/copyright",
+      "label": "ANU Copyright and Terms of Use",
+      "source": "ANU"
+    }
+  ]
+}

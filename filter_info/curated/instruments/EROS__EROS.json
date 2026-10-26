@@ -1,0 +1,31 @@
+{
+  "description": "The EROS (Earth Remote Observation Satellite) B satellite is a high-resolution commercial Earth observation spacecraft equipped with a panchromatic CCD imager covering visible and near-infrared wavelengths (500-900 nm).",
+  "facility_description": "The EROS satellite constellation was developed by Israel Aerospace Industries (IAI) and is operated commercially by ImageSat International (ISI).",
+  "notes": "EROS/EROS catalogs the commercial Earth observation satellite EROS-B panchromatic response curve published by imagery reseller Apollo Mapping. Terms are reserved under Apollo Mapping copyright.",
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"Copyright © 2026 All Rights Reserved\"",
+    "url": "https://apollomapping.com/about-us/whitepapers"
+  },
+  "references": [
+    "doi:10.5194/isprs-archives-XLI-B7-647-2016",
+    "doi:10.1109/IGARSS.2015.7325906"
+  ],
+  "links": [
+    {
+      "url": "https://apollomapping.com/about-us/whitepapers",
+      "label": "Apollo Mapping Spectral Response Whitepapers",
+      "source": "Apollo Mapping"
+    },
+    {
+      "url": "https://apollomapping.com/image_downloads/Relative_Spectral_Response_Value_and_Curve_EROS_B.pdf",
+      "label": "EROS B Relative Spectral Response curve",
+      "source": "Apollo Mapping"
+    }
+  ],
+  "bands": {
+    "Pan": {
+      "Description": "EROS B panchromatic relative spectral response"
+    }
+  }
+}

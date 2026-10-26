@@ -1,0 +1,40 @@
+{
+  "description": "The Gemini Multi-Object Spectrograph North (GMOS-N) is an optical imager and multi-slit/integral-field spectrograph mounted on Gemini North. Its filter mechanism accommodates broad-band Sloan-like filters and specialized narrow-band and order-sorting filters for optical imaging and spectroscopy.",
+  "facility_description": "The International Gemini Observatory operates twin 8.1-meter optical and infrared telescopes atop Maunakea in Hawai'i (Gemini North) and Cerro Pachón in Chile (Gemini South), managed by NSF NOIRLab.",
+  "notes": "GMOS-N filter transmission data are provided as laboratory measurements on Gemini instrumentation pages; redistribution terms for numerical transmission files are not specified under NOIRLab open content policy.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the Creative Commons Attribution 4.0 International License\"",
+    "url": "https://noirlab.edu/public/copyright/"
+  },
+  "references": [
+    "doi:10.1086/383624",
+    "bibcode:1997SPIE.2871...15M"
+  ],
+  "links": [
+    {
+      "url": "https://www.gemini.edu/instrumentation/gmos",
+      "label": "GMOS instrument page",
+      "source": "Gemini Observatory"
+    },
+    {
+      "url": "https://www.gemini.edu/instrumentation/gmos/components",
+      "label": "GMOS optical components and filter curves",
+      "source": "Gemini Observatory"
+    },
+    {
+      "url": "https://www.gemini.edu/instrumentation/gmos/documents",
+      "label": "GMOS citation and documentation",
+      "source": "Gemini Observatory"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "International Gemini Observatory",
+      "text": "Based on observations obtained at the international Gemini Observatory, a program of NSF NOIRLab [ include additional acknowledgment here, see section below ], which is managed by the Association of Universities for Research in Astronomy (AURA) under a cooperative agreement with the U.S. National Science Foundation on behalf of the Gemini Observatory partnership: the U.S. National Science Foundation (United States), National Research Council (Canada), Agencia Nacional de Investigación y Desarrollo (Chile), Ministerio de Ciencia, Tecnología e Innovación (Argentina), Ministério da Ciência, Tecnologia, Inovações e Comunicações (Brazil), and Korea Astronomy and Space Science Institute (Republic of Korea).",
+      "url": "https://noirlab.edu/science/about/scientific-acknowledgments",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

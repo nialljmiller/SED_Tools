@@ -1,0 +1,17 @@
+{
+  "description": "Hasselblad H3D digital camera: R, G and B spectral responses measured with a set of interference filters (camSPECS) in C. Mauer's 2009 diploma thesis (Cologne University of Applied Sciences / Image Engineering), appendix 'Hasselblad H3D'.",
+  "facility_description": "Digital cameras (DSLRs, mirrorless, compact, industrial, cinema and phone cameras) whose RGB channel spectral sensitivities or internal IR/UV-cut filter transmissions have been measured.",
+  "notes": "SVO's ProfileReference points to https://www.image-engineering.de/content/library/diploma_thesis/christian_mauer_spectral_response.pdf, which now redirects to a generic Image Engineering page; the thesis is available from the TH Koeln repository (https://epb.bibl.th-koeln.de/files/166/Mauer_Christian.pdf). Licence: no licence statement found on the TH Koeln repository front page or in the thesis; looked at https://epb.bibl.th-koeln.de/frontdoor/index/index/docId/166.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "",
+    "url": "https://epb.bibl.th-koeln.de/frontdoor/index/index/docId/166"
+  },
+  "links": [
+    {
+      "url": "https://epb.bibl.th-koeln.de/frontdoor/index/index/docId/166",
+      "label": "Mauer (2009) diploma thesis: spectral response of digital cameras",
+      "source": "TH Koeln repository"
+    }
+  ]
+}

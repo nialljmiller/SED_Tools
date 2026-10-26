@@ -1,0 +1,61 @@
+{
+  "description": "FOCAS is the faint-object camera and spectrograph at the Subaru Cassegrain focus, used for optical imaging, long-slit and multi-slit spectroscopy, polarimetry, and integral-field spectroscopy over a 6 arcmin field. Its broad-band imaging filters on the current Subaru page are U, B, V, R and I.",
+  "facility_description": "Subaru Telescope is an 8.2-metre optical-infrared telescope near the summit of Maunakea, Hawaiʻi, operated by the National Astronomical Observatory of Japan.",
+  "notes": "The current filters page lists broad-band U, B, V, R and I, with centres and widths 3600/560, 4400/1080, 5500/1000, 6600/1170 and 8050/1460 angstroms, and says those sensitivities are preliminary as of 8/5/2010. The same centres and widths appear in the users'-guide filter list. The older imaging-sensitivity page instead labels the two red filters Rc and Ic and, in a separate conversion section, defines the AB system and gives AB-to-Johnson offsets for B, V, Rc and Ic, citing Frei & Gunn 1995, plus a Johnson-Cousins photon table referenced to Bessel (1979). That page does not say which magnitude system the FOCAS sensitivity numbers themselves use, so MagSys is omitted. The Johnson assignment is the SPIE 2000 postscript linked from the FOCAS page: the words were read from the PostScript text stream as one sentence, 'A set of standard FOCAS filters are also available for broad-band filters (Johnson's UBVRI), narrow-band filters, and order-cut filters.' The instrument page asks authors to cite Kashikawa, N., et al. 2002, PASJ, 54, 819, and check_refs resolves bibcode:2002PASJ...54..819K. The PASJ article URL returned HTTP 403, so the paper is not attached to individual bands. Bessell 1990 and Fukugita 1996 are not named on these FOCAS pages. NAOJ's copyright page allows some free uses of website works and does not clearly license redistribution of the numeric transmission tables, so the class is unknown. The acknowledgement sentence is copied from the FOCAS instrument page.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"The whole site and all works (text, photographs, illustrations, videos, audio files, etc.) contained in the Subaru Telescope website are owned by the National Astronomical Observatory of Japan (NAOJ) or their respective copyright holders.\"",
+    "url": "https://subarutelescope.org/Information/copyright.html"
+  },
+  "references": [
+    "bibcode:2002PASJ...54..819K"
+  ],
+  "links": [
+    {
+      "url": "https://subarutelescope.org/Instruments/FOCAS/",
+      "label": "FOCAS instrument page",
+      "source": "Subaru"
+    },
+    {
+      "url": "https://subarutelescope.org/Instruments/FOCAS/camera/filters.html",
+      "label": "FOCAS filters and sensitivities",
+      "source": "Subaru"
+    },
+    {
+      "url": "https://subarutelescope.org/Instruments/FOCAS/Detail/UsersGuide/PartsDetail/Filters/FilterList.html",
+      "label": "FOCAS filter and transmission list",
+      "source": "Subaru"
+    },
+    {
+      "url": "https://subarutelescope.org/Instruments/FOCAS/Detail/UsersGuide/Observing/Sensitivities/Imag/ImagSensitivity.html",
+      "label": "FOCAS imaging sensitivities (users' guide)",
+      "source": "Subaru"
+    },
+    {
+      "url": "https://subarutelescope.org/Instruments/FOCAS/spie2000.kashik.ps.gz",
+      "label": "Kashikawa et al. SPIE 2000 postscript, linked from the FOCAS page",
+      "source": "Subaru"
+    },
+    {
+      "url": "https://subarutelescope.org/en/",
+      "label": "Subaru Telescope",
+      "source": "Subaru"
+    },
+    {
+      "url": "https://subarutelescope.org/Information/copyright.html",
+      "label": "Subaru Telescope website terms",
+      "source": "Subaru"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "FOCAS",
+      "text": "Please cite the following paper when you refer FOCAS in your publication.",
+      "url": "https://subarutelescope.org/Instruments/FOCAS/",
+      "references": [
+        "bibcode:2002PASJ...54..819K"
+      ],
+      "applies_to": "all bands"
+    }
+  ]
+}

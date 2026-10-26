@@ -1,0 +1,45 @@
+{
+  "description": "BOOMERANG was a balloon-borne microwave telescope and total-power receiver built to map cosmic microwave background anisotropy from a long-duration balloon.",
+  "facility_description": "BOOMERANG flew a 10.5 day stratospheric flight from McMurdo Station, Antarctica.",
+  "notes": "No requested acknowledgement was found. The only reuse terms opened for the article are the arXiv non-exclusive licence, which does not grant further reuse and says to contact the author. That is not a grant to redistribute a separate numeric curve. No magnitude system was recorded.",
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"which does not grant further reuse permissions directly. In these cases you will need to contact the author directly with your request.\"",
+    "url": "https://info.arxiv.org/help/license/reuse.html"
+  },
+  "references": [
+    "bibcode:2003ApJS..148..527C",
+    "arxiv:astro-ph/0206254"
+  ],
+  "links": [
+    {
+      "url": "https://arxiv.org/abs/astro-ph/0206254",
+      "label": "Crill et al. 2003, BOOMERANG",
+      "source": "arXiv"
+    },
+    {
+      "url": "https://info.arxiv.org/help/license/reuse.html",
+      "label": "arXiv permissions and reuse",
+      "source": "arXiv"
+    }
+  ],
+  "bands": {
+    "*": {
+      "references": [
+        "bibcode:2003ApJS..148..527C"
+      ]
+    },
+    "90GHz": {
+      "Description": "BOOMERANG spectral band centred at 90 GHz."
+    },
+    "150GHz": {
+      "Description": "BOOMERANG spectral band centred at 150 GHz."
+    },
+    "240GHz": {
+      "Description": "BOOMERANG spectral band centred at 240 GHz."
+    },
+    "410GHz": {
+      "Description": "BOOMERANG spectral band centred at 410 GHz."
+    }
+  }
+}

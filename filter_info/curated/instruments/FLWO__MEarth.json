@@ -1,0 +1,31 @@
+{
+  "description": "The MEarth-North observatory is an array of eight robotically controlled 40 cm telescopes at FLWO dedicated to detecting transiting rocky exoplanets around nearby M dwarfs using a custom red-optical/near-infrared passband (iz).",
+  "facility_description": "The Fred Lawrence Whipple Observatory (FLWO) is located on Mount Hopkins, Arizona, and operated by the Center for Astrophysics | Harvard & Smithsonian.",
+  "notes": "MEarth-North operates eight 40 cm f/9 Ritchey-Chretien telescopes equipped with Apogee Alta U42 CCDs and Schott RG715 longpass filters defining the custom iz bandpass. Data and site policies fall under the Smithsonian/CfA Open Access public domain terms.",
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"our digital assets are in the public domain and are thus free of copyright restrictions and may be used for any purpose, free of charge, without further permission.\"",
+    "url": "https://www.cfa.harvard.edu/news/image-use-policy"
+  },
+  "references": [
+    "bibcode:2008PASP..120..317N",
+    "bibcode:2012AJ....144..145B"
+  ],
+  "links": [
+    {
+      "url": "https://lweb.cfa.harvard.edu/MEarth/Welcome.html",
+      "label": "MEarth Project Homepage",
+      "source": "CfA"
+    },
+    {
+      "url": "https://lweb.cfa.harvard.edu/MEarth/Telescopes.html",
+      "label": "MEarth Telescopes overview",
+      "source": "CfA"
+    },
+    {
+      "url": "https://www.cfa.harvard.edu/news/image-use-policy",
+      "label": "CfA Open Access and Image Use Policy",
+      "source": "CfA"
+    }
+  ]
+}

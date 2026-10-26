@@ -1,0 +1,30 @@
+{
+  "description": "PANIC is a panoramic near-infrared camera designed for Calar Alto, optimised for the 2.2 m telescope and also usable at the 3.5 m telescope. Its filter set comprises Z, Y, J, H and Ks broad bands and H2 and Br-gamma narrow bands.",
+  "facility_description": "Calar Alto Observatory is located in the Sierra de Filabres in Almería, Spain, and is jointly operated by IAA-CSIC and the Andalusian Government.",
+  "notes": "The IAA instrument site is retained for historical purposes and describes the original mosaic camera. Parameters are quoted at 100 K in a converging beam; do not substitute the upgraded camera response. CAHA website permission terms cannot automatically license IAA-hosted files; no filter-specific grant found on the IAA overview, instrument or publications pages. Research accessed 2026-10-26. General CAHA observing acknowledgement is conditional on observational data and a proposal identifier; no observing proposal or SVO use is invented for these filter curves. Rights checked against CAHA legal notice (https://www.caha.es/es/?option=com_content&view=article&id=14725) and data management plan (https://www.caha.es/joomlaCMS/images/docs/DMPlan-CAHA.pdf); neither establishes an unambiguous grant for these third-party filter files.",
+  "references": [
+    "bibcode:2018PASP..130b5003C"
+  ],
+  "links": [
+    {
+      "url": "https://panic.iaa.es/",
+      "label": "PANIC instrument or filter documentation",
+      "source": "IAA-CSIC"
+    },
+    {
+      "url": "https://www.caha.es/",
+      "label": "Calar Alto Observatory",
+      "source": "CAHA"
+    },
+    {
+      "url": "https://panic.iaa.es/instrument.html",
+      "label": "Historical PANIC filter curves and parameters",
+      "source": "IAA-CSIC"
+    }
+  ],
+  "bands": {
+    "*": {
+      "Comments": "Filter parameters refer to 100 K and a converging beam."
+    }
+  }
+}

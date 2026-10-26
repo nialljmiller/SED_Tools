@@ -1,0 +1,32 @@
+{
+  "description": "Omega2000 is a near-infrared wide-field camera at the prime focus of the Calar Alto 3.5 m telescope, designed particularly for surveys. Broad- and narrow-band filters span the z through K wavelength range.",
+  "facility_description": "Calar Alto Observatory is located in the Sierra de Filabres in Almería, Spain, and is jointly operated by IAA-CSIC and the Andalusian Government.",
+  "notes": "The filter table includes blocking requirements; some filters need an additional blocker to suppress radiation beyond 2.6 microns. The owner bibliography was opened, but instrument/calibration reference resolution remains to be completed. Research accessed 2026-10-26. General CAHA observing acknowledgement is conditional on observational data and a proposal identifier; no observing proposal or SVO use is invented for these filter curves. CAHA legal notice requires prior written permission for distribution of website contents. The data management plan instead describes open reuse with attribution for publicly released observational data; its application to technical filter files is unconfirmed. Permission is the conservative class pending an explicit exception.",
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"Independientemente de la finalidad para la que fueran destinados, la reproducción total o parcial, uso, explotación, distribución y comercialización de los contenidos de este sitio web, requiere en todo caso de la autorización escrita previa por parte del prestador.\"",
+    "url": "https://www.caha.es/es/?option=com_content&view=article&id=14725"
+  },
+  "links": [
+    {
+      "url": "https://www.caha.es/CAHA/Instruments/O2000/index2.html",
+      "label": "Omega2000 instrument or filter documentation",
+      "source": "CAHA"
+    },
+    {
+      "url": "https://www.caha.es/",
+      "label": "Calar Alto Observatory",
+      "source": "CAHA"
+    },
+    {
+      "url": "https://www.caha.es/CAHA/Instruments/O2000/FILTERS/filters.html",
+      "label": "Omega2000 filter parameters",
+      "source": "CAHA"
+    },
+    {
+      "url": "https://www.caha.es/CAHA/Instruments/O2000/LITERATURE/literature.html",
+      "label": "Omega2000 technical bibliography",
+      "source": "CAHA"
+    }
+  ]
+}

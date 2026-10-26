@@ -1,0 +1,36 @@
+{
+  "description": "The Acquisition Camera (AcqCam) on Gemini North is an optical CCD imager located within the Acquisition and Guidance unit, used for field acquisition, telescope pointing verification, and direct optical imaging. Its filter wheel contains broad-band visible filters approximating the Johnson-Kron-Cousins system.",
+  "facility_description": "The International Gemini Observatory operates twin 8.1-meter optical and infrared telescopes atop Maunakea in Hawai'i (Gemini North) and Cerro Pachón in Chile (Gemini South), managed by NSF NOIRLab.",
+  "notes": "AcqCam on Gemini North has been retired from science use. Filter transmission data are documented on the legacy Gemini instrument pages; redistribution rights for raw filter measurement data are not specified under NOIRLab open content policy.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the Creative Commons Attribution 4.0 International License\"",
+    "url": "https://noirlab.edu/public/copyright/"
+  },
+  "references": [
+    "bibcode:1998SPIE.3355..206H",
+    "doi:10.1117/12.316751",
+    "bibcode:1997SPIE.2871...15M"
+  ],
+  "links": [
+    {
+      "url": "https://www.gemini.edu/sciops/telescope/acqcam/acqIndex.html",
+      "label": "Acquisition Camera overview",
+      "source": "Gemini Observatory"
+    },
+    {
+      "url": "https://www.gemini.edu/sciops/telescope/acqcam/acqFilterList.html",
+      "label": "Acquisition Camera filters and transmission curves",
+      "source": "Gemini Observatory"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "International Gemini Observatory",
+      "text": "Based on observations obtained at the international Gemini Observatory, a program of NSF NOIRLab [ include additional acknowledgment here, see section below ], which is managed by the Association of Universities for Research in Astronomy (AURA) under a cooperative agreement with the U.S. National Science Foundation on behalf of the Gemini Observatory partnership: the U.S. National Science Foundation (United States), National Research Council (Canada), Agencia Nacional de Investigación y Desarrollo (Chile), Ministerio de Ciencia, Tecnología e Innovación (Argentina), Ministério da Ciência, Tecnologia, Inovações e Comunicações (Brazil), and Korea Astronomy and Space Science Institute (Republic of Korea).",
+      "url": "https://noirlab.edu/science/about/scientific-acknowledgments",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

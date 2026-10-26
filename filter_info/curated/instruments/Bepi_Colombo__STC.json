@@ -1,0 +1,60 @@
+{
+  "description": "The Stereo Channel (STC) of SIMBIO-SYS is a push-frame stereo camera on the BepiColombo Mercury Planetary Orbiter. Table 5 of Cremonese et al. (2020) names six filters: F420, F550, F750, F920, PANL and PANH. The NJM keys 420nm, 550nm, 750nm and 920nm are those four broad-band filters.",
+  "facility_description": "BepiColombo is a joint ESA and JAXA mission; the ESA factsheet gives the launch date as 19/20 October 2018 and names the Mercury Planetary Orbiter as the ESA orbiter that carries SIMBIO-SYS.",
+  "notes": "PANL and PANH are printed on successive name lines of one spectral-band block in Table 5, so both are given that block's 699.5 nm centre and 204.3 nm FWHM. The SPICE IK v1.1 lists round centres (420, 550, 750, 920 nm at 20 nm; two P700 filters at 700 nm and 200 nm) and its colour-filter NAIF IDs disagree with the FOV names for -121623, -121624 and -121627; those kernel numbers were not used. The ESA Cosmos page lists STC channels as panchromatic (650) plus 550, 700 and 880 nm, which does not match Table 5, and was not used.",
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"If You Share the Licensed Material (including in modified\n                    form), You must:\"",
+    "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en"
+  },
+  "references": [
+    "doi:10.1007/s11214-020-00704-8",
+    "bibcode:2020SSRv..216...75C"
+  ],
+  "links": [
+    {
+      "url": "https://www.esa.int/Science_Exploration/Space_Science/BepiColombo/BepiColombo_factsheet",
+      "label": "ESA BepiColombo factsheet",
+      "source": "ESA"
+    },
+    {
+      "url": "https://www.cosmos.esa.int/web/bepicolombo/simbio-sys",
+      "label": "ESA Cosmos SIMBIO-SYS page",
+      "source": "ESA"
+    },
+    {
+      "url": "https://doi.org/10.1007/s11214-020-00704-8",
+      "label": "Cremonese et al. 2020, Space Science Reviews",
+      "source": "publisher"
+    },
+    {
+      "url": "https://www.research.unipd.it/bitstream/11577/3343819/2/s11214-020-00704-8.pdf",
+      "label": "Cremonese et al. 2020 PDF (University of Padua)",
+      "source": "university"
+    },
+    {
+      "url": "https://naif.jpl.nasa.gov/pub/naif/BEPICOLOMBO/kernels/ik/bc_mpo_simbio-sys_v11.ti",
+      "label": "BepiColombo SIMBIO-SYS SPICE IK v1.1",
+      "source": "NASA"
+    }
+  ],
+  "bands": {
+    "*": {
+      "references": [
+        "doi:10.1007/s11214-020-00704-8"
+      ]
+    },
+    "420nm": {
+      "Description": "STC broad-band filter named F420 in Table 5 of Cremonese et al. (2020). The table lists a central wavelength of 420.6 nm and a FWHM of 20.7 nm."
+    },
+    "550nm": {
+      "Description": "STC broad-band filter named F550 in Table 5 of Cremonese et al. (2020). The table lists a central wavelength of 550 nm and a FWHM of 20.4 nm."
+    },
+    "750nm": {
+      "Description": "STC broad-band filter named F750 in Table 5 of Cremonese et al. (2020). The table lists a central wavelength of 749.6 nm and a FWHM of 20.8 nm."
+    },
+    "920nm": {
+      "Description": "STC broad-band filter named F920 in Table 5 of Cremonese et al. (2020). The table lists a central wavelength of 923.8 nm and a FWHM of 20.5 nm."
+    }
+  }
+}

@@ -11,11 +11,17 @@
       "url": "https://irtfweb.ifa.hawaii.edu/IRrefdata/iwafdv.html",
       "label": "IRTF Near-Infrared Photometric Reference Data",
       "source": "IRTF"
+    },
+    {
+      "url": "https://irtfweb.ifa.hawaii.edu/~nsfcam2/Filter_Profiles.html",
+      "label": "NSFCam filter transmission profiles (incl. Mauna Kea set)",
+      "source": "IRTF"
     }
   ],
   "references": [
     "bibcode:2002PASP..114..180T",
-    "doi:10.1086/429382"
+    "doi:10.1086/429382",
+    "bibcode:2002PASP..114..169S"
   ],
   "notes": "Filter-only transmission profiles (no detector QE or atmosphere) for the MKO-NIR set; the IRTF profiles page lists the Mauna Kea filters as needing no PK50 blocker. Tokunaga & Vacca (2005) give the Vega-based calibration of the set.",
   "bands": {
@@ -104,5 +110,10 @@
         }
       ]
     }
+  },
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "",
+    "url": "https://irtfweb.ifa.hawaii.edu/~nsfcam2/Filter_Profiles.html"
   }
 }

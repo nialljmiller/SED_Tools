@@ -1,0 +1,59 @@
+{
+  "description": "Hipparcos was an ESA high-precision astrometry and photometry space mission. The Hipparcos instrument observed through a broad optical band (Hp) covering approximately 340 to 850 nm using an image dissector tube detector.",
+  "facility_description": "Hipparcos was a European Space Agency astrometric satellite launched into Earth orbit in 1989.",
+  "notes": "Passband curve is the Bessell & Murphy (2012) table 2 normalised photonic response (CDS catalogue J/PASP/124/140, table2.dat) for photon-counting synthetic photometry. New Hipparcos reduction is validated in van Leeuwen (2007). DetectorType is left unchanged.",
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"The data retrieved with VizieR are free of usage in a scientific context ; however, as it is the usage in scientific publication, the original authors and publication references including the publisher have to be explicitely cited\"",
+    "url": "https://cds.unistra.fr/vizier-org/licences_vizier.html"
+  },
+  "references": [
+    "bibcode:2012PASP..124..140B",
+    "bibcode:2007A&A...474..653V"
+  ],
+  "links": [
+    {
+      "url": "https://cdsarc.cds.unistra.fr/ftp/cats/J/PASP/124/140/ReadMe",
+      "label": "ReadMe for revised photonic passbands catalogue J/PASP/124/140",
+      "source": "CDS / VizieR"
+    },
+    {
+      "url": "https://cdsarc.cds.unistra.fr/viz-bin/cite/J/PASP/124/140",
+      "label": "Citation page for catalogue J/PASP/124/140",
+      "source": "CDS / VizieR"
+    },
+    {
+      "url": "https://cds.unistra.fr/vizier-org/licences_vizier.html",
+      "label": "VizieR data rules of usage and licence",
+      "source": "CDS / VizieR"
+    },
+    {
+      "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
+      "label": "ESA Space Science Archives terms and conditions",
+      "source": "ESA"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "CDS VizieR catalogue access tool",
+      "text": "This research has made use of the VizieR catalogue access tool, CDS, Strasbourg, France (DOI : 10.26093/cds/vizier). The original description of the VizieR service was published in 2000, A&AS 143, 23",
+      "url": "https://cdsarc.cds.unistra.fr/viz-bin/cite/J/PASP/124/140",
+      "references": [],
+      "applies_to": "all bands"
+    },
+    {
+      "for": "ESA Hipparcos mission credit",
+      "text": "Hipparcos Credit: ESA",
+      "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ],
+  "bands": {
+    "Hp": {
+      "references": [
+        "bibcode:2012PASP..124..140B"
+      ]
+    }
+  }
+}

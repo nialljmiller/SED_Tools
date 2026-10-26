@@ -1,0 +1,41 @@
+{
+  "description": "RINGO was the first-generation fast-readout imaging polarimeter on the 2.0-meter Liverpool Telescope, using a rotating polaroid and prism with a broad VR hybrid filter (Schott GG475 + KG3).",
+  "facility_description": "The Liverpool Telescope is a 2.0-meter fully robotic telescope operated by Liverpool John Moores University at Roque de los Muchachos Observatory on La Palma.",
+  "notes": "RINGO was decommissioned in June 2009 and replaced by RINGO2 and later RINGO3. Its VR passband covers 460-720 nm using cemented Schott GG475 and KG3 filters. Downloaded materials are subject to the LJMU copyright policy restricting use to personal, non-commercial purposes. Observations should cite the Liverpool Telescope acknowledgement and instrument papers (Steele et al. 2004, 2006).",
+  "licence": {
+    "redistribution": "restricted",
+    "terms": "\"In accessing the University webpages, you agree that any content you download is for personal, non-commercial use only.\"",
+    "url": "https://www.ljmu.ac.uk/legal/copyright-notice"
+  },
+  "references": [
+    "bibcode:2004SPIE.5489..679S",
+    "doi:10.1117/12.670756",
+    "bibcode:2024A&A...689A..93R"
+  ],
+  "links": [
+    {
+      "url": "https://telescope.livjm.ac.uk/TelInst/Inst/RINGO/",
+      "label": "Liverpool Telescope RINGO Instrument Page",
+      "source": "Liverpool Telescope"
+    },
+    {
+      "url": "https://telescope.livjm.ac.uk/Ack/",
+      "label": "Liverpool Telescope Acknowledgements",
+      "source": "Liverpool Telescope"
+    },
+    {
+      "url": "https://www.ljmu.ac.uk/legal/copyright-notice",
+      "label": "LJMU Copyright Notice",
+      "source": "Liverpool John Moores University"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "Liverpool Telescope",
+      "text": "The Liverpool Telescope is operated on the island of La Palma by Liverpool John Moores University in the Spanish Observatorio del Roque de los Muchachos of the Instituto de Astrofisica de Canarias with financial support from the UK Science and Technology Facilities Council.",
+      "url": "https://telescope.livjm.ac.uk/Ack/",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

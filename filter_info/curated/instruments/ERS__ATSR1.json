@@ -1,0 +1,12 @@
+{
+  "description": "The Along Track Scanning Radiometer (ATSR-1) measured sea-surface temperatures using two viewing angles for atmospheric correction. Onboard reference targets provided stable radiometric calibration for climate observations.",
+  "facility_description": "ERS-1 carried the first ATSR instrument, launched on 17 July 1991.",
+  "notes": "ATSR project pages credit the Oxford, Met Office, UCL and Rutherford Appleton Laboratory consortium; these are historical contributor credits, not a requested acknowledgement. Filter-curve redistribution terms and calibration bibliography remain unresolved.",
+  "links": [
+    {
+      "url": "https://www.atsrsensors.org/atsr-1.htm",
+      "label": "ATSR-1 instrument history and attributes",
+      "source": "ATSR sensor team"
+    }
+  ]
+}

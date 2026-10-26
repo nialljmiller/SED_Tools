@@ -1,0 +1,5 @@
+{
+  "description": "Kodak DCS200 digital camera: R, G and B channel spectral responses.",
+  "facility_description": "Digital cameras (DSLRs, mirrorless, compact, industrial, cinema and phone cameras) whose RGB channel spectral sensitivities or internal IR/UV-cut filter transmissions have been measured.",
+  "notes": "Source unknown: SVO gives no ProfileReference; the camera is not in the RIT database, the Kolari page or the Mauer thesis. Licence unknown."
+}

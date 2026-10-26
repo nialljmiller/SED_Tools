@@ -1,0 +1,30 @@
+{
+  "description": "90Prime is a prime-focus wide-field optical CCD mosaic imager on the Steward Observatory 2.3-meter (90-inch) Bok Telescope on Kitt Peak, equipped with UBVRI, SDSS, Washington, and narrow-band filters.",
+  "facility_description": "The Bart Bok 2.3-meter (90-inch) Telescope is located at Kitt Peak National Observatory in Arizona, owned and operated solely by Steward Observatory at the University of Arizona.",
+  "notes": "The Steward Observatory MOON wiki documents 90Prime filter tracings and properties under CC BY-SA 4.0. No required observatory-wide publication acknowledgment text is published on the wiki or Bok pages.",
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"Except where otherwise noted, content on this wiki is licensed under the following license: CC Attribution-Share Alike 4.0 International\"",
+    "url": "https://lavinia.as.arizona.edu/~tscopewiki/doku.php?id=public:kitt_peak:bok_90:90prime:filters"
+  },
+  "references": [
+    "bibcode:2004SPIE.5492..787W"
+  ],
+  "links": [
+    {
+      "url": "https://james.as.arizona.edu/~psmith/90inch/90inch.html",
+      "label": "Bok Telescope Home",
+      "source": "Steward Observatory"
+    },
+    {
+      "url": "https://lavinia.as.arizona.edu/~tscopewiki/doku.php?id=public:kitt_peak:bok_90:90prime:filters",
+      "label": "90Prime Available Filters and Curves",
+      "source": "Steward Observatory MOON Wiki"
+    },
+    {
+      "url": "https://lavinia.as.arizona.edu/~tscopewiki/doku.php?id=public:kitt_peak:bok_90:bok_90_telescope",
+      "label": "Bok 90 Telescope Overview",
+      "source": "Steward Observatory MOON Wiki"
+    }
+  ]
+}

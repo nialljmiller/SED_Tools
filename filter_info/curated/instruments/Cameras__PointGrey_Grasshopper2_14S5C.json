@@ -1,0 +1,42 @@
+{
+  "description": "PointGrey Grasshopper2 14S5C digital camera: normalized R, G and B channel spectral sensitivities (400-720 nm, 10 nm steps) from the RIT Camera Spectral Sensitivity Database (Jiang et al. 2013).",
+  "facility_description": "Digital cameras (DSLRs, mirrorless, compact, industrial, cinema and phone cameras) whose RGB channel spectral sensitivities or internal IR/UV-cut filter transmissions have been measured.",
+  "notes": "RGB curves checked this session: NJM values are identical (max abs diff 0) to the 'Point Grey Grasshopper2 14S5C' entry of http://www.gujinwei.org/research/camspec/camspec_database.txt.",
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"Licensed under the Creative Commons BY-NC-SA 4.0 license\" (non-commercial, share-alike, attribution to Rochester Institute of Technology / Jiang et al. 2013)",
+    "url": "http://www.gujinwei.org/research/camspec/db.html"
+  },
+  "references": [
+    "doi:10.1109/WACV.2013.6475015"
+  ],
+  "links": [
+    {
+      "url": "http://www.gujinwei.org/research/camspec/db.html",
+      "label": "Camera Spectral Sensitivity Database (28 cameras, 400-720 nm)",
+      "source": "Rochester Institute of Technology (J. Gu)"
+    },
+    {
+      "url": "https://infoscience.epfl.ch/record/182538/files/egpaper_final.pdf",
+      "label": "Jiang et al. (2013) WACV paper",
+      "source": "EPFL Infoscience"
+    }
+  ],
+  "bands": {
+    "Grasshopper2_14S5C_B": {
+      "references": [
+        "doi:10.1109/WACV.2013.6475015"
+      ]
+    },
+    "Grasshopper2_14S5C_G": {
+      "references": [
+        "doi:10.1109/WACV.2013.6475015"
+      ]
+    },
+    "Grasshopper2_14S5C_R": {
+      "references": [
+        "doi:10.1109/WACV.2013.6475015"
+      ]
+    }
+  }
+}

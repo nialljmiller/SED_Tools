@@ -1,0 +1,37 @@
+{
+  "description": "CASTOR filter curves used here are the UV, u, and g transmission curves plotted by Scott, Upton Sanderbeck, and Bird (2022) for a proposed wide-field ultraviolet-optical survey. That paper states three broadband filters from 150 nm to 550 nm and compares them with GALEX NUV and FUV.",
+  "facility_description": "In Scott et al. (2022), CASTOR (Cosmological Advanced Survey Telescope for Optical and UV Research) is a proposed one-metre-class near-UV and optical survey satellite with a wide field of view, cited there as intended for launch in the mid to late 2020s.",
+  "notes": "The arXiv abstract page states the journal reference as Monthly Notices of the Royal Astronomical Society, Volume 511, Issue 4, April 2022, Pages 5158–5170, related DOI https://doi.org/10.1093/mnras/stac265. The shortened bibcode 2022MNRAS.511.5158 was not printed on that page. ADS returned a human-verification wall, so no ADS bibcode was copied. doi.org for this DOI redirects to academic.oup.com and curl received HTTP 403, so the MNRAS publisher page and any OUP reuse terms were not opened. No CSA data-policy or requested acknowledgement page was opened. The licence quote is the grant the submitter gives arXiv; it is not a public reuse licence for the filter curves. Scott et al. also print \"CASTOR is a proposed near UV-optical survey telescope. Wavelength coverage for the UV imaging instrument is ≈ 550 − 5500 Å.\" That angstrom range is quoted as printed and is not reconciled here with the 150–550 nm sentence. The design paper they cite as Cote et al. 2019 was not opened. No per-band pivot wavelengths were separated in the opened text, so uv, u, and g are covered only by the shared reference. The Figure 1 quote is from pdftotext of the arXiv PDF.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"I grant arXiv.org a perpetual, non-exclusive license to distribute this article.\"",
+    "url": "https://arxiv.org/licenses/nonexclusive-distrib/1.0/"
+  },
+  "references": [
+    "doi:10.1093/mnras/stac265"
+  ],
+  "links": [
+    {
+      "url": "https://arxiv.org/abs/2104.00017",
+      "label": "Scott et al. 2022 arXiv abstract",
+      "source": "arXiv"
+    },
+    {
+      "url": "https://arxiv.org/pdf/2104.00017.pdf",
+      "label": "Scott et al. 2022 arXiv PDF",
+      "source": "arXiv"
+    },
+    {
+      "url": "https://ar5iv.labs.arxiv.org/html/2104.00017",
+      "label": "Scott et al. 2022 ar5iv HTML",
+      "source": "arXiv"
+    }
+  ],
+  "bands": {
+    "*": {
+      "references": [
+        "doi:10.1093/mnras/stac265"
+      ]
+    }
+  }
+}

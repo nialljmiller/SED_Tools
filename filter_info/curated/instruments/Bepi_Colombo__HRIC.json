@@ -1,0 +1,60 @@
+{
+  "description": "The High Resolution Imaging Channel (HRIC) is the push-frame camera of SIMBIO-SYS on the BepiColombo Mercury Planetary Orbiter. One panchromatic filter and three band-pass filters are deposited on the detector window.",
+  "facility_description": "BepiColombo is a joint ESA and JAXA mission; the ESA factsheet gives the launch date as 19/20 October 2018 and names the Mercury Planetary Orbiter as the ESA orbiter that carries SIMBIO-SYS.",
+  "notes": "Passbands are the measured central wavelength and FWHM in Table 2 of Cremonese et al. (2020), not the round values in the ESA SPICE IK. The ESA Cosmos SIMBIO-SYS page was not used for wavelengths; it says the HRIC channels match STC and lists a different set. Zusi et al. 2019 (2019ApOpt..58.4059Z) was not opened beyond an abstract that does not list these passbands, so it is not cited. SVO was not used.",
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"If You Share the Licensed Material (including in modified\n                    form), You must:\"",
+    "url": "https://creativecommons.org/licenses/by/4.0/legalcode.en"
+  },
+  "references": [
+    "doi:10.1007/s11214-020-00704-8",
+    "bibcode:2020SSRv..216...75C"
+  ],
+  "links": [
+    {
+      "url": "https://www.esa.int/Science_Exploration/Space_Science/BepiColombo/BepiColombo_factsheet",
+      "label": "ESA BepiColombo factsheet",
+      "source": "ESA"
+    },
+    {
+      "url": "https://www.cosmos.esa.int/web/bepicolombo/simbio-sys",
+      "label": "ESA Cosmos SIMBIO-SYS page",
+      "source": "ESA"
+    },
+    {
+      "url": "https://doi.org/10.1007/s11214-020-00704-8",
+      "label": "Cremonese et al. 2020, Space Science Reviews",
+      "source": "publisher"
+    },
+    {
+      "url": "https://www.research.unipd.it/bitstream/11577/3343819/2/s11214-020-00704-8.pdf",
+      "label": "Cremonese et al. 2020 PDF (University of Padua)",
+      "source": "university"
+    },
+    {
+      "url": "https://naif.jpl.nasa.gov/pub/naif/BEPICOLOMBO/kernels/ik/bc_mpo_simbio-sys_v11.ti",
+      "label": "BepiColombo SIMBIO-SYS SPICE IK v1.1",
+      "source": "NASA"
+    }
+  ],
+  "bands": {
+    "*": {
+      "references": [
+        "doi:10.1007/s11214-020-00704-8"
+      ]
+    },
+    "F550": {
+      "Description": "HRIC filter F550. Table 2 of Cremonese et al. (2020) lists a central wavelength of 549.3 nm and a FWHM of 40.4 nm."
+    },
+    "F750": {
+      "Description": "HRIC filter F750. Table 2 of Cremonese et al. (2020) lists a central wavelength of 752.9 nm and a FWHM of 39.6 nm."
+    },
+    "F880": {
+      "Description": "HRIC filter F880. Table 2 of Cremonese et al. (2020) lists a central wavelength of 880.1 nm and a FWHM of 39.8 nm."
+    },
+    "FPAN": {
+      "Description": "HRIC panchromatic filter FPAN. Table 2 of Cremonese et al. (2020) lists a central wavelength of 652.3 nm and a FWHM of 504.9 nm."
+    }
+  }
+}

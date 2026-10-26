@@ -1,0 +1,35 @@
+{
+  "description": "The York filter set consists of sixteen narrow-band interference filters (central wavelengths from 5059 to 9088 Angstroms) loaned by Donald G. York (University of Chicago) for interstellar and emission-line imaging on the ARC 3.5-meter telescope.",
+  "facility_description": "The ARC 3.5-meter Telescope is an optical and infrared telescope at Apache Point Observatory (APO) in the Sacramento Mountains of New Mexico, owned and operated by the Astrophysical Research Consortium.",
+  "notes": "York narrow-band interference filters (50 mm round) provided by Don York (University of Chicago). Transmission curves are hosted on the APO filter server subject to NMSU copyright policy requiring permission for reproduction.",
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"reproduction of any content-text, images, photographs, etc.-requires permission.\"",
+    "url": "https://www.nmsu.edu/copyright.html"
+  },
+  "references": [
+    "bibcode:2000AJ....120.1579Y",
+    "doi:10.1117/12.316525"
+  ],
+  "links": [
+    {
+      "url": "http://filters.apo.nmsu.edu/curves/York/",
+      "label": "York Interference Filter Set",
+      "source": "Apache Point Observatory"
+    },
+    {
+      "url": "http://filters.apo.nmsu.edu/",
+      "label": "APO Filter Inventory",
+      "source": "Apache Point Observatory"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "Apache Point Observatory",
+      "text": "Based on observations obtained with the Apache Point Observatory 3.5-meter telescope, which is owned and operated by the Astrophysical Research Consortium.",
+      "url": "https://legacy.apo.nmsu.edu/Projects/pubacknow.htm",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

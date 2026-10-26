@@ -13,7 +13,9 @@
       "source": "Apache Point Observatory"
     }
   ],
-  "references": [],
+  "references": [
+    "doi:10.1117/12.316525"
+  ],
   "notes": "From the APO narrow-band filter page (bandpass < 10 nm section), which also links Semrock filter details.",
   "bands": {
     "Halpha_655nm": {
@@ -37,5 +39,19 @@
     "Semrock_857nm": {
       "Description": "APO Semrock narrow-band filter (APO lists centre 857 nm, FWHM 37.8 nm)"
     }
-  }
+  },
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"reproduction of any content-text, images, photographs, etc.-requires permission.\"",
+    "url": "https://www.nmsu.edu/copyright.html"
+  },
+  "acknowledgements": [
+    {
+      "for": "Apache Point Observatory",
+      "text": "Based on observations obtained with the Apache Point Observatory 3.5-meter telescope, which is owned and operated by the Astrophysical Research Consortium.",
+      "url": "https://legacy.apo.nmsu.edu/Projects/pubacknow.htm",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
 }

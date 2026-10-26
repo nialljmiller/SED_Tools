@@ -1,0 +1,74 @@
+{
+  "description": "SCUBA-2 is the Submillimetre Common-User Bolometer Array 2 on the James Clerk Maxwell Telescope, a 10,000-pixel camera that images in the 450 and 850 micron atmospheric windows at the same time.",
+  "facility_description": "The James Clerk Maxwell Telescope is a 15 m telescope built for submillimetre wavelengths, near the summit of Maunakea, Hawaii, at an altitude of 4092 m. The East Asian Observatory operates the JCMT.",
+  "notes": "NJM's band keys are 450GHz and 850GHz. The JCMT instrument page, the filters page and Holland et al. 2013 name the windows 450 and 850 microns, not gigahertz. Those keys were not given Description fields. The filters page links numeric profiles (model450, model850, and measured s8c and s8d averages) and says the files use a pdf extension but are text. Its footer is the all-rights-reserved sentence stored as the licence quote. That sentence does not grant redistribution, so the class is permission. The JCMT acknowledgement stored here is the wording required for observations after March 2025. The same page gives a different sentence for observations before March 2025, a pre-2015 Joint Astronomy Centre sentence, and shorter Research Notes wording. Papers are also asked to quote a programme ID. No magnitude system is stated. The instrument page points to Holland et al. 2013, Dempsey et al. 2013, Chapin et al. 2013 and Mairs et al. 2021; only Holland was opened and resolved.",
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"All site content Copyright © 2014-2025 East Asian Observatory all rights reserved.\"",
+    "url": "https://www.eaobservatory.org/jcmt/instrumentation/continuum/scuba-2/"
+  },
+  "references": [
+    "bibcode:2013MNRAS.430.2513H",
+    "doi:10.1093/mnras/sts612",
+    "arxiv:1301.3650"
+  ],
+  "links": [
+    {
+      "url": "https://www.eaobservatory.org/jcmt/instrumentation/continuum/scuba-2/",
+      "label": "SCUBA-2",
+      "source": "EAO"
+    },
+    {
+      "url": "https://www.eaobservatory.org/jcmt/about-jcmt/",
+      "label": "About the JCMT",
+      "source": "EAO"
+    },
+    {
+      "url": "https://www.eaobservatory.org/jcmt/observing/acknowledgement/",
+      "label": "Acknowledgement for JCMT papers",
+      "source": "EAO"
+    },
+    {
+      "url": "https://arxiv.org/abs/1301.3650",
+      "label": "Holland et al. 2013, SCUBA-2 instrument paper",
+      "source": "arXiv"
+    },
+    {
+      "url": "https://www.eaobservatory.org/jcmt/instrumentation/continuum/scuba-2/filters/",
+      "label": "SCUBA-2 filter profiles",
+      "source": "EAO"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "James Clerk Maxwell Telescope",
+      "text": "These observations were obtained by the James Clerk Maxwell Telescope, operated by the East Asian Observatory on behalf of Academia Sinica Institute of Astronomy and Astrophysics and the National Astronomical Research Institute of Thailand. Additional funding support is provided by the Science and Technology Facilities Council of the United Kingdom and participating universities and organizations in the United Kingdom and Canada.",
+      "url": "https://www.eaobservatory.org/jcmt/observing/acknowledgement/",
+      "references": [
+        "bibcode:2013MNRAS.430.2513H"
+      ],
+      "applies_to": "all bands"
+    },
+    {
+      "for": "SCUBA-2",
+      "text": "Additional funds for the construction of SCUBA-2 were provided by the Canada Foundation for Innovation.",
+      "url": "https://www.eaobservatory.org/jcmt/observing/acknowledgement/",
+      "references": [],
+      "applies_to": "all bands"
+    },
+    {
+      "for": "Maunakea",
+      "text": "The authors wish to recognize and acknowledge the very significant cultural role and reverence that the summit of Maunakea has always had within the indigenous Hawaiian community. We are most fortunate to have the opportunity to conduct observations from this mountain.",
+      "url": "https://www.eaobservatory.org/jcmt/observing/acknowledgement/",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ],
+  "bands": {
+    "*": {
+      "references": [
+        "bibcode:2013MNRAS.430.2513H"
+      ]
+    }
+  }
+}

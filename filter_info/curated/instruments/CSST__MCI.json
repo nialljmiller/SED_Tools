@@ -1,0 +1,92 @@
+{
+  "description": "MCI is the CSST Multi-channel Imager. Cao et al. (2022) define nine medium-band filters, F275W, F336W, F375M, F450M, F500M, F630M, F763M, F845M and F960M, and give trapezoidal intrinsic transmission curves plus total curves that include detector quantum efficiency.",
+  "facility_description": "The China Space Station Telescope is a 2 m telescope intended to operate in the same orbit as the China Manned Space Station. The MCI splits the beam into near-UV, optical-blue and optical-red channels with a 7.5 by 7.5 arcmin field.",
+  "notes": "No CSST or NAOC data-policy page was opened (NAOC overview curl HTTP 000; Meng PDF HTTP 500). The arXiv record links to the non-exclusive distribution licence, which lets arXiv.org distribute the article and does not say that third parties may redistribute numerical filter curves. The IOP journal page was not opened, so the journal licence is unknown. Figure 1 states that dotted curves are detector quantum efficiency and that dashed and solid lines are intrinsic and total transmission. That split is not given as separate NJM filenames. No requested user acknowledgement was found. The limiting magnitudes in the paper are AB; the MagSys value uses the sentence that the three channels can be stacked to 29-30 AB mag. Author funding text was not copied.",
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"I grant arXiv.org a perpetual, non-exclusive license to distribute this article.\"",
+    "url": "https://arxiv.org/licenses/nonexclusive-distrib/1.0/license.html"
+  },
+  "references": [
+    "bibcode:2022RAA....22b5019C",
+    "doi:10.1088/1674-4527/ac424e"
+  ],
+  "links": [
+    {
+      "url": "https://arxiv.org/abs/2110.07088",
+      "label": "Cao et al. 2022, CSST MCI filters",
+      "source": "arXiv"
+    },
+    {
+      "url": "https://arxiv.org/pdf/2110.07088",
+      "label": "Cao et al. 2022 PDF",
+      "source": "arXiv"
+    },
+    {
+      "url": "https://arxiv.org/licenses/nonexclusive-distrib/1.0/license.html",
+      "label": "arXiv non-exclusive distribution licence",
+      "source": "arXiv"
+    }
+  ],
+  "bands": {
+    "F275W": {
+      "MagSys": "AB",
+      "references": [
+        "bibcode:2022RAA....22b5019C"
+      ]
+    },
+    "F336W": {
+      "MagSys": "AB",
+      "references": [
+        "bibcode:2022RAA....22b5019C"
+      ]
+    },
+    "F375M": {
+      "MagSys": "AB",
+      "references": [
+        "bibcode:2022RAA....22b5019C"
+      ]
+    },
+    "F450M": {
+      "MagSys": "AB",
+      "references": [
+        "bibcode:2022RAA....22b5019C"
+      ]
+    },
+    "F500M": {
+      "MagSys": "AB",
+      "references": [
+        "bibcode:2022RAA....22b5019C"
+      ]
+    },
+    "F630M": {
+      "MagSys": "AB",
+      "references": [
+        "bibcode:2022RAA....22b5019C"
+      ]
+    },
+    "F763M": {
+      "MagSys": "AB",
+      "references": [
+        "bibcode:2022RAA....22b5019C"
+      ]
+    },
+    "F845M": {
+      "MagSys": "AB",
+      "references": [
+        "bibcode:2022RAA....22b5019C"
+      ]
+    },
+    "F960M": {
+      "MagSys": "AB",
+      "references": [
+        "bibcode:2022RAA....22b5019C"
+      ]
+    },
+    "*": {
+      "references": [
+        "bibcode:2022RAA....22b5019C"
+      ]
+    }
+  }
+}

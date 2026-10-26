@@ -1,0 +1,83 @@
+{
+  "description": "The Dawn Framing Camera is a multispectral CCD imager in a refracting telescope. Each of the two identical cameras has a filter wheel with one clear filter and seven narrow-band filters, used both to map Vesta and Ceres and for optical navigation.",
+  "facility_description": "Dawn is the NASA mission to the asteroids 4 Vesta and 1 Ceres; the Framing Camera is the German imaging contribution, flown as two identical units.",
+  "notes": "Filter numbers F1-F8 in the PDS FC2 instrument catalog match Schröder et al.: F1 is the clear filter and F2-F8 are the narrow-band filters. The catalog peak of 700 nm for F1 is not the effective wavelength; Schröder et al. Table 3 lists F1 central wavelength 735 nm and effective wavelength 732 nm, and lists effective wavelengths for F2-F8 that match the catalog. ADS abstract pages returned HTTP 405, so no bibcode was copied. The Springer article page for 10.1007/s11214-011-9745-4 returned a client-challenge document; the DOI is taken from the PDS FC1 context page and from Crossref. The Schröder manuscript on arXiv is marked CC-BY-NC-ND 4.0. The band wavelengths quoted here are from the PDS instrument catalog, and the calibration-pipeline report archived with the PDS Dawn FC data (DA-FC-MPAE-RP-272, issue 2, revision b) had no copyright or restrictive-licence sentence in its extracted text. PDS citing pages say to cite the data product but do not give a fixed acknowledgement sentence. The NASA licence sentence is used because these are calibration and auxiliary descriptions from the NASA-led Dawn mission in the PDS. Images are digitized to 14 bits on a frame-transfer CCD; that is not a statement of photon versus energy weighting. The NASA licence page qualifies that sentence: it applies unless the data file is marked with a restrictive notice or license.",
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"There are no restrictions on the usage of these data.\"",
+    "url": "https://science.data.nasa.gov/about/license"
+  },
+  "references": [
+    "doi:10.1007/s11214-011-9745-4",
+    "doi:10.1016/j.icarus.2013.07.036",
+    "arxiv:1701.09014"
+  ],
+  "links": [
+    {
+      "url": "https://science.nasa.gov/mission/dawn/technology/fc-instrument/",
+      "label": "Dawn Framing Camera instrument page",
+      "source": "NASA Science"
+    },
+    {
+      "url": "https://pds.nasa.gov/ds-view/pds/viewContext.jsp?identifier=urn:nasa:pds:context:instrument:dawn.fc1",
+      "label": "PDS context for Dawn Framing Camera 1",
+      "source": "NASA PDS"
+    },
+    {
+      "url": "https://pds.nasa.gov/data/pds3/backup/201506-spiceDawn/DWNVFC2/zzold/FC2_INSTRUMENT.CAT",
+      "label": "Dawn FC2 PDS3 instrument catalog",
+      "source": "NASA PDS"
+    },
+    {
+      "url": "https://sbnarchive.psi.edu/pds3/dawn/fc/DWNC7FC2_1B/DOCUMENT/CALIB_PIPELINE/DA-FC-MPAE-RP-272_2_B.PDF",
+      "label": "Dawn FC calibration pipeline, issue 2 revision b",
+      "source": "NASA PDS Small Bodies archive"
+    },
+    {
+      "url": "https://arxiv.org/html/1701.09014",
+      "label": "Schröder et al. in-flight calibration (arXiv HTML)",
+      "source": "arXiv"
+    },
+    {
+      "url": "https://arxiv.org/abs/1701.09014",
+      "label": "Schröder et al. 2013 arXiv abstract",
+      "source": "arXiv"
+    },
+    {
+      "url": "https://science.data.nasa.gov/about/license",
+      "label": "NASA science data licences",
+      "source": "NASA Science Data Portal"
+    }
+  ],
+  "bands": {
+    "*": {
+      "references": [
+        "doi:10.1016/j.icarus.2013.07.036"
+      ]
+    },
+    "F1": {
+      "Description": "Dawn FC filter F1, the broadband clear filter, sensitive from 400 to 1100 nm and peaking at 700 nm in the PDS instrument catalog."
+    },
+    "F2": {
+      "Description": "Dawn FC filter F2, effective wavelength 555 nm, with the catalog FWHM given as +15 nm and -28 nm."
+    },
+    "F3": {
+      "Description": "Dawn FC filter F3, effective wavelength 749 nm, with the catalog FWHM given as +22 nm and -22 nm."
+    },
+    "F4": {
+      "Description": "Dawn FC filter F4, effective wavelength 917 nm, with the catalog FWHM given as +24 nm and -21 nm."
+    },
+    "F5": {
+      "Description": "Dawn FC filter F5, effective wavelength 965 nm, with the catalog FWHM given as +56 nm and -29 nm."
+    },
+    "F6": {
+      "Description": "Dawn FC filter F6, effective wavelength 829 nm, with the catalog FWHM given as +18 nm and -18 nm."
+    },
+    "F7": {
+      "Description": "Dawn FC filter F7, effective wavelength 653 nm, with the catalog FWHM given as +18 nm and -24 nm."
+    },
+    "F8": {
+      "Description": "Dawn FC filter F8, effective wavelength 438 nm, with the catalog FWHM given as +10 nm and -30 nm."
+    }
+  }
+}

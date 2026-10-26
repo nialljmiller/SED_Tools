@@ -1,0 +1,17 @@
+{
+  "description": "Fujifilm S5Pro digital camera: R, G and B spectral responses measured with a set of interference filters (camSPECS) in C. Mauer's 2009 diploma thesis (Cologne University of Applied Sciences / Image Engineering), appendix 'Fuji S5 Pro'.",
+  "facility_description": "Digital cameras (DSLRs, mirrorless, compact, industrial, cinema and phone cameras) whose RGB channel spectral sensitivities or internal IR/UV-cut filter transmissions have been measured.",
+  "notes": "SVO gives no ProfileReference for this camera; attribution to Mauer (2009) is by camera match: the thesis appendix contains a 'Fuji S5 Pro' section. NJM values look digitized from the thesis plots (quantized steps), not copied from its tables; not numerically verified. Licence: no licence statement found on the TH Koeln repository front page or in the thesis; looked at https://epb.bibl.th-koeln.de/frontdoor/index/index/docId/166.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "",
+    "url": "https://epb.bibl.th-koeln.de/frontdoor/index/index/docId/166"
+  },
+  "links": [
+    {
+      "url": "https://epb.bibl.th-koeln.de/frontdoor/index/index/docId/166",
+      "label": "Mauer (2009) diploma thesis: spectral response of digital cameras",
+      "source": "TH Koeln repository"
+    }
+  ]
+}

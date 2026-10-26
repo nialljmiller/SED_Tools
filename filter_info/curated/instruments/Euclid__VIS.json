@@ -1,0 +1,61 @@
+{
+  "description": "VIS is Euclid's visible camera. It uses one broad band, I_E, covering roughly the combined r, i and z range. The instrument paper plots the optical throughput and CCD detective quantum efficiency and states a 550–920 nm passband. No separate VIS numerical throughput file is listed on the ESA Euclid reference-data site.",
+  "facility_description": "Euclid is an ESA visible and near-infrared space survey, launched on 1 July 2023, with a 1.20 m Korsch off-axis three-mirror telescope.",
+  "notes": "The arXiv record for Cropper et al. links the article to the CC BY 4.0 deed (license icon by-4.0.png, http://creativecommons.org/licenses/by/4.0/). The deed page also says: \"This deed highlights only some of the key features and terms of the actual license. It is not a license and has no legal value.\" The quoted Share sentence is the redistribution statement on that deed. No VIS throughput file appears on https://euclid.esac.esa.int/msp/refdata/, which says the archived items are Mission Reference Data V1.0 (draft), NISP photometric passbands (V1.0) and a planetary nebulae spectral atlas (V1.0). The passband edges are not the same in every opened source: Cropper et al. use 550–920 nm, while the Euclid Consortium overview says \"single passband: I E =530-920nm\" and the NISP instrument paper says \"VIS has one single wide passband between ∼530 and 920 nm\". The NISP product acknowledgement was not copied onto VIS. The archive-wide Euclid credit line on the ESA terms page was not attached, because no VIS numerical product was found in the archive. Q1 data-credit text was not used.",
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"Share — copy and redistribute the material in any medium or format for any purpose, even commercially.\"",
+    "url": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "references": [
+    "bibcode:2025A&A...697A...2E"
+  ],
+  "links": [
+    {
+      "url": "https://www.cosmos.esa.int/web/euclid",
+      "label": "ESA Euclid mission page",
+      "source": "ESA Cosmos"
+    },
+    {
+      "url": "https://www.euclid-ec.org/",
+      "label": "Euclid Consortium",
+      "source": "Euclid Consortium"
+    },
+    {
+      "url": "https://www.euclid-ec.org/science/overview/",
+      "label": "Euclid Consortium science overview",
+      "source": "Euclid Consortium"
+    },
+    {
+      "url": "https://euclid.esac.esa.int/msp/refdata/",
+      "label": "Euclid mission reference data index",
+      "source": "ESA"
+    },
+    {
+      "url": "https://arxiv.org/abs/2405.13492",
+      "label": "Euclid Collaboration: Cropper et al. 2025, VIS instrument",
+      "source": "arXiv"
+    },
+    {
+      "url": "https://arxiv.org/pdf/2405.13492",
+      "label": "VIS instrument paper PDF",
+      "source": "arXiv"
+    },
+    {
+      "url": "https://creativecommons.org/licenses/by/4.0/",
+      "label": "CC BY 4.0 deed (linked from the arXiv article)",
+      "source": "Creative Commons"
+    }
+  ],
+  "bands": {
+    "*": {
+      "references": [
+        "bibcode:2025A&A...697A...2E"
+      ]
+    },
+    "vis": {
+      "Description": "Single broad VIS band I_E. Cropper et al. give the passband as 550–920 nm and describe it as approximately r+i+z. Figure 7 shows optical-element throughput, CCD detective quantum efficiency, and the total throughput.",
+      "MagSys": "AB"
+    }
+  }
+}

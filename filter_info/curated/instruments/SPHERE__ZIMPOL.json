@@ -11,6 +11,21 @@
       "url": "https://www.eso.org/sci/facilities/paranal/instruments/sphere/inst/filters/transmission_ND_filters.txt",
       "label": "ZIMPOL neutral-density curves",
       "source": "ESO"
+    },
+    {
+      "url": "https://www.eso.org/sci/facilities/paranal/instruments/sphere.html",
+      "label": "SPHERE instrument summary",
+      "source": "ESO"
+    },
+    {
+      "url": "https://www.eso.org/public/copyright/",
+      "label": "ESO public-website copyright",
+      "source": "ESO"
+    },
+    {
+      "url": "https://archive.eso.org/cms/eso-data-access-policy.html",
+      "label": "ESO Science Archive data access policy",
+      "source": "ESO"
     }
   ],
   "references": [
@@ -201,5 +216,21 @@
         "bibcode:2018A&A...619A...9S"
       ]
     }
-  }
+  },
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"music, scientific papers, code, and text other than press releases, announcements, pictures of the week, blog posts and captions on this site are not released under the Creative Commons Attribution 4.0 International License and can not be used for non-ESO products.\"",
+    "url": "https://www.eso.org/public/copyright/"
+  },
+  "acknowledgements": [
+    {
+      "for": "SPHERE (ESO)",
+      "text": "Publications based on data obtained with the SPHERE instrument should quote the following reference paper: Beuzit et al., 2019 (A&A 631, A155)",
+      "url": "https://www.eso.org/sci/facilities/paranal/instruments/sphere.html",
+      "references": [
+        "bibcode:2019A&A...631A.155B"
+      ],
+      "applies_to": "all bands"
+    }
+  ]
 }

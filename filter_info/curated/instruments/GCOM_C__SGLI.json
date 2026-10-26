@@ -1,0 +1,31 @@
+{
+  "description": "The Second-Generation Global Imager (SGLI) is a multichannel optical sensor on GCOM-C observing from near ultraviolet to thermal infrared. Its channels support environmental observations including vegetation and aerosols.",
+  "facility_description": "GCOM-C is the Japanese Earth-observation mission carrying SGLI, successor to GLI on ADEOS-II.",
+  "notes": "Prelaunch characterization page explains left, nadir and right VNR telescopes and supplies their response functions. These match the VL/VN/VR naming structure in NJM, but individual passband files have not been compared. General JAXA website policy has restrictions; standard-product reuse terms must not automatically be applied to calibration files. General site-policy credit example is “Courtesy of JAXA”; commercial use requires prior permission and modifications are limited. No assumption is made that low-resolution standard satellite product terms cover instrument characterization tables.",
+  "references": [
+    "doi:10.1117/12.2068558",
+    "doi:10.1117/12.2073597"
+  ],
+  "links": [
+    {
+      "url": "https://suzaku.eorc.jaxa.jp/GCOM_C/instruments/index.html",
+      "label": "SGLI instrument overview",
+      "source": "JAXA"
+    },
+    {
+      "url": "https://suzaku.eorc.jaxa.jp/GCOM_C/data/prelaunch/index.html",
+      "label": "SGLI prelaunch spectral response and calibration references",
+      "source": "JAXA"
+    },
+    {
+      "url": "https://global.jaxa.jp/policy.html",
+      "label": "JAXA general website terms; curve-specific scope unresolved",
+      "source": "JAXA"
+    }
+  ],
+  "bands": {
+    "*": {
+      "Comments": "The prelaunch response release includes left, nadir and right VNR telescope variants; telescope identity must be preserved when using VL, VN and VR bands."
+    }
+  }
+}

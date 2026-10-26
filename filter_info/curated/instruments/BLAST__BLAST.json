@@ -1,0 +1,43 @@
+{
+  "description": "BLAST, the Balloon-borne Large Aperture Submillimeter Telescope, was a stratospheric 2 m survey telescope with a three-band bolometer camera at 250, 350 and 500 microns.",
+  "facility_description": "BLAST flew on long-duration stratospheric balloons, including flights from Kiruna in 2005 and McMurdo Station in 2006.",
+  "notes": "The abstract says microns. NJM's keys are 250mic, 350mic and 500mic. No requested acknowledgement was found. The only reuse terms opened for the article are the arXiv non-exclusive licence, which does not grant further reuse and says to contact the author. That is not a grant to redistribute a separate numeric curve. No magnitude system was recorded.",
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"which does not grant further reuse permissions directly. In these cases you will need to contact the author directly with your request.\"",
+    "url": "https://info.arxiv.org/help/license/reuse.html"
+  },
+  "references": [
+    "bibcode:2008ApJ...681..400P",
+    "doi:10.1086/588541",
+    "arxiv:0711.3465"
+  ],
+  "links": [
+    {
+      "url": "https://arxiv.org/abs/0711.3465",
+      "label": "Pascale et al. 2008, BLAST",
+      "source": "arXiv"
+    },
+    {
+      "url": "https://info.arxiv.org/help/license/reuse.html",
+      "label": "arXiv permissions and reuse",
+      "source": "arXiv"
+    }
+  ],
+  "bands": {
+    "*": {
+      "references": [
+        "bibcode:2008ApJ...681..400P"
+      ]
+    },
+    "250mic": {
+      "Description": "BLAST spectral window at 250 microns."
+    },
+    "350mic": {
+      "Description": "BLAST spectral window at 350 microns."
+    },
+    "500mic": {
+      "Description": "BLAST spectral window at 500 microns."
+    }
+  }
+}

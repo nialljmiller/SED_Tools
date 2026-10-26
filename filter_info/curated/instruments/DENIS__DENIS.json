@@ -1,0 +1,69 @@
+{
+  "description": "DENIS is the three-channel camera of the Deep Near-Infrared Survey of the Southern Sky. The survey bands are an optical Gunn-i channel, released as I, and the near-infrared J and Ks channels.",
+  "facility_description": "A European consortium ran the survey on the ESO 1 m telescope at La Silla, and the CDS in Strasbourg distributes the public catalogues.",
+  "notes": "The 1998 release note asks publications to use the footnote stored as the first acknowledgement, including the quotation marks and the leading space as printed in the blockquote. It also says users are free to use data extracted from the databases. That sentence is about catalogue extracts, not a stated right to redistribute the filter profiles, so the curve licence is unknown. The Hertfordshire record of Fouqué et al. 2000, which determines the i, J and Ks transmission profiles, says \"Copyright The European Southern Observatory\" and gives no reuse terms. The A&A copyright page returned HTTP 403. The CDS home page says I at 0.8 µm, J at 1.25 µm and K at 2.16 µm; the overview and B/denis ReadMe say Gunn-i at 0.82 µm and Ks at 2.15 µm. NJM's I is that Gunn-i channel. The second acknowledgement is the LaTeX text the acknowledgements page says to copy, backslashes included. Epchtein et al., A&A 349, 236 (1999), was opened as an ADS PDF, but bibcode:1999A&A...349..236E failed check_refs and was omitted. Redistribution of the numeric profiles is not clearly allowed.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"Users are free to use the data that they may extract from the\ndatabases.\"",
+    "url": "https://cdsweb.u-strasbg.fr/DENIS/introduction.htx"
+  },
+  "references": [
+    "bibcode:2000A&AS..141..313F",
+    "doi:10.1051/aas:2000123"
+  ],
+  "links": [
+    {
+      "url": "https://cdsweb.u-strasbg.fr/denis.html",
+      "label": "DENIS public server",
+      "source": "CDS"
+    },
+    {
+      "url": "https://cdsweb.u-strasbg.fr/DENIS/overview.html",
+      "label": "DENIS project overview",
+      "source": "CDS"
+    },
+    {
+      "url": "https://cdsweb.u-strasbg.fr/DENIS/introduction.htx",
+      "label": "1998 release note and required footnote",
+      "source": "CDS"
+    },
+    {
+      "url": "https://cdsweb.u-strasbg.fr/DENIS/ackno.html",
+      "label": "DENIS funding acknowledgement",
+      "source": "DENIS Consortium"
+    },
+    {
+      "url": "https://cdsarc.cds.unistra.fr/ftp/cats/B/denis/ReadMe",
+      "label": "DENIS third-release ReadMe",
+      "source": "CDS"
+    },
+    {
+      "url": "https://uhra.herts.ac.uk/id/eprint/1369/",
+      "label": "Fouqué et al. 2000 calibration paper",
+      "source": "University of Hertfordshire Research Archive"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "DENIS data (1998 release note)",
+      "text": "\" (partly) based on DENIS data obtained at the European Southern Observatory\"",
+      "url": "https://cdsweb.u-strasbg.fr/DENIS/introduction.htx",
+      "applies_to": "all bands",
+      "references": []
+    },
+    {
+      "for": "DENIS project funding",
+      "text": "The DENIS project has been partly funded by the SCIENCE and the HCM plans of\nthe European Commission under grants CT920791 and CT940627.\nIt is supported by INSU, MEN and CNRS in France, by the State of Baden-W\\\"urttemberg \nin Germany, by DGICYT in Spain, by CNR in Italy, by FFwFBWF in Austria, by FAPESP in Brazil,\nby OTKA grants F-4239 and F-013990 in Hungary, and by the ESO C\\&EE grant A-04-046.\n\nJean Claude Renault from IAP was the Project manager.  Observations were  \ncarried out thanks to the contribution of numerous students and young \nscientists from all involved institutes, under the supervision of  P. Fouqu\\'e,  \nsurvey astronomer resident in Chile.  \n",
+      "url": "https://cdsweb.u-strasbg.fr/DENIS/ackno.html",
+      "applies_to": "all bands",
+      "references": []
+    }
+  ],
+  "bands": {
+    "*": {
+      "references": [
+        "bibcode:2000A&AS..141..313F"
+      ]
+    }
+  }
+}

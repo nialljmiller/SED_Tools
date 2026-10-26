@@ -1,0 +1,79 @@
+{
+  "description": "The Far-Infrared Surveyor is one of AKARI's two focal-plane instruments. It has four photometric bands, formed by optical filters plus Ge:Ga and stressed Ge:Ga arrays, and the two wide bands also feed a Fourier-transform spectrometer.",
+  "facility_description": "AKARI was Japan's second infrared astronomy satellite, with a 68.5 cm telescope cooled to 6 K, observing from 1.7 to 180 μm in a Sun-synchronous polar orbit until operations ended on 24 November 2011.",
+  "notes": "NJM names WIDE_S and WIDE_L are Kawada et al.'s WIDE-S and WIDE-L (Murakami et al. also write Wide-S and Wide-L). The candidate FIS RSRF index http://www.ir.isas.jaxa.jp/AKARI/Observation/RSRF/FIS_FAD/index.html redirects to https and returns HTTP 404, so no public FIS FAD table was opened. Kawada et al. Figure 4 is the system spectral response, normalized at the peak; the text says in-orbit blackbody spectra agree with the laboratory curves to within 10% after responsivity scaling. The acknowledgement text is the italic sentence in the acknowledgement section of the ISAS publishing page, including the quotation marks that surround it on that page. The licence quote is section 6 of the ISAS Data Policy (14 March 2018), which also says these rules follow the Government of Japan Standard Terms of Use (Version 2.0) and are compatible with CC BY 4.0, and that users should indicate the origin as \"ISAS/JAXA\". The same section says third parties involved in production may impose other restrictions. AKARI HTML footers say \"Copyright © ISAS/JAXA. All Rights Reserved.\" The data policy does not state that the FIS response curves are classified as open data. Kawada et al. list Martin Cohen as a coauthor; no separate Cohen licence was found. The Murakami band-list quote is taken from the ar5iv HTML, which escapes micron as \\\\micron. Recorded licence class is permission because this footer is on the AKARI pages that were opened, and the ISAS Data Policy copy grant applies to data judged open. Those pages do not say the response curves are open data.",
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"Copyright © ISAS/JAXA. All Rights Reserved.\"",
+    "url": "https://www.ir.isas.jaxa.jp/AKARI/about/"
+  },
+  "references": [
+    "bibcode:2007PASJ...59S.389K",
+    "bibcode:2007PASJ...59S.369M"
+  ],
+  "links": [
+    {
+      "url": "https://www.ir.isas.jaxa.jp/AKARI/about/",
+      "label": "About AKARI",
+      "source": "ISAS/JAXA"
+    },
+    {
+      "url": "https://www.ir.isas.jaxa.jp/AKARI/about/instruments.html",
+      "label": "AKARI focal-plane instruments",
+      "source": "ISAS/JAXA"
+    },
+    {
+      "url": "https://www.ir.isas.jaxa.jp/AKARI/Observation/publish/",
+      "label": "AKARI publication guidelines",
+      "source": "ISAS/JAXA"
+    },
+    {
+      "url": "https://www.ir.isas.jaxa.jp/AKARI/Observation/publish/refs.html",
+      "label": "AKARI citation list",
+      "source": "ISAS/JAXA"
+    },
+    {
+      "url": "https://www.isas.jaxa.jp/en/researchers/data-policy/",
+      "label": "ISAS Data Policy",
+      "source": "ISAS/JAXA"
+    },
+    {
+      "url": "https://ar5iv.labs.arxiv.org/html/0708.3004",
+      "label": "Kawada et al. 2007, FIS instrument paper",
+      "source": "arXiv"
+    },
+    {
+      "url": "https://ar5iv.labs.arxiv.org/html/0708.1796",
+      "label": "Murakami et al. 2007, AKARI mission paper",
+      "source": "arXiv"
+    },
+    {
+      "url": "https://arxiv.org/abs/0708.3004",
+      "label": "arXiv abstract, FIS paper",
+      "source": "arXiv"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "AKARI project (JAXA, with ESA participation)",
+      "text": "\"This research is based on observations with AKARI, a JAXA project with the participation of ESA.\"",
+      "url": "https://www.ir.isas.jaxa.jp/AKARI/Observation/publish/",
+      "applies_to": "all bands",
+      "references": []
+    }
+  ],
+  "bands": {
+    "N60": {
+      "Description": "Narrow FIS band on the short-wavelength Ge:Ga detector, paired with WIDE-S."
+    },
+    "WIDE_S": {
+      "Description": "Wide FIS band on the short-wavelength Ge:Ga detector. Kawada et al. write this name WIDE-S."
+    },
+    "WIDE_L": {
+      "Description": "Wide FIS band on the long-wavelength stressed Ge:Ga detector. Kawada et al. write this name WIDE-L."
+    },
+    "N160": {
+      "Description": "Narrow FIS band on the long-wavelength stressed Ge:Ga detector, paired with WIDE-L."
+    }
+  }
+}

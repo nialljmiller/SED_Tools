@@ -1,0 +1,45 @@
+{
+  "description": "Archeops was a balloon-borne bolometer experiment, using Planck high-frequency-instrument technology, to map cosmic microwave background temperature anisotropy over a large fraction of the sky.",
+  "facility_description": "Archeops flew from a stratospheric balloon and scanned the millimetre sky in total power along large circles at constant elevation.",
+  "notes": "The abstract quote is taken from the arXiv abstract page, including its backslash-tilde before 100muK. No requested user acknowledgement was found. The only reuse terms opened for the article are the arXiv non-exclusive licence, which does not grant further reuse and says to contact the author. That is not a grant to redistribute a separate numeric curve. No magnitude system was recorded.",
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"which does not grant further reuse permissions directly. In these cases you will need to contact the author directly with your request.\"",
+    "url": "https://info.arxiv.org/help/license/reuse.html"
+  },
+  "references": [
+    "bibcode:2002APh....17..101B",
+    "arxiv:astro-ph/0106152"
+  ],
+  "links": [
+    {
+      "url": "https://arxiv.org/abs/astro-ph/0106152",
+      "label": "Benoît et al. 2002, Archeops instrument paper",
+      "source": "arXiv"
+    },
+    {
+      "url": "https://info.arxiv.org/help/license/reuse.html",
+      "label": "arXiv permissions and reuse",
+      "source": "arXiv"
+    }
+  ],
+  "bands": {
+    "*": {
+      "references": [
+        "bibcode:2002APh....17..101B"
+      ]
+    },
+    "143GHz": {
+      "Description": "Archeops frequency band centred at 143 GHz."
+    },
+    "217GHz": {
+      "Description": "Archeops frequency band centred at 217 GHz."
+    },
+    "353GHz": {
+      "Description": "Archeops frequency band centred at 353 GHz."
+    },
+    "545GHz": {
+      "Description": "Archeops frequency band centred at 545 GHz."
+    }
+  }
+}

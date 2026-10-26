@@ -1,0 +1,36 @@
+{
+  "description": "BICEP3 is a 550 mm refracting telescope at the South Pole for polarimetry of the cosmic microwave background at 95 GHz, in the BICEP and Keck series.",
+  "facility_description": "BICEP3 observes from the South Pole.",
+  "notes": "The 2014 SPIE abstract is the passband statement used here. A later instrument paper, arXiv:2110.00482, was resolved but not used for the band quote. No requested acknowledgement was found. The only reuse terms opened for the article are the arXiv non-exclusive licence, which does not grant further reuse and says to contact the author. That is not a grant to redistribute a separate numeric curve. No magnitude system was recorded.",
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"which does not grant further reuse permissions directly. In these cases you will need to contact the author directly with your request.\"",
+    "url": "https://info.arxiv.org/help/license/reuse.html"
+  },
+  "references": [
+    "arxiv:1407.5928",
+    "doi:10.1117/12.2057224"
+  ],
+  "links": [
+    {
+      "url": "https://arxiv.org/abs/1407.5928",
+      "label": "Ahmed et al. 2014, BICEP3",
+      "source": "arXiv"
+    },
+    {
+      "url": "https://info.arxiv.org/help/license/reuse.html",
+      "label": "arXiv permissions and reuse",
+      "source": "arXiv"
+    }
+  ],
+  "bands": {
+    "*": {
+      "references": [
+        "arxiv:1407.5928"
+      ]
+    },
+    "95GHz": {
+      "Description": "BICEP3 band at 95 GHz."
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "description": "The Medium Resolution Spectral Imager (MERSI) on FY-3A is a 20-channel multispectral optical imaging radiometer covering the visible, near-infrared, shortwave-infrared, and thermal-infrared spectral regions. It measures cloud properties, aerosols, ocean color, vegetation index, and land surface characteristics.",
+  "facility_description": "FengYun-3A is China’s first second-generation polar-orbiting meteorological satellite, launched in May 2008 and operated by the National Satellite Meteorological Center (NSMC) of the China Meteorological Administration (CMA).",
+  "notes": "FY-3A MERSI filter response functions are published on the NSMC GSICS portal (http://gsics.nsmc.org.cn/portal/en/fycv/srf.html). Site terms assert Copyright © NSMC(NCSW). All Rights Reserved., with redistribution restricted under CMA policy. DetectorType is left unchanged.",
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"Copyright © NSMC(NCSW). All Rights Reserved.\"",
+    "url": "http://gsics.nsmc.org.cn/portal/share/footer.html"
+  },
+  "references": [
+    "bibcode:2009BAMS...90.1531D",
+    "bibcode:2012ITGRS..50.4915H",
+    "bibcode:2021AdAtS..38.1267X",
+    "doi:10.1109/TGRS.2024.3432899"
+  ],
+  "links": [
+    {
+      "url": "https://www.nsmc.org.cn/nsmc/en/instrument/MERSI-1.html",
+      "label": "NSMC MERSI-1 instrument overview",
+      "source": "NSMC"
+    },
+    {
+      "url": "https://www.nsmc.org.cn/nsmc/en/satellite/FY3A.html",
+      "label": "NSMC FY-3A satellite overview",
+      "source": "NSMC"
+    },
+    {
+      "url": "http://gsics.nsmc.org.cn/portal/en/fycv/srf.html",
+      "label": "NSMC Spectral Response Functions portal",
+      "source": "NSMC"
+    },
+    {
+      "url": "https://space.oscar.wmo.int/instruments/view/mersi_1",
+      "label": "WMO OSCAR MERSI-1 instrument entry",
+      "source": "WMO"
+    }
+  ]
+}

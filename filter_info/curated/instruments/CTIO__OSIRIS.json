@@ -1,0 +1,34 @@
+{
+  "description": "The Ohio State Infrared Imager/Spectrometer (OSIRIS) was a facility near-infrared camera and multi-mode spectrograph mounted on the CTIO Blanco 4-meter and 1.5-meter telescopes, operating in the 1–2.5 micron wavelength regime.",
+  "facility_description": "Cerro Tololo Inter-American Observatory (CTIO) operates astronomical telescopes on Cerro Tololo in Chile, managed by NSF NOIRLab.",
+  "notes": "OSIRIS was developed by Ohio State University and used at CTIO. Transmission curves are historical CTIO data without an explicit open redistribution licence.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the Creative Commons Attribution 4.0 International License\"",
+    "url": "https://noirlab.edu/public/copyright/"
+  },
+  "references": [
+    "bibcode:1993SPIE.1946..667D"
+  ],
+  "links": [
+    {
+      "url": "https://noirlab.edu/science/programs/ctio/retired-instruments/osiris",
+      "label": "OSIRIS Retired Instrument Page",
+      "source": "NSF NOIRLab"
+    },
+    {
+      "url": "https://noirlab.edu/science/programs/ctio/filters",
+      "label": "CTIO Filters",
+      "source": "NSF NOIRLab"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "Cerro Tololo Inter-American Observatory",
+      "text": "Based on observations made at NSF Cerro Tololo Inter-American Observatory, NSF NOIRLab (NOIRLab Prop. ID; PI: first initial last name), which is managed by the Association of Universities for Research in Astronomy (AURA) under a cooperative agreement with the U.S. National Science Foundation.",
+      "url": "https://noirlab.edu/science/about/scientific-acknowledgments",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

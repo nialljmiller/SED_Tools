@@ -1,0 +1,69 @@
+{
+  "description": "Gaia DR2 passbands used to generate the released Data Release 2 magnitudes and astrophysical parameters for the G, BP and RP bands, as published by Evans et al. (2018).",
+  "facility_description": "Gaia is a European Space Agency astrometric, photometric and spectroscopic space observatory operating at the Sun-Earth L2 Lagrange point.",
+  "notes": "Gaia DR2 passbands used to generate the released DR2 magnitudes and astrophysical parameters (Evans et al. 2018, A&A 616, A4). Whole-instrument (telescope optics, filter/prisms, CCD QE) transmissivities for CCD photometry (DetectorType=photon). DetectorType is left unchanged. Distinct from GAIA/DR2r (revised curves) and GAIA/GAIA (EDR3/DR3, Gaia2m BP bright/faint).",
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"raw and calibrated data (hereafter data) deriving from satellites flown in the framework of an agency programme and contained in the esa space science archives, as well as analysed data and higher-level science products (hereafter data products) contained in the esa space science archives, are open and free to use by the user subject to proper acknowledgment to be given in accordance with the credit lines provided below.\"",
+    "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions"
+  },
+  "references": [
+    "bibcode:2018A&A...616A...4E",
+    "bibcode:2016A&A...595A...1G"
+  ],
+  "links": [
+    {
+      "url": "https://www.cosmos.esa.int/web/gaia/iow_20180316",
+      "label": "Gaia DR2 passbands description and documentation",
+      "source": "ESA / Gaia"
+    },
+    {
+      "url": "https://www.cosmos.esa.int/documents/29201/1645651/GaiaDR2_Passbands_ZeroPoints.zip/49cdce41-8eee-655d-7ed2-4e7a83598c1d",
+      "label": "Gaia DR2 passbands and zero points archive",
+      "source": "ESA / Gaia"
+    },
+    {
+      "url": "https://www.cosmos.esa.int/web/gaia-users/credits",
+      "label": "Gaia data credits and acknowledgements",
+      "source": "ESA / Gaia"
+    },
+    {
+      "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
+      "label": "ESA Space Science Archives terms and conditions",
+      "source": "ESA"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "European Space Agency (ESA) and Gaia DPAC",
+      "text": "The terms and conditions for the use of data in the ESA Space Science Archives require users to acknowledge ESA and other providers of the data by means of mission-specific credit lines as indicated below.",
+      "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
+      "references": [],
+      "applies_to": "all bands"
+    },
+    {
+      "for": "Gaia mission data credit line",
+      "text": "Gaia all Credit: ESA, Gaia DPAC",
+      "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ],
+  "bands": {
+    "BP": {
+      "references": [
+        "bibcode:2018A&A...616A...4E"
+      ]
+    },
+    "G": {
+      "references": [
+        "bibcode:2018A&A...616A...4E"
+      ]
+    },
+    "RP": {
+      "references": [
+        "bibcode:2018A&A...616A...4E"
+      ]
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "description": "This entry collects filters in the Calar Alto filter database, which tabulates central wavelength, bandwidth and peak transmission and provides throughput files for selected filters.",
+  "facility_description": "Calar Alto Observatory is located in the Sierra de Filabres in Almería, Spain, and is jointly operated by IAA-CSIC and the Andalusian Government.",
+  "notes": "This is an observatory filter collection rather than a single instrument. Legacy filterlist.html redirects by an HTML notice to the database. Some NJM IDs lack the a/b suffixes of current database entries; no ambiguous band mappings asserted. Research accessed 2026-10-26. General CAHA observing acknowledgement is conditional on observational data and a proposal identifier; no observing proposal or SVO use is invented for these filter curves. CAHA legal notice requires prior written permission for distribution of website contents. The data management plan instead describes open reuse with attribution for publicly released observational data; its application to technical filter files is unconfirmed. Permission is the conservative class pending an explicit exception.",
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"Independientemente de la finalidad para la que fueran destinados, la reproducción total o parcial, uso, explotación, distribución y comercialización de los contenidos de este sitio web, requiere en todo caso de la autorización escrita previa por parte del prestador.\"",
+    "url": "https://www.caha.es/es/?option=com_content&view=article&id=14725"
+  },
+  "links": [
+    {
+      "url": "https://www.caha.es/CAHA/Instruments/FILTER/filters.php",
+      "label": "CAHA instrument or filter documentation",
+      "source": "CAHA"
+    },
+    {
+      "url": "https://www.caha.es/",
+      "label": "Calar Alto Observatory",
+      "source": "CAHA"
+    }
+  ]
+}

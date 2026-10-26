@@ -1,0 +1,153 @@
+{
+  "description": "LAICA is a four-CCD optical camera at the prime focus of the Calar Alto 3.5 m telescope. Its filters support broad-band imaging and the medium-band ALHAMBRA photometric system.",
+  "facility_description": "Calar Alto Observatory is located in the Sierra de Filabres in Almería, Spain, and is jointly operated by IAA-CSIC and the Andalusian Government.",
+  "notes": "The user manual describes the Johnson and SDSS sets; the ALHAMBRA paper characterises the A...M filters. No wildcard citation is used because the NJM entry also contains Johnson, SDSS and F...W bands. Research accessed 2026-10-26. General CAHA observing acknowledgement is conditional on observational data and a proposal identifier; no observing proposal or SVO use is invented for these filter curves. CAHA legal notice requires prior written permission for distribution of website contents. The data management plan instead describes open reuse with attribution for publicly released observational data; its application to technical filter files is unconfirmed. Permission is the conservative class pending an explicit exception. Figure 1 and Table 1 support the twenty A...M bands only. The paper distinguishes filter, CCD and atmospheric response factors; no numerical curve identity is inferred from its title.",
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"Independientemente de la finalidad para la que fueran destinados, la reproducción total o parcial, uso, explotación, distribución y comercialización de los contenidos de este sitio web, requiere en todo caso de la autorización escrita previa por parte del prestador.\"",
+    "url": "https://www.caha.es/es/?option=com_content&view=article&id=14725"
+  },
+  "references": [
+    "bibcode:2010AJ....139.1242A",
+    "arxiv:1306.4968"
+  ],
+  "links": [
+    {
+      "url": "https://www.caha.es/CAHA/Instruments/LAICA/manual.html",
+      "label": "LAICA instrument or filter documentation",
+      "source": "CAHA"
+    },
+    {
+      "url": "https://www.caha.es/",
+      "label": "Calar Alto Observatory",
+      "source": "CAHA"
+    },
+    {
+      "url": "https://idus.us.es/bitstreams/227a70c2-8d2e-4a64-8008-16d3e8f6ef40/download",
+      "label": "ALHAMBRA filter-system paper (author repository)",
+      "source": "Aparicio Villegas et al.; Universidad de Sevilla"
+    }
+  ],
+  "bands": {
+    "A366M": {
+      "references": [
+        "bibcode:2010AJ....139.1242A"
+      ],
+      "PhotSystem": "ALHAMBRA"
+    },
+    "A394M": {
+      "references": [
+        "bibcode:2010AJ....139.1242A"
+      ],
+      "PhotSystem": "ALHAMBRA"
+    },
+    "A425M": {
+      "references": [
+        "bibcode:2010AJ....139.1242A"
+      ],
+      "PhotSystem": "ALHAMBRA"
+    },
+    "A457M": {
+      "references": [
+        "bibcode:2010AJ....139.1242A"
+      ],
+      "PhotSystem": "ALHAMBRA"
+    },
+    "A491M": {
+      "references": [
+        "bibcode:2010AJ....139.1242A"
+      ],
+      "PhotSystem": "ALHAMBRA"
+    },
+    "A522M": {
+      "references": [
+        "bibcode:2010AJ....139.1242A"
+      ],
+      "PhotSystem": "ALHAMBRA"
+    },
+    "A551M": {
+      "references": [
+        "bibcode:2010AJ....139.1242A"
+      ],
+      "PhotSystem": "ALHAMBRA"
+    },
+    "A581M": {
+      "references": [
+        "bibcode:2010AJ....139.1242A"
+      ],
+      "PhotSystem": "ALHAMBRA"
+    },
+    "A613M": {
+      "references": [
+        "bibcode:2010AJ....139.1242A"
+      ],
+      "PhotSystem": "ALHAMBRA"
+    },
+    "A646M": {
+      "references": [
+        "bibcode:2010AJ....139.1242A"
+      ],
+      "PhotSystem": "ALHAMBRA"
+    },
+    "A678M": {
+      "references": [
+        "bibcode:2010AJ....139.1242A"
+      ],
+      "PhotSystem": "ALHAMBRA"
+    },
+    "A708M": {
+      "references": [
+        "bibcode:2010AJ....139.1242A"
+      ],
+      "PhotSystem": "ALHAMBRA"
+    },
+    "A739M": {
+      "references": [
+        "bibcode:2010AJ....139.1242A"
+      ],
+      "PhotSystem": "ALHAMBRA"
+    },
+    "A770M": {
+      "references": [
+        "bibcode:2010AJ....139.1242A"
+      ],
+      "PhotSystem": "ALHAMBRA"
+    },
+    "A802M": {
+      "references": [
+        "bibcode:2010AJ....139.1242A"
+      ],
+      "PhotSystem": "ALHAMBRA"
+    },
+    "A829M": {
+      "references": [
+        "bibcode:2010AJ....139.1242A"
+      ],
+      "PhotSystem": "ALHAMBRA"
+    },
+    "A861M": {
+      "references": [
+        "bibcode:2010AJ....139.1242A"
+      ],
+      "PhotSystem": "ALHAMBRA"
+    },
+    "A892M": {
+      "references": [
+        "bibcode:2010AJ....139.1242A"
+      ],
+      "PhotSystem": "ALHAMBRA"
+    },
+    "A921M": {
+      "references": [
+        "bibcode:2010AJ....139.1242A"
+      ],
+      "PhotSystem": "ALHAMBRA"
+    },
+    "A948M": {
+      "references": [
+        "bibcode:2010AJ....139.1242A"
+      ],
+      "PhotSystem": "ALHAMBRA"
+    }
+  }
+}

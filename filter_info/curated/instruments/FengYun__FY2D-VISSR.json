@@ -1,0 +1,36 @@
+{
+  "description": "The Visible and Infrared Spin Scan Radiometer (VISSR) on FY-2D is a geostationary scanning radiometer providing visible and multi-channel infrared imagery. Its split-window thermal, middle-infrared, and water vapor channels monitor weather systems, sea surface temperature, and severe convective events.",
+  "facility_description": "FengYun-2D is a first-generation geostationary meteorological satellite of China, launched in December 2006 and operated by the National Satellite Meteorological Center (NSMC) of the China Meteorological Administration (CMA).",
+  "notes": "FY-2D VISSR filter curves originate from the NSMC GSICS portal (http://gsics.nsmc.org.cn/portal/en/fycv/srf.html). Site terms assert Copyright © NSMC(NCSW). All Rights Reserved., and redistribution is subject to CMA data policy. DetectorType is left unchanged.",
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"Copyright © NSMC(NCSW). All Rights Reserved.\"",
+    "url": "http://gsics.nsmc.org.cn/portal/share/footer.html"
+  },
+  "references": [
+    "bibcode:2021AdAtS..38.1267X",
+    "bibcode:2013ITGRS..51.5008H"
+  ],
+  "links": [
+    {
+      "url": "https://www.nsmc.org.cn/nsmc/en/instrument/VISSR-2.html",
+      "label": "NSMC VISSR instrument overview",
+      "source": "NSMC"
+    },
+    {
+      "url": "https://www.nsmc.org.cn/nsmc/en/satellite/FY2D.html",
+      "label": "NSMC FY-2D satellite overview",
+      "source": "NSMC"
+    },
+    {
+      "url": "http://gsics.nsmc.org.cn/portal/en/fycv/srf.html",
+      "label": "NSMC Spectral Response Functions portal",
+      "source": "NSMC"
+    },
+    {
+      "url": "https://space.oscar.wmo.int/instruments/view/vissr",
+      "label": "WMO OSCAR VISSR instrument entry",
+      "source": "WMO"
+    }
+  ]
+}

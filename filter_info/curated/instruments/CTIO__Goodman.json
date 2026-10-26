@@ -6,6 +6,11 @@
       "url": "https://noirlab.edu/science/programs/ctio/instruments/goodman-high-throughput-spectrograph",
       "label": "Goodman HTS instrument page",
       "source": "NOIRLab / SOAR"
+    },
+    {
+      "url": "https://noirlab.edu/science/programs/ctio/telescopes/soar-telescope/filters",
+      "label": "SOAR Filters",
+      "source": "NSF NOIRLab"
     }
   ],
   "references": [
@@ -77,5 +82,19 @@
       "Description": "Goodman HTS zp_SDSS filter",
       "PhotSystem": "SDSS"
     }
-  }
+  },
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the Creative Commons Attribution 4.0 International License\"",
+    "url": "https://noirlab.edu/public/copyright/"
+  },
+  "acknowledgements": [
+    {
+      "for": "Southern Astrophysical Research (SOAR) Telescope",
+      "text": "Based on observations obtained at the Southern Astrophysical Research (SOAR) Telescope, which is a joint project of the Ministério da Ciência, Tecnologia e Inovações (MCTI/LNA) do Brasil, the U.S. National Science Foundation NOIRLab, the University of North Carolina at Chapel Hill (UNC), and Michigan State University (MSU).",
+      "url": "https://noirlab.edu/science/about/scientific-acknowledgments",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
 }

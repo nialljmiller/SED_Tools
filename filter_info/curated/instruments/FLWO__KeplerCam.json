@@ -1,0 +1,36 @@
+{
+  "description": "KeplerCam was a 4096x4096 pixel CCD camera with a Fairchild CCD 486 detector on the 1.2-meter telescope at FLWO, used for optical photometry in Harris BVRI, SDSS ugriz, and narrowband filters.",
+  "facility_description": "The Fred Lawrence Whipple Observatory (FLWO) is an observatory facility on Mount Hopkins, Arizona, operated by the Center for Astrophysics | Harvard & Smithsonian.",
+  "notes": "KeplerCam operated at the Cassegrain focus of the FLWO 1.2m telescope. Filters included 4-inch Harris BVRI sets, SDSS (Sloan) ugriz sets, and narrowbands. Terms follow CfA / Smithsonian Open Access public domain policy.",
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"our digital assets are in the public domain and are thus free of copyright restrictions and may be used for any purpose, free of charge, without further permission.\"",
+    "url": "https://www.cfa.harvard.edu/news/image-use-policy"
+  },
+  "references": [
+    "bibcode:2009AJ....137.4911F",
+    "bibcode:2012AJ....144..101G"
+  ],
+  "links": [
+    {
+      "url": "http://www.sao.arizona.edu/FLWO/48/48.html",
+      "label": "FLWO 1.2m Telescope overview",
+      "source": "FLWO"
+    },
+    {
+      "url": "http://www.sao.arizona.edu/FLWO/48/kepccd.html",
+      "label": "KeplerCam CCD characteristics",
+      "source": "FLWO"
+    },
+    {
+      "url": "http://www.sao.arizona.edu/FLWO/48/CCD.filters.html",
+      "label": "FLWO 1.2m CCD Filters",
+      "source": "FLWO"
+    },
+    {
+      "url": "https://www.cfa.harvard.edu/news/image-use-policy",
+      "label": "CfA Open Access and Image Use Policy",
+      "source": "CfA"
+    }
+  ]
+}

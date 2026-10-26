@@ -1,0 +1,12 @@
+{
+  "description": "MODIS is a 36-band spectroradiometer measuring visible and infrared radiation. Its bands support observations of vegetation, ocean chlorophyll, clouds, aerosols, fire, snow and sea ice.",
+  "facility_description": "Aqua is a NASA Earth-observation satellite launched in May 2002 with the second MODIS instrument.",
+  "notes": "Owner description opened successfully at the NASA Science replacement page. Legacy MODIS page failed on subsequent retrieval and local certificate validation; Ocean Color RSR URL redirected to an Earthdata page returning HTTP 403. Earthdata data-use policy also returned 403, so its search excerpt was not used as licence evidence. NJM includes individual-detector variants; no per-detector mapping or magnitude system is inferred. Curve provenance, applicable terms, acknowledgement and passband/calibration papers remain to verify.",
+  "links": [
+    {
+      "url": "https://science.nasa.gov/mission/aqua/modis/",
+      "label": "Aqua MODIS instrument and spectral characteristics",
+      "source": "NASA"
+    }
+  ]
+}

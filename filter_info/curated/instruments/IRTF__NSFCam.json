@@ -6,6 +6,11 @@
       "url": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html",
       "label": "NSFCam Filter Documentation",
       "source": "IRTF"
+    },
+    {
+      "url": "https://irtfweb.ifa.hawaii.edu/research/acknowledge.php",
+      "label": "How to Acknowledge the IRTF",
+      "source": "IRTF"
     }
   ],
   "references": [
@@ -191,5 +196,19 @@
     "HEI": {
       "Description": "NSFCam HEI narrow-band filter"
     }
-  }
+  },
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "",
+    "url": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html"
+  },
+  "acknowledgements": [
+    {
+      "for": "NASA Infrared Telescope Facility",
+      "text": "Observers must add the following footnote to any publications which incorporate data obtained at the IRTF: \"Astronomer observing with the Infrared Telescope Facility, which is operated by the University of Hawaii under contract 80HQTR24DA010 with the National Aeronautics and Space Administration.\"",
+      "url": "https://irtfweb.ifa.hawaii.edu/research/acknowledge.php",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
 }

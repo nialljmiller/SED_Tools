@@ -1,0 +1,27 @@
+{
+  "description": "WMAP, the Wilkinson Microwave Anisotropy Probe, was a NASA mission to map the temperature anisotropy of the cosmic microwave background over the full sky.",
+  "facility_description": "WMAP was a NASA space mission. LAMBDA, at NASA Goddard, distributes the WMAP data products.",
+  "notes": "The LAMBDA effective-frequency note names five bands, K, Ka, Q, V and W, at nominal frequencies 23, 33, 41, 61 and 94 GHz, and points to Jarosik et al. (2003) and Bennett et al. (2013) for the algorithm. It does not print the NJM radiometer keys (K11_3 and the rest), so no per-band fields were set and no bibcode was stored. The NASA licence sentence covers data from a NASA-led mission, including calibration and auxiliary data, unless a file is marked restrictive. No individual WMAP transmission file was opened, so that sentence is the repository policy rather than a header read from a curve. It does not name the LAMBDA bandpass files, so the curve redistribution class is unknown. LAMBDA's overview asks users to go to the current data page and does not give a required acknowledgement sentence. SVO did not answer.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"There are no restrictions on the usage of these data.\"",
+    "url": "https://science.data.nasa.gov/about/license"
+  },
+  "links": [
+    {
+      "url": "https://lambda.gsfc.nasa.gov/product/wmap/current/",
+      "label": "WMAP at NASA LAMBDA",
+      "source": "NASA LAMBDA"
+    },
+    {
+      "url": "https://lambda.gsfc.nasa.gov/product/wmap/dr5/effective_feq_tool_doc.html",
+      "label": "WMAP effective-frequency calculator notes",
+      "source": "NASA LAMBDA"
+    },
+    {
+      "url": "https://science.data.nasa.gov/about/license",
+      "label": "NASA science data licences",
+      "source": "NASA"
+    }
+  ]
+}

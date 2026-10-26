@@ -1,0 +1,81 @@
+{
+  "description": "NIRC2 is the near-infrared adaptive-optics camera on Keck II, with filters from about 1 to 5 microns. The bands kept here are the broad filters J, H, K, Ks, Kp, Lp and Ms.",
+  "facility_description": "NIRC2 sits behind the adaptive-optics bench on the left Nasmyth platform of the Keck II telescope at W. M. Keck Observatory.",
+  "notes": "Central wavelengths, bandpass widths, cut-on and cut-off wavelengths, and the Strehl=1 zeropoints are transcribed from the NIRC2 filter table. Bandpass width is defined there as the wavelength range where transmission exceeds 50 percent of peak. The same page says broad-band specifications are room-temperature measurements from the manufacturer, while narrow-band values were measured cold in NIRC2; J, H, K, Ks, Kp, Lp and Ms are in the broad-band section. Zeropoints are defined with counts per second and a Strehl term. The page states a gain of 4.0 electrons per count. The general-specifications page says that value was for the transputer electronics, and that the gain is 8 e-/DN after science operations with the Archon controller began on 20 November 2023. Neither page names Vega or AB, so MagSys is not set, and neither says whether the transmissions are photon-weighted or energy-weighted. The NIRC2 home page says No Publication Reference. The author page lists NIRC2 with no paper link. No SPIE or PASP instrument paper that publishes these passbands was opened, so no reference key is stored. Liu et al. 2012 is linked from the filter page for Y-band conversions; Y is not one of these bands and that paper was not opened. The Keck author-page acknowledgement is for papers based on Keck data. The Maunakea sentence there is only suggested and is omitted. KOA's access page requests an archive acknowledgement when KOA is used and describes proprietary periods; it does not licence the filter-curve spreadsheet. https://www2.keck.hawaii.edu/gallery/copyright.php returned 404. The include_end.js footer does not clearly allow redistribution of the curves, so the licence class is restricted.",
+  "licence": {
+    "redistribution": "restricted",
+    "terms": "\"The contents of this page or any part thereof shall not\"",
+    "url": "https://www2.keck.hawaii.edu/inst/web_docs/scripts/include_end.js"
+  },
+  "links": [
+    {
+      "url": "https://www2.keck.hawaii.edu/inst/nirc2/filters.html",
+      "label": "NIRC2 filter list",
+      "source": "Keck"
+    },
+    {
+      "url": "https://www2.keck.hawaii.edu/inst/nirc2/",
+      "label": "NIRC2 instrument home",
+      "source": "Keck"
+    },
+    {
+      "url": "https://www2.keck.hawaii.edu/inst/nirc2/genspecs.html",
+      "label": "NIRC2 general specifications",
+      "source": "Keck"
+    },
+    {
+      "url": "https://www2.keck.hawaii.edu/observing/keck_authors.html",
+      "label": "Publishing papers with Keck data",
+      "source": "Keck"
+    },
+    {
+      "url": "https://www2.keck.hawaii.edu/inst/web_docs/scripts/include_end.js",
+      "label": "Keck instrument-page copyright footer",
+      "source": "Keck"
+    },
+    {
+      "url": "https://koa.ipac.caltech.edu/UserGuide/access.html",
+      "label": "KOA user access and proprietary periods",
+      "source": "Keck"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "papers based on Keck data",
+      "text": "Some of the data presented herein were obtained at Keck Observatory, which is a private 501(c)3 non-profit organization operated as a scientific partnership among the California Institute of Technology, the University of California, and the National Aeronautics and Space Administration. The Observatory was made possible by the generous financial support of the W. M. Keck Foundation.",
+      "url": "https://www2.keck.hawaii.edu/observing/keck_authors.html",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ],
+  "bands": {
+    "H": {
+      "Description": "Broad H filter in the NIRC2 filter wheel.",
+      "Comments": "The filter table lists a central wavelength of 1.633 μm and a bandpass width of 0.296 μm, with cut-on 1.485 μm and cut-off 1.781 μm. The tabulated photometric zeropoint is 25.44 for Strehl of 1. Broad-band specifications are room-temperature manufacturer measurements."
+    },
+    "J": {
+      "Description": "Broad J filter in the NIRC2 filter wheel.",
+      "Comments": "The filter table lists a central wavelength of 1.248 μm and a bandpass width of 0.163 μm, with cut-on 1.166 μm and cut-off 1.330 μm. The tabulated photometric zeropoint is 25.35 for Strehl of 1."
+    },
+    "K": {
+      "Description": "Broad K filter in the NIRC2 filter wheel.",
+      "Comments": "The filter table lists a central wavelength of 2.196 μm and a bandpass width of 0.336 μm, with cut-on 2.028 μm and cut-off 2.364 μm. The tabulated photometric zeropoint is 24.63 for Strehl of 1."
+    },
+    "Kp": {
+      "Description": "Broad Kp filter in the NIRC2 filter wheel.",
+      "Comments": "The filter table lists a central wavelength of 2.124 μm and a bandpass width of 0.351 μm, with cut-on 1.948 μm and cut-off 2.299 μm. The tabulated photometric zeropoint is 24.74 for Strehl of 1."
+    },
+    "Ks": {
+      "Description": "Broad Ks filter in the NIRC2 filter wheel.",
+      "Comments": "The filter table lists a central wavelength of 2.146 μm and a bandpass width of 0.311 μm, with cut-on 1.991 μm and cut-off 2.302 μm. The tabulated photometric zeropoint is 24.53 for Strehl of 1."
+    },
+    "Lp": {
+      "Description": "Broad Lp filter in the NIRC2 filter wheel.",
+      "Comments": "The filter table lists a central wavelength of 3.776 μm and a bandpass width of 0.700 μm, with cut-on 3.426 μm and cut-off 4.126 μm. The tabulated photometric zeropoint is 23.2 for Strehl of 1."
+    },
+    "Ms": {
+      "Description": "Broad Ms filter in the NIRC2 filter wheel.",
+      "Comments": "The filter table lists a central wavelength of 4.670 μm and a bandpass width of 0.241 μm, with cut-on 4.549 μm and cut-off 4.790 μm. The tabulated photometric zeropoint is 21.2 for Strehl of 1."
+    }
+  }
+}

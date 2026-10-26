@@ -1,0 +1,28 @@
+{
+  "description": "The Munich Near-Infrared Cluster Survey is a K-prime-selected photometric survey with J imaging and complementary optical V, R and I observations. Its instrumental filter system was retained for comparison with synthetic photometry.",
+  "facility_description": "Calar Alto Observatory is located in the Sierra de Filabres in Almería, Spain, and is jointly operated by IAA-CSIC and the Andalusian Government.",
+  "notes": "The survey paper supplies filter characterisation, but its publication/access status does not establish a licence for redistribution of numerical filter curves. CAHA data-plan and website terms checked; no explicit survey filter-data grant found. Research accessed 2026-10-26. General CAHA observing acknowledgement is conditional on observational data and a proposal identifier; no observing proposal or SVO use is invented for these filter curves. Rights checked against CAHA legal notice (https://www.caha.es/es/?option=com_content&view=article&id=14725) and data management plan (https://www.caha.es/joomlaCMS/images/docs/DMPlan-CAHA.pdf); neither establishes an unambiguous grant for these third-party filter files.",
+  "references": [
+    "bibcode:2001MNRAS.325..550D"
+  ],
+  "links": [
+    {
+      "url": "https://arxiv.org/abs/astro-ph/0102354",
+      "label": "MUNICS instrument or filter documentation",
+      "source": "Survey authors (arXiv)"
+    },
+    {
+      "url": "https://www.caha.es/",
+      "label": "Calar Alto Observatory",
+      "source": "CAHA"
+    }
+  ],
+  "bands": {
+    "*": {
+      "MagSys": "Vega",
+      "references": [
+        "bibcode:2001MNRAS.325..550D"
+      ]
+    }
+  }
+}

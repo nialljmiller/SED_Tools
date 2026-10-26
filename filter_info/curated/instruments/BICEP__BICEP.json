@@ -1,0 +1,47 @@
+{
+  "description": "BICEP is a ground-based millimetre-wave bolometer array at the South Pole, built to measure the polarisation of the cosmic microwave background on degree scales.",
+  "facility_description": "BICEP observes from the South Pole.",
+  "notes": "NJM also lists 95GHz, 95GHz_rj, 150GHz_rj and 220GHz_rj. Takahashi et al. name 100, 150 and 220 GHz and do not define an _rj variant or a 95 GHz BICEP band, so those four keys have no Description. No requested acknowledgement was found. The only reuse terms opened for the article are the arXiv non-exclusive licence, which does not grant further reuse and says to contact the author. That is not a grant to redistribute a separate numeric curve. No magnitude system was recorded.",
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"which does not grant further reuse permissions directly. In these cases you will need to contact the author directly with your request.\"",
+    "url": "https://info.arxiv.org/help/license/reuse.html"
+  },
+  "references": [
+    "bibcode:2008SPIE.7020E..1DT",
+    "arxiv:0808.1763"
+  ],
+  "links": [
+    {
+      "url": "https://arxiv.org/abs/0808.1763",
+      "label": "Takahashi et al., BICEP characterisation",
+      "source": "arXiv"
+    },
+    {
+      "url": "https://ar5iv.labs.arxiv.org/html/0808.1763",
+      "label": "Takahashi et al. HTML",
+      "source": "arXiv"
+    },
+    {
+      "url": "https://info.arxiv.org/help/license/reuse.html",
+      "label": "arXiv permissions and reuse",
+      "source": "arXiv"
+    }
+  ],
+  "bands": {
+    "*": {
+      "references": [
+        "bibcode:2008SPIE.7020E..1DT"
+      ]
+    },
+    "100GHz": {
+      "Description": "BICEP channel at 100 GHz."
+    },
+    "150GHz": {
+      "Description": "BICEP channel at 150 GHz."
+    },
+    "220GHz": {
+      "Description": "220 GHz feedhorns added for the second year, replacing two 150 GHz feedhorns."
+    }
+  }
+}

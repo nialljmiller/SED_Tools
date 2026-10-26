@@ -1,0 +1,36 @@
+{
+  "description": "The MSSSO filter set at Apache Point Observatory consists of 3.125-inch square broad-band U, B, V, R, and I filters constructed according to Mount Stromlo and Siding Spring Observatories specifications for the Bessell UBVRI system, offered for ARCTIC and Agile at the ARC 3.5-meter telescope.",
+  "facility_description": "The ARC 3.5-meter Telescope is an optical and infrared telescope at Apache Point Observatory (APO) in the Sacramento Mountains of New Mexico, owned and operated by the Astrophysical Research Consortium.",
+  "notes": "The APO MSSSO page notes these are theoretical transmission curves calculated from Schott glass catalog transmissions following Bessell (1990, 1995). Governed by NMSU copyright policy requiring permission for reproduction.",
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"reproduction of any content-text, images, photographs, etc.-requires permission.\"",
+    "url": "https://www.nmsu.edu/copyright.html"
+  },
+  "references": [
+    "bibcode:1990PASP..102.1181B",
+    "bibcode:1995PASP..107..672B",
+    "doi:10.1117/12.316525"
+  ],
+  "links": [
+    {
+      "url": "http://filters.apo.nmsu.edu/curves/MSSSO/",
+      "label": "APO MSSSO Filters",
+      "source": "Apache Point Observatory"
+    },
+    {
+      "url": "http://filters.apo.nmsu.edu/",
+      "label": "APO Filter Inventory",
+      "source": "Apache Point Observatory"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "Apache Point Observatory",
+      "text": "Based on observations obtained with the Apache Point Observatory 3.5-meter telescope, which is owned and operated by the Astrophysical Research Consortium.",
+      "url": "https://legacy.apo.nmsu.edu/Projects/pubacknow.htm",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

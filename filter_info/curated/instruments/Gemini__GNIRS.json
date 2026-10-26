@@ -1,0 +1,38 @@
+{
+  "description": "The Gemini Near-InfraRed Spectrograph (GNIRS) is a versatile 1.0 to 5.4 micron instrument mounted on Gemini North providing long-slit, cross-dispersed, and integral-field spectroscopy as well as acquisition imaging. Its filter wheels hold broad-band near-infrared filters and narrow-band order-sorting and emission-line filters.",
+  "facility_description": "The International Gemini Observatory operates twin 8.1-meter optical and infrared telescopes atop Maunakea in Hawai'i (Gemini North) and Cerro Pachón in Chile (Gemini South), managed by NSF NOIRLab.",
+  "notes": "GNIRS filter transmissions include Mauna Kea near-infrared broad-band filters (J_MK, K_MK), broad-band blue/red cut filters, and narrow-band filters (H2, PAH). Laboratory transmission scans are distributed on Gemini instrumentation pages; redistribution terms are not specified under NOIRLab open content policy.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the Creative Commons Attribution 4.0 International License\"",
+    "url": "https://noirlab.edu/public/copyright/"
+  },
+  "references": [
+    "bibcode:2006SPIE.6269E..14E",
+    "bibcode:2006SPIE.6269E..4CE",
+    "doi:10.1117/12.671765",
+    "doi:10.1117/12.671817",
+    "bibcode:1997SPIE.2871...15M"
+  ],
+  "links": [
+    {
+      "url": "https://www.gemini.edu/instrumentation/gnirs",
+      "label": "GNIRS instrument page",
+      "source": "Gemini Observatory"
+    },
+    {
+      "url": "https://www.gemini.edu/instrumentation/gnirs/components",
+      "label": "GNIRS optical components and transmission data",
+      "source": "Gemini Observatory"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "International Gemini Observatory",
+      "text": "Based on observations obtained at the international Gemini Observatory, a program of NSF NOIRLab [ include additional acknowledgment here, see section below ], which is managed by the Association of Universities for Research in Astronomy (AURA) under a cooperative agreement with the U.S. National Science Foundation on behalf of the Gemini Observatory partnership: the U.S. National Science Foundation (United States), National Research Council (Canada), Agencia Nacional de Investigación y Desarrollo (Chile), Ministerio de Ciencia, Tecnología e Innovación (Argentina), Ministério da Ciência, Tecnologia, Inovações e Comunicações (Brazil), and Korea Astronomy and Space Science Institute (Republic of Korea).",
+      "url": "https://noirlab.edu/science/about/scientific-acknowledgments",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

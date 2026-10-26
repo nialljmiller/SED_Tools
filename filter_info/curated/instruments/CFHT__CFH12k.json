@@ -1,0 +1,48 @@
+{
+  "description": "CFH12K was a 12,288 by 8,192 pixel wide-field CCD mosaic camera deployed at the prime focus of the Canada-France-Hawaii Telescope from 1999 to 2003, utilizing broad-band and narrow-band optical filters.",
+  "facility_description": "The Canada-France-Hawaii Telescope (CFHT) is a 3.6-meter optical and infrared telescope operated by NRC (Canada), CNRS/INSU (France), and the University of Hawaii, located on Maunakea in Hawaii.",
+  "notes": "CFH12K was a 12k x 8k mosaic of 12 MIT/Lincoln Labs CCDs at the prime focus of CFHT, operating prior to MegaCam. Filter transmission curves for CFH12K filters are distributed via CFHT filter documentation and SVO.",
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"The Canada-France-Hawaii Telescope Corporation owns the copyright of all contents of this web site unless stated otherwise.\"",
+    "url": "https://www.cfht.hawaii.edu/hawaiianstarlight/CFHT_WWW_Copyright.html"
+  },
+  "references": [
+    "bibcode:2000SPIE.4008.1010C",
+    "bibcode:2000SPIE.4008..999S",
+    "bibcode:2024A&A...689A..93R"
+  ],
+  "links": [
+    {
+      "url": "https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/en/cfht/",
+      "label": "CADC CFHT Science Archive",
+      "source": "CADC"
+    },
+    {
+      "url": "https://www.cfht.hawaii.edu/en/science/Publications/",
+      "label": "CFHT Publications and Acknowledgement Policy",
+      "source": "CFHT"
+    },
+    {
+      "url": "https://www.cfht.hawaii.edu/hawaiianstarlight/CFHT_WWW_Copyright.html",
+      "label": "CFHT Copyright Policy",
+      "source": "CFHT"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "Canada-France-Hawaii Telescope",
+      "text": "Based on observations obtained at the Canada-France-Hawaiʻi Telescope (CFHT) which is operated by the National Research Council of Canada, the Institut National des Sciences de l'Univers of the Centre National de la Recherche Scientifique of France, and the University of Hawaiʻi. CFHT is located on Maunakea on Hawaiʻi Island, a mountain of considerable cultural, natural, and ecological significance. Maunakea is a sacred site to Native Hawaiians, also known as Kānaka ʻŌiwi.",
+      "url": "https://www.cfht.hawaii.edu/en/science/Publications/",
+      "applies_to": "all bands",
+      "references": []
+    },
+    {
+      "for": "Canadian Astronomy Data Centre",
+      "text": "This research used the facilities of the Canadian Astronomy Data Centre operated by the National Research Council of Canada with the support of the Canadian Space Agency.",
+      "url": "https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/en/cfht/credits.html",
+      "applies_to": "all bands",
+      "references": []
+    }
+  ]
+}

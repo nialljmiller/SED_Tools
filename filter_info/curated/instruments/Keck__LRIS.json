@@ -1,0 +1,85 @@
+{
+  "description": "LRIS is the visible-wavelength imager and spectrograph at the Cassegrain focus of Keck I, with separate blue and red cameras. The bands here are blue-side g and the broadband B, V, R, Rs and I filters; B and V are also listed on the red side with different effective wavelengths.",
+  "facility_description": "LRIS operates at the Cassegrain focus of the Keck I telescope at W. M. Keck Observatory.",
+  "notes": "Effective wavelengths and FWHMs are transcribed from the blue-side and red-side broadband tables on the filter page. Blue: B 4370/878 Å, g 4731/1082 Å, V 5437/922 Å. Red: B 4377/909 Å, V 5473/948 Å, R 6417/1185 Å, Rs 6809/1269 Å, I 7599/1225 Å. The red-side footnote says effective wavelength assumes equal energy at all wavelengths and neglects telescope and atmospheric transmission, and that FWHM is not convolved with the CCD. That is an energy-weighted definition of lambda_eff, not a stated magnitude system, so MagSys and PhotSystem are omitted. The B active-area warning applies to the red-side B filter. Oke et al. 1995 (doi:10.1086/133562) was opened as the IOPscience abstract and PDF. It is the LRIS instrument paper named on the LRIS home and reference pages. The PDF describes filter placement and mentions an OG 570 order-separating filter, but it does not publish the current B, I, R, Rs, V and g passbands, so it is not attached to the bands. bibcode:1995PASP..107..375O failed check_refs and is not stored. The blue-channel paper listed on the LRIS reference page (McCarthy et al. 1998) and the Rockosi et al. 2010 red-CCD upgrade were not opened, and bibcode:2010SPIE.7735E..26R failed check_refs, so neither is cited. The Keck author-page acknowledgement is for papers based on Keck data. The Maunakea sentence on that page is only suggested and is omitted. KOA access terms do not cover these curve files. https://www2.keck.hawaii.edu/gallery/copyright.php returned 404. The instrument-page footer in include_end.js forbids copying page contents except for observing support and analysis of Keck data, so redistribution of the curves is restricted.",
+  "licence": {
+    "redistribution": "restricted",
+    "terms": "\"The contents of this page or any part thereof shall not\"",
+    "url": "https://www2.keck.hawaii.edu/inst/web_docs/scripts/include_end.js"
+  },
+  "references": [
+    "doi:10.1086/133562"
+  ],
+  "links": [
+    {
+      "url": "https://www2.keck.hawaii.edu/inst/lris/filters.html",
+      "label": "LRIS filter list",
+      "source": "Keck"
+    },
+    {
+      "url": "https://www2.keck.hawaii.edu/inst/lris/lrishome.html",
+      "label": "LRIS instrument home",
+      "source": "Keck"
+    },
+    {
+      "url": "https://www2.keck.hawaii.edu/inst/lris/lris_refs.html",
+      "label": "LRIS reference list",
+      "source": "Keck"
+    },
+    {
+      "url": "https://doi.org/10.1086/133562",
+      "label": "Oke et al. 1995, the Keck LRIS",
+      "source": "Keck"
+    },
+    {
+      "url": "https://iopscience.iop.org/article/10.1086/133562",
+      "label": "Oke et al. 1995 abstract",
+      "source": "Keck"
+    },
+    {
+      "url": "https://www2.keck.hawaii.edu/observing/keck_authors.html",
+      "label": "Publishing papers with Keck data",
+      "source": "Keck"
+    },
+    {
+      "url": "https://www2.keck.hawaii.edu/inst/web_docs/scripts/include_end.js",
+      "label": "Keck instrument-page copyright footer",
+      "source": "Keck"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "papers based on Keck data",
+      "text": "Some of the data presented herein were obtained at Keck Observatory, which is a private 501(c)3 non-profit organization operated as a scientific partnership among the California Institute of Technology, the University of California, and the National Aeronautics and Space Administration. The Observatory was made possible by the generous financial support of the W. M. Keck Foundation.",
+      "url": "https://www2.keck.hawaii.edu/observing/keck_authors.html",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ],
+  "bands": {
+    "B": {
+      "Description": "Broadband B imaging filter. LRIS lists a blue-side B and a separate red-side B.",
+      "Comments": "The filter tables give a blue-side effective wavelength of 4370 Å and FWHM 878 Å, and a red-side effective wavelength of 4377 Å and FWHM 909 Å. The red-side B filter has a limited clear aperture, so throughput falls off axis. Effective wavelengths fold in detector quantum efficiency and assume equal energy per wavelength."
+    },
+    "I": {
+      "Description": "Red-side broadband I imaging filter.",
+      "Comments": "The red-side table gives an effective wavelength of 7599 Å and a FWHM of 1225 Å, with the parenthetical range 698.6-820.4. The transmission file is linked as an Excel spreadsheet rather than ASCII."
+    },
+    "R": {
+      "Description": "Red-side broadband R imaging filter.",
+      "Comments": "The red-side table gives an effective wavelength of 6417 Å and a FWHM of 1185 Å. FWHM is the full width of the filter curve alone, not convolved with the CCD."
+    },
+    "Rs": {
+      "Description": "Red-side broadband Rs imaging filter, listed separately from R.",
+      "Comments": "The red-side table gives an effective wavelength of 6809 Å and a FWHM of 1269 Å. Rs is not named in the instrument-home sentence that lists the UBVGRI passbands."
+    },
+    "V": {
+      "Description": "Broadband V imaging filter. LRIS lists a blue-side V and a separate red-side V.",
+      "Comments": "The filter tables give a blue-side effective wavelength of 5437 Å and FWHM 922 Å, and a red-side effective wavelength of 5473 Å and FWHM 948 Å."
+    },
+    "g": {
+      "Description": "Blue-side broadband g imaging filter.",
+      "Comments": "The blue-side table gives an effective wavelength of 4731 Å and a FWHM of 1082 Å, with an ASCII transmission file. The blue filters sit in the parallel beam in front of the blue camera."
+    }
+  }
+}

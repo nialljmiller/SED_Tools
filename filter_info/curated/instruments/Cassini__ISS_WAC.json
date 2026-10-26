@@ -1,0 +1,117 @@
+{
+  "description": "The Cassini ISS wide-angle camera is an f/3.5 refractor using Voyager spare optics, with a 3.5 by 3.5 degree field of view and two filter wheels that carry 9 filters each. The PDS instrument catalog gives a spectral range of 380 to 1050 nm; the 2018 data user guide says 380 to 1100 nm.",
+  "facility_description": "Cassini-Huygens launched on 15 October 1997 and the orbiter entered Saturn orbit on 1 July 2004; the Imaging Node portal describes later Equinox and Solstice extensions through September 2017.",
+  "notes": "Band Comments quote central wavelength, FWHM and effective wavelength from Table A.2 of Knowles, Cassini ISS Data User's Guide, 16 September 2018, on the PDS Imaging Node. Those rows are calibration products in a NASA PDS document, so the NASA Science Data Portal CC0 statement is applied to them. The Kluwer/Springer Porco et al. 2004 PDF is cited as the instrument paper and as the source that publishes Table VIII and transmission figures; its numeric tables were not copied into these Comments because that PDF states it was printed by Kluwer Academic Publishers. NJM single-filter names are the Table A.2 pair of that filter with CL1 or CL2. NJM two-filter names are the Table A.2 pairs that the guide actually lists. Table A.2 also lists NAC RED/IR3 and WAC IR3/RED and WAC IR3/IR1, which are not NJM keys and are omitted. Polarizers (NAC P0, P60, P120, IRP0; WAC IRP0, IRP90) are described in the user guide and instrument catalogs but are not NJM band names. CB1a and CB1b are the two peaks of the CB1 response, not separate filters. Clear is the CL1/CL2 pair. pdftotext of user-guide Table A.1 prints BL2 as 440W, while Porco et al. 2004 Table VIII and issna_inst.cat print 440M. Table A.1 prints WAC HAL as 656W; isswa_inst.cat prints 656N. pdftotext did not place a WAC numerical name on the Table A.1 MT2 row, but Table A.2 and isswa_inst.cat both include WAC MT2. The instrument catalog and the 2018 guide disagree on WAC spectral coverage (380-1050 nm versus 380-1100 nm). The WAC catalog overview says the wheels move at 3 positions per second, while its Filters section and Porco et al. 2004 say 2 positions per second in the WAC and 3 in the NAC. Figure A.6 of the user guide gives CCD quantum efficiency in electrons per incident photon, so the cameras are photon-counting detectors; DetectorType was left unset. No opened PDS or NASA page supplied a required acknowledgement sentence. Citation requests were not copied into acknowledgements. ADS abstracts returned HTTP 405 or a human-verification page, so no bibcode was recorded. Springer returned a client-challenge page. SVO filter pages timed out or returned 404 and were not used. The suggested user-guide URL dated 160929 returned HTTP 404. The West et al. 2010 author PDF at boulder.swri.edu failed TLS certificate verification and was not opened, so that calibration paper is not in references. The GISS HTML abstract gives doi:10.1007/s11214-004-1456-7. The NASA licence page qualifies that sentence: it applies unless the data file is marked with a restrictive notice or license.",
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"There are no restrictions on the usage of these data.\"",
+    "url": "https://science.data.nasa.gov/about/license"
+  },
+  "references": [
+    "doi:10.1007/s11214-004-1456-7"
+  ],
+  "links": [
+    {
+      "url": "https://pds-imaging.jpl.nasa.gov/portal/cassini_mission.html",
+      "label": "PDS Imaging Node Cassini mission page",
+      "source": "PDS"
+    },
+    {
+      "url": "https://pds-imaging.jpl.nasa.gov/documentation/iss_data_user_guide_180916.pdf",
+      "label": "Cassini ISS Data User's Guide (Knowles, 16 September 2018)",
+      "source": "PDS"
+    },
+    {
+      "url": "https://pds-imaging.jpl.nasa.gov/data/cassini/cassini_orbiter/coiss_2101/catalog/isswa_inst.cat",
+      "label": "PDS ISS wide-angle camera instrument catalog",
+      "source": "PDS"
+    },
+    {
+      "url": "https://pds-imaging.jpl.nasa.gov/data/cassini/cassini_orbiter/coiss_2001/catalog/mission.cat",
+      "label": "Cassini-Huygens PDS mission catalog",
+      "source": "PDS"
+    },
+    {
+      "url": "https://www.giss.nasa.gov/pubs/abs/po04100j.html",
+      "label": "NASA GISS abstract for Porco et al. 2004",
+      "source": "NASA"
+    },
+    {
+      "url": "https://www.giss.nasa.gov/pubs/docs/2004/2004_Porco_po04100j.pdf",
+      "label": "Porco et al. 2004 PDF hosted by NASA GISS",
+      "source": "NASA"
+    },
+    {
+      "url": "https://science.nasa.gov/mission/cassini/spacecraft/cassini-orbiter/imaging-science-subsystem/",
+      "label": "NASA Science Imaging Science Subsystem page",
+      "source": "NASA"
+    }
+  ],
+  "bands": {
+    "*": {
+      "references": [
+        "doi:10.1007/s11214-004-1456-7"
+      ],
+      "Comments": "Table A.2 of the 2018 ISS Data User's Guide lists central wavelength, FWHM and effective wavelength for non-polarized NAC and WAC filter pairs, adapted and updated from Porco et al. (2004). Single-name NJM bands below are the color filter paired with a clear filter (CL1 or CL2), not a bare filter transmission."
+    },
+    "BL1": {
+      "Comments": "Central wavelength 460.418 nm, bandpass FWHM 62.2554 nm, effective wavelength 462.865 nm for the WAC CL1/BL1 pair in the 2018 ISS Data User's Guide Table A.2.",
+      "Description": "Broad-band color"
+    },
+    "CB2": {
+      "Comments": "Central wavelength 752.364 nm, bandpass FWHM 10.0044 nm, effective wavelength 752.354 nm for the WAC CB2/CL2 pair in the 2018 ISS Data User's Guide Table A.2.",
+      "Description": "Continuum for MT2"
+    },
+    "CB3": {
+      "Comments": "Central wavelength 938.532 nm, bandpass FWHM 9.95298 nm, effective wavelength 938.445 nm for the WAC CB3/CL2 pair in the 2018 ISS Data User's Guide Table A.2.",
+      "Description": "Continuum for MT3, see through Titan haze"
+    },
+    "Clear": {
+      "Comments": "Central wavelength 634.928 nm, bandpass FWHM 285.999 nm, effective wavelength 633.817 nm for the WAC CL1/CL2 pair in the 2018 ISS Data User's Guide Table A.2."
+    },
+    "GRN": {
+      "Comments": "Central wavelength 567.126 nm, bandpass FWHM 123.999 nm, effective wavelength 568.214 nm for the WAC CL1/GRN pair in the 2018 ISS Data User's Guide Table A.2.",
+      "Description": "Broad-band color"
+    },
+    "HAL": {
+      "Comments": "Central wavelength 656.401 nm, bandpass FWHM 9.9615 nm, effective wavelength 656.386 nm for the WAC CL1/HAL pair in the 2018 ISS Data User's Guide Table A.2.",
+      "Description": "H-alpha/lightning"
+    },
+    "IR1": {
+      "Comments": "Central wavelength 741.456 nm, bandpass FWHM 99.9735 nm, effective wavelength 739.826 nm for the WAC CL1/IR1 pair in the 2018 ISS Data User's Guide Table A.2.",
+      "Description": "Broad-band color"
+    },
+    "IR2": {
+      "Comments": "Central wavelength 853.258 nm, bandpass FWHM 54.8544 nm, effective wavelength 852.448 nm for the WAC IR2/CL2 pair in the 2018 ISS Data User's Guide Table A.2.",
+      "Description": "Broad-band color, ring absorption band"
+    },
+    "IR2_IR1": {
+      "Comments": "Central wavelength 826.348 nm, bandpass FWHM 26.0795 nm, effective wavelength 826.255 nm for the WAC IR2/IR1 pair in the 2018 ISS Data User's Guide Table A.2."
+    },
+    "IR3": {
+      "Comments": "Central wavelength 917.841 nm, bandpass FWHM 45.3074 nm, effective wavelength 916.727 nm for the WAC IR3/CL2 pair in the 2018 ISS Data User's Guide Table A.2.",
+      "Description": "Broad-band color"
+    },
+    "IR4": {
+      "Comments": "Central wavelength 1002.36 nm, bandpass FWHM 25.533 nm, effective wavelength 1001.88 nm for the WAC IR4/CL2 pair in the 2018 ISS Data User's Guide Table A.2.",
+      "Description": "Broad-band color"
+    },
+    "IR5": {
+      "Comments": "Central wavelength 1034.49 nm, bandpass FWHM 19.4577 nm, effective wavelength 1033.87 nm for the WAC IR5/CL2 pair in the 2018 ISS Data User's Guide Table A.2."
+    },
+    "MT2": {
+      "Comments": "Central wavelength 728.452 nm, bandpass FWHM 4.00903 nm, effective wavelength 728.418 nm for the WAC MT2/CL2 pair in the 2018 ISS Data User's Guide Table A.2."
+    },
+    "MT3": {
+      "Comments": "Central wavelength 890.34 nm, bandpass FWHM 10.0116 nm, effective wavelength 890.332 nm for the WAC MT3/CL2 pair in the 2018 ISS Data User's Guide Table A.2.",
+      "Description": "Methane band, vertical sounding"
+    },
+    "RED": {
+      "Comments": "Central wavelength 648.422 nm, bandpass FWHM 150.025 nm, effective wavelength 647.239 nm for the WAC CL1/RED pair in the 2018 ISS Data User's Guide Table A.2.",
+      "Description": "Broad-band color"
+    },
+    "VIO": {
+      "Comments": "Central wavelength 419.684 nm, bandpass FWHM 18.1825 nm, effective wavelength 419.822 nm for the WAC CL1/VIO pair in the 2018 ISS Data User's Guide Table A.2."
+    }
+  }
+}

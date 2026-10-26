@@ -1,0 +1,77 @@
+{
+  "description": "The Galileo Solid-State Imaging subsystem is a single 800 by 800 pixel CCD camera on a 1500 mm f/8.5 telescope. It carries one clear filter and seven colour filters so that images through complementary filters can be combined into colour pictures of Jupiter and its satellites.",
+  "facility_description": "Galileo was NASA's Jupiter mission, launched on 18 October 1989 as a combined orbiter and probe on a Venus-Earth-Earth gravity-assist trajectory.",
+  "notes": "NJM names 7270A, 7560A, 8890A, and 9680A are not printed as those exact keys in the PDS label list. That list uses IR-7270, IR-7560, IR-8890, and IR-9680, and the instrument catalog titles are METHANE7270, CONTINUUM, METHANE8890, and INFRARED. CONTINUUM is paired with 7560A because its center keyword is 0.756. INFRARED is not given a center in the 9680A description: its center keyword is 0.986, which is not 968 nm, and the catalog does not print 9680 beside it. Klaasen's 22 March 1993 JPL report (JPL D-5880), archived as calrpt2.pdf, Table 3-3 names wheel positions Clear, Green, Red, Violet, 7560 A, >9680 A, 7270 A, and 8890 A, and Table 3-4 heads columns clear, green, red, violet, 7560A, 9680A, 7270A, and 8890A. Those spellings are why the NJM keys are used. The METHANE8890 catalog minimum keyword is 0.779, which sits far below the center 0.887 and maximum 0.895; it is omitted from the description rather than corrected. Catalog wavelength keywords do not print a unit. No bands.*.references entry is included because no opened paper page quoted all eight passbands; Belton et al. 1992 and Klaasen et al. 1997 are cited from Crossref records of the instrument and in-flight calibration papers. ADS returned HTTP 405, so no bibcode was copied. The SVO Galileo/SSI browse page did not return an HTTP status (curl exit before a response). PDS citing pages say please cite the data set or bundle and show example citations; they do not give one fixed acknowledgement sentence. The calibration report text extraction contained no copyright or restrictive-licence sentence. The NASA CC0 sentence is used because the filter names and catalog wavelengths are PDS calibration and auxiliary files from the NASA-led Galileo mission. SSI pixels are stored as 8-bit values proportional to the amount of light detected. The NASA licence page qualifies that sentence: it applies unless the data file is marked with a restrictive notice or license.",
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"There are no restrictions on the usage of these data.\"",
+    "url": "https://science.data.nasa.gov/about/license"
+  },
+  "references": [
+    "doi:10.1007/bf00216864",
+    "doi:10.1117/1.601525"
+  ],
+  "links": [
+    {
+      "url": "https://pds-rings.seti.org/holdings/volumes/GO_0xxx/GO_0001/CATALOG/INST.CAT",
+      "label": "Galileo SSI PDS3 instrument catalog",
+      "source": "NASA PDS"
+    },
+    {
+      "url": "https://pds-rings.seti.org/holdings/volumes/GO_0xxx/GO_0001/CATALOG/MISSION.CAT",
+      "label": "Galileo mission catalog",
+      "source": "NASA PDS"
+    },
+    {
+      "url": "https://pds.nasa.gov/ds-view/pds/viewProfile.jsp?dsid=GO-CAL-SSI-6-V1.0",
+      "label": "Galileo SSI calibration files data-set profile",
+      "source": "NASA PDS"
+    },
+    {
+      "url": "https://planetarydata.jpl.nasa.gov/img/data/galileo/galileo_orbiter/go_0001/document/calrpt2.pdf",
+      "label": "Klaasen 1993 SSI calibration report, part 2",
+      "source": "NASA PDS Imaging"
+    },
+    {
+      "url": "https://pds.nasa.gov/datastandards/citing/",
+      "label": "Citing PDS4 data",
+      "source": "NASA PDS"
+    },
+    {
+      "url": "https://pds.nasa.gov/datastandards/pds3/citing-pds3-data.shtml",
+      "label": "Citing PDS3 data",
+      "source": "NASA PDS"
+    },
+    {
+      "url": "https://science.data.nasa.gov/about/license",
+      "label": "NASA science data licences",
+      "source": "NASA Science Data Portal"
+    }
+  ],
+  "bands": {
+    "7270A": {
+      "Description": "SSI filter named IR-7270 in the PDS label list and METHANE7270 in the instrument catalog, with catalog center keyword 0.734, minimum 0.729, and maximum 0.739."
+    },
+    "7560A": {
+      "Description": "SSI filter named IR-7560 in the PDS label list. The catalog entry titled CONTINUUM has center keyword 0.756, minimum 0.747, and maximum 0.765."
+    },
+    "8890A": {
+      "Description": "SSI filter named IR-8890 in the PDS label list and METHANE8890 in the instrument catalog, with catalog center keyword 0.887 and maximum 0.895."
+    },
+    "9680A": {
+      "Description": "SSI filter named IR-9680 in the PDS label list, filter number 5."
+    },
+    "Clear": {
+      "Description": "SSI clear filter, PDS name CLEAR, catalog type quartz, center keyword 0.611, minimum 0.38, and maximum 0.82."
+    },
+    "Green": {
+      "Description": "SSI green interference filter, PDS name GREEN, catalog center keyword 0.559, minimum 0.53, and maximum 0.59."
+    },
+    "Red": {
+      "Description": "SSI red interference filter, PDS name RED, catalog center keyword 0.671, minimum 0.64, and maximum 0.70."
+    },
+    "Violet": {
+      "Description": "SSI violet interference filter, PDS name VIOLET, catalog center keyword 0.404, minimum 0.38, and maximum 0.43."
+    }
+  }
+}

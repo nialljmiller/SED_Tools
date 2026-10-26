@@ -1,0 +1,80 @@
+{
+  "description": "MRI-VIS is the visible CCD camera of the Deep Impact Medium Resolution Instrument. Its nine-position wheel includes two clear apertures, context filters, and narrow filters aimed at OH, CN, C2 and continuum in the coma; the PDS ground-calibration tables are manufacturer witness-sample transmission profiles.",
+  "facility_description": "Deep Impact was a NASA comet mission whose flyby spacecraft carried the High Resolution Instrument and Medium Resolution Instrument; the same flyby cameras were later used in the EPOXI extended mission.",
+  "notes": "NJM names C2_fil, CN_fil, Clear1_fil, Clear6_fil, Green_cont_fil, IR_fil, OH_fil, Red_fil and Violet_cont_fil are omitted. SVO pages that would show a filter-only product timed out (HTTP 000), and no opened PDS file uses the _fil suffix. The opened curves are witness-sample filter transmissions. The flight AICD calls the camera the Medium Resolution Imager; the PDS label says MEDIUM RESOLUTION INSTRUMENT. The AICD prose says the wheel contained two clear apertures and 8 filters, while its table and the labels have nine positions (two clear and seven filters). MRI CLEAR6 is inconsistent across opened files: the label repeats the position-1 wording, the EPOXI catalog center is 600 nm, and the AICD filter table lists position 6 at 650 nm with width >700 nm. The OH label description says OH, but PRODUCT_NAME says C2. The AICD says the narrow-band filters were designed to match Hale-Bopp filter sets; the MRI reference catalog cites Farnham, Schleicher and A'Hearn, Icarus, 2000, doi:10.1006/icar.2000.6420, for HB narrowband comet filters. That DOI is not listed here because the opened pages do not say it publishes these flight curves. The MRI reference catalog still calls Klaasen et al. EPOXI Instrument Calibration 2011, in preparation; Crossref has the published Icarus paper doi:10.1016/j.icarus.2013.03.024. No magnitude system is stated. Dataset citation lines are requests to cite a data set, so acknowledgements is empty. The NASA licence page qualifies that sentence: it applies unless the data file is marked with a restrictive notice or license.",
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"There are no restrictions on the usage of these data.\"",
+    "url": "https://science.data.nasa.gov/about/license"
+  },
+  "references": [
+    "doi:10.1007/s11214-005-3390-8",
+    "doi:10.1063/1.2972112",
+    "doi:10.1016/j.icarus.2013.03.024"
+  ],
+  "links": [
+    {
+      "url": "https://pdssbn.astro.umd.edu/holdings/dif-cal-hrii_hriv_mri-2-ground-tv4-v1.0/calib/mri/filters/",
+      "label": "MRI ground TV4 filter transmission tables",
+      "source": "NASA PDS Small Bodies Node"
+    },
+    {
+      "url": "https://pdssbn.astro.umd.edu/holdings/di-c-hrii_hriv_mri_its-6-doc-set-v4.0/document/archive_support/di/archive_description/aicd_flight_hriv_mri_its.pdf",
+      "label": "HRIV, MRI and ITS flight archive interface control document",
+      "source": "NASA PDS Small Bodies Node"
+    },
+    {
+      "url": "https://pdssbn.astro.umd.edu/holdings/dif-cal-mri-2-epoxi-calibrations-v2.0/catalog/dataset.cat",
+      "label": "EPOXI MRI calibration dataset catalog",
+      "source": "NASA PDS Small Bodies Node"
+    },
+    {
+      "url": "https://pdssbn.astro.umd.edu/holdings/dif-cal-mri-2-epoxi-calibrations-v2.0/catalog/ref.cat",
+      "label": "EPOXI MRI calibration reference catalog",
+      "source": "NASA PDS Small Bodies Node"
+    },
+    {
+      "url": "https://science.data.nasa.gov/about/license",
+      "label": "NASA science data licenses",
+      "source": "NASA Science Data Portal"
+    }
+  ],
+  "bands": {
+    "C2": {
+      "Description": "MRI filter-wheel position 2, the C2 filter, centered at 514 nm with a width of 11.8 nm.",
+      "Comments": "The EPOXI MRI catalog says this position is for C2 in the coma. The profile was measured on a manufacturer witness sample."
+    },
+    "CN": {
+      "Description": "MRI filter-wheel position 7, the CN filter, centered at 387 nm with a width of 6.2 nm.",
+      "Comments": "The EPOXI MRI catalog says this position is for CN in the coma. The profile was measured on a manufacturer witness sample."
+    },
+    "Clear1": {
+      "Description": "MRI filter-wheel position 1, an uncoated clear aperture.",
+      "Comments": "Witness-sample transmission is 90 percent or greater from 299 through 1200 nanometers. The EPOXI catalog names it CLEAR1 and lists center 650 nm and width >700 nm."
+    },
+    "Clear6": {
+      "Description": "MRI filter-wheel position 6, the second clear aperture, named CLEAR6 in the EPOXI catalog.",
+      "Comments": "The position-6 label text still says position number 1. The catalog lists center 600 nm and width >700 nm, while the flight AICD table lists position 6 at 650 nm and width >700 nm."
+    },
+    "Green_cont": {
+      "Description": "MRI filter-wheel position 3, the green continuum filter, centered at 526 nm with a width of 5.6 nm.",
+      "Comments": "The EPOXI MRI catalog says this position is for dust in the coma. The profile was measured on a manufacturer witness sample."
+    },
+    "IR": {
+      "Description": "MRI filter-wheel position 5, a longpass filter the label calls effectively centered at 950 nm.",
+      "Comments": "The label says the longpass starts at 900 nm and that the CCD response defines the long-wavelength cutoff at about 960 nm."
+    },
+    "OH": {
+      "Description": "MRI filter-wheel position 9, the OH filter, centered at 309 nm with a width of 6.2 nm.",
+      "Comments": "The description says OH, but PRODUCT_NAME and PRODUCT_ID on the same label say C2. The EPOXI catalog comment is for OH in the coma."
+    },
+    "Red": {
+      "Description": "MRI filter-wheel position 4, the red filter, centered at 750 nm with a width of 100 nm.",
+      "Comments": "The EPOXI MRI catalog lists this position as context. The profile was measured on a manufacturer witness sample."
+    },
+    "Violet_cont": {
+      "Description": "MRI filter-wheel position 8, the violet continuum filter, centered at 345 nm with a width of 6.8 nm.",
+      "Comments": "The EPOXI MRI catalog says this position is for dust in the coma. The profile was measured on a manufacturer witness sample."
+    }
+  }
+}

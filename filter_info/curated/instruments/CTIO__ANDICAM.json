@@ -1,0 +1,46 @@
+{
+  "description": "ANDICAM (A Novel Dual-Imaging CAMera) was an optical and infrared camera mounted on the SMARTS 1.3-meter telescope at CTIO, designed to obtain simultaneous optical and near-infrared imaging.",
+  "facility_description": "Cerro Tololo Inter-American Observatory (CTIO) is an astronomical observatory located on Cerro Tololo in Chile, operated by NSF NOIRLab.",
+  "notes": "ANDICAM provided simultaneous optical and infrared imaging at the SMARTS 1.3m telescope. Filter transmission curves are hosted on OSU astronomy and NOIRLab pages without an open redistribution licence.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the Creative Commons Attribution 4.0 International License\"",
+    "url": "https://noirlab.edu/public/copyright/"
+  },
+  "references": [
+    "bibcode:2003SPIE.4841..827D"
+  ],
+  "links": [
+    {
+      "url": "https://noirlab.edu/science/programs/ctio/filters/andicam",
+      "label": "ANDICAM filter information",
+      "source": "NSF NOIRLab"
+    },
+    {
+      "url": "https://www.astronomy.ohio-state.edu/ANDICAM/Filters/",
+      "label": "ANDICAM Filter Curves at OSU",
+      "source": "Ohio State University"
+    },
+    {
+      "url": "http://www.astro.gsu.edu/~thenry/SMARTS/",
+      "label": "SMARTS Consortium Home",
+      "source": "SMARTS / GSU"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "SMARTS Consortium",
+      "text": "This research has used data from the SMARTS [1.5m/1.3m/1.0m/0.9m] telescope, which is operated as part of the SMARTS Consortium.",
+      "url": "https://noirlab.edu/science/about/scientific-acknowledgments",
+      "references": [],
+      "applies_to": "all bands"
+    },
+    {
+      "for": "Cerro Tololo Inter-American Observatory",
+      "text": "Based on observations at NSF Cerro Tololo Inter-American Observatory, NSF NOIRLab (NOIRLab Prop. ID xxxxx-xxxx; PI: first initial last name), which is managed by the Association of Universities for Research in Astronomy (AURA) under a cooperative agreement with the U.S. National Science Foundation.",
+      "url": "https://noirlab.edu/science/about/scientific-acknowledgments",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

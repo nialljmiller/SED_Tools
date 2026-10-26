@@ -1,0 +1,52 @@
+{
+  "description": "ITS-VIS is the visible CCD camera of the Deep Impact Impactor Targeting Sensor. It uses the same telescope type as the Medium Resolution Instrument, but the filter wheel was deleted, and the archive describes the images as unfiltered white-light frames.",
+  "facility_description": "Deep Impact was a NASA mission that released an impactor spacecraft, carrying the Impactor Targeting Sensor, to strike comet 9P/Tempel 1 while the flyby spacecraft watched.",
+  "notes": "The NJM band name is clear. Pages opened for ITS say unfiltered and white-light; none of them uses the word clear as a filter name, and the flight AICD section on filters is titled for HRIV and MRI only. No ITS transmission table was found in the opened holdings. The intro PDF text extraction shows a line break in 1024 2-pixel; the quote is copied from that extraction. The AICD says ITS was an exact clone of the Medium Resolution Instrument except that the filter wheel had been deleted, and that calibration is discussed by Klaasen et al. 2006. The later reference catalog identifies that calibration paper as Rev. Sci. Instrum. 79, 091301, 2008, doi:10.1063/1.2972112, while the older AICD still says submitted to Optical Engineering. EPOXI is not used in the facility sentence because the ITS pages opened here describe the Deep Impact impactor, not the EPOXI flyby. The cruise dataset page says Citation to use when referencing this data set, which is a citation request, so acknowledgements is empty. No magnitude system is stated. SVO ITS-VIS pages timed out (HTTP 000). The NASA licence page qualifies that sentence: it applies unless the data file is marked with a restrictive notice or license.",
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"There are no restrictions on the usage of these data.\"",
+    "url": "https://science.data.nasa.gov/about/license"
+  },
+  "references": [
+    "doi:10.1007/s11214-005-3390-8",
+    "doi:10.1063/1.2972112"
+  ],
+  "links": [
+    {
+      "url": "https://pdssbn.astro.umd.edu/holdings/di-c-hrii_hriv_mri_its-6-doc-set-v4.0/document/archive_support/di/archive_description/aicd_flight_hriv_mri_its.pdf",
+      "label": "HRIV, MRI and ITS flight archive interface control document",
+      "source": "NASA PDS Small Bodies Node"
+    },
+    {
+      "url": "https://pdssbn.astro.umd.edu/holdings/dii-cal-its-2-9p-cruise-v1.0/NOTES/introdoc.pdf",
+      "label": "ITS cruise calibration data introduction",
+      "source": "NASA PDS Small Bodies Node"
+    },
+    {
+      "url": "https://pdssbn.astro.umd.edu/holdings/di-c-hrii_hriv_mri_its-6-doc-set-v4.0/catalog/dii.cat",
+      "label": "Deep Impact impactor spacecraft catalog",
+      "source": "NASA PDS Small Bodies Node"
+    },
+    {
+      "url": "https://pdssbn.astro.umd.edu/holdings/dii-cal-its-2-9p-cruise-v1.0/dataset.shtml",
+      "label": "ITS-VIS cruise raw calibration dataset",
+      "source": "NASA PDS Small Bodies Node"
+    },
+    {
+      "url": "https://pdssbn.astro.umd.edu/holdings/dif-e-hriv-3_4-epoxi-earth-v2.0/catalog/ref.cat",
+      "label": "Reference catalog printing the Hampton and Klaasen DOIs",
+      "source": "NASA PDS Small Bodies Node"
+    },
+    {
+      "url": "https://science.data.nasa.gov/about/license",
+      "label": "NASA science data licenses",
+      "source": "NASA Science Data Portal"
+    }
+  ],
+  "bands": {
+    "clear": {
+      "Description": "The single NJM band is the unfiltered ITS visible channel.",
+      "Comments": "Opened PDS text says the camera is unfiltered and that the images are white-light. It does not print the band name clear or a transmission table."
+    }
+  }
+}

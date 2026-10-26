@@ -21,10 +21,17 @@
       "url": "https://www.gemini.edu/sciops/instruments/nifs/HK.dat",
       "label": "NIFS HK transmission file",
       "source": "Gemini"
+    },
+    {
+      "url": "https://www.gemini.edu/instrumentation/nifs",
+      "label": "NIFS instrument page",
+      "source": "Gemini Observatory"
     }
   ],
   "references": [
-    "doi:10.1117/12.459448"
+    "doi:10.1117/12.459448",
+    "bibcode:2003SPIE.4841.1581M",
+    "bibcode:1997SPIE.2871...15M"
   ],
   "notes": "The components page says the gratings are used with one dual blocking filter: Z-J, J-H or H-K. The ZJ.dat header lists cut-on and cut-off at both temperatures and labels the columns 298 K and 77 K. The page also lists KG3 and KG5 neutral-density filters in the focal-plane unit; those are not these six bands. McGregor et al. 2003, Proc. SPIE 4841, is the instrument paper. The page describes the detector as a Rockwell HAWAII-2RG HgCdTe array and contrasts it with CCDs. No magnitude system is stated. DetectorType photon, DetectorTypeSource inferred (2026-10-26): no owner states the integration convention for the curve file, but the Gemini .dat files are witness scans of the blocking filters (HK.dat '#ED052-W H-K filter'), and the NIFS detector is a 'Rockwell HAWAII-2RG (H2RG)' HgCdTe device (https://www.gemini.edu/instrumentation/nifs/components), so the curves integrate as photon counters. SVO's energy label for HK and ZJ sits on identical arrays and gives no basis. The source is 'inferred' because this rests on the published curve content and the documented detector, not on an explicit owner statement.",
   "bands": {
@@ -70,5 +77,19 @@
         "doi:10.1117/12.459448"
       ]
     }
-  }
+  },
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the Creative Commons Attribution 4.0 International License\"",
+    "url": "https://noirlab.edu/public/copyright/"
+  },
+  "acknowledgements": [
+    {
+      "for": "International Gemini Observatory",
+      "text": "Based on observations obtained at the international Gemini Observatory, a program of NSF NOIRLab [ include additional acknowledgment here, see section below ], which is managed by the Association of Universities for Research in Astronomy (AURA) under a cooperative agreement with the U.S. National Science Foundation on behalf of the Gemini Observatory partnership: the U.S. National Science Foundation (United States), National Research Council (Canada), Agencia Nacional de Investigación y Desarrollo (Chile), Ministerio de Ciencia, Tecnología e Innovación (Argentina), Ministério da Ciência, Tecnologia, Inovações e Comunicações (Brazil), and Korea Astronomy and Space Science Institute (Republic of Korea).",
+      "url": "https://noirlab.edu/science/about/scientific-acknowledgments",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
 }

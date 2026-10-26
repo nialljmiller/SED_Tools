@@ -1,0 +1,36 @@
+{
+  "description": "NICMOS is Hubble’s Near Infrared Camera and Multi-Object Spectrometer. This entry represents camera 1.",
+  "facility_description": "These instruments operate on the Hubble Space Telescope.",
+  "notes": "Description from the STScI instrument overview. The general STScI content-use policy applies unless an item carries its own notice. Instrument, calibration and passband papers have not yet been added for these bands.",
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"Unless otherwise specifically stated, no claim to copyright is being asserted by STScI and material on this site may be freely used as in the public domain in accordance with NASA's contract.\"",
+    "url": "https://www.stsci.edu/copyright"
+  },
+  "links": [
+    {
+      "url": "https://www.stsci.edu/hst/instrumentation/legacy/nicmos",
+      "label": "NICMOS instrument overview",
+      "source": "STScI"
+    },
+    {
+      "url": "https://www.stsci.edu/copyright",
+      "label": "STScI content use policy",
+      "source": "STScI / MAST"
+    },
+    {
+      "url": "https://archive.stsci.edu/publishing/mission-acknowledgements",
+      "label": "MAST mission acknowledgement templates",
+      "source": "STScI / MAST"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "NASA and STScI: reuse credit request",
+      "text": "However, it is requested that in any subsequent use of this work, NASA and STScI be given appropriate acknowledgement.",
+      "url": "https://www.stsci.edu/copyright",
+      "references": [],
+      "applies_to": "all bands: STScI-produced calibration material"
+    }
+  ]
+}

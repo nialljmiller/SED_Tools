@@ -1,0 +1,43 @@
+{
+  "description": "'Alopeke is a dual-channel high-resolution optical speckle interferometer and wide-field imager mounted on the Gemini North telescope. It uses a dichroic beamsplitter at 674 nm to provide simultaneous two-color diffraction-limited imaging in narrow-band speckle filters and standard SDSS broad-band filters.",
+  "facility_description": "The International Gemini Observatory operates twin 8.1-meter optical and infrared telescopes atop Maunakea in Hawai'i (Gemini North) and Cerro Pachón in Chile (Gemini South), managed by NSF NOIRLab.",
+  "notes": "'Alopeke filters include narrow-band interference filters (466, 562, 716, 832 nm) from Edmund Optics and wide-field SDSS filters (u, g, r, i, z). Transmission curves are measured and distributed on Gemini instrumentation pages; general redistribution rights are not explicitly specified under NOIRLab policy.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the Creative Commons Attribution 4.0 International License\"",
+    "url": "https://noirlab.edu/public/copyright/"
+  },
+  "references": [
+    "bibcode:2021FrASS...8..138S",
+    "doi:10.3389/fspas.2021.716560",
+    "bibcode:1997SPIE.2871...15M"
+  ],
+  "links": [
+    {
+      "url": "https://www.gemini.edu/instrumentation/alopeke-zorro",
+      "label": "'Alopeke & Zorro instrument page",
+      "source": "Gemini Observatory"
+    },
+    {
+      "url": "https://www.gemini.edu/instrumentation/alopeke-zorro/components",
+      "label": "'Alopeke & Zorro components and filter curves",
+      "source": "Gemini Observatory"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "International Gemini Observatory",
+      "text": "Based on observations obtained at the international Gemini Observatory, a program of NSF NOIRLab [ include additional acknowledgment here, see section below ], which is managed by the Association of Universities for Research in Astronomy (AURA) under a cooperative agreement with the U.S. National Science Foundation on behalf of the Gemini Observatory partnership: the U.S. National Science Foundation (United States), National Research Council (Canada), Agencia Nacional de Investigación y Desarrollo (Chile), Ministerio de Ciencia, Tecnología e Innovación (Argentina), Ministério da Ciência, Tecnologia, Inovações e Comunicações (Brazil), and Korea Astronomy and Space Science Institute (Republic of Korea).",
+      "url": "https://noirlab.edu/science/about/scientific-acknowledgments",
+      "references": [],
+      "applies_to": "all bands"
+    },
+    {
+      "for": "`Alopeke and/or Zorro",
+      "text": "(Some of the) Observations in the paper made use of the High-Resolution Imaging instrument(s) ‘Alopeke (and/or Zorro). ‘Alopeke (and/or Zorro) was funded by the NASA Exoplanet Exploration Program and built at the NASA Ames Research Center by Steve B. Howell, Nic Scott, Elliott P. Horch, and Emmett Quigley. ‘Alopeke (and/or Zorro) was mounted on the Gemini North (and/or South) telescope of the international Gemini Observatory, a program of NSF NOIRLab, which is managed by the Association of Universities for Research in Astronomy (AURA) under a cooperative agreement with the U.S. National Science Foundation. on behalf of the Gemini partnership: the U.S. National Science Foundation (United States), National Research Council (Canada), Agencia Nacional de Investigación y Desarrollo (Chile), Ministerio de Ciencia, Tecnología e Innovación (Argentina), Ministério da Ciência, Tecnologia, Inovações e Comunicações (Brazil), and Korea Astronomy and Space Science Institute (Republic of Korea).",
+      "url": "https://noirlab.edu/science/about/scientific-acknowledgments",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

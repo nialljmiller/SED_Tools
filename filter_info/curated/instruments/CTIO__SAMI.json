@@ -1,0 +1,34 @@
+{
+  "description": "SAMI (SOAR Adaptive Module Imager) is the optical imaging camera fed by the SAM laser-guide-star adaptive optics system on the 4.1-meter SOAR Telescope, providing diffraction-limited imaging in broad and narrow optical bands.",
+  "facility_description": "The Southern Astrophysical Research (SOAR) 4.1-meter Telescope is situated on Cerro Pachón, Chile, operated by NSF NOIRLab.",
+  "notes": "SAMI uses optical filters in the SAM corrected beam. NOIRLab distributes the curves without an open redistribution grant.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the Creative Commons Attribution 4.0 International License\"",
+    "url": "https://noirlab.edu/public/copyright/"
+  },
+  "references": [
+    "bibcode:2016PASP..128l5003T"
+  ],
+  "links": [
+    {
+      "url": "https://noirlab.edu/science/programs/ctio/instruments/sam/instrument-characteristics/filters-sami",
+      "label": "SAMI Filters and Transmission",
+      "source": "NSF NOIRLab"
+    },
+    {
+      "url": "https://noirlab.edu/science/programs/ctio/telescopes/soar-telescope/filters",
+      "label": "SOAR Filters",
+      "source": "NSF NOIRLab"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "Southern Astrophysical Research (SOAR) Telescope",
+      "text": "Based on observations obtained at the Southern Astrophysical Research (SOAR) Telescope, which is a joint project of the Ministério da Ciência, Tecnologia e Inovações (MCTI/LNA) do Brasil, the U.S. National Science Foundation NOIRLab, the University of North Carolina at Chapel Hill (UNC), and Michigan State University (MSU).",
+      "url": "https://noirlab.edu/science/about/scientific-acknowledgments",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

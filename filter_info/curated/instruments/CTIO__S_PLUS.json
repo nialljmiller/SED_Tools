@@ -1,0 +1,34 @@
+{
+  "description": "The Southern Photometric Local Universe Survey (S-PLUS) utilizes a dedicated 0.82-meter robotic telescope (T80-South) at CTIO, equipped with a 12-filter optical system featuring 5 SDSS-like broad bands and 7 narrow bands.",
+  "facility_description": "The T80-South telescope is a robotic facility located at Cerro Tololo Inter-American Observatory (CTIO) in Chile.",
+  "notes": "T80-South operates as a tenant facility on Cerro Tololo. S-PLUS data and filter curves are maintained by the collaboration.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the Creative Commons Attribution 4.0 International License\"",
+    "url": "https://noirlab.edu/public/copyright/"
+  },
+  "references": [
+    "bibcode:2019MNRAS.489..241M"
+  ],
+  "links": [
+    {
+      "url": "https://www.splus.iag.usp.br/",
+      "label": "S-PLUS Survey Homepage",
+      "source": "S-PLUS / IAG-USP"
+    },
+    {
+      "url": "https://arxiv.org/abs/1907.01567",
+      "label": "S-PLUS Survey Paper",
+      "source": "arXiv"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "Cerro Tololo Inter-American Observatory",
+      "text": "Based on observations made at NSF Cerro Tololo Inter-American Observatory, NSF NOIRLab (NOIRLab Prop. ID; PI: first initial last name), which is managed by the Association of Universities for Research in Astronomy (AURA) under a cooperative agreement with the U.S. National Science Foundation.",
+      "url": "https://noirlab.edu/science/about/scientific-acknowledgments",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

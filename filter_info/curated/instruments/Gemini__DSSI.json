@@ -1,0 +1,36 @@
+{
+  "description": "The Differential Speckle Survey Instrument (DSSI) is a visiting dual-channel optical speckle camera deployed at Gemini North and Gemini South. It uses a dichroic beamsplitter to feed two electron-multiplying CCDs for simultaneous two-color diffraction-limited speckle imaging through medium- and narrow-band optical filters.",
+  "facility_description": "The International Gemini Observatory operates twin 8.1-meter optical and infrared telescopes atop Maunakea in Hawai'i (Gemini North) and Cerro Pachón in Chile (Gemini South), managed by NSF NOIRLab.",
+  "notes": "DSSI was a visiting instrument developed at Southern Connecticut State University and operated at Gemini North and South before being succeeded by 'Alopeke and Zorro. Redistribution terms for its instrument filter curves are not explicitly stated.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the Creative Commons Attribution 4.0 International License\"",
+    "url": "https://noirlab.edu/public/copyright/"
+  },
+  "references": [
+    "bibcode:2009AJ....137.5057H",
+    "bibcode:2012AJ....144..165H",
+    "bibcode:1997SPIE.2871...15M"
+  ],
+  "links": [
+    {
+      "url": "https://webarchive.gemini.edu/20210514-sciops--instruments--dssi-speckle-camera-north/",
+      "label": "DSSI speckle camera overview",
+      "source": "Gemini Observatory"
+    },
+    {
+      "url": "https://www.gemini.edu/instrumentation/instrumentation/retired-instruments",
+      "label": "Gemini retired instruments list",
+      "source": "Gemini Observatory"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "International Gemini Observatory",
+      "text": "Based on observations obtained at the international Gemini Observatory, a program of NSF NOIRLab [ include additional acknowledgment here, see section below ], which is managed by the Association of Universities for Research in Astronomy (AURA) under a cooperative agreement with the U.S. National Science Foundation on behalf of the Gemini Observatory partnership: the U.S. National Science Foundation (United States), National Research Council (Canada), Agencia Nacional de Investigación y Desarrollo (Chile), Ministerio de Ciencia, Tecnología e Innovación (Argentina), Ministério da Ciência, Tecnologia, Inovações e Comunicações (Brazil), and Korea Astronomy and Space Science Institute (Republic of Korea).",
+      "url": "https://noirlab.edu/science/about/scientific-acknowledgments",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

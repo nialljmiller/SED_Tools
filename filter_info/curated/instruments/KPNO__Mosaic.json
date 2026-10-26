@@ -1,0 +1,66 @@
+{
+  "description": "NOIRLab lists full-size filters for the Mosaic imagers, including Harris B, V, and R, U, I, and SDSS i and r. KPNO copies were measured at NOAO, and the former CTIO Mosaic-2 filters are also at KPNO for Mosaic-1. Tabulated 4 m properties are for parallel light.",
+  "facility_description": "These Mosaic filters are catalogued for the Nicholas U. Mayall 4-meter Telescope at Kitt Peak National Observatory.",
+  "notes": "The Mosaic list is paginated. Harris B/R, I, and i SDSS were read on page=1 sorted by title; U, V Harris, and r SDSS on page=2. Each band has more than one physical filter (KPNO k-numbers and former CTIO c-numbers). The page says that as of 24 April 2012 all CTIO Mosaic-2 filters were transferred to KPNO for Mosaic-1, and that KPNO Mosaic filters were measured at NOAO. The NOIRLab Kitt Peak acknowledgement is for observations, not these curves, so it is not stored. The public copyright page does not place filter scans under CC BY 4.0 and does not say the work is a US government work, so redistribution is unknown. No magnitude system is stated. Fukugita 1996 is not cited: the table names the filters i SDSS and r SDSS but does not cite that paper.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the\"",
+    "url": "https://noirlab.edu/public/copyright/"
+  },
+  "links": [
+    {
+      "url": "https://noirlab.edu/science/programs/kpno/filters/mosaic",
+      "label": "KPNO Mosaic filters",
+      "source": "NSF NOIRLab"
+    },
+    {
+      "url": "https://noirlab.edu/science/programs/kpno/filters/mosaic?order=title&sort=asc&page=1",
+      "label": "Mosaic filter table, Harris B, I, R and i SDSS",
+      "source": "NSF NOIRLab"
+    },
+    {
+      "url": "https://noirlab.edu/science/programs/kpno/filters/mosaic?order=title&sort=asc&page=2",
+      "label": "Mosaic filter table, U, V Harris and r SDSS",
+      "source": "NSF NOIRLab"
+    }
+  ],
+  "bands": {
+    "B": {
+      "Description": "Harris B filters for Mosaic. The KPNO piece k1002 is listed at 4381 Å with FWHM 993.88 Å, and the former CTIO piece c6002 at 4360 Å with FWHM 990 Å.",
+      "Band": "B Harris",
+      "Comments": "Both are listed on the Mayall Mosaic filter table. Properties for the 4 m filters are given for parallel light."
+    },
+    "V": {
+      "Description": "Harris V filters for Mosaic. The KPNO piece k1003 is listed at 5386.76 Å with FWHM 948.66 Å, and c6026 at 5370 Å with FWHM 940 Å.",
+      "Band": "V Harris",
+      "Comments": "Properties shown for the 4 m filters are for parallel light."
+    },
+    "R": {
+      "Description": "Harris R filters for Mosaic. The KPNO piece k1004 is listed at 6513.54 Å with FWHM 1511.30 Å, and c6004 at 6440 Å with FWHM 1510 Å.",
+      "Band": "R Harris",
+      "Comments": "Properties shown for the 4 m filters are for parallel light."
+    },
+    "U": {
+      "Description": "Mosaic U filters. KPNO k1001 is listed at 3552.00 Å with FWHM 630.71 Å, and c6001 at 3570 Å with FWHM 650 Å.",
+      "Band": "U",
+      "Comments": "Unlike most KPNO Mosaic filters, the U filter is not parfocal. All KPNO Mosaic filters were measured at NOAO."
+    },
+    "I": {
+      "Description": "Mosaic I filters. I c6028 is listed at 8050 Å with FWHM 1500 Å, and I Nearly-Mould k1005 at 8204.53 Å with FWHM 1914.59 Å.",
+      "Band": "I",
+      "Comments": "The catalog distinguishes the Nearly-Mould I from I c6028. Properties for the 4 m filters are for parallel light."
+    },
+    "i_SDSS": {
+      "Description": "SDSS i filters for Mosaic. KPNO k1019 is listed at 7726.28 Å with FWHM 1539.89 Å, and c6019 at 7732 Å with FWHM 1548 Å.",
+      "Band": "i SDSS",
+      "PhotSystem": "SDSS",
+      "Comments": "Named i SDSS on the Mosaic filter table. Properties for the 4 m filters are for parallel light."
+    },
+    "r_SDSS": {
+      "Description": "SDSS r filters for Mosaic. KPNO k1018 is listed at 6292.28 Å with FWHM 1475.17 Å, and c6018 at 6287 Å with FWHM 1468 Å.",
+      "Band": "r SDSS",
+      "PhotSystem": "SDSS",
+      "Comments": "Named r SDSS on the Mosaic filter table. Properties for the 4 m filters are for parallel light."
+    }
+  }
+}

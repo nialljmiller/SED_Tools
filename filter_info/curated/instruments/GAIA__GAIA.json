@@ -1,0 +1,88 @@
+{
+  "description": "GAIA passbands include the broad-band photometric system (G, Gbp, Grp), the magnitude-dependent split blue passbands (Gbp_bright and Gbp_faint separated at G = 10.87 by Maíz Apellániz & Weiler 2018), and the Radial Velocity Spectrometer band (Grvs).",
+  "facility_description": "Gaia is a European Space Agency astrometric, photometric and spectroscopic space observatory operating at the Sun-Earth L2 Lagrange point.",
+  "notes": "GAIA/GAIA contains the revised Gaia DR2 photometric sensitivity curves from Maíz Apellániz & Weiler (2018, A&A 619, A180), which separated Gbp into bright (G < 10.87) and faint regimes to account for charge transfer effects, as well as the RVS transmission profile. Pre-launch and nominal bandpasses are described in Jordi et al. (2010). The owner documentation explicitly describes these as photon response functions (quantum efficiency). DetectorType is left unchanged.",
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"raw and calibrated data (hereafter data) deriving from satellites flown in the framework of an agency programme and contained in the esa space science archives, as well as analysed data and higher-level science products (hereafter data products) contained in the esa space science archives, are open and free to use by the user subject to proper acknowledgment to be given in accordance with the credit lines provided below.\"",
+    "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions"
+  },
+  "references": [
+    "bibcode:2018A&A...619A.180M",
+    "bibcode:2010A&A...523A..48J",
+    "bibcode:2016A&A...595A...1G"
+  ],
+  "links": [
+    {
+      "url": "https://www.cosmos.esa.int/web/gaia/transmissionwithoriginal",
+      "label": "Gaia instrument transmission profiles including RVS",
+      "source": "ESA / Gaia"
+    },
+    {
+      "url": "https://www.cosmos.esa.int/web/gaia/iow_20180316",
+      "label": "Gaia DR2 passbands description and documentation",
+      "source": "ESA / Gaia"
+    },
+    {
+      "url": "https://www.cosmos.esa.int/web/gaia-users/credits",
+      "label": "Gaia data credits and acknowledgements",
+      "source": "ESA / Gaia"
+    },
+    {
+      "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
+      "label": "ESA Space Science Archives terms and conditions",
+      "source": "ESA"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "European Space Agency (ESA) and Gaia DPAC",
+      "text": "The terms and conditions for the use of data in the ESA Space Science Archives require users to acknowledge ESA and other providers of the data by means of mission-specific credit lines as indicated below.",
+      "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
+      "references": [],
+      "applies_to": "all bands"
+    },
+    {
+      "for": "Gaia mission data credit line",
+      "text": "Gaia all Credit: ESA, Gaia DPAC",
+      "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ],
+  "bands": {
+    "G": {
+      "references": [
+        "bibcode:2018A&A...619A.180M",
+        "bibcode:2010A&A...523A..48J"
+      ]
+    },
+    "Gbp": {
+      "references": [
+        "bibcode:2018A&A...619A.180M",
+        "bibcode:2010A&A...523A..48J"
+      ]
+    },
+    "Gbp_bright": {
+      "references": [
+        "bibcode:2018A&A...619A.180M"
+      ]
+    },
+    "Gbp_faint": {
+      "references": [
+        "bibcode:2018A&A...619A.180M"
+      ]
+    },
+    "Grp": {
+      "references": [
+        "bibcode:2018A&A...619A.180M",
+        "bibcode:2010A&A...523A..48J"
+      ]
+    },
+    "Grvs": {
+      "references": [
+        "bibcode:2010A&A...523A..48J"
+      ]
+    }
+  }
+}

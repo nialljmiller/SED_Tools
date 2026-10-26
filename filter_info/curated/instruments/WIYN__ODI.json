@@ -1,0 +1,54 @@
+{
+  "description": "The WIYN One Degree Imager filter page posts filter-only throughput for the u' and r' filters and for the narrow-band filters NB695 and NB422. The u' and r' curves are shown next to SDSS system throughput for comparison.",
+  "facility_description": "ODI is mounted at the f/6.3 Nasmyth port of the WIYN 3.5 m telescope, a joint facility at Kitt Peak National Observatory.",
+  "notes": "The NOIRLab ODI page lists u', g', r', i', z', NB422, NB695, NB746, and H-alpha. Only u, r, NB422, and NB695 are NJM keys. The WIYN credit page requests an acknowledgement for publications that include data from WIYN telescopes; it does not mention filter curves, so no acknowledgement is stored. The NOIRLab copyright page puts press text and images under CC BY 4.0 and says other text on that site is not released under that licence and cannot be used for non-NOIRLab products. The numerical ODI files are hosted on wiyn.org, which was not given its own redistribution terms, so the class is unknown. No magnitude system is stated. The NB422 header quote was read from the start of NB_422.txt.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the\"",
+    "url": "https://noirlab.edu/public/copyright/"
+  },
+  "links": [
+    {
+      "url": "https://www.wiyn.org/ODI/wiynODIfilters.html",
+      "label": "ODI filter throughput",
+      "source": "WIYN Observatory"
+    },
+    {
+      "url": "https://noirlab.edu/science/programs/kpno/instruments/one-degree-imager",
+      "label": "One Degree Imager instrument summary",
+      "source": "NSF NOIRLab"
+    },
+    {
+      "url": "https://www.wiyn.org/Observe/wiyncredit.html",
+      "label": "WIYN and KPNO credit line for publications",
+      "source": "WIYN Observatory"
+    },
+    {
+      "url": "https://www.wiyn.org/ODI/Observe/NB_422.txt",
+      "label": "ODI NB422 filter-only transmission file",
+      "source": "WIYN Observatory"
+    }
+  ],
+  "bands": {
+    "u": {
+      "Description": "ODI u' filter. A filter-only throughput file, odi_u.dat, is linked from the ODI filter page.",
+      "Band": "u'",
+      "Comments": "The page plots the original SDSS system throughput in u' for reference and says those responses were taken from the SDSS DR3 imager page. It does not state that ODI magnitudes are on the SDSS system."
+    },
+    "r": {
+      "Description": "ODI r' filter. A filter-only throughput file, odi_r.txt, is linked from the ODI filter page.",
+      "Band": "r'",
+      "Comments": "The page plots the original SDSS system throughput in r' for reference. It does not state an ODI magnitude system."
+    },
+    "NB695": {
+      "Description": "ODI narrow-band filter NB695, with filter-only throughput file odi_NB695.txt.",
+      "Band": "NB695",
+      "Comments": "The filter-only column is described as throughput averaged over the field of view."
+    },
+    "NB422": {
+      "Description": "ODI narrow-band filter NB422, with filter-only file NB422.txt.",
+      "Band": "NB422",
+      "Comments": "The file header gives transmission in percent for a parallel beam at 5 degrees angle of incidence. The page says this filter-only throughput is averaged over the field of view."
+    }
+  }
+}

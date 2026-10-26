@@ -16,6 +16,26 @@
       "url": "https://instrumentation.obs.carnegiescience.edu/FourStar/",
       "label": "FourStar home",
       "source": "Carnegie"
+    },
+    {
+      "url": "https://instrumentation.obs.carnegiescience.edu/FourStar/OPTICS/optics.html",
+      "label": "FourStar optical design",
+      "source": "Carnegie Observatories"
+    },
+    {
+      "url": "https://instrumentation.obs.carnegiescience.edu/FourStar/calibration.html",
+      "label": "FourStar calibration and zeropoints",
+      "source": "Carnegie Observatories"
+    },
+    {
+      "url": "https://instrumentation.obs.carnegiescience.edu/FourStar/Documents/documentation.html",
+      "label": "FourStar documentation and requested citation",
+      "source": "Carnegie Observatories"
+    },
+    {
+      "url": "https://iopscience.iop.org/article/10.1086/671164",
+      "label": "Persson et al. 2013, PASP, FourStar instrument paper",
+      "source": "IOP Science"
     }
   ],
   "references": [
@@ -52,49 +72,72 @@
       "Comments": "Named on the Carnegie FourStar filters page.",
       "references": [
         "bibcode:2013PASP..125..654P"
-      ]
+      ],
+      "Band": "J1"
     },
     "J2": {
       "Description": "FourStar Medium-band J2",
       "Comments": "Named on the Carnegie FourStar filters page.",
       "references": [
         "bibcode:2013PASP..125..654P"
-      ]
+      ],
+      "Band": "J2"
     },
     "J3": {
       "Description": "FourStar Medium-band J3",
       "Comments": "Named on the Carnegie FourStar filters page.",
       "references": [
         "bibcode:2013PASP..125..654P"
-      ]
+      ],
+      "Band": "J3"
     },
     "Hshort": {
       "Description": "FourStar Medium-band Hshort",
       "Comments": "Named on the Carnegie FourStar filters page.",
       "references": [
         "bibcode:2013PASP..125..654P"
-      ]
+      ],
+      "Band": "Hshort"
     },
     "Hlong": {
       "Description": "FourStar Medium-band Hlong",
       "Comments": "Named on the Carnegie FourStar filters page.",
       "references": [
         "bibcode:2013PASP..125..654P"
-      ]
+      ],
+      "Band": "Hlong"
     },
     "NB118": {
       "Description": "FourStar Narrow-band 1.18",
       "Comments": "Named on the Carnegie FourStar filters page. plot.sm builds FS118 from FS118_convolve.txt, which Janice Lee's note in that script says was convolved with the J2 blocking filter and already includes the 0.995^16 surface factor.",
       "references": [
         "bibcode:2013PASP..125..654P"
-      ]
+      ],
+      "Band": "Narrow-band 1.18"
     },
     "NB209": {
       "Description": "FourStar Narrow-band 2.09",
       "Comments": "Named on the Carnegie FourStar filters page. plot.sm builds FS209 from FS209_convolve.txt, convolved with the Ks blocking filter. The script applies the Ks absorption roll-off only to the Ks broadband file, and says the convolve files do not include that Ks absorption.",
       "references": [
         "bibcode:2013PASP..125..654P"
-      ]
+      ],
+      "Band": "Narrow-band 2.09"
     }
-  }
+  },
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"These Documentation pages are Design in Progress and content may change.\"",
+    "url": "https://instrumentation.obs.carnegiescience.edu/FourStar/OPTICS/filters.html"
+  },
+  "acknowledgements": [
+    {
+      "for": "FourStar",
+      "text": "Persson et al. 2013, PASP, 125, 654",
+      "url": "https://instrumentation.obs.carnegiescience.edu/FourStar/Documents/documentation.html",
+      "references": [
+        "bibcode:2013PASP..125..654P"
+      ],
+      "applies_to": "all bands"
+    }
+  ]
 }

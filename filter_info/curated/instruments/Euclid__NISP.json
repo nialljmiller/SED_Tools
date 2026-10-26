@@ -1,0 +1,112 @@
+{
+  "description": "NISP on Euclid has three photometric passbands, Y, J and H, and slitless grisms. ESA's NISP-PHOTO-PASSBANDS-V1 product gives the effective Y, J and H throughput at the centre of the focal plane, as the product of telescope, NISP optics, filter and quantum efficiency. Blue and Red are the blue grism BGE and the red grism RGE, not additional imaging filters.",
+  "facility_description": "Euclid is an ESA visible and near-infrared space survey, launched on 1 July 2023, with a 1.20 m Korsch off-axis three-mirror telescope.",
+  "notes": "The NISP-PHOTO-PASSBANDS-V1 page publishes Y, J and H total-throughput files and the Euclid Consortium acknowledgement copied above. That page does not itself state a licence. The numerical files are Euclid reference data hosted by ESA, so the licence class follows the ESA Space Science Archives terms (CC BY-NC 3.0 IGO), which also require the Euclid credit line. Schirmer et al. 2022 on arXiv is separately marked CC BY 4.0; that article licence is not used here as the licence of the archive files. The reference-data index lists NISP photometric passbands and a planetary-nebula atlas, not Blue or Red grism curves. A NISP-SPECTRO-PASSBANDS page was not used: its DOI placeholder was not a real release. Wavelength edges for Y, J and H are quoted from the Euclid Consortium overview, which attributes them to Schirmer+2022 Table 3. The Y ASCII product header (opened this session) is '# WAVE T_TOTAL T_FILTER T_TELESCOPE T_NI-OA T_QE'.",
+  "licence": {
+    "redistribution": "restricted",
+    "terms": "\"Data hosted in the ESA Space Science Archives are distributed under the CC BY-NC 3.0 IGO licence.\"",
+    "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions"
+  },
+  "references": [
+    "bibcode:2022A&A...662A..92E",
+    "bibcode:2025A&A...697A...3E",
+    "doi:10.5270/esa-kx8w57c"
+  ],
+  "links": [
+    {
+      "url": "https://www.cosmos.esa.int/web/euclid",
+      "label": "ESA Euclid mission page",
+      "source": "ESA Cosmos"
+    },
+    {
+      "url": "https://www.euclid-ec.org/",
+      "label": "Euclid Consortium",
+      "source": "Euclid Consortium"
+    },
+    {
+      "url": "https://www.euclid-ec.org/science/overview/",
+      "label": "Euclid Consortium science overview (passband edges)",
+      "source": "Euclid Consortium"
+    },
+    {
+      "url": "https://euclid.esac.esa.int/msp/refdata/nisp/NISP-PHOTO-PASSBANDS-V1",
+      "label": "NISP photometric passbands V1",
+      "source": "ESA Euclid reference data"
+    },
+    {
+      "url": "https://euclid.esac.esa.int/msp/refdata/",
+      "label": "Euclid mission reference data index",
+      "source": "ESA"
+    },
+    {
+      "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
+      "label": "ESA Space Science Archives terms",
+      "source": "ESA ESDC"
+    },
+    {
+      "url": "https://arxiv.org/abs/2203.01650",
+      "label": "Schirmer et al. 2022, NISP photometric system",
+      "source": "arXiv"
+    },
+    {
+      "url": "https://arxiv.org/pdf/2203.01650",
+      "label": "Schirmer et al. 2022 PDF",
+      "source": "arXiv"
+    },
+    {
+      "url": "https://arxiv.org/abs/2405.13493",
+      "label": "Euclid Collaboration: Jahnke et al. 2025, NISP instrument",
+      "source": "arXiv"
+    },
+    {
+      "url": "https://arxiv.org/pdf/2405.13493",
+      "label": "NISP instrument paper PDF",
+      "source": "arXiv"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "Euclid Consortium NISP photometric passbands",
+      "text": "This work has made use of data from the Euclid Consortium. Funding for the Euclid Consortium has been provided by national institutions, in particular the institutions participating in the Euclid Multilateral Agreement.",
+      "url": "https://euclid.esac.esa.int/msp/refdata/nisp/NISP-PHOTO-PASSBANDS-V1",
+      "references": [
+        "bibcode:2022A&A...662A..92E"
+      ],
+      "applies_to": "Y, J, H"
+    },
+    {
+      "for": "ESA Euclid",
+      "text": "Credit: ESA Euclid, Euclid Consortium, NASA",
+      "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
+      "applies_to": "all bands",
+      "references": []
+    }
+  ],
+  "bands": {
+    "*": {
+      "references": [
+        "bibcode:2025A&A...697A...3E"
+      ]
+    },
+    "Y": {
+      "Band": "Y_E",
+      "MagSys": "AB"
+    },
+    "J": {
+      "Band": "J_E",
+      "MagSys": "AB"
+    },
+    "H": {
+      "Band": "H_E",
+      "MagSys": "AB"
+    },
+    "Blue": {
+      "Description": "NISP blue slitless grism BGE (BGS000, orientation 0°). The instrument paper gives 926–1366 nm and R > 400. The Euclid Consortium lists the same 50% edges for BG_E and R~400.",
+      "Band": "BGE"
+    },
+    "Red": {
+      "Description": "NISP red slitless grism RGE. The instrument paper gives 1206–1892 nm and R > 480, with grisms at different dispersion orientations. The Euclid Consortium lists RG_E from RGS000 and RGS180 (0° and 180°); RGS270 is unused.",
+      "Band": "RGE"
+    }
+  }
+}

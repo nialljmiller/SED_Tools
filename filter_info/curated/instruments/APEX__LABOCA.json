@@ -1,0 +1,51 @@
+{
+  "description": "LABOCA, the Large APEX Bolometer Camera, is a 295-bolometer total-power camera on the APEX telescope for continuum mapping in the 870 micrometre atmospheric window. Cold filters define a passband centred at 345 GHz.",
+  "facility_description": "The Atacama Pathfinder Experiment is a 12-metre telescope at 5100 metres on the Chajnantor plateau in Chile, a project of the Max Planck Institute for Radio Astronomy hosted by ALMA.",
+  "notes": "The public ESO URL /public/teles-instr/apex/laboca/ returned HTTP 404. The passband numbers are the figure caption in Siringo et al. 2009 (arXiv HTML). The APEX acknowledgement is the sentence the ESO archive policy requires for publications that use APEX observational data; the programme-ID placeholders and the footnote digits 1 and 2 are printed on that page. That sentence was not shown to cover the filter curve. The archive policy puts ESO data files under CC BY 4.0. The public copyright page does not put scientific papers or other site text under that licence. Neither page identifies the LABOCA transmission curve, so redistribution of the curve is unknown. No magnitude system is stated. SVO did not answer from this machine, so the SVO bibcodes already stored on NJM were not copied.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, pictures of the week, blog posts and captions on this site are not released under the Creative Commons Attribution 4.0 International License and can not be used for non-ESO products.\"",
+    "url": "https://www.eso.org/public/copyright/"
+  },
+  "references": [
+    "bibcode:2009A&A...497..945S",
+    "arxiv:0903.1354"
+  ],
+  "links": [
+    {
+      "url": "https://www.eso.org/public/teles-instr/apex/",
+      "label": "APEX telescope",
+      "source": "ESO"
+    },
+    {
+      "url": "https://arxiv.org/abs/0903.1354",
+      "label": "Siringo et al. 2009, LABOCA instrument paper",
+      "source": "arXiv"
+    },
+    {
+      "url": "https://arxiv.org/html/0903.1354",
+      "label": "Siringo et al. 2009 HTML",
+      "source": "arXiv"
+    },
+    {
+      "url": "https://archive.eso.org/cms/eso-data-access-policy.html",
+      "label": "ESO data access policy and APEX acknowledgement",
+      "source": "ESO"
+    },
+    {
+      "url": "https://www.eso.org/public/copyright/",
+      "label": "ESO copyright notice",
+      "source": "ESO"
+    }
+  ],
+  "bands": {
+    "*": {
+      "references": [
+        "bibcode:2009A&A...497..945S"
+      ]
+    },
+    "345GHz": {
+      "Description": "LABOCA passband centred at 345 GHz; the paper's spectral-response figure has 50% transmission between 313 and 372 GHz."
+    }
+  }
+}

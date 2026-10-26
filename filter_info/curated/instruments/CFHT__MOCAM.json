@@ -1,0 +1,47 @@
+{
+  "description": "MOCAM (MOsaic CAMera) was a 4096 by 4096 pixel optical CCD mosaic camera developed by CFHT and the University of Hawaii, mounted at the CFHT prime focus for wide-field imaging.",
+  "facility_description": "The Canada-France-Hawaii Telescope (CFHT) is a 3.6-meter optical and infrared telescope operated by NRC (Canada), CNRS/INSU (France), and the University of Hawaii, located on Maunakea in Hawaii.",
+  "notes": "MOCAM operated at the CFHT prime focus in the mid-1990s as a precursor to CFH12K and MegaCam, using four Loral 2048x2048 CCDs with Harris/Cousins B, V, R, and I filters.",
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"The Canada-France-Hawaii Telescope Corporation owns the copyright of all contents of this web site unless stated otherwise.\"",
+    "url": "https://www.cfht.hawaii.edu/hawaiianstarlight/CFHT_WWW_Copyright.html"
+  },
+  "references": [
+    "bibcode:1996PASP..108.1120C",
+    "bibcode:2024A&A...689A..93R"
+  ],
+  "links": [
+    {
+      "url": "https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/en/cfht/",
+      "label": "CADC CFHT Science Archive",
+      "source": "CADC"
+    },
+    {
+      "url": "https://www.cfht.hawaii.edu/en/science/Publications/",
+      "label": "CFHT Publications and Acknowledgement Policy",
+      "source": "CFHT"
+    },
+    {
+      "url": "https://www.cfht.hawaii.edu/hawaiianstarlight/CFHT_WWW_Copyright.html",
+      "label": "CFHT Copyright Policy",
+      "source": "CFHT"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "Canada-France-Hawaii Telescope",
+      "text": "Based on observations obtained at the Canada-France-Hawaiʻi Telescope (CFHT) which is operated by the National Research Council of Canada, the Institut National des Sciences de l'Univers of the Centre National de la Recherche Scientifique of France, and the University of Hawaiʻi. CFHT is located on Maunakea on Hawaiʻi Island, a mountain of considerable cultural, natural, and ecological significance. Maunakea is a sacred site to Native Hawaiians, also known as Kānaka ʻŌiwi.",
+      "url": "https://www.cfht.hawaii.edu/en/science/Publications/",
+      "applies_to": "all bands",
+      "references": []
+    },
+    {
+      "for": "Canadian Astronomy Data Centre",
+      "text": "This research used the facilities of the Canadian Astronomy Data Centre operated by the National Research Council of Canada with the support of the Canadian Space Agency.",
+      "url": "https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/en/cfht/credits.html",
+      "applies_to": "all bands",
+      "references": []
+    }
+  ]
+}

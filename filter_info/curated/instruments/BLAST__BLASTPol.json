@@ -1,0 +1,32 @@
+{
+  "description": "BLASTPol was the polarimetric Balloon-borne Large Aperture Submillimeter Telescope, mapping linearly polarised dust in molecular clouds from a stratospheric balloon.",
+  "facility_description": "BLASTPol flew from Antarctica, including a December 2012 flight.",
+  "notes": "The paper centres the wavebands at 250, 350 and 500 microns. NJM's keys are 1200GHz, 600GHz and 850GHz. Those numbers were not printed on the opened abstract, so no per-band Description was attached. bibcode:2016PhDT.......113G was not opened. No requested acknowledgement was found. The only reuse terms opened for the article are the arXiv non-exclusive licence, which does not grant further reuse and says to contact the author. That is not a grant to redistribute a separate numeric curve. No magnitude system was recorded.",
+  "licence": {
+    "redistribution": "permission",
+    "terms": "\"which does not grant further reuse permissions directly. In these cases you will need to contact the author directly with your request.\"",
+    "url": "https://info.arxiv.org/help/license/reuse.html"
+  },
+  "references": [
+    "arxiv:1407.3815"
+  ],
+  "links": [
+    {
+      "url": "https://arxiv.org/abs/1407.3815",
+      "label": "Galitzki et al., BLASTPol 2012 flight",
+      "source": "arXiv"
+    },
+    {
+      "url": "https://info.arxiv.org/help/license/reuse.html",
+      "label": "arXiv permissions and reuse",
+      "source": "arXiv"
+    }
+  ],
+  "bands": {
+    "*": {
+      "references": [
+        "arxiv:1407.3815"
+      ]
+    }
+  }
+}

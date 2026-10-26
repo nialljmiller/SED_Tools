@@ -1,0 +1,12 @@
+{
+  "description": "ATSR-2 continued ATSR-1 sea-surface temperature observations and added three visible and near-infrared channels for land applications. Its dual-angle measurements support atmospheric correction of land-cover observations.",
+  "facility_description": "ERS-2 was the ESA follow-on mission to ERS-1 and carried ATSR-2.",
+  "notes": "No curve-specific terms or requested acknowledgement located on the opened ATSR project pages. CEDA archive links are available but the source of the NJM spectral response curves remains unresolved.",
+  "links": [
+    {
+      "url": "https://atsrsensors.org/atsr-2.htm",
+      "label": "ATSR-2 instrument history and added channels",
+      "source": "ATSR sensor team"
+    }
+  ]
+}

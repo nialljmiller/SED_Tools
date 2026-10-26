@@ -1,0 +1,31 @@
+{
+  "description": "The Speckle Polarimeter (SPP) is a facility instrument combining a two-beam polarimeter and speckle interferometer on the 2.5-m telescope of CMO SAI MSU, equipped with intermediate/narrow-band and standard filters (550nm, 625nm, 656nm, 880nm, V, Rc, Ic) for high-resolution polarimetric imaging.",
+  "facility_description": "The Caucasian Mountain Observatory (CMO) is a mountain observatory of the Sternberg Astronomical Institute, Lomonosov Moscow State University (SAI MSU), located on the Mount Shatdzhatmaz plateau in Russia.",
+  "notes": "SPP operates on the 2.5-m telescope at CMO SAI MSU. No explicit data redistribution terms or user acknowledgement requests were found on the instrument pages or SAI website.",
+  "licence": {
+    "redistribution": "unknown",
+    "url": "http://lnfm1.sai.msu.ru/kgo/mfc_en.php"
+  },
+  "references": [
+    "bibcode:2017AstL...43..344S",
+    "bibcode:2023AstBu..78..234S",
+    "arxiv:2305.00451"
+  ],
+  "links": [
+    {
+      "url": "http://lnfm1.sai.msu.ru/kgo/mfc_en.php",
+      "label": "Speckle Polarimeter instrument overview",
+      "source": "SAI MSU"
+    },
+    {
+      "url": "http://lnfm1.sai.msu.ru/kgo/",
+      "label": "Caucasian Mountain Observatory",
+      "source": "SAI MSU"
+    },
+    {
+      "url": "https://arxiv.org/abs/2305.00451",
+      "label": "Speckle Interferometry with CMOS Detector (arXiv)",
+      "source": "arXiv"
+    }
+  ]
+}

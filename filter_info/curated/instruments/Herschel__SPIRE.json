@@ -1,0 +1,101 @@
+{
+  "description": "SPIRE was Herschel's submillimetre camera and spectrometer. Its imaging photometer had three broad bands centred on 250, 350 and 500 µm, observed together, plus an imaging Fourier-transform spectrometer.",
+  "facility_description": "Herschel is ESA's fourth cornerstone mission, launched on 14 May 2009 with a 3.5 m Cassegrain telescope for photometry and spectroscopy at about 55–671 µm.",
+  "notes": "Numeric transmissions are the HSA ancillary product SPIRE-P Filter Transmissions (listed Available from HSA: Yes; the directory note also calls them the relative spectral response function). That note states no licence. ESA archive terms put data hosted in the ESA Space Science Archives under CC BY-NC 3.0 IGO and require a separate authorisation before commercial use. Those terms do not name filter-transmission tables. Coverage of the curves is inferred because the ADP page says the files are available from the HSA, not because a clause identifies calibration tables as observations. Non-commercial redistribution with the required credit is the grant named on the terms page; commercial redistribution is not allowed without permission. IRSA says most IRSA-served data are public with no usage restrictions, but that page does not identify these filter tables, so that statement is not applied here. Griffin et al. quote flux densities at 250, 350 and 500 µm for a flat nu S(nu) convention and give noise in mJy; that is not recorded as a magnitude system. The SPIRE consortium acknowledgement is compulsory for consortium guaranteed-time papers and optional otherwise. Bibcodes were not printed as ADS strings; the publishing-rules page cites Griffin et al. 2010, A&A, 518, L3 and Pilbratt et al. 2010, A&A, 518, L1, and check_refs resolved those keys. The arXiv abstract uses a backtick in Observatory`s; that character is copied in the evidence quote.",
+  "licence": {
+    "redistribution": "restricted",
+    "terms": "\"Data hosted in the ESA Space Science Archives are distributed under the CC BY-NC 3.0 IGO licence.\"",
+    "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions"
+  },
+  "references": [
+    "bibcode:2010A&A...518L...3G",
+    "doi:10.1051/0004-6361/201014519",
+    "arxiv:1005.5123",
+    "bibcode:2010A&A...518L...1P"
+  ],
+  "links": [
+    {
+      "url": "https://www.cosmos.esa.int/web/herschel",
+      "label": "Herschel Science Centre home",
+      "source": "ESA"
+    },
+    {
+      "url": "https://www.cosmos.esa.int/web/herschel/spire-overview",
+      "label": "SPIRE overview",
+      "source": "ESA"
+    },
+    {
+      "url": "https://www.cosmos.esa.int/web/herschel/publishing-rules-guidelines",
+      "label": "Herschel publishing rules and acknowledgements",
+      "source": "ESA"
+    },
+    {
+      "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
+      "label": "ESA Space Science Archives terms",
+      "source": "ESA"
+    },
+    {
+      "url": "https://www.cosmos.esa.int/web/herschel/ancillary-data-products",
+      "label": "Herschel ancillary data products, including SPIRE-P filter transmissions",
+      "source": "ESA"
+    },
+    {
+      "url": "https://archives.esac.esa.int/hsa/legacy/ADP/SPIRE/SPIRE-P_filter_curves/",
+      "label": "SPIRE photometer filter transmission and RSRF files",
+      "source": "ESA"
+    },
+    {
+      "url": "https://arxiv.org/abs/1005.5123",
+      "label": "Griffin et al. 2010, SPIRE instrument paper",
+      "source": "arXiv"
+    },
+    {
+      "url": "https://ar5iv.labs.arxiv.org/html/1005.5123",
+      "label": "Griffin et al. 2010 HTML",
+      "source": "arXiv"
+    },
+    {
+      "url": "https://irsa.ipac.caltech.edu/Missions/herschel.html",
+      "label": "IRSA Herschel mission page",
+      "source": "IRSA"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "Herschel Space Observatory",
+      "text": "Herschel is an ESA space observatory with science instruments provided by European-led Principal Investigator consortia and with important participation from NASA.",
+      "url": "https://www.cosmos.esa.int/web/herschel/publishing-rules-guidelines",
+      "references": [
+        "bibcode:2010A&A...518L...1P"
+      ],
+      "applies_to": "all bands"
+    },
+    {
+      "for": "SPIRE consortium",
+      "text": "SPIRE has been developed by a consortium of institutes led by Cardiff University (UK) and including Univ. Lethbridge (Canada); NAOC (China); CEA, LAM (France); IFSI, Univ. Padua (Italy); IAC (Spain); Stockholm Observatory (Sweden); Imperial College London, RAL, UCL-MSSL, UKATC, Univ. Sussex (UK); and Caltech, JPL, NHSC, Univ. Colorado (USA). This development has been supported by national funding agencies: CSA (Canada); NAOC (China); CEA, CNES, CNRS (France); ASI (Italy); MCINN (Spain); SNSB (Sweden); STFC, UKSA (UK); and NASA (USA).",
+      "url": "https://www.cosmos.esa.int/web/herschel/publishing-rules-guidelines",
+      "references": [
+        "bibcode:2010A&A...518L...3G"
+      ],
+      "applies_to": "all bands"
+    }
+  ],
+  "bands": {
+    "*": {
+      "references": [
+        "bibcode:2010A&A...518L...3G",
+        "doi:10.1051/0004-6361/201014519",
+        "arxiv:1005.5123"
+      ]
+    },
+    "250": {
+      "Description": "SPIRE photometer band centred on 250 µm, one of three broad bands observed simultaneously."
+    },
+    "350": {
+      "Description": "SPIRE photometer band centred on 350 µm, one of three broad bands observed simultaneously."
+    },
+    "500": {
+      "Description": "SPIRE photometer band centred on 500 µm, one of three broad bands observed simultaneously."
+    }
+  }
+}

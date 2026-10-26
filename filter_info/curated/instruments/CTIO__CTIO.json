@@ -1,0 +1,35 @@
+{
+  "description": "The CTIO filter collection comprises the observatory pool of optical narrow-band and broad-band interference filters made available for instrumentation across CTIO telescopes.",
+  "facility_description": "Cerro Tololo Inter-American Observatory (CTIO) is an astronomical observatory located on Cerro Tololo in Chile, operated by NSF NOIRLab.",
+  "notes": "CTIO filter pool numerical curves are hosted on NOIRLab CTIO science pages without an explicit open redistribution grant.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the Creative Commons Attribution 4.0 International License\"",
+    "url": "https://noirlab.edu/public/copyright/"
+  },
+  "references": [
+    "bibcode:1990PASP..102.1181B",
+    "bibcode:1992AJ....104..340L"
+  ],
+  "links": [
+    {
+      "url": "https://noirlab.edu/science/programs/ctio/filters",
+      "label": "CTIO Filters and Throughputs",
+      "source": "NSF NOIRLab"
+    },
+    {
+      "url": "https://noirlab.edu/science/programs/ctio/filters/3x3-inch-and-4x4-inch-filters",
+      "label": "CTIO 3x3-inch and 4x4-inch Filter Sets",
+      "source": "NSF NOIRLab"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "Cerro Tololo Inter-American Observatory",
+      "text": "Based on observations made at NSF Cerro Tololo Inter-American Observatory, NSF NOIRLab (NOIRLab Prop. ID; PI: first initial last name), which is managed by the Association of Universities for Research in Astronomy (AURA) under a cooperative agreement with the U.S. National Science Foundation.",
+      "url": "https://noirlab.edu/science/about/scientific-acknowledgments",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

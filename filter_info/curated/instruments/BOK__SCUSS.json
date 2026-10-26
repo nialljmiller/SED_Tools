@@ -1,0 +1,41 @@
+{
+  "description": "The South Galactic Cap u-band Sky Survey (SCUSS) was a deep optical photometric survey covering about 5,000 square degrees in the southern Galactic cap, using the 90Prime prime-focus imager on the Bok 2.3-meter telescope.",
+  "facility_description": "The 2.3-meter Bok Telescope on Kitt Peak is operated by Steward Observatory, University of Arizona.",
+  "notes": "SCUSS utilized a dedicated high-throughput u-band filter on 90Prime at the Bok telescope. Survey data and profiles were prepared under NAOC and Steward collaboration; redistribution terms for raw profile files are not explicitly released under an open copyright license.",
+  "licence": {
+    "redistribution": "unknown",
+    "url": "https://arxiv.org/abs/1511.07575"
+  },
+  "references": [
+    "bibcode:2015AJ....150..104Z",
+    "bibcode:2016AJ....151...37Z"
+  ],
+  "links": [
+    {
+      "url": "https://james.as.arizona.edu/~psmith/90inch/90inch.html",
+      "label": "Bok Telescope Home",
+      "source": "Steward Observatory"
+    },
+    {
+      "url": "https://arxiv.org/abs/1511.07575",
+      "label": "SCUSS Data Release Paper",
+      "source": "arXiv"
+    },
+    {
+      "url": "https://arxiv.org/abs/1509.02647",
+      "label": "SCUSS Data Reduction Paper",
+      "source": "arXiv"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "South Galactic Cap u-band Sky Survey (SCUSS)",
+      "text": "The SCUSS is funded by the Main Direction Program of Knowledge Innovation of Chinese Academy of Sciences (No. KJCX2-EWt06). It is also an international cooperative project between National Astronomical Observatories, Chinese Academy of Sciences, and Steward Observatory, University of Arizona, USA. Technical support and observational assistance from the Bok Telescope are provided by Steward Observatory. The project is managed by the National Astronomical Observatory of China and Shanghai Astronomical Observatory.",
+      "url": "https://arxiv.org/pdf/1511.07575",
+      "references": [
+        "bibcode:2016AJ....151...37Z"
+      ],
+      "applies_to": "all bands"
+    }
+  ]
+}

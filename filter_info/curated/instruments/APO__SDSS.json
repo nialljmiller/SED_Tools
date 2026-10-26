@@ -1,0 +1,48 @@
+{
+  "description": "The SDSS filter set at Apache Point Observatory comprises large-format u', g', r', i', and z' broad-band filters defining the Sloan Digital Sky Survey photometric system, available for ARCTIC and Agile imaging at the ARC 3.5-meter telescope.",
+  "facility_description": "The ARC 3.5-meter Telescope is an optical and infrared telescope at Apache Point Observatory (APO) in the Sacramento Mountains of New Mexico, owned and operated by the Astrophysical Research Consortium.",
+  "notes": "SDSS u', g', r', i', z' filters for ARCTIC and Agile. Passbands are defined by Fukugita et al. (1996). All SDSS public data releases are placed in the public domain under ARC/SDSS policy.",
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"all SDSS data released in our public data releases are considered in the public domain.\"",
+    "url": "https://www.sdss.org/collaboration/image-use-policy/"
+  },
+  "references": [
+    "bibcode:1996AJ....111.1748F",
+    "bibcode:2002AJ....123..485S",
+    "doi:10.1117/12.316525"
+  ],
+  "links": [
+    {
+      "url": "http://filters.apo.nmsu.edu/curves/SDSS/",
+      "label": "SDSS Filter Set at APO",
+      "source": "Apache Point Observatory"
+    },
+    {
+      "url": "https://www.sdss.org/collaboration/image-use-policy/",
+      "label": "SDSS Image and Data Use Policy",
+      "source": "Sloan Digital Sky Survey"
+    },
+    {
+      "url": "http://filters.apo.nmsu.edu/",
+      "label": "APO Filter Inventory",
+      "source": "Apache Point Observatory"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "Apache Point Observatory",
+      "text": "Based on observations obtained with the Apache Point Observatory 3.5-meter telescope, which is owned and operated by the Astrophysical Research Consortium.",
+      "url": "https://legacy.apo.nmsu.edu/Projects/pubacknow.htm",
+      "references": [],
+      "applies_to": "all bands"
+    },
+    {
+      "for": "Sloan Digital Sky Survey",
+      "text": "Funding for the Sloan Digital Sky Survey V has been provided by the Alfred P. Sloan Foundation, the Heising-Simons Foundation, the National Science Foundation, and the Participating Institutions. SDSS acknowledges support and resources from the Center for High-Performance Computing at the University of Utah. SDSS telescopes are located at Apache Point Observatory, funded by the Astrophysical Research Consortium and operated by New Mexico State University, and at Las Campanas Observatory, operated by the Carnegie Institution for Science. The SDSS web site is www.sdss.org .",
+      "url": "https://www.sdss.org/collaboration/citing-sdss/",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

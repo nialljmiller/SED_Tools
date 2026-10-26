@@ -11,6 +11,31 @@
       "url": "https://www2.keck.hawaii.edu/inst/deimos/",
       "label": "DEIMOS home",
       "source": "Keck"
+    },
+    {
+      "url": "https://www2.keck.hawaii.edu/inst/deimos/specs.html",
+      "label": "DEIMOS characteristics",
+      "source": "Keck"
+    },
+    {
+      "url": "https://www2.keck.hawaii.edu/inst/deimos/ffd.html",
+      "label": "DEIMOS filter-focus offsets",
+      "source": "Keck"
+    },
+    {
+      "url": "https://doi.org/10.1117/12.460346",
+      "label": "Faber et al. 2003, DEIMOS integration and testing",
+      "source": "Keck"
+    },
+    {
+      "url": "https://www2.keck.hawaii.edu/observing/keck_authors.html",
+      "label": "Publishing papers with Keck data",
+      "source": "Keck"
+    },
+    {
+      "url": "https://www2.keck.hawaii.edu/inst/web_docs/scripts/include_end.js",
+      "label": "Keck instrument-page copyright footer",
+      "source": "Keck"
     }
   ],
   "references": [
@@ -50,5 +75,19 @@
         "doi:10.1117/12.460346"
       ]
     }
-  }
+  },
+  "licence": {
+    "redistribution": "restricted",
+    "terms": "\"The contents of this page or any part thereof shall not\"",
+    "url": "https://www2.keck.hawaii.edu/inst/web_docs/scripts/include_end.js"
+  },
+  "acknowledgements": [
+    {
+      "for": "papers based on Keck data",
+      "text": "Some of the data presented herein were obtained at Keck Observatory, which is a private 501(c)3 non-profit organization operated as a scientific partnership among the California Institute of Technology, the University of California, and the National Aeronautics and Space Administration. The Observatory was made possible by the generous financial support of the W. M. Keck Foundation.",
+      "url": "https://www2.keck.hawaii.edu/observing/keck_authors.html",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
 }

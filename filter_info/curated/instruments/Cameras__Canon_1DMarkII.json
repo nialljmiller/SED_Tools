@@ -1,0 +1,42 @@
+{
+  "description": "Canon 1DMarkII digital camera: normalized R, G and B channel spectral sensitivities (400-720 nm, 10 nm steps) from the RIT Camera Spectral Sensitivity Database (Jiang et al. 2013).",
+  "facility_description": "Digital cameras (DSLRs, mirrorless, compact, industrial, cinema and phone cameras) whose RGB channel spectral sensitivities or internal IR/UV-cut filter transmissions have been measured.",
+  "notes": "RGB curves checked this session: NJM values are identical (max abs diff 0) to the 'Canon 5DMarkII' entry of http://www.gujinwei.org/research/camspec/camspec_database.txt. WARNING: NJM/SVO 'Canon_1DMarkII' curves are identical to the database's 'Canon 5DMarkII' entry; the RIT database has no 1D Mark II (it has a 1D Mark III, which differs by up to 0.29). The instrument is probably mislabelled upstream (SVO); the curves are really the Canon EOS 5D Mark II.",
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"Licensed under the Creative Commons BY-NC-SA 4.0 license\" (non-commercial, share-alike, attribution to Rochester Institute of Technology / Jiang et al. 2013)",
+    "url": "http://www.gujinwei.org/research/camspec/db.html"
+  },
+  "references": [
+    "doi:10.1109/WACV.2013.6475015"
+  ],
+  "links": [
+    {
+      "url": "http://www.gujinwei.org/research/camspec/db.html",
+      "label": "Camera Spectral Sensitivity Database (28 cameras, 400-720 nm)",
+      "source": "Rochester Institute of Technology (J. Gu)"
+    },
+    {
+      "url": "https://infoscience.epfl.ch/record/182538/files/egpaper_final.pdf",
+      "label": "Jiang et al. (2013) WACV paper",
+      "source": "EPFL Infoscience"
+    }
+  ],
+  "bands": {
+    "1DMarkII_B": {
+      "references": [
+        "doi:10.1109/WACV.2013.6475015"
+      ]
+    },
+    "1DMarkII_G": {
+      "references": [
+        "doi:10.1109/WACV.2013.6475015"
+      ]
+    },
+    "1DMarkII_R": {
+      "references": [
+        "doi:10.1109/WACV.2013.6475015"
+      ]
+    }
+  }
+}

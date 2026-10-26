@@ -1,0 +1,91 @@
+{
+  "description": "The XMM-Newton Optical Monitor is a 30 cm telescope that images the central part of the X-ray field through six broad-band filters: UVW2, UVM2, UVW1, U, B, and V. ESA distributes effective-area response files for those filters, computed from laboratory component measurements and adjusted using observations of standard stars.",
+  "facility_description": "XMM-Newton is an ESA science mission whose X-ray telescopes are accompanied by the Optical Monitor so the same field can be observed in X-rays and in the ultraviolet and optical.",
+  "notes": "The Optical Monitor page says the detectors are micro-channel plate intensified CCDs and that photon events are centroided to 1/8 physical pixel, so the OM is a photon-counting detector. The filter-wheel page names the six broad-band filters UVW1, UVM2, UVW2, U, B, and V between 180 nm and 580 nm; a white filter, a magnifier, and two grisms are also in the wheel but are not NJM bands. The bandpass figure page shows throughput curves but does not give numeric edges in text. Wavelength bands and preliminary zeropoints below are from Table 2 of the Mason et al. HTML, which says those zeropoints would be updated after a ground-based programme. U, B, and V zeropoints were set so Vega matches literature values; UV filters were set to Vega magnitude 0.025. The paper says the zeropoint is the magnitude that yields 1 count per second, and the detector centroids incoming photon events, so the OM counts photons rather than integrating energy. Mason et al. is cited on the ESA OM page as K.O. Mason et al. 2001, A&A 365, L36. The arXiv record opened this session gives the journal reference Astron.Astrophys.365:L36-L44,2001 and related DOI 10.1051/0004-6361:20000044. ADS and SciX did not return the abstract, so the bibcode string 2001A&A...365L..36M is not included because that exact key was not read on an opened page. The ESDC terms cover data in the ESA Space Science Archives, list XMM-Newton with the credit line 'Credit: ESA, Name of Proposal PI', and require authorisation before commercial use. The OM response-file page itself states no separate licence. Those files are therefore treated under the archive CC BY-NC terms, which do not clearly allow commercial redistribution. The publication acknowledgement has no final period inside the quotation on the guidelines page.",
+  "licence": {
+    "redistribution": "restricted",
+    "terms": "\"Data hosted in the ESA Space Science Archives are distributed under the CC BY-NC 3.0 IGO licence.\"",
+    "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions"
+  },
+  "references": [
+    "doi:10.1051/0004-6361:20000044"
+  ],
+  "links": [
+    {
+      "url": "https://www.cosmos.esa.int/web/xmm-newton/technical-details-om",
+      "label": "XMM-Newton Optical Monitor technical description",
+      "source": "ESA Cosmos"
+    },
+    {
+      "url": "https://www.cosmos.esa.int/web/xmm-newton/om-filter",
+      "label": "OM filter wheel",
+      "source": "ESA Cosmos"
+    },
+    {
+      "url": "https://www.cosmos.esa.int/web/xmm-newton/om-filter-bands",
+      "label": "OM filter throughput curves",
+      "source": "ESA Cosmos"
+    },
+    {
+      "url": "https://www.cosmos.esa.int/web/xmm-newton/om-response-files",
+      "label": "OM effective-area response files",
+      "source": "ESA Cosmos"
+    },
+    {
+      "url": "https://www.cosmos.esa.int/web/xmm-newton/publication-guidelines",
+      "label": "XMM-Newton publication acknowledgement",
+      "source": "ESA Cosmos"
+    },
+    {
+      "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions",
+      "label": "ESA Space Science Archives terms",
+      "source": "ESA Cosmos"
+    },
+    {
+      "url": "https://arxiv.org/abs/astro-ph/0011216",
+      "label": "Mason et al., XMM-Newton Optical/UV Monitor Telescope",
+      "source": "arXiv"
+    },
+    {
+      "url": "https://arxiv.org/html/astro-ph/0011216v1",
+      "label": "Mason et al. 2001 HTML, OM filter table",
+      "source": "arXiv"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "ESA / XMM-Newton",
+      "text": "Based on observations obtained with XMM-Newton, an ESA science mission with instruments and contributions directly funded by ESA Member States and NASA",
+      "url": "https://www.cosmos.esa.int/web/xmm-newton/publication-guidelines",
+      "references": [
+        "doi:10.1051/0004-6361:20000044"
+      ],
+      "applies_to": "all bands"
+    }
+  ],
+  "bands": {
+    "*": {
+      "references": [
+        "doi:10.1051/0004-6361:20000044"
+      ]
+    },
+    "V": {
+      "Description": "OM V filter, wavelength band 510-580 nm; preliminary zeropoint 18.11 mag in Mason et al. 2001."
+    },
+    "B": {
+      "Description": "OM B filter, wavelength band 390-490 nm; preliminary zeropoint 19.28 mag in Mason et al. 2001."
+    },
+    "U": {
+      "Description": "OM U filter, wavelength band 300-390 nm; preliminary zeropoint 18.24 mag in Mason et al. 2001."
+    },
+    "UVW1": {
+      "Description": "OM UVW1 filter, wavelength band 245-320 nm; preliminary zeropoint 17.37 mag in Mason et al. 2001."
+    },
+    "UVM2": {
+      "Description": "OM UVM2 filter, wavelength band 205-245 nm; preliminary zeropoint 16.02 mag in Mason et al. 2001."
+    },
+    "UVW2": {
+      "Description": "OM UVW2 filter, wavelength band 180-225 nm; preliminary zeropoint 15.17 mag in Mason et al. 2001."
+    }
+  }
+}
