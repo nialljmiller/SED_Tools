@@ -1595,6 +1595,10 @@ class Filters:
         filters = Filters.query()
         filters = Filters.query(facility='HST')
         Filters.fetch('Generic', 'Johnson')
+        Filters.search(wavelength=21500, fwhm=(1000, 5000))   # NJM's catalogue, no SVO
+        Filters.info('2MASS', '2MASS'); Filters.properties('2MASS', '2MASS')
+        print(Filters.cite('2MASS/2MASS', 'GAIA/GAIA/G'))
+        Filters.plot('2MASS/2MASS', normalize='peak', vega=True)
     """
     
     _filter_root: Path = FILTER_DIR_DEFAULT
@@ -1896,6 +1900,310 @@ class Filters:
             instrument=instrument,
             on_conflict=on_conflict,
         )
+
+
+    # ------------------------------------------------------------------
+    # NJM catalogue: properties, descriptions, search, citations, plots
+    # ------------------------------------------------------------------
+    _catalogues: Dict[Tuple[str, bool], Any] = {}
+
+    @classmethod
+    def _catalogue(cls, filter_root=None, *, offline: bool = False):
+        """One catalogue client per filter root, so the mirror is checked once per session."""
+        from .filter_catalogue import FilterCatalogue
+
+        key = (str(Path(filter_root or cls._filter_root).expanduser().resolve()), offline)
+        if key not in cls._catalogues:
+            cls._catalogues[key] = FilterCatalogue(key[0], offline=offline)
+        return cls._catalogues[key]
+
+    @classmethod
+    def properties(
+        cls,
+        facility: str,
+        instrument: str,
+        *,
+        filter_root: Optional[Union[str, Path]] = None,
+        refresh: bool = False,
+        offline: bool = False,
+    ) -> Dict[str, Any]:
+        """An instrument's ``properties.json`` as NJM serves it.
+
+        ``{"bands": {band: {"WavelengthPivot": ..., "FWHM": ..., "ZeroPointVega_Jy": ...,
+        "ABminusVega": ..., "DetectorType": ..., "DisplayColor": ...}}, "definitions": {...}}``,
+        computed by :mod:`sed_tools.filter_properties` (units under ``definitions``).
+
+        The copy saved beside installed curves is used first, since it describes
+        those curves; otherwise NJM's current file, cached under
+        ``<filter root>/../cache/njm/``.  ``refresh=True`` asks NJM again;
+        ``offline=True`` uses installed and cached copies only.  Raises
+        :class:`sed_tools.filter_catalogue.CatalogueError` when neither has it.
+        """
+        return cls._catalogue(filter_root, offline=offline).properties(facility, instrument, refresh=refresh)
+
+    @classmethod
+    def info(
+        cls,
+        facility: str,
+        instrument: str,
+        *,
+        filter_root: Optional[Union[str, Path]] = None,
+        refresh: bool = False,
+        offline: bool = False,
+    ) -> Dict[str, Any]:
+        """An instrument's ``info.json`` as NJM serves it.
+
+        Descriptions, links, notes, the references to cite (``bibliography``, with
+        BibTeX where available), the providers' ``acknowledgements``, the
+        ``licence``, and per band the SVO-style fields (``Description``,
+        ``PhotSystem``, ``MagSys``, ...), owner-published values and what SVO
+        recorded.  Sources are chosen as in :meth:`properties`.
+        """
+        return cls._catalogue(filter_root, offline=offline).info(facility, instrument, refresh=refresh)
+
+    @classmethod
+    def search(
+        cls,
+        text: Optional[str] = None,
+        *,
+        facility: Optional[str] = None,
+        instrument: Optional[str] = None,
+        band: Optional[str] = None,
+        wavelength: Any = None,
+        pivot: Optional[Sequence[Optional[float]]] = None,
+        fwhm: Optional[Sequence[Optional[float]]] = None,
+        detector_type: Optional[str] = None,
+        where: Optional[Dict[str, Any]] = None,
+        properties: bool = True,
+        filter_root: Optional[Union[str, Path]] = None,
+        refresh: bool = False,
+        offline: bool = False,
+    ) -> pd.DataFrame:
+        """Find bands in NJM's catalogue, one row per band, without SVO.
+
+        Parameters
+        ----------
+        text : str, optional
+            Case-insensitive substring of ``Facility/Instrument/Band``.
+        facility, instrument, band : str, optional
+            Case-insensitive substrings of each name.
+        wavelength : float or (low, high), optional
+            Å (or an astropy quantity).  A single value keeps bands that cover it
+            (``WavelengthMin <= λ <= WavelengthMax``, where T is at least 1 % of its
+            peak); a range keeps bands that overlap it.
+        pivot, fwhm : (low, high), optional
+            Ranges in Å for ``WavelengthPivot`` and ``FWHM``; ``None`` leaves an end open.
+        detector_type : {"energy", "photon"}, optional
+        where : dict, optional
+            Any other ``properties.json`` column: a ``(low, high)`` range or a value
+            to equal (strings ignore case), e.g. ``{"ABminusVega": (None, 0.5)}``.
+            A band whose value is missing (Vega quantities where Vega does not
+            cover it) never matches a criterion.
+        properties : bool
+            ``False`` matches names only, from ``index.json``, without fetching
+            any ``properties.json``.
+
+        Names are matched in ``index.json`` first, so ``properties.json`` is
+        fetched only for instruments that can still match (at most six requests
+        at a time; cached).  Returns a DataFrame sorted by facility, instrument and
+        pivot, with ``facility``, ``instrument``, ``band`` and the property
+        columns; ``.attrs["units"]`` gives units and ``.attrs["errors"]`` lists
+        instruments whose properties could not be read.
+        """
+        return cls._catalogue(filter_root, offline=offline).search(
+            text, facility=facility, instrument=instrument, band=band, wavelength=wavelength,
+            pivot=pivot, fwhm=fwhm, detector_type=detector_type, where=where,
+            properties=properties, refresh=refresh)
+
+    @classmethod
+    def _targets(cls, targets, filter_root) -> List[Tuple[str, str, Optional[List[str]], Optional[Path]]]:
+        """Normalise targets to ``(facility, instrument, bands or None, directory or None)``.
+
+        A target is ``"Facility/Instrument"``, ``"Facility/Instrument/Band"``, a
+        tuple of those parts, an instrument directory, a ``.dat`` file, or a
+        :meth:`search` result.  No targets means every installed instrument.
+        """
+        from .filter_catalogue import parse_target
+
+        root = Path(filter_root or cls._filter_root)
+        items: List[Tuple[str, str, Optional[str], Optional[Path]]] = []
+        if not targets:
+            for directory in sorted(root.glob("*/*")):
+                if directory.is_dir() and any(directory.glob("*.dat")):
+                    items.append((directory.parent.name, directory.name, None, directory))
+        for target in targets:
+            if isinstance(target, pd.DataFrame):
+                items.extend((r.facility, r.instrument, r.band, None)
+                             for r in target[["facility", "instrument", "band"]].itertuples())
+            elif isinstance(target, (tuple, list)):
+                fac, inst, *rest = target
+                items.append((fac, inst, rest[0] if rest else None, None))
+            elif isinstance(target, Path) or (Path(str(target)).exists() and (
+                    Path(str(target)).suffix == ".dat" or any(Path(str(target)).glob("*.dat")))):
+                path = Path(target)
+                if path.is_file():
+                    items.append((path.parent.parent.name, path.parent.name, path.stem, path.parent))
+                else:
+                    items.append((path.parent.name, path.name, None, path))
+            else:
+                items.append(parse_target(str(target)) + (None,))
+        grouped: Dict[Tuple[str, str], List[Any]] = {}
+        for fac, inst, band, directory in items:
+            entry = grouped.setdefault((fac, inst), [fac, inst, [], directory])
+            if band is None:
+                entry[2] = None
+            elif entry[2] is not None and band not in entry[2]:
+                entry[2].append(band)
+        return [tuple(v) for v in grouped.values()]
+
+    @classmethod
+    def citations(
+        cls,
+        *targets: Any,
+        filter_root: Optional[Union[str, Path]] = None,
+        refresh: bool = False,
+        offline: bool = False,
+    ) -> Dict[str, Any]:
+        """What to cite and acknowledge for instruments or bands, from their ``info.json``.
+
+        Targets are as in :meth:`plot`; with none, every installed instrument.
+        Returns ``{"instruments", "references", "acknowledgements", "errors"}``:
+        references merged across instruments (one per work, following
+        ``same_as`` to the bibcode form, each with ``bibtex`` where NJM has it and
+        ``used_by``), and the providers' acknowledgement texts, merged.  For a
+        subset of bands, the instrument-wide references plus those bands' own.
+        """
+        from .filter_catalogue import CatalogueError, collect_citations
+
+        catalogue = cls._catalogue(filter_root, offline=offline)
+        infos, errors = [], []
+        for fac, inst, bands, directory in cls._targets(targets, filter_root):
+            try:
+                local = directory / "info.json" if directory is not None else None
+                if local is not None and local.is_file() and not refresh:
+                    info = catalogue._json_object(local.read_text(encoding="utf-8"))
+                else:
+                    info = catalogue.info(fac, inst, refresh=refresh)
+            except (CatalogueError, OSError, ValueError) as exc:
+                errors.append(f"{fac}/{inst}: {exc}")
+                continue
+            if bands is not None:
+                unknown = [b for b in bands if b not in info.get("bands", {})]
+                errors.extend(f"{fac}/{inst}: no band {b!r} in info.json" for b in unknown)
+                bands = [b for b in bands if b not in unknown]
+                if not bands:
+                    continue
+            infos.append((f"{info.get('facility', fac)}/{info.get('instrument', inst)}", info, bands))
+        result = collect_citations(infos)
+        result["errors"] = errors
+        return result
+
+    @classmethod
+    def cite(
+        cls,
+        *targets: Any,
+        format: str = "text",
+        filter_root: Optional[Union[str, Path]] = None,
+        refresh: bool = False,
+        offline: bool = False,
+    ) -> str:
+        """:meth:`citations` as text (``format="text"``: acknowledgements, licences,
+        references and BibTeX) or as a ``.bib`` file (``format="bibtex"``).
+
+        References NJM holds no BibTeX for appear in the ``.bib`` output as ``%``
+        comments with what is known; nothing is made up.
+        """
+        from .filter_catalogue import format_bibtex, format_citations
+
+        result = cls.citations(*targets, filter_root=filter_root, refresh=refresh, offline=offline)
+        if format == "bibtex":
+            return format_bibtex(result)
+        if format == "text":
+            return format_citations(result)
+        raise ValueError("format must be 'text' or 'bibtex'")
+
+    @classmethod
+    def plot(
+        cls,
+        *targets: Any,
+        normalize: Union[None, bool, str] = None,
+        vega: Any = False,
+        ax=None,
+        legend: bool = True,
+        log_wavelength: Optional[bool] = None,
+        filter_root: Optional[Union[str, Path]] = None,
+        fetch: bool = True,
+    ):
+        """Plot filter curves in their :mod:`sed_tools.filter_colors` colours; returns the Axes.
+
+        Targets: ``"Facility/Instrument"``, ``"Facility/Instrument/Band"``, a
+        tuple of those parts, an instrument directory or ``.dat`` file, or a
+        :meth:`search` result.  Instruments that are not installed are fetched
+        (``fetch=False`` refuses instead).  Bands keep their instrument's colours
+        (true colours for visible bands, ordered false colours otherwise) when
+        they all come from one instrument; a selection across instruments is
+        coloured as one set.  ``normalize`` is ``None``, ``"peak"`` or
+        ``"area"``.  ``vega=True`` overlays NJM's Vega spectrum
+        (``vega/vega_flam.csv``) scaled to the curves; a path or a
+        ``(wavelength Å, f_λ)`` pair overlays another spectrum.  Needs matplotlib.
+        """
+        from .filter_catalogue import CatalogueError
+        from .filter_colors import instrument_colors
+        from .filter_plot import plot_curves
+        from .filter_properties import load_vega
+        from .flux_cube_tool import load_filter_curve
+
+        if not targets:
+            raise ValueError("nothing to plot: give Facility/Instrument[/Band] targets or a search result")
+        root = Path(filter_root or cls._filter_root)
+        selection = cls._targets(targets, filter_root)
+        catalogue = cls._catalogue(filter_root)
+        chosen: List[Tuple[str, str, str, Path]] = []
+        for fac, inst, bands, directory in selection:
+            if directory is None:
+                directory = next((d for d in (root / fac / inst, *root.glob("*/*"))
+                                  if d.is_dir() and (d.parent.name.casefold(), d.name.casefold())
+                                  == (fac.casefold(), inst.casefold()) and any(d.glob("*.dat"))), None)
+            if directory is None:
+                if not fetch:
+                    raise FileNotFoundError(f"{fac}/{inst} is not installed under {root}")
+                try:
+                    served = catalogue.resolve(fac, inst)
+                    fac, inst = served["facility"], served["instrument"]
+                except CatalogueError:
+                    pass
+                directory = cls._fetch_published(fac, inst, filter_root=filter_root)
+            files = {p.stem: p for p in sorted(Path(directory).glob("*.dat"))}
+            for band in (files if bands is None else bands):
+                if band not in files:
+                    raise FileNotFoundError(f"{fac}/{inst} has no band {band!r} in {directory}")
+                chosen.append((fac, inst, band, Path(directory)))
+
+        curves, labels = {}, {}
+        for fac, inst, band, directory in chosen:
+            key = f"{fac}/{inst}/{band}"
+            curve = load_filter_curve(str(directory / f"{band}.dat"))
+            curves[key] = (curve.wavelength, curve.transmission)
+        directories = {directory for *_, directory in chosen}
+        colors, title = None, None
+        if len(directories) == 1:
+            directory = directories.pop()
+            served = instrument_colors(sorted(directory.glob("*.dat")))
+            colors = {f"{fac}/{inst}/{band}": served[band]["DisplayColor"] for fac, inst, band, _ in chosen}
+            labels = {f"{fac}/{inst}/{band}": band for fac, inst, band, _ in chosen}
+            title = f"{chosen[0][0]}/{chosen[0][1]}"
+        else:
+            labels = {f"{fac}/{inst}/{band}": f"{fac}/{inst} {band}" for fac, inst, band, _ in chosen}
+
+        spectrum = None
+        if vega is True:
+            spectrum = load_vega(catalogue.vega())
+        elif isinstance(vega, (str, Path)):
+            spectrum = load_vega(vega)
+        elif vega is not None and vega is not False:
+            spectrum = vega
+        return plot_curves(curves, colors=colors, labels=labels, normalize=normalize, vega=spectrum,
+                           ax=ax, legend=legend, log_wavelength=log_wavelength, title=title)
 
 
 # =============================================================================

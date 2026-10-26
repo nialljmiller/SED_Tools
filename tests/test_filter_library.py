@@ -14,7 +14,10 @@ from sed_tools.filter_components import (
 )
 from sed_tools.filter_library import FilterLibrary
 from sed_tools.filter_metadata import PHOTON, SVOFilterRecord, read_filter_header, write_filter_file
+from sed_tools.njm_filter_grabber import NJMFilterGrabber
 from sed_tools.svo_filter_grabber import Facility, Instrument, FilterRow
+
+REAL_AVAILABILITY_CHECK = NJMFilterGrabber._check_availability
 
 
 @pytest.fixture(autouse=True)
@@ -341,6 +344,115 @@ def test_mirror_retries_temporary_forbidden(tmp_path, monkeypatch):
     grabber.session.get = get
     assert grabber._get("https://example.invalid/filter.dat") is response
     assert len(calls) == 2 and delays == [1]
+
+
+class BurstBlockedNJM:
+    """A fake NJM session that answers the first ``blocked`` requests with 403, like Apache's burst block."""
+
+    BASE = "https://nillmill.ddns.net/sed_tools"
+
+    def __init__(self, files, blocked=0, head_error=None, head_status=301):
+        self.files, self.blocked = files, blocked
+        self.head_error, self.head_status = head_error, head_status
+        self.headers, self.verify, self.calls = {}, True, []
+
+    def _answer(self, method, url, status, text=""):
+        import requests
+
+        self.calls.append((method, url[len(self.BASE):]))
+        if self.blocked:
+            self.blocked -= 1
+            status, text = 403, "Forbidden"
+
+        def raise_for_status():
+            if status >= 400:
+                raise requests.HTTPError(str(status), response=SimpleNamespace(status_code=status, headers={}))
+        return SimpleNamespace(status_code=status, text=text, content=text.encode(), headers={},
+                               raise_for_status=raise_for_status, json=lambda: __import__("json").loads(text))
+
+    def head(self, url, timeout=None, verify=None):
+        if self.head_error is not None:
+            self.calls.append(("HEAD", url[len(self.BASE):]))
+            raise self.head_error
+        return self._answer("HEAD", url, self.head_status)
+
+    def get(self, url, timeout=None, headers=None, **kwargs):
+        rel = url[len(self.BASE) + 1:]
+        return self._answer("GET", url, 200 if rel in self.files else 404, self.files.get(rel, ""))
+
+
+def njm_index(facilities=("Test",)):
+    import json
+
+    return json.dumps({"generated": "2026-10-26T12:00:00", "filters": {
+        "facilities": list(facilities),
+        "facilities_detailed": {"Test": {"instruments": {"Camera": {
+            "filters": ["g", "r"], "detector_types": {"photon": 2},
+            "properties": "properties.json", "info": "info.json"}}}}}})
+
+
+def blocked_grabber(tmp_path, monkeypatch, session):
+    delays = []
+    monkeypatch.setattr("sed_tools.njm_filter_grabber.time", SimpleNamespace(sleep=delays.append))
+    grabber = NJMFilterGrabber(base_dir=str(tmp_path))  # availability patched off by the fixture
+    grabber.session = session
+    return grabber, delays
+
+
+def test_burst_block_403_is_not_reported_as_an_outage(tmp_path, monkeypatch):
+    session = BurstBlockedNJM({"index.json": njm_index()}, blocked=2)  # HEAD and the first index GET
+    grabber, delays = blocked_grabber(tmp_path, monkeypatch, session)
+    assert REAL_AVAILABILITY_CHECK(grabber) is True
+    assert session.calls == [("HEAD", ""), ("GET", "/index.json"), ("GET", "/index.json")]
+    assert delays == [1]  # the grabber's usual wait before retrying a 403
+
+    grabber._available = True
+    assert grabber.discover_facilities() == ["Test"]  # reuses the index fetched by the check
+    assert len(session.calls) == 3
+
+
+def test_outages_and_refusals_are_still_reported_as_down(tmp_path, monkeypatch):
+    import requests
+
+    down = BurstBlockedNJM({}, head_error=requests.ConnectionError("no route to host"))
+    grabber, delays = blocked_grabber(tmp_path, monkeypatch, down)
+    assert REAL_AVAILABILITY_CHECK(grabber) is False
+    assert down.calls == [("HEAD", "")] and delays == []
+
+    missing = BurstBlockedNJM({"index.json": njm_index()}, head_status=404)
+    grabber, delays = blocked_grabber(tmp_path, monkeypatch, missing)
+    assert REAL_AVAILABILITY_CHECK(grabber) is False and missing.calls == [("HEAD", "")]
+
+    blocked = BurstBlockedNJM({"index.json": njm_index()}, blocked=10)  # still blocked after the retries
+    grabber, delays = blocked_grabber(tmp_path, monkeypatch, blocked)
+    assert REAL_AVAILABILITY_CHECK(grabber) is False
+    assert delays == [1, 60] and len(blocked.calls) == 4
+
+
+def test_fetch_and_catalogue_use_njm_through_a_burst_block(tmp_path, monkeypatch):
+    import json
+
+    curve = "Wavelength,Transmission,DetectorType=photon;DetectorTypeSource=svo\n4000,0\n5000,1\n6000,0\n"
+    properties = json.dumps({"bands": {"g": {"WavelengthPivot": 5000.0}, "r": {"WavelengthPivot": 5000.0}}})
+    files = {"index.json": njm_index(), "filters/Test/Camera/Camera": "g.dat\nr.dat\n",
+             "filters/Test/Camera/g.dat": curve, "filters/Test/Camera/r.dat": curve,
+             "filters/Test/Camera/properties.json": properties,
+             "filters/Test/Camera/info.json": json.dumps({"bands": {}, "description": "A camera."})}
+    session = BurstBlockedNJM(files, blocked=2)
+    monkeypatch.setattr("sed_tools.njm_filter_grabber.requests.Session", lambda: session)
+    monkeypatch.setattr("sed_tools.njm_filter_grabber.time", SimpleNamespace(sleep=lambda s: None))
+    monkeypatch.setattr(NJMFilterGrabber, "_check_availability", REAL_AVAILABILITY_CHECK)
+    monkeypatch.setattr("sed_tools.njm_filter_grabber.tag_filter_file", lambda *a, **k: SimpleNamespace(source="header"))
+    monkeypatch.setattr(FilterLibrary, "svo", property(lambda self: pytest.fail("NJM was reported down")))
+    monkeypatch.setattr(Filters, "_catalogues", {})
+
+    root = tmp_path / "filters"
+    directory = Filters.fetch("Test", "Camera", filter_root=root)
+    assert directory == root / "Test" / "Camera" and FilterLibrary.published_complete(directory)
+    assert (directory / "properties.json").is_file()
+
+    session.blocked = 2  # blocked again when the catalogue client checks the mirror
+    assert Filters.properties("Test", "Camera", filter_root=root, refresh=True)["bands"]["g"]["WavelengthPivot"] == 5000
 
 
 def test_svo_fallback_tracks_and_recovers_partial_downloads(tmp_path, monkeypatch):
