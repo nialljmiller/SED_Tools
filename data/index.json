@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-10-26T17:24:05.650323",
+  "generated": "2026-10-26T17:47:00.208528",
   "base_url": "http://nillmill.ddns.net/sed_tools",
   "statistics": {
     "total_models": 1,
@@ -8,8 +8,8 @@
     "total_spectra": 6028,
     "total_size_bytes": 142850198218,
     "total_size_human": "133.04 GB",
-    "total_facilities": 96,
-    "total_filters": 4572
+    "total_facilities": 101,
+    "total_filters": 4994
   },
   "models": [
     "bt-cond"
@@ -53,6 +53,7 @@
       "BLAST",
       "BOK",
       "BOOMERANG",
+      "Beijing1",
       "Bepi_Colombo",
       "CAHA",
       "CASTOR",
@@ -80,6 +81,7 @@
       "ERIS",
       "EROS",
       "ERS",
+      "ESO",
       "Envisat",
       "Euclid",
       "ExoMars",
@@ -95,6 +97,8 @@
       "Galileo",
       "Gemini",
       "Generic",
+      "GeoEye",
+      "Giotto",
       "HAWK-I",
       "HST",
       "Herschel",
@@ -122,6 +126,7 @@
       "Roman",
       "SLOAN",
       "SPHERE",
+      "Sentinel",
       "Spitzer",
       "Subaru",
       "TESS",
@@ -155,8 +160,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 24416,
-            "size_human": "23.84 KB"
+            "size_bytes": 28385,
+            "size_human": "27.72 KB"
           }
         },
         "instrument_count": 1
@@ -225,8 +230,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 218103,
-            "size_human": "212.99 KB"
+            "size_bytes": 228635,
+            "size_human": "223.28 KB"
           },
           "GSC2": {
             "name": "GSC2",
@@ -246,8 +251,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 28089,
-            "size_human": "27.43 KB"
+            "size_bytes": 31128,
+            "size_human": "30.40 KB"
           }
         },
         "instrument_count": 2
@@ -306,8 +311,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 664532,
-            "size_human": "648.96 KB"
+            "size_bytes": 674690,
+            "size_human": "658.88 KB"
           },
           "OCTS": {
             "name": "OCTS",
@@ -332,8 +337,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 34004,
-            "size_human": "33.21 KB"
+            "size_bytes": 37874,
+            "size_human": "36.99 KB"
           },
           "POLDER": {
             "name": "POLDER",
@@ -374,8 +379,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 104591,
-            "size_human": "102.14 KB"
+            "size_bytes": 111723,
+            "size_human": "109.10 KB"
           }
         },
         "instrument_count": 3
@@ -402,8 +407,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 32562,
-            "size_human": "31.80 KB"
+            "size_bytes": 36570,
+            "size_human": "35.71 KB"
           },
           "IRC": {
             "name": "IRC",
@@ -429,8 +434,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 208577,
-            "size_human": "203.69 KB"
+            "size_bytes": 213595,
+            "size_human": "208.59 KB"
           }
         },
         "instrument_count": 2
@@ -454,8 +459,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 13710,
-            "size_human": "13.39 KB"
+            "size_bytes": 16918,
+            "size_human": "16.52 KB"
           },
           "SABOCA": {
             "name": "SABOCA",
@@ -473,8 +478,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 16460,
-            "size_human": "16.07 KB"
+            "size_bytes": 19668,
+            "size_human": "19.21 KB"
           }
         },
         "instrument_count": 2
@@ -501,8 +506,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 34637,
-            "size_human": "33.83 KB"
+            "size_bytes": 38471,
+            "size_human": "37.57 KB"
           },
           "Balzers": {
             "name": "Balzers",
@@ -531,8 +536,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 190480,
-            "size_human": "186.02 KB"
+            "size_bytes": 194833,
+            "size_human": "190.27 KB"
           },
           "Blocking": {
             "name": "Blocking",
@@ -556,8 +561,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 88281,
-            "size_human": "86.21 KB"
+            "size_bytes": 91705,
+            "size_human": "89.56 KB"
           },
           "Broad": {
             "name": "Broad",
@@ -579,8 +584,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 39936,
-            "size_human": "39.00 KB"
+            "size_bytes": 43786,
+            "size_human": "42.76 KB"
           },
           "FNAL": {
             "name": "FNAL",
@@ -599,8 +604,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 21592,
-            "size_human": "21.09 KB"
+            "size_bytes": 24807,
+            "size_human": "24.23 KB"
           },
           "Gunn": {
             "name": "Gunn",
@@ -621,8 +626,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 40580,
-            "size_human": "39.63 KB"
+            "size_bytes": 43875,
+            "size_human": "42.85 KB"
           },
           "Hodge": {
             "name": "Hodge",
@@ -643,8 +648,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 19618,
-            "size_human": "19.16 KB"
+            "size_bytes": 22914,
+            "size_human": "22.38 KB"
           },
           "MSSSO": {
             "name": "MSSSO",
@@ -666,8 +671,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 38614,
-            "size_human": "37.71 KB"
+            "size_bytes": 42459,
+            "size_human": "41.46 KB"
           },
           "NICFPS": {
             "name": "NICFPS",
@@ -699,8 +704,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 160266,
-            "size_human": "156.51 KB"
+            "size_bytes": 164395,
+            "size_human": "160.54 KB"
           },
           "NMSU": {
             "name": "NMSU",
@@ -740,8 +745,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 142468,
-            "size_human": "139.13 KB"
+            "size_bytes": 147089,
+            "size_human": "143.64 KB"
           },
           "Narrow": {
             "name": "Narrow",
@@ -765,8 +770,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 44714,
-            "size_human": "43.67 KB"
+            "size_bytes": 48138,
+            "size_human": "47.01 KB"
           },
           "SDSS": {
             "name": "SDSS",
@@ -788,8 +793,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 237147,
-            "size_human": "231.59 KB"
+            "size_bytes": 241746,
+            "size_human": "236.08 KB"
           },
           "UCO": {
             "name": "UCO",
@@ -847,8 +852,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 249563,
-            "size_human": "243.71 KB"
+            "size_bytes": 256052,
+            "size_human": "250.05 KB"
           },
           "York": {
             "name": "York",
@@ -881,8 +886,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 58927,
-            "size_human": "57.55 KB"
+            "size_bytes": 64308,
+            "size_human": "62.80 KB"
           }
         },
         "instrument_count": 14
@@ -892,26 +897,29 @@
         "instruments": {
           "ARCHEOPS": {
             "name": "ARCHEOPS",
-            "filter_count": 4,
+            "filter_count": 7,
             "filters": [
               "143GHz",
               "217GHz",
               "353GHz",
-              "545GHz"
+              "545GHz",
+              "KS3_143GHz",
+              "KS3_217GHz",
+              "KS3_353GHz"
             ],
             "published_paths": {
-              "filter": 1,
+              "filter": 4,
               "filter+instrument": 3
             },
             "detector_types": {
-              "energy": 4
+              "energy": 7
             },
             "separate_components": {},
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 38553,
-            "size_human": "37.65 KB"
+            "size_bytes": 63948,
+            "size_human": "62.45 KB"
           }
         },
         "instrument_count": 1
@@ -938,8 +946,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 35404,
-            "size_human": "34.57 KB"
+            "size_bytes": 39081,
+            "size_human": "38.17 KB"
           }
         },
         "instrument_count": 1
@@ -949,23 +957,26 @@
         "instruments": {
           "ATLAS": {
             "name": "ATLAS",
-            "filter_count": 2,
+            "filter_count": 3,
             "filters": [
               "c",
+              "c_svo",
               "o"
             ],
             "published_paths": {
+              "filter+instrument+atmosphere": 1,
               "filter+optics+qe+atmosphere": 2
             },
             "detector_types": {
+              "energy": 1,
               "photon": 2
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15361,
-            "size_human": "15.00 KB"
+            "size_bytes": 25355,
+            "size_human": "24.76 KB"
           }
         },
         "instrument_count": 1
@@ -992,8 +1003,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 53824,
-            "size_human": "52.56 KB"
+            "size_bytes": 57100,
+            "size_human": "55.76 KB"
           },
           "IR2": {
             "name": "IR2",
@@ -1015,8 +1026,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 50377,
-            "size_human": "49.20 KB"
+            "size_bytes": 53505,
+            "size_human": "52.25 KB"
           },
           "LIR": {
             "name": "LIR",
@@ -1036,8 +1047,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 41726,
-            "size_human": "40.75 KB"
+            "size_bytes": 44757,
+            "size_human": "43.71 KB"
           },
           "UVI": {
             "name": "UVI",
@@ -1057,8 +1068,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 31696,
-            "size_human": "30.95 KB"
+            "size_bytes": 34739,
+            "size_human": "33.92 KB"
           }
         },
         "instrument_count": 4
@@ -1088,8 +1099,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 53155,
-            "size_human": "51.91 KB"
+            "size_bytes": 57209,
+            "size_human": "55.87 KB"
           }
         },
         "instrument_count": 1
@@ -1218,8 +1229,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 316394,
-            "size_human": "308.98 KB"
+            "size_bytes": 333496,
+            "size_human": "325.68 KB"
           }
         },
         "instrument_count": 1
@@ -1267,8 +1278,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 102135,
-            "size_human": "99.74 KB"
+            "size_bytes": 107647,
+            "size_human": "105.12 KB"
           }
         },
         "instrument_count": 1
@@ -1298,8 +1309,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 45134,
-            "size_human": "44.08 KB"
+            "size_bytes": 48409,
+            "size_human": "47.27 KB"
           },
           "BICEP3": {
             "name": "BICEP3",
@@ -1317,8 +1328,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 19558,
-            "size_human": "19.10 KB"
+            "size_bytes": 22437,
+            "size_human": "21.91 KB"
           }
         },
         "instrument_count": 2
@@ -1344,8 +1355,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 23699,
-            "size_human": "23.14 KB"
+            "size_bytes": 26651,
+            "size_human": "26.03 KB"
           },
           "BLASTPol": {
             "name": "BLASTPol",
@@ -1365,8 +1376,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 27292,
-            "size_human": "26.65 KB"
+            "size_bytes": 30626,
+            "size_human": "29.91 KB"
           },
           "BLAST_TNG": {
             "name": "BLAST_TNG",
@@ -1386,8 +1397,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 29862,
-            "size_human": "29.16 KB"
+            "size_bytes": 33208,
+            "size_human": "32.43 KB"
           }
         },
         "instrument_count": 3
@@ -1401,7 +1412,7 @@
             "filters": [
               "B",
               "I",
-              "R",
+              "R_Bessell",
               "U",
               "V",
               "Wash_M",
@@ -1428,8 +1439,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 74974,
-            "size_human": "73.22 KB"
+            "size_bytes": 79904,
+            "size_human": "78.03 KB"
           },
           "SCUSS": {
             "name": "SCUSS",
@@ -1448,8 +1459,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 16996,
-            "size_human": "16.60 KB"
+            "size_bytes": 20202,
+            "size_human": "19.73 KB"
           }
         },
         "instrument_count": 2
@@ -1474,8 +1485,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 24982,
-            "size_human": "24.40 KB"
+            "size_bytes": 27967,
+            "size_human": "27.31 KB"
           },
           "BOOMERANG": {
             "name": "BOOMERANG",
@@ -1496,11 +1507,41 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 33735,
-            "size_human": "32.94 KB"
+            "size_bytes": 37099,
+            "size_human": "36.23 KB"
           }
         },
         "instrument_count": 2
+      },
+      "Beijing1": {
+        "name": "Beijing1",
+        "instruments": {
+          "SLIM6": {
+            "name": "SLIM6",
+            "filter_count": 4,
+            "filters": [
+              "NIR1",
+              "NIR2",
+              "Red1",
+              "Red2"
+            ],
+            "published_paths": {
+              "filter": 4
+            },
+            "detector_types": {
+              "energy": 4
+            },
+            "separate_components": {
+              "filter": 4
+            },
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 41428,
+            "size_human": "40.46 KB"
+          }
+        },
+        "instrument_count": 1
       },
       "Bepi_Colombo": {
         "name": "Bepi_Colombo",
@@ -1524,8 +1565,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 39985,
-            "size_human": "39.05 KB"
+            "size_bytes": 43267,
+            "size_human": "42.25 KB"
           },
           "STC": {
             "name": "STC",
@@ -1548,8 +1589,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 52377,
-            "size_human": "51.15 KB"
+            "size_bytes": 55935,
+            "size_human": "54.62 KB"
           }
         },
         "instrument_count": 2
@@ -1613,8 +1654,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 514316,
-            "size_human": "502.26 KB"
+            "size_bytes": 526777,
+            "size_human": "514.43 KB"
           },
           "BUSCA": {
             "name": "BUSCA",
@@ -1643,8 +1684,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 47664,
-            "size_human": "46.55 KB"
+            "size_bytes": 53233,
+            "size_human": "51.99 KB"
           },
           "CAHA": {
             "name": "CAHA",
@@ -1839,8 +1880,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 2597805,
-            "size_human": "2.48 MB"
+            "size_bytes": 2627845,
+            "size_human": "2.51 MB"
           },
           "LAICA": {
             "name": "LAICA",
@@ -1989,8 +2030,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 760735,
-            "size_human": "742.91 KB"
+            "size_bytes": 792952,
+            "size_human": "774.37 KB"
           },
           "MUNICS": {
             "name": "MUNICS",
@@ -2012,8 +2053,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 39649,
-            "size_human": "38.72 KB"
+            "size_bytes": 43877,
+            "size_human": "42.85 KB"
           },
           "Omega2000": {
             "name": "Omega2000",
@@ -2057,8 +2098,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 248594,
-            "size_human": "242.77 KB"
+            "size_bytes": 257238,
+            "size_human": "251.21 KB"
           },
           "PANIC": {
             "name": "PANIC",
@@ -2084,8 +2125,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 318224,
-            "size_human": "310.77 KB"
+            "size_bytes": 322017,
+            "size_human": "314.47 KB"
           },
           "PlanetCam2": {
             "name": "PlanetCam2",
@@ -2153,8 +2194,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 509896,
-            "size_human": "497.95 KB"
+            "size_bytes": 522766,
+            "size_human": "510.51 KB"
           }
         },
         "instrument_count": 8
@@ -2180,8 +2221,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 24637,
-            "size_human": "24.06 KB"
+            "size_bytes": 28128,
+            "size_human": "27.47 KB"
           }
         },
         "instrument_count": 1
@@ -2218,12 +2259,12 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 71704,
-            "size_human": "70.02 KB"
+            "size_bytes": 76816,
+            "size_human": "75.02 KB"
           },
           "CFHT": {
             "name": "CFHT",
-            "filter_count": 343,
+            "filter_count": 348,
             "filters": [
               "G",
               "I",
@@ -2303,11 +2344,14 @@
               "cfh1627",
               "cfh1628",
               "cfh1629",
+              "cfh1629_svo",
               "cfh1630",
               "cfh1631",
               "cfh1632",
               "cfh1633",
+              "cfh1633_svo",
               "cfh1634",
+              "cfh1634_svo",
               "cfh1701",
               "cfh1702",
               "cfh1703",
@@ -2374,6 +2418,7 @@
               "cfh4615",
               "cfh4616",
               "cfh4617",
+              "cfh4617_svo",
               "cfh4618",
               "cfh4701",
               "cfh4801",
@@ -2551,6 +2596,7 @@
               "cfh8102",
               "cfh8103",
               "cfh8104",
+              "cfh8104_svo",
               "cfh8105",
               "cfh8201",
               "cfh8202",
@@ -2570,10 +2616,10 @@
               "cfh9801"
             ],
             "published_paths": {
-              "filter": 343
+              "filter": 348
             },
             "detector_types": {
-              "energy": 343
+              "energy": 348
             },
             "separate_components": {
               "filter": 343
@@ -2581,8 +2627,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 1355474,
-            "size_human": "1.29 MB"
+            "size_bytes": 1421899,
+            "size_human": "1.36 MB"
           },
           "MOCAM": {
             "name": "MOCAM",
@@ -2605,8 +2651,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 23352,
-            "size_human": "22.80 KB"
+            "size_bytes": 26492,
+            "size_human": "25.87 KB"
           },
           "MegaCam": {
             "name": "MegaCam",
@@ -2636,8 +2682,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 72533,
-            "size_human": "70.83 KB"
+            "size_bytes": 78067,
+            "size_human": "76.24 KB"
           },
           "Megaprime": {
             "name": "Megaprime",
@@ -2714,8 +2760,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 1215887,
-            "size_human": "1.16 MB"
+            "size_bytes": 1226942,
+            "size_human": "1.17 MB"
           },
           "QUIRC": {
             "name": "QUIRC",
@@ -2747,8 +2793,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 39657,
-            "size_human": "38.73 KB"
+            "size_bytes": 43902,
+            "size_human": "42.87 KB"
           },
           "WFC": {
             "name": "WFC",
@@ -2766,12 +2812,12 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 27228,
-            "size_human": "26.59 KB"
+            "size_bytes": 30155,
+            "size_human": "29.45 KB"
           },
           "Wircam": {
             "name": "Wircam",
-            "filter_count": 12,
+            "filter_count": 13,
             "filters": [
               "Brackett_gamma",
               "CH4_off",
@@ -2783,14 +2829,15 @@
               "Ks",
               "LowOH1",
               "LowOH2",
+              "LowOH2_svo",
               "W",
               "Y"
             ],
             "published_paths": {
-              "filter": 12
+              "filter": 13
             },
             "detector_types": {
-              "energy": 12
+              "energy": 13
             },
             "separate_components": {
               "filter": 12
@@ -2798,8 +2845,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 144134,
-            "size_human": "140.76 KB"
+            "size_bytes": 156273,
+            "size_human": "152.61 KB"
           }
         },
         "instrument_count": 8
@@ -2823,8 +2870,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 18486,
-            "size_human": "18.05 KB"
+            "size_bytes": 21856,
+            "size_human": "21.34 KB"
           }
         },
         "instrument_count": 1
@@ -2854,8 +2901,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 44264,
-            "size_human": "43.23 KB"
+            "size_bytes": 47835,
+            "size_human": "46.71 KB"
           }
         },
         "instrument_count": 1
@@ -2888,8 +2935,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 38566,
-            "size_human": "37.66 KB"
+            "size_bytes": 43140,
+            "size_human": "42.13 KB"
           }
         },
         "instrument_count": 1
@@ -2920,8 +2967,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 24264,
-            "size_human": "23.70 KB"
+            "size_bytes": 27890,
+            "size_human": "27.24 KB"
           }
         },
         "instrument_count": 1
@@ -2976,8 +3023,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 186022,
-            "size_human": "181.66 KB"
+            "size_bytes": 191399,
+            "size_human": "186.91 KB"
           },
           "MCI": {
             "name": "MCI",
@@ -3003,8 +3050,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 55505,
-            "size_human": "54.20 KB"
+            "size_bytes": 59759,
+            "size_human": "58.36 KB"
           }
         },
         "instrument_count": 2
@@ -3030,8 +3077,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 13250,
-            "size_human": "12.94 KB"
+            "size_bytes": 16289,
+            "size_human": "15.91 KB"
           }
         },
         "instrument_count": 1
@@ -3063,8 +3110,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 44668,
-            "size_human": "43.62 KB"
+            "size_bytes": 49584,
+            "size_human": "48.42 KB"
           },
           "BLANK": {
             "name": "BLANK",
@@ -3122,8 +3169,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 212652,
-            "size_human": "207.67 KB"
+            "size_bytes": 217645,
+            "size_human": "212.54 KB"
           },
           "CTIO": {
             "name": "CTIO",
@@ -3375,8 +3422,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 748151,
-            "size_human": "730.62 KB"
+            "size_bytes": 771867,
+            "size_human": "753.78 KB"
           },
           "DECam": {
             "name": "DECam",
@@ -3415,8 +3462,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 227221,
-            "size_human": "221.90 KB"
+            "size_bytes": 232744,
+            "size_human": "227.29 KB"
           },
           "Goodman": {
             "name": "Goodman",
@@ -3450,8 +3497,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 134515,
-            "size_human": "131.36 KB"
+            "size_bytes": 138121,
+            "size_human": "134.88 KB"
           },
           "ISPI": {
             "name": "ISPI",
@@ -3496,8 +3543,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 177638,
-            "size_human": "173.47 KB"
+            "size_bytes": 185244,
+            "size_human": "180.90 KB"
           },
           "MosaicII": {
             "name": "MosaicII",
@@ -3538,8 +3585,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 171529,
-            "size_human": "167.51 KB"
+            "size_bytes": 178324,
+            "size_human": "174.14 KB"
           },
           "OSIRIS": {
             "name": "OSIRIS",
@@ -3562,8 +3609,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 58162,
-            "size_human": "56.80 KB"
+            "size_bytes": 61825,
+            "size_human": "60.38 KB"
           },
           "SAMI": {
             "name": "SAMI",
@@ -3592,8 +3639,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 75466,
-            "size_human": "73.70 KB"
+            "size_bytes": 79922,
+            "size_human": "78.05 KB"
           },
           "SMARTS": {
             "name": "SMARTS",
@@ -3622,8 +3669,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 34132,
-            "size_human": "33.33 KB"
+            "size_bytes": 38421,
+            "size_human": "37.52 KB"
           },
           "SOI": {
             "name": "SOI",
@@ -3658,8 +3705,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 150226,
-            "size_human": "146.71 KB"
+            "size_bytes": 156746,
+            "size_human": "153.07 KB"
           },
           "S_PLUS": {
             "name": "S_PLUS",
@@ -3688,8 +3735,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 66531,
-            "size_human": "64.97 KB"
+            "size_bytes": 71004,
+            "size_human": "69.34 KB"
           },
           "Spartan": {
             "name": "Spartan",
@@ -3719,8 +3766,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 94052,
-            "size_human": "91.85 KB"
+            "size_bytes": 97847,
+            "size_human": "95.55 KB"
           },
           "Y4KCam": {
             "name": "Y4KCam",
@@ -3746,8 +3793,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 35143,
-            "size_human": "34.32 KB"
+            "size_bytes": 39308,
+            "size_human": "38.39 KB"
           }
         },
         "instrument_count": 14
@@ -3773,8 +3820,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15575,
-            "size_human": "15.21 KB"
+            "size_bytes": 19075,
+            "size_human": "18.63 KB"
           },
           "Canon_10D": {
             "name": "Canon_10D",
@@ -3792,8 +3839,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 13198,
-            "size_human": "12.89 KB"
+            "size_bytes": 16555,
+            "size_human": "16.17 KB"
           },
           "Canon_1DMarkII": {
             "name": "Canon_1DMarkII",
@@ -3813,8 +3860,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 16044,
-            "size_human": "15.67 KB"
+            "size_bytes": 19280,
+            "size_human": "18.83 KB"
           },
           "Canon_1DMarkIII": {
             "name": "Canon_1DMarkIII",
@@ -3834,8 +3881,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15485,
-            "size_human": "15.12 KB"
+            "size_bytes": 18524,
+            "size_human": "18.09 KB"
           },
           "Canon_20D": {
             "name": "Canon_20D",
@@ -3857,8 +3904,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 22740,
-            "size_human": "22.21 KB"
+            "size_bytes": 26023,
+            "size_human": "25.41 KB"
           },
           "Canon_300D": {
             "name": "Canon_300D",
@@ -3880,8 +3927,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 23083,
-            "size_human": "22.54 KB"
+            "size_bytes": 26556,
+            "size_human": "25.93 KB"
           },
           "Canon_30D": {
             "name": "Canon_30D",
@@ -3899,8 +3946,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 13338,
-            "size_human": "13.03 KB"
+            "size_bytes": 16695,
+            "size_human": "16.30 KB"
           },
           "Canon_350D": {
             "name": "Canon_350D",
@@ -3918,8 +3965,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 12752,
-            "size_human": "12.45 KB"
+            "size_bytes": 15914,
+            "size_human": "15.54 KB"
           },
           "Canon_40D": {
             "name": "Canon_40D",
@@ -3939,8 +3986,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15735,
-            "size_human": "15.37 KB"
+            "size_bytes": 18961,
+            "size_human": "18.52 KB"
           },
           "Canon_450D_IR": {
             "name": "Canon_450D_IR",
@@ -3960,8 +4007,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15090,
-            "size_human": "14.74 KB"
+            "size_bytes": 18205,
+            "size_human": "17.78 KB"
           },
           "Canon_500D": {
             "name": "Canon_500D",
@@ -3981,8 +4028,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15752,
-            "size_human": "15.38 KB"
+            "size_bytes": 18980,
+            "size_human": "18.54 KB"
           },
           "Canon_50D": {
             "name": "Canon_50D",
@@ -4002,8 +4049,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15386,
-            "size_human": "15.03 KB"
+            "size_bytes": 18423,
+            "size_human": "17.99 KB"
           },
           "Canon_5D": {
             "name": "Canon_5D",
@@ -4021,8 +4068,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 12715,
-            "size_human": "12.42 KB"
+            "size_bytes": 15877,
+            "size_human": "15.50 KB"
           },
           "Canon_5DII": {
             "name": "Canon_5DII",
@@ -4040,8 +4087,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 11997,
-            "size_human": "11.72 KB"
+            "size_bytes": 15355,
+            "size_human": "15.00 KB"
           },
           "Canon_600D": {
             "name": "Canon_600D",
@@ -4061,8 +4108,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15752,
-            "size_human": "15.38 KB"
+            "size_bytes": 18977,
+            "size_human": "18.53 KB"
           },
           "Canon_60D": {
             "name": "Canon_60D",
@@ -4084,8 +4131,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 22830,
-            "size_human": "22.29 KB"
+            "size_bytes": 26308,
+            "size_human": "25.69 KB"
           },
           "Canon_G1X": {
             "name": "Canon_G1X",
@@ -4103,8 +4150,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 12685,
-            "size_human": "12.39 KB"
+            "size_bytes": 15847,
+            "size_human": "15.48 KB"
           },
           "Canon_T2i": {
             "name": "Canon_T2i",
@@ -4122,8 +4169,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 12772,
-            "size_human": "12.47 KB"
+            "size_bytes": 15934,
+            "size_human": "15.56 KB"
           },
           "Canon_XS": {
             "name": "Canon_XS",
@@ -4141,8 +4188,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 13122,
-            "size_human": "12.81 KB"
+            "size_bytes": 16477,
+            "size_human": "16.09 KB"
           },
           "Canon_XSi": {
             "name": "Canon_XSi",
@@ -4160,8 +4207,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 13137,
-            "size_human": "12.83 KB"
+            "size_bytes": 16494,
+            "size_human": "16.11 KB"
           },
           "Fujifilm_S3": {
             "name": "Fujifilm_S3",
@@ -4179,8 +4226,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 12557,
-            "size_human": "12.26 KB"
+            "size_bytes": 15719,
+            "size_human": "15.35 KB"
           },
           "Fujifilm_S5Pro": {
             "name": "Fujifilm_S5Pro",
@@ -4200,8 +4247,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 14621,
-            "size_human": "14.28 KB"
+            "size_bytes": 17735,
+            "size_human": "17.32 KB"
           },
           "Fujifilm_X100": {
             "name": "Fujifilm_X100",
@@ -4219,8 +4266,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 12690,
-            "size_human": "12.39 KB"
+            "size_bytes": 15852,
+            "size_human": "15.48 KB"
           },
           "Fujifilm_Xpro1": {
             "name": "Fujifilm_Xpro1",
@@ -4238,8 +4285,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 12853,
-            "size_human": "12.55 KB"
+            "size_bytes": 16015,
+            "size_human": "15.64 KB"
           },
           "Hasselblad_H2": {
             "name": "Hasselblad_H2",
@@ -4259,8 +4306,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 16204,
-            "size_human": "15.82 KB"
+            "size_bytes": 19632,
+            "size_human": "19.17 KB"
           },
           "Hasselblad_H3D": {
             "name": "Hasselblad_H3D",
@@ -4280,8 +4327,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15541,
-            "size_human": "15.18 KB"
+            "size_bytes": 19049,
+            "size_human": "18.60 KB"
           },
           "Kodak_DCS200": {
             "name": "Kodak_DCS200",
@@ -4301,8 +4348,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15556,
-            "size_human": "15.19 KB"
+            "size_bytes": 18816,
+            "size_human": "18.38 KB"
           },
           "Kodak_DCS420": {
             "name": "Kodak_DCS420",
@@ -4322,8 +4369,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 16653,
-            "size_human": "16.26 KB"
+            "size_bytes": 20106,
+            "size_human": "19.63 KB"
           },
           "Leica_M8": {
             "name": "Leica_M8",
@@ -4343,8 +4390,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15960,
-            "size_human": "15.59 KB"
+            "size_bytes": 19629,
+            "size_human": "19.17 KB"
           },
           "Lumix_G10": {
             "name": "Lumix_G10",
@@ -4362,8 +4409,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 12707,
-            "size_human": "12.41 KB"
+            "size_bytes": 15869,
+            "size_human": "15.50 KB"
           },
           "Lumix_GF1": {
             "name": "Lumix_GF1",
@@ -4381,8 +4428,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 13084,
-            "size_human": "12.78 KB"
+            "size_bytes": 16246,
+            "size_human": "15.87 KB"
           },
           "Lumix_GF2": {
             "name": "Lumix_GF2",
@@ -4400,8 +4447,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 13119,
-            "size_human": "12.81 KB"
+            "size_bytes": 16281,
+            "size_human": "15.90 KB"
           },
           "Nikon_D100": {
             "name": "Nikon_D100",
@@ -4419,8 +4466,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 13013,
-            "size_human": "12.71 KB"
+            "size_bytes": 16371,
+            "size_human": "15.99 KB"
           },
           "Nikon_D200": {
             "name": "Nikon_D200",
@@ -4442,8 +4489,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 22911,
-            "size_human": "22.37 KB"
+            "size_bytes": 26580,
+            "size_human": "25.96 KB"
           },
           "Nikon_D3": {
             "name": "Nikon_D3",
@@ -4463,8 +4510,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15544,
-            "size_human": "15.18 KB"
+            "size_bytes": 18768,
+            "size_human": "18.33 KB"
           },
           "Nikon_D3000": {
             "name": "Nikon_D3000",
@@ -4482,8 +4529,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 12985,
-            "size_human": "12.68 KB"
+            "size_bytes": 16147,
+            "size_human": "15.77 KB"
           },
           "Nikon_D300s": {
             "name": "Nikon_D300s",
@@ -4503,8 +4550,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 16065,
-            "size_human": "15.69 KB"
+            "size_bytes": 19485,
+            "size_human": "19.03 KB"
           },
           "Nikon_D3100": {
             "name": "Nikon_D3100",
@@ -4522,8 +4569,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 13107,
-            "size_human": "12.80 KB"
+            "size_bytes": 16468,
+            "size_human": "16.08 KB"
           },
           "Nikon_D3X": {
             "name": "Nikon_D3X",
@@ -4543,8 +4590,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15928,
-            "size_human": "15.55 KB"
+            "size_bytes": 19341,
+            "size_human": "18.89 KB"
           },
           "Nikon_D40": {
             "name": "Nikon_D40",
@@ -4566,8 +4613,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 22079,
-            "size_human": "21.56 KB"
+            "size_bytes": 25932,
+            "size_human": "25.32 KB"
           },
           "Nikon_D40x": {
             "name": "Nikon_D40x",
@@ -4585,8 +4632,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 11974,
-            "size_human": "11.69 KB"
+            "size_bytes": 15333,
+            "size_human": "14.97 KB"
           },
           "Nikon_D50": {
             "name": "Nikon_D50",
@@ -4608,8 +4655,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 19884,
-            "size_human": "19.42 KB"
+            "size_bytes": 23539,
+            "size_human": "22.99 KB"
           },
           "Nikon_D5100": {
             "name": "Nikon_D5100",
@@ -4629,8 +4676,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 13840,
-            "size_human": "13.52 KB"
+            "size_bytes": 17261,
+            "size_human": "16.86 KB"
           },
           "Nikon_D60": {
             "name": "Nikon_D60",
@@ -4648,8 +4695,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 12180,
-            "size_human": "11.89 KB"
+            "size_bytes": 15537,
+            "size_human": "15.17 KB"
           },
           "Nikon_D70": {
             "name": "Nikon_D70",
@@ -4667,8 +4714,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 11156,
-            "size_human": "10.89 KB"
+            "size_bytes": 14318,
+            "size_human": "13.98 KB"
           },
           "Nikon_D700": {
             "name": "Nikon_D700",
@@ -4688,8 +4735,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 14443,
-            "size_human": "14.10 KB"
+            "size_bytes": 18048,
+            "size_human": "17.62 KB"
           },
           "Nikon_D80": {
             "name": "Nikon_D80",
@@ -4711,8 +4758,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 19125,
-            "size_human": "18.68 KB"
+            "size_bytes": 22596,
+            "size_human": "22.07 KB"
           },
           "Nikon_D90": {
             "name": "Nikon_D90",
@@ -4734,8 +4781,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 19982,
-            "size_human": "19.51 KB"
+            "size_bytes": 23639,
+            "size_human": "23.08 KB"
           },
           "Nokia_N900": {
             "name": "Nokia_N900",
@@ -4755,8 +4802,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 12183,
-            "size_human": "11.90 KB"
+            "size_bytes": 15222,
+            "size_human": "14.87 KB"
           },
           "Olympus_EP1": {
             "name": "Olympus_EP1",
@@ -4774,8 +4821,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 11216,
-            "size_human": "10.95 KB"
+            "size_bytes": 14378,
+            "size_human": "14.04 KB"
           },
           "Olympus_EPL2": {
             "name": "Olympus_EPL2",
@@ -4795,8 +4842,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 12063,
-            "size_human": "11.78 KB"
+            "size_bytes": 15102,
+            "size_human": "14.75 KB"
           },
           "Panasonic_DML_LX3": {
             "name": "Panasonic_DML_LX3",
@@ -4816,8 +4863,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 10976,
-            "size_human": "10.72 KB"
+            "size_bytes": 14089,
+            "size_human": "13.76 KB"
           },
           "Pentax_K100D": {
             "name": "Pentax_K100D",
@@ -4835,8 +4882,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 11162,
-            "size_human": "10.90 KB"
+            "size_bytes": 14324,
+            "size_human": "13.99 KB"
           },
           "Pentax_K10D": {
             "name": "Pentax_K10D",
@@ -4854,8 +4901,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 12107,
-            "size_human": "11.82 KB"
+            "size_bytes": 15468,
+            "size_human": "15.11 KB"
           },
           "Pentax_K5": {
             "name": "Pentax_K5",
@@ -4875,8 +4922,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 12098,
-            "size_human": "11.81 KB"
+            "size_bytes": 15135,
+            "size_human": "14.78 KB"
           },
           "Pentax_Q": {
             "name": "Pentax_Q",
@@ -4896,8 +4943,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 13107,
-            "size_human": "12.80 KB"
+            "size_bytes": 16331,
+            "size_human": "15.95 KB"
           },
           "Pentax_ist_D": {
             "name": "Pentax_ist_D",
@@ -4915,8 +4962,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 11204,
-            "size_human": "10.94 KB"
+            "size_bytes": 14366,
+            "size_human": "14.03 KB"
           },
           "Pentax_ist_DL": {
             "name": "Pentax_ist_DL",
@@ -4934,8 +4981,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 12269,
-            "size_human": "11.98 KB"
+            "size_bytes": 15634,
+            "size_human": "15.27 KB"
           },
           "PhaseOne": {
             "name": "PhaseOne",
@@ -4955,8 +5002,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 13801,
-            "size_human": "13.48 KB"
+            "size_bytes": 17208,
+            "size_human": "16.80 KB"
           },
           "PointGrey_Grasshopper2_14S5C": {
             "name": "PointGrey_Grasshopper2_14S5C",
@@ -4976,8 +5023,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 13294,
-            "size_human": "12.98 KB"
+            "size_bytes": 16557,
+            "size_human": "16.17 KB"
           },
           "PointGrey_Grasshopper_50S5C": {
             "name": "PointGrey_Grasshopper_50S5C",
@@ -4997,8 +5044,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 12494,
-            "size_human": "12.20 KB"
+            "size_bytes": 15533,
+            "size_human": "15.17 KB"
           },
           "SQM": {
             "name": "SQM",
@@ -5022,8 +5069,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 37339,
-            "size_human": "36.46 KB"
+            "size_bytes": 40699,
+            "size_human": "39.75 KB"
           },
           "Samsung_NX10": {
             "name": "Samsung_NX10",
@@ -5041,8 +5088,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 11300,
-            "size_human": "11.04 KB"
+            "size_bytes": 14462,
+            "size_human": "14.12 KB"
           },
           "Samsung_NX100": {
             "name": "Samsung_NX100",
@@ -5060,8 +5107,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 12243,
-            "size_human": "11.96 KB"
+            "size_bytes": 15608,
+            "size_human": "15.24 KB"
           },
           "Sony.A200": {
             "name": "Sony.A200",
@@ -5079,8 +5126,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 12348,
-            "size_human": "12.06 KB"
+            "size_bytes": 15705,
+            "size_human": "15.34 KB"
           },
           "Sony.A55": {
             "name": "Sony.A55",
@@ -5098,8 +5145,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 12084,
-            "size_human": "11.80 KB"
+            "size_bytes": 15439,
+            "size_human": "15.08 KB"
           },
           "Sony_A290": {
             "name": "Sony_A290",
@@ -5117,8 +5164,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 12354,
-            "size_human": "12.06 KB"
+            "size_bytes": 15711,
+            "size_human": "15.34 KB"
           },
           "Sony_A300": {
             "name": "Sony_A300",
@@ -5136,8 +5183,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 12046,
-            "size_human": "11.76 KB"
+            "size_bytes": 15403,
+            "size_human": "15.04 KB"
           },
           "Sony_A330": {
             "name": "Sony_A330",
@@ -5155,8 +5202,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 11060,
-            "size_human": "10.80 KB"
+            "size_bytes": 14222,
+            "size_human": "13.89 KB"
           },
           "Sony_NEX5N": {
             "name": "Sony_NEX5N",
@@ -5176,8 +5223,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 12108,
-            "size_human": "11.82 KB"
+            "size_bytes": 15147,
+            "size_human": "14.79 KB"
           },
           "Sony_NEX_5N": {
             "name": "Sony_NEX_5N",
@@ -5195,8 +5242,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 12113,
-            "size_human": "11.83 KB"
+            "size_bytes": 15474,
+            "size_human": "15.11 KB"
           },
           "Sony_NEX_C3": {
             "name": "Sony_NEX_C3",
@@ -5214,8 +5261,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 12116,
-            "size_human": "11.83 KB"
+            "size_bytes": 15477,
+            "size_human": "15.11 KB"
           }
         },
         "instrument_count": 72
@@ -5278,8 +5325,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 766754,
-            "size_human": "748.78 KB"
+            "size_bytes": 775366,
+            "size_human": "757.19 KB"
           },
           "ISS_WAC": {
             "name": "ISS_WAC",
@@ -5316,8 +5363,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 435061,
-            "size_human": "424.86 KB"
+            "size_bytes": 440525,
+            "size_human": "430.20 KB"
           }
         },
         "instrument_count": 2
@@ -5344,8 +5391,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 35935,
-            "size_human": "35.09 KB"
+            "size_bytes": 39790,
+            "size_human": "38.86 KB"
           },
           "NIR": {
             "name": "NIR",
@@ -5367,8 +5414,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 38221,
-            "size_human": "37.33 KB"
+            "size_bytes": 41731,
+            "size_human": "40.75 KB"
           },
           "UVVIS": {
             "name": "UVVIS",
@@ -5390,8 +5437,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 39575,
-            "size_human": "38.65 KB"
+            "size_bytes": 43470,
+            "size_human": "42.45 KB"
           }
         },
         "instrument_count": 3
@@ -5437,8 +5484,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 62595,
-            "size_human": "61.13 KB"
+            "size_bytes": 68518,
+            "size_human": "66.91 KB"
           },
           "CRISP": {
             "name": "CRISP",
@@ -5475,8 +5522,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 55313,
-            "size_human": "54.02 KB"
+            "size_bytes": 59414,
+            "size_human": "58.02 KB"
           }
         },
         "instrument_count": 2
@@ -5501,8 +5548,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 23675,
-            "size_human": "23.12 KB"
+            "size_bytes": 27031,
+            "size_human": "26.40 KB"
           }
         },
         "instrument_count": 1
@@ -5537,8 +5584,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 42545,
-            "size_human": "41.55 KB"
+            "size_bytes": 47733,
+            "size_human": "46.61 KB"
           }
         },
         "instrument_count": 1
@@ -5570,8 +5617,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 147990,
-            "size_human": "144.52 KB"
+            "size_bytes": 151023,
+            "size_human": "147.48 KB"
           },
           "Medium": {
             "name": "Medium",
@@ -5595,8 +5642,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 84456,
-            "size_human": "82.48 KB"
+            "size_bytes": 87401,
+            "size_human": "85.35 KB"
           },
           "Narrow": {
             "name": "Narrow",
@@ -5624,8 +5671,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 224627,
-            "size_human": "219.36 KB"
+            "size_bytes": 227745,
+            "size_human": "222.41 KB"
           },
           "all": {
             "name": "all",
@@ -5665,8 +5712,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 439868,
-            "size_human": "429.56 KB"
+            "size_bytes": 443494,
+            "size_human": "433.10 KB"
           }
         },
         "instrument_count": 4
@@ -5692,8 +5739,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 17391,
-            "size_human": "16.98 KB"
+            "size_bytes": 20791,
+            "size_human": "20.30 KB"
           }
         },
         "instrument_count": 1
@@ -5724,8 +5771,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 56476,
-            "size_human": "55.15 KB"
+            "size_bytes": 59906,
+            "size_human": "58.50 KB"
           }
         },
         "instrument_count": 1
@@ -5758,8 +5805,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 59340,
-            "size_human": "57.95 KB"
+            "size_bytes": 64764,
+            "size_human": "63.25 KB"
           }
         },
         "instrument_count": 1
@@ -5790,8 +5837,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 59493,
-            "size_human": "58.10 KB"
+            "size_bytes": 64103,
+            "size_human": "62.60 KB"
           }
         },
         "instrument_count": 1
@@ -5833,8 +5880,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 242602,
-            "size_human": "236.92 KB"
+            "size_bytes": 248667,
+            "size_human": "242.84 KB"
           },
           "ITS_VIS": {
             "name": "ITS_VIS",
@@ -5852,8 +5899,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15369,
-            "size_human": "15.01 KB"
+            "size_bytes": 18324,
+            "size_human": "17.89 KB"
           },
           "MRI_VIS": {
             "name": "MRI_VIS",
@@ -5889,8 +5936,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 183218,
-            "size_human": "178.92 KB"
+            "size_bytes": 187083,
+            "size_human": "182.70 KB"
           }
         },
         "instrument_count": 3
@@ -5916,8 +5963,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 88842,
-            "size_human": "86.76 KB"
+            "size_bytes": 92491,
+            "size_human": "90.32 KB"
           }
         },
         "instrument_count": 1
@@ -5957,8 +6004,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 292729,
-            "size_human": "285.87 KB"
+            "size_bytes": 296461,
+            "size_human": "289.51 KB"
           }
         },
         "instrument_count": 1
@@ -5982,8 +6029,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 10630,
-            "size_human": "10.38 KB"
+            "size_bytes": 13701,
+            "size_human": "13.38 KB"
           }
         },
         "instrument_count": 1
@@ -6010,8 +6057,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 12426,
-            "size_human": "12.13 KB"
+            "size_bytes": 16152,
+            "size_human": "15.77 KB"
           },
           "ATSR2": {
             "name": "ATSR2",
@@ -6035,11 +6082,103 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 30143,
-            "size_human": "29.44 KB"
+            "size_bytes": 33997,
+            "size_human": "33.20 KB"
           }
         },
         "instrument_count": 2
+      },
+      "ESO": {
+        "name": "ESO",
+        "instruments": {
+          "ESO": {
+            "name": "ESO",
+            "filter_count": 66,
+            "filters": [
+              "0210",
+              "0212",
+              "0215",
+              "0218",
+              "0228",
+              "0237",
+              "0253",
+              "0284",
+              "0290",
+              "0315",
+              "0339",
+              "0357",
+              "0361",
+              "0365",
+              "0381",
+              "0403",
+              "0406",
+              "0416",
+              "0441",
+              "0454",
+              "0457",
+              "0526",
+              "0534",
+              "0535",
+              "0536",
+              "0577",
+              "0579",
+              "0582",
+              "0583",
+              "0613",
+              "0618",
+              "0639",
+              "0644",
+              "0696",
+              "0711",
+              "0716",
+              "0721",
+              "0731",
+              "0732",
+              "0733",
+              "0742",
+              "0743",
+              "0745",
+              "0747",
+              "0784",
+              "0799",
+              "0810",
+              "0812",
+              "0813",
+              "0814",
+              "0821",
+              "0824",
+              "0835",
+              "0847",
+              "0852",
+              "0859",
+              "0866",
+              "0876",
+              "0890",
+              "1037",
+              "1040",
+              "1043",
+              "1050",
+              "1078",
+              "1112",
+              "1114"
+            ],
+            "published_paths": {
+              "filter": 66
+            },
+            "detector_types": {
+              "photon": 66
+            },
+            "separate_components": {
+              "filter": 66
+            },
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 495870,
+            "size_human": "484.25 KB"
+          }
+        },
+        "instrument_count": 1
       },
       "Envisat": {
         "name": "Envisat",
@@ -6066,8 +6205,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 40576,
-            "size_human": "39.62 KB"
+            "size_bytes": 44798,
+            "size_human": "43.75 KB"
           },
           "MERIS": {
             "name": "MERIS",
@@ -6099,8 +6238,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 63209,
-            "size_human": "61.73 KB"
+            "size_bytes": 68546,
+            "size_human": "66.94 KB"
           }
         },
         "instrument_count": 2
@@ -6129,8 +6268,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 86733,
-            "size_human": "84.70 KB"
+            "size_bytes": 90417,
+            "size_human": "88.30 KB"
           },
           "VIS": {
             "name": "VIS",
@@ -6148,8 +6287,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 39676,
-            "size_human": "38.75 KB"
+            "size_bytes": 42636,
+            "size_human": "41.64 KB"
           }
         },
         "instrument_count": 2
@@ -6181,8 +6320,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 57267,
-            "size_human": "55.92 KB"
+            "size_bytes": 60903,
+            "size_human": "59.48 KB"
           }
         },
         "instrument_count": 1
@@ -6234,8 +6373,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 176391,
-            "size_human": "172.26 KB"
+            "size_bytes": 182822,
+            "size_human": "178.54 KB"
           },
           "MEarth": {
             "name": "MEarth",
@@ -6253,8 +6392,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 14521,
-            "size_human": "14.18 KB"
+            "size_bytes": 17653,
+            "size_human": "17.24 KB"
           }
         },
         "instrument_count": 2
@@ -6284,8 +6423,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 32831,
-            "size_human": "32.06 KB"
+            "size_bytes": 36819,
+            "size_human": "35.96 KB"
           },
           "FY2C-VISSR": {
             "name": "FY2C-VISSR",
@@ -6310,8 +6449,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 36892,
-            "size_human": "36.03 KB"
+            "size_bytes": 40111,
+            "size_human": "39.17 KB"
           },
           "FY2D-VISSR": {
             "name": "FY2D-VISSR",
@@ -6336,8 +6475,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 33629,
-            "size_human": "32.84 KB"
+            "size_bytes": 36847,
+            "size_human": "35.98 KB"
           },
           "FY3A-IRAS": {
             "name": "FY3A-IRAS",
@@ -6380,8 +6519,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 275219,
-            "size_human": "268.77 KB"
+            "size_bytes": 281101,
+            "size_human": "274.51 KB"
           },
           "FY3A-MERSI": {
             "name": "FY3A-MERSI",
@@ -6418,8 +6557,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 111578,
-            "size_human": "108.96 KB"
+            "size_bytes": 116102,
+            "size_human": "113.38 KB"
           },
           "FY3B-IRAS": {
             "name": "FY3B-IRAS",
@@ -6462,8 +6601,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 379477,
-            "size_human": "370.58 KB"
+            "size_bytes": 385367,
+            "size_human": "376.33 KB"
           },
           "FY3B-MERSI": {
             "name": "FY3B-MERSI",
@@ -6499,8 +6638,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 72325,
-            "size_human": "70.63 KB"
+            "size_bytes": 76811,
+            "size_human": "75.01 KB"
           },
           "FY3B-VIRR": {
             "name": "FY3B-VIRR",
@@ -6527,8 +6666,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 53567,
-            "size_human": "52.31 KB"
+            "size_bytes": 56885,
+            "size_human": "55.55 KB"
           },
           "FY3C-IRAS": {
             "name": "FY3C-IRAS",
@@ -6571,8 +6710,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 349040,
-            "size_human": "340.86 KB"
+            "size_bytes": 354353,
+            "size_human": "346.05 KB"
           },
           "FY3C-MERSI": {
             "name": "FY3C-MERSI",
@@ -6609,8 +6748,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 59738,
-            "size_human": "58.34 KB"
+            "size_bytes": 63885,
+            "size_human": "62.39 KB"
           },
           "FY3C-VIRR": {
             "name": "FY3C-VIRR",
@@ -6634,8 +6773,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 28888,
-            "size_human": "28.21 KB"
+            "size_bytes": 32092,
+            "size_human": "31.34 KB"
           }
         },
         "instrument_count": 11
@@ -6662,8 +6801,50 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 12185,
-            "size_human": "11.90 KB"
+            "size_bytes": 15406,
+            "size_human": "15.04 KB"
+          },
+          "PS2k": {
+            "name": "PS2k",
+            "filter_count": 3,
+            "filters": [
+              "Blue",
+              "Green",
+              "NIR"
+            ],
+            "published_paths": {
+              "filter+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 21707,
+            "size_human": "21.20 KB"
+          },
+          "PS2p": {
+            "name": "PS2p",
+            "filter_count": 3,
+            "filters": [
+              "Blue",
+              "Green",
+              "NIR"
+            ],
+            "published_paths": {
+              "filter+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 22199,
+            "size_human": "21.68 KB"
           },
           "SuperDove": {
             "name": "SuperDove",
@@ -6685,56 +6866,64 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 16099,
-            "size_human": "15.72 KB"
+            "size_bytes": 19361,
+            "size_human": "18.91 KB"
           }
         },
-        "instrument_count": 2
+        "instrument_count": 4
       },
       "GAIA": {
         "name": "GAIA",
         "instruments": {
           "DR2": {
             "name": "DR2",
-            "filter_count": 3,
+            "filter_count": 5,
             "filters": [
               "BP",
+              "BP_svo",
               "G",
+              "G_svo",
               "RP"
             ],
             "published_paths": {
+              "filter+instrument": 2,
               "filter+optics+qe": 3
             },
             "detector_types": {
+              "energy": 2,
               "photon": 3
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 168209,
-            "size_human": "164.27 KB"
+            "size_bytes": 253514,
+            "size_human": "247.57 KB"
           },
           "DR2r": {
             "name": "DR2r",
-            "filter_count": 3,
+            "filter_count": 5,
             "filters": [
               "BP",
+              "BP_svo",
               "G",
+              "G_svo",
               "RP"
             ],
             "published_paths": {
+              "filter+instrument": 2,
               "filter+optics+qe": 3
             },
             "detector_types": {
+              "energy": 2,
               "photon": 3
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 176503,
-            "size_human": "172.37 KB"
+            "size_bytes": 266637,
+            "size_human": "260.39 KB"
           },
           "GAIA": {
             "name": "GAIA",
@@ -6758,11 +6947,32 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 141979,
-            "size_human": "138.65 KB"
+            "size_bytes": 145568,
+            "size_human": "142.16 KB"
+          },
+          "GAIA0": {
+            "name": "GAIA0",
+            "filter_count": 3,
+            "filters": [
+              "G",
+              "Gbp",
+              "Grp"
+            ],
+            "published_paths": {
+              "filter+instrument": 3
+            },
+            "detector_types": {
+              "energy": 3
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 36251,
+            "size_human": "35.40 KB"
           }
         },
-        "instrument_count": 3
+        "instrument_count": 4
       },
       "GALEX": {
         "name": "GALEX",
@@ -6784,8 +6994,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 41551,
-            "size_human": "40.58 KB"
+            "size_bytes": 45148,
+            "size_human": "44.09 KB"
           }
         },
         "instrument_count": 1
@@ -6849,8 +7059,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 475204,
-            "size_human": "464.07 KB"
+            "size_bytes": 484990,
+            "size_human": "473.62 KB"
           }
         },
         "instrument_count": 1
@@ -6877,8 +7087,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 19579,
-            "size_human": "19.12 KB"
+            "size_bytes": 23006,
+            "size_human": "22.47 KB"
           },
           "Cousins": {
             "name": "Cousins",
@@ -6899,8 +7109,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 22176,
-            "size_human": "21.66 KB"
+            "size_bytes": 25779,
+            "size_human": "25.17 KB"
           },
           "Eggen": {
             "name": "Eggen",
@@ -6919,8 +7129,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 18029,
-            "size_human": "17.61 KB"
+            "size_bytes": 21352,
+            "size_human": "20.85 KB"
           },
           "Geneva": {
             "name": "Geneva",
@@ -6951,8 +7161,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 39092,
-            "size_human": "38.18 KB"
+            "size_bytes": 42940,
+            "size_human": "41.93 KB"
           },
           "JHKLMN": {
             "name": "JHKLMN",
@@ -6980,8 +7190,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 36559,
-            "size_human": "35.70 KB"
+            "size_bytes": 41831,
+            "size_human": "40.85 KB"
           },
           "Johnson": {
             "name": "Johnson",
@@ -7019,13 +7229,16 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 70739,
-            "size_human": "69.08 KB"
+            "size_bytes": 78079,
+            "size_human": "76.25 KB"
           },
           "Stromgren": {
             "name": "Stromgren",
-            "filter_count": 8,
+            "filter_count": 11,
             "filters": [
+              "Stromgren_b",
+              "Stromgren_u",
+              "Stromgren_y",
               "b",
               "b_ADPS",
               "u",
@@ -7036,17 +7249,18 @@
               "y_ADPS"
             ],
             "published_paths": {
+              "filter": 3,
               "unspecified": 8
             },
             "detector_types": {
-              "energy": 8
+              "energy": 11
             },
             "separate_components": {},
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 33207,
-            "size_human": "32.43 KB"
+            "size_bytes": 47435,
+            "size_human": "46.32 KB"
           },
           "Vilnius": {
             "name": "Vilnius",
@@ -7077,8 +7291,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 50298,
-            "size_human": "49.12 KB"
+            "size_bytes": 55777,
+            "size_human": "54.47 KB"
           },
           "WBVR": {
             "name": "WBVR",
@@ -7103,8 +7317,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 34496,
-            "size_human": "33.69 KB"
+            "size_bytes": 38963,
+            "size_human": "38.05 KB"
           },
           "Walraven": {
             "name": "Walraven",
@@ -7126,8 +7340,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 23593,
-            "size_human": "23.04 KB"
+            "size_bytes": 27595,
+            "size_human": "26.95 KB"
           },
           "Washington": {
             "name": "Washington",
@@ -7152,8 +7366,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 29024,
-            "size_human": "28.34 KB"
+            "size_bytes": 33587,
+            "size_human": "32.80 KB"
           }
         },
         "instrument_count": 11
@@ -7163,15 +7377,17 @@
         "instruments": {
           "ABI1": {
             "name": "ABI1",
-            "filter_count": 16,
+            "filter_count": 19,
             "filters": [
               "Ch01",
               "Ch02",
               "Ch03",
               "Ch04",
+              "Ch04_svo",
               "Ch05",
               "Ch06",
               "Ch07",
+              "Ch07_svo",
               "Ch08",
               "Ch09",
               "Ch10",
@@ -7180,29 +7396,32 @@
               "Ch13",
               "Ch14",
               "Ch15",
-              "Ch16"
+              "Ch16",
+              "Ch16_svo"
             ],
             "published_paths": {
+              "filter+instrument": 3,
               "filter+optics+qe": 16
             },
             "detector_types": {
-              "energy": 16
+              "energy": 19
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 566449,
-            "size_human": "553.17 KB"
+            "size_bytes": 644412,
+            "size_human": "629.31 KB"
           },
           "ABI2": {
             "name": "ABI2",
-            "filter_count": 26,
+            "filter_count": 28,
             "filters": [
               "Ch01",
               "Ch02",
               "Ch03",
               "Ch04",
+              "Ch04_svo",
               "Ch05",
               "Ch06",
               "Ch07",
@@ -7224,20 +7443,22 @@
               "Ch15",
               "Ch15_81K",
               "Ch16",
-              "Ch16_81K"
+              "Ch16_81K",
+              "Ch16_svo"
             ],
             "published_paths": {
+              "filter+instrument": 2,
               "filter+optics+qe": 26
             },
             "detector_types": {
-              "energy": 26
+              "energy": 28
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 881957,
-            "size_human": "861.29 KB"
+            "size_bytes": 907386,
+            "size_human": "886.12 KB"
           },
           "ABI3": {
             "name": "ABI3",
@@ -7270,12 +7491,12 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 502923,
-            "size_human": "491.14 KB"
+            "size_bytes": 507387,
+            "size_human": "495.50 KB"
           },
           "ABI4": {
             "name": "ABI4",
-            "filter_count": 16,
+            "filter_count": 17,
             "filters": [
               "Ch01",
               "Ch02",
@@ -7284,6 +7505,7 @@
               "Ch05",
               "Ch06",
               "Ch07",
+              "Ch07_svo",
               "Ch08",
               "Ch09",
               "Ch10",
@@ -7295,20 +7517,453 @@
               "Ch16"
             ],
             "published_paths": {
+              "filter+instrument": 1,
               "filter+optics+qe": 16
             },
             "detector_types": {
-              "energy": 16
+              "energy": 17
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 518267,
-            "size_human": "506.12 KB"
+            "size_bytes": 569085,
+            "size_human": "555.75 KB"
+          },
+          "Imager10": {
+            "name": "Imager10",
+            "filter_count": 2,
+            "filters": [
+              "VIS_d2",
+              "VIS_d3"
+            ],
+            "published_paths": {
+              "filter+instrument": 2
+            },
+            "detector_types": {
+              "energy": 2
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 25662,
+            "size_human": "25.06 KB"
+          },
+          "Imager11": {
+            "name": "Imager11",
+            "filter_count": 11,
+            "filters": [
+              "IR2_d1s1",
+              "IR2_d2s2",
+              "IR3_d1s1",
+              "IR3_d1s2",
+              "IR4_d1s1",
+              "IR5_d1s2",
+              "IR5_d2s1",
+              "VIS_d1",
+              "VIS_d2",
+              "VIS_d3",
+              "VIS_d4"
+            ],
+            "published_paths": {
+              "filter+instrument": 11
+            },
+            "detector_types": {
+              "energy": 11
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 232873,
+            "size_human": "227.42 KB"
+          },
+          "Imager12": {
+            "name": "Imager12",
+            "filter_count": 1,
+            "filters": [
+              "VIS_d8"
+            ],
+            "published_paths": {
+              "filter+instrument": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 18341,
+            "size_human": "17.91 KB"
+          },
+          "Imager13": {
+            "name": "Imager13",
+            "filter_count": 10,
+            "filters": [
+              "IR2_d1s1",
+              "IR2_d2s2",
+              "IR3_d1s1",
+              "IR4_d1s1",
+              "IR4_d2s2",
+              "IR6_d1s1v1",
+              "VIS_d1",
+              "VIS_d4",
+              "VIS_d5",
+              "VIS_d8"
+            ],
+            "published_paths": {
+              "filter+instrument": 10
+            },
+            "detector_types": {
+              "energy": 10
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 396731,
+            "size_human": "387.43 KB"
+          },
+          "Imager15": {
+            "name": "Imager15",
+            "filter_count": 2,
+            "filters": [
+              "IR6_d1s2",
+              "VIS_d4"
+            ],
+            "published_paths": {
+              "filter+instrument": 2
+            },
+            "detector_types": {
+              "energy": 2
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 37957,
+            "size_human": "37.07 KB"
+          },
+          "Imager8": {
+            "name": "Imager8",
+            "filter_count": 2,
+            "filters": [
+              "VIS_d3",
+              "VIS_d7"
+            ],
+            "published_paths": {
+              "filter+instrument": 2
+            },
+            "detector_types": {
+              "energy": 2
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 29923,
+            "size_human": "29.22 KB"
+          },
+          "Imager9": {
+            "name": "Imager9",
+            "filter_count": 11,
+            "filters": [
+              "IR2_d1s1",
+              "IR3_d1s1",
+              "IR4_d1s1",
+              "IR4_d2s1",
+              "IR4_d2s2",
+              "IR5_d1s1",
+              "IR5_d1s2",
+              "IR5_d2s2",
+              "VIS_d3",
+              "VIS_d4",
+              "VIS_d7"
+            ],
+            "published_paths": {
+              "filter+instrument": 11
+            },
+            "detector_types": {
+              "energy": 11
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 277659,
+            "size_human": "271.15 KB"
+          },
+          "Sounder10": {
+            "name": "Sounder10",
+            "filter_count": 57,
+            "filters": [
+              "IR10_d1",
+              "IR10_d2",
+              "IR10_d3",
+              "IR10_d4",
+              "IR11_d1",
+              "IR11_d2",
+              "IR11_d3",
+              "IR11_d4",
+              "IR12_d1",
+              "IR12_d3",
+              "IR13_d1",
+              "IR13_d2",
+              "IR14_d1",
+              "IR14_d3",
+              "IR15_d2",
+              "IR15_d3",
+              "IR16_d1",
+              "IR16_d3",
+              "IR16_d4",
+              "IR17_d1",
+              "IR17_d2",
+              "IR17_d3",
+              "IR18_d1",
+              "IR18_d2",
+              "IR18_d3",
+              "IR1_d4",
+              "IR2_d1",
+              "IR2_d2",
+              "IR2_d3",
+              "IR2_d4",
+              "IR3_d1",
+              "IR3_d2",
+              "IR3_d3",
+              "IR3_d4",
+              "IR4_d2",
+              "IR4_d3",
+              "IR4_d4",
+              "IR5_d1",
+              "IR5_d2",
+              "IR5_d3",
+              "IR5_d4",
+              "IR6_d1",
+              "IR6_d2",
+              "IR6_d3",
+              "IR6_d4",
+              "IR7_d1",
+              "IR7_d2",
+              "IR7_d4",
+              "IR8_d1",
+              "IR8_d2",
+              "IR8_d4",
+              "IR9_d1",
+              "IR9_d2",
+              "IR9_d3",
+              "IR9_d4",
+              "VIS_d1",
+              "VIS_d3"
+            ],
+            "published_paths": {
+              "filter+instrument": 57
+            },
+            "detector_types": {
+              "energy": 57
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 992649,
+            "size_human": "969.38 KB"
+          },
+          "Sounder11": {
+            "name": "Sounder11",
+            "filter_count": 22,
+            "filters": [
+              "IR10_d1",
+              "IR10_d4",
+              "IR11_d4",
+              "IR12_d1",
+              "IR13_d3",
+              "IR13_d4",
+              "IR15_d2",
+              "IR17_d3",
+              "IR18_d2",
+              "IR18_d3",
+              "IR1_d4",
+              "IR2_d3",
+              "IR2_d4",
+              "IR3_d2",
+              "IR3_d4",
+              "IR4_d3",
+              "IR4_d4",
+              "IR7_d3",
+              "IR9_d1",
+              "IR9_d2",
+              "IR9_d3",
+              "VIS_d1"
+            ],
+            "published_paths": {
+              "filter+instrument": 22
+            },
+            "detector_types": {
+              "energy": 22
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 403316,
+            "size_human": "393.86 KB"
+          },
+          "Sounder13": {
+            "name": "Sounder13",
+            "filter_count": 13,
+            "filters": [
+              "IR10_d4",
+              "IR13_d1",
+              "IR15_d4",
+              "IR16_d4",
+              "IR17_d3",
+              "IR17_d4",
+              "IR18_d4",
+              "IR1_d3",
+              "IR6_d1",
+              "IR7_d2",
+              "IR7_d4",
+              "IR8_d2",
+              "VIS_d3"
+            ],
+            "published_paths": {
+              "filter+instrument": 13
+            },
+            "detector_types": {
+              "energy": 13
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 266912,
+            "size_human": "260.66 KB"
+          },
+          "Sounder14": {
+            "name": "Sounder14",
+            "filter_count": 6,
+            "filters": [
+              "IR14_d1",
+              "IR15_d4",
+              "IR1_d3",
+              "IR2_d1",
+              "IR3_d2",
+              "IR3_d3"
+            ],
+            "published_paths": {
+              "filter+instrument": 6
+            },
+            "detector_types": {
+              "energy": 6
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 78711,
+            "size_human": "76.87 KB"
+          },
+          "Sounder15": {
+            "name": "Sounder15",
+            "filter_count": 15,
+            "filters": [
+              "IR10_d2",
+              "IR11_d2",
+              "IR13_d1",
+              "IR13_d2",
+              "IR13_d3",
+              "IR15_d1",
+              "IR15_d4",
+              "IR16_d2",
+              "IR17_d2",
+              "IR18_d1",
+              "IR1_d2",
+              "IR3_d1",
+              "IR3_d2",
+              "IR6_d3",
+              "IR9_d2"
+            ],
+            "published_paths": {
+              "filter+instrument": 15
+            },
+            "detector_types": {
+              "energy": 15
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 314425,
+            "size_human": "307.06 KB"
+          },
+          "Sounder8": {
+            "name": "Sounder8",
+            "filter_count": 4,
+            "filters": [
+              "IR11_d1",
+              "IR13_d1",
+              "IR18_d4",
+              "IR3_d4"
+            ],
+            "published_paths": {
+              "filter+instrument": 4
+            },
+            "detector_types": {
+              "energy": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 162125,
+            "size_human": "158.33 KB"
+          },
+          "VAS5": {
+            "name": "VAS5",
+            "filter_count": 4,
+            "filters": [
+              "Ch02",
+              "Ch04",
+              "Ch06",
+              "Ch07"
+            ],
+            "published_paths": {
+              "filter+instrument": 4
+            },
+            "detector_types": {
+              "energy": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 94155,
+            "size_human": "91.95 KB"
+          },
+          "VAS7": {
+            "name": "VAS7",
+            "filter_count": 2,
+            "filters": [
+              "Ch10",
+              "Ch12"
+            ],
+            "published_paths": {
+              "filter+instrument": 2
+            },
+            "detector_types": {
+              "energy": 2
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 209864,
+            "size_human": "204.95 KB"
           }
         },
-        "instrument_count": 4
+        "instrument_count": 19
       },
       "GTC": {
         "name": "GTC",
@@ -7346,8 +8001,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 611186,
-            "size_human": "596.86 KB"
+            "size_bytes": 618070,
+            "size_human": "603.58 KB"
           }
         },
         "instrument_count": 1
@@ -7378,8 +8033,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 29455,
-            "size_human": "28.76 KB"
+            "size_bytes": 33253,
+            "size_human": "32.47 KB"
           }
         },
         "instrument_count": 1
@@ -7405,8 +8060,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 30511,
-            "size_human": "29.80 KB"
+            "size_bytes": 33887,
+            "size_human": "33.09 KB"
           },
           "AcqCam_S": {
             "name": "AcqCam_S",
@@ -7428,8 +8083,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 106406,
-            "size_human": "103.91 KB"
+            "size_bytes": 109500,
+            "size_human": "106.93 KB"
           },
           "Alopeke": {
             "name": "Alopeke",
@@ -7455,8 +8110,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 55239,
-            "size_human": "53.94 KB"
+            "size_bytes": 60220,
+            "size_human": "58.81 KB"
           },
           "DSSI": {
             "name": "DSSI",
@@ -7482,8 +8137,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 58691,
-            "size_human": "57.32 KB"
+            "size_bytes": 62867,
+            "size_human": "61.39 KB"
           },
           "Flamingos2": {
             "name": "Flamingos2",
@@ -7513,8 +8168,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 186524,
-            "size_human": "182.15 KB"
+            "size_bytes": 191324,
+            "size_human": "186.84 KB"
           },
           "GMOS_N": {
             "name": "GMOS_N",
@@ -7550,8 +8205,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 79454,
-            "size_human": "77.59 KB"
+            "size_bytes": 84784,
+            "size_human": "82.80 KB"
           },
           "GMOS_S": {
             "name": "GMOS_S",
@@ -7585,8 +8240,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 147345,
-            "size_human": "143.89 KB"
+            "size_bytes": 153314,
+            "size_human": "149.72 KB"
           },
           "GNIRS": {
             "name": "GNIRS",
@@ -7615,8 +8270,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 88437,
-            "size_human": "86.36 KB"
+            "size_bytes": 92534,
+            "size_human": "90.37 KB"
           },
           "GPI": {
             "name": "GPI",
@@ -7638,8 +8293,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 188907,
-            "size_human": "184.48 KB"
+            "size_bytes": 192521,
+            "size_human": "188.01 KB"
           },
           "GSAOI": {
             "name": "GSAOI",
@@ -7680,8 +8335,58 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 751064,
-            "size_human": "733.46 KB"
+            "size_bytes": 757318,
+            "size_human": "739.57 KB"
+          },
+          "Michelle": {
+            "name": "Michelle",
+            "filter_count": 4,
+            "filters": [
+              "Np",
+              "Qa",
+              "Si5",
+              "Si6"
+            ],
+            "published_paths": {
+              "filter": 4
+            },
+            "detector_types": {
+              "energy": 4
+            },
+            "separate_components": {
+              "filter": 4
+            },
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 35988,
+            "size_human": "35.14 KB"
+          },
+          "NICI": {
+            "name": "NICI",
+            "filter_count": 6,
+            "filters": [
+              "ED283",
+              "ED286",
+              "ED299",
+              "ED381",
+              "ED449",
+              "ED451"
+            ],
+            "published_paths": {
+              "filter": 6
+            },
+            "detector_types": {
+              "energy": 6
+            },
+            "separate_components": {
+              "filter": 6
+            },
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 71936,
+            "size_human": "70.25 KB"
           },
           "NIFS": {
             "name": "NIFS",
@@ -7706,37 +8411,233 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 254666,
-            "size_human": "248.70 KB"
+            "size_bytes": 258830,
+            "size_human": "252.76 KB"
+          },
+          "NIRI": {
+            "name": "NIRI",
+            "filter_count": 37,
+            "filters": [
+              "BrAlpha-G0238w",
+              "BrAlphaCont-G0237w",
+              "BrG-G0218",
+              "BrG-G0218w",
+              "CH4ice2275-G0243w",
+              "CH4long-G0229",
+              "CH4long-G0229w",
+              "CH4short-G0228",
+              "CH4short-G0228w",
+              "CO2-0bh-G0225w",
+              "FeII-G0215",
+              "FeII-G0215w",
+              "H2Oice-G0230w",
+              "H2S1v1-0-G0216",
+              "H2S1v1-0-G0216w",
+              "H2S1v2-1-G0220",
+              "H2S1v2-1-G0220w",
+              "HKnotch-G0236w",
+              "Hcont157-G0214",
+              "HeI-G0234w",
+              "HeI2p2s-G0233w",
+              "Hsort-G0210",
+              "J-G0202w",
+              "Jcont1065-G0239",
+              "Kcont209-G0217w",
+              "Kcont227-G0219",
+              "Kcont227-G0219w",
+              "Kprime-G0206w",
+              "Kshort-G0205w",
+              "Lprime-G0207w",
+              "Mprime-G0208w",
+              "PK50-G0201w",
+              "PaBeta-G0221w",
+              "PaGamma-G0240w",
+              "Y-G0241w",
+              "hydrocarbon-G0231",
+              "hydrocarbon-G0231w"
+            ],
+            "published_paths": {
+              "filter": 37
+            },
+            "detector_types": {
+              "energy": 37
+            },
+            "separate_components": {
+              "filter": 37
+            },
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 343713,
+            "size_human": "335.66 KB"
+          },
+          "OSCIR": {
+            "name": "OSCIR",
+            "filter_count": 2,
+            "filters": [
+              "10300nm",
+              "18200nm"
+            ],
+            "published_paths": {
+              "filter": 2
+            },
+            "detector_types": {
+              "photon": 2
+            },
+            "separate_components": {
+              "filter": 2
+            },
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 21854,
+            "size_human": "21.34 KB"
+          },
+          "Phoenix": {
+            "name": "Phoenix",
+            "filter_count": 11,
+            "filters": [
+              "H6073",
+              "H6420",
+              "J8265",
+              "J9440",
+              "K4220",
+              "K4308",
+              "K4578",
+              "K4748",
+              "L2870",
+              "L3010",
+              "M1930"
+            ],
+            "published_paths": {
+              "filter": 11
+            },
+            "detector_types": {
+              "photon": 11
+            },
+            "separate_components": {
+              "filter": 11
+            },
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 87776,
+            "size_human": "85.72 KB"
+          },
+          "TReCS": {
+            "name": "TReCS",
+            "filter_count": 14,
+            "filters": [
+              "ArIII",
+              "NeII",
+              "Qb",
+              "SIV",
+              "Si1",
+              "Si2",
+              "Si3",
+              "Si4",
+              "Si5",
+              "Si6",
+              "k",
+              "l",
+              "m",
+              "n"
+            ],
+            "published_paths": {
+              "filter": 14
+            },
+            "detector_types": {
+              "energy": 14
+            },
+            "separate_components": {
+              "filter": 14
+            },
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 68920,
+            "size_human": "67.30 KB"
+          },
+          "Zorro": {
+            "name": "Zorro",
+            "filter_count": 6,
+            "filters": [
+              "EO_466",
+              "EO_832",
+              "g_sdss",
+              "i_sdss",
+              "r_sdss",
+              "z_sdss"
+            ],
+            "published_paths": {
+              "filter": 6
+            },
+            "detector_types": {
+              "energy": 6
+            },
+            "separate_components": {
+              "filter": 6
+            },
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 53081,
+            "size_human": "51.84 KB"
           }
         },
-        "instrument_count": 11
+        "instrument_count": 18
       },
       "Generic": {
         "name": "Generic",
         "instruments": {
           "Bessell": {
             "name": "Bessell",
-            "filter_count": 5,
+            "filter_count": 10,
             "filters": [
               "B",
+              "B_svo",
               "I",
+              "I_svo",
               "R",
+              "R_svo",
               "U",
-              "V"
+              "U_svo",
+              "V",
+              "V_svo"
             ],
             "published_paths": {
+              "filter": 5,
               "filter+optics+qe": 5
             },
             "detector_types": {
+              "energy": 5,
               "photon": 5
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 25833,
-            "size_human": "25.23 KB"
+            "size_bytes": 47112,
+            "size_human": "46.01 KB"
+          },
+          "Bessell_JHKLM": {
+            "name": "Bessell_JHKLM",
+            "filter_count": 1,
+            "filters": [
+              "L"
+            ],
+            "published_paths": {
+              "filter+atmosphere": 1
+            },
+            "detector_types": {
+              "energy": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 14060,
+            "size_human": "13.73 KB"
           },
           "Johnson": {
             "name": "Johnson",
@@ -7760,8 +8661,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 23466,
-            "size_human": "22.92 KB"
+            "size_bytes": 26850,
+            "size_human": "26.22 KB"
           },
           "MKO": {
             "name": "MKO",
@@ -7785,8 +8686,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 194871,
-            "size_human": "190.30 KB"
+            "size_bytes": 197432,
+            "size_human": "192.80 KB"
           },
           "USNO": {
             "name": "USNO",
@@ -7808,11 +8709,72 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 21162,
-            "size_human": "20.67 KB"
+            "size_bytes": 23712,
+            "size_human": "23.16 KB"
           }
         },
-        "instrument_count": 4
+        "instrument_count": 5
+      },
+      "GeoEye": {
+        "name": "GeoEye",
+        "instruments": {
+          "GIS": {
+            "name": "GIS",
+            "filter_count": 2,
+            "filters": [
+              "Green",
+              "Pan"
+            ],
+            "published_paths": {
+              "filter+instrument": 2
+            },
+            "detector_types": {
+              "energy": 2
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 24514,
+            "size_human": "23.94 KB"
+          }
+        },
+        "instrument_count": 1
+      },
+      "Giotto": {
+        "name": "Giotto",
+        "instruments": {
+          "HMC": {
+            "name": "HMC",
+            "filter_count": 9,
+            "filters": [
+              "C10",
+              "C10_fil",
+              "C11",
+              "C11_fil",
+              "C12",
+              "C3",
+              "C4",
+              "C5_fil",
+              "C8_fil"
+            ],
+            "published_paths": {
+              "filter": 9
+            },
+            "detector_types": {
+              "photon": 9
+            },
+            "separate_components": {
+              "filter": 9
+            },
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 83062,
+            "size_human": "81.12 KB"
+          }
+        },
+        "instrument_count": 1
       },
       "HAWK-I": {
         "name": "HAWK-I",
@@ -7844,8 +8806,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 346743,
-            "size_human": "338.62 KB"
+            "size_bytes": 351916,
+            "size_human": "343.67 KB"
           }
         },
         "instrument_count": 1
@@ -7898,8 +8860,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 7846285,
-            "size_human": "7.48 MB"
+            "size_bytes": 7854477,
+            "size_human": "7.49 MB"
           },
           "ACS_SBC": {
             "name": "ACS_SBC",
@@ -7924,8 +8886,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 290159,
-            "size_human": "283.36 KB"
+            "size_bytes": 294702,
+            "size_human": "287.79 KB"
           },
           "ACS_WFC": {
             "name": "ACS_WFC",
@@ -7977,7 +8939,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 5731676,
+            "size_bytes": 5740907,
             "size_human": "5.47 MB"
           },
           "FGS": {
@@ -8001,8 +8963,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 53328,
-            "size_human": "52.08 KB"
+            "size_bytes": 57543,
+            "size_human": "56.19 KB"
           },
           "FOC_F48": {
             "name": "FOC_F48",
@@ -8033,8 +8995,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 919128,
-            "size_human": "897.59 KB"
+            "size_bytes": 925178,
+            "size_human": "903.49 KB"
           },
           "FOC_F96": {
             "name": "FOC_F96",
@@ -8095,8 +9057,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 2451972,
-            "size_human": "2.34 MB"
+            "size_bytes": 2464722,
+            "size_human": "2.35 MB"
           },
           "FOS_BLUE": {
             "name": "FOS_BLUE",
@@ -8120,8 +9082,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 107108,
-            "size_human": "104.60 KB"
+            "size_bytes": 111596,
+            "size_human": "108.98 KB"
           },
           "FOS_RED": {
             "name": "FOS_RED",
@@ -8147,8 +9109,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 188306,
-            "size_human": "183.89 KB"
+            "size_bytes": 193248,
+            "size_human": "188.72 KB"
           },
           "HSP_POL": {
             "name": "HSP_POL",
@@ -8172,8 +9134,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 105623,
-            "size_human": "103.15 KB"
+            "size_bytes": 109917,
+            "size_human": "107.34 KB"
           },
           "HSP_UV1": {
             "name": "HSP_UV1",
@@ -8214,8 +9176,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 210005,
-            "size_human": "205.08 KB"
+            "size_bytes": 218427,
+            "size_human": "213.31 KB"
           },
           "HSP_UV2": {
             "name": "HSP_UV2",
@@ -8258,8 +9220,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 234040,
-            "size_human": "228.55 KB"
+            "size_bytes": 242921,
+            "size_human": "237.23 KB"
           },
           "HSP_VIS": {
             "name": "HSP_VIS",
@@ -8298,8 +9260,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 304148,
-            "size_human": "297.02 KB"
+            "size_bytes": 312117,
+            "size_human": "304.80 KB"
           },
           "NICMOS1": {
             "name": "NICMOS1",
@@ -8335,8 +9297,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 389465,
-            "size_human": "380.34 KB"
+            "size_bytes": 396244,
+            "size_human": "386.96 KB"
           },
           "NICMOS2": {
             "name": "NICMOS2",
@@ -8372,8 +9334,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 531077,
-            "size_human": "518.63 KB"
+            "size_bytes": 537856,
+            "size_human": "525.25 KB"
           },
           "NICMOS3": {
             "name": "NICMOS3",
@@ -8413,8 +9375,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 508116,
-            "size_human": "496.21 KB"
+            "size_bytes": 514883,
+            "size_human": "502.82 KB"
           },
           "STIS_CCD": {
             "name": "STIS_CCD",
@@ -8458,8 +9420,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 2769982,
-            "size_human": "2.64 MB"
+            "size_bytes": 2779431,
+            "size_human": "2.65 MB"
           },
           "STIS_FUV": {
             "name": "STIS_FUV",
@@ -8506,8 +9468,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 1080848,
-            "size_human": "1.03 MB"
+            "size_bytes": 1090815,
+            "size_human": "1.04 MB"
           },
           "STIS_NUV": {
             "name": "STIS_NUV",
@@ -8576,8 +9538,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 8214807,
-            "size_human": "7.83 MB"
+            "size_bytes": 8230120,
+            "size_human": "7.85 MB"
           },
           "WFC3_IR": {
             "name": "WFC3_IR",
@@ -8615,8 +9577,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 970045,
-            "size_human": "947.31 KB"
+            "size_bytes": 976407,
+            "size_human": "953.52 KB"
           },
           "WFC3_UVIS1": {
             "name": "WFC3_UVIS1",
@@ -8700,8 +9662,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15326225,
-            "size_human": "14.62 MB"
+            "size_bytes": 15342306,
+            "size_human": "14.63 MB"
           },
           "WFC3_UVIS2": {
             "name": "WFC3_UVIS2",
@@ -8785,8 +9747,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15247762,
-            "size_human": "14.54 MB"
+            "size_bytes": 15263844,
+            "size_human": "14.56 MB"
           },
           "WFPC1-PC": {
             "name": "WFPC1-PC",
@@ -8852,8 +9814,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 562122,
-            "size_human": "548.95 KB"
+            "size_bytes": 576182,
+            "size_human": "562.68 KB"
           },
           "WFPC1-WF": {
             "name": "WFPC1-WF",
@@ -8919,8 +9881,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 523762,
-            "size_human": "511.49 KB"
+            "size_bytes": 537820,
+            "size_human": "525.21 KB"
           },
           "WFPC2-PC": {
             "name": "WFPC2-PC",
@@ -8985,8 +9947,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 2991080,
-            "size_human": "2.85 MB"
+            "size_bytes": 3002985,
+            "size_human": "2.86 MB"
           },
           "WFPC2-WF": {
             "name": "WFPC2-WF",
@@ -9059,8 +10021,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 2998001,
-            "size_human": "2.86 MB"
+            "size_bytes": 3011584,
+            "size_human": "2.87 MB"
           }
         },
         "instrument_count": 25
@@ -9088,7 +10050,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 1959906,
+            "size_bytes": 1963502,
             "size_human": "1.87 MB"
           },
           "SPIRE": {
@@ -9109,8 +10071,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 78181,
-            "size_human": "76.35 KB"
+            "size_bytes": 81182,
+            "size_human": "79.28 KB"
           }
         },
         "instrument_count": 2
@@ -9149,8 +10111,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 883838,
-            "size_human": "863.12 KB"
+            "size_bytes": 898065,
+            "size_human": "877.02 KB"
           },
           "AHI9": {
             "name": "AHI9",
@@ -9183,8 +10145,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 958085,
-            "size_human": "935.63 KB"
+            "size_bytes": 971609,
+            "size_human": "948.84 KB"
           }
         },
         "instrument_count": 2
@@ -9208,8 +10170,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 13260,
-            "size_human": "12.95 KB"
+            "size_bytes": 16212,
+            "size_human": "15.83 KB"
           },
           "Tycho": {
             "name": "Tycho",
@@ -9228,8 +10190,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 10644,
-            "size_human": "10.39 KB"
+            "size_bytes": 13059,
+            "size_human": "12.75 KB"
           }
         },
         "instrument_count": 2
@@ -9259,8 +10221,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 24581,
-            "size_human": "24.00 KB"
+            "size_bytes": 27663,
+            "size_human": "27.01 KB"
           }
         },
         "instrument_count": 1
@@ -9311,7 +10273,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 1834107,
+            "size_bytes": 1839046,
             "size_human": "1.75 MB"
           }
         },
@@ -9337,8 +10299,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 93148,
-            "size_human": "90.96 KB"
+            "size_bytes": 96313,
+            "size_human": "94.06 KB"
           }
         },
         "instrument_count": 1
@@ -9346,6 +10308,46 @@
       "JPSS": {
         "name": "JPSS",
         "instruments": {
+          "VIIRS": {
+            "name": "VIIRS",
+            "filter_count": 22,
+            "filters": [
+              "I1",
+              "I2",
+              "I3",
+              "I4",
+              "I5",
+              "M1",
+              "M10",
+              "M11",
+              "M12",
+              "M13",
+              "M14",
+              "M15",
+              "M16A",
+              "M16B",
+              "M2",
+              "M3",
+              "M4",
+              "M5",
+              "M6",
+              "M7",
+              "M8",
+              "M9"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 22
+            },
+            "detector_types": {
+              "energy": 22
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 1538095,
+            "size_human": "1.47 MB"
+          },
           "VIIRS-J1": {
             "name": "VIIRS-J1",
             "filter_count": 25,
@@ -9386,8 +10388,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 316805,
-            "size_human": "309.38 KB"
+            "size_bytes": 321677,
+            "size_human": "314.14 KB"
           },
           "VIIRS-J2": {
             "name": "VIIRS-J2",
@@ -9429,11 +10431,11 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 306578,
-            "size_human": "299.39 KB"
+            "size_bytes": 311454,
+            "size_human": "304.15 KB"
           }
         },
-        "instrument_count": 2
+        "instrument_count": 3
       },
       "JWST": {
         "name": "JWST",
@@ -9470,7 +10472,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 2126393,
+            "size_bytes": 2131281,
             "size_human": "2.03 MB"
           },
           "NIRCam": {
@@ -9551,8 +10553,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 5611961,
-            "size_human": "5.35 MB"
+            "size_bytes": 5617274,
+            "size_human": "5.36 MB"
           },
           "NIRISS": {
             "name": "NIRISS",
@@ -9585,8 +10587,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 4626846,
-            "size_human": "4.41 MB"
+            "size_bytes": 4631353,
+            "size_human": "4.42 MB"
           },
           "NIRSPEC": {
             "name": "NIRSPEC",
@@ -9608,8 +10610,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 116887,
-            "size_human": "114.15 KB"
+            "size_bytes": 120410,
+            "size_human": "117.59 KB"
           }
         },
         "instrument_count": 4
@@ -9641,8 +10643,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 124826,
-            "size_human": "121.90 KB"
+            "size_bytes": 128007,
+            "size_human": "125.01 KB"
           }
         },
         "instrument_count": 1
@@ -9669,8 +10671,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 739640,
-            "size_human": "722.30 KB"
+            "size_bytes": 742109,
+            "size_human": "724.72 KB"
           },
           "LRIS": {
             "name": "LRIS",
@@ -9695,8 +10697,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 263290,
-            "size_human": "257.12 KB"
+            "size_bytes": 266426,
+            "size_human": "260.18 KB"
           },
           "MOSFIRE": {
             "name": "MOSFIRE",
@@ -9724,8 +10726,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 173316,
-            "size_human": "169.25 KB"
+            "size_bytes": 176001,
+            "size_human": "171.88 KB"
           },
           "NIRC2": {
             "name": "NIRC2",
@@ -9751,8 +10753,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 358374,
-            "size_human": "349.97 KB"
+            "size_bytes": 361543,
+            "size_human": "353.07 KB"
           }
         },
         "instrument_count": 4
@@ -9776,8 +10778,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 24422,
-            "size_human": "23.85 KB"
+            "size_bytes": 27382,
+            "size_human": "26.74 KB"
           }
         },
         "instrument_count": 1
@@ -9810,7 +10812,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 2764755,
+            "size_bytes": 2769004,
             "size_human": "2.64 MB"
           }
         },
@@ -9847,8 +10849,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 974617,
-            "size_human": "951.77 KB"
+            "size_bytes": 977587,
+            "size_human": "954.67 KB"
           },
           "Spectral": {
             "name": "Spectral",
@@ -9877,8 +10879,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 876716,
-            "size_human": "856.17 KB"
+            "size_bytes": 879645,
+            "size_human": "859.03 KB"
           }
         },
         "instrument_count": 2
@@ -9912,8 +10914,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 229921,
-            "size_human": "224.53 KB"
+            "size_bytes": 233271,
+            "size_human": "227.80 KB"
           },
           "RINGO": {
             "name": "RINGO",
@@ -9931,8 +10933,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15161,
-            "size_human": "14.81 KB"
+            "size_bytes": 18019,
+            "size_human": "17.60 KB"
           }
         },
         "instrument_count": 2
@@ -9959,8 +10961,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 82910,
-            "size_human": "80.97 KB"
+            "size_bytes": 85984,
+            "size_human": "83.97 KB"
           }
         },
         "instrument_count": 1
@@ -9993,8 +10995,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 77509,
-            "size_human": "75.69 KB"
+            "size_bytes": 80833,
+            "size_human": "78.94 KB"
           },
           "MegaCam": {
             "name": "MegaCam",
@@ -10020,8 +11022,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 460237,
-            "size_human": "449.45 KB"
+            "size_bytes": 462657,
+            "size_human": "451.81 KB"
           }
         },
         "instrument_count": 2
@@ -10055,8 +11057,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 185421,
-            "size_human": "181.08 KB"
+            "size_bytes": 188001,
+            "size_human": "183.59 KB"
           }
         },
         "instrument_count": 1
@@ -10084,8 +11086,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 68129,
-            "size_human": "66.53 KB"
+            "size_bytes": 70552,
+            "size_human": "68.90 KB"
           }
         },
         "instrument_count": 1
@@ -10114,8 +11116,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 78095,
-            "size_human": "76.26 KB"
+            "size_bytes": 81253,
+            "size_human": "79.35 KB"
           }
         },
         "instrument_count": 1
@@ -10144,8 +11146,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 461656,
-            "size_human": "450.84 KB"
+            "size_bytes": 464701,
+            "size_human": "453.81 KB"
           }
         },
         "instrument_count": 1
@@ -10179,8 +11181,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 38364,
-            "size_human": "37.46 KB"
+            "size_bytes": 41338,
+            "size_human": "40.37 KB"
           },
           "FORS2": {
             "name": "FORS2",
@@ -10205,8 +11207,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 135904,
-            "size_human": "132.72 KB"
+            "size_bytes": 138753,
+            "size_human": "135.50 KB"
           },
           "HAWKI": {
             "name": "HAWKI",
@@ -10236,8 +11238,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 227489,
-            "size_human": "222.16 KB"
+            "size_bytes": 233545,
+            "size_human": "228.07 KB"
           },
           "NACO": {
             "name": "NACO",
@@ -10289,8 +11291,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 104470,
-            "size_human": "102.02 KB"
+            "size_bytes": 116165,
+            "size_human": "113.44 KB"
           },
           "OmegaCAM": {
             "name": "OmegaCAM",
@@ -10316,8 +11318,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 110888,
-            "size_human": "108.29 KB"
+            "size_bytes": 114352,
+            "size_human": "111.67 KB"
           },
           "SPHERE": {
             "name": "SPHERE",
@@ -10360,8 +11362,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 969729,
-            "size_human": "947.00 KB"
+            "size_bytes": 975087,
+            "size_human": "952.23 KB"
           },
           "VISTA": {
             "name": "VISTA",
@@ -10392,8 +11394,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 530000,
-            "size_human": "517.58 KB"
+            "size_bytes": 534002,
+            "size_human": "521.49 KB"
           }
         },
         "instrument_count": 7
@@ -10422,7 +11424,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 3292588,
+            "size_bytes": 3295683,
             "size_human": "3.14 MB"
           },
           "LFI": {
@@ -10443,8 +11445,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 36304,
-            "size_human": "35.45 KB"
+            "size_bytes": 39297,
+            "size_human": "38.38 KB"
           }
         },
         "instrument_count": 2
@@ -10489,8 +11491,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 271181,
-            "size_human": "264.83 KB"
+            "size_bytes": 274996,
+            "size_human": "268.55 KB"
           },
           "WFI_SCA01": {
             "name": "WFI_SCA01",
@@ -10518,8 +11520,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 226879,
-            "size_human": "221.56 KB"
+            "size_bytes": 230265,
+            "size_human": "224.87 KB"
           },
           "WFI_SCA02": {
             "name": "WFI_SCA02",
@@ -10547,8 +11549,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 226520,
-            "size_human": "221.21 KB"
+            "size_bytes": 229910,
+            "size_human": "224.52 KB"
           },
           "WFI_SCA03": {
             "name": "WFI_SCA03",
@@ -10576,8 +11578,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 226526,
-            "size_human": "221.22 KB"
+            "size_bytes": 229913,
+            "size_human": "224.52 KB"
           },
           "WFI_SCA04": {
             "name": "WFI_SCA04",
@@ -10605,8 +11607,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 226924,
-            "size_human": "221.61 KB"
+            "size_bytes": 230313,
+            "size_human": "224.92 KB"
           },
           "WFI_SCA05": {
             "name": "WFI_SCA05",
@@ -10634,8 +11636,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 226527,
-            "size_human": "221.22 KB"
+            "size_bytes": 229914,
+            "size_human": "224.53 KB"
           },
           "WFI_SCA06": {
             "name": "WFI_SCA06",
@@ -10663,8 +11665,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 226380,
-            "size_human": "221.07 KB"
+            "size_bytes": 229767,
+            "size_human": "224.38 KB"
           },
           "WFI_SCA07": {
             "name": "WFI_SCA07",
@@ -10692,8 +11694,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 227025,
-            "size_human": "221.70 KB"
+            "size_bytes": 230414,
+            "size_human": "225.01 KB"
           },
           "WFI_SCA08": {
             "name": "WFI_SCA08",
@@ -10721,8 +11723,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 226485,
-            "size_human": "221.18 KB"
+            "size_bytes": 229873,
+            "size_human": "224.49 KB"
           },
           "WFI_SCA09": {
             "name": "WFI_SCA09",
@@ -10750,8 +11752,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 226248,
-            "size_human": "220.95 KB"
+            "size_bytes": 229637,
+            "size_human": "224.25 KB"
           },
           "WFI_SCA10": {
             "name": "WFI_SCA10",
@@ -10779,8 +11781,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 226773,
-            "size_human": "221.46 KB"
+            "size_bytes": 230163,
+            "size_human": "224.77 KB"
           },
           "WFI_SCA11": {
             "name": "WFI_SCA11",
@@ -10808,8 +11810,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 226584,
-            "size_human": "221.27 KB"
+            "size_bytes": 229972,
+            "size_human": "224.58 KB"
           },
           "WFI_SCA12": {
             "name": "WFI_SCA12",
@@ -10837,8 +11839,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 226525,
-            "size_human": "221.22 KB"
+            "size_bytes": 229911,
+            "size_human": "224.52 KB"
           },
           "WFI_SCA13": {
             "name": "WFI_SCA13",
@@ -10866,8 +11868,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 226808,
-            "size_human": "221.49 KB"
+            "size_bytes": 230197,
+            "size_human": "224.80 KB"
           },
           "WFI_SCA14": {
             "name": "WFI_SCA14",
@@ -10895,8 +11897,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 226701,
-            "size_human": "221.39 KB"
+            "size_bytes": 230090,
+            "size_human": "224.70 KB"
           },
           "WFI_SCA15": {
             "name": "WFI_SCA15",
@@ -10924,8 +11926,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 226403,
-            "size_human": "221.10 KB"
+            "size_bytes": 229791,
+            "size_human": "224.41 KB"
           },
           "WFI_SCA16": {
             "name": "WFI_SCA16",
@@ -10953,8 +11955,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 226907,
-            "size_human": "221.59 KB"
+            "size_bytes": 230291,
+            "size_human": "224.89 KB"
           },
           "WFI_SCA17": {
             "name": "WFI_SCA17",
@@ -10982,8 +11984,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 226519,
-            "size_human": "221.21 KB"
+            "size_bytes": 229907,
+            "size_human": "224.52 KB"
           },
           "WFI_SCA18": {
             "name": "WFI_SCA18",
@@ -11011,8 +12013,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 226476,
-            "size_human": "221.17 KB"
+            "size_bytes": 229862,
+            "size_human": "224.47 KB"
           }
         },
         "instrument_count": 19
@@ -11046,8 +12048,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 242882,
-            "size_human": "237.19 KB"
+            "size_bytes": 254106,
+            "size_human": "248.15 KB"
           }
         },
         "instrument_count": 1
@@ -11091,7 +12093,8 @@
               "N_PaB"
             ],
             "published_paths": {
-              "unspecified": 30
+              "filter": 24,
+              "unspecified": 6
             },
             "detector_types": {
               "photon": 30
@@ -11100,8 +12103,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 1583148,
-            "size_human": "1.51 MB"
+            "size_bytes": 1598232,
+            "size_human": "1.52 MB"
           },
           "ZIMPOL": {
             "name": "ZIMPOL",
@@ -11141,11 +12144,110 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 548318,
-            "size_human": "535.47 KB"
+            "size_bytes": 553436,
+            "size_human": "540.46 KB"
           }
         },
         "instrument_count": 2
+      },
+      "Sentinel": {
+        "name": "Sentinel",
+        "instruments": {
+          "MSI-2A": {
+            "name": "MSI-2A",
+            "filter_count": 13,
+            "filters": [
+              "B01",
+              "B02",
+              "B03",
+              "B04",
+              "B05",
+              "B06",
+              "B07",
+              "B08",
+              "B09",
+              "B10",
+              "B11",
+              "B12",
+              "B8A"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 13
+            },
+            "detector_types": {
+              "energy": 13
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 392124,
+            "size_human": "382.93 KB"
+          },
+          "MSI-2B": {
+            "name": "MSI-2B",
+            "filter_count": 13,
+            "filters": [
+              "B01",
+              "B02",
+              "B03",
+              "B04",
+              "B05",
+              "B06",
+              "B07",
+              "B08",
+              "B09",
+              "B10",
+              "B11",
+              "B12",
+              "B8A"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 13
+            },
+            "detector_types": {
+              "energy": 13
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 392085,
+            "size_human": "382.90 KB"
+          },
+          "MSI-2C": {
+            "name": "MSI-2C",
+            "filter_count": 13,
+            "filters": [
+              "B01",
+              "B02",
+              "B03",
+              "B04",
+              "B05",
+              "B06",
+              "B07",
+              "B08",
+              "B09",
+              "B10",
+              "B11",
+              "B12",
+              "B8A"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 13
+            },
+            "detector_types": {
+              "energy": 13
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 392252,
+            "size_human": "383.06 KB"
+          }
+        },
+        "instrument_count": 3
       },
       "Spitzer": {
         "name": "Spitzer",
@@ -11169,8 +12271,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 53167,
-            "size_human": "51.92 KB"
+            "size_bytes": 56230,
+            "size_human": "54.91 KB"
           },
           "IRS": {
             "name": "IRS",
@@ -11189,8 +12291,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 21880,
-            "size_human": "21.37 KB"
+            "size_bytes": 24295,
+            "size_human": "23.73 KB"
           },
           "MIPS": {
             "name": "MIPS",
@@ -11210,8 +12312,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 28395,
-            "size_human": "27.73 KB"
+            "size_bytes": 31567,
+            "size_human": "30.83 KB"
           }
         },
         "instrument_count": 3
@@ -11241,8 +12343,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 52919,
-            "size_human": "51.68 KB"
+            "size_bytes": 56123,
+            "size_human": "54.81 KB"
           },
           "HSC": {
             "name": "HSC",
@@ -11268,8 +12370,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 60209,
-            "size_human": "58.80 KB"
+            "size_bytes": 64169,
+            "size_human": "62.67 KB"
           },
           "SuprimeCam": {
             "name": "SuprimeCam",
@@ -11298,8 +12400,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 67734,
-            "size_human": "66.15 KB"
+            "size_bytes": 71117,
+            "size_human": "69.45 KB"
           }
         },
         "instrument_count": 3
@@ -11323,8 +12425,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 23236,
-            "size_human": "22.69 KB"
+            "size_bytes": 26371,
+            "size_human": "25.75 KB"
           }
         },
         "instrument_count": 1
@@ -11349,8 +12451,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 19868,
-            "size_human": "19.40 KB"
+            "size_bytes": 22417,
+            "size_human": "21.89 KB"
           },
           "COSMO15": {
             "name": "COSMO15",
@@ -11370,8 +12472,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 8557,
-            "size_human": "8.36 KB"
+            "size_bytes": 11216,
+            "size_human": "10.95 KB"
           }
         },
         "instrument_count": 2
@@ -11401,8 +12503,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 97674,
-            "size_human": "95.38 KB"
+            "size_bytes": 101061,
+            "size_human": "98.69 KB"
           }
         },
         "instrument_count": 1
@@ -11447,8 +12549,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 218007,
-            "size_human": "212.90 KB"
+            "size_bytes": 227816,
+            "size_human": "222.48 KB"
           }
         },
         "instrument_count": 1
@@ -11475,8 +12577,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 60080,
-            "size_human": "58.67 KB"
+            "size_bytes": 63840,
+            "size_human": "62.34 KB"
           }
         },
         "instrument_count": 1
@@ -11505,8 +12607,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 142579,
-            "size_human": "139.24 KB"
+            "size_bytes": 145633,
+            "size_human": "142.22 KB"
           }
         },
         "instrument_count": 1
@@ -11569,8 +12671,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 186583,
-            "size_human": "182.21 KB"
+            "size_bytes": 195422,
+            "size_human": "190.84 KB"
           }
         },
         "instrument_count": 1
@@ -11612,8 +12714,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 188338,
-            "size_human": "183.92 KB"
+            "size_bytes": 192516,
+            "size_human": "188.00 KB"
           }
         },
         "instrument_count": 1
@@ -11639,7 +12741,9 @@
         "ZeroPointST_flam": "erg/s/cm2/Angstrom",
         "ZeroPointST_Jy": "Jy",
         "ABminusVega": "mag",
-        "STminusVega": "mag"
+        "STminusVega": "mag",
+        "Fsun": "erg/s/cm2/Angstrom",
+        "AfAv": "dimensionless"
       },
       "vega_spectrum": {
         "file": "data/vega/vega_flam.csv",
@@ -11647,7 +12751,45 @@
         "url": "vega/vega_flam.csv",
         "spectrum": "CALSPEC alpha_lyr_mod_004 (vega/README.md)"
       },
-      "note": "Vega quantities are null when the Vega spectrum does not cover the curve.",
+      "sun_spectrum": {
+        "file": "data/sun/sun_flam.csv",
+        "sha256": "08b8dbcf908992460f02a0f2733a542e43dba3711cbf952263153b0e2903cdd5",
+        "range_angstrom": [
+          1195.0,
+          2999932.9060498998
+        ],
+        "url": "sun/sun_flam.csv",
+        "spectrum": "CALSPEC sun_reference_stis_002 below 9600 Angstrom, sun_mod_001 from 9600 Angstrom (sun/README.md)",
+        "units": "WAVELENGTH Angstrom (vacuum), FLUX erg/s/cm2/Angstrom at 1 AU",
+        "references": [
+          "Bohlin, Gordon & Tremblay 2014, PASP 126, 711 (2014PASP..126..711B, doi:10.1086/677655): CALSPEC",
+          "Colina, Bohlin & Castelli 1996, AJ 112, 307 (doi:10.1086/118016): the solar reference spectrum"
+        ]
+      },
+      "extinction": {
+        "quantity": "AfAv = A(lambda)/A(V) at the pivot wavelength",
+        "law": "Fitzpatrick (1999) Milky Way R(V)-dependent extinction curve",
+        "R_V": 3.1,
+        "implementation": "dust_extinction.parameter_averages.F99 (dust_extinction >= 1.6)",
+        "normalisation": "A(V) is the law's own normalisation, the extinction averaged over the V band: A(lambda)/A(V) = 1 at 5414 Angstrom and 0.978 at 5500 Angstrom (https://dust-extinction.readthedocs.io/en/latest/dust_extinction/normalization_details.html)",
+        "out_of_range": "null where the pivot lies outside the implementation's F99.x_range; never extrapolated",
+        "references": [
+          "Fitzpatrick 1999, PASP 111, 63 (1999PASP..111...63F, doi:10.1086/316293): the law",
+          "Gordon 2024, JOSS 9(100), 7023 (doi:10.21105/joss.07023): dust_extinction"
+        ],
+        "dust_extinction_version": "1.7",
+        "valid_range_per_micron": [
+          0.3,
+          10.0
+        ],
+        "valid_range_angstrom": [
+          1000.0,
+          33333.333333333336
+        ]
+      },
+      "Fsun": "band-averaged f_lambda of the Sun at 1 AU, integral(W S) / integral(W) with S the sun_spectrum and W the curve's detector-aware weight (T energy-counting, T*lambda photon-counting), trapezoidal rule on the curve's samples: the weight of ZeroPointVega_flam",
+      "AfAv": "A(lambda)/A(V) at lambda = WavelengthPivot from the extinction law (see extinction); dimensionless",
+      "note": "Vega quantities are null when the Vega spectrum does not cover the curve (where it transmits at least 1 % of its peak), Fsun likewise with the sun_spectrum. AfAv is null where the pivot lies outside the extinction law's valid range, or when dust_extinction is not installed (extinction.dust_extinction_version is then null).",
       "colors": "DisplayColor is an sRGB hex for plotting (sed_tools.filter_colors). ColorMethod 'true': CIE D65 daylight seen through the curve, for bands with VisibleFraction (share of the throughput between 380 and 750 nm) of at least 0.5; 'false': ordered false colour for ultraviolet and infrared bands."
     },
     "info_definitions": {
@@ -11657,8 +12799,22 @@
         "ids": 7750,
         "sha256": "a24a52769b09ab879af37c9410028dca84d46b09f4196c8dacd7914b126f45a4"
       },
-      "references": 312,
-      "unresolved_references": 0
+      "references": 317,
+      "unresolved_references": 0,
+      "svo_fields": {
+        "Fsun": {
+          "unit": "erg/s/cm2/Angstrom",
+          "meaning": "SVO's band-averaged f_lambda of the Sun (CALSPEC sun_reference_stis_002 composed with sun_mod_001), the quantity NJM's properties.json gives as Fsun",
+          "unit_source": "SVO's VOTable: <PARAM name=\"Fsun\" value=\"22.596337946016\" unit=\"erg/cm2/s/A\" ucd=\"phot.flux.density\" datatype=\"double\" > (2MASS/2MASS.H, Internet Archive capture 20250323174315 of http://svo2.cab.inta-csic.es/svo/theory/fps3/fps.php?ID=2MASS/2MASS.H); SVO's browse page: \"Unit :erg/cm2/s/A UCD :phot.flux.density\"",
+          "precision": "rounded as SVO's browse page displays it: 2 decimals from 1 up, 3 significant figures below 1"
+        },
+        "AfAv": {
+          "unit": "dimensionless",
+          "meaning": "SVO's A_f/A_V at its reference wavelength (the pivot): k(lambda)/k_V with k_V = 211.4, from SVO's opacity table for 'the extinction law by Fitzpatrick (1999) improved by Indebetouw et al (2005) in the infrared'. Not the law of NJM's AfAv (properties_definitions.extinction), so the two differ.",
+          "unit_source": "SVO's browse page shows the unit as ()",
+          "precision": "rounded as SVO's browse page displays it, to 3 significant figures"
+        }
+      }
     }
   }
 }
