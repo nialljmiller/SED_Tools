@@ -36,7 +36,8 @@ def _tabular(instrument: str) -> BuilderRef:
 
 
 #: Instruments rebuilt from their teams' original files (``component_sources``
-#: modules ``surveys``, ``space``, ``observatories`` and ``standards``), as
+#: modules ``surveys``, ``space``, ``observatories``, ``standards``, ``swift``,
+#: ``csp`` and ``cassini``), as
 #: (facility, instrument, separate components published?).
 ORIGINAL_SOURCES: Dict[str, Tuple[Tuple[str, str, bool], ...]] = {
     "surveys": (
@@ -60,6 +61,9 @@ ORIGINAL_SOURCES: Dict[str, Tuple[Tuple[str, str, bool], ...]] = {
     "standards": (
         ("Generic", "Bessell", False), ("Generic", "MKO", False), ("Generic", "USNO", False),
     ),
+    "swift": (("Swift", "UVOT", True),),
+    "csp": (("LCO", "CSP", True), ("LCO", "CSP2", False)),
+    "cassini": (("Cassini", "ISS_NAC", True), ("Cassini", "ISS_WAC", True)),
 }
 
 

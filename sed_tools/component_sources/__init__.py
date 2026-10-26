@@ -40,6 +40,9 @@ BUILDERS: Dict[str, str] = {
     "sdss": ".sdss",
     "euclid": ".euclid",
     "roman": ".roman",
+    "swift": ".swift",
+    "csp": ".csp",
+    "cassini": ".cassini",
 }
 
 
