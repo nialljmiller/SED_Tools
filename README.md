@@ -219,16 +219,27 @@ SED_Tools 0.3.0 wrote these fields as `#` lines above the column row instead, wh
 
 A curve with no column-name row (its first line is a sample) has no free line, so SED_Tools leaves it as it is and stores no metadata in it.
 
-`DetectorType` is `energy` or `photon`. `DetectorTypeSource` is `svo` (taken from the SVO record for `FilterID`), `svo-curve-match` (the file was identified by matching its curve point-by-point against SVO), or `assumed` (not identifiable — custom curves — written as `energy` and unverified). Downloads write the header automatically; existing files can be tagged in place:
+`DetectorType` is `energy` or `photon`. `DetectorTypeSource` says how it was established. From the strongest evidence to the weakest:
+
+1. `original`: stated by the curve's publisher (paper, instrument page or data file).
+2. `inferred`: not stated by the publisher, but established from documented facts, such as a filter-only curve used with a documented photon-counting detector.
+3. `svo`: taken from the SVO record for `FilterID`.
+4. `svo-curve-match`: the file was identified by matching its curve point-by-point against SVO.
+5. `assumed`: unverified. `filters-detector` writes `energy` with this source when a file has no `DetectorType` and cannot be identified; the original-source builders write the convention set for the instrument (`photon` by default) with it.
+
+Downloads write the header automatically; existing files can be tagged in place:
 
 ```bash
 sed-tools filters-detector                 # whole filter root
 sed-tools filters-detector GAIA/GAIA --dry-run
+sed-tools filters-detector Generic/Bessell --force --dry-run
 ```
 
 ```python
 Filters.tag_detector_types()               # returns one row per file
 ```
+
+By default `filters-detector` resolves untagged files, retries `assumed` ones (except curves built from original sources) and completes tags that lack `WavelengthUnit` or `Components`; `--force` re-resolves every file. In both modes an existing type is replaced only by a resolution of equal or higher precedence in the list above, so SVO's label never overrides an `original` or `inferred` type. A weaker resolution is not written: the file is left as it is, and the run lists it as kept, with the SVO answer and the reason (`kept photon [original]: original outranks svo; svo gives energy (Generic/Bessell.B)`). The returned rows carry `kept`, `resolved_type` and `resolved_source`. Types set by SED_Tools' composition tools (`user` overrides, `composed` products and `component` files) are outside this order and are never replaced.
 
 `load_filter_curve` reads the header (`FilterCurve.detector_type`, `FilterCurve.weight`) and all band averages use it; untagged files are treated as energy-counting.
 
@@ -272,6 +283,52 @@ colors = instrument_colors(sorted(Path("data/filters/2MASS/2MASS").glob("*.dat")
 colors["J"]["DisplayColor"]                       # "#6cee2b"
 ```
 
+#### Searching, describing and citing filters without SVO
+
+NJM serves, beside the curves, a catalogue that SED_Tools reads directly, so SVO is not needed to find a band, look up its characteristics or cite it:
+- `index.json` lists every facility, instrument and band;
+- each instrument's `properties.json` holds the values above, computed from its curves;
+- each instrument's `info.json` holds descriptions, the references to cite (with BibTeX where a service supplied it), the providers' requested acknowledgements, the licence and what SVO recorded about each band.
+
+```bash
+# Bands covering 2.15 µm with an FWHM of 1000-5000 Å (wavelengths in Å; '-' leaves an end open)
+sed-tools filters-search --wavelength 21500 --fwhm 1000 5000
+# By name (substring of Facility/Instrument/Band), pivot range and detector type
+sed-tools filters-search SDSS --pivot 4000 7000 --detector-type photon
+# Any properties.json column, as a range or a value; csv or json output
+sed-tools filters-search --where ABminusVega=:0.5 --where ColorMethod=true --format csv
+
+# Description, licence and a per-band table, after the component report
+sed-tools filters-info 2MASS/2MASS
+
+# References, BibTeX, acknowledgements and licences: named instruments or bands, or everything installed
+sed-tools filters-cite 2MASS/2MASS GAIA/GAIA/G
+sed-tools filters-cite --format bibtex > filters.bib
+```
+
+```python
+from sed_tools.api import Filters
+
+bands = Filters.search(wavelength=21500, fwhm=(1000, 5000))     # pandas DataFrame, one row per band
+bands[["facility", "instrument", "band", "WavelengthPivot", "FWHM", "DetectorType"]]
+Filters.search(facility="HST", pivot=(5000, 6000), where={"ABminusVega": (None, 0.2)})
+
+Filters.properties("2MASS", "2MASS")["bands"]["Ks"]["ZeroPointVega_Jy"]
+Filters.info("2MASS", "2MASS")["acknowledgements"]
+print(Filters.cite("2MASS/2MASS", "GAIA/GAIA/G"))             # or format="bibtex"
+
+ax = Filters.plot("2MASS/2MASS", normalize="peak", vega=True)   # matplotlib Axes
+Filters.plot(bands)                                              # a search result
+```
+
+- **Search.** Name criteria are matched in `index.json` first. `properties.json` is then fetched only for instruments that can still match, at most six requests at a time, retrying when NJM briefly blocks a burst.
+  - A single `wavelength` keeps bands whose span (`WavelengthMin`–`WavelengthMax`, where T is at least 1 % of its peak) covers it; a range keeps bands overlapping it.
+  - Astropy quantities are accepted. A band with a missing value, such as a Vega quantity where the Vega spectrum does not cover it, never matches a criterion on that value.
+- **Caching.** Catalogue files are cached in `cache/njm/` beside the filter root (next to `atmospheres/`). `index.json` is rechecked daily; the other files are revalidated, by ETag, only when `index.json` changes. Without the mirror the cached copies are used (`--offline` / `offline=True` never contacts it; `--refresh` / `refresh=True` asks again).
+- **Downloads.** A downloaded instrument keeps `properties.json` and `info.json` beside its curves, and these copies are preferred because they describe exactly those curves. The MESA index file still lists only the curves.
+- **Citations.** References are merged across instruments, one per work (bibcode form). For chosen bands, the instrument-wide references plus those bands' own are given. Acknowledgement texts are quoted as the providers ask. References for which NJM has no BibTeX appear in the `.bib` output as `%` comments with what is known; nothing is made up.
+- **Plots.** Curves use `sed_tools.filter_colors`: true colours for visible bands and ordered false colours otherwise. One instrument's bands keep its own colours; a selection across instruments is coloured as one set. Instruments not yet installed are downloaded first. `normalize` is `"peak"` or `"area"`; `vega=True` overlays NJM's `vega/vega_flam.csv`, scaled to the curves.
+
 #### Filter, optics, QE and atmosphere as separate components
 
 A published passband is usually a product of several throughputs, and which ones varies: Gaia DR3 is filter + CCD + instrument, SDSS/2MASS/PS1 include the atmosphere, Johnson is the filter alone. Every filter file records what its published curve contains (`Components=filter+qe+instrument`). Where an instrument's team publishes the factors separately, SED_Tools stores them alongside and generates that instrument's throughput with and without each one. Components are never mixed between instruments or sites: an instrument is only ever composed from its own filter, optics and QE, and only its own site's atmosphere.
@@ -282,7 +339,7 @@ filters/<Facility>/<Instrument>/
   manifest.json                what is available, with provenance
   components/<role>/*.dat      filter / optics / qe (or composites, e.g. filter+optics+qe)
   products/<recipe>/           composed sets; each is itself a MESA instrument directory
-atmospheres/<site>/            telluric grids (ESO SkyCalc; team standards such as lsst_std)
+atmospheres/<site>/            telluric sites: team standards (lsst_std, ...) or derived SkyCalc grids
 ```
 
 ```bash
@@ -304,27 +361,62 @@ Filters.fetch("LSST", "LSST", components=["filter", "optics", "qe"],
 
 Requests that cannot be met are refused with an explanation rather than approximated: components the team never published (e.g. Gaia's bare filters), an atmosphere from another site, adding an atmosphere to a curve that already includes one, or to a space/airborne instrument. A published curve that is the bare filter counts as the `filter` component automatically. Products containing QE are photon-counting; otherwise they inherit the instrument's detector type.
 
-An instrument's atmosphere is the one at its own site (`default_site` in its manifest), with the user choosing only airmass and PWV. Sites are either a team's own standard atmosphere (e.g. Rubin's `lsst_std`) or an [ESO SkyCalc](https://www.eso.org/observing/etc/skycalc/) grid (`lasilla`, `paranal`, `armazones`, `highanddry`), fetched at R=200000 and bin-averaged to R=20000 so unresolved lines are integrated correctly. SkyCalc models Cerro Paranal, so it is used only for ESO facilities there and at La Silla (FORS2, HAWK-I, SPHERE, ERIS, VISTA, La Silla instruments); other observatories are offered an atmosphere only once their team's own standard atmosphere is added.
+An instrument's atmosphere is one at its own location, with the user choosing only airmass and PWV. Each site directory has a `manifest.json` recording its kind, observing conditions, model, model version, parameters, citation and any usage terms:
+
+- **Team** sites (`kind: team`) hold the standard atmosphere an instrument team published, stored as published (wavelengths converted to Å) unless the entry records a `derivation`; such curves carry `ComponentsSource=derived`.
+- **Derived** sites (`kind: derived`) are grids SED_Tools computes with the [ESO SkyCalc](https://www.eso.org/observing/etc/skycalc/) sky model (`lasilla`, `paranal`, `armazones`, `highanddry`), fetched at R=200000 and bin-averaged to R=20000 so unresolved lines are integrated correctly. SkyCalc models Cerro Paranal, so it is used only for ESO facilities there and at La Silla (FORS2, HAWK-I, SPHERE, ERIS, VISTA, La Silla instruments). Other observatories are offered only their team's own atmospheres.
+
+The default is the manifest's `default_site`. Further sites at the same location are listed in the manifest's `atmosphere_sites` or registered for the instrument in `sed_tools/facility_sites.py`, and are chosen by name. Builders register a team atmosphere with `component_sources._common.SiteAtmosphere` (written by `write_site`; `SimpleSource.site`/`sites`, or `Instrument.sites` for original-source recipes); `component_sources/team_atmospheres.py` holds the registered ones.
+
+| Site | Kind | Conditions | Model and source | Instruments |
+|---|---|---|---|---|
+| `lsst_std` | team | X = 1.0, 1.2 | Rubin MODTRAN, `lsst/throughputs` v1.9.2 | LSST |
+| `ctio_des` | team | X = 1.2 | DES standard bandpass table | DECam |
+| `maunakea_hsc` | team | X = 1.2, PWV 1.5 mm | MODTRAN (N. Yasuda), `lsst/obs_subaru` | HSC |
+| `haleakala_ps1` | team | X = 1.2 | MODTRAN; Aero × Ray × Mol of Tonry et al. 2012, table 3 | PS1 |
+| `paranal_vircam` | team | X = 1.0 / PWV 1 mm; X = 2.0 / PWV 3 mm | unnamed model in ESO's VIRCAM ETC curves (0.9–5.6 µm) | VISTA (beside SkyCalc `paranal`) |
+| `hopkins_2mass`, `ctio_2mass` | team | airmass not stated | PLEXUS (Cohen et al. 2003; Explanatory Supplement III.1.b1, tables 15/16) | 2MASS |
+| `apo_sdss` | team | X = 1.0; X = 1.3 derived (power 1.3) | DR7 imager tables, column 5 | SDSS |
+| `lco_csp` | team | X = 1.2, derived | CSP filter package: one-airmass CTIO extinction ^1.2 × telluric lines | LCO/CSP |
+| `kpno_bass` | team | X = 1.0, derived, in-band only | BASS `bass-g/r.txt` column 4 / column 3 | BOK/BASS |
+| `maunakea_gemini` | team | X = 1.0, 1.5, 2.0 × PWV 1.0, 1.6, 3.0, 5.0 mm | Gemini ATRAN (Lord 1992), 0.9–5.6 µm | NIFS |
+| `cpachon_gemini` | team | X = 1.0, 1.5, 2.0 × PWV 2.3, 4.3, 7.6, 10 mm | Gemini ATRAN (Lord 1992), 0.9–5.6 µm | GSAOI, Flamingos-2 |
+| `paranal`, `lasilla` | derived | X = 1.0–3.0 × PWV 0.5–20 mm (9 × 9) | ESO SkyCalc 2.0.9 (Noll et al. 2012; Jones et al. 2013) | ESO instruments |
+
+Some sources do not state their airmass (2MASS's PLEXUS models). Those atmospheres are kept as published and selected explicitly with `airmass=None`, or `--airmass unstated` on the command line; they are never relabelled with an assumed airmass. A site may set its own `outside_range` and `coverage_tolerance`. Most team sites use `error` with a tolerance of 0.1%: composition is refused when more than 0.1% of a band's throughput lies beyond the atmosphere's table, and the edge values are held only over fainter leak wings.
+
+```bash
+sed-tools filters-compose Paranal/VISTA --components filter,optics,qe --airmass 1.2 --pwv 2.5   # SkyCalc paranal
+sed-tools filters-compose Paranal/VISTA --components filter,optics,qe \
+  --atmosphere-site paranal_vircam --airmass 1.0                                            # ESO's own model
+sed-tools filters-build-components team_atmospheres --sites haleakala_ps1 --archive evidence/  # curation
+```
 
 Where components come from:
 
 | Instruments | Source of the separate factors |
 |---|---|
-| HST ACS (WFC/HRC/SBC), WFC3 (UVIS1/2, IR), WFPC2, NICMOS 1–3 | STScI synphot component tables (graph-table walk per obsmode) |
-| JWST NIRCam, NIRISS, MIRI imaging | STScI Pandeia reference data 4.0 (in-flight) |
-| Rubin/LSST | `lsst/throughputs` (+ Rubin's standard atmosphere `lsst_std`) |
+| HST ACS (WFC/HRC/SBC), WFC3 (UVIS1/2, IR), WFPC2, NICMOS 1–3 | STScI synphot component tables (graph-table walk per obsmode); ACS/SBC's time-dependent sensitivity is pinned to the release (2021-04-25) its published curves were computed with |
+| JWST NIRCam, NIRISS, MIRI imaging | STScI Pandeia reference data 2026.7 (in-flight; a 21.6 MB download without the PSF library) |
+| Euclid NISP Y, J, H | ESA NISP-PHOTO-PASSBANDS V1.0: filter, telescope × NISP optics, and QE, which multiply to ESA's T_TOTAL, the published Y/J/H (SVO's earlier copies are kept on NJM as `Y_svo`, `J_svo`, `H_svo`) |
+| Roman WFI | Detector QE only: the mean of the 18 flight detectors (Roman technical information repository) |
+| Rubin/LSST | `lsst/throughputs` release 1.5 for `LSST/LSST` (SVO's curves) and release 1.9 for `LSST/LSSTv19` (+ Rubin's standard atmosphere `lsst_std`) |
+| CFHT MegaPrime/MegaCam | CFHT filter-database scans of each band's own filter (2002, 2007 and 2014–2015 sets kept apart), primary mirror × corrector, simulated E2V QE |
+| ERIS/NIX | ESO `nix-filters.zip`: AO dichroic × the band's default NIX camera (no QE or telescope curve published) |
+| 2MASS | Explanatory Supplement III.1.b1 filter, mirror, window, lens and dichroic tables and NICMOS3 QE (the published RSRs also include PLEXUS atmosphere and a λ factor) |
 | Subaru HSC | NAOJ/Subaru curves (+ HSC pipeline's Maunakea atmosphere `maunakea_hsc`) |
-| CTIO DECam | DES standard bandpasses ÷ DES atmosphere (+ `ctio_des`) |
-| VISTA/VIRCAM | ESO VIRCAM ETC curves (+ SkyCalc `paranal`) |
+| CTIO DECam | DES standard bandpasses ÷ DES atmosphere (+ `ctio_des`); the i and z quotients exceed 1 and are kept unclipped, flagged in the manifest notes |
+| VISTA/VIRCAM | ESO VIRCAM ETC curves (+ SkyCalc `paranal`, ESO's own `paranal_vircam`) |
 | HAWK-I, NACO, SPHERE/IRDIS | ESO filter scans (11, 33 and 24 independently named curves; filter-only, with optics and QE still unavailable) |
 | Gemini GSAOI, NIFS | Gemini filter scans (22 GSAOI bands and six NIFS temperature variants; filter-only) |
 | CAHA PANIC, WHT INGRID, IRTF NSFCam | Independently sourced in-band filter scans (7 PANIC, 20 INGRID warm/cold variants, 26 historical NSFCam); filter-only |
 | Liverpool IO:O | Seven filter scans plus the separately published CCD QE and cryostat-window transmission from the IO:O efficiency model; other telescope optics remain unavailable |
 | ZTF | `ztf_information` filters and CCD QE |
 | 57 SVO instrument groups (SDSS, Swift/UVOT, UKIRT/WFCAM, OmegaCAM, Suprime-Cam, ...) | SVO's own filter-only sibling curves (`g_filter`, `g_fil`, `gprime_filter`) |
-| Gaia, 2MASS, WISE, Spitzer, GALEX, TESS, Kepler, Hipparcos/Tycho | none — only totals are published (`filters-info` says so) |
+| Pan-STARRS1 | not yet built: PS1's Table 3 has the open (no filter) cross-section and the atmosphere |
+| Gaia, WISE, Spitzer, GALEX, TESS, Kepler, Hipparcos/Tycho | none — only totals are published (`filters-info` says so) |
 
-The NJM mirror runs the automatic builders ahead of time (`sed-tools filters-build-components all`). Component requests reuse installed files, try NJM, then run the instrument's original-source builder if needed. For these table sets, a curator can run `sed-tools filters-build-components tabular --instrument PANIC` (or `INGRID`, `NSFCam`, `IOO`, `HAWKI`, `NACO`, `SPHERE`, `GSAOI`, `NIFS`); `--raw /path/to/evidence` reads the saved official files when a source is unavailable. These filters can be discovered and downloaded without SVO. If both NJM and the original source are unavailable, the normal SVO fallback remains. Their root curves are measured filters, not full system throughput. Large downloads, including JWST reference data, require `allow_heavy=True` in Python or `--allow-heavy` on the command line.
+The NJM mirror runs the automatic builders ahead of time (`sed-tools filters-build-components all`). Component requests reuse installed files, try NJM, then run the instrument's original-source builder if needed. For these table sets, a curator can run `sed-tools filters-build-components tabular --instrument PANIC` (or `INGRID`, `NSFCam`, `IOO`, `HAWKI`, `NACO`, `SPHERE`, `GSAOI`, `NIFS`); `--raw /path/to/evidence` reads the saved official files when a source is unavailable. These filters can be discovered and downloaded without SVO. If both NJM and the original source are unavailable, the normal SVO fallback remains. Their root curves are measured filters, not full system throughput. Builders marked as large downloads require `allow_heavy=True` in Python or `--allow-heavy` on the command line; none is marked at present (JWST's reference data is now a 21.6 MB download).
 
 #### Inspecting availability and requesting products
 
@@ -361,13 +453,13 @@ product = Filters.fetch("LSST", "LSST", components="filter+optics+qe",
 
 The detector override changes the integration convention applied to the selected throughput; replacing a physical detector's QE requires its actual QE component. An override records `DetectorTypeSource: user` and `DetectorTypeOriginal` in a separate `+detector_energy` or `+detector_photon` product directory. Source curves retain their original metadata. Without an override, each band's convention is preserved, including instruments with mixed detector conventions.
 
-Atmosphere requests use the instrument's own site and exact observing conditions. Installed grids are used first, followed by NJM. During an NJM outage, supported sites recover their own original standard atmosphere or generate the requested SkyCalc grid point. SkyCalc generation requires PWV; an existing grid with several PWV values requires an explicit choice. SED_Tools does not substitute another site's atmosphere or interpolate between grid points.
+Atmosphere requests use one of the instrument's own sites and exact observing conditions. Installed grids are used first, followed by NJM. During an NJM outage, team sites are rebuilt from their original files (`team_atmospheres`, or the instrument's own builder for `lsst_std` and `ctio_des`), and SkyCalc sites generate the requested grid point (through ESO's API, or its web form when the API host does not answer). SkyCalc generation requires PWV; an existing grid with several PWV values requires an explicit choice. SED_Tools does not substitute another site's atmosphere or interpolate between grid points.
 
 Source failures remain visible in inventory and availability results. Published downloads check the expected bands recorded in manifests and index files; older installations without a catalogue declaration can only be checked against their existing contents. Product construction finishes every selected band before replacing a previous product, so a failed composition preserves the previous result.
 
 #### Updating an existing filter collection
 
-Run `sed-tools filters-detector --dry-run` to inspect proposed detector tags, then `sed-tools filters-detector` to write them. Review entries marked `assumed`: they retain the historical energy-counting convention until identified. Use `sed-tools filters-info Facility/Instrument` to inspect published contents, available components and the instrument's atmosphere before composing a new set.
+Run `sed-tools filters-detector --dry-run` to inspect proposed detector tags, then `sed-tools filters-detector` to write them. Review entries marked `assumed`: their type is unverified (files that had none keep the historical energy-counting convention until identified). `--force` re-resolves tagged files too, but never replaces an `original` or `inferred` type; review the kept list it prints. Use `sed-tools filters-info Facility/Instrument` to inspect published contents, available components and the instrument's atmosphere before composing a new set.
 
 Published curves remain the default. Composed products have their own directories and MESA index files; select a product directory explicitly to use that recipe. Automatic photometry lookup skips `components/` and `products/`, so adding component data does not silently replace a published passband. The filter-set combination menu includes composed products as selectable inputs. Existing flux cubes do not need rebuilding to tag filters or compose throughputs; recompute photometry to apply corrected detector weights.
 
@@ -841,6 +933,13 @@ hst_filters = Filters.query(facility='HST')
 
 # Download a filter set
 path = Filters.fetch(facility='Generic', instrument='Johnson')
+
+# NJM's catalogue: search, properties, descriptions, citations and plots
+bands = Filters.search(wavelength=5500, fwhm=(500, 1500))
+props = Filters.properties('Generic', 'Johnson')
+info = Filters.info('Generic', 'Johnson')
+print(Filters.cite('Generic/Johnson'))
+Filters.plot('Generic/Johnson', normalize='peak', vega=True)
 ```
 
 ---
@@ -871,6 +970,9 @@ info.covers_range(teff_min=5000, teff_max=6000)
 |-------------|----------------------|
 | `sed-tools filters` | `Filters.fetch(...)` |
 | `sed-tools filters-combine X A B` | `Filters.combine('X', 'A', 'B')` |
+| `sed-tools filters-search --wavelength W` | `Filters.search(wavelength=W)` |
+| `sed-tools filters-info F/I` | `Filters.available('F', 'I')`, `Filters.info('F', 'I')`, `Filters.properties('F', 'I')` |
+| `sed-tools filters-cite F/I` | `Filters.cite('F/I')` |
 | `sed-tools grids` (list) | `SED.query()` |
 | `sed-tools grids --grids X` | `SED.fetch('X')` |
 | `sed-tools rebuild --grids X` | `sed.grid.write()` |
@@ -1065,6 +1167,16 @@ sed-tools grids --source njm --grids Kurucz2003all
 
 # Or reduce parallel workers
 sed-tools grids --grids Kurucz2003all --workers 2
+```
+
+**SVO Filter Profile Service unreachable**
+
+SVO filter requests give up after a 10 s connect timeout. Use the NJM mirror
+or the original-source builders (`sed-tools filters-build-components`), or
+point SED_Tools at another FPS endpoint:
+
+```bash
+export SED_SVO_FPS_URL=https://svo2.cab.inta-csic.es/theory/fps/fps.php
 ```
 
 **Missing PyTorch for ML tools**

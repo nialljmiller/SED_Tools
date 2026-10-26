@@ -12,7 +12,9 @@ and component lookup table (TMC).  For each band, the chain for its obsmode
 * ``optics`` - everything else: OTA, pick-off and relay mirrors, windows
 
 Graph and component tables are taken from the newest files in
-https://ssb.stsci.edu/trds/mtab/ unless pinned.
+https://ssb.stsci.edu/trds/mtab/ unless pinned.  Individual component files
+can be pinned per instrument (:data:`PINNED`) to the release the published
+curves were computed with.
 """
 
 from __future__ import annotations
@@ -22,7 +24,7 @@ import io
 import logging
 import re
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Sequence, Tuple, Union
+from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
@@ -47,6 +49,20 @@ MODES: Dict[str, str] = {
     "NICMOS1": "nicmos,1",
     "NICMOS2": "nicmos,2",
     "NICMOS3": "nicmos,3",
+}
+
+#: Component files pinned per instrument, as {component: file in the same TRDS
+#: directory}.  STScI revises ACS/SBC's time-dependent sensitivity (TDS) every
+#: year; each file's default column extrapolates to a future epoch, and the
+#: factor is achromatic per filter.  The published SBC curves (SVO) equal
+#: synphot with the TDS release of 2021-04-25 (``*_tds_def_004``, default
+#: extrapolated to 2023-04-01) to 5e-6 of the peak in every filter, so the
+#: components use that release and reproduce the published totals.  The
+#: prisms' TDS is 1 in every release.
+SBC_TDS_RELEASE = "004"
+PINNED: Dict[str, Dict[str, str]] = {
+    "ACS_SBC": {f"acs_{f}_tds_def": f"acs_{f}_tds_def_{SBC_TDS_RELEASE}_syn.fits"
+                for f in ("f115lp", "f122m", "f125lp", "f140lp", "f150lp", "f165lp")},
 }
 
 _QE_PATTERN = re.compile(r"(ccd|_qe\b|_qe$|dqe|mama)")
@@ -124,27 +140,60 @@ class SynphotTables:
             raise ValueError(f"{obsmode}: keywords not in graph: {sorted(unused)}")
         return comps
 
-    def throughput(self, component: str) -> Tuple[np.ndarray, np.ndarray]:
+    def _ref(self, component: str, pins: Optional[Mapping[str, str]] = None) -> Tuple[str, str]:
+        prefix, name = self.files[component].split("$", 1)
+        return prefix, (pins or {}).get(component, name)
+
+    def throughput(self, component: str, pins: Optional[Mapping[str, str]] = None
+                   ) -> Tuple[np.ndarray, np.ndarray]:
         from astropy.io import fits
 
-        if component not in self._cache:
-            ref = self.files[component]
-            prefix, name = ref.split("$", 1)
+        prefix, name = self._ref(component, pins)
+        key = f"{prefix}${name}"
+        if key not in self._cache:
             subdir = re.sub(r"^cr|comp$", "", prefix)
             data = fits.open(io.BytesIO(self._get(f"{TRDS}/comp/{subdir}/{name}")))[1].data
             wl = np.asarray(data["WAVELENGTH"], dtype=float)
-            tr = np.asarray(data["THROUGHPUT"], dtype=float)
+            # Some tables (e.g. the NICMOS filters) carry small negative
+            # measurement noise; a transmission cannot be negative, and the
+            # published totals have none.
+            tr = np.maximum(np.asarray(data["THROUGHPUT"], dtype=float), 0.0)
             order = np.argsort(wl)
-            self._cache[component] = (wl[order], tr[order])
-        return self._cache[component]
+            self._cache[key] = (wl[order], tr[order])
+        return self._cache[key]
 
-    def source(self, component: str) -> str:
-        return f"STScI synphot {self.files[component].split('$', 1)[1]} ({self.tmg_name})"
+    def source(self, component: str, pins: Optional[Mapping[str, str]] = None) -> str:
+        name = self._ref(component, pins)[1]
+        pinned = component in (pins or {})
+        return f"STScI synphot {name} ({self.tmg_name}{'; pinned release' if pinned else ''})"
 
 
-def _product(tables: SynphotTables, comps: Sequence[str]) -> Tuple[np.ndarray, np.ndarray]:
+def _pin_note(tables: SynphotTables, pins: Mapping[str, str], used: Iterable[str]) -> str:
+    """How the newest TRDS files differ from the pinned ones (both achromatic)."""
+    parts = []
+    for comp in sorted(set(used) & set(pins)):
+        new = tables.throughput(comp)[1]
+        old = tables.throughput(comp, pins)[1]
+        new, old = new[new > 0], old[old > 0]
+        newest = tables.files[comp].split("$", 1)[1]
+        if new.size and old.size and np.ptp(new) == 0 and np.ptp(old) == 0:
+            parts.append(f"{newest} = {new[0] / old[0]:.4f} x {pins[comp]}")
+        else:
+            parts.append(f"{newest} differs from {pins[comp]} (not achromatic)")
+    return "; ".join(parts)
+
+
+def _tail_beyond_published(path: Path, wl: np.ndarray, total: np.ndarray) -> float:
+    """Largest total outside the published curve's wavelength range, relative to its peak."""
+    pw, pt = np.loadtxt(path, delimiter=",", skiprows=1, usecols=(0, 1), unpack=True)
+    out = (wl < pw.min()) | (wl > pw.max())
+    return float(total[out].max() / pt.max()) if out.any() and pt.max() > 0 else 0.0
+
+
+def _product(tables: SynphotTables, comps: Sequence[str],
+             pins: Optional[Mapping[str, str]] = None) -> Tuple[np.ndarray, np.ndarray]:
     """Product of components on their merged grid, over their common range."""
-    curves = [tables.throughput(c) for c in comps]
+    curves = [tables.throughput(c, pins) for c in comps]
     lo = max(c[0][0] for c in curves)
     hi = min(c[0][-1] for c in curves)
     grid = np.unique(np.concatenate([c[0][(c[0] >= lo) & (c[0] <= hi)] for c in curves]))
@@ -178,6 +227,9 @@ def build(
         manifest = InstrumentManifest.load(inst_dir)
         manifest.components = {}
         skipped = {}
+        pins = PINNED.get(inst, {})
+        used = set()
+        tails = {}
         for band in bands:
             try:
                 comps = tables.chain(f"{prefix},{band.lower()}")
@@ -190,14 +242,19 @@ def build(
             if len(roles[FILTER]) != 1 or not roles[QE]:
                 skipped[band] = f"unclassifiable chain {comps}"
                 continue
+            used.update(comps)
             for role, comps_for_role in roles.items():
                 if not comps_for_role:
                     continue
-                wl, tr = _product(tables, comps_for_role)
+                wl, tr = _product(tables, comps_for_role, pins)
                 add_component(
                     inst_dir, role, wl, tr, band=band, name=band,
-                    source="; ".join(tables.source(c) for c in comps_for_role), manifest=manifest,
+                    source="; ".join(tables.source(c, pins) for c in comps_for_role), manifest=manifest,
                 )
+            try:
+                tails[band] = _tail_beyond_published(inst_dir / f"{band}.dat", *_product(tables, comps, pins))
+            except (OSError, ValueError, IndexError):
+                pass
         manifest.detector_type = PHOTON
         manifest.ground_based = False
         manifest.outside_range = "zero"  # synphot evaluates throughput tables as zero outside their range
@@ -207,6 +264,20 @@ def build(
             "detector-side corrections (*_cor, *_tds*) so filter+optics+qe reproduces synphot's total."
             + (f" Not decomposed: {', '.join(sorted(skipped))}." if skipped else "")
         )
+        widest = max(tails, key=tails.get) if tails else None
+        if widest and tails[widest] > 0:
+            manifest.notes += (
+                " The components extend beyond the wavelength range of the published curves, which "
+                f"omit that tail; there the composed product reaches up to {tails[widest]:.1e} of the "
+                f"published peak ({widest}), which matters for sources much brighter there."
+            )
+        if pins and used & set(pins):
+            manifest.notes += (
+                " Pinned to the release the published curves were computed with: "
+                + ", ".join(sorted(pins[c] for c in used & set(pins)))
+                + ". The newest TRDS files differ by an achromatic factor per band ("
+                + _pin_note(tables, pins, used) + "); for the current calibration use synphot itself."
+            )
         manifest.save(inst_dir)
         if skipped:
             logger.info("HST/%s skipped %d bands: %s", inst, len(skipped), skipped)

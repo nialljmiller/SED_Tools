@@ -45,7 +45,10 @@ NACO_NAMES = (
 )
 NACO = SimpleSource(
     facility="Paranal", instrument="NACO",
-    filters=_tables("naco/inst/filters", NACO_NAMES, wl_scale=10000, tr_scale=1),
+    # ESO's files are named IB_2.00 etc.; MESA names history columns by the text before
+    # the first dot, so the bands are published as IB_2p00 (as on the njm mirror).
+    filters={name.replace(".", "p"): table for name, table in
+             _tables("naco/inst/filters", NACO_NAMES, wl_scale=10000, tr_scale=1).items()},
     published_from_filters=True, default_site="paranal",
     references={"eso": f"{ESO}/naco/inst/filters.html"},
     notes="ESO CONICA filter transmissions in microns. NB_4.05 is excluded: its file labels the wavelength axis as inverse centimetres but its values conflict with the named band.",

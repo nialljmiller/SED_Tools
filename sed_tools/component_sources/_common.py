@@ -20,8 +20,8 @@ import numpy as np
 
 from ..filter_components import (ATMOSPHERE, FILTER, OPTICS, QE, SHARED, AtmosphereGrid,
                                  InstrumentManifest, add_component)
-from ..filter_metadata import (ENERGY, PHOTON, SOURCE_SVO, SVOMetadataClient,
-                               read_filter_header, svo_components_header, write_filter_file)
+from ..filter_metadata import (ENERGY, PHOTON, SOURCE_SVO, SVOMetadataClient, read_filter_header,
+                               svo_components_header, svo_fps_url, write_filter_file)
 
 logger = logging.getLogger(__name__)
 
@@ -66,12 +66,14 @@ class Table:
         data = np.array(rows)
         wl = data[:, 0] * self.wl_scale
         tr = data[:, 1] * self.tr_scale
-        order = np.argsort(wl)
-        wl, idx = np.unique(wl[order], return_index=True)
+        # Repeated wavelengths (e.g. overlapping scan segments) are averaged,
+        # so the result does not depend on the sort algorithm.
+        wl, inverse, counts = np.unique(wl, return_inverse=True, return_counts=True)
+        tr = np.bincount(inverse, weights=tr) / counts
         # Published measurements can dip slightly below zero in the noise.
         # A physical transmission cannot be negative, and the component
         # loader requires nonnegative values.
-        return wl, np.maximum(tr[order][idx], 0.0)
+        return wl, np.maximum(tr, 0.0)
 
 
 def product(curves: Sequence[Curve]) -> Curve:
@@ -88,12 +90,51 @@ def product(curves: Sequence[Curve]) -> Curve:
 
 
 @dataclass
+class DerivedCurve:
+    """A curve SED_Tools computes from a team's files (a ratio, product, power).
+
+    ``derivation`` says exactly how; ``url`` lists the source file(s).  Used
+    as a :class:`SiteAtmosphere` entry where a :class:`Table` would hold data
+    stored as published.
+    """
+
+    url: str
+    make: Callable[..., Curve]
+    derivation: str
+    note: str = ""
+
+    def read(self, session) -> Curve:
+        wl, tr = self.make(session)
+        return np.asarray(wl, dtype=float), np.asarray(tr, dtype=float)
+
+
+@dataclass
 class SiteAtmosphere:
+    """An atmosphere supplied by an instrument team, registered as a named site.
+
+    ``entries`` are ``(airmass, pwv, source)``; ``source`` is a :class:`Table`
+    (data stored as published, units converted) or a :class:`DerivedCurve`.
+    ``airmass=None`` records an atmosphere whose source does not state the
+    airmass; it is listed under the site's ``unstated`` atmospheres.
+
+    The provenance fields (``kind`` onwards) are written to the site
+    manifest only when set; ``kind`` is normally ``"team"``.
+    """
+
     site: str
-    altitude_m: float
-    entries: Sequence[Tuple[float, Optional[float], Table]]  # (airmass, pwv, table)
+    altitude_m: Optional[float]
+    entries: Sequence[Tuple[Optional[float], Optional[float], Table]]  # (airmass, pwv, table)
     source: str
     notes: str = ""
+    kind: Optional[str] = None
+    model: Optional[str] = None
+    model_version: Optional[str] = None
+    citation: Optional[str] = None
+    location: Optional[str] = None
+    terms: Optional[str] = None
+    parameters: Optional[Dict[str, object]] = None
+    outside_range: Optional[str] = None  # unset: the instrument's own policy
+    coverage_tolerance: Optional[float] = None  # see AtmosphereGrid.coverage_tolerance
 
 
 @dataclass
@@ -113,6 +154,12 @@ class SimpleSource:
     references: Mapping[str, str] = field(default_factory=dict)
     notes: str = ""
     published_from_filters: bool = False  # original filter scans can stand alone without SVO
+    #: band -> file stem of its filter component when it is not the band name
+    #: (e.g. a newer filter generation must not reuse an older curve's file)
+    filter_names: Mapping[str, str] = field(default_factory=dict)
+    #: Further team atmospheres of the same location, offered next to the
+    #: default site (``site`` or ``default_site``) as ``atmosphere_sites``.
+    sites: Sequence[SiteAtmosphere] = ()
 
 
 def ensure_published(inst_dir: Path, svo_ids: Mapping[str, str], client: SVOMetadataClient) -> None:
@@ -131,28 +178,77 @@ def ensure_published(inst_dir: Path, svo_ids: Mapping[str, str], client: SVOMeta
         write_filter_file(
             path, record.wavelength, record.transmission,
             detector_type=record.detector_type or PHOTON, source=SOURCE_SVO, filter_id=fid,
-            wavelength_unit=record.wavelength_unit, extra=svo_components_header(record.components),
+            wavelength_unit=record.wavelength_unit,
+            extra={**svo_components_header(record.components), "Sources": f"{svo_fps_url()}?ID={fid}"},
         )
     if not (inst_dir / inst_dir.name).exists() and list(inst_dir.glob("*.dat")):
         write_filter_index(inst_dir, inst_dir.name)
 
 
-def write_site(atmosphere_root: Path, site: SiteAtmosphere, session) -> None:
+#: File name of a site's atmosphere of unstated airmass.
+UNSTATED_FILE = "am_unstated.dat"
+
+
+def write_site(atmosphere_root: Path, site: SiteAtmosphere, session) -> Path:
+    """Write a team atmosphere site: its curves and its grid manifest.
+
+    Every curve is checked (increasing wavelengths, finite values in 0-1)
+    before anything is written, so a bad download leaves no partial site.
+    """
+    atmosphere_root = Path(atmosphere_root)
     site_dir = atmosphere_root / site.site
-    site_dir.mkdir(parents=True, exist_ok=True)
-    entries = []
+    curves = []
     for airmass, pwv, table in site.entries:
+        if airmass is None and pwv is not None:
+            raise ValueError(f"{site.site}: an atmosphere of unstated airmass cannot state a pwv")
         wl, tr = table.read(session)
-        name = f"am{airmass:.2f}" + (f"_pwv{pwv:g}" if pwv is not None else "") + ".dat"
+        wl, tr = np.asarray(wl, dtype=float), np.asarray(tr, dtype=float)
+        if (len(wl) < 2 or not np.all(np.isfinite(wl)) or not np.all(np.isfinite(tr))
+                or np.any(np.diff(wl) <= 0) or np.any(tr < 0) or np.any(tr > 1.0 + 1e-6)):
+            raise ValueError(f"{site.site}: {table.url} is not a transmission (0-1) on increasing wavelengths")
+        curves.append((airmass, pwv, table, wl, tr))
+    site_dir.mkdir(parents=True, exist_ok=True)
+    entries, unstated = [], []
+    for airmass, pwv, table, wl, tr in curves:
+        if airmass is None:
+            name, condition = UNSTATED_FILE, f"site={site.site} airmass=unstated"
+        else:
+            name = f"am{airmass:.2f}" + (f"_pwv{pwv:g}" if pwv is not None else "") + ".dat"
+            condition = f"site={site.site} airmass={airmass:g}" + (f" pwv={pwv:g}" if pwv is not None else "")
+        derivation = getattr(table, "derivation", "")
+        extra = {"Role": ATMOSPHERE, "Components": ATMOSPHERE, "Atmosphere": condition, "Sources": table.url}
+        if site.kind is not None:
+            extra["ComponentsSource"] = "derived" if derivation else "original"
         write_filter_file(
             site_dir / name, wl, tr, detector_type=ENERGY, source="component", wavelength_unit="Angstrom",
-            extra={"Role": ATMOSPHERE, "Components": ATMOSPHERE,
-                   "Atmosphere": f"site={site.site} airmass={airmass:g}" + (f" pwv={pwv:g}" if pwv is not None else ""),
-                   "Sources": table.url},
+            extra=extra,
         )
-        entries.append({"airmass": airmass, "pwv": pwv, "file": name})
+        row: Dict[str, object] = {"airmass": airmass, "pwv": pwv, "file": name}
+        if site.kind is not None:
+            row["source"] = table.url
+            if derivation:
+                row["derivation"] = derivation
+            elif getattr(table, "note", ""):
+                row["note"] = table.note
+        if airmass is None:
+            del row["airmass"], row["pwv"]
+            unstated.append(row)
+        else:
+            entries.append(row)
     AtmosphereGrid(site=site.site, entries=entries, altitude_m=site.altitude_m,
-                   source=site.source, notes=site.notes).save(site_dir)
+                   source=site.source, notes=site.notes, kind=site.kind, model=site.model,
+                   model_version=site.model_version, citation=site.citation, location=site.location,
+                   terms=site.terms, parameters=site.parameters, outside_range=site.outside_range,
+                   coverage_tolerance=site.coverage_tolerance, unstated=unstated or None).save(site_dir)
+    return site_dir
+
+
+def register_sites(manifest: InstrumentManifest, default: Optional[str], sites: Sequence[SiteAtmosphere]) -> None:
+    """Record an instrument's own atmosphere sites in its manifest."""
+    if default:
+        manifest.default_site = default
+    extra = [s.site for s in sites if s.site != manifest.default_site]
+    manifest.atmosphere_sites = list(dict.fromkeys([*manifest.atmosphere_sites, *extra]))
 
 
 def build_simple(
@@ -210,8 +306,11 @@ def build_simple(
                 read_filter_header(inst_dir / f"{band}.dat").get("ComponentsSource") == "original"):
             continue  # the published filter scan is already this component
         wl, tr = original_filters.get(band) or table.read(session)
-        add_component(inst_dir, FILTER, wl, tr, band=band, name=band,
+        add_component(inst_dir, FILTER, wl, tr, band=band, name=spec.filter_names.get(band, band),
                       source=table.url + (f" ({table.note})" if table.note else ""), manifest=manifest)
+        # Each band cites its own filter file ("filter:<band>"); drop a
+        # role-wide entry left by an older build, which named one band's file.
+        manifest.sources.pop(FILTER, None)
     if spec.optics:
         wl, tr = product([t.read(session) for t in spec.optics])
         add_component(inst_dir, OPTICS, wl, tr, band=SHARED, name="optics",
@@ -232,11 +331,28 @@ def build_simple(
     manifest.outside_range = spec.outside_range
     manifest.sources.update(spec.references)
     manifest.notes = spec.notes
+    root = Path(atmosphere_root) if atmosphere_root else filter_root.parent / "atmospheres"
     if spec.site is not None:
-        root = Path(atmosphere_root) if atmosphere_root else filter_root.parent / "atmospheres"
         write_site(root, spec.site, session)
         manifest.default_site = spec.site.site
     elif spec.default_site:
         manifest.default_site = spec.default_site
+    for extra in spec.sites:
+        write_site(root, extra, session)
+    if spec.sites:
+        register_sites(manifest, None, spec.sites)
     manifest.save(inst_dir)
     return inst_dir
+
+
+def register_variant(manifest: InstrumentManifest, key: str, name: str,
+                     files: Mapping[str, str], **info: object) -> None:
+    """Record curves already written as the named alternative ``name`` of ``key``.
+
+    ``files`` maps band (or ``"*"``) to a path inside the instrument;
+    ``info`` adds ``description``, ``source``, ``epoch``, ``derived``,
+    ``default`` and the like (see :attr:`InstrumentManifest.variants`).
+    """
+    entry = {"files": dict(files)}
+    entry.update(info)
+    manifest.variants.setdefault(key, {})[name] = entry

@@ -80,5 +80,8 @@ htmlcov/
 !filter_info/curated/*.json
 !filter_info/curated/instruments/*.json
 
+# Test fixtures are excerpts of published curves; *.dat above would otherwise drop them
+!tests/fixtures/**/*.dat
+
 # Official CIE colour tables shipped with sed_tools.filter_colors
 !sed_tools/cie/*.csv

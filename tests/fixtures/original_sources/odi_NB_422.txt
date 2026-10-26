@@ -1,0 +1,6 @@
+Wavelength[nm]	T% in a parallel beam at AOI 5 deg
+426	97.1304
+424	97.2316
+422	96.9853
+420	96.8759
+418	97.2543
