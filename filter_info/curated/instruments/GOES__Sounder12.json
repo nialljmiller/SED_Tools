@@ -13,5 +13,11 @@
   ],
   "bands": {},
   "evidence": [],
-  "notes": "Operational SRF set per the OSPO table; file-to-channel/detector mapping from each archive's README. Band names follow SVO's GOES/Sounder IDs (IR<ch>_d<det>, VIS_d<det>); pivots agree with SVO's archived records to <0.01 %. DetectorType energy is assumed."
+  "notes": "Operational SRF set per the OSPO table; file-to-channel/detector mapping from each archive's README. Band names follow SVO's GOES/Sounder IDs (IR<ch>_d<det>, VIS_d<det>); pivots agree with SVO's archived records to <0.01 %. DetectorType energy is assumed.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "",
+    "url": "https://www.ospo.noaa.gov/Operations_/GOES/goes-sounder-srfs.html",
+    "scope": "No owner statement verified. The NOAA NESDIS OSPO page that distributes the SRFs carries no terms; its footer only links NOAA's disclaimer (https://www.noaa.gov/disclaimer), which refused the request (CloudFront 403) and was not verified. The page says 'The SRFs were provided by ITT, the instruments' manufacturer'."
+  }
 }

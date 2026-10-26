@@ -1805,6 +1805,16 @@
   "volume": "80",
   "year": 1975
  },
+ "bibcode:1976A&A....49..389H": {
+  "bibcode": "1976A&A....49..389H",
+  "journal": "A&A",
+  "key": "bibcode:1976A&A....49..389H",
+  "resolved": "2026-10-26",
+  "short": "1976A&A....49..389H",
+  "type": "article",
+  "url": "https://ui.adsabs.harvard.edu/abs/1976A&A....49..389H",
+  "year": 1976
+ },
  "bibcode:1976AJ.....81..182M": {
   "authors": [
    "McClure, R. D."
@@ -1901,6 +1911,25 @@
   "url": "https://ui.adsabs.harvard.edu/abs/1979PASP...91..589B",
   "volume": "91",
   "year": 1979
+ },
+ "bibcode:1982MNRAS.201.1139C": {
+  "authors": [
+   "Carnochan, D. J."
+  ],
+  "bibcode": "1982MNRAS.201.1139C",
+  "bibtex": "@article{1982MNRAS.201.1139C, title={The intrinsic colours of stars in the ultraviolet}, volume={201}, ISSN={1365-2966}, url={http://dx.doi.org/10.1093/mnras/201.4.1139}, DOI={10.1093/mnras/201.4.1139}, number={4}, journal={Monthly Notices of the Royal Astronomical Society}, publisher={Oxford University Press (OUP)}, author={Carnochan, D. J.}, year={1982}, month=Dec, pages={1139\u20131153} }",
+  "doi": "10.1093/mnras/201.4.1139",
+  "journal": "Monthly Notices of the Royal Astronomical Society",
+  "key": "bibcode:1982MNRAS.201.1139C",
+  "page": "1139-1153",
+  "resolved": "2026-10-26",
+  "resolved_by": "doi.org",
+  "short": "Carnochan 1982",
+  "title": "The intrinsic colours of stars in the ultraviolet",
+  "type": "article",
+  "url": "https://ui.adsabs.harvard.edu/abs/1982MNRAS.201.1139C",
+  "volume": "201",
+  "year": 1982
  },
  "bibcode:1983ApJ...264..337S": {
   "authors": [
@@ -4361,6 +4390,43 @@
   "type": "article",
   "url": "https://ui.adsabs.harvard.edu/abs/2005ApJ...619L...7M",
   "volume": "619",
+  "year": 2005
+ },
+ "bibcode:2005ApJS..160...59S": {
+  "authors": [
+   "Silverberg, R. F.",
+   "Cheng, E. S.",
+   "Aguirre, J. E.",
+   "Bezaire, J. J.",
+   "Crawford, T. M.",
+   "Meyer, S. S.",
+   "Bier, A.",
+   "Campano, B.",
+   "Chen, T. C.",
+   "Cottingham, D. A.",
+   "Sharp, E. H.",
+   "Christensen, P. R.",
+   "Cordone, S.",
+   "Timbie, P. T.",
+   "Dame, R. E.",
+   "Fixsen, D. J.",
+   "Kristensen, R. J. K.",
+   "Norgaard\u2010Nielsen, H. U.",
+   "Wilson, G. W."
+  ],
+  "bibcode": "2005ApJS..160...59S",
+  "bibtex": "@article{2005ApJS..160...59S, title={The TopHat Experiment: A Balloon\u2010borne Instrument for Mapping Millimeter and Submillimeter Emission}, volume={160}, ISSN={1538-4365}, url={http://dx.doi.org/10.1086/432117}, DOI={10.1086/432117}, number={1}, journal={The Astrophysical Journal Supplement Series}, publisher={American Astronomical Society}, author={Silverberg, R. F. and Cheng, E. S. and Aguirre, J. E. and Bezaire, J. J. and Crawford, T. M. and Meyer, S. S. and Bier, A. and Campano, B. and Chen, T. C. and Cottingham, D. A. and Sharp, E. H. and Christensen, P. R. and Cordone, S. and Timbie, P. T. and Dame, R. E. and Fixsen, D. J. and Kristensen, R. J. K. and Norgaard\u2010Nielsen, H. U. and Wilson, G. W.}, year={2005}, month=Sept, pages={59\u201375} }",
+  "doi": "10.1086/432117",
+  "journal": "ASTROPHYS J SUPPL S",
+  "key": "bibcode:2005ApJS..160...59S",
+  "page": "59-75",
+  "resolved": "2026-10-26",
+  "resolved_by": "doi.org",
+  "short": "Silverberg et al. 2005",
+  "title": "The TopHat Experiment: A Balloon\u2010borne Instrument for Mapping Millimeter and Submillimeter Emission",
+  "type": "article",
+  "url": "https://ui.adsabs.harvard.edu/abs/2005ApJS..160...59S",
+  "volume": "160",
   "year": 2005
  },
  "bibcode:2005PASP..117..978R": {
