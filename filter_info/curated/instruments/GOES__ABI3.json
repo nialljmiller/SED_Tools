@@ -1,0 +1,47 @@
+{
+  "description": "The Advanced Baseline Imager (ABI) flight model FM3 on GOES-18, a 16-channel visible/near-infrared/infrared imager of the GOES-R series. The curves are the GOES-R Calibration Working Group's processed channel relative spectral response functions (0.47-13.3 um), used for imagery, radiance and product calculations.",
+  "facility_description": "GOES-R is the NOAA/NASA series of geostationary weather satellites (GOES-16 to GOES-19) whose primary imager is the ABI.",
+  "links": [
+    {
+      "url": "https://ncc.nesdis.noaa.gov/GOESR/ABI.php",
+      "label": "NOAA NCC GOES-R ABI spectral response functions",
+      "source": "NOAA NESDIS NCC / GOES-R CWG"
+    },
+    {
+      "url": "https://ncc.nesdis.noaa.gov/GOESR/docs/2016_03_10_SRF_PFM_FM2_FM3_FM4_CWG_release.docx",
+      "label": "CWG release note for PFM, FM2, FM3, FM4 SRFs (2016-03-10)",
+      "source": "GOES-R CWG"
+    },
+    {
+      "url": "https://ncc.nesdis.noaa.gov/GOESR/docs/GOES-R_ABI_FM3_SRF_CWG.zip",
+      "label": "CWG processed SRFs (GOES-R_ABI_FM3_SRF_CWG.zip)",
+      "source": "GOES-R CWG"
+    },
+    {
+      "url": "https://www.goes-r.gov/mission/ABI-bands-quick-info.html",
+      "label": "ABI Bands Quick Guides (central wavelengths)",
+      "source": "NOAA/NASA GOES-R Program"
+    }
+  ],
+  "references": [
+    "doi:10.1175/BAMS-D-15-00230.1",
+    "doi:10.1175/BAMS-86-8-1079"
+  ],
+  "acknowledgements": [
+    {
+      "for": "NOAA NESDIS STAR (host of the NCC GOES-R ABI SRF page)",
+      "text": "as long as credit is given to the NOAA / NESDIS Center for Satellite Applications and Research",
+      "url": "https://www.star.nesdis.noaa.gov/star/productdisclaimer.php",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ],
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"Users are free to use the images or information hosted on this site as they wish, as long as credit is given to the NOAA / NESDIS Center for Satellite Applications and Research.\" (STAR disclaimer, linked from the footer of the NCC ABI page that hosts the SRFs)",
+    "url": "https://www.star.nesdis.noaa.gov/star/productdisclaimer.php"
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "Flight-model mapping from the NCC page: 'PFM (aka FM1) on GOES-16, FM2 on GOES-17, FM3 on GOES-18, and FM4' (quoted from https://ncc.nesdis.noaa.gov/GOESR/ABI.php); the NCC page does not name FM4's satellite; GOES-19 = FM4 follows SVO's GOES/ABI4 record description 'GOES19 FM4 ABI ... normalized SRF' (archived SVO VOTable). The release note (2016-03-10) says the vendor SRFs were truncated by the CWG 'to the innermost 0.1% of the relative spectral response' and gives columns wavelength [um], wavenumber [cm-1], 'Relative spectral response'. Photon/energy weighting is not stated by the owner; the staged DetectorType=energy is tagged 'assumed' (SVO also uses energy counter for these IDs)."
+}
