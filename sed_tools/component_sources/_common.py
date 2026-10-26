@@ -20,8 +20,8 @@ import numpy as np
 
 from ..filter_components import (ATMOSPHERE, FILTER, OPTICS, QE, SHARED, AtmosphereGrid,
                                  InstrumentManifest, add_component)
-from ..filter_metadata import (ENERGY, PHOTON, SOURCE_SVO, SVOMetadataClient,
-                               read_filter_header, svo_components_header, write_filter_file)
+from ..filter_metadata import (ENERGY, PHOTON, SOURCE_SVO, SVOMetadataClient, read_filter_header,
+                               svo_components_header, svo_fps_url, write_filter_file)
 
 logger = logging.getLogger(__name__)
 
@@ -66,12 +66,14 @@ class Table:
         data = np.array(rows)
         wl = data[:, 0] * self.wl_scale
         tr = data[:, 1] * self.tr_scale
-        order = np.argsort(wl)
-        wl, idx = np.unique(wl[order], return_index=True)
+        # Repeated wavelengths (e.g. overlapping scan segments) are averaged,
+        # so the result does not depend on the sort algorithm.
+        wl, inverse, counts = np.unique(wl, return_inverse=True, return_counts=True)
+        tr = np.bincount(inverse, weights=tr) / counts
         # Published measurements can dip slightly below zero in the noise.
         # A physical transmission cannot be negative, and the component
         # loader requires nonnegative values.
-        return wl, np.maximum(tr[order][idx], 0.0)
+        return wl, np.maximum(tr, 0.0)
 
 
 def product(curves: Sequence[Curve]) -> Curve:
@@ -113,6 +115,9 @@ class SimpleSource:
     references: Mapping[str, str] = field(default_factory=dict)
     notes: str = ""
     published_from_filters: bool = False  # original filter scans can stand alone without SVO
+    #: band -> file stem of its filter component when it is not the band name
+    #: (e.g. a newer filter generation must not reuse an older curve's file)
+    filter_names: Mapping[str, str] = field(default_factory=dict)
 
 
 def ensure_published(inst_dir: Path, svo_ids: Mapping[str, str], client: SVOMetadataClient) -> None:
@@ -131,7 +136,8 @@ def ensure_published(inst_dir: Path, svo_ids: Mapping[str, str], client: SVOMeta
         write_filter_file(
             path, record.wavelength, record.transmission,
             detector_type=record.detector_type or PHOTON, source=SOURCE_SVO, filter_id=fid,
-            wavelength_unit=record.wavelength_unit, extra=svo_components_header(record.components),
+            wavelength_unit=record.wavelength_unit,
+            extra={**svo_components_header(record.components), "Sources": f"{svo_fps_url()}?ID={fid}"},
         )
     if not (inst_dir / inst_dir.name).exists() and list(inst_dir.glob("*.dat")):
         write_filter_index(inst_dir, inst_dir.name)
@@ -210,8 +216,11 @@ def build_simple(
                 read_filter_header(inst_dir / f"{band}.dat").get("ComponentsSource") == "original"):
             continue  # the published filter scan is already this component
         wl, tr = original_filters.get(band) or table.read(session)
-        add_component(inst_dir, FILTER, wl, tr, band=band, name=band,
+        add_component(inst_dir, FILTER, wl, tr, band=band, name=spec.filter_names.get(band, band),
                       source=table.url + (f" ({table.note})" if table.note else ""), manifest=manifest)
+        # Each band cites its own filter file ("filter:<band>"); drop a
+        # role-wide entry left by an older build, which named one band's file.
+        manifest.sources.pop(FILTER, None)
     if spec.optics:
         wl, tr = product([t.read(session) for t in spec.optics])
         add_component(inst_dir, OPTICS, wl, tr, band=SHARED, name="optics",
@@ -240,3 +249,16 @@ def build_simple(
         manifest.default_site = spec.default_site
     manifest.save(inst_dir)
     return inst_dir
+
+
+def register_variant(manifest: InstrumentManifest, key: str, name: str,
+                     files: Mapping[str, str], **info: object) -> None:
+    """Record curves already written as the named alternative ``name`` of ``key``.
+
+    ``files`` maps band (or ``"*"``) to a path inside the instrument;
+    ``info`` adds ``description``, ``source``, ``epoch``, ``derived``,
+    ``default`` and the like (see :attr:`InstrumentManifest.variants`).
+    """
+    entry = {"files": dict(files)}
+    entry.update(info)
+    manifest.variants.setdefault(key, {})[name] = entry
