@@ -266,3 +266,14 @@ def test_single_letter_bands_match_svo_with_their_case(tmp_path):
     sources = InfoSources(tmp_path, svo_dir=svo_dir, curated_dir=tmp_path / "curated", references={})
     assert match_svo(sources, "Test", "Cam", "R", {}, None, 6000.0)[2] == "band name and pivot"
     assert match_svo(sources, "Test", "Cam", "r", {}, None, 6000.0)[0] is None
+
+
+def test_manifest_sources_apply_only_to_the_bands_they_cover():
+    from filter_info.compose import _manifest_sources
+    manifest = {"components": {"filter": {"Y": "c/Y.dat"}, "qe": {"*": "c/qe.dat"}},
+                "published_bands": {"Y": "filter+qe"},
+                "sources": {"filter": "ESA filter", "qe": "ESA QE", "filter:Red": "red only",
+                            "published": "ESA totals", "atmosphere": "site"}}
+    assert _manifest_sources(manifest, "Y") == ["ESA filter", "ESA QE", "ESA totals", "site"]
+    assert _manifest_sources(manifest, "Y_svo") == ["ESA QE", "site"]
+    assert _manifest_sources(manifest, "Red") == ["ESA QE", "red only", "site"]

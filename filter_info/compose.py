@@ -206,6 +206,33 @@ def _svo_entry(sources, filter_id, record, how, digest, header):
     return fields, refs, specified, svo, page
 
 
+def _manifest_sources(manifest, band):
+    """The manifest's source texts that concern one band.
+
+    "<role>:<band>" keys name their band; a role key applies to the bands that role's
+    components cover ("*" covers all); "published" applies to the published bands.
+    Bands outside a component (e.g. an SVO copy beside an original) don't inherit it.
+    """
+    components = manifest.get("components") or {}
+    published = manifest.get("published_bands")
+    texts = []
+    for key, text in (manifest.get("sources") or {}).items():
+        if not isinstance(text, str):
+            continue
+        role, _, named = key.partition(":")
+        if named:
+            keep = named == band
+        elif key == "published":
+            keep = not published or band in published
+        elif key in components:
+            keep = band in components[key] or "*" in components[key]
+        else:
+            keep = True
+        if keep:
+            texts.append(text)
+    return texts
+
+
 def _curve_sources(sources, header, manifest_sources, provenance_band):
     keys = []
     for text in (header.get("Sources", ""), (provenance_band or {}).get("sources", ""), *manifest_sources):
@@ -220,7 +247,6 @@ def compose_info(sources, instrument_dir, curves, properties=None):
     provenance = _load(sources.provenance_dir / f"{facility}__{instrument}.json")
     curated = _load(sources.curated_dir / f"{facility}__{instrument}.json")
     manifest = _load(instrument_dir / "manifest.json")
-    manifest_sources = [v for v in (manifest.get("sources") or {}).values() if isinstance(v, str)]
     info = {"schema": SCHEMA, "facility": facility, "instrument": instrument}
     bands, unmatched, svo_groups, svo_curves = {}, [], {}, False
     for curve in sorted(curves):
@@ -267,7 +293,7 @@ def compose_info(sources, instrument_dir, curves, properties=None):
             unmatched.append(band)
         curve_info = {k: header[k] for k in ("FilterID", "DetectorType", "DetectorTypeSource",
                                               "Components", "ComponentsSource") if header.get(k)}
-        curve_sources = _curve_sources(sources, header, manifest_sources, prov_band)
+        curve_sources = _curve_sources(sources, header, _manifest_sources(manifest, band), prov_band)
         if curve_sources:
             curve_info["sources"] = curve_sources
         if prov_band and prov_band.get("cleaning"):
