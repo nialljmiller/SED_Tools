@@ -4,11 +4,25 @@ Generate index.json for SED_Tools data archive
 Now includes both stellar models and filter profiles
 """
 
+import hashlib
 import json
+import os
 from collections import Counter
 from datetime import datetime
 from pathlib import Path
 from urllib.parse import unquote
+
+from sed_tools import __version__ as SED_TOOLS_VERSION
+from sed_tools.filter_properties import UNITS, curve_properties, load_vega
+from sed_tools.filter_metadata import read_filter_header
+
+# Vega spectrum for the Vega-weighted filter properties: MESA's own, so the zero points
+# NJM serves match MESA colors. SED_VEGA_SPECTRUM overrides it.
+VEGA_CANDIDATES = [
+    os.environ.get("SED_VEGA_SPECTRUM", ""),
+    os.path.join(os.environ.get("MESA_DIR", ""), "data/colors_data/stellar_models/vega_flam.csv"),
+    "/media/data3/MESA/mesa/data/colors_data/stellar_models/vega_flam.csv",
+]
 
 
 def scan_stellar_models(base_path: Path):
@@ -108,7 +122,43 @@ def separate_component_coverage(instrument_dir: Path, bands):
     return coverage
 
 
-def scan_filters(base_path: Path):
+def find_vega():
+    """Return (spectrum, description) for the Vega reference, or (None, None)."""
+    for candidate in VEGA_CANDIDATES:
+        path = Path(candidate) if candidate else None
+        if path and path.is_file():
+            digest = hashlib.sha256(path.read_bytes()).hexdigest()
+            return load_vega(path), {"file": str(path), "sha256": digest}
+    return None, None
+
+
+def _rounded(value):
+    return float(f"{value:.7g}") if isinstance(value, float) else value
+
+
+def write_properties(instrument_dir: Path, filter_files, vega, reference):
+    """Write the instrument's properties.json (published curves only); True when written."""
+    bands = {}
+    for curve in sorted(filter_files):
+        try:
+            props = {k: _rounded(v) for k, v in curve_properties(curve, vega).items()}
+        except ValueError as exc:  # an unusable curve is reported, not fatal
+            props = {"error": str(exc)}
+        header = read_filter_header(curve)
+        props["DetectorType"] = header.get("DetectorType", "energy")
+        props["DetectorTypeSource"] = header.get("DetectorTypeSource", "assumed")
+        bands[curve.stem] = props
+    if not bands:
+        return False
+    document = {"definitions": reference, "bands": bands}
+    path = instrument_dir / "properties.json"
+    text = json.dumps(document, indent=1, sort_keys=True) + "\n"
+    if not path.is_file() or path.read_text() != text:
+        path.write_text(text)
+    return True
+
+
+def scan_filters(base_path: Path, vega=None, reference=None):
     """Scan filters directory for facility/instrument information."""
     filters_dir = base_path / "filters"
 
@@ -144,6 +194,8 @@ def scan_filters(base_path: Path):
                 metadata = read_curve_metadata(curve)
                 published_paths[metadata.get("Components", "unspecified")] += 1
                 detector_types[metadata.get("DetectorType", "unclassified")] += 1
+            has_properties = reference is not None and write_properties(
+                instrument_dir, filter_files, vega, reference)
 
             # Calculate size
             total_size = 0
@@ -164,6 +216,7 @@ def scan_filters(base_path: Path):
                     instrument_dir, [file.stem for file in filter_files]
                 ),
                 "has_component_manifest": (instrument_dir / "manifest.json").is_file(),
+                "properties": "properties.json" if has_properties else None,
                 "size_bytes": total_size,
                 "size_human": format_size(total_size),
             }
@@ -224,7 +277,14 @@ def generate_index(data_dir: str = None):
 
     # Scan filters
     print("Scanning filters/...")
-    facilities, filters_detailed, total_filters = scan_filters(data_dir)
+    vega, vega_source = find_vega()
+    reference = {
+        "module": f"sed_tools.filter_properties (SED_Tools {SED_TOOLS_VERSION})",
+        "units": UNITS,
+        "vega_spectrum": vega_source,
+        "note": "Vega quantities are null when the Vega spectrum does not cover the curve.",
+    }
+    facilities, filters_detailed, total_filters = scan_filters(data_dir, vega, reference)
 
     # Build index structure
     index = {
@@ -245,6 +305,7 @@ def generate_index(data_dir: str = None):
         "filters": {
             "facilities": facilities,
             "facilities_detailed": filters_detailed,
+            "properties_definitions": reference,
         },
     }
 
