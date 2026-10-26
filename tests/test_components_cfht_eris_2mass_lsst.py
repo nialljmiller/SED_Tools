@@ -246,7 +246,8 @@ def test_lsst_releases_are_separate_instruments(tmp_path):
     m15 = InstrumentManifest.load(old)
     assert m15.component_file(FILTER, "g") == "components/filter/g_v1p5.dat"
     assert m15.component_file(QE, "g") == "components/qe/detector_v1p5.dat"
-    assert "lsst/throughputs 1.5" in m15.sources[FILTER]
+    # Component sources are recorded per band ("<role>:<band>") since PR #51.
+    assert "lsst/throughputs 1.5" in m15.sources[f"{FILTER}:g"]
     assert "X=1.0" in m15.notes and "1.2 airmasses" in m15.notes
     new = filters / "LSST" / "LSSTv19"
     m19 = InstrumentManifest.load(new)
