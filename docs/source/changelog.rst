@@ -65,6 +65,12 @@ NJM catalogue: search, descriptions and citations without SVO
   optionally normalised and with NJM's Vega spectrum overlaid.
 - NJM downloads keep ``properties.json`` and ``info.json`` beside the curves
   they describe. The MESA index file still lists only the curves.
+- The NJM availability check no longer reports the mirror as down during
+  NJM's temporary 403 block on a burst of requests from one address (or a
+  429/5xx). It confirms by fetching ``index.json`` with the usual retries,
+  which wait out the block (up to about a minute). No answer, or a 404, still
+  means the mirror is down. ``Filters.fetch()`` therefore keeps using NJM
+  instead of falling back to SVO, and the catalogue keeps working.
 
 Version 0.4.1 (October 2026)
 ----------------------------

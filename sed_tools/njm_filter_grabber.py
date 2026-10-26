@@ -21,6 +21,11 @@ from .filter_metadata import SOURCE_ASSUMED, SVOMetadataClient, migrate_filter_f
 
 logger = logging.getLogger(__name__)
 
+# Answers that mean "ask again later", not "no such file": NJM's Apache answers a burst of
+# requests from one address with 403 until the block lifts, within about a minute.
+RETRY_STATUSES = (403, 429, 500, 502, 503, 504)
+
+
 class NJMFilterGrabber:
     """Grabber for filter profiles from NJM mirror server."""
     
@@ -36,28 +41,48 @@ class NJMFilterGrabber:
         self.session.headers.update({"User-Agent": "SED_Tools/1.0 (NJM Mirror)"})
 
         self._cached_facilities: Optional[List[str]] = None
+        self._index_data: Optional[Dict] = None
         self._metadata_client = SVOMetadataClient()
         self._available = self._check_availability()
         
     def _check_availability(self) -> bool:
-        """Check if the NJM mirror is available and responding."""
+        """Check if the NJM mirror is available and responding.
+
+        No answer, or a definite refusal (e.g. 404), means the mirror is down.
+        A 403 is NJM's temporary block on a burst of requests from this address
+        (shared by every client behind it), and 429/5xx are transient too: those
+        are confirmed by fetching ``index.json`` with the usual retries, which
+        wait the block out, rather than reported as an outage.
+        """
         try:
             # Try with SSL verification first
             response = self.session.head(self.base_url, timeout=5)
-            response.raise_for_status()
-            return True
         except requests.exceptions.SSLError:
             # SSL certificate issue - try without verification
             try:
                 response = self.session.head(self.base_url, timeout=5, verify=False)
-                response.raise_for_status()
-                self._disable_ssl_verification()
-                print("  [njm] Note: SSL verification disabled (certificate issue)")
-                return True
             except requests.RequestException:
                 return False
+            self._disable_ssl_verification()
+            print("  [njm] Note: SSL verification disabled (certificate issue)")
         except requests.RequestException:
             return False
+        if response.status_code < 400:
+            return True
+        if response.status_code not in RETRY_STATUSES:
+            return False
+        logger.warning("NJM answered %s; confirming with index.json (a burst block lifts within about a minute)",
+                       response.status_code)
+        try:
+            response = self._get(f"{self.base_url}/index.json", timeout=10)
+        except requests.RequestException:
+            return False
+        try:
+            data = response.json()
+            self._index_data = data if isinstance(data, dict) else None
+        except ValueError:
+            pass  # the mirror answered; the index is fetched again when needed
+        return True
     
     def _disable_ssl_verification(self) -> None:
         """Suppress SSL warnings and switch the session to skip certificate checks."""
@@ -78,7 +103,7 @@ class NJMFilterGrabber:
                 return response
             except requests.RequestException as exc:
                 status = getattr(getattr(exc, "response", None), "status_code", None)
-                if status is not None and status not in (403, 429, 500, 502, 503, 504):
+                if status is not None and status not in RETRY_STATUSES:
                     raise
                 if attempt == 2:
                     raise
@@ -158,10 +183,11 @@ class NJMFilterGrabber:
             return self._cached_facilities
 
         try:
-            index_url = f"{self.base_url}/index.json"
-            response = self.session.get(index_url, timeout=10)
-            response.raise_for_status()
-            data = response.json()
+            data = self._index_data  # fetched by the availability check during a burst block
+            if data is None:
+                response = self.session.get(f"{self.base_url}/index.json", timeout=10)
+                response.raise_for_status()
+                data = response.json()
             facilities = data.get("filters", {}).get("facilities", [])
             if not facilities:
                 facilities = self._parse_directory_listing(self.filters_url)
