@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-10-26T19:11:48.077787",
+  "generated": "2026-10-26T19:29:33.432668",
   "base_url": "http://nillmill.ddns.net/sed_tools",
   "statistics": {
     "total_models": 1,
@@ -981,8 +981,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 25355,
-            "size_human": "24.76 KB"
+            "size_bytes": 25284,
+            "size_human": "24.69 KB"
           }
         },
         "instrument_count": 1
@@ -1472,8 +1472,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 44761,
-            "size_human": "43.71 KB"
+            "size_bytes": 44413,
+            "size_human": "43.37 KB"
           },
           "SCUSS": {
             "name": "SCUSS",
@@ -3501,8 +3501,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 232744,
-            "size_human": "227.29 KB"
+            "size_bytes": 231137,
+            "size_human": "225.72 KB"
           },
           "Goodman": {
             "name": "Goodman",
@@ -5409,8 +5409,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 13498236,
-            "size_human": "12.87 MB"
+            "size_bytes": 13476155,
+            "size_human": "12.85 MB"
           },
           "ISS_WAC": {
             "name": "ISS_WAC",
@@ -5472,8 +5472,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 5315554,
-            "size_human": "5.07 MB"
+            "size_bytes": 5303261,
+            "size_human": "5.06 MB"
           }
         },
         "instrument_count": 2
@@ -6388,8 +6388,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 294304,
-            "size_human": "287.41 KB"
+            "size_bytes": 293814,
+            "size_human": "286.93 KB"
           },
           "VIS": {
             "name": "VIS",
@@ -7017,8 +7017,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 253514,
-            "size_human": "247.57 KB"
+            "size_bytes": 253248,
+            "size_human": "247.31 KB"
           },
           "DR2r": {
             "name": "DR2r",
@@ -7042,8 +7042,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 266637,
-            "size_human": "260.39 KB"
+            "size_bytes": 266355,
+            "size_human": "260.11 KB"
           },
           "GAIA": {
             "name": "GAIA",
@@ -7530,8 +7530,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 644412,
-            "size_human": "629.31 KB"
+            "size_bytes": 644169,
+            "size_human": "629.07 KB"
           },
           "ABI2": {
             "name": "ABI2",
@@ -7577,8 +7577,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 907386,
-            "size_human": "886.12 KB"
+            "size_bytes": 907230,
+            "size_human": "885.97 KB"
           },
           "ABI3": {
             "name": "ABI3",
@@ -7647,8 +7647,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 569085,
-            "size_human": "555.75 KB"
+            "size_bytes": 569007,
+            "size_human": "555.67 KB"
           },
           "Imager10": {
             "name": "Imager10",
@@ -8741,8 +8741,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 47112,
-            "size_human": "46.01 KB"
+            "size_bytes": 46727,
+            "size_human": "45.63 KB"
           },
           "Bessell_JHKLM": {
             "name": "Bessell_JHKLM",
@@ -10978,8 +10978,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 270451,
-            "size_human": "264.11 KB"
+            "size_bytes": 253133,
+            "size_human": "247.20 KB"
           },
           "CSP2": {
             "name": "CSP2",
@@ -11005,8 +11005,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 74715,
-            "size_human": "72.96 KB"
+            "size_bytes": 67126,
+            "size_human": "65.55 KB"
           }
         },
         "instrument_count": 2
@@ -11401,8 +11401,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 485566,
-            "size_human": "474.19 KB"
+            "size_bytes": 484514,
+            "size_human": "473.16 KB"
           }
         },
         "instrument_count": 1
@@ -12655,8 +12655,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 263215,
-            "size_human": "257.05 KB"
+            "size_bytes": 253219,
+            "size_human": "247.28 KB"
           },
           "SuprimeCam": {
             "name": "SuprimeCam",
@@ -13034,8 +13034,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 192516,
-            "size_human": "188.00 KB"
+            "size_bytes": 191515,
+            "size_human": "187.03 KB"
           }
         },
         "instrument_count": 1
@@ -13119,7 +13119,7 @@
         "ids": 8340,
         "sha256": "0d0994b1f308fe35e7531c16b400a75c9536de26653f31aa349ca107c3a9e8f9"
       },
-      "references": 322,
+      "references": 325,
       "unresolved_references": 0,
       "svo_fields": {
         "Fsun": {
