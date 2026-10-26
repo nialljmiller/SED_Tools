@@ -76,6 +76,11 @@ def _hst() -> Dict[Tuple[str, str], BuilderRef]:
 
 BUILDERS_FOR: Dict[Tuple[str, str], BuilderRef] = {
     ("LSST", "LSST"): BuilderRef("lsst"),
+    ("LSST", "LSSTv19"): BuilderRef("lsst", (("instrument", "LSSTv19"),), publishes=True),
+    ("CFHT", "Megaprime"): BuilderRef("cfht", (("instrument", "Megaprime"),)),
+    ("CFHT", "MegaCam"): BuilderRef("cfht", (("instrument", "MegaCam"),)),
+    ("ERIS", "NIX"): BuilderRef("eris"),
+    ("2MASS", "2MASS"): BuilderRef("twomass"),
     ("Subaru", "HSC"): BuilderRef("hsc"),
     ("CTIO", "DECam"): BuilderRef("decam"),
     ("Paranal", "VISTA"): BuilderRef("vista"),
