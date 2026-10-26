@@ -396,31 +396,45 @@ def build(
         archive = _Archive(Path(archive_dir) / site) if archive_dir else None
         grid_path = site_dir / "manifest.json"
         grid = AtmosphereGrid.load(site_dir) if grid_path.exists() else AtmosphereGrid(site=site, entries=[])
-        grid.source = (
+        source = (
             "ESO SkyCalc sky model (Noll et al. 2012, A&A 543, A92; Jones et al. 2013, A&A 560, A91), "
             f"fetched at R={fetch_resolution:g}, bin-averaged to R={store_resolution:g}"
         )
-        grid.altitude_m = SITES[site][1]
-        grid.notes = "Cerro Paranal climatology at this altitude; transmission only (no emission)."
-        grid.kind = DERIVED
-        grid.model = MODEL
-        grid.citation = CITATION
         fixed = {k: v for k, v in _BASE_PARAMS.items() if k not in _VARIABLE}
-        grid.parameters = {
+        parameters = {
             **fixed, "observatory": SITES[site][0], "fetch_resolution": fetch_resolution,
             "store_resolution": store_resolution, "chunks": chunks, "wmin_nm": WMIN_NM, "wmax_nm": WMAX_NM,
             "below_wmin": "transmission set to 0 below 300 nm (ozone; SkyCalc's limit)",
             "clip": "bin averages clipped to [0, 1]",
         }
+        recorded = dict(grid.parameters or {})
+        if not grid.entries or not recorded:
+            # A new grid (or one from before provenance was recorded): describe it now.
+            grid.source, grid.parameters = source, {**parameters, **{k: v for k, v in recorded.items()
+                                                                     if k == "interface"}}
+        grid.altitude_m = SITES[site][1]
+        grid.notes = "Cerro Paranal climatology at this altitude; transmission only (no emission)."
+        grid.kind = DERIVED
+        grid.model = MODEL
+        grid.citation = CITATION
         known = {e["file"] for e in grid.entries}
         versions = set(filter(None, [grid.model_version]))
-        interfaces = set()
+        interfaces = set(filter(None, str((grid.parameters or {}).get("interface", "")).split("; ")))
+        checked = False
 
         for airmass in airmasses:
             for pwv in pwvs:
                 name = _file_name(airmass, pwv)
                 path = site_dir / name
                 if not path.exists():
+                    if not checked:
+                        # New points must match how the existing ones were made.
+                        mismatched = {k: (grid.parameters.get(k), v) for k, v in parameters.items()
+                                      if k not in ("interface",) and grid.parameters.get(k) != v}
+                        if mismatched:
+                            raise ValueError(f"{site}: the existing grid was made with different settings "
+                                             f"{mismatched}; build it in a new atmosphere root")
+                        checked = True
                     logger.info("SkyCalc %s airmass=%g pwv=%g", site, airmass, pwv)
                     wl_parts: List[np.ndarray] = []
                     tr_parts: List[np.ndarray] = []
