@@ -4,3 +4,4 @@
 # Add each new harvest (the phase-3 Internet Archive recovery, the full harvest when SVO returns) here.
 source_evidence/svo-archive/2026-10-26-pilot/manifest.jsonl
 source_evidence/svo-archive/ia-snapshot-2026-10-26/manifest.jsonl
+source_evidence/svo-archive/ia-2026-10-26-b00-missing-tail/manifest.jsonl
