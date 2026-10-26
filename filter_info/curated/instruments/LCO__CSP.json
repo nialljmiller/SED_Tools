@@ -1,0 +1,93 @@
+{
+  "description": "Carnegie Supernova Project I (CSP-I) natural-system passbands from the CSP team: TAMU monochromator scans of the Swope telescope with the SITe CCD (u g r i B and three V filters) and with RetroCam (Y, two J filters, H), and of the du Pont telescope with WIRC (Y J H). The final passbands include the atmosphere at airmass 1.2.",
+  "notes": "Curves are the final passbands of CSP_filter_package.tgz (README updated 03/16/2018), built by sed_tools.component_sources.csp; manifest.json describes the components (raw optical scans, Telescope.txt, Telescope+Camera.txt) and the atmosphere site lco_csp. The band names are the package's own: three V filters (V_LC3014, V_LC3009, V_LC9844; the original LC-3014 was damaged on 2006-01-14 per the CSP page) and two RetroCam J filters (Jrc1, Jrc2). They are original-source curves, so no SVO record is attached to them (svo_filterID null); SVO's own LCO/CSP keys use other names (V, J_old, J for V_LC9844, Jrc1, Jrc2, going by the CSP page's file links). No licence, usage terms or acknowledgement request was found on the CSP filters page or in the README.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "No licence or usage terms are stated on the CSP filters page or in the CSP_filter_package.tgz README (checked 2026-10-26); the page's footer covers only the Plone software.",
+    "url": "https://csp.obs.carnegiescience.edu/data/filters"
+  },
+  "references": [
+    "doi:10.1088/0004-6256/142/5/156",
+    "doi:10.3847/1538-3881/aa8df0"
+  ],
+  "links": [
+    {
+      "url": "https://csp.obs.carnegiescience.edu/data/filters",
+      "label": "CSP filters page (passbands, zero points, epochs)",
+      "source": "Carnegie Supernova Project"
+    },
+    {
+      "url": "https://csp.obs.carnegiescience.edu/data/CSP_filter_package.tgz",
+      "label": "CSP filter package (final passbands and component scans)",
+      "source": "Carnegie Supernova Project"
+    }
+  ],
+  "bands": {
+    "*": {
+      "references": [
+        "doi:10.1088/0004-6256/142/5/156",
+        "doi:10.3847/1538-3881/aa8df0"
+      ]
+    },
+    "u": {
+      "svo_filterID": null,
+      "Comments": "Swope SITe CCD; in use 01/01/2003 - 10/2013 (CSP filters page table)."
+    },
+    "g": {
+      "svo_filterID": null,
+      "Comments": "Swope SITe CCD; in use 01/01/2003 - 10/2013 (CSP filters page table)."
+    },
+    "r": {
+      "svo_filterID": null,
+      "Comments": "Swope SITe CCD; in use 01/01/2003 - 10/2013 (CSP filters page table)."
+    },
+    "i": {
+      "svo_filterID": null,
+      "Comments": "Swope SITe CCD; in use 01/01/2003 - 10/2013 (CSP filters page table)."
+    },
+    "B": {
+      "svo_filterID": null,
+      "Comments": "Swope SITe CCD; in use 01/01/2003 - 10/2013 (CSP filters page table)."
+    },
+    "V_LC3014": {
+      "svo_filterID": null,
+      "Comments": "Swope SITe CCD; in use 01/01/2003 - 01/13/2006 (CSP filters page table)."
+    },
+    "V_LC3009": {
+      "svo_filterID": null,
+      "Comments": "Swope SITe CCD; in use 01/14/2006 - 01/24/2006 (CSP filters page table)."
+    },
+    "V_LC9844": {
+      "svo_filterID": null,
+      "Comments": "Swope SITe CCD; in use 01/25/2006 - 10/2013 (CSP filters page table). The CSP page links this curve as the 'V' file; SVO's LCO/CSP.V appears to be this filter."
+    },
+    "Y": {
+      "svo_filterID": null,
+      "Comments": "Swope RetroCam; in use 01/01/2003 - 07/2011 (CSP filters page table)."
+    },
+    "Jrc1": {
+      "svo_filterID": null,
+      "Comments": "Swope RetroCam; in use 01/01/2003 - 01/15/2009 (CSP filters page table). The CSP page links this curve as the 'J_old' file; SVO's LCO/CSP.J_old appears to be this filter."
+    },
+    "Jrc2": {
+      "svo_filterID": null,
+      "Comments": "Swope RetroCam; in use 01/15/2009 - 07/2011 (CSP filters page table). The CSP page links this curve as the 'J' file; SVO's LCO/CSP.J appears to be this filter."
+    },
+    "H": {
+      "svo_filterID": null,
+      "Comments": "Swope RetroCam; in use 01/01/2003 - 07/2011 (CSP filters page table)."
+    },
+    "WIRC_Y": {
+      "svo_filterID": null,
+      "Comments": "du Pont WIRC; in use 01/01/2003 - 07/2011 (CSP filters page table)."
+    },
+    "WIRC_J": {
+      "svo_filterID": null,
+      "Comments": "du Pont WIRC; in use 01/01/2003 - 07/2011 (CSP filters page table)."
+    },
+    "WIRC_H": {
+      "svo_filterID": null,
+      "Comments": "du Pont WIRC; in use 01/01/2003 - 07/2011 (CSP filters page table)."
+    }
+  }
+}

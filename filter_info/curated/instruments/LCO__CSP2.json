@@ -1,0 +1,63 @@
+{
+  "description": "Carnegie Supernova Project II (CSP-II) natural-system passbands from the CSP team: scans of the Swope telescope with the e2v CCD (u g r i B V) and of the du Pont telescope with RetroCam (Y J H), including the atmosphere.",
+  "notes": "Curves are the CSP-II files linked one by one from the CSP filters page (not in CSP_filter_package.tgz), built by sed_tools.component_sources.csp. The optical file names carry the 'atm_ext_1.2' (airmass 1.2) label; the NIR files say only 'atm'. The page says the CSP-II filters 'will be described more fully in an upcoming publication' and cites Phillips et al. (2019) for colour terms. They are original-source curves, so no SVO record is attached (svo_filterID null). No licence, usage terms or acknowledgement request was found on the CSP filters page.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "No licence or usage terms are stated on the CSP filters page or in the CSP_filter_package.tgz README (checked 2026-10-26); the page's footer covers only the Plone software.",
+    "url": "https://csp.obs.carnegiescience.edu/data/filters"
+  },
+  "references": [
+    "doi:10.1088/1538-3873/aae8bd",
+    "doi:10.3847/1538-3881/aa8df0"
+  ],
+  "links": [
+    {
+      "url": "https://csp.obs.carnegiescience.edu/data/filters",
+      "label": "CSP filters page (passbands, zero points, epochs)",
+      "source": "Carnegie Supernova Project"
+    }
+  ],
+  "bands": {
+    "*": {
+      "references": [
+        "doi:10.1088/1538-3873/aae8bd"
+      ]
+    },
+    "u": {
+      "svo_filterID": null,
+      "Comments": "Swope e2v CCD; in use 10/2013 - present (CSP filters page table)."
+    },
+    "g": {
+      "svo_filterID": null,
+      "Comments": "Swope e2v CCD; in use 10/2013 - present (CSP filters page table)."
+    },
+    "r": {
+      "svo_filterID": null,
+      "Comments": "Swope e2v CCD; in use 10/2013 - present (CSP filters page table)."
+    },
+    "i": {
+      "svo_filterID": null,
+      "Comments": "Swope e2v CCD; in use 10/2013 - present (CSP filters page table)."
+    },
+    "B": {
+      "svo_filterID": null,
+      "Comments": "Swope e2v CCD; in use 10/2013 - present (CSP filters page table)."
+    },
+    "V": {
+      "svo_filterID": null,
+      "Comments": "Swope e2v CCD; in use 10/2013 - present (CSP filters page table)."
+    },
+    "Y": {
+      "svo_filterID": null,
+      "Comments": "du Pont RetroCam; in use 07/2011 - present (CSP filters page table)."
+    },
+    "J": {
+      "svo_filterID": null,
+      "Comments": "du Pont RetroCam; in use 07/2011 - present (CSP filters page table)."
+    },
+    "H": {
+      "svo_filterID": null,
+      "Comments": "du Pont RetroCam; in use 07/2011 - present (CSP filters page table)."
+    }
+  }
+}

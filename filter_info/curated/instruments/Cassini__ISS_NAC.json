@@ -1,7 +1,7 @@
 {
   "description": "The Cassini ISS narrow-angle camera is an f/10.5 reflecting telescope with a 0.35 by 0.35 degree field of view, a spectral range of 200 to 1100 nm, and two filter wheels that carry 12 filters each.",
   "facility_description": "Cassini-Huygens launched on 15 October 1997 and the orbiter entered Saturn orbit on 1 July 2004; the Imaging Node portal describes later Equinox and Solstice extensions through September 2017.",
-  "notes": "Band Comments quote central wavelength, FWHM and effective wavelength from Table A.2 of Knowles, Cassini ISS Data User's Guide, 16 September 2018, on the PDS Imaging Node. Those rows are calibration products in a NASA PDS document, so the NASA Science Data Portal CC0 statement is applied to them. The Kluwer/Springer Porco et al. 2004 PDF is cited as the instrument paper and as the source that publishes Table VIII and transmission figures; its numeric tables were not copied into these Comments because that PDF states it was printed by Kluwer Academic Publishers. NJM single-filter names are the Table A.2 pair of that filter with CL1 or CL2. NJM two-filter names are the Table A.2 pairs that the guide actually lists. Table A.2 also lists NAC RED/IR3 and WAC IR3/RED and WAC IR3/IR1, which are not NJM keys and are omitted. Polarizers (NAC P0, P60, P120, IRP0; WAC IRP0, IRP90) are described in the user guide and instrument catalogs but are not NJM band names. CB1a and CB1b are the two peaks of the CB1 response, not separate filters. Clear is the CL1/CL2 pair. pdftotext of user-guide Table A.1 prints BL2 as 440W, while Porco et al. 2004 Table VIII and issna_inst.cat print 440M. Table A.1 prints WAC HAL as 656W; isswa_inst.cat prints 656N. pdftotext did not place a WAC numerical name on the Table A.1 MT2 row, but Table A.2 and isswa_inst.cat both include WAC MT2. The instrument catalog and the 2018 guide disagree on WAC spectral coverage (380-1050 nm versus 380-1100 nm). The WAC catalog overview says the wheels move at 3 positions per second, while its Filters section and Porco et al. 2004 say 2 positions per second in the WAC and 3 in the NAC. Figure A.6 of the user guide gives CCD quantum efficiency in electrons per incident photon, so the cameras are photon-counting detectors; DetectorType was left unset. No opened PDS or NASA page supplied a required acknowledgement sentence. Citation requests were not copied into acknowledgements. ADS abstracts returned HTTP 405 or a human-verification page, so no bibcode was recorded. Springer returned a client-challenge page. SVO filter pages timed out or returned 404 and were not used. The suggested user-guide URL dated 160929 returned HTTP 404. The West et al. 2010 author PDF at boulder.swri.edu failed TLS certificate verification and was not opened, so that calibration paper is not in references. The GISS HTML abstract gives doi:10.1007/s11214-004-1456-7. The NASA licence page qualifies that sentence: it applies unless the data file is marked with a restrictive notice or license.",
+  "notes": "Band Comments quote central wavelength, FWHM and effective wavelength from Table A.2 of Knowles, Cassini ISS Data User's Guide, 16 September 2018, on the PDS Imaging Node. Those rows are calibration products in a NASA PDS document, so the NASA Science Data Portal CC0 statement is applied to them. The Kluwer/Springer Porco et al. 2004 PDF is cited as the instrument paper and as the source that publishes Table VIII and transmission figures; its numeric tables were not copied into these Comments because that PDF states it was printed by Kluwer Academic Publishers. NJM single-filter names are the Table A.2 pair of that filter with CL1 or CL2. NJM two-filter names are the Table A.2 pairs that the guide actually lists. Table A.2 also lists NAC RED/IR3 and WAC IR3/RED and WAC IR3/IR1, which are not NJM keys and are omitted. Polarizers (NAC P0, P60, P120, IRP0; WAC IRP0, IRP90) are described in the user guide and instrument catalogs but are not NJM band names. CB1a and CB1b are the two peaks of the CB1 response, not separate filters. Clear is the CL1/CL2 pair. pdftotext of user-guide Table A.1 prints BL2 as 440W, while Porco et al. 2004 Table VIII and issna_inst.cat print 440M. Table A.1 prints WAC HAL as 656W; isswa_inst.cat prints 656N. pdftotext did not place a WAC numerical name on the Table A.1 MT2 row, but Table A.2 and isswa_inst.cat both include WAC MT2. The instrument catalog and the 2018 guide disagree on WAC spectral coverage (380-1050 nm versus 380-1100 nm). The WAC catalog overview says the wheels move at 3 positions per second, while its Filters section and Porco et al. 2004 say 2 positions per second in the WAC and 3 in the NAC. Figure A.6 of the user guide gives CCD quantum efficiency in electrons per incident photon, so the cameras are photon-counting detectors; DetectorType was left unset. No opened PDS or NASA page supplied a required acknowledgement sentence. Citation requests were not copied into acknowledgements. ADS abstracts returned HTTP 405 or a human-verification page, so no bibcode was recorded. Springer returned a client-challenge page. SVO filter pages timed out or returned 404 and were not used. The suggested user-guide URL dated 160929 returned HTTP 404. The West et al. 2010 author PDF at boulder.swri.edu failed TLS certificate verification and was not opened, so that calibration paper is not in references. The GISS HTML abstract gives doi:10.1007/s11214-004-1456-7. The NASA licence page qualifies that sentence: it applies unless the data file is marked with a restrictive notice or license. Since 2026-10-26 the band names carry the PDS system transmission, column 2 of COISS_0011 calib/efficiency/systrans/<cam><filter1><filter2>_systrans.tab (QE x optics x filter1 x filter2, full 0.1 nm grid; DetectorType photon from document/theoretical_basis.tex eq. 1), and get no SVO record (svo_filterID null). SVO's copies, windows cut from those files, are kept as <band>_svo and point at SVO's IDs (rename map filter_expansion/renamed_filters_20261026_cassini.csv). manifest.json adds the CCD QE (ccdqe.tab), the optics (na_optics.tab / wa_optics.tab) and derived filter pairs. The PDS data set catalog gives CITATION_DESC \"Porco, C.P., CASSINI ORBITER CALIBRATION ISSNA/ISSWA 2 EDR VERSION 4.3, CO_CAL_ISSNA/ISSWA_2_EDR_V4.3, 2019\" (calds.cat).",
   "licence": {
     "redistribution": "public",
     "terms": "\"There are no restrictions on the usage of these data.\"",
@@ -45,6 +45,16 @@
       "url": "https://science.nasa.gov/mission/cassini/spacecraft/cassini-orbiter/imaging-science-subsystem/",
       "label": "NASA Science Imaging Science Subsystem page",
       "source": "NASA"
+    },
+    {
+      "url": "https://pds-rings.seti.org/holdings/volumes/COISS_0xxx/COISS_0011/calib/efficiency/",
+      "label": "PDS COISS_0011 calib/efficiency tables (source of the curves and components)",
+      "source": "PDS"
+    },
+    {
+      "url": "https://pds-rings.seti.org/holdings/volumes/COISS_0xxx/COISS_0011/catalog/calds.cat",
+      "label": "PDS data set catalog CO_CAL_ISSNA/ISSWA_2_EDR_V4.3 (citation)",
+      "source": "PDS"
     }
   ],
   "bands": {
@@ -56,84 +66,276 @@
     },
     "BL1": {
       "Comments": "Central wavelength 450.851 nm, bandpass FWHM 102.996 nm, effective wavelength 455.471 nm for the NAC BL1/CL2 pair in the 2018 ISS Data User's Guide Table A.2.",
-      "Description": "Broad-band color"
+      "Description": "Broad-band color",
+      "svo_filterID": null
     },
     "BL1_GRN": {
-      "Comments": "Central wavelength 497.445 nm, bandpass FWHM 5.00811 nm, effective wavelength 497.435 nm for the NAC BL1/GRN pair in the 2018 ISS Data User's Guide Table A.2."
+      "Comments": "Central wavelength 497.445 nm, bandpass FWHM 5.00811 nm, effective wavelength 497.435 nm for the NAC BL1/GRN pair in the 2018 ISS Data User's Guide Table A.2.",
+      "svo_filterID": null
     },
     "BL2": {
-      "Comments": "Central wavelength 439.923 nm, bandpass FWHM 29.4692 nm, effective wavelength 440.98 nm for the NAC CL1/BL2 pair in the 2018 ISS Data User's Guide Table A.2."
+      "Comments": "Central wavelength 439.923 nm, bandpass FWHM 29.4692 nm, effective wavelength 440.98 nm for the NAC CL1/BL2 pair in the 2018 ISS Data User's Guide Table A.2.",
+      "svo_filterID": null
     },
     "CB2": {
       "Comments": "Central wavelength 750.505 nm, bandpass FWHM 10.0129 nm, effective wavelength 750.495 nm for the NAC CL1/CB2 pair in the 2018 ISS Data User's Guide Table A.2.",
-      "Description": "Continuum for MT2"
+      "Description": "Continuum for MT2",
+      "svo_filterID": null
     },
     "CB3": {
-      "Description": "Continuum for MT3, see through Titan haze"
+      "Description": "Continuum for MT3, see through Titan haze",
+      "svo_filterID": null
     },
     "Clear": {
-      "Comments": "Central wavelength 610.675 nm, bandpass FWHM 340.056 nm, effective wavelength 651.057 nm for the NAC CL1/CL2 pair in the 2018 ISS Data User's Guide Table A.2."
+      "Comments": "Central wavelength 610.675 nm, bandpass FWHM 340.056 nm, effective wavelength 651.057 nm for the NAC CL1/CL2 pair in the 2018 ISS Data User's Guide Table A.2.",
+      "svo_filterID": null
     },
     "GRN": {
       "Comments": "Central wavelength 568.134 nm, bandpass FWHM 113.019 nm, effective wavelength 569.236 nm for the NAC CL1/GRN pair in the 2018 ISS Data User's Guide Table A.2.",
-      "Description": "Broad-band color"
+      "Description": "Broad-band color",
+      "svo_filterID": null
     },
     "HAL": {
       "Comments": "Central wavelength 655.663 nm, bandpass FWHM 9.2647 nm, effective wavelength 655.621 nm for the NAC HAL/CL2 pair in the 2018 ISS Data User's Guide Table A.2.",
-      "Description": "H-alpha/lightning"
+      "Description": "H-alpha/lightning",
+      "svo_filterID": null
     },
     "IR1": {
       "Comments": "Central wavelength 751.894 nm, bandpass FWHM 152.929 nm, effective wavelength 750.048 nm for the NAC CL1/IR1 pair in the 2018 ISS Data User's Guide Table A.2.",
-      "Description": "Broad-band color"
+      "Description": "Broad-band color",
+      "svo_filterID": null
     },
     "IR2": {
       "Comments": "Central wavelength 861.962 nm, bandpass FWHM 97.0431 nm, effective wavelength 861.066 nm for the NAC IR2/CL2 pair in the 2018 ISS Data User's Guide Table A.2.",
-      "Description": "Broad-band color, ring absorption band"
+      "Description": "Broad-band color, ring absorption band",
+      "svo_filterID": null
     },
     "IR2_IR1": {
-      "Comments": "Central wavelength 827.438 nm, bandpass FWHM 28.043 nm, effective wavelength 827.331 nm for the NAC IR2/IR1 pair in the 2018 ISS Data User's Guide Table A.2."
+      "Comments": "Central wavelength 827.438 nm, bandpass FWHM 28.043 nm, effective wavelength 827.331 nm for the NAC IR2/IR1 pair in the 2018 ISS Data User's Guide Table A.2.",
+      "svo_filterID": null
     },
     "IR2_IR3": {
-      "Comments": "Central wavelength 901.843 nm, bandpass FWHM 44.0356 nm, effective wavelength 901.63 nm for the NAC IR2/IR3 pair in the 2018 ISS Data User's Guide Table A.2."
+      "Comments": "Central wavelength 901.843 nm, bandpass FWHM 44.0356 nm, effective wavelength 901.63 nm for the NAC IR2/IR3 pair in the 2018 ISS Data User's Guide Table A.2.",
+      "svo_filterID": null
     },
     "IR3": {
       "Comments": "Central wavelength 929.763 nm, bandpass FWHM 66.9995 nm, effective wavelength 928.304 nm for the NAC CL1/IR3 pair in the 2018 ISS Data User's Guide Table A.2.",
-      "Description": "Broad-band color"
+      "Description": "Broad-band color",
+      "svo_filterID": null
     },
     "IR4": {
       "Comments": "Central wavelength 1002.4 nm, bandpass FWHM 35.9966 nm, effective wavelength 1001.91 nm for the NAC IR4/CL2 pair in the 2018 ISS Data User's Guide Table A.2.",
-      "Description": "Broad-band color"
+      "Description": "Broad-band color",
+      "svo_filterID": null
     },
     "IR4_IR3": {
-      "Comments": "Central wavelength 996.723 nm, bandpass FWHM 36.07 nm, effective wavelength 996.46 nm for the NAC IR4/IR3 pair in the 2018 ISS Data User's Guide Table A.2."
+      "Comments": "Central wavelength 996.723 nm, bandpass FWHM 36.07 nm, effective wavelength 996.46 nm for the NAC IR4/IR3 pair in the 2018 ISS Data User's Guide Table A.2.",
+      "svo_filterID": null
     },
     "MT1": {
-      "Comments": "Central wavelength 618.945 nm, bandpass FWHM 3.6894 nm, effective wavelength 618.949 nm for the NAC CL1/MT1 pair in the 2018 ISS Data User's Guide Table A.2."
+      "Comments": "Central wavelength 618.945 nm, bandpass FWHM 3.6894 nm, effective wavelength 618.949 nm for the NAC CL1/MT1 pair in the 2018 ISS Data User's Guide Table A.2.",
+      "svo_filterID": null
     },
     "MT2": {
-      "Comments": "Central wavelength 727.421 nm, bandpass FWHM 4.1124 nm, effective wavelength 727.415 nm for the NAC CL1/MT2 pair in the 2018 ISS Data User's Guide Table A.2."
+      "Comments": "Central wavelength 727.421 nm, bandpass FWHM 4.1124 nm, effective wavelength 727.415 nm for the NAC CL1/MT2 pair in the 2018 ISS Data User's Guide Table A.2.",
+      "svo_filterID": null
     },
     "MT3": {
-      "Description": "Methane band, vertical sounding"
+      "Description": "Methane band, vertical sounding",
+      "svo_filterID": null
     },
     "RED": {
       "Comments": "Central wavelength 650.086 nm, bandpass FWHM 149.998 nm, effective wavelength 648.879 nm for the NAC RED/CL2 pair in the 2018 ISS Data User's Guide Table A.2.",
-      "Description": "Broad-band color"
+      "Description": "Broad-band color",
+      "svo_filterID": null
     },
     "RED_GRN": {
-      "Comments": "Central wavelength 601.032 nm, bandpass FWHM 51.9801 nm, effective wavelength 600.959 nm for the NAC RED/GRN pair in the 2018 ISS Data User's Guide Table A.2."
+      "Comments": "Central wavelength 601.032 nm, bandpass FWHM 51.9801 nm, effective wavelength 600.959 nm for the NAC RED/GRN pair in the 2018 ISS Data User's Guide Table A.2.",
+      "svo_filterID": null
     },
     "RED_IR1": {
-      "Comments": "Central wavelength 701.9 nm, bandpass FWHM 44.9603 nm, effective wavelength 701.692 nm for the NAC RED/IR1 pair in the 2018 ISS Data User's Guide Table A.2."
+      "Comments": "Central wavelength 701.9 nm, bandpass FWHM 44.9603 nm, effective wavelength 701.692 nm for the NAC RED/IR1 pair in the 2018 ISS Data User's Guide Table A.2.",
+      "svo_filterID": null
     },
     "UV1": {
-      "Comments": "Central wavelength 258.098 nm, bandpass FWHM 37.9542 nm, effective wavelength 266.321 nm for the NAC UV1/CL2 pair in the 2018 ISS Data User's Guide Table A.2."
+      "Comments": "Central wavelength 258.098 nm, bandpass FWHM 37.9542 nm, effective wavelength 266.321 nm for the NAC UV1/CL2 pair in the 2018 ISS Data User's Guide Table A.2.",
+      "svo_filterID": null
     },
     "UV2_UV3": {
-      "Comments": "Central wavelength 315.623 nm, bandpass FWHM 28.9282 nm, effective wavelength 317.609 nm for the NAC UV2/UV3 pair in the 2018 ISS Data User's Guide Table A.2."
+      "Comments": "Central wavelength 315.623 nm, bandpass FWHM 28.9282 nm, effective wavelength 317.609 nm for the NAC UV2/UV3 pair in the 2018 ISS Data User's Guide Table A.2.",
+      "svo_filterID": null
     },
     "UV3": {
-      "Comments": "Central wavelength 338.284 nm, bandpass FWHM 68.0616 nm, effective wavelength 343.136 nm for the NAC CL1/UV3 pair in the 2018 ISS Data User's Guide Table A.2."
+      "Comments": "Central wavelength 338.284 nm, bandpass FWHM 68.0616 nm, effective wavelength 343.136 nm for the NAC CL1/UV3 pair in the 2018 ISS Data User's Guide Table A.2.",
+      "svo_filterID": null
+    },
+    "BL1_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.BL1"
+    },
+    "BL1_BL2": {
+      "svo_filterID": null
+    },
+    "BL1_BL2_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.BL1_BL2"
+    },
+    "BL1_GRN_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.BL1_GRN"
+    },
+    "BL1_UV3": {
+      "svo_filterID": null
+    },
+    "BL1_UV3_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.BL1_UV3"
+    },
+    "BL2_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.BL2"
+    },
+    "CB1": {
+      "svo_filterID": null
+    },
+    "CB1_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.CB1"
+    },
+    "CB1a": {
+      "svo_filterID": null
+    },
+    "CB1a_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.CB1a"
+    },
+    "CB1b": {
+      "svo_filterID": null
+    },
+    "CB1b_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.CB1b"
+    },
+    "CB2_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.CB2"
+    },
+    "CB3_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.CB3"
+    },
+    "Clear_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.Clear"
+    },
+    "GRN_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.GRN"
+    },
+    "HAL_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.HAL"
+    },
+    "HAL_CB1": {
+      "svo_filterID": null
+    },
+    "HAL_CB1_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.HAL_CB1"
+    },
+    "HAL_GRN": {
+      "svo_filterID": null
+    },
+    "HAL_GRN_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.HAL_GRN"
+    },
+    "HAL_IR1": {
+      "svo_filterID": null
+    },
+    "HAL_IR1_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.HAL_IR1"
+    },
+    "IR1_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.IR1"
+    },
+    "IR2_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.IR2"
+    },
+    "IR2_CB3": {
+      "svo_filterID": null
+    },
+    "IR2_CB3_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.IR2_CB3"
+    },
+    "IR2_IR1_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.IR2_IR1"
+    },
+    "IR2_IR3_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.IR2_IR3"
+    },
+    "IR2_MT3": {
+      "svo_filterID": null
+    },
+    "IR2_MT3_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.IR2_MT3"
+    },
+    "IR3_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.IR3"
+    },
+    "IR4_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.IR4"
+    },
+    "IR4_IR3_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.IR4_IR3"
+    },
+    "MT1_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.MT1"
+    },
+    "MT2_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.MT2"
+    },
+    "MT3_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.MT3"
+    },
+    "RED_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.RED"
+    },
+    "RED_CB1": {
+      "svo_filterID": null
+    },
+    "RED_CB1_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.RED_CB1"
+    },
+    "RED_CB2": {
+      "svo_filterID": null
+    },
+    "RED_CB2_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.RED_CB2"
+    },
+    "RED_GRN_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.RED_GRN"
+    },
+    "RED_IR1_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.RED_IR1"
+    },
+    "RED_MT1": {
+      "svo_filterID": null
+    },
+    "RED_MT1_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.RED_MT1"
+    },
+    "RED_MT2": {
+      "svo_filterID": null
+    },
+    "RED_MT2_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.RED_MT2"
+    },
+    "UV1_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.UV1"
+    },
+    "UV1_UV3": {
+      "svo_filterID": null
+    },
+    "UV1_UV3_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.UV1_UV3"
+    },
+    "UV2": {
+      "svo_filterID": null
+    },
+    "UV2_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.UV2"
+    },
+    "UV2_UV3_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.UV2_UV3"
+    },
+    "UV3_svo": {
+      "svo_filterID": "Cassini/ISS_NAC.UV3"
     }
   }
 }
