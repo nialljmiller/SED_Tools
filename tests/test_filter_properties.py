@@ -82,11 +82,16 @@ def test_zero_points_agree_with_sed_tools_band_averages(detector):
     assert p["ZeroPointST_Jy"] == pytest.approx(band_average_flux_nu(lam, st, curve) / 1e-23, rel=1e-9)
 
 
-def test_vega_quantities_need_full_coverage():
+def test_vega_quantities_need_coverage_where_the_filter_transmits():
     lam, t = gaussian(50000.0, 3000.0)
     p = filter_properties(lam, t, "photon", vega=(np.array([900.0, 30000.0]), np.array([1e-9, 1e-12])))
     assert p["ZeroPointVega_Jy"] is None and p["WavelengthEff"] is None
     assert p["ZeroPointAB_Jy"] == AB_JY
+    # A negligible tail beyond the spectrum counts as zero flux, as in SED_Tools photometry.
+    vega = (np.linspace(900.0, 7400.0, 2000), np.full(2000, 1e-9))
+    lam, t = gaussian(5500.0, 300.0)  # tabulated out to 7300 A; above 1 % of peak only to ~6400 A
+    tail = np.concatenate([lam, [8000.0]]), np.concatenate([t, [0.0]])
+    assert filter_properties(*tail, "photon", vega=vega)["ZeroPointVega_flam"] == pytest.approx(1e-9, rel=1e-6)
 
 
 def test_curve_at_full_transmission_at_its_edge():
