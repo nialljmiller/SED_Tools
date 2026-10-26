@@ -33,6 +33,30 @@ the SVO service. SVO-derived curves are credited to SVO in each record's
 
 Matching is exact first, then a unique case-insensitive match.
 
+## Copies: `_svo` and `_old`
+
+Every published curve is in the service under its own `filterID`, copies included;
+none is left out. `<band>_svo` is SVO's copy of a curve NJM holds from the original
+source, and `<band>_old` is a superseded curve kept after a newer official curve took
+the plain band name. The rule:
+
+1. A copy's `filterID` is its NJM path ID, `Facility/Instrument.<band>_svo` or
+   `Facility/Instrument.<band>_old` (for example `Euclid/NISP.Y_svo`,
+   `JWST/NIRCam.F444W_old`). It never takes the `FilterID` header it shares with the
+   plain-named curve.
+2. That shared ID, the SVO-form IDs that point at it (`Euclid/NISP.Y`, `GAIA/GAIA2.G`,
+   `Cassini/ISS_WAC.IR3`) and their PhotCalIDs return NJM's current, plain-named
+   curve. To get SVO's curve, ask for the `_svo` ID, or ask SVO.
+3. A copy's `Comments` starts by saying what it is:
+   `SVO FPS copy of NJM curve <ID>; SVO serves it as <SVO ID>`, or
+   `Superseded curve; the current one is <ID>`.
+4. The rule also covers a curve whose `FilterID` header is another curve's path ID.
+   `BOK/90prime/g` carries the header `BOK/BASS.g`, the path ID of `BOK/BASS/g`, so it
+   is served as `BOK/90prime.g` with `Comments` `Same curve as BOK/BASS.g`. Both stay.
+
+Filter lists (`Facility=`, wavelength ranges) include the copies. If you want one curve
+per passband, drop the `filterID`s that end in `_svo` or `_old`.
+
 ## astroquery
 
 astroquery 0.4.11 does not accept a non-SVO `conf.base_url` (its option validator
@@ -65,11 +89,12 @@ NJM extras after the SVO fields: `Components`, `ComponentsSource`,
 ## Maintenance
 
 The service reads one file, `catalog.json`, built from the published curves.
-After new curves are deployed and `generate_index.py` has rewritten
-`properties.json`, rebuild it with one command on Cirrus:
+`filter_info/refresh.sh` rebuilds it as its last step, so every refresh leaves it
+current. To rebuild it on its own (after new curves are deployed and
+`generate_index.py` has rewritten `properties.json`), run on Cirrus:
 
 ```sh
-cd /media/data3/MESA/SED_Tools && python3 filter_expansion/svc/build_catalog.py
+cd /media/data3/MESA/SED_Tools && flock /tmp/sed-filter-info.lock python3 filter_expansion/svc/build_catalog.py
 ```
 
 (defaults: `--data data --out data/svo_fps --aliases filter_expansion/svo_aliases.json`;

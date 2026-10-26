@@ -21,6 +21,14 @@ bands.<b>.svo_filterID, and (3) the "aliases" of svo_aliases.json (SVO ID ->
 NJM Facility/Instrument/band, built by filter_expansion/phase4/tools/
 build_svo_aliases.py).  A FilterID always wins over an alias.
 
+Copies: <band>_svo (SVO's copy of a curve NJM holds from the original
+source) and <band>_old (a superseded curve) are served under their own NJM
+path ID Facility/Instrument.<band>_svo|_old, never under the FilterID header
+they share with the plain-named curve, so SVO-form IDs reach NJM's current
+curve.  The same applies to any curve whose FilterID header is another
+curve's NJM path ID (BOK/90prime.g carries BOK/BASS.g, the path ID of
+BOK/BASS/g).  The displaced header ID stays an alias of last resort.
+
 Nothing is computed from the curves here; every property comes from
 properties.json (sed_tools.filter_properties).  Missing values stay null.
 
@@ -82,6 +90,7 @@ SPECIFIED_PARAMS = ["WavelengthRef", "WavelengthMean", "WavelengthEff", "Wavelen
                     "WavelengthMax", "WidthEff", "WavelengthCen", "WavelengthPivot",
                     "WavelengthPeak", "WavelengthPhot", "FWHM", "Fsun"]
 MAGSYS = {"vega": "Vega", "ab": "AB", "st": "ST"}
+COPY_SUFFIXES = ("_svo", "_old")
 
 
 def read_header(path):
@@ -191,6 +200,52 @@ def acks_for(acks, svo_curve, svo_meta):
     return hits
 
 
+def is_copy(band):
+    """``<band>_svo`` (SVO's copy) and ``<band>_old`` (superseded curve)."""
+    return band.endswith(COPY_SUFFIXES)
+
+
+def path_ids(filters_dir):
+    """NJM path IDs ``Facility/Instrument.band`` of every published curve."""
+    ids = set()
+    for facility in os.listdir(filters_dir):
+        fdir = os.path.join(filters_dir, facility)
+        for instrument in os.listdir(fdir) if os.path.isdir(fdir) else []:
+            idir = os.path.join(fdir, instrument)
+            for name in os.listdir(idir) if os.path.isdir(idir) else []:
+                if name.endswith(".dat") and os.path.isfile(os.path.join(idir, name)):
+                    ids.add(f"{facility}/{instrument}.{name[:-4]}")
+    return ids
+
+
+def same_curve(path_a, path_b):
+    """True when two curve files hold the same table (column rows may differ)."""
+    try:
+        with open(path_a, "rb") as a, open(path_b, "rb") as b:
+            a.readline(), b.readline()
+            return a.read() == b.read()
+    except OSError:
+        return False
+
+
+def copy_note(filters_dir, facility, instrument, band, header_id, njm_ids):
+    """Comments text for a curve served under its path ID instead of its FilterID header."""
+    plain = f"{facility}/{instrument}.{band[:-4]}"
+    if band.endswith("_svo"):
+        lead = (f"SVO FPS copy of NJM curve {plain}" if plain in njm_ids
+                else "SVO FPS copy")
+        return f"{lead}; SVO serves it as {header_id}"
+    if band.endswith("_old"):
+        lead = (f"Superseded curve; the current one is {plain}" if plain in njm_ids
+                else "Superseded curve")
+        return f"{lead}; FilterID header {header_id}"
+    fac, ins, other = split_id(header_id)
+    if same_curve(os.path.join(filters_dir, facility, instrument, band + ".dat"),
+                  os.path.join(filters_dir, fac, ins, other + ".dat")):
+        return f"Same curve as {header_id}"
+    return f"FilterID header {header_id} is another NJM curve's ID"
+
+
 def num(value):
     if isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value):
         return value
@@ -199,7 +254,8 @@ def num(value):
 
 def build(data_dir):
     filters_dir = os.path.join(data_dir, "filters")
-    rows, files, warnings, svo_ids = [], [], [], []
+    rows, files, warnings, svo_ids, header_ids = [], [], [], [], []
+    njm_ids = path_ids(filters_dir)
     vega_info, module = None, None
     all_acks, ack_seen = [], {}
     for facility in sorted(os.listdir(filters_dir)):
@@ -246,7 +302,11 @@ def build(data_dir):
                 band = name[:-4]
                 meta = read_header(os.path.join(idir, name))
                 njm_id = f"{facility}/{instrument}.{band}"
-                fid = meta.get("FilterID") or njm_id
+                header_id = meta.get("FilterID") or njm_id
+                fid, note = header_id, ""
+                if header_id != njm_id and (is_copy(band) or header_id in njm_ids):
+                    fid = njm_id
+                    note = copy_note(filters_dir, facility, instrument, band, header_id, njm_ids)
                 s_fac, s_ins, s_band = split_id(fid)
                 p = bands.get(band)
                 if p is None:
@@ -290,7 +350,7 @@ def build(data_dir):
                 }
                 for key in PROPS:
                     rec[key] = num(p.get(key))
-                entry = info_entry(info, band, fid)
+                entry = info_entry(info, band, header_id)
                 for key in INFO_FIELDS:
                     value = info_value(entry, key)
                     if value:
@@ -305,6 +365,8 @@ def build(data_dir):
                         warnings.append(f"unknown MagSys in info.json for {njm_id}: "
                                         f"{info_value(entry, 'MagSys')}")
                         rec["PhotCalID"] = rec["ZeroPointType"] = ""
+                if note:   # the shared PhotCalID belongs to the plain-named curve
+                    rec["PhotCalID"] = ""
                 spec = entry.get("specified") if isinstance(entry.get("specified"), dict) else {}
                 used = []
                 for key in SPECIFIED_PARAMS:
@@ -325,7 +387,7 @@ def build(data_dir):
                 credit = [a["citation"] for a in acks_for(acks, svo_derived, svo_meta)]
                 if svo_derived and not credit:
                     credit = [SVO_CREDIT]
-                rec["Comments"] = "; ".join(t for t in [info_value(entry, "Comments")] + credit if t)
+                rec["Comments"] = "; ".join(t for t in [note, info_value(entry, "Comments")] + credit if t)
                 bad = [k for k in FIELDS if isinstance(rec[k], str) and "\ufffd" in rec[k]]
                 if bad:   # lossy decode upstream (e.g. ISO-8859-1 page read as UTF-8): fix the source
                     warnings.append(f"U+FFFD replacement character in {njm_id}: {', '.join(bad)}")
@@ -334,7 +396,8 @@ def build(data_dir):
                 svo = entry.get("svo") if isinstance(entry.get("svo"), dict) else {}
                 svo_ids.append([v for v in (svo.get("filterID"), entry.get("svo_filterID"))
                                 if isinstance(v, str) and v.strip()])
-    return rows, files, warnings, vega_info, module, all_acks, svo_ids
+                header_ids.append(header_id if header_id != fid else "")
+    return rows, files, warnings, vega_info, module, all_acks, svo_ids, header_ids
 
 
 def default_paths():
@@ -355,7 +418,7 @@ def main():
     ap.add_argument("--out", default=d_out, help=f"output dir for catalog.json; default {d_out}")
     ap.add_argument("--aliases", default=d_alias, help=f"svo_aliases.json; default {d_alias} (skipped if absent)")
     args = ap.parse_args()
-    rows, files, warnings, vega_info, module, acks, svo_ids = build(args.data)
+    rows, files, warnings, vega_info, module, acks, svo_ids, header_ids = build(args.data)
     ids = {}
     for i, row in enumerate(rows):
         fid = row[FIELDS.index("filterID")]
@@ -391,11 +454,17 @@ def main():
     elif args.aliases:
         warnings.append(f"alias map not found: {args.aliases}")
     n_map = len(aliases) - n_path - n_info
+    for i, hid in enumerate(header_ids):   # FilterID headers displaced from copies
+        if hid and hid not in ids and hid not in aliases:
+            aliases[hid] = i
+    n_header = len(aliases) - n_path - n_info - n_map
     col = {k: FIELDS.index(k) for k in FIELDS}
     photcal = {}  # info.json PhotCalIDs that differ from <filterID>/<MagSys>
     for i, row in enumerate(rows):
         pc, ms = row[col["PhotCalID"]], row[col["MagSys"]]
         if pc and ms and pc != f"{row[col['filterID']]}/{ms}":
+            if pc.rpartition("/")[0] in ids:   # another curve's own <filterID>/<MagSys>
+                continue
             if pc in photcal:
                 warnings.append(f"duplicate PhotCalID {pc}: {files[photcal[pc]]} and {files[i]}")
                 continue
@@ -414,7 +483,8 @@ def main():
         "rows": rows,
         "files": files,
         "aliases": aliases,
-        "alias_counts": {"njm_path": n_path, "info_json_svo": n_info, "svo_aliases_json": n_map},
+        "alias_counts": {"njm_path": n_path, "info_json_svo": n_info, "svo_aliases_json": n_map,
+                         "copy_header": n_header},
         "alias_source": alias_source,
         "photcal": photcal,
         "acknowledgements": acks,
@@ -430,7 +500,7 @@ def main():
     os.chmod(tmp, 0o644)
     os.replace(tmp, os.path.join(args.out, "catalog.json"))  # atomic swap for live readers
     print(f"catalog.json: {len(rows)} filters, {len(aliases)} alias IDs ({n_path} NJM path, "
-          f"{n_info} info.json SVO, {n_map} svo_aliases.json), "
+          f"{n_info} info.json SVO, {n_map} svo_aliases.json, {n_header} copy header), "
           f"{len(catalog['facilities'])} facilities, {len(warnings)} warnings -> {args.out}")
     for w in warnings[:20]:
         print("  warning:", w)
