@@ -19,3 +19,23 @@ new instruments were built from the original teams' published curves instead of 
   retrieval time). The files themselves are archived on Cirrus under
   `source_evidence/filters/2026-10-25-expansion/` (not served publicly).
 - `svo-diagnostics-a8c7ef0f.md`: why SVO FPS (`svo2.cab.inta-csic.es`) timed out.
+
+## Phases 3-4 (2026-10-25/26)
+
+- `BRIEF-4.md`, `DECISIONS-20261026.md`: the phase 4 brief and Nill's decisions of 2026-10-26.
+- `svo_aliases.json`: SVO filter IDs that NJM holds under another path (SVO ID -> NJM
+  `Facility/Instrument/band`, with the basis of each), built by
+  `phase4/tools/build_svo_aliases.py`; used by the SVO-compatible service and `metrics.py`.
+- `svc/`: the SVO-compatible Filter Profile Service (`fps.php`, `getdata.php`, `_lib.php`,
+  `build_catalog.py`), deployed to `data/svo_fps/` =
+  https://nillmill.ddns.net/sed_tools/svo_fps/fps.php. See `svc/README.md` (astroquery
+  override `SvoFps.SVO_MAIN_URL`, catalog rebuild).
+- `ia/scripts/`: the Internet Archive harvest of SVO FPS captures (CDX enumeration,
+  selection, throttled downloads, parse, staging, batch export/publish). Versions of
+  2026-10-25 (the W2 worker of 2026-10-26 keeps editing its own copies).
+- `phase4/`: `tools/` (`dispatch.py` model-free worker dispatcher, `verify_a.py`,
+  `integrate_a.py`, `apply_b.py`, `patch_star.py`, `metrics.py`, `build_svo_aliases.py`),
+  `INTEGRATE.md`, `BRIEF-CB.md`, `WORKERS-20261026.md`, `svo_missing.txt` (the 5,876 SVO
+  IDs NJM lacked on 2026-10-26).
+- `tools/recipes/c4_*.py`: block C4 recipes (GOES ABI, Himawari AHI, JPSS VIIRS, Sentinel-2 MSI).
+  Their raw downloads are archived in `source_evidence/filters/2026-10-26-blockC-raw/`.

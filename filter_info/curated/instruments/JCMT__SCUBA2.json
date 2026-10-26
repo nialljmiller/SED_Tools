@@ -5,7 +5,8 @@
   "licence": {
     "redistribution": "permission",
     "terms": "\"All site content Copyright © 2014-2025 East Asian Observatory all rights reserved.\"",
-    "url": "https://www.eaobservatory.org/jcmt/instrumentation/continuum/scuba-2/"
+    "url": "https://www.eaobservatory.org/jcmt/instrumentation/continuum/scuba-2/",
+    "scope": "Site-wide footer of www.eaobservatory.org; not a data licence written for the filter curves."
   },
   "references": [
     "bibcode:2013MNRAS.430.2513H",

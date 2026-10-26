@@ -4,8 +4,9 @@
   "notes": "CTIO BLANK includes optical standard and interference filters used with various prime-focus and Cassegrain instruments at the Blanco telescope. Curves are from NOIRLab observatory records without an open redistribution licence.",
   "licence": {
     "redistribution": "unknown",
-    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the Creative Commons Attribution 4.0 International License\"",
-    "url": "https://noirlab.edu/public/copyright/"
+    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the Creative Commons Attribution 4.0 International License and can not be used for non-NOIRLab products.\"",
+    "url": "https://noirlab.edu/public/copyright/",
+    "scope": "Site-wide copyright and image-use policy of noirlab.edu (website content); not a data licence written for the filter curves."
   },
   "references": [
     "bibcode:1990PASP..102.1181B",

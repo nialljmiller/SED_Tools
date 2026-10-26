@@ -4,8 +4,9 @@
   "notes": "KeplerCam operated at the Cassegrain focus of the FLWO 1.2m telescope. Filters included 4-inch Harris BVRI sets, SDSS (Sloan) ugriz sets, and narrowbands. Terms follow CfA / Smithsonian Open Access public domain policy.",
   "licence": {
     "redistribution": "public",
-    "terms": "\"our digital assets are in the public domain and are thus free of copyright restrictions and may be used for any purpose, free of charge, without further permission.\"",
-    "url": "https://www.cfa.harvard.edu/news/image-use-policy"
+    "terms": "\"Our digital assets are in the public domain and are thus free of copyright restrictions and may be used for any purpose, free of charge, without further permission.\"",
+    "url": "https://www.cfa.harvard.edu/news/image-use-policy",
+    "scope": "Site-wide image use policy of www.cfa.harvard.edu; not a data licence written for the filter curves."
   },
   "references": [
     "bibcode:2009AJ....137.4911F",

@@ -5,7 +5,8 @@
   "licence": {
     "redistribution": "permission",
     "terms": "\"Copyright © ISAS/JAXA. All Rights Reserved.\"",
-    "url": "https://www.ir.isas.jaxa.jp/AKARI/about/"
+    "url": "https://www.ir.isas.jaxa.jp/AKARI/about/",
+    "scope": "Footer of the AKARI pages at www.ir.isas.jaxa.jp; not a data licence written for the filter curves."
   },
   "references": [
     "bibcode:2007PASJ...59S.389K",

@@ -4,7 +4,7 @@
   "notes": "The paper centres the wavebands at 250, 350 and 500 microns. NJM's keys are 1200GHz, 600GHz and 850GHz. Those numbers were not printed on the opened abstract, so no per-band Description was attached. bibcode:2016PhDT.......113G was not opened. No requested acknowledgement was found. The only reuse terms opened for the article are the arXiv non-exclusive licence, which does not grant further reuse and says to contact the author. That is not a grant to redistribute a separate numeric curve. No magnitude system was recorded.",
   "licence": {
     "redistribution": "permission",
-    "terms": "\"which does not grant further reuse permissions directly. In these cases you will need to contact the author directly with your request.\"",
+    "terms": "\"The overwhelming majority of e-prints are submitted using the arXiv perpetual non-exclusive license, which does not grant further reuse permissions directly. In these cases you will need to contact the author directly with your request.\"",
     "url": "https://info.arxiv.org/help/license/reuse.html"
   },
   "references": [

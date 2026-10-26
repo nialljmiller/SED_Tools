@@ -5,7 +5,8 @@
   "licence": {
     "redistribution": "public",
     "terms": "\"Unless otherwise specifically stated, no claim to copyright is being asserted by STScI and material on this site may be freely used as in the public domain in accordance with NASA's contract.\"",
-    "url": "https://www.stsci.edu/copyright"
+    "url": "https://www.stsci.edu/copyright",
+    "scope": "Site-wide Content Use Policy of www.stsci.edu; not a data licence written for the filter curves."
   },
   "references": [
     "doi:10.1117/12.460040",

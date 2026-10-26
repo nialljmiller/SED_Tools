@@ -4,7 +4,7 @@
   "notes": "The CHEOPS passband is formed by the combination of telescope optical transmission and CCD quantum efficiency from 330 to 1100 nm, as documented in the ESA CHEOPS bandpass note (README_CHEOPS_Bandpass-April2021.pdf). The note explicitly states that the bandpass represents the ratio between measured electrons and incident photons, confirming a photon-counting detector type. DetectorType is left unchanged. Terms of use and required acknowledgement are from the ESA Space Science Archives terms and conditions.",
   "licence": {
     "redistribution": "attribution",
-    "terms": "\"raw and calibrated data (hereafter data) deriving from satellites flown in the framework of an agency programme and contained in the esa space science archives, as well as analysed data and higher-level science products (hereafter data products) contained in the esa space science archives, are open and free to use by the user subject to proper acknowledgment to be given in accordance with the credit lines provided below.\"",
+    "terms": "\"Raw and Calibrated Data (hereafter Data) deriving from satellites flown in the framework of an Agency Programme and contained in the ESA Space Science Archives, as well as analysed data and higher-level science products (hereafter Data Products) contained in the ESA Space Science Archives, are open and free to use by the User subject to proper acknowledgment to be given in accordance with the credit lines provided below.\"",
     "url": "https://www.cosmos.esa.int/web/esdc/terms-and-conditions"
   },
   "references": [

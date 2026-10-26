@@ -4,7 +4,7 @@
   "notes": "Hewett et al. 2006 give the default ZYJHK curves as system throughput from above the atmosphere to the detector (1.3 airmass, 1.0 mm water), normalised to the measured photon count rate. The UKIDSS technical page offers those tables if you wish to produce your own synthetic colours and states no redistribution terms. The arXiv record uses the assumed 1991-2003 licence, which the arXiv reuse page treats as the non-exclusive licence; the stored sentence is from that page and requires contacting the author before further reuse. The numeric curves are therefore not clearly redistributable. J, H and K were made to the Mauna Kea specification; Z and Y are WFCAM bands, so PhotSystem is the paper's name for the set, ZYJHK, not MKO. The WSA citation text still contains the placeholders Xnd and XX et al (200X) and does not ask for a proposal id. Irwin et al. is given there once as 2008 and elsewhere as in preparation, with no bibcode. Casali et al. 2007 is cited by DOI because bibcode:2007A&A...467..777C failed check_refs. about.ifa.hawaii.edu timed out. The UKIDSS HTML citation is split by links, so the acknowledgement is the contiguous wording on the WSA publications page.",
   "licence": {
     "redistribution": "permission",
-    "terms": "\"which does not grant further reuse permissions directly. In these cases you will need to contact the author directly with your request.\"",
+    "terms": "\"The overwhelming majority of e-prints are submitted using the arXiv perpetual non-exclusive license, which does not grant further reuse permissions directly. In these cases you will need to contact the author directly with your request.\"",
     "url": "https://info.arxiv.org/help/license/reuse.html"
   },
   "references": [

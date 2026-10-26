@@ -4,7 +4,7 @@
   "notes": "VizieR's rules say data are free for scientific use with citation of the original authors and publication, and that commercial use depends on the data origin; this catalogue comes from PASP (not AAS, not A&A) and its ReadMe states no copyright. Bessell (1990) is listed for context only: NJM's notes say these curves are the 2012 photonic set, not the 1990 energy-response passbands. The VizieR acknowledgement text is copied verbatim from the VizieR rules page; it is a request ('would be appreciated'). DetectorType unchanged (NJM already records photon).",
   "licence": {
     "redistribution": "attribution",
-    "terms": "\"The data retrieved with VizieR are free of usage in a scientific context\"",
+    "terms": "\"The data retrieved with VizieR are free of usage in a scientific context; however, as it is the usage in scientific publication, the original authors and publication references including the publisher have to be explicitely cited (see section Code of conduct of scientific research).\"",
     "url": "https://cds.unistra.fr/vizier-org/licences_vizier.html"
   },
   "references": [

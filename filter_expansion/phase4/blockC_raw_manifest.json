@@ -1,0 +1,287 @@
+[
+  {
+    "path": "source_evidence/filters/2026-10-26-blockC-raw/GOES/2016_03_10_SRF_PFM_FM2_FM3_FM4_CWG_release.docx",
+    "local_path": "downloads/GOES/2016_03_10_SRF_PFM_FM2_FM3_FM4_CWG_release.docx",
+    "build": "CB1 (GOES-R ABI, tools/recipes/c4_goes_abi.py)",
+    "source_url": "https://ncc.nesdis.noaa.gov/GOESR/docs/2016_03_10_SRF_PFM_FM2_FM3_FM4_CWG_release.docx",
+    "used_by": [
+      "GOES/ABI1",
+      "GOES/ABI2",
+      "GOES/ABI3",
+      "GOES/ABI4"
+    ],
+    "sha256": "280ec1289997cd558e008c38d43300fe4f9523e63b260f97373732ca65b6fa15",
+    "bytes": 22200,
+    "retrieved_utc": "2026-10-26T04:49:22Z",
+    "retrieved_basis": "file modification time of the download (as in 2026-10-25-expansion/manifest.json)"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-26-blockC-raw/GOES/GOES-R_ABI_FM2_SRF_CWG.zip",
+    "local_path": "downloads/GOES/GOES-R_ABI_FM2_SRF_CWG.zip",
+    "build": "CB1 (GOES-R ABI, tools/recipes/c4_goes_abi.py)",
+    "source_url": "https://ncc.nesdis.noaa.gov/GOESR/docs/GOES-R_ABI_FM2_SRF_CWG.zip",
+    "used_by": [
+      "GOES/ABI1",
+      "GOES/ABI2",
+      "GOES/ABI3",
+      "GOES/ABI4"
+    ],
+    "sha256": "247bca85282317003abaabc85e80685e64498bbca8e675c17063f24021af43d6",
+    "bytes": 218885,
+    "retrieved_utc": "2026-10-26T04:49:27Z",
+    "retrieved_basis": "file modification time of the download (as in 2026-10-25-expansion/manifest.json)"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-26-blockC-raw/GOES/GOES-R_ABI_FM2_SRF_CWG_81K.zip",
+    "local_path": "downloads/GOES/GOES-R_ABI_FM2_SRF_CWG_81K.zip",
+    "build": "CB1 (GOES-R ABI, tools/recipes/c4_goes_abi.py)",
+    "source_url": "https://ncc.nesdis.noaa.gov/GOESR/docs/GOES-R_ABI_FM2_SRF_CWG_81K.zip",
+    "used_by": [
+      "GOES/ABI1",
+      "GOES/ABI2",
+      "GOES/ABI3",
+      "GOES/ABI4"
+    ],
+    "sha256": "284af1b136f752b56dacae344393242736b24c6b13bf55dbf9dd0ec17f24a294",
+    "bytes": 170915,
+    "retrieved_utc": "2026-10-26T04:49:30Z",
+    "retrieved_basis": "file modification time of the download (as in 2026-10-25-expansion/manifest.json)"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-26-blockC-raw/GOES/GOES-R_ABI_FM3_SRF_CWG.zip",
+    "local_path": "downloads/GOES/GOES-R_ABI_FM3_SRF_CWG.zip",
+    "build": "CB1 (GOES-R ABI, tools/recipes/c4_goes_abi.py)",
+    "source_url": "https://ncc.nesdis.noaa.gov/GOESR/docs/GOES-R_ABI_FM3_SRF_CWG.zip",
+    "used_by": [
+      "GOES/ABI1",
+      "GOES/ABI2",
+      "GOES/ABI3",
+      "GOES/ABI4"
+    ],
+    "sha256": "09f78459ddd3f4ac346c46f6465cedc43737c6e227dd33be908cbd13d9e3732a",
+    "bytes": 223256,
+    "retrieved_utc": "2026-10-26T04:49:32Z",
+    "retrieved_basis": "file modification time of the download (as in 2026-10-25-expansion/manifest.json)"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-26-blockC-raw/GOES/GOES-R_ABI_FM4_SRF_CWG.zip",
+    "local_path": "downloads/GOES/GOES-R_ABI_FM4_SRF_CWG.zip",
+    "build": "CB1 (GOES-R ABI, tools/recipes/c4_goes_abi.py)",
+    "source_url": "https://ncc.nesdis.noaa.gov/GOESR/docs/GOES-R_ABI_FM4_SRF_CWG.zip",
+    "used_by": [
+      "GOES/ABI1",
+      "GOES/ABI2",
+      "GOES/ABI3",
+      "GOES/ABI4"
+    ],
+    "sha256": "b1482058cd63481f55e523c565a982bb2787f01088960e2833a1e4bf6286dd17",
+    "bytes": 229279,
+    "retrieved_utc": "2026-10-26T04:49:34Z",
+    "retrieved_basis": "file modification time of the download (as in 2026-10-25-expansion/manifest.json)"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-26-blockC-raw/GOES/GOES-R_ABI_PFM_SRF_CWG_v3.zip",
+    "local_path": "downloads/GOES/GOES-R_ABI_PFM_SRF_CWG_v3.zip",
+    "build": "CB1 (GOES-R ABI, tools/recipes/c4_goes_abi.py)",
+    "source_url": "https://ncc.nesdis.noaa.gov/GOESR/docs/GOES-R_ABI_PFM_SRF_CWG_v3.zip",
+    "used_by": [
+      "GOES/ABI1",
+      "GOES/ABI2",
+      "GOES/ABI3",
+      "GOES/ABI4"
+    ],
+    "sha256": "a0f762598455d03dceb8cb523115b9938d275b6fa53060f70effded565d5a4af",
+    "bytes": 265107,
+    "retrieved_utc": "2026-10-26T04:49:24Z",
+    "retrieved_basis": "file modification time of the download (as in 2026-10-25-expansion/manifest.json)"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-26-blockC-raw/JPSS/J1_VIIRS_RSR_DAWG_At-Launch_Public_Release_V2.1_Nov2016.zip",
+    "local_path": "downloads/JPSS/J1_VIIRS_RSR_DAWG_At-Launch_Public_Release_V2.1_Nov2016.zip",
+    "build": "CB2 (JPSS VIIRS, c4_viirs.py)",
+    "source_url": "https://ncc.nesdis.noaa.gov/NOAA-20/docs/J1_VIIRS_RSR_DAWG_At-Launch_Public_Release_V2.1_Nov2016.zip",
+    "used_by": [
+      "JPSS/VIIRS-J1"
+    ],
+    "sha256": "b74c8357ad216ca8c20474cc7da83fa999503590de000762f3d9d5db856dc9d4",
+    "bytes": 3256061,
+    "retrieved_utc": "2026-10-26T04:54:25Z",
+    "retrieved_basis": "file modification time of the download (as in 2026-10-25-expansion/manifest.json)"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-26-blockC-raw/JPSS/J2_VIIRS_RSR_DAWG_At-Launch_Public_Release_V2_Jul2019.zip",
+    "local_path": "downloads/JPSS/J2_VIIRS_RSR_DAWG_At-Launch_Public_Release_V2_Jul2019.zip",
+    "build": "CB2 (JPSS VIIRS, c4_viirs.py)",
+    "source_url": "https://ncc.nesdis.noaa.gov/NOAA-21/docs/J2_VIIRS_RSR_DAWG_At-Launch_Public_Release_V2_Jul2019.zip",
+    "used_by": [
+      "JPSS/VIIRS-J2"
+    ],
+    "sha256": "5139b0d70325dae13a9c267921806755e22b053a47df04ac85859750249ebce7",
+    "bytes": 3687953,
+    "retrieved_utc": "2026-10-26T04:54:28Z",
+    "retrieved_basis": "file modification time of the download (as in 2026-10-25-expansion/manifest.json)"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-26-blockC-raw/JPSS/NG_VIIRS_NPP_RSR_filtered_Oct2011_BA.zip",
+    "local_path": "downloads/JPSS/NG_VIIRS_NPP_RSR_filtered_Oct2011_BA.zip",
+    "build": "CB2 (JPSS VIIRS, c4_viirs.py)",
+    "source_url": "https://ncc.nesdis.noaa.gov/documents/documentation/NG_VIIRS_NPP_RSR_filtered_Oct2011_BA.zip",
+    "used_by": [
+      "downloaded by the CB worker; not listed in a provenance raw_files"
+    ],
+    "sha256": "a49d9aab756a1284265244ffb72044cbfd22b56b41bddf10292a00fb801f9329",
+    "bytes": 474631,
+    "retrieved_utc": "2026-10-26T04:54:19Z",
+    "retrieved_basis": "file modification time of the download (as in 2026-10-25-expansion/manifest.json)"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-26-blockC-raw/JPSS/NOAA-20-VIIRS-on-OrbitPerformanceTable.pdf",
+    "local_path": "downloads/JPSS/NOAA-20-VIIRS-on-OrbitPerformanceTable.pdf",
+    "build": "CB2 (JPSS VIIRS, c4_viirs.py)",
+    "source_url": "https://ncc.nesdis.noaa.gov/NOAA-20/docs/NOAA-20-VIIRS-on-OrbitPerformanceTable.pdf",
+    "used_by": [
+      "JPSS/VIIRS-J1",
+      "JPSS/VIIRS-J2"
+    ],
+    "sha256": "c49d9f6f25d07ca8db586349893286fb8f0b2183b6b8fae5e7ce392a61870365",
+    "bytes": 161875,
+    "retrieved_utc": "2026-10-26T04:55:28Z",
+    "retrieved_basis": "file modification time of the download (as in 2026-10-25-expansion/manifest.json)"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-26-blockC-raw/JPSS/f1-rsr-overview-gt-final-jan2012.pdf",
+    "local_path": "downloads/JPSS/f1-rsr-overview-gt-final-jan2012.pdf",
+    "build": "CB2 (JPSS VIIRS, c4_viirs.py)",
+    "source_url": null,
+    "note": "URL not recorded by the CB2 worker; PDF title 'VIIRS Pre-Launch F1 RSR Overview'",
+    "used_by": [
+      "downloaded by the CB worker; not listed in a provenance raw_files"
+    ],
+    "sha256": "c82183afb4f75c5ec274c512a7445c47c0af33198ad5ce63ae98e509c1f77f76",
+    "bytes": 1842401,
+    "retrieved_utc": "2026-10-26T04:55:19Z",
+    "retrieved_basis": "file modification time of the download (as in 2026-10-25-expansion/manifest.json)"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-26-blockC-raw/Himawari/AHI-08_SpectralResponsivity.zip",
+    "local_path": "downloads/Himawari/AHI-08_SpectralResponsivity.zip",
+    "build": "CB3 (Himawari AHI, c4_ahi.py)",
+    "source_url": "https://www.data.jma.go.jp/mscweb/en/himawari89/space_segment/srf_201309/AHI-08_SpectralResponsivity.zip",
+    "used_by": [
+      "Himawari/AHI8"
+    ],
+    "sha256": "19746461b94ac6a2e9563b07b6e448a81e57dd6855c1c01f3b7b8f998bd8741e",
+    "bytes": 1128228,
+    "retrieved_utc": "2026-10-26T04:59:02Z",
+    "retrieved_basis": "file modification time of the download (as in 2026-10-25-expansion/manifest.json)"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-26-blockC-raw/Himawari/AHI-09_SpectralResponsivity.zip",
+    "local_path": "downloads/Himawari/AHI-09_SpectralResponsivity.zip",
+    "build": "CB3 (Himawari AHI, c4_ahi.py)",
+    "source_url": "https://www.data.jma.go.jp/mscweb/en/himawari89/space_segment/srf_201310/AHI-09_SpectralResponsivity.zip",
+    "used_by": [
+      "Himawari/AHI9"
+    ],
+    "sha256": "b05b5c561d9ac77f71aae54e68aeb8c52e82329557e79d24b84e9cc776d225ee",
+    "bytes": 1154305,
+    "retrieved_utc": "2026-10-26T04:59:05Z",
+    "retrieved_basis": "file modification time of the download (as in 2026-10-25-expansion/manifest.json)"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-26-blockC-raw/Himawari/AHI8_performance_test_en.pdf",
+    "local_path": "downloads/Himawari/AHI8_performance_test_en.pdf",
+    "build": "CB3 (Himawari AHI, c4_ahi.py)",
+    "source_url": "https://www.data.jma.go.jp/mscweb/en/himawari89/space_segment/fig/AHI8_performance_test_en.pdf",
+    "used_by": [
+      "Himawari/AHI8",
+      "Himawari/AHI9"
+    ],
+    "sha256": "93b287b0aef4dba50a3acc0db272546dfbd30b7e9da24bfd949c37ac7879fbbb",
+    "bytes": 72657,
+    "retrieved_utc": "2026-10-26T04:59:07Z",
+    "retrieved_basis": "file modification time of the download (as in 2026-10-25-expansion/manifest.json)"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-26-blockC-raw/Himawari/spsg_ahi.html",
+    "local_path": "downloads/Himawari/spsg_ahi.html",
+    "build": "CB3 (Himawari AHI, c4_ahi.py)",
+    "source_url": "https://www.data.jma.go.jp/mscweb/en/himawari89/space_segment/spsg_ahi.html",
+    "url_basis": "saved copy of the page (canonical link / CB report)",
+    "used_by": [
+      "Himawari/AHI8",
+      "Himawari/AHI9"
+    ],
+    "sha256": "b576d290de94e07beed60757af2c699aaf51624210046f55d9ac9503ddb0c8df",
+    "bytes": 23552,
+    "retrieved_utc": "2026-10-26T04:58:53Z",
+    "retrieved_basis": "file modification time of the download (as in 2026-10-25-expansion/manifest.json)"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-26-blockC-raw/Sentinel/ads-ec-sentinel-licence.html",
+    "local_path": "downloads/Sentinel/ads-ec-sentinel-licence.html",
+    "build": "CB4 (Sentinel-2 MSI, c4_msi.py)",
+    "source_url": null,
+    "note": "URL not recorded by the CB4 worker; page title 'Copernicus Sentinel data licence (rev. 1)' (Copernicus Atmosphere Data Store)",
+    "used_by": [
+      "Sentinel/MSI-2A",
+      "Sentinel/MSI-2B",
+      "Sentinel/MSI-2C"
+    ],
+    "sha256": "5c8499295ff76ca00844ac50e248cb3b2352c604f17491dc615a2cf44041b4d6",
+    "bytes": 54845,
+    "retrieved_utc": "2026-10-26T05:04:11Z",
+    "retrieved_basis": "file modification time of the download (as in 2026-10-25-expansion/manifest.json)"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-26-blockC-raw/Sentinel/s2-documents.html",
+    "local_path": "downloads/Sentinel/s2-documents.html",
+    "build": "CB4 (Sentinel-2 MSI, c4_msi.py)",
+    "source_url": "https://sentiwiki.copernicus.eu/web/s2-documents",
+    "url_basis": "saved copy of the page (canonical link / CB report)",
+    "used_by": [
+      "Sentinel/MSI-2A",
+      "Sentinel/MSI-2B",
+      "Sentinel/MSI-2C"
+    ],
+    "sha256": "67ac659e0937d869faecb4289eb3cdf2a2dd88e9df74b5526c9d23cfd6f7a0a1",
+    "bytes": 50836,
+    "retrieved_utc": "2026-10-26T05:04:11Z",
+    "retrieved_basis": "file modification time of the download (as in 2026-10-25-expansion/manifest.json)"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-26-blockC-raw/Sentinel/sentinel-2-spectral-response-functions-v5.xlsx",
+    "local_path": "downloads/Sentinel/sentinel-2-spectral-response-functions-v5.xlsx",
+    "build": "CB4 (Sentinel-2 MSI, c4_msi.py)",
+    "source_url": "https://sentiwiki.copernicus.eu/__attachments/a_ad595cc9fa0018a4e9eb28e1e234124a751149b5933b0b8b1f6b80612eaab586/sentinel-2-spectral-response-functions-v5.xlsx",
+    "used_by": [
+      "Sentinel/MSI-2A",
+      "Sentinel/MSI-2B",
+      "Sentinel/MSI-2C"
+    ],
+    "sha256": "42be3ebd8bfcbde11c37caeb2e2fdda65fefa8d2b6f8329559b7806d02cdc9e2",
+    "bytes": 1330493,
+    "retrieved_utc": "2026-10-26T05:02:54Z",
+    "retrieved_basis": "file modification time of the download (as in 2026-10-25-expansion/manifest.json)"
+  },
+  {
+    "path": "source_evidence/filters/2026-10-26-blockC-raw/Sentinel/sentiwiki-terms-and-conditions.html",
+    "local_path": "downloads/Sentinel/sentiwiki-terms-and-conditions.html",
+    "build": "CB4 (Sentinel-2 MSI, c4_msi.py)",
+    "source_url": "https://sentiwiki.copernicus.eu/web/terms-and-conditions",
+    "url_basis": "saved copy of the page (canonical link / CB report)",
+    "used_by": [
+      "Sentinel/MSI-2A",
+      "Sentinel/MSI-2B",
+      "Sentinel/MSI-2C",
+      "Sentinel/OLCI-A",
+      "Sentinel/OLCI-B",
+      "Sentinel/SLSTR-A",
+      "Sentinel/SLSTR-B"
+    ],
+    "sha256": "2295de1699e8d1e8cc21a0b6a498cc42d14bea6cf7370b960a1f9e73b9f56f35",
+    "bytes": 30210,
+    "retrieved_utc": "2026-10-26T05:04:11Z",
+    "retrieved_basis": "file modification time of the download (as in 2026-10-25-expansion/manifest.json)"
+  }
+]

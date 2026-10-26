@@ -4,7 +4,7 @@
   "notes": "SDSS u', g', r', i', z' filters for ARCTIC and Agile. Passbands are defined by Fukugita et al. (1996). All SDSS public data releases are placed in the public domain under ARC/SDSS policy.",
   "licence": {
     "redistribution": "public",
-    "terms": "\"all SDSS data released in our public data releases are considered in the public domain.\"",
+    "terms": "\"All SDSS data released in our public data releases are considered in the public domain.\"",
     "url": "https://www.sdss.org/collaboration/image-use-policy/"
   },
   "references": [

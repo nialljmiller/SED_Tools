@@ -4,8 +4,9 @@
   "notes": "ISPI operated on the Blanco 4-meter until replacement by DECam. Transmission curves are published by NOIRLab without an open redistribution license.",
   "licence": {
     "redistribution": "unknown",
-    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the Creative Commons Attribution 4.0 International License\"",
-    "url": "https://noirlab.edu/public/copyright/"
+    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the Creative Commons Attribution 4.0 International License and can not be used for non-NOIRLab products.\"",
+    "url": "https://noirlab.edu/public/copyright/",
+    "scope": "Site-wide copyright and image-use policy of noirlab.edu (website content); not a data licence written for the filter curves."
   },
   "references": [
     "bibcode:2004SPIE.5492.1582V"

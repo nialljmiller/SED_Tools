@@ -4,8 +4,9 @@
   "notes": "University of Colorado Boulder (CASA/LASP) tilt-tuned narrow band filter traces for planetary sodium/sulfur imaging. Governed by NMSU copyright policy requiring permission for reproduction.",
   "licence": {
     "redistribution": "permission",
-    "terms": "\"reproduction of any content-text, images, photographs, etc.-requires permission.\"",
-    "url": "https://www.nmsu.edu/copyright.html"
+    "terms": "\"Reproduction of any content—text, images, photographs, etc.—requires permission.\"",
+    "url": "https://www.nmsu.edu/copyright.html",
+    "scope": "Copyright statement for all official New Mexico State University websites; not a data licence written for the filter curves."
   },
   "references": [
     "bibcode:1991Sci...253.1394S",

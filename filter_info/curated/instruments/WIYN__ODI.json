@@ -4,8 +4,9 @@
   "notes": "The NOIRLab ODI page lists u', g', r', i', z', NB422, NB695, NB746, and H-alpha. Only u, r, NB422, and NB695 are NJM keys. The WIYN credit page requests an acknowledgement for publications that include data from WIYN telescopes; it does not mention filter curves, so no acknowledgement is stored. The NOIRLab copyright page puts press text and images under CC BY 4.0 and says other text on that site is not released under that licence and cannot be used for non-NOIRLab products. The numerical ODI files are hosted on wiyn.org, which was not given its own redistribution terms, so the class is unknown. No magnitude system is stated. The NB422 header quote was read from the start of NB_422.txt.",
   "licence": {
     "redistribution": "unknown",
-    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the\"",
-    "url": "https://noirlab.edu/public/copyright/"
+    "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the Creative Commons Attribution 4.0 International License and can not be used for non-NOIRLab products.\"",
+    "url": "https://noirlab.edu/public/copyright/",
+    "scope": "Site-wide copyright and image-use policy of noirlab.edu (website content); not a data licence written for the filter curves."
   },
   "links": [
     {

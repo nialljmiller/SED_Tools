@@ -4,8 +4,9 @@
   "notes": "York narrow-band interference filters (50 mm round) provided by Don York (University of Chicago). Transmission curves are hosted on the APO filter server subject to NMSU copyright policy requiring permission for reproduction.",
   "licence": {
     "redistribution": "permission",
-    "terms": "\"reproduction of any content-text, images, photographs, etc.-requires permission.\"",
-    "url": "https://www.nmsu.edu/copyright.html"
+    "terms": "\"Reproduction of any content—text, images, photographs, etc.—requires permission.\"",
+    "url": "https://www.nmsu.edu/copyright.html",
+    "scope": "Copyright statement for all official New Mexico State University websites; not a data licence written for the filter curves."
   },
   "references": [
     "bibcode:2000AJ....120.1579Y",

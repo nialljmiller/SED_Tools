@@ -4,8 +4,9 @@
   "notes": "NMSU-UW institutional filter collection for the ARC 3.5m telescope. Traces are hosted in the NMSU-UW-Filters directory on the APO filter server subject to NMSU copyright terms requiring permission for reproduction.",
   "licence": {
     "redistribution": "permission",
-    "terms": "\"reproduction of any content-text, images, photographs, etc.-requires permission.\"",
-    "url": "https://www.nmsu.edu/copyright.html"
+    "terms": "\"Reproduction of any content—text, images, photographs, etc.—requires permission.\"",
+    "url": "https://www.nmsu.edu/copyright.html",
+    "scope": "Copyright statement for all official New Mexico State University websites; not a data licence written for the filter curves."
   },
   "references": [
     "bibcode:1976AJ.....81..228C",

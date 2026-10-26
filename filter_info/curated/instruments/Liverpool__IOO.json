@@ -98,7 +98,8 @@
   "licence": {
     "redistribution": "restricted",
     "terms": "\"In accessing the University webpages, you agree that any content you download is for personal, non-commercial use only.\"",
-    "url": "https://www.ljmu.ac.uk/legal/copyright-notice"
+    "url": "https://www.ljmu.ac.uk/legal/copyright-notice",
+    "scope": "Site-wide copyright notice of the Liverpool John Moores University website; not a data licence written for the filter curves."
   },
   "acknowledgements": [
     {

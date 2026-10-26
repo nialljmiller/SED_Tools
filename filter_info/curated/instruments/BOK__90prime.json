@@ -5,7 +5,8 @@
   "licence": {
     "redistribution": "attribution",
     "terms": "\"Except where otherwise noted, content on this wiki is licensed under the following license: CC Attribution-Share Alike 4.0 International\"",
-    "url": "https://lavinia.as.arizona.edu/~tscopewiki/doku.php?id=public:kitt_peak:bok_90:90prime:filters"
+    "url": "https://lavinia.as.arizona.edu/~tscopewiki/doku.php?id=public:kitt_peak:bok_90:90prime:filters",
+    "scope": "Site-wide footer of the Steward Observatory telescope wiki (lavinia.as.arizona.edu/~tscopewiki), shown on every wiki page; it applies to wiki content and is not a data licence written for the filter curves."
   },
   "references": [
     "bibcode:2004SPIE.5492..787W"

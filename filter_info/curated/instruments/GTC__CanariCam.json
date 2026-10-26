@@ -5,7 +5,8 @@
   "licence": {
     "redistribution": "restricted",
     "terms": "\"The distribution, modification, transfer or public communication of the contents and any other act that has not been expressly authorized by GRAN TELESCOPIO DE CANARIAS S.A. is prohibited.\"",
-    "url": "https://www.gtc.iac.es/gtc/legal.php"
+    "url": "https://www.gtc.iac.es/gtc/legal.php",
+    "scope": "Site-wide legal notice (Aviso legal) of www.gtc.iac.es; not a data licence written for the filter curves."
   },
   "references": [
     "doi:10.1117/12.458979",

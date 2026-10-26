@@ -4,8 +4,9 @@
   "notes": "Except for F158M, JDox says the filters originated as NIRCam flight spares, with a blocking element added below 2.5 μm. The exploded-view figure caption reads: Exploded view of the structure of a NIRISS \"double-stack\" filter. © Honeywell. That figure is third-party material. Zeropoints are described as the previous Vegamag system, using a Sirius CALSPEC model as an A0V template of magnitude -1.395, and the page also gives an offset from that Sirius system to AB magnitudes. MagSys was left unset because both are defined. The printed Bohlin citation says AJ, 141, 5, while the hyperlink on the same page is bibcode 2011AJ....141..173B. DetectorType was left unchanged. PCE curves account for quantum yield. Manufacturer terms for the measured transmissions were not found.",
   "licence": {
     "redistribution": "public",
-    "terms": "\"no claim to copyright is being asserted by STScI and material on this site may be freely used as in the public domain\"",
-    "url": "https://www.stsci.edu/copyright"
+    "terms": "\"Unless otherwise specifically stated, no claim to copyright is being asserted by STScI and material on this site may be freely used as in the public domain in accordance with NASA's contract.\"",
+    "url": "https://www.stsci.edu/copyright",
+    "scope": "Site-wide Content Use Policy of www.stsci.edu; not a data licence written for the filter curves."
   },
   "references": [
     "bibcode:2023PASP..135i8001D",

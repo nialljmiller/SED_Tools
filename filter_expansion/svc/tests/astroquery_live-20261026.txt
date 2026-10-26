@@ -1,0 +1,11 @@
+SvoFps.SVO_MAIN_URL = https://nillmill.ddns.net/sed_tools/svo_fps/fps.php
+get_filter_list(2MASS): 3 ['2MASS/2MASS.H', '2MASS/2MASS.J', '2MASS/2MASS.Ks']
+get_filter_list(Paranal, NACO): 33
+get_filter_index(16000-16500 A): 82 ['ADEOS/GLI.ch28', 'APO/NICFPS.FeII_160', 'APO/NICFPS.FeII_164', 'APO/NICFPS.MKO_H', 'Akatsuki/IR2.1650nm', 'Aqua/MODIS.band1640', 'CAHA/Omega2000.FeII_1644', 'CAHA/Omega2000.H']
+get_transmission_data(2MASS/2MASS.H): 58 rows, ['Wavelength', 'Transmission'], Angstrom, 12890.0..19140.0
+get_transmission_data(Paranal/NACO.H): 25 rows, ['Wavelength', 'Transmission'], Angstrom, 14200.0..19000.0
+get_transmission_data(WFIRST/WFI.R062): 68 rows, ['Wavelength', 'Transmission'], Angstrom, 4600.0..7950.0
+get_transmission_data(Herschel/SPIRE.PSW): 512 rows, ['Wavelength', 'Transmission'], Angstrom, 1666666.6666666667..10000000.0
+get_transmission_data(Spitzer/MIPS.24mu): 128 rows, ['Wavelength', 'Transmission'], Angstrom, 180050.0..322070.0
+get_transmission_data(GAIA/GAIA2r.Grp): 1997 rows, ['Wavelength', 'Transmission'], Angstrom, 6000.0..10990.0
+unknown ID -> IndexError: No filter found for requested Filter ID
