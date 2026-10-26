@@ -472,6 +472,20 @@
         </font>
     </div>
 
+    <div class="section">
+        <div class="section-title">&#169; CREDITS &amp; CONTACT</div>
+        <font face="Arial" size="2">
+        <p>Every filter curve here comes from the team that published it. Each instrument's <b>DETAILS</b> panel lists
+        where its curves came from, the papers to cite, the acknowledgement the data provider asks for, and the terms
+        under which the curves are shared; please cite the original work as well as this archive. Curves taken from the
+        <a href="http://svo2.cab.inta-csic.es/theory/fps/" target="_blank">SVO Filter Profile Service</a> are credited to it.
+        Vega quantities use CALSPEC's model of Vega (<a href="vega/">vega/</a>), and true colours use the CIE's
+        published colour-matching functions.</p>
+        <p><b>Data providers and authors:</b> if you would like your data credited differently, corrected or removed,
+        please email <a href="#" id="contact-link">[show address]</a><noscript>niall.j.miller [at] gmail [dot] com</noscript>.</p>
+        </font>
+    </div>
+
     <hr>
 
     <center>
@@ -1064,6 +1078,21 @@ fetch('index.json')
     header.addEventListener('pointerleave', () => { lifted = true; });
     window.addEventListener('resize', resize);
     resize();
+})();
+
+// Contact address: kept out of the page source and assembled only when asked for, to deter scrapers.
+(function contactLink() {
+    const link = document.getElementById('contact-link');
+    if (!link) return;
+    const parts = ['rellim.j.llain', 'moc.liamg'];
+    link.addEventListener('click', event => {
+        if (link.dataset.shown) return;  // once shown, the mailto link works normally
+        event.preventDefault();
+        const address = parts.map(part => part.split('').reverse().join('')).join('@');
+        link.textContent = address;
+        link.href = 'mailto:' + address;
+        link.dataset.shown = '1';
+    });
 })();
 
 // Visitor counter (independent of index.json)
