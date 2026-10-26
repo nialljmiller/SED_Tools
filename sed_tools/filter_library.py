@@ -92,7 +92,7 @@ class FilterLibrary:
                 return directory
 
         ref = builder_for(facility, instrument)
-        if ref is not None and ref.name == "tabular":
+        if ref is not None and ref.publishes:
             try:
                 get_builder(ref.name)(self.root, **dict(ref.kwargs))
                 if self.published_complete(directory):
@@ -177,7 +177,7 @@ class FilterLibrary:
             if self.components_ready(directory, components, bands):
                 return True
         ref = builder_for(facility, instrument)
-        if ref is None:
+        if ref is None or not ref.components:
             return False
         if ref.heavy and not allow_heavy:
             logger.warning("%s/%s requires a large source download; use allow_heavy=True or --allow-heavy",

@@ -70,3 +70,6 @@ models/*prediction*.png
 .coverage.*
 coverage.xml
 htmlcov/
+
+# Test fixtures are excerpts of published curves; *.dat above would otherwise drop them
+!tests/fixtures/**/*.dat
