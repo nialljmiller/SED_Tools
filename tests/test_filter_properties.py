@@ -82,10 +82,24 @@ def test_zero_points_agree_with_sed_tools_band_averages(detector):
     assert p["ZeroPointST_Jy"] == pytest.approx(band_average_flux_nu(lam, st, curve) / 1e-23, rel=1e-9)
 
 
+@pytest.mark.parametrize("detector", ["photon", "energy"])
+def test_magnitude_offsets_vanish_when_vega_is_the_reference_spectrum(detector):
+    lam, t = gaussian(7000.0, 900.0)
+    grid = np.linspace(900.0, 30000.0, 20000)
+    ab = (grid, AB_JY * 1e-23 * SPEED_OF_LIGHT_ANG_PER_S / grid**2)
+    assert filter_properties(lam, t, detector, vega=ab)["ABminusVega"] == pytest.approx(0.0, abs=1e-6)
+    st = (grid, np.full_like(grid, ST_FLAM))
+    assert filter_properties(lam, t, detector, vega=st)["STminusVega"] == pytest.approx(0.0, abs=1e-9)
+    # A source 10x fainter than Vega in f_nu is 2.5 mag fainter in both systems.
+    p = filter_properties(lam, t, detector, vega=(ab[0], ab[1] * 10))
+    assert p["ABminusVega"] == pytest.approx(-2.5, abs=1e-6)
+
+
 def test_vega_quantities_need_coverage_where_the_filter_transmits():
     lam, t = gaussian(50000.0, 3000.0)
     p = filter_properties(lam, t, "photon", vega=(np.array([900.0, 30000.0]), np.array([1e-9, 1e-12])))
     assert p["ZeroPointVega_Jy"] is None and p["WavelengthEff"] is None
+    assert p["ABminusVega"] is None and p["STminusVega"] is None
     assert p["ZeroPointAB_Jy"] == AB_JY
     # A negligible tail beyond the spectrum counts as zero flux, as in SED_Tools photometry.
     vega = (np.linspace(900.0, 7400.0, 2000), np.full(2000, 1e-9))
