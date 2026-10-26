@@ -1,0 +1,90 @@
+{
+  "description": "NIRSpec is JWST's near-infrared spectrograph, covering about 0.6 to 5.3 μm with a micro-shutter array, an integral-field unit and fixed slits. These bands are the medium- and high-resolution grating plus long-pass pairs and the low-resolution prism, not the target-acquisition filters.",
+  "facility_description": "The James Webb Space Telescope is a joint NASA, ESA and CSA infrared observatory that operates at the Sun-Earth L2 point.",
+  "notes": "NJM names the grating bands with an underscore; JDox prints a slash. The quote for the shared comment stops before an HTML link, at the words 'as shown in '. F070LP, F100LP, F110W, F140X and CLEAR alone are not NJM bands. Jakobsen et al. 2022 and Böker et al. 2023 are the instrument papers named on the NIRSpec page; arXiv:2301.13766 is the Böker preprint and was not repeated. DetectorType was left unchanged. The MAST acknowledgement and STScI content-use policy match the other JWST instruments.",
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"no claim to copyright is being asserted by STScI and material on this site may be freely used as in the public domain\"",
+    "url": "https://www.stsci.edu/copyright"
+  },
+  "references": [
+    "bibcode:2022A&A...661A..80J",
+    "bibcode:2023PASP..135c8001B"
+  ],
+  "links": [
+    {
+      "url": "https://jwst-docs.stsci.edu/jwst-near-infrared-spectrograph",
+      "label": "NIRSpec",
+      "source": "STScI"
+    },
+    {
+      "url": "https://jwst-docs.stsci.edu/jwst-near-infrared-spectrograph/nirspec-instrumentation/nirspec-dispersers-and-filters",
+      "label": "NIRSpec dispersers and filters",
+      "source": "STScI"
+    },
+    {
+      "url": "https://jwst-docs.stsci.edu/files/216455634/216455639/1/1762452061073/jwst_nirspec_f170lp_trans.fits",
+      "label": "F170LP transmission table",
+      "source": "STScI"
+    },
+    {
+      "url": "https://jwst-docs.stsci.edu/files/216455634/216455638/1/1762452060907/jwst_nirspec_f290lp_trans.fits",
+      "label": "F290LP transmission table",
+      "source": "STScI"
+    },
+    {
+      "url": "https://jwst-docs.stsci.edu/files/216455634/216455648/1/1762452062676/jwst_nirspec_prism_disp.fits",
+      "label": "PRISM dispersion table",
+      "source": "STScI"
+    },
+    {
+      "url": "https://jwst-docs.stsci.edu/accessing-jwst-data/citing-jwst-data",
+      "label": "Citing JWST data",
+      "source": "STScI"
+    },
+    {
+      "url": "https://science.nasa.gov/mission/webb/",
+      "label": "James Webb Space Telescope",
+      "source": "NASA"
+    },
+    {
+      "url": "https://www.stsci.edu/copyright",
+      "label": "STScI content use policy",
+      "source": "STScI"
+    },
+    {
+      "url": "https://archive.stsci.edu/publishing/mission-acknowledgements",
+      "label": "MAST mission acknowledgements",
+      "source": "MAST"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "James Webb Space Telescope (MAST)",
+      "text": "This work is based [in part] on observations made with the NASA/ESA/CSA James Webb Space Telescope. The data were obtained from the Mikulski Archive for Space Telescopes at the Space Telescope Science Institute, which is operated by the Association of Universities for Research in Astronomy, Inc., under NASA contract NAS5-03127 for JWST. These observations are associated with program #____.",
+      "url": "https://archive.stsci.edu/publishing/mission-acknowledgements",
+      "applies_to": "all bands",
+      "references": []
+    }
+  ],
+  "bands": {
+    "*": {
+      "Comments": "Each of these bands is a NIRSpec disperser used with its paired transmission filter."
+    },
+    "G235H_F170LP": {
+      "Description": "High-resolution G235H grating with the F170LP long-pass filter (JDox writes this pair as G235H/F170LP)."
+    },
+    "G235M_F170LP": {
+      "Description": "Medium-resolution G235M grating with the F170LP long-pass filter (JDox writes this pair as G235M/F170LP)."
+    },
+    "G395H_F290LP": {
+      "Description": "High-resolution G395H grating with the F290LP long-pass filter (JDox writes this pair as G395H/F290LP)."
+    },
+    "G395M_F290LP": {
+      "Description": "Medium-resolution G395M grating with the F290LP long-pass filter (JDox writes this pair as G395M/F290LP)."
+    },
+    "Prism": {
+      "Description": "Low-resolution prism. JDox lists the paired configuration as PRISM/CLEAR."
+    }
+  }
+}

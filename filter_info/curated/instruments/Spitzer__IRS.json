@@ -1,0 +1,54 @@
+{
+  "description": "IRS is Spitzer's infrared spectrograph. Its peak-up arrays image through a blue and a red filter (PU_blue, PU_red); these curves are the detector response times filter transmission for each.",
+  "facility_description": "The Spitzer Space Telescope was NASA's infrared space observatory, operated by JPL/Caltech, with science data archived at IRSA.",
+  "notes": "Spitzer ack: the SSC page gives this text for users of Spitzer data without Spitzer funding; funded work uses Templates 1a-4b on the same page. The page also asks authors to cite the fundamental papers describing the Observatory and instruments (listed at the publications page). Photon/energy evidence: the curve files (bluePUtrans.txt, redPUtrans.txt) say the second column is 'RQExT', the product of the detector's responsive quantum efficiency (QE times photoconductive gain) and the filter transmission, applied to incident photons/second, at 2.0 V bias used in nominal operations. DetectorType left unchanged. The peak-up page cites no paper for the curves, so no bands.* reference.",
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"Most data served by IRSA is public, with no usage restrictions.\"",
+    "url": "https://irsa.ipac.caltech.edu/data_use_terms.html"
+  },
+  "references": [
+    "bibcode:2004ApJS..154....1W",
+    "bibcode:2004ApJS..154...18H"
+  ],
+  "links": [
+    {
+      "url": "https://irsa.ipac.caltech.edu/data/SPITZER/docs/irs/calibrationfiles/peakupfiltertransmissioncurves/",
+      "label": "IRS peak-up filter transmission curves",
+      "source": "IRSA/SSC"
+    },
+    {
+      "url": "https://irsa.ipac.caltech.edu/data/SPITZER/docs/spitzermission/publications/ackn/",
+      "label": "Spitzer publication acknowledgement guidelines",
+      "source": "IRSA/SSC"
+    },
+    {
+      "url": "https://irsa.ipac.caltech.edu/data/SPITZER/docs/spitzermission/publications/",
+      "label": "Spitzer fundamental papers",
+      "source": "IRSA/SSC"
+    },
+    {
+      "url": "https://irsa.ipac.caltech.edu/data_use_terms.html",
+      "label": "Terms of use of data hosted by IRSA",
+      "source": "IRSA"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "Spitzer Space Telescope",
+      "text": "This work is based [in part] on observations made with the Spitzer Space Telescope, which was operated by the Jet Propulsion Laboratory, California Institute of Technology under a contract with NASA.",
+      "url": "https://irsa.ipac.caltech.edu/data/SPITZER/docs/spitzermission/publications/ackn/",
+      "references": [
+        "bibcode:2004ApJS..154....1W"
+      ],
+      "applies_to": "all bands"
+    },
+    {
+      "for": "NASA/IPAC Infrared Science Archive (IRSA)",
+      "text": "This research has made use of the NASA/IPAC Infrared Science Archive, which is funded by the National Aeronautics and Space Administration and operated by the California Institute of Technology.",
+      "url": "https://irsa.ipac.caltech.edu/docs/knowledgebase/general.html",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
+}

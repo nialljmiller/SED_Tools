@@ -1,0 +1,41 @@
+{
+  "description": "GALEX imaged the sky in two ultraviolet bands, far-UV (FUV) and near-UV (NUV), fed simultaneously by a dichroic beamsplitter onto two microchannel-plate detectors.",
+  "facility_description": "The Galaxy Evolution Explorer was a NASA Small Explorer mission led by Caltech, with a 50 cm Ritchey-Chretien telescope; its data are archived at MAST.",
+  "notes": "MAST's acknowledgement for legacy missions is a template: the page shows the word 'mission' (bold italic) as a placeholder, and lists 'Galaxy Evolution Explorer' among the missions to substitute. The text above is copied verbatim with the placeholder; display it as '...made with the Galaxy Evolution Explorer, obtained from...'. The contract number uses an en dash (NAS5–26555) on the page. MAST data-use page: the quoted sentence has a non-breaking space after 'MAST' in the HTML; it continues 'and therefore do not have restrictions on use', and adds that researchers are expected to acknowledge the mission and STScI. No owner page found that publishes the FUV/NUV effective-area curve files directly (galex.caltech.edu researcher pages now 404); Morrissey et al. (2007) is the calibration paper, but no bands.* reference was added without a quote tying it to the passband tables.",
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"Most data hosted at MAST are in the public domain\"",
+    "url": "https://archive.stsci.edu/publishing/data-use"
+  },
+  "references": [
+    "bibcode:2005ApJ...619L...7M",
+    "bibcode:2007ApJS..173..682M"
+  ],
+  "links": [
+    {
+      "url": "https://archive.stsci.edu/missions-and-data/galex",
+      "label": "GALEX at MAST",
+      "source": "MAST/STScI"
+    },
+    {
+      "url": "http://galex.stsci.edu/doc/CTM/wiki/Public_documentation/Chapter_1.html",
+      "label": "GALEX Technical Documentation, Ch. 1: Instrument Overview",
+      "source": "MAST/STScI"
+    },
+    {
+      "url": "https://archive.stsci.edu/publishing/mission-acknowledgements",
+      "label": "MAST mission acknowledgements",
+      "source": "MAST/STScI"
+    },
+    {
+      "url": "https://archive.stsci.edu/publishing/data-use",
+      "label": "MAST data use policy",
+      "source": "MAST/STScI"
+    }
+  ],
+  "bands": {
+    "*": {
+      "MagSys": "AB"
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "description": "LSSTCam is a 3.2-gigapixel optical survey camera with a 9.6-square-degree field of view and six filters, u, g, r, i, z and y, used for the Legacy Survey of Space and Time.",
+  "facility_description": "The Simonyi Survey Telescope at NSF-DOE Vera C. Rubin Observatory carries LSSTCam for the Legacy Survey of Space and Time.",
+  "notes": "Owner pages opened in this session: LSSTCam documentation, lsst/throughputs and lsst-pst/syseng_throughputs. No explicit curve redistribution licence was found there. Public GitHub visibility is not a licence; no software or documentation licence has been applied to curve data. Current LSSTCam documentation and repository revisions need not match the historical NJM profiles; no band-level reference or numerical metadata is asserted. The owner instrument page describes total throughput including atmosphere at airmass 1.2, optics and detector sensitivity. The acknowledgement entry is the owner-requested instrument citation string rather than a dataset acknowledgement.",
+  "licence": {
+    "redistribution": "unknown",
+    "url": "https://lsstcam.lsst.io/"
+  },
+  "references": [
+    "doi:10.71929/rubin/2571927",
+    "doi:10.3847/1538-4357/ab042c",
+    "doi:10.1117/12.3019698"
+  ],
+  "links": [
+    {
+      "url": "https://lsstcam.lsst.io/",
+      "label": "LSSTCam instrument, filters and citation guidance",
+      "source": "Rubin Observatory"
+    },
+    {
+      "url": "https://github.com/lsst/throughputs",
+      "label": "LSST baseline throughput repository",
+      "source": "Rubin Observatory"
+    },
+    {
+      "url": "https://github.com/lsst-pst/syseng_throughputs",
+      "label": "System Engineering source throughput curves",
+      "source": "Rubin Observatory"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "LSSTCam instrument citation",
+      "text": "SLAC National Accelerator Laboratory & NSF-DOE Vera C. Rubin Observatory, The LSST Camera (LSSTCam) (2025)",
+      "url": "https://lsstcam.lsst.io/",
+      "references": [
+        "doi:10.71929/rubin/2571927"
+      ],
+      "applies_to": "all bands"
+    }
+  ]
+}

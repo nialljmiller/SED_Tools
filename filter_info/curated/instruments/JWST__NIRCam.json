@@ -1,0 +1,66 @@
+{
+  "description": "NIRCam is JWST's near-infrared camera for imaging, coronagraphy, slitless spectroscopy and time-series work from about 0.6 to 5 μm. These bands are the short- and long-wavelength filters, including the pupil-wheel filters that are used with a second filter.",
+  "facility_description": "The James Webb Space Telescope is a joint NASA, ESA and CSA infrared observatory that operates at the Sun-Earth L2 point.",
+  "notes": "The filter page labels the archive link 'version 7.0: Jan 2025', but the file name on that link is nircam_throughputs_4Nov2022_v5.tar.gz. Pupil-wheel filters F162M, F164N, F323N, F405N, F466N and F470N are used with a second filter. Rieke et al. 2008 is cited there for the bandwidth definition, not as a JWST filter list. Tokunaga & Vacca 2005 is also cited, for the Mauna Kea set, and was not used as a NIRCam reference. No magnitude system is stated on the filter page. DetectorType was left unchanged. The curves include detector QE. The MAST acknowledgement and STScI content-use policy are the same as for the other JWST instruments; JDox does not repeat a licence.",
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"no claim to copyright is being asserted by STScI and material on this site may be freely used as in the public domain\"",
+    "url": "https://www.stsci.edu/copyright"
+  },
+  "references": [
+    "bibcode:2023PASP..135b8001R",
+    "bibcode:2023PASP..135d8001R",
+    "bibcode:2008AJ....135.2245R"
+  ],
+  "links": [
+    {
+      "url": "https://jwst-docs.stsci.edu/jwst-near-infrared-camera",
+      "label": "NIRCam",
+      "source": "STScI"
+    },
+    {
+      "url": "https://jwst-docs.stsci.edu/jwst-near-infrared-camera/nircam-instrumentation/nircam-filters",
+      "label": "NIRCam filters",
+      "source": "STScI"
+    },
+    {
+      "url": "https://jwst-docs.stsci.edu/files/216457506/216457549/1/1762454236677/nircam_throughputs_4Nov2022_v5.tar.gz",
+      "label": "NIRCam throughput archive linked as version 7.0",
+      "source": "STScI"
+    },
+    {
+      "url": "https://jwst-docs.stsci.edu/accessing-jwst-data/citing-jwst-data",
+      "label": "Citing JWST data",
+      "source": "STScI"
+    },
+    {
+      "url": "https://science.nasa.gov/mission/webb/",
+      "label": "James Webb Space Telescope",
+      "source": "NASA"
+    },
+    {
+      "url": "https://www.stsci.edu/copyright",
+      "label": "STScI content use policy",
+      "source": "STScI"
+    },
+    {
+      "url": "https://archive.stsci.edu/publishing/mission-acknowledgements",
+      "label": "MAST mission acknowledgements",
+      "source": "MAST"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "James Webb Space Telescope (MAST)",
+      "text": "This work is based [in part] on observations made with the NASA/ESA/CSA James Webb Space Telescope. The data were obtained from the Mikulski Archive for Space Telescopes at the Space Telescope Science Institute, which is operated by the Association of Universities for Research in Astronomy, Inc., under NASA contract NAS5-03127 for JWST. These observations are associated with program #____.",
+      "url": "https://archive.stsci.edu/publishing/mission-acknowledgements",
+      "applies_to": "all bands",
+      "references": []
+    }
+  ],
+  "bands": {
+    "*": {
+      "Comments": "The JDox tables are total system throughputs, including the telescope, NIRCam optics and detector quantum efficiency. The tabulated values are based on commissioning flight data."
+    }
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "description": "NIRISS is JWST's near-infrared imager and slitless spectrograph, with imaging, wide-field slitless spectroscopy and interferometric modes between about 0.6 and 5 μm. These bands are its broadband, medium and the F158M filters.",
+  "facility_description": "The James Webb Space Telescope is a joint NASA, ESA and CSA infrared observatory that operates at the Sun-Earth L2 point.",
+  "notes": "Except for F158M, JDox says the filters originated as NIRCam flight spares, with a blocking element added below 2.5 μm. The exploded-view figure caption reads: Exploded view of the structure of a NIRISS \"double-stack\" filter. © Honeywell. That figure is third-party material. Zeropoints are described as the previous Vegamag system, using a Sirius CALSPEC model as an A0V template of magnitude -1.395, and the page also gives an offset from that Sirius system to AB magnitudes. MagSys was left unset because both are defined. The printed Bohlin citation says AJ, 141, 5, while the hyperlink on the same page is bibcode 2011AJ....141..173B. DetectorType was left unchanged. PCE curves account for quantum yield. Manufacturer terms for the measured transmissions were not found.",
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"no claim to copyright is being asserted by STScI and material on this site may be freely used as in the public domain\"",
+    "url": "https://www.stsci.edu/copyright"
+  },
+  "references": [
+    "bibcode:2023PASP..135i8001D",
+    "bibcode:2022PASP..134b5002W",
+    "bibcode:2022AJ....163...45R",
+    "bibcode:2011AJ....141..173B"
+  ],
+  "links": [
+    {
+      "url": "https://jwst-docs.stsci.edu/jwst-near-infrared-imager-and-slitless-spectrograph",
+      "label": "NIRISS",
+      "source": "STScI"
+    },
+    {
+      "url": "https://jwst-docs.stsci.edu/jwst-near-infrared-imager-and-slitless-spectrograph/niriss-instrumentation/niriss-filters",
+      "label": "NIRISS filters",
+      "source": "STScI"
+    },
+    {
+      "url": "https://jwst-docs.stsci.edu/files/216454094/216454098/1/1762450948325/niriss_filter_tarball.tar",
+      "label": "NIRISS filter transmission tarball",
+      "source": "STScI"
+    },
+    {
+      "url": "https://jwst-docs.stsci.edu/accessing-jwst-data/citing-jwst-data",
+      "label": "Citing JWST data",
+      "source": "STScI"
+    },
+    {
+      "url": "https://science.nasa.gov/mission/webb/",
+      "label": "James Webb Space Telescope",
+      "source": "NASA"
+    },
+    {
+      "url": "https://www.stsci.edu/copyright",
+      "label": "STScI content use policy",
+      "source": "STScI"
+    },
+    {
+      "url": "https://archive.stsci.edu/publishing/mission-acknowledgements",
+      "label": "MAST mission acknowledgements",
+      "source": "MAST"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "James Webb Space Telescope (MAST)",
+      "text": "This work is based [in part] on observations made with the NASA/ESA/CSA James Webb Space Telescope. The data were obtained from the Mikulski Archive for Space Telescopes at the Space Telescope Science Institute, which is operated by the Association of Universities for Research in Astronomy, Inc., under NASA contract NAS5-03127 for JWST. These observations are associated with program #____.",
+      "url": "https://archive.stsci.edu/publishing/mission-acknowledgements",
+      "applies_to": "all bands",
+      "references": []
+    }
+  ],
+  "bands": {
+    "*": {
+      "Comments": "JDox states that the filter transmission curves are based on the manufacturer's cryogenic measurements, and it also plots a photon-to-electron conversion efficiency for each filter."
+    }
+  }
+}

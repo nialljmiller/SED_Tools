@@ -1,0 +1,21 @@
+{
+  "facility_description": "The Sloan Digital Sky Survey is operated by an international collaboration of scientists at many institutions.",
+  "notes": "Curve-specific redistribution rights and provenance remain unresolved. Current SDSS policy declares public-release data public domain, separately from its image-only CC-BY policy; applicability to these response curves, particularly primed filter-only entries, is not established. The legacy SDSS-I/II credits page still displays commercial-use restrictions for archive data; do not silently resolve that historical/current policy distinction as a curve licence. The full acknowledgement above is reproduced from the expressly requested SDSS-I/II acknowledgement. Current collaboration page directs users of previous survey phases to their phase-specific acknowledgements. Instrument description, filter/calibration papers and band metadata remain to be researched; no speculative assignments to primed versus unprimed profiles are supplied.",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"All SDSS data released in our public data releases are considered in the public domain.\"",
+    "url": "https://www.sdss.org/collaboration/"
+  },
+  "links": [
+    {
+      "url": "https://www.sdss.org/collaboration/",
+      "label": "SDSS collaboration, data policy and phase-specific acknowledgements",
+      "source": "SDSS"
+    },
+    {
+      "url": "https://classic.sdss.org/collaboration/credits.php",
+      "label": "SDSS-I/II acknowledgement",
+      "source": "SDSS"
+    }
+  ]
+}

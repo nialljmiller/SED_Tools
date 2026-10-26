@@ -123,5 +123,9 @@
         }
       ]
     }
+  },
+  "licence": {
+    "redistribution": "unknown",
+    "url": "https://noirlab.edu/public/copyright/"
   }
 }

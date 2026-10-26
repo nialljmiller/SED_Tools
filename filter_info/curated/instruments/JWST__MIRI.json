@@ -1,0 +1,82 @@
+{
+  "description": "MIRI is JWST's mid-infrared imager, coronagraph and spectrometer. The bands here are the imager filters and the four coronagraph filters, covering roughly 5 to 28 μm.",
+  "facility_description": "The James Webb Space Telescope is a joint NASA, ESA and CSA infrared observatory that operates at the Sun-Earth L2 point.",
+  "notes": "JDox says MIRI imaging uses 9 photometric bands and coronagraphy uses 4 filters; the filter wheel also holds a redundant F2550WR, which is not an NJM band. The wheel-figure caption is marked with a copyright sign and links Wright et al. 2015. Photon-conversion efficiencies are the curves JDox points to; DetectorType was left unchanged. The MAST acknowledgement is the text required for refereed papers based on JWST data, and the program blank is printed as #____. The same STScI policy paragraph asks that NASA and STScI be acknowledged. JDox itself does not repeat a licence. doi:10.1086/682259 is the Glasse et al. 2015 sensitivity paper linked from the MIRI page. No single paper opened here tabulates every current flight curve, so band references were not set.",
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"no claim to copyright is being asserted by STScI and material on this site may be freely used as in the public domain\"",
+    "url": "https://www.stsci.edu/copyright"
+  },
+  "references": [
+    "bibcode:2023PASP..135d8003W",
+    "bibcode:2015PASP..127..584R",
+    "bibcode:2015PASP..127..595W",
+    "bibcode:2015PASP..127..612B",
+    "bibcode:2015PASP..127..633B",
+    "bibcode:2025AJ....169....6G",
+    "doi:10.1086/682259"
+  ],
+  "links": [
+    {
+      "url": "https://jwst-docs.stsci.edu/jwst-mid-infrared-instrument",
+      "label": "MIRI",
+      "source": "STScI"
+    },
+    {
+      "url": "https://jwst-docs.stsci.edu/jwst-mid-infrared-instrument/miri-instrumentation/miri-filters-and-dispersers",
+      "label": "MIRI filters and dispersers",
+      "source": "STScI"
+    },
+    {
+      "url": "https://jwst-docs.stsci.edu/jwst-mid-infrared-instrument/miri-technical-library",
+      "label": "MIRI technical library",
+      "source": "STScI"
+    },
+    {
+      "url": "https://jwst-docs.stsci.edu/accessing-jwst-data/citing-jwst-data",
+      "label": "Citing JWST data",
+      "source": "STScI"
+    },
+    {
+      "url": "https://science.nasa.gov/mission/webb/",
+      "label": "James Webb Space Telescope",
+      "source": "NASA"
+    },
+    {
+      "url": "https://www.stsci.edu/copyright",
+      "label": "STScI content use policy",
+      "source": "STScI"
+    },
+    {
+      "url": "https://archive.stsci.edu/publishing/mission-acknowledgements",
+      "label": "MAST mission acknowledgements",
+      "source": "MAST"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "James Webb Space Telescope (MAST)",
+      "text": "This work is based [in part] on observations made with the NASA/ESA/CSA James Webb Space Telescope. The data were obtained from the Mikulski Archive for Space Telescopes at the Space Telescope Science Institute, which is operated by the Association of Universities for Research in Astronomy, Inc., under NASA contract NAS5-03127 for JWST. These observations are associated with program #____.",
+      "url": "https://archive.stsci.edu/publishing/mission-acknowledgements",
+      "applies_to": "all bands",
+      "references": []
+    }
+  ],
+  "bands": {
+    "*": {
+      "Comments": "JDox sends users to the MIRI Technical Library for throughput and photon-conversion-efficiency curves of the imaging and coronagraphic filters."
+    },
+    "F1065C": {
+      "Description": "MIRI coronagraph filter listed as 4QPM1. These coronagraph filters are not interchangeable."
+    },
+    "F1140C": {
+      "Description": "MIRI coronagraph filter listed as 4QPM2. These coronagraph filters are not interchangeable."
+    },
+    "F1550C": {
+      "Description": "MIRI coronagraph filter listed as 4QPM3. These coronagraph filters are not interchangeable."
+    },
+    "F2300C": {
+      "Description": "MIRI coronagraph filter listed as Lyot spot. These coronagraph filters are not interchangeable."
+    }
+  }
+}

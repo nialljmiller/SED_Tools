@@ -1,0 +1,19 @@
+{
+  "description": "The Dark Energy Camera (DECam) is an optical imager with broadband filters u, g, r, i, z, Y and VR. This collection distinguishes filter-only profiles, DES DR1 total responses and older throughput measurements.",
+  "facility_description": "DECam operates on the Blanco 4-meter telescope at Cerro Tololo Inter-American Observatory.",
+  "notes": "Owner filter page retrieved successfully with HTTP 200 using Python requests; web search access encountered a JavaScript challenge. The owner supplies distinct filter-only area-weighted responses, DES DR1 total instrument-plus-atmosphere responses, legacy responses, and medium/narrow filter measurements. These must not be conflated. NOIRLab public copyright page was inspected: its CC BY grant covers specified public images, videos and publicity text, and does not establish permission to redistribute numerical filter curves. Curve redistribution terms remain unresolved. The narrow-band MOUs on the filter page restrict observing programmes and duplication of science; these are not numerical-curve redistribution licences. A dedicated DECam acknowledgments page is linked by the owner, but its wording was not retrieved before the research stop; acknowledgement list is incomplete. Manufacturers include Asahi and Materion; the response page is an observatory distribution, and manufacturer-site terms were not researched. Flaugher et al. (2015) describes the original broad filters; it does not establish the provenance of the later medium/narrow profiles.",
+  "licence": {
+    "redistribution": "unknown",
+    "url": "https://noirlab.edu/public/copyright/"
+  },
+  "references": [
+    "bibcode:2015AJ....150..150F"
+  ],
+  "links": [
+    {
+      "url": "https://noirlab.edu/science/programs/ctio/filters/Dark-Energy-Camera",
+      "label": "DECam filter information and response downloads",
+      "source": "NSF NOIRLab"
+    }
+  ]
+}

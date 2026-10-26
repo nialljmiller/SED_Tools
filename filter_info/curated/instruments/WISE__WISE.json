@@ -1,0 +1,56 @@
+{
+  "description": "WISE mapped the whole sky in four mid-infrared bands, W1 to W4 (about 3.4, 4.6, 12 and 22 µm). The curves are the WISE relative system response (RSR) curves from the All-Sky Release Explanatory Supplement.",
+  "facility_description": "The Wide-field Infrared Survey Explorer was a NASA mission, a joint project of UCLA and JPL/Caltech, with data released through IRSA.",
+  "notes": "IPAC publishes two RSR sets: QE-based (response per photon; RSR-W?.txt) and energy-based (λR(λ); RSR-W?.EE.txt). Which set NJM holds should be checked before DetectorType is interpreted; DetectorType left unchanged. The page also describes an empirical W4 wavelength rescaling (factor 1.033) for red sources. Band central wavelengths in description are the nominal W1-W4 values cited on the page (W3 12 µm, W4 22 µm); W1/W2 values (3.4, 4.6 µm) appear in the Fig. 5 caption.",
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"Most data served by IRSA is public, with no usage restrictions.\"",
+    "url": "https://irsa.ipac.caltech.edu/data_use_terms.html"
+  },
+  "references": [
+    "bibcode:2010AJ....140.1868W",
+    "bibcode:2011ApJ...735..112J"
+  ],
+  "links": [
+    {
+      "url": "https://wise2.ipac.caltech.edu/docs/release/allsky/expsup/sec4_4h.html",
+      "label": "WISE photometric calibration and filter RSRs (Explanatory Supplement IV.4.h)",
+      "source": "IPAC"
+    },
+    {
+      "url": "https://wise2.ipac.caltech.edu/docs/release/allsky/",
+      "label": "WISE All-Sky Data Release (incl. acknowledgement)",
+      "source": "IPAC"
+    },
+    {
+      "url": "https://irsa.ipac.caltech.edu/data_use_terms.html",
+      "label": "Terms of use of data hosted by IRSA",
+      "source": "IRSA"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "Wide-field Infrared Survey Explorer (WISE)",
+      "text": "This publication makes use of data products from the Wide-field Infrared Survey Explorer, which is a joint project of the University of California, Los Angeles, and the Jet Propulsion Laboratory/California Institute of Technology, funded by the National Aeronautics and Space Administration.",
+      "url": "https://wise2.ipac.caltech.edu/docs/release/allsky/",
+      "references": [],
+      "applies_to": "all bands"
+    },
+    {
+      "for": "NASA/IPAC Infrared Science Archive (IRSA)",
+      "text": "This research has made use of the NASA/IPAC Infrared Science Archive, which is funded by the National Aeronautics and Space Administration and operated by the California Institute of Technology.",
+      "url": "https://irsa.ipac.caltech.edu/docs/knowledgebase/general.html",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ],
+  "bands": {
+    "*": {
+      "PhotSystem": "WISE",
+      "MagSys": "Vega",
+      "references": [
+        "bibcode:2010AJ....140.1868W"
+      ]
+    }
+  }
+}

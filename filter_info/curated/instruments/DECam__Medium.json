@@ -37,6 +37,13 @@
     },
     "M517": {
       "Description": "DECam M517 medium bandpass centered ~517 nm"
+    },
+    "*": {
+      "Comments": "The Intermediate-Band Imaging Survey (IBIS) uses five different medium-band filters to photometrically identify Lyman Alpha Emitters and Lyman Break Galaxies at redshifts 2.2<z<3.4."
     }
+  },
+  "licence": {
+    "redistribution": "unknown",
+    "url": "https://noirlab.edu/public/copyright/"
   }
 }

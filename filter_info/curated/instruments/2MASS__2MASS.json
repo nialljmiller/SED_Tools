@@ -1,0 +1,57 @@
+{
+  "description": "2MASS imaged the whole sky in the near-infrared J, H and Ks bands. These are the relative spectral response curves Cohen et al. (2003) derived for the 2MASS photometric system.",
+  "facility_description": "The Two Micron All Sky Survey was a joint project of the University of Massachusetts and IPAC/Caltech, funded by NASA and the NSF.",
+  "notes": "The 2MASS FAQ asks for the standard acknowledgement and gives Skrutskie et al. (2006) as the 2MASS reference. The RSR page (VI.4a) calls the Cohen et al. (2003) curves photon-counting RSRs that include PLEXUS-modelled atmospheric transmission; DetectorType left unchanged. The 2MASS FAQ separately says 2MASS Image Gallery images are public domain; licence here uses IRSA's general terms page, which covers public IRSA data.",
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"Most data served by IRSA is public, with no usage restrictions.\"",
+    "url": "https://irsa.ipac.caltech.edu/data_use_terms.html"
+  },
+  "references": [
+    "bibcode:2006AJ....131.1163S",
+    "bibcode:2003AJ....126.1090C"
+  ],
+  "links": [
+    {
+      "url": "https://irsa.ipac.caltech.edu/data/2MASS/docs/releases/allsky/doc/sec6_4a.html",
+      "label": "2MASS photometric system and RSRs (Explanatory Supplement VI.4a)",
+      "source": "IRSA/IPAC"
+    },
+    {
+      "url": "https://irsa.ipac.caltech.edu/data/2MASS/docs/releases/allsky/faq.html",
+      "label": "2MASS FAQ: citation and acknowledgement",
+      "source": "IRSA/IPAC"
+    },
+    {
+      "url": "https://irsa.ipac.caltech.edu/data_use_terms.html",
+      "label": "Terms of use of data hosted by IRSA",
+      "source": "IRSA"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "Two Micron All Sky Survey (2MASS)",
+      "text": "This publication makes use of data products from the Two Micron All Sky Survey, which is a joint project of the University of Massachusetts and the Infrared Processing and Analysis Center/California Institute of Technology, funded by the National Aeronautics and Space Administration and the National Science Foundation.",
+      "url": "https://irsa.ipac.caltech.edu/data/2MASS/docs/releases/allsky/faq.html",
+      "references": [
+        "bibcode:2006AJ....131.1163S"
+      ],
+      "applies_to": "all bands"
+    },
+    {
+      "for": "NASA/IPAC Infrared Science Archive (IRSA)",
+      "text": "This research has made use of the NASA/IPAC Infrared Science Archive, which is funded by the National Aeronautics and Space Administration and operated by the California Institute of Technology.",
+      "url": "https://irsa.ipac.caltech.edu/docs/knowledgebase/general.html",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ],
+  "bands": {
+    "*": {
+      "PhotSystem": "2MASS",
+      "references": [
+        "bibcode:2003AJ....126.1090C"
+      ]
+    }
+  }
+}
