@@ -19,9 +19,11 @@ T_TELESCOPE x T_NI-OA, ``qe`` = T_QE.  T_FILTER has small negative noise
 samples in J and H; they are set to 0.  J's filter peaks at 1.003 and is
 kept as published.
 
-:func:`build` compares the product with the instrument's published Y/J/H
-curves and records any release mismatch in the manifest notes; the
-published curves are never altered.
+:func:`build` writes ESA's T_TOTAL as the published Y/J/H curves where none
+exist (negative noise set to 0), compares the product of the components with
+the published curves, and records any release mismatch in the manifest
+notes.  Existing published curves and the MESA index are never altered.
+On NJM, SVO's earlier copies are kept as ``Y_svo``, ``J_svo`` and ``H_svo``.
 """
 
 from __future__ import annotations
@@ -33,8 +35,8 @@ from typing import Dict, Iterable, Optional, Tuple, Union
 import numpy as np
 
 from ..filter_components import FILTER, OPTICS, QE, InstrumentManifest, add_component
-from ..filter_metadata import PHOTON
-from ._original import Fetcher
+from ..filter_metadata import PHOTON, write_filter_file
+from ._original import ORIGINAL, Fetcher
 
 logger = logging.getLogger(__name__)
 
@@ -89,6 +91,23 @@ def factors(cols: Dict[str, np.ndarray]) -> Tuple[np.ndarray, Dict[str, np.ndarr
     }, negative
 
 
+def write_published(inst_dir: Path, band: str, cols: Dict[str, np.ndarray]) -> int:
+    """Write ESA's T_TOTAL as ``<band>.dat`` unless it exists; return the negatives set to 0 (-1 if kept)."""
+    path = Path(inst_dir) / f"{band}.dat"
+    if path.exists():
+        return -1
+    total = cols["T_TOTAL"]
+    write_filter_file(
+        path, cols["WAVE"] * 10.0, np.maximum(total, 0.0),
+        # T_TOTAL includes the detector QE (T_QE): a photon detection probability.
+        detector_type=PHOTON, source=ORIGINAL, filter_id=f"{FACILITY}/{INSTRUMENT}.{band}",
+        wavelength_unit="Angstrom",
+        extra={"Components": "filter+optics+qe", "ComponentsSource": ORIGINAL,
+               "Sources": f"{URL.format(band=band)} | {PAGE}"},
+    )
+    return int(np.sum(total < 0))
+
+
 def _published_deviation(inst_dir: Path, band: str, wl: np.ndarray, total: np.ndarray) -> Optional[float]:
     """max |composed - published| / published peak on the published grid (None if absent)."""
     path = inst_dir / f"{band}.dat"
@@ -108,15 +127,25 @@ def build(
 ) -> Path:
     """Add ESA's NISP filter, optics and QE factors to ``Euclid/NISP``."""
     inst_dir = Path(filter_root) / FACILITY / INSTRUMENT
-    present = {p.stem for p in inst_dir.glob("*.dat")}
-    wanted = [b for b in (bands or BANDS) if b in BANDS and b in present]
+    wanted = [b for b in (bands or BANDS) if b in BANDS]
     if not wanted:
-        raise FileNotFoundError(f"{inst_dir}: no published Y/J/H curves; fetch them first")
+        raise ValueError(f"No NISP photometric band among {list(bands or [])}; ESA publishes {BANDS}")
     fetch = Fetcher(session)
     # Download and check every band before writing anything.
     tables = {b: parse_table(fetch.text(URL.format(band=b))) for b in wanted}
 
+    inst_dir.mkdir(parents=True, exist_ok=True)
+    written = {b: n for b in wanted if (n := write_published(inst_dir, b, tables[b])) >= 0}
+    index = inst_dir / INSTRUMENT
+    if not index.exists():
+        index.write_text("".join(f"{b}.dat\n" for b in BANDS if (inst_dir / f"{b}.dat").is_file()),
+                         encoding="utf-8")
     manifest = InstrumentManifest.load(inst_dir)
+    # The published curves may have changed since the manifest was written (e.g. SVO's copies
+    # renamed to <band>_svo): describe them from their headers.
+    known = InstrumentManifest.from_published(inst_dir)
+    manifest.bands, manifest.published, manifest.published_bands = known.bands, known.published, known.published_bands
+    manifest.detector_types, manifest.detector_type_sources = known.detector_types, known.detector_type_sources
     for role in (FILTER, OPTICS, QE):
         for b in wanted:
             manifest.components.get(role, {}).pop(b, None)
@@ -146,6 +175,11 @@ def build(
         "dichroic) x T_NI-OA (NISP optical assembly), qe = T_QE. Their product equals ESA's T_TOTAL. "
         "WAVE is nm (the files state no unit; inferred from the values)."
     ]
+    if written:
+        notes.append("Published " + ", ".join(written) + " written from ESA's T_TOTAL (photon-counting: it "
+                     "includes the detector QE)" + (": negative samples set to 0: "
+                     + ", ".join(f"{b} {n}" for b, n in written.items() if n) if any(written.values()) else "")
+                     + ".")
     if clamped:
         notes.append("Negative T_FILTER noise samples set to 0: "
                      + ", ".join(f"{b} {n}" for b, n in clamped.items()) + ".")
@@ -159,7 +193,11 @@ def build(
     elif deviations:
         notes.append("filter x optics x qe reproduces the published curves to "
                      + ", ".join(f"{b} {d:.1e}" for b, d in deviations.items()) + " of their peak.")
-    others = [b for b in manifest.bands if b not in BANDS]
+    copies = [b for b in manifest.bands if b.endswith("_svo") and b[:-4] in BANDS]
+    if copies:
+        notes.append(", ".join(copies) + " are SVO's copies of an earlier release, kept for reference; "
+                     "these components do not compose to them.")
+    others = [b for b in manifest.bands if b not in BANDS and b not in copies]
     if others:
         notes.append("No separate factors are published for " + ", ".join(others) + ".")
     manifest.notes = " ".join(notes)

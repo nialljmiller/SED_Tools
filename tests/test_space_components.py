@@ -108,7 +108,7 @@ def test_euclid_build_writes_components_and_compares(tmp_path, scale, expect):
     _published(inst, "Y", wave * 10.0, total * scale)
     _published(inst, "Blue", wave * 10.0, total, components="filter+instrument")
     session = _Session({euclid.URL.format(band="Y"): text})
-    euclid.build(tmp_path, session=session)
+    euclid.build(tmp_path, bands=["Y"], session=session)
     m = InstrumentManifest.load(inst)
     assert {r: m.components[r] for r in (FILTER, OPTICS, QE)} == {
         r: {"Y": f"components/{r}/Y.dat"} for r in (FILTER, OPTICS, QE)}
@@ -116,14 +116,26 @@ def test_euclid_build_writes_components_and_compares(tmp_path, scale, expect):
     assert all(released_mesa_reads(inst / rel) for rel in (m.components[r]["Y"] for r in (FILTER, OPTICS, QE)))
 
 
-def test_euclid_build_needs_published_curves(tmp_path):
+def test_euclid_build_writes_missing_published_curves(tmp_path):
     from sed_tools.component_sources import euclid
+    from sed_tools.filter_metadata import read_filter_header
 
-    with pytest.raises(FileNotFoundError):
-        euclid.build(tmp_path, session=_Session({}))
+    text, wave, total = _nisp_table()
+    lines = text.splitlines()
+    lines[1] = lines[1].replace(lines[1].split()[1], "-1e-07", 1).replace(lines[1].split()[2], "-1e-07", 1)
+    text = "\n".join(lines) + "\n"
     inst = tmp_path / "Euclid" / "NISP"
-    _published(inst, "Blue", np.array([9000.0, 9500.0]), np.array([0.1, 0.2]))
-    with pytest.raises(FileNotFoundError):  # grism bands have no ESA factors to fetch
+    _published(inst, "Y_svo", wave * 10.0, total * 0.6)
+    euclid.build(tmp_path, bands=["Y", "Blue"], session=_Session({euclid.URL.format(band="Y"): text}))
+    header = read_filter_header(inst / "Y.dat")
+    assert header["FilterID"] == "Euclid/NISP.Y" and header["DetectorType"] == "photon"
+    assert header["DetectorTypeSource"] == "original" and header["Components"] == "filter+optics+qe"
+    assert released_mesa_reads(inst / "Y.dat")
+    assert (inst / "NISP").read_text() == "Y.dat\n"
+    m = InstrumentManifest.load(inst)
+    assert m.bands == ["Y", "Y_svo"] and "reproduces" in m.notes and "Y_svo are SVO's copies" in m.notes
+    assert "negative samples set to 0: Y 1" in m.notes
+    with pytest.raises(ValueError, match="photometric band"):  # grisms have no ESA factors
         euclid.build(tmp_path, bands=["Blue"], session=_Session({}))
 
 
@@ -280,6 +292,7 @@ def test_status_of_2mass_and_ps1_and_new_builders():
     assert "only total" not in catalog.status_for("2MASS", "2MASS")[1]
     info = catalog.component_availability("Roman", "WFI")
     assert info["status"] == "supported" and info["builder"] == "roman"
-    # ESA's V1.0 factors do not multiply to the served Y/J/H, so clients do not build them.
-    assert catalog.builder_for("Euclid", "NISP") is None
-    assert catalog.component_availability("Euclid", "NISP")["status"] == catalog.NOT_BUILT
+    info = catalog.component_availability("Euclid", "NISP")
+    assert info["status"] == "supported" and info["builder"] == "euclid"
+    # Pandeia 2026.7 is 21.6 MB: JWST components no longer need allow_heavy.
+    assert not any(catalog.builder_for("JWST", i).heavy for i in ("NIRCam", "NIRISS", "MIRI"))

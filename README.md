@@ -273,8 +273,8 @@ Where components come from:
 | Instruments | Source of the separate factors |
 |---|---|
 | HST ACS (WFC/HRC/SBC), WFC3 (UVIS1/2, IR), WFPC2, NICMOS 1–3 | STScI synphot component tables (graph-table walk per obsmode); ACS/SBC's time-dependent sensitivity is pinned to the release (2021-04-25) its published curves were computed with |
-| JWST NIRCam, NIRISS, MIRI imaging | STScI Pandeia reference data 2026.7 (in-flight; 21.6 MB without the PSF library) |
-| Euclid NISP Y, J, H | Not attached: ESA's NISP-PHOTO-PASSBANDS V1.0 factors (filter, telescope × NISP optics, QE; `sed-tools filters-build-components euclid`) multiply to ESA's V1.0 total, a different release from the published SVO curves |
+| JWST NIRCam, NIRISS, MIRI imaging | STScI Pandeia reference data 2026.7 (in-flight; a 21.6 MB download without the PSF library) |
+| Euclid NISP Y, J, H | ESA NISP-PHOTO-PASSBANDS V1.0: filter, telescope × NISP optics, and QE, which multiply to ESA's T_TOTAL, the published Y/J/H (SVO's earlier copies are kept on NJM as `Y_svo`, `J_svo`, `H_svo`) |
 | Roman WFI | Detector QE only: the mean of the 18 flight detectors (Roman technical information repository) |
 | Rubin/LSST | `lsst/throughputs` (+ Rubin's standard atmosphere `lsst_std`) |
 | Subaru HSC | NAOJ/Subaru curves (+ HSC pipeline's Maunakea atmosphere `maunakea_hsc`) |
@@ -289,7 +289,7 @@ Where components come from:
 | 2MASS, Pan-STARRS1 | not yet built: 2MASS publishes mirror, window, lens, dichroic, filter, QE and atmosphere tables; PS1's Table 3 has the open (no filter) cross-section and the atmosphere |
 | Gaia, WISE, Spitzer, GALEX, TESS, Kepler, Hipparcos/Tycho | none — only totals are published (`filters-info` says so) |
 
-The NJM mirror runs the automatic builders ahead of time (`sed-tools filters-build-components all`). Component requests reuse installed files, try NJM, then run the instrument's original-source builder if needed. For these table sets, a curator can run `sed-tools filters-build-components tabular --instrument PANIC` (or `INGRID`, `NSFCam`, `IOO`, `HAWKI`, `NACO`, `SPHERE`, `GSAOI`, `NIFS`); `--raw /path/to/evidence` reads the saved official files when a source is unavailable. These filters can be discovered and downloaded without SVO. If both NJM and the original source are unavailable, the normal SVO fallback remains. Their root curves are measured filters, not full system throughput. Large downloads, including JWST reference data, require `allow_heavy=True` in Python or `--allow-heavy` on the command line.
+The NJM mirror runs the automatic builders ahead of time (`sed-tools filters-build-components all`). Component requests reuse installed files, try NJM, then run the instrument's original-source builder if needed. For these table sets, a curator can run `sed-tools filters-build-components tabular --instrument PANIC` (or `INGRID`, `NSFCam`, `IOO`, `HAWKI`, `NACO`, `SPHERE`, `GSAOI`, `NIFS`); `--raw /path/to/evidence` reads the saved official files when a source is unavailable. These filters can be discovered and downloaded without SVO. If both NJM and the original source are unavailable, the normal SVO fallback remains. Their root curves are measured filters, not full system throughput. Builders marked as large downloads require `allow_heavy=True` in Python or `--allow-heavy` on the command line; none is marked at present (JWST's reference data is now a 21.6 MB download).
 
 #### Inspecting availability and requesting products
 
