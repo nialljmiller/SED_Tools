@@ -488,6 +488,7 @@ function countLabels(counts) {
 // Instrument details: properties.json (computed) and info.json (descriptions, references,
 // provenance) are fetched only when an instrument's DETAILS row is opened.
 const INSTRUMENTS = {};
+let VEGA_URL = null, VEGA = null;
 
 function safeUrl(url) {
     return /^https?:\/\//i.test(String(url || '')) ? escapeHtml(url) : '#';
@@ -550,8 +551,9 @@ function renderDetails(record, info, props) {
 
     html += `<h4>TRANSMISSION</h4><div class="curve-plot"><span class="blink">LOADING CURVES...</span></div>`;
     html += `<h4>BANDS</h4><div class="table-scroll"><table class="band-table"><thead><tr>
-        <th>BAND</th><th>DESCRIPTION</th><th>DETECTOR</th><th>\u{3bb} PIVOT (\u{c5})</th><th>FWHM (\u{c5})</th>
-        <th>\u{3bb} MIN\u{2013}MAX (\u{c5})</th><th>VEGA ZP (Jy)</th><th>CITE</th><th>SVO RECORD</th>
+        <th>BAND</th><th>DESCRIPTION</th><th>DETECTOR</th><th>\u{3bb} PIVOT (\u{c5})</th><th>\u{3bb} EFF, VEGA (\u{c5})</th>
+        <th>FWHM (\u{c5})</th><th>\u{3bb} MIN\u{2013}MAX (\u{c5})</th><th>VEGA ZP (Jy)</th><th>AB\u{2212}VEGA (mag)</th>
+        <th>CITE</th><th>SVO RECORD</th>
     </tr></thead><tbody>`;
     const notes = [];
     names.forEach(band => {
@@ -586,9 +588,11 @@ function renderDetails(record, info, props) {
             <td class="wrap">${description || '<span class="metadata-missing">\u{2014}</span>'}</td>
             <td>${detectorHtml}</td>
             <td align="right">${fmt(p.WavelengthPivot)}</td>
+            <td align="right">${fmt(p.WavelengthEff)}</td>
             <td align="right">${fmt(p.FWHM)}</td>
             <td>${fmt(p.WavelengthMin)}\u{2013}${fmt(p.WavelengthMax)}</td>
             <td align="right">${fmt(p.ZeroPointVega_Jy, 5)}</td>
+            <td align="right">${p.ABminusVega === null || p.ABminusVega === undefined ? fmt(null) : escapeHtml(p.ABminusVega.toFixed(3))}</td>
             <td class="wrap">${cite || '<span class="metadata-missing">\u{2014}</span>'}</td>
             <td>${svoHtml}</td>
         </tr>`;
@@ -664,16 +668,31 @@ function toggleDetails(key, toggle) {
 
 // Transmission plot: curves fetched at most 6 at a time (NJM's flood guard counts
 // requests), drawn as SVG in each band's DisplayColor from properties.json.
-function parseCurve(text) {
+function parseColumns(text) {
     const points = [];
     text.split(/\r?\n/).slice(1).forEach(line => {
         if (line.startsWith('#')) return;
         const [w, t] = line.split(/[,\s]+/).map(Number);
         if (Number.isFinite(w) && Number.isFinite(t)) points.push([w, Math.max(t, 0)]);
     });
-    points.sort((a, b) => a[0] - b[0]);
-    const stride = Math.ceil(points.length / 800);
+    return points.sort((a, b) => a[0] - b[0]);
+}
+
+function thin(points, most) {
+    const stride = Math.ceil(points.length / most);
     return stride > 1 ? points.filter((point, i) => i % stride === 0 || i === points.length - 1) : points;
+}
+
+function parseCurve(text) {
+    return thin(parseColumns(text), 800);
+}
+
+// Vega (data/vega/vega_flam.csv, CALSPEC alpha_lyr_mod_004), fetched once when first shown.
+function loadVega() {
+    if (!VEGA) {
+        VEGA = fetch(VEGA_URL).then(r => r.ok ? r.text() : '').then(text => parseColumns(text).filter(p => p[1] > 0));
+    }
+    return VEGA;
 }
 
 async function fetchCurves(folder, bands) {
@@ -709,7 +728,9 @@ function logTicks(lo, hi) {
     return ticks;
 }
 
-function drawPlot(box, curves, colors, normalise, hidden) {
+function drawPlot(box, curves, colors, state, propBands, vega) {
+    const {normalise, hidden} = state;
+    const showVega = Boolean(state.vega && vega && vega.length);
     const bands = Object.keys(curves).filter(b => curves[b].length > 1)
         .sort((a, b) => (colors[a].mean - colors[b].mean));
     if (!bands.length) { box.innerHTML = '<span class="metadata-missing">No curves to plot.</span>'; return; }
@@ -725,7 +746,7 @@ function drawPlot(box, curves, colors, normalise, hidden) {
     const pad = log ? Math.pow(hi / lo, 0.03) : (hi - lo) * 0.03;
     [lo, hi] = log ? [lo / pad, hi * pad] : [Math.max(lo - pad, 0), hi + pad];
     const unit = hi < 12000 ? ['\u{c5}', 1] : hi < 1e7 ? ['\u{b5}m', 1e4] : ['mm', 1e7];
-    const W = 900, H = 300, L = 62, R = 14, T = 12, B = 44;
+    const W = 900, H = 300, L = 62, R = showVega ? 76 : 14, T = 12, B = 44;
     const x = w => L + (W - L - R) * (log ? Math.log(w / lo) / Math.log(hi / lo) : (w - lo) / (hi - lo));
     const y = t => H - B - (H - T - B) * t / (top * 1.05);
     const label = v => { const u = v / unit[1]; return Math.abs(u) >= 1000 ? u.toFixed(0) : Number(u.toPrecision(3)).toString(); };
@@ -751,11 +772,45 @@ function drawPlot(box, curves, colors, normalise, hidden) {
                `<polygon points="${x(pts[0][0]).toFixed(1)},${y(0)} ${line} ${x(pts[pts.length - 1][0]).toFixed(1)},${y(0)}" fill="${color}" fill-opacity="0.12" stroke="none"/>` +
                `<polyline points="${line}" fill="none" stroke="${color}" stroke-width="1.6"/></g>`;
     });
+    if (showVega) svg += vegaOverlay(vega, shown, propBands, colors, lo, hi, x, {W, H, L, R, T, B});
     svg += '</svg>';
     const legend = bands.map(b =>
         `<span data-band="${escapeHtml(b)}" class="${hidden.has(b) ? 'hidden' : ''}" style="color:${escapeHtml(colors[b].color)}">${escapeHtml(b)}</span>`).join(' ');
     box.innerHTML = svg + `<div class="plot-legend">${legend}</div>` +
-        `<label style="font-size:12px"><input type="checkbox" class="plot-normalise"${normalise ? ' checked' : ''}> normalise each curve to its peak</label>`;
+        `<label style="font-size:12px"><input type="checkbox" class="plot-normalise"${normalise ? ' checked' : ''}> normalise each curve to its peak</label>` +
+        (VEGA_URL ? ` &nbsp; <label style="font-size:12px"><input type="checkbox" class="plot-vega"${state.vega ? ' checked' : ''}> show Vega's spectrum and its band-averaged fluxes</label>` : '');
+}
+
+// Vega's f_lambda on a logarithmic right-hand axis, with each band's band-averaged flux
+// (ZeroPointVega_flam) at its pivot wavelength and a bar across its FWHM.
+function vegaOverlay(vega, shown, propBands, colors, lo, hi, x, {W, H, L, R, T, B}) {
+    const spectrum = thin(vega.filter(([w]) => w >= lo && w <= hi), 1500);
+    const points = shown.map(b => [b, propBands[b] || {}])
+        .filter(([, p]) => p.ZeroPointVega_flam > 0 && p.WavelengthPivot >= lo && p.WavelengthPivot <= hi);
+    const fluxes = spectrum.map(p => p[1]).concat(points.map(([, p]) => p.ZeroPointVega_flam));
+    if (!fluxes.length) return '';
+    const fmin = Math.min(...fluxes) / 1.5, fmax = Math.max(...fluxes) * 1.5;
+    const y = f => H - B - (H - T - B) * Math.log(f / fmin) / Math.log(fmax / fmin);
+    let svg = '';
+    const ticks = logTicks(fmin, fmax);
+    (Math.log10(fmax / fmin) > 3 ? ticks.filter(v => Math.abs(Math.log10(v) % 1) < 1e-9) : ticks).forEach(v => {
+        svg += `<line x1="${W - R}" x2="${W - R + 4}" y1="${y(v)}" y2="${y(v)}" stroke="#C0C0C0"/>` +
+               `<text x="${W - R + 6}" y="${y(v) + 4}" style="fill:#C0C0C0">${v.toExponential(0)}</text>`;
+    });
+    svg += `<text transform="translate(${W - 8} ${(T + H - B) / 2}) rotate(90)" text-anchor="middle" style="fill:#C0C0C0">Vega f\u{3bb} (erg s\u{207b}\u{b9} cm\u{207b}\u{b2} \u{c5}\u{207b}\u{b9})</text>`;
+    if (spectrum.length > 1) {
+        svg += `<polyline points="${spectrum.map(([w, f]) => `${x(w).toFixed(1)},${y(f).toFixed(1)}`).join(' ')}" fill="none" stroke="#C0C0C0" stroke-width="1" stroke-opacity="0.85"/>`;
+    }
+    points.forEach(([b, p]) => {
+        const color = escapeHtml(colors[b].color);
+        const half = (p.FWHM || 0) / 2, centre = p.WavelengthCen || p.WavelengthPivot;
+        const tip = `${b}: Vega f\u{3bb} = ${p.ZeroPointVega_flam.toPrecision(4)} erg s\u{207b}\u{b9} cm\u{207b}\u{b2} \u{c5}\u{207b}\u{b9}` +
+            (p.ABminusVega === null || p.ABminusVega === undefined ? '' : `, AB\u{2212}Vega = ${p.ABminusVega.toFixed(3)} mag`);
+        svg += `<g class="plot-band" data-band="${escapeHtml(b)}"><title>${escapeHtml(tip)}</title>` +
+               `<line x1="${x(Math.max(centre - half, lo)).toFixed(1)}" x2="${x(Math.min(centre + half, hi)).toFixed(1)}" y1="${y(p.ZeroPointVega_flam)}" y2="${y(p.ZeroPointVega_flam)}" stroke="${color}" stroke-width="2"/>` +
+               `<circle cx="${x(p.WavelengthPivot).toFixed(1)}" cy="${y(p.ZeroPointVega_flam).toFixed(1)}" r="4.5" fill="${color}" stroke="#FFFFFF" stroke-width="1"/></g>`;
+    });
+    return svg;
 }
 
 async function plotInstrument(record, props, box) {
@@ -769,8 +824,9 @@ async function plotInstrument(record, props, box) {
         const moment = pts.reduce((s, p, i) => i ? s + (p[0] - pts[i - 1][0]) * (p[0] * p[1] + pts[i - 1][0] * pts[i - 1][1]) / 2 : 0, 0);
         colors[b] = {color: (propBands[b] || {}).DisplayColor || '#00FF00', mean: area > 0 ? moment / area : pts[0][0]};
     });
-    const state = {normalise: false, hidden: new Set()};
-    const redraw = () => drawPlot(box, curves, colors, state.normalise, state.hidden);
+    const state = {normalise: false, hidden: new Set(), vega: false};
+    let vega = null;
+    const redraw = () => drawPlot(box, curves, colors, state, propBands, vega);
     box.addEventListener('click', event => {
         const item = event.target.closest('.plot-legend span');
         if (item) {
@@ -781,6 +837,14 @@ async function plotInstrument(record, props, box) {
     });
     box.addEventListener('change', event => {
         if (event.target.classList.contains('plot-normalise')) { state.normalise = event.target.checked; redraw(); }
+        if (event.target.classList.contains('plot-vega')) {
+            state.vega = event.target.checked;
+            if (state.vega && !vega) {
+                loadVega().then(points => { vega = points; redraw(); });
+            } else {
+                redraw();
+            }
+        }
     });
     box.addEventListener('mouseover', event => {
         const item = event.target.closest('[data-band]');
@@ -895,6 +959,7 @@ fetch('index.json')
             filtersContainer.innerHTML = '<center>No filter profiles available</center>';
         }
 
+        VEGA_URL = ((data.filters && data.filters.properties_definitions || {}).vega_spectrum || {}).url || null;
         filtersContainer.addEventListener('click', event => {
             const button = event.target.closest('.details-button');
             if (button) {

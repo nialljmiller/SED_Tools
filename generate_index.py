@@ -19,10 +19,13 @@ from sed_tools.filter_colors import instrument_colors
 from sed_tools.filter_properties import UNITS, curve_properties, load_vega
 from sed_tools.filter_metadata import read_filter_header
 
-# Vega spectrum for the Vega-weighted filter properties: MESA's own, so the zero points
-# NJM serves match MESA colors. SED_VEGA_SPECTRUM overrides it.
+# Vega spectrum for the Vega-weighted filter properties: data/vega/vega_flam.csv, which is
+# CALSPEC alpha_lyr_mod_004 exactly as MESA colors ships it (data/vega/README.md), so the
+# zero points NJM serves match MESA colors. SED_VEGA_SPECTRUM overrides it.
+REPO_VEGA = Path(__file__).resolve().parent / "data" / "vega" / "vega_flam.csv"
 VEGA_CANDIDATES = [
     os.environ.get("SED_VEGA_SPECTRUM", ""),
+    str(REPO_VEGA),
     os.path.join(os.environ.get("MESA_DIR", ""), "data/colors_data/stellar_models/vega_flam.csv"),
     "/media/data3/MESA/mesa/data/colors_data/stellar_models/vega_flam.csv",
 ]
@@ -131,7 +134,11 @@ def find_vega():
         path = Path(candidate) if candidate else None
         if path and path.is_file():
             digest = hashlib.sha256(path.read_bytes()).hexdigest()
-            return load_vega(path), {"file": str(path), "sha256": digest}
+            source = {"file": str(path), "sha256": digest}
+            if path.resolve() == REPO_VEGA:
+                source.update(file="data/vega/vega_flam.csv", url="vega/vega_flam.csv",
+                              spectrum="CALSPEC alpha_lyr_mod_004 (vega/README.md)")
+            return load_vega(path), source
     return None, None
 
 
