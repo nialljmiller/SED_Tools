@@ -234,6 +234,44 @@ Filters.tag_detector_types()               # returns one row per file
 
 `WavelengthUnit` is read the same way. Files without it are assumed to be in Angstrom unless their reddest point is below 1000 (then nm, µm or m), with a logged warning; pass `load_filter_curve(path, wavelength_unit="nm")` when a file is ambiguous.
 
+#### Filter properties
+
+`sed_tools.filter_properties` computes the characteristics the SVO Filter Profile Service lists for a curve:
+- mean, pivot, peak, central, minimum and maximum wavelengths;
+- FWHM and effective width;
+- the Vega-weighted effective and photon wavelengths;
+- Vega, AB and ST zero points, in f_λ and in Jy;
+- the AB−Vega and ST−Vega magnitude offsets (2MASS Ks: m_AB − m_Vega ≈ 1.85);
+- `Fsun`, the Sun's band-averaged f_λ at 1 AU (erg s⁻¹ cm⁻² Å⁻¹), when you supply a solar spectrum;
+- `AfAv`, the extinction ratio A(λ)/A(V) at the pivot wavelength, from the [Fitzpatrick (1999)](https://ui.adsabs.harvard.edu/abs/1999PASP..111...63F) law with R_V = 3.1.
+
+The pivot, zero points and `Fsun` use the same detector-aware weights as SED_Tools photometry, so band-averaged f_λ and f_ν convert exactly. Definitions are in the module docstring. The NJM mirror serves these values precomputed in each instrument's `properties.json`, listed in `index.json`. It uses MESA's `vega_flam.csv` for the Vega quantities, so they match MESA colors. For `Fsun` it uses CALSPEC's solar spectrum (`sun_reference_stis_002` below 9600 Å, `sun_mod_001` above), the composite the SVO Filter Profile Service uses.
+
+`AfAv` is computed by the `F99` class of [dust_extinction](https://github.com/karllark/dust_extinction) (Gordon 2024, [JOSS 9(100), 7023](https://doi.org/10.21105/joss.07023)), an optional dependency: `pip install "sed-tools[extinction]"`. Without it, `AfAv` is `None` and a warning says why. It is also `None` where the pivot lies outside the range dust_extinction defines for the law (1000 Å to 3.33 µm); the law is never extrapolated. A(V) is the law's own normalisation (V-band averaged), so `AfAv` is 1 at 5414 Å, not at 5500 Å. SVO's `Af/AV` uses a different law, so the two differ.
+
+```python
+from sed_tools.filter_properties import instrument_properties, load_sun, load_vega
+
+vega = load_vega("vega_flam.csv")                 # wavelength in Å, f_λ in erg/s/cm²/Å
+sun = load_sun("sun_flam.csv")                    # the Sun at 1 AU, same units
+props = instrument_properties("data/filters/2MASS/2MASS", vega, sun)
+props["Ks"]["WavelengthPivot"], props["Ks"]["ZeroPointVega_Jy"], props["Ks"]["Fsun"], props["Ks"]["AfAv"]
+```
+
+`sed_tools.filter_colors` gives each band a colour for plotting, computed from its curve rather than guessed from its name:
+- **Mostly-visible bands** (at least half the throughput between 380 and 750 nm) get their true colour: daylight (CIE D65) seen through the curve, using the CIE 1931 colour-matching functions shipped with the package.
+- **Ultraviolet and infrared bands** get false colours in wavelength order. Next to visible bands they continue bluer or redder; in an all-infrared or all-ultraviolet instrument they span a rainbow shifted toward that regime.
+
+NJM serves the colours in `properties.json` (`DisplayColor`), and its website plots each instrument's curves with them.
+
+```python
+from pathlib import Path
+from sed_tools.filter_colors import instrument_colors
+
+colors = instrument_colors(sorted(Path("data/filters/2MASS/2MASS").glob("*.dat")))
+colors["J"]["DisplayColor"]                       # "#6cee2b"
+```
+
 #### Filter, optics, QE and atmosphere as separate components
 
 A published passband is usually a product of several throughputs, and which ones varies: Gaia DR3 is filter + CCD + instrument, SDSS/2MASS/PS1 include the atmosphere, Johnson is the filter alone. Every filter file records what its published curve contains (`Components=filter+qe+instrument`). Where an instrument's team publishes the factors separately, SED_Tools stores them alongside and generates that instrument's throughput with and without each one. Components are never mixed between instruments or sites: an instrument is only ever composed from its own filter, optics and QE, and only its own site's atmosphere.

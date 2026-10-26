@@ -73,3 +73,6 @@ htmlcov/
 
 # Test fixtures are excerpts of published curves; *.dat above would otherwise drop them
 !tests/fixtures/**/*.dat
+
+# Official CIE colour tables shipped with sed_tools.filter_colors
+!sed_tools/cie/*.csv
