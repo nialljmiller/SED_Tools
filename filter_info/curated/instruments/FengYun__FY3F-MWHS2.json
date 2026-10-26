@@ -1,0 +1,27 @@
+{
+  "description": "MWHS-2 on FY-3F (RTTOV FY-3 satellite id 6). The curves are the channel spectral response functions distributed by the EUMETSAT NWP SAF for the RTTOV radiative-transfer model, converted from frequency to wavelength; bands chNN follow the RTTOV channel order.",
+  "facility_description": "FengYun FY-3 satellites (RTTOV platform FY-3; data from CMA or BNU per the README).",
+  "links": [
+    {
+      "url": "https://nwp-saf.eumetsat.int/downloads/rtcoef_info/mw_srf/rtcoef_fy3_6_mwhs2e_srf.html",
+      "label": "NWP SAF SRF page for RTTOV sensor fy3_6_mwhs2e",
+      "source": "EUMETSAT NWP SAF"
+    },
+    {
+      "url": "https://nwp-saf.eumetsat.int/site/software/rttov/download/coefficients/spectral-response-functions/",
+      "label": "NWP SAF spectral response functions index",
+      "source": "EUMETSAT NWP SAF"
+    }
+  ],
+  "references": [],
+  "acknowledgements": [],
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "No terms of use are stated on the NWP SAF SRF pages or in the files. The NWP SAF SRF index lists sensors whose 'SRFs cannot be published due to licence restrictions' separately; this sensor's SRFs are published there.",
+    "url": "https://nwp-saf.eumetsat.int/downloads/rtcoef_info/mw_srf/rtcoef_fy3_6_mwhs2e_srf.html",
+    "scope": "EUMETSAT NWP SAF distribution of originator data (see notes). Hosted under Nill's 2026-10-26 'host everything' decision."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "NWP SAF README_SRF: 'Data obtained from CMA Date received: 23/11/2023 Data available at: https://satellite.nsmc.org.cn/FY3F/html/FY3FAPPDATASET.html Text files contains the frequency (Hz) and the un-normalised spectral responses in dBm' Zeros added just inside gaps between separate passbands. Pivots agree with the page's central frequencies within 1% except double-sideband channels, whose pivot lies between the sidebands. DetectorType energy is assumed."
+}

@@ -1,0 +1,35 @@
+{
+  "description": "The Advanced Microwave Sounding Unit-A (AMSU-A) on NOAA-18, a 15-channel microwave temperature sounder (23.8-89 GHz). The curves are NOAA's CRTM boxcar channel models (not measured SRFs), converted from frequency to wavelength.",
+  "facility_description": "NOAA polar-orbiting satellites (CRTM sensor ids amsua_n15 ... n19, amsub_n15 ... n17).",
+  "links": [
+    {
+      "url": "https://www.star.nesdis.noaa.gov/smcd/GCC/instrInfo-srf.php",
+      "label": "NOAA STAR GSICS Coordination Center instrument SRF page",
+      "source": "NOAA NESDIS STAR"
+    },
+    {
+      "url": "https://www.star.nesdis.noaa.gov/smcd/GCC/data/amsu_ab_srf.tgz",
+      "label": "AMSU-A/B SRF archive",
+      "source": "NOAA NESDIS STAR"
+    }
+  ],
+  "references": [],
+  "acknowledgements": [
+    {
+      "for": "NOAA/NESDIS STAR (host of the SRF files)",
+      "text": "as long as credit is given to the NOAA / NESDIS Center for Satellite Applications and Research",
+      "url": "https://www.star.nesdis.noaa.gov/star/productdisclaimer.php",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ],
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"Users are free to use the images or information hosted on this site as they wish, as long as credit is given to the NOAA / NESDIS Center for Satellite Applications and Research.\" (STAR Disclaimers & Notices)",
+    "url": "https://www.star.nesdis.noaa.gov/star/productdisclaimer.php",
+    "scope": "Site-wide notice of www.star.nesdis.noaa.gov (linked from the page footer), which hosts the SRF files."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "Owner boxcar model: file trunk/netCDF/amsua_n18.osrf.nc of amsu_ab_srf.tgz, title '... Boxcar Spectral Response Functions', comment 'The SRF for this sensor is computed from central frequencies and intermediate frequencies assuming a boxcar response across the passband-width.' NOAA's GCC SRF page offers no measured SRF for this instrument (measured AMSU-A SRFs there are for NOAA-19 only). All passbands of each channel are kept; zeros added just outside each passband edge. Band numbers are the file's channel numbers. DetectorType energy assumed."
+}

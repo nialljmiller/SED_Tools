@@ -1,0 +1,38 @@
+{
+  "description": "The Advanced Technology Microwave Sounder (ATMS) for QuickSounder (ATMS serial number 301), a 22-channel cross-track microwave sounder. The curves are the pre-launch channel spectral response functions of the NASA/GSFC public release for the primary (PRI) and redundant (RED) local oscillators, converted from frequency to wavelength.",
+  "facility_description": "QuickSounder, a NEON-1 series space mission carrying an ATMS (NASA/GSFC release announcement in the SRF zip).",
+  "links": [
+    {
+      "url": "https://www.star.nesdis.noaa.gov/jpss/ATMS.php",
+      "label": "STAR JPSS ATMS page (public SRF datasets)",
+      "source": "NOAA NESDIS STAR"
+    },
+    {
+      "url": "https://www.star.nesdis.noaa.gov/jpss/documents/ATMS_SRF/QS_SRF_Public_Release.zip",
+      "label": "ATMS SRF dataset for QuickSounder (ATMS serial number 301) (zip with the 'QuickSounder ATMS SRF Public Release Announcement')",
+      "source": "NOAA NESDIS STAR / NASA GSFC"
+    }
+  ],
+  "references": [
+    "doi:10.1029/2012JD018144",
+    "doi:10.1002/2013JD020483"
+  ],
+  "acknowledgements": [
+    {
+      "for": "NOAA/NESDIS STAR (host of the SRF files)",
+      "text": "as long as credit is given to the NOAA / NESDIS Center for Satellite Applications and Research",
+      "url": "https://www.star.nesdis.noaa.gov/star/productdisclaimer.php",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ],
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"Users are free to use the images or information hosted on this site as they wish, as long as credit is given to the NOAA / NESDIS Center for Satellite Applications and Research.\" (STAR Disclaimers & Notices)",
+    "url": "https://www.star.nesdis.noaa.gov/star/productdisclaimer.php",
+    "scope": "Site-wide notice of www.star.nesdis.noaa.gov (linked from the page footer), which hosts the SRF files."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "Per the release announcement in the zip: measured by Northrop Grumman at receiver-subsystem level (flight antenna excluded) at about +20 C shelf temperature, nominal voltage, corrected to vacuum; all frequencies in RF; amplitudes normalised to 0 dB peak; a noise-floor correction was applied; PRI = primary (A-side) LO, RED = redundant (B-side) LO; channels 1-2 are direct-detect. Response converted to linear and scaled to peak 1; wavelength = c/nu. DetectorType energy is assumed. QuickSounder ch18_RED peaks at +0.08 dB in the file."
+}

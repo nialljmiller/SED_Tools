@@ -1,0 +1,27 @@
+{
+  "description": "TROPICS SV1 (Pathfinder) radiometer (MIT LL). The curves are the channel spectral response functions distributed by the EUMETSAT NWP SAF for the RTTOV radiative-transfer model, converted from frequency to wavelength; bands chNN follow the RTTOV channel order.",
+  "facility_description": "RTTOV platform TROPICS (EUMETSAT NWP SAF list of supported platforms).",
+  "links": [
+    {
+      "url": "https://nwp-saf.eumetsat.int/downloads/rtcoef_info/mw_srf/rtcoef_tropics_0_tropics_srf.html",
+      "label": "NWP SAF SRF page for RTTOV sensor tropics_0_tropics",
+      "source": "EUMETSAT NWP SAF"
+    },
+    {
+      "url": "https://nwp-saf.eumetsat.int/site/software/rttov/download/coefficients/spectral-response-functions/",
+      "label": "NWP SAF spectral response functions index",
+      "source": "EUMETSAT NWP SAF"
+    }
+  ],
+  "references": [],
+  "acknowledgements": [],
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "No terms of use are stated on the NWP SAF SRF pages or in the files. The NWP SAF SRF index lists sensors whose 'SRFs cannot be published due to licence restrictions' separately; this sensor's SRFs are published there.",
+    "url": "https://nwp-saf.eumetsat.int/downloads/rtcoef_info/mw_srf/rtcoef_tropics_0_tropics_srf.html",
+    "scope": "EUMETSAT NWP SAF distribution of originator data (see notes). Hosted under Nill's 2026-10-26 'host everything' decision."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "NWP SAF README_SRF: 'Data obtained from MITLL for the MIT LL TROPICS SV1 (a.k.a Pathfinder) radiometer Date received: 31/03/2021 This material is based upon work supported by the National Aeronautics and Space Administration under Air Force Contract No. FA8702-15-D-0001. Text file contains the frequency (GHz) and the passband weights (normalized to one within six-digit precision). This coefficient contains a corrected SRF for channel 9 as of April 2023.' Zeros added just inside gaps between separate passbands. Pivots agree with the page's central frequencies within 1% except double-sideband channels, whose pivot lies between the sidebands. DetectorType energy is assumed."
+}

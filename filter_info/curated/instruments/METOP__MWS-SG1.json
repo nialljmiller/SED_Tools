@@ -1,0 +1,27 @@
+{
+  "description": "Microwave Sounder (MWS) protoflight model, RTTOV Metop-SG satellite id 1. The curves are the channel spectral response functions distributed by the EUMETSAT NWP SAF for the RTTOV radiative-transfer model, converted from frequency to wavelength; bands chNN follow the RTTOV channel order.",
+  "facility_description": "Metop-SG satellites (RTTOV platform Metop-SG).",
+  "links": [
+    {
+      "url": "https://nwp-saf.eumetsat.int/downloads/rtcoef_info/mw_srf/rtcoef_metopsg_1_mws_srf.html",
+      "label": "NWP SAF SRF page for RTTOV sensor metopsg_1_mws",
+      "source": "EUMETSAT NWP SAF"
+    },
+    {
+      "url": "https://nwp-saf.eumetsat.int/site/software/rttov/download/coefficients/spectral-response-functions/",
+      "label": "NWP SAF spectral response functions index",
+      "source": "EUMETSAT NWP SAF"
+    }
+  ],
+  "references": [],
+  "acknowledgements": [],
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "No terms of use are stated on the NWP SAF SRF pages or in the files. The NWP SAF SRF index lists sensors whose 'SRFs cannot be published due to licence restrictions' separately; this sensor's SRFs are published there.",
+    "url": "https://nwp-saf.eumetsat.int/downloads/rtcoef_info/mw_srf/rtcoef_metopsg_1_mws_srf.html",
+    "scope": "EUMETSAT NWP SAF distribution of originator data (see notes). Hosted under Nill's 2026-10-26 'host everything' decision."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "NWP SAF README_SRF: 'Data obtained from EUMETSAT for all channels the MWS PFM instrument. This is the first flight model. Date received: 31/01/2023 Three excel spreadsheets entitled 'MWS_RF-ch1-2_ch17-24', 'MWS_RF-A_03-16-PFM', and 'MWS_RF-B_03-16-PFM' were provided. The 'A' file was used for channels 3 to 16. SRF's given in frequency (GHz) and passband weights in dB. Weights used were labelled 'FFT-NOM (dB)-normalised' or 'FFT-NOM (dB)-normalised-balanced' for the upper side band in 'MWS_RF-ch1-2_ch17-24'. Weights used were labelled 'MWS-{channel number}-FE+BE' in 'MWS_RF-A_03-16-PFM'.' Zeros added just inside gaps between separate passbands. Pivots agree with the page's central frequencies within 1% except double-sideband channels, whose pivot lies between the sidebands. DetectorType energy is assumed."
+}

@@ -1,0 +1,22 @@
+{
+  "description": "The Coastal Zone Color Scanner (CZCS) on Nimbus-7, an ocean-colour scanner. The curves are the relative spectral responses of its four ocean-colour bands (443, 520, 550, 670 nm) as distributed by NASA's Ocean Biology DAAC.",
+  "facility_description": "Nimbus-7, a NASA satellite that carried the Coastal Zone Color Scanner (CZCS).",
+  "links": [
+    {
+      "url": "https://oceandata.sci.gsfc.nasa.gov/directdataaccess/Manifest/v3.1.0/share/czcs/cal/",
+      "label": "OB.DAAC CZCS calibration directory (CZCS_RSRs.txt, CZCS_RSRs.hdf)",
+      "source": "NASA GSFC OB.DAAC"
+    }
+  ],
+  "references": [],
+  "acknowledgements": [],
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"Mission data are released as soon as possible, and unrestricted mission software is developed openly.\" (NASA Science Mission Directorate, Scientific Information Policy page, linked as 'Data & Information Policy' from the OB.DAAC directory page that lists CZCS_RSRs.txt)",
+    "url": "https://science.nasa.gov/researchers/science-information-policy/",
+    "scope": "Agency-wide NASA SMD data policy linked from the site footer; the file itself states no terms."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "File header: responses 'taken from Figures 2-2, 2-3, 2-4, and 2-5 from volume 2 of the Ball Bros. Final Report F78-11 Revision A, May, 1979' (message from Howard Gordon), tabulated on a 1 nm grid; -999 samples dropped and each band scaled to peak 1. Pivots equal SVO's NIMBUS/CZCS records (band520, band670). DetectorType energy is assumed. The file holds only these four bands."
+}

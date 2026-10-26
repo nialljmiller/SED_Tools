@@ -1,0 +1,38 @@
+{
+  "description": "The Advanced Technology Microwave Sounder (ATMS) on NOAA-20 (JPSS-1), a 22-channel cross-track microwave sounder (23.8-183.31 GHz). The curves are the 61 channel spectral response functions of NOAA STAR's 'NOAA-20 ATMS Spectral Response Function (SRF) Dataset' (1/22/2018): NASA/GSFC RF-frequency SRFs at +20 C for the primary (A) and redundant (B) local oscillators, converted from frequency to wavelength.",
+  "facility_description": "The Joint Polar Satellite System (JPSS) is NOAA's polar-orbiting series (Suomi NPP, NOAA-20, NOAA-21, ...).",
+  "links": [
+    {
+      "url": "https://www.star.nesdis.noaa.gov/jpss/ATMS.php",
+      "label": "STAR JPSS ATMS page (public SRF datasets)",
+      "source": "NOAA NESDIS STAR"
+    },
+    {
+      "url": "https://www.star.nesdis.noaa.gov/jpss/documents/ATMS_SRF/J1-ATMS_SRFs_X.zip",
+      "label": "NOAA-20 ATMS SRF dataset (zip with GSFC READMEs)",
+      "source": "NOAA NESDIS STAR / NASA GSFC"
+    }
+  ],
+  "references": [
+    "doi:10.1029/2012JD018144",
+    "doi:10.1002/2013JD020483"
+  ],
+  "acknowledgements": [
+    {
+      "for": "NOAA/NESDIS STAR (host of the SRF files)",
+      "text": "as long as credit is given to the NOAA / NESDIS Center for Satellite Applications and Research",
+      "url": "https://www.star.nesdis.noaa.gov/star/productdisclaimer.php",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ],
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"Users are free to use the images or information hosted on this site as they wish, as long as credit is given to the NOAA / NESDIS Center for Satellite Applications and Research.\" (STAR Disclaimers & Notices)",
+    "url": "https://www.star.nesdis.noaa.gov/star/productdisclaimer.php",
+    "scope": "Site-wide notice of www.star.nesdis.noaa.gov (linked from the page footer), which hosts the SRF files."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "Band names follow SVO's JPSS/ATMS-J1 IDs: A/B = primary/redundant LO; L/U = lower/upper sideband (ch12-15 sideband-balance sweeps, ch18-22 passbands); ch17A1/A2/B1 = sideband-balance runs. Channels 1-2 are direct-detect (no LO, a single curve). Per the zip's READMEs: ch3-9 and 16 were measured at the IF and converted to RF by GSFC; ch10-15 and 17 come from sideband-balance (RF) data; ch18-22 passbands were derived by GSFC from bandpass-characteristics data and have zero sideband imbalance. Response in dB converted to linear and scaled to peak 1; wavelength = c/nu. SVO's archived ATMS-J1 records have pivots 10 times larger than c/nu of these channels (pivot ratio exactly 0.100 for every band); the NJM curves use the correct conversion. DetectorType energy is assumed."
+}

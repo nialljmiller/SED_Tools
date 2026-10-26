@@ -1,0 +1,27 @@
+{
+  "description": "TEMPEST-D (Pathfinder) radiometer (JPL). The curves are the channel spectral response functions distributed by the EUMETSAT NWP SAF for the RTTOV radiative-transfer model, converted from frequency to wavelength; bands chNN follow the RTTOV channel order.",
+  "facility_description": "RTTOV platform TEMPEST (EUMETSAT NWP SAF list of supported platforms).",
+  "links": [
+    {
+      "url": "https://nwp-saf.eumetsat.int/downloads/rtcoef_info/mw_srf/rtcoef_tempest_0_tempest_srf.html",
+      "label": "NWP SAF SRF page for RTTOV sensor tempest_0_tempest",
+      "source": "EUMETSAT NWP SAF"
+    },
+    {
+      "url": "https://nwp-saf.eumetsat.int/site/software/rttov/download/coefficients/spectral-response-functions/",
+      "label": "NWP SAF spectral response functions index",
+      "source": "EUMETSAT NWP SAF"
+    }
+  ],
+  "references": [],
+  "acknowledgements": [],
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "No terms of use are stated on the NWP SAF SRF pages or in the files. The NWP SAF SRF index lists sensors whose 'SRFs cannot be published due to licence restrictions' separately; this sensor's SRFs are published there.",
+    "url": "https://nwp-saf.eumetsat.int/downloads/rtcoef_info/mw_srf/rtcoef_tempest_0_tempest_srf.html",
+    "scope": "EUMETSAT NWP SAF distribution of originator data (see notes). Hosted under Nill's 2026-10-26 'host everything' decision."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "NWP SAF README_SRF: 'Data obtained from JPL for the TEMPEST-D (a.k.a Pathfinder) radiometer Date received: 18/10/2018 Excel file titled '20171013 spectral_response_FM1.xlsx' contains the frequency (GHz) and the passband weights (normalized to one within six-digit precision).' Zeros added just inside gaps between separate passbands. Pivots agree with the page's central frequencies within 1% except double-sideband channels, whose pivot lies between the sidebands. DetectorType energy is assumed."
+}

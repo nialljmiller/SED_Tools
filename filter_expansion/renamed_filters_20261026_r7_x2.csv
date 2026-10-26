@@ -1,0 +1,5 @@
+old_path,new_path
+QUIET/QUIET/Q.dat,QUIET/QUIET/Q_svo.dat
+QUIET/QUIET/W.dat,QUIET/QUIET/W_svo.dat
+NIMBUS/CZCS/band520.dat,NIMBUS/CZCS/band520_svo.dat
+NIMBUS/CZCS/band670.dat,NIMBUS/CZCS/band670_svo.dat

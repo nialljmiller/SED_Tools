@@ -1,0 +1,29 @@
+{
+  "description": "QUIET (Q/U Imaging ExperimenT), a CMB polarization experiment with Q-band and W-band receivers. The curves are the Q-band and W-band bandpass profiles of the 1st+2nd season galactic-fields data release (response to a source of uniform spectral radiance, peak 1), converted from frequency to wavelength.",
+  "facility_description": "QUIET (Q/U Imaging ExperimenT) CMB polarization experiment; instrument described in QUIET Collaboration (2013), ApJ 768, 9.",
+  "links": [
+    {
+      "url": "https://lambda.gsfc.nasa.gov/product/quiet/quiet_band_info.html",
+      "label": "LAMBDA: QUIET beams and bandpasses (product description)",
+      "source": "NASA LAMBDA / QUIET collaboration"
+    },
+    {
+      "url": "https://lambda.gsfc.nasa.gov/product/quiet/quiet_band_get.html",
+      "label": "LAMBDA: QUIET beam and bandpass downloads",
+      "source": "NASA LAMBDA"
+    }
+  ],
+  "references": [
+    "doi:10.1088/0004-637X/768/1/9"
+  ],
+  "acknowledgements": [],
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "No terms of use are stated on the LAMBDA product pages (quiet_band_info.html, quiet_band_get.html) or in the files.",
+    "url": "https://lambda.gsfc.nasa.gov/product/quiet/quiet_band_get.html",
+    "scope": "NASA LAMBDA distribution of a collaboration data release. Hosted under Nill's 2026-10-26 'host everything' decision."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "Q-band: averaged over detector diodes RQ00-RQ15 (file header). W-band: 'the response for one representative detector diode, and, unlike the QUIET Q-band profile, is thus not averaged over detector diodes' (file header); LAMBDA: 'It therefore has an additional uncertainty'. Negative noise set to 0. Pivots agree with SVO's QUIET/QUIET.Q/W records within 0.05%. DetectorType energy is assumed."
+}

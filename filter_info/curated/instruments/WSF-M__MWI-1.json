@@ -1,0 +1,27 @@
+{
+  "description": "Microwave Imager (MWI) on WSF-M1. The curves are the channel spectral response functions distributed by the EUMETSAT NWP SAF for the RTTOV radiative-transfer model, converted from frequency to wavelength; bands chNN follow the RTTOV channel order.",
+  "facility_description": "RTTOV platform WSF-M (EUMETSAT NWP SAF list of supported platforms).",
+  "links": [
+    {
+      "url": "https://nwp-saf.eumetsat.int/downloads/rtcoef_info/mw_srf/rtcoef_wsfm_1_wsfmmwi_srf.html",
+      "label": "NWP SAF SRF page for RTTOV sensor wsfm_1_wsfmmwi",
+      "source": "EUMETSAT NWP SAF"
+    },
+    {
+      "url": "https://nwp-saf.eumetsat.int/site/software/rttov/download/coefficients/spectral-response-functions/",
+      "label": "NWP SAF spectral response functions index",
+      "source": "EUMETSAT NWP SAF"
+    }
+  ],
+  "references": [],
+  "acknowledgements": [],
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "No terms of use are stated on the NWP SAF SRF pages or in the files. The NWP SAF SRF index lists sensors whose 'SRFs cannot be published due to licence restrictions' separately; this sensor's SRFs are published there.",
+    "url": "https://nwp-saf.eumetsat.int/downloads/rtcoef_info/mw_srf/rtcoef_wsfm_1_wsfmmwi_srf.html",
+    "scope": "EUMETSAT NWP SAF distribution of originator data (see notes). Hosted under Nill's 2026-10-26 'host everything' decision."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "NWP SAF README_SRF: 'Data obtained from NRL for the MWI instrument on WSF-M1 Date received: 16/03/2023 ALL_MWI_SPECTRAL_DATA.h5 file contains the FreqSamp [GHz], un-normalised SpectralResponse [dB]. Data was sorted by ascending frequen Cutoffs were applied to the noise floor. Note there are no real SRFs for the 3rd/4th Stokes channels 3,4,7,8,12,13. Tophat assumption is used for these six channels.' Held, not hosted (curve extends below 15 GHz, beyond the NJM validator limit of 2e8 A): ch01 (10.859 GHz V (ID=3)): curve reaches 10.555 GHz < 14.99 GHz; ch02 (10.857 GHz H (ID=4)): curve reaches 10.555 GHz < 14.99 GHz; ch03 (10.85 GHz S3 (ID=5)): curve reaches 10.600 GHz < 14.99 GHz; ch04 (10.85 GHz S4 (ID=6)): curve reaches 10.600 GHz < 14.99 GHz. Zeros added just inside gaps between separate passbands. Pivots agree with the page's central frequencies within 1% except double-sideband channels, whose pivot lies between the sidebands. DetectorType energy is assumed."
+}

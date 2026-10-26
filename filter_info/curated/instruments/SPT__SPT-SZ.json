@@ -1,0 +1,29 @@
+{
+  "description": "The SPT-SZ camera of the South Pole Telescope. The curves are the measured average spectral bandpass functions of the 150 and 220 GHz bands for the 2008 season (first SPT data release), the response to a flat-spectrum source, converted from frequency to wavelength.",
+  "facility_description": "The South Pole Telescope (SPT) is a 10 m millimetre-wave telescope at the Amundsen-Scott South Pole Station.",
+  "links": [
+    {
+      "url": "https://lambda.gsfc.nasa.gov/product/spt/dr1/bands_info.html",
+      "label": "LAMBDA: SPT spectral bandpass functions for the 2008 season",
+      "source": "NASA LAMBDA / SPT collaboration"
+    },
+    {
+      "url": "https://lambda.gsfc.nasa.gov/product/spt/dr1/bands_get.html",
+      "label": "LAMBDA: bandpass downloads",
+      "source": "NASA LAMBDA"
+    }
+  ],
+  "references": [
+    "bibcode:2011ApJ...743...90S"
+  ],
+  "acknowledgements": [],
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "No terms of use are stated on the LAMBDA product pages (bands_info.html, bands_get.html) or in the files.",
+    "url": "https://lambda.gsfc.nasa.gov/product/spt/dr1/bands_get.html",
+    "scope": "NASA LAMBDA distribution of a collaboration data release. Hosted under Nill's 2026-10-26 'host everything' decision."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "Bandpasses from Fourier-transform-spectrometer measurements averaged over about 50% of the detectors in each band (LAMBDA product description); LAMBDA lists only the 150 and 220 GHz bandpasses for 2008. The file headers say 'This function gives the response to a flat-spectrum source and is normalized to peak=1'. Negative FTS noise set to 0. DetectorType energy is assumed (bolometers)."
+}

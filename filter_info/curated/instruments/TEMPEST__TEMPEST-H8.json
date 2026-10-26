@@ -1,0 +1,27 @@
+{
+  "description": "TEMPEST-H8 radiometer (STP-H8 mission). The curves are the channel spectral response functions distributed by the EUMETSAT NWP SAF for the RTTOV radiative-transfer model, converted from frequency to wavelength; bands chNN follow the RTTOV channel order.",
+  "facility_description": "RTTOV platform TEMPEST (EUMETSAT NWP SAF list of supported platforms).",
+  "links": [
+    {
+      "url": "https://nwp-saf.eumetsat.int/downloads/rtcoef_info/mw_srf/rtcoef_tempest_1_tempest_srf.html",
+      "label": "NWP SAF SRF page for RTTOV sensor tempest_1_tempest",
+      "source": "EUMETSAT NWP SAF"
+    },
+    {
+      "url": "https://nwp-saf.eumetsat.int/site/software/rttov/download/coefficients/spectral-response-functions/",
+      "label": "NWP SAF spectral response functions index",
+      "source": "EUMETSAT NWP SAF"
+    }
+  ],
+  "references": [],
+  "acknowledgements": [],
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "No terms of use are stated on the NWP SAF SRF pages or in the files. The NWP SAF SRF index lists sensors whose 'SRFs cannot be published due to licence restrictions' separately; this sensor's SRFs are published there.",
+    "url": "https://nwp-saf.eumetsat.int/downloads/rtcoef_info/mw_srf/rtcoef_tempest_1_tempest_srf.html",
+    "scope": "EUMETSAT NWP SAF distribution of originator data (see notes). Hosted under Nill's 2026-10-26 'host everything' decision."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "NWP SAF README_SRF: 'Data obtained from The Aerospace Corporation for the TEMPEST-H8 radiometer. The Aerospace Corporation is leading the Cal/Val effort for the DoD Space Test Program Houston 8 (STP-H8) Mission, which will operate both the Compact Ocean Wind Vector Radiometer (COWVR) and the second TEMPEST unit (TEMPEST-H8). TEMPEST-H8 is a duplicate of TEMPEST-D but with different spectral response functions for the 5 channels. Date received: 22/06/2021 5 text files provided entitled 'TEMPEST_FM2_H8_CH1_181GHz_bandpass.dat' etc. contain the frequency (GHz) and the passband weights (normalized to one within six-digit precision).' Zeros added just inside gaps between separate passbands. Pivots agree with the page's central frequencies within 1% except double-sideband channels, whose pivot lies between the sidebands. DetectorType energy is assumed."
+}

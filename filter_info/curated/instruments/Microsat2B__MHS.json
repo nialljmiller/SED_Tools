@@ -1,0 +1,27 @@
+{
+  "description": "MHS on Microsat-2b (NCMRWF, MoES, India). The curves are the channel spectral response functions distributed by the EUMETSAT NWP SAF for the RTTOV radiative-transfer model, converted from frequency to wavelength; bands chNN follow the RTTOV channel order.",
+  "facility_description": "RTTOV platform Microsat2B (EUMETSAT NWP SAF list of supported platforms).",
+  "links": [
+    {
+      "url": "https://nwp-saf.eumetsat.int/downloads/rtcoef_info/mw_srf/rtcoef_micro2b_0_mhsm2b_srf.html",
+      "label": "NWP SAF SRF page for RTTOV sensor micro2b_0_mhsm2b",
+      "source": "EUMETSAT NWP SAF"
+    },
+    {
+      "url": "https://nwp-saf.eumetsat.int/site/software/rttov/download/coefficients/spectral-response-functions/",
+      "label": "NWP SAF spectral response functions index",
+      "source": "EUMETSAT NWP SAF"
+    }
+  ],
+  "references": [],
+  "acknowledgements": [],
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "No terms of use are stated on the NWP SAF SRF pages or in the files. The NWP SAF SRF index lists sensors whose 'SRFs cannot be published due to licence restrictions' separately; this sensor's SRFs are published there.",
+    "url": "https://nwp-saf.eumetsat.int/downloads/rtcoef_info/mw_srf/rtcoef_micro2b_0_mhsm2b_srf.html",
+    "scope": "EUMETSAT NWP SAF distribution of originator data (see notes). Hosted under Nill's 2026-10-26 'host everything' decision."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "NWP SAF README_SRF: 'Data obtained from NCMRWF, MoES, India for the MHS instrument on Microsat 2b. Date received: 05/05/2023. An excel spreadsheet entitled 'spectral_response' was provided, along with some plots of weighted absorption coefficients and a README file. The spreadsheet contained two columns, freqeuncy in Hz, and SRF in dBm. Only the lower sideband for each channel was provided. The upper sidebands were produced by mirroring the lower sideband around 183.31 GHz.' Zeros added just inside gaps between separate passbands. Pivots agree with the page's central frequencies within 1% except double-sideband channels, whose pivot lies between the sidebands. DetectorType energy is assumed."
+}

@@ -1,0 +1,27 @@
+{
+  "description": "GPM Microwave Imager (GMI) on GPM. The curves are the channel spectral response functions distributed by the EUMETSAT NWP SAF for the RTTOV radiative-transfer model, converted from frequency to wavelength; bands chNN follow the RTTOV channel order.",
+  "facility_description": "The GPM satellite (RTTOV platform GPM).",
+  "links": [
+    {
+      "url": "https://nwp-saf.eumetsat.int/downloads/rtcoef_info/mw_srf/rtcoef_gpm_1_gmi_srf.html",
+      "label": "NWP SAF SRF page for RTTOV sensor gpm_1_gmi",
+      "source": "EUMETSAT NWP SAF"
+    },
+    {
+      "url": "https://nwp-saf.eumetsat.int/site/software/rttov/download/coefficients/spectral-response-functions/",
+      "label": "NWP SAF spectral response functions index",
+      "source": "EUMETSAT NWP SAF"
+    }
+  ],
+  "references": [],
+  "acknowledgements": [],
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "No terms of use are stated on the NWP SAF SRF pages or in the files. The NWP SAF SRF index lists sensors whose 'SRFs cannot be published due to licence restrictions' separately; this sensor's SRFs are published there.",
+    "url": "https://nwp-saf.eumetsat.int/downloads/rtcoef_info/mw_srf/rtcoef_gpm_1_gmi_srf.html",
+    "scope": "EUMETSAT NWP SAF distribution of originator data (see notes). Hosted under Nill's 2026-10-26 'host everything' decision."
+  },
+  "bands": {},
+  "evidence": [],
+  "notes": "NWP SAF README_SRF: 'Data obtained for the GMI radiometer on GPM. Data originates from Colorado State & GMI inter-calibration team. Band pass filters were added to channels 8,9 and 12 to eliminate RFI issues. Date received: 20/11/2019 Excel files contain the frequency (GHz) and the passband weights in dB at six measured temperatures. The data associated with a mid-20 deg-C temperature were used for these SRFs.' Held, not hosted (curve extends below 15 GHz, beyond the NJM validator limit of 2e8 A): ch01 (10.647 GHz V (ID=3)): curve reaches 10.554 GHz < 14.99 GHz; ch02 (10.645 GHz H (ID=4)): curve reaches 10.551 GHz < 14.99 GHz. Zeros added just inside gaps between separate passbands. Pivots agree with the page's central frequencies within 1% except double-sideband channels, whose pivot lies between the sidebands. DetectorType energy is assumed."
+}
