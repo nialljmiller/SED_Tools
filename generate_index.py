@@ -15,6 +15,7 @@ from urllib.parse import unquote
 from filter_info.compose import SCHEMA as INFO_SCHEMA, InfoSources, write_info
 from filter_info.references import UNRESOLVED
 from sed_tools import __version__ as SED_TOOLS_VERSION
+from sed_tools.filter_colors import instrument_colors
 from sed_tools.filter_properties import UNITS, curve_properties, load_vega
 from sed_tools.filter_metadata import read_filter_header
 
@@ -152,6 +153,9 @@ def write_properties(instrument_dir: Path, filter_files, vega, reference):
         bands[curve.stem] = props
     if not bands:
         return False
+    # Plotting colours depend on the instrument's other bands (false colours go in order).
+    for band, colors in instrument_colors(sorted(filter_files)).items():
+        bands[band].update(colors)
     document = {"definitions": reference, "bands": bands}
     path = instrument_dir / "properties.json"
     text = json.dumps(document, indent=1, sort_keys=True) + "\n"
@@ -290,6 +294,10 @@ def generate_index(data_dir: str = None):
         "units": UNITS,
         "vega_spectrum": vega_source,
         "note": "Vega quantities are null when the Vega spectrum does not cover the curve.",
+        "colors": ("DisplayColor is an sRGB hex for plotting (sed_tools.filter_colors). ColorMethod "
+                   "'true': CIE D65 daylight seen through the curve, for bands with VisibleFraction "
+                   "(share of the throughput between 380 and 750 nm) of at least 0.5; 'false': "
+                   "ordered false colour for ultraviolet and infrared bands."),
     }
     info_sources = InfoSources(Path(__file__).resolve().parent)
     facilities, filters_detailed, total_filters = scan_filters(data_dir, vega, reference, info_sources)
