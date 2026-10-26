@@ -219,7 +219,7 @@ SED_Tools 0.3.0 wrote these fields as `#` lines above the column row instead, wh
 
 A curve with no column-name row (its first line is a sample) has no free line, so SED_Tools leaves it as it is and stores no metadata in it.
 
-`DetectorType` is `energy` or `photon`. `DetectorTypeSource` is `svo` (taken from the SVO record for `FilterID`), `svo-curve-match` (the file was identified by matching its curve point-by-point against SVO), or `assumed` (not identifiable — custom curves — written as `energy` and unverified). Downloads write the header automatically; existing files can be tagged in place:
+`DetectorType` is `energy` or `photon`. `DetectorTypeSource` is `svo` (taken from the SVO record for `FilterID`), `svo-curve-match` (the file was identified by matching its curve point-by-point against SVO), `original` (stated by the curve's publisher), `inferred` (established from documented facts, such as a filter-only curve on a documented photon-counting detector), or `assumed` (not identifiable — custom curves — written as `energy` and unverified). Downloads write the header automatically; existing files can be tagged in place:
 
 ```bash
 sed-tools filters-detector                 # whole filter root
