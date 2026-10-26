@@ -270,7 +270,10 @@ def compose_info(sources, instrument_dir, curves, properties=None):
     whole = own if own in svo_groups else (
         next(iter(svo_groups)) if len(svo_groups) == 1 and not unmatched else None)
     if whole:
-        info.update(svo_groups[whole])
+        group = dict(svo_groups[whole])
+        if whole.split("/", 1)[0] != facility:  # e.g. SVO files ATLAS under "Misc"
+            group.pop("facility_description", None)
+        info.update(group)
     if svo_groups:
         info["svo_groups"] = svo_groups
     notes = [n for n in (provenance.get("notes"), manifest.get("notes")) if n]

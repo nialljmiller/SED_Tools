@@ -68,6 +68,17 @@ def _number(value):
         return None
 
 
+def decode(raw):
+    """Text of a capture: UTF-8, else its declared charset (SVO's pages say ISO-8859-1)."""
+    try:
+        return raw.decode("utf-8")
+    except UnicodeDecodeError:
+        declared = re.search(rb'charset=["\']?([A-Za-z0-9_-]+)', raw[:4096])
+        name = declared.group(1).decode().lower() if declared else "cp1252"
+        # Browsers read ISO-8859-1 as Windows-1252, which also maps 0x80-0x9F.
+        return raw.decode("cp1252" if name in ("iso-8859-1", "latin1", "latin-1") else name, errors="replace")
+
+
 def curve_digest(samples):
     """SHA-256 of a curve's samples at 8 significant figures (format-independent)."""
     text = "\n".join(f"{float(w):.8g},{float(t):.8g}" for w, t in samples)
@@ -241,7 +252,7 @@ def _candidates(item):
 
 
 def _valid(kind, filter_id, raw):
-    text = raw.decode("utf-8", errors="replace")
+    text = decode(raw)
     record = parse_votable(text) if kind == "fps_votable" else parse_browse(text)
     if record is None:
         return "no filter record"
@@ -322,7 +333,7 @@ def build(out_dir, manifests):
             if hashlib.sha256(raw).hexdigest() != row["sha256"]:
                 counts[(row["kind"], family, "SHA-256 differs from manifest")] += 1
                 continue
-            text = raw.decode("utf-8", errors="replace")
+            text = decode(raw)
             capture = {"timestamp": row["capture_timestamp"], "url": row["original_url"],
                        "sha256": row["sha256"]}
             if row["kind"] == "fps_votable":

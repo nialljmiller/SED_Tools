@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
     <title>Niall Miller's SED Tools Data Archive</title>
     <style>
         body {
@@ -223,6 +224,78 @@
             color: #666666;
         }
 
+        .details-button {
+            border: 2px outset #C0C0C0;
+            background-color: #C0C0C0;
+            font-family: "Courier New", monospace;
+            font-size: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .details-button:hover {
+            border-style: inset;
+            background-color: #A0A0A0;
+        }
+
+        .details-row > td {
+            background-color: #FFFFF0 !important;
+            border: 2px inset #808080;
+            padding: 8px;
+        }
+
+        .details-panel h4 {
+            background-color: #008080;
+            color: #FFFFFF;
+            margin: 10px 0 5px;
+            padding: 2px 6px;
+            font-size: 12px;
+        }
+
+        .details-panel p {
+            margin: 4px 0;
+            font-size: 12px;
+        }
+
+        .table-scroll {
+            overflow-x: auto;
+        }
+
+        .band-table td {
+            background-color: #FFFFFF;
+            white-space: nowrap;
+        }
+
+        .band-table td.wrap {
+            white-space: normal;
+            min-width: 140px;
+        }
+
+        .note-warn {
+            color: #A00000;
+            font-weight: bold;
+            cursor: help;
+        }
+
+        .ref-list li {
+            margin: 3px 0;
+            font-size: 12px;
+        }
+
+        .details-panel pre {
+            background-color: #000000;
+            color: #00FF00;
+            padding: 6px;
+            font-size: 11px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .details-panel summary {
+            cursor: pointer;
+            font-size: 12px;
+        }
+
         .webring {
             border: 3px double #FFD700;
             background-color: #000000;
@@ -257,7 +330,7 @@
     <div class="header">
         <h1> Niall Miller's SED TOOLS DATA ARCHIVE </h1>
         <font size="2">Stellar Atmosphere Models & Filter Profiles for MESA</font>
-        <font size="1"><span class="blink">●</span> ONLINE <span class="blink">●</span></font>
+        <font size="1"><span class="blink">&#9679;</span> ONLINE <span class="blink">&#9679;</span></font>
     </div>
 
     <center>
@@ -318,6 +391,9 @@
             <b>Separate component curves</b> shows independently downloadable files by element and the number of bands covered.
             These are distinct: a published curve can include optics or detector response even when no separate file is available.
             Detector type describes photon or energy counting, not an additional optical component.
+            <b>DETAILS</b> opens each instrument's band properties (pivot, width, zero points), descriptions,
+            references to cite, and where every curve came from, including what the SVO Filter Profile Service said about it.
+            Link to an instrument with <code>#Facility/Instrument</code>.
         </div>
         <div id="filters-container">
             <center><span class="blink">LOADING...</span></center>
@@ -327,7 +403,7 @@
     <hr>
 
     <div class="section">
-        <div class="section-title">📖 HOW TO USE</div>
+        <div class="section-title">&#128214; HOW TO USE</div>
         <font face="Arial" size="2">
         <b>For MESA Users:</b><br>
         <ol>
@@ -347,8 +423,8 @@
     <hr>
 
     <center>
-        <a class="button" href="https://github.com/nialljmiller/SED_Tools" target="_blank">📁 GitHub Repo</a>
-        <a class="button" href="index.json">📄 Raw JSON Index</a>
+        <a class="button" href="https://github.com/nialljmiller/SED_Tools" target="_blank">&#128193; GitHub Repo</a>
+        <a class="button" href="index.json">&#128196; Raw JSON Index</a>
     </center>
 
 </div>
@@ -377,6 +453,187 @@ function countLabels(counts) {
         : '<span class="metadata-missing">Not specified</span>';
 }
 
+// Instrument details: properties.json (computed) and info.json (descriptions, references,
+// provenance) are fetched only when an instrument's DETAILS row is opened.
+const INSTRUMENTS = {};
+
+function safeUrl(url) {
+    return /^https?:\/\//i.test(String(url || '')) ? escapeHtml(url) : '#';
+}
+
+function fmt(value, digits = 6) {
+    return (value === null || value === undefined || value === '')
+        ? '<span class="metadata-missing">\u{2014}</span>'
+        : escapeHtml(Number(Number(value).toPrecision(digits)));
+}
+
+function fetchJson(url) {
+    return fetch(url).then(response => {
+        if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
+        return response.json();
+    });
+}
+
+function citeLink(key, bibliography) {
+    const entry = bibliography[key] || {};
+    const title = entry.title ? ` title="${escapeHtml(entry.title)}"` : '';
+    return `<a href="${safeUrl(entry.url)}" target="_blank"${title}>${escapeHtml(entry.short || key.replace(/^[a-z]+:/, ''))}</a>`;
+}
+
+function bibliographyItem(key, entry) {
+    const parts = [`<b>${escapeHtml(entry.short || key)}</b>`];
+    if (entry.title) parts.push(escapeHtml(entry.title));
+    const where = [entry.journal, entry.volume, entry.page].filter(Boolean).map(escapeHtml).join(', ');
+    if (where) parts.push(`<i>${where}</i>`);
+    const links = [];
+    if (entry.bibcode) links.push(`<a href="https://ui.adsabs.harvard.edu/abs/${encodeURIComponent(entry.bibcode)}" target="_blank">ADS</a>`);
+    if (entry.doi) links.push(`<a href="https://doi.org/${escapeHtml(encodeURI(entry.doi))}" target="_blank">DOI</a>`);
+    if (entry.arxiv) links.push(`<a href="https://arxiv.org/abs/${escapeHtml(encodeURI(entry.arxiv))}" target="_blank">arXiv</a>`);
+    if (entry.publisher_url) links.push(`<a href="${safeUrl(entry.publisher_url)}" target="_blank">publisher</a>`);
+    if (!links.length) links.push(`<a href="${safeUrl(entry.url)}" target="_blank">link</a>`);
+    let html = `<li>${parts.join('. ')} [${links.join('] [')}]`;
+    if (entry.bibtex) html += `<details><summary>BibTeX</summary><pre>${escapeHtml(entry.bibtex)}</pre></details>`;
+    return html + '</li>';
+}
+
+function renderDetails(record, info, props) {
+    const {facility, instrument, folder, inst} = record;
+    const infoBands = (info && info.bands) || {};
+    const propBands = (props && props.bands) || {};
+    const bibliography = (info && info.bibliography) || {};
+    const names = [...new Set([...(inst.filters || []), ...Object.keys(propBands), ...Object.keys(infoBands)])]
+        .sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
+    let html = '<div class="details-panel">';
+    if (info) {
+        if (info.description) html += `<p><b>${escapeHtml(instrument)}:</b> ${escapeHtml(info.description)}</p>`;
+        if (info.facility_description && info.facility_description !== info.description) {
+            html += `<p><b>${escapeHtml(facility)}:</b> ${escapeHtml(info.facility_description)}</p>`;
+        }
+        if (info.links && info.links.length) {
+            html += '<p><b>Links:</b> ' + info.links.map(link =>
+                `<a href="${safeUrl(link.url)}" target="_blank">${escapeHtml(link.label || link.url)}</a>`).join(' \u{b7} ') + '</p>';
+        }
+        if (info.notes) html += `<details><summary>Provenance notes</summary><p>${escapeHtml(info.notes)}</p></details>`;
+    }
+
+    html += `<h4>BANDS</h4><div class="table-scroll"><table class="band-table"><thead><tr>
+        <th>BAND</th><th>DESCRIPTION</th><th>DETECTOR</th><th>\u{3bb} PIVOT (\u{c5})</th><th>FWHM (\u{c5})</th>
+        <th>\u{3bb} MIN\u{2013}MAX (\u{c5})</th><th>VEGA ZP (Jy)</th><th>CITE</th><th>SVO RECORD</th>
+    </tr></thead><tbody>`;
+    const notes = [];
+    names.forEach(band => {
+        const b = infoBands[band] || {};
+        const p = propBands[band] || {};
+        const curve = b.curve || {};
+        const svo = b.svo;
+        const detector = curve.DetectorType || p.DetectorType;
+        let detectorHtml = detector
+            ? `${escapeHtml(detector)} <span class="metadata-missing">(${escapeHtml(curve.DetectorTypeSource || p.DetectorTypeSource || 'unspecified')})</span>`
+            : '<span class="metadata-missing">\u{2014}</span>';
+        if (svo && svo.DetectorType_note) {
+            notes.push([band, svo.DetectorType_note]);
+            detectorHtml += ` <span class="note-warn" title="${escapeHtml(svo.DetectorType_note)}">\u{26a0}</span>`;
+        }
+        const system = b.PhotSystem && !(b.Description || '').includes(b.PhotSystem) ? `(${b.PhotSystem})` : '';
+        let description = [b.Description, system, b.Comments]
+            .filter(Boolean).map(escapeHtml).join(' ');
+        if (p.error) description += ` <span class="note-warn">${escapeHtml(p.error)}</span>`;
+        const cite = (b.references || []).map(key => citeLink(key, bibliography)).join(', ');
+        let svoHtml = '<span class="metadata-missing">none archived yet</span>';
+        if (svo) {
+            const capture = (svo.captures || {}).browse || (svo.captures || {}).votable;
+            const id = escapeHtml(svo.filterID);
+            svoHtml = (capture
+                ? `<a href="https://web.archive.org/web/${encodeURIComponent(capture.timestamp)}/${safeUrl(capture.url)}" target="_blank" title="Internet Archive copy of SVO's record">${id}</a>`
+                : id) + ({identical: ' <span class="metadata-missing">(same curve)</span>',
+                          differs: ' <span class="metadata-missing">(NJM curve differs)</span>'}[svo.curve] || '');
+        }
+        html += `<tr>
+            <td><a href="${folder}${encodeURIComponent(band)}.dat">${escapeHtml(band)}</a></td>
+            <td class="wrap">${description || '<span class="metadata-missing">\u{2014}</span>'}</td>
+            <td>${detectorHtml}</td>
+            <td align="right">${fmt(p.WavelengthPivot)}</td>
+            <td align="right">${fmt(p.FWHM)}</td>
+            <td>${fmt(p.WavelengthMin)}\u{2013}${fmt(p.WavelengthMax)}</td>
+            <td align="right">${fmt(p.ZeroPointVega_Jy, 5)}</td>
+            <td class="wrap">${cite || '<span class="metadata-missing">\u{2014}</span>'}</td>
+            <td>${svoHtml}</td>
+        </tr>`;
+    });
+    html += '</tbody></table></div>';
+    if (notes.length) {
+        html += '<h4>DETECTOR TYPE NOTES</h4><ul class="ref-list">' +
+            notes.map(([band, note]) => `<li><b>${escapeHtml(band)}</b>: ${escapeHtml(note)}</li>`).join('') + '</ul>';
+    }
+
+    html += '<h4>HOW TO CITE</h4>';
+    if (info) {
+        (info.acknowledgements || []).forEach(ack => {
+            const refs = (ack.references || []).map(key => citeLink(key, bibliography)).join(', ');
+            html += `<p><b>${escapeHtml(ack.for)}</b> (used here for ${escapeHtml(ack.applies_to || 'this instrument')}) asks for this acknowledgement:
+                <i>${escapeHtml(ack.text)}</i>${refs ? `, and for these references: ${refs}` : ''}.</p>`;
+        });
+        const keys = Object.keys(bibliography);
+        if (keys.length) {
+            html += '<ul class="ref-list">' + keys.map(key => bibliographyItem(key, bibliography[key])).join('') + '</ul>';
+            const bibtex = keys.map(key => bibliography[key].bibtex).filter(Boolean);
+            if (bibtex.length) {
+                html += `<details><summary>All BibTeX (${bibtex.length})</summary><pre>${escapeHtml(bibtex.join('\n\n'))}</pre></details>`;
+            }
+        } else {
+            html += '<p class="metadata-missing">No references recorded yet.</p>';
+        }
+        if (info.svo_unmatched && info.svo_unmatched.length) {
+            html += `<p class="metadata-missing">${info.svo_unmatched.length} of ${names.length} bands have no archived SVO record yet; they fill in as the harvest continues.</p>`;
+        }
+    } else {
+        html += '<p class="metadata-missing">No descriptions or references for this instrument yet.</p>';
+    }
+
+    const files = [];
+    if (inst.properties) files.push(`<a href="${folder}${escapeHtml(inst.properties)}">${escapeHtml(inst.properties)}</a> (computed properties)`);
+    if (inst.info) files.push(`<a href="${folder}${escapeHtml(inst.info)}">${escapeHtml(inst.info)}</a> (descriptions, references, provenance)`);
+    if (inst.has_component_manifest) files.push(`<a href="${folder}manifest.json">manifest.json</a> (components)`);
+    files.push(`<a href="${folder}">all files</a>`);
+    html += `<h4>FILES</h4><p>${files.join(' \u{b7} ')}</p>`;
+    return html + '</div>';
+}
+
+function toggleDetails(key, toggle) {
+    const record = INSTRUMENTS[key];
+    if (!record) return false;
+    document.getElementById(record.listId).style.display = 'block';
+    const row = document.getElementById(record.rowId);
+    const button = document.querySelector(`[data-target="${record.rowId}"]`);
+    if (toggle && row.style.display !== 'none') {
+        row.style.display = 'none';
+        button.textContent = '[+] DETAILS';
+        return true;
+    }
+    row.style.display = '';
+    button.textContent = '[-] DETAILS';
+    if (toggle) history.replaceState(null, '', '#' + encodeURI(key));
+    if (!record.loaded) {
+        record.loaded = true;
+        const cell = row.firstElementChild;
+        cell.innerHTML = '<span class="blink">LOADING...</span>';
+        const {folder, inst} = record;
+        Promise.all([
+            inst.info ? fetchJson(folder + inst.info).catch(() => null) : null,
+            inst.properties ? fetchJson(folder + inst.properties).catch(() => null) : null,
+        ]).then(([info, props]) => { cell.innerHTML = renderDetails(record, info, props); });
+    }
+    return true;
+}
+
+function openFromHash() {
+    let key = '';
+    try { key = decodeURIComponent(location.hash.slice(1)); } catch (error) { return; }
+    if (key && toggleDetails(key, false)) {
+        document.getElementById(INSTRUMENTS[key].rowId).previousElementSibling.scrollIntoView();
+    }
+}
+
 // Load index.json and populate the page
 fetch('index.json')
     .then(response => response.json())
@@ -399,11 +656,11 @@ fetch('index.json')
 		tr.innerHTML = `
 		    <td><a href="stellar_models/${modelName}/">${modelName}</a></td>
 		    <td align="center">${model.spectra_count || 0}</td>
-		    <td align="center" class="${model.has_flux_cube ? 'status-yes' : 'status-no'}">${model.has_flux_cube ? '✓ YES' : '✗ NO'}</td>
-		    <td align="center" class="${model.has_lookup_table ? 'status-yes' : 'status-no'}">${model.has_lookup_table ? '✓YES' : '✗ NO'}</td>
-		    <td align="center" class="${model.has_h5_bundle ? 'status-yes' : 'status-no'}">${model.has_h5_bundle ? '✓ YES' : '✗ NO'}</td>
+		    <td align="center" class="${model.has_flux_cube ? 'status-yes' : 'status-no'}">${model.has_flux_cube ? '\u{2713} YES' : '\u{2717} NO'}</td>
+		    <td align="center" class="${model.has_lookup_table ? 'status-yes' : 'status-no'}">${model.has_lookup_table ? '\u{2713}YES' : '\u{2717} NO'}</td>
+		    <td align="center" class="${model.has_h5_bundle ? 'status-yes' : 'status-no'}">${model.has_h5_bundle ? '\u{2713} YES' : '\u{2717} NO'}</td>
 		    <td align="right">${model.size_human || '--'}</td>
-		    <td align="center"><a class="button" href="bulk_download.php?model=${modelName}" style="font-size:12px; padding:2px 6px;">⬇ TAR</a></td>
+		    <td align="center"><a class="button" href="bulk_download.php?model=${modelName}" style="font-size:12px; padding:2px 6px;">\u{2b07} TAR</a></td>
 		`;
 
                 tbody.appendChild(tr);
@@ -424,16 +681,16 @@ fetch('index.json')
                 facilityDiv.className = 'filter-section';
 
                 let html = `<div class="facility-name" onclick="toggleInstruments('inst-${idx}')">
-                    📂 ${escapeHtml(facilityName)} (${facility.instrument_count || 0} instruments) [+]
+                    \u{1f4c2} ${escapeHtml(facilityName)} (${facility.instrument_count || 0} instruments) [+]
                 </div>`;
                 html += `<div class="instruments" id="inst-${idx}">`;
 
                 if (facility.instruments) {
-                    html += `<table class="instrument-table"><thead><tr>
+                    html += `<div class="table-scroll"><table class="instrument-table"><thead><tr>
                         <th>INSTRUMENT</th><th>FILTERS</th><th>PUBLISHED PATH</th>
-                        <th>SEPARATE COMPONENT CURVES</th><th>DETECTOR TYPE</th><th>SIZE</th>
+                        <th>SEPARATE COMPONENT CURVES</th><th>DETECTOR TYPE</th><th>SIZE</th><th>DETAILS</th>
                     </tr></thead><tbody>`;
-                    Object.keys(facility.instruments).sort().forEach(instName => {
+                    Object.keys(facility.instruments).sort().forEach((instName, n) => {
                         const inst = facility.instruments[instName];
                         const folder = `filters/${encodeURIComponent(facilityName)}/${encodeURIComponent(instName)}/`;
                         const components = Object.entries(inst.separate_components || {});
@@ -451,9 +708,16 @@ fetch('index.json')
                             <td>${componentHtml}${manifestLink}</td>
                             <td>${countLabels(inst.detector_types)}</td>
                             <td align="right">${escapeHtml(inst.size_human)}</td>
-                        </tr>`;
+                            <td align="center"><button class="details-button" data-target="details-${idx}-${n}"
+                                data-facility="${escapeHtml(facilityName)}" data-instrument="${escapeHtml(instName)}">[+] DETAILS</button></td>
+                        </tr>
+                        <tr class="details-row" id="details-${idx}-${n}" style="display:none"><td colspan="7"></td></tr>`;
+                        INSTRUMENTS[`${facilityName}/${instName}`] = {
+                            facility: facilityName, instrument: instName, folder, inst,
+                            listId: `inst-${idx}`, rowId: `details-${idx}-${n}`,
+                        };
                     });
-                    html += '</tbody></table>';
+                    html += '</tbody></table></div>';
                 }
 
                 html += '</div>';
@@ -464,8 +728,14 @@ fetch('index.json')
             filtersContainer.innerHTML = '<center>No filter profiles available</center>';
         }
 
-
-
+        filtersContainer.addEventListener('click', event => {
+            const button = event.target.closest('.details-button');
+            if (button) {
+                toggleDetails(`${button.dataset.facility}/${button.dataset.instrument}`, true);
+            }
+        });
+        openFromHash();
+        window.addEventListener('hashchange', openFromHash);
     })
     .catch(err => {
         console.error('Failed to load index.json:', err);

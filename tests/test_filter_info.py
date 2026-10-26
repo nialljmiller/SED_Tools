@@ -5,7 +5,7 @@ import json
 
 from filter_info.compose import InfoSources, _name_forms, compose_info, match_svo
 from filter_info.references import canonical, link_duplicates, reference_keys
-from filter_info.svo_archive import build, curve_digest, parse_browse, parse_votable
+from filter_info.svo_archive import build, curve_digest, decode, parse_browse, parse_votable
 
 CURVE = [(5000.0, 0.0), (6000.0, 1.0), (7000.0, 0.0)]
 VOTABLE = """<VOTABLE><RESOURCE><TABLE>
@@ -181,3 +181,17 @@ def test_original_curves_acknowledge_svo_for_metadata_only(tmp_path):
     assert info["acknowledgements"][0]["applies_to"] == "metadata"
     assert "bibcode:2012ivoa.rept.1015R" not in info["references"]
     assert "bibcode:2012ivoa.rept.1015R" in info["bibliography"]
+
+
+def test_captures_decode_by_their_declared_charset():
+    page = '<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">Ma\u00edz Apell\u00e1niz'
+    assert decode(page.encode("latin-1")).endswith("Maíz Apellániz")
+    assert decode("Maíz".encode()) == "Maíz"
+
+
+def test_tidy_removes_crossref_html():
+    from filter_info.references import tidy
+    entry = tidy({"journal": "A&amp;A", "title": "The <i>Gaia</i> passbands",
+                  "bibtex": "@article{x, title={<i>Planck</i> results}, journal={Astronomy &amp; Astrophysics}}"})
+    assert entry["journal"] == "A&A" and entry["title"] == "The Gaia passbands"
+    assert entry["bibtex"] == r"@article{x, title={\textit{Planck} results}, journal={Astronomy \& Astrophysics}}"

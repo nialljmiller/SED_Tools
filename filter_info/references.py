@@ -104,12 +104,35 @@ def save_cache(cache, path=CACHE):
     Path(path).write_text(json.dumps(dict(sorted(cache.items())), indent=1, sort_keys=True) + "\n")
 
 
+def tidy(entry):
+    """Undo the HTML that Crossref puts in metadata and BibTeX (``A&amp;A``, ``<i>Gaia</i>``)."""
+    for field in ("title", "journal"):
+        if entry.get(field):
+            entry[field] = re.sub(r"<[^>]+>", "", html.unescape(str(entry[field])))
+    if entry.get("bibtex"):
+        text = html.unescape(entry["bibtex"])
+        text = re.sub(r"<i>(.*?)</i>", r"\\textit{\1}", text, flags=re.S)
+        text = re.sub(r"<[^>]+>", "", text)
+        entry["bibtex"] = re.sub(r"(?<!\\)&", r"\\&", text)
+    return entry
+
+
+def bibtex_key(entry):
+    """Key BibTeX entries by bibcode, else arXiv ID, else DOI (Crossref's own keys collide)."""
+    key = entry.get("bibcode") or (f"arXiv:{entry['arxiv']}" if entry.get("arxiv") else entry.get("doi"))
+    if entry.get("bibtex") and key:
+        entry["bibtex"] = re.sub(r"^(@\w+\{)[^,]*,", lambda m: f"{m.group(1)}{key},", entry["bibtex"], count=1)
+    return entry
+
+
 def load_references(cache_path=CACHE, curated_path=CURATED):
     """The resolved cache with hand-checked entries (curated/references.json) on top."""
     cache = load_cache(cache_path)
     for key, fields in load_cache(curated_path).items():
         entry = {**cache.get(key, {"key": key, "url": link(key)}), **fields}
         entry.setdefault("resolved_by", "curated")
+        if key.startswith("bibcode:"):
+            entry.setdefault("bibcode", key.partition(":")[2])
         entry["short"] = fields.get("short") or short(entry)
         cache[key] = entry
     return cache
@@ -271,10 +294,9 @@ class _Lookup:
         elif kind == "arxiv":
             entry = self.ads(f'identifier:"arXiv:{value}"') or self.arxiv(value)
         entry = entry or {"type": "misc", "resolved_by": None}
-        if entry.get("bibtex") and entry.get("bibcode"):
-            entry["bibtex"] = re.sub(r"^(@\w+\{)[^,]*,", rf"\g<1>{entry['bibcode']},", entry["bibtex"], count=1)
+        bibtex_key(entry)
         entry.update(key=key, url=link(key) if kind != "url" else value, resolved=date.today().isoformat())
-        entry["short"] = short(entry)
+        entry["short"] = short(tidy(entry))
         return {k: v for k, v in entry.items() if v not in (None, "", [])}
 
 
