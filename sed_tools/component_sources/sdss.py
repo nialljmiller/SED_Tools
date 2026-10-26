@@ -109,7 +109,8 @@ def build(filter_root, *, session=None, **_ignored) -> Path:
         "in air); the 2.5 m camera's filters are in vacuum and their red edges sit about 2.5% bluer (SDSS DR7 "
         "flux calibration), so the primed curves are separate bands, not the camera's filter. The camera's "
         "measured responses per camera column (Doi et al. 2010: CCD, filter, first corrector and mirrors, no "
-        "atmosphere) are the filter+optics+qe variants camcol1 ... camcol6."
+        "atmosphere) are the filter+optics+qe variants camcol1 ... camcol6. Only u, g, r, i, z have these "
+        "responses: compose them with bands=['u', 'g', 'r', 'i', 'z']."
     )
     manifest.save(inst_dir)
     return inst_dir

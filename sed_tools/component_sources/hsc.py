@@ -85,7 +85,11 @@ SPEC = SimpleSource(
         "User filters (filter-only published curves from the area-weighted tables) open for open use from: "
         + ", ".join(f"{b} {s}" for b, s in USER_FILTERS.items())
         + f", {'/'.join(MBQ1)} {MBQ1_OPEN}. "
-        "Filters within their first three semesters need the developers' approval (HSC filter policy)."
+        "Filters within their first three semesters need the developers' approval (HSC filter policy). "
+        "The HSC page asks publications using a user filter to acknowledge its funding, as listed in its "
+        "table 'Contact addresses of user filters and Information for acknowledgement'; its example: "
+        "'The NB387 filter was supported by KAKENHI (23244022) Grant-in-Aid for Scientific Research (A) "
+        "through the Japan Society for the Promotion of Science (JSPS).'"
     ),
 )
 
@@ -143,7 +147,8 @@ def build(filter_root, *, session=None, **kwargs):
     manifest.published, manifest.published_bands = fresh.published, fresh.published_bands
     manifest.detector_types = fresh.detector_types
     manifest.detector_type_sources = fresh.detector_type_sources
-    current = {b: manifest.component_file(FILTER, b) for b in BANDS}
+    # Variants list every band's filter, so selecting one composes all bands.
+    current = dict(manifest.components[FILTER])
     early = dict(current)
     for band, curve in first_curves.items():
         early[band] = add_component(inst_dir, FILTER, *curve, band=band, name=FIRST[band],
@@ -151,10 +156,11 @@ def build(filter_root, *, session=None, **kwargs):
     manifest.variants.pop(FILTER, None)
     register_variant(manifest, FILTER, "r2_i2", current, default=True,
                      epoch="r: from 2016-07-28 HST; i: from February 2016",
-                     description="HSC-r2 and HSC-i2 with g, z, Y (the generation of the published r and i)")
+                     description=("HSC-r2 and HSC-i2 (the generation of the published r and i) with the other "
+                                  "filters"))
     register_variant(manifest, FILTER, "first_r_i", early,
                      epoch="r: mainly until 2016-07-11 HST; i: until January 2016",
-                     description="the first HSC-r and HSC-i filters with g, z, Y",
+                     description="the first HSC-r and HSC-i filters with the other filters",
                      sources={b: first[b].url for b in first})
     manifest.save(inst_dir)
     return inst_dir

@@ -16,8 +16,9 @@
 The default is the multi-layer QE because SVO's published ``Palomar/ZTF``
 curves use it: SVO's ZTF.g comment says "Includes CCD QE with a multi-layer
 coating", and filter x multi-layer QE reproduces SVO's r and i to 5e-7 and
-2e-6 of the peak (g to 1.6%; the single-layer and mean QE differ by 9-16% and
-4.5-8%).
+2e-6 of the peak, and g to 1.6% of the peak (0.8% when repeated wavelengths
+in the vendor g table are averaged); the single-layer and mean QE differ by
+9-16% and 4.5-8%.
 
 No optics (mirror/corrector) throughput is published, so ``filter+qe`` is
 the most complete composition.  Palomar has no modelled own-site atmosphere.

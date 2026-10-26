@@ -85,12 +85,16 @@ NOTES = {
     "GMOS_N": ("GMOS-N published curves are filter-only scans, so none includes a detector QE. Detector QE by "
                "epoch is in the qe variants: eev (original array, to October 2011), e2v_dd (October 2011 to "
                "February 2017), hamamatsu_bb and hamamatsu_hsc (from February/March 2017; BB for CCDr/CCDb and "
-               "HSC for CCDg in the Gemini ITC). No QE is the default; select one."),
+               "HSC for CCDg in the Gemini ITC). No QE is the default; select one. The EEV table ends at "
+               "1000 nm and the others at 1100 nm, so no QE variant covers Y (and EEV not z); compose those "
+               "bands only with allow_partial."),
     "GMOS_S": ("GMOS-S published curves are filter-only scans, so none includes a detector QE. Detector QE by "
                "epoch is in the qe variants: eev (original array, removed May 2014), hamamatsu_red (CCDr, CCDg) "
                "and hamamatsu_blue (CCDb) from June 2014, as the Gemini page labels them. The Gemini ITC instead "
                "uses the red EEV curve for the old array and BB/HSC/SC for the three Hamamatsu CCDs. No QE is "
-               "the default; select one."),
+               "the default; select one. The EEV table ends at 1000 nm and the Hamamatsu Blue table covers "
+               "340-1060 nm, so those variants do not cover Y (Blue also not u); compose those bands only with "
+               "allow_partial."),
 }
 
 
