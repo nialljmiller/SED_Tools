@@ -343,6 +343,31 @@
             text-decoration: line-through;
         }
 
+        .download-bar {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 10;
+            background-color: #000080;
+            color: #FFFF00;
+            border-top: 3px outset #C0C0C0;
+            padding: 6px 10px;
+            text-align: center;
+            font-family: "Courier New", monospace;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .download-bar .details-button {
+            margin-left: 8px;
+            font-size: 14px;
+        }
+
+        body.has-selection {
+            padding-bottom: 60px;
+        }
+
         .details-panel summary {
             cursor: pointer;
             font-size: 12px;
@@ -446,6 +471,9 @@
             <b>DETAILS</b> opens each instrument's band properties (pivot, width, zero points), descriptions,
             references to cite, and where every curve came from, including what the SVO Filter Profile Service said about it.
             Link to an instrument with <code>#Facility/Instrument</code>.
+            <b>Downloading several filters:</b> tick whole instruments here, or single bands inside DETAILS, then press
+            <b>DOWNLOAD ZIP</b>. Each instrument comes as a MESA-ready folder (the curves, an index file listing them,
+            properties and info), with a <code>CITATION.txt</code> of the papers, acknowledgements and terms to honour.
         </div>
         <div id="filters-container">
             <center><span class="blink">LOADING...</span></center>
@@ -493,6 +521,12 @@
         <a class="button" href="index.json">&#128196; Raw JSON Index</a>
     </center>
 
+</div>
+
+<div id="download-bar" class="download-bar" style="display:none">
+    <span id="download-summary"></span>
+    <button type="button" id="download-zip" class="details-button">&#11015; DOWNLOAD ZIP</button>
+    <button type="button" id="download-clear" class="details-button">CLEAR</button>
 </div>
 
 <div class="footer">
@@ -583,8 +617,8 @@ function renderDetails(record, info, props) {
         if (info.notes) html += `<details><summary>Provenance notes</summary><p>${escapeHtml(info.notes)}</p></details>`;
     }
 
-    html += `<h4>TRANSMISSION</h4><div class="curve-plot"><span class="blink">LOADING CURVES...</span></div>`;
     html += `<h4>BANDS</h4><div class="table-scroll"><table class="band-table"><thead><tr>
+        <th><input type="checkbox" class="select-all-bands" data-key="${escapeHtml(`${facility}/${instrument}`)}" title="Select every band for download"></th>
         <th>BAND</th><th>DESCRIPTION</th><th>DETECTOR</th><th>\u{3bb} PIVOT (\u{c5})</th><th>\u{3bb} EFF, VEGA (\u{c5})</th>
         <th>FWHM (\u{c5})</th><th>\u{3bb} MIN\u{2013}MAX (\u{c5})</th><th>VEGA ZP (Jy)</th><th>AB\u{2212}VEGA (mag)</th>
         <th>CITE</th><th>SVO RECORD</th>
@@ -618,6 +652,7 @@ function renderDetails(record, info, props) {
                           differs: ' <span class="metadata-missing">(NJM curve differs)</span>'}[svo.curve] || '');
         }
         html += `<tr>
+            <td align="center"><input type="checkbox" class="select-band" data-key="${escapeHtml(`${facility}/${instrument}`)}" data-band="${escapeHtml(band)}" title="Select ${escapeHtml(band)} for download"></td>
             <td><a href="${folder}${encodeURIComponent(band)}.dat">${escapeHtml(band)}</a></td>
             <td class="wrap">${description || '<span class="metadata-missing">\u{2014}</span>'}</td>
             <td>${detectorHtml}</td>
@@ -672,6 +707,7 @@ function renderDetails(record, info, props) {
     if (inst.has_component_manifest) files.push(`<a href="${folder}manifest.json">manifest.json</a> (components)`);
     files.push(`<a href="${folder}">all files</a>`);
     html += `<h4>FILES</h4><p>${files.join(' \u{b7} ')}</p>`;
+    html += `<h4>TRANSMISSION</h4><div class="curve-plot"><span class="blink">LOADING CURVES...</span></div>`;
     return html + '</div>';
 }
 
@@ -699,6 +735,7 @@ function toggleDetails(key, toggle) {
             inst.properties ? fetchJson(folder + inst.properties).catch(() => null) : null,
         ]).then(([info, props]) => {
             cell.innerHTML = renderDetails(record, info, props);
+            syncSelection(key);
             plotInstrument(record, props, cell.querySelector('.curve-plot'));
         });
     }
@@ -904,6 +941,184 @@ function openFromHash() {
     }
 }
 
+// Downloads: tick whole instruments (instrument table) or single bands (DETAILS), then
+// DOWNLOAD ZIP builds, in the browser, a MESA-ready filters/<Facility>/<Instrument>/ folder
+// per instrument (the chosen curves, an index file listing them, properties.json and
+// info.json) plus CITATION.txt with the papers, acknowledgements and terms to honour.
+const SELECTED = new Map();  // "Facility/Instrument" -> Set of band names
+
+function selectBands(key, bands, on) {
+    const chosen = SELECTED.get(key) || new Set();
+    bands.forEach(band => on ? chosen.add(band) : chosen.delete(band));
+    if (chosen.size) SELECTED.set(key, chosen); else SELECTED.delete(key);
+    syncSelection(key);
+}
+
+function syncSelection(key) {
+    const record = INSTRUMENTS[key];
+    const chosen = SELECTED.get(key) || new Set();
+    const total = record ? (record.inst.filters || []).length : 0;
+    document.querySelectorAll('input[data-key]').forEach(box => {
+        if (box.dataset.key !== key) return;
+        if (box.classList.contains('select-band')) {
+            box.checked = chosen.has(box.dataset.band);
+        } else {
+            box.checked = total > 0 && chosen.size === total;
+            box.indeterminate = chosen.size > 0 && chosen.size < total;
+        }
+    });
+    const bands = [...SELECTED.values()].reduce((n, set) => n + set.size, 0);
+    document.getElementById('download-bar').style.display = bands ? '' : 'none';
+    document.body.classList.toggle('has-selection', bands > 0);
+    document.getElementById('download-summary').textContent =
+        `${bands} filter${bands === 1 ? '' : 's'} from ${SELECTED.size} instrument${SELECTED.size === 1 ? '' : 's'} selected`;
+}
+
+document.addEventListener('change', event => {
+    const box = event.target;
+    const record = box.dataset && box.dataset.key && INSTRUMENTS[box.dataset.key];
+    if (!record) return;
+    if (box.classList.contains('select-band')) {
+        selectBands(box.dataset.key, [box.dataset.band], box.checked);
+    } else if (box.classList.contains('select-instrument') || box.classList.contains('select-all-bands')) {
+        selectBands(box.dataset.key, record.inst.filters || [], box.checked);
+    }
+});
+
+const CRC_TABLE = (() => {
+    const table = new Uint32Array(256);
+    for (let n = 0; n < 256; n++) {
+        let c = n;
+        for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1;
+        table[n] = c >>> 0;
+    }
+    return table;
+})();
+
+function crc32(bytes) {
+    let c = 0xFFFFFFFF;
+    for (let i = 0; i < bytes.length; i++) c = CRC_TABLE[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
+    return (c ^ 0xFFFFFFFF) >>> 0;
+}
+
+// A ZIP archive of uncompressed ("stored") entries: [{name, data: Uint8Array}] -> Blob.
+function makeZip(files) {
+    const encoder = new TextEncoder(), parts = [], central = [];
+    const now = new Date();
+    const time = (now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1);
+    const date = ((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate();
+    let offset = 0;
+    files.forEach(file => {
+        const name = encoder.encode(file.name), crc = crc32(file.data), size = file.data.length;
+        const local = new DataView(new ArrayBuffer(30));
+        [[0, 0x04034b50, 4], [4, 20, 2], [6, 0x0800, 2], [8, 0, 2], [10, time, 2], [12, date, 2], [14, crc, 4],
+         [18, size, 4], [22, size, 4], [26, name.length, 2], [28, 0, 2]]
+            .forEach(([at, value, bytes]) => bytes === 4 ? local.setUint32(at, value, true) : local.setUint16(at, value, true));
+        parts.push(new Uint8Array(local.buffer), name, file.data);
+        const entry = new DataView(new ArrayBuffer(46));
+        [[0, 0x02014b50, 4], [4, 20, 2], [6, 20, 2], [8, 0x0800, 2], [10, 0, 2], [12, time, 2], [14, date, 2],
+         [16, crc, 4], [20, size, 4], [24, size, 4], [28, name.length, 2], [30, 0, 2], [32, 0, 2], [34, 0, 2],
+         [36, 0, 2], [38, 0, 4], [42, offset, 4]]
+            .forEach(([at, value, bytes]) => bytes === 4 ? entry.setUint32(at, value, true) : entry.setUint16(at, value, true));
+        central.push(new Uint8Array(entry.buffer), name);
+        offset += 30 + name.length + size;
+    });
+    const centralSize = central.reduce((n, part) => n + part.length, 0);
+    const end = new DataView(new ArrayBuffer(22));
+    [[0, 0x06054b50, 4], [4, 0, 2], [6, 0, 2], [8, files.length, 2], [10, files.length, 2],
+     [12, centralSize, 4], [16, offset, 4], [20, 0, 2]]
+        .forEach(([at, value, bytes]) => bytes === 4 ? end.setUint32(at, value, true) : end.setUint16(at, value, true));
+    return new Blob([...parts, ...central, new Uint8Array(end.buffer)], {type: 'application/zip'});
+}
+
+function citationText(entries, infos) {
+    const site = location.href.split('#')[0];
+    const lines = [`SED_Tools filter archive (NJM): ${site}`, `Downloaded ${new Date().toISOString().slice(0, 10)}.`,
+        'Please cite the original work for every filter you use, honour each data provider\'s',
+        'requested acknowledgement and terms, and mention this archive.', ''];
+    entries.forEach(([key, bands]) => {
+        const info = infos[key] || {}, bibliography = info.bibliography || {}, infoBands = info.bands || {};
+        // Instrument references, minus those that belong only to bands left out.
+        const keep = new Set(), drop = new Set();
+        Object.keys(infoBands).forEach(band =>
+            (infoBands[band].references || []).forEach(ref => (bands.has(band) ? keep : drop).add(ref)));
+        const cite = (info.references || []).filter(ref => keep.has(ref) || !drop.has(ref));
+        lines.push(`== ${key} ==`);
+        if (info.description) lines.push(info.description);
+        lines.push(`Bands: ${[...bands].sort((a, b) => a.localeCompare(b, undefined, {numeric: true})).join(', ')}`);
+        if (cite.length) {
+            lines.push('Cite:');
+            cite.forEach(ref => {
+                const e = bibliography[ref] || {};
+                const where = [e.journal, e.volume, e.page].filter(Boolean).join(', ');
+                const link = e.doi ? `https://doi.org/${e.doi}` : (e.url || '');
+                lines.push(`  - ${[e.short || ref, e.title, where].filter(Boolean).join('. ')}${link ? ` ${link}` : ''}`);
+            });
+        }
+        (info.acknowledgements || []).forEach(ack =>
+            lines.push(`Acknowledgement requested by ${ack.for}: "${ack.text}"${ack.url ? ` (${ack.url})` : ''}`));
+        if (info.licence) {
+            lines.push(`Terms: ${info.licence.terms || info.licence.redistribution || ''}${info.licence.url ? ` (${info.licence.url})` : ''}`);
+        }
+        lines.push(`Details: ${site}#${encodeURI(key)}`, '');
+    });
+    return lines.join('\n');
+}
+
+async function downloadSelection() {
+    const entries = [...SELECTED.entries()].filter(([key, bands]) => bands.size && INSTRUMENTS[key]);
+    if (!entries.length) return;
+    const button = document.getElementById('download-zip'), summary = document.getElementById('download-summary');
+    const encoder = new TextEncoder(), tasks = [], files = [], infos = {};
+    entries.forEach(([key, bands]) => {
+        const {facility, instrument, folder, inst} = INSTRUMENTS[key];
+        const base = `filters/${facility}/${instrument}/`;
+        const names = [...bands].sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
+        names.forEach(band => tasks.push({name: `${base}${band}.dat`, url: `${folder}${encodeURIComponent(band)}.dat`}));
+        [inst.properties, inst.info].filter(Boolean).forEach(file =>
+            tasks.push({name: base + file, url: folder + file, info: file === inst.info ? key : null}));
+        // MESA loads the bands listed in the index file named after the instrument.
+        files.push({name: base + instrument, data: encoder.encode(names.map(band => `${band}.dat`).join('\n') + '\n')});
+    });
+    button.disabled = true;
+    let next = 0, done = 0, failed = 0;
+    async function worker() {  // at most 6 requests at a time (NJM's flood guard)
+        while (next < tasks.length) {
+            const task = tasks[next++];
+            try {
+                const response = await fetch(task.url);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = new Uint8Array(await response.arrayBuffer());
+                files.push({name: task.name, data});
+                if (task.info) infos[task.info] = JSON.parse(new TextDecoder().decode(data));
+            } catch (error) {
+                failed++;
+            }
+            summary.textContent = `Downloading ${++done}/${tasks.length}...`;
+        }
+    }
+    await Promise.all(Array.from({length: Math.min(6, tasks.length)}, worker));
+    files.push({name: 'CITATION.txt', data: encoder.encode(citationText(entries, infos))});
+    files.sort((a, b) => a.name.localeCompare(b.name));
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(makeZip(files));
+    link.download = entries.length === 1 ? `${entries[0][0].replace(/\//g, '_')}_filters.zip` : 'njm_filters.zip';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(link.href), 60000);
+    button.disabled = false;
+    syncSelection(entries[0][0]);
+    if (failed) summary.textContent += ` (${failed} file${failed === 1 ? '' : 's'} could not be fetched)`;
+}
+
+document.getElementById('download-zip').addEventListener('click', downloadSelection);
+document.getElementById('download-clear').addEventListener('click', () => {
+    const keys = [...SELECTED.keys()];
+    SELECTED.clear();
+    keys.forEach(syncSelection);
+});
+
 // Load index.json and populate the page
 fetch('index.json')
     .then(response => response.json())
@@ -957,7 +1172,7 @@ fetch('index.json')
 
                 if (facility.instruments) {
                     html += `<div class="table-scroll"><table class="instrument-table"><thead><tr>
-                        <th>INSTRUMENT</th><th>FILTERS</th><th>PUBLISHED PATH</th>
+                        <th title="Select for download">GET</th><th>INSTRUMENT</th><th>FILTERS</th><th>PUBLISHED PATH</th>
                         <th>SEPARATE COMPONENT CURVES</th><th>DETECTOR TYPE</th><th>SIZE</th><th>DETAILS</th>
                     </tr></thead><tbody>`;
                     Object.keys(facility.instruments).sort().forEach((instName, n) => {
@@ -972,6 +1187,7 @@ fetch('index.json')
                         const manifestLink = inst.has_component_manifest
                             ? ` <a href="${folder}manifest.json">manifest</a>` : '';
                         html += `<tr>
+                            <td align="center"><input type="checkbox" class="select-instrument" data-key="${escapeHtml(`${facilityName}/${instName}`)}" title="Select all ${inst.filter_count} filters for download"></td>
                             <td><a href="${folder}">${escapeHtml(instName)}</a></td>
                             <td align="center">${inst.filter_count}</td>
                             <td>${countLabels(inst.published_paths)}</td>
@@ -981,7 +1197,7 @@ fetch('index.json')
                             <td align="center"><button class="details-button" data-target="details-${idx}-${n}"
                                 data-facility="${escapeHtml(facilityName)}" data-instrument="${escapeHtml(instName)}">[+] DETAILS</button></td>
                         </tr>
-                        <tr class="details-row" id="details-${idx}-${n}" style="display:none"><td colspan="7"></td></tr>`;
+                        <tr class="details-row" id="details-${idx}-${n}" style="display:none"><td colspan="8"></td></tr>`;
                         INSTRUMENTS[`${facilityName}/${instName}`] = {
                             facility: facilityName, instrument: instName, folder, inst,
                             listId: `inst-${idx}`, rowId: `details-${idx}-${n}`,
