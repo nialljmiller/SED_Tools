@@ -190,10 +190,13 @@ def _svo_entry(sources, filter_id, record, how, digest, header):
         if njm_detector and svo_detector != njm_detector:
             stamp = (votable if from_votable else browse)["captures"][-1]["timestamp"]
             said = f"SVO's record captured {stamp[:4]}-{stamp[4:6]}-{stamp[6:8]} says {svo_detector}"
+            source = header.get("DetectorTypeSource", "assumed")
             svo["DetectorType_note"] = (
                 f"{said}; NJM's {njm_detector} was also taken from SVO, at another time, so SVO changed its classification"
-                if header.get("DetectorTypeSource") == "svo" else
-                f"{said}; NJM's curve header says {njm_detector} ({header.get('DetectorTypeSource', 'unspecified')}) and is authoritative")
+                if source == "svo" else
+                f"{said}; NJM's {njm_detector} is an assumption, not evidence, so this is unverified"
+                if source == "assumed" else
+                f"{said}; NJM's curve header says {njm_detector} ({source}) and is authoritative")
     for k in ("Fsun", "AfAv"):
         if page.get("calculated", {}).get(k) is not None:
             svo[k] = page["calculated"][k]

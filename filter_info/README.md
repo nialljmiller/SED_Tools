@@ -23,6 +23,8 @@ Each instrument directory on NJM gets an `info.json` next to `properties.json`.
 | 4. Resolve new references | `python -m filter_info.references resolve` | `filter_info/references.json` |
 | 5. Generate again | `python generate_index.py data` | `info.json` with full bibliography entries |
 
+**One command:** `filter_info/refresh.sh`, run on NJM from the checkout, does steps 2–5.
+
 **Resolution sources:**
 - **Bibcodes:** ADS when `ADS_DEV_KEY` is set. Otherwise ADS's public link resolver, then a Crossref search accepted only when year, volume, page and first-author initial all agree.
 - **DOIs:** doi.org.
