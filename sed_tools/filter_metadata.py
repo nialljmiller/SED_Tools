@@ -605,9 +605,9 @@ def tag_filter_file(
     A resolution replaces an existing ``DetectorType`` only if its source has
     equal or higher precedence (:func:`detector_source_may_replace`), so even
     with ``force`` an ``original`` or ``inferred`` type is never replaced by
-    SVO's label.  A weaker resolution leaves the file unchanged and is
-    reported through ``kept``, ``resolved_type``, ``resolved_source`` and
-    ``note``.
+    SVO's label.  A weaker resolution is not written (the header fields stay
+    as they are) and is reported through ``kept``, ``resolved_type``,
+    ``resolved_source`` and ``note``.
     """
     path = Path(path)
     migrated = migrate_filter_file(path, dry_run=dry_run)

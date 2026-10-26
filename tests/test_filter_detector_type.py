@@ -295,7 +295,7 @@ def test_detector_source_may_replace(existing, new, allowed):
 
 
 def test_force_does_not_replace_inferred_with_svo_curve_match(tmp_path):
-    """NACO: NJM's curve is SVO's array point for point, but SVO labels it energy."""
+    """An inferred curve that SVO's array matches point for point, labelled energy by SVO."""
     wl, tr = [15000.0, 16000.0, 17000.0, 18000.0], [0.0, 0.9, 0.95, 0.0]
     path = tmp_path / "Paranal" / "NACO" / "H_CONICA.dat"
     before = _evidence_file(path, wl, tr, PHOTON, SOURCE_INFERRED)

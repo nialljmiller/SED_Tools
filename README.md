@@ -232,14 +232,14 @@ Downloads write the header automatically; existing files can be tagged in place:
 ```bash
 sed-tools filters-detector                 # whole filter root
 sed-tools filters-detector GAIA/GAIA --dry-run
-sed-tools filters-detector Paranal/NACO --force --dry-run
+sed-tools filters-detector Generic/Bessell --force --dry-run
 ```
 
 ```python
 Filters.tag_detector_types()               # returns one row per file
 ```
 
-By default `filters-detector` resolves untagged files, retries `assumed` ones (except curves built from original sources) and completes tags that lack `WavelengthUnit` or `Components`; `--force` re-resolves every file. In both modes an existing type is replaced only by a resolution of equal or higher precedence in the list above, so SVO's label never overrides an `original` or `inferred` type. A weaker resolution is not written: the file is left as it is, and the run lists it as kept, with the SVO answer and the reason (`kept photon [inferred]: inferred outranks svo-curve-match; svo-curve-match gives energy (Paranal/NACO.H_CONICA)`). The returned rows carry `kept`, `resolved_type` and `resolved_source`. Types set by SED_Tools' composition tools (`user` overrides, `composed` products and `component` files) are outside this order and are never replaced.
+By default `filters-detector` resolves untagged files, retries `assumed` ones (except curves built from original sources) and completes tags that lack `WavelengthUnit` or `Components`; `--force` re-resolves every file. In both modes an existing type is replaced only by a resolution of equal or higher precedence in the list above, so SVO's label never overrides an `original` or `inferred` type. A weaker resolution is not written: the file is left as it is, and the run lists it as kept, with the SVO answer and the reason (`kept photon [original]: original outranks svo; svo gives energy (Generic/Bessell.B)`). The returned rows carry `kept`, `resolved_type` and `resolved_source`. Types set by SED_Tools' composition tools (`user` overrides, `composed` products and `component` files) are outside this order and are never replaced.
 
 `load_filter_curve` reads the header (`FilterCurve.detector_type`, `FilterCurve.weight`) and all band averages use it; untagged files are treated as energy-counting.
 
