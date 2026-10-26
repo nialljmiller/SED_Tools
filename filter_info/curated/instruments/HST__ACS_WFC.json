@@ -1,0 +1,130 @@
+{
+  "description": "The Wide Field Channel of Hubble’s Advanced Camera for Surveys provides deep, wide-field imaging from visible to near-infrared wavelengths. Its filters support broad- and narrow-band imaging; the instrument also has a grism and polarimetric modes.",
+  "facility_description": "The NASA/ESA Hubble Space Telescope is a 2.4-m reflecting telescope operating in low-Earth orbit.",
+  "notes": "Researched 2026-10-26. Licence classification applies to STScI-produced, unmarked calibration data under the STScI content use policy, which separately requests NASA/STScI acknowledgement. Separately copyrighted third-party material is excluded. Do not redistribute the cited papers themselves under this data policy. Original source family is STScI synphot component tables; the owner throughput documentation explains total-system response. Existing NJM curves were not downloaded, hash-matched, replaced or assigned a new calibration epoch in this research. No DetectorType changes. The HST acknowledgement is copied verbatim as a conditional publication template, including its unfilled program placeholder. No grant acknowledgement is claimed. Sirianni et al. (2005) characterises the fixed imaging-filter response curves; Bohlin (2016) updates the CCD photometric calibration. Ramp filters, polarizers, prisms and grisms are deliberately not given that imaging-paper reference. The owner ACS throughput page describes photon detection efficiency and date-dependent response; its plotted WFC/SBC reference epoch is MJD 60035 and HRC MJD 54136, which must not be assumed to be the epoch of existing NJM curves.",
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"Unless otherwise specifically stated, no claim to copyright is being asserted by STScI and material on this site may be freely used as in the public domain in accordance with NASA's contract.\"",
+    "url": "https://www.stsci.edu/copyright"
+  },
+  "references": [
+    "doi:10.1117/12.460040",
+    "arxiv:astro-ph/0507614",
+    "arxiv:1606.01838"
+  ],
+  "links": [
+    {
+      "url": "https://www.stsci.edu/hst/instrumentation/acs/instrument-design/system-throughputs",
+      "label": "System throughput curves and computation",
+      "source": "STScI / MAST"
+    },
+    {
+      "url": "https://hst-docs.stsci.edu/acsihb/chapter-3-acs-capabilities-design-and-operations/3-2-instrument-capabilities",
+      "label": "Instrument capabilities",
+      "source": "STScI / MAST"
+    },
+    {
+      "url": "https://ssb.stsci.edu/trds/comp/acs/",
+      "label": "Original STScI synphot component tables",
+      "source": "STScI / MAST"
+    },
+    {
+      "url": "https://archive.stsci.edu/missions-and-data/hst",
+      "label": "HST mission and archive",
+      "source": "STScI / MAST"
+    },
+    {
+      "url": "https://www.stsci.edu/copyright",
+      "label": "STScI content use policy",
+      "source": "STScI / MAST"
+    },
+    {
+      "url": "https://archive.stsci.edu/publishing/mission-acknowledgements",
+      "label": "Requested mission acknowledgements",
+      "source": "STScI / MAST"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "NASA and STScI: reuse credit request",
+      "text": "However, it is requested that in any subsequent use of this work, NASA and STScI be given appropriate acknowledgement.",
+      "url": "https://www.stsci.edu/copyright",
+      "references": [],
+      "applies_to": "all bands: STScI-produced calibration material"
+    },
+    {
+      "for": "Hubble Space Telescope: observing-data publication template",
+      "text": "This research is based on observations made with the NASA/ESA Hubble Space Telescope obtained from the Space Telescope Science Institute, which is operated by the Association of Universities for Research in Astronomy, Inc., under NASA contract NAS5–26555. These observations are associated with program(s) __________.",
+      "url": "https://archive.stsci.edu/publishing/mission-acknowledgements",
+      "references": [],
+      "applies_to": "Publications based on HST observations; complete the program identifiers only when applicable. This template is not a statement that this curve service obtained an observing grant."
+    }
+  ],
+  "bands": {
+    "F435W": {
+      "references": [
+        "arxiv:astro-ph/0507614"
+      ]
+    },
+    "F475W": {
+      "references": [
+        "arxiv:astro-ph/0507614"
+      ]
+    },
+    "F502N": {
+      "references": [
+        "arxiv:astro-ph/0507614"
+      ]
+    },
+    "F550M": {
+      "references": [
+        "arxiv:astro-ph/0507614"
+      ]
+    },
+    "F555W": {
+      "references": [
+        "arxiv:astro-ph/0507614"
+      ]
+    },
+    "F606W": {
+      "references": [
+        "arxiv:astro-ph/0507614"
+      ]
+    },
+    "F625W": {
+      "references": [
+        "arxiv:astro-ph/0507614"
+      ]
+    },
+    "F658N": {
+      "references": [
+        "arxiv:astro-ph/0507614"
+      ]
+    },
+    "F660N": {
+      "references": [
+        "arxiv:astro-ph/0507614"
+      ]
+    },
+    "F775W": {
+      "references": [
+        "arxiv:astro-ph/0507614"
+      ]
+    },
+    "F814W": {
+      "references": [
+        "arxiv:astro-ph/0507614"
+      ]
+    },
+    "F850LP": {
+      "references": [
+        "arxiv:astro-ph/0507614"
+      ]
+    },
+    "F892N": {
+      "references": [
+        "arxiv:astro-ph/0507614"
+      ]
+    }
+  }
+}

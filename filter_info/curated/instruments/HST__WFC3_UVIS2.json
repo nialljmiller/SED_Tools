@@ -1,0 +1,373 @@
+{
+  "description": "UVIS2 is one of the two CCD chips in the ultraviolet-visible channel of Hubble’s Wide Field Camera 3, covering approximately 200–1000 nm. The channel provides 62 imaging filters and the G280 grism; these passbands refer to chip 2.",
+  "facility_description": "The NASA/ESA Hubble Space Telescope is a 2.4-m reflecting telescope operating in low-Earth orbit.",
+  "notes": "Researched 2026-10-26. Licence classification applies to STScI-produced, unmarked calibration data under the STScI content use policy, which separately requests NASA/STScI acknowledgement. Separately copyrighted third-party material is excluded. Do not redistribute the cited papers themselves under this data policy. Original source family is STScI synphot component tables; the owner throughput documentation explains total-system response. Existing NJM curves were not downloaded, hash-matched, replaced or assigned a new calibration epoch in this research. No DetectorType changes. The HST acknowledgement is copied verbatim as a conditional publication template, including its unfilled program placeholder. No grant acknowledgement is claimed. Calamida et al. (2022) characterises the calibration of all 42 full-frame UVIS filters, 20 quad filters and 15 IR imaging filters. G280, G102 and G141 are excluded from these imaging-filter references. The owner throughput appendix defines response in detected electrons relative to incident photons, and notes the ultraviolet quantum-yield caveat. UVIS1 and UVIS2 calibrations are chip dependent. No single magnitude system is asserted: multiple systems are supported.",
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"Unless otherwise specifically stated, no claim to copyright is being asserted by STScI and material on this site may be freely used as in the public domain in accordance with NASA's contract.\"",
+    "url": "https://www.stsci.edu/copyright"
+  },
+  "references": [
+    "arxiv:2205.13014"
+  ],
+  "links": [
+    {
+      "url": "https://hst-docs.stsci.edu/wfc3ihb/appendix-a-wfc3-filter-throughputs/a-2-throughputs-and-signal-to-noise-ratio-data",
+      "label": "System throughput curves and computation",
+      "source": "STScI / MAST"
+    },
+    {
+      "url": "https://hst-docs.stsci.edu/wfc3ihb/chapter-1-introduction-to-wfc3/1-3-key-features-of-wfc3",
+      "label": "Instrument capabilities",
+      "source": "STScI / MAST"
+    },
+    {
+      "url": "https://ssb.stsci.edu/trds/comp/wfc3/",
+      "label": "Original STScI synphot component tables",
+      "source": "STScI / MAST"
+    },
+    {
+      "url": "https://archive.stsci.edu/missions-and-data/hst",
+      "label": "HST mission and archive",
+      "source": "STScI / MAST"
+    },
+    {
+      "url": "https://www.stsci.edu/copyright",
+      "label": "STScI content use policy",
+      "source": "STScI / MAST"
+    },
+    {
+      "url": "https://archive.stsci.edu/publishing/mission-acknowledgements",
+      "label": "Requested mission acknowledgements",
+      "source": "STScI / MAST"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "NASA and STScI: reuse credit request",
+      "text": "However, it is requested that in any subsequent use of this work, NASA and STScI be given appropriate acknowledgement.",
+      "url": "https://www.stsci.edu/copyright",
+      "references": [],
+      "applies_to": "all bands: STScI-produced calibration material"
+    },
+    {
+      "for": "Hubble Space Telescope: observing-data publication template",
+      "text": "This research is based on observations made with the NASA/ESA Hubble Space Telescope obtained from the Space Telescope Science Institute, which is operated by the Association of Universities for Research in Astronomy, Inc., under NASA contract NAS5–26555. These observations are associated with program(s) __________.",
+      "url": "https://archive.stsci.edu/publishing/mission-acknowledgements",
+      "references": [],
+      "applies_to": "Publications based on HST observations; complete the program identifiers only when applicable. This template is not a statement that this curve service obtained an observing grant."
+    }
+  ],
+  "bands": {
+    "F200LP": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F218W": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F225W": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F275W": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F280N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F300X": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F336W": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F343N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F350LP": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F373N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F390M": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F390W": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F395N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F410M": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F438W": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F467M": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F469N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F475W": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F475X": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F487N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F502N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F547M": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F555W": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F600LP": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F606W": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F621M": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F625W": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F631N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F645N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F656N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F657N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F658N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F665N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F673N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F680N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F689M": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F763M": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F775W": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F814W": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F845M": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F850LP": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "F953N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "FQ232N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "FQ243N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "FQ378N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "FQ387N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "FQ422M": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "FQ436N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "FQ437N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "FQ492N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "FQ508N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "FQ575N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "FQ619N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "FQ634N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "FQ672N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "FQ674N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "FQ727N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "FQ750N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "FQ889N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "FQ906N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "FQ924N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    },
+    "FQ937N": {
+      "references": [
+        "arxiv:2205.13014"
+      ]
+    }
+  }
+}
