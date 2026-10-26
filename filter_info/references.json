@@ -2236,6 +2236,22 @@
   "volume": "124",
   "year": 1997
  },
+ "bibcode:1997JGR...102.3989M": {
+  "bibcode": "1997JGR...102.3989M",
+  "bibtex": "@article{1997JGR...102.3989M, volume={102}, ISSN={0148-0227}, url={http://dx.doi.org/10.1029/96je01922}, DOI={10.1029/96je01922}, number={E2}, journal={Journal of Geophysical Research: Planets}, publisher={American Geophysical Union (AGU)}, year={1997}, month=Feb, pages={3989\u20134001} }",
+  "doi": "10.1029/96je01922",
+  "journal": "J. Geophys. Res.",
+  "key": "bibcode:1997JGR...102.3989M",
+  "page": "3989-4001",
+  "resolved": "2026-10-26",
+  "resolved_by": "doi.org",
+  "short": "The Pathfinder Microrover",
+  "title": "The Pathfinder Microrover",
+  "type": "article",
+  "url": "https://ui.adsabs.harvard.edu/abs/1997JGR...102.3989M",
+  "volume": "102",
+  "year": 1997
+ },
  "bibcode:1997SPIE.2871...15M": {
   "authors": [
    "Mountain, C. Matt",
@@ -2763,6 +2779,34 @@
   "type": "misc",
   "url": "https://ui.adsabs.harvard.edu/abs/2000SPIE.4008.1010C",
   "volume": "4008",
+  "year": 2000
+ },
+ "bibcode:2000SoPh..195...13D": {
+  "authors": [
+   "Dere, K.P.",
+   "Moses, J.D.",
+   "Delaboudini\u00e8re, J.-P.",
+   "Brunaud, J.",
+   "Carabetian, C.",
+   "Hochedez, J.-F.",
+   "Song, X.Y.",
+   "Catura, R.C.",
+   "Clette, F.",
+   "Defise, J.-M."
+  ],
+  "bibcode": "2000SoPh..195...13D",
+  "bibtex": "@article{2000SoPh..195...13D, title={The Preflight Photometric Calibration of the Extreme-Ultraviolet Imaging Telescope EIT}, volume={195}, ISSN={1573-093X}, url={http://dx.doi.org/10.1023/a:1005288008723}, DOI={10.1023/a:1005288008723}, number={1}, journal={Solar Physics}, publisher={Springer Science and Business Media LLC}, author={Dere, K.P. and Moses, J.D. and Delaboudini\u00e8re, J.-P. and Brunaud, J. and Carabetian, C. and Hochedez, J.-F. and Song, X.Y. and Catura, R.C. and Clette, F. and Defise, J.-M.}, year={2000}, month=July, pages={13\u201344} }",
+  "doi": "10.1023/a:1005288008723",
+  "journal": "Solar Physics",
+  "key": "bibcode:2000SoPh..195...13D",
+  "page": "13-44",
+  "resolved": "2026-10-26",
+  "resolved_by": "doi.org",
+  "short": "Dere et al. 2000",
+  "title": "The Preflight Photometric Calibration of the Extreme-Ultraviolet Imaging Telescope EIT",
+  "type": "article",
+  "url": "https://ui.adsabs.harvard.edu/abs/2000SoPh..195...13D",
+  "volume": "195",
   "year": 2000
  },
  "bibcode:2001AJ....121.2819P": {
@@ -6332,6 +6376,35 @@
   "volume": "150",
   "year": 2010
  },
+ "bibcode:2010SSRv..154...79K": {
+  "authors": [
+   "Kodama, Shinsuke",
+   "Ohtake, Makiko",
+   "Yokota, Yasuhiro",
+   "Iwasaki, Akira",
+   "Haruyama, Junichi",
+   "Matsunaga, Tsuneo",
+   "Nakamura, Ryosuke",
+   "Demura, Hirohide",
+   "Hirata, Naru",
+   "Sugihara, Takamitsu",
+   "Yamamoto, Yasuji"
+  ],
+  "bibcode": "2010SSRv..154...79K",
+  "bibtex": "@article{2010SSRv..154...79K, title={Characterization of Multiband Imager Aboard SELENE: Pre-flight and In-flight Radiometric Calibration}, volume={154}, ISSN={1572-9672}, url={http://dx.doi.org/10.1007/s11214-010-9661-z}, DOI={10.1007/s11214-010-9661-z}, number={1-4}, journal={Space Science Reviews}, publisher={Springer Science and Business Media LLC}, author={Kodama, Shinsuke and Ohtake, Makiko and Yokota, Yasuhiro and Iwasaki, Akira and Haruyama, Junichi and Matsunaga, Tsuneo and Nakamura, Ryosuke and Demura, Hirohide and Hirata, Naru and Sugihara, Takamitsu and Yamamoto, Yasuji}, year={2010}, month=June, pages={79\u2013102} }",
+  "doi": "10.1007/s11214-010-9661-z",
+  "journal": "Space Sci Rev",
+  "key": "bibcode:2010SSRv..154...79K",
+  "page": "79-102",
+  "resolved": "2026-10-26",
+  "resolved_by": "doi.org",
+  "short": "Kodama et al. 2010",
+  "title": "Characterization of Multiband Imager Aboard SELENE",
+  "type": "article",
+  "url": "https://ui.adsabs.harvard.edu/abs/2010SSRv..154...79K",
+  "volume": "154",
+  "year": 2010
+ },
  "bibcode:2010Sci...327..977B": {
   "authors": [
    "Borucki, William J.",
@@ -6491,6 +6564,30 @@
   "type": "article",
   "url": "https://ui.adsabs.harvard.edu/abs/2011ApJ...735..112J",
   "volume": "735",
+  "year": 2011
+ },
+ "bibcode:2011PASP..123..789B": {
+  "authors": [
+   "Bessell, Michael",
+   "Bloxham, Gabe",
+   "Schmidt, Brian",
+   "Keller, Stefan",
+   "Tisserand, Patrick",
+   "Francis, Paul"
+  ],
+  "bibcode": "2011PASP..123..789B",
+  "bibtex": "@article{2011PASP..123..789B, title={SkyMapper Filter Set: Design and Fabrication of Large-Scale Optical Filters}, volume={123}, ISSN={1538-3873}, url={http://dx.doi.org/10.1086/660849}, DOI={10.1086/660849}, number={905}, journal={Publications of the Astronomical Society of the Pacific}, publisher={IOP Publishing}, author={Bessell, Michael and Bloxham, Gabe and Schmidt, Brian and Keller, Stefan and Tisserand, Patrick and Francis, Paul}, year={2011}, month=July, pages={789\u2013798} }",
+  "doi": "10.1086/660849",
+  "journal": "Publications of the Astronomical Society of the Pacific",
+  "key": "bibcode:2011PASP..123..789B",
+  "page": "789-798",
+  "resolved": "2026-10-26",
+  "resolved_by": "doi.org",
+  "short": "Bessell et al. 2011",
+  "title": "SkyMapper Filter Set: Design and Fabrication of Large-Scale Optical Filters",
+  "type": "article",
+  "url": "https://ui.adsabs.harvard.edu/abs/2011PASP..123..789B",
+  "volume": "123",
   "year": 2011
  },
  "bibcode:2012AJ....144..101G": {
@@ -6930,6 +7027,32 @@
   "volume": "125",
   "year": 2013
  },
+ "bibcode:2014JPRS...92...16M": {
+  "authors": [
+   "Mattar, C.",
+   "Hern\u00e1ndez, J.",
+   "Santamar\u00eda-Artigas, A.",
+   "Dur\u00e1n-Alarc\u00f3n, C.",
+   "Olivera-Guerra, L.",
+   "Inzunza, M.",
+   "Tapia, D.",
+   "Escobar-lav\u00edn, E."
+  ],
+  "bibcode": "2014JPRS...92...16M",
+  "bibtex": "@article{2014JPRS...92...16M, title={A first in-flight absolute calibration of the Chilean Earth Observation Satellite}, volume={92}, ISSN={0924-2716}, url={http://dx.doi.org/10.1016/j.isprsjprs.2014.02.017}, DOI={10.1016/j.isprsjprs.2014.02.017}, journal={ISPRS Journal of Photogrammetry and Remote Sensing}, publisher={Elsevier BV}, author={Mattar, C. and Hern\u00e1ndez, J. and Santamar\u00eda-Artigas, A. and Dur\u00e1n-Alarc\u00f3n, C. and Olivera-Guerra, L. and Inzunza, M. and Tapia, D. and Escobar-lav\u00edn, E.}, year={2014}, month=June, pages={16\u201325} }",
+  "doi": "10.1016/j.isprsjprs.2014.02.017",
+  "journal": "ISPRS Journal of Photogrammetry and Remote Sensing",
+  "key": "bibcode:2014JPRS...92...16M",
+  "page": "16-25",
+  "resolved": "2026-10-26",
+  "resolved_by": "doi.org",
+  "short": "Mattar et al. 2014",
+  "title": "A first in-flight absolute calibration of the Chilean Earth Observation Satellite",
+  "type": "article",
+  "url": "https://ui.adsabs.harvard.edu/abs/2014JPRS...92...16M",
+  "volume": "92",
+  "year": 2014
+ },
  "bibcode:2014PNAS..11112661M": {
   "authors": [
    "Macintosh, Bruce",
@@ -6994,6 +7117,39 @@
   "url": "https://ui.adsabs.harvard.edu/abs/2014PNAS..11112661M",
   "volume": "111",
   "year": 2014
+ },
+ "bibcode:2015A&A...574A.123M": {
+  "authors": [
+   "Magrin, S.",
+   "La Forgia, F.",
+   "Da Deppo, V.",
+   "Lazzarin, M.",
+   "Bertini, I.",
+   "Ferri, F.",
+   "Pajola, M.",
+   "Barbieri, M.",
+   "Naletto, G.",
+   "Barbieri, C.",
+   "Tubiana, C.",
+   "K\u00fcppers, M.",
+   "Fornasier, S.",
+   "Jorda, L.",
+   "Sierks, H."
+  ],
+  "bibcode": "2015A&A...574A.123M",
+  "bibtex": "@article{2015A\\&A...574A.123M, title={Pre-hibernation performances of the OSIRIS cameras onboard the Rosetta spacecraft}, volume={574}, ISSN={1432-0746}, url={http://dx.doi.org/10.1051/0004-6361/201423830}, DOI={10.1051/0004-6361/201423830}, journal={Astronomy \\& Astrophysics}, publisher={EDP Sciences}, author={Magrin, S. and La Forgia, F. and Da Deppo, V. and Lazzarin, M. and Bertini, I. and Ferri, F. and Pajola, M. and Barbieri, M. and Naletto, G. and Barbieri, C. and Tubiana, C. and K\u00fcppers, M. and Fornasier, S. and Jorda, L. and Sierks, H.}, year={2015}, month=Feb, pages={A123} }",
+  "doi": "10.1051/0004-6361/201423830",
+  "journal": "A&A",
+  "key": "bibcode:2015A&A...574A.123M",
+  "page": "A123",
+  "resolved": "2026-10-26",
+  "resolved_by": "doi.org",
+  "short": "Magrin et al. 2015",
+  "title": "Pre-hibernation performances of the OSIRIS cameras onboard the Rosetta spacecraft",
+  "type": "article",
+  "url": "https://ui.adsabs.harvard.edu/abs/2015A&A...574A.123M",
+  "volume": "574",
+  "year": 2015
  },
  "bibcode:2015AJ....150..104Z": {
   "authors": [
@@ -8547,6 +8703,31 @@
   "volume": "467",
   "year": 2017
  },
+ "bibcode:2017SPIE10563E..2MM": {
+  "authors": [
+   "Crippa, G.",
+   "Lopez, M.",
+   "Marini, A.",
+   "Reina Barragan, F. J.",
+   "Harnisch, B.",
+   "Fuente, I.",
+   "Cabeza, I.",
+   "Zorita, D."
+  ],
+  "bibcode": "2017SPIE10563E..2MM",
+  "bibtex": "@inproceedings{2017SPIE10563E..2MM, title={SEOSAT/INGENIO: a Spanish high-spatial-resolution optical mission}, url={http://dx.doi.org/10.1117/12.2304151}, DOI={10.1117/12.2304151}, booktitle={International Conference on Space Optics \u2014 ICSO 2014}, publisher={SPIE}, author={Crippa, G. and Lopez, M. and Marini, A. and Reina Barragan, F. J. and Harnisch, B. and Fuente, I. and Cabeza, I. and Zorita, D.}, editor={Cugny, Bruno and Sodnik, Zoran and Karafolas, Nikos}, year={2017}, month=Nov, pages={91} }",
+  "doi": "10.1117/12.2304151",
+  "journal": "International Conference on Space Optics \u2014 ICSO 2014",
+  "key": "bibcode:2017SPIE10563E..2MM",
+  "page": "91",
+  "resolved": "2026-10-26",
+  "resolved_by": "doi.org",
+  "short": "Crippa et al. 2017",
+  "title": "SEOSAT/INGENIO: a Spanish high-spatial-resolution optical mission",
+  "type": "misc",
+  "url": "https://ui.adsabs.harvard.edu/abs/2017SPIE10563E..2MM",
+  "year": 2017
+ },
  "bibcode:2017SSRv..212.1897T": {
   "authors": [
    "Thomas, N.",
@@ -9653,6 +9834,72 @@
   "type": "article",
   "url": "https://ui.adsabs.harvard.edu/abs/2019PhDT........69G",
   "year": 2019
+ },
+ "bibcode:2020A&A...642A..13H": {
+  "authors": [
+   "Howard, R. A.",
+   "Vourlidas, A.",
+   "Colaninno, R. C.",
+   "Korendyke, C. M.",
+   "Plunkett, S. P.",
+   "Carter, M. T.",
+   "Wang, D.",
+   "Rich, N.",
+   "Lynch, S.",
+   "Thurn, A.",
+   "Socker, D. G.",
+   "Thernisien, A. F.",
+   "Chua, D.",
+   "Linton, M. G.",
+   "Koss, S.",
+   "Tun-Beltran, S.",
+   "Dennison, H.",
+   "Stenborg, G.",
+   "McMullin, D. R.",
+   "Hunt, T.",
+   "Baugh, R.",
+   "Clifford, G.",
+   "Keller, D.",
+   "Janesick, J. R.",
+   "Tower, J.",
+   "Grygon, M.",
+   "Farkas, R.",
+   "Hagood, R.",
+   "Eisenhauer, K.",
+   "Uhl, A.",
+   "Yerushalmi, S.",
+   "Smith, L.",
+   "Liewer, P. C.",
+   "Velli, M. C.",
+   "Linker, J.",
+   "Bothmer, V.",
+   "Rochus, P.",
+   "Halain, J.-P.",
+   "Lamy, P. L.",
+   "Auch\u00e8re, F.",
+   "Harrison, R. A.",
+   "Rouillard, A.",
+   "Patsourakos, S.",
+   "Cyr, O. C. St.",
+   "Gilbert, H.",
+   "Maldonado, H.",
+   "Mariano, C.",
+   "Cerullo, J."
+  ],
+  "bibcode": "2020A&A...642A..13H",
+  "bibtex": "@article{2020A\\&A...642A..13H, title={The Solar Orbiter Heliospheric Imager (SoloHI)}, volume={642}, ISSN={1432-0746}, url={http://dx.doi.org/10.1051/0004-6361/201935202}, DOI={10.1051/0004-6361/201935202}, journal={Astronomy \\& Astrophysics}, publisher={EDP Sciences}, author={Howard, R. A. and Vourlidas, A. and Colaninno, R. C. and Korendyke, C. M. and Plunkett, S. P. and Carter, M. T. and Wang, D. and Rich, N. and Lynch, S. and Thurn, A. and Socker, D. G. and Thernisien, A. F. and Chua, D. and Linton, M. G. and Koss, S. and Tun-Beltran, S. and Dennison, H. and Stenborg, G. and McMullin, D. R. and Hunt, T. and Baugh, R. and Clifford, G. and Keller, D. and Janesick, J. R. and Tower, J. and Grygon, M. and Farkas, R. and Hagood, R. and Eisenhauer, K. and Uhl, A. and Yerushalmi, S. and Smith, L. and Liewer, P. C. and Velli, M. C. and Linker, J. and Bothmer, V. and Rochus, P. and Halain, J.-P. and Lamy, P. L. and Auch\u00e8re, F. and Harrison, R. A. and Rouillard, A. and Patsourakos, S. and Cyr, O. C. St. and Gilbert, H. and Maldonado, H. and Mariano, C. and Cerullo, J.}, year={2020}, month=Sept, pages={A13} }",
+  "doi": "10.1051/0004-6361/201935202",
+  "journal": "A&A",
+  "key": "bibcode:2020A&A...642A..13H",
+  "page": "A13",
+  "resolved": "2026-10-26",
+  "resolved_by": "doi.org",
+  "short": "Howard et al. 2020",
+  "title": "The Solar Orbiter Heliospheric Imager (SoloHI)",
+  "type": "article",
+  "url": "https://ui.adsabs.harvard.edu/abs/2020A&A...642A..13H",
+  "volume": "642",
+  "year": 2020
  },
  "bibcode:2020AJ....159..158T": {
   "authors": [
