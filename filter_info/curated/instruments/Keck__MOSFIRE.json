@@ -130,8 +130,9 @@
   },
   "licence": {
     "redistribution": "restricted",
-    "terms": "\"The contents of this page or any part thereof shall not\"",
-    "url": "https://www2.keck.hawaii.edu/inst/web_docs/scripts/include_end.js"
+    "terms": "The information on this page is the property of the W. M. Keck Observatory. The contents of this page or any part thereof shall not be copied or otherwise reproduced or transferred to other documents or used or disclosed to others for any purpose other than observing support at the W. M. Keck Observatory and the subsequent analysis and publication of scientific data obtained from observations conducted at the W. M. Keck Observatory. All rights reserved. © W. M. Keck Observatory.",
+    "url": "https://www2.keck.hawaii.edu/inst/web_docs/scripts/include_end.js",
+    "scope": "Site-wide footer that include_end.js adds to every page of www2.keck.hawaii.edu, including the instrument filter pages; the curves themselves are separate linked files. Under review (2026-10-26)."
   },
   "acknowledgements": [
     {
