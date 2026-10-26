@@ -1,0 +1,2917 @@
+{
+ "schema": 1,
+ "generated": "2026-10-26T17:03:01Z",
+ "description": "SVO Filter Profile Service IDs (Facility/Instrument.Band) that NJM serves under another path. Generic rule: SVO Fac/Inst.Band -> NJM Fac/Inst/Band; IDs equal to an NJM FilterID header need no alias. 'njm' is Facility/Instrument/band (file band.dat). 'related' IDs are NOT the same band and are not served. Built by filter_expansion/phase4/tools/build_svo_aliases.py.",
+ "generic_rule": "SVO Facility/Instrument.Band -> NJM Facility/Instrument/Band",
+ "thresholds": {
+  "identical_overlap": 0.995,
+  "identical_pivot": 0.002,
+  "name_check_overlap": 0.9,
+  "name_check_pivot": 0.02
+ },
+ "instrument_aliases": {
+  "ADEOS/POLDER-1": [
+   {
+    "njm": "ADEOS/POLDER",
+    "basis": "FilterID headers place ADEOS/POLDER-1.* bands in ADEOS/POLDER"
+   }
+  ],
+  "ADEOS/POLDER-2": [
+   {
+    "njm": "ADEOS/POLDER",
+    "basis": "FilterID headers place ADEOS/POLDER-2.* bands in ADEOS/POLDER"
+   }
+  ],
+  "ARCHEOPS/KS3": [
+   {
+    "njm": "ARCHEOPS/ARCHEOPS",
+    "basis": "FilterID headers place ARCHEOPS/KS3.* bands in ARCHEOPS/ARCHEOPS"
+   }
+  ],
+  "ARCHEOPS/Trapani": [
+   {
+    "njm": "ARCHEOPS/ARCHEOPS",
+    "basis": "FilterID headers place ARCHEOPS/Trapani.* bands in ARCHEOPS/ARCHEOPS"
+   }
+  ],
+  "BICEP/BICEP1": [
+   {
+    "njm": "BICEP/BICEP",
+    "basis": "FilterID headers place BICEP/BICEP1.* bands in BICEP/BICEP"
+   }
+  ],
+  "BICEP/BICEP2": [
+   {
+    "njm": "BICEP/BICEP",
+    "basis": "FilterID headers place BICEP/BICEP2.* bands in BICEP/BICEP"
+   }
+  ],
+  "BLAST/BLAST-TNG": [
+   {
+    "njm": "BLAST/BLAST_TNG",
+    "basis": "FilterID headers place BLAST/BLAST-TNG.* bands in BLAST/BLAST_TNG"
+   }
+  ],
+  "BLAST/BLAST06": [
+   {
+    "njm": "BLAST/BLAST",
+    "basis": "FilterID headers place BLAST/BLAST06.* bands in BLAST/BLAST"
+   }
+  ],
+  "BOK/BASS": [
+   {
+    "njm": "BOK/90prime",
+    "basis": "FilterID headers place BOK/BASS.* bands in BOK/90prime"
+   }
+  ],
+  "BOOMERANG/LDB": [
+   {
+    "njm": "BOOMERANG/BOOMERANG",
+    "basis": "FilterID headers place BOOMERANG/LDB.* bands in BOOMERANG/BOOMERANG"
+   }
+  ],
+  "Bepi-Colombo/HRIC": [
+   {
+    "njm": "Bepi_Colombo/HRIC",
+    "basis": "FilterID headers place Bepi-Colombo/HRIC.* bands in Bepi_Colombo/HRIC"
+   }
+  ],
+  "Bepi-Colombo/STC": [
+   {
+    "njm": "Bepi_Colombo/STC",
+    "basis": "FilterID headers place Bepi-Colombo/STC.* bands in Bepi_Colombo/STC"
+   }
+  ],
+  "CAHA/ALHAMBRA": [
+   {
+    "njm": "CAHA/LAICA",
+    "basis": "FilterID headers place CAHA/ALHAMBRA.* bands in CAHA/LAICA"
+   },
+   {
+    "njm": "CAHA/Omega2000",
+    "basis": "ALHAMBRA optical bands are NJM CAHA/LAICA (FilterID headers); its J/H/Ks curves are identical to NJM CAHA/Omega2000"
+   }
+  ],
+  "CASTOR/CASTOR0": [
+   {
+    "njm": "CASTOR/CASTOR",
+    "basis": "FilterID headers place CASTOR/CASTOR0.* bands in CASTOR/CASTOR"
+   }
+  ],
+  "CFHT/CFHT": [
+   {
+    "njm": "CFHT/Megaprime",
+    "basis": "FilterID headers place CFHT/CFHT.* bands in CFHT/Megaprime"
+   }
+  ],
+  "CFHT/Wircam": [
+   {
+    "njm": "CFHT/WFC",
+    "basis": "FilterID headers place CFHT/Wircam.* bands in CFHT/WFC"
+   }
+  ],
+  "CMO-SAI/SPP": [
+   {
+    "njm": "CMP_SAI/SPP",
+    "basis": "FilterID headers place CMO-SAI/SPP.* bands in CMP_SAI/SPP"
+   }
+  ],
+  "COSMOSOMAS/COSMO11": [
+   {
+    "njm": "Teide/COSMO11",
+    "basis": "same instrument name; COSMOSOMAS ran at Teide Observatory"
+   }
+  ],
+  "COSMOSOMAS/COSMO15": [
+   {
+    "njm": "Teide/COSMO15",
+    "basis": "same instrument name; COSMOSOMAS ran at Teide Observatory"
+   }
+  ],
+  "CSST/SC0-Phot": [
+   {
+    "njm": "CSST/CSS_OS",
+    "basis": "FilterID headers place CSST/SC0-Phot.* bands in CSST/CSS_OS"
+   }
+  ],
+  "CSST/SC0-Spec": [
+   {
+    "njm": "CSST/CSS_OS",
+    "basis": "FilterID headers place CSST/SC0-Spec.* bands in CSST/CSS_OS"
+   }
+  ],
+  "CSTAR/CSTAR1": [
+   {
+    "njm": "CSTAR/CSTAR",
+    "basis": "FilterID headers place CSTAR/CSTAR1.* bands in CSTAR/CSTAR"
+   }
+  ],
+  "CSTAR/CSTAR2": [
+   {
+    "njm": "CSTAR/CSTAR",
+    "basis": "FilterID headers place CSTAR/CSTAR2.* bands in CSTAR/CSTAR"
+   }
+  ],
+  "CSTAR/CSTAR4": [
+   {
+    "njm": "CSTAR/CSTAR",
+    "basis": "FilterID headers place CSTAR/CSTAR4.* bands in CSTAR/CSTAR"
+   }
+  ],
+  "CTIO/S-PLUS": [
+   {
+    "njm": "CTIO/S_PLUS",
+    "basis": "FilterID headers place CTIO/S-PLUS.* bands in CTIO/S_PLUS"
+   }
+  ],
+  "Cameras/Arriflex": [
+   {
+    "njm": "Cameras/Arriflex_D21",
+    "basis": "FilterID headers place Cameras/Arriflex.* bands in Cameras/Arriflex_D21"
+   }
+  ],
+  "Cameras/Canon": [
+   {
+    "njm": "Cameras/Canon_10D",
+    "basis": "FilterID headers place Cameras/Canon.* bands in Cameras/Canon_10D"
+   },
+   {
+    "njm": "Cameras/Canon_1DMarkII",
+    "basis": "FilterID headers place Cameras/Canon.* bands in Cameras/Canon_1DMarkII"
+   },
+   {
+    "njm": "Cameras/Canon_1DMarkIII",
+    "basis": "FilterID headers place Cameras/Canon.* bands in Cameras/Canon_1DMarkIII"
+   },
+   {
+    "njm": "Cameras/Canon_20D",
+    "basis": "FilterID headers place Cameras/Canon.* bands in Cameras/Canon_20D"
+   },
+   {
+    "njm": "Cameras/Canon_300D",
+    "basis": "FilterID headers place Cameras/Canon.* bands in Cameras/Canon_300D"
+   },
+   {
+    "njm": "Cameras/Canon_30D",
+    "basis": "FilterID headers place Cameras/Canon.* bands in Cameras/Canon_30D"
+   },
+   {
+    "njm": "Cameras/Canon_350D",
+    "basis": "FilterID headers place Cameras/Canon.* bands in Cameras/Canon_350D"
+   },
+   {
+    "njm": "Cameras/Canon_40D",
+    "basis": "FilterID headers place Cameras/Canon.* bands in Cameras/Canon_40D"
+   },
+   {
+    "njm": "Cameras/Canon_450D_IR",
+    "basis": "FilterID headers place Cameras/Canon.* bands in Cameras/Canon_450D_IR"
+   },
+   {
+    "njm": "Cameras/Canon_500D",
+    "basis": "FilterID headers place Cameras/Canon.* bands in Cameras/Canon_500D"
+   },
+   {
+    "njm": "Cameras/Canon_50D",
+    "basis": "FilterID headers place Cameras/Canon.* bands in Cameras/Canon_50D"
+   },
+   {
+    "njm": "Cameras/Canon_5D",
+    "basis": "FilterID headers place Cameras/Canon.* bands in Cameras/Canon_5D"
+   },
+   {
+    "njm": "Cameras/Canon_5DII",
+    "basis": "FilterID headers place Cameras/Canon.* bands in Cameras/Canon_5DII"
+   },
+   {
+    "njm": "Cameras/Canon_600D",
+    "basis": "FilterID headers place Cameras/Canon.* bands in Cameras/Canon_600D"
+   },
+   {
+    "njm": "Cameras/Canon_60D",
+    "basis": "FilterID headers place Cameras/Canon.* bands in Cameras/Canon_60D"
+   },
+   {
+    "njm": "Cameras/Canon_G1X",
+    "basis": "FilterID headers place Cameras/Canon.* bands in Cameras/Canon_G1X"
+   },
+   {
+    "njm": "Cameras/Canon_T2i",
+    "basis": "FilterID headers place Cameras/Canon.* bands in Cameras/Canon_T2i"
+   },
+   {
+    "njm": "Cameras/Canon_XS",
+    "basis": "FilterID headers place Cameras/Canon.* bands in Cameras/Canon_XS"
+   },
+   {
+    "njm": "Cameras/Canon_XSi",
+    "basis": "FilterID headers place Cameras/Canon.* bands in Cameras/Canon_XSi"
+   }
+  ],
+  "Cameras/Fujifilm": [
+   {
+    "njm": "Cameras/Fujifilm_S3",
+    "basis": "FilterID headers place Cameras/Fujifilm.* bands in Cameras/Fujifilm_S3"
+   },
+   {
+    "njm": "Cameras/Fujifilm_S5Pro",
+    "basis": "FilterID headers place Cameras/Fujifilm.* bands in Cameras/Fujifilm_S5Pro"
+   },
+   {
+    "njm": "Cameras/Fujifilm_X100",
+    "basis": "FilterID headers place Cameras/Fujifilm.* bands in Cameras/Fujifilm_X100"
+   },
+   {
+    "njm": "Cameras/Fujifilm_Xpro1",
+    "basis": "FilterID headers place Cameras/Fujifilm.* bands in Cameras/Fujifilm_Xpro1"
+   }
+  ],
+  "Cameras/Hasselblad": [
+   {
+    "njm": "Cameras/Hasselblad_H2",
+    "basis": "FilterID headers place Cameras/Hasselblad.* bands in Cameras/Hasselblad_H2"
+   },
+   {
+    "njm": "Cameras/Hasselblad_H3D",
+    "basis": "FilterID headers place Cameras/Hasselblad.* bands in Cameras/Hasselblad_H3D"
+   }
+  ],
+  "Cameras/Kodak": [
+   {
+    "njm": "Cameras/Kodak_DCS200",
+    "basis": "FilterID headers place Cameras/Kodak.* bands in Cameras/Kodak_DCS200"
+   },
+   {
+    "njm": "Cameras/Kodak_DCS420",
+    "basis": "FilterID headers place Cameras/Kodak.* bands in Cameras/Kodak_DCS420"
+   }
+  ],
+  "Cameras/Leica": [
+   {
+    "njm": "Cameras/Leica_M8",
+    "basis": "FilterID headers place Cameras/Leica.* bands in Cameras/Leica_M8"
+   }
+  ],
+  "Cameras/Lumix": [
+   {
+    "njm": "Cameras/Lumix_G10",
+    "basis": "FilterID headers place Cameras/Lumix.* bands in Cameras/Lumix_G10"
+   },
+   {
+    "njm": "Cameras/Lumix_GF1",
+    "basis": "FilterID headers place Cameras/Lumix.* bands in Cameras/Lumix_GF1"
+   },
+   {
+    "njm": "Cameras/Lumix_GF2",
+    "basis": "FilterID headers place Cameras/Lumix.* bands in Cameras/Lumix_GF2"
+   }
+  ],
+  "Cameras/Nikon": [
+   {
+    "njm": "Cameras/Nikon_D100",
+    "basis": "FilterID headers place Cameras/Nikon.* bands in Cameras/Nikon_D100"
+   },
+   {
+    "njm": "Cameras/Nikon_D200",
+    "basis": "FilterID headers place Cameras/Nikon.* bands in Cameras/Nikon_D200"
+   },
+   {
+    "njm": "Cameras/Nikon_D3",
+    "basis": "FilterID headers place Cameras/Nikon.* bands in Cameras/Nikon_D3"
+   },
+   {
+    "njm": "Cameras/Nikon_D3000",
+    "basis": "FilterID headers place Cameras/Nikon.* bands in Cameras/Nikon_D3000"
+   },
+   {
+    "njm": "Cameras/Nikon_D300s",
+    "basis": "FilterID headers place Cameras/Nikon.* bands in Cameras/Nikon_D300s"
+   },
+   {
+    "njm": "Cameras/Nikon_D3100",
+    "basis": "FilterID headers place Cameras/Nikon.* bands in Cameras/Nikon_D3100"
+   },
+   {
+    "njm": "Cameras/Nikon_D3X",
+    "basis": "FilterID headers place Cameras/Nikon.* bands in Cameras/Nikon_D3X"
+   },
+   {
+    "njm": "Cameras/Nikon_D40",
+    "basis": "FilterID headers place Cameras/Nikon.* bands in Cameras/Nikon_D40"
+   },
+   {
+    "njm": "Cameras/Nikon_D40x",
+    "basis": "FilterID headers place Cameras/Nikon.* bands in Cameras/Nikon_D40x"
+   },
+   {
+    "njm": "Cameras/Nikon_D50",
+    "basis": "FilterID headers place Cameras/Nikon.* bands in Cameras/Nikon_D50"
+   },
+   {
+    "njm": "Cameras/Nikon_D5100",
+    "basis": "FilterID headers place Cameras/Nikon.* bands in Cameras/Nikon_D5100"
+   },
+   {
+    "njm": "Cameras/Nikon_D60",
+    "basis": "FilterID headers place Cameras/Nikon.* bands in Cameras/Nikon_D60"
+   },
+   {
+    "njm": "Cameras/Nikon_D70",
+    "basis": "FilterID headers place Cameras/Nikon.* bands in Cameras/Nikon_D70"
+   },
+   {
+    "njm": "Cameras/Nikon_D700",
+    "basis": "FilterID headers place Cameras/Nikon.* bands in Cameras/Nikon_D700"
+   },
+   {
+    "njm": "Cameras/Nikon_D80",
+    "basis": "FilterID headers place Cameras/Nikon.* bands in Cameras/Nikon_D80"
+   },
+   {
+    "njm": "Cameras/Nikon_D90",
+    "basis": "FilterID headers place Cameras/Nikon.* bands in Cameras/Nikon_D90"
+   }
+  ],
+  "Cameras/Nokia": [
+   {
+    "njm": "Cameras/Nokia_N900",
+    "basis": "FilterID headers place Cameras/Nokia.* bands in Cameras/Nokia_N900"
+   }
+  ],
+  "Cameras/Olympus": [
+   {
+    "njm": "Cameras/Olympus_EP1",
+    "basis": "FilterID headers place Cameras/Olympus.* bands in Cameras/Olympus_EP1"
+   },
+   {
+    "njm": "Cameras/Olympus_EPL2",
+    "basis": "FilterID headers place Cameras/Olympus.* bands in Cameras/Olympus_EPL2"
+   }
+  ],
+  "Cameras/Panasonic": [
+   {
+    "njm": "Cameras/Panasonic_DML_LX3",
+    "basis": "FilterID headers place Cameras/Panasonic.* bands in Cameras/Panasonic_DML_LX3"
+   }
+  ],
+  "Cameras/Pentax": [
+   {
+    "njm": "Cameras/Pentax_K100D",
+    "basis": "FilterID headers place Cameras/Pentax.* bands in Cameras/Pentax_K100D"
+   },
+   {
+    "njm": "Cameras/Pentax_K10D",
+    "basis": "FilterID headers place Cameras/Pentax.* bands in Cameras/Pentax_K10D"
+   },
+   {
+    "njm": "Cameras/Pentax_K5",
+    "basis": "FilterID headers place Cameras/Pentax.* bands in Cameras/Pentax_K5"
+   },
+   {
+    "njm": "Cameras/Pentax_Q",
+    "basis": "FilterID headers place Cameras/Pentax.* bands in Cameras/Pentax_Q"
+   },
+   {
+    "njm": "Cameras/Pentax_ist_D",
+    "basis": "FilterID headers place Cameras/Pentax.* bands in Cameras/Pentax_ist_D"
+   },
+   {
+    "njm": "Cameras/Pentax_ist_DL",
+    "basis": "FilterID headers place Cameras/Pentax.* bands in Cameras/Pentax_ist_DL"
+   }
+  ],
+  "Cameras/PointGrey": [
+   {
+    "njm": "Cameras/PointGrey_Grasshopper2_14S5C",
+    "basis": "FilterID headers place Cameras/PointGrey.* bands in Cameras/PointGrey_Grasshopper2_14S5C"
+   },
+   {
+    "njm": "Cameras/PointGrey_Grasshopper_50S5C",
+    "basis": "FilterID headers place Cameras/PointGrey.* bands in Cameras/PointGrey_Grasshopper_50S5C"
+   }
+  ],
+  "Cameras/Samsung": [
+   {
+    "njm": "Cameras/Samsung_NX10",
+    "basis": "FilterID headers place Cameras/Samsung.* bands in Cameras/Samsung_NX10"
+   },
+   {
+    "njm": "Cameras/Samsung_NX100",
+    "basis": "FilterID headers place Cameras/Samsung.* bands in Cameras/Samsung_NX100"
+   }
+  ],
+  "Cameras/Sony": [
+   {
+    "njm": "Cameras/Sony.A200",
+    "basis": "FilterID headers place Cameras/Sony.* bands in Cameras/Sony.A200"
+   },
+   {
+    "njm": "Cameras/Sony.A55",
+    "basis": "FilterID headers place Cameras/Sony.* bands in Cameras/Sony.A55"
+   },
+   {
+    "njm": "Cameras/Sony_A290",
+    "basis": "FilterID headers place Cameras/Sony.* bands in Cameras/Sony_A290"
+   },
+   {
+    "njm": "Cameras/Sony_A300",
+    "basis": "FilterID headers place Cameras/Sony.* bands in Cameras/Sony_A300"
+   },
+   {
+    "njm": "Cameras/Sony_A330",
+    "basis": "FilterID headers place Cameras/Sony.* bands in Cameras/Sony_A330"
+   },
+   {
+    "njm": "Cameras/Sony_NEX5N",
+    "basis": "FilterID headers place Cameras/Sony.* bands in Cameras/Sony_NEX5N"
+   },
+   {
+    "njm": "Cameras/Sony_NEX_5N",
+    "basis": "FilterID headers place Cameras/Sony.* bands in Cameras/Sony_NEX_5N"
+   },
+   {
+    "njm": "Cameras/Sony_NEX_C3",
+    "basis": "FilterID headers place Cameras/Sony.* bands in Cameras/Sony_NEX_C3"
+   }
+  ],
+  "DeepImpact/HRI-VIS": [
+   {
+    "njm": "DeepImpact/HRI_VIS",
+    "basis": "FilterID headers place DeepImpact/HRI-VIS.* bands in DeepImpact/HRI_VIS"
+   }
+  ],
+  "DeepImpact/ITS-VIS": [
+   {
+    "njm": "DeepImpact/ITS_VIS",
+    "basis": "FilterID headers place DeepImpact/ITS-VIS.* bands in DeepImpact/ITS_VIS"
+   }
+  ],
+  "DeepImpact/MRI-VIS": [
+   {
+    "njm": "DeepImpact/MRI_VIS",
+    "basis": "FilterID headers place DeepImpact/MRI-VIS.* bands in DeepImpact/MRI_VIS"
+   }
+  ],
+  "EROS/EROS-B": [
+   {
+    "njm": "EROS/EROS",
+    "basis": "FilterID headers place EROS/EROS-B.* bands in EROS/EROS"
+   }
+  ],
+  "Euclid/NISP0": [
+   {
+    "njm": "Euclid/NISP",
+    "basis": "FilterID headers place Euclid/NISP0.* bands in Euclid/NISP"
+   }
+  ],
+  "Flock/PS3p": [
+   {
+    "njm": "Flock/PS",
+    "basis": "FilterID headers place Flock/PS3p.* bands in Flock/PS"
+   }
+  ],
+  "GAIA/GAIA2": [
+   {
+    "njm": "GAIA/DR2",
+    "basis": "info.json SVO matches place GAIA/GAIA2.* bands in GAIA/DR2"
+   }
+  ],
+  "GAIA/GAIA2r": [
+   {
+    "njm": "GAIA/DR2r",
+    "basis": "info.json SVO matches place GAIA/GAIA2r.* bands in GAIA/DR2r"
+   }
+  ],
+  "GAIA/GAIA3": [
+   {
+    "njm": "GAIA/GAIA",
+    "basis": "FilterID headers place GAIA/GAIA3.* bands in GAIA/GAIA"
+   }
+  ],
+  "GAIA/Gaia2m": [
+   {
+    "njm": "GAIA/GAIA",
+    "basis": "FilterID headers place GAIA/Gaia2m.* bands in GAIA/GAIA"
+   }
+  ],
+  "GCOM-C/SGLI": [
+   {
+    "njm": "GCOM_C/SGLI",
+    "basis": "FilterID headers place GCOM-C/SGLI.* bands in GCOM_C/SGLI"
+   }
+  ],
+  "GCPD/DDO": [
+   {
+    "njm": "DDO/DDO",
+    "basis": "FilterID headers place GCPD/DDO.* bands in DDO/DDO"
+   }
+  ],
+  "Gemini/AcqCam-N": [
+   {
+    "njm": "Gemini/AcqCam_N",
+    "basis": "FilterID headers place Gemini/AcqCam-N.* bands in Gemini/AcqCam_N"
+   }
+  ],
+  "Gemini/AcqCam-S": [
+   {
+    "njm": "Gemini/AcqCam_S",
+    "basis": "FilterID headers place Gemini/AcqCam-S.* bands in Gemini/AcqCam_S"
+   }
+  ],
+  "Gemini/GMOS-N": [
+   {
+    "njm": "Gemini/GMOS_N",
+    "basis": "FilterID headers place Gemini/GMOS-N.* bands in Gemini/GMOS_N"
+   }
+  ],
+  "Gemini/GMOS-S": [
+   {
+    "njm": "Gemini/GMOS_S",
+    "basis": "FilterID headers place Gemini/GMOS-S.* bands in Gemini/GMOS_S"
+   }
+  ],
+  "Generic/Cousins": [
+   {
+    "njm": "GCPD/Cousins",
+    "basis": "SVO also lists GCPD/Cousins"
+   }
+  ],
+  "Generic/Johnson_UBVRIJHKL": [
+   {
+    "njm": "Generic/Johnson",
+    "basis": "archived SVO curves identical to NJM Generic/Johnson (both SVO-derived)"
+   }
+  ],
+  "Generic/Stromgren": [
+   {
+    "njm": "GCPD/Stromgren",
+    "basis": "SVO also lists GCPD/Stromgren"
+   }
+  ],
+  "Geneva/Geneva": [
+   {
+    "njm": "GCPD/Geneva",
+    "basis": "SVO also lists GCPD/Geneva"
+   }
+  ],
+  "Herschel/Pacs": [
+   {
+    "njm": "Herschel/PACS",
+    "basis": "info.json SVO matches place Herschel/Pacs.* bands in Herschel/PACS"
+   }
+  ],
+  "JWST/NIRSpec": [
+   {
+    "njm": "JWST/NIRSPEC",
+    "basis": "FilterID headers place JWST/NIRSpec.* bands in JWST/NIRSPEC"
+   }
+  ],
+  "LCO/FourStar": [
+   {
+    "njm": "Magellan/FourStar",
+    "basis": "info.json SVO matches place LCO/FourStar.* bands in Magellan/FourStar"
+   }
+  ],
+  "LasCumbres/LasCumbres": [
+   {
+    "njm": "LasCumbres/Spectral",
+    "basis": "archived SVO curves identical to NJM LasCumbres/Spectral"
+   }
+  ],
+  "MKO/NSFCam": [
+   {
+    "njm": "IRTF/NSFCam",
+    "basis": "NSFCam is the IRTF camera on Maunakea (NJM also has its MKO-system bands)"
+   }
+  ],
+  "Misc/Atlas": [
+   {
+    "njm": "ATLAS/ATLAS",
+    "basis": "info.json SVO matches place Misc/Atlas.* bands in ATLAS/ATLAS"
+   }
+  ],
+  "NIRT/NSFCAM": [
+   {
+    "njm": "IRTF/NSFCam",
+    "basis": "NSFCam is the IRTF camera"
+   }
+  ],
+  "NOT/NOT": [
+   {
+    "njm": "NOT/ALFOSC",
+    "basis": "SVO NOT/NOT.<filter number> curves identical to NJM NOT/ALFOSC bands"
+   }
+  ],
+  "PLANCK/HFI": [
+   {
+    "njm": "Planck/HFI",
+    "basis": "case only: NJM FilterIDs are Planck/HFI.<GHz>"
+   }
+  ],
+  "PLANCK/LFI": [
+   {
+    "njm": "Planck/LFI",
+    "basis": "case only: NJM FilterIDs are Planck/LFI.<GHz>"
+   }
+  ],
+  "Paranal/ERIS": [
+   {
+    "njm": "ERIS/NIX",
+    "basis": "FilterID headers place Paranal/ERIS.* bands in ERIS/NIX"
+   }
+  ],
+  "Paranal/SPHERE": [
+   {
+    "njm": "SPHERE/IRDIS",
+    "basis": "NJM splits SPHERE into its IRDIS and ZIMPOL arms; SVO prefixes the band with IRDIS_/ZIMPOL_; archived SVO curves are identical to NJM's"
+   },
+   {
+    "njm": "SPHERE/ZIMPOL",
+    "basis": "NJM splits SPHERE into its IRDIS and ZIMPOL arms; SVO prefixes the band with IRDIS_/ZIMPOL_; archived SVO curves are identical to NJM's"
+   }
+  ],
+  "Subaru/Suprime": [
+   {
+    "njm": "Subaru/SuprimeCam",
+    "basis": "info.json SVO matches place Subaru/Suprime.* bands in Subaru/SuprimeCam"
+   }
+  ],
+  "TYCHO/TYCHO": [
+   {
+    "njm": "Hipparcos/Tycho",
+    "basis": "Tycho photometry from Hipparcos"
+   }
+  ],
+  "UKIRT/UKIDSS": [
+   {
+    "njm": "UKIRT/WFCAM",
+    "basis": "info.json SVO matches place UKIRT/UKIDSS.* bands in UKIRT/WFCAM"
+   }
+  ],
+  "WFIRST/WFI": [
+   {
+    "njm": "Roman/WFI",
+    "basis": "DECISIONS-20261026 item 7: WFIRST = Roman/WFI (mission renamed 2020); SVO's WFIRST/WFI.* are the older SVO Roman curves"
+   }
+  ]
+ },
+ "not_instrument_aliases": {
+  "Beijing1/SLIM6 -> AlSat1/SLIM6": "Beijing-1 and AlSat-1 are different DMC satellites with the same SLIM6 imager design; one NJM AlSat1 header carries a Beijing1 FilterID",
+  "Gemini/Zorro -> Gemini/Alopeke": "Zorro (Gemini South) and 'Alopeke (Gemini North) are twin imagers; SVO lists identical curves for both",
+  "JPSS/VIIRS -> JPSS/VIIRS-J1": "SVO JPSS/VIIRS is Suomi-NPP VIIRS, a different unit from NOAA-20 (J1)",
+  "JPSS/VIIRS -> JPSS/VIIRS-J2": "SVO JPSS/VIIRS is Suomi-NPP VIIRS, a different unit from NOAA-21 (J2)"
+ },
+ "counts": {
+  "missing_list": 5876,
+  "now_held_directly": 170,
+  "aliases_from_missing_list": 166,
+  "aliases_by_kind": {
+   "name": 13,
+   "curated": 87,
+   "curve": 58,
+   "path": 8
+  },
+  "aliases_total_including_info_matches": 228,
+  "related_not_counted": 84,
+  "still_missing": 5540
+ },
+ "aliases": {
+  "CAHA/ALHAMBRA.H": {
+   "njm": "CAHA/Omega2000/H",
+   "kind": "name",
+   "basis": "band name equal up to case/punctuation; instrument: ALHAMBRA optical bands are NJM CAHA/LAICA (FilterID headers); its J/H/Ks curves are identical to NJM CAHA/Omega2000",
+   "overlap": 0.9999,
+   "pivot_diff_pct": 0.0,
+   "njm_filterID": "CAHA/Omega2000.H"
+  },
+  "CAHA/ALHAMBRA.J": {
+   "njm": "CAHA/Omega2000/J",
+   "kind": "name",
+   "basis": "band name equal up to case/punctuation; instrument: ALHAMBRA optical bands are NJM CAHA/LAICA (FilterID headers); its J/H/Ks curves are identical to NJM CAHA/Omega2000",
+   "overlap": 1.0,
+   "pivot_diff_pct": 0.0,
+   "njm_filterID": "CAHA/Omega2000.J"
+  },
+  "CAHA/ALHAMBRA.Ks": {
+   "njm": "CAHA/Omega2000/Ks",
+   "kind": "name",
+   "basis": "band name equal up to case/punctuation; instrument: ALHAMBRA optical bands are NJM CAHA/LAICA (FilterID headers); its J/H/Ks curves are identical to NJM CAHA/Omega2000",
+   "overlap": 0.9998,
+   "pivot_diff_pct": 0.001,
+   "njm_filterID": "CAHA/Omega2000.Ks"
+  },
+  "COSMOSOMAS/COSMO11.Ch2": {
+   "njm": "Teide/COSMO11/Ch2",
+   "kind": "name",
+   "basis": "band name equal up to case/punctuation; instrument: same instrument name; COSMOSOMAS ran at Teide Observatory",
+   "overlap": 1.0,
+   "pivot_diff_pct": 0.0
+  },
+  "GAIA/GAIA2.G": {
+   "njm": "GAIA/DR2/G",
+   "kind": "info",
+   "basis": "info.json bands.G.svo (matched by provenance; SVO curve differs)"
+  },
+  "GAIA/GAIA2.Gbp": {
+   "njm": "GAIA/DR2/BP",
+   "kind": "info",
+   "basis": "info.json bands.BP.svo (matched by provenance; SVO curve differs)"
+  },
+  "GAIA/GAIA2.Grp": {
+   "njm": "GAIA/DR2/RP",
+   "kind": "curated",
+   "basis": "info.json matches GAIA/GAIA2(r).Gbp/G to GAIA/DR2(r)/BP,G; Grp = RP (DECISIONS item 7: GAIA2r = DR2r); instrument: info.json SVO matches place GAIA/GAIA2.* bands in GAIA/DR2",
+   "njm_filterID": "GAIA/DR2.RP"
+  },
+  "GAIA/GAIA2r.BP": {
+   "njm": "GAIA/DR2r/BP",
+   "kind": "curated",
+   "basis": "info.json matches GAIA/GAIA2(r).Gbp/G to GAIA/DR2(r)/BP,G; Grp = RP (DECISIONS item 7: GAIA2r = DR2r); instrument: info.json SVO matches place GAIA/GAIA2r.* bands in GAIA/DR2r",
+   "njm_filterID": "GAIA/DR2r.BP"
+  },
+  "GAIA/GAIA2r.G": {
+   "njm": "GAIA/DR2r/G",
+   "kind": "info",
+   "basis": "info.json bands.G.svo (matched by provenance; SVO curve differs)"
+  },
+  "GAIA/GAIA2r.Gbp": {
+   "njm": "GAIA/DR2r/BP",
+   "kind": "info",
+   "basis": "info.json bands.BP.svo (matched by provenance; SVO curve differs)"
+  },
+  "GAIA/GAIA2r.Grp": {
+   "njm": "GAIA/DR2r/RP",
+   "kind": "curated",
+   "basis": "info.json matches GAIA/GAIA2(r).Gbp/G to GAIA/DR2(r)/BP,G; Grp = RP (DECISIONS item 7: GAIA2r = DR2r); instrument: info.json SVO matches place GAIA/GAIA2r.* bands in GAIA/DR2r",
+   "njm_filterID": "GAIA/DR2r.RP"
+  },
+  "GAIA/GAIA2r.RP": {
+   "njm": "GAIA/DR2r/RP",
+   "kind": "curated",
+   "basis": "info.json matches GAIA/GAIA2(r).Gbp/G to GAIA/DR2(r)/BP,G; Grp = RP (DECISIONS item 7: GAIA2r = DR2r); instrument: info.json SVO matches place GAIA/GAIA2r.* bands in GAIA/DR2r",
+   "njm_filterID": "GAIA/DR2r.RP"
+  },
+  "Gemini/NIFS.HK": {
+   "njm": "Gemini/NIFS/HK_77K",
+   "kind": "curve",
+   "overlap": 0.9998,
+   "pivot_diff_pct": 0.042,
+   "basis": "archived SVO curve (IA capture 20230329185349) identical to NJM curve; instrument: same instrument directory"
+  },
+  "Gemini/NIFS.HK_298K": {
+   "njm": "Gemini/NIFS/HK_298K",
+   "kind": "path",
+   "basis": "generic rule SVO Fac/Inst.Band -> NJM Fac/Inst/Band"
+  },
+  "Gemini/NIFS.JH_298K": {
+   "njm": "Gemini/NIFS/JH_298K",
+   "kind": "path",
+   "basis": "generic rule SVO Fac/Inst.Band -> NJM Fac/Inst/Band",
+   "overlap": 0.9995,
+   "pivot_diff_pct": 0.01
+  },
+  "Gemini/NIFS.ZJ": {
+   "njm": "Gemini/NIFS/ZJ_298K",
+   "kind": "curve",
+   "overlap": 1.0,
+   "pivot_diff_pct": 0.001,
+   "basis": "archived SVO curve (IA capture 20221130095733) identical to NJM curve; instrument: same instrument directory"
+  },
+  "Gemini/NIFS.ZJ_298K": {
+   "njm": "Gemini/NIFS/ZJ_298K",
+   "kind": "path",
+   "basis": "generic rule SVO Fac/Inst.Band -> NJM Fac/Inst/Band"
+  },
+  "Generic/Cousins.I": {
+   "njm": "GCPD/Cousins/I_ADPS",
+   "kind": "curve",
+   "overlap": 0.9998,
+   "pivot_diff_pct": 0.0,
+   "basis": "archived SVO curve (IA capture 20221130113532) identical to NJM curve; instrument: SVO also lists GCPD/Cousins",
+   "njm_filterID": "GCPD/Cousins.I_ADPS"
+  },
+  "Generic/Johnson_UBVRIJHKL.J": {
+   "njm": "Generic/Johnson/J",
+   "kind": "name",
+   "basis": "band name equal up to case/punctuation; instrument: archived SVO curves identical to NJM Generic/Johnson (both SVO-derived)",
+   "overlap": 1.0,
+   "pivot_diff_pct": 0.0,
+   "njm_filterID": "Generic/Johnson.J"
+  },
+  "Generic/Johnson_UBVRIJHKL.R": {
+   "njm": "Generic/Johnson/R",
+   "kind": "name",
+   "basis": "band name equal up to case/punctuation; instrument: archived SVO curves identical to NJM Generic/Johnson (both SVO-derived)",
+   "overlap": 1.0,
+   "pivot_diff_pct": 0.0,
+   "njm_filterID": "Generic/Johnson.R"
+  },
+  "Geneva/Geneva.B": {
+   "njm": "GCPD/Geneva/B_ADPS",
+   "kind": "curve",
+   "overlap": 1.0,
+   "pivot_diff_pct": 0.0,
+   "basis": "archived SVO curve (IA capture 20230207154140) identical to NJM curve; instrument: SVO also lists GCPD/Geneva",
+   "njm_filterID": "GCPD/Geneva.B_ADPS"
+  },
+  "Geneva/Geneva.B1": {
+   "njm": "GCPD/Geneva/B1_ADPS",
+   "kind": "curve",
+   "overlap": 1.0,
+   "pivot_diff_pct": 0.0,
+   "basis": "archived SVO curve (IA capture 20230204175751) identical to NJM curve; instrument: SVO also lists GCPD/Geneva",
+   "njm_filterID": "GCPD/Geneva.B1_ADPS"
+  },
+  "Geneva/Geneva.B2": {
+   "njm": "GCPD/Geneva/B2_ADPS",
+   "kind": "curve",
+   "overlap": 1.0,
+   "pivot_diff_pct": 0.0,
+   "basis": "archived SVO curve (IA capture 20230204185702) identical to NJM curve; instrument: SVO also lists GCPD/Geneva",
+   "njm_filterID": "GCPD/Geneva.B2_ADPS"
+  },
+  "Geneva/Geneva.G": {
+   "njm": "GCPD/Geneva/G_ADPS",
+   "kind": "curve",
+   "overlap": 1.0,
+   "pivot_diff_pct": 0.0,
+   "basis": "archived SVO curve (IA capture 20230207142656) identical to NJM curve; instrument: SVO also lists GCPD/Geneva",
+   "njm_filterID": "GCPD/Geneva.G_ADPS"
+  },
+  "Geneva/Geneva.U": {
+   "njm": "GCPD/Geneva/U_ADPS",
+   "kind": "curve",
+   "overlap": 1.0,
+   "pivot_diff_pct": 0.0,
+   "basis": "archived SVO curve (IA capture 20230207152243) identical to NJM curve; instrument: SVO also lists GCPD/Geneva",
+   "njm_filterID": "GCPD/Geneva.U_ADPS"
+  },
+  "Geneva/Geneva.V": {
+   "njm": "GCPD/Geneva/V_ADPS",
+   "kind": "curve",
+   "overlap": 1.0,
+   "pivot_diff_pct": 0.0,
+   "basis": "archived SVO curve (IA capture 20230207150536) identical to NJM curve; instrument: SVO also lists GCPD/Geneva",
+   "njm_filterID": "GCPD/Geneva.V_ADPS"
+  },
+  "Geneva/Geneva.V2": {
+   "njm": "GCPD/Geneva/V1_ADPS",
+   "kind": "curve",
+   "overlap": 1.0,
+   "pivot_diff_pct": 0.0,
+   "basis": "archived SVO curve (IA capture 20230127075459) identical to NJM curve; instrument: SVO also lists GCPD/Geneva",
+   "njm_filterID": "GCPD/Geneva.V1_ADPS"
+  },
+  "Herschel/Pacs.blue": {
+   "njm": "Herschel/PACS/70",
+   "kind": "info",
+   "basis": "info.json bands.70.svo (matched by provenance; SVO curve differs)"
+  },
+  "Herschel/Pacs.green": {
+   "njm": "Herschel/PACS/100",
+   "kind": "info",
+   "basis": "info.json bands.100.svo (matched by provenance; SVO curve differs)"
+  },
+  "Herschel/Pacs.red": {
+   "njm": "Herschel/PACS/160",
+   "kind": "curated",
+   "basis": "info.json matches Herschel/Pacs.blue/green to PACS/70,100 (provenance); red = 160; instrument: info.json SVO matches place Herschel/Pacs.* bands in Herschel/PACS",
+   "njm_filterID": "Herschel/PACS.160"
+  },
+  "Herschel/SPIRE.PLW": {
+   "njm": "Herschel/SPIRE/500",
+   "kind": "curated",
+   "basis": "DECISIONS-20261026 item 7 and C-sources.md: SPIRE PLW = 500 um array; instrument: same instrument directory",
+   "njm_filterID": "Herschel/SPIRE.500"
+  },
+  "Herschel/SPIRE.PMW": {
+   "njm": "Herschel/SPIRE/350",
+   "kind": "curated",
+   "basis": "DECISIONS-20261026 item 7 and C-sources.md: SPIRE PMW = 350 um array; instrument: same instrument directory",
+   "njm_filterID": "Herschel/SPIRE.350"
+  },
+  "Herschel/SPIRE.PSW": {
+   "njm": "Herschel/SPIRE/250",
+   "kind": "curated",
+   "basis": "DECISIONS-20261026 item 7 and C-sources.md: SPIRE PSW = 250 um array; instrument: same instrument directory",
+   "njm_filterID": "Herschel/SPIRE.250"
+  },
+  "IRAS/IRAS.100mu": {
+   "njm": "IRAS/IRAS/100",
+   "kind": "curated",
+   "basis": "SVO <n>mu = NJM <n> (info.json matches IRAS/IRAS.12mu to IRAS/12; DECISIONS item 7: MIPS 24mu = 24); instrument: same instrument directory",
+   "njm_filterID": "IRAS/IRAS.100"
+  },
+  "IRAS/IRAS.12mu": {
+   "njm": "IRAS/IRAS/12",
+   "kind": "info",
+   "basis": "info.json bands.12.svo (matched by provenance; SVO curve identical)"
+  },
+  "IRAS/IRAS.25mu": {
+   "njm": "IRAS/IRAS/25",
+   "kind": "curated",
+   "basis": "SVO <n>mu = NJM <n> (info.json matches IRAS/IRAS.12mu to IRAS/12; DECISIONS item 7: MIPS 24mu = 24); instrument: same instrument directory",
+   "njm_filterID": "IRAS/IRAS.25"
+  },
+  "IRAS/IRAS.60mu": {
+   "njm": "IRAS/IRAS/60",
+   "kind": "curated",
+   "basis": "SVO <n>mu = NJM <n> (info.json matches IRAS/IRAS.12mu to IRAS/12; DECISIONS item 7: MIPS 24mu = 24); instrument: same instrument directory",
+   "njm_filterID": "IRAS/IRAS.60"
+  },
+  "LCO/FourStar.H": {
+   "njm": "Magellan/FourStar/H",
+   "kind": "info",
+   "basis": "info.json bands.H.svo (matched by provenance; SVO curve identical)"
+  },
+  "LCO/FourStar.Hlong": {
+   "njm": "Magellan/FourStar/Hlong",
+   "kind": "info",
+   "basis": "info.json bands.Hlong.svo (matched by provenance; SVO curve identical)"
+  },
+  "LCO/FourStar.Hshort": {
+   "njm": "Magellan/FourStar/Hshort",
+   "kind": "info",
+   "basis": "info.json bands.Hshort.svo (matched by provenance; SVO curve identical)"
+  },
+  "LCO/FourStar.J": {
+   "njm": "Magellan/FourStar/J",
+   "kind": "info",
+   "basis": "info.json bands.J.svo (matched by provenance; SVO curve identical)"
+  },
+  "LCO/FourStar.J2": {
+   "njm": "Magellan/FourStar/J2",
+   "kind": "info",
+   "basis": "info.json bands.J2.svo (matched by provenance; SVO curve identical)"
+  },
+  "LCO/FourStar.Ks": {
+   "njm": "Magellan/FourStar/Ks",
+   "kind": "info",
+   "basis": "info.json bands.Ks.svo (matched by provenance; SVO curve differs)"
+  },
+  "LasCumbres/LasCumbres.Bessel_B": {
+   "njm": "LasCumbres/Spectral/B",
+   "kind": "curve",
+   "overlap": 0.9999,
+   "pivot_diff_pct": 0.006,
+   "basis": "archived SVO curve (IA capture 20251210025914) identical to NJM curve; instrument: archived SVO curves identical to NJM LasCumbres/Spectral",
+   "njm_filterID": "LasCumbres/Spectral.B"
+  },
+  "LasCumbres/LasCumbres.Bessel_I": {
+   "njm": "LasCumbres/Spectral/I",
+   "kind": "curve",
+   "overlap": 1.0,
+   "pivot_diff_pct": 0.001,
+   "basis": "archived SVO curve (IA capture 20260510175122) identical to NJM curve; instrument: archived SVO curves identical to NJM LasCumbres/Spectral",
+   "njm_filterID": "LasCumbres/Spectral.I"
+  },
+  "LasCumbres/LasCumbres.SDSS_gp": {
+   "njm": "LasCumbres/Spectral/gp",
+   "kind": "curve",
+   "overlap": 0.999,
+   "pivot_diff_pct": 0.148,
+   "basis": "archived SVO curve (IA capture 20251118221929) identical to NJM curve; instrument: archived SVO curves identical to NJM LasCumbres/Spectral",
+   "njm_filterID": "LasCumbres/Spectral.gp"
+  },
+  "LasCumbres/LasCumbres.SDSS_ip": {
+   "njm": "LasCumbres/Spectral/ip",
+   "kind": "curve",
+   "overlap": 0.9992,
+   "pivot_diff_pct": 0.044,
+   "basis": "archived SVO curve (IA capture 20260519154029) identical to NJM curve; instrument: archived SVO curves identical to NJM LasCumbres/Spectral",
+   "njm_filterID": "LasCumbres/Spectral.ip"
+  },
+  "LasCumbres/LasCumbres.SDSS_rp": {
+   "njm": "LasCumbres/Spectral/rp",
+   "kind": "curve",
+   "overlap": 0.9985,
+   "pivot_diff_pct": 0.146,
+   "basis": "archived SVO curve (IA capture 20240528145031) identical to NJM curve; instrument: archived SVO curves identical to NJM LasCumbres/Spectral",
+   "njm_filterID": "LasCumbres/Spectral.rp"
+  },
+  "Liverpool/IOO.B_filter": {
+   "njm": "Liverpool/IOO/B",
+   "kind": "curve",
+   "overlap": 1.0,
+   "pivot_diff_pct": 0.0,
+   "basis": "archived SVO curve (IA capture 20251115204501) identical to NJM curve; instrument: same instrument directory"
+  },
+  "Liverpool/IOO.SDSS-g_filter": {
+   "njm": "Liverpool/IOO/g",
+   "kind": "curve",
+   "overlap": 0.9999,
+   "pivot_diff_pct": 0.006,
+   "basis": "archived SVO curve (IA capture 20201021170115) identical to NJM curve; instrument: same instrument directory"
+  },
+  "Liverpool/IOO.SDSS-i_filter": {
+   "njm": "Liverpool/IOO/i",
+   "kind": "curve",
+   "overlap": 1.0,
+   "pivot_diff_pct": 0.001,
+   "basis": "archived SVO curve (IA capture 20260510183152) identical to NJM curve; instrument: same instrument directory"
+  },
+  "Liverpool/IOO.SDSS-r_filter": {
+   "njm": "Liverpool/IOO/r",
+   "kind": "curve",
+   "overlap": 1.0,
+   "pivot_diff_pct": 0.001,
+   "basis": "archived SVO curve (IA capture 20201026162221) identical to NJM curve; instrument: same instrument directory"
+  },
+  "Liverpool/IOO.SDSS-u_filter": {
+   "njm": "Liverpool/IOO/u",
+   "kind": "curve",
+   "overlap": 0.9999,
+   "pivot_diff_pct": 0.015,
+   "basis": "archived SVO curve (IA capture 20251115211029) identical to NJM curve; instrument: same instrument directory"
+  },
+  "Liverpool/IOO.SDSS-z_filter": {
+   "njm": "Liverpool/IOO/z",
+   "kind": "curve",
+   "overlap": 1.0,
+   "pivot_diff_pct": 0.0,
+   "basis": "archived SVO curve (IA capture 20201021164200) identical to NJM curve; instrument: same instrument directory"
+  },
+  "Liverpool/IOO.V": {
+   "njm": "Liverpool/IOO/V",
+   "kind": "info",
+   "basis": "info.json bands.V.svo (matched by band name and pivot; SVO curve differs)"
+  },
+  "Liverpool/IOO.V_filter": {
+   "njm": "Liverpool/IOO/V",
+   "kind": "curve",
+   "overlap": 1.0,
+   "pivot_diff_pct": 0.0,
+   "basis": "archived SVO curve (IA capture 20201021154041) identical to NJM curve; instrument: same instrument directory",
+   "njm_filterID": "Liverpool/IOO.V"
+  },
+  "MKO/NSFCam.Ks": {
+   "njm": "IRTF/NSFCam/KSMK",
+   "kind": "curve",
+   "overlap": 0.9999,
+   "pivot_diff_pct": 0.001,
+   "basis": "archived SVO curve (IA capture 20250911065254) identical to NJM curve; instrument: NSFCam is the IRTF camera on Maunakea (NJM also has its MKO-system bands)"
+  },
+  "MKO/NSFCam.Lp": {
+   "njm": "IRTF/NSFCam/LPMK",
+   "kind": "curve",
+   "overlap": 0.9996,
+   "pivot_diff_pct": 0.002,
+   "basis": "archived SVO curve (IA capture 20250207014936) identical to NJM curve; instrument: NSFCam is the IRTF camera on Maunakea (NJM also has its MKO-system bands)"
+  },
+  "MKO/NSFCam.Mp": {
+   "njm": "IRTF/NSFCam/MPMK",
+   "kind": "curve",
+   "overlap": 0.9967,
+   "pivot_diff_pct": 0.002,
+   "basis": "archived SVO curve (IA capture 20200922150535) identical to NJM curve; instrument: NSFCam is the IRTF camera on Maunakea (NJM also has its MKO-system bands)"
+  },
+  "Misc/Atlas.cyan": {
+   "njm": "ATLAS/ATLAS/c",
+   "kind": "info",
+   "basis": "info.json bands.c.svo (matched by provenance; SVO curve differs)"
+  },
+  "Misc/Atlas.orange": {
+   "njm": "ATLAS/ATLAS/o",
+   "kind": "info",
+   "basis": "info.json bands.o.svo (matched by provenance; SVO curve not harvested)"
+  },
+  "NIRT/NSFCAM.H": {
+   "njm": "IRTF/NSFCam/HMK",
+   "kind": "curve",
+   "overlap": 0.9998,
+   "pivot_diff_pct": 0.0,
+   "basis": "archived SVO curve (IA capture 20241008114046) identical to NJM curve; instrument: NSFCam is the IRTF camera"
+  },
+  "NIRT/NSFCAM.J": {
+   "njm": "IRTF/NSFCam/JMK",
+   "kind": "curve",
+   "overlap": 0.9995,
+   "pivot_diff_pct": 0.003,
+   "basis": "archived SVO curve (IA capture 20201126074936) identical to NJM curve; instrument: NSFCam is the IRTF camera"
+  },
+  "NIRT/NSFCAM.K": {
+   "njm": "IRTF/NSFCam/KMK",
+   "kind": "curve",
+   "overlap": 0.9996,
+   "pivot_diff_pct": 0.004,
+   "basis": "archived SVO curve (IA capture 20260218174820) identical to NJM curve; instrument: NSFCam is the IRTF camera"
+  },
+  "NIRT/NSFCAM.Kp": {
+   "njm": "IRTF/NSFCam/KPMK",
+   "kind": "curve",
+   "overlap": 0.9998,
+   "pivot_diff_pct": 0.0,
+   "basis": "archived SVO curve (IA capture 20251211213037) identical to NJM curve; instrument: NSFCam is the IRTF camera"
+  },
+  "NIRT/NSFCAM.Ks": {
+   "njm": "IRTF/NSFCam/KSMK",
+   "kind": "curve",
+   "overlap": 0.9998,
+   "pivot_diff_pct": 0.002,
+   "basis": "archived SVO curve (IA capture 20260120115835) identical to NJM curve; instrument: NSFCam is the IRTF camera"
+  },
+  "NIRT/NSFCAM.Lp": {
+   "njm": "IRTF/NSFCam/LPMK",
+   "kind": "curve",
+   "overlap": 0.9996,
+   "pivot_diff_pct": 0.002,
+   "basis": "archived SVO curve (IA capture 20201204082649) identical to NJM curve; instrument: NSFCam is the IRTF camera"
+  },
+  "NIRT/NSFCAM.Mp": {
+   "njm": "IRTF/NSFCam/MPMK",
+   "kind": "curve",
+   "overlap": 0.9964,
+   "pivot_diff_pct": 0.004,
+   "basis": "archived SVO curve (IA capture 20200922045054) identical to NJM curve; instrument: NSFCam is the IRTF camera"
+  },
+  "NOT/ALFOSC.Bes_B": {
+   "njm": "NOT/ALFOSC/B",
+   "kind": "curve",
+   "overlap": 0.9998,
+   "pivot_diff_pct": 0.009,
+   "basis": "archived SVO curve (IA capture 20230324005321) identical to NJM curve; instrument: same instrument directory",
+   "njm_filterID": "NOT/ALFOSC.B"
+  },
+  "NOT/ALFOSC.Bes_U": {
+   "njm": "NOT/ALFOSC/U",
+   "kind": "curve",
+   "overlap": 0.9997,
+   "pivot_diff_pct": 0.014,
+   "basis": "archived SVO curve (IA capture 20230331193529) identical to NJM curve; instrument: same instrument directory",
+   "njm_filterID": "NOT/ALFOSC.U"
+  },
+  "NOT/ALFOSC.Bes_V": {
+   "njm": "NOT/ALFOSC/V",
+   "kind": "curve",
+   "overlap": 0.9997,
+   "pivot_diff_pct": 0.007,
+   "basis": "archived SVO curve (IA capture 20221130110339) identical to NJM curve; instrument: same instrument directory",
+   "njm_filterID": "NOT/ALFOSC.V"
+  },
+  "NOT/ALFOSC.i797": {
+   "njm": "NOT/ALFOSC/i_int",
+   "kind": "curve",
+   "overlap": 0.9999,
+   "pivot_diff_pct": 0.001,
+   "basis": "archived SVO curve (IA capture 20230323233428) identical to NJM curve; instrument: same instrument directory",
+   "njm_filterID": "NOT/ALFOSC.i_int"
+  },
+  "NOT/NOT.074": {
+   "njm": "NOT/ALFOSC/B",
+   "kind": "curve",
+   "overlap": 0.9999,
+   "pivot_diff_pct": 0.003,
+   "basis": "archived SVO curve (IA capture 20251213232636) identical to NJM curve; instrument: SVO NOT/NOT.<filter number> curves identical to NJM NOT/ALFOSC bands",
+   "njm_filterID": "NOT/ALFOSC.B"
+  },
+  "NOT/NOT.076": {
+   "njm": "NOT/ALFOSC/R",
+   "kind": "curve",
+   "overlap": 0.9998,
+   "pivot_diff_pct": 0.009,
+   "basis": "archived SVO curve (IA capture 20201125054650) identical to NJM curve; instrument: SVO NOT/NOT.<filter number> curves identical to NJM NOT/ALFOSC bands",
+   "njm_filterID": "NOT/ALFOSC.R"
+  },
+  "NOT/NOT.111": {
+   "njm": "NOT/ALFOSC/ip",
+   "kind": "curve",
+   "overlap": 1.0,
+   "pivot_diff_pct": 0.0,
+   "basis": "archived SVO curve (IA capture 20201125043645) identical to NJM curve; instrument: SVO NOT/NOT.<filter number> curves identical to NJM NOT/ALFOSC bands",
+   "njm_filterID": "NOT/ALFOSC.ip"
+  },
+  "NOT/NOT.120": {
+   "njm": "NOT/ALFOSC/gp",
+   "kind": "curve",
+   "overlap": 1.0,
+   "pivot_diff_pct": 0.0,
+   "basis": "archived SVO curve (IA capture 20210418060246) identical to NJM curve; instrument: SVO NOT/NOT.<filter number> curves identical to NJM NOT/ALFOSC bands",
+   "njm_filterID": "NOT/ALFOSC.gp"
+  },
+  "PLANCK/HFI.100GHz": {
+   "njm": "Planck/HFI/100",
+   "kind": "curated",
+   "basis": "SVO <nnn>GHz = NJM <GHz> (Planck channel); instrument: case only: NJM FilterIDs are Planck/HFI.<GHz>",
+   "overlap": 0.9841,
+   "pivot_diff_pct": 0.057,
+   "njm_filterID": "Planck/HFI.100",
+   "note": "same band, curve version differs"
+  },
+  "PLANCK/HFI.143GHz": {
+   "njm": "Planck/HFI/143",
+   "kind": "curated",
+   "basis": "SVO <nnn>GHz = NJM <GHz> (Planck channel); instrument: case only: NJM FilterIDs are Planck/HFI.<GHz>",
+   "overlap": 0.9871,
+   "pivot_diff_pct": 0.121,
+   "njm_filterID": "Planck/HFI.143",
+   "note": "same band, curve version differs"
+  },
+  "PLANCK/HFI.217GHz": {
+   "njm": "Planck/HFI/217",
+   "kind": "curated",
+   "basis": "SVO <nnn>GHz = NJM <GHz> (Planck channel); instrument: case only: NJM FilterIDs are Planck/HFI.<GHz>",
+   "overlap": 0.9787,
+   "pivot_diff_pct": 0.278,
+   "njm_filterID": "Planck/HFI.217",
+   "note": "same band, curve version differs"
+  },
+  "PLANCK/HFI.353GHz": {
+   "njm": "Planck/HFI/353",
+   "kind": "curated",
+   "basis": "SVO <nnn>GHz = NJM <GHz> (Planck channel); instrument: case only: NJM FilterIDs are Planck/HFI.<GHz>",
+   "overlap": 0.966,
+   "pivot_diff_pct": 0.163,
+   "njm_filterID": "Planck/HFI.353",
+   "note": "same band, curve version differs"
+  },
+  "PLANCK/HFI.545GHz": {
+   "njm": "Planck/HFI/545",
+   "kind": "curated",
+   "basis": "SVO <nnn>GHz = NJM <GHz> (Planck channel); instrument: case only: NJM FilterIDs are Planck/HFI.<GHz>",
+   "overlap": 0.9982,
+   "pivot_diff_pct": 0.099,
+   "njm_filterID": "Planck/HFI.545"
+  },
+  "PLANCK/HFI.857GHz": {
+   "njm": "Planck/HFI/857",
+   "kind": "curated",
+   "basis": "SVO <nnn>GHz = NJM <GHz> (Planck channel); instrument: case only: NJM FilterIDs are Planck/HFI.<GHz>",
+   "overlap": 0.9928,
+   "pivot_diff_pct": 0.029,
+   "njm_filterID": "Planck/HFI.857",
+   "note": "same band, curve version differs"
+  },
+  "PLANCK/LFI.030GHz": {
+   "njm": "Planck/LFI/30",
+   "kind": "curated",
+   "basis": "SVO <nnn>GHz = NJM <GHz> (Planck channel); instrument: case only: NJM FilterIDs are Planck/LFI.<GHz>",
+   "overlap": 0.9999,
+   "pivot_diff_pct": 0.0,
+   "njm_filterID": "Planck/LFI.30"
+  },
+  "PLANCK/LFI.044GHz": {
+   "njm": "Planck/LFI/44",
+   "kind": "curated",
+   "basis": "SVO <nnn>GHz = NJM <GHz> (Planck channel); instrument: case only: NJM FilterIDs are Planck/LFI.<GHz>",
+   "overlap": 1.0,
+   "pivot_diff_pct": 0.001,
+   "njm_filterID": "Planck/LFI.44"
+  },
+  "Paranal/ERIS.Br-a": {
+   "njm": "ERIS/NIX/Br-a",
+   "kind": "name",
+   "basis": "band name equal up to case/punctuation; instrument: FilterID headers place Paranal/ERIS.* bands in ERIS/NIX"
+  },
+  "Paranal/ERIS.Br-a-cont": {
+   "njm": "ERIS/NIX/Br-a-cont",
+   "kind": "name",
+   "basis": "band name equal up to case/punctuation; instrument: FilterID headers place Paranal/ERIS.* bands in ERIS/NIX"
+  },
+  "Paranal/ERIS.Br-g": {
+   "njm": "ERIS/NIX/Br-g",
+   "kind": "name",
+   "basis": "band name equal up to case/punctuation; instrument: FilterID headers place Paranal/ERIS.* bands in ERIS/NIX",
+   "overlap": 0.9999,
+   "pivot_diff_pct": 0.0
+  },
+  "Paranal/ERIS.H2_cont": {
+   "njm": "ERIS/NIX/H2-cont",
+   "kind": "name",
+   "basis": "band name equal up to case/punctuation; instrument: FilterID headers place Paranal/ERIS.* bands in ERIS/NIX",
+   "overlap": 1.0,
+   "pivot_diff_pct": 0.0
+  },
+  "Paranal/ERIS.IB242": {
+   "njm": "ERIS/NIX/IB-2p42",
+   "kind": "name",
+   "basis": "band name equal up to case/punctuation; instrument: FilterID headers place Paranal/ERIS.* bands in ERIS/NIX"
+  },
+  "Paranal/ERIS.IB248": {
+   "njm": "ERIS/NIX/IB-2p48",
+   "kind": "name",
+   "basis": "band name equal up to case/punctuation; instrument: FilterID headers place Paranal/ERIS.* bands in ERIS/NIX"
+  },
+  "Paranal/HAWKI.BrGamma": {
+   "njm": "Paranal/HAWKI/BrGamma",
+   "kind": "path",
+   "basis": "generic rule SVO Fac/Inst.Band -> NJM Fac/Inst/Band"
+  },
+  "Paranal/HAWKI.CH4": {
+   "njm": "Paranal/HAWKI/CH4",
+   "kind": "path",
+   "basis": "generic rule SVO Fac/Inst.Band -> NJM Fac/Inst/Band"
+  },
+  "Paranal/HAWKI.H": {
+   "njm": "Paranal/HAWKI/H",
+   "kind": "info",
+   "basis": "info.json bands.H.svo (matched by band name and pivot; SVO curve differs)"
+  },
+  "Paranal/HAWKI.H2": {
+   "njm": "Paranal/HAWKI/H2",
+   "kind": "path",
+   "basis": "generic rule SVO Fac/Inst.Band -> NJM Fac/Inst/Band"
+  },
+  "Paranal/HAWKI.J": {
+   "njm": "Paranal/HAWKI/J",
+   "kind": "info",
+   "basis": "info.json bands.J.svo (matched by band name and pivot; SVO curve differs)"
+  },
+  "Paranal/HAWKI.Ks": {
+   "njm": "Paranal/HAWKI/Kold",
+   "kind": "curve",
+   "overlap": 0.9997,
+   "pivot_diff_pct": 0.002,
+   "basis": "archived SVO curve (IA capture 20251216030421) identical to NJM curve; instrument: same instrument directory",
+   "also_identical": [
+    "Paranal/HAWKI/Knew"
+   ]
+  },
+  "Paranal/HAWKI.NB1060": {
+   "njm": "Paranal/HAWKI/NB1060",
+   "kind": "info",
+   "basis": "info.json bands.NB1060.svo (matched by band name and pivot; SVO curve differs)"
+  },
+  "Paranal/HAWKI.NB1190": {
+   "njm": "Paranal/HAWKI/NB1190",
+   "kind": "path",
+   "basis": "generic rule SVO Fac/Inst.Band -> NJM Fac/Inst/Band"
+  },
+  "Paranal/HAWKI.NB2090": {
+   "njm": "Paranal/HAWKI/NB2090",
+   "kind": "info",
+   "basis": "info.json bands.NB2090.svo (matched by band name and pivot; SVO curve differs)"
+  },
+  "Paranal/HAWKI.Y": {
+   "njm": "Paranal/HAWKI/Y",
+   "kind": "path",
+   "basis": "generic rule SVO Fac/Inst.Band -> NJM Fac/Inst/Band"
+  },
+  "Paranal/NACO.H": {
+   "njm": "Paranal/NACO/H_CONICA",
+   "kind": "info",
+   "basis": "info.json bands.H_CONICA.svo (matched by band name and pivot; SVO curve differs)"
+  },
+  "Paranal/NACO.IB200": {
+   "njm": "Paranal/NACO/IB_2p00",
+   "kind": "info",
+   "basis": "info.json bands.IB_2p00.svo (matched by band name and pivot; SVO curve not harvested)"
+  },
+  "Paranal/NACO.IB203": {
+   "njm": "Paranal/NACO/IB_2p03",
+   "kind": "curated",
+   "basis": "NACO scheme IB<nnn>/NB<nnn> = NJM IB_<n>p<nn>/NB_<n>p<nn> (info.json matches IB200..IB248, NB104..NB374 by band name and pivot); instrument: same instrument directory"
+  },
+  "Paranal/NACO.IB206": {
+   "njm": "Paranal/NACO/IB_2p06",
+   "kind": "curated",
+   "basis": "NACO scheme IB<nnn>/NB<nnn> = NJM IB_<n>p<nn>/NB_<n>p<nn> (info.json matches IB200..IB248, NB104..NB374 by band name and pivot); instrument: same instrument directory"
+  },
+  "Paranal/NACO.IB209": {
+   "njm": "Paranal/NACO/IB_2p09",
+   "kind": "curated",
+   "basis": "NACO scheme IB<nnn>/NB<nnn> = NJM IB_<n>p<nn>/NB_<n>p<nn> (info.json matches IB200..IB248, NB104..NB374 by band name and pivot); instrument: same instrument directory"
+  },
+  "Paranal/NACO.IB212": {
+   "njm": "Paranal/NACO/IB_2p12",
+   "kind": "info",
+   "basis": "info.json bands.IB_2p12.svo (matched by band name and pivot; SVO curve differs)"
+  },
+  "Paranal/NACO.IB215": {
+   "njm": "Paranal/NACO/IB_2p15",
+   "kind": "info",
+   "basis": "info.json bands.IB_2p15.svo (matched by band name and pivot; SVO curve differs)"
+  },
+  "Paranal/NACO.IB218": {
+   "njm": "Paranal/NACO/IB_2p18",
+   "kind": "curated",
+   "basis": "NACO scheme IB<nnn>/NB<nnn> = NJM IB_<n>p<nn>/NB_<n>p<nn> (info.json matches IB200..IB248, NB104..NB374 by band name and pivot); instrument: same instrument directory"
+  },
+  "Paranal/NACO.IB221": {
+   "njm": "Paranal/NACO/IB_2p21",
+   "kind": "info",
+   "basis": "info.json bands.IB_2p21.svo (matched by band name and pivot; SVO curve differs)"
+  },
+  "Paranal/NACO.IB224": {
+   "njm": "Paranal/NACO/IB_2p24",
+   "kind": "info",
+   "basis": "info.json bands.IB_2p24.svo (matched by band name and pivot; SVO curve differs)"
+  },
+  "Paranal/NACO.IB227": {
+   "njm": "Paranal/NACO/IB_2p27",
+   "kind": "info",
+   "basis": "info.json bands.IB_2p27.svo (matched by band name and pivot; SVO curve differs)"
+  },
+  "Paranal/NACO.IB230": {
+   "njm": "Paranal/NACO/IB_2p30",
+   "kind": "info",
+   "basis": "info.json bands.IB_2p30.svo (matched by band name and pivot; SVO curve differs)"
+  },
+  "Paranal/NACO.IB233": {
+   "njm": "Paranal/NACO/IB_2p33",
+   "kind": "info",
+   "basis": "info.json bands.IB_2p33.svo (matched by band name and pivot; SVO curve differs)"
+  },
+  "Paranal/NACO.IB236": {
+   "njm": "Paranal/NACO/IB_2p36",
+   "kind": "curated",
+   "basis": "NACO scheme IB<nnn>/NB<nnn> = NJM IB_<n>p<nn>/NB_<n>p<nn> (info.json matches IB200..IB248, NB104..NB374 by band name and pivot); instrument: same instrument directory"
+  },
+  "Paranal/NACO.IB239": {
+   "njm": "Paranal/NACO/IB_2p39",
+   "kind": "info",
+   "basis": "info.json bands.IB_2p39.svo (matched by band name and pivot; SVO curve differs)"
+  },
+  "Paranal/NACO.IB242": {
+   "njm": "Paranal/NACO/IB_2p42",
+   "kind": "curated",
+   "basis": "NACO scheme IB<nnn>/NB<nnn> = NJM IB_<n>p<nn>/NB_<n>p<nn> (info.json matches IB200..IB248, NB104..NB374 by band name and pivot); instrument: same instrument directory"
+  },
+  "Paranal/NACO.IB245": {
+   "njm": "Paranal/NACO/IB_2p45",
+   "kind": "info",
+   "basis": "info.json bands.IB_2p45.svo (matched by band name and pivot; SVO curve differs)"
+  },
+  "Paranal/NACO.IB248": {
+   "njm": "Paranal/NACO/IB_2p48",
+   "kind": "info",
+   "basis": "info.json bands.IB_2p48.svo (matched by band name and pivot; SVO curve differs)"
+  },
+  "Paranal/NACO.J": {
+   "njm": "Paranal/NACO/J_CONICA",
+   "kind": "info",
+   "basis": "info.json bands.J_CONICA.svo (matched by band name and pivot; SVO curve differs)"
+  },
+  "Paranal/NACO.Ks": {
+   "njm": "Paranal/NACO/Ks_CONICA",
+   "kind": "curated",
+   "basis": "NACO scheme <X> = NJM <X>_CONICA (info.json matches H, J); instrument: same instrument directory"
+  },
+  "Paranal/NACO.Lp": {
+   "njm": "Paranal/NACO/L_prime",
+   "kind": "info",
+   "basis": "info.json bands.L_prime.svo (matched by band name and pivot; SVO curve not harvested)"
+  },
+  "Paranal/NACO.Mp": {
+   "njm": "Paranal/NACO/M_prime",
+   "kind": "info",
+   "basis": "info.json bands.M_prime.svo (matched by band name and pivot; SVO curve differs)"
+  },
+  "Paranal/NACO.NB104": {
+   "njm": "Paranal/NACO/NB_1p04",
+   "kind": "info",
+   "basis": "info.json bands.NB_1p04.svo (matched by band name and pivot; SVO curve differs)"
+  },
+  "Paranal/NACO.NB108": {
+   "njm": "Paranal/NACO/NB_1p08",
+   "kind": "curated",
+   "basis": "NACO scheme IB<nnn>/NB<nnn> = NJM IB_<n>p<nn>/NB_<n>p<nn> (info.json matches IB200..IB248, NB104..NB374 by band name and pivot); instrument: same instrument directory"
+  },
+  "Paranal/NACO.NB109": {
+   "njm": "Paranal/NACO/NB_1p09",
+   "kind": "info",
+   "basis": "info.json bands.NB_1p09.svo (matched by band name and pivot; SVO curve differs)"
+  },
+  "Paranal/NACO.NB124": {
+   "njm": "Paranal/NACO/NB_1p24",
+   "kind": "curated",
+   "basis": "NACO scheme IB<nnn>/NB<nnn> = NJM IB_<n>p<nn>/NB_<n>p<nn> (info.json matches IB200..IB248, NB104..NB374 by band name and pivot); instrument: same instrument directory"
+  },
+  "Paranal/NACO.NB126": {
+   "njm": "Paranal/NACO/NB_1p26",
+   "kind": "info",
+   "basis": "info.json bands.NB_1p26.svo (matched by band name and pivot; SVO curve differs)"
+  },
+  "Paranal/NACO.NB128": {
+   "njm": "Paranal/NACO/NB_1p28",
+   "kind": "info",
+   "basis": "info.json bands.NB_1p28.svo (matched by band name and pivot; SVO curve differs)"
+  },
+  "Paranal/NACO.NB164": {
+   "njm": "Paranal/NACO/NB_1p64",
+   "kind": "info",
+   "basis": "info.json bands.NB_1p64.svo (matched by band name and pivot; SVO curve differs)"
+  },
+  "Paranal/NACO.NB175": {
+   "njm": "Paranal/NACO/NB_1p75",
+   "kind": "info",
+   "basis": "info.json bands.NB_1p75.svo (matched by band name and pivot; SVO curve differs)"
+  },
+  "Paranal/NACO.NB212": {
+   "njm": "Paranal/NACO/NB_2p12",
+   "kind": "info",
+   "basis": "info.json bands.NB_2p12.svo (matched by band name and pivot; SVO curve differs)"
+  },
+  "Paranal/NACO.NB217": {
+   "njm": "Paranal/NACO/NB_2p17",
+   "kind": "curated",
+   "basis": "NACO scheme IB<nnn>/NB<nnn> = NJM IB_<n>p<nn>/NB_<n>p<nn> (info.json matches IB200..IB248, NB104..NB374 by band name and pivot); instrument: same instrument directory"
+  },
+  "Paranal/NACO.NB374": {
+   "njm": "Paranal/NACO/NB_3p74",
+   "kind": "info",
+   "basis": "info.json bands.NB_3p74.svo (matched by band name and pivot; SVO curve identical)"
+  },
+  "Paranal/OmegaCAM.B": {
+   "njm": "Paranal/OmegaCAM/B_JOHN",
+   "kind": "info",
+   "basis": "info.json bands.B_JOHN.svo (matched by band name and pivot; SVO curve differs)"
+  },
+  "Paranal/SPHERE.IRDIS_B_H": {
+   "njm": "Paranal/SPHERE/B_H",
+   "kind": "curated",
+   "basis": "SVO SPHERE IRDIS_<band> = NJM SPHERE/IRDIS/<band>; instrument: same instrument directory"
+  },
+  "Paranal/SPHERE.IRDIS_B_J": {
+   "njm": "Paranal/SPHERE/B_J",
+   "kind": "curated",
+   "basis": "SVO SPHERE IRDIS_<band> = NJM SPHERE/IRDIS/<band>; instrument: same instrument directory"
+  },
+  "Paranal/SPHERE.IRDIS_B_Ks": {
+   "njm": "Paranal/SPHERE/B_Ks",
+   "kind": "curated",
+   "basis": "SVO SPHERE IRDIS_<band> = NJM SPHERE/IRDIS/<band>; instrument: same instrument directory"
+  },
+  "Paranal/SPHERE.IRDIS_B_Y": {
+   "njm": "Paranal/SPHERE/B_Y",
+   "kind": "curated",
+   "basis": "SVO SPHERE IRDIS_<band> = NJM SPHERE/IRDIS/<band>; instrument: same instrument directory",
+   "overlap": 0.9994,
+   "pivot_diff_pct": 0.053
+  },
+  "Paranal/SPHERE.IRDIS_D_H23_2": {
+   "njm": "Paranal/SPHERE/D_H23_H2",
+   "kind": "curated",
+   "basis": "SVO SPHERE IRDIS_D_[ND-]<X><ab>_<n> = NJM D_[ND_]<X><ab>_<X><n> (IRDIS dual-band); instrument: same instrument directory",
+   "overlap": 0.9982,
+   "pivot_diff_pct": 0.105
+  },
+  "Paranal/SPHERE.IRDIS_D_H23_3": {
+   "njm": "Paranal/SPHERE/D_H23_H3",
+   "kind": "curated",
+   "basis": "SVO SPHERE IRDIS_D_[ND-]<X><ab>_<n> = NJM D_[ND_]<X><ab>_<X><n> (IRDIS dual-band); instrument: same instrument directory"
+  },
+  "Paranal/SPHERE.IRDIS_D_H34_3": {
+   "njm": "Paranal/SPHERE/D_H34_H3",
+   "kind": "curated",
+   "basis": "SVO SPHERE IRDIS_D_[ND-]<X><ab>_<n> = NJM D_[ND_]<X><ab>_<X><n> (IRDIS dual-band); instrument: same instrument directory",
+   "overlap": 0.999,
+   "pivot_diff_pct": 0.037
+  },
+  "Paranal/SPHERE.IRDIS_D_H34_4": {
+   "njm": "Paranal/SPHERE/D_H34_H4",
+   "kind": "curated",
+   "basis": "SVO SPHERE IRDIS_D_[ND-]<X><ab>_<n> = NJM D_[ND_]<X><ab>_<X><n> (IRDIS dual-band); instrument: same instrument directory"
+  },
+  "Paranal/SPHERE.IRDIS_D_J23_2": {
+   "njm": "Paranal/SPHERE/D_J23_J2",
+   "kind": "curated",
+   "basis": "SVO SPHERE IRDIS_D_[ND-]<X><ab>_<n> = NJM D_[ND_]<X><ab>_<X><n> (IRDIS dual-band); instrument: same instrument directory"
+  },
+  "Paranal/SPHERE.IRDIS_D_J23_3": {
+   "njm": "Paranal/SPHERE/D_J23_J3",
+   "kind": "curated",
+   "basis": "SVO SPHERE IRDIS_D_[ND-]<X><ab>_<n> = NJM D_[ND_]<X><ab>_<X><n> (IRDIS dual-band); instrument: same instrument directory",
+   "overlap": 0.9979,
+   "pivot_diff_pct": 0.256
+  },
+  "Paranal/SPHERE.IRDIS_D_K12_1": {
+   "njm": "Paranal/SPHERE/D_K12_K1",
+   "kind": "curated",
+   "basis": "SVO SPHERE IRDIS_D_[ND-]<X><ab>_<n> = NJM D_[ND_]<X><ab>_<X><n> (IRDIS dual-band); instrument: same instrument directory",
+   "overlap": 0.9992,
+   "pivot_diff_pct": 0.03
+  },
+  "Paranal/SPHERE.IRDIS_D_K12_2": {
+   "njm": "Paranal/SPHERE/D_K12_K2",
+   "kind": "curated",
+   "basis": "SVO SPHERE IRDIS_D_[ND-]<X><ab>_<n> = NJM D_[ND_]<X><ab>_<X><n> (IRDIS dual-band); instrument: same instrument directory",
+   "overlap": 0.999,
+   "pivot_diff_pct": 0.051
+  },
+  "Paranal/SPHERE.IRDIS_D_ND-H23_2": {
+   "njm": "SPHERE/IRDIS/D_ND_H23_H2",
+   "kind": "curated",
+   "basis": "SVO SPHERE IRDIS_D_[ND-]<X><ab>_<n> = NJM D_[ND_]<X><ab>_<X><n> (IRDIS dual-band); instrument: NJM splits SPHERE into its IRDIS and ZIMPOL arms; SVO prefixes the band with IRDIS_/ZIMPOL_; archived SVO curves are identical to NJM's",
+   "overlap": 0.9973,
+   "pivot_diff_pct": 0.114
+  },
+  "Paranal/SPHERE.IRDIS_D_ND-H23_3": {
+   "njm": "SPHERE/IRDIS/D_ND_H23_H3",
+   "kind": "curated",
+   "basis": "SVO SPHERE IRDIS_D_[ND-]<X><ab>_<n> = NJM D_[ND_]<X><ab>_<X><n> (IRDIS dual-band); instrument: NJM splits SPHERE into its IRDIS and ZIMPOL arms; SVO prefixes the band with IRDIS_/ZIMPOL_; archived SVO curves are identical to NJM's",
+   "overlap": 0.9972,
+   "pivot_diff_pct": 0.047
+  },
+  "Paranal/SPHERE.IRDIS_D_Y23_2": {
+   "njm": "Paranal/SPHERE/D_Y23_Y2",
+   "kind": "curated",
+   "basis": "SVO SPHERE IRDIS_D_[ND-]<X><ab>_<n> = NJM D_[ND_]<X><ab>_<X><n> (IRDIS dual-band); instrument: same instrument directory",
+   "overlap": 0.9987,
+   "pivot_diff_pct": 0.133
+  },
+  "Paranal/SPHERE.IRDIS_D_Y23_3": {
+   "njm": "Paranal/SPHERE/D_Y23_Y3",
+   "kind": "curated",
+   "basis": "SVO SPHERE IRDIS_D_[ND-]<X><ab>_<n> = NJM D_[ND_]<X><ab>_<X><n> (IRDIS dual-band); instrument: same instrument directory"
+  },
+  "Paranal/SPHERE.IRDIS_N_BrG": {
+   "njm": "Paranal/SPHERE/N_BrG",
+   "kind": "curated",
+   "basis": "SVO SPHERE IRDIS_<band> = NJM SPHERE/IRDIS/<band>; instrument: same instrument directory"
+  },
+  "Paranal/SPHERE.IRDIS_N_CO": {
+   "njm": "Paranal/SPHERE/N_CO",
+   "kind": "curated",
+   "basis": "SVO SPHERE IRDIS_<band> = NJM SPHERE/IRDIS/<band>; instrument: same instrument directory"
+  },
+  "Paranal/SPHERE.IRDIS_N_CntH": {
+   "njm": "Paranal/SPHERE/N_CntH",
+   "kind": "curated",
+   "basis": "SVO SPHERE IRDIS_<band> = NJM SPHERE/IRDIS/<band>; instrument: same instrument directory"
+  },
+  "Paranal/SPHERE.IRDIS_N_CntJ": {
+   "njm": "Paranal/SPHERE/N_CntJ",
+   "kind": "curated",
+   "basis": "SVO SPHERE IRDIS_<band> = NJM SPHERE/IRDIS/<band>; instrument: same instrument directory"
+  },
+  "Paranal/SPHERE.IRDIS_N_CntK1": {
+   "njm": "Paranal/SPHERE/N_CntK1",
+   "kind": "curated",
+   "basis": "SVO SPHERE IRDIS_<band> = NJM SPHERE/IRDIS/<band>; instrument: same instrument directory"
+  },
+  "Paranal/SPHERE.IRDIS_N_CntK2": {
+   "njm": "Paranal/SPHERE/N_CntK2",
+   "kind": "curated",
+   "basis": "SVO SPHERE IRDIS_<band> = NJM SPHERE/IRDIS/<band>; instrument: same instrument directory"
+  },
+  "Paranal/SPHERE.IRDIS_N_FeII": {
+   "njm": "Paranal/SPHERE/N_FeII",
+   "kind": "curated",
+   "basis": "SVO SPHERE IRDIS_<band> = NJM SPHERE/IRDIS/<band>; instrument: same instrument directory"
+  },
+  "Paranal/SPHERE.IRDIS_N_H2": {
+   "njm": "Paranal/SPHERE/N_H2",
+   "kind": "curated",
+   "basis": "SVO SPHERE IRDIS_<band> = NJM SPHERE/IRDIS/<band>; instrument: same instrument directory",
+   "overlap": 0.9988,
+   "pivot_diff_pct": 0.055
+  },
+  "Paranal/SPHERE.IRDIS_N_HeI": {
+   "njm": "Paranal/SPHERE/N_HeI",
+   "kind": "curated",
+   "basis": "SVO SPHERE IRDIS_<band> = NJM SPHERE/IRDIS/<band>; instrument: same instrument directory",
+   "overlap": 0.9991,
+   "pivot_diff_pct": 0.019
+  },
+  "Paranal/SPHERE.IRDIS_N_PaB": {
+   "njm": "Paranal/SPHERE/N_PaB",
+   "kind": "curated",
+   "basis": "SVO SPHERE IRDIS_<band> = NJM SPHERE/IRDIS/<band>; instrument: same instrument directory",
+   "overlap": 0.9992,
+   "pivot_diff_pct": 0.007
+  },
+  "Paranal/SPHERE.ZIMPOL_730_NB": {
+   "njm": "SPHERE/ZIMPOL/730_NB",
+   "kind": "curated",
+   "basis": "SVO SPHERE ZIMPOL_<band> = NJM SPHERE/ZIMPOL/<band>; instrument: NJM splits SPHERE into its IRDIS and ZIMPOL arms; SVO prefixes the band with IRDIS_/ZIMPOL_; archived SVO curves are identical to NJM's",
+   "overlap": 0.9998,
+   "pivot_diff_pct": 0.0
+  },
+  "Paranal/SPHERE.ZIMPOL_B_Ha": {
+   "njm": "SPHERE/ZIMPOL/B_Ha",
+   "kind": "curated",
+   "basis": "SVO SPHERE ZIMPOL_<band> = NJM SPHERE/ZIMPOL/<band>; instrument: NJM splits SPHERE into its IRDIS and ZIMPOL arms; SVO prefixes the band with IRDIS_/ZIMPOL_; archived SVO curves are identical to NJM's",
+   "overlap": 1.0,
+   "pivot_diff_pct": 0.0
+  },
+  "Paranal/SPHERE.ZIMPOL_CH4_727": {
+   "njm": "SPHERE/ZIMPOL/CH4_727",
+   "kind": "curated",
+   "basis": "SVO SPHERE ZIMPOL_<band> = NJM SPHERE/ZIMPOL/<band>; instrument: NJM splits SPHERE into its IRDIS and ZIMPOL arms; SVO prefixes the band with IRDIS_/ZIMPOL_; archived SVO curves are identical to NJM's",
+   "overlap": 0.9996,
+   "pivot_diff_pct": 0.0
+  },
+  "Paranal/SPHERE.ZIMPOL_Cnt748": {
+   "njm": "SPHERE/ZIMPOL/Cnt748",
+   "kind": "curated",
+   "basis": "SVO SPHERE ZIMPOL_<band> = NJM SPHERE/ZIMPOL/<band>; instrument: NJM splits SPHERE into its IRDIS and ZIMPOL arms; SVO prefixes the band with IRDIS_/ZIMPOL_; archived SVO curves are identical to NJM's",
+   "overlap": 0.9996,
+   "pivot_diff_pct": 0.0
+  },
+  "Paranal/SPHERE.ZIMPOL_Cnt820": {
+   "njm": "SPHERE/ZIMPOL/Cnt820",
+   "kind": "curated",
+   "basis": "SVO SPHERE ZIMPOL_<band> = NJM SPHERE/ZIMPOL/<band>; instrument: NJM splits SPHERE into its IRDIS and ZIMPOL arms; SVO prefixes the band with IRDIS_/ZIMPOL_; archived SVO curves are identical to NJM's",
+   "overlap": 0.9996,
+   "pivot_diff_pct": 0.0
+  },
+  "Paranal/SPHERE.ZIMPOL_Cnt_Ha": {
+   "njm": "SPHERE/ZIMPOL/Cnt_Ha",
+   "kind": "curated",
+   "basis": "SVO SPHERE ZIMPOL_<band> = NJM SPHERE/ZIMPOL/<band>; instrument: NJM splits SPHERE into its IRDIS and ZIMPOL arms; SVO prefixes the band with IRDIS_/ZIMPOL_; archived SVO curves are identical to NJM's",
+   "overlap": 1.0,
+   "pivot_diff_pct": 0.0
+  },
+  "Paranal/SPHERE.ZIMPOL_HeI": {
+   "njm": "SPHERE/ZIMPOL/HeI",
+   "kind": "curated",
+   "basis": "SVO SPHERE ZIMPOL_<band> = NJM SPHERE/ZIMPOL/<band>; instrument: NJM splits SPHERE into its IRDIS and ZIMPOL arms; SVO prefixes the band with IRDIS_/ZIMPOL_; archived SVO curves are identical to NJM's"
+  },
+  "Paranal/SPHERE.ZIMPOL_I_L": {
+   "njm": "SPHERE/ZIMPOL/I_L",
+   "kind": "curated",
+   "basis": "SVO SPHERE ZIMPOL_<band> = NJM SPHERE/ZIMPOL/<band>; instrument: NJM splits SPHERE into its IRDIS and ZIMPOL arms; SVO prefixes the band with IRDIS_/ZIMPOL_; archived SVO curves are identical to NJM's"
+  },
+  "Paranal/SPHERE.ZIMPOL_I_PRIM": {
+   "njm": "SPHERE/ZIMPOL/I_PRIM",
+   "kind": "curated",
+   "basis": "SVO SPHERE ZIMPOL_<band> = NJM SPHERE/ZIMPOL/<band>; instrument: NJM splits SPHERE into its IRDIS and ZIMPOL arms; SVO prefixes the band with IRDIS_/ZIMPOL_; archived SVO curves are identical to NJM's"
+  },
+  "Paranal/SPHERE.ZIMPOL_KI": {
+   "njm": "SPHERE/ZIMPOL/KI",
+   "kind": "curated",
+   "basis": "SVO SPHERE ZIMPOL_<band> = NJM SPHERE/ZIMPOL/<band>; instrument: NJM splits SPHERE into its IRDIS and ZIMPOL arms; SVO prefixes the band with IRDIS_/ZIMPOL_; archived SVO curves are identical to NJM's",
+   "overlap": 0.9996,
+   "pivot_diff_pct": 0.0
+  },
+  "Paranal/SPHERE.ZIMPOL_N_Ha": {
+   "njm": "SPHERE/ZIMPOL/N_Ha",
+   "kind": "curated",
+   "basis": "SVO SPHERE ZIMPOL_<band> = NJM SPHERE/ZIMPOL/<band>; instrument: NJM splits SPHERE into its IRDIS and ZIMPOL arms; SVO prefixes the band with IRDIS_/ZIMPOL_; archived SVO curves are identical to NJM's",
+   "overlap": 0.9981,
+   "pivot_diff_pct": 0.001
+  },
+  "Paranal/SPHERE.ZIMPOL_N_I": {
+   "njm": "SPHERE/ZIMPOL/N_I",
+   "kind": "curated",
+   "basis": "SVO SPHERE ZIMPOL_<band> = NJM SPHERE/ZIMPOL/<band>; instrument: NJM splits SPHERE into its IRDIS and ZIMPOL arms; SVO prefixes the band with IRDIS_/ZIMPOL_; archived SVO curves are identical to NJM's",
+   "overlap": 1.0,
+   "pivot_diff_pct": 0.0
+  },
+  "Paranal/SPHERE.ZIMPOL_N_R": {
+   "njm": "SPHERE/ZIMPOL/N_R",
+   "kind": "curated",
+   "basis": "SVO SPHERE ZIMPOL_<band> = NJM SPHERE/ZIMPOL/<band>; instrument: NJM splits SPHERE into its IRDIS and ZIMPOL arms; SVO prefixes the band with IRDIS_/ZIMPOL_; archived SVO curves are identical to NJM's",
+   "overlap": 1.0,
+   "pivot_diff_pct": 0.0
+  },
+  "Paranal/SPHERE.ZIMPOL_OI_630": {
+   "njm": "SPHERE/ZIMPOL/OI_630",
+   "kind": "curated",
+   "basis": "SVO SPHERE ZIMPOL_<band> = NJM SPHERE/ZIMPOL/<band>; instrument: NJM splits SPHERE into its IRDIS and ZIMPOL arms; SVO prefixes the band with IRDIS_/ZIMPOL_; archived SVO curves are identical to NJM's",
+   "overlap": 1.0,
+   "pivot_diff_pct": 0.0
+  },
+  "Paranal/SPHERE.ZIMPOL_R_PRIM": {
+   "njm": "SPHERE/ZIMPOL/R_PRIM",
+   "kind": "curated",
+   "basis": "SVO SPHERE ZIMPOL_<band> = NJM SPHERE/ZIMPOL/<band>; instrument: NJM splits SPHERE into its IRDIS and ZIMPOL arms; SVO prefixes the band with IRDIS_/ZIMPOL_; archived SVO curves are identical to NJM's",
+   "overlap": 1.0,
+   "pivot_diff_pct": 0.002
+  },
+  "Paranal/SPHERE.ZIMPOL_TiO_717": {
+   "njm": "SPHERE/ZIMPOL/TiO_717",
+   "kind": "curated",
+   "basis": "SVO SPHERE ZIMPOL_<band> = NJM SPHERE/ZIMPOL/<band>; instrument: NJM splits SPHERE into its IRDIS and ZIMPOL arms; SVO prefixes the band with IRDIS_/ZIMPOL_; archived SVO curves are identical to NJM's",
+   "overlap": 0.9997,
+   "pivot_diff_pct": 0.0
+  },
+  "Paranal/SPHERE.ZIMPOL_V": {
+   "njm": "SPHERE/ZIMPOL/V",
+   "kind": "curated",
+   "basis": "SVO SPHERE ZIMPOL_<band> = NJM SPHERE/ZIMPOL/<band>; instrument: NJM splits SPHERE into its IRDIS and ZIMPOL arms; SVO prefixes the band with IRDIS_/ZIMPOL_; archived SVO curves are identical to NJM's",
+   "overlap": 1.0,
+   "pivot_diff_pct": 0.0
+  },
+  "Paranal/SPHERE.ZIMPOL_VBB": {
+   "njm": "SPHERE/ZIMPOL/VBB",
+   "kind": "curated",
+   "basis": "SVO SPHERE ZIMPOL_<band> = NJM SPHERE/ZIMPOL/<band>; instrument: NJM splits SPHERE into its IRDIS and ZIMPOL arms; SVO prefixes the band with IRDIS_/ZIMPOL_; archived SVO curves are identical to NJM's",
+   "overlap": 1.0,
+   "pivot_diff_pct": 0.0
+  },
+  "Paranal/SPHERE.ZIMPOL_V_L": {
+   "njm": "SPHERE/ZIMPOL/V_L",
+   "kind": "curated",
+   "basis": "SVO SPHERE ZIMPOL_<band> = NJM SPHERE/ZIMPOL/<band>; instrument: NJM splits SPHERE into its IRDIS and ZIMPOL arms; SVO prefixes the band with IRDIS_/ZIMPOL_; archived SVO curves are identical to NJM's",
+   "overlap": 0.9998,
+   "pivot_diff_pct": 0.0
+  },
+  "Paranal/SPHERE.ZIMPOL_V_S": {
+   "njm": "SPHERE/ZIMPOL/V_S",
+   "kind": "curated",
+   "basis": "SVO SPHERE ZIMPOL_<band> = NJM SPHERE/ZIMPOL/<band>; instrument: NJM splits SPHERE into its IRDIS and ZIMPOL arms; SVO prefixes the band with IRDIS_/ZIMPOL_; archived SVO curves are identical to NJM's"
+  },
+  "Paranal/VISTA.NB118_filter": {
+   "njm": "Paranal/VISTA/NB118",
+   "kind": "curve",
+   "overlap": 0.9966,
+   "pivot_diff_pct": 0.002,
+   "basis": "archived SVO curve (IA capture 20230402110344) identical to NJM curve; instrument: same instrument directory",
+   "njm_filterID": "Paranal/VISTA.NB118"
+  },
+  "Paranal/VISTA.NB980_filter": {
+   "njm": "Paranal/VISTA/NB980",
+   "kind": "curve",
+   "overlap": 0.9966,
+   "pivot_diff_pct": 0.002,
+   "basis": "archived SVO curve (IA capture 20201021153756) identical to NJM curve; instrument: same instrument directory",
+   "njm_filterID": "Paranal/VISTA.NB980"
+  },
+  "Paranal/VISTA.NB990_filter": {
+   "njm": "Paranal/VISTA/NB990",
+   "kind": "curve",
+   "overlap": 0.9987,
+   "pivot_diff_pct": 0.001,
+   "basis": "archived SVO curve (IA capture 20201021161050) identical to NJM curve; instrument: same instrument directory",
+   "njm_filterID": "Paranal/VISTA.NB990"
+  },
+  "Spitzer/MIPS.160mu": {
+   "njm": "Spitzer/MIPS/160",
+   "kind": "curated",
+   "basis": "SVO <n>mu = NJM <n> (info.json matches IRAS/IRAS.12mu to IRAS/12; DECISIONS item 7: MIPS 24mu = 24); instrument: same instrument directory",
+   "njm_filterID": "Spitzer/MIPS.160"
+  },
+  "Spitzer/MIPS.24mu": {
+   "njm": "Spitzer/MIPS/24",
+   "kind": "curated",
+   "basis": "SVO <n>mu = NJM <n> (info.json matches IRAS/IRAS.12mu to IRAS/12; DECISIONS item 7: MIPS 24mu = 24); instrument: same instrument directory",
+   "njm_filterID": "Spitzer/MIPS.24"
+  },
+  "Spitzer/MIPS.70mu": {
+   "njm": "Spitzer/MIPS/70",
+   "kind": "curated",
+   "basis": "SVO <n>mu = NJM <n> (info.json matches IRAS/IRAS.12mu to IRAS/12; DECISIONS item 7: MIPS 24mu = 24); instrument: same instrument directory",
+   "njm_filterID": "Spitzer/MIPS.70"
+  },
+  "Subaru/Suprime.B": {
+   "njm": "Subaru/SuprimeCam/B",
+   "kind": "info",
+   "basis": "info.json bands.B.svo (matched by provenance; SVO curve differs)"
+  },
+  "Subaru/Suprime.B_filter": {
+   "njm": "Subaru/SuprimeCam/B",
+   "kind": "curve",
+   "overlap": 0.9998,
+   "pivot_diff_pct": 0.005,
+   "basis": "archived SVO curve (IA capture 20220928023044) identical to NJM curve; instrument: info.json SVO matches place Subaru/Suprime.* bands in Subaru/SuprimeCam",
+   "njm_filterID": "Subaru/SuprimeCam.B"
+  },
+  "Subaru/Suprime.Ic_filter": {
+   "njm": "Subaru/SuprimeCam/Ic",
+   "kind": "curve",
+   "overlap": 0.9998,
+   "pivot_diff_pct": 0.002,
+   "basis": "archived SVO curve (IA capture 20250523110456) identical to NJM curve; instrument: info.json SVO matches place Subaru/Suprime.* bands in Subaru/SuprimeCam",
+   "njm_filterID": "Subaru/SuprimeCam.Ic"
+  },
+  "Subaru/Suprime.Rc_filter": {
+   "njm": "Subaru/SuprimeCam/Rc",
+   "kind": "curve",
+   "overlap": 0.9998,
+   "pivot_diff_pct": 0.004,
+   "basis": "archived SVO curve (IA capture 20220929053240) identical to NJM curve; instrument: info.json SVO matches place Subaru/Suprime.* bands in Subaru/SuprimeCam",
+   "njm_filterID": "Subaru/SuprimeCam.Rc"
+  },
+  "Subaru/Suprime.V": {
+   "njm": "Subaru/SuprimeCam/V",
+   "kind": "info",
+   "basis": "info.json bands.V.svo (matched by provenance; SVO curve differs)"
+  },
+  "Subaru/Suprime.V_filter": {
+   "njm": "Subaru/SuprimeCam/V",
+   "kind": "curve",
+   "overlap": 0.9998,
+   "pivot_diff_pct": 0.006,
+   "basis": "archived SVO curve (IA capture 20260207235822) identical to NJM curve; instrument: info.json SVO matches place Subaru/Suprime.* bands in Subaru/SuprimeCam",
+   "njm_filterID": "Subaru/SuprimeCam.V"
+  },
+  "Subaru/Suprime.Y_filter": {
+   "njm": "Subaru/SuprimeCam/Y",
+   "kind": "curve",
+   "overlap": 1.0,
+   "pivot_diff_pct": 0.0,
+   "basis": "archived SVO curve (IA capture 20241004075450) identical to NJM curve; instrument: info.json SVO matches place Subaru/Suprime.* bands in Subaru/SuprimeCam",
+   "njm_filterID": "Subaru/SuprimeCam.Y"
+  },
+  "Subaru/Suprime.g": {
+   "njm": "Subaru/SuprimeCam/g",
+   "kind": "info",
+   "basis": "info.json bands.g.svo (matched by provenance; SVO curve differs)"
+  },
+  "Subaru/Suprime.g_filter": {
+   "njm": "Subaru/SuprimeCam/g",
+   "kind": "curve",
+   "overlap": 0.9999,
+   "pivot_diff_pct": 0.0,
+   "basis": "archived SVO curve (IA capture 20220929212424) identical to NJM curve; instrument: info.json SVO matches place Subaru/Suprime.* bands in Subaru/SuprimeCam",
+   "njm_filterID": "Subaru/SuprimeCam.g"
+  },
+  "Subaru/Suprime.i": {
+   "njm": "Subaru/SuprimeCam/i",
+   "kind": "info",
+   "basis": "info.json bands.i.svo (matched by provenance; SVO curve differs)"
+  },
+  "Subaru/Suprime.i_filter": {
+   "njm": "Subaru/SuprimeCam/i",
+   "kind": "curve",
+   "overlap": 0.9997,
+   "pivot_diff_pct": 0.008,
+   "basis": "archived SVO curve (IA capture 20220926103447) identical to NJM curve; instrument: info.json SVO matches place Subaru/Suprime.* bands in Subaru/SuprimeCam",
+   "njm_filterID": "Subaru/SuprimeCam.i"
+  },
+  "Subaru/Suprime.r": {
+   "njm": "Subaru/SuprimeCam/r",
+   "kind": "info",
+   "basis": "info.json bands.r.svo (matched by provenance; SVO curve differs)"
+  },
+  "Subaru/Suprime.r_filter": {
+   "njm": "Subaru/SuprimeCam/r",
+   "kind": "curve",
+   "overlap": 1.0,
+   "pivot_diff_pct": 0.0,
+   "basis": "archived SVO curve (IA capture 20220926092525) identical to NJM curve; instrument: info.json SVO matches place Subaru/Suprime.* bands in Subaru/SuprimeCam",
+   "njm_filterID": "Subaru/SuprimeCam.r"
+  },
+  "Subaru/Suprime.z": {
+   "njm": "Subaru/SuprimeCam/z",
+   "kind": "info",
+   "basis": "info.json bands.z.svo (matched by provenance; SVO curve differs)"
+  },
+  "Subaru/Suprime.z_filter": {
+   "njm": "Subaru/SuprimeCam/z",
+   "kind": "curve",
+   "overlap": 0.9999,
+   "pivot_diff_pct": 0.001,
+   "basis": "archived SVO curve (IA capture 20250523110530) identical to NJM curve; instrument: info.json SVO matches place Subaru/Suprime.* bands in Subaru/SuprimeCam",
+   "njm_filterID": "Subaru/SuprimeCam.z"
+  },
+  "UKIRT/UKIDSS.H": {
+   "njm": "UKIRT/WFCAM/H",
+   "kind": "info",
+   "basis": "info.json bands.H.svo (matched by provenance; SVO curve differs)"
+  },
+  "UKIRT/UKIDSS.J": {
+   "njm": "UKIRT/WFCAM/J",
+   "kind": "info",
+   "basis": "info.json bands.J.svo (matched by provenance; SVO curve differs)"
+  },
+  "UKIRT/UKIDSS.K": {
+   "njm": "UKIRT/WFCAM/K",
+   "kind": "info",
+   "basis": "info.json bands.K.svo (matched by provenance; SVO curve differs)"
+  },
+  "UKIRT/UKIDSS.Y": {
+   "njm": "UKIRT/WFCAM/Y",
+   "kind": "info",
+   "basis": "info.json bands.Y.svo (matched by provenance; SVO curve differs)"
+  },
+  "UKIRT/UKIDSS.Z": {
+   "njm": "UKIRT/WFCAM/Z",
+   "kind": "name",
+   "basis": "band name equal up to case/punctuation; instrument: info.json SVO matches place UKIRT/UKIDSS.* bands in UKIRT/WFCAM",
+   "overlap": 0.9985,
+   "pivot_diff_pct": 0.001,
+   "njm_filterID": "UKIRT/WFCAM.Z"
+  },
+  "WFIRST/WFI.F184": {
+   "njm": "Roman/WFI/F184",
+   "kind": "curated",
+   "basis": "WFIRST <letter><nnn> = Roman F<nnn> (same element, renamed); instrument: DECISIONS-20261026 item 7: WFIRST = Roman/WFI (mission renamed 2020); SVO's WFIRST/WFI.* are the older SVO Roman curves",
+   "overlap": 0.9898,
+   "pivot_diff_pct": 0.059,
+   "njm_filterID": "Roman/WFI.F184",
+   "note": "same band, curve version differs"
+  },
+  "WFIRST/WFI.Grism": {
+   "njm": "Roman/WFI/Grism",
+   "kind": "curated",
+   "basis": "band name equal up to case/punctuation; instrument: DECISIONS-20261026 item 7: WFIRST = Roman/WFI (mission renamed 2020); SVO's WFIRST/WFI.* are the older SVO Roman curves",
+   "overlap": 0.9544,
+   "pivot_diff_pct": 0.316,
+   "njm_filterID": "Roman/WFI.Grism",
+   "note": "same band, curve version differs"
+  },
+  "WFIRST/WFI.H158": {
+   "njm": "Roman/WFI/F158",
+   "kind": "curated",
+   "basis": "WFIRST <letter><nnn> = Roman F<nnn> (same element, renamed); instrument: DECISIONS-20261026 item 7: WFIRST = Roman/WFI (mission renamed 2020); SVO's WFIRST/WFI.* are the older SVO Roman curves",
+   "overlap": 0.9911,
+   "pivot_diff_pct": 0.039,
+   "njm_filterID": "Roman/WFI.F158",
+   "note": "same band, curve version differs"
+  },
+  "WFIRST/WFI.J129": {
+   "njm": "Roman/WFI/F129",
+   "kind": "curated",
+   "basis": "WFIRST <letter><nnn> = Roman F<nnn> (same element, renamed); instrument: DECISIONS-20261026 item 7: WFIRST = Roman/WFI (mission renamed 2020); SVO's WFIRST/WFI.* are the older SVO Roman curves",
+   "overlap": 0.9922,
+   "pivot_diff_pct": 0.087,
+   "njm_filterID": "Roman/WFI.F129",
+   "note": "same band, curve version differs"
+  },
+  "WFIRST/WFI.Prism": {
+   "njm": "Roman/WFI/Prism",
+   "kind": "curated",
+   "basis": "band name equal up to case/punctuation; instrument: DECISIONS-20261026 item 7: WFIRST = Roman/WFI (mission renamed 2020); SVO's WFIRST/WFI.* are the older SVO Roman curves",
+   "njm_filterID": "Roman/WFI.Prism"
+  },
+  "WFIRST/WFI.R062": {
+   "njm": "Roman/WFI/F062",
+   "kind": "curated",
+   "basis": "WFIRST <letter><nnn> = Roman F<nnn> (same element, renamed); instrument: DECISIONS-20261026 item 7: WFIRST = Roman/WFI (mission renamed 2020); SVO's WFIRST/WFI.* are the older SVO Roman curves",
+   "njm_filterID": "Roman/WFI.F062"
+  },
+  "WFIRST/WFI.W146": {
+   "njm": "Roman/WFI/F146",
+   "kind": "curated",
+   "basis": "WFIRST <letter><nnn> = Roman F<nnn> (same element, renamed); instrument: DECISIONS-20261026 item 7: WFIRST = Roman/WFI (mission renamed 2020); SVO's WFIRST/WFI.* are the older SVO Roman curves",
+   "njm_filterID": "Roman/WFI.F146"
+  },
+  "WFIRST/WFI.Y106": {
+   "njm": "Roman/WFI/F106",
+   "kind": "curated",
+   "basis": "WFIRST <letter><nnn> = Roman F<nnn> (same element, renamed); instrument: DECISIONS-20261026 item 7: WFIRST = Roman/WFI (mission renamed 2020); SVO's WFIRST/WFI.* are the older SVO Roman curves",
+   "overlap": 0.993,
+   "pivot_diff_pct": 0.063,
+   "njm_filterID": "Roman/WFI.F106",
+   "note": "same band, curve version differs"
+  },
+  "WFIRST/WFI.Z087": {
+   "njm": "Roman/WFI/F087",
+   "kind": "curated",
+   "basis": "WFIRST <letter><nnn> = Roman F<nnn> (same element, renamed); instrument: DECISIONS-20261026 item 7: WFIRST = Roman/WFI (mission renamed 2020); SVO's WFIRST/WFI.* are the older SVO Roman curves",
+   "njm_filterID": "Roman/WFI.F087"
+  },
+  "WHT/INGRID.Brg_w": {
+   "njm": "WHT/INGRID/BRG_WARM",
+   "kind": "curve",
+   "overlap": 0.9986,
+   "pivot_diff_pct": 0.001,
+   "basis": "archived SVO curve (IA capture 20230323234318) identical to NJM curve; instrument: same instrument directory"
+  },
+  "WHT/INGRID.FeII": {
+   "njm": "WHT/INGRID/FEII_COLD",
+   "kind": "info",
+   "basis": "info.json bands.FEII_COLD.svo (matched by band name and pivot; SVO curve differs)"
+  },
+  "WHT/INGRID.H": {
+   "njm": "WHT/INGRID/H_WARM",
+   "kind": "info",
+   "basis": "info.json bands.H_WARM.svo (matched by band name and pivot; SVO curve differs)"
+  },
+  "WHT/INGRID.H2-2": {
+   "njm": "WHT/INGRID/H2V21_COLD",
+   "kind": "curve",
+   "overlap": 0.9986,
+   "pivot_diff_pct": 0.001,
+   "basis": "archived SVO curve (IA capture 20221130115247) identical to NJM curve; instrument: same instrument directory"
+  },
+  "WHT/INGRID.J": {
+   "njm": "WHT/INGRID/J_WARM",
+   "kind": "info",
+   "basis": "info.json bands.J_WARM.svo (matched by band name and pivot; SVO curve differs)"
+  },
+  "WHT/INGRID.Jcont": {
+   "njm": "WHT/INGRID/JCONT_WARM",
+   "kind": "info",
+   "basis": "info.json bands.JCONT_WARM.svo (matched by band name and pivot; SVO curve differs)"
+  },
+  "WHT/INGRID.Jcont_w": {
+   "njm": "WHT/INGRID/JCONT_WARM",
+   "kind": "curve",
+   "overlap": 0.9986,
+   "pivot_diff_pct": 0.0,
+   "basis": "archived SVO curve (IA capture 20260314020612) identical to NJM curve; instrument: same instrument directory",
+   "njm_filterID": "WHT/INGRID.Jcont"
+  },
+  "WHT/INGRID.Kcont": {
+   "njm": "WHT/INGRID/KCONT_COLD",
+   "kind": "info",
+   "basis": "info.json bands.KCONT_COLD.svo (matched by band name and pivot; SVO curve differs)"
+  },
+  "WHT/INGRID.Kcont_w": {
+   "njm": "WHT/INGRID/KCONT_WARM",
+   "kind": "curve",
+   "overlap": 0.9985,
+   "pivot_diff_pct": 0.002,
+   "basis": "archived SVO curve (IA capture 20230325232802) identical to NJM curve; instrument: same instrument directory"
+  },
+  "WHT/INGRID.Ksbarr": {
+   "njm": "WHT/INGRID/KSBARR_WARM",
+   "kind": "info",
+   "basis": "info.json bands.KSBARR_WARM.svo (matched by band name and pivot; SVO curve differs)"
+  },
+  "WHT/INGRID.Pab": {
+   "njm": "WHT/INGRID/PAB_WARM",
+   "kind": "info",
+   "basis": "info.json bands.PAB_WARM.svo (matched by band name and pivot; SVO curve differs)"
+  },
+  "WHT/INGRID.Pab_w": {
+   "njm": "WHT/INGRID/PAB_WARM",
+   "kind": "curve",
+   "overlap": 0.9984,
+   "pivot_diff_pct": 0.001,
+   "basis": "archived SVO curve (IA capture 20260311005532) identical to NJM curve; instrument: same instrument directory",
+   "njm_filterID": "WHT/INGRID.Pab"
+  },
+  "WHT/INGRID.Z": {
+   "njm": "WHT/INGRID/Z_WARM",
+   "kind": "info",
+   "basis": "info.json bands.Z_WARM.svo (matched by band name and pivot; SVO curve differs)"
+  }
+ },
+ "related": {
+  "Gemini/Zorro.EO_466": {
+   "njm": "Gemini/Alopeke/EO_466",
+   "relation": "twin or different unit, similar curve",
+   "overlap": 1.0,
+   "basis": "Zorro (Gemini South) and 'Alopeke (Gemini North) are twin imagers; SVO lists identical curves for both"
+  },
+  "Gemini/Zorro.EO_832": {
+   "njm": "Gemini/Alopeke/EO_832",
+   "relation": "twin or different unit, similar curve",
+   "overlap": 1.0,
+   "basis": "Zorro (Gemini South) and 'Alopeke (Gemini North) are twin imagers; SVO lists identical curves for both"
+  },
+  "Gemini/Zorro.i_sdss": {
+   "njm": "Gemini/Alopeke/i_sdss",
+   "relation": "twin or different unit, similar curve",
+   "overlap": 1.0,
+   "basis": "Zorro (Gemini South) and 'Alopeke (Gemini North) are twin imagers; SVO lists identical curves for both"
+  },
+  "Gemini/Zorro.r_sdss": {
+   "njm": "Gemini/Alopeke/r_sdss",
+   "relation": "twin or different unit, similar curve",
+   "overlap": 1.0,
+   "basis": "Zorro (Gemini South) and 'Alopeke (Gemini North) are twin imagers; SVO lists identical curves for both"
+  },
+  "Gemini/Zorro.z_sdss": {
+   "njm": "Gemini/Alopeke/z_sdss",
+   "relation": "twin or different unit, similar curve",
+   "overlap": 1.0,
+   "basis": "Zorro (Gemini South) and 'Alopeke (Gemini North) are twin imagers; SVO lists identical curves for both"
+  },
+  "Generic/Johnson_UBVRIJHKL.B": {
+   "njm": "Generic/Johnson/B",
+   "relation": "similar curve, not the same band",
+   "overlap": 0.9763,
+   "pivot_diff_pct": 0.108,
+   "svo_components": "Filter"
+  },
+  "Generic/Stromgren.b": {
+   "njm": "GCPD/Stromgren/b_ADPS",
+   "relation": "similar curve, not the same band",
+   "overlap": 0.9916,
+   "pivot_diff_pct": 0.004,
+   "svo_components": "Filter"
+  },
+  "JPSS/VIIRS.I5": {
+   "njm": "JPSS/VIIRS-J1/I5",
+   "relation": "twin or different unit, similar curve",
+   "overlap": 0.9583,
+   "basis": "SVO JPSS/VIIRS is Suomi-NPP VIIRS, a different unit from NOAA-20 (J1)"
+  },
+  "JPSS/VIIRS.M10": {
+   "njm": "JPSS/VIIRS-J1/I3",
+   "relation": "twin or different unit, similar curve",
+   "overlap": 0.9512,
+   "basis": "SVO JPSS/VIIRS is Suomi-NPP VIIRS, a different unit from NOAA-20 (J1)"
+  },
+  "JPSS/VIIRS.M12": {
+   "njm": "JPSS/VIIRS-J1/M12",
+   "relation": "twin or different unit, similar curve",
+   "overlap": 0.9708,
+   "basis": "SVO JPSS/VIIRS is Suomi-NPP VIIRS, a different unit from NOAA-20 (J1)"
+  },
+  "JPSS/VIIRS.M13": {
+   "njm": "JPSS/VIIRS-J1/M13",
+   "relation": "twin or different unit, similar curve",
+   "overlap": 0.9661,
+   "basis": "SVO JPSS/VIIRS is Suomi-NPP VIIRS, a different unit from NOAA-20 (J1)"
+  },
+  "JPSS/VIIRS.M14": {
+   "njm": "JPSS/VIIRS-J1/M14",
+   "relation": "twin or different unit, similar curve",
+   "overlap": 0.9871,
+   "basis": "SVO JPSS/VIIRS is Suomi-NPP VIIRS, a different unit from NOAA-20 (J1)"
+  },
+  "JPSS/VIIRS.M16B": {
+   "njm": "JPSS/VIIRS-J1/M16B",
+   "relation": "twin or different unit, similar curve",
+   "overlap": 0.972,
+   "basis": "SVO JPSS/VIIRS is Suomi-NPP VIIRS, a different unit from NOAA-20 (J1)"
+  },
+  "JPSS/VIIRS.M8": {
+   "njm": "JPSS/VIIRS-J1/M8",
+   "relation": "twin or different unit, similar curve",
+   "overlap": 0.9904,
+   "basis": "SVO JPSS/VIIRS is Suomi-NPP VIIRS, a different unit from NOAA-20 (J1)"
+  },
+  "JPSS/VIIRS.M9": {
+   "njm": "JPSS/VIIRS-J1/M9",
+   "relation": "twin or different unit, similar curve",
+   "overlap": 0.9767,
+   "basis": "SVO JPSS/VIIRS is Suomi-NPP VIIRS, a different unit from NOAA-20 (J1)"
+  },
+  "LSST/LSST.g_filter": {
+   "njm": "LSST/LSST/g",
+   "relation": "filter-only component of the NJM curve",
+   "overlap": 0.9641,
+   "pivot_diff_pct": 0.757,
+   "svo_components": "Filter + Instrument + Atmosphere"
+  },
+  "LSST/LSST.i_filter": {
+   "njm": "LSST/LSST/i",
+   "relation": "filter-only component of the NJM curve",
+   "overlap": 0.9764,
+   "pivot_diff_pct": 0.045,
+   "svo_components": "Filter + Instrument + Atmosphere"
+  },
+  "LSST/LSST.r_filter": {
+   "njm": "LSST/LSST/r",
+   "relation": "filter-only component of the NJM curve",
+   "overlap": 0.97,
+   "pivot_diff_pct": 0.263,
+   "svo_components": "Filter + Instrument + Atmosphere"
+  },
+  "LSST/LSST.u_filter": {
+   "njm": "LSST/LSST/u",
+   "relation": "filter-only component of the NJM curve (by name)"
+  },
+  "LSST/LSST.y_filter": {
+   "njm": "LSST/LSST/y",
+   "relation": "filter-only component of the NJM curve (by name)"
+  },
+  "LSST/LSST.z_filter": {
+   "njm": "LSST/LSST/z",
+   "relation": "filter-only component of the NJM curve",
+   "overlap": 0.9725,
+   "pivot_diff_pct": 0.193,
+   "svo_components": "Filter + Instrument + Atmosphere"
+  },
+  "LasCumbres/LasCumbres.SDSS_up": {
+   "njm": "LasCumbres/Spectral/up",
+   "relation": "similar curve, not the same band",
+   "overlap": 0.9958,
+   "pivot_diff_pct": 0.82,
+   "svo_components": "Filter"
+  },
+  "Liverpool/IOO.B": {
+   "njm": "Liverpool/IOO/B",
+   "relation": "NJM curve is identical to Liverpool/IOO.B_filter instead",
+   "overlap": 0.9402,
+   "pivot_diff_pct": 1.041
+  },
+  "Liverpool/IOO.SDSS-i": {
+   "njm": "Liverpool/IOO/i",
+   "relation": "similar curve, not the same band",
+   "overlap": 0.9772,
+   "pivot_diff_pct": 0.285,
+   "svo_components": "Filter + Instrument"
+  },
+  "Liverpool/IOO.SDSS-r": {
+   "njm": "Liverpool/IOO/r",
+   "relation": "similar curve, not the same band",
+   "overlap": 0.9869,
+   "pivot_diff_pct": 0.161,
+   "svo_components": "Filter + Instrument"
+  },
+  "Liverpool/IOO.SDSS-u": {
+   "njm": "Liverpool/IOO/u",
+   "relation": "similar curve, not the same band",
+   "overlap": 0.9763,
+   "pivot_diff_pct": 0.114,
+   "svo_components": "Filter + Instrument"
+  },
+  "NOT/NOT.002": {
+   "njm": "NOT/ALFOSC/B",
+   "relation": "similar curve, not the same band",
+   "overlap": 0.9626,
+   "pivot_diff_pct": 0.939,
+   "svo_components": "Filter"
+  },
+  "NOT/NOT.013": {
+   "njm": "NOT/ALFOSC/i_int",
+   "relation": "similar curve, not the same band",
+   "overlap": 0.9349,
+   "pivot_diff_pct": 0.638,
+   "svo_components": "Filter"
+  },
+  "NOT/NOT.027": {
+   "njm": "NOT/ALFOSC/B",
+   "relation": "similar curve, not the same band",
+   "overlap": 0.9689,
+   "pivot_diff_pct": 0.296,
+   "svo_components": "Filter"
+  },
+  "NOT/NOT.107": {
+   "njm": "NOT/ALFOSC/R",
+   "relation": "similar curve, not the same band",
+   "overlap": 0.9829,
+   "pivot_diff_pct": 0.029,
+   "svo_components": "Filter"
+  },
+  "Palomar/ZTF.i_fil": {
+   "njm": "Palomar/ZTF/i",
+   "relation": "filter-only component of the NJM curve (by name)"
+  },
+  "Palomar/ZTF.r_fil": {
+   "njm": "Palomar/ZTF/r",
+   "relation": "filter-only component of the NJM curve (by name)"
+  },
+  "Paranal/FORS1.ESO1034": {
+   "njm": "Paranal/FORS1/B_BESS",
+   "relation": "similar curve, not the same band",
+   "overlap": 0.9809,
+   "pivot_diff_pct": 0.216,
+   "svo_components": "Filter"
+  },
+  "Paranal/FORS1.ESO1038": {
+   "njm": "Paranal/FORS1/u_GUNN",
+   "relation": "similar curve, not the same band",
+   "overlap": 0.9335,
+   "pivot_diff_pct": 0.829,
+   "svo_components": "Filter"
+  },
+  "Paranal/FORS1.ESO1039": {
+   "njm": "Paranal/FORS1/v_GUNN",
+   "relation": "similar curve, not the same band",
+   "overlap": 0.9684,
+   "pivot_diff_pct": 0.014,
+   "svo_components": "Filter"
+  },
+  "Paranal/FORS1.ESO1041": {
+   "njm": "Paranal/FORS1/r_GUNN",
+   "relation": "similar curve, not the same band",
+   "overlap": 0.9606,
+   "pivot_diff_pct": 0.745,
+   "svo_components": "Filter"
+  },
+  "Paranal/OmegaCAM.B_aux": {
+   "njm": "Paranal/OmegaCAM/B_JOHN",
+   "relation": "similar curve, not the same band",
+   "overlap": 0.9717,
+   "pivot_diff_pct": 0.13,
+   "svo_components": "Filter + Instrument"
+  },
+  "Paranal/OmegaCAM.B_aux_filter": {
+   "njm": "Paranal/OmegaCAM/B_JOHN",
+   "relation": "filter-only component of the NJM curve",
+   "overlap": 0.9728,
+   "pivot_diff_pct": 0.294,
+   "svo_components": "Filter"
+  },
+  "Paranal/OmegaCAM.B_qA_filter": {
+   "njm": "Paranal/OmegaCAM/B_JOHN",
+   "relation": "filter-only component of the NJM curve",
+   "overlap": 0.9838,
+   "pivot_diff_pct": 0.261,
+   "svo_components": "Filter"
+  },
+  "Paranal/OmegaCAM.B_qB": {
+   "njm": "Paranal/OmegaCAM/B_JOHN",
+   "relation": "similar curve, not the same band",
+   "overlap": 0.9922,
+   "pivot_diff_pct": 0.113,
+   "svo_components": "Filter + Instrument"
+  },
+  "Paranal/OmegaCAM.B_qB_filter": {
+   "njm": "Paranal/OmegaCAM/B_JOHN",
+   "relation": "filter-only component of the NJM curve",
+   "overlap": 0.9849,
+   "pivot_diff_pct": 0.272,
+   "svo_components": "Filter"
+  },
+  "Paranal/OmegaCAM.B_qC": {
+   "njm": "Paranal/OmegaCAM/B_JOHN",
+   "relation": "similar curve, not the same band",
+   "overlap": 0.9732,
+   "pivot_diff_pct": 0.339,
+   "svo_components": "Filter + Instrument"
+  },
+  "Paranal/OmegaCAM.B_qD": {
+   "njm": "Paranal/OmegaCAM/B_JOHN",
+   "relation": "similar curve, not the same band",
+   "overlap": 0.9914,
+   "pivot_diff_pct": 0.101,
+   "svo_components": "Filter + Instrument"
+  },
+  "Paranal/OmegaCAM.B_qD_filter": {
+   "njm": "Paranal/OmegaCAM/B_JOHN",
+   "relation": "filter-only component of the NJM curve",
+   "overlap": 0.9842,
+   "pivot_diff_pct": 0.26,
+   "svo_components": "Filter"
+  },
+  "Paranal/OmegaCAM.Halpha_aux": {
+   "njm": "Paranal/OmegaCAM/r_SDSS",
+   "relation": "similar curve, not the same band",
+   "overlap": 0.9484,
+   "pivot_diff_pct": 0.63,
+   "svo_components": "Filter + Instrument"
+  },
+  "Paranal/OmegaCAM.Halpha_aux_filter": {
+   "njm": "Paranal/OmegaCAM/r_SDSS",
+   "relation": "filter-only component of the NJM curve",
+   "overlap": 0.9532,
+   "pivot_diff_pct": 0.389,
+   "svo_components": "Filter"
+  },
+  "Paranal/OmegaCAM.V_aux": {
+   "njm": "Paranal/OmegaCAM/V_JOHN",
+   "relation": "similar curve, not the same band",
+   "overlap": 0.978,
+   "pivot_diff_pct": 0.211,
+   "svo_components": "Filter + Instrument"
+  },
+  "Paranal/OmegaCAM.V_aux_filter": {
+   "njm": "Paranal/OmegaCAM/V_JOHN",
+   "relation": "filter-only component of the NJM curve",
+   "overlap": 0.9689,
+   "pivot_diff_pct": 0.311,
+   "svo_components": "Filter"
+  },
+  "Paranal/OmegaCAM.V_filter": {
+   "njm": "Paranal/OmegaCAM/V_JOHN",
+   "relation": "filter-only component of the NJM curve",
+   "overlap": 0.9901,
+   "pivot_diff_pct": 0.1,
+   "svo_components": "Filter"
+  },
+  "Paranal/OmegaCAM.V_qA": {
+   "njm": "Paranal/OmegaCAM/V_JOHN",
+   "relation": "similar curve, not the same band",
+   "overlap": 0.984,
+   "pivot_diff_pct": 0.065,
+   "svo_components": "Filter + Instrument"
+  },
+  "Paranal/OmegaCAM.V_qA_filter": {
+   "njm": "Paranal/OmegaCAM/V_JOHN",
+   "relation": "filter-only component of the NJM curve",
+   "overlap": 0.9738,
+   "pivot_diff_pct": 0.162,
+   "svo_components": "Filter"
+  },
+  "Paranal/OmegaCAM.V_qB": {
+   "njm": "Paranal/OmegaCAM/V_JOHN",
+   "relation": "similar curve, not the same band",
+   "overlap": 0.9869,
+   "pivot_diff_pct": 0.064,
+   "svo_components": "Filter + Instrument"
+  },
+  "Paranal/OmegaCAM.V_qB_filter": {
+   "njm": "Paranal/OmegaCAM/V_JOHN",
+   "relation": "filter-only component of the NJM curve",
+   "overlap": 0.9889,
+   "pivot_diff_pct": 0.039,
+   "svo_components": "Filter"
+  },
+  "Paranal/OmegaCAM.V_qC_filter": {
+   "njm": "Paranal/OmegaCAM/V_JOHN",
+   "relation": "filter-only component of the NJM curve",
+   "overlap": 0.9887,
+   "pivot_diff_pct": 0.012,
+   "svo_components": "Filter"
+  },
+  "Paranal/OmegaCAM.g_SDSS_filter": {
+   "njm": "Paranal/OmegaCAM/g_SDSS",
+   "relation": "filter-only component of the NJM curve",
+   "overlap": 0.994,
+   "pivot_diff_pct": 0.043,
+   "svo_components": "Filter"
+  },
+  "Paranal/OmegaCAM.i_CAL": {
+   "njm": "Paranal/OmegaCAM/i_SDSS",
+   "relation": "similar curve, not the same band",
+   "overlap": 0.9394,
+   "pivot_diff_pct": 0.532,
+   "svo_components": "Filter + Instrument"
+  },
+  "Paranal/OmegaCAM.i_SDSS_filter": {
+   "njm": "Paranal/OmegaCAM/i_SDSS",
+   "relation": "filter-only component of the NJM curve",
+   "overlap": 0.9257,
+   "pivot_diff_pct": 0.981,
+   "svo_components": "Filter"
+  },
+  "Paranal/OmegaCAM.r_SDSS_filter": {
+   "njm": "Paranal/OmegaCAM/r_SDSS",
+   "relation": "filter-only component of the NJM curve (by name)"
+  },
+  "Paranal/OmegaCAM.u_SDSS_filter": {
+   "njm": "Paranal/OmegaCAM/u_SDSS",
+   "relation": "filter-only component of the NJM curve (by name)"
+  },
+  "Paranal/OmegaCAM.z_SDSS_filter": {
+   "njm": "Paranal/OmegaCAM/z_SDSS",
+   "relation": "filter-only component of the NJM curve (by name)"
+  },
+  "Paranal/VISTA.H_filter": {
+   "njm": "Paranal/VISTA/H",
+   "relation": "filter-only component of the NJM curve",
+   "overlap": 0.9911,
+   "pivot_diff_pct": 0.051,
+   "svo_components": "Filter"
+  },
+  "Paranal/VISTA.J_filter": {
+   "njm": "Paranal/VISTA/J",
+   "relation": "filter-only component of the NJM curve",
+   "overlap": 0.9901,
+   "pivot_diff_pct": 0.041,
+   "svo_components": "Filter"
+  },
+  "Paranal/VISTA.Ks_filter": {
+   "njm": "Paranal/VISTA/Ks",
+   "relation": "filter-only component of the NJM curve",
+   "overlap": 0.9687,
+   "pivot_diff_pct": 0.251,
+   "svo_components": "Filter"
+  },
+  "Paranal/VISTA.Y_filter": {
+   "njm": "Paranal/VISTA/Y",
+   "relation": "filter-only component of the NJM curve",
+   "overlap": 0.9935,
+   "pivot_diff_pct": 0.037,
+   "svo_components": "Filter"
+  },
+  "Paranal/VISTA.Z_filter": {
+   "njm": "Paranal/VISTA/Z",
+   "relation": "filter-only component of the NJM curve",
+   "overlap": 0.9668,
+   "pivot_diff_pct": 0.203,
+   "svo_components": "Filter"
+  },
+  "Subaru/HSC.Y_filter": {
+   "njm": "Subaru/HSC/Y",
+   "relation": "filter-only component of the NJM curve (by name)"
+  },
+  "Subaru/HSC.g_filter": {
+   "njm": "Subaru/HSC/g",
+   "relation": "filter-only component of the NJM curve (by name)"
+  },
+  "Subaru/HSC.i2_filter": {
+   "njm": "Subaru/HSC/i",
+   "relation": "filter-only component of the NJM curve",
+   "overlap": 0.9612,
+   "pivot_diff_pct": 0.265,
+   "svo_components": "Filter"
+  },
+  "Subaru/HSC.i_filter": {
+   "njm": "Subaru/HSC/i",
+   "relation": "filter-only component of the NJM curve",
+   "overlap": 0.9398,
+   "pivot_diff_pct": 0.374,
+   "svo_components": "Filter"
+  },
+  "Subaru/HSC.r2_filter": {
+   "njm": "Subaru/HSC/r",
+   "relation": "filter-only component of the NJM curve",
+   "overlap": 0.9872,
+   "pivot_diff_pct": 0.054,
+   "svo_components": "Filter"
+  },
+  "Subaru/HSC.r_filter": {
+   "njm": "Subaru/HSC/r",
+   "relation": "filter-only component of the NJM curve",
+   "overlap": 0.969,
+   "pivot_diff_pct": 0.466,
+   "svo_components": "Filter"
+  },
+  "Subaru/HSC.z_filter": {
+   "njm": "Subaru/HSC/z",
+   "relation": "filter-only component of the NJM curve",
+   "overlap": 0.974,
+   "pivot_diff_pct": 0.149,
+   "svo_components": "Filter"
+  },
+  "UKIRT/WFCAM.H_filter": {
+   "njm": "UKIRT/WFCAM/H",
+   "relation": "filter-only component of the NJM curve (by name)"
+  },
+  "UKIRT/WFCAM.J_filter": {
+   "njm": "UKIRT/WFCAM/J",
+   "relation": "filter-only component of the NJM curve",
+   "overlap": 0.958,
+   "pivot_diff_pct": 0.362,
+   "svo_components": "Filter"
+  },
+  "UKIRT/WFCAM.K_filter": {
+   "njm": "UKIRT/WFCAM/K",
+   "relation": "filter-only component of the NJM curve (by name)"
+  },
+  "UKIRT/WFCAM.Y_filter": {
+   "njm": "UKIRT/WFCAM/Y",
+   "relation": "filter-only component of the NJM curve",
+   "overlap": 0.9513,
+   "pivot_diff_pct": 0.47,
+   "svo_components": "Filter"
+  },
+  "UKIRT/WFCAM.Z_filter": {
+   "njm": "UKIRT/WFCAM/Z",
+   "relation": "filter-only component of the NJM curve",
+   "overlap": 0.969,
+   "pivot_diff_pct": 0.145,
+   "svo_components": "Filter"
+  },
+  "WHT/INGRID.Hbarr": {
+   "njm": "WHT/INGRID/H_WARM",
+   "relation": "similar curve, not the same band",
+   "overlap": 0.9521,
+   "pivot_diff_pct": 0.452,
+   "svo_components": "Filter"
+  },
+  "XMM/OM.B_filter": {
+   "njm": "XMM/OM/B",
+   "relation": "filter-only component of the NJM curve",
+   "overlap": 0.9389,
+   "pivot_diff_pct": 0.718,
+   "svo_components": "Filter"
+  },
+  "XMM/OM.UVM2_filter": {
+   "njm": "XMM/OM/UVM2",
+   "relation": "filter-only component of the NJM curve (by name)"
+  },
+  "XMM/OM.UVW1_filter": {
+   "njm": "XMM/OM/UVW1",
+   "relation": "filter-only component of the NJM curve (by name)"
+  },
+  "XMM/OM.UVW2_filter": {
+   "njm": "XMM/OM/UVW2",
+   "relation": "filter-only component of the NJM curve (by name)"
+  },
+  "XMM/OM.U_filter": {
+   "njm": "XMM/OM/U",
+   "relation": "filter-only component of the NJM curve",
+   "overlap": 0.9733,
+   "pivot_diff_pct": 0.343,
+   "svo_components": "Filter"
+  },
+  "XMM/OM.V_filter": {
+   "njm": "XMM/OM/V",
+   "relation": "filter-only component of the NJM curve",
+   "overlap": 0.938,
+   "pivot_diff_pct": 0.472,
+   "svo_components": "Filter"
+  }
+ },
+ "rejected_candidates": {
+  "ARCHEOPS/KS3.143GHz": {
+   "njm": "ARCHEOPS/ARCHEOPS/143GHz",
+   "reason": "name match but curve differs (overlap 0.8093, pivot 1.85 %)",
+   "components": "Filter"
+  },
+  "ARCHEOPS/KS3.217GHz": {
+   "njm": "ARCHEOPS/ARCHEOPS/217GHz",
+   "reason": "name match but curve differs (overlap 0.7253, pivot 6.40 %)",
+   "components": "Filter"
+  },
+  "ARCHEOPS/KS3.353GHz": {
+   "njm": "ARCHEOPS/ARCHEOPS/353GHz",
+   "reason": "name match but curve differs (overlap 0.3910, pivot 40.67 %)",
+   "components": "Filter"
+  },
+  "BICEP/BICEP1.150GHz": {
+   "njm": "BICEP/BICEP/150GHz",
+   "reason": "name match but curve differs (overlap 0.0825, pivot 34.20 %)",
+   "components": "Filter + Instrument"
+  },
+  "BICEP/BICEP1.220GHz": {
+   "njm": "BICEP/BICEP/220GHz",
+   "reason": "name match but curve differs (overlap 0.2109, pivot 20.30 %)",
+   "components": "Filter + Instrument"
+  },
+  "GAIA/Gaia2m.Grp": {
+   "njm": "GAIA/GAIA/Grp",
+   "reason": "NJM band already holds SVO GAIA/GAIA3.Grp; no identical curve"
+  },
+  "Generic/Johnson_UBVRIJHKL.B": {
+   "njm": "Generic/Johnson/B",
+   "reason": "NJM band already holds SVO Generic/Johnson.B; no identical curve"
+  },
+  "LCO/FourStar.J1": {
+   "njm": "Magellan/FourStar/J1",
+   "reason": "NJM band already holds SVO Magellan/FourStar.J1; no identical curve"
+  },
+  "LCO/FourStar.NB209": {
+   "njm": "Magellan/FourStar/NB209",
+   "reason": "NJM band already holds SVO Magellan/FourStar.NB209; no identical curve"
+  },
+  "Paranal/ERIS.Lp.": {
+   "njm": "ERIS/NIX/Lp",
+   "reason": "NJM band already holds SVO Paranal/ERIS.Lp; no identical curve"
+  }
+ },
+ "now_held_directly": {
+  "GOES/ABI1.Ch01": "GOES/ABI1/Ch01",
+  "GOES/ABI1.Ch02": "GOES/ABI1/Ch02",
+  "GOES/ABI1.Ch03": "GOES/ABI1/Ch03",
+  "GOES/ABI1.Ch04": "GOES/ABI1/Ch04",
+  "GOES/ABI1.Ch05": "GOES/ABI1/Ch05",
+  "GOES/ABI1.Ch06": "GOES/ABI1/Ch06",
+  "GOES/ABI1.Ch07": "GOES/ABI1/Ch07",
+  "GOES/ABI1.Ch08": "GOES/ABI1/Ch08",
+  "GOES/ABI1.Ch09": "GOES/ABI1/Ch09",
+  "GOES/ABI1.Ch10": "GOES/ABI1/Ch10",
+  "GOES/ABI1.Ch11": "GOES/ABI1/Ch11",
+  "GOES/ABI1.Ch12": "GOES/ABI1/Ch12",
+  "GOES/ABI1.Ch13": "GOES/ABI1/Ch13",
+  "GOES/ABI1.Ch14": "GOES/ABI1/Ch14",
+  "GOES/ABI1.Ch16": "GOES/ABI1/Ch16",
+  "GOES/ABI2.Ch01": "GOES/ABI2/Ch01",
+  "GOES/ABI2.Ch02": "GOES/ABI2/Ch02",
+  "GOES/ABI2.Ch03": "GOES/ABI2/Ch03",
+  "GOES/ABI2.Ch04": "GOES/ABI2/Ch04",
+  "GOES/ABI2.Ch05": "GOES/ABI2/Ch05",
+  "GOES/ABI2.Ch06": "GOES/ABI2/Ch06",
+  "GOES/ABI2.Ch07": "GOES/ABI2/Ch07",
+  "GOES/ABI2.Ch07_81K": "GOES/ABI2/Ch07_81K",
+  "GOES/ABI2.Ch08": "GOES/ABI2/Ch08",
+  "GOES/ABI2.Ch08_81K": "GOES/ABI2/Ch08_81K",
+  "GOES/ABI2.Ch09": "GOES/ABI2/Ch09",
+  "GOES/ABI2.Ch09_81K": "GOES/ABI2/Ch09_81K",
+  "GOES/ABI2.Ch10": "GOES/ABI2/Ch10",
+  "GOES/ABI2.Ch10_81K": "GOES/ABI2/Ch10_81K",
+  "GOES/ABI2.Ch11": "GOES/ABI2/Ch11",
+  "GOES/ABI2.Ch11_81K": "GOES/ABI2/Ch11_81K",
+  "GOES/ABI2.Ch12": "GOES/ABI2/Ch12",
+  "GOES/ABI2.Ch12_81K": "GOES/ABI2/Ch12_81K",
+  "GOES/ABI2.Ch13": "GOES/ABI2/Ch13",
+  "GOES/ABI2.Ch13_81K": "GOES/ABI2/Ch13_81K",
+  "GOES/ABI2.Ch14": "GOES/ABI2/Ch14",
+  "GOES/ABI2.Ch14_81K": "GOES/ABI2/Ch14_81K",
+  "GOES/ABI2.Ch15": "GOES/ABI2/Ch15",
+  "GOES/ABI2.Ch15_81K": "GOES/ABI2/Ch15_81K",
+  "GOES/ABI2.Ch16": "GOES/ABI2/Ch16",
+  "GOES/ABI2.Ch16_81K": "GOES/ABI2/Ch16_81K",
+  "GOES/ABI3.Ch01": "GOES/ABI3/Ch01",
+  "GOES/ABI3.Ch02": "GOES/ABI3/Ch02",
+  "GOES/ABI3.Ch03": "GOES/ABI3/Ch03",
+  "GOES/ABI3.Ch04": "GOES/ABI3/Ch04",
+  "GOES/ABI3.Ch05": "GOES/ABI3/Ch05",
+  "GOES/ABI3.Ch06": "GOES/ABI3/Ch06",
+  "GOES/ABI3.Ch07": "GOES/ABI3/Ch07",
+  "GOES/ABI3.Ch08": "GOES/ABI3/Ch08",
+  "GOES/ABI3.Ch09": "GOES/ABI3/Ch09",
+  "GOES/ABI3.Ch12": "GOES/ABI3/Ch12",
+  "GOES/ABI3.Ch13": "GOES/ABI3/Ch13",
+  "GOES/ABI3.Ch14": "GOES/ABI3/Ch14",
+  "GOES/ABI3.Ch15": "GOES/ABI3/Ch15",
+  "GOES/ABI3.Ch16": "GOES/ABI3/Ch16",
+  "Himawari/AHI8.Band01": "Himawari/AHI8/Band01",
+  "Himawari/AHI8.Band02": "Himawari/AHI8/Band02",
+  "Himawari/AHI8.Band03": "Himawari/AHI8/Band03",
+  "Himawari/AHI8.Band04": "Himawari/AHI8/Band04",
+  "Himawari/AHI8.Band05": "Himawari/AHI8/Band05",
+  "Himawari/AHI8.Band06": "Himawari/AHI8/Band06",
+  "Himawari/AHI8.Band07": "Himawari/AHI8/Band07",
+  "Himawari/AHI8.Band08": "Himawari/AHI8/Band08",
+  "Himawari/AHI8.Band09": "Himawari/AHI8/Band09",
+  "Himawari/AHI8.Band10": "Himawari/AHI8/Band10",
+  "Himawari/AHI8.Band11": "Himawari/AHI8/Band11",
+  "Himawari/AHI8.Band12": "Himawari/AHI8/Band12",
+  "Himawari/AHI8.Band13": "Himawari/AHI8/Band13",
+  "Himawari/AHI8.Band14": "Himawari/AHI8/Band14",
+  "Himawari/AHI8.Band15": "Himawari/AHI8/Band15",
+  "Himawari/AHI8.Band16": "Himawari/AHI8/Band16",
+  "Himawari/AHI9.Band01": "Himawari/AHI9/Band01",
+  "Himawari/AHI9.Band02": "Himawari/AHI9/Band02",
+  "Himawari/AHI9.Band03": "Himawari/AHI9/Band03",
+  "Himawari/AHI9.Band04": "Himawari/AHI9/Band04",
+  "Himawari/AHI9.Band05": "Himawari/AHI9/Band05",
+  "Himawari/AHI9.Band06": "Himawari/AHI9/Band06",
+  "Himawari/AHI9.Band07": "Himawari/AHI9/Band07",
+  "Himawari/AHI9.Band08": "Himawari/AHI9/Band08",
+  "Himawari/AHI9.Band09": "Himawari/AHI9/Band09",
+  "Himawari/AHI9.Band10": "Himawari/AHI9/Band10",
+  "Himawari/AHI9.Band11": "Himawari/AHI9/Band11",
+  "Himawari/AHI9.Band12": "Himawari/AHI9/Band12",
+  "Himawari/AHI9.Band13": "Himawari/AHI9/Band13",
+  "Himawari/AHI9.Band14": "Himawari/AHI9/Band14",
+  "Himawari/AHI9.Band15": "Himawari/AHI9/Band15",
+  "Himawari/AHI9.Band16": "Himawari/AHI9/Band16",
+  "JPSS/VIIRS-J1.DNBLGS": "JPSS/VIIRS-J1/DNBLGS",
+  "JPSS/VIIRS-J1.DNBMGS": "JPSS/VIIRS-J1/DNBMGS",
+  "JPSS/VIIRS-J1.I1": "JPSS/VIIRS-J1/I1",
+  "JPSS/VIIRS-J1.I2": "JPSS/VIIRS-J1/I2",
+  "JPSS/VIIRS-J1.I3": "JPSS/VIIRS-J1/I3",
+  "JPSS/VIIRS-J1.I4": "JPSS/VIIRS-J1/I4",
+  "JPSS/VIIRS-J1.I5": "JPSS/VIIRS-J1/I5",
+  "JPSS/VIIRS-J1.M1": "JPSS/VIIRS-J1/M1",
+  "JPSS/VIIRS-J1.M10": "JPSS/VIIRS-J1/M10",
+  "JPSS/VIIRS-J1.M11": "JPSS/VIIRS-J1/M11",
+  "JPSS/VIIRS-J1.M12": "JPSS/VIIRS-J1/M12",
+  "JPSS/VIIRS-J1.M13": "JPSS/VIIRS-J1/M13",
+  "JPSS/VIIRS-J1.M14": "JPSS/VIIRS-J1/M14",
+  "JPSS/VIIRS-J1.M15": "JPSS/VIIRS-J1/M15",
+  "JPSS/VIIRS-J1.M16": "JPSS/VIIRS-J1/M16",
+  "JPSS/VIIRS-J1.M16A": "JPSS/VIIRS-J1/M16A",
+  "JPSS/VIIRS-J1.M16B": "JPSS/VIIRS-J1/M16B",
+  "JPSS/VIIRS-J1.M2": "JPSS/VIIRS-J1/M2",
+  "JPSS/VIIRS-J1.M3": "JPSS/VIIRS-J1/M3",
+  "JPSS/VIIRS-J1.M4": "JPSS/VIIRS-J1/M4",
+  "JPSS/VIIRS-J1.M5": "JPSS/VIIRS-J1/M5",
+  "JPSS/VIIRS-J1.M6": "JPSS/VIIRS-J1/M6",
+  "JPSS/VIIRS-J1.M7": "JPSS/VIIRS-J1/M7",
+  "JPSS/VIIRS-J1.M8": "JPSS/VIIRS-J1/M8",
+  "JPSS/VIIRS-J2.DNBLGS": "JPSS/VIIRS-J2/DNBLGS",
+  "JPSS/VIIRS-J2.DNBMGS": "JPSS/VIIRS-J2/DNBMGS",
+  "JPSS/VIIRS-J2.I1": "JPSS/VIIRS-J2/I1",
+  "JPSS/VIIRS-J2.I2": "JPSS/VIIRS-J2/I2",
+  "JPSS/VIIRS-J2.I3": "JPSS/VIIRS-J2/I3",
+  "JPSS/VIIRS-J2.I4": "JPSS/VIIRS-J2/I4",
+  "JPSS/VIIRS-J2.I5": "JPSS/VIIRS-J2/I5",
+  "JPSS/VIIRS-J2.M1": "JPSS/VIIRS-J2/M1",
+  "JPSS/VIIRS-J2.M10": "JPSS/VIIRS-J2/M10",
+  "JPSS/VIIRS-J2.M11": "JPSS/VIIRS-J2/M11",
+  "JPSS/VIIRS-J2.M12": "JPSS/VIIRS-J2/M12",
+  "JPSS/VIIRS-J2.M13": "JPSS/VIIRS-J2/M13",
+  "JPSS/VIIRS-J2.M14": "JPSS/VIIRS-J2/M14",
+  "JPSS/VIIRS-J2.M15": "JPSS/VIIRS-J2/M15",
+  "JPSS/VIIRS-J2.M16": "JPSS/VIIRS-J2/M16",
+  "JPSS/VIIRS-J2.M16A": "JPSS/VIIRS-J2/M16A",
+  "JPSS/VIIRS-J2.M16B": "JPSS/VIIRS-J2/M16B",
+  "JPSS/VIIRS-J2.M2": "JPSS/VIIRS-J2/M2",
+  "JPSS/VIIRS-J2.M3": "JPSS/VIIRS-J2/M3",
+  "JPSS/VIIRS-J2.M4": "JPSS/VIIRS-J2/M4",
+  "JPSS/VIIRS-J2.M5": "JPSS/VIIRS-J2/M5",
+  "JPSS/VIIRS-J2.M6": "JPSS/VIIRS-J2/M6",
+  "JPSS/VIIRS-J2.M7": "JPSS/VIIRS-J2/M7",
+  "JPSS/VIIRS-J2.M8": "JPSS/VIIRS-J2/M8",
+  "JPSS/VIIRS-J2.M9": "JPSS/VIIRS-J2/M9",
+  "LCO/FourStar.Hshort": "Magellan/FourStar/Hshort",
+  "LCO/FourStar.J2": "Magellan/FourStar/J2",
+  "Liverpool/IOO.V": "Liverpool/IOO/V",
+  "Paranal/HAWKI.H": "Paranal/HAWKI/H",
+  "Paranal/HAWKI.J": "Paranal/HAWKI/J",
+  "Paranal/HAWKI.NB1060": "Paranal/HAWKI/NB1060",
+  "Paranal/HAWKI.NB2090": "Paranal/HAWKI/NB2090",
+  "Paranal/NACO.IB233": "Paranal/NACO/IB_2p33",
+  "Paranal/NACO.IB245": "Paranal/NACO/IB_2p45",
+  "Paranal/NACO.IB248": "Paranal/NACO/IB_2p48",
+  "Paranal/NACO.J": "Paranal/NACO/J_CONICA",
+  "Paranal/NACO.NB109": "Paranal/NACO/NB_1p09",
+  "Paranal/NACO.NB128": "Paranal/NACO/NB_1p28",
+  "Paranal/NACO.NB212": "Paranal/NACO/NB_2p12",
+  "Paranal/NACO.NB374": "Paranal/NACO/NB_3p74",
+  "Paranal/OmegaCAM.B": "Paranal/OmegaCAM/B_JOHN",
+  "Subaru/Suprime.B": "Subaru/SuprimeCam/B",
+  "Subaru/Suprime.V": "Subaru/SuprimeCam/V",
+  "Subaru/Suprime.g": "Subaru/SuprimeCam/g",
+  "Subaru/Suprime.i": "Subaru/SuprimeCam/i",
+  "Subaru/Suprime.r": "Subaru/SuprimeCam/r",
+  "Subaru/Suprime.z": "Subaru/SuprimeCam/z",
+  "UKIRT/UKIDSS.H": "UKIRT/WFCAM/H",
+  "UKIRT/UKIDSS.J": "UKIRT/WFCAM/J",
+  "UKIRT/UKIDSS.K": "UKIRT/WFCAM/K",
+  "UKIRT/UKIDSS.Y": "UKIRT/WFCAM/Y",
+  "WHT/INGRID.FeII": "WHT/INGRID/FEII_COLD",
+  "WHT/INGRID.H": "WHT/INGRID/H_WARM",
+  "WHT/INGRID.J": "WHT/INGRID/J_WARM",
+  "WHT/INGRID.Jcont": "WHT/INGRID/JCONT_WARM",
+  "WHT/INGRID.Kcont": "WHT/INGRID/KCONT_COLD",
+  "WHT/INGRID.Ksbarr": "WHT/INGRID/KSBARR_WARM",
+  "WHT/INGRID.Pab": "WHT/INGRID/PAB_WARM",
+  "WHT/INGRID.Z": "WHT/INGRID/Z_WARM"
+ }
+}
