@@ -28,6 +28,12 @@ BUILDERS: Dict[str, str] = {
     "vista": ".vista",
     "ztf": ".ztf",
     "tabular": ".tabular",
+    "surveys": ".surveys",
+    "space": ".space",
+    "observatories": ".observatories",
+    "standards": ".standards",
+    "euclid": ".euclid",
+    "roman": ".roman",
 }
 
 

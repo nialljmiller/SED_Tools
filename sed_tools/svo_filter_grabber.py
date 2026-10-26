@@ -10,18 +10,14 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional, Sequence
 
 import requests
-from astroquery.svo_fps import SvoFps
 from bs4 import BeautifulSoup
 
-from .filter_metadata import (ENERGY, SOURCE_ASSUMED, SOURCE_SVO, SVOMetadataClient,
-                              svo_components_header, write_filter_file)
+from .filter_metadata import (ENERGY, SOURCE_ASSUMED, SOURCE_SVO, SVOMetadataClient, SVOUnreachableError,
+                              svo_components_header, svo_fps_url, svo_get, write_filter_file)
 from .ui_utils import prompt_choice
 from .parsing import parse_multi_selection
 
-SvoFps.TIMEOUT = 300  # give SVO a generous timeout
-
-BASE_URL = "https://svo2.cab.inta-csic.es/theory/fps/"
-INDEX_URL = urllib.parse.urljoin(BASE_URL, "index.php")
+SVO_READ_TIMEOUT = 300  # give a connected SVO a generous time to respond
 
 DEFAULT_BASE_DIR = os.path.join(os.path.dirname(__file__), "data", "filters")
 
@@ -61,7 +57,7 @@ class SVOFilterBrowser:
         self._facility_cache: Optional[List[Facility]] = None
         self._instrument_cache: Dict[str, List[Instrument]] = {}
         self._filters_cache: Dict[tuple[str, str], List[FilterRow]] = {}
-        self.metadata_client = SVOMetadataClient(session=self.session, timeout=SvoFps.TIMEOUT)
+        self.metadata_client = SVOMetadataClient(session=self.session, timeout=SVO_READ_TIMEOUT)
 
     # -------------------- discovery helpers --------------------
     def list_facilities(self) -> List[Facility]:
@@ -204,6 +200,8 @@ class SVOFilterBrowser:
                     extra=svo_components_header(record.components),
                 )
                 print(f"    [saved] {out_path} ({detector_type}-counting)")
+            except SVOUnreachableError:
+                raise  # every remaining filter would fail the same way
             except (requests.RequestException, ValueError) as exc:  # malformed or unavailable source response
                 print(f"    [error] Failed to download {row.filter_id}: {exc}")
 
@@ -242,14 +240,17 @@ class SVOFilterBrowser:
     # -------------------- HTTP helpers --------------------
     def _fetch_index(self, params: Dict[str, str]) -> BeautifulSoup:
         try:
-            resp = self.session.get(INDEX_URL, params=params, timeout=60)
+            resp = svo_get(self.session, urllib.parse.urljoin(svo_fps_url(), "index.php"),
+                           params=params, read_timeout=60)
             resp.raise_for_status()
+        except SVOUnreachableError:
+            raise
         except requests.RequestException as exc:
             raise RuntimeError(f"Failed to fetch SVO index: {exc}") from exc
         return BeautifulSoup(resp.text, "html.parser")
 
     def _parse_params(self, href: str) -> Dict[str, str]:
-        url = urllib.parse.urljoin(BASE_URL, href)
+        url = urllib.parse.urljoin(svo_fps_url(), href)
         parsed = urllib.parse.urlparse(url)
         qs = urllib.parse.parse_qs(parsed.query)
         return {k: v[0] for k, v in qs.items() if v}

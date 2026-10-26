@@ -1,0 +1,6 @@
+# Average Spectral response curve for IRAC 3.6 micron array
+# Wave     Spectral Response
+# microns  electrons / photon
+3.269500        0.405907
+3.271560        0.409766
+3.273630        0.411492

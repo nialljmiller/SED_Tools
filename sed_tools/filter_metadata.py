@@ -54,6 +54,7 @@ from typing import Callable, Dict, Iterable, List, Mapping, Optional, Sequence, 
 from urllib.parse import unquote
 
 import numpy as np
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +82,34 @@ HEADER_KEYS = (
 )
 DETECTOR_KEYS = HEADER_KEYS[:4]
 
-SVO_FPS_URL = "https://svo2.cab.inta-csic.es/theory/fps/fps.php"
+SVO_FPS_URL = "https://svo2.cab.inta-csic.es/theory/fps/fps.php"  # default endpoint
+SVO_FPS_URL_ENV = "SED_SVO_FPS_URL"
+# A down SVO host never completes the TCP handshake; fail on that within
+# seconds instead of waiting out the read timeout for every request.
+SVO_CONNECT_TIMEOUT = 10.0
+
+
+def svo_fps_url() -> str:
+    """The FPS ``fps.php`` endpoint: ``$SED_SVO_FPS_URL`` if set, else :data:`SVO_FPS_URL`."""
+    return os.environ.get(SVO_FPS_URL_ENV, "").strip() or SVO_FPS_URL
+
+
+class SVOUnreachableError(requests.ConnectionError, RuntimeError):
+    """The SVO FPS host could not be connected to."""
+
+
+def svo_get(session, url: str, *, read_timeout: float, connect_timeout: float = SVO_CONNECT_TIMEOUT, **kwargs):
+    """``session.get`` with a short connect timeout and one clear error when SVO is unreachable."""
+    try:
+        return session.get(url, timeout=(connect_timeout, read_timeout), **kwargs)
+    except requests.ConnectionError as exc:  # includes ConnectTimeout, DNS and refused connections
+        raise SVOUnreachableError(
+            f"SVO Filter Profile Service unreachable: could not connect to {url} "
+            f"within {connect_timeout:g} s ({type(exc).__name__}). Use the NJM mirror or the "
+            f"original-source builders (sed-tools filters-build-components) instead, or set "
+            f"{SVO_FPS_URL_ENV} to another FPS endpoint."
+        ) from exc
+
 
 PathLike = Union[str, os.PathLike]
 
@@ -375,20 +403,25 @@ class SVOMetadataClient:
     ``DetectorType``) so the response is parsed here directly.
     """
 
-    def __init__(self, session=None, timeout: float = 120.0):
-        if session is None:
-            import requests
-
-            session = requests.Session()
-        self.session = session
-        self.timeout = timeout
+    def __init__(self, session=None, timeout: float = 120.0, connect_timeout: float = SVO_CONNECT_TIMEOUT):
+        self.session = session if session is not None else requests.Session()
+        self.timeout = timeout  # read timeout
+        self.connect_timeout = connect_timeout
+        self._unreachable: Optional[SVOUnreachableError] = None
         self._records: Dict[str, Optional[SVOFilterRecord]] = {}
         self._facility_ids: Dict[str, List[str]] = {}
 
     def _get_votable(self, params: Dict[str, str]):
         from astropy.io.votable import parse
 
-        resp = self.session.get(SVO_FPS_URL, params=params, timeout=self.timeout)
+        if self._unreachable is not None:  # don't wait out the connect timeout again
+            raise SVOUnreachableError(str(self._unreachable))
+        try:
+            resp = svo_get(self.session, svo_fps_url(), params=params,
+                           read_timeout=self.timeout, connect_timeout=self.connect_timeout)
+        except SVOUnreachableError as exc:
+            self._unreachable = exc
+            raise
         resp.raise_for_status()
         return parse(io.BytesIO(resp.content), verify="ignore")
 
