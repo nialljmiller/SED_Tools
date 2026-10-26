@@ -174,7 +174,7 @@ HALEAKALA_PS1 = SiteAtmosphere(
     location="Haleakala, Maui (Pan-STARRS1)",
     parameters={"airmass": 1.2, "elevation": "3 km", "pwv": "0.65 mm (or cm) at sea level, as stated",
                 "aerosol exponent": 0.7},
-    outside_range="error",
+    outside_range="error", coverage_tolerance=1e-3,
 )
 
 
@@ -215,12 +215,13 @@ PARANAL_VIRCAM = SiteAtmosphere(
     notes=("ESO's VIRCAM page calls these 'a theoretical model for the atmospheric transmission for various "
            "airmasses and water vapor content'; the bundle does not name the model. Wavelengths in micron and "
            "transmission as a fraction (the bundle's f02.sm plots them so, after skipping two title lines); "
-           "0.9-5.6 um only, so composition with bands reaching below 0.9 um (Z, NB980, NB990) is refused. "
+           "0.9-5.6 um only: composition is refused when more than 0.1% of a band's throughput lies outside "
+           "(Z), and the 0.9 um value is held over fainter leak wings (Y, J, H, Ks: <=1.6e-4 of the band). "
            "altitude_m is VISTA's (ESO); the SkyCalc 'paranal' grid is computed for 2640 m."),
     kind=TEAM, model="not named by the source", model_version="not stated",
     citation=f"ESO VIRCAM instrument page ({VIRCAM_PAGE})",
     location="VISTA, Cerro Paranal",
-    outside_range="error",
+    outside_range="error", coverage_tolerance=1e-3,
 )
 
 
@@ -254,7 +255,7 @@ _PLEXUS = dict(
     kind=TEAM, model="PLEXUS (AFRL; MODTRAN 3.7, SAMM, FASCODE3P, HITRAN98)", model_version="not stated",
     citation=("Cohen, Wheaton & Megeath 2003, AJ 126, 1090 (2003AJ....126.1090C), Sect. 2; 2MASS All-Sky "
               f"Explanatory Supplement III.1.b1 ({TWOMASS_DOC}sec3_1b1.html)"),
-    outside_range="error",
+    outside_range="error", coverage_tolerance=1e-3,
 )
 _PLEXUS_NOTE = ("PLEXUS model provided by M. Cohen; 'in addition to atomic and molecular absorption, this code "
                 "accounts for Rayleigh and site-specific mean aerosol scattering' (Explanatory Supplement). "
@@ -337,7 +338,7 @@ LCO_CSP = SiteAtmosphere(
     location="Swope telescope, Las Campanas Observatory (CTIO extinction)",
     parameters={"airmass": CSP_AIRMASS, "continuum": "atm_ext_ctio.dat ** airmass",
                 "lines": "atm_ext_lines.dat, unscaled"},
-    outside_range="error",
+    outside_range="error", coverage_tolerance=1e-3,
 )
 
 
@@ -383,7 +384,7 @@ APO_SDSS = SiteAtmosphere(
     kind=TEAM, model="not stated", model_version="DR7",
     citation=f"SDSS DR7 imager page ({SDSS_DR7}), which cites Doi et al. 2010 (arXiv:1002.3701)",
     location="Apache Point Observatory (SDSS 2.5 m)",
-    outside_range="error",
+    outside_range="error", coverage_tolerance=1e-3,
 )
 
 
@@ -466,7 +467,7 @@ _ATRAN = dict(
     citation=f"Lord 1992, NASA Technical Memorandum 103957; Gemini Observatory ({GEMINI_PAGE})",
     terms=GEMINI_TERMS,
     parameters={"sampling_um": 2e-5, "resolution_um": 4e-5, "range_um": [0.9, 5.6]},
-    outside_range="error",
+    outside_range="error", coverage_tolerance=1e-3,
 )
 _ATRAN_NOTE = ("Gemini's near-infrared sky transmission models used by its integration time calculators: "
                "'generated using the ATRAN modelling software (Lord, S.D. 1992, NASA Technical Memor. 103957)'; "

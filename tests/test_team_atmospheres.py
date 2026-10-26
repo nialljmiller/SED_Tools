@@ -450,3 +450,17 @@ def test_cli_passes_the_atmosphere_site_and_unstated_airmass(tmp_path, monkeypat
                                     "--components", "filter", *argv])
     assert cli.main() in (0, None)
     assert seen["atmosphere"] == expected
+
+
+def test_coverage_tolerance_allows_faint_wings_only(tmp_path):
+    # Band: a Gaussian at 5000 A (sigma 200); atmosphere table from 4500 A.
+    atm = DerivedCurve("u", lambda s: (np.array([4500.0, 7000.0]), np.array([0.8, 0.8])), "")
+    inst = _instrument(tmp_path / "filters", default_site="short_team")
+    write_site(tmp_path / "loose", _site("short_team", entries=[(1.2, None, atm)], outside_range="error",
+                                         coverage_tolerance=1e-2), None)
+    curve = compose_band(inst, "g", [FILTER], atmosphere={"airmass": 1.2}, atmosphere_root=tmp_path / "loose")
+    assert curve.transmission[curve.wavelength < 4500].max() > 0  # the wing holds the edge value
+    write_site(tmp_path / "tight", _site("short_team", entries=[(1.2, None, atm)], outside_range="error",
+                                         coverage_tolerance=1e-4), None)
+    with pytest.raises(ComponentCoverageError, match="lies beyond it"):
+        compose_band(inst, "g", [FILTER], atmosphere={"airmass": 1.2}, atmosphere_root=tmp_path / "tight")

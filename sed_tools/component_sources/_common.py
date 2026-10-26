@@ -132,6 +132,7 @@ class SiteAtmosphere:
     terms: Optional[str] = None
     parameters: Optional[Dict[str, object]] = None
     outside_range: Optional[str] = None  # unset: the instrument's own policy
+    coverage_tolerance: Optional[float] = None  # see AtmosphereGrid.coverage_tolerance
 
 
 @dataclass
@@ -232,7 +233,7 @@ def write_site(atmosphere_root: Path, site: SiteAtmosphere, session) -> Path:
                    source=site.source, notes=site.notes, kind=site.kind, model=site.model,
                    model_version=site.model_version, citation=site.citation, location=site.location,
                    terms=site.terms, parameters=site.parameters, outside_range=site.outside_range,
-                   unstated=unstated or None).save(site_dir)
+                   coverage_tolerance=site.coverage_tolerance, unstated=unstated or None).save(site_dir)
     return site_dir
 
 

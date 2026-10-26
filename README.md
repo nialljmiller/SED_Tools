@@ -288,7 +288,7 @@ The default is the manifest's `default_site`. Further sites at the same location
 | `cpachon_gemini` | team | X = 1.0, 1.5, 2.0 × PWV 2.3, 4.3, 7.6, 10 mm | Gemini ATRAN (Lord 1992), 0.9–5.6 µm | GSAOI, Flamingos-2 |
 | `paranal`, `lasilla` | derived | X = 1.0–3.0 × PWV 0.5–20 mm (9 × 9) | ESO SkyCalc 2.0.9 (Noll et al. 2012; Jones et al. 2013) | ESO instruments |
 
-Some sources do not state their airmass (2MASS's PLEXUS models). Those atmospheres are kept as published and selected explicitly with `airmass=None`, or `--airmass unstated` on the command line; they are never relabelled with an assumed airmass. A site may set its own `outside_range`. For most team sites this is `error`, so composing a band that extends beyond the atmosphere's table is refused rather than extrapolated.
+Some sources do not state their airmass (2MASS's PLEXUS models). Those atmospheres are kept as published and selected explicitly with `airmass=None`, or `--airmass unstated` on the command line; they are never relabelled with an assumed airmass. A site may set its own `outside_range` and `coverage_tolerance`. Most team sites use `error` with a tolerance of 0.1%: composition is refused when more than 0.1% of a band's throughput lies beyond the atmosphere's table, and the edge values are held only over fainter leak wings.
 
 ```bash
 sed-tools filters-compose Paranal/VISTA --components filter,optics,qe --airmass 1.2 --pwv 2.5   # SkyCalc paranal

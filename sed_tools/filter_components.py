@@ -547,11 +547,15 @@ class AtmosphereGrid:
     #: How composition treats wavelengths beyond this atmosphere's table:
     #: "error", "zero" or "edge"; unset = the instrument's own policy.
     outside_range: Optional[str] = None
+    #: With outside_range "error": the largest fraction of a band's throughput
+    #: (the product of its other factors) allowed beyond the table, where the
+    #: edge values are then held; e.g. a filter's faint leak wing.
+    coverage_tolerance: Optional[float] = None
     #: [{"file": str, "source": str, ...}] atmospheres of unstated airmass
     unstated: Optional[List[Dict[str, object]]] = None
 
     _OPTIONAL = ("kind", "model", "model_version", "citation", "parameters", "location", "terms",
-                 "outside_range", "unstated")
+                 "outside_range", "coverage_tolerance", "unstated")
 
     def __post_init__(self):
         if self.kind is not None and self.kind not in ATMOSPHERE_KINDS:
@@ -684,6 +688,7 @@ def multiply_curves(
     allow_partial: bool = False,
     outside: str = "error",
     policies: Optional[Sequence[Optional[str]]] = None,
+    tolerances: Optional[Sequence[Optional[float]]] = None,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """Multiply component curves on a merged grid spanning the first curve.
 
@@ -694,7 +699,9 @@ def multiply_curves(
     otherwise: ``outside="zero"`` (or ``allow_partial``) treats it as zero,
     ``outside="edge"`` holds its edge value.  ``policies`` may override
     ``outside`` per curve (``None`` entries keep it), e.g. for an atmosphere
-    whose own manifest sets ``outside_range``.
+    whose own manifest sets ``outside_range``.  ``tolerances`` (per curve)
+    relax an ``"error"`` rule: the curve may miss at most that fraction of
+    the throughput accumulated so far, and holds its edge values there.
     """
     if allow_partial and outside == "error":
         outside = "zero"
@@ -708,13 +715,16 @@ def multiply_curves(
     for rule in [outside, *rules]:
         if rule not in ("error", "zero", "edge"):
             raise ComponentError(f"Unknown outside-range policy {rule!r}")
+    tols = list(tolerances or [None] * len(curves))
+    if len(tols) != len(curves):
+        raise ComponentError("one coverage tolerance per curve")
     base = curves[0]
     lo, hi = float(base.wavelength[0]), float(base.wavelength[-1])
     band_lo, band_hi = _support(base)
 
-    for other, rule in zip(curves[1:], rules[1:]):
+    for other, rule, tol in zip(curves[1:], rules[1:], tols[1:]):
         o_lo, o_hi = float(other.wavelength[0]), float(other.wavelength[-1])
-        if (o_lo > band_lo or o_hi < band_hi) and rule == "error":
+        if (o_lo > band_lo or o_hi < band_hi) and rule == "error" and tol is None:
             raise ComponentCoverageError(
                 f"{other.path.name if other.path else 'component'} covers {o_lo:.0f}-{o_hi:.0f} A "
                 f"but the band spans {band_lo:.0f}-{band_hi:.0f} A"
@@ -724,7 +734,17 @@ def multiply_curves(
         [base.wavelength] + [c.wavelength[(c.wavelength > lo) & (c.wavelength < hi)] for c in curves[1:]]
     ))
     product = np.interp(grid, base.wavelength, base.transmission)
-    for other, rule in zip(curves[1:], rules[1:]):
+    for other, rule, tol in zip(curves[1:], rules[1:], tols[1:]):
+        o_lo, o_hi = float(other.wavelength[0]), float(other.wavelength[-1])
+        if rule == "error" and tol is not None:
+            total = float(np.trapezoid(product, grid))
+            beyond = float(np.trapezoid(np.where((grid < o_lo) | (grid > o_hi), product, 0.0), grid))
+            if total <= 0 or beyond > tol * total:
+                raise ComponentCoverageError(
+                    f"{other.path.name if other.path else 'component'} covers {o_lo:.0f}-{o_hi:.0f} A but "
+                    f"{beyond / total if total > 0 else 1:.2%} of the band lies beyond it (tolerance {tol:g})"
+                )
+            rule = "edge"
         if rule == "edge":
             factor = np.interp(grid, other.wavelength, other.transmission)
         else:
@@ -884,11 +904,14 @@ def compose_band(
     curves: List[Curve] = []
     sources: List[str] = []
     policies: List[Optional[str]] = []
+    tolerances: List[Optional[float]] = []
     for key, path in steps:
         policies.append(None)
+        tolerances.append(None)
         if key == ATMOSPHERE:
             grid = atmosphere_grid(atmosphere_root, spec.site)  # type: ignore[arg-type,union-attr]
-            policies[-1] = grid.outside_range if grid is not None else None
+            if grid is not None:
+                policies[-1], tolerances[-1] = grid.outside_range, grid.coverage_tolerance
         if key != ATMOSPHERE and not path.resolve().is_relative_to(instrument_dir.resolve()):
             raise ComponentError(f"{path}: component resolves outside its instrument directory")
         curve = read_curve(path)
@@ -908,7 +931,8 @@ def compose_band(
             str(path.relative_to(path.parents[2])) if len(path.parents) > 2 else path.name))
 
     wavelength, transmission = multiply_curves(
-        curves, allow_partial=allow_partial, outside=manifest.outside_range, policies=policies
+        curves, allow_partial=allow_partial, outside=manifest.outside_range, policies=policies,
+        tolerances=tolerances,
     )
     recipe = recipe_name(ordered)
     header = {
