@@ -1742,9 +1742,14 @@ class Filters:
 
         Each ``.dat`` file gets ``DetectorType=energy|photon`` on its column
         row (plus ``FilterID`` and ``DetectorTypeSource``), resolved from SVO by
-        filter ID or by matching the curve against SVO's records. Files that
-        cannot be identified are written as ``energy`` with source
-        ``assumed``. See :mod:`sed_tools.filter_metadata`.
+        filter ID or by matching the curve against SVO's records. Files with no
+        ``DetectorType`` that cannot be identified are written as ``energy``
+        with source ``assumed``; files that already have one keep it. An
+        existing type is replaced only by a resolution whose source has equal
+        or higher precedence (``original`` > ``inferred`` > ``svo`` >
+        ``svo-curve-match`` > ``assumed``); a weaker resolution is reported
+        (``kept``, ``resolved_type``, ``resolved_source``, ``note``) and not
+        written. See :mod:`sed_tools.filter_metadata`.
 
         Parameters
         ----------
@@ -1754,7 +1759,8 @@ class Filters:
         facility : str, optional
             SVO facility name, when ``path`` is a single instrument directory.
         force : bool
-            Re-resolve files that are already tagged from SVO.
+            Re-resolve files that are already tagged. The precedence still
+            applies, so ``original`` and ``inferred`` types are kept.
         dry_run : bool
             Report what would be written without modifying files.
         """
@@ -1780,10 +1786,13 @@ class Filters:
                 "changed": r.changed,
                 "migrated": r.migrated,
                 "note": r.note,
+                "kept": r.kept,
+                "resolved_type": r.resolved_type,
+                "resolved_source": r.resolved_source,
             })
-            if verbose or (r.changed and r.source == "assumed"):
+            if verbose or r.kept or (r.changed and r.source == "assumed"):
                 flag = "*" if r.changed else " "
-                note = f"  ({r.note})" if r.note and r.source == "assumed" else ""
+                note = f"  ({r.note})" if r.note and (r.kept or r.source == "assumed") else ""
                 print(f"[filters]{flag} {r.path}: {r.detector_type} [{r.source}]{note}")
         return rows
 
