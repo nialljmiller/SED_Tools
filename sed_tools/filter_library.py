@@ -232,7 +232,7 @@ class FilterLibrary:
         return result
 
     def compose(self, instrument, components, *, atmosphere=None, bands=None,
-                detector_type=None, allow_heavy=False, allow_partial=False):
+                detector_type=None, allow_heavy=False, allow_partial=False, variants=None):
         directory = self.directory(instrument)
         if not list(directory.glob("*.dat")):
             directory = self.published(directory.parent.name, directory.name)
@@ -243,7 +243,8 @@ class FilterLibrary:
             manifest = InstrumentManifest.load(directory)
             self.prepare_atmosphere(manifest, spec, allow_heavy=allow_heavy)
         return build_product(directory, roles, atmosphere=spec, atmosphere_root=self.atmosphere_root,
-                             bands=bands, detector_type=detector_type, allow_partial=allow_partial)
+                             bands=bands, detector_type=detector_type, allow_partial=allow_partial,
+                             variants=variants)
 
     @staticmethod
     def _catalogue_key(name):

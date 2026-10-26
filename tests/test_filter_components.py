@@ -448,15 +448,29 @@ def test_only_eso_sites_get_a_skycalc_atmosphere(tmp_path, facility, site):
 
 
 def test_svo_filter_only_sibling_is_the_bands_filter_component(tmp_path):
-    inst = tmp_path / "SLOAN" / "SDSS"
+    inst = tmp_path / "Subaru" / "HSC"
     _published(inst, "g", WL, _gauss(4800, 150) * 0.5, "filter+instrument+atmosphere")
-    _published(inst, "gprime_filter", WL, _gauss(4800, 150), "filter")
+    _published(inst, "g_filter", WL, _gauss(4800, 150), "filter")
     _published(inst, "r", WL, _gauss(6200, 150) * 0.5, "filter+instrument+atmosphere")
 
     m = InstrumentManifest.load(inst)
 
-    assert m.component_file(FILTER, "g") == "gprime_filter.dat"
-    assert m.component_file(FILTER, "gprime_filter") == "gprime_filter.dat"
+    assert m.component_file(FILTER, "g") == "g_filter.dat"
+    assert m.component_file(FILTER, "g_filter") == "g_filter.dat"
     assert m.component_file(FILTER, "r") is None
     assert m.primary_bands() == ["g", "r"]  # the sibling is g's component, not a band to compose
     assert m.bands_with(FILTER) == ["g"]
+
+
+def test_sdss_primed_filters_are_not_the_2p5m_cameras_filter(tmp_path):
+    # SVO's gprime_filter is the USNO 40-in filter (in air); the 2.5 m
+    # camera's filters sit in vacuum and differ, so it is a band of its own.
+    inst = tmp_path / "SLOAN" / "SDSS"
+    _published(inst, "g", WL, _gauss(4800, 150) * 0.5, "filter+instrument+atmosphere")
+    _published(inst, "gprime_filter", WL, _gauss(4800, 150), "filter")
+
+    m = InstrumentManifest.load(inst)
+
+    assert m.component_file(FILTER, "g") is None
+    assert m.component_file(FILTER, "gprime_filter") == "gprime_filter.dat"
+    assert m.primary_bands() == ["g", "gprime_filter"]

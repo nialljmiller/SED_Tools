@@ -32,6 +32,9 @@ BUILDERS: Dict[str, str] = {
     "space": ".space",
     "observatories": ".observatories",
     "standards": ".standards",
+    "legacy_surveys": ".legacy_surveys",
+    "gmos": ".gmos",
+    "sdss": ".sdss",
 }
 
 

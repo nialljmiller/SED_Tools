@@ -1686,6 +1686,7 @@ class Filters:
         detector_type: Optional[str] = None,
         allow_heavy: bool = False,
         allow_partial: bool = False,
+        variants: Optional[Dict[str, str]] = None,
     ) -> Path:
         """Download filter profiles, optionally composing them from components.
 
@@ -1714,13 +1715,18 @@ class Filters:
             Permit large original-source downloads such as JWST reference data.
         allow_partial : bool
             Explicitly allow zero transmission outside component coverage.
+        variants : dict, optional
+            Alternative component curves to use, e.g. ``{"qe": "single_layer"}``
+            for a detector coating or epoch; see ``variants`` in
+            :meth:`available`.  The choice is part of the product name.
         """
         instrument_dir = cls._fetch_published(facility, instrument, filter_root=filter_root)
-        if components is None and atmosphere is None and detector_type is None and bands is None:
+        if (components is None and atmosphere is None and detector_type is None and bands is None
+                and not variants):
             return instrument_dir
         return cls.compose(instrument_dir, components or ["published"], atmosphere=atmosphere,
                            filter_root=filter_root, bands=bands, detector_type=detector_type,
-                           allow_heavy=allow_heavy, allow_partial=allow_partial)
+                           allow_heavy=allow_heavy, allow_partial=allow_partial, variants=variants)
 
     @classmethod
     def _fetch_published(cls, facility, instrument, filter_root=None) -> Path:
@@ -1846,6 +1852,7 @@ class Filters:
         bands: Optional[Sequence[str]] = None,
         detector_type: Optional[str] = None,
         allow_heavy: bool = False,
+        variants: Optional[Dict[str, str]] = None,
     ) -> Path:
         """Build ``products/<recipe>/`` for a local instrument directory.
 
@@ -1859,7 +1866,8 @@ class Filters:
 
         out = FilterLibrary(filter_root or cls._filter_root).compose(
             instrument, components, atmosphere=atmosphere, bands=bands,
-            detector_type=detector_type, allow_heavy=allow_heavy, allow_partial=allow_partial)
+            detector_type=detector_type, allow_heavy=allow_heavy, allow_partial=allow_partial,
+            variants=variants)
         print(f"[filters] Built {out}")
         return out
 
