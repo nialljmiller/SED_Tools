@@ -79,7 +79,8 @@ def main():
             f'date-released: "{today.isoformat()}"')
         contents["README.md"] = replace_once(
             contents["README.md"],
-            r'^A version-specific Zenodo DOI for Version .* will be added following archival of this release\.$',
+            r'^(A version-specific Zenodo DOI for Version .* will be added following archival of this release\.'
+            r'|Version [0-9.]+: \[10\.5281/zenodo\.[0-9]+\]\(https://doi\.org/10\.5281/zenodo\.[0-9]+\))$',
             f'A version-specific Zenodo DOI for Version {target} will be added following archival of this release.')
         heading = f"Version {target} ({today.strftime('%B %Y')})"
         changelog = contents["docs/source/changelog.rst"]
