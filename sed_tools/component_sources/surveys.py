@@ -17,6 +17,7 @@ import zipfile
 import numpy as np
 
 from ._original import Component, Fetcher, Instrument, make_band, make_builder, safe_member
+from .team_atmospheres import HALEAKALA_PS1
 
 PHOTON = "photon"
 
@@ -117,11 +118,12 @@ def ps1(fetch: Fetcher) -> Instrument:
             "sampling 380-1100 nm. Values are m^2 e-/photon (effective area including telescope, "
             "corrector, filter, detector QE and the nominal 1.2 airmasses of the PS1 standard "
             "atmosphere); kept unscaled (synthetic photometry is scale-free). Photon-counting CCDs. "
-            "The table also gives the 1.2-airmass atmosphere (Aero x Ray x Mol) on the same grid, but "
-            "SED_Tools add_component accepts only filter/optics/qe roles, so it is recorded in "
-            "provenance only and no separate component is published. No published pivot: table4's "
-            "'pivot' column is the log-mean wavelength, reproduced here to <0.1 % (provenance).")
-    return Instrument("PAN-STARRS", "PS1", bands, note, ground_based=True)
+            "The table also gives the 1.2-airmass atmosphere (Aero x Ray x Mol) on the same grid; it is "
+            "registered as the team atmosphere site 'haleakala_ps1' (no separate instrument-only "
+            "component is published, so the curves above already contain it). No published pivot: "
+            "table4's 'pivot' column is the log-mean wavelength, reproduced here to <0.1 % (provenance).")
+    return Instrument("PAN-STARRS", "PS1", bands, note, ground_based=True,
+                      sites=[HALEAKALA_PS1], default_site=HALEAKALA_PS1.site)
 
 
 # ---------------------------------------------------------------------- OGLE
