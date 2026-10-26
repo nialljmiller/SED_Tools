@@ -20,6 +20,11 @@ Filter properties
   photometry. ``curve_properties()`` and ``instrument_properties()`` read
   filter files with their metadata. The NJM mirror serves the values
   precomputed in each instrument's ``properties.json``.
+- Add ``sed_tools.filter_colors`` to give each band a plotting colour from its
+  curve. Mostly-visible bands get their true colour (CIE 1931 2-degree observer
+  and illuminant D65, from the CIE's published tables, now shipped in
+  ``sed_tools/cie``). Ultraviolet and infrared bands get false colours in
+  wavelength order.
 
 Version 0.4.1 (October 2026)
 ----------------------------
