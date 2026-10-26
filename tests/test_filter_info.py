@@ -237,3 +237,32 @@ def test_curated_star_band_fields_apply_to_every_band(tmp_path):
     assert info["bands"]["R"]["PhotSystem"] == "Test R"
     assert info["bands"]["I"]["PhotSystem"] == "Test"
     assert "bibcode:2003AJ....126.1090C" in info["bands"]["I"]["references"]
+
+
+def test_curated_band_can_repoint_or_clear_the_svo_match_and_its_note(tmp_path):
+    svo_dir = _archive(tmp_path)
+    curated = tmp_path / "curated"
+    curated.mkdir()
+    inst = tmp_path / "data" / "filters" / "Test" / "Cam"
+    inst.mkdir(parents=True)
+    (inst / "R.dat").write_text(_curve_text("FilterID=Test/Cam.R;DetectorType=energy;DetectorTypeSource=original"))
+    (inst / "V.dat").write_text(_curve_text("FilterID=Test/Cam.V;DetectorType=photon;DetectorTypeSource=original"))
+    (curated / "Test__Cam.json").write_text(json.dumps({"bands": {
+        "R": {"DetectorType_note": "SVO split this band into R and R_fil; NJM's R is the full curve."},
+        "V": {"svo_filterID": "Test/Cam.R"}}}))
+    sources = InfoSources(tmp_path, svo_dir=svo_dir, curated_dir=curated, references={})
+    props = {"R": {"WavelengthPivot": 6000.0}, "V": {"WavelengthPivot": 6000.0}}
+    info = compose_info(sources, inst, sorted(inst.glob("*.dat")), props)
+    assert info["bands"]["R"]["svo"]["DetectorType_note"].startswith("SVO split")
+    assert "DetectorType_note" not in info["bands"]["R"]  # override consumed, not copied
+    assert info["bands"]["V"]["svo"]["matched_by"] == "curated"
+    (curated / "Test__Cam.json").write_text(json.dumps({"bands": {"R": {"svo_filterID": None, "DetectorType_note": ""}}}))
+    info = compose_info(sources, inst, sorted(inst.glob("*.dat")), props)
+    assert "svo" not in info["bands"]["R"] and "R" in info["svo_unmatched"]
+
+
+def test_single_letter_bands_match_svo_with_their_case(tmp_path):
+    svo_dir = _archive(tmp_path)
+    sources = InfoSources(tmp_path, svo_dir=svo_dir, curated_dir=tmp_path / "curated", references={})
+    assert match_svo(sources, "Test", "Cam", "R", {}, None, 6000.0)[2] == "band name and pivot"
+    assert match_svo(sources, "Test", "Cam", "r", {}, None, 6000.0)[0] is None

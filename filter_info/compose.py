@@ -143,7 +143,9 @@ def match_svo(sources, facility, instrument, band, header, provenance_band, pivo
         for filter_id, record in sources.svo_facility(group.split("/", 1)[0]).items():
             prefix, _, svo_band = filter_id.rpartition(".")
             svo_pivot = _svo_pivot(record)
-            if (prefix == group and _norm(svo_band) in names and svo_pivot
+            # Single letters keep their case: SDSS-style r is not Cousins-style R.
+            same_name = svo_band == band if len(band) == 1 else _norm(svo_band) in names
+            if (prefix == group and same_name and svo_pivot
                     and abs(svo_pivot - pivot) <= PIVOT_TOLERANCE * pivot):
                 found.append((filter_id, record))
     if len(found) == 1:  # ambiguous name matches are left unmatched
@@ -226,7 +228,20 @@ def compose_info(sources, instrument_dir, curves, properties=None):
         header = read_filter_header(curve)
         prov_band = (provenance.get("bands") or {}).get(band)
         pivot = ((properties or {}).get(band) or {}).get("WavelengthPivot")
-        filter_id, record, how = match_svo(sources, facility, instrument, band, header, prov_band, pivot)
+        # Curated svo_filterID re-points the SVO match (null: no SVO record applies);
+        # curated DetectorType_note replaces the generated note ("" removes it).
+        curated_bands = curated.get("bands") or {}
+        override = dict(curated_bands.get(band, {}))
+        svo_override = override.pop("svo_filterID", False)
+        note_override = override.pop("DetectorType_note", None)
+        if svo_override is False:
+            filter_id, record, how = match_svo(sources, facility, instrument, band, header, prov_band, pivot)
+        else:
+            filter_id = svo_override or None
+            record = sources.svo(filter_id) if filter_id else None
+            how = "curated" if record else None
+            if filter_id and not record:
+                filter_id = None
         entry = {}
         if record:
             fields, refs, specified, svo, page = _svo_entry(
@@ -235,6 +250,10 @@ def compose_info(sources, instrument_dir, curves, properties=None):
             entry.update(refs)
             if specified:
                 entry["specified"] = specified
+            if note_override is not None:
+                svo.pop("DetectorType_note", None)
+                if note_override:
+                    svo["DetectorType_note"] = note_override
             entry["svo"] = svo
             group = svo_groups.setdefault(filter_id.rsplit(".", 1)[0], {})
             for key, field in (("instrument", "description"), ("facility", "facility_description")):
@@ -257,9 +276,9 @@ def compose_info(sources, instrument_dir, curves, properties=None):
         svo_curves |= header.get("ComponentsSource") == "svo"
         # Curated "*" fields apply to every band (e.g. the paper that publishes the whole set);
         # a band's own curated fields override them.
-        curated_bands = curated.get("bands") or {}
-        entry.update(curated_bands.get("*", {}))
-        entry.update(curated_bands.get(band, {}))
+        entry.update({k: v for k, v in curated_bands.get("*", {}).items()
+                      if k not in ("svo_filterID", "DetectorType_note")})
+        entry.update(override)
         # To cite: SVO's references (papers and documentation pages), the papers among the
         # curve's sources, and curated ones. Data-file URLs stay under curve.sources only.
         cited = [r["ref"] for name in ("CalibrationReference", "ProfileReference") for r in entry.get(name, [])]
