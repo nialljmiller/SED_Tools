@@ -14,7 +14,8 @@ Filter properties
   - mean, pivot, peak, central, minimum and maximum wavelengths;
   - FWHM and effective width;
   - Vega-weighted effective and photon wavelengths;
-  - Vega, AB and ST zero points, in f_lambda and Jy.
+  - Vega, AB and ST zero points, in f_lambda and Jy;
+  - AB-Vega and ST-Vega magnitude offsets.
 
   The pivot and zero points share the detector-aware weights of SED_Tools
   photometry. ``curve_properties()`` and ``instrument_properties()`` read

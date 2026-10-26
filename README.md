@@ -240,7 +240,8 @@ Filters.tag_detector_types()               # returns one row per file
 - mean, pivot, peak, central, minimum and maximum wavelengths;
 - FWHM and effective width;
 - the Vega-weighted effective and photon wavelengths;
-- Vega, AB and ST zero points, in f_λ and in Jy.
+- Vega, AB and ST zero points, in f_λ and in Jy;
+- the AB−Vega and ST−Vega magnitude offsets (2MASS Ks: m_AB − m_Vega ≈ 1.85).
 
 The pivot and zero points use the same detector-aware weights as SED_Tools photometry, so band-averaged f_λ and f_ν convert exactly. Definitions are in the module docstring. The NJM mirror serves these values precomputed in each instrument's `properties.json`, listed in `index.json`. It uses MESA's `vega_flam.csv` for the Vega quantities, so they match MESA colors.
 

@@ -19,6 +19,8 @@ WavelengthEff      ∫ λ T F dλ / ∫ T F dλ, F the Vega spectrum
 WavelengthPhot     ∫ λ² T F dλ / ∫ λ T F dλ
 ZeroPoint*_flam    band-averaged f_λ of the reference source, erg s⁻¹ cm⁻² Å⁻¹
 ZeroPoint*_Jy      band-averaged f_ν of the reference source, Jy
+ABminusVega        m_AB − m_Vega for any source: −2.5 log₁₀(ZeroPointVega_Jy / 3631 Jy)
+STminusVega        m_ST − m_Vega: −2.5 log₁₀(ZeroPointVega_flam / 3.631e-9)
 =================  ==============================================================
 
 The references are Vega (a supplied spectrum), AB (3631 Jy) and ST
@@ -55,6 +57,7 @@ UNITS = {
     "ZeroPointVega_flam": "erg/s/cm2/Angstrom", "ZeroPointVega_Jy": "Jy",
     "ZeroPointAB_flam": "erg/s/cm2/Angstrom", "ZeroPointAB_Jy": "Jy",
     "ZeroPointST_flam": "erg/s/cm2/Angstrom", "ZeroPointST_Jy": "Jy",
+    "ABminusVega": "mag", "STminusVega": "mag",
 }
 
 PathLike = Union[str, Path]
@@ -123,6 +126,8 @@ def filter_properties(
         "ZeroPointAB_Jy": AB_JY,
         "ZeroPointST_flam": ST_FLAM,
         "ZeroPointST_Jy": ST_FLAM * nu_factor / JY,
+        "ABminusVega": None,
+        "STminusVega": None,
     }
     if vega is not None:
         vl, vf = (np.asarray(a, dtype=float) for a in vega)
@@ -137,6 +142,9 @@ def filter_properties(
                 "ZeroPointVega_flam": flam,
                 "ZeroPointVega_Jy": flam * nu_factor / JY,
             })
+            if flam > 0:
+                props["ABminusVega"] = -2.5 * math.log10(flam * nu_factor / JY / AB_JY)
+                props["STminusVega"] = -2.5 * math.log10(flam / ST_FLAM)
     return props
 
 
