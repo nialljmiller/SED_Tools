@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-10-26T23:28:26.094471",
+  "generated": "2026-10-26T23:37:23.275837",
   "base_url": "http://nillmill.ddns.net/sed_tools",
   "statistics": {
     "total_models": 1,
@@ -10013,8 +10013,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 500454,
-            "size_human": "488.72 KB"
+            "size_bytes": 501635,
+            "size_human": "489.88 KB"
           },
           "VAS5": {
             "name": "VAS5",
@@ -10078,8 +10078,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 466567,
-            "size_human": "455.63 KB"
+            "size_bytes": 467774,
+            "size_human": "456.81 KB"
           },
           "VAS7": {
             "name": "VAS7",

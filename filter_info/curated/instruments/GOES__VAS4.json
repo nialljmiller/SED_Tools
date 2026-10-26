@@ -9,5 +9,20 @@
     }
   ],
   "references": [],
-  "notes": "VISSR Atmospheric Sounder (VAS) on GOES-4: normalised spectral response functions of the 12 sounding channels from Paul van Delst's SRF archive (ftp://ftp.ssec.wisc.edu/paulv/SRF_Data/netCDF/vas_g04.srf.nc; title 'Normalised VAS SRFs for GOES-04', comment 'Interpolated SRFs for transmittance production; Data obtained from HMW'), the source SVO cites as 'Paul Van Delst SRFs'. Channel n of the file is Chnn. Wavenumber grid rebuilt from begin/end frequency and the point count (checked against the file's summation_srf), converted to Angstrom (1e8/sigma), sorted; negative samples set to 0; scaled to peak 1. DetectorType=energy is assumed: the owner gives a normalised (relative) spectral response without stating photon or energy weighting; meteorological imager SRFs are applied as weights on spectral radiance (energy convention). SVO's archived records for these instruments carry DetectorType 0 (energy). Source: NOAA/NESDIS (CIMSS/SSEC SRF archive, P. van Delst; data from HMW)."
+  "notes": "VISSR Atmospheric Sounder (VAS) on GOES-4: normalised spectral response functions of the 12 sounding channels from Paul van Delst's SRF archive (ftp://ftp.ssec.wisc.edu/paulv/SRF_Data/netCDF/vas_g04.srf.nc; title 'Normalised VAS SRFs for GOES-04', comment 'Interpolated SRFs for transmittance production; Data obtained from HMW'), the source SVO cites as 'Paul Van Delst SRFs'. Channel n of the file is Chnn. Wavenumber grid rebuilt from begin/end frequency and the point count (checked against the file's summation_srf), converted to Angstrom (1e8/sigma), sorted; negative samples set to 0; scaled to peak 1. DetectorType=energy is assumed: the owner gives a normalised (relative) spectral response without stating photon or energy weighting; meteorological imager SRFs are applied as weights on spectral radiance (energy convention). SVO's archived records for these instruments carry DetectorType 0 (energy). Source: NOAA/NESDIS (CIMSS/SSEC SRF archive, P. van Delst; data from HMW).",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"These images are freely available for noncommercial use with proper attribution.\" \"The following disclaimers apply to all content on our website, unless specified otherwise\"",
+    "url": "https://www.ssec.wisc.edu/disclaimer/",
+    "scope": "Owner-side site-wide statement, following sibling GOES/VAS5: SSEC website disclaimer (used because no statement exists on the page that serves the curve); its usage sentence names images, not data, so the class stays unknown. The SRFs SVO cites are on SSEC's anonymous FTP (ftp://ftp.ssec.wisc.edu/paulv/SRF_Data/netCDF/vas_g04.srf.nc), which has no statement; the netCDF attributes carry no notice ('Interpolated SRFs for transmittance production; Data obtained from HMW'). The curves come from the CIMSS/SSEC SRF archive (P. van Delst) directly, not from SVO records."
+  },
+  "acknowledgements": [
+    {
+      "for": "Space Science and Engineering Center (SSEC), University of Wisconsin-Madison",
+      "text": "Provided courtesy of Space Science and Engineering Center, University of Wisconsin-Madison.",
+      "url": "https://www.ssec.wisc.edu/disclaimer/",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ]
 }
