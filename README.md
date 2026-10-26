@@ -274,7 +274,10 @@ Where components come from:
 |---|---|
 | HST ACS (WFC/HRC/SBC), WFC3 (UVIS1/2, IR), WFPC2, NICMOS 1–3 | STScI synphot component tables (graph-table walk per obsmode) |
 | JWST NIRCam, NIRISS, MIRI imaging | STScI Pandeia reference data 4.0 (in-flight) |
-| Rubin/LSST | `lsst/throughputs` (+ Rubin's standard atmosphere `lsst_std`) |
+| Rubin/LSST | `lsst/throughputs` release 1.5 for `LSST/LSST` (SVO's curves) and release 1.9 for `LSST/LSSTv19` (+ Rubin's standard atmosphere `lsst_std`) |
+| CFHT MegaPrime/MegaCam | CFHT filter-database scans of each band's own filter (2002, 2007 and 2014–2015 sets kept apart), primary mirror × corrector, simulated E2V QE |
+| ERIS/NIX | ESO `nix-filters.zip`: AO dichroic × the band's default NIX camera (no QE or telescope curve published) |
+| 2MASS | Explanatory Supplement III.1.b1 filter, mirror, window, lens and dichroic tables and NICMOS3 QE (the published RSRs also include PLEXUS atmosphere and a λ factor) |
 | Subaru HSC | NAOJ/Subaru curves (+ HSC pipeline's Maunakea atmosphere `maunakea_hsc`) |
 | CTIO DECam | DES standard bandpasses ÷ DES atmosphere (+ `ctio_des`) |
 | VISTA/VIRCAM | ESO VIRCAM ETC curves (+ SkyCalc `paranal`) |
@@ -284,7 +287,7 @@ Where components come from:
 | Liverpool IO:O | Seven filter scans plus the separately published CCD QE and cryostat-window transmission from the IO:O efficiency model; other telescope optics remain unavailable |
 | ZTF | `ztf_information` filters and CCD QE |
 | 57 SVO instrument groups (SDSS, Swift/UVOT, UKIRT/WFCAM, OmegaCAM, Suprime-Cam, ...) | SVO's own filter-only sibling curves (`g_filter`, `g_fil`, `gprime_filter`) |
-| Gaia, 2MASS, WISE, Spitzer, GALEX, TESS, Kepler, Hipparcos/Tycho | none — only totals are published (`filters-info` says so) |
+| Gaia, WISE, Spitzer, GALEX, TESS, Kepler, Hipparcos/Tycho | none — only totals are published (`filters-info` says so) |
 
 The NJM mirror runs the automatic builders ahead of time (`sed-tools filters-build-components all`). Component requests reuse installed files, try NJM, then run the instrument's original-source builder if needed. For these table sets, a curator can run `sed-tools filters-build-components tabular --instrument PANIC` (or `INGRID`, `NSFCam`, `IOO`, `HAWKI`, `NACO`, `SPHERE`, `GSAOI`, `NIFS`); `--raw /path/to/evidence` reads the saved official files when a source is unavailable. These filters can be discovered and downloaded without SVO. If both NJM and the original source are unavailable, the normal SVO fallback remains. Their root curves are measured filters, not full system throughput. Large downloads, including JWST reference data, require `allow_heavy=True` in Python or `--allow-heavy` on the command line.
 
