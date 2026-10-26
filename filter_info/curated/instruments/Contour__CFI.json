@@ -1,0 +1,41 @@
+{
+  "description": "The CONTOUR Forward Imager (CFI) was one of the two CCD cameras on CONTOUR, intended for coma studies and approach imaging. Its 10-position filter wheel held nine narrow spectral filters (5–15 nm wide, centred from 309 to 920 nm; the narrowest are UV filters for coma emission features) and one broadband clear filter.",
+  "facility_description": "CONTOUR (Comet Nucleus Tour) was a NASA mission to study the diversity of comet nuclei. The ground-calibration documents for its two CCD imagers are archived at the PDS Small Bodies Node.",
+  "notes": "Researched 2026-10-26. CONTOUR ground-calibration data are archived in the PDS Small Bodies Node (CON-CAL-ALL-6-DOC-SET-V1.0); the NASA science data licence page states there are no restrictions on usage. Instrument: Conard et al. (2004). Bandpasses are documented in Izenberg (2002), \"Bandpasses for spectral filters of CONTOUR imagers\". Bands with suffix _fil are the Barr laboratory filter transmissions; base band names are relative responses from monochromator scans through the instrument during APL calibration. Suffix oob marks the scans of the narrow-band filters repeated with out-of-band rejection filters in the light path. Manager review: detector details not found in the linked pages were removed; DetectorType is unchanged.",
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"There are no restrictions on the usage of these data.\"",
+    "url": "https://science.data.nasa.gov/about/license"
+  },
+  "references": [
+    "doi:10.1016/S0094-5765(99)00143-5",
+    "doi:10.1117/12.506344"
+  ],
+  "links": [
+    {
+      "url": "https://pdssbn.astro.umd.edu/holdings/con-cal-all-6-doc-set-v1.0/document/",
+      "label": "CONTOUR Ground Calibration Documents Directory",
+      "source": "NASA PDS Small Bodies Node"
+    },
+    {
+      "url": "https://pdssbn.astro.umd.edu/holdings/con-cal-all-6-doc-set-v1.0/document/izenberg/imager_bandpasses.pdf",
+      "label": "Bandpasses for CONTOUR Imagers Report",
+      "source": "NASA PDS Small Bodies Node"
+    },
+    {
+      "url": "https://pdssbn.astro.umd.edu/holdings/con-cal-all-6-doc-set-v1.0/document/izenberg/cfi_filter_transmission.pdf",
+      "label": "CFI Filter Transmission Data",
+      "source": "NASA PDS Small Bodies Node"
+    },
+    {
+      "url": "https://pdssbn.astro.umd.edu/holdings/con-cal-all-6-doc-set-v1.0/document/izenberg/cfi_bandpass_data.pdf",
+      "label": "CFI Bandpass Data",
+      "source": "NASA PDS Small Bodies Node"
+    },
+    {
+      "url": "https://science.data.nasa.gov/about/license",
+      "label": "NASA Science Data Licenses",
+      "source": "NASA Science Data Portal"
+    }
+  ]
+}

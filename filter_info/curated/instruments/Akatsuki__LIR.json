@@ -1,0 +1,78 @@
+{
+  "description": "LIR is Akatsuki’s longwave infrared camera, imaging thermal emission in the 8–12 μm region to map Venusian cloud-top temperature on both the dayside and nightside.",
+  "facility_description": "Akatsuki, also called the Venus Climate Orbiter or PLANET-C, is JAXA’s Venus mission for studying the planet’s atmosphere using cameras at several wavelengths and radio occultation.",
+  "notes": "Descriptions are paraphrased from live ISAS/JAXA instrument pages and the cited papers. DARTS About explicitly directs data users to ISAS Data Policy. Section 6 permits commercial and non-commercial reuse, requires ISAS/JAXA origin credit, asks users to identify and describe modifications, and preserves third-party restrictions. The DARTS acknowledgement is conditional on significant use of its service; general DARTS archive papers are not mandatory instrument citations. Filter files are PLANET-C calibration documents mirrored by NASA PDS. No instrument-specific extra redistribution restriction was found in the inspected inventories, labels or owner pages. No magnitude system is asserted. A24 cached sources were read only; owner and publisher pages were fetched live on 2026-10-26. The PDS label specifies a 7.0° half-cone and incidence columns of 0°, 13.5° and 16.4°. NJM names 10mic_135deg and 10mic_164deg mean 13.5° and 16.4°, not 135° and 164°. Fukuhara et al. Figure 4 is explicitly zero-incidence, so that passband reference is assigned only to 10mic. Taguchi et al. (2023) is a recalibration reference, not a claimed source for all three curves. The instrument paper describes an uncooled micro-bolometer; DetectorType is unchanged.",
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"They may be copied, forwarded or modified.\"",
+    "url": "https://www.isas.jaxa.jp/en/researchers/data-policy/"
+  },
+  "references": [
+    "doi:10.5047/eps.2011.06.019",
+    "doi:10.1186/s40623-023-01803-w"
+  ],
+  "links": [
+    {
+      "url": "https://darts.isas.jaxa.jp/missions/akatsuki/lir_en.html",
+      "label": "LIR data archive and overview",
+      "source": "ISAS/JAXA DARTS"
+    },
+    {
+      "url": "https://atmos.nmsu.edu/PDS/data/vcolir_0001/document/ft/ftinfo.txt",
+      "label": "LIR filter-transmission inventory",
+      "source": "NASA PDS Atmospheres Node / PLANET-C Project Team"
+    },
+    {
+      "url": "https://akatsuki.isas.jaxa.jp/en/mission/spacecraft/",
+      "label": "Akatsuki spacecraft and instruments",
+      "source": "ISAS/JAXA"
+    },
+    {
+      "url": "https://akatsuki.isas.jaxa.jp/en/papers/",
+      "label": "Akatsuki publication list",
+      "source": "ISAS/JAXA"
+    },
+    {
+      "url": "https://www.isas.jaxa.jp/en/researchers/data-policy/",
+      "label": "ISAS data policy",
+      "source": "ISAS/JAXA"
+    },
+    {
+      "url": "https://darts.isas.jaxa.jp/en/about",
+      "label": "DARTS acknowledgement and policy applicability",
+      "source": "ISAS/JAXA DARTS"
+    },
+    {
+      "url": "https://atmos.nmsu.edu/PDS/data/vcolir_0001/document/ft/ft_lir_pic.lbl",
+      "label": "LIR transmission columns and incidence angles",
+      "source": "NASA PDS Atmospheres Node / PLANET-C Project Team"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "ISAS/JAXA open data",
+      "text": "When using data, please indicate origin of the data as \"ISAS/JAXA\".",
+      "url": "https://www.isas.jaxa.jp/en/researchers/data-policy/",
+      "references": [],
+      "applies_to": "all bands"
+    },
+    {
+      "for": "DARTS (when use of its service significantly contributes to the work)",
+      "text": "This research made use of data obtained from Data ARchives and Transmission System (DARTS), provided by Center for Science-satellite Operation and Data Archive (C-SODA) at ISAS/JAXA.",
+      "url": "https://darts.isas.jaxa.jp/en/about",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ],
+  "bands": {
+    "10mic": {
+      "Description": "LIR 8–12 μm filter at 0° incidence"
+    },
+    "10mic_135deg": {
+      "Description": "LIR 8–12 μm filter at 13.5° incidence"
+    },
+    "10mic_164deg": {
+      "Description": "LIR 8–12 μm filter at 16.4° incidence"
+    }
+  }
+}

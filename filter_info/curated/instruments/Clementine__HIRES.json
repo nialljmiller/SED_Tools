@@ -1,0 +1,37 @@
+{
+  "description": "HIRES was Clementine's high-resolution camera, built together with the mission's lidar ranging system. The NJM curves cover its four narrow-band filters at 415, 560, 650 and 750 nm.",
+  "facility_description": "The Deep Space Program Science Experiment (DSPSE), better known as Clementine, was a joint mission of the US Ballistic Missile Defense Organization and NASA that tested sensors and spacecraft components in space and systematically mapped the Moon in 1994.",
+  "notes": "Researched 2026-10-26. Clementine data are archived in the NASA Planetary Data System; the NASA science data licence page states there are no restrictions on usage. Design: Ledebuhr et al. (1995); radiometric calibration: Robinson et al. (2003). Mission overview: Nozette et al. (1994). Manager review: detector part numbers and optical details not found in the linked pages were removed; DetectorType is unchanged.",
+  "licence": {
+    "redistribution": "public",
+    "terms": "\"There are no restrictions on the usage of these data.\"",
+    "url": "https://science.data.nasa.gov/about/license"
+  },
+  "references": [
+    "bibcode:1994Sci...266.1835N",
+    "doi:10.1117/12.212030",
+    "doi:10.1029/2000JE001241"
+  ],
+  "links": [
+    {
+      "url": "https://pds-imaging.jpl.nasa.gov/portal/clementine_mission.html",
+      "label": "Clementine Imaging Node Mission Page",
+      "source": "NASA PDS Imaging"
+    },
+    {
+      "url": "https://pds-geosciences.wustl.edu/missions/clementine/",
+      "label": "Clementine Geosciences Node Data Archive",
+      "source": "NASA PDS Geosciences"
+    },
+    {
+      "url": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1994-004A",
+      "label": "Clementine Spacecraft Profile",
+      "source": "NASA NSSDCA"
+    },
+    {
+      "url": "https://science.data.nasa.gov/about/license",
+      "label": "NASA Science Data Licenses",
+      "source": "NASA Science Data Portal"
+    }
+  ]
+}

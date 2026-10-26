@@ -1,0 +1,78 @@
+{
+  "description": "IR2 is Akatsuki’s 2-μm camera, using nightside atmospheric windows to trace Venus’s lower clouds and carbon monoxide. Its 2.02-μm channel probes dayside cloud-top altitude, while the 1.65-μm channel was used for zodiacal-light observations during cruise.",
+  "facility_description": "Akatsuki, also called the Venus Climate Orbiter or PLANET-C, is JAXA’s Venus mission for studying the planet’s atmosphere using cameras at several wavelengths and radio occultation.",
+  "notes": "Descriptions are paraphrased from live ISAS/JAXA instrument pages and the cited papers. DARTS About explicitly directs data users to ISAS Data Policy. Section 6 permits commercial and non-commercial reuse, requires ISAS/JAXA origin credit, asks users to identify and describe modifications, and preserves third-party restrictions. The DARTS acknowledgement is conditional on significant use of its service; general DARTS archive papers are not mandatory instrument citations. Filter files are PLANET-C calibration documents mirrored by NASA PDS. No instrument-specific extra redistribution restriction was found in the inspected inventories, labels or owner pages. No magnitude system is asserted. A24 cached sources were read only; owner and publisher pages were fetched live on 2026-10-26. The inventory labels the 1740nm channel 1.735 μm; DARTS rounds it to 1.74 μm. Satoh et al. Figure 2 distinguishes standalone filters from products with the common short-wavelength-pass filter and discusses temperature shifts. No assertion is made that NJM curves have been corrected for these effects.",
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"They may be copied, forwarded or modified.\"",
+    "url": "https://www.isas.jaxa.jp/en/researchers/data-policy/"
+  },
+  "references": [
+    "doi:10.1186/s40623-016-0451-z"
+  ],
+  "links": [
+    {
+      "url": "https://darts.isas.jaxa.jp/missions/akatsuki/ir2_en.html",
+      "label": "IR2 data archive and overview",
+      "source": "ISAS/JAXA DARTS"
+    },
+    {
+      "url": "https://atmos.nmsu.edu/PDS/data/vcoir2_0001/document/ft/ftinfo.txt",
+      "label": "IR2 filter-transmission inventory",
+      "source": "NASA PDS Atmospheres Node / PLANET-C Project Team"
+    },
+    {
+      "url": "https://akatsuki.isas.jaxa.jp/en/mission/spacecraft/",
+      "label": "Akatsuki spacecraft and instruments",
+      "source": "ISAS/JAXA"
+    },
+    {
+      "url": "https://akatsuki.isas.jaxa.jp/en/papers/",
+      "label": "Akatsuki publication list",
+      "source": "ISAS/JAXA"
+    },
+    {
+      "url": "https://www.isas.jaxa.jp/en/researchers/data-policy/",
+      "label": "ISAS data policy",
+      "source": "ISAS/JAXA"
+    },
+    {
+      "url": "https://darts.isas.jaxa.jp/en/about",
+      "label": "DARTS acknowledgement and policy applicability",
+      "source": "ISAS/JAXA DARTS"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "ISAS/JAXA open data",
+      "text": "When using data, please indicate origin of the data as \"ISAS/JAXA\".",
+      "url": "https://www.isas.jaxa.jp/en/researchers/data-policy/",
+      "references": [],
+      "applies_to": "all bands"
+    },
+    {
+      "for": "DARTS (when use of its service significantly contributes to the work)",
+      "text": "This research made use of data obtained from Data ARchives and Transmission System (DARTS), provided by Center for Science-satellite Operation and Data Archive (C-SODA) at ISAS/JAXA.",
+      "url": "https://darts.isas.jaxa.jp/en/about",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ],
+  "bands": {
+    "1650nm": {
+      "Description": "IR2 1.65 μm filter"
+    },
+    "1740nm": {
+      "Description": "IR2 1.735 μm filter, commonly labelled 1.74 μm"
+    },
+    "2020nm": {
+      "Description": "IR2 2.02 μm filter"
+    },
+    "2260nm": {
+      "Description": "IR2 2.26 μm filter"
+    },
+    "2320nm": {
+      "Description": "IR2 2.32 μm filter"
+    }
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "description": "IR1 is Akatsuki’s 1-μm camera, using separate 0.90-μm dayside and nightside filters and 0.97- and 1.01-μm filters to study Venusian clouds, near-surface water vapour and surface thermal emission.",
+  "facility_description": "Akatsuki, also called the Venus Climate Orbiter or PLANET-C, is JAXA’s Venus mission for studying the planet’s atmosphere using cameras at several wavelengths and radio occultation.",
+  "notes": "Descriptions are paraphrased from live ISAS/JAXA instrument pages and the cited papers. DARTS About explicitly directs data users to ISAS Data Policy. Section 6 permits commercial and non-commercial reuse, requires ISAS/JAXA origin credit, asks users to identify and describe modifications, and preserves third-party restrictions. The DARTS acknowledgement is conditional on significant use of its service; general DARTS archive papers are not mandatory instrument citations. Filter files are PLANET-C calibration documents mirrored by NASA PDS. No instrument-specific extra redistribution restriction was found in the inspected inventories, labels or owner pages. No magnitude system is asserted. A24 cached sources were read only; owner and publisher pages were fetched live on 2026-10-26.",
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "\"They may be copied, forwarded or modified.\"",
+    "url": "https://www.isas.jaxa.jp/en/researchers/data-policy/"
+  },
+  "references": [
+    "doi:10.5047/eps.2011.03.007",
+    "doi:10.1186/s40623-017-0773-5"
+  ],
+  "links": [
+    {
+      "url": "https://darts.isas.jaxa.jp/missions/akatsuki/ir1_en.html",
+      "label": "IR1 data archive and overview",
+      "source": "ISAS/JAXA DARTS"
+    },
+    {
+      "url": "https://atmos.nmsu.edu/PDS/data/vcoir1_0001/document/ft/ftinfo.txt",
+      "label": "IR1 filter-transmission inventory",
+      "source": "NASA PDS Atmospheres Node / PLANET-C Project Team"
+    },
+    {
+      "url": "https://akatsuki.isas.jaxa.jp/en/mission/spacecraft/",
+      "label": "Akatsuki spacecraft and instruments",
+      "source": "ISAS/JAXA"
+    },
+    {
+      "url": "https://akatsuki.isas.jaxa.jp/en/papers/",
+      "label": "Akatsuki publication list",
+      "source": "ISAS/JAXA"
+    },
+    {
+      "url": "https://www.isas.jaxa.jp/en/researchers/data-policy/",
+      "label": "ISAS data policy",
+      "source": "ISAS/JAXA"
+    },
+    {
+      "url": "https://darts.isas.jaxa.jp/en/about",
+      "label": "DARTS acknowledgement and policy applicability",
+      "source": "ISAS/JAXA DARTS"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "ISAS/JAXA open data",
+      "text": "When using data, please indicate origin of the data as \"ISAS/JAXA\".",
+      "url": "https://www.isas.jaxa.jp/en/researchers/data-policy/",
+      "references": [],
+      "applies_to": "all bands"
+    },
+    {
+      "for": "DARTS (when use of its service significantly contributes to the work)",
+      "text": "This research made use of data obtained from Data ARchives and Transmission System (DARTS), provided by Center for Science-satellite Operation and Data Archive (C-SODA) at ISAS/JAXA.",
+      "url": "https://darts.isas.jaxa.jp/en/about",
+      "references": [],
+      "applies_to": "all bands"
+    }
+  ],
+  "bands": {
+    "900nm_day": {
+      "Description": "IR1 0.90 μm dayside filter"
+    },
+    "900nm_night": {
+      "Description": "IR1 0.90 μm nightside filter"
+    },
+    "970nm": {
+      "Description": "IR1 0.97 μm filter"
+    },
+    "1010nm": {
+      "Description": "IR1 1.01 μm filter"
+    }
+  }
+}
