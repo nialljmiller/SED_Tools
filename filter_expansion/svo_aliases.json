@@ -1866,6 +1866,136 @@
    "basis": "archived SVO curve (IA capture 20201021161050) identical to NJM curve; instrument: same instrument directory",
    "njm_filterID": "Paranal/VISTA.NB990"
   },
+  "Sentinel/MSI.B01-A": {
+   "njm": "Sentinel/MSI-2A/B01",
+   "kind": "verified",
+   "basis": "R7 worker X3: SVO Sentinel/MSI.<band>-<A|B> = Sentinel-2A MSI band B01; NJM Sentinel/MSI-2A (Mac-claimed; ESA curves); ls of /media/data3/MESA/SED_Tools/data/filters on Cirrus 2026-10-26 after W6 deploy (R7/W6_DEPLOYED)"
+  },
+  "Sentinel/MSI.B01-B": {
+   "njm": "Sentinel/MSI-2B/B01",
+   "kind": "verified",
+   "basis": "R7 worker X3: SVO Sentinel/MSI.<band>-<A|B> = Sentinel-2B MSI band B01; NJM Sentinel/MSI-2B (Mac-claimed; ESA curves); ls of /media/data3/MESA/SED_Tools/data/filters on Cirrus 2026-10-26 after W6 deploy (R7/W6_DEPLOYED)"
+  },
+  "Sentinel/MSI.B02-A": {
+   "njm": "Sentinel/MSI-2A/B02",
+   "kind": "verified",
+   "basis": "R7 worker X3: SVO Sentinel/MSI.<band>-<A|B> = Sentinel-2A MSI band B02; NJM Sentinel/MSI-2A (Mac-claimed; ESA curves); ls of /media/data3/MESA/SED_Tools/data/filters on Cirrus 2026-10-26 after W6 deploy (R7/W6_DEPLOYED)"
+  },
+  "Sentinel/MSI.B02-B": {
+   "njm": "Sentinel/MSI-2B/B02",
+   "kind": "verified",
+   "basis": "R7 worker X3: SVO Sentinel/MSI.<band>-<A|B> = Sentinel-2B MSI band B02; NJM Sentinel/MSI-2B (Mac-claimed; ESA curves); ls of /media/data3/MESA/SED_Tools/data/filters on Cirrus 2026-10-26 after W6 deploy (R7/W6_DEPLOYED)"
+  },
+  "Sentinel/MSI.B03-A": {
+   "njm": "Sentinel/MSI-2A/B03",
+   "kind": "verified",
+   "basis": "R7 worker X3: SVO Sentinel/MSI.<band>-<A|B> = Sentinel-2A MSI band B03; NJM Sentinel/MSI-2A (Mac-claimed; ESA curves); ls of /media/data3/MESA/SED_Tools/data/filters on Cirrus 2026-10-26 after W6 deploy (R7/W6_DEPLOYED)"
+  },
+  "Sentinel/MSI.B03-B": {
+   "njm": "Sentinel/MSI-2B/B03",
+   "kind": "verified",
+   "basis": "R7 worker X3: SVO Sentinel/MSI.<band>-<A|B> = Sentinel-2B MSI band B03; NJM Sentinel/MSI-2B (Mac-claimed; ESA curves); ls of /media/data3/MESA/SED_Tools/data/filters on Cirrus 2026-10-26 after W6 deploy (R7/W6_DEPLOYED)"
+  },
+  "Sentinel/MSI.B04-A": {
+   "njm": "Sentinel/MSI-2A/B04",
+   "kind": "verified",
+   "basis": "R7 worker X3: SVO Sentinel/MSI.<band>-<A|B> = Sentinel-2A MSI band B04; NJM Sentinel/MSI-2A (Mac-claimed; ESA curves); ls of /media/data3/MESA/SED_Tools/data/filters on Cirrus 2026-10-26 after W6 deploy (R7/W6_DEPLOYED)"
+  },
+  "Sentinel/MSI.B04-B": {
+   "njm": "Sentinel/MSI-2B/B04",
+   "kind": "verified",
+   "basis": "R7 worker X3: SVO Sentinel/MSI.<band>-<A|B> = Sentinel-2B MSI band B04; NJM Sentinel/MSI-2B (Mac-claimed; ESA curves); ls of /media/data3/MESA/SED_Tools/data/filters on Cirrus 2026-10-26 after W6 deploy (R7/W6_DEPLOYED)"
+  },
+  "Sentinel/MSI.B05-A": {
+   "njm": "Sentinel/MSI-2A/B05",
+   "kind": "verified",
+   "basis": "R7 worker X3: SVO Sentinel/MSI.<band>-<A|B> = Sentinel-2A MSI band B05; NJM Sentinel/MSI-2A (Mac-claimed; ESA curves); ls of /media/data3/MESA/SED_Tools/data/filters on Cirrus 2026-10-26 after W6 deploy (R7/W6_DEPLOYED)"
+  },
+  "Sentinel/MSI.B05-B": {
+   "njm": "Sentinel/MSI-2B/B05",
+   "kind": "verified",
+   "basis": "R7 worker X3: SVO Sentinel/MSI.<band>-<A|B> = Sentinel-2B MSI band B05; NJM Sentinel/MSI-2B (Mac-claimed; ESA curves); ls of /media/data3/MESA/SED_Tools/data/filters on Cirrus 2026-10-26 after W6 deploy (R7/W6_DEPLOYED)"
+  },
+  "Sentinel/MSI.B06-A": {
+   "njm": "Sentinel/MSI-2A/B06",
+   "kind": "verified",
+   "basis": "R7 worker X3: SVO Sentinel/MSI.<band>-<A|B> = Sentinel-2A MSI band B06; NJM Sentinel/MSI-2A (Mac-claimed; ESA curves); ls of /media/data3/MESA/SED_Tools/data/filters on Cirrus 2026-10-26 after W6 deploy (R7/W6_DEPLOYED)"
+  },
+  "Sentinel/MSI.B06-B": {
+   "njm": "Sentinel/MSI-2B/B06",
+   "kind": "verified",
+   "basis": "R7 worker X3: SVO Sentinel/MSI.<band>-<A|B> = Sentinel-2B MSI band B06; NJM Sentinel/MSI-2B (Mac-claimed; ESA curves); ls of /media/data3/MESA/SED_Tools/data/filters on Cirrus 2026-10-26 after W6 deploy (R7/W6_DEPLOYED)"
+  },
+  "Sentinel/MSI.B07-A": {
+   "njm": "Sentinel/MSI-2A/B07",
+   "kind": "verified",
+   "basis": "R7 worker X3: SVO Sentinel/MSI.<band>-<A|B> = Sentinel-2A MSI band B07; NJM Sentinel/MSI-2A (Mac-claimed; ESA curves); ls of /media/data3/MESA/SED_Tools/data/filters on Cirrus 2026-10-26 after W6 deploy (R7/W6_DEPLOYED)"
+  },
+  "Sentinel/MSI.B07-B": {
+   "njm": "Sentinel/MSI-2B/B07",
+   "kind": "verified",
+   "basis": "R7 worker X3: SVO Sentinel/MSI.<band>-<A|B> = Sentinel-2B MSI band B07; NJM Sentinel/MSI-2B (Mac-claimed; ESA curves); ls of /media/data3/MESA/SED_Tools/data/filters on Cirrus 2026-10-26 after W6 deploy (R7/W6_DEPLOYED)"
+  },
+  "Sentinel/MSI.B08-A": {
+   "njm": "Sentinel/MSI-2A/B08",
+   "kind": "verified",
+   "basis": "R7 worker X3: SVO Sentinel/MSI.<band>-<A|B> = Sentinel-2A MSI band B08; NJM Sentinel/MSI-2A (Mac-claimed; ESA curves); ls of /media/data3/MESA/SED_Tools/data/filters on Cirrus 2026-10-26 after W6 deploy (R7/W6_DEPLOYED)"
+  },
+  "Sentinel/MSI.B08-B": {
+   "njm": "Sentinel/MSI-2B/B08",
+   "kind": "verified",
+   "basis": "R7 worker X3: SVO Sentinel/MSI.<band>-<A|B> = Sentinel-2B MSI band B08; NJM Sentinel/MSI-2B (Mac-claimed; ESA curves); ls of /media/data3/MESA/SED_Tools/data/filters on Cirrus 2026-10-26 after W6 deploy (R7/W6_DEPLOYED)"
+  },
+  "Sentinel/MSI.B08a-A": {
+   "njm": "Sentinel/MSI-2A/B8A",
+   "kind": "verified",
+   "basis": "R7 worker X3: SVO Sentinel/MSI.<band>-<A|B> = Sentinel-2A MSI band B8A; NJM Sentinel/MSI-2A (Mac-claimed; ESA curves); ls of /media/data3/MESA/SED_Tools/data/filters on Cirrus 2026-10-26 after W6 deploy (R7/W6_DEPLOYED)"
+  },
+  "Sentinel/MSI.B08a-B": {
+   "njm": "Sentinel/MSI-2B/B8A",
+   "kind": "verified",
+   "basis": "R7 worker X3: SVO Sentinel/MSI.<band>-<A|B> = Sentinel-2B MSI band B8A; NJM Sentinel/MSI-2B (Mac-claimed; ESA curves); ls of /media/data3/MESA/SED_Tools/data/filters on Cirrus 2026-10-26 after W6 deploy (R7/W6_DEPLOYED)"
+  },
+  "Sentinel/MSI.B09-A": {
+   "njm": "Sentinel/MSI-2A/B09",
+   "kind": "verified",
+   "basis": "R7 worker X3: SVO Sentinel/MSI.<band>-<A|B> = Sentinel-2A MSI band B09; NJM Sentinel/MSI-2A (Mac-claimed; ESA curves); ls of /media/data3/MESA/SED_Tools/data/filters on Cirrus 2026-10-26 after W6 deploy (R7/W6_DEPLOYED)"
+  },
+  "Sentinel/MSI.B09-B": {
+   "njm": "Sentinel/MSI-2B/B09",
+   "kind": "verified",
+   "basis": "R7 worker X3: SVO Sentinel/MSI.<band>-<A|B> = Sentinel-2B MSI band B09; NJM Sentinel/MSI-2B (Mac-claimed; ESA curves); ls of /media/data3/MESA/SED_Tools/data/filters on Cirrus 2026-10-26 after W6 deploy (R7/W6_DEPLOYED)"
+  },
+  "Sentinel/MSI.B10-A": {
+   "njm": "Sentinel/MSI-2A/B10",
+   "kind": "verified",
+   "basis": "R7 worker X3: SVO Sentinel/MSI.<band>-<A|B> = Sentinel-2A MSI band B10; NJM Sentinel/MSI-2A (Mac-claimed; ESA curves); ls of /media/data3/MESA/SED_Tools/data/filters on Cirrus 2026-10-26 after W6 deploy (R7/W6_DEPLOYED)"
+  },
+  "Sentinel/MSI.B10-B": {
+   "njm": "Sentinel/MSI-2B/B10",
+   "kind": "verified",
+   "basis": "R7 worker X3: SVO Sentinel/MSI.<band>-<A|B> = Sentinel-2B MSI band B10; NJM Sentinel/MSI-2B (Mac-claimed; ESA curves); ls of /media/data3/MESA/SED_Tools/data/filters on Cirrus 2026-10-26 after W6 deploy (R7/W6_DEPLOYED)"
+  },
+  "Sentinel/MSI.B11-A": {
+   "njm": "Sentinel/MSI-2A/B11",
+   "kind": "verified",
+   "basis": "R7 worker X3: SVO Sentinel/MSI.<band>-<A|B> = Sentinel-2A MSI band B11; NJM Sentinel/MSI-2A (Mac-claimed; ESA curves); ls of /media/data3/MESA/SED_Tools/data/filters on Cirrus 2026-10-26 after W6 deploy (R7/W6_DEPLOYED)"
+  },
+  "Sentinel/MSI.B11-B": {
+   "njm": "Sentinel/MSI-2B/B11",
+   "kind": "verified",
+   "basis": "R7 worker X3: SVO Sentinel/MSI.<band>-<A|B> = Sentinel-2B MSI band B11; NJM Sentinel/MSI-2B (Mac-claimed; ESA curves); ls of /media/data3/MESA/SED_Tools/data/filters on Cirrus 2026-10-26 after W6 deploy (R7/W6_DEPLOYED)"
+  },
+  "Sentinel/MSI.B12-A": {
+   "njm": "Sentinel/MSI-2A/B12",
+   "kind": "verified",
+   "basis": "R7 worker X3: SVO Sentinel/MSI.<band>-<A|B> = Sentinel-2A MSI band B12; NJM Sentinel/MSI-2A (Mac-claimed; ESA curves); ls of /media/data3/MESA/SED_Tools/data/filters on Cirrus 2026-10-26 after W6 deploy (R7/W6_DEPLOYED)"
+  },
+  "Sentinel/MSI.B12-B": {
+   "njm": "Sentinel/MSI-2B/B12",
+   "kind": "verified",
+   "basis": "R7 worker X3: SVO Sentinel/MSI.<band>-<A|B> = Sentinel-2B MSI band B12; NJM Sentinel/MSI-2B (Mac-claimed; ESA curves); ls of /media/data3/MESA/SED_Tools/data/filters on Cirrus 2026-10-26 after W6 deploy (R7/W6_DEPLOYED)"
+  },
   "Spitzer/MIPS.160mu": {
    "njm": "Spitzer/MIPS/160",
    "kind": "curated",
@@ -2913,5 +3043,13 @@
   "WHT/INGRID.Ksbarr": "WHT/INGRID/KSBARR_WARM",
   "WHT/INGRID.Pab": "WHT/INGRID/PAB_WARM",
   "WHT/INGRID.Z": "WHT/INGRID/Z_WARM"
- }
+ },
+ "manual_additions": [
+  {
+   "date": "2026-10-26",
+   "kind": "verified",
+   "count": 26,
+   "note": "Hand-verified R7 worker proposals (phase4/decisions/R7/X*/aliases_proposed.tsv) not produced by build_svo_aliases.py; carry them over when the map is regenerated."
+  }
+ ]
 }
