@@ -19,7 +19,7 @@ Filter properties
   The pivot and zero points share the detector-aware weights of SED_Tools
   photometry. ``curve_properties()`` and ``instrument_properties()`` read
   filter files with their metadata. The NJM mirror serves the values
-  precomputed in ``index.json``.
+  precomputed in each instrument's ``properties.json``.
 
 Version 0.4.1 (October 2026)
 ----------------------------
