@@ -11,3 +11,4 @@ source_evidence/svo-archive/ia-2026-10-26-b03-njm-votable/manifest.jsonl
 source_evidence/svo-archive/ia-2026-10-26-b04-njm-votable/manifest.jsonl
 source_evidence/svo-archive/ia-2026-10-26-b05-njm-browse/manifest.jsonl
 source_evidence/svo-archive/ia-2026-10-26-b06-njm-browse/manifest.jsonl
+source_evidence/svo-archive/ia-2026-10-26-b13-rest-votable/manifest.jsonl
