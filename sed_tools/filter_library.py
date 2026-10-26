@@ -92,7 +92,7 @@ class FilterLibrary:
                 return directory
 
         ref = builder_for(facility, instrument)
-        if ref is not None and ref.name == "tabular":
+        if ref is not None and ref.publishes:
             try:
                 get_builder(ref.name)(self.root, **dict(ref.kwargs))
                 if self.published_complete(directory):
@@ -177,7 +177,7 @@ class FilterLibrary:
             if self.components_ready(directory, components, bands):
                 return True
         ref = builder_for(facility, instrument)
-        if ref is None:
+        if ref is None or not ref.components:
             return False
         if ref.heavy and not allow_heavy:
             logger.warning("%s/%s requires a large source download; use allow_heavy=True or --allow-heavy",
@@ -232,7 +232,7 @@ class FilterLibrary:
         return result
 
     def compose(self, instrument, components, *, atmosphere=None, bands=None,
-                detector_type=None, allow_heavy=False, allow_partial=False):
+                detector_type=None, allow_heavy=False, allow_partial=False, variants=None):
         directory = self.directory(instrument)
         if not list(directory.glob("*.dat")):
             directory = self.published(directory.parent.name, directory.name)
@@ -243,7 +243,8 @@ class FilterLibrary:
             manifest = InstrumentManifest.load(directory)
             self.prepare_atmosphere(manifest, spec, allow_heavy=allow_heavy)
         return build_product(directory, roles, atmosphere=spec, atmosphere_root=self.atmosphere_root,
-                             bands=bands, detector_type=detector_type, allow_partial=allow_partial)
+                             bands=bands, detector_type=detector_type, allow_partial=allow_partial,
+                             variants=variants)
 
     @staticmethod
     def _catalogue_key(name):

@@ -379,9 +379,14 @@ class NJMFilterGrabber:
         output_dir.mkdir(parents=True, exist_ok=True)
         (output_dir / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
 
+        listed = [rel for entries in manifest.get("components", {}).values() for rel in entries.values()]
+        # Alternative curves (e.g. QE per detector epoch) are fetched too, so
+        # they can be selected offline.
+        listed += [rel for named in (manifest.get("variants") or {}).values()
+                   for entry in named.values() for rel in (entry.get("files") or {}).values()]
         rel_paths = sorted({
-            rel for entries in manifest.get("components", {}).values() for rel in entries.values()
-            if "/" in rel  # root-level entries are the published curves themselves
+            rel for rel in listed
+            if isinstance(rel, str) and "/" in rel  # root-level entries are the published curves themselves
         })
         count = 0
         for rel in rel_paths:

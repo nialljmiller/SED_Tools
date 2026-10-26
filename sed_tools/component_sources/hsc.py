@@ -6,22 +6,60 @@
 * atmosphere (own site ``maunakea_hsc``): the MODTRAN Maunakea model used by
   the HSC pipeline (airmass 1.2, PWV 1.5 mm)
 
+Filter generations.  Subaru replaced the r filter by HSC-r2 from 2016-07-28
+HST (HSC-r was mainly used until 2016-07-11 HST) and the i filter by HSC-i2
+from February 2016 (HSC-i until January 2016); FILTER01 in the FITS header
+says which was used (HSC sensitivity page).  The published ``r`` and ``i``
+curves (SVO ``Subaru/HSC.r`` and ``.i``, "full transmission") are on the
+HSC-r2 and HSC-i2 wavelength grids (582 and 566 samples, ending at 7498.2
+and 8999.2 A, exactly the r2/i2 tables), so their filter components are
+``wHSC-r2`` and ``wHSC-i2`` (``components/filter/r2.dat``, ``i2.dat``).
+The first r and i filters are the filter variant ``first_r_i``.
+
+Narrow-, intermediate- and medium-band user filters with transmission
+tables on the HSC page are published as filter-only bands from the same
+area-weighted tables (``NB387`` ... ``MBQ1-490``); the semester each opened
+is in the manifest notes.
+
 Vignetting is wavelength independent and is not included (it changes only
 the overall scale, not synthetic photometry).
 """
 
 from __future__ import annotations
 
-from ._common import SimpleSource, SiteAtmosphere, Table, build_simple
+import io
+import zipfile
 
-SUBARU = "https://subarutelescope.org/Observing/Instruments/HSC/txt"
+from ..filter_components import FILTER, InstrumentManifest, add_component
+from ..filter_metadata import PHOTON, write_filter_file
+from ._common import SimpleSource, SiteAtmosphere, Table, build_simple, register_variant
+
+PAGE = "https://subarutelescope.org/Instruments/HSC/sensitivity.html"
+SUBARU = "https://subarutelescope.org/Instruments/HSC/txt"
 OBS_SUBARU = "https://raw.githubusercontent.com/lsst/obs_subaru/4db92921ce698fb2601955731e28970de943041f/hsc/transmission"
 BANDS = ("g", "r", "i", "z", "Y")
+#: band -> filter table of the generation in the published curve
+CURRENT = {"g": "g", "r": "r2", "i": "i2", "z": "z", "Y": "Y"}
+#: band -> filter table before the 2016 replacements
+FIRST = {"g": "g", "r": "r", "i": "i", "z": "z", "Y": "Y"}
+
+#: User filters with transmission tables on the HSC page, and the semester
+#: each was opened for open use ("Open from").
+USER_FILTERS = {
+    "NB387": "S16B", "NB391": "S21B", "NB395": "S21B", "NB400": "S19A", "NB430": "S20A",
+    "NB468": "S16A", "NB497": "S20B", "NB506": "S22B", "NB515": "S15A", "NB527": "S16A",
+    "NB656": "S16A", "NB718": "S16B", "NB816": "S15B", "NB872": "S23A", "NB921": "S15A",
+    "NB926": "S17A", "NB973": "S17A", "NB1010": "S18A", "IB945": "S17A", "EB-gri": "S22B",
+}
+#: MBQ1 (Medium Band Quadrant) is one filter with four bands, tabulated in a zip.
+MBQ1 = ("MBQ1-413", "MBQ1-439", "MBQ1-465", "MBQ1-490")
+MBQ1_OPEN = "S26A"
 
 SPEC = SimpleSource(
     facility="Subaru",
     instrument="HSC",
-    filters={b: Table(f"{SUBARU}/wHSC-{b}.txt", note="area-weighted mean") for b in BANDS},
+    filters={b: Table(f"{SUBARU}/wHSC-{CURRENT[b]}.txt", note="area-weighted mean") for b in BANDS},
+    filter_names={b: CURRENT[b] for b in BANDS if CURRENT[b] != b},
     optics=(
         Table(f"{OBS_SUBARU}/M1-2010s.txt", wl_scale=10.0, note="primary mirror"),
         Table(f"{SUBARU}/throughput_popt2.txt", note="Primary Focus Unit"),
@@ -36,10 +74,93 @@ SPEC = SimpleSource(
         source="MODTRAN Maunakea model used by the HSC pipeline (N. Yasuda), lsst/obs_subaru",
     ),
     outside_range="edge",  # HSC pipeline convention: non-filter curves hold their edge values
-    references={"subaru": "https://subarutelescope.org/Observing/Instruments/HSC/sensitivity.html"},
-    notes="Vignetting (wavelength independent) is not included.",
+    references={"subaru": PAGE, "obs_subaru": f"{OBS_SUBARU}/README.txt"},
+    notes=(
+        "Vignetting (wavelength independent) is not included. "
+        "Filter generations: HSC-r2 replaced HSC-r from 2016-07-28 HST (HSC-r mainly used until 2016-07-11 HST); "
+        "HSC-i2 replaced HSC-i from February 2016 (HSC-i until January 2016); FITS keyword FILTER01 says which. "
+        "The published r and i (SVO Subaru/HSC.r, .i) are the r2/i2 generation: their wavelength grids are "
+        "those of wHSC-r2 and wHSC-i2, so the default r and i filter components are r2.dat and i2.dat; "
+        "filter variant 'first_r_i' selects HSC-r and HSC-i. "
+        "User filters (filter-only published curves from the area-weighted tables) open for open use from: "
+        + ", ".join(f"{b} {s}" for b, s in USER_FILTERS.items())
+        + f", {'/'.join(MBQ1)} {MBQ1_OPEN}. "
+        "Filters within their first three semesters need the developers' approval (HSC filter policy). "
+        "The HSC page asks publications using a user filter to acknowledge its funding, as listed in its "
+        "table 'Contact addresses of user filters and Information for acknowledgement'; its example: "
+        "'The NB387 filter was supported by KAKENHI (23244022) Grant-in-Aid for Scientific Research (A) "
+        "through the Japan Society for the Promotion of Science (JSPS).'"
+    ),
 )
 
 
-def build(filter_root, **kwargs):
-    return build_simple(SPEC, filter_root, **kwargs)
+def _user_filter_curves(session):
+    """(band, wavelength A, transmission, source URL) for every user filter."""
+    out = []
+    for band in USER_FILTERS:
+        table = Table(f"{SUBARU}/wHSC-{band}.txt", note="area-weighted mean")
+        out.append((band, *table.read(session), table.url))
+    url = f"{SUBARU}/wHSC-MBQ1.zip"
+    resp = session.get(url, timeout=300)
+    resp.raise_for_status()
+    with zipfile.ZipFile(io.BytesIO(resp.content)) as zf:
+        names = set(zf.namelist())
+        for band in MBQ1:
+            member = f"wHSC-{band}.txt"
+            if member not in names:
+                raise RuntimeError(f"{url} has no {member}")
+            out.append((band, *Table(f"{url}#{member}").parse(zf.read(member)), f"{url} ({member})"))
+    return out
+
+
+def build(filter_root, *, session=None, **kwargs):
+    if session is None:
+        import requests
+
+        session = requests.Session()
+    from pathlib import Path
+
+    from ..combine_filters import write_filter_index
+
+    first = {b: Table(f"{SUBARU}/wHSC-{t}.txt", note="area-weighted mean")
+             for b, t in FIRST.items() if t != CURRENT[b]}
+    first_curves = {b: t.read(session) for b, t in first.items()}
+    user = _user_filter_curves(session)
+
+    inst_dir = Path(filter_root) / SPEC.facility / SPEC.instrument
+    inst_dir.mkdir(parents=True, exist_ok=True)
+    for band, wl, tr, url in user:
+        path = inst_dir / f"{band}.dat"
+        if not path.exists():
+            write_filter_file(path, wl, tr, detector_type=PHOTON, source="assumed",
+                              filter_id=f"Subaru/HSC.{band}", wavelength_unit="Angstrom",
+                              extra={"Components": FILTER, "ComponentsSource": "original",
+                                     "Sources": f"{url} (area-weighted mean)"})
+
+    inst_dir = build_simple(SPEC, filter_root, session=session, **kwargs)
+    write_filter_index(inst_dir, SPEC.instrument)
+
+    manifest = InstrumentManifest.load(inst_dir)
+    # The user-filter bands are new published curves: describe every band again.
+    fresh = InstrumentManifest.from_published(inst_dir)
+    manifest.bands = fresh.bands
+    manifest.published, manifest.published_bands = fresh.published, fresh.published_bands
+    manifest.detector_types = fresh.detector_types
+    manifest.detector_type_sources = fresh.detector_type_sources
+    # Variants list every band's filter, so selecting one composes all bands.
+    current = dict(manifest.components[FILTER])
+    early = dict(current)
+    for band, curve in first_curves.items():
+        early[band] = add_component(inst_dir, FILTER, *curve, band=band, name=FIRST[band],
+                                    source=f"{first[band].url} (area-weighted mean)")
+    manifest.variants.pop(FILTER, None)
+    register_variant(manifest, FILTER, "r2_i2", current, default=True,
+                     epoch="r: from 2016-07-28 HST; i: from February 2016",
+                     description=("HSC-r2 and HSC-i2 (the generation of the published r and i) with the other "
+                                  "filters"))
+    register_variant(manifest, FILTER, "first_r_i", early,
+                     epoch="r: mainly until 2016-07-11 HST; i: until January 2016",
+                     description="the first HSC-r and HSC-i filters with the other filters",
+                     sources={b: first[b].url for b in first})
+    manifest.save(inst_dir)
+    return inst_dir

@@ -85,7 +85,14 @@ def is_auxiliary_path(path: PathLike, root: Optional[PathLike] = None, dirs: Seq
 
 MANIFEST_NAME = "manifest.json"
 #: Suffixes SVO uses for the filter-only sibling of a total passband.
-FILTER_SIBLING_SUFFIXES = ("_filter", "_fil", "prime_filter")
+#: SVO's SDSS ``uprime_filter`` ... ``zprime_filter`` are not siblings of
+#: ``u`` ... ``z``: they are the USNO 40-in filters of the primed system,
+#: kept in air, whereas the 2.5 m camera's filters sit in vacuum, which
+#: moves their red edges about 2.5 per cent blueward (SDSS DR7 "Photometric
+#: flux calibration", classic.sdss.org/dr7/algorithms/fluxcal.html).
+FILTER_SIBLING_SUFFIXES = ("_filter", "_fil")
+#: Variant names: letters, digits, ``_`` and ``-`` (they appear in product names).
+_VARIANT_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]*")
 MANIFEST_SCHEMA = 1
 SHARED = "*"  # component key meaning "applies to every band"
 
@@ -220,6 +227,14 @@ class InstrumentManifest:
     #: "edge" (hold the edge value).
     outside_range: str = "error"
     schema: int = MANIFEST_SCHEMA
+    #: Alternative curves for a component key (a role or composite recipe)
+    #: that are used only when selected, e.g. QE per detector coating or
+    #: epoch: key -> variant name -> {"files": {band or "*": path},
+    #: "description": ..., "source": ..., optional "epoch", "derived",
+    #: "default"}.  The curve in ``components`` stays the default; a
+    #: variant never replaces it unless asked for.  Saved only when set,
+    #: so existing manifests are written unchanged.
+    variants: Dict[str, Dict[str, Dict[str, object]]] = field(default_factory=dict)
 
     def __post_init__(self):
         for band in self.bands:
@@ -228,6 +243,12 @@ class InstrumentManifest:
         for entries in self.components.values():
             for rel in entries.values():
                 _require_inside(rel, f"{self.facility}/{self.instrument}")
+        for key, named in self.variants.items():
+            for name, entry in named.items():
+                if not _VARIANT_NAME.fullmatch(name):
+                    raise ComponentError(f"Invalid {key} variant name: {name!r}")
+                for rel in dict(entry.get("files") or {}).values():
+                    _require_inside(str(rel), f"{self.facility}/{self.instrument} {key} variant {name}")
 
     # ---- persistence -------------------------------------------------
     @classmethod
@@ -319,8 +340,38 @@ class InstrumentManifest:
 
     def save(self, instrument_dir: PathLike) -> Path:
         path = Path(instrument_dir) / MANIFEST_NAME
-        path.write_text(json.dumps(asdict(self), indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        data = asdict(self)
+        if not data["variants"]:
+            del data["variants"]
+        path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         return path
+
+    # ---- variants ----------------------------------------------------
+    def variant_files(self) -> List[str]:
+        """Every file referenced by a variant."""
+        return sorted({str(rel) for named in self.variants.values() for entry in named.values()
+                       for rel in dict(entry.get("files") or {}).values()})
+
+    def with_variants(self, selection: Optional[Mapping[str, str]]) -> "InstrumentManifest":
+        """A copy whose components use the selected variants.
+
+        ``selection`` maps a component key (``"qe"``, ``"filter+optics+qe"``)
+        to a variant name.  The variant's files replace that key's default
+        entries; bands the variant does not cover keep no entry for the key,
+        so composing them fails rather than silently using the default.
+        """
+        if not selection:
+            return self
+        view = deepcopy(self)
+        for key, name in selection.items():
+            canonical = recipe_name(parse_components(key))
+            named = self.variants.get(canonical, {})
+            if name not in named:
+                have = ", ".join(sorted(named)) or "none"
+                raise ComponentError(f"{self.facility}/{self.instrument} has no {canonical} variant "
+                                     f"{name!r} (available: {have})")
+            view.components[canonical] = {str(b): str(rel) for b, rel in dict(named[name]["files"]).items()}
+        return view
 
     # ---- queries -----------------------------------------------------
     def component_file(self, role: str, band: str) -> Optional[str]:
@@ -410,6 +461,16 @@ class InstrumentManifest:
                     raise ComponentError(f"{rel}: component resolves outside its instrument directory")
                 if not path.is_file():
                     del entries[band]
+        for named in view.variants.values():
+            for entry in named.values():
+                files = dict(entry.get("files") or {})
+                for band, rel in list(files.items()):
+                    path = (root / str(rel)).resolve()
+                    if not path.is_relative_to(root):
+                        raise ComponentError(f"{rel}: variant resolves outside its instrument directory")
+                    if not path.is_file():
+                        del files[band]
+                entry["files"] = files
         return view
 
     def missing_files(self, instrument_dir: PathLike) -> List[str]:
@@ -417,6 +478,7 @@ class InstrumentManifest:
         paths = {f"{b}.dat" for b in self.bands}
         for entries in self.components.values():
             paths.update(entries.values())
+        paths.update(self.variant_files())
         return sorted(rel for rel in paths if not (root / rel).is_file())
 
     def describe(self, instrument_dir: Optional[PathLike] = None) -> Dict[str, object]:
@@ -465,6 +527,12 @@ class InstrumentManifest:
             "component_status": source_availability["note"] or None,
             "component_availability": source_availability,
             "missing_files": [],
+            "variants": {
+                key: {name: {k: v for k, v in entry.items() if k != "files"}
+                      | {"bands": sorted(dict(entry.get("files") or {}))}
+                      for name, entry in named.items()}
+                for key, named in self.variants.items()
+            },
         }
 
 
@@ -696,10 +764,15 @@ def compose_band(
     atmosphere_root: Optional[PathLike] = None,
     allow_partial: bool = False,
     manifest: Optional[InstrumentManifest] = None,
+    variants: Optional[Mapping[str, str]] = None,
 ) -> Curve:
-    """Compose one band from its components (see module docstring)."""
+    """Compose one band from its components (see module docstring).
+
+    ``variants`` selects alternative curves for component keys, e.g.
+    ``{"qe": "single_layer"}`` (see :meth:`InstrumentManifest.with_variants`).
+    """
     instrument_dir = Path(instrument_dir)
-    manifest = manifest or InstrumentManifest.load(instrument_dir)
+    manifest = (manifest or InstrumentManifest.load(instrument_dir)).with_variants(variants)
     roles = set(parse_components(components))
     spec = AtmosphereSpec.coerce(atmosphere)
     if spec is not None:
@@ -775,7 +848,8 @@ def compose_band(
     header = {
         "Components": recipe_name(covered),
         "ComponentsSource": "composed",
-        "Recipe": recipe + (f" @ {spec.label}" if spec else ""),
+        "Recipe": recipe + "".join(f" [{k}={v}]" for k, v in sorted((variants or {}).items()))
+                  + (f" @ {spec.label}" if spec else ""),
         "Sources": "; ".join(sources),
     }
     if spec is not None:
@@ -784,9 +858,19 @@ def compose_band(
     return Curve(wavelength, transmission, header)
 
 
-def product_name(components: Iterable[str], atmosphere: Optional[AtmosphereSpec] = None) -> str:
+def product_name(components: Iterable[str], atmosphere: Optional[AtmosphereSpec] = None,
+                 variants: Optional[Mapping[str, str]] = None) -> str:
+    """Directory name of a product; selected variants are part of it.
+
+    ``filter+qe`` with ``{"qe": "single_layer"}`` is ``filter+qe+qe_single_layer``,
+    so products of different variants never replace each other.
+    """
     roles = [r for r in parse_components(list(components)) if r != ATMOSPHERE]
     name = recipe_name(roles)
+    for key, value in sorted((variants or {}).items()):
+        if not _VARIANT_NAME.fullmatch(str(value)):
+            raise ComponentError(f"Invalid {key} variant name: {value!r}")
+        name += f"+{recipe_name(parse_components(key))}_{value}"
     return f"{name}+atm_{atmosphere.label}" if atmosphere else name
 
 
@@ -800,11 +884,14 @@ def build_product(
     allow_partial: bool = False,
     overwrite: bool = True,
     detector_type: Optional[str] = None,
+    variants: Optional[Mapping[str, str]] = None,
 ) -> Path:
     """Compose every (or the given) band into ``products/<recipe>/``.
 
     The output directory is a self-contained MESA instrument: ``.dat`` files
-    plus an index file named after the directory.
+    plus an index file named after the directory.  ``variants`` selects
+    alternative component curves (:meth:`InstrumentManifest.with_variants`);
+    the choice is part of the product name.
     """
     from .combine_filters import write_filter_index
 
@@ -817,10 +904,11 @@ def build_product(
     override = normalize_detector_type(detector_type)
     if detector_type is not None and override is None:
         raise ComponentError(f"Unknown detector type: {detector_type!r}; choose energy or photon")
-    name = product_name(roles, spec) + (f"+detector_{override}" if override else "")
+    name = product_name(roles, spec, variants) + (f"+detector_{override}" if override else "")
     out_dir = instrument_dir / "products" / name
     if out_dir.exists() and not overwrite:
         return out_dir
+    manifest.with_variants(variants)  # refuse unknown variants before writing anything
     selected = list(manifest.primary_bands() if bands is None else bands)
     if not selected:
         raise ComponentError("No bands selected for composition")
@@ -834,7 +922,7 @@ def build_product(
             curve = compose_band(
                 instrument_dir, band, roles,
                 atmosphere=spec, atmosphere_root=atmosphere_root,
-                allow_partial=allow_partial, manifest=manifest,
+                allow_partial=allow_partial, manifest=manifest, variants=variants,
             )
             original = _band_detector_type(instrument_dir, band, roles, manifest)
             if override:
@@ -909,12 +997,22 @@ def add_component(
     name: Optional[str] = None,
     source: str = "",
     manifest: Optional[InstrumentManifest] = None,
+    variant: Optional[str] = None,
+    variant_info: Optional[Mapping[str, object]] = None,
 ) -> str:
     """Write a component curve and register it in the manifest (not saved).
 
     ``role`` is ``filter``, ``optics`` or ``qe``, or a composite such as
     ``filter+optics+qe`` when the source only publishes the product.
+
+    With ``variant`` the curve is registered as that named alternative of
+    ``role`` (``manifest.variants``) instead of as the default component;
+    ``variant_info`` adds its description, epoch, etc.  A band-specific
+    curve's source is recorded under ``"<role>:<band>"`` so each band
+    cites its own file.
     """
+    if variant is not None and not _VARIANT_NAME.fullmatch(variant):
+        raise ComponentError(f"Invalid variant name: {variant!r}")
     roles = parse_components(role)
     if not roles or not set(roles) <= {FILTER, OPTICS, QE}:
         raise ComponentError(f"Instrument components are filter/optics/qe (or composites), not {role!r}")
@@ -934,8 +1032,17 @@ def add_component(
         wavelength_unit="Angstrom",
         extra={"Role": role, "Components": role, "Sources": source or None},
     )
-    if manifest is not None:
+    if manifest is not None and variant is not None:
+        entry = manifest.variants.setdefault(role, {}).setdefault(variant, {"files": {}})
+        entry.setdefault("files", {})[band] = rel
+        if source:
+            entry.setdefault("sources", {})[band] = source
+        entry.update(dict(variant_info or {}))
+    elif manifest is not None:
         manifest.components.setdefault(role, {})[band] = rel
         if source:
-            manifest.sources.setdefault(role, source)
+            if band == SHARED:
+                manifest.sources[role] = source
+            else:
+                manifest.sources[f"{role}:{band}"] = source
     return rel

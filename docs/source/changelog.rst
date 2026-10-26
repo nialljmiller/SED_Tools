@@ -2,6 +2,39 @@
 Changelog
 =========
 
+Version 0.4.2 (unreleased)
+--------------------------
+
+Rebuild from original sources
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- 37 more instruments can be rebuilt from their teams' original files when
+  the NJM mirror is unavailable (``component_sources`` modules ``surveys``,
+  ``space``, ``observatories`` and ``standards``, registered in
+  ``catalog.BUILDERS_FOR``): ATLAS, PAN-STARRS, OGLE-IV, UKIRT/WFCAM, LCO,
+  Gaia DR2, Herschel, Hipparcos/Tycho, IRAS, MSX, Planck, Spitzer, XMM-OM,
+  FORS1/2, OmegaCAM, Keck NIRC2/LRIS/MOSFIRE/DEIMOS, KPNO Mosaic, Magellan
+  FourStar/MegaCam, NOT/ALFOSC, Subaru Suprime-Cam/FOCAS, WIYN/ODI and the
+  Bessell, MKO and USNO standard systems. ``FilterLibrary.published`` tries
+  NJM, then these builders, then SVO. Keck spreadsheets need ``xlrd``
+  (``full`` extra).
+- Paranal/NACO bands are published as ``IB_2p00`` etc. instead of
+  ``IB_2.00``, matching the NJM mirror: MESA names history columns by the
+  text before the first dot.
+
+SVO fails fast
+~~~~~~~~~~~~~~
+
+- SVO Filter Profile Service requests use a 10 s connect timeout (read
+  timeouts unchanged), so an unreachable SVO host is reported within seconds
+  instead of after 120-300 s per request. The first connection failure raises
+  ``filter_metadata.SVOUnreachableError`` with the URL tried and the
+  alternatives (the NJM mirror, the original-source builders); later requests
+  from the same client and the rest of an SVO download stop at once.
+- The FPS endpoint can be overridden with ``SED_SVO_FPS_URL`` (default
+  ``https://svo2.cab.inta-csic.es/theory/fps/fps.php``); the browse index is
+  taken from the same location.
+
 Version 0.4.1 (October 2026)
 ----------------------------
 
