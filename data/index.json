@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-10-26T22:44:32.366730",
+  "generated": "2026-10-26T23:28:26.094471",
   "base_url": "http://nillmill.ddns.net/sed_tools",
   "statistics": {
     "total_models": 1,
@@ -8,8 +8,8 @@
     "total_spectra": 6028,
     "total_size_bytes": 142850198218,
     "total_size_human": "133.04 GB",
-    "total_facilities": 201,
-    "total_filters": 9228
+    "total_facilities": 212,
+    "total_filters": 11438
   },
   "models": [
     "bt-cond"
@@ -45,6 +45,7 @@
       "ARCHEOPS",
       "ARGO",
       "ATLAS",
+      "AWS",
       "Akatsuki",
       "AlSat1",
       "Aqua",
@@ -94,6 +95,7 @@
       "GCPD",
       "GOES",
       "GOTO",
+      "GPM",
       "GTC",
       "Galileo",
       "Gemini",
@@ -124,6 +126,7 @@
       "JCMT",
       "JPSS",
       "JWST",
+      "Jiheng",
       "KOMPSTAT",
       "KPNO",
       "Keck",
@@ -157,6 +160,7 @@
       "Mercator",
       "Messenger",
       "Meteosat",
+      "Microsat2B",
       "Misc",
       "NAOC",
       "NEAR",
@@ -173,6 +177,7 @@
       "OGLE",
       "OHP",
       "OLIMPO",
+      "OMS",
       "OSIRIS-REX",
       "OSN",
       "Odyssey",
@@ -187,6 +192,7 @@
       "Pleiades",
       "QUIET",
       "QuickBird",
+      "QuickSounder",
       "RapidEye",
       "Roman",
       "Rosetta",
@@ -214,6 +220,7 @@
       "Swift",
       "TCS",
       "TD1",
+      "TEMPEST",
       "TESS",
       "TIROS-N",
       "TJO",
@@ -221,8 +228,10 @@
       "TNO",
       "TNT",
       "TRMM",
+      "TROPICS",
       "Teide",
       "Terra",
+      "Tomorrow",
       "TopHat",
       "UK-DMC",
       "UKIRT",
@@ -234,6 +243,8 @@
       "WISE",
       "WIYN",
       "WMAP",
+      "WSF-M",
+      "WeatherStream",
       "WorldView",
       "XMM",
       "ZiYuan"
@@ -1085,6 +1096,49 @@
         },
         "instrument_count": 1
       },
+      "AWS": {
+        "name": "AWS",
+        "instruments": {
+          "AWS": {
+            "name": "AWS",
+            "filter_count": 19,
+            "filters": [
+              "ch01",
+              "ch02",
+              "ch03",
+              "ch04",
+              "ch05",
+              "ch06",
+              "ch07",
+              "ch08",
+              "ch09",
+              "ch10",
+              "ch11",
+              "ch12",
+              "ch13",
+              "ch14",
+              "ch15",
+              "ch16",
+              "ch17",
+              "ch18",
+              "ch19"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 19
+            },
+            "detector_types": {
+              "energy": 19
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 196258,
+            "size_human": "191.66 KB"
+          }
+        },
+        "instrument_count": 1
+      },
       "Akatsuki": {
         "name": "Akatsuki",
         "instruments": {
@@ -1212,6 +1266,39 @@
       "Aqua": {
         "name": "Aqua",
         "instruments": {
+          "AMSUA": {
+            "name": "AMSUA",
+            "filter_count": 15,
+            "filters": [
+              "Ch01",
+              "Ch02",
+              "Ch03",
+              "Ch04",
+              "Ch05",
+              "Ch06",
+              "Ch07",
+              "Ch08",
+              "Ch09",
+              "Ch10",
+              "Ch11",
+              "Ch12",
+              "Ch13",
+              "Ch14",
+              "Ch15"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 15
+            },
+            "detector_types": {
+              "energy": 15
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 119435,
+            "size_human": "116.64 KB"
+          },
           "MODIS": {
             "name": "MODIS",
             "filter_count": 142,
@@ -1374,7 +1461,7 @@
             "size_human": "775.75 KB"
           }
         },
-        "instrument_count": 1
+        "instrument_count": 2
       },
       "Astrosat": {
         "name": "Astrosat",
@@ -6362,66 +6449,529 @@
         "instruments": {
           "ESO": {
             "name": "ESO",
-            "filter_count": 66,
+            "filter_count": 529,
             "filters": [
+              "0046",
+              "0047",
+              "0175",
+              "0203",
+              "0204",
+              "0205",
+              "0206",
+              "0207",
+              "0209",
               "0210",
+              "0210_svo",
+              "0211",
               "0212",
+              "0212_svo",
               "0215",
+              "0215_svo",
+              "0216",
               "0218",
+              "0218_svo",
+              "0219",
+              "0220",
+              "0221",
+              "0222",
+              "0226",
+              "0227",
               "0228",
+              "0228_svo",
+              "0229",
+              "0230",
+              "0231",
+              "0236",
               "0237",
+              "0237_svo",
+              "0239",
+              "0240",
+              "0242",
+              "0243",
+              "0244",
+              "0245",
+              "0247",
+              "0248",
               "0253",
+              "0253_svo",
+              "0254",
+              "0256",
+              "0257",
+              "0258",
+              "0259",
+              "0270",
+              "0271",
+              "0279",
+              "0280",
+              "0281",
+              "0282",
               "0284",
+              "0289",
               "0290",
+              "0290_svo",
+              "0291",
+              "0292",
+              "0293",
+              "0294",
+              "0295",
+              "0296",
+              "0301",
+              "0302",
+              "0303",
+              "0304",
+              "0307",
+              "0310",
+              "0311",
+              "0313",
+              "0314",
               "0315",
+              "0315_svo",
+              "0316",
+              "0317",
+              "0318",
+              "0319",
+              "0320",
+              "0321",
+              "0328",
+              "0329",
+              "0330",
+              "0331",
+              "0332",
+              "0334",
+              "0335",
+              "0336",
+              "0338",
               "0339",
+              "0339_svo",
+              "0340",
+              "0342",
+              "0343",
+              "0344",
+              "0345",
+              "0346",
+              "0347",
+              "0349",
+              "0350",
+              "0351",
+              "0354",
+              "0355",
+              "0356",
               "0357",
+              "0357_svo",
+              "0358",
+              "0359",
+              "0360",
               "0361",
+              "0361_svo",
+              "0362",
+              "0363",
+              "0364",
               "0365",
+              "0365_svo",
+              "0366",
+              "0367",
+              "0368",
+              "0369",
+              "0370",
+              "0371",
+              "0372",
+              "0373",
+              "0374",
+              "0375",
+              "0376",
+              "0377",
+              "0378",
+              "0379",
+              "0380",
               "0381",
+              "0381_svo",
+              "0382",
+              "0383",
+              "0384",
+              "0385",
+              "0386",
+              "0387",
+              "0389",
+              "0390",
+              "0391",
+              "0392",
+              "0393",
+              "0394",
+              "0395",
+              "0396",
+              "0397",
+              "0398",
+              "0399",
+              "0400",
+              "0401",
+              "0402",
               "0403",
+              "0403_svo",
+              "0404",
+              "0405",
               "0406",
+              "0406_svo",
+              "0407",
+              "0408",
+              "0409",
+              "0411",
+              "0412",
+              "0414",
+              "0415",
               "0416",
+              "0416_svo",
+              "0418",
+              "0419",
+              "0420",
+              "0421",
+              "0423",
+              "0425",
+              "0427",
+              "0428",
+              "0430",
+              "0432",
+              "0433",
+              "0434",
+              "0435",
+              "0436",
+              "0437",
+              "0438",
+              "0439",
+              "0440",
               "0441",
+              "0441_svo",
+              "0442",
+              "0443",
+              "0444",
+              "0445",
+              "0446",
+              "0447",
+              "0449",
+              "0450",
+              "0451",
+              "0452",
               "0454",
+              "0454_svo",
+              "0455",
+              "0456",
               "0457",
+              "0457_svo",
+              "0459",
+              "0460",
+              "0462",
+              "0463",
+              "0464",
+              "0465",
+              "0505",
+              "0509",
+              "0510",
+              "0511",
+              "0512",
+              "0513",
+              "0514",
+              "0515",
+              "0516",
+              "0525",
               "0526",
+              "0526_svo",
+              "0533",
               "0534",
+              "0534_svo",
               "0535",
+              "0535_svo",
               "0536",
+              "0536_svo",
+              "0537",
+              "0538",
+              "0539",
+              "0545",
+              "0546",
+              "0548",
+              "0549",
+              "0550",
+              "0552",
+              "0553",
+              "0554",
+              "0555",
+              "0556",
+              "0557",
+              "0568",
+              "0569",
+              "0570",
+              "0571",
+              "0572",
+              "0574",
+              "0575",
+              "0576",
               "0577",
+              "0577_svo",
+              "0578",
               "0579",
+              "0579_svo",
+              "0580",
+              "0581",
               "0582",
+              "0582_svo",
               "0583",
+              "0583_svo",
+              "0584",
+              "0585",
+              "0586",
+              "0587",
+              "0588",
+              "0589",
+              "0590",
+              "0591",
+              "0592",
+              "0593",
+              "0594",
+              "0595",
+              "0596",
+              "0597",
+              "0598",
+              "0599",
+              "0600",
+              "0601",
+              "0602",
+              "0603",
+              "0604",
+              "0605",
+              "0606",
+              "0608",
+              "0610",
+              "0611",
+              "0612",
               "0613",
+              "0613_svo",
+              "0614",
+              "0616",
+              "0617",
               "0618",
+              "0618_svo",
+              "0620",
+              "0621",
+              "0622",
+              "0623",
+              "0625",
+              "0626",
+              "0627",
+              "0628",
+              "0629",
+              "0630",
+              "0631",
+              "0632",
+              "0633",
+              "0634",
               "0639",
+              "0639_svo",
+              "0640",
+              "0641",
+              "0642",
+              "0643",
               "0644",
+              "0644_svo",
+              "0645",
+              "0646",
+              "0647",
+              "0648",
+              "0649",
+              "0650",
+              "0651",
+              "0652",
+              "0653",
+              "0654",
+              "0655",
+              "0656",
+              "0657",
+              "0658",
+              "0671",
+              "0672",
+              "0673",
+              "0674",
+              "0675",
+              "0676",
+              "0677",
+              "0678",
+              "0679",
+              "0680",
+              "0681",
+              "0682",
+              "0683",
+              "0684",
+              "0685",
+              "0686",
+              "0687",
+              "0688",
+              "0689",
+              "0690",
+              "0691",
+              "0692",
+              "0693",
+              "0694",
               "0696",
+              "0696_svo",
+              "0697",
+              "0698",
+              "0699",
+              "0700",
+              "0701",
+              "0702",
+              "0703",
+              "0705",
+              "0707",
+              "0708",
+              "0709",
               "0711",
+              "0711_svo",
+              "0712",
+              "0713",
+              "0714",
+              "0715",
               "0716",
+              "0716_svo",
+              "0717",
+              "0718",
+              "0719",
+              "0720",
               "0721",
+              "0721_svo",
+              "0722",
+              "0723",
+              "0724",
+              "0725",
+              "0726",
+              "0727",
+              "0728",
+              "0729",
+              "0730",
               "0731",
+              "0731_svo",
               "0732",
+              "0732_svo",
               "0733",
+              "0733_svo",
+              "0734",
               "0742",
+              "0742_svo",
               "0743",
+              "0743_svo",
+              "0744",
               "0745",
+              "0745_svo",
+              "0746",
               "0747",
+              "0747_svo",
+              "0748",
+              "0749",
+              "0750",
+              "0751",
+              "0752",
+              "0753",
+              "0754",
+              "0755",
+              "0756",
+              "0757",
+              "0758",
+              "0759",
+              "0760",
+              "0761",
+              "0762",
+              "0763",
+              "0764",
+              "0765",
+              "0766",
+              "0767",
+              "0768",
+              "0769",
+              "0770",
+              "0771",
+              "0772",
+              "0773",
+              "0774",
+              "0775",
+              "0776",
+              "0777",
+              "0778",
+              "0779",
+              "0780",
+              "0781",
+              "0782",
+              "0783",
               "0784",
+              "0784_svo",
+              "0785",
+              "0786",
+              "0787",
+              "0788",
+              "0789",
+              "0795",
+              "0796",
               "0799",
               "0810",
+              "0810_svo",
+              "0811",
               "0812",
+              "0812_svo",
               "0813",
+              "0813_svo",
               "0814",
+              "0814_svo",
+              "0815",
+              "0817",
               "0821",
               "0824",
+              "0824_svo",
+              "0825",
+              "0830",
+              "0831",
               "0835",
+              "0841",
+              "0842",
+              "0843",
+              "0844",
+              "0846",
               "0847",
+              "0847_svo",
+              "0848",
+              "0849",
+              "0850",
+              "0851",
               "0852",
+              "0852_svo",
+              "0853",
+              "0854",
+              "0856",
+              "0857",
+              "0858",
               "0859",
+              "0859_svo",
+              "0860",
+              "0861",
+              "0862",
+              "0863",
+              "0864",
+              "0865",
               "0866",
+              "0866_svo",
+              "0867",
+              "0868",
+              "0869",
+              "0870",
+              "0871",
+              "0872",
+              "0873",
+              "0874",
+              "0875",
               "0876",
+              "0877",
+              "0878",
+              "0879",
+              "0880",
+              "0881",
+              "0882",
+              "0883",
+              "0884",
+              "0885",
               "0890",
               "1037",
               "1040",
@@ -6432,10 +6982,10 @@
               "1114"
             ],
             "published_paths": {
-              "filter": 66
+              "filter": 529
             },
             "detector_types": {
-              "photon": 66
+              "photon": 529
             },
             "separate_components": {
               "filter": 66
@@ -6443,8 +6993,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 497001,
-            "size_human": "485.35 KB"
+            "size_bytes": 3828984,
+            "size_human": "3.65 MB"
           }
         },
         "instrument_count": 1
@@ -6755,6 +7305,154 @@
             "size_bytes": 36847,
             "size_human": "35.98 KB"
           },
+          "FY3-7-MWRIRM": {
+            "name": "FY3-7-MWRIRM",
+            "filter_count": 24,
+            "filters": [
+              "ch03",
+              "ch04",
+              "ch05",
+              "ch06",
+              "ch07",
+              "ch08",
+              "ch09",
+              "ch10",
+              "ch11",
+              "ch12",
+              "ch13",
+              "ch14",
+              "ch15",
+              "ch16",
+              "ch17",
+              "ch18",
+              "ch19",
+              "ch20",
+              "ch21",
+              "ch22",
+              "ch23",
+              "ch24",
+              "ch25",
+              "ch26"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 24
+            },
+            "detector_types": {
+              "energy": 24
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 194956,
+            "size_human": "190.39 KB"
+          },
+          "FY3-8-MWHS2": {
+            "name": "FY3-8-MWHS2",
+            "filter_count": 15,
+            "filters": [
+              "ch01",
+              "ch02",
+              "ch03",
+              "ch04",
+              "ch05",
+              "ch06",
+              "ch07",
+              "ch08",
+              "ch09",
+              "ch10",
+              "ch11",
+              "ch12",
+              "ch13",
+              "ch14",
+              "ch15"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 15
+            },
+            "detector_types": {
+              "energy": 15
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 276250,
+            "size_human": "269.78 KB"
+          },
+          "FY3-8-MWRI2": {
+            "name": "FY3-8-MWRI2",
+            "filter_count": 20,
+            "filters": [
+              "ch03",
+              "ch04",
+              "ch05",
+              "ch06",
+              "ch07",
+              "ch08",
+              "ch09",
+              "ch10",
+              "ch11",
+              "ch12",
+              "ch13",
+              "ch14",
+              "ch15",
+              "ch16",
+              "ch17",
+              "ch18",
+              "ch19",
+              "ch20",
+              "ch21",
+              "ch22"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 20
+            },
+            "detector_types": {
+              "energy": 20
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 202620,
+            "size_human": "197.87 KB"
+          },
+          "FY3-8-MWTS3": {
+            "name": "FY3-8-MWTS3",
+            "filter_count": 17,
+            "filters": [
+              "ch01",
+              "ch02",
+              "ch03",
+              "ch04",
+              "ch05",
+              "ch06",
+              "ch07",
+              "ch08",
+              "ch09",
+              "ch10",
+              "ch11",
+              "ch12",
+              "ch13",
+              "ch14",
+              "ch15",
+              "ch16",
+              "ch17"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 17
+            },
+            "detector_types": {
+              "energy": 17
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 400670,
+            "size_human": "391.28 KB"
+          },
           "FY3A-IRAS": {
             "name": "FY3A-IRAS",
             "filter_count": 26,
@@ -7052,9 +7750,115 @@
             "info": "info.json",
             "size_bytes": 32092,
             "size_human": "31.34 KB"
+          },
+          "FY3F-MWHS2": {
+            "name": "FY3F-MWHS2",
+            "filter_count": 15,
+            "filters": [
+              "ch01",
+              "ch02",
+              "ch03",
+              "ch04",
+              "ch05",
+              "ch06",
+              "ch07",
+              "ch08",
+              "ch09",
+              "ch10",
+              "ch11",
+              "ch12",
+              "ch13",
+              "ch14",
+              "ch15"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 15
+            },
+            "detector_types": {
+              "energy": 15
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 278695,
+            "size_human": "272.16 KB"
+          },
+          "FY3F-MWRI2": {
+            "name": "FY3F-MWRI2",
+            "filter_count": 20,
+            "filters": [
+              "ch03",
+              "ch04",
+              "ch05",
+              "ch06",
+              "ch07",
+              "ch08",
+              "ch09",
+              "ch10",
+              "ch11",
+              "ch12",
+              "ch13",
+              "ch14",
+              "ch15",
+              "ch16",
+              "ch17",
+              "ch18",
+              "ch19",
+              "ch20",
+              "ch21",
+              "ch22"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 20
+            },
+            "detector_types": {
+              "energy": 20
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 146587,
+            "size_human": "143.15 KB"
+          },
+          "FY3F-MWTS3": {
+            "name": "FY3F-MWTS3",
+            "filter_count": 17,
+            "filters": [
+              "ch01",
+              "ch02",
+              "ch03",
+              "ch04",
+              "ch05",
+              "ch06",
+              "ch07",
+              "ch08",
+              "ch09",
+              "ch10",
+              "ch11",
+              "ch12",
+              "ch13",
+              "ch14",
+              "ch15",
+              "ch16",
+              "ch17"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 17
+            },
+            "detector_types": {
+              "energy": 17
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 230835,
+            "size_human": "225.42 KB"
           }
         },
-        "instrument_count": 11
+        "instrument_count": 18
       },
       "Flock": {
         "name": "Flock",
@@ -9182,50 +9986,136 @@
             "size_bytes": 1883857,
             "size_human": "1.80 MB"
           },
-          "VAS5": {
-            "name": "VAS5",
-            "filter_count": 4,
+          "VAS4": {
+            "name": "VAS4",
+            "filter_count": 12,
             "filters": [
+              "Ch01",
               "Ch02",
+              "Ch03",
               "Ch04",
+              "Ch05",
               "Ch06",
-              "Ch07"
-            ],
-            "published_paths": {
-              "filter+instrument": 4
-            },
-            "detector_types": {
-              "energy": 4
-            },
-            "separate_components": {},
-            "has_component_manifest": true,
-            "properties": "properties.json",
-            "info": "info.json",
-            "size_bytes": 95327,
-            "size_human": "93.09 KB"
-          },
-          "VAS7": {
-            "name": "VAS7",
-            "filter_count": 2,
-            "filters": [
+              "Ch07",
+              "Ch08",
+              "Ch09",
               "Ch10",
+              "Ch11",
               "Ch12"
             ],
             "published_paths": {
-              "filter+instrument": 2
+              "filter+optics+qe": 12
             },
             "detector_types": {
-              "energy": 2
+              "energy": 12
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 211036,
-            "size_human": "206.09 KB"
+            "size_bytes": 500454,
+            "size_human": "488.72 KB"
+          },
+          "VAS5": {
+            "name": "VAS5",
+            "filter_count": 16,
+            "filters": [
+              "Ch01",
+              "Ch02",
+              "Ch02_svo",
+              "Ch03",
+              "Ch04",
+              "Ch04_svo",
+              "Ch05",
+              "Ch06",
+              "Ch06_svo",
+              "Ch07",
+              "Ch07_svo",
+              "Ch08",
+              "Ch09",
+              "Ch10",
+              "Ch11",
+              "Ch12"
+            ],
+            "published_paths": {
+              "filter+instrument": 4,
+              "filter+optics+qe": 12
+            },
+            "detector_types": {
+              "energy": 16
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 581857,
+            "size_human": "568.22 KB"
+          },
+          "VAS6": {
+            "name": "VAS6",
+            "filter_count": 12,
+            "filters": [
+              "Ch01",
+              "Ch02",
+              "Ch03",
+              "Ch04",
+              "Ch05",
+              "Ch06",
+              "Ch07",
+              "Ch08",
+              "Ch09",
+              "Ch10",
+              "Ch11",
+              "Ch12"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 12
+            },
+            "detector_types": {
+              "energy": 12
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 466567,
+            "size_human": "455.63 KB"
+          },
+          "VAS7": {
+            "name": "VAS7",
+            "filter_count": 14,
+            "filters": [
+              "Ch01",
+              "Ch02",
+              "Ch03",
+              "Ch04",
+              "Ch05",
+              "Ch06",
+              "Ch07",
+              "Ch08",
+              "Ch09",
+              "Ch10",
+              "Ch10_svo",
+              "Ch11",
+              "Ch12",
+              "Ch12_svo"
+            ],
+            "published_paths": {
+              "filter+instrument": 2,
+              "filter+optics+qe": 12
+            },
+            "detector_types": {
+              "energy": 14
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 805216,
+            "size_human": "786.34 KB"
           }
         },
-        "instrument_count": 22
+        "instrument_count": 24
       },
       "GOTO": {
         "name": "GOTO",
@@ -9260,6 +10150,41 @@
         },
         "instrument_count": 1
       },
+      "GPM": {
+        "name": "GPM",
+        "instruments": {
+          "GMI": {
+            "name": "GMI",
+            "filter_count": 11,
+            "filters": [
+              "ch03",
+              "ch04",
+              "ch05",
+              "ch06",
+              "ch07",
+              "ch08",
+              "ch09",
+              "ch10",
+              "ch11",
+              "ch12",
+              "ch13"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 11
+            },
+            "detector_types": {
+              "energy": 11
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 824299,
+            "size_human": "804.98 KB"
+          }
+        },
+        "instrument_count": 1
+      },
       "GTC": {
         "name": "GTC",
         "instruments": {
@@ -9282,8 +10207,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 32589,
-            "size_human": "31.83 KB"
+            "size_bytes": 37678,
+            "size_human": "36.79 KB"
           },
           "CanariCam": {
             "name": "CanariCam",
@@ -11686,85 +12611,169 @@
           },
           "GMS1": {
             "name": "GMS1",
-            "filter_count": 1,
+            "filter_count": 3,
             "filters": [
-              "IR"
-            ],
-            "published_paths": {
-              "filter+qe+instrument": 1
-            },
-            "detector_types": {
-              "photon": 1
-            },
-            "separate_components": {},
-            "has_component_manifest": true,
-            "properties": "properties.json",
-            "info": "info.json",
-            "size_bytes": 14515,
-            "size_human": "14.17 KB"
-          },
-          "GMS3": {
-            "name": "GMS3",
-            "filter_count": 1,
-            "filters": [
+              "IR",
+              "IR_svo",
               "Vis"
             ],
             "published_paths": {
+              "filter+optics+qe": 2,
               "filter+qe+instrument": 1
             },
             "detector_types": {
+              "energy": 2,
               "photon": 1
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 14380,
-            "size_human": "14.04 KB"
+            "size_bytes": 27885,
+            "size_human": "27.23 KB"
+          },
+          "GMS2": {
+            "name": "GMS2",
+            "filter_count": 2,
+            "filters": [
+              "IR",
+              "Vis"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 2
+            },
+            "detector_types": {
+              "energy": 2
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 22557,
+            "size_human": "22.03 KB"
+          },
+          "GMS3": {
+            "name": "GMS3",
+            "filter_count": 3,
+            "filters": [
+              "IR",
+              "Vis",
+              "Vis_svo"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 2,
+              "filter+qe+instrument": 1
+            },
+            "detector_types": {
+              "energy": 2,
+              "photon": 1
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 27423,
+            "size_human": "26.78 KB"
+          },
+          "GMS4": {
+            "name": "GMS4",
+            "filter_count": 2,
+            "filters": [
+              "IR",
+              "Vis"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 2
+            },
+            "detector_types": {
+              "energy": 2
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 22267,
+            "size_human": "21.75 KB"
           },
           "GMS5": {
             "name": "GMS5",
-            "filter_count": 1,
+            "filter_count": 5,
             "filters": [
-              "IR1"
+              "IR1",
+              "IR1_svo",
+              "IR2",
+              "IR3",
+              "Vis"
             ],
             "published_paths": {
+              "filter+optics+qe": 4,
               "filter+qe+instrument": 1
             },
             "detector_types": {
+              "energy": 4,
               "photon": 1
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 14705,
-            "size_human": "14.36 KB"
+            "size_bytes": 39527,
+            "size_human": "38.60 KB"
           },
-          "MTSAT2": {
-            "name": "MTSAT2",
-            "filter_count": 4,
+          "MTSAT-1R": {
+            "name": "MTSAT-1R",
+            "filter_count": 5,
             "filters": [
               "IR1",
               "IR2",
+              "IR3",
               "IR4",
               "Vis"
             ],
             "published_paths": {
+              "filter+optics+qe": 5
+            },
+            "detector_types": {
+              "energy": 5
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 37652,
+            "size_human": "36.77 KB"
+          },
+          "MTSAT2": {
+            "name": "MTSAT2",
+            "filter_count": 9,
+            "filters": [
+              "IR1",
+              "IR1_svo",
+              "IR2",
+              "IR2_svo",
+              "IR3",
+              "IR4",
+              "IR4_svo",
+              "Vis",
+              "Vis_svo"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 5,
               "filter+qe+instrument": 4
             },
             "detector_types": {
+              "energy": 5,
               "photon": 4
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 128669,
-            "size_human": "125.65 KB"
+            "size_bytes": 360752,
+            "size_human": "352.30 KB"
           }
         },
-        "instrument_count": 6
+        "instrument_count": 9
       },
       "Hipparcos": {
         "name": "Hipparcos",
@@ -11953,165 +12962,400 @@
         "instruments": {
           "ING": {
             "name": "ING",
-            "filter_count": 151,
+            "filter_count": 385,
             "filters": [
               "001",
+              "001_svo",
               "003",
+              "003_svo",
               "005",
+              "005_svo",
               "007",
+              "007_svo",
               "008",
+              "008_svo",
+              "011",
+              "012",
+              "014",
+              "015",
               "017",
+              "017_svo",
+              "020",
+              "021",
+              "022",
               "023",
+              "023_svo",
               "024",
+              "024_svo",
               "025",
+              "025_svo",
               "026",
+              "026_svo",
               "027",
+              "027_svo",
               "029",
+              "029_svo",
+              "030",
               "031",
+              "031_svo",
+              "032",
               "033",
+              "033_svo",
+              "034",
+              "035",
               "036",
+              "036_svo",
               "037",
+              "037_svo",
               "038",
+              "038_svo",
+              "039",
+              "040",
               "041",
+              "041_svo",
               "042",
+              "042_svo",
+              "043",
               "044",
+              "044_svo",
               "045",
+              "045_svo",
               "046",
+              "046_svo",
               "047",
+              "047_svo",
               "048",
+              "048_svo",
               "049",
+              "049_svo",
+              "050",
               "051",
+              "051_svo",
               "052",
+              "052_svo",
               "053",
+              "053_svo",
+              "054",
               "055",
+              "055_svo",
               "056",
+              "056_svo",
               "057",
+              "057_svo",
+              "058",
+              "060",
               "061",
+              "061_svo",
               "062",
+              "062_svo",
               "063",
+              "063_svo",
+              "064",
+              "065",
+              "066",
+              "067",
+              "068",
               "069",
+              "069_svo",
+              "071",
               "072",
+              "072_svo",
               "073",
+              "073_svo",
               "074",
+              "074_svo",
               "075",
+              "075_svo",
+              "076",
+              "077",
               "078",
+              "078_svo",
               "079",
+              "079_svo",
               "080",
+              "080_svo",
               "081",
+              "081_svo",
+              "082",
               "083",
+              "083_svo",
               "084",
+              "084_svo",
               "085",
+              "085_svo",
               "086",
+              "086_svo",
               "087",
+              "087_svo",
               "091",
+              "091_svo",
               "092",
+              "092_svo",
               "093",
+              "093_svo",
               "094",
+              "094_svo",
               "095",
+              "095_svo",
+              "096",
               "097",
+              "097_svo",
               "098",
+              "098_svo",
               "099",
+              "099_svo",
               "100",
+              "100_svo",
+              "101",
               "102",
+              "102_svo",
               "103",
+              "103_svo",
               "104",
+              "104_svo",
               "105",
+              "105_svo",
+              "106",
               "107",
+              "107_svo",
               "108",
+              "108_svo",
               "109",
+              "109_svo",
+              "110",
+              "111",
               "112",
+              "112_svo",
               "113",
+              "113_svo",
+              "114",
+              "115",
+              "116",
               "117",
+              "117_svo",
               "118",
+              "118_svo",
               "119",
+              "119_svo",
               "120",
+              "120_svo",
               "121",
+              "121_svo",
               "122",
+              "122_svo",
+              "123",
+              "124",
+              "125",
+              "126",
               "127",
+              "127_svo",
               "128",
+              "128_svo",
+              "129",
               "130",
+              "130_svo",
               "133",
+              "133_svo",
               "134",
+              "134_svo",
               "135",
+              "135_svo",
               "136",
+              "136_svo",
+              "137",
               "139",
+              "139_svo",
               "140",
+              "140_svo",
               "141",
+              "141_svo",
               "142",
+              "142_svo",
+              "143",
               "144",
+              "144_svo",
+              "145",
               "146",
+              "146_svo",
               "147",
+              "147_svo",
+              "148",
+              "149",
+              "150",
               "151",
+              "151_svo",
               "152",
+              "152_svo",
               "153",
+              "153_svo",
+              "154",
               "156",
+              "156_svo",
+              "157",
               "158",
+              "158_svo",
               "159",
+              "159_svo",
+              "160",
               "161",
+              "161_svo",
               "162",
+              "162_svo",
+              "163",
               "164",
+              "164_svo",
+              "165",
               "166",
+              "166_svo",
               "168",
+              "168_svo",
               "169",
+              "169_svo",
               "170",
+              "170_svo",
               "171",
+              "171_svo",
+              "172",
+              "173",
               "174",
+              "174_svo",
               "175",
+              "175_svo",
               "176",
+              "176_svo",
+              "178",
+              "179",
               "180",
+              "180_svo",
+              "181",
               "182",
+              "182_svo",
               "183",
+              "183_svo",
+              "184",
+              "185",
               "186",
+              "186_svo",
               "187",
+              "187_svo",
               "188",
+              "188_svo",
               "189",
+              "189_svo",
+              "190",
               "191",
+              "191_svo",
+              "192",
+              "193",
               "194",
+              "194_svo",
               "195",
+              "195_svo",
+              "196",
+              "197",
+              "198",
               "199",
+              "199_svo",
+              "200",
               "201",
+              "201_svo",
               "202",
+              "202_svo",
+              "203",
               "204",
+              "204_svo",
+              "205",
+              "206",
               "207",
+              "207_svo",
               "209",
+              "209_svo",
               "210",
+              "210_svo",
+              "211",
               "212",
+              "212_svo",
               "213",
+              "213_svo",
+              "214",
+              "215",
               "216",
+              "216_svo",
+              "217",
+              "218",
+              "219",
+              "220",
               "221",
+              "221_svo",
               "223",
               "226",
+              "226_svo",
               "228",
+              "228_svo",
+              "230",
               "231",
+              "231_svo",
+              "234",
+              "236",
               "237",
               "238",
               "239",
+              "239_svo",
+              "240",
               "581",
+              "581_svo",
               "582",
+              "582_svo",
               "583",
+              "583_svo",
               "584",
+              "584_svo",
               "585",
+              "585_svo",
               "586",
+              "586_svo",
+              "587",
+              "588",
+              "589",
               "590",
+              "590_svo",
               "591",
+              "591_svo",
+              "592",
               "593",
+              "593_svo",
               "594",
+              "594_svo",
               "608",
+              "608_svo",
               "609",
+              "609_svo",
               "610",
+              "610_svo",
+              "611",
               "612",
+              "612_svo",
+              "613",
               "614",
+              "614_svo",
+              "615",
               "700",
+              "700_svo",
               "701",
+              "701_svo",
               "702",
+              "702_svo",
               "703",
-              "704"
+              "703_svo",
+              "704",
+              "704_svo"
             ],
             "published_paths": {
-              "filter": 151
+              "filter": 385
             },
             "detector_types": {
-              "energy": 151
+              "energy": 151,
+              "photon": 234
             },
             "separate_components": {
               "filter": 151
@@ -12119,8 +13363,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 1403901,
-            "size_human": "1.34 MB"
+            "size_bytes": 3878482,
+            "size_human": "3.70 MB"
           }
         },
         "instrument_count": 1
@@ -12452,33 +13696,55 @@
         "instruments": {
           "ISO": {
             "name": "ISO",
-            "filter_count": 18,
+            "filter_count": 39,
             "filters": [
               "LW1",
               "LW10",
+              "LW10_svo",
+              "LW1_svo",
               "LW2",
+              "LW2_svo",
               "LW3",
+              "LW3_svo",
               "LW4",
+              "LW4_svo",
               "LW5",
+              "LW5_svo",
               "LW6",
+              "LW6_svo",
+              "LW7",
               "LW8",
+              "LW8_svo",
               "LW9",
+              "LW9_svo",
               "SW1",
               "SW10",
+              "SW10_svo",
               "SW11",
+              "SW11_svo",
+              "SW1_svo",
               "SW2",
+              "SW2_svo",
               "SW3",
+              "SW3_svo",
               "SW4",
+              "SW4_svo",
+              "SW5",
               "SW6",
+              "SW6_svo",
               "SW7",
-              "SW9"
+              "SW7_svo",
+              "SW8",
+              "SW9",
+              "SW9_svo"
             ],
             "published_paths": {
               "filter": 1,
-              "filter+instrument": 17
+              "filter+instrument": 17,
+              "filter+qe": 21
             },
             "detector_types": {
-              "photon": 18
+              "photon": 39
             },
             "separate_components": {
               "filter": 1
@@ -12486,8 +13752,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 94690,
-            "size_human": "92.47 KB"
+            "size_bytes": 200302,
+            "size_human": "195.61 KB"
           },
           "ISO_CVF": {
             "name": "ISO_CVF",
@@ -12771,58 +14037,85 @@
           },
           "PHT-C": {
             "name": "PHT-C",
-            "filter_count": 7,
+            "filter_count": 18,
             "filters": [
+              "100mu",
+              "105mu",
               "120mu",
+              "120mu_svo",
               "135mu",
+              "135mu_svo",
               "160mu",
+              "160mu_svo",
               "180mu",
+              "180mu_svo",
+              "200mu",
               "50mu",
+              "50mu_svo",
               "60mu",
-              "90mu"
+              "60mu_svo",
+              "70mu",
+              "90mu",
+              "90mu_svo"
             ],
             "published_paths": {
-              "filter+instrument": 7
+              "filter+instrument": 7,
+              "filter+qe": 11
             },
             "detector_types": {
-              "energy": 7
+              "energy": 18
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 75787,
-            "size_human": "74.01 KB"
+            "size_bytes": 215295,
+            "size_human": "210.25 KB"
           },
           "PHT-P": {
             "name": "PHT-P",
-            "filter_count": 12,
+            "filter_count": 26,
             "filters": [
+              "100mu",
               "10mu",
+              "10mu_svo",
               "11_3mu",
+              "11_3mu_svo",
               "11_5mu",
+              "11_5mu_svo",
               "12_8mu",
+              "12_8mu_svo",
               "16mu",
+              "16mu_svo",
               "20mu",
+              "20mu_svo",
               "25mu",
+              "25mu_svo",
               "3_29mu",
+              "3_29mu_svo",
               "3_6mu",
+              "3_6mu_svo",
               "4_85mu",
+              "4_85mu_svo",
+              "60mu",
               "7_3mu",
-              "7_7mu"
+              "7_3mu_svo",
+              "7_7mu",
+              "7_7mu_svo"
             ],
             "published_paths": {
-              "filter+instrument": 12
+              "filter+instrument": 12,
+              "filter+qe": 14
             },
             "detector_types": {
-              "energy": 12
+              "energy": 26
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 121753,
-            "size_human": "118.90 KB"
+            "size_bytes": 303930,
+            "size_human": "296.81 KB"
           }
         },
         "instrument_count": 4
@@ -12960,6 +14253,85 @@
       "JPSS": {
         "name": "JPSS",
         "instruments": {
+          "ATMS-J1": {
+            "name": "ATMS-J1",
+            "filter_count": 61,
+            "filters": [
+              "ch1",
+              "ch10A",
+              "ch10B",
+              "ch11A",
+              "ch11B",
+              "ch12AL",
+              "ch12AU",
+              "ch12BL",
+              "ch12BU",
+              "ch13AL",
+              "ch13AU",
+              "ch13BL",
+              "ch13BU",
+              "ch14AL",
+              "ch14AU",
+              "ch14BL",
+              "ch14BU",
+              "ch15AL",
+              "ch15AU",
+              "ch15BL",
+              "ch15BU",
+              "ch16A",
+              "ch16B",
+              "ch17A1",
+              "ch17A2",
+              "ch17B1",
+              "ch18AL",
+              "ch18AU",
+              "ch18BL",
+              "ch18BU",
+              "ch19AL",
+              "ch19AU",
+              "ch19BL",
+              "ch19BU",
+              "ch2",
+              "ch20AL",
+              "ch20AU",
+              "ch20BL",
+              "ch20BU",
+              "ch21AL",
+              "ch21AU",
+              "ch21BL",
+              "ch21BU",
+              "ch22AL",
+              "ch22AU",
+              "ch22BL",
+              "ch22BU",
+              "ch3A",
+              "ch3B",
+              "ch4A",
+              "ch4B",
+              "ch5A",
+              "ch5B",
+              "ch6A",
+              "ch6B",
+              "ch7A",
+              "ch7B",
+              "ch8A",
+              "ch8B",
+              "ch9A",
+              "ch9B"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 61
+            },
+            "detector_types": {
+              "energy": 61
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 6615061,
+            "size_human": "6.31 MB"
+          },
           "ATMS-J2": {
             "name": "ATMS-J2",
             "filter_count": 42,
@@ -13019,6 +14391,126 @@
             "info": "info.json",
             "size_bytes": 2860080,
             "size_human": "2.73 MB"
+          },
+          "ATMS-J3": {
+            "name": "ATMS-J3",
+            "filter_count": 42,
+            "filters": [
+              "ch01_PRI",
+              "ch02_PRI",
+              "ch03_PRI",
+              "ch03_RED",
+              "ch04_PRI",
+              "ch04_RED",
+              "ch05_PRI",
+              "ch05_RED",
+              "ch06_PRI",
+              "ch06_RED",
+              "ch07_PRI",
+              "ch07_RED",
+              "ch08_PRI",
+              "ch08_RED",
+              "ch09_PRI",
+              "ch09_RED",
+              "ch10_PRI",
+              "ch10_RED",
+              "ch11_PRI",
+              "ch11_RED",
+              "ch12_PRI",
+              "ch12_RED",
+              "ch13_PRI",
+              "ch13_RED",
+              "ch14_PRI",
+              "ch14_RED",
+              "ch15_PRI",
+              "ch15_RED",
+              "ch16_PRI",
+              "ch16_RED",
+              "ch17_PRI",
+              "ch17_RED",
+              "ch18_PRI",
+              "ch18_RED",
+              "ch19_PRI",
+              "ch19_RED",
+              "ch20_PRI",
+              "ch20_RED",
+              "ch21_PRI",
+              "ch21_RED",
+              "ch22_PRI",
+              "ch22_RED"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 42
+            },
+            "detector_types": {
+              "energy": 42
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 3843884,
+            "size_human": "3.67 MB"
+          },
+          "ATMS-J4": {
+            "name": "ATMS-J4",
+            "filter_count": 42,
+            "filters": [
+              "ch01_PRI",
+              "ch02_PRI",
+              "ch03_PRI",
+              "ch03_RED",
+              "ch04_PRI",
+              "ch04_RED",
+              "ch05_PRI",
+              "ch05_RED",
+              "ch06_PRI",
+              "ch06_RED",
+              "ch07_PRI",
+              "ch07_RED",
+              "ch08_PRI",
+              "ch08_RED",
+              "ch09_PRI",
+              "ch09_RED",
+              "ch10_PRI",
+              "ch10_RED",
+              "ch11_PRI",
+              "ch11_RED",
+              "ch12_PRI",
+              "ch12_RED",
+              "ch13_PRI",
+              "ch13_RED",
+              "ch14_PRI",
+              "ch14_RED",
+              "ch15_PRI",
+              "ch15_RED",
+              "ch16_PRI",
+              "ch16_RED",
+              "ch17_PRI",
+              "ch17_RED",
+              "ch18_PRI",
+              "ch18_RED",
+              "ch19_PRI",
+              "ch19_RED",
+              "ch20_PRI",
+              "ch20_RED",
+              "ch21_PRI",
+              "ch21_RED",
+              "ch22_PRI",
+              "ch22_RED"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 42
+            },
+            "detector_types": {
+              "energy": 42
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 3841544,
+            "size_human": "3.66 MB"
           },
           "ATMS-NPP": {
             "name": "ATMS-NPP",
@@ -13361,7 +14853,7 @@
             "size_human": "304.15 KB"
           }
         },
-        "instrument_count": 5
+        "instrument_count": 8
       },
       "JWST": {
         "name": "JWST",
@@ -13541,6 +15033,48 @@
           }
         },
         "instrument_count": 4
+      },
+      "Jiheng": {
+        "name": "Jiheng",
+        "instruments": {
+          "Jiheng": {
+            "name": "Jiheng",
+            "filter_count": 18,
+            "filters": [
+              "ch01",
+              "ch02",
+              "ch03",
+              "ch04",
+              "ch05",
+              "ch06",
+              "ch07",
+              "ch08",
+              "ch09",
+              "ch10",
+              "ch11",
+              "ch12",
+              "ch13",
+              "ch14",
+              "ch15",
+              "ch16",
+              "ch17",
+              "ch18"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 18
+            },
+            "detector_types": {
+              "energy": 18
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 950377,
+            "size_human": "928.10 KB"
+          }
+        },
+        "instrument_count": 1
       },
       "KOMPSTAT": {
         "name": "KOMPSTAT",
@@ -14730,126 +16264,281 @@
         "instruments": {
           "LICK": {
             "name": "LICK",
-            "filter_count": 142,
+            "filter_count": 302,
             "filters": [
+              "3300_1150",
               "3380_30",
+              "3380_30_svo",
               "3380_55",
+              "3380_55_svo",
               "3440_90",
+              "3440_90_svo",
               "3500_50",
+              "3500_50_svo",
               "3500_800",
+              "3500_800_svo",
               "3600_600",
+              "3600_600_svo",
               "3650_80",
+              "3650_80_svo",
+              "3653_20",
+              "3662_70",
+              "3695_30",
               "3700_100",
+              "3700_100_svo",
+              "3734_63",
               "3750_80",
+              "3750_80_svo",
               "3804_65",
+              "3804_65_svo",
               "3825_300",
+              "3825_300_svo",
+              "3870_30",
               "3870_60",
+              "3870_60_svo",
               "3871_50",
+              "3871_50_svo",
               "3875_62",
+              "3875_62_svo",
+              "3953_60",
+              "3972_60",
+              "4000_400",
               "4000_650",
+              "4000_650_svo",
               "4023_25",
+              "4023_25_svo",
+              "4043_60",
               "4060_70",
+              "4060_70_svo",
               "4100_100",
+              "4100_100_svo",
+              "4200_250",
               "4217_17",
+              "4217_17_svo",
               "4220_60",
+              "4220_60_svo",
               "4260_30",
+              "4260_30_svo",
+              "4260_80",
               "4265_65",
+              "4265_65_svo",
               "4300_60",
+              "4300_60_svo",
               "4315_30",
+              "4315_30_svo",
               "4360_45",
+              "4360_45_svo",
+              "4380_20",
+              "4450_60",
               "4479_60",
+              "4479_60_svo",
+              "4512_60",
               "4545_60",
+              "4545_60_svo",
               "4550_80",
+              "4550_80_svo",
               "4578_60",
+              "4578_60_svo",
               "4614_20",
+              "4614_20_svo",
+              "4624_47",
+              "4625_100",
               "4644_60",
+              "4644_60_svo",
               "4677_60",
+              "4677_60_svo",
               "4710_60",
+              "4710_60_svo",
               "4743_60",
+              "4743_60_svo",
               "4750_400",
+              "4750_400_svo",
               "4776_60",
+              "4776_60_svo",
+              "4809_60",
               "4838_32",
+              "4838_32_svo",
               "4845_60",
+              "4845_60_svo",
               "4861_40",
+              "4861_40_svo",
+              "4875_60",
               "4908_60",
+              "4908_60_svo",
               "4941_90",
+              "4941_90_svo",
               "4974_60",
+              "4974_60_svo",
+              "4985_80",
+              "5000_100",
+              "5030_80",
               "5064_30",
+              "5064_30_svo",
               "5071_58",
+              "5071_58_svo",
               "5103_59",
+              "5103_59_svo",
               "5110_80",
+              "5110_80_svo",
               "5139_90",
+              "5139_90_svo",
               "5156_36",
+              "5156_36_svo",
               "5190_80",
+              "5190_80_svo",
               "5199_60",
+              "5199_60_svo",
               "5200_100",
+              "5200_100_svo",
               "5232_60",
+              "5232_60_svo",
               "5265_60",
+              "5265_60_svo",
               "5298_61",
+              "5298_61_svo",
               "5332_61",
+              "5332_61_svo",
               "5350_80",
+              "5350_80_svo",
               "5366_62",
+              "5366_62_svo",
+              "5382_62",
               "5434_63",
+              "5434_63_svo",
               "5500_400",
+              "5500_400_svo",
               "5503_63",
+              "5503_63_svo",
               "5538_64",
+              "5538_64_svo",
               "5550_200",
+              "5550_200_svo",
               "5580_65",
+              "5580_65_svo",
               "5610_65",
+              "5610_65_svo",
               "5646_65",
+              "5646_65_svo",
               "5682_65",
+              "5682_65_svo",
               "5719_66",
+              "5719_66_svo",
               "5735_250",
+              "5735_250_svo",
+              "5756_66",
               "5780_65",
+              "5780_65_svo",
               "5794_80",
+              "5794_80_svo",
+              "5826_80",
               "5893_40",
+              "5893_40_svo",
               "5920_60",
+              "5920_60_svo",
               "5940_60",
+              "5940_60_svo",
               "6000_70",
+              "6000_70_svo",
               "6067_70",
+              "6067_70_svo",
               "6107_70",
+              "6107_70_svo",
               "6147_71",
+              "6147_71_svo",
+              "6187_71",
+              "6199_40",
               "6228_72",
+              "6228_72_svo",
+              "6250_400",
+              "6269_73",
               "6300_45",
+              "6300_45_svo",
               "6310_73",
+              "6310_73_svo",
               "6351_74",
+              "6351_74_svo",
               "6363_45",
+              "6363_45_svo",
               "6393_74",
+              "6393_74_svo",
               "6435_74",
+              "6435_74_svo",
               "6460_15",
+              "6460_15_svo",
               "6477_75",
+              "6477_75_svo",
+              "6500_700",
               "6520_75",
+              "6520_75_svo",
               "6563_100",
+              "6563_100_svo",
               "6563_45",
+              "6563_45_svo",
               "6563_75",
+              "6563_75_svo",
               "6567_15",
+              "6567_15_svo",
               "6570_70",
+              "6570_70_svo",
               "6588_15",
+              "6588_15_svo",
               "6606_75",
+              "6606_75_svo",
               "6649_76",
+              "6649_76_svo",
               "6685_50",
+              "6685_50_svo",
               "6693_76",
+              "6693_76_svo",
               "6710_100",
+              "6710_100_svo",
+              "6725_30",
               "6737_76",
+              "6737_76_svo",
               "6750_500",
+              "6750_500_svo",
               "6781_78",
+              "6781_78_svo",
               "6826_78",
+              "6826_78_svo",
+              "6871_78",
               "6890_90",
+              "6890_90_svo",
               "6916_78",
+              "6916_78_svo",
               "6961_79",
+              "6961_79_svo",
+              "7007_79",
               "7025_230",
+              "7025_230_svo",
               "7053_79",
+              "7053_79_svo",
               "7099_80",
+              "7099_80_svo",
               "7141_50",
+              "7141_50_svo",
               "7146_80",
+              "7146_80_svo",
+              "7193_80",
+              "7240_82",
               "7246_50",
+              "7246_50_svo",
               "7250_500",
+              "7250_500_svo",
               "7288_82",
+              "7288_82_svo",
               "7336_82",
+              "7336_82_svo",
+              "7384_84",
+              "7400hp",
               "7433_84",
+              "7433_84_svo",
               "7482_84",
+              "7482_84_svo",
               "7580_85",
+              "7630_85",
               "7680_85",
+              "7680_85_svo",
               "7730_85",
               "7781_86",
               "7832_86",
@@ -14869,17 +16558,22 @@
               "9160_100",
               "9230_100",
               "B",
+              "B_svo",
               "I",
+              "I_svo",
               "R",
+              "R_svo",
               "Rs",
+              "Rs_svo",
               "U",
-              "V"
+              "V",
+              "V_svo"
             ],
             "published_paths": {
-              "filter": 142
+              "filter": 302
             },
             "detector_types": {
-              "photon": 142
+              "photon": 302
             },
             "separate_components": {
               "filter": 142
@@ -14887,8 +16581,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 958037,
-            "size_human": "935.58 KB"
+            "size_bytes": 2069017,
+            "size_human": "1.97 MB"
           }
         },
         "instrument_count": 1
@@ -15078,45 +16772,59 @@
           },
           "DFOSC": {
             "name": "DFOSC",
-            "filter_count": 30,
+            "filter_count": 44,
             "filters": [
               "Bcont",
               "Bcont_filter",
               "Bessel_B",
               "Bessel_B_filter",
+              "Bessel_B_filter_svo",
               "Bessel_R",
               "Bessel_R_filter",
+              "Bessel_R_filter_svo",
               "Bessel_U",
               "Bessel_U_filter",
+              "Bessel_U_filter_svo",
               "Bessel_V_filter",
+              "Bessel_V_filter_svo",
               "C2",
               "C2_filter",
               "C3",
               "C3_filter",
               "CN",
               "Gunn_g_filter",
+              "Gunn_g_filter_svo",
               "Gunn_i",
               "Gunn_i_filter",
+              "Gunn_i_filter_svo",
               "Gunn_r",
+              "Gunn_r_filter",
               "Gunn_z",
               "Gunn_z_filter",
+              "Gunn_z_filter_svo",
               "Halpha700_filter",
+              "Halpha700_filter_svo",
               "Halpha800_filter",
               "Halpha_r",
+              "Halpha_r_filter",
               "Hbeta",
               "Hbeta_C",
               "Hbeta_C_filter",
+              "Hbeta_C_filter_svo",
+              "Hbeta_filter",
               "NH2",
               "OIII_filter",
+              "OIII_filter_svo",
               "Rcont",
-              "SII"
+              "SII",
+              "SII_filter"
             ],
             "published_paths": {
-              "filter": 13,
+              "filter": 27,
               "filter+instrument": 17
             },
             "detector_types": {
-              "photon": 30
+              "photon": 44
             },
             "separate_components": {
               "filter": 22
@@ -15124,27 +16832,42 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 322962,
-            "size_human": "315.39 KB"
+            "size_bytes": 437150,
+            "size_human": "426.90 KB"
           },
           "EFOSC": {
             "name": "EFOSC",
-            "filter_count": 8,
+            "filter_count": 22,
             "filters": [
               "ESO639",
+              "ESO639_svo",
               "ESO640",
+              "ESO640_svo",
               "ESO641",
+              "ESO641_svo",
+              "ESO642",
+              "ESO687",
               "ESO692",
+              "ESO692_svo",
+              "ESO700",
               "ESO705",
+              "ESO705_svo",
               "ESO709",
+              "ESO709_svo",
               "ESO724",
-              "ESO742"
+              "ESO724_svo",
+              "ESO742",
+              "ESO742_svo",
+              "ESO743",
+              "ESO782",
+              "ESO784"
             ],
             "published_paths": {
-              "filter": 8
+              "filter": 22
             },
             "detector_types": {
-              "energy": 8
+              "energy": 8,
+              "photon": 14
             },
             "separate_components": {
               "filter": 8
@@ -15152,45 +16875,98 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 67833,
-            "size_human": "66.24 KB"
+            "size_bytes": 170919,
+            "size_human": "166.91 KB"
           },
           "EMMI": {
             "name": "EMMI",
-            "filter_count": 26,
+            "filter_count": 79,
             "filters": [
               "BG38",
+              "BG38_svo",
+              "BG39",
               "Bb",
+              "Bb_svo",
+              "Bessel_B",
               "Bessel_U",
+              "Bessel_U_svo",
               "EUV",
+              "EUV_svo",
               "GG375",
+              "GG375_svo",
+              "Gunn_g",
+              "Gunn_r",
               "Gunn_z",
+              "Gunn_z_svo",
               "Halpha",
               "Halpha_0",
+              "Halpha_0_svo",
               "Halpha_12000",
+              "Halpha_12000_svo",
+              "Halpha_15000",
+              "Halpha_3000",
+              "Halpha_6000",
               "Halpha_9000",
+              "Halpha_9000_svo",
+              "Halpha_svo",
+              "Hbeta",
               "Hbeta_cont",
+              "Hbeta_cont_svo",
+              "HeII",
+              "HeII_468",
               "I",
+              "I_svo",
+              "NII",
               "NII_0",
+              "NII_0_svo",
+              "NeV",
               "OG530",
+              "OG530_svo",
               "OIII",
+              "OIII_12000",
               "OIII_15000",
+              "OIII_15000_svo",
               "OIII_3000",
+              "OIII_3000_svo",
+              "OIII_6000",
+              "OIII_9000",
+              "OIII_svo",
               "OII_0",
+              "OII_0_svo",
+              "OII_10000",
               "OII_15000",
+              "OII_15000_svo",
+              "OII_5000",
+              "R",
+              "RG715",
               "SIII_0",
+              "SIII_0_svo",
+              "SII_0",
               "Spec_394",
+              "Spec_394_svo",
+              "Spec_435",
               "Spec_472",
+              "Spec_472_svo",
+              "Spec_489",
               "Spec_502",
+              "Spec_502_svo",
+              "Spec_505",
+              "Spec_539",
+              "Spec_546",
               "Spec_602",
+              "Spec_602_svo",
+              "Spec_912",
               "Tyson_B",
-              "Z"
+              "Tyson_B_svo",
+              "V",
+              "Z",
+              "Z_svo"
             ],
             "published_paths": {
-              "filter": 26
+              "filter": 79
             },
             "detector_types": {
-              "photon": 26
+              "photon": 79
             },
             "separate_components": {
               "filter": 26
@@ -15198,57 +16974,87 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 208855,
-            "size_human": "203.96 KB"
+            "size_bytes": 567839,
+            "size_human": "554.53 KB"
           },
           "GROND": {
             "name": "GROND",
-            "filter_count": 5,
+            "filter_count": 12,
             "filters": [
+              "H",
               "J",
+              "J_svo",
               "K",
+              "K_svo",
               "g",
+              "g_svo",
+              "i",
               "r",
-              "z"
+              "r_svo",
+              "z",
+              "z_svo"
             ],
             "published_paths": {
+              "filter": 7,
               "filter+instrument": 5
             },
             "detector_types": {
-              "energy": 5
+              "energy": 5,
+              "photon": 7
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 66556,
-            "size_human": "65.00 KB"
+            "size_bytes": 279533,
+            "size_human": "272.98 KB"
           },
           "SOFI": {
             "name": "SOFI",
-            "filter_count": 15,
+            "filter_count": 35,
             "filters": [
               "H",
+              "H_svo",
               "J",
+              "J_svo",
+              "Js",
               "Ks",
+              "Ks_svo",
               "NB106",
+              "NB106_svo",
               "NB108",
+              "NB108_svo",
               "NB119",
+              "NB119_svo",
               "NB121",
+              "NB121_svo",
               "NB126",
+              "NB126_svo",
               "NB128",
+              "NB128_svo",
               "NB164",
+              "NB164_svo",
               "NB171",
+              "NB171_svo",
+              "NB207",
+              "NB209",
               "NB213",
+              "NB213_svo",
               "NB217",
+              "NB217_svo",
               "NB219",
-              "NB225"
+              "NB219_svo",
+              "NB225",
+              "NB225_svo",
+              "NB229",
+              "NB234"
             ],
             "published_paths": {
-              "filter": 15
+              "filter": 35
             },
             "detector_types": {
-              "energy": 15
+              "energy": 15,
+              "photon": 20
             },
             "separate_components": {
               "filter": 15
@@ -15256,33 +17062,52 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 236126,
-            "size_human": "230.59 KB"
+            "size_bytes": 677978,
+            "size_human": "662.09 KB"
           },
           "SUSI2": {
             "name": "SUSI2",
-            "filter_count": 14,
+            "filter_count": 32,
             "filters": [
               "B",
               "B_817",
+              "B_817_svo",
+              "B_svo",
               "I",
               "IB609",
+              "IB609_svo",
+              "IB662",
+              "I_svo",
               "NB880",
+              "NB880_svo",
+              "NB881",
+              "NB882",
+              "NB883",
               "NB884",
+              "NB884_svo",
               "NB885",
+              "NB885_svo",
               "R",
+              "R_svo",
               "U",
+              "U_svo",
               "Up",
+              "Up_svo",
               "V",
+              "V_svo",
               "WB490",
+              "WB490_svo",
               "WB655",
-              "Z"
+              "WB655_svo",
+              "Z",
+              "Z_svo"
             ],
             "published_paths": {
-              "filter": 14
+              "filter": 32
             },
             "detector_types": {
-              "energy": 14
+              "energy": 14,
+              "photon": 18
             },
             "separate_components": {
               "filter": 14
@@ -15290,8 +17115,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 135822,
-            "size_human": "132.64 KB"
+            "size_bytes": 264288,
+            "size_human": "258.09 KB"
           },
           "TIMMI2": {
             "name": "TIMMI2",
@@ -15323,43 +17148,82 @@
           },
           "WFI": {
             "name": "WFI",
-            "filter_count": 28,
+            "filter_count": 67,
             "filters": [
+              "ESO841_filter",
               "ESO842",
+              "ESO842_filter",
+              "ESO843_filter",
+              "ESO844_filter",
               "ESO845",
+              "ESO845_filter",
               "ESO846_filter",
+              "ESO846_filter_svo",
               "ESO847_filter",
+              "ESO847_filter_svo",
               "ESO848",
               "ESO848_filter",
+              "ESO848_filter_svo",
+              "ESO849_filter",
               "ESO850_filter",
+              "ESO850_filter_svo",
               "ESO851_filter",
+              "ESO851_filter_svo",
+              "ESO852_filter",
+              "ESO853_filter",
               "ESO854",
+              "ESO854_filter",
               "ESO856",
+              "ESO856_filter",
               "ESO857",
+              "ESO857_filter",
               "ESO858",
+              "ESO858_filter",
               "ESO859_filter",
+              "ESO859_filter_svo",
               "ESO860",
+              "ESO860_filter",
+              "ESO861_filter",
+              "ESO862_filter",
               "ESO863_filter",
+              "ESO863_filter_svo",
               "ESO864",
               "ESO864_filter",
+              "ESO864_filter_svo",
               "ESO865",
               "ESO865_filter",
+              "ESO865_filter_svo",
+              "ESO866_filter",
               "ESO867_filter",
+              "ESO867_filter_svo",
+              "ESO868_filter",
+              "ESO869_filter",
+              "ESO870_filter",
               "ESO871",
               "ESO871_filter",
+              "ESO871_filter_svo",
+              "ESO872_filter",
               "ESO873",
+              "ESO873_filter",
+              "ESO874_filter",
+              "ESO875_filter",
+              "ESO877_filter",
+              "ESO878_filter",
+              "ESO879_filter",
               "NB513",
               "NB513_filter",
               "NB549_filter",
+              "NB549_filter_svo",
               "OIII-2_filter",
+              "OIII-2_filter_svo",
               "White_filter"
             ],
             "published_paths": {
-              "filter": 15,
+              "filter": 54,
               "filter+instrument": 13
             },
             "detector_types": {
-              "photon": 28
+              "photon": 67
             },
             "separate_components": {
               "filter": 20
@@ -15367,8 +17231,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 206219,
-            "size_human": "201.39 KB"
+            "size_bytes": 541095,
+            "size_human": "528.41 KB"
           }
         },
         "instrument_count": 9
@@ -15959,52 +17823,320 @@
       "METOP": {
         "name": "METOP",
         "instruments": {
-          "AVHRR-A": {
-            "name": "AVHRR-A",
-            "filter_count": 4,
+          "AMSUA-A": {
+            "name": "AMSUA-A",
+            "filter_count": 15,
             "filters": [
-              "Ch2",
-              "Ch3A",
-              "Ch4",
-              "Ch5"
+              "Ch01",
+              "Ch02",
+              "Ch03",
+              "Ch04",
+              "Ch05",
+              "Ch06",
+              "Ch07",
+              "Ch08",
+              "Ch09",
+              "Ch10",
+              "Ch11",
+              "Ch12",
+              "Ch13",
+              "Ch14",
+              "Ch15"
             ],
             "published_paths": {
-              "filter+instrument": 4
+              "filter+optics+qe": 15
             },
             "detector_types": {
-              "energy": 4
+              "energy": 15
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 30981,
-            "size_human": "30.25 KB"
+            "size_bytes": 119613,
+            "size_human": "116.81 KB"
+          },
+          "AMSUA-B": {
+            "name": "AMSUA-B",
+            "filter_count": 15,
+            "filters": [
+              "Ch01",
+              "Ch02",
+              "Ch03",
+              "Ch04",
+              "Ch05",
+              "Ch06",
+              "Ch07",
+              "Ch08",
+              "Ch09",
+              "Ch10",
+              "Ch11",
+              "Ch12",
+              "Ch13",
+              "Ch14",
+              "Ch15"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 15
+            },
+            "detector_types": {
+              "energy": 15
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 119534,
+            "size_human": "116.73 KB"
+          },
+          "AMSUA-C": {
+            "name": "AMSUA-C",
+            "filter_count": 15,
+            "filters": [
+              "Ch01",
+              "Ch02",
+              "Ch03",
+              "Ch04",
+              "Ch05",
+              "Ch06",
+              "Ch07",
+              "Ch08",
+              "Ch09",
+              "Ch10",
+              "Ch11",
+              "Ch12",
+              "Ch13",
+              "Ch14",
+              "Ch15"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 15
+            },
+            "detector_types": {
+              "energy": 15
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 119612,
+            "size_human": "116.81 KB"
+          },
+          "AVHRR-A": {
+            "name": "AVHRR-A",
+            "filter_count": 10,
+            "filters": [
+              "Ch1",
+              "Ch2",
+              "Ch2_svo",
+              "Ch3A",
+              "Ch3A_svo",
+              "Ch3B",
+              "Ch4",
+              "Ch4_svo",
+              "Ch5",
+              "Ch5_svo"
+            ],
+            "published_paths": {
+              "filter+instrument": 4,
+              "filter+optics+qe": 6
+            },
+            "detector_types": {
+              "energy": 10
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 73874,
+            "size_human": "72.14 KB"
           },
           "AVHRR-B": {
             "name": "AVHRR-B",
-            "filter_count": 4,
+            "filter_count": 10,
             "filters": [
+              "Ch1",
               "Ch2",
+              "Ch2_svo",
               "Ch3A",
+              "Ch3A_svo",
+              "Ch3B",
               "Ch4",
-              "Ch5"
+              "Ch4_svo",
+              "Ch5",
+              "Ch5_svo"
             ],
             "published_paths": {
-              "filter+instrument": 4
+              "filter+instrument": 4,
+              "filter+optics+qe": 6
             },
             "detector_types": {
-              "energy": 4
+              "energy": 10
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 31225,
-            "size_human": "30.49 KB"
+            "size_bytes": 74252,
+            "size_human": "72.51 KB"
+          },
+          "ICI-SG2": {
+            "name": "ICI-SG2",
+            "filter_count": 13,
+            "filters": [
+              "ch01",
+              "ch02",
+              "ch03",
+              "ch04",
+              "ch05",
+              "ch06",
+              "ch07",
+              "ch08",
+              "ch09",
+              "ch10",
+              "ch11",
+              "ch12",
+              "ch13"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 13
+            },
+            "detector_types": {
+              "energy": 13
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 213279,
+            "size_human": "208.28 KB"
+          },
+          "METimage": {
+            "name": "METimage",
+            "filter_count": 20,
+            "filters": [
+              "VII_10690",
+              "VII_12020",
+              "VII_1240",
+              "VII_13345",
+              "VII_1375",
+              "VII_1630",
+              "VII_2250",
+              "VII_3740",
+              "VII_3959",
+              "VII_4050",
+              "VII_443",
+              "VII_555",
+              "VII_668",
+              "VII_6725",
+              "VII_7325",
+              "VII_752",
+              "VII_763",
+              "VII_8540",
+              "VII_865",
+              "VII_914"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 20
+            },
+            "detector_types": {
+              "energy": 20
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 141892,
+            "size_human": "138.57 KB"
+          },
+          "MWI-SG2": {
+            "name": "MWI-SG2",
+            "filter_count": 26,
+            "filters": [
+              "ch01",
+              "ch02",
+              "ch03",
+              "ch04",
+              "ch05",
+              "ch06",
+              "ch07",
+              "ch08",
+              "ch09",
+              "ch10",
+              "ch11",
+              "ch12",
+              "ch13",
+              "ch14",
+              "ch15",
+              "ch16",
+              "ch17",
+              "ch18",
+              "ch19",
+              "ch20",
+              "ch21",
+              "ch22",
+              "ch23",
+              "ch24",
+              "ch25",
+              "ch26"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 26
+            },
+            "detector_types": {
+              "energy": 26
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 794827,
+            "size_human": "776.20 KB"
+          },
+          "MWS-SG1": {
+            "name": "MWS-SG1",
+            "filter_count": 24,
+            "filters": [
+              "ch01",
+              "ch02",
+              "ch03",
+              "ch04",
+              "ch05",
+              "ch06",
+              "ch07",
+              "ch08",
+              "ch09",
+              "ch10",
+              "ch11",
+              "ch12",
+              "ch13",
+              "ch14",
+              "ch15",
+              "ch16",
+              "ch17",
+              "ch18",
+              "ch19",
+              "ch20",
+              "ch21",
+              "ch22",
+              "ch23",
+              "ch24"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 24
+            },
+            "detector_types": {
+              "energy": 24
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 568365,
+            "size_human": "555.04 KB"
           }
         },
-        "instrument_count": 2
+        "instrument_count": 9
       },
       "MEX": {
         "name": "MEX",
@@ -16593,8 +18725,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 19073,
-            "size_human": "18.63 KB"
+            "size_bytes": 20229,
+            "size_human": "19.75 KB"
           }
         },
         "instrument_count": 1
@@ -16682,15 +18814,42 @@
           },
           "MVIRI03": {
             "name": "MVIRI03",
+            "filter_count": 8,
+            "filters": [
+              "IR1",
+              "IR1_svo",
+              "IR2",
+              "VIS",
+              "WV1",
+              "WV1_svo",
+              "WV2",
+              "WV2_svo"
+            ],
+            "published_paths": {
+              "filter+instrument": 4,
+              "filter+optics+qe": 4
+            },
+            "detector_types": {
+              "energy": 8
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 988425,
+            "size_human": "965.26 KB"
+          },
+          "MVIRI04": {
+            "name": "MVIRI04",
             "filter_count": 4,
             "filters": [
               "IR1",
-              "VIS",
+              "IR2",
               "WV1",
               "WV2"
             ],
             "published_paths": {
-              "filter+instrument": 4
+              "filter+optics+qe": 4
             },
             "detector_types": {
               "energy": 4
@@ -16699,76 +18858,282 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 430528,
-            "size_human": "420.44 KB"
+            "size_bytes": 565715,
+            "size_human": "552.46 KB"
+          },
+          "MVIRI05": {
+            "name": "MVIRI05",
+            "filter_count": 4,
+            "filters": [
+              "IR1",
+              "IR2",
+              "WV1",
+              "WV2"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 4
+            },
+            "detector_types": {
+              "energy": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 567131,
+            "size_human": "553.84 KB"
+          },
+          "MVIRI06": {
+            "name": "MVIRI06",
+            "filter_count": 4,
+            "filters": [
+              "IR1",
+              "IR2",
+              "WV1",
+              "WV2"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 4
+            },
+            "detector_types": {
+              "energy": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 553805,
+            "size_human": "540.83 KB"
           },
           "MVIRI07": {
             "name": "MVIRI07",
-            "filter_count": 3,
+            "filter_count": 13,
             "filters": [
+              "IR1",
+              "IR2",
               "VIS",
               "VIS1",
-              "VIS4"
+              "VIS1_svo",
+              "VIS2",
+              "VIS3",
+              "VIS4",
+              "VIS4_svo",
+              "VIS_backup_avg",
+              "VIS_nominal_avg",
+              "WV1",
+              "WV2"
             ],
             "published_paths": {
-              "filter+instrument": 3
+              "filter+instrument": 3,
+              "filter+optics+qe": 10
             },
             "detector_types": {
-              "energy": 3
+              "energy": 13
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 27428,
-            "size_human": "26.79 KB"
+            "size_bytes": 611444,
+            "size_human": "597.11 KB"
+          },
+          "SEVIRI08": {
+            "name": "SEVIRI08",
+            "filter_count": 21,
+            "filters": [
+              "HRV",
+              "HRV_extended",
+              "IR108_85K",
+              "IR108_95K",
+              "IR120_85K",
+              "IR120_95K",
+              "IR134_85K",
+              "IR134_95K",
+              "IR39_85K",
+              "IR39_95K",
+              "IR62_85K",
+              "IR62_95K",
+              "IR73_85K",
+              "IR73_95K",
+              "IR87_85K",
+              "IR87_95K",
+              "IR97_85K",
+              "IR97_95K",
+              "NIR16",
+              "VIS06",
+              "VIS08"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 21
+            },
+            "detector_types": {
+              "energy": 21
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 122522,
+            "size_human": "119.65 KB"
           },
           "SEVIRI09": {
             "name": "SEVIRI09",
-            "filter_count": 4,
+            "filter_count": 25,
             "filters": [
+              "HRV",
+              "HRV_extended",
+              "IR108_85K",
+              "IR108_95K",
+              "IR120_85K",
+              "IR120_95K",
+              "IR134_85K",
+              "IR134_95K",
+              "IR39_85K",
               "IR39_95K",
+              "IR39_95K_svo",
+              "IR62_85K",
               "IR62_95K",
+              "IR62_95K_svo",
               "IR73_85K",
-              "VIS06"
+              "IR73_85K_svo",
+              "IR73_95K",
+              "IR87_85K",
+              "IR87_95K",
+              "IR97_85K",
+              "IR97_95K",
+              "NIR16",
+              "VIS06",
+              "VIS06_svo",
+              "VIS08"
             ],
             "published_paths": {
-              "filter+instrument": 4
+              "filter+instrument": 4,
+              "filter+optics+qe": 21
             },
             "detector_types": {
-              "energy": 4
+              "energy": 25
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 29696,
-            "size_human": "29.00 KB"
+            "size_bytes": 173075,
+            "size_human": "169.02 KB"
+          },
+          "SEVIRI10": {
+            "name": "SEVIRI10",
+            "filter_count": 20,
+            "filters": [
+              "HRV",
+              "IR108_85K",
+              "IR108_95K",
+              "IR120_85K",
+              "IR120_95K",
+              "IR134_85K",
+              "IR134_95K",
+              "IR39_85K",
+              "IR39_95K",
+              "IR62_85K",
+              "IR62_95K",
+              "IR73_85K",
+              "IR73_95K",
+              "IR87_85K",
+              "IR87_95K",
+              "IR97_85K",
+              "IR97_95K",
+              "NIR16",
+              "VIS06",
+              "VIS08"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 20
+            },
+            "detector_types": {
+              "energy": 20
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 126641,
+            "size_human": "123.67 KB"
           },
           "SEVIRI11": {
             "name": "SEVIRI11",
-            "filter_count": 4,
+            "filter_count": 25,
             "filters": [
+              "HRV",
+              "HRV_extended",
               "IR108_85K",
+              "IR108_85K_svo",
               "IR108_95K",
+              "IR108_95K_svo",
+              "IR120_85K",
+              "IR120_95K",
+              "IR134_85K",
+              "IR134_95K",
+              "IR39_85K",
+              "IR39_95K",
+              "IR62_85K",
               "IR62_95K",
-              "IR87_85K"
+              "IR62_95K_svo",
+              "IR73_85K",
+              "IR73_95K",
+              "IR87_85K",
+              "IR87_85K_svo",
+              "IR87_95K",
+              "IR97_85K",
+              "IR97_95K",
+              "NIR16",
+              "VIS06",
+              "VIS08"
             ],
             "published_paths": {
-              "filter+instrument": 4
+              "filter+instrument": 4,
+              "filter+optics+qe": 21
             },
             "detector_types": {
-              "energy": 4
+              "energy": 25
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 30050,
-            "size_human": "29.35 KB"
+            "size_bytes": 173169,
+            "size_human": "169.11 KB"
           }
         },
-        "instrument_count": 5
+        "instrument_count": 10
+      },
+      "Microsat2B": {
+        "name": "Microsat2B",
+        "instruments": {
+          "MHS": {
+            "name": "MHS",
+            "filter_count": 6,
+            "filters": [
+              "ch01",
+              "ch02",
+              "ch03",
+              "ch04",
+              "ch05",
+              "ch06"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 6
+            },
+            "detector_types": {
+              "energy": 6
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 350271,
+            "size_human": "342.06 KB"
+          }
+        },
+        "instrument_count": 1
       },
       "Misc": {
         "name": "Misc",
@@ -17026,23 +19391,28 @@
         "instruments": {
           "CZCS": {
             "name": "CZCS",
-            "filter_count": 2,
+            "filter_count": 6,
             "filters": [
+              "band443",
               "band520",
-              "band670"
+              "band520_svo",
+              "band550",
+              "band670",
+              "band670_svo"
             ],
             "published_paths": {
-              "filter+instrument": 2
+              "filter+instrument": 2,
+              "filter+optics+qe": 4
             },
             "detector_types": {
-              "energy": 2
+              "energy": 6
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 18765,
-            "size_human": "18.33 KB"
+            "size_bytes": 35832,
+            "size_human": "34.99 KB"
           },
           "ITPR5": {
             "name": "ITPR5",
@@ -17094,6 +19464,138 @@
       "NOAA": {
         "name": "NOAA",
         "instruments": {
+          "AMSUA-15": {
+            "name": "AMSUA-15",
+            "filter_count": 15,
+            "filters": [
+              "Ch01",
+              "Ch02",
+              "Ch03",
+              "Ch04",
+              "Ch05",
+              "Ch06",
+              "Ch07",
+              "Ch08",
+              "Ch09",
+              "Ch10",
+              "Ch11",
+              "Ch12",
+              "Ch13",
+              "Ch14",
+              "Ch15"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 15
+            },
+            "detector_types": {
+              "energy": 15
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 119538,
+            "size_human": "116.74 KB"
+          },
+          "AMSUA-16": {
+            "name": "AMSUA-16",
+            "filter_count": 15,
+            "filters": [
+              "Ch01",
+              "Ch02",
+              "Ch03",
+              "Ch04",
+              "Ch05",
+              "Ch06",
+              "Ch07",
+              "Ch08",
+              "Ch09",
+              "Ch10",
+              "Ch11",
+              "Ch12",
+              "Ch13",
+              "Ch14",
+              "Ch15"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 15
+            },
+            "detector_types": {
+              "energy": 15
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 119528,
+            "size_human": "116.73 KB"
+          },
+          "AMSUA-17": {
+            "name": "AMSUA-17",
+            "filter_count": 15,
+            "filters": [
+              "Ch01",
+              "Ch02",
+              "Ch03",
+              "Ch04",
+              "Ch05",
+              "Ch06",
+              "Ch07",
+              "Ch08",
+              "Ch09",
+              "Ch10",
+              "Ch11",
+              "Ch12",
+              "Ch13",
+              "Ch14",
+              "Ch15"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 15
+            },
+            "detector_types": {
+              "energy": 15
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 119492,
+            "size_human": "116.69 KB"
+          },
+          "AMSUA-18": {
+            "name": "AMSUA-18",
+            "filter_count": 15,
+            "filters": [
+              "Ch01",
+              "Ch02",
+              "Ch03",
+              "Ch04",
+              "Ch05",
+              "Ch06",
+              "Ch07",
+              "Ch08",
+              "Ch09",
+              "Ch10",
+              "Ch11",
+              "Ch12",
+              "Ch13",
+              "Ch14",
+              "Ch15"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 15
+            },
+            "detector_types": {
+              "energy": 15
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 119524,
+            "size_human": "116.72 KB"
+          },
           "AMSUA-19": {
             "name": "AMSUA-19",
             "filter_count": 15,
@@ -17127,163 +19629,420 @@
             "size_bytes": 1929635,
             "size_human": "1.84 MB"
           },
-          "AVHRR-10": {
-            "name": "AVHRR-10",
-            "filter_count": 1,
+          "AMSUB-15": {
+            "name": "AMSUB-15",
+            "filter_count": 5,
             "filters": [
-              "Ch1"
+              "Ch01",
+              "Ch02",
+              "Ch03",
+              "Ch04",
+              "Ch05"
             ],
             "published_paths": {
-              "filter+instrument": 1
+              "filter+optics+qe": 5
             },
             "detector_types": {
-              "energy": 1
+              "energy": 5
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 14268,
-            "size_human": "13.93 KB"
+            "size_bytes": 45498,
+            "size_human": "44.43 KB"
+          },
+          "AMSUB-16": {
+            "name": "AMSUB-16",
+            "filter_count": 5,
+            "filters": [
+              "Ch01",
+              "Ch02",
+              "Ch03",
+              "Ch04",
+              "Ch05"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 5
+            },
+            "detector_types": {
+              "energy": 5
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 45493,
+            "size_human": "44.43 KB"
+          },
+          "AMSUB-17": {
+            "name": "AMSUB-17",
+            "filter_count": 5,
+            "filters": [
+              "Ch01",
+              "Ch02",
+              "Ch03",
+              "Ch04",
+              "Ch05"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 5
+            },
+            "detector_types": {
+              "energy": 5
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 45487,
+            "size_human": "44.42 KB"
+          },
+          "AVHRR-10": {
+            "name": "AVHRR-10",
+            "filter_count": 5,
+            "filters": [
+              "Ch1",
+              "Ch1_svo",
+              "Ch2",
+              "Ch3",
+              "Ch4"
+            ],
+            "published_paths": {
+              "filter+instrument": 1,
+              "filter+optics+qe": 4
+            },
+            "detector_types": {
+              "energy": 5
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 31345,
+            "size_human": "30.61 KB"
+          },
+          "AVHRR-11": {
+            "name": "AVHRR-11",
+            "filter_count": 5,
+            "filters": [
+              "Ch1",
+              "Ch2",
+              "Ch3",
+              "Ch4",
+              "Ch5"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 5
+            },
+            "detector_types": {
+              "energy": 5
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 29273,
+            "size_human": "28.59 KB"
           },
           "AVHRR-12": {
             "name": "AVHRR-12",
-            "filter_count": 2,
+            "filter_count": 7,
             "filters": [
+              "Ch1",
               "Ch2",
-              "Ch4"
+              "Ch2_svo",
+              "Ch3",
+              "Ch4",
+              "Ch4_svo",
+              "Ch5"
             ],
             "published_paths": {
-              "filter+instrument": 2
+              "filter+instrument": 2,
+              "filter+optics+qe": 5
             },
             "detector_types": {
-              "energy": 2
+              "energy": 7
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 18232,
-            "size_human": "17.80 KB"
+            "size_bytes": 38643,
+            "size_human": "37.74 KB"
+          },
+          "AVHRR-13": {
+            "name": "AVHRR-13",
+            "filter_count": 5,
+            "filters": [
+              "Ch1",
+              "Ch2",
+              "Ch3",
+              "Ch4",
+              "Ch5"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 5
+            },
+            "detector_types": {
+              "energy": 5
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 26536,
+            "size_human": "25.91 KB"
           },
           "AVHRR-14": {
             "name": "AVHRR-14",
-            "filter_count": 2,
+            "filter_count": 7,
             "filters": [
+              "Ch1",
               "Ch2",
-              "Ch4"
+              "Ch2_svo",
+              "Ch3",
+              "Ch4",
+              "Ch4_svo",
+              "Ch5"
             ],
             "published_paths": {
-              "filter+instrument": 2
+              "filter+instrument": 2,
+              "filter+optics+qe": 5
             },
             "detector_types": {
-              "energy": 2
+              "energy": 7
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 18241,
-            "size_human": "17.81 KB"
+            "size_bytes": 38982,
+            "size_human": "38.07 KB"
           },
           "AVHRR-15": {
             "name": "AVHRR-15",
-            "filter_count": 2,
+            "filter_count": 8,
             "filters": [
               "Ch1",
-              "Ch3A"
+              "Ch1_svo",
+              "Ch2",
+              "Ch3A",
+              "Ch3A_svo",
+              "Ch3B",
+              "Ch4",
+              "Ch5"
             ],
             "published_paths": {
-              "filter+instrument": 2
+              "filter+instrument": 2,
+              "filter+optics+qe": 6
             },
             "detector_types": {
-              "energy": 2
+              "energy": 8
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 31593,
-            "size_human": "30.85 KB"
+            "size_bytes": 190659,
+            "size_human": "186.19 KB"
           },
           "AVHRR-16": {
             "name": "AVHRR-16",
-            "filter_count": 1,
+            "filter_count": 7,
             "filters": [
-              "Ch2"
+              "Ch1",
+              "Ch2",
+              "Ch2_svo",
+              "Ch3A",
+              "Ch3B",
+              "Ch4",
+              "Ch5"
             ],
             "published_paths": {
-              "filter+instrument": 1
+              "filter+instrument": 1,
+              "filter+optics+qe": 6
             },
             "detector_types": {
-              "energy": 1
+              "energy": 7
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15138,
-            "size_human": "14.78 KB"
+            "size_bytes": 56895,
+            "size_human": "55.56 KB"
+          },
+          "AVHRR-17": {
+            "name": "AVHRR-17",
+            "filter_count": 6,
+            "filters": [
+              "Ch1",
+              "Ch2",
+              "Ch3A",
+              "Ch3B",
+              "Ch4",
+              "Ch5"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 6
+            },
+            "detector_types": {
+              "energy": 6
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 50228,
+            "size_human": "49.05 KB"
           },
           "AVHRR-18": {
             "name": "AVHRR-18",
-            "filter_count": 1,
+            "filter_count": 7,
             "filters": [
-              "Ch4"
+              "Ch1",
+              "Ch2",
+              "Ch3A",
+              "Ch3B",
+              "Ch4",
+              "Ch4_svo",
+              "Ch5"
             ],
             "published_paths": {
-              "filter+instrument": 1
+              "filter+instrument": 1,
+              "filter+optics+qe": 6
             },
             "detector_types": {
-              "energy": 1
+              "energy": 7
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15170,
-            "size_human": "14.81 KB"
+            "size_bytes": 56371,
+            "size_human": "55.05 KB"
           },
           "AVHRR-19": {
             "name": "AVHRR-19",
-            "filter_count": 1,
+            "filter_count": 7,
             "filters": [
-              "Ch1"
+              "Ch1",
+              "Ch1_svo",
+              "Ch2",
+              "Ch3A",
+              "Ch3B",
+              "Ch4",
+              "Ch5"
             ],
             "published_paths": {
-              "filter+instrument": 1
+              "filter+instrument": 1,
+              "filter+optics+qe": 6
             },
             "detector_types": {
-              "energy": 1
+              "energy": 7
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 14905,
-            "size_human": "14.56 KB"
+            "size_bytes": 57432,
+            "size_human": "56.09 KB"
+          },
+          "AVHRR-6": {
+            "name": "AVHRR-6",
+            "filter_count": 4,
+            "filters": [
+              "Ch1",
+              "Ch2",
+              "Ch3",
+              "Ch4"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 4
+            },
+            "detector_types": {
+              "energy": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 25676,
+            "size_human": "25.07 KB"
           },
           "AVHRR-7": {
             "name": "AVHRR-7",
-            "filter_count": 1,
+            "filter_count": 6,
             "filters": [
-              "Ch3"
+              "Ch1",
+              "Ch2",
+              "Ch3",
+              "Ch3_svo",
+              "Ch4",
+              "Ch5"
             ],
             "published_paths": {
-              "filter+instrument": 1
+              "filter+instrument": 1,
+              "filter+optics+qe": 5
             },
             "detector_types": {
-              "energy": 1
+              "energy": 6
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 14316,
-            "size_human": "13.98 KB"
+            "size_bytes": 35306,
+            "size_human": "34.48 KB"
+          },
+          "AVHRR-8": {
+            "name": "AVHRR-8",
+            "filter_count": 4,
+            "filters": [
+              "Ch1",
+              "Ch2",
+              "Ch3",
+              "Ch4"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 4
+            },
+            "detector_types": {
+              "energy": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 26038,
+            "size_human": "25.43 KB"
+          },
+          "AVHRR-9": {
+            "name": "AVHRR-9",
+            "filter_count": 5,
+            "filters": [
+              "Ch1",
+              "Ch2",
+              "Ch3",
+              "Ch4",
+              "Ch5"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 5
+            },
+            "detector_types": {
+              "energy": 5
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 29122,
+            "size_human": "28.44 KB"
           }
         },
-        "instrument_count": 9
+        "instrument_count": 22
       },
       "NOAO": {
         "name": "NOAO",
@@ -17845,6 +20604,46 @@
             "info": "info.json",
             "size_bytes": 19766,
             "size_human": "19.30 KB"
+          }
+        },
+        "instrument_count": 1
+      },
+      "OMS": {
+        "name": "OMS",
+        "instruments": {
+          "GEMS1": {
+            "name": "GEMS1",
+            "filter_count": 16,
+            "filters": [
+              "ch01",
+              "ch02",
+              "ch03",
+              "ch04",
+              "ch05",
+              "ch06",
+              "ch07",
+              "ch08",
+              "ch09",
+              "ch10",
+              "ch11",
+              "ch12",
+              "ch13",
+              "ch14",
+              "ch15",
+              "ch16"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 16
+            },
+            "detector_types": {
+              "energy": 16
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 70434,
+            "size_human": "68.78 KB"
           }
         },
         "instrument_count": 1
@@ -18892,23 +21691,26 @@
         "instruments": {
           "QUIET": {
             "name": "QUIET",
-            "filter_count": 2,
+            "filter_count": 4,
             "filters": [
               "Q",
-              "W"
+              "Q_svo",
+              "W",
+              "W_svo"
             ],
             "published_paths": {
-              "filter+instrument": 2
+              "filter+instrument": 2,
+              "filter+optics+qe": 2
             },
             "detector_types": {
-              "energy": 2
+              "energy": 4
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 46070,
-            "size_human": "44.99 KB"
+            "size_bytes": 105541,
+            "size_human": "103.07 KB"
           }
         },
         "instrument_count": 1
@@ -18941,6 +21743,72 @@
             "info": "info.json",
             "size_bytes": 50849,
             "size_human": "49.66 KB"
+          }
+        },
+        "instrument_count": 1
+      },
+      "QuickSounder": {
+        "name": "QuickSounder",
+        "instruments": {
+          "ATMS": {
+            "name": "ATMS",
+            "filter_count": 42,
+            "filters": [
+              "ch01",
+              "ch02",
+              "ch03_PRI",
+              "ch03_RED",
+              "ch04_PRI",
+              "ch04_RED",
+              "ch05_PRI",
+              "ch05_RED",
+              "ch06_PRI",
+              "ch06_RED",
+              "ch07_PRI",
+              "ch07_RED",
+              "ch08_PRI",
+              "ch08_RED",
+              "ch09_PRI",
+              "ch09_RED",
+              "ch10_PRI",
+              "ch10_RED",
+              "ch11_PRI",
+              "ch11_RED",
+              "ch12_PRI",
+              "ch12_RED",
+              "ch13_PRI",
+              "ch13_RED",
+              "ch14_PRI",
+              "ch14_RED",
+              "ch15_PRI",
+              "ch15_RED",
+              "ch16_PRI",
+              "ch16_RED",
+              "ch17_PRI",
+              "ch17_RED",
+              "ch18_PRI",
+              "ch18_RED",
+              "ch19_PRI",
+              "ch19_RED",
+              "ch20_PRI",
+              "ch20_RED",
+              "ch21_PRI",
+              "ch21_RED",
+              "ch22_PRI",
+              "ch22_RED"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 42
+            },
+            "detector_types": {
+              "energy": 42
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 8241515,
+            "size_human": "7.86 MB"
           }
         },
         "instrument_count": 1
@@ -20391,9 +23259,29 @@
             "info": "info.json",
             "size_bytes": 21438,
             "size_human": "20.94 KB"
+          },
+          "SPT-SZ": {
+            "name": "SPT-SZ",
+            "filter_count": 2,
+            "filters": [
+              "150GHz",
+              "220GHz"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 2
+            },
+            "detector_types": {
+              "energy": 2
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 23062,
+            "size_human": "22.52 KB"
           }
         },
-        "instrument_count": 1
+        "instrument_count": 2
       },
       "SSOT": {
         "name": "SSOT",
@@ -21714,8 +24602,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 275094,
-            "size_human": "268.65 KB"
+            "size_bytes": 276387,
+            "size_human": "269.91 KB"
           }
         },
         "instrument_count": 1
@@ -21725,22 +24613,34 @@
         "instruments": {
           "NARROW1": {
             "name": "NARROW1",
-            "filter_count": 8,
+            "filter_count": 20,
             "filters": [
               "1400",
+              "1400_svo",
               "1500",
+              "1500_svo",
               "1600",
+              "1600_svo",
               "1700",
+              "1700_svo",
+              "1800",
               "1900",
+              "1900_svo",
+              "2000",
               "2100",
+              "2100_svo",
               "2200",
-              "2500"
+              "2200_svo",
+              "2300",
+              "2400",
+              "2500",
+              "2500_svo"
             ],
             "published_paths": {
-              "filter": 8
+              "filter": 20
             },
             "detector_types": {
-              "energy": 8
+              "energy": 20
             },
             "separate_components": {
               "filter": 8
@@ -21748,27 +24648,36 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 48130,
-            "size_human": "47.00 KB"
+            "size_bytes": 100561,
+            "size_human": "98.20 KB"
           },
           "NARROW2": {
             "name": "NARROW2",
-            "filter_count": 8,
+            "filter_count": 17,
             "filters": [
               "1455",
+              "1455_svo",
               "1565",
+              "1565_svo",
               "1675",
+              "1675_svo",
+              "1855",
               "1965",
+              "1965_svo",
               "2075",
+              "2075_svo",
               "2255",
+              "2255_svo",
               "2365",
-              "2475"
+              "2365_svo",
+              "2475",
+              "2475_svo"
             ],
             "published_paths": {
-              "filter": 8
+              "filter": 17
             },
             "detector_types": {
-              "energy": 8
+              "energy": 17
             },
             "separate_components": {
               "filter": 8
@@ -21776,8 +24685,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 48978,
-            "size_human": "47.83 KB"
+            "size_bytes": 91199,
+            "size_human": "89.06 KB"
           },
           "SPEC": {
             "name": "SPEC",
@@ -21853,7 +24762,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 1903493,
+            "size_bytes": 1904296,
             "size_human": "1.82 MB"
           },
           "TD1": {
@@ -21889,23 +24798,27 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 76635,
-            "size_human": "74.84 KB"
+            "size_bytes": 77345,
+            "size_human": "75.53 KB"
           },
           "WIDE": {
             "name": "WIDE",
-            "filter_count": 4,
+            "filter_count": 8,
             "filters": [
               "1565",
+              "1565_svo",
               "1965",
+              "1965_svo",
               "2365",
-              "2740"
+              "2365_svo",
+              "2740",
+              "2740_svo"
             ],
             "published_paths": {
-              "filter": 4
+              "filter": 8
             },
             "detector_types": {
-              "energy": 4
+              "energy": 8
             },
             "separate_components": {
               "filter": 4
@@ -21913,11 +24826,63 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 32006,
-            "size_human": "31.26 KB"
+            "size_bytes": 64558,
+            "size_human": "63.04 KB"
           }
         },
         "instrument_count": 5
+      },
+      "TEMPEST": {
+        "name": "TEMPEST",
+        "instruments": {
+          "TEMPEST-D": {
+            "name": "TEMPEST-D",
+            "filter_count": 5,
+            "filters": [
+              "ch01",
+              "ch02",
+              "ch03",
+              "ch04",
+              "ch05"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 5
+            },
+            "detector_types": {
+              "energy": 5
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 23005,
+            "size_human": "22.47 KB"
+          },
+          "TEMPEST-H8": {
+            "name": "TEMPEST-H8",
+            "filter_count": 5,
+            "filters": [
+              "ch01",
+              "ch02",
+              "ch03",
+              "ch04",
+              "ch05"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 5
+            },
+            "detector_types": {
+              "energy": 5
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 41586,
+            "size_human": "40.61 KB"
+          }
+        },
+        "instrument_count": 2
       },
       "TESS": {
         "name": "TESS",
@@ -21949,23 +24914,28 @@
         "instruments": {
           "AVHRR": {
             "name": "AVHRR",
-            "filter_count": 2,
+            "filter_count": 6,
             "filters": [
+              "Ch1",
+              "Ch2",
               "Ch3",
-              "Ch4"
+              "Ch3_svo",
+              "Ch4",
+              "Ch4_svo"
             ],
             "published_paths": {
-              "filter+instrument": 2
+              "filter+instrument": 2,
+              "filter+optics+qe": 4
             },
             "detector_types": {
-              "energy": 2
+              "energy": 6
             },
             "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 18093,
-            "size_human": "17.67 KB"
+            "size_bytes": 34826,
+            "size_human": "34.01 KB"
           }
         },
         "instrument_count": 1
@@ -21998,8 +24968,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 65950,
-            "size_human": "64.40 KB"
+            "size_bytes": 67228,
+            "size_human": "65.65 KB"
           },
           "TFRM": {
             "name": "TFRM",
@@ -22019,8 +24989,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 17806,
-            "size_human": "17.39 KB"
+            "size_bytes": 19472,
+            "size_human": "19.02 KB"
           }
         },
         "instrument_count": 2
@@ -22055,8 +25025,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 87594,
-            "size_human": "85.54 KB"
+            "size_bytes": 88907,
+            "size_human": "86.82 KB"
           },
           "NICS": {
             "name": "NICS",
@@ -22076,8 +25046,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 25475,
-            "size_human": "24.88 KB"
+            "size_bytes": 26806,
+            "size_human": "26.18 KB"
           },
           "OIG": {
             "name": "OIG",
@@ -22100,8 +25070,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 39752,
-            "size_human": "38.82 KB"
+            "size_bytes": 41065,
+            "size_human": "40.10 KB"
           },
           "TNG": {
             "name": "TNG",
@@ -22154,8 +25124,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 299260,
-            "size_human": "292.25 KB"
+            "size_bytes": 300573,
+            "size_human": "293.53 KB"
           }
         },
         "instrument_count": 4
@@ -22209,8 +25179,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 268416,
-            "size_human": "262.12 KB"
+            "size_bytes": 269705,
+            "size_human": "263.38 KB"
           }
         },
         "instrument_count": 1
@@ -22260,8 +25230,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 264496,
-            "size_human": "258.30 KB"
+            "size_bytes": 265585,
+            "size_human": "259.36 KB"
           }
         },
         "instrument_count": 1
@@ -22291,6 +25261,162 @@
           }
         },
         "instrument_count": 1
+      },
+      "TROPICS": {
+        "name": "TROPICS",
+        "instruments": {
+          "SV1-Pathfinder": {
+            "name": "SV1-Pathfinder",
+            "filter_count": 12,
+            "filters": [
+              "ch01",
+              "ch02",
+              "ch03",
+              "ch04",
+              "ch05",
+              "ch06",
+              "ch07",
+              "ch08",
+              "ch09",
+              "ch10",
+              "ch11",
+              "ch12"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 12
+            },
+            "detector_types": {
+              "energy": 12
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 41404,
+            "size_human": "40.43 KB"
+          },
+          "TROPICS-03": {
+            "name": "TROPICS-03",
+            "filter_count": 12,
+            "filters": [
+              "ch01",
+              "ch02",
+              "ch03",
+              "ch04",
+              "ch05",
+              "ch06",
+              "ch07",
+              "ch08",
+              "ch09",
+              "ch10",
+              "ch11",
+              "ch12"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 12
+            },
+            "detector_types": {
+              "energy": 12
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 40046,
+            "size_human": "39.11 KB"
+          },
+          "TROPICS-05": {
+            "name": "TROPICS-05",
+            "filter_count": 12,
+            "filters": [
+              "ch01",
+              "ch02",
+              "ch03",
+              "ch04",
+              "ch05",
+              "ch06",
+              "ch07",
+              "ch08",
+              "ch09",
+              "ch10",
+              "ch11",
+              "ch12"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 12
+            },
+            "detector_types": {
+              "energy": 12
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 40024,
+            "size_human": "39.09 KB"
+          },
+          "TROPICS-06": {
+            "name": "TROPICS-06",
+            "filter_count": 12,
+            "filters": [
+              "ch01",
+              "ch02",
+              "ch03",
+              "ch04",
+              "ch05",
+              "ch06",
+              "ch07",
+              "ch08",
+              "ch09",
+              "ch10",
+              "ch11",
+              "ch12"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 12
+            },
+            "detector_types": {
+              "energy": 12
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 39778,
+            "size_human": "38.85 KB"
+          },
+          "TROPICS-07": {
+            "name": "TROPICS-07",
+            "filter_count": 12,
+            "filters": [
+              "ch01",
+              "ch02",
+              "ch03",
+              "ch04",
+              "ch05",
+              "ch06",
+              "ch07",
+              "ch08",
+              "ch09",
+              "ch10",
+              "ch11",
+              "ch12"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 12
+            },
+            "detector_types": {
+              "energy": 12
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 40034,
+            "size_human": "39.10 KB"
+          }
+        },
+        "instrument_count": 5
       },
       "Teide": {
         "name": "Teide",
@@ -22446,6 +25572,342 @@
         },
         "instrument_count": 2
       },
+      "Tomorrow": {
+        "name": "Tomorrow",
+        "instruments": {
+          "TMS-S01": {
+            "name": "TMS-S01",
+            "filter_count": 12,
+            "filters": [
+              "ch01",
+              "ch02",
+              "ch03",
+              "ch04",
+              "ch05",
+              "ch06",
+              "ch07",
+              "ch08",
+              "ch09",
+              "ch10",
+              "ch11",
+              "ch12"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 12
+            },
+            "detector_types": {
+              "energy": 12
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 147743,
+            "size_human": "144.28 KB"
+          },
+          "TMS-S02": {
+            "name": "TMS-S02",
+            "filter_count": 12,
+            "filters": [
+              "ch01",
+              "ch02",
+              "ch03",
+              "ch04",
+              "ch05",
+              "ch06",
+              "ch07",
+              "ch08",
+              "ch09",
+              "ch10",
+              "ch11",
+              "ch12"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 12
+            },
+            "detector_types": {
+              "energy": 12
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 144845,
+            "size_human": "141.45 KB"
+          },
+          "TMS-S03": {
+            "name": "TMS-S03",
+            "filter_count": 12,
+            "filters": [
+              "ch01",
+              "ch02",
+              "ch03",
+              "ch04",
+              "ch05",
+              "ch06",
+              "ch07",
+              "ch08",
+              "ch09",
+              "ch10",
+              "ch11",
+              "ch12"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 12
+            },
+            "detector_types": {
+              "energy": 12
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 152994,
+            "size_human": "149.41 KB"
+          },
+          "TMS-S04": {
+            "name": "TMS-S04",
+            "filter_count": 12,
+            "filters": [
+              "ch01",
+              "ch02",
+              "ch03",
+              "ch04",
+              "ch05",
+              "ch06",
+              "ch07",
+              "ch08",
+              "ch09",
+              "ch10",
+              "ch11",
+              "ch12"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 12
+            },
+            "detector_types": {
+              "energy": 12
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 153119,
+            "size_human": "149.53 KB"
+          },
+          "TMS-S05": {
+            "name": "TMS-S05",
+            "filter_count": 12,
+            "filters": [
+              "ch01",
+              "ch02",
+              "ch03",
+              "ch04",
+              "ch05",
+              "ch06",
+              "ch07",
+              "ch08",
+              "ch09",
+              "ch10",
+              "ch11",
+              "ch12"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 12
+            },
+            "detector_types": {
+              "energy": 12
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 152833,
+            "size_human": "149.25 KB"
+          },
+          "TMS-S06": {
+            "name": "TMS-S06",
+            "filter_count": 12,
+            "filters": [
+              "ch01",
+              "ch02",
+              "ch03",
+              "ch04",
+              "ch05",
+              "ch06",
+              "ch07",
+              "ch08",
+              "ch09",
+              "ch10",
+              "ch11",
+              "ch12"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 12
+            },
+            "detector_types": {
+              "energy": 12
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 163266,
+            "size_human": "159.44 KB"
+          },
+          "TMS-S07": {
+            "name": "TMS-S07",
+            "filter_count": 12,
+            "filters": [
+              "ch01",
+              "ch02",
+              "ch03",
+              "ch04",
+              "ch05",
+              "ch06",
+              "ch07",
+              "ch08",
+              "ch09",
+              "ch10",
+              "ch11",
+              "ch12"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 12
+            },
+            "detector_types": {
+              "energy": 12
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 163785,
+            "size_human": "159.95 KB"
+          },
+          "TMS-S08": {
+            "name": "TMS-S08",
+            "filter_count": 12,
+            "filters": [
+              "ch01",
+              "ch02",
+              "ch03",
+              "ch04",
+              "ch05",
+              "ch06",
+              "ch07",
+              "ch08",
+              "ch09",
+              "ch10",
+              "ch11",
+              "ch12"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 12
+            },
+            "detector_types": {
+              "energy": 12
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 162394,
+            "size_human": "158.59 KB"
+          },
+          "TMS-S09": {
+            "name": "TMS-S09",
+            "filter_count": 12,
+            "filters": [
+              "ch01",
+              "ch02",
+              "ch03",
+              "ch04",
+              "ch05",
+              "ch06",
+              "ch07",
+              "ch08",
+              "ch09",
+              "ch10",
+              "ch11",
+              "ch12"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 12
+            },
+            "detector_types": {
+              "energy": 12
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 176536,
+            "size_human": "172.40 KB"
+          },
+          "TMS-S10": {
+            "name": "TMS-S10",
+            "filter_count": 12,
+            "filters": [
+              "ch01",
+              "ch02",
+              "ch03",
+              "ch04",
+              "ch05",
+              "ch06",
+              "ch07",
+              "ch08",
+              "ch09",
+              "ch10",
+              "ch11",
+              "ch12"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 12
+            },
+            "detector_types": {
+              "energy": 12
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 180612,
+            "size_human": "176.38 KB"
+          },
+          "TMS-S11": {
+            "name": "TMS-S11",
+            "filter_count": 12,
+            "filters": [
+              "ch01",
+              "ch02",
+              "ch03",
+              "ch04",
+              "ch05",
+              "ch06",
+              "ch07",
+              "ch08",
+              "ch09",
+              "ch10",
+              "ch11",
+              "ch12"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 12
+            },
+            "detector_types": {
+              "energy": 12
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 171758,
+            "size_human": "167.73 KB"
+          }
+        },
+        "instrument_count": 11
+      },
       "TopHat": {
         "name": "TopHat",
         "instruments": {
@@ -22465,8 +25927,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 19128,
-            "size_human": "18.68 KB"
+            "size_bytes": 19899,
+            "size_human": "19.43 KB"
           }
         },
         "instrument_count": 1
@@ -22495,8 +25957,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 41338,
-            "size_human": "40.37 KB"
+            "size_bytes": 42332,
+            "size_human": "41.34 KB"
           }
         },
         "instrument_count": 1
@@ -22537,8 +25999,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 118788,
-            "size_human": "116.00 KB"
+            "size_bytes": 119674,
+            "size_human": "116.87 KB"
           },
           "WFCAM": {
             "name": "WFCAM",
@@ -22602,8 +26064,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 97461,
-            "size_human": "95.18 KB"
+            "size_bytes": 98185,
+            "size_human": "95.88 KB"
           }
         },
         "instrument_count": 1
@@ -22651,8 +26113,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 101860,
-            "size_human": "99.47 KB"
+            "size_bytes": 103043,
+            "size_human": "100.63 KB"
           },
           "VIK12": {
             "name": "VIK12",
@@ -22683,8 +26145,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 57917,
-            "size_human": "56.56 KB"
+            "size_bytes": 59100,
+            "size_human": "57.71 KB"
           },
           "VIK21": {
             "name": "VIK21",
@@ -22715,8 +26177,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 55573,
-            "size_human": "54.27 KB"
+            "size_bytes": 56756,
+            "size_human": "55.43 KB"
           },
           "VIK22": {
             "name": "VIK22",
@@ -22752,8 +26214,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 75855,
-            "size_human": "74.08 KB"
+            "size_bytes": 77038,
+            "size_human": "75.23 KB"
           }
         },
         "instrument_count": 4
@@ -22778,8 +26240,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 27034,
-            "size_human": "26.40 KB"
+            "size_bytes": 28240,
+            "size_human": "27.58 KB"
           }
         },
         "instrument_count": 1
@@ -22803,8 +26265,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 19454,
-            "size_human": "19.00 KB"
+            "size_bytes": 21004,
+            "size_human": "20.51 KB"
           }
         },
         "instrument_count": 1
@@ -22879,8 +26341,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 76469,
-            "size_human": "74.68 KB"
+            "size_bytes": 78267,
+            "size_human": "76.43 KB"
           },
           "PAUCam": {
             "name": "PAUCam",
@@ -22908,8 +26370,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 62886,
-            "size_human": "61.41 KB"
+            "size_bytes": 63791,
+            "size_human": "62.30 KB"
           },
           "PFIP": {
             "name": "PFIP",
@@ -22933,8 +26395,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 62364,
-            "size_human": "60.90 KB"
+            "size_bytes": 64182,
+            "size_human": "62.68 KB"
           },
           "ULTRACAM": {
             "name": "ULTRACAM",
@@ -22956,8 +26418,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 43586,
-            "size_human": "42.56 KB"
+            "size_bytes": 44657,
+            "size_human": "43.61 KB"
           }
         },
         "instrument_count": 5
@@ -23036,8 +26498,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 166032,
-            "size_human": "162.14 KB"
+            "size_bytes": 167839,
+            "size_human": "163.91 KB"
           },
           "NESSI": {
             "name": "NESSI",
@@ -23073,8 +26535,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 115514,
-            "size_human": "112.81 KB"
+            "size_bytes": 117356,
+            "size_human": "114.61 KB"
           },
           "ODI": {
             "name": "ODI",
@@ -23122,8 +26584,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 14388,
-            "size_human": "14.05 KB"
+            "size_bytes": 16195,
+            "size_human": "15.82 KB"
           },
           "WHIRC": {
             "name": "WHIRC",
@@ -23156,8 +26618,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 215098,
-            "size_human": "210.06 KB"
+            "size_bytes": 216923,
+            "size_human": "211.84 KB"
           },
           "WIYN": {
             "name": "WIYN",
@@ -23216,8 +26678,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 272788,
-            "size_human": "266.39 KB"
+            "size_bytes": 274642,
+            "size_human": "268.21 KB"
           }
         },
         "instrument_count": 6
@@ -23282,6 +26744,91 @@
             "info": "info.json",
             "size_bytes": 195422,
             "size_human": "190.84 KB"
+          }
+        },
+        "instrument_count": 1
+      },
+      "WSF-M": {
+        "name": "WSF-M",
+        "instruments": {
+          "MWI-1": {
+            "name": "MWI-1",
+            "filter_count": 13,
+            "filters": [
+              "ch05",
+              "ch06",
+              "ch07",
+              "ch08",
+              "ch09",
+              "ch10",
+              "ch11",
+              "ch12",
+              "ch13",
+              "ch14",
+              "ch15",
+              "ch16",
+              "ch17"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 13
+            },
+            "detector_types": {
+              "energy": 13
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 514116,
+            "size_human": "502.07 KB"
+          }
+        },
+        "instrument_count": 1
+      },
+      "WeatherStream": {
+        "name": "WeatherStream",
+        "instruments": {
+          "GEMS2A": {
+            "name": "GEMS2A",
+            "filter_count": 24,
+            "filters": [
+              "ch01",
+              "ch02",
+              "ch03",
+              "ch04",
+              "ch05",
+              "ch06",
+              "ch07",
+              "ch08",
+              "ch09",
+              "ch10",
+              "ch11",
+              "ch12",
+              "ch13",
+              "ch14",
+              "ch15",
+              "ch16",
+              "ch17",
+              "ch18",
+              "ch19",
+              "ch20",
+              "ch21",
+              "ch22",
+              "ch23",
+              "ch24"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 24
+            },
+            "detector_types": {
+              "energy": 24
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 828113,
+            "size_human": "808.70 KB"
           }
         },
         "instrument_count": 1
@@ -23576,8 +27123,8 @@
         "ids": 9117,
         "sha256": "a29ceda6cd602f7a2d551149ce4d207ff155f20dd22168227d26de393871108b"
       },
-      "references": 386,
-      "unresolved_references": 3,
+      "references": 397,
+      "unresolved_references": 0,
       "svo_fields": {
         "Fsun": {
           "unit": "erg/s/cm2/Angstrom",
