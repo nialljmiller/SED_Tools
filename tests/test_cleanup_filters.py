@@ -205,3 +205,263 @@ def test_published_reports_each_fallback_and_every_source_failure(tmp_path, monk
                                "original source: team site offline; SVO: SVO index down")
     assert "NJM cannot provide Fac/Cam (the mirror is unavailable); trying its original-source builder" in caplog.text
     assert "The original source cannot provide Fac/Cam (team site offline); trying SVO" in caplog.text
+
+
+# ----------------------------------------------------------------------
+# njm_filter_grabber (a fake session; never the network)
+# ----------------------------------------------------------------------
+NJM = "https://nillmill.ddns.net/sed_tools"
+CURVE = "Wavelength,Transmission,DetectorType=photon;DetectorTypeSource=svo\n4000,0.1\n5000,1\n6000,0.1\n"
+
+
+class Served:
+    """A fake NJM session: ``files`` maps paths under the mirror to text, or to an HTTP status."""
+
+    def __init__(self, files):
+        self.files = dict(files)
+        self.headers, self.verify, self.requested = {}, True, []
+
+    def get(self, url, timeout=None, headers=None, **kwargs):
+        import json
+        from types import SimpleNamespace
+
+        import requests
+
+        rel = url[len(NJM) + 1:]
+        self.requested.append(rel)
+        body = self.files.get(rel, 404)
+        status, text = (body, "") if isinstance(body, int) else (200, body)
+
+        def raise_for_status():
+            if status >= 400:
+                raise requests.HTTPError(f"{status} for {rel}", response=SimpleNamespace(status_code=status, headers={}))
+
+        return SimpleNamespace(status_code=status, text=text, content=text.encode(), headers={},
+                               raise_for_status=raise_for_status, json=lambda: json.loads(text))
+
+
+@pytest.fixture
+def njm(monkeypatch):
+    """Build an available NJMFilterGrabber that talks to a :class:`Served` session."""
+    from sed_tools.njm_filter_grabber import NJMFilterGrabber
+
+    monkeypatch.setattr(NJMFilterGrabber, "_check_availability", lambda self: True)
+    monkeypatch.setattr("sed_tools.njm_filter_grabber.time.sleep", lambda seconds: None)
+
+    def make(root, files):
+        grabber = NJMFilterGrabber(base_dir=str(root))
+        grabber.session = Served(files)
+        return grabber
+
+    return make
+
+
+def test_unreachable_mirror_is_reported_with_its_reason(tmp_path, caplog):
+    import requests
+    from types import SimpleNamespace
+
+    from sed_tools.njm_filter_grabber import NJMFilterGrabber
+
+    def head(url, **kwargs):
+        raise requests.ConnectionError("no route to host")
+
+    grabber = NJMFilterGrabber.__new__(NJMFilterGrabber)
+    grabber.base_url, grabber.session = NJM, SimpleNamespace(head=head)
+    with caplog.at_level(logging.WARNING):
+        assert grabber._check_availability() is False
+    assert f"NJM mirror {NJM} is unavailable (no route to host)" in caplog.text
+
+
+def test_directory_listing_is_empty_only_when_nothing_is_there(tmp_path, njm):
+    import requests
+
+    grabber = njm(tmp_path, {"filters/Fac/": '<a href="Cam/">Cam/</a>', "filters/Down/": 500})
+    assert grabber.discover_instruments("Fac") == ["Cam"]
+    assert grabber.discover_instruments("Nope") == []
+    with pytest.raises(requests.HTTPError, match="500"):
+        grabber.discover_instruments("Down")
+
+
+def test_unreadable_index_falls_back_to_the_listing_with_a_warning(tmp_path, njm, caplog):
+    grabber = njm(tmp_path, {"index.json": "{broken", "filters": '<a href="Fac/">Fac/</a>',
+                             "filters/Fac/Cam/Cam": 500, "filters/Fac/Cam/": '<a href="g.dat">g.dat</a>'})
+    with caplog.at_level(logging.WARNING):
+        assert grabber.discover_facilities() == ["Fac"]
+        assert grabber.discover_filters("Fac", "Cam") == ["g"]
+    assert "Cannot read NJM's index.json" in caplog.text
+    assert "Cannot read NJM's index of Fac/Cam (500 for filters/Fac/Cam/Cam); listing its directory instead" in caplog.text
+
+
+def test_catalogue_files_skip_unserved_and_report_unreadable(tmp_path, njm, caplog):
+    grabber = njm(tmp_path, {"filters/Fac/Cam/info.json": "{not json"})
+    with caplog.at_level(logging.WARNING):
+        assert grabber.download_catalogue_files("Fac", "Cam") == []
+    assert "info.json for Fac/Cam was not saved" in caplog.text
+    assert "properties.json" not in caplog.text  # not served (404): skipped quietly
+
+
+def test_manifest_is_none_only_when_not_served(tmp_path, njm):
+    import json
+
+    import requests
+
+    manifest = {"facility": "Fac", "instrument": "Cam", "bands": ["g"]}
+    grabber = njm(tmp_path, {"filters/Fac/Cam/manifest.json": json.dumps(manifest),
+                             "filters/Fac/Other/manifest.json": json.dumps(manifest),
+                             "filters/Fac/Bad/manifest.json": '{"facility": "Fac"}',
+                             "filters/Fac/Down/manifest.json": 503})
+    assert grabber.fetch_manifest("Fac", "Cam") == manifest
+    assert grabber.fetch_manifest("Fac", "Nope") is None
+    with pytest.raises(ValueError, match="describes Fac/Cam"):
+        grabber.fetch_manifest("Fac", "Other")
+    with pytest.raises(ValueError, match="unreadable manifest.json for Fac/Bad"):
+        grabber.fetch_manifest("Fac", "Bad")
+    with pytest.raises(requests.HTTPError, match="503"):
+        grabber.fetch_manifest("Fac", "Down")
+
+
+def test_component_download_saves_what_it_can_then_lists_the_failures(tmp_path, njm):
+    import json
+
+    manifest = {"facility": "Fac", "instrument": "Cam", "bands": ["g"],
+                "components": {"filter": {"g": "components/filter/g.dat"}, "qe": {"*": "components/qe/ccd.dat"}}}
+    grabber = njm(tmp_path, {"filters/Fac/Cam/manifest.json": json.dumps(manifest),
+                             "filters/Fac/Cam/components/filter/g.dat": CURVE,
+                             "filters/Fac/Cam/components/qe/ccd.dat": 500})
+    with pytest.raises(RuntimeError, match="1 component files of Fac/Cam were not downloaded:\n  components/qe/ccd.dat"):
+        grabber.download_components("Fac", "Cam")
+    assert (tmp_path / "Fac/Cam/components/filter/g.dat").is_file()
+
+
+def test_atmosphere_is_false_only_when_not_served(tmp_path, njm):
+    import requests
+
+    grabber = njm(tmp_path, {"atmospheres/down/manifest.json": 500})
+    assert grabber.download_atmosphere(str(tmp_path), "nowhere") is False
+    with pytest.raises(requests.HTTPError, match="500"):
+        grabber.download_atmosphere(str(tmp_path), "down")
+
+
+def test_download_all_filters_finishes_then_lists_incomplete_instruments(tmp_path, njm, monkeypatch):
+    grabber = njm(tmp_path, {})
+    monkeypatch.setattr(grabber, "discover_instruments", lambda facility: ["A", "B"])
+    attempted = []
+
+    def download(facility, instrument):
+        attempted.append(instrument)
+        if instrument == "A":
+            raise RuntimeError("NJM download of Fac/A is incomplete")
+        return 2
+
+    monkeypatch.setattr(grabber, "download_filters", download)
+    with pytest.raises(RuntimeError, match="1 NJM instrument downloads are incomplete:\nNJM download of Fac/A"):
+        grabber.download_all_filters("Fac")
+    assert attempted == ["A", "B"]
+
+
+def test_svo_failure_while_checking_a_mirror_curve_keeps_the_curve(tmp_path, njm, monkeypatch, caplog):
+    def tag(path, **kwargs):
+        raise fm.SVOUnreachableError("SVO Filter Profile Service unreachable")
+
+    monkeypatch.setattr("sed_tools.njm_filter_grabber.tag_filter_file", tag)
+    grabber = njm(tmp_path, {"filters/Fac/Cam/Cam": "g.dat\n", "filters/Fac/Cam/g.dat": CURVE})
+    with caplog.at_level(logging.WARNING):
+        assert grabber.download_filters("Fac", "Cam") == 1
+    assert (tmp_path / "Fac/Cam/g.dat").read_text() == CURVE
+    assert "could not check its header against SVO (SVO Filter Profile Service unreachable)" in caplog.text
+
+
+# ----------------------------------------------------------------------
+# filter_library with NJM failures
+# ----------------------------------------------------------------------
+def test_njm_components_failure_does_not_discard_complete_curves(tmp_path, njm, caplog):
+    import json
+
+    from sed_tools.filter_library import FilterLibrary
+
+    manifest = {"facility": "Fac", "instrument": "Cam", "bands": ["g"],
+                "components": {"qe": {"*": "components/qe/ccd.dat"}}}
+    library = FilterLibrary(tmp_path)
+    library.mirror = njm(tmp_path, {"filters/Fac/Cam/Cam": "g.dat\n", "filters/Fac/Cam/g.dat": CURVE,
+                                    "filters/Fac/Cam/manifest.json": json.dumps(manifest),
+                                    "filters/Fac/Cam/components/qe/ccd.dat": 500})
+    with caplog.at_level(logging.WARNING):
+        assert library.published("Fac", "Cam") == tmp_path / "Fac" / "Cam"
+    assert "NJM provided every curve of Fac/Cam, but" in caplog.text and "components/qe/ccd.dat" in caplog.text
+
+
+def test_availability_and_catalogues_record_njm_failures(tmp_path):
+    import requests
+    from types import SimpleNamespace
+
+    from sed_tools.filter_library import FilterLibrary
+    from sed_tools.svo_filter_grabber import Facility
+
+    def down(*args):
+        raise requests.ConnectionError("NJM timed out")
+
+    library = FilterLibrary(tmp_path)
+    library.svo = SimpleNamespace(list_facilities=lambda: [Facility("SvoOnly", "SvoOnly")],
+                                  list_instruments=lambda key: [])
+    library.mirror = SimpleNamespace(is_available=lambda: True, fetch_manifest=down, discover_facilities=down)
+    info = library.available("Fac", "Cam")
+    assert info["availability_source"] == "unknown" and "NJM: NJM timed out" in info["errors"]
+    assert "NJM: NJM timed out" in library.facilities()["errors"]
+    assert "NJM SvoOnly: NJM timed out" in library.instruments("SvoOnly")["errors"]
+
+    library.mirror = SimpleNamespace(is_available=lambda: False)
+    assert "NJM unavailable" in library.instruments("SvoOnly")["errors"]
+
+
+def test_njm_component_failure_is_reported_before_the_original_source(tmp_path, monkeypatch, caplog):
+    from types import SimpleNamespace
+
+    from sed_tools import filter_library
+    from sed_tools.component_sources import catalog
+    from sed_tools.filter_library import FilterLibrary
+
+    directory = tmp_path / "Fac" / "Cam"
+    directory.mkdir(parents=True)
+    fm.write_filter_file(directory / "g.dat", [4000.0, 6000.0], [1.0, 1.0], detector_type=fm.PHOTON,
+                         source="svo", wavelength_unit="Angstrom", extra={"Components": "filter+optics+qe"})
+
+    def fail(facility, instrument):
+        raise RuntimeError("1 component files of Fac/Cam were not downloaded")
+
+    library = FilterLibrary(tmp_path)
+    library.mirror = SimpleNamespace(is_available=lambda: True, download_components=fail)
+    monkeypatch.setitem(catalog.BUILDERS_FOR, ("Fac", "Cam"), catalog.BuilderRef("test"))
+    monkeypatch.setattr(filter_library, "get_builder", lambda name: lambda root, **kwargs: None)
+    with caplog.at_level(logging.WARNING):
+        assert not library.prepare_components(directory, components="filter+qe")
+    assert ("NJM cannot provide the components of Fac/Cam (1 component files of Fac/Cam were not downloaded); "
+            "trying their original source") in caplog.text
+
+
+def test_njm_atmosphere_failure_is_reported_before_its_source(tmp_path, monkeypatch, caplog):
+    import requests
+    from types import SimpleNamespace
+
+    from sed_tools import filter_library
+    from sed_tools.filter_components import AtmosphereGrid, AtmosphereSpec, InstrumentManifest
+    from sed_tools.filter_library import FilterLibrary
+
+    def down(*args):
+        raise requests.HTTPError("502 for atmospheres/paranal/manifest.json")
+
+    library = FilterLibrary(tmp_path / "filters")
+    library.mirror = SimpleNamespace(download_atmosphere=down)
+
+    def skycalc(root, **kwargs):
+        site = library.atmosphere_root / "paranal"
+        site.mkdir(parents=True)
+        fm.write_filter_file(site / "a.dat", [3000.0, 7000.0], [0.8, 0.8], detector_type="energy",
+                             source="component", wavelength_unit="Angstrom", extra={"Components": "atmosphere"})
+        AtmosphereGrid("paranal", [{"airmass": 1.2, "pwv": 2.5, "file": "a.dat"}]).save(site)
+
+    monkeypatch.setattr(filter_library, "get_builder", lambda name: skycalc)
+    manifest = InstrumentManifest("Paranal", "Cam", ["g"], ground_based=True, default_site="paranal")
+    with caplog.at_level(logging.WARNING):
+        path = library.prepare_atmosphere(manifest, AtmosphereSpec(None, 1.2, 2.5))
+    assert path.name == "a.dat"
+    assert "NJM cannot provide the paranal_am1.2_pwv2.5 atmosphere (502" in caplog.text

@@ -290,8 +290,10 @@ def test_mirror_does_not_certify_partial_download(tmp_path, monkeypatch):
     monkeypatch.setattr(grabber, "_get", get)
     monkeypatch.setattr("sed_tools.njm_filter_grabber.tag_filter_file", lambda *args, **kwargs:
                         SimpleNamespace(source="header"))
-    assert grabber.download_filters("Test", "Camera") == 1
+    with pytest.raises(RuntimeError, match="r: mirror unavailable"):
+        grabber.download_filters("Test", "Camera")
     directory = tmp_path / "Test" / "Camera"
+    assert (directory / "g.dat").is_file()
     assert not (directory / "Camera").exists()
     assert not FilterLibrary.published_complete(directory)
 
