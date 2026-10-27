@@ -1335,7 +1335,7 @@ def _training_libraries(base_dir: str) -> List[Dict[str, Any]]:
         n_seds = "?"
         if os.path.exists(lookup):
             try:
-                n_seds = len(pd.read_csv(lookup, comment='#'))
+                n_seds = len(pd.read_csv(lookup))
             except (OSError, ValueError) as exc:
                 logger.warning("Could not count the SEDs in %s: %s", lookup, exc)
         libraries.append({'name': name, 'path': path, 'n_seds': n_seds})
@@ -1353,7 +1353,7 @@ def _extendable_grids(base_dir: str) -> List[Dict[str, Any]]:
         if not os.path.isdir(path) or not os.path.exists(lookup):
             continue
         try:
-            df = pd.read_csv(lookup, comment='#')
+            df = pd.read_csv(lookup)
         except (OSError, ValueError) as exc:
             logger.warning("Not offering %s: could not read %s: %s", name, lookup, exc)
             continue

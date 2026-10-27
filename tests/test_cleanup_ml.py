@@ -691,14 +691,22 @@ def test_extend_catalog_raises_when_a_column_is_missing(catalog, tmp_path, missi
     assert completer._completer.calls == []
 
 
-def test_extend_catalog_raises_on_a_hash_prefixed_header(catalog, tmp_path):
-    # sed_tools writes lookup tables with a '#file_name,...' header, which
-    # pd.read_csv(comment='#') drops; see the ml cleanup report.
+def test_extend_catalog_reads_a_hash_prefixed_header(catalog, tmp_path):
+    # sed_tools writes lookup tables with a '#file_name,...' header. It used
+    # to be dropped (pd.read_csv(comment='#')) and the table refused; it now
+    # gives the same result as a plain header (test_extend_catalog_values).
     text = (catalog / "lookup_table.csv").read_text()
     (catalog / "lookup_table.csv").write_text("#" + text)
+    completer = _stubbed_completer()
+    out_dir = tmp_path / "out"
 
-    with pytest.raises(ValueError, match="A header line starting with '#' is dropped"):
-        _stubbed_completer().extend_catalog(str(catalog), str(tmp_path / "out"))
+    summary = completer.extend_catalog(str(catalog), str(out_dir), extension_range=(500.0, 60000.0))
+
+    assert summary == {"extended": 2, "failed": 0, "skipped": 1, "total": 3, "output_dir": str(out_dir)}
+    assert completer._completer.calls == [(5000.0, 4.0, 0.0, (500.0, 60000.0)),
+                                          (6000.0, 4.5, -0.5, (500.0, 60000.0))]
+    assert (out_dir / "lookup_table.csv").read_text().splitlines()[0] == (
+        "file_name,teff,logg,meta,extra,extended_by_ml,wl_min,wl_max")
 
 
 def test_extend_catalog_writes_the_good_spectra_then_lists_every_failure(catalog, tmp_path):

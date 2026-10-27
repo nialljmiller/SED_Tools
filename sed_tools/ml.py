@@ -503,7 +503,8 @@ class Completer:
         Extend all model spectra in a spectral grid directory.
         
         Each spectrum's file name, Teff, logg and [M/H] come from
-        ``input_dir/lookup_table.csv``. Spectra that already cover
+        ``input_dir/lookup_table.csv``, whose header line may start with
+        '#' as sed_tools writes it. Spectra that already cover
         ``extension_range`` (to within 10%) are copied unchanged. The spectra
         and a new lookup table are written to ``output_dir``.
         
@@ -670,8 +671,10 @@ def _read_catalog_table(input_dir: str):
             f"lookup_table.csv not found in {input_dir}; extend_catalog needs each "
             "spectrum's file name, Teff, logg and [M/H] from it"
         )
-    df = pd.read_csv(lookup_path, comment='#')
-    
+    # sed_tools writes the header as '#file_name,teff,...'; comment='#' would drop it
+    df = pd.read_csv(lookup_path)
+    df.columns = [c.strip().lstrip('#').strip() for c in df.columns]
+
     columns = {}
     missing = []
     for role, candidates in _CATALOG_COLUMNS.items():
@@ -683,8 +686,7 @@ def _read_catalog_table(input_dir: str):
     if missing:
         raise ValueError(
             f"{lookup_path} has no column for {'; '.join(missing)}. Columns read: "
-            f"{list(df.columns)}. A header line starting with '#' is dropped when "
-            "the table is read, so its column names are not seen."
+            f"{list(df.columns)}"
         )
     return df, columns
 
