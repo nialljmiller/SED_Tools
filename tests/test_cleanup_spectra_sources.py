@@ -7,9 +7,12 @@ HTTP request fail the test, and each grabber gets a fake session.
 import json
 import logging
 
+import h5py
+import numpy as np
 import pytest
 import requests
 
+from sed_tools import msg_spectra_grabber as msg
 from sed_tools import njm_spectra_grabber as njm
 from sed_tools import svo_spectra_grabber as svo
 from sed_tools.header_parser import parse_header
@@ -392,3 +395,111 @@ def test_svo_complete_download_writes_lookup_table(tmp_path, monkeypatch):
     assert grabber.download_model_spectra("Grid", [{"fid": 1}, {"fid": 2}]) == 2
     lookup = (tmp_path / "Grid" / "lookup_table.csv").read_text().splitlines()
     assert lookup[0] == "#file_name,logg,metallicity,teff" and len(lookup) == 3
+
+
+# ---------------------------------------------------------------- MSG
+
+MSG_INDEX = "http://user.astro.wisc.edu/~townsend/static.php?ref=msg-grids"
+MSG_FILE = "http://user.astro.wisc.edu/msg/grids/sg-Test.h5"
+
+
+def make_msg(tmp_path, monkeypatch, routes):
+    session = FakeSession(routes)
+    monkeypatch.setattr(msg.requests, "Session", lambda: session)
+    return msg.MSGSpectraGrabber(base_dir=str(tmp_path), max_workers=1), session
+
+
+def write_msg_grid(path):
+    """Three spectra: one good, one with no flux dataset, one with an undecodable wavelength segment."""
+    wave = np.linspace(3000.0, 9000.0, 50)
+    with h5py.File(path, "w") as f:
+        for i, values in enumerate(([5000.0, 6000.0], [-1.0, 0.0], [4.0, 4.5])):
+            f[f"vgrid/axes[{i}]/x"] = values
+        f["vgrid/v_lin_seq"] = [1, 2, 3]
+        good = f.create_group("specsource/specints[1]")
+        good["flux"] = np.ones(50)
+        good["range/x"] = wave
+        no_flux = f.create_group("specsource/specints[2]")
+        no_flux["a"] = np.ones(50)
+        no_flux["b"] = np.ones(50)
+        gapped = f.create_group("specsource/specints[3]")
+        gapped["flux"] = np.ones(60)
+        gapped["range/ranges[1]/x"] = wave[:30]
+        gapped.create_group("range/ranges[2]").attrs["label"] = "no numbers here"
+
+
+def test_msg_discovery_failure_warns_instead_of_vanishing(tmp_path, monkeypatch, caplog):
+    grabber, _ = make_msg(tmp_path, monkeypatch, {MSG_INDEX: FakeResponse(500)})
+    with caplog.at_level(logging.WARNING):
+        assert grabber.discover_models() == []
+    assert any("500" in m and "not offered" in m for m in warnings_from(caplog, "msg_spectra_grabber"))
+
+
+def test_msg_metadata_raises_for_unknown_grid_and_failed_download(tmp_path, monkeypatch):
+    index = f'<a href="{MSG_FILE}">sg-Test</a>'
+    grabber, _ = make_msg(tmp_path, monkeypatch, {
+        MSG_INDEX: FakeResponse(200, index), MSG_FILE: requests.ConnectionError("dropped")})
+
+    with pytest.raises(RuntimeError, match="unknown to this grabber"):
+        grabber.get_model_metadata("sg-Test")
+    assert grabber.discover_models() == ["sg-Test"]
+    with pytest.raises(RuntimeError, match="could not download .*sg-Test.h5: dropped"):
+        grabber.get_model_metadata("sg-Test")
+
+
+def test_msg_metadata_raises_for_unreadable_or_empty_file(tmp_path, monkeypatch):
+    grabber, _ = make_msg(tmp_path, monkeypatch, {})
+    grabber.model_urls["sg-Test"] = MSG_FILE
+    h5_path = tmp_path / "sg-Test" / "sg-Test.h5"
+    h5_path.parent.mkdir()
+
+    h5_path.write_bytes(b"\x89HDF partial download")
+    with pytest.raises(RuntimeError, match="could not read .*partial"):
+        grabber.get_model_metadata("sg-Test")
+
+    with h5py.File(h5_path, "w") as f:
+        f.create_group("other")
+    with pytest.raises(RuntimeError, match="no 'specsource' group"):
+        grabber.get_model_metadata("sg-Test")
+
+
+def test_msg_failed_extractions_raise_after_the_rest(tmp_path, monkeypatch):
+    grabber, _ = make_msg(tmp_path, monkeypatch, {})
+    grabber.model_urls["sg-Test"] = MSG_FILE
+    model_dir = tmp_path / "sg-Test"
+    model_dir.mkdir()
+    write_msg_grid(model_dir / "sg-Test.h5")
+
+    spectra = grabber.get_model_metadata("sg-Test")
+    with pytest.raises(RuntimeError) as err:
+        grabber.download_model_spectra("sg-Test", spectra)
+
+    message = str(err.value)
+    assert "2 of 3 spectra" in message
+    assert "sg-Test_fid2.txt: No suitable flux dataset" in message
+    assert "sg-Test_fid3.txt: Unable to recover wavelength grid" in message  # was written truncated to 30 points
+    wl, _ = read_text_spectrum(model_dir / "sg-Test_fid1.txt")
+    assert wl.size == 50
+    assert not (model_dir / "lookup_table.csv").exists()
+
+
+def test_msg_cut_exclusions_are_not_failures(tmp_path, monkeypatch):
+    grabber, _ = make_msg(tmp_path, monkeypatch, {})
+    grabber.model_urls["sg-Test"] = MSG_FILE
+    model_dir = tmp_path / "sg-Test"
+    model_dir.mkdir()
+    write_msg_grid(model_dir / "sg-Test.h5")
+
+    spectra = grabber.get_model_metadata("sg-Test")[:1]
+    assert grabber.download_model_spectra("sg-Test", spectra, teff_range=(5500, 7000)) == 0
+    assert grabber.download_model_spectra("sg-Test", spectra, teff_range=(4500, 5500)) == 1
+    assert (model_dir / "lookup_table.csv").exists()
+
+
+def test_msg_axis_role_beyond_the_grid_raises(tmp_path, monkeypatch):
+    grabber, _ = make_msg(tmp_path, monkeypatch, {})
+    grabber.model_axes["sg-C3K-test"] = {
+        "axes": [np.array([5000.0, 6000.0]), np.array([-1.0, 0.0]), np.array([4.0, 4.5])],
+        "shape": (2, 2, 2), "vlin": np.array([0]), "roles": {"teff": 0, "meta": 1, "logg": 3}}
+    with pytest.raises(RuntimeError, match="logg is mapped to axis 3, but the grid has 3 axes"):
+        grabber._params_from_index("sg-C3K-test", 0)

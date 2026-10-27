@@ -84,16 +84,17 @@ def _recover_wavelengths(f, spec_g, expected_len=None):
         seg_names.sort(key=seg_key)
         segs=[]
         def num(grp, keys):
+            """First of *keys* (attribute, then dataset) that holds a number, else None."""
             for k in keys:
                 if k in grp.attrs:
                     try: return float(np.array(grp.attrs[k]).ravel()[0])
-                    except Exception: logger.debug("Could not parse HDF5 attr %s as float", k, exc_info=True)
+                    except (TypeError, ValueError, IndexError): pass  # not a number: try the next name
             d = _dataset_if_exists(grp, keys)
             if d is not None:
                 arr = np.array(d[()]).ravel()
                 if arr.size:
                     try: return float(arr[0])
-                    except Exception: logger.debug("Could not parse HDF5 dataset %s as float", keys, exc_info=True)
+                    except (TypeError, ValueError): pass  # not a number: no value under these names
             return None
         for sn in seg_names:
             sgrp = seg_root[sn]
@@ -110,9 +111,13 @@ def _recover_wavelengths(f, spec_g, expected_len=None):
                 segs.append(np.arange(start, stop+0.5*step, step, dtype=float))
             elif start is not None and step is not None and npts is not None:
                 segs.append(start + step*np.arange(int(round(npts)), dtype=float))
-            elif start is not None and stop is not None and npts is not None:
-                n = int(round(npts))
-                if n >= 2: segs.append(np.linspace(start, stop, n, dtype=float))
+            elif start is not None and stop is not None and npts is not None and int(round(npts)) >= 2:
+                segs.append(np.linspace(start, stop, int(round(npts)), dtype=float))
+            else:
+                # Skipping the segment would leave a gap that _extract_one hides by truncating
+                # the flux, so look for the wavelengths in the layouts below instead
+                segs = []
+                break
         if segs:
             wl = np.concatenate(segs)
             if wl.size > 1 and np.all(np.diff(wl) >= 0) and _is_physical_wavelength(wl):
@@ -132,8 +137,8 @@ def _recover_wavelengths(f, spec_g, expected_len=None):
         for path, d in _iter_datasets_recursive(f):
             try:
                 arr = np.array(d[()]).astype(float).ravel()
-            except Exception:
-                continue
+            except (TypeError, ValueError):
+                continue  # not numeric, so not a wavelength grid
             if arr.ndim == 1 and arr.size == expected_len and np.all(np.diff(arr) > 0):
                 if _is_physical_wavelength(arr):
                     return arr
@@ -178,6 +183,15 @@ def _role_override_for_model(model_name):
             return mapping.copy()
     return {}
 
+def _in_range(val, rng):
+    """Return True if val is within rng (lo, hi), or if rng is None/val is nan."""
+    if rng is None:
+        return True
+    if not np.isfinite(val):
+        return True  # can't filter what we don't know
+    lo, hi = rng
+    return lo <= val <= hi
+
 class MSGSpectraGrabber:
     def __init__(self, base_dir="../data/stellar_models/", max_workers=6):
         self.base_dir = base_dir
@@ -195,12 +209,13 @@ class MSGSpectraGrabber:
         self.model_axes = {}   # model -> dict(axes=list, shape=tuple, vlin=array, roles=dict)
 
     def discover_models(self):
+        """Return the MSG grids on the index page; [] after a warning if it cannot be read."""
         print("Discovering spectral grids from MSG...")
         try:
             r = self.session.get(self.index_url, timeout=30)
             r.raise_for_status()
         except requests.RequestException as e:
-            print(f"Error fetching MSG index: {e}")
+            logger.warning("MSG: grid index %s failed (%s); MSG spectral grids are not offered", self.index_url, e)
             return []
         soup = BeautifulSoup(r.text, "html.parser")
         models = []
@@ -210,6 +225,8 @@ class MSGSpectraGrabber:
                 name = os.path.basename(href).rstrip(".h5")
                 models.append({"name": name, "url": urljoin(self.index_url, href)})
         self.model_urls = {m["name"]: m["url"] for m in models}
+        if not self.model_urls:
+            logger.warning("MSG: no grids linked from %s; MSG spectral grids are not offered", self.index_url)
         return sorted(self.model_urls.keys())
 
     def _load_axes_and_vlin(self, f: h5py.File, model_name: str):
@@ -240,6 +257,12 @@ class MSGSpectraGrabber:
         return {"axes": axes, "shape": shape, "vlin": vlin, "roles": roles}
 
     def get_model_metadata(self, model_name):
+        """Download the grid's HDF5 file if needed and list its spectra.
+
+        Raises RuntimeError if the grid was not found by discover_models() on
+        this grabber, or the file cannot be downloaded, read, or holds no
+        spectra.
+        """
         print(f"  Fetching metadata for {model_name}...")
         out_dir = os.path.join(self.base_dir, model_name)
         os.makedirs(out_dir, exist_ok=True)
@@ -247,8 +270,8 @@ class MSGSpectraGrabber:
 
         url = self.model_urls.get(model_name)
         if not url:
-            print(f"    No URL for {model_name}")
-            return []
+            raise RuntimeError(f"MSG grid {model_name} is unknown to this grabber; "
+                               "call discover_models() first and check the name")
 
         if not os.path.exists(h5_path):
             print(f"    Downloading {model_name}.h5 ...")
@@ -260,41 +283,45 @@ class MSGSpectraGrabber:
                             if not chunk: break
                             f.write(chunk)
             except requests.RequestException as e:
-                print(f"    Error downloading HDF5: {e}")
-                return []
+                raise RuntimeError(f"MSG: could not download {url} to {h5_path}: {e}. "
+                                   f"Delete any partial {h5_path} before retrying") from e
+
+        try:
+            f = h5py.File(h5_path, "r")
+        except OSError as e:
+            raise RuntimeError(f"MSG: could not read {h5_path}: {e}. If it is a partial "
+                               "download, delete it and rerun to download it again") from e
 
         spectra=[]
-        try:
-            with h5py.File(h5_path,"r") as f:
-                # specsource root
-                spec_root=None
-                for k in f.keys():
-                    if k.startswith("specsource"):
-                        spec_root=k; break
-                if spec_root is None:
-                    print("    No 'specsource' group in HDF5"); return []
+        with f:
+            # specsource root
+            spec_root=None
+            for k in f.keys():
+                if k.startswith("specsource"):
+                    spec_root=k; break
+            if spec_root is None:
+                raise RuntimeError(f"MSG: no 'specsource' group in {h5_path}")
 
-                src=f[spec_root]
-                names=[k for k in src.keys() if k.startswith("specints[")]
-                def keynum(s):
-                    m=_SEG_IDX.search(s); return int(m.group(1)) if m else 0
-                names.sort(key=keynum)
+            src=f[spec_root]
+            names=[k for k in src.keys() if k.startswith("specints[")]
+            def keynum(s):
+                m=_SEG_IDX.search(s); return int(m.group(1)) if m else 0
+            names.sort(key=keynum)
 
-                # load axes and mapping
-                axinfo = self._load_axes_and_vlin(f, model_name)
-                self.model_axes[model_name] = axinfo
+            # load axes and mapping
+            axinfo = self._load_axes_and_vlin(f, model_name)
+            self.model_axes[model_name] = axinfo
 
-                for i, nm in enumerate(names):
-                    spectra.append({
-                        "fid": i+1,
-                        "gname": f"{spec_root}/{nm}",
-                        "order_index": i  # index into vlin, same order as groups
-                    })
-            print(f"    Found {len(spectra)} spectra for {model_name}")
-            return spectra
-        except Exception as e:
-            print(f"    Error reading HDF5: {e}")
-            return []
+            for i, nm in enumerate(names):
+                spectra.append({
+                    "fid": i+1,
+                    "gname": f"{spec_root}/{nm}",
+                    "order_index": i  # index into vlin, same order as groups
+                })
+        if not spectra:
+            raise RuntimeError(f"MSG: {h5_path} holds no spectra ('specints[...]' groups)")
+        print(f"    Found {len(spectra)} spectra for {model_name}")
+        return spectra
 
     def _params_from_index(self, model_name, order_index):
         axinfo = self.model_axes.get(model_name, {})
@@ -310,20 +337,18 @@ class MSGSpectraGrabber:
         flat = int(vlin[order_index])
 
         # try both unravel orders, pick the one yielding plausible values
-        coordsC = None; coordsF = None
-        try: coordsC = np.unravel_index(flat, shape, order="C")
-        except Exception: logger.debug("unravel_index C-order failed for flat=%d shape=%s", flat, shape, exc_info=True)
-        try: coordsF = np.unravel_index(flat, shape, order="F")
-        except Exception: logger.debug("unravel_index F-order failed for flat=%d shape=%s", flat, shape, exc_info=True)
+        # (vlin was clipped into the grid when loaded, so both orders give valid coordinates)
+        coordsC = np.unravel_index(flat, shape, order="C")
+        coordsF = np.unravel_index(flat, shape, order="F")
 
         def vals_from_coords(coords):
             if coords is None: return None
             out = {}
             for key, j in roles.items():
-                try:
-                    out[key] = float(axes[j][coords[j]])
-                except Exception:
-                    out[key] = float("nan")
+                if j >= len(axes):
+                    raise RuntimeError(f"MSG {model_name}: {key} is mapped to axis {j}, "
+                                       f"but the grid has {len(axes)} axes")
+                out[key] = float(axes[j][coords[j]])
             return out
 
         vc = vals_from_coords(coordsC)
@@ -396,6 +421,13 @@ class MSGSpectraGrabber:
     def download_model_spectra(self, model_name, spectra_info,
                                teff_range=None, logg_range=None,
                                meta_range=None, wl_range=None):
+        """Extract the listed spectra from the grid's HDF5 file to .txt files.
+
+        Spectra outside a requested range are left out. Returns the number of
+        spectra written or already on disk. If any spectrum cannot be
+        extracted, the rest are still written, lookup_table.csv is not, and
+        RuntimeError lists each failure.
+        """
         out_dir = os.path.join(self.base_dir, model_name)
         os.makedirs(out_dir, exist_ok=True)
         h5_path = os.path.join(out_dir, f"{model_name}.h5")
@@ -406,79 +438,83 @@ class MSGSpectraGrabber:
 
         print(f"Extracting {len(spectra_info)} spectra for {model_name}...")
 
-        rows=[]; ok=0
-
-        def _in_range(val, rng):
-            """Return True if val is within rng (lo, hi), or if rng is None/val is nan."""
-            if rng is None:
-                return True
-            if not np.isfinite(val):
-                return True  # can't filter what we don't know
-            lo, hi = rng
-            return lo <= val <= hi
-
-        def task(spec):
-            fid = int(spec["fid"])
-            gpath = spec["gname"]
-            idx = int(spec["order_index"])
-            fname = f"{model_name}_fid{fid}.txt"
-            fpath = os.path.join(out_dir, fname)
-
-            if os.path.exists(fpath) and os.path.getsize(fpath) > 1024:
-                return (fname, None, True)
-
-            try:
-                wl, fx, teff, logg, meta = self._extract_one(h5_path, gpath, model_name, idx)
-            except Exception as e:
-                return (fname, {"error": str(e)}, False)
-
-            # Apply parameter range filters
-            if not _in_range(teff, teff_range):
-                return (fname, None, False)
-            if not _in_range(logg, logg_range):
-                return (fname, None, False)
-            if not _in_range(meta, meta_range):
-                return (fname, None, False)
-
-            # Apply wavelength range trim
-            if wl_range is not None:
-                wl_lo, wl_hi = wl_range
-                mask = (wl >= wl_lo) & (wl <= wl_hi)
-                wl = wl[mask]
-                fx = fx[mask]
-                if wl.size == 0:
-                    return (fname, None, False)
-
-            with open(fpath, "w", encoding="utf-8") as fh:
-                fh.write("# source = MSG HDF5\n")
-                fh.write(f"# spec_group = {gpath}\n")
-                if np.isfinite(teff): fh.write(f"# teff = {teff}\n")
-                if np.isfinite(logg): fh.write(f"# logg = {logg}\n")
-                if np.isfinite(meta): fh.write(f"# meta = {meta}\n")
-                fh.write("# wavelength_unit = Angstrom\n")
-                fh.write("# flux_unit = erg/cm2/s/A\n")
-                fh.write("# columns = wavelength_A flux\n")
-                for x, y in zip(wl, fx):
-                    # Ensure x and y are Python scalars to avoid TypeError in f-strings
-                    fh.write(f"{float(x):.6f} {float(y):.8e}\n")
-
-            return (fname, {"teff":teff,"logg":logg,"meta":meta}, True)
+        rows=[]; failures=[]
+        ranges = {"teff": teff_range, "logg": logg_range, "meta": meta_range, "wl": wl_range}
 
         with ThreadPoolExecutor(max_workers=self.max_workers) as ex:
-            futs = {ex.submit(task, spec): spec for spec in spectra_info}
+            futs = {ex.submit(self._extract_to_text, model_name, h5_path, out_dir, spec, ranges): spec
+                    for spec in spectra_info}
             for fut in tqdm(as_completed(futs), total=len(futs), desc=f"Extracting {model_name}"):
-                fname, params, okflag = fut.result()
-                if okflag:
+                status, fname, detail = fut.result()
+                if status == "failed":
+                    failures.append(f"{fname}: {detail}")
+                elif status != "excluded":
                     row = {"file_name": fname}
-                    if params: row.update(params)
-                    rows.append(row); ok += 1
+                    if detail: row.update(detail)
+                    rows.append(row)
+
+        if failures:
+            raise RuntimeError(
+                f"MSG: {len(failures)} of {len(spectra_info)} spectra of {model_name} could not be "
+                f"extracted, so lookup_table.csv was not written; the others are in {out_dir}:\n  "
+                + "\n  ".join(sorted(failures)))
 
         if rows:
             self._write_lookup(out_dir, rows)
-            print(f"  Successfully extracted {ok} spectra")
+            print(f"  Successfully extracted {len(rows)} spectra")
         else:
             print(f"  No spectra extracted for {model_name}")
-        return ok
+        return len(rows)
+
+    def _extract_to_text(self, model_name, h5_path, out_dir, spec, ranges):
+        """Write one spectrum to <out_dir>/<model>_fid<n>.txt.
+
+        Returns (status, file name, detail): 'cached' if the file is already
+        there, 'excluded' if it lies outside a requested range, 'ok' with its
+        parameters, or 'failed' with the reason.
+        """
+        fid = int(spec["fid"])
+        gpath = spec["gname"]
+        idx = int(spec["order_index"])
+        fname = f"{model_name}_fid{fid}.txt"
+        fpath = os.path.join(out_dir, fname)
+
+        if os.path.exists(fpath) and os.path.getsize(fpath) > 1024:
+            return ("cached", fname, None)
+
+        try:
+            wl, fx, teff, logg, meta = self._extract_one(h5_path, gpath, model_name, idx)
+        except (KeyError, RuntimeError, OSError, ValueError) as e:
+            return ("failed", fname, str(e))
+
+        # Apply parameter range filters
+        if not (_in_range(teff, ranges["teff"]) and _in_range(logg, ranges["logg"])
+                and _in_range(meta, ranges["meta"])):
+            return ("excluded", fname, None)
+
+        # Apply wavelength range trim
+        if ranges["wl"] is not None:
+            wl_lo, wl_hi = ranges["wl"]
+            mask = (wl >= wl_lo) & (wl <= wl_hi)
+            wl = wl[mask]
+            fx = fx[mask]
+            if wl.size == 0:
+                return ("excluded", fname, None)
+
+        with open(fpath, "w", encoding="utf-8") as fh:
+            fh.write("# source = MSG HDF5\n")
+            fh.write(f"# spec_group = {gpath}\n")
+            if np.isfinite(teff): fh.write(f"# teff = {teff}\n")
+            if np.isfinite(logg): fh.write(f"# logg = {logg}\n")
+            if np.isfinite(meta): fh.write(f"# meta = {meta}\n")
+            fh.write("# wavelength_unit = Angstrom\n")
+            fh.write("# flux_unit = erg/cm2/s/A\n")
+            fh.write("# columns = wavelength_A flux\n")
+            for x, y in zip(wl, fx):
+                # Ensure x and y are Python scalars to avoid TypeError in f-strings
+                fh.write(f"{float(x):.6f} {float(y):.8e}\n")
+
+        return ("ok", fname, {"teff":teff,"logg":logg,"meta":meta})
 
     def _write_lookup(self, out_dir, rows):
         header = ["file_name","teff","logg","meta"]
