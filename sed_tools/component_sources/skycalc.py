@@ -370,6 +370,136 @@ class _Archive:
         self.path.write_text(json.dumps(self.data, indent=1) + "\n")
 
 
+def _grid_parameters(site: str, fetch_resolution: float, store_resolution: float, chunks: int) -> Dict:
+    """The settings a site's grid is made with, as its manifest records them."""
+    fixed = {k: v for k, v in _BASE_PARAMS.items() if k not in _VARIABLE}
+    return {
+        **fixed, "observatory": SITES[site][0], "fetch_resolution": fetch_resolution,
+        "store_resolution": store_resolution, "chunks": chunks, "wmin_nm": WMIN_NM, "wmax_nm": WMAX_NM,
+        "below_wmin": "transmission set to 0 below 300 nm (ozone; SkyCalc's limit)",
+        "clip": "bin averages clipped to [0, 1]",
+    }
+
+
+def _load_grid(site_dir: Path, site: str, parameters: Dict, fetch_resolution: float,
+               store_resolution: float) -> AtmosphereGrid:
+    """The site's grid manifest, described as a SkyCalc grid; an existing grid keeps its recorded settings."""
+    if (site_dir / "manifest.json").exists():
+        grid = AtmosphereGrid.load(site_dir)
+    else:
+        grid = AtmosphereGrid(site=site, entries=[])
+    recorded = dict(grid.parameters or {})
+    if not grid.entries or not recorded:
+        # A new grid (or one from before provenance was recorded): describe it now.
+        grid.source = (
+            "ESO SkyCalc sky model (Noll et al. 2012, A&A 543, A92; Jones et al. 2013, A&A 560, A91), "
+            f"fetched at R={fetch_resolution:g}, bin-averaged to R={store_resolution:g}"
+        )
+        grid.parameters = {**parameters, **{k: v for k, v in recorded.items() if k == "interface"}}
+    grid.altitude_m = SITES[site][1]
+    grid.notes = "Cerro Paranal climatology at this altitude; transmission only (no emission)."
+    grid.kind = DERIVED
+    grid.model = MODEL
+    grid.citation = CITATION
+    return grid
+
+
+def _check_settings(grid: AtmosphereGrid, parameters: Dict, site: str) -> None:
+    """New points must match how the existing ones were made."""
+    mismatched = {k: (grid.parameters.get(k), v) for k, v in parameters.items()
+                  if k not in ("interface",) and grid.parameters.get(k) != v}
+    if mismatched:
+        raise ValueError(f"{site}: the existing grid was made with different settings "
+                         f"{mismatched}; build it in a new atmosphere root")
+
+
+def _fetch_point(client, site: str, airmass: float, pwv: float, edges: np.ndarray, fetch_resolution: float,
+                 store_resolution: float, archive: Optional[_Archive]
+                 ) -> Tuple[np.ndarray, np.ndarray, List[SkyCalcResult]]:
+    """One (airmass, PWV) point: every chunk fetched, bin-averaged and merged; (nm, transmission, results)."""
+    stem = Path(_file_name(airmass, pwv)).stem
+    wl_parts: List[np.ndarray] = []
+    tr_parts: List[np.ndarray] = []
+    results: List[SkyCalcResult] = []
+    for i, (lo, hi) in enumerate(zip(edges[:-1], edges[1:])):
+        if hasattr(client, "fetch"):
+            result = client.fetch(site, airmass, pwv, lo, hi, fetch_resolution)
+        else:
+            result = SkyCalcResult(*client.transmission(site, airmass, pwv, lo, hi, fetch_resolution))
+        if archive is not None and result.content:
+            archive.add(f"{stem}_chunk{i}.fits.gz", result, site=site, airmass=airmass,
+                        pwv=pwv, chunk=i, wmin_nm=float(lo), wmax_nm=float(hi))
+        wl, tr = bin_average(result.wavelength_nm, result.transmission, store_resolution, lo, hi)
+        wl_parts.append(wl)
+        tr_parts.append(tr)
+        results.append(result)
+    wl_nm = np.concatenate(wl_parts)
+    tr = np.concatenate(tr_parts)
+    order = np.argsort(wl_nm)
+    return wl_nm[order], np.clip(tr[order], 0.0, 1.0), results
+
+
+def _write_point(path: Path, site: str, airmass: float, pwv: float, wl_nm: np.ndarray, tr: np.ndarray,
+                 version: Optional[str]) -> None:
+    # The atmosphere is opaque below SkyCalc's 300 nm limit (ozone).
+    wl_ang = np.concatenate([[1000.0, WMIN_NM * 10 - 1.0], wl_nm * 10])
+    tr = np.concatenate([[0.0, 0.0], tr])
+    spec = AtmosphereSpec(site, airmass, pwv)
+    write_filter_file(
+        path, wl_ang, tr,
+        detector_type=ENERGY, source="component", wavelength_unit="Angstrom",
+        extra={
+            "Role": ATMOSPHERE,
+            "Components": ATMOSPHERE,
+            "ComponentsSource": DERIVED,
+            "Atmosphere": f"site={site} airmass={airmass:g} pwv={pwv:g}",
+            "Sources": "ESO SkyCalc" + (f" {version}" if version else ""),
+            "Recipe": spec.label,
+        },
+    )
+
+
+def _endpoint(client, interface: str) -> str:
+    """How a grid records the interface that served it, e.g. ``"form: https://www.eso.org/..."``."""
+    return f"{interface}: " + (client.form_url if interface == "form" else client.base_url)
+
+
+def _build_site(site_dir: Path, site: str, client, points: Sequence[Tuple[float, float]], edges: np.ndarray,
+                fetch_resolution: float, store_resolution: float, chunks: int,
+                archive: Optional[_Archive]) -> None:
+    """Fetch the site's missing points and keep its grid manifest current after each one."""
+    site_dir.mkdir(parents=True, exist_ok=True)
+    parameters = _grid_parameters(site, fetch_resolution, store_resolution, chunks)
+    grid = _load_grid(site_dir, site, parameters, fetch_resolution, store_resolution)
+    known = {e["file"] for e in grid.entries}
+    versions = set(filter(None, [grid.model_version]))
+    interfaces = set(filter(None, str((grid.parameters or {}).get("interface", "")).split("; ")))
+
+    for airmass, pwv in points:
+        name = _file_name(airmass, pwv)
+        path = site_dir / name
+        if not path.exists():
+            _check_settings(grid, parameters, site)
+            logger.info("SkyCalc %s airmass=%g pwv=%g", site, airmass, pwv)
+            wl_nm, tr, results = _fetch_point(client, site, airmass, pwv, edges, fetch_resolution,
+                                              store_resolution, archive)
+            versions.update(r.version for r in results if r.version)
+            interfaces.update(_endpoint(client, r.interface) for r in results if r.interface)
+            # Checked before writing, so a refused point leaves no file for a later run to pick up.
+            if len(versions) > 1:
+                raise RuntimeError(f"SkyCalc version changed during the {site} grid: {sorted(versions)}")
+            _write_point(path, site, airmass, pwv, wl_nm, tr, results[-1].version)
+        grid.model_version = next(iter(versions), grid.model_version)
+        if interfaces:
+            grid.parameters["interface"] = "; ".join(sorted(interfaces))
+        if name not in known:
+            grid.entries.append({"airmass": airmass, "pwv": pwv, "file": name})
+            known.add(name)
+            grid.entries.sort(key=lambda e: (float(e["airmass"]), float(e["pwv"])))
+        grid.save(site_dir)  # save as we go so the build is resumable
+    grid.save(site_dir)
+
+
 def build(
     filter_root: Union[str, Path],
     *,
@@ -396,101 +526,10 @@ def build(
     # Split the range so each request stays a manageable size at high R.
     edges = WMIN_NM * (WMAX_NM / WMIN_NM) ** (np.arange(chunks + 1) / chunks)
 
+    points = [(airmass, pwv) for airmass in airmasses for pwv in pwvs]
     for site in sites:
         if site not in SITES:
             raise ValueError(f"Unknown SkyCalc site '{site}'. Choose from {sorted(SITES)}")
-        site_dir = root / site
-        site_dir.mkdir(parents=True, exist_ok=True)
         archive = _Archive(Path(archive_dir) / site) if archive_dir else None
-        grid_path = site_dir / "manifest.json"
-        grid = AtmosphereGrid.load(site_dir) if grid_path.exists() else AtmosphereGrid(site=site, entries=[])
-        source = (
-            "ESO SkyCalc sky model (Noll et al. 2012, A&A 543, A92; Jones et al. 2013, A&A 560, A91), "
-            f"fetched at R={fetch_resolution:g}, bin-averaged to R={store_resolution:g}"
-        )
-        fixed = {k: v for k, v in _BASE_PARAMS.items() if k not in _VARIABLE}
-        parameters = {
-            **fixed, "observatory": SITES[site][0], "fetch_resolution": fetch_resolution,
-            "store_resolution": store_resolution, "chunks": chunks, "wmin_nm": WMIN_NM, "wmax_nm": WMAX_NM,
-            "below_wmin": "transmission set to 0 below 300 nm (ozone; SkyCalc's limit)",
-            "clip": "bin averages clipped to [0, 1]",
-        }
-        recorded = dict(grid.parameters or {})
-        if not grid.entries or not recorded:
-            # A new grid (or one from before provenance was recorded): describe it now.
-            grid.source, grid.parameters = source, {**parameters, **{k: v for k, v in recorded.items()
-                                                                     if k == "interface"}}
-        grid.altitude_m = SITES[site][1]
-        grid.notes = "Cerro Paranal climatology at this altitude; transmission only (no emission)."
-        grid.kind = DERIVED
-        grid.model = MODEL
-        grid.citation = CITATION
-        known = {e["file"] for e in grid.entries}
-        versions = set(filter(None, [grid.model_version]))
-        interfaces = set(filter(None, str((grid.parameters or {}).get("interface", "")).split("; ")))
-        checked = False
-
-        for airmass in airmasses:
-            for pwv in pwvs:
-                name = _file_name(airmass, pwv)
-                path = site_dir / name
-                if not path.exists():
-                    if not checked:
-                        # New points must match how the existing ones were made.
-                        mismatched = {k: (grid.parameters.get(k), v) for k, v in parameters.items()
-                                      if k not in ("interface",) and grid.parameters.get(k) != v}
-                        if mismatched:
-                            raise ValueError(f"{site}: the existing grid was made with different settings "
-                                             f"{mismatched}; build it in a new atmosphere root")
-                        checked = True
-                    logger.info("SkyCalc %s airmass=%g pwv=%g", site, airmass, pwv)
-                    wl_parts: List[np.ndarray] = []
-                    tr_parts: List[np.ndarray] = []
-                    for i, (lo, hi) in enumerate(zip(edges[:-1], edges[1:])):
-                        if hasattr(client, "fetch"):
-                            result = client.fetch(site, airmass, pwv, lo, hi, fetch_resolution)
-                        else:
-                            result = SkyCalcResult(*client.transmission(site, airmass, pwv, lo, hi, fetch_resolution))
-                        if result.version:
-                            versions.add(result.version)
-                        if result.interface:
-                            interfaces.add(f"{result.interface}: "
-                                           + (client.form_url if result.interface == "form" else client.base_url))
-                        if archive is not None and result.content:
-                            archive.add(f"{Path(name).stem}_chunk{i}.fits.gz", result, site=site, airmass=airmass,
-                                        pwv=pwv, chunk=i, wmin_nm=float(lo), wmax_nm=float(hi))
-                        wl, tr = bin_average(result.wavelength_nm, result.transmission, store_resolution, lo, hi)
-                        wl_parts.append(wl)
-                        tr_parts.append(tr)
-                    wl_nm = np.concatenate(wl_parts)
-                    tr = np.concatenate(tr_parts)
-                    order = np.argsort(wl_nm)
-                    wl_nm, tr = wl_nm[order], np.clip(tr[order], 0.0, 1.0)
-                    # The atmosphere is opaque below SkyCalc's 300 nm limit (ozone).
-                    wl_ang = np.concatenate([[1000.0, WMIN_NM * 10 - 1.0], wl_nm * 10])
-                    tr = np.concatenate([[0.0, 0.0], tr])
-                    spec = AtmosphereSpec(site, airmass, pwv)
-                    write_filter_file(
-                        path, wl_ang, tr,
-                        detector_type=ENERGY, source="component", wavelength_unit="Angstrom",
-                        extra={
-                            "Role": ATMOSPHERE,
-                            "Components": ATMOSPHERE,
-                            "ComponentsSource": DERIVED,
-                            "Atmosphere": f"site={site} airmass={airmass:g} pwv={pwv:g}",
-                            "Sources": "ESO SkyCalc" + (f" {result.version}" if result.version else ""),
-                            "Recipe": spec.label,
-                        },
-                    )
-                if len(versions) > 1:
-                    raise RuntimeError(f"SkyCalc version changed during the {site} grid: {sorted(versions)}")
-                grid.model_version = next(iter(versions), grid.model_version)
-                if interfaces:
-                    grid.parameters["interface"] = "; ".join(sorted(interfaces))
-                if name not in known:
-                    grid.entries.append({"airmass": airmass, "pwv": pwv, "file": name})
-                    known.add(name)
-                    grid.entries.sort(key=lambda e: (float(e["airmass"]), float(e["pwv"])))
-                grid.save(site_dir)  # save as we go so the build is resumable
-        grid.save(site_dir)
+        _build_site(root / site, site, client, points, edges, fetch_resolution, store_resolution, chunks, archive)
     return root

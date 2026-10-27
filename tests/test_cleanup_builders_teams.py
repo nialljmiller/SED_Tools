@@ -165,3 +165,23 @@ def test_skycalc_api_temporary_directory_left_behind_is_warned(caplog, no_wait):
         result = client.fetch("paranal", 1.0, 2.5, 1000.0, 1100.0, 2000)
     assert result.interface == "api" and result.version == "2.0.9"
     assert "Could not delete SkyCalc tmpdir t1" in caplog.text and "rmtmp timed out" in caplog.text
+
+
+def test_skycalc_version_change_leaves_no_unregistered_point(tmp_path, no_wait):
+    from sed_tools.filter_components import AtmosphereGrid
+    from sed_tools.filter_metadata import ENERGY, write_filter_file
+
+    site = tmp_path / "atmospheres" / "paranal"
+    site.mkdir(parents=True)
+    AtmosphereGrid(site="paranal", entries=[{"airmass": 1.0, "pwv": 2.5, "file": "am1.00_pwv2.5.dat"}],
+                   model_version="2.0.8").save(site)
+    write_filter_file(site / "am1.00_pwv2.5.dat", [1000.0, 30000.0], [0.9, 0.9], detector_type=ENERGY,
+                      source="component", wavelength_unit="Angstrom")
+    client = skycalc.SkyCalcClient(session=_SkyCalcSession(), interface="form", pause=0)
+    with pytest.raises(RuntimeError, match=r"version changed .*'2.0.8', '2.0.9'"):
+        skycalc.build(tmp_path / "filters", sites=["paranal"], airmasses=[1.0, 2.0], pwvs=[2.5],
+                      fetch_resolution=2000, store_resolution=500, chunks=2, client=client)
+    # Nothing made with 2.0.9 is left for a later run to register under the grid's 2.0.8.
+    assert not (site / "am2.00_pwv2.5.dat").exists()
+    grid = AtmosphereGrid.load(site)
+    assert [e["file"] for e in grid.entries] == ["am1.00_pwv2.5.dat"] and grid.model_version == "2.0.8"
