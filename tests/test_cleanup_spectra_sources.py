@@ -19,6 +19,7 @@ from sed_tools import njm_spectra_grabber as njm
 from sed_tools import svo_spectra_grabber as svo
 from sed_tools.header_parser import parse_header
 from sed_tools.spectrum_io import read_text_spectrum
+from sed_tools.svo_regen_spectra_lookup import regenerate_lookup_table
 
 
 @pytest.fixture(autouse=True)
@@ -42,8 +43,37 @@ def test_parse_header_raises_for_missing_file(tmp_path):
 
 
 def test_read_text_spectrum_raises_for_missing_file(tmp_path):
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(FileNotFoundError, match="missing.txt"):
         read_text_spectrum(tmp_path / "missing.txt")
+
+
+# ---------------------------------------------------------------- lookup table
+
+def write_spectra(directory, headers):
+    directory.mkdir(exist_ok=True)
+    for name, header in headers.items():
+        (directory / name).write_text(header + "1000 1.0\n2000 2.0\n")
+
+
+def test_lookup_table_leaves_out_parameters_no_spectrum_states(tmp_path, capsys):
+    grid = tmp_path / "bbody"
+    write_spectra(grid, {"bb_3000.txt": "# teff = 3000\n", "bb_4000.txt": "# teff = 4000\n"})
+
+    regenerate_lookup_table(str(grid))
+
+    assert (grid / "lookup_table.csv").read_text().splitlines() == [
+        "#file_name, teff", "bb_3000.txt,3000.0", "bb_4000.txt,4000.0"]
+    assert "no logg column" in capsys.readouterr().out
+
+
+def test_lookup_table_raises_when_only_some_spectra_state_a_parameter(tmp_path):
+    grid = tmp_path / "mixed"
+    write_spectra(grid, {"a.txt": "# teff = 3000\n# logg = 4.0\n", "b.txt": "# teff = 4000\n",
+                         "c.txt": "# teff = 5000\n# logg = n/a\n"})
+
+    with pytest.raises(ValueError, match="2 of 3 spectra .* do not state logg in their headers: b.txt, c.txt"):
+        regenerate_lookup_table(str(grid))
+    assert not (grid / "lookup_table.csv").exists()
 
 
 # ---------------------------------------------------------------- fakes
