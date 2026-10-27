@@ -215,3 +215,70 @@ def test_msg_grid_names_keep_their_last_characters(tmp_path, monkeypatch):
 
     assert grabber.discover_models() == sorted(names)
     assert grabber.model_urls["sg-OSTAR2002-high"] == "http://user.astro.wisc.edu/msg/grids/sg-OSTAR2002-high.h5"
+
+
+# ---------------------------------------------------------------- 7. zero bounds
+
+# logg and [M/H] ranges chosen so that a bound of 0 keeps some grids and drops others.
+LOCAL_GRIDS = {
+    "Negative": {"logg": [-1.0, -0.5], "meta": [-2.0, -1.0]},
+    "Positive": {"logg": [0.5, 1.0], "meta": [0.25, 0.5]},
+    "Straddle": {"logg": [-0.5, 0.5], "meta": [-0.5, 0.5]},
+}
+
+
+@pytest.fixture
+def local_grids(tmp_path, monkeypatch, cube_writer):
+    for name, axes in LOCAL_GRIDS.items():
+        teff = [4000.0, 6000.0]
+        flux = np.ones((len(teff), len(axes["logg"]), len(axes["meta"]), 2))
+        cube_writer(tmp_path / name / "flux_cube.bin", teff, axes["logg"], axes["meta"], [4000.0, 5000.0], flux)
+    monkeypatch.setattr(SED, "_model_root", tmp_path)
+    return tmp_path
+
+
+@pytest.mark.parametrize("bound, expected", [
+    ({"teff_min": 0}, {"Negative", "Positive", "Straddle"}),
+    ({"teff_max": 0}, set()),
+    ({"logg_min": 0.0}, {"Positive", "Straddle"}),
+    ({"logg_max": 0.0}, {"Negative", "Straddle"}),
+    ({"metallicity_min": 0.0}, {"Positive", "Straddle"}),
+    ({"metallicity_max": 0.0}, {"Negative", "Straddle"}),
+    ({"metallicity_max": 0}, {"Negative", "Straddle"}),
+    ({"logg_min": 0, "metallicity_max": 0.0}, {"Straddle"}),
+])
+def test_query_applies_a_bound_of_zero(local_grids, bound, expected):
+    found = SED.query(source="local", include_remote=False, **bound)
+    assert {info.name for info in found} == expected
+
+
+@pytest.fixture
+def downloaded_grid(tmp_path, monkeypatch):
+    """A grid already on disk; SED.fetch's download step is replaced by a no-op."""
+    grid = tmp_path / "Tiny"
+    grid.mkdir()
+    rows = ["file_name,teff,logg,metallicity"]
+    for logg in (-0.5, 0.0, 0.5):
+        for meta in (-0.5, 0.0, 0.5):
+            name = f"g{logg:+.1f}_m{meta:+.1f}.txt"
+            (grid / name).write_text("4000 1.0\n5000 2.0\n")
+            rows.append(f"{name},5000,{logg},{meta}")
+    (grid / "lookup_table.csv").write_text("\n".join(rows) + "\n")
+    monkeypatch.setattr(SED, "_download_from", classmethod(lambda cls, src, catalog, model_dir, workers: None))
+    return tmp_path
+
+
+@pytest.mark.parametrize("bound, keep", [
+    ({"teff_min": 0}, lambda logg, meta: True),
+    ({"teff_max": 0}, lambda logg, meta: False),
+    ({"logg_min": 0.0}, lambda logg, meta: logg >= 0),
+    ({"logg_max": 0.0}, lambda logg, meta: logg <= 0),
+    ({"metallicity_min": 0.0}, lambda logg, meta: meta >= 0),
+    ({"metallicity_max": 0.0}, lambda logg, meta: meta <= 0),
+    ({"metallicity_max": 0}, lambda logg, meta: meta <= 0),
+])
+def test_fetch_applies_a_bound_of_zero(downloaded_grid, bound, keep):
+    sed = SED.fetch("Tiny", source="njm", clean=False, model_root=downloaded_grid, **bound)
+
+    expected = {(logg, meta) for logg in (-0.5, 0.0, 0.5) for meta in (-0.5, 0.0, 0.5) if keep(logg, meta)}
+    assert {(s.logg, s.metallicity) for s in sed.grid} == expected
