@@ -13,7 +13,8 @@ Processing:
   1. Sample 10% of the spectral grid to determine units (consensus)
   2. Apply those units uniformly to ALL files
   3. Convert wavelength → Angstroms, flux → F_lambda
-  4. Validate and write with standardized header
+  4. Validate, renormalise a spectrum whose absolute flux scale is wrong
+     (see _bolometric_renorm_ratio), and write with standardized header
 
 The tag `# units_standardized = True` prevents reprocessing.
 """
@@ -33,7 +34,7 @@ from typing import Dict, List, Optional, Tuple
 import h5py
 import numpy as np
 
-from ._constants import C
+from ._constants import C, SIGMA, planck_flam
 from ._lookup_io import write_lookup_csv
 from .header_parser import parse_header as _parse_header_dict
 from .spectrum_io import read_text_spectrum
@@ -46,6 +47,14 @@ logger = logging.getLogger(__name__)
 # ============================================================================
 
 SPEED_OF_LIGHT_ANGSTROM = C * 1e8  # c in Å/s — from _constants
+
+# A spectrum whose integrated flux is more than 3 times a blackbody's at its
+# Teff, over the same wavelengths, has a wrong absolute flux scale (SVO's NextGen
+# T >= 5000 K entries are about 100x too large). It is only checked when those
+# wavelengths hold at least 5 % of sigma*T^4. Spectra far below the blackbody are
+# left alone: cool giants' optical flux really is 2-10 % of it.
+_RENORM_MAX_RATIO = 3.0
+_RENORM_MIN_COVERAGE = 0.05
 
 # Wavelength conversion factors → Angstroms
 WAVELENGTH_FACTORS = {
@@ -782,37 +791,51 @@ def clean_spectrum_file(
     
     Returns: (status, detail)
         status: 'skipped_already', 'skipped_index', 'skipped_invalid', 
-                'converted', 'recovered'
+                'converted', 'recovered', or 'converted_renormed' /
+                'recovered_renormed' when the flux scale was also corrected
+                (see _bolometric_renorm_ratio); detail then gives the factor.
 
     Raises RuntimeError if rewriting the file fails; the file may then hold
     only its new header.
     """
+    status, detail, renorm_ratio = _clean_spectrum(filepath, catalog_units, try_h5_recovery)
+    if renorm_ratio is not None:
+        status += '_renormed'
+    return status, detail
+
+
+def _clean_spectrum(
+    filepath: str,
+    catalog_units: Optional[UnitInfo],
+    try_h5_recovery: bool,
+) -> Tuple[str, str, Optional[float]]:
+    """clean_spectrum_file's work. Also returns the factor the flux was divided by, or None."""
     # Parse header
     meta, _ = _load_header(filepath)
     
     # Skip if already standardized
     if meta.units_standardized:
-        return 'skipped_already', 'already standardized'
+        return 'skipped_already', 'already standardized', None
     
     # Read data
     wl, flux = read_spectrum_data(filepath)
     
     if wl.size == 0 or flux.size == 0:
-        return 'skipped_invalid', 'empty data'
+        return 'skipped_invalid', 'empty data', None
     
     # Clean: remove NaN/inf and non-positive wavelengths
     valid = np.isfinite(wl) & np.isfinite(flux) & (wl > 0)
     wl, flux = wl[valid], flux[valid]
     
     if wl.size < 2:
-        return 'skipped_invalid', 'no valid data points'
+        return 'skipped_invalid', 'no valid data points', None
     
     wl, flux = _sorted_unique(wl, flux)
     
     if is_index_grid(wl):
         wl = _recovered_wavelengths(filepath, meta, len(flux), try_h5_recovery)
         if wl is None:
-            return 'skipped_index', 'index grid without HDF5 recovery'
+            return 'skipped_index', 'index grid without HDF5 recovery', None
         status = 'recovered'
     else:
         status = 'converted'
@@ -825,7 +848,11 @@ def clean_spectrum_file(
     # Validate
     valid, msg = validate_converted_spectrum(wl_std, flux_std)
     if not valid:
-        return 'skipped_invalid', f'validation failed: {msg}'
+        return 'skipped_invalid', f'validation failed: {msg}', None
+
+    renorm_ratio = _bolometric_renorm_ratio(wl_std, flux_std, meta.teff)
+    if renorm_ratio is not None:
+        flux_std = flux_std / renorm_ratio
 
     try:
         write_standardized_spectrum(filepath, wl_std, flux_std, meta, unit_info)
@@ -837,7 +864,36 @@ def clean_spectrum_file(
         ) from exc
     
     detail = f"{wl_std[0]:.0f}-{wl_std[-1]:.0f}Å, {unit_info.wavelength_unit}→Å, conf={unit_info.confidence}"
-    return status, detail
+    if renorm_ratio is not None:
+        detail += f", flux divided by {renorm_ratio:.4g} (bolometric renormalisation)"
+    return status, detail, renorm_ratio
+
+
+def _bolometric_renorm_ratio(wl: np.ndarray, flux: np.ndarray, teff: float) -> Optional[float]:
+    """The factor to divide the flux by when its absolute scale is wrong, else None.
+
+    That factor is the spectrum's integrated flux over pi*B_lambda(Teff)
+    integrated on the same wavelengths, so both integrals share one quadrature
+    and a correctly scaled spectrum gives about 1 however it is sampled.
+    Spectra without a Teff, or whose wavelengths hold too little of sigma*T^4,
+    are not checked.
+
+    The first version differed in two ways, both of which rescaled correct
+    spectra. It integrated the blackbody on a 2000-point linear grid, which
+    misses a hot star's peak on a wide wavelength range (correct 30000 K
+    blackbodies over 10 Å-1e7 Å came out 11 times too bright). And it also
+    rescaled spectra below 0.1 times the blackbody, which multiplied correct
+    3000-3500 K giants observed only in the optical by 10-50.
+    """
+    if not (np.isfinite(teff) and teff > 0):
+        return None
+    expected = float(np.trapezoid(planck_flam(wl, teff), wl))
+    if expected < _RENORM_MIN_COVERAGE * SIGMA * teff ** 4:
+        return None
+    ratio = float(np.trapezoid(np.maximum(flux, 0), wl)) / expected
+    if ratio > _RENORM_MAX_RATIO:
+        return ratio
+    return None
 
 
 def _sorted_unique(wl: np.ndarray, flux: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
@@ -915,7 +971,9 @@ def clean_model_dir(
         sample_fraction: Fraction of files to sample for unit detection (default 10%)
     
     Returns:
-        Summary dict with counts and file lists
+        Summary dict with counts and file lists. When any spectrum's flux scale
+        was corrected it also has 'renormed': {file name: factor its flux was
+        divided by}; those files are listed under 'converted' or 'recovered' too.
 
     Raises:
         RuntimeError: if any spectrum is left unconverted (invalid, unrecoverable
@@ -966,6 +1024,8 @@ def clean_model_dir(
             "converted using units detected file by file.",
             model_dir, detection_stats.get('status', 'unknown'), n_per_file,
         )
+    if 'renormed' in summary:
+        _warn_renormed(model_dir, summary['renormed'])
     
     # =========================================================
     # STEP 3: Rebuild lookup table
@@ -1002,28 +1062,43 @@ def _clean_all_files(txt_files: List[str], catalog_units: Optional[UnitInfo],
                      try_h5_recovery: bool, summary: Dict) -> List[Tuple[str, str]]:
     """Clean every file, appending each file name to its status list in *summary*.
 
+    A renormalised spectrum is listed under its status ('converted' or
+    'recovered') and in summary['renormed'] with its factor; that key is added
+    only when there is one.
+
     Returns (file name, reason) for every spectrum left unconverted. A file that
     cannot be read is recorded and the batch goes on; a failed rewrite raises.
     """
     failures = []
+    renormed = {}
     t_start = time.time()
     for i, filepath in enumerate(txt_files):
         filename = os.path.basename(filepath)
         try:
-            status, detail = clean_spectrum_file(
-                filepath,
-                catalog_units=catalog_units,
-                try_h5_recovery=try_h5_recovery,
-            )
+            status, detail, renorm_ratio = _clean_spectrum(filepath, catalog_units, try_h5_recovery)
         except (OSError, ValueError) as exc:
             # Raised before the file is rewritten (rewrite failures raise RuntimeError).
-            status, detail = 'error', f'{type(exc).__name__}: {exc}'
+            status, detail, renorm_ratio = 'error', f'{type(exc).__name__}: {exc}', None
         summary[status].append(filename)
+        if renorm_ratio is not None:
+            renormed[filename] = renorm_ratio
         if status in _UNCONVERTED:
             failures.append((filename, detail))
         _print_progress(i + 1, len(txt_files), t_start)
     print()
+    if renormed:
+        summary['renormed'] = renormed
     return failures
+
+
+def _warn_renormed(model_dir: str, renormed: Dict[str, float]) -> None:
+    ratios = list(renormed.values())
+    logger.warning(
+        "%s: %d spectra integrated to %.3g-%.3g times a blackbody at their Teff, so each "
+        "one's flux was divided by its factor (bolometric renormalisation). The summary's "
+        "'renormed' entry lists every file and factor.",
+        model_dir, len(ratios), min(ratios), max(ratios),
+    )
 
 
 def _print_progress(done: int, total: int, t_start: float) -> None:
