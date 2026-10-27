@@ -33,6 +33,7 @@ import json
 import logging
 import os
 import struct
+from collections import Counter
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -222,16 +223,12 @@ class SEDGenerator:
         print(f"  Grid: {nt} Teff × {nl} logg × {nm} [M/H] = {total_seds} total SEDs")
         print(f"  Original wavelength: {wavelengths.min():.0f} - {wavelengths.max():.0f} Å")
         
-        # Create target wavelength grid
         self.wavelength_grid = self._create_wavelength_grid()
-        n_wl = len(self.wavelength_grid)
-        
-        wl_orig_min = wavelengths.min()
-        wl_orig_max = wavelengths.max()
         
         params_list = []
         flux_list = []
         masks_list = []
+        dropped = Counter()
         
         n_samples = min(max_samples, total_seds)
         indices = np.random.permutation(total_seds)[:n_samples]
@@ -244,40 +241,23 @@ class SEDGenerator:
             i_l = remainder // nm
             i_m = remainder % nm
             
-            flux = flux_cube[:, i_m, i_l, i_t]
-            
-            # Skip invalid spectra
-            if np.any(flux <= 0) or np.any(~np.isfinite(flux)):
+            # The cube is stored as [nw, nm, nl, nt]
+            reason, sample = self._training_sample(flux_cube[:, i_m, i_l, i_t], wavelengths)
+            if reason:
+                dropped[reason] += 1
                 continue
             
-            # Interpolate to target grid
-            flux_interp = np.interp(
-                self.wavelength_grid,
-                wavelengths,
-                flux,
-                left=np.nan,
-                right=np.nan,
-            )
-            
-            # Validity mask
-            valid_mask = (
-                (self.wavelength_grid >= wl_orig_min) &
-                (self.wavelength_grid <= wl_orig_max) &
-                np.isfinite(flux_interp) &
-                (flux_interp > 0)
-            )
-            
-            if valid_mask.sum() < n_wl * 0.3:
-                continue
-            
-            flux_interp = np.where(valid_mask, flux_interp, 1e-30)
-            
+            flux_interp, valid_mask = sample
             params_list.append([teff_grid[i_t], logg_grid[i_l], meta_grid[i_m]])
             flux_list.append(flux_interp)
-            masks_list.append(valid_mask.astype(np.float32))
+            masks_list.append(valid_mask)
         
+        if dropped:
+            reasons = ", ".join(f"{count} with {reason}" for reason, count in dropped.items())
+            logger.warning("Training data from %s: dropped %d of %d sampled spectra (%s)",
+                           library_path, sum(dropped.values()), len(indices), reasons)
         if len(params_list) == 0:
-            raise ValueError("No valid training samples found")
+            raise ValueError(f"No valid training samples found in {library_path}")
         
         params = np.array(params_list, dtype=np.float32)
         flux = np.array(flux_list, dtype=np.float32)
@@ -290,6 +270,34 @@ class SEDGenerator:
         print(f"  Average coverage: {masks.mean() * 100:.1f}%")
         
         return params, flux, masks
+
+    def _training_sample(
+        self,
+        flux: np.ndarray,
+        wavelengths: np.ndarray,
+    ) -> Tuple[Optional[str], Optional[Tuple[np.ndarray, np.ndarray]]]:
+        """
+        Resample one grid spectrum to the model grid.
+        
+        Returns ``(None, (flux, valid_mask))``, or ``(reason, None)`` when the
+        spectrum cannot be used. Points outside the original coverage get
+        flux 1e-30 and mask 0.
+        """
+        if np.any(flux <= 0) or np.any(~np.isfinite(flux)):
+            return "non-positive or non-finite flux", None
+        
+        flux_interp = np.interp(self.wavelength_grid, wavelengths, flux, left=np.nan, right=np.nan)
+        valid_mask = (
+            (self.wavelength_grid >= wavelengths.min()) &
+            (self.wavelength_grid <= wavelengths.max()) &
+            np.isfinite(flux_interp) &
+            (flux_interp > 0)
+        )
+        if valid_mask.sum() < len(self.wavelength_grid) * 0.3:
+            return "less than 30% of the model grid covered", None
+        
+        flux_interp = np.where(valid_mask, flux_interp, 1e-30)
+        return None, (flux_interp, valid_mask.astype(np.float32))
     
     def train(
         self,
@@ -335,18 +343,76 @@ class SEDGenerator:
         history : dict with 'train_loss' and 'val_loss'
         """
         import torch
-        from torch.utils.data import DataLoader, TensorDataset
         from sklearn.model_selection import train_test_split
+        from .ml_utils import data_loaders, fit
         
         params, flux, masks = self._prepare_training_data(library_path, max_samples)
+        params_norm, flux_norm = self._normalise_training_data(params, flux, masks, library_path)
         
-        # Log-scale flux
+        # Split indices, so the raw parameters of the training set can be kept
+        idx_train, idx_val = train_test_split(np.arange(len(params_norm)), test_size=0.2, random_state=42)
+        p_train, p_val = params_norm[idx_train], params_norm[idx_val]
+        f_train, f_val = flux_norm[idx_train], flux_norm[idx_val]
+        m_train, m_val = masks[idx_train], masks[idx_val]
+        # save() stores these in config.json for the parameter-space plot
+        self._train_params_raw = params[idx_train]
+        
+        train_loader, val_loader = data_loaders((p_train, f_train, m_train), (p_val, f_val, m_val), batch_size)
+        
+        output_dim = flux_norm.shape[1]
+        hidden = hidden_layers or [512, 512, 256, 256]
+        print(f"Building network: 3 → {hidden} → {output_dim}")
+        self.model = SEDGeneratorNetwork(
+            output_dim=output_dim,
+            hidden_layers=hidden,
+            dropout=dropout,
+        )
+        
+        optimizer = torch.optim.AdamW(self.model.parameters(), lr=learning_rate, weight_decay=1e-4)
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer, mode='min', factor=0.5, patience=15, min_lr=1e-6
+        )
+        history, best_val_loss = fit(
+            self.model, train_loader, val_loader, optimizer, scheduler,
+            epochs=epochs, patience=patience, verbose=verbose, device=self.device,
+            progress="  Epoch {epoch:3d}: train={train:.6f}, val={val:.6f}, lr={lr:.2e}",
+        )
+        if not history['train_loss']:
+            raise RuntimeError(
+                f"Training on {library_path} produced no usable epoch (every training or "
+                f"validation batch had a NaN loss); nothing was saved to {output_path}"
+            )
+        
+        print("-" * 60)
+        print(f"Training complete. Best val_loss: {best_val_loss:.6f}")
+        
+        self.save(output_path, hidden_layers=hidden, dropout=dropout)
+        
+        print("\nGenerating plots...")
+        self._plot_training(history, output_path)
+        self._plot_predictions(p_val, f_val, m_val, output_path)
+        
+        return history
+
+    def _normalise_training_data(
+        self,
+        params: np.ndarray,
+        flux: np.ndarray,
+        masks: np.ndarray,
+        library_path: str,
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Fit ``self.scaler_params`` and return the normalised parameters and log10 fluxes.
+        
+        The flux scaler uses valid points only. Both arrays are float32.
+        """
         print("Normalizing data...")
         flux_log = np.log10(np.maximum(flux, 1e-30))
         
-        # Compute scaler params from valid data
         valid_mask = (masks > 0.5) & (flux_log > -25)
         flux_valid = flux_log[valid_mask]
+        if len(flux_valid) == 0:
+            raise ValueError(f"No valid data points for normalization in {library_path}")
         
         self.scaler_params = {
             'teff_mean': float(np.mean(params[:, 0])),
@@ -367,7 +433,6 @@ class SEDGenerator:
         
         print(f"  Flux log10 range: [{flux_valid.min():.2f}, {flux_valid.max():.2f}]")
         
-        # Normalize
         params_norm = np.column_stack([
             (params[:, 0] - self.scaler_params['teff_mean']) / self.scaler_params['teff_std'],
             (params[:, 1] - self.scaler_params['logg_mean']) / self.scaler_params['logg_std'],
@@ -378,141 +443,7 @@ class SEDGenerator:
         flux_norm = np.where(np.isfinite(flux_norm), flux_norm, 0.0).astype(np.float32)
         
         print(f"  Input: {params_norm.shape}, Output: {flux_norm.shape}")
-        
-        # Split - use indices to properly track validation data
-        indices = np.arange(len(params_norm))
-        idx_train, idx_val = train_test_split(indices, test_size=0.2, random_state=42)
-        
-        p_train, p_val = params_norm[idx_train], params_norm[idx_val]
-        f_train, f_val = flux_norm[idx_train], flux_norm[idx_val]
-        m_train, m_val = masks[idx_train], masks[idx_val]
-        
-        # Store raw params for plotting (now correctly matched to validation set)
-        self._val_params_raw = params[idx_val]
-        
-        # Store all training params for parameter space visualization
-        self._train_params_raw = params[idx_train]
-        
-        train_dataset = TensorDataset(
-            torch.from_numpy(p_train),
-            torch.from_numpy(f_train),
-            torch.from_numpy(m_train),
-        )
-        val_dataset = TensorDataset(
-            torch.from_numpy(p_val),
-            torch.from_numpy(f_val),
-            torch.from_numpy(m_val),
-        )
-        
-        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-        val_loader = DataLoader(val_dataset, batch_size=batch_size)
-        
-        # Build model
-        output_dim = flux_norm.shape[1]
-        hidden = hidden_layers or [512, 512, 256, 256]
-        
-        print(f"Building network: 3 → {hidden} → {output_dim}")
-        self.model = SEDGeneratorNetwork(
-            output_dim=output_dim,
-            hidden_layers=hidden,
-            dropout=dropout,
-        )
-        
-        optimizer = torch.optim.AdamW(
-            self.model.parameters(),
-            lr=learning_rate,
-            weight_decay=1e-4,
-        )
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer, mode='min', factor=0.5, patience=15, min_lr=1e-6
-        )
-        
-        def masked_mse(y_pred, y_true, mask):
-            sq_err = (y_pred - y_true) ** 2
-            return (sq_err * mask).sum() / (mask.sum() + 1e-8)
-        
-        history = {'train_loss': [], 'val_loss': []}
-        best_val_loss = float('inf')
-        best_state = None
-        patience_counter = 0
-        
-        print(f"\nTraining for up to {epochs} epochs...")
-        print("-" * 60)
-        
-        for epoch in range(epochs):
-            self.model.train()
-            train_losses = []
-            
-            for p_batch, f_batch, m_batch in train_loader:
-                p_batch = p_batch.to(self.device)
-                f_batch = f_batch.to(self.device)
-                m_batch = m_batch.to(self.device)
-                
-                optimizer.zero_grad()
-                pred = self.model(p_batch)
-                loss = masked_mse(pred, f_batch, m_batch)
-                
-                if torch.isnan(loss):
-                    continue
-                
-                loss.backward()
-                torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
-                optimizer.step()
-                train_losses.append(loss.item())
-            
-            self.model.eval()
-            val_losses = []
-            
-            with torch.no_grad():
-                for p_batch, f_batch, m_batch in val_loader:
-                    p_batch = p_batch.to(self.device)
-                    f_batch = f_batch.to(self.device)
-                    m_batch = m_batch.to(self.device)
-                    
-                    pred = self.model(p_batch)
-                    loss = masked_mse(pred, f_batch, m_batch)
-                    if not torch.isnan(loss):
-                        val_losses.append(loss.item())
-            
-            if not train_losses or not val_losses:
-                break
-            
-            train_loss = np.mean(train_losses)
-            val_loss = np.mean(val_losses)
-            
-            history['train_loss'].append(train_loss)
-            history['val_loss'].append(val_loss)
-            
-            scheduler.step(val_loss)
-            
-            if val_loss < best_val_loss:
-                best_val_loss = val_loss
-                best_state = {k: v.cpu().clone() for k, v in self.model.state_dict().items()}
-                patience_counter = 0
-            else:
-                patience_counter += 1
-            
-            if verbose and (epoch + 1) % 10 == 0:
-                lr = optimizer.param_groups[0]['lr']
-                print(f"  Epoch {epoch+1:3d}: train={train_loss:.6f}, val={val_loss:.6f}, lr={lr:.2e}")
-            
-            if patience_counter >= patience:
-                print(f"  Early stopping at epoch {epoch+1}")
-                break
-        
-        if best_state:
-            self.model.load_state_dict(best_state)
-        
-        print("-" * 60)
-        print(f"Training complete. Best val_loss: {best_val_loss:.6f}")
-        
-        self.save(output_path, hidden_layers=hidden, dropout=dropout)
-        
-        print("\nGenerating plots...")
-        self._plot_training(history, output_path)
-        self._plot_predictions(p_val, f_val, m_val, output_path)
-        
-        return history
+        return params_norm, flux_norm
     
     def _plot_training(self, history: Dict, output_path: str):
         """Plot training curves."""
@@ -764,19 +695,11 @@ class SEDGenerator:
         wavelength : array (Angstroms)
         flux : array (erg/s/cm²/Å)
         """
-        import matplotlib.pyplot as plt
-        from mpl_toolkits.mplot3d import Axes3D
-        
-        # Generate the SED
         wl, flux = self.generate(teff, logg, meta, check_bounds=check_bounds)
         
-        # Create output directory
         os.makedirs(output_dir, exist_ok=True)
-        
-        # Base filename
         base_name = f"sed_T{teff:.0f}_g{logg:.2f}_m{meta:+.2f}"
         
-        # Save SED data
         data_file = os.path.join(output_dir, f"{base_name}.txt")
         np.savetxt(
             data_file,
@@ -786,111 +709,24 @@ class SEDGenerator:
         )
         print(f"  Saved SED data: {data_file}")
         
-        # Get parameter ranges from config
+        # Wide defaults for models saved without their training ranges
         ranges = self.config.get('parameter_ranges', {})
         teff_range = ranges.get('teff', [3000, 50000])
         logg_range = ranges.get('logg', [0, 5])
         meta_range = ranges.get('meta', [-5, 1])
-        
-        # Check if outside training range
         outside_range = (
             teff < teff_range[0] or teff > teff_range[1] or
             logg < logg_range[0] or logg > logg_range[1] or
             meta < meta_range[0] or meta > meta_range[1]
         )
         
-        # ===== Plot 1: SED Spectrum =====
-        fig1, ax1 = plt.subplots(figsize=(12, 6))
-        
-        ax1.loglog(wl, flux, 'b-', linewidth=1.5, label='Generated SED')
-        
-        ax1.set_xlabel('Wavelength (Å)', fontsize=12)
-        ax1.set_ylabel('Flux (erg/s/cm²/Å)', fontsize=12)
-        ax1.set_title(f'Generated SED: Teff={teff:.0f} K, logg={logg:.2f}, [M/H]={meta:+.2f}', 
-                     fontsize=14, fontweight='bold')
-        ax1.grid(True, alpha=0.3, which='both')
-        ax1.legend(fontsize=10)
-        
-        # Add annotation if outside range
-        if outside_range:
-            ax1.annotate('⚠ Parameters outside training range', 
-                        xy=(0.02, 0.98), xycoords='axes fraction',
-                        fontsize=10, color='red', va='top',
-                        bbox=dict(boxstyle='round', facecolor='yellow', alpha=0.8))
-        
-        # Add wavelength region labels
-        ax1.axvspan(100, 912, alpha=0.1, color='purple', label='EUV')
-        ax1.axvspan(912, 4000, alpha=0.1, color='blue', label='UV')
-        ax1.axvspan(4000, 7000, alpha=0.1, color='green', label='Optical')
-        ax1.axvspan(7000, 25000, alpha=0.1, color='red', label='NIR')
-        ax1.axvspan(25000, 100000, alpha=0.1, color='darkred', label='MIR')
-        
-        plt.tight_layout()
         spectrum_file = os.path.join(output_dir, f"{base_name}_spectrum.png")
-        fig1.savefig(spectrum_file, dpi=150, bbox_inches='tight')
-        plt.close(fig1)
+        _plot_generated_sed(wl, flux, teff, logg, meta, outside_range, spectrum_file)
         print(f"  Saved SED plot: {spectrum_file}")
         
-        # ===== Plot 2: Parameter Space =====
-        train_params = self.config.get('training_params', [])
-        
-        fig2 = plt.figure(figsize=(14, 5))
-        
-        # 3D scatter plot
-        ax3d = fig2.add_subplot(131, projection='3d')
-        
-        if train_params:
-            train_arr = np.array(train_params)
-            ax3d.scatter(train_arr[:, 0], train_arr[:, 1], train_arr[:, 2],
-                        c='blue', alpha=0.3, s=10, label='Training data')
-        
-        # Plot the generated point
-        ax3d.scatter([teff], [logg], [meta], c='red', s=200, marker='*', 
-                    edgecolors='black', linewidths=1.5, label='Generated', zorder=10)
-        
-        ax3d.set_xlabel('Teff (K)')
-        ax3d.set_ylabel('logg')
-        ax3d.set_zlabel('[M/H]')
-        ax3d.set_title('3D Parameter Space')
-        ax3d.legend(loc='upper left', fontsize=8)
-        
-        # 2D projection: Teff vs logg
-        ax2a = fig2.add_subplot(132)
-        if train_params:
-            ax2a.scatter(train_arr[:, 0], train_arr[:, 1], c='blue', alpha=0.3, s=10, label='Training')
-        ax2a.scatter(teff, logg, c='red', s=200, marker='*', edgecolors='black', 
-                    linewidths=1.5, label='Generated', zorder=10)
-        ax2a.axvline(teff_range[0], color='gray', linestyle='--', alpha=0.5)
-        ax2a.axvline(teff_range[1], color='gray', linestyle='--', alpha=0.5)
-        ax2a.axhline(logg_range[0], color='gray', linestyle='--', alpha=0.5)
-        ax2a.axhline(logg_range[1], color='gray', linestyle='--', alpha=0.5)
-        ax2a.set_xlabel('Teff (K)')
-        ax2a.set_ylabel('logg')
-        ax2a.set_title('Teff vs logg')
-        ax2a.grid(True, alpha=0.3)
-        
-        # 2D projection: Teff vs [M/H]
-        ax2b = fig2.add_subplot(133)
-        if train_params:
-            ax2b.scatter(train_arr[:, 0], train_arr[:, 2], c='blue', alpha=0.3, s=10, label='Training')
-        ax2b.scatter(teff, meta, c='red', s=200, marker='*', edgecolors='black',
-                    linewidths=1.5, label='Generated', zorder=10)
-        ax2b.axvline(teff_range[0], color='gray', linestyle='--', alpha=0.5)
-        ax2b.axvline(teff_range[1], color='gray', linestyle='--', alpha=0.5)
-        ax2b.axhline(meta_range[0], color='gray', linestyle='--', alpha=0.5)
-        ax2b.axhline(meta_range[1], color='gray', linestyle='--', alpha=0.5)
-        ax2b.set_xlabel('Teff (K)')
-        ax2b.set_ylabel('[M/H]')
-        ax2b.set_title('Teff vs [M/H]')
-        ax2b.grid(True, alpha=0.3)
-        
-        fig2.suptitle(f'Parameter Space: Teff={teff:.0f} K, logg={logg:.2f}, [M/H]={meta:+.2f}',
-                     fontsize=12, fontweight='bold')
-        
-        plt.tight_layout()
         params_file = os.path.join(output_dir, f"{base_name}_params.png")
-        fig2.savefig(params_file, dpi=150, bbox_inches='tight')
-        plt.close(fig2)
+        _plot_parameter_space(self.config.get('training_params', []), teff, logg, meta,
+                              teff_range, logg_range, meta_range, params_file)
         print(f"  Saved parameter space plot: {params_file}")
         
         return wl, flux
@@ -921,10 +757,83 @@ class SEDGenerator:
                             'parameter_ranges': config.get('parameter_ranges', {}),
                             'architecture': config.get('architecture', {}),
                         })
-                except Exception:
-                    logger.warning("Could not read ML generator model config in %s", subdir, exc_info=True)
+                except (OSError, ValueError) as exc:
+                    logger.warning("Skipping %s: could not read its %s: %s", subdir, SEDGenerator.CONFIG_FILE, exc)
 
         return models
+
+
+def _plot_generated_sed(wl, flux, teff, logg, meta, outside_range: bool, path: str) -> None:
+    """Plot a generated SED over shaded wavelength regions."""
+    import matplotlib.pyplot as plt
+    
+    fig, ax = plt.subplots(figsize=(12, 6))
+    ax.loglog(wl, flux, 'b-', linewidth=1.5, label='Generated SED')
+    ax.set_xlabel('Wavelength (Å)', fontsize=12)
+    ax.set_ylabel('Flux (erg/s/cm²/Å)', fontsize=12)
+    ax.set_title(f'Generated SED: Teff={teff:.0f} K, logg={logg:.2f}, [M/H]={meta:+.2f}', 
+                 fontsize=14, fontweight='bold')
+    ax.grid(True, alpha=0.3, which='both')
+    ax.legend(fontsize=10)
+    
+    if outside_range:
+        ax.annotate('⚠ Parameters outside training range', 
+                    xy=(0.02, 0.98), xycoords='axes fraction',
+                    fontsize=10, color='red', va='top',
+                    bbox=dict(boxstyle='round', facecolor='yellow', alpha=0.8))
+    
+    ax.axvspan(100, 912, alpha=0.1, color='purple', label='EUV')
+    ax.axvspan(912, 4000, alpha=0.1, color='blue', label='UV')
+    ax.axvspan(4000, 7000, alpha=0.1, color='green', label='Optical')
+    ax.axvspan(7000, 25000, alpha=0.1, color='red', label='NIR')
+    ax.axvspan(25000, 100000, alpha=0.1, color='darkred', label='MIR')
+    
+    plt.tight_layout()
+    fig.savefig(path, dpi=150, bbox_inches='tight')
+    plt.close(fig)
+
+
+def _plot_parameter_space(train_params, teff, logg, meta, teff_range, logg_range, meta_range, path: str) -> None:
+    """Plot the generated point against the training parameters: 3-D, Teff-logg and Teff-[M/H]."""
+    import matplotlib.pyplot as plt
+    
+    train_arr = np.array(train_params) if train_params else None
+    fig = plt.figure(figsize=(14, 5))
+    
+    ax3d = fig.add_subplot(131, projection='3d')
+    if train_arr is not None:
+        ax3d.scatter(train_arr[:, 0], train_arr[:, 1], train_arr[:, 2],
+                     c='blue', alpha=0.3, s=10, label='Training data')
+    ax3d.scatter([teff], [logg], [meta], c='red', s=200, marker='*', 
+                 edgecolors='black', linewidths=1.5, label='Generated', zorder=10)
+    ax3d.set_xlabel('Teff (K)')
+    ax3d.set_ylabel('logg')
+    ax3d.set_zlabel('[M/H]')
+    ax3d.set_title('3D Parameter Space')
+    ax3d.legend(loc='upper left', fontsize=8)
+    
+    projections = [(132, 1, logg, logg_range, 'logg', 'Teff vs logg'),
+                   (133, 2, meta, meta_range, '[M/H]', 'Teff vs [M/H]')]
+    for position, column, value, value_range, ylabel, title in projections:
+        ax = fig.add_subplot(position)
+        if train_arr is not None:
+            ax.scatter(train_arr[:, 0], train_arr[:, column], c='blue', alpha=0.3, s=10, label='Training')
+        ax.scatter(teff, value, c='red', s=200, marker='*', edgecolors='black', 
+                   linewidths=1.5, label='Generated', zorder=10)
+        ax.axvline(teff_range[0], color='gray', linestyle='--', alpha=0.5)
+        ax.axvline(teff_range[1], color='gray', linestyle='--', alpha=0.5)
+        ax.axhline(value_range[0], color='gray', linestyle='--', alpha=0.5)
+        ax.axhline(value_range[1], color='gray', linestyle='--', alpha=0.5)
+        ax.set_xlabel('Teff (K)')
+        ax.set_ylabel(ylabel)
+        ax.set_title(title)
+        ax.grid(True, alpha=0.3)
+    
+    fig.suptitle(f'Parameter Space: Teff={teff:.0f} K, logg={logg:.2f}, [M/H]={meta:+.2f}',
+                 fontsize=12, fontweight='bold')
+    plt.tight_layout()
+    fig.savefig(path, dpi=150, bbox_inches='tight')
+    plt.close(fig)
 
 
 # =============================================================================
@@ -937,8 +846,6 @@ def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> None:
     
     Called from CLI as option 6.
     """
-    import pandas as pd
-    
     os.makedirs(base_dir, exist_ok=True)
     os.makedirs(models_dir, exist_ok=True)
     
@@ -956,206 +863,199 @@ def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> None:
     print("  0) Back")
     
     choice = input("> ").strip()
-    
     if choice == "0":
         return
-    
-    elif choice == "1":
-        # TRAINING
-        print("\n" + "-" * 60)
-        print("TRAIN NEW GENERATOR")
-        print("-" * 60)
-        
-        available = []
-        for name in sorted(os.listdir(base_dir)):
-            path = os.path.join(base_dir, name)
-            if os.path.isdir(path) and os.path.exists(os.path.join(path, "flux_cube.bin")):
-                lookup = os.path.join(path, "lookup_table.csv")
-                n_seds = "?"
-                if os.path.exists(lookup):
-                    try:
-                        df = pd.read_csv(lookup, comment='#')
-                        n_seds = len(df)
-                    except Exception:
-                        pass
-                available.append({'name': name, 'path': path, 'n_seds': n_seds})
-        
-        if not available:
-            print(f"\nNo libraries with flux_cube.bin found in {base_dir}")
-            return
-        
-        print("\nAvailable libraries:")
-        print("-" * 60)
-        for i, lib in enumerate(available, 1):
-            print(f"  {i:2d}) {lib['name']:30s} ({lib['n_seds']} SEDs)")
-        
-        selection = input("\nSelect library: > ").strip()
-        try:
-            selected = available[int(selection) - 1]
-        except (ValueError, IndexError):
-            print("Invalid selection")
-            return
-        
-        print(f"\nTraining on: {selected['name']}")
-        
-        epochs = int(input("  Epochs [200]: ").strip() or "200")
-        batch_size = int(input("  Batch size [64]: ").strip() or "64")
-        
-        default_name = f"sed_generator_{selected['name']}"
-        model_name = input(f"  Model name [{default_name}]: ").strip() or default_name
-        output_path = os.path.join(models_dir, model_name)
-        
-        print(f"\nModel will be saved to: {output_path}/")
-        if input("Start training? [Y/n]: ").strip().lower() not in ('', 'y', 'yes'):
-            return
-        
-        print("\n" + "=" * 60)
-        print("TRAINING...")
-        print("=" * 60)
-        
-        gen = SEDGenerator()
-        gen.train(selected['path'], output_path, epochs=epochs, batch_size=batch_size)
-        
-        print("\n" + "=" * 60)
-        print("TRAINING COMPLETE!")
-        print("=" * 60)
-    
+    if choice == "1":
+        _train_menu(base_dir, models_dir)
     elif choice == "2":
-        # SINGLE GENERATION
-        print("\n" + "-" * 60)
-        print("GENERATE SED")
-        print("-" * 60)
-        
-        generators = SEDGenerator.list_models(models_dir)
-        if not generators:
-            print(f"\nNo generators found in {models_dir}/")
-            return
-        
-        print("\nAvailable generators:")
-        for i, g in enumerate(generators, 1):
-            r = g.get('parameter_ranges', {})
-            teff_r = r.get('teff', [0, 0])
-            print(f"  {i}) {g['name']} (Teff: {teff_r[0]:.0f}-{teff_r[1]:.0f} K)")
-        
-        selection = input("\nSelect generator: > ").strip()
-        try:
-            selected = generators[int(selection) - 1]
-        except (ValueError, IndexError):
-            print("Invalid selection")
-            return
-        
-        gen = SEDGenerator(selected['path'])
-        
-        print("\nEnter stellar parameters:")
-        teff = float(input("  Teff (K): ").strip())
-        logg = float(input("  logg: ").strip())
-        meta = float(input("  [M/H]: ").strip())
-        
-        # Default output directory inside the model folder
-        default_output = os.path.join(selected['path'], "SED")
-        print(f"\nOutput directory [{default_output}]: ", end="")
-        output_dir = input().strip() or default_output
-        
-        print("\nGenerating SED with diagnostics...")
-        wl, flux = gen.generate_with_outputs(teff, logg, meta, output_dir)
-        
-        print(f"\n✓ Generated: {len(wl)} points, {wl.min():.0f}-{wl.max():.0f} Å")
-        print(f"✓ All outputs saved to: {output_dir}/")
-    
+        _generate_menu(models_dir)
     elif choice == "3":
-        # BATCH GENERATION
-        print("\n" + "-" * 60)
-        print("BATCH GENERATE (Parameter Grid)")
-        print("-" * 60)
-        
-        generators = SEDGenerator.list_models(models_dir)
-        if not generators:
-            print(f"\nNo generators found in {models_dir}/")
-            return
-        
-        print("\nAvailable generators:")
-        for i, g in enumerate(generators, 1):
-            print(f"  {i}) {g['name']}")
-        
-        selection = input("\nSelect generator: > ").strip()
-        try:
-            selected = generators[int(selection) - 1]
-        except (ValueError, IndexError):
-            print("Invalid selection")
-            return
-        
-        gen = SEDGenerator(selected['path'])
-        
-        print("\nDefine parameter grid (comma-separated values):")
-        print("  Example: 5000,5500,6000")
-        
-        teff_str = input("  Teff values: ").strip()
-        logg_str = input("  logg values: ").strip()
-        meta_str = input("  [M/H] values: ").strip()
-        
-        teff_vals = [float(x.strip()) for x in teff_str.split(',')]
-        logg_vals = [float(x.strip()) for x in logg_str.split(',')]
-        meta_vals = [float(x.strip()) for x in meta_str.split(',')]
-        
-        n_total = len(teff_vals) * len(logg_vals) * len(meta_vals)
-        print(f"\nWill generate {n_total} SEDs")
-        
-        # Default output directory inside the model folder
-        default_output = os.path.join(selected['path'], "SED", "batch")
-        print(f"Output directory [{default_output}]: ", end="")
-        output_dir = input().strip() or default_output
-        
-        os.makedirs(output_dir, exist_ok=True)
-        
-        print(f"\nGenerating {n_total} SEDs...")
-        from itertools import product
-        
-        count = 0
-        for t, g, m in product(teff_vals, logg_vals, meta_vals):
-            wl, flux = gen.generate(t, g, m, check_bounds=False)
-            
-            fname = f"sed_T{t:.0f}_g{g:.2f}_m{m:+.2f}.txt"
-            np.savetxt(
-                os.path.join(output_dir, fname),
-                np.column_stack([wl, flux]),
-                header=f'wavelength_A flux_erg/s/cm2/A\n# Teff={t} logg={g} [M/H]={m}',
-                fmt='%.6e',
-            )
-                
-            wl, flux = gen.generate_with_outputs(t, g, m, output_dir)
-
-            count += 1
-            if count % 10 == 0:
-                print(f"  Generated {count}/{n_total}...")
-
-        print(f"\n✓ Generated {count} SEDs in {output_dir}/")
-    
+        _batch_menu(models_dir)
     elif choice == "4":
-        # LIST
-        print("\n" + "-" * 60)
-        print("AVAILABLE GENERATORS")
-        print("-" * 60)
-        
-        generators = SEDGenerator.list_models(models_dir)
-        if not generators:
-            print(f"\nNo generators found in {models_dir}/")
-            return
-        
-        for g in generators:
-            r = g.get('parameter_ranges', {})
-            arch = g.get('architecture', {})
-            
-            print(f"\n  {g['name']}")
-            print(f"    Path: {g['path']}")
-            if r:
-                print(f"    Teff: {r.get('teff', [0,0])[0]:.0f} - {r.get('teff', [0,0])[1]:.0f} K")
-                print(f"    logg: {r.get('logg', [0,0])[0]:.2f} - {r.get('logg', [0,0])[1]:.2f}")
-                print(f"    [M/H]: {r.get('meta', [0,0])[0]:.2f} - {r.get('meta', [0,0])[1]:.2f}")
-            if arch:
-                print(f"    Architecture: 3 → {arch.get('hidden_layers', [])} → {arch.get('output_dim', '?')}")
-    
+        _list_menu(models_dir)
     else:
         print("Invalid choice")
+
+
+def _section(title: str) -> None:
+    print("\n" + "-" * 60)
+    print(title)
+    print("-" * 60)
+
+
+def _banner(title: str) -> None:
+    print("\n" + "=" * 60)
+    print(title)
+    print("=" * 60)
+
+
+def _menu_choice(items: List[Dict[str, Any]], prompt: str) -> Optional[Dict[str, Any]]:
+    """Read a 1-based menu number; print "Invalid selection" and return None for anything else."""
+    selection = input(prompt).strip()
+    try:
+        idx = int(selection) - 1
+    except ValueError:
+        print("Invalid selection")
+        return None
+    if idx < 0 or idx >= len(items):
+        print("Invalid selection")
+        return None
+    return items[idx]
+
+
+def _training_libraries(base_dir: str) -> List[Dict[str, Any]]:
+    """Libraries under base_dir with a flux_cube.bin, and their SED counts ("?" if unknown)."""
+    import pandas as pd
+    
+    libraries = []
+    for name in sorted(os.listdir(base_dir)):
+        path = os.path.join(base_dir, name)
+        if not os.path.isdir(path) or not os.path.exists(os.path.join(path, "flux_cube.bin")):
+            continue
+        
+        lookup = os.path.join(path, "lookup_table.csv")
+        n_seds = "?"
+        if os.path.exists(lookup):
+            try:
+                n_seds = len(pd.read_csv(lookup, comment='#'))
+            except (OSError, ValueError) as exc:
+                logger.warning("Could not count the SEDs in %s: %s", lookup, exc)
+        libraries.append({'name': name, 'path': path, 'n_seds': n_seds})
+    return libraries
+
+
+def _choose_generator(models_dir: str, show_teff_range: bool) -> Optional[Dict[str, Any]]:
+    """List the generators in models_dir and read the user's choice."""
+    generators = SEDGenerator.list_models(models_dir)
+    if not generators:
+        print(f"\nNo generators found in {models_dir}/")
+        return None
+    
+    print("\nAvailable generators:")
+    for i, g in enumerate(generators, 1):
+        if show_teff_range:
+            teff_r = g.get('parameter_ranges', {}).get('teff', [0, 0])
+            print(f"  {i}) {g['name']} (Teff: {teff_r[0]:.0f}-{teff_r[1]:.0f} K)")
+        else:
+            print(f"  {i}) {g['name']}")
+    return _menu_choice(generators, "\nSelect generator: > ")
+
+
+def _ask_output_dir(default: str) -> str:
+    print(f"Output directory [{default}]: ", end="")
+    return input().strip() or default
+
+
+def _train_menu(base_dir: str, models_dir: str) -> None:
+    _section("TRAIN NEW GENERATOR")
+    
+    libraries = _training_libraries(base_dir)
+    if not libraries:
+        print(f"\nNo libraries with flux_cube.bin found in {base_dir}")
+        return
+    
+    print("\nAvailable libraries:")
+    print("-" * 60)
+    for i, lib in enumerate(libraries, 1):
+        print(f"  {i:2d}) {lib['name']:30s} ({lib['n_seds']} SEDs)")
+    
+    selected = _menu_choice(libraries, "\nSelect library: > ")
+    if selected is None:
+        return
+    print(f"\nTraining on: {selected['name']}")
+    
+    epochs = int(input("  Epochs [200]: ").strip() or "200")
+    batch_size = int(input("  Batch size [64]: ").strip() or "64")
+    
+    default_name = f"sed_generator_{selected['name']}"
+    model_name = input(f"  Model name [{default_name}]: ").strip() or default_name
+    output_path = os.path.join(models_dir, model_name)
+    
+    print(f"\nModel will be saved to: {output_path}/")
+    if input("Start training? [Y/n]: ").strip().lower() not in ('', 'y', 'yes'):
+        return
+    
+    _banner("TRAINING...")
+    SEDGenerator().train(selected['path'], output_path, epochs=epochs, batch_size=batch_size)
+    _banner("TRAINING COMPLETE!")
+
+
+def _generate_menu(models_dir: str) -> None:
+    _section("GENERATE SED")
+    
+    selected = _choose_generator(models_dir, show_teff_range=True)
+    if selected is None:
+        return
+    gen = SEDGenerator(selected['path'])
+    
+    print("\nEnter stellar parameters:")
+    teff = float(input("  Teff (K): ").strip())
+    logg = float(input("  logg: ").strip())
+    meta = float(input("  [M/H]: ").strip())
+    
+    print()
+    output_dir = _ask_output_dir(os.path.join(selected['path'], "SED"))
+    
+    print("\nGenerating SED with diagnostics...")
+    wl, flux = gen.generate_with_outputs(teff, logg, meta, output_dir)
+    
+    print(f"\n✓ Generated: {len(wl)} points, {wl.min():.0f}-{wl.max():.0f} Å")
+    print(f"✓ All outputs saved to: {output_dir}/")
+
+
+def _batch_menu(models_dir: str) -> None:
+    from itertools import product
+    
+    _section("BATCH GENERATE (Parameter Grid)")
+    
+    selected = _choose_generator(models_dir, show_teff_range=False)
+    if selected is None:
+        return
+    gen = SEDGenerator(selected['path'])
+    
+    print("\nDefine parameter grid (comma-separated values):")
+    print("  Example: 5000,5500,6000")
+    teff_vals = [float(x.strip()) for x in input("  Teff values: ").strip().split(',')]
+    logg_vals = [float(x.strip()) for x in input("  logg values: ").strip().split(',')]
+    meta_vals = [float(x.strip()) for x in input("  [M/H] values: ").strip().split(',')]
+    
+    n_total = len(teff_vals) * len(logg_vals) * len(meta_vals)
+    print(f"\nWill generate {n_total} SEDs")
+    
+    output_dir = _ask_output_dir(os.path.join(selected['path'], "SED", "batch"))
+    os.makedirs(output_dir, exist_ok=True)
+    
+    print(f"\nGenerating {n_total} SEDs...")
+    count = 0
+    for t, g, m in product(teff_vals, logg_vals, meta_vals):
+        gen.generate_with_outputs(t, g, m, output_dir)
+        count += 1
+        if count % 10 == 0:
+            print(f"  Generated {count}/{n_total}...")
+    
+    print(f"\n✓ Generated {count} SEDs in {output_dir}/")
+
+
+def _list_menu(models_dir: str) -> None:
+    _section("AVAILABLE GENERATORS")
+    
+    generators = SEDGenerator.list_models(models_dir)
+    if not generators:
+        print(f"\nNo generators found in {models_dir}/")
+        return
+    
+    for g in generators:
+        r = g.get('parameter_ranges', {})
+        arch = g.get('architecture', {})
+        
+        print(f"\n  {g['name']}")
+        print(f"    Path: {g['path']}")
+        if r:
+            print(f"    Teff: {r.get('teff', [0,0])[0]:.0f} - {r.get('teff', [0,0])[1]:.0f} K")
+            print(f"    logg: {r.get('logg', [0,0])[0]:.2f} - {r.get('logg', [0,0])[1]:.2f}")
+            print(f"    [M/H]: {r.get('meta', [0,0])[0]:.2f} - {r.get('meta', [0,0])[1]:.2f}")
+        if arch:
+            print(f"    Architecture: 3 → {arch.get('hidden_layers', [])} → {arch.get('output_dim', '?')}")
 
 
 # =============================================================================

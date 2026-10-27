@@ -2,9 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import optuna
-import numpy as np
 from pathlib import Path
-from typing import List, Dict, Any, Optional, Tuple
 from .ml_utils import get_device, FluxCubeDataset, create_dataloaders
 from tqdm import tqdm
 

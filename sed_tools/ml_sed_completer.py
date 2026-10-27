@@ -37,6 +37,7 @@ import json
 import logging
 import os
 import struct
+from collections import Counter
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -51,6 +52,32 @@ from ._constants import H as PLANCK_H, C as SPEED_C, K as BOLTZMANN_K, SIGMA
 DEFAULT_WL_MIN = 100.0      # Angstroms
 DEFAULT_WL_MAX = 100000.0   # Angstroms
 DEFAULT_WL_POINTS = 1000
+
+
+def _warn_dropped(dropped: Counter, n_sampled: int, library_path: str) -> None:
+    """Say how many sampled spectra were left out of the training set, and why."""
+    if not dropped:
+        return
+    reasons = ", ".join(f"{count} with {reason}" for reason, count in dropped.items())
+    logger.warning("Training data from %s: dropped %d of %d sampled spectra (%s)",
+                   library_path, sum(dropped.values()), n_sampled, reasons)
+
+
+def _blend_with_blackbody(wl_out, log_dist, wl_pred, pred, bb_flux):
+    """
+    Blend the network prediction into the black body away from the data edge.
+    
+    ``log_dist`` is each output point's distance from the edge of the input
+    data in decades of wavelength. The prediction's weight falls as
+    exp(-log_dist / 0.5): the network is trusted for about half a decade (a
+    factor of ~3), then the black body takes over. Log wavelength because
+    stellar spectra behave more uniformly there.
+    """
+    blend_decades = 0.5
+    pred_interp = np.interp(wl_out, wl_pred, pred, left=pred[0], right=pred[-1])
+    weight_ml = np.exp(-log_dist / blend_decades)
+    weight_ml = np.clip(weight_ml, 0, 1)
+    return weight_ml * pred_interp + (1 - weight_ml) * bb_flux
 
 
 def planck_function(wavelength_angstrom: np.ndarray, temperature: float) -> np.ndarray:
@@ -282,12 +309,9 @@ class SEDCompleter:
         lookup_path = os.path.join(library_path, "lookup_table.csv")
         if not os.path.exists(lookup_path):
             return False
-        
-        try:
-            df = pd.read_csv(lookup_path, comment='#', nrows=5)
-            return 'source_model' in df.columns or 'original_file' in df.columns
-        except Exception:
-            return False
+
+        df = pd.read_csv(lookup_path, comment='#', nrows=5)
+        return 'source_model' in df.columns or 'original_file' in df.columns
     
     def _build_coverage_map(
         self,
@@ -309,22 +333,18 @@ class SEDCompleter:
         if not os.path.exists(lookup_path):
             return coverage
         
-        try:
-            df = pd.read_csv(lookup_path, comment='#')
-            
-            for _, row in df.iterrows():
-                t = float(row.get('teff', row.get('Teff', 0)))
-                g = float(row.get('logg', row.get('log_g', 0)))
-                m = float(row.get('meta', row.get('metallicity', row.get('[M/H]', 0))))
-                
-                # Get wavelength range from lookup if available
-                wl_min = float(row.get('wl_min', row.get('wavelength_min', 0)))
-                wl_max = float(row.get('wl_max', row.get('wavelength_max', 1e6)))
-                
-                if wl_min > 0 and wl_max > wl_min:
-                    coverage[(t, g, m)] = (wl_min, wl_max)
-        except Exception:
-            logger.debug("Could not build coverage map from %s", lookup_path, exc_info=True)
+        df = pd.read_csv(lookup_path, comment='#')
+        for _, row in df.iterrows():
+            t = float(row.get('teff', row.get('Teff', 0)))
+            g = float(row.get('logg', row.get('log_g', 0)))
+            m = float(row.get('meta', row.get('metallicity', row.get('[M/H]', 0))))
+
+            # Get wavelength range from lookup if available
+            wl_min = float(row.get('wl_min', row.get('wavelength_min', 0)))
+            wl_max = float(row.get('wl_max', row.get('wavelength_max', 1e6)))
+
+            if wl_min > 0 and wl_max > wl_min:
+                coverage[(t, g, m)] = (wl_min, wl_max)
 
         return coverage
     
@@ -360,16 +380,13 @@ class SEDCompleter:
         print(f"  Grid: {nt} Teff × {nl} logg × {nm} [M/H] = {total_seds} total SEDs")
         print(f"  Sampling {n_samples} SEDs for training")
         
-        # Create wavelength grid
         self.wavelength_grid = self._create_wavelength_grid()
         n_wl = len(self.wavelength_grid)
         
-        # Fixed input size for network (40% of grid - but position varies)
-        known_width = n_wl * 2 // 5  # 400 points for 1000-point grid
-        
-        # Store for architecture (fixed size needed for network input)
+        # The network input is a fixed 40% of the grid. Training moves that
+        # window around; inference uses the central one stored here.
+        known_width = n_wl * 2 // 5
         self._known_width = known_width
-        # These will be set per-sample during training, but we need defaults for inference
         self._known_start = (n_wl - known_width) // 2
         self._known_end = self._known_start + known_width
         
@@ -377,91 +394,30 @@ class SEDCompleter:
         y_list = []
         params_list = []
         masks_list = []
-        known_regions = []  # Store (start, end) for each sample
+        dropped = Counter()
         
-        # Get original wavelength coverage
-        wl_orig_min = wavelengths.min()
-        wl_orig_max = wavelengths.max()
-        
-        # Random sampling
         indices = np.random.permutation(total_seds)[:n_samples]
-        
         for idx in indices:
             i_t = idx // (nl * nm)
             remainder = idx % (nl * nm)
             i_l = remainder // nm
             i_m = remainder % nm
             
-            # Get flux from cube (shape: [nw, nm, nl, nt])
-            flux = flux_cube[:, i_m, i_l, i_t]
-            
-            # Skip spectra with invalid values in original data
-            valid_original = (flux > 0) & np.isfinite(flux)
-            if valid_original.sum() < 100:
+            # The cube is stored as [nw, nm, nl, nt]
+            reason, sample = self._training_sample(flux_cube[:, i_m, i_l, i_t], wavelengths, known_width)
+            if reason:
+                dropped[reason] += 1
                 continue
             
-            # Interpolate to common grid (use NaN for out-of-range)
-            flux_interp = np.interp(
-                self.wavelength_grid, 
-                wavelengths, 
-                flux,
-                left=np.nan, 
-                right=np.nan
-            )
-            
-            # Build validity mask based on original wavelength coverage
-            valid_mask = (
-                (self.wavelength_grid >= wl_orig_min) & 
-                (self.wavelength_grid <= wl_orig_max) &
-                np.isfinite(flux_interp) &
-                (flux_interp > 0)
-            )
-            
-            # Randomize known region position
-            # Ensure we stay within valid data regions
-            valid_indices = np.where(valid_mask)[0]
-            if len(valid_indices) < known_width:
-                continue
-            
-            # Random start position within valid range
-            max_start = valid_indices[-1] - known_width
-            min_start = valid_indices[0]
-            if max_start <= min_start:
-                continue
-            
-            known_start = np.random.randint(min_start, max_start)
-            known_end = known_start + known_width
-            
-            # Check known region has enough valid data
-            known_valid = valid_mask[known_start:known_end].sum()
-            if known_valid < known_width * 0.8:  # Need 80% valid in known region
-                continue
-            
-            # Extension mask: everything outside known region that has valid data
-            ext_mask = valid_mask.copy()
-            ext_mask[known_start:known_end] = False
-            
-            if ext_mask.sum() < 50:  # Need at least 50 valid extension points
-                continue
-            
-            # Extract known region
-            X_known = flux_interp[known_start:known_end].copy()
-            
-            # Full spectrum as target (network learns to predict everything, masked loss handles rest)
-            y_full = flux_interp.copy()
-            
-            # Replace NaN/invalid with small positive value (will be masked during training)
-            X_known = np.where(np.isfinite(X_known) & (X_known > 0), X_known, 1e-20)
-            y_full = np.where(np.isfinite(y_full) & (y_full > 0), y_full, 1e-20)
-            
+            X_known, y_full, ext_mask = sample
             X_list.append(X_known)
             y_list.append(y_full)
             params_list.append([teff[i_t], logg[i_l], meta[i_m]])
-            masks_list.append(ext_mask.astype(np.float32))
-            known_regions.append((known_start, known_end))
+            masks_list.append(ext_mask)
         
+        _warn_dropped(dropped, len(indices), library_path)
         if len(X_list) == 0:
-            raise ValueError("No valid training samples found")
+            raise ValueError(f"No valid training samples found in {library_path}")
         
         print(f"  Prepared {len(X_list)} valid samples")
         print(f"  Known region width: {known_width} points (randomized position)")
@@ -471,14 +427,63 @@ class SEDCompleter:
         params = np.array(params_list, dtype=np.float32)
         masks = np.array(masks_list, dtype=np.float32)
         
-        # Store known regions for potential debugging
-        self._training_known_regions = known_regions
-        
-        # Report coverage statistics
         avg_coverage = masks.mean() * 100
         print(f"  Average extension coverage: {avg_coverage:.1f}%")
         
         return X, y, params, masks
+
+    def _training_sample(
+        self,
+        flux: np.ndarray,
+        wavelengths: np.ndarray,
+        known_width: int,
+    ) -> Tuple[Optional[str], Optional[Tuple[np.ndarray, np.ndarray, np.ndarray]]]:
+        """
+        Cut one training sample from a grid spectrum at a random input window.
+        
+        Returns ``(None, (X_known, y_full, ext_mask))``, or ``(reason, None)``
+        when the spectrum cannot be used.
+        """
+        valid_original = (flux > 0) & np.isfinite(flux)
+        if valid_original.sum() < 100:
+            return "fewer than 100 positive, finite flux points", None
+        
+        # Resample to the model grid; NaN outside the original coverage
+        flux_interp = np.interp(self.wavelength_grid, wavelengths, flux, left=np.nan, right=np.nan)
+        valid_mask = (
+            (self.wavelength_grid >= wavelengths.min()) &
+            (self.wavelength_grid <= wavelengths.max()) &
+            np.isfinite(flux_interp) &
+            (flux_interp > 0)
+        )
+        
+        # Place the input window at random inside the valid data
+        too_narrow = f"coverage narrower than the {known_width}-point input window"
+        valid_indices = np.where(valid_mask)[0]
+        if len(valid_indices) < known_width:
+            return too_narrow, None
+        max_start = valid_indices[-1] - known_width
+        min_start = valid_indices[0]
+        if max_start <= min_start:
+            return too_narrow, None
+        known_start = np.random.randint(min_start, max_start)
+        known_end = known_start + known_width
+        
+        if valid_mask[known_start:known_end].sum() < known_width * 0.8:
+            return "input window less than 80% valid", None
+        
+        # The loss covers every valid point outside the input window
+        ext_mask = valid_mask.copy()
+        ext_mask[known_start:known_end] = False
+        if ext_mask.sum() < 50:
+            return "fewer than 50 valid points outside the input window", None
+        
+        # The target is the whole spectrum. Invalid points get a small positive
+        # flux; the masked loss ignores them.
+        X_known = flux_interp[known_start:known_end]
+        X_known = np.where(np.isfinite(X_known) & (X_known > 0), X_known, 1e-20)
+        y_full = np.where(np.isfinite(flux_interp) & (flux_interp > 0), flux_interp, 1e-20)
+        return None, (X_known, y_full, ext_mask.astype(np.float32))
     
     def train(
         self,
@@ -525,32 +530,76 @@ class SEDCompleter:
             Training history with 'train_loss' and 'val_loss'
         """
         import torch
-        import torch.nn as nn
-        from torch.utils.data import DataLoader, TensorDataset
         from sklearn.model_selection import train_test_split
+        from .ml_utils import data_loaders, fit
         
-        # Prepare data (now always returns masks)
         X, y, params, masks = self._prepare_training_data(library_path, max_samples)
+        X_combined, y_norm, masks = self._normalise_training_data(X, y, params, masks, library_path)
         
-        # Log-scale flux - only on valid (positive) values
+        X_train, X_val, y_train, y_val, m_train, m_val = train_test_split(
+            X_combined, y_norm, masks, test_size=0.2, random_state=42
+        )
+        train_loader, val_loader = data_loaders((X_train, y_train, m_train), (X_val, y_val, m_val), batch_size)
+        
+        input_dim = X.shape[1]
+        output_dim = y_norm.shape[1]
+        print(f"Building network: {input_dim} + 3 -> {hidden_layers or [256, 128, 64]} -> {output_dim}")
+        self.model = SEDCompleterNetwork(
+            input_dim=input_dim,
+            output_dim=output_dim,
+            hidden_layers=hidden_layers,
+            dropout=dropout,
+        )
+        
+        optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate, weight_decay=1e-5)
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer, mode='min', factor=0.5, patience=10, min_lr=1e-6
+        )
+        history, best_val_loss = fit(
+            self.model, train_loader, val_loader, optimizer, scheduler,
+            epochs=epochs, patience=patience, verbose=verbose, device=self.device,
+            progress="  Epoch {epoch:3d}: train_loss={train:.6f}, val_loss={val:.6f}, lr={lr:.2e}",
+        )
+        if not history['train_loss']:
+            raise RuntimeError(
+                f"Training on {library_path} produced no usable epoch (every training or "
+                f"validation batch had a NaN loss); nothing was saved to {output_path}"
+            )
+        
+        print("-" * 60)
+        print(f"Training complete. Best val_loss: {best_val_loss:.6f}")
+        
+        self.save(output_path, hidden_layers=hidden_layers, dropout=dropout)
+        
+        print("\nGenerating training plots...")
+        self._plot_training_results(history, output_path)
+        self._plot_prediction_examples(X_val, y_val, output_path, masks=m_val)
+        
+        return history
+
+    def _normalise_training_data(
+        self,
+        X: np.ndarray,
+        y: np.ndarray,
+        params: np.ndarray,
+        masks: np.ndarray,
+        library_path: str,
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Fit ``self.scaler_params`` and return the network inputs and targets.
+        
+        Fluxes are scaled in log10, using valid points only. Returns
+        ``(X_combined, y_norm, masks)`` as float32, where ``X_combined`` is
+        the normalised input window followed by the three parameters.
+        """
         print("Normalizing data...")
         
-        # Use a floor value that won't create extreme outliers
-        FLUX_FLOOR = 1e-20
-        X_safe = np.maximum(X, FLUX_FLOOR)
-        y_safe = np.maximum(y, FLUX_FLOOR)
+        # Floor at 1e-20 so log10 has no -inf; the floor values are excluded below
+        X_log = np.log10(np.maximum(X, 1e-20))
+        y_log = np.log10(np.maximum(y, 1e-20))
         
-        X_log = np.log10(X_safe)
-        y_log = np.log10(y_safe)
-        
-        # Compute scaler parameters only from VALID data points
-        # For X (known region), all values should be valid
-        x_valid = X_log[X_log > -25]  # Exclude floor values
-        
-        # For y (extension), use mask to select valid values
-        y_valid_mask = (masks > 0.5) & (y_log > -25)
-        y_valid = y_log[y_valid_mask]
-        
+        x_valid = X_log[X_log > -25]
+        y_valid = y_log[(masks > 0.5) & (y_log > -25)]
         if len(x_valid) == 0 or len(y_valid) == 0:
             raise ValueError("No valid data points for normalization")
         
@@ -570,11 +619,10 @@ class SEDCompleter:
         print(f"  X (known) log10 range: [{x_valid.min():.2f}, {x_valid.max():.2f}]")
         print(f"  y (ext) log10 range: [{y_valid.min():.2f}, {y_valid.max():.2f}]")
         
-        # Normalize
         X_norm = (X_log - self.scaler_params['flux_log_mean']) / self.scaler_params['flux_log_std']
         y_norm = (y_log - self.scaler_params['ext_log_mean']) / self.scaler_params['ext_log_std']
         
-        # Replace invalid normalized values with 0 (will be masked anyway)
+        # Invalid points are masked out of the loss, so any finite value will do
         X_norm = np.where(np.isfinite(X_norm), X_norm, 0.0)
         y_norm = np.where(np.isfinite(y_norm), y_norm, 0.0)
         
@@ -584,7 +632,6 @@ class SEDCompleter:
             (params[:, 2] - self.scaler_params['meta_mean']) / self.scaler_params['meta_std'],
         ])
         
-        # Combine input features
         X_combined = np.concatenate([X_norm, params_norm], axis=1).astype(np.float32)
         y_norm = y_norm.astype(np.float32)
         masks = masks.astype(np.float32)
@@ -593,156 +640,12 @@ class SEDCompleter:
         print(f"  Output shape: {y_norm.shape}")
         print(f"  Masks shape: {masks.shape}")
         
-        # Verify no NaN/inf in data
-        assert np.all(np.isfinite(X_combined)), "NaN/inf in X_combined"
-        assert np.all(np.isfinite(y_norm)), "NaN/inf in y_norm"
+        # The fluxes were made finite above; non-finite grid parameters were not
+        if not np.all(np.isfinite(X_combined)):
+            raise ValueError(f"Non-finite Teff, logg or [M/H] in the training grid {library_path}")
         
-        # Train/val split (include masks)
-        X_train, X_val, y_train, y_val, m_train, m_val = train_test_split(
-            X_combined, y_norm, masks, test_size=0.2, random_state=42
-        )
-        
-        # Create PyTorch datasets (include masks)
-        train_dataset = TensorDataset(
-            torch.from_numpy(X_train),
-            torch.from_numpy(y_train),
-            torch.from_numpy(m_train),
-        )
-        val_dataset = TensorDataset(
-            torch.from_numpy(X_val),
-            torch.from_numpy(y_val),
-            torch.from_numpy(m_val),
-        )
-        
-        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-        val_loader = DataLoader(val_dataset, batch_size=batch_size)
-        
-        # Build model
-        input_dim = X_norm.shape[1]
-        output_dim = y_norm.shape[1]
-        
-        print(f"Building network: {input_dim} + 3 -> {hidden_layers or [256, 128, 64]} -> {output_dim}")
-        self.model = SEDCompleterNetwork(
-            input_dim=input_dim,
-            output_dim=output_dim,
-            hidden_layers=hidden_layers,
-            dropout=dropout,
-        )
-        
-        # Optimizer and scheduler
-        optimizer = torch.optim.Adam(
-            self.model.parameters(),
-            lr=learning_rate,
-            weight_decay=1e-5,
-        )
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer, mode='min', factor=0.5, patience=10, min_lr=1e-6
-        )
-        
-        # Masked MSE loss function
-        def masked_mse_loss(y_pred, y_true, mask):
-            """MSE loss that only considers valid (masked) regions."""
-            # mask: 1 = valid, 0 = invalid
-            sq_error = (y_pred - y_true) ** 2
-            masked_error = sq_error * mask
-            # Average over valid points only
-            n_valid = mask.sum() + 1e-8  # Avoid division by zero
-            return masked_error.sum() / n_valid
-        
-        # Training loop
-        history = {'train_loss': [], 'val_loss': []}
-        best_val_loss = float('inf')
-        best_state = None
-        patience_counter = 0
-        
-        print(f"\nTraining for up to {epochs} epochs...")
-        print("-" * 60)
-        
-        for epoch in range(epochs):
-            # Training
-            self.model.train()
-            train_losses = []
-            
-            for X_batch, y_batch, m_batch in train_loader:
-                X_batch = X_batch.to(self.device)
-                y_batch = y_batch.to(self.device)
-                m_batch = m_batch.to(self.device)
-                
-                optimizer.zero_grad()
-                y_pred = self.model(X_batch)
-                loss = masked_mse_loss(y_pred, y_batch, m_batch)
-                
-                if torch.isnan(loss):
-                    print(f"  Warning: NaN loss at epoch {epoch+1}, skipping batch")
-                    continue
-                
-                loss.backward()
-                torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
-                optimizer.step()
-                
-                train_losses.append(loss.item())
-            
-            # Validation
-            self.model.eval()
-            val_losses = []
-            
-            with torch.no_grad():
-                for X_batch, y_batch, m_batch in val_loader:
-                    X_batch = X_batch.to(self.device)
-                    y_batch = y_batch.to(self.device)
-                    m_batch = m_batch.to(self.device)
-                    
-                    y_pred = self.model(X_batch)
-                    loss = masked_mse_loss(y_pred, y_batch, m_batch)
-                    
-                    if not torch.isnan(loss):
-                        val_losses.append(loss.item())
-            
-            if not train_losses or not val_losses:
-                print(f"  Epoch {epoch+1}: No valid batches, stopping")
-                break
-            
-            train_loss = np.mean(train_losses)
-            val_loss = np.mean(val_losses)
-            
-            history['train_loss'].append(train_loss)
-            history['val_loss'].append(val_loss)
-            
-            scheduler.step(val_loss)
-            
-            # Early stopping check
-            if val_loss < best_val_loss:
-                best_val_loss = val_loss
-                best_state = {k: v.cpu().clone() for k, v in self.model.state_dict().items()}
-                patience_counter = 0
-            else:
-                patience_counter += 1
-            
-            if verbose and (epoch + 1) % 10 == 0:
-                lr = optimizer.param_groups[0]['lr']
-                print(f"  Epoch {epoch+1:3d}: train_loss={train_loss:.6f}, val_loss={val_loss:.6f}, lr={lr:.2e}")
-            
-            if patience_counter >= patience:
-                print(f"  Early stopping at epoch {epoch+1}")
-                break
-        
-        # Restore best model
-        if best_state is not None:
-            self.model.load_state_dict(best_state)
-        
-        print("-" * 60)
-        print(f"Training complete. Best val_loss: {best_val_loss:.6f}")
-        
-        # Save model
-        self.save(output_path, hidden_layers=hidden_layers, dropout=dropout)
-        
-        # Generate plots
-        print("\nGenerating training plots...")
-        self._plot_training_results(history, output_path)
-        self._plot_prediction_examples(X_val, y_val, output_path, masks=m_val)
-        
-        return history
-    
+        return X_combined, y_norm, masks
+
     def _plot_training_results(self, history: Dict[str, List[float]], output_path: str):
         """Plot and save training loss curves."""
         import matplotlib.pyplot as plt
@@ -845,79 +748,72 @@ class SEDCompleter:
         fig.savefig(plot_path, dpi=150, bbox_inches='tight')
         plt.close(fig)
         print(f"  Saved: {plot_path}")
-    
-
 
     def plot_inference_examples(
-            self,
-            examples: List[Tuple[str, np.ndarray, np.ndarray, np.ndarray, np.ndarray]],
-            output_dir: str,
-            filename: str = "inference_examples.png"
-        ):
-            """
-            Plot examples of extended SEDs from inference.
+        self,
+        examples: List[Tuple[str, np.ndarray, np.ndarray, np.ndarray, np.ndarray]],
+        output_dir: str,
+        filename: str = "inference_examples.png",
+    ):
+        """
+        Plot examples of extended SEDs from inference.
+        
+        Parameters
+        ----------
+        examples : list of tuples
+            (filename, wl_orig, flux_orig, wl_ext, flux_ext)
+        output_dir : str
+            Directory to save plot
+        filename : str
+            Name of the output file
+        """
+        import matplotlib.pyplot as plt
+        
+        n = len(examples)
+        if n == 0:
+            return
+        
+        # Determine grid size (max 3 columns)
+        cols = 3
+        rows = (n + cols - 1) // cols
+        
+        fig, axes = plt.subplots(rows, cols, figsize=(5*cols, 4*rows))
+        
+        # Handle single subplot case
+        if n == 1:
+            axes = np.array([axes])
+        
+        # Flatten for easy indexing if multiple rows
+        ax_flat = axes.flatten()
+        
+        for i, (fname, wl_in, flux_in, wl_out, flux_out) in enumerate(examples):
+            ax = ax_flat[i]
             
-            Parameters
-            ----------
-            examples : list of tuples
-                (filename, wl_orig, flux_orig, wl_ext, flux_ext)
-            output_dir : str
-                Directory to save plot
-            filename : str
-                Name of the output file
-            """
-            import matplotlib.pyplot as plt
-            import os
+            # Plot extended (background, red)
+            ax.loglog(wl_out, flux_out, 'r-', alpha=0.6, linewidth=2, label='Extended')
             
-            n = len(examples)
-            if n == 0:
-                return
+            # Plot original (foreground, blue)
+            ax.loglog(wl_in, flux_in, 'b-', alpha=0.8, linewidth=1.5, label='Original')
             
-            # Determine grid size (max 3 columns)
-            cols = 3
-            rows = (n + cols - 1) // cols
+            ax.set_title(fname, fontsize=10, pad=5)
+            ax.set_xlabel('Wavelength (Å)', fontsize=8)
+            ax.set_ylabel('Flux', fontsize=8)
+            ax.tick_params(labelsize=8)
+            ax.grid(True, alpha=0.3, which='both')
             
-            fig, axes = plt.subplots(rows, cols, figsize=(5*cols, 4*rows))
+            # Only add legend to the first plot to reduce clutter
+            if i == 0:
+                ax.legend(fontsize=8, loc='best')
+        
+        # Hide empty subplots
+        for j in range(i+1, len(ax_flat)):
+            ax_flat[j].axis('off')
             
-            # Handle single subplot case
-            if n == 1:
-                axes = np.array([axes])
-            
-            # Flatten for easy indexing if multiple rows
-            ax_flat = axes.flatten()
-            
-            for i, (fname, wl_in, flux_in, wl_out, flux_out) in enumerate(examples):
-                ax = ax_flat[i]
-                
-                # Plot extended (background, red)
-                ax.loglog(wl_out, flux_out, 'r-', alpha=0.6, linewidth=2, label='Extended')
-                
-                # Plot original (foreground, blue)
-                ax.loglog(wl_in, flux_in, 'b-', alpha=0.8, linewidth=1.5, label='Original')
-                
-                ax.set_title(fname, fontsize=10, pad=5)
-                ax.set_xlabel('Wavelength (Å)', fontsize=8)
-                ax.set_ylabel('Flux', fontsize=8)
-                ax.tick_params(labelsize=8)
-                ax.grid(True, alpha=0.3, which='both')
-                
-                # Only add legend to the first plot to reduce clutter
-                if i == 0:
-                    ax.legend(fontsize=8, loc='best')
-            
-            # Hide empty subplots
-            for j in range(i+1, len(ax_flat)):
-                ax_flat[j].axis('off')
-                
-            plt.tight_layout()
-            out_path = os.path.join(output_dir, filename)
-            fig.savefig(out_path, dpi=150, bbox_inches='tight')
-            plt.close(fig)
-            print(f"  Saved inference plot: {out_path}")
-
-
-
-
+        plt.tight_layout()
+        out_path = os.path.join(output_dir, filename)
+        fig.savefig(out_path, dpi=150, bbox_inches='tight')
+        plt.close(fig)
+        print(f"  Saved inference plot: {out_path}")
 
     def save(
         self,
@@ -1072,17 +968,12 @@ class SEDCompleter:
         flux_extended : np.ndarray
             Extended flux array
         """
-        import torch
-        
         if self.model is None:
             raise RuntimeError("No model loaded. Train or load a model first.")
         
         self.model.eval()
         
-        # Create output wavelength grid
         full_grid = self._create_wavelength_grid(extension_range[0], extension_range[1])
-        
-        # Check what needs extension
         wl_min, wl_max = wavelength.min(), wavelength.max()
         need_low = full_grid < wl_min
         need_high = full_grid > wl_max
@@ -1091,80 +982,29 @@ class SEDCompleter:
             print("SED already covers requested range")
             return wavelength, flux
         
-        # Calculate black body baseline
+        # The black body is the baseline wherever the prediction fades out
         bb_flux = planck_function(full_grid, teff)
-        
-        # Initialize output with black body
         flux_extended = bb_flux.copy()
         
-        # Resample input to training grid
-        flux_safe = np.maximum(flux, 1e-20)
-        flux_log = np.log10(flux_safe)
-        flux_on_grid = np.interp(self.wavelength_grid, wavelength, 10**flux_log, left=1e-20, right=1e-20)
-        
-        # Use stored region indices
+        y_pred_flux = self._predict_grid_flux(wavelength, flux, teff, logg, meta)
         known_start = self._known_start
         known_end = self._known_end
         
-        # Prepare model input
-        flux_known = flux_on_grid[known_start:known_end]
-        flux_known_log = np.log10(np.maximum(flux_known, 1e-20))
-        flux_known_norm = (flux_known_log - self.scaler_params['flux_log_mean']) / self.scaler_params['flux_log_std']
-        
-        # Handle any NaN/inf from normalization
-        flux_known_norm = np.where(np.isfinite(flux_known_norm), flux_known_norm, 0.0)
-        
-        params_norm = self._normalize_params(teff, logg, meta)
-        
-        X_input = np.concatenate([flux_known_norm, params_norm]).astype(np.float32)
-        X_tensor = torch.from_numpy(X_input[np.newaxis, :]).to(self.device)
-        
-        # Predict extension
-        with torch.no_grad():
-            y_pred_norm = self.model(X_tensor).cpu().numpy()[0]
-        
-        # Denormalize
-        y_pred_log = y_pred_norm * self.scaler_params['ext_log_std'] + self.scaler_params['ext_log_mean']
-        y_pred_flux = 10 ** y_pred_log
-        
-        # Network now outputs full spectrum - extract UV and IR extension regions
-        pred_low = y_pred_flux[:known_start]
-        pred_high = y_pred_flux[known_end:]
-        
-        wl_pred_low = self.wavelength_grid[:known_start]
-        wl_pred_high = self.wavelength_grid[known_end:]
-        
-        # Blend ML predictions with black body using log-wavelength distance
-        # This is physically motivated: stellar spectra behave more uniformly in log space
-        # blend_decades controls how far (in decades of wavelength) we trust ML before fading to BB
-        blend_decades = 0.5  # Trust ML for ~0.5 decades (factor of ~3), then blend toward BB
-        
+        # The network predicts the whole grid; only the parts outside the
+        # input window extend the SED
         if need_low.any():
-            idx_low = np.where(need_low)[0]
-            wl_low = full_grid[idx_low]
-            
-            # Interpolate prediction to output grid
-            pred_interp = np.interp(wl_low, wl_pred_low, pred_low, left=pred_low[0], right=pred_low[-1])
-            
-            # Log-space distance from data edge (in decades)
-            log_dist = np.log10(wl_min) - np.log10(wl_low)
-            weight_ml = np.exp(-log_dist / blend_decades)
-            weight_ml = np.clip(weight_ml, 0, 1)
-            
-            flux_extended[idx_low] = weight_ml * pred_interp + (1 - weight_ml) * bb_flux[idx_low]
+            wl_low = full_grid[need_low]
+            flux_extended[need_low] = _blend_with_blackbody(
+                wl_low, np.log10(wl_min) - np.log10(wl_low),
+                self.wavelength_grid[:known_start], y_pred_flux[:known_start], bb_flux[need_low],
+            )
         
         if need_high.any():
-            idx_high = np.where(need_high)[0]
-            wl_high = full_grid[idx_high]
-            
-            pred_interp = np.interp(wl_high, wl_pred_high, pred_high, left=pred_high[0], right=pred_high[-1])
-            
-            # Log-space distance from data edge (in decades)
-            log_dist = np.log10(wl_high) - np.log10(wl_max)
-            weight_ml = np.exp(-log_dist / blend_decades)
-            weight_ml = np.clip(weight_ml, 0, 1)
-            
-            flux_extended[idx_high] = weight_ml * pred_interp + (1 - weight_ml) * bb_flux[idx_high]
+            wl_high = full_grid[need_high]
+            flux_extended[need_high] = _blend_with_blackbody(
+                wl_high, np.log10(wl_high) - np.log10(wl_max),
+                self.wavelength_grid[known_end:], y_pred_flux[known_end:], bb_flux[need_high],
+            )
         
         # Insert original data in overlap region
         overlap_mask = (full_grid >= wl_min) & (full_grid <= wl_max)
@@ -1174,6 +1014,34 @@ class SEDCompleter:
         print(f"Extended SED: {wavelength.min():.0f}-{wavelength.max():.0f} Å → {full_grid.min():.0f}-{full_grid.max():.0f} Å")
         
         return full_grid, flux_extended
+
+    def _predict_grid_flux(self, wavelength, flux, teff, logg, meta) -> np.ndarray:
+        """
+        Run the network on an SED and return its predicted flux on ``self.wavelength_grid``.
+        
+        The input is always the stored central window of the model grid, with
+        1e-20 wherever the SED does not reach.
+        """
+        import torch
+        
+        flux_safe = np.maximum(flux, 1e-20)
+        flux_log = np.log10(flux_safe)
+        flux_on_grid = np.interp(self.wavelength_grid, wavelength, 10**flux_log, left=1e-20, right=1e-20)
+        
+        flux_known = flux_on_grid[self._known_start:self._known_end]
+        flux_known_log = np.log10(np.maximum(flux_known, 1e-20))
+        flux_known_norm = (flux_known_log - self.scaler_params['flux_log_mean']) / self.scaler_params['flux_log_std']
+        flux_known_norm = np.where(np.isfinite(flux_known_norm), flux_known_norm, 0.0)
+        
+        params_norm = self._normalize_params(teff, logg, meta)
+        X_input = np.concatenate([flux_known_norm, params_norm]).astype(np.float32)
+        X_tensor = torch.from_numpy(X_input[np.newaxis, :]).to(self.device)
+        
+        with torch.no_grad():
+            y_pred_norm = self.model(X_tensor).cpu().numpy()[0]
+        
+        y_pred_log = y_pred_norm * self.scaler_params['ext_log_std'] + self.scaler_params['ext_log_mean']
+        return 10 ** y_pred_log
     
     @staticmethod
     def list_models(models_dir: str = "models") -> List[Dict[str, Any]]:
@@ -1213,8 +1081,8 @@ class SEDCompleter:
                         'framework': config.get('framework', 'unknown'),
                         'architecture': config.get('architecture', {}),
                     })
-                except Exception:
-                    logger.warning("Could not read ML completer model config in %s", subdir, exc_info=True)
+                except (OSError, ValueError) as exc:
+                    logger.warning("Skipping %s: could not read its %s: %s", subdir, SEDCompleter.CONFIG_FILE, exc)
 
         return models
 
@@ -1367,9 +1235,6 @@ def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> None:
     models_dir : str
         Directory to store/load trained models (default: "models")
     """
-    import pandas as pd
-    
-    # Ensure directories exist
     os.makedirs(base_dir, exist_ok=True)
     os.makedirs(models_dir, exist_ok=True)
     
@@ -1378,7 +1243,6 @@ def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> None:
     print("=" * 60)
     print("\nExtend incomplete SEDs using trained neural networks")
     
-    # Main choice: train or complete
     print("\nWhat would you like to do?")
     print("  1) Train new model")
     print("  2) Complete/extend SEDs (inference)")
@@ -1386,281 +1250,235 @@ def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> None:
     print("  0) Back")
     
     choice = input("> ").strip()
-    
     if choice == "0":
         return
-    
-    elif choice == "1":
-        # TRAINING MODE
-        print("\n" + "-" * 60)
-        print("TRAIN NEW MODEL")
-        print("-" * 60)
-        
-        # Discover available model libraries
-        available_models = []
-        for name in sorted(os.listdir(base_dir)):
-            model_path = os.path.join(base_dir, name)
-            if not os.path.isdir(model_path):
-                continue
-            
-            # Check for flux_cube.bin (required for training)
-            flux_cube = os.path.join(model_path, "flux_cube.bin")
-            if os.path.exists(flux_cube):
-                # Count SEDs in lookup table
-                lookup = os.path.join(model_path, "lookup_table.csv")
-                n_seds = "?"
-                if os.path.exists(lookup):
-                    try:
-                        df = pd.read_csv(lookup, comment='#')
-                        n_seds = len(df)
-                    except Exception:
-                        pass
-                
-                available_models.append({
-                    'name': name,
-                    'path': model_path,
-                    'n_seds': n_seds
-                })
-        
-        if not available_models:
-            print(f"\nNo model libraries with flux_cube.bin found in {base_dir}")
-            print("Download spectral grids first with 'sed-tools grids'")
-            return
-        
-        # Display available models
-        print("\nAvailable model libraries for training:")
-        print("-" * 60)
-        for i, model in enumerate(available_models, 1):
-            print(f"  {i:2d}) {model['name']:30s} ({model['n_seds']} SEDs)")
-        
-        # Select model
-        print("\nSelect library to train on (enter number):")
-        selection = input("> ").strip()
-        
-        try:
-            idx = int(selection) - 1
-            if idx < 0 or idx >= len(available_models):
-                print("Invalid selection")
-                return
-            selected = available_models[idx]
-        except (ValueError, IndexError):
-            print("Invalid selection")
-            return
-        
-        print(f"\nTraining on: {selected['name']}")
-        
-        # Training parameters
-        print("\nTraining parameters:")
-        epochs_str = input("  Epochs [100]: ").strip() or "100"
-        batch_size_str = input("  Batch size [32]: ").strip() or "32"
-        
-        try:
-            epochs = int(epochs_str)
-            batch_size = int(batch_size_str)
-        except ValueError:
-            print("Invalid parameters")
-            return
-        
-        # Model name - now creates a DIRECTORY
-        default_name = f"sed_model_{selected['name']}"
-        model_name = input(f"  Model name [{default_name}]: ").strip() or default_name
-        output_path = os.path.join(models_dir, model_name)
-        
-        print(f"\nModel will be saved to: {output_path}/")
-        print(f"  - model.pt")
-        print(f"  - config.json")
-        print(f"  - training_plots.png")
-        print(f"  - prediction_examples.png")
-        
-        confirm = input("\nStart training? [Y/n]: ").strip().lower()
-        
-        if confirm and not confirm.startswith('y'):
-            print("Cancelled")
-            return
-        
-        # Train
-        print("\n" + "=" * 60)
-        print("TRAINING...")
-        print("=" * 60)
-        
-        completer = SEDCompleter()
-        history = completer.train(
-            library_path=selected['path'],
-            output_path=output_path,
-            epochs=epochs,
-            batch_size=batch_size,
-        )
-        
-        print("\n" + "=" * 60)
-        print("TRAINING COMPLETE!")
-        print("=" * 60)
-        print(f"Model saved to: {output_path}/")
-    
+    if choice == "1":
+        _train_menu(base_dir, models_dir)
     elif choice == "2":
-        # INFERENCE/COMPLETION MODE
-        print("\n" + "-" * 60)
-        print("COMPLETE/EXTEND SEDs")
-        print("-" * 60)
-        
-        # Discover trained models (look for directories with config.json)
-        trained_models = SEDCompleter.list_models(models_dir)
-        
-        if not trained_models:
-            print(f"\nNo trained models found in {models_dir}/")
-            print("Train a model first (option 1)")
-            return
-        
-        # Select trained model
-        print("\nAvailable trained spectral grids:")
-        print("-" * 60)
-        for i, model in enumerate(trained_models, 1):
-            arch = model.get('architecture', {})
-            print(f"  {i:2d}) {model['name']}")
-            if arch:
-                hidden = arch.get('hidden_layers', [])
-                print(f"      Architecture: {arch.get('input_dim', '?')} -> {hidden} -> {arch.get('output_dim', '?')}")
-        
-        print("\nSelect model to use (enter number):")
-        selection = input("> ").strip()
-        
-        try:
-            idx = int(selection) - 1
-            if idx < 0 or idx >= len(trained_models):
-                print("Invalid selection")
-                return
-            selected_model = trained_models[idx]
-        except (ValueError, IndexError):
-            print("Invalid selection")
-            return
-        
-        print(f"\nUsing model: {selected_model['name']}")
-        
-        # Load model
-        completer = SEDCompleter(selected_model['path'])
-        print("✓ Model loaded successfully")
-        
-        # Select source model set to complete
-        print("\n" + "-" * 60)
-        print("SELECT MODEL SET TO EXTEND")
-        print("-" * 60)
-        
-        available_sources = []
-        for name in sorted(os.listdir(base_dir)):
-            model_path = os.path.join(base_dir, name)
-            if not os.path.isdir(model_path):
-                continue
-            
-            # Check for lookup table
-            lookup = os.path.join(model_path, "lookup_table.csv")
-            if os.path.exists(lookup):
-                try:
-                    df = pd.read_csv(lookup, comment='#')
-                    n_seds = len(df)
-                    available_sources.append({
-                        'name': name,
-                        'path': model_path,
-                        'n_seds': n_seds
-                    })
-                except Exception:
-                    pass
-        
-        if not available_sources:
-            print(f"\nNo model sets found in {base_dir}")
-            return
-        
-        # Display models
-        print("\nAvailable model sets:")
-        print("-" * 60)
-        for i, model in enumerate(available_sources, 1):
-            print(f"  {i:2d}) {model['name']:30s} ({model['n_seds']} SEDs)")
-        
-        print("\nSelect model set to extend (enter number):")
-        selection = input("> ").strip()
-        
-        try:
-            idx = int(selection) - 1
-            if idx < 0 or idx >= len(available_sources):
-                print("Invalid selection")
-                return
-            source_model = available_sources[idx]
-        except (ValueError, IndexError):
-            print("Invalid selection")
-            return
-        
-        print(f"\nExtending: {source_model['name']}")
-        
-        # Output directory
-        output_name = source_model['name'] + "_ml_extended"
-        output_dir = os.path.join(base_dir, output_name)
-        
-        print(f"Output will be saved to: {output_name}/")
-        confirm = input("Start extension? [Y/n]: ").strip().lower()
-        
-        if confirm and not confirm.startswith('y'):
-            print("Cancelled")
-            return
-        
-        # Run extension
-        print("\n" + "=" * 60)
-        print("EXTENDING SEDs...")
-        print("=" * 60)
-        
-        # Use the Completer class for batch processing
-        from .ml import Completer
-        comp = Completer(selected_model['path'])
-        
-        summary = comp.extend_catalog(
-            input_dir=source_model['path'],
-            output_dir=output_dir,
-            extension_range=(100.0, 100000.0),
-            verbose=True,
-        )
-        
-        print("\n" + "=" * 60)
-        print("EXTENSION COMPLETE!")
-        print("=" * 60)
-        print(f"Extended model: {output_dir}")
-        print(f"  {summary['extended']} SEDs extended successfully")
-        print(f"  {summary.get('skipped', 0)} SEDs skipped (already covered range)")
-        if summary.get('failed', 0):
-            print(f"  {summary['failed']} SEDs failed")
-
-
-
-
-
+        _extend_menu(base_dir, models_dir)
     elif choice == "3":
-        # LIST MODELS
-        print("\n" + "-" * 60)
-        print("AVAILABLE TRAINED MODELS")
-        print("-" * 60)
-        
-        models = SEDCompleter.list_models(models_dir)
-        
-        if not models:
-            print(f"\nNo models found in {models_dir}/")
-            return
-        
-        for m in models:
-            arch = m.get('architecture', {})
-            print(f"\n  {m['name']}")
-            print(f"    Path: {m['path']}")
-            print(f"    Framework: {m['framework']}, Version: {m['version']}")
-            if arch:
-                hidden = arch.get('hidden_layers', [])
-                print(f"    Architecture: {arch.get('input_dim', '?')} -> {hidden} -> {arch.get('output_dim', '?')}")
-    
+        _list_menu(models_dir)
     else:
         print("Invalid choice")
 
+
+def _banner(title: str) -> None:
+    print("\n" + "=" * 60)
+    print(title)
+    print("=" * 60)
+
+
+def _section(title: str) -> None:
+    print("\n" + "-" * 60)
+    print(title)
+    print("-" * 60)
+
+
+def _menu_choice(items: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    """Read a 1-based menu number; print "Invalid selection" and return None for anything else."""
+    selection = input("> ").strip()
+    try:
+        idx = int(selection) - 1
+    except ValueError:
+        print("Invalid selection")
+        return None
+    if idx < 0 or idx >= len(items):
+        print("Invalid selection")
+        return None
+    return items[idx]
+
+
+def _confirmed(prompt: str) -> bool:
+    """Ask a [Y/n] question; anything but an empty or y... answer prints "Cancelled"."""
+    answer = input(prompt).strip().lower()
+    if answer and not answer.startswith('y'):
+        print("Cancelled")
+        return False
+    return True
+
+
+def _print_libraries(libraries: List[Dict[str, Any]]) -> None:
+    for i, library in enumerate(libraries, 1):
+        print(f"  {i:2d}) {library['name']:30s} ({library['n_seds']} SEDs)")
+
+
+def _training_libraries(base_dir: str) -> List[Dict[str, Any]]:
+    """Libraries under base_dir with a flux_cube.bin, and their SED counts ("?" if unknown)."""
+    import pandas as pd
+    
+    libraries = []
+    for name in sorted(os.listdir(base_dir)):
+        path = os.path.join(base_dir, name)
+        if not os.path.isdir(path) or not os.path.exists(os.path.join(path, "flux_cube.bin")):
+            continue
+        
+        lookup = os.path.join(path, "lookup_table.csv")
+        n_seds = "?"
+        if os.path.exists(lookup):
+            try:
+                n_seds = len(pd.read_csv(lookup, comment='#'))
+            except (OSError, ValueError) as exc:
+                logger.warning("Could not count the SEDs in %s: %s", lookup, exc)
+        libraries.append({'name': name, 'path': path, 'n_seds': n_seds})
+    return libraries
+
+
+def _extendable_grids(base_dir: str) -> List[Dict[str, Any]]:
+    """Grids under base_dir with a readable lookup_table.csv."""
+    import pandas as pd
+    
+    grids = []
+    for name in sorted(os.listdir(base_dir)):
+        path = os.path.join(base_dir, name)
+        lookup = os.path.join(path, "lookup_table.csv")
+        if not os.path.isdir(path) or not os.path.exists(lookup):
+            continue
+        try:
+            df = pd.read_csv(lookup, comment='#')
+        except (OSError, ValueError) as exc:
+            logger.warning("Not offering %s: could not read %s: %s", name, lookup, exc)
+            continue
+        grids.append({'name': name, 'path': path, 'n_seds': len(df)})
+    return grids
+
+
+def _train_menu(base_dir: str, models_dir: str) -> None:
+    _section("TRAIN NEW MODEL")
+    
+    libraries = _training_libraries(base_dir)
+    if not libraries:
+        print(f"\nNo model libraries with flux_cube.bin found in {base_dir}")
+        print("Download spectral grids first with 'sed-tools grids'")
+        return
+    
+    print("\nAvailable model libraries for training:")
+    print("-" * 60)
+    _print_libraries(libraries)
+    
+    print("\nSelect library to train on (enter number):")
+    selected = _menu_choice(libraries)
+    if selected is None:
+        return
+    print(f"\nTraining on: {selected['name']}")
+    
+    print("\nTraining parameters:")
+    epochs_str = input("  Epochs [100]: ").strip() or "100"
+    batch_size_str = input("  Batch size [32]: ").strip() or "32"
+    try:
+        epochs = int(epochs_str)
+        batch_size = int(batch_size_str)
+    except ValueError:
+        print("Invalid parameters")
+        return
+    
+    default_name = f"sed_model_{selected['name']}"
+    model_name = input(f"  Model name [{default_name}]: ").strip() or default_name
+    output_path = os.path.join(models_dir, model_name)
+    
+    print(f"\nModel will be saved to: {output_path}/")
+    print("  - model.pt")
+    print("  - config.json")
+    print("  - training_plots.png")
+    print("  - prediction_examples.png")
+    if not _confirmed("\nStart training? [Y/n]: "):
+        return
+    
+    _banner("TRAINING...")
+    SEDCompleter().train(
+        library_path=selected['path'],
+        output_path=output_path,
+        epochs=epochs,
+        batch_size=batch_size,
+    )
+    _banner("TRAINING COMPLETE!")
+    print(f"Model saved to: {output_path}/")
+
+
+def _extend_menu(base_dir: str, models_dir: str) -> None:
+    from .ml import Completer
+    
+    _section("COMPLETE/EXTEND SEDs")
+    
+    trained_models = SEDCompleter.list_models(models_dir)
+    if not trained_models:
+        print(f"\nNo trained models found in {models_dir}/")
+        print("Train a model first (option 1)")
+        return
+    
+    print("\nAvailable trained spectral grids:")
+    print("-" * 60)
+    for i, model in enumerate(trained_models, 1):
+        arch = model.get('architecture', {})
+        print(f"  {i:2d}) {model['name']}")
+        if arch:
+            hidden = arch.get('hidden_layers', [])
+            print(f"      Architecture: {arch.get('input_dim', '?')} -> {hidden} -> {arch.get('output_dim', '?')}")
+    
+    print("\nSelect model to use (enter number):")
+    selected_model = _menu_choice(trained_models)
+    if selected_model is None:
+        return
+    print(f"\nUsing model: {selected_model['name']}")
+    completer = Completer(selected_model['path'])
+    print("✓ Model loaded successfully")
+    
+    _section("SELECT MODEL SET TO EXTEND")
+    grids = _extendable_grids(base_dir)
+    if not grids:
+        print(f"\nNo model sets found in {base_dir}")
+        return
+    
+    print("\nAvailable model sets:")
+    print("-" * 60)
+    _print_libraries(grids)
+    
+    print("\nSelect model set to extend (enter number):")
+    source = _menu_choice(grids)
+    if source is None:
+        return
+    print(f"\nExtending: {source['name']}")
+    
+    output_name = source['name'] + "_ml_extended"
+    output_dir = os.path.join(base_dir, output_name)
+    print(f"Output will be saved to: {output_name}/")
+    if not _confirmed("Start extension? [Y/n]: "):
+        return
+    
+    _banner("EXTENDING SEDs...")
+    summary = completer.extend_catalog(
+        input_dir=source['path'],
+        output_dir=output_dir,
+        extension_range=(100.0, 100000.0),
+        verbose=True,
+    )
+    
+    _banner("EXTENSION COMPLETE!")
+    print(f"Extended model: {output_dir}")
+    print(f"  {summary['extended']} SEDs extended successfully")
+    print(f"  {summary.get('skipped', 0)} SEDs skipped (already covered range)")
+
+
+def _list_menu(models_dir: str) -> None:
+    _section("AVAILABLE TRAINED MODELS")
+    
+    models = SEDCompleter.list_models(models_dir)
+    if not models:
+        print(f"\nNo models found in {models_dir}/")
+        return
+    
+    for m in models:
+        arch = m.get('architecture', {})
+        print(f"\n  {m['name']}")
+        print(f"    Path: {m['path']}")
+        print(f"    Framework: {m['framework']}, Version: {m['version']}")
+        if arch:
+            hidden = arch.get('hidden_layers', [])
+            print(f"    Architecture: {arch.get('input_dim', '?')} -> {hidden} -> {arch.get('output_dim', '?')}")
 
 
 # =============================================================================
 # API wrappers expected by sed_tools/api.py
 # =============================================================================
-
-from pathlib import Path
-from typing import Optional, Tuple, Union, Any, Dict
 
 def train_model(
     grid_dir: str,
@@ -1674,34 +1492,24 @@ def train_model(
     Wrapper expected by MLCompleter in api.py.
 
     Trains a model using SEDCompleter.train(), saves it under save_path/,
-    and returns a model handle suitable for extend_catalog().
+    and returns a model handle suitable for extend_catalog(). Extra keyword
+    arguments go to SEDCompleter.train(); one it does not take raises TypeError.
     """
+    from .ml import Completer
+
     save_path = str(save_path)
     Path(save_path).mkdir(parents=True, exist_ok=True)
 
     completer = SEDCompleter()
-    # Forward only args SEDCompleter.train is likely to accept; ignore extras safely
-    train_kwargs: Dict[str, Any] = {}
-    for k in ("learning_rate", "hidden_layers", "dropout", "val_split", "patience"):
-        if k in kwargs:
-            train_kwargs[k] = kwargs[k]
-
     completer.train(
         library_path=str(grid_dir),
         output_path=save_path,
         epochs=int(epochs),
         batch_size=int(batch_size),
         max_samples=int(max_samples),
-        **train_kwargs,
+        **kwargs,
     )
-
-    # Prefer the batch/IO-oriented Completer if available (it already has extend_catalog)
-    try:
-        from .ml import Completer  # existing batch processor in your package
-        return Completer(save_path)
-    except Exception:
-        # Fallback: return the SEDCompleter itself (still usable for per-spectrum completion)
-        return SEDCompleter(save_path)
+    return Completer(save_path)
 
 
 def load_model(model_path: str):
@@ -1710,12 +1518,9 @@ def load_model(model_path: str):
 
     Returns an object that can be passed into extend_catalog().
     """
-    # Prefer .ml.Completer (has extend_catalog and is used elsewhere in this file)
-    try:
-        from .ml import Completer
-        return Completer(str(model_path))
-    except Exception:
-        return SEDCompleter(str(model_path))
+    from .ml import Completer
+
+    return Completer(str(model_path))
 
 
 def extend_catalog(
@@ -1748,20 +1553,10 @@ def extend_catalog(
             **kwargs,
         )
 
-    # Last-resort fallback: do nothing loudly (better than silent partial output)
     raise TypeError(
         "extend_catalog() expected a model with an .extend_catalog() method "
         "(e.g. sed_tools.ml.Completer) or a model directory path."
     )
-
-
-
-
-
-
-
-
-
 
 
 if __name__ == '__main__':
