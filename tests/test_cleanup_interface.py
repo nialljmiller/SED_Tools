@@ -723,3 +723,18 @@ def test_cleaning_report_reads_the_summary_clean_model_dir_returns(capsys):
     assert "Cleaned       : 2 files" in out and "Recovered     : 1 files" in out
     assert "Already done  : 1 files" in out and "Invalid       : 1 files" in out
     assert "4/5 files usable" in out
+
+
+# ----------------------------------------------------------------------
+# Interactive picker
+# ----------------------------------------------------------------------
+def test_picker_rejects_an_invalid_regex_instead_of_showing_everything(monkeypatch, capsys):
+    from sed_tools.ui_utils import prompt_choice
+
+    answer(monkeypatch, "/beta", "//[unclosed", "1")
+    assert prompt_choice(["alpha", "beta", "gamma"], "Things", max_label=20) == 0
+    out = capsys.readouterr().out
+    assert "Invalid regular expression '[unclosed'" in out
+    # The substring filter stays in force: the last listing shows beta only.
+    last_listing = out.rsplit("Things", 1)[1]
+    assert "beta" in last_listing and "alpha" not in last_listing
