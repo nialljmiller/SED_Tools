@@ -2,6 +2,7 @@
 
 import importlib
 import logging
+from pathlib import Path
 
 import pytest
 import requests
@@ -51,6 +52,10 @@ def fake_grabber(models=(), error=None, available=True, metadata=None, downloade
             return metadata
 
         def download_model_spectra(self, name, meta, **cuts):
+            for i in range(downloaded):
+                path = Path(self.base_dir) / name / f"spectrum{i}.txt"
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("1000 1\n2000 1\n")
             return downloaded
 
     return Grabber
@@ -351,3 +356,107 @@ def test_running_the_cli_module_passes_on_the_exit_status(tmp_path):
     done = subprocess.run([sys.executable, "-m", "sed_tools.cli", "coverage", "--base", str(tmp_path)],
                           cwd=root, capture_output=True, text=True)
     assert done.returncode == 1, done.stderr
+
+
+# ----------------------------------------------------------------------
+# Spectral grid download workflow
+# ----------------------------------------------------------------------
+CLEAN = {"total": 1, "converted": [], "skipped_already": [], "skipped_invalid": [], "skipped_index": [],
+         "error": [], "recovered": [], "detection_stats": {}, "catalog_units": None}
+
+
+@pytest.fixture
+def grid_flow(monkeypatch):
+    """run_spectra_flow with fake grabbers, cleaning and product builds; returns the grids built."""
+    from sed_tools import cli
+
+    built = []
+
+    def install(cleaned=CLEAN, cube_built=True, **grabbers):
+        for name, cls_name in (("njm", "NJMSpectraGrabber"), ("svo", "SVOSpectraGrabber"),
+                               ("msg", "MSGSpectraGrabber"), ("mast", "MASTSpectraGrabber")):
+            monkeypatch.setattr(cli, cls_name, grabbers.get(name, fake_grabber()))
+        monkeypatch.setattr(cli, "clean_model_dir", lambda *a, **k: cleaned)
+
+        def build(name, *args):
+            built.append(name)
+            return cube_built
+
+        monkeypatch.setattr(cli, "_build_data_products", build)
+        return built
+    return install
+
+
+def test_spectra_flow_builds_what_it_can_then_lists_every_grid_not_completed(grid_flow, tmp_path, capsys):
+    from sed_tools.cli import run_spectra_flow
+
+    built = grid_flow(svo=fake_grabber(["Good", "NoMeta", "Empty"]),
+                      msg=fake_grabber(["Good"], metadata={"m": 1}, downloaded=1),
+                      mast=fake_grabber(["Empty"], metadata={"m": 1}, downloaded=0))
+    with pytest.raises(RuntimeError) as excinfo:
+        run_spectra_flow("all", base_dir=str(tmp_path), models=["Good", "NoMeta", "Empty", "Missing"])
+    message = str(excinfo.value)
+    assert built == ["Good"]
+    assert "NoMeta: no metadata from any source" in message
+    assert "Empty: no spectra downloaded from mast" in message
+    assert "Missing: not listed by any source" in message
+    assert "Good" not in message
+    assert "Done." not in capsys.readouterr().out
+
+
+def test_spectra_flow_reports_unusable_spectra_and_a_missing_flux_cube(grid_flow, tmp_path):
+    from sed_tools.cli import run_spectra_flow
+
+    cleaned = dict(CLEAN, total=3, skipped_invalid=["bad.txt"], error=["worse.txt"])
+    built = grid_flow(cleaned=cleaned, cube_built=False,
+                      svo=fake_grabber(["Grid"], metadata=[{"fid": 1}], downloaded=1))
+    with pytest.raises(RuntimeError) as excinfo:
+        run_spectra_flow("svo", base_dir=str(tmp_path), models=["Grid"])
+    assert built == ["Grid"]
+    assert "Grid: 2 spectra unusable after cleaning: bad.txt, worse.txt" in str(excinfo.value)
+    assert "Grid: flux cube not built" in str(excinfo.value)
+
+
+def test_spectra_flow_completes_quietly_when_every_grid_is_built(grid_flow, tmp_path, capsys):
+    from sed_tools.cli import run_spectra_flow
+
+    grid_flow(svo=fake_grabber(["Grid"], metadata=[{"fid": 1}], downloaded=1))
+    run_spectra_flow("svo", base_dir=str(tmp_path), models=["Grid"])
+    assert capsys.readouterr().out.rstrip().endswith("Done.")
+
+
+def test_spectra_flow_uses_other_sources_when_discovery_fails(grid_flow, tmp_path, capsys):
+    from sed_tools.cli import run_spectra_flow
+
+    grid_flow(svo=fake_grabber(error=requests.ConnectionError("SVO down")),
+              msg=fake_grabber(["Grid"], metadata={"m": 1}, downloaded=1))
+    run_spectra_flow("all", base_dir=str(tmp_path), models=["Grid"])
+    assert "[svo] Spectral grid discovery failed: SVO down; using other sources" in capsys.readouterr().out
+
+
+def test_spectra_flow_raises_when_no_grid_is_discovered(grid_flow, tmp_path):
+    from sed_tools.cli import run_spectra_flow
+
+    grid_flow(svo=fake_grabber(error=requests.ConnectionError("SVO down")))
+    with pytest.raises(RuntimeError, match="No spectral grids discovered; svo: discovery failed: SVO down"):
+        run_spectra_flow("svo", base_dir=str(tmp_path), models=["Grid"])
+
+
+def test_grids_command_fails_when_a_grid_is_not_found(grid_flow, tmp_path, monkeypatch):
+    grid_flow(svo=fake_grabber(["Grid"]))
+    with pytest.raises(RuntimeError, match="Missing: not listed by any source"):
+        run_cli(monkeypatch, "grids", "--source", "svo", "--grids", "Missing", "--base", str(tmp_path))
+
+
+def test_axis_cut_prompt_asks_again_after_an_unparseable_range(monkeypatch, capsys):
+    from sed_tools.cli import prompt_njm_axis_cuts
+
+    class Grabber:
+        def get_grid_info(self, name, model_url=None):
+            return None
+
+    answers = iter(["3500 to 8000", "3500,8000", "", "", ""])
+    monkeypatch.setattr("builtins.input", lambda prompt="": next(answers))
+    cuts = prompt_njm_axis_cuts("Grid", Grabber())
+    assert cuts == {"teff_range": (3500.0, 8000.0), "logg_range": None, "meta_range": None, "wl_range": None}
+    assert "Could not parse range from '3500 to 8000'" in capsys.readouterr().out

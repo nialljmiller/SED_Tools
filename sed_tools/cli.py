@@ -63,16 +63,17 @@ def build_h5_bundle_from_txt(model_dir: str, out_h5: str) -> None:
     print(f"[H5 bundle] Wrote {out_h5}")
 
 
-def _parse_range(raw: str) -> Optional[Tuple[float, float]]:
-    """Parse a user-entered range string like '3500,8000' or '3500 8000' or '3500-8000'.
-    
-    Returns (min, max) tuple or None if empty/invalid.
+def _ask_range(prompt: str) -> Optional[Tuple[float, float]]:
+    """Ask for a range like '3500,8000', '3500 8000' or '3500-8000' until one parses.
+
+    Returns (min, max), or None for a blank answer (no cut).
     """
-    parsed = parse_numeric_range(raw)
-    if parsed is not None or not raw.strip():
-        return parsed
-    print(f"  Could not parse range from '{raw}' — need two values (e.g. '3500,8000')")
-    return None
+    while True:
+        raw = input(prompt).strip()
+        parsed = parse_numeric_range(raw)
+        if parsed is not None or not raw:
+            return parsed
+        print(f"  Could not parse range from '{raw}' — need two values (e.g. '3500,8000')")
 
 
 def prompt_njm_axis_cuts(
@@ -107,10 +108,10 @@ def prompt_njm_axis_cuts(
     else:
         print("  (Could not fetch grid info — cuts will still work if lookup_table.csv is available)\n")
 
-    cuts['teff_range'] = _parse_range(input("  Teff range (e.g. '3500,8000') or blank for all: ").strip())
-    cuts['logg_range'] = _parse_range(input("  logg range (e.g. '3.5,5.0') or blank for all: ").strip())
-    cuts['meta_range'] = _parse_range(input("  [M/H] range (e.g. '-1.0,0.5') or blank for all: ").strip())
-    cuts['wl_range']   = _parse_range(input("  Wavelength range in Å (e.g. '3000,10000') or blank for all: ").strip())
+    cuts['teff_range'] = _ask_range("  Teff range (e.g. '3500,8000') or blank for all: ")
+    cuts['logg_range'] = _ask_range("  logg range (e.g. '3.5,5.0') or blank for all: ")
+    cuts['meta_range'] = _ask_range("  [M/H] range (e.g. '-1.0,0.5') or blank for all: ")
+    cuts['wl_range']   = _ask_range("  Wavelength range in Å (e.g. '3000,10000') or blank for all: ")
 
     if any(v is not None for v in cuts.values()):
         print(f"\n  Applied cuts:")
@@ -290,8 +291,11 @@ def _build_data_products(
     src: str,
     force_bundle_h5: bool,
     build_flux_cube: bool,
-) -> None:
-    """Build HDF5 bundle, lookup table, and flux cube for a downloaded spectral grid."""
+) -> bool:
+    """Build HDF5 bundle, lookup table, and flux cube for a downloaded spectral grid.
+
+    Returns False if a flux cube was requested and none was built.
+    """
     # HDF5 bundle
     out_h5 = os.path.join(model_dir, f"{name}_bundle.h5" if src == "msg" else f"{name}.h5")
     if force_bundle_h5 or not os.path.exists(out_h5):
@@ -306,7 +310,7 @@ def _build_data_products(
 
     # Flux cube
     if not build_flux_cube:
-        return
+        return True
     flux_cube_path = os.path.join(model_dir, "flux_cube.bin")
     precompute_flux_cube(model_dir, flux_cube_path)
     variants_index = os.path.join(model_dir, "variants_index.csv")
@@ -320,12 +324,14 @@ def _build_data_products(
         for row in vrows:
             vname = row.get("variant_name", row.get("path", "?"))
             print(f"  -> {os.path.join(model_dir, vname)}/")
-        print(f"\n  Point MESA Colors to one of the above subdirectories.")
+        print("\n  Point MESA Colors to one of the above subdirectories.")
         print(f"  See {variants_index} for the full inventory.")
     elif os.path.exists(flux_cube_path):
-        print(f"Flux cube     : flux_cube.bin")
+        print("Flux cube     : flux_cube.bin")
     else:
-        print(f"Flux cube     : not built")
+        print("Flux cube     : not built")
+        return False
+    return True
 
 
 def run_spectra_flow(
@@ -336,124 +342,170 @@ def run_spectra_flow(
     force_bundle_h5: bool = True,
     build_flux_cube: bool = True,
 ) -> None:
+    """Discover spectral grids, then download, clean and build each chosen one.
+
+    A grid that cannot be completed is reported and the rest are processed;
+    then RuntimeError lists every grid that was not completed.
+    """
     ensure_dir(base_dir)
 
-    # Parse source list
-    if source.lower() == "all":
-        src_list = ["njm", "svo", "msg", "mast"]
-    elif source.lower() == "both":
-        src_list = ["njm", "svo", "msg"]
-    elif "," in source:
-        src_list = [s.strip().lower() for s in source.split(",")]
-    else:
-        src_list = [source.lower()]
-
-    # Initialize grabbers (NJM first so availability is checked before discovery)
-    grabs: Dict = {}
-    if "njm" in src_list:
-        grabs["njm"] = NJMSpectraGrabber(base_dir=base_dir, max_workers=workers)
-        if not grabs["njm"].is_available():
-            print("[njm] Mirror unavailable, using other sources")
-            del grabs["njm"]
-            src_list.remove("njm")
-    if "svo"  in src_list: grabs["svo"]  = SVOSpectraGrabber(base_dir=base_dir, max_workers=workers)
-    if "msg"  in src_list: grabs["msg"]  = MSGSpectraGrabber(base_dir=base_dir, max_workers=workers)
-    if "mast" in src_list: grabs["mast"] = MASTSpectraGrabber(base_dir=base_dir, max_workers=workers)
-
-    # Discover models from every active source
-    model_sources: Dict[str, List[str]] = {}
-    for s in src_list:
-        if s in grabs:
-            for model_name in grabs[s].discover_models():
-                model_sources.setdefault(model_name, []).append(s)
+    src_list = _spectra_sources(source)
+    grabs = _spectra_grabbers(src_list, base_dir, workers)
+    model_sources, discovery_failures = _discover_spectral_grids(src_list, grabs)
     if not model_sources:
-        print("No spectral grids discovered.")
-        return
+        raise RuntimeError("No spectral grids discovered" + "".join(f"; {f}" for f in discovery_failures))
 
     all_models = [_ModelOption(n, srcs) for n, srcs in sorted(model_sources.items())]
-
-    # Resolve which models to process
     if models is not None:
-        if len(models) == 1 and models[0].lower() == "all":
-            chosen = [(opt.sources, opt.name) for opt in all_models]
-        else:
-            chosen = []
-            for m in models:
-                if ":" in m:
-                    s, n = m.split(":", 1)
-                    chosen.append(([s.strip().lower()], n.strip()))
-                else:
-                    matching = [opt for opt in all_models if opt.name == m.strip()]
-                    if not matching:
-                        print(f"[skip] Spectral grid '{m.strip()}' not found")
-                    else:
-                        chosen.append((matching[0].sources, matching[0].name))
+        chosen, failures = _requested_spectral_grids(models, all_models)
     else:
         idxs = prompt_choice(all_models, label="Spectral grids", allow_back=True, multi=True)
         if idxs is None or idxs == -1:
             return
-        if isinstance(idxs, int):
-            idxs = [idxs]
-        chosen = [(all_models[i].sources, all_models[i].name) for i in idxs]
+        chosen, failures = [(all_models[i].sources, all_models[i].name) for i in idxs], []
 
     for sources, name in chosen:
-        print("\n" + "=" * 64)
-        print(f"{''.join(f'[{s}]' for s in sources)} {name}")
-        print("=" * 64)
-
-        model_dir = os.path.join(base_dir, name)
-        ensure_dir(model_dir)
-
-        # Try sources in priority order until one supplies metadata
-        meta = g = src = None
-        for try_src in sources:
-            g = grabs.get(try_src)
-            if not g:
-                continue
-            meta = g.get_model_metadata(name)
-            if meta:
-                src = try_src
-                break
-            print(f"  [{try_src}] No metadata — trying next source...")
-        if not (meta and g and src):
-            print("No metadata available from any source")
-            continue
-
-        print(f"  Using source: {src}")
-        is_preprocessed = isinstance(meta, dict) and meta.get("pre_processed", False)
-
-        njm_cuts: Dict = {}
-        if src == "njm":
-            njm_cuts = prompt_njm_axis_cuts(name, g, model_url=meta.get("model_url"))
-
-        n_written = g.download_model_spectra(
-            name, meta,
-            teff_range=njm_cuts.get('teff_range'),
-            logg_range=njm_cuts.get('logg_range'),
-            meta_range=njm_cuts.get('meta_range'),
-            wl_range=njm_cuts.get('wl_range'),
-        )
-        print(f"Downloaded {n_written} spectra → {model_dir}")
-
-        if is_preprocessed:
-            print("Pre-processed data (skipping cleaning)")
-            essential = ["flux_cube.bin", "lookup_table.csv"]
-            missing = [f for f in essential if not os.path.exists(os.path.join(model_dir, f))]
-            print(f"Missing: {', '.join(missing)}" if missing else "All essential files present")
-            continue
-
-        summary = clean_model_dir(model_dir, try_h5_recovery=True, rebuild_lookup=True)
-        _print_cleaning_report(summary)
-
-        if not glob.glob(os.path.join(model_dir, "*.txt")):
-            print("\n  No spectra remaining after cleaning")
-            continue
-
-        _build_data_products(name, model_dir, src, force_bundle_h5, build_flux_cube)
+        problems = _download_and_build_grid(name, sources, grabs, base_dir, force_bundle_h5, build_flux_cube)
+        failures.extend(f"{name}: {problem}" for problem in problems)
 
     print("\n" + "─" * 64)
+    if failures:
+        raise RuntimeError(f"Spectral grids not completed ({len(failures)}): " + "; ".join(failures))
     print("Done.")
 
+
+def _spectra_sources(source: str) -> List[str]:
+    """Source names from --source: one name, a comma-separated list, 'both' or 'all'."""
+    if source.lower() == "all":
+        return ["njm", "svo", "msg", "mast"]
+    if source.lower() == "both":
+        return ["njm", "svo", "msg"]
+    if "," in source:
+        return [s.strip().lower() for s in source.split(",")]
+    return [source.lower()]
+
+
+def _spectra_grabbers(src_list: List[str], base_dir: str, workers: int) -> Dict:
+    """A grabber per requested source; NJM is left out, with a message, when the mirror is unavailable."""
+    grabs: Dict = {}
+    if "njm" in src_list:
+        njm = NJMSpectraGrabber(base_dir=base_dir, max_workers=workers)
+        if njm.is_available():
+            grabs["njm"] = njm
+        else:
+            print("[njm] Mirror unavailable, using other sources")
+    if "svo"  in src_list: grabs["svo"]  = SVOSpectraGrabber(base_dir=base_dir, max_workers=workers)
+    if "msg"  in src_list: grabs["msg"]  = MSGSpectraGrabber(base_dir=base_dir, max_workers=workers)
+    if "mast" in src_list: grabs["mast"] = MASTSpectraGrabber(base_dir=base_dir, max_workers=workers)
+    return grabs
+
+
+def _discover_spectral_grids(src_list: List[str], grabs: Dict) -> Tuple[Dict[str, List[str]], List[str]]:
+    """Each grid name with the sources listing it (in --source order), and each source that failed."""
+    model_sources: Dict[str, List[str]] = {}
+    failures = []
+    for s in src_list:
+        if s not in grabs:
+            continue
+        try:
+            names = grabs[s].discover_models()
+        except (ValueError, RequestException, OSError, RuntimeError) as exc:
+            print(f"[{s}] Spectral grid discovery failed: {exc}; using other sources")
+            failures.append(f"{s}: discovery failed: {exc}")
+            continue
+        for model_name in names:
+            model_sources.setdefault(model_name, []).append(s)
+    return model_sources, failures
+
+
+def _requested_spectral_grids(models: List[str], all_models: List[_ModelOption]):
+    """``(sources, name)`` for each name in ``models`` ('all', NAME or SOURCE:NAME), and the names not found."""
+    if len(models) == 1 and models[0].lower() == "all":
+        return [(opt.sources, opt.name) for opt in all_models], []
+    chosen, not_found = [], []
+    for m in models:
+        if ":" in m:
+            s, n = m.split(":", 1)
+            chosen.append(([s.strip().lower()], n.strip()))
+            continue
+        matching = [opt for opt in all_models if opt.name == m.strip()]
+        if matching:
+            chosen.append((matching[0].sources, matching[0].name))
+        else:
+            print(f"[skip] Spectral grid '{m.strip()}' not found")
+            not_found.append(f"{m.strip()}: not listed by any source")
+    return chosen, not_found
+
+
+def _first_source_with_metadata(name: str, sources: List[str], grabs: Dict):
+    """``(source, grabber, metadata)`` from the first active source with metadata for ``name``, else Nones."""
+    for src in sources:
+        g = grabs.get(src)
+        if not g:
+            continue
+        meta = g.get_model_metadata(name)
+        if meta:
+            return src, g, meta
+        print(f"  [{src}] No metadata — trying next source...")
+    return None, None, None
+
+
+def _download_and_build_grid(name: str, sources: List[str], grabs: Dict, base_dir: str,
+                             force_bundle_h5: bool, build_flux_cube: bool) -> List[str]:
+    """Download one grid from its first source with metadata, clean it and build its products.
+
+    Returns what was not done; empty when the grid is complete.
+    """
+    from .api import _unusable_after_cleaning
+
+    print("\n" + "=" * 64)
+    print(f"{''.join(f'[{s}]' for s in sources)} {name}")
+    print("=" * 64)
+
+    model_dir = os.path.join(base_dir, name)
+    ensure_dir(model_dir)
+
+    src, g, meta = _first_source_with_metadata(name, sources, grabs)
+    if src is None:
+        print("No metadata available from any source")
+        return ["no metadata from any source"]
+
+    print(f"  Using source: {src}")
+    is_preprocessed = isinstance(meta, dict) and meta.get("pre_processed", False)
+    njm_cuts = prompt_njm_axis_cuts(name, g, model_url=meta.get("model_url")) if src == "njm" else {}
+
+    n_written = g.download_model_spectra(
+        name, meta,
+        teff_range=njm_cuts.get('teff_range'),
+        logg_range=njm_cuts.get('logg_range'),
+        meta_range=njm_cuts.get('meta_range'),
+        wl_range=njm_cuts.get('wl_range'),
+    )
+    print(f"Downloaded {n_written} spectra → {model_dir}")
+
+    if is_preprocessed:
+        print("Pre-processed data (skipping cleaning)")
+        essential = ["flux_cube.bin", "lookup_table.csv"]
+        missing = [f for f in essential if not os.path.exists(os.path.join(model_dir, f))]
+        print(f"Missing: {', '.join(missing)}" if missing else "All essential files present")
+        return [f"missing {', '.join(missing)}"] if missing else []
+    if not n_written:
+        return [f"no spectra downloaded from {src}"]
+
+    summary = clean_model_dir(model_dir, try_h5_recovery=True, rebuild_lookup=True)
+    _print_cleaning_report(summary)
+
+    if not glob.glob(os.path.join(model_dir, "*.txt")):
+        print("\n  No spectra remaining after cleaning")
+        return ["no spectra remaining after cleaning"]
+
+    problems = []
+    unusable = _unusable_after_cleaning(summary)
+    if unusable:
+        problems.append(f"{len(unusable)} spectra unusable after cleaning: {', '.join(unusable)}")
+    if not _build_data_products(name, model_dir, src, force_bundle_h5, build_flux_cube):
+        problems.append("flux cube not built")
+    return problems
 
 
 def print_filter_availability(info: dict) -> None:
