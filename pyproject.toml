@@ -29,6 +29,7 @@ dependencies = [
     "astropy>=6.1",
     "astroquery>=0.4.7",
     "matplotlib>=3.7",
+    "psutil>=5.9",  # measures available RAM when flux cubes are built
     "tomli>=2.0; python_version < '3.11'",
 ]
 

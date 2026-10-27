@@ -13,14 +13,15 @@ from collections import Counter
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from scipy.interpolate import interp1d
-from scipy.spatial import KDTree
 from tqdm import tqdm
 
 from ._resample import resample_to_grid
 from .spectrum_io import read_text_spectrum
 
 logger = logging.getLogger(__name__)
+
+# scipy is only in the [full] extra, so the functions that need it import it
+# themselves: this module, and `import sed_tools`, must work without it.
 
 
 def find_stellar_models(base_dir=None):
@@ -242,6 +243,8 @@ def compute_normalization_factors(target_data, reference_data, wavelength_grid):
     ranges[ranges == 0] = 1.0
     ref_params_norm = (ref_params - ref_params.min(axis=0)) / ranges
 
+    from scipy.spatial import KDTree
+
     tree = KDTree(ref_params_norm)
     norm_factors = []
     failures = []
@@ -301,6 +304,8 @@ def _normalization_factor(file_target, teff, file_ref, ref_teff, wavelength_grid
     mask = (wavelength_grid >= wl_min) & (wavelength_grid <= wl_max)
     if mask.sum() < 100:
         return 1.0, "fewer than 100 common wavelength points"
+
+    from scipy.interpolate import interp1d
 
     wl_common = wavelength_grid[mask]
     interp_tgt = interp1d(wl_tgt, flux_tgt, bounds_error=False, fill_value=0)
@@ -403,6 +408,8 @@ def _fill_gaps(flux_cube, filled_map, source_map, teff_grid, logg_grid, meta_gri
         logg_norm[filled_indices[1]],
         meta_norm[filled_indices[2]]
     ])
+    from scipy.spatial import KDTree
+
     tree = KDTree(filled_points)
 
     for i_t in range(len(teff_grid)):
