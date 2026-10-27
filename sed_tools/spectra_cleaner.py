@@ -71,11 +71,14 @@ WAVELENGTH_FACTORS = {
 # The flux units a caller can give with flux_unit:
 # name -> (flux type, factor applied first, description). The names are the
 # ones detect_units_from_header gives a declared unit.
+# 1 W/m² = 1e3 erg/s/cm², so W/m² per Å, nm and µm are 1e3, 1e2 and 0.1 erg/s/cm²/Å.
 FLUX_UNITS = {
     'flam': ('flam', 1.0, 'erg/s/cm²/Å (F_λ)'),
     'fnu': ('fnu', 1.0, 'erg/s/cm²/Hz (F_ν)'),
     'fnu_jy': ('fnu', 1e-23, 'Jansky (F_ν)'),
     'flam_si': ('flam', 1e3, 'W/m²/Å'),
+    'flam_si_nm': ('flam', 1e2, 'W/m²/nm'),
+    'flam_si_um': ('flam', 0.1, 'W/m²/µm'),
     'normalized': ('normalized', 1.0, 'arbitrary scale, left as it is'),
 }
 
@@ -207,21 +210,29 @@ def detect_units_from_header(header_text: str) -> Dict[str, Optional[str]]:
             break
     
     # --- Flux unit detection ---
+    # Units come before the bare quantity names, so that 'F_nu (Jy)' is read
+    # as Jansky and 'F_lambda (W/m2/nm)' as W/m²/nm. The (?<![a-z]) and
+    # (?![a-z]) keep text such as 'erg/s/cm2/arcsec2' or 'low mass' from
+    # matching a unit.
+    per_angstrom = r'(angstroms?|angs|ang|aa|a|å)(?![a-z])'
     flux_patterns = [
-        # F_lambda patterns
-        (r'erg\s*/?\s*s\s*/?\s*cm\s*\^?2?\s*/?\s*(a|å|angstrom)', 'flam'),
-        (r'erg\s*/?\s*cm\s*\^?2?\s*/?\s*s\s*/?\s*(a|å|angstrom)', 'flam'),
-        (r'f_?lambda', 'flam'),
-        (r'flam\b', 'flam'),
-        # F_nu patterns
+        # F_lambda in erg/s/cm²/Å
+        (r'erg\s*/?\s*s\s*/?\s*cm\s*\^?2?\s*/?\s*' + per_angstrom, 'flam'),
+        (r'erg\s*/?\s*cm\s*\^?2?\s*/?\s*s\s*/?\s*' + per_angstrom, 'flam'),
+        # F_nu in erg/s/cm²/Hz
         (r'erg\s*/?\s*s\s*/?\s*cm\s*\^?2?\s*/?\s*hz', 'fnu'),
         (r'erg\s*/?\s*cm\s*\^?2?\s*/?\s*s\s*/?\s*hz', 'fnu'),
-        (r'f_?nu', 'fnu'),
-        (r'fnu\b', 'fnu'),
         # Jansky
         (r'\bjansky\b|\bjy\b', 'fnu_jy'),
-        # SI units
-        (r'w\s*/?\s*m\s*\^?2?\s*/?\s*(a|å|angstrom|nm|um)', 'flam_si'),
+        # SI F_lambda in W/m² per Å, nm or µm
+        (r'(?<![a-z])w\s*/?\s*m\s*\^?2?\s*/?\s*' + per_angstrom, 'flam_si'),
+        (r'(?<![a-z])w\s*/?\s*m\s*\^?2?\s*/?\s*nm(?![a-z])', 'flam_si_nm'),
+        (r'(?<![a-z])w\s*/?\s*m\s*\^?2?\s*/?\s*um(?![a-z])', 'flam_si_um'),
+        # Quantity names with no unit, taken as erg/s/cm²/Å or erg/s/cm²/Hz
+        (r'f_?lambda', 'flam'),
+        (r'flam\b', 'flam'),
+        (r'f_?nu', 'fnu'),
+        (r'fnu\b', 'fnu'),
         # Normalized
         (r'normalized|norm\b', 'normalized'),
     ]
@@ -368,14 +379,7 @@ def detect_units_single_file(filepath: str) -> Optional[UnitInfo]:
     
     # Flux
     if header_units['flux_unit']:
-        flux_type = header_units['flux_unit']
-        flux_factor = 1.0
-        if flux_type == 'fnu_jy':
-            flux_type = 'fnu'
-            flux_factor = 1e-23
-        elif flux_type == 'flam_si':
-            flux_type = 'flam'
-            flux_factor = 1e3
+        flux_type, flux_factor, _ = FLUX_UNITS[header_units['flux_unit']]
         flux_conf = 'high'
     else:
         flux_type, flux_factor, flux_conf = detect_flux_unit_from_range(flux)
@@ -1056,8 +1060,9 @@ def clean_model_dir(
         rebuild_lookup: Rebuild lookup_table.csv after cleaning
         sample_fraction: Fraction of files to sample for unit detection (default 10%)
         flux_unit: The spectra's flux unit, a name in FLUX_UNITS ('flam', 'fnu',
-            'fnu_jy', 'flam_si', 'normalized'). It replaces the unit their
-            headers declare, and is required when they declare none.
+            'fnu_jy', 'flam_si', 'flam_si_nm', 'flam_si_um', 'normalized'). It
+            replaces the unit their headers declare, and is required when they
+            declare none.
     
     Returns:
         Summary dict with counts and file lists. When any spectrum's flux scale
