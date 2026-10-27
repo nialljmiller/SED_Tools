@@ -855,9 +855,10 @@ def load_spectrum(path: str, wavelength_unit: str | None = None) -> Spectrum:
     return Spectrum(wavelength, flux, metadata, wavelength_unit="angstrom")
 
 
-def discover_flux_cube_files(hints: Sequence[str | os.PathLike[str]] | None = None) -> List[Path]:
-    """Discover ``flux_cube.bin`` files from common locations and hints."""
-    
+def _flux_cube_search_locations(
+    hints: Sequence[str | os.PathLike[str]] | None,
+) -> Tuple[List[Path], List[Path]]:
+    """Files named by the hints and $SED_FLUX_CUBE, and directories to search for cubes."""
     from .models import DATA_DIR_DEFAULT
 
     hints = list(hints or [])
@@ -892,6 +893,12 @@ def discover_flux_cube_files(hints: Sequence[str | os.PathLike[str]] | None = No
     for root in default_roots:
         if root not in search_dirs:
             search_dirs.append(root)
+    return direct_files, search_dirs
+
+
+def discover_flux_cube_files(hints: Sequence[str | os.PathLike[str]] | None = None) -> List[Path]:
+    """Discover ``flux_cube.bin`` files from common locations and hints."""
+    direct_files, search_dirs = _flux_cube_search_locations(hints)
 
     seen: set[Path] = set()
     results: List[Path] = []
@@ -1006,7 +1013,7 @@ def prompt_for_flux_cube_path(hints: Sequence[str | os.PathLike[str]] | None = N
             hints.append(response)
 
 
-def main(argv: Sequence[str] | None = None) -> int:
+def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Inspect and interpolate a flux cube")
     parser.add_argument("--flux-cube", help="Path to flux_cube.bin")
     parser.add_argument("--model-dir", help="Model directory containing a flux cube", default=None)
@@ -1024,8 +1031,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--vega-sed", help="Path to a Vega reference spectrum (required for Vega magnitudes if no zeropoint metadata is provided)")
     parser.add_argument("--plot", help="Write a diagnostic plot to this path (defaults to plots/)")
     parser.add_argument("--save-sed", help="Write interpolated SED (wavelength, flux) to a text file")
+    return parser
 
-    args = parser.parse_args(argv)
+
+def main(argv: Sequence[str] | None = None) -> int:
+    args = _build_parser().parse_args(argv)
 
     hints: List[str | os.PathLike[str]] = []
     if args.model_dir:
