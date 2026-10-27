@@ -378,9 +378,10 @@ def grid_flow(monkeypatch):
             monkeypatch.setattr(cli, cls_name, grabbers.get(name, fake_grabber()))
         monkeypatch.setattr(cli, "clean_model_dir", lambda *a, **k: cleaned)
 
-        def build(name, *args):
+        def build(name, model_dir, *args):
+            if not cube_built:
+                raise RuntimeError(f"No flux cube was built in {model_dir}")
             built.append(name)
-            return cube_built
 
         monkeypatch.setattr(cli, "_build_data_products", build)
         return built
@@ -404,17 +405,24 @@ def test_spectra_flow_builds_what_it_can_then_lists_every_grid_not_completed(gri
     assert "Done." not in capsys.readouterr().out
 
 
-def test_spectra_flow_reports_unusable_spectra_and_a_missing_flux_cube(grid_flow, tmp_path):
+def test_spectra_flow_builds_a_grid_with_unusable_spectra_but_lists_them(grid_flow, tmp_path):
     from sed_tools.cli import run_spectra_flow
 
     cleaned = dict(CLEAN, total=3, skipped_invalid=["bad.txt"], error=["worse.txt"])
-    built = grid_flow(cleaned=cleaned, cube_built=False,
-                      svo=fake_grabber(["Grid"], metadata=[{"fid": 1}], downloaded=1))
-    with pytest.raises(RuntimeError) as excinfo:
+    built = grid_flow(cleaned=cleaned, svo=fake_grabber(["Grid"], metadata=[{"fid": 1}], downloaded=1))
+    with pytest.raises(RuntimeError, match="Grid: 2 spectra unusable after cleaning: bad.txt, worse.txt"):
         run_spectra_flow("svo", base_dir=str(tmp_path), models=["Grid"])
     assert built == ["Grid"]
-    assert "Grid: 2 spectra unusable after cleaning: bad.txt, worse.txt" in str(excinfo.value)
-    assert "Grid: flux cube not built" in str(excinfo.value)
+
+
+def test_spectra_flow_carries_on_after_a_grid_whose_build_fails(grid_flow, tmp_path):
+    from sed_tools.cli import run_spectra_flow
+
+    grid_flow(cube_built=False, svo=fake_grabber(["A", "B"], metadata=[{"fid": 1}], downloaded=1))
+    with pytest.raises(RuntimeError) as excinfo:
+        run_spectra_flow("svo", base_dir=str(tmp_path), models=["A", "B"])
+    assert "A: RuntimeError: No flux cube was built in" in str(excinfo.value)
+    assert "B: RuntimeError: No flux cube was built in" in str(excinfo.value)
 
 
 def test_spectra_flow_completes_quietly_when_every_grid_is_built(grid_flow, tmp_path, capsys):
@@ -460,3 +468,96 @@ def test_axis_cut_prompt_asks_again_after_an_unparseable_range(monkeypatch, caps
     cuts = prompt_njm_axis_cuts("Grid", Grabber())
     assert cuts == {"teff_range": (3500.0, 8000.0), "logg_range": None, "meta_range": None, "wl_range": None}
     assert "Could not parse range from '3500 to 8000'" in capsys.readouterr().out
+
+
+# ----------------------------------------------------------------------
+# Flux cube builds and the rebuild workflow
+# ----------------------------------------------------------------------
+@pytest.fixture
+def precompute(monkeypatch):
+    """Replace precompute_flux_cube with one that writes the given files (or nothing)."""
+    def install(*names):
+        def fake(model_dir, output_file):
+            for name in names:
+                (Path(model_dir) / name).write_text("built")
+        monkeypatch.setattr(importlib.import_module("sed_tools.precompute_flux_cube"), "precompute_flux_cube", fake)
+    return install
+
+
+def test_flux_cube_helper_reports_what_was_written(tmp_path, precompute):
+    from sed_tools.api import _build_flux_cube
+
+    precompute("flux_cube.bin")
+    assert _build_flux_cube(tmp_path) == tmp_path / "flux_cube.bin"
+    precompute("variants_index.csv")
+    assert _build_flux_cube(tmp_path) == tmp_path / "variants_index.csv"
+
+
+def test_flux_cube_helper_raises_when_nothing_new_was_written(tmp_path, precompute):
+    from sed_tools.api import _build_flux_cube
+
+    (tmp_path / "flux_cube.bin").write_text("from an earlier build")
+    precompute()
+    with pytest.raises(RuntimeError, match="No flux cube was built in"):
+        _build_flux_cube(tmp_path)
+
+
+def test_grid_write_says_when_it_built_one_cube_per_variant(tmp_path, precompute, capsys):
+    from sed_tools.api import SpectralGrid
+
+    precompute("variants_index.csv")
+    SpectralGrid(name="Grid", source="local", spectra=[spectrum()]).write(tmp_path / "out", build_h5=False)
+    out = capsys.readouterr().out
+    assert "Built one flux cube per extra-axis variant" in out and "Built flux_cube.bin" not in out
+
+
+@pytest.fixture
+def rebuild(tmp_path, monkeypatch):
+    """Local grids A, B and C with run_rebuild_flow's cleaning and builds faked; B's cleaning fails."""
+    from sed_tools import cli
+
+    for name in ("A", "B", "C"):
+        (tmp_path / name).mkdir()
+        (tmp_path / name / "s.txt").write_text("1000 1\n")
+    rebuilt = []
+
+    def clean(model_dir, **kwargs):
+        if model_dir.endswith("B"):
+            raise ValueError("corrupt header in s.txt")
+        rebuilt.append(Path(model_dir).name)
+        return dict(CLEAN)
+
+    monkeypatch.setattr(cli, "clean_model_dir", clean)
+    monkeypatch.setattr(cli, "regenerate_lookup_table", lambda model_dir: None)
+    monkeypatch.setattr(cli, "build_h5_bundle_from_txt", lambda model_dir, out: None)
+    monkeypatch.setattr("sed_tools.api._build_flux_cube", lambda model_dir: Path(model_dir) / "flux_cube.bin")
+    return rebuilt
+
+
+def test_rebuild_rebuilds_every_grid_it_can_then_lists_the_rest(tmp_path, rebuild):
+    from sed_tools.cli import run_rebuild_flow
+
+    with pytest.raises(RuntimeError) as excinfo:
+        run_rebuild_flow(base_dir=str(tmp_path), models=["A", "B", "C", "Nope"])
+    assert rebuild == ["A", "C"]
+    assert "B: ValueError: corrupt header in s.txt" in str(excinfo.value)
+    assert "Nope: not a local spectral grid under" in str(excinfo.value)
+
+
+def test_rebuild_asks_again_for_an_out_of_range_selection(tmp_path, rebuild, monkeypatch, capsys):
+    from sed_tools.cli import run_rebuild_flow
+
+    answers = iter(["7", "1,3"])
+    monkeypatch.setattr("builtins.input", lambda prompt="": next(answers))
+    run_rebuild_flow(base_dir=str(tmp_path))
+    assert rebuild == ["A", "C"]
+    assert "Selection out of bounds: 7" in capsys.readouterr().out
+
+
+def test_rebuild_and_combine_raise_when_there_are_no_local_grids(tmp_path):
+    from sed_tools.cli import run_combine_flow, run_rebuild_flow
+
+    with pytest.raises(FileNotFoundError, match="No local spectral grids found"):
+        run_rebuild_flow(base_dir=str(tmp_path), models=["A"])
+    with pytest.raises(FileNotFoundError, match="No spectral grids found"):
+        run_combine_flow(base_dir=str(tmp_path), interactive=False)

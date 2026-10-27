@@ -76,6 +76,26 @@ def _unusable_after_cleaning(summary: Dict[str, Any]) -> List[str]:
     return [*summary['skipped_invalid'], *summary['skipped_index'], *summary['error']]
 
 
+def _build_flux_cube(model_dir: Path) -> Path:
+    """Run precompute_flux_cube on ``model_dir`` and return what it wrote.
+
+    That is ``flux_cube.bin``, or ``variants_index.csv`` when a grid with extra
+    axes is split into one flux cube per variant.  precompute_flux_cube can
+    also stop without writing either (it then prints why), so RuntimeError is
+    raised unless one of them was written by this call.
+    """
+    from .precompute_flux_cube import precompute_flux_cube
+
+    model_dir = Path(model_dir)
+    outputs = (model_dir / "flux_cube.bin", model_dir / "variants_index.csv")
+    before = {path: path.stat().st_mtime_ns for path in outputs if path.exists()}
+    precompute_flux_cube(str(model_dir), str(outputs[0]))
+    for path in outputs:
+        if path.exists() and path.stat().st_mtime_ns != before.get(path):
+            return path
+    raise RuntimeError(f"No flux cube was built in {model_dir}; see the flux cube messages above")
+
+
 # =============================================================================
 # Data Classes for API Results
 # =============================================================================
@@ -328,9 +348,11 @@ class SpectralGrid:
         
         # Build flux cube
         if build_flux_cube and len(self.spectra) > 0:
-            from .precompute_flux_cube import precompute_flux_cube
-            precompute_flux_cube(str(path), str(path / "flux_cube.bin"))
-            print("[write] Built flux_cube.bin")
+            written = _build_flux_cube(path)
+            if written.name == "flux_cube.bin":
+                print("[write] Built flux_cube.bin")
+            else:
+                print(f"[write] Built one flux cube per extra-axis variant, listed in {written}")
 
         # Build H5 bundle
         if build_h5 and len(self.spectra) > 0:
@@ -1012,8 +1034,7 @@ class SED:
                 raise RuntimeError(f"No .txt spectra left in {dest} to bundle into {name}.h5")
 
         if build_cube:
-            from .precompute_flux_cube import precompute_flux_cube
-            precompute_flux_cube(str(dest), str(dest / "flux_cube.bin"))
+            _build_flux_cube(dest)
 
         unusable = _unusable_after_cleaning(summary)
         if missing or unusable:

@@ -31,12 +31,11 @@ from .mast_spectra_grabber import MASTSpectraGrabber
 from .models import FILTER_DIR_DEFAULT, STELLAR_DIR_DEFAULT
 from .msg_spectra_grabber import MSGSpectraGrabber
 from .njm_spectra_grabber import NJMSpectraGrabber
-from .precompute_flux_cube import precompute_flux_cube
 from .spectra_cleaner import clean_model_dir
 from .svo_regen_spectra_lookup import regenerate_lookup_table
 from .svo_spectra_grabber import SVOSpectraGrabber
 from .ui_utils import prompt_choice  # public, no leading underscore
-from .parsing import parse_numeric_range
+from .parsing import parse_multi_selection, parse_numeric_range
 from .spectrum_io import build_h5_bundle, list_text_spectra, read_text_spectrum
 from .terminal_plots import terminal_color_enabled
 # ------------ Small Utils ------------
@@ -139,8 +138,45 @@ def run_rebuild_flow(
     rebuild_h5: bool = True,
     rebuild_flux_cube: bool = True
 ) -> None:
+    """Clean each chosen local grid and rebuild its lookup table, HDF5 bundle and flux cube.
+
+    Every grid that can be rebuilt is; then RuntimeError lists each grid that
+    could not be, and why.
+    """
     ensure_dir(base_dir)
 
+    cand = _rebuildable_grids(base_dir)
+    if not cand:
+        raise FileNotFoundError(f"No local spectral grids found under {base_dir}")
+
+    selected = models if models is not None else _ask_rebuild_selection(cand)
+    if not selected:
+        print("Nothing selected.")
+        return
+
+    failures = []
+    for model_name in selected:
+        print("\n" + "=" * 64)
+        print(f"[rebuild] {model_name}")
+        if model_name not in cand:
+            print(f"[rebuild] {model_name} is not a local spectral grid under {base_dir}")
+            failures.append(f"{model_name}: not a local spectral grid under {base_dir}")
+            continue
+        try:
+            problems = _rebuild_grid(os.path.join(base_dir, model_name), model_name,
+                                     rebuild_h5, rebuild_flux_cube)
+        except (ValueError, OSError, RuntimeError) as exc:
+            print(f"[rebuild] {model_name} failed: {exc}")
+            problems = [f"{type(exc).__name__}: {exc}"]
+        failures.extend(f"{model_name}: {problem}" for problem in problems)
+
+    if failures:
+        raise RuntimeError(f"Spectral grids not rebuilt ({len(failures)}): " + "; ".join(failures))
+    print("\nRebuild complete.")
+
+
+def _rebuildable_grids(base_dir: str) -> List[str]:
+    """Folders under ``base_dir`` holding .txt spectra or an .h5 file."""
     cand = []
     for name in sorted(os.listdir(base_dir)):
         p = os.path.join(base_dir, name)
@@ -150,71 +186,50 @@ def run_rebuild_flow(
         has_h5 = any(fn.lower().endswith(".h5") for fn in os.listdir(p))
         if has_txt or has_h5:
             cand.append(name)
+    return cand
 
-    if not cand:
-        print(f"No local spectral grids found under {base_dir}")
-        return
 
-    if models is None:
-        print("\nLocal spectral grids available for rebuild:")
-        print("-" * 64)
-        for i, m in enumerate(cand, 1):
-            print(f"{i:3d}. {m}")
-        print("\nSelect indices (comma / ranges like 3-6) or 'all':")
+def _ask_rebuild_selection(cand: List[str]) -> List[str]:
+    """Ask which grids to rebuild ('all', or numbers and ranges like 1,3-6) until the answer parses."""
+    print("\nLocal spectral grids available for rebuild:")
+    print("-" * 64)
+    for i, m in enumerate(cand, 1):
+        print(f"{i:3d}. {m}")
+    print("\nSelect indices (comma / ranges like 3-6) or 'all':")
+    while True:
         raw = input("> ").strip().lower()
         if raw == "all":
-            selected = cand
-        else:
-            idxs = []
-            for token in raw.split(","):
-                token = token.strip()
-                if "-" in token:
-                    a, b = token.split("-", 1)
-                    idxs += list(range(int(a), int(b)+1))
-                else:
-                    if token:
-                        idxs.append(int(token))
-            selected = [cand[i-1] for i in idxs if 1 <= i <= len(cand)]
-    else:
-        selected = models
-
-    if not selected:
-        print("Nothing selected.")
-        return
-
-    for model_name in selected:
-        print("\n" + "=" * 64)
-        print(f"[rebuild] {model_name}")
-        model_dir = os.path.join(base_dir, model_name)
-
-        summary = clean_model_dir(model_dir, try_h5_recovery=True, rebuild_lookup=True)
-        print(f"[clean] {model_name}: total={summary['total']}")
-
-        txts = glob.glob(os.path.join(model_dir, "*.txt"))
-        if not txts:
-            print(f"[rebuild] no spectra (.txt) present after cleaning; skipping {model_name}.")
-            continue
-
-        regenerate_lookup_table(model_dir)
-
-        if rebuild_h5:
-            out_h5 = os.path.join(model_dir, f"{model_name}.h5")
-            build_h5_bundle_from_txt(model_dir, out_h5)
-
-        if rebuild_flux_cube:
-            out_flux = os.path.join(model_dir, "flux_cube.bin")
-            precompute_flux_cube(model_dir, out_flux)
-
-    print("\nRebuild complete.")
+            return cand
+        try:
+            return [cand[i] for i in parse_multi_selection(raw, len(cand))]
+        except ValueError as exc:
+            print(f"  {exc}")
 
 
+def _rebuild_grid(model_dir: str, model_name: str, rebuild_h5: bool, rebuild_flux_cube: bool) -> List[str]:
+    """Clean one local grid and rebuild its products; returns what was not done (empty when complete)."""
+    from .api import _build_flux_cube, _unusable_after_cleaning
 
+    summary = clean_model_dir(model_dir, try_h5_recovery=True, rebuild_lookup=True)
+    print(f"[clean] {model_name}: total={summary['total']}")
 
+    if not glob.glob(os.path.join(model_dir, "*.txt")):
+        print(f"[rebuild] no spectra (.txt) present after cleaning; skipping {model_name}.")
+        return ["no spectra (.txt) present after cleaning"]
 
+    regenerate_lookup_table(model_dir)
 
+    if rebuild_h5:
+        out_h5 = os.path.join(model_dir, f"{model_name}.h5")
+        build_h5_bundle_from_txt(model_dir, out_h5)
 
+    if rebuild_flux_cube:
+        _build_flux_cube(model_dir)
 
-
+    unusable = _unusable_after_cleaning(summary)
+    if unusable:
+        return [f"{len(unusable)} spectra unusable after cleaning: {', '.join(unusable)}"]
+    return []
 
 
 class _ModelOption:
@@ -291,11 +306,8 @@ def _build_data_products(
     src: str,
     force_bundle_h5: bool,
     build_flux_cube: bool,
-) -> bool:
-    """Build HDF5 bundle, lookup table, and flux cube for a downloaded spectral grid.
-
-    Returns False if a flux cube was requested and none was built.
-    """
+) -> None:
+    """Build HDF5 bundle, lookup table, and flux cube for a downloaded spectral grid."""
     # HDF5 bundle
     out_h5 = os.path.join(model_dir, f"{name}_bundle.h5" if src == "msg" else f"{name}.h5")
     if force_bundle_h5 or not os.path.exists(out_h5):
@@ -310,11 +322,11 @@ def _build_data_products(
 
     # Flux cube
     if not build_flux_cube:
-        return True
-    flux_cube_path = os.path.join(model_dir, "flux_cube.bin")
-    precompute_flux_cube(model_dir, flux_cube_path)
-    variants_index = os.path.join(model_dir, "variants_index.csv")
-    if os.path.exists(variants_index):
+        return
+    from .api import _build_flux_cube
+
+    if _build_flux_cube(model_dir).name == "variants_index.csv":
+        variants_index = os.path.join(model_dir, "variants_index.csv")
         with open(variants_index) as vf:
             header = vf.readline()
             vrows = list(csv.DictReader(vf, fieldnames=[
@@ -326,12 +338,8 @@ def _build_data_products(
             print(f"  -> {os.path.join(model_dir, vname)}/")
         print("\n  Point MESA Colors to one of the above subdirectories.")
         print(f"  See {variants_index} for the full inventory.")
-    elif os.path.exists(flux_cube_path):
-        print("Flux cube     : flux_cube.bin")
     else:
-        print("Flux cube     : not built")
-        return False
-    return True
+        print("Flux cube     : flux_cube.bin")
 
 
 def run_spectra_flow(
@@ -365,7 +373,11 @@ def run_spectra_flow(
         chosen, failures = [(all_models[i].sources, all_models[i].name) for i in idxs], []
 
     for sources, name in chosen:
-        problems = _download_and_build_grid(name, sources, grabs, base_dir, force_bundle_h5, build_flux_cube)
+        try:
+            problems = _download_and_build_grid(name, sources, grabs, base_dir, force_bundle_h5, build_flux_cube)
+        except (ValueError, RequestException, OSError, RuntimeError) as exc:
+            print(f"[{name}] failed: {exc}")
+            problems = [f"{type(exc).__name__}: {exc}"]
         failures.extend(f"{name}: {problem}" for problem in problems)
 
     print("\n" + "─" * 64)
@@ -499,13 +511,11 @@ def _download_and_build_grid(name: str, sources: List[str], grabs: Dict, base_di
         print("\n  No spectra remaining after cleaning")
         return ["no spectra remaining after cleaning"]
 
-    problems = []
+    _build_data_products(name, model_dir, src, force_bundle_h5, build_flux_cube)
     unusable = _unusable_after_cleaning(summary)
     if unusable:
-        problems.append(f"{len(unusable)} spectra unusable after cleaning: {', '.join(unusable)}")
-    if not _build_data_products(name, model_dir, src, force_bundle_h5, build_flux_cube):
-        problems.append("flux cube not built")
-    return problems
+        return [f"{len(unusable)} spectra unusable after cleaning: {', '.join(unusable)}"]
+    return []
 
 
 def print_filter_availability(info: dict) -> None:
@@ -895,8 +905,7 @@ def run_combine_flow(
 
     model_dirs = find_stellar_models(base_dir)
     if not model_dirs:
-        print(f"No spectral grids found in {base_dir}")
-        return
+        raise FileNotFoundError(f"No spectral grids found in {base_dir}")
 
     selected_models = select_models_interactive(model_dirs) if interactive else model_dirs
     if not selected_models:
