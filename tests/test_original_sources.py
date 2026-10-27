@@ -436,19 +436,18 @@ def test_bessell_and_mko_parsers():
         standards.mko_scan("WL\tT\n1 2\n")
 
 
-def test_usno_reads_wayback_then_falls_back_to_live_file():
+def test_usno_reads_only_the_wayback_snapshots(tmp_path):
     text = fx("usno_u.res")
     assert standards.usno_table(text, "u").shape == (4, 6)
     with pytest.raises(ValueError, match="unexpected header"):
         standards.usno_table(text, "g")
-    live = standards.USNO_ORIG.format("u")
-    wb = f"https://web.archive.org/web/{standards.USNO_WB['u']}id_/{live}"
-    session = _Session({live: text})
-    assert standards._archived(Fetcher(session), wb, live) == text
-    assert session.calls == [wb, live]
-    session = _Session({})
+    # The curves cite the snapshots, so an unreachable archive stops the build
+    # instead of silently reading the live files.
+    session = _Session({standards.USNO_README: "readme", standards.USNO_ORIG.format("u"): text})
     with pytest.raises(OSError):
-        standards._archived(Fetcher(session), wb, live)
+        standards.build(tmp_path, instrument="USNO", session=session)
+    assert session.calls == [standards.USNO_README_WB]
+    assert not (tmp_path / "Generic").exists()
 
 
 def test_naco_band_names_have_no_inner_dot():

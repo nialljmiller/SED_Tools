@@ -5,8 +5,7 @@ Generic/MKO      MKO-NIR J H K L' M' (Tokunaga, Simons & Vacca 2002): IRTF NSFCa
                  scans nsfcam_<b>mk_trans.dat (percent -> fraction; filter only).
 Generic/USNO     u'g'r'i'z' (Smith et al. 2002): J. Gunn's usno_[ugriz].res responses at 1.3
                  airmasses.  The Fermilab site answers HTTP 403 to scripts, so the files are read
-                 from their Wayback Machine raw snapshots (2021-03-19), falling back to the live
-                 URL if the archive is unreachable.
+                 from their Wayback Machine raw snapshots (2021-03-19), which the curves cite.
 
 Held: Johnson, Cousins, Stromgren, Kron, Thuan-Gunn and Bessell (1990) have no numeric original
 (only SVO or PDF tables).
@@ -83,17 +82,6 @@ def mko(fetch: Fetcher) -> Instrument:
     return Instrument(FAC, "MKO", bands, note, ground_based=True)
 
 
-def _archived(fetch: Fetcher, snapshot_url: str, live_url: str) -> str:
-    """The Wayback raw snapshot, or the live file if the archive cannot be reached."""
-    try:
-        return fetch.text(snapshot_url)
-    except (OSError, ValueError) as exc:  # requests' errors are OSErrors
-        try:
-            return fetch.text(live_url)
-        except (OSError, ValueError):
-            raise exc from None
-
-
 def usno_table(text: str, band: str, url: str = "") -> np.ndarray:
     lines = text.splitlines()
     if (lines[0].strip() != f"\\ FILE: /surtel/filters/usno/usno_{band}.res"
@@ -106,13 +94,13 @@ def usno_table(text: str, band: str, url: str = "") -> np.ndarray:
 
 
 def usno(fetch: Fetcher) -> Instrument:
-    rtext = _archived(fetch, USNO_README_WB, USNO_README)
+    rtext = fetch.text(USNO_README_WB)
     if "USNO 40-inch/SITe 1024^2" not in rtext or "median airmass of about 1.3" not in rtext:
         raise ValueError("unexpected USNO readme")
     bands = []
     for f in "ugriz":
         wb = f"https://web.archive.org/web/{USNO_WB[f]}id_/{USNO_ORIG.format(f)}"
-        data = usno_table(_archived(fetch, wb, USNO_ORIG.format(f)), f, wb)
+        data = usno_table(fetch.text(wb), f, wb)
         # Column 4 = 1.3 airmasses, the natural-system median airmass.
         bands.append(make_band(f + "p", data[:, 0], data[:, 3], unit="Angstrom", detector_type=PHOTON,
                                components="filter+optics+qe+atmosphere",
