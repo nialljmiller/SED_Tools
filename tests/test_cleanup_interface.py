@@ -666,7 +666,7 @@ def test_filter_browser_reports_a_failed_build_when_browsing_ends(filter_browser
     answer(monkeypatch, "1", "1", "y", "y", "q")
     with pytest.raises(RuntimeError, match="A/Cam1 composed product: Airmass and PWV must be numbers"):
         cli.run_filters_flow()
-    assert "Cannot build: Airmass and PWV must be numbers" in capsys.readouterr().out
+    assert "Composed product of A/Cam1 not built: Airmass and PWV must be numbers" in capsys.readouterr().out
 
 
 def test_filter_browser_ends_quietly_when_nothing_failed(filter_browser, monkeypatch):
@@ -866,3 +866,79 @@ def test_ml_generator_auto_fails_at_once_without_optuna(monkeypatch, capsys):
                         lambda name, *args: None if name == "optuna" else real_find_spec(name, *args))
     assert run_cli(monkeypatch, "ml_generator", "--auto", "--library", "lib", "--output", "out") == 1
     assert "--auto training needs the optuna package" in capsys.readouterr().out
+
+
+# ----------------------------------------------------------------------
+# Detector-type tagging
+# ----------------------------------------------------------------------
+def tagged(path):
+    return SimpleNamespace(path=path, detector_type="photon", source="svo", filter_id="F", changed=True,
+                           migrated=False, note="", kept=False, resolved_type="photon", resolved_source="svo")
+
+
+def test_tagging_one_facility_finishes_every_file_then_lists_failures(tmp_path, monkeypatch, filters, capsys):
+    import sed_tools.filter_metadata as fm
+
+    for band in ("g", "r", "i"):
+        (tmp_path / f"{band}.dat").write_text("Wavelength,Transmission\n1,1\n")
+
+    def tag(path, **kwargs):
+        if path.stem == "r":
+            raise requests.ConnectionError("SVO timed out")
+        return tagged(path)
+
+    monkeypatch.setattr(fm, "SVOMetadataClient", lambda: None)
+    monkeypatch.setattr(fm, "tag_filter_file", tag)
+    with pytest.raises(RuntimeError, match=r"(?s)1 of 3 filter files could not be tagged.*r\.dat: SVO timed out"):
+        filters.tag_detector_types(tmp_path, facility="Fac")
+    out = capsys.readouterr().out
+    assert "g.dat: photon [svo]" in out and "i.dat: photon [svo]" in out
+
+
+def test_tagging_stops_at_once_when_svo_is_unreachable(tmp_path, monkeypatch, filters):
+    import sed_tools.filter_metadata as fm
+
+    for band in ("g", "r"):
+        (tmp_path / f"{band}.dat").write_text("Wavelength,Transmission\n1,1\n")
+    calls = []
+
+    def tag(path, **kwargs):
+        calls.append(path.stem)
+        raise fm.SVOUnreachableError("SVO unreachable")
+
+    monkeypatch.setattr(fm, "SVOMetadataClient", lambda: None)
+    monkeypatch.setattr(fm, "tag_filter_file", tag)
+    with pytest.raises(fm.SVOUnreachableError):
+        filters.tag_detector_types(tmp_path, facility="Fac")
+    assert len(calls) == 1
+
+
+def test_filters_detector_prints_what_was_tagged_and_what_failed(tmp_path, monkeypatch, capsys):
+    import sed_tools.filter_metadata as fm
+
+    def tag_tree(root, *, force, dry_run, progress):
+        progress(tagged(Path(root) / "g.dat"))
+        raise RuntimeError("1 of 2 filter files could not be tagged and were left unchanged:\n  r.dat: bad")
+
+    monkeypatch.setattr(fm, "tag_filter_tree", tag_tree)
+    assert run_cli(monkeypatch, "filters-detector", str(tmp_path)) == 1
+    out = capsys.readouterr().out
+    assert "g.dat: photon [svo]" in out
+    assert "[filters] 1 of 2 filter files could not be tagged" in out
+
+
+def test_composition_says_when_the_atmosphere_list_failed(tmp_path, monkeypatch, filters):
+    from sed_tools import cli
+
+    info = {"buildable": ["filter"], "atmosphere": True, "atmosphere_site": "paranal", "atmosphere_sites": None,
+            "component_availability": {"status": "supported", "large_download": False}}
+
+    def atmospheres(cls, *args, **kwargs):
+        raise RuntimeError("NJM mirror unreachable")
+
+    monkeypatch.setattr(filters, "available", classmethod(lambda cls, *a, **k: info))
+    monkeypatch.setattr(filters, "atmospheres", classmethod(atmospheres))
+    monkeypatch.setattr(cli, "print_filter_availability", lambda info: None)
+    answer(monkeypatch, "y", "1", "", "y")
+    with pytest.raises(RuntimeError, match="could not list the atmosphere grids for paranal: NJM mirror unreachable"):
+        cli._offer_composition(tmp_path / "Fac" / "Cam")

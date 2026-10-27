@@ -1821,21 +1821,18 @@ class Filters:
             applies, so ``original`` and ``inferred`` types are kept.
         dry_run : bool
             Report what would be written without modifying files.
+
+        Each file is reported as it is tagged.  Files that cannot be tagged are
+        left unchanged and listed in a RuntimeError once the others are done;
+        an unreachable SVO raises
+        :class:`~sed_tools.filter_metadata.SVOUnreachableError` at once.
         """
-        from .filter_metadata import SVOMetadataClient, iter_filter_files, tag_filter_file, tag_filter_tree
+        from .filter_metadata import (SVOMetadataClient, SVOUnreachableError, iter_filter_files,
+                                      tag_filter_file, tag_filter_tree)
 
-        target = Path(path) if path is not None else cls._filter_root
-        if facility is not None:
-            client = SVOMetadataClient()
-            results = [
-                tag_filter_file(p, client=client, facility=facility, force=force, dry_run=dry_run)
-                for p in iter_filter_files(target)
-            ]
-        else:
-            results = tag_filter_tree(target, force=force, dry_run=dry_run)
+        rows: List[Dict[str, Any]] = []
 
-        rows = []
-        for r in results:
+        def record(r) -> None:
             rows.append({
                 "path": str(r.path),
                 "detector_type": r.detector_type,
@@ -1852,6 +1849,24 @@ class Filters:
                 flag = "*" if r.changed else " "
                 note = f"  ({r.note})" if r.note and (r.kept or r.source == "assumed") else ""
                 print(f"[filters]{flag} {r.path}: {r.detector_type} [{r.source}]{note}")
+
+        target = Path(path) if path is not None else cls._filter_root
+        if facility is None:
+            tag_filter_tree(target, force=force, dry_run=dry_run, progress=record)
+            return rows
+
+        client = SVOMetadataClient()
+        failed = []
+        for p in iter_filter_files(target):
+            try:
+                record(tag_filter_file(p, client=client, facility=facility, force=force, dry_run=dry_run))
+            except SVOUnreachableError:
+                raise  # every later lookup would fail too
+            except (RequestException, ValueError) as exc:
+                failed.append(f"{p}: {exc}")
+        if failed:
+            raise RuntimeError(f"{len(failed)} of {len(failed) + len(rows)} filter files could not be tagged "
+                               "and were left unchanged:\n  " + "\n  ".join(failed))
         return rows
 
     @classmethod

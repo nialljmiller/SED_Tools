@@ -710,7 +710,10 @@ def _offer_composition(instrument_dir: Path) -> None:
         site = info["atmosphere_site"] or sites[0]
         if len(sites) > 1:
             site = input(f"Site [{site}]: ").strip() or site
-        grid = Filters.atmospheres(filter_root=instrument_dir.parent.parent).get(site)
+        try:
+            grid = Filters.atmospheres(filter_root=instrument_dir.parent.parent).get(site)
+        except (RequestException, OSError, RuntimeError, ValueError) as exc:
+            raise RuntimeError(f"could not list the atmosphere grids for {site}: {exc}") from exc
         if grid:
             print(f"  airmass {grid['airmass']}" + (f", pwv {grid['pwv']} mm" if grid["pwv"] else "")
                   + (" or 'unstated' (as published)" if grid.get("unstated_airmass") else ""))
@@ -806,7 +809,7 @@ def _fetch_instrument(facility: str, instrument: str, base_dir: str, failures: L
     try:
         _offer_composition(directory)
     except (ValueError, RequestException, OSError, RuntimeError) as exc:  # ComponentError is a ValueError
-        print(f"Cannot build: {exc}")
+        print(f"Composed product of {facility}/{instrument} not built: {exc}")
         failures.append(f"{facility}/{instrument} composed product: {exc}")
 
 
@@ -1390,9 +1393,14 @@ def _cmd_filters_detector(args, parser):
 
     from .api import Filters
 
-    rows = Filters.tag_detector_types(
-        args.path, facility=args.facility, force=args.force, dry_run=args.dry_run
-    )
+    # Each file is printed as it is tagged, so on failure only the error remains to be said.
+    try:
+        rows = Filters.tag_detector_types(
+            args.path, facility=args.facility, force=args.force, dry_run=args.dry_run
+        )
+    except (RequestException, RuntimeError, ValueError) as exc:  # SVOUnreachableError is a RequestException
+        print(f"\n[filters] {exc}")
+        return 1
     counts = Counter((r["detector_type"], r["source"]) for r in rows)
     changed = sum(r["changed"] for r in rows)
     verb = "would change" if args.dry_run else "changed"
