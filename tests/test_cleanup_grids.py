@@ -135,3 +135,225 @@ def test_densifier_menu_rejects_out_of_range_choice(tmp_path, monkeypatch, capsy
     monkeypatch.setattr(gd, "densify_grid", lambda **kw: pytest.fail("must not run"))
     gd.run_interactive_workflow(str(tmp_path))
     assert "Invalid selection." in capsys.readouterr().out
+
+
+# ---------------------------------------------------------------------
+# spectra_cleaner: HDF5 wavelength recovery (characterisation)
+# ---------------------------------------------------------------------
+
+def _h5(path, build):
+    import h5py
+
+    with h5py.File(path, "w") as f:
+        build(f)
+    return path
+
+
+def test_recovery_reads_direct_dataset_in_spec_group(tmp_path):
+    import numpy as np
+
+    from sed_tools.spectra_cleaner import recover_wavelengths_from_hdf5
+
+    wl = np.linspace(3000.0, 9000.0, 12)
+    _h5(tmp_path / "msg.h5", lambda f: f.create_group("g1").create_dataset("lambda", data=wl))
+    np.testing.assert_array_equal(recover_wavelengths_from_hdf5(str(tmp_path), "g1", 10), wl[:10])
+
+
+def test_recovery_reads_range_x_then_segments(tmp_path):
+    import numpy as np
+
+    from sed_tools.spectra_cleaner import recover_wavelengths_from_hdf5
+
+    def build(f):
+        rg = f.create_group("g1").create_group("range")
+        rg.create_group("range2").create_dataset("wave", data=np.linspace(6000.0, 9000.0, 5))
+        rg.create_group("range1").create_dataset("wave", data=np.linspace(3000.0, 5000.0, 5))
+        g2 = f.create_group("g2").create_group("range")
+        g2.create_dataset("x", data=np.linspace(2000.0, 4000.0, 8))
+
+    _h5(tmp_path / "msg.h5", build)
+    seg = recover_wavelengths_from_hdf5(str(tmp_path), "g1", 10)
+    np.testing.assert_array_equal(seg, np.concatenate([np.linspace(3000.0, 5000.0, 5),
+                                                       np.linspace(6000.0, 9000.0, 5)]))
+    np.testing.assert_array_equal(recover_wavelengths_from_hdf5(str(tmp_path), "g2", 8),
+                                  np.linspace(2000.0, 4000.0, 8))
+
+
+def test_recovery_top_level_array_within_two_points(tmp_path):
+    import numpy as np
+
+    from sed_tools.spectra_cleaner import recover_wavelengths_from_hdf5
+
+    wl = np.linspace(3000.0, 9000.0, 11)
+    _h5(tmp_path / "msg.h5", lambda f: f.create_dataset("wavelength", data=wl))
+    np.testing.assert_array_equal(recover_wavelengths_from_hdf5(str(tmp_path), "absent", 10), wl[:10])
+    assert recover_wavelengths_from_hdf5(str(tmp_path), "absent", 20) is None
+
+
+def test_recovery_global_search_skips_non_numeric_datasets(tmp_path):
+    import numpy as np
+
+    from sed_tools.spectra_cleaner import recover_wavelengths_from_hdf5
+
+    wl = np.geomspace(1000.0, 50000.0, 9)
+
+    def build(f):
+        f.create_dataset("labels", data=np.array([b"a", b"b"]))
+        f.create_dataset("records", data=np.zeros(9, dtype=[("a", "f8"), ("b", "i4")]))
+        f.create_group("deep").create_group("er").create_dataset("grid", data=wl)
+
+    _h5(tmp_path / "msg.h5", build)
+    np.testing.assert_array_equal(recover_wavelengths_from_hdf5(str(tmp_path), "absent", 9), wl)
+
+
+def test_recovery_rejects_index_like_arrays(tmp_path):
+    import numpy as np
+
+    from sed_tools.spectra_cleaner import recover_wavelengths_from_hdf5
+
+    _h5(tmp_path / "msg.h5", lambda f: f.create_group("g1").create_dataset("lambda", data=np.arange(10.0)))
+    assert recover_wavelengths_from_hdf5(str(tmp_path), "g1", 10) is None
+
+
+def test_recovery_warns_about_unreadable_h5(tmp_path, caplog):
+    # An unreadable .h5 used to be skipped with a DEBUG message only.
+    import logging
+
+    from sed_tools.spectra_cleaner import recover_wavelengths_from_hdf5
+
+    (tmp_path / "broken.h5").write_bytes(b"not an hdf5 file")
+    with caplog.at_level(logging.WARNING, logger="sed_tools.spectra_cleaner"):
+        assert recover_wavelengths_from_hdf5(str(tmp_path), "g1", 10) is None
+    assert "broken.h5" in caplog.text
+
+
+def test_recovery_still_uses_a_good_h5_beside_a_broken_one(tmp_path):
+    import numpy as np
+
+    from sed_tools.spectra_cleaner import recover_wavelengths_from_hdf5
+
+    (tmp_path / "broken.h5").write_bytes(b"not an hdf5 file")
+    wl = np.linspace(3000.0, 9000.0, 10)
+    _h5(tmp_path / "good.h5", lambda f: f.create_group("g1").create_dataset("lambda", data=wl))
+    np.testing.assert_array_equal(recover_wavelengths_from_hdf5(str(tmp_path), "g1", 10), wl)
+
+
+# ---------------------------------------------------------------------
+# spectra_cleaner: clean_model_dir must not report success over
+# spectra it left in their original units
+# ---------------------------------------------------------------------
+
+def _spectrum(path, teff=5000.0, unit_line="# wavelength_unit = nm\n", wl=None, flux=None):
+    import numpy as np
+
+    wl = np.linspace(400.0, 700.0, 30) if wl is None else wl
+    flux = np.full(len(wl), 1e-14) if flux is None else flux
+    lines = [f"# source = testgrid\n# teff = {teff}\n# logg = 4.0\n# metallicity = 0.0\n", unit_line]
+    lines += [f"{w:.6f} {f:.8e}\n" for w, f in zip(wl, flux)]
+    path.write_text("".join(lines))
+
+
+def _is_standardized(path):
+    return "units_standardized = True" in path.read_text()
+
+
+def test_clean_model_dir_raises_listing_unconverted_spectra(tmp_path):
+    # Used to return a summary as if the grid were clean, leaving these two
+    # files in their original units beside the converted ones.
+    import numpy as np
+
+    from sed_tools.spectra_cleaner import clean_model_dir
+
+    for i in range(3):
+        _spectrum(tmp_path / f"good_{i}.txt", teff=4000.0 + 1000 * i)
+    (tmp_path / "empty.txt").write_text("# teff = 5000\n")
+    _spectrum(tmp_path / "index.txt", unit_line="", wl=np.arange(30.0))
+
+    with pytest.raises(RuntimeError) as err:
+        clean_model_dir(str(tmp_path), sample_fraction=1.0)
+
+    message = str(err.value)
+    assert "2 of 5 spectra" in message
+    assert "empty data (1): empty.txt" in message
+    assert "index grid without HDF5 recovery (1): index.txt" in message
+    assert "lookup_table.csv was rebuilt" in message
+    assert all(_is_standardized(tmp_path / f"good_{i}.txt") for i in range(3))
+    assert not _is_standardized(tmp_path / "empty.txt")
+    assert (tmp_path / "lookup_table.csv").exists()
+
+
+def test_clean_model_dir_records_unreadable_file_and_finishes_the_rest(tmp_path, monkeypatch):
+    import sed_tools.spectra_cleaner as sc
+
+    _spectrum(tmp_path / "a.txt")
+    (tmp_path / "b.txt").mkdir()  # matches *.txt but cannot be read as a file
+    _spectrum(tmp_path / "c.txt")
+    monkeypatch.setattr(sc.random, "sample", lambda files, n: [str(tmp_path / "a.txt")])
+
+    with pytest.raises(RuntimeError, match=r"IsADirectoryError.*\(1\): b\.txt"):
+        sc.clean_model_dir(str(tmp_path), rebuild_lookup=False, sample_fraction=0.4)
+    assert _is_standardized(tmp_path / "a.txt") and _is_standardized(tmp_path / "c.txt")
+
+
+def test_clean_model_dir_unreadable_sampled_file_stops_before_any_rewrite(tmp_path):
+    # Used to be counted as an invalid sample without saying why.
+    from sed_tools.spectra_cleaner import clean_model_dir
+
+    _spectrum(tmp_path / "a.txt")
+    (tmp_path / "b.txt").mkdir()
+
+    with pytest.raises(IsADirectoryError, match=r"b\.txt"):
+        clean_model_dir(str(tmp_path), sample_fraction=1.0)
+    assert not _is_standardized(tmp_path / "a.txt")
+
+
+def test_clean_model_dir_stops_at_once_when_a_rewrite_fails(tmp_path, monkeypatch):
+    # A failed rewrite can leave a header-only file that later runs skip, so
+    # the batch must not carry on (it used to record 'error' and continue).
+    import sed_tools.spectra_cleaner as sc
+
+    for name in ("a.txt", "b.txt"):
+        _spectrum(tmp_path / name)
+    calls = []
+
+    def disk_full(filepath, *args):
+        calls.append(filepath)
+        raise OSError(28, "No space left on device")
+
+    monkeypatch.setattr(sc, "write_standardized_spectrum", disk_full)
+    with pytest.raises(RuntimeError, match=r"a\.txt.*only its new header"):
+        sc.clean_model_dir(str(tmp_path), sample_fraction=1.0)
+    assert len(calls) == 1
+
+
+def test_write_standardized_spectrum_length_mismatch_leaves_file_intact(tmp_path):
+    import numpy as np
+
+    from sed_tools.spectra_cleaner import SpectrumMeta, UnitInfo, write_standardized_spectrum
+
+    path = tmp_path / "s.txt"
+    _spectrum(path)
+    before = path.read_text()
+    units = UnitInfo("angstrom", 1.0, "flam", 1.0, "high", "header")
+    with pytest.raises(ValueError):
+        write_standardized_spectrum(str(path), np.arange(1.0, 5.0), np.ones(3), SpectrumMeta(), units)
+    assert path.read_text() == before
+
+
+def test_clean_model_dir_warns_when_units_come_from_each_file(tmp_path, monkeypatch, caplog):
+    # The sample happened to hold only standardized files, so the grid-wide
+    # units were unknown and the rest were converted one by one, silently.
+    import logging
+
+    import sed_tools.spectra_cleaner as sc
+
+    for i in range(9):
+        _spectrum(tmp_path / f"raw_{i}.txt")
+    done = tmp_path / "done.txt"
+    done.write_text("# units_standardized = True\n4000 1.0\n5000 2.0\n")
+    monkeypatch.setattr(sc.random, "sample", lambda files, n: [str(done)])
+
+    with caplog.at_level(logging.WARNING, logger="sed_tools.spectra_cleaner"):
+        summary = sc.clean_model_dir(str(tmp_path), sample_fraction=0.1)
+    assert len(summary["converted"]) == 9
+    assert "9 spectra were converted using units detected file by file" in caplog.text

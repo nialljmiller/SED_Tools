@@ -26,20 +26,17 @@ import os
 import random
 import re
 import time
-from collections import Counter
+from collections import Counter, defaultdict
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
+import h5py
 import numpy as np
 
-from ._constants import C, H, K, SIGMA, planck_flam as _planck_flam
+from ._constants import C
 from ._lookup_io import write_lookup_csv
-
-try:
-    import h5py
-    HAS_H5PY = True
-except ImportError:
-    HAS_H5PY = False
+from .header_parser import parse_header as _parse_header_dict
+from .spectrum_io import read_text_spectrum
 
 logger = logging.getLogger(__name__)
 
@@ -109,8 +106,6 @@ class SpectrumMeta:
 # ============================================================================
 # HEADER PARSING
 # ============================================================================
-from .header_parser import parse_header as _parse_header_dict
-from .spectrum_io import read_text_spectrum
 
 def _load_header(filepath: str) -> Tuple[SpectrumMeta, str]:
     """Internal adapter: calls header_parser and returns (SpectrumMeta, raw_header_text)."""
@@ -131,14 +126,11 @@ def _load_header(filepath: str) -> Tuple[SpectrumMeta, str]:
 
     # re-read raw header text for unit detection
     header_lines = []
-    try:
-        with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
-            for line in f:
-                if not line.strip().startswith("#"):
-                    break
-                header_lines.append(line)
-    except Exception:
-        logger.debug("Could not read header text from %s", filepath, exc_info=True)
+    with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+        for line in f:
+            if not line.strip().startswith("#"):
+                break
+            header_lines.append(line)
 
     return meta, "".join(header_lines)
 
@@ -381,21 +373,21 @@ def detect_units_single_file(filepath: str) -> Optional[UnitInfo]:
 
 
 # ============================================================================
-# SPECTRAL GRID UNIT DETECTION (10% SAMPLE)
+# SPECTRAL GRID UNIT DETECTION (SAMPLED)
 # ============================================================================
 
 def detect_catalog_units(txt_files: List[str], sample_fraction: float = 0.10) -> Tuple[Optional[UnitInfo], Dict]:
     """
     Detect units from a sample of model spectrum files.
     
-    Samples 10% of files (min 1, max 100), determines consensus units.
+    Samples ``sample_fraction`` of the files at random (min 1, max 1000) and
+    takes the most common wavelength unit and flux type as the grid's units.
     
     Returns: (UnitInfo or None, stats_dict)
     """
     if not txt_files:
         return None, {'error': 'no files'}
     
-    # Calculate sample size: 10%, min 1, max 100
     n_total = len(txt_files)
     n_sample = max(1, min(1000, int(n_total * sample_fraction)))
     
@@ -405,30 +397,7 @@ def detect_catalog_units(txt_files: List[str], sample_fraction: float = 0.10) ->
     else:
         sample_files = random.sample(txt_files, n_sample)
     
-    # Detect units from each sample file
-    detections = []
-    skipped_standardized = 0
-    skipped_invalid = 0
-    index_grids = 0
-    
-    for filepath in sample_files:
-        unit_info = detect_units_single_file(filepath)
-        
-        if unit_info is None:
-            # Check why it was skipped
-            meta, _ = _load_header(filepath)
-            if meta.units_standardized:
-                skipped_standardized += 1
-            else:
-                skipped_invalid += 1
-            continue
-        
-        if unit_info.confidence == 'index_grid':
-            index_grids += 1
-            continue
-        
-        detections.append(unit_info)
-    
+    detections, skipped_standardized, skipped_invalid, index_grids = _detect_sample(sample_files)
     stats = {
         'total_files': n_total,
         'sample_size': n_sample,
@@ -451,27 +420,8 @@ def detect_catalog_units(txt_files: List[str], sample_fraction: float = 0.10) ->
     # Find consensus: most common wavelength unit and flux type
     wl_units = Counter(d.wavelength_unit for d in detections)
     flux_types = Counter(d.flux_type for d in detections)
-    
     consensus_wl = wl_units.most_common(1)[0][0]
     consensus_flux = flux_types.most_common(1)[0][0]
-    
-    # Get representative UnitInfo with consensus values
-    # Use the first detection that matches consensus for factors
-    representative = None
-    for d in detections:
-        if d.wavelength_unit == consensus_wl and d.flux_type == consensus_flux:
-            representative = d
-            break
-    
-    if representative is None:
-        # Fallback: use first detection with consensus wavelength
-        for d in detections:
-            if d.wavelength_unit == consensus_wl:
-                representative = d
-                break
-    
-    if representative is None:
-        representative = detections[0]
     
     # Check consensus strength
     wl_agreement = wl_units[consensus_wl] / len(detections)
@@ -495,12 +445,49 @@ def detect_catalog_units(txt_files: List[str], sample_fraction: float = 0.10) ->
         wavelength_unit=consensus_wl,
         wavelength_factor=WAVELENGTH_FACTORS.get(consensus_wl, 1.0),
         flux_type=consensus_flux,
-        flux_factor=representative.flux_factor,
+        flux_factor=_representative(detections, consensus_wl, consensus_flux).flux_factor,
         confidence=confidence,
         detection_source='catalog_consensus'
     )
     
     return catalog_units, stats
+
+
+def _detect_sample(sample_files: List[str]) -> Tuple[List[UnitInfo], int, int, int]:
+    """Detect units in each sampled file.
+
+    Returns (detections, n_already_standardized, n_invalid, n_index_grids).
+    """
+    detections = []
+    skipped_standardized = 0
+    skipped_invalid = 0
+    index_grids = 0
+    for filepath in sample_files:
+        unit_info = detect_units_single_file(filepath)
+        if unit_info is None:
+            # Check why it was skipped
+            meta, _ = _load_header(filepath)
+            if meta.units_standardized:
+                skipped_standardized += 1
+            else:
+                skipped_invalid += 1
+        elif unit_info.confidence == 'index_grid':
+            index_grids += 1
+        else:
+            detections.append(unit_info)
+    return detections, skipped_standardized, skipped_invalid, index_grids
+
+
+def _representative(detections: List[UnitInfo], wl_unit: str, flux_type: str) -> UnitInfo:
+    """The detection whose flux factor the grid uses.
+
+    The first detection matching both consensus units, else the first with the
+    consensus wavelength unit (one always exists: the consensus came from them).
+    """
+    for d in detections:
+        if d.wavelength_unit == wl_unit and d.flux_type == flux_type:
+            return d
+    return next(d for d in detections if d.wavelength_unit == wl_unit)
 
 
 # ============================================================================
@@ -596,11 +583,12 @@ def write_standardized_spectrum(
                        'original_wavelength_unit', 'original_flux_unit', 'conversion_confidence'):
             header += f"# {key} = {value}\n"
     
-    # Write file
+    # Stack first so a length mismatch fails before the file is truncated.
+    data = np.column_stack([wl, flux])
     with open(filepath, 'w', encoding='utf-8') as f:
         f.write(header)
     with open(filepath, 'ab') as f:
-        np.savetxt(f, np.column_stack([wl, flux]), fmt='%.6f %.8e')
+        np.savetxt(f, data, fmt='%.6f %.8e')
 
 
 # ============================================================================
@@ -633,96 +621,121 @@ def recover_wavelengths_from_hdf5(
     """
     Attempt to recover wavelength array from HDF5 file for index grids.
 
-    Searches in priority order:
+    Searches every *.h5 in model_dir, in priority order:
       1. Direct wavelength dataset within spec_group
       2. range/x structure within spec_group
       3. Top-level wavelength arrays in the HDF5 root
       4. Global search for any physically plausible array of the right length
 
+    An unreadable .h5 is reported with a warning and the next one is tried.
     Returns None if no physical wavelength grid is found.
     """
-    if not HAS_H5PY:
-        return None
-
-    h5_files = glob.glob(os.path.join(model_dir, "*.h5"))
-
-    for h5_path in h5_files:
+    for h5_path in glob.glob(os.path.join(model_dir, "*.h5")):
         try:
             with h5py.File(h5_path, 'r') as f:
-                # ---- 1. Direct wavelength dataset within spec_group ----
-                if spec_group in f:
-                    group = f[spec_group]
-                    for key in WAVE_KEYS:
-                        if key in group and isinstance(group[key], h5py.Dataset):
-                            wl = np.array(group[key]).astype(float).ravel()
-                            if (wl.size >= expected_len and
-                                    np.all(np.diff(wl[:expected_len]) > 0) and
-                                    _is_physical_wavelength_array(wl[:expected_len])):
-                                return wl[:expected_len]
-
-                    # ---- 2. range/x structure ----
-                    if 'range' in group and isinstance(group['range'], h5py.Group):
-                        rg = group['range']
-                        if 'x' in rg and isinstance(rg['x'], h5py.Dataset):
-                            wl = np.array(rg['x']).astype(float).ravel()
-                            if (wl.size >= expected_len and
-                                    np.all(np.diff(wl[:expected_len]) > 0) and
-                                    _is_physical_wavelength_array(wl[:expected_len])):
-                                return wl[:expected_len]
-
-                        # Concatenated segments
-                        segs = []
-                        seg_names = sorted(
-                            [k for k in rg.keys() if 'range' in k.lower()],
-                            key=lambda s: int(re.search(r'\d+', s).group()) if re.search(r'\d+', s) else 0
-                        )
-                        for sn in seg_names:
-                            if not isinstance(rg[sn], h5py.Group):
-                                continue
-                            sg = rg[sn]
-                            for key in WAVE_KEYS:
-                                if key in sg and isinstance(sg[key], h5py.Dataset):
-                                    segs.append(np.array(sg[key]).astype(float).ravel())
-                                    break
-                        if segs:
-                            wl = np.concatenate(segs)
-                            if (wl.size >= expected_len and
-                                    _is_physical_wavelength_array(wl[:expected_len])):
-                                return wl[:expected_len]
-
-                # ---- 3. Top-level wavelength arrays (MSG often stores here) ----
-                for key in WAVE_KEYS:
-                    if key in f and isinstance(f[key], h5py.Dataset):
-                        wl = np.array(f[key]).astype(float).ravel()
-                        if (wl.size >= 2 and np.all(np.diff(wl) > 0) and
-                                _is_physical_wavelength_array(wl)):
-                            if abs(wl.size - expected_len) <= 2:
-                                return wl[:expected_len] if wl.size > expected_len else wl
-
-                # ---- 4. Global search — physical validation required ----
-                def _iter_all(g, prefix=""):
-                    for k, v in g.items():
-                        path = f"{prefix}/{k}" if prefix else k
-                        if isinstance(v, h5py.Dataset):
-                            yield path, v
-                        elif isinstance(v, h5py.Group):
-                            yield from _iter_all(v, path)
-
-                for path, d in _iter_all(f):
-                    try:
-                        arr = np.array(d[()]).astype(float).ravel()
-                    except Exception:
-                        logger.debug("Could not read HDF5 dataset at path %s", path, exc_info=True)
-                        continue
-                    if (arr.ndim == 1 and arr.size == expected_len and
-                            np.all(np.diff(arr) > 0) and
-                            _is_physical_wavelength_array(arr)):
-                        return arr
-
-        except Exception:
-            logger.debug("Could not read HDF5 file %s for wavelength recovery", h5_path, exc_info=True)
+                wl = _wavelengths_in_h5(f, spec_group, expected_len)
+        except OSError as exc:
+            logger.warning("Skipping unreadable HDF5 file %s while recovering wavelengths "
+                           "for %s: %s", h5_path, spec_group, exc)
             continue
+        if wl is not None:
+            return wl
+    return None
 
+
+def _wavelengths_in_h5(f, spec_group: str, expected_len: int) -> Optional[np.ndarray]:
+    """Apply the four recovery searches to one open HDF5 file."""
+    if spec_group in f:
+        wl = _wavelengths_in_group(f[spec_group], expected_len)
+        if wl is not None:
+            return wl
+    wl = _top_level_wavelengths(f, expected_len)
+    if wl is not None:
+        return wl
+    return _search_all_datasets(f, expected_len)
+
+
+def _increasing_physical_prefix(wl: np.ndarray, expected_len: int) -> Optional[np.ndarray]:
+    """wl[:expected_len] if wl is long enough and that prefix is a rising physical grid."""
+    if (wl.size >= expected_len and
+            np.all(np.diff(wl[:expected_len]) > 0) and
+            _is_physical_wavelength_array(wl[:expected_len])):
+        return wl[:expected_len]
+    return None
+
+
+def _wavelengths_in_group(group, expected_len: int) -> Optional[np.ndarray]:
+    """Searches 1 and 2: a wavelength dataset in the spectrum's group, then its range/ subgroup."""
+    for key in WAVE_KEYS:
+        if key in group and isinstance(group[key], h5py.Dataset):
+            wl = _increasing_physical_prefix(np.array(group[key]).astype(float).ravel(), expected_len)
+            if wl is not None:
+                return wl
+    if 'range' in group and isinstance(group['range'], h5py.Group):
+        return _wavelengths_in_range_group(group['range'], expected_len)
+    return None
+
+
+def _segment_number(name: str) -> int:
+    match = re.search(r'\d+', name)
+    return int(match.group()) if match else 0
+
+
+def _wavelengths_in_range_group(rg, expected_len: int) -> Optional[np.ndarray]:
+    """range/x, else the range segments' wavelength datasets concatenated in numeric order."""
+    if 'x' in rg and isinstance(rg['x'], h5py.Dataset):
+        wl = _increasing_physical_prefix(np.array(rg['x']).astype(float).ravel(), expected_len)
+        if wl is not None:
+            return wl
+
+    segs = []
+    seg_names = sorted([k for k in rg.keys() if 'range' in k.lower()], key=_segment_number)
+    for sn in seg_names:
+        if not isinstance(rg[sn], h5py.Group):
+            continue
+        sg = rg[sn]
+        for key in WAVE_KEYS:
+            if key in sg and isinstance(sg[key], h5py.Dataset):
+                segs.append(np.array(sg[key]).astype(float).ravel())
+                break
+    if segs:
+        wl = np.concatenate(segs)
+        if wl.size >= expected_len and _is_physical_wavelength_array(wl[:expected_len]):
+            return wl[:expected_len]
+    return None
+
+
+def _top_level_wavelengths(f, expected_len: int) -> Optional[np.ndarray]:
+    """Search 3: a root-level wavelength dataset within two points of the expected length."""
+    for key in WAVE_KEYS:
+        if key in f and isinstance(f[key], h5py.Dataset):
+            wl = np.array(f[key]).astype(float).ravel()
+            if (wl.size >= 2 and np.all(np.diff(wl) > 0) and
+                    _is_physical_wavelength_array(wl) and
+                    abs(wl.size - expected_len) <= 2):
+                return wl[:expected_len] if wl.size > expected_len else wl
+    return None
+
+
+def _iter_datasets(group):
+    for item in group.values():
+        if isinstance(item, h5py.Dataset):
+            yield item
+        elif isinstance(item, h5py.Group):
+            yield from _iter_datasets(item)
+
+
+def _search_all_datasets(f, expected_len: int) -> Optional[np.ndarray]:
+    """Search 4: any rising physical numeric dataset of exactly the expected length."""
+    for dataset in _iter_datasets(f):
+        try:
+            arr = np.array(dataset[()]).astype(float).ravel()
+        except (TypeError, ValueError):
+            continue  # string and compound datasets cannot be wavelength grids
+        if (arr.size == expected_len and
+                np.all(np.diff(arr) > 0) and
+                _is_physical_wavelength_array(arr)):
+            return arr
     return None
 
 
@@ -763,16 +776,19 @@ def clean_spectrum_file(
     
     Args:
         filepath: Path to spectrum file
-        catalog_units: Pre-determined units for the spectral grid (from 10% sample).
+        catalog_units: Pre-determined units for the spectral grid (from the sample).
                        If None, detects units per-file (legacy behavior).
         try_h5_recovery: Attempt HDF5 wavelength recovery for index grids
     
     Returns: (status, detail)
         status: 'skipped_already', 'skipped_index', 'skipped_invalid', 
-                'converted', 'recovered', 'error'
+                'converted', 'recovered'
+
+    Raises RuntimeError if rewriting the file fails; the file may then hold
+    only its new header.
     """
     # Parse header
-    meta, header_text = _load_header(filepath)
+    meta, _ = _load_header(filepath)
     
     # Skip if already standardized
     if meta.units_standardized:
@@ -791,85 +807,53 @@ def clean_spectrum_file(
     if wl.size < 2:
         return 'skipped_invalid', 'no valid data points'
     
-    # Sort by wavelength
-    order = np.argsort(wl)
-    wl, flux = wl[order], flux[order]
+    wl, flux = _sorted_unique(wl, flux)
     
-    # Remove duplicates (keep first)
-    unique_mask = np.concatenate([[True], np.diff(wl) > 0])
-    wl, flux = wl[unique_mask], flux[unique_mask]
-    
-    # Check for index grid
-    recovered_wl = None
     if is_index_grid(wl):
-        if try_h5_recovery and meta.spec_group and 'msg' in meta.source.lower():
-            model_dir = os.path.dirname(filepath)
-            recovered_wl = recover_wavelengths_from_hdf5(model_dir, meta.spec_group, len(flux))
-        
-        if recovered_wl is None:
+        wl = _recovered_wavelengths(filepath, meta, len(flux), try_h5_recovery)
+        if wl is None:
             return 'skipped_index', 'index grid without HDF5 recovery'
-        
-        wl = recovered_wl
         status = 'recovered'
     else:
         status = 'converted'
     
-    # Use catalog units if provided, otherwise detect per-file
-    if catalog_units is not None:
-        unit_info = catalog_units
-    else:
-        unit_info = detect_units_single_file(filepath)
-        if unit_info is None:
-            # Fallback detection
-            header_units = detect_units_from_header(header_text)
-            wl_unit = header_units.get('wavelength_unit') or 'angstrom'
-            flux_type = header_units.get('flux_unit') or 'flam'
-            unit_info = UnitInfo(
-                wavelength_unit=wl_unit,
-                wavelength_factor=WAVELENGTH_FACTORS.get(wl_unit, 1.0),
-                flux_type=flux_type,
-                flux_factor=1.0,
-                confidence='low',
-                detection_source='fallback'
-            )
-    
-    try:
-        wl_std, flux_std = convert_to_standard_units(wl, flux, unit_info)
-    except Exception as e:
-        return 'error', str(e)
+    # Use catalog units if provided, otherwise detect per-file (the file has
+    # at least two valid points by now, so per-file detection always succeeds).
+    unit_info = catalog_units if catalog_units is not None else detect_units_single_file(filepath)
+    wl_std, flux_std = convert_to_standard_units(wl, flux, unit_info)
     
     # Validate
     valid, msg = validate_converted_spectrum(wl_std, flux_std)
     if not valid:
         return 'skipped_invalid', f'validation failed: {msg}'
 
-    # Post-conversion bolometric sanity check.
-    # If the integrated flux deviates by more than 3x from the expected
-    # blackbody integral over the same wavelength range, renormalize.
-    # This catches cases where the source data has a wrong absolute flux scale
-    # (e.g. NJM NextGen T >= 5000K which is ~100x too large).
-    if np.isfinite(meta.teff) and meta.teff > 0:
-        try:
-            wl_bb = np.linspace(max(float(wl_std[0]), 1.0), float(wl_std[-1]), 2000)
-            bb    = _planck_flam(wl_bb, meta.teff)
-            bol_expected = float(np.trapezoid(bb, wl_bb))
-            bol_actual   = float(np.trapezoid(np.maximum(flux_std, 0), wl_std))
-            # Only renorm when coverage is meaningful (>5% of total sigmaT4)
-            bol_total = SIGMA_SB * meta.teff**4
-            coverage = bol_expected / bol_total if bol_total > 0 else 0
-            if coverage >= 0.05 and bol_expected > 0:
-                ratio = bol_actual / bol_expected
-                if ratio > 3.0 or ratio < 0.1:
-                    flux_std = flux_std / ratio
-                    status = status + '_renormed'
-        except Exception:
-            logger.debug("Bolometric renorm failed for %s", filepath, exc_info=True)  # renorm is best-effort, never block the write
-    
-    # Write standardized file
-    write_standardized_spectrum(filepath, wl_std, flux_std, meta, unit_info)
+    try:
+        write_standardized_spectrum(filepath, wl_std, flux_std, meta, unit_info)
+    except OSError as exc:
+        raise RuntimeError(
+            f"Failed while rewriting {filepath}: {exc}. The file may now hold only its new "
+            "header, which marks it as standardized, so later runs would skip it. Restore "
+            "it from the original download, then run the cleaning again."
+        ) from exc
     
     detail = f"{wl_std[0]:.0f}-{wl_std[-1]:.0f}Å, {unit_info.wavelength_unit}→Å, conf={unit_info.confidence}"
     return status, detail
+
+
+def _sorted_unique(wl: np.ndarray, flux: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    """Sort by wavelength and drop repeated wavelengths, keeping the first."""
+    order = np.argsort(wl)
+    wl, flux = wl[order], flux[order]
+    unique_mask = np.concatenate([[True], np.diff(wl) > 0])
+    return wl[unique_mask], flux[unique_mask]
+
+
+def _recovered_wavelengths(filepath: str, meta: SpectrumMeta, n_points: int,
+                           try_h5_recovery: bool) -> Optional[np.ndarray]:
+    """Real wavelengths for an index-grid MSG spectrum from the grid's HDF5 files, or None."""
+    if not (try_h5_recovery and meta.spec_group and 'msg' in meta.source.lower()):
+        return None
+    return recover_wavelengths_from_hdf5(os.path.dirname(filepath), meta.spec_group, n_points)
 
 
 def rebuild_lookup_table(model_dir: str) -> str:
@@ -922,7 +906,7 @@ def clean_model_dir(
     """
     Clean all spectra in a model directory.
     
-    KEY: Detects units from 10% sample first, then applies uniformly.
+    KEY: Detects units from a random sample first (default 10%), then applies uniformly.
     
     Args:
         model_dir: Directory containing *.txt spectrum files
@@ -932,6 +916,12 @@ def clean_model_dir(
     
     Returns:
         Summary dict with counts and file lists
+
+    Raises:
+        RuntimeError: if any spectrum is left unconverted (invalid, unrecoverable
+            index grid, or unreadable). Raised after every file has been tried
+            and the lookup table rebuilt, listing each such file and why.
+            Raised at once if rewriting a file fails.
     """
     txt_files = sorted(glob.glob(os.path.join(model_dir, "*.txt")))
     
@@ -953,64 +943,29 @@ def clean_model_dir(
         return summary
     
     # =========================================================
-    # STEP 1: Detect catalog-wide units from 10% sample
+    # STEP 1: Detect catalog-wide units from a sample
     # =========================================================
     catalog_units, detection_stats = detect_catalog_units(txt_files, sample_fraction)
     summary['detection_stats'] = detection_stats
-    
     if catalog_units:
         summary['catalog_units'] = {
             'wavelength': catalog_units.wavelength_unit,
             'flux': catalog_units.flux_type,
             'confidence': catalog_units.confidence,
         }
-        print(f"[clean] Spectral grid units (from {detection_stats.get('sample_size', '?')} samples): "
-              f"λ={catalog_units.wavelength_unit} ({detection_stats.get('wavelength_agreement', '?')}), "
-              f"flux={catalog_units.flux_type} ({detection_stats.get('flux_agreement', '?')})")
-    elif detection_stats.get('status') == 'already_standardized':
-        print(f"[clean] Spectral grid already standardized (all {detection_stats.get('sample_size', '?')} samples)")
-    else:
-        print(f"[clean] Warning: Could not determine spectral grid units. Status: {detection_stats.get('status', 'unknown')}")
+    _print_detected_units(catalog_units, detection_stats)
     
     # =========================================================
     # STEP 2: Apply catalog units to ALL files
     # =========================================================
-    failure_reasons = Counter()
-    n_total_files = len(txt_files)
-    t_start = time.time()
-    for i, filepath in enumerate(txt_files):
-        filename = os.path.basename(filepath)
-        try:
-            status, detail = clean_spectrum_file(
-                filepath,
-                catalog_units=catalog_units,
-                try_h5_recovery=try_h5_recovery,
-            )
-            if status in summary:
-                summary[status].append(filename)
-            else:
-                summary['error'].append(filename)
-            if status == 'skipped_invalid':
-                failure_reasons[detail] += 1
-        except Exception as e:
-            summary['error'].append(filename)
-            failure_reasons[f'exception: {type(e).__name__}: {e}'] += 1
-
-        done = i + 1
-        elapsed = time.time() - t_start
-        rate = done / elapsed if elapsed > 0 else 1.0
-        eta = (n_total_files - done) / rate
-        print(
-            f"\r  [clean] {done}/{n_total_files} ({100*done/n_total_files:.1f}%)  "
-            f"elapsed {elapsed:.0f}s  ETA {eta:.0f}s   ",
-            end="", flush=True,
+    failures = _clean_all_files(txt_files, catalog_units, try_h5_recovery, summary)
+    n_per_file = len(summary['converted']) + len(summary['recovered'])
+    if catalog_units is None and n_per_file:
+        logger.warning(
+            "%s: the sampled files gave no grid-wide units (status: %s); %d spectra were "
+            "converted using units detected file by file.",
+            model_dir, detection_stats.get('status', 'unknown'), n_per_file,
         )
-    print()
-
-    if failure_reasons:
-        print("  [clean] Failure breakdown:")
-        for reason, count in failure_reasons.most_common(10):
-            print(f"    {count:>6}x  {reason}")
     
     # =========================================================
     # STEP 3: Rebuild lookup table
@@ -1021,4 +976,78 @@ def clean_model_dir(
             summary['lookup_updated'] = True
             summary['lookup_path'] = lookup_path
     
+    if failures:
+        raise RuntimeError(
+            _unconverted_report(model_dir, len(txt_files), failures, summary['lookup_updated'])
+        )
     return summary
+
+
+# Outcomes that leave a spectrum in its original units.
+_UNCONVERTED = ('skipped_invalid', 'skipped_index', 'error')
+
+
+def _print_detected_units(catalog_units: Optional[UnitInfo], stats: Dict) -> None:
+    if catalog_units:
+        print(f"[clean] Spectral grid units (from {stats.get('sample_size', '?')} samples): "
+              f"λ={catalog_units.wavelength_unit} ({stats.get('wavelength_agreement', '?')}), "
+              f"flux={catalog_units.flux_type} ({stats.get('flux_agreement', '?')})")
+    elif stats.get('status') == 'already_standardized':
+        print(f"[clean] Spectral grid already standardized (all {stats.get('sample_size', '?')} samples)")
+    else:
+        print(f"[clean] Warning: Could not determine spectral grid units. Status: {stats.get('status', 'unknown')}")
+
+
+def _clean_all_files(txt_files: List[str], catalog_units: Optional[UnitInfo],
+                     try_h5_recovery: bool, summary: Dict) -> List[Tuple[str, str]]:
+    """Clean every file, appending each file name to its status list in *summary*.
+
+    Returns (file name, reason) for every spectrum left unconverted. A file that
+    cannot be read is recorded and the batch goes on; a failed rewrite raises.
+    """
+    failures = []
+    t_start = time.time()
+    for i, filepath in enumerate(txt_files):
+        filename = os.path.basename(filepath)
+        try:
+            status, detail = clean_spectrum_file(
+                filepath,
+                catalog_units=catalog_units,
+                try_h5_recovery=try_h5_recovery,
+            )
+        except (OSError, ValueError) as exc:
+            # Raised before the file is rewritten (rewrite failures raise RuntimeError).
+            status, detail = 'error', f'{type(exc).__name__}: {exc}'
+        summary[status].append(filename)
+        if status in _UNCONVERTED:
+            failures.append((filename, detail))
+        _print_progress(i + 1, len(txt_files), t_start)
+    print()
+    return failures
+
+
+def _print_progress(done: int, total: int, t_start: float) -> None:
+    elapsed = time.time() - t_start
+    rate = done / elapsed if elapsed > 0 else 1.0
+    eta = (total - done) / rate
+    print(
+        f"\r  [clean] {done}/{total} ({100*done/total:.1f}%)  "
+        f"elapsed {elapsed:.0f}s  ETA {eta:.0f}s   ",
+        end="", flush=True,
+    )
+
+
+def _unconverted_report(model_dir: str, n_total: int, failures: List[Tuple[str, str]],
+                        lookup_rebuilt: bool) -> str:
+    """Error text listing every unconverted spectrum, grouped by reason."""
+    by_reason = defaultdict(list)
+    for filename, reason in failures:
+        by_reason[reason].append(filename)
+    lines = [f"{len(failures)} of {n_total} spectra in {model_dir} were not converted "
+             "and are still in their original units:"]
+    for reason, filenames in by_reason.items():
+        lines.append(f"  {reason} ({len(filenames)}): {', '.join(filenames)}")
+    rebuilt = " and lookup_table.csv was rebuilt" if lookup_rebuilt else ""
+    lines.append(f"The other spectra were standardized in place{rebuilt}; a re-run skips them. "
+                 "Fix or remove the listed files, then clean the directory again.")
+    return "\n".join(lines)
