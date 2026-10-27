@@ -16,6 +16,7 @@ Filters:
 
 import argparse
 import csv
+import importlib.util
 import glob
 import json
 import os
@@ -1581,7 +1582,10 @@ def _cmd_ml_generator(args, parser):
         return 0
     if not args.library or not args.output:
         print("Error: --library and --output are required for --auto training.")
-        sys.exit(1)
+        return 1
+    if importlib.util.find_spec("optuna") is None:
+        print("Error: --auto training needs the optuna package, which is not installed (pip install optuna).")
+        return 1
     from .ml import auto_train_generator
     auto_train_generator(library=args.library, output=args.output)
     return 0

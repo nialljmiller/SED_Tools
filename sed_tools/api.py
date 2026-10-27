@@ -1360,14 +1360,19 @@ class MLCompleter:
             raise RuntimeError("No model trained. Call train() first.")
         
         output = output or f"{catalog}_extended"
-        
-        extend_catalog(
+
+        summary = extend_catalog(
             model=self._model,
             catalog_dir=str(self.base_dir / catalog),
             output_dir=str(self.base_dir / output),
             wavelength_range=wavelength_range,
         )
-        
+        if summary['failed']:
+            raise RuntimeError(f"{summary['failed']} of {summary['total']} spectra of '{catalog}' could not be "
+                               f"extended; the others were written to {self.base_dir / output}")
+        if not summary['total']:
+            raise FileNotFoundError(f"No spectra to extend in {self.base_dir / catalog}")
+
         return SED._load_catalog_from_dir(self.base_dir / output, output, 'ml')
     
     def load(self, model_name: str) -> 'MLCompleter':
@@ -1407,6 +1412,7 @@ class MLGenerator:
         self.base_dir = base_dir
         self.models_dir = models_dir
         self._generator = None
+        self._model_path: Optional[Path] = None  # set by train() and load()
     
     def train(
         self,
@@ -1461,7 +1467,8 @@ class MLGenerator:
             batch_size=batch_size,
             max_samples=max_samples,
         )
-        
+        self._model_path = save_path
+
         return self
     
     def load(self, model_name: str) -> 'MLGenerator':
@@ -1485,6 +1492,7 @@ class MLGenerator:
             raise FileNotFoundError(f"Model not found: {model_path}")
         
         self._generator = SEDGenerator(str(model_path))
+        self._model_path = model_path
         return self
     
     def generate(
@@ -1569,8 +1577,10 @@ class MLGenerator:
             )
         
         if output_dir is None:
-            # Default to SED subdirectory inside model directory
-            output_dir = str(Path(self._generator.config.get('_model_path', 'output')) / 'SED')
+            if self._model_path is None:
+                raise RuntimeError("Give output_dir: the model was not trained or loaded through this "
+                                   "MLGenerator, so its model directory is unknown")
+            output_dir = str(self._model_path / 'SED')
         
         return self._generator.generate_with_outputs(
             teff=teff,

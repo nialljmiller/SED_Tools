@@ -1,6 +1,7 @@
 """Failures in the public API and CLI are raised, warned about or reported with a non-zero exit."""
 
 import importlib
+import importlib.util
 import logging
 from pathlib import Path
 from types import SimpleNamespace
@@ -816,3 +817,52 @@ def test_spectra_flow_lists_every_source_error_and_never_mixes_sources(grid_flow
         assert "Tried: svo: 2 of 5 spectra failed" in message
     # msg (which would fail with "MSG down") was never tried for A or B, only for C, which mast then built.
     assert "MSG down" not in message
+
+
+# ----------------------------------------------------------------------
+# ML wrappers
+# ----------------------------------------------------------------------
+@pytest.mark.parametrize("summary,error,message", [
+    ({"extended": 3, "failed": 2, "skipped": 0, "total": 5}, RuntimeError, "2 of 5 spectra of 'Grid' could not be extended"),
+    ({"extended": 0, "failed": 0, "skipped": 0, "total": 0}, FileNotFoundError, "No spectra to extend in"),
+])
+def test_ml_completer_extend_raises_on_spectra_it_could_not_extend(tmp_path, monkeypatch, summary, error, message):
+    from sed_tools.api import MLCompleter
+
+    monkeypatch.setattr("sed_tools.ml_sed_completer.extend_catalog", lambda **kwargs: dict(summary, output_dir="o"))
+    completer = MLCompleter(base_dir=tmp_path)
+    completer._model = object()
+    with pytest.raises(error, match=message):
+        completer.extend("Grid")
+
+
+def test_ml_generator_writes_outputs_beside_the_loaded_model(tmp_path, monkeypatch):
+    from sed_tools.api import MLGenerator
+
+    calls = []
+
+    class Generator:
+        def __init__(self, path=None):
+            self.config = {}
+
+        def generate_with_outputs(self, **kwargs):
+            calls.append(kwargs["output_dir"])
+
+    monkeypatch.setattr("sed_tools.ml_sed_generator.SEDGenerator", Generator)
+    (tmp_path / "models" / "gen").mkdir(parents=True)
+    generator = MLGenerator(base_dir=tmp_path).load("gen")
+    generator.generate_with_outputs(5800, 4.4, 0.0)
+    assert calls == [str(tmp_path / "models" / "gen" / "SED")]
+
+    unknown = MLGenerator(base_dir=tmp_path)
+    unknown._generator = Generator()
+    with pytest.raises(RuntimeError, match="Give output_dir"):
+        unknown.generate_with_outputs(5800, 4.4, 0.0)
+
+
+def test_ml_generator_auto_fails_at_once_without_optuna(monkeypatch, capsys):
+    real_find_spec = importlib.util.find_spec
+    monkeypatch.setattr(importlib.util, "find_spec",
+                        lambda name, *args: None if name == "optuna" else real_find_spec(name, *args))
+    assert run_cli(monkeypatch, "ml_generator", "--auto", "--library", "lib", "--output", "out") == 1
+    assert "--auto training needs the optuna package" in capsys.readouterr().out
