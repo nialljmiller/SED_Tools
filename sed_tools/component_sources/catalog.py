@@ -96,6 +96,9 @@ BUILDERS_FOR: Dict[Tuple[str, str], BuilderRef] = {
     ("Gemini", "GMOS_N"): BuilderRef("gmos", (("instrument", "GMOS_N"),)),
     ("Gemini", "GMOS_S"): BuilderRef("gmos", (("instrument", "GMOS_S"),)),
     ("SLOAN", "SDSS"): BuilderRef("sdss"),
+    # Argus inputs are partly non-public: without them the builder raises and points to NJM.
+    ("Argus", "DR280"): BuilderRef("argus", (("instrument", "DR280"),), publishes=True),
+    ("Argus", "System"): BuilderRef("argus", (("instrument", "System"),)),
     ("Paranal", "HAWKI"): _tabular("HAWKI"),
     ("Paranal", "NACO"): _tabular("NACO"),
     ("Paranal", "SPHERE"): _tabular("SPHERE"),
