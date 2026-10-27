@@ -42,6 +42,8 @@ full = [
     ]
 # A(lambda)/A(V) (AfAv) in sed_tools.filter_properties: the Fitzpatrick (1999) law.
 extinction = ["dust_extinction>=1.6"]
+# Hyperparameter search for `sed-tools ml_generator --auto` (with torch and scikit-learn from [full]).
+ml-tune = ["optuna>=3"]
 
 [project.urls]
 "Homepage" = "https://github.com/nialljmiller/SED_Tools"

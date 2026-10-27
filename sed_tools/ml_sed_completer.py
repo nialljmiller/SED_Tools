@@ -160,7 +160,6 @@ class SEDCompleterNetwork:
             Dropout rate
         """
         try:
-            import torch
             import torch.nn as nn
         except ImportError:
             raise ImportError("PyTorch required. Install: pip install torch")
@@ -185,7 +184,9 @@ class SEDCompleterNetwork:
         layers.append(nn.Linear(prev_dim, output_dim))
         
         self.model = nn.Sequential(*layers)
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        # The same device SEDCompleter.device picks, so inputs and weights agree
+        from .ml_utils import get_device
+        self.device = get_device()
         self.model.to(self.device)
     
     def forward(self, x):
@@ -1334,7 +1335,7 @@ def _training_libraries(base_dir: str) -> List[Dict[str, Any]]:
         n_seds = "?"
         if os.path.exists(lookup):
             try:
-                n_seds = len(pd.read_csv(lookup, comment='#'))
+                n_seds = len(pd.read_csv(lookup))
             except (OSError, ValueError) as exc:
                 logger.warning("Could not count the SEDs in %s: %s", lookup, exc)
         libraries.append({'name': name, 'path': path, 'n_seds': n_seds})
@@ -1352,7 +1353,7 @@ def _extendable_grids(base_dir: str) -> List[Dict[str, Any]]:
         if not os.path.isdir(path) or not os.path.exists(lookup):
             continue
         try:
-            df = pd.read_csv(lookup, comment='#')
+            df = pd.read_csv(lookup)
         except (OSError, ValueError) as exc:
             logger.warning("Not offering %s: could not read %s: %s", name, lookup, exc)
             continue

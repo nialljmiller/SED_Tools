@@ -73,7 +73,6 @@ class SEDGeneratorNetwork:
             Dropout rate
         """
         try:
-            import torch
             import torch.nn as nn
         except ImportError:
             raise ImportError("PyTorch required: pip install torch")
@@ -97,7 +96,9 @@ class SEDGeneratorNetwork:
         layers.append(nn.Linear(prev_dim, output_dim))
         
         self.model = nn.Sequential(*layers)
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        # The same device SEDGenerator.device picks, so inputs and weights agree
+        from .ml_utils import get_device
+        self.device = get_device()
         self.model.to(self.device)
     
     def forward(self, x):
@@ -122,6 +123,17 @@ class SEDGeneratorNetwork:
     
     def load_state_dict(self, state_dict):
         self.model.load_state_dict(state_dict)
+
+
+def _optimizer_and_scheduler(model: SEDGeneratorNetwork, learning_rate: float):
+    """The optimizer and learning-rate schedule SEDGenerator.train uses (and AutoTrainer's trials)."""
+    import torch
+
+    optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=1e-4)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer, mode='min', factor=0.5, patience=15, min_lr=1e-6
+    )
+    return optimizer, scheduler
 
 
 class SEDGenerator:
@@ -342,24 +354,13 @@ class SEDGenerator:
         -------
         history : dict with 'train_loss' and 'val_loss'
         """
-        import torch
-        from sklearn.model_selection import train_test_split
         from .ml_utils import data_loaders, fit
         
-        params, flux, masks = self._prepare_training_data(library_path, max_samples)
-        params_norm, flux_norm = self._normalise_training_data(params, flux, masks, library_path)
+        train_set, val_set = self._training_split(library_path, max_samples)
+        p_val, f_val, m_val = val_set
+        train_loader, val_loader = data_loaders(train_set, val_set, batch_size)
         
-        # Split indices, so the raw parameters of the training set can be kept
-        idx_train, idx_val = train_test_split(np.arange(len(params_norm)), test_size=0.2, random_state=42)
-        p_train, p_val = params_norm[idx_train], params_norm[idx_val]
-        f_train, f_val = flux_norm[idx_train], flux_norm[idx_val]
-        m_train, m_val = masks[idx_train], masks[idx_val]
-        # save() stores these in config.json for the parameter-space plot
-        self._train_params_raw = params[idx_train]
-        
-        train_loader, val_loader = data_loaders((p_train, f_train, m_train), (p_val, f_val, m_val), batch_size)
-        
-        output_dim = flux_norm.shape[1]
+        output_dim = f_val.shape[1]
         hidden = hidden_layers or [512, 512, 256, 256]
         print(f"Building network: 3 → {hidden} → {output_dim}")
         self.model = SEDGeneratorNetwork(
@@ -368,10 +369,7 @@ class SEDGenerator:
             dropout=dropout,
         )
         
-        optimizer = torch.optim.AdamW(self.model.parameters(), lr=learning_rate, weight_decay=1e-4)
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer, mode='min', factor=0.5, patience=15, min_lr=1e-6
-        )
+        optimizer, scheduler = _optimizer_and_scheduler(self.model, learning_rate)
         history, best_val_loss = fit(
             self.model, train_loader, val_loader, optimizer, scheduler,
             epochs=epochs, patience=patience, verbose=verbose, device=self.device,
@@ -393,6 +391,32 @@ class SEDGenerator:
         self._plot_predictions(p_val, f_val, m_val, output_path)
         
         return history
+
+    def _training_split(
+        self,
+        library_path: str,
+        max_samples: int,
+    ) -> Tuple[Tuple[np.ndarray, np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray, np.ndarray]]:
+        """
+        Prepare and normalise the training data and split it 80/20.
+
+        Returns the training and validation sets, each as normalised
+        (params, flux, masks). Also used by ml_optimized.AutoTrainer, so its
+        trials see the data train() does.
+        """
+        from sklearn.model_selection import train_test_split
+
+        params, flux, masks = self._prepare_training_data(library_path, max_samples)
+        params_norm, flux_norm = self._normalise_training_data(params, flux, masks, library_path)
+
+        # Split indices, so the raw parameters of the training set can be kept
+        idx_train, idx_val = train_test_split(np.arange(len(params_norm)), test_size=0.2, random_state=42)
+        # save() stores these in config.json for the parameter-space plot
+        self._train_params_raw = params[idx_train]
+
+        train_set = (params_norm[idx_train], flux_norm[idx_train], masks[idx_train])
+        val_set = (params_norm[idx_val], flux_norm[idx_val], masks[idx_val])
+        return train_set, val_set
 
     def _normalise_training_data(
         self,
@@ -917,7 +941,7 @@ def _training_libraries(base_dir: str) -> List[Dict[str, Any]]:
         n_seds = "?"
         if os.path.exists(lookup):
             try:
-                n_seds = len(pd.read_csv(lookup, comment='#'))
+                n_seds = len(pd.read_csv(lookup))
             except (OSError, ValueError) as exc:
                 logger.warning("Could not count the SEDs in %s: %s", lookup, exc)
         libraries.append({'name': name, 'path': path, 'n_seds': n_seds})

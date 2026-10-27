@@ -282,7 +282,13 @@ def auto_train_generator(
     epochs: int = 100,
 ) -> Any:
     """
-    Train a generator using automated hyperparameter optimization and GPU acceleration.
+    Train a generator after an optuna search for its hyperparameters.
+
+    Each trial trains a SEDGenerator network for a few epochs on the library.
+    The network shape, dropout and learning rate with the lowest validation
+    loss are then trained with SEDGenerator.train and saved to ``output``,
+    so SEDGenerator and api.MLGenerator load it like any other generator.
+    Needs optuna: ``pip install 'sed-tools[ml-tune]'``.
     
     Parameters
     ----------
@@ -293,32 +299,23 @@ def auto_train_generator(
     n_trials : int
         Number of hyperparameter optimization trials
     epochs : int
-        Number of epochs for final training
+        Maximum epochs for the final training
+
+    Returns
+    -------
+    SEDGenerator
+        The trained generator
     """
     from .ml_optimized import AutoTrainer
-    import json
-    
-    os.makedirs(output, exist_ok=True)
     
     trainer = AutoTrainer(library, task="generator")
-    model, best_params = trainer.train_best(
+    generator, _ = trainer.train_best(
         library_path=library,
         output_path=output,
         n_trials=n_trials,
         epochs=epochs
     )
-    
-    # Save config
-    config = {
-        "architecture": "ResidualMLP",
-        "best_params": best_params,
-        "task": "generator",
-        "framework": "PyTorch-Optimized"
-    }
-    with open(os.path.join(output, "config.json"), "w") as f:
-        json.dump(config, f, indent=4)
-        
-    return model
+    return generator
 
 
 # =============================================================================
@@ -503,7 +500,8 @@ class Completer:
         Extend all model spectra in a spectral grid directory.
         
         Each spectrum's file name, Teff, logg and [M/H] come from
-        ``input_dir/lookup_table.csv``. Spectra that already cover
+        ``input_dir/lookup_table.csv``, whose header line may start with
+        '#' as sed_tools writes it. Spectra that already cover
         ``extension_range`` (to within 10%) are copied unchanged. The spectra
         and a new lookup table are written to ``output_dir``.
         
@@ -670,8 +668,10 @@ def _read_catalog_table(input_dir: str):
             f"lookup_table.csv not found in {input_dir}; extend_catalog needs each "
             "spectrum's file name, Teff, logg and [M/H] from it"
         )
-    df = pd.read_csv(lookup_path, comment='#')
-    
+    # sed_tools writes the header as '#file_name,teff,...'; comment='#' would drop it
+    df = pd.read_csv(lookup_path)
+    df.columns = [c.strip().lstrip('#').strip() for c in df.columns]
+
     columns = {}
     missing = []
     for role, candidates in _CATALOG_COLUMNS.items():
@@ -683,8 +683,7 @@ def _read_catalog_table(input_dir: str):
     if missing:
         raise ValueError(
             f"{lookup_path} has no column for {'; '.join(missing)}. Columns read: "
-            f"{list(df.columns)}. A header line starting with '#' is dropped when "
-            "the table is read, so its column names are not seen."
+            f"{list(df.columns)}"
         )
     return df, columns
 
