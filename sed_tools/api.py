@@ -821,7 +821,7 @@ class SED:
                     + ", ".join(unusable))
 
         # Load spectra into SpectralGrid object
-        cat = cls._load_catalog_from_dir(model_dir, catalog, source)
+        cat = cls._load_catalog_from_dir(model_dir, catalog, used_source)
         
         # Apply parameter filters
         if any([teff_min, teff_max, logg_min, logg_max, metallicity_min, metallicity_max]):

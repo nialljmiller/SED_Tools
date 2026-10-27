@@ -738,3 +738,9 @@ def test_picker_rejects_an_invalid_regex_instead_of_showing_everything(monkeypat
     # The substring filter stays in force: the last listing shows beta only.
     last_listing = out.rsplit("Things", 1)[1]
     assert "beta" in last_listing and "alpha" not in last_listing
+
+
+def test_fetched_grid_records_the_source_it_came_from(sources, tmp_path, monkeypatch):
+    sources(svo=fake_grabber(["Grid"], metadata=[{"fid": 1}], downloaded=1))
+    monkeypatch.setattr("sed_tools.spectra_cleaner.clean_model_dir", lambda *a, **k: dict(CLEAN))
+    assert SED.fetch("Grid", model_root=tmp_path).grid.source == "svo"
