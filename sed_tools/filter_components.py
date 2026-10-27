@@ -323,7 +323,9 @@ class InstrumentManifest:
             header = headers[band]
             try:
                 roles = parse_components(header.get("Components"))
-            except ComponentError:
+            except ComponentError as exc:
+                logger.warning("%s/%s band %s: %s in its Components header; its published contents "
+                               "are treated as unknown", facility, instrument, band, exc)
                 roles = ()
             if roles:
                 published_bands[band] = recipe_name(roles)
@@ -908,29 +910,9 @@ def _band_detector_type(instrument_dir: Path, band: str, roles: Sequence[str], m
     return product_detector_type(roles, manifest)
 
 
-def compose_band(
-    instrument_dir: PathLike,
-    band: str,
-    components: Union[str, Iterable[str]],
-    *,
-    atmosphere: Union[AtmosphereSpec, Mapping[str, object], None] = None,
-    atmosphere_root: Optional[PathLike] = None,
-    allow_partial: bool = False,
-    manifest: Optional[InstrumentManifest] = None,
-    variants: Optional[Mapping[str, str]] = None,
-) -> Curve:
-    """Compose one band from its components (see module docstring).
-
-    ``variants`` selects alternative curves for component keys, e.g.
-    ``{"qe": "single_layer"}`` (see :meth:`InstrumentManifest.with_variants`).
-    """
-    instrument_dir = Path(instrument_dir)
-    manifest = (manifest or InstrumentManifest.load(instrument_dir)).with_variants(variants)
-    roles = set(parse_components(components))
-    spec = AtmosphereSpec.coerce(atmosphere)
-    if spec is not None:
-        roles.add(ATMOSPHERE)
-
+def _check_composition(roles: set, band: str, manifest: InstrumentManifest,
+                       spec: Optional[AtmosphereSpec]) -> None:
+    """Refuse requests that do not describe one band's own throughput."""
     if INSTRUMENT in roles:
         raise ComponentError("'instrument' describes published curves; request 'optics' and/or 'qe'")
     if PUBLISHED in roles and FILTER in roles:
@@ -941,12 +923,12 @@ def compose_band(
         raise ComponentError(f"{manifest.facility}/{manifest.instrument} has no band '{band}'")
     if ATMOSPHERE in roles and spec is None:
         raise ComponentError("Including the atmosphere needs atmosphere={'airmass': ..., 'pwv': ...}")
-    if ATMOSPHERE in roles:
-        spec = resolve_atmosphere(manifest, spec)
 
-    ordered = [r for r in (PUBLISHED,) + COMPOSABLE_ROLES if r in roles]
-    instrument_roles = [r for r in ordered if r in (FILTER, OPTICS, QE)]
-    covered: List[str] = []
+
+def _composition_steps(instrument_dir: Path, band: str, roles: set, manifest: InstrumentManifest,
+                       spec: Optional[AtmosphereSpec], atmosphere_root: Optional[PathLike]) -> List[Tuple[str, Path]]:
+    """The files to multiply for ``band`` as (component key, path), the one holding the filter first."""
+    instrument_roles = [r for r in (FILTER, OPTICS, QE) if r in roles]
     steps: List[Tuple[str, Path]] = []
     if PUBLISHED in roles:
         if not manifest.published_bands.get(band) and roles != {PUBLISHED}:
@@ -972,7 +954,38 @@ def compose_band(
         if atmosphere_root is None:
             raise ComponentError("atmosphere_root is required to include the atmosphere")
         steps.append((ATMOSPHERE, atmosphere_file(atmosphere_root, spec)))  # type: ignore[arg-type]
+    return steps
 
+
+def compose_band(
+    instrument_dir: PathLike,
+    band: str,
+    components: Union[str, Iterable[str]],
+    *,
+    atmosphere: Union[AtmosphereSpec, Mapping[str, object], None] = None,
+    atmosphere_root: Optional[PathLike] = None,
+    allow_partial: bool = False,
+    manifest: Optional[InstrumentManifest] = None,
+    variants: Optional[Mapping[str, str]] = None,
+) -> Curve:
+    """Compose one band from its components (see module docstring).
+
+    ``variants`` selects alternative curves for component keys, e.g.
+    ``{"qe": "single_layer"}`` (see :meth:`InstrumentManifest.with_variants`).
+    """
+    instrument_dir = Path(instrument_dir)
+    manifest = (manifest or InstrumentManifest.load(instrument_dir)).with_variants(variants)
+    roles = set(parse_components(components))
+    spec = AtmosphereSpec.coerce(atmosphere)
+    if spec is not None:
+        roles.add(ATMOSPHERE)
+    _check_composition(roles, band, manifest, spec)
+    if ATMOSPHERE in roles:
+        spec = resolve_atmosphere(manifest, spec)
+    ordered = [r for r in (PUBLISHED,) + COMPOSABLE_ROLES if r in roles]
+    steps = _composition_steps(instrument_dir, band, roles, manifest, spec, atmosphere_root)
+
+    covered: List[str] = []
     curves: List[Curve] = []
     sources: List[str] = []
     policies: List[Optional[str]] = []
@@ -984,7 +997,7 @@ def compose_band(
             grid = atmosphere_grid(atmosphere_root, spec.site)  # type: ignore[arg-type,union-attr]
             if grid is not None:
                 policies[-1], tolerances[-1] = grid.outside_range, grid.coverage_tolerance
-        if key != ATMOSPHERE and not path.resolve().is_relative_to(instrument_dir.resolve()):
+        elif not path.resolve().is_relative_to(instrument_dir.resolve()):
             raise ComponentError(f"{path}: component resolves outside its instrument directory")
         curve = read_curve(path)
         # A file may itself already include other factors; never count one twice.

@@ -7,11 +7,13 @@ import sys
 import textwrap
 import urllib.parse
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Sequence
+from pathlib import Path
+from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
 import requests
 from bs4 import BeautifulSoup
 
+from .filter_components import InstrumentManifest
 from .filter_metadata import (ENERGY, SOURCE_ASSUMED, SOURCE_SVO, SVOMetadataClient, SVOUnreachableError,
                               svo_components_header, svo_fps_url, svo_get, write_filter_file)
 from .ui_utils import prompt_choice
@@ -162,80 +164,64 @@ class SVOFilterBrowser:
 
     # -------------------- downloading --------------------
     def download_filters(self, filters: Sequence[FilterRow]) -> None:
+        """Save ``filters`` as ``<base_dir>/<Facility>/<Instrument>/<band>.dat`` with their SVO metadata.
+
+        Every filter that can be saved is saved, and each instrument's index and
+        manifest are written.  Then RuntimeError lists every filter that could not
+        be saved, and why.  An unreachable SVO raises :class:`SVOUnreachableError`
+        at once, since every remaining filter would fail the same way.
+        """
         if not filters:
             print("No filters to download.")
             return
-        touched_dirs = {}  # out_dir -> expected bands
-        
+        expected: Dict[str, set] = {}  # instrument directory -> bands it should hold
+        failed = []
         for idx, row in enumerate(filters, 1):
             print(f"  [{idx:3d}/{len(filters):3d}] {row.filter_id}")
-            facility_dir = _clean_path(row.facility or "UnknownFacility")
-            instrument_dir = _clean_path(row.instrument or "UnknownInstrument")
-            band_name = _clean_filename(row.band) or _clean_filename(_band_from_filter_id(row.filter_id))
-            if not band_name:
-                band_name = _clean_filename(row.filter_id.split("/")[-1])
-            out_dir = os.path.join(self.base_dir, facility_dir, instrument_dir)
-            os.makedirs(out_dir, exist_ok=True)
-            out_path = os.path.join(out_dir, f"{band_name}.dat")
-            touched_dirs.setdefault(out_dir, set()).add(band_name)
-
+            out_dir, band_name = self._target(row)
+            expected.setdefault(out_dir, set()).add(band_name)
             try:
-                record = self.metadata_client.get_filter(row.filter_id)
-                if record is None or record.wavelength.size == 0:
-                    print(f"    [skip] No transmission data returned for {row.filter_id}")
-                    continue
-                if record.detector_type:
-                    detector_type, source = record.detector_type, SOURCE_SVO
-                else:
-                    detector_type, source = ENERGY, SOURCE_ASSUMED
-                    print(f"    [warn] SVO gives no DetectorType for {row.filter_id}; assuming energy")
-                write_filter_file(
-                    out_path,
-                    record.wavelength,
-                    record.transmission,
-                    detector_type=detector_type,
-                    source=source,
-                    filter_id=row.filter_id,
-                    wavelength_unit=record.wavelength_unit,
-                    extra=svo_components_header(record.components),
-                )
-                print(f"    [saved] {out_path} ({detector_type}-counting)")
+                self._save_filter(row, os.path.join(out_dir, f"{band_name}.dat"))
             except SVOUnreachableError:
-                raise  # every remaining filter would fail the same way
+                raise
             except (requests.RequestException, ValueError) as exc:  # malformed or unavailable source response
-                print(f"    [error] Failed to download {row.filter_id}: {exc}")
+                print(f"    [error] {row.filter_id}: {exc}")
+                failed.append(f"{row.filter_id}: {exc}")
+        for out_dir, bands in expected.items():
+            _write_index_and_manifest(Path(out_dir), bands)
+        if failed:
+            raise RuntimeError(f"{len(failed)} of {len(filters)} SVO filters could not be saved; "
+                               "run again to retry them:\n  " + "\n  ".join(failed))
 
-        # -------------------- final index files --------------------
-        for out_dir, expected in touched_dirs.items():
-            from pathlib import Path
-            from .filter_components import InstrumentManifest
+    def _target(self, row: FilterRow) -> Tuple[str, str]:
+        """The instrument directory (created) and band file name for ``row``."""
+        facility_dir = _clean_path(row.facility or "UnknownFacility")
+        instrument_dir = _clean_path(row.instrument or "UnknownInstrument")
+        out_dir = os.path.join(self.base_dir, facility_dir, instrument_dir)
+        os.makedirs(out_dir, exist_ok=True)
+        return out_dir, _clean_filename(row.band)
 
-            directory = Path(out_dir)
-            instrument_dir = directory.name
-            index_path = os.path.join(out_dir, instrument_dir)  # e.g., .../Generic/Johnson/Johnson
-            # list all .dat files in the folder (names only), sorted; exclude the index file itself if it ends with .dat (it won't)
-            dat_files = sorted(
-                f for f in os.listdir(out_dir)
-                if os.path.isfile(os.path.join(out_dir, f)) and f.endswith(".dat")
-            )
-            with open(index_path, "w", encoding="utf-8") as fh:
-                fh.write("\n".join(dat_files) + ("\n" if dat_files else ""))
-            # Keep expected bands even after a partial download so a retry
-            # cannot mistake one successful curve for a complete instrument.
-            manifest = InstrumentManifest.load(directory)
-            headers = InstrumentManifest.from_published(directory)
-            manifest.bands = sorted(set(manifest.bands) | expected)
-            manifest.published = headers.published
-            manifest.published_bands.update(headers.published_bands)
-            manifest.detector_types.update(headers.detector_types)
-            manifest.detector_type_sources.update(headers.detector_type_sources)
-            for role, entries in headers.components.items():
-                for band, rel in entries.items():
-                    manifest.components.setdefault(role, {}).setdefault(band, rel)
-            manifest.save(directory)
-
-
-
+    def _save_filter(self, row: FilterRow, out_path: str) -> None:
+        """Write one SVO curve with its metadata header."""
+        record = self.metadata_client.get_filter(row.filter_id)
+        if record is None or record.wavelength.size == 0:
+            raise ValueError("SVO returned no transmission data")
+        if record.detector_type:
+            detector_type, source = record.detector_type, SOURCE_SVO
+        else:
+            detector_type, source = ENERGY, SOURCE_ASSUMED
+            print(f"    [warn] SVO gives no DetectorType for {row.filter_id}; assuming energy")
+        write_filter_file(
+            out_path,
+            record.wavelength,
+            record.transmission,
+            detector_type=detector_type,
+            source=source,
+            filter_id=row.filter_id,
+            wavelength_unit=record.wavelength_unit,
+            extra=svo_components_header(record.components),
+        )
+        print(f"    [saved] {out_path} ({detector_type}-counting)")
 
     # -------------------- HTTP helpers --------------------
     def _fetch_index(self, params: Dict[str, str]) -> BeautifulSoup:
@@ -264,6 +250,32 @@ class SVOFilterBrowser:
             if titles and titles[0] == "filter id":
                 return table
         return None
+
+
+def _write_index_and_manifest(directory: Path, expected: Iterable[str]) -> None:
+    """Write the instrument's MESA index (every ``.dat`` present) and merge its curves into the manifest.
+
+    The manifest keeps every expected band even after a partial download, so a
+    retry cannot mistake one saved curve for a complete instrument.
+    """
+    out_dir = str(directory)
+    dat_files = sorted(
+        f for f in os.listdir(out_dir)
+        if os.path.isfile(os.path.join(out_dir, f)) and f.endswith(".dat")
+    )
+    with open(os.path.join(out_dir, directory.name), "w", encoding="utf-8") as fh:  # e.g. .../Generic/Johnson/Johnson
+        fh.write("\n".join(dat_files) + ("\n" if dat_files else ""))
+    manifest = InstrumentManifest.load(directory)
+    headers = InstrumentManifest.from_published(directory)
+    manifest.bands = sorted(set(manifest.bands) | set(expected))
+    manifest.published = headers.published
+    manifest.published_bands.update(headers.published_bands)
+    manifest.detector_types.update(headers.detector_types)
+    manifest.detector_type_sources.update(headers.detector_type_sources)
+    for role, entries in headers.components.items():
+        for band, rel in entries.items():
+            manifest.components.setdefault(role, {}).setdefault(band, rel)
+    manifest.save(directory)
 
 
 def _would_collide(instrument_name: str, instrument_key: str, other_keys: Sequence[str]) -> bool:
@@ -325,20 +337,7 @@ def run_interactive(base_dir: str = DEFAULT_BASE_DIR) -> None:
             confirm = input("Download ALL instruments for selected facilities? [Y/n] ").strip().lower()
             if confirm and not confirm.startswith("y"):
                 continue
-
-            for facility in selected:
-                instruments = browser.list_instruments(facility.key)
-                if not instruments:
-                    print(f"No instruments found for {facility.label}.")
-                    continue
-                print(f"\nFacility: {facility.label} ({len(instruments)} instruments)")
-                for instrument in instruments:
-                    filters = browser.list_filters(facility.key, instrument.key)
-                    if not filters:
-                        print(f"  [skip] {instrument.label}: no filters found")
-                        continue
-                    print(f"  Downloading {len(filters)} filters for {instrument.label}")
-                    browser.download_filters(filters)
+            _download_facilities(browser, selected)
             again = input("Bulk download another set of facilities? [y/N] ").strip().lower()
             if again.startswith("y"):
                 continue
@@ -355,42 +354,72 @@ def run_interactive(base_dir: str = DEFAULT_BASE_DIR) -> None:
         if not instruments:
             print(f"No instruments found for {facility.label}.")
             continue
+        if not _browse_instruments(browser, facility, instruments):
+            return
 
-        while True:
-            inst_idx = prompt_choice(instruments, f"Instruments for {facility.label}", allow_back=True)
-            if inst_idx is None:
-                print("Exiting.")
-                return
-            if inst_idx == -1:
-                # user chose to go back to facility list
-                break
-            instrument = instruments[inst_idx]
 
+def _download_facilities(browser: SVOFilterBrowser, facilities: Sequence[Facility]) -> None:
+    """Download every instrument of ``facilities``, then raise RuntimeError listing any that failed."""
+    failed = []
+    for facility in facilities:
+        instruments = browser.list_instruments(facility.key)
+        if not instruments:
+            print(f"No instruments found for {facility.label}.")
+            continue
+        print(f"\nFacility: {facility.label} ({len(instruments)} instruments)")
+        for instrument in instruments:
             filters = browser.list_filters(facility.key, instrument.key)
             if not filters:
-                print(f"No filters found for {instrument.label}.")
+                print(f"  [skip] {instrument.label}: no filters found")
                 continue
+            print(f"  Downloading {len(filters)} filters for {instrument.label}")
+            try:
+                browser.download_filters(filters)
+            except SVOUnreachableError:
+                raise
+            except RuntimeError as exc:  # some filters of this instrument could not be saved
+                failed.append(f"{facility.label}/{instrument.label}: {exc}")
+    if failed:
+        raise RuntimeError("Bulk download incomplete:\n" + "\n".join(failed))
 
-            print(
-                textwrap.dedent(
-                    f"""
-                    \nSelected:
-                      Facility : {facility.label} ({facility.key})
-                      Instrument: {instrument.label} ({instrument.key})
-                      Filters  : {len(filters)} available
-                    """
-                ).strip()
-            )
 
-            confirm = input("Download all filters for this instrument? [Y/n] ").strip().lower()
-            if confirm and not confirm.startswith("y"):
-                continue
+def _browse_instruments(browser: SVOFilterBrowser, facility: Facility, instruments: Sequence[Instrument]) -> bool:
+    """Offer one facility's instruments for download; False when the user chooses to exit."""
+    while True:
+        inst_idx = prompt_choice(instruments, f"Instruments for {facility.label}", allow_back=True)
+        if inst_idx is None:
+            print("Exiting.")
+            return False
+        if inst_idx == -1:
+            # user chose to go back to facility list
+            return True
+        instrument = instruments[inst_idx]
 
-            browser.download_filters(filters)
+        filters = browser.list_filters(facility.key, instrument.key)
+        if not filters:
+            print(f"No filters found for {instrument.label}.")
+            continue
 
-            again = input("Download another instrument from this facility? [y/N] ").strip().lower()
-            if not again.startswith("y"):
-                break
+        print(
+            textwrap.dedent(
+                f"""
+                \nSelected:
+                  Facility : {facility.label} ({facility.key})
+                  Instrument: {instrument.label} ({instrument.key})
+                  Filters  : {len(filters)} available
+                """
+            ).strip()
+        )
+
+        confirm = input("Download all filters for this instrument? [Y/n] ").strip().lower()
+        if confirm and not confirm.startswith("y"):
+            continue
+
+        browser.download_filters(filters)
+
+        again = input("Download another instrument from this facility? [y/N] ").strip().lower()
+        if not again.startswith("y"):
+            return True
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:

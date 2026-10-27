@@ -21,7 +21,7 @@ from .filter_components import (
     InstrumentManifest, atmosphere_file, build_product, find_atmosphere, parse_components,
     resolve_atmosphere,
 )
-from .filter_metadata import migrate_filter_tree, svo_components_header
+from .filter_metadata import SVOUnreachableError, migrate_filter_tree, svo_components_header
 from .njm_filter_grabber import NJMFilterGrabber
 from .svo_filter_grabber import SVOFilterBrowser, _clean_path
 
@@ -80,35 +80,80 @@ class FilterLibrary:
                                       for name in expected)
 
     def published(self, facility, instrument):
+        """The directory of the instrument's complete published curves, downloading them if needed.
+
+        Sources, in order: an installed complete copy, NJM, the instrument's
+        original-source builder, SVO.  Each source that cannot give a complete
+        set is reported with a warning naming the next one tried; when none can,
+        ComponentError carries every source's reason.
+        """
         directory = self.root / facility / instrument
         if self.published_complete(directory):
             # Sets downloaded by SED_Tools 0.3.0 carry metadata on leading '#' lines.
             migrate_filter_tree(directory)
             return directory
 
-        if self.mirror.is_available():
-            self.mirror.download_filters(facility, instrument)
-            if self.published_complete(directory):
-                return directory
-
         ref = builder_for(facility, instrument)
-        if ref is not None and ref.publishes:
-            try:
-                get_builder(ref.name)(self.root, **dict(ref.kwargs))
-                if self.published_complete(directory):
-                    return directory
-            except (RequestException, OSError, RuntimeError, ValueError) as exc:
-                logger.warning("Original source unavailable for %s/%s: %s", facility, instrument, exc)
+        builder = ref if ref is not None and ref.publishes else None
+        reason = self._published_from_njm(facility, instrument, directory)
+        if reason is None:
+            return directory
+        reasons = [f"NJM: {reason}"]
+        logger.warning("NJM cannot provide %s/%s (%s); trying %s", facility, instrument, reason,
+                       "its original-source builder" if builder else "SVO")
+        if builder is not None:
+            reason = self._published_from_builder(builder, directory)
+            if reason is None:
+                return directory
+            reasons.append(f"original source: {reason}")
+            logger.warning("The original source cannot provide %s/%s (%s); trying SVO", facility, instrument, reason)
+        try:
+            return self._published_from_svo(facility, instrument, directory)
+        except (ComponentError, RequestException, RuntimeError) as exc:
+            reasons.append(f"SVO: {exc}")
+            raise ComponentError(f"No source can provide {facility}/{instrument}: " + "; ".join(reasons)) from exc
 
+    def _published_from_njm(self, facility, instrument, directory):
+        """Download the set from NJM; ``None`` once it is complete, else why it is not."""
+        if not self.mirror.is_available():
+            return "the mirror is unavailable"
+        try:
+            self.mirror.download_filters(facility, instrument)
+        except (RequestException, OSError, RuntimeError, ValueError) as exc:
+            if not self.published_complete(directory):
+                return str(exc)
+            # Every curve arrived; only an extra (components, say) failed, and is fetched again when needed.
+            logger.warning("NJM provided every curve of %s/%s, but: %s", facility, instrument, exc)
+            return None
+        return None if self.published_complete(directory) else "the mirror has no complete set"
+
+    def _published_from_builder(self, ref, directory):
+        """Build the set from its original source; ``None`` once it is complete, else why it is not."""
+        try:
+            get_builder(ref.name)(self.root, **dict(ref.kwargs))
+        except (RequestException, OSError, RuntimeError, ValueError) as exc:
+            return str(exc)
+        return None if self.published_complete(directory) else "the builder left an incomplete set"
+
+    def _published_from_svo(self, facility, instrument, directory):
+        """Download the set from SVO and return its complete directory, or raise."""
         rows = self.svo_filters(facility, instrument)
         if not rows:
             raise ComponentError(f"SVO returned no filters for {facility}/{instrument}")
-        self.svo.download_filters(rows)
-        directories = {self.root / _clean_path(row.facility) / _clean_path(row.instrument) for row in rows}
-        for candidate in [directory, *sorted(directories)]:
-            if self.published_complete(candidate):
-                return candidate
-        raise ComponentError(f"Incomplete passband download for {facility}/{instrument}; retry to recover missing files")
+        failure = None
+        try:
+            self.svo.download_filters(rows)
+        except SVOUnreachableError:
+            raise
+        except RuntimeError as exc:  # some curves could not be saved; their bands stay expected
+            failure = exc
+        if failure is None:
+            directories = {self.root / _clean_path(row.facility) / _clean_path(row.instrument) for row in rows}
+            for candidate in [directory, *sorted(directories)]:
+                if self.published_complete(candidate):
+                    return candidate
+        raise ComponentError(f"Incomplete passband download for {facility}/{instrument}; retry to recover "
+                             "missing files" + (f" ({failure})" if failure else "")) from failure
 
     def available(self, facility, instrument, *, remote=True):
         directory = self.root / facility / instrument
@@ -117,7 +162,11 @@ class FilterLibrary:
             return dict(info, availability_source="local", errors=[])
         errors = []
         if remote:
-            data = self.mirror.fetch_manifest(facility, instrument)
+            try:
+                data = self.mirror.fetch_manifest(facility, instrument)
+            except (RequestException, ValueError) as exc:
+                errors.append(f"NJM: {exc}")
+                data = None
             if data:
                 manifest = InstrumentManifest.from_dict(data)
                 return dict(manifest.describe(), availability_source="njm", errors=[])
@@ -172,17 +221,27 @@ class FilterLibrary:
         if self.components_ready(directory, components, bands):
             return True
         facility, instrument = directory.parent.name, directory.name
+        reason = "the mirror is unavailable"
         if self.mirror.is_available():
-            self.mirror.download_components(facility, instrument)
-            if self.components_ready(directory, components, bands):
-                return True
+            try:
+                self.mirror.download_components(facility, instrument)
+            except (RequestException, RuntimeError, ValueError) as exc:
+                reason = str(exc)
+            else:
+                if self.components_ready(directory, components, bands):
+                    return True
+                reason = "the mirror does not have them"
         ref = builder_for(facility, instrument)
         if ref is None or not ref.components:
+            logger.warning("NJM cannot provide the components of %s/%s (%s), and no original source is registered",
+                           facility, instrument, reason)
             return False
         if ref.heavy and not allow_heavy:
             logger.warning("%s/%s requires a large source download; use allow_heavy=True or --allow-heavy",
                            facility, instrument)
             return False
+        logger.warning("NJM cannot provide the components of %s/%s (%s); trying their original source",
+                       facility, instrument, reason)
         get_builder(ref.name)(self.root, **dict(ref.kwargs))
         return self.components_ready(directory, components, bands)
 
@@ -191,14 +250,12 @@ class FilterLibrary:
         cached = find_atmosphere(self.atmosphere_root, spec)
         if cached is not None:
             return cached
-        if self.mirror.download_atmosphere(str(self.atmosphere_root), spec.site):
-            grid = AtmosphereGrid.load(self.atmosphere_root / spec.site)
-            filename = grid.find(spec)
-            if filename is not None:
-                self.mirror.download_atmosphere(str(self.atmosphere_root), spec.site, filename)
-                cached = find_atmosphere(self.atmosphere_root, spec)
-                if cached is not None:
-                    return cached
+        try:
+            cached = self._atmosphere_from_njm(spec)
+        except RequestException as exc:
+            logger.warning("NJM cannot provide the %s atmosphere (%s); trying its source", spec.label, exc)
+        if cached is not None:
+            return cached
         # Only registered site models may be recovered. Never substitute a
         # different observatory or invent weather conditions for a standard.
         from .component_sources.skycalc import SITES
@@ -218,6 +275,16 @@ class FilterLibrary:
             if ref is not None and (allow_heavy or not ref.heavy):
                 get_builder(ref.name)(self.root, **dict(ref.kwargs))
         return atmosphere_file(self.atmosphere_root, spec)
+
+    def _atmosphere_from_njm(self, spec):
+        """The requested grid point downloaded from NJM, or None when NJM does not have it."""
+        if not self.mirror.download_atmosphere(str(self.atmosphere_root), spec.site):
+            return None
+        filename = AtmosphereGrid.load(self.atmosphere_root / spec.site).find(spec)
+        if filename is None:
+            return None
+        self.mirror.download_atmosphere(str(self.atmosphere_root), spec.site, filename)
+        return find_atmosphere(self.atmosphere_root, spec)
 
     def atmospheres(self, *, remote=True):
         sites = {p.parent.name for p in self.atmosphere_root.glob("*/manifest.json")}
@@ -287,7 +354,12 @@ class FilterLibrary:
             except (ComponentError, RequestException, RuntimeError) as exc:
                 errors.append(f"SVO: {exc}")
             if self.mirror.is_available():
-                for facility in self.mirror.discover_facilities():
+                try:
+                    njm_facilities = self.mirror.discover_facilities()
+                except RequestException as exc:
+                    errors.append(f"NJM: {exc}")
+                    njm_facilities = []
+                for facility in njm_facilities:
                     self._catalogue_add(entries, facility, facility, "njm")
             else:
                 errors.append("NJM unavailable")
@@ -315,10 +387,16 @@ class FilterLibrary:
             except (ComponentError, RequestException, RuntimeError) as exc:
                 errors.append(f"SVO {facility}: {exc}")
             if self.mirror.is_available():
-                fac = next((name for name in self.mirror.discover_facilities() if same_facility(name)), None)
-                if fac:
-                    for instrument in self.mirror.discover_instruments(fac):
-                        self._catalogue_add(entries, instrument, instrument, "njm")
+                try:
+                    fac = next((name for name in self.mirror.discover_facilities() if same_facility(name)), None)
+                    njm_instruments = self.mirror.discover_instruments(fac) if fac else []
+                except RequestException as exc:
+                    errors.append(f"NJM {facility}: {exc}")
+                    njm_instruments = []
+                for instrument in njm_instruments:
+                    self._catalogue_add(entries, instrument, instrument, "njm")
+            else:
+                errors.append("NJM unavailable")
         return {"entries": sorted(entries.values(), key=lambda e: e["key"].casefold()), "errors": errors}
 
     def inventory(self, *, remote=True, facility=None):
@@ -331,7 +409,7 @@ class FilterLibrary:
                 continue
             source_catalogue = any(s in fac["sources"] for s in ("svo", "njm"))
             result = self.instruments(fac["key"], remote=remote and source_catalogue)
-            errors.extend(result["errors"])
+            errors.extend(error for error in result["errors"] if error not in errors)
             for inst in result["entries"]:
                 rows.append({"facility": fac["key"], "instrument": inst["key"],
                              "sources": inst["sources"],

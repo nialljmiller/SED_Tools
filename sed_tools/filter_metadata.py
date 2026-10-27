@@ -469,18 +469,13 @@ class SVOMetadataClient:
         return record
 
     def facility_filter_ids(self, facility: str) -> List[str]:
-        """Return every SVO filterID registered under ``facility`` (empty if unknown)."""
+        """Return every SVO filterID registered under ``facility`` (empty if SVO lists none)."""
         if facility in self._facility_ids:
             return self._facility_ids[facility]
         ids: List[str] = []
-        try:
-            vot = self._get_votable({"Facility": facility})
-            tables = list(vot.iter_tables())
-            if tables:
-                data = tables[0].to_table()
-                ids = [_param_text(v) for v in data["filterID"]]
-        except Exception:
-            logger.debug("SVO facility listing failed for %s", facility, exc_info=True)
+        tables = list(self._get_votable({"Facility": facility}).iter_tables())
+        if tables:
+            ids = [_param_text(v) for v in tables[0].to_table()["filterID"]]
         self._facility_ids[facility] = ids
         return ids
 
@@ -494,7 +489,8 @@ def svo_components_header(components: Optional[str]) -> Dict[str, str]:
     try:
         roles = parse_components(components)
     except ComponentError:
-        logger.warning("Unrecognised SVO components string %r", components)
+        logger.warning("Unrecognised SVO components string %r; the curve's Components are left unrecorded",
+                       components)
         return {}
     return {"Components": recipe_name(roles), "ComponentsSource": SOURCE_SVO} if roles else {}
 
@@ -548,7 +544,9 @@ def resolve_detector_type(
     """Work out the detector type for one filter file.
 
     Returns ``(detector_type, filter_id, source, note)``; ``detector_type`` is
-    ``None`` when nothing authoritative was found.
+    ``None`` when SVO has nothing authoritative for the file.  When SVO cannot
+    be asked, ``requests.RequestException`` (:class:`SVOUnreachableError` if it
+    cannot be reached) or ValueError (an unreadable answer) is raised.
     """
     path = Path(path)
     header = read_filter_header(path)
@@ -557,10 +555,7 @@ def resolve_detector_type(
         client = SVOMetadataClient()
 
     if filter_id:
-        try:
-            record = client.get_filter(filter_id)
-        except Exception as exc:
-            return None, filter_id, SOURCE_ASSUMED, f"SVO lookup for {filter_id} failed: {exc}"
+        record = client.get_filter(filter_id)
         if record is not None and record.detector_type:
             return record.detector_type, filter_id, SOURCE_SVO, ""
         return None, filter_id, SOURCE_ASSUMED, f"SVO has no DetectorType for {filter_id}"
@@ -573,10 +568,7 @@ def resolve_detector_type(
     local_curve = _read_curve(path)
     matches: List[SVOFilterRecord] = []
     for fid in candidates:
-        try:
-            record = client.get_filter(fid)
-        except Exception:
-            continue
+        record = client.get_filter(fid)
         if record is not None and _curves_match(local_curve, (record.wavelength, record.transmission)):
             matches.append(record)
 
@@ -608,11 +600,8 @@ def _candidate_filter_ids(path: Path, facility: str, client: SVOMetadataClient) 
 
     candidates: List[str] = []
     for fid in guesses:
-        try:
-            if client.get_filter(fid) is not None and fid not in candidates:
-                candidates.append(fid)
-        except Exception:
-            continue
+        if client.get_filter(fid) is not None and fid not in candidates:
+            candidates.append(fid)
     for fid in listed:
         if fid not in candidates:
             candidates.append(fid)
@@ -641,6 +630,9 @@ def tag_filter_file(
     SVO's label.  A weaker resolution is not written (the header fields stay
     as they are) and is reported through ``kept``, ``resolved_type``,
     ``resolved_source`` and ``note``.
+
+    When SVO is needed and cannot be asked, the errors of
+    :func:`resolve_detector_type` are raised and the header is not changed.
     """
     path = Path(path)
     migrated = migrate_filter_file(path, dry_run=dry_run)
@@ -648,18 +640,14 @@ def tag_filter_file(
     header = read_filter_header(path)
     existing = normalize_detector_type(header.get("DetectorType"))
     existing_source = header.get("DetectorTypeSource", "")
-    complete = not header.get("FilterID") or bool(header.get("WavelengthUnit") and header.get("Components"))
-    if (existing and existing_source == SOURCE_ASSUMED and
-            header.get("ComponentsSource") == "original" and not force):
-        return DetectorTypeResult(path, existing, SOURCE_ASSUMED, header.get("FilterID"), migrated=migrated)
-    if existing and existing_source != SOURCE_ASSUMED and complete and not force:
+    if not force and not _needs_resolution(header, existing, existing_source):
         return DetectorTypeResult(path, existing, existing_source or "header", header.get("FilterID"),
                                   migrated=migrated)
 
     detector_type, filter_id, source, note = resolve_detector_type(path, client=client, facility=facility)
     if detector_type is None:
         if existing:
-            # An unavailable catalogue cannot replace an explicit source
+            # SVO having no answer cannot replace an explicit source
             # assumption with the historical energy default.
             return DetectorTypeResult(path, existing, existing_source or "header", header.get("FilterID"),
                                       note=note, migrated=migrated)
@@ -681,13 +669,42 @@ def tag_filter_file(
                                   migrated=migrated, kept=True, resolved_type=detector_type,
                                   resolved_source=source)
 
+    new_fields = _resolved_fields(header, client, detector_type, source, filter_id)
+    changed = any(
+        (header.get(k) or None) != (new_fields.get(k) or None)
+        for k in DETECTOR_KEYS + ("Components", "ComponentsSource")
+    )
+    if changed and not has_column_row(path):
+        changed = False
+        note = "; ".join(filter(None, [note, "no column-name row to hold metadata; file left as it is"]))
+    elif changed and not dry_run:
+        write_filter_header(path, new_fields)
+    return DetectorTypeResult(path, detector_type, source, filter_id, changed=changed, note=note,
+                              migrated=migrated)
+
+
+def _needs_resolution(header: Mapping[str, str], existing: Optional[str], existing_source: str) -> bool:
+    """Whether a file's ``DetectorType`` is resolved again without ``force``.
+
+    An authoritative type is settled once the SVO fields (unit, components) of
+    its ``FilterID`` are recorded; an assumed type is retried, except on an
+    original-source curve, whose assumption is the builder's convention.
+    """
+    if not existing:
+        return True
+    if existing_source == SOURCE_ASSUMED:
+        return header.get("ComponentsSource") != "original"
+    complete = not header.get("FilterID") or bool(header.get("WavelengthUnit") and header.get("Components"))
+    return not complete
+
+
+def _resolved_fields(header: Mapping[str, str], client: SVOMetadataClient, detector_type: str, source: str,
+                     filter_id: Optional[str]) -> Dict[str, Optional[str]]:
+    """``header`` with the resolved type, plus the unit and components SVO records for ``filter_id``."""
     wavelength_unit = header.get("WavelengthUnit")
     published_components = None
     if filter_id and source != SOURCE_ASSUMED:
-        try:
-            record = client.get_filter(filter_id)
-        except Exception:
-            record = None
+        record = client.get_filter(filter_id)  # cached by the resolution
         if record is not None and record.wavelength_unit:
             wavelength_unit = record.wavelength_unit
         if record is not None and not header.get("Components"):
@@ -701,17 +718,7 @@ def tag_filter_file(
     })
     if published_components:
         new_fields.update(published_components)
-    changed = any(
-        (header.get(k) or None) != (new_fields.get(k) or None)
-        for k in DETECTOR_KEYS + ("Components", "ComponentsSource")
-    )
-    if changed and not has_column_row(path):
-        changed = False
-        note = "; ".join(filter(None, [note, "no column-name row to hold metadata; file left as it is"]))
-    elif changed and not dry_run:
-        write_filter_header(path, new_fields)
-    return DetectorTypeResult(path, detector_type, source, filter_id, changed=changed, note=note,
-                              migrated=migrated)
+    return new_fields
 
 
 def iter_filter_files(root: PathLike) -> Iterable[Path]:
@@ -731,20 +738,35 @@ def tag_filter_tree(
     dry_run: bool = False,
     progress: Optional[Callable[[DetectorTypeResult], None]] = None,
 ) -> List[DetectorTypeResult]:
-    """Tag every filter file below ``root``; see :func:`tag_filter_file`."""
+    """Tag every filter file below ``root``; see :func:`tag_filter_file`.
+
+    Every file that can be tagged is; then RuntimeError lists those that could
+    not be (left unchanged) and why.  An unreachable SVO raises
+    :class:`SVOUnreachableError` at once, since every later lookup would fail.
+    """
     root = Path(root)
     client = client or SVOMetadataClient()
     results = []
+    failed = []
     for path in iter_filter_files(root):
         facility = None
         if root.is_dir():
             rel = path.relative_to(root).parts
             # Layout is <root>/<Facility>/<Instrument>/<Band>.dat
             facility = rel[0] if len(rel) >= 3 else None
-        result = tag_filter_file(path, client=client, facility=facility, force=force, dry_run=dry_run)
+        try:
+            result = tag_filter_file(path, client=client, facility=facility, force=force, dry_run=dry_run)
+        except SVOUnreachableError:
+            raise
+        except (requests.RequestException, ValueError) as exc:  # SVO failed or answered unreadably
+            failed.append(f"{path}: {exc}")
+            continue
         results.append(result)
         if progress is not None:
             progress(result)
+    if failed:
+        raise RuntimeError(f"{len(failed)} of {len(failed) + len(results)} filter files could not be tagged "
+                           "and were left unchanged; run again to retry them:\n  " + "\n  ".join(failed))
     return results
 
 
