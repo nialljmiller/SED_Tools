@@ -8,7 +8,7 @@ precompute_flux_cube.py behaves when multiple SED files map to the same
 Config file format  (TOML):
 
     [on_collision]
-    strategy = "all-warn"   # all-warn | all | mean | filter
+    strategy = "all-warn"   # split | all-warn | all | mean | filter  (all-warn, all = split)
 
     # Only needed when strategy = "filter"
     [on_collision.filter]
@@ -17,9 +17,10 @@ Config file format  (TOML):
     composition = "h-rich"  # string: case-insensitive exact match
 
 Config resolution order (later wins):
-    1. Built-in defaults  (strategy = "all-warn")
+    1. The packaged sed_tools.defaults  (strategy = "all-warn")
     2. <sed_tools_root>/sed_tools.defaults
     3. <model_dir>/mesa_config.toml
+    4. The override_dict passed through the Python API
 
 The global file is also copied into each model directory when a cube is
 built so the exact configuration used is reproducible alongside the data.
@@ -30,8 +31,6 @@ from __future__ import annotations
 import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
-
-import numpy as np
 
 from .config import load_defaults_config, load_toml, merge_config
 
@@ -108,9 +107,10 @@ def _find_column(target: str, columns: List[str]) -> Optional[str]:
 # ---------------------------------------------------------------------------
 
 def _parse_float_safe(s: str) -> Optional[float]:
+    """``float(s)``, or None when *s* is a string value such as "h-rich"."""
     try:
         return float(s)
-    except (ValueError, TypeError):
+    except ValueError:
         return None
 
 
