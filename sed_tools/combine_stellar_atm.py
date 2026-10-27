@@ -105,9 +105,14 @@ def prepare_sed(filepath, teff):
     (wavelength in Angstroms, flux in erg/cm²/s/Å) via spectra_cleaner.py.
     No renormalization is applied here.
 
-    Raises ValueError if the file gives fewer than two readable points.
+    Raises ValueError if the file cannot be read or gives fewer than two
+    readable points, so callers can list every bad spectrum in one error.
     """
-    wl, flux = load_sed(filepath)
+    try:
+        wl, flux = load_sed(filepath)
+    except OSError as exc:
+        raise ValueError(f"{filepath}: fewer than 2 readable wavelength/flux rows "
+                         f"(cannot read the file: {exc.strerror or exc})") from exc
     if wl.size < 2:
         raise ValueError(f"{filepath}: fewer than 2 readable wavelength/flux rows "
                          "(missing, empty or not a spectrum)")
@@ -152,7 +157,12 @@ def create_common_wavelength_grid(all_models_data, sample_size=20):
 
         for idx in indices:
             filepath = os.path.join(model_data["model_dir"], model_data["files"][idx])
-            wavelengths, _ = load_sed(filepath)
+            try:
+                wavelengths, _ = load_sed(filepath)
+            except OSError:
+                # Every spectrum is read again when the cube is built, and that
+                # pass raises one error listing all unreadable files.
+                continue
             if len(wavelengths) <= 10:
                 continue
             mask = (wavelengths >= 3000) & (wavelengths <= 25000)
