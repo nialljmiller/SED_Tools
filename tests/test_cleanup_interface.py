@@ -479,13 +479,14 @@ def test_spectra_flow_completes_quietly_when_every_grid_is_built(grid_flow, tmp_
     assert capsys.readouterr().out.rstrip().endswith("Done.")
 
 
-def test_spectra_flow_uses_other_sources_when_discovery_fails(grid_flow, tmp_path, capsys):
+def test_spectra_flow_uses_other_sources_when_discovery_fails(grid_flow, tmp_path, caplog):
     from sed_tools.cli import run_spectra_flow
 
     grid_flow(svo=fake_grabber(error=requests.ConnectionError("SVO down")),
               msg=fake_grabber(["Grid"], metadata={"m": 1}, downloaded=1))
-    run_spectra_flow("all", base_dir=str(tmp_path), models=["Grid"])
-    assert "[svo] Spectral grid discovery failed: SVO down; using other sources" in capsys.readouterr().out
+    with caplog.at_level(logging.WARNING, logger="sed_tools.cli"):
+        run_spectra_flow("all", base_dir=str(tmp_path), models=["Grid"])
+    assert "[svo] Spectral grid discovery failed: SVO down; using other sources" in caplog.text
 
 
 def test_spectra_flow_raises_when_no_grid_is_discovered(grid_flow, tmp_path):
@@ -791,17 +792,19 @@ def test_fetched_grid_records_the_source_it_came_from(sources, tmp_path, monkeyp
     assert SED.fetch("Grid", model_root=tmp_path).grid.source == "svo"
 
 
-def test_spectra_flow_tries_the_next_source_when_one_raises(grid_flow, tmp_path, capsys):
+def test_spectra_flow_tries_the_next_source_when_one_raises(grid_flow, tmp_path, caplog):
     from sed_tools.cli import run_spectra_flow
 
     built = grid_flow(svo=fake_grabber(["Grid"], metadata=RuntimeError("SVO: incomplete FID list")),
                       msg=fake_grabber(["Grid"], metadata={"m": 1}, downloaded=1))
-    run_spectra_flow("all", base_dir=str(tmp_path), models=["Grid"])
+    with caplog.at_level(logging.WARNING, logger="sed_tools.cli"):
+        run_spectra_flow("all", base_dir=str(tmp_path), models=["Grid"])
     assert built == ["Grid"]
-    assert "[svo] SVO: incomplete FID list — trying next source..." in capsys.readouterr().out
+    assert "[svo] SVO: incomplete FID list — trying next source..." in caplog.text
 
 
-def test_spectra_flow_lists_every_source_error_and_never_mixes_sources(grid_flow, tmp_path):
+def test_spectra_flow_tries_no_other_source_after_a_partial_download(grid_flow, tmp_path):
+    """Only files written by the failed attempt are detected; files from earlier runs are not."""
     from sed_tools.cli import run_spectra_flow
 
     built = grid_flow(svo=fake_grabber(["A", "B"], metadata=[{"fid": 1}], downloaded=1,

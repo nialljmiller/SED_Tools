@@ -16,9 +16,10 @@ Filters:
 
 import argparse
 import csv
-import importlib.util
 import glob
+import importlib.util
 import json
+import logging
 import os
 import sys
 from pathlib import Path
@@ -39,6 +40,8 @@ from .ui_utils import prompt_choice  # public, no leading underscore
 from .parsing import parse_multi_selection, parse_numeric_range
 from .spectrum_io import build_h5_bundle, read_text_spectrum
 from .terminal_plots import terminal_color_enabled
+
+logger = logging.getLogger(__name__)
 # ------------ Small Utils ------------
 
 def ensure_dir(path: str) -> None:
@@ -419,7 +422,7 @@ def _discover_spectral_grids(src_list: List[str], grabs: Dict) -> Tuple[Dict[str
         try:
             names = grabs[s].discover_models()
         except (ValueError, RequestException, OSError, RuntimeError) as exc:
-            print(f"[{s}] Spectral grid discovery failed: {exc}; using other sources")
+            logger.warning("[%s] Spectral grid discovery failed: %s; using other sources", s, exc)
             failures.append(f"{s}: discovery failed: {exc}")
             continue
         for model_name in names:
@@ -469,7 +472,7 @@ def _download_from_first_source(name: str, sources: List[str], grabs: Dict, mode
         if _directory_state(model_dir) != before:
             raise RuntimeError(f"{src} failed after changing {model_dir}, so another source's spectra would be "
                                f"mixed with its files; no further source tried. Tried: {'; '.join(errors)}")
-        print(f"  [{src}] {error} — trying next source...")
+        logger.warning("  [%s] %s — trying next source...", src, error)
     raise RuntimeError(f"no source could supply it. Tried: {'; '.join(errors)}")
 
 
