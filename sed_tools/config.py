@@ -9,11 +9,8 @@ from typing import Any, Dict, Union
 
 try:
     import tomllib
-except ImportError:
-    try:
-        import tomli as tomllib
-    except ImportError:
-        tomllib = None
+except ImportError:  # Python 3.10: tomli is a declared dependency there
+    import tomli as tomllib
 
 _CONFIG_DIR  = Path("~/.sed_tools").expanduser()
 _CONFIG_FILE = _CONFIG_DIR / "config.toml"
@@ -25,21 +22,20 @@ _UI_MODES = {"auto", "always", "never"}
 
 
 def load_toml(path: Union[str, Path], *, strict: bool = False) -> Dict[str, Any]:
-    """Load a TOML mapping through the package's single TOML implementation."""
-    if tomllib is None:
-        if strict:
-            raise ImportError("TOML support requires tomllib or tomli")
-        return {}
+    """Load a TOML mapping through the package's single TOML implementation.
+
+    A missing file gives ``{}`` unless *strict*. A file that exists but cannot
+    be parsed raises ``ValueError`` naming the file.
+    """
     try:
         with Path(path).open("rb") as handle:
             return tomllib.load(handle)
-    except (FileNotFoundError, OSError, ValueError, TypeError):
+    except FileNotFoundError:
         if strict:
             raise
         return {}
-
-
-_load_toml = load_toml  # private compatibility alias
+    except (tomllib.TOMLDecodeError, UnicodeDecodeError) as exc:
+        raise ValueError(f"Cannot parse TOML file {path}: {exc}. Fix or remove this file.") from exc
 
 
 def load_defaults_config() -> Dict[str, Any]:
@@ -162,10 +158,9 @@ def _move_data(old: Path, new: Path) -> list[tuple[str, str]]:
             dst.mkdir(parents=True, exist_ok=True)
             for child in list(src.iterdir()):
                 _merge(child, dst / child.name)
-            try:
-                src.rmdir()  # only succeeds if fully drained
-            except OSError:
-                pass
+            # Conflicting files stay behind; only a fully drained directory goes.
+            if not any(src.iterdir()):
+                src.rmdir()
             return
         # src is a file
         if not dst.exists():
