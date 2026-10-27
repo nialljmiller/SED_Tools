@@ -33,7 +33,7 @@ from .mast_spectra_grabber import MASTSpectraGrabber
 from .models import FILTER_DIR_DEFAULT, STELLAR_DIR_DEFAULT
 from .msg_spectra_grabber import MSGSpectraGrabber
 from .njm_spectra_grabber import NJMSpectraGrabber
-from .spectra_cleaner import clean_model_dir
+from .spectra_cleaner import FLUX_GUESS_WHY, FLUX_UNITS, clean_model_dir, undeclared_flux_unit
 from .svo_regen_spectra_lookup import regenerate_lookup_table
 from .svo_spectra_grabber import SVOSpectraGrabber
 from .ui_utils import prompt_choice  # public, no leading underscore
@@ -205,11 +205,50 @@ def _ask_rebuild_selection(cand: List[str]) -> List[str]:
             print(f"  {exc}")
 
 
+def _ask_flux_unit(grid: str, txt_files: List[str]) -> Optional[str]:
+    """The flux unit to clean a grid with: None when its spectra declare theirs, else the user's choice.
+
+    Without a terminal it returns None as well, so the cleaning stops with the
+    error that names the best guess and how to pass a unit. Answering 'n'
+    raises ValueError: the grid is not cleaned.
+    """
+    guess = undeclared_flux_unit(txt_files)
+    if guess is None or not sys.stdin.isatty():
+        return None
+    print("\nAccepted flux units:")
+    for name, (_, _, description) in FLUX_UNITS.items():
+        print(f"  {name:11s} {description}")
+    question = (f"Flux unit of {grid} is not declared; best guess: {guess} ({FLUX_GUESS_WHY}). "
+                "Use it? [Y/n, or type a unit] ")
+    while True:
+        answer = input(question).strip()
+        if answer.lower() in ("", "y", "yes"):
+            return guess
+        if answer in FLUX_UNITS:
+            return answer
+        if answer.lower() in ("n", "no"):
+            raise ValueError(f"No flux unit chosen for {grid}; it was not cleaned")
+        print(f"  {answer!r} is not one of: {', '.join(FLUX_UNITS)}")
+
+
+def _txt_files(model_dir: str) -> List[str]:
+    return sorted(glob.glob(os.path.join(model_dir, "*.txt")))
+
+
+def _ask_import_flux_unit(path: str, name: Optional[str]) -> Optional[str]:
+    """_ask_flux_unit for the spectra SED.import_grid would import from path."""
+    from .api import _import_sources
+
+    files, src_dir = _import_sources(Path(path).expanduser())
+    return _ask_flux_unit(name or src_dir.name, [str(f) for f in files])
+
+
 def _rebuild_grid(model_dir: str, model_name: str, rebuild_h5: bool, rebuild_flux_cube: bool) -> List[str]:
     """Clean one local grid and rebuild its products; returns what was not done (empty when complete)."""
     from .api import _build_flux_cube, _unusable_after_cleaning
 
-    summary = clean_model_dir(model_dir, try_h5_recovery=True, rebuild_lookup=True)
+    flux_unit = _ask_flux_unit(model_name, _txt_files(model_dir))
+    summary = clean_model_dir(model_dir, try_h5_recovery=True, rebuild_lookup=True, flux_unit=flux_unit)
     print(f"[clean] {model_name}: total={summary['total']}")
 
     if not glob.glob(os.path.join(model_dir, "*.txt")):
@@ -528,7 +567,8 @@ def _download_and_build_grid(name: str, sources: List[str], grabs: Dict, base_di
         print(f"Missing: {', '.join(missing)}" if missing else "All essential files present")
         return [f"missing {', '.join(missing)}"] if missing else []
 
-    summary = clean_model_dir(model_dir, try_h5_recovery=True, rebuild_lookup=True)
+    flux_unit = _ask_flux_unit(name, _txt_files(model_dir))
+    summary = clean_model_dir(model_dir, try_h5_recovery=True, rebuild_lookup=True, flux_unit=flux_unit)
     _print_cleaning_report(summary)
 
     if not glob.glob(os.path.join(model_dir, "*.txt")):
@@ -1039,7 +1079,8 @@ def run_import_flow(base_dir: str = str(STELLAR_DIR_DEFAULT)) -> None:
         return
     name = input("Spectral grid name [blank = source folder name]: ").strip() or None
     mv = input("Move files instead of copying? [y/N] ").strip().lower().startswith("y")
-    SED.import_grid(path, name=name, model_root=base_dir, move=mv)
+    flux_unit = _ask_import_flux_unit(path, name)
+    SED.import_grid(path, name=name, model_root=base_dir, move=mv, flux_unit=flux_unit)
 
 
 def menu() -> str:
@@ -1681,6 +1722,7 @@ def _cmd_import(args, parser):
         build_h5=not args.no_h5,
         build_cube=not args.no_cube,
         dry_run=args.dry_run,
+        flux_unit=None if args.dry_run else _ask_import_flux_unit(args.path, args.name),
     )
     return 0
 

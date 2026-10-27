@@ -1,11 +1,12 @@
-"""Tests for Nill's decisions of 27 October 2026: packaging (psutil, scipy) and the
-densifier's wavelength blocks."""
+"""Tests for Nill's decisions of 27 October 2026: packaging (psutil, scipy), the
+densifier's wavelength blocks, and stopping on an undeclared flux unit."""
 
 import subprocess
 import sys
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from sed_tools._constants import planck_flam
 from sed_tools._resample import resample_to_grid
@@ -122,3 +123,236 @@ def test_densified_ml_nodes_do_not_depend_on_the_block_size(tmp_path, cube_write
             for i_m, meta in enumerate(dense.meta_grid):
                 expected = resample_to_grid(*PowerLawGenerator(None).generate(t, logg, meta), t, dense.wavelengths)
                 np.testing.assert_array_equal(dense.flux[i_t, i_l, i_m], expected)
+
+
+# ---------------------------------------------------------------------
+# Undeclared flux units: stop and ask, offering the detector's best guess
+# ---------------------------------------------------------------------
+
+def _surface_flux_grid(directory, flux_header=None, teffs=(3500.0, 3600.0, 3700.0)):
+    """Spectra of pi*B_lambda, a surface flux in erg/s/cm2/A, with or without a flux-unit header."""
+    directory.mkdir(parents=True, exist_ok=True)
+    wl = np.linspace(3000.0, 10000.0, 200)
+    for i, teff in enumerate(teffs):
+        lines = [f"# teff = {teff}\n", "# logg = 4.5\n", "# metallicity = 0.0\n", "# wavelength_unit = Angstrom\n"]
+        if flux_header:
+            lines.append(f"# flux_unit = {flux_header}\n")
+        lines += [f"{w:.6f} {f:.8e}\n" for w, f in zip(wl, planck_flam(wl, teff))]
+        (directory / f"s{i}.txt").write_text("".join(lines))
+    return directory
+
+
+def _contents(directory):
+    return {p.name: p.read_bytes() for p in sorted(directory.glob("*.txt"))}
+
+
+def test_clean_model_dir_stops_on_an_undeclared_flux_unit_naming_the_best_guess(tmp_path):
+    from sed_tools.spectra_cleaner import clean_model_dir, undeclared_flux_unit
+
+    grid = _surface_flux_grid(tmp_path / "Cool")
+    before = _contents(grid)
+    # The range detector reads these surface fluxes (1e5-1e6) as Jansky at Earth.
+    assert undeclared_flux_unit(sorted(str(p) for p in grid.glob("*.txt")), 1.0) == "fnu_jy"
+
+    with pytest.raises(ValueError) as err:
+        clean_model_dir(str(grid), sample_fraction=1.0)
+    message = str(err.value)
+    assert f"Flux unit of {grid} is not declared; best guess: 'fnu_jy', Jansky" in message
+    assert "Pass the unit as flux_unit='fnu_jy', or as another of flam, fnu, fnu_jy, flam_si, normalized" in message
+    assert _contents(grid) == before
+    assert not (grid / "lookup_table.csv").exists()
+
+
+def test_clean_model_dir_uses_the_flux_unit_it_is_given(tmp_path):
+    from sed_tools.spectra_cleaner import clean_model_dir
+    from sed_tools.spectrum_io import read_text_spectrum
+
+    grid = _surface_flux_grid(tmp_path / "Cool")
+    summary = clean_model_dir(str(grid), sample_fraction=1.0, flux_unit="flam")
+
+    assert len(summary["converted"]) == 3 and summary["catalog_units"]["flux"] == "flam"
+    wl, flux = read_text_spectrum(str(grid / "s0.txt"))
+    np.testing.assert_allclose(flux, planck_flam(wl, 3500.0), rtol=1e-8)
+    assert "# original_flux_unit = flam" in (grid / "s0.txt").read_text()
+
+
+def test_declared_flux_units_clean_as_before(tmp_path):
+    # A declared unit is used without asking, and gives the same files as passing it.
+    from sed_tools.spectra_cleaner import clean_model_dir
+
+    declared = _surface_flux_grid(tmp_path / "Declared", flux_header="erg/cm2/s/A")
+    passed = _surface_flux_grid(tmp_path / "Passed")
+    clean_model_dir(str(declared), sample_fraction=1.0)
+    clean_model_dir(str(passed), sample_fraction=1.0, flux_unit="flam")
+    assert _contents(declared) == _contents(passed)
+
+
+def test_an_unknown_flux_unit_name_is_refused_before_anything_changes(tmp_path):
+    from sed_tools.spectra_cleaner import clean_model_dir
+
+    grid = _surface_flux_grid(tmp_path / "Cool")
+    before = _contents(grid)
+    with pytest.raises(ValueError, match=r"flux_unit='Jy' is not one of flam, fnu, fnu_jy, flam_si, normalized"):
+        clean_model_dir(str(grid), flux_unit="Jy")
+    assert _contents(grid) == before
+
+
+def test_a_spectrum_cleaned_on_its_own_stops_on_an_undeclared_flux_unit(tmp_path):
+    from sed_tools.spectra_cleaner import clean_spectrum_file
+
+    grid = _surface_flux_grid(tmp_path / "Cool")
+    before = (grid / "s0.txt").read_bytes()
+    with pytest.raises(ValueError, match=r"Flux unit of this spectrum is not declared; best guess: 'fnu_jy'"):
+        clean_spectrum_file(str(grid / "s0.txt"))
+    assert (grid / "s0.txt").read_bytes() == before
+
+
+def test_files_cleaned_one_by_one_without_a_declared_flux_unit_are_listed(tmp_path, monkeypatch):
+    # The sample held only a standardized file, so there are no grid-wide units.
+    import sed_tools.spectra_cleaner as sc
+
+    grid = _surface_flux_grid(tmp_path / "Cool")
+    done = grid / "done.txt"
+    done.write_text("# units_standardized = True\n4000 1.0\n5000 2.0\n")
+    monkeypatch.setattr(sc.random, "sample", lambda files, n: [str(done)])
+
+    with pytest.raises(RuntimeError, match=r"(?s)3 of 4 spectra .*Flux unit of this spectrum is not declared; "
+                                           r"best guess: 'fnu_jy'.* \(3\): s0.txt, s1.txt, s2.txt"):
+        sc.clean_model_dir(str(grid), sample_fraction=0.1)
+    summary = sc.clean_model_dir(str(grid), sample_fraction=0.1, flux_unit="flam")
+    assert summary["converted"] == ["s0.txt", "s1.txt", "s2.txt"]
+
+
+class _Stdin:
+    def __init__(self, tty):
+        self.tty = tty
+
+    def isatty(self):
+        return self.tty
+
+
+def _answers(monkeypatch, *answers):
+    """Feed input() these answers on a terminal; return the prompts it was given."""
+    prompts, queue = [], list(answers)
+    monkeypatch.setattr("sys.stdin", _Stdin(True))
+    monkeypatch.setattr("builtins.input", lambda prompt="": prompts.append(prompt) or queue.pop(0))
+    return prompts
+
+
+@pytest.mark.parametrize("answer, unit", [("", "fnu_jy"), ("y", "fnu_jy"), ("flam", "flam")])
+def test_cli_offers_the_best_guess_and_takes_a_typed_unit(tmp_path, monkeypatch, capsys, answer, unit):
+    from sed_tools import cli
+
+    grid = _surface_flux_grid(tmp_path / "Cool")
+    prompts = _answers(monkeypatch, answer)
+    assert cli._ask_flux_unit("Cool", sorted(str(p) for p in grid.glob("*.txt"))) == unit
+    assert prompts == ["Flux unit of Cool is not declared; best guess: fnu_jy (guessed from the size of the "
+                       "flux values, assuming flux received at Earth). Use it? [Y/n, or type a unit] "]
+    out = capsys.readouterr().out
+    assert "flam        erg/s/cm²/Å (F_λ)" in out and "fnu_jy      Jansky (F_ν)" in out
+
+
+def test_cli_asks_again_after_an_unknown_unit_and_stops_on_no(tmp_path, monkeypatch, capsys):
+    from sed_tools import cli
+
+    grid = _surface_flux_grid(tmp_path / "Cool")
+    prompts = _answers(monkeypatch, "Jy", "n")
+    with pytest.raises(ValueError, match="No flux unit chosen for Cool; it was not cleaned"):
+        cli._ask_flux_unit("Cool", sorted(str(p) for p in grid.glob("*.txt")))
+    assert len(prompts) == 2
+    assert "'Jy' is not one of: flam, fnu, fnu_jy, flam_si, normalized" in capsys.readouterr().out
+
+
+def test_cli_does_not_ask_when_the_flux_unit_is_declared(tmp_path, monkeypatch):
+    from sed_tools import cli
+
+    grid = _surface_flux_grid(tmp_path / "Declared", flux_header="erg/cm2/s/A")
+    prompts = _answers(monkeypatch)
+    assert cli._ask_flux_unit("Declared", sorted(str(p) for p in grid.glob("*.txt"))) is None
+    assert prompts == []
+
+
+def test_cli_rebuild_asks_once_per_grid_and_cleans_with_the_answer(tmp_path, monkeypatch):
+    from sed_tools import cli
+    from sed_tools.spectrum_io import read_text_spectrum
+
+    for name in ("A", "B"):
+        _surface_flux_grid(tmp_path / name)
+    prompts = _answers(monkeypatch, "flam", "")
+    cli.run_rebuild_flow(base_dir=str(tmp_path), models=["A", "B"], rebuild_h5=False, rebuild_flux_cube=False)
+
+    assert [p.split(" is not")[0] for p in prompts] == ["Flux unit of A", "Flux unit of B"]
+    wl, flux = read_text_spectrum(str(tmp_path / "A" / "s0.txt"))
+    np.testing.assert_allclose(flux, planck_flam(wl, 3500.0), rtol=1e-8)
+    assert "# original_flux_unit = fnu" in (tmp_path / "B" / "s0.txt").read_text()
+
+
+def test_cli_without_a_terminal_stops_naming_the_grid_and_the_guess(tmp_path, monkeypatch):
+    from sed_tools import cli
+
+    grid = _surface_flux_grid(tmp_path / "Cool")
+    before = _contents(grid)
+    monkeypatch.setattr("sys.stdin", _Stdin(False))
+    monkeypatch.setattr("builtins.input", lambda prompt="": pytest.fail("asked without a terminal"))
+
+    with pytest.raises(RuntimeError) as err:
+        cli.run_rebuild_flow(base_dir=str(tmp_path), models=["Cool"], rebuild_h5=False, rebuild_flux_cube=False)
+    message = str(err.value)
+    assert f"Cool: ValueError: Flux unit of {grid} is not declared; best guess: 'fnu_jy'" in message
+    assert "flux_unit='fnu_jy'" in message and "sed-tools asks for it when run in a terminal" in message
+    assert _contents(grid) == before
+
+
+def test_import_grid_stops_before_moving_files_and_imports_with_a_unit(tmp_path):
+    from sed_tools.api import SED
+
+    src = _surface_flux_grid(tmp_path / "mine")
+    with pytest.raises(ValueError, match=rf"Flux unit of {src} is not declared; best guess: 'fnu_jy'"):
+        SED.import_grid(src, model_root=tmp_path / "models", move=True, build_cube=False, build_h5=False)
+    assert len(list(src.glob("*.txt"))) == 3
+    assert not (tmp_path / "models" / "mine").exists()
+
+    SED.import_grid(src, model_root=tmp_path / "models", move=True, build_cube=False, build_h5=False,
+                    flux_unit="flam")
+    assert "# original_flux_unit = flam" in (tmp_path / "models" / "mine" / "s0.txt").read_text()
+
+
+def test_cli_import_asks_for_the_flux_unit_and_passes_it_on(tmp_path, monkeypatch):
+    from sed_tools import cli
+
+    src = _surface_flux_grid(tmp_path / "mine")
+    calls = []
+    monkeypatch.setattr("sed_tools.api.SED.import_grid", lambda *a, **k: calls.append(k))
+    _answers(monkeypatch, str(src), "", "n", "flam")
+    cli.run_import_flow(base_dir=str(tmp_path / "models"))
+    assert calls[0]["flux_unit"] == "flam"
+
+
+def test_cli_import_command_asks_on_a_terminal_and_not_for_a_dry_run(tmp_path, monkeypatch):
+    from sed_tools import cli
+
+    src = _surface_flux_grid(tmp_path / "mine")
+    calls = []
+    monkeypatch.setattr("sed_tools.api.SED.import_grid", lambda *a, **k: calls.append(k))
+    prompts = _answers(monkeypatch, "fnu")
+    for extra in ([], ["--dry-run"]):
+        monkeypatch.setattr(sys, "argv", ["sed-tools", "import", "--path", str(src),
+                                          "--base", str(tmp_path / "models")] + extra)
+        assert cli.main() == 0
+    assert [c["flux_unit"] for c in calls] == ["fnu", None]
+    assert len(prompts) == 1
+
+
+def test_fetch_stops_on_an_undeclared_flux_unit_and_cleans_with_the_one_given(tmp_path, monkeypatch):
+    from sed_tools.api import SED
+
+    def download(cls, catalog, sources, failures, model_dir, workers):
+        _surface_flux_grid(model_dir)
+        return "svo"
+
+    monkeypatch.setattr(SED, "_download_from_first_source", classmethod(download))
+    with pytest.raises(ValueError, match=r"Flux unit of .*Cool is not declared; best guess: 'fnu_jy'"):
+        SED.fetch("Cool", source="svo", model_root=tmp_path)
+    sed = SED.fetch("Cool", source="svo", model_root=tmp_path, flux_unit="flam")
+    assert len(sed.grid) == 3
+    assert "# original_flux_unit = flam" in (tmp_path / "Cool" / "s0.txt").read_text()

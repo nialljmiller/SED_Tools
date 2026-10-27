@@ -243,7 +243,7 @@ def test_recovery_still_uses_a_good_h5_beside_a_broken_one(tmp_path):
 # spectra it left in their original units
 # ---------------------------------------------------------------------
 
-def _spectrum(path, teff=5000.0, unit_line="# wavelength_unit = nm\n", wl=None, flux=None):
+def _spectrum(path, teff=5000.0, unit_line="# wavelength_unit = nm\n# flux_unit = erg/s/cm2/A\n", wl=None, flux=None):
     import numpy as np
 
     wl = np.linspace(400.0, 700.0, 30) if wl is None else wl

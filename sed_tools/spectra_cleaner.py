@@ -11,6 +11,8 @@ KEY PRINCIPLE: A spectral grid has ONE unit system, not per-file units.
 
 Processing:
   1. Sample 10% of the spectral grid to determine units (consensus)
+     A flux unit not declared in the headers is not guessed: cleaning stops
+     and names the best guess, unless the caller gives the unit (flux_unit).
   2. Apply those units uniformly to ALL files
   3. Convert wavelength → Angstroms, flux → F_lambda
   4. Validate, renormalise a spectrum whose absolute flux scale is wrong
@@ -21,6 +23,7 @@ The tag `# units_standardized = True` prevents reprocessing.
 
 from __future__ import annotations
 
+import dataclasses
 import glob
 import logging
 import os
@@ -65,6 +68,21 @@ WAVELENGTH_FACTORS = {
     'm': 1e10,
 }
 
+# The flux units a caller can give with flux_unit:
+# name -> (flux type, factor applied first, description). The names are the
+# ones detect_units_from_header gives a declared unit.
+FLUX_UNITS = {
+    'flam': ('flam', 1.0, 'erg/s/cm²/Å (F_λ)'),
+    'fnu': ('fnu', 1.0, 'erg/s/cm²/Hz (F_ν)'),
+    'fnu_jy': ('fnu', 1e-23, 'Jansky (F_ν)'),
+    'flam_si': ('flam', 1e3, 'W/m²/Å'),
+    'normalized': ('normalized', 1.0, 'arbitrary scale, left as it is'),
+}
+
+# How detect_flux_unit_from_range guesses. Model-atmosphere surface fluxes in
+# erg/s/cm²/Å are 'flam', but it reads them as Jansky or as normalised.
+FLUX_GUESS_WHY = "guessed from the size of the flux values, assuming flux received at Earth"
+
 # Standard header format
 STANDARD_HEADER_TEMPLATE = """\
 # source = {source}
@@ -93,6 +111,7 @@ class UnitInfo:
     flux_factor: float        # scaling factor before F_nu→F_lambda conversion
     confidence: str           # 'high', 'medium', 'low', 'catalog'
     detection_source: str     # 'header', 'range', 'catalog_consensus'
+    flux_declared: bool = True  # False when the flux unit was guessed from the data
 
 
 @dataclass 
@@ -377,7 +396,8 @@ def detect_units_single_file(filepath: str) -> Optional[UnitInfo]:
         flux_type=flux_type,
         flux_factor=flux_factor,
         confidence=confidence,
-        detection_source=wl_source
+        detection_source=wl_source,
+        flux_declared=header_units['flux_unit'] is not None,
     )
 
 
@@ -456,10 +476,67 @@ def detect_catalog_units(txt_files: List[str], sample_fraction: float = 0.10) ->
         flux_type=consensus_flux,
         flux_factor=_representative(detections, consensus_wl, consensus_flux).flux_factor,
         confidence=confidence,
-        detection_source='catalog_consensus'
+        detection_source='catalog_consensus',
+        flux_declared=all(d.flux_declared for d in detections),
     )
     
     return catalog_units, stats
+
+
+def undeclared_flux_unit(txt_files: List[str], sample_fraction: float = 0.10) -> Optional[str]:
+    """The best guess at the spectra's flux unit (a FLUX_UNITS name) when a sample of them
+    does not declare it, as clean_model_dir would find; None when they do, or have nothing to clean.
+    """
+    catalog_units, _ = detect_catalog_units(txt_files, sample_fraction)
+    if catalog_units is None or catalog_units.flux_declared:
+        return None
+    return _flux_unit_name(catalog_units)
+
+
+def check_flux_unit(grid: str, txt_files: List[str], flux_unit: Optional[str] = None,
+                    sample_fraction: float = 0.10) -> None:
+    """Raise ValueError if clean_model_dir would refuse these spectra's flux unit before cleaning:
+    flux_unit is not a FLUX_UNITS name, or is None while a sample of them does not declare theirs.
+    """
+    _check_flux_unit_name(flux_unit)
+    if flux_unit is None:
+        guess = undeclared_flux_unit(txt_files, sample_fraction)
+        if guess is not None:
+            raise ValueError(_undeclared_flux_unit_message(grid, guess))
+
+
+def _check_flux_unit_name(flux_unit: Optional[str]) -> None:
+    if flux_unit is not None and flux_unit not in FLUX_UNITS:
+        raise ValueError(f"flux_unit={flux_unit!r} is not one of {', '.join(FLUX_UNITS)}")
+
+
+def _undeclared_flux_unit_message(grid: str, guess: str) -> str:
+    """The error for spectra that do not declare their flux unit: the best guess and how to pass one."""
+    return (
+        f"Flux unit of {grid} is not declared; best guess: '{guess}', {FLUX_UNITS[guess][2]} "
+        f"({FLUX_GUESS_WHY}). Pass the unit as flux_unit='{guess}', or as another of "
+        f"{', '.join(FLUX_UNITS)}, to clean_model_dir, SED.fetch or SED.import_grid. "
+        "sed-tools asks for it when run in a terminal."
+    )
+
+
+def _flux_unit_name(unit_info: UnitInfo) -> str:
+    return next(name for name, (flux_type, factor, _) in FLUX_UNITS.items()
+                if (flux_type, factor) == (unit_info.flux_type, unit_info.flux_factor))
+
+
+def _with_flux_unit(grid: str, unit_info: UnitInfo, flux_unit: Optional[str]) -> UnitInfo:
+    """unit_info with the caller's flux unit if given, else as detected when the spectra declare theirs.
+
+    Raises ValueError naming the best guess when they do not and none was given.
+    """
+    if flux_unit is not None:
+        flux_type, flux_factor, _ = FLUX_UNITS[flux_unit]
+        return dataclasses.replace(unit_info, flux_type=flux_type, flux_factor=flux_factor,
+                                   flux_declared=True)
+    if not unit_info.flux_declared:
+        raise ValueError(_undeclared_flux_unit_message(grid, _flux_unit_name(unit_info)))
+    return unit_info
 
 
 def _detect_sample(sample_files: List[str]) -> Tuple[List[UnitInfo], int, int, int]:
@@ -786,7 +863,8 @@ def clean_spectrum_file(
     Args:
         filepath: Path to spectrum file
         catalog_units: Pre-determined units for the spectral grid (from the sample).
-                       If None, detects units per-file (legacy behavior).
+                       If None, detects units per-file (legacy behavior); a flux
+                       unit the header does not declare then raises ValueError.
         try_h5_recovery: Attempt HDF5 wavelength recovery for index grids
     
     Returns: (status, detail)
@@ -808,8 +886,12 @@ def _clean_spectrum(
     filepath: str,
     catalog_units: Optional[UnitInfo],
     try_h5_recovery: bool,
+    flux_unit: Optional[str] = None,
 ) -> Tuple[str, str, Optional[float]]:
-    """clean_spectrum_file's work. Also returns the factor the flux was divided by, or None."""
+    """clean_spectrum_file's work. Also returns the factor the flux was divided by, or None.
+
+    flux_unit is used when catalog_units is None (see clean_model_dir).
+    """
     # Parse header
     meta, _ = _load_header(filepath)
     
@@ -842,7 +924,10 @@ def _clean_spectrum(
     
     # Use catalog units if provided, otherwise detect per-file (the file has
     # at least two valid points by now, so per-file detection always succeeds).
-    unit_info = catalog_units if catalog_units is not None else detect_units_single_file(filepath)
+    if catalog_units is not None:
+        unit_info = catalog_units
+    else:
+        unit_info = _with_flux_unit("this spectrum", detect_units_single_file(filepath), flux_unit)
     wl_std, flux_std = convert_to_standard_units(wl, flux, unit_info)
     
     # Validate
@@ -957,7 +1042,8 @@ def clean_model_dir(
     model_dir: str,
     try_h5_recovery: bool = True,
     rebuild_lookup: bool = True,
-    sample_fraction: float = 0.10
+    sample_fraction: float = 0.10,
+    flux_unit: Optional[str] = None,
 ) -> Dict:
     """
     Clean all spectra in a model directory.
@@ -969,6 +1055,9 @@ def clean_model_dir(
         try_h5_recovery: Attempt HDF5 wavelength recovery for index grids
         rebuild_lookup: Rebuild lookup_table.csv after cleaning
         sample_fraction: Fraction of files to sample for unit detection (default 10%)
+        flux_unit: The spectra's flux unit, a name in FLUX_UNITS ('flam', 'fnu',
+            'fnu_jy', 'flam_si', 'normalized'). It replaces the unit their
+            headers declare, and is required when they declare none.
     
     Returns:
         Summary dict with counts and file lists. When any spectrum's flux scale
@@ -976,11 +1065,16 @@ def clean_model_dir(
         divided by}; those files are listed under 'converted' or 'recovered' too.
 
     Raises:
+        ValueError: before any file is changed, if flux_unit is not a FLUX_UNITS
+            name, or is None while the sampled headers do not all declare the
+            flux unit; the message gives the best guess.
         RuntimeError: if any spectrum is left unconverted (invalid, unrecoverable
-            index grid, or unreadable). Raised after every file has been tried
+            index grid, unreadable, or without a declared flux unit when no
+            grid-wide units were found). Raised after every file has been tried
             and the lookup table rebuilt, listing each such file and why.
             Raised at once if rewriting a file fails.
     """
+    _check_flux_unit_name(flux_unit)
     txt_files = sorted(glob.glob(os.path.join(model_dir, "*.txt")))
     
     summary = {
@@ -1004,6 +1098,8 @@ def clean_model_dir(
     # STEP 1: Detect catalog-wide units from a sample
     # =========================================================
     catalog_units, detection_stats = detect_catalog_units(txt_files, sample_fraction)
+    if catalog_units is not None:
+        catalog_units = _with_flux_unit(model_dir, catalog_units, flux_unit)
     summary['detection_stats'] = detection_stats
     if catalog_units:
         summary['catalog_units'] = {
@@ -1016,7 +1112,7 @@ def clean_model_dir(
     # =========================================================
     # STEP 2: Apply catalog units to ALL files
     # =========================================================
-    failures = _clean_all_files(txt_files, catalog_units, try_h5_recovery, summary)
+    failures = _clean_all_files(txt_files, catalog_units, try_h5_recovery, summary, flux_unit)
     n_per_file = len(summary['converted']) + len(summary['recovered'])
     if catalog_units is None and n_per_file:
         logger.warning(
@@ -1059,7 +1155,8 @@ def _print_detected_units(catalog_units: Optional[UnitInfo], stats: Dict) -> Non
 
 
 def _clean_all_files(txt_files: List[str], catalog_units: Optional[UnitInfo],
-                     try_h5_recovery: bool, summary: Dict) -> List[Tuple[str, str]]:
+                     try_h5_recovery: bool, summary: Dict,
+                     flux_unit: Optional[str]) -> List[Tuple[str, str]]:
     """Clean every file, appending each file name to its status list in *summary*.
 
     A renormalised spectrum is listed under its status ('converted' or
@@ -1075,7 +1172,8 @@ def _clean_all_files(txt_files: List[str], catalog_units: Optional[UnitInfo],
     for i, filepath in enumerate(txt_files):
         filename = os.path.basename(filepath)
         try:
-            status, detail, renorm_ratio = _clean_spectrum(filepath, catalog_units, try_h5_recovery)
+            status, detail, renorm_ratio = _clean_spectrum(filepath, catalog_units, try_h5_recovery,
+                                                           flux_unit)
         except (OSError, ValueError) as exc:
             # Raised before the file is rewritten (rewrite failures raise RuntimeError).
             status, detail, renorm_ratio = 'error', f'{type(exc).__name__}: {exc}', None

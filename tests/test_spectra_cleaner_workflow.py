@@ -57,7 +57,7 @@ def test_negative_wavelengths_are_filtered_out(tmp_path):
     path = tmp_path / "negwl.txt"
     _write_spectrum(
         path,
-        ["# teff = 5000\n"],
+        ["# teff = 5000\n# flux_unit = erg/s/cm2/A\n"],
         [-100.0, 4000.0, 5000.0],
         [1.0, 2.0, 3.0],
     )
@@ -73,7 +73,7 @@ def test_unsorted_wavelengths_are_sorted(tmp_path):
     path = tmp_path / "unsorted.txt"
     _write_spectrum(
         path,
-        ["# teff = 5000\n"],
+        ["# teff = 5000\n# flux_unit = erg/s/cm2/A\n"],
         [6000.0, 4000.0, 5000.0],
         [3.0, 1.0, 2.0],
     )
@@ -87,7 +87,7 @@ def test_duplicate_wavelengths_keep_first_occurrence(tmp_path):
     path = tmp_path / "dup.txt"
     _write_spectrum(
         path,
-        ["# teff = 5000\n"],
+        ["# teff = 5000\n# flux_unit = erg/s/cm2/A\n"],
         [4000.0, 4000.0, 5000.0],
         [1.0, 999.0, 2.0],  # duplicate at 4000 with a different flux value
     )
@@ -112,7 +112,8 @@ def test_cleaning_is_idempotent_on_already_cleaned_output(tmp_path):
     # Clean once, then clean the (now-standardized) result again: the
     # second pass must be a no-op that doesn't further alter the file.
     path = tmp_path / "star.txt"
-    _write_spectrum(path, ["# teff = 5000\n# wavelength_unit = nm\n"], [400.0, 500.0], [1e-14, 2e-14])
+    _write_spectrum(path, ["# teff = 5000\n# wavelength_unit = nm\n# flux_unit = erg/s/cm2/A\n"],
+                    [400.0, 500.0], [1e-14, 2e-14])
 
     status1, _ = clean_spectrum_file(str(path))
     assert status1 == "converted"
@@ -257,7 +258,8 @@ def test_bolometric_renorm_rescales_a_spectrum_100x_too_large(tmp_path):
     bb = planck_flam(wl, 6000.0)
     flux_100x_too_large = bb * 100.0  # mirrors the documented NextGen bug
 
-    _write_spectrum(path, ["# teff = 6000\n# logg = 4.0\n# metallicity = 0.0\n"], wl, flux_100x_too_large)
+    _write_spectrum(path, ["# teff = 6000\n# logg = 4.0\n# metallicity = 0.0\n# flux_unit = erg/s/cm2/A\n"],
+                    wl, flux_100x_too_large)
 
     status, detail = clean_spectrum_file(str(path))
 

@@ -762,6 +762,7 @@ class SED:
         workers: int = 5,
         clean: bool = True,
         model_root: Optional[Union[str, Path]] = None,
+        flux_unit: Optional[str] = None,
     ) -> 'SED':
         """
         Fetch and download a stellar spectral grid.
@@ -785,6 +786,9 @@ class SED:
             Whether to run unit standardization after download
         model_root : str or Path, optional
             Base directory for spectral grids
+        flux_unit : str, optional
+            The spectra's flux unit for cleaning (see spectra_cleaner.clean_model_dir);
+            required when their headers do not declare one.
             
         Returns
         -------
@@ -795,6 +799,8 @@ class SED:
         ------
         ValueError
             If no source could supply the grid; the message gives each source's error.
+            Also if the spectra do not declare their flux unit and flux_unit is not
+            given; the message gives the best guess.
         RuntimeError
             If a failed download left files behind (another source is then
             not tried), or cleaning left spectra unusable.
@@ -814,7 +820,8 @@ class SED:
         # Clean/standardize units
         if clean:
             from .spectra_cleaner import clean_model_dir
-            summary = clean_model_dir(str(model_dir), try_h5_recovery=True, rebuild_lookup=True)
+            summary = clean_model_dir(str(model_dir), try_h5_recovery=True, rebuild_lookup=True,
+                                      flux_unit=flux_unit)
             print(f"[fetch] Cleaned: {summary['total']} total, {len(summary['converted'])} converted")
             unusable = _unusable_after_cleaning(summary)
             if unusable:
@@ -1030,6 +1037,7 @@ class SED:
         build_cube: bool = True,
         build_h5: bool = True,
         dry_run: bool = False,
+        flux_unit: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Ingest a local grid of .txt spectra into the SED_Tools pipeline.
@@ -1053,10 +1061,15 @@ class SED:
         build_cube : build flux_cube.bin.
         build_h5 : build the HDF5 bundle.
         dry_run : only report how many files have parseable headers; do not copy.
+        flux_unit : the spectra's flux unit for cleaning (see
+            spectra_cleaner.clean_model_dir); required when their headers do
+            not declare one.
 
         Returns a summary dict.  Files whose headers lack a parameter, or that
         cleaning leaves unusable, are left out of the built grid and then
-        listed in a RuntimeError.
+        listed in a RuntimeError. If the spectra do not declare their flux unit
+        and flux_unit is not given, ValueError names the best guess before any
+        file is copied or moved; so does a flux_unit that is not a known name.
         """
         files, src_dir = _import_sources(Path(src).expanduser())
         if name is None:
@@ -1076,6 +1089,10 @@ class SED:
                 "dry_run": True,
             }
 
+        from .spectra_cleaner import check_flux_unit, clean_model_dir
+
+        check_flux_unit(str(src_dir), [str(f) for f in files], flux_unit)
+
         # --- stage files into the data dir ---
         dest.mkdir(parents=True, exist_ok=True)
         for f in files:
@@ -1087,10 +1104,9 @@ class SED:
         print(f"[import] {'moved' if move else 'copied'} {len(files)} files -> {dest}")
 
         # --- standard pipeline: clean -> lookup -> h5 -> cube ---
-        from .spectra_cleaner import clean_model_dir
         from .svo_regen_spectra_lookup import regenerate_lookup_table
 
-        summary = clean_model_dir(str(dest), try_h5_recovery=True, rebuild_lookup=True)
+        summary = clean_model_dir(str(dest), try_h5_recovery=True, rebuild_lookup=True, flux_unit=flux_unit)
         print(f"[import] cleaned: total={summary['total']}")
 
         regenerate_lookup_table(str(dest))
