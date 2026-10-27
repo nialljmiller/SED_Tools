@@ -494,3 +494,109 @@ def test_generator_workflow_batch_writes_one_sed_per_grid_point(cpu_torch, stell
     wl, flux = loaded.generate(5500.0, 4.0, -0.5, check_bounds=False)
     np.testing.assert_array_equal(np.loadtxt(batch / "sed_T5500_g4.00_m-0.50.txt"),
                                   np.loadtxt([f"{w:.6e} {f:.6e}" for w, f in zip(wl, flux)]))
+
+
+# =====================================================================
+# Behaviour changes: handlers that now raise or warn
+# =====================================================================
+
+# --- ml_sed_completer --------------------------------------------------
+
+def test_check_combined_grid_raises_on_unreadable_lookup(tmp_path):
+    import pandas as pd
+
+    (tmp_path / "lookup_table.csv").write_text("")
+    with pytest.raises(pd.errors.EmptyDataError):
+        mc.SEDCompleter()._check_combined_grid(str(tmp_path))
+
+
+def test_build_coverage_map_raises_on_unreadable_lookup(tmp_path):
+    import pandas as pd
+
+    (tmp_path / "lookup_table.csv").write_text("")
+    with pytest.raises(pd.errors.EmptyDataError):
+        mc.SEDCompleter()._build_coverage_map(str(tmp_path), np.array([5000.0]),
+                                              np.array([4.0]), np.array([0.0]))
+
+
+@pytest.mark.parametrize("cls", [mc.SEDCompleter])
+def test_list_models_warns_naming_the_unreadable_config(cls, tmp_path, caplog):
+    (tmp_path / "broken").mkdir()
+    (tmp_path / "broken" / "config.json").write_text("{not valid json")
+
+    assert cls.list_models(str(tmp_path)) == []
+    assert f"Skipping {tmp_path / 'broken'}: could not read its config.json" in caplog.text
+
+
+def test_completer_prepare_training_data_warns_how_many_spectra_it_dropped(tmp_path, cube_writer, caplog):
+    wl = np.logspace(np.log10(1000.0), np.log10(50000.0), 200)
+    flux = np.full((2, 1, 1, 200), 1e-10)
+    flux[0, 0, 0, :150] = np.nan          # 4000 K: only 50 usable points
+    cube_writer(tmp_path / "lib" / "flux_cube.bin", [4000.0, 5000.0], [4.0], [0.0], wl, flux)
+
+    np.random.seed(0)
+    _, _, params, _ = mc.SEDCompleter()._prepare_training_data(str(tmp_path / "lib"), 2)
+
+    assert params[:, 0].tolist() == [5000.0]
+    assert ("dropped 1 of 2 sampled spectra (1 with fewer than 100 positive, finite flux points)"
+            in caplog.text)
+
+
+def test_completer_train_raises_before_saving_when_every_batch_is_nan(cpu_torch, tiny_library, tmp_path, monkeypatch):
+    monkeypatch.setattr(mc.SEDCompleterNetwork, "__call__", lambda self, x: self.model(x) * float("nan"))
+
+    with pytest.raises(RuntimeError, match="produced no usable epoch"):
+        mc.SEDCompleter().train(str(tiny_library), str(tmp_path / "model"), epochs=2,
+                                batch_size=3, max_samples=12, hidden_layers=[8])
+    assert not (tmp_path / "model").exists()
+
+
+def test_completer_train_rejects_non_finite_grid_parameters(cpu_torch, tmp_path, cube_writer):
+    wl = np.logspace(np.log10(1000.0), np.log10(50000.0), 200)
+    cube_writer(tmp_path / "lib" / "flux_cube.bin", [4000.0, np.nan], [4.0], [0.0], wl,
+                np.full((2, 1, 1, 200), 1e-10))
+
+    with pytest.raises(ValueError, match="Non-finite Teff, logg or"):
+        mc.SEDCompleter().train(str(tmp_path / "lib"), str(tmp_path / "model"), epochs=1,
+                                batch_size=2, max_samples=2, hidden_layers=[8])
+
+
+def test_train_model_forwards_keywords_and_rejects_unknown_ones(tmp_path, monkeypatch):
+    calls = []
+    monkeypatch.setattr(mc.SEDCompleter, "train", lambda self, **kw: calls.append(kw))
+    monkeypatch.setattr(ml, "Completer", lambda path: ("Completer", path))
+
+    handle = mc.train_model("grid", str(tmp_path / "m"), epochs=2, verbose=False, dropout=0.1)
+
+    assert handle == ("Completer", str(tmp_path / "m"))
+    assert calls[0]["verbose"] is False and calls[0]["dropout"] == 0.1
+
+
+def test_train_model_rejects_keywords_train_does_not_take(tmp_path):
+    with pytest.raises(TypeError, match="val_split"):
+        mc.train_model("grid", str(tmp_path / "m"), val_split=0.2)
+
+
+def test_load_model_raises_the_load_error(tmp_path):
+    with pytest.raises(ValueError, match="Model path must be a directory"):
+        mc.load_model(str(tmp_path / "missing"))
+
+
+def test_completer_workflow_warns_about_unreadable_lookup_tables(stellar_dir, tmp_path, monkeypatch, capsys, caplog):
+    (stellar_dir / "gridA" / "lookup_table.csv").write_text("")
+    (stellar_dir / "gridC").mkdir()
+    (stellar_dir / "gridC" / "lookup_table.csv").write_text("")
+    _write_model_config(tmp_path / "models" / "cm1", {"architecture": {}})
+    monkeypatch.setattr(mc.SEDCompleter, "load", lambda self, path: setattr(self, "model", object()))
+
+    _feed_input(monkeypatch, ["1", "x"])
+    mc.run_interactive_workflow(str(stellar_dir), str(tmp_path / "models"))
+    assert "   1) gridA                          (? SEDs)" in capsys.readouterr().out
+    assert f"Could not count the SEDs in {stellar_dir / 'gridA' / 'lookup_table.csv'}" in caplog.text
+
+    _feed_input(monkeypatch, ["2", "1", "x"])
+    mc.run_interactive_workflow(str(stellar_dir), str(tmp_path / "models"))
+    out = capsys.readouterr().out
+    assert "gridC" not in out and "   1) gridB" in out
+    assert "Not offering gridA: could not read" in caplog.text
+    assert "Not offering gridC: could not read" in caplog.text

@@ -37,6 +37,7 @@ import json
 import logging
 import os
 import struct
+from collections import Counter
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -51,6 +52,15 @@ from ._constants import H as PLANCK_H, C as SPEED_C, K as BOLTZMANN_K, SIGMA
 DEFAULT_WL_MIN = 100.0      # Angstroms
 DEFAULT_WL_MAX = 100000.0   # Angstroms
 DEFAULT_WL_POINTS = 1000
+
+
+def _warn_dropped(dropped: Counter, n_sampled: int, library_path: str) -> None:
+    """Say how many sampled spectra were left out of the training set, and why."""
+    if not dropped:
+        return
+    reasons = ", ".join(f"{count} with {reason}" for reason, count in dropped.items())
+    logger.warning("Training data from %s: dropped %d of %d sampled spectra (%s)",
+                   library_path, sum(dropped.values()), n_sampled, reasons)
 
 
 def planck_function(wavelength_angstrom: np.ndarray, temperature: float) -> np.ndarray:
@@ -282,12 +292,9 @@ class SEDCompleter:
         lookup_path = os.path.join(library_path, "lookup_table.csv")
         if not os.path.exists(lookup_path):
             return False
-        
-        try:
-            df = pd.read_csv(lookup_path, comment='#', nrows=5)
-            return 'source_model' in df.columns or 'original_file' in df.columns
-        except Exception:
-            return False
+
+        df = pd.read_csv(lookup_path, comment='#', nrows=5)
+        return 'source_model' in df.columns or 'original_file' in df.columns
     
     def _build_coverage_map(
         self,
@@ -309,22 +316,18 @@ class SEDCompleter:
         if not os.path.exists(lookup_path):
             return coverage
         
-        try:
-            df = pd.read_csv(lookup_path, comment='#')
-            
-            for _, row in df.iterrows():
-                t = float(row.get('teff', row.get('Teff', 0)))
-                g = float(row.get('logg', row.get('log_g', 0)))
-                m = float(row.get('meta', row.get('metallicity', row.get('[M/H]', 0))))
-                
-                # Get wavelength range from lookup if available
-                wl_min = float(row.get('wl_min', row.get('wavelength_min', 0)))
-                wl_max = float(row.get('wl_max', row.get('wavelength_max', 1e6)))
-                
-                if wl_min > 0 and wl_max > wl_min:
-                    coverage[(t, g, m)] = (wl_min, wl_max)
-        except Exception:
-            logger.debug("Could not build coverage map from %s", lookup_path, exc_info=True)
+        df = pd.read_csv(lookup_path, comment='#')
+        for _, row in df.iterrows():
+            t = float(row.get('teff', row.get('Teff', 0)))
+            g = float(row.get('logg', row.get('log_g', 0)))
+            m = float(row.get('meta', row.get('metallicity', row.get('[M/H]', 0))))
+
+            # Get wavelength range from lookup if available
+            wl_min = float(row.get('wl_min', row.get('wavelength_min', 0)))
+            wl_max = float(row.get('wl_max', row.get('wavelength_max', 1e6)))
+
+            if wl_min > 0 and wl_max > wl_min:
+                coverage[(t, g, m)] = (wl_min, wl_max)
 
         return coverage
     
@@ -377,7 +380,7 @@ class SEDCompleter:
         y_list = []
         params_list = []
         masks_list = []
-        known_regions = []  # Store (start, end) for each sample
+        dropped = Counter()
         
         # Get original wavelength coverage
         wl_orig_min = wavelengths.min()
@@ -398,6 +401,7 @@ class SEDCompleter:
             # Skip spectra with invalid values in original data
             valid_original = (flux > 0) & np.isfinite(flux)
             if valid_original.sum() < 100:
+                dropped["fewer than 100 positive, finite flux points"] += 1
                 continue
             
             # Interpolate to common grid (use NaN for out-of-range)
@@ -421,12 +425,14 @@ class SEDCompleter:
             # Ensure we stay within valid data regions
             valid_indices = np.where(valid_mask)[0]
             if len(valid_indices) < known_width:
+                dropped[f"coverage narrower than the {known_width}-point input window"] += 1
                 continue
             
             # Random start position within valid range
             max_start = valid_indices[-1] - known_width
             min_start = valid_indices[0]
             if max_start <= min_start:
+                dropped[f"coverage narrower than the {known_width}-point input window"] += 1
                 continue
             
             known_start = np.random.randint(min_start, max_start)
@@ -435,6 +441,7 @@ class SEDCompleter:
             # Check known region has enough valid data
             known_valid = valid_mask[known_start:known_end].sum()
             if known_valid < known_width * 0.8:  # Need 80% valid in known region
+                dropped["input window less than 80% valid"] += 1
                 continue
             
             # Extension mask: everything outside known region that has valid data
@@ -442,6 +449,7 @@ class SEDCompleter:
             ext_mask[known_start:known_end] = False
             
             if ext_mask.sum() < 50:  # Need at least 50 valid extension points
+                dropped["fewer than 50 valid points outside the input window"] += 1
                 continue
             
             # Extract known region
@@ -458,10 +466,10 @@ class SEDCompleter:
             y_list.append(y_full)
             params_list.append([teff[i_t], logg[i_l], meta[i_m]])
             masks_list.append(ext_mask.astype(np.float32))
-            known_regions.append((known_start, known_end))
         
+        _warn_dropped(dropped, len(indices), library_path)
         if len(X_list) == 0:
-            raise ValueError("No valid training samples found")
+            raise ValueError(f"No valid training samples found in {library_path}")
         
         print(f"  Prepared {len(X_list)} valid samples")
         print(f"  Known region width: {known_width} points (randomized position)")
@@ -470,9 +478,6 @@ class SEDCompleter:
         y = np.array(y_list, dtype=np.float32)
         params = np.array(params_list, dtype=np.float32)
         masks = np.array(masks_list, dtype=np.float32)
-        
-        # Store known regions for potential debugging
-        self._training_known_regions = known_regions
         
         # Report coverage statistics
         avg_coverage = masks.mean() * 100
@@ -593,9 +598,9 @@ class SEDCompleter:
         print(f"  Output shape: {y_norm.shape}")
         print(f"  Masks shape: {masks.shape}")
         
-        # Verify no NaN/inf in data
-        assert np.all(np.isfinite(X_combined)), "NaN/inf in X_combined"
-        assert np.all(np.isfinite(y_norm)), "NaN/inf in y_norm"
+        # The fluxes were made finite above; non-finite grid parameters were not
+        if not np.all(np.isfinite(X_combined)):
+            raise ValueError(f"Non-finite Teff, logg or [M/H] in the training grid {library_path}")
         
         # Train/val split (include masks)
         X_train, X_val, y_train, y_val, m_train, m_val = train_test_split(
@@ -726,6 +731,12 @@ class SEDCompleter:
                 print(f"  Early stopping at epoch {epoch+1}")
                 break
         
+        if not history['train_loss']:
+            raise RuntimeError(
+                f"Training on {library_path} produced no usable epoch (every training or "
+                f"validation batch had a NaN loss); nothing was saved to {output_path}"
+            )
+
         # Restore best model
         if best_state is not None:
             self.model.load_state_dict(best_state)
@@ -1213,8 +1224,8 @@ class SEDCompleter:
                         'framework': config.get('framework', 'unknown'),
                         'architecture': config.get('architecture', {}),
                     })
-                except Exception:
-                    logger.warning("Could not read ML completer model config in %s", subdir, exc_info=True)
+                except (OSError, ValueError) as exc:
+                    logger.warning("Skipping %s: could not read its %s: %s", subdir, SEDCompleter.CONFIG_FILE, exc)
 
         return models
 
@@ -1413,8 +1424,8 @@ def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> None:
                     try:
                         df = pd.read_csv(lookup, comment='#')
                         n_seds = len(df)
-                    except Exception:
-                        pass
+                    except (OSError, ValueError) as exc:
+                        logger.warning("Could not count the SEDs in %s: %s", lookup, exc)
                 
                 available_models.append({
                     'name': name,
@@ -1555,14 +1566,14 @@ def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> None:
             if os.path.exists(lookup):
                 try:
                     df = pd.read_csv(lookup, comment='#')
-                    n_seds = len(df)
-                    available_sources.append({
-                        'name': name,
-                        'path': model_path,
-                        'n_seds': n_seds
-                    })
-                except Exception:
-                    pass
+                except (OSError, ValueError) as exc:
+                    logger.warning("Not offering %s: could not read %s: %s", name, lookup, exc)
+                    continue
+                available_sources.append({
+                    'name': name,
+                    'path': model_path,
+                    'n_seds': len(df)
+                })
         
         if not available_sources:
             print(f"\nNo model sets found in {base_dir}")
@@ -1674,34 +1685,24 @@ def train_model(
     Wrapper expected by MLCompleter in api.py.
 
     Trains a model using SEDCompleter.train(), saves it under save_path/,
-    and returns a model handle suitable for extend_catalog().
+    and returns a model handle suitable for extend_catalog(). Extra keyword
+    arguments go to SEDCompleter.train(); one it does not take raises TypeError.
     """
+    from .ml import Completer
+
     save_path = str(save_path)
     Path(save_path).mkdir(parents=True, exist_ok=True)
 
     completer = SEDCompleter()
-    # Forward only args SEDCompleter.train is likely to accept; ignore extras safely
-    train_kwargs: Dict[str, Any] = {}
-    for k in ("learning_rate", "hidden_layers", "dropout", "val_split", "patience"):
-        if k in kwargs:
-            train_kwargs[k] = kwargs[k]
-
     completer.train(
         library_path=str(grid_dir),
         output_path=save_path,
         epochs=int(epochs),
         batch_size=int(batch_size),
         max_samples=int(max_samples),
-        **train_kwargs,
+        **kwargs,
     )
-
-    # Prefer the batch/IO-oriented Completer if available (it already has extend_catalog)
-    try:
-        from .ml import Completer  # existing batch processor in your package
-        return Completer(save_path)
-    except Exception:
-        # Fallback: return the SEDCompleter itself (still usable for per-spectrum completion)
-        return SEDCompleter(save_path)
+    return Completer(save_path)
 
 
 def load_model(model_path: str):
@@ -1710,12 +1711,9 @@ def load_model(model_path: str):
 
     Returns an object that can be passed into extend_catalog().
     """
-    # Prefer .ml.Completer (has extend_catalog and is used elsewhere in this file)
-    try:
-        from .ml import Completer
-        return Completer(str(model_path))
-    except Exception:
-        return SEDCompleter(str(model_path))
+    from .ml import Completer
+
+    return Completer(str(model_path))
 
 
 def extend_catalog(
