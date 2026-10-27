@@ -5583,6 +5583,17 @@
   "volume": "120",
   "year": 2008
  },
+ "bibcode:2008PhDT.......208W": {
+  "bibcode": "2008PhDT.......208W",
+  "journal": "PhDT",
+  "key": "bibcode:2008PhDT.......208W",
+  "publisher_url": "http://gateway.proquest.com/openurl?url_ver=Z39.88-2004&res_dat=xri:pqdiss&rft_val_fmt=info:ofi/fmt:kev:mtx:dissertation&rft_dat=xri:pqdiss:NR58114",
+  "resolved": "2026-10-27",
+  "short": "2008PhDT.......208W",
+  "type": "article",
+  "url": "https://ui.adsabs.harvard.edu/abs/2008PhDT.......208W",
+  "year": 2008
+ },
  "bibcode:2008SPIE.7015E..18M": {
   "authors": [
    "Macintosh, Bruce A.",
