@@ -127,9 +127,13 @@ def build(
 ) -> Path:
     """Add ESA's NISP filter, optics and QE factors to ``Euclid/NISP``."""
     inst_dir = Path(filter_root) / FACILITY / INSTRUMENT
-    wanted = [b for b in (bands or BANDS) if b in BANDS]
+    requested = list(bands or BANDS)
+    wanted = [b for b in requested if b in BANDS]
     if not wanted:
         raise ValueError(f"No NISP photometric band among {list(bands or [])}; ESA publishes {BANDS}")
+    skipped = [b for b in requested if b not in BANDS]
+    if skipped:
+        logger.warning("Euclid/NISP: ESA publishes factors only for %s; %s skipped", BANDS, skipped)
     fetch = Fetcher(session)
     # Download and check every band before writing anything.
     tables = {b: parse_table(fetch.text(URL.format(band=b))) for b in wanted}

@@ -180,7 +180,7 @@ def build(filter_root: Union[str, Path], *, instrument: str = "Megaprime", sessi
     mapping = {b: c for b, c in BANDS[instrument].items() if b in present}
     missing = sorted(set(BANDS[instrument]) - present)
     if missing:
-        logger.info("CFHT/%s: no published curve for %s; their filters are skipped", instrument, missing)
+        logger.warning("CFHT/%s: no published curve for %s; their filters are skipped", instrument, missing)
 
     # Fetch and check everything before writing anything.
     fetch = Fetcher(session)

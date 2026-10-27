@@ -13,8 +13,10 @@ import numpy as np
 import pytest
 import requests
 
-from sed_tools.component_sources import skycalc, swift
+from sed_tools.component_sources import cfht, euclid, skycalc, swift, twomass
 from sed_tools.component_sources._original import Fetcher
+from sed_tools.filter_components import FILTER, InstrumentManifest
+from sed_tools.filter_metadata import write_filter_file
 
 
 class _Resp:
@@ -185,3 +187,46 @@ def test_skycalc_version_change_leaves_no_unregistered_point(tmp_path, no_wait):
     assert not (site / "am2.00_pwv2.5.dat").exists()
     grid = AtmosphereGrid.load(site)
     assert [e["file"] for e in grid.entries] == ["am1.00_pwv2.5.dat"] and grid.model_version == "2.0.8"
+
+
+# --------------------------------------------------------------------------- bands a builder skips
+def _published(inst, band, wl, tr, components, detector="photon"):
+    inst.mkdir(parents=True, exist_ok=True)
+    write_filter_file(inst / f"{band}.dat", wl, tr, detector_type=detector, source="svo",
+                      wavelength_unit="Angstrom", extra={"Components": components})
+
+
+def test_cfht_warns_about_bands_without_a_published_curve(tmp_path, caplog):
+    inst = tmp_path / "CFHT" / "Megaprime"
+    _published(inst, "z", np.linspace(8000, 9500, 16), np.full(16, 0.3), "filter+optics+qe")
+    percent = "".join(f"{w} 90\n" for w in range(280, 1101, 10)).encode()
+    files = {url: percent for url in (cfht.PRIMARY, cfht.CORRECTOR, cfht.QE_MODEL, cfht.QE_MEASURED)}
+    files[cfht.CURVE.format(code="9901")] = b"800,0\n850,90\n900,90\n950,0\n"
+    with caplog.at_level(logging.WARNING, logger=cfht.__name__):
+        cfht.build(tmp_path, instrument="Megaprime", session=_Session(files))
+    assert "no published curve for" in caplog.text and "'u'" in caplog.text and "'NB920'" in caplog.text
+    assert InstrumentManifest.load(inst).component_file(FILTER, "z") == "components/filter/z.dat"
+
+
+def test_twomass_warns_about_bands_without_a_published_curve(tmp_path, caplog, monkeypatch):
+    inst = tmp_path / "2MASS" / "2MASS"
+    _published(inst, "J", np.linspace(10600, 14600, 30), np.ones(30), "filter+instrument+atmosphere", "energy")
+    curve = (np.linspace(10000.0, 25000.0, 31), np.full(31, 0.9))
+    monkeypatch.setattr(twomass, "fetch_tables", lambda fetch, numbers: {n: curve for n in numbers})
+    with caplog.at_level(logging.WARNING, logger=twomass.__name__):
+        twomass.build(tmp_path, session=_Session({}))
+    assert "no published curve for ['H', 'Ks']" in caplog.text
+    m = InstrumentManifest.load(inst)
+    assert m.component_file(FILTER, "J") == "components/filter/J.dat" and "H" not in m.components[FILTER]
+
+
+def test_euclid_warns_about_requested_bands_without_esa_factors(tmp_path, caplog):
+    wave = np.arange(1000.0, 1011.0)
+    filt, tel, nioa, qe = (np.full(wave.size, v) for v in (0.9, 0.88, 0.95, 0.93))
+    rows = "".join(" ".join(f"{v:.9g}" for v in row) + "\n"
+                   for row in zip(wave, filt * tel * nioa * qe, filt, tel, nioa, qe))
+    table = ("# WAVE T_TOTAL T_FILTER T_TELESCOPE T_NI-OA T_QE\n" + rows).encode()
+    with caplog.at_level(logging.WARNING, logger=euclid.__name__):
+        euclid.build(tmp_path, bands=["Y", "Blue"], session=_Session({euclid.URL.format(band="Y"): table}))
+    assert "['Blue'] skipped" in caplog.text
+    assert InstrumentManifest.load(tmp_path / "Euclid" / "NISP").component_file(FILTER, "Y") is not None

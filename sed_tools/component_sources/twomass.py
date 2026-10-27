@@ -32,6 +32,7 @@ PLEXUS atmospheres (tbl15/16) are not added here.
 
 from __future__ import annotations
 
+import logging
 import re
 from pathlib import Path
 from typing import Dict, Union
@@ -41,6 +42,8 @@ import numpy as np
 from ..filter_components import FILTER, OPTICS, QE, SHARED
 from ._attach import common_product, fresh_manifest, published_bands, register, with_earlier_note
 from ._original import Fetcher, clean_curve
+
+logger = logging.getLogger(__name__)
 
 FACILITY, INSTRUMENT = "2MASS", "2MASS"
 DOC = "https://www.ipac.caltech.edu/2mass/releases/allsky/doc/"
@@ -140,6 +143,9 @@ def band_optics(t: Dict[int, tuple], band: str):
 def build(filter_root: Union[str, Path], *, session=None, **_ignored) -> Path:
     inst_dir = Path(filter_root) / FACILITY / INSTRUMENT
     present = published_bands(inst_dir)
+    missing = sorted(set(FILTER_TABLE) - present)
+    if missing:
+        logger.warning("2MASS: no published curve for %s; their filter and optics are skipped", missing)
     t = fetch_tables(Fetcher(session), range(1, 12))
     notes = with_earlier_note(inst_dir, NOTES.format(page=PAGE, rsr=RSR_PAGE))
     manifest = fresh_manifest(inst_dir, FACILITY, INSTRUMENT)
