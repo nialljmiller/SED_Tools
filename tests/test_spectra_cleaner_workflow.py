@@ -55,10 +55,9 @@ def test_all_nan_and_inf_flux_is_skipped_invalid(tmp_path):
 
 def test_negative_wavelengths_are_filtered_out(tmp_path):
     path = tmp_path / "negwl.txt"
-    # No Teff, so the bolometric renormalisation is not checked and the toy fluxes stay as written.
     _write_spectrum(
         path,
-        ["# logg = 4.0\n"],
+        ["# teff = 5000\n"],
         [-100.0, 4000.0, 5000.0],
         [1.0, 2.0, 3.0],
     )
@@ -72,10 +71,9 @@ def test_negative_wavelengths_are_filtered_out(tmp_path):
 
 def test_unsorted_wavelengths_are_sorted(tmp_path):
     path = tmp_path / "unsorted.txt"
-    # No Teff, so the bolometric renormalisation is not checked and the toy fluxes stay as written.
     _write_spectrum(
         path,
-        ["# logg = 4.0\n"],
+        ["# teff = 5000\n"],
         [6000.0, 4000.0, 5000.0],
         [3.0, 1.0, 2.0],
     )
@@ -87,10 +85,9 @@ def test_unsorted_wavelengths_are_sorted(tmp_path):
 
 def test_duplicate_wavelengths_keep_first_occurrence(tmp_path):
     path = tmp_path / "dup.txt"
-    # No Teff, so the bolometric renormalisation is not checked and the toy fluxes stay as written.
     _write_spectrum(
         path,
-        ["# logg = 4.0\n"],
+        ["# teff = 5000\n"],
         [4000.0, 4000.0, 5000.0],
         [1.0, 999.0, 2.0],  # duplicate at 4000 with a different flux value
     )
@@ -114,13 +111,11 @@ def test_already_standardized_file_is_skipped(tmp_path):
 def test_cleaning_is_idempotent_on_already_cleaned_output(tmp_path):
     # Clean once, then clean the (now-standardized) result again: the
     # second pass must be a no-op that doesn't further alter the file.
-    # The toy fluxes are far below a 5000 K blackbody, so the first pass also
-    # renormalises them; the second must not do it again.
     path = tmp_path / "star.txt"
     _write_spectrum(path, ["# teff = 5000\n# wavelength_unit = nm\n"], [400.0, 500.0], [1e-14, 2e-14])
 
     status1, _ = clean_spectrum_file(str(path))
-    assert status1 == "converted_renormed"
+    assert status1 == "converted"
     wl_after_first, flux_after_first = read_text_spectrum(str(path))
 
     status2, _ = clean_spectrum_file(str(path))

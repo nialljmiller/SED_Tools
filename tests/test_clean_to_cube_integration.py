@@ -28,11 +28,6 @@ from sed_tools.spectra_cleaner import clean_model_dir
 # test_spectra_cleaner_units.py for the same convention).
 C_ANGSTROM_PER_S = 2.99792458e18
 
-# Jansky levels scaled up to a stellar surface's, so each spectrum integrates to
-# 0.1-3 times a blackbody at its Teff and the cleaner's bolometric
-# renormalisation leaves it alone.
-SURFACE_JY = 2e16
-
 
 def _write_raw_node(path, teff, logg, meta, wl_nm, flux_jy):
     """Write one *uncleaned* spectrum: nm wavelengths, Jansky flux."""
@@ -61,7 +56,7 @@ def test_clean_to_cube_round_trip_exact_nodes(tmp_path):
     nodes = list(itertools.product(teffs, loggs, metas))
     # Distinct flux level per node so a mislabeled/scrambled node is
     # caught, not just a wrong-but-plausible-looking value.
-    flux_jy_for_node = {node: (50.0 + 5.0 * i) * SURFACE_JY for i, node in enumerate(nodes)}
+    flux_jy_for_node = {node: 50.0 + 5.0 * i for i, node in enumerate(nodes)}
 
     for i, (T, L, M) in enumerate(nodes):
         _write_raw_node(model_dir / f"node_{i}.txt", T, L, M, wl_nm, flux_jy_for_node[(T, L, M)])

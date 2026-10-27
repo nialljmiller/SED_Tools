@@ -154,19 +154,21 @@ def test_spectrum_100x_too_bright_is_renormalised_to_sigma_t4(tmp_path):
     assert np.trapezoid(flux_after, wl_after) / (SIGMA * 6000.0 ** 4) == pytest.approx(1.0, rel=0.01)
 
 
-def test_spectrum_far_too_faint_is_renormalised(tmp_path):
+def test_cool_giant_far_below_the_blackbody_in_the_optical_is_left_alone(tmp_path):
+    # Granada HRES PHOENIX giants at 3000-3500 K, log g <= 1, have 2-10 % of a blackbody's
+    # flux over 3000-7000 A (TiO), which holds 8-15 % of sigma*T^4. They are correct; the
+    # first version, which also rescaled ratios below 0.1, multiplied them by 10-50.
     from sed_tools.spectra_cleaner import clean_spectrum_file
 
-    wl = np.geomspace(100.0, 1e6, 3000)
-    path = tmp_path / "faint.txt"
-    _write_spectrum(path, 4000.0, wl, 0.01 * planck_flam(wl, 4000.0))
+    wl = np.linspace(3000.0, 7000.0, 4000)
+    path = tmp_path / "m_giant.txt"
+    _write_spectrum(path, 3000.0, wl, 0.03 * planck_flam(wl, 3000.0))
+    _, written_before = _read(path)
 
-    status, detail = clean_spectrum_file(str(path))
+    status, _ = clean_spectrum_file(str(path))
 
-    assert status == "converted_renormed"
-    assert "flux divided by 0.01 " in detail
-    wl_after, flux_after = _read(path)
-    assert np.trapezoid(flux_after, wl_after) / (SIGMA * 4000.0 ** 4) == pytest.approx(1.0, rel=0.01)
+    assert status == "converted"
+    np.testing.assert_array_equal(_read(path)[1], written_before)
 
 
 @pytest.mark.parametrize("teff", [20000.0, 30000.0, 37000.0])

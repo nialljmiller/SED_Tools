@@ -29,11 +29,6 @@ from sed_tools.spectra_cleaner import clean_model_dir
 
 C_ANGSTROM_PER_S = 2.99792458e18
 
-# Jansky levels scaled up to a stellar surface's, so each spectrum integrates to
-# 0.1-3 times a blackbody at its Teff and the cleaner's bolometric
-# renormalisation leaves it alone.
-SURFACE_JY = 2e16
-
 
 def _write_node(model_dir, fname, teff, logg, meta, alpha, flux_jy_value, wl_nm):
     lines = [
@@ -48,7 +43,7 @@ def _write_node(model_dir, fname, teff, logg, meta, alpha, flux_jy_value, wl_nm)
     with (model_dir / fname).open("w") as fh:
         fh.writelines(lines)
         for w in wl_nm:
-            fh.write(f"{w:.6f} {flux_jy_value * SURFACE_JY:.8e}\n")
+            fh.write(f"{w:.6f} {flux_jy_value:.8e}\n")
 
 
 def _make_collision_grid(model_dir):
@@ -135,8 +130,8 @@ def test_split_strategy_exact_variant_retrieval(tmp_path):
     r_a0 = model_a0(teff=5000.0, logg=4.0, metallicity=0.0)
     r_a4 = model_a4(teff=5000.0, logg=4.0, metallicity=0.0)
 
-    expected_a0 = (100.0 * SURFACE_JY * 1e-23) * C_ANGSTROM_PER_S / (wl_ang ** 2)
-    expected_a4 = (300.0 * SURFACE_JY * 1e-23) * C_ANGSTROM_PER_S / (wl_ang ** 2)
+    expected_a0 = (100.0 * 1e-23) * C_ANGSTROM_PER_S / (wl_ang ** 2)
+    expected_a4 = (300.0 * 1e-23) * C_ANGSTROM_PER_S / (wl_ang ** 2)
     np.testing.assert_allclose(r_a0.flux, expected_a0, rtol=1e-6)
     np.testing.assert_allclose(r_a4.flux, expected_a4, rtol=1e-6)
     # The two variants must not be interchangeable. (atol=0: these fluxes
@@ -181,8 +176,8 @@ def test_mean_strategy_equals_arithmetic_mean_of_variants(tmp_path):
     r5000 = model(teff=5000.0, logg=4.0, metallicity=0.0)
     r6000 = model(teff=6000.0, logg=4.0, metallicity=0.0)
 
-    expected_5000 = (200.0 * SURFACE_JY * 1e-23) * C_ANGSTROM_PER_S / (wl_ang ** 2)  # mean(100, 300)
-    expected_6000 = (500.0 * SURFACE_JY * 1e-23) * C_ANGSTROM_PER_S / (wl_ang ** 2)  # mean(400, 600)
+    expected_5000 = (200.0 * 1e-23) * C_ANGSTROM_PER_S / (wl_ang ** 2)  # mean(100, 300)
+    expected_6000 = (500.0 * 1e-23) * C_ANGSTROM_PER_S / (wl_ang ** 2)  # mean(400, 600)
     np.testing.assert_allclose(r5000.flux, expected_5000, rtol=1e-6)
     np.testing.assert_allclose(r6000.flux, expected_6000, rtol=1e-6)
 
@@ -213,7 +208,7 @@ def test_filter_strategy_exact_value_match(tmp_path):
     model = SEDModel(name="filt", flux_cube_path=cube_path)
     wl_ang = wl_nm * 10.0
     result = model(teff=5000.0, logg=4.0, metallicity=0.0)
-    expected = (300.0 * SURFACE_JY * 1e-23) * C_ANGSTROM_PER_S / (wl_ang ** 2)  # alpha=0.4 variant, not alpha=0.0
+    expected = (300.0 * 1e-23) * C_ANGSTROM_PER_S / (wl_ang ** 2)  # alpha=0.4 variant, not alpha=0.0
     np.testing.assert_allclose(result.flux, expected, rtol=1e-6)
 
 
@@ -228,7 +223,7 @@ def test_filter_strategy_min_and_max_shortcuts(tmp_path):
         override_dict={"on_collision": {"strategy": "filter", "filter": {"alpha": "min"}}},
     )
     model_min = SEDModel(name="min", flux_cube_path=cube_min)
-    expected_min = (100.0 * SURFACE_JY * 1e-23) * C_ANGSTROM_PER_S / (wl_ang ** 2)  # alpha=0.0 is min
+    expected_min = (100.0 * 1e-23) * C_ANGSTROM_PER_S / (wl_ang ** 2)  # alpha=0.0 is min
     np.testing.assert_allclose(model_min(teff=5000.0, logg=4.0, metallicity=0.0).flux, expected_min, rtol=1e-6)
 
     cube_max = model_dir / "cube_max.bin"
@@ -237,7 +232,7 @@ def test_filter_strategy_min_and_max_shortcuts(tmp_path):
         override_dict={"on_collision": {"strategy": "filter", "filter": {"alpha": "max"}}},
     )
     model_max = SEDModel(name="max", flux_cube_path=cube_max)
-    expected_max = (300.0 * SURFACE_JY * 1e-23) * C_ANGSTROM_PER_S / (wl_ang ** 2)  # alpha=0.4 is max
+    expected_max = (300.0 * 1e-23) * C_ANGSTROM_PER_S / (wl_ang ** 2)  # alpha=0.4 is max
     np.testing.assert_allclose(model_max(teff=5000.0, logg=4.0, metallicity=0.0).flux, expected_max, rtol=1e-6)
 
 

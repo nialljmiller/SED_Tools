@@ -48,12 +48,12 @@ logger = logging.getLogger(__name__)
 
 SPEED_OF_LIGHT_ANGSTROM = C * 1e8  # c in Å/s — from _constants
 
-# A spectrum whose integrated flux is more than 3 or less than 0.1 times a
-# blackbody's at its Teff, over the same wavelengths, has a wrong absolute flux
-# scale (SVO's NextGen T >= 5000 K entries are about 100x too large). It is only
-# checked when those wavelengths hold at least 5 % of sigma*T^4.
+# A spectrum whose integrated flux is more than 3 times a blackbody's at its
+# Teff, over the same wavelengths, has a wrong absolute flux scale (SVO's NextGen
+# T >= 5000 K entries are about 100x too large). It is only checked when those
+# wavelengths hold at least 5 % of sigma*T^4. Spectra far below the blackbody are
+# left alone: cool giants' optical flux really is 2-10 % of it.
 _RENORM_MAX_RATIO = 3.0
-_RENORM_MIN_RATIO = 0.1
 _RENORM_MIN_COVERAGE = 0.05
 
 # Wavelength conversion factors → Angstroms
@@ -874,12 +874,16 @@ def _bolometric_renorm_ratio(wl: np.ndarray, flux: np.ndarray, teff: float) -> O
 
     That factor is the spectrum's integrated flux over pi*B_lambda(Teff)
     integrated on the same wavelengths, so both integrals share one quadrature
-    and a correctly scaled spectrum gives about 1 however it is sampled. (The
-    first version integrated the blackbody on a 2000-point linear grid, which
-    misses the peak of a hot star on a wide wavelength range: correct 30000 K
-    blackbodies over 10 Å-1e7 Å came out 11 times too bright and were rescaled.)
+    and a correctly scaled spectrum gives about 1 however it is sampled.
     Spectra without a Teff, or whose wavelengths hold too little of sigma*T^4,
     are not checked.
+
+    The first version differed in two ways, both of which rescaled correct
+    spectra. It integrated the blackbody on a 2000-point linear grid, which
+    misses a hot star's peak on a wide wavelength range (correct 30000 K
+    blackbodies over 10 Å-1e7 Å came out 11 times too bright). And it also
+    rescaled spectra below 0.1 times the blackbody, which multiplied correct
+    3000-3500 K giants observed only in the optical by 10-50.
     """
     if not (np.isfinite(teff) and teff > 0):
         return None
@@ -887,7 +891,7 @@ def _bolometric_renorm_ratio(wl: np.ndarray, flux: np.ndarray, teff: float) -> O
     if expected < _RENORM_MIN_COVERAGE * SIGMA * teff ** 4:
         return None
     ratio = float(np.trapezoid(np.maximum(flux, 0), wl)) / expected
-    if ratio > _RENORM_MAX_RATIO or ratio < _RENORM_MIN_RATIO:
+    if ratio > _RENORM_MAX_RATIO:
         return ratio
     return None
 
