@@ -4,9 +4,9 @@
 import csv
 import io
 import json
+import logging
 import os
 import re
-import threading
 import time
 import urllib.parse
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -18,18 +18,7 @@ from urllib3.util.retry import Retry
 
 from .header_parser import parse_header
 
-try:
-    from astropy.io.votable import parse_single_table as vot_parse_single_table
-    _HAS_VOTABLE = True
-except Exception:
-    _HAS_VOTABLE = False
-
-
-# SVO's SSAP endpoint serves malformed VOTable XML with unclosed CDATA sections.
-# This is a known server-side bug; astropy fails on it predictably.
-# We skip astropy entirely and go straight to the regex approach which is
-# faster, more memory-efficient, and 100% reliable against SVO's output.
-_USE_VOTABLE_PARSER = False  # Kept for future use if SVO ever fixes their XML
+logger = logging.getLogger(__name__)
 
 
 class SVOSpectraGrabber:
@@ -90,12 +79,14 @@ class SVOSpectraGrabber:
     # -------------------- model list --------------------
 
     def discover_models(self):
+        """Return the spectral grids SVO lists; [] after a warning if the index cannot be read."""
         print("Discovering spectral grids from SVO...")
         try:
             r = self.session.get(self.model_index_url, timeout=20)
             r.raise_for_status()
         except requests.RequestException as e:
-            print(f"[SVO] spectral grid index failed: {e}")
+            logger.warning("SVO: spectral grid index %s failed (%s); SVO spectral grids are not offered",
+                           self.model_index_url, e)
             return []
         soup = BeautifulSoup(r.text, "html.parser")
         models = set()
@@ -110,51 +101,76 @@ class SVOSpectraGrabber:
                 models.add(m)
         out = sorted(models)
         if not out:
-            print("  [warn] no spectral grids found on SVO index page.")
+            logger.warning("SVO: no spectral grids found on the index page %s; SVO spectral grids are not offered",
+                           self.model_index_url)
         return out
 
     # -------------------- spectra discovery --------------------
 
     def get_model_metadata(self, model_name):
+        """Return [{'fid': n}, ...] for every spectrum of the grid on SVO.
+
+        Discovery tries the SSAP query, then the model index page, then a
+        bounded probe, warning at each fallback. Raises RuntimeError if none
+        finds a spectrum, if the SSAP response reaches its size cap, or if a
+        probe request fails. Only a complete FID list is cached.
+        """
         print(f"  Fetching metadata for {model_name}...")
 
-        # Cache hit
         cache_path = os.path.join(self.cache_root, f"{model_name}.json")
-        if os.path.exists(cache_path):
-            try:
-                with open(cache_path, "r") as f:
-                    data = json.load(f)
-                if isinstance(data, list) and data:
-                    print(f"    (cache) {len(data)} spectra")
-                    return [{"fid": int(x)} for x in sorted(set(int(y) for y in data))]
-            except Exception:
-                pass
+        cached = self._read_fid_cache(cache_path)
+        if cached:
+            print(f"    (cache) {len(cached)} spectra")
+            return [{"fid": fid} for fid in cached]
 
-        fids = set()
-
-        # A) SSAP VOTable stream → regex
-        fids |= self._discover_ssap_stream(model_name)
-
-        # B) Model index scrape (fallback)
-        if not fids:
-            fids |= self._discover_index_page(model_name)
-
-        # C) Bounded sparse probe + expansion (last resort)
-        if not fids:
-            fids |= self._bounded_probe(model_name)
-
+        fids = self._discover_fids(model_name)
         out = [{"fid": int(fid)} for fid in sorted(fids)]
         print(f"    Found {len(out)} spectra for {model_name}")
 
-        # Cache
-        if out:
-            try:
-                with open(cache_path, "w") as f:
-                    json.dump([int(d["fid"]) for d in out], f)
-            except Exception:
-                pass
+        try:
+            with open(cache_path, "w") as f:
+                json.dump([int(d["fid"]) for d in out], f)
+        except OSError as e:
+            logger.warning("SVO: could not cache the FID list at %s (%s); it will be discovered again next time",
+                           cache_path, e)
 
         return out
+
+    def _read_fid_cache(self, cache_path):
+        """FIDs saved by an earlier discovery, or None (warned about if the cache is unreadable)."""
+        if not os.path.exists(cache_path):
+            return None
+        try:
+            with open(cache_path, "r") as f:
+                data = json.load(f)
+            fids = sorted(set(int(y) for y in data)) if isinstance(data, list) else []
+        except (OSError, ValueError, TypeError) as e:
+            logger.warning("SVO: ignoring unreadable FID cache %s (%s); discovering the spectra again", cache_path, e)
+            return None
+        if not fids:
+            logger.warning("SVO: ignoring FID cache %s, which lists no FIDs; discovering the spectra again", cache_path)
+            return None
+        return fids
+
+    def _discover_fids(self, model_name):
+        """FIDs from the SSAP query, else the index page, else a bounded probe."""
+        fids, ssap_problem = self._discover_ssap_stream(model_name)
+        if fids:
+            return fids
+        logger.warning("SVO: SSAP query for %s found no spectra (%s); trying the model index page",
+                       model_name, ssap_problem)
+
+        fids, index_problem = self._discover_index_page(model_name)
+        if fids:
+            return fids
+        logger.warning("SVO: model index page for %s found no spectra (%s); probing FIDs directly",
+                       model_name, index_problem)
+
+        fids = self._bounded_probe(model_name)
+        if fids:
+            return fids
+        raise RuntimeError(f"SVO has no spectra for {model_name}: SSAP query: {ssap_problem}; "
+                           f"index page: {index_problem}; probing found none")
 
     # ---- A) SSAP stream ----
 
@@ -165,6 +181,8 @@ class SVOSpectraGrabber:
         SVO's VOTable XML contains unclosed CDATA sections which cause astropy
         and any standard XML parser to fail. Regex over raw bytes is the only
         reliable approach and is actually faster for this use case.
+
+        Returns (fids, problem): problem says why fids is empty.
         """
         params = {"model": model_name, "REQUEST": "queryData", "FORMAT": "votable"}
         try:
@@ -173,43 +191,50 @@ class SVOSpectraGrabber:
                 timeout=self.ssap_timeout, stream=True
             ) as r:
                 if r.status_code != 200:
-                    return set()
-                buf = io.BytesIO()
-                total = 0
-                for chunk in r.iter_content(chunk_size=131072):
-                    if not chunk:
-                        break
-                    buf.write(chunk)
-                    total += len(chunk)
-                    if total >= self.ssap_max_bytes:
-                        print(f"    [SVO] SSAP response hit {self.ssap_max_bytes // 1_048_576}MB cap "
-                              f"— spectral grid may be very large")
-                        break
-                raw = buf.getvalue()
-        except Exception as e:
-            print(f"    [SVO] SSAP stream failed: {e}")
-            return set()
+                    return set(), f"HTTP {r.status_code}"
+                raw = self._read_capped(r, model_name)
+        except requests.RequestException as e:
+            return set(), str(e)
 
         text = raw.decode("utf-8", "ignore")
         fids = set(int(x) for x in re.findall(r"[?&]fid=(\d+)", text))
-        if fids:
-            print(f"    SSAP: {len(fids)} fids")
-        return fids
+        if not fids:
+            return fids, "the response lists none"
+        print(f"    SSAP: {len(fids)} fids")
+        return fids, None
+
+    def _read_capped(self, r, model_name):
+        """The SSAP response body; RuntimeError if it reaches ssap_max_bytes (the FID list would be cut short)."""
+        buf = io.BytesIO()
+        total = 0
+        for chunk in r.iter_content(chunk_size=131072):
+            if not chunk:
+                break
+            buf.write(chunk)
+            total += len(chunk)
+            if total >= self.ssap_max_bytes:
+                raise RuntimeError(
+                    f"SVO: the SSAP response for {model_name} reached the "
+                    f"{self.ssap_max_bytes // 1_048_576} MB cap, so its spectrum list would be "
+                    f"incomplete; raise the grabber's ssap_max_bytes and retry")
+        return buf.getvalue()
 
     # ---- B) Index page scrape ----
 
     def _discover_index_page(self, model_name):
+        """FIDs linked from the grid's index page, as (fids, problem)."""
+        url = f"{self.model_index_url}?models={urllib.parse.quote(model_name)}"
         try:
-            url = f"{self.model_index_url}?models={urllib.parse.quote(model_name)}"
             r = self.session.get(url, timeout=20)
-            if r.status_code != 200:
-                return set()
-            fids = set(int(x) for x in re.findall(r"[?&]fid=(\d+)", r.text))
-            if fids:
-                print(f"    index: {len(fids)} fids")
-            return fids
-        except Exception:
-            return set()
+        except requests.RequestException as e:
+            return set(), str(e)
+        if r.status_code != 200:
+            return set(), f"HTTP {r.status_code}"
+        fids = set(int(x) for x in re.findall(r"[?&]fid=(\d+)", r.text))
+        if not fids:
+            return fids, "the page links none"
+        print(f"    index: {len(fids)} fids")
+        return fids, None
 
     # ---- C) Bounded sparse probe + expansion ----
 
@@ -229,12 +254,8 @@ class SVOSpectraGrabber:
                 for fid in probes[:budget]
             }
             for fut in as_completed(futs):
-                fid = futs[fut]
-                try:
-                    if fut.result():
-                        hits.append(fid)
-                except Exception:
-                    pass
+                if fut.result():
+                    hits.append(futs[fut])
         if not hits:
             return set()
         found = set(hits)
@@ -244,6 +265,7 @@ class SVOSpectraGrabber:
         return found
 
     def _head_exists(self, model_name, fid):
+        """True if SVO serves a spectrum for this FID; RuntimeError if the request fails."""
         params = {"model": model_name, "fid": int(fid), "format": "ascii"}
         try:
             r = self.session.head(
@@ -266,8 +288,9 @@ class SVOSpectraGrabber:
                         return _is_spectral_content(chunk[:512])
                 return False
             return int(cl) > 1024
-        except Exception:
-            return False
+        except requests.RequestException as e:
+            # Treating this FID as absent would silently cut the FID list short
+            raise RuntimeError(f"SVO: could not check FID {fid} of {model_name}: {e}") from e
 
     def _expand_around(self, model_name, seed):
         found = {seed}
@@ -292,6 +315,17 @@ class SVOSpectraGrabber:
     def download_model_spectra(self, model_name, spectra_info,
                                teff_range=None, logg_range=None,
                                meta_range=None, wl_range=None):
+        """Download the spectra listed by get_model_metadata and write lookup_table.csv.
+
+        Returns the number of spectra on disk. SVO serves whole grids, so a
+        Teff, logg, [M/H] or wavelength range raises ValueError. If any
+        spectrum fails, the rest are still downloaded, lookup_table.csv is
+        not written, and RuntimeError lists each failure.
+        """
+        if any(rng is not None for rng in (teff_range, logg_range, meta_range, wl_range)):
+            raise ValueError(f"SVO downloads of {model_name} cannot be cut by Teff, logg, [M/H] or "
+                             "wavelength; leave the ranges unset and filter the downloaded grid")
+
         out_dir = os.path.join(self.base_dir, model_name)
         os.makedirs(out_dir, exist_ok=True)
 
@@ -303,70 +337,55 @@ class SVOSpectraGrabber:
         print(f"Downloading {total} spectra for {model_name}...")
 
         rows = []
-        rows_lock = threading.Lock()
-        ok_count = [0]          # list so closure can mutate it
-        done_count = [0]
-        done_lock = threading.Lock()
+        to_download = []
+        for spec in spectra_info:
+            fid = int(spec["fid"])
+            fname = f"{model_name}_fid{fid}.txt"
+            fpath = os.path.join(out_dir, fname)
 
-        def on_done(fname, fpath, success):
-            with done_lock:
-                done_count[0] += 1
-                done = done_count[0]
-            if success:
-                meta = parse_header(fpath)
-                meta["file_name"] = fname
-                with rows_lock:
-                    rows.append(meta)
-                    ok_count[0] += 1
-            if done % self.progress_every == 0 or done == total:
-                print(f"    {done}/{total} processed, {ok_count[0]} ok")
+            if os.path.exists(fpath) and os.path.getsize(fpath) > 1024:
+                # Validate cached file is actually spectral data
+                if _file_is_spectral(fpath):
+                    rows.append(_lookup_row(fpath, fname))
+                    continue
+                # Corrupted/HTML cached file — re-download
+                os.remove(fpath)
+            to_download.append((fid, fname, fpath))
 
+        failures = []
+        done = len(rows)
         with ThreadPoolExecutor(max_workers=self.max_workers) as ex:
-            futures = {}
-            for spec in spectra_info:
-                fid = int(spec["fid"])
-                fname = f"{model_name}_fid{fid}.txt"
-                fpath = os.path.join(out_dir, fname)
-
-                if os.path.exists(fpath) and os.path.getsize(fpath) > 1024:
-                    # Validate cached file is actually spectral data
-                    if _file_is_spectral(fpath):
-                        meta = parse_header(fpath)
-                        meta["file_name"] = fname
-                        with rows_lock:
-                            rows.append(meta)
-                            ok_count[0] += 1
-                        with done_lock:
-                            done_count[0] += 1
-                        continue
-                    else:
-                        # Corrupted/HTML cached file — re-download
-                        os.remove(fpath)
-
-                futures[ex.submit(self._download_with_retry, model_name, fid, fpath)] = (fid, fname, fpath)
-
+            futures = {ex.submit(self._download_with_retry, model_name, fid, fpath): (fid, fname, fpath)
+                       for fid, fname, fpath in to_download}
             for fut in as_completed(futures):
                 fid, fname, fpath = futures[fut]
                 try:
-                    success = fut.result()
-                    if not success and os.path.exists(fpath):
-                        os.remove(fpath)
-                    on_done(fname, fpath, success)
-                except Exception as e:
-                    print(f"    [error] FID {fid}: {e}")
+                    fut.result()
+                except RuntimeError as e:
+                    failures.append(str(e))
                     if os.path.exists(fpath):
-                        os.remove(fpath)
-                    on_done(fname, fpath, False)
+                        os.remove(fpath)  # a stale cached file too small to trust
+                else:
+                    rows.append(_lookup_row(fpath, fname))
+                done += 1
+                if done % self.progress_every == 0 or done == total:
+                    print(f"    {done}/{total} processed, {len(rows)} ok")
 
-        if rows:
-            self._write_lookup(out_dir, rows)
-            print(f"  Successfully downloaded {ok_count[0]}/{total} spectra")
-        else:
-            print(f"  No spectra downloaded for {model_name}")
-        return ok_count[0]
+        if failures:
+            raise RuntimeError(
+                f"SVO: {len(failures)} of {total} spectra of {model_name} failed to download, so "
+                f"lookup_table.csv was not written; the others are in {out_dir}. Rerun to retry:\n  "
+                + "\n  ".join(sorted(failures)))
+
+        self._write_lookup(out_dir, rows)
+        print(f"  Successfully downloaded {len(rows)}/{total} spectra")
+        return len(rows)
 
     def _download_with_retry(self, model_name, fid, out_path):
-        """Download one spectrum with exponential-backoff retries."""
+        """Download one spectrum with exponential-backoff retries.
+
+        Raises RuntimeError with the last error once every attempt has failed.
+        """
         params = {"model": model_name, "fid": int(fid), "format": "ascii"}
         last_exc = None
         for attempt in range(self.dl_max_retries + 1):
@@ -399,25 +418,20 @@ class SVOSpectraGrabber:
                     continue
 
                 os.replace(tmp_path, out_path)
-                return True
+                return
 
             except requests.exceptions.Timeout:
                 last_exc = "timeout"
             except requests.exceptions.ConnectionError as e:
                 last_exc = f"connection error: {e}"
-            except Exception as e:
+            except (requests.RequestException, OSError) as e:
                 last_exc = str(e)
             finally:
                 tmp = out_path + ".tmp"
                 if os.path.exists(tmp):
-                    try:
-                        os.remove(tmp)
-                    except Exception:
-                        pass
+                    os.remove(tmp)
 
-        # All retries exhausted
-        print(f"    [fail] FID {fid} after {self.dl_max_retries + 1} attempts: {last_exc}")
-        return False
+        raise RuntimeError(f"FID {fid}: {last_exc} (after {self.dl_max_retries + 1} attempts)")
 
 
     def _write_lookup(self, out_dir, rows):
@@ -434,6 +448,13 @@ class SVOSpectraGrabber:
 
 
 # -------------------- module-level helpers --------------------
+
+def _lookup_row(fpath: str, fname: str) -> dict:
+    """The spectrum's header parameters plus its file name, for lookup_table.csv."""
+    meta = parse_header(fpath)
+    meta["file_name"] = fname
+    return meta
+
 
 def _is_spectral_content(data: bytes) -> bool:
     """
@@ -456,8 +477,5 @@ def _is_spectral_content(data: bytes) -> bool:
 
 def _file_is_spectral(path: str) -> bool:
     """Read the first 512 bytes of a file and check if it's spectral data."""
-    try:
-        with open(path, "rb") as f:
-            return _is_spectral_content(f.read(512))
-    except Exception:
-        return False
+    with open(path, "rb") as f:
+        return _is_spectral_content(f.read(512))
