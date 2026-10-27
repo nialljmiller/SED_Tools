@@ -268,14 +268,15 @@ def _print_cleaning_report(summary: Dict) -> None:
 
     # Per-file outcome counts
     units_already_standard = (detected_wl == 'angstrom' and detected_flux == 'flam')
-    n_converted = len(summary.get('converted', []))
-    n_tagged    = len(summary.get('tagged', []))
-    n_recovered = len(summary.get('recovered', []))
-    n_skipped   = len(summary.get('skipped_already', []) or summary.get('skipped', []))
-    n_invalid   = len(summary.get('skipped_invalid', []) or summary.get('invalid', []))
-    n_index     = len(summary.get('skipped_index', []))
-    n_error     = len(summary.get('error', []))
+    n_converted = len(summary['converted'])
+    n_recovered = len(summary['recovered'])
+    n_skipped   = len(summary['skipped_already'])
+    n_invalid   = len(summary['skipped_invalid'])
+    n_index     = len(summary['skipped_index'])
+    n_error     = len(summary['error'])
 
+    # Files "converted" from units that were already Å and F_λ were only cleaned and tagged.
+    n_tagged = 0
     if n_converted > 0 and units_already_standard:
         n_tagged, n_converted = n_converted, 0
 
@@ -1233,6 +1234,10 @@ def _add_filter_component_parsers(sub) -> None:
     fbp.add_argument("--pwv", nargs="+", type=float, default=None, help="SkyCalc PWV grid (mm)")
 
 
+# densify accepts --ml-gap-threshold only at this default, since densify_grid has no such threshold.
+_ML_GAP_THRESHOLD_DEFAULT = 5000.0
+
+
 def _add_grid_build_parsers(sub) -> None:
     rp = sub.add_parser("rebuild", help="Rebuild lookup table + HDF5 + flux cube")
     rp.add_argument("--base", default=str(STELLAR_DIR_DEFAULT),
@@ -1273,7 +1278,7 @@ def _add_grid_build_parsers(sub) -> None:
     p_densify.add_argument("--method", default="auto",
                             choices=["auto", "interp", "ml", "blackbody"])
     p_densify.add_argument("--ml-model", default=None)
-    p_densify.add_argument("--ml-gap-threshold", type=float, default=5000.0)
+    p_densify.add_argument("--ml-gap-threshold", type=float, default=_ML_GAP_THRESHOLD_DEFAULT)
     p_densify.add_argument("--no-lookup", action="store_true")
 
 
@@ -1601,16 +1606,25 @@ def _cmd_ml_generator(args, parser):
 
 
 def _cmd_densify(args, parser):
+    """densify_grid fills each Teff gap with --ml-model inside the source grid's Teff range, and
+    with a blackbody scaled to the nearest real spectrum otherwise; options it cannot honour are refused."""
     from .grid_densifier import densify_grid
 
+    if args.method == "interp":
+        parser.error("--method interp is not implemented: densify fills gaps with --ml-model or blackbodies")
+    if args.method == "ml" and not args.ml_model:
+        parser.error("--method ml needs --ml-model")
+    if args.method == "blackbody" and args.ml_model:
+        parser.error("--method blackbody does not use --ml-model; leave one of them out")
+    if args.ml_gap_threshold != _ML_GAP_THRESHOLD_DEFAULT:
+        parser.error("--ml-gap-threshold is not implemented: with --ml-model, every gap inside the source "
+                     "grid's Teff range is filled by the model")
+    # --no-lookup needs nothing: densify_grid writes only the flux cube.
     densify_grid(
         src=args.flux_cube,
         dst=args.output,
         teff_spacing=args.teff_spacing,
-        method=args.method,
         ml_model=args.ml_model,
-        ml_gap_threshold=args.ml_gap_threshold,
-        write_lookup=not args.no_lookup,
     )
     return 0
 
@@ -1641,14 +1655,21 @@ def _cmd_coverage(args, parser):
         if not names:
             print(f"No local grids found under {args.base}")
             return 1
+    failed = []
     for nm in names:
-        SED.coverage(
-            nm,
-            model_root=args.base,
-            plot=not args.no_plot,
-            out_path=args.out if len(names) == 1 else None,
-        )
-    return 0
+        try:
+            SED.coverage(
+                nm,
+                model_root=args.base,
+                plot=not args.no_plot,
+                out_path=args.out if len(names) == 1 else None,
+            )
+        except (ValueError, OSError, RuntimeError) as exc:
+            print(f"[coverage] {nm}: {exc}")
+            failed.append(f"{nm}: {exc}")
+    for line in failed:
+        print(f"[coverage] FAILED {line}")
+    return 1 if failed else 0
 
 
 def _cmd_import(args, parser):

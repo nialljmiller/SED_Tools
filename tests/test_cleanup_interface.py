@@ -650,3 +650,76 @@ def test_offer_composition_rejects_an_airmass_that_is_not_a_number(tmp_path, mon
     answer(monkeypatch, "y", "1", "", "y", "high")
     with pytest.raises(ValueError, match="Airmass and PWV must be numbers"):
         cli._offer_composition(tmp_path / "Fac" / "Cam")
+
+
+# ----------------------------------------------------------------------
+# densify, coverage and the cleaning report
+# ----------------------------------------------------------------------
+@pytest.fixture
+def densify(monkeypatch):
+    """Record densify_grid calls, checking each binds to the real signature."""
+    import inspect
+
+    module = importlib.import_module("sed_tools.grid_densifier")
+    signature = inspect.signature(module.densify_grid)
+    calls = []
+
+    def record(*args, **kwargs):
+        signature.bind(*args, **kwargs)
+        calls.append(kwargs)
+
+    monkeypatch.setattr(module, "densify_grid", record)
+    return calls
+
+
+def test_densify_passes_only_what_densify_grid_accepts(densify, monkeypatch):
+    base = ["densify", "--flux-cube", "in.bin", "--output", "out.bin", "--teff-spacing", "250"]
+    assert run_cli(monkeypatch, *base, "--no-lookup") == 0
+    assert run_cli(monkeypatch, *base, "--method", "ml", "--ml-model", "gen") == 0
+    assert run_cli(monkeypatch, *base, "--method", "blackbody") == 0
+    assert densify == [
+        {"src": "in.bin", "dst": "out.bin", "teff_spacing": 250.0, "ml_model": None},
+        {"src": "in.bin", "dst": "out.bin", "teff_spacing": 250.0, "ml_model": "gen"},
+        {"src": "in.bin", "dst": "out.bin", "teff_spacing": 250.0, "ml_model": None},
+    ]
+
+
+@pytest.mark.parametrize("options,message", [
+    (["--method", "interp"], "--method interp is not implemented"),
+    (["--method", "ml"], "--method ml needs --ml-model"),
+    (["--method", "blackbody", "--ml-model", "gen"], "--method blackbody does not use --ml-model"),
+    (["--ml-gap-threshold", "2000"], "--ml-gap-threshold is not implemented"),
+])
+def test_densify_refuses_options_it_cannot_honour(densify, monkeypatch, capsys, options, message):
+    with pytest.raises(SystemExit) as excinfo:
+        run_cli(monkeypatch, "densify", "--flux-cube", "in.bin", "--output", "out.bin", *options)
+    assert excinfo.value.code == 2
+    assert message in capsys.readouterr().err
+    assert densify == []
+
+
+def test_coverage_reports_every_grid_then_exits_1_if_any_failed(tmp_path, monkeypatch, capsys):
+    covered = []
+
+    def coverage(cls, name, **kwargs):
+        if name == "B":
+            raise ValueError("lookup_table.csv has no Teff column")
+        covered.append(name)
+
+    monkeypatch.setattr(SED, "coverage", classmethod(coverage))
+    assert run_cli(monkeypatch, "coverage", "--grids", "A", "B", "C", "--no-plot", "--base", str(tmp_path)) == 1
+    assert covered == ["A", "C"]
+    assert "[coverage] FAILED B: lookup_table.csv has no Teff column" in capsys.readouterr().out
+
+
+def test_cleaning_report_reads_the_summary_clean_model_dir_returns(capsys):
+    from sed_tools.cli import _print_cleaning_report
+
+    summary = dict(CLEAN, total=5, converted=["a", "b"], recovered=["c"], skipped_already=["d"],
+                   skipped_invalid=["e"], catalog_units={"wavelength": "angstrom", "flux": "flam"},
+                   detection_stats={"status": "consensus"})
+    _print_cleaning_report(summary)
+    out = capsys.readouterr().out
+    assert "Cleaned       : 2 files" in out and "Recovered     : 1 files" in out
+    assert "Already done  : 1 files" in out and "Invalid       : 1 files" in out
+    assert "4/5 files usable" in out
