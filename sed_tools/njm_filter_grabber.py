@@ -402,17 +402,21 @@ class NJMFilterGrabber:
         failed = []
         for fac in facilities:
             print(f"\n[njm] Facility: {fac}")
-            instruments = self.discover_instruments(fac)
+            try:
+                instruments = self.discover_instruments(fac)
+            except requests.RequestException as exc:
+                failed.append(f"{fac}: {exc}")
+                continue
 
             for inst in instruments:
                 try:
                     total_downloaded += self.download_filters(fac, inst)
-                except RuntimeError as exc:
-                    failed.append(str(exc))
+                except (requests.RequestException, RuntimeError) as exc:
+                    failed.append(f"{fac}/{inst}: {exc}")
 
         print(f"\n[njm] Total filters downloaded: {total_downloaded}")
         if failed:
-            raise RuntimeError(f"{len(failed)} NJM instrument downloads are incomplete:\n" + "\n".join(failed))
+            raise RuntimeError(f"{len(failed)} NJM downloads are incomplete:\n" + "\n".join(failed))
         return total_downloaded
 
     # ------------------------------------------------------------------

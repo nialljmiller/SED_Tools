@@ -343,20 +343,31 @@ def test_atmosphere_is_false_only_when_not_served(tmp_path, njm):
 
 
 def test_download_all_filters_finishes_then_lists_incomplete_instruments(tmp_path, njm, monkeypatch):
+    import requests
+
     grabber = njm(tmp_path, {})
-    monkeypatch.setattr(grabber, "discover_instruments", lambda facility: ["A", "B"])
+    monkeypatch.setattr(grabber, "discover_facilities", lambda: ["Down", "Fac"])
     attempted = []
+
+    def instruments(facility):
+        if facility == "Down":
+            raise requests.HTTPError("500 for filters/Down/")
+        return ["A", "B", "C"]
 
     def download(facility, instrument):
         attempted.append(instrument)
         if instrument == "A":
             raise RuntimeError("NJM download of Fac/A is incomplete")
+        if instrument == "B":
+            raise requests.HTTPError("502 for filters/Fac/B/")
         return 2
 
+    monkeypatch.setattr(grabber, "discover_instruments", instruments)
     monkeypatch.setattr(grabber, "download_filters", download)
-    with pytest.raises(RuntimeError, match="1 NJM instrument downloads are incomplete:\nNJM download of Fac/A"):
-        grabber.download_all_filters("Fac")
-    assert attempted == ["A", "B"]
+    with pytest.raises(RuntimeError, match="3 NJM downloads are incomplete:\nDown: 500 .*\n"
+                                           "Fac/A: NJM download of Fac/A is incomplete\nFac/B: 502"):
+        grabber.download_all_filters()
+    assert attempted == ["A", "B", "C"]
 
 
 def test_svo_failure_while_checking_a_mirror_curve_keeps_the_curve(tmp_path, njm, monkeypatch, caplog):
