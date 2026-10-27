@@ -633,3 +633,20 @@ def test_mast_wavelength_cut_that_leaves_nothing_is_not_a_failure(tmp_path):
     grabber = mast.MASTSpectraGrabber(base_dir=str(tmp_path), session=session)
     info = {"reskey": "r1000", "metals": ["m+0.00"]}
     assert grabber.download_model_spectra("BOSZ-2024-r1000", info, wl_range=(9000, 9500)) == 0
+
+
+def test_svo_cache_that_cannot_be_read_or_written_is_warned_about(tmp_path, monkeypatch, caplog):
+    grabber, _ = make_svo(tmp_path, monkeypatch, {SSAP_QUERY: FakeResponse(200, "<TD>ssap.php?fid=3</TD>")})
+    (tmp_path / ".cache" / "svo_fids" / "Grid.json").mkdir()  # a directory where the cache file goes
+
+    with caplog.at_level(logging.WARNING):
+        assert grabber.get_model_metadata("Grid") == [{"fid": 3}]
+
+    messages = warnings_from(caplog, "svo_spectra_grabber")
+    assert any("unreadable FID cache" in m for m in messages)
+    assert any("could not cache the FID list" in m for m in messages)
+
+
+def test_mast_filter_keeps_names_it_cannot_parse_so_the_download_reports_them():
+    odd = "https://x/m+0.00/r1000/bosz2024_xx_t05750_r1000_resam.txt.gz"
+    assert mast._filter_urls_by_params([odd], teff_range=(5000, 6000)) == [odd]
