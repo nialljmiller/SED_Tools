@@ -69,10 +69,16 @@ def _read_cube_header(path):
 
 
 def _open_flux_memmap(path, nt, nl, nm, nw, mode="r"):
-    """Return a memmap view of the flux data in an existing cube file."""
+    """Memmap of the flux in an existing cube file, indexed [teff, logg, meta, wavelength].
+
+    The file stores the flux C-order as (nw, nm, nl, nt), Teff varying fastest:
+    the layout MESA, precompute_flux_cube and FluxCube.from_file use. The
+    returned array is a transposed view, so writes through it land in that layout.
+    """
     offset = _flux_offset(nt, nl, nm, nw)
-    return np.memmap(path, dtype=np.float64, mode=mode,
-                     offset=offset, shape=(nt, nl, nm, nw))
+    flux = np.memmap(path, dtype=np.float64, mode=mode,
+                     offset=offset, shape=(nw, nm, nl, nt))
+    return flux.transpose(3, 2, 1, 0)
 
 
 def _init_output_cube(path, teff, logg, meta, wl, nt_new):
@@ -87,9 +93,7 @@ def _init_output_cube(path, teff, logg, meta, wl, nt_new):
         f.write(wl.astype(np.float64).tobytes())
         # Pre-allocate flux region as zeros
         f.write(b"\x00" * (nt_new * nl * nm * nw * 8))
-    offset = _flux_offset(nt_new, nl, nm, nw)
-    return np.memmap(path, dtype=np.float64, mode="r+",
-                     offset=offset, shape=(nt_new, nl, nm, nw))
+    return _open_flux_memmap(path, nt_new, nl, nm, nw, mode="r+")
 
 
 # ---------------------------------------------------------------------------
