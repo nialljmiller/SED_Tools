@@ -147,7 +147,8 @@ class FilterCatalogue:
         A copy is fresh while the index ``generation`` it was checked under is
         unchanged, or for ``max_age`` seconds.  Returns ``None`` if neither the
         mirror nor the cache has it; raises :class:`CatalogueError` if the mirror
-        does not serve it.
+        does not serve it.  A stale copy used because NJM cannot be asked is
+        reported with a warning.
         """
         path = self._cache_path(rel)
         meta = self._read_meta(path)
@@ -157,8 +158,9 @@ class FilterCatalogue:
             return path
         mirror = self._online_mirror(have_copy=path.is_file() and not refresh)
         if mirror is None:
-            if refresh and path.is_file():
-                logger.warning("Cannot ask NJM again (%s); using the cached %s",
+            # Offline, the cache is what was asked for; only a refresh it cannot honour is reported.
+            if path.is_file() and (refresh or not self.offline):
+                logger.warning("Cannot ask NJM (%s); using the cached %s, which may be out of date",
                                "offline" if self.offline else "unreachable", rel)
             return path if path.is_file() else None
         headers = {}
@@ -179,13 +181,20 @@ class FilterCatalogue:
                 logger.warning("NJM unreachable (%s); using the cached %s", exc, rel)
                 return path
             raise CatalogueError(f"Cannot fetch {rel} from NJM: {exc}") from exc
+        self._store(path, rel, url, response, meta, generation, validate)
+        return path
+
+    @staticmethod
+    def _store(path: Path, rel: str, url: str, response, meta: dict, generation: Optional[str],
+               validate: Optional[Callable[[str], None]]) -> None:
+        """Save a fetched file (unless NJM answered 304 Not Modified) and record when it was checked."""
         response_headers = getattr(response, "headers", None) or {}
         if getattr(response, "status_code", 200) != 304:
             content = _body(response)
             if validate is not None:
                 try:
                     validate(content.decode("utf-8"))
-                except (ValueError, TypeError) as exc:
+                except ValueError as exc:
                     raise CatalogueError(f"NJM served an unreadable {rel}: {exc}") from exc
             path.parent.mkdir(parents=True, exist_ok=True)
             tmp = path.with_name(f".{path.name}.part")
@@ -197,7 +206,6 @@ class FilterCatalogue:
                     last_modified=(response_headers.get("Last-Modified") or meta.get("last_modified")
                                    or formatdate(path.stat().st_mtime, usegmt=True)))
         path.with_name(path.name + ".http.json").write_text(json.dumps(meta, indent=1) + "\n")
-        return path
 
     @staticmethod
     def _json_object(text: str, require_bands: bool = True) -> dict:
@@ -280,7 +288,9 @@ class FilterCatalogue:
             try:
                 return self._json_object(installed.read_text(encoding="utf-8"))
             except (OSError, ValueError) as exc:
-                logger.warning("Ignoring unreadable %s: %s", installed, exc)
+                # NJM's current file may describe other curves than the installed ones.
+                raise CatalogueError(f"{installed} is unreadable ({exc}); repair or remove it, or pass "
+                                     "refresh=True to read NJM's current file instead") from exc
         try:
             index = self.index()
         except CatalogueError:
@@ -342,7 +352,9 @@ class FilterCatalogue:
         try:
             definitions = self.index()["filters"].get("properties_definitions") or {}
             rel = (definitions.get("vega_spectrum") or {}).get("url") or VEGA_URL
-        except CatalogueError:
+        except CatalogueError as exc:
+            logger.warning("Cannot read NJM's index.json (%s); using the Vega spectrum at its usual path, %s",
+                           exc, VEGA_URL)
             rel = VEGA_URL
         path = self._fetch(rel, max_age=30 * 24 * 3600, refresh=refresh)
         if path is None:
@@ -352,33 +364,9 @@ class FilterCatalogue:
     # ------------------------------------------------------------------
     # Search
     # ------------------------------------------------------------------
-    def search(self, text: Optional[str] = None, *, facility: Optional[str] = None,
-               instrument: Optional[str] = None, band: Optional[str] = None,
-               wavelength: Any = None, pivot: Optional[Range] = None, fwhm: Optional[Range] = None,
-               detector_type: Optional[str] = None, where: Optional[Mapping[str, Any]] = None,
-               properties: bool = True, refresh: bool = False) -> pd.DataFrame:
-        """Find served bands; see :meth:`sed_tools.api.Filters.search`."""
-        if detector_type is not None:
-            wanted_detector = normalize_detector_type(detector_type)
-            if wanted_detector is None:
-                raise ValueError(f"Unknown detector type: {detector_type!r}")
-        else:
-            wanted_detector = None
-        needles = {"facility": facility, "instrument": instrument, "band": band}
-        criteria = {}
-        if wavelength is not None:
-            criteria["wavelength"] = _wavelength_criterion(wavelength)
-        if pivot is not None:
-            criteria["WavelengthPivot"] = _range(pivot, angstrom=True)
-        if fwhm is not None:
-            criteria["FWHM"] = _range(fwhm, angstrom=True)
-        for column, value in (where or {}).items():
-            criteria[column] = _range(value) if _is_range(value) else ("equals", value)
-        if wanted_detector:
-            criteria["DetectorType"] = ("equals", wanted_detector)
-        if criteria and not properties:
-            raise ValueError("property criteria need properties=True")
-
+    def _named_bands(self, text: Optional[str], needles: Mapping[str, Optional[str]],
+                     wanted_detector: Optional[str], refresh: bool) -> Tuple[List[dict], Dict[Tuple[str, str], dict]]:
+        """Bands whose names match, from ``index.json``: their rows and the instruments they belong to."""
         rows, entries = [], {}
         for entry in self.instruments(refresh=refresh):
             if wanted_detector and entry["detector_types"] and not entry["detector_types"].get(wanted_detector):
@@ -391,6 +379,24 @@ class FilterCatalogue:
                     continue
                 rows.append(values)
                 entries[(entry["facility"], entry["instrument"])] = entry
+        return rows, entries
+
+    def search(self, text: Optional[str] = None, *, facility: Optional[str] = None,
+               instrument: Optional[str] = None, band: Optional[str] = None,
+               wavelength: Any = None, pivot: Optional[Range] = None, fwhm: Optional[Range] = None,
+               detector_type: Optional[str] = None, where: Optional[Mapping[str, Any]] = None,
+               properties: bool = True, refresh: bool = False) -> pd.DataFrame:
+        """Find served bands; see :meth:`sed_tools.api.Filters.search`."""
+        wanted_detector = None
+        if detector_type is not None:
+            wanted_detector = normalize_detector_type(detector_type)
+            if wanted_detector is None:
+                raise ValueError(f"Unknown detector type: {detector_type!r}")
+        criteria = _criteria(wavelength, pivot, fwhm, where, wanted_detector)
+        if criteria and not properties:
+            raise ValueError("property criteria need properties=True")
+        needles = {"facility": facility, "instrument": instrument, "band": band}
+        rows, entries = self._named_bands(text, needles, wanted_detector, refresh)
 
         errors: List[str] = []
         if properties and rows:
@@ -421,6 +427,22 @@ class FilterCatalogue:
 # ----------------------------------------------------------------------
 # Search criteria
 # ----------------------------------------------------------------------
+def _criteria(wavelength, pivot, fwhm, where, detector_type: Optional[str]) -> Dict[str, tuple]:
+    """The property criteria of a search, by column."""
+    criteria = {}
+    if wavelength is not None:
+        criteria["wavelength"] = _wavelength_criterion(wavelength)
+    if pivot is not None:
+        criteria["WavelengthPivot"] = _range(pivot, angstrom=True)
+    if fwhm is not None:
+        criteria["FWHM"] = _range(fwhm, angstrom=True)
+    for column, value in (where or {}).items():
+        criteria[column] = _range(value) if _is_range(value) else ("equals", value)
+    if detector_type:
+        criteria["DetectorType"] = ("equals", detector_type)
+    return criteria
+
+
 def _to_angstrom(value) -> float:
     """A wavelength in Å; astropy quantities in any spectral unit are converted."""
     if hasattr(value, "unit"):
