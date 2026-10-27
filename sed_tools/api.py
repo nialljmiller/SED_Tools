@@ -624,8 +624,9 @@ class SED:
         if include_remote:
             catalogs.extend(cls._query_remote(source))
 
-        # Filter by parameter coverage
-        if any([teff_min, teff_max, logg_min, logg_max, metallicity_min, metallicity_max]):
+        # Filter by parameter coverage; a bound of 0 is a bound
+        bounds = (teff_min, teff_max, logg_min, logg_max, metallicity_min, metallicity_max)
+        if any(b is not None for b in bounds):
             catalogs = [
                 c for c in catalogs
                 if c.covers_range(
@@ -825,8 +826,9 @@ class SED:
         # Load spectra into SpectralGrid object
         cat = cls._load_catalog_from_dir(model_dir, catalog, used_source)
         
-        # Apply parameter filters
-        if any([teff_min, teff_max, logg_min, logg_max, metallicity_min, metallicity_max]):
+        # Apply parameter filters; a bound of 0 is a bound
+        bounds = (teff_min, teff_max, logg_min, logg_max, metallicity_min, metallicity_max)
+        if any(b is not None for b in bounds):
             cat = cat.filter(
                 teff_min=teff_min,
                 teff_max=teff_max,
