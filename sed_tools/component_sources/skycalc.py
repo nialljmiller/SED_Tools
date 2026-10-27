@@ -222,6 +222,7 @@ class SkyCalcClient:
         self.form_url = form_url
         self.interface = interface
         self.pause = pause
+        self._api_error: Optional[Exception] = None  # why "auto" switched to the form
 
     def transmission(
         self, site: str, airmass: float, pwv: float, wmin_nm: float, wmax_nm: float, resolution: float
@@ -245,6 +246,7 @@ class SkyCalcClient:
                 time.sleep(self.pause)
                 return result
             except RuntimeError as exc:
+                # A rejection or an echo mismatch is final; a missing FITS link or file is retried.
                 if "rejected" in str(exc) or "echoed" in str(exc):
                     raise
                 last_error = exc
@@ -253,9 +255,14 @@ class SkyCalcClient:
                 if self.interface == "auto" and not use_form and _unreachable(exc):
                     logger.warning("SkyCalc API host %s unreachable (%s); using the web form", self.base_url, exc)
                     self.interface = "form"
+                    self._api_error = exc
                     continue
             time.sleep(5 * (attempt + 1))
-        raise RuntimeError(f"SkyCalc request failed after {self.retries} attempts: {last_error}")
+        message = f"SkyCalc request failed after {self.retries} attempts: {last_error}"
+        if self._api_error is not None and last_error is not self._api_error:
+            message += (f"; the web form was used because the API host {self.base_url} was unreachable "
+                        f"({self._api_error})")
+        raise RuntimeError(message) from last_error
 
     def _api(self, params: Dict[str, object]) -> SkyCalcResult:
         tmpdir = None
@@ -273,8 +280,9 @@ class SkyCalcClient:
             if tmpdir:
                 try:
                     self.session.get(f"{self.base_url}/api/rmtmp", params={"d": tmpdir}, timeout=60)
-                except RequestException:
-                    logger.debug("Could not delete SkyCalc tmpdir %s", tmpdir)
+                except RequestException as exc:
+                    # The result is unaffected; only ESO's temporary directory is left behind.
+                    logger.warning("Could not delete SkyCalc tmpdir %s on %s: %s", tmpdir, self.base_url, exc)
 
     def _form(self, params: Dict[str, object]) -> SkyCalcResult:
         fields = _form_fields(params)
@@ -296,7 +304,7 @@ class SkyCalcClient:
             if content[:6] == b"SIMPLE":
                 return content
             time.sleep(2)
-        raise RuntimeError("SkyCalc output was not a FITS file")
+        raise RuntimeError(f"SkyCalc output {url} was not a FITS file")
 
     @staticmethod
     def _result(content: bytes, url: str, interface: str, request: Dict[str, object]) -> SkyCalcResult:
