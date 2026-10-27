@@ -117,3 +117,91 @@ def test_unknown_components_header_is_reported(caplog):
         manifest = InstrumentManifest.from_headers("Fac", "Cam", headers)
     assert manifest.published_bands == {"r": "filter"}
     assert "Fac/Cam band g" in caplog.text and "'warp'" in caplog.text
+
+
+# ----------------------------------------------------------------------
+# svo_filter_grabber
+# ----------------------------------------------------------------------
+def _svo_record(filter_id):
+    import numpy as np
+
+    return fm.SVOFilterRecord(filter_id, fm.PHOTON, np.array([4000.0, 6000.0]), np.ones(2), "Angstrom", "Filter")
+
+
+def test_svo_download_saves_what_it_can_then_lists_the_failures(tmp_path):
+    import requests
+
+    from sed_tools.filter_components import InstrumentManifest
+    from sed_tools.svo_filter_grabber import FilterRow, SVOFilterBrowser
+
+    browser = SVOFilterBrowser(base_dir=str(tmp_path))
+
+    def get_filter(filter_id):
+        if filter_id.endswith(".r"):
+            return None
+        if filter_id.endswith(".i"):
+            raise requests.HTTPError("500 Server Error")
+        return _svo_record(filter_id)
+
+    browser.metadata_client.get_filter = get_filter
+    rows = [FilterRow(f"Fac/Cam.{b}", b, "Fac", "Cam", "") for b in "gri"]
+    with pytest.raises(RuntimeError) as info:
+        browser.download_filters(rows)
+    message = str(info.value)
+    assert "2 of 3 SVO filters could not be saved" in message
+    assert "Fac/Cam.r: SVO returned no transmission data" in message and "Fac/Cam.i: 500" in message
+    directory = tmp_path / "Fac" / "Cam"
+    assert (directory / "Cam").read_text() == "g.dat\n"
+    assert InstrumentManifest.load(directory).missing_files(directory) == ["i.dat", "r.dat"]
+
+
+def test_svo_bulk_download_finishes_then_reports_failed_instruments():
+    from types import SimpleNamespace
+
+    from sed_tools.svo_filter_grabber import Facility, Instrument, _download_facilities
+
+    downloaded = []
+
+    def download(filters):
+        downloaded.append(filters[0])
+        if filters[0] == "A/one.g":
+            raise RuntimeError("1 of 1 SVO filters could not be saved")
+
+    browser = SimpleNamespace(
+        list_instruments=lambda key: [Instrument(key, "one", "One"), Instrument(key, "two", "Two")],
+        list_filters=lambda fac, inst: [f"{fac}/{inst}.g"],
+        download_filters=download,
+    )
+    with pytest.raises(RuntimeError, match="Bulk download incomplete:\nA/One: 1 of 1"):
+        _download_facilities(browser, [Facility("A", "A"), Facility("B", "B")])
+    assert downloaded == ["A/one.g", "A/two.g", "B/one.g", "B/two.g"]
+
+
+# ----------------------------------------------------------------------
+# filter_library
+# ----------------------------------------------------------------------
+def test_published_reports_each_fallback_and_every_source_failure(tmp_path, monkeypatch, caplog):
+    from types import SimpleNamespace
+
+    from requests import ConnectionError
+
+    from sed_tools import filter_library
+    from sed_tools.component_sources import catalog
+    from sed_tools.filter_components import ComponentError
+    from sed_tools.filter_library import FilterLibrary
+
+    library = FilterLibrary(tmp_path)
+    library.mirror = SimpleNamespace(is_available=lambda: False)
+    library.svo = SimpleNamespace(list_facilities=lambda: (_ for _ in ()).throw(RuntimeError("SVO index down")))
+    monkeypatch.setitem(catalog.BUILDERS_FOR, ("Fac", "Cam"), catalog.BuilderRef("test", publishes=True))
+
+    def builder(root, **kwargs):
+        raise ConnectionError("team site offline")
+
+    monkeypatch.setattr(filter_library, "get_builder", lambda name: builder)
+    with caplog.at_level(logging.WARNING), pytest.raises(ComponentError) as info:
+        library.published("Fac", "Cam")
+    assert str(info.value) == ("No source can provide Fac/Cam: NJM: the mirror is unavailable; "
+                               "original source: team site offline; SVO: SVO index down")
+    assert "NJM cannot provide Fac/Cam (the mirror is unavailable); trying its original-source builder" in caplog.text
+    assert "The original source cannot provide Fac/Cam (team site offline); trying SVO" in caplog.text

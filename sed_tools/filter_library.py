@@ -21,7 +21,7 @@ from .filter_components import (
     InstrumentManifest, atmosphere_file, build_product, find_atmosphere, parse_components,
     resolve_atmosphere,
 )
-from .filter_metadata import migrate_filter_tree, svo_components_header
+from .filter_metadata import SVOUnreachableError, migrate_filter_tree, svo_components_header
 from .njm_filter_grabber import NJMFilterGrabber
 from .svo_filter_grabber import SVOFilterBrowser, _clean_path
 
@@ -80,35 +80,76 @@ class FilterLibrary:
                                       for name in expected)
 
     def published(self, facility, instrument):
+        """The directory of the instrument's complete published curves, downloading them if needed.
+
+        Sources, in order: an installed complete copy, NJM, the instrument's
+        original-source builder, SVO.  Each source that cannot give a complete
+        set is reported with a warning naming the next one tried; when none can,
+        ComponentError carries every source's reason.
+        """
         directory = self.root / facility / instrument
         if self.published_complete(directory):
             # Sets downloaded by SED_Tools 0.3.0 carry metadata on leading '#' lines.
             migrate_filter_tree(directory)
             return directory
 
-        if self.mirror.is_available():
-            self.mirror.download_filters(facility, instrument)
-            if self.published_complete(directory):
-                return directory
-
         ref = builder_for(facility, instrument)
-        if ref is not None and ref.publishes:
-            try:
-                get_builder(ref.name)(self.root, **dict(ref.kwargs))
-                if self.published_complete(directory):
-                    return directory
-            except (RequestException, OSError, RuntimeError, ValueError) as exc:
-                logger.warning("Original source unavailable for %s/%s: %s", facility, instrument, exc)
+        builder = ref if ref is not None and ref.publishes else None
+        reason = self._published_from_njm(facility, instrument, directory)
+        if reason is None:
+            return directory
+        reasons = [f"NJM: {reason}"]
+        logger.warning("NJM cannot provide %s/%s (%s); trying %s", facility, instrument, reason,
+                       "its original-source builder" if builder else "SVO")
+        if builder is not None:
+            reason = self._published_from_builder(builder, directory)
+            if reason is None:
+                return directory
+            reasons.append(f"original source: {reason}")
+            logger.warning("The original source cannot provide %s/%s (%s); trying SVO", facility, instrument, reason)
+        try:
+            return self._published_from_svo(facility, instrument, directory)
+        except (ComponentError, RequestException, RuntimeError) as exc:
+            reasons.append(f"SVO: {exc}")
+            raise ComponentError(f"No source can provide {facility}/{instrument}: " + "; ".join(reasons)) from exc
 
+    def _published_from_njm(self, facility, instrument, directory):
+        """Download the set from NJM; ``None`` once it is complete, else why it is not."""
+        if not self.mirror.is_available():
+            return "the mirror is unavailable"
+        try:
+            self.mirror.download_filters(facility, instrument)
+        except (RequestException, OSError, RuntimeError) as exc:
+            return str(exc)
+        return None if self.published_complete(directory) else "the mirror has no complete set"
+
+    def _published_from_builder(self, ref, directory):
+        """Build the set from its original source; ``None`` once it is complete, else why it is not."""
+        try:
+            get_builder(ref.name)(self.root, **dict(ref.kwargs))
+        except (RequestException, OSError, RuntimeError, ValueError) as exc:
+            return str(exc)
+        return None if self.published_complete(directory) else "the builder left an incomplete set"
+
+    def _published_from_svo(self, facility, instrument, directory):
+        """Download the set from SVO and return its complete directory, or raise."""
         rows = self.svo_filters(facility, instrument)
         if not rows:
             raise ComponentError(f"SVO returned no filters for {facility}/{instrument}")
-        self.svo.download_filters(rows)
-        directories = {self.root / _clean_path(row.facility) / _clean_path(row.instrument) for row in rows}
-        for candidate in [directory, *sorted(directories)]:
-            if self.published_complete(candidate):
-                return candidate
-        raise ComponentError(f"Incomplete passband download for {facility}/{instrument}; retry to recover missing files")
+        failure = None
+        try:
+            self.svo.download_filters(rows)
+        except SVOUnreachableError:
+            raise
+        except RuntimeError as exc:  # some curves could not be saved; their bands stay expected
+            failure = exc
+        if failure is None:
+            directories = {self.root / _clean_path(row.facility) / _clean_path(row.instrument) for row in rows}
+            for candidate in [directory, *sorted(directories)]:
+                if self.published_complete(candidate):
+                    return candidate
+        raise ComponentError(f"Incomplete passband download for {facility}/{instrument}; retry to recover "
+                             "missing files" + (f" ({failure})" if failure else "")) from failure
 
     def available(self, facility, instrument, *, remote=True):
         directory = self.root / facility / instrument
