@@ -470,9 +470,26 @@ def band_average_flux_lambda_from_arrays(
     return float(numerator / denom)
 
 
+def _warn_outside_sed(sed_wavelength: np.ndarray, curve: FilterCurve) -> None:
+    """Warn when part of the filter lies outside the SED, where the band average counts zero flux."""
+    lo, hi = np.min(sed_wavelength), np.max(sed_wavelength)
+    total = np.trapezoid(curve.transmission, curve.wavelength)
+    if not total > 0:
+        return  # the band average itself raises for a curve that integrates to zero
+    outside = (curve.wavelength < lo) | (curve.wavelength > hi)
+    fraction = np.trapezoid(np.where(outside, curve.transmission, 0.0), curve.wavelength) / total
+    if fraction > 0:
+        logger.warning(
+            "Filter %s: %.3g%% of its transmission lies outside the SED's wavelength range "
+            "(%.6g-%.6g Å), where the band average counts the flux as zero, so it is biased low.",
+            curve.name, 100 * fraction, lo, hi,
+        )
+
+
 def band_average_flux_lambda(
     sed_wavelength: np.ndarray, sed_flux: np.ndarray, curve: FilterCurve
 ) -> float:
+    _warn_outside_sed(sed_wavelength, curve)
     interp_flux = np.interp(curve.wavelength, sed_wavelength, sed_flux, left=0.0, right=0.0)
     return band_average_flux_lambda_from_arrays(
         curve.wavelength, interp_flux, curve.transmission, curve.detector_type
@@ -482,6 +499,7 @@ def band_average_flux_lambda(
 def band_average_flux_nu(
     sed_wavelength: np.ndarray, sed_flux: np.ndarray, curve: FilterCurve
 ) -> float:
+    _warn_outside_sed(sed_wavelength, curve)
     interp_flux = np.interp(curve.wavelength, sed_wavelength, sed_flux, left=0.0, right=0.0)
     weight = curve.weight
     numerator = np.trapezoid(interp_flux * weight, curve.wavelength)

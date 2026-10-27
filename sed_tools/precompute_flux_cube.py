@@ -384,6 +384,31 @@ def _accumulate_spectra(
     return count_cube
 
 
+def _warn_averaged_rows(lookup: Dict[str, List], rows, nodes, cube_path: str) -> None:
+    """Warn when lookup rows share a (Teff, logg, [M/H]) node: the cube holds their mean.
+
+    ``rows`` are the cube's row numbers in *lookup* and ``nodes`` their parsed
+    (Teff, logg, [M/H]), the values the cube is indexed by.
+    """
+    at_node: Dict[Tuple[float, float, float], List[int]] = {}
+    for row, node in zip(rows, nodes):
+        at_node.setdefault(node, []).append(row)
+    shared = [members for members in at_node.values() if len(members) > 1]
+    if not shared:
+        return
+    columns = list(lookup)
+    not_compared = {find_file_column(columns) or columns[0], find_teff_column(columns),
+                    find_logg_column(columns), find_metallicity_column(columns)}
+    differing = [col for col in columns if col not in not_compared
+                 and any(len({lookup[col][i] for i in members}) > 1 for members in shared)]
+    logger.warning(
+        "%s: %d lookup rows were averaged onto %d (Teff, logg, [M/H]) node(s), so each of those "
+        "nodes holds a mean spectrum. The averaged rows differ in: %s.",
+        cube_path, sum(len(members) for members in shared), len(shared),
+        ", ".join(differing) if differing else "no column but the file name (duplicate nodes)",
+    )
+
+
 # ---------------------------------------------------------------------------
 # Collision handling
 # ---------------------------------------------------------------------------
@@ -399,9 +424,9 @@ def _group_by_extra_axes(
     """
     Group lookup rows by their unique extra-axis combination.
 
-    Returns {extra_key_tuple: {"file_names": [...], "teff": [...], ...}}
-    where extra_key_tuple is a tuple of (col_name, value) pairs sorted by
-    col_name for deterministic ordering.
+    Returns {extra_key_tuple: {"rows": [...], "file_names": [...], "teff": [...], ...}},
+    where "rows" are the row numbers in *lookup* and extra_key_tuple is a tuple
+    of (col_name, value) pairs sorted by col_name for deterministic ordering.
     """
     groups: Dict[Tuple, Dict] = {}
 
@@ -411,10 +436,11 @@ def _group_by_extra_axes(
         )
         if extra_key not in groups:
             groups[extra_key] = {
-                "file_names": [], "teff": [], "logg": [], "meta": [],
+                "rows": [], "file_names": [], "teff": [], "logg": [], "meta": [],
                 "extra_vals": dict(extra_key),
             }
         g = groups[extra_key]
+        g["rows"].append(i)
         g["file_names"].append(fname)
         g["teff"].append(float(teff_vals[i]))
         g["logg"].append(float(logg_vals[i]))
@@ -596,6 +622,7 @@ def _build_split_subgrids(
         teff_arr = np.array(g["teff"])
         logg_arr = np.array(g["logg"])
         meta_arr = np.array(g["meta"])
+        _warn_averaged_rows(lookup, g["rows"], zip(g["teff"], g["logg"], g["meta"]), cube_path)
         _populate_and_write(
             model_dir, g["file_names"],
             teff_arr, logg_arr, meta_arr,
@@ -745,6 +772,8 @@ def _build_filtered_cube(
 
     print(f"Matched variant: {matched_group['extra_vals']} "
           f"({len(matched_group['file_names'])} spectra)")
+    _warn_averaged_rows(lookup, matched_group["rows"],
+                        zip(matched_group["teff"], matched_group["logg"], matched_group["meta"]), output_file)
     _populate_and_write(
         model_dir,
         matched_group["file_names"],
@@ -821,6 +850,7 @@ def precompute_flux_cube(
 
     # No extra axes, or every file shares the same extra-axis values: one cube.
     if len(groups) <= 1:
+        _warn_averaged_rows(lookup, range(len(file_names)), zip(teff_vals, logg_vals, meta_vals), output_file)
         _populate_and_write(
             model_dir, file_names, teff_vals, logg_vals, meta_vals,
             wavelengths, output_file, usable,

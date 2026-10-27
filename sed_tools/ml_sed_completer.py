@@ -52,6 +52,8 @@ from ._constants import H as PLANCK_H, C as SPEED_C, K as BOLTZMANN_K, SIGMA
 DEFAULT_WL_MIN = 100.0      # Angstroms
 DEFAULT_WL_MAX = 100000.0   # Angstroms
 DEFAULT_WL_POINTS = 1000
+# Training uses only samples whose input window is at least this fraction valid.
+MIN_WINDOW_COVERAGE = 0.8
 
 
 def _warn_dropped(dropped: Counter, n_sampled: int, library_path: str) -> None:
@@ -61,6 +63,20 @@ def _warn_dropped(dropped: Counter, n_sampled: int, library_path: str) -> None:
     reasons = ", ".join(f"{count} with {reason}" for reason, count in dropped.items())
     logger.warning("Training data from %s: dropped %d of %d sampled spectra (%s)",
                    library_path, sum(dropped.values()), n_sampled, reasons)
+
+
+def _warn_window_coverage(window: np.ndarray, wavelength: np.ndarray) -> None:
+    """Warn when the SED covers less of the network's input window than training required."""
+    covered = (window >= wavelength.min()) & (window <= wavelength.max())
+    if covered.sum() >= MIN_WINDOW_COVERAGE * covered.size:
+        return
+    logger.warning(
+        "The input SED (%.0f-%.0f Å) covers %.0f%% of the network's input window (%.0f-%.0f Å); "
+        "the other %.0f%% is filled with 1e-20. Training required at least %.0f%% coverage, so "
+        "this prediction is outside what the network was trained on.",
+        wavelength.min(), wavelength.max(), 100 * covered.mean(), window[0], window[-1],
+        100 * (1 - covered.mean()), 100 * MIN_WINDOW_COVERAGE,
+    )
 
 
 def _blend_with_blackbody(wl_out, log_dist, wl_pred, pred, bb_flux):
@@ -469,7 +485,7 @@ class SEDCompleter:
         known_start = np.random.randint(min_start, max_start)
         known_end = known_start + known_width
         
-        if valid_mask[known_start:known_end].sum() < known_width * 0.8:
+        if valid_mask[known_start:known_end].sum() < known_width * MIN_WINDOW_COVERAGE:
             return "input window less than 80% valid", None
         
         # The loss covers every valid point outside the input window
@@ -1020,10 +1036,12 @@ class SEDCompleter:
         Run the network on an SED and return its predicted flux on ``self.wavelength_grid``.
         
         The input is always the stored central window of the model grid, with
-        1e-20 wherever the SED does not reach.
+        1e-20 wherever the SED does not reach; a warning says so when that is
+        more than training allowed.
         """
         import torch
-        
+
+        _warn_window_coverage(self.wavelength_grid[self._known_start:self._known_end], wavelength)
         flux_safe = np.maximum(flux, 1e-20)
         flux_log = np.log10(flux_safe)
         flux_on_grid = np.interp(self.wavelength_grid, wavelength, 10**flux_log, left=1e-20, right=1e-20)
