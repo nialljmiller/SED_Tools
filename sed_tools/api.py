@@ -96,6 +96,49 @@ def _build_flux_cube(model_dir: Path) -> Path:
     raise RuntimeError(f"No flux cube was built in {model_dir}; see the flux cube messages above")
 
 
+def _build_combined_grid(selected_models: List[Tuple[str, str]], output_dir: str, *,
+                         visualization: bool = True) -> None:
+    """Merge the ``(name, path)`` grids onto common parameter and wavelength grids and save to ``output_dir``."""
+    from .combine_stellar_atm import (
+        build_combined_flux_cube,
+        create_common_wavelength_grid,
+        create_unified_grid,
+        load_model_data,
+        save_combined_data,
+        visualize_parameter_space,
+    )
+
+    print("\nLoading spectral grid data...")
+    all_models_data = []
+    for name, path in selected_models:
+        print(f"  Loading {name}...")
+        all_models_data.append(load_model_data(path))
+
+    print("\nCreating unified parameter grids...")
+    teff_grid, logg_grid, meta_grid = create_unified_grid(all_models_data)
+    wavelength_grid = create_common_wavelength_grid(all_models_data)
+
+    print("\nBuilding combined flux cube...")
+    flux_cube, source_map = build_combined_flux_cube(
+        all_models_data, teff_grid, logg_grid, meta_grid, wavelength_grid
+    )
+
+    save_combined_data(
+        output_dir,
+        teff_grid,
+        logg_grid,
+        meta_grid,
+        wavelength_grid,
+        flux_cube,
+        all_models_data,
+    )
+
+    if visualization:
+        visualize_parameter_space(
+            teff_grid, logg_grid, meta_grid, source_map, all_models_data, output_dir,
+            wavelength_grid=wavelength_grid, flux_cube=flux_cube)
+
+
 # =============================================================================
 # Data Classes for API Results
 # =============================================================================
@@ -1079,65 +1122,21 @@ class SED:
             SED instance with the combined spectral grid
         """
         base_dir = Path(model_root) if model_root else cls._model_root
-        
-        from .combine_stellar_atm import (
-            build_combined_flux_cube,
-            create_common_wavelength_grid,
-            create_unified_grid,
-            load_model_data,
-            save_combined_data,
-            visualize_parameter_space,
-        )
-        
-        # Build list of (name, path) tuples
+
         selected_models = []
         for cat in catalogs:
             cat_path = base_dir / cat
             if not cat_path.exists():
                 raise FileNotFoundError(f"SpectralGrid directory not found: {cat_path}")
             selected_models.append((cat, str(cat_path)))
-        
+
         print(f"\nCombining {len(selected_models)} spectral grids:")
         for name, _ in selected_models:
             print(f"  - {name}")
-        
-        # Load data
-        print("\nLoading model data...")
-        all_models_data = []
-        for name, path in selected_models:
-            print(f"  Loading {name}...")
-            all_models_data.append(load_model_data(path))
-        
-        # Create grids
-        print("\nCreating unified parameter grids...")
-        teff_grid, logg_grid, meta_grid = create_unified_grid(all_models_data)
-        wavelength_grid = create_common_wavelength_grid(all_models_data)
-        
-        # Build cube
-        print("\nBuilding combined flux cube...")
-        flux_cube, source_map = build_combined_flux_cube(
-            all_models_data, teff_grid, logg_grid, meta_grid, wavelength_grid
-        )
-        
-        # Save
-        output_dir = str(base_dir / output)
-        save_combined_data(
-            output_dir,
-            teff_grid,
-            logg_grid,
-            meta_grid,
-            wavelength_grid,
-            flux_cube,
-            all_models_data,
-        )
-        
-        # Visualize
-        if visualization:
 
-            visualize_parameter_space(
-                teff_grid, logg_grid, meta_grid, source_map, all_models_data, output_dir,
-                wavelength_grid=wavelength_grid, flux_cube=flux_cube)
-            
+        output_dir = str(base_dir / output)
+        _build_combined_grid(selected_models, output_dir, visualization=visualization)
+
         print(f"\nSuccessfully combined {len(selected_models)} spectral grids!")
         print(f"Output: {output_dir}")
         

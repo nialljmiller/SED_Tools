@@ -36,16 +36,12 @@ from .svo_regen_spectra_lookup import regenerate_lookup_table
 from .svo_spectra_grabber import SVOSpectraGrabber
 from .ui_utils import prompt_choice  # public, no leading underscore
 from .parsing import parse_multi_selection, parse_numeric_range
-from .spectrum_io import build_h5_bundle, list_text_spectra, read_text_spectrum
+from .spectrum_io import build_h5_bundle, read_text_spectrum
 from .terminal_plots import terminal_color_enabled
 # ------------ Small Utils ------------
 
 def ensure_dir(path: str) -> None:
     os.makedirs(path, exist_ok=True)
-
-
-def list_txt_spectra(model_dir: str) -> List[str]:
-    return [path.name for path in list_text_spectra(model_dir)]
 
 
 def load_txt_spectrum(txt_path: str) -> Tuple[np.ndarray, np.ndarray]:
@@ -127,7 +123,6 @@ def prompt_njm_axis_cuts(
         print("\n  No cuts — downloading full grid.\n")
 
     return cuts
-
 
 
 # ------------ Workflow Runners ------------
@@ -900,7 +895,6 @@ def run_mesa_prepare_flow(
     run_interactive(base_dir=base_dir, model=model, output=output)
 
 
-
 def run_combine_flow(
     base_dir: str = STELLAR_DIR_DEFAULT,
     output_name: str = "combined_models",
@@ -917,12 +911,8 @@ def run_combine_flow(
         output_name: Name for the combined spectral grid directory
         interactive: If True, prompt user to select spectral grids
     """
-    from .combine_stellar_atm import (build_combined_flux_cube,
-                                      create_common_wavelength_grid,
-                                      create_unified_grid, find_stellar_models,
-                                      load_model_data, save_combined_data,
-                                      select_models_interactive,
-                                      visualize_parameter_space)
+    from .api import _build_combined_grid
+    from .combine_stellar_atm import find_stellar_models, select_models_interactive
 
     ensure_dir(base_dir)
 
@@ -935,47 +925,18 @@ def run_combine_flow(
         print("No spectral grids selected.")
         return
 
-
     if interactive:
         output_name = input(f"What should the combined spectral grid be called? [{output_name}]") or output_name
 
     print("\nSpectral grid will be saved as:", output_name, "\n")
 
-
     print(f"\nSelected {len(selected_models)} spectral grids to combine:")
     for name, _ in selected_models:
         print(f"- {name}")
 
-    print("\nLoading spectral grid data...")
-    all_models_data = []
-    for name, path in selected_models:
-        print(f"Loading {name}...")
-        all_models_data.append(load_model_data(path))
-
-    print("\nCreating unified parameter grids...")
-    teff_grid, logg_grid, meta_grid = create_unified_grid(all_models_data)
-    wavelength_grid = create_common_wavelength_grid(all_models_data)
-
-    flux_cube, source_map = build_combined_flux_cube(
-        all_models_data, teff_grid, logg_grid, meta_grid, wavelength_grid
-    )
-
     output_dir = os.path.join(base_dir, output_name)
-    save_combined_data(
-        output_dir,
-        teff_grid,
-        logg_grid,
-        meta_grid,
-        wavelength_grid,
-        flux_cube,
-        all_models_data,
-    )
+    _build_combined_grid(selected_models, output_dir)
 
-    visualize_parameter_space(
-        teff_grid, logg_grid, meta_grid, source_map, all_models_data, output_dir,
-        wavelength_grid=wavelength_grid, flux_cube=flux_cube
-    )
-    
     print(f"\nSuccessfully combined {len(selected_models)} stellar spectral grids!")
     print(f"Output saved to: {output_dir}")
     print("You can now use this combined spectral grid in MESA by setting:")
@@ -1050,7 +1011,6 @@ def run_import_flow(base_dir: str = str(STELLAR_DIR_DEFAULT)) -> None:
     SED.import_grid(path, name=name, model_root=base_dir, move=mv)
 
 
-
 def menu() -> str:
     use_color = terminal_color_enabled("auto")
     BOLD = "\x1b[1m" if use_color else ""
@@ -1058,8 +1018,6 @@ def menu() -> str:
     CYAN = "\x1b[36m" if use_color else ""
     YELL = "\x1b[33m" if use_color else ""
     RED = "\x1b[31m" if use_color else ""
-    BLUE = "\x1b[34m" if use_color else ""
-    GREEN = "\x1b[32m" if use_color else ""
     RESET = "\x1b[0m" if use_color else ""
 
     print(BOLD + "=" * 50 + RESET)
