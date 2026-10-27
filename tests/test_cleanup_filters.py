@@ -583,3 +583,66 @@ def test_tag_tree_stops_at_once_when_svo_is_unreachable(tmp_path):
     client = SVOClient(fail={"Fac/Cam.a": down, "Fac/Cam.b": down})
     with pytest.raises(fm.SVOUnreachableError):
         fm.tag_filter_tree(tmp_path, client=client)
+
+
+def test_unverified_ssl_fallback_is_a_warning(caplog):
+    import requests
+    from types import SimpleNamespace
+
+    from sed_tools.njm_filter_grabber import NJMFilterGrabber
+
+    def head(url, timeout=None, verify=True):
+        if verify:
+            raise requests.exceptions.SSLError("certificate expired")
+        return SimpleNamespace(status_code=200)
+
+    grabber = NJMFilterGrabber.__new__(NJMFilterGrabber)
+    grabber.base_url, grabber.session = NJM, SimpleNamespace(head=head, verify=True)
+    with caplog.at_level(logging.WARNING):
+        assert grabber._check_availability() is True
+    assert grabber.session.verify is False
+    assert "NJM's SSL certificate could not be verified" in caplog.text
+
+
+def test_unreadable_served_catalogue_file_is_refused(tmp_path):
+    from types import SimpleNamespace
+
+    from sed_tools.filter_catalogue import CatalogueError, FilterCatalogue
+
+    mirror = SimpleNamespace(base_url=NJM, is_available=lambda: True,
+                             _get=lambda url, **kwargs: SimpleNamespace(status_code=200, content=b"\xff{",
+                                                                        headers={}))
+    catalogue = FilterCatalogue(tmp_path / "filters", mirror=mirror)
+    with pytest.raises(CatalogueError, match="NJM served an unreadable index.json"):
+        catalogue.index()
+
+
+def test_published_carries_every_source_reason(tmp_path, monkeypatch, caplog):
+    from types import SimpleNamespace
+
+    from sed_tools import filter_library
+    from sed_tools.component_sources import catalog
+    from sed_tools.filter_components import ComponentError
+    from sed_tools.filter_library import FilterLibrary
+    from sed_tools.svo_filter_grabber import Facility, FilterRow, Instrument
+
+    def njm_download(facility, instrument):
+        raise RuntimeError("NJM download of Fac/Cam is incomplete")
+
+    def svo_download(rows):
+        raise fm.SVOUnreachableError("SVO Filter Profile Service unreachable")
+
+    library = FilterLibrary(tmp_path)
+    library.mirror = SimpleNamespace(is_available=lambda: True, download_filters=njm_download)
+    library.svo = SimpleNamespace(list_facilities=lambda: [Facility("Fac", "Fac")],
+                                  list_instruments=lambda key: [Instrument("Fac", "Cam", "Cam")],
+                                  list_filters=lambda fac, inst: [FilterRow("Fac/Cam.g", "g", "Fac", "Cam", "")],
+                                  download_filters=svo_download)
+    monkeypatch.setitem(catalog.BUILDERS_FOR, ("Fac", "Cam"), catalog.BuilderRef("test", publishes=True))
+    monkeypatch.setattr(filter_library, "get_builder", lambda name: lambda root, **kwargs: None)
+    with caplog.at_level(logging.WARNING), pytest.raises(ComponentError) as info:
+        library.published("Fac", "Cam")
+    assert str(info.value) == ("No source can provide Fac/Cam: NJM: NJM download of Fac/Cam is incomplete; "
+                               "original source: the builder left an incomplete set; "
+                               "SVO: SVO Filter Profile Service unreachable")
+    assert "The original source cannot provide Fac/Cam (the builder left an incomplete set); trying SVO" in caplog.text
