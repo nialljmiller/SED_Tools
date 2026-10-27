@@ -48,9 +48,9 @@ from typing import Optional
 
 import numpy as np
 
+from ._constants import available_memory_bytes as _available_ram_bytes
 from ._constants import planck_flam as _blackbody
 from ._resample import resample_to_grid
-from .precompute_flux_cube import _available_ram_bytes
 
 
 # ---------------------------------------------------------------------------

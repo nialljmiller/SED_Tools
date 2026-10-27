@@ -1,4 +1,4 @@
-"""Tests for Nill's decisions of 27 October 2026: packaging (psutil, scipy), the
+"""Tests for Nill's decisions of 27 October 2026: packaging (no psutil; scipy), the
 densifier's wavelength blocks, stopping on an undeclared flux unit, and magnitudes of
 zero flux."""
 
@@ -19,16 +19,38 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 # ---------------------------------------------------------------------
-# Packaging: psutil is required; scipy (the [full] extra) is not needed to import
+# Packaging: psutil is not a dependency; scipy (the [full] extra) is not needed to import
 # ---------------------------------------------------------------------
 
-def test_psutil_is_a_required_dependency_and_scipy_is_not():
+def test_psutil_is_not_a_dependency_and_scipy_is_not_required():
     import tomllib
 
     project = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]
-    assert any(dep.startswith("psutil>=") for dep in project["dependencies"])
+    extras = project["optional-dependencies"]
+    assert not any(dep.startswith("psutil") for dep in project["dependencies"])
+    assert not any(dep.startswith("psutil") for deps in extras.values() for dep in deps)
     assert not any(dep.startswith("scipy") for dep in project["dependencies"])
-    assert any(dep.startswith("scipy") for dep in project["optional-dependencies"]["full"])
+    assert any(dep.startswith("scipy") for dep in extras["full"])
+
+
+_WITHOUT_PSUTIL = """
+import sys
+sys.modules["psutil"] = None  # import psutil now raises ImportError
+
+import sed_tools
+from sed_tools._constants import available_memory_bytes
+
+assert not [m for m, mod in sys.modules.items() if m.startswith("psutil") and mod is not None]
+print(available_memory_bytes())
+"""
+
+
+def test_import_sed_tools_and_measure_ram_without_psutil():
+    done = subprocess.run([sys.executable, "-c", _WITHOUT_PSUTIL], cwd=ROOT, capture_output=True, text=True)
+    assert done.returncode == 0, done.stderr
+    # On Linux and macOS the RAM is measured without psutil, so nothing is assumed or warned.
+    assert "Could not measure available RAM" not in done.stderr
+    assert int(done.stdout) > 0
 
 
 _WITHOUT_SCIPY = """

@@ -38,6 +38,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 
+from ._constants import available_memory_bytes as _available_ram_bytes
 from ._lookup_io import (
     find_file_column, find_logg_column, find_metallicity_column, find_teff_column,
     write_lookup_csv,
@@ -50,42 +51,11 @@ from .collision_config import (
 )
 from .spectrum_io import read_text_spectrum
 
-try:
-    import psutil
-except ImportError:
-    psutil = None
-
 logger = logging.getLogger(__name__)
 
 # Auto-split when the number of extra-axis combinations is at or below this.
 # Above this threshold the user is prompted before creating many directories.
 SPLIT_THRESHOLD = 25
-
-_MEMINFO = "/proc/meminfo"
-_ASSUMED_RAM_BYTES = 2 * (1024 ** 3)
-
-
-def _available_ram_bytes() -> int:
-    """Available RAM in bytes.
-
-    It only decides whether the cube is held in RAM or on disk and how many
-    wavelengths are written per chunk; the cube's contents do not depend on it.
-    """
-    if psutil is not None:
-        return psutil.virtual_memory().available
-    try:
-        with open(_MEMINFO) as f:
-            for line in f:
-                if line.startswith("MemAvailable:"):
-                    return int(line.split()[1]) * 1024
-        reason = f"{_MEMINFO} has no MemAvailable line"
-    except OSError as exc:
-        reason = f"psutil is not installed and {_MEMINFO} could not be read ({exc})"
-    logger.warning(
-        "Could not measure available RAM: %s. Assuming %d GiB; this affects "
-        "memory use only, not the flux cube.", reason, _ASSUMED_RAM_BYTES // 1024**3,
-    )
-    return _ASSUMED_RAM_BYTES
 
 
 # ---------------------------------------------------------------------------

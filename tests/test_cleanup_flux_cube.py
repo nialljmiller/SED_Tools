@@ -9,11 +9,13 @@ from __future__ import annotations
 import importlib
 import io
 import logging
+import os
+import types
 
 import numpy as np
 import pytest
 
-from sed_tools import mesa_prepare
+from sed_tools import _constants, mesa_prepare
 from sed_tools._flux import FluxCube
 
 # sed_tools re-exports the function precompute_flux_cube under the module's name.
@@ -162,31 +164,82 @@ def test_symlink_failure_warns_and_still_builds_the_subgrid_cube(tmp_path, monke
 
 # ---------------------------------------------------------------- fallbacks
 
-def test_ram_probe_failure_warns_and_assumes_2_gib(monkeypatch, caplog, tmp_path):
-    monkeypatch.setattr(pcf, "psutil", None)
-    monkeypatch.setattr(pcf, "_MEMINFO", str(tmp_path / "no_meminfo"))
-    with caplog.at_level(logging.WARNING, logger=pcf.__name__):
-        assert pcf._available_ram_bytes() == 2 * 1024**3
-    assert "Could not measure available RAM" in caplog.text
-    assert "psutil is not installed" in caplog.text
+# Available RAM, measured by _constants.available_memory_bytes: psutil if installed,
+# else MemAvailable in /proc/meminfo, else half the physical RAM, else 2 GiB.
+# The golden venv has psutil, so every test sets _constants.psutil itself.
+
+def _without_psutil(monkeypatch, meminfo):
+    monkeypatch.setattr(_constants, "psutil", None)
+    monkeypatch.setattr(_constants, "_MEMINFO", str(meminfo))
 
 
-def test_meminfo_without_memavailable_warns(monkeypatch, caplog, tmp_path):
-    meminfo = tmp_path / "meminfo"
-    meminfo.write_text("MemTotal:  1000 kB\n")
-    monkeypatch.setattr(pcf, "psutil", None)
-    monkeypatch.setattr(pcf, "_MEMINFO", str(meminfo))
-    with caplog.at_level(logging.WARNING, logger=pcf.__name__):
-        assert pcf._available_ram_bytes() == 2 * 1024**3
-    assert "has no MemAvailable line" in caplog.text
+def _fake_sysconf(monkeypatch, page_size, pages):
+    values = {"SC_PAGE_SIZE": page_size, "SC_PHYS_PAGES": pages}
+    monkeypatch.setattr(_constants.os, "sysconf", values.__getitem__)
 
 
-def test_meminfo_is_read_when_psutil_is_missing(monkeypatch, tmp_path):
+def test_psutil_is_used_when_installed(monkeypatch, tmp_path):
+    memory = types.SimpleNamespace(available=123 * 1024**2)
+    monkeypatch.setattr(_constants, "psutil", types.SimpleNamespace(virtual_memory=lambda: memory))
+    monkeypatch.setattr(_constants, "_MEMINFO", str(tmp_path / "unread"))
+    assert _constants.available_memory_bytes() == 123 * 1024**2
+
+
+def test_meminfo_is_read_when_psutil_is_missing(monkeypatch, tmp_path, caplog):
     meminfo = tmp_path / "meminfo"
     meminfo.write_text("MemTotal:  1000 kB\nMemAvailable:  512 kB\n")
-    monkeypatch.setattr(pcf, "psutil", None)
-    monkeypatch.setattr(pcf, "_MEMINFO", str(meminfo))
-    assert pcf._available_ram_bytes() == 512 * 1024
+    _without_psutil(monkeypatch, meminfo)
+    _fake_sysconf(monkeypatch, 4096, 1000)
+    with caplog.at_level(logging.WARNING, logger=_constants.__name__):
+        assert _constants.available_memory_bytes() == 512 * 1024
+    assert not caplog.records
+
+
+def test_half_the_physical_ram_without_psutil_or_meminfo(monkeypatch, tmp_path, caplog):
+    _without_psutil(monkeypatch, tmp_path / "no_meminfo")
+    _fake_sysconf(monkeypatch, 4096, 1000)
+    with caplog.at_level(logging.WARNING, logger=_constants.__name__):
+        assert _constants.available_memory_bytes() == 4096 * 1000 // 2
+    assert not caplog.records
+
+
+def test_meminfo_without_memavailable_falls_back_to_half_the_physical_ram(monkeypatch, tmp_path, caplog):
+    meminfo = tmp_path / "meminfo"
+    meminfo.write_text("MemTotal:  1000 kB\n")
+    _without_psutil(monkeypatch, meminfo)
+    _fake_sysconf(monkeypatch, 4096, 1000)
+    with caplog.at_level(logging.WARNING, logger=_constants.__name__):
+        assert _constants.available_memory_bytes() == 4096 * 1000 // 2
+    assert not caplog.records
+
+
+def test_physical_ram_on_this_machine(monkeypatch, tmp_path):
+    _without_psutil(monkeypatch, tmp_path / "no_meminfo")
+    if not hasattr(os, "sysconf"):
+        pytest.skip("os.sysconf does not exist on this platform")
+    physical = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
+    assert physical >= 256 * 1024**2
+    assert _constants.available_memory_bytes() == physical // 2
+
+
+def _sysconf_unknown_name(name):
+    raise ValueError("unrecognized configuration name")
+
+
+@pytest.mark.parametrize("break_sysconf, reason", [
+    (lambda mp: mp.setattr(_constants.os, "sysconf", _sysconf_unknown_name), "unrecognized configuration name"),
+    (lambda mp: mp.delattr(_constants.os, "sysconf"), "has no attribute 'sysconf'"),
+    (lambda mp: _fake_sysconf(mp, 4096, -1), "SC_PHYS_PAGES is -1"),
+], ids=["unknown-name", "no-sysconf", "negative"])
+def test_ram_probe_failure_warns_and_assumes_2_gib(monkeypatch, caplog, tmp_path, break_sysconf, reason):
+    _without_psutil(monkeypatch, tmp_path / "no_meminfo")
+    break_sysconf(monkeypatch)
+    with caplog.at_level(logging.WARNING, logger=_constants.__name__):
+        assert _constants.available_memory_bytes() == 2 * 1024**3
+    assert "Could not measure available RAM" in caplog.text
+    assert "psutil is not installed" in caplog.text
+    assert "no_meminfo could not be read" in caplog.text
+    assert reason in caplog.text
 
 
 def test_other_lookup_table_file_is_used_with_a_warning(tmp_path, caplog):
