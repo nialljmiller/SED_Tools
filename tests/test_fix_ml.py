@@ -169,7 +169,7 @@ def test_menus_count_every_spectrum_of_a_hash_headed_lookup(tmp_path, cube_write
 
 
 # ---------------------------------------------------------------------
-# ml_generator --auto: FluxCubeDataset, and models SEDGenerator can load
+# ml_generator --auto: models SEDGenerator can load
 # ---------------------------------------------------------------------
 
 GOLDEN_KURUCZ = Path(__file__).resolve().parent / "golden" / "inputs" / "stellar_models" / "Kurucz2003all"
@@ -184,27 +184,6 @@ def kurucz_library(tmp_path):
     shutil.copytree(GOLDEN_KURUCZ, library)
     precompute_flux_cube(str(library), str(library / "flux_cube.bin"))
     return library
-
-
-def test_flux_cube_dataset_gives_each_node_its_own_spectrum(kurucz_library):
-    # It used to read nw contiguous values per node, but the cube is stored
-    # as (nw, nm, nl, nt), so each "spectrum" mixed stars and wavelengths.
-    pytest.importorskip("torch")
-    from sed_tools.flux_cube_tool import FluxCube
-    from sed_tools.ml_utils import FluxCubeDataset
-
-    cube = FluxCube.from_file(str(kurucz_library / "flux_cube.bin"))
-    dataset = FluxCubeDataset(str(kurucz_library))
-
-    nt, nl, nm, nw = cube.flux.shape
-    assert (dataset.nt, dataset.nl, dataset.nm, dataset.nw) == (nt, nl, nm, nw) == (3, 2, 2, 1199)
-    np.testing.assert_array_equal(dataset.wavelengths, cube.wavelengths)
-    assert len(dataset) == 12
-    for idx in range(12):
-        i_t, i_l, i_m = idx // (nl * nm), idx // nm % nl, idx % nm
-        params, flux = dataset[idx]
-        assert params.tolist() == [cube.teff_grid[i_t], cube.logg_grid[i_l], cube.meta_grid[i_m]]
-        np.testing.assert_array_equal(flux.numpy(), cube.flux[i_t, i_l, i_m].astype(np.float32))
 
 
 @pytest.fixture

@@ -504,23 +504,6 @@ def test_generator_workflow_batch_writes_one_sed_per_grid_point(cpu_torch, stell
 
 # --- ml_sed_completer --------------------------------------------------
 
-def test_check_combined_grid_raises_on_unreadable_lookup(tmp_path):
-    import pandas as pd
-
-    (tmp_path / "lookup_table.csv").write_text("")
-    with pytest.raises(pd.errors.EmptyDataError):
-        mc.SEDCompleter()._check_combined_grid(str(tmp_path))
-
-
-def test_build_coverage_map_raises_on_unreadable_lookup(tmp_path):
-    import pandas as pd
-
-    (tmp_path / "lookup_table.csv").write_text("")
-    with pytest.raises(pd.errors.EmptyDataError):
-        mc.SEDCompleter()._build_coverage_map(str(tmp_path), np.array([5000.0]),
-                                              np.array([4.0]), np.array([0.0]))
-
-
 @pytest.mark.parametrize("cls", [mc.SEDCompleter, mg.SEDGenerator])
 def test_list_models_warns_naming_the_unreadable_config(cls, tmp_path, caplog):
     (tmp_path / "broken").mkdir()

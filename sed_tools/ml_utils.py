@@ -1,8 +1,7 @@
 import torch
 import numpy as np
-import os
-from torch.utils.data import Dataset, DataLoader, TensorDataset
-from typing import Dict, List, Optional, Tuple
+from torch.utils.data import DataLoader, TensorDataset
+from typing import Dict, List, Tuple
 
 def get_device():
     """Automatically detect and return the best available device."""
@@ -13,59 +12,6 @@ def get_device():
     elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
         return torch.device("mps")
     return torch.device("cpu")
-
-class FluxCubeDataset(Dataset):
-    """
-    The spectra of a library's flux_cube.bin, one grid node per item.
-
-    Item ``i`` is the node ``(i_t, i_l, i_m)`` with ``i = (i_t*nl + i_l)*nm + i_m``:
-    its (Teff, logg, [M/H]) and its flux on ``wavelengths``, both float32.
-    The whole cube is read into memory with ``FluxCube.from_file``.
-    """
-    def __init__(self, library_path: str, max_samples: Optional[int] = None, transform=None):
-        from .flux_cube_tool import FluxCube
-
-        self.library_path = library_path
-        self.transform = transform
-        
-        cube_path = os.path.join(library_path, "flux_cube.bin")
-        if not os.path.exists(cube_path):
-            raise FileNotFoundError(f"flux_cube.bin not found in {library_path}")
-            
-        cube = FluxCube.from_file(cube_path)
-        self.flux = cube.flux  # (nt, nl, nm, nw)
-        self.nt, self.nl, self.nm, self.nw = self.flux.shape
-        self.teff_grid = cube.teff_grid
-        self.logg_grid = cube.logg_grid
-        self.meta_grid = cube.meta_grid
-        self.wavelengths = cube.wavelengths
-            
-        self.total_size = self.nt * self.nl * self.nm
-        self.indices = np.arange(self.total_size)
-        if max_samples and max_samples < self.total_size:
-            np.random.shuffle(self.indices)
-            self.indices = self.indices[:max_samples]
-            
-    def __len__(self):
-        return len(self.indices)
-        
-    def __getitem__(self, idx):
-        real_idx = self.indices[idx]
-        
-        # Calculate grid coordinates
-        i_t = real_idx // (self.nl * self.nm)
-        remainder = real_idx % (self.nl * self.nm)
-        i_l = remainder // self.nm
-        i_m = remainder % self.nm
-        
-        # A copy, so a transform that works in place cannot change the cube
-        flux = self.flux[i_t, i_l, i_m].copy()
-        params = np.array([self.teff_grid[i_t], self.logg_grid[i_l], self.meta_grid[i_m]], dtype=np.float32)
-        
-        if self.transform:
-            params, flux = self.transform(params, flux)
-            
-        return torch.from_numpy(params), torch.from_numpy(flux.astype(np.float32))
 
 
 # ---------------------------------------------------------------------------

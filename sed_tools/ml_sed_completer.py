@@ -319,52 +319,6 @@ class SEDCompleter:
         
         return teff, logg, meta, wavelengths, flux_cube
     
-    def _check_combined_grid(self, library_path: str) -> bool:
-        """Check if library is a combined grid with varying wavelength coverage."""
-        import pandas as pd
-        
-        lookup_path = os.path.join(library_path, "lookup_table.csv")
-        if not os.path.exists(lookup_path):
-            return False
-
-        df = pd.read_csv(lookup_path, comment='#', nrows=5)
-        return 'source_model' in df.columns or 'original_file' in df.columns
-    
-    def _build_coverage_map(
-        self,
-        library_path: str,
-        teff_grid: np.ndarray,
-        logg_grid: np.ndarray,
-        meta_grid: np.ndarray,
-    ) -> Dict[Tuple[float, float, float], Tuple[float, float]]:
-        """
-        Build wavelength coverage map for combined grids.
-        
-        Returns dict mapping (teff, logg, meta) -> (wl_min, wl_max)
-        """
-        import pandas as pd
-        
-        coverage = {}
-        lookup_path = os.path.join(library_path, "lookup_table.csv")
-        
-        if not os.path.exists(lookup_path):
-            return coverage
-        
-        df = pd.read_csv(lookup_path, comment='#')
-        for _, row in df.iterrows():
-            t = float(row.get('teff', row.get('Teff', 0)))
-            g = float(row.get('logg', row.get('log_g', 0)))
-            m = float(row.get('meta', row.get('metallicity', row.get('[M/H]', 0))))
-
-            # Get wavelength range from lookup if available
-            wl_min = float(row.get('wl_min', row.get('wavelength_min', 0)))
-            wl_max = float(row.get('wl_max', row.get('wavelength_max', 1e6)))
-
-            if wl_min > 0 and wl_max > wl_min:
-                coverage[(t, g, m)] = (wl_min, wl_max)
-
-        return coverage
-    
     def _prepare_training_data(
         self,
         library_path: str,
