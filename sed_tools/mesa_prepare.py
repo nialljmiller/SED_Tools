@@ -353,15 +353,14 @@ def export_variant(
 # Interactive CLI flow
 # ---------------------------------------------------------------------------
 
-def _choose_grid(base_path: Path) -> str | None:
-    """Prompt for one of the spectral grids in *base_path*; None if there is none to pick."""
+def _choose_grid(base_path: Path) -> str:
+    """Prompt for one of the spectral grids in *base_path*; exits with status 1 if none can be chosen."""
     available = sorted(
         d.name for d in base_path.iterdir()
         if d.is_dir() and (d / "lookup_table.csv").exists()
     )
     if not available:
-        print(f"No spectral grids found in {base_path}. Run 'sed-tools grids' first.")
-        return None
+        raise SystemExit(f"Error: no spectral grids found in {base_path}. Run 'sed-tools grids' first.")
 
     print("\nAvailable spectral grids:")
     for i, name in enumerate(available, 1):
@@ -372,15 +371,16 @@ def _choose_grid(base_path: Path) -> str | None:
         return available[int(raw) - 1]
     if raw in available:
         return raw
-    print(f"Invalid selection: {raw}")
-    return None
+    raise SystemExit(f"Error: invalid spectral grid selection {raw!r}; "
+                     f"enter a number from 1 to {len(available)} or a grid name. Nothing was exported.")
 
 
-def _choose_variant(variants: List[VariantInfo]) -> VariantInfo | None:
+def _choose_variant(variants: List[VariantInfo]) -> VariantInfo:
+    """Prompt for one of *variants*; exits with status 1 on an invalid choice."""
     raw = input("\nSelect variant number: ").strip()
     if not raw.isdigit() or not (1 <= int(raw) <= len(variants)):
-        print(f"Invalid selection: {raw}")
-        return None
+        raise SystemExit(f"Error: invalid variant selection {raw!r}; "
+                         f"enter a number from 1 to {len(variants)}. Nothing was exported.")
     return variants[int(raw) - 1]
 
 
@@ -389,15 +389,15 @@ def run_interactive(base_dir: str = None, model=None, output=None):
     Interactive MESA-prepare workflow.
 
     Prompts the user to pick a spectral grid (if not supplied), lists its variants,
-    lets the user select one, and exports it to a clean folder. Exits with an
-    error message if the grid's lookup table or flux cube is missing.
+    lets the user select one, and exports it to a clean folder. Exits with status 1
+    and an error message if nothing was exported: no grid to pick, an invalid
+    choice, a missing lookup table or flux cube, a grid with no variants to
+    choose from, or an existing output directory the user chose not to overwrite.
     """
     base_path = Path(base_dir if base_dir is not None else STELLAR_DIR_DEFAULT)
 
     if model is None:
         model = _choose_grid(base_path)
-        if model is None:
-            return
 
     model_dir = base_path / model
     print(f"\nScanning {model_dir} for sub-variants...")
@@ -407,14 +407,11 @@ def run_interactive(base_dir: str = None, model=None, output=None):
         raise SystemExit(f"Error: {exc}") from exc
 
     if len(variants) == 1 and not variants[0].extra_axes:
-        print("This spectral grid has no extra-axis variants — it is a single uniform grid.")
-        print("Nothing to select; the existing flux_cube.bin already covers the full grid.")
-        return
+        raise SystemExit(f"Error: {model_dir} offers a single variant (no extra-axis cubes to "
+                         "choose from), so nothing was exported.")
 
     print_variant_table(variants, model_name=model)
     chosen = _choose_variant(variants)
-    if chosen is None:
-        return
 
     print(f"\nSelected: {chosen.label}")
     for k, v in chosen.extra_axes.items():
@@ -433,7 +430,6 @@ def run_interactive(base_dir: str = None, model=None, output=None):
     except FileExistsError as exc:
         print(f"Error: {exc}")
         raw_ow = input("Overwrite? [y/N]: ").strip().lower()
-        if raw_ow == "y":
-            export_variant(chosen, output_dir=output, overwrite=True)
-        else:
-            print("Aborted.")
+        if raw_ow != "y":
+            raise SystemExit(f"Error: {output} already exists and was not overwritten; nothing was exported.")
+        export_variant(chosen, output_dir=output, overwrite=True)
