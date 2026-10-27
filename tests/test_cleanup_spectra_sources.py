@@ -4,6 +4,7 @@ Every test here runs without the network: the autouse fixture makes any real
 HTTP request fail the test, and each grabber gets a fake session.
 """
 
+import gzip
 import json
 import logging
 
@@ -12,6 +13,7 @@ import numpy as np
 import pytest
 import requests
 
+from sed_tools import mast_spectra_grabber as mast
 from sed_tools import msg_spectra_grabber as msg
 from sed_tools import njm_spectra_grabber as njm
 from sed_tools import svo_spectra_grabber as svo
@@ -503,3 +505,101 @@ def test_msg_axis_role_beyond_the_grid_raises(tmp_path, monkeypatch):
         "shape": (2, 2, 2), "vlin": np.array([0]), "roles": {"teff": 0, "meta": 1, "logg": 3}}
     with pytest.raises(RuntimeError, match="logg is mapped to axis 3, but the grid has 3 axes"):
         grabber._params_from_index("sg-C3K-test", 0)
+
+
+# ---------------------------------------------------------------- MAST (BOSZ)
+
+BOSZ_SCRIPT = f"{mast.SCRIPTS_DIR}/hlsp_bosz_bosz2024_sim_r1000_m%2B0.00_v1_bulkdl.sh"
+BOSZ_WAVE = f"{mast.DATA_BASE}/wavelength_grids/bosz2024_wave_r1000.txt"
+
+
+def bosz_url(teff):
+    return (f"{mast.DATA_BASE}/m+0.00/r1000/"
+            f"bosz2024_mp_t{teff:05d}_g+4.5_m+0.00_a+0.00_c+0.00_v2_r1000_resam.txt.gz")
+
+
+def bosz_resam(n):
+    """n rows of (flux, continuum); the flux is not monotonic, so it is not read as wavelengths."""
+    return gzip.compress("".join(f"{1.0 + (i % 3)} 2.0\n" for i in range(n)).encode())
+
+
+def test_mast_download_text_distinguishes_missing_from_failed():
+    session = FakeSession({"https://x/missing": FakeResponse(404), "https://x/broken": FakeResponse(503)})
+    assert mast._download_text("https://x/missing", session=session) == ""
+    with pytest.raises(requests.HTTPError):
+        mast._download_text("https://x/broken", session=session)
+
+
+def test_mast_gz_download_raises_for_corrupt_gzip_instead_of_decoding_it():
+    good = gzip.compress(b"1 2\n")
+    session = FakeSession({
+        "https://x/plain": FakeResponse(200, b"1 2\n"),
+        "https://x/good": FakeResponse(200, good),
+        "https://x/corrupt": FakeResponse(200, good[:-6] + b"\x00" * 6),
+        "https://x/gone": FakeResponse(404),
+    })
+    assert mast._download_text_gz("https://x/plain", session=session) == "1 2\n"
+    assert mast._download_text_gz("https://x/good", session=session) == "1 2\n"
+    with pytest.raises(ValueError, match="corrupt gzip"):
+        mast._download_text_gz("https://x/corrupt", session=session)
+    with pytest.raises(requests.HTTPError):
+        mast._download_text_gz("https://x/gone", session=session)
+
+
+def test_mast_missing_wavelength_grid_raises_listing_each_location():
+    with pytest.raises(RuntimeError, match="No BOSZ wavelength grid found for r1000") as err:
+        mast._try_wave_urls("r1000", FakeSession({BOSZ_WAVE: FakeResponse(200, "1\n2\n")}))
+    assert "not an increasing wavelength grid (2 values)" in str(err.value)
+    assert str(err.value).count("not found") == 4
+
+
+def test_mast_unreadable_download_script_raises():
+    session = FakeSession({BOSZ_SCRIPT: requests.ConnectionError("timed out")})
+    with pytest.raises(RuntimeError, match="metallicities would be missing:\n  .*timed out"):
+        mast._gather_urls_from_scripts("r1000", ["m+0.00"], session)
+    with pytest.raises(RuntimeError, match="not found"):
+        mast._gather_urls_from_scripts("r1000", ["m+0.00"], FakeSession())
+
+
+def test_mast_metallicity_prompt_rejects_values_it_would_have_dropped(monkeypatch):
+    grabber = mast.MASTSpectraGrabber(base_dir="unused", session=FakeSession())
+    for typed, error in (("-1.0,abc", "'abc' is not a number"), ("-3.0", "no \\[M/H\\] = -3.0")):
+        monkeypatch.setattr("builtins.input", lambda prompt, typed=typed: typed)
+        with pytest.raises(ValueError, match=error):
+            grabber.get_model_metadata("BOSZ-2024-r1000")
+    monkeypatch.setattr("builtins.input", lambda prompt: "-1.0, +0.25,")
+    assert grabber.get_model_metadata("BOSZ-2024-r1000")["metals"] == ["m-1.00", "m+0.25"]
+
+
+def test_mast_failed_spectra_raise_after_the_rest(tmp_path):
+    urls = [bosz_url(5750), bosz_url(6000), bosz_url(6250)]
+    session = FakeSession({
+        BOSZ_SCRIPT: FakeResponse(200, "\n".join(f"curl -O {u}" for u in urls)),
+        BOSZ_WAVE: FakeResponse(200, "\n".join(str(3000 + 100 * i) for i in range(12))),
+        urls[0]: FakeResponse(200, bosz_resam(12)),
+        urls[1]: FakeResponse(404),
+        urls[2]: FakeResponse(200, bosz_resam(11)),
+    })
+    grabber = mast.MASTSpectraGrabber(base_dir=str(tmp_path), max_workers=1, session=session)
+
+    with pytest.raises(RuntimeError) as err:
+        grabber.download_model_spectra("BOSZ-2024-r1000", {"reskey": "r1000", "metals": ["m+0.00"]})
+
+    message = str(err.value)
+    assert "2 of 3 BOSZ spectra" in message
+    assert "t06000" in message and "404" in message and "length mismatch" in message
+    model_dir = tmp_path / "BOSZ-2024-r1000"
+    assert [p.name for p in model_dir.glob("*.txt")] == [
+        "bosz2024_mp_t05750_g_4.5_m_0.00_a_0.00_c_0.00_v2_r1000_resam.txt"]  # '+' sanitised to '_'
+    assert not (model_dir / "lookup_table.csv").exists()
+
+
+def test_mast_wavelength_cut_that_leaves_nothing_is_not_a_failure(tmp_path):
+    session = FakeSession({
+        BOSZ_SCRIPT: FakeResponse(200, f"curl -O {bosz_url(5750)}"),
+        BOSZ_WAVE: FakeResponse(200, "\n".join(str(3000 + 100 * i) for i in range(12))),
+        bosz_url(5750): FakeResponse(200, bosz_resam(12)),
+    })
+    grabber = mast.MASTSpectraGrabber(base_dir=str(tmp_path), session=session)
+    info = {"reskey": "r1000", "metals": ["m+0.00"]}
+    assert grabber.download_model_spectra("BOSZ-2024-r1000", info, wl_range=(9000, 9500)) == 0

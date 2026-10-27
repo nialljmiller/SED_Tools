@@ -23,6 +23,7 @@ import os
 import re
 import string
 import urllib.parse
+import zlib
 from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
@@ -48,6 +49,9 @@ HEAD_RE = re.compile(
 SCRIPT_URL_RE = re.compile(r'https?://\S+?\.txt(?:\.gz)?', re.IGNORECASE)
 MET_TAG_RE    = re.compile(r"/(m[+\-]\d\.\d{2})/", re.IGNORECASE)
 
+# Errors that make one spectrum fail without stopping the rest of the download
+_SPECTRUM_ERRORS = (requests.RequestException, OSError, ValueError)
+
 # ----------------- small utils -----------------
 def _safe_makedirs(path: str) -> None:
     os.makedirs(path, exist_ok=True)
@@ -59,23 +63,24 @@ def _http_get(url: str, session: Optional[requests.Session] = None, timeout: int
     return r
 
 def _download_text(url: str, session: Optional[requests.Session] = None, timeout: int = 180) -> str:
+    """Fetch a text file; "" if the server says it does not exist (404). Raises on any other failure."""
     try:
         return _http_get(url, session, timeout).text
-    except Exception as e:
-        print(f"[mast] text fetch failed {url}: {e}")
-        return ""
+    except requests.HTTPError as e:
+        if e.response is not None and e.response.status_code == 404:
+            return ""
+        raise
 
 def _download_text_gz(url: str, session: Optional[requests.Session] = None) -> str:
+    """Fetch a spectrum file and gunzip it if it is gzip data. Raises on failure."""
+    raw = _http_get(url, session, timeout=300).content
+    if raw[:2] != b"\x1f\x8b":  # served uncompressed
+        return raw.decode("utf-8", errors="ignore")
     try:
-        raw = _http_get(url, session, timeout=300).content
-        try:
-            with gzip.GzipFile(fileobj=io.BytesIO(raw)) as gz:
-                return gz.read().decode("utf-8", errors="ignore")
-        except OSError:
-            return raw.decode("utf-8", errors="ignore")
-    except Exception as e:
-        print(f"[mast] gz fetch failed {url}: {e}")
-        return ""
+        with gzip.GzipFile(fileobj=io.BytesIO(raw)) as gz:
+            return gz.read().decode("utf-8", errors="ignore")
+    except (OSError, EOFError, zlib.error) as e:
+        raise ValueError(f"corrupt gzip data from {url}: {e}") from e
 
 def _sanitize_filename(name: str) -> str:
     keep = f"-_.() {string.ascii_letters}{string.digits}"
@@ -98,6 +103,19 @@ def _metal_tag_to_float(tag: str) -> Optional[float]:
         return None
     sign = -1.0 if m.group(1) == "-" else 1.0
     return sign * float(m.group("val"))
+
+def _metal_tag(token: str) -> str:
+    """The BOSZ tag ('m-1.00') for a typed metallicity; ValueError if BOSZ has no such value."""
+    try:
+        val = float(token)
+    except ValueError:
+        raise ValueError(f"Metallicity '{token}' is not a number") from None
+    sgn = "+" if val >= 0 else "-"
+    tag = f"m{sgn}{abs(val):.2f}"
+    if tag not in METALS:
+        raise ValueError(f"BOSZ 2024 has no [M/H] = {token}; choose from "
+                         + ", ".join(m[1:] for m in METALS))
+    return tag
 
 def _filter_metals_by_range(
     metals: List[str],
@@ -122,13 +140,9 @@ def _filter_urls_by_params(
     for url in urls:
         params = _parse_params_from_name(os.path.basename(urllib.parse.urlparse(url).path))
         if not params:
+            kept.append(url)  # cannot be classified; the download reports it
             continue
-        try:
-            teff = float(params["teff"])
-            logg = float(params["logg"])
-        except (KeyError, ValueError):
-            continue
-        if _in_range(teff, teff_range) and _in_range(logg, logg_range):
+        if _in_range(float(params["teff"]), teff_range) and _in_range(float(params["logg"]), logg_range):
             kept.append(url)
     return kept
 
@@ -158,8 +172,8 @@ def _parse_wavefile(text: str) -> np.ndarray:
             continue
         try:
             xs.append(float(s.split()[0]))
-        except Exception:
-            pass
+        except ValueError:
+            pass  # a label line, not a wavelength
     return np.asarray(xs, dtype=float)
 
 def _parse_rorig_txt(text: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -172,7 +186,7 @@ def _parse_rorig_txt(text: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         if len(parts) >= 3:
             try:
                 wl.append(float(parts[0])); fx.append(float(parts[1])); ct.append(float(parts[2]))
-            except Exception:
+            except ValueError:
                 continue
     return np.asarray(wl, float), np.asarray(fx, float), np.asarray(ct, float)
 
@@ -186,7 +200,7 @@ def _parse_resam_txt(text: str) -> Tuple[np.ndarray, np.ndarray]:
         if len(parts) >= 2:
             try:
                 fx.append(float(parts[0])); ct.append(float(parts[1]))
-            except Exception:
+            except ValueError:
                 continue
     return np.asarray(fx, float), np.asarray(ct, float)
 
@@ -201,7 +215,7 @@ def _detect_inline_wave(text: str) -> Tuple[bool, Optional[np.ndarray], Optional
         nums = []
         for p in parts:
             try: nums.append(float(p))
-            except Exception: nums = []; break
+            except ValueError: nums = []; break
         if not nums: continue
         rows += 1
         if len(nums) >= 3:
@@ -220,7 +234,12 @@ def _detect_inline_wave(text: str) -> Tuple[bool, Optional[np.ndarray], Optional
         return (True, wl, f1, None)
     return (False, None, None, None)
 
-def _try_wave_urls(reskey: str, session: requests.Session) -> Tuple[Optional[np.ndarray], Optional[str]]:
+def _try_wave_urls(reskey: str, session: requests.Session) -> Tuple[np.ndarray, str]:
+    """The BOSZ wavelength grid for a resolution, as (wavelengths, url).
+
+    Raises RuntimeError saying what each candidate location gave if none
+    holds a usable grid.
+    """
     # Official locations under /hlsps/
     candidates = [
         f"{DATA_BASE}/wavelength_grids/bosz2024_wave_{reskey}.txt",
@@ -229,13 +248,17 @@ def _try_wave_urls(reskey: str, session: requests.Session) -> Tuple[Optional[np.
         f"{DATA_BASE}/{reskey}/bosz2024_wave_{reskey}.txt",
         f"{DATA_BASE}/bosz2024_{reskey}_wave.txt",
     ]
+    tried = []
     for url in candidates:
         txt = _download_text(url, session=session)
-        if txt:
-            w = _parse_wavefile(txt)
-            if w.size > 10 and _is_monotonic_increasing(w):
-                return (w, url)
-    return (None, None)
+        if not txt:
+            tried.append(f"{url}: not found")
+            continue
+        w = _parse_wavefile(txt)
+        if w.size > 10 and _is_monotonic_increasing(w):
+            return (w, url)
+        tried.append(f"{url}: not an increasing wavelength grid ({w.size} values)")
+    raise RuntimeError(f"No BOSZ wavelength grid found for {reskey}:\n  " + "\n  ".join(tried))
 
 # ----------------- URL harvesting (no listings) -----------------
 def _gather_urls_from_scripts(reskey: str, metals: List[str], session: requests.Session) -> List[str]:
@@ -243,28 +266,124 @@ def _gather_urls_from_scripts(reskey: str, metals: List[str], session: requests.
     Build each official bulk script URL deterministically:
       {SCRIPTS_DIR}/hlsp_bosz_bosz2024_sim_<reskey>_<metal>_v1_bulkdl.sh
     Extract all direct .txt/.txt.gz URLs; filter by product (_resam vs _noresam).
+
+    Raises RuntimeError if any script cannot be read (the grid would lack
+    that metallicity) or the scripts list no spectra.
     """
     want_metals = metals if metals and len(metals) != len(METALS) else METALS
     urls = set()
+    unread = []
     for met in want_metals:
         met_enc = urllib.parse.quote(met, safe="")  # 'm+0.00' -> 'm%2B0.00'
         script = f"{SCRIPTS_DIR}/hlsp_bosz_bosz2024_sim_{reskey}_{met_enc}_v1_bulkdl.sh"
-        stxt = _download_text(script, session=session)
-        if not stxt:
+        try:
+            stxt = _download_text(script, session=session)
+        except requests.RequestException as e:
+            unread.append(f"{script}: {e}")
             continue
-        for u in SCRIPT_URL_RE.findall(stxt):
-            upath = urllib.parse.urlparse(u).path.lower()
-            if f"/{reskey}/" not in upath:
-                continue
-            # choose product type by resolution key
-            if reskey == "rorig":
-                if "_noresam.txt" not in upath and "_noresam.txt.gz" not in upath:
-                    continue
-            else:
-                if "_resam.txt" not in upath and "_resam.txt.gz" not in upath:
-                    continue
-            urls.add(u)
+        if not stxt:
+            unread.append(f"{script}: not found")
+            continue
+        urls.update(_script_spectrum_urls(stxt, reskey))
+    if unread:
+        raise RuntimeError(f"Could not read {len(unread)} BOSZ download script(s) for {reskey}, so those "
+                           "metallicities would be missing:\n  " + "\n  ".join(unread))
+    if not urls:
+        raise RuntimeError(f"The BOSZ download scripts for {reskey} list no spectra")
     return sorted(urls)
+
+def _script_spectrum_urls(stxt: str, reskey: str) -> List[str]:
+    """Spectrum URLs in a bulk script for this resolution: _noresam for rorig, else _resam."""
+    product = "_noresam.txt" if reskey == "rorig" else "_resam.txt"
+    found = []
+    for u in SCRIPT_URL_RE.findall(stxt):
+        upath = urllib.parse.urlparse(u).path.lower()
+        if f"/{reskey}/" in upath and (product in upath or product + ".gz" in upath):
+            found.append(u)
+    return found
+
+# ----------------- spectrum files -----------------
+def _apply_wl_range(
+    wl: np.ndarray,
+    fx: np.ndarray,
+    ct: Optional[np.ndarray],
+    wl_range: Optional[Tuple[float, float]],
+) -> Tuple[np.ndarray, np.ndarray, Optional[np.ndarray]]:
+    if wl_range is None:
+        return wl, fx, ct
+    lo, hi = wl_range
+    if lo > hi:
+        lo, hi = hi, lo
+    mask = (wl >= lo) & (wl <= hi)
+    if not np.any(mask):
+        return np.array([]), np.array([]), None
+    return wl[mask], fx[mask], (ct[mask] if ct is not None and ct.size == wl.size else ct)
+
+def _write_spectrum_txt(out_path: str, wl: np.ndarray, fx: np.ndarray, ct: Optional[np.ndarray],
+                        src_url: str, params: Dict[str, str], wave_url_used: Optional[str]) -> None:
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write("# source = BOSZ@MAST (HLSP)\n")
+        f.write("# url = " + src_url + "\n")
+        if wave_url_used:
+            f.write("# wave_grid = " + wave_url_used + "\n")
+        for k,v in params.items():
+            f.write(f"# {k} = {v}\n")
+        f.write("# columns = wavelength_A flux continuum\n")
+        if ct is None:
+            ct = np.ones_like(fx)
+        for x,y,z in zip(wl, fx, ct):
+            f.write(f"{x:.6f} {y:.8e} {z:.8e}\n")
+
+def _parse_any(text: str, inline_w: Optional[np.ndarray], wave: Optional[np.ndarray],
+               reskey: str) -> Tuple[np.ndarray, np.ndarray, Optional[np.ndarray]]:
+    """Wavelength, flux and continuum from a BOSZ file; empty arrays if none can be read.
+
+    3-column files carry their wavelengths; 2-column (flux, continuum) files
+    take them from *inline_w* (detected in the first file) or the grid *wave*.
+    """
+    wl3, f3, c3 = _parse_rorig_txt(text)
+    if wl3.size:
+        return wl3, f3, c3
+    fx, ct = _parse_resam_txt(text)
+    if fx.size:
+        if inline_w is not None:
+            n = min(fx.size, inline_w.size)
+            return inline_w[:n], fx[:n], (ct[:n] if ct.size >= n else None)
+        if wave is not None:
+            if fx.size != wave.size:
+                raise ValueError(
+                    f"BOSZ {reskey} wavelength-grid length mismatch: "
+                    f"wave={wave.size}, flux={fx.size}"
+                )
+            continuum = ct if ct.size == fx.size else None
+            return wave, fx, continuum
+    # last-ditch: 2-col (wave, flux)
+    wl_guess, fx_guess = [], []
+    for line in text.splitlines():
+        s = line.strip()
+        if not s or s.startswith("#"): continue
+        parts = s.split()
+        if len(parts) == 2:
+            try: a = float(parts[0]); b = float(parts[1])
+            except ValueError: continue
+            wl_guess.append(a); fx_guess.append(b)
+    wl_guess = np.asarray(wl_guess, float)
+    fx_guess = np.asarray(fx_guess, float)
+    if _is_monotonic_increasing(wl_guess):
+        return wl_guess, fx_guess, None
+    return np.array([]), np.array([]), None
+
+def _write_lookup_table(model_dir: str, names: List[str]) -> None:
+    out_csv = os.path.join(model_dir, "lookup_table.csv")
+    rows = []; keys = set(["file_name"])
+    for n in names:
+        pd = _parse_params_from_name(n); pd["file_name"] = n
+        rows.append(pd); keys.update(pd.keys())
+    header = ["file_name"] + sorted([k for k in keys if k != "file_name"])
+    with open(out_csv, "w", encoding="utf-8", newline="") as f:
+        w = csv.writer(f); w.writerow(header)
+        for r in rows: w.writerow([r.get(k, "") for k in header])
+    print(f"[MAST] wrote lookup_table.csv with {len(rows)} rows")
 
 # ----------------- main class -----------------
 class MASTSpectraGrabber:
@@ -279,6 +398,11 @@ class MASTSpectraGrabber:
         return [f"BOSZ-2024-{rk}" for rk in RES_KEYS]
 
     def get_model_metadata(self, model_name: str) -> Dict[str, Any]:
+        """Ask which metallicities to fetch and return the download plan.
+
+        Raises ValueError for an unknown model name, or a typed metallicity
+        that is not a number or not a BOSZ 2024 value.
+        """
         m = re.match(r"^BOSZ-2024-(r\d+|rorig)$", model_name)
         if not m:
             raise ValueError(f"Unrecognized BOSZ model name: {model_name}")
@@ -288,17 +412,7 @@ class MASTSpectraGrabber:
         raw = input("> ").strip()
         metals = METALS
         if raw:
-            sel = []
-            for tok in raw.split(","):
-                tok = tok.strip()
-                try:
-                    val = float(tok)
-                except Exception:
-                    continue
-                sgn = "+" if val >= 0 else "-"
-                tag = f"m{sgn}{abs(val):.2f}"
-                if tag in METALS:
-                    sel.append(tag)
+            sel = [_metal_tag(tok.strip()) for tok in raw.split(",") if tok.strip()]
             if sel:
                 metals = sel
         return {"provider": "mast-bosz", "version": "2024", "reskey": reskey, "metals": metals}
@@ -313,6 +427,13 @@ class MASTSpectraGrabber:
         wl_range: Optional[Tuple[float, float]] = None,
         **_ignored: Any,
     ) -> int:
+        """Download the BOSZ spectra in the plan from get_model_metadata.
+
+        Returns the number written. Raises RuntimeError if the download
+        scripts or the wavelength grid cannot be read; if any spectrum
+        fails, the rest are still written, lookup_table.csv is not, and
+        RuntimeError lists each failure.
+        """
         import concurrent.futures as cf
 
         reskey: str = info["reskey"]
@@ -346,123 +467,60 @@ class MASTSpectraGrabber:
         wave = None; wave_url = None
         if reskey != "rorig" and not has_inline:
             wave, wave_url = _try_wave_urls(reskey, self.session)
-            if wave is None:
-                print(f"[MAST] failed to locate wavelength grid for {reskey}")
-                return 0
-
-        def apply_wl_range(
-            wl: np.ndarray,
-            fx: np.ndarray,
-            ct: Optional[np.ndarray],
-        ) -> Tuple[np.ndarray, np.ndarray, Optional[np.ndarray]]:
-            if wl_range is None:
-                return wl, fx, ct
-            lo, hi = wl_range
-            if lo > hi:
-                lo, hi = hi, lo
-            mask = (wl >= lo) & (wl <= hi)
-            if not np.any(mask):
-                return np.array([]), np.array([]), None
-            return wl[mask], fx[mask], (ct[mask] if ct is not None and ct.size == wl.size else ct)
-
-        def write_txt(out_path: str, wl: np.ndarray, fx: np.ndarray, ct: Optional[np.ndarray],
-                      src_url: str, params: Dict[str, str], wave_url_used: Optional[str]) -> None:
-            with open(out_path, "w", encoding="utf-8") as f:
-                f.write("# source = BOSZ@MAST (HLSP)\n")
-                f.write("# url = " + src_url + "\n")
-                if wave_url_used:
-                    f.write("# wave_grid = " + wave_url_used + "\n")
-                for k,v in params.items():
-                    f.write(f"# {k} = {v}\n")
-                f.write("# columns = wavelength_A flux continuum\n")
-                if ct is None:
-                    ct = np.ones_like(fx)
-                for x,y,z in zip(wl, fx, ct):
-                    f.write(f"{x:.6f} {y:.8e} {z:.8e}\n")
-
-        def parse_any(text: str) -> Tuple[np.ndarray, np.ndarray, Optional[np.ndarray]]:
-            wl3, f3, c3 = _parse_rorig_txt(text)
-            if wl3.size:
-                return wl3, f3, c3
-            fx, ct = _parse_resam_txt(text)
-            if fx.size:
-                if has_inline and inline_w is not None and inline_f is not None:
-                    n = min(fx.size, inline_w.size)
-                    return inline_w[:n], fx[:n], (ct[:n] if ct.size >= n else None)
-                if wave is not None:
-                    if fx.size != wave.size:
-                        raise ValueError(
-                            f"BOSZ {reskey} wavelength-grid length mismatch: "
-                            f"wave={wave.size}, flux={fx.size}"
-                        )
-                    continuum = ct if ct.size == fx.size else None
-                    return wave, fx, continuum
-            # last-ditch: 2-col (wave, flux)
-            wl_guess, fx_guess = [], []
-            for line in text.splitlines():
-                s = line.strip()
-                if not s or s.startswith("#"): continue
-                parts = s.split()
-                if len(parts) == 2:
-                    try: a = float(parts[0]); b = float(parts[1])
-                    except Exception: continue
-                    wl_guess.append(a); fx_guess.append(b)
-            wl_guess = np.asarray(wl_guess, float)
-            fx_guess = np.asarray(fx_guess, float)
-            if _is_monotonic_increasing(wl_guess):
-                return wl_guess, fx_guess, None
-            return np.array([]), np.array([]), None
-
-        names: List[str] = []
 
         def handle_one(u: str, pre_text: Optional[str] = None) -> Optional[str]:
-            try:
-                text = pre_text if pre_text is not None else _download_text_gz(u, session=self.session)
-                if not text: return None
-                base = os.path.basename(urllib.parse.urlparse(u).path)
-                params = _parse_params_from_name(base)
-                if not params: return None
-                oname = _sanitize_filename(base.replace(".txt.gz", ".txt"))
-                out_path = os.path.join(model_dir, oname)
+            """Write one spectrum; its file name, or None if wl_range leaves no points.
 
-                if has_inline and pre_text is not None and inline_w is not None and inline_f is not None:
-                    ct = inline_c if inline_c is not None else np.ones_like(inline_f)
-                    wl, fx, ct = apply_wl_range(inline_w, inline_f, ct)
-                    if wl.size == 0 or fx.size == 0:
-                        return None
-                    write_txt(out_path, wl, fx, ct, u, params, None)
-                    return oname
+            Raises one of _SPECTRUM_ERRORS if it cannot be fetched, named or read.
+            """
+            text = pre_text if pre_text is not None else _download_text_gz(u, session=self.session)
+            if not text:
+                raise ValueError("empty file")
+            base = os.path.basename(urllib.parse.urlparse(u).path)
+            params = _parse_params_from_name(base)
+            if not params:
+                raise ValueError("file name does not follow the BOSZ 2024 pattern")
+            oname = _sanitize_filename(base.replace(".txt.gz", ".txt"))
+            out_path = os.path.join(model_dir, oname)
 
-                wl, fx, ct = parse_any(text)
-                wl, fx, ct = apply_wl_range(wl, fx, ct)
-                if wl.size == 0 or fx.size == 0: return None
-                write_txt(out_path, wl, fx, ct, u, params, wave_url)
+            if has_inline and pre_text is not None and inline_w is not None and inline_f is not None:
+                ct = inline_c if inline_c is not None else np.ones_like(inline_f)
+                wl, fx, ct = _apply_wl_range(inline_w, inline_f, ct, wl_range)
+                if wl.size == 0 or fx.size == 0:
+                    return None
+                _write_spectrum_txt(out_path, wl, fx, ct, u, params, None)
                 return oname
-            except Exception as e:
-                print(f"[MAST] failed on {u}: {e}")
-                return None
+
+            wl, fx, ct = _parse_any(text, inline_w if has_inline else None, wave, reskey)
+            if wl.size == 0:
+                raise ValueError("no spectrum could be read from the file")
+            wl, fx, ct = _apply_wl_range(wl, fx, ct, wl_range)
+            if wl.size == 0 or fx.size == 0: return None
+            _write_spectrum_txt(out_path, wl, fx, ct, u, params, wave_url)
+            return oname
+
+        def try_one(u: str, pre_text: Optional[str] = None) -> Tuple[Optional[str], Optional[str]]:
+            try:
+                return handle_one(u, pre_text), None
+            except _SPECTRUM_ERRORS as e:
+                return None, f"{u}: {e}"
 
         # write first (prefetched) then parallelize the rest
-        first_name = handle_one(first_url, pre_text=first_text)
-        if first_name: names.append(first_name)
-
+        results = [try_one(first_url, pre_text=first_text)]
         rest = urls[1:]
         if rest:
             with cf.ThreadPoolExecutor(max_workers=self.max_workers) as ex:
-                for rname in ex.map(handle_one, rest):
-                    if rname: names.append(rname)
+                results.extend(ex.map(try_one, rest))
+        names = [name for name, _ in results if name]
+        failures = [error for _, error in results if error]
 
-        # lookup table
+        if failures:
+            raise RuntimeError(
+                f"MAST: {len(failures)} of {len(urls)} BOSZ spectra for {model_name} failed, so "
+                f"lookup_table.csv was not written; the others are in {model_dir}:\n  "
+                + "\n  ".join(failures))
+
         if names:
-            out_csv = os.path.join(model_dir, "lookup_table.csv")
-            rows = []; keys = set(["file_name"])
-            for n in names:
-                pd = _parse_params_from_name(n); pd["file_name"] = n
-                rows.append(pd); keys.update(pd.keys())
-            header = ["file_name"] + sorted([k for k in keys if k != "file_name"])
-            with open(out_csv, "w", encoding="utf-8", newline="") as f:
-                w = csv.writer(f); w.writerow(header)
-                for r in rows: w.writerow([r.get(k, "") for k in header])
-            print(f"[MAST] wrote lookup_table.csv with {len(rows)} rows")
+            _write_lookup_table(model_dir, names)
 
         return len(names)
