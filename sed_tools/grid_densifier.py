@@ -14,6 +14,10 @@ A blackbody (π·B_λ scaled to the nearest real grid SED's bolometric flux)
 is used when no ML model is given, and for requested Teff values outside the
 source grid's Teff range. If the ML model fails at any node the run stops.
 
+The dense cube is written a block of wavelengths at a time. A block holds
+every node at its wavelengths, so in the file's (nw, nm, nl, nt) order it is
+one contiguous write; blocks are sized to half the available RAM.
+
 Usage (CLI)
 -----------
     python -m sed_tools.grid_densifier \\
@@ -46,6 +50,7 @@ import numpy as np
 
 from ._constants import planck_flam as _blackbody
 from ._resample import resample_to_grid
+from .precompute_flux_cube import _available_ram_bytes
 
 
 # ---------------------------------------------------------------------------
@@ -68,32 +73,20 @@ def _read_cube_header(path):
     return nt, nl, nm, nw, teff, logg, meta, wl
 
 
-def _open_flux_memmap(path, nt, nl, nm, nw, mode="r"):
-    """Memmap of the flux in an existing cube file, indexed [teff, logg, meta, wavelength].
+def _open_flux_memmap(path, nt, nl, nm, nw):
+    """Read-only memmap of an existing cube's flux, in the file's order (nw, nm, nl, nt).
 
-    The file stores the flux C-order as (nw, nm, nl, nt), Teff varying fastest:
-    the layout MESA, precompute_flux_cube and FluxCube.from_file use. The
-    returned array is a transposed view, so writes through it land in that layout.
+    Teff varies fastest: the layout MESA, precompute_flux_cube and
+    FluxCube.from_file use.
     """
     offset = _flux_offset(nt, nl, nm, nw)
-    flux = np.memmap(path, dtype=np.float64, mode=mode,
-                     offset=offset, shape=(nw, nm, nl, nt))
-    return flux.transpose(3, 2, 1, 0)
+    return np.memmap(path, dtype=np.float64, mode="r", offset=offset, shape=(nw, nm, nl, nt))
 
 
-def _init_output_cube(path, teff, logg, meta, wl, nt_new):
-    """Write header to dst and return a writable memmap over the flux region."""
-    nl, nm, nw = len(logg), len(meta), len(wl)
-    os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
-    with open(path, "wb") as f:
-        f.write(struct.pack("iiii", nt_new, nl, nm, nw))
-        f.write(teff.astype(np.float64).tobytes())
-        f.write(logg.astype(np.float64).tobytes())
-        f.write(meta.astype(np.float64).tobytes())
-        f.write(wl.astype(np.float64).tobytes())
-        # Pre-allocate flux region as zeros
-        f.write(b"\x00" * (nt_new * nl * nm * nw * 8))
-    return _open_flux_memmap(path, nt_new, nl, nm, nw, mode="r+")
+def _write_header(f, teff, logg, meta, wl):
+    f.write(struct.pack("iiii", len(teff), len(logg), len(meta), len(wl)))
+    for axis in (teff, logg, meta, wl):
+        f.write(axis.astype(np.float64).tobytes())
 
 
 # ---------------------------------------------------------------------------
@@ -115,9 +108,10 @@ def _build_dense_teff(teff_orig, spacing):
 def _blackbody_scales(flux_orig, teff_orig, wavelengths):
     """Ratio of each real node's bolometric flux to its Teff's blackbody (1 where either is <= 0).
 
-    Computed one original Teff row at a time so no (nt, nw) array is held.
+    Indexed [teff, logg, meta]; flux_orig is in the file's order (nw, nm, nl, nt).
+    Computed one node at a time so no (nt, nw) array is held.
     """
-    nt, nl, nm = flux_orig.shape[:3]
+    nt, nl, nm = flux_orig.shape[3], flux_orig.shape[2], flux_orig.shape[1]
     bb_scale = np.ones((nt, nl, nm), dtype=np.float64)
     for i_t in range(nt):
         bb_bol = np.trapezoid(_blackbody(wavelengths, teff_orig[i_t]), wavelengths)
@@ -125,22 +119,20 @@ def _blackbody_scales(flux_orig, teff_orig, wavelengths):
             continue
         for i_l in range(nl):
             for i_m in range(nm):
-                real_bol = np.trapezoid(flux_orig[i_t, i_l, i_m], wavelengths)
+                real_bol = np.trapezoid(flux_orig[:, i_m, i_l, i_t], wavelengths)
                 if real_bol > 0:
                     bb_scale[i_t, i_l, i_m] = real_bol / bb_bol
     return bb_scale
 
 
-def _copy_real_rows(flux_dense, flux_orig, teff_orig, teff_dense):
-    """Copy every original Teff row verbatim into the dense cube; return the mask of copied rows."""
-    real_mask = np.zeros(len(teff_dense), dtype=bool)
+def _source_rows(teff_orig, teff_dense):
+    """{dense Teff index: source Teff index} for the source Teffs, which are copied verbatim."""
+    rows = {}
     for i_orig, t in enumerate(teff_orig):
         idx_d = int(np.argmin(np.abs(teff_dense - t)))
         if np.abs(teff_dense[idx_d] - t) < 1.0:
-            flux_dense[idx_d] = flux_orig[i_orig]
-            real_mask[idx_d] = True
-    flux_dense.flush()
-    return real_mask
+            rows[idx_d] = i_orig
+    return rows
 
 
 def _ml_sed(generator, teff, logg, meta, wavelengths, dst):
@@ -156,33 +148,59 @@ def _ml_sed(generator, teff, logg, meta, wavelengths, dst):
         ) from exc
 
 
-def _fill_synthetic_rows(flux_dense, synthetic, teff_dense, teff_orig, logg_grid, meta_grid,
-                         wavelengths, bb_scale, generator, dst):
-    """Write an SED at every node of each synthetic Teff row, printing progress."""
-    t_start = time.time()
-    for count, idx_d in enumerate(synthetic, 1):
-        t_new = teff_dense[idx_d]
-        i_near = int(np.argmin(np.abs(teff_orig - t_new)))
-        use_ml = generator is not None and teff_orig[0] <= t_new <= teff_orig[-1]
+def _synthetic_seds(t_new, i_near, use_ml, wl_block, logg_grid, meta_grid, bb_scale, generator, dst):
+    """The SEDs at every (logg, meta) node of one synthetic Teff on wl_block, shaped (nw_block, nm, nl)."""
+    if not use_ml:
+        bb = _blackbody(wl_block, t_new)
+        return bb[:, None, None] * bb_scale[i_near].T
+    seds = np.empty((len(wl_block), len(meta_grid), len(logg_grid)))
+    for i_l, logg in enumerate(logg_grid):
+        for i_m, meta in enumerate(meta_grid):
+            seds[:, i_m, i_l] = _ml_sed(generator, t_new, float(logg), float(meta), wl_block, dst)
+    return seds
 
-        for i_l in range(len(logg_grid)):
-            for i_m in range(len(meta_grid)):
-                if use_ml:
-                    flux_dense[idx_d, i_l, i_m] = _ml_sed(
-                        generator, t_new, float(logg_grid[i_l]), float(meta_grid[i_m]),
-                        wavelengths, dst,
-                    )
-                else:
-                    bb = _blackbody(wavelengths, t_new)
-                    flux_dense[idx_d, i_l, i_m] = bb * bb_scale[i_near, i_l, i_m]
-        flux_dense.flush()
+
+def _wavelengths_per_block(nt_orig, nt_new, nl, nm):
+    """How many wavelengths a block holds, so its source and dense parts fit in half the available RAM."""
+    bytes_per_wavelength = (nt_orig + nt_new) * nl * nm * 8
+    return max(1, _available_ram_bytes() // 2 // bytes_per_wavelength)
+
+
+def _write_dense_flux(f, flux_orig, source_rows, teff_dense, teff_orig, logg_grid, meta_grid,
+                      wavelengths, bb_scale, generator, dst):
+    """Write the dense cube's flux to f, one block of wavelengths at a time, printing progress.
+
+    Source Teffs are copied verbatim; every other Teff gets an SED at each node.
+    An ML node is generated once per block (once in all when the cube fits in one).
+    """
+    nw, nm, nl, nt_orig = flux_orig.shape
+    nt_new = len(teff_dense)
+    synthetic = []
+    for idx_d in range(nt_new):
+        if idx_d not in source_rows:
+            t_new = teff_dense[idx_d]
+            use_ml = generator is not None and teff_orig[0] <= t_new <= teff_orig[-1]
+            synthetic.append((idx_d, t_new, int(np.argmin(np.abs(teff_orig - t_new))), use_ml))
+
+    w_block = _wavelengths_per_block(nt_orig, nt_new, nl, nm)
+    n_blocks = (nw + w_block - 1) // w_block
+    n_ml = sum(use_ml for _, _, _, use_ml in synthetic)
+    print(f"\nGenerating {len(synthetic)} synthetic Teff points ({n_ml} by ML, "
+          f"{len(synthetic) - n_ml} blackbody) in {n_blocks} wavelength block(s)...")
+    t_start = time.time()
+    for count, w0 in enumerate(range(0, nw, w_block), 1):
+        w1 = min(w0 + w_block, nw)
+        block = np.empty((w1 - w0, nm, nl, nt_new), dtype=np.float64)
+        for idx_d, i_orig in source_rows.items():
+            block[..., idx_d] = flux_orig[w0:w1, :, :, i_orig]
+        for idx_d, t_new, i_near, use_ml in synthetic:
+            block[..., idx_d] = _synthetic_seds(t_new, i_near, use_ml, wavelengths[w0:w1],
+                                                logg_grid, meta_grid, bb_scale, generator, dst)
+        block.tofile(f)
 
         elapsed = time.time() - t_start
-        rate = count / elapsed if elapsed > 0 else 1.0
-        eta = (len(synthetic) - count) / rate
-        label = "ml" if use_ml else "bb"
-        print(f"\r  {count}/{len(synthetic)}  T={t_new:.0f} K  "
-              f"[{label}]  ETA {eta:.0f}s   ", end="", flush=True)
+        eta = (n_blocks - count) * elapsed / count
+        print(f"\r  block {count}/{n_blocks}  ETA {eta:.0f}s   ", end="", flush=True)
     print()
 
 
@@ -224,7 +242,7 @@ def densify_grid(
     print(f"  Largest gap: {gaps.max():.0f} K  (mean {gaps.mean():.0f} K)")
 
     # Source flux as read-only memmap — pages in from disk on demand
-    flux_orig = _open_flux_memmap(src, nt_orig, nl, nm, nw, mode="r")
+    flux_orig = _open_flux_memmap(src, nt_orig, nl, nm, nw)
 
     generator = None
     if ml_model is not None:
@@ -242,19 +260,12 @@ def densify_grid(
     bb_scale = _blackbody_scales(flux_orig, teff_orig, wavelengths)
     print("done")
 
-    # Writes the header and zero-fills the flux region on disk
-    print("Initialising output cube on disk...", end=" ", flush=True)
-    flux_dense = _init_output_cube(dst, teff_dense, logg_grid, meta_grid,
-                                    wavelengths, nt_new)
-    print("done")
+    os.makedirs(os.path.dirname(os.path.abspath(dst)), exist_ok=True)
+    with open(dst, "wb") as f:
+        _write_header(f, teff_dense, logg_grid, meta_grid, wavelengths)
+        _write_dense_flux(f, flux_orig, _source_rows(teff_orig, teff_dense), teff_dense, teff_orig,
+                          logg_grid, meta_grid, wavelengths, bb_scale, generator, dst)
 
-    real_mask = _copy_real_rows(flux_dense, flux_orig, teff_orig, teff_dense)
-    synthetic = np.where(~real_mask)[0]
-    print(f"\nGenerating {len(synthetic)} synthetic Teff points...")
-    _fill_synthetic_rows(flux_dense, synthetic, teff_dense, teff_orig, logg_grid, meta_grid,
-                         wavelengths, bb_scale, generator, dst)
-
-    del flux_dense  # close memmap
     size_mb = os.path.getsize(dst) / (1024**2)
     print(f"  Written: {nt_new} × {nl} × {nm} × {nw}  ({size_mb:.1f} MiB)")
     print(f"{'='*60}\n")
