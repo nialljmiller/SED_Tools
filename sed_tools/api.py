@@ -40,6 +40,7 @@ Example usage::
 from __future__ import annotations
 
 import logging
+import math
 import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -328,27 +329,99 @@ class SpectralGrid:
         # Build flux cube
         if build_flux_cube and len(self.spectra) > 0:
             from .precompute_flux_cube import precompute_flux_cube
-            try:
-                precompute_flux_cube(str(path), str(path / "flux_cube.bin"))
-                print(f"[write] Built flux_cube.bin")
-            except Exception as e:
-                print(f"[write] Warning: flux cube build failed: {e}")
-        
+            precompute_flux_cube(str(path), str(path / "flux_cube.bin"))
+            print("[write] Built flux_cube.bin")
+
         # Build H5 bundle
         if build_h5 and len(self.spectra) > 0:
             from . import build_h5_bundle_from_txt
-            try:
-                build_h5_bundle_from_txt(str(path), str(path / f"{self.name}.h5"))
-                print(f"[write] Built {self.name}.h5")
-            except Exception as e:
-                print(f"[write] Warning: H5 bundle build failed: {e}")
-        
+            if not build_h5_bundle_from_txt(str(path), str(path / f"{self.name}.h5")):
+                raise RuntimeError(f"No .txt spectra in {path} to bundle into {self.name}.h5")
+            print(f"[write] Built {self.name}.h5")
+
         return path
 
 
 # Existing imports continue to refer to the same classes.
 Catalog = SpectralGrid
 CatalogInfo = SpectralGridInfo
+
+
+def _read_listed_spectra(lookup_path: Path, grid_name: str) -> List[Spectrum]:
+    """The spectra a lookup table lists, for rows whose file exists beside it.
+
+    Raises ValueError naming the file when a listed spectrum cannot be read.
+    """
+    model_dir = lookup_path.parent
+    df = pd.read_csv(lookup_path)
+    df.columns = [c.lstrip('#').strip().lower() for c in df.columns]
+    file_col = find_file_column(df.columns)
+    teff_col = find_teff_column(df.columns)
+    logg_col = find_logg_column(df.columns)
+    meta_col = find_metallicity_column(df.columns)
+
+    spectra = []
+    for _, row in df.iterrows():
+        filename = row[file_col] if file_col else None
+        if not filename or not (model_dir / filename).exists():
+            continue
+        try:
+            wl, fl = np.loadtxt(model_dir / filename, unpack=True, comments='#')
+            spectra.append(Spectrum(
+                wavelength=wl,
+                flux=fl,
+                teff=float(row.get(teff_col, np.nan)) if teff_col else np.nan,
+                logg=float(row.get(logg_col, np.nan)) if logg_col else np.nan,
+                metallicity=float(row.get(meta_col, np.nan)) if meta_col else np.nan,
+                filename=filename,
+                source_catalog=grid_name,
+            ))
+        except (OSError, ValueError) as exc:
+            raise ValueError(f"Cannot read spectrum {model_dir / filename} listed in {lookup_path}: {exc}") from exc
+    return spectra
+
+
+def _import_sources(src: Path) -> Tuple[List[Path], Path]:
+    """The .txt spectra to import from a directory or a single file, and their directory."""
+    if not src.exists():
+        raise FileNotFoundError(f"Source path not found: {src}")
+
+    if src.is_dir():
+        files = sorted(src.glob("*.txt"))
+        src_dir = src
+    elif src.is_file() and src.suffix.lower() == ".txt":
+        files = [src]
+        src_dir = src.parent
+    else:
+        raise ValueError(f"Source must be a directory or a .txt file: {src}")
+
+    if not files:
+        raise RuntimeError(f"No .txt spectra found in {src}")
+    return files, src_dir
+
+
+def _report_import_headers(files: List[Path], src_dir: Path) -> List[str]:
+    """Print how many files carry Teff, logg and [M/H]; return the names of those that do not."""
+    from .header_parser import parse_header
+
+    missing: List[str] = []
+    for f in files:
+        h = parse_header(str(f))
+        vals = [float(h.get(k, float("nan"))) for k in ("teff", "logg", "metallicity")]
+        if any(math.isnan(v) for v in vals):
+            missing.append(f.name)
+
+    print(f"[import] {len(files)} .txt files in {src_dir}")
+    print(f"[import] parseable Teff+logg+[M/H] headers: {len(files) - len(missing)}/{len(files)}")
+    if missing:
+        print(f"[import] missing one or more parameters: {len(missing)}")
+        for b in missing[:10]:
+            print(f"           {b}")
+        if len(missing) > 10:
+            print(f"           ... and {len(missing) - 10} more")
+        print("[import] If a key is merely unrecognised, add it to ALIASES "
+              "in header_parser.py.")
+    return missing
 
 
 # =============================================================================
@@ -518,7 +591,7 @@ class SED:
                 is_local=True,
             )
             
-            # Try to extract parameter ranges from flux cube
+            # Parameter ranges from the flux cube header
             try:
                 from .models import _read_flux_cube_header
                 meta = _read_flux_cube_header(cube)
@@ -526,17 +599,17 @@ class SED:
                 info.logg_range = (float(meta['logg'][0]), float(meta['logg'][-1]))
                 info.metallicity_range = (float(meta['meta'][0]), float(meta['meta'][-1]))
                 info.wavelength_range = (float(meta['wavelengths'][0]), float(meta['wavelengths'][-1]))
-            except Exception:
-                logger.debug("Could not read flux cube header for %s", entry.name, exc_info=True)
+            except (OSError, ValueError, IndexError) as exc:
+                raise ValueError(f"Cannot read the flux cube header of local grid '{entry.name}' ({cube}): "
+                                 f"{exc}. Rebuild it with: sed-tools rebuild --grids {entry.name}") from exc
 
             # Count spectra from lookup table
             if lookup.exists():
                 try:
-                    df = pd.read_csv(lookup)
-                    info.n_spectra = len(df)
-                except Exception:
-                    logger.debug("Could not read lookup table for %s", entry.name, exc_info=True)
-            
+                    info.n_spectra = len(pd.read_csv(lookup))
+                except (OSError, ValueError) as exc:
+                    raise ValueError(f"Cannot read {lookup} of local grid '{entry.name}': {exc}") from exc
+
             catalogs.append(info)
         
         return catalogs
@@ -679,8 +752,8 @@ class SED:
             if unusable:
                 raise RuntimeError(
                     f"{len(unusable)} of {summary['total']} spectra of '{catalog}' in {model_dir} are unusable "
-                    f"after cleaning (invalid, index-only or failed), e.g. {unusable[0]}; "
-                    "see the [clean] report above")
+                    f"after cleaning (invalid, index-only or failed; see the [clean] report above): "
+                    + ", ".join(unusable))
 
         # Load spectra into SpectralGrid object
         cat = cls._load_catalog_from_dir(model_dir, catalog, source)
@@ -763,41 +836,9 @@ class SED:
     
     @classmethod
     def _load_catalog_from_dir(cls, model_dir: Path, name: str, source: str) -> SpectralGrid:
-        """Load spectra from a local directory into a SpectralGrid."""
-        spectra = []
-        
-        # Read lookup table
+        """Load the spectra listed in ``lookup_table.csv`` into a SpectralGrid."""
         lookup_path = model_dir / "lookup_table.csv"
-        if lookup_path.exists():
-            df = pd.read_csv(lookup_path)
-            
-            # Normalize column names
-            df.columns = [c.lstrip('#').strip().lower() for c in df.columns]
-            
-            # Find column mappings
-            file_col = find_file_column(df.columns)
-            teff_col = find_teff_column(df.columns)
-            logg_col = find_logg_column(df.columns)
-            meta_col = find_metallicity_column(df.columns)
-            
-            for _, row in df.iterrows():
-                filename = row[file_col] if file_col else None
-                if filename and (model_dir / filename).exists():
-                    try:
-                        wl, fl = np.loadtxt(model_dir / filename, unpack=True, comments='#')
-                        spec = Spectrum(
-                            wavelength=wl,
-                            flux=fl,
-                            teff=float(row.get(teff_col, np.nan)) if teff_col else np.nan,
-                            logg=float(row.get(logg_col, np.nan)) if logg_col else np.nan,
-                            metallicity=float(row.get(meta_col, np.nan)) if meta_col else np.nan,
-                            filename=filename,
-                            source_catalog=name,
-                        )
-                        spectra.append(spec)
-                    except Exception:
-                        logger.debug("Could not load spectrum %s", filename, exc_info=True)
-
+        spectra = _read_listed_spectra(lookup_path, name) if lookup_path.exists() else []
         return SpectralGrid(
             name=name,
             source=source,
@@ -924,55 +965,18 @@ class SED:
         build_h5 : build the HDF5 bundle.
         dry_run : only report how many files have parseable headers; do not copy.
 
-        Returns a summary dict.
+        Returns a summary dict.  Files whose headers lack a parameter, or that
+        cleaning leaves unusable, are left out of the built grid and then
+        listed in a RuntimeError.
         """
-        import math
-
-        from .header_parser import parse_header
-
-        src = Path(src).expanduser()
-        if not src.exists():
-            raise FileNotFoundError(f"Source path not found: {src}")
-
-        if src.is_dir():
-            files = sorted(src.glob("*.txt"))
-            src_dir = src
-        elif src.is_file() and src.suffix.lower() == ".txt":
-            files = [src]
-            src_dir = src.parent
-        else:
-            raise ValueError(f"Source must be a directory or a .txt file: {src}")
-
-        if not files:
-            raise RuntimeError(f"No .txt spectra found in {src}")
-
+        files, src_dir = _import_sources(Path(src).expanduser())
         if name is None:
             name = src_dir.name
         base = Path(model_root) if model_root else cls._model_root
         dest = Path(base) / name
 
-        # --- header check (also the dry-run report) ---
-        n_ok = 0
-        missing: List[str] = []
-        for f in files:
-            h = parse_header(str(f))
-            vals = [float(h.get(k, float("nan"))) for k in ("teff", "logg", "metallicity")]
-            if all(not math.isnan(v) for v in vals):
-                n_ok += 1
-            else:
-                missing.append(f.name)
-
-        print(f"[import] {len(files)} .txt files in {src_dir}")
-        print(f"[import] parseable Teff+logg+[M/H] headers: {n_ok}/{len(files)}")
-        if missing:
-            print(f"[import] missing one or more parameters: {len(missing)}")
-            for b in missing[:10]:
-                print(f"           {b}")
-            if len(missing) > 10:
-                print(f"           ... and {len(missing) - 10} more")
-            print("[import] If a key is merely unrecognised, add it to ALIASES "
-                  "in header_parser.py.")
-
+        missing = _report_import_headers(files, src_dir)
+        n_ok = len(files) - len(missing)
         if dry_run:
             return {
                 "name": name,
@@ -1004,12 +1008,19 @@ class SED:
 
         if build_h5:
             from . import build_h5_bundle_from_txt
-            build_h5_bundle_from_txt(str(dest), str(dest / f"{name}.h5"))
+            if not build_h5_bundle_from_txt(str(dest), str(dest / f"{name}.h5")):
+                raise RuntimeError(f"No .txt spectra left in {dest} to bundle into {name}.h5")
 
         if build_cube:
             from .precompute_flux_cube import precompute_flux_cube
             precompute_flux_cube(str(dest), str(dest / "flux_cube.bin"))
 
+        unusable = _unusable_after_cleaning(summary)
+        if missing or unusable:
+            raise RuntimeError(
+                f"Imported '{name}' into {dest} without some spectra. "
+                f"Lacking a Teff, logg or [M/H] header ({len(missing)}): {', '.join(missing) or 'none'}. "
+                f"Unusable after cleaning ({len(unusable)}): {', '.join(unusable) or 'none'}.")
         print(f"[import] done. Load with: SED.local('{name}')")
         return {
             "name": name,

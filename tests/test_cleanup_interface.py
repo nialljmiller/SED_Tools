@@ -1,5 +1,6 @@
 """Failures in the public API and CLI are raised, warned about or reported with a non-zero exit."""
 
+import importlib
 import logging
 
 import pytest
@@ -138,3 +139,91 @@ def test_fetch_raises_when_cleaning_leaves_unusable_spectra(sources, tmp_path, m
     monkeypatch.setattr("sed_tools.spectra_cleaner.clean_model_dir", lambda *a, **k: summary)
     with pytest.raises(RuntimeError, match="2 of 3 spectra of 'Grid' .* are unusable after cleaning"):
         SED.fetch("Grid", source="svo", model_root=tmp_path)
+
+
+# ----------------------------------------------------------------------
+# Local spectral grids
+# ----------------------------------------------------------------------
+def write_cube_header(path, teff=(5000.0,), logg=(4.0,), meta=(0.0,), wavelengths=(1000.0, 2000.0)):
+    import struct
+
+    import numpy as np
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("wb") as fh:
+        fh.write(struct.pack("4i", len(teff), len(logg), len(meta), len(wavelengths)))
+        for axis in (teff, logg, meta, wavelengths):
+            np.asarray(axis, dtype=np.float64).tofile(fh)
+        np.zeros(len(teff) * len(logg) * len(meta) * len(wavelengths)).tofile(fh)
+
+
+def test_query_raises_for_a_local_grid_whose_cube_header_is_unreadable(tmp_path, monkeypatch):
+    (tmp_path / "Broken").mkdir()
+    (tmp_path / "Broken" / "flux_cube.bin").write_bytes(b"abc")
+    monkeypatch.setattr(SED, "_model_root", tmp_path)
+    with pytest.raises(ValueError, match="flux cube header of local grid 'Broken'.*sed-tools rebuild --grids Broken"):
+        SED.query(include_remote=False)
+
+
+def test_query_raises_for_a_local_grid_whose_lookup_table_is_unreadable(tmp_path, monkeypatch):
+    write_cube_header(tmp_path / "Grid" / "flux_cube.bin")
+    (tmp_path / "Grid" / "lookup_table.csv").write_text("")
+    monkeypatch.setattr(SED, "_model_root", tmp_path)
+    with pytest.raises(ValueError, match="lookup_table.csv of local grid 'Grid'"):
+        SED.query(include_remote=False)
+
+
+def test_local_raises_for_a_listed_spectrum_it_cannot_read(tmp_path):
+    grid = tmp_path / "Grid"
+    write_cube_header(grid / "flux_cube.bin")
+    (grid / "lookup_table.csv").write_text("file_name,teff,logg,meta\nbad.txt,5000,4.0,0.0\n")
+    (grid / "bad.txt").write_text("not a spectrum\n")
+    with pytest.raises(ValueError, match="Cannot read spectrum .*bad.txt listed in"):
+        SED.local("Grid", model_root=tmp_path)
+
+
+def spectrum(teff=5000.0, logg=4.0, metallicity=0.0, filename=None):
+    import numpy as np
+
+    from sed_tools.api import Spectrum
+
+    return Spectrum(wavelength=np.array([1000.0, 2000.0, 3000.0]), flux=np.array([1.0, 2.0, 3.0]),
+                    teff=teff, logg=logg, metallicity=metallicity, filename=filename)
+
+
+def test_grid_write_raises_when_the_flux_cube_build_fails(tmp_path, monkeypatch):
+    from sed_tools.api import SpectralGrid
+
+    def fail(*args):
+        raise RuntimeError("cube failed")
+
+    # The package re-exports the function under the module's name, so patch the module itself.
+    monkeypatch.setattr(importlib.import_module("sed_tools.precompute_flux_cube"), "precompute_flux_cube", fail)
+    grid = SpectralGrid(name="Grid", source="local", spectra=[spectrum()])
+    with pytest.raises(RuntimeError, match="cube failed"):
+        grid.write(tmp_path / "out", build_h5=False)
+
+
+def test_grid_write_raises_when_there_is_nothing_to_bundle(tmp_path):
+    from sed_tools.api import SpectralGrid
+
+    grid = SpectralGrid(name="Grid", source="local", spectra=[spectrum(filename="a.dat")])
+    with pytest.raises(RuntimeError, match="No .txt spectra in .* to bundle into Grid.h5"):
+        grid.write(tmp_path / "out", build_flux_cube=False)
+
+
+def test_import_lists_spectra_left_out_after_building_the_rest(tmp_path, monkeypatch):
+    src = tmp_path / "src"
+    src.mkdir()
+    spectrum().save(src / "good.txt")
+    spectrum(metallicity=float("nan")).save(src / "no_meta.txt")
+    summary = {"total": 2, "converted": [], "skipped_invalid": [], "skipped_index": [], "error": []}
+    monkeypatch.setattr("sed_tools.spectra_cleaner.clean_model_dir", lambda *a, **k: summary)
+    monkeypatch.setattr("sed_tools.svo_regen_spectra_lookup.regenerate_lookup_table", lambda *a: None)
+
+    with pytest.raises(RuntimeError, match=r"Lacking a Teff, logg or \[M/H\] header \(1\): no_meta.txt"):
+        SED.import_grid(src, name="Grid", model_root=tmp_path / "models", build_cube=False)
+    assert (tmp_path / "models" / "Grid" / "Grid.h5").is_file()
+
+    report = SED.import_grid(src, name="Grid", model_root=tmp_path / "models", dry_run=True)
+    assert report["n_missing"] == 1
