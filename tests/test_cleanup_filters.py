@@ -104,3 +104,16 @@ def test_vega_path_without_an_index_is_reported(tmp_path, caplog):
     with caplog.at_level(logging.WARNING):
         assert catalogue.vega() == vega
     assert "Cannot read NJM's index.json" in caplog.text and VEGA_URL in caplog.text
+
+
+# ----------------------------------------------------------------------
+# filter_components
+# ----------------------------------------------------------------------
+def test_unknown_components_header_is_reported(caplog):
+    from sed_tools.filter_components import InstrumentManifest
+
+    headers = {"g": {"Components": "filter+warp"}, "r": {"Components": "filter"}}
+    with caplog.at_level(logging.WARNING):
+        manifest = InstrumentManifest.from_headers("Fac", "Cam", headers)
+    assert manifest.published_bands == {"r": "filter"}
+    assert "Fac/Cam band g" in caplog.text and "'warp'" in caplog.text
