@@ -38,7 +38,10 @@ def find_stellar_models(base_dir=None):
 
 
 def select_models_interactive(model_dirs):
-    """Present spectral grid options to user and get selection."""
+    """Present spectral grid options and ask until the answer is 'all' or valid grid numbers.
+
+    The grids are returned in the order typed.
+    """
     print("\nAvailable stellar spectral grids:")
     print("-" * 50)
     for idx, (name, path) in enumerate(model_dirs, start=1):
@@ -50,17 +53,16 @@ def select_models_interactive(model_dirs):
         print(f"{idx}. {name} ({n_models} model spectra)")
 
     print("\nEnter spectral grid numbers (comma-separated) or 'all':")
-    user_input = input("> ").strip()
-
-    if user_input.lower() == "all":
-        return model_dirs
-
-    try:
-        indices = [int(x.strip()) - 1 for x in user_input.split(",")]
-    except ValueError:
-        print("Invalid input. Using all spectral grids.")
-        return model_dirs
-    return [model_dirs[i] for i in indices if 0 <= i < len(model_dirs)]
+    while True:
+        user_input = input("> ").strip()
+        if user_input.lower() == "all":
+            return model_dirs
+        tokens = [x.strip() for x in user_input.split(",")]
+        valid = all(t.isdecimal() and 1 <= int(t) <= len(model_dirs) for t in tokens)
+        if valid and len(set(map(int, tokens))) == len(tokens):
+            return [model_dirs[int(t) - 1] for t in tokens]
+        print(f"Invalid selection {user_input!r}: enter distinct numbers from 1 to "
+              f"{len(model_dirs)}, comma-separated, or 'all'.")
 
 
 def load_model_data(model_path):

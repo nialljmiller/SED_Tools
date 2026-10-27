@@ -216,3 +216,28 @@ def test_sed_tools_mesa_prepare_exit_status_is_1_on_failure(tmp_path):
                            "--grid", "Plain", "--output", str(tmp_path / "out")],
                           cwd=root, capture_output=True, text=True, stdin=subprocess.DEVNULL)
     assert done.returncode == 1 and "offers a single variant" in done.stderr
+
+
+# ----------------------------------------------------------------------
+# 3. Combine menu: invalid input asks again, never selects everything
+# ----------------------------------------------------------------------
+def test_combine_menu_asks_again_until_the_selection_is_valid(tmp_path, monkeypatch, capsys):
+    from sed_tools.combine_stellar_atm import select_models_interactive
+
+    grids = [(name, str(tmp_path / name)) for name in ("A", "B", "C")]
+    # Empty input and a bad token used to combine every grid; out-of-range
+    # numbers were dropped silently. A repeated grid is refused too.
+    answer(monkeypatch, "", "two", "1,", "0", "4", "1,9", "2,2", "3,1")
+    assert select_models_interactive(grids) == [grids[2], grids[0]]  # in the order typed
+    out = capsys.readouterr().out
+    for reply in ("''", "'two'", "'1,'", "'0'", "'4'", "'1,9'", "'2,2'"):
+        assert f"Invalid selection {reply}: enter distinct numbers from 1 to 3, comma-separated, or 'all'." in out
+    assert "Using all" not in out
+
+
+def test_combine_menu_all_still_selects_every_grid(tmp_path, monkeypatch):
+    from sed_tools.combine_stellar_atm import select_models_interactive
+
+    grids = [(name, str(tmp_path / name)) for name in ("A", "B")]
+    answer(monkeypatch, "ALL")
+    assert select_models_interactive(grids) == grids
