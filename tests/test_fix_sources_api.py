@@ -327,6 +327,16 @@ def test_photometry_takes_several_name_path_tuples(evaluated, bands):
     assert magnitudes(evaluated.photometry((("V", v), ("B", b)))) == expected  # one tuple of specs
 
 
+def test_a_lone_pair_of_names_stays_two_filters(bands):
+    # ("V", "B") must not become filter "B" labelled "V": only a path makes a (name, path) spec.
+    from sed_tools.models import _normalize_filter_sequence
+
+    v, _ = bands
+    assert _normalize_filter_sequence([("V", "B")]) == ["V", "B"]
+    assert _normalize_filter_sequence([("V", str(v))]) == [("V", str(v))]
+    assert _normalize_filter_sequence([("V", v)]) == [("V", v)]
+
+
 def test_photometry_plain_paths_and_sequences_of_them_are_unchanged(evaluated, bands):
     v, b = bands
     plain = magnitudes(evaluated.photometry(str(v), str(b)))

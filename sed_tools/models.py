@@ -758,12 +758,15 @@ def _build_filter_index(root: Union[str, os.PathLike[str]]) -> Dict[str, List[Pa
 def _normalize_filter_sequence(filters: Sequence[FilterSpec]) -> List[FilterSpec]:
     """The filter specs given; a lone list, set or tuple of specs is unpacked.
 
-    A lone ``(name, path)`` tuple is one spec, not two.
+    A lone ``(name, path)`` tuple is one spec when its second item is a path:
+    a path object, or a string naming an existing file. ``("V", "B")`` stays
+    two filter names.
     """
     if len(filters) == 1 and isinstance(filters[0], (list, tuple, set)):
         only = filters[0]
         is_named_path = (isinstance(only, tuple) and len(only) == 2 and isinstance(only[0], str)
-                         and isinstance(only[1], (str, os.PathLike)))
+                         and (isinstance(only[1], os.PathLike)
+                              or (isinstance(only[1], str) and os.path.isfile(only[1]))))
         if not is_named_path:
             return list(only)  # type: ignore[return-value]
     return list(filters)
