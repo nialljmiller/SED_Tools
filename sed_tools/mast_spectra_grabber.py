@@ -47,7 +47,6 @@ HEAD_RE = re.compile(
 )
 
 SCRIPT_URL_RE = re.compile(r'https?://\S+?\.txt(?:\.gz)?', re.IGNORECASE)
-MET_TAG_RE    = re.compile(r"/(m[+\-]\d\.\d{2})/", re.IGNORECASE)
 
 # Errors that make one spectrum fail without stopping the rest of the download
 _SPECTRUM_ERRORS = (requests.RequestException, OSError, ValueError)
