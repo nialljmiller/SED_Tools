@@ -153,14 +153,18 @@ def display_colors(curves: Mapping[str, Curve]) -> Dict[str, Dict[str, Union[str
 
 
 def instrument_colors(curve_paths: Sequence[Union[str, Path]]) -> Dict[str, Dict[str, Union[str, float]]]:
-    """:func:`display_colors` for curve files, read as SED_Tools reads them (Å)."""
+    """:func:`display_colors` for curve files, read as SED_Tools reads them (Å).
+
+    Every curve must be readable: false colours follow the order of all the
+    instrument's bands, so leaving one out would change the others.
+    """
     from .flux_cube_tool import load_filter_curve
 
     curves = {}
     for path in curve_paths:
         try:
             curve = load_filter_curve(str(path))
-        except (OSError, ValueError):
-            continue
+        except ValueError as exc:
+            raise ValueError(f"{path}: cannot read the curve to colour it: {exc}") from exc
         curves[Path(path).stem] = (curve.wavelength, curve.transmission)
     return display_colors(curves)
