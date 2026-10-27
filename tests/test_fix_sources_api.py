@@ -200,3 +200,18 @@ def test_mast_lookup_table_keeps_plus_signs_dropped_by_the_file_names(tmp_path):
         "bosz2024_ms_t3600_g-0.5_m_0.00_a_0.25_c-0.75_v1_r500_resam.txt":
             ("3600", "-0.50", "0.00", "0.25", "-0.75", "1", "ms", "r500"),
     }
+
+
+# ---------------------------------------------------------------- 6. MSG grid names
+
+def test_msg_grid_names_keep_their_last_characters(tmp_path, monkeypatch):
+    index_url = "http://user.astro.wisc.edu/~townsend/static.php?ref=msg-grids"
+    names = ["sg-OSTAR2002-high", "sg-CAP18-high", "sg-Test-h5", "sg-Grid-1.5", "sg-demo"]
+    links = "".join(f'<a href="http://user.astro.wisc.edu/msg/grids/{n}.h5">{n}</a>' for n in names)
+    session = FakeSession({index_url: FakeResponse(200, links)})
+    monkeypatch.setattr(msg.requests, "Session", lambda: session)
+
+    grabber = msg.MSGSpectraGrabber(base_dir=str(tmp_path), max_workers=1)
+
+    assert grabber.discover_models() == sorted(names)
+    assert grabber.model_urls["sg-OSTAR2002-high"] == "http://user.astro.wisc.edu/msg/grids/sg-OSTAR2002-high.h5"

@@ -222,7 +222,7 @@ class MSGSpectraGrabber:
         for link in soup.find_all("a", href=True):
             href = link["href"]
             if "/msg/grids/" in href and href.endswith(".h5"):
-                name = os.path.basename(href).rstrip(".h5")
+                name = os.path.basename(href).removesuffix(".h5")
                 models.append({"name": name, "url": urljoin(self.index_url, href)})
         self.model_urls = {m["name"]: m["url"] for m in models}
         if not self.model_urls:
