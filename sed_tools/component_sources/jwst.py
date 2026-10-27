@@ -38,6 +38,7 @@ import numpy as np
 
 from ..filter_components import FILTER, OPTICS, QE, InstrumentManifest, add_component
 from ..filter_metadata import PHOTON
+from ._common import product
 from ._original import safe_member
 
 logger = logging.getLogger(__name__)
@@ -103,16 +104,6 @@ def _read(path: Path) -> Tuple[np.ndarray, np.ndarray]:
     return wl[order], tr[order]
 
 
-def _product(curves: List[Tuple[np.ndarray, np.ndarray]]) -> Tuple[np.ndarray, np.ndarray]:
-    lo = max(c[0][0] for c in curves)
-    hi = min(c[0][-1] for c in curves)
-    grid = np.unique(np.concatenate([c[0][(c[0] >= lo) & (c[0] <= hi)] for c in curves]))
-    out = np.ones_like(grid)
-    for wl, tr in curves:
-        out *= np.interp(grid, wl, tr)
-    return grid, out
-
-
 def _band_factors(inst: str, band: str, paths: Dict[str, str]) -> Optional[Dict[str, List[str]]]:
     """Reference-file keys per role for one imaging band (None if not imaging)."""
     key = band.lower()
@@ -167,7 +158,7 @@ def build(
                 if role == OPTICS:
                     curves.insert(0, ote)
                     sources.insert(0, f"Pandeia {REFDATA_VERSION} jwst/telescope/{ote_file.name}")
-                wl, tr = _product(curves) if len(curves) > 1 else curves[0]
+                wl, tr = product(curves)
                 add_component(inst_dir, role, wl, tr, band=band, name=band,
                               source="; ".join(sources), manifest=manifest)
         manifest.detector_type = PHOTON
