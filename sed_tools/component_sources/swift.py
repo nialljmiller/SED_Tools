@@ -19,11 +19,15 @@ from __future__ import annotations
 
 import gzip
 import io
+import logging
 from typing import Dict, Tuple
 
 import numpy as np
+from requests import RequestException
 
 from ._original import Component, Fetcher, Instrument, clean_curve, make_band, make_builder
+
+logger = logging.getLogger(__name__)
 
 PHOTON = "photon"
 
@@ -65,18 +69,24 @@ def _fits(raw: bytes):
 
 
 def caldb_get(fetch: Fetcher, path: str) -> Tuple[bytes, str]:
-    """Download a CALDB file from the first root that serves it; return (data, URL)."""
+    """Download a CALDB file from the first root that serves it; return (data, URL).
+
+    Each root that fails is named in a warning when a later one serves the
+    file, and in the error when none does.
+    """
     errors = []
     for root in CALDB_ROOTS:
         url = root + path
         try:
             data = fetch.get(url)
-        except Exception as exc:  # TLS/host failures and HTTP errors: try the mirror
+        except (RequestException, ValueError) as exc:  # TLS, host and HTTP errors; HTML instead of data
             errors.append(f"{url}: {exc}")
             continue
         if not data.startswith(b"SIMPLE  ="):
             errors.append(f"{url}: not a FITS file")
             continue
+        if errors:
+            logger.warning("UVOT CALDB: %s; using %s", "; ".join(errors), url)
         return data, url
     raise RuntimeError("UVOT CALDB file unavailable: " + "; ".join(errors))
 

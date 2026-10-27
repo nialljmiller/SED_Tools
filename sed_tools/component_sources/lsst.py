@@ -34,7 +34,6 @@ instruments share the ``lsst_std`` site.  An existing site is never rewritten.
 from __future__ import annotations
 
 import io
-import logging
 from pathlib import Path
 from typing import Dict, Optional, Tuple, Union
 
@@ -44,8 +43,6 @@ from ..filter_components import (ATMOSPHERE, FILTER, OPTICS, QE, SHARED, Atmosph
                                  InstrumentManifest, add_component)
 from ..filter_metadata import (ENERGY, PHOTON, SOURCE_ASSUMED, SOURCE_SVO, SVOMetadataClient,
                                svo_components_header, write_filter_file)
-
-logger = logging.getLogger(__name__)
 
 FACILITY = "LSST"
 BANDS = ("u", "g", "r", "i", "z", "y")
@@ -180,6 +177,15 @@ def build(
 
         write_filter_index(instrument_dir, instrument)
 
+    _register_components(instrument_dir, instrument, tag, suffix, filters, optics_parts, detector)
+    atm_root = Path(atmosphere_root) if atmosphere_root else filter_root.parent / "atmospheres"
+    _write_site(atm_root / ATMOSPHERE_SITE, atmospheres, tag)
+    return instrument_dir
+
+
+def _register_components(instrument_dir: Path, instrument: str, tag: str, suffix: str, filters, optics_parts,
+                         detector) -> None:
+    """The release's filter, optics (mirrors x lenses) and detector QE, in a fresh manifest."""
     manifest = InstrumentManifest.from_published(instrument_dir)
     manifest.components = {}
     for band in BANDS:
@@ -205,11 +211,11 @@ def build(
     manifest.notes = NOTES[instrument]
     manifest.save(instrument_dir)
 
-    # Rubin's fiducial atmospheres as an atmosphere "site" (written once).
-    atm_root = Path(atmosphere_root) if atmosphere_root else filter_root.parent / "atmospheres"
-    site_dir = atm_root / ATMOSPHERE_SITE
+
+def _write_site(site_dir: Path, atmospheres, tag: str) -> None:
+    """Rubin's fiducial atmospheres as the atmosphere site ``lsst_std``, written once and never rewritten."""
     if (site_dir / "manifest.json").exists():
-        return instrument_dir
+        return
     site_dir.mkdir(parents=True, exist_ok=True)
     entries = []
     for name, airmass in ATMOSPHERES:
@@ -228,7 +234,6 @@ def build(
         source=f"Rubin fiducial atmosphere (MODTRAN, with aerosols), lsst/throughputs {tag}",
         notes="Cerro Pachon; fixed water vapour as in Rubin's baseline. " + AIRMASS_EVIDENCE,
     ).save(site_dir)
-    return instrument_dir
 
 
 def validate(instrument_dir: Union[str, Path], tag: Optional[str] = None, session=None,

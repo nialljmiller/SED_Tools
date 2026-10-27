@@ -131,9 +131,15 @@ def csp1(fetch: Fetcher) -> Instrument:
                       components="filter+optics+qe+atmosphere", sources=f"{src} (member {member})")
         b.atmosphere = "airmass=1.2"
         bands.append(b)
+    return Instrument("LCO", "CSP", bands, _csp1_notes(bands, comps, tel[2], raw_notes, checks),
+                      ground_based=True, components=comps, outside_range="error")
+
+
+def _csp1_notes(bands, comps, tel_note: str, raw_notes, checks) -> str:
+    """The CSP-I manifest notes: the package, the bands and their epochs, the components and checks."""
     with_tel = sorted({c.band for c in comps if c.name == "telescope"})
     clean = "; ".join(f"{b.name}: {b.clean_note}" for b in bands if b.clean_note)
-    note = (
+    return (
         "Carnegie Supernova Project I passbands from the CSP team's filter package "
         f"({PACKAGE}, README updated 03/16/2018; filters page {PAGE}; Krisciunas et al. 2017, {KRISCIUNAS}). "
         "TAMU scans (Rheault, Marshall, DePoy, Villanueva) with a 2.5 nm FWHM monochromator. Published curves "
@@ -155,7 +161,7 @@ def csp1(fetch: Fetcher) -> Instrument:
         "shared with the NIR bands): filter+optics+qe = the README's 'Raw optical Telescope+Camera+Filter "
         "scans' {band}_texas_WLcorr.txt (no atmosphere; sorted by wavelength"
         + (f"; {'; '.join(raw_notes)}" if raw_notes else "") + "); optics (file "
-        "telescope) = Telescope.txt 'Telescope throughput' (header: nm" + (f"; {tel[2]}" if tel[2] else "")
+        "telescope) = Telescope.txt 'Telescope throughput' (header: nm" + (f"; {tel_note}" if tel_note else "")
         + "), for the bands it covers ("
         + " ".join(with_tel) + "; it ends at 800 nm, so not i); optics+qe (file telescope_camera) = "
         "Telescope+Camera.txt 'Telescope and Camera together' (no header; nm by range, 302-900 nm). Both are "
@@ -174,7 +180,6 @@ def csp1(fetch: Fetcher) -> Instrument:
         "Contreras et al. 2010 guess), hfilter (undocumented) and the raw NIR *_texas_SWO/DUP.dat scans "
         "(the README calls them 'raw NIR filter scans' without saying whether they include the telescope "
         "and camera).")
-    return Instrument("LCO", "CSP", bands, note, ground_based=True, components=comps, outside_range="error")
 
 
 def csp2(fetch: Fetcher) -> Instrument:

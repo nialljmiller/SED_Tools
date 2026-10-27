@@ -15,7 +15,6 @@ only within its validity range (see :data:`VALID_NM`).
 
 from __future__ import annotations
 
-import logging
 from pathlib import Path
 from typing import Dict, Tuple
 
@@ -23,8 +22,6 @@ import numpy as np
 
 from ..filter_components import InstrumentManifest
 from ._original import Component, Fetcher, Instrument, clean_curve, make_band, write_instrument
-
-logger = logging.getLogger(__name__)
 
 FACILITY = "Cassini"
 VOLUME = "https://pds-rings.seti.org/holdings/volumes/COISS_0xxx/COISS_0011/"
@@ -147,11 +144,16 @@ def _camera(camera: str, fetch: Fetcher) -> Instrument:
     ow, ot, _ = clean_curve(optics[:, 0] * 10.0, optics[:, 1])
     comps.append(Component("optics", ow, ot, name="optics",
                            source=f"{optics_url} (optics transmission; nm converted to Angstrom)"))
+    return Instrument(FACILITY, camera, bands, _camera_notes(camera, bands, qe_col, optics_url, skipped),
+                      ground_based=False, components=comps, outside_range="error")
 
+
+def _camera_notes(camera: str, bands, qe_col: int, optics_url: str, skipped) -> str:
+    """The manifest notes of one camera: sources, filter pairs, components and their validity."""
     cam = "NAC" if camera == "ISS_NAC" else "WAC"
     pair_map = ", ".join(f"{b}={'x'.join(p.upper() for p in filter_pair(camera, b))}" for b in BANDS[camera])
     clean = "; ".join(f"{b.name}: {b.clean_note}" for b in bands if b.clean_note)
-    note = (
+    return (
         f"Cassini ISS {cam} from the PDS Ring-Moon Systems Node calibration volume COISS_0011 (calib/efficiency; "
         "requests need a User-Agent header). Published curves: column 2 of systrans/<cam><f1><f2>_systrans.tab, "
         "the system transmission QE x optics x filter1 x filter2 (efficiency_info.txt; e-/photon, so "
@@ -175,8 +177,6 @@ def _camera(camera: str, fetch: Fetcher) -> Instrument:
         + ("; ".join(skipped) or "none") + ". DetectorType photon: the ISS theoretical basis (COISS_0011 "
         "document/theoretical_basis.tex eq. 1) counts electrons as the integral of photon radiance x optics x "
         "filters x QE (e-/photon). Polarizer combinations (P0, P60, P120, IRP0, IRP90) are not among the bands.")
-    return Instrument(FACILITY, camera, bands, note, ground_based=False, components=comps,
-                      outside_range="error")
 
 
 def iss_nac(fetch: Fetcher) -> Instrument:
