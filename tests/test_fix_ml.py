@@ -4,6 +4,10 @@
 Tests that need torch (or optuna) skip without it; the rest are torch-free.
 """
 
+import json
+import shutil
+from pathlib import Path
+
 import numpy as np
 import pytest
 
@@ -162,3 +166,121 @@ def test_menus_count_every_spectrum_of_a_hash_headed_lookup(tmp_path, cube_write
         out = capsys.readouterr().out
         assert f"{'hashed':30s} (3 SEDs)" in out
         assert f"{'plain':30s} (2 SEDs)" in out
+
+
+# ---------------------------------------------------------------------
+# ml_generator --auto: FluxCubeDataset, and models SEDGenerator can load
+# ---------------------------------------------------------------------
+
+GOLDEN_KURUCZ = Path(__file__).resolve().parent / "golden" / "inputs" / "stellar_models" / "Kurucz2003all"
+
+
+@pytest.fixture
+def kurucz_library(tmp_path):
+    """The 12-spectrum golden Kurucz grid (3 Teff x 2 logg x 2 [M/H]) with its flux cube."""
+    from sed_tools.precompute_flux_cube import precompute_flux_cube
+
+    library = tmp_path / "Kurucz2003all"
+    shutil.copytree(GOLDEN_KURUCZ, library)
+    precompute_flux_cube(str(library), str(library / "flux_cube.bin"))
+    return library
+
+
+def test_flux_cube_dataset_gives_each_node_its_own_spectrum(kurucz_library):
+    # It used to read nw contiguous values per node, but the cube is stored
+    # as (nw, nm, nl, nt), so each "spectrum" mixed stars and wavelengths.
+    pytest.importorskip("torch")
+    from sed_tools.flux_cube_tool import FluxCube
+    from sed_tools.ml_utils import FluxCubeDataset
+
+    cube = FluxCube.from_file(str(kurucz_library / "flux_cube.bin"))
+    dataset = FluxCubeDataset(str(kurucz_library))
+
+    nt, nl, nm, nw = cube.flux.shape
+    assert (dataset.nt, dataset.nl, dataset.nm, dataset.nw) == (nt, nl, nm, nw) == (3, 2, 2, 1199)
+    np.testing.assert_array_equal(dataset.wavelengths, cube.wavelengths)
+    assert len(dataset) == 12
+    for idx in range(12):
+        i_t, i_l, i_m = idx // (nl * nm), idx // nm % nl, idx % nm
+        params, flux = dataset[idx]
+        assert params.tolist() == [cube.teff_grid[i_t], cube.logg_grid[i_l], cube.meta_grid[i_m]]
+        np.testing.assert_array_equal(flux.numpy(), cube.flux[i_t, i_l, i_m].astype(np.float32))
+
+
+@pytest.fixture
+def cpu_torch(monkeypatch):
+    """torch pinned to the CPU through ml_utils.get_device; matplotlib on Agg."""
+    torch = pytest.importorskip("torch")
+    pytest.importorskip("sklearn")
+    import matplotlib
+    matplotlib.use("Agg")
+    from sed_tools import ml_utils
+
+    monkeypatch.setattr(ml_utils, "get_device", lambda: torch.device("cpu"))
+    return torch
+
+
+def test_auto_train_generator_saves_a_model_sedgenerator_and_the_api_load(cpu_torch, kurucz_library, tmp_path):
+    # It used to save a ResidualMLP's weights as model_best.pt and overwrite
+    # config.json with keys of its own, so nothing could load the model.
+    pytest.importorskip("optuna")
+    from sed_tools import api, ml
+
+    output = tmp_path / "base" / "models" / "auto"
+    generator = ml.auto_train_generator(str(kurucz_library), str(output), n_trials=2, epochs=2)
+
+    assert isinstance(generator, mg.SEDGenerator)
+    assert sorted(p.name for p in output.iterdir()) == [
+        "config.json", "model.pt", "prediction_examples.png", "training_plots.png"]
+    config = json.loads((output / "config.json").read_text())
+    assert sorted(config) == ["architecture", "framework", "model_type", "parameter_ranges",
+                              "scaler_params", "training_params", "version", "wavelength_grid"]
+    assert (config["model_type"], config["version"], config["framework"]) == ("sed_generator", "1.0.0", "pytorch")
+    # The scalers are those of SEDGenerator's own preparation of the cube (11 usable spectra)
+    reference = mg.SEDGenerator()
+    params, flux, masks = reference._prepare_training_data(str(kurucz_library), 10000)
+    reference._normalise_training_data(params, flux, masks, str(kurucz_library))
+    assert len(params) == 11
+    assert config["scaler_params"] == pytest.approx(reference.scaler_params, rel=1e-6)
+    assert [m["name"] for m in mg.SEDGenerator.list_models(str(output.parent))] == ["auto"]
+
+    wl, flux_out = mg.SEDGenerator(output).generate(6000.0, 4.25, -0.25)
+    assert len(wl) == len(flux_out) == 1000
+    assert np.all(np.isfinite(flux_out)) and np.all(flux_out > 0)
+    wl_api, flux_api = api.MLGenerator(base_dir=tmp_path / "base").load("auto").generate(
+        teff=6000.0, logg=4.25, metallicity=-0.25)
+    np.testing.assert_array_equal(wl_api, wl)
+    np.testing.assert_array_equal(flux_api, flux_out)
+
+
+def test_ml_generator_auto_names_the_extra_when_optuna_is_missing(monkeypatch, capsys):
+    import importlib.util
+    import sys
+    from sed_tools import cli
+
+    real_find_spec = importlib.util.find_spec
+    monkeypatch.setattr(importlib.util, "find_spec",
+                        lambda name, *args: None if name == "optuna" else real_find_spec(name, *args))
+    monkeypatch.setattr(sys, "argv", ["sed-tools", "ml_generator", "--auto", "--library", "lib", "--output", "out"])
+
+    assert cli.main() == 1
+    assert "pip install 'sed-tools[ml-tune]'" in capsys.readouterr().out
+
+
+def test_optuna_is_an_optional_extra_only():
+    import tomllib
+
+    project = tomllib.loads((Path(__file__).resolve().parents[1] / "pyproject.toml").read_text())["project"]
+    assert project["optional-dependencies"]["ml-tune"] == ["optuna>=3"]
+    assert not any("optuna" in dep for dep in project["dependencies"] + project["optional-dependencies"]["full"])
+
+
+def test_auto_trainer_stops_on_a_trial_with_no_usable_epoch(cpu_torch, tiny_library, tmp_path, monkeypatch):
+    pytest.importorskip("optuna")
+    from sed_tools.ml_optimized import AutoTrainer
+
+    monkeypatch.setattr(mg.SEDGeneratorNetwork, "__call__", lambda self, x: self.model(x) * float("nan"))
+
+    with pytest.raises(RuntimeError, match=r"Trial 0 \{'hidden_dim': .*\} produced no usable epoch"):
+        AutoTrainer(str(tiny_library)).train_best(str(tiny_library), str(tmp_path / "model"), n_trials=1, epochs=1)
+    assert not (tmp_path / "model").exists()

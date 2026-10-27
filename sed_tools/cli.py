@@ -1596,7 +1596,7 @@ def _cmd_ml_generator(args, parser):
         print("Error: --library and --output are required for --auto training.")
         return 1
     if importlib.util.find_spec("optuna") is None:
-        print("Error: --auto training needs the optuna package, which is not installed (pip install optuna).")
+        print("Error: --auto training needs the optuna package, which is not installed (pip install 'sed-tools[ml-tune]').")
         return 1
     from .ml import auto_train_generator
     auto_train_generator(library=args.library, output=args.output)

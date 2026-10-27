@@ -282,7 +282,13 @@ def auto_train_generator(
     epochs: int = 100,
 ) -> Any:
     """
-    Train a generator using automated hyperparameter optimization and GPU acceleration.
+    Train a generator after an optuna search for its hyperparameters.
+
+    Each trial trains a SEDGenerator network for a few epochs on the library.
+    The network shape, dropout and learning rate with the lowest validation
+    loss are then trained with SEDGenerator.train and saved to ``output``,
+    so SEDGenerator and api.MLGenerator load it like any other generator.
+    Needs optuna: ``pip install 'sed-tools[ml-tune]'``.
     
     Parameters
     ----------
@@ -293,32 +299,23 @@ def auto_train_generator(
     n_trials : int
         Number of hyperparameter optimization trials
     epochs : int
-        Number of epochs for final training
+        Maximum epochs for the final training
+
+    Returns
+    -------
+    SEDGenerator
+        The trained generator
     """
     from .ml_optimized import AutoTrainer
-    import json
-    
-    os.makedirs(output, exist_ok=True)
     
     trainer = AutoTrainer(library, task="generator")
-    model, best_params = trainer.train_best(
+    generator, _ = trainer.train_best(
         library_path=library,
         output_path=output,
         n_trials=n_trials,
         epochs=epochs
     )
-    
-    # Save config
-    config = {
-        "architecture": "ResidualMLP",
-        "best_params": best_params,
-        "task": "generator",
-        "framework": "PyTorch-Optimized"
-    }
-    with open(os.path.join(output, "config.json"), "w") as f:
-        json.dump(config, f, indent=4)
-        
-    return model
+    return generator
 
 
 # =============================================================================

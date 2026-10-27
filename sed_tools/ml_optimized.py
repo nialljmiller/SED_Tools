@@ -1,141 +1,86 @@
-import torch
-import torch.nn as nn
-import torch.optim as optim
+"""
+Hyperparameter search for the SED generator (``sed-tools ml_generator --auto``).
+
+Each optuna trial trains a SEDGenerator network briefly on the library; the
+network shape, dropout and learning rate with the lowest validation loss are
+then trained in full by SEDGenerator.train, so the saved model is an ordinary
+SEDGenerator model.
+
+Needs optuna: ``pip install 'sed-tools[ml-tune]'``.
+"""
+
 import optuna
-from pathlib import Path
-from .ml_utils import get_device, FluxCubeDataset, create_dataloaders
-from tqdm import tqdm
 
-class ResidualBlock(nn.Module):
-    def __init__(self, dim, dropout=0.1):
-        super().__init__()
-        self.block = nn.Sequential(
-            nn.Linear(dim, dim),
-            nn.BatchNorm1d(dim),
-            nn.LeakyReLU(0.1),
-            nn.Dropout(dropout),
-            nn.Linear(dim, dim),
-            nn.BatchNorm1d(dim)
-        )
-        self.activation = nn.LeakyReLU(0.1)
+from .ml_sed_generator import SEDGenerator, SEDGeneratorNetwork, _optimizer_and_scheduler
+from .ml_utils import data_loaders, fit
 
-    def forward(self, x):
-        return self.activation(x + self.block(x))
+# Epochs each trial trains for before its validation loss is compared
+TRIAL_EPOCHS = 10
+# SEDGenerator.train's defaults; trials and the final training both use them
+BATCH_SIZE = 64
+MAX_SAMPLES = 10000
 
-class SEDModel(nn.Module):
-    """Enhanced Neural Network for SED tasks."""
-    def __init__(self, input_dim: int, output_dim: int, hidden_dim: int = 512, num_blocks: int = 3, dropout: float = 0.1):
-        super().__init__()
-        self.input_layer = nn.Sequential(
-            nn.Linear(input_dim, hidden_dim),
-            nn.BatchNorm1d(hidden_dim),
-            nn.LeakyReLU(0.1)
-        )
-        
-        self.blocks = nn.ModuleList([ResidualBlock(hidden_dim, dropout) for _ in range(num_blocks)])
-        
-        self.output_layer = nn.Linear(hidden_dim, output_dim)
 
-    def forward(self, x):
-        x = self.input_layer(x)
-        for block in self.blocks:
-            x = block(x)
-        return self.output_layer(x)
+def _hidden_layers(params):
+    """The SEDGenerator hidden layers for a trial's parameters: num_blocks layers of hidden_dim."""
+    return [params["hidden_dim"]] * params["num_blocks"]
+
 
 class AutoTrainer:
-    """Automated training pipeline with hyperparameter optimization."""
+    """Tune SEDGenerator's hyperparameters with optuna, then train it with the best."""
     def __init__(self, library_path: str, task: str = "generator"):
+        from .ml_utils import get_device
+
         self.library_path = library_path
         self.task = task
         self.device = get_device()
         print(f"Using device: {self.device}")
 
-    def objective(self, trial, train_loader, val_loader, input_dim, output_dim):
-        # Hyperparameters to optimize
-        hidden_dim = trial.suggest_int("hidden_dim", 128, 1024, step=128)
-        num_blocks = trial.suggest_int("num_blocks", 1, 5)
-        lr = trial.suggest_float("lr", 1e-5, 1e-2, log=True)
-        dropout = trial.suggest_float("dropout", 0.0, 0.5)
-        
-        model = SEDModel(input_dim, output_dim, hidden_dim, num_blocks, dropout).to(self.device)
-        optimizer = optim.Adam(model.parameters(), lr=lr)
-        criterion = nn.MSELoss()
-        
-        # Short training for optimization
-        for epoch in range(10):  # 10 epochs per trial
-            model.train()
-            for x, y in train_loader:
-                x, y = x.to(self.device), y.to(self.device)
-                optimizer.zero_grad()
-                pred = model(x)
-                loss = criterion(pred, y)
-                loss.backward()
-                optimizer.step()
-                
-        # Validation
-        model.eval()
-        val_loss = 0
-        with torch.no_grad():
-            for x, y in val_loader:
-                x, y = x.to(self.device), y.to(self.device)
-                pred = model(x)
-                val_loss += criterion(pred, y).item()
-        
-        return val_loss / len(val_loader)
+    def objective(self, trial, train_loader, val_loader, output_dim):
+        """Train one trial's network for TRIAL_EPOCHS and return its best validation loss."""
+        params = {
+            "hidden_dim": trial.suggest_int("hidden_dim", 128, 1024, step=128),
+            "num_blocks": trial.suggest_int("num_blocks", 1, 5),
+            "lr": trial.suggest_float("lr", 1e-5, 1e-2, log=True),
+            "dropout": trial.suggest_float("dropout", 0.0, 0.5),
+        }
+        model = SEDGeneratorNetwork(output_dim, hidden_layers=_hidden_layers(params), dropout=params["dropout"])
+        optimizer, scheduler = _optimizer_and_scheduler(model, params["lr"])
+        history, best_val_loss = fit(
+            model, train_loader, val_loader, optimizer, scheduler,
+            epochs=TRIAL_EPOCHS, patience=TRIAL_EPOCHS, verbose=False, device=self.device, progress="",
+        )
+        if not history['train_loss']:
+            raise RuntimeError(
+                f"Trial {trial.number} {params} produced no usable epoch (every training "
+                "or validation batch had a NaN loss)"
+            )
+        return best_val_loss
 
     def train_best(self, library_path, output_path, n_trials=20, epochs=100):
-        dataset = FluxCubeDataset(library_path)
-        # For simplicity in this example, we assume generator task (params -> flux)
-        # A more robust version would handle completer (flux_part + params -> flux_full)
-        
-        input_dim = 3 # Teff, logg, [M/H]
-        output_dim = dataset.nw
-        
-        train_loader, val_loader = create_dataloaders(dataset)
-        
+        """
+        Run ``n_trials`` trials, then train a SEDGenerator with the best
+        parameters for up to ``epochs`` epochs and save it to ``output_path``.
+
+        Returns the trained SEDGenerator and the best parameters
+        (hidden_dim, num_blocks, lr, dropout).
+        """
+        train_set, val_set = SEDGenerator()._training_split(library_path, MAX_SAMPLES)
+        train_loader, val_loader = data_loaders(train_set, val_set, BATCH_SIZE)
+        output_dim = val_set[1].shape[1]
+
         print(f"Starting hyperparameter optimization ({n_trials} trials)...")
         study = optuna.create_study(direction="minimize")
-        study.optimize(lambda trial: self.objective(trial, train_loader, val_loader, input_dim, output_dim), n_trials=n_trials)
-        
-        print("Best hyperparameters:", study.best_params)
-        
-        # Train final model with best params
-        best_params = study.best_params.copy()
-        lr = best_params.pop('lr')
-        model = SEDModel(input_dim, output_dim, **best_params).to(self.device)
-        optimizer = optim.Adam(model.parameters(), lr=lr)
-        scheduler = optim.lr_scheduler.OneCycleLR(optimizer, max_lr=1e-3, steps_per_epoch=len(train_loader), epochs=epochs)
-        criterion = nn.MSELoss()
-        
-        print(f"Training final model for {epochs} epochs...")
-        best_val_loss = float('inf')
-        
-        for epoch in range(epochs):
-            model.train()
-            train_loss = 0
-            for x, y in tqdm(train_loader, desc=f"Epoch {epoch+1}/{epochs}"):
-                x, y = x.to(self.device), y.to(self.device)
-                optimizer.zero_grad()
-                pred = model(x)
-                loss = criterion(pred, y)
-                loss.backward()
-                optimizer.step()
-                scheduler.step()
-                train_loss += loss.item()
-                
-            model.eval()
-            val_loss = 0
-            with torch.no_grad():
-                for x, y in val_loader:
-                    x, y = x.to(self.device), y.to(self.device)
-                    pred = model(x)
-                    val_loss += criterion(pred, y).item()
-            
-            val_loss /= len(val_loader)
-            if val_loss < best_val_loss:
-                best_val_loss = val_loss
-                torch.save(model.state_dict(), Path(output_path) / "model_best.pt")
-                
-            print(f"Epoch {epoch+1}: Train Loss: {train_loss/len(train_loader):.6f}, Val Loss: {val_loss:.6f}")
-            
-        return model, study.best_params
+        study.optimize(lambda trial: self.objective(trial, train_loader, val_loader, output_dim), n_trials=n_trials)
+        best_params = study.best_params
+        print("Best hyperparameters:", best_params)
+
+        print(f"Training final model for up to {epochs} epochs...")
+        generator = SEDGenerator()
+        generator.train(
+            library_path, output_path,
+            epochs=epochs, batch_size=BATCH_SIZE, learning_rate=best_params["lr"],
+            max_samples=MAX_SAMPLES, hidden_layers=_hidden_layers(best_params),
+            dropout=best_params["dropout"],
+        )
+        return generator, best_params

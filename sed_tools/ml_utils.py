@@ -1,7 +1,6 @@
 import torch
 import numpy as np
 import os
-import struct
 from torch.utils.data import Dataset, DataLoader, TensorDataset
 from typing import Dict, List, Optional, Tuple
 
@@ -16,8 +15,16 @@ def get_device():
     return torch.device("cpu")
 
 class FluxCubeDataset(Dataset):
-    """Memory-efficient dataset for reading from flux_cube.bin."""
+    """
+    The spectra of a library's flux_cube.bin, one grid node per item.
+
+    Item ``i`` is the node ``(i_t, i_l, i_m)`` with ``i = (i_t*nl + i_l)*nm + i_m``:
+    its (Teff, logg, [M/H]) and its flux on ``wavelengths``, both float32.
+    The whole cube is read into memory with ``FluxCube.from_file``.
+    """
     def __init__(self, library_path: str, max_samples: Optional[int] = None, transform=None):
+        from .flux_cube_tool import FluxCube
+
         self.library_path = library_path
         self.transform = transform
         
@@ -25,14 +32,13 @@ class FluxCubeDataset(Dataset):
         if not os.path.exists(cube_path):
             raise FileNotFoundError(f"flux_cube.bin not found in {library_path}")
             
-        with open(cube_path, 'rb') as f:
-            header = f.read(16)
-            self.nt, self.nl, self.nm, self.nw = struct.unpack('4i', header)
-            
-            self.teff_grid = np.fromfile(f, dtype=np.float64, count=self.nt)
-            self.logg_grid = np.fromfile(f, dtype=np.float64, count=self.nl)
-            self.meta_grid = np.fromfile(f, dtype=np.float64, count=self.nm)
-            self.wavelengths = np.fromfile(f, dtype=np.float64, count=self.nw)
+        cube = FluxCube.from_file(cube_path)
+        self.flux = cube.flux  # (nt, nl, nm, nw)
+        self.nt, self.nl, self.nm, self.nw = self.flux.shape
+        self.teff_grid = cube.teff_grid
+        self.logg_grid = cube.logg_grid
+        self.meta_grid = cube.meta_grid
+        self.wavelengths = cube.wavelengths
             
         self.total_size = self.nt * self.nl * self.nm
         self.indices = np.arange(self.total_size)
@@ -52,32 +58,14 @@ class FluxCubeDataset(Dataset):
         i_l = remainder // self.nm
         i_m = remainder % self.nm
         
-        # Read specific flux vector from binary file
-        # Offset: header (16) + grids (nt+nl+nm+nw)*8 + real_idx * nw * 8
-        offset = 16 + (self.nt + self.nl + self.nm + self.nw) * 8 + real_idx * self.nw * 8
-        
-        with open(os.path.join(self.library_path, "flux_cube.bin"), 'rb') as f:
-            f.seek(offset)
-            flux = np.fromfile(f, dtype=np.float64, count=self.nw)
-            
+        # A copy, so a transform that works in place cannot change the cube
+        flux = self.flux[i_t, i_l, i_m].copy()
         params = np.array([self.teff_grid[i_t], self.logg_grid[i_l], self.meta_grid[i_m]], dtype=np.float32)
         
         if self.transform:
             params, flux = self.transform(params, flux)
             
         return torch.from_numpy(params), torch.from_numpy(flux.astype(np.float32))
-
-def create_dataloaders(dataset, batch_size=64, val_split=0.2):
-    """Split dataset and create DataLoaders."""
-    from torch.utils.data import random_split
-    val_size = int(len(dataset) * val_split)
-    train_size = len(dataset) - val_size
-    train_ds, val_ds = random_split(dataset, [train_size, val_size])
-    
-    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=2)
-    val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False, num_workers=2)
-    
-    return train_loader, val_loader
 
 
 # ---------------------------------------------------------------------------
