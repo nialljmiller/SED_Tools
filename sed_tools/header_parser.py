@@ -14,12 +14,9 @@ the only place a developer needs to touch.
 
 from __future__ import annotations
 
-import re
-from typing import Dict, Optional
 import math
-import logging
-
-logger = logging.getLogger(__name__)
+import re
+from typing import Dict
 
 # =============================================================================
 # ALIAS TABLE
@@ -96,34 +93,36 @@ def parse_header(filepath: str) -> Dict[str, object]:
     dict
         Keys include at minimum 'teff', 'logg', 'metallicity' (all float).
         Additional keys depend on what the file header contains.
+
+    Raises
+    ------
+    OSError
+        If the file cannot be opened or read.
     """
     result: Dict[str, object] = {
         "teff":        float("nan"),
         "logg":        float("nan"),
         "metallicity": float("nan"),
     }
-    try:
-        with open(filepath, "r", encoding="utf-8", errors="ignore") as fh:
-            for line in fh:
-                stripped = line.strip()
-                if not stripped.startswith("#"):
-                    break
-                if "=" not in stripped:
-                    continue
-                raw_key, _, raw_val = stripped.lstrip("#").partition("=")
-                key_lower = raw_key.strip().lower()
-                # Strip parenthetical unit annotations: "15000 K (...)" → "15000"
-                val_clean = raw_val.split("(")[0].strip()
-                canonical = ALIASES.get(key_lower, key_lower)
+    with open(filepath, "r", encoding="utf-8", errors="ignore") as fh:
+        for line in fh:
+            stripped = line.strip()
+            if not stripped.startswith("#"):
+                break
+            if "=" not in stripped:
+                continue
+            raw_key, _, raw_val = stripped.lstrip("#").partition("=")
+            key_lower = raw_key.strip().lower()
+            # Strip parenthetical unit annotations: "15000 K (...)" → "15000"
+            val_clean = raw_val.split("(")[0].strip()
+            canonical = ALIASES.get(key_lower, key_lower)
 
-                if canonical in _NUMERIC_PARAMS:
-                    m = _NUM_RE.search(val_clean)
-                    parsed = float(m.group(0)) if m else float("nan")
-                    # never let nan overwrite an already-finite value
-                    if not (math.isnan(parsed) and not math.isnan(result.get(canonical, float("nan")))):
-                        result[canonical] = parsed
-                else:
-                    result[canonical] = val_clean
-    except Exception:
-        logger.debug("Could not parse header for %s", filepath, exc_info=True)
+            if canonical in _NUMERIC_PARAMS:
+                m = _NUM_RE.search(val_clean)
+                parsed = float(m.group(0)) if m else float("nan")
+                # never let nan overwrite an already-finite value
+                if not (math.isnan(parsed) and not math.isnan(result.get(canonical, float("nan")))):
+                    result[canonical] = parsed
+            else:
+                result[canonical] = val_clean
     return result
