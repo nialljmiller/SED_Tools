@@ -17,7 +17,9 @@ Filters:
 import argparse
 import csv
 import glob
+import importlib.util
 import json
+import logging
 import os
 import sys
 from pathlib import Path
@@ -31,22 +33,19 @@ from .mast_spectra_grabber import MASTSpectraGrabber
 from .models import FILTER_DIR_DEFAULT, STELLAR_DIR_DEFAULT
 from .msg_spectra_grabber import MSGSpectraGrabber
 from .njm_spectra_grabber import NJMSpectraGrabber
-from .precompute_flux_cube import precompute_flux_cube
 from .spectra_cleaner import clean_model_dir
 from .svo_regen_spectra_lookup import regenerate_lookup_table
 from .svo_spectra_grabber import SVOSpectraGrabber
 from .ui_utils import prompt_choice  # public, no leading underscore
-from .parsing import parse_numeric_range
-from .spectrum_io import build_h5_bundle, list_text_spectra, read_text_spectrum
+from .parsing import parse_multi_selection, parse_numeric_range
+from .spectrum_io import build_h5_bundle, read_text_spectrum
 from .terminal_plots import terminal_color_enabled
+
+logger = logging.getLogger(__name__)
 # ------------ Small Utils ------------
 
 def ensure_dir(path: str) -> None:
     os.makedirs(path, exist_ok=True)
-
-
-def list_txt_spectra(model_dir: str) -> List[str]:
-    return [path.name for path in list_text_spectra(model_dir)]
 
 
 def load_txt_spectrum(txt_path: str) -> Tuple[np.ndarray, np.ndarray]:
@@ -63,16 +62,17 @@ def build_h5_bundle_from_txt(model_dir: str, out_h5: str) -> None:
     print(f"[H5 bundle] Wrote {out_h5}")
 
 
-def _parse_range(raw: str) -> Optional[Tuple[float, float]]:
-    """Parse a user-entered range string like '3500,8000' or '3500 8000' or '3500-8000'.
-    
-    Returns (min, max) tuple or None if empty/invalid.
+def _ask_range(prompt: str) -> Optional[Tuple[float, float]]:
+    """Ask for a range like '3500,8000', '3500 8000' or '3500-8000' until one parses.
+
+    Returns (min, max), or None for a blank answer (no cut).
     """
-    parsed = parse_numeric_range(raw)
-    if parsed is not None or not raw.strip():
-        return parsed
-    print(f"  Could not parse range from '{raw}' — need two values (e.g. '3500,8000')")
-    return None
+    while True:
+        raw = input(prompt).strip()
+        parsed = parse_numeric_range(raw)
+        if parsed is not None or not raw:
+            return parsed
+        print(f"  Could not parse range from '{raw}' — need two values (e.g. '3500,8000')")
 
 
 def prompt_njm_axis_cuts(
@@ -107,10 +107,10 @@ def prompt_njm_axis_cuts(
     else:
         print("  (Could not fetch grid info — cuts will still work if lookup_table.csv is available)\n")
 
-    cuts['teff_range'] = _parse_range(input("  Teff range (e.g. '3500,8000') or blank for all: ").strip())
-    cuts['logg_range'] = _parse_range(input("  logg range (e.g. '3.5,5.0') or blank for all: ").strip())
-    cuts['meta_range'] = _parse_range(input("  [M/H] range (e.g. '-1.0,0.5') or blank for all: ").strip())
-    cuts['wl_range']   = _parse_range(input("  Wavelength range in Å (e.g. '3000,10000') or blank for all: ").strip())
+    cuts['teff_range'] = _ask_range("  Teff range (e.g. '3500,8000') or blank for all: ")
+    cuts['logg_range'] = _ask_range("  logg range (e.g. '3.5,5.0') or blank for all: ")
+    cuts['meta_range'] = _ask_range("  [M/H] range (e.g. '-1.0,0.5') or blank for all: ")
+    cuts['wl_range']   = _ask_range("  Wavelength range in Å (e.g. '3000,10000') or blank for all: ")
 
     if any(v is not None for v in cuts.values()):
         print(f"\n  Applied cuts:")
@@ -129,7 +129,6 @@ def prompt_njm_axis_cuts(
     return cuts
 
 
-
 # ------------ Workflow Runners ------------
 
 def run_rebuild_flow(
@@ -138,8 +137,45 @@ def run_rebuild_flow(
     rebuild_h5: bool = True,
     rebuild_flux_cube: bool = True
 ) -> None:
+    """Clean each chosen local grid and rebuild its lookup table, HDF5 bundle and flux cube.
+
+    Every grid that can be rebuilt is; then RuntimeError lists each grid that
+    could not be, and why.
+    """
     ensure_dir(base_dir)
 
+    cand = _rebuildable_grids(base_dir)
+    if not cand:
+        raise FileNotFoundError(f"No local spectral grids found under {base_dir}")
+
+    selected = models if models is not None else _ask_rebuild_selection(cand)
+    if not selected:
+        print("Nothing selected.")
+        return
+
+    failures = []
+    for model_name in selected:
+        print("\n" + "=" * 64)
+        print(f"[rebuild] {model_name}")
+        if model_name not in cand:
+            print(f"[rebuild] {model_name} is not a local spectral grid under {base_dir}")
+            failures.append(f"{model_name}: not a local spectral grid under {base_dir}")
+            continue
+        try:
+            problems = _rebuild_grid(os.path.join(base_dir, model_name), model_name,
+                                     rebuild_h5, rebuild_flux_cube)
+        except (ValueError, OSError, RuntimeError) as exc:
+            print(f"[rebuild] {model_name} failed: {exc}")
+            problems = [f"{type(exc).__name__}: {exc}"]
+        failures.extend(f"{model_name}: {problem}" for problem in problems)
+
+    if failures:
+        raise RuntimeError(f"Spectral grids not rebuilt ({len(failures)}): " + "; ".join(failures))
+    print("\nRebuild complete.")
+
+
+def _rebuildable_grids(base_dir: str) -> List[str]:
+    """Folders under ``base_dir`` holding .txt spectra or an .h5 file."""
     cand = []
     for name in sorted(os.listdir(base_dir)):
         p = os.path.join(base_dir, name)
@@ -149,71 +185,50 @@ def run_rebuild_flow(
         has_h5 = any(fn.lower().endswith(".h5") for fn in os.listdir(p))
         if has_txt or has_h5:
             cand.append(name)
+    return cand
 
-    if not cand:
-        print(f"No local spectral grids found under {base_dir}")
-        return
 
-    if models is None:
-        print("\nLocal spectral grids available for rebuild:")
-        print("-" * 64)
-        for i, m in enumerate(cand, 1):
-            print(f"{i:3d}. {m}")
-        print("\nSelect indices (comma / ranges like 3-6) or 'all':")
+def _ask_rebuild_selection(cand: List[str]) -> List[str]:
+    """Ask which grids to rebuild ('all', or numbers and ranges like 1,3-6) until the answer parses."""
+    print("\nLocal spectral grids available for rebuild:")
+    print("-" * 64)
+    for i, m in enumerate(cand, 1):
+        print(f"{i:3d}. {m}")
+    print("\nSelect indices (comma / ranges like 3-6) or 'all':")
+    while True:
         raw = input("> ").strip().lower()
         if raw == "all":
-            selected = cand
-        else:
-            idxs = []
-            for token in raw.split(","):
-                token = token.strip()
-                if "-" in token:
-                    a, b = token.split("-", 1)
-                    idxs += list(range(int(a), int(b)+1))
-                else:
-                    if token:
-                        idxs.append(int(token))
-            selected = [cand[i-1] for i in idxs if 1 <= i <= len(cand)]
-    else:
-        selected = models
-
-    if not selected:
-        print("Nothing selected.")
-        return
-
-    for model_name in selected:
-        print("\n" + "=" * 64)
-        print(f"[rebuild] {model_name}")
-        model_dir = os.path.join(base_dir, model_name)
-
-        summary = clean_model_dir(model_dir, try_h5_recovery=True, rebuild_lookup=True)
-        print(f"[clean] {model_name}: total={summary['total']}")
-
-        txts = glob.glob(os.path.join(model_dir, "*.txt"))
-        if not txts:
-            print(f"[rebuild] no spectra (.txt) present after cleaning; skipping {model_name}.")
-            continue
-
-        regenerate_lookup_table(model_dir)
-
-        if rebuild_h5:
-            out_h5 = os.path.join(model_dir, f"{model_name}.h5")
-            build_h5_bundle_from_txt(model_dir, out_h5)
-
-        if rebuild_flux_cube:
-            out_flux = os.path.join(model_dir, "flux_cube.bin")
-            precompute_flux_cube(model_dir, out_flux)
-
-    print("\nRebuild complete.")
+            return cand
+        try:
+            return [cand[i] for i in parse_multi_selection(raw, len(cand))]
+        except ValueError as exc:
+            print(f"  {exc}")
 
 
+def _rebuild_grid(model_dir: str, model_name: str, rebuild_h5: bool, rebuild_flux_cube: bool) -> List[str]:
+    """Clean one local grid and rebuild its products; returns what was not done (empty when complete)."""
+    from .api import _build_flux_cube, _unusable_after_cleaning
 
+    summary = clean_model_dir(model_dir, try_h5_recovery=True, rebuild_lookup=True)
+    print(f"[clean] {model_name}: total={summary['total']}")
 
+    if not glob.glob(os.path.join(model_dir, "*.txt")):
+        print(f"[rebuild] no spectra (.txt) present after cleaning; skipping {model_name}.")
+        return ["no spectra (.txt) present after cleaning"]
 
+    regenerate_lookup_table(model_dir)
 
+    if rebuild_h5:
+        out_h5 = os.path.join(model_dir, f"{model_name}.h5")
+        build_h5_bundle_from_txt(model_dir, out_h5)
 
+    if rebuild_flux_cube:
+        _build_flux_cube(model_dir)
 
-
+    unusable = _unusable_after_cleaning(summary)
+    if unusable:
+        return [f"{len(unusable)} spectra unusable after cleaning: {', '.join(unusable)}"]
+    return []
 
 
 class _ModelOption:
@@ -252,14 +267,15 @@ def _print_cleaning_report(summary: Dict) -> None:
 
     # Per-file outcome counts
     units_already_standard = (detected_wl == 'angstrom' and detected_flux == 'flam')
-    n_converted = len(summary.get('converted', []))
-    n_tagged    = len(summary.get('tagged', []))
-    n_recovered = len(summary.get('recovered', []))
-    n_skipped   = len(summary.get('skipped_already', []) or summary.get('skipped', []))
-    n_invalid   = len(summary.get('skipped_invalid', []) or summary.get('invalid', []))
-    n_index     = len(summary.get('skipped_index', []))
-    n_error     = len(summary.get('error', []))
+    n_converted = len(summary['converted'])
+    n_recovered = len(summary['recovered'])
+    n_skipped   = len(summary['skipped_already'])
+    n_invalid   = len(summary['skipped_invalid'])
+    n_index     = len(summary['skipped_index'])
+    n_error     = len(summary['error'])
 
+    # Files "converted" from units that were already Å and F_λ were only cleaned and tagged.
+    n_tagged = 0
     if n_converted > 0 and units_already_standard:
         n_tagged, n_converted = n_converted, 0
 
@@ -307,10 +323,10 @@ def _build_data_products(
     # Flux cube
     if not build_flux_cube:
         return
-    flux_cube_path = os.path.join(model_dir, "flux_cube.bin")
-    precompute_flux_cube(model_dir, flux_cube_path)
-    variants_index = os.path.join(model_dir, "variants_index.csv")
-    if os.path.exists(variants_index):
+    from .api import _build_flux_cube
+
+    if _build_flux_cube(model_dir).name == "variants_index.csv":
+        variants_index = os.path.join(model_dir, "variants_index.csv")
         with open(variants_index) as vf:
             header = vf.readline()
             vrows = list(csv.DictReader(vf, fieldnames=[
@@ -320,12 +336,10 @@ def _build_data_products(
         for row in vrows:
             vname = row.get("variant_name", row.get("path", "?"))
             print(f"  -> {os.path.join(model_dir, vname)}/")
-        print(f"\n  Point MESA Colors to one of the above subdirectories.")
+        print("\n  Point MESA Colors to one of the above subdirectories.")
         print(f"  See {variants_index} for the full inventory.")
-    elif os.path.exists(flux_cube_path):
-        print(f"Flux cube     : flux_cube.bin")
     else:
-        print(f"Flux cube     : not built")
+        print("Flux cube     : flux_cube.bin")
 
 
 def run_spectra_flow(
@@ -336,96 +350,141 @@ def run_spectra_flow(
     force_bundle_h5: bool = True,
     build_flux_cube: bool = True,
 ) -> None:
+    """Discover spectral grids, then download, clean and build each chosen one.
+
+    A grid that cannot be completed is reported and the rest are processed;
+    then RuntimeError lists every grid that was not completed.
+    """
     ensure_dir(base_dir)
 
-    # Parse source list
-    if source.lower() == "all":
-        src_list = ["njm", "svo", "msg", "mast"]
-    elif source.lower() == "both":
-        src_list = ["njm", "svo", "msg"]
-    elif "," in source:
-        src_list = [s.strip().lower() for s in source.split(",")]
-    else:
-        src_list = [source.lower()]
-
-    # Initialize grabbers (NJM first so availability is checked before discovery)
-    grabs: Dict = {}
-    if "njm" in src_list:
-        grabs["njm"] = NJMSpectraGrabber(base_dir=base_dir, max_workers=workers)
-        if not grabs["njm"].is_available():
-            print("[njm] Mirror unavailable, using other sources")
-            del grabs["njm"]
-            src_list.remove("njm")
-    if "svo"  in src_list: grabs["svo"]  = SVOSpectraGrabber(base_dir=base_dir, max_workers=workers)
-    if "msg"  in src_list: grabs["msg"]  = MSGSpectraGrabber(base_dir=base_dir, max_workers=workers)
-    if "mast" in src_list: grabs["mast"] = MASTSpectraGrabber(base_dir=base_dir, max_workers=workers)
-
-    # Discover models from every active source
-    model_sources: Dict[str, List[str]] = {}
-    for s in src_list:
-        if s in grabs:
-            for model_name in grabs[s].discover_models():
-                model_sources.setdefault(model_name, []).append(s)
+    src_list = _spectra_sources(source)
+    grabs = _spectra_grabbers(src_list, base_dir, workers)
+    model_sources, discovery_failures = _discover_spectral_grids(src_list, grabs)
     if not model_sources:
-        print("No spectral grids discovered.")
-        return
+        raise RuntimeError("No spectral grids discovered" + "".join(f"; {f}" for f in discovery_failures))
 
     all_models = [_ModelOption(n, srcs) for n, srcs in sorted(model_sources.items())]
-
-    # Resolve which models to process
     if models is not None:
-        if len(models) == 1 and models[0].lower() == "all":
-            chosen = [(opt.sources, opt.name) for opt in all_models]
-        else:
-            chosen = []
-            for m in models:
-                if ":" in m:
-                    s, n = m.split(":", 1)
-                    chosen.append(([s.strip().lower()], n.strip()))
-                else:
-                    matching = [opt for opt in all_models if opt.name == m.strip()]
-                    if not matching:
-                        print(f"[skip] Spectral grid '{m.strip()}' not found")
-                    else:
-                        chosen.append((matching[0].sources, matching[0].name))
+        chosen, failures = _requested_spectral_grids(models, all_models)
     else:
         idxs = prompt_choice(all_models, label="Spectral grids", allow_back=True, multi=True)
         if idxs is None or idxs == -1:
             return
-        if isinstance(idxs, int):
-            idxs = [idxs]
-        chosen = [(all_models[i].sources, all_models[i].name) for i in idxs]
+        chosen, failures = [(all_models[i].sources, all_models[i].name) for i in idxs], []
 
     for sources, name in chosen:
-        print("\n" + "=" * 64)
-        print(f"{''.join(f'[{s}]' for s in sources)} {name}")
-        print("=" * 64)
+        try:
+            problems = _download_and_build_grid(name, sources, grabs, base_dir, force_bundle_h5, build_flux_cube)
+        except (ValueError, RequestException, OSError, RuntimeError) as exc:
+            print(f"[{name}] failed: {exc}")
+            problems = [f"{type(exc).__name__}: {exc}"]
+        failures.extend(f"{name}: {problem}" for problem in problems)
 
-        model_dir = os.path.join(base_dir, name)
-        ensure_dir(model_dir)
+    print("\n" + "─" * 64)
+    if failures:
+        raise RuntimeError(f"Spectral grids not completed ({len(failures)}): " + "; ".join(failures))
+    print("Done.")
 
-        # Try sources in priority order until one supplies metadata
-        meta = g = src = None
-        for try_src in sources:
-            g = grabs.get(try_src)
-            if not g:
-                continue
-            meta = g.get_model_metadata(name)
-            if meta:
-                src = try_src
-                break
-            print(f"  [{try_src}] No metadata — trying next source...")
-        if not (meta and g and src):
-            print("No metadata available from any source")
+
+def _spectra_sources(source: str) -> List[str]:
+    """Source names from --source: one name, a comma-separated list, 'both' or 'all'."""
+    if source.lower() == "all":
+        return ["njm", "svo", "msg", "mast"]
+    if source.lower() == "both":
+        return ["njm", "svo", "msg"]
+    if "," in source:
+        return [s.strip().lower() for s in source.split(",")]
+    return [source.lower()]
+
+
+def _spectra_grabbers(src_list: List[str], base_dir: str, workers: int) -> Dict:
+    """A grabber per requested source; NJM is left out, with a message, when the mirror is unavailable."""
+    grabs: Dict = {}
+    if "njm" in src_list:
+        njm = NJMSpectraGrabber(base_dir=base_dir, max_workers=workers)
+        if njm.is_available():
+            grabs["njm"] = njm
+        else:
+            print("[njm] Mirror unavailable, using other sources")
+    if "svo"  in src_list: grabs["svo"]  = SVOSpectraGrabber(base_dir=base_dir, max_workers=workers)
+    if "msg"  in src_list: grabs["msg"]  = MSGSpectraGrabber(base_dir=base_dir, max_workers=workers)
+    if "mast" in src_list: grabs["mast"] = MASTSpectraGrabber(base_dir=base_dir, max_workers=workers)
+    return grabs
+
+
+def _discover_spectral_grids(src_list: List[str], grabs: Dict) -> Tuple[Dict[str, List[str]], List[str]]:
+    """Each grid name with the sources listing it (in --source order), and each source that failed."""
+    model_sources: Dict[str, List[str]] = {}
+    failures = []
+    for s in src_list:
+        if s not in grabs:
             continue
+        try:
+            names = grabs[s].discover_models()
+        except (ValueError, RequestException, OSError, RuntimeError) as exc:
+            logger.warning("[%s] Spectral grid discovery failed: %s; using other sources", s, exc)
+            failures.append(f"{s}: discovery failed: {exc}")
+            continue
+        for model_name in names:
+            model_sources.setdefault(model_name, []).append(s)
+    return model_sources, failures
 
+
+def _requested_spectral_grids(models: List[str], all_models: List[_ModelOption]):
+    """``(sources, name)`` for each name in ``models`` ('all', NAME or SOURCE:NAME), and the names not found."""
+    if len(models) == 1 and models[0].lower() == "all":
+        return [(opt.sources, opt.name) for opt in all_models], []
+    chosen, not_found = [], []
+    for m in models:
+        if ":" in m:
+            s, n = m.split(":", 1)
+            chosen.append(([s.strip().lower()], n.strip()))
+            continue
+        matching = [opt for opt in all_models if opt.name == m.strip()]
+        if matching:
+            chosen.append((matching[0].sources, matching[0].name))
+        else:
+            print(f"[skip] Spectral grid '{m.strip()}' not found")
+            not_found.append(f"{m.strip()}: not listed by any source")
+    return chosen, not_found
+
+
+def _download_from_first_source(name: str, sources: List[str], grabs: Dict, model_dir: str):
+    """Download ``name`` from the first active source that can supply it; returns ``(source, metadata)``.
+
+    A source that fails is reported and the next one tried, unless the failed
+    attempt changed ``model_dir``: the next source's spectra would then be
+    mixed with its files.  Raises RuntimeError with every source's error when
+    no source succeeds.
+    """
+    from .api import _directory_state
+
+    errors = []
+    for src in sources:
+        if src not in grabs:
+            errors.append(f"{src}: not available")
+            continue
+        before = _directory_state(model_dir)
+        meta, error = _download_from(name, src, grabs[src], model_dir)
+        if error is None:
+            return src, meta
+        errors.append(f"{src}: {error}")
+        if _directory_state(model_dir) != before:
+            raise RuntimeError(f"{src} failed after changing {model_dir}, so another source's spectra would be "
+                               f"mixed with its files; no further source tried. Tried: {'; '.join(errors)}")
+        logger.warning("  [%s] %s — trying next source...", src, error)
+    raise RuntimeError(f"no source could supply it. Tried: {'; '.join(errors)}")
+
+
+def _download_from(name: str, src: str, g, model_dir: str):
+    """Download ``name`` from one source: ``(metadata, None)``, or ``(metadata, what went wrong)``."""
+    meta = None
+    try:
+        meta = g.get_model_metadata(name)
+        if not meta:
+            return meta, "no metadata"
         print(f"  Using source: {src}")
-        is_preprocessed = isinstance(meta, dict) and meta.get("pre_processed", False)
-
-        njm_cuts: Dict = {}
-        if src == "njm":
-            njm_cuts = prompt_njm_axis_cuts(name, g, model_url=meta.get("model_url"))
-
+        njm_cuts = prompt_njm_axis_cuts(name, g, model_url=meta.get("model_url")) if src == "njm" else {}
         n_written = g.download_model_spectra(
             name, meta,
             teff_range=njm_cuts.get('teff_range'),
@@ -433,27 +492,54 @@ def run_spectra_flow(
             meta_range=njm_cuts.get('meta_range'),
             wl_range=njm_cuts.get('wl_range'),
         )
-        print(f"Downloaded {n_written} spectra → {model_dir}")
+    except (ValueError, RequestException, OSError, RuntimeError) as exc:
+        return meta, str(exc)
+    print(f"Downloaded {n_written} spectra → {model_dir}")
+    if not n_written and not _is_preprocessed(meta):
+        return meta, "no spectra downloaded"
+    return meta, None
 
-        if is_preprocessed:
-            print("Pre-processed data (skipping cleaning)")
-            essential = ["flux_cube.bin", "lookup_table.csv"]
-            missing = [f for f in essential if not os.path.exists(os.path.join(model_dir, f))]
-            print(f"Missing: {', '.join(missing)}" if missing else "All essential files present")
-            continue
 
-        summary = clean_model_dir(model_dir, try_h5_recovery=True, rebuild_lookup=True)
-        _print_cleaning_report(summary)
+def _is_preprocessed(meta) -> bool:
+    return isinstance(meta, dict) and meta.get("pre_processed", False)
 
-        if not glob.glob(os.path.join(model_dir, "*.txt")):
-            print("\n  No spectra remaining after cleaning")
-            continue
 
-        _build_data_products(name, model_dir, src, force_bundle_h5, build_flux_cube)
+def _download_and_build_grid(name: str, sources: List[str], grabs: Dict, base_dir: str,
+                             force_bundle_h5: bool, build_flux_cube: bool) -> List[str]:
+    """Download one grid from its first source that can supply it, clean it and build its products.
 
-    print("\n" + "─" * 64)
-    print("Done.")
+    Returns what was not done; empty when the grid is complete.
+    """
+    from .api import _unusable_after_cleaning
 
+    print("\n" + "=" * 64)
+    print(f"{''.join(f'[{s}]' for s in sources)} {name}")
+    print("=" * 64)
+
+    model_dir = os.path.join(base_dir, name)
+    ensure_dir(model_dir)
+
+    src, meta = _download_from_first_source(name, sources, grabs, model_dir)
+
+    if _is_preprocessed(meta):
+        print("Pre-processed data (skipping cleaning)")
+        essential = ["flux_cube.bin", "lookup_table.csv"]
+        missing = [f for f in essential if not os.path.exists(os.path.join(model_dir, f))]
+        print(f"Missing: {', '.join(missing)}" if missing else "All essential files present")
+        return [f"missing {', '.join(missing)}"] if missing else []
+
+    summary = clean_model_dir(model_dir, try_h5_recovery=True, rebuild_lookup=True)
+    _print_cleaning_report(summary)
+
+    if not glob.glob(os.path.join(model_dir, "*.txt")):
+        print("\n  No spectra remaining after cleaning")
+        return ["no spectra remaining after cleaning"]
+
+    _build_data_products(name, model_dir, src, force_bundle_h5, build_flux_cube)
+    unusable = _unusable_after_cleaning(summary)
+    if unusable:
+        return [f"{len(unusable)} spectra unusable after cleaning: {', '.join(unusable)}"]
+    return []
 
 
 def print_filter_availability(info: dict) -> None:
@@ -598,9 +684,8 @@ def _add_filter_product_options(parser, *, components=None):
 
 
 def _offer_composition(instrument_dir: Path) -> None:
-    """After a download, offer to build a composed product."""
+    """After a download, offer to build a composed product; the build's errors propagate."""
     from .api import Filters
-    from .filter_components import ComponentError
 
     info = Filters.available(instrument_dir.parent.name, instrument_dir.name,
                              filter_root=instrument_dir.parent.parent, include_remote=False)
@@ -628,7 +713,10 @@ def _offer_composition(instrument_dir: Path) -> None:
         site = info["atmosphere_site"] or sites[0]
         if len(sites) > 1:
             site = input(f"Site [{site}]: ").strip() or site
-        grid = Filters.atmospheres(filter_root=instrument_dir.parent.parent).get(site)
+        try:
+            grid = Filters.atmospheres(filter_root=instrument_dir.parent.parent).get(site)
+        except (RequestException, OSError, RuntimeError, ValueError) as exc:
+            raise RuntimeError(f"could not list the atmosphere grids for {site}: {exc}") from exc
         if grid:
             print(f"  airmass {grid['airmass']}" + (f", pwv {grid['pwv']} mm" if grid["pwv"] else "")
                   + (" or 'unstated' (as published)" if grid.get("unstated_airmass") else ""))
@@ -637,20 +725,19 @@ def _offer_composition(instrument_dir: Path) -> None:
             pwv_txt = input("PWV mm (blank if not applicable): ").strip() if not grid or grid["pwv"] else ""
             atmosphere = {"site": site, "airmass": None if airmass == _UNSTATED else airmass,
                           "pwv": float(pwv_txt) if pwv_txt else None}
-        except ValueError:
-            print("Airmass and PWV must be numbers.")
-            return
-    try:
-        Filters.compose(instrument_dir, [c.strip() for c in chosen.split(",") if c.strip()],
-                        atmosphere=atmosphere, filter_root=instrument_dir.parent.parent,
-                        detector_type=detector, allow_heavy=allow_heavy)
-    except (ComponentError, RequestException, OSError, RuntimeError) as exc:
-        print(f"Cannot build: {exc}")
+        except ValueError as exc:
+            raise ValueError(f"Airmass and PWV must be numbers ({exc})") from exc
+    Filters.compose(instrument_dir, [c.strip() for c in chosen.split(",") if c.strip()],
+                    atmosphere=atmosphere, filter_root=instrument_dir.parent.parent,
+                    detector_type=detector, allow_heavy=allow_heavy)
 
 
 def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
-    """Browse available instruments; use the API for every download and product."""
-    from .api import Filters
+    """Browse available instruments; use the API for every download and product.
+
+    A download or build that fails is reported at once; when browsing ends,
+    RuntimeError lists every one that failed.
+    """
     from .filter_library import FilterLibrary
 
     library = FilterLibrary(base_dir)
@@ -662,47 +749,71 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
         print("No facilities found.")
         return
 
-    def fetch(facility, instrument, *, offer=False):
-        try:
-            directory = Filters.fetch(facility, instrument, filter_root=base_dir)
-            if offer:
-                _offer_composition(directory)
-        except (ValueError, RequestException, OSError, RuntimeError) as exc:
-            print(f"Cannot fetch: {exc}")
-
+    failures: List[str] = []
     while True:
         selected = prompt_choice([f["label"] for f in facilities], "Filter Facilities", multi=True)
         if selected is None:
-            return
+            break
         if len(selected) > 1:
-            for index in selected:
-                facility = facilities[index]["key"]
-                result = library.instruments(facility)
-                for error in result["errors"]:
-                    print(f"[filters] {error}")
-                for instrument in result["entries"]:
-                    fetch(facility, instrument["key"])
-            return
+            _download_every_instrument(library, [facilities[i]["key"] for i in selected], base_dir, failures)
+            break
+        if not _browse_instruments(library, facilities[selected[0]]["key"], base_dir, failures):
+            break
+    if failures:
+        raise RuntimeError(f"Filter downloads or builds failed ({len(failures)}): " + "; ".join(failures))
 
-        facility = facilities[selected[0]]["key"]
+
+def _download_every_instrument(library, facilities: List[str], base_dir: str, failures: List[str]) -> None:
+    """Download every instrument of each facility; an incomplete instrument list is a failure too."""
+    for facility in facilities:
         result = library.instruments(facility)
         for error in result["errors"]:
             print(f"[filters] {error}")
-        instruments = result["entries"]
-        if not instruments:
-            print(f"No instruments found for {facility}.")
-            continue
-        while True:
-            index = prompt_choice([i["label"] for i in instruments], f"Instruments for {facility}", allow_back=True)
-            if index is None:
-                return
-            if index == -1:
-                break
-            instrument = instruments[index]["key"]
-            if not input(f"Download {facility}/{instrument}? [Y/n] ").strip().lower().startswith("n"):
-                fetch(facility, instrument, offer=True)
-            if not input("Download another instrument? [y/N] ").strip().lower().startswith("y"):
-                break
+            failures.append(f"{facility}: instrument list incomplete: {error}")
+        for instrument in result["entries"]:
+            _fetch_instrument(facility, instrument["key"], base_dir, failures)
+
+
+def _browse_instruments(library, facility: str, base_dir: str, failures: List[str]) -> bool:
+    """Pick instruments of one facility to download; returns False if the user quit."""
+    result = library.instruments(facility)
+    for error in result["errors"]:
+        print(f"[filters] {error}")
+    instruments = result["entries"]
+    if not instruments:
+        print(f"No instruments found for {facility}.")
+        return True
+    while True:
+        index = prompt_choice([i["label"] for i in instruments], f"Instruments for {facility}", allow_back=True)
+        if index is None:
+            return False
+        if index == -1:
+            return True
+        instrument = instruments[index]["key"]
+        if not input(f"Download {facility}/{instrument}? [Y/n] ").strip().lower().startswith("n"):
+            _fetch_instrument(facility, instrument, base_dir, failures, offer=True)
+        if not input("Download another instrument? [y/N] ").strip().lower().startswith("y"):
+            return True
+
+
+def _fetch_instrument(facility: str, instrument: str, base_dir: str, failures: List[str], *,
+                      offer: bool = False) -> None:
+    """Download one instrument (then offer a composed product); a failure is printed and recorded."""
+    from .api import Filters
+
+    try:
+        directory = Filters.fetch(facility, instrument, filter_root=base_dir)
+    except (ValueError, RequestException, OSError, RuntimeError) as exc:
+        print(f"Cannot fetch: {exc}")
+        failures.append(f"{facility}/{instrument}: {exc}")
+        return
+    if not offer:
+        return
+    try:
+        _offer_composition(directory)
+    except (ValueError, RequestException, OSError, RuntimeError) as exc:  # ComponentError is a ValueError
+        print(f"Composed product of {facility}/{instrument} not built: {exc}")
+        failures.append(f"{facility}/{instrument} composed product: {exc}")
 
 
 class _FilterSetOption:
@@ -815,7 +926,6 @@ def run_mesa_prepare_flow(
     run_interactive(base_dir=base_dir, model=model, output=output)
 
 
-
 def run_combine_flow(
     base_dir: str = STELLAR_DIR_DEFAULT,
     output_name: str = "combined_models",
@@ -832,66 +942,32 @@ def run_combine_flow(
         output_name: Name for the combined spectral grid directory
         interactive: If True, prompt user to select spectral grids
     """
-    from .combine_stellar_atm import (build_combined_flux_cube,
-                                      create_common_wavelength_grid,
-                                      create_unified_grid, find_stellar_models,
-                                      load_model_data, save_combined_data,
-                                      select_models_interactive,
-                                      visualize_parameter_space)
+    from .api import _build_combined_grid
+    from .combine_stellar_atm import find_stellar_models, select_models_interactive
 
     ensure_dir(base_dir)
 
     model_dirs = find_stellar_models(base_dir)
     if not model_dirs:
-        print(f"No spectral grids found in {base_dir}")
-        return
+        raise FileNotFoundError(f"No spectral grids found in {base_dir}")
 
     selected_models = select_models_interactive(model_dirs) if interactive else model_dirs
     if not selected_models:
         print("No spectral grids selected.")
         return
 
-
     if interactive:
         output_name = input(f"What should the combined spectral grid be called? [{output_name}]") or output_name
 
     print("\nSpectral grid will be saved as:", output_name, "\n")
 
-
     print(f"\nSelected {len(selected_models)} spectral grids to combine:")
     for name, _ in selected_models:
         print(f"- {name}")
 
-    print("\nLoading spectral grid data...")
-    all_models_data = []
-    for name, path in selected_models:
-        print(f"Loading {name}...")
-        all_models_data.append(load_model_data(path))
-
-    print("\nCreating unified parameter grids...")
-    teff_grid, logg_grid, meta_grid = create_unified_grid(all_models_data)
-    wavelength_grid = create_common_wavelength_grid(all_models_data)
-
-    flux_cube, source_map = build_combined_flux_cube(
-        all_models_data, teff_grid, logg_grid, meta_grid, wavelength_grid
-    )
-
     output_dir = os.path.join(base_dir, output_name)
-    save_combined_data(
-        output_dir,
-        teff_grid,
-        logg_grid,
-        meta_grid,
-        wavelength_grid,
-        flux_cube,
-        all_models_data,
-    )
+    _build_combined_grid(selected_models, output_dir)
 
-    visualize_parameter_space(
-        teff_grid, logg_grid, meta_grid, source_map, all_models_data, output_dir,
-        wavelength_grid=wavelength_grid, flux_cube=flux_cube
-    )
-    
     print(f"\nSuccessfully combined {len(selected_models)} stellar spectral grids!")
     print(f"Output saved to: {output_dir}")
     print("You can now use this combined spectral grid in MESA by setting:")
@@ -966,7 +1042,6 @@ def run_import_flow(base_dir: str = str(STELLAR_DIR_DEFAULT)) -> None:
     SED.import_grid(path, name=name, model_root=base_dir, move=mv)
 
 
-
 def menu() -> str:
     use_color = terminal_color_enabled("auto")
     BOLD = "\x1b[1m" if use_color else ""
@@ -974,8 +1049,6 @@ def menu() -> str:
     CYAN = "\x1b[36m" if use_color else ""
     YELL = "\x1b[33m" if use_color else ""
     RED = "\x1b[31m" if use_color else ""
-    BLUE = "\x1b[34m" if use_color else ""
-    GREEN = "\x1b[32m" if use_color else ""
     RESET = "\x1b[0m" if use_color else ""
 
     print(BOLD + "=" * 50 + RESET)
@@ -1027,13 +1100,22 @@ def menu() -> str:
     }
     return mapping.get(choice, "")
 
-# ------------ Main CLI ------------
+# ------------ Command-line parser ------------
 
-def main():
+def _build_parser() -> argparse.ArgumentParser:
+    """The ``sed-tools`` parser; subcommands appear in --help in the order added here."""
     parser = argparse.ArgumentParser(description="SED Tools — spectral grids and photometric filters")
     sub = parser.add_subparsers(dest="cmd", required=False)
+    _add_grid_download_parser(sub)
+    _add_filter_download_parsers(sub)
+    _add_filter_catalogue_parsers(sub)
+    _add_filter_component_parsers(sub)
+    _add_grid_build_parsers(sub)
+    _add_grid_tool_parsers(sub)
+    return parser
 
-    # spectra
+
+def _add_grid_download_parser(sub) -> None:
     sp = sub.add_parser("grids", aliases=["spectra"], help="Download and build spectral grids")
     sp.add_argument("--source",
                     choices=["njm", "svo", "msg", "mast", "both", "all"],
@@ -1047,7 +1129,8 @@ def main():
     sp.add_argument("--no-h5", action="store_true", help="Do not force-create HDF5 bundle")
     sp.add_argument("--no-cube", action="store_true", help="Skip flux cube build")
 
-    # filters
+
+def _add_filter_download_parsers(sub) -> None:
     fp = sub.add_parser("filters", help="Download instrument passbands or browse interactively")
     fp.add_argument("target", nargs="?", help="Facility/Instrument; omit to browse")
     _add_filter_product_options(fp)
@@ -1074,6 +1157,8 @@ def main():
     fdp.add_argument("--dry-run", action="store_true",
                      help="Report without modifying files")
 
+
+def _add_filter_catalogue_parsers(sub) -> None:
     fip = sub.add_parser("filters-info",
                          help="Show what a filter set contains and which components can be requested")
     fip.add_argument("target", help="Facility/Instrument, e.g. SLOAN/SDSS")
@@ -1112,6 +1197,8 @@ def main():
     fcip.add_argument("--refresh", action="store_true", help="Use NJM's current info.json, not installed copies")
     fcip.add_argument("--offline", action="store_true", help="Use installed and cached info.json only")
 
+
+def _add_filter_component_parsers(sub) -> None:
     fcop = sub.add_parser("filters-compose", help="Compose optical-path components")
     fcop.add_argument("target", help="Facility/Instrument or installed instrument directory")
     _add_filter_product_options(fcop, components="filter")
@@ -1135,7 +1222,12 @@ def main():
     fbp.add_argument("--airmass", nargs="+", type=float, default=None, help="SkyCalc airmass grid")
     fbp.add_argument("--pwv", nargs="+", type=float, default=None, help="SkyCalc PWV grid (mm)")
 
-    # rebuild
+
+# densify accepts --ml-gap-threshold only at this default, since densify_grid has no such threshold.
+_ML_GAP_THRESHOLD_DEFAULT = 5000.0
+
+
+def _add_grid_build_parsers(sub) -> None:
     rp = sub.add_parser("rebuild", help="Rebuild lookup table + HDF5 + flux cube")
     rp.add_argument("--base", default=str(STELLAR_DIR_DEFAULT),
                     help="Base spectral grid dir")
@@ -1144,7 +1236,6 @@ def main():
     rp.add_argument("--no-h5", action="store_true", help="Skip HDF5 bundle")
     rp.add_argument("--no-cube", action="store_true", help="Skip flux cube")
 
-    # combine
     cp = sub.add_parser("combine", help="Combine multiple grids into omni grid")
     cp.add_argument("--base", default=str(STELLAR_DIR_DEFAULT),
                     help="Base spectral grid directory")
@@ -1153,14 +1244,12 @@ def main():
     cp.add_argument("--non-interactive", action="store_true",
                     help="Combine all spectral grids without prompting")
 
-    # ml_completer
     mp = sub.add_parser("ml_completer", help="Train/use ML SED completer")
     mp.add_argument("--base", default=str(STELLAR_DIR_DEFAULT),
                     help="Base spectral grid directory")
     mp.add_argument("--models-dir", default="models",
                     help="Directory for trained ML models")
 
-    # ml_generator
     gp = sub.add_parser("ml_generator", help="Train/use ML SED generator")
     gp.add_argument("--base", default=str(STELLAR_DIR_DEFAULT),
                     help="Base spectral grid directory")
@@ -1171,7 +1260,6 @@ def main():
     gp.add_argument("--library", help="Library path for auto-training")
     gp.add_argument("--output", help="Output directory for auto-training")
 
-    # densify
     p_densify = sub.add_parser("densify", help="Fill coarse Teff gaps in a flux_cube.bin")
     p_densify.add_argument("--flux-cube", required=True)
     p_densify.add_argument("--output", required=True)
@@ -1179,10 +1267,11 @@ def main():
     p_densify.add_argument("--method", default="auto",
                             choices=["auto", "interp", "ml", "blackbody"])
     p_densify.add_argument("--ml-model", default=None)
-    p_densify.add_argument("--ml-gap-threshold", type=float, default=5000.0)
+    p_densify.add_argument("--ml-gap-threshold", type=float, default=_ML_GAP_THRESHOLD_DEFAULT)
     p_densify.add_argument("--no-lookup", action="store_true")
 
-    # mesa_prepare
+
+def _add_grid_tool_parsers(sub) -> None:
     pp = sub.add_parser("mesa_prepare",
         help="Export a spectral grid variant as a clean MESA-ready folder")
     pp.add_argument("--base", default=str(STELLAR_DIR_DEFAULT),
@@ -1192,14 +1281,12 @@ def main():
     pp.add_argument("--output", default=None,
                     help="Output directory for the exported variant; prompted if omitted")
 
-    # config
     cfg_p = sub.add_parser("config", help="Show or set the data directory")
     cfg_p.add_argument("--set", metavar="PATH", default=None,
                        help="Set data directory to PATH")
     cfg_p.add_argument("--move", action="store_true",
                        help="With --set: move existing data to the new path")
 
-    # coverage
     covp = sub.add_parser("coverage",
         help="Report parameter-space coverage of a local grid")
     covp.add_argument("--base", default=str(STELLAR_DIR_DEFAULT),
@@ -1211,7 +1298,6 @@ def main():
     covp.add_argument("--out", default=None,
                       help="Output path for the plot PNG (single spectral grid only)")
 
-    # import
     imp = sub.add_parser("import",
         help="Ingest a local grid of .txt spectra into the pipeline")
     imp.add_argument("--path", required=True,
@@ -1227,327 +1313,458 @@ def main():
     imp.add_argument("--dry-run", action="store_true",
                      help="Report parseable headers without importing")
 
-    args = parser.parse_args()
 
-    if args.cmd in ("grids", "spectra"):
-        run_spectra_flow(
-            source=args.source,
-            base_dir=args.base,
-            models=args.models,
-            workers=args.workers,
-            force_bundle_h5=not args.no_h5,
-            build_flux_cube=not args.no_cube
-        )
-    elif args.cmd in ("filters", "filters-compose"):
-        from .api import Filters
-        from .filter_components import ComponentError
+# ------------ Command handlers ------------
+# Each takes the parsed arguments and the top-level parser (for parser.error)
+# and returns the process exit status.
 
-        if not args.target:
-            if any((args.components, args.bands, args.detector_type, args.airmass is not None,
-                    args.pwv is not None, args.atmosphere_site, args.allow_heavy, args.allow_partial)):
-                parser.error("component options require a Facility/Instrument target")
-            run_filters_flow(base_dir=args.base)
-            return 0
-        if args.pwv is not None and args.airmass is None:
-            parser.error("--pwv needs --airmass")
-        if args.atmosphere_site and args.airmass is None:
-            parser.error("--atmosphere-site needs --airmass (a number, or 'unstated')")
-        atmosphere = None
-        if args.airmass is not None:
-            atmosphere = {"airmass": None if args.airmass == _UNSTATED else args.airmass, "pwv": args.pwv}
-            if args.atmosphere_site:
-                atmosphere["site"] = args.atmosphere_site
-        options = dict(filter_root=args.base, components=args.components, atmosphere=atmosphere,
-                       bands=args.bands, detector_type=args.detector_type,
-                       allow_heavy=args.allow_heavy, allow_partial=args.allow_partial)
-        try:
-            if args.cmd == "filters-compose":
-                Filters.compose(args.target, **options)
-            else:
-                target = args.target.strip("/").split("/")
-                if len(target) != 2:
-                    parser.error("target must be Facility/Instrument")
-                print(Filters.fetch(*target, **options))
-        except (ComponentError, RequestException, OSError, RuntimeError) as exc:
-            print(f"[filters] {exc}")
-            return 1
-    elif args.cmd == "filters-combine":
-        from .combine_filters import combine_filter_sets
-        out = combine_filter_sets(
-            args.output,
-            args.inputs,
-            filter_root=args.base,
-            facility=args.facility,
-            instrument=args.instrument,
-            on_conflict=args.on_conflict,
-        )
-        print(f"[filters] Combined filter set written to {out}")
-    elif args.cmd == "filters-detector":
-        from collections import Counter
+def _cmd_grids(args, parser):
+    run_spectra_flow(
+        source=args.source,
+        base_dir=args.base,
+        models=args.models,
+        workers=args.workers,
+        force_bundle_h5=not args.no_h5,
+        build_flux_cube=not args.no_cube
+    )
+    return 0
 
-        from .api import Filters
+
+def _facility_instrument(target: str, parser) -> List[str]:
+    parts = target.strip("/").split("/")
+    if len(parts) != 2:
+        parser.error("target must be Facility/Instrument")
+    return parts
+
+
+def _atmosphere_request(args, parser) -> Optional[Dict]:
+    """The ``atmosphere`` argument of Filters.fetch/compose, from --airmass, --pwv and --atmosphere-site."""
+    if args.pwv is not None and args.airmass is None:
+        parser.error("--pwv needs --airmass")
+    if args.atmosphere_site and args.airmass is None:
+        parser.error("--atmosphere-site needs --airmass (a number, or 'unstated')")
+    if args.airmass is None:
+        return None
+    atmosphere = {"airmass": None if args.airmass == _UNSTATED else args.airmass, "pwv": args.pwv}
+    if args.atmosphere_site:
+        atmosphere["site"] = args.atmosphere_site
+    return atmosphere
+
+
+def _cmd_filters(args, parser):
+    """``filters`` and ``filters-compose``: download (or browse) an instrument, optionally composing it."""
+    from .api import Filters
+    from .filter_components import ComponentError
+
+    if not args.target:
+        if any((args.components, args.bands, args.detector_type, args.airmass is not None,
+                args.pwv is not None, args.atmosphere_site, args.allow_heavy, args.allow_partial)):
+            parser.error("component options require a Facility/Instrument target")
+        run_filters_flow(base_dir=args.base)
+        return 0
+    options = dict(filter_root=args.base, components=args.components, atmosphere=_atmosphere_request(args, parser),
+                   bands=args.bands, detector_type=args.detector_type,
+                   allow_heavy=args.allow_heavy, allow_partial=args.allow_partial)
+    try:
+        if args.cmd == "filters-compose":
+            Filters.compose(args.target, **options)
+        else:
+            print(Filters.fetch(*_facility_instrument(args.target, parser), **options))
+    except (ComponentError, RequestException, OSError, RuntimeError) as exc:
+        print(f"[filters] {exc}")
+        return 1
+    return 0
+
+
+def _cmd_filters_combine(args, parser):
+    from .combine_filters import combine_filter_sets
+
+    out = combine_filter_sets(
+        args.output,
+        args.inputs,
+        filter_root=args.base,
+        facility=args.facility,
+        instrument=args.instrument,
+        on_conflict=args.on_conflict,
+    )
+    print(f"[filters] Combined filter set written to {out}")
+    return 0
+
+
+def _cmd_filters_detector(args, parser):
+    from collections import Counter
+
+    from .api import Filters
+
+    # Each file is printed as it is tagged, so on failure only the error remains to be said.
+    try:
         rows = Filters.tag_detector_types(
             args.path, facility=args.facility, force=args.force, dry_run=args.dry_run
         )
-        counts = Counter((r["detector_type"], r["source"]) for r in rows)
-        changed = sum(r["changed"] for r in rows)
-        verb = "would change" if args.dry_run else "changed"
-        migrated = sum(r["migrated"] for r in rows)
-        moved = "would move" if args.dry_run else "moved"
-        print(f"\n[filters] {len(rows)} files, {changed} {verb}, {migrated} {moved} 0.3.0 '#' metadata to the column row")
-        for (dtype, source), n in sorted(counts.items()):
-            print(f"  {dtype:6s} [{source}]: {n}")
-        kept = [r for r in rows if r["kept"]]
-        if kept:
-            differ = sum(r["resolved_type"] != r["detector_type"] for r in kept)
-            print(f"[filters] {len(kept)} kept their DetectorType: the new resolution does not outrank "
-                  f"their DetectorTypeSource and was not written ({differ} of them resolve to the other type)")
-            for r in kept:
-                print(f"  {r['path']}: {r['note']}")
-    elif args.cmd == "filters-info":
-        from .api import Filters
-        target = args.target.strip("/").split("/")
-        if len(target) != 2:
-            parser.error("target must be Facility/Instrument")
-        info = Filters.available(*target, filter_root=args.base, include_remote=not args.offline)
-        catalogue = _catalogue_entry(*target, args.base, offline=args.offline)
-        if args.json:
-            print(json.dumps(dict(info, catalogue=catalogue), indent=2))
-        else:
-            print_filter_availability(info)
-            print_catalogue_entry("/".join(target), catalogue)
-        return 1 if info.get("availability_source") == "unknown" and info.get("errors") else 0
-    elif args.cmd == "filters-search":
-        from .api import Filters
-        from .filter_catalogue import CatalogueError
+    except (RequestException, RuntimeError, ValueError) as exc:  # SVOUnreachableError is a RequestException
+        print(f"\n[filters] {exc}")
+        return 1
+    counts = Counter((r["detector_type"], r["source"]) for r in rows)
+    changed = sum(r["changed"] for r in rows)
+    verb = "would change" if args.dry_run else "changed"
+    migrated = sum(r["migrated"] for r in rows)
+    moved = "would move" if args.dry_run else "moved"
+    print(f"\n[filters] {len(rows)} files, {changed} {verb}, {migrated} {moved} 0.3.0 '#' metadata to the column row")
+    for (dtype, source), n in sorted(counts.items()):
+        print(f"  {dtype:6s} [{source}]: {n}")
+    kept = [r for r in rows if r["kept"]]
+    if kept:
+        differ = sum(r["resolved_type"] != r["detector_type"] for r in kept)
+        print(f"[filters] {len(kept)} kept their DetectorType: the new resolution does not outrank "
+              f"their DetectorTypeSource and was not written ({differ} of them resolve to the other type)")
+        for r in kept:
+            print(f"  {r['path']}: {r['note']}")
+    return 0
 
-        wavelength = args.wavelength
-        if wavelength is not None and (len(wavelength) > 2 or wavelength == [None]):
-            parser.error("--wavelength takes one value or a LOW HIGH range")
+
+def _cmd_filters_info(args, parser):
+    from .api import Filters
+
+    target = _facility_instrument(args.target, parser)
+    info = Filters.available(*target, filter_root=args.base, include_remote=not args.offline)
+    catalogue = _catalogue_entry(*target, args.base, offline=args.offline)
+    if args.json:
+        print(json.dumps(dict(info, catalogue=catalogue), indent=2))
+    else:
+        print_filter_availability(info)
+        print_catalogue_entry("/".join(target), catalogue)
+    # Offline, an info.json that is not cached is reported as such, not a failure.
+    return 1 if info.get("errors") or (catalogue["errors"] and not args.offline) else 0
+
+
+def _cmd_filters_search(args, parser):
+    from .api import Filters
+    from .filter_catalogue import CatalogueError
+
+    wavelength = args.wavelength
+    if wavelength is not None and (len(wavelength) > 2 or wavelength == [None]):
+        parser.error("--wavelength takes one value or a LOW HIGH range")
+    try:
+        result = Filters.search(
+            args.text, facility=args.facility, instrument=args.instrument, band=args.band,
+            wavelength=(wavelength[0] if len(wavelength) == 1 else tuple(wavelength)) if wavelength else None,
+            pivot=tuple(args.pivot) if args.pivot else None, fwhm=tuple(args.fwhm) if args.fwhm else None,
+            detector_type=args.detector_type, where=_where(args.where), properties=not args.names_only,
+            filter_root=args.base, refresh=args.refresh, offline=args.offline)
+    except (CatalogueError, ValueError) as exc:
+        print(f"[filters] {exc}")
+        return 1
+    columns = args.columns.split(",") if args.columns else SEARCH_COLUMNS
+    unknown = [c for c in columns if c not in result.columns and c not in SEARCH_COLUMNS]
+    if unknown:
+        parser.error(f"unknown columns: {', '.join(unknown)}")
+    _print_search_result(result, [c for c in columns if c in result.columns], args.format)
+    return 0
+
+
+def _print_search_result(result, columns: List[str], fmt: str) -> None:
+    shown = result[columns]
+    if fmt == "csv":
+        print(shown.to_csv(index=False), end="")
+    elif fmt == "json":
+        print(json.dumps({"bands": json.loads(shown.to_json(orient="records")),
+                          "units": result.attrs.get("units", {}),
+                          "errors": result.attrs.get("errors", [])}, indent=2))
+    elif shown.empty:
+        print("No bands match.")
+    else:
+        print(shown.to_string(index=False, na_rep="-", float_format=lambda v: f"{v:.6g}"))
+        n_inst = len(result[["facility", "instrument"]].drop_duplicates())
+        print(f"\n{len(result)} band{'s' * (len(result) != 1)} in "
+              f"{n_inst} instrument{'s' * (n_inst != 1)}")
+    if fmt != "json":
+        for error in result.attrs.get("errors", []):
+            print(f"[filters] {error}")
+
+
+def _cmd_filters_cite(args, parser):
+    from .api import Filters
+    from .filter_catalogue import format_bibtex, format_citations
+
+    try:
+        result = Filters.citations(*args.targets, filter_root=args.base,
+                                   refresh=args.refresh, offline=args.offline)
+    except ValueError as exc:
+        parser.error(str(exc))
+    if args.format == "json":
+        print(json.dumps(result, indent=2))
+    elif args.format == "bibtex":
+        print(format_bibtex(result), end="")
+        for error in result["errors"]:
+            print(f"[filters] {error}", file=sys.stderr)
+    else:
+        print(format_citations(result), end="")
+    return 1 if result["errors"] else 0
+
+
+def _cmd_filters_inventory(args, parser):
+    from .api import Filters
+
+    result = Filters.inventory(filter_root=args.base, include_remote=not args.offline, facility=args.facility)
+    if args.json:
+        print(json.dumps(result, indent=2))
+    else:
+        for row in result["instruments"]:
+            status = row["component_availability"]["status"]
+            print(f"{row['facility']}/{row['instrument']}: {status} [{', '.join(row['sources'])}]")
+        for error in result["errors"]:
+            print(f"[filters] {error}")
+    return 1 if result["errors"] else 0
+
+
+def _cmd_filters_build_components(args, parser):
+    from .component_sources import get_builder
+
+    if args.source == "all":
+        return _build_all_component_sources(args.base, args.sites)
+    builder = get_builder(args.source)
+    kwargs = {}
+    if args.raw:
+        kwargs["raw"] = args.raw
+    if args.instrument:
+        kwargs["instrument"] = args.instrument
+    if args.sites:
+        kwargs["sites"] = args.sites
+    if args.airmass:
+        kwargs["airmasses"] = args.airmass
+    if args.pwv:
+        kwargs["pwvs"] = args.pwv
+    if args.archive:
+        kwargs["archive_dir"] = args.archive
+    print(f"[filters] Built {builder(args.base, **kwargs)}")
+    return 0
+
+
+def _build_all_component_sources(base: str, sites: Optional[List[str]]) -> int:
+    """Run every automatic builder; report each failure and return 1 if any failed."""
+    from .component_sources import AUTOMATIC_BUILDERS, get_builder
+
+    failed = []
+    for name in AUTOMATIC_BUILDERS:
+        kw = {"sites": sites or ["paranal", "lasilla"]} if name == "skycalc" else {}
+        print(f"[filters] === {name} ===")
         try:
-            result = Filters.search(
-                args.text, facility=args.facility, instrument=args.instrument, band=args.band,
-                wavelength=(wavelength[0] if len(wavelength) == 1 else tuple(wavelength)) if wavelength else None,
-                pivot=tuple(args.pivot) if args.pivot else None, fwhm=tuple(args.fwhm) if args.fwhm else None,
-                detector_type=args.detector_type, where=_where(args.where), properties=not args.names_only,
-                filter_root=args.base, refresh=args.refresh, offline=args.offline)
-        except (CatalogueError, ValueError) as exc:
-            print(f"[filters] {exc}")
-            return 1
-        columns = args.columns.split(",") if args.columns else SEARCH_COLUMNS
-        unknown = [c for c in columns if c not in result.columns and c not in SEARCH_COLUMNS]
-        if unknown:
-            parser.error(f"unknown columns: {', '.join(unknown)}")
-        shown = result[[c for c in columns if c in result.columns]]
-        if args.format == "csv":
-            print(shown.to_csv(index=False), end="")
-        elif args.format == "json":
-            print(json.dumps({"bands": json.loads(shown.to_json(orient="records")),
-                              "units": result.attrs.get("units", {}),
-                              "errors": result.attrs.get("errors", [])}, indent=2))
-        else:
-            if shown.empty:
-                print("No bands match.")
-            else:
-                print(shown.to_string(index=False, na_rep="-", float_format=lambda v: f"{v:.6g}"))
-                n_inst = len(result[["facility", "instrument"]].drop_duplicates())
-                print(f"\n{len(result)} band{'s' * (len(result) != 1)} in "
-                      f"{n_inst} instrument{'s' * (n_inst != 1)}")
-        if args.format != "json":
-            for error in result.attrs.get("errors", []):
-                print(f"[filters] {error}")
-        return 0
-    elif args.cmd == "filters-cite":
-        from .api import Filters
+            get_builder(name)(base, **kw)
+        except (ValueError, RequestException, OSError, RuntimeError) as exc:
+            failed.append(f"{name}: {exc}")
+    for line in failed:
+        print(f"[filters] FAILED {line}")
+    return 1 if failed else 0
 
-        try:
-            result = Filters.citations(*args.targets, filter_root=args.base,
-                                       refresh=args.refresh, offline=args.offline)
-        except ValueError as exc:
-            parser.error(str(exc))
-        if args.format == "json":
-            print(json.dumps(result, indent=2))
-        else:
-            from .filter_catalogue import format_bibtex, format_citations
 
-            print(format_bibtex(result) if args.format == "bibtex" else format_citations(result), end="")
-            if args.format == "bibtex":
-                for error in result["errors"]:
-                    print(f"[filters] {error}", file=sys.stderr)
-        return 1 if result["errors"] and not result["references"] else 0
-    elif args.cmd == "filters-inventory":
-        from .api import Filters
-        result = Filters.inventory(filter_root=args.base, include_remote=not args.offline, facility=args.facility)
-        if args.json:
-            print(json.dumps(result, indent=2))
-        else:
-            for row in result["instruments"]:
-                status = row["component_availability"]["status"]
-                print(f"{row['facility']}/{row['instrument']}: {status} [{', '.join(row['sources'])}]")
-            for error in result["errors"]:
-                print(f"[filters] {error}")
-        return 1 if result["errors"] else 0
-    elif args.cmd == "filters-build-components":
-        from .component_sources import AUTOMATIC_BUILDERS, get_builder
-        if args.source == "all":
-            failed = []
-            for name in AUTOMATIC_BUILDERS:
-                kw = {"sites": args.sites or ["paranal", "lasilla"]} if name == "skycalc" else {}
-                print(f"[filters] === {name} ===")
-                try:
-                    get_builder(name)(args.base, **kw)
-                except (ValueError, RequestException, OSError, RuntimeError) as exc:
-                    failed.append(f"{name}: {exc}")
-            for line in failed:
-                print(f"[filters] FAILED {line}")
-            return 1 if failed else 0
-        builder = get_builder(args.source)
-        kwargs = {}
-        if args.raw:
-            kwargs["raw"] = args.raw
-        if args.instrument:
-            kwargs["instrument"] = args.instrument
-        if args.sites:
-            kwargs["sites"] = args.sites
-        if args.airmass:
-            kwargs["airmasses"] = args.airmass
-        if args.pwv:
-            kwargs["pwvs"] = args.pwv
-        if args.archive:
-            kwargs["archive_dir"] = args.archive
-        print(f"[filters] Built {builder(args.base, **kwargs)}")
-    elif args.cmd == "rebuild":
-        run_rebuild_flow(
-            base_dir=args.base,
-            models=args.models,
-            rebuild_h5=not args.no_h5,
-            rebuild_flux_cube=not args.no_cube
-        )
-    elif args.cmd == "combine":
-        run_combine_flow(
-            base_dir=args.base,
-            output_name=args.output,
-            interactive=not args.non_interactive
-        )
-    elif args.cmd == "ml_completer":
-        run_ml_completer_flow(
+def _cmd_rebuild(args, parser):
+    run_rebuild_flow(
+        base_dir=args.base,
+        models=args.models,
+        rebuild_h5=not args.no_h5,
+        rebuild_flux_cube=not args.no_cube
+    )
+    return 0
+
+
+def _cmd_combine(args, parser):
+    run_combine_flow(
+        base_dir=args.base,
+        output_name=args.output,
+        interactive=not args.non_interactive
+    )
+    return 0
+
+
+def _cmd_ml_completer(args, parser):
+    run_ml_completer_flow(
+        base_dir=args.base,
+        models_dir=args.models_dir
+    )
+    return 0
+
+
+def _cmd_ml_generator(args, parser):
+    if not args.auto:
+        run_ml_generator_flow(
             base_dir=args.base,
             models_dir=args.models_dir
         )
-    elif args.cmd == "ml_generator":
-        if args.auto:
-            if not args.library or not args.output:
-                print("Error: --library and --output are required for --auto training.")
-                sys.exit(1)
-            from .ml import auto_train_generator
-            auto_train_generator(library=args.library, output=args.output)
-        else:
-            run_ml_generator_flow(
-                base_dir=args.base,
-                models_dir=args.models_dir
-            )
-    elif args.cmd == "densify":
-        from .grid_densifier import densify_grid
-        densify_grid(
-            src=args.flux_cube,
-            dst=args.output,
-            teff_spacing=args.teff_spacing,
-            method=args.method,
-            ml_model=args.ml_model,
-            ml_gap_threshold=args.ml_gap_threshold,
-            write_lookup=not args.no_lookup,
-        )
-    elif args.cmd == "mesa_prepare":
-        run_mesa_prepare_flow(
-            base_dir=args.base,
-            model=args.model,
-            output=args.output,
-        )
-    elif args.cmd == "config":
-        if args.set:
-            set_data_dir(args.set, move=args.move if args.move else None)
-        else:
-            show_config()
-    elif args.cmd == "coverage":
-        from .api import SED
-        names = args.models
+        return 0
+    if not args.library or not args.output:
+        print("Error: --library and --output are required for --auto training.")
+        return 1
+    if importlib.util.find_spec("optuna") is None:
+        print("Error: --auto training needs the optuna package, which is not installed (pip install optuna).")
+        return 1
+    from .ml import auto_train_generator
+    auto_train_generator(library=args.library, output=args.output)
+    return 0
+
+
+def _cmd_densify(args, parser):
+    """densify_grid fills each Teff gap with --ml-model inside the source grid's Teff range, and
+    with a blackbody scaled to the nearest real spectrum otherwise; options it cannot honour are refused."""
+    from .grid_densifier import densify_grid
+
+    if args.method == "interp":
+        parser.error("--method interp is not implemented: densify fills gaps with --ml-model or blackbodies")
+    if args.method == "ml" and not args.ml_model:
+        parser.error("--method ml needs --ml-model")
+    if args.method == "blackbody" and args.ml_model:
+        parser.error("--method blackbody does not use --ml-model; leave one of them out")
+    if args.ml_gap_threshold != _ML_GAP_THRESHOLD_DEFAULT:
+        parser.error("--ml-gap-threshold is not implemented: with --ml-model, every gap inside the source "
+                     "grid's Teff range is filled by the model")
+    # --no-lookup needs nothing: densify_grid writes only the flux cube.
+    densify_grid(
+        src=args.flux_cube,
+        dst=args.output,
+        teff_spacing=args.teff_spacing,
+        ml_model=args.ml_model,
+    )
+    return 0
+
+
+def _cmd_mesa_prepare(args, parser):
+    run_mesa_prepare_flow(
+        base_dir=args.base,
+        model=args.model,
+        output=args.output,
+    )
+    return 0
+
+
+def _cmd_config(args, parser):
+    if args.set:
+        set_data_dir(args.set, move=args.move if args.move else None)
+    else:
+        show_config()
+    return 0
+
+
+def _cmd_coverage(args, parser):
+    from .api import SED
+
+    names = args.models
+    if not names:
+        names = _discover_local_grids(args.base)
         if not names:
-            names = _discover_local_grids(args.base)
-            if not names:
-                print(f"No local grids found under {args.base}")
-                return
-        for nm in names:
+            print(f"No local grids found under {args.base}")
+            return 1
+    failed = []
+    for nm in names:
+        try:
             SED.coverage(
                 nm,
                 model_root=args.base,
                 plot=not args.no_plot,
                 out_path=args.out if len(names) == 1 else None,
             )
-    elif args.cmd == "import":
-        from .api import SED
-        SED.import_grid(
-            args.path,
-            name=args.name,
-            model_root=args.base,
-            move=args.move,
-            build_h5=not args.no_h5,
-            build_cube=not args.no_cube,
-            dry_run=args.dry_run,
-        )
-    else:
-        # Interactive mode
-        use_color = terminal_color_enabled("auto")
-        BOLD = "\x1b[1m" if use_color else ""
-        DIM = "\x1b[2m" if use_color else ""
-        CYAN = "\x1b[36m" if use_color else ""
-        YELL = "\x1b[33m" if use_color else ""
-        RED = "\x1b[31m" if use_color else ""
-        BLUE = "\x1b[34m" if use_color else ""
-        GREEN = "\x1b[32m" if use_color else ""
-        RESET = "\x1b[0m" if use_color else ""
+        except (ValueError, OSError, RuntimeError) as exc:
+            print(f"[coverage] {nm}: {exc}")
+            failed.append(f"{nm}: {exc}")
+    for line in failed:
+        print(f"[coverage] FAILED {line}")
+    return 1 if failed else 0
 
-        banner = (
-                "▄▖▄▖▄   ▄▖    ▜   ",
-                "▚ ▙▖▌▌  ▐ ▛▌▛▌▐ ▛▘",
-                "▄▌▙▖▙▘▄▖▐ ▙▌▙▌▐▖▄▌",
-                                      )
 
-        print()
-        print("\n" + BOLD + "=" * 50 + RESET)
-        
-        banner_colors = [RED, GREEN, BLUE]
-        for i, line in enumerate(banner):
-            print(f"{BOLD}{banner_colors[i]}{line}{RESET}")
+def _cmd_import(args, parser):
+    from .api import SED
 
-        while True:
-            choice = menu()
-            if choice == "grids":
-                run_spectra_flow(source="all")
-            elif choice == "filters":
-                run_filters_flow()
-            elif choice == "filters_combine":
-                run_filter_combine_flow()
-            elif choice == "rebuild":
-                run_rebuild_flow()
-            elif choice == "combine":
-                run_combine_flow()
-            elif choice == "ml_completer":
-                run_ml_completer_flow()
-            elif choice == "ml_generator":
-                run_ml_generator_flow()
-            elif choice == "grid_densifier":
-                run_grid_densifier_flow()
-            elif choice == "mesa_prepare":
-                run_mesa_prepare_flow()
-            elif choice == "config":
-                run_config_flow()
-            elif choice == "coverage":
-                run_coverage_flow()
-            elif choice == "import":
-                run_import_flow()
-            else:
-                sys.exit(0)
+    SED.import_grid(
+        args.path,
+        name=args.name,
+        model_root=args.base,
+        move=args.move,
+        build_h5=not args.no_h5,
+        build_cube=not args.no_cube,
+        dry_run=args.dry_run,
+    )
+    return 0
+
+
+_COMMANDS = {
+    "grids": _cmd_grids,
+    "spectra": _cmd_grids,
+    "filters": _cmd_filters,
+    "filters-compose": _cmd_filters,
+    "filters-combine": _cmd_filters_combine,
+    "filters-detector": _cmd_filters_detector,
+    "filters-info": _cmd_filters_info,
+    "filters-search": _cmd_filters_search,
+    "filters-cite": _cmd_filters_cite,
+    "filters-inventory": _cmd_filters_inventory,
+    "filters-build-components": _cmd_filters_build_components,
+    "rebuild": _cmd_rebuild,
+    "combine": _cmd_combine,
+    "ml_completer": _cmd_ml_completer,
+    "ml_generator": _cmd_ml_generator,
+    "densify": _cmd_densify,
+    "mesa_prepare": _cmd_mesa_prepare,
+    "config": _cmd_config,
+    "coverage": _cmd_coverage,
+    "import": _cmd_import,
+}
+
+
+# ------------ Interactive mode ------------
+
+def _print_banner() -> None:
+    use_color = terminal_color_enabled("auto")
+    BOLD = "\x1b[1m" if use_color else ""
+    RED = "\x1b[31m" if use_color else ""
+    BLUE = "\x1b[34m" if use_color else ""
+    GREEN = "\x1b[32m" if use_color else ""
+    RESET = "\x1b[0m" if use_color else ""
+
+    banner = (
+            "▄▖▄▖▄   ▄▖    ▜   ",
+            "▚ ▙▖▌▌  ▐ ▛▌▛▌▐ ▛▘",
+            "▄▌▙▖▙▘▄▖▐ ▙▌▙▌▐▖▄▌",
+                                  )
+
+    print()
+    print("\n" + BOLD + "=" * 50 + RESET)
+
+    banner_colors = [RED, GREEN, BLUE]
+    for i, line in enumerate(banner):
+        print(f"{BOLD}{banner_colors[i]}{line}{RESET}")
+
+
+def _run_menu():
+    """Show the menu and run the chosen workflow until the user quits."""
+    _print_banner()
+    flows = {
+        "grids": lambda: run_spectra_flow(source="all"),
+        "filters": run_filters_flow,
+        "filters_combine": run_filter_combine_flow,
+        "rebuild": run_rebuild_flow,
+        "combine": run_combine_flow,
+        "ml_completer": run_ml_completer_flow,
+        "ml_generator": run_ml_generator_flow,
+        "grid_densifier": run_grid_densifier_flow,
+        "mesa_prepare": run_mesa_prepare_flow,
+        "config": run_config_flow,
+        "coverage": run_coverage_flow,
+        "import": run_import_flow,
+    }
+    while True:
+        flow = flows.get(menu())
+        if flow is None:
+            sys.exit(0)
+        flow()
+
+
+# ------------ Main CLI ------------
+
+def main():
+    parser = _build_parser()
+    args = parser.parse_args()
+    if args.cmd is None:
+        return _run_menu()
+    return _COMMANDS[args.cmd](args, parser)
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

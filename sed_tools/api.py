@@ -39,22 +39,19 @@ Example usage::
 
 from __future__ import annotations
 
-import csv
 import logging
-import os
+import math
 import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterator, List, Optional, Sequence, Tuple, Union
-
-logger = logging.getLogger(__name__)
+from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import pandas as pd
+from requests import RequestException
 
 from ._lookup_io import find_teff_column, find_logg_column, find_metallicity_column, find_file_column
 from .models import (
-    DATA_DIR_DEFAULT,
     FILTER_DIR_DEFAULT,
     STELLAR_DIR_DEFAULT,
     EvaluatedSED,
@@ -63,7 +60,91 @@ from .models import (
     SED as _SEDCore,
 )
 
+logger = logging.getLogger(__name__)
+
 Number = Union[int, float, np.floating]
+
+# Remote spectral grid sources, in the order SED.fetch tries them.
+_SPECTRA_SOURCES = ("njm", "svo", "msg", "mast")
+
+# What a remote source raises when it is unreachable or serves something unexpected.
+_SOURCE_ERRORS = (RequestException, OSError, ValueError, RuntimeError)
+
+
+def _unusable_after_cleaning(summary: Dict[str, Any]) -> List[str]:
+    """Spectra that ``clean_model_dir`` could not make usable: invalid, index-only or failed."""
+    return [*summary['skipped_invalid'], *summary['skipped_index'], *summary['error']]
+
+
+def _directory_state(directory: Path) -> Dict[str, int]:
+    """Name and modification time of each entry in ``directory`` ({} if it does not exist)."""
+    directory = Path(directory)
+    if not directory.is_dir():
+        return {}
+    return {path.name: path.stat().st_mtime_ns for path in directory.iterdir()}
+
+
+def _build_flux_cube(model_dir: Path) -> Path:
+    """Run precompute_flux_cube on ``model_dir`` and return what it wrote.
+
+    That is ``flux_cube.bin``, or ``variants_index.csv`` when a grid with extra
+    axes is split into one flux cube per variant.  precompute_flux_cube can
+    also stop without writing either (it then prints why), so RuntimeError is
+    raised unless one of them was written by this call.
+    """
+    from .precompute_flux_cube import precompute_flux_cube
+
+    model_dir = Path(model_dir)
+    outputs = (model_dir / "flux_cube.bin", model_dir / "variants_index.csv")
+    before = {path: path.stat().st_mtime_ns for path in outputs if path.exists()}
+    precompute_flux_cube(str(model_dir), str(outputs[0]))
+    for path in outputs:
+        if path.exists() and path.stat().st_mtime_ns != before.get(path):
+            return path
+    raise RuntimeError(f"No flux cube was built in {model_dir}; see the flux cube messages above")
+
+
+def _build_combined_grid(selected_models: List[Tuple[str, str]], output_dir: str, *,
+                         visualization: bool = True) -> None:
+    """Merge the ``(name, path)`` grids onto common parameter and wavelength grids and save to ``output_dir``."""
+    from .combine_stellar_atm import (
+        build_combined_flux_cube,
+        create_common_wavelength_grid,
+        create_unified_grid,
+        load_model_data,
+        save_combined_data,
+        visualize_parameter_space,
+    )
+
+    print("\nLoading spectral grid data...")
+    all_models_data = []
+    for name, path in selected_models:
+        print(f"  Loading {name}...")
+        all_models_data.append(load_model_data(path))
+
+    print("\nCreating unified parameter grids...")
+    teff_grid, logg_grid, meta_grid = create_unified_grid(all_models_data)
+    wavelength_grid = create_common_wavelength_grid(all_models_data)
+
+    print("\nBuilding combined flux cube...")
+    flux_cube, source_map = build_combined_flux_cube(
+        all_models_data, teff_grid, logg_grid, meta_grid, wavelength_grid
+    )
+
+    save_combined_data(
+        output_dir,
+        teff_grid,
+        logg_grid,
+        meta_grid,
+        wavelength_grid,
+        flux_cube,
+        all_models_data,
+    )
+
+    if visualization:
+        visualize_parameter_space(
+            teff_grid, logg_grid, meta_grid, source_map, all_models_data, output_dir,
+            wavelength_grid=wavelength_grid, flux_cube=flux_cube)
 
 
 # =============================================================================
@@ -318,28 +399,102 @@ class SpectralGrid:
         
         # Build flux cube
         if build_flux_cube and len(self.spectra) > 0:
-            from .precompute_flux_cube import precompute_flux_cube
-            try:
-                precompute_flux_cube(str(path), str(path / "flux_cube.bin"))
-                print(f"[write] Built flux_cube.bin")
-            except Exception as e:
-                print(f"[write] Warning: flux cube build failed: {e}")
-        
+            written = _build_flux_cube(path)
+            if written.name == "flux_cube.bin":
+                print("[write] Built flux_cube.bin")
+            else:
+                print(f"[write] Built one flux cube per extra-axis variant, listed in {written}")
+
         # Build H5 bundle
         if build_h5 and len(self.spectra) > 0:
             from . import build_h5_bundle_from_txt
-            try:
-                build_h5_bundle_from_txt(str(path), str(path / f"{self.name}.h5"))
-                print(f"[write] Built {self.name}.h5")
-            except Exception as e:
-                print(f"[write] Warning: H5 bundle build failed: {e}")
-        
+            if not build_h5_bundle_from_txt(str(path), str(path / f"{self.name}.h5")):
+                raise RuntimeError(f"No .txt spectra in {path} to bundle into {self.name}.h5")
+            print(f"[write] Built {self.name}.h5")
+
         return path
 
 
 # Existing imports continue to refer to the same classes.
 Catalog = SpectralGrid
 CatalogInfo = SpectralGridInfo
+
+
+def _read_listed_spectra(lookup_path: Path, grid_name: str) -> List[Spectrum]:
+    """The spectra a lookup table lists, for rows whose file exists beside it.
+
+    Raises ValueError naming the file when a listed spectrum cannot be read.
+    """
+    model_dir = lookup_path.parent
+    df = pd.read_csv(lookup_path)
+    df.columns = [c.lstrip('#').strip().lower() for c in df.columns]
+    file_col = find_file_column(df.columns)
+    teff_col = find_teff_column(df.columns)
+    logg_col = find_logg_column(df.columns)
+    meta_col = find_metallicity_column(df.columns)
+
+    spectra = []
+    for _, row in df.iterrows():
+        filename = row[file_col] if file_col else None
+        if not filename or not (model_dir / filename).exists():
+            continue
+        try:
+            wl, fl = np.loadtxt(model_dir / filename, unpack=True, comments='#')
+            spectra.append(Spectrum(
+                wavelength=wl,
+                flux=fl,
+                teff=float(row.get(teff_col, np.nan)) if teff_col else np.nan,
+                logg=float(row.get(logg_col, np.nan)) if logg_col else np.nan,
+                metallicity=float(row.get(meta_col, np.nan)) if meta_col else np.nan,
+                filename=filename,
+                source_catalog=grid_name,
+            ))
+        except (OSError, ValueError) as exc:
+            raise ValueError(f"Cannot read spectrum {model_dir / filename} listed in {lookup_path}: {exc}") from exc
+    return spectra
+
+
+def _import_sources(src: Path) -> Tuple[List[Path], Path]:
+    """The .txt spectra to import from a directory or a single file, and their directory."""
+    if not src.exists():
+        raise FileNotFoundError(f"Source path not found: {src}")
+
+    if src.is_dir():
+        files = sorted(src.glob("*.txt"))
+        src_dir = src
+    elif src.is_file() and src.suffix.lower() == ".txt":
+        files = [src]
+        src_dir = src.parent
+    else:
+        raise ValueError(f"Source must be a directory or a .txt file: {src}")
+
+    if not files:
+        raise RuntimeError(f"No .txt spectra found in {src}")
+    return files, src_dir
+
+
+def _report_import_headers(files: List[Path], src_dir: Path) -> List[str]:
+    """Print how many files carry Teff, logg and [M/H]; return the names of those that do not."""
+    from .header_parser import parse_header
+
+    missing: List[str] = []
+    for f in files:
+        h = parse_header(str(f))
+        vals = [float(h.get(k, float("nan"))) for k in ("teff", "logg", "metallicity")]
+        if any(math.isnan(v) for v in vals):
+            missing.append(f.name)
+
+    print(f"[import] {len(files)} .txt files in {src_dir}")
+    print(f"[import] parseable Teff+logg+[M/H] headers: {len(files) - len(missing)}/{len(files)}")
+    if missing:
+        print(f"[import] missing one or more parameters: {len(missing)}")
+        for b in missing[:10]:
+            print(f"           {b}")
+        if len(missing) > 10:
+            print(f"           ... and {len(missing) - 10} more")
+        print("[import] If a key is merely unrecognised, add it to ALIASES "
+              "in header_parser.py.")
+    return missing
 
 
 # =============================================================================
@@ -457,24 +612,18 @@ class SED:
         -------
         List[SpectralGridInfo]
             Available spectral grids matching the criteria
+
+        A remote source that cannot be queried is skipped with a warning;
+        RuntimeError is raised if every requested remote source fails.
         """
+        if source not in (None, 'local', 'all', *_SPECTRA_SOURCES):
+            raise ValueError(f"Unknown source: {source}")
         catalogs = []
-        
-        # Local catalogs
-        if include_local and (source is None or source == 'local' or source == 'all'):
+        if include_local and source in (None, 'local', 'all'):
             catalogs.extend(cls._query_local())
-        
-        # Remote sources
         if include_remote:
-            if source is None or source in ('svo', 'all'):
-                catalogs.extend(cls._query_svo())
-            if source is None or source in ('msg', 'all'):
-                catalogs.extend(cls._query_msg())
-            if source is None or source in ('mast', 'all'):
-                catalogs.extend(cls._query_mast())
-            if source is None or source in ('njm', 'all'):
-                catalogs.extend(cls._query_njm())
-        
+            catalogs.extend(cls._query_remote(source))
+
         # Filter by parameter coverage
         if any([teff_min, teff_max, logg_min, logg_max, metallicity_min, metallicity_max]):
             catalogs = [
@@ -515,7 +664,7 @@ class SED:
                 is_local=True,
             )
             
-            # Try to extract parameter ranges from flux cube
+            # Parameter ranges from the flux cube header
             try:
                 from .models import _read_flux_cube_header
                 meta = _read_flux_cube_header(cube)
@@ -523,83 +672,81 @@ class SED:
                 info.logg_range = (float(meta['logg'][0]), float(meta['logg'][-1]))
                 info.metallicity_range = (float(meta['meta'][0]), float(meta['meta'][-1]))
                 info.wavelength_range = (float(meta['wavelengths'][0]), float(meta['wavelengths'][-1]))
-            except Exception:
-                logger.debug("Could not read flux cube header for %s", entry.name, exc_info=True)
+            except (OSError, ValueError, IndexError) as exc:
+                raise ValueError(f"Cannot read the flux cube header of local grid '{entry.name}' ({cube}): "
+                                 f"{exc}. Rebuild it with: sed-tools rebuild --grids {entry.name}") from exc
 
             # Count spectra from lookup table
             if lookup.exists():
                 try:
-                    df = pd.read_csv(lookup)
-                    info.n_spectra = len(df)
-                except Exception:
-                    logger.debug("Could not read lookup table for %s", entry.name, exc_info=True)
-            
+                    info.n_spectra = len(pd.read_csv(lookup))
+                except (OSError, ValueError) as exc:
+                    raise ValueError(f"Cannot read {lookup} of local grid '{entry.name}': {exc}") from exc
+
             catalogs.append(info)
         
         return catalogs
     
     @classmethod
+    def _query_remote(cls, source: Optional[str]) -> List[SpectralGridInfo]:
+        """Grids from each requested remote source; a source that fails is skipped with a warning."""
+        queries = {'svo': cls._query_svo, 'msg': cls._query_msg,
+                   'mast': cls._query_mast, 'njm': cls._query_njm}
+        requested = [name for name in queries if source in (None, 'all', name)]
+        catalogs, errors = [], []
+        for name in requested:
+            try:
+                catalogs.extend(queries[name]())
+            except _SOURCE_ERRORS as exc:
+                errors.append(f"{name}: {exc}")
+                logger.warning("[query] %s spectral grid discovery failed: %s", name, exc)
+        if requested and len(errors) == len(requested):
+            raise RuntimeError("Spectral grid discovery failed for every requested source: "
+                               + "; ".join(errors))
+        return catalogs
+
+    @classmethod
     def _query_svo(cls) -> List[SpectralGridInfo]:
         """Query SVO remote spectral grids."""
-        try:
-            from .svo_spectra_grabber import SVOSpectraGrabber
-            grabber = SVOSpectraGrabber(base_dir=str(cls._model_root))
-            models = grabber.discover_models()
-            return [
-                SpectralGridInfo(name=m, source='svo', url="http://svo2.cab.inta-csic.es/theory/newov2/")
-                for m in models
-            ]
-        except Exception as e:
-            logger.debug("[query] SVO discovery failed: %s", e, exc_info=True)
-            return []
+        from .svo_spectra_grabber import SVOSpectraGrabber
+        grabber = SVOSpectraGrabber(base_dir=str(cls._model_root))
+        return [
+            SpectralGridInfo(name=m, source='svo', url="http://svo2.cab.inta-csic.es/theory/newov2/")
+            for m in grabber.discover_models()
+        ]
 
     @classmethod
     def _query_msg(cls) -> List[SpectralGridInfo]:
         """Query MSG (Townsend) remote spectral grids."""
-        try:
-            from .msg_spectra_grabber import MSGSpectraGrabber
-            grabber = MSGSpectraGrabber(base_dir=str(cls._model_root))
-            models = grabber.discover_models()
-            return [
-                SpectralGridInfo(name=m, source='msg', description="MSG HDF5 format")
-                for m in models
-            ]
-        except Exception as e:
-            logger.debug("[query] MSG discovery failed: %s", e, exc_info=True)
-            return []
+        from .msg_spectra_grabber import MSGSpectraGrabber
+        grabber = MSGSpectraGrabber(base_dir=str(cls._model_root))
+        return [
+            SpectralGridInfo(name=m, source='msg', description="MSG HDF5 format")
+            for m in grabber.discover_models()
+        ]
 
     @classmethod
     def _query_mast(cls) -> List[SpectralGridInfo]:
         """Query MAST (BOSZ) remote spectral grids."""
-        try:
-            from .mast_spectra_grabber import MASTSpectraGrabber
-            grabber = MASTSpectraGrabber(base_dir=str(cls._model_root))
-            models = grabber.discover_models()
-            return [
-                SpectralGridInfo(name=m, source='mast', description="BOSZ spectral grids")
-                for m in models
-            ]
-        except Exception as e:
-            logger.debug("[query] MAST discovery failed: %s", e, exc_info=True)
-            return []
+        from .mast_spectra_grabber import MASTSpectraGrabber
+        grabber = MASTSpectraGrabber(base_dir=str(cls._model_root))
+        return [
+            SpectralGridInfo(name=m, source='mast', description="BOSZ spectral grids")
+            for m in grabber.discover_models()
+        ]
 
     @classmethod
     def _query_njm(cls) -> List[SpectralGridInfo]:
-        """Query NJM mirror remote spectral grids."""
-        try:
-            from .njm_spectra_grabber import NJMSpectraGrabber
-            grabber = NJMSpectraGrabber(base_dir=str(cls._model_root))
-            if not grabber.is_available():
-                return []
-            models = grabber.discover_models()
-            return [
-                SpectralGridInfo(name=m, source='njm', description="NJM pre-processed mirror")
-                for m in models
-            ]
-        except Exception as e:
-            logger.debug("[query] NJM discovery failed: %s", e, exc_info=True)
-            return []
-    
+        """Query NJM mirror remote spectral grids; RuntimeError if the mirror is unreachable."""
+        from .njm_spectra_grabber import NJMSpectraGrabber
+        grabber = NJMSpectraGrabber(base_dir=str(cls._model_root))
+        if not grabber.is_available():
+            raise RuntimeError(f"NJM mirror {grabber.base_url} is unreachable")
+        return [
+            SpectralGridInfo(name=m, source='njm', description="NJM pre-processed mirror")
+            for m in grabber.discover_models()
+        ]
+
     @classmethod
     def fetch(
         cls,
@@ -642,55 +789,41 @@ class SED:
         -------
         SED
             SED instance with the fetched spectral grid in sed.grid
+
+        Raises
+        ------
+        ValueError
+            If no source could supply the grid; the message gives each source's error.
+        RuntimeError
+            If a failed download left files behind (another source is then
+            not tried), or cleaning left spectra unusable.
         """
         base_dir = Path(model_root) if model_root else cls._model_root
         base_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Build list of sources to try
-        if source is not None:
-            sources_to_try = [source]
+
+        if source is None:
+            sources_to_try, failures = cls._get_sources_for_catalog(catalog)
+        elif source in _SPECTRA_SOURCES:
+            sources_to_try, failures = [source], []
         else:
-            # Try sources in order of preference
-            sources_to_try = cls._get_sources_for_catalog(catalog)
-        
-        # Try each source until one works
-        metadata = None
-        grabber = None
-        used_source = None
-        
-        for src in sources_to_try:
-            try:
-                print(f"[fetch] Trying {catalog} from {src}...")
-                grabber = cls._get_grabber(src, str(base_dir), workers)
-                metadata = grabber.get_model_metadata(catalog)
-                if metadata:
-                    used_source = src
-                    break
-                else:
-                    print(f"[fetch] {src}: no metadata returned, trying next...")
-            except Exception as e:
-                print(f"[fetch] {src} failed: {e}, trying next...")
-                continue
-        
-        if not metadata or grabber is None:
-            tried = ", ".join(sources_to_try)
-            raise ValueError(f"Spectral grid '{catalog}' not found. Tried: {tried}")
-        
-        print(f"[fetch] Downloading {catalog} from {used_source}...")
-        n_downloaded = grabber.download_model_spectra(catalog, metadata)
-        print(f"[fetch] Downloaded {n_downloaded} spectra")
-        
-        # Clean/standardize units
+            raise ValueError(f"Unknown source: {source}")
         model_dir = base_dir / catalog
+        used_source = cls._download_from_first_source(catalog, sources_to_try, failures, model_dir, workers)
+
+        # Clean/standardize units
         if clean:
             from .spectra_cleaner import clean_model_dir
             summary = clean_model_dir(str(model_dir), try_h5_recovery=True, rebuild_lookup=True)
-            n_fixed = len(summary.get('fixed', []))
-            n_total = summary.get('total', 0)
-            print(f"[fetch] Cleaned: {n_total} total, {n_fixed} fixed")
-        
+            print(f"[fetch] Cleaned: {summary['total']} total, {len(summary['converted'])} converted")
+            unusable = _unusable_after_cleaning(summary)
+            if unusable:
+                raise RuntimeError(
+                    f"{len(unusable)} of {summary['total']} spectra of '{catalog}' in {model_dir} are unusable "
+                    f"after cleaning (invalid, index-only or failed; see the [clean] report above): "
+                    + ", ".join(unusable))
+
         # Load spectra into SpectralGrid object
-        cat = cls._load_catalog_from_dir(model_dir, catalog, source)
+        cat = cls._load_catalog_from_dir(model_dir, catalog, used_source)
         
         # Apply parameter filters
         if any([teff_min, teff_max, logg_min, logg_max, metallicity_min, metallicity_max]):
@@ -707,57 +840,66 @@ class SED:
         return cls(catalog=cat, model_root=base_dir)
     
     @classmethod
-    def _get_sources_for_catalog(cls, catalog: str) -> List[str]:
-        """Get ordered list of sources that might have this spectral grid."""
-        sources = []
-        
-        # Try NJM first (pre-processed)
-        try:
-            from .njm_spectra_grabber import NJMSpectraGrabber
-            njm = NJMSpectraGrabber(base_dir=str(cls._model_root))
-            if njm.is_available():
-                models = njm.discover_models()
-                if catalog in models:
-                    sources.append('njm')
-        except Exception:
-            logger.debug("NJM source discovery failed for %s", catalog, exc_info=True)
+    def _get_sources_for_catalog(cls, catalog: str) -> Tuple[List[str], List[str]]:
+        """Sources whose index lists this spectral grid (NJM first), and each discovery failure."""
+        queries = {'njm': cls._query_njm, 'svo': cls._query_svo,
+                   'msg': cls._query_msg, 'mast': cls._query_mast}
+        sources, failures = [], []
+        for name, query in queries.items():
+            try:
+                listed = [info.name for info in query()]
+            except _SOURCE_ERRORS as exc:
+                failures.append(f"{name}: discovery failed: {exc}")
+                logger.warning("[fetch] %s discovery failed: %s; trying the other sources", name, exc)
+                continue
+            if catalog in listed:
+                sources.append(name)
 
-        # Try SVO
-        try:
-            from .svo_spectra_grabber import SVOSpectraGrabber
-            svo = SVOSpectraGrabber(base_dir=str(cls._model_root))
-            models = svo.discover_models()
-            if catalog in models:
-                sources.append('svo')
-        except Exception:
-            logger.debug("SVO source discovery failed for %s", catalog, exc_info=True)
-
-        # Try MSG
-        try:
-            from .msg_spectra_grabber import MSGSpectraGrabber
-            msg = MSGSpectraGrabber(base_dir=str(cls._model_root))
-            models = msg.discover_models()
-            if catalog in models:
-                sources.append('msg')
-        except Exception:
-            logger.debug("MSG source discovery failed for %s", catalog, exc_info=True)
-
-        # Try MAST
-        try:
-            from .mast_spectra_grabber import MASTSpectraGrabber
-            mast = MASTSpectraGrabber(base_dir=str(cls._model_root))
-            models = mast.discover_models()
-            if catalog in models:
-                sources.append('mast')
-        except Exception:
-            logger.debug("MAST source discovery failed for %s", catalog, exc_info=True)
-        
         # Always include SVO as fallback if not already there
         if 'svo' not in sources:
             sources.append('svo')
-        
-        return sources
-    
+        return sources, failures
+
+    @classmethod
+    def _download_from_first_source(cls, catalog: str, sources: List[str], failures: List[str],
+                                    model_dir: Path, workers: int) -> str:
+        """Download ``catalog`` into ``model_dir`` from the first source that can supply it.
+
+        Returns that source.  A source that fails is recorded in ``failures``
+        with a warning and the next one is tried, unless the failed attempt
+        changed ``model_dir``: the next source's spectra would then be mixed
+        with its files, so RuntimeError is raised instead.  ValueError lists
+        every failure when no source succeeds.
+        """
+        for src in sources:
+            print(f"[fetch] Trying {catalog} from {src}...")
+            before = _directory_state(model_dir)
+            error = cls._download_from(src, catalog, model_dir, workers)
+            if error is None:
+                return src
+            failures.append(f"{src}: {error}")
+            if _directory_state(model_dir) != before:
+                raise RuntimeError(
+                    f"Fetching '{catalog}' stopped: {src} failed after changing {model_dir}, so another "
+                    f"source's spectra would be mixed with its files. Tried: {'; '.join(failures)}")
+            logger.warning("[fetch] %s: %s, trying next...", src, error)
+        raise ValueError(f"Spectral grid '{catalog}' could not be fetched. Tried: {'; '.join(failures)}")
+
+    @classmethod
+    def _download_from(cls, src: str, catalog: str, model_dir: Path, workers: int) -> Optional[str]:
+        """Download ``catalog`` from one source; returns None on success, else what went wrong."""
+        try:
+            grabber = cls._get_grabber(src, str(model_dir.parent), workers)
+            metadata = grabber.get_model_metadata(catalog)
+            if not metadata:
+                return f"no metadata for {catalog}"
+            print(f"[fetch] Downloading {catalog} from {src}...")
+            n_downloaded = grabber.download_model_spectra(catalog, metadata)
+        except _SOURCE_ERRORS as exc:
+            return str(exc)
+        print(f"[fetch] Downloaded {n_downloaded} spectra")
+        return None if n_downloaded else "no spectra downloaded"
+
     @classmethod
     def _get_grabber(cls, source: str, base_dir: str, workers: int):
         """Get the appropriate grabber instance."""
@@ -766,10 +908,13 @@ class SED:
             return SVOSpectraGrabber(base_dir=base_dir, max_workers=workers)
         elif source == 'msg':
             from .msg_spectra_grabber import MSGSpectraGrabber
-            return MSGSpectraGrabber(base_dir=base_dir, max_workers=workers)
+            grabber = MSGSpectraGrabber(base_dir=base_dir, max_workers=workers)
+            grabber.discover_models()  # get_model_metadata finds grids in the index this reads
+            return grabber
         elif source == 'mast':
-            from .mast_spectra_grabber import MASTSpectraGrabber
-            return MASTSpectraGrabber(base_dir=base_dir, max_workers=workers)
+            # The MAST grabber asks on the terminal which metallicities to download.
+            raise RuntimeError("MAST (BOSZ) grids are fetched with 'sed-tools grids --source mast', which asks "
+                               "which metallicities to download; SED.fetch cannot answer that prompt")
         elif source == 'njm':
             from .njm_spectra_grabber import NJMSpectraGrabber
             return NJMSpectraGrabber(base_dir=base_dir)
@@ -778,41 +923,9 @@ class SED:
     
     @classmethod
     def _load_catalog_from_dir(cls, model_dir: Path, name: str, source: str) -> SpectralGrid:
-        """Load spectra from a local directory into a SpectralGrid."""
-        spectra = []
-        
-        # Read lookup table
+        """Load the spectra listed in ``lookup_table.csv`` into a SpectralGrid."""
         lookup_path = model_dir / "lookup_table.csv"
-        if lookup_path.exists():
-            df = pd.read_csv(lookup_path)
-            
-            # Normalize column names
-            df.columns = [c.lstrip('#').strip().lower() for c in df.columns]
-            
-            # Find column mappings
-            file_col = find_file_column(df.columns)
-            teff_col = find_teff_column(df.columns)
-            logg_col = find_logg_column(df.columns)
-            meta_col = find_metallicity_column(df.columns)
-            
-            for _, row in df.iterrows():
-                filename = row[file_col] if file_col else None
-                if filename and (model_dir / filename).exists():
-                    try:
-                        wl, fl = np.loadtxt(model_dir / filename, unpack=True, comments='#')
-                        spec = Spectrum(
-                            wavelength=wl,
-                            flux=fl,
-                            teff=float(row.get(teff_col, np.nan)) if teff_col else np.nan,
-                            logg=float(row.get(logg_col, np.nan)) if logg_col else np.nan,
-                            metallicity=float(row.get(meta_col, np.nan)) if meta_col else np.nan,
-                            filename=filename,
-                            source_catalog=name,
-                        )
-                        spectra.append(spec)
-                    except Exception:
-                        logger.debug("Could not load spectrum %s", filename, exc_info=True)
-
+        spectra = _read_listed_spectra(lookup_path, name) if lookup_path.exists() else []
         return SpectralGrid(
             name=name,
             source=source,
@@ -939,55 +1052,18 @@ class SED:
         build_h5 : build the HDF5 bundle.
         dry_run : only report how many files have parseable headers; do not copy.
 
-        Returns a summary dict.
+        Returns a summary dict.  Files whose headers lack a parameter, or that
+        cleaning leaves unusable, are left out of the built grid and then
+        listed in a RuntimeError.
         """
-        import math
-
-        from .header_parser import parse_header
-
-        src = Path(src).expanduser()
-        if not src.exists():
-            raise FileNotFoundError(f"Source path not found: {src}")
-
-        if src.is_dir():
-            files = sorted(src.glob("*.txt"))
-            src_dir = src
-        elif src.is_file() and src.suffix.lower() == ".txt":
-            files = [src]
-            src_dir = src.parent
-        else:
-            raise ValueError(f"Source must be a directory or a .txt file: {src}")
-
-        if not files:
-            raise RuntimeError(f"No .txt spectra found in {src}")
-
+        files, src_dir = _import_sources(Path(src).expanduser())
         if name is None:
             name = src_dir.name
         base = Path(model_root) if model_root else cls._model_root
         dest = Path(base) / name
 
-        # --- header check (also the dry-run report) ---
-        n_ok = 0
-        missing: List[str] = []
-        for f in files:
-            h = parse_header(str(f))
-            vals = [float(h.get(k, float("nan"))) for k in ("teff", "logg", "metallicity")]
-            if all(not math.isnan(v) for v in vals):
-                n_ok += 1
-            else:
-                missing.append(f.name)
-
-        print(f"[import] {len(files)} .txt files in {src_dir}")
-        print(f"[import] parseable Teff+logg+[M/H] headers: {n_ok}/{len(files)}")
-        if missing:
-            print(f"[import] missing one or more parameters: {len(missing)}")
-            for b in missing[:10]:
-                print(f"           {b}")
-            if len(missing) > 10:
-                print(f"           ... and {len(missing) - 10} more")
-            print("[import] If a key is merely unrecognised, add it to ALIASES "
-                  "in header_parser.py.")
-
+        missing = _report_import_headers(files, src_dir)
+        n_ok = len(files) - len(missing)
         if dry_run:
             return {
                 "name": name,
@@ -1019,12 +1095,18 @@ class SED:
 
         if build_h5:
             from . import build_h5_bundle_from_txt
-            build_h5_bundle_from_txt(str(dest), str(dest / f"{name}.h5"))
+            if not build_h5_bundle_from_txt(str(dest), str(dest / f"{name}.h5")):
+                raise RuntimeError(f"No .txt spectra left in {dest} to bundle into {name}.h5")
 
         if build_cube:
-            from .precompute_flux_cube import precompute_flux_cube
-            precompute_flux_cube(str(dest), str(dest / "flux_cube.bin"))
+            _build_flux_cube(dest)
 
+        unusable = _unusable_after_cleaning(summary)
+        if missing or unusable:
+            raise RuntimeError(
+                f"Imported '{name}' into {dest} without some spectra. "
+                f"Lacking a Teff, logg or [M/H] header ({len(missing)}): {', '.join(missing) or 'none'}. "
+                f"Unusable after cleaning ({len(unusable)}): {', '.join(unusable) or 'none'}.")
         print(f"[import] done. Load with: SED.local('{name}')")
         return {
             "name": name,
@@ -1062,65 +1144,21 @@ class SED:
             SED instance with the combined spectral grid
         """
         base_dir = Path(model_root) if model_root else cls._model_root
-        
-        from .combine_stellar_atm import (
-            build_combined_flux_cube,
-            create_common_wavelength_grid,
-            create_unified_grid,
-            load_model_data,
-            save_combined_data,
-            visualize_parameter_space,
-        )
-        
-        # Build list of (name, path) tuples
+
         selected_models = []
         for cat in catalogs:
             cat_path = base_dir / cat
             if not cat_path.exists():
                 raise FileNotFoundError(f"SpectralGrid directory not found: {cat_path}")
             selected_models.append((cat, str(cat_path)))
-        
+
         print(f"\nCombining {len(selected_models)} spectral grids:")
         for name, _ in selected_models:
             print(f"  - {name}")
-        
-        # Load data
-        print("\nLoading model data...")
-        all_models_data = []
-        for name, path in selected_models:
-            print(f"  Loading {name}...")
-            all_models_data.append(load_model_data(path))
-        
-        # Create grids
-        print("\nCreating unified parameter grids...")
-        teff_grid, logg_grid, meta_grid = create_unified_grid(all_models_data)
-        wavelength_grid = create_common_wavelength_grid(all_models_data)
-        
-        # Build cube
-        print("\nBuilding combined flux cube...")
-        flux_cube, source_map = build_combined_flux_cube(
-            all_models_data, teff_grid, logg_grid, meta_grid, wavelength_grid
-        )
-        
-        # Save
-        output_dir = str(base_dir / output)
-        save_combined_data(
-            output_dir,
-            teff_grid,
-            logg_grid,
-            meta_grid,
-            wavelength_grid,
-            flux_cube,
-            all_models_data,
-        )
-        
-        # Visualize
-        if visualization:
 
-            visualize_parameter_space(
-                teff_grid, logg_grid, meta_grid, source_map, all_models_data, output_dir,
-                wavelength_grid=wavelength_grid, flux_cube=flux_cube)
-            
+        output_dir = str(base_dir / output)
+        _build_combined_grid(selected_models, output_dir, visualization=visualization)
+
         print(f"\nSuccessfully combined {len(selected_models)} spectral grids!")
         print(f"Output: {output_dir}")
         
@@ -1322,14 +1360,19 @@ class MLCompleter:
             raise RuntimeError("No model trained. Call train() first.")
         
         output = output or f"{catalog}_extended"
-        
-        extend_catalog(
+
+        summary = extend_catalog(
             model=self._model,
             catalog_dir=str(self.base_dir / catalog),
             output_dir=str(self.base_dir / output),
             wavelength_range=wavelength_range,
         )
-        
+        if summary['failed']:
+            raise RuntimeError(f"{summary['failed']} of {summary['total']} spectra of '{catalog}' could not be "
+                               f"extended; the others were written to {self.base_dir / output}")
+        if not summary['total']:
+            raise FileNotFoundError(f"No spectra to extend in {self.base_dir / catalog}")
+
         return SED._load_catalog_from_dir(self.base_dir / output, output, 'ml')
     
     def load(self, model_name: str) -> 'MLCompleter':
@@ -1369,6 +1412,7 @@ class MLGenerator:
         self.base_dir = base_dir
         self.models_dir = models_dir
         self._generator = None
+        self._model_path: Optional[Path] = None  # set by train() and load()
     
     def train(
         self,
@@ -1423,7 +1467,8 @@ class MLGenerator:
             batch_size=batch_size,
             max_samples=max_samples,
         )
-        
+        self._model_path = save_path
+
         return self
     
     def load(self, model_name: str) -> 'MLGenerator':
@@ -1447,6 +1492,7 @@ class MLGenerator:
             raise FileNotFoundError(f"Model not found: {model_path}")
         
         self._generator = SEDGenerator(str(model_path))
+        self._model_path = model_path
         return self
     
     def generate(
@@ -1531,8 +1577,10 @@ class MLGenerator:
             )
         
         if output_dir is None:
-            # Default to SED subdirectory inside model directory
-            output_dir = str(Path(self._generator.config.get('_model_path', 'output')) / 'SED')
+            if self._model_path is None:
+                raise RuntimeError("Give output_dir: the model was not trained or loaded through this "
+                                   "MLGenerator, so its model directory is unknown")
+            output_dir = str(self._model_path / 'SED')
         
         return self._generator.generate_with_outputs(
             teff=teff,
@@ -1555,11 +1603,11 @@ class MLGenerator:
         if self._generator is None:
             raise RuntimeError("No model loaded. Call train() or load() first.")
         
-        ranges = self._generator.config.get('parameter_ranges', {})
+        ranges = self._generator.config['parameter_ranges']
         return {
-            'teff': tuple(ranges.get('teff', [0, 0])),
-            'logg': tuple(ranges.get('logg', [0, 0])),
-            'metallicity': tuple(ranges.get('meta', [0, 0])),
+            'teff': tuple(ranges['teff']),
+            'logg': tuple(ranges['logg']),
+            'metallicity': tuple(ranges['meta']),
         }
     
     @staticmethod
@@ -1669,7 +1717,7 @@ class Filters:
 
         report = FilterLibrary(cls._filter_root).facilities()
         for error in report["errors"]:
-            logger.info("Filter discovery: %s", error)
+            logger.warning("Filter discovery: %s", error)
         return [
             {"facility": row["label"], "facility_key": row["key"], "source": source, "is_local": False}
             for row in report["entries"]
@@ -1773,21 +1821,18 @@ class Filters:
             applies, so ``original`` and ``inferred`` types are kept.
         dry_run : bool
             Report what would be written without modifying files.
+
+        Each file is reported as it is tagged.  Files that cannot be tagged are
+        left unchanged and listed in a RuntimeError once the others are done;
+        an unreachable SVO raises
+        :class:`~sed_tools.filter_metadata.SVOUnreachableError` at once.
         """
-        from .filter_metadata import SVOMetadataClient, iter_filter_files, tag_filter_file, tag_filter_tree
+        from .filter_metadata import (SVOMetadataClient, SVOUnreachableError, iter_filter_files,
+                                      tag_filter_file, tag_filter_tree)
 
-        target = Path(path) if path is not None else cls._filter_root
-        if facility is not None:
-            client = SVOMetadataClient()
-            results = [
-                tag_filter_file(p, client=client, facility=facility, force=force, dry_run=dry_run)
-                for p in iter_filter_files(target)
-            ]
-        else:
-            results = tag_filter_tree(target, force=force, dry_run=dry_run)
+        rows: List[Dict[str, Any]] = []
 
-        rows = []
-        for r in results:
+        def record(r) -> None:
             rows.append({
                 "path": str(r.path),
                 "detector_type": r.detector_type,
@@ -1804,11 +1849,25 @@ class Filters:
                 flag = "*" if r.changed else " "
                 note = f"  ({r.note})" if r.note and (r.kept or r.source == "assumed") else ""
                 print(f"[filters]{flag} {r.path}: {r.detector_type} [{r.source}]{note}")
-        return rows
 
-    @classmethod
-    def _atmosphere_root(cls, filter_root: Optional[Union[str, Path]] = None) -> Path:
-        return (Path(filter_root) if filter_root else cls._filter_root).parent / "atmospheres"
+        target = Path(path) if path is not None else cls._filter_root
+        if facility is None:
+            tag_filter_tree(target, force=force, dry_run=dry_run, progress=record)
+            return rows
+
+        client = SVOMetadataClient()
+        failed = []
+        for p in iter_filter_files(target):
+            try:
+                record(tag_filter_file(p, client=client, facility=facility, force=force, dry_run=dry_run))
+            except SVOUnreachableError:
+                raise  # every later lookup would fail too
+            except (RequestException, ValueError) as exc:
+                failed.append(f"{p}: {exc}")
+        if failed:
+            raise RuntimeError(f"{len(failed)} of {len(failed) + len(rows)} filter files could not be tagged "
+                               "and were left unchanged:\n  " + "\n  ".join(failed))
+        return rows
 
     @classmethod
     def available(
@@ -2120,12 +2179,17 @@ class Filters:
         references and BibTeX) or as a ``.bib`` file (``format="bibtex"``).
 
         References NJM holds no BibTeX for appear in the ``.bib`` output as ``%``
-        comments with what is known; nothing is made up.
+        comments with what is known; nothing is made up.  The text lists any
+        target whose ``info.json`` could not be read; the ``.bib`` file cannot,
+        so then :class:`~sed_tools.filter_catalogue.CatalogueError` is raised
+        (:meth:`citations` returns what was found).
         """
-        from .filter_catalogue import format_bibtex, format_citations
+        from .filter_catalogue import CatalogueError, format_bibtex, format_citations
 
         result = cls.citations(*targets, filter_root=filter_root, refresh=refresh, offline=offline)
         if format == "bibtex":
+            if result["errors"]:
+                raise CatalogueError("Cannot cite every target: " + "; ".join(result["errors"]))
             return format_bibtex(result)
         if format == "text":
             return format_citations(result)
@@ -2156,7 +2220,6 @@ class Filters:
         (``vega/vega_flam.csv``) scaled to the curves; a path or a
         ``(wavelength Å, f_λ)`` pair overlays another spectrum.  Needs matplotlib.
         """
-        from .filter_catalogue import CatalogueError
         from .filter_colors import instrument_colors
         from .filter_plot import plot_curves
         from .filter_properties import load_vega
@@ -2164,29 +2227,8 @@ class Filters:
 
         if not targets:
             raise ValueError("nothing to plot: give Facility/Instrument[/Band] targets or a search result")
-        root = Path(filter_root or cls._filter_root)
-        selection = cls._targets(targets, filter_root)
         catalogue = cls._catalogue(filter_root)
-        chosen: List[Tuple[str, str, str, Path]] = []
-        for fac, inst, bands, directory in selection:
-            if directory is None:
-                directory = next((d for d in (root / fac / inst, *root.glob("*/*"))
-                                  if d.is_dir() and (d.parent.name.casefold(), d.name.casefold())
-                                  == (fac.casefold(), inst.casefold()) and any(d.glob("*.dat"))), None)
-            if directory is None:
-                if not fetch:
-                    raise FileNotFoundError(f"{fac}/{inst} is not installed under {root}")
-                try:
-                    served = catalogue.resolve(fac, inst)
-                    fac, inst = served["facility"], served["instrument"]
-                except CatalogueError:
-                    pass
-                directory = cls._fetch_published(fac, inst, filter_root=filter_root)
-            files = {p.stem: p for p in sorted(Path(directory).glob("*.dat"))}
-            for band in (files if bands is None else bands):
-                if band not in files:
-                    raise FileNotFoundError(f"{fac}/{inst} has no band {band!r} in {directory}")
-                chosen.append((fac, inst, band, Path(directory)))
+        chosen = cls._plot_bands(targets, filter_root, catalogue, fetch)
 
         curves, labels = {}, {}
         for fac, inst, band, directory in chosen:
@@ -2213,6 +2255,41 @@ class Filters:
             spectrum = vega
         return plot_curves(curves, colors=colors, labels=labels, normalize=normalize, vega=spectrum,
                            ax=ax, legend=legend, log_wavelength=log_wavelength, title=title)
+
+    @classmethod
+    def _plot_bands(cls, targets, filter_root, catalogue, fetch) -> List[Tuple[str, str, str, Path]]:
+        """``(facility, instrument, band, directory)`` for every band the plot targets select."""
+        chosen: List[Tuple[str, str, str, Path]] = []
+        for fac, inst, bands, directory in cls._targets(targets, filter_root):
+            if directory is None:
+                fac, inst, directory = cls._installed_or_fetched(fac, inst, filter_root, catalogue, fetch)
+            files = {p.stem: p for p in sorted(Path(directory).glob("*.dat"))}
+            for band in (files if bands is None else bands):
+                if band not in files:
+                    raise FileNotFoundError(f"{fac}/{inst} has no band {band!r} in {directory}")
+                chosen.append((fac, inst, band, Path(directory)))
+        return chosen
+
+    @classmethod
+    def _installed_or_fetched(cls, fac, inst, filter_root, catalogue, fetch) -> Tuple[str, str, Path]:
+        """``(facility, instrument, directory)`` of an installed instrument (names ignore case),
+        or of its published curves fetched under NJM's names for it."""
+        from .filter_catalogue import CatalogueError
+
+        root = Path(filter_root or cls._filter_root)
+        for d in (root / fac / inst, *root.glob("*/*")):
+            if (d.is_dir() and (d.parent.name.casefold(), d.name.casefold()) == (fac.casefold(), inst.casefold())
+                    and any(d.glob("*.dat"))):
+                return fac, inst, d
+        if not fetch:
+            raise FileNotFoundError(f"{fac}/{inst} is not installed under {root}")
+        try:
+            served = catalogue.resolve(fac, inst)
+        except CatalogueError as exc:
+            logger.warning("%s; fetching %s/%s under the name given", exc, fac, inst)
+        else:
+            fac, inst = served["facility"], served["instrument"]
+        return fac, inst, cls._fetch_published(fac, inst, filter_root=filter_root)
 
 
 # =============================================================================

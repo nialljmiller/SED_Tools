@@ -51,10 +51,8 @@ def terminal_unicode_enabled() -> bool:
 
 
 def terminal_width(default: int = 80) -> int:
-    try:
-        return shutil.get_terminal_size(fallback=(default, 24)).columns
-    except OSError:
-        return default
+    # get_terminal_size falls back to ``default`` itself when stdout is not a terminal.
+    return shutil.get_terminal_size(fallback=(default, 24)).columns
 
 
 def _paint(char: str, color: Optional[str], enabled: bool) -> str:
@@ -92,7 +90,7 @@ def scatter2d(
     ylo, yhi = _limits(yv)
     unicode_ok = terminal_unicode_enabled()
     dot, vert, horiz, corner = ("·", "│", "─", "└") if unicode_ok else (".", "|", "-", "+")
-    canvas = [[dot if False else " " for _ in range(canvas_w)] for _ in range(canvas_h)]
+    canvas = [[" " for _ in range(canvas_w)] for _ in range(canvas_h)]
     cell_colors = [[None for _ in range(canvas_w)] for _ in range(canvas_h)]
     labels = point_labels or {}
     colors = point_colors or {}
