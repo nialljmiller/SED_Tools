@@ -407,8 +407,15 @@ def run_interactive(base_dir: str = None, model=None, output=None):
         raise SystemExit(f"Error: {exc}") from exc
 
     if len(variants) == 1 and not variants[0].extra_axes:
-        raise SystemExit(f"Error: {model_dir} offers a single variant (no extra-axis cubes to "
-                         "choose from), so nothing was exported.")
+        # A single uniform grid needs no export: its own folder is what MESA reads.
+        if not variants[0].flux_cube_path.is_file():
+            raise SystemExit(f"Error: {model_dir} is a single uniform grid and has no flux_cube.bin yet. "
+                             "Build it with 'sed-tools rebuild'; the grid folder is then MESA-ready. "
+                             "Nothing was exported.")
+        print("This spectral grid has no extra-axis variants; it is a single uniform grid.")
+        print(f"Its flux_cube.bin covers the full grid, so {model_dir} is already MESA-ready. "
+              "Nothing to export.")
+        return
 
     print_variant_table(variants, model_name=model)
     chosen = _choose_variant(variants)

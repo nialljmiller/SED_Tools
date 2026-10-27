@@ -172,12 +172,24 @@ def test_mesa_prepare_exits_1_on_an_invalid_grid_choice(variant_grid, monkeypatc
     assert message.startswith("Error: invalid spectral grid selection '9'")
 
 
-def test_mesa_prepare_exits_1_when_the_grid_has_no_variants(tmp_path, monkeypatch):
-    # The message it used to print ("the existing flux_cube.bin already covers the
-    # full grid") was printed even when no flux_cube.bin had been built.
+def test_mesa_prepare_exits_1_for_a_single_grid_without_a_flux_cube(tmp_path, monkeypatch):
+    # It used to print "the existing flux_cube.bin already covers the full grid"
+    # and exit 0 even when no flux_cube.bin had been built.
     write_lookup(tmp_path / "Plain", ["file_name", "teff", "logg", "metallicity"], [("a.txt", 5000, 4.0, 0.0)])
     message = run_mesa_prepare(tmp_path, monkeypatch=monkeypatch, model="Plain", output=str(tmp_path / "out"))
-    assert "offers a single variant" in message and "nothing was exported" in message
+    assert "has no flux_cube.bin" in message and "Nothing was exported" in message
+    assert not (tmp_path / "out").exists()
+
+
+def test_mesa_prepare_accepts_a_single_grid_that_has_its_flux_cube(tmp_path, monkeypatch, capsys, cube_writer):
+    import numpy as np
+
+    from sed_tools import mesa_prepare
+
+    write_lookup(tmp_path / "Plain", ["file_name", "teff", "logg", "metallicity"], [("a.txt", 5000, 4.0, 0.0)])
+    cube_writer(tmp_path / "Plain" / "flux_cube.bin", [5000.0], [4.0], [0.0], [1000.0, 2000.0], np.ones((1, 1, 1, 2)))
+    mesa_prepare.run_interactive(base_dir=str(tmp_path), model="Plain", output=str(tmp_path / "out"))
+    assert "already MESA-ready" in capsys.readouterr().out
     assert not (tmp_path / "out").exists()
 
 
@@ -215,7 +227,7 @@ def test_sed_tools_mesa_prepare_exit_status_is_1_on_failure(tmp_path):
     done = subprocess.run([sys.executable, "-m", "sed_tools.cli", "mesa_prepare", "--base", str(tmp_path),
                            "--grid", "Plain", "--output", str(tmp_path / "out")],
                           cwd=root, capture_output=True, text=True, stdin=subprocess.DEVNULL)
-    assert done.returncode == 1 and "offers a single variant" in done.stderr
+    assert done.returncode == 1 and "has no flux_cube.bin" in done.stderr
 
 
 # ----------------------------------------------------------------------
