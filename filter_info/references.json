@@ -15804,6 +15804,42 @@
   "volume": "131",
   "year": 2018
  },
+ "doi:10.1088/1538-3873/ac4811": {
+  "authors": [
+   "Law, Nicholas M.",
+   "Corbett, Hank",
+   "Galliher, Nathan W.",
+   "Gonzalez, Ramses",
+   "Vasquez, Alan",
+   "Walters, Glenn",
+   "Machia, Lawrence",
+   "Ratzloff, Jeff",
+   "Ackley, Kendall",
+   "Bizon, Chris",
+   "Clemens, Christopher",
+   "Cox, Steven",
+   "Eikenberry, Steven",
+   "Howard, Ward S.",
+   "Glazier, Amy",
+   "Mann, Andrew W.",
+   "Quimby, Robert",
+   "Reichart, Daniel",
+   "Trilling, David"
+  ],
+  "bibtex": "@article{10.1088/1538-3873/ac4811, title={Low-cost Access to the Deep, High-cadence Sky: the Argus Optical Array}, volume={134}, ISSN={1538-3873}, url={http://dx.doi.org/10.1088/1538-3873/ac4811}, DOI={10.1088/1538-3873/ac4811}, number={1033}, journal={Publications of the Astronomical Society of the Pacific}, publisher={IOP Publishing}, author={Law, Nicholas M. and Corbett, Hank and Galliher, Nathan W. and Gonzalez, Ramses and Vasquez, Alan and Walters, Glenn and Machia, Lawrence and Ratzloff, Jeff and Ackley, Kendall and Bizon, Chris and Clemens, Christopher and Cox, Steven and Eikenberry, Steven and Howard, Ward S. and Glazier, Amy and Mann, Andrew W. and Quimby, Robert and Reichart, Daniel and Trilling, David}, year={2022}, month=Mar, pages={035003} }",
+  "doi": "10.1088/1538-3873/ac4811",
+  "journal": "PASP",
+  "key": "doi:10.1088/1538-3873/ac4811",
+  "page": "035003",
+  "resolved": "2026-10-27",
+  "resolved_by": "doi.org",
+  "short": "Law et al. 2022",
+  "title": "Low-cost Access to the Deep, High-cadence Sky: the Argus Optical Array",
+  "type": "article",
+  "url": "https://doi.org/10.1088/1538-3873/ac4811",
+  "volume": "134",
+  "year": 2022
+ },
  "doi:10.1088/1674-4527/ac424e": {
   "authors": [
    "Cao, Ye",
@@ -16681,6 +16717,33 @@
   "title": "LSST camera verification testing and characterization",
   "type": "misc",
   "url": "https://doi.org/10.1117/12.3019698",
+  "year": 2024
+ },
+ "doi:10.1117/12.3019797": {
+  "authors": [
+   "Law, Nicholas",
+   "Corbett, Hank",
+   "Vasquez Soto, Alan",
+   "Gonzalez, Ramses",
+   "Machia, Lawrence M.",
+   "Carney, Jonathan",
+   "Marshall, William",
+   "Walters, Glenn",
+   "Fitton, Shannon",
+   "Glazier, Amy",
+   "Procter, Thomas"
+  ],
+  "bibtex": "@inproceedings{10.1117/12.3019797, title={The Argus Array: low-cost access to the deep, high-cadence sky}, url={http://dx.doi.org/10.1117/12.3019797}, DOI={10.1117/12.3019797}, booktitle={Ground-based and Airborne Telescopes X}, publisher={SPIE}, author={Law, Nicholas and Corbett, Hank and Vasquez Soto, Alan and Gonzalez, Ramses and Machia, Lawrence M. and Carney, Jonathan and Marshall, William and Walters, Glenn and Fitton, Shannon and Glazier, Amy and Procter, Thomas}, editor={Marshall, Heather K. and Spyromilio, Jason and Usuda, Tomonori}, year={2024}, month=Aug, pages={70} }",
+  "doi": "10.1117/12.3019797",
+  "journal": "Ground-based and Airborne Telescopes X",
+  "key": "doi:10.1117/12.3019797",
+  "page": "70",
+  "resolved": "2026-10-27",
+  "resolved_by": "doi.org",
+  "short": "Law et al. 2024",
+  "title": "The Argus Array: low-cost access to the deep, high-cadence sky",
+  "type": "misc",
+  "url": "https://doi.org/10.1117/12.3019797",
   "year": 2024
  },
  "doi:10.1117/12.316525": {

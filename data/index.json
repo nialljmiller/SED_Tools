@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-10-27T21:10:34.833448",
+  "generated": "2026-10-27T21:32:54.562246",
   "base_url": "http://nillmill.ddns.net/sed_tools",
   "statistics": {
     "total_models": 1,
@@ -8,8 +8,8 @@
     "total_spectra": 6028,
     "total_size_bytes": 102629311050,
     "total_size_human": "95.58 GB",
-    "total_facilities": 212,
-    "total_filters": 11438
+    "total_facilities": 213,
+    "total_filters": 11442
   },
   "models": [
     "bt-cond"
@@ -49,6 +49,7 @@
       "Akatsuki",
       "AlSat1",
       "Aqua",
+      "Argus",
       "Astrosat",
       "BICEP",
       "BLAST",
@@ -1459,6 +1460,60 @@
             "info": "info.json",
             "size_bytes": 814076,
             "size_human": "795.00 KB"
+          }
+        },
+        "instrument_count": 2
+      },
+      "Argus": {
+        "name": "Argus",
+        "instruments": {
+          "DR280": {
+            "name": "DR280",
+            "filter_count": 2,
+            "filters": [
+              "beta",
+              "rho"
+            ],
+            "published_paths": {
+              "filter+optics+qe": 2
+            },
+            "detector_types": {
+              "photon": 2
+            },
+            "separate_components": {
+              "filter": 2,
+              "optics": 2,
+              "qe": 2
+            },
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 124382,
+            "size_human": "121.47 KB"
+          },
+          "System": {
+            "name": "System",
+            "filter_count": 2,
+            "filters": [
+              "beta",
+              "rho"
+            ],
+            "published_paths": {
+              "unspecified": 2
+            },
+            "detector_types": {
+              "unclassified": 2
+            },
+            "separate_components": {
+              "filter": 2,
+              "optics": 2,
+              "qe": 2
+            },
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 671849,
+            "size_human": "656.10 KB"
           }
         },
         "instrument_count": 2
@@ -27123,7 +27178,7 @@
         "ids": 9619,
         "sha256": "74cb445898d26ecdd2ce72e78a6357724eb4e42828cb6d9479e95e23a67ab0ba"
       },
-      "references": 399,
+      "references": 401,
       "unresolved_references": 0,
       "svo_fields": {
         "Fsun": {
