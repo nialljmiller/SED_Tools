@@ -185,7 +185,10 @@ def _pin_note(tables: SynphotTables, pins: Mapping[str, str], used: Iterable[str
 
 def _tail_beyond_published(path: Path, wl: np.ndarray, total: np.ndarray) -> float:
     """Largest total outside the published curve's wavelength range, relative to its peak."""
-    pw, pt = np.loadtxt(path, delimiter=",", skiprows=1, usecols=(0, 1), unpack=True)
+    try:
+        pw, pt = np.loadtxt(path, delimiter=",", skiprows=1, usecols=(0, 1), unpack=True)
+    except ValueError as exc:
+        raise ValueError(f"{path}: cannot read the published curve: {exc}") from exc
     out = (wl < pw.min()) | (wl > pw.max())
     return float(total[out].max() / pt.max()) if out.any() and pt.max() > 0 else 0.0
 
@@ -253,7 +256,8 @@ def _build_instrument(inst: str, prefix: str, inst_dir: Path, bands: Sequence[st
     for band in bands:
         try:
             comps, roles = _split_chain(tables, prefix, band)
-        except (ValueError, KeyError) as exc:
+        except ValueError as exc:
+            # Ramp, quad and grism bands have no single chain; the notes list them.
             skipped[band] = str(exc)
             continue
         used.update(comps)
@@ -265,10 +269,7 @@ def _build_instrument(inst: str, prefix: str, inst_dir: Path, bands: Sequence[st
                 inst_dir, role, wl, tr, band=band, name=band,
                 source="; ".join(tables.source(c, pins) for c in comps_for_role), manifest=manifest,
             )
-        try:
-            tails[band] = _tail_beyond_published(inst_dir / f"{band}.dat", *_product(tables, comps, pins))
-        except (OSError, ValueError, IndexError):
-            pass
+        tails[band] = _tail_beyond_published(inst_dir / f"{band}.dat", *_product(tables, comps, pins))
     manifest.detector_type = PHOTON
     manifest.ground_based = False
     manifest.outside_range = "zero"  # synphot evaluates throughput tables as zero outside their range
@@ -276,7 +277,7 @@ def _build_instrument(inst: str, prefix: str, inst_dir: Path, bands: Sequence[st
     manifest.notes = _notes(tables, prefix, skipped, tails, pins, used)
     manifest.save(inst_dir)
     if skipped:
-        logger.info("HST/%s skipped %d bands: %s", inst, len(skipped), skipped)
+        logger.warning("HST/%s: %d bands not decomposed into components: %s", inst, len(skipped), skipped)
 
 
 def build(
@@ -289,19 +290,24 @@ def build(
 ) -> List[Path]:
     """Populate components for the HST imagers in :data:`MODES`.
 
-    ``svo_client`` is accepted for compatibility and is not used.
+    Instruments without published curves are left out; once the others are
+    built, a FileNotFoundError lists them.  ``svo_client`` is accepted for
+    compatibility and is not used.
     """
     filter_root = Path(filter_root)
     tables = tables or SynphotTables(session=session)
-    built = []
+    built, unpublished = [], []
     for inst in instruments or MODES:
         prefix = MODES[inst]
         inst_dir = filter_root / FACILITY / inst
-        inst_dir.mkdir(parents=True, exist_ok=True)
         bands = sorted(p.stem for p in inst_dir.glob("*.dat"))
         if not bands:
-            logger.warning("HST/%s: no published curves present; fetch them first", inst)
+            unpublished.append(inst)
             continue
         _build_instrument(inst, prefix, inst_dir, bands, tables)
         built.append(inst_dir)
+    if unpublished:
+        raise FileNotFoundError(
+            f"{filter_root / FACILITY} has no published curves for {', '.join(unpublished)}; fetch them "
+            f"first (njm mirror or SVO). Built: {', '.join(p.name for p in built) or 'none'}.")
     return built

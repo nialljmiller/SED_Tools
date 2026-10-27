@@ -92,3 +92,75 @@ def test_build_simple_refuses_a_composite_band_without_a_published_curve(tmp_pat
     with pytest.raises(FileNotFoundError, match="no published curve for z"):
         build_simple(spec, tmp_path, session=_Session({}), svo_client=_SVO({}))
     assert not (inst / "manifest.json").exists()
+
+
+# ---------------------------------------------------------------------------
+# hst.build
+# ---------------------------------------------------------------------------
+def _fits_table(wl, tr):
+    import io
+
+    from astropy.io import fits
+
+    cols = [fits.Column(name="WAVELENGTH", format="D", array=np.asarray(wl, float)),
+            fits.Column(name="THROUGHPUT", format="D", array=np.asarray(tr, float))]
+    buf = io.BytesIO()
+    fits.HDUList([fits.PrimaryHDU(), fits.BinTableHDU.from_columns(cols)]).writeto(buf)
+    return buf.getvalue()
+
+
+def _hst_tables():
+    """ACS/SBC graph: F122M splits into ota x filter x mama; FR388N has no chain."""
+    from sed_tools.component_sources import hst
+
+    t = hst.SynphotTables.__new__(hst.SynphotTables)
+    t.tmg_name, t.tmc_name = "x_tmg.fits", "x_tmc.fits"
+    t.innode, t.outnode = np.array([1, 2, 3, 3]), np.array([2, 3, 4, 4])
+    t.keyword = np.array(["acs", "sbc", "f122m", "default"])
+    t.compname = np.array(["hst_ota", "acs_sbc_mama", "acs_f122m", "clear"])
+    names = ("hst_ota", "acs_sbc_mama", "acs_f122m")
+    t.files = {n: f"acscomp${n}_001_syn.fits" for n in names}
+    wl = np.linspace(1000.0, 3000.0, 21)
+    t._get = {f"{hst.TRDS}/comp/acs/{n}_001_syn.fits": _fits_table(wl, np.full(21, 0.5)) for n in names}.__getitem__
+    t._cache = {}
+    return t
+
+
+def _hst_published(root, bands=("F122M", "FR388N")):
+    inst = root / "HST" / "ACS_SBC"
+    for band in bands:
+        _published(inst, band)
+    return inst
+
+
+def test_hst_build_warns_about_bands_it_cannot_decompose(tmp_path, caplog):
+    from sed_tools.component_sources import hst
+    from sed_tools.filter_components import InstrumentManifest
+
+    inst = _hst_published(tmp_path)
+    with caplog.at_level("WARNING", logger="sed_tools.component_sources.hst"):
+        assert hst.build(tmp_path, instruments=["ACS_SBC"], tables=_hst_tables()) == [inst]
+    assert "1 bands not decomposed" in caplog.text and "FR388N" in caplog.text
+    manifest = InstrumentManifest.load(inst)
+    assert "Not decomposed: FR388N." in manifest.notes
+    assert set(manifest.components["filter"]) == {"F122M"}
+
+
+def test_hst_build_raises_after_building_the_others_for_instruments_without_curves(tmp_path):
+    from sed_tools.component_sources import hst
+
+    inst = _hst_published(tmp_path)
+    with pytest.raises(FileNotFoundError, match="no published curves for ACS_WFC.*Built: ACS_SBC"):
+        hst.build(tmp_path, instruments=["ACS_SBC", "ACS_WFC"], tables=_hst_tables())
+    assert (inst / "manifest.json").is_file()
+    assert not (tmp_path / "HST" / "ACS_WFC").exists()  # no empty directory left behind
+
+
+def test_hst_build_refuses_an_unreadable_published_curve(tmp_path):
+    from sed_tools.component_sources import hst
+
+    inst = _hst_published(tmp_path, bands=())
+    inst.mkdir(parents=True)
+    (inst / "F122M.dat").write_text("Wavelength,Transmission\n1500,0.1\nbad,row\n")
+    with pytest.raises(ValueError, match="F122M.dat: cannot read the published curve"):
+        hst.build(tmp_path, instruments=["ACS_SBC"], tables=_hst_tables())
