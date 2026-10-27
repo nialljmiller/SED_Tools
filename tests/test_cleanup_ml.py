@@ -519,7 +519,7 @@ def test_build_coverage_map_raises_on_unreadable_lookup(tmp_path):
                                               np.array([4.0]), np.array([0.0]))
 
 
-@pytest.mark.parametrize("cls", [mc.SEDCompleter])
+@pytest.mark.parametrize("cls", [mc.SEDCompleter, mg.SEDGenerator])
 def test_list_models_warns_naming_the_unreadable_config(cls, tmp_path, caplog):
     (tmp_path / "broken").mkdir()
     (tmp_path / "broken" / "config.json").write_text("{not valid json")
@@ -600,3 +600,64 @@ def test_completer_workflow_warns_about_unreadable_lookup_tables(stellar_dir, tm
     assert "gridC" not in out and "   1) gridB" in out
     assert "Not offering gridA: could not read" in caplog.text
     assert "Not offering gridC: could not read" in caplog.text
+
+
+# --- ml_sed_generator --------------------------------------------------
+
+def test_generator_prepare_training_data_warns_how_many_spectra_it_dropped(tmp_path, cube_writer, caplog):
+    wl = np.logspace(np.log10(1000.0), np.log10(50000.0), 200)
+    flux = np.full((2, 1, 1, 200), 1e-10)
+    flux[0, 0, 0, 5] = np.nan
+    cube_writer(tmp_path / "lib" / "flux_cube.bin", [4000.0, 5000.0], [4.0], [0.0], wl, flux)
+
+    params, _, _ = mg.SEDGenerator()._prepare_training_data(str(tmp_path / "lib"), 2)
+
+    assert params[:, 0].tolist() == [5000.0]
+    assert "dropped 1 of 2 sampled spectra (1 with non-positive or non-finite flux)" in caplog.text
+
+
+def test_generator_train_raises_before_saving_when_every_batch_is_nan(cpu_torch, tiny_library, tmp_path,
+                                                                      monkeypatch, capsys):
+    monkeypatch.setattr(mg.SEDGeneratorNetwork, "__call__", lambda self, x: self.model(x) * float("nan"))
+
+    with pytest.raises(RuntimeError, match="produced no usable epoch"):
+        mg.SEDGenerator().train(str(tiny_library), str(tmp_path / "model"), epochs=2,
+                                batch_size=3, max_samples=12, hidden_layers=[8])
+    out = capsys.readouterr().out
+    assert "Warning: NaN loss at epoch 1, skipping batch" in out
+    assert "Epoch 1: No valid batches, stopping" in out
+    assert not (tmp_path / "model").exists()
+
+
+def test_generator_train_rejects_a_grid_with_no_flux_above_the_floor(cpu_torch, tmp_path, cube_writer):
+    wl = np.logspace(np.log10(1000.0), np.log10(50000.0), 200)
+    cube_writer(tmp_path / "lib" / "flux_cube.bin", [4000.0, 5000.0], [4.0], [0.0], wl,
+                np.full((2, 1, 1, 200), 1e-30))
+
+    with pytest.raises(ValueError, match="No valid data points for normalization"):
+        mg.SEDGenerator().train(str(tmp_path / "lib"), str(tmp_path / "model"), epochs=1,
+                                batch_size=2, max_samples=2, hidden_layers=[8])
+    assert not (tmp_path / "model").exists()
+
+
+@pytest.mark.parametrize("menu", ["1", "2", "3"])
+@pytest.mark.parametrize("number", ["0", "-1"])
+def test_generator_workflow_rejects_zero_and_negative_menu_numbers(stellar_dir, tmp_path, monkeypatch,
+                                                                   capsys, menu, number):
+    # These used to index from the end of the list and pick the last entry.
+    _write_model_config(tmp_path / "models" / "gm1", {"model_type": "sed_generator"})
+    _feed_input(monkeypatch, [menu, number])
+
+    mg.run_interactive_workflow(str(stellar_dir), str(tmp_path / "models"))
+
+    assert capsys.readouterr().out.rstrip().endswith("Invalid selection")
+
+
+def test_generator_workflow_warns_about_an_unreadable_lookup_table(stellar_dir, tmp_path, monkeypatch, capsys, caplog):
+    (stellar_dir / "gridA" / "lookup_table.csv").write_text("")
+    _feed_input(monkeypatch, ["1", "x"])
+
+    mg.run_interactive_workflow(str(stellar_dir), str(tmp_path / "models"))
+
+    assert "   1) gridA                          (? SEDs)" in capsys.readouterr().out
+    assert f"Could not count the SEDs in {stellar_dir / 'gridA' / 'lookup_table.csv'}" in caplog.text

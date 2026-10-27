@@ -33,6 +33,7 @@ import json
 import logging
 import os
 import struct
+from collections import Counter
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -232,6 +233,7 @@ class SEDGenerator:
         params_list = []
         flux_list = []
         masks_list = []
+        dropped = Counter()
         
         n_samples = min(max_samples, total_seds)
         indices = np.random.permutation(total_seds)[:n_samples]
@@ -248,6 +250,7 @@ class SEDGenerator:
             
             # Skip invalid spectra
             if np.any(flux <= 0) or np.any(~np.isfinite(flux)):
+                dropped["non-positive or non-finite flux"] += 1
                 continue
             
             # Interpolate to target grid
@@ -268,6 +271,7 @@ class SEDGenerator:
             )
             
             if valid_mask.sum() < n_wl * 0.3:
+                dropped["less than 30% of the model grid covered"] += 1
                 continue
             
             flux_interp = np.where(valid_mask, flux_interp, 1e-30)
@@ -276,8 +280,12 @@ class SEDGenerator:
             flux_list.append(flux_interp)
             masks_list.append(valid_mask.astype(np.float32))
         
+        if dropped:
+            reasons = ", ".join(f"{count} with {reason}" for reason, count in dropped.items())
+            logger.warning("Training data from %s: dropped %d of %d sampled spectra (%s)",
+                           library_path, sum(dropped.values()), len(indices), reasons)
         if len(params_list) == 0:
-            raise ValueError("No valid training samples found")
+            raise ValueError(f"No valid training samples found in {library_path}")
         
         params = np.array(params_list, dtype=np.float32)
         flux = np.array(flux_list, dtype=np.float32)
@@ -347,6 +355,8 @@ class SEDGenerator:
         # Compute scaler params from valid data
         valid_mask = (masks > 0.5) & (flux_log > -25)
         flux_valid = flux_log[valid_mask]
+        if len(flux_valid) == 0:
+            raise ValueError(f"No valid data points for normalization in {library_path}")
         
         self.scaler_params = {
             'teff_mean': float(np.mean(params[:, 0])),
@@ -453,6 +463,7 @@ class SEDGenerator:
                 loss = masked_mse(pred, f_batch, m_batch)
                 
                 if torch.isnan(loss):
+                    print(f"  Warning: NaN loss at epoch {epoch+1}, skipping batch")
                     continue
                 
                 loss.backward()
@@ -475,6 +486,7 @@ class SEDGenerator:
                         val_losses.append(loss.item())
             
             if not train_losses or not val_losses:
+                print(f"  Epoch {epoch+1}: No valid batches, stopping")
                 break
             
             train_loss = np.mean(train_losses)
@@ -499,6 +511,12 @@ class SEDGenerator:
             if patience_counter >= patience:
                 print(f"  Early stopping at epoch {epoch+1}")
                 break
+        
+        if not history['train_loss']:
+            raise RuntimeError(
+                f"Training on {library_path} produced no usable epoch (every training or "
+                f"validation batch had a NaN loss); nothing was saved to {output_path}"
+            )
         
         if best_state:
             self.model.load_state_dict(best_state)
@@ -921,8 +939,8 @@ class SEDGenerator:
                             'parameter_ranges': config.get('parameter_ranges', {}),
                             'architecture': config.get('architecture', {}),
                         })
-                except Exception:
-                    logger.warning("Could not read ML generator model config in %s", subdir, exc_info=True)
+                except (OSError, ValueError) as exc:
+                    logger.warning("Skipping %s: could not read its %s: %s", subdir, SEDGenerator.CONFIG_FILE, exc)
 
         return models
 
@@ -930,6 +948,20 @@ class SEDGenerator:
 # =============================================================================
 # Interactive Workflow (CLI Option 6)
 # =============================================================================
+
+def _menu_choice(items: List[Dict[str, Any]], prompt: str) -> Optional[Dict[str, Any]]:
+    """Read a 1-based menu number; print "Invalid selection" and return None for anything else."""
+    selection = input(prompt).strip()
+    try:
+        idx = int(selection) - 1
+    except ValueError:
+        print("Invalid selection")
+        return None
+    if idx < 0 or idx >= len(items):
+        print("Invalid selection")
+        return None
+    return items[idx]
+
 
 def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> None:
     """
@@ -976,8 +1008,8 @@ def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> None:
                     try:
                         df = pd.read_csv(lookup, comment='#')
                         n_seds = len(df)
-                    except Exception:
-                        pass
+                    except (OSError, ValueError) as exc:
+                        logger.warning("Could not count the SEDs in %s: %s", lookup, exc)
                 available.append({'name': name, 'path': path, 'n_seds': n_seds})
         
         if not available:
@@ -989,11 +1021,8 @@ def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> None:
         for i, lib in enumerate(available, 1):
             print(f"  {i:2d}) {lib['name']:30s} ({lib['n_seds']} SEDs)")
         
-        selection = input("\nSelect library: > ").strip()
-        try:
-            selected = available[int(selection) - 1]
-        except (ValueError, IndexError):
-            print("Invalid selection")
+        selected = _menu_choice(available, "\nSelect library: > ")
+        if selected is None:
             return
         
         print(f"\nTraining on: {selected['name']}")
@@ -1037,11 +1066,8 @@ def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> None:
             teff_r = r.get('teff', [0, 0])
             print(f"  {i}) {g['name']} (Teff: {teff_r[0]:.0f}-{teff_r[1]:.0f} K)")
         
-        selection = input("\nSelect generator: > ").strip()
-        try:
-            selected = generators[int(selection) - 1]
-        except (ValueError, IndexError):
-            print("Invalid selection")
+        selected = _menu_choice(generators, "\nSelect generator: > ")
+        if selected is None:
             return
         
         gen = SEDGenerator(selected['path'])
@@ -1077,11 +1103,8 @@ def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> None:
         for i, g in enumerate(generators, 1):
             print(f"  {i}) {g['name']}")
         
-        selection = input("\nSelect generator: > ").strip()
-        try:
-            selected = generators[int(selection) - 1]
-        except (ValueError, IndexError):
-            print("Invalid selection")
+        selected = _menu_choice(generators, "\nSelect generator: > ")
+        if selected is None:
             return
         
         gen = SEDGenerator(selected['path'])
