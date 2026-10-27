@@ -400,13 +400,13 @@ def test_magnitude_of_zero_flux_is_infinite_in_both_systems(system):
         assert _band_magnitude(0.0, system) == math.inf
 
 
-def test_vega_magnitude_of_negative_flux_is_nan_and_ab_stays_infinite():
+@pytest.mark.parametrize("system", ["AB", "Vega"])
+def test_magnitude_of_negative_flux_is_nan_in_both_systems(system):
+    # The AB path used to return inf for a negative flux.
     with warnings.catch_warnings():
         warnings.simplefilter("error")
-        assert math.isnan(_photometry(-1e-12, "Vega"))
-        assert math.isnan(_band_magnitude(-1e-12, "Vega"))
-        assert _photometry(-1e-12, "AB") == math.inf
-        assert _band_magnitude(-1e-12, "AB") == math.inf
+        assert math.isnan(_photometry(-1e-12, system))
+        assert math.isnan(_band_magnitude(-1e-12, system))
 
 
 def _band_magnitude(flux_level, system, zero_point=2.0e-10):

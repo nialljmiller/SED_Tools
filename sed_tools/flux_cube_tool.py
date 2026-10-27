@@ -373,13 +373,15 @@ def bolometric_magnitude(
     reference_flux: float = 1.0,
     reference_magnitude: float = 0.0,
 ) -> Tuple[float, float]:
-    """Return bolometric flux and magnitude."""
+    """Return bolometric flux and magnitude.
+
+    A zero or negative bolometric flux gives a magnitude of ``inf`` or NaN, and a
+    zero or negative reference flux ``-inf`` or NaN, as computed; no error.
+    """
 
     fbol = integrate_flux(wavelength, flux)
-    if fbol <= 0:
-        mag = math.inf
-    else:
-        mag = reference_magnitude - 2.5 * math.log10(fbol / reference_flux)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        mag = float(reference_magnitude - 2.5 * np.log10(np.divide(fbol, reference_flux)))
     return fbol, mag
 
 
@@ -1096,7 +1098,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if math.isfinite(mbol):
         print(f"Bolometric magnitude: {mbol:.4f}")
     else:
-        print("Bolometric magnitude: undefined (non-positive flux)")
+        print("Bolometric magnitude: undefined (non-positive flux or reference flux)")
 
     filters: Dict[str, FilterCurve] = {}
     failures: List[str] = []
@@ -1191,17 +1193,16 @@ def _print_filter_photometry(
 def _band_magnitude(wl, flux, curve, photometric_system, vega_spectrum):
     """Return (flux label, band-averaged flux, magnitude) for one filter.
 
-    The AB magnitude of a non-positive band flux is ``inf``; the Vega magnitude
-    is ``inf`` for zero band flux and NaN for a negative one, and ``-inf`` or NaN
-    for a zero or negative Vega zero point. *vega_spectrum*
-    is called for the Vega reference only when the filter has no Vega zero
-    point in its metadata.
+    In both systems the magnitude of a zero band flux is ``inf`` and of a
+    negative one NaN; a zero or negative Vega zero point gives ``-inf`` or NaN.
+    *vega_spectrum* is called for the Vega reference only when the filter has
+    no Vega zero point in its metadata.
     """
     if photometric_system == "AB":
         flux_density = band_average_flux_nu(wl, flux, curve)
-        if flux_density <= 0:
-            return "f_nu", flux_density, math.inf
-        return "f_nu", flux_density, -2.5 * math.log10(flux_density / AB_ZERO_FLUX)
+        # A zero or negative band flux gives inf or NaN, as computed; no error.
+        with np.errstate(divide="ignore", invalid="ignore"):
+            return "f_nu", flux_density, float(-2.5 * np.log10(flux_density / AB_ZERO_FLUX))
 
     flux_density = band_average_flux_lambda(wl, flux, curve)
     vega_zero = get_metadata_float(curve.metadata, VEGA_ZP_KEYS)
