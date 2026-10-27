@@ -376,7 +376,8 @@ def _accumulate_spectra(
     print(f"\n  {prefix}Done — {n - len(empty)}/{n} loaded.")
     if empty:
         raise ValueError(
-            f"{len(empty)} spectra hold no numeric data; no flux cube was written. "
+            f"{len(empty)} spectra hold no numeric data or could not be read; "
+            "no flux cube was written. "
             "Re-download or remove them and their lookup_table.csv rows:\n  "
             + "\n  ".join(empty)
         )
