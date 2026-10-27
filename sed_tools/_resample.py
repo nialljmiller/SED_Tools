@@ -20,8 +20,6 @@ from __future__ import annotations
 
 import numpy as np
 
-from ._constants import planck_flam as _planck_flam  # noqa: F401 — re-exported for callers
-
 _FLUX_FLOOR = 1e-300
 
 
