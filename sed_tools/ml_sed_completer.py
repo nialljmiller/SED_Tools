@@ -160,7 +160,6 @@ class SEDCompleterNetwork:
             Dropout rate
         """
         try:
-            import torch
             import torch.nn as nn
         except ImportError:
             raise ImportError("PyTorch required. Install: pip install torch")
@@ -185,7 +184,9 @@ class SEDCompleterNetwork:
         layers.append(nn.Linear(prev_dim, output_dim))
         
         self.model = nn.Sequential(*layers)
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        # The same device SEDCompleter.device picks, so inputs and weights agree
+        from .ml_utils import get_device
+        self.device = get_device()
         self.model.to(self.device)
     
     def forward(self, x):
