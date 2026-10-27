@@ -329,3 +329,21 @@ def test_flux_cube_search_warns_when_a_directory_cannot_be_searched(tmp_path, mo
     with caplog.at_level(logging.WARNING, logger=flux_cube_tool.__name__):
         flux_cube_tool.discover_flux_cube_files([tmp_path])
     assert f"Could not finish searching {tmp_path.resolve()} for flux cubes" in caplog.text
+
+
+def test_a_non_numeric_line_inside_a_filter_curve_raises(tmp_path):
+    # Bad rows used to be dropped silently, removing points from the curve.
+    from sed_tools.flux_cube_tool import load_filter_curve
+
+    path = tmp_path / "Band.dat"
+    path.write_text("Wavelength,Transmission\n4000.0,0.5\n4500.0,O.9\n5000.0,0.5\n")
+    with pytest.raises(ValueError, match=r"Band\.dat, line 3: expected two numbers, found '4500\.0,O\.9'"):
+        load_filter_curve(str(path))
+
+
+def test_header_lines_before_the_data_are_still_skipped(tmp_path):
+    from sed_tools.flux_cube_tool import load_two_column_file
+
+    path = tmp_path / "vega.csv"
+    path.write_text("Vega reference\nwavelength,flux\n4000.0,1e-9\n5000.0,2e-9\n")
+    assert load_two_column_file(str(path))[:2] == ([4000.0, 5000.0], [1e-9, 2e-9])

@@ -186,6 +186,11 @@ def standardize_wavelength_array(
 
 
 def load_two_column_file(path: str) -> Tuple[List[float], List[float], Dict[str, object]]:
+    """The first two columns of a text curve, and its ``# key: value`` metadata.
+
+    Non-numeric lines before the first data row (column names, titles) are
+    skipped; one after the data has started raises ValueError.
+    """
     x_values: List[float] = []
     y_values: List[float] = []
     metadata: Dict[str, object] = {}
@@ -207,14 +212,15 @@ def load_two_column_file(path: str) -> Tuple[List[float], List[float], Dict[str,
                     comments.append(meta)
                 continue
 
-            normalized = line.replace(",", " ")
-            parts = normalized.split()
-            if len(parts) < 2:
-                continue
+            parts = line.replace(",", " ").split()
             try:
                 x = float(parts[0])
                 y = float(parts[1])
-            except ValueError:
+            except (IndexError, ValueError):
+                if x_values:
+                    raise ValueError(
+                        f"{path}, line {line_no}: expected two numbers, found {line!r}"
+                    ) from None
                 continue
             x_values.append(x)
             y_values.append(y)
