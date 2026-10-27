@@ -16,7 +16,6 @@ Public entry point: grid_coverage(name_or_dir, base_dir=..., plot=..., out_path=
 from __future__ import annotations
 
 import math
-import os
 import re
 from pathlib import Path
 from typing import Dict, List, Optional, Union

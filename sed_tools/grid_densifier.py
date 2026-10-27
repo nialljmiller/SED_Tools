@@ -225,7 +225,7 @@ def densify_grid(
     generator = None
     if ml_model is not None:
         from sed_tools.ml_sed_generator import SEDGenerator
-        print(f"\nLoading ML model...", end=" ", flush=True)
+        print("\nLoading ML model...", end=" ", flush=True)
         generator = SEDGenerator(ml_model)
         print("done")
 
@@ -239,7 +239,7 @@ def densify_grid(
     print("done")
 
     # Writes the header and zero-fills the flux region on disk
-    print(f"Initialising output cube on disk...", end=" ", flush=True)
+    print("Initialising output cube on disk...", end=" ", flush=True)
     flux_dense = _init_output_cube(dst, teff_dense, logg_grid, meta_grid,
                                     wavelengths, nt_new)
     print("done")
