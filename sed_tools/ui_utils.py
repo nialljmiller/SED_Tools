@@ -30,7 +30,8 @@ def prompt_choice(
         return None
 
     if max_label < 0:
-        max_label = max(len(getattr(x, "label", str(x))) for x in options) + 4
+        # Each column holds a 6-character id ("  12. ") before the label.
+        max_label = max(len(getattr(x, "label", str(x))) for x in options) + 6
 
     # ---- setup ----
     labels: List[str] = [getattr(o, "label", str(o)) for o in options]

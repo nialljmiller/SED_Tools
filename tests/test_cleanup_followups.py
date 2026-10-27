@@ -415,3 +415,17 @@ def test_split_and_filter_cubes_report_their_own_averaged_rows(tmp_path, caplog)
     strategy["on_collision"]["filter"]["alpha"] = "0.0"
     (message,) = build_cube(filtered, caplog, **strategy)
     assert message.startswith(f"{filtered / 'flux_cube.bin'}: 2 lookup rows were averaged")
+
+
+# ----------------------------------------------------------------------
+# 5. Picker: the longest labels are shown in full
+# ----------------------------------------------------------------------
+def test_picker_shows_the_longest_label_in_full(monkeypatch, capsys):
+    from sed_tools import ui_utils
+
+    monkeypatch.setattr(ui_utils, "terminal_width", lambda default=80: 80)
+    answer(monkeypatch, "1")
+    assert ui_utils.prompt_choice(["alpha", "beta"], "Things", use_color=False) == 0
+    out = capsys.readouterr().out
+    # The longest label used to be cut 2 characters short ("alp", "bet").
+    assert "   1. alpha  " in out and "   2. beta" in out
