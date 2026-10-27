@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-10-27T23:00:44.210129",
+  "generated": "2026-10-27T23:49:58.879352",
   "base_url": "http://nillmill.ddns.net/sed_tools",
   "statistics": {
     "total_models": 1,
@@ -1478,7 +1478,7 @@
               "filter+optics+qe": 2
             },
             "detector_types": {
-              "photon": 2
+              "energy": 2
             },
             "separate_components": {
               "filter": 2,
@@ -1488,8 +1488,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 124382,
-            "size_human": "121.47 KB"
+            "size_bytes": 153703,
+            "size_human": "150.10 KB"
           },
           "System": {
             "name": "System",
@@ -1499,10 +1499,10 @@
               "rho"
             ],
             "published_paths": {
-              "unspecified": 2
+              "filter+optics+qe": 2
             },
             "detector_types": {
-              "unclassified": 2
+              "energy": 2
             },
             "separate_components": {
               "filter": 2,
@@ -1512,8 +1512,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 671849,
-            "size_human": "656.10 KB"
+            "size_bytes": 1297388,
+            "size_human": "1.24 MB"
           }
         },
         "instrument_count": 2
