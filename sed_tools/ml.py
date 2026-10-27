@@ -492,8 +492,6 @@ class Completer:
             extension_range=extension_range,
         )
     
-
-
     def extend_catalog(
         self,
         input_dir: str,
