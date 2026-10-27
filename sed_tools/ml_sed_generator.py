@@ -343,16 +343,72 @@ class SEDGenerator:
         history : dict with 'train_loss' and 'val_loss'
         """
         import torch
-        from torch.utils.data import DataLoader, TensorDataset
         from sklearn.model_selection import train_test_split
+        from .ml_utils import data_loaders, fit
         
         params, flux, masks = self._prepare_training_data(library_path, max_samples)
+        params_norm, flux_norm = self._normalise_training_data(params, flux, masks, library_path)
         
-        # Log-scale flux
+        # Split indices, so the raw parameters of the training set can be kept
+        idx_train, idx_val = train_test_split(np.arange(len(params_norm)), test_size=0.2, random_state=42)
+        p_train, p_val = params_norm[idx_train], params_norm[idx_val]
+        f_train, f_val = flux_norm[idx_train], flux_norm[idx_val]
+        m_train, m_val = masks[idx_train], masks[idx_val]
+        # save() stores these in config.json for the parameter-space plot
+        self._train_params_raw = params[idx_train]
+        
+        train_loader, val_loader = data_loaders((p_train, f_train, m_train), (p_val, f_val, m_val), batch_size)
+        
+        output_dim = flux_norm.shape[1]
+        hidden = hidden_layers or [512, 512, 256, 256]
+        print(f"Building network: 3 → {hidden} → {output_dim}")
+        self.model = SEDGeneratorNetwork(
+            output_dim=output_dim,
+            hidden_layers=hidden,
+            dropout=dropout,
+        )
+        
+        optimizer = torch.optim.AdamW(self.model.parameters(), lr=learning_rate, weight_decay=1e-4)
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer, mode='min', factor=0.5, patience=15, min_lr=1e-6
+        )
+        history, best_val_loss = fit(
+            self.model, train_loader, val_loader, optimizer, scheduler,
+            epochs=epochs, patience=patience, verbose=verbose, device=self.device,
+            progress="  Epoch {epoch:3d}: train={train:.6f}, val={val:.6f}, lr={lr:.2e}",
+        )
+        if not history['train_loss']:
+            raise RuntimeError(
+                f"Training on {library_path} produced no usable epoch (every training or "
+                f"validation batch had a NaN loss); nothing was saved to {output_path}"
+            )
+        
+        print("-" * 60)
+        print(f"Training complete. Best val_loss: {best_val_loss:.6f}")
+        
+        self.save(output_path, hidden_layers=hidden, dropout=dropout)
+        
+        print("\nGenerating plots...")
+        self._plot_training(history, output_path)
+        self._plot_predictions(p_val, f_val, m_val, output_path)
+        
+        return history
+
+    def _normalise_training_data(
+        self,
+        params: np.ndarray,
+        flux: np.ndarray,
+        masks: np.ndarray,
+        library_path: str,
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Fit ``self.scaler_params`` and return the normalised parameters and log10 fluxes.
+        
+        The flux scaler uses valid points only. Both arrays are float32.
+        """
         print("Normalizing data...")
         flux_log = np.log10(np.maximum(flux, 1e-30))
         
-        # Compute scaler params from valid data
         valid_mask = (masks > 0.5) & (flux_log > -25)
         flux_valid = flux_log[valid_mask]
         if len(flux_valid) == 0:
@@ -377,7 +433,6 @@ class SEDGenerator:
         
         print(f"  Flux log10 range: [{flux_valid.min():.2f}, {flux_valid.max():.2f}]")
         
-        # Normalize
         params_norm = np.column_stack([
             (params[:, 0] - self.scaler_params['teff_mean']) / self.scaler_params['teff_std'],
             (params[:, 1] - self.scaler_params['logg_mean']) / self.scaler_params['logg_std'],
@@ -388,149 +443,7 @@ class SEDGenerator:
         flux_norm = np.where(np.isfinite(flux_norm), flux_norm, 0.0).astype(np.float32)
         
         print(f"  Input: {params_norm.shape}, Output: {flux_norm.shape}")
-        
-        # Split - use indices to properly track validation data
-        indices = np.arange(len(params_norm))
-        idx_train, idx_val = train_test_split(indices, test_size=0.2, random_state=42)
-        
-        p_train, p_val = params_norm[idx_train], params_norm[idx_val]
-        f_train, f_val = flux_norm[idx_train], flux_norm[idx_val]
-        m_train, m_val = masks[idx_train], masks[idx_val]
-        
-        # Store raw params for plotting (now correctly matched to validation set)
-        self._val_params_raw = params[idx_val]
-        
-        # Store all training params for parameter space visualization
-        self._train_params_raw = params[idx_train]
-        
-        train_dataset = TensorDataset(
-            torch.from_numpy(p_train),
-            torch.from_numpy(f_train),
-            torch.from_numpy(m_train),
-        )
-        val_dataset = TensorDataset(
-            torch.from_numpy(p_val),
-            torch.from_numpy(f_val),
-            torch.from_numpy(m_val),
-        )
-        
-        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-        val_loader = DataLoader(val_dataset, batch_size=batch_size)
-        
-        # Build model
-        output_dim = flux_norm.shape[1]
-        hidden = hidden_layers or [512, 512, 256, 256]
-        
-        print(f"Building network: 3 → {hidden} → {output_dim}")
-        self.model = SEDGeneratorNetwork(
-            output_dim=output_dim,
-            hidden_layers=hidden,
-            dropout=dropout,
-        )
-        
-        optimizer = torch.optim.AdamW(
-            self.model.parameters(),
-            lr=learning_rate,
-            weight_decay=1e-4,
-        )
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer, mode='min', factor=0.5, patience=15, min_lr=1e-6
-        )
-        
-        def masked_mse(y_pred, y_true, mask):
-            sq_err = (y_pred - y_true) ** 2
-            return (sq_err * mask).sum() / (mask.sum() + 1e-8)
-        
-        history = {'train_loss': [], 'val_loss': []}
-        best_val_loss = float('inf')
-        best_state = None
-        patience_counter = 0
-        
-        print(f"\nTraining for up to {epochs} epochs...")
-        print("-" * 60)
-        
-        for epoch in range(epochs):
-            self.model.train()
-            train_losses = []
-            
-            for p_batch, f_batch, m_batch in train_loader:
-                p_batch = p_batch.to(self.device)
-                f_batch = f_batch.to(self.device)
-                m_batch = m_batch.to(self.device)
-                
-                optimizer.zero_grad()
-                pred = self.model(p_batch)
-                loss = masked_mse(pred, f_batch, m_batch)
-                
-                if torch.isnan(loss):
-                    print(f"  Warning: NaN loss at epoch {epoch+1}, skipping batch")
-                    continue
-                
-                loss.backward()
-                torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
-                optimizer.step()
-                train_losses.append(loss.item())
-            
-            self.model.eval()
-            val_losses = []
-            
-            with torch.no_grad():
-                for p_batch, f_batch, m_batch in val_loader:
-                    p_batch = p_batch.to(self.device)
-                    f_batch = f_batch.to(self.device)
-                    m_batch = m_batch.to(self.device)
-                    
-                    pred = self.model(p_batch)
-                    loss = masked_mse(pred, f_batch, m_batch)
-                    if not torch.isnan(loss):
-                        val_losses.append(loss.item())
-            
-            if not train_losses or not val_losses:
-                print(f"  Epoch {epoch+1}: No valid batches, stopping")
-                break
-            
-            train_loss = np.mean(train_losses)
-            val_loss = np.mean(val_losses)
-            
-            history['train_loss'].append(train_loss)
-            history['val_loss'].append(val_loss)
-            
-            scheduler.step(val_loss)
-            
-            if val_loss < best_val_loss:
-                best_val_loss = val_loss
-                best_state = {k: v.cpu().clone() for k, v in self.model.state_dict().items()}
-                patience_counter = 0
-            else:
-                patience_counter += 1
-            
-            if verbose and (epoch + 1) % 10 == 0:
-                lr = optimizer.param_groups[0]['lr']
-                print(f"  Epoch {epoch+1:3d}: train={train_loss:.6f}, val={val_loss:.6f}, lr={lr:.2e}")
-            
-            if patience_counter >= patience:
-                print(f"  Early stopping at epoch {epoch+1}")
-                break
-        
-        if not history['train_loss']:
-            raise RuntimeError(
-                f"Training on {library_path} produced no usable epoch (every training or "
-                f"validation batch had a NaN loss); nothing was saved to {output_path}"
-            )
-        
-        if best_state:
-            self.model.load_state_dict(best_state)
-        
-        print("-" * 60)
-        print(f"Training complete. Best val_loss: {best_val_loss:.6f}")
-        
-        self.save(output_path, hidden_layers=hidden, dropout=dropout)
-        
-        print("\nGenerating plots...")
-        self._plot_training(history, output_path)
-        self._plot_predictions(p_val, f_val, m_val, output_path)
-        
-        return history
+        return params_norm, flux_norm
     
     def _plot_training(self, history: Dict, output_path: str):
         """Plot training curves."""

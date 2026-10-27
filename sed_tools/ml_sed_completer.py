@@ -63,14 +63,6 @@ def _warn_dropped(dropped: Counter, n_sampled: int, library_path: str) -> None:
                    library_path, sum(dropped.values()), n_sampled, reasons)
 
 
-def _masked_mse(y_pred, y_true, mask):
-    """Mean squared error over the points where mask is 1."""
-    sq_error = (y_pred - y_true) ** 2
-    masked_error = sq_error * mask
-    n_valid = mask.sum() + 1e-8  # Avoid division by zero
-    return masked_error.sum() / n_valid
-
-
 def _blend_with_blackbody(wl_out, log_dist, wl_pred, pred, bb_flux):
     """
     Blend the network prediction into the black body away from the data edge.
@@ -86,17 +78,6 @@ def _blend_with_blackbody(wl_out, log_dist, wl_pred, pred, bb_flux):
     weight_ml = np.exp(-log_dist / blend_decades)
     weight_ml = np.clip(weight_ml, 0, 1)
     return weight_ml * pred_interp + (1 - weight_ml) * bb_flux
-
-
-def _data_loaders(train_arrays, val_arrays, batch_size: int):
-    """DataLoaders over (inputs, targets, masks) arrays; only training batches are shuffled."""
-    import torch
-    from torch.utils.data import DataLoader, TensorDataset
-    
-    train_dataset = TensorDataset(*(torch.from_numpy(a) for a in train_arrays))
-    val_dataset = TensorDataset(*(torch.from_numpy(a) for a in val_arrays))
-    return (DataLoader(train_dataset, batch_size=batch_size, shuffle=True),
-            DataLoader(val_dataset, batch_size=batch_size))
 
 
 def planck_function(wavelength_angstrom: np.ndarray, temperature: float) -> np.ndarray:
@@ -548,7 +529,9 @@ class SEDCompleter:
         history : dict
             Training history with 'train_loss' and 'val_loss'
         """
+        import torch
         from sklearn.model_selection import train_test_split
+        from .ml_utils import data_loaders, fit
         
         X, y, params, masks = self._prepare_training_data(library_path, max_samples)
         X_combined, y_norm, masks = self._normalise_training_data(X, y, params, masks, library_path)
@@ -556,7 +539,7 @@ class SEDCompleter:
         X_train, X_val, y_train, y_val, m_train, m_val = train_test_split(
             X_combined, y_norm, masks, test_size=0.2, random_state=42
         )
-        train_loader, val_loader = _data_loaders((X_train, y_train, m_train), (X_val, y_val, m_val), batch_size)
+        train_loader, val_loader = data_loaders((X_train, y_train, m_train), (X_val, y_val, m_val), batch_size)
         
         input_dim = X.shape[1]
         output_dim = y_norm.shape[1]
@@ -568,7 +551,15 @@ class SEDCompleter:
             dropout=dropout,
         )
         
-        history, best_val_loss = self._fit(train_loader, val_loader, epochs, learning_rate, patience, verbose)
+        optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate, weight_decay=1e-5)
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer, mode='min', factor=0.5, patience=10, min_lr=1e-6
+        )
+        history, best_val_loss = fit(
+            self.model, train_loader, val_loader, optimizer, scheduler,
+            epochs=epochs, patience=patience, verbose=verbose, device=self.device,
+            progress="  Epoch {epoch:3d}: train_loss={train:.6f}, val_loss={val:.6f}, lr={lr:.2e}",
+        )
         if not history['train_loss']:
             raise RuntimeError(
                 f"Training on {library_path} produced no usable epoch (every training or "
@@ -655,105 +646,6 @@ class SEDCompleter:
         
         return X_combined, y_norm, masks
 
-    def _fit(self, train_loader, val_loader, epochs: int, learning_rate: float,
-             patience: int, verbose: bool) -> Tuple[Dict[str, List[float]], float]:
-        """
-        Run the training loop with early stopping, then restore the best weights.
-        
-        Returns the loss history and the best validation loss. The history is
-        empty if the first epoch had no batch with a finite loss.
-        """
-        import torch
-        
-        optimizer = torch.optim.Adam(
-            self.model.parameters(),
-            lr=learning_rate,
-            weight_decay=1e-5,
-        )
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer, mode='min', factor=0.5, patience=10, min_lr=1e-6
-        )
-        
-        history = {'train_loss': [], 'val_loss': []}
-        best_val_loss = float('inf')
-        best_state = None
-        patience_counter = 0
-        
-        print(f"\nTraining for up to {epochs} epochs...")
-        print("-" * 60)
-        
-        for epoch in range(epochs):
-            train_losses = self._train_epoch(train_loader, optimizer, epoch)
-            val_losses = self._validation_losses(val_loader)
-            if not train_losses or not val_losses:
-                print(f"  Epoch {epoch+1}: No valid batches, stopping")
-                break
-            
-            train_loss = np.mean(train_losses)
-            val_loss = np.mean(val_losses)
-            history['train_loss'].append(train_loss)
-            history['val_loss'].append(val_loss)
-            
-            scheduler.step(val_loss)
-            
-            if val_loss < best_val_loss:
-                best_val_loss = val_loss
-                best_state = {k: v.cpu().clone() for k, v in self.model.state_dict().items()}
-                patience_counter = 0
-            else:
-                patience_counter += 1
-            
-            if verbose and (epoch + 1) % 10 == 0:
-                lr = optimizer.param_groups[0]['lr']
-                print(f"  Epoch {epoch+1:3d}: train_loss={train_loss:.6f}, val_loss={val_loss:.6f}, lr={lr:.2e}")
-            
-            if patience_counter >= patience:
-                print(f"  Early stopping at epoch {epoch+1}")
-                break
-        
-        if best_state is not None:
-            self.model.load_state_dict(best_state)
-        return history, best_val_loss
-
-    def _train_epoch(self, train_loader, optimizer, epoch: int) -> List[float]:
-        """One pass over the training batches; returns their losses. NaN batches are skipped."""
-        import torch
-        
-        self.model.train()
-        losses = []
-        for X_batch, y_batch, m_batch in train_loader:
-            X_batch = X_batch.to(self.device)
-            y_batch = y_batch.to(self.device)
-            m_batch = m_batch.to(self.device)
-            
-            optimizer.zero_grad()
-            loss = _masked_mse(self.model(X_batch), y_batch, m_batch)
-            if torch.isnan(loss):
-                print(f"  Warning: NaN loss at epoch {epoch+1}, skipping batch")
-                continue
-            
-            loss.backward()
-            torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
-            optimizer.step()
-            losses.append(loss.item())
-        return losses
-
-    def _validation_losses(self, val_loader) -> List[float]:
-        """Losses of the validation batches whose loss is not NaN."""
-        import torch
-        
-        self.model.eval()
-        losses = []
-        with torch.no_grad():
-            for X_batch, y_batch, m_batch in val_loader:
-                X_batch = X_batch.to(self.device)
-                y_batch = y_batch.to(self.device)
-                m_batch = m_batch.to(self.device)
-                loss = _masked_mse(self.model(X_batch), y_batch, m_batch)
-                if not torch.isnan(loss):
-                    losses.append(loss.item())
-        return losses
-    
     def _plot_training_results(self, history: Dict[str, List[float]], output_path: str):
         """Plot and save training loss curves."""
         import matplotlib.pyplot as plt
