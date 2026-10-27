@@ -11,6 +11,7 @@ import pytest
 import requests
 
 from sed_tools import njm_spectra_grabber as njm
+from sed_tools import svo_spectra_grabber as svo
 from sed_tools.header_parser import parse_header
 from sed_tools.spectrum_io import read_text_spectrum
 
@@ -279,3 +280,115 @@ def test_njm_wavelength_cut_failures_are_raised(tmp_path, monkeypatch, caplog):
     assert any("probe refused" in m for m in warnings_from(caplog, "njm_spectra_grabber"))
     wl, _ = read_text_spectrum(tmp_path / "Grid" / "a.txt")
     assert wl.min() == 1100 and wl.max() == 1200
+
+
+# ---------------------------------------------------------------- SVO
+
+SVO_INDEX = "http://svo2.cab.inta-csic.es/theory/newov2/index.php"
+SSAP = "http://svo2.cab.inta-csic.es/theory/newov2/ssap.php"
+SSAP_QUERY = f"{SSAP}?model=Grid&REQUEST=queryData&FORMAT=votable"
+
+
+def svo_spectrum_url(fid):
+    return f"{SSAP}?model=Grid&fid={fid}&format=ascii"
+
+
+def make_svo(tmp_path, monkeypatch, routes):
+    session = FakeSession(routes)
+    monkeypatch.setattr(svo.requests, "Session", lambda: session)
+    monkeypatch.setattr(svo.time, "sleep", lambda seconds: None)
+    return svo.SVOSpectraGrabber(base_dir=str(tmp_path)), session
+
+
+def test_svo_discovery_failure_warns_instead_of_vanishing(tmp_path, monkeypatch, caplog):
+    grabber, _ = make_svo(tmp_path, monkeypatch, {SVO_INDEX: requests.ConnectionError("no route")})
+    with caplog.at_level(logging.WARNING):
+        assert grabber.discover_models() == []
+    assert any("no route" in m and "not offered" in m for m in warnings_from(caplog, "svo_spectra_grabber"))
+
+
+def test_svo_metadata_warns_at_each_fallback_and_raises_when_a_probe_fails(tmp_path, monkeypatch, caplog):
+    grabber, _ = make_svo(tmp_path, monkeypatch, {
+        SSAP_QUERY: FakeResponse(503),
+        f"{SVO_INDEX}?models=Grid": requests.ConnectionError("index down"),
+        svo_spectrum_url(7): requests.ConnectionError("probe refused"),
+    })
+
+    with caplog.at_level(logging.WARNING), pytest.raises(RuntimeError, match="FID 7 of Grid: probe refused"):
+        grabber.get_model_metadata("Grid")
+
+    messages = warnings_from(caplog, "svo_spectra_grabber")
+    assert any("HTTP 503" in m and "index page" in m for m in messages)
+    assert any("index down" in m and "probing" in m for m in messages)
+    assert not (tmp_path / ".cache" / "svo_fids" / "Grid.json").exists()
+
+
+def test_svo_metadata_raises_when_no_method_finds_spectra(tmp_path, monkeypatch):
+    grabber, _ = make_svo(tmp_path, monkeypatch, {SSAP_QUERY: FakeResponse(200, "<VOTABLE/>")})
+    with pytest.raises(RuntimeError, match="no spectra for Grid: SSAP query: the response lists none"):
+        grabber.get_model_metadata("Grid")
+
+
+def test_svo_truncated_ssap_response_raises_and_is_not_cached(tmp_path, monkeypatch):
+    body = "".join(f"<TD>ssap.php?fid={i}</TD>" for i in range(1, 200))
+    grabber, _ = make_svo(tmp_path, monkeypatch, {SSAP_QUERY: FakeResponse(200, body)})
+    grabber.ssap_max_bytes = 1000
+
+    with pytest.raises(RuntimeError, match="cap"):
+        grabber.get_model_metadata("Grid")
+    assert not (tmp_path / ".cache" / "svo_fids" / "Grid.json").exists()
+
+
+def test_svo_metadata_is_cached_and_a_corrupt_cache_is_warned_about(tmp_path, monkeypatch, caplog):
+    body = "<TD>ssap.php?fid=2</TD><TD>ssap.php?fid=1</TD>"
+    grabber, session = make_svo(tmp_path, monkeypatch, {SSAP_QUERY: FakeResponse(200, body)})
+    cache = tmp_path / ".cache" / "svo_fids" / "Grid.json"
+
+    assert grabber.get_model_metadata("Grid") == [{"fid": 1}, {"fid": 2}]
+    assert json.loads(cache.read_text()) == [1, 2]
+    session.calls.clear()
+    assert grabber.get_model_metadata("Grid") == [{"fid": 1}, {"fid": 2}]
+    assert session.calls == []
+
+    cache.write_text("[1, 2")
+    with caplog.at_level(logging.WARNING):
+        assert grabber.get_model_metadata("Grid") == [{"fid": 1}, {"fid": 2}]
+    assert any("unreadable FID cache" in m for m in warnings_from(caplog, "svo_spectra_grabber"))
+
+
+def test_svo_download_refuses_ranges_it_cannot_apply(tmp_path, monkeypatch):
+    grabber, session = make_svo(tmp_path, monkeypatch, {})
+    with pytest.raises(ValueError, match="cannot be cut"):
+        grabber.download_model_spectra("Grid", [{"fid": 1}], teff_range=(4000, 5000))
+    assert session.calls == []
+
+
+SVO_SPECTRUM = "# teff = 5000\n# logg = 4.5\n" + "".join(f"{wl} 1.0e-10\n" for wl in range(1000, 1100))
+
+
+def test_svo_failed_downloads_raise_and_leave_no_lookup_table(tmp_path, monkeypatch):
+    grabber, _ = make_svo(tmp_path, monkeypatch, {
+        svo_spectrum_url(1): FakeResponse(200, SVO_SPECTRUM),
+        svo_spectrum_url(2): FakeResponse(200, "<html>Error</html>" + " " * 600),
+        svo_spectrum_url(3): requests.ConnectionError("reset by peer"),
+    })
+
+    with pytest.raises(RuntimeError) as err:
+        grabber.download_model_spectra("Grid", [{"fid": 1}, {"fid": 2}, {"fid": 3}])
+
+    message = str(err.value)
+    assert "2 of 3 spectra" in message
+    assert "FID 2: content is not spectral data" in message and "FID 3: connection error: reset by peer" in message
+    model_dir = tmp_path / "Grid"
+    assert (model_dir / "Grid_fid1.txt").exists()
+    assert not (model_dir / "lookup_table.csv").exists()
+
+
+def test_svo_complete_download_writes_lookup_table(tmp_path, monkeypatch):
+    grabber, _ = make_svo(tmp_path, monkeypatch, {
+        svo_spectrum_url(1): FakeResponse(200, SVO_SPECTRUM),
+        svo_spectrum_url(2): FakeResponse(200, SVO_SPECTRUM),
+    })
+    assert grabber.download_model_spectra("Grid", [{"fid": 1}, {"fid": 2}]) == 2
+    lookup = (tmp_path / "Grid" / "lookup_table.csv").read_text().splitlines()
+    assert lookup[0] == "#file_name,logg,metallicity,teff" and len(lookup) == 3
