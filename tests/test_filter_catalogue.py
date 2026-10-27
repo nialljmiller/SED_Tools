@@ -192,7 +192,8 @@ def test_search_by_wavelength_pivot_fwhm_detector_and_any_property(root, njm):
     # A null Vega quantity never matches, and never raises.
     assert list(Filters.search(where={"ABminusVega": (None, 0.5)}, filter_root=root)["band"]) == ["g", "i"]
     assert list(Filters.search(where={"DetectorType": "ENERGY"}, filter_root=root)["band"]) == ["J", "K"]
-    assert "Fac/Old: NJM has no properties file" in covers.attrs["errors"]
+    # A permanent catalogue gap is reported apart from fetch failures.
+    assert covers.attrs["gaps"] == ["Fac/Old: NJM has no properties file"] and covers.attrs["errors"] == []
     assert covers.attrs["units"]["FWHM"] == "Angstrom"
 
     njm.requests.clear()
@@ -373,9 +374,12 @@ def test_cli_search_cite_and_info(root, njm, monkeypatch, capsys):
                         "--where", "ABminusVega=:0.5", "--format", "json", "--base", str(root))
     data = json.loads(out)
     assert code == 0 and [b["band"] for b in data["bands"]] == ["g"]
+    # Fac/Old has no properties file: a gap, reported, but not a failure.
+    assert data["errors"] == [] and data["gaps"] == ["Fac/Old: NJM has no properties file"]
 
     code, out = run_cli(monkeypatch, capsys, "filters-search", "--wavelength", "21000", "--base", str(root))
     assert code == 0 and "K" in out and "1 band in 1 instrument" in out
+    assert "[filters] Fac/Old: NJM has no properties file" in out
 
     code, out = run_cli(monkeypatch, capsys, "filters-cite", "Other/IR", "--format", "bibtex", "--base", str(root))
     assert code == 0 and out.startswith("% No BibTeX served") and "@article{2020Cam.....1A" in out
@@ -383,7 +387,7 @@ def test_cli_search_cite_and_info(root, njm, monkeypatch, capsys):
     write_curve(root / "Fac" / "Cam" / "g.dat", 4800, 1200,
                 header="Wavelength,Transmission,DetectorType=photon;DetectorTypeSource=svo")
     code, out = run_cli(monkeypatch, capsys, "filters-info", "Fac/Cam", "--base", str(root), "--offline")
-    assert code == 0 and "info.json is not cached and working offline" in out
+    assert code == 1 and "info.json is not cached and working offline" in out
     assert not njm.fetched("filters/Fac/Cam/info.json")
     code, out = run_cli(monkeypatch, capsys, "filters-info", "Fac/Cam", "--base", str(root))
     assert code == 0 and "A camera." in out and "Free to use." in out and "Cam g" in out

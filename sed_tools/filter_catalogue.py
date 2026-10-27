@@ -399,8 +399,12 @@ class FilterCatalogue:
         rows, entries = self._named_bands(text, needles, wanted_detector, refresh)
 
         errors: List[str] = []
+        gaps: List[str] = []  # permanent: NJM lists the instrument but serves no properties.json for it
         if properties and rows:
-            fetched, errors = self.many(list(entries.values()), PROPERTIES, refresh=refresh)
+            served = [e for e in entries.values() if e.get(PROPERTIES)]
+            gaps = [f"{e['facility']}/{e['instrument']}: NJM has no {PROPERTIES} file"
+                    for e in entries.values() if not e.get(PROPERTIES)]
+            fetched, errors = self.many(served, PROPERTIES, refresh=refresh)
             for row in rows:
                 served = fetched.get((row["facility"], row["instrument"]), {}).get("bands", {})
                 row.update(served.get(row["band"], {}))
@@ -420,6 +424,7 @@ class FilterCatalogue:
                              "b": frame["band"].str.casefold()}, index=frame.index)
         frame = frame.loc[sort.sort_values(["f", "i", "p", "b"]).index].reset_index(drop=True)
         frame.attrs["errors"] = errors
+        frame.attrs["gaps"] = gaps
         frame.attrs["units"] = (self.index()["filters"].get("properties_definitions") or {}).get("units", {})
         return frame
 

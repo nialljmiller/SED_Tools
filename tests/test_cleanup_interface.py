@@ -371,7 +371,7 @@ def test_filters_cite_exits_1_when_any_target_failed(filters, monkeypatch, capsy
     ([], [], False, 0),
     (["SVO: no metadata for Fac/Cam.g"], [], False, 1),
     ([], ["NJM unreachable"], False, 1),
-    ([], ["info.json is not cached and working offline"], True, 0),
+    ([], ["info.json is not cached and working offline"], True, 1),
 ])
 def test_filters_info_exit_status(filters, monkeypatch, source_errors, catalogue_errors, offline, expected):
     from sed_tools import cli

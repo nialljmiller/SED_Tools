@@ -2075,8 +2075,9 @@ class Filters:
         fetched only for instruments that can still match (at most six requests
         at a time; cached).  Returns a DataFrame sorted by facility, instrument and
         pivot, with ``facility``, ``instrument``, ``band`` and the property
-        columns; ``.attrs["units"]`` gives units and ``.attrs["errors"]`` lists
-        instruments whose properties could not be read.
+        columns; ``.attrs["units"]`` gives units, ``.attrs["errors"]`` lists
+        instruments whose properties could not be read, and ``.attrs["gaps"]``
+        lists instruments NJM serves no ``properties.json`` for.
         """
         return cls._catalogue(filter_root, offline=offline).search(
             text, facility=facility, instrument=instrument, band=band, wavelength=wavelength,

@@ -1433,8 +1433,7 @@ def _cmd_filters_info(args, parser):
     else:
         print_filter_availability(info)
         print_catalogue_entry("/".join(target), catalogue)
-    # Offline, an info.json that is not cached is reported as such, not a failure.
-    return 1 if info.get("errors") or (catalogue["errors"] and not args.offline) else 0
+    return 1 if info.get("errors") or catalogue["errors"] else 0
 
 
 def _cmd_filters_search(args, parser):
@@ -1459,7 +1458,8 @@ def _cmd_filters_search(args, parser):
     if unknown:
         parser.error(f"unknown columns: {', '.join(unknown)}")
     _print_search_result(result, [c for c in columns if c in result.columns], args.format)
-    return 0
+    # Gaps (instruments NJM serves no properties for) are printed but are not failures.
+    return 1 if result.attrs.get("errors") else 0
 
 
 def _print_search_result(result, columns: List[str], fmt: str) -> None:
@@ -1469,7 +1469,8 @@ def _print_search_result(result, columns: List[str], fmt: str) -> None:
     elif fmt == "json":
         print(json.dumps({"bands": json.loads(shown.to_json(orient="records")),
                           "units": result.attrs.get("units", {}),
-                          "errors": result.attrs.get("errors", [])}, indent=2))
+                          "errors": result.attrs.get("errors", []),
+                          "gaps": result.attrs.get("gaps", [])}, indent=2))
     elif shown.empty:
         print("No bands match.")
     else:
@@ -1478,8 +1479,8 @@ def _print_search_result(result, columns: List[str], fmt: str) -> None:
         print(f"\n{len(result)} band{'s' * (len(result) != 1)} in "
               f"{n_inst} instrument{'s' * (n_inst != 1)}")
     if fmt != "json":
-        for error in result.attrs.get("errors", []):
-            print(f"[filters] {error}")
+        for message in result.attrs.get("gaps", []) + result.attrs.get("errors", []):
+            print(f"[filters] {message}")
 
 
 def _cmd_filters_cite(args, parser):
