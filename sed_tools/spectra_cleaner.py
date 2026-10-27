@@ -1047,7 +1047,8 @@ def _unconverted_report(model_dir: str, n_total: int, failures: List[Tuple[str, 
              "and are still in their original units:"]
     for reason, filenames in by_reason.items():
         lines.append(f"  {reason} ({len(filenames)}): {', '.join(filenames)}")
-    rebuilt = " and lookup_table.csv was rebuilt" if lookup_rebuilt else ""
-    lines.append(f"The other spectra were standardized in place{rebuilt}; a re-run skips them. "
-                 "Fix or remove the listed files, then clean the directory again.")
+    if len(failures) < n_total:
+        rebuilt = " and lookup_table.csv was rebuilt" if lookup_rebuilt else ""
+        lines.append(f"The other spectra were standardized in place{rebuilt}; a re-run skips them.")
+    lines.append("Fix or remove the listed files, then clean the directory again.")
     return "\n".join(lines)
