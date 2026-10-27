@@ -293,3 +293,61 @@ def test_ml_generator_parameter_ranges_need_the_trained_ranges():
     generator._generator = SimpleNamespace(config={})
     with pytest.raises(KeyError, match="parameter_ranges"):
         generator.parameter_ranges()
+
+
+# ----------------------------------------------------------------------
+# CLI exit status
+# ----------------------------------------------------------------------
+def run_cli(monkeypatch, *argv):
+    import sys
+
+    from sed_tools import cli
+
+    monkeypatch.setattr(sys, "argv", ["sed-tools", *argv])
+    return cli.main()
+
+
+def test_filters_cite_exits_1_when_any_target_failed(filters, monkeypatch, capsys):
+    result = {"instruments": [{"instrument": "Fac/Cam", "bands": None}], "acknowledgements": [],
+              "references": [{"key": "ref", "used_by": ["Fac/Cam"], "bibtex": "@misc{ref}"}],
+              "errors": ["Other/IR: not cached"]}
+    monkeypatch.setattr(filters, "citations", classmethod(lambda cls, *targets, **kwargs: result))
+    assert run_cli(monkeypatch, "filters-cite", "Fac/Cam", "Other/IR") == 1
+    assert "[filters] Other/IR: not cached" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("source_errors,catalogue_errors,offline,expected", [
+    ([], [], False, 0),
+    (["SVO: no metadata for Fac/Cam.g"], [], False, 1),
+    ([], ["NJM unreachable"], False, 1),
+    ([], ["info.json is not cached and working offline"], True, 0),
+])
+def test_filters_info_exit_status(filters, monkeypatch, source_errors, catalogue_errors, offline, expected):
+    from sed_tools import cli
+
+    info = {"facility": "Fac", "instrument": "Cam", "bands": [], "published_source": "", "published": "",
+            "published_bands": {}, "components": [], "partial_components": {}, "buildable": [],
+            "component_status": "", "component_availability": {"status": "unreviewed", "builder": None},
+            "missing_files": [], "errors": source_errors, "atmosphere": False, "platform": "ground",
+            "detector_type": "", "detector_type_sources": {}, "availability_source": "svo"}
+    monkeypatch.setattr(filters, "available", classmethod(lambda cls, *args, **kwargs: info))
+    monkeypatch.setattr(cli, "_catalogue_entry", lambda *args, **kwargs:
+                        {"info": None, "properties": None, "errors": catalogue_errors})
+    argv = ["filters-info", "Fac/Cam"] + (["--offline"] if offline else [])
+    assert run_cli(monkeypatch, *argv) == expected
+
+
+def test_coverage_exits_1_when_there_are_no_local_grids(tmp_path, monkeypatch, capsys):
+    assert run_cli(monkeypatch, "coverage", "--base", str(tmp_path)) == 1
+    assert "No local grids found" in capsys.readouterr().out
+
+
+def test_running_the_cli_module_passes_on_the_exit_status(tmp_path):
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    done = subprocess.run([sys.executable, "-m", "sed_tools.cli", "coverage", "--base", str(tmp_path)],
+                          cwd=root, capture_output=True, text=True)
+    assert done.returncode == 1, done.stderr

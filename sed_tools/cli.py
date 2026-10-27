@@ -1250,6 +1250,7 @@ def _cmd_grids(args, parser):
         force_bundle_h5=not args.no_h5,
         build_flux_cube=not args.no_cube
     )
+    return 0
 
 
 def _facility_instrument(target: str, parser) -> List[str]:
@@ -1295,6 +1296,7 @@ def _cmd_filters(args, parser):
     except (ComponentError, RequestException, OSError, RuntimeError) as exc:
         print(f"[filters] {exc}")
         return 1
+    return 0
 
 
 def _cmd_filters_combine(args, parser):
@@ -1309,6 +1311,7 @@ def _cmd_filters_combine(args, parser):
         on_conflict=args.on_conflict,
     )
     print(f"[filters] Combined filter set written to {out}")
+    return 0
 
 
 def _cmd_filters_detector(args, parser):
@@ -1334,6 +1337,7 @@ def _cmd_filters_detector(args, parser):
               f"their DetectorTypeSource and was not written ({differ} of them resolve to the other type)")
         for r in kept:
             print(f"  {r['path']}: {r['note']}")
+    return 0
 
 
 def _cmd_filters_info(args, parser):
@@ -1347,7 +1351,8 @@ def _cmd_filters_info(args, parser):
     else:
         print_filter_availability(info)
         print_catalogue_entry("/".join(target), catalogue)
-    return 1 if info.get("availability_source") == "unknown" and info.get("errors") else 0
+    # Offline, an info.json that is not cached is reported as such, not a failure.
+    return 1 if info.get("errors") or (catalogue["errors"] and not args.offline) else 0
 
 
 def _cmd_filters_search(args, parser):
@@ -1412,7 +1417,7 @@ def _cmd_filters_cite(args, parser):
             print(f"[filters] {error}", file=sys.stderr)
     else:
         print(format_citations(result), end="")
-    return 1 if result["errors"] and not result["references"] else 0
+    return 1 if result["errors"] else 0
 
 
 def _cmd_filters_inventory(args, parser):
@@ -1450,6 +1455,7 @@ def _cmd_filters_build_components(args, parser):
     if args.archive:
         kwargs["archive_dir"] = args.archive
     print(f"[filters] Built {builder(args.base, **kwargs)}")
+    return 0
 
 
 def _build_all_component_sources(base: str, sites: Optional[List[str]]) -> int:
@@ -1476,6 +1482,7 @@ def _cmd_rebuild(args, parser):
         rebuild_h5=not args.no_h5,
         rebuild_flux_cube=not args.no_cube
     )
+    return 0
 
 
 def _cmd_combine(args, parser):
@@ -1484,6 +1491,7 @@ def _cmd_combine(args, parser):
         output_name=args.output,
         interactive=not args.non_interactive
     )
+    return 0
 
 
 def _cmd_ml_completer(args, parser):
@@ -1491,6 +1499,7 @@ def _cmd_ml_completer(args, parser):
         base_dir=args.base,
         models_dir=args.models_dir
     )
+    return 0
 
 
 def _cmd_ml_generator(args, parser):
@@ -1499,12 +1508,13 @@ def _cmd_ml_generator(args, parser):
             base_dir=args.base,
             models_dir=args.models_dir
         )
-        return
+        return 0
     if not args.library or not args.output:
         print("Error: --library and --output are required for --auto training.")
         sys.exit(1)
     from .ml import auto_train_generator
     auto_train_generator(library=args.library, output=args.output)
+    return 0
 
 
 def _cmd_densify(args, parser):
@@ -1519,6 +1529,7 @@ def _cmd_densify(args, parser):
         ml_gap_threshold=args.ml_gap_threshold,
         write_lookup=not args.no_lookup,
     )
+    return 0
 
 
 def _cmd_mesa_prepare(args, parser):
@@ -1527,6 +1538,7 @@ def _cmd_mesa_prepare(args, parser):
         model=args.model,
         output=args.output,
     )
+    return 0
 
 
 def _cmd_config(args, parser):
@@ -1534,6 +1546,7 @@ def _cmd_config(args, parser):
         set_data_dir(args.set, move=args.move if args.move else None)
     else:
         show_config()
+    return 0
 
 
 def _cmd_coverage(args, parser):
@@ -1544,7 +1557,7 @@ def _cmd_coverage(args, parser):
         names = _discover_local_grids(args.base)
         if not names:
             print(f"No local grids found under {args.base}")
-            return
+            return 1
     for nm in names:
         SED.coverage(
             nm,
@@ -1552,6 +1565,7 @@ def _cmd_coverage(args, parser):
             plot=not args.no_plot,
             out_path=args.out if len(names) == 1 else None,
         )
+    return 0
 
 
 def _cmd_import(args, parser):
@@ -1566,6 +1580,7 @@ def _cmd_import(args, parser):
         build_cube=not args.no_cube,
         dry_run=args.dry_run,
     )
+    return 0
 
 
 _COMMANDS = {
@@ -1651,4 +1666,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
