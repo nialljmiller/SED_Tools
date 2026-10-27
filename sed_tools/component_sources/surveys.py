@@ -10,6 +10,7 @@ instrument manifest.
 from __future__ import annotations
 
 import hashlib
+import io
 import re
 import tarfile
 import zipfile
@@ -28,8 +29,6 @@ ATLAS_TABLE3 = {"c": 533.0, "o": 679.0}  # Tonry 2018 Table 3 "pivot" [nm], c an
 
 
 def atlas_tex(raw: bytes) -> str:
-    import io
-
     with tarfile.open(fileobj=io.BytesIO(raw), mode="r:*") as t:
         m = t.getmember("atlas_defn.tex")
         safe_member(m.name)
@@ -179,8 +178,6 @@ UKIRT_QE = [0.53, 0.55, 0.54, 0.54, 0.54, 0.57, 0.62, 0.61]
 
 def tar_members(raw: bytes, wanted, *, flat: bool = False) -> dict:
     """Text of the ``wanted`` regular members; refuse unsafe member names."""
-    import io
-
     out = {}
     with tarfile.open(fileobj=io.BytesIO(raw), mode="r:*") as t:
         for m in t.getmembers():
@@ -252,8 +249,6 @@ def _lco(instrument: str, fetch: Fetcher, sha256: str = LCO_SHA256) -> Instrumen
     if sha256 and hashlib.sha256(raw).hexdigest() != sha256:
         raise ValueError("lco_filter_curves.zip differs from the verified copy")
     names = LCO_SETS[instrument]
-    import io
-
     with zipfile.ZipFile(io.BytesIO(raw)) as zf:
         data = {n: lco_member(zf, LCO_FILES[n][0]) for n in names}
     mapping = "; ".join(f"{b}={m} (codex band {c})" for b, (m, c) in LCO_FILES.items())

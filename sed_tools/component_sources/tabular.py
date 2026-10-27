@@ -8,9 +8,14 @@ tables carry separate named channels.
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
+from requests import Response, Session
+
 from ._common import SimpleSource, Table, build_simple
+
+logger = logging.getLogger(__name__)
 
 ESO = "https://www.eso.org/sci/facilities/paranal/instruments"
 
@@ -187,27 +192,30 @@ RAW_GROUPS = {
 }
 
 
+class _SavedSession:
+    """Serve downloads from an instrument's saved research inventory, else from the network."""
+
+    def __init__(self, raw, instrument: str, fallback):
+        self.folder = Path(raw) / RAW_GROUPS[instrument]
+        self.instrument, self.fallback = instrument, fallback
+
+    def get(self, url, **options):
+        filename = ("ioo_filter_throughput_and_qe.txt" if self.instrument == "IOO"
+                    else url.rsplit("/", 1)[-1])
+        path = self.folder / filename
+        if not path.is_file():
+            logger.warning("%s is not in the saved inventory; downloading %s instead", path, url)
+            return self.fallback.get(url, **options)
+        response = Response()
+        response.status_code = 200
+        response.url = url
+        response._content = path.read_bytes()
+        return response
+
+
 def build(filter_root, *, instrument, raw=None, session=None, **kwargs) -> Path:
     """Build one instrument; ``raw`` may hold the saved research inventory."""
     spec = SOURCES[instrument]
     if raw is not None:
-        from requests import Response, Session
-
-        class SavedSession:
-            def __init__(self, root, fallback):
-                self.root, self.fallback = Path(root), fallback
-
-            def get(self, url, **options):
-                filename = ("ioo_filter_throughput_and_qe.txt" if instrument == "IOO"
-                            else url.rsplit("/", 1)[-1])
-                path = self.root / RAW_GROUPS[instrument] / filename
-                if path.is_file():
-                    response = Response()
-                    response.status_code = 200
-                    response.url = url
-                    response._content = path.read_bytes()
-                    return response
-                return self.fallback.get(url, **options)
-
-        session = SavedSession(raw, session or Session())
+        session = _SavedSession(raw, instrument, session or Session())
     return build_simple(spec, filter_root, session=session, **kwargs)
