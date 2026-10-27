@@ -40,6 +40,11 @@ def regenerate_lookup_table(
     files: Optional[Iterable[str]] = None,
     output_dir: Optional[str] = None,
 ):
+    """Write <output_dir>/lookup_table.csv from the headers of the given spectra.
+
+    *files* defaults to every .txt in output_dir. Raises RuntimeError if
+    there are no spectra and OSError if one cannot be read.
+    """
     if output_dir is None and isinstance(model, str) and os.path.isdir(model):
         output_dir = model
         model_name = os.path.basename(os.path.normpath(model))
@@ -68,13 +73,12 @@ def regenerate_lookup_table(
         metadata_rows.append(row)
         all_keys.update(row.keys())
 
-    if metadata_rows:
-        with open(lookup_table_path, mode="w", newline="") as csv_file:
-            header = ["file_name"] + sorted(all_keys - {"file_name"})
-            csv_file.write("#" + ", ".join(header) + "\n")
-            writer = csv.DictWriter(csv_file, fieldnames=header)
-            writer.writerows(metadata_rows)
-        print(f"Lookup table regenerated: {lookup_table_path}")
+    with open(lookup_table_path, mode="w", newline="") as csv_file:
+        header = ["file_name"] + sorted(all_keys - {"file_name"})
+        csv_file.write("#" + ", ".join(header) + "\n")
+        writer = csv.DictWriter(csv_file, fieldnames=header)
+        writer.writerows(metadata_rows)
+    print(f"Lookup table regenerated: {lookup_table_path}")
 
 def main():
     from .models import STELLAR_DIR_DEFAULT
