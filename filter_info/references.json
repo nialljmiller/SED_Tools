@@ -2313,6 +2313,16 @@
   "volume": "266",
   "year": 1994
  },
+ "bibcode:1995A&A...304..110G": {
+  "bibcode": "1995A&A...304..110G",
+  "journal": "A&A",
+  "key": "bibcode:1995A&A...304..110G",
+  "resolved": "2026-10-27",
+  "short": "1995A&A...304..110G",
+  "type": "article",
+  "url": "https://ui.adsabs.harvard.edu/abs/1995A&A...304..110G",
+  "year": 1995
+ },
  "bibcode:1995PASP..107..672B": {
   "authors": [
    "Bessell, Michael S."
