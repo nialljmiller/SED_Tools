@@ -445,22 +445,64 @@ def _requested_spectral_grids(models: List[str], all_models: List[_ModelOption])
     return chosen, not_found
 
 
-def _first_source_with_metadata(name: str, sources: List[str], grabs: Dict):
-    """``(source, grabber, metadata)`` from the first active source with metadata for ``name``, else Nones."""
+def _download_from_first_source(name: str, sources: List[str], grabs: Dict, model_dir: str):
+    """Download ``name`` from the first active source that can supply it; returns ``(source, metadata)``.
+
+    A source that fails is reported and the next one tried, unless the failed
+    attempt changed ``model_dir``: the next source's spectra would then be
+    mixed with its files.  Raises RuntimeError with every source's error when
+    no source succeeds.
+    """
+    from .api import _directory_state
+
+    errors = []
     for src in sources:
-        g = grabs.get(src)
-        if not g:
+        if src not in grabs:
+            errors.append(f"{src}: not available")
             continue
+        before = _directory_state(model_dir)
+        meta, error = _download_from(name, src, grabs[src], model_dir)
+        if error is None:
+            return src, meta
+        errors.append(f"{src}: {error}")
+        if _directory_state(model_dir) != before:
+            raise RuntimeError(f"{src} failed after changing {model_dir}, so another source's spectra would be "
+                               f"mixed with its files; no further source tried. Tried: {'; '.join(errors)}")
+        print(f"  [{src}] {error} — trying next source...")
+    raise RuntimeError(f"no source could supply it. Tried: {'; '.join(errors)}")
+
+
+def _download_from(name: str, src: str, g, model_dir: str):
+    """Download ``name`` from one source: ``(metadata, None)``, or ``(metadata, what went wrong)``."""
+    meta = None
+    try:
         meta = g.get_model_metadata(name)
-        if meta:
-            return src, g, meta
-        print(f"  [{src}] No metadata — trying next source...")
-    return None, None, None
+        if not meta:
+            return meta, "no metadata"
+        print(f"  Using source: {src}")
+        njm_cuts = prompt_njm_axis_cuts(name, g, model_url=meta.get("model_url")) if src == "njm" else {}
+        n_written = g.download_model_spectra(
+            name, meta,
+            teff_range=njm_cuts.get('teff_range'),
+            logg_range=njm_cuts.get('logg_range'),
+            meta_range=njm_cuts.get('meta_range'),
+            wl_range=njm_cuts.get('wl_range'),
+        )
+    except (ValueError, RequestException, OSError, RuntimeError) as exc:
+        return meta, str(exc)
+    print(f"Downloaded {n_written} spectra → {model_dir}")
+    if not n_written and not _is_preprocessed(meta):
+        return meta, "no spectra downloaded"
+    return meta, None
+
+
+def _is_preprocessed(meta) -> bool:
+    return isinstance(meta, dict) and meta.get("pre_processed", False)
 
 
 def _download_and_build_grid(name: str, sources: List[str], grabs: Dict, base_dir: str,
                              force_bundle_h5: bool, build_flux_cube: bool) -> List[str]:
-    """Download one grid from its first source with metadata, clean it and build its products.
+    """Download one grid from its first source that can supply it, clean it and build its products.
 
     Returns what was not done; empty when the grid is complete.
     """
@@ -473,32 +515,14 @@ def _download_and_build_grid(name: str, sources: List[str], grabs: Dict, base_di
     model_dir = os.path.join(base_dir, name)
     ensure_dir(model_dir)
 
-    src, g, meta = _first_source_with_metadata(name, sources, grabs)
-    if src is None:
-        print("No metadata available from any source")
-        return ["no metadata from any source"]
+    src, meta = _download_from_first_source(name, sources, grabs, model_dir)
 
-    print(f"  Using source: {src}")
-    is_preprocessed = isinstance(meta, dict) and meta.get("pre_processed", False)
-    njm_cuts = prompt_njm_axis_cuts(name, g, model_url=meta.get("model_url")) if src == "njm" else {}
-
-    n_written = g.download_model_spectra(
-        name, meta,
-        teff_range=njm_cuts.get('teff_range'),
-        logg_range=njm_cuts.get('logg_range'),
-        meta_range=njm_cuts.get('meta_range'),
-        wl_range=njm_cuts.get('wl_range'),
-    )
-    print(f"Downloaded {n_written} spectra → {model_dir}")
-
-    if is_preprocessed:
+    if _is_preprocessed(meta):
         print("Pre-processed data (skipping cleaning)")
         essential = ["flux_cube.bin", "lookup_table.csv"]
         missing = [f for f in essential if not os.path.exists(os.path.join(model_dir, f))]
         print(f"Missing: {', '.join(missing)}" if missing else "All essential files present")
         return [f"missing {', '.join(missing)}"] if missing else []
-    if not n_written:
-        return [f"no spectra downloaded from {src}"]
 
     summary = clean_model_dir(model_dir, try_h5_recovery=True, rebuild_lookup=True)
     _print_cleaning_report(summary)

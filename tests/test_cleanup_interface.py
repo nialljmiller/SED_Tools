@@ -34,7 +34,9 @@ GRABBERS = {
 }
 
 
-def fake_grabber(models=(), error=None, available=True, metadata=None, downloaded=0):
+def fake_grabber(models=(), error=None, available=True, metadata=None, downloaded=0, download_error=None):
+    """A grabber class; ``metadata`` may be an exception to raise, and ``download_error`` is
+    raised after ``downloaded`` spectra have been written."""
     class Grabber:
         base_url = "https://mirror.invalid"
 
@@ -50,6 +52,8 @@ def fake_grabber(models=(), error=None, available=True, metadata=None, downloade
             return list(models)
 
         def get_model_metadata(self, name):
+            if isinstance(metadata, Exception):
+                raise metadata
             return metadata
 
         def download_model_spectra(self, name, meta, **cuts):
@@ -57,6 +61,8 @@ def fake_grabber(models=(), error=None, available=True, metadata=None, downloade
                 path = Path(self.base_dir) / name / f"spectrum{i}.txt"
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text("1000 1\n2000 1\n")
+            if download_error is not None:
+                raise download_error
             return downloaded
 
     return Grabber
@@ -113,19 +119,57 @@ def test_fetch_error_names_every_source_that_failed(sources, tmp_path, caplog):
     with caplog.at_level(logging.WARNING, logger="sed_tools.api"), pytest.raises(ValueError) as excinfo:
         SED.fetch("Missing", model_root=tmp_path)
     message = str(excinfo.value)
-    assert "Spectral grid 'Missing' not found" in message
+    assert "Spectral grid 'Missing' could not be fetched" in message
     assert "njm: discovery failed: NJM mirror https://mirror.invalid is unreachable" in message
     assert "msg: discovery failed: bad index" in message
     assert "svo: no metadata for Missing" in message
     assert "msg discovery failed: bad index; trying the other sources" in caplog.text
-    assert "svo: no metadata returned" in caplog.text
+    assert "svo: no metadata for Missing, trying next" in caplog.text
 
 
-def test_fetch_falls_back_to_the_next_source_with_a_warning(sources, tmp_path, caplog):
-    sources(njm=fake_grabber(["Grid"]), svo=fake_grabber(["Grid"], metadata=[{"fid": 1}]))
-    with caplog.at_level(logging.WARNING, logger="sed_tools.api"), pytest.raises(RuntimeError, match="from svo"):
+def test_fetch_falls_back_to_the_next_source_with_a_warning(sources, tmp_path, monkeypatch, caplog):
+    sources(njm=fake_grabber(["Grid"], metadata=RuntimeError("NJM mirror has no files for Grid")),
+            svo=fake_grabber(["Grid"], metadata=[{"fid": 1}], download_error=RuntimeError("SVO timed out")),
+            msg=fake_grabber(["Grid"], metadata={"m": 1}, downloaded=1))
+    monkeypatch.setattr("sed_tools.spectra_cleaner.clean_model_dir", lambda *a, **k: dict(CLEAN))
+    with caplog.at_level(logging.WARNING, logger="sed_tools.api"):
+        sed = SED.fetch("Grid", model_root=tmp_path)
+    assert sed.grid.source == "msg"
+    assert "njm: NJM mirror has no files for Grid, trying next" in caplog.text
+    assert "svo: SVO timed out, trying next" in caplog.text
+
+
+def test_fetch_stops_when_a_failed_download_left_files_behind(sources, tmp_path):
+    sources(svo=fake_grabber(["Grid"], metadata=[{"fid": 1}], downloaded=2, download_error=RuntimeError("1 of 3 failed")),
+            msg=fake_grabber(["Grid"], metadata={"m": 1}, downloaded=1))
+    with pytest.raises(RuntimeError, match="svo failed after changing .*mixed with its files.*svo: 1 of 3 failed"):
         SED.fetch("Grid", model_root=tmp_path)
-    assert "njm: no metadata returned, trying next" in caplog.text
+    assert sorted(p.name for p in (tmp_path / "Grid").iterdir()) == ["spectrum0.txt", "spectrum1.txt"]
+
+
+def test_fetch_from_msg_reads_the_msg_index_first(tmp_path, monkeypatch):
+    class MSG:
+        def __init__(self, base_dir=None, max_workers=None):
+            self.model_urls = {}
+
+        def discover_models(self):
+            self.model_urls = {"Grid": "https://msg.invalid/Grid.h5"}
+            return ["Grid"]
+
+        def get_model_metadata(self, name):
+            if name not in self.model_urls:
+                raise RuntimeError(f"MSG grid {name} is unknown to this grabber")
+            return {}
+
+    monkeypatch.setattr(GRABBERS["msg"], MSG)
+    with pytest.raises(ValueError, match="msg: no metadata for Grid"):
+        SED.fetch("Grid", source="msg", model_root=tmp_path)
+
+
+def test_fetch_from_mast_does_not_wait_for_the_keyboard(tmp_path, monkeypatch):
+    monkeypatch.setattr("builtins.input", lambda prompt="": pytest.fail("SED.fetch must not prompt"))
+    with pytest.raises(ValueError, match="mast: MAST \\(BOSZ\\) grids are fetched with 'sed-tools grids --source mast'"):
+        SED.fetch("BOSZ-2024-r10000", source="mast", model_root=tmp_path)
 
 
 def test_fetch_rejects_an_unknown_source(tmp_path):
@@ -135,7 +179,7 @@ def test_fetch_rejects_an_unknown_source(tmp_path):
 
 def test_fetch_raises_when_nothing_was_downloaded(sources, tmp_path):
     sources(svo=fake_grabber(["Grid"], metadata=[{"fid": 1}], downloaded=0))
-    with pytest.raises(RuntimeError, match="No spectra of 'Grid' were downloaded from svo"):
+    with pytest.raises(ValueError, match="svo: no spectra downloaded"):
         SED.fetch("Grid", source="svo", model_root=tmp_path)
 
 
@@ -399,8 +443,8 @@ def test_spectra_flow_builds_what_it_can_then_lists_every_grid_not_completed(gri
         run_spectra_flow("all", base_dir=str(tmp_path), models=["Good", "NoMeta", "Empty", "Missing"])
     message = str(excinfo.value)
     assert built == ["Good"]
-    assert "NoMeta: no metadata from any source" in message
-    assert "Empty: no spectra downloaded from mast" in message
+    assert "NoMeta: RuntimeError: no source could supply it. Tried: svo: no metadata" in message
+    assert "Empty: RuntimeError: no source could supply it. Tried: svo: no metadata; mast: no spectra downloaded" in message
     assert "Missing: not listed by any source" in message
     assert "Good" not in message
     assert "Done." not in capsys.readouterr().out
@@ -744,3 +788,31 @@ def test_fetched_grid_records_the_source_it_came_from(sources, tmp_path, monkeyp
     sources(svo=fake_grabber(["Grid"], metadata=[{"fid": 1}], downloaded=1))
     monkeypatch.setattr("sed_tools.spectra_cleaner.clean_model_dir", lambda *a, **k: dict(CLEAN))
     assert SED.fetch("Grid", model_root=tmp_path).grid.source == "svo"
+
+
+def test_spectra_flow_tries_the_next_source_when_one_raises(grid_flow, tmp_path, capsys):
+    from sed_tools.cli import run_spectra_flow
+
+    built = grid_flow(svo=fake_grabber(["Grid"], metadata=RuntimeError("SVO: incomplete FID list")),
+                      msg=fake_grabber(["Grid"], metadata={"m": 1}, downloaded=1))
+    run_spectra_flow("all", base_dir=str(tmp_path), models=["Grid"])
+    assert built == ["Grid"]
+    assert "[svo] SVO: incomplete FID list — trying next source..." in capsys.readouterr().out
+
+
+def test_spectra_flow_lists_every_source_error_and_never_mixes_sources(grid_flow, tmp_path):
+    from sed_tools.cli import run_spectra_flow
+
+    built = grid_flow(svo=fake_grabber(["A", "B"], metadata=[{"fid": 1}], downloaded=1,
+                                       download_error=RuntimeError("2 of 5 spectra failed")),
+                      msg=fake_grabber(["A", "B", "C"], metadata=RuntimeError("MSG down")),
+                      mast=fake_grabber(["C"], metadata={"m": 1}, downloaded=1))
+    with pytest.raises(RuntimeError) as excinfo:
+        run_spectra_flow("all", base_dir=str(tmp_path), models=["A", "B", "C"])
+    message = str(excinfo.value)
+    assert built == ["C"]
+    for name in ("A", "B"):
+        assert f"{name}: RuntimeError: svo failed after changing" in message
+        assert "Tried: svo: 2 of 5 spectra failed" in message
+    # msg (which would fail with "MSG down") was never tried for A or B, only for C, which mast then built.
+    assert "MSG down" not in message

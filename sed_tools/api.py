@@ -76,6 +76,14 @@ def _unusable_after_cleaning(summary: Dict[str, Any]) -> List[str]:
     return [*summary['skipped_invalid'], *summary['skipped_index'], *summary['error']]
 
 
+def _directory_state(directory: Path) -> Dict[str, int]:
+    """Name and modification time of each entry in ``directory`` ({} if it does not exist)."""
+    directory = Path(directory)
+    if not directory.is_dir():
+        return {}
+    return {path.name: path.stat().st_mtime_ns for path in directory.iterdir()}
+
+
 def _build_flux_cube(model_dir: Path) -> Path:
     """Run precompute_flux_cube on ``model_dir`` and return what it wrote.
 
@@ -785,9 +793,10 @@ class SED:
         Raises
         ------
         ValueError
-            If no source has the grid; the message gives each source's error.
+            If no source could supply the grid; the message gives each source's error.
         RuntimeError
-            If no spectra were downloaded, or cleaning left spectra unusable.
+            If a failed download left files behind (another source is then
+            not tried), or cleaning left spectra unusable.
         """
         base_dir = Path(model_root) if model_root else cls._model_root
         base_dir.mkdir(parents=True, exist_ok=True)
@@ -798,17 +807,10 @@ class SED:
             sources_to_try, failures = [source], []
         else:
             raise ValueError(f"Unknown source: {source}")
-        used_source, grabber, metadata = cls._first_source_with(
-            catalog, sources_to_try, failures, str(base_dir), workers)
-
-        print(f"[fetch] Downloading {catalog} from {used_source}...")
-        n_downloaded = grabber.download_model_spectra(catalog, metadata)
-        print(f"[fetch] Downloaded {n_downloaded} spectra")
-        if not n_downloaded:
-            raise RuntimeError(f"No spectra of '{catalog}' were downloaded from {used_source}")
+        model_dir = base_dir / catalog
+        used_source = cls._download_from_first_source(catalog, sources_to_try, failures, model_dir, workers)
 
         # Clean/standardize units
-        model_dir = base_dir / catalog
         if clean:
             from .spectra_cleaner import clean_model_dir
             summary = clean_model_dir(str(model_dir), try_h5_recovery=True, rebuild_lookup=True)
@@ -859,27 +861,44 @@ class SED:
         return sources, failures
 
     @classmethod
-    def _first_source_with(cls, catalog: str, sources: List[str], failures: List[str],
-                           base_dir: str, workers: int):
-        """``(source, grabber, metadata)`` from the first source that has metadata for ``catalog``.
+    def _download_from_first_source(cls, catalog: str, sources: List[str], failures: List[str],
+                                    model_dir: Path, workers: int) -> str:
+        """Download ``catalog`` into ``model_dir`` from the first source that can supply it.
 
-        Each source that fails is recorded in ``failures`` with a warning; if
-        none has the grid, raises ValueError listing every failure.
+        Returns that source.  A source that fails is recorded in ``failures``
+        with a warning and the next one is tried, unless the failed attempt
+        changed ``model_dir``: the next source's spectra would then be mixed
+        with its files, so RuntimeError is raised instead.  ValueError lists
+        every failure when no source succeeds.
         """
         for src in sources:
             print(f"[fetch] Trying {catalog} from {src}...")
-            try:
-                grabber = cls._get_grabber(src, base_dir, workers)
-                metadata = grabber.get_model_metadata(catalog)
-            except _SOURCE_ERRORS as exc:
-                failures.append(f"{src}: {exc}")
-                logger.warning("[fetch] %s failed: %s, trying next...", src, exc)
-                continue
-            if metadata:
-                return src, grabber, metadata
-            failures.append(f"{src}: no metadata for {catalog}")
-            logger.warning("[fetch] %s: no metadata returned, trying next...", src)
-        raise ValueError(f"Spectral grid '{catalog}' not found. Tried: {'; '.join(failures)}")
+            before = _directory_state(model_dir)
+            error = cls._download_from(src, catalog, model_dir, workers)
+            if error is None:
+                return src
+            failures.append(f"{src}: {error}")
+            if _directory_state(model_dir) != before:
+                raise RuntimeError(
+                    f"Fetching '{catalog}' stopped: {src} failed after changing {model_dir}, so another "
+                    f"source's spectra would be mixed with its files. Tried: {'; '.join(failures)}")
+            logger.warning("[fetch] %s: %s, trying next...", src, error)
+        raise ValueError(f"Spectral grid '{catalog}' could not be fetched. Tried: {'; '.join(failures)}")
+
+    @classmethod
+    def _download_from(cls, src: str, catalog: str, model_dir: Path, workers: int) -> Optional[str]:
+        """Download ``catalog`` from one source; returns None on success, else what went wrong."""
+        try:
+            grabber = cls._get_grabber(src, str(model_dir.parent), workers)
+            metadata = grabber.get_model_metadata(catalog)
+            if not metadata:
+                return f"no metadata for {catalog}"
+            print(f"[fetch] Downloading {catalog} from {src}...")
+            n_downloaded = grabber.download_model_spectra(catalog, metadata)
+        except _SOURCE_ERRORS as exc:
+            return str(exc)
+        print(f"[fetch] Downloaded {n_downloaded} spectra")
+        return None if n_downloaded else "no spectra downloaded"
 
     @classmethod
     def _get_grabber(cls, source: str, base_dir: str, workers: int):
@@ -889,10 +908,13 @@ class SED:
             return SVOSpectraGrabber(base_dir=base_dir, max_workers=workers)
         elif source == 'msg':
             from .msg_spectra_grabber import MSGSpectraGrabber
-            return MSGSpectraGrabber(base_dir=base_dir, max_workers=workers)
+            grabber = MSGSpectraGrabber(base_dir=base_dir, max_workers=workers)
+            grabber.discover_models()  # get_model_metadata finds grids in the index this reads
+            return grabber
         elif source == 'mast':
-            from .mast_spectra_grabber import MASTSpectraGrabber
-            return MASTSpectraGrabber(base_dir=base_dir, max_workers=workers)
+            # The MAST grabber asks on the terminal which metallicities to download.
+            raise RuntimeError("MAST (BOSZ) grids are fetched with 'sed-tools grids --source mast', which asks "
+                               "which metallicities to download; SED.fetch cannot answer that prompt")
         elif source == 'njm':
             from .njm_spectra_grabber import NJMSpectraGrabber
             return NJMSpectraGrabber(base_dir=base_dir)
