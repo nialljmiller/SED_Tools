@@ -76,3 +76,7 @@ htmlcov/
 
 # Official CIE colour tables shipped with sed_tools.filter_colors
 !sed_tools/cie/*.csv
+
+# Fixed inputs and recorded outputs of the golden tests (tests/golden/cases.py)
+!tests/golden/**
+tests/golden/**/__pycache__/

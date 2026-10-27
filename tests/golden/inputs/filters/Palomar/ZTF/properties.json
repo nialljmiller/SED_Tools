@@ -1,0 +1,156 @@
+{
+ "bands": {
+  "g": {
+   "ABminusVega": -0.1077235,
+   "AfAv": 1.191385,
+   "ColorMethod": "true",
+   "DetectorType": "photon",
+   "DetectorTypeSource": "svo",
+   "DisplayColor": "#00c4ff",
+   "FWHM": 1320.597,
+   "Fsun": 189.0385,
+   "STminusVega": -0.4010454,
+   "VisibleFraction": 0.9996,
+   "WavelengthCen": 4802.75,
+   "WavelengthEff": 4716.741,
+   "WavelengthMax": 5520.742,
+   "WavelengthMean": 4798.904,
+   "WavelengthMin": 4087.368,
+   "WavelengthPeak": 4356.68,
+   "WavelengthPhot": 4747.206,
+   "WavelengthPivot": 4783.502,
+   "WidthEff": 1269.847,
+   "ZeroPointAB_Jy": 3631.0,
+   "ZeroPointAB_flam": 4.757239e-09,
+   "ZeroPointST_Jy": 2771.389,
+   "ZeroPointST_flam": 3.631e-09,
+   "ZeroPointVega_Jy": 4009.735,
+   "ZeroPointVega_flam": 5.253448e-09
+  },
+  "i": {
+   "ABminusVega": 0.4244027,
+   "AfAv": 0.5688943,
+   "ColorMethod": "false",
+   "DetectorType": "photon",
+   "DetectorTypeSource": "svo",
+   "DisplayColor": "#ee3b2b",
+   "FWHM": 1462.604,
+   "Fsun": 116.3115,
+   "STminusVega": 1.211511,
+   "VisibleFraction": 0.2439,
+   "WavelengthCen": 7940.358,
+   "WavelengthEff": 7803.691,
+   "WavelengthMax": 8848.0,
+   "WavelengthMean": 7879.469,
+   "WavelengthMin": 7026.0,
+   "WavelengthPeak": 7310.0,
+   "WavelengthPhot": 7827.5,
+   "WavelengthPivot": 7867.413,
+   "WidthEff": 1224.878,
+   "ZeroPointAB_Jy": 3631.0,
+   "ZeroPointAB_flam": 1.758665e-09,
+   "ZeroPointST_Jy": 7496.688,
+   "ZeroPointST_flam": 3.631e-09,
+   "ZeroPointVega_Jy": 2456.208,
+   "ZeroPointVega_flam": 1.189658e-09
+  },
+  "r": {
+   "ABminusVega": 0.1821149,
+   "AfAv": 0.7865642,
+   "ColorMethod": "true",
+   "DetectorType": "photon",
+   "DetectorTypeSource": "svo",
+   "DisplayColor": "#ff6000",
+   "FWHM": 1554.873,
+   "Fsun": 160.5375,
+   "STminusVega": 0.5267588,
+   "VisibleFraction": 1.0,
+   "WavelengthCen": 6433.038,
+   "WavelengthEff": 6335.364,
+   "WavelengthMax": 7314.2,
+   "WavelengthMean": 6432.706,
+   "WavelengthMin": 5600.8,
+   "WavelengthPeak": 6517.2,
+   "WavelengthPhot": 6366.396,
+   "WavelengthPivot": 6417.105,
+   "WidthEff": 1506.018,
+   "ZeroPointAB_Jy": 3631.0,
+   "ZeroPointAB_flam": 2.643435e-09,
+   "ZeroPointST_Jy": 4987.51,
+   "ZeroPointST_flam": 3.631e-09,
+   "ZeroPointVega_Jy": 3070.296,
+   "ZeroPointVega_flam": 2.235233e-09
+  }
+ },
+ "definitions": {
+  "AfAv": "A(lambda)/A(V) at lambda = WavelengthPivot from the extinction law (see extinction); dimensionless",
+  "Fsun": "band-averaged f_lambda of the Sun at 1 AU, integral(W S) / integral(W) with S the sun_spectrum and W the curve's detector-aware weight (T energy-counting, T*lambda photon-counting), trapezoidal rule on the curve's samples: the weight of ZeroPointVega_flam",
+  "colors": "DisplayColor is an sRGB hex for plotting (sed_tools.filter_colors). ColorMethod 'true': CIE D65 daylight seen through the curve, for bands with VisibleFraction (share of the throughput between 380 and 750 nm) of at least 0.5; 'false': ordered false colour for ultraviolet and infrared bands.",
+  "extinction": {
+   "R_V": 3.1,
+   "dust_extinction_version": "1.7",
+   "implementation": "dust_extinction.parameter_averages.F99 (dust_extinction >= 1.6)",
+   "law": "Fitzpatrick (1999) Milky Way R(V)-dependent extinction curve",
+   "normalisation": "A(V) is the law's own normalisation, the extinction averaged over the V band: A(lambda)/A(V) = 1 at 5414 Angstrom and 0.978 at 5500 Angstrom (https://dust-extinction.readthedocs.io/en/latest/dust_extinction/normalization_details.html)",
+   "out_of_range": "null where the pivot lies outside the implementation's F99.x_range; never extrapolated",
+   "quantity": "AfAv = A(lambda)/A(V) at the pivot wavelength",
+   "references": [
+    "Fitzpatrick 1999, PASP 111, 63 (1999PASP..111...63F, doi:10.1086/316293): the law",
+    "Gordon 2024, JOSS 9(100), 7023 (doi:10.21105/joss.07023): dust_extinction"
+   ],
+   "valid_range_angstrom": [
+    1000.0,
+    33333.333333333336
+   ],
+   "valid_range_per_micron": [
+    0.3,
+    10.0
+   ]
+  },
+  "module": "sed_tools.filter_properties (SED_Tools 0.4.1)",
+  "note": "Vega quantities are null when the Vega spectrum does not cover the curve (where it transmits at least 1 % of its peak), Fsun likewise with the sun_spectrum. AfAv is null where the pivot lies outside the extinction law's valid range, or when dust_extinction is not installed (extinction.dust_extinction_version is then null).",
+  "sun_spectrum": {
+   "file": "data/sun/sun_flam.csv",
+   "range_angstrom": [
+    1195.0,
+    2999932.9060498998
+   ],
+   "references": [
+    "Bohlin, Gordon & Tremblay 2014, PASP 126, 711 (2014PASP..126..711B, doi:10.1086/677655): CALSPEC",
+    "Colina, Bohlin & Castelli 1996, AJ 112, 307 (doi:10.1086/118016): the solar reference spectrum"
+   ],
+   "sha256": "08b8dbcf908992460f02a0f2733a542e43dba3711cbf952263153b0e2903cdd5",
+   "spectrum": "CALSPEC sun_reference_stis_002 below 9600 Angstrom, sun_mod_001 from 9600 Angstrom (sun/README.md)",
+   "units": "WAVELENGTH Angstrom (vacuum), FLUX erg/s/cm2/Angstrom at 1 AU",
+   "url": "sun/sun_flam.csv"
+  },
+  "units": {
+   "ABminusVega": "mag",
+   "AfAv": "dimensionless",
+   "FWHM": "Angstrom",
+   "Fsun": "erg/s/cm2/Angstrom",
+   "STminusVega": "mag",
+   "WavelengthCen": "Angstrom",
+   "WavelengthEff": "Angstrom",
+   "WavelengthMax": "Angstrom",
+   "WavelengthMean": "Angstrom",
+   "WavelengthMin": "Angstrom",
+   "WavelengthPeak": "Angstrom",
+   "WavelengthPhot": "Angstrom",
+   "WavelengthPivot": "Angstrom",
+   "WidthEff": "Angstrom",
+   "ZeroPointAB_Jy": "Jy",
+   "ZeroPointAB_flam": "erg/s/cm2/Angstrom",
+   "ZeroPointST_Jy": "Jy",
+   "ZeroPointST_flam": "erg/s/cm2/Angstrom",
+   "ZeroPointVega_Jy": "Jy",
+   "ZeroPointVega_flam": "erg/s/cm2/Angstrom"
+  },
+  "vega_spectrum": {
+   "file": "data/vega/vega_flam.csv",
+   "sha256": "f5d77623188ab923d63cbb67a76b6a575e04ffff5881c7eea7891a9502148478",
+   "spectrum": "CALSPEC alpha_lyr_mod_004 (vega/README.md)",
+   "url": "vega/vega_flam.csv"
+  }
+ }
+}

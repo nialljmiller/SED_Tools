@@ -1,0 +1,13 @@
+#file_name,teff,logg,metallicity,source,units_standardized,alpha,lh,vtur
+Kurucz2003all_fid16515.txt,5750.0,4.0,-0.5,unknown,True,0,1.25,2 km/s
+Kurucz2003all_fid16516.txt,5750.0,4.5,-0.5,unknown,True,0,1.25,2 km/s
+Kurucz2003all_fid16526.txt,6000.0,4.0,-0.5,unknown,True,0,1.25,2 km/s
+Kurucz2003all_fid16527.txt,6000.0,4.5,-0.5,unknown,True,0,1.25,2 km/s
+Kurucz2003all_fid16536.txt,6250.0,4.0,-0.5,unknown,True,0,1.25,2 km/s
+Kurucz2003all_fid16537.txt,6250.0,4.5,-0.5,unknown,True,0,1.25,2 km/s
+Kurucz2003all_fid18895.txt,5750.0,4.0,0.0,unknown,True,0,1.25,2 km/s
+Kurucz2003all_fid18896.txt,5750.0,4.5,0.0,unknown,True,0,1.25,2 km/s
+Kurucz2003all_fid18906.txt,6000.0,4.0,0.0,unknown,True,0,1.25,2 km/s
+Kurucz2003all_fid18907.txt,6000.0,4.5,0.0,unknown,True,0,1.25,2 km/s
+Kurucz2003all_fid18916.txt,6250.0,4.0,0.0,unknown,True,0,1.25,2 km/s
+Kurucz2003all_fid18917.txt,6250.0,4.5,0.0,unknown,True,0,1.25,2 km/s

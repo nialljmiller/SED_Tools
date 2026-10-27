@@ -1,0 +1,5 @@
+file_name,teff,logg,metallicity
+Kurucz2003all_fid16527.txt,6000.0,4.5,-0.5
+Kurucz2003all_fid16537.txt,6250.0,4.5,-0.5
+Kurucz2003all_fid18907.txt,6000.0,4.5,0.0
+Kurucz2003all_fid18917.txt,6250.0,4.5,0.0

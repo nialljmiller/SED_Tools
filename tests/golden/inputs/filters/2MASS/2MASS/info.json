@@ -1,0 +1,442 @@
+{
+ "acknowledgements": [
+  {
+   "applies_to": "all bands",
+   "for": "Two Micron All Sky Survey (2MASS)",
+   "references": [
+    "bibcode:2006AJ....131.1163S"
+   ],
+   "text": "This publication makes use of data products from the Two Micron All Sky Survey, which is a joint project of the University of Massachusetts and the Infrared Processing and Analysis Center/California Institute of Technology, funded by the National Aeronautics and Space Administration and the National Science Foundation.",
+   "url": "https://irsa.ipac.caltech.edu/data/2MASS/docs/releases/allsky/faq.html"
+  },
+  {
+   "applies_to": "all bands",
+   "for": "NASA/IPAC Infrared Science Archive (IRSA)",
+   "references": [],
+   "text": "This research has made use of the NASA/IPAC Infrared Science Archive, which is funded by the National Aeronautics and Space Administration and operated by the California Institute of Technology.",
+   "url": "https://irsa.ipac.caltech.edu/docs/knowledgebase/general.html"
+  },
+  {
+   "applies_to": "curves and metadata",
+   "for": "SVO Filter Profile Service",
+   "references": [
+    "bibcode:2012ivoa.rept.1015R",
+    "bibcode:2020sea..confE.182R",
+    "bibcode:2024A&A...689A..93R"
+   ],
+   "text": "This research has made use of the SVO Filter Profile Service \"Carlos Rodrigo\", funded by MCIN/AEI/10.13039/501100011033/ through grant PID2023-146210NB-I00"
+  }
+ ],
+ "bands": {
+  "H": {
+   "Band": "H",
+   "CalibrationReference": [
+    {
+     "label": "Cohen 2003",
+     "ref": "bibcode:2003AJ....126.1090C"
+    }
+   ],
+   "Description": "2MASS H",
+   "MagSys": "Vega",
+   "PhotCalID": "2MASS/2MASS.H/Vega",
+   "PhotSystem": "2MASS",
+   "ProfileReference": [
+    {
+     "label": "2MASS at IPAC documentation",
+     "ref": "url:http://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec6_4a.html#rsr"
+    }
+   ],
+   "ZeroPointType": "Pogson",
+   "curve": {
+    "Components": "filter+instrument+atmosphere",
+    "ComponentsSource": "svo",
+    "DetectorType": "energy",
+    "DetectorTypeSource": "original",
+    "FilterID": "2MASS/2MASS.H",
+    "sources": [
+     "url:https://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=2MASS/2MASS.H",
+     "url:https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec3_1b1.html:",
+     "url:https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec3_1b1.html",
+     "url:https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec3_1b1.tbl11.html",
+     "url:https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec6_4a.html"
+    ]
+   },
+   "references": [
+    "bibcode:2003AJ....126.1090C",
+    "url:http://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec6_4a.html#rsr"
+   ],
+   "specified": {
+    "WavelengthEff": 16620.0,
+    "WavelengthMean": 16620.0,
+    "WavelengthRef": 16620.0,
+    "ZeroPoint": {
+     "Vega": {
+      "Jy": 1024.0,
+      "erg/cm2/s/A": 1.133e-10
+     }
+    }
+   },
+   "svo": {
+    "AfAv": 0.193,
+    "DetectorType": "energy",
+    "Fsun": 22.6,
+    "added": "2010-04-17 05:58:55",
+    "captures": {
+     "browse": {
+      "sha256": "71726c72baa9df62dbb88f4bc14a0c8defda99f047a069b2d083f08ec2000ca2",
+      "timestamp": "20250320054833",
+      "url": "http://svo2.cab.inta-csic.es/svo/theory/fps3/index.php?id=2MASS/2MASS.H&&mode=browse&gname=2MASS&gname2=2MASS"
+     },
+     "votable": {
+      "sha256": "3450202cb4da92b1c2d3372cf2af5add07c7c1380e489bd057aa27cedcfe8621",
+      "timestamp": "20250323174315",
+      "url": "http://svo2.cab.inta-csic.es/svo/theory/fps3/fps.php?ID=2MASS/2MASS.H"
+     }
+    },
+    "components": "Filter + Instrument + Atmosphere",
+    "curve": "identical",
+    "filterID": "2MASS/2MASS.H",
+    "matched_by": "FilterID",
+    "updated": "2021-07-27 18:33:54"
+   }
+  },
+  "J": {
+   "Band": "J",
+   "CalibrationReference": [
+    {
+     "label": "Cohen 2003",
+     "ref": "bibcode:2003AJ....126.1090C"
+    }
+   ],
+   "Description": "2MASS J",
+   "MagSys": "Vega",
+   "PhotCalID": "2MASS/2MASS.J/Vega",
+   "PhotSystem": "2MASS",
+   "ProfileReference": [
+    {
+     "label": "2MASS at IPAC documentation",
+     "ref": "url:http://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec6_4a.html#rsr"
+    }
+   ],
+   "ZeroPointType": "Pogson",
+   "curve": {
+    "Components": "filter+instrument+atmosphere",
+    "ComponentsSource": "svo",
+    "DetectorType": "energy",
+    "DetectorTypeSource": "original",
+    "FilterID": "2MASS/2MASS.J",
+    "sources": [
+     "url:https://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=2MASS/2MASS.J",
+     "url:https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec3_1b1.html:",
+     "url:https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec3_1b1.html",
+     "url:https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec3_1b1.tbl11.html",
+     "url:https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec6_4a.html"
+    ]
+   },
+   "references": [
+    "bibcode:2003AJ....126.1090C",
+    "url:http://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec6_4a.html#rsr"
+   ],
+   "specified": {
+    "WavelengthEff": 12350.0,
+    "WavelengthMean": 12350.0,
+    "WavelengthRef": 12350.0,
+    "ZeroPoint": {
+     "Vega": {
+      "Jy": 1594.0,
+      "erg/cm2/s/A": 3.129e-10
+     }
+    }
+   },
+   "svo": {
+    "AfAv": 0.304,
+    "DetectorType": "photon",
+    "DetectorType_note": "SVO's 2MASS/2MASS.J (captured 2025-10-11) is the same array as NJM's (SVO/NJM ratio 1.000 wherever both exceed 5 % of peak) but is labelled photon, while SVO's archived H and Ks records (2025-03-23, 2023-10-04) label the same kind of curve energy. NJM follows Cohen, Wheaton & Megeath (2003, AJ 126, 1090, §3): the RSRs 'are designed to be integrated directly over stellar spectra in Fλ form' with the wavelength factor already folded in, which is energy in SED_Tools' convention. SVO's J label is not used.",
+    "Fsun": 45.61,
+    "added": "2010-04-17 05:58:55",
+    "captures": {
+     "browse": {
+      "sha256": "e55ab638e008535d21e40982dae58f16180cc235c241dc2d907c4c206c36289c",
+      "timestamp": "20251213230708",
+      "url": "http://svo2.cab.inta-csic.es/svo/theory/fps3/index.php?id=2MASS/2MASS.J&&mode=browse&gname=2MASS&gname2=2MASS"
+     },
+     "votable": {
+      "sha256": "b4ed648ed9dd575234e84322dac582e34f5cb069f53fcab58cf6e32a9b3cd17f",
+      "timestamp": "20251011192130",
+      "url": "http://svo2.cab.inta-csic.es/svo/theory/fps3/fps.php?ID=2MASS/2MASS.J"
+     }
+    },
+    "components": "Filter + Instrument + Atmosphere",
+    "curve": "identical",
+    "filterID": "2MASS/2MASS.J",
+    "matched_by": "FilterID",
+    "updated": "2025-09-04 11:10:39"
+   }
+  },
+  "Ks": {
+   "Band": "Ks",
+   "CalibrationReference": [
+    {
+     "label": "Cohen 2003",
+     "ref": "bibcode:2003AJ....126.1090C"
+    }
+   ],
+   "Description": "2MASS Ks",
+   "MagSys": "Vega",
+   "PhotCalID": "2MASS/2MASS.Ks/Vega",
+   "PhotSystem": "2MASS",
+   "ProfileReference": [
+    {
+     "label": "2MASS at IPAC documentation",
+     "ref": "url:http://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec6_4a.html#rsr"
+    }
+   ],
+   "ZeroPointType": "Pogson",
+   "curve": {
+    "Components": "filter+instrument+atmosphere",
+    "ComponentsSource": "svo",
+    "DetectorType": "energy",
+    "DetectorTypeSource": "original",
+    "FilterID": "2MASS/2MASS.Ks",
+    "sources": [
+     "url:https://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=2MASS/2MASS.Ks",
+     "url:https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec3_1b1.html:",
+     "url:https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec3_1b1.html",
+     "url:https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec3_1b1.tbl11.html",
+     "url:https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec6_4a.html"
+    ]
+   },
+   "references": [
+    "bibcode:2003AJ....126.1090C",
+    "url:http://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec6_4a.html#rsr"
+   ],
+   "specified": {
+    "WavelengthEff": 21590.0,
+    "WavelengthMean": 21590.0,
+    "WavelengthRef": 21590.0,
+    "ZeroPoint": {
+     "Vega": {
+      "Jy": 666.8,
+      "erg/cm2/s/A": 4.283e-11
+     }
+    }
+   },
+   "svo": {
+    "AfAv": 0.125,
+    "DetectorType": "energy",
+    "Fsun": 8.74,
+    "added": "2010-04-17 05:58:55",
+    "captures": {
+     "browse": {
+      "sha256": "f9bc365655ecbcba5da8e0186e30d4f3ebf8f69be6c67057b729cfb41ee14d41",
+      "timestamp": "20260118235450",
+      "url": "http://svo2.cab.inta-csic.es/svo/theory/fps3/index.php?id=2MASS/2MASS.Ks&&mode=browse&gname=2MASS&gname2=2MASS"
+     },
+     "votable": {
+      "sha256": "4dc233475740d1382c4938b8029cd9dbf58a235238d670d57da4debe26d46332",
+      "timestamp": "20231004063603",
+      "url": "http://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=2MASS/2MASS.Ks"
+     }
+    },
+    "components": "Filter + Instrument + Atmosphere",
+    "curve": "identical",
+    "filterID": "2MASS/2MASS.Ks",
+    "matched_by": "FilterID",
+    "updated": "2025-09-04 11:11:27"
+   }
+  }
+ },
+ "bibliography": {
+  "bibcode:2003AJ....126.1090C": {
+   "authors": [
+    "Cohen, Martin",
+    "Wheaton, Wm. A.",
+    "Megeath, S. T."
+   ],
+   "bibcode": "2003AJ....126.1090C",
+   "bibtex": "@article{2003AJ....126.1090C, title={Spectral Irradiance Calibration in the Infrared. XIV. The Absolute Calibration of 2MASS}, volume={126}, ISSN={1538-3881}, url={http://dx.doi.org/10.1086/376474}, DOI={10.1086/376474}, number={2}, journal={The Astronomical Journal}, publisher={American Astronomical Society}, author={Cohen, Martin and Wheaton, Wm. A. and Megeath, S. T.}, year={2003}, month=Aug, pages={1090–1096} }",
+   "doi": "10.1086/376474",
+   "journal": "AJ",
+   "page": "1090-1096",
+   "resolved": "2026-10-25",
+   "short": "Cohen et al. 2003",
+   "title": "Spectral Irradiance Calibration in the Infrared. XIV. The Absolute Calibration of 2MASS",
+   "type": "article",
+   "url": "https://ui.adsabs.harvard.edu/abs/2003AJ....126.1090C",
+   "volume": "126",
+   "year": 2003
+  },
+  "bibcode:2006AJ....131.1163S": {
+   "authors": [
+    "Skrutskie, M. F.",
+    "Cutri, R. M.",
+    "Stiening, R.",
+    "Weinberg, M. D.",
+    "Schneider, S.",
+    "Carpenter, J. M.",
+    "Beichman, C.",
+    "Capps, R.",
+    "Chester, T.",
+    "Elias, J.",
+    "Huchra, J.",
+    "Liebert, J.",
+    "Lonsdale, C.",
+    "Monet, D. G.",
+    "Price, S.",
+    "Seitzer, P.",
+    "Jarrett, T.",
+    "Kirkpatrick, J. D.",
+    "Gizis, J. E.",
+    "Howard, E.",
+    "Evans, T.",
+    "Fowler, J.",
+    "Fullmer, L.",
+    "Hurt, R.",
+    "Light, R.",
+    "Kopan, E. L.",
+    "Marsh, K. A.",
+    "McCallon, H. L.",
+    "Tam, R.",
+    "Van Dyk, S.",
+    "Wheelock, S."
+   ],
+   "bibcode": "2006AJ....131.1163S",
+   "bibtex": "@article{2006AJ....131.1163S, title={The Two Micron All Sky Survey (2MASS)}, volume={131}, ISSN={1538-3881}, url={http://dx.doi.org/10.1086/498708}, DOI={10.1086/498708}, number={2}, journal={The Astronomical Journal}, publisher={American Astronomical Society}, author={Skrutskie, M. F. and Cutri, R. M. and Stiening, R. and Weinberg, M. D. and Schneider, S. and Carpenter, J. M. and Beichman, C. and Capps, R. and Chester, T. and Elias, J. and Huchra, J. and Liebert, J. and Lonsdale, C. and Monet, D. G. and Price, S. and Seitzer, P. and Jarrett, T. and Kirkpatrick, J. D. and Gizis, J. E. and Howard, E. and Evans, T. and Fowler, J. and Fullmer, L. and Hurt, R. and Light, R. and Kopan, E. L. and Marsh, K. A. and McCallon, H. L. and Tam, R. and Van Dyk, S. and Wheelock, S.}, year={2006}, month=Feb, pages={1163–1183} }",
+   "doi": "10.1086/498708",
+   "journal": "AJ",
+   "page": "1163-1183",
+   "resolved": "2026-10-25",
+   "short": "Skrutskie et al. 2006",
+   "title": "The Two Micron All Sky Survey (2MASS)",
+   "type": "article",
+   "url": "https://ui.adsabs.harvard.edu/abs/2006AJ....131.1163S",
+   "volume": "131",
+   "year": 2006
+  },
+  "bibcode:2012ivoa.rept.1015R": {
+   "authors": [
+    "Rodrigo, C.",
+    "Solano, E.",
+    "Bayo, A."
+   ],
+   "bibcode": "2012ivoa.rept.1015R",
+   "bibtex": "@techreport{2012ivoa.rept.1015R,\n  author = {Rodrigo, C. and Solano, E. and Bayo, A.},\n  title = {SVO Filter Profile Service Version 1.0},\n  institution = {International Virtual Observatory Alliance},\n  type = {IVOA Working Draft},\n  year = {2012},\n  month = oct,\n  url = {http://www.ivoa.net/documents/Notes/SVOFPS/index.html}\n}",
+   "journal": "IVOA Working Draft, 15 October 2012",
+   "publisher_url": "http://www.ivoa.net/documents/Notes/SVOFPS/index.html",
+   "short": "Rodrigo et al. 2012",
+   "title": "SVO Filter Profile Service Version 1.0",
+   "type": "techreport",
+   "url": "https://ui.adsabs.harvard.edu/abs/2012ivoa.rept.1015R",
+   "year": 2012
+  },
+  "bibcode:2020sea..confE.182R": {
+   "authors": [
+    "Rodrigo, C.",
+    "Solano, E."
+   ],
+   "bibcode": "2020sea..confE.182R",
+   "bibtex": "@inproceedings{2020sea..confE.182R,\n  author = {Rodrigo, C. and Solano, E.},\n  title = {The SVO Filter Profile Service},\n  year = {2020},\n  url = {https://ui.adsabs.harvard.edu/abs/2020sea..confE.182R}\n}",
+   "short": "Rodrigo & Solano 2020",
+   "title": "The SVO Filter Profile Service",
+   "type": "inproceedings",
+   "url": "https://ui.adsabs.harvard.edu/abs/2020sea..confE.182R",
+   "year": 2020
+  },
+  "bibcode:2024A&A...689A..93R": {
+   "authors": [
+    "Rodrigo, Carlos",
+    "Cruz, Patricia",
+    "Aguilar, John F.",
+    "Aller, Alba",
+    "Solano, Enrique",
+    "Gálvez-Ortiz, Maria Cruz",
+    "Jiménez-Esteban, Francisco",
+    "Mas-Buitrago, Pedro",
+    "Bayo, Amelia",
+    "Cortés-Contreras, Miriam",
+    "Murillo-Ojeda, Raquel",
+    "Bonoli, Silvia",
+    "Cenarro, Javier",
+    "Dupke, Renato",
+    "López-Sanjuan, Carlos",
+    "Marín-Franch, Antonio",
+    "de Oliveira, Claudia Mendes",
+    "Moles, Mariano",
+    "Taylor, Keith",
+    "Varela, Jesús",
+    "Ramió, Héctor Vázquez"
+   ],
+   "bibcode": "2024A&A...689A..93R",
+   "bibtex": "@article{2024A&A...689A..93R, title={Photometric segregation of dwarf and giant FGK stars using the SVO Filter Profile Service and photometric tools}, volume={689}, ISSN={1432-0746}, url={http://dx.doi.org/10.1051/0004-6361/202449998}, DOI={10.1051/0004-6361/202449998}, journal={Astronomy \\& Astrophysics}, publisher={EDP Sciences}, author={Rodrigo, Carlos and Cruz, Patricia and Aguilar, John F. and Aller, Alba and Solano, Enrique and Gálvez-Ortiz, Maria Cruz and Jiménez-Esteban, Francisco and Mas-Buitrago, Pedro and Bayo, Amelia and Cortés-Contreras, Miriam and Murillo-Ojeda, Raquel and Bonoli, Silvia and Cenarro, Javier and Dupke, Renato and López-Sanjuan, Carlos and Marín-Franch, Antonio and de Oliveira, Claudia Mendes and Moles, Mariano and Taylor, Keith and Varela, Jesús and Ramió, Héctor Vázquez}, year={2024}, month=Sept, pages={A93} }",
+   "doi": "10.1051/0004-6361/202449998",
+   "journal": "A&A",
+   "page": "A93",
+   "resolved": "2026-10-25",
+   "short": "Rodrigo et al. 2024",
+   "title": "Photometric segregation of dwarf and giant FGK stars using the SVO Filter Profile Service and photometric tools",
+   "type": "article",
+   "url": "https://ui.adsabs.harvard.edu/abs/2024A&A...689A..93R",
+   "volume": "689",
+   "year": 2024
+  },
+  "url:http://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec6_4a.html#rsr": {
+   "short": "2MASS at IPAC documentation",
+   "type": "web",
+   "url": "http://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec6_4a.html#rsr"
+  }
+ },
+ "description": "2MASS imaged the whole sky in the near-infrared J, H and Ks bands. These are the relative spectral response curves Cohen et al. (2003) derived for the 2MASS photometric system.",
+ "facility": "2MASS",
+ "facility_description": "The Two Micron All Sky Survey was a joint project of the University of Massachusetts and IPAC/Caltech, funded by NASA and the NSF.",
+ "instrument": "2MASS",
+ "licence": {
+  "redistribution": "public",
+  "terms": "\"Most data served by IRSA is public, with no usage restrictions.\"",
+  "url": "https://irsa.ipac.caltech.edu/data_use_terms.html"
+ },
+ "links": [
+  {
+   "label": "2MASS photometric system and RSRs (Explanatory Supplement VI.4a)",
+   "source": "IRSA/IPAC",
+   "url": "https://irsa.ipac.caltech.edu/data/2MASS/docs/releases/allsky/doc/sec6_4a.html"
+  },
+  {
+   "label": "2MASS FAQ: citation and acknowledgement",
+   "source": "IRSA/IPAC",
+   "url": "https://irsa.ipac.caltech.edu/data/2MASS/docs/releases/allsky/faq.html"
+  },
+  {
+   "label": "Terms of use of data hosted by IRSA",
+   "source": "IRSA",
+   "url": "https://irsa.ipac.caltech.edu/data_use_terms.html"
+  },
+  {
+   "label": "2MASS",
+   "source": "svo",
+   "url": "http://irsa.ipac.caltech.edu/Missions/2mass.html"
+  }
+ ],
+ "notes": "The 2MASS FAQ asks for the standard acknowledgement and gives Skrutskie et al. (2006) as the 2MASS reference. The RSR page (VI.4a) calls the Cohen et al. (2003) curves photon-counting RSRs that include PLEXUS-modelled atmospheric transmission. The 2MASS FAQ separately says 2MASS Image Gallery images are public domain; licence here uses IRSA's general terms page, which covers public IRSA data. DetectorType changed to energy, DetectorTypeSource original (2026-10-26): Cohen, Wheaton & Megeath (2003) §3, quoted on the Explanatory Supplement VI.4a page, say these RSRs 'are designed to be integrated directly over stellar spectra in Fλ form' because the wavelength factor is already folded in ('The QE-based component was converted to yield photon-counting RSRs by multiplying by wavelength and renormalized'). In SED_Tools' convention that is an energy integration; NJM's earlier photon label came from SVO's 2025 relabelling of 2MASS.J and is not used.",
+ "references": [
+  "bibcode:2006AJ....131.1163S",
+  "bibcode:2003AJ....126.1090C",
+  "url:http://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec6_4a.html#rsr",
+  "bibcode:2012ivoa.rept.1015R",
+  "bibcode:2020sea..confE.182R",
+  "bibcode:2024A&A...689A..93R"
+ ],
+ "schema": 1,
+ "svo_groups": {
+  "2MASS/2MASS": {
+   "description": "Filters for the Two Micron All Sky Survey",
+   "facility_description": "The Two Micron All Sky Survey.",
+   "links": [
+    {
+     "label": "2MASS",
+     "source": "svo",
+     "url": "http://irsa.ipac.caltech.edu/Missions/2mass.html"
+    }
+   ]
+  }
+ }
+}
