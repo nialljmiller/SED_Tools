@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-10-27T19:14:44.676839",
+  "generated": "2026-10-27T20:16:04.368676",
   "base_url": "http://nillmill.ddns.net/sed_tools",
   "statistics": {
     "total_models": 1,
@@ -275,8 +275,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 65574,
-            "size_human": "64.04 KB"
+            "size_bytes": 65841,
+            "size_human": "64.30 KB"
           }
         },
         "instrument_count": 1
@@ -345,8 +345,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 228635,
-            "size_human": "223.28 KB"
+            "size_bytes": 228629,
+            "size_human": "223.27 KB"
           },
           "GSC2": {
             "name": "GSC2",
@@ -366,8 +366,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 31128,
-            "size_human": "30.40 KB"
+            "size_bytes": 32055,
+            "size_human": "31.30 KB"
           }
         },
         "instrument_count": 2
@@ -426,8 +426,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 674690,
-            "size_human": "658.88 KB"
+            "size_bytes": 676668,
+            "size_human": "660.81 KB"
           },
           "OCTS": {
             "name": "OCTS",
@@ -452,8 +452,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 37874,
-            "size_human": "36.99 KB"
+            "size_bytes": 44341,
+            "size_human": "43.30 KB"
           },
           "POLDER": {
             "name": "POLDER",
@@ -494,8 +494,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 111723,
-            "size_human": "109.10 KB"
+            "size_bytes": 114355,
+            "size_human": "111.67 KB"
           }
         },
         "instrument_count": 3
@@ -522,7 +522,7 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 36570,
+            "size_bytes": 36572,
             "size_human": "35.71 KB"
           },
           "IRC": {
@@ -549,7 +549,7 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 213595,
+            "size_bytes": 213592,
             "size_human": "208.59 KB"
           }
         },
@@ -574,8 +574,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 16918,
-            "size_human": "16.52 KB"
+            "size_bytes": 17241,
+            "size_human": "16.84 KB"
           },
           "SABOCA": {
             "name": "SABOCA",
@@ -593,8 +593,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 19668,
-            "size_human": "19.21 KB"
+            "size_bytes": 19991,
+            "size_human": "19.52 KB"
           }
         },
         "instrument_count": 2
@@ -621,8 +621,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 38471,
-            "size_human": "37.57 KB"
+            "size_bytes": 38790,
+            "size_human": "37.88 KB"
           },
           "Balzers": {
             "name": "Balzers",
@@ -651,8 +651,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 194833,
-            "size_human": "190.27 KB"
+            "size_bytes": 197379,
+            "size_human": "192.75 KB"
           },
           "Blocking": {
             "name": "Blocking",
@@ -676,8 +676,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 91705,
-            "size_human": "89.56 KB"
+            "size_bytes": 94258,
+            "size_human": "92.05 KB"
           },
           "Broad": {
             "name": "Broad",
@@ -699,8 +699,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 43786,
-            "size_human": "42.76 KB"
+            "size_bytes": 44413,
+            "size_human": "43.37 KB"
           },
           "FNAL": {
             "name": "FNAL",
@@ -719,8 +719,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 24807,
-            "size_human": "24.23 KB"
+            "size_bytes": 25723,
+            "size_human": "25.12 KB"
           },
           "Gunn": {
             "name": "Gunn",
@@ -741,8 +741,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 43875,
-            "size_human": "42.85 KB"
+            "size_bytes": 45103,
+            "size_human": "44.05 KB"
           },
           "Hodge": {
             "name": "Hodge",
@@ -763,8 +763,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 22914,
-            "size_human": "22.38 KB"
+            "size_bytes": 25612,
+            "size_human": "25.01 KB"
           },
           "MSSSO": {
             "name": "MSSSO",
@@ -786,8 +786,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 42459,
-            "size_human": "41.46 KB"
+            "size_bytes": 43079,
+            "size_human": "42.07 KB"
           },
           "NICFPS": {
             "name": "NICFPS",
@@ -819,8 +819,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 164395,
-            "size_human": "160.54 KB"
+            "size_bytes": 164719,
+            "size_human": "160.86 KB"
           },
           "NMSU": {
             "name": "NMSU",
@@ -12821,8 +12821,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 21824,
-            "size_human": "21.31 KB"
+            "size_bytes": 24700,
+            "size_human": "24.12 KB"
           }
         },
         "instrument_count": 2
@@ -18571,8 +18571,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 97414,
-            "size_human": "95.13 KB"
+            "size_bytes": 98281,
+            "size_human": "95.98 KB"
           },
           "MegaCam": {
             "name": "MegaCam",
@@ -27120,10 +27120,10 @@
       "schema": 1,
       "svo_records": {
         "dir": "/media/data3/MESA/SED_Tools/source_evidence/svo-archive/parsed",
-        "ids": 9117,
-        "sha256": "a29ceda6cd602f7a2d551149ce4d207ff155f20dd22168227d26de393871108b"
+        "ids": 9133,
+        "sha256": "bd16066108906f4f943ac6a49f0fa84d20d092a08f0f99e2dd58696998f1294d"
       },
-      "references": 397,
+      "references": 398,
       "unresolved_references": 0,
       "svo_fields": {
         "Fsun": {
