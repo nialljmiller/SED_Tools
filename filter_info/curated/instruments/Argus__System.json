@@ -1,0 +1,52 @@
+{
+  "description": "Legacy Argus Array beta and rho curves (Niall Miller, 30 September 2026), as his MESA projects read them, served byte-for-byte: beta = Chroma CT446-162bp collimated design curve and rho = an idealised 560-825 nm box, each x a PlaneWave CDK optics model x Sony IMX455 QE, without atmosphere. Superseded by Argus/DR280.",
+  "facility_description": "The Argus Array, built at the University of North Carolina at Chapel Hill, is an array of small telescopes designed to observe the entire accessible sky at high cadence (Law et al. 2022, PASP 134, 035003; Law et al. 2024, Proc. SPIE 13094, 130941W). The 2022 paper describes an earlier hardware design (g-band and wide g+r filters, IMX455 sensors, 203 mm f/2.8 telescopes) that has since been replaced; the current hardware is DR280 telescopes with IMX461 sensors and the beta and rho bands.",
+  "notes": "Legacy curves, kept unchanged: Nill's Argus beta and rho of 30 September 2026, which his MESA projects (MESA_ARGUS, argus_star, custom_colors) read. Served byte-for-byte, so their column row carries no metadata; they include the QE, so they are photon-counting responses, and manifest.json says photon, but properties.json, which reads the curve header, lists them as energy (assumed). Made with build_argus_filters.py (archived) from ArgusSim's argus_g.csv (Chroma CT446-162bp collimated design curve), bandpass_560_825nm.csv (an idealised 560-825 nm box, not the real rho filter), optics_throughput.csv (a PlaneWave CDK optics model, not the DR280) and imx455_qe.csv (Sony IMX455, standing in for the IMX461): PCHIP for the filters and optics, CubicSpline for the QE (extrapolated to 300 nm), on 10000 points from 300 to 1000 nm; no atmosphere. Rebuilding from those files reproduces both curves to 3e-8. Components (filter, optics, qe) are served beside them. Composing them uses linear interpolation without QE extrapolation, so filter x optics x qe differs from the published curves near the steep filter edges (by up to 0.072 in beta at 527.8 nm and 0.026 in rho at 561.7 nm; in-band rms 0.0034 and 0.0015), and the pivot wavelengths agree within 0.4 A. Inputs: argus_g.csv, bandpass_560_825nm.csv and imx455_qe.csv are public in argus-hdps/argus_sim at commit 785c92e8; optics_throughput.csv is only in the private argus-hdps/ArgusSim. All four, the build script and both curves are archived in source_evidence/filters/2026-10-27-argus on NJM (manifest.json gives each file's URL or origin, retrieval time and SHA-256). The current hardware (Chroma CT699-259bp rho, DR280 optics) is Argus/DR280.",
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "argus-hdps/argus_sim LICENSE: \"MIT License Copyright (c) 2026 The University of North Carolina at Chapel Hill Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\" argus-hdps/ArgusSim pyproject.toml: \"license = {text = \"MIT\"}\"",
+    "url": "https://github.com/argus-hdps/argus_sim/blob/37a25ebbdc4f5151d5845e1cb1ccfc4c1abf7b85/LICENSE",
+    "scope": "Software licences of the source repositories, not data licences written for the curves; the curves themselves are Niall Miller's product of the inputs. argus_g.csv, bandpass_560_825nm.csv and imx455_qe.csv are public in argus-hdps/argus_sim at commit 785c92e8, whose README says 'MIT.'; the LICENSE file quoted (from commit 37a25ebb) was added later the same day (commit 74510cf3). optics_throughput.csv is from the private argus-hdps/ArgusSim, which declares MIT in pyproject.toml and has no LICENSE file; a byte-identical copy is on argus-hdps/hdps branches under its BSD 3-Clause licence."
+  },
+  "references": [
+    "doi:10.1088/1538-3873/ac4811",
+    "doi:10.1117/12.3019797"
+  ],
+  "links": [
+    {
+      "url": "https://argus.unc.edu/",
+      "label": "Argus Array project",
+      "source": "UNC Chapel Hill"
+    },
+    {
+      "url": "https://github.com/argus-hdps/argus_sim",
+      "label": "argus_sim, the public Argus survey simulator (production filter curves, IMX455 QE)",
+      "source": "argus-hdps"
+    },
+    {
+      "url": "https://github.com/argus-hdps/argus_sim/tree/785c92e8e423055e933d19f934054ca76ebd20e3/src/argus_sim/data/throughputs",
+      "label": "argus_sim throughputs at commit 785c92e8 (argus_g.csv, bandpass_560_825nm.csv, imx455_qe.csv)",
+      "source": "argus-hdps"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "argus-hdps/argus_sim (filter curves and IMX455 QE)",
+      "text": "Copyright (c) 2026 The University of North Carolina at Chapel Hill",
+      "url": "https://github.com/argus-hdps/argus_sim/blob/37a25ebbdc4f5151d5845e1cb1ccfc4c1abf7b85/LICENSE",
+      "references": [
+        "doi:10.1088/1538-3873/ac4811",
+        "doi:10.1117/12.3019797"
+      ],
+      "applies_to": "all bands"
+    }
+  ],
+  "bands": {
+    "beta": {
+      "Description": "Argus beta (legacy): Chroma CT446-162bp collimated design curve x PlaneWave CDK optics model x Sony IMX455 QE; no atmosphere"
+    },
+    "rho": {
+      "Description": "Argus rho (legacy): idealised 560-825 nm box (not the CT699 filter) x PlaneWave CDK optics model x Sony IMX455 QE; no atmosphere"
+    }
+  }
+}

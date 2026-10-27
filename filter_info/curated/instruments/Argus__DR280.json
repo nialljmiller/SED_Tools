@@ -1,0 +1,62 @@
+{
+  "description": "Argus Array survey bands for the current hardware: beta (Chroma CT446-162bp, about 360-526 nm) and rho (Chroma CT699-259bp, about 567-826 nm), on PlaneWave DeltaRho 280 (DR280) telescopes with Sony IMX461 CMOS sensors. Each published curve is filter x DR280 optics x detector QE, without atmosphere. The filter, optics and QE are served as separate components: filter variants 'production' (default) and 'addem', optics variants 'dr280' (default) and 'cdk'.",
+  "facility_description": "The Argus Array, built at the University of North Carolina at Chapel Hill, is an array of small telescopes designed to observe the entire accessible sky at high cadence (Law et al. 2022, PASP 134, 035003; Law et al. 2024, Proc. SPIE 13094, 130941W). The 2022 paper describes an earlier hardware design (g-band and wide g+r filters, IMX455 sensors, 203 mm f/2.8 telescopes) that has since been replaced; the current hardware is DR280 telescopes with IMX461 sensors and the beta and rho bands.",
+  "notes": "Published curves: filter x optics x QE of the default components, composed by SED_Tools (linear interpolation on the merged grid; zero outside a component's tabulated range), so composing the defaults reproduces them exactly. Filter variants: 'production' (default): argus_sim's argus_beta_ct446.csv and argus_rho_ct699.csv (commit 37a25ebb), Chroma's design curves averaged over the DR280 beam. 'addem': the ADDem (Argus Deep-field Demonstrator) filters: the same CT446-162bp beta filter, with the production curve, and the earlier CT692-276bp red filter rho0 in the rho band, from the filter_beam column of synthref's synthref_response_rho.csv. synthref's README calls that column 'rho0 CT692-276 theory, AOI n_eff 1.6', while its code defaults say the measured lot 452749; which it is is unresolved. ADDem's own calibration curves (synthref, hdps) used a beta curve with a provisional +5 nm red edge; that curve is archive-only, so 'addem' beta equals 'production' beta. Composed with the default optics and QE, 'addem' rho reproduces synthref's own rho response (R_noatm) to 1e-6. Optics variants: 'dr280' (default): the DR280 vendor-coating model dr280_vendor_s2s2 (hdps addem_optics.csv): two 'supplier 2' enhanced-aluminium mirrors digitised by eye from the vendor coating sheet, three CDGM corrector lenses and six AR surfaces at 0.5%; no window, since the filter substrate is in the filter curve and the sensor cover glass in the QE. 'cdk': ArgusSim's PlaneWave CDK optics curve (optics_throughput.csv), which the legacy Argus/System curves use. Both are models; no measured optics exist. QE: Sony IMX455, digitised from the datasheet (version and figure not recorded). The deployed sensor is the Sony IMX461; no IMX461 QE curve is available, so the IMX455 curve stands in, as in every Argus pipeline. No atmosphere is published or offered: the only atmosphere in the Argus repositories (pachon_modtran_atm_aerosols.txt) is LSST's Cerro Pachon MODTRAN model at airmass 1.2 (syseng_throughputs siteProperties/pachonModtranAtm_12_aerosol.dat), labelled airmass 1.0, and is not the Argus site. DetectorType photon (inferred): the curves include the IMX455 QE, which argus_sim's throughput.py gives in electrons per photon ('u.electron / u.photon') and uses in each band's 'photon-rate response'; synthref's passbands README also says 'Per-star rate ∝ ∫ F_λ · λ · R dλ (photon counting)' for the same product. Caveat: argus_rho_ct699.csv (2026-09-25) may use an earlier single-field-angle beam model rather than the field average used for argus_beta_ct446.csv (2026-10-21); the difference is probably small. Sources: the production filters and the QE are public (argus-hdps/argus_sim, MIT). The optics curves and the rho0 curve are not: addem_optics.csv is only on unmerged branches of the private argus-hdps/hdps repository, optics_throughput.csv only in the private argus-hdps/ArgusSim (and as a copy on hdps branches), and the rho0 curve only in argus-hdps/synthref, now removed from GitHub. NJM is their source; SED_Tools' builder (component_sources/argus.py) stops and points to NJM without them. All inputs are archived in source_evidence/filters/2026-10-27-argus on NJM (manifest.json gives each file's URL or origin, retrieval time and SHA-256). Archive-only, available on request: the 22 measured Chroma production-lot curves (order SO448371: 8 beta, 14 rho), the legacy design-study bands (r, i, A, r+i, i+z, r+i+z and the 560-825 nm rho box) and the provisional red-edge beta curve. Credit: the filter beam averages, the DR280 optics model, ArgusSim's CDK optics curve and the IMX455 digitisation are by Hank Corbett (UNC). Nill's earlier curves, which his MESA projects use, are Argus/System.",
+  "licence": {
+    "redistribution": "attribution",
+    "terms": "argus-hdps/argus_sim LICENSE: \"MIT License Copyright (c) 2026 The University of North Carolina at Chapel Hill Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\" argus-hdps/hdps LICENSE: \"BSD 3-Clause License Copyright (c) 2022, argus-hdps All rights reserved. Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met: 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer. 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution. 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\"",
+    "url": "https://github.com/argus-hdps/argus_sim/blob/37a25ebbdc4f5151d5845e1cb1ccfc4c1abf7b85/LICENSE",
+    "scope": "Software licences of the source repositories, not data licences written for the curves. The MIT licence (argus-hdps/argus_sim, public, commit 37a25ebb) covers argus_beta_ct446.csv, argus_rho_ct699.csv and imx455_qe.csv: the production filter components and the QE. The BSD 3-Clause licence (argus-hdps/hdps, private; LICENSE on main) covers addem_optics.csv, the default 'dr280' optics component. Both are in the published curves. No licence file covers the other two inputs: optics_throughput.csv (optics variant 'cdk') is from the private argus-hdps/ArgusSim, whose pyproject.toml says 'license = {text = \"MIT\"}' and which has no LICENSE file (a byte-identical copy is on hdps branches under the BSD licence above); the rho0 curve (filter variant 'addem') is from argus-hdps/synthref, which has no licence file and is removed from GitHub."
+  },
+  "references": [
+    "doi:10.1088/1538-3873/ac4811",
+    "doi:10.1117/12.3019797"
+  ],
+  "links": [
+    {
+      "url": "https://argus.unc.edu/",
+      "label": "Argus Array project",
+      "source": "UNC Chapel Hill"
+    },
+    {
+      "url": "https://github.com/argus-hdps/argus_sim",
+      "label": "argus_sim, the public Argus survey simulator (production filter curves, IMX455 QE)",
+      "source": "argus-hdps"
+    },
+    {
+      "url": "https://github.com/argus-hdps/argus_sim/blob/37a25ebbdc4f5151d5845e1cb1ccfc4c1abf7b85/src/argus_sim/data/throughputs/PROVENANCE.md",
+      "label": "argus_sim throughput provenance (commit 37a25ebb)",
+      "source": "argus-hdps"
+    },
+    {
+      "url": "https://github.com/argus-hdps/argus_sim/blob/37a25ebbdc4f5151d5845e1cb1ccfc4c1abf7b85/LICENSE",
+      "label": "argus_sim MIT licence",
+      "source": "argus-hdps"
+    }
+  ],
+  "acknowledgements": [
+    {
+      "for": "argus-hdps/argus_sim (production filter curves and IMX455 QE)",
+      "text": "Copyright (c) 2026 The University of North Carolina at Chapel Hill",
+      "url": "https://github.com/argus-hdps/argus_sim/blob/37a25ebbdc4f5151d5845e1cb1ccfc4c1abf7b85/LICENSE",
+      "references": [
+        "doi:10.1088/1538-3873/ac4811",
+        "doi:10.1117/12.3019797"
+      ],
+      "applies_to": "all bands (filter 'production' and qe components, and the published curves)"
+    },
+    {
+      "for": "argus-hdps/hdps (DR280 optics model addem_optics.csv)",
+      "text": "Copyright (c) 2022, argus-hdps All rights reserved.",
+      "applies_to": "all bands (optics 'dr280' component, and the published curves)"
+    }
+  ],
+  "bands": {
+    "beta": {
+      "Description": "Argus beta: Chroma CT446-162bp filter (design curve averaged over the DR280 beam) x DR280 optics model x Sony IMX455 QE (standing in for the IMX461); no atmosphere"
+    },
+    "rho": {
+      "Description": "Argus rho: Chroma CT699-259bp filter (design curve averaged over the DR280 beam) x DR280 optics model x Sony IMX455 QE (standing in for the IMX461); no atmosphere"
+    }
+  }
+}
