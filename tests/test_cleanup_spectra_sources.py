@@ -650,3 +650,41 @@ def test_svo_cache_that_cannot_be_read_or_written_is_warned_about(tmp_path, monk
 def test_mast_filter_keeps_names_it_cannot_parse_so_the_download_reports_them():
     odd = "https://x/m+0.00/r1000/bosz2024_xx_t05750_r1000_resam.txt.gz"
     assert mast._filter_urls_by_params([odd], teff_range=(5000, 6000)) == [odd]
+
+
+def test_mast_failed_first_spectrum_does_not_stop_the_rest(tmp_path):
+    urls = [bosz_url(5750), bosz_url(6000)]
+    session = FakeSession({
+        BOSZ_SCRIPT: FakeResponse(200, "\n".join(f"curl -O {u}" for u in urls)),
+        BOSZ_WAVE: FakeResponse(200, "\n".join(str(3000 + 100 * i) for i in range(12))),
+        urls[0]: requests.ConnectionError("first one dropped"),
+        urls[1]: FakeResponse(200, bosz_resam(12)),
+    })
+    grabber = mast.MASTSpectraGrabber(base_dir=str(tmp_path), max_workers=1, session=session)
+
+    with pytest.raises(RuntimeError, match="1 of 2 BOSZ spectra.*\n.*t05750.*first one dropped"):
+        grabber.download_model_spectra("BOSZ-2024-r1000", {"reskey": "r1000", "metals": ["m+0.00"]})
+    assert len(list((tmp_path / "BOSZ-2024-r1000").glob("*t06000*.txt"))) == 1
+
+
+def test_msg_discover_and_run_finishes_other_grids_then_raises(tmp_path, monkeypatch):
+    index = (f'<a href="{MSG_FILE}">a</a>'
+             '<a href="http://user.astro.wisc.edu/msg/grids/sg-Other.h5">b</a>')
+    grabber, _ = make_msg(tmp_path, monkeypatch, {MSG_INDEX: FakeResponse(200, index)})
+    done = []
+
+    def metadata(name):
+        if name == "sg-Test":
+            raise RuntimeError("download failed")
+        return [{"fid": 1}]
+
+    def download(name, meta):
+        done.append(name)
+        return 1
+
+    monkeypatch.setattr(grabber, "get_model_metadata", metadata)
+    monkeypatch.setattr(grabber, "download_model_spectra", download)
+
+    with pytest.raises(RuntimeError, match="1 of 2 grid\\(s\\) failed:\n  sg-Test: download failed"):
+        grabber.discover_and_run()
+    assert done == ["sg-Other"]

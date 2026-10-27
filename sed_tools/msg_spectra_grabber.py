@@ -532,13 +532,17 @@ class MSGSpectraGrabber:
         if not avail:
             print("No MSG spectral grids found."); return
         selected = selected_models or avail
-        total=0
+        total=0; failed=[]
         for name in selected:
             print(f"\n[msg] Processing spectral grid: {name}")
-            meta = self.get_model_metadata(name)
-            if not meta: continue
-            total += self.download_model_spectra(name, meta)
+            try:
+                meta = self.get_model_metadata(name)
+                total += self.download_model_spectra(name, meta)
+            except RuntimeError as e:  # finish the other grids, then report
+                failed.append(f"{name}: {e}")
         print(f"\n[MSG] Done. Extracted {total} spectra total.")
+        if failed:
+            raise RuntimeError(f"MSG: {len(failed)} of {len(selected)} grid(s) failed:\n  " + "\n  ".join(failed))
 
 def main():
     import argparse

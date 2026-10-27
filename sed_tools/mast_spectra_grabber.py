@@ -460,8 +460,11 @@ class MASTSpectraGrabber:
 
         # -------- detect inline wavelength; if not, fetch wave grid (resampled only) --------
         first_url = urls[0]
-        first_text = _download_text_gz(first_url, session=self.session)
-        has_inline, inline_w, inline_f, inline_c = _detect_inline_wave(first_text)
+        try:
+            first_text = _download_text_gz(first_url, session=self.session)
+        except _SPECTRUM_ERRORS:
+            first_text = None  # handle_one fetches it again and reports the failure with the rest
+        has_inline, inline_w, inline_f, inline_c = _detect_inline_wave(first_text or "")
 
         wave = None; wave_url = None
         if reskey != "rorig" and not has_inline:
