@@ -646,3 +646,12 @@ def test_published_carries_every_source_reason(tmp_path, monkeypatch, caplog):
                                "original source: the builder left an incomplete set; "
                                "SVO: SVO Filter Profile Service unreachable")
     assert "The original source cannot provide Fac/Cam (the builder left an incomplete set); trying SVO" in caplog.text
+
+
+def test_svo_error_on_a_listed_candidate_is_raised(tmp_path):
+    import requests
+
+    path = _curve(tmp_path / "GAIA" / "GAIA" / "G.dat", header="Wavelength,Transmission")
+    client = SVOClient(listing=["GAIA/GAIA3.G"], fail={"GAIA/GAIA3.G": requests.HTTPError("503 Service Unavailable")})
+    with pytest.raises(requests.HTTPError, match="503"):
+        fm.resolve_detector_type(path, client=client)
