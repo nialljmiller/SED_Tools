@@ -326,6 +326,10 @@ def _write_spectrum_txt(out_path: str, wl: np.ndarray, fx: np.ndarray, ct: Optio
             f.write("# wave_grid = " + wave_url_used + "\n")
         for k,v in params.items():
             f.write(f"# {k} = {v}\n")
+        # No flux unit is declared, on purpose. BOSZ 2024 gives the Eddington flux H_λ in
+        # erg/s/cm²/Å, and the surface flux is F_λ = 4πH_λ (Mészáros et al. 2024, eq. 2).
+        # spectra_cleaner has no unit for H_λ, and declaring F_λ would make it 4π too low,
+        # so cleaning stops and asks for the unit instead.
         f.write("# columns = wavelength_A flux continuum\n")
         if ct is None:
             ct = np.ones_like(fx)

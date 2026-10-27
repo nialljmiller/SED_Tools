@@ -1,0 +1,112 @@
+"""Follow-ups to decisions 18 and 19.
+
+1. BOSZ (MAST) spectra hold the Eddington flux H_λ, which no flux unit of
+   spectra_cleaner describes, so cleaning them stops and asks for the unit.
+
+No test uses the network: the autouse fixture fails any real HTTP request.
+"""
+
+import gzip
+import os
+
+import numpy as np
+import pytest
+import requests
+
+from sed_tools import mast_spectra_grabber as mast
+from sed_tools.spectra_cleaner import check_flux_unit, clean_model_dir, detect_units_from_header
+
+
+@pytest.fixture(autouse=True)
+def no_network(monkeypatch):
+    def refuse(*args, **kwargs):
+        raise AssertionError("test tried to use the network")
+
+    monkeypatch.setattr(requests.adapters.HTTPAdapter, "send", refuse)
+
+
+class FakeResponse:
+    def __init__(self, body):
+        self.status_code = 200
+        self.content = body if isinstance(body, bytes) else body.encode()
+        self.text = self.content.decode("utf-8", "ignore")
+
+    def raise_for_status(self):
+        pass
+
+
+class FakeSession:
+    """Answers from a {url: response} table; any other URL is a test error."""
+
+    def __init__(self, routes):
+        self.routes = routes
+
+    def get(self, url, **kwargs):
+        return self.routes[url]
+
+
+# ---------------------------------------------------------------------
+# 1. BOSZ spectra: the flux is H_λ, so cleaning stops and asks
+# ---------------------------------------------------------------------
+
+# Twelve rows (1, 824-826, 2001, 3001, 3501, 4001, 5001, 6001, 7001 and 7500 of
+# 7500) of a real BOSZ 2024 R=500 spectrum and of its wavelength grid, as MAST
+# serves them, retrieved 2026-10-27:
+#   https://archive.stsci.edu/hlsps/bosz/bosz2024/r500/m+0.00/<BOSZ_NAME>
+#   https://archive.stsci.edu/hlsps/bosz/bosz2024/wavelength_grids/bosz2024_wave_r500.txt
+# The spectrum's columns are the Eddington flux H_λ in erg/s/cm²/Å and the
+# continuum; the surface flux is F_λ = 4πH_λ (Mészáros et al. 2024, eq. 2).
+# Where the flux is below 1e-6 the file holds 0 and 1.
+BOSZ_NAME = "bosz2024_mp_t5000_g+5.0_m+0.00_a+0.00_c+0.00_v0_r500_resam.txt.gz"
+BOSZ_WAVE_LINES = [
+    "5.0000000e+02", "1.0160182e+03", "1.0168939e+03", "1.0177704e+03",
+    "2.8008166e+03", "6.6289080e+03", "1.0198133e+04", "1.5689147e+04",
+    "3.7132711e+04", "8.7884843e+04", "2.0800382e+05", "3.1972443e+05",
+]
+BOSZ_SPECTRUM_LINES = [
+    "0.0000e+00 1.0000e+00", "0.0000e+00 1.0000e+00", "7.9405e-07 1.0064e-06", "8.1437e-07 1.0373e-06",
+    "4.0757e+03 5.8027e+04", "3.1197e+05 3.2022e+05", "1.6892e+05 1.7022e+05", "7.7956e+04 8.1788e+04",
+    "3.6002e+03 3.6386e+03", "1.2803e+02 1.2810e+02", "4.2380e+00 4.2434e+00", "7.6432e-01 7.6514e-01",
+]
+
+
+def _download_bosz_fixture(tmp_path):
+    """The fixture spectrum as MASTSpectraGrabber writes it; returns the grid directory."""
+    url = f"{mast.DATA_BASE}/r500/m+0.00/{BOSZ_NAME}"
+    script = f"{mast.SCRIPTS_DIR}/hlsp_bosz_bosz2024_sim_r500_m%2B0.00_v1_bulkdl.sh"
+    wave_url = f"{mast.DATA_BASE}/wavelength_grids/bosz2024_wave_r500.txt"
+    session = FakeSession({
+        script: FakeResponse(f'curl -f --create-dirs --output "r500/m+0.00/{BOSZ_NAME}" "{url}"\n'),
+        url: FakeResponse(gzip.compress(("\n".join(BOSZ_SPECTRUM_LINES) + "\n").encode())),
+        wave_url: FakeResponse("\n".join(BOSZ_WAVE_LINES) + "\n"),
+    })
+    grabber = mast.MASTSpectraGrabber(base_dir=str(tmp_path), max_workers=1, session=session)
+    assert grabber.download_model_spectra("BOSZ-2024-r500", {"reskey": "r500", "metals": ["m+0.00"]}) == 1
+    return tmp_path / "BOSZ-2024-r500"
+
+
+def _snapshot(directory):
+    return {name: (directory / name).read_bytes() for name in sorted(os.listdir(directory))}
+
+
+def test_bosz_spectrum_is_written_as_served_and_declares_no_flux_unit(tmp_path):
+    model_dir = _download_bosz_fixture(tmp_path)
+    text = (model_dir / mast._sanitize_filename(BOSZ_NAME.replace(".txt.gz", ".txt"))).read_text()
+    header = "".join(line + "\n" for line in text.splitlines() if line.startswith("#"))
+
+    data = np.loadtxt(text.splitlines(), comments="#")
+    np.testing.assert_array_equal(data[:, 0], [float(w) for w in BOSZ_WAVE_LINES])
+    np.testing.assert_array_equal(data[:, 1:], [[float(v) for v in line.split()] for line in BOSZ_SPECTRUM_LINES])
+    assert detect_units_from_header(header)["flux_unit"] is None
+
+
+def test_cleaning_a_bosz_grid_stops_and_asks_for_the_flux_unit(tmp_path):
+    model_dir = _download_bosz_fixture(tmp_path)
+    before = _snapshot(model_dir)
+    txt_files = sorted(str(p) for p in model_dir.glob("*.txt"))
+
+    with pytest.raises(ValueError, match=r"is not declared; best guess"):
+        check_flux_unit("BOSZ-2024-r500", txt_files)
+    with pytest.raises(ValueError, match=r"Flux unit of .*BOSZ-2024-r500 is not declared; best guess"):
+        clean_model_dir(str(model_dir), sample_fraction=1.0)
+    assert _snapshot(model_dir) == before
