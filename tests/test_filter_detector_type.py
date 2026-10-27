@@ -237,10 +237,12 @@ def test_tag_backfills_published_components(tmp_path):
 def test_failed_lookup_does_not_downgrade_authoritative_tag(tmp_path):
     path = tmp_path / "G.dat"
     write_filter_file(path, [1.0], [1.0], detector_type=PHOTON, source=SOURCE_SVO, filter_id="GAIA/GAIA3.G")
+    before = path.read_bytes()
 
-    result = tag_filter_file(path, client=FakeSVO({}, fail=True), force=True)
+    with pytest.raises(RuntimeError, match="network down"):
+        tag_filter_file(path, client=FakeSVO({}, fail=True), force=True)
 
-    assert (result.detector_type, result.changed) == (PHOTON, False)
+    assert path.read_bytes() == before
     assert read_filter_header(path)["DetectorType"] == PHOTON
 
 

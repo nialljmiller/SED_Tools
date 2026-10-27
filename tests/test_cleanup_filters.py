@@ -465,3 +465,110 @@ def test_njm_atmosphere_failure_is_reported_before_its_source(tmp_path, monkeypa
         path = library.prepare_atmosphere(manifest, AtmosphereSpec(None, 1.2, 2.5))
     assert path.name == "a.dat"
     assert "NJM cannot provide the paranal_am1.2_pwv2.5 atmosphere (502" in caplog.text
+
+
+# ----------------------------------------------------------------------
+# filter_metadata: SVO failures are no longer taken for "SVO has no answer"
+# ----------------------------------------------------------------------
+class SVOClient:
+    """Offline stand-in for SVOMetadataClient: ``fail`` maps filter IDs to the exception they raise."""
+
+    def __init__(self, records=None, fail=None, listing=()):
+        self.records, self.fail, self.listing = records or {}, fail or {}, list(listing)
+
+    def get_filter(self, filter_id):
+        if filter_id in self.fail:
+            raise self.fail[filter_id]
+        return self.records.get(filter_id)
+
+    def facility_filter_ids(self, facility):
+        return self.listing
+
+
+class SVOSession:
+    """A requests session for SVOMetadataClient: every answer is ``content`` with ``status``."""
+
+    def __init__(self, content=b"", status=200, error=None):
+        self.content, self.status, self.error, self.headers = content, status, error, {}
+
+    def get(self, url, **kwargs):
+        import requests
+        from types import SimpleNamespace
+
+        if self.error is not None:
+            raise self.error
+
+        def raise_for_status():
+            if self.status >= 400:
+                raise requests.HTTPError(f"{self.status} Server Error")
+
+        return SimpleNamespace(content=self.content, status_code=self.status, raise_for_status=raise_for_status)
+
+
+def test_svo_error_is_raised_and_nothing_is_written(tmp_path):
+    import requests
+
+    path = _curve(tmp_path / "GAIA" / "GAIA" / "G.dat", header="Wavelength,Transmission,FilterID=GAIA/GAIA3.G")
+    before = path.read_bytes()
+    client = SVOClient(fail={"GAIA/GAIA3.G": requests.HTTPError("500 Server Error")})
+    with pytest.raises(requests.HTTPError, match="500"):
+        fm.tag_filter_file(path, client=client)
+    assert path.read_bytes() == before  # no "energy, assumed" placeholder
+
+
+def test_svo_timeout_during_curve_matching_is_raised(tmp_path):
+    import requests
+
+    path = _curve(tmp_path / "GAIA" / "GAIA" / "G.dat", header="Wavelength,Transmission")
+    before = path.read_bytes()
+    client = fm.SVOMetadataClient(session=SVOSession(error=requests.ReadTimeout("read timed out")))
+    with pytest.raises(requests.ReadTimeout):
+        fm.tag_filter_file(path, client=client)
+    assert path.read_bytes() == before
+
+
+def test_unreadable_svo_answer_is_raised(tmp_path):
+    client = fm.SVOMetadataClient(session=SVOSession(content=b"<html><body>Service down</body></html>"))
+    with pytest.raises(ValueError, match="VOTABLE"):
+        client.facility_filter_ids("GAIA")
+    with pytest.raises(ValueError, match="VOTABLE"):
+        client.get_filter("GAIA/GAIA3.G")
+
+
+def test_failed_facility_listing_is_raised_and_not_cached_as_empty():
+    import requests
+
+    session = SVOSession(status=500)
+    client = fm.SVOMetadataClient(session=session)
+    with pytest.raises(requests.HTTPError):
+        client.facility_filter_ids("GAIA")
+    session.status, session.content = 200, (
+        b'<?xml version="1.0"?><VOTABLE version="1.3" xmlns="http://www.ivoa.net/xml/VOTable/v1.3">'
+        b'<RESOURCE><INFO name="QUERY_STATUS" value="ERROR">none</INFO></RESOURCE></VOTABLE>')
+    assert client.facility_filter_ids("GAIA") == []
+
+
+def test_tag_tree_tags_what_it_can_then_lists_the_failures(tmp_path):
+    import numpy as np
+    import requests
+
+    instrument = tmp_path / "Fac" / "Cam"
+    for band in "ab":
+        _curve(instrument / f"{band}.dat", header=f"Wavelength,Transmission,FilterID=Fac/Cam.{band}")
+    before = (instrument / "a.dat").read_bytes()
+    record = fm.SVOFilterRecord("Fac/Cam.b", fm.PHOTON, np.array([4000.0, 5000.0, 6000.0]),
+                                np.array([0.1, 1.0, 0.1]), "Angstrom", "Filter")
+    client = SVOClient({"Fac/Cam.b": record}, fail={"Fac/Cam.a": requests.HTTPError("502 Bad Gateway")})
+    with pytest.raises(RuntimeError, match=r"(?s)1 of 2 filter files could not be tagged.*a\.dat: 502 Bad Gateway"):
+        fm.tag_filter_tree(tmp_path, client=client)
+    assert (instrument / "a.dat").read_bytes() == before
+    assert fm.read_filter_header(instrument / "b.dat")["DetectorType"] == fm.PHOTON
+
+
+def test_tag_tree_stops_at_once_when_svo_is_unreachable(tmp_path):
+    for band in "ab":
+        _curve(tmp_path / "Fac" / "Cam" / f"{band}.dat", header=f"Wavelength,Transmission,FilterID=Fac/Cam.{band}")
+    down = fm.SVOUnreachableError("SVO Filter Profile Service unreachable")
+    client = SVOClient(fail={"Fac/Cam.a": down, "Fac/Cam.b": down})
+    with pytest.raises(fm.SVOUnreachableError):
+        fm.tag_filter_tree(tmp_path, client=client)
