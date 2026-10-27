@@ -172,7 +172,8 @@ def iras_tables(page: str) -> dict:
     out = {}
     for i in range(1, len(parts), 2):
         nums = [float(x) for x in re.findall(r"(?<![\w.])\d+\.\d+|(?<![\w.])\d+(?![\w.])", parts[i + 1])]
-        nums = nums[: len(nums) // 4 * 4]
+        if len(nums) % 4:
+            raise ValueError(f"IRAS {parts[i]} um band: {len(nums)} numbers do not make rows of 4")
         out[parts[i]] = np.array(nums).reshape(-1, 4)
     return out
 

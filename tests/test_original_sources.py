@@ -288,7 +288,10 @@ def test_hipparcos_fixed_width_columns_end_independently():
 
 
 def test_iras_html_table():
-    tables = space.iras_tables(fx("iras_tabC5.html"))
+    page = fx("iras_tabC5.html")
+    with pytest.raises(ValueError, match="rows of 4"):  # the excerpt ends inside a row
+        space.iras_tables(page)
+    tables = space.iras_tables(page.replace("<TD>33.0</TD>", ""))
     assert sorted(tables) == ["12", "60"]
     assert tables["12"].tolist() == [[7.0, 0.0, 0.3, 0.0], [7.5, 0.01, 0.35, 0.008]]
     assert tables["60"].shape == (2, 4)
