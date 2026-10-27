@@ -164,3 +164,43 @@ def test_hst_build_refuses_an_unreadable_published_curve(tmp_path):
     (inst / "F122M.dat").write_text("Wavelength,Transmission\n1500,0.1\nbad,row\n")
     with pytest.raises(ValueError, match="F122M.dat: cannot read the published curve"):
         hst.build(tmp_path, instruments=["ACS_SBC"], tables=_hst_tables())
+
+
+# ---------------------------------------------------------------------------
+# jwst.build
+# ---------------------------------------------------------------------------
+def _pandeia_raw(root):
+    """Unpacked Pandeia reference data with the NIRCam F200W imaging factors."""
+    import json
+
+    from astropy.io import fits
+
+    def table(path, wl, tr):
+        cols = [fits.Column(name="wavelength", format="D", array=wl, unit="microns"),
+                fits.Column(name="throughput", format="D", array=tr)]
+        path.parent.mkdir(parents=True, exist_ok=True)
+        fits.HDUList([fits.PrimaryHDU(), fits.BinTableHDU.from_columns(cols)]).writeto(path)
+
+    wl = np.linspace(1.0, 3.0, 11)
+    (root / "jwst" / "telescope").mkdir(parents=True)
+    (root / "jwst" / "telescope" / "config.json").write_text(json.dumps({"paths": {"otefile": "ote.fits"}}))
+    table(root / "jwst" / "telescope" / "ote.fits", wl, np.full(11, 0.9))
+    paths = {"f200w": "filters/f200w.fits", "internal": "optical/internal.fits",
+             "dbs_sw": "optical/dbs_sw.fits", "qe_sw": "qe/qe_sw.fits"}
+    (root / "jwst" / "nircam").mkdir(parents=True)
+    (root / "jwst" / "nircam" / "config.json").write_text(json.dumps({"paths": paths}))
+    for i, rel in enumerate(paths.values()):
+        table(root / "jwst" / "nircam" / rel, wl[i:], np.linspace(0.5, 0.8, 11 - i))
+    return root
+
+
+def test_jwst_build_raises_after_building_the_others_for_instruments_without_curves(tmp_path):
+    from sed_tools.component_sources import jwst
+    from sed_tools.filter_components import InstrumentManifest
+
+    raw = _pandeia_raw(tmp_path / "pandeia")
+    inst = tmp_path / "filters" / "JWST" / "NIRCam"
+    _published(inst, "F200W")
+    with pytest.raises(FileNotFoundError, match="no published curves for MIRI.*Built: NIRCam"):
+        jwst.build(tmp_path / "filters", raw=raw, instruments=["NIRCam", "MIRI"])
+    assert set(InstrumentManifest.load(inst).components) == {"filter", "optics", "qe"}

@@ -28,7 +28,6 @@ from __future__ import annotations
 import hashlib
 import io
 import json
-import logging
 import re
 import tarfile
 from pathlib import Path
@@ -40,8 +39,6 @@ from ..filter_components import FILTER, OPTICS, QE, InstrumentManifest, add_comp
 from ..filter_metadata import PHOTON
 from ._common import product
 from ._original import safe_member
-
-logger = logging.getLogger(__name__)
 
 FACILITY = "JWST"
 REFDATA_VERSION = "2026.7"
@@ -126,7 +123,11 @@ def build(
     instruments: Optional[Iterable[str]] = None,
     session=None,
 ) -> List[Path]:
-    """Populate components for JWST NIRCam, NIRISS and MIRI imaging bands."""
+    """Populate components for JWST NIRCam, NIRISS and MIRI imaging bands.
+
+    Instruments without published curves are left out; once the others are
+    built, a FileNotFoundError lists them.
+    """
     filter_root = Path(filter_root)
     refdata = Path(raw) if raw else fetch_refdata(filter_root.parent / "cache" / "pandeia", session=session)
     if (refdata / "jwst").is_dir():
@@ -135,13 +136,13 @@ def build(
     ote_file = refdata / "telescope" / tel_cfg["paths"]["otefile"]
     ote = _read(ote_file)
 
-    built = []
+    built, unpublished = [], []
     for svo_inst in instruments or INSTRUMENTS:
         inst = INSTRUMENTS[svo_inst]
         inst_dir = filter_root / FACILITY / svo_inst
         bands = sorted(p.stem for p in inst_dir.glob("*.dat"))
         if not bands:
-            logger.warning("JWST/%s: no published curves present; fetch them first", svo_inst)
+            unpublished.append(svo_inst)
             continue
         paths = json.loads((refdata / inst / "config.json").read_text())["paths"]
         manifest = InstrumentManifest.load(inst_dir)
@@ -171,4 +172,8 @@ def build(
         )
         manifest.save(inst_dir)
         built.append(inst_dir)
+    if unpublished:
+        raise FileNotFoundError(
+            f"{filter_root / FACILITY} has no published curves for {', '.join(unpublished)}; fetch them "
+            f"first (njm mirror or SVO). Built: {', '.join(p.name for p in built) or 'none'}.")
     return built
