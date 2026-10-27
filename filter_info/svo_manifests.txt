@@ -26,3 +26,4 @@ source_evidence/svo-archive/svo-live-2026-10-27-b01-curves/manifest.jsonl
 source_evidence/svo-archive/svo-live-2026-10-27-b02-curves/manifest.jsonl
 source_evidence/svo-archive/svo-live-2026-10-27-b03-curves/manifest.jsonl
 source_evidence/svo-archive/svo-live-2026-10-27-b04-curves/manifest.jsonl
+source_evidence/svo-archive/svo-live-2026-10-27-b05-curves/manifest.jsonl
