@@ -10,7 +10,6 @@ own site, and saves the manifest.
 from __future__ import annotations
 
 import gzip
-import logging
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Dict, Mapping, Optional, Sequence, Tuple, Union
@@ -21,8 +20,6 @@ from ..filter_components import (ATMOSPHERE, FILTER, OPTICS, QE, SHARED, Atmosph
                                  InstrumentManifest, add_component)
 from ..filter_metadata import (ENERGY, PHOTON, SOURCE_SVO, SVOMetadataClient, read_filter_header,
                                svo_components_header, svo_fps_url, write_filter_file)
-
-logger = logging.getLogger(__name__)
 
 Curve = Tuple[np.ndarray, np.ndarray]  # (Angstrom, fraction)
 
@@ -162,17 +159,23 @@ class SimpleSource:
 
 
 def ensure_published(inst_dir: Path, svo_ids: Mapping[str, str], client: SVOMetadataClient) -> None:
-    """Write any missing published curves from SVO (the MESA-facing default)."""
+    """Write any missing published curves from SVO (the MESA-facing default).
+
+    If SVO has no record for some of ``svo_ids``, the others are written and
+    a RuntimeError lists the missing ones.  The MESA index is written only
+    when nothing is missing, so a partial set never looks complete.
+    """
     from ..combine_filters import write_filter_index
 
     inst_dir.mkdir(parents=True, exist_ok=True)
+    missing = []
     for band, fid in svo_ids.items():
         path = inst_dir / f"{band}.dat"
         if path.exists():
             continue
         record = client.get_filter(fid)
         if record is None:
-            logger.warning("SVO has no %s", fid)
+            missing.append(fid)
             continue
         write_filter_file(
             path, record.wavelength, record.transmission,
@@ -180,6 +183,10 @@ def ensure_published(inst_dir: Path, svo_ids: Mapping[str, str], client: SVOMeta
             wavelength_unit=record.wavelength_unit,
             extra={**svo_components_header(record.components), "Sources": f"{svo_fps_url()}?ID={fid}"},
         )
+    if missing:
+        raise RuntimeError(
+            f"{inst_dir}: SVO has no {', '.join(missing)}, so the published curves are incomplete "
+            "(the others were written). Check these IDs at SVO, or install the curves from the njm mirror.")
     if not (inst_dir / inst_dir.name).exists() and list(inst_dir.glob("*.dat")):
         write_filter_index(inst_dir, inst_dir.name)
 
@@ -292,15 +299,19 @@ def build_simple(
 
         write_filter_index(inst_dir, spec.instrument)
 
+    # Every band given a component must have a published curve to belong to.
+    published = {p.stem for p in inst_dir.glob("*.dat")}
+    unpublished = sorted((set(spec.filters) | set(spec.composites)) - published)
+    if unpublished:
+        raise FileNotFoundError(
+            f"{inst_dir} has no published curve for {', '.join(unpublished)}; add them to the "
+            f"{spec.facility}/{spec.instrument} builder's svo_ids, or install them from the njm mirror first")
+
     manifest = (InstrumentManifest.from_published(inst_dir) if spec.published_from_filters
                 else InstrumentManifest.load(inst_dir))
     # Keep what the published curves already provide (e.g. SVO filter-only siblings).
     manifest.components = InstrumentManifest.from_published(inst_dir).components
-    published = {p.stem for p in inst_dir.glob("*.dat")}
     for band, table in spec.filters.items():
-        if band not in published:
-            logger.info("%s/%s: no published %s curve; skipping its filter", spec.facility, spec.instrument, band)
-            continue
         if (spec.published_from_filters and
                 read_filter_header(inst_dir / f"{band}.dat").get("ComponentsSource") == "original"):
             continue  # the published filter scan is already this component
@@ -319,10 +330,9 @@ def build_simple(
         add_component(inst_dir, QE, wl, tr, band=SHARED, name="qe",
                       source=spec.qe.url + (f" ({spec.qe.note})" if spec.qe.note else ""), manifest=manifest)
     for band, (recipe, make) in spec.composites.items():
-        if band in published:
-            wl, tr = make(session)
-            add_component(inst_dir, recipe, wl, tr, band=band, name=band,
-                          source=f"{spec.references.get(recipe, '')}", manifest=manifest)
+        wl, tr = make(session)
+        add_component(inst_dir, recipe, wl, tr, band=band, name=band,
+                      source=f"{spec.references.get(recipe, '')}", manifest=manifest)
 
     manifest.facility, manifest.instrument = spec.facility, spec.instrument
     manifest.detector_type = spec.detector_type
