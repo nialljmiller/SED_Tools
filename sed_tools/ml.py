@@ -46,8 +46,9 @@ Model Management::
 """
 
 import logging
+import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 
@@ -296,7 +297,6 @@ def auto_train_generator(
     """
     from .ml_optimized import AutoTrainer
     import json
-    import os
     
     os.makedirs(output, exist_ok=True)
     
@@ -495,222 +495,148 @@ class Completer:
 
 
     def extend_catalog(
-            self,
-            input_dir: str,
-            output_dir: str,
-            extension_range: Tuple[float, float] = (100.0, 100000.0),
-            verbose: bool = True,
-        ) -> Dict[str, Any]:
-            """
-            Extend all model spectra in a spectral grid directory.
-            """
-            import os
-            import glob
-            import pandas as pd
+        self,
+        input_dir: str,
+        output_dir: str,
+        extension_range: Tuple[float, float] = (100.0, 100000.0),
+        verbose: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Extend all model spectra in a spectral grid directory.
+        
+        Each spectrum's file name, Teff, logg and [M/H] come from
+        ``input_dir/lookup_table.csv``. Spectra that already cover
+        ``extension_range`` (to within 10%) are copied unchanged. The spectra
+        and a new lookup table are written to ``output_dir``.
+        
+        Returns
+        -------
+        dict
+            Counts of spectra 'extended', 'skipped' (copied unchanged),
+            'failed' (always 0; see Raises) and 'total', and 'output_dir'.
+        
+        Raises
+        ------
+        FileNotFoundError
+            If ``input_dir`` has no lookup_table.csv.
+        ValueError
+            If the lookup table has no file-name, Teff, logg or [M/H] column.
+        RuntimeError
+            After every other spectrum has been written, if any could not be
+            read or extended; the message lists each one and why.
+        """
+        import pandas as pd
+        
+        if not self.is_trained:
+            raise RuntimeError("No model loaded. Call train() or load() first.")
+        
+        df, columns = _read_catalog_table(input_dir)
+        if verbose:
+            print(f"  Total rows to process: {len(df)}")
+            print(f"  Using file column: {columns['file']}")
+        
+        os.makedirs(output_dir, exist_ok=True)
+        
+        new_rows = []
+        examples = []
+        failures = []
+        extended_count = 0
+        skipped_count = 0
+        for i, row in df.iterrows():
+            try:
+                new_row, example = self._extend_one(row, columns, input_dir, output_dir, extension_range)
+            except (OSError, ValueError) as exc:
+                failures.append(f"row {i} ({row[columns['file']]}): {exc}")
+                continue
             
-            if not self.is_trained:
-                raise RuntimeError("No model loaded. Call train() or load() first.")
+            new_rows.append(new_row)
+            if example is None:
+                skipped_count += 1
+                continue
             
-            # Load lookup table
-            lookup_path = os.path.join(input_dir, "lookup_table.csv")
-            if not os.path.exists(lookup_path):
-                # Fallback: create a dummy DF from txt files if lookup doesn't exist
-                if verbose:
-                    print(f"  Warning: lookup_table.csv not found in {input_dir}")
-                txt_files = sorted(glob.glob(os.path.join(input_dir, "*.txt")))
-                if not txt_files:
-                    return {'extended': 0, 'failed': 0, 'skipped': 0, 'total': 0, 'output_dir': output_dir}
-                
-                # Create dummy dataframe
-                df = pd.DataFrame({'file_name': [os.path.basename(f) for f in txt_files]})
-                if verbose:
-                    print(f"  Found {len(df)} .txt files (no lookup table)")
-            else:
-                df = pd.read_csv(lookup_path, comment='#')
-            
+            extended_count += 1
+            if len(examples) < 6:
+                examples.append(example)
+            if verbose and extended_count % 50 == 0:
+                print(f"  Extended {extended_count} SEDs...")
+        
+        if new_rows:
+            new_df = pd.DataFrame(new_rows)
+            cols = ['file_name'] + [c for c in new_df.columns if c != 'file_name']
+            new_df[cols].to_csv(os.path.join(output_dir, "lookup_table.csv"), index=False)
+        
+        if examples:
             if verbose:
-                print(f"  Total rows to process: {len(df)}")
-            
-            os.makedirs(output_dir, exist_ok=True)
-            
-            # Find the file column - try multiple variants
-            file_col = None
-            for col_name in ['file_name', 'file', 'filename', 'sed_file', 'spectrum', 'File', 'Filename']:
-                if col_name in df.columns:
-                    file_col = col_name
-                    break
-            
-            # Find parameter columns
-            teff_col = None
-            for col in ['teff', 'Teff', 'TEFF', 'T_eff']:
-                if col in df.columns: teff_col = col; break
-            
-            logg_col = None
-            for col in ['logg', 'log_g', 'Logg', 'LOG_G', 'gravity']:
-                if col in df.columns: logg_col = col; break
-            
-            meta_col = None
-            for col in ['meta', 'metallicity', '[M/H]', 'M_H', 'feh', '[Fe/H]', 'FeH']:
-                if col in df.columns: meta_col = col; break
-                
-            if verbose and file_col:
-                print(f"  Using file column: {file_col}")
-
-            examples_to_plot = []
-            extended_count = 0
-            failed_count = 0
-            skipped_count = 0
-            extended_rows = []
-            
-            # Pre-scan for files if file_col is missing
-            local_files = []
-            if not file_col:
-                local_files = sorted(glob.glob(os.path.join(input_dir, "*.txt")))
-                if verbose:
-                    print(f"  No file column found. Matching {len(local_files)} local files to {len(df)} rows by index.")
-
-            for i, row in df.iterrows():
-                # Get stellar parameters with fallbacks
-                try:
-                    teff = float(row[teff_col]) if teff_col else 5000.0
-                    if not np.isfinite(teff) or teff <= 0: teff = 5000.0
-                except (ValueError, TypeError): teff = 5000.0
-                
-                try:
-                    logg = float(row[logg_col]) if logg_col else 4.5
-                    if not np.isfinite(logg) or logg > 10: logg = 4.5
-                except (ValueError, TypeError): logg = 4.5
-                
-                try:
-                    meta = float(row[meta_col]) if meta_col else 0.0
-                    if not np.isfinite(meta) or abs(meta) > 100: meta = 0.0
-                except (ValueError, TypeError): meta = 0.0
-                
-                # Determine filename
-                filename = None
-                if file_col:
-                    filename = str(row[file_col])
-                    if filename == 'nan' or not filename:
-                        filename = None
-                elif i < len(local_files):
-                    # Fallback: match by index
-                    filename = os.path.basename(local_files[i])
-                
-                if not filename:
-                    if verbose and skipped_count < 3:
-                        print(f"  [Skip] Row {i}: No filename determined")
-                    skipped_count += 1
-                    continue
-                
-                input_file = os.path.join(input_dir, filename)
-                if not os.path.exists(input_file):
-                    # Try just the basename in case filename has path components
-                    basename = os.path.basename(filename)
-                    alt_file = os.path.join(input_dir, basename)
-                    if os.path.exists(alt_file):
-                        input_file = alt_file
-                    else:
-                        if verbose and failed_count < 3:
-                            print(f"  [Fail] File not found: {filename}")
-                        failed_count += 1
-                        continue
-                
-                try:
-                    # Load SED
-                    data = np.loadtxt(input_file)
-                    if data.ndim != 2 or data.shape[1] < 2:
-                        if verbose and skipped_count < 3:
-                            print(f"  [Skip] {filename}: Invalid data format {data.shape}")
-                        skipped_count += 1
-                        continue
-                        
-                    wavelength = data[:, 0]
-                    flux = data[:, 1]
-                    
-                    # Check if extension is actually needed
-                    # (Allow 10% buffer)
-                    covers_low = wavelength.min() <= extension_range[0] * 1.1
-                    covers_high = wavelength.max() >= extension_range[1] * 0.9
-                    
-                    if covers_low and covers_high:
-                        # Already covers range - just copy
-                        output_file = os.path.join(output_dir, filename)
-                        np.savetxt(output_file, data, header='wavelength_A flux_erg/s/cm2/A', fmt='%.6e')
-                        
-                        new_row = row.to_dict()
-                        new_row['extended_by_ml'] = False
-                        new_row['file_name'] = filename # Ensure filename is recorded
-                        extended_rows.append(new_row)
-                        skipped_count += 1
-                        continue
-                    
-                    # Extend
-                    wl_ext, flux_ext = self.extend(
-                        wavelength, flux,
-                        teff=teff, logg=logg, meta=meta,
-                        extension_range=extension_range,
-                    )
-                    
-                    # Save
-                    output_file = os.path.join(output_dir, filename)
-                    np.savetxt(
-                        output_file,
-                        np.column_stack([wl_ext, flux_ext]),
-                        header='wavelength_A flux_erg/s/cm2/A',
-                        fmt='%.6e',
-                    )
-
-                    # NEW: Capture example for plotting (limit to 6)
-                    if len(examples_to_plot) < 6:
-                        examples_to_plot.append((filename, wavelength, flux, wl_ext, flux_ext))
-
-                    
-                    # Track
-                    new_row = row.to_dict()
-                    new_row['extended_by_ml'] = True
-                    new_row['file_name'] = filename
-                    new_row['wl_min'] = float(wl_ext.min())
-                    new_row['wl_max'] = float(wl_ext.max())
-                    extended_rows.append(new_row)
-                    
-                    extended_count += 1
-                    
-                    if verbose and extended_count % 50 == 0:
-                        print(f"  Extended {extended_count} SEDs...")
-                    
-                except Exception as e:
-                    if verbose and failed_count < 5:
-                        print(f"  [Error] {filename}: {e}")
-                    failed_count += 1
-                
-            # Save new lookup table
-            if extended_rows:
-                new_df = pd.DataFrame(extended_rows)
-                cols = ['file_name'] + [c for c in new_df.columns if c != 'file_name']
-                new_df[cols].to_csv(os.path.join(output_dir, "lookup_table.csv"), index=False)
-
-            # NEW: Generate inference plot
-            if examples_to_plot:
-                if verbose: print("\nGenerating inference examples plot...")
-                self._completer.plot_inference_examples(examples_to_plot, output_dir)
-
-
-            
-            summary = {
-                'extended': extended_count,
-                'failed': failed_count,
-                'skipped': skipped_count,
-                'total': len(df),
-                'output_dir': output_dir,
-            }
-            
-            if verbose:
-                print(f"\nProcessing complete:")
-                print(f"  {extended_count} extended")
-                print(f"  {skipped_count} skipped (already covered or invalid)")
-                print(f"  {failed_count} failed")
-            
-            return summary
+                print("\nGenerating inference examples plot...")
+            self._completer.plot_inference_examples(examples, output_dir)
+        
+        if verbose:
+            print("\nProcessing complete:")
+            print(f"  {extended_count} extended")
+            print(f"  {skipped_count} skipped (already covered the range)")
+            print(f"  {len(failures)} failed")
+        
+        if failures:
+            raise RuntimeError(
+                f"{len(failures)} of {len(df)} spectra in {input_dir} could not be extended "
+                f"(the other {len(new_rows)} were written to {output_dir}):\n  " + "\n  ".join(failures)
+            )
+        
+        return {
+            'extended': extended_count,
+            'failed': 0,
+            'skipped': skipped_count,
+            'total': len(df),
+            'output_dir': output_dir,
+        }
+    
+    def _extend_one(self, row, columns, input_dir, output_dir, extension_range):
+        """
+        Extend, or copy, one catalog spectrum into output_dir.
+        
+        Returns its row for the new lookup table and, if it was extended, an
+        example for the inference plot (None if it was copied). Raises
+        ValueError or OSError if the spectrum cannot be used.
+        """
+        teff, logg, meta = _row_parameters(row, columns)
+        
+        filename = str(row[columns['file']])
+        if filename == 'nan' or not filename:
+            raise ValueError("no file name")
+        
+        data = np.loadtxt(_find_spectrum(input_dir, filename))
+        if data.ndim != 2 or data.shape[1] < 2:
+            raise ValueError(f"expected wavelength and flux columns, got an array of shape {data.shape}")
+        wavelength = data[:, 0]
+        flux = data[:, 1]
+        
+        output_file = os.path.join(output_dir, filename)
+        new_row = row.to_dict()
+        
+        covers_low = wavelength.min() <= extension_range[0] * 1.1
+        covers_high = wavelength.max() >= extension_range[1] * 0.9
+        if covers_low and covers_high:
+            np.savetxt(output_file, data, header='wavelength_A flux_erg/s/cm2/A', fmt='%.6e')
+            new_row['extended_by_ml'] = False
+            new_row['file_name'] = filename
+            return new_row, None
+        
+        wl_ext, flux_ext = self.extend(
+            wavelength, flux,
+            teff=teff, logg=logg, meta=meta,
+            extension_range=extension_range,
+        )
+        np.savetxt(
+            output_file,
+            np.column_stack([wl_ext, flux_ext]),
+            header='wavelength_A flux_erg/s/cm2/A',
+            fmt='%.6e',
+        )
+        new_row['extended_by_ml'] = True
+        new_row['file_name'] = filename
+        new_row['wl_min'] = float(wl_ext.min())
+        new_row['wl_max'] = float(wl_ext.max())
+        return new_row, (filename, wavelength, flux, wl_ext, flux_ext)
     
     @staticmethod
     def available_models(models_dir: str = "models") -> List[Dict[str, Any]]:
@@ -721,3 +647,81 @@ class Completer:
         status = "trained" if self.is_trained else "untrained"
         path = f" @ {self._model_path}" if self._model_path else ""
         return f"<Completer({status}{path})>"
+
+
+# =============================================================================
+# Catalog helpers for Completer.extend_catalog
+# =============================================================================
+
+# Column names accepted in a catalog's lookup_table.csv, in order of preference
+_CATALOG_COLUMNS = {
+    'file': ['file_name', 'file', 'filename', 'sed_file', 'spectrum', 'File', 'Filename'],
+    'teff': ['teff', 'Teff', 'TEFF', 'T_eff'],
+    'logg': ['logg', 'log_g', 'Logg', 'LOG_G', 'gravity'],
+    'meta': ['meta', 'metallicity', '[M/H]', 'M_H', 'feh', '[Fe/H]', 'FeH'],
+}
+
+
+def _read_catalog_table(input_dir: str):
+    """Read a catalog's lookup table and find its file-name and parameter columns."""
+    import pandas as pd
+    
+    lookup_path = os.path.join(input_dir, "lookup_table.csv")
+    if not os.path.exists(lookup_path):
+        raise FileNotFoundError(
+            f"lookup_table.csv not found in {input_dir}; extend_catalog needs each "
+            "spectrum's file name, Teff, logg and [M/H] from it"
+        )
+    df = pd.read_csv(lookup_path, comment='#')
+    
+    columns = {}
+    missing = []
+    for role, candidates in _CATALOG_COLUMNS.items():
+        found = [c for c in candidates if c in df.columns]
+        if found:
+            columns[role] = found[0]
+        else:
+            missing.append(f"{role} (one of {', '.join(candidates)})")
+    if missing:
+        raise ValueError(
+            f"{lookup_path} has no column for {'; '.join(missing)}. Columns read: "
+            f"{list(df.columns)}. A header line starting with '#' is dropped when "
+            "the table is read, so its column names are not seen."
+        )
+    return df, columns
+
+
+def _row_number(row, column: str, name: str) -> float:
+    value = row[column]
+    try:
+        number = float(value)
+    except (ValueError, TypeError) as exc:
+        raise ValueError(f"{name} {value!r} is not a number") from exc
+    if not np.isfinite(number):
+        raise ValueError(f"{name} is {value!r}")
+    return number
+
+
+def _row_parameters(row, columns) -> Tuple[float, float, float]:
+    """Teff, logg and [M/H] of one lookup-table row; ValueError if one is unusable."""
+    teff = _row_number(row, columns['teff'], 'Teff')
+    if teff <= 0:
+        raise ValueError(f"Teff {teff} is not positive")
+    logg = _row_number(row, columns['logg'], 'logg')
+    if logg > 10:
+        raise ValueError(f"logg {logg} is above 10")
+    meta = _row_number(row, columns['meta'], '[M/H]')
+    if abs(meta) > 100:
+        raise ValueError(f"[M/H] {meta} is outside -100..100")
+    return teff, logg, meta
+
+
+def _find_spectrum(input_dir: str, filename: str) -> str:
+    """Path of a catalog spectrum; the lookup may hold a path, so its basename is tried too."""
+    path = os.path.join(input_dir, filename)
+    if os.path.exists(path):
+        return path
+    path = os.path.join(input_dir, os.path.basename(filename))
+    if os.path.exists(path):
+        return path
+    raise FileNotFoundError(f"{filename} not found in {input_dir}")

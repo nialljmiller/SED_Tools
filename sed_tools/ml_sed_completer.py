@@ -1456,8 +1456,6 @@ def _extend_menu(base_dir: str, models_dir: str) -> None:
     print(f"Extended model: {output_dir}")
     print(f"  {summary['extended']} SEDs extended successfully")
     print(f"  {summary.get('skipped', 0)} SEDs skipped (already covered range)")
-    if summary.get('failed', 0):
-        print(f"  {summary['failed']} SEDs failed")
 
 
 def _list_menu(models_dir: str) -> None:
@@ -1555,7 +1553,6 @@ def extend_catalog(
             **kwargs,
         )
 
-    # Last-resort fallback: do nothing loudly (better than silent partial output)
     raise TypeError(
         "extend_catalog() expected a model with an .extend_catalog() method "
         "(e.g. sed_tools.ml.Completer) or a model directory path."

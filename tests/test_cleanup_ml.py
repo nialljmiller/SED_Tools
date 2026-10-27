@@ -661,3 +661,91 @@ def test_generator_workflow_warns_about_an_unreadable_lookup_table(stellar_dir, 
 
     assert "   1) gridA                          (? SEDs)" in capsys.readouterr().out
     assert f"Could not count the SEDs in {stellar_dir / 'gridA' / 'lookup_table.csv'}" in caplog.text
+
+
+# --- ml.Completer.extend_catalog ---------------------------------------
+
+def test_extend_catalog_raises_without_a_lookup_table(tmp_path):
+    # It used to extend every *.txt file with Teff=5000, logg=4.5, [M/H]=0.
+    (tmp_path / "cat").mkdir()
+    _write_spectrum(tmp_path / "cat" / "a.txt", 3000, 20000)
+
+    with pytest.raises(FileNotFoundError, match="lookup_table.csv not found"):
+        _stubbed_completer().extend_catalog(str(tmp_path / "cat"), str(tmp_path / "out"))
+
+
+@pytest.mark.parametrize("missing", ["teff", "logg", "meta", "file_name"])
+def test_extend_catalog_raises_when_a_column_is_missing(catalog, tmp_path, missing):
+    # Missing parameters used to default to 5000 K / 4.5 / 0.0, and a missing
+    # file column matched rows to the sorted *.txt files by position.
+    import pandas as pd
+
+    df = pd.read_csv(catalog / "lookup_table.csv").drop(columns=[missing])
+    df.to_csv(catalog / "lookup_table.csv", index=False)
+    completer = _stubbed_completer()
+
+    with pytest.raises(ValueError, match=r"has no column for (file|teff|logg|meta) \(one of"):
+        completer.extend_catalog(str(catalog), str(tmp_path / "out"))
+    assert completer._completer.calls == []
+
+
+def test_extend_catalog_raises_on_a_hash_prefixed_header(catalog, tmp_path):
+    # sed_tools writes lookup tables with a '#file_name,...' header, which
+    # pd.read_csv(comment='#') drops; see the ml cleanup report.
+    text = (catalog / "lookup_table.csv").read_text()
+    (catalog / "lookup_table.csv").write_text("#" + text)
+
+    with pytest.raises(ValueError, match="A header line starting with '#' is dropped"):
+        _stubbed_completer().extend_catalog(str(catalog), str(tmp_path / "out"))
+
+
+def test_extend_catalog_writes_the_good_spectra_then_lists_every_failure(catalog, tmp_path):
+    import pandas as pd
+
+    np.savetxt(catalog / "one_column.txt", np.arange(5.0))
+    pd.DataFrame({
+        "file_name": ["a.txt", "b.txt", "c.txt", "gone.txt", "one_column.txt", None, "a.txt", "a.txt", "a.txt"],
+        "teff": [5000, 6000, 7000, 5000, 5000, 5000, "hot", -10, 5000],
+        "logg": [4.0, 4.5, 3.5, 4.0, 4.0, 4.0, 4.0, 4.0, 12.0],
+        "meta": [0.0, -0.5, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+    }).to_csv(catalog / "lookup_table.csv", index=False)
+    completer = _stubbed_completer()
+    out_dir = tmp_path / "out"
+
+    with pytest.raises(RuntimeError) as excinfo:
+        completer.extend_catalog(str(catalog), str(out_dir), verbose=False)
+
+    message = str(excinfo.value)
+    assert message.startswith(f"6 of 9 spectra in {catalog} could not be extended "
+                              f"(the other 3 were written to {out_dir}):")
+    assert f"row 3 (gone.txt): gone.txt not found in {catalog}" in message
+    assert "row 4 (one_column.txt): expected wavelength and flux columns, got an array of shape (5,)" in message
+    assert "row 5 (nan): no file name" in message
+    assert "row 6 (a.txt): Teff 'hot' is not a number" in message
+    assert "row 7 (a.txt): Teff -10.0 is not positive" in message
+    assert "row 8 (a.txt): logg 12.0 is above 10" in message
+    assert sorted(p.name for p in out_dir.iterdir()) == ["a.txt", "b.txt", "c.txt", "lookup_table.csv"]
+    assert len(completer._completer.calls) == 2
+
+
+def test_extend_catalog_lists_a_spectrum_the_model_rejects(catalog, tmp_path):
+    completer = _stubbed_completer()
+
+    def reject(wavelength, flux, teff, logg, meta, extension_range):
+        raise ValueError("flux has NaNs")
+
+    completer._completer.complete_sed = reject
+    with pytest.raises(RuntimeError, match=r"row 0 \(a.txt\): flux has NaNs"):
+        completer.extend_catalog(str(catalog), str(tmp_path / "out"), verbose=False)
+
+
+def test_extend_catalog_stops_at_once_on_an_unexpected_error(catalog, tmp_path):
+    # A broad except used to count any error as one failed spectrum and go on.
+    completer = _stubbed_completer()
+
+    def broken(wavelength, flux, teff, logg, meta, extension_range):
+        raise RuntimeError("Tensor for argument weight is on cpu but expected on mps")
+
+    completer._completer.complete_sed = broken
+    with pytest.raises(RuntimeError, match="expected on mps"):
+        completer.extend_catalog(str(catalog), str(tmp_path / "out"), verbose=False)
