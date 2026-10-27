@@ -118,3 +118,144 @@ def test_densifier_keeps_every_node_in_place_on_an_uneven_grid(tmp_path, cube_wr
     np.testing.assert_array_equal(dense.teff_grid, [4000.0, 5000.0, 6000.0])
     np.testing.assert_array_equal(dense.flux[0], flux[0])
     np.testing.assert_array_equal(dense.flux[2], flux[1])
+
+
+# ---------------------------------------------------------------------
+# spectra_cleaner: bolometric renormalisation
+# ---------------------------------------------------------------------
+
+def _write_spectrum(path, teff, wl, flux):
+    with path.open("w") as fh:
+        fh.write(f"# teff = {teff}\n# logg = 4.0\n# metallicity = 0.0\n"
+                 "# wavelength_unit = Angstrom\n# flux_unit = erg/cm2/s/A\n")
+        for w, f in zip(wl, flux):
+            fh.write(f"{w:.6f} {f:.8e}\n")
+
+
+def _read(path):
+    from sed_tools.spectrum_io import read_text_spectrum
+
+    return read_text_spectrum(str(path))
+
+
+def test_spectrum_100x_too_bright_is_renormalised_to_sigma_t4(tmp_path):
+    # SVO's NextGen T >= 5000 K entries are about 100 times too bright.
+    from sed_tools.spectra_cleaner import clean_spectrum_file
+
+    wl = np.geomspace(100.0, 1e6, 3000)
+    path = tmp_path / "nextgen_like.txt"
+    _write_spectrum(path, 6000.0, wl, 100.0 * planck_flam(wl, 6000.0))
+
+    status, detail = clean_spectrum_file(str(path))
+
+    assert status == "converted_renormed"
+    assert "flux divided by 100 " in detail
+    wl_after, flux_after = _read(path)
+    assert np.trapezoid(flux_after, wl_after) / (SIGMA * 6000.0 ** 4) == pytest.approx(1.0, rel=0.01)
+
+
+def test_spectrum_far_too_faint_is_renormalised(tmp_path):
+    from sed_tools.spectra_cleaner import clean_spectrum_file
+
+    wl = np.geomspace(100.0, 1e6, 3000)
+    path = tmp_path / "faint.txt"
+    _write_spectrum(path, 4000.0, wl, 0.01 * planck_flam(wl, 4000.0))
+
+    status, detail = clean_spectrum_file(str(path))
+
+    assert status == "converted_renormed"
+    assert "flux divided by 0.01 " in detail
+    wl_after, flux_after = _read(path)
+    assert np.trapezoid(flux_after, wl_after) / (SIGMA * 4000.0 ** 4) == pytest.approx(1.0, rel=0.01)
+
+
+@pytest.mark.parametrize("teff", [20000.0, 30000.0, 37000.0])
+def test_correct_hot_blackbody_on_a_wide_grid_is_left_alone(tmp_path, teff):
+    # The first version integrated the blackbody on a 2000-point linear grid. Over
+    # 10 A-1e7 A that misses a hot star's peak, so these correctly scaled spectra
+    # came out 4-11 times too bright and would have been divided by that.
+    from sed_tools.spectra_cleaner import clean_spectrum_file
+
+    wl = np.geomspace(10.0, 1e7, 5000)
+    flux = planck_flam(wl, teff)
+    path = tmp_path / "hot.txt"
+    _write_spectrum(path, teff, wl, flux)
+    _, written_before = _read(path)
+
+    status, _ = clean_spectrum_file(str(path))
+
+    assert status == "converted"
+    np.testing.assert_array_equal(_read(path)[1], written_before)
+
+
+def test_pi_less_blackbody_is_within_the_thresholds(tmp_path):
+    # B_lambda instead of pi*B_lambda (MESA's bbody grid) is 1/pi of sigma*T^4: not rescaled.
+    from sed_tools.spectra_cleaner import clean_spectrum_file
+
+    wl = np.geomspace(100.0, 1e6, 3000)
+    path = tmp_path / "bbody.txt"
+    _write_spectrum(path, 5000.0, wl, planck_flam(wl, 5000.0) / np.pi)
+    assert clean_spectrum_file(str(path))[0] == "converted"
+
+
+def test_spectrum_covering_little_of_sigma_t4_is_not_checked(tmp_path):
+    # 3000-9000 A holds about 3 % of a 50000 K blackbody's flux: too little to judge the scale.
+    from sed_tools.spectra_cleaner import clean_spectrum_file
+
+    wl = np.linspace(3000.0, 9000.0, 500)
+    path = tmp_path / "optical_only.txt"
+    _write_spectrum(path, 50000.0, wl, 100.0 * planck_flam(wl, 50000.0))
+    assert clean_spectrum_file(str(path))[0] == "converted"
+
+
+def test_clean_model_dir_counts_renormed_spectra_as_converted_and_warns(tmp_path, caplog):
+    import logging
+
+    from sed_tools.spectra_cleaner import clean_model_dir
+
+    wl = np.geomspace(100.0, 1e6, 2000)
+    grid = tmp_path / "grid"
+    grid.mkdir()
+    _write_spectrum(grid / "a.txt", 5000.0, wl, 100.0 * planck_flam(wl, 5000.0))
+    _write_spectrum(grid / "b.txt", 6000.0, wl, 120.0 * planck_flam(wl, 6000.0))
+    _write_spectrum(grid / "c.txt", 7000.0, wl, planck_flam(wl, 7000.0))
+
+    with caplog.at_level(logging.WARNING, logger="sed_tools.spectra_cleaner"):
+        summary = clean_model_dir(str(grid), try_h5_recovery=False, sample_fraction=1.0)
+
+    assert summary["converted"] == ["a.txt", "b.txt", "c.txt"]
+    assert summary["error"] == []
+    assert sorted(summary["renormed"]) == ["a.txt", "b.txt"]
+    assert summary["renormed"]["a.txt"] == pytest.approx(100.0)
+    assert summary["renormed"]["b.txt"] == pytest.approx(120.0)
+    warning = [r.getMessage() for r in caplog.records if "bolometric renormalisation" in r.getMessage()]
+    assert len(warning) == 1 and "2 spectra integrated to 100-120 times" in warning[0]
+    for name, teff in (("a.txt", 5000.0), ("b.txt", 6000.0), ("c.txt", 7000.0)):
+        wl_after, flux_after = _read(grid / name)
+        assert np.trapezoid(flux_after, wl_after) / (SIGMA * teff ** 4) == pytest.approx(1.0, rel=0.01)
+
+
+def test_unstandardized_kurucz_slice_is_converted_without_renormalisation(tmp_path, caplog):
+    # The golden clean_model_dir case only skips these files (they are marked standardized),
+    # so it does not show the check leaves correctly scaled Kurucz spectra alone. This does.
+    import logging
+
+    from sed_tools.spectra_cleaner import clean_model_dir
+
+    grid = shutil.copytree(KURUCZ, tmp_path / "Kurucz2003all")
+    before = {}
+    for path in sorted(grid.glob("*.txt")):
+        path.write_text("".join(line for line in path.read_text().splitlines(keepends=True)
+                                if not line.startswith("# units_standardized")))
+        before[path.name] = _read(path)
+
+    with caplog.at_level(logging.WARNING, logger="sed_tools.spectra_cleaner"):
+        summary = clean_model_dir(str(grid), try_h5_recovery=False, sample_fraction=1.0)
+
+    assert len(summary["converted"]) == 12
+    assert "renormed" not in summary
+    assert not any("renormalisation" in r.getMessage() for r in caplog.records)
+    for name, (wl, flux) in before.items():
+        wl_after, flux_after = _read(grid / name)
+        np.testing.assert_array_equal(wl_after, wl)
+        np.testing.assert_array_equal(flux_after, flux)

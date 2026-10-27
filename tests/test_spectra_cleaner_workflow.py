@@ -5,14 +5,10 @@ Covers ``clean_spectrum_file``, ``clean_model_dir``, and
 (the ``units_standardized`` header guard), and the catalog-wide unit
 detection + apply-to-all-files pipeline.
 
-Also includes a regression test for a bug found while writing these
-tests: the post-conversion bolometric sanity check documented in
-``docs/source/changelog.rst`` (the fix for "NextGen T >= 5000 K flux
-100x too large") currently never fires — see
-``test_bolometric_renorm_is_currently_broken_due_to_undefined_name``
-below for details. This is flagged as ``xfail(strict=True)`` so the
-test suite stays informative about the gap without blocking on it, and
-will fail loudly (telling you to remove the marker) once it's fixed.
+Also includes a regression test for the post-conversion bolometric
+renormalisation documented in ``docs/source/changelog.rst`` (the fix for
+"NextGen T >= 5000 K flux 100x too large"), which never ran until it was
+fixed: see ``test_bolometric_renorm_rescales_a_spectrum_100x_too_large``.
 """
 
 import csv
@@ -59,9 +55,10 @@ def test_all_nan_and_inf_flux_is_skipped_invalid(tmp_path):
 
 def test_negative_wavelengths_are_filtered_out(tmp_path):
     path = tmp_path / "negwl.txt"
+    # No Teff, so the bolometric renormalisation is not checked and the toy fluxes stay as written.
     _write_spectrum(
         path,
-        ["# teff = 5000\n"],
+        ["# logg = 4.0\n"],
         [-100.0, 4000.0, 5000.0],
         [1.0, 2.0, 3.0],
     )
@@ -75,9 +72,10 @@ def test_negative_wavelengths_are_filtered_out(tmp_path):
 
 def test_unsorted_wavelengths_are_sorted(tmp_path):
     path = tmp_path / "unsorted.txt"
+    # No Teff, so the bolometric renormalisation is not checked and the toy fluxes stay as written.
     _write_spectrum(
         path,
-        ["# teff = 5000\n"],
+        ["# logg = 4.0\n"],
         [6000.0, 4000.0, 5000.0],
         [3.0, 1.0, 2.0],
     )
@@ -89,9 +87,10 @@ def test_unsorted_wavelengths_are_sorted(tmp_path):
 
 def test_duplicate_wavelengths_keep_first_occurrence(tmp_path):
     path = tmp_path / "dup.txt"
+    # No Teff, so the bolometric renormalisation is not checked and the toy fluxes stay as written.
     _write_spectrum(
         path,
-        ["# teff = 5000\n"],
+        ["# logg = 4.0\n"],
         [4000.0, 4000.0, 5000.0],
         [1.0, 999.0, 2.0],  # duplicate at 4000 with a different flux value
     )
@@ -115,11 +114,13 @@ def test_already_standardized_file_is_skipped(tmp_path):
 def test_cleaning_is_idempotent_on_already_cleaned_output(tmp_path):
     # Clean once, then clean the (now-standardized) result again: the
     # second pass must be a no-op that doesn't further alter the file.
+    # The toy fluxes are far below a 5000 K blackbody, so the first pass also
+    # renormalises them; the second must not do it again.
     path = tmp_path / "star.txt"
     _write_spectrum(path, ["# teff = 5000\n# wavelength_unit = nm\n"], [400.0, 500.0], [1e-14, 2e-14])
 
     status1, _ = clean_spectrum_file(str(path))
-    assert status1 == "converted"
+    assert status1 == "converted_renormed"
     wl_after_first, flux_after_first = read_text_spectrum(str(path))
 
     status2, _ = clean_spectrum_file(str(path))
@@ -243,28 +244,16 @@ def test_clean_model_dir_on_empty_directory(tmp_path):
 # Regression test: bolometric renormalization safety net
 # ---------------------------------------------------------------------
 
-def test_bolometric_renorm_is_currently_broken_due_to_undefined_name(tmp_path):
-    """Documents a live bug found while writing these tests.
+def test_bolometric_renorm_rescales_a_spectrum_100x_too_large(tmp_path):
+    """``clean_spectrum_file`` renormalises a spectrum whose integrated flux
+    deviates by more than 3x from the blackbody integral over the same
+    wavelengths (the changelog's fix for "NextGen T >= 5000 K flux 100x too
+    large").
 
-    ``clean_spectrum_file`` is supposed to renormalize a spectrum whose
-    integrated flux deviates by more than 3x from the expected blackbody
-    integral (this is the exact fix documented in
-    ``docs/source/changelog.rst`` for the "NextGen T >= 5000 K flux 100x
-    too large" bug). The renorm block references a name ``SIGMA_SB``
-    that is never defined or imported anywhere in ``spectra_cleaner.py``
-    (only ``SIGMA`` is imported from ``_constants``), so the block raises
-    ``NameError`` every time it runs. That exception is caught by the
-    surrounding bare ``except Exception:`` (logged at DEBUG level only,
-    with the comment "renorm is best-effort, never block the write"), so
-    the safety net silently never fires and the inflated flux is written
-    to disk unchanged with status ``'converted'`` instead of
-    ``'converted_renormed'``.
-
-    This test asserts the *intended* behaviour and is expected to fail
-    until ``SIGMA_SB`` is defined (e.g. ``SIGMA_SB = SIGMA`` or importing
-    the right name from ``_constants``). Remove the ``xfail`` marker once
-    it's fixed — if it starts passing unexpectedly, this test will error
-    to tell you exactly that.
+    Until it was fixed this never happened: the block used the undefined name
+    ``SIGMA_SB`` and a DEBUG-only handler hid the ``NameError``, so the flux
+    was written unchanged with status ``'converted'``. The test then skipped
+    itself with ``pytest.xfail``.
     """
     from sed_tools._constants import planck_flam
 
@@ -275,16 +264,13 @@ def test_bolometric_renorm_is_currently_broken_due_to_undefined_name(tmp_path):
 
     _write_spectrum(path, ["# teff = 6000\n# logg = 4.0\n# metallicity = 0.0\n"], wl, flux_100x_too_large)
 
-    status, _ = clean_spectrum_file(str(path))
+    status, detail = clean_spectrum_file(str(path))
 
     wl_after, flux_after = read_text_spectrum(str(path))
     ratio_after = float(np.trapezoid(flux_after, wl_after)) / float(
         np.trapezoid(planck_flam(wl_after, 6000.0), wl_after)
     )
 
-    if status != "converted_renormed" or not (0.5 < ratio_after < 2.0):
-        pytest.xfail(
-            "Bolometric renorm did not fire — see NameError('SIGMA_SB') in "
-            "spectra_cleaner.py's clean_spectrum_file (bug found while writing "
-            "this test; SIGMA_SB is never defined, only SIGMA is imported)."
-        )
+    assert status == "converted_renormed"
+    assert "flux divided by 100" in detail
+    assert ratio_after == pytest.approx(1.0, rel=1e-6)
