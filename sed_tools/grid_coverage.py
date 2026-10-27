@@ -19,7 +19,7 @@ import math
 import os
 import re
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -187,7 +187,7 @@ def coverage_summary(model_dir: Union[str, Path]) -> Dict:
         product *= max(n_unique[ax], 1)
     complete = df.dropna(subset=list(_AXES))
     n_distinct_nodes = int(complete.drop_duplicates(subset=list(_AXES)).shape[0])
-    fill = (n_distinct_nodes / product) if product else float("nan")
+    fill = n_distinct_nodes / product
 
     return {
         "name": model_dir.name,
@@ -325,11 +325,6 @@ def _representative_nodes(df: pd.DataFrame) -> List[Dict]:
     return selected
 
 
-def _load_txt_spectrum(path: Union[str, Path]) -> Tuple[np.ndarray, np.ndarray]:
-    """Read the first two numeric columns from a text spectrum."""
-    return read_text_spectrum(path)
-
-
 def _node_parameters(item: Dict) -> str:
     """Return a compact parameter label suitable for a half-width plot."""
     row = item["row"]
@@ -373,16 +368,34 @@ def _visible_ljust(text: str, width: int) -> str:
     return text + " " * max(0, width - _visible_width(text))
 
 
+_PALETTE = ["cyan", "yellow", "green", "magenta", "blue", "red", "white"]
+
+
 def print_terminal_coverage(summary: Dict, *, color: str = "auto") -> None:
     """Print parameter projections and representative normalized SEDs."""
-    from .terminal_plots import lineplot, scatter2d, terminal_width
+    from .terminal_plots import terminal_width
 
     df = summary["_df"]
     selected = _representative_nodes(df)
-    palette = ["cyan", "yellow", "green", "magenta", "blue", "red", "white"]
+    # Each panel occupies roughly half an 80-column terminal and half the
+    # renderer's original height, allowing two useful plots per row.
+    plot_width = max(20, min(42, (terminal_width() - 30) // 2))
+    print(f"\n{summary['name']}: parameter coverage\n")
+    print(_plot_rows(_parameter_plots(df, selected, plot_width, color)))
+
+    if "path" not in df.columns or not any(str(value).strip() for value in df["path"]):
+        print("\nTerminal SED plot skipped: lookup_table.csv does not identify spectrum files.")
+        return
+    _print_representative_seds(selected, plot_width, color)
+
+
+def _parameter_plots(df: pd.DataFrame, selected: List[Dict], plot_width: int, color: str) -> List[str]:
+    """Render the three 2D parameter projections, marking the selected nodes."""
+    from .terminal_plots import scatter2d
+
     labels = {df.index.get_loc(item["index"]): item["letter"] for item in selected}
     colors = {
-        df.index.get_loc(item["index"]): palette[i % len(palette)]
+        df.index.get_loc(item["index"]): _PALETTE[i % len(_PALETTE)]
         for i, item in enumerate(selected)
     }
     projections = [
@@ -390,9 +403,6 @@ def print_terminal_coverage(summary: Dict, *, color: str = "auto") -> None:
         ("teff", "metallicity", "Teff [K]", "[M/H]", False),
         ("logg", "metallicity", "log g", "[M/H]", False),
     ]
-    # Each panel occupies roughly half an 80-column terminal and half the
-    # renderer's original height, allowing two useful plots per row.
-    plot_width = max(20, min(42, (terminal_width() - 30) // 2))
     parameter_plots = []
     for xaxis, yaxis, xlabel, ylabel, invert in projections:
         parameter_plots.append(scatter2d(
@@ -402,31 +412,32 @@ def print_terminal_coverage(summary: Dict, *, color: str = "auto") -> None:
             point_labels=labels, point_colors=colors, color=color,
             width=plot_width, height=9,
         ))
-    print(f"\n{summary['name']}: parameter coverage\n")
-    print(_plot_rows(parameter_plots))
+    return parameter_plots
 
-    if "path" not in df.columns or not any(str(value).strip() for value in df["path"]):
-        print("\nTerminal SED plot skipped: lookup_table.csv does not identify spectrum files.")
-        return
+
+def _print_representative_seds(selected: List[Dict], plot_width: int, color: str) -> None:
+    """Plot each selected node's spectrum, saying which ones could not be shown."""
+    from .terminal_plots import lineplot
 
     sed_plots = []
+    skipped = []
     for i, item in enumerate(selected):
-        path = Path(str(item["row"].get("path", "")))
+        listed = str(item["row"].get("path", ""))
+        path = Path(listed)
         if not path.is_file():
+            skipped.append(f"SED {item['letter']}: spectrum file not found: {listed or '(none listed)'}")
             continue
-        try:
-            wavelength, flux = _load_txt_spectrum(path)
-        except OSError:
-            continue
+        wavelength, flux = read_text_spectrum(path)
         good = np.isfinite(wavelength) & np.isfinite(flux) & (flux > 0)
         wavelength, flux = wavelength[good], flux[good]
         if wavelength.size < 2:
+            skipped.append(f"SED {item['letter']}: fewer than 2 positive flux points in {path}")
             continue
         normalized = np.log10(flux / np.max(flux))
         series = [{
             "x": wavelength, "y": normalized,
             "label": _node_parameters(item), "char": item["letter"],
-            "color": palette[i % len(palette)],
+            "color": _PALETTE[i % len(_PALETTE)],
         }]
         sed_plots.append(lineplot(
             series, title=f"SED {item['letter']}: {item['description']}",
@@ -438,6 +449,8 @@ def print_terminal_coverage(summary: Dict, *, color: str = "auto") -> None:
         print(_plot_rows(sed_plots))
     else:
         print("\nTerminal SED plot skipped: no readable representative spectra.")
+    for note in skipped:
+        print(f"  skipped {note}")
 
 
 # ---------------------------------------------------------------------------

@@ -57,3 +57,24 @@ def test_move_data_removes_drained_dirs_and_keeps_conflicts(tmp_path):
     assert (new / "stellar_models" / "B" / "clash.txt").read_text() == "new"
     assert conflicts == [(str(old / "stellar_models" / "B" / "clash.txt"),
                           str(new / "stellar_models" / "B" / "clash.txt"))]
+
+
+# ---------------------------------------------------------------------
+# grid_coverage
+# ---------------------------------------------------------------------
+
+def test_terminal_coverage_reports_missing_representative_spectra(tmp_path, monkeypatch, capsys):
+    # A representative spectrum missing from disk used to be dropped silently.
+    from sed_tools.grid_coverage import grid_coverage
+
+    (tmp_path / "cool.txt").write_text("# teff = 4000\n# logg = 3.0\n1000 1.0\n2000 2.0\n")
+    (tmp_path / "lookup_table.csv").write_text(
+        "teff,logg,metallicity,filename\n4000,3.0,0.0,cool.txt\n8000,5.0,0.0,gone.txt\n"
+    )
+    monkeypatch.setattr(config, "get_ui_setting",
+                        lambda name: "always" if name == "terminal_plots" else "never")
+    grid_coverage(tmp_path, plot=False)
+    output = capsys.readouterr().out
+    assert "Representative SEDs" in output
+    assert "spectrum file not found" in output
+    assert "gone.txt" in output
