@@ -204,3 +204,24 @@ def test_jwst_build_raises_after_building_the_others_for_instruments_without_cur
     with pytest.raises(FileNotFoundError, match="no published curves for MIRI.*Built: NIRCam"):
         jwst.build(tmp_path / "filters", raw=raw, instruments=["NIRCam", "MIRI"])
     assert set(InstrumentManifest.load(inst).components) == {"filter", "optics", "qe"}
+
+
+# ---------------------------------------------------------------------------
+# tabular.build with a saved research inventory
+# ---------------------------------------------------------------------------
+def test_tabular_raw_inventory_warns_when_a_file_is_downloaded_instead(tmp_path, caplog):
+    from sed_tools.component_sources import tabular
+
+    folder = tmp_path / "raw" / tabular.RAW_GROUPS["PANIC"]
+    folder.mkdir(parents=True)
+    scan = b"400 50\n500 80\n"
+    *saved, (band, missing) = tabular.PANIC_FILES.items()
+    for _, filename in saved:
+        (folder / filename).write_bytes(scan)
+    url = tabular.PANIC.filters[band].url
+    session = _Session({url: scan})
+    with caplog.at_level("WARNING", logger="sed_tools.component_sources.tabular"):
+        tabular.build(tmp_path / "filters", instrument="PANIC", raw=tmp_path / "raw", session=session)
+    assert session.calls == [url]
+    assert f"{missing} is not in the saved inventory" in caplog.text
+    assert (tmp_path / "filters" / "CAHA" / "PANIC" / f"{band}.dat").is_file()
