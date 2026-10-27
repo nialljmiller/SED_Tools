@@ -10,7 +10,7 @@ import os
 import re
 import time
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import requests
 import urllib3
@@ -293,38 +293,9 @@ class NJMFilterGrabber:
         output_dir = os.path.join(self.base_dir, facility, instrument)
         os.makedirs(output_dir, exist_ok=True)
 
-        downloaded = 0
-        skipped = 0
-        failed = []
-
         print(f"[njm] Downloading filters: {facility}/{instrument}")
         print(f"  Found {len(filters)} filters")
-
-        for filter_name in filters:
-            # Handle both with and without .dat extension
-            filter_filename = filter_name if filter_name.endswith('.dat') else f"{filter_name}.dat"
-            filter_url = f"{self.filters_url}/{facility}/{instrument}/{filter_filename}"
-            output_path = os.path.join(output_dir, filter_filename)
-
-            # Skip if already exists
-            if os.path.exists(output_path):
-                self._tag(Path(output_path), facility)
-                skipped += 1
-                continue
-
-            try:
-                self._save_curve(filter_url, Path(output_path))
-            except requests.RequestException as e:
-                print(f"  [error] {filter_name}: {e}")
-                failed.append(f"{filter_name}: {e}")
-                if os.path.exists(output_path):
-                    os.remove(output_path)
-                continue
-            result = self._tag(Path(output_path), facility)
-            if result is not None and result.source == SOURCE_ASSUMED:
-                print(f"  [warn] {filter_name}: detector type unverified, assuming {result.detector_type}"
-                      + (f" ({result.note})" if result.note else ""))
-            downloaded += 1
+        downloaded, skipped, failed = self._download_curves(facility, instrument, filters, Path(output_dir))
 
         remote_index = self._save_index(facility, instrument, Path(output_dir))
         print(f"[njm] {facility}/{instrument}: {downloaded} downloaded, {skipped} skipped, {len(failed)} failed")
@@ -343,6 +314,31 @@ class NJMFilterGrabber:
             raise RuntimeError(f"NJM download of {facility}/{instrument} is incomplete; run again to retry:\n  "
                                + "\n  ".join(failed))
         return downloaded
+
+    def _download_curves(self, facility: str, instrument: str, filters: List[str],
+                         output_dir: Path) -> Tuple[int, int, List[str]]:
+        """Save each listed curve not installed yet; returns (downloaded, skipped, failures)."""
+        downloaded, skipped, failed = 0, 0, []
+        for filter_name in filters:
+            # Handle both with and without .dat extension
+            filter_filename = filter_name if filter_name.endswith('.dat') else f"{filter_name}.dat"
+            output_path = output_dir / filter_filename
+            if output_path.exists():
+                self._tag(output_path, facility)
+                skipped += 1
+                continue
+            try:
+                self._save_curve(f"{self.filters_url}/{facility}/{instrument}/{filter_filename}", output_path)
+            except requests.RequestException as e:  # raised before anything is written
+                print(f"  [error] {filter_name}: {e}")
+                failed.append(f"{filter_name}: {e}")
+                continue
+            result = self._tag(output_path, facility)
+            if result is not None and result.source == SOURCE_ASSUMED:
+                print(f"  [warn] {filter_name}: detector type unverified, assuming {result.detector_type}"
+                      + (f" ({result.note})" if result.note else ""))
+            downloaded += 1
+        return downloaded, skipped, failed
 
     def _tag(self, path: Path, facility: str):
         """Fill in what the curve's header lacks from SVO; a no-op for curves the mirror tagged fully.
