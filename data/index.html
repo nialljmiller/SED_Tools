@@ -818,6 +818,74 @@ function logTicks(lo, hi) {
     return ticks;
 }
 
+// Rough regions of the electromagnetic spectrum (wavelengths in Angstrom), shown along the
+// top of each plot so the axis numbers can be read as UV, visible, IR and so on.
+// Boundaries are conventional and approximate; astronomers draw them slightly differently.
+const EM_REGIONS = [
+    ['Gamma rays', 'gamma', 0, 0.1, '#2a1040'],
+    ['X-rays', 'X-ray', 0.1, 100, '#3a1a5a'],
+    ['Extreme ultraviolet', 'EUV', 100, 912, '#2e1a47'],
+    ['Far ultraviolet', 'FUV', 912, 2000, '#3d2266'],
+    ['Near ultraviolet', 'NUV', 2000, 3800, '#5a2d91'],
+    ['Visible', 'Vis', 3800, 7500, null],
+    ['Near infrared', 'NIR', 7500, 5e4, '#5a1a1a'],
+    ['Mid infrared', 'MIR', 5e4, 2.5e5, '#4a1414'],
+    ['Far infrared', 'FIR', 2.5e5, 3.5e6, '#3a0f0f'],
+    ['Submillimetre', 'sub-mm', 3.5e6, 1e7, '#2e2a1a'],
+    ['Microwave', 'MW', 1e7, 1e10, '#1a2e2e'],
+    ['Radio', 'radio', 1e10, Infinity, '#1a1a2e'],
+];
+// Colours across the visible band, for its rainbow fill.
+const VISIBLE_STOPS = [[3800, '#7f00ff'], [4400, '#0000ff'], [4900, '#00ffff'], [5100, '#00ff00'],
+                       [5800, '#ffff00'], [6200, '#ff7f00'], [7000, '#ff0000'], [7500, '#7f0000']];
+let emGradientCount = 0;
+
+const LENGTH_UNITS = [[1e10, 'm'], [1e7, 'mm'], [1e4, '\u{b5}m'], [1, '\u{c5}']];
+
+function lengthUnit(angstrom) {
+    return LENGTH_UNITS.find(([scale]) => angstrom >= scale) || LENGTH_UNITS[LENGTH_UNITS.length - 1];
+}
+
+function formatLength(angstrom, [scale, name] = lengthUnit(angstrom)) {
+    return `${Number((angstrom / scale).toPrecision(3))} ${name}`;
+}
+
+// Both ends in the upper end's unit ("0.75 um - 5 um"), unless the lower end would be tiny in it.
+function regionRange(a, b) {
+    if (a === 0) return `below ${formatLength(b)}`;
+    if (b === Infinity) return `above ${formatLength(a)}`;
+    const unit = lengthUnit(b);
+    return `${formatLength(a, a / unit[0] >= 0.1 ? unit : lengthUnit(a))} \u{2013} ${formatLength(b, unit)}`;
+}
+
+// The labelled strip above the plot, plus faint dashed lines down the plot at each boundary.
+function emRegionStrip(lo, hi, x, {W, H, L, R, T, B}) {
+    const top = 10, height = T - top - 6, charWidth = 7.2;
+    const gradient = `em-visible-${++emGradientCount}`;
+    const span = x(7500) - x(3800);
+    let svg = `<defs><linearGradient id="${gradient}" gradientUnits="userSpaceOnUse" x1="${x(3800)}" x2="${x(7500)}" y1="0" y2="0">` +
+        VISIBLE_STOPS.map(([w, c]) => `<stop offset="${((x(w) - x(3800)) / span).toFixed(4)}" stop-color="${c}"/>`).join('') +
+        '</linearGradient></defs>';
+    EM_REGIONS.forEach(([name, short, a, b, fill]) => {
+        const start = Math.max(a, lo), end = Math.min(b, hi);
+        if (!(end > start)) return;
+        const x0 = Math.max(x(start), L), x1 = Math.min(x(end), W - R), width = x1 - x0;
+        if (width <= 0) return;
+        const text = width >= name.length * charWidth + 6 ? name : width >= short.length * charWidth + 4 ? short : '';
+        // The rainbow runs from dark violet through yellow to dark red, so its label gets a dark outline.
+        const textStyle = fill ? 'fill:#C0C0C0'
+            : 'fill:#FFFFFF;font-weight:bold;stroke:#000000;stroke-width:3px;stroke-linejoin:round;paint-order:stroke';
+        svg += `<g><title>${name}: ${regionRange(a, b)}</title>` +
+               `<rect x="${x0.toFixed(1)}" y="${top}" width="${width.toFixed(1)}" height="${height}" fill="${fill || `url(#${gradient})`}" stroke="#000000" stroke-width="0.5"/>` +
+               (text ? `<text x="${((x0 + x1) / 2).toFixed(1)}" y="${top + height - 5}" text-anchor="middle" style="${textStyle}">${text}</text>` : '') +
+               '</g>';
+        if (a > lo && a < hi) {
+            svg += `<line x1="${x(a).toFixed(1)}" x2="${x(a).toFixed(1)}" y1="${T}" y2="${H - B}" stroke="#808080" stroke-dasharray="2 4" stroke-opacity="0.6"/>`;
+        }
+    });
+    return svg;
+}
+
 function drawPlot(box, curves, colors, state, propBands, vega) {
     const {normalise, hidden} = state;
     const showVega = Boolean(state.vega && vega && vega.length);
@@ -831,12 +899,13 @@ function drawPlot(box, curves, colors, state, propBands, vega) {
         curves[b].forEach(([w, t]) => { if (t >= 0.005 * peak) { lo = Math.min(lo, w); hi = Math.max(hi, w); } });
         top = Math.max(top, normalise ? 1 : peak);
     });
-    if (!shown.length || !(hi > lo)) { lo = 1; hi = 10; top = 1; }
+    const empty = !shown.length || !(hi > lo);
+    if (empty) { lo = 1; hi = 10; top = 1; }
     const log = hi / lo > 10;
     const pad = log ? Math.pow(hi / lo, 0.03) : (hi - lo) * 0.03;
     [lo, hi] = log ? [lo / pad, hi * pad] : [Math.max(lo - pad, 0), hi + pad];
     const unit = hi < 12000 ? ['\u{c5}', 1] : hi < 1e7 ? ['\u{b5}m', 1e4] : ['mm', 1e7];
-    const W = 900, H = 300, L = 62, R = showVega ? 76 : 14, T = 12, B = 44;
+    const W = 900, H = 322, L = 62, R = showVega ? 76 : 14, T = 34, B = 44;
     const x = w => L + (W - L - R) * (log ? Math.log(w / lo) / Math.log(hi / lo) : (w - lo) / (hi - lo));
     const y = t => H - B - (H - T - B) * t / (top * 1.05);
     const label = v => { const u = v / unit[1]; return Math.abs(u) >= 1000 ? u.toFixed(0) : Number(u.toPrecision(3)).toString(); };
@@ -849,6 +918,7 @@ function drawPlot(box, curves, colors, state, propBands, vega) {
         svg += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="#003300"/>` +
                `<text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${Number(v.toPrecision(3))}</text>`;
     });
+    if (!empty) svg += emRegionStrip(lo, hi, x, {W, H, L, R, T, B});
     svg += `<rect x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}" fill="none" stroke="#00FF00"/>`;
     svg += `<text x="${(L + W - R) / 2}" y="${H - 6}" text-anchor="middle">wavelength (${unit[0]})${log ? ', log scale' : ''}</text>`;
     svg += `<text transform="translate(14 ${(T + H - B) / 2}) rotate(-90)" text-anchor="middle">${normalise ? 'transmission / peak' : 'transmission'}</text>`;
