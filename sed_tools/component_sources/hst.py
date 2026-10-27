@@ -203,6 +203,82 @@ def _product(tables: SynphotTables, comps: Sequence[str],
     return grid, out
 
 
+def _split_chain(tables: SynphotTables, prefix: str, band: str) -> Tuple[List[str], Dict[str, List[str]]]:
+    """A band's synphot components in chain order, and the same grouped by role.
+
+    Raises ValueError if the graph has no chain for the band, or the chain
+    does not have exactly one filter and at least one qe component.
+    """
+    comps = tables.chain(f"{prefix},{band.lower()}")
+    roles = {FILTER: [], OPTICS: [], QE: []}
+    for comp in comps:
+        roles[classify(comp, band)].append(comp)
+    if len(roles[FILTER]) != 1 or not roles[QE]:
+        raise ValueError(f"unclassifiable chain {comps}")
+    return comps, roles
+
+
+def _notes(tables: SynphotTables, prefix: str, skipped: Mapping[str, str], tails: Mapping[str, float],
+           pins: Mapping[str, str], used: set) -> str:
+    """Manifest notes: the obsmode, bands not decomposed, the unpublished tail and any pins."""
+    notes = (
+        f"Components from STScI synphot obsmode '{prefix},<band>'. QE includes STScI's empirical "
+        "detector-side corrections (*_cor, *_tds*) so filter+optics+qe reproduces synphot's total."
+        + (f" Not decomposed: {', '.join(sorted(skipped))}." if skipped else "")
+    )
+    widest = max(tails, key=tails.get) if tails else None
+    if widest and tails[widest] > 0:
+        notes += (
+            " The components extend beyond the wavelength range of the published curves, which "
+            f"omit that tail; there the composed product reaches up to {tails[widest]:.1e} of the "
+            f"published peak ({widest}), which matters for sources much brighter there."
+        )
+    if pins and used & set(pins):
+        notes += (
+            " Pinned to the release the published curves were computed with: "
+            + ", ".join(sorted(pins[c] for c in used & set(pins)))
+            + ". The newest TRDS files differ by an achromatic factor per band ("
+            + _pin_note(tables, pins, used) + "); for the current calibration use synphot itself."
+        )
+    return notes
+
+
+def _build_instrument(inst: str, prefix: str, inst_dir: Path, bands: Sequence[str],
+                      tables: SynphotTables) -> None:
+    """Write the components of one instrument's published ``bands``, and its manifest."""
+    manifest = InstrumentManifest.load(inst_dir)
+    manifest.components = {}
+    pins = PINNED.get(inst, {})
+    skipped, used, tails = {}, set(), {}
+    for band in bands:
+        try:
+            comps, roles = _split_chain(tables, prefix, band)
+        except (ValueError, KeyError) as exc:
+            skipped[band] = str(exc)
+            continue
+        used.update(comps)
+        for role, comps_for_role in roles.items():
+            if not comps_for_role:
+                continue
+            wl, tr = _product(tables, comps_for_role, pins)
+            add_component(
+                inst_dir, role, wl, tr, band=band, name=band,
+                source="; ".join(tables.source(c, pins) for c in comps_for_role), manifest=manifest,
+            )
+        try:
+            tails[band] = _tail_beyond_published(inst_dir / f"{band}.dat", *_product(tables, comps, pins))
+        except (OSError, ValueError, IndexError):
+            pass
+    manifest.detector_type = PHOTON
+    manifest.ground_based = False
+    manifest.outside_range = "zero"  # synphot evaluates throughput tables as zero outside their range
+    manifest.sources["synphot"] = f"{TRDS} ({tables.tmg_name}, {tables.tmc_name}); obsmode {prefix},<band>"
+    manifest.notes = _notes(tables, prefix, skipped, tails, pins, used)
+    manifest.save(inst_dir)
+    if skipped:
+        logger.info("HST/%s skipped %d bands: %s", inst, len(skipped), skipped)
+
+
 def build(
     filter_root: Union[str, Path],
     *,
@@ -226,62 +302,6 @@ def build(
         if not bands:
             logger.warning("HST/%s: no published curves present; fetch them first", inst)
             continue
-        manifest = InstrumentManifest.load(inst_dir)
-        manifest.components = {}
-        skipped = {}
-        pins = PINNED.get(inst, {})
-        used = set()
-        tails = {}
-        for band in bands:
-            try:
-                comps = tables.chain(f"{prefix},{band.lower()}")
-            except (ValueError, KeyError) as exc:
-                skipped[band] = str(exc)
-                continue
-            roles = {FILTER: [], OPTICS: [], QE: []}
-            for comp in comps:
-                roles[classify(comp, band)].append(comp)
-            if len(roles[FILTER]) != 1 or not roles[QE]:
-                skipped[band] = f"unclassifiable chain {comps}"
-                continue
-            used.update(comps)
-            for role, comps_for_role in roles.items():
-                if not comps_for_role:
-                    continue
-                wl, tr = _product(tables, comps_for_role, pins)
-                add_component(
-                    inst_dir, role, wl, tr, band=band, name=band,
-                    source="; ".join(tables.source(c, pins) for c in comps_for_role), manifest=manifest,
-                )
-            try:
-                tails[band] = _tail_beyond_published(inst_dir / f"{band}.dat", *_product(tables, comps, pins))
-            except (OSError, ValueError, IndexError):
-                pass
-        manifest.detector_type = PHOTON
-        manifest.ground_based = False
-        manifest.outside_range = "zero"  # synphot evaluates throughput tables as zero outside their range
-        manifest.sources["synphot"] = f"{TRDS} ({tables.tmg_name}, {tables.tmc_name}); obsmode {prefix},<band>"
-        manifest.notes = (
-            f"Components from STScI synphot obsmode '{prefix},<band>'. QE includes STScI's empirical "
-            "detector-side corrections (*_cor, *_tds*) so filter+optics+qe reproduces synphot's total."
-            + (f" Not decomposed: {', '.join(sorted(skipped))}." if skipped else "")
-        )
-        widest = max(tails, key=tails.get) if tails else None
-        if widest and tails[widest] > 0:
-            manifest.notes += (
-                " The components extend beyond the wavelength range of the published curves, which "
-                f"omit that tail; there the composed product reaches up to {tails[widest]:.1e} of the "
-                f"published peak ({widest}), which matters for sources much brighter there."
-            )
-        if pins and used & set(pins):
-            manifest.notes += (
-                " Pinned to the release the published curves were computed with: "
-                + ", ".join(sorted(pins[c] for c in used & set(pins)))
-                + ". The newest TRDS files differ by an achromatic factor per band ("
-                + _pin_note(tables, pins, used) + "); for the current calibration use synphot itself."
-            )
-        manifest.save(inst_dir)
-        if skipped:
-            logger.info("HST/%s skipped %d bands: %s", inst, len(skipped), skipped)
+        _build_instrument(inst, prefix, inst_dir, bands, tables)
         built.append(inst_dir)
     return built
