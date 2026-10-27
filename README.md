@@ -359,7 +359,7 @@ Filters.fetch("LSST", "LSST", components=["filter", "optics", "qe"],
               atmosphere={"airmass": 1.2})                                   # + its own atmosphere
 ```
 
-Requests that cannot be met are refused with an explanation rather than approximated: components the team never published (e.g. Gaia's bare filters), an atmosphere from another site, adding an atmosphere to a curve that already includes one, or to a space/airborne instrument. A published curve that is the bare filter counts as the `filter` component automatically. Products containing QE are photon-counting; otherwise they inherit the instrument's detector type.
+Requests that cannot be met are refused with an explanation rather than approximated: components the team never published (e.g. Gaia's bare filters), an atmosphere from another site, adding an atmosphere to a curve that already includes one, or to a space/airborne instrument. A published curve that is the bare filter counts as the `filter` component automatically. Products containing QE are photon-counting; otherwise they inherit the instrument's detector type. A band whose manifest records a `user` detector type (Argus, whose team states its sensors are energy counting) keeps that type in every product.
 
 An instrument's atmosphere is one at its own location, with the user choosing only airmass and PWV. Each site directory has a `manifest.json` recording its kind, observing conditions, model, model version, parameters, citation and any usage terms:
 

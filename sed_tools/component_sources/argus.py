@@ -3,8 +3,8 @@
 Argus/DR280
     The survey bands ``beta`` (Chroma CT446-162bp) and ``rho`` (Chroma
     CT699-259bp) on PlaneWave DeltaRho 280 (DR280) telescopes with Sony
-    IMX461 sensors.  Each factor is a separate component, and variants
-    select alternatives:
+    IMX461 sensors.  Each factor is a separate component, and filter
+    variants select alternative filter curves:
 
     ``filter``  ``production`` (default): argus_sim's ``argus_beta_ct446.csv``
                 and ``argus_rho_ct699.csv``, the vendor design curves
@@ -12,9 +12,8 @@ Argus/DR280
                 demonstrator, which flew the same CT446 beta filter and the
                 earlier CT692-276bp red filter (``rho0``); its rho is
                 synthref's beam-averaged rho0 curve.
-    ``optics``  ``dr280`` (default): the DR280 vendor-coating model
-                ``dr280_vendor_s2s2`` (hdps ``addem_optics.csv``).  ``cdk``:
-                ArgusSim's PlaneWave CDK curve (``optics_throughput.csv``).
+    ``optics``  the DR280 vendor-coating model ``dr280_vendor_s2s2`` (hdps
+                ``addem_optics.csv``), which ADDem and production share.
     ``qe``      ``imx455_qe.csv``.  The IMX455 stands in for the deployed
                 IMX461, for which no QE curve is available.
 
@@ -23,7 +22,7 @@ Argus/DR280
     so composing the defaults reproduces them exactly.  No atmosphere.
 
     Only the production filters and the QE are public (argus-hdps/argus_sim,
-    MIT); they are downloaded at a pinned commit.  The optics curves and the
+    MIT); they are downloaded at a pinned commit.  The optics curve and the
     rho0 curve are not public: they are read from ``raw``, and without them
     the build stops and says to install Argus/DR280 from the NJM mirror,
     which serves them.
@@ -32,11 +31,20 @@ Argus/System
     Nill's beta and rho curves of 30 September 2026, which MESA_ARGUS,
     argus_star and custom_colors read: ArgusSim's ``argus_g.csv`` (beta) or
     ``bandpass_560_825nm.csv`` (an idealised rho box) x
-    ``optics_throughput.csv`` x ``imx455_qe.csv``.  The published curves
-    are never touched; this builder adds their components from those four
-    files in ``raw``.  Three are public at argus_sim commit 785c92e8;
-    ``optics_throughput.csv`` is only in the private ArgusSim repository.
-    All four are archived on NJM (``source_evidence/filters/2026-10-27-argus``).
+    ``optics_throughput.csv`` (a PlaneWave CDK model) x ``imx455_qe.csv``.
+    This builder adds their components from those four files in ``raw`` and
+    writes SED_Tools metadata on the curves' column row (line 1, which
+    released MESA discards); their samples are never touched.  Three inputs
+    are public at argus_sim commit 785c92e8; ``optics_throughput.csv`` is
+    only in the private ArgusSim repository.  All four are archived on NJM
+    (``source_evidence/filters/2026-10-27-argus``).
+
+Both instruments are labelled energy-counting (``DetectorType=energy``,
+``DetectorTypeSource=user``): the Argus team states that the Argus sensors
+are energy counting (N. Miller, 2026-10-27), although argus_sim's
+throughput.py describes the product as a photon-rate response.  A ``user``
+type is never replaced by an SVO resolution, and products composed from the
+components keep it.
 
 Every input is pinned by SHA-256, and a different file stops the build.
 """
@@ -56,7 +64,7 @@ import numpy as np
 from ..combine_filters import write_filter_index
 from ..filter_components import (FILTER, OPTICS, QE, SHARED, InstrumentManifest, add_component,
                                  compose_band)
-from ..filter_metadata import PHOTON, SOURCE_INFERRED, write_filter_file
+from ..filter_metadata import ENERGY, read_filter_header, write_filter_file, write_filter_header
 from ._common import register_variant
 from .team_atmospheres import CachingSession
 
@@ -124,8 +132,6 @@ DR280_INPUTS: Dict[str, Input] = {
         f"{HDPS} packages/hdps_orchestrate/src/hdps/orchestrate/data/throughput/addem_optics.csv @8745a72c, "
         "on unmerged branches feat/photocal-gaia-xp and feature/gaia-xp-pipeline; numerically identical to "
         "the optics column of synthref's passbands"),
-    "cdk": Input("optics_throughput.csv", "8cf704337544e227c7f4c5fdb8add77f44c064af233bca2d4659ce6b6af727e9",
-                 CDK_ORIGIN),
 }
 
 #: filter variant -> (band -> DR280_INPUTS key, description)
@@ -137,27 +143,24 @@ FILTER_VARIANTS: Dict[str, Tuple[Dict[str, str], str]] = {
               "ADDem demonstrator: the same CT446-162bp beta filter (production curve) and the CT692-276bp red "
               "filter rho0 in the rho band (synthref's beam-averaged rho0 curve)"),
 }
-#: optics variant -> (DR280_INPUTS key, description)
-OPTICS_VARIANTS: Dict[str, Tuple[str, str]] = {
-    "dr280": ("dr280", "DR280 vendor-coating model dr280_vendor_s2s2: two 'supplier 2' enhanced-aluminium mirrors "
-                       "digitised from the vendor coating sheet, three CDGM corrector lenses and six AR surfaces at "
-                       "0.5%; no window. Modelled, not measured"),
-    "cdk": ("cdk", "ArgusSim's PlaneWave CDK optics curve (3 corrector lenses + sensor window + 2 mirror "
-                   "reflections), used by Argus/System; not the DR280. Modelled, not measured"),
-}
-DEFAULT_FILTER, DEFAULT_OPTICS = "production", "dr280"
+DEFAULT_FILTER = "production"
+OPTICS_KEY = "dr280"  # the only DR280 optics: ADDem and production share it
 
-DETECTOR_EVIDENCE = (
-    "inferred: the published curves include the IMX455 QE, which argus_sim's throughput.py gives in "
-    "electrons per photon (qe_freq = ... * (u.electron / u.photon)) and uses in the bands' 'photon-rate "
-    "response'; synthref's passbands README says 'Per-star rate ∝ ∫ F_λ · λ · R dλ (photon counting)' "
-    "for the same filter x DR280 optics x QE product. The sensor is a CMOS (Sony IMX461)."
+#: Nill's decision for both instruments (2026-10-27).  ``user`` is outside
+#: the SVO precedence order, so an SVO resolution never replaces it, and
+#: composed products keep it (filter_components._band_detector_type).
+DETECTOR_TYPE, DETECTOR_SOURCE = ENERGY, "user"
+DETECTOR_NOTE = (
+    "user: the Argus team states that the Argus sensors are energy counting (N. Miller, 2026-10-27). "
+    "This overrides argus_sim's throughput.py, which gives the IMX455 QE in electrons per photon "
+    "(qe_freq = ... * (u.electron / u.photon)) and calls the product a 'photon-rate response'; synthref's "
+    "passbands README also says 'Per-star rate ∝ ∫ F_λ · λ · R dλ (photon counting)'."
 )
 
 DR280_NOTES = (
     "Argus Array survey bands beta (Chroma CT446-162bp) and rho (Chroma CT699-259bp) on PlaneWave DeltaRho 280 "
-    "(DR280) telescopes with Sony IMX461 sensors. The published curves are filter x optics x qe of the default "
-    "variants (filter 'production', optics 'dr280'), composed by SED_Tools from the component files (linear "
+    "(DR280) telescopes with Sony IMX461 sensors. The published curves are filter x optics x qe with the default "
+    "filter variant ('production'), composed by SED_Tools from the component files (linear "
     "interpolation on the merged grid; zero outside a component's tabulated range), so composing the defaults "
     "reproduces them exactly. "
     "Filter variants: 'production' (default), argus_sim's argus_beta_ct446.csv and argus_rho_ct699.csv, the "
@@ -169,22 +172,24 @@ DR280_NOTES = (
     "a beta curve with a provisional +5 nm red edge; that curve is archive-only, so 'addem' beta equals "
     "'production' beta. Caveat: argus_rho_ct699.csv (2026-09-25) may use synthref's earlier single-field-angle "
     "beam model rather than the field average used for argus_beta_ct446.csv (2026-10-21). "
-    "Optics variants: 'dr280' (default), the DR280 vendor-coating model dr280_vendor_s2s2 (two 'supplier 2' "
-    "enhanced-aluminium mirrors digitised by eye from the vendor coating sheet, three CDGM corrector lenses, six "
-    "AR surfaces at 0.5%; no window, since the filter substrate is in the filter curve and the sensor cover "
-    "glass in the QE); 'cdk', ArgusSim's PlaneWave CDK optics curve, used by the legacy Argus/System curves. "
-    "Both are models; no measured optics exist. "
+    "Optics: the DR280 vendor-coating model dr280_vendor_s2s2, which ADDem and production share (two "
+    "'supplier 2' enhanced-aluminium mirrors digitised by eye from the vendor coating sheet, three CDGM corrector "
+    "lenses, six AR surfaces at 0.5%; no window, since the filter substrate is in the filter curve and the "
+    "sensor cover glass in the QE). It is a model; no measured optics exist. "
     "QE: Sony IMX455, digitised from the datasheet (version and figure not recorded). The deployed sensor is "
     "the IMX461; no IMX461 QE curve is available, so the IMX455 stands in, as in every Argus pipeline. "
+    "DetectorType energy (user): the Argus team states that the Argus sensors are energy counting (N. Miller, "
+    "2026-10-27); argus_sim's throughput.py describes the product as a photon-rate response. "
     "No atmosphere is published or offered: the only one in the Argus repositories "
     "(pachon_modtran_atm_aerosols.txt) is LSST's Cerro Pachon MODTRAN model at airmass 1.2 "
     "(syseng_throughputs siteProperties/pachonModtranAtm_12_aerosol.dat), labelled airmass 1.0, and not the "
     "Argus site. "
-    "Not public: the optics curves (hdps unmerged branches; private ArgusSim) and the rho0 curve (synthref, "
-    "removed from GitHub); NJM is their source. "
+    "Not public: the optics curve (hdps unmerged branches) and the rho0 curve (synthref, removed from GitHub); "
+    "NJM is their source. "
     "Archive-only, available on request: the 22 measured Chroma production-lot curves (order SO448371; 8 beta, "
     "14 rho), the legacy design-study bands (r, i, A, r+i, i+z, r+i+z and the 560-825 nm rho box) and the "
-    "provisional red-edge beta curve. Nill's earlier curves, which his MESA projects use, are Argus/System."
+    "provisional red-edge beta curve. Nill's earlier curves, which his MESA projects use, are Argus/System; "
+    "their PlaneWave CDK optics curve is Argus/System's optics component."
 )
 
 #: Argus/System inputs, read from ``raw``: role or band -> input.
@@ -204,10 +209,12 @@ SYSTEM_INPUTS: Dict[str, Input] = {
 
 SYSTEM_NOTES = (
     "Legacy: Nill's Argus beta and rho curves of 30 September 2026, which MESA_ARGUS, argus_star and "
-    "custom_colors read, served unchanged (their column row carries no metadata). beta = argus_g.csv (Chroma "
+    "custom_colors read. Their samples are served unchanged; only the column row (line 1, which released MESA "
+    "discards) carries SED_Tools metadata, so MESA reads the same numbers. beta = argus_g.csv (Chroma "
     "CT446-162bp collimated design curve) and rho = bandpass_560_825nm.csv (an idealised 560-825 nm box, not the "
     "real rho filter), each x optics_throughput.csv (a PlaneWave CDK model, not the DR280) x imx455_qe.csv. "
-    "They include the QE, so they are photon-counting responses. "
+    "DetectorType energy (user): the Argus team states that the Argus sensors are energy counting (N. Miller, "
+    "2026-10-27); argus_sim's throughput.py describes the product as a photon-rate response. "
     "Published curves are ArgusSim's system response (PCHIP filters/optics, "
     "CubicSpline QE extrapolated to 300 nm). Composed products use linear "
     "interpolation and do not extrapolate the QE: filter x optics x qe differs from the published curves "
@@ -263,8 +270,16 @@ def _read_inputs(inputs: Mapping[str, Input], raw: Optional[Path], instrument: s
 # --------------------------------------------------------------------------
 # Argus/DR280
 # --------------------------------------------------------------------------
+def _label_detector(manifest: InstrumentManifest) -> None:
+    """Record the Argus team's detector convention (both instruments) in ``manifest``."""
+    manifest.detector_type = DETECTOR_TYPE
+    manifest.detector_types = {band: DETECTOR_TYPE for band in BANDS}
+    manifest.detector_type_sources = {band: DETECTOR_SOURCE for band in BANDS}
+    manifest.sources["detector_type"] = DETECTOR_NOTE
+
+
 def _add_dr280_components(inst_dir: Path, manifest: InstrumentManifest, curves: Mapping[str, Curve]) -> None:
-    """Write every component file and register the defaults and variants."""
+    """Write every component file and register the defaults and the filter variants."""
     filter_files = {}
     for band, key in FILTER_VARIANTS[DEFAULT_FILTER][0].items():
         filter_files[key] = add_component(inst_dir, FILTER, *curves[key], band=band, name=key,
@@ -278,12 +293,8 @@ def _add_dr280_components(inst_dir: Path, manifest: InstrumentManifest, curves: 
         register_variant(manifest, FILTER, name, {b: filter_files[k] for b, k in bands.items()},
                          description=description, sources={b: DR280_INPUTS[k].source for b, k in bands.items()},
                          **({"default": True} if name == DEFAULT_FILTER else {}))
-    for name, (key, description) in OPTICS_VARIANTS.items():
-        spec = DR280_INPUTS[key]
-        rel = add_component(inst_dir, OPTICS, *curves[key], band=SHARED, name=key, source=spec.source,
-                            manifest=manifest if name == DEFAULT_OPTICS else None)
-        register_variant(manifest, OPTICS, name, {SHARED: rel}, description=description, source=spec.source,
-                         **({"default": True} if name == DEFAULT_OPTICS else {}))
+    add_component(inst_dir, OPTICS, *curves[OPTICS_KEY], band=SHARED, name=OPTICS_KEY,
+                  source=DR280_INPUTS[OPTICS_KEY].source, manifest=manifest)
     qe = DR280_INPUTS["imx455"]
     add_component(inst_dir, QE, *curves["imx455"], band=SHARED, name="imx455", manifest=manifest,
                   source=f"{qe.source} (Sony IMX455, digitised; stands in for the deployed IMX461)")
@@ -291,15 +302,14 @@ def _add_dr280_components(inst_dir: Path, manifest: InstrumentManifest, curves: 
 
 def _write_dr280(inst_dir: Path, curves: Mapping[str, Curve]) -> None:
     """Write the components, the published totals of the defaults, the MESA index and the manifest."""
-    manifest = InstrumentManifest(facility=FACILITY, instrument="DR280", bands=list(BANDS),
-                                  detector_type=PHOTON, ground_based=True)
+    manifest = InstrumentManifest(facility=FACILITY, instrument="DR280", bands=list(BANDS), ground_based=True)
+    _label_detector(manifest)
     _add_dr280_components(inst_dir, manifest, curves)
-    optics_key = OPTICS_VARIANTS[DEFAULT_OPTICS][0]
     for band, filter_key in FILTER_VARIANTS[DEFAULT_FILTER][0].items():
         total = compose_band(inst_dir, band, (FILTER, OPTICS, QE), manifest=manifest)
-        sources = " | ".join(DR280_INPUTS[k].source for k in (filter_key, optics_key, "imx455"))
+        sources = " | ".join(DR280_INPUTS[k].source for k in (filter_key, OPTICS_KEY, "imx455"))
         write_filter_file(inst_dir / f"{band}.dat", total.wavelength, total.transmission,
-                          detector_type=PHOTON, source=SOURCE_INFERRED, filter_id=f"{FACILITY}/DR280.{band}",
+                          detector_type=DETECTOR_TYPE, source=DETECTOR_SOURCE, filter_id=f"{FACILITY}/DR280.{band}",
                           wavelength_unit="Angstrom",
                           extra={"Components": "filter+optics+qe", "ComponentsSource": "composed",
                                  "Sources": sources})
@@ -307,13 +317,8 @@ def _write_dr280(inst_dir: Path, curves: Mapping[str, Curve]) -> None:
 
     manifest.published = {"components": "filter+optics+qe", "source": "composed"}
     manifest.published_bands = {band: "filter+optics+qe" for band in BANDS}
-    manifest.detector_types = {band: PHOTON for band in BANDS}
-    manifest.detector_type_sources = {band: SOURCE_INFERRED for band in BANDS}
-    manifest.sources.update({
-        "argus_sim": f"{ARGUS_SIM_REPO}/tree/{ARGUS_SIM_COMMIT} (MIT, Copyright (c) 2026 The University of "
-                     "North Carolina at Chapel Hill)",
-        "detector_type": DETECTOR_EVIDENCE,
-    })
+    manifest.sources["argus_sim"] = (f"{ARGUS_SIM_REPO}/tree/{ARGUS_SIM_COMMIT} (MIT, Copyright (c) 2026 "
+                                     "The University of North Carolina at Chapel Hill)")
     manifest.notes = DR280_NOTES
     manifest.save(inst_dir)
 
@@ -346,19 +351,41 @@ def build_dr280(filter_root: Union[str, Path], raw: Union[str, Path, None] = Non
 # --------------------------------------------------------------------------
 # Argus/System (legacy)
 # --------------------------------------------------------------------------
+def system_header(band: str) -> Dict[str, str]:
+    """The column-row metadata of the legacy ``Argus/System`` curve of ``band``.
+
+    ``ComponentsSource=original``: the curves are the Argus team's own,
+    stored as published.
+    """
+    return {"FilterID": f"{FACILITY}/System.{band}", "DetectorType": DETECTOR_TYPE,
+            "DetectorTypeSource": DETECTOR_SOURCE, "WavelengthUnit": "Angstrom",
+            "Components": "filter+optics+qe", "ComponentsSource": "original",
+            "Sources": " | ".join(SYSTEM_INPUTS[key].source for key in (band, OPTICS, QE))}
+
+
 def build_system(filter_root: Union[str, Path], raw: Union[str, Path, None] = None) -> Path:
-    """Add the components of the legacy Argus/System curves; the published curves are not touched."""
+    """Add the components of the legacy Argus/System curves and label the curves' column row.
+
+    Only line 1 of each published curve changes (:func:`system_header`);
+    its samples are kept byte for byte.
+    """
     filter_root = Path(filter_root)
     instrument_dir = filter_root / FACILITY / "System"
     raw = Path(raw) if raw else filter_root / FACILITY / "raw"
     curves = _read_inputs(SYSTEM_INPUTS, raw, "System")
     instrument_dir.mkdir(parents=True, exist_ok=True)
+    for band in BANDS:
+        published = instrument_dir / f"{band}.dat"
+        if published.is_file() and not write_filter_header(
+                published, {**read_filter_header(published), **system_header(band)}):
+            raise ValueError(f"{published} has no column row (line 1) to hold its metadata")
 
     manifest = InstrumentManifest.load(instrument_dir)
     manifest.facility, manifest.instrument = FACILITY, "System"
     manifest.bands = list(BANDS)
     manifest.published = {"components": "filter+optics+qe", "source": "Argus ArgusSim system response"}
-    manifest.detector_type = PHOTON
+    manifest.published_bands = {band: "filter+optics+qe" for band in BANDS}
+    _label_detector(manifest)
     manifest.ground_based = True
     manifest.components = {}
 

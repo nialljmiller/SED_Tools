@@ -900,6 +900,10 @@ def product_detector_type(roles: Iterable[str], manifest: InstrumentManifest) ->
 
 
 def _band_detector_type(instrument_dir: Path, band: str, roles: Sequence[str], manifest: InstrumentManifest) -> str:
+    if manifest.detector_type_sources.get(band) == "user":
+        # A convention stated for the instrument (e.g. by its team, as for
+        # Argus) holds for every product of the band, QE or not.
+        return manifest.detector_types[band]
     if PUBLISHED in roles and QE not in roles:
         # The product is the published curve times extra factors: same detector.
         published = normalize_detector_type(read_filter_header(instrument_dir / f"{band}.dat").get("DetectorType"))
