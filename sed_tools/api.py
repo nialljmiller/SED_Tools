@@ -39,22 +39,18 @@ Example usage::
 
 from __future__ import annotations
 
-import csv
 import logging
-import os
 import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterator, List, Optional, Sequence, Tuple, Union
-
-logger = logging.getLogger(__name__)
+from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import pandas as pd
+from requests import RequestException
 
 from ._lookup_io import find_teff_column, find_logg_column, find_metallicity_column, find_file_column
 from .models import (
-    DATA_DIR_DEFAULT,
     FILTER_DIR_DEFAULT,
     STELLAR_DIR_DEFAULT,
     EvaluatedSED,
@@ -63,7 +59,20 @@ from .models import (
     SED as _SEDCore,
 )
 
+logger = logging.getLogger(__name__)
+
 Number = Union[int, float, np.floating]
+
+# Remote spectral grid sources, in the order SED.fetch tries them.
+_SPECTRA_SOURCES = ("njm", "svo", "msg", "mast")
+
+# What a remote source raises when it is unreachable or serves something unexpected.
+_SOURCE_ERRORS = (RequestException, OSError, ValueError, RuntimeError)
+
+
+def _unusable_after_cleaning(summary: Dict[str, Any]) -> List[str]:
+    """Spectra that ``clean_model_dir`` could not make usable: invalid, index-only or failed."""
+    return [*summary['skipped_invalid'], *summary['skipped_index'], *summary['error']]
 
 
 # =============================================================================
@@ -457,24 +466,18 @@ class SED:
         -------
         List[SpectralGridInfo]
             Available spectral grids matching the criteria
+
+        A remote source that cannot be queried is skipped with a warning;
+        RuntimeError is raised if every requested remote source fails.
         """
+        if source not in (None, 'local', 'all', *_SPECTRA_SOURCES):
+            raise ValueError(f"Unknown source: {source}")
         catalogs = []
-        
-        # Local catalogs
-        if include_local and (source is None or source == 'local' or source == 'all'):
+        if include_local and source in (None, 'local', 'all'):
             catalogs.extend(cls._query_local())
-        
-        # Remote sources
         if include_remote:
-            if source is None or source in ('svo', 'all'):
-                catalogs.extend(cls._query_svo())
-            if source is None or source in ('msg', 'all'):
-                catalogs.extend(cls._query_msg())
-            if source is None or source in ('mast', 'all'):
-                catalogs.extend(cls._query_mast())
-            if source is None or source in ('njm', 'all'):
-                catalogs.extend(cls._query_njm())
-        
+            catalogs.extend(cls._query_remote(source))
+
         # Filter by parameter coverage
         if any([teff_min, teff_max, logg_min, logg_max, metallicity_min, metallicity_max]):
             catalogs = [
@@ -539,67 +542,65 @@ class SED:
         return catalogs
     
     @classmethod
+    def _query_remote(cls, source: Optional[str]) -> List[SpectralGridInfo]:
+        """Grids from each requested remote source; a source that fails is skipped with a warning."""
+        queries = {'svo': cls._query_svo, 'msg': cls._query_msg,
+                   'mast': cls._query_mast, 'njm': cls._query_njm}
+        requested = [name for name in queries if source in (None, 'all', name)]
+        catalogs, errors = [], []
+        for name in requested:
+            try:
+                catalogs.extend(queries[name]())
+            except _SOURCE_ERRORS as exc:
+                errors.append(f"{name}: {exc}")
+                logger.warning("[query] %s spectral grid discovery failed: %s", name, exc)
+        if requested and len(errors) == len(requested):
+            raise RuntimeError("Spectral grid discovery failed for every requested source: "
+                               + "; ".join(errors))
+        return catalogs
+
+    @classmethod
     def _query_svo(cls) -> List[SpectralGridInfo]:
         """Query SVO remote spectral grids."""
-        try:
-            from .svo_spectra_grabber import SVOSpectraGrabber
-            grabber = SVOSpectraGrabber(base_dir=str(cls._model_root))
-            models = grabber.discover_models()
-            return [
-                SpectralGridInfo(name=m, source='svo', url="http://svo2.cab.inta-csic.es/theory/newov2/")
-                for m in models
-            ]
-        except Exception as e:
-            logger.debug("[query] SVO discovery failed: %s", e, exc_info=True)
-            return []
+        from .svo_spectra_grabber import SVOSpectraGrabber
+        grabber = SVOSpectraGrabber(base_dir=str(cls._model_root))
+        return [
+            SpectralGridInfo(name=m, source='svo', url="http://svo2.cab.inta-csic.es/theory/newov2/")
+            for m in grabber.discover_models()
+        ]
 
     @classmethod
     def _query_msg(cls) -> List[SpectralGridInfo]:
         """Query MSG (Townsend) remote spectral grids."""
-        try:
-            from .msg_spectra_grabber import MSGSpectraGrabber
-            grabber = MSGSpectraGrabber(base_dir=str(cls._model_root))
-            models = grabber.discover_models()
-            return [
-                SpectralGridInfo(name=m, source='msg', description="MSG HDF5 format")
-                for m in models
-            ]
-        except Exception as e:
-            logger.debug("[query] MSG discovery failed: %s", e, exc_info=True)
-            return []
+        from .msg_spectra_grabber import MSGSpectraGrabber
+        grabber = MSGSpectraGrabber(base_dir=str(cls._model_root))
+        return [
+            SpectralGridInfo(name=m, source='msg', description="MSG HDF5 format")
+            for m in grabber.discover_models()
+        ]
 
     @classmethod
     def _query_mast(cls) -> List[SpectralGridInfo]:
         """Query MAST (BOSZ) remote spectral grids."""
-        try:
-            from .mast_spectra_grabber import MASTSpectraGrabber
-            grabber = MASTSpectraGrabber(base_dir=str(cls._model_root))
-            models = grabber.discover_models()
-            return [
-                SpectralGridInfo(name=m, source='mast', description="BOSZ spectral grids")
-                for m in models
-            ]
-        except Exception as e:
-            logger.debug("[query] MAST discovery failed: %s", e, exc_info=True)
-            return []
+        from .mast_spectra_grabber import MASTSpectraGrabber
+        grabber = MASTSpectraGrabber(base_dir=str(cls._model_root))
+        return [
+            SpectralGridInfo(name=m, source='mast', description="BOSZ spectral grids")
+            for m in grabber.discover_models()
+        ]
 
     @classmethod
     def _query_njm(cls) -> List[SpectralGridInfo]:
-        """Query NJM mirror remote spectral grids."""
-        try:
-            from .njm_spectra_grabber import NJMSpectraGrabber
-            grabber = NJMSpectraGrabber(base_dir=str(cls._model_root))
-            if not grabber.is_available():
-                return []
-            models = grabber.discover_models()
-            return [
-                SpectralGridInfo(name=m, source='njm', description="NJM pre-processed mirror")
-                for m in models
-            ]
-        except Exception as e:
-            logger.debug("[query] NJM discovery failed: %s", e, exc_info=True)
-            return []
-    
+        """Query NJM mirror remote spectral grids; RuntimeError if the mirror is unreachable."""
+        from .njm_spectra_grabber import NJMSpectraGrabber
+        grabber = NJMSpectraGrabber(base_dir=str(cls._model_root))
+        if not grabber.is_available():
+            raise RuntimeError(f"NJM mirror {grabber.base_url} is unreachable")
+        return [
+            SpectralGridInfo(name=m, source='njm', description="NJM pre-processed mirror")
+            for m in grabber.discover_models()
+        ]
+
     @classmethod
     def fetch(
         cls,
@@ -642,53 +643,45 @@ class SED:
         -------
         SED
             SED instance with the fetched spectral grid in sed.grid
+
+        Raises
+        ------
+        ValueError
+            If no source has the grid; the message gives each source's error.
+        RuntimeError
+            If no spectra were downloaded, or cleaning left spectra unusable.
         """
         base_dir = Path(model_root) if model_root else cls._model_root
         base_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Build list of sources to try
-        if source is not None:
-            sources_to_try = [source]
+
+        if source is None:
+            sources_to_try, failures = cls._get_sources_for_catalog(catalog)
+        elif source in _SPECTRA_SOURCES:
+            sources_to_try, failures = [source], []
         else:
-            # Try sources in order of preference
-            sources_to_try = cls._get_sources_for_catalog(catalog)
-        
-        # Try each source until one works
-        metadata = None
-        grabber = None
-        used_source = None
-        
-        for src in sources_to_try:
-            try:
-                print(f"[fetch] Trying {catalog} from {src}...")
-                grabber = cls._get_grabber(src, str(base_dir), workers)
-                metadata = grabber.get_model_metadata(catalog)
-                if metadata:
-                    used_source = src
-                    break
-                else:
-                    print(f"[fetch] {src}: no metadata returned, trying next...")
-            except Exception as e:
-                print(f"[fetch] {src} failed: {e}, trying next...")
-                continue
-        
-        if not metadata or grabber is None:
-            tried = ", ".join(sources_to_try)
-            raise ValueError(f"Spectral grid '{catalog}' not found. Tried: {tried}")
-        
+            raise ValueError(f"Unknown source: {source}")
+        used_source, grabber, metadata = cls._first_source_with(
+            catalog, sources_to_try, failures, str(base_dir), workers)
+
         print(f"[fetch] Downloading {catalog} from {used_source}...")
         n_downloaded = grabber.download_model_spectra(catalog, metadata)
         print(f"[fetch] Downloaded {n_downloaded} spectra")
-        
+        if not n_downloaded:
+            raise RuntimeError(f"No spectra of '{catalog}' were downloaded from {used_source}")
+
         # Clean/standardize units
         model_dir = base_dir / catalog
         if clean:
             from .spectra_cleaner import clean_model_dir
             summary = clean_model_dir(str(model_dir), try_h5_recovery=True, rebuild_lookup=True)
-            n_fixed = len(summary.get('fixed', []))
-            n_total = summary.get('total', 0)
-            print(f"[fetch] Cleaned: {n_total} total, {n_fixed} fixed")
-        
+            print(f"[fetch] Cleaned: {summary['total']} total, {len(summary['converted'])} converted")
+            unusable = _unusable_after_cleaning(summary)
+            if unusable:
+                raise RuntimeError(
+                    f"{len(unusable)} of {summary['total']} spectra of '{catalog}' in {model_dir} are unusable "
+                    f"after cleaning (invalid, index-only or failed), e.g. {unusable[0]}; "
+                    "see the [clean] report above")
+
         # Load spectra into SpectralGrid object
         cat = cls._load_catalog_from_dir(model_dir, catalog, source)
         
@@ -707,57 +700,49 @@ class SED:
         return cls(catalog=cat, model_root=base_dir)
     
     @classmethod
-    def _get_sources_for_catalog(cls, catalog: str) -> List[str]:
-        """Get ordered list of sources that might have this spectral grid."""
-        sources = []
-        
-        # Try NJM first (pre-processed)
-        try:
-            from .njm_spectra_grabber import NJMSpectraGrabber
-            njm = NJMSpectraGrabber(base_dir=str(cls._model_root))
-            if njm.is_available():
-                models = njm.discover_models()
-                if catalog in models:
-                    sources.append('njm')
-        except Exception:
-            logger.debug("NJM source discovery failed for %s", catalog, exc_info=True)
+    def _get_sources_for_catalog(cls, catalog: str) -> Tuple[List[str], List[str]]:
+        """Sources whose index lists this spectral grid (NJM first), and each discovery failure."""
+        queries = {'njm': cls._query_njm, 'svo': cls._query_svo,
+                   'msg': cls._query_msg, 'mast': cls._query_mast}
+        sources, failures = [], []
+        for name, query in queries.items():
+            try:
+                listed = [info.name for info in query()]
+            except _SOURCE_ERRORS as exc:
+                failures.append(f"{name}: discovery failed: {exc}")
+                logger.warning("[fetch] %s discovery failed: %s; trying the other sources", name, exc)
+                continue
+            if catalog in listed:
+                sources.append(name)
 
-        # Try SVO
-        try:
-            from .svo_spectra_grabber import SVOSpectraGrabber
-            svo = SVOSpectraGrabber(base_dir=str(cls._model_root))
-            models = svo.discover_models()
-            if catalog in models:
-                sources.append('svo')
-        except Exception:
-            logger.debug("SVO source discovery failed for %s", catalog, exc_info=True)
-
-        # Try MSG
-        try:
-            from .msg_spectra_grabber import MSGSpectraGrabber
-            msg = MSGSpectraGrabber(base_dir=str(cls._model_root))
-            models = msg.discover_models()
-            if catalog in models:
-                sources.append('msg')
-        except Exception:
-            logger.debug("MSG source discovery failed for %s", catalog, exc_info=True)
-
-        # Try MAST
-        try:
-            from .mast_spectra_grabber import MASTSpectraGrabber
-            mast = MASTSpectraGrabber(base_dir=str(cls._model_root))
-            models = mast.discover_models()
-            if catalog in models:
-                sources.append('mast')
-        except Exception:
-            logger.debug("MAST source discovery failed for %s", catalog, exc_info=True)
-        
         # Always include SVO as fallback if not already there
         if 'svo' not in sources:
             sources.append('svo')
-        
-        return sources
-    
+        return sources, failures
+
+    @classmethod
+    def _first_source_with(cls, catalog: str, sources: List[str], failures: List[str],
+                           base_dir: str, workers: int):
+        """``(source, grabber, metadata)`` from the first source that has metadata for ``catalog``.
+
+        Each source that fails is recorded in ``failures`` with a warning; if
+        none has the grid, raises ValueError listing every failure.
+        """
+        for src in sources:
+            print(f"[fetch] Trying {catalog} from {src}...")
+            try:
+                grabber = cls._get_grabber(src, base_dir, workers)
+                metadata = grabber.get_model_metadata(catalog)
+            except _SOURCE_ERRORS as exc:
+                failures.append(f"{src}: {exc}")
+                logger.warning("[fetch] %s failed: %s, trying next...", src, exc)
+                continue
+            if metadata:
+                return src, grabber, metadata
+            failures.append(f"{src}: no metadata for {catalog}")
+            logger.warning("[fetch] %s: no metadata returned, trying next...", src)
+        raise ValueError(f"Spectral grid '{catalog}' not found. Tried: {'; '.join(failures)}")
+
     @classmethod
     def _get_grabber(cls, source: str, base_dir: str, workers: int):
         """Get the appropriate grabber instance."""
