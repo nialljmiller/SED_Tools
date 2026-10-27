@@ -1191,7 +1191,9 @@ def _print_filter_photometry(
 def _band_magnitude(wl, flux, curve, photometric_system, vega_spectrum):
     """Return (flux label, band-averaged flux, magnitude) for one filter.
 
-    The AB magnitude of a non-positive band flux is ``inf``. *vega_spectrum*
+    The AB magnitude of a non-positive band flux is ``inf``; the Vega magnitude
+    is ``inf`` for zero band flux and NaN for a negative one, and ``-inf`` or NaN
+    for a zero or negative Vega zero point. *vega_spectrum*
     is called for the Vega reference only when the filter has no Vega zero
     point in its metadata.
     """
@@ -1215,11 +1217,9 @@ def _band_magnitude(wl, flux, curve, photometric_system, vega_spectrum):
         vega_zero = band_average_flux_lambda_from_arrays(
             curve.wavelength, interp_flux, curve.transmission, curve.detector_type
         )
-    if vega_zero <= 0:
-        raise ValueError(
-            "Computed Vega zero point is non-positive; cannot determine magnitude."
-        )
-    return "f_lambda", flux_density, -2.5 * math.log10(flux_density / vega_zero)
+    # A zero or negative band flux or zero point gives inf, -inf or NaN, as computed; no error.
+    with np.errstate(divide="ignore", invalid="ignore"):
+        return "f_lambda", flux_density, float(-2.5 * np.log10(np.divide(flux_density, vega_zero)))
 
 
 if __name__ == "__main__":

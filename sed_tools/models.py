@@ -110,7 +110,9 @@ class EvaluatedSED:
         system:
             Photometric system to use. "AB" (default) computes magnitudes using
             the AB zero-point. "Vega" relies on either the filter metadata or on
-            a provided Vega reference spectrum.
+            a provided Vega reference spectrum. A band flux of zero gives an
+            infinite magnitude in both; a negative one gives ``inf`` (AB) or NaN
+            (Vega). A Vega zero point of zero gives ``-inf``, and a negative one NaN.
         vega_spectrum:
             Optional spectrum to use as Vega reference when ``system="Vega"``
             and the filter file does not encode a zero point. Can be provided as
@@ -157,12 +159,9 @@ class EvaluatedSED:
                 self.wavelength, self.flux, curve
             )
             vega_zero = _vega_zero_point(curve, vega_curve)
-            if vega_zero <= 0:
-                raise ValueError(
-                    f"Vega zero point for filter '{name}' is non-positive; "
-                    "cannot compute magnitude."
-                )
-            magnitude = -2.5 * math.log10(flux_density / vega_zero)
+            # A zero or negative band flux or zero point gives inf, -inf or NaN, as computed; no error.
+            with np.errstate(divide="ignore", invalid="ignore"):
+                magnitude = float(-2.5 * np.log10(np.divide(flux_density, vega_zero)))
             results[name] = PhotometryResult(
                 magnitude=magnitude,
                 flux_density=float(flux_density),

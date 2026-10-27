@@ -1,8 +1,11 @@
 """Tests for Nill's decisions of 27 October 2026: packaging (psutil, scipy), the
-densifier's wavelength blocks, and stopping on an undeclared flux unit."""
+densifier's wavelength blocks, stopping on an undeclared flux unit, and magnitudes of
+zero flux."""
 
+import math
 import subprocess
 import sys
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -356,3 +359,73 @@ def test_fetch_stops_on_an_undeclared_flux_unit_and_cleans_with_the_one_given(tm
     sed = SED.fetch("Cool", source="svo", model_root=tmp_path, flux_unit="flam")
     assert len(sed.grid) == 3
     assert "# original_flux_unit = flam" in (tmp_path / "Cool" / "s0.txt").read_text()
+
+
+# ---------------------------------------------------------------------
+# Magnitudes of zero or negative band flux: the computed value, no error
+# ---------------------------------------------------------------------
+
+def _box_band(zero_point=2.0e-10):
+    from sed_tools.flux_cube_tool import FilterCurve
+
+    return FilterCurve("Band", np.array([3000.0, 4000.0, 5000.0, 6000.0]), np.array([0.0, 1.0, 1.0, 0.0]),
+                       {"zp_vega": zero_point})
+
+
+class _OneFilter:
+    """Stands in for the SEDModel behind an EvaluatedSED: every filter resolves to one curve."""
+
+    def __init__(self, curve):
+        self.curve = curve
+
+    def _resolve_filters(self, filters):
+        return {"Band": self.curve}
+
+
+def _photometry(flux_level, system, zero_point=2.0e-10):
+    from sed_tools.models import EvaluatedSED
+
+    wl = np.linspace(2000.0, 8000.0, 300)
+    sed = EvaluatedSED(wl, np.full(wl.size, flux_level), {"teff": 5000.0, "logg": 4.0, "meta": 0.0},
+                       _OneFilter(_box_band(zero_point)))
+    return sed.photometry("Band", system=system)["Band"].magnitude
+
+
+@pytest.mark.parametrize("system", ["AB", "Vega"])
+def test_magnitude_of_zero_flux_is_infinite_in_both_systems(system):
+    # The Vega path used to raise ValueError from math.log10(0).
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        assert _photometry(0.0, system) == math.inf
+        assert _band_magnitude(0.0, system) == math.inf
+
+
+def test_vega_magnitude_of_negative_flux_is_nan_and_ab_stays_infinite():
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        assert math.isnan(_photometry(-1e-12, "Vega"))
+        assert math.isnan(_band_magnitude(-1e-12, "Vega"))
+        assert _photometry(-1e-12, "AB") == math.inf
+        assert _band_magnitude(-1e-12, "AB") == math.inf
+
+
+def _band_magnitude(flux_level, system, zero_point=2.0e-10):
+    from sed_tools.flux_cube_tool import _band_magnitude as band_magnitude
+
+    wl = np.linspace(2000.0, 8000.0, 300)
+    return band_magnitude(wl, np.full(wl.size, flux_level), _box_band(zero_point), system, None)[2]
+
+
+@pytest.mark.parametrize("flux_level, zero_point, expected", [
+    (1e-12, 0.0, -math.inf), (0.0, 0.0, math.nan), (1e-12, -2.0e-10, math.nan), (0.0, -2.0e-10, math.inf),
+])
+def test_vega_magnitude_with_a_zero_or_negative_zero_point_is_computed(flux_level, zero_point, expected):
+    # A non-positive Vega zero point used to raise ValueError in both modules.
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        for magnitude in (_photometry(flux_level, "Vega", zero_point),
+                          _band_magnitude(flux_level, "Vega", zero_point)):
+            if math.isnan(expected):
+                assert math.isnan(magnitude)
+            else:
+                assert magnitude == expected
