@@ -271,3 +271,61 @@ def test_get_metadata_float_raises_on_the_first_non_numeric_key():
     assert get_metadata_float({}, VEGA_ZP_KEYS) is None
     with pytest.raises(ValueError, match="metadata zp_vega = '' is not a number"):
         get_metadata_float({"zp_vega": "", "vega_zp": 1.5}, VEGA_ZP_KEYS)
+
+
+# ---------------------------------------------------------------- flux_cube_tool
+
+def _run_tool(tmp_path, monkeypatch, filters_dir):
+    from sed_tools import flux_cube_tool
+
+    model = _simple_grid(tmp_path / "grid")
+    pcf.precompute_flux_cube(str(model), str(model / "flux_cube.bin"))
+    monkeypatch.setattr("builtins.input", lambda *args: "")  # no distance scaling
+    return flux_cube_tool.main([
+        "--flux-cube", str(model / "flux_cube.bin"),
+        "--teff", "5500", "--logg", "4.25", "--metallicity", "0",
+        "--filters", str(filters_dir), "--filter-system", "all",
+        "--photometric-system", "AB", "--plot", str(tmp_path / "sed.png"),
+    ])
+
+
+def test_flux_cube_tool_exits_non_zero_when_a_filter_fails(tmp_path, monkeypatch, capsys):
+    # A failing filter used to print an error and the tool still exited 0.
+    filters = tmp_path / "filters"
+    filters.mkdir()
+    _filter_file(filters / "Good.dat", ["# WavelengthUnit = Angstrom"])
+    (filters / "Dark.dat").write_text("# WavelengthUnit = Angstrom\n4000.0 0.0\n5000.0 0.0\n")
+    assert _run_tool(tmp_path, monkeypatch, filters) == 1
+    out = capsys.readouterr().out
+    assert "Photometry failed for 1 filter(s):" in out
+    assert "Dark: Filter transmission integrates to zero" in out
+    assert "Good" in out and "mag=" in out
+
+
+def test_flux_cube_tool_exits_zero_when_every_filter_succeeds(tmp_path, monkeypatch):
+    filters = tmp_path / "filters"
+    filters.mkdir()
+    _filter_file(filters / "Good.dat", ["# WavelengthUnit = Angstrom"])
+    assert _run_tool(tmp_path, monkeypatch, filters) == 0
+
+
+def _unreadable_rglob(self, pattern):
+    raise PermissionError(13, "Permission denied", str(self))
+
+
+def test_vega_search_warns_when_a_directory_cannot_be_searched(tmp_path, monkeypatch, caplog):
+    from sed_tools import flux_cube_tool
+
+    monkeypatch.setattr(flux_cube_tool.Path, "rglob", _unreadable_rglob)
+    with caplog.at_level(logging.WARNING, logger=flux_cube_tool.__name__):
+        assert flux_cube_tool.discover_vega_candidates([tmp_path]) == []
+    assert f"Could not finish searching {tmp_path.resolve()} for Vega spectra" in caplog.text
+
+
+def test_flux_cube_search_warns_when_a_directory_cannot_be_searched(tmp_path, monkeypatch, caplog):
+    from sed_tools import flux_cube_tool
+
+    monkeypatch.setattr(flux_cube_tool.Path, "rglob", _unreadable_rglob)
+    with caplog.at_level(logging.WARNING, logger=flux_cube_tool.__name__):
+        flux_cube_tool.discover_flux_cube_files([tmp_path])
+    assert f"Could not finish searching {tmp_path.resolve()} for flux cubes" in caplog.text
