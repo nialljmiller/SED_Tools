@@ -13,6 +13,7 @@ import logging
 import numpy as np
 import pytest
 
+from sed_tools import mesa_prepare
 from sed_tools._flux import FluxCube
 
 # sed_tools re-exports the function precompute_flux_cube under the module's name.
@@ -21,26 +22,27 @@ pcf = importlib.import_module("sed_tools.precompute_flux_cube")
 WAVELENGTHS = np.linspace(1000.0, 10000.0, 20)
 
 
-def _write_grid(model_dir, rows, columns=("file_name", "teff", "logg", "metallicity")):
-    """Write one flat spectrum per row and a lookup table with ``columns``."""
+def _write_grid(model_dir, rows, columns=("file_name", "teff", "logg", "metallicity"),
+                *, missing=(), lookup_name="lookup_table.csv"):
+    """Write one flat spectrum per row (except those in ``missing``) and a lookup table."""
     model_dir.mkdir(parents=True, exist_ok=True)
     lines = [",".join(columns)]
     for row in rows:
-        values = dict(zip(columns, row))
-        spectrum = model_dir / values["file_name"]
-        spectrum.write_text("".join(f"{w:.1f} {1e-10:.6e}\n" for w in WAVELENGTHS))
+        name = dict(zip(columns, row))["file_name"]
+        if name not in missing:
+            (model_dir / name).write_text("".join(f"{w:.1f} {1e-10:.6e}\n" for w in WAVELENGTHS))
         lines.append(",".join(str(v) for v in row))
-    (model_dir / "lookup_table.csv").write_text("\n".join(lines) + "\n")
+    (model_dir / lookup_name).write_text("\n".join(lines) + "\n")
     return model_dir
 
 
-def _simple_grid(model_dir):
+def _simple_grid(model_dir, **kwargs):
     return _write_grid(model_dir, [
         ("a.txt", 5000.0, 4.0, 0.0),
         ("b.txt", 6000.0, 4.0, 0.0),
         ("c.txt", 5000.0, 4.5, 0.0),
         ("d.txt", 6000.0, 4.5, 0.0),
-    ])
+    ], **kwargs)
 
 
 # ---------------------------------------------------------------- lookup values
@@ -104,9 +106,7 @@ def test_missing_logg_and_metallicity_columns_still_read_as_zero(tmp_path):
 # ---------------------------------------------------------------- spectra
 
 def test_missing_spectra_raise_listing_every_file(tmp_path):
-    model = _simple_grid(tmp_path / "grid")
-    (model / "b.txt").unlink()
-    (model / "d.txt").unlink()
+    model = _simple_grid(tmp_path / "grid", missing=("b.txt", "d.txt"))
     with pytest.raises(FileNotFoundError, match="2 spectra listed") as excinfo:
         pcf.precompute_flux_cube(str(model), str(model / "flux_cube.bin"))
     assert "b.txt" in str(excinfo.value) and "d.txt" in str(excinfo.value)
@@ -190,9 +190,42 @@ def test_meminfo_is_read_when_psutil_is_missing(monkeypatch, tmp_path):
 
 
 def test_other_lookup_table_file_is_used_with_a_warning(tmp_path, caplog):
-    model = _simple_grid(tmp_path / "grid")
-    (model / "lookup_table.csv").rename(model / "lookup_table_full.csv")
+    model = _simple_grid(tmp_path / "grid", lookup_name="lookup_table_full.csv")
     with caplog.at_level(logging.WARNING, logger=pcf.__name__):
         pcf.precompute_flux_cube(str(model), str(model / "flux_cube.bin"))
     assert "using" in caplog.text and "lookup_table_full.csv" in caplog.text
     assert (model / "flux_cube.bin").exists()
+
+
+# ---------------------------------------------------------------- mesa_prepare
+
+def test_list_variants_raises_on_a_truncated_flux_cube(tmp_path):
+    # An unreadable cube header used to be logged at debug level and shown as n/a.
+    model = _simple_grid(tmp_path / "grid")
+    (model / "flux_cube.bin").write_bytes(b"\x00" * 10)
+    with pytest.raises(ValueError, match="Flux cube header truncated"):
+        mesa_prepare.list_variants(model)
+
+
+def test_list_variants_without_a_built_cube_shows_no_wavelengths(tmp_path):
+    # Unchanged: a grid whose cube has not been built yet lists with n/a wavelengths.
+    model = _simple_grid(tmp_path / "grid")
+    (variant,) = mesa_prepare.list_variants(model)
+    assert variant.wavelength_n == 0 and np.isnan(variant.wavelength_min)
+
+
+def test_export_variant_raises_on_missing_spectra_before_writing(tmp_path):
+    model = _simple_grid(tmp_path / "grid", missing=("c.txt",))
+    (variant,) = mesa_prepare.list_variants(model)
+    out = tmp_path / "export"
+    with pytest.raises(FileNotFoundError, match="1 spectra of variant 'full_grid' are missing") as excinfo:
+        mesa_prepare.export_variant(variant, out)
+    assert "c.txt" in str(excinfo.value)
+    assert not out.exists()
+
+
+def test_run_interactive_exits_non_zero_when_the_grid_has_no_lookup(tmp_path):
+    (tmp_path / "Empty").mkdir()
+    with pytest.raises(SystemExit) as excinfo:
+        mesa_prepare.run_interactive(base_dir=str(tmp_path), model="Empty", output=str(tmp_path / "out"))
+    assert "lookup_table.csv not found" in str(excinfo.value.code)

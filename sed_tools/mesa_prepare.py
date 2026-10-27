@@ -20,18 +20,16 @@ Usage (API):
 
 from __future__ import annotations
 
-import logging
 import os
 import shutil
-import struct
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 import numpy as np
 import pandas as pd
 
-logger = logging.getLogger(__name__)
+from .models import STELLAR_DIR_DEFAULT, _read_flux_cube_header
 
 
 # ---------------------------------------------------------------------------
@@ -105,7 +103,7 @@ def list_variants(model_dir: str | os.PathLike) -> List[VariantInfo]:
 
     # No extra axes — single uniform grid
     if not extra_cols:
-        return [_variant_from_rows(df, {}, model_dir / "flux_cube.bin", df, model_dir)]
+        return [_variant_from_rows(df, {}, model_dir / "flux_cube.bin", model_dir)]
 
     # No fluxcube_library — model was built without variant cubes; fall back to master cube
     if not library_dir.exists():
@@ -120,7 +118,7 @@ def list_variants(model_dir: str | os.PathLike) -> List[VariantInfo]:
             f"all extra-axis variants ({axes_list})."
         )
         print("  To get per-variant cubes, run 'sed-tools rebuild' on this spectral grid.")
-        return [_variant_from_rows(df, {}, master_cube, df, model_dir)]
+        return [_variant_from_rows(df, {}, master_cube, model_dir)]
 
     # Group by unique combination of extra-axis values
     variants: List[VariantInfo] = []
@@ -133,7 +131,7 @@ def list_variants(model_dir: str | os.PathLike) -> List[VariantInfo]:
         label = "__".join(f"{k}_{v}" for k, v in axes.items())
 
         cube_path = _find_variant_cube(library_dir, label)
-        variants.append(_variant_from_rows(rows.reset_index(drop=True), axes, cube_path, df, model_dir))
+        variants.append(_variant_from_rows(rows.reset_index(drop=True), axes, cube_path, model_dir))
 
     return variants
 
@@ -157,28 +155,16 @@ def _find_variant_cube(library_dir: Path, label: str) -> Path:
 
 
 def _read_cube_header(path: Path) -> dict:
-    """Read grid axes from a binary flux cube header."""
+    """Grid axes from a flux cube's header, or {} if the cube has not been built."""
     if not path.exists():
         return {}
-    try:
-        with open(path, "rb") as fh:
-            header = fh.read(16)
-            nt, nl, nm, nw = struct.unpack("4i", header)
-            teff = np.fromfile(fh, dtype=np.float64, count=nt)
-            logg = np.fromfile(fh, dtype=np.float64, count=nl)
-            meta = np.fromfile(fh, dtype=np.float64, count=nm)
-            wave = np.fromfile(fh, dtype=np.float64, count=nw)
-        return {"teff": teff, "logg": logg, "meta": meta, "wave": wave}
-    except Exception:
-        logger.debug("Could not read flux cube header from %s", path, exc_info=True)
-        return {}
+    return _read_flux_cube_header(path)
 
 
 def _variant_from_rows(
     rows: pd.DataFrame,
     axes: Dict[str, str],
     cube_path: Path,
-    _full_df: pd.DataFrame,
     model_dir: Path,
 ) -> VariantInfo:
     """Build a :class:`VariantInfo` from a subset of lookup-table rows."""
@@ -199,9 +185,9 @@ def _variant_from_rows(
     # Wavelength range and point count come from the flux cube header
     hdr = _read_cube_header(cube_path)
     if hdr:
-        wave_min = float(hdr["wave"][0])
-        wave_max = float(hdr["wave"][-1])
-        wave_n   = len(hdr["wave"])
+        wave_min = float(hdr["wavelengths"][0])
+        wave_max = float(hdr["wavelengths"][-1])
+        wave_n   = len(hdr["wavelengths"])
     else:
         wave_min = wave_max = float("nan")
         wave_n = 0
@@ -223,6 +209,12 @@ def _variant_from_rows(
 # ---------------------------------------------------------------------------
 # Display
 # ---------------------------------------------------------------------------
+
+def _fmt_range(lo: float, hi: float, n: int, decimals: int) -> str:
+    if np.isnan(lo):
+        return "n/a"
+    return f"{lo:.{decimals}f} – {hi:.{decimals}f}  ({n}pt)"
+
 
 def print_variant_table(variants: List[VariantInfo], model_name: str = "") -> None:
     """Print a formatted table of all variants to stdout."""
@@ -249,23 +241,10 @@ def print_variant_table(variants: List[VariantInfo], model_name: str = "") -> No
     print("-" * 90)
 
     for i, v in enumerate(variants, start=1):
-        def fmt_range(lo, hi, n):
-            if np.isnan(lo):
-                return "n/a"
-            return f"{lo:.0f} – {hi:.0f}  ({n}pt)"
-
-        def fmt_range_f(lo, hi, n):
-            if np.isnan(lo):
-                return "n/a"
-            return f"{lo:.2f} – {hi:.2f}  ({n}pt)"
-
-        teff_s = fmt_range(v.teff_min, v.teff_max, v.teff_n)
-        logg_s = fmt_range_f(v.logg_min, v.logg_max, v.logg_n)
-        meta_s = fmt_range_f(v.meta_min, v.meta_max, v.meta_n)
-        wave_s = (
-            f"{v.wavelength_min:.0f} – {v.wavelength_max:.0f}  ({v.wavelength_n}pt)"
-            if not np.isnan(v.wavelength_min) else "n/a"
-        )
+        teff_s = _fmt_range(v.teff_min, v.teff_max, v.teff_n, 0)
+        logg_s = _fmt_range(v.logg_min, v.logg_max, v.logg_n, 2)
+        meta_s = _fmt_range(v.meta_min, v.meta_max, v.meta_n, 2)
+        wave_s = _fmt_range(v.wavelength_min, v.wavelength_max, v.wavelength_n, 0)
 
         # Extra axes inline annotation
         axes_str = "  ".join(f"{k}={val}" for k, val in v.extra_axes.items())
@@ -315,6 +294,9 @@ def export_variant(
     Returns
     -------
     Path to the created output directory.
+
+    Raises ``FileNotFoundError``, before writing anything, if any of the
+    variant's spectra is missing from the source directory.
     """
     out = Path(output_dir)
     src = variant.source_model_dir
@@ -325,9 +307,6 @@ def export_variant(
             f"Pass overwrite=True or choose a different name."
         )
 
-    out.mkdir(parents=True, exist_ok=True)
-
-    # 1. Copy .txt spectrum files for this variant
     file_col = next(
         (c for c in variant.lookup_rows.columns if c.lower() == "file_name"), None
     )
@@ -335,20 +314,21 @@ def export_variant(
         raise KeyError("lookup_rows has no 'file_name' column — cannot locate spectra.")
 
     filenames = variant.lookup_rows[file_col].dropna().tolist()
-    print(f"  Copying {len(filenames)} spectrum files...")
-    n_copied = 0
-    n_missing = 0
-    for fname in filenames:
-        src_file = src / fname
-        if not src_file.exists():
-            n_missing += 1
-            continue
-        shutil.copy2(src_file, out / fname)
-        n_copied += 1
+    missing = [fname for fname in filenames if not (src / fname).exists()]
+    if missing:
+        raise FileNotFoundError(
+            f"{len(missing)} spectra of variant '{variant.label}' are missing from {src}; "
+            "nothing was exported. Restore them or rebuild the grid:\n  "
+            + "\n  ".join(missing)
+        )
 
-    if n_missing:
-        print(f"  Warning: {n_missing} spectrum file(s) not found in {src} — skipped.")
-    print(f"  Copied {n_copied}/{len(filenames)} spectrum files.")
+    out.mkdir(parents=True, exist_ok=True)
+
+    # 1. Copy .txt spectrum files for this variant
+    print(f"  Copying {len(filenames)} spectrum files...")
+    for fname in filenames:
+        shutil.copy2(src / fname, out / fname)
+    print(f"  Copied {len(filenames)} spectrum files.")
 
     # 2. Filtered lookup table
     dest_lookup = out / "lookup_table.csv"
@@ -362,8 +342,8 @@ def export_variant(
 
     # 4. Summary
     print(f"\n  Done. MESA-ready folder: {out}")
-    print(f"    {n_copied} spectra  |  lookup_table.csv  |  flux_cube.bin")
-    print(f"\n  To use in MESA:")
+    print(f"    {len(filenames)} spectra  |  lookup_table.csv  |  flux_cube.bin")
+    print("\n  To use in MESA:")
     print(f"    stellar_atm = '{out}/'")
 
     return out
@@ -373,54 +353,58 @@ def export_variant(
 # Interactive CLI flow
 # ---------------------------------------------------------------------------
 
-def run_interactive(base_dir: str = None, model=None, output=None):
+def _choose_grid(base_path: Path) -> str | None:
+    """Prompt for one of the spectral grids in *base_path*; None if there is none to pick."""
+    available = sorted(
+        d.name for d in base_path.iterdir()
+        if d.is_dir() and (d / "lookup_table.csv").exists()
+    )
+    if not available:
+        print(f"No spectral grids found in {base_path}. Run 'sed-tools grids' first.")
+        return None
 
+    print("\nAvailable spectral grids:")
+    for i, name in enumerate(available, 1):
+        print(f"  [{i}] {name}")
+    raw = input("\nSelect spectral grid number (or type name): ").strip()
+
+    if raw.isdigit() and 1 <= int(raw) <= len(available):
+        return available[int(raw) - 1]
+    if raw in available:
+        return raw
+    print(f"Invalid selection: {raw}")
+    return None
+
+
+def _choose_variant(variants: List[VariantInfo]) -> VariantInfo | None:
+    raw = input("\nSelect variant number: ").strip()
+    if not raw.isdigit() or not (1 <= int(raw) <= len(variants)):
+        print(f"Invalid selection: {raw}")
+        return None
+    return variants[int(raw) - 1]
+
+
+def run_interactive(base_dir: str = None, model=None, output=None):
     """
     Interactive MESA-prepare workflow.
 
     Prompts the user to pick a spectral grid (if not supplied), lists its variants,
-    lets the user select one, and exports it to a clean folder.
+    lets the user select one, and exports it to a clean folder. Exits with an
+    error message if the grid's lookup table or flux cube is missing.
     """
-
-    if base_dir is None:
-        from .models import STELLAR_DIR_DEFAULT
-        base_dir = str(STELLAR_DIR_DEFAULT)
-
-    base_path = Path(base_dir)
-
-    # --- Step 1: pick model ---
+    base_path = Path(base_dir if base_dir is not None else STELLAR_DIR_DEFAULT)
 
     if model is None:
-        available = sorted(
-            d.name for d in base_path.iterdir()
-            if d.is_dir() and (d / "lookup_table.csv").exists()
-        )
-        if not available:
-            print(f"No spectral grids found in {base_path}. Run 'sed-tools grids' first.")
-            return
-
-        print("\nAvailable spectral grids:")
-        for i, name in enumerate(available, 1):
-            print(f"  [{i}] {name}")
-        raw = input("\nSelect spectral grid number (or type name): ").strip()
-
-        if raw.isdigit() and 1 <= int(raw) <= len(available):
-            model = available[int(raw) - 1]
-        elif raw in available:
-            model = raw
-        else:
-            print(f"Invalid selection: {raw}")
+        model = _choose_grid(base_path)
+        if model is None:
             return
 
     model_dir = base_path / model
-
-    # --- Step 2: discover variants ---
     print(f"\nScanning {model_dir} for sub-variants...")
     try:
         variants = list_variants(model_dir)
     except FileNotFoundError as exc:
-        print(f"Error: {exc}")
-        return
+        raise SystemExit(f"Error: {exc}") from exc
 
     if len(variants) == 1 and not variants[0].extra_axes:
         print("This spectral grid has no extra-axis variants — it is a single uniform grid.")
@@ -428,19 +412,14 @@ def run_interactive(base_dir: str = None, model=None, output=None):
         return
 
     print_variant_table(variants, model_name=model)
-
-    # --- Step 3: user selects a variant ---
-    raw = input("\nSelect variant number: ").strip()
-    if not raw.isdigit() or not (1 <= int(raw) <= len(variants)):
-        print(f"Invalid selection: {raw}")
+    chosen = _choose_variant(variants)
+    if chosen is None:
         return
-    chosen = variants[int(raw) - 1]
 
     print(f"\nSelected: {chosen.label}")
     for k, v in chosen.extra_axes.items():
         print(f"  {k} = {v}")
 
-    # --- Step 4: determine output directory ---
     if output is None:
         default_name = f"{model}__{chosen.label}"
         raw_out = input(
@@ -448,7 +427,6 @@ def run_interactive(base_dir: str = None, model=None, output=None):
         ).strip()
         output = raw_out if raw_out else str(base_path / default_name)
 
-    # --- Step 5: export ---
     print(f"\nExporting variant to {output}...")
     try:
         export_variant(chosen, output_dir=output)
