@@ -8,8 +8,7 @@ import logging
 import os
 import shutil
 import struct
-
-logger = logging.getLogger(__name__)
+from collections import Counter
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -21,7 +20,7 @@ from tqdm import tqdm
 from ._resample import resample_to_grid
 from .spectrum_io import read_text_spectrum
 
-SIGMA = 5.670374419e-5  # Stefan-Boltzmann constant (erg s-1 cm-2 K-4)
+logger = logging.getLogger(__name__)
 
 
 def find_stellar_models(base_dir=None):
@@ -45,10 +44,9 @@ def select_models_interactive(model_dirs):
     for idx, (name, path) in enumerate(model_dirs, start=1):
         lookup_file = os.path.join(path, "lookup_table.csv")
         try:
-            df = pd.read_csv(lookup_file, comment="#")
-            n_models = len(df)
-        except Exception:
-            n_models = "?"
+            n_models = len(pd.read_csv(lookup_file, comment="#"))
+        except (OSError, pd.errors.ParserError, pd.errors.EmptyDataError, UnicodeDecodeError):
+            n_models = "?"  # only the menu count; loading the grid reports the problem
         print(f"{idx}. {name} ({n_models} model spectra)")
 
     print("\nEnter spectral grid numbers (comma-separated) or 'all':")
@@ -59,10 +57,10 @@ def select_models_interactive(model_dirs):
 
     try:
         indices = [int(x.strip()) - 1 for x in user_input.split(",")]
-        return [model_dirs[i] for i in indices if 0 <= i < len(model_dirs)]
-    except (ValueError, IndexError):
+    except ValueError:
         print("Invalid input. Using all spectral grids.")
         return model_dirs
+    return [model_dirs[i] for i in indices if 0 <= i < len(model_dirs)]
 
 
 def load_model_data(model_path):
@@ -105,8 +103,14 @@ def load_sed(filepath):
 def prepare_sed(filepath, teff):
     """Load a spectrum. Spectra are expected to already be in standard units
     (wavelength in Angstroms, flux in erg/cm²/s/Å) via spectra_cleaner.py.
-    No renormalization is applied here."""
+    No renormalization is applied here.
+
+    Raises ValueError if the file gives fewer than two readable points.
+    """
     wl, flux = load_sed(filepath)
+    if wl.size < 2:
+        raise ValueError(f"{filepath}: fewer than 2 readable wavelength/flux rows "
+                         "(missing, empty or not a spectrum)")
     return wl, flux
 
 
@@ -148,20 +152,25 @@ def create_common_wavelength_grid(all_models_data, sample_size=20):
 
         for idx in indices:
             filepath = os.path.join(model_data["model_dir"], model_data["files"][idx])
-            try:
-                wavelengths, _ = load_sed(filepath)
-                if len(wavelengths) > 10:
-                    mask = (wavelengths >= 3000) & (wavelengths <= 25000)
-                    if mask.sum() > 10:
-                        wl_subset = wavelengths[mask]
-                        min_wave = min(min_wave, wl_subset.min())
-                        max_wave = max(max_wave, wl_subset.max())
-                        resolutions.append(np.median(np.diff(wl_subset)))
-            except Exception:
-                logger.debug("Could not load SED for wavelength grid sampling: %s", filepath, exc_info=True)
+            wavelengths, _ = load_sed(filepath)
+            if len(wavelengths) <= 10:
                 continue
+            mask = (wavelengths >= 3000) & (wavelengths <= 25000)
+            if mask.sum() <= 10:
+                continue
+            wl_subset = wavelengths[mask]
+            min_wave = min(min_wave, wl_subset.min())
+            max_wave = max(max_wave, wl_subset.max())
+            resolutions.append(np.median(np.diff(wl_subset)))
 
-    typical_resolution = np.median(resolutions) if resolutions else 50.0
+    if not resolutions:
+        names = ", ".join(os.path.basename(d["model_dir"]) for d in all_models_data)
+        raise ValueError(
+            f"No sampled spectrum from {names} has more than 10 points between 3000 and "
+            "25000 Å, so no common wavelength grid can be built. Check that the spectra "
+            "are readable and in Angstrom (run the spectra cleaner on each grid)."
+        )
+    typical_resolution = np.median(resolutions)
     grid_resolution = max(50.0, typical_resolution * 2)
     n_points = min(int((max_wave - min_wave) / grid_resolution) + 1, 5000)
     wavelength_grid = np.linspace(min_wave, max_wave, n_points)
@@ -183,10 +192,21 @@ def identify_reference_model(all_models_data):
 
 
 def compute_normalization_factors(target_data, reference_data, wavelength_grid):
-    """Compute normalization factors to match target SEDs to reference spectral grid."""
-    print(f"  Normalizing to: {os.path.basename(reference_data['model_dir'])}")
+    """Compute normalization factors to match target SEDs to reference spectral grid.
+
+    Each target spectrum is scaled to its nearest reference spectrum in
+    (Teff, log g, [M/H]) over their common wavelength range. Where no
+    comparison is possible the factor is 1 (native scale kept) and a warning
+    says how many spectra that affected. Raises ValueError listing every
+    target spectrum that cannot be read or has non-finite parameters.
+    """
+    target_name = os.path.basename(target_data["model_dir"])
+    ref_name = os.path.basename(reference_data["model_dir"])
+    print(f"  Normalizing to: {ref_name}")
 
     if len(reference_data["files"]) == 0:
+        logger.warning("Reference grid %s has no spectra; %s keeps its native flux scale.",
+                       ref_name, target_name)
         return np.ones(len(target_data["files"]))
 
     # Build reference parameter array
@@ -201,6 +221,8 @@ def compute_normalization_factors(target_data, reference_data, wavelength_grid):
     ref_teff = np.array(reference_data["teff"])[valid_mask]
 
     if len(ref_params) == 0:
+        logger.warning("Reference grid %s has no spectra with finite parameters; "
+                       "%s keeps its native flux scale.", ref_name, target_name)
         return np.ones(len(target_data["files"]))
 
     # Normalize parameters for distance calculation
@@ -210,59 +232,81 @@ def compute_normalization_factors(target_data, reference_data, wavelength_grid):
 
     tree = KDTree(ref_params_norm)
     norm_factors = []
+    failures = []
+    kept_native = Counter()
 
-    for i, (file, teff, logg, meta) in enumerate(zip(
+    for file, teff, logg, meta in zip(
         target_data["files"], target_data["teff"],
         target_data["logg"], target_data["meta"]
-    )):
+    ):
+        file_target = os.path.join(target_data["model_dir"], file)
         if not all(np.isfinite([teff, logg, meta])):
-            norm_factors.append(1.0)
+            failures.append(f"{file_target}: non-finite parameters "
+                            f"(teff={teff}, logg={logg}, meta={meta})")
             continue
 
         # Normalize query point
         query = np.array([teff, logg, meta])
         query_norm = (query - ref_params.min(axis=0)) / ranges
-
         _, idx = tree.query(query_norm)
-
-        # Load and compare SEDs
-        file_target = os.path.join(target_data["model_dir"], file)
         file_ref = os.path.join(reference_data["model_dir"], ref_files[idx])
 
         try:
-            wl_tgt, flux_tgt = prepare_sed(file_target, teff)
-            wl_ref, flux_ref = prepare_sed(file_ref, ref_teff[idx])
+            factor, reason = _normalization_factor(file_target, teff, file_ref, ref_teff[idx],
+                                                   wavelength_grid)
+        except ValueError as exc:  # unreadable target or reference spectrum
+            failures.append(str(exc))
+            continue
+        if reason:
+            kept_native[reason] += 1
+        elif not (0.01 < factor < 100):
+            print(f"  Warning: large normalization factor {factor:.3e} for {file} "
+                  f"(teff={teff:.0f}, logg={logg:.2f}, [M/H]={meta:.2f}) — check unit consistency")
+        norm_factors.append(factor)
 
-            # Find common wavelength range
-            wl_min = max(wl_tgt.min(), wl_ref.min(), wavelength_grid.min())
-            wl_max = min(wl_tgt.max(), wl_ref.max(), wavelength_grid.max())
-            mask = (wavelength_grid >= wl_min) & (wavelength_grid <= wl_max)
-
-            if mask.sum() < 100:
-                norm_factors.append(1.0)
-                continue
-
-            wl_common = wavelength_grid[mask]
-            interp_tgt = interp1d(wl_tgt, flux_tgt, bounds_error=False, fill_value=0)
-            interp_ref = interp1d(wl_ref, flux_ref, bounds_error=False, fill_value=0)
-
-            F_tgt = np.trapezoid(interp_tgt(wl_common), wl_common)
-            F_ref = np.trapezoid(interp_ref(wl_common), wl_common)
-
-            factor = F_ref / F_tgt if F_tgt > 0 else 1.0
-            if not (0.01 < factor < 100):
-                print(f"  Warning: large normalization factor {factor:.3e} for {file} "
-                      f"(teff={teff:.0f}, logg={logg:.2f}, [M/H]={meta:.2f}) — check unit consistency")
-            norm_factors.append(factor)
-
-        except Exception:
-            norm_factors.append(1.0)
-
+    if failures:
+        raise ValueError(
+            f"Cannot normalise {len(failures)} spectra of {target_name} to {ref_name}; "
+            "fix them or remove their rows from the lookup table:\n  " + "\n  ".join(failures)
+        )
+    for reason, count in kept_native.items():
+        logger.warning("%d spectra of %s keep their native flux scale (not normalised to %s): %s.",
+                       count, target_name, ref_name, reason)
     return np.array(norm_factors)
 
 
+def _normalization_factor(file_target, teff, file_ref, ref_teff, wavelength_grid):
+    """Ratio of reference to target integrated flux over their common wavelength range.
+
+    Returns (factor, None), or (1.0, reason) when the two cannot be compared.
+    """
+    wl_tgt, flux_tgt = prepare_sed(file_target, teff)
+    wl_ref, flux_ref = prepare_sed(file_ref, ref_teff)
+
+    # Find common wavelength range
+    wl_min = max(wl_tgt.min(), wl_ref.min(), wavelength_grid.min())
+    wl_max = min(wl_tgt.max(), wl_ref.max(), wavelength_grid.max())
+    mask = (wavelength_grid >= wl_min) & (wavelength_grid <= wl_max)
+    if mask.sum() < 100:
+        return 1.0, "fewer than 100 common wavelength points"
+
+    wl_common = wavelength_grid[mask]
+    interp_tgt = interp1d(wl_tgt, flux_tgt, bounds_error=False, fill_value=0)
+    interp_ref = interp1d(wl_ref, flux_ref, bounds_error=False, fill_value=0)
+
+    F_tgt = np.trapezoid(interp_tgt(wl_common), wl_common)
+    F_ref = np.trapezoid(interp_ref(wl_common), wl_common)
+    if not F_tgt > 0:
+        return 1.0, "no positive target flux over the common range"
+    return F_ref / F_tgt, None
+
+
 def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, wavelength_grid):
-    """Build the combined flux cube from all spectral grids."""
+    """Build the combined flux cube from all spectral grids.
+
+    Raises ValueError, before anything is written, listing every spectrum that
+    cannot be read or has non-finite parameters.
+    """
     n_teff, n_logg, n_meta, n_lambda = len(teff_grid), len(logg_grid), len(meta_grid), len(wavelength_grid)
 
     flux_cube = np.zeros((n_teff, n_logg, n_meta, n_lambda))
@@ -285,7 +329,8 @@ def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, w
                 model_data, ref_data, wavelength_grid
             )
 
-    # Fill the cube
+    # Fill the cube; later grids overwrite earlier ones at shared nodes
+    failures = []
     for model_idx, model_data in enumerate(all_models_data):
         model_name = os.path.basename(model_data["model_dir"])
         print(f"\nProcessing {model_name}...")
@@ -295,23 +340,30 @@ def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, w
                 model_data["logg"], model_data["meta"]),
             total=len(model_data["files"]), desc=f"Spectral grid {model_idx + 1}"
         )):
-            i_teff = int(np.argmin(np.abs(teff_grid - teff)))
-            i_logg = int(np.argmin(np.abs(logg_grid - logg)))
-            i_meta = int(np.argmin(np.abs(meta_grid - meta)))
-
             filepath = os.path.join(model_data["model_dir"], file)
-            try:
-                
-                wl, fl = prepare_sed(filepath, teff)
-                fl *= norm_factors[model_idx][i]
-
-                flux_cube[i_teff, i_logg, i_meta, :] = resample_to_grid(wl, fl, teff, wavelength_grid)
-
-                filled_map[i_teff, i_logg, i_meta] = True
-                source_map[i_teff, i_logg, i_meta] = model_idx
-            except Exception:
-                logger.debug("Could not load SED into flux cube: %s", filepath, exc_info=True)
+            if not all(np.isfinite([teff, logg, meta])):
+                failures.append(f"{filepath}: non-finite parameters "
+                                f"(teff={teff}, logg={logg}, meta={meta})")
                 continue
+            try:
+                wl, fl = prepare_sed(filepath, teff)
+            except ValueError as exc:
+                failures.append(str(exc))
+                continue
+            fl *= norm_factors[model_idx][i]
+
+            node = (int(np.argmin(np.abs(teff_grid - teff))),
+                    int(np.argmin(np.abs(logg_grid - logg))),
+                    int(np.argmin(np.abs(meta_grid - meta))))
+            flux_cube[node] = resample_to_grid(wl, fl, teff, wavelength_grid)
+            filled_map[node] = True
+            source_map[node] = model_idx
+
+    if failures:
+        raise ValueError(
+            f"Cannot place {len(failures)} spectra in the combined cube; nothing was written. "
+            "Fix them or remove their rows from the lookup table:\n  " + "\n  ".join(failures)
+        )
 
     # Fill gaps with nearest neighbor
     empty_count = np.sum(~filled_map)
@@ -354,7 +406,11 @@ def _fill_gaps(flux_cube, filled_map, source_map, teff_grid, logg_grid, meta_gri
 
 def save_combined_data(output_dir, teff_grid, logg_grid, meta_grid,
                        wavelength_grid, flux_cube, all_models_data):
-    """Save the combined data and create unified lookup table."""
+    """Save the combined data and create unified lookup table.
+
+    A spectrum already present in output_dir under its new name is not copied
+    again. Raises OSError after writing the lookup table if any copy failed.
+    """
     os.makedirs(output_dir, exist_ok=True)
 
     # Save binary flux cube (transposed for Fortran compatibility)
@@ -375,6 +431,7 @@ def save_combined_data(output_dir, teff_grid, logg_grid, meta_grid,
     print("\nCopying SED files...")
     lookup_data = []
     file_counter = 0
+    copy_failures = []
 
     for model_data in tqdm(all_models_data, desc="Copying"):
         model_name = os.path.basename(model_data["model_dir"])
@@ -394,11 +451,11 @@ def save_combined_data(output_dir, teff_grid, logg_grid, meta_grid,
 
             src_path = os.path.join(model_data["model_dir"], orig_file)
             dst_path = os.path.join(output_dir, new_filename)
-            if os.path.exists(src_path) and not os.path.exists(dst_path):
+            if not os.path.exists(dst_path):
                 try:
                     shutil.copy2(src_path, dst_path)
-                except Exception as e:
-                    print(f"\nWarning: Could not copy {src_path}: {e}")
+                except OSError as exc:
+                    copy_failures.append(f"{src_path}: {exc}")
 
             file_counter += 1
 
@@ -412,9 +469,53 @@ def save_combined_data(output_dir, teff_grid, logg_grid, meta_grid,
     print(f"Saved lookup table: {lookup_file}")
     print(f"Total model spectra: {len(lookup_df)}")
 
+    if copy_failures:
+        raise OSError(
+            f"Could not copy {len(copy_failures)} spectra into {output_dir}; its lookup table "
+            "lists them but the files are missing. Fix the cause and run the combine again "
+            "(copies already made are kept):\n  " + "\n  ".join(copy_failures)
+        )
     return lookup_df
 
 
+
+
+def _nearest_idx(arr, val):
+    return int(np.argmin(np.abs(arr - val)))
+
+
+def _plot_meta_index(meta_grid):
+    """[M/H] index to plot: the one nearest 0 if the grid spans 0, else the middle."""
+    if meta_grid.min() <= 0.0 <= meta_grid.max():
+        return _nearest_idx(meta_grid, 0.0)
+    return len(meta_grid) // 2
+
+
+def _sed_sample_points(teff_grid, logg_grid, meta_grid, meta_idx, flux_cube, source_map,
+                       model_names):
+    """Up to 15 nodes (5 Teff x 3 log g quantiles) at meta_idx that have positive flux."""
+    teff_samples = np.unique(
+        teff_grid[np.round(np.linspace(0, len(teff_grid) - 1, 5)).astype(int)]
+    )
+    logg_samples = np.unique(
+        logg_grid[np.round(np.linspace(0, len(logg_grid) - 1, 3)).astype(int)]
+    )
+
+    sample_points = []
+    for t_val in teff_samples:
+        for g_val in logg_samples:
+            ti = _nearest_idx(teff_grid, t_val)
+            gi = _nearest_idx(logg_grid, g_val)
+            flux = flux_cube[ti, gi, meta_idx, :]
+            if not np.any(flux > 0):
+                continue
+            src_idx = int(source_map[ti, gi, meta_idx])
+            src_name = model_names[src_idx] if 0 <= src_idx < len(model_names) else "unknown"
+            sample_points.append((
+                teff_grid[ti], logg_grid[gi], meta_grid[meta_idx],
+                flux, src_name, src_idx
+            ))
+    return sample_points
 
 
 def plot_sed_samples(teff_grid, logg_grid, meta_grid, wavelength_grid,
@@ -428,38 +529,9 @@ def plot_sed_samples(teff_grid, logg_grid, meta_grid, wavelength_grid,
     model_names = [os.path.basename(d["model_dir"]) for d in all_models_data]
     cmap_colors = plt.cm.tab10(np.linspace(0, 1, max(len(model_names), 1)))
 
-    def nearest_idx(arr, val):
-        return int(np.argmin(np.abs(arr - val)))
-
-    # Median metallicity index (prefer [M/H]=0, else midpoint)
-    if meta_grid.min() <= 0.0 <= meta_grid.max():
-        meta_idx = nearest_idx(meta_grid, 0.0)
-    else:
-        meta_idx = len(meta_grid) // 2
-
-    # Sample Teff at 5 quantiles, logg at 3 quantiles → up to 15 candidates
-    teff_samples = np.unique(
-        teff_grid[np.round(np.linspace(0, len(teff_grid) - 1, 5)).astype(int)]
-    )
-    logg_samples = np.unique(
-        logg_grid[np.round(np.linspace(0, len(logg_grid) - 1, 3)).astype(int)]
-    )
-
-    sample_points = []
-    for t_val in teff_samples:
-        for g_val in logg_samples:
-            ti = nearest_idx(teff_grid, t_val)
-            gi = nearest_idx(logg_grid, g_val)
-            flux = flux_cube[ti, gi, meta_idx, :]
-            if not np.any(flux > 0):
-                continue
-            src_idx = int(source_map[ti, gi, meta_idx])
-            src_name = model_names[src_idx] if 0 <= src_idx < len(model_names) else "unknown"
-            sample_points.append((
-                teff_grid[ti], logg_grid[gi], meta_grid[meta_idx],
-                flux, src_name, src_idx
-            ))
-
+    meta_idx = _plot_meta_index(meta_grid)
+    sample_points = _sed_sample_points(teff_grid, logg_grid, meta_grid, meta_idx,
+                                       flux_cube, source_map, model_names)
     if not sample_points:
         print("  Warning: no valid SED samples found — skipping sed_samples.png")
         return
@@ -565,7 +637,15 @@ def visualize_parameter_space(teff_grid, logg_grid, meta_grid, source_map,
     plt.savefig(plot_file, dpi=150, bbox_inches="tight")
     print(f"Saved: {plot_file}")
 
-    # Print summary
+    _print_combination_summary(teff_grid, logg_grid, meta_grid, source_map, model_names)
+
+    if wavelength_grid is not None and flux_cube is not None:
+        plot_sed_samples(teff_grid, logg_grid, meta_grid, wavelength_grid,
+                         flux_cube, source_map, all_models_data, output_dir)
+
+
+def _print_combination_summary(teff_grid, logg_grid, meta_grid, source_map, model_names):
+    """Print the combined grid's extent and each source grid's share of its nodes."""
     print("\n" + "=" * 60)
     print("SUMMARY")
     print("=" * 60)
@@ -578,10 +658,6 @@ def visualize_parameter_space(teff_grid, logg_grid, meta_grid, source_map,
     for idx, name in enumerate(model_names):
         n = np.sum(source_map == idx)
         print(f"  {name}: {n:,} ({100 * n / source_map.size:.1f}%)")
-
-    if wavelength_grid is not None and flux_cube is not None:
-        plot_sed_samples(teff_grid, logg_grid, meta_grid, wavelength_grid,
-                         flux_cube, source_map, all_models_data, output_dir)
 
 
 
