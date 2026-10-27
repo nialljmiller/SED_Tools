@@ -10,11 +10,10 @@ own site, and saves the manifest.
 from __future__ import annotations
 
 import gzip
-import io
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Callable, Dict, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import Callable, Dict, Mapping, Optional, Sequence, Tuple, Union
 
 import numpy as np
 

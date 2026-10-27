@@ -29,7 +29,7 @@ from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Uni
 import numpy as np
 
 from ..filter_components import FILTER, OPTICS, QE, InstrumentManifest, add_component
-from ..filter_metadata import PHOTON, SOURCE_SVO, SVOMetadataClient, svo_components_header, write_filter_file
+from ..filter_metadata import PHOTON, SVOMetadataClient
 
 logger = logging.getLogger(__name__)
 
@@ -211,10 +211,12 @@ def build(
     svo_client: Optional[SVOMetadataClient] = None,
     tables: Optional[SynphotTables] = None,
 ) -> List[Path]:
-    """Populate components for the HST imagers in :data:`MODES`."""
+    """Populate components for the HST imagers in :data:`MODES`.
+
+    ``svo_client`` is accepted for compatibility and is not used.
+    """
     filter_root = Path(filter_root)
     tables = tables or SynphotTables(session=session)
-    svo_client = svo_client or SVOMetadataClient()
     built = []
     for inst in instruments or MODES:
         prefix = MODES[inst]
