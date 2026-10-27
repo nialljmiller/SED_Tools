@@ -216,17 +216,18 @@ def load_two_column_file(path: str) -> Tuple[List[float], List[float], Dict[str,
 
 
 def get_metadata_float(metadata: Dict[str, object], keys: Sequence[str]) -> float | None:
+    """The value of the first of *keys* present in *metadata*, or None if none is.
+
+    Raises ValueError if that value is not a number.
+    """
     for key in keys:
         if key not in metadata:
             continue
         value = metadata[key]
-        if isinstance(value, (int, float)):
+        try:
             return float(value)
-        if isinstance(value, str):
-            try:
-                return float(value)
-            except ValueError:
-                continue
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"metadata {key} = {value!r} is not a number") from exc
     return None
 
 try:

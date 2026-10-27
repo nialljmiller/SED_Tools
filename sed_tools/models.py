@@ -5,8 +5,7 @@ import os
 import struct
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import (Dict, Iterable, Iterator, List, Mapping, Optional,
-                    Sequence, Tuple, Union)
+from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
@@ -15,6 +14,7 @@ from ._flux import (AB_ZERO_FLUX, FILTER_EXTENSIONS, VEGA_ZP_KEYS, FilterCurve,
                     FluxCube, Spectrum, band_average_flux_lambda,
                     band_average_flux_lambda_from_arrays, band_average_flux_nu,
                     load_filter_curve, load_spectrum)
+from .flux_cube_tool import get_metadata_float
 
 Number = Union[int, float, np.floating]
 FilterSpec = Union[str, os.PathLike[str], FilterCurve, Tuple[str, Union[str, os.PathLike[str]]]]
@@ -174,7 +174,10 @@ class EvaluatedSED:
 
 
 def _vega_zero_point(curve: FilterCurve, vega_curve: Optional[Spectrum]) -> float:
-    metadata_value = _extract_metadata_float(curve.metadata, VEGA_ZP_KEYS)
+    try:
+        metadata_value = get_metadata_float(curve.metadata, VEGA_ZP_KEYS)
+    except ValueError as exc:
+        raise ValueError(f"Filter '{curve.name}': {exc}") from exc
     if metadata_value is not None:
         return float(metadata_value)
     if vega_curve is None:
@@ -194,23 +197,13 @@ def _vega_zero_point(curve: FilterCurve, vega_curve: Optional[Spectrum]) -> floa
     )
 
 
-def _extract_metadata_float(metadata: Mapping[str, object], keys: Iterable[str]) -> Optional[float]:
-    for key in keys:
-        if key not in metadata:
-            continue
-        value = metadata[key]
-        if isinstance(value, (int, float)):
-            return float(value)
-        if isinstance(value, str):
-            try:
-                return float(value)
-            except ValueError:
-                continue
-    return None
-
-
 class SEDModel:
-    """Thin wrapper around a flux cube providing interpolation utilities."""
+    """Thin wrapper around a flux cube providing interpolation utilities.
+
+    With ``fill_gaps=True`` (the default) a requested Teff, logg or [M/H]
+    outside the grid is clamped to the nearest grid edge; with ``False`` it
+    raises ValueError.
+    """
 
     def __init__(
         self,
@@ -764,9 +757,7 @@ def _build_filter_index(root: Union[str, os.PathLike[str]]) -> Dict[str, List[Pa
 
 def _normalize_filter_sequence(filters: Sequence[FilterSpec]) -> List[FilterSpec]:
     if len(filters) == 1 and isinstance(filters[0], (list, tuple, set)):
-        inner = filters[0]
-        if isinstance(inner, (list, tuple, set)):
-            return list(inner)  # type: ignore[return-value]
+        return list(filters[0])  # type: ignore[return-value]
     return list(filters)
 
 

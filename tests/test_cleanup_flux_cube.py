@@ -229,3 +229,45 @@ def test_run_interactive_exits_non_zero_when_the_grid_has_no_lookup(tmp_path):
     with pytest.raises(SystemExit) as excinfo:
         mesa_prepare.run_interactive(base_dir=str(tmp_path), model="Empty", output=str(tmp_path / "out"))
     assert "lookup_table.csv not found" in str(excinfo.value.code)
+
+
+# ---------------------------------------------------------------- Vega zero points
+
+def _evaluated_sed(tmp_path):
+    from sed_tools.models import SEDModel
+
+    model = _simple_grid(tmp_path / "grid")
+    pcf.precompute_flux_cube(str(model), str(model / "flux_cube.bin"))
+    return SEDModel(name="grid", flux_cube_path=model / "flux_cube.bin")(5500.0, 4.25, 0.0)
+
+
+def _filter_file(path, header_lines=()):
+    lines = list(header_lines) + [f"{w:.1f} {t}" for w, t in
+                                  [(3000.0, 0.0), (4000.0, 1.0), (5000.0, 1.0), (6000.0, 0.0)]]
+    path.write_text("\n".join(lines) + "\n")
+    return str(path)
+
+
+def test_non_numeric_vega_zero_point_in_a_filter_file_raises(tmp_path):
+    # It used to be skipped, so the magnitude silently came from the Vega spectrum instead.
+    sed = _evaluated_sed(tmp_path)
+    band = _filter_file(tmp_path / "Band.dat", ["# zp_vega = 3.6e-9 erg/s/cm2/A", "# WavelengthUnit = Angstrom"])
+    vega = _filter_file(tmp_path / "vega.dat", ["# WavelengthUnit = Angstrom"])
+    with pytest.raises(ValueError, match=r"Filter 'Band': metadata zp_vega = '3.6e-9 erg/s/cm2/A' is not a number"):
+        sed.photometry(band, system="Vega", vega_spectrum=vega)
+
+
+def test_numeric_vega_zero_point_is_used(tmp_path):
+    sed = _evaluated_sed(tmp_path)
+    band = _filter_file(tmp_path / "Band.dat", ["# zp_vega = 2.0e-10", "# WavelengthUnit = Angstrom"])
+    result = sed.photometry(band, system="Vega")["Band"]
+    assert result.magnitude == pytest.approx(-2.5 * np.log10(result.flux_density / 2.0e-10))
+
+
+def test_get_metadata_float_raises_on_the_first_non_numeric_key():
+    from sed_tools.flux_cube_tool import VEGA_ZP_KEYS, get_metadata_float
+
+    assert get_metadata_float({"vega_zp": 1.5}, VEGA_ZP_KEYS) == 1.5
+    assert get_metadata_float({}, VEGA_ZP_KEYS) is None
+    with pytest.raises(ValueError, match="metadata zp_vega = '' is not a number"):
+        get_metadata_float({"zp_vega": "", "vega_zp": 1.5}, VEGA_ZP_KEYS)
