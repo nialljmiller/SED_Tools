@@ -78,3 +78,60 @@ def test_terminal_coverage_reports_missing_representative_spectra(tmp_path, monk
     assert "Representative SEDs" in output
     assert "spectrum file not found" in output
     assert "gone.txt" in output
+
+
+# ---------------------------------------------------------------------
+# grid_densifier
+# ---------------------------------------------------------------------
+
+def _write_small_cube(path, teff=(5000.0, 7000.0), nw=40):
+    import struct
+
+    import numpy as np
+
+    teff = np.asarray(teff, dtype=np.float64)
+    logg, meta = np.array([4.0]), np.array([0.0])
+    wl = np.linspace(3000.0, 10000.0, nw)
+    flux = np.ones((len(teff), 1, 1, nw))
+    with open(path, "wb") as fh:
+        fh.write(struct.pack("4i", len(teff), 1, 1, nw))
+        for arr in (teff, logg, meta, wl, flux):
+            fh.write(arr.astype(np.float64).tobytes())
+
+
+def test_densify_stops_when_ml_generation_fails(tmp_path, monkeypatch):
+    # Used to log a warning and write a blackbody in place of the ML SED.
+    import sys
+    import types
+
+    from sed_tools.grid_densifier import densify_grid
+
+    class FailingGenerator:
+        def __init__(self, path):
+            pass
+
+        def generate(self, **kwargs):
+            raise ValueError("network produced NaN")
+
+    fake = types.ModuleType("sed_tools.ml_sed_generator")
+    fake.SEDGenerator = FailingGenerator
+    monkeypatch.setitem(sys.modules, "sed_tools.ml_sed_generator", fake)
+
+    src = tmp_path / "src.bin"
+    _write_small_cube(src)
+    with pytest.raises(RuntimeError, match=r"Teff=6000 logg=4\.00 meta=0\.00.*network produced NaN"):
+        densify_grid(str(src), str(tmp_path / "dense.bin"), teff_spacing=1000.0, ml_model="fake")
+
+
+@pytest.mark.parametrize("answer", ["0", "-1", "3", "x"])
+def test_densifier_menu_rejects_out_of_range_choice(tmp_path, monkeypatch, capsys, answer):
+    # "0" and negative numbers used to pick cubes from the end of the list.
+    import sed_tools.grid_densifier as gd
+
+    for name in ("a", "b"):
+        (tmp_path / name).mkdir()
+        _write_small_cube(tmp_path / name / "flux_cube.bin")
+    monkeypatch.setattr("builtins.input", lambda prompt="": answer)
+    monkeypatch.setattr(gd, "densify_grid", lambda **kw: pytest.fail("must not run"))
+    gd.run_interactive_workflow(str(tmp_path))
+    assert "Invalid selection." in capsys.readouterr().out

@@ -10,9 +10,9 @@ the trained network at the requested Teff values, giving MESA's Hermite
 interpolation short enough intervals that the discrete photometry jumps
 disappear.
 
-A blackbody fallback (π·B_λ scaled to the nearest real grid SED's
-bolometric flux) is used when no ML model is available or when a requested
-Teff falls outside the generator's training range.
+A blackbody (π·B_λ scaled to the nearest real grid SED's bolometric flux)
+is used when no ML model is given, and for requested Teff values outside the
+source grid's Teff range. If the ML model fails at any node the run stops.
 
 Usage (CLI)
 -----------
@@ -37,17 +37,15 @@ API
 from __future__ import annotations
 
 import argparse
-import logging
 import os
 import struct
 import time
 from typing import Optional
 
-from ._resample import resample_to_grid
-
 import numpy as np
 
-logger = logging.getLogger(__name__)
+from ._constants import planck_flam as _blackbody
+from ._resample import resample_to_grid
 
 
 # ---------------------------------------------------------------------------
@@ -95,13 +93,6 @@ def _init_output_cube(path, teff, logg, meta, wl, nt_new):
 
 
 # ---------------------------------------------------------------------------
-# Blackbody fallback
-# ---------------------------------------------------------------------------
-
-from ._constants import planck_flam as _blackbody
-
-
-# ---------------------------------------------------------------------------
 # Dense Teff grid
 # ---------------------------------------------------------------------------
 
@@ -115,6 +106,80 @@ def _build_dense_teff(teff_orig, spacing):
         dists[np.argmin(dists)] = 1e9
         keep[dists < 1.0] = False
     return np.sort(combined[keep])
+
+
+def _blackbody_scales(flux_orig, teff_orig, wavelengths):
+    """Ratio of each real node's bolometric flux to its Teff's blackbody (1 where either is <= 0).
+
+    Computed one original Teff row at a time so no (nt, nw) array is held.
+    """
+    nt, nl, nm = flux_orig.shape[:3]
+    bb_scale = np.ones((nt, nl, nm), dtype=np.float64)
+    for i_t in range(nt):
+        bb_bol = np.trapezoid(_blackbody(wavelengths, teff_orig[i_t]), wavelengths)
+        if not bb_bol > 0:  # also skips NaN
+            continue
+        for i_l in range(nl):
+            for i_m in range(nm):
+                real_bol = np.trapezoid(flux_orig[i_t, i_l, i_m], wavelengths)
+                if real_bol > 0:
+                    bb_scale[i_t, i_l, i_m] = real_bol / bb_bol
+    return bb_scale
+
+
+def _copy_real_rows(flux_dense, flux_orig, teff_orig, teff_dense):
+    """Copy every original Teff row verbatim into the dense cube; return the mask of copied rows."""
+    real_mask = np.zeros(len(teff_dense), dtype=bool)
+    for i_orig, t in enumerate(teff_orig):
+        idx_d = int(np.argmin(np.abs(teff_dense - t)))
+        if np.abs(teff_dense[idx_d] - t) < 1.0:
+            flux_dense[idx_d] = flux_orig[i_orig]
+            real_mask[idx_d] = True
+    flux_dense.flush()
+    return real_mask
+
+
+def _ml_sed(generator, teff, logg, meta, wavelengths, dst):
+    """SEDGenerator output at one node, resampled onto the cube's wavelengths."""
+    try:
+        wl_ml, fl_ml = generator.generate(teff=teff, logg=logg, meta=meta, check_bounds=False)
+        return resample_to_grid(wl_ml, fl_ml, teff, wavelengths)
+    except Exception as exc:
+        raise RuntimeError(
+            f"ML generation failed for Teff={teff:.0f} logg={logg:.2f} meta={meta:.2f}: {exc}. "
+            f"{dst} is only partly written and must not be used; fix the model or re-run "
+            "without ml_model to use blackbodies."
+        ) from exc
+
+
+def _fill_synthetic_rows(flux_dense, synthetic, teff_dense, teff_orig, logg_grid, meta_grid,
+                         wavelengths, bb_scale, generator, dst):
+    """Write an SED at every node of each synthetic Teff row, printing progress."""
+    t_start = time.time()
+    for count, idx_d in enumerate(synthetic, 1):
+        t_new = teff_dense[idx_d]
+        i_near = int(np.argmin(np.abs(teff_orig - t_new)))
+        use_ml = generator is not None and teff_orig[0] <= t_new <= teff_orig[-1]
+
+        for i_l in range(len(logg_grid)):
+            for i_m in range(len(meta_grid)):
+                if use_ml:
+                    flux_dense[idx_d, i_l, i_m] = _ml_sed(
+                        generator, t_new, float(logg_grid[i_l]), float(meta_grid[i_m]),
+                        wavelengths, dst,
+                    )
+                else:
+                    bb = _blackbody(wavelengths, t_new)
+                    flux_dense[idx_d, i_l, i_m] = bb * bb_scale[i_near, i_l, i_m]
+        flux_dense.flush()
+
+        elapsed = time.time() - t_start
+        rate = count / elapsed if elapsed > 0 else 1.0
+        eta = (len(synthetic) - count) / rate
+        label = "ml" if use_ml else "bb"
+        print(f"\r  {count}/{len(synthetic)}  T={t_new:.0f} K  "
+              f"[{label}]  ETA {eta:.0f}s   ", end="", flush=True)
+    print()
 
 
 # ---------------------------------------------------------------------------
@@ -135,6 +200,8 @@ def densify_grid(
     dst          : path for output dense flux_cube.bin
     teff_spacing : target Teff spacing in K (default 1000)
     ml_model     : path to a trained SEDGenerator model directory
+
+    Raises RuntimeError if the ML model fails at any node; dst is then incomplete.
     """
     print(f"\n{'='*60}")
     print("SED_Tools Grid Densifier")
@@ -155,7 +222,6 @@ def densify_grid(
     # Source flux as read-only memmap — pages in from disk on demand
     flux_orig = _open_flux_memmap(src, nt_orig, nl, nm, nw, mode="r")
 
-    # Load ML model
     generator = None
     if ml_model is not None:
         from sed_tools.ml_sed_generator import SEDGenerator
@@ -163,83 +229,27 @@ def densify_grid(
         generator = SEDGenerator(ml_model)
         print("done")
 
-    # Build dense Teff grid
     teff_dense = _build_dense_teff(teff_orig, teff_spacing)
     nt_new = len(teff_dense)
     print(f"\nDense grid: {nt_orig} → {nt_new} Teff points "
           f"(+{nt_new - nt_orig} synthetic)")
 
-    # Pre-compute bb_scale one original Teff row at a time — no (nt, nw) array
     print("Pre-computing blackbody scale factors...", end=" ", flush=True)
-    bb_scale = np.ones((nt_orig, nl, nm), dtype=np.float64)
-    for i_t in range(nt_orig):
-        bb_row = _blackbody(wavelengths, teff_orig[i_t])   # (nw,) only
-        bb_bol = np.trapezoid(bb_row, wavelengths)
-        if bb_bol > 0:
-            for i_l in range(nl):
-                for i_m in range(nm):
-                    real_bol = np.trapezoid(flux_orig[i_t, i_l, i_m], wavelengths)
-                    if real_bol > 0:
-                        bb_scale[i_t, i_l, i_m] = real_bol / bb_bol
+    bb_scale = _blackbody_scales(flux_orig, teff_orig, wavelengths)
     print("done")
 
-    # Initialise output cube — writes header + zero-fills on disk, returns memmap
+    # Writes the header and zero-fills the flux region on disk
     print(f"Initialising output cube on disk...", end=" ", flush=True)
     flux_dense = _init_output_cube(dst, teff_dense, logg_grid, meta_grid,
                                     wavelengths, nt_new)
     print("done")
 
-    # Map original Teff indices into the dense grid and copy verbatim
-    real_mask = np.zeros(nt_new, dtype=bool)
-    for i_orig, t in enumerate(teff_orig):
-        idx_d = int(np.argmin(np.abs(teff_dense - t)))
-        if np.abs(teff_dense[idx_d] - t) < 1.0:
-            flux_dense[idx_d] = flux_orig[i_orig]
-            real_mask[idx_d]  = True
-    flux_dense.flush()
-
+    real_mask = _copy_real_rows(flux_dense, flux_orig, teff_orig, teff_dense)
     synthetic = np.where(~real_mask)[0]
     print(f"\nGenerating {len(synthetic)} synthetic Teff points...")
-    t_start = time.time()
+    _fill_synthetic_rows(flux_dense, synthetic, teff_dense, teff_orig, logg_grid, meta_grid,
+                         wavelengths, bb_scale, generator, dst)
 
-    for count, idx_d in enumerate(synthetic, 1):
-        t_new    = teff_dense[idx_d]
-        i_near   = int(np.argmin(np.abs(teff_orig - t_new)))
-        in_range = teff_orig[0] <= t_new <= teff_orig[-1]
-
-        for i_l in range(nl):
-            for i_m in range(nm):
-                used_ml = False
-
-                if generator is not None and in_range:
-                    try:
-                        wl_ml, fl_ml = generator.generate(
-                            teff=t_new,
-                            logg=float(logg_grid[i_l]),
-                            meta=float(meta_grid[i_m]),
-                            check_bounds=False,
-                        )
-
-                        flux_dense[idx_d, i_l, i_m] = resample_to_grid(wl_ml, fl_ml, t_new, wavelengths)
-
-                        used_ml = True
-                    except Exception:
-                        logger.warning("ML generation failed for Teff=%.0f logg=%.2f meta=%.2f", t_new, float(logg_grid[i_l]), float(meta_grid[i_m]), exc_info=True)
-
-                if not used_ml:
-                    bb = _blackbody(wavelengths, t_new)
-                    flux_dense[idx_d, i_l, i_m] = bb * bb_scale[i_near, i_l, i_m]
-
-        flux_dense.flush()
-
-        elapsed = time.time() - t_start
-        rate    = count / elapsed if elapsed > 0 else 1.0
-        eta     = (len(synthetic) - count) / rate
-        label   = "ml" if (generator is not None and in_range) else "bb"
-        print(f"\r  {count}/{len(synthetic)}  T={t_new:.0f} K  "
-              f"[{label}]  ETA {eta:.0f}s   ", end="", flush=True)
-
-    print()
     del flux_dense  # close memmap
     size_mb = os.path.getsize(dst) / (1024**2)
     print(f"  Written: {nt_new} × {nl} × {nm} × {nw}  ({size_mb:.1f} MiB)")
@@ -276,11 +286,10 @@ def run_interactive_workflow(base_dir: str = None):
               f"{gap_str}  ({len(teff)} pts)")
 
     sel = input("\nSelect cube: > ").strip()
-    try:
-        src = cubes[int(sel) - 1]
-    except (ValueError, IndexError):
+    if not sel.isdecimal() or not 1 <= int(sel) <= len(cubes):
         print("Invalid selection.")
         return
+    src = cubes[int(sel) - 1]
 
     spacing  = float(input("Target Teff spacing in K [1000]: ").strip() or "1000")
     ml_model = input("ML model path (leave blank for blackbody only): ").strip() or None
