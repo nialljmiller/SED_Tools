@@ -3,6 +3,7 @@
 import importlib
 import logging
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 import requests
@@ -561,3 +562,91 @@ def test_rebuild_and_combine_raise_when_there_are_no_local_grids(tmp_path):
         run_rebuild_flow(base_dir=str(tmp_path), models=["A"])
     with pytest.raises(FileNotFoundError, match="No spectral grids found"):
         run_combine_flow(base_dir=str(tmp_path), interactive=False)
+
+
+# ----------------------------------------------------------------------
+# Interactive filter downloads
+# ----------------------------------------------------------------------
+@pytest.fixture
+def filter_browser(tmp_path, monkeypatch, filters):
+    """Facilities A and B with instruments Cam1 and Cam2; fetching B/Cam2 fails."""
+    from sed_tools import cli
+    from sed_tools.filter_library import FilterLibrary
+
+    listing_errors = {}
+    monkeypatch.setattr(FilterLibrary, "facilities", lambda self: {
+        "entries": [{"key": "A", "label": "A"}, {"key": "B", "label": "B"}], "errors": []})
+    monkeypatch.setattr(FilterLibrary, "instruments", lambda self, facility: {
+        "entries": [{"key": "Cam1", "label": "Cam1"}, {"key": "Cam2", "label": "Cam2"}],
+        "errors": listing_errors.get(facility, [])})
+    fetched = []
+
+    def fetch(cls, facility, instrument, **kwargs):
+        if (facility, instrument) == ("B", "Cam2"):
+            raise requests.ConnectionError("SVO down")
+        fetched.append(f"{facility}/{instrument}")
+        return tmp_path / facility / instrument
+
+    monkeypatch.setattr(filters, "fetch", classmethod(fetch))
+    monkeypatch.setattr(cli, "_offer_composition", lambda directory: None)
+    return SimpleNamespace(fetched=fetched, listing_errors=listing_errors)
+
+
+def answer(monkeypatch, *answers):
+    replies = iter(answers)
+    monkeypatch.setattr("builtins.input", lambda prompt="": next(replies))
+
+
+def test_filter_batch_downloads_the_rest_then_lists_failures(filter_browser, monkeypatch, capsys):
+    from sed_tools.cli import run_filters_flow
+
+    filter_browser.listing_errors["A"] = ["SVO A: timed out"]
+    answer(monkeypatch, "1,2")
+    with pytest.raises(RuntimeError) as excinfo:
+        run_filters_flow()
+    assert filter_browser.fetched == ["A/Cam1", "A/Cam2", "B/Cam1"]
+    assert "B/Cam2: SVO down" in str(excinfo.value)
+    assert "A: instrument list incomplete: SVO A: timed out" in str(excinfo.value)
+    assert "Cannot fetch: SVO down" in capsys.readouterr().out
+
+
+def test_filter_browser_reports_a_failed_build_when_browsing_ends(filter_browser, monkeypatch, capsys):
+    from sed_tools import cli
+
+    def fail(directory):
+        raise ValueError("Airmass and PWV must be numbers (could not convert string to float: 'x')")
+
+    monkeypatch.setattr(cli, "_offer_composition", fail)
+    # Facility A, instrument 1, download, then quit from the instrument list.
+    answer(monkeypatch, "1", "1", "y", "y", "q")
+    with pytest.raises(RuntimeError, match="A/Cam1 composed product: Airmass and PWV must be numbers"):
+        cli.run_filters_flow()
+    assert "Cannot build: Airmass and PWV must be numbers" in capsys.readouterr().out
+
+
+def test_filter_browser_ends_quietly_when_nothing_failed(filter_browser, monkeypatch):
+    from sed_tools.cli import run_filters_flow
+
+    answer(monkeypatch, "1", "2", "y", "n", "q")
+    run_filters_flow()
+    assert filter_browser.fetched == ["A/Cam2"]
+
+
+def test_filters_command_without_a_target_fails_when_a_download_failed(filter_browser, monkeypatch):
+    answer(monkeypatch, "2", "2", "y", "n", "q")
+    with pytest.raises(RuntimeError, match="B/Cam2: SVO down"):
+        run_cli(monkeypatch, "filters")
+
+
+def test_offer_composition_rejects_an_airmass_that_is_not_a_number(tmp_path, monkeypatch, filters):
+    from sed_tools import cli
+
+    info = {"buildable": ["filter"], "atmosphere": True, "atmosphere_site": "paranal", "atmosphere_sites": None,
+            "component_availability": {"status": "supported", "large_download": False}}
+    monkeypatch.setattr(filters, "available", classmethod(lambda cls, *a, **k: info))
+    monkeypatch.setattr(filters, "atmospheres", classmethod(lambda cls, *a, **k: {}))
+    monkeypatch.setattr(cli, "print_filter_availability", lambda info: None)
+    monkeypatch.setattr(filters, "compose", classmethod(lambda cls, *a, **k: pytest.fail("must not build")))
+    answer(monkeypatch, "y", "1", "", "y", "high")
+    with pytest.raises(ValueError, match="Airmass and PWV must be numbers"):
+        cli._offer_composition(tmp_path / "Fac" / "Cam")

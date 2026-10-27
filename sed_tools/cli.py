@@ -660,9 +660,8 @@ def _add_filter_product_options(parser, *, components=None):
 
 
 def _offer_composition(instrument_dir: Path) -> None:
-    """After a download, offer to build a composed product."""
+    """After a download, offer to build a composed product; the build's errors propagate."""
     from .api import Filters
-    from .filter_components import ComponentError
 
     info = Filters.available(instrument_dir.parent.name, instrument_dir.name,
                              filter_root=instrument_dir.parent.parent, include_remote=False)
@@ -699,20 +698,19 @@ def _offer_composition(instrument_dir: Path) -> None:
             pwv_txt = input("PWV mm (blank if not applicable): ").strip() if not grid or grid["pwv"] else ""
             atmosphere = {"site": site, "airmass": None if airmass == _UNSTATED else airmass,
                           "pwv": float(pwv_txt) if pwv_txt else None}
-        except ValueError:
-            print("Airmass and PWV must be numbers.")
-            return
-    try:
-        Filters.compose(instrument_dir, [c.strip() for c in chosen.split(",") if c.strip()],
-                        atmosphere=atmosphere, filter_root=instrument_dir.parent.parent,
-                        detector_type=detector, allow_heavy=allow_heavy)
-    except (ComponentError, RequestException, OSError, RuntimeError) as exc:
-        print(f"Cannot build: {exc}")
+        except ValueError as exc:
+            raise ValueError(f"Airmass and PWV must be numbers ({exc})") from exc
+    Filters.compose(instrument_dir, [c.strip() for c in chosen.split(",") if c.strip()],
+                    atmosphere=atmosphere, filter_root=instrument_dir.parent.parent,
+                    detector_type=detector, allow_heavy=allow_heavy)
 
 
 def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
-    """Browse available instruments; use the API for every download and product."""
-    from .api import Filters
+    """Browse available instruments; use the API for every download and product.
+
+    A download or build that fails is reported at once; when browsing ends,
+    RuntimeError lists every one that failed.
+    """
     from .filter_library import FilterLibrary
 
     library = FilterLibrary(base_dir)
@@ -724,47 +722,71 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
         print("No facilities found.")
         return
 
-    def fetch(facility, instrument, *, offer=False):
-        try:
-            directory = Filters.fetch(facility, instrument, filter_root=base_dir)
-            if offer:
-                _offer_composition(directory)
-        except (ValueError, RequestException, OSError, RuntimeError) as exc:
-            print(f"Cannot fetch: {exc}")
-
+    failures: List[str] = []
     while True:
         selected = prompt_choice([f["label"] for f in facilities], "Filter Facilities", multi=True)
         if selected is None:
-            return
+            break
         if len(selected) > 1:
-            for index in selected:
-                facility = facilities[index]["key"]
-                result = library.instruments(facility)
-                for error in result["errors"]:
-                    print(f"[filters] {error}")
-                for instrument in result["entries"]:
-                    fetch(facility, instrument["key"])
-            return
+            _download_every_instrument(library, [facilities[i]["key"] for i in selected], base_dir, failures)
+            break
+        if not _browse_instruments(library, facilities[selected[0]]["key"], base_dir, failures):
+            break
+    if failures:
+        raise RuntimeError(f"Filter downloads or builds failed ({len(failures)}): " + "; ".join(failures))
 
-        facility = facilities[selected[0]]["key"]
+
+def _download_every_instrument(library, facilities: List[str], base_dir: str, failures: List[str]) -> None:
+    """Download every instrument of each facility; an incomplete instrument list is a failure too."""
+    for facility in facilities:
         result = library.instruments(facility)
         for error in result["errors"]:
             print(f"[filters] {error}")
-        instruments = result["entries"]
-        if not instruments:
-            print(f"No instruments found for {facility}.")
-            continue
-        while True:
-            index = prompt_choice([i["label"] for i in instruments], f"Instruments for {facility}", allow_back=True)
-            if index is None:
-                return
-            if index == -1:
-                break
-            instrument = instruments[index]["key"]
-            if not input(f"Download {facility}/{instrument}? [Y/n] ").strip().lower().startswith("n"):
-                fetch(facility, instrument, offer=True)
-            if not input("Download another instrument? [y/N] ").strip().lower().startswith("y"):
-                break
+            failures.append(f"{facility}: instrument list incomplete: {error}")
+        for instrument in result["entries"]:
+            _fetch_instrument(facility, instrument["key"], base_dir, failures)
+
+
+def _browse_instruments(library, facility: str, base_dir: str, failures: List[str]) -> bool:
+    """Pick instruments of one facility to download; returns False if the user quit."""
+    result = library.instruments(facility)
+    for error in result["errors"]:
+        print(f"[filters] {error}")
+    instruments = result["entries"]
+    if not instruments:
+        print(f"No instruments found for {facility}.")
+        return True
+    while True:
+        index = prompt_choice([i["label"] for i in instruments], f"Instruments for {facility}", allow_back=True)
+        if index is None:
+            return False
+        if index == -1:
+            return True
+        instrument = instruments[index]["key"]
+        if not input(f"Download {facility}/{instrument}? [Y/n] ").strip().lower().startswith("n"):
+            _fetch_instrument(facility, instrument, base_dir, failures, offer=True)
+        if not input("Download another instrument? [y/N] ").strip().lower().startswith("y"):
+            return True
+
+
+def _fetch_instrument(facility: str, instrument: str, base_dir: str, failures: List[str], *,
+                      offer: bool = False) -> None:
+    """Download one instrument (then offer a composed product); a failure is printed and recorded."""
+    from .api import Filters
+
+    try:
+        directory = Filters.fetch(facility, instrument, filter_root=base_dir)
+    except (ValueError, RequestException, OSError, RuntimeError) as exc:
+        print(f"Cannot fetch: {exc}")
+        failures.append(f"{facility}/{instrument}: {exc}")
+        return
+    if not offer:
+        return
+    try:
+        _offer_composition(directory)
+    except (ValueError, RequestException, OSError, RuntimeError) as exc:  # ComponentError is a ValueError
+        print(f"Cannot build: {exc}")
+        failures.append(f"{facility}/{instrument} composed product: {exc}")
 
 
 class _FilterSetOption:
