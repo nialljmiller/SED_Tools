@@ -4,6 +4,8 @@
    spectra_cleaner describes, so cleaning them stops and asks for the unit.
 2. AB and bolometric magnitudes return what the formula gives: inf for zero
    flux and NaN for negative flux, as the Vega ones already did.
+3. Flux units declared in spectrum headers: W/m²/nm and W/m²/µm had the
+   factor for W/m²/Å, and some header text was read as the wrong unit.
 
 No test uses the network: the autouse fixture fails any real HTTP request.
 """
@@ -21,7 +23,8 @@ from sed_tools import mast_spectra_grabber as mast
 from sed_tools._flux import AB_ZERO_FLUX
 from sed_tools.flux_cube_tool import FilterCurve, _band_magnitude, bolometric_magnitude
 from sed_tools.models import EvaluatedSED
-from sed_tools.spectra_cleaner import check_flux_unit, clean_model_dir, detect_units_from_header
+from sed_tools.spectra_cleaner import (FLUX_UNITS, check_flux_unit, clean_model_dir,
+                                       detect_units_from_header)
 
 
 @pytest.fixture(autouse=True)
@@ -187,3 +190,91 @@ def test_bolometric_magnitude_of_non_positive_flux_or_reference_is_computed(flux
         assert math.isnan(mbol)
     else:
         assert mbol == expected
+
+
+# ---------------------------------------------------------------------
+# 3. Declared flux units: SI factors and header patterns
+# ---------------------------------------------------------------------
+
+LAMBDA_A = np.linspace(3000.0, 10000.0, 41)
+FLAM = 1e-5 * (LAMBDA_A / 5000.0) ** -2          # the known F_λ, erg/s/cm²/Å
+C_A_PER_S = 2.99792458e18                        # speed of light, Å/s
+FNU = FLAM * LAMBDA_A ** 2 / C_A_PER_S           # F_ν = F_λ λ²/c, erg/s/cm²/Hz
+
+# The known spectrum in each declared unit, by hand. 1 erg/s = 1e-7 W and
+# 1 cm² = 1e-4 m², so 1 erg/s/cm² = 1e-3 W/m²; an nm holds 10 Å and a µm 1e4 Å.
+DECLARED = {
+    "erg/s/cm2/A": FLAM,
+    "erg/s/cm2/Hz": FNU,
+    "Jy": FNU / 1e-23,
+    "W/m2/A": FLAM * 1e-3,
+    "W/m2/nm": FLAM * 1e-3 * 10.0,
+    "W/m2/um": FLAM * 1e-3 * 1e4,
+}
+
+
+def _declared_spectrum(path, flux_header, flux):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    rows = "".join(f"{w:.17g} {f:.17g}\n" for w, f in zip(LAMBDA_A, flux))
+    path.write_text(f"# wavelength_unit = Angstrom\n# flux_unit = {flux_header}\n{rows}")
+
+
+@pytest.mark.parametrize("flux_header", list(DECLARED))
+def test_a_declared_flux_unit_is_converted_to_erg_s_cm2_a(tmp_path, flux_header):
+    grid = tmp_path / "Grid"
+    _declared_spectrum(grid / "s0.txt", flux_header, DECLARED[flux_header])
+
+    summary = clean_model_dir(str(grid), sample_fraction=1.0, rebuild_lookup=False)
+
+    assert summary["converted"] == ["s0.txt"]
+    data = np.loadtxt(grid / "s0.txt", comments="#")
+    np.testing.assert_allclose(data[:, 0], LAMBDA_A, rtol=0, atol=5e-7)
+    np.testing.assert_allclose(data[:, 1], FLAM, rtol=1e-8, atol=0)  # written with 9 significant digits
+
+
+def test_si_flux_units_have_the_factor_of_their_wavelength_unit():
+    assert FLUX_UNITS["flam_si"][:2] == ("flam", 1e3)
+    assert FLUX_UNITS["flam_si_nm"][:2] == ("flam", 1e2)
+    assert FLUX_UNITS["flam_si_um"][:2] == ("flam", 0.1)
+
+
+@pytest.mark.parametrize("header, expected", [
+    # W/m² per nm and per µm used to be read as W/m²/Å
+    ("# flux_unit = W/m2/nm", "flam_si_nm"),
+    ("# flux_unit = W/m^2/um", "flam_si_um"),
+    ("# flux [W/m2/A]", "flam_si"),
+    ("# columns = wavelength_A flux_W/m2/A", "flam_si"),
+    # a unit next to a quantity name is read as the unit, not the name
+    ("# F_nu (Jy)", "fnu_jy"),
+    ("# Flambda (W/m2/um)", "flam_si_um"),
+    ("# F_lambda (W/m^2/nm)", "flam_si_nm"),
+    # words that used to be read as a unit
+    ("# BT-Settl low mass models", None),
+    ("# a new man", None),
+    ("# flux erg/s/cm2/arcsec2", None),
+    # spellings read as before
+    ("# column 2: FLUX (ERG/CM2/S/A)", "flam"),
+    ("# flux_unit = erg/cm2/s/A", "flam"),
+    ("# flux (erg/s/cm^2/Angstrom)", "flam"),
+    ("# flux (erg/s/cm2/Angstroms)", "flam"),
+    ("# erg/s/cm2/AA", "flam"),
+    ("# erg/s/cm2/Ang", "flam"),
+    ("# erg/s/cm2/Å", "flam"),
+    ("# fnu (erg/s/cm2/Hz)", "fnu"),
+    ("# units: F_nu", "fnu"),
+    ("# flux in Jansky", "fnu_jy"),
+    ("# normalized flux", "normalized"),
+])
+def test_flux_unit_header_patterns(header, expected):
+    assert detect_units_from_header(header + "\n")["flux_unit"] == expected
+
+
+def test_a_grid_declaring_w_m2_nm_in_some_spectra_names_that_unit_as_its_guess(tmp_path):
+    # The guess is the unit of the first sampled spectrum; W/m²/nm used to be
+    # read with the W/m²/Å factor, which a FLUX_UNITS name had to match.
+    grid = tmp_path / "Mixed"
+    _declared_spectrum(grid / "a.txt", "W/m2/nm", DECLARED["W/m2/nm"])
+    (grid / "b.txt").write_text("".join(f"{w:.17g} {f:.17g}\n" for w, f in zip(LAMBDA_A, FLAM)))
+
+    with pytest.raises(ValueError, match=r"is not declared; best guess: 'flam_si_nm', W/m²/nm"):
+        clean_model_dir(str(grid), sample_fraction=1.0)

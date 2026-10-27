@@ -161,7 +161,7 @@ def test_clean_model_dir_stops_on_an_undeclared_flux_unit_naming_the_best_guess(
         clean_model_dir(str(grid), sample_fraction=1.0)
     message = str(err.value)
     assert f"Flux unit of {grid} is not declared; best guess: 'fnu_jy', Jansky" in message
-    assert "Pass the unit as flux_unit='fnu_jy', or as another of flam, fnu, fnu_jy, flam_si, normalized" in message
+    assert "Pass the unit as flux_unit='fnu_jy', or as another of flam, fnu, fnu_jy, flam_si, flam_si_nm, flam_si_um, normalized" in message
     assert _contents(grid) == before
     assert not (grid / "lookup_table.csv").exists()
 
@@ -195,7 +195,7 @@ def test_an_unknown_flux_unit_name_is_refused_before_anything_changes(tmp_path):
 
     grid = _surface_flux_grid(tmp_path / "Cool")
     before = _contents(grid)
-    with pytest.raises(ValueError, match=r"flux_unit='Jy' is not one of flam, fnu, fnu_jy, flam_si, normalized"):
+    with pytest.raises(ValueError, match=r"flux_unit='Jy' is not one of flam, fnu, fnu_jy, flam_si, flam_si_nm, flam_si_um, normalized"):
         clean_model_dir(str(grid), flux_unit="Jy")
     assert _contents(grid) == before
 
@@ -263,7 +263,7 @@ def test_cli_asks_again_after_an_unknown_unit_and_stops_on_no(tmp_path, monkeypa
     with pytest.raises(ValueError, match="No flux unit chosen for Cool; it was not cleaned"):
         cli._ask_flux_unit("Cool", sorted(str(p) for p in grid.glob("*.txt")))
     assert len(prompts) == 2
-    assert "'Jy' is not one of: flam, fnu, fnu_jy, flam_si, normalized" in capsys.readouterr().out
+    assert "'Jy' is not one of: flam, fnu, fnu_jy, flam_si, flam_si_nm, flam_si_um, normalized" in capsys.readouterr().out
 
 
 def test_cli_does_not_ask_when_the_flux_unit_is_declared(tmp_path, monkeypatch):
