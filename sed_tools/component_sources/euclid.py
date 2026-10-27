@@ -118,6 +118,70 @@ def _published_deviation(inst_dir: Path, band: str, wl: np.ndarray, total: np.nd
     return float(np.max(np.abs(mine - pt)) / np.max(pt))
 
 
+def _fresh_manifest(inst_dir: Path, bands) -> InstrumentManifest:
+    """The manifest with its published curves described again and ``bands``' factors dropped."""
+    manifest = InstrumentManifest.load(inst_dir)
+    # The published curves may have changed since the manifest was written (e.g. SVO's copies
+    # renamed to <band>_svo): describe them from their headers.
+    known = InstrumentManifest.from_published(inst_dir)
+    manifest.bands, manifest.published, manifest.published_bands = known.bands, known.published, known.published_bands
+    manifest.detector_types, manifest.detector_type_sources = known.detector_types, known.detector_type_sources
+    for role in (FILTER, OPTICS, QE):
+        for b in bands:
+            manifest.components.get(role, {}).pop(b, None)
+    return manifest
+
+
+def _add_factors(inst_dir: Path, manifest: InstrumentManifest, band: str,
+                 cols: Dict[str, np.ndarray]) -> Tuple[int, Optional[float]]:
+    """Write one band's filter, optics and QE; return (negative filter samples set to 0, deviation)."""
+    wl, curves, negative = factors(cols)
+    url = URL.format(band=band)
+    described = {FILTER: "T_FILTER", OPTICS: "T_TELESCOPE x T_NI-OA", QE: "T_QE"}
+    for role, tr in curves.items():
+        add_component(inst_dir, role, wl, tr, band=band, name=band,
+                      source=f"{url} ({described[role]}; ESA NISP-PHOTO-PASSBANDS V1.0, {DOI})",
+                      manifest=manifest)
+    deviation = _published_deviation(inst_dir, band, wl, curves[FILTER] * curves[OPTICS] * curves[QE])
+    return negative, deviation
+
+
+def _notes(bands, written: Dict[str, int], clamped: Dict[str, int], deviations: Dict[str, float],
+           mismatched: Dict[str, float]) -> str:
+    """The manifest notes: the source, what was written or clamped, and how the product compares."""
+    notes = [
+        "Y, J and H components from ESA NISP-PHOTO-PASSBANDS V1.0 (2021-11-01; on-ground factors at the "
+        "centre of the NISP focal plane): filter = T_FILTER, optics = T_TELESCOPE (all mirrors and the "
+        "dichroic) x T_NI-OA (NISP optical assembly), qe = T_QE. Their product equals ESA's T_TOTAL. "
+        "WAVE is nm (the files state no unit; inferred from the values)."
+    ]
+    if written:
+        notes.append("Published " + ", ".join(written) + " written from ESA's T_TOTAL (photon-counting: it "
+                     "includes the detector QE)" + (": negative samples set to 0: "
+                     + ", ".join(f"{b} {n}" for b, n in written.items() if n) if any(written.values()) else "")
+                     + ".")
+    if clamped:
+        notes.append("Negative T_FILTER noise samples set to 0: "
+                     + ", ".join(f"{b} {n}" for b, n in clamped.items()) + ".")
+    if mismatched:
+        notes.append(
+            "Release mismatch: filter x optics x qe is ESA's V1.0 T_TOTAL, not the published curve of the "
+            "same band here; max |difference| / published peak = "
+            + ", ".join(f"{b} {d:.3f}" for b, d in mismatched.items())
+            + ". Compose these components for the V1.0 passbands; use the published curves as they are.")
+    elif deviations:
+        notes.append("filter x optics x qe reproduces the published curves to "
+                     + ", ".join(f"{b} {d:.1e}" for b, d in deviations.items()) + " of their peak.")
+    copies = [b for b in bands if b.endswith("_svo") and b[:-4] in BANDS]
+    if copies:
+        notes.append(", ".join(copies) + " are SVO's copies of an earlier release, kept for reference; "
+                     "these components do not compose to them.")
+    others = [b for b in bands if b not in BANDS and b not in copies]
+    if others:
+        notes.append("No separate factors are published for " + ", ".join(others) + ".")
+    return " ".join(notes)
+
+
 def build(
     filter_root: Union[str, Path],
     *,
@@ -139,32 +203,21 @@ def build(
     tables = {b: parse_table(fetch.text(URL.format(band=b))) for b in wanted}
 
     inst_dir.mkdir(parents=True, exist_ok=True)
-    written = {b: n for b in wanted if (n := write_published(inst_dir, b, tables[b])) >= 0}
+    written = {}
+    for band in wanted:
+        negatives = write_published(inst_dir, band, tables[band])
+        if negatives >= 0:  # -1: the published curve existed and was kept
+            written[band] = negatives
     index = inst_dir / INSTRUMENT
     if not index.exists():
         index.write_text("".join(f"{b}.dat\n" for b in BANDS if (inst_dir / f"{b}.dat").is_file()),
                          encoding="utf-8")
-    manifest = InstrumentManifest.load(inst_dir)
-    # The published curves may have changed since the manifest was written (e.g. SVO's copies
-    # renamed to <band>_svo): describe them from their headers.
-    known = InstrumentManifest.from_published(inst_dir)
-    manifest.bands, manifest.published, manifest.published_bands = known.bands, known.published, known.published_bands
-    manifest.detector_types, manifest.detector_type_sources = known.detector_types, known.detector_type_sources
-    for role in (FILTER, OPTICS, QE):
-        for b in wanted:
-            manifest.components.get(role, {}).pop(b, None)
+    manifest = _fresh_manifest(inst_dir, wanted)
     clamped, deviations = {}, {}
     for band in wanted:
-        wl, curves, negative = factors(tables[band])
+        negative, deviation = _add_factors(inst_dir, manifest, band, tables[band])
         if negative:
             clamped[band] = negative
-        url = URL.format(band=band)
-        described = {FILTER: "T_FILTER", OPTICS: "T_TELESCOPE x T_NI-OA", QE: "T_QE"}
-        for role, tr in curves.items():
-            add_component(inst_dir, role, wl, tr, band=band, name=band,
-                          source=f"{url} ({described[role]}; ESA NISP-PHOTO-PASSBANDS V1.0, {DOI})",
-                          manifest=manifest)
-        deviation = _published_deviation(inst_dir, band, wl, curves[FILTER] * curves[OPTICS] * curves[QE])
         if deviation is not None:
             deviations[band] = deviation
 
@@ -173,38 +226,8 @@ def build(
     manifest.ground_based = False
     manifest.outside_range = "zero"  # the factors are tabulated only across each band
     manifest.sources["esa_nisp_passbands"] = f"{PAGE} ({DOI}; Schirmer et al. 2022, {PAPER})"
-    notes = [
-        "Y, J and H components from ESA NISP-PHOTO-PASSBANDS V1.0 (2021-11-01; on-ground factors at the "
-        "centre of the NISP focal plane): filter = T_FILTER, optics = T_TELESCOPE (all mirrors and the "
-        "dichroic) x T_NI-OA (NISP optical assembly), qe = T_QE. Their product equals ESA's T_TOTAL. "
-        "WAVE is nm (the files state no unit; inferred from the values)."
-    ]
-    if written:
-        notes.append("Published " + ", ".join(written) + " written from ESA's T_TOTAL (photon-counting: it "
-                     "includes the detector QE)" + (": negative samples set to 0: "
-                     + ", ".join(f"{b} {n}" for b, n in written.items() if n) if any(written.values()) else "")
-                     + ".")
-    if clamped:
-        notes.append("Negative T_FILTER noise samples set to 0: "
-                     + ", ".join(f"{b} {n}" for b, n in clamped.items()) + ".")
     mismatched = {b: d for b, d in deviations.items() if d > MATCH_TOLERANCE}
-    if mismatched:
-        notes.append(
-            "Release mismatch: filter x optics x qe is ESA's V1.0 T_TOTAL, not the published curve of the "
-            "same band here; max |difference| / published peak = "
-            + ", ".join(f"{b} {d:.3f}" for b, d in mismatched.items())
-            + ". Compose these components for the V1.0 passbands; use the published curves as they are.")
-    elif deviations:
-        notes.append("filter x optics x qe reproduces the published curves to "
-                     + ", ".join(f"{b} {d:.1e}" for b, d in deviations.items()) + " of their peak.")
-    copies = [b for b in manifest.bands if b.endswith("_svo") and b[:-4] in BANDS]
-    if copies:
-        notes.append(", ".join(copies) + " are SVO's copies of an earlier release, kept for reference; "
-                     "these components do not compose to them.")
-    others = [b for b in manifest.bands if b not in BANDS and b not in copies]
-    if others:
-        notes.append("No separate factors are published for " + ", ".join(others) + ".")
-    manifest.notes = " ".join(notes)
+    manifest.notes = _notes(manifest.bands, written, clamped, deviations, mismatched)
     manifest.save(inst_dir)
     if mismatched:
         logger.warning("Euclid/NISP: components do not reproduce the published curves: %s", mismatched)
