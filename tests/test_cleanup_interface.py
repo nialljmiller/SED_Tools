@@ -227,3 +227,69 @@ def test_import_lists_spectra_left_out_after_building_the_rest(tmp_path, monkeyp
 
     report = SED.import_grid(src, name="Grid", model_root=tmp_path / "models", dry_run=True)
     assert report["n_missing"] == 1
+
+
+# ----------------------------------------------------------------------
+# Filters and ML
+# ----------------------------------------------------------------------
+@pytest.fixture
+def filters(tmp_path, monkeypatch):
+    from sed_tools.api import Filters
+
+    monkeypatch.setattr(Filters, "_filter_root", tmp_path / "filters")
+    monkeypatch.setattr(Filters, "_catalogues", {})
+    return Filters
+
+
+def test_filter_query_warns_about_discovery_errors(filters, monkeypatch, caplog):
+    from sed_tools.filter_library import FilterLibrary
+
+    report = {"entries": [{"key": "HST", "label": "HST", "sources": ["original"]}],
+              "errors": ["SVO facility list: connection refused"]}
+    monkeypatch.setattr(FilterLibrary, "facilities", lambda self: report)
+    with caplog.at_level(logging.WARNING, logger="sed_tools.api"):
+        rows = filters.query(include_local=False)
+    assert [row["facility"] for row in rows] == ["HST"]
+    assert "Filter discovery: SVO facility list: connection refused" in caplog.text
+
+
+def test_bibtex_citations_raise_when_a_target_failed(filters, monkeypatch):
+    from sed_tools.filter_catalogue import CatalogueError
+
+    result = {"instruments": [], "references": [], "acknowledgements": [], "errors": ["A/B: not cached"]}
+    monkeypatch.setattr(filters, "citations", classmethod(lambda cls, *targets, **kwargs: result))
+    with pytest.raises(CatalogueError, match="Cannot cite every target: A/B: not cached"):
+        filters.cite("A/B", format="bibtex")
+    assert "[filters] A/B: not cached" in filters.cite("A/B", format="text")
+
+
+def test_plot_warns_when_njm_cannot_resolve_an_instrument_name(filters, tmp_path, monkeypatch, caplog):
+    from sed_tools.filter_catalogue import CatalogueError
+
+    fetched = tmp_path / "fetched" / "Fac" / "Cam"
+    fetched.mkdir(parents=True)
+    (fetched / "g.dat").write_text("Wavelength,Transmission\n4000,0\n4500,1\n5000,0\n")
+
+    class Catalogue:
+        def resolve(self, facility, instrument):
+            raise CatalogueError(f"NJM does not serve {facility}/{instrument}")
+
+    monkeypatch.setattr(filters, "_fetch_published", classmethod(lambda cls, fac, inst, filter_root=None: fetched))
+    with caplog.at_level(logging.WARNING, logger="sed_tools.api"):
+        chosen = filters._plot_bands(("Fac/Cam",), None, Catalogue(), fetch=True)
+    assert chosen == [("Fac", "Cam", "g", fetched)]
+    assert "NJM does not serve Fac/Cam; fetching Fac/Cam under the name given" in caplog.text
+
+
+def test_ml_generator_parameter_ranges_need_the_trained_ranges():
+    from types import SimpleNamespace
+
+    from sed_tools.api import MLGenerator
+
+    generator = MLGenerator(base_dir=None)
+    generator._generator = SimpleNamespace(config={"parameter_ranges": {
+        "teff": [3000, 9000], "logg": [0, 5], "meta": [-2, 0.5]}})
+    assert generator.parameter_ranges() == {"teff": (3000, 9000), "logg": (0, 5), "metallicity": (-2, 0.5)}
+    generator._generator = SimpleNamespace(config={})
+    with pytest.raises(KeyError, match="parameter_ranges"):
+        generator.parameter_ranges()

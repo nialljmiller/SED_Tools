@@ -1551,11 +1551,11 @@ class MLGenerator:
         if self._generator is None:
             raise RuntimeError("No model loaded. Call train() or load() first.")
         
-        ranges = self._generator.config.get('parameter_ranges', {})
+        ranges = self._generator.config['parameter_ranges']
         return {
-            'teff': tuple(ranges.get('teff', [0, 0])),
-            'logg': tuple(ranges.get('logg', [0, 0])),
-            'metallicity': tuple(ranges.get('meta', [0, 0])),
+            'teff': tuple(ranges['teff']),
+            'logg': tuple(ranges['logg']),
+            'metallicity': tuple(ranges['meta']),
         }
     
     @staticmethod
@@ -1665,7 +1665,7 @@ class Filters:
 
         report = FilterLibrary(cls._filter_root).facilities()
         for error in report["errors"]:
-            logger.info("Filter discovery: %s", error)
+            logger.warning("Filter discovery: %s", error)
         return [
             {"facility": row["label"], "facility_key": row["key"], "source": source, "is_local": False}
             for row in report["entries"]
@@ -1801,10 +1801,6 @@ class Filters:
                 note = f"  ({r.note})" if r.note and (r.kept or r.source == "assumed") else ""
                 print(f"[filters]{flag} {r.path}: {r.detector_type} [{r.source}]{note}")
         return rows
-
-    @classmethod
-    def _atmosphere_root(cls, filter_root: Optional[Union[str, Path]] = None) -> Path:
-        return (Path(filter_root) if filter_root else cls._filter_root).parent / "atmospheres"
 
     @classmethod
     def available(
@@ -2116,12 +2112,17 @@ class Filters:
         references and BibTeX) or as a ``.bib`` file (``format="bibtex"``).
 
         References NJM holds no BibTeX for appear in the ``.bib`` output as ``%``
-        comments with what is known; nothing is made up.
+        comments with what is known; nothing is made up.  The text lists any
+        target whose ``info.json`` could not be read; the ``.bib`` file cannot,
+        so then :class:`~sed_tools.filter_catalogue.CatalogueError` is raised
+        (:meth:`citations` returns what was found).
         """
-        from .filter_catalogue import format_bibtex, format_citations
+        from .filter_catalogue import CatalogueError, format_bibtex, format_citations
 
         result = cls.citations(*targets, filter_root=filter_root, refresh=refresh, offline=offline)
         if format == "bibtex":
+            if result["errors"]:
+                raise CatalogueError("Cannot cite every target: " + "; ".join(result["errors"]))
             return format_bibtex(result)
         if format == "text":
             return format_citations(result)
@@ -2152,7 +2153,6 @@ class Filters:
         (``vega/vega_flam.csv``) scaled to the curves; a path or a
         ``(wavelength Å, f_λ)`` pair overlays another spectrum.  Needs matplotlib.
         """
-        from .filter_catalogue import CatalogueError
         from .filter_colors import instrument_colors
         from .filter_plot import plot_curves
         from .filter_properties import load_vega
@@ -2160,29 +2160,8 @@ class Filters:
 
         if not targets:
             raise ValueError("nothing to plot: give Facility/Instrument[/Band] targets or a search result")
-        root = Path(filter_root or cls._filter_root)
-        selection = cls._targets(targets, filter_root)
         catalogue = cls._catalogue(filter_root)
-        chosen: List[Tuple[str, str, str, Path]] = []
-        for fac, inst, bands, directory in selection:
-            if directory is None:
-                directory = next((d for d in (root / fac / inst, *root.glob("*/*"))
-                                  if d.is_dir() and (d.parent.name.casefold(), d.name.casefold())
-                                  == (fac.casefold(), inst.casefold()) and any(d.glob("*.dat"))), None)
-            if directory is None:
-                if not fetch:
-                    raise FileNotFoundError(f"{fac}/{inst} is not installed under {root}")
-                try:
-                    served = catalogue.resolve(fac, inst)
-                    fac, inst = served["facility"], served["instrument"]
-                except CatalogueError:
-                    pass
-                directory = cls._fetch_published(fac, inst, filter_root=filter_root)
-            files = {p.stem: p for p in sorted(Path(directory).glob("*.dat"))}
-            for band in (files if bands is None else bands):
-                if band not in files:
-                    raise FileNotFoundError(f"{fac}/{inst} has no band {band!r} in {directory}")
-                chosen.append((fac, inst, band, Path(directory)))
+        chosen = cls._plot_bands(targets, filter_root, catalogue, fetch)
 
         curves, labels = {}, {}
         for fac, inst, band, directory in chosen:
@@ -2209,6 +2188,41 @@ class Filters:
             spectrum = vega
         return plot_curves(curves, colors=colors, labels=labels, normalize=normalize, vega=spectrum,
                            ax=ax, legend=legend, log_wavelength=log_wavelength, title=title)
+
+    @classmethod
+    def _plot_bands(cls, targets, filter_root, catalogue, fetch) -> List[Tuple[str, str, str, Path]]:
+        """``(facility, instrument, band, directory)`` for every band the plot targets select."""
+        chosen: List[Tuple[str, str, str, Path]] = []
+        for fac, inst, bands, directory in cls._targets(targets, filter_root):
+            if directory is None:
+                fac, inst, directory = cls._installed_or_fetched(fac, inst, filter_root, catalogue, fetch)
+            files = {p.stem: p for p in sorted(Path(directory).glob("*.dat"))}
+            for band in (files if bands is None else bands):
+                if band not in files:
+                    raise FileNotFoundError(f"{fac}/{inst} has no band {band!r} in {directory}")
+                chosen.append((fac, inst, band, Path(directory)))
+        return chosen
+
+    @classmethod
+    def _installed_or_fetched(cls, fac, inst, filter_root, catalogue, fetch) -> Tuple[str, str, Path]:
+        """``(facility, instrument, directory)`` of an installed instrument (names ignore case),
+        or of its published curves fetched under NJM's names for it."""
+        from .filter_catalogue import CatalogueError
+
+        root = Path(filter_root or cls._filter_root)
+        for d in (root / fac / inst, *root.glob("*/*")):
+            if (d.is_dir() and (d.parent.name.casefold(), d.name.casefold()) == (fac.casefold(), inst.casefold())
+                    and any(d.glob("*.dat"))):
+                return fac, inst, d
+        if not fetch:
+            raise FileNotFoundError(f"{fac}/{inst} is not installed under {root}")
+        try:
+            served = catalogue.resolve(fac, inst)
+        except CatalogueError as exc:
+            logger.warning("%s; fetching %s/%s under the name given", exc, fac, inst)
+        else:
+            fac, inst = served["facility"], served["instrument"]
+        return fac, inst, cls._fetch_published(fac, inst, filter_root=filter_root)
 
 
 # =============================================================================
