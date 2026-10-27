@@ -549,6 +549,44 @@ class NJMSpectraGrabber:
             return 'fail', f"{filename}: {exc}"
         return 'ok', None
 
+    def _download_files(self, model_dir: str, model_url: str, txt_files: List[str],
+                        aux_files: List[str], wl_query: str,
+                        force_txt: bool) -> Tuple[Dict[str, int], List[str]]:
+        """Download the spectra (in parallel), then the auxiliary files.
+
+        Returns the count of each status ('ok', 'skip', 'fail') and a
+        'file: error' entry for each failure.
+        """
+        counts = {'ok': 0, 'skip': 0, 'fail': 0}
+        failures: List[str] = []
+        
+        # Download .txt files first (parallel) - these are the primary data
+        # Force re-download when server-side wl_cut is active (existing files
+        # may have a different wavelength range from a prior download)
+        if txt_files:
+            print(f"  Downloading {len(txt_files)} spectrum files...")
+            with ThreadPoolExecutor(max_workers=self.max_workers) as ex:
+                futures = [ex.submit(self._fetch_file, model_dir, model_url, f, wl_query, force_txt)
+                           for f in txt_files]
+                for fut in tqdm(as_completed(futures), total=len(futures), desc="  Spectra"):
+                    status, error = fut.result()
+                    counts[status] += 1
+                    if error:
+                        failures.append(error)
+        
+        # Download auxiliary files (sequential)
+        # These will be REGENERATED after cleaning to ensure consistency
+        if aux_files:
+            print(f"  Downloading {len(aux_files)} auxiliary files...")
+            for filename in aux_files:
+                status, error = self._fetch_file(model_dir, model_url, filename)
+                counts[status] += 1
+                print(f"    [{status}] {filename}")
+                if error:
+                    failures.append(error)
+        
+        return counts, failures
+
     def _server_wl_cut_available(self, model_name: str, probe_file: str,
                                  wl_range: Tuple[float, float]) -> bool:
         """Ask for one spectrum with wl_min/wl_max; True if the mirror cuts server-side.
@@ -687,34 +725,9 @@ class NJMSpectraGrabber:
                 print(f"  [njm] Server-side wavelength cut active ({wl_range[0]:.1f} – {wl_range[1]:.1f} Å)")
         wl_query = f"?wl_min={wl_range[0]}&wl_max={wl_range[1]}" if server_wl_cut else ""
 
-        counts = {'ok': 0, 'skip': 0, 'fail': 0}
-        failures: List[str] = []
-        
-        # Download .txt files first (parallel) - these are the primary data
-        # Force re-download when server-side wl_cut is active (existing files
-        # may have a different wavelength range from a prior download)
-        if txt_files:
-            print(f"  Downloading {len(txt_files)} spectrum files...")
-            with ThreadPoolExecutor(max_workers=self.max_workers) as ex:
-                futures = [ex.submit(self._fetch_file, model_dir, model_url, f, wl_query, server_wl_cut)
-                           for f in txt_files]
-                for fut in tqdm(as_completed(futures), total=len(futures), desc="  Spectra"):
-                    status, error = fut.result()
-                    counts[status] += 1
-                    if error:
-                        failures.append(error)
-        
-        # Download auxiliary files (sequential)
-        # These will be REGENERATED after cleaning to ensure consistency
         aux_files = bin_files + h5_files + csv_files
-        if aux_files:
-            print(f"  Downloading {len(aux_files)} auxiliary files...")
-            for filename in aux_files:
-                status, error = self._fetch_file(model_dir, model_url, filename)
-                counts[status] += 1
-                print(f"    [{status}] {filename}")
-                if error:
-                    failures.append(error)
+        counts, failures = self._download_files(model_dir, model_url, txt_files, aux_files,
+                                                wl_query, force_txt=server_wl_cut)
         
         print(f"[njm] {model_name}: {counts['ok']} downloaded, {counts['skip']} skipped, {counts['fail']} failed")
         
