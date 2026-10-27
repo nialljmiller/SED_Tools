@@ -34,7 +34,6 @@ instruments share the ``lsst_std`` site.  An existing site is never rewritten.
 from __future__ import annotations
 
 import io
-import logging
 from pathlib import Path
 from typing import Dict, Optional, Tuple, Union
 
@@ -44,8 +43,6 @@ from ..filter_components import (ATMOSPHERE, FILTER, OPTICS, QE, SHARED, Atmosph
                                  InstrumentManifest, add_component)
 from ..filter_metadata import (ENERGY, PHOTON, SOURCE_ASSUMED, SOURCE_SVO, SVOMetadataClient,
                                svo_components_header, write_filter_file)
-
-logger = logging.getLogger(__name__)
 
 FACILITY = "LSST"
 BANDS = ("u", "g", "r", "i", "z", "y")

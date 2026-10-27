@@ -15,7 +15,6 @@ only within its validity range (see :data:`VALID_NM`).
 
 from __future__ import annotations
 
-import logging
 from pathlib import Path
 from typing import Dict, Tuple
 
@@ -23,8 +22,6 @@ import numpy as np
 
 from ..filter_components import InstrumentManifest
 from ._original import Component, Fetcher, Instrument, clean_curve, make_band, write_instrument
-
-logger = logging.getLogger(__name__)
 
 FACILITY = "Cassini"
 VOLUME = "https://pds-rings.seti.org/holdings/volumes/COISS_0xxx/COISS_0011/"

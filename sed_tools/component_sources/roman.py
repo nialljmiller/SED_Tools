@@ -20,7 +20,6 @@ The detector-to-detector spread is recorded in the manifest notes.
 
 from __future__ import annotations
 
-import logging
 import re
 from pathlib import Path
 from typing import Dict, Tuple, Union
@@ -29,8 +28,6 @@ import numpy as np
 
 from ..filter_components import QE, SHARED, InstrumentManifest, add_component
 from ._original import Fetcher
-
-logger = logging.getLogger(__name__)
 
 FACILITY, INSTRUMENT = "Roman", "WFI"
 COMMIT = "14a9b0c98b0da723d0f2e4c6277956183c1fdd06"  # repository HEAD on 2026-10-26 (v1.6)

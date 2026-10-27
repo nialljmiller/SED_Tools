@@ -26,8 +26,6 @@ the most complete composition.  Palomar has no modelled own-site atmosphere.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-
 import numpy as np
 
 from ..filter_components import QE, InstrumentManifest, add_component
@@ -41,15 +39,12 @@ COATINGS = ("ZTF's 16 CCDs have two anti-reflection coatings: the northernmost a
             "eight are single-layer, the inner eight multi-layer (ztf_information README).")
 
 
-@dataclass
-class _MeanQE(Table):
-    def read(self, session):
-        a = Table(SINGLE, wl_scale=10.0).read(session)
-        b = Table(MULTI, wl_scale=10.0).read(session)
-        lo, hi = max(a[0][0], b[0][0]), min(a[0][-1], b[0][-1])
-        grid = np.unique(np.concatenate([a[0], b[0]]))
-        grid = grid[(grid >= lo) & (grid <= hi)]
-        return grid, 0.5 * (np.interp(grid, *a) + np.interp(grid, *b))
+def _mean_qe(single, multi):
+    """Equal-weight mean of the two QE curves, on their merged samples over their common range."""
+    lo, hi = max(single[0][0], multi[0][0]), min(single[0][-1], multi[0][-1])
+    grid = np.unique(np.concatenate([single[0], multi[0]]))
+    grid = grid[(grid >= lo) & (grid <= hi)]
+    return grid, 0.5 * (np.interp(grid, *single) + np.interp(grid, *multi))
 
 
 SPEC = SimpleSource(
@@ -86,7 +81,7 @@ def build(filter_root, *, session=None, **kwargs):
 
         session = requests.Session()
     curves = {name: Table(url, wl_scale=10.0).read(session) for name, (_, url, _) in QE_VARIANTS.items()}
-    mean = _MeanQE(f"{SINGLE} + {MULTI}").read(session)
+    mean = _mean_qe(curves["single_layer"], curves["multi_layer"])
     inst_dir = build_simple(SPEC, filter_root, session=session, **kwargs)
     manifest = InstrumentManifest.load(inst_dir)
     manifest.variants.pop(QE, None)

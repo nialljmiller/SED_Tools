@@ -29,10 +29,9 @@ from __future__ import annotations
 
 import io
 import zipfile
-from ..filter_components import TEAM
-from ._common import SimpleSource, SiteAtmosphere, Table, build_simple
+from pathlib import Path
 
-from ..filter_components import FILTER, InstrumentManifest, add_component
+from ..filter_components import FILTER, TEAM, InstrumentManifest, add_component
 from ..filter_metadata import PHOTON, write_filter_file
 from ._common import SimpleSource, SiteAtmosphere, Table, build_simple, register_variant
 
@@ -125,7 +124,6 @@ def build(filter_root, *, session=None, **kwargs):
         import requests
 
         session = requests.Session()
-    from pathlib import Path
 
     from ..combine_filters import write_filter_index
 
