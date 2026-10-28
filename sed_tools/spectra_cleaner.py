@@ -530,18 +530,23 @@ def _flux_unit_name(unit_info: UnitInfo) -> str:
                 if (flux_type, factor) == (unit_info.flux_type, unit_info.flux_factor))
 
 
-def _with_flux_unit(grid: str, unit_info: UnitInfo, flux_unit: Optional[str]) -> UnitInfo:
-    """unit_info with the caller's flux unit if given, else as detected when the spectra declare theirs.
+def _with_flux_unit(grid: str, unit_info: UnitInfo, flux_unit: Optional[str], *,
+                    report: bool = True) -> UnitInfo:
+    """unit_info as detected when the spectra declare their flux unit, else with the caller's.
 
-    Raises ValueError naming the best guess when they do not and none was given.
+    A declared unit is never replaced: a flux_unit given as well is not used,
+    and a warning says so (unless ``report`` is False).  Raises ValueError
+    naming the best guess when the spectra declare none and none was given.
     """
-    if flux_unit is not None:
-        flux_type, flux_factor, _ = FLUX_UNITS[flux_unit]
-        return dataclasses.replace(unit_info, flux_type=flux_type, flux_factor=flux_factor,
-                                   flux_declared=True)
-    if not unit_info.flux_declared:
+    if unit_info.flux_declared:
+        if flux_unit is not None and report:
+            logger.warning("%s: the spectra declare their flux unit (%s); flux_unit=%r is not used",
+                           grid, _flux_unit_name(unit_info), flux_unit)
+        return unit_info
+    if flux_unit is None:
         raise ValueError(_undeclared_flux_unit_message(grid, _flux_unit_name(unit_info)))
-    return unit_info
+    flux_type, flux_factor, _ = FLUX_UNITS[flux_unit]
+    return dataclasses.replace(unit_info, flux_type=flux_type, flux_factor=flux_factor, flux_declared=True)
 
 
 def _detect_sample(sample_files: List[str]) -> Tuple[List[UnitInfo], int, int, int]:
@@ -932,7 +937,7 @@ def _clean_spectrum(
     if catalog_units is not None:
         unit_info = catalog_units
     else:
-        unit_info = _with_flux_unit("this spectrum", detect_units_single_file(filepath), flux_unit)
+        unit_info = _with_flux_unit("this spectrum", detect_units_single_file(filepath), flux_unit, report=False)
     wl_std, flux_std = convert_to_standard_units(wl, flux, unit_info)
     
     # Validate
@@ -1061,9 +1066,10 @@ def clean_model_dir(
         rebuild_lookup: Rebuild lookup_table.csv after cleaning
         sample_fraction: Fraction of files to sample for unit detection (default 10%)
         flux_unit: The spectra's flux unit, a name in FLUX_UNITS ('flam', 'fnu',
-            'fnu_jy', 'flam_si', 'flam_si_nm', 'flam_si_um', 'normalized'). It
-            replaces the unit their headers declare, and is required when they
-            declare none.
+            'fnu_jy', 'flam_si', 'flam_si_nm', 'flam_si_um', 'normalized'),
+            used only for spectra whose headers do not declare theirs, and
+            required when the sampled ones declare none. A declared unit is
+            never replaced; a warning says when flux_unit is not used.
     
     Returns:
         Summary dict with counts and file lists. When any spectrum's flux scale

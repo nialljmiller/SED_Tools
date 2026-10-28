@@ -540,3 +540,41 @@ def test_tabular_names_its_instruments_for_an_unknown_one(tmp_path):
 
     with pytest.raises(ValueError, match=r"tabular has no instrument 'NOPE'; choose one of: HAWKI"):
         tabular.build(tmp_path, instrument="NOPE")
+
+
+# ----------------------------------------------------------------------
+# Item 30: flux_unit= never replaces a declared flux unit, as --flux-unit does not
+# ----------------------------------------------------------------------
+def _flam_grid(directory, flux_header):
+    directory.mkdir(parents=True)
+    wl = np.linspace(3000.0, 10000.0, 50)
+    for i, teff in enumerate((3500.0, 3600.0, 3700.0)):
+        header = [f"# teff = {teff}\n", "# logg = 4.5\n", "# metallicity = 0.0\n", "# wavelength_unit = Angstrom\n"]
+        if flux_header:
+            header.append(f"# flux_unit = {flux_header}\n")
+        flux = 1e5 * (wl / 5000.0) ** -2
+        (directory / f"s{i}.txt").write_text("".join(header) + "".join(f"{w:.4f} {f:.6e}\n" for w, f in zip(wl, flux)))
+    return directory
+
+
+def test_a_declared_flux_unit_is_used_and_a_different_flux_unit_is_reported_unused(tmp_path, caplog):
+    from sed_tools.spectra_cleaner import clean_model_dir
+
+    declared = _flam_grid(tmp_path / "Declared", "erg/cm2/s/A")
+    reference = _flam_grid(tmp_path / "Reference", "erg/cm2/s/A")
+    with caplog.at_level(logging.WARNING, logger="sed_tools.spectra_cleaner"):
+        summary = clean_model_dir(str(declared), sample_fraction=1.0, flux_unit="fnu")
+    clean_model_dir(str(reference), sample_fraction=1.0)
+    assert summary["catalog_units"]["flux"] == "flam"  # the header's unit, not fnu
+    assert [p.read_text() for p in sorted(declared.glob("s*.txt"))] == \
+        [p.read_text() for p in sorted(reference.glob("s*.txt"))]
+    assert "the spectra declare their flux unit (flam); flux_unit='fnu' is not used" in caplog.text
+
+
+def test_flux_unit_is_used_for_spectra_that_declare_none(tmp_path, caplog):
+    from sed_tools.spectra_cleaner import clean_model_dir
+
+    grid = _flam_grid(tmp_path / "Undeclared", None)
+    with caplog.at_level(logging.WARNING, logger="sed_tools.spectra_cleaner"):
+        summary = clean_model_dir(str(grid), sample_fraction=1.0, flux_unit="flam")
+    assert summary["catalog_units"]["flux"] == "flam" and "is not used" not in caplog.text

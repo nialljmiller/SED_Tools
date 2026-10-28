@@ -788,7 +788,8 @@ class SED:
             Base directory for spectral grids
         flux_unit : str, optional
             The spectra's flux unit for cleaning (see spectra_cleaner.clean_model_dir);
-            required when their headers do not declare one.
+            required when their headers do not declare one, and never used
+            in place of a declared unit.
             
         Returns
         -------
@@ -1063,7 +1064,7 @@ class SED:
         dry_run : only report how many files have parseable headers; do not copy.
         flux_unit : the spectra's flux unit for cleaning (see
             spectra_cleaner.clean_model_dir); required when their headers do
-            not declare one.
+            not declare one, and never used in place of a declared unit.
 
         Returns a summary dict.  Files whose headers lack a parameter, or that
         cleaning leaves unusable, are left out of the built grid and then
