@@ -102,6 +102,21 @@ class FilterCatalogue:
         self._mirror_lock = threading.Lock()
         self._index: Optional[dict] = None
         self._index_loaded = 0.0
+        self._origins: Dict[Any, dict] = {}  # see origin()
+
+    def origin(self, facility: Optional[str] = None, instrument: Optional[str] = None,
+               kind: str = INFO) -> Optional[dict]:
+        """Where the last read of an instrument's ``kind`` file (without an instrument: of index.json) came from.
+
+        ``{"source": "installed" | "cache" | "njm", "checked": when NJM last
+        confirmed that copy (time.time(); None for an installed copy),
+        "njm_unreachable": True when the cached copy was used because NJM
+        could not be asked}``, or None if it has not been read.
+        """
+        return self._origins.get("index.json" if facility is None else (facility, instrument, kind))
+
+    def _came_from(self, key, source: str, checked: Optional[float], njm_unreachable: bool = False) -> None:
+        self._origins[key] = {"source": source, "checked": checked, "njm_unreachable": njm_unreachable}
 
     # ------------------------------------------------------------------
     # HTTP with an on-disk cache
@@ -157,6 +172,7 @@ class FilterCatalogue:
         if path.is_file() and not refresh and (
                 (generation is not None and meta.get("generation") == generation)
                 or (max_age is not None and time.time() - float(meta.get("checked", 0)) < max_age)):
+            self._came_from(rel, "cache", meta.get("checked"))
             return path
         mirror = self._online_mirror(have_copy=path.is_file() and not refresh)
         if mirror is None:
@@ -164,6 +180,8 @@ class FilterCatalogue:
             if path.is_file() and (refresh or not self.offline):
                 logger.warning("Cannot ask NJM (%s); using the cached %s, which may be out of date",
                                "offline" if self.offline else "unreachable", rel)
+            if path.is_file():
+                self._came_from(rel, "cache", meta.get("checked"), njm_unreachable=not self.offline)
             return path if path.is_file() else None
         headers = {}
         if path.is_file():
@@ -181,9 +199,11 @@ class FilterCatalogue:
             FilterCatalogue._unreachable_until = time.time() + 300
             if path.is_file():
                 logger.warning("NJM unreachable (%s); using the cached %s", exc, rel)
+                self._came_from(rel, "cache", meta.get("checked"), njm_unreachable=True)
                 return path
             raise CatalogueError(f"Cannot fetch {rel} from NJM: {exc}") from exc
         self._store(path, rel, url, response, meta, generation, validate)
+        self._came_from(rel, "njm", time.time())
         return path
 
     @staticmethod
@@ -288,7 +308,9 @@ class FilterCatalogue:
         installed = self._installed(facility, instrument, kind) if prefer_installed and not refresh else None
         if installed is not None:
             try:
-                return self._json_object(installed.read_text(encoding="utf-8"))
+                data = self._json_object(installed.read_text(encoding="utf-8"))
+                self._came_from((facility, instrument, kind), "installed", None)
+                return data
             except (OSError, ValueError) as exc:
                 # NJM's current file may describe other curves than the installed ones.
                 raise CatalogueError(f"{installed} is unreadable ({exc}); repair or remove it, or pass "
@@ -299,7 +321,10 @@ class FilterCatalogue:
             if self.offline:
                 cached = self.cache_root / "filters" / facility / instrument / f"{kind}.json"
                 if cached.is_file():
-                    return self._json_object(cached.read_text(encoding="utf-8"))
+                    data = self._json_object(cached.read_text(encoding="utf-8"))
+                    self._came_from((facility, instrument, kind), "cache",
+                                    self._read_meta(cached).get("checked"))
+                    return data
             raise
         entry = self.resolve(facility, instrument)
         name = entry[kind]
@@ -309,7 +334,12 @@ class FilterCatalogue:
         path = self._fetch(rel, generation=index.get("generated"), refresh=refresh, validate=self._json_object)
         if path is None:
             raise CatalogueError(self._not_cached(rel))
-        return self._json_object(path.read_text(encoding="utf-8"))
+        data = self._json_object(path.read_text(encoding="utf-8"))
+        origin = dict(self._origins[rel])
+        if origin["source"] == "cache" and (self._origins.get("index.json") or {}).get("njm_unreachable"):
+            origin["njm_unreachable"] = True  # current only as of an index.json NJM could not confirm
+        self._origins[(facility, instrument, kind)] = origin
+        return data
 
     def properties(self, facility: str, instrument: str, **kwargs) -> dict:
         """The instrument's ``properties.json``: ``{"bands": {band: {...}}, "definitions": {...}}``."""

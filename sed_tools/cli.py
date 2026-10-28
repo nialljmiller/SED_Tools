@@ -25,6 +25,7 @@ import os
 import re
 import sys
 import textwrap
+import time
 import traceback
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
@@ -770,16 +771,18 @@ SEARCH_COLUMNS = ["facility", "instrument", "band", "WavelengthPivot", "FWHM",
 
 
 def _catalogue_entry(facility: str, instrument: str, base: str, *, offline: bool) -> dict:
-    """NJM's info.json and properties.json for ``filters-info``; errors are reported, not raised."""
+    """NJM's info.json and properties.json for ``filters-info``, and where info.json came from
+    (FilterCatalogue.origin); errors are reported, not raised."""
     from .api import Filters
 
-    entry = {"info": None, "properties": None, "errors": []}
+    entry = {"info": None, "properties": None, "errors": [], "origin": None}
     for kind in ("info", "properties"):
         try:
             entry[kind] = getattr(Filters, kind)(facility, instrument, filter_root=base, offline=offline)
         except (CatalogueError, OSError, ValueError) as exc:
             if str(exc) not in entry["errors"]:
                 entry["errors"].append(str(exc))
+    entry["origin"] = Filters._catalogue(base, offline=offline).origin(facility, instrument, "info")
     return entry
 
 
@@ -789,6 +792,11 @@ def print_catalogue_entry(target: str, entry: dict) -> None:
 
     if info.get("description"):
         _print_field("Description", info["description"])
+    origin = entry.get("origin") or {}
+    if origin.get("njm_unreachable"):
+        checked = origin.get("checked")
+        when = time.strftime(", checked %Y-%m-%d %H:%M UTC", time.gmtime(checked)) if checked else ""
+        _print_field("Catalogue", f"from the cached copy{when}; NJM could not be asked")
     licence = info.get("licence") or {}
     if licence:
         _print_field("Licence", _licence_summary(licence) + f" Full text: sed-tools filters-cite {target}")

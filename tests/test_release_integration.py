@@ -612,3 +612,38 @@ def test_every_number_question_is_the_same_one_and_refuses_nan(monkeypatch, caps
     assert cli._ask_number("Airmass: ", words=("unstated",)) == 1.3  # the CLI's question took nan before
     out = capsys.readouterr().out
     assert "'nan' is not a number or 'unstated'; try again." in out and "Please enter a number or 'unstated'." in out
+
+
+# ----------------------------------------------------------------------
+# Item 26: the catalogue says where its data came from
+# ----------------------------------------------------------------------
+def test_the_catalogue_reports_njm_the_cache_or_an_installed_copy(legacy_sources, monkeypatch, capsys):
+    from sed_tools.filter_catalogue import FilterCatalogue
+
+    catalogue = FilterCatalogue(legacy_sources.root)
+    assert catalogue.info("Herschel", "PACS")["description"] == "Herschel PACS passbands"
+    assert catalogue.origin("Herschel", "PACS", "info")["source"] == "njm"
+    assert catalogue.origin()["source"] == "njm"  # index.json
+
+    # NJM stops answering: the next catalogue uses the cached copies and says so.
+    legacy_sources.served.files = {}
+    later = FilterCatalogue(legacy_sources.root, index_max_age=0)
+    monkeypatch.setattr(later, "_online_mirror", lambda have_copy=False: None)
+    later.info("Herschel", "PACS")
+    origin = later.origin("Herschel", "PACS", "info")
+    assert origin["source"] == "cache" and origin["njm_unreachable"] and origin["checked"] > 0
+
+    installed = legacy_sources.root / "Herschel" / "PACS"
+    installed.mkdir(parents=True)
+    (installed / "info.json").write_text(json.dumps({"description": "installed", "bands": {"b": {}}}))
+    assert later.info("Herschel", "PACS")["description"] == "installed"
+    assert later.origin("Herschel", "PACS", "info") == {"source": "installed", "checked": None,
+                                                        "njm_unreachable": False}
+
+
+def test_filters_info_says_when_the_catalogue_is_the_cached_copy(capsys):
+    cli.print_catalogue_entry("Fac/Cam", {"info": {"description": "d"}, "properties": None, "errors": [],
+                                          "origin": {"source": "cache", "checked": 0.0 + 1761600000,
+                                                     "njm_unreachable": True}})
+    out = " ".join(capsys.readouterr().out.split())  # the field wraps to the terminal
+    assert "Catalogue : from the cached copy, checked 2025-10-27 21:20 UTC; NJM could not be asked" in out
