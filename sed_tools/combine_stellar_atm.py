@@ -88,9 +88,9 @@ def _count_spectra(lookup_file):
 
 
 def select_models_interactive(model_dirs):
-    """Present spectral grid options and ask until the answer is 'all' or valid grid numbers.
+    """Present spectral grid options and ask until the answer is 'all', valid grid numbers, or q/b.
 
-    The grids are returned in the order typed.
+    The grids are returned in the order typed; q or b (back) returns [].
     """
     print("\nAvailable stellar spectral grids:")
     print("-" * 50)
@@ -102,11 +102,13 @@ def select_models_interactive(model_dirs):
             n_models = "?"  # only the menu count; loading the grid reports the problem
         print(f"{idx}. {name} ({n_models} model spectra)")
 
-    print("\nEnter spectral grid numbers (comma-separated) or 'all':")
+    print("\nEnter spectral grid numbers (comma-separated) or 'all'; q or b to go back:")
     while True:
         user_input = input("> ").strip()
         if user_input.lower() == "all":
             return model_dirs
+        if user_input.lower() in ("q", "quit", "exit", "b", "back"):  # as in the pickers
+            return []
         tokens = [x.strip() for x in user_input.split(",")]
         valid = all(t.isdecimal() and 1 <= int(t) <= len(model_dirs) for t in tokens)
         if valid and len(set(map(int, tokens))) == len(tokens):
