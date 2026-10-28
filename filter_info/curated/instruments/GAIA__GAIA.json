@@ -1,8 +1,8 @@
 {
-  "description": "GAIA passbands include the broad-band photometric system (G, Gbp, Grp), the magnitude-dependent split blue passbands (Gbp_bright and Gbp_faint separated at G = 10.87 by Maíz Apellániz & Weiler 2018), and the Radial Velocity Spectrometer band (Grvs).",
+  "description": "Gaia passbands: the (E)DR3 broad-band passbands (G, Gbp, Grp) and the DR3 Radial Velocity Spectrometer band (Grvs), plus the bright and faint BP passbands (Gbp_bright for G < 10.87, Gbp_faint for G > 10.87) from Maíz Apellániz & Weiler's (2018) revision of the Gaia DR2 passbands.",
   "short_description": "Gaia DR3 passbands + BP bright/faint (Maíz Apellániz & Weiler 2018)",
   "facility_description": "Gaia is a European Space Agency astrometric, photometric and spectroscopic space observatory operating at the Sun-Earth L2 Lagrange point.",
-  "notes": "GAIA/GAIA contains the revised Gaia DR2 photometric sensitivity curves from Maíz Apellániz & Weiler (2018, A&A 619, A180), which separated Gbp into bright (G < 10.87) and faint regimes to account for charge transfer effects, as well as the RVS transmission profile. Pre-launch and nominal bandpasses are described in Jordi et al. (2010). The owner documentation explicitly describes these as photon response functions (quantum efficiency). DetectorType is left unchanged.",
+  "notes": "G, Gbp and Grp are the Gaia (E)DR3 passbands and Grvs is the Gaia DR3 RVS passband: each curve's data rows are identical to SVO's GAIA/GAIA3 record of the same band (SVO description 'GAIA <band> filter, DR3'; SVO profile reference https://www.cosmos.esa.int/web/gaia/edr3-passbands for G, Gbp and Grp, and https://www.cosmos.esa.int/web/gaia/dr3-passbands for Grvs). They are not the Maíz Apellániz & Weiler (2018) curves. Gbp_bright and Gbp_faint are Maíz Apellániz & Weiler's (2018, A&A 619, A180) revision of the Gaia DR2 BP passband, which has one BP passband for bright stars (G < 10.87) and one for faint stars (G > 10.87); their data rows are identical to SVO's GAIA/Gaia2m.Gbp_bright and GAIA/Gaia2m.Gbp_faint. The curves were compared with SVO captures of 2026-10-27. Pre-launch nominal passbands are described in Jordi et al. (2010). DetectorType (photon) is SVO's for all six bands and is left unchanged.",
   "licence": {
     "redistribution": "attribution",
     "terms": "\"Data hosted in the ESA Space Science Archives are distributed under the CC BY-NC 3.0 IGO licence.\" … \"Prior to any commercial use by the User of any Data or Data Product, including any use or application that directly or indirectly generates a financial gain, a detailed request for authorisation/licence shall be made by the User by sending email to data.licences@esa.int.\"",
@@ -15,6 +15,16 @@
     "bibcode:2016A&A...595A...1G"
   ],
   "links": [
+    {
+      "url": "https://www.cosmos.esa.int/web/gaia/edr3-passbands",
+      "label": "Gaia EDR3 passbands (SVO's profile reference for G, Gbp and Grp)",
+      "source": "ESA / Gaia"
+    },
+    {
+      "url": "https://www.cosmos.esa.int/web/gaia/dr3-passbands",
+      "label": "Gaia DR3 passbands (SVO's profile reference for Grvs)",
+      "source": "ESA / Gaia"
+    },
     {
       "url": "https://www.cosmos.esa.int/web/gaia/transmissionwithoriginal",
       "label": "Gaia instrument transmission profiles including RVS",
@@ -55,13 +65,11 @@
   "bands": {
     "G": {
       "references": [
-        "bibcode:2018A&A...619A.180M",
         "bibcode:2010A&A...523A..48J"
       ]
     },
     "Gbp": {
       "references": [
-        "bibcode:2018A&A...619A.180M",
         "bibcode:2010A&A...523A..48J"
       ]
     },
@@ -77,7 +85,6 @@
     },
     "Grp": {
       "references": [
-        "bibcode:2018A&A...619A.180M",
         "bibcode:2010A&A...523A..48J"
       ]
     },
