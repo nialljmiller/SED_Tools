@@ -221,3 +221,175 @@ def test_densifier_spacing_prompt_asks_again(tmp_path, cube_writer, monkeypatch,
     out = capsys.readouterr().out
     assert "'fine' is not a positive number; try again." in out
     assert "'-5' is not a positive number; try again." in out
+
+
+# ---------------------------------------------------------------------
+# P20: mesa_prepare lists and exports the variants 'sed-tools rebuild' writes
+# ---------------------------------------------------------------------
+
+def _kurucz_alpha(base):
+    """Both golden Kurucz grids (alpha 0 and 0.4) as one grid; lh and vtur are the same throughout."""
+    import pandas as pd
+
+    from sed_tools.svo_regen_spectra_lookup import regenerate_lookup_table
+
+    grid = base / "KuruczAlpha"
+    grid.mkdir(parents=True)
+    for name in ("Kurucz2003all", "Kurucz2003all__alpha_04"):
+        for path in (GOLDEN_MODELS / name).glob("*.txt"):
+            shutil.copy2(path, grid / path.name)
+    regenerate_lookup_table(str(grid))
+    lookup = pd.read_csv(grid / "lookup_table.csv", dtype=str)
+    assert sorted(set(lookup[" vtur"])) == ["2 km/s"]  # a value with a space and a '/'
+    return grid
+
+
+@pytest.fixture
+def split_grid(tmp_path):
+    """KuruczAlpha after a rebuild: split into one subgrid per alpha, plus variants_index.csv."""
+    from sed_tools.api import _build_flux_cube
+
+    grid = _kurucz_alpha(tmp_path / "stellar")
+    assert _build_flux_cube(grid).name == "variants_index.csv"
+    assert not (grid / "flux_cube.bin").exists()
+    return grid
+
+
+def test_list_variants_reads_the_subgrids_rebuild_writes(split_grid):
+    # Used to raise "No flux_cube.bin found in .../KuruczAlpha. Run 'sed-tools rebuild' first."
+    from sed_tools.mesa_prepare import list_variants
+
+    variants = list_variants(split_grid)
+
+    assert [v.label for v in variants] == ["alpha_0", "alpha_0.4"]
+    assert [v.extra_axes for v in variants] == [{"alpha": "0"}, {"alpha": "0.4"}]
+    assert [v.n_spectra for v in variants] == [12, 12]
+    sub = "KuruczAlpha_alpha_0p40_lh_1p25_vtur_2_km_s"
+    assert variants[1].flux_cube_path == split_grid / sub / "flux_cube.bin"
+    assert variants[1].source_model_dir == split_grid
+    assert variants[1].wavelength_n == 1199
+    assert set(variants[1].lookup_rows["alpha"]) == {"0.4"}
+
+
+def test_export_variant_writes_a_mesa_ready_folder_from_a_split_grid(split_grid, tmp_path):
+    import pandas as pd
+
+    from sed_tools.mesa_prepare import export_variant, list_variants
+
+    variant = list_variants(split_grid)[1]
+    out = export_variant(variant, tmp_path / "export")
+
+    spectra = sorted(out.glob("*.txt"))
+    assert len(spectra) == 12 and not any(p.is_symlink() for p in spectra)
+    for path in spectra:
+        assert path.read_bytes() == (split_grid / path.name).read_bytes()
+    sub = split_grid / "KuruczAlpha_alpha_0p40_lh_1p25_vtur_2_km_s"
+    assert (out / "flux_cube.bin").read_bytes() == (sub / "flux_cube.bin").read_bytes()
+    lookup = pd.read_csv(out / "lookup_table.csv", dtype=str)
+    assert sorted(lookup["file_name"]) == [p.name for p in spectra]
+    assert set(lookup["alpha"]) == {"0.4"}
+
+
+def test_mesa_prepare_menu_exports_a_variant_of_a_split_grid(split_grid, monkeypatch, capsys):
+    from sed_tools import mesa_prepare
+
+    _feed_input(monkeypatch, ["2", ""])
+    mesa_prepare.run_interactive(base_dir=str(split_grid.parent), model="KuruczAlpha")
+
+    out = capsys.readouterr().out
+    assert "Sub-variants of KuruczAlpha: 2 variants over alpha" in out
+    assert "lh" not in out.split("Sub-variants")[1] and "vtur" not in out
+    exported = split_grid.parent / "KuruczAlpha__alpha_0.4"
+    assert len(list(exported.glob("*.txt"))) == 12 and (exported / "flux_cube.bin").is_file()
+
+
+def test_list_variants_raises_for_a_subgrid_without_its_cube(split_grid):
+    from sed_tools.mesa_prepare import list_variants
+
+    sub = split_grid / "KuruczAlpha_alpha_0p00_lh_1p25_vtur_2_km_s"
+    (sub / "flux_cube.bin").rename(sub / "flux_cube.bin.moved")
+    with pytest.raises(FileNotFoundError, match="lists the subgrid KuruczAlpha_alpha_0p00_lh_1p25_vtur_2_km_s"):
+        list_variants(split_grid)
+
+
+def test_mesa_prepare_on_a_uniform_grid_says_one_thing(tmp_path, monkeypatch, capsys):
+    # The golden Kurucz grid has alpha, lh and vtur columns with one value each. It used
+    # to print "the master flux_cube.bin averages all extra-axis variants (alpha, lh, vtur)"
+    # and then "This spectral grid has no extra-axis variants".
+    from sed_tools import mesa_prepare
+    from sed_tools.precompute_flux_cube import precompute_flux_cube
+
+    grid = tmp_path / "Kurucz2003all"
+    shutil.copytree(GOLDEN_MODELS / "Kurucz2003all", grid)
+    precompute_flux_cube(str(grid), str(grid / "flux_cube.bin"))
+    capsys.readouterr()
+
+    mesa_prepare.run_interactive(base_dir=str(tmp_path), model="Kurucz2003all")
+
+    out = capsys.readouterr().out
+    assert "averages" not in out and "Note" not in out
+    assert "has one flux_cube.bin for all its spectra and no variants to choose between" in out
+    assert "already MESA-ready" in out
+
+
+def test_mesa_prepare_notes_a_mean_cube_naming_only_the_varying_axes(tmp_path, monkeypatch, capsys):
+    from sed_tools import mesa_prepare
+    from sed_tools.precompute_flux_cube import precompute_flux_cube
+
+    grid = _kurucz_alpha(tmp_path)
+    precompute_flux_cube(str(grid), str(grid / "flux_cube.bin"),
+                         override_dict={"on_collision": {"strategy": "mean"}})
+    capsys.readouterr()
+
+    (variant,) = mesa_prepare.list_variants(grid)
+
+    out = capsys.readouterr().out
+    assert "Note: KuruczAlpha has 2 variants over alpha, but no per-variant cubes" in out
+    assert "lh" not in out and "vtur" not in out
+    assert variant.label == "full_grid" and variant.flux_cube_path == grid / "flux_cube.bin"
+
+
+def _legacy_library_grid(tmp_path, cube_writer):
+    """A grid in the layout of earlier SED_Tools versions: cube names carry every extra column."""
+    grid = tmp_path / "Grid"
+    grid.mkdir()
+    (grid / "lookup_table.csv").write_text(
+        "file_name,teff,logg,metallicity,alpha,vtur\na.txt,5000,4.0,0.0,0.0,2\nb.txt,5000,4.0,0.0,0.4,2\n")
+    for name in ("a.txt", "b.txt"):
+        (grid / name).write_text("4000 1.0\n5000 2.0\n")
+    for alpha in ("0.0", "0.4"):
+        cube_writer(grid / "fluxcube_library" / f"flux_cube__alpha_{alpha}__vtur_2.bin",
+                    [5000.0], [4.0], [0.0], [4000.0, 5000.0], np.ones((1, 1, 1, 2)))
+    return grid
+
+
+def test_list_variants_still_reads_a_fluxcube_library(tmp_path, cube_writer):
+    from sed_tools.mesa_prepare import export_variant, list_variants
+
+    variants = list_variants(_legacy_library_grid(tmp_path, cube_writer))
+
+    assert [v.label for v in variants] == ["alpha_0.0__vtur_2", "alpha_0.4__vtur_2"]
+    out = export_variant(variants[1], tmp_path / "export")
+    assert sorted(p.name for p in out.iterdir()) == ["b.txt", "flux_cube.bin", "lookup_table.csv"]
+
+
+def test_print_variant_table_names_only_the_axes_that_vary(tmp_path, cube_writer, capsys):
+    from sed_tools.mesa_prepare import list_variants, print_variant_table
+
+    print_variant_table(list_variants(_legacy_library_grid(tmp_path, cube_writer)), model_name="Grid")
+    out = capsys.readouterr().out
+    assert "Sub-variants of Grid: 2 variants over alpha" in out
+    assert "alpha=0.4" in out and "vtur=" not in out
+
+
+def test_export_variant_refuses_a_missing_cube_before_writing(tmp_path):
+    from sed_tools.mesa_prepare import export_variant, list_variants
+
+    grid = tmp_path / "Plain"
+    grid.mkdir()
+    (grid / "lookup_table.csv").write_text("file_name,teff,logg,metallicity\na.txt,5000,4.0,0.0\n")
+    (grid / "a.txt").write_text("4000 1.0\n5000 2.0\n")
+    (variant,) = list_variants(grid)
+    with pytest.raises(FileNotFoundError, match="does not exist; nothing was exported"):
+        export_variant(variant, tmp_path / "out")
+    assert not (tmp_path / "out").exists()
