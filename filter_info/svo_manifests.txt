@@ -33,3 +33,4 @@ source_evidence/svo-archive/svo-live-2026-10-27-b08-curves/manifest.jsonl
 source_evidence/svo-archive/svo-live-2026-10-27-b09-browse/manifest.jsonl
 source_evidence/svo-archive/svo-live-2026-10-27-b10-browse/manifest.jsonl
 source_evidence/svo-archive/svo-live-2026-10-27-b11-browse/manifest.jsonl
+source_evidence/svo-archive/svo-live-2026-10-27-b12-browse/manifest.jsonl
