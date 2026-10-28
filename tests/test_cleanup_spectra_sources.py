@@ -168,12 +168,13 @@ def njm_online(extra=None):
 def test_njm_unreachable_warns_with_every_attempt_and_named_grid_requests_raise(tmp_path, monkeypatch, caplog):
     down = requests.ConnectionError("connection refused")
     with caplog.at_level(logging.WARNING):
-        grabber, _ = make_njm(tmp_path, monkeypatch, {
+        grabber, session = make_njm(tmp_path, monkeypatch, {
             f"{NJM}/index.json": down, NJM: down, f"{NJM.replace('https', 'http')}/index.json": down})
 
     assert not grabber.is_available()
     [message] = warnings_from(caplog, "njm_spectra_grabber")
-    assert "unreachable" in message and message.count("connection refused") == 3
+    # No answer means the mirror is down: one attempt, not three (a silent outage cost 26 s).
+    assert "unreachable" in message and message.count("connection refused") == 1 and len(session.calls) == 1
     assert grabber.discover_models() == []
     with pytest.raises(RuntimeError, match="unreachable"):
         grabber.get_model_metadata("Grid")

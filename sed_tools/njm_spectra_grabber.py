@@ -21,7 +21,12 @@ import urllib3
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 
+from .njm_filter_grabber import NJM_CONNECT_TIMEOUT
+
 logger = logging.getLogger(__name__)
+
+#: Connect and read timeouts of the availability check: a mirror that is down fails fast.
+_TIMEOUT = (NJM_CONNECT_TIMEOUT, 10)
 
 
 class NJMSpectraGrabber:
@@ -57,74 +62,76 @@ class NJMSpectraGrabber:
         self._available = self._check_availability()
         
     def _check_availability(self) -> bool:
-        """Check if the NJM mirror is available.
-        
-        Tries multiple approaches in order:
-          1) GET index.json (HTTPS, verify → no-verify)
-          2) HEAD base URL  (HTTPS, verify → no-verify)
-          3) GET index.json (HTTP fallback)
-        Also caches index.json data if successfully fetched. Dropping
-        certificate checks or HTTPS is warned about, and if every attempt
-        fails the warning lists each attempt's error.
+        """Check if the NJM mirror is available, failing fast when it does not answer.
+
+        GET index.json, which is also cached for discover_models.  A failed
+        certificate check is retried without verification, with a warning; an
+        HTTP error status is confirmed with a HEAD of the base URL (any answer
+        below 500 means the server is up).  No answer at all (refused, or no
+        connection within NJM_CONNECT_TIMEOUT) means the mirror is down, and
+        nothing else is tried.  Plain HTTP is tried only when HTTPS fails its
+        TLS handshake with and without verification.  If the mirror is down,
+        the warning lists each attempt's error.
         """
         index_url = f"{self.base_url}/index.json"
         errors: List[str] = []
-        
-        # Attempt 1: GET index.json (preferred — also caches data)
-        for verify in [True, False]:
+        for verify in (True, False):
             try:
-                resp = self.session.get(index_url, timeout=10, verify=verify)
+                resp = self.session.get(index_url, timeout=_TIMEOUT, verify=verify)
             except requests.exceptions.SSLError as exc:
                 errors.append(f"GET {index_url}: {exc}")
-                continue  # try next verify setting
+                continue  # try without certificate verification
             except requests.RequestException as exc:
                 errors.append(f"GET {index_url}: {exc}")
-                break  # non-SSL failure, skip to next approach
+                return self._unreachable(errors)
             if resp.status_code == 200:
                 self._cache_index(resp)
-                if not verify:
-                    self._disable_ssl_verification(errors)
-                return True
-            errors.append(f"GET {index_url}: HTTP {resp.status_code}")
+            else:
+                errors.append(f"GET {index_url}: HTTP {resp.status_code}")
+                if not self._answers_head(verify, errors):
+                    return self._unreachable(errors)
+            if not verify:
+                self._disable_ssl_verification(errors)
+            return True
+        return self._plain_http(index_url, errors)
 
-        # Attempt 2: HEAD on base URL (lighter request)
-        for verify in [True, False]:
-            try:
-                resp = self.session.head(self.base_url, timeout=5, verify=verify)
-            except requests.exceptions.SSLError as exc:
-                errors.append(f"HEAD {self.base_url}: {exc}")
-                continue
-            except requests.RequestException as exc:
-                errors.append(f"HEAD {self.base_url}: {exc}")
-                break
-            if resp.status_code < 500:  # even 403 means server is alive
-                if not verify:
-                    self._disable_ssl_verification(errors)
-                return True
-            errors.append(f"HEAD {self.base_url}: HTTP {resp.status_code}")
-        
-        # Attempt 3: HTTP fallback (no SSL at all)
+    def _answers_head(self, verify: bool, errors: List[str]) -> bool:
+        """Whether a HEAD of the base URL gets an answer below 500 (even a 403 means the server is up)."""
+        try:
+            resp = self.session.head(self.base_url, timeout=_TIMEOUT, verify=verify)
+        except requests.RequestException as exc:
+            errors.append(f"HEAD {self.base_url}: {exc}")
+            return False
+        if resp.status_code < 500:
+            return True
+        errors.append(f"HEAD {self.base_url}: HTTP {resp.status_code}")
+        return False
+
+    def _plain_http(self, index_url: str, errors: List[str]) -> bool:
+        """Use plain HTTP when HTTPS cannot complete its TLS handshake at all."""
         http_index_url = index_url.replace("https://", "http://")
         try:
-            resp = self.session.get(http_index_url, timeout=10, verify=False)
+            resp = self.session.get(http_index_url, timeout=_TIMEOUT, verify=False)
         except requests.RequestException as exc:
             errors.append(f"GET {http_index_url}: {exc}")
-        else:
-            if resp.status_code == 200:
-                self._cache_index(resp)
-                self.base_url = self.base_url.replace("https://", "http://")
-                self.stellar_models_url = self.stellar_models_url.replace("https://", "http://")
-                urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-                self.session.verify = False
-                logger.warning("NJM mirror: HTTPS failed (%s); using plain HTTP at %s",
-                               "; ".join(errors), self.base_url)
-                return True
+            return self._unreachable(errors)
+        if resp.status_code != 200:
             errors.append(f"GET {http_index_url}: HTTP {resp.status_code}")
-        
+            return self._unreachable(errors)
+        self._cache_index(resp)
+        self.base_url = self.base_url.replace("https://", "http://")
+        self.stellar_models_url = self.stellar_models_url.replace("https://", "http://")
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        self.session.verify = False
+        logger.warning("NJM mirror: HTTPS failed (%s); using plain HTTP at %s", "; ".join(errors), self.base_url)
+        return True
+
+    @staticmethod
+    def _unreachable(errors: List[str]) -> bool:
         logger.warning("NJM mirror is unreachable, so its spectral grids are not offered. Attempts: %s",
                        "; ".join(errors))
         return False
-    
+
     def _cache_index(self, resp: requests.Response) -> None:
         """Keep index.json for discover_models; a body that is not JSON just isn't cached."""
         try:
