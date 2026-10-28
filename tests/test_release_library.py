@@ -236,8 +236,10 @@ def test_builder_and_status_lookups_ignore_case_and_punctuation():
 
 @pytest.mark.parametrize("njm_up", [True, False])
 def test_picker_names_use_njm_or_builder_spelling_whether_or_not_njm_answers(tmp_path, njm, bundled, njm_up):
-    bundled({"CTIO": {"S_PLUS": {}}, "Herschel": {"PACS": {}}, "Planck": {"HFI": {}},
-             "Bepi_Colombo": {"HRIC": {}}, "JWST": {"NIRSPEC": {}}})
+    bundled({"CTIO": {"S_PLUS": {"svo_instruments": ["CTIO/S-PLUS"]}},
+             "Herschel": {"PACS": {"svo_instruments": ["Herschel/Pacs"]}},
+             "Planck": {"HFI": {"svo_instruments": ["PLANCK/HFI"]}}, "Bepi_Colombo": {"HRIC": {}},
+             "JWST": {"NIRSPEC": {"svo_instruments": ["JWST/NIRSpec"]}}})
     library = FilterLibrary(tmp_path / "filters")
     library.svo = svo_stub({"CTIO": "", "Herschel": "", "PLANCK": "Planck mission.", "Bepi-Colombo": "", "JWST": ""},
                            {"CTIO": {"S-PLUS": "Southern Photometric Local Universe Survey"},
@@ -255,6 +257,17 @@ def test_picker_names_use_njm_or_builder_spelling_whether_or_not_njm_answers(tmp
                                    if catalog.name_key(e["label"]) == catalog.name_key(inst))
     assert fetch("CTIO", "S-PLUS") == "S_PLUS" and fetch("Herschel", "Pacs") == "PACS"
     assert fetch("PLANCK", "HFI") == "HFI" and fetch("JWST", "NIRSpec") == "NIRSPEC"
+
+
+def test_a_same_named_svo_product_njm_does_not_claim_keeps_its_own_name_and_text(tmp_path, bundled):
+    bundled({"Gemini": {"NIRI": {"description": "NJM's NIRI filter curves", "svo_instruments": []},
+                        "GMOS_N": {"description": "NJM's GMOS-N", "svo_instruments": ["Gemini/GMOS-N"]}}})
+    library = FilterLibrary(tmp_path / "filters")
+    library.svo = svo_stub({"Gemini": ""}, {"Gemini": {"Niri": "SVO's NIRI", "GMOS-N": "SVO's GMOS-N"}})
+    library.mirror = SimpleNamespace(is_available=lambda: False)
+    shown = {label: rest for label, *rest in labels(library.instruments("Gemini"))}
+    assert shown["GMOS_N"] == [["original", "svo"], "NJM's GMOS-N"]  # NJM's product: NJM's name and text
+    assert shown["Niri"] == [["svo"], "SVO's NIRI"] and "NIRI" not in shown  # another product: SVO's own
 
 
 def test_svo_labels_are_instrument_names_with_svo_descriptions(tmp_path):
@@ -407,6 +420,40 @@ def test_njm_that_stops_answering_is_not_asked_again(tmp_path, njm, caplog):
     assert not grabber.is_available()
     with pytest.raises(requests.ConnectionError, match="not asked again"):
         grabber._get(f"{NJM}/index.json")
+
+
+def test_njm_is_asked_again_once_its_pause_is_over(tmp_path, njm, monkeypatch):
+    clock = [1000.0]
+    monkeypatch.setattr("sed_tools.njm_filter_grabber.monotonic", lambda: clock[0])
+    grabber = njm(tmp_path, {"index.json": requests.ConnectionError("refused")})
+    with pytest.raises(requests.ConnectionError, match="refused"):
+        grabber._get(f"{NJM}/index.json")
+    assert not grabber.is_available()
+    clock[0] += 299
+    assert not grabber.is_available()
+    clock[0] += 2
+    grabber.session.files["index.json"] = "{}"
+    assert grabber.is_available() and grabber._get(f"{NJM}/index.json").text == "{}"
+
+
+def test_svo_may_complete_a_set_njm_wrote_nothing_into(tmp_path, njm, bundled):
+    root = tmp_path / "filters"
+    directory = write_set(root / "Fac" / "Cam", ["g"], manifest_bands=["g", "r"], text=SVO_CURVE)  # SVO, partial
+    library = FilterLibrary(root)
+    down = requests.ConnectTimeout("connect timed out")
+    library.mirror = njm(root, {"filters/Fac/Cam/Cam": "g.dat\nr.dat\n", "filters/Fac/Cam/g.dat": down,
+                                "filters/Fac/Cam/r.dat": down})
+
+    def download(rows):
+        (directory / "r.dat").write_text(SVO_CURVE)
+
+    library.svo = SimpleNamespace(list_facilities=lambda: [Facility("Fac", "Fac")],
+                                  list_instruments=lambda key: [Instrument("Fac", "Cam", "Cam")],
+                                  list_filters=lambda f, i: [FilterRow(f"Fac/Cam.{b}", b, "Fac", "Cam", "")
+                                                             for b in "gr"],
+                                  download_filters=download)
+    assert library.published("Fac", "Cam") == directory
+    assert (directory / "g.dat").read_text() == (directory / "r.dat").read_text() == SVO_CURVE
 
 
 def test_unavailable_njm_says_which_sources_are_used(tmp_path, monkeypatch, caplog):

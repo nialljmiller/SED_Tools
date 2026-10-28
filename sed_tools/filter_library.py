@@ -139,9 +139,8 @@ class FilterLibrary:
         """Download the set from NJM.
 
         Returns ``(directory, None)`` once every curve NJM's index lists is
-        installed and matches NJM's copy, else ``(directory NJM wrote into, or
-        None, why the set is incomplete)``.  Bands NJM's manifest declares
-        outside its index are reported, not fetched.
+        installed and matches NJM's copy, else ``(directory holding curves NJM
+        wrote or confirmed now, or None, why the set is incomplete)``.
         """
         if not self.mirror.is_available():
             return None, "the mirror is unavailable"
@@ -161,7 +160,7 @@ class FilterLibrary:
                 return (directory if _curve_state(directory) != before else None), str(exc)
             if result.listed:
                 reason = self._njm_shortfall(fac, inst, directory, result)
-                filled = reason is None or any((directory / curve_file(n)).is_file() for n in result.listed)
+                filled = reason is None or result.downloaded + result.verified > 0  # NJM's curves are there now
                 return (directory if filled else None), reason
         return None, "it does not serve this instrument"
 
@@ -476,8 +475,7 @@ class FilterLibrary:
                     errors.append(f"NJM: {exc}")
             else:
                 errors.append("NJM unavailable")
-        known = {name: record["description"] for name, record in self._bundled.items()}
-        return {"entries": _picker_entries(_merge(listings), known), "errors": errors}
+        return {"entries": _picker_entries(_merge(listings), self._bundled), "errors": errors}
 
     def instruments(self, facility, *, remote=True):
         """Discover every instrument under one facility without downloading curves.
@@ -512,10 +510,11 @@ class FilterLibrary:
             else:
                 errors.append("NJM unavailable")
         known = self._njm_instruments(facility, live)
+        claims = {name_key(claim.partition("/")[2]): njm for njm, meta in known.items()
+                  for claim in meta["svo_instruments"] if name_key(claim.partition("/")[0]) == name_key(facility)}
         entries = _merge(listings)
-        _drop_svo_duplicates(entries, facility, known)
-        descriptions = {name: meta["description"] for name, meta in known.items()}
-        return {"entries": _picker_entries(entries, descriptions), "errors": errors}
+        _drop_svo_duplicates(entries, claims)
+        return {"entries": _picker_entries(entries, known, claims), "errors": errors}
 
     def inventory(self, *, remote=True, facility=None):
         """List every discovered instrument; retain errors and unreviewed sources."""
@@ -668,48 +667,58 @@ def _join(entry, source, name, description):
         entry["descriptions"][source] = description
 
 
-def _drop_svo_duplicates(entries, facility, known):
-    """Remove SVO's copy of a product NJM lists as its own (``svo_instruments``), keeping its description.
+def _drop_svo_duplicates(entries, claims):
+    """Remove SVO's copy of a product NJM lists as its own, keeping SVO's description for NJM's entry.
 
-    Only instruments NJM listed now count: while NJM is unreachable, SVO's
-    copies are what can be downloaded.
+    ``claims`` maps an SVO instrument (:func:`name_key`) to the NJM instrument
+    that is the same product.  Only instruments NJM lists now count: while NJM
+    is unreachable, SVO's copies are what can be downloaded.
     """
-    for claimer in [e for e in entries if "njm" in e["names"]]:
-        for claim in known.get(claimer["names"]["njm"], {}).get("svo_instruments", []):
-            svo_facility, _, svo_instrument = claim.partition("/")
-            if name_key(svo_facility) != name_key(facility):
-                continue
-            svo_entries = {e["names"]["svo"]: e for e in entries if "svo" in e["names"]}
-            claimed = svo_entries.get(match_name(svo_instrument, svo_entries))
-            if claimed is None:
-                continue
-            del claimed["names"]["svo"]
-            text = claimed["descriptions"].pop("svo", "")
-            if text:
-                claimer["descriptions"].setdefault("svo", text)
+    listed = {e["names"]["njm"]: e for e in entries if "njm" in e["names"]}
+    for entry in [e for e in entries if "svo" in e["names"]]:
+        claimer = listed.get(claims.get(name_key(entry["names"]["svo"])))
+        if claimer is None:
+            continue
+        del entry["names"]["svo"]
+        text = entry["descriptions"].pop("svo", "")
+        if text:
+            claimer["descriptions"].setdefault("svo", text)
     entries[:] = [e for e in entries if e["names"]]
 
 
-def _picker_entries(entries, njm_descriptions):
+def _picker_entries(entries, njm_known, claims=None):
     """The entries as the pickers show them, sorted by label.
 
     Each has ``label`` (the name shown), ``fetch_key`` (the spelling to
     download with: NJM's, else the original builder's, else the installed
-    directory's, else SVO's; NJM's comes from the bundled catalogue when NJM
-    is unreachable, so names do not change with it), ``key`` (the same),
-    ``sources`` (every source listing it now: ``local``, ``original``,
-    ``svo``, ``njm``) and ``description`` (NJM's, else SVO's own text, else
-    ``""``; SVO's can run to several sentences).
+    directory's, else SVO's), ``key`` (the same), ``sources`` (every source
+    listing it now: ``local``, ``original``, ``svo``, ``njm``) and
+    ``description`` (NJM's, else SVO's own text, else ``""``; SVO's can run to
+    several sentences).  ``njm_known`` (NJM's names -> their catalogue record)
+    names and describes entries NJM does not list now, so names do not change
+    with NJM's availability; an entry only SVO lists takes them only if
+    ``claims`` (SVO name key -> NJM name) says it is NJM's product.
     """
     rows = []
     for entry in entries:
         names = dict(entry["names"])
-        if "njm" not in names:  # NJM unreachable, or not listing it: its spelling from the catalogue
-            spellings = [match_name(name, njm_descriptions) for name in names.values()]
-            names["njm"] = next((spelling for spelling in spellings if spelling), None)
+        if "njm" not in names:
+            names["njm"] = _catalogue_name(names, njm_known, claims)
         names = {source: name for source, name in names.items() if name}
         fetch_key = next(names[source] for source in FETCH_ORDER if source in names)
-        description = njm_descriptions.get(names.get("njm"), "") or entry["descriptions"].get("svo", "")
+        description = (njm_known.get(names.get("njm")) or {}).get("description") or entry["descriptions"].get("svo", "")
         rows.append({"key": fetch_key, "label": fetch_key, "sources": list(entry["names"]),
                      "description": description, "fetch_key": fetch_key})
     return sorted(rows, key=lambda row: (row["label"].casefold(), row["label"]))
+
+
+def _catalogue_name(names, njm_known, claims):
+    """NJM's name for an entry it does not list now, from the bundled catalogue, or None."""
+    for name in names.values():
+        found = match_name(name, njm_known)
+        if found is None:
+            continue
+        if claims is not None and set(names) == {"svo"} and claims.get(name_key(names["svo"])) != found:
+            return None  # the same name, but NJM does not say it is the same product
+        return found
+    return None

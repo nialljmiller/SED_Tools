@@ -10,6 +10,7 @@ import os
 import re
 import time
 from dataclasses import dataclass, field
+from time import monotonic
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -29,6 +30,8 @@ RETRY_STATUSES = (403, 429, 500, 502, 503, 504)
 BLOCKED_STATUSES = (403, 429)
 #: Seconds to wait for NJM to accept a connection: a mirror that is down fails fast.
 NJM_CONNECT_TIMEOUT = 5.0
+#: Seconds NJM is left alone after it stops answering.
+NJM_PAUSE = 300
 FALLBACK_SOURCES = "installed copies, the original-source builders and SVO"
 
 
@@ -65,6 +68,7 @@ class SetDownload:
 
     listed: List[str]  # the curves NJM's index lists (empty: NJM does not serve the instrument)
     downloaded: int = 0
+    verified: int = 0  # installed curves found to be NJM's
     curve_failures: List[str] = field(default_factory=list)  # curves not downloaded or not verified
     other_failures: List[str] = field(default_factory=list)  # e.g. its components
 
@@ -72,8 +76,9 @@ class SetDownload:
 class NJMFilterGrabber:
     """Grabber for filter profiles from NJM mirror server."""
 
-    #: Why NJM stopped answering during this run; once set it is not asked again.
+    #: Why NJM stopped answering, and until when (monotonic()) it is not asked again.
     _unreachable: Optional[str] = None
+    _unreachable_until = 0.0
 
     def __init__(self, base_dir: str = "../data/filters/", max_workers: int = 5):
         self.base_dir = base_dir
@@ -144,17 +149,24 @@ class NJMFilterGrabber:
 
     def is_available(self) -> bool:
         """Return True if the mirror is available."""
-        return self._available and self._unreachable is None
+        return self._available and not self._paused()
+
+    def _paused(self) -> bool:
+        """Whether NJM stopped answering less than ``NJM_PAUSE`` seconds ago."""
+        if self._unreachable is not None and monotonic() >= self._unreachable_until:
+            self._unreachable = None
+        return self._unreachable is not None
 
     def _get(self, url: str, *, timeout: int = 30, headers: Optional[Dict[str, str]] = None) -> requests.Response:
         """Retry transient mirror failures, including Apache's temporary 403 block.
 
         A request NJM still does not answer after the retries (no connection,
         a timeout, or a block that has not lifted) marks NJM unreachable for
-        the rest of the run, with one warning; later requests fail at once.
+        ``NJM_PAUSE`` seconds, with one warning; requests until then fail at once.
         """
-        if self._unreachable is not None:
-            raise requests.ConnectionError(f"NJM is unreachable ({self._unreachable}); not asked again in this run")
+        if self._paused():
+            raise requests.ConnectionError(f"NJM is unreachable ({self._unreachable}); "
+                                           f"not asked again for {NJM_PAUSE // 60} minutes")
         timeouts = (NJM_CONNECT_TIMEOUT, timeout)
         for attempt in range(3):
             try:
@@ -169,8 +181,10 @@ class NJMFilterGrabber:
                 if attempt == 2:
                     if status is None or status in BLOCKED_STATUSES:
                         self._unreachable = f"{status or type(exc).__name__} for {url}"
-                        logger.warning("NJM mirror %s stopped answering (%s); it will not be asked again in this "
-                                       "run, and filters come from %s", self.base_url, exc, FALLBACK_SOURCES)
+                        self._unreachable_until = monotonic() + NJM_PAUSE
+                        logger.warning("NJM mirror %s stopped answering (%s); it is not asked again for %d "
+                                       "minutes, and filters come from %s", self.base_url, exc, NJM_PAUSE // 60,
+                                       FALLBACK_SOURCES)
                     raise
                 delay = (1, 60)[attempt] if status == 403 else (1, 3)[attempt]
                 if status == 429:
@@ -398,8 +412,8 @@ class NJMFilterGrabber:
         print(f"[njm] Downloading filters: {facility}/{instrument}")
         print(f"  Found {len(filters)} filters")
         downloaded, skipped, failed = self._download_curves(facility, instrument, filters, output_dir)
-        result = SetDownload(listed=list(filters), downloaded=downloaded, curve_failures=failed)
-        if self._unreachable is not None:
+        result = SetDownload(listed=list(filters), downloaded=downloaded, verified=skipped, curve_failures=failed)
+        if self._paused():
             result.other_failures.append("its index, catalogue files and components: NJM stopped answering")
             return result
 
@@ -433,7 +447,7 @@ class NJMFilterGrabber:
             try:
                 served = self._get(f"{self.filters_url}/{facility}/{instrument}/{output_path.name}", timeout=30).text
             except requests.RequestException as e:  # raised before anything is written
-                if self._unreachable is not None:  # one line for the rest, not one per curve
+                if self._paused():  # one line for the rest, not one per curve
                     failed.append(f"{len(filters) - number} curves from {filter_name} on: {e}")
                     print(f"  [error] {failed[-1]}")
                     break
@@ -645,7 +659,7 @@ class NJMFilterGrabber:
             except requests.RequestException as exc:
                 print(f"  [error] component {rel}: {exc}")
                 failed.append(f"{rel}: {exc}")
-                if self._unreachable is not None:  # the rest would fail the same way
+                if self._paused():  # the rest would fail the same way
                     break
         if count:
             print(f"[njm] {facility}/{instrument}: {count} component files downloaded")
