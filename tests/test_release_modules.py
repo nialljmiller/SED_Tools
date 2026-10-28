@@ -624,3 +624,36 @@ def test_import_hint_names_the_model_root_it_imported_into(tmp_path, monkeypatch
     SED.import_grid(_undeclared_flux_grid(tmp_path / "default"), build_cube=False, build_h5=False,
                     flux_unit="flam")
     assert "Load with: SED.local('default')\n" in capsys.readouterr().out
+
+
+def test_mesa_prepare_takes_a_combined_grid_as_it_is(two_grids, monkeypatch, capsys):
+    # source_model and original_file differ on every row of a combined grid's lookup;
+    # they say where each spectrum came from and are not variants of the grid.
+    from sed_tools import mesa_prepare
+    from sed_tools.api import SED
+
+    np.random.seed(0)
+    SED.combine(["Kurucz2003all", "Kurucz2003all__alpha_04"], output="omni", model_root=two_grids,
+                visualization=False)
+    capsys.readouterr()
+
+    mesa_prepare.run_interactive(base_dir=str(two_grids), model="omni")
+
+    out = capsys.readouterr().out
+    assert "Note" not in out and "variants over" not in out
+    assert "has one flux_cube.bin for all its spectra and no variants to choose between" in out
+
+
+def test_mesa_prepare_ignores_the_ml_completers_columns(tmp_path, cube_writer, capsys):
+    from sed_tools import mesa_prepare
+
+    grid = tmp_path / "Ext"
+    grid.mkdir()
+    (grid / "lookup_table.csv").write_text(
+        "file_name,teff,logg,metallicity,extended_by_ml,wl_min,wl_max\n"
+        "a.txt,5000,4.0,0.0,True,100.0,400000.0\nb.txt,6000,4.0,0.0,False,,\n")
+    cube_writer(grid / "flux_cube.bin", [5000.0, 6000.0], [4.0], [0.0], [1000.0, 2000.0], np.ones((2, 1, 1, 2)))
+
+    (variant,) = mesa_prepare.list_variants(grid)
+
+    assert variant.label == "full_grid" and "Note" not in capsys.readouterr().out

@@ -40,6 +40,12 @@ _LEGACY_CORE_COLUMNS = {"file_name", "teff", "logg", "metallicity", "flux_unit",
                         "original_flux_unit", "original_wavelength_unit",
                         "conversion_confidence"}
 
+# Provenance columns SED_Tools itself writes: where each spectrum came from in a
+# combined grid (save_combined_data), and what the ML completer did to it
+# (Completer.extend_catalog). They vary row to row but are not variant axes;
+# collision_config.discover_extra_axes does not know them.
+_PROVENANCE_COLUMNS = {"source_model", "original_file", "extended_by_ml", "wl_min", "wl_max"}
+
 
 # ---------------------------------------------------------------------------
 # Data structures
@@ -115,7 +121,8 @@ def list_variants(model_dir: str | os.PathLike) -> List[VariantInfo]:
         return _library_variants(df, legacy_cols, library_dir, model_dir)
 
     master_cube = model_dir / "flux_cube.bin"
-    varying = _varying_columns(df, discover_extra_axes(list(df.columns)))
+    axes = [c for c in discover_extra_axes(list(df.columns)) if c not in _PROVENANCE_COLUMNS]
+    varying = _varying_columns(df, axes)
     if varying:
         if not master_cube.exists():
             raise FileNotFoundError(
