@@ -32,11 +32,11 @@ def filter_catalogue(tmp_path, monkeypatch):
                                      {"key": "Camera2", "label": "Camera2"}], "errors": []})
     fetched, offered = [], []
 
-    def fetch(facility, instrument, **kwargs):
+    def fetch(self, facility, instrument):
         fetched.append((facility, instrument))
         return tmp_path / facility / instrument
 
-    monkeypatch.setattr(Filters, "fetch", fetch)
+    monkeypatch.setattr(FilterLibrary, "published", fetch)  # the browser downloads with its own library
     monkeypatch.setattr(cli, "_offer_composition", offered.append)
     return SimpleNamespace(root=tmp_path, fetched=fetched, offered=offered)
 

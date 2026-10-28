@@ -1168,22 +1168,32 @@ def _picker_rows(entries: List[dict], library=None) -> List[str]:
     cut; the description is cut first, then the label.
     """
     usable = terminal_width() - 10 - 6  # the picker's margin and each row's "  12. " id
-    labels = [e.get("label") or e["key"] for e in entries]
-    label_width = min(max(map(len, labels)), 28)
     njm_listed = any("njm" in (e.get("sources") or []) for e in entries)
     unused = {"njm"} if njm_listed and library is not None and not library.mirror.is_available() else set()
+    labels = [e.get("label") or e["key"] for e in entries]
+    descriptions = [" ".join(str(e.get("description") or "").split()) for e in entries]
+    tags = [_source_tag(e, unused) for e in entries]
+    tag_width = max(map(len, tags))
+    tag_room = tag_width + 2 if tag_width else 0
+    label_width = min(max(map(len, labels)), 28 if any(descriptions) else usable - tag_room)
+    description_width = min(max(map(len, descriptions)), usable - label_width - 2 - tag_room)
+    if description_width < 8:
+        description_width = 0
     rows = []
-    for entry, label in zip(entries, labels):
-        sources = sorted(set(entry.get("sources") or []) - unused, key=_source_rank)
-        tail = f"  [{','.join(sources)}]" if sources else ""
-        description = " ".join(str(entry.get("description") or "").split())
-        room = usable - label_width - 2 - len(tail)
-        if description and room >= 8:
-            text = f"{_cut(label, label_width):<{label_width}}  {_cut(description, room)}"
-        else:
-            text = _cut(label, usable - len(tail))
-        rows.append(text + tail)
+    for label, description, tag in zip(labels, descriptions, tags):
+        columns = [f"{_cut(label, label_width):<{label_width}}"]
+        if description_width:
+            columns.append(f"{_cut(description, description_width):<{description_width}}")
+        if tag_width:
+            columns.append(tag)
+        rows.append("  ".join(columns).rstrip())
     return rows
+
+
+def _source_tag(entry: dict, unused: set) -> str:
+    """``[local,njm,...]``: the entry's sources in the order a download tries them, or "" for none."""
+    sources = sorted(set(entry.get("sources") or []) - unused, key=_source_rank)
+    return f"[{','.join(sources)}]" if sources else ""
 
 
 def _source_rank(source: str) -> int:
@@ -1235,7 +1245,7 @@ def _download_every_instrument(library, facilities: List[dict], base_dir: str, f
         return
     for facility, entries in listings:
         for instrument in entries:
-            _fetch_instrument(_fetch_key(facility), _fetch_key(instrument), base_dir, failures)
+            _fetch_instrument(library, _fetch_key(facility), _fetch_key(instrument), failures)
 
 
 def _browse_instruments(library, facility_entry: dict, base_dir: str, failures: List[str], *,
@@ -1258,20 +1268,22 @@ def _browse_instruments(library, facility_entry: dict, base_dir: str, failures: 
         installed = Path(base_dir) / facility / instrument
         if library.published_complete(installed):
             print(f"{facility}/{instrument} is installed: {installed}")
-            _fetch_instrument(facility, instrument, base_dir, failures, offer=True)
+            _fetch_instrument(library, facility, instrument, failures, offer=True)
         elif not input(f"Download {facility}/{instrument}? [Y/n] ").strip().lower().startswith("n"):
-            _fetch_instrument(facility, instrument, base_dir, failures, offer=True)
+            _fetch_instrument(library, facility, instrument, failures, offer=True)
         if not _yes("Choose another instrument? [y/N] "):
             return True
 
 
-def _fetch_instrument(facility: str, instrument: str, base_dir: str, failures: List[str], *,
+def _fetch_instrument(library, facility: str, instrument: str, failures: List[str], *,
                       offer: bool = False) -> None:
-    """Download one instrument (then offer a composed product); a failure is printed and recorded."""
-    from .api import Filters
+    """Download one instrument (then offer a composed product); a failure is printed and recorded.
 
+    This is Filters.fetch with the browsing session's library, so NJM is
+    checked, and an unreachable NJM reported, once per session, not per download.
+    """
     try:
-        directory = Filters.fetch(facility, instrument, filter_root=base_dir)
+        directory = library.published(facility, instrument)
     except (ValueError, RequestException, OSError, RuntimeError) as exc:
         print(f"Cannot fetch: {exc}")
         failures.append(f"{facility}/{instrument}: {exc}")

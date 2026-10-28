@@ -629,13 +629,13 @@ def filter_browser(tmp_path, monkeypatch, filters):
         "errors": listing_errors.get(facility, [])})
     fetched = []
 
-    def fetch(cls, facility, instrument, **kwargs):
+    def fetch(self, facility, instrument):
         if (facility, instrument) == ("B", "Cam2"):
             raise requests.ConnectionError("SVO down")
         fetched.append(f"{facility}/{instrument}")
         return tmp_path / facility / instrument
 
-    monkeypatch.setattr(filters, "fetch", classmethod(fetch))
+    monkeypatch.setattr(FilterLibrary, "published", fetch)  # the browser downloads with its own library
     monkeypatch.setattr(cli, "_offer_composition", lambda directory: None)
     return SimpleNamespace(fetched=fetched, listing_errors=listing_errors)
 

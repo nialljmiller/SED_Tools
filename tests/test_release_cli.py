@@ -428,7 +428,7 @@ def test_an_installed_instrument_is_not_offered_for_download(tmp_path, monkeypat
     monkeypatch.setattr(FilterLibrary, "instruments", lambda self, facility: {
         "entries": [{"key": "Cam", "label": "Cam", "sources": ["local", "svo"]}], "errors": []})
     monkeypatch.setattr(FilterLibrary, "published_complete", staticmethod(lambda d: True))
-    monkeypatch.setattr(Filters, "fetch", classmethod(lambda cls, f, i, **k: fetched.append((f, i)) or tmp_path))
+    monkeypatch.setattr(FilterLibrary, "published", lambda self, f, i: fetched.append((f, i)) or tmp_path)
     monkeypatch.setattr(cli, "_offer_composition", offered.append)
     prompts = answer(monkeypatch, "1", "n")
     assert cli._browse_instruments(FilterLibrary(tmp_path), {"key": "Fac", "label": "Fac"}, str(tmp_path), [])
@@ -447,7 +447,7 @@ def test_picker_rows_show_label_description_and_sources(monkeypatch):
         {"key": "GAIA3", "label": "GAIA3", "sources": ["svo"]},
     ])
     assert rows[0] == "DR2    Gaia DR2 passbands (Evans et al. 2018)  [njm,svo]"
-    assert rows[1] == "GAIA3  [svo]"
+    assert rows[1] == "GAIA3  " + " " * 38 + "  [svo]"  # the tags line up
 
 
 def test_picker_rows_cut_the_description_and_keep_the_tag(monkeypatch):
@@ -486,7 +486,7 @@ def catalogue(tmp_path, monkeypatch):
         {"key": "GAIA2", "label": "GAIA2", "fetch_key": "DR2", "sources": ["svo"]},
         {"key": "Cam", "label": "Cam", "sources": ["svo"]}], "errors": []})
     fetched = []
-    monkeypatch.setattr(Filters, "fetch", classmethod(lambda cls, f, i, **k: fetched.append(f"{f}/{i}") or tmp_path))
+    monkeypatch.setattr(FilterLibrary, "published", lambda self, f, i: fetched.append(f"{f}/{i}") or tmp_path)
     monkeypatch.setattr(cli, "_offer_composition", lambda directory: None)
     return fetched
 
@@ -764,7 +764,7 @@ def test_an_unreachable_njm_is_neither_printed_again_nor_a_failure(tmp_path, mon
     monkeypatch.setattr(FilterLibrary, "instruments", lambda self, facility: {
         "entries": [{"key": "Cam", "label": "Cam", "sources": ["svo"]}], "errors": ["NJM unavailable"]})
     fetched = []
-    monkeypatch.setattr(Filters, "fetch", classmethod(lambda cls, f, i, **k: fetched.append(f"{f}/{i}") or tmp_path))
+    monkeypatch.setattr(FilterLibrary, "published", lambda self, f, i: fetched.append(f"{f}/{i}") or tmp_path)
     answer(monkeypatch, "1,2", "y")
     assert cli.run_filters_flow(str(tmp_path)) == 0
     assert fetched == ["A/Cam", "B/Cam"]
