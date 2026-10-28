@@ -216,10 +216,17 @@ def _print_page(label: str, labels: List[str], chunk: List[int], max_label: int,
 
 
 def _layout(max_label: int, min_cols: int, max_cols: int) -> Tuple[int, int]:
-    """Column width and number of columns for entries up to ``max_label`` wide."""
+    """Column width and number of columns for entries up to ``max_label`` wide.
+
+    A single column may use the whole line, so a label is cut (with '…') only
+    when the terminal is narrower than it.
+    """
     usable = terminal_width() - 10
     col_width = min(usable, max_label)
-    return col_width, max(min_cols, min(max_cols, usable // col_width))
+    n_cols = max(min_cols, min(max_cols, usable // col_width))
+    if n_cols == 1:
+        col_width = min(terminal_width() - 1, max_label)
+    return col_width, n_cols
 
 
 def _rows_on_screen() -> int:
