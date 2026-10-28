@@ -799,6 +799,19 @@ Each item says what 0.4.1 did, what 0.5.0 does, and when it happens.
 - Atmosphere site errors list sites as plain text ("observes from paranal,
   here_team; atmospheres from other sites (lsst_std) are not mixed in")
   instead of Python lists.
+- ``combine_filter_sets`` (``Filters.combine``, ``filters-combine``): a
+  file renamed for a name clash took the prefix ``<facility>_<instrument>_``
+  as it was, so ``Cameras/Sony.A200`` gave ``Old_Sony.A200_V.dat``, which
+  MESA reads as the band ``Old_Sony``. Dots in a renamed file's name now
+  become ``p`` (``Old_SonypA200_V.dat``), as in builders' band names. Files
+  that need no renaming keep their names.
+- ``combine_filter_sets`` copied and indexed every ``.dat`` file of an input
+  directory, including the superseded copies NJM keeps beside some sets
+  (``H_svo.dat``, ``F062_old.dat``). A directory now gives the curves its
+  MESA index file lists (every ``.dat`` file without one), less its
+  manifest's ``archived_bands``. Other files left out are named in a
+  warning, and an index file listing a missing curve raises
+  ``FileNotFoundError``.
 
 **Original-source builders**
 
