@@ -722,11 +722,17 @@ Each item says what 0.4.1 did, what 0.5.0 does, and when it happens.
   only when the terminal is narrower than it.
 - Without scipy, torch or scikit-learn (they come with ``[full]``), menu 8
   and ``ml_completer`` ended with a ``ModuleNotFoundError`` traceback, as did
-  menu 9, ``ml_generator`` and ``ml_generator --auto`` at their first torch
-  or scikit-learn import. They now print, e.g., ``Error: missing scipy,
-  torch, scikit-learn: pip install "sed-tools[full]"`` and exit 1, or go
-  back to the menu. ``densify --ml-model`` without torch, and combining grids
-  without scipy, print the same line instead of a traceback.
+  the actions of menu 9, ``ml_generator`` and ``ml_generator --auto`` at
+  their first torch or scikit-learn import. Each menu still opens, and an
+  action that needs a missing package is refused when it is chosen, before
+  its questions, with one line such as ``Error: missing torch, scikit-learn:
+  pip install "sed-tools[full]"`` (exit 1, or back to the menu). Training
+  needs torch and scikit-learn, extending SEDs torch and scipy, generating
+  torch; listing models or generators needs none of them (the completer
+  imported scipy on opening, so in 0.4.1 it needed scipy for everything).
+  The densifier menu refuses an ML model without torch once the model is
+  named. ``densify --ml-model`` without torch, and combining grids without
+  scipy, print the same line instead of a traceback.
 - Three menu lines wider than 80 columns were wrapped: the introduction of
   the filter-set combination menu, the densifier's list of flux cubes (each
   cube's Teff range goes on its own line), and mesa_prepare's message for an

@@ -40,7 +40,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import numpy as np
 
 # The interactive menus' number questions (ml_sed_completer and grid_densifier import them from here too).
-from .ui_utils import ask_number as _ask_number, ask_numbers as _ask_numbers  # noqa: F401
+from .ui_utils import ask_number as _ask_number, ask_numbers as _ask_numbers, refused_without  # noqa: F401
 
 logger = logging.getLogger(__name__)
 
@@ -867,11 +867,13 @@ def _plot_parameter_space(train_params, teff, logg, meta, teff_range, logg_range
 # Interactive Workflow (CLI Option 6)
 # =============================================================================
 
-def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> None:
+def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> Optional[int]:
     """
     Interactive ML SED Generator workflow.
     
-    Called from CLI as option 6.
+    Called from the CLI menu. Returns 1, saying what to install, when the
+    chosen action needs a package that is not installed (training: torch and
+    scikit-learn; generating: torch); listing generators needs neither.
     """
     os.makedirs(base_dir, exist_ok=True)
     os.makedirs(models_dir, exist_ok=True)
@@ -893,15 +895,22 @@ def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> None:
     if choice == "0":
         return
     if choice == "1":
+        if refused_without("torch", "sklearn"):
+            return 1
         _train_menu(base_dir, models_dir)
     elif choice == "2":
+        if refused_without("torch"):
+            return 1
         _generate_menu(models_dir)
     elif choice == "3":
+        if refused_without("torch"):
+            return 1
         _batch_menu(models_dir)
     elif choice == "4":
         _list_menu(models_dir)
     else:
         print("Invalid choice")
+    return None
 
 
 def _section(title: str) -> None:

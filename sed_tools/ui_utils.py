@@ -1,9 +1,11 @@
 """UI utility functions for interactive prompts."""
 
 from typing import Sequence, Optional, List, Union, Tuple
+import importlib.util
 import math
 import re
 import shutil
+import sys
 
 from .parsing import parse_multi_selection
 
@@ -12,6 +14,31 @@ from .terminal_plots import terminal_color_enabled, terminal_width
 
 #: ``default`` of :func:`ask_number` when a blank answer is not allowed (None is a default).
 NO_DEFAULT = object()
+
+#: Optional packages a workflow may import, and the extra (pyproject.toml) that installs each.
+OPTIONAL_EXTRAS = {"scipy": "full", "torch": "full", "sklearn": "full", "optuna": "ml-tune"}
+_PIP_NAMES = {"sklearn": "scikit-learn"}
+
+
+def missing_packages(modules: Sequence[str]) -> Optional[str]:
+    """``Error: missing <packages>: pip install "sed-tools[<extra>]"`` for those of ``modules``
+    (keys of OPTIONAL_EXTRAS) that are not installed; None when all are."""
+    missing = [m for m in modules if importlib.util.find_spec(m) is None]
+    if not missing:
+        return None
+    extras = ",".join(sorted({OPTIONAL_EXTRAS[m] for m in missing}))
+    return f"Error: missing {', '.join(_PIP_NAMES.get(m, m) for m in missing)}: pip install \"sed-tools[{extras}]\""
+
+
+def refused_without(*modules: str) -> bool:
+    """True, after printing :func:`missing_packages` on stderr, when any of ``modules`` is not installed.
+
+    The interactive menus ask it when an action is chosen, before that action's questions.
+    """
+    message = missing_packages(modules)
+    if message:
+        print(message, file=sys.stderr)
+    return message is not None
 
 
 def ask_number(prompt: str, default=NO_DEFAULT, *, whole: bool = False, positive: bool = False,

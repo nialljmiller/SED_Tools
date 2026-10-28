@@ -275,10 +275,11 @@ def densify_grid(
 # Interactive workflow
 # ---------------------------------------------------------------------------
 
-def run_interactive_workflow(base_dir: str = None):
+def run_interactive_workflow(base_dir: str = None) -> Optional[int]:
+    """Choose a cube, spacing, ML model and output, then densify; 1 when a model is given without torch."""
     import glob
 
-    from .ui_utils import ask_number as _ask_number
+    from .ui_utils import ask_number as _ask_number, refused_without
 
     if base_dir is None:
         from .models import STELLAR_DIR_DEFAULT
@@ -310,6 +311,8 @@ def run_interactive_workflow(base_dir: str = None):
 
     spacing  = _ask_number("Target Teff spacing in K [1000]: ", 1000.0, positive=True)
     ml_model = input("ML model path (leave blank for blackbody only): ").strip() or None
+    if ml_model is not None and refused_without("torch"):
+        return 1
 
     src_dir     = os.path.dirname(src)
     parent      = os.path.dirname(src_dir)

@@ -44,10 +44,9 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 logger = logging.getLogger(__name__)
 
 import numpy as np
-from scipy.integrate import simpson as simps
 
 from ._constants import H as PLANCK_H, C as SPEED_C, K as BOLTZMANN_K, SIGMA
-from .ui_utils import ask_number as _ask_number
+from .ui_utils import ask_number as _ask_number, refused_without
 
 # Default wavelength grid parameters
 DEFAULT_WL_MIN = 100.0      # Angstroms
@@ -124,7 +123,10 @@ def planck_function(wavelength_angstrom: np.ndarray, temperature: float) -> np.n
     
     flux = numerator / denominator * 1e-8  # Convert to per Angstrom
     
-    # Normalize to σT⁴
+    # Normalize to σT⁴. scipy is only in the [full] extra, so it is imported here, where it is
+    # needed: listing or training models works without it.
+    from scipy.integrate import simpson as simps
+
     integrated = simps(flux, wavelength_angstrom)
     if integrated > 0:
         flux = flux * (SIGMA * temperature**4 / integrated)
@@ -1197,13 +1199,17 @@ Examples:
 # Interactive Workflow (for CLI integration)
 # =============================================================================
 
-def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> None:
+def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> Optional[int]:
     """
     Interactive ML SED Completer workflow.
     
     Allows user to:
     1. Train new models on existing SED libraries
     2. Load trained models and extend incomplete SEDs
+
+    Returns 1, saying what to install, when the chosen action needs a package
+    that is not installed (training: torch and scikit-learn; extending: torch
+    and scipy); listing models needs neither.
     
     Parameters
     ----------
@@ -1230,13 +1236,18 @@ def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> None:
     if choice == "0":
         return
     if choice == "1":
+        if refused_without("torch", "sklearn"):
+            return 1
         _train_menu(base_dir, models_dir)
     elif choice == "2":
+        if refused_without("scipy", "torch"):
+            return 1
         _extend_menu(base_dir, models_dir)
     elif choice == "3":
         _list_menu(models_dir)
     else:
         print("Invalid choice")
+    return None
 
 
 def _banner(title: str) -> None:

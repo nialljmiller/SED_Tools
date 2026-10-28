@@ -43,7 +43,8 @@ from .njm_spectra_grabber import NJMSpectraGrabber
 from .spectra_cleaner import FLUX_GUESS_WHY, FLUX_UNITS, clean_model_dir, undeclared_flux_unit
 from .svo_regen_spectra_lookup import regenerate_lookup_table
 from .svo_spectra_grabber import SVOSpectraGrabber
-from .ui_utils import NO_DEFAULT as _NO_DEFAULT, ask_number as _ask_number, prompt_choice
+from .ui_utils import NO_DEFAULT as _NO_DEFAULT, OPTIONAL_EXTRAS, ask_number as _ask_number, missing_packages
+from .ui_utils import prompt_choice
 from .parsing import parse_multi_selection, parse_numeric_range
 from .spectrum_io import build_h5_bundle, read_text_spectrum
 from .terminal_plots import terminal_color_enabled, terminal_width
@@ -55,30 +56,16 @@ logger = logging.getLogger(__name__)
 EXPECTED_ERRORS = (RuntimeError, ValueError, OSError, ComponentError, CatalogueError,
                    RequestException, EOFError)
 
-#: Optional packages a workflow may import, and the extra (pyproject.toml) that installs each.
-_OPTIONAL_EXTRAS = {"scipy": "full", "torch": "full", "sklearn": "full", "optuna": "ml-tune"}
-_PIP_NAMES = {"sklearn": "scikit-learn"}
-
 # ------------ Small Utils ------------
 
 def ensure_dir(path: str) -> None:
     os.makedirs(path, exist_ok=True)
 
 
-def _missing_packages(modules: Sequence[str]) -> Optional[str]:
-    """``Error: missing <packages>: pip install "sed-tools[<extra>]"`` for those of ``modules``
-    (keys of _OPTIONAL_EXTRAS) that are not installed; None when all are."""
-    missing = [m for m in modules if importlib.util.find_spec(m) is None]
-    if not missing:
-        return None
-    extras = ",".join(sorted({_OPTIONAL_EXTRAS[m] for m in missing}))
-    return f"Error: missing {', '.join(_PIP_NAMES.get(m, m) for m in missing)}: pip install \"sed-tools[{extras}]\""
-
-
 def _missing_package_error(exc: ImportError) -> Optional[str]:
-    """The _missing_packages line for an optional package that failed to import, else None (a bug)."""
+    """The missing_packages line for an optional package that failed to import, else None (a bug)."""
     root = (exc.name or "").split(".")[0]
-    return _missing_packages([root]) if root in _OPTIONAL_EXTRAS else None
+    return missing_packages([root]) if root in OPTIONAL_EXTRAS else None
 
 
 def _ask_option(prompt: str, options: Sequence[str], default: Optional[str] = None) -> str:
@@ -1572,19 +1559,15 @@ def run_ml_generator_flow(
     base_dir: str = STELLAR_DIR_DEFAULT,
     models_dir: str = "models"
 ) -> Optional[int]:
-    """Run ML SED Generator interactive workflow; 1, with what to install, when torch or scikit-learn is missing."""
-    missing = _missing_packages(("torch", "sklearn"))
-    if missing:
-        print(missing, file=sys.stderr)
-        return 1
+    """Run ML SED Generator interactive workflow; 1 when the chosen action's packages are missing."""
     from .ml_sed_generator import run_interactive_workflow
-    run_interactive_workflow(base_dir=base_dir, models_dir=models_dir)
+    return run_interactive_workflow(base_dir=base_dir, models_dir=models_dir)
 
 
-def run_grid_densifier_flow(base_dir: str = STELLAR_DIR_DEFAULT) -> None:
-    """Run Grid Densifier interactive workflow."""
+def run_grid_densifier_flow(base_dir: str = STELLAR_DIR_DEFAULT) -> Optional[int]:
+    """Run Grid Densifier interactive workflow; 1 when an ML model is given and torch is missing."""
     from .grid_densifier import run_interactive_workflow
-    run_interactive_workflow(base_dir=base_dir)
+    return run_interactive_workflow(base_dir=base_dir)
 
 
 def run_mesa_prepare_flow(
@@ -1710,14 +1693,10 @@ def run_ml_completer_flow(
     
     This is a thin wrapper that delegates to ml_sed_completer.run_interactive_workflow().
     All training and inference logic lives in the ml_sed_completer module.
-    Returns 1, saying what to install, when scipy, torch or scikit-learn is missing.
+    Returns 1, saying what to install, when the chosen action's packages are missing.
     """
-    missing = _missing_packages(("scipy", "torch", "sklearn"))
-    if missing:
-        print(missing, file=sys.stderr)
-        return 1
     from .ml_sed_completer import run_interactive_workflow
-    run_interactive_workflow(base_dir, models_dir)
+    return run_interactive_workflow(base_dir, models_dir)
 
 def run_config_flow() -> None:
     show_config()
@@ -2356,7 +2335,7 @@ def _cmd_ml_generator(args, parser):
     if importlib.util.find_spec("optuna") is None:
         print("Error: --auto training needs the optuna package, which is not installed (pip install 'sed-tools[ml-tune]').")
         return 1
-    missing = _missing_packages(("torch", "sklearn"))
+    missing = missing_packages(("torch", "sklearn"))
     if missing:
         print(missing, file=sys.stderr)
         return 1
