@@ -225,6 +225,7 @@ def test_a_changed_curve_or_a_changed_njm_record_is_checked_again(tmp_path, grab
     assert local_change.session.curves_requested() == ["r.dat"] and r.read_text() == CURVE
     assert f"{r} differs from NJM's copy" in caplog.text
 
+    njm_filter_grabber._STATE.reset()  # a later process, which reads NJM's index.json again
     njm_change = grabber(_njm_set(size_bytes=151))  # NJM's set changed since
     njm_change._download_set("Fac", "Cam")
     assert njm_change.session.curves_requested() == ["g.dat", "r.dat"]
@@ -669,3 +670,36 @@ def test_available_reports_failures_by_source_and_which_were_fallbacks(tmp_path,
     assert info["sources_failed"] == {"njm": ["Connection refused"], "svo": ["no metadata for Fac/Cam.r"]}
     assert info["fallback_from"] == ["njm"]
     assert cli._availability_errors(info) == ["no metadata for Fac/Cam.r"]  # NJM's failure left nothing out
+
+
+def test_compose_leaves_variants_to_the_sources_that_register_them(tmp_path):
+    # A set whose manifest has no variants yet (from SVO, or installed by 0.4.1): the builder or
+    # NJM's manifest adds the variant while the components are prepared, so it is not refused first.
+    inst = _nisp_with_declared_components(tmp_path)
+    library = FilterLibrary(tmp_path / "filters")
+
+    def prepare(directory, **kwargs):
+        manifest = InstrumentManifest.load(inst)
+        manifest.variants = {"qe": {"cold": {"files": {"*": "components/qe/cold.dat"}}}}
+        manifest.save(inst)
+        raise ComponentError("stop here: the variant was registered")
+
+    library.prepare_components = prepare
+    with pytest.raises(ComponentError, match="the variant was registered"):
+        library.compose("Euclid/NISP", "filter,optics,qe", bands=["H", "Y"], variants={"qe": "cold"})
+
+
+def test_index_json_is_read_once_per_process(tmp_path, grabber):
+    first = grabber(_njm_set())
+    first._download_set("Fac", "Cam")
+    second = grabber(_njm_set())  # every FilterLibrary makes its own grabber
+    second._download_set("Fac", "Cam")
+    assert first.session.requested.count("index.json") == 1 and "index.json" not in second.session.requested
+
+
+def test_no_index_json_is_fetched_for_the_record_while_njm_is_paused(tmp_path, grabber, caplog):
+    made = grabber(_njm_set())
+    njm_filter_grabber.NJMFilterGrabber._pause("test outage", "NJM is down (test)")
+    with caplog.at_level(logging.WARNING):
+        assert made._njm_record("Fac", "Cam") is None
+    assert made.session.requested == [] and "Cannot read NJM's index.json" not in caplog.text

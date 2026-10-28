@@ -420,7 +420,7 @@ class FilterLibrary:
         for band in bands or ():
             if band not in manifest.bands:
                 raise ComponentError(f"{manifest.facility}/{manifest.instrument} has no band '{band}'")
-        _refuse_uncovered_bands(manifest.with_variants(variants), roles, bands)
+        _refuse_uncovered_bands(manifest, roles, bands)
         self.prepare_components(directory, components=roles, bands=bands, allow_heavy=allow_heavy)
         spec = AtmosphereSpec.coerce(atmosphere)
         if spec is not None:

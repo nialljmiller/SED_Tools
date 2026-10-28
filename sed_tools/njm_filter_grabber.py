@@ -33,6 +33,8 @@ BLOCKED_STATUSES = (403, 429)
 NJM_CONNECT_TIMEOUT = 5.0
 #: Seconds NJM is left alone after it stops answering.
 NJM_PAUSE = 300
+#: Seconds a process keeps NJM's index.json before reading it again.
+NJM_INDEX_MAX_AGE = 3600
 FALLBACK_SOURCES = "installed copies, the original-source builders and SVO"
 #: Which installed curves a download found to be NJM's, kept under ``<filter root>/../cache/njm/filters/F/I/``.
 VERIFIED_CURVES = "verified_curves.json"
@@ -57,6 +59,8 @@ class _MirrorState:
         self.unreachable: Optional[str] = None  # why NJM is not asked, until `until` (monotonic())
         self.until = 0.0
         self.reported = False  # the current outage has been reported
+        self.index: Optional[Dict] = None  # NJM's index.json, read at `index_read` (monotonic())
+        self.index_read = 0.0
 
 
 _STATE = _MirrorState()
@@ -313,19 +317,30 @@ class NJMFilterGrabber:
                 return name
         return None
 
-    def _index(self) -> Optional[Dict]:
-        """NJM's ``index.json``, fetched once; None (after a warning) when it cannot be read."""
+    def _index(self, unreadable: str = "listing the filters directory instead") -> Optional[Dict]:
+        """NJM's ``index.json``, read once per process (again after an hour); None when it cannot be read.
+
+        A failure is warned about once per grabber, followed by ``unreadable``
+        (what is done without it).
+        """
         if self._index_data is not None and not isinstance(self._index_data.get("filters"), dict):
             self._index_data = None  # what the availability check fetched is no filter index
+        if self._index_data is None:
+            with _STATE.lock:
+                if _STATE.index is not None and monotonic() - _STATE.index_read < NJM_INDEX_MAX_AGE:
+                    self._index_data = _STATE.index
         if self._index_data is None and not self._index_unreadable:
             try:
                 data = self._get(f"{self.base_url}/index.json", timeout=10).json()
                 if not isinstance(data, dict) or not isinstance(data.get("filters"), dict):
                     raise ValueError("it has no 'filters' section")
-                self._index_data = data
             except (requests.RequestException, ValueError) as exc:
-                logger.warning("Cannot read NJM's index.json (%s); listing the filters directory instead", exc)
+                logger.warning("Cannot read NJM's index.json (%s); %s", exc, unreadable)
                 self._index_unreadable = True
+            else:
+                self._index_data = data
+                with _STATE.lock:
+                    _STATE.index, _STATE.index_read = data, monotonic()
         return self._index_data
 
     def discover_facilities(self) -> List[str]:
@@ -546,9 +561,13 @@ class NJMFilterGrabber:
         """NJM's ``index.json`` record of the instrument's curves (names and size), or None if it has none.
 
         It changes whenever NJM's set does, so installed curves verified under
-        it need not be fetched again while it stays the same.
+        it need not be fetched again while it stays the same.  While NJM is
+        paused nothing is fetched for it: the curves are then checked next time.
         """
-        detailed = (self._index() or {"filters": {}})["filters"].get("facilities_detailed")
+        if self._index_data is None and self._paused():
+            return None
+        index = self._index(f"the installed curves of {facility}/{instrument} are checked against NJM's copies")
+        detailed = (index or {"filters": {}})["filters"].get("facilities_detailed")
         facility_record = detailed.get(facility) if isinstance(detailed, dict) else None
         instruments = facility_record.get("instruments") if isinstance(facility_record, dict) else None
         record = instruments.get(instrument) if isinstance(instruments, dict) else None
