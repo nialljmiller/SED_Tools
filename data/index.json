@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-10-28T02:36:36.553427",
+  "generated": "2026-10-28T04:14:20.528390",
   "base_url": "http://nillmill.ddns.net/sed_tools",
   "statistics": {
     "total_models": 1,
@@ -276,8 +276,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 65841,
-            "size_human": "64.30 KB",
+            "size_bytes": 65827,
+            "size_human": "64.28 KB",
             "description": "2MASS J, H, Ks relative spectral responses (Cohen et al. 2003)",
             "svo_instruments": [
               "2MASS/2MASS"
@@ -350,8 +350,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 228629,
-            "size_human": "223.27 KB",
+            "size_bytes": 228403,
+            "size_human": "223.05 KB",
             "description": "Anglo-Australian Telescope broad- and narrow-band filters (AAO)",
             "svo_instruments": [
               "AAO/AAO"
@@ -375,8 +375,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 32055,
-            "size_human": "31.30 KB",
+            "size_bytes": 32040,
+            "size_human": "31.29 KB",
             "description": "GSC-II southern photographic passbands Bj, Rf, In (UK Schmidt)",
             "svo_instruments": [
               "AAO/GSC2"
@@ -439,8 +439,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 676668,
-            "size_human": "660.81 KB",
+            "size_bytes": 676508,
+            "size_human": "660.65 KB",
             "description": "ADEOS-II Global Imager (GLI) channels, near-UV to thermal infrared",
             "svo_instruments": [
               "ADEOS/GLI"
@@ -469,8 +469,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 44341,
-            "size_human": "43.30 KB",
+            "size_bytes": 47247,
+            "size_human": "46.14 KB",
             "description": "ADEOS Ocean Color and Temperature Scanner (OCTS) visible/NIR bands",
             "svo_instruments": [
               "ADEOS/OCTS"
@@ -515,8 +515,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 114355,
-            "size_human": "111.67 KB",
+            "size_bytes": 114323,
+            "size_human": "111.64 KB",
             "description": "POLDER-1 and POLDER-2 radiometer bands (ADEOS and ADEOS-II)",
             "svo_instruments": [
               "ADEOS/POLDER-1",
@@ -548,7 +548,7 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 36572,
+            "size_bytes": 36565,
             "size_human": "35.71 KB",
             "description": "AKARI Far-Infrared Surveyor (FIS) photometric bands",
             "svo_instruments": [
@@ -579,8 +579,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 213592,
-            "size_human": "208.59 KB",
+            "size_bytes": 213556,
+            "size_human": "208.55 KB",
             "description": "AKARI Infrared Camera (IRC) near- and mid-infrared imaging filters",
             "svo_instruments": [
               "AKARI/IRC"
@@ -697,8 +697,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 197379,
-            "size_human": "192.75 KB",
+            "size_bytes": 197369,
+            "size_human": "192.74 KB",
             "description": "Balzers neutral density filters ND1-ND12 at Apache Point (ARC 3.5-m)",
             "svo_instruments": [
               "APO/Balzers"
@@ -726,8 +726,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 94258,
-            "size_human": "92.05 KB",
+            "size_bytes": 94681,
+            "size_human": "92.46 KB",
             "description": "Apache Point long-pass blocking filters (GG, OG, RG coloured glass)",
             "svo_instruments": [
               "APO/Blocking"
@@ -753,8 +753,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 44413,
-            "size_human": "43.37 KB",
+            "size_bytes": 44403,
+            "size_human": "43.36 KB",
             "description": "Apache Point broad-band B, V, R, I and BG40 filters (ARC 3.5-m)",
             "svo_instruments": [
               "APO/Broad"
@@ -777,8 +777,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 25723,
-            "size_human": "25.12 KB",
+            "size_bytes": 26136,
+            "size_human": "25.52 KB",
             "description": "FNAL Harris V and R filters at Apache Point (ARCTIC and Agile)",
             "svo_instruments": [
               "APO/FNAL"
@@ -829,8 +829,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 25612,
-            "size_human": "25.01 KB",
+            "size_bytes": 27857,
+            "size_human": "27.20 KB",
             "description": "Hodge H-alpha on/off narrow-band filters in the Apache Point list",
             "svo_instruments": [
               "APO/Hodge"
@@ -893,8 +893,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 168588,
-            "size_human": "164.64 KB",
+            "size_bytes": 168573,
+            "size_human": "164.62 KB",
             "description": "NICFPS near-infrared camera filters, ARC 3.5-m at Apache Point",
             "svo_instruments": [
               "APO/NICFPS"
@@ -967,8 +967,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 52033,
-            "size_human": "50.81 KB",
+            "size_bytes": 54160,
+            "size_human": "52.89 KB",
             "description": "Apache Point narrow-band filters: H-alpha set and Semrock 857 nm",
             "svo_instruments": [
               "APO/Narrow"
@@ -994,8 +994,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 242667,
-            "size_human": "236.98 KB",
+            "size_bytes": 242662,
+            "size_human": "236.97 KB",
             "description": "SDSS u'g'r'i'z' filters at Apache Point (ARCTIC and Agile)",
             "svo_instruments": [
               "APO/SDSS"
@@ -1095,8 +1095,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 66508,
-            "size_human": "64.95 KB",
+            "size_bytes": 66499,
+            "size_human": "64.94 KB",
             "description": "York narrow-band interference filters at Apache Point (ARC 3.5-m)",
             "svo_instruments": [
               "APO/York"
@@ -1131,8 +1131,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 65110,
-            "size_human": "63.58 KB",
+            "size_bytes": 65650,
+            "size_human": "64.11 KB",
             "description": "Archeops balloon bolometer bands, incl. KS3 (2002 Kiruna flight) set",
             "svo_instruments": [
               "ARCHEOPS/KS3",
@@ -1164,8 +1164,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 39084,
-            "size_human": "38.17 KB",
+            "size_bytes": 39046,
+            "size_human": "38.13 KB",
             "description": "ARGO balloon-borne CMB anisotropy telescope bands A-D",
             "svo_instruments": [
               "ARGO/ARGO"
@@ -1299,8 +1299,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 57435,
-            "size_human": "56.09 KB",
+            "size_bytes": 61005,
+            "size_human": "59.58 KB",
             "description": "Akatsuki IR2 2-\u03bcm Venus camera filters",
             "svo_instruments": [
               "Akatsuki/IR2"
@@ -1349,8 +1349,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 37148,
-            "size_human": "36.28 KB",
+            "size_bytes": 39734,
+            "size_human": "38.80 KB",
             "description": "Akatsuki UVI ultraviolet imager 283 and 365 nm filters, diffuser",
             "svo_instruments": [
               "Akatsuki/UVI"
@@ -1384,8 +1384,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 57863,
-            "size_human": "56.51 KB",
+            "size_bytes": 57789,
+            "size_human": "56.43 KB",
             "description": "SSTL SLIM6 multispectral imager on AlSat-1 (one band from Beijing-1)",
             "svo_instruments": []
           }
@@ -1588,8 +1588,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 814076,
-            "size_human": "795.00 KB",
+            "size_bytes": 812492,
+            "size_human": "793.45 KB",
             "description": "Aqua MODIS spectroradiometer band RSRs, incl. per-detector curves",
             "svo_instruments": [
               "Aqua/MODIS"
@@ -1699,8 +1699,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 109618,
-            "size_human": "107.05 KB",
+            "size_bytes": 109362,
+            "size_human": "106.80 KB",
             "description": "AstroSat UVIT far-UV, near-UV and visible filters, plus older curves",
             "svo_instruments": [
               "Astrosat/UVIT"
@@ -1734,8 +1734,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 49926,
-            "size_human": "48.76 KB",
+            "size_bytes": 50270,
+            "size_human": "49.09 KB",
             "description": "BICEP1 and BICEP2/Keck CMB polarimeter bands, South Pole",
             "svo_instruments": [
               "BICEP/BICEP2"
@@ -1757,8 +1757,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 22760,
-            "size_human": "22.23 KB",
+            "size_bytes": 22745,
+            "size_human": "22.21 KB",
             "description": "BICEP3 South Pole CMB polarimeter band at 95 GHz",
             "svo_instruments": [
               "BICEP/BICEP3"
@@ -1812,8 +1812,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 29162,
-            "size_human": "28.48 KB",
+            "size_bytes": 30966,
+            "size_human": "30.24 KB",
             "description": "BLAST balloon submillimetre telescope bands at 250, 350, 500 \u03bcm",
             "svo_instruments": [
               "BLAST/BLAST06"
@@ -1837,8 +1837,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 30951,
-            "size_human": "30.23 KB",
+            "size_bytes": 30939,
+            "size_human": "30.21 KB",
             "description": "BLASTPol polarimetric balloon telescope bands (250, 350, 500 \u03bcm)",
             "svo_instruments": [
               "BLAST/BLASTPol"
@@ -1862,8 +1862,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 33533,
-            "size_human": "32.75 KB",
+            "size_bytes": 33521,
+            "size_human": "32.74 KB",
             "description": "BLAST-TNG next-generation balloon telescope bands, 250-500 \u03bcm",
             "svo_instruments": [
               "BLAST/BLAST-TNG"
@@ -1908,8 +1908,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 82767,
-            "size_human": "80.83 KB",
+            "size_bytes": 82665,
+            "size_human": "80.73 KB",
             "description": "90Prime wide-field imager filters, Bok 2.3-m telescope at Kitt Peak",
             "svo_instruments": [
               "BOK/90prime",
@@ -1940,8 +1940,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 51027,
-            "size_human": "49.83 KB",
+            "size_bytes": 51011,
+            "size_human": "49.82 KB",
             "description": "Beijing-Arizona Sky Survey (BASS) g, r: full and filter-only curves",
             "svo_instruments": [
               "BOK/BASS"
@@ -1964,7 +1964,7 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 20832,
+            "size_bytes": 20824,
             "size_human": "20.34 KB",
             "description": "SCUSS u-band survey filter, with and without atmosphere (Bok 90Prime)",
             "svo_instruments": [
@@ -1994,8 +1994,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 28666,
-            "size_human": "27.99 KB",
+            "size_bytes": 28656,
+            "size_human": "27.98 KB",
             "description": "BOOMERANG North America (BNA) balloon CMB radiometer, 90 and 150 GHz",
             "svo_instruments": [
               "BOOMERANG/BNA"
@@ -2020,7 +2020,7 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 37933,
+            "size_bytes": 37926,
             "size_human": "37.04 KB",
             "description": "BOOMERANG long-duration balloon CMB telescope bands, 90-410 GHz",
             "svo_instruments": [
@@ -2054,8 +2054,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 42511,
-            "size_human": "41.51 KB",
+            "size_bytes": 42501,
+            "size_human": "41.50 KB",
             "description": "SSTL SLIM6 multispectral imager red and NIR bands on Beijing-1",
             "svo_instruments": []
           }
@@ -2084,8 +2084,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 44261,
-            "size_human": "43.22 KB",
+            "size_bytes": 44249,
+            "size_human": "43.21 KB",
             "description": "BepiColombo SIMBIO-SYS HRIC camera: panchromatic and 3 bandpasses",
             "svo_instruments": [
               "Bepi-Colombo/HRIC"
@@ -2112,7 +2112,7 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 57258,
+            "size_bytes": 57257,
             "size_human": "55.92 KB",
             "description": "BepiColombo SIMBIO-SYS STC stereo camera filters",
             "svo_instruments": [
@@ -2181,8 +2181,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 527100,
-            "size_human": "514.75 KB",
+            "size_bytes": 526815,
+            "size_human": "514.47 KB",
             "description": "AstraLux lucky-imaging camera filters, Calar Alto 2.2 m",
             "svo_instruments": [
               "CAHA/Astralux"
@@ -2215,8 +2215,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 53234,
-            "size_human": "51.99 KB",
+            "size_bytes": 53217,
+            "size_human": "51.97 KB",
             "description": "BUSCA four-channel simultaneous CCD camera filters, Calar Alto 2.2 m",
             "svo_instruments": [
               "CAHA/BUSCA"
@@ -2415,7 +2415,7 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 2649574,
+            "size_bytes": 2647684,
             "size_human": "2.53 MB",
             "description": "Calar Alto observatory filter database, broad- and narrow-band",
             "svo_instruments": [
@@ -2569,8 +2569,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 794825,
-            "size_human": "776.20 KB",
+            "size_bytes": 793815,
+            "size_human": "775.21 KB",
             "description": "LAICA camera filters incl. ALHAMBRA medium bands, Calar Alto 3.5 m",
             "svo_instruments": [
               "CAHA/LAICA"
@@ -2596,8 +2596,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 44457,
-            "size_human": "43.42 KB",
+            "size_bytes": 44437,
+            "size_human": "43.40 KB",
             "description": "Munich Near-Infrared Cluster Survey (MUNICS) V, R, I, J, K' filters",
             "svo_instruments": [
               "CAHA/MUNICS"
@@ -2676,8 +2676,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 323899,
-            "size_human": "316.31 KB",
+            "size_bytes": 323864,
+            "size_human": "316.27 KB",
             "description": "PANIC panoramic near-infrared camera filters, Calar Alto",
             "svo_instruments": [
               "CAHA/PANIC"
@@ -2749,8 +2749,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 527436,
-            "size_human": "515.07 KB",
+            "size_bytes": 527096,
+            "size_human": "514.74 KB",
             "description": "PlanetCam UPV/EHU lucky-imaging camera visible and SWIR filters",
             "svo_instruments": [
               "CAHA/PlanetCam2"
@@ -2780,8 +2780,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 28861,
-            "size_human": "28.18 KB",
+            "size_bytes": 30923,
+            "size_human": "30.20 KB",
             "description": "CASTOR proposed UV-optical survey telescope uv, u, g pre-flight bands",
             "svo_instruments": [
               "CASTOR/CASTOR0"
@@ -2822,8 +2822,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 80810,
-            "size_human": "78.92 KB",
+            "size_bytes": 87270,
+            "size_human": "85.22 KB",
             "description": "CFH12K prime-focus CCD mosaic camera filters, CFHT (1999-2003)",
             "svo_instruments": [
               "CFHT/CFH12k"
@@ -3194,8 +3194,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 1598492,
-            "size_human": "1.52 MB",
+            "size_bytes": 1686305,
+            "size_human": "1.61 MB",
             "description": "CFHT general filter collection: UBVRI and numbered cfh filters",
             "svo_instruments": []
           },
@@ -13995,8 +13995,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 24700,
-            "size_human": "24.12 KB",
+            "size_bytes": 25850,
+            "size_human": "25.24 KB",
             "description": "Tycho BT and VT passbands of the ESA Hipparcos star mapper",
             "svo_instruments": []
           }
@@ -20095,8 +20095,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 100013,
-            "size_human": "97.67 KB",
+            "size_bytes": 100989,
+            "size_human": "98.62 KB",
             "description": "FourStar near-IR imager, Magellan Baade: broad, medium, narrow bands",
             "svo_instruments": []
           },
@@ -29345,7 +29345,7 @@
       "svo_records": {
         "dir": "/media/data3/MESA/SED_Tools/source_evidence/svo-archive/parsed",
         "ids": 11066,
-        "sha256": "8c4c61a864abc505aa60853fb33bb0c8e9569dbe1d0f72f7245cfc618bc73761"
+        "sha256": "92fc4f50d83fff90fab764ff9be6d6c6a164bb555c10c084a4ee679875125168"
       },
       "references": 401,
       "unresolved_references": 0,
