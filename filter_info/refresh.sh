@@ -4,6 +4,9 @@
 # Run on NJM from the server checkout. The network is used only when new references turn up.
 set -euo pipefail
 cd "$(dirname "$0")/.."
+# Every manifest band must be in its instrument's MESA index file, or SED_Tools 0.4.1 replaces
+# that instrument's curves with SVO's. Archive copies go under "archived_bands".
+python3 -m filter_info.check_manifests data
 python3 -m filter_info.svo_archive build source_evidence/svo-archive/parsed $(grep -v '^#' filter_info/svo_manifests.txt)
 python3 generate_index.py data
 if [ -s filter_info/unresolved.txt ]; then

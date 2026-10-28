@@ -277,3 +277,16 @@ def test_manifest_sources_apply_only_to_the_bands_they_cover():
     assert _manifest_sources(manifest, "Y") == ["ESA filter", "ESA QE", "ESA totals", "site"]
     assert _manifest_sources(manifest, "Y_svo") == ["ESA QE", "site"]
     assert _manifest_sources(manifest, "Red") == ["ESA QE", "red only", "site"]
+
+
+def test_check_manifests_names_bands_outside_the_index_file(tmp_path, capsys):
+    from filter_info.check_manifests import main
+    inst = tmp_path / "filters" / "Test" / "Cam"
+    inst.mkdir(parents=True)
+    (inst / "Cam").write_text("R.dat\nV.dat\n")
+    (inst / "manifest.json").write_text(json.dumps({"bands": ["R", "R_old", "V"]}))
+    assert main(["check_manifests", str(tmp_path)]) == 1
+    err = capsys.readouterr().err
+    assert "Test/Cam/manifest.json" in err and "R_old" in err and "V," not in err
+    (inst / "manifest.json").write_text(json.dumps({"bands": ["R", "V"], "archived_bands": {"R_old": {}}}))
+    assert main(["check_manifests", str(tmp_path)]) == 0
