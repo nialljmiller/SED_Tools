@@ -417,7 +417,7 @@ def test_pressing_enter_at_the_atmosphere_choice_folds_in_none(tmp_path, monkeyp
     prompts = answer(monkeypatch, "y", "1", "", "")
     cli._offer_composition(tmp_path / "LSST" / "LSST")
     assert [p for p in prompts if p.startswith("Atmosphere")] == ["Atmosphere [0, none]: "]
-    assert composed[0][1]["atmosphere"] is None and sites == [False]  # the cache only: every site is cached
+    assert composed[0][1]["atmosphere"] is None and sites == [True]  # one listing; installed sites are checked daily
     out = capsys.readouterr().out
     assert ("Atmosphere to fold in:\n"
             "  0. none                     the curve without atmosphere\n"
@@ -445,7 +445,7 @@ def test_an_atmosphere_can_be_named_and_a_site_without_a_grid_is_said_so(tmp_pat
     cli._offer_composition(tmp_path / "Fac" / "Cam")
     assert composed[0][1]["atmosphere"] == {"site": "lsst_std", "airmass": 1.2, "pwv": None}
     assert "  1. hopkins_2mass  not downloaded yet" in capsys.readouterr().out
-    assert sites == [False, True]  # hopkins_2mass is not cached, so NJM is asked
+    assert sites == [True]  # one listing, which includes NJM's sites not cached yet
 
 
 def _summary_inputs(monkeypatch, info=None, catalogue=None):
@@ -467,6 +467,7 @@ def test_an_installed_instrument_is_not_offered_for_download(tmp_path, monkeypat
     monkeypatch.setattr(FilterLibrary, "instruments", lambda self, facility: {
         "entries": [{"key": "Cam", "label": "Cam", "sources": ["local", "svo"]}], "errors": []})
     monkeypatch.setattr(FilterLibrary, "published_complete", staticmethod(lambda d: True))
+    monkeypatch.setattr(FilterLibrary, "installed_directory", lambda self, f, i: tmp_path / f / i)
     monkeypatch.setattr(FilterLibrary, "published", lambda self, f, i: fetched.append((f, i)) or tmp_path)
     monkeypatch.setattr(cli, "_offer_composition", offered.append)
     _summary_inputs(monkeypatch)
@@ -1012,3 +1013,18 @@ def test_grids_without_a_terminal_or_names_says_to_use_grids(monkeypatch, tmp_pa
     with pytest.raises(ValueError, match=r"No terminal to choose from the 1 spectral grids found; name them with "
                                          r"--grids NAME \.\.\. \(or --grids all\)"):
         cli.run_spectra_flow("msg", base_dir=str(tmp_path))
+
+
+def test_the_picker_finds_an_instrument_installed_under_an_older_spelling(tmp_path):
+    # 0.4.1 wrote Gemini/GMOS-N; NJM's name is GMOS_N. The picker must see the installed copy, not offer a second one.
+    from sed_tools.filter_library import FilterLibrary
+
+    installed = tmp_path / "Gemini" / "GMOS-N"
+    installed.mkdir(parents=True)
+    (installed / "g.dat").write_text("Wavelength,Transmission\n4000,0.1\n5000,0.5\n6000,0.1\n")
+    (installed / "GMOS-N").write_text("g.dat\n")
+    library = FilterLibrary(tmp_path)
+    facility, instrument, directory = cli._picked_names(library, {"key": "Gemini"}, {"key": "GMOS_N"})
+    assert (facility, instrument) == ("Gemini", "GMOS_N")
+    assert directory is None or directory.resolve() == installed.resolve()
+    assert library.installed_directory("Gemini", "GMOS_N").resolve() == installed.resolve()

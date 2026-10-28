@@ -1007,13 +1007,11 @@ def _ask_atmosphere(info: dict, filter_root: Path) -> Optional[Dict]:
 
 
 def _site_grids(sites: List[str], filter_root: Path) -> Dict[str, dict]:
-    """The atmosphere grids by site: the cached ones, and NJM's only when one of ``sites`` is not cached yet."""
+    """The atmosphere grids by site, cached ones refreshed from NJM's manifests (checked once a day)."""
     from .api import Filters
 
     try:
-        grids = Filters.atmospheres(filter_root=filter_root, include_remote=False)
-        if not all(site in grids for site in sites):
-            grids = Filters.atmospheres(filter_root=filter_root)
+        grids = Filters.atmospheres(filter_root=filter_root)
     except (RequestException, OSError, RuntimeError, ValueError) as exc:
         raise RuntimeError(f"could not list the atmosphere grids for {', '.join(sites)}: {exc}") from exc
     return grids
@@ -1335,8 +1333,11 @@ def _picked_names(library, facility_entry: dict, instrument_entry: dict) -> Tupl
     """The names to fetch a picked instrument with (the library's ``fetch_key``), and its installed
     directory when it holds the complete set, else None."""
     facility, instrument = _fetch_key(facility_entry), _fetch_key(instrument_entry)
-    directory = library.root / facility / instrument
-    return facility, instrument, directory if library.published_complete(directory) else None
+    try:
+        directory = library.installed_directory(facility, instrument)
+    except ComponentError:  # installed under two spellings: the download step names both
+        directory = None
+    return facility, instrument, directory if directory is not None and library.published_complete(directory) else None
 
 
 def _print_pick_summary(library, facility: str, instrument: str, entry: dict, installed: Optional[Path]) -> None:
