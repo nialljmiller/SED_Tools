@@ -378,7 +378,7 @@ class FilterLibrary:
         shortfall = (f"{len(have)} of NJM's {len(plan.bands)} bands came from SVO's "
                      f"{', '.join(plan.svo_instruments)}: {', '.join(have) or 'none'}")
         if absent:
-            shortfall += f"; SVO has no copy of {', '.join(absent)}"
+            shortfall += f"; SVO has no curve that is NJM's {', '.join(absent)}"
         if failure is not None:
             shortfall += f"; {failure}"
         return directory, shortfall
@@ -418,6 +418,9 @@ class FilterLibrary:
                               "DetectorTypeSource": "assumed"} for band in spec.filters}
             manifest = InstrumentManifest.from_headers(facility, instrument, headers)
             return _availability(manifest.describe(), "original", failed)
+        builder, _, _ = self._publishing_builder(facility, instrument, None)
+        if builder is not None:  # published() would build it before asking SVO
+            return self._bundled_availability(facility, instrument, failed, source="original")
         if remote:
             try:
                 info = self._svo_availability(facility, instrument, failed)
@@ -450,18 +453,23 @@ class FilterLibrary:
         meta = self._bundled_record(facility, instrument)
         absent = [band for band in meta["bands"] if band not in headers] if meta and meta["svo_bands"] else []
         if absent:
-            info["notes"] = [f"SVO has no copy of NJM's {', '.join(absent)}; only NJM has them"]
+            info["notes"] = [f"SVO has no curve that is NJM's {', '.join(absent)}"]
         return info
 
-    def _bundled_availability(self, facility, instrument, failed):
-        """No source could say: the bands NJM served when this SED_Tools was released, else none."""
+    def _bundled_availability(self, facility, instrument, failed, source="unknown"):
+        """The bands NJM served when this SED_Tools was released, else none: no source could say
+        (``source="unknown"``), or the original-source builder makes them when fetched (``"original"``)."""
         meta = self._bundled_record(facility, instrument)
         bands = meta["bands"] if meta else []
         manifest = InstrumentManifest.from_headers(facility, instrument, {band: {} for band in bands})
-        info = _availability(manifest.describe(), "unknown", failed)
+        info = _availability(manifest.describe(), source, failed)
+        notes = ["its original-source builder makes the curves when it is fetched"] if source == "original" else []
         if bands:
-            info["notes"] = ["bands as NJM served them when this SED_Tools was released; what each curve "
-                             "contains is not known until NJM or another source can be asked"]
+            notes.append("bands as NJM served them when this SED_Tools was released; what each curve contains "
+                         "is known once " + ("they are built" if source == "original" else
+                                             "NJM or another source can be asked"))
+        if notes:
+            info["notes"] = notes
         return info
 
     def _njm_availability(self, facility, instrument):

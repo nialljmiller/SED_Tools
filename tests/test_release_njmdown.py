@@ -114,7 +114,8 @@ def test_njm_product_from_svo_is_installed_under_njm_names_and_says_what_is_miss
     directory = root / "GAIA" / "GAIA"
     message = str(raised.value)
     assert message.startswith(f"GAIA/GAIA is only partly installed, in {directory}: 4 of NJM's 6 bands came from "
-                              "SVO's GAIA/GAIA3: G, Gbp, Grp, Grvs; SVO has no copy of Gbp_bright, Gbp_faint")
+                              "SVO's GAIA/GAIA3: G, Gbp, Grp, Grvs; SVO has no curve that is NJM's Gbp_bright, "
+                              "Gbp_faint")
     assert "Fetch it again when NJM is reachable" in message and "NJM: the mirror is unavailable" in message
     assert "trying SVO" in caplog.text
     assert sorted(p.name for p in directory.glob("*.dat")) == ["G.dat", "Gbp.dat", "Grp.dat", "Grvs.dat"]
@@ -400,4 +401,15 @@ def test_available_from_svo_describes_njms_product_and_its_missing_bands(tmp_pat
     library.svo = svo_browser(root, {("GAIA", "GAIA3"): ["G", "Gbp", "Grp", "Grvs"]})
     info = library.available("GAIA", "GAIA")
     assert info["availability_source"] == "svo" and info["bands"] == ["G", "Gbp", "Grp", "Grvs"]
-    assert info["notes"] == ["SVO has no copy of NJM's Gbp_bright, Gbp_faint; only NJM has them"]
+    assert info["notes"] == ["SVO has no curve that is NJM's Gbp_bright, Gbp_faint"]
+
+
+def test_available_without_njm_follows_published_to_the_builder_before_svo(tmp_path, bundled):
+    bundled({"Planck": {"HFI": {"svo_instruments": ["PLANCK/HFI"], "bands": ["100", "545"],
+                                "svo_bands": {"PLANCK/HFI": ["545GHz=545"]}}}})
+    library = FilterLibrary(tmp_path / "filters")
+    library.mirror = NJM_DOWN
+    library.svo = svo_stub({}, {}, down=True)  # never asked: the builder comes first
+    info = library.available("Planck", "HFI")
+    assert info["availability_source"] == "original" and info["bands"] == ["100", "545"]
+    assert info["notes"][0] == "its original-source builder makes the curves when it is fetched"

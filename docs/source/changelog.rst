@@ -319,6 +319,15 @@ SVO fails fast
 - The FPS endpoint can be overridden with ``SED_SVO_FPS_URL`` (default
   ``https://svo2.cab.inta-csic.es/theory/fps/fps.php``); the browse index is
   taken from the same location.
+- An SVO that cannot be connected to, or does not answer its browse index in
+  time, is not asked again for five minutes by anything in the process, as
+  for NJM: the facility list and each instrument list after it fail at once
+  with the same error, which the pickers print once.
+- Spectral grid discovery (``grids``, ``SED.query``) asks the SVO and MSG
+  grid indexes once, with a 5 s connect and 10 s read timeout, instead of
+  retrying for up to 200 s; a failure is one line ("did not answer within
+  5+10 s", "answered HTTP 403"). NJM's spectra client does not ask a mirror
+  NJM's filter client found down in the same process.
 
 Filter properties and colours
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -451,9 +460,28 @@ Filter pickers, instrument names and NJM
   filter ID (0.4.1 showed labels such as ``Swift/UVOT.UVW2_f``). ``key``
   equals ``fetch_key``.
 - An SVO instrument that NJM lists as the same product (``svo_instruments``
-  in ``index.json``) is shown once, as NJM's, while NJM is reachable. An entry
+  in ``index.json``) is shown once, under NJM's name and description, whether
+  or not NJM is reachable: with NJM down, SVO's GAIA2, GAIA2r and GAIA3 are
+  listed as DR2, DR2r and GAIA, and Euclid's NISP0 is part of NISP. An entry
   only SVO lists takes NJM's name and description from the bundled catalogue
   only when NJM says it is the same product.
+- Builders that make only an instrument's separate components (30 of 84,
+  e.g. 2MASS, HST, JWST, Euclid/NISP) are no longer listed or tagged
+  ``original`` as a source of its curves.
+- With NJM down, a product of NJM's is filled from the SVO instruments that
+  hold its bands, under NJM's facility, instrument and band names
+  (``Filters.fetch("GAIA", "GAIA")`` installs SVO's GAIA/GAIA3 curves in
+  ``GAIA/GAIA``; SVO's ``GAIA/GAIA2.Gbp`` becomes ``GAIA/DR2/BP.dat``). Each
+  curve's header names the SVO filter it came from. The bundled catalogue
+  records each instrument's bands and which SVO filter holds which band.
+- An instrument installed under another spelling (``Gemini/GMOS-N``, or
+  ``PLANCK/HFI`` from 0.4.1 on a case-sensitive disk) is used, or completed,
+  in that folder; no second copy is made beside it.
+- ``Filters.info`` and ``Filters.properties`` list the superseded copies NJM
+  keeps beside a set (``BP_svo``) under ``archived_bands``, not ``bands``;
+  ``filters-info`` no longer shows them as bands. ``filters-cite`` prints
+  each title on one line and a reference known only by its address as the
+  address.
 - The pickers show each row as label, description and the sources it can be
   downloaded from, in the order a download tries them
   (``[local,njm,original,svo]``), with a legend; NJM is left out of the tags
@@ -698,6 +726,19 @@ Each item says what 0.4.1 did, what 0.5.0 does, and when it happens.
 - ``FilterLibrary.published``, SVO step: a failed row now raises
   ``ComponentError`` even when the requested directory is complete (the row
   was filed under another directory); it used to return that directory.
+- ``FilterLibrary.published`` with NJM down: a product of NJM's that SVO
+  holds under other names (GAIA/GAIA is SVO's GAIA/GAIA3) raised "SVO
+  instrument not found"; it is now installed from those SVO instruments under
+  NJM's names. When SVO has only some of its bands, those are installed and
+  ``ComponentError`` then names the bands missing and why (GAIA/GAIA's
+  Gbp_bright and Gbp_faint are NJM's only); the set stays incomplete, so the
+  next fetch asks NJM again, which keeps the curves that are its own and
+  replaces the others with a warning.
+- ``FilterLibrary.published`` downloaded into a new folder spelled as NJM
+  spells the instrument when it was installed under another spelling; it now
+  completes the installed folder (the MESA index file takes that folder's
+  name). Two installed spellings of one instrument raise ``ComponentError``
+  naming both, unless one is spelled exactly as asked.
 - When NJM provides every curve its index lists, bands the local
   ``manifest.json`` declares that the index does not list and that are not
   installed are removed from it, with a warning (they made the set look
