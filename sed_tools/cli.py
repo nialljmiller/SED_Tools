@@ -1754,25 +1754,24 @@ def menu() -> str:
     print("\n" + YELL + "-- Filters " + "-" * 39 + RESET)
     print(f"  {CYAN}1){RESET} Download Filters (NJM / SVO)")
     print(f"  {CYAN}2){RESET} Combine filter sets")
-    # Added after 0.4.1's twelve options, so the numbers people type keep their meaning.
-    print(f" {CYAN}13){RESET} Filter set information")
-    print(f" {CYAN}14){RESET} Build a filter curve from its parts (filter, optics, camera, atmosphere)")
+    print(f"  {CYAN}3){RESET} Filter set information")
+    print(f"  {CYAN}4){RESET} Build a filter curve from its parts (filter, optics, camera, atmosphere)")
 
     print("\n" + YELL + "-- Spectral grids " + "-" * 32 + RESET)
-    print(f"  {CYAN}3){RESET} Download spectral grids (NJM / SVO / MSG / MAST)")
-    print(f"  {CYAN}4){RESET} Rebuild (lookup + HDF5 + flux cube)")
-    print(f"  {CYAN}5){RESET} Combine grids into omni grid")
+    print(f"  {CYAN}5){RESET} Download spectral grids (NJM / SVO / MSG / MAST)")
+    print(f"  {CYAN}6){RESET} Rebuild (lookup + HDF5 + flux cube)")
+    print(f"  {CYAN}7){RESET} Combine grids into omni grid")
 
     print("\n" + YELL + "-- ML " + "-" * 44 + RESET)
-    print(f"  {CYAN}6){RESET} ML SED Completer (train/extend incomplete SEDs)")
-    print(f"  {CYAN}7){RESET} ML SED Generator (generate SEDs from parameters)")
-    print(f"  {CYAN}8){RESET} Grid Densifier (fill coarse Teff gaps)")
+    print(f"  {CYAN}8){RESET} ML SED Completer (train/extend incomplete SEDs)")
+    print(f"  {CYAN}9){RESET} ML SED Generator (generate SEDs from parameters)")
+    print(f" {CYAN}10){RESET} Grid Densifier (fill coarse Teff gaps)")
 
     print("\n" + YELL + "-- Tools " + "-" * 41 + RESET)
-    print(f"  {CYAN}9){RESET} Coverage (parameter-space summary + plot)")
-    print(f" {CYAN}10){RESET} Import a local spectral grid")
-    print(f" {CYAN}11){RESET} Prepare a spectral grid for MESA")
-    print(f" {CYAN}12){RESET} Config (data directory)")
+    print(f" {CYAN}11){RESET} Coverage (parameter-space summary + plot)")
+    print(f" {CYAN}12){RESET} Import a local spectral grid")
+    print(f" {CYAN}13){RESET} Prepare a spectral grid for MESA")
+    print(f" {CYAN}14){RESET} Config (data directory)")
 
     print("\n" + DIM + "-" * 50 + RESET)
     print(f"  {RED}0/q){RESET} Quit")
@@ -1782,18 +1781,18 @@ def menu() -> str:
     mapping = {
         "1": "filters",
         "2": "filters_combine",
-        "3": "grids",
-        "4": "rebuild",
-        "5": "combine",
-        "6": "ml_completer",
-        "7": "ml_generator",
-        "8": "grid_densifier",
-        "9": "coverage",
-        "10": "import",
-        "11": "mesa_prepare",
-        "12": "config",
-        "13": "filter_info",
-        "14": "filter_compose",
+        "3": "filter_info",
+        "4": "filter_compose",
+        "5": "grids",
+        "6": "rebuild",
+        "7": "combine",
+        "8": "ml_completer",
+        "9": "ml_generator",
+        "10": "grid_densifier",
+        "11": "coverage",
+        "12": "import",
+        "13": "mesa_prepare",
+        "14": "config",
         "q": "quit",
         "Q": "quit",
         "quit": "quit",

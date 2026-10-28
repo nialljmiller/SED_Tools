@@ -61,6 +61,16 @@ def write_flux_cube(
 
 
 @pytest.fixture(autouse=True)
+def _private_config_file(tmp_path_factory, monkeypatch):
+    """No test reads or writes the user's own ~/.sed_tools/config.toml."""
+    from sed_tools import config
+
+    config_dir = tmp_path_factory.mktemp("sed_tools_config")
+    monkeypatch.setattr(config, "_CONFIG_DIR", config_dir)
+    monkeypatch.setattr(config, "_CONFIG_FILE", config_dir / "config.toml")
+
+
+@pytest.fixture(autouse=True)
 def _fresh_njm_state():
     """What a process knows about NJM is shared by its clients; each test starts as a new process."""
     from sed_tools import njm_filter_grabber

@@ -42,7 +42,7 @@ Download or build again
   the grid again. Fixed-resolution BOSZ grids, read with MAST's separate
   wavelength files, were written in full. Cleaning a BOSZ grid now stops and
   asks for its flux unit (see "Flux units").
-- Flux cubes made by the densifier (menu option 8 or
+- Flux cubes made by the densifier (menu option 8 in earlier releases, 10 now, or
   ``grid_densifier.densify_grid``) with any earlier release are scrambled
   (see "Wrong results fixed"). Densify the source cube again.
 
@@ -467,10 +467,12 @@ Filter pickers, instrument names and NJM
   curve contains, the separate components and variants, the atmosphere
   sites and the licence. Declining the download returns to the instrument
   list (in 0.4.1 it asked "Download another instrument?").
-- The interactive menu gains options 13 (filter set information, as
-  ``filters-info``, for an instrument picked from the lists) and 14 (build a
-  filter curve from an instrument's own parts, with the questions asked after
-  a download). Options 1-12 keep 0.4.1's numbers.
+- The interactive menu gains two filter options, 3 (filter set information,
+  as ``filters-info``, for an instrument picked from the lists) and 4 (build
+  a filter curve from an instrument's own parts, with the questions asked
+  after a download). The options after them are renumbered so the menu reads
+  in order: 0.4.1's options 3-12 are now 5-14 (spectral grids 5-7, ML 8-10,
+  tools 11-14). Options 1 and 2 and 0/q are unchanged.
 - The browser downloads with the library it lists from, so NJM is checked and
   reported once per session; each listing error is printed once; an
   unreachable NJM does not count as an incomplete instrument list. The
