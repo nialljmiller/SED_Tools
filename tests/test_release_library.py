@@ -311,8 +311,9 @@ def test_njm_set_complete_by_its_index_stops_there(tmp_path, njm, bundled, caplo
     library.svo = SimpleNamespace(list_facilities=lambda: pytest.fail("SVO was asked"))
     with caplog.at_level(logging.WARNING):
         assert library.published("Euclid", "NISP") == root / "Euclid" / "NISP"
-    assert "declares bands its index does not list (H_svo)" in caplog.text
+    assert "declared bands that NJM's index does not list and that are not installed (H_svo)" in caplog.text
     assert (root / "Euclid" / "NISP" / "H.dat").read_text() == CURVE
+    assert FilterLibrary.published_complete(root / "Euclid" / "NISP")  # the next fetch asks no source
 
 
 def test_svo_never_writes_into_a_set_njm_partly_filled(tmp_path, njm, bundled):

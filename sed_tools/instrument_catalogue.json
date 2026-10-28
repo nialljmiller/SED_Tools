@@ -2,1603 +2,4107 @@
  "facilities": {
   "2MASS": {
    "instruments": {
-    "2MASS": {}
+    "2MASS": {
+     "description": "2MASS J, H, Ks relative spectral responses (Cohen et al. 2003)",
+     "svo_instruments": [
+      "2MASS/2MASS"
+     ]
+    }
    }
   },
   "AAO": {
    "instruments": {
-    "AAO": {},
-    "GSC2": {}
+    "AAO": {
+     "description": "Anglo-Australian Telescope broad- and narrow-band filters (AAO)",
+     "svo_instruments": [
+      "AAO/AAO"
+     ]
+    },
+    "GSC2": {
+     "description": "GSC-II southern photographic passbands Bj, Rf, In (UK Schmidt)",
+     "svo_instruments": [
+      "AAO/GSC2"
+     ]
+    }
    }
   },
   "ADEOS": {
    "instruments": {
-    "GLI": {},
-    "OCTS": {},
-    "POLDER": {}
+    "GLI": {
+     "description": "ADEOS-II Global Imager (GLI) channels, near-UV to thermal infrared",
+     "svo_instruments": [
+      "ADEOS/GLI"
+     ]
+    },
+    "OCTS": {
+     "description": "ADEOS Ocean Color and Temperature Scanner (OCTS) visible/NIR bands",
+     "svo_instruments": [
+      "ADEOS/OCTS"
+     ]
+    },
+    "POLDER": {
+     "description": "POLDER-1 and POLDER-2 radiometer bands (ADEOS and ADEOS-II)",
+     "svo_instruments": [
+      "ADEOS/POLDER-1",
+      "ADEOS/POLDER-2"
+     ]
+    }
    }
   },
   "AKARI": {
    "instruments": {
-    "FIS": {},
-    "IRC": {}
+    "FIS": {
+     "description": "AKARI Far-Infrared Surveyor (FIS) photometric bands",
+     "svo_instruments": [
+      "AKARI/FIS"
+     ]
+    },
+    "IRC": {
+     "description": "AKARI Infrared Camera (IRC) near- and mid-infrared imaging filters",
+     "svo_instruments": [
+      "AKARI/IRC"
+     ]
+    }
    }
   },
   "APEX": {
    "instruments": {
-    "LABOCA": {},
-    "SABOCA": {}
+    "LABOCA": {
+     "description": "APEX LABOCA bolometer camera passband at 345 GHz (870 μm)",
+     "svo_instruments": [
+      "APEX/LABOCA"
+     ]
+    },
+    "SABOCA": {
+     "description": "APEX SABOCA submillimetre bolometer camera passband near 350 μm",
+     "svo_instruments": [
+      "APEX/SABOCA"
+     ]
+    }
    }
   },
   "APO": {
    "instruments": {
-    "ARCTIC": {},
-    "Balzers": {},
-    "Blocking": {},
-    "Broad": {},
-    "FNAL": {},
-    "Gunn": {},
-    "Hodge": {},
-    "MSSSO": {},
-    "NICFPS": {},
-    "NMSU": {},
-    "Narrow": {},
-    "SDSS": {},
-    "UCO": {},
-    "York": {}
+    "ARCTIC": {
+     "description": "ARCTIC CCD imager filters, ARC 3.5-m telescope at Apache Point",
+     "svo_instruments": [
+      "APO/ARCTIC"
+     ]
+    },
+    "Balzers": {
+     "description": "Balzers neutral density filters ND1-ND12 at Apache Point (ARC 3.5-m)",
+     "svo_instruments": [
+      "APO/Balzers"
+     ]
+    },
+    "Blocking": {
+     "description": "Apache Point long-pass blocking filters (GG, OG, RG coloured glass)",
+     "svo_instruments": [
+      "APO/Blocking"
+     ]
+    },
+    "Broad": {
+     "description": "Apache Point broad-band B, V, R, I and BG40 filters (ARC 3.5-m)",
+     "svo_instruments": [
+      "APO/Broad"
+     ]
+    },
+    "FNAL": {
+     "description": "FNAL Harris V and R filters at Apache Point (ARCTIC and Agile)",
+     "svo_instruments": [
+      "APO/FNAL"
+     ]
+    },
+    "Gunn": {
+     "description": "Gunn-Thuan g, r, i, z filters at Apache Point (ARC 3.5-m)",
+     "svo_instruments": [
+      "APO/Gunn"
+     ]
+    },
+    "Hodge": {
+     "description": "Hodge H-alpha on/off narrow-band filters in the Apache Point list",
+     "svo_instruments": [
+      "APO/Hodge"
+     ]
+    },
+    "MSSSO": {
+     "description": "MSSSO Bessell UBVRI filters at Apache Point (ARCTIC and Agile)",
+     "svo_instruments": [
+      "APO/MSSSO"
+     ]
+    },
+    "NICFPS": {
+     "description": "NICFPS near-infrared camera filters, ARC 3.5-m at Apache Point",
+     "svo_instruments": [
+      "APO/NICFPS"
+     ]
+    },
+    "NMSU": {
+     "description": "NMSU filters at Apache Point: UBVRI, Washington, DDO51, H-alpha, [SII]",
+     "svo_instruments": [
+      "APO/NMSU"
+     ]
+    },
+    "Narrow": {
+     "description": "Apache Point narrow-band filters: H-alpha set and Semrock 857 nm",
+     "svo_instruments": [
+      "APO/Narrow"
+     ]
+    },
+    "SDSS": {
+     "description": "SDSS u'g'r'i'z' filters at Apache Point (ARCTIC and Agile)",
+     "svo_instruments": [
+      "APO/SDSS"
+     ]
+    },
+    "UCO": {
+     "description": "U. Colorado tilt-tuned narrow-band planetary filters at Apache Point",
+     "svo_instruments": [
+      "APO/UCO"
+     ]
+    },
+    "York": {
+     "description": "York narrow-band interference filters at Apache Point (ARC 3.5-m)",
+     "svo_instruments": [
+      "APO/York"
+     ]
+    }
    }
   },
   "ARCHEOPS": {
    "instruments": {
-    "ARCHEOPS": {}
+    "ARCHEOPS": {
+     "description": "Archeops balloon bolometer bands, incl. KS3 (2002 Kiruna flight) set",
+     "svo_instruments": [
+      "ARCHEOPS/KS3",
+      "ARCHEOPS/Trapani"
+     ]
+    }
    }
   },
   "ARGO": {
    "instruments": {
-    "ARGO": {}
+    "ARGO": {
+     "description": "ARGO balloon-borne CMB anisotropy telescope bands A-D",
+     "svo_instruments": [
+      "ARGO/ARGO"
+     ]
+    }
    }
   },
   "ATLAS": {
    "instruments": {
-    "ATLAS": {}
+    "ATLAS": {
+     "description": "ATLAS (Asteroid Terrestrial-impact Last Alert System) c and o filters"
+    }
    }
   },
   "AWS": {
    "instruments": {
-    "AWS": {}
+    "AWS": {
+     "description": "AWS microwave sounder channel SRFs (EUMETSAT NWP SAF, for RTTOV)"
+    }
    }
   },
   "Akatsuki": {
    "instruments": {
-    "IR1": {},
-    "IR2": {},
-    "LIR": {},
-    "UVI": {}
+    "IR1": {
+     "description": "Akatsuki IR1 1-μm Venus camera filters (0.90 day/night, 0.97, 1.01)",
+     "svo_instruments": [
+      "Akatsuki/IR1"
+     ]
+    },
+    "IR2": {
+     "description": "Akatsuki IR2 2-μm Venus camera filters",
+     "svo_instruments": [
+      "Akatsuki/IR2"
+     ]
+    },
+    "LIR": {
+     "description": "Akatsuki LIR 8-12 μm Venus camera filter at three incidence angles",
+     "svo_instruments": [
+      "Akatsuki/LIR"
+     ]
+    },
+    "UVI": {
+     "description": "Akatsuki UVI ultraviolet imager 283 and 365 nm filters, diffuser",
+     "svo_instruments": [
+      "Akatsuki/UVI"
+     ]
+    }
    }
   },
   "AlSat1": {
    "instruments": {
-    "SLIM6": {}
+    "SLIM6": {
+     "description": "SSTL SLIM6 multispectral imager on AlSat-1 (one band from Beijing-1)"
+    }
    }
   },
   "Aqua": {
    "instruments": {
-    "AMSUA": {},
-    "MODIS": {}
+    "AMSUA": {
+     "description": "Aqua AMSU-A microwave sounder channels (CRTM boxcar models)"
+    },
+    "MODIS": {
+     "description": "Aqua MODIS spectroradiometer band RSRs, incl. per-detector curves",
+     "svo_instruments": [
+      "Aqua/MODIS"
+     ]
+    }
    }
   },
   "Argus": {
    "instruments": {
-    "DR280": {},
-    "System": {}
+    "DR280": {
+     "description": "Argus Array beta and rho bands on DR280 telescopes (filter×optics×QE)"
+    },
+    "System": {
+     "description": "Legacy Argus Array beta and rho curves, superseded by Argus/DR280"
+    }
    }
   },
   "Astrosat": {
    "instruments": {
-    "UVIT": {}
+    "UVIT": {
+     "description": "AstroSat UVIT far-UV, near-UV and visible filters, plus older curves",
+     "svo_instruments": [
+      "Astrosat/UVIT"
+     ]
+    }
    }
   },
   "BICEP": {
    "instruments": {
-    "BICEP": {},
-    "BICEP3": {},
-    "BK18": {}
+    "BICEP": {
+     "description": "BICEP1 and BICEP2/Keck CMB polarimeter bands, South Pole",
+     "svo_instruments": [
+      "BICEP/BICEP2"
+     ]
+    },
+    "BICEP3": {
+     "description": "BICEP3 South Pole CMB polarimeter band at 95 GHz",
+     "svo_instruments": [
+      "BICEP/BICEP3"
+     ]
+    },
+    "BK18": {
+     "description": "BICEP/Keck BK18 bandpasses: BICEP3 95 GHz, Keck 95/150/220 GHz"
+    }
    }
   },
   "BLAST": {
    "instruments": {
-    "BLAST": {},
-    "BLASTPol": {},
-    "BLAST_TNG": {}
+    "BLAST": {
+     "description": "BLAST balloon submillimetre telescope bands at 250, 350, 500 μm",
+     "svo_instruments": [
+      "BLAST/BLAST06"
+     ]
+    },
+    "BLASTPol": {
+     "description": "BLASTPol polarimetric balloon telescope bands (250, 350, 500 μm)",
+     "svo_instruments": [
+      "BLAST/BLASTPol"
+     ]
+    },
+    "BLAST_TNG": {
+     "description": "BLAST-TNG next-generation balloon telescope bands, 250-500 μm",
+     "svo_instruments": [
+      "BLAST/BLAST-TNG"
+     ]
+    }
    }
   },
   "BOK": {
    "instruments": {
-    "90prime": {},
-    "BASS": {},
-    "SCUSS": {}
+    "90prime": {
+     "description": "90Prime wide-field imager filters, Bok 2.3-m telescope at Kitt Peak",
+     "svo_instruments": [
+      "BOK/90prime",
+      "BOK/BASS"
+     ]
+    },
+    "BASS": {
+     "description": "Beijing-Arizona Sky Survey (BASS) g, r: full and filter-only curves",
+     "svo_instruments": [
+      "BOK/BASS"
+     ]
+    },
+    "SCUSS": {
+     "description": "SCUSS u-band survey filter, with and without atmosphere (Bok 90Prime)",
+     "svo_instruments": [
+      "BOK/SCUSS"
+     ]
+    }
    }
   },
   "BOOMERANG": {
    "instruments": {
-    "BNA": {},
-    "BOOMERANG": {}
+    "BNA": {
+     "description": "BOOMERANG North America (BNA) balloon CMB radiometer, 90 and 150 GHz",
+     "svo_instruments": [
+      "BOOMERANG/BNA"
+     ]
+    },
+    "BOOMERANG": {
+     "description": "BOOMERANG long-duration balloon CMB telescope bands, 90-410 GHz",
+     "svo_instruments": [
+      "BOOMERANG/LDB"
+     ]
+    }
    }
   },
   "Beijing1": {
    "instruments": {
-    "SLIM6": {}
+    "SLIM6": {
+     "description": "SSTL SLIM6 multispectral imager red and NIR bands on Beijing-1"
+    }
    }
   },
   "Bepi_Colombo": {
    "instruments": {
-    "HRIC": {},
-    "STC": {}
+    "HRIC": {
+     "description": "BepiColombo SIMBIO-SYS HRIC camera: panchromatic and 3 bandpasses",
+     "svo_instruments": [
+      "Bepi-Colombo/HRIC"
+     ]
+    },
+    "STC": {
+     "description": "BepiColombo SIMBIO-SYS STC stereo camera filters",
+     "svo_instruments": [
+      "Bepi-Colombo/STC"
+     ]
+    }
    }
   },
   "CAHA": {
    "instruments": {
-    "Astralux": {},
-    "BUSCA": {},
-    "CAHA": {},
-    "LAICA": {},
-    "MUNICS": {},
-    "Omega2000": {},
-    "PANIC": {},
-    "PlanetCam2": {}
+    "Astralux": {
+     "description": "AstraLux lucky-imaging camera filters, Calar Alto 2.2 m",
+     "svo_instruments": [
+      "CAHA/Astralux"
+     ]
+    },
+    "BUSCA": {
+     "description": "BUSCA four-channel simultaneous CCD camera filters, Calar Alto 2.2 m",
+     "svo_instruments": [
+      "CAHA/BUSCA"
+     ]
+    },
+    "CAHA": {
+     "description": "Calar Alto observatory filter database, broad- and narrow-band",
+     "svo_instruments": [
+      "CAHA/CAHA"
+     ]
+    },
+    "LAICA": {
+     "description": "LAICA camera filters incl. ALHAMBRA medium bands, Calar Alto 3.5 m",
+     "svo_instruments": [
+      "CAHA/LAICA"
+     ]
+    },
+    "MUNICS": {
+     "description": "Munich Near-Infrared Cluster Survey (MUNICS) V, R, I, J, K' filters",
+     "svo_instruments": [
+      "CAHA/MUNICS"
+     ]
+    },
+    "Omega2000": {
+     "description": "Omega2000 near-infrared wide-field camera filters, Calar Alto 3.5 m",
+     "svo_instruments": [
+      "CAHA/Omega2000"
+     ]
+    },
+    "PANIC": {
+     "description": "PANIC panoramic near-infrared camera filters, Calar Alto",
+     "svo_instruments": [
+      "CAHA/PANIC"
+     ]
+    },
+    "PlanetCam2": {
+     "description": "PlanetCam UPV/EHU lucky-imaging camera visible and SWIR filters",
+     "svo_instruments": [
+      "CAHA/PlanetCam2"
+     ]
+    }
    }
   },
   "CASTOR": {
    "instruments": {
-    "CASTOR": {}
+    "CASTOR": {
+     "description": "CASTOR proposed UV-optical survey telescope uv, u, g pre-flight bands",
+     "svo_instruments": [
+      "CASTOR/CASTOR0"
+     ]
+    }
    }
   },
   "CFHT": {
    "instruments": {
-    "CFH12k": {},
-    "CFHT": {},
-    "MOCAM": {},
-    "MegaCam": {},
-    "Megaprime": {},
-    "QUIRC": {},
-    "WFC": {},
-    "Wircam": {}
+    "CFH12k": {
+     "description": "CFH12K prime-focus CCD mosaic camera filters, CFHT (1999-2003)",
+     "svo_instruments": [
+      "CFHT/CFH12k"
+     ]
+    },
+    "CFHT": {
+     "description": "CFHT general filter collection: UBVRI and numbered cfh filters"
+    },
+    "MOCAM": {
+     "description": "MOCAM prime-focus CCD mosaic camera filters, CFHT",
+     "svo_instruments": [
+      "CFHT/MOCAM"
+     ]
+    },
+    "MegaCam": {
+     "description": "CFHT MegaCam u, g, r, i, z, gri filters, several filter generations",
+     "svo_instruments": [
+      "CFHT/MegaCam"
+     ]
+    },
+    "Megaprime": {
+     "description": "CFHT MegaPrime broad-, narrow- and medium-band filters (full, filter)",
+     "svo_instruments": [
+      "CFHT/Megaprime"
+     ]
+    },
+    "QUIRC": {
+     "description": "QUIRC near-infrared camera filters (CFHT and UH 2.2-m)",
+     "svo_instruments": [
+      "CFHT/QUIRC"
+     ]
+    },
+    "WFC": {
+     "description": "CFHT WIRCam J-band curve, kept under the legacy name WFC"
+    },
+    "Wircam": {
+     "description": "WIRCam wide-field near-infrared imager filters, CFHT prime focus"
+    }
    }
   },
   "CHEOPS": {
    "instruments": {
-    "CHEOPS": {}
+    "CHEOPS": {
+     "description": "CHEOPS exoplanet satellite broad 330-1100 nm CCD passband",
+     "svo_instruments": [
+      "CHEOPS/CHEOPS"
+     ]
+    }
    }
   },
   "CMP_SAI": {
    "instruments": {
-    "SPP": {}
+    "SPP": {
+     "description": "SAI MSU Speckle Polarimeter (SPP) filters, CMO 2.5-m telescope",
+     "svo_instruments": [
+      "CMO-SAI/SPP"
+     ]
+    }
    }
   },
   "COBE": {
    "instruments": {
-    "DIRBE": {}
+    "DIRBE": {
+     "description": "COBE DIRBE ten infrared bands, 1.25-240 μm (filter and detector)",
+     "svo_instruments": [
+      "COBE/DIRBE"
+     ]
+    }
    }
   },
   "COMS": {
    "instruments": {
-    "GOCI": {}
+    "GOCI": {
+     "description": "COMS Geostationary Ocean Color Imager (GOCI) bands, 412-865 nm",
+     "svo_instruments": [
+      "COMS/GOCI"
+     ]
+    }
    }
   },
   "CSST": {
    "instruments": {
-    "CSS_OS": {},
-    "MCI": {}
+    "CSS_OS": {
+     "description": "CSST optical survey camera: NUV-y bands and slitless GU, GV, GI",
+     "svo_instruments": [
+      "CSST/SC0-Phot",
+      "CSST/SC0-Spec"
+     ]
+    },
+    "MCI": {
+     "description": "CSST Multi-channel Imager (MCI) nine medium-band filters",
+     "svo_instruments": [
+      "CSST/MCI"
+     ]
+    }
    }
   },
   "CSTAR": {
    "instruments": {
-    "CSTAR": {}
+    "CSTAR": {
+     "description": "CSTAR telescope array at Dome A, Antarctica: g, r, i passbands",
+     "svo_instruments": [
+      "CSTAR/CSTAR1",
+      "CSTAR/CSTAR2",
+      "CSTAR/CSTAR4"
+     ]
+    }
    }
   },
   "CTIO": {
    "instruments": {
-    "ANDICAM": {},
-    "BLANK": {},
-    "CTIO": {},
-    "DECam": {},
-    "Goodman": {},
-    "ISPI": {},
-    "MosaicII": {},
-    "OSIRIS": {},
-    "SAMI": {},
-    "SMARTS": {},
-    "SOI": {},
-    "S_PLUS": {},
-    "Spartan": {},
-    "Y4KCam": {}
+    "ANDICAM": {
+     "description": "ANDICAM optical/near-IR dual camera filters, SMARTS 1.3-m at CTIO",
+     "svo_instruments": [
+      "CTIO/ANDICAM"
+     ]
+    },
+    "BLANK": {
+     "description": "CTIO general filter pool (BLANK) for the Blanco 4-m and others",
+     "svo_instruments": [
+      "CTIO/BLANK"
+     ]
+    },
+    "CTIO": {
+     "description": "CTIO observatory pool of optical narrow- and broad-band filters",
+     "svo_instruments": [
+      "CTIO/CTIO"
+     ]
+    },
+    "DECam": {
+     "description": "Dark Energy Camera (DECam) ugrizY, VR: filter, DES DR1 and old totals",
+     "svo_instruments": [
+      "CTIO/DECam"
+     ]
+    },
+    "Goodman": {
+     "description": "Goodman HTS imaging filters, SOAR 4.1-m telescope",
+     "svo_instruments": [
+      "CTIO/Goodman"
+     ]
+    },
+    "ISPI": {
+     "description": "ISPI near-infrared imager filters, Blanco 4-m telescope at CTIO",
+     "svo_instruments": [
+      "CTIO/ISPI"
+     ]
+    },
+    "MosaicII": {
+     "description": "Mosaic II prime-focus CCD camera filters, Blanco 4-m at CTIO",
+     "svo_instruments": [
+      "CTIO/MosaicII"
+     ]
+    },
+    "OSIRIS": {
+     "description": "Ohio State Infrared Imager/Spectrometer (OSIRIS) filters at CTIO",
+     "svo_instruments": [
+      "CTIO/OSIRIS"
+     ]
+    },
+    "SAMI": {
+     "description": "SOAR Adaptive Module Imager (SAMI) optical filters, SOAR 4.1-m",
+     "svo_instruments": [
+      "CTIO/SAMI"
+     ]
+    },
+    "SMARTS": {
+     "description": "SMARTS 0.9-m telescope B, V, R, Kc filters (three sets each)",
+     "svo_instruments": [
+      "CTIO/SMARTS"
+     ]
+    },
+    "SOI": {
+     "description": "SOAR Optical Imager (SOI) broad- and narrow-band filters",
+     "svo_instruments": [
+      "CTIO/SOI"
+     ]
+    },
+    "S_PLUS": {
+     "description": "S-PLUS survey 12 filters (5 broad, 7 narrow), T80-South at CTIO",
+     "svo_instruments": [
+      "CTIO/S-PLUS"
+     ]
+    },
+    "Spartan": {
+     "description": "Spartan near-infrared camera filters, SOAR 4.1-m telescope",
+     "svo_instruments": [
+      "CTIO/Spartan"
+     ]
+    },
+    "Y4KCam": {
+     "description": "Y4KCam optical imager filters, SMARTS 1.0-m telescope at CTIO",
+     "svo_instruments": [
+      "CTIO/Y4KCam"
+     ]
+    }
    }
   },
   "Cameras": {
    "instruments": {
-    "Arriflex_D21": {},
-    "Canon_10D": {},
-    "Canon_1DMarkII": {},
-    "Canon_1DMarkIII": {},
-    "Canon_20D": {},
-    "Canon_300D": {},
-    "Canon_30D": {},
-    "Canon_350D": {},
-    "Canon_40D": {},
-    "Canon_450D_IR": {},
-    "Canon_500D": {},
-    "Canon_50D": {},
-    "Canon_5D": {},
-    "Canon_5DII": {},
-    "Canon_600D": {},
-    "Canon_60D": {},
-    "Canon_G1X": {},
-    "Canon_T2i": {},
-    "Canon_XS": {},
-    "Canon_XSi": {},
-    "Fujifilm_S3": {},
-    "Fujifilm_S5Pro": {},
-    "Fujifilm_X100": {},
-    "Fujifilm_Xpro1": {},
-    "Hasselblad_H2": {},
-    "Hasselblad_H3D": {},
-    "Kodak_DCS200": {},
-    "Kodak_DCS420": {},
-    "Leica_M8": {},
-    "Lumix_G10": {},
-    "Lumix_GF1": {},
-    "Lumix_GF2": {},
-    "Nikon_D100": {},
-    "Nikon_D200": {},
-    "Nikon_D3": {},
-    "Nikon_D3000": {},
-    "Nikon_D300s": {},
-    "Nikon_D3100": {},
-    "Nikon_D3X": {},
-    "Nikon_D40": {},
-    "Nikon_D40x": {},
-    "Nikon_D50": {},
-    "Nikon_D5100": {},
-    "Nikon_D60": {},
-    "Nikon_D70": {},
-    "Nikon_D700": {},
-    "Nikon_D80": {},
-    "Nikon_D90": {},
-    "Nokia_N900": {},
-    "Olympus_EP1": {},
-    "Olympus_EPL2": {},
-    "Panasonic_DML_LX3": {},
-    "Pentax_K100D": {},
-    "Pentax_K10D": {},
-    "Pentax_K5": {},
-    "Pentax_Q": {},
-    "Pentax_ist_D": {},
-    "Pentax_ist_DL": {},
-    "PhaseOne": {},
-    "PointGrey_Grasshopper2_14S5C": {},
-    "PointGrey_Grasshopper_50S5C": {},
-    "SQM": {},
-    "Samsung_NX10": {},
-    "Samsung_NX100": {},
-    "Sony.A200": {},
-    "Sony.A55": {},
-    "Sony_A290": {},
-    "Sony_A300": {},
-    "Sony_A330": {},
-    "Sony_NEX5N": {},
-    "Sony_NEX_5N": {},
-    "Sony_NEX_C3": {}
+    "Arriflex_D21": {
+     "description": "Arriflex D21 camera RGB responses (Mauer 2009)",
+     "svo_instruments": [
+      "Cameras/Arriflex"
+     ]
+    },
+    "Canon_10D": {
+     "description": "Canon 10D camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "Canon_1DMarkII": {
+     "description": "Canon 1DMarkII camera RGB sensitivities (Jiang et al. 2013)"
+    },
+    "Canon_1DMarkIII": {
+     "description": "Canon 1DMarkIII camera RGB sensitivities (Jiang et al. 2013)"
+    },
+    "Canon_20D": {
+     "description": "Canon 20D RGB sensitivities (Jiang et al. 2013), UV/IR-cut filter"
+    },
+    "Canon_300D": {
+     "description": "Canon 300D RGB sensitivities (Jiang et al. 2013), UV/IR-cut filter"
+    },
+    "Canon_30D": {
+     "description": "Canon 30D camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "Canon_350D": {
+     "description": "Canon 350D camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "Canon_40D": {
+     "description": "Canon 40D camera RGB sensitivities (Jiang et al. 2013)"
+    },
+    "Canon_450D_IR": {
+     "description": "Canon EOS 450D without IR filter: RGB responses (Mauer 2009)"
+    },
+    "Canon_500D": {
+     "description": "Canon 500D camera RGB sensitivities (Jiang et al. 2013)"
+    },
+    "Canon_50D": {
+     "description": "Canon 50D camera RGB sensitivities (Jiang et al. 2013)"
+    },
+    "Canon_5D": {
+     "description": "Canon 5D camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "Canon_5DII": {
+     "description": "Canon 5DII camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "Canon_600D": {
+     "description": "Canon 600D camera RGB sensitivities (Jiang et al. 2013)"
+    },
+    "Canon_60D": {
+     "description": "Canon 60D RGB sensitivities (Jiang et al. 2013), UV/IR-cut filter"
+    },
+    "Canon_G1X": {
+     "description": "Canon G1X camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "Canon_T2i": {
+     "description": "Canon T2i camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "Canon_XS": {
+     "description": "Canon XS camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "Canon_XSi": {
+     "description": "Canon XSi camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "Fujifilm_S3": {
+     "description": "Fujifilm S3 camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "Fujifilm_S5Pro": {
+     "description": "Fujifilm S5 Pro camera RGB responses (Mauer 2009)"
+    },
+    "Fujifilm_X100": {
+     "description": "Fujifilm X100 camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "Fujifilm_Xpro1": {
+     "description": "Fujifilm Xpro1 camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "Hasselblad_H2": {
+     "description": "Hasselblad H2 camera RGB sensitivities (Jiang et al. 2013)"
+    },
+    "Hasselblad_H3D": {
+     "description": "Hasselblad H3D camera RGB responses (Mauer 2009)"
+    },
+    "Kodak_DCS200": {
+     "description": "Kodak DCS200 digital camera RGB responses (Vora et al. 1997)"
+    },
+    "Kodak_DCS420": {
+     "description": "Kodak DCS-420 digital camera RGB responses (Vora et al. 1997)"
+    },
+    "Leica_M8": {
+     "description": "Leica M8 camera RGB responses (Mauer 2009)",
+     "svo_instruments": [
+      "Cameras/Leica"
+     ]
+    },
+    "Lumix_G10": {
+     "description": "Lumix G10 camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "Lumix_GF1": {
+     "description": "Lumix GF1 camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "Lumix_GF2": {
+     "description": "Lumix GF2 camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "Nikon_D100": {
+     "description": "Nikon D100 camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "Nikon_D200": {
+     "description": "Nikon D200 RGB sensitivities (Jiang et al. 2013), UV/IR-cut filter"
+    },
+    "Nikon_D3": {
+     "description": "Nikon D3 camera RGB sensitivities (Jiang et al. 2013)"
+    },
+    "Nikon_D3000": {
+     "description": "Nikon D3000 camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "Nikon_D300s": {
+     "description": "Nikon D300s camera RGB sensitivities (Jiang et al. 2013)"
+    },
+    "Nikon_D3100": {
+     "description": "Nikon D3100 camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "Nikon_D3X": {
+     "description": "Nikon D3X camera RGB sensitivities (Jiang et al. 2013)"
+    },
+    "Nikon_D40": {
+     "description": "Nikon D40 RGB sensitivities (Jiang et al. 2013), UV/IR-cut filter"
+    },
+    "Nikon_D40x": {
+     "description": "Nikon D40x camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "Nikon_D50": {
+     "description": "Nikon D50 RGB sensitivities (Jiang et al. 2013), UV/IR-cut filter"
+    },
+    "Nikon_D5100": {
+     "description": "Nikon D5100 camera RGB sensitivities (Jiang et al. 2013)"
+    },
+    "Nikon_D60": {
+     "description": "Nikon D60 camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "Nikon_D70": {
+     "description": "Nikon D70 camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "Nikon_D700": {
+     "description": "Nikon D700 camera RGB sensitivities (Jiang et al. 2013)"
+    },
+    "Nikon_D80": {
+     "description": "Nikon D80 RGB sensitivities (Jiang et al. 2013), UV/IR-cut filter"
+    },
+    "Nikon_D90": {
+     "description": "Nikon D90 RGB sensitivities (Jiang et al. 2013), UV/IR-cut filter"
+    },
+    "Nokia_N900": {
+     "description": "Nokia N900 camera RGB sensitivities (Jiang et al. 2013)",
+     "svo_instruments": [
+      "Cameras/Nokia"
+     ]
+    },
+    "Olympus_EP1": {
+     "description": "Olympus EP1 camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "Olympus_EPL2": {
+     "description": "Olympus EPL2 camera RGB sensitivities (Jiang et al. 2013)"
+    },
+    "Panasonic_DML_LX3": {
+     "description": "Panasonic DMC-LX3 camera RGB responses (camSPECS, Mauer thesis)",
+     "svo_instruments": [
+      "Cameras/Panasonic"
+     ]
+    },
+    "Pentax_K100D": {
+     "description": "Pentax K100D camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "Pentax_K10D": {
+     "description": "Pentax K10D camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "Pentax_K5": {
+     "description": "Pentax K5 camera RGB sensitivities (Jiang et al. 2013)"
+    },
+    "Pentax_Q": {
+     "description": "Pentax Q camera RGB sensitivities (Jiang et al. 2013)"
+    },
+    "Pentax_ist_D": {
+     "description": "Pentax ist D camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "Pentax_ist_DL": {
+     "description": "Pentax ist DL camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "PhaseOne": {
+     "description": "PhaseOne camera RGB sensitivities (Jiang et al. 2013)",
+     "svo_instruments": [
+      "Cameras/PhaseOne"
+     ]
+    },
+    "PointGrey_Grasshopper2_14S5C": {
+     "description": "PointGrey Grasshopper2 14S5C RGB sensitivities (Jiang et al. 2013)"
+    },
+    "PointGrey_Grasshopper_50S5C": {
+     "description": "PointGrey Grasshopper 50S5C RGB sensitivities (Jiang et al. 2013)"
+    },
+    "SQM": {
+     "description": "Unihedron Sky Quality Meter (SQM) bands, CM-500 filter, scotopic eye",
+     "svo_instruments": [
+      "Cameras/SQM"
+     ]
+    },
+    "Samsung_NX10": {
+     "description": "Samsung NX10 camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "Samsung_NX100": {
+     "description": "Samsung NX100 camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "Sony.A200": {
+     "description": "Sony A200 camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "Sony.A55": {
+     "description": "Sony A55 camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "Sony_A290": {
+     "description": "Sony A290 camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "Sony_A300": {
+     "description": "Sony A300 camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "Sony_A330": {
+     "description": "Sony A330 camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "Sony_NEX5N": {
+     "description": "Sony NEX5N camera RGB sensitivities (Jiang et al. 2013)"
+    },
+    "Sony_NEX_5N": {
+     "description": "Sony NEX 5N camera internal UV/IR-cut filter (Kolari Vision)"
+    },
+    "Sony_NEX_C3": {
+     "description": "Sony NEX C3 camera internal UV/IR-cut filter (Kolari Vision)"
+    }
    }
   },
   "Cassini": {
    "instruments": {
-    "ISS_NAC": {},
-    "ISS_WAC": {}
+    "ISS_NAC": {
+     "description": "Cassini ISS narrow-angle camera filters and filter combinations",
+     "svo_instruments": [
+      "Cassini/ISS_NAC"
+     ]
+    },
+    "ISS_WAC": {
+     "description": "Cassini ISS wide-angle camera filters and filter combinations",
+     "svo_instruments": [
+      "Cassini/ISS_WAC"
+     ]
+    }
    }
   },
   "Clementine": {
    "instruments": {
-    "HIRES": {},
-    "NIR": {},
-    "UVVIS": {}
+    "HIRES": {
+     "description": "Clementine HIRES high-resolution camera narrow-band filters",
+     "svo_instruments": [
+      "Clementine/HIRES"
+     ]
+    },
+    "NIR": {
+     "description": "Clementine near-infrared (NIR) camera narrow-band filters",
+     "svo_instruments": [
+      "Clementine/NIR"
+     ]
+    },
+    "UVVIS": {
+     "description": "Clementine ultraviolet-visible (UVVIS) camera narrow-band filters",
+     "svo_instruments": [
+      "Clementine/UVVIS"
+     ]
+    }
    }
   },
   "Contour": {
    "instruments": {
-    "CFI": {},
-    "CRISP": {}
+    "CFI": {
+     "description": "CONTOUR Forward Imager (CFI) bands, plus filter-only curves",
+     "svo_instruments": [
+      "Contour/CFI"
+     ]
+    },
+    "CRISP": {
+     "description": "CONTOUR Remote Imager/Spectrometer (CRISP) bands and filter-only",
+     "svo_instruments": [
+      "Contour/CRISP"
+     ]
+    }
    }
   },
   "Corot": {
    "instruments": {
-    "Corot": {}
+    "Corot": {
+     "description": "CoRoT asteroseismology (AS) and exoplanet transit (PF) channels",
+     "svo_instruments": [
+      "Corot/Corot"
+     ]
+    }
    }
   },
   "DDO": {
    "instruments": {
-    "DDO": {}
+    "DDO": {
+     "description": "DDO intermediate-band system (Mann & von Braun 2015 and ADPS)",
+     "svo_instruments": [
+      "GCPD/DDO"
+     ]
+    }
    }
   },
   "DECam": {
    "instruments": {
-    "Broad": {},
-    "Medium": {},
-    "Narrow": {},
-    "all": {}
+    "Broad": {
+     "description": "Dark Energy Camera (DECam) broad bands ugrizY and VR, Blanco 4m"
+    },
+    "Medium": {
+     "description": "Dark Energy Camera (DECam) medium bands M411-M517, Blanco 4m"
+    },
+    "Narrow": {
+     "description": "Dark Energy Camera (DECam) narrow-band emission-line filters"
+    },
+    "all": {
+     "description": "Dark Energy Camera (DECam): all 21 broad, medium and narrow bands"
+    }
    }
   },
   "DENIS": {
    "instruments": {
-    "DENIS": {}
+    "DENIS": {
+     "description": "Deep Near-Infrared Survey (DENIS) I (Gunn-i), J and Ks channels",
+     "svo_instruments": [
+      "DENIS/DENIS"
+     ]
+    }
    }
   },
   "DOT": {
    "instruments": {
-    "TIRCAM2": {}
+    "TIRCAM2": {
+     "description": "TIRCAM2 near-infrared camera, 3.6m Devasthal Optical Telescope",
+     "svo_instruments": [
+      "DOT/TIRCAM2"
+     ]
+    }
    }
   },
   "DSCOVR": {
    "instruments": {
-    "EPIC": {}
+    "EPIC": {
+     "description": "DSCOVR Earth Polychromatic Imaging Camera (EPIC) ten UV-NIR bands",
+     "svo_instruments": [
+      "DSCOVR/EPIC"
+     ]
+    }
    }
   },
   "Dawn": {
    "instruments": {
-    "FC": {}
+    "FC": {
+     "description": "Dawn Framing Camera clear and seven narrow-band filters",
+     "svo_instruments": [
+      "Dawn/FC"
+     ]
+    }
    }
   },
   "DeepImpact": {
    "instruments": {
-    "HRI_VIS": {},
-    "ITS_VIS": {},
-    "MRI_VIS": {}
+    "HRI_VIS": {
+     "description": "Deep Impact High Resolution Instrument visible CCD filters",
+     "svo_instruments": [
+      "DeepImpact/HRI-VIS"
+     ]
+    },
+    "ITS_VIS": {
+     "description": "Deep Impact Impactor Targeting Sensor visible CCD, unfiltered",
+     "svo_instruments": [
+      "DeepImpact/ITS-VIS"
+     ]
+    },
+    "MRI_VIS": {
+     "description": "Deep Impact Medium Resolution Instrument visible CCD filters",
+     "svo_instruments": [
+      "DeepImpact/MRI-VIS"
+     ]
+    }
    }
   },
   "ERBS": {
    "instruments": {
-    "ERBE": {}
+    "ERBE": {
+     "description": "Earth Radiation Budget Experiment (ERBE) longwave, shortwave, total",
+     "svo_instruments": [
+      "ERBS/ERBE"
+     ]
+    }
    }
   },
   "ERIS": {
    "instruments": {
-    "NIX": {}
+    "NIX": {
+     "description": "ERIS/NIX infrared imager filters, J through M, on VLT UT4",
+     "svo_instruments": [
+      "Paranal/ERIS"
+     ]
+    }
    }
   },
   "EROS": {
    "instruments": {
-    "EROS": {}
+    "EROS": {
+     "description": "EROS-B Earth observation satellite panchromatic band",
+     "svo_instruments": [
+      "EROS/EROS-B"
+     ]
+    }
    }
   },
   "ERS": {
    "instruments": {
-    "ATSR1": {},
-    "ATSR2": {}
+    "ATSR1": {
+     "description": "ERS-1 Along Track Scanning Radiometer (ATSR-1) channels",
+     "svo_instruments": [
+      "ERS/ATSR1"
+     ]
+    },
+    "ATSR2": {
+     "description": "ERS-2 Along Track Scanning Radiometer (ATSR-2) channels",
+     "svo_instruments": [
+      "ERS/ATSR2"
+     ]
+    }
    }
   },
   "ESO": {
    "instruments": {
-    "ESO": {}
+    "ESO": {
+     "description": "European Southern Observatory filter database, by ESO filter number"
+    }
    }
   },
   "Envisat": {
    "instruments": {
-    "AATSR": {},
-    "MERIS": {}
+    "AATSR": {
+     "description": "Envisat Advanced Along Track Scanning Radiometer (AATSR) channels",
+     "svo_instruments": [
+      "Envisat/AATSR"
+     ]
+    },
+    "MERIS": {
+     "description": "Envisat Medium Resolution Imaging Spectrometer (MERIS) 15 bands",
+     "svo_instruments": [
+      "Envisat/MERIS"
+     ]
+    }
    }
   },
   "Euclid": {
    "instruments": {
-    "NISP": {},
-    "VIS": {}
+    "NISP": {
+     "description": "Euclid NISP Y, J, H passbands and blue/red slitless grisms",
+     "svo_instruments": [
+      "Euclid/NISP",
+      "Euclid/NISP0"
+     ]
+    },
+    "VIS": {
+     "description": "Euclid VIS visible camera broad band I_E",
+     "svo_instruments": [
+      "Euclid/VIS"
+     ]
+    }
    }
   },
   "ExoMars": {
    "instruments": {
-    "CaSSIS": {}
+    "CaSSIS": {
+     "description": "CaSSIS colour and stereo camera filters, ExoMars Trace Gas Orbiter",
+     "svo_instruments": [
+      "ExoMars/CaSSIS"
+     ]
+    }
    }
   },
   "FLWO": {
    "instruments": {
-    "KeplerCam": {},
-    "MEarth": {}
+    "KeplerCam": {
+     "description": "KeplerCam on FLWO 1.2m: Harris BVRI, SDSS ugriz and narrow bands",
+     "svo_instruments": [
+      "FLWO/KeplerCam"
+     ]
+    },
+    "MEarth": {
+     "description": "MEarth-North M-dwarf transit survey custom iz passband",
+     "svo_instruments": [
+      "FLWO/MEarth"
+     ]
+    }
    }
   },
   "FengYun": {
    "instruments": {
-    "FY1D-MVISR": {},
-    "FY2C-VISSR": {},
-    "FY2D-VISSR": {},
-    "FY3-7-MWRIRM": {},
-    "FY3-8-MWHS2": {},
-    "FY3-8-MWRI2": {},
-    "FY3-8-MWTS3": {},
-    "FY3A-IRAS": {},
-    "FY3A-MERSI": {},
-    "FY3B-IRAS": {},
-    "FY3B-MERSI": {},
-    "FY3B-VIRR": {},
-    "FY3C-IRAS": {},
-    "FY3C-MERSI": {},
-    "FY3C-VIRR": {},
-    "FY3F-MWHS2": {},
-    "FY3F-MWRI2": {},
-    "FY3F-MWTS3": {}
+    "FY1D-MVISR": {
+     "description": "FY-1D Multi-channel Visible and Infrared Scanning Radiometer (MVISR)",
+     "svo_instruments": [
+      "FengYun/FY1D-MVISR"
+     ]
+    },
+    "FY2C-VISSR": {
+     "description": "FY-2C Visible and Infrared Spin Scan Radiometer (VISSR) IR channels",
+     "svo_instruments": [
+      "FengYun/FY2C-VISSR"
+     ]
+    },
+    "FY2D-VISSR": {
+     "description": "FY-2D Visible and Infrared Spin Scan Radiometer (VISSR) IR channels",
+     "svo_instruments": [
+      "FengYun/FY2D-VISSR"
+     ]
+    },
+    "FY3-7-MWRIRM": {
+     "description": "FY-3 MWRI-RM microwave channels, RTTOV FY-3 satellite id 7 (NWP SAF)"
+    },
+    "FY3-8-MWHS2": {
+     "description": "FY-3 MWHS-2 microwave channels, RTTOV FY-3 satellite id 8 (NWP SAF)"
+    },
+    "FY3-8-MWRI2": {
+     "description": "FY-3 MWRI-2 microwave channels, RTTOV FY-3 satellite id 8 (NWP SAF)"
+    },
+    "FY3-8-MWTS3": {
+     "description": "FY-3 MWTS-3 microwave channels, RTTOV FY-3 satellite id 8 (NWP SAF)"
+    },
+    "FY3A-IRAS": {
+     "description": "FY-3A Infra-Red Atmospheric Sounder (IRAS), 26 channels",
+     "svo_instruments": [
+      "FengYun/FY3A-IRAS"
+     ]
+    },
+    "FY3A-MERSI": {
+     "description": "FY-3A Medium Resolution Spectral Imager (MERSI), 20 channels",
+     "svo_instruments": [
+      "FengYun/FY3A-MERSI"
+     ]
+    },
+    "FY3B-IRAS": {
+     "description": "FY-3B Infra-Red Atmospheric Sounder (IRAS), 26 channels",
+     "svo_instruments": [
+      "FengYun/FY3B-IRAS"
+     ]
+    },
+    "FY3B-MERSI": {
+     "description": "FY-3B Medium Resolution Spectral Imager (MERSI), 19 of 20 channels",
+     "svo_instruments": [
+      "FengYun/FY3B-MERSI"
+     ]
+    },
+    "FY3B-VIRR": {
+     "description": "FY-3B Visible and Infra-Red Radiometer (VIRR), 10 channels",
+     "svo_instruments": [
+      "FengYun/FY3B-VIRR"
+     ]
+    },
+    "FY3C-IRAS": {
+     "description": "FY-3C Infra-Red Atmospheric Sounder (IRAS), 26 channels",
+     "svo_instruments": [
+      "FengYun/FY3C-IRAS"
+     ]
+    },
+    "FY3C-MERSI": {
+     "description": "FY-3C Medium Resolution Spectral Imager (MERSI), 20 channels",
+     "svo_instruments": [
+      "FengYun/FY3C-MERSI"
+     ]
+    },
+    "FY3C-VIRR": {
+     "description": "FY-3C Visible and Infra-Red Radiometer (VIRR), 7 of 10 channels",
+     "svo_instruments": [
+      "FengYun/FY3C-VIRR"
+     ]
+    },
+    "FY3F-MWHS2": {
+     "description": "FY-3F MWHS-2 microwave channels, RTTOV FY-3 satellite id 6 (NWP SAF)"
+    },
+    "FY3F-MWRI2": {
+     "description": "FY-3F MWRI-2 microwave channels, RTTOV FY-3 satellite id 6 (NWP SAF)"
+    },
+    "FY3F-MWTS3": {
+     "description": "FY-3F MWTS-3 microwave channels, RTTOV FY-3 satellite id 6 (NWP SAF)"
+    }
    }
   },
   "Flock": {
    "instruments": {
-    "DoveR": {},
-    "PS": {},
-    "PS-0c0d": {},
-    "PS-0e": {},
-    "PS-0f10": {},
-    "PS2k": {},
-    "PS2p": {},
-    "SuperDove": {},
-    "SuperDove8": {}
+    "DoveR": {
+     "description": "PlanetScope Dove-R (satellite_id 11xx) 4-band spectral responses"
+    },
+    "PS": {
+     "description": "Planet Flock-3p PS Blue, Green, Red and NIR spectral responses",
+     "svo_instruments": [
+      "Flock/PS3p"
+     ]
+    },
+    "PS-0c0d": {
+     "description": "PlanetScope Doves, satellite_id 0cxx/0dxx: 4-band responses"
+    },
+    "PS-0e": {
+     "description": "PlanetScope Doves, satellite_id 0exx: 4-band responses"
+    },
+    "PS-0f10": {
+     "description": "PlanetScope Doves, satellite_id 0fxx and Dove-Classic 10xx, 4 bands"
+    },
+    "PS2k": {
+     "description": "Planet Flock 2k satellites (launched 2017): Blue, Green, Red, NIR",
+     "svo_instruments": [
+      "Flock/PS2k"
+     ]
+    },
+    "PS2p": {
+     "description": "Planet Flock 2p Doves (launched 2016): Blue, Green, Red, NIR",
+     "svo_instruments": [
+      "Flock/PS2p"
+     ]
+    },
+    "SuperDove": {
+     "description": "Planet SuperDove (PSB.SD) imager, 5 of its 8 bands",
+     "svo_instruments": [
+      "Flock/SuperDove"
+     ]
+    },
+    "SuperDove8": {
+     "description": "Planet SuperDove (PSB.SD) imager, all eight bands"
+    }
    }
   },
   "GAIA": {
    "instruments": {
-    "DR2": {},
-    "DR2r": {},
-    "GAIA": {},
-    "GAIA0": {}
+    "DR2": {
+     "description": "Gaia DR2 passbands (Evans et al. 2018)",
+     "svo_instruments": [
+      "GAIA/GAIA2"
+     ]
+    },
+    "DR2r": {
+     "description": "Gaia DR2 revised passbands (Evans et al. 2018)",
+     "svo_instruments": [
+      "GAIA/GAIA2r"
+     ]
+    },
+    "GAIA": {
+     "description": "Gaia DR3 passbands + BP bright/faint (Maíz Apellániz & Weiler 2018)",
+     "svo_instruments": [
+      "GAIA/GAIA3"
+     ]
+    },
+    "GAIA0": {
+     "description": "Gaia pre-launch passbands (Jordi et al. 2010)",
+     "svo_instruments": [
+      "GAIA/GAIA0"
+     ]
+    }
    }
   },
   "GALEX": {
    "instruments": {
-    "GALEX": {}
+    "GALEX": {
+     "description": "GALEX far-UV (FUV) and near-UV (NUV) imaging bands",
+     "svo_instruments": [
+      "GALEX/GALEX"
+     ]
+    }
    }
   },
   "GCOM_C": {
    "instruments": {
-    "SGLI": {}
+    "SGLI": {
+     "description": "GCOM-C Second-Generation Global Imager (SGLI) channels",
+     "svo_instruments": [
+      "GCOM-C/SGLI"
+     ]
+    }
    }
   },
   "GCPD": {
    "instruments": {
-    "Cape": {},
-    "Cousins": {},
-    "Eggen": {},
-    "Geneva": {},
-    "JHKLMN": {},
-    "Johnson": {},
-    "Stromgren": {},
-    "Vilnius": {},
-    "WBVR": {},
-    "Walraven": {},
-    "Washington": {}
+    "Cape": {
+     "description": "Cape UcBV system (Arp 1958): GCPD ADPS and revised curves",
+     "svo_instruments": [
+      "GCPD/Cape"
+     ]
+    },
+    "Cousins": {
+     "description": "Kron-Cousins R and I bands from the GCPD (ADPS and revised)",
+     "svo_instruments": [
+      "GCPD/Cousins",
+      "Generic/Cousins"
+     ]
+    },
+    "Eggen": {
+     "description": "Kron-Eggen R and I bands from the GCPD",
+     "svo_instruments": [
+      "GCPD/Eggen"
+     ]
+    },
+    "Geneva": {
+     "description": "Geneva seven-colour system (U B1 B B2 V1 V G) from the GCPD",
+     "svo_instruments": [
+      "GCPD/Geneva",
+      "Geneva/Geneva"
+     ]
+    },
+    "JHKLMN": {
+     "description": "Johnson UBVRIJKLMN broad-band system from the GCPD (ADPS)",
+     "svo_instruments": [
+      "GCPD/JHKLMN"
+     ]
+    },
+    "Johnson": {
+     "description": "Johnson UBV, R and I in several GCPD realisations, incl. Landolt",
+     "svo_instruments": [
+      "GCPD/Johnson"
+     ]
+    },
+    "Stromgren": {
+     "description": "Strömgren uvby intermediate-band system (GCPD and generic curves)",
+     "svo_instruments": [
+      "GCPD/Stromgren"
+     ]
+    },
+    "Vilnius": {
+     "description": "Vilnius seven-colour intermediate-band system from the GCPD",
+     "svo_instruments": [
+      "GCPD/Vilnius"
+     ]
+    },
+    "WBVR": {
+     "description": "Sternberg WBVR four-colour system (Tien Shan) from the GCPD",
+     "svo_instruments": [
+      "GCPD/WBVR"
+     ]
+    },
+    "Walraven": {
+     "description": "Walraven VBLUW five-band system (Leiden Southern Station), GCPD",
+     "svo_instruments": [
+      "GCPD/Walraven"
+     ]
+    },
+    "Washington": {
+     "description": "Washington C, M, T1, T2 system, photoelectric and photographic",
+     "svo_instruments": [
+      "GCPD/Washington"
+     ]
+    }
    }
   },
   "GOES": {
    "instruments": {
-    "ABI1": {},
-    "ABI2": {},
-    "ABI3": {},
-    "ABI4": {},
-    "Imager10": {},
-    "Imager11": {},
-    "Imager12": {},
-    "Imager13": {},
-    "Imager14": {},
-    "Imager15": {},
-    "Imager8": {},
-    "Imager9": {},
-    "Sounder10": {},
-    "Sounder11": {},
-    "Sounder12": {},
-    "Sounder13": {},
-    "Sounder14": {},
-    "Sounder15": {},
-    "Sounder8": {},
-    "Sounder9": {},
-    "VAS4": {},
-    "VAS5": {},
-    "VAS6": {},
-    "VAS7": {}
+    "ABI1": {
+     "description": "Advanced Baseline Imager (ABI) PFM/FM1 on GOES-16, 16 channels",
+     "svo_instruments": [
+      "GOES/ABI1"
+     ]
+    },
+    "ABI2": {
+     "description": "Advanced Baseline Imager (ABI) FM2 on GOES-17, plus 81 K IR SRFs",
+     "svo_instruments": [
+      "GOES/ABI2"
+     ]
+    },
+    "ABI3": {
+     "description": "Advanced Baseline Imager (ABI) FM3 on GOES-18, 16 channels",
+     "svo_instruments": [
+      "GOES/ABI3"
+     ]
+    },
+    "ABI4": {
+     "description": "Advanced Baseline Imager (ABI) FM4 on GOES-19, 16 channels",
+     "svo_instruments": [
+      "GOES/ABI4"
+     ]
+    },
+    "Imager10": {
+     "description": "GOES-10 five-channel Imager, per-detector and scan-side SRFs",
+     "svo_instruments": [
+      "GOES/Imager10"
+     ]
+    },
+    "Imager11": {
+     "description": "GOES-11 five-channel Imager, per-detector and scan-side SRFs",
+     "svo_instruments": [
+      "GOES/Imager11"
+     ]
+    },
+    "Imager12": {
+     "description": "GOES-12 five-channel Imager, per-detector and scan-side SRFs",
+     "svo_instruments": [
+      "GOES/Imager12"
+     ]
+    },
+    "Imager13": {
+     "description": "GOES-13 five-channel Imager, per-detector and scan-side SRFs"
+    },
+    "Imager14": {
+     "description": "GOES-14 five-channel Imager, per-detector and scan-side SRFs",
+     "svo_instruments": [
+      "GOES/Imager14"
+     ]
+    },
+    "Imager15": {
+     "description": "GOES-15 five-channel Imager, per-detector and scan-side SRFs",
+     "svo_instruments": [
+      "GOES/Imager15"
+     ]
+    },
+    "Imager8": {
+     "description": "GOES-8 five-channel Imager, per-detector and scan-side SRFs",
+     "svo_instruments": [
+      "GOES/Imager8"
+     ]
+    },
+    "Imager9": {
+     "description": "GOES-9 five-channel Imager, per-detector and scan-side SRFs",
+     "svo_instruments": [
+      "GOES/Imager9"
+     ]
+    },
+    "Sounder10": {
+     "description": "GOES-10 19-channel Sounder, per-detector SRFs",
+     "svo_instruments": [
+      "GOES/Sounder10"
+     ]
+    },
+    "Sounder11": {
+     "description": "GOES-11 19-channel Sounder, per-detector SRFs",
+     "svo_instruments": [
+      "GOES/Sounder11"
+     ]
+    },
+    "Sounder12": {
+     "description": "GOES-12 19-channel Sounder, per-detector SRFs",
+     "svo_instruments": [
+      "GOES/Sounder12"
+     ]
+    },
+    "Sounder13": {
+     "description": "GOES-13 19-channel Sounder, per-detector SRFs",
+     "svo_instruments": [
+      "GOES/Sounder13"
+     ]
+    },
+    "Sounder14": {
+     "description": "GOES-14 19-channel Sounder, per-detector SRFs",
+     "svo_instruments": [
+      "GOES/Sounder14"
+     ]
+    },
+    "Sounder15": {
+     "description": "GOES-15 19-channel Sounder, per-detector SRFs",
+     "svo_instruments": [
+      "GOES/Sounder15"
+     ]
+    },
+    "Sounder8": {
+     "description": "GOES-8 19-channel Sounder, per-detector SRFs",
+     "svo_instruments": [
+      "GOES/Sounder8"
+     ]
+    },
+    "Sounder9": {
+     "description": "GOES-9 19-channel Sounder, per-detector SRFs",
+     "svo_instruments": [
+      "GOES/Sounder9"
+     ]
+    },
+    "VAS4": {
+     "description": "VISSR Atmospheric Sounder (VAS) on GOES-4, 12 infrared channels",
+     "svo_instruments": [
+      "GOES/VAS4"
+     ]
+    },
+    "VAS5": {
+     "description": "GOES-5 VAS atmospheric sounder channels",
+     "svo_instruments": [
+      "GOES/VAS5"
+     ]
+    },
+    "VAS6": {
+     "description": "VISSR Atmospheric Sounder (VAS) on GOES-6, 12 infrared channels",
+     "svo_instruments": [
+      "GOES/VAS6"
+     ]
+    },
+    "VAS7": {
+     "description": "GOES-7 VAS atmospheric sounder channels",
+     "svo_instruments": [
+      "GOES/VAS7"
+     ]
+    }
    }
   },
   "GOTO": {
    "instruments": {
-    "GOTO": {}
+    "GOTO": {
+     "description": "Gravitational-wave Optical Transient Observer (GOTO) filters"
+    }
    }
   },
   "GPM": {
    "instruments": {
-    "GMI": {}
+    "GMI": {
+     "description": "GPM Microwave Imager (GMI) channels, RTTOV SRFs from NWP SAF"
+    }
    }
   },
   "GTC": {
    "instruments": {
-    "CIRCE": {},
-    "CanariCam": {},
-    "EMIR": {},
-    "HIPERCAM": {},
-    "OSIRIS": {}
+    "CIRCE": {
+     "description": "GTC Canarias InfraRed Camera Experiment (CIRCE) J and Ks filters"
+    },
+    "CanariCam": {
+     "description": "GTC CanariCam mid-infrared camera filters (about 8-25 micron)",
+     "svo_instruments": [
+      "GTC/CanariCam"
+     ]
+    },
+    "EMIR": {
+     "description": "GTC EMIR near-infrared imager/spectrograph filters (lab scans)"
+    },
+    "HIPERCAM": {
+     "description": "GTC HiPERCAM quintuple-beam imager SDSS and Super-SDSS filters"
+    },
+    "OSIRIS": {
+     "description": "GTC OSIRIS optical imager filters, full and filter-only curves"
+    }
    }
   },
   "Galileo": {
    "instruments": {
-    "SSI": {}
+    "SSI": {
+     "description": "Galileo Solid-State Imaging (SSI) camera clear and colour filters",
+     "svo_instruments": [
+      "Galileo/SSI"
+     ]
+    }
    }
   },
   "Gemini": {
    "instruments": {
-    "AcqCam_N": {},
-    "AcqCam_S": {},
-    "Alopeke": {},
-    "DSSI": {},
-    "Flamingos2": {},
-    "GMOS_N": {},
-    "GMOS_S": {},
-    "GNIRS": {},
-    "GPI": {},
-    "GSAOI": {},
-    "Michelle": {},
-    "NICI": {},
-    "NIFS": {},
-    "NIRI": {},
-    "OSCIR": {},
-    "Phoenix": {},
-    "TReCS": {},
-    "Zorro": {}
+    "AcqCam_N": {
+     "description": "Gemini North Acquisition Camera (AcqCam) V, R and I filters",
+     "svo_instruments": [
+      "Gemini/AcqCam-N"
+     ]
+    },
+    "AcqCam_S": {
+     "description": "Gemini South Acquisition Camera (AcqCam) UBVRI filters",
+     "svo_instruments": [
+      "Gemini/AcqCam-S"
+     ]
+    },
+    "Alopeke": {
+     "description": "Gemini North 'Alopeke speckle imager: narrow-band and SDSS filters",
+     "svo_instruments": [
+      "Gemini/Alopeke"
+     ]
+    },
+    "DSSI": {
+     "description": "Gemini DSSI speckle camera bands, filter+CCD and filter-only",
+     "svo_instruments": [
+      "Gemini/DSSI"
+     ]
+    },
+    "Flamingos2": {
+     "description": "Gemini South FLAMINGOS-2 near-infrared imager filters",
+     "svo_instruments": [
+      "Gemini/Flamingos2"
+     ]
+    },
+    "GMOS_N": {
+     "description": "Gemini North GMOS-N imaging filters (Sloan-like and narrow-band)",
+     "svo_instruments": [
+      "Gemini/GMOS-N"
+     ]
+    },
+    "GMOS_S": {
+     "description": "Gemini South GMOS-S imaging filters (Sloan-like and narrow-band)",
+     "svo_instruments": [
+      "Gemini/GMOS-S"
+     ]
+    },
+    "GNIRS": {
+     "description": "Gemini Near-InfraRed Spectrograph (GNIRS) filters",
+     "svo_instruments": [
+      "Gemini/GNIRS"
+     ]
+    },
+    "GPI": {
+     "description": "Gemini Planet Imager (GPI) Y, J, H, K1 and K2 bands",
+     "svo_instruments": [
+      "Gemini/GPI"
+     ]
+    },
+    "GSAOI": {
+     "description": "Gemini South Adaptive Optics Imager (GSAOI) near-infrared filters",
+     "svo_instruments": [
+      "Gemini/GSAOI"
+     ]
+    },
+    "Michelle": {
+     "description": "Michelle mid-infrared imager/spectrometer filters (ex-UKIRT)"
+    },
+    "NICI": {
+     "description": "Gemini South NICI Near-Infrared Coronagraphic Imager filters"
+    },
+    "NIFS": {
+     "description": "Gemini NIFS ZJ, JH and HK blocking filters at 298 K and 77 K",
+     "svo_instruments": [
+      "Gemini/NIFS"
+     ]
+    },
+    "NIRI": {
+     "description": "Gemini NIRI Near InfraRed Imager and spectrograph filters"
+    },
+    "OSCIR": {
+     "description": "Gemini OSCIR filters at 10300 nm and 18200 nm"
+    },
+    "Phoenix": {
+     "description": "Phoenix High Resolution Infrared Spectrograph filters (Gemini)"
+    },
+    "TReCS": {
+     "description": "Gemini South T-ReCS mid-infrared imager/spectrograph filters"
+    },
+    "Zorro": {
+     "description": "Zorro dual-channel speckle imager at Gemini: EO and SDSS filters"
+    }
    }
   },
   "Generic": {
    "instruments": {
-    "Bessell": {},
-    "Bessell_JHKLM": {},
-    "Johnson": {},
-    "MKO": {},
-    "USNO": {}
+    "Bessell": {
+     "description": "Bessell UBVRI: Bessell & Murphy 2012 curves plus SVO copies",
+     "svo_instruments": [
+      "Generic/Bessell"
+     ]
+    },
+    "Bessell_JHKLM": {
+     "description": "Bessell & Brett 1988 L band (JHKLM system)"
+    },
+    "Johnson": {
+     "description": "Generic Johnson UBVRIJM passbands (SVO Generic/Johnson group)",
+     "svo_instruments": [
+      "Generic/Johnson"
+     ]
+    },
+    "MKO": {
+     "description": "Mauna Kea Observatories near-infrared (MKO-NIR) J H K L' M' filters"
+    },
+    "USNO": {
+     "description": "USNO 40-inch u'g'r'i'z' system, the SDSS standard-star passbands"
+    }
    }
   },
   "GeoEye": {
    "instruments": {
-    "GIS": {}
+    "GIS": {
+     "description": "GeoEye-1 imager (GIS) panchromatic and four multispectral bands",
+     "svo_instruments": [
+      "GeoEye/GIS"
+     ]
+    }
    }
   },
   "Giotto": {
    "instruments": {
-    "HMC": {}
+    "HMC": {
+     "description": "Giotto Halley Multicolour Camera (HMC) filters"
+    }
    }
   },
   "HAWK-I": {
    "instruments": {
-    "HAWK-I": {}
+    "HAWK-I": {
+     "description": "VLT HAWK-I wide-field near-infrared imager cryogenic filter scans"
+    }
    }
   },
   "HCT": {
    "instruments": {
-    "HFOSC": {},
-    "TIRSPEC": {}
+    "HFOSC": {
+     "description": "Himalayan Chandra Telescope HFOSC Bessell V filter"
+    },
+    "TIRSPEC": {
+     "description": "Himalayan Chandra Telescope TIRSPEC Y (single order mode) filter"
+    }
    }
   },
   "HST": {
    "instruments": {
-    "ACS_HRC": {},
-    "ACS_SBC": {},
-    "ACS_WFC": {},
-    "FGS": {},
-    "FOC_F48": {},
-    "FOC_F96": {},
-    "FOS_BLUE": {},
-    "FOS_RED": {},
-    "HSP_POL": {},
-    "HSP_UV1": {},
-    "HSP_UV2": {},
-    "HSP_VIS": {},
-    "NICMOS1": {},
-    "NICMOS2": {},
-    "NICMOS3": {},
-    "STIS_CCD": {},
-    "STIS_FUV": {},
-    "STIS_NUV": {},
-    "WFC3_IR": {},
-    "WFC3_UVIS1": {},
-    "WFC3_UVIS2": {},
-    "WFPC1-PC": {},
-    "WFPC1-WF": {},
-    "WFPC2-PC": {},
-    "WFPC2-WF": {}
+    "ACS_HRC": {
+     "description": "Hubble ACS High Resolution Channel (HRC), unavailable since 2007",
+     "svo_instruments": [
+      "HST/ACS_HRC"
+     ]
+    },
+    "ACS_SBC": {
+     "description": "Hubble ACS Solar Blind Channel (SBC) far-UV filters and prisms",
+     "svo_instruments": [
+      "HST/ACS_SBC"
+     ]
+    },
+    "ACS_WFC": {
+     "description": "Hubble ACS Wide Field Channel (WFC) imaging filters",
+     "svo_instruments": [
+      "HST/ACS_WFC"
+     ]
+    },
+    "FGS": {
+     "description": "Hubble Fine Guidance Sensors (FGS) filters",
+     "svo_instruments": [
+      "HST/FGS"
+     ]
+    },
+    "FOC_F48": {
+     "description": "Hubble Faint Object Camera (FOC) f/48 camera filters and prisms",
+     "svo_instruments": [
+      "HST/FOC_F48"
+     ]
+    },
+    "FOC_F96": {
+     "description": "Hubble Faint Object Camera (FOC) f/96 camera filters",
+     "svo_instruments": [
+      "HST/FOC_F96"
+     ]
+    },
+    "FOS_BLUE": {
+     "description": "Hubble Faint Object Spectrograph blue detector gratings and prism",
+     "svo_instruments": [
+      "HST/FOS_BLUE"
+     ]
+    },
+    "FOS_RED": {
+     "description": "Hubble Faint Object Spectrograph red detector gratings and prism",
+     "svo_instruments": [
+      "HST/FOS_RED"
+     ]
+    },
+    "HSP_POL": {
+     "description": "Hubble High Speed Photometer (HSP) polarization channel filters",
+     "svo_instruments": [
+      "HST/HSP_POL"
+     ]
+    },
+    "HSP_UV1": {
+     "description": "Hubble High Speed Photometer (HSP) UV1 channel filters",
+     "svo_instruments": [
+      "HST/HSP_UV1"
+     ]
+    },
+    "HSP_UV2": {
+     "description": "Hubble High Speed Photometer (HSP) UV2 channel filters",
+     "svo_instruments": [
+      "HST/HSP_UV2"
+     ]
+    },
+    "HSP_VIS": {
+     "description": "Hubble High Speed Photometer (HSP) visible channel filters",
+     "svo_instruments": [
+      "HST/HSP_VIS"
+     ]
+    },
+    "NICMOS1": {
+     "description": "Hubble NICMOS camera 1 near-infrared filters",
+     "svo_instruments": [
+      "HST/NICMOS1"
+     ]
+    },
+    "NICMOS2": {
+     "description": "Hubble NICMOS camera 2 near-infrared filters",
+     "svo_instruments": [
+      "HST/NICMOS2"
+     ]
+    },
+    "NICMOS3": {
+     "description": "Hubble NICMOS camera 3 near-infrared filters",
+     "svo_instruments": [
+      "HST/NICMOS3"
+     ]
+    },
+    "STIS_CCD": {
+     "description": "Hubble STIS CCD channel filters, with and without gratings",
+     "svo_instruments": [
+      "HST/STIS_CCD"
+     ]
+    },
+    "STIS_FUV": {
+     "description": "Hubble STIS far-ultraviolet channel filters, with/without gratings",
+     "svo_instruments": [
+      "HST/STIS_FUV"
+     ]
+    },
+    "STIS_NUV": {
+     "description": "Hubble STIS near-ultraviolet channel filters, with/without gratings",
+     "svo_instruments": [
+      "HST/STIS_NUV"
+     ]
+    },
+    "WFC3_IR": {
+     "description": "Hubble WFC3 infrared channel imaging filters",
+     "svo_instruments": [
+      "HST/WFC3_IR"
+     ]
+    },
+    "WFC3_UVIS1": {
+     "description": "Hubble WFC3 UVIS channel, chip 1 imaging filters",
+     "svo_instruments": [
+      "HST/WFC3_UVIS1"
+     ]
+    },
+    "WFC3_UVIS2": {
+     "description": "Hubble WFC3 UVIS channel, chip 2 imaging filters",
+     "svo_instruments": [
+      "HST/WFC3_UVIS2"
+     ]
+    },
+    "WFPC1-PC": {
+     "description": "Hubble WF/PC-1 Planetary Camera (detectors 5-8) filters",
+     "svo_instruments": [
+      "HST/WFPC1-PC"
+     ]
+    },
+    "WFPC1-WF": {
+     "description": "Hubble WF/PC-1 Wide Field Camera (detectors 1-4) filters",
+     "svo_instruments": [
+      "HST/WFPC1-WF"
+     ]
+    },
+    "WFPC2-PC": {
+     "description": "Hubble WFPC2 Planetary Camera (detector 1) filters",
+     "svo_instruments": [
+      "HST/WFPC2-PC"
+     ]
+    },
+    "WFPC2-WF": {
+     "description": "Hubble WFPC2 Wide Field Camera (detectors 2-4) filters",
+     "svo_instruments": [
+      "HST/WFPC2-WF"
+     ]
+    }
    }
   },
   "Hayabusa2": {
    "instruments": {
-    "ONC-T": {}
+    "ONC-T": {
+     "description": "Hayabusa2 optical navigation camera, telescopic nadir unit (ONC-T)"
+    }
    }
   },
   "Herschel": {
    "instruments": {
-    "PACS": {},
-    "SPIRE": {}
+    "PACS": {
+     "description": "Herschel PACS imaging photometer bands at 70, 100 and 160 µm",
+     "svo_instruments": [
+      "Herschel/Pacs"
+     ]
+    },
+    "SPIRE": {
+     "description": "Herschel SPIRE imaging photometer bands at 250, 350 and 500 µm"
+    }
    }
   },
   "Himawari": {
    "instruments": {
-    "AHI8": {},
-    "AHI9": {},
-    "GMS1": {},
-    "GMS2": {},
-    "GMS3": {},
-    "GMS4": {},
-    "GMS5": {},
-    "MTSAT-1R": {},
-    "MTSAT2": {}
+    "AHI8": {
+     "description": "Advanced Himawari Imager AHI-08 on Himawari-8: 16 band responses",
+     "svo_instruments": [
+      "Himawari/AHI8"
+     ]
+    },
+    "AHI9": {
+     "description": "Advanced Himawari Imager AHI-09 on Himawari-9: 16 band responses",
+     "svo_instruments": [
+      "Himawari/AHI9"
+     ]
+    },
+    "GMS1": {
+     "description": "VISSR spin scan radiometer on GMS-1 (Himawari-1), Vis and IR",
+     "svo_instruments": [
+      "Himawari/GMS1"
+     ]
+    },
+    "GMS2": {
+     "description": "VISSR spin scan radiometer on GMS-2 (Himawari-2), Vis and IR",
+     "svo_instruments": [
+      "Himawari/GMS2"
+     ]
+    },
+    "GMS3": {
+     "description": "VISSR spin scan radiometer on GMS-3 (Himawari-3), Vis and IR",
+     "svo_instruments": [
+      "Himawari/GMS3"
+     ]
+    },
+    "GMS4": {
+     "description": "VISSR spin scan radiometer on GMS-4 (Himawari-4), Vis and IR",
+     "svo_instruments": [
+      "Himawari/GMS4"
+     ]
+    },
+    "GMS5": {
+     "description": "VISSR on GMS-5 (Himawari-5), with split-window and water-vapour bands"
+    },
+    "MTSAT-1R": {
+     "description": "JAMI (Japanese Advanced Meteorological Imager), MTSAT-1R/Himawari-6",
+     "svo_instruments": [
+      "Himawari/MTSAT-1R"
+     ]
+    },
+    "MTSAT2": {
+     "description": "Imager on MTSAT-2 (Himawari-7): Vis and four IR channels",
+     "svo_instruments": [
+      "Himawari/MTSAT2"
+     ]
+    }
    }
   },
   "Hipparcos": {
    "instruments": {
-    "Hipparcos": {},
-    "Tycho": {}
+    "Hipparcos": {
+     "description": "Hipparcos Hp passband: Bessell & Murphy 2012, Bessell 2000, SVO copy"
+    },
+    "Tycho": {
+     "description": "Tycho BT and VT passbands of the ESA Hipparcos star mapper"
+    }
    }
   },
   "IAC80": {
    "instruments": {
-    "CAMELOT": {},
-    "TCP": {}
+    "CAMELOT": {
+     "description": "CAMELOT CCD imager filters, IAC80 telescope, Teide Observatory"
+    },
+    "TCP": {
+     "description": "Tromsoe CCD Photometer (TCP) I filter, IAC80 telescope"
+    }
    }
   },
   "IKONOS": {
    "instruments": {
-    "OSA": {}
+    "OSA": {
+     "description": "IKONOS Optical Sensor Assembly: Pan and four multispectral RSRs"
+    }
    }
   },
   "ING": {
    "instruments": {
-    "ING": {}
+    "ING": {
+     "description": "Isaac Newton Group (La Palma) filter database, by serial number"
+    }
    }
   },
   "INSAT": {
    "instruments": {
-    "INSAT-3D-SND": {}
+    "INSAT-3D-SND": {
+     "description": "INSAT-3D Sounder channel spectral responses"
+    }
    }
   },
   "INT": {
    "instruments": {
-    "IPHAS": {},
-    "OASIS": {},
-    "WFC": {}
+    "IPHAS": {
+     "description": "INT Photometric H-Alpha Survey (IPHAS) filters"
+    },
+    "OASIS": {
+     "description": "OASIS integral-field spectrograph filters (WHT, NAOMI port)"
+    },
+    "WFC": {
+     "description": "Wide Field Camera (WFC), 2.5m Isaac Newton Telescope prime focus"
+    }
    }
   },
   "IRAM": {
    "instruments": {
-    "MAMBO2": {},
-    "NIKA2": {}
+    "MAMBO2": {
+     "description": "MAMBO2 (Max-Planck-Millimeter-Bolometer) 250 GHz band, IRAM",
+     "svo_instruments": [
+      "IRAM/MAMBO2"
+     ]
+    },
+    "NIKA2": {
+     "description": "NIKA2 (New IRAM KID Array 2) camera, 1 mm band (A1)"
+    }
    }
   },
   "IRAS": {
    "instruments": {
-    "IRAS": {}
+    "IRAS": {
+     "description": "IRAS survey bands at 12, 25, 60 and 100 µm (Explanatory Supplement)",
+     "svo_instruments": [
+      "IRAS/IRAS"
+     ]
+    }
    }
   },
   "IRS": {
    "instruments": {
-    "MOS": {}
+    "MOS": {
+     "description": "Modular Optoelectronic Scanner (MOS) on the IRS-P3 satellite"
+    }
    }
   },
   "IRSF": {
    "instruments": {
-    "Sirius": {}
+    "Sirius": {
+     "description": "SIRIUS near-IR camera Ks filter, IRSF 1.4 m telescope, Sutherland"
+    }
    }
   },
   "IRTF": {
    "instruments": {
-    "NSFCam": {}
+    "NSFCam": {
+     "description": "IRTF NSFCam 1-5 micron camera: broad, MKO-NIR and narrow-band filters",
+     "svo_instruments": [
+      "NIRT/NSFCAM"
+     ]
+    }
    }
   },
   "ISO": {
    "instruments": {
-    "ISO": {},
-    "ISO_CVF": {},
-    "PHT-C": {},
-    "PHT-P": {}
+    "ISO": {
+     "description": "ISOCAM (ISO camera) SW1-SW11 and LW1-LW10 broad-band filters",
+     "svo_instruments": [
+      "ISO/ISO"
+     ]
+    },
+    "ISO_CVF": {
+     "description": "ISOCAM circular variable filter (CVF) wheel positions (ISO)"
+    },
+    "PHT-C": {
+     "description": "ISOPHOT PHT-C far-infrared cameras C100 and C200 filters (ISO)",
+     "svo_instruments": [
+      "ISO/PHT-C"
+     ]
+    },
+    "PHT-P": {
+     "description": "ISOPHOT PHT-P multi-band photometer filters, detectors P1-P3 (ISO)",
+     "svo_instruments": [
+      "ISO/PHT-P"
+     ]
+    }
    }
   },
   "IUE": {
    "instruments": {
-    "IUE": {}
+    "IUE": {
+     "description": "International Ultraviolet Explorer (IUE) 2150-2200 Å band"
+    }
    }
   },
   "InSight": {
    "instruments": {
-    "ICC": {},
-    "IDC": {}
+    "ICC": {
+     "description": "InSight lander Instrument Context Camera (ICC) Blue and Red filters"
+    },
+    "IDC": {
+     "description": "InSight arm Instrument Deployment Camera (IDC), no IR cutoff"
+    }
    }
   },
   "Integral": {
    "instruments": {
-    "OMC": {}
+    "OMC": {
+     "description": "INTEGRAL Optical Monitoring Camera (OMC) V filter"
+    }
    }
   },
   "JCMT": {
    "instruments": {
-    "SCUBA2": {}
+    "SCUBA2": {
+     "description": "JCMT SCUBA-2 bolometer camera 450 and 850 µm passbands",
+     "svo_instruments": [
+      "JCMT/SCUBA2"
+     ]
+    }
    }
   },
   "JPSS": {
    "instruments": {
-    "ATMS-J1": {},
-    "ATMS-J2": {},
-    "ATMS-J3": {},
-    "ATMS-J4": {},
-    "ATMS-NPP": {},
-    "VIIRS": {},
-    "VIIRS-J1": {},
-    "VIIRS-J2": {}
+    "ATMS-J1": {
+     "description": "ATMS microwave sounder on NOAA-20 (JPSS-1): 61 channel SRFs"
+    },
+    "ATMS-J2": {
+     "description": "ATMS microwave sounder on NOAA-21 (JPSS-2): measured channel SRFs"
+    },
+    "ATMS-J3": {
+     "description": "ATMS microwave sounder for JPSS-3 (SN 306): pre-launch channel SRFs"
+    },
+    "ATMS-J4": {
+     "description": "ATMS microwave sounder for JPSS-4 (SN 305): pre-launch channel SRFs"
+    },
+    "ATMS-NPP": {
+     "description": "ATMS microwave sounder on Suomi NPP: SRFs per tested configuration"
+    },
+    "VIIRS": {
+     "description": "VIIRS on Suomi NPP: at-launch band-averaged RSRs (22 bands)"
+    },
+    "VIIRS-J1": {
+     "description": "VIIRS on NOAA-20 (JPSS-1): DAWG at-launch RSRs, V2.1",
+     "svo_instruments": [
+      "JPSS/VIIRS-J1"
+     ]
+    },
+    "VIIRS-J2": {
+     "description": "VIIRS on NOAA-21 (JPSS-2): DAWG at-launch RSRs, V2",
+     "svo_instruments": [
+      "JPSS/VIIRS-J2"
+     ]
+    }
    }
   },
   "JWST": {
    "instruments": {
-    "MIRI": {},
-    "NIRCam": {},
-    "NIRISS": {},
-    "NIRSPEC": {}
+    "MIRI": {
+     "description": "JWST MIRI mid-infrared imager and coronagraph filters",
+     "svo_instruments": [
+      "JWST/MIRI"
+     ]
+    },
+    "NIRCam": {
+     "description": "JWST NIRCam near-infrared camera filters, plus previous NJM curves",
+     "svo_instruments": [
+      "JWST/NIRCam"
+     ]
+    },
+    "NIRISS": {
+     "description": "JWST NIRISS near-infrared imager and slitless spectrograph filters",
+     "svo_instruments": [
+      "JWST/NIRISS"
+     ]
+    },
+    "NIRSPEC": {
+     "description": "JWST NIRSpec spectrograph: grating/long-pass pairs and the prism",
+     "svo_instruments": [
+      "JWST/NIRSpec"
+     ]
+    }
    }
   },
   "Jiheng": {
    "instruments": {
-    "Jiheng": {}
+    "Jiheng": {
+     "description": "Jiheng microwave radiometer channel SRFs (NWP SAF, for RTTOV)"
+    }
    }
   },
   "KOMPSTAT": {
    "instruments": {
-    "AEISS3": {},
-    "AEISS3A": {},
-    "MSC": {},
-    "OSMI": {}
+    "AEISS3": {
+     "description": "AEISS imager on KOMPSAT-3: Pan, Blue, Green, Red and NIR responses",
+     "svo_instruments": [
+      "KOMPSTAT/AEISS3"
+     ]
+    },
+    "AEISS3A": {
+     "description": "AEISS-A imager on KOMPSAT-3A: four multispectral band responses"
+    },
+    "MSC": {
+     "description": "MSC imager on KOMPSAT-2: Pan, Blue, Green, Red and NIR responses"
+    },
+    "OSMI": {
+     "description": "Ocean Scanning Multispectral Imager (OSMI, KOMPSAT), 412-865 nm",
+     "svo_instruments": [
+      "KOMPSTAT/OSMI"
+     ]
+    }
    }
   },
   "KPNO": {
    "instruments": {
-    "DESI": {},
-    "Flamingos": {},
-    "GoldCam": {},
-    "KOSMOS": {},
-    "KP4in": {},
-    "Mosaic": {},
-    "MzLS": {},
-    "TIFKAM": {}
+    "DESI": {
+     "description": "DESI spectrograph NIR throughput, Kitt Peak"
+    },
+    "Flamingos": {
+     "description": "FLAMINGOS (Florida IR Imaging Multi-object Spectrograph) H filter"
+    },
+    "GoldCam": {
+     "description": "GoldCam optical spectrograph filters, Kitt Peak 2.1-m telescope"
+    },
+    "KOSMOS": {
+     "description": "KOSMOS (Kitt Peak Ohio State Multi-Object Spectrograph) filters"
+    },
+    "KP4in": {
+     "description": "KPNO 4-inch filters: Gunn v, r, I, z and Stromgren y"
+    },
+    "Mosaic": {
+     "description": "KPNO Mosaic imager filters: Harris, SDSS, BATC medium bands and more",
+     "svo_instruments": [
+      "KPNO/Mosaic"
+     ]
+    },
+    "MzLS": {
+     "description": "Mayall z-band Legacy Survey (MzLS) z, full system and filter only",
+     "svo_instruments": [
+      "KPNO/MzLS"
+     ]
+    },
+    "TIFKAM": {
+     "description": "TIFKAM 1-2.5 micron imager and spectrometer: H, J, K, Ks filters",
+     "svo_instruments": [
+      "KPNO/TIFKAM"
+     ]
+    }
    }
   },
   "Keck": {
    "instruments": {
-    "DEIMOS": {},
-    "ESI": {},
-    "LRIS": {},
-    "LWS": {},
-    "MOSFIRE": {},
-    "NIRC2": {},
-    "NIRSPEC": {},
-    "OSIRIS": {}
+    "DEIMOS": {
+     "description": "Keck II DEIMOS spectrograph broadband imaging filters (B, R, I, Z)"
+    },
+    "ESI": {
+     "description": "Keck II Echellette Spectrograph and Imager (ESI) V and R filters"
+    },
+    "LRIS": {
+     "description": "Keck I LRIS imager and spectrograph filters, blue and red sides"
+    },
+    "LWS": {
+     "description": "Keck I Long Wavelength Spectrometer (LWS) 3-25 µm imaging filters"
+    },
+    "MOSFIRE": {
+     "description": "Keck I MOSFIRE near-IR imaging and spectroscopic filters (Y to K)"
+    },
+    "NIRC2": {
+     "description": "Keck II NIRC2 adaptive-optics near-infrared camera filters",
+     "svo_instruments": [
+      "Keck/NIRC2"
+     ]
+    },
+    "NIRSPEC": {
+     "description": "Keck II NIRSPEC cross-dispersed echelle spectrograph filters"
+    },
+    "OSIRIS": {
+     "description": "Keck OSIRIS AO integral field spectrograph: imager and spec filters"
+    }
    }
   },
   "Kepler": {
    "instruments": {
-    "Kepler": {}
+    "Kepler": {
+     "description": "Kepler Space Telescope wide optical passband (K), 430-890 nm",
+     "svo_instruments": [
+      "Kepler/Kepler"
+     ]
+    }
    }
   },
   "LBT": {
    "instruments": {
-    "LBCB": {},
-    "LBCR": {},
-    "LMIRCam": {},
-    "LUCIFER": {}
+    "LBCB": {
+     "description": "LBT LBC Blue camera, Bessel U filter"
+    },
+    "LBCR": {
+     "description": "LBT LBC Red camera filters: Bessel R and I, SDSS i, narrow bands"
+    },
+    "LMIRCam": {
+     "description": "LMIRCam (LBT Interferometer camera) filters at 300 K or 77 K"
+    },
+    "LUCIFER": {
+     "description": "LBT LUCI 1 and 2 (LUCIFER) infrared multi-mode instrument filters"
+    }
    }
   },
   "LCO": {
    "instruments": {
-    "CAPSCam": {},
-    "CCD3x3": {},
-    "CSP": {},
-    "CSP2": {},
-    "IMACS": {},
-    "MMIRS": {},
-    "MagAOX": {},
-    "MagIC": {},
-    "RetroCam": {},
-    "SITe3": {},
-    "VisAO": {},
-    "WFCCD": {},
-    "WIRC": {},
-    "e2v": {}
+    "CAPSCam": {
+     "description": "CAPSCam (Carnegie Astrometric Planet Search Camera) z, du Pont",
+     "svo_instruments": [
+      "LCO/CAPSCam"
+     ]
+    },
+    "CCD3x3": {
+     "description": "Las Campanas 3x3 filters for CCD imaging: U, B, V, R, I"
+    },
+    "CSP": {
+     "description": "Carnegie Supernova Project I (CSP-I) natural-system passbands",
+     "svo_instruments": [
+      "LCO/CSP"
+     ]
+    },
+    "CSP2": {
+     "description": "Carnegie Supernova Project II (CSP-II) natural-system passbands",
+     "svo_instruments": [
+      "LCO/CSP2"
+     ]
+    },
+    "IMACS": {
+     "description": "IMACS wide-field imager/spectrograph filters, Magellan Baade telescope",
+     "svo_instruments": [
+      "LCO/IMACS"
+     ]
+    },
+    "MMIRS": {
+     "description": "MMIRS (MMT and Magellan Infrared Spectrograph) filters, LCO listing"
+    },
+    "MagAOX": {
+     "description": "MagAO-X extreme AO filters, Magellan Clay 6.5m, some with atmosphere"
+    },
+    "MagIC": {
+     "description": "Magellan Instant Camera (MagIC II) filters: SDSS, R and Mould I"
+    },
+    "RetroCam": {
+     "description": "Swope RetroCam near-IR imager (CSP), curves up to and since 2011",
+     "svo_instruments": [
+      "LCO/RetroCam"
+     ]
+    },
+    "SITe3": {
+     "description": "Swope SITe3 CCD passbands: u, r, i, B and V"
+    },
+    "VisAO": {
+     "description": "VisAO camera filters, Magellan Clay telescope"
+    },
+    "WFCCD": {
+     "description": "WFCCD wide-field reimaging CCD camera, B filter"
+    },
+    "WIRC": {
+     "description": "du Pont WIRC wide-field infrared camera Y, J, H passbands"
+    },
+    "e2v": {
+     "description": "Swope e2v CCD passbands (B, g, r, i), since 2013"
+    }
    }
   },
   "LICK": {
    "instruments": {
-    "LICK": {}
+    "LICK": {
+     "description": "Lick Observatory (Mount Hamilton) filter collection"
+    }
    }
   },
   "LRO": {
    "instruments": {
-    "Diviner": {},
-    "LROC_NAC": {}
+    "Diviner": {
+     "description": "Diviner Lunar Radiometer Experiment (LRO), channel A6"
+    },
+    "LROC_NAC": {
+     "description": "Lunar Reconnaissance Orbiter Narrow Angle Camera (LROC NAC)"
+    }
    }
   },
   "LSST": {
    "instruments": {
-    "LSST": {},
-    "LSSTv19": {}
+    "LSST": {
+     "description": "LSSTCam ugrizy filters for LSST: full throughput and filter only",
+     "svo_instruments": [
+      "LSST/LSST"
+     ]
+    },
+    "LSSTv19": {
+     "description": "LSST full-throughput curves, Rubin release 1.9 (lsst/throughputs)"
+    }
    }
   },
   "LYRA": {
    "instruments": {
-    "LYRA": {}
+    "LYRA": {
+     "description": "LYRA ISS all-sky survey photometric bands, 195-930 nm and pan"
+    }
    }
   },
   "LaSilla": {
    "instruments": {
-    "COMBO17": {},
-    "DFOSC": {},
-    "EFOSC": {},
-    "EMMI": {},
-    "GROND": {},
-    "SOFI": {},
-    "SUSI2": {},
-    "TIMMI2": {},
-    "WFI": {}
+    "COMBO17": {
+     "description": "COMBO-17 (Classifying Objects by Medium-Band Observations) filters"
+    },
+    "DFOSC": {
+     "description": "DFOSC on the Danish 1.54 m: ESO-numbered filters, filter only"
+    },
+    "EFOSC": {
+     "description": "EFOSC2 (ESO Faint Object Spectrograph and Camera) basic filter set"
+    },
+    "EMMI": {
+     "description": "ESO Multi-Mode Instrument (EMMI) on the NTT, ESO-numbered filters"
+    },
+    "GROND": {
+     "description": "GROND 7-channel simultaneous imager (g'r'i'z'JHK), MPG 2.2 m",
+     "svo_instruments": [
+      "LaSilla/GROND"
+     ]
+    },
+    "SOFI": {
+     "description": "SOFI (Son OF ISAAC) near-IR imager on the NTT: broad and narrow bands"
+    },
+    "SUSI2": {
+     "description": "SUSI2 (SUperb Seeing Imager 2) on the NTT, ESO-numbered filters"
+    },
+    "TIMMI2": {
+     "description": "TIMMI2 Thermal Infrared MultiMode Instrument filters, ESO 3.6 m"
+    },
+    "WFI": {
+     "description": "Wide Field Imager (WFI) on the MPG/ESO 2.2 m, by ESO filter number"
+    }
    }
   },
   "Landsat": {
    "instruments": {
-    "ETM-7": {},
-    "MSS-1": {},
-    "MSS-2": {},
-    "MSS-3": {},
-    "MSS-4": {},
-    "MSS-5": {},
-    "OLI": {},
-    "OLI-2": {},
-    "TIRS": {},
-    "TIRS-2": {},
-    "TM-4": {},
-    "TM-5": {}
+    "ETM-7": {
+     "description": "Landsat 7 Enhanced Thematic Mapper Plus (ETM+), bands 1-8"
+    },
+    "MSS-1": {
+     "description": "Landsat 1 Multispectral Scanner System (MSS), bands 4-7",
+     "svo_instruments": [
+      "Landsat/MSS-1"
+     ]
+    },
+    "MSS-2": {
+     "description": "Landsat 2 Multispectral Scanner System (MSS), bands 4-7",
+     "svo_instruments": [
+      "Landsat/MSS-2"
+     ]
+    },
+    "MSS-3": {
+     "description": "Landsat 3 Multispectral Scanner System (MSS), bands 4-7",
+     "svo_instruments": [
+      "Landsat/MSS-3"
+     ]
+    },
+    "MSS-4": {
+     "description": "Landsat 4 Multispectral Scanner System (MSS), bands 1-4"
+    },
+    "MSS-5": {
+     "description": "Landsat 5 Multispectral Scanner System (MSS), bands 1-4"
+    },
+    "OLI": {
+     "description": "Landsat 8 Operational Land Imager (OLI), nine bands",
+     "svo_instruments": [
+      "Landsat/OLI"
+     ]
+    },
+    "OLI-2": {
+     "description": "Landsat 9 Operational Land Imager-2 (OLI-2), GLAMR-derived RSRs"
+    },
+    "TIRS": {
+     "description": "Landsat 8 Thermal Infrared Sensor (TIRS), bands 10 and 11",
+     "svo_instruments": [
+      "Landsat/TIRS"
+     ]
+    },
+    "TIRS-2": {
+     "description": "Landsat 9 Thermal Infrared Sensor-2 (TIRS-2), bands 10 and 11"
+    },
+    "TM-4": {
+     "description": "Landsat 4 Thematic Mapper (TM), bands 1-7"
+    },
+    "TM-5": {
+     "description": "Landsat 5 Thematic Mapper (TM), bands 1-7"
+    }
    }
   },
   "LasCumbres": {
    "instruments": {
-    "Sinistro": {},
-    "Spectral": {}
+    "Sinistro": {
+     "description": "Las Cumbres 1-m network Sinistro imager: Bessell and SDSS filters"
+    },
+    "Spectral": {
+     "description": "Spectral cameras on the Las Cumbres 2-m Faulkes Telescopes"
+    }
    }
   },
   "Liverpool": {
    "instruments": {
-    "IOI": {},
-    "IOO": {},
-    "RATCam": {},
-    "RINGO": {},
-    "RISE": {}
+    "IOI": {
+     "description": "Liverpool Telescope IO:I near-infrared imager, J filter"
+    },
+    "IOO": {
+     "description": "Liverpool Telescope IO:O optical CCD camera: Bessell, SDSS, H-alpha"
+    },
+    "RATCam": {
+     "description": "Liverpool Telescope RATCam optical CCD camera filters"
+    },
+    "RINGO": {
+     "description": "Liverpool Telescope RINGO polarimeter, VR filter (GG475 + KG3)",
+     "svo_instruments": [
+      "Liverpool/RINGO"
+     ]
+    },
+    "RISE": {
+     "description": "Liverpool Telescope RISE fast-readout camera, V+R filter",
+     "svo_instruments": [
+      "Liverpool/RISE"
+     ]
+    }
    }
   },
   "MAXIMA": {
    "instruments": {
-    "MAXIMA": {}
+    "MAXIMA": {
+     "description": "MAXIMA balloon-borne CMB experiment, 150 and 240 GHz bandpasses"
+    }
    }
   },
   "MER": {
    "instruments": {
-    "MI": {},
-    "PanCam": {}
+    "MI": {
+     "description": "Spirit/Opportunity Microscopic Imager (MI), by temperature and cover"
+    },
+    "PanCam": {
+     "description": "Mars Exploration Rover Pancam left camera L5 (geology) filter"
+    }
    }
   },
   "METOP": {
    "instruments": {
-    "AMSUA-A": {},
-    "AMSUA-B": {},
-    "AMSUA-C": {},
-    "AVHRR-A": {},
-    "AVHRR-B": {},
-    "ICI-SG2": {},
-    "METimage": {},
-    "MWI-SG2": {},
-    "MWS-SG1": {}
+    "AMSUA-A": {
+     "description": "AMSU-A microwave sounder on MetOp-A: CRTM boxcar channel models"
+    },
+    "AMSUA-B": {
+     "description": "AMSU-A microwave sounder on MetOp-B: CRTM boxcar channel models"
+    },
+    "AMSUA-C": {
+     "description": "AMSU-A microwave sounder on MetOp-C: CRTM boxcar channel models"
+    },
+    "AVHRR-A": {
+     "description": "AVHRR/3 (S/N A305) on METOP-A: vendor-measured channel SRFs",
+     "svo_instruments": [
+      "METOP/AVHRR-A"
+     ]
+    },
+    "AVHRR-B": {
+     "description": "AVHRR/3 (S/N A307) on METOP-B: vendor-measured channel SRFs",
+     "svo_instruments": [
+      "METOP/AVHRR-B"
+     ]
+    },
+    "ICI-SG2": {
+     "description": "Ice Cloud Imager (ICI) first flight model, Metop-SG: channel SRFs"
+    },
+    "METimage": {
+     "description": "METimage Visible/Infrared Imager on Metop-SG A1: 20 channels"
+    },
+    "MWI-SG2": {
+     "description": "Microwave Imager (MWI) flight model FM2, Metop-SG: channel SRFs"
+    },
+    "MWS-SG1": {
+     "description": "Microwave Sounder (MWS) protoflight model, Metop-SG: channel SRFs"
+    }
    }
   },
   "MEX": {
    "instruments": {
-    "HRSC": {}
+    "HRSC": {
+     "description": "Mars Express High Resolution Stereo Camera (HRSC) channels"
+    }
    }
   },
   "MKO": {
    "instruments": {
-    "MIRSI": {}
+    "MIRSI": {
+     "description": "MIRSI (Mid-InfraRed Spectrometer and Imager) filters, Mauna Kea"
+    }
    }
   },
   "MMT": {
    "instruments": {
-    "Clio": {},
-    "MIRAC": {},
-    "MMIRS": {},
-    "MMTCam": {},
-    "MegaCam": {}
+    "Clio": {
+     "description": "Clio 1-5 micron AO imager and coronagraph filters (MMT)"
+    },
+    "MIRAC": {
+     "description": "MIRAC3 Mid-InfraRed Array Camera filters at 5 K, 25 K or ambient"
+    },
+    "MMIRS": {
+     "description": "MMIRS (MMT and Magellan Infrared Spectrograph) filters, MMT listing"
+    },
+    "MMTCam": {
+     "description": "MMTCam optical imager (f/5 secondary): u, g, r, z filters"
+    },
+    "MegaCam": {
+     "description": "Megacam CCD mosaic camera filters (at MMT and Magellan)"
+    }
    }
   },
   "MOA": {
    "instruments": {
-    "MOA": {},
-    "MOA-II": {}
+    "MOA": {
+     "description": "MOA microlensing survey Blue and Red filters (MOA-cam2)",
+     "svo_instruments": [
+      "MOA/MOA"
+     ]
+    },
+    "MOA-II": {
+     "description": "MOA-II microlensing survey R filter (MOA-cam3)"
+    }
    }
   },
   "MOM": {
    "instruments": {
-    "MCC": {}
+    "MCC": {
+     "description": "Mars Orbiter Mission Mars Colour Camera (MCC) Red response"
+    }
    }
   },
   "MOST": {
    "instruments": {
-    "MOST": {}
+    "MOST": {
+     "description": "MOST (Microvariability and Oscillation of Stars) passband, digitised",
+     "svo_instruments": [
+      "MOST/MOST"
+     ]
+    }
    }
   },
   "MRO": {
    "instruments": {
-    "CTX": {},
-    "HiRISE": {}
+    "CTX": {
+     "description": "Mars Reconnaissance Orbiter Context Camera (CTX), filter only"
+    },
+    "HiRISE": {
+     "description": "MRO HiRISE (High Resolution Imaging Experiment) Red band"
+    }
    }
   },
   "MSX": {
    "instruments": {
-    "MSX": {}
+    "MSX": {
+     "description": "Midcourse Space Experiment (MSX) infrared bands A, B1, C, D and E"
+    }
    }
   },
   "MT": {
    "instruments": {
-    "SCARAB": {}
+    "SCARAB": {
+     "description": "SCARAB Earth Radiation Budget scanning radiometer, Megha-Tropiques"
+    }
    }
   },
   "Magellan": {
    "instruments": {
-    "FourStar": {},
-    "MegaCam": {}
+    "FourStar": {
+     "description": "FourStar near-IR imager, Magellan Baade: broad, medium, narrow bands"
+    },
+    "MegaCam": {
+     "description": "Magellan MegaCam Sloan u'g'r'i'z' filters (not MMT or CFHT MegaCam)"
+    }
    }
   },
   "Mariner10": {
    "instruments": {
-    "TVCam": {}
+    "TVCam": {
+     "description": "Mariner 10 television science subsystem camera filters"
+    }
    }
   },
   "Mars2020": {
    "instruments": {
-    "MastCamZ": {}
+    "MastCamZ": {
+     "description": "Mastcam-Z zoom mast camera filters, Mars 2020 Perseverance rover"
+    }
    }
   },
   "McD": {
    "instruments": {
-    "DIAFI": {}
+    "DIAFI": {
+     "description": "McDonald Observatory DIAFI direct-imaging filters (B, I, SDSS, Halpha)"
+    }
    }
   },
   "Mercator": {
    "instruments": {
-    "MAIA": {}
+    "MAIA": {
+     "description": "Mercator Advanced Imager for Asteroseismology (MAIA) u filter"
+    }
    }
   },
   "Messenger": {
    "instruments": {
-    "MDIS_NAC": {},
-    "MDIS_WAC": {}
+    "MDIS_NAC": {
+     "description": "MESSENGER Mercury Dual Imaging System narrow-angle camera filter",
+     "svo_instruments": [
+      "Messenger/MDIS_NAC"
+     ]
+    },
+    "MDIS_WAC": {
+     "description": "MESSENGER Mercury Dual Imaging System wide-angle camera filters",
+     "svo_instruments": [
+      "Messenger/MDIS_WAC"
+     ]
+    }
    }
   },
   "Meteosat": {
    "instruments": {
-    "GERB2": {},
-    "MVIRI03": {},
-    "MVIRI04": {},
-    "MVIRI05": {},
-    "MVIRI06": {},
-    "MVIRI07": {},
-    "SEVIRI08": {},
-    "SEVIRI09": {},
-    "SEVIRI10": {},
-    "SEVIRI11": {}
+    "GERB2": {
+     "description": "Geostationary Earth Radiation Budget (GERB2) shortwave and total"
+    },
+    "MVIRI03": {
+     "description": "Meteosat-3 Visible and InfraRed Imager (MVIRI) VIS, WV, IR channels",
+     "svo_instruments": [
+      "Meteosat/MVIRI03"
+     ]
+    },
+    "MVIRI04": {
+     "description": "Meteosat-4 Visible and InfraRed Imager (MVIRI) WV and IR channels"
+    },
+    "MVIRI05": {
+     "description": "Meteosat-5 Visible and InfraRed Imager (MVIRI) WV and IR channels"
+    },
+    "MVIRI06": {
+     "description": "Meteosat-6 Visible and InfraRed Imager (MVIRI) WV and IR channels"
+    },
+    "MVIRI07": {
+     "description": "Meteosat-7 Visible and InfraRed Imager (MVIRI) VIS, WV, IR channels"
+    },
+    "SEVIRI08": {
+     "description": "Meteosat-8 (MSG-1) SEVIRI channels; cold IR at 85 K and 95 K"
+    },
+    "SEVIRI09": {
+     "description": "Meteosat-9 (MSG-2) SEVIRI channels; cold IR at 85 K and 95 K"
+    },
+    "SEVIRI10": {
+     "description": "Meteosat-10 (MSG-3) SEVIRI channels; cold IR at 85 K and 95 K"
+    },
+    "SEVIRI11": {
+     "description": "Meteosat-11 (MSG-4) SEVIRI channels; cold IR at 85 K and 95 K"
+    }
    }
   },
   "Microsat2B": {
    "instruments": {
-    "MHS": {}
+    "MHS": {
+     "description": "MHS channel responses on Microsat-2b (NWP SAF RTTOV SRFs)"
+    }
    }
   },
   "Misc": {
    "instruments": {
-    "APASS": {},
-    "AndromedA": {},
-    "Junocam": {},
-    "MCPS": {},
-    "MUSYC": {},
-    "UCAC": {}
+    "APASS": {
+     "description": "APASS survey filters, defined as Johnson B, V and SDSS i, z"
+    },
+    "AndromedA": {
+     "description": "AndromedA Observatory, Sofia: Chroma Bessell and Schuler filters"
+    },
+    "Junocam": {
+     "description": "JunoCam wide-angle camera filters on Juno at Jupiter"
+    },
+    "MCPS": {
+     "description": "Magellanic Clouds Photometric Survey (MCPS) Johnson B filter"
+    },
+    "MUSYC": {
+     "description": "Multiwavelength Survey by Yale-Chile (MUSYC) filters"
+    },
+    "UCAC": {
+     "description": "UCAC4 filters, defined as Johnson B and SDSS g, r"
+    }
    }
   },
   "NAOC": {
    "instruments": {
-    "BATC": {},
-    "BFOSC": {}
+    "BATC": {
+     "description": "Beijing-Arizona-Taiwan-Connecticut (BATC) filters, NAOC"
+    },
+    "BFOSC": {
+     "description": "BFOSC (Beijing Faint Object Spectrograph and Camera) filters"
+    }
    }
   },
   "NEAR": {
    "instruments": {
-    "MSI": {}
+    "MSI": {
+     "description": "Near Earth Asteroid Rendezvous (NEAR) MultiSpectral Imager bands"
+    }
    }
   },
   "NIMBUS": {
    "instruments": {
-    "CZCS": {},
-    "ITPR5": {},
-    "MRIR3": {}
+    "CZCS": {
+     "description": "Nimbus-7 Coastal Zone Color Scanner (CZCS) ocean-colour bands",
+     "svo_instruments": [
+      "NIMBUS/CZCS"
+     ]
+    },
+    "ITPR5": {
+     "description": "Infrared Temperature Profile Radiometer (ITPR) channels, Nimbus-5"
+    },
+    "MRIR3": {
+     "description": "Medium Resolution Infrared Radiometer (MRIR) channels, Nimbus-3"
+    }
    }
   },
   "NOAA": {
    "instruments": {
-    "AMSUA-15": {},
-    "AMSUA-16": {},
-    "AMSUA-17": {},
-    "AMSUA-18": {},
-    "AMSUA-19": {},
-    "AMSUB-15": {},
-    "AMSUB-16": {},
-    "AMSUB-17": {},
-    "AVHRR-10": {},
-    "AVHRR-11": {},
-    "AVHRR-12": {},
-    "AVHRR-13": {},
-    "AVHRR-14": {},
-    "AVHRR-15": {},
-    "AVHRR-16": {},
-    "AVHRR-17": {},
-    "AVHRR-18": {},
-    "AVHRR-19": {},
-    "AVHRR-6": {},
-    "AVHRR-7": {},
-    "AVHRR-8": {},
-    "AVHRR-9": {}
+    "AMSUA-15": {
+     "description": "NOAA-15 AMSU-A microwave sounder, 15 channels (CRTM boxcar models)"
+    },
+    "AMSUA-16": {
+     "description": "NOAA-16 AMSU-A microwave sounder, 15 channels (CRTM boxcar models)"
+    },
+    "AMSUA-17": {
+     "description": "NOAA-17 AMSU-A microwave sounder, 15 channels (CRTM boxcar models)"
+    },
+    "AMSUA-18": {
+     "description": "NOAA-18 AMSU-A microwave sounder, 15 channels (CRTM boxcar models)"
+    },
+    "AMSUA-19": {
+     "description": "NOAA-19 AMSU-A microwave sounder, 15 channels (measured SRFs)"
+    },
+    "AMSUB-15": {
+     "description": "NOAA-15 AMSU-B microwave humidity sounder, 5 channels (CRTM boxcar)"
+    },
+    "AMSUB-16": {
+     "description": "NOAA-16 AMSU-B microwave humidity sounder, 5 channels (CRTM boxcar)"
+    },
+    "AMSUB-17": {
+     "description": "NOAA-17 AMSU-B microwave humidity sounder, 5 channels (CRTM boxcar)"
+    },
+    "AVHRR-10": {
+     "description": "NOAA-10 Advanced Very High Resolution Radiometer (AVHRR/1) channels",
+     "svo_instruments": [
+      "NOAA/AVHRR-10"
+     ]
+    },
+    "AVHRR-11": {
+     "description": "NOAA-11 Advanced Very High Resolution Radiometer (AVHRR/2) channels",
+     "svo_instruments": [
+      "NOAA/AVHRR-11"
+     ]
+    },
+    "AVHRR-12": {
+     "description": "NOAA-12 Advanced Very High Resolution Radiometer (AVHRR/2) channels",
+     "svo_instruments": [
+      "NOAA/AVHRR-12"
+     ]
+    },
+    "AVHRR-13": {
+     "description": "NOAA-13 Advanced Very High Resolution Radiometer (AVHRR/2) channels",
+     "svo_instruments": [
+      "NOAA/AVHRR-13"
+     ]
+    },
+    "AVHRR-14": {
+     "description": "NOAA-14 Advanced Very High Resolution Radiometer (AVHRR/2) channels",
+     "svo_instruments": [
+      "NOAA/AVHRR-14"
+     ]
+    },
+    "AVHRR-15": {
+     "description": "NOAA-15 Advanced Very High Resolution Radiometer (AVHRR/3) channels",
+     "svo_instruments": [
+      "NOAA/AVHRR-15"
+     ]
+    },
+    "AVHRR-16": {
+     "description": "NOAA-16 Advanced Very High Resolution Radiometer (AVHRR/3) channels",
+     "svo_instruments": [
+      "NOAA/AVHRR-16"
+     ]
+    },
+    "AVHRR-17": {
+     "description": "NOAA-17 Advanced Very High Resolution Radiometer (AVHRR/3) channels",
+     "svo_instruments": [
+      "NOAA/AVHRR-17"
+     ]
+    },
+    "AVHRR-18": {
+     "description": "NOAA-18 Advanced Very High Resolution Radiometer (AVHRR/3) channels",
+     "svo_instruments": [
+      "NOAA/AVHRR-18"
+     ]
+    },
+    "AVHRR-19": {
+     "description": "NOAA-19 Advanced Very High Resolution Radiometer (AVHRR/3) channels",
+     "svo_instruments": [
+      "NOAA/AVHRR-19"
+     ]
+    },
+    "AVHRR-6": {
+     "description": "NOAA-6 Advanced Very High Resolution Radiometer (AVHRR/1) channels",
+     "svo_instruments": [
+      "NOAA/AVHRR-6"
+     ]
+    },
+    "AVHRR-7": {
+     "description": "NOAA-7 Advanced Very High Resolution Radiometer (AVHRR/2) channels",
+     "svo_instruments": [
+      "NOAA/AVHRR-7"
+     ]
+    },
+    "AVHRR-8": {
+     "description": "NOAA-8 Advanced Very High Resolution Radiometer (AVHRR/1) channels",
+     "svo_instruments": [
+      "NOAA/AVHRR-8"
+     ]
+    },
+    "AVHRR-9": {
+     "description": "NOAA-9 Advanced Very High Resolution Radiometer (AVHRR/2) channels",
+     "svo_instruments": [
+      "NOAA/AVHRR-9"
+     ]
+    }
    }
   },
   "NOAO": {
    "instruments": {
-    "NEWFIRM": {}
+    "NEWFIRM": {
+     "description": "NOAO Extremely Wide Field Infrared Imager (NEWFIRM) filters"
+    }
    }
   },
   "NOT": {
    "instruments": {
-    "ALFOSC": {},
-    "NOTcam": {},
-    "StanCam": {}
+    "ALFOSC": {
+     "description": "ALFOSC filter-only curves, 2.56-m Nordic Optical Telescope"
+    },
+    "NOTcam": {
+     "description": "Nordic Optical Telescope near-infrared camera (NOTCam) filters"
+    },
+    "StanCam": {
+     "description": "Nordic Optical Telescope stand-by CCD camera (StanCam) filters",
+     "svo_instruments": [
+      "NOT/StanCam"
+     ]
+    }
    }
   },
   "NewHorizons": {
    "instruments": {
-    "ALICE": {},
-    "MVIC": {}
+    "ALICE": {
+     "description": "New Horizons ALICE ultraviolet imaging spectrograph effective areas"
+    },
+    "MVIC": {
+     "description": "New Horizons Multispectral Visible Imaging Camera (MVIC) filters"
+    }
    }
   },
   "NigeriaSat1": {
    "instruments": {
-    "SLIM6": {}
+    "SLIM6": {
+     "description": "SSTL SLIM6 multispectral imager on NigeriaSat-1 (Green2 band)"
+    }
    }
   },
   "OAF": {
    "instruments": {
-    "Bessell": {}
+    "Bessell": {
+     "description": "Bessell B and I filters, Observatorio Astronómico de Forcarei"
+    }
    }
   },
   "OAJ": {
    "instruments": {
-    "JPAS": {},
-    "JPLUS": {}
+    "JPAS": {
+     "description": "J-PAS photometric sky survey filters, Javalambre"
+    },
+    "JPLUS": {
+     "description": "J-PLUS filters for T80Cam on the JAST/T80 telescope, Javalambre"
+    }
    }
   },
   "OAN-SPM": {
    "instruments": {
-    "OPTICAM": {}
+    "OPTICAM": {
+     "description": "OPTICAM triple-band high-time-resolution camera filters, OAN-SPM"
+    }
    }
   },
   "OAO": {
    "instruments": {
-    "KOOLS": {},
-    "MuSCAT": {}
+    "KOOLS": {
+     "description": "Kyoto Okayama Optical Low-dispersion Spectrograph (KOOLS) filters"
+    },
+    "MuSCAT": {
+     "description": "MuSCAT multi-color simultaneous camera z_s filter, Okayama (NAOJ)"
+    }
    }
   },
   "OGLE": {
    "instruments": {
-    "OGLE-IV": {}
+    "OGLE-IV": {
+     "description": "OGLE-IV mosaic camera I and V interference filters (Asahi Spectra)"
+    }
    }
   },
   "OHP": {
    "instruments": {
-    "Cam120": {},
-    "MISTRAL": {}
+    "Cam120": {
+     "description": "CCD camera filters, 1.20-m telescope, Observatoire de Haute-Provence"
+    },
+    "MISTRAL": {
+     "description": "MISTRAL spectro-imager filters, OHP 1.93-m telescope"
+    }
    }
   },
   "OLIMPO": {
    "instruments": {
-    "OLIMPO": {}
+    "OLIMPO": {
+     "description": "OLIMPO stratospheric-balloon mm/submm telescope 460 GHz band"
+    }
    }
   },
   "OMS": {
    "instruments": {
-    "GEMS1": {}
+    "GEMS1": {
+     "description": "Orbital Microsystems GEMS-1 channels (NWP SAF RTTOV SRFs)"
+    }
    }
   },
   "OSIRIS-REX": {
    "instruments": {
-    "MapCam": {}
+    "MapCam": {
+     "description": "OSIRIS-REx MapCam filters (W coarse, X fine)"
+    }
    }
   },
   "OSN": {
    "instruments": {
-    "Circ": {},
-    "Comet25": {},
-    "Comet50": {},
-    "Halpha": {},
-    "Johnson": {},
-    "Lines": {},
-    "Molec": {},
-    "Stromgren": {}
+    "Circ": {
+     "description": "Observatorio de Sierra Nevada Circ set: Johnson BV, Cousins RI",
+     "svo_instruments": [
+      "OSN/Circ"
+     ]
+    },
+    "Comet25": {
+     "description": "Observatorio de Sierra Nevada Comet25 continuum filter (d25)"
+    },
+    "Comet50": {
+     "description": "Observatorio de Sierra Nevada Comet50 C3 and continuum filters"
+    },
+    "Halpha": {
+     "description": "Observatorio de Sierra Nevada redshifted Halpha filters"
+    },
+    "Johnson": {
+     "description": "Observatorio de Sierra Nevada Johnson UBV and Cousins RI filters"
+    },
+    "Lines": {
+     "description": "Observatorio de Sierra Nevada emission-line filter (HeII 4691)"
+    },
+    "Molec": {
+     "description": "Observatorio de Sierra Nevada molecular-band filters"
+    },
+    "Stromgren": {
+     "description": "Observatorio de Sierra Nevada Stromgren uvby and Hbeta filters"
+    }
    }
   },
   "Odyssey": {
    "instruments": {
-    "THEMIS": {}
+    "THEMIS": {
+     "description": "Mars Odyssey Thermal Emission Imaging System (THEMIS) bands"
+    }
    }
   },
   "P200": {
    "instruments": {
-    "LFC": {},
-    "WIRC": {}
+    "LFC": {
+     "description": "Large Format Camera (LFC) filters, Palomar 200-inch Hale telescope"
+    },
+    "WIRC": {
+     "description": "Wide Field Infrared Camera (WIRC) filters, Palomar 200-inch Hale"
+    }
    }
   },
   "PAN-STARRS": {
    "instruments": {
-    "PS1": {}
+    "PS1": {
+     "description": "Pan-STARRS1 g, r, i, z, y and wide w passbands (Tonry et al. 2012)"
+    }
    }
   },
   "PRIRODA": {
    "instruments": {
-    "MOS": {}
+    "MOS": {
+     "description": "Modular Optoelectronic Scanner (MOS), PRIRODA/MIR, 408-1010 nm",
+     "svo_instruments": [
+      "PRIRODA/MOS"
+     ]
+    }
    }
   },
   "Palomar": {
    "instruments": {
-    "Arp1961": {},
-    "ZTF": {}
+    "Arp1961": {
+     "description": "Palomar photographic 103a-O plate sensitivity (Arp 1961)"
+    },
+    "ZTF": {
+     "description": "Zwicky Transient Facility g, r, i filters, Palomar 48-inch Schmidt"
+    }
    }
   },
   "Paranal": {
    "instruments": {
-    "FORS1": {},
-    "FORS2": {},
-    "HAWKI": {},
-    "ISAAC": {},
-    "MIDI": {},
-    "NACO": {},
-    "OmegaCAM": {},
-    "SPHERE": {},
-    "VIMOS": {},
-    "VISIR": {},
-    "VISTA": {}
+    "FORS1": {
+     "description": "VLT FORS1 original Bessell and Gunn broad-band filters, ESO scans"
+    },
+    "FORS2": {
+     "description": "VLT FORS2 Bessell I, R_SPECIAL and high-throughput u/b/v/g filters"
+    },
+    "HAWKI": {
+     "description": "VLT HAWK-I High-Acuity Wide-field K-band Imager filters"
+    },
+    "ISAAC": {
+     "description": "ISAAC infrared (1-5 μm) imager/spectrograph filters, VLT UT3"
+    },
+    "MIDI": {
+     "description": "MIDI mid-infrared (N-band) VLT Interferometer instrument filter"
+    },
+    "NACO": {
+     "description": "NACO (NAOS-CONICA) VLT adaptive-optics imager CONICA filters"
+    },
+    "OmegaCAM": {
+     "description": "OmegaCAM 32-CCD imager filters, VLT Survey Telescope (VST)"
+    },
+    "SPHERE": {
+     "description": "VLT SPHERE/IRDIS broad-, dual- and narrow-band filters (ESO)"
+    },
+    "VIMOS": {
+     "description": "VIMOS wide-field imager U and z, total transmission, VLT UT3"
+    },
+    "VISIR": {
+     "description": "VISIR mid-infrared imager and spectrometer filters, VLT UT3"
+    },
+    "VISTA": {
+     "description": "VISTA VIRCAM ZYJHKs and narrow-band filters, full and filter-only",
+     "svo_instruments": [
+      "Paranal/VISTA"
+     ]
+    }
    }
   },
   "Parasol": {
    "instruments": {
-    "POLDER-P": {}
+    "POLDER-P": {
+     "description": "POLDER on PARASOL (CNES), nine channels from 443 to 1020 nm",
+     "svo_instruments": [
+      "Parasol/POLDER-P"
+     ]
+    }
    }
   },
   "Pathfinder": {
    "instruments": {
-    "Pathfinder": {}
+    "Pathfinder": {
+     "description": "Mars Pathfinder aft camera Green, Red and IR bandpasses",
+     "svo_instruments": [
+      "Pathfinder/Pathfinder"
+     ]
+    }
    }
   },
   "Planck": {
    "instruments": {
-    "HFI": {},
-    "LFI": {}
+    "HFI": {
+     "description": "Planck High Frequency Instrument (HFI) bands, 100 to 857 GHz",
+     "svo_instruments": [
+      "PLANCK/HFI"
+     ]
+    },
+    "LFI": {
+     "description": "Planck Low Frequency Instrument (LFI) bands at 30, 44 and 70 GHz",
+     "svo_instruments": [
+      "PLANCK/LFI"
+     ]
+    }
    }
   },
   "Pleiades": {
    "instruments": {
-    "HIRI-1A": {},
-    "HIRI-1B": {}
+    "HIRI-1A": {
+     "description": "Pleiades 1A imager (HiRI): blue, green, red, NIR and pan bands"
+    },
+    "HIRI-1B": {
+     "description": "Pleiades 1B imager (HiRI): blue, green, red, NIR and pan bands"
+    }
    }
   },
   "QUIET": {
    "instruments": {
-    "QUIET": {}
+    "QUIET": {
+     "description": "QUIET (Q/U Imaging ExperimenT) CMB polarization Q and W bands",
+     "svo_instruments": [
+      "QUIET/QUIET"
+     ]
+    }
    }
   },
   "QuickBird": {
    "instruments": {
-    "BGIS2": {}
+    "BGIS2": {
+     "description": "QuickBird BGIS-2000 imager, pan and four multispectral bands (Maxar)",
+     "svo_instruments": [
+      "QuickBird/BGIS2"
+     ]
+    }
    }
   },
   "QuickSounder": {
    "instruments": {
-    "ATMS": {}
+    "ATMS": {
+     "description": "Advanced Technology Microwave Sounder (ATMS) on QuickSounder"
+    }
    }
   },
   "RapidEye": {
    "instruments": {
-    "REIS": {}
+    "REIS": {
+     "description": "RapidEye Earth Imaging System (REIS) bands, Blue to NIR",
+     "svo_instruments": [
+      "RapidEye/REIS"
+     ]
+    }
    }
   },
   "Roman": {
    "instruments": {
-    "WFI": {},
-    "WFI_SCA01": {},
-    "WFI_SCA02": {},
-    "WFI_SCA03": {},
-    "WFI_SCA04": {},
-    "WFI_SCA05": {},
-    "WFI_SCA06": {},
-    "WFI_SCA07": {},
-    "WFI_SCA08": {},
-    "WFI_SCA09": {},
-    "WFI_SCA10": {},
-    "WFI_SCA11": {},
-    "WFI_SCA12": {},
-    "WFI_SCA13": {},
-    "WFI_SCA14": {},
-    "WFI_SCA15": {},
-    "WFI_SCA16": {},
-    "WFI_SCA17": {},
-    "WFI_SCA18": {}
+    "WFI": {
+     "description": "Roman WFI detector-averaged: 8 filters, grism, prism (+ old curves)",
+     "svo_instruments": [
+      "Roman/WFI"
+     ]
+    },
+    "WFI_SCA01": {
+     "description": "Roman WFI detector SCA01 only: eight filters, grism and prism"
+    },
+    "WFI_SCA02": {
+     "description": "Roman WFI detector SCA02 only: eight filters, grism and prism"
+    },
+    "WFI_SCA03": {
+     "description": "Roman WFI detector SCA03 only: eight filters, grism and prism"
+    },
+    "WFI_SCA04": {
+     "description": "Roman WFI detector SCA04 only: eight filters, grism and prism"
+    },
+    "WFI_SCA05": {
+     "description": "Roman WFI detector SCA05 only: eight filters, grism and prism"
+    },
+    "WFI_SCA06": {
+     "description": "Roman WFI detector SCA06 only: eight filters, grism and prism"
+    },
+    "WFI_SCA07": {
+     "description": "Roman WFI detector SCA07 only: eight filters, grism and prism"
+    },
+    "WFI_SCA08": {
+     "description": "Roman WFI detector SCA08 only: eight filters, grism and prism"
+    },
+    "WFI_SCA09": {
+     "description": "Roman WFI detector SCA09 only: eight filters, grism and prism"
+    },
+    "WFI_SCA10": {
+     "description": "Roman WFI detector SCA10 only: eight filters, grism and prism"
+    },
+    "WFI_SCA11": {
+     "description": "Roman WFI detector SCA11 only: eight filters, grism and prism"
+    },
+    "WFI_SCA12": {
+     "description": "Roman WFI detector SCA12 only: eight filters, grism and prism"
+    },
+    "WFI_SCA13": {
+     "description": "Roman WFI detector SCA13 only: eight filters, grism and prism"
+    },
+    "WFI_SCA14": {
+     "description": "Roman WFI detector SCA14 only: eight filters, grism and prism"
+    },
+    "WFI_SCA15": {
+     "description": "Roman WFI detector SCA15 only: eight filters, grism and prism"
+    },
+    "WFI_SCA16": {
+     "description": "Roman WFI detector SCA16 only: eight filters, grism and prism"
+    },
+    "WFI_SCA17": {
+     "description": "Roman WFI detector SCA17 only: eight filters, grism and prism"
+    },
+    "WFI_SCA18": {
+     "description": "Roman WFI detector SCA18 only: eight filters, grism and prism"
+    }
    }
   },
   "Rosetta": {
    "instruments": {
-    "OSIRIS_NAC": {},
-    "OSIRIS_WAC": {}
+    "OSIRIS_NAC": {
+     "description": "Rosetta OSIRIS imaging system, narrow-angle camera (NAC) filters"
+    },
+    "OSIRIS_WAC": {
+     "description": "Rosetta OSIRIS imaging system, wide-angle camera (WAC) filters"
+    }
    }
   },
   "SALT": {
    "instruments": {
-    "RSS": {}
+    "RSS": {
+     "description": "SALT Robert Stobie Spectrograph (RSS) Fabry-Perot filters"
+    }
    }
   },
   "SAO": {
    "instruments": {
-    "SCORPIO": {}
+    "SCORPIO": {
+     "description": "SCORPIO focal reducer filters, Special Astrophysical Observatory"
+    }
    }
   },
   "SEOSAT": {
    "instruments": {
-    "PP": {}
+    "PP": {
+     "description": "SEOSAT/INGENIO Primary Payload push-broom imager, Green and NIR"
+    }
    }
   },
   "SLOAN": {
    "instruments": {
-    "SDSS": {}
+    "SDSS": {
+     "description": "SDSS ugriz camera passbands plus primed u'g'r'i'z' filter-only curves",
+     "svo_instruments": [
+      "SLOAN/SDSS"
+     ]
+    }
    }
   },
   "SOFIA": {
    "instruments": {
-    "FLITECAM": {},
-    "FORCAST": {},
-    "FPI": {},
-    "HAWC": {},
-    "HIPO": {}
+    "FLITECAM": {
+     "description": "SOFIA First Light Infrared Test Camera (FLITECAM), 1.0-5.5 μm"
+    },
+    "FORCAST": {
+     "description": "Faint Object infraRed CAmera for SOFIA (FORCAST), 5-40 μm"
+    },
+    "FPI": {
+     "description": "SOFIA Focal Plane Imager (FPI+) tracking camera filters",
+     "svo_instruments": [
+      "SOFIA/FPI"
+     ]
+    },
+    "HAWC": {
+     "description": "SOFIA HAWC+ far-infrared camera and polarimeter, band B"
+    },
+    "HIPO": {
+     "description": "SOFIA High Speed Imaging Photometer for Occultations (HIPO) filters"
+    }
    }
   },
   "SOHO": {
    "instruments": {
-    "EIT": {},
-    "LASCO": {}
+    "EIT": {
+     "description": "SOHO Extreme ultraviolet Imaging Telescope (EIT) bands"
+    },
+    "LASCO": {
+     "description": "SOHO Large Angle and Spectrometric Coronagraph (LASCO) filters"
+    }
    }
   },
   "SPHERE": {
    "instruments": {
-    "IRDIS": {},
-    "ZIMPOL": {}
+    "IRDIS": {
+     "description": "SPHERE IRDIS dual-band imager filters, incl. neutral densities"
+    },
+    "ZIMPOL": {
+     "description": "SPHERE Zurich Imaging Polarimeter (ZIMPOL) filters and NDs"
+    }
    }
   },
   "SPOT": {
    "instruments": {
-    "NAOMI6": {},
-    "NAOMI7": {},
-    "SPOT1-HRV1": {},
-    "SPOT1-HRV2": {},
-    "SPOT2-HRV1": {},
-    "SPOT2-HRV2": {},
-    "SPOT3-HRV1": {},
-    "SPOT3-HRV2": {},
-    "SPOT4-HRVIR1": {},
-    "SPOT4-HRVIR2": {},
-    "SPOT5-HRG1": {},
-    "SPOT5-HRG2": {}
+    "NAOMI6": {
+     "description": "SPOT 6 NAOMI imager: blue, green, red, NIR and panchromatic bands",
+     "svo_instruments": [
+      "SPOT/NAOMI6"
+     ]
+    },
+    "NAOMI7": {
+     "description": "SPOT 7 NAOMI imager: blue, green, red, NIR and panchromatic bands",
+     "svo_instruments": [
+      "SPOT/NAOMI7"
+     ]
+    },
+    "SPOT1-HRV1": {
+     "description": "SPOT 1 HRV1 imager band spectral sensitivities (Pan, Xs1-Xs3)"
+    },
+    "SPOT1-HRV2": {
+     "description": "SPOT 1 HRV2 imager band spectral sensitivities (Pan, Xs1-Xs3)"
+    },
+    "SPOT2-HRV1": {
+     "description": "SPOT 2 HRV1 imager band spectral sensitivities (Pan, Xs1-Xs3)"
+    },
+    "SPOT2-HRV2": {
+     "description": "SPOT 2 HRV2 imager band spectral sensitivities (Pan, Xs1-Xs3)"
+    },
+    "SPOT3-HRV1": {
+     "description": "SPOT 3 HRV1 imager band spectral sensitivities (Pan, Xs1-Xs3)"
+    },
+    "SPOT3-HRV2": {
+     "description": "SPOT 3 HRV2 imager band spectral sensitivities (Pan, Xs1-Xs3)"
+    },
+    "SPOT4-HRVIR1": {
+     "description": "SPOT 4 HRVIR1 imager band spectral sensitivities (Mono, Xi1-Xi4)"
+    },
+    "SPOT4-HRVIR2": {
+     "description": "SPOT 4 HRVIR2 imager band spectral sensitivities (Mono, Xi1-Xi4)"
+    },
+    "SPOT5-HRG1": {
+     "description": "SPOT 5 HRG1 imager band spectral sensitivities (Pa, B1-B3, MIR)"
+    },
+    "SPOT5-HRG2": {
+     "description": "SPOT 5 HRG2 imager band spectral sensitivities (Pa, B1-B3, MIR)"
+    }
    }
   },
   "SPT": {
    "instruments": {
-    "SPT-3G": {},
-    "SPT-SZ": {}
+    "SPT-3G": {
+     "description": "South Pole Telescope SPT-3G camera bandpasses, 95/150/220 GHz"
+    },
+    "SPT-SZ": {
+     "description": "South Pole Telescope SPT-SZ 150/220 GHz bandpasses, 2008 season",
+     "svo_instruments": [
+      "SPT/SPT-SZ"
+     ]
+    }
    }
   },
   "SSOT": {
    "instruments": {
-    "NAOMI": {}
+    "NAOMI": {
+     "description": "NAOMI high-resolution pushbroom imager Red band, SSOT (Fasat-C)"
+    }
    }
   },
   "STELLA": {
    "instruments": {
-    "WiFSIP": {}
+    "WiFSIP": {
+     "description": "Wide Field STELLA Imaging Photometer (WiFSIP) filters"
+    }
    }
   },
   "Scorpio": {
    "instruments": {
-    "Comet": {},
-    "Cousins": {},
-    "Johnson": {},
-    "SED": {}
+    "Comet": {
+     "description": "SCORPIO comet molecular-band filters (C2, CN, CO+, continua)",
+     "svo_instruments": [
+      "Scorpio/Comet"
+     ]
+    },
+    "Cousins": {
+     "description": "SCORPIO camera Cousins Ic filter"
+    },
+    "Johnson": {
+     "description": "SCORPIO camera Johnson V filter"
+    },
+    "SED": {
+     "description": "SCORPIO medium-band SED filters SED415-SED967 plus FN657 (HeII)"
+    }
    }
   },
   "SeaStar": {
    "instruments": {
-    "SeaWiFS": {}
+    "SeaWiFS": {
+     "description": "SeaWiFS (Sea-viewing Wide Field-of-view Sensor) bands 412-865 nm"
+    }
    }
   },
   "Selene": {
    "instruments": {
-    "MI": {}
+    "MI": {
+     "description": "SELENE (Kaguya) Multiband Imager (MI) lunar VIS and NIR bands"
+    }
    }
   },
   "Sentinel": {
    "instruments": {
-    "MSI-2A": {},
-    "MSI-2B": {},
-    "MSI-2C": {},
-    "OLCI-A": {},
-    "OLCI-B": {},
-    "SLSTR-A": {},
-    "SLSTR-B": {}
+    "MSI-2A": {
+     "description": "Sentinel-2A MultiSpectral Instrument (MSI) bands B01-B12, B8A"
+    },
+    "MSI-2B": {
+     "description": "Sentinel-2B MultiSpectral Instrument (MSI) bands B01-B12, B8A"
+    },
+    "MSI-2C": {
+     "description": "Sentinel-2C MultiSpectral Instrument (MSI) bands B01-B12, B8A"
+    },
+    "OLCI-A": {
+     "description": "Sentinel-3A Ocean and Land Colour Instrument (OLCI), 21 bands",
+     "svo_instruments": [
+      "Sentinel/OLCI-A"
+     ]
+    },
+    "OLCI-B": {
+     "description": "Sentinel-3B Ocean and Land Colour Instrument (OLCI), 21 bands",
+     "svo_instruments": [
+      "Sentinel/OLCI-B"
+     ]
+    },
+    "SLSTR-A": {
+     "description": "Sentinel-3A Sea and Land Surface Temperature Radiometer S1-S9",
+     "svo_instruments": [
+      "Sentinel/SLSTR-A"
+     ]
+    },
+    "SLSTR-B": {
+     "description": "Sentinel-3B Sea and Land Surface Temperature Radiometer S1-S9",
+     "svo_instruments": [
+      "Sentinel/SLSTR-B"
+     ]
+    }
    }
   },
   "SkyMapper": {
    "instruments": {
-    "SkyMapper": {}
+    "SkyMapper": {
+     "description": "SkyMapper wide-field survey telescope g, r, i, v passbands"
+    }
    }
   },
   "SkySat": {
    "instruments": {
-    "SkySat1": {},
-    "SkySat10": {},
-    "SkySat11": {},
-    "SkySat12": {},
-    "SkySat13": {},
-    "SkySat14-19": {},
-    "SkySat2": {},
-    "SkySat3": {},
-    "SkySat4": {},
-    "SkySat5": {},
-    "SkySat6": {},
-    "SkySat7": {},
-    "SkySat8": {},
-    "SkySat9": {}
+    "SkySat1": {
+     "description": "SkySat-1 (Planet) imager: Blue, Green, Red, NIR and Pan responses",
+     "svo_instruments": [
+      "SkySat/SkySat1"
+     ]
+    },
+    "SkySat10": {
+     "description": "SkySat-10 (Planet) imager: Blue, Green, Red, NIR and Pan responses",
+     "svo_instruments": [
+      "SkySat/SkySat10"
+     ]
+    },
+    "SkySat11": {
+     "description": "SkySat-11 (Planet) imager: Blue, Green, Red, NIR and Pan responses",
+     "svo_instruments": [
+      "SkySat/SkySat11"
+     ]
+    },
+    "SkySat12": {
+     "description": "SkySat-12 (Planet) imager: Blue, Green, Red, NIR and Pan responses",
+     "svo_instruments": [
+      "SkySat/SkySat12"
+     ]
+    },
+    "SkySat13": {
+     "description": "SkySat-13 (Planet) imager: Blue, Green, Red, NIR and Pan responses",
+     "svo_instruments": [
+      "SkySat/SkySat13"
+     ]
+    },
+    "SkySat14-19": {
+     "description": "SkySat-14 to SkySat-19 (Planet) relative spectral responses"
+    },
+    "SkySat2": {
+     "description": "SkySat-2 (Planet) imager: Blue, Green, Red, NIR and Pan responses",
+     "svo_instruments": [
+      "SkySat/SkySat2"
+     ]
+    },
+    "SkySat3": {
+     "description": "SkySat-3 (Planet) imager: Blue, Green, Red, NIR and Pan responses",
+     "svo_instruments": [
+      "SkySat/SkySat3"
+     ]
+    },
+    "SkySat4": {
+     "description": "SkySat-4 (Planet) imager: Blue, Green, Red, NIR and Pan responses",
+     "svo_instruments": [
+      "SkySat/SkySat4"
+     ]
+    },
+    "SkySat5": {
+     "description": "SkySat-5 (Planet) imager: Blue, Green, Red, NIR and Pan responses",
+     "svo_instruments": [
+      "SkySat/SkySat5"
+     ]
+    },
+    "SkySat6": {
+     "description": "SkySat-6 (Planet) imager: Blue, Green, Red, NIR and Pan responses",
+     "svo_instruments": [
+      "SkySat/SkySat6"
+     ]
+    },
+    "SkySat7": {
+     "description": "SkySat-7 (Planet) imager: Blue, Green, Red, NIR and Pan responses",
+     "svo_instruments": [
+      "SkySat/SkySat7"
+     ]
+    },
+    "SkySat8": {
+     "description": "SkySat-8 (Planet) imager: Blue, Green, Red, NIR and Pan responses",
+     "svo_instruments": [
+      "SkySat/SkySat8"
+     ]
+    },
+    "SkySat9": {
+     "description": "SkySat-9 (Planet) imager: Blue, Green, Red, NIR and Pan responses",
+     "svo_instruments": [
+      "SkySat/SkySat9"
+     ]
+    }
    }
   },
   "SolarOrbiter": {
    "instruments": {
-    "SoloHI": {}
+    "SoloHI": {
+     "description": "Solar Orbiter SoloHI heliospheric imager, flight lens SN03 bandpass",
+     "svo_instruments": [
+      "SolarOrbiter/SoloHI"
+     ]
+    }
    }
   },
   "Spitzer": {
    "instruments": {
-    "IRAC": {},
-    "IRS": {},
-    "MIPS": {}
+    "IRAC": {
+     "description": "Spitzer IRAC mid-infrared camera, channels I1-I4 spectral response",
+     "svo_instruments": [
+      "Spitzer/IRAC"
+     ]
+    },
+    "IRS": {
+     "description": "Spitzer IRS peak-up imaging blue and red filters"
+    },
+    "MIPS": {
+     "description": "Spitzer MIPS far-infrared imaging bands at 24, 70 and 160 µm",
+     "svo_instruments": [
+      "Spitzer/MIPS"
+     ]
+    }
    }
   },
   "Stardust": {
    "instruments": {
-    "NAVCAM": {}
+    "NAVCAM": {
+     "description": "Stardust Navigation Camera (NAVCAM) NIR and OpNav filters"
+    }
    }
   },
   "Subaru": {
    "instruments": {
-    "CIAO": {},
-    "FOCAS": {},
-    "HSC": {},
-    "IRCS": {},
-    "MOIRCS": {},
-    "OHS": {},
-    "SuprimeCam": {}
+    "CIAO": {
+     "description": "Subaru Coronagraphic Imager with Adaptive Optics (CIAO) filters",
+     "svo_instruments": [
+      "Subaru/CIAO"
+     ]
+    },
+    "FOCAS": {
+     "description": "Subaru Faint Object Camera and Spectrograph (FOCAS) filters"
+    },
+    "HSC": {
+     "description": "Subaru Hyper Suprime-Cam (HSC) prime-focus camera filters",
+     "svo_instruments": [
+      "Subaru/HSC"
+     ]
+    },
+    "IRCS": {
+     "description": "Subaru Infrared Camera and Spectrograph (IRCS) J, H, M' filters"
+    },
+    "MOIRCS": {
+     "description": "Subaru Multi-Object InfraRed Camera and Spectrograph (MOIRCS) K"
+    },
+    "OHS": {
+     "description": "Subaru OHS near-IR filters (OH-background removal, CISCO camera)"
+    },
+    "SuprimeCam": {
+     "description": "Subaru Suprime-Cam prime-focus camera filters (broad, IB and NB)",
+     "svo_instruments": [
+      "Subaru/Suprime"
+     ]
+    }
    }
   },
   "Swift": {
    "instruments": {
-    "UVOT": {}
+    "UVOT": {
+     "description": "Swift Ultraviolet/Optical Telescope (UVOT) filters and effective areas"
+    }
    }
   },
   "TCS": {
    "instruments": {
-    "CAIN3": {}
+    "CAIN3": {
+     "description": "CAIN-III camera filters (J, H, K, narrow), Telescopio Carlos Sanchez"
+    }
    }
   },
   "TD1": {
    "instruments": {
-    "NARROW1": {},
-    "NARROW2": {},
-    "SPEC": {},
-    "TD1": {},
-    "WIDE": {}
+    "NARROW1": {
+     "description": "TD1 S2/68 100 A narrow UV passbands, 1400-2500 A (Carnochan 1982)",
+     "svo_instruments": [
+      "TD1/NARROW1"
+     ]
+    },
+    "NARROW2": {
+     "description": "TD1 S2/68 110 A narrow UV passbands, 1455-2475 A (Carnochan 1982)",
+     "svo_instruments": [
+      "TD1/NARROW2"
+     ]
+    },
+    "SPEC": {
+     "description": "TD1 spectrometer channel effective passbands, 1360-2540 A"
+    },
+    "TD1": {
+     "description": "TD1 satellite filters centred at 1400-2740 A"
+    },
+    "WIDE": {
+     "description": "TD1 S2/68 broad UV passbands at 1565, 1965, 2365 and 2740 A",
+     "svo_instruments": [
+      "TD1/WIDE"
+     ]
+    }
    }
   },
   "TEMPEST": {
    "instruments": {
-    "TEMPEST-D": {},
-    "TEMPEST-H8": {}
+    "TEMPEST-D": {
+     "description": "TEMPEST-D (Pathfinder) radiometer channel SRFs from EUMETSAT NWP SAF"
+    },
+    "TEMPEST-H8": {
+     "description": "TEMPEST-H8 radiometer (STP-H8) channel SRFs from EUMETSAT NWP SAF"
+    }
    }
   },
   "TESS": {
    "instruments": {
-    "TESS": {}
+    "TESS": {
+     "description": "TESS (Transiting Exoplanet Survey Satellite) 600-1000 nm bandpass",
+     "svo_instruments": [
+      "TESS/TESS"
+     ]
+    }
    }
   },
   "TIROS-N": {
    "instruments": {
-    "AVHRR": {}
+    "AVHRR": {
+     "description": "TIROS-N Advanced Very High Resolution Radiometer (AVHRR/1)",
+     "svo_instruments": [
+      "TIROS-N/AVHRR"
+     ]
+    }
    }
   },
   "TJO": {
    "instruments": {
-    "LAIA": {},
-    "TFRM": {}
+    "LAIA": {
+     "description": "LAIA optical imager filters on the Telescopio Joan Oro (TJO)"
+    },
+    "TFRM": {
+     "description": "Telescopi Fabra-ROA Montsec (TFRM) GG475 longpass filter"
+    }
    }
   },
   "TNG": {
    "instruments": {
-    "DOLORES": {},
-    "NICS": {},
-    "OIG": {},
-    "TNG": {}
+    "DOLORES": {
+     "description": "TNG DOLORES (LRS) low-resolution spectrograph and camera filters",
+     "svo_instruments": [
+      "TNG/DOLORES"
+     ]
+    },
+    "NICS": {
+     "description": "TNG NICS infrared camera/spectrometer K filter"
+    },
+    "OIG": {
+     "description": "TNG Optical Imager Galileo (OIG) B, R, r', i' filters"
+    },
+    "TNG": {
+     "description": "Telescopio Nazionale Galileo optical filter collection"
+    }
    }
   },
   "TNO": {
    "instruments": {
-    "ULTRACAM": {}
+    "ULTRACAM": {
+     "description": "ULTRACAM filters used at the Thai National Observatory"
+    }
    }
   },
   "TNT": {
    "instruments": {
-    "ULTRASPEC": {}
+    "ULTRASPEC": {
+     "description": "ULTRASPEC high-speed EMCCD camera filters, Thai National Telescope"
+    }
    }
   },
   "TRMM": {
    "instruments": {
-    "CERES": {}
+    "CERES": {
+     "description": "TRMM CERES shortwave and total channel spectral responses"
+    }
    }
   },
   "TROPICS": {
    "instruments": {
-    "SV1-Pathfinder": {},
-    "TROPICS-03": {},
-    "TROPICS-05": {},
-    "TROPICS-06": {},
-    "TROPICS-07": {}
+    "SV1-Pathfinder": {
+     "description": "TROPICS SV1 (Pathfinder) radiometer channel SRFs (EUMETSAT NWP SAF)"
+    },
+    "TROPICS-03": {
+     "description": "TROPICS radiometer, RTTOV satellite id 3 (MIT LL SV2-SV7 data)"
+    },
+    "TROPICS-05": {
+     "description": "TROPICS radiometer, RTTOV satellite id 5 (MIT LL SV2-SV7 data)"
+    },
+    "TROPICS-06": {
+     "description": "TROPICS radiometer, RTTOV satellite id 6 (MIT LL SV2-SV7 data)"
+    },
+    "TROPICS-07": {
+     "description": "TROPICS radiometer, RTTOV satellite id 7 (MIT LL SV2-SV7 data)"
+    }
    }
   },
   "Teide": {
    "instruments": {
-    "COSMO11": {},
-    "COSMO15": {}
+    "COSMO11": {
+     "description": "COSMOSOMAS COSMO11 11 GHz radiometer channels, Teide Observatory",
+     "svo_instruments": [
+      "COSMOSOMAS/COSMO11"
+     ]
+    },
+    "COSMO15": {
+     "description": "COSMOSOMAS COSMO15 13-17 GHz radiometer channels, Teide Observatory"
+    }
    }
   },
   "Terra": {
    "instruments": {
-    "MISR": {},
-    "MODIS": {}
+    "MISR": {
+     "description": "Terra Multi-angle Imaging SpectroRadiometer (MISR) 443-865 nm bands"
+    },
+    "MODIS": {
+     "description": "Terra MODIS (PFM) 36 bands, 0.41-14.4 um, MCST band-averaged RSRs"
+    }
    }
   },
   "Tomorrow": {
    "instruments": {
-    "TMS-S01": {},
-    "TMS-S02": {},
-    "TMS-S03": {},
-    "TMS-S04": {},
-    "TMS-S05": {},
-    "TMS-S06": {},
-    "TMS-S07": {},
-    "TMS-S08": {},
-    "TMS-S09": {},
-    "TMS-S10": {},
-    "TMS-S11": {}
+    "TMS-S01": {
+     "description": "Tomorrow.io Microwave Sounder (TMS) on Tomorrow-S01, channel SRFs"
+    },
+    "TMS-S02": {
+     "description": "Tomorrow.io Microwave Sounder (TMS) on Tomorrow-S02, channel SRFs"
+    },
+    "TMS-S03": {
+     "description": "Tomorrow.io Microwave Sounder (TMS) on Tomorrow-S03, channel SRFs"
+    },
+    "TMS-S04": {
+     "description": "Tomorrow.io Microwave Sounder (TMS) on Tomorrow-S04, channel SRFs"
+    },
+    "TMS-S05": {
+     "description": "Tomorrow.io Microwave Sounder (TMS) on Tomorrow-S05, channel SRFs"
+    },
+    "TMS-S06": {
+     "description": "Tomorrow.io Microwave Sounder (TMS) on Tomorrow-S06, channel SRFs"
+    },
+    "TMS-S07": {
+     "description": "Tomorrow.io Microwave Sounder (TMS) on Tomorrow-S07, channel SRFs"
+    },
+    "TMS-S08": {
+     "description": "Tomorrow.io Microwave Sounder (TMS) on Tomorrow-S08, channel SRFs"
+    },
+    "TMS-S09": {
+     "description": "Tomorrow.io Microwave Sounder (TMS) on Tomorrow-S09, channel SRFs"
+    },
+    "TMS-S10": {
+     "description": "Tomorrow.io Microwave Sounder (TMS) on Tomorrow-S10, channel SRFs"
+    },
+    "TMS-S11": {
+     "description": "Tomorrow.io Microwave Sounder (TMS) on Tomorrow-S11, channel SRFs"
+    }
    }
   },
   "TopHat": {
    "instruments": {
-    "TopHat": {}
+    "TopHat": {
+     "description": "TopHat balloon-borne CMB and dust experiment, Band 3 passband"
+    }
    }
   },
   "UK-DMC": {
    "instruments": {
-    "SLIM6": {}
+    "SLIM6": {
+     "description": "UK-DMC SLIM6 (Surrey Linear Imager Multispectral) bands"
+    }
    }
   },
   "UKIRT": {
    "instruments": {
-    "UFTI": {},
-    "WFCAM": {}
+    "UFTI": {
+     "description": "UKIRT Fast-Track Imager (UFTI) filters",
+     "svo_instruments": [
+      "UKIRT/UFTI"
+     ]
+    },
+    "WFCAM": {
+     "description": "UKIRT WFCAM ZYJHK passbands (Hewett et al. 2006) and filter curves",
+     "svo_instruments": [
+      "UKIRT/UKIDSS"
+     ]
+    }
    }
   },
   "VATT": {
    "instruments": {
-    "VATT": {}
+    "VATT": {
+     "description": "Vatican Advanced Technology Telescope filters (Vilnius, SDSS)"
+    }
    }
   },
   "Viking": {
    "instruments": {
-    "VIK11": {},
-    "VIK12": {},
-    "VIK21": {},
-    "VIK22": {}
+    "VIK11": {
+     "description": "Viking Lander 1, Camera 1: full-response and photodiode curves",
+     "svo_instruments": [
+      "Viking/VIK11"
+     ]
+    },
+    "VIK12": {
+     "description": "Viking Lander 1, Camera 2: full-response and photodiode curves"
+    },
+    "VIK21": {
+     "description": "Viking Lander 2, Camera 1: full-response and photodiode curves"
+    },
+    "VIK22": {
+     "description": "Viking Lander 2, Camera 2: full-response and photodiode curves"
+    }
    }
   },
   "Voyager": {
    "instruments": {
-    "ISS-NAC": {}
+    "ISS-NAC": {
+     "description": "Voyager ISS Narrow Angle Camera (NAC) Blue and Green responses"
+    }
    }
   },
   "WASP": {
    "instruments": {
-    "SuperWASP": {}
+    "SuperWASP": {
+     "description": "SuperWASP wide-field camera filter (SW)",
+     "svo_instruments": [
+      "WASP/SuperWASP"
+     ]
+    }
    }
   },
   "WHT": {
    "instruments": {
-    "INGRID": {},
-    "LRIS": {},
-    "PAUCam": {},
-    "PFIP": {},
-    "ULTRACAM": {}
+    "INGRID": {
+     "description": "WHT INGRID near-IR camera filters, warm and cold scans",
+     "svo_instruments": [
+      "WHT/INGRID"
+     ]
+    },
+    "LRIS": {
+     "description": "WHT LIRIS near-infrared imager/spectrograph filters"
+    },
+    "PAUCam": {
+     "description": "PAUCam optical camera filters (NB505-NB845, g), WHT prime focus"
+    },
+    "PFIP": {
+     "description": "WHT Prime Focus Imaging Platform (PFIP) Harris and RGO filters"
+    },
+    "ULTRACAM": {
+     "description": "ULTRACAM triple-beam CCD camera SDSS r' and i'+z' on the WHT"
+    }
    }
   },
   "WISE": {
    "instruments": {
-    "WISE": {}
+    "WISE": {
+     "description": "WISE W1-W4 relative system response curves (3.4-22 µm)",
+     "svo_instruments": [
+      "WISE/WISE"
+     ]
+    }
    }
   },
   "WIYN": {
    "instruments": {
-    "Hydra": {},
-    "NESSI": {},
-    "ODI": {},
-    "S2KB": {},
-    "WHIRC": {},
-    "WIYN": {}
+    "Hydra": {
+     "description": "WIYN Hydra multi-fiber positioner filter set"
+    },
+    "NESSI": {
+     "description": "WIYN NESSI speckle imager filters (filter-only and filter+CCD)"
+    },
+    "ODI": {
+     "description": "WIYN One Degree Imager (ODI) u, g, r, i, z and NB422/NB695"
+    },
+    "S2KB": {
+     "description": "WIYN S2KB 2k x 2k CCD imager uStrom filter"
+    },
+    "WHIRC": {
+     "description": "WIYN High-Resolution Infrared Camera (WHIRC) filters"
+    },
+    "WIYN": {
+     "description": "WIYN 3.5m Observatory collection of filters"
+    }
    }
   },
   "WMAP": {
    "instruments": {
-    "WMAP": {}
+    "WMAP": {
+     "description": "WMAP per-detector passbands of the K, Ka, Q, V and W radiometers",
+     "svo_instruments": [
+      "WMAP/WMAP"
+     ]
+    }
    }
   },
   "WSF-M": {
    "instruments": {
-    "MWI-1": {}
+    "MWI-1": {
+     "description": "Microwave Imager (MWI) on WSF-M1, channel SRFs (EUMETSAT NWP SAF)"
+    }
    }
   },
   "WeatherStream": {
    "instruments": {
-    "GEMS2A": {}
+    "GEMS2A": {
+     "description": "Weather Stream GEMS2A mission sensor channel SRFs (NWP SAF)"
+    }
    }
   },
   "WorldView": {
    "instruments": {
-    "SW110": {},
-    "WV110": {},
-    "WV3": {},
-    "WV60": {}
+    "SW110": {
+     "description": "WorldView-4 SpaceView-110 imager: Pan and 4 multispectral bands",
+     "svo_instruments": [
+      "WorldView/SW110"
+     ]
+    },
+    "WV110": {
+     "description": "WorldView-2 WV110 imager: Pan and 8 multispectral bands",
+     "svo_instruments": [
+      "WorldView/WV110"
+     ]
+    },
+    "WV3": {
+     "description": "WorldView-3 imager: Pan, 8 VNIR and 8 SWIR bands"
+    },
+    "WV60": {
+     "description": "WorldView-1 WV60 imager panchromatic band",
+     "svo_instruments": [
+      "WorldView/WV60"
+     ]
+    }
    }
   },
   "XMM": {
    "instruments": {
-    "OM": {}
+    "OM": {
+     "description": "XMM-Newton Optical Monitor filters UVW2-V, effective areas",
+     "svo_instruments": [
+      "XMM/OM"
+     ]
+    }
    }
   },
   "ZiYuan": {
    "instruments": {
-    "MSC3-1": {},
-    "MSC3-2": {}
+    "MSC3-1": {
+     "description": "ZiYuan-3 01 (ZY-3) multispectral camera bands B1-B4",
+     "svo_instruments": [
+      "ZiYuan/MSC3-1"
+     ]
+    },
+    "MSC3-2": {
+     "description": "ZiYuan-3 02 (ZY-3) multispectral camera bands B1-B4",
+     "svo_instruments": [
+      "ZiYuan/MSC3-2"
+     ]
+    }
    }
   }
  },
- "index_generated": "2026-10-28T02:00:18.983447",
+ "index_generated": "2026-10-28T02:36:36.553427",
  "schema": 1,
  "source": "https://nillmill.ddns.net/sed_tools/index.json"
 }

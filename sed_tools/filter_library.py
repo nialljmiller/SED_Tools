@@ -177,13 +177,7 @@ class FilterLibrary:
             # Every curve arrived; only an extra (components, say) failed, and is fetched again when needed.
             logger.warning("NJM provided every curve of %s/%s, but: %s", facility, instrument,
                            "; ".join(result.other_failures))
-        listed = {curve_file(name) for name in result.listed}
-        declared = _declared_bands(directory) if (directory / "manifest.json").is_file() else []
-        unlisted = [band for band in declared if f"{band}.dat" not in listed]
-        if unlisted:
-            logger.warning("NJM's manifest of %s/%s declares bands its index does not list (%s); "
-                           "they are not part of the set and were not downloaded",
-                           facility, instrument, ", ".join(unlisted))
+        _drop_unlisted_bands(directory, {curve_file(name) for name in result.listed})
         return None
 
     def _published_from_builder(self, ref, directory):
@@ -548,6 +542,28 @@ def _declared_bands(directory):
     data = json.loads((Path(directory) / "manifest.json").read_text(encoding="utf-8"))
     archived = data.get("archived_bands") or {}  # NJM writes {band: {...}}; a list of names works too
     return [band for band in InstrumentManifest.from_dict(data).bands if band not in archived]
+
+
+def _drop_unlisted_bands(directory, listed):
+    """Remove from an NJM set's manifest the bands NJM's index does not list and that are not installed.
+
+    Such bands are never downloaded: an archive copy NJM's manifest did not
+    move to ``archived_bands``, or one left by an earlier release's SVO
+    fallback.  Kept, they would make the set look incomplete for ever.
+    """
+    path = Path(directory) / "manifest.json"
+    if not path.is_file():
+        return
+    data = json.loads(path.read_text(encoding="utf-8"))
+    archived = data.get("archived_bands") or {}
+    stale = [band for band in data.get("bands", []) if band not in archived and f"{band}.dat" not in listed
+             and not (Path(directory) / f"{band}.dat").is_file()]
+    if not stale:
+        return
+    data["bands"] = [band for band in data["bands"] if band not in stale]
+    path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    logger.warning("%s declared bands that NJM's index does not list and that are not installed (%s); "
+                   "they are no longer expected", path, ", ".join(stale))
 
 
 def _index_entries(directory):
