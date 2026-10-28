@@ -712,13 +712,17 @@ class NJMSpectraGrabber:
         
         # When cutting by params or wavelength, skip downloading pre-built
         # .bin and .h5 since they contain the full grid and will be rebuilt
-        # from the filtered .txt files anyway
+        # from the filtered .txt files anyway; with parameter cuts the lookup
+        # table too, which lists spectra that are not downloaded
         if has_param_cuts or wl_range:
             skipped_aux = []
             if bin_files:
                 skipped_aux.append(f"{len(bin_files)} .bin")
             if h5_files:
                 skipped_aux.append(f"{len(h5_files)} .h5")
+            if has_param_cuts and csv_files:
+                skipped_aux.append(f"{len(csv_files)} .csv")
+                csv_files = []
             if skipped_aux:
                 print(f"  [njm] Skipping pre-built {', '.join(skipped_aux)} (will rebuild from filtered spectra)")
             bin_files = []

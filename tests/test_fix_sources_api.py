@@ -263,7 +263,7 @@ def downloaded_grid(tmp_path, monkeypatch):
             (grid / name).write_text("4000 1.0\n5000 2.0\n")
             rows.append(f"{name},5000,{logg},{meta}")
     (grid / "lookup_table.csv").write_text("\n".join(rows) + "\n")
-    monkeypatch.setattr(SED, "_download_from", classmethod(lambda cls, src, catalog, model_dir, workers: None))
+    monkeypatch.setattr(SED, "_download_from", classmethod(lambda cls, src, catalog, model_dir, workers, cuts: None))
     return tmp_path
 
 
@@ -277,7 +277,8 @@ def downloaded_grid(tmp_path, monkeypatch):
     ({"metallicity_max": 0}, lambda logg, meta: meta <= 0),
 ])
 def test_fetch_applies_a_bound_of_zero(downloaded_grid, bound, keep):
-    sed = SED.fetch("Tiny", source="njm", clean=False, model_root=downloaded_grid, **bound)
+    # From SVO, which cannot select spectra, the whole grid is downloaded and the bounds applied after.
+    sed = SED.fetch("Tiny", source="svo", clean=False, model_root=downloaded_grid, **bound)
 
     expected = {(logg, meta) for logg in (-0.5, 0.0, 0.5) for meta in (-0.5, 0.0, 0.5) if keep(logg, meta)}
     assert {(s.logg, s.metallicity) for s in sed.grid} == expected

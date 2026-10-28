@@ -975,10 +975,39 @@ Each item says what 0.4.1 did, what 0.5.0 does, and when it happens.
 
 **Spectral grid downloads**
 
-- The README and ``SED.fetch``'s docstring now say that its ``teff_min`` …
-  ``metallicity_max`` cuts are applied after the whole grid is downloaded (as
-  in 0.4.1; unchanged), and that ``sed-tools grids --teff … --logg … --meta
-  …`` downloads only the selected spectra.
+- ``SED.fetch`` with any of ``teff_min`` … ``metallicity_max`` downloads
+  only the spectra within them, as ``sed-tools grids --teff … --logg …
+  --meta …`` does. 0.4.1 downloaded the whole grid (from NJM also NJM's flux
+  cube and HDF5 bundle of the whole grid), left it all in the grid's folder,
+  and returned only the spectra within the bounds; ``bt-cond`` on NJM is
+  6,028 spectra, about 96 GB. The grid returned is the same as before. What
+  is on disk changes: the folder now holds only the selected spectra (byte
+  for byte the copies a whole download makes), with a ``lookup_table.csv``,
+  HDF5 bundle and ``flux_cube.bin`` built from them as ``grids`` builds
+  them, and NJM's whole-grid cube and bundle are not downloaded. So
+  ``SED.local()`` on that folder, and MESA, use the selection.
+- MSG still downloads its grid's single HDF5 file whole and extracts only the
+  selected spectra. SVO cannot select spectra: from SVO the whole grid is
+  downloaded, with a warning saying so, then cut, as in 0.4.1.
+- A folder that already holds every spectrum within the bounds with its flux
+  cube (the whole grid, or a wider selection) is cut as it stands: no
+  spectrum is downloaded and no file in it is rewritten (cleaning used to
+  rewrite its lookup table).
+- A later ``SED.fetch`` into the folder without bounds, or with wider ones,
+  downloads the rest and rebuilds the lookup table, bundle and flux cube from
+  every spectrum there, since a flux cube older than spectra beside it was
+  built without them. 0.4.1's ``SED.fetch`` kept the flux cube and bundle of
+  a selection made with the ``grids`` axis-cut prompt after downloading the
+  rest, because NJM's whole-grid copies are not downloaded over files
+  already there.
+- ``sed-tools grids`` after a selection: with ``--no-h5`` a bundle older than
+  spectra beside it is rebuilt, and with ``--no-cube`` such a flux cube is
+  reported and the command exits 1, naming ``sed-tools rebuild``. Both used
+  to be kept as if they were the whole grid's.
+- Bounds that no spectrum meets return an empty grid, as before, now without
+  downloading the grid. With Teff, log g or [M/H] cuts, NJM's whole-grid
+  ``lookup_table.csv`` is no longer downloaded either (cleaning rebuilt it
+  from the selected spectra anyway).
 - ``SED.fetch`` stopped, or carried on with an empty or stale directory, when
   a source's metadata or download failed or downloaded nothing; it now
   reports that source and tries the next. When every source fails it raises

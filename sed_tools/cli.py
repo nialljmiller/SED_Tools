@@ -425,11 +425,20 @@ def _build_data_products(
     src: str,
     force_bundle_h5: bool,
     build_flux_cube: bool,
-) -> None:
-    """Build HDF5 bundle, lookup table, and flux cube for a downloaded spectral grid."""
+) -> List[str]:
+    """Build HDF5 bundle, lookup table, and flux cube for a downloaded spectral grid.
+
+    A bundle or flux cube older than a spectrum beside it was built without
+    that spectrum (a selection, before the rest was downloaded): the bundle is
+    then rebuilt even without ``force_bundle_h5``, and a cube left as it is
+    because ``build_flux_cube`` is False is returned as a problem.  Returns
+    the problems; empty when the products are complete.
+    """
+    from .api import _build_flux_cube, _flux_cube_file, _older_than_a_spectrum
+
     # HDF5 bundle
     out_h5 = os.path.join(model_dir, f"{name}_bundle.h5" if src == "msg" else f"{name}.h5")
-    if force_bundle_h5 or not os.path.exists(out_h5):
+    if force_bundle_h5 or not os.path.exists(out_h5) or _older_than_a_spectrum(Path(out_h5), Path(model_dir)):
         build_h5_bundle_from_txt(model_dir, out_h5)
         print(f"HDF5 bundle   : {os.path.basename(out_h5)}")
     else:
@@ -441,8 +450,11 @@ def _build_data_products(
 
     # Flux cube
     if not build_flux_cube:
-        return
-    from .api import _build_flux_cube
+        cube = _flux_cube_file(Path(model_dir))
+        if cube is not None and _older_than_a_spectrum(cube, Path(model_dir)):
+            return [f"{cube} was built before some of the spectra beside it, so it does not include them; "
+                    f"it was not rebuilt (--no-cube). Rebuild it with: sed-tools rebuild --grids {name}"]
+        return []
 
     if _build_flux_cube(model_dir).name == "variants_index.csv":
         variants_index = os.path.join(model_dir, "variants_index.csv")
@@ -459,6 +471,7 @@ def _build_data_products(
         print(f"  See {variants_index} for the full inventory.")
     else:
         print("Flux cube     : flux_cube.bin")
+    return []
 
 
 def run_spectra_flow(
@@ -684,11 +697,11 @@ def _download_and_build_grid(name: str, sources: List[str], grabs: Dict, base_di
         print("\n  No spectra remaining after cleaning")
         return ["no spectra remaining after cleaning"]
 
-    _build_data_products(name, model_dir, src, force_bundle_h5, build_flux_cube)
+    problems = _build_data_products(name, model_dir, src, force_bundle_h5, build_flux_cube)
     unusable = _unusable_after_cleaning(summary)
     if unusable:
-        return [f"{len(unusable)} spectra unusable after cleaning: {', '.join(unusable)}"]
-    return []
+        problems.append(f"{len(unusable)} spectra unusable after cleaning: {', '.join(unusable)}")
+    return problems
 
 
 def _print_field(name: str, text) -> None:

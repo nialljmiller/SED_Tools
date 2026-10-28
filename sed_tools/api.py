@@ -67,6 +67,10 @@ Number = Union[int, float, np.floating]
 # Remote spectral grid sources, in the order SED.fetch tries them.
 _SPECTRA_SOURCES = ("njm", "svo", "msg", "mast")
 
+# The sources SED.fetch can ask for only the spectra within its Teff, log g and [M/H] cuts. (MSG
+# downloads its grid's one HDF5 file whole and extracts the spectra within them; SVO serves whole grids.)
+_CUTTING_SOURCES = ("njm", "msg")
+
 # What a remote source raises when it is unreachable or serves something unexpected.
 _SOURCE_ERRORS = (RequestException, OSError, ValueError, RuntimeError)
 
@@ -82,6 +86,39 @@ def _directory_state(directory: Path) -> Dict[str, int]:
     if not directory.is_dir():
         return {}
     return {path.name: path.stat().st_mtime_ns for path in directory.iterdir()}
+
+
+def _parameter_cuts(teff_min, teff_max, logg_min, logg_max, metallicity_min,
+                    metallicity_max) -> Dict[str, Tuple[float, float]]:
+    """The grabbers' ``teff_range``, ``logg_range`` and ``meta_range`` for the bounds given.
+
+    A bound of 0 is a bound; an axis bounded on one side only is open on the other.
+    """
+    cuts = {}
+    for name, low, high in (("teff_range", teff_min, teff_max), ("logg_range", logg_min, logg_max),
+                            ("meta_range", metallicity_min, metallicity_max)):
+        if low is not None or high is not None:
+            cuts[name] = (-math.inf if low is None else float(low), math.inf if high is None else float(high))
+    return cuts
+
+
+def _flux_cube_file(model_dir: Path) -> Optional[Path]:
+    """The grid's flux cube: ``flux_cube.bin``, else ``variants_index.csv`` (one cube per variant), else None."""
+    for name in ("flux_cube.bin", "variants_index.csv"):
+        if (Path(model_dir) / name).is_file():
+            return Path(model_dir) / name
+    return None
+
+
+def _older_than_a_spectrum(path: Path, model_dir: Path) -> bool:
+    """Whether ``path`` was written before one of the spectra in ``model_dir``, so was built without it.
+
+    That is how a grid's lookup table, HDF5 bundle and flux cube, built from a
+    selection of its spectra, are known to be out of date once more spectra
+    are downloaded beside them.
+    """
+    written = Path(path).stat().st_mtime_ns
+    return any(spectrum.stat().st_mtime_ns > written for spectrum in Path(model_dir).glob("*.txt"))
 
 
 def _build_flux_cube(model_dir: Path) -> Path:
@@ -775,11 +812,11 @@ class SED:
             Force a specific source: 'svo', 'msg', 'mast', 'njm'
             If None, tries NJM first (pre-processed), then others
         teff_min, teff_max : float, optional
-            Return only spectra within this Teff range (see Notes)
+            Download and return only spectra within this Teff range (see Notes)
         logg_min, logg_max : float, optional
-            Return only spectra within this logg range (see Notes)
+            Download and return only spectra within this logg range (see Notes)
         metallicity_min, metallicity_max : float, optional
-            Return only spectra within this metallicity range (see Notes)
+            Download and return only spectra within this metallicity range (see Notes)
         workers : int
             Number of parallel download workers
         clean : bool
@@ -793,14 +830,23 @@ class SED:
 
         Notes
         -----
-        The parameter cuts are applied after the whole grid is downloaded:
-        every spectrum is fetched (from NJM also the grid's full flux cube and
-        HDF5 bundle), and only the spectra within the cuts are returned. For a
-        large grid that is a large download (bt-cond on NJM is 6,028 spectra,
-        about 96 GB). ``sed-tools grids --grids NAME --teff LOW HIGH --logg LOW
-        HIGH --meta LOW HIGH`` downloads only the selected spectra (from NJM,
-        MSG or MAST; SVO serves whole grids only).
-            
+        With any Teff, logg or metallicity bound (a bound of 0 is a bound; a
+        single bound leaves the other side open), only the spectra within the
+        bounds are downloaded, as ``sed-tools grids --teff ... --logg ...
+        --meta ...`` does, and the lookup table, HDF5 bundle and flux cube in
+        ``model_root/catalog`` are built from them, so ``SED.local`` and MESA
+        use that selection. NJM's flux cube and HDF5 bundle of the whole grid
+        are not downloaded. MSG downloads its grid's HDF5 file whole and
+        extracts only the selected spectra. SVO cannot select spectra, so from
+        SVO the whole grid is downloaded, with a warning, then cut.
+
+        A folder that already holds every selected spectrum with its flux
+        cube (the whole grid, or a wider selection) is cut as it stands:
+        nothing is downloaded or rewritten. A later fetch without bounds, or
+        with wider ones, downloads the rest; a flux cube older than spectra
+        beside it does not include them, so the lookup table, HDF5 bundle and
+        flux cube are then rebuilt from every spectrum in the folder.
+
         Returns
         -------
         SED
@@ -826,20 +872,30 @@ class SED:
         else:
             raise ValueError(f"Unknown source: {source}")
         model_dir = base_dir / catalog
-        used_source = cls._download_from_first_source(catalog, sources_to_try, failures, model_dir, workers)
+        cuts = _parameter_cuts(teff_min, teff_max, logg_min, logg_max, metallicity_min, metallicity_max)
+        before = _directory_state(model_dir)
+        used_source = cls._download_from_first_source(catalog, sources_to_try, failures, model_dir, workers,
+                                                      cuts)
+        selected = bool(cuts) and used_source in _CUTTING_SOURCES
+        cube = _flux_cube_file(model_dir)
 
-        # Clean/standardize units
-        if clean:
-            from .spectra_cleaner import clean_model_dir
-            summary = clean_model_dir(str(model_dir), try_h5_recovery=True, rebuild_lookup=True,
-                                      flux_unit=flux_unit)
-            print(f"[fetch] Cleaned: {summary['total']} total, {len(summary['converted'])} converted")
-            unusable = _unusable_after_cleaning(summary)
-            if unusable:
-                raise RuntimeError(
-                    f"{len(unusable)} of {summary['total']} spectra of '{catalog}' in {model_dir} are unusable "
-                    f"after cleaning (invalid, index-only or failed; see the [clean] report above): "
-                    + ", ".join(unusable))
+        if (selected and cube is not None and not _older_than_a_spectrum(cube, model_dir)
+                and _directory_state(model_dir) == before):
+            # The whole grid, or a wider selection, installed with its flux cube: cleaning would
+            # rewrite its lookup table, so it is cut as it stands.
+            print(f"[fetch] {model_dir} already holds every spectrum of {catalog} within the bounds, with "
+                  "its flux cube; nothing was downloaded or rewritten")
+        else:
+            if clean:
+                cls._clean_fetched(catalog, model_dir, flux_unit)
+            cube = _flux_cube_file(model_dir)
+            stale = cube is not None and _older_than_a_spectrum(cube, model_dir)
+            if ((selected and cube is None) or stale) and any(model_dir.glob("*.txt")):
+                # As sed-tools grids does: a selection gets a lookup table, HDF5 bundle and flux cube of
+                # its own, and a cube older than spectra beside it (a selection, then the rest) is
+                # rebuilt from every spectrum present.
+                from .cli import _build_data_products
+                _build_data_products(catalog, str(model_dir), used_source, True, True)
 
         # Load spectra into SpectralGrid object
         cat = cls._load_catalog_from_dir(model_dir, catalog, used_source)
@@ -858,7 +914,21 @@ class SED:
             print(f"[fetch] Filtered to {len(cat)} spectra")
         
         return cls(catalog=cat, model_root=base_dir)
-    
+
+    @staticmethod
+    def _clean_fetched(catalog: str, model_dir: Path, flux_unit: Optional[str]) -> None:
+        """Standardize the units of a fetched grid; RuntimeError if cleaning left spectra unusable."""
+        from .spectra_cleaner import clean_model_dir
+        summary = clean_model_dir(str(model_dir), try_h5_recovery=True, rebuild_lookup=True,
+                                  flux_unit=flux_unit)
+        print(f"[fetch] Cleaned: {summary['total']} total, {len(summary['converted'])} converted")
+        unusable = _unusable_after_cleaning(summary)
+        if unusable:
+            raise RuntimeError(
+                f"{len(unusable)} of {summary['total']} spectra of '{catalog}' in {model_dir} are unusable "
+                f"after cleaning (invalid, index-only or failed; see the [clean] report above): "
+                + ", ".join(unusable))
+
     @classmethod
     def _get_sources_for_catalog(cls, catalog: str) -> Tuple[List[str], List[str]]:
         """Sources whose index lists this spectral grid (NJM first), and each discovery failure."""
@@ -882,19 +952,21 @@ class SED:
 
     @classmethod
     def _download_from_first_source(cls, catalog: str, sources: List[str], failures: List[str],
-                                    model_dir: Path, workers: int) -> str:
+                                    model_dir: Path, workers: int,
+                                    cuts: Optional[Dict[str, Tuple[float, float]]] = None) -> str:
         """Download ``catalog`` into ``model_dir`` from the first source that can supply it.
 
         Returns that source.  A source that fails is recorded in ``failures``
         with a warning and the next one is tried, unless the failed attempt
         changed ``model_dir``: the next source's spectra would then be mixed
         with its files, so RuntimeError is raised instead.  ValueError lists
-        every failure when no source succeeds.
+        every failure when no source succeeds.  ``cuts`` are as for
+        :meth:`_download_from`.
         """
         for src in sources:
             print(f"[fetch] Trying {catalog} from {src}...")
             before = _directory_state(model_dir)
-            error = cls._download_from(src, catalog, model_dir, workers)
+            error = cls._download_from(src, catalog, model_dir, workers, cuts)
             if error is None:
                 return src
             failures.append(f"{src}: {error}")
@@ -906,18 +978,31 @@ class SED:
         raise ValueError(f"Spectral grid '{catalog}' could not be fetched. Tried: {'; '.join(failures)}")
 
     @classmethod
-    def _download_from(cls, src: str, catalog: str, model_dir: Path, workers: int) -> Optional[str]:
-        """Download ``catalog`` from one source; returns None on success, else what went wrong."""
+    def _download_from(cls, src: str, catalog: str, model_dir: Path, workers: int,
+                       cuts: Optional[Dict[str, Tuple[float, float]]] = None) -> Optional[str]:
+        """Download ``catalog`` from one source; returns None on success, else what went wrong.
+
+        ``cuts`` (:func:`_parameter_cuts`) select the spectra a source in
+        ``_CUTTING_SOURCES`` downloads; none of them lying within the cuts is a
+        success.  Any other source downloads the whole grid, with a warning.
+        """
         try:
             grabber = cls._get_grabber(src, str(model_dir.parent), workers)
             metadata = grabber.get_model_metadata(catalog)
             if not metadata:
                 return f"no metadata for {catalog}"
+            if cuts and src not in _CUTTING_SOURCES:
+                logger.warning("[fetch] %s cannot select spectra by Teff, logg or metallicity, so the whole of %s "
+                               "is downloaded, then cut", src, catalog)
+                cuts = None
             print(f"[fetch] Downloading {catalog} from {src}...")
-            n_downloaded = grabber.download_model_spectra(catalog, metadata)
+            n_downloaded = grabber.download_model_spectra(catalog, metadata, **(cuts or {}))
         except _SOURCE_ERRORS as exc:
             return str(exc)
         print(f"[fetch] Downloaded {n_downloaded} spectra")
+        if cuts and not n_downloaded:
+            print(f"[fetch] {src} has no spectrum of {catalog} within the bounds")
+            return None
         return None if n_downloaded else "no spectra downloaded"
 
     @classmethod

@@ -423,6 +423,7 @@ def grid_flow(monkeypatch):
             if not cube_built:
                 raise RuntimeError(f"No flux cube was built in {model_dir}")
             built.append(name)
+            return []  # what was not done, as _build_data_products returns
 
         monkeypatch.setattr(cli, "_build_data_products", build)
         return built

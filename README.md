@@ -790,7 +790,7 @@ sed = SED.fetch('Kurucz2003all')
 # Force specific source
 sed = SED.fetch('Kurucz2003all', source='svo')
 
-# Keep only part of the grid (the whole grid is downloaded first; see below)
+# Download only part of the grid
 sed = SED.fetch(
     'Kurucz2003all',
     teff_min=4000,
@@ -802,24 +802,16 @@ sed = SED.fetch(
     workers=8,
 )
 
-# Save to disk (generates all SED_Model/MESA-compatible files)
-sed.grid.write()
+# Write the returned spectra, with a lookup table, flux cube and HDF5 bundle of their own, to another folder
 sed.grid.write('/custom/output/path')
 ```
 
-**The parameter cuts are applied after the whole grid is downloaded.**
-`SED.fetch` downloads every spectrum of the grid, and from NJM also the
-grid's full flux cube and HDF5 bundle. It then returns only the spectra
-within `teff_min` … `metallicity_max`; the other files stay on disk. For a
-large grid that is a large download: `bt-cond` on NJM is 6,028 spectra,
-about 96 GB.
+**With `teff_min` … `metallicity_max`, only the spectra within them are downloaded**, as `sed-tools grids --teff … --logg … --meta …` does. The grid's folder (`Kurucz2003all` under the stellar model directory) then holds those spectra, their `lookup_table.csv`, HDF5 bundle and `flux_cube.bin`, so `SED.local('Kurucz2003all')` and MESA use that selection. NJM's flux cube and bundle of the whole grid are not downloaded. MSG downloads its grid's single HDF5 file whole and extracts only the spectra within the bounds. SVO cannot select spectra, so from SVO the whole grid is downloaded, with a warning, then cut.
 
-To download only the spectra you want, use the command line, which cuts
-before downloading (NJM, MSG and MAST; SVO serves whole grids only):
-
-```bash
-sed-tools grids --source njm --grids bt-cond --teff 4000 8000 --logg 3 5 --meta -1 0.5
-```
+- A folder that already holds every spectrum within the bounds, with its flux cube (the whole grid, or a wider selection), is cut as it stands: nothing is downloaded or rewritten.
+- A later fetch without bounds, or with wider ones, downloads the rest and rebuilds the lookup table, bundle and flux cube from every spectrum in the folder.
+- A whole grid from NJM comes with NJM's flux cube. For a grid from SVO, or a whole grid from MSG, build it with `sed-tools rebuild --grids NAME`.
+- `sed.grid.write()` without a path writes into the grid's own folder, replacing its spectra with copies whose header keeps only Teff, log g, [M/H] and the units; give it another folder.
 
 #### Loading Local Data
 
@@ -1175,16 +1167,15 @@ for star in stars:
 ```python
 from sed_tools.api import SED
 
-# Hot stars from Kurucz (SED.fetch downloads the whole grid, then keeps
-# this Teff range; see "Downloading" for downloading only the range)
+# Hot stars from Kurucz: only the spectra with Teff 7000-50000 K are downloaded,
+# and the Kurucz2003all folder gets their lookup table, HDF5 bundle and flux cube
+# (a grid that comes from SVO is downloaded whole, then cut; see "Downloading")
 hot = SED.fetch('Kurucz2003all', teff_min=7000, teff_max=50000)
-hot.grid.write()
 
 # Cool stars from BT-Settl
 cool = SED.fetch('bt-settl', teff_min=2500, teff_max=7000)
-cool.grid.write()
 
-# Combine into unified grid
+# Combine the two selections into a unified grid
 combined = SED.combine(
     ['Kurucz2003all', 'bt-settl'],
     output='full_temperature_grid'
