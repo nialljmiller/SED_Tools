@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-10-28T04:29:18.467395",
+  "generated": "2026-10-28T04:44:31.042245",
   "base_url": "http://nillmill.ddns.net/sed_tools",
   "statistics": {
     "total_models": 1,
@@ -8928,8 +8928,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 152230,
-            "size_human": "148.66 KB",
+            "size_bytes": 152948,
+            "size_human": "149.36 KB",
             "description": "Gaia DR3 passbands + BP bright/faint (Ma\u00edz Apell\u00e1niz & Weiler 2018)",
             "svo_instruments": [
               "GAIA/GAIA3"
@@ -23687,8 +23687,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 296340,
-            "size_human": "289.39 KB",
+            "size_bytes": 296377,
+            "size_human": "289.43 KB",
             "description": "Roman WFI detector-averaged: 8 filters, grism, prism (+ old curves)",
             "svo_instruments": [
               "Roman/WFI"
