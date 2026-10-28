@@ -1,5 +1,6 @@
 {
   "description": "MOCAM (MOsaic CAMera) was a 4096 by 4096 pixel optical CCD mosaic camera developed by CFHT and the University of Hawaii, mounted at the CFHT prime focus for wide-field imaging.",
+  "short_description": "MOCAM prime-focus CCD mosaic camera filters, CFHT",
   "facility_description": "The Canada-France-Hawaii Telescope (CFHT) is a 3.6-meter optical and infrared telescope operated by NRC (Canada), CNRS/INSU (France), and the University of Hawaii, located on Maunakea in Hawaii.",
   "notes": "MOCAM operated at the CFHT prime focus in the mid-1990s as a precursor to CFH12K and MegaCam, using four Loral 2048x2048 CCDs with Harris/Cousins B, V, R, and I filters.",
   "licence": {

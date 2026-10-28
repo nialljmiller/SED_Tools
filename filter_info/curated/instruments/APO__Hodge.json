@@ -1,5 +1,6 @@
 {
   "description": "The Hodge on/off H-alpha narrow-band filters (6563, 6585, 6607, 6629), listed in the Apache Point Observatory filter inventory as not on site but available on loan from Paul Hodge (University of Washington).",
+  "short_description": "Hodge H-alpha on/off narrow-band filters in the Apache Point list",
   "facility_description": "The ARC 3.5-meter Telescope is an optical/infrared telescope at Apache Point Observatory (APO) in New Mexico, operated by the Astrophysical Research Consortium.",
   "links": [
     {

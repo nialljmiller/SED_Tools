@@ -1,5 +1,6 @@
 {
   "description": "FourStar is the near-infrared imager built for the Magellan Baade telescope, with four HAWAII-2RG detectors covering a 10.9 by 10.9 arcmin field through J, H and Ks plus medium and narrow bands.",
+  "short_description": "FourStar near-IR imager, Magellan Baade: broad, medium, narrow bands",
   "facility_description": "The Magellan Baade telescope is a 6.5 m telescope at Las Campanas Observatory. FourStar is its near-infrared camera.",
   "links": [
     {

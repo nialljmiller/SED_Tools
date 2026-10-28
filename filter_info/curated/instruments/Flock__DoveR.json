@@ -1,5 +1,6 @@
 {
   "description": "PlanetScope Dove-R (satellite_id 11xx): relative spectral responses from Planet's dove_r.csv.",
+  "short_description": "PlanetScope Dove-R (satellite_id 11xx) 4-band spectral responses",
   "facility_description": "Planet Labs satellites (SkySat; PlanetScope Doves).",
   "links": [
     {

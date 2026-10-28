@@ -1,5 +1,6 @@
 {
   "description": "ISPI (Infrared Side Port Imager) was a 1–2.4 micron wide-field infrared imager mounted at the f/8 Cassegrain side port of the Blanco 4-meter telescope at CTIO, equipped with a 2048x2048 Hawaii-2 array and broad/narrow-band near-IR filters.",
+  "short_description": "ISPI near-infrared imager filters, Blanco 4-m telescope at CTIO",
   "facility_description": "The Víctor M. Blanco 4-meter Telescope is located at Cerro Tololo Inter-American Observatory (CTIO) in Chile, operated by NSF NOIRLab.",
   "notes": "ISPI operated on the Blanco 4-meter until replacement by DECam. Transmission curves are published by NOIRLab without an open redistribution license.",
   "licence": {

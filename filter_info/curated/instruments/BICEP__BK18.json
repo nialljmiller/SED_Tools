@@ -1,5 +1,6 @@
 {
   "description": "BICEP/Keck BK18 band-average bandpasses: BICEP3 at 95 GHz and the Keck Array at 95, 150 and 220 GHz, from the collaboration's June 2021 data release (BICEP/Keck XIII), converted from frequency to wavelength.",
+  "short_description": "BICEP/Keck BK18 bandpasses: BICEP3 95 GHz, Keck 95/150/220 GHz",
   "facility_description": "BICEP/Keck is a series of CMB polarization experiments at the South Pole (BICEP1-3, Keck Array, BICEP Array).",
   "links": [
     {

@@ -1,5 +1,6 @@
 {
   "description": "SPT-3G, the third-generation camera of the 10 m South Pole Telescope, observing at 95, 150 and 220 GHz. The curves are the measured band-average bandpasses (Fourier transform spectrometer, 2019) released with the SPT-3G instrument paper, converted from frequency to wavelength.",
+  "short_description": "South Pole Telescope SPT-3G camera bandpasses, 95/150/220 GHz",
   "facility_description": "The South Pole Telescope (SPT) is a 10 m millimetre-wave telescope at the Amundsen-Scott South Pole Station.",
   "links": [
     {

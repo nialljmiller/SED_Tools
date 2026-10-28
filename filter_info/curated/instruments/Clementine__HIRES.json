@@ -1,5 +1,6 @@
 {
   "description": "HIRES was Clementine's high-resolution camera, built together with the mission's lidar ranging system. The NJM curves cover its four narrow-band filters at 415, 560, 650 and 750 nm.",
+  "short_description": "Clementine HIRES high-resolution camera narrow-band filters",
   "facility_description": "The Deep Space Program Science Experiment (DSPSE), better known as Clementine, was a joint mission of the US Ballistic Missile Defense Organization and NASA that tested sensors and spacecraft components in space and systematically mapped the Moon in 1994.",
   "notes": "Researched 2026-10-26. Clementine data are archived in the NASA Planetary Data System; the NASA science data licence page states there are no restrictions on usage. Design: Ledebuhr et al. (1995); radiometric calibration: Robinson et al. (2003). Mission overview: Nozette et al. (1994). Manager review: detector part numbers and optical details not found in the linked pages were removed; DetectorType is unchanged.",
   "licence": {

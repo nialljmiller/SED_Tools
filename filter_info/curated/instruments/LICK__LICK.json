@@ -1,5 +1,6 @@
 {
   "description": "Filters of the Lick Observatory (Mount Hamilton) filter collection: narrow-, medium- and broad-band filters kept at the 3-meter and 1-meter telescopes and available for borrowing (Mount Hamilton Filter List). The curves are the measured transmission tables published by the observatory (techdocs/filters/data/); the broad filters 3300_1150, 3500_800, 3600_600, 4000_650 and 7400hp are labelled 'Measured December 2010 at UCSC' and cover 200-2000 nm. B, V, R, I and Rs come from the observatory's 'Transmission tables for our B, V, R, I, and Rs filters' (phot_filt_curves.html), whose values 'were read off by eye i(not ours) from spectrophotometer tracings' [sic] (owner's caveat: 'We do not guarantee their accuracy.'); the page says the BVRI filters 'were made according to the prescription given by Bessel (PASP 1990, 102, 1181)' and Rs 'is the Spinrad night-sky suppression filter'.",
+  "short_description": "Lick Observatory (Mount Hamilton) filter collection",
   "facility_description": "Lick Observatory on Mount Hamilton, California (University of California Observatories / Lick Observatory, as headed on the filter-list page).",
   "links": [
     {

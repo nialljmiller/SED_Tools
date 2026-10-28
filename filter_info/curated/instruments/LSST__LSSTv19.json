@@ -1,4 +1,5 @@
 {
+  "short_description": "LSST full-throughput curves, Rubin release 1.9 (lsst/throughputs)",
   "licence": {
     "redistribution": "unknown",
     "terms": "",

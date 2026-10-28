@@ -1,5 +1,6 @@
 {
   "description": "Y4KCam (Yale 4K x 4K Camera) was an optical imager mounted on the SMARTS 1.0-meter (formerly Yale 1m) telescope at CTIO, utilizing a 4096x4096 CCD and standard broad-band optical filters.",
+  "short_description": "Y4KCam optical imager filters, SMARTS 1.0-m telescope at CTIO",
   "facility_description": "The SMARTS 1.0-meter telescope is located at Cerro Tololo Inter-American Observatory (CTIO) in Chile, operated by the SMARTS consortium.",
   "notes": "Y4KCam operated on the 1.0m telescope. Curves from OSU/SMARTS lack explicit open redistribution licences.",
   "licence": {

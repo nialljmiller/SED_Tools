@@ -1,5 +1,6 @@
 {
   "description": "IRDIS is the infrared dual-band imager and spectrograph inside SPHERE. This set adds the common-path neutral-density filters and the neutral-density H23 dual-band to the IRDIS filters also filed under Paranal/SPHERE.",
+  "short_description": "SPHERE IRDIS dual-band imager filters, incl. neutral densities",
   "facility_description": "SPHERE, the Spectro-Polarimetric High-contrast Exoplanet REsearch instrument, is mounted on the VLT at Paranal.",
   "links": [
     {

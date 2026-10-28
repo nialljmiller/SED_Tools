@@ -1,5 +1,6 @@
 {
   "description": "The imager of WorldView-3 (Maxar): relative spectral responses of the panchromatic, eight VNIR and eight SWIR bands, from Maxar's January 2023 constellation spectral response values.",
+  "short_description": "WorldView-3 imager: Pan, 8 VNIR and 8 SWIR bands",
   "facility_description": "Commercial very-high-resolution Earth-observation satellite operated by Maxar Technologies (formerly DigitalGlobe / GeoEye / Space Imaging).",
   "links": [
     {

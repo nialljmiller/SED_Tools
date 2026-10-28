@@ -1,5 +1,6 @@
 {
   "description": "DEIMOS is the Deep Extragalactic Imaging Multi-Object Spectrograph on Keck II. It also images through broadband filters that sit in the converging beam between the camera and the CCD window.",
+  "short_description": "Keck II DEIMOS spectrograph broadband imaging filters (B, R, I, Z)",
   "facility_description": "The W. M. Keck Observatory operates the two 10 m Keck telescopes on Maunakea. DEIMOS is on Keck II.",
   "links": [
     {

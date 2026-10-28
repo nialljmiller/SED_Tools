@@ -1,5 +1,6 @@
 {
   "description": "NSFCam is a facility 1-5 micron near-infrared array camera on the NASA Infrared Telescope Facility (IRTF), housing broad-band, MKO-NIR, and narrow-band emission line filters.",
+  "short_description": "IRTF NSFCam 1-5 micron camera: broad, MKO-NIR and narrow-band filters",
   "facility_description": "The NASA Infrared Telescope Facility (IRTF) is a 3.2-meter infrared-optimized telescope located at the summit of Mauna Kea in Hawaii.",
   "links": [
     {

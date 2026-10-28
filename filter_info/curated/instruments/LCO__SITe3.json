@@ -1,4 +1,5 @@
 {
+  "short_description": "Swope SITe3 CCD passbands: u, r, i, B and V",
   "licence": {
     "redistribution": "restricted",
     "terms": "\"Copyright © 2020 Carnegie Science. All rights reserved.\"",

@@ -1,5 +1,6 @@
 {
   "description": "The Medium Resolution Spectral Imager (MERSI) on FY-3B is a 20-channel optical imaging spectrometer covering the visible, near-infrared, and thermal-infrared spectral range. Its bands are designed for global monitoring of ocean color, aerosol optical depth, cloud parameters, and land surface vegetation.",
+  "short_description": "FY-3B Medium Resolution Spectral Imager (MERSI), 19 of 20 channels",
   "facility_description": "FengYun-3B is China’s second-generation polar-orbiting meteorological satellite in afternoon sun-synchronous orbit, launched in November 2010 and operated by the National Satellite Meteorological Center (NSMC) of the China Meteorological Administration (CMA).",
   "notes": "FY-3B MERSI filter response functions originate from the NSMC GSICS portal (http://gsics.nsmc.org.cn/portal/en/fycv/srf.html). Note that NJM catalogs 19 bands (excluding CH05). Portal footer states Copyright © NSMC(NCSW). All Rights Reserved., with redistribution terms governed by CMA policy. DetectorType is left unchanged.",
   "licence": {

@@ -1,5 +1,6 @@
 {
   "description": "NICFPS (Near-Infrared Camera and Fabry-Perot Spectrometer) was a cryogenic astronomical instrument on the ARC 3.5-meter telescope at Apache Point Observatory, utilizing a Rockwell Hawaii-1RG detector for near-infrared imaging (0.85 to 2.5 microns) and Fabry-Perot spectroscopy. Its filter set includes Mauna Kea broad-band filters and specialized narrow-band lines.",
+  "short_description": "NICFPS near-infrared camera filters, ARC 3.5-m at Apache Point",
   "facility_description": "The ARC 3.5-meter Telescope is an optical and infrared telescope at Apache Point Observatory (APO) in the Sacramento Mountains of New Mexico, owned and operated by the Astrophysical Research Consortium.",
   "notes": "NICFPS filters were semi-permanently mounted inside the dewar at 77 K. Specifications and cryogenic traces are hosted by CASA at the University of Colorado Boulder and APO without an open redistribution licence.",
   "licence": {

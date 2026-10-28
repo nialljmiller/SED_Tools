@@ -25,6 +25,7 @@
     }
   ],
   "description": "Sloan Digital Sky Survey u, g, r, i, z passbands. The full-transmission curves (u, g, r, i, z) are for the SDSS imaging camera, which collects photometric imaging data with an array of 30 2048 x 2048 CCDs in six columns of five, the r, i, u, z and g filters each covering one row, operated in drift-scan mode (Gunn et al. 1998). SDSS describes its June 2001 throughput tables as defining the survey's photometric system, including extinction through an airmass of 1.3 at Apache Point Observatory, and notes that Doi et al. (2010) published more recent estimates, finding that the u band in particular has changed over time. The uprime_filter to zprime_filter curves are filter-only transmissions of the primed u'g'r'i'z' filters, which SVO describes as at the USNO 40-in.",
+  "short_description": "SDSS ugriz camera passbands plus primed u'g'r'i'z' filter-only curves",
   "acknowledgements": [
     {
       "for": "Sloan Digital Sky Survey (SDSS-I/II)",

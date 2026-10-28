@@ -1,4 +1,5 @@
 {
+  "short_description": "Mars Odyssey Thermal Emission Imaging System (THEMIS) bands",
   "licence": {
     "redistribution": "attribution",
     "terms": "\"Acknowledgement of the THEMIS site and its resources will help ensure the continuing support necessary for the validation, archiving, and distribution of THEMIS images.\" \"please credit THEMIS images as: NASA/JPL-Caltech/Arizona State University.\"",

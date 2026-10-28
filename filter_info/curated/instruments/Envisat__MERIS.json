@@ -1,5 +1,6 @@
 {
   "description": "The Medium Resolution Imaging Spectrometer (MERIS) measured reflected sunlight in fifteen programmable visible and near-infrared bands. Its principal mission was ocean and coastal water colour measurement.",
+  "short_description": "Envisat Medium Resolution Imaging Spectrometer (MERIS) 15 bands",
   "facility_description": "Envisat was an ESA Earth-observation satellite monitoring land, atmosphere, oceans and ice.",
   "notes": "MERIS Online Dissemination has a restrictive website copyright policy, but its scope relative to instrument response curves is not established. Exact NJM curve source and applicable data licence require confirmation; free data access alone does not establish redistribution rights.",
   "licence": {

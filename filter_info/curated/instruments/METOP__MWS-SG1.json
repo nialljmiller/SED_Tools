@@ -1,5 +1,6 @@
 {
   "description": "Microwave Sounder (MWS) protoflight model, RTTOV Metop-SG satellite id 1. The curves are the channel spectral response functions distributed by the EUMETSAT NWP SAF for the RTTOV radiative-transfer model, converted from frequency to wavelength; bands chNN follow the RTTOV channel order.",
+  "short_description": "Microwave Sounder (MWS) protoflight model, Metop-SG: channel SRFs",
   "facility_description": "Metop-SG satellites (RTTOV platform Metop-SG).",
   "links": [
     {

@@ -1,5 +1,6 @@
 {
   "description": "COSMO11 is an 11 GHz total-power radiometer/polarimeter on the COSMOSOMAS experiment at Teide Observatory, mapping Galactic diffuse emission and CMB foregrounds in two channels.",
+  "short_description": "COSMOSOMAS COSMO11 11 GHz radiometer channels, Teide Observatory",
   "facility_description": "Teide Observatory (Observatorio del Teide) is an astronomical observatory located on Mount Teide in Tenerife, Canary Islands, operated by the Instituto de Astrofísica de Canarias (IAC).",
   "links": [
     {

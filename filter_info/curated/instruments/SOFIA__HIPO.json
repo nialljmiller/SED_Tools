@@ -1,4 +1,5 @@
 {
+  "short_description": "SOFIA High Speed Imaging Photometer for Occultations (HIPO) filters",
   "licence": {
     "redistribution": "attribution",
     "terms": "\"Authors who utilize SOFIA data should provide the following acknowledgement in their publications\"",

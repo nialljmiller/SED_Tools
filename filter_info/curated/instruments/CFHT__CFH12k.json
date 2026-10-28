@@ -1,5 +1,6 @@
 {
   "description": "CFH12K was a 12,288 by 8,192 pixel wide-field CCD mosaic camera deployed at the prime focus of the Canada-France-Hawaii Telescope from 1999 to 2003, utilizing broad-band and narrow-band optical filters.",
+  "short_description": "CFH12K prime-focus CCD mosaic camera filters, CFHT (1999-2003)",
   "facility_description": "The Canada-France-Hawaii Telescope (CFHT) is a 3.6-meter optical and infrared telescope operated by NRC (Canada), CNRS/INSU (France), and the University of Hawaii, located on Maunakea in Hawaii.",
   "notes": "CFH12K was a 12k x 8k mosaic of 12 MIT/Lincoln Labs CCDs at the prime focus of CFHT, operating prior to MegaCam. Filter transmission curves for CFH12K filters are distributed via CFHT filter documentation and SVO.",
   "licence": {

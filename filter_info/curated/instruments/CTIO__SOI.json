@@ -1,5 +1,6 @@
 {
   "description": "The SOAR Optical Imager (SOI) is an optical mini-mosaic imager mounted at the bent Cassegrain focus of the 4.1-meter SOAR telescope, utilizing two 2k x 4k CCDs and a wide complement of broad-band and narrow-band filters.",
+  "short_description": "SOAR Optical Imager (SOI) broad- and narrow-band filters",
   "facility_description": "The Southern Astrophysical Research (SOAR) 4.1-meter Telescope is situated atop Cerro Pachón in Chile, operated by NSF NOIRLab.",
   "notes": "SOI was the first-light optical imager for SOAR. Filter curves are distributed on NOIRLab/SOAR websites without an open licence grant.",
   "licence": {

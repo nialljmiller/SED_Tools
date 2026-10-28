@@ -1,5 +1,6 @@
 {
   "description": "ISOPHOT PHT-P multi-band photometer: relative system responses of the 14 filters of detectors P1 (Si:Ga, 3.3-16 micron), P2 (Si:B, 20 and 25 micron) and P3 (Ge:Ga, 60 and 100 micron), from the ISO Handbook Vol. IV.",
+  "short_description": "ISOPHOT PHT-P multi-band photometer filters, detectors P1-P3 (ISO)",
   "facility_description": "The Infrared Space Observatory (ISO) was an ESA infrared space telescope; ISOPHOT, the Imaging Photo-Polarimeter, was one of its four instruments (ISO Handbook Vol. IV: 'PHT - The Imaging Photo-Polarimeter', Laureijs, Klaas, Richards, Schulz & Abraham, ESA SP-1262, Version 2.0.1, June 2003; ISOPHOT Instrument Consortium, PI D. Lemke, MPI Astronomie, Heidelberg).",
   "links": [
     {

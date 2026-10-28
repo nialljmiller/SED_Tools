@@ -1,5 +1,6 @@
 {
   "description": "The VISSR on GMS-3 (Himawari-3). Curves from the EUMETSAT NWP SAF RTTOV SRF collection, which credits the original JMA files.",
+  "short_description": "VISSR spin scan radiometer on GMS-3 (Himawari-3), Vis and IR",
   "facility_description": "Japan Meteorological Agency (JMA) geostationary meteorological satellites (GMS / MTSAT / Himawari series).",
   "links": [
     {

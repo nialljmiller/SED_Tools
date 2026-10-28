@@ -1,5 +1,6 @@
 {
   "description": "BOOMERANG was a balloon-borne microwave telescope and total-power receiver built to map cosmic microwave background anisotropy from a long-duration balloon.",
+  "short_description": "BOOMERANG long-duration balloon CMB telescope bands, 90-410 GHz",
   "facility_description": "BOOMERANG flew a 10.5 day stratospheric flight from McMurdo Station, Antarctica.",
   "notes": "No requested acknowledgement was found. The only reuse terms opened for the article are the arXiv non-exclusive licence, which does not grant further reuse and says to contact the author. That is not a grant to redistribute a separate numeric curve. No magnitude system was recorded.",
   "licence": {

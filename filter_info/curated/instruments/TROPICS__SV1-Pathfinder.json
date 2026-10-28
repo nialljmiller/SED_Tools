@@ -1,5 +1,6 @@
 {
   "description": "TROPICS SV1 (Pathfinder) radiometer (MIT LL). The curves are the channel spectral response functions distributed by the EUMETSAT NWP SAF for the RTTOV radiative-transfer model, converted from frequency to wavelength; bands chNN follow the RTTOV channel order.",
+  "short_description": "TROPICS SV1 (Pathfinder) radiometer channel SRFs (EUMETSAT NWP SAF)",
   "facility_description": "RTTOV platform TROPICS (EUMETSAT NWP SAF list of supported platforms).",
   "links": [
     {

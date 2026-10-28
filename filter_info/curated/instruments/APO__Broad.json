@@ -1,5 +1,6 @@
 {
   "description": "The APO broad-band filter set contains standard optical imaging filters (Johnson-Cousins B, V, R, I and BG40) available for imaging instruments on the ARC 3.5-meter telescope.",
+  "short_description": "Apache Point broad-band B, V, R, I and BG40 filters (ARC 3.5-m)",
   "facility_description": "The ARC 3.5-meter Telescope is an optical and infrared telescope at Apache Point Observatory (APO) in the Sacramento Mountains of New Mexico, owned and operated by the Astrophysical Research Consortium.",
   "notes": "Broad band filters (bandpass > 30 nm) in the APO pool. Numerical filter curves are hosted on NMSU/APO pages without an open redistribution licence.",
   "licence": {

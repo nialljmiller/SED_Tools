@@ -1,5 +1,6 @@
 {
   "description": "HFI, the Planck High Frequency Instrument, was a bolometer instrument for the temperature and polarisation of the cosmic microwave background and Galactic foregrounds in six wide bands from 100 to 857 GHz.",
+  "short_description": "Planck High Frequency Instrument (HFI) bands, 100 to 857 GHz",
   "facility_description": "Planck is ESA's mission to observe the first light in the Universe, designed to image the temperature and polarisation anisotropies of the cosmic microwave background over the whole sky.",
   "notes": "The acknowledgement is the footnote ESA asks for papers that use Planck data. The licence sentence is the ESA archive terms. Those terms do not name the filter curves. The instrument papers are also on arXiv under the non-exclusive licence, which does not grant further reuse. Commercial use of ESA archive data needs a separate authorisation. No magnitude system was recorded.",
   "licence": {

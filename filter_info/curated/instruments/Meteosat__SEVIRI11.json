@@ -1,5 +1,6 @@
 {
   "description": "The Spinning Enhanced Visible and InfraRed Imager (SEVIRI) on Meteosat-11 (MSG-4), SEVIRI FM4: 12 channels from 0.6 to 13.4 um; the cold IR channels at 85 K and 95 K focal-plane temperature.",
+  "short_description": "Meteosat-11 (MSG-4) SEVIRI channels; cold IR at 85 K and 95 K",
   "facility_description": "EUMETSAT geostationary Meteosat satellites.",
   "links": [
     {

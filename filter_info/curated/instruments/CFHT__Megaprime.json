@@ -1,5 +1,6 @@
 {
   "description": "MegaPrime is the wide-field prime focus upper end assembly and instrument system at CFHT supporting MegaCam, containing broadband filters as well as narrowband and intermediate filters.",
+  "short_description": "CFHT MegaPrime broad-, narrow- and medium-band filters (full, filter)",
   "facility_description": "The Canada-France-Hawaii Telescope (CFHT) is a 3.6-meter optical and infrared telescope operated by NRC (Canada), CNRS/INSU (France), and the University of Hawaii, located on Maunakea in Hawaii.",
   "notes": "MegaPrime designates the prime focus upper end environment accommodating MegaCam, its wide-field corrector optics, and filter juke-box. Filter profiles in this inventory include the Sloan-like broadband sets (including _fil variants) and specialized narrowband filters (e.g. CaHK, Halpha, OIII, TiO, NB920).",
   "licence": {

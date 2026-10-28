@@ -1,5 +1,6 @@
 {
   "description": "INGRID is the 1024x1024 HAWAII near-infrared camera for 0.8-2.5 micron imaging on the William Herschel Telescope (WHT).",
+  "short_description": "WHT INGRID near-IR camera filters, warm and cold scans",
   "facility_description": "The William Herschel Telescope (WHT) is a 4.2-meter optical/near-infrared telescope at Roque de los Muchachos Observatory on La Palma, operated by the Isaac Newton Group of Telescopes (ING).",
   "links": [
     {

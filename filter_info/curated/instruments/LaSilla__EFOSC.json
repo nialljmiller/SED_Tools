@@ -1,5 +1,6 @@
 {
   "description": "EFOSC2 (ESO Faint Object Spectrograph and Camera): filter-only lab transmission of the basic set, by ESO filter number, from the ESO filter database (ESO-MIDAS XFilter).",
+  "short_description": "EFOSC2 (ESO Faint Object Spectrograph and Camera) basic filter set",
   "facility_description": "ESO La Silla Observatory, Chile.",
   "links": [
     {

@@ -1,4 +1,5 @@
 {
+  "short_description": "SkyMapper wide-field survey telescope g, r, i, v passbands",
   "licence": {
     "redistribution": "attribution",
     "terms": "\"Authors are required to include the following acknowledgement paragraph in the paper\" \"The use of all SkyMapper data is governed by the policies outlined on this website.\"",

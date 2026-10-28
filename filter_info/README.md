@@ -59,6 +59,20 @@ Each key is looked up once. `--retry` tries the unresolved ones again.
 
 The curve header row stays authoritative for `DetectorType`. SVO's value is only reported, under `svo`, with a note when it disagrees.
 
+## Picker keys in `index.json`
+
+Each `filters.facilities_detailed[F].instruments[I]` carries two keys for pickers. Old clients ignore them.
+
+- **`description`:** one line under 70 characters saying what the instrument is, e.g. `"Gaia DR2 passbands (Evans et al. 2018)"`.
+  - It is `short_description` in `curated/instruments/<F>__<I>.json`, the source of truth; `info.json` does not use it.
+  - Each line was checked against that instrument's curated text, its SVO records and its bibliography.
+- **`svo_instruments`:** SVO `"Facility/Instrument"` names whose curves are the same product as this NJM instrument, e.g. `["GAIA/GAIA2"]`.
+  - An SVO instrument is listed only when every filter ID in SVO's current list for it is held in this NJM instrument with the same curve.
+  - `[]` means assessed, and no SVO instrument is the same product.
+  - It comes from `svo_instruments.json`, which also holds the evidence for every SVO ID (NJM band, how it was linked, overlap, pivot, capture).
+  - `svo_instruments.json` is written by `python3 -m filter_info.svo_instruments source_evidence/svo-archive/<list batch> filter_info/svo_instruments.json`, run on NJM from the checkout. It reads no network; its docstring gives the rule.
+- **Absent key:** the instrument has not been assessed yet (e.g. added after the last run). `generate_index.py` prints a WARNING naming each one.
+
 ## `info.json` (schema 1)
 
 ```

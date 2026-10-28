@@ -1,5 +1,6 @@
 {
   "description": "The Global Imager (GLI) was a multichannel optical radiometer on ADEOS-II, observing from the near ultraviolet to the thermal infrared. Its channels support studies of the atmosphere, oceans, land and cryosphere.",
+  "short_description": "ADEOS-II Global Imager (GLI) channels, near-UV to thermal infrared",
   "facility_description": "ADEOS-II was a Japanese Earth-observation mission carrying GLI and other environmental sensors.",
   "notes": "NJM facility key ADEOS is preserved, but GLI flew on ADEOS-II. The existing GLI source URL points to the SGLI characterization page and must not be treated as proof of GLI curve provenance. JAXA general site policy inspected; its relationship to the specific archived GLI curves needs confirmation. General site-policy credit example is “Courtesy of JAXA”; commercial use requires prior permission and modifications are limited. No assumption is made that low-resolution standard satellite product terms cover instrument characterization tables.",
   "licence": {

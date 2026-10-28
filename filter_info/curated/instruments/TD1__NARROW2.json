@@ -1,5 +1,6 @@
 {
   "description": "Nine 110 A wide narrow passbands of the TD1 S2/68 spectrophotometer, centred at 1455, 1565, 1675, 1855, 1965, 2075, 2255, 2365 and 2475 A, used by Carnochan (1982) (group (2) of the II/91 ReadMe; its prose says 2465A, its byte table and IWAVE data say 2475).",
+  "short_description": "TD1 S2/68 110 A narrow UV passbands, 1455-2475 A (Carnochan 1982)",
   "facility_description": "TD1 (ESRO TD-1A) carried the S2/68 Ultraviolet Sky Survey Telescope (UVSST), which measured the absolute ultraviolet flux distribution between 2740 A and 1350 A; the first observation period lasted from 19 March 1972 to 31 October 1972 (CDS III/39A ReadMe). The experiment is described by Boksenberg et al. (1973).",
   "links": [
     {

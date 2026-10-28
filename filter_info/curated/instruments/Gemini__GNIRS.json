@@ -1,5 +1,6 @@
 {
   "description": "The Gemini Near-InfraRed Spectrograph (GNIRS) is a versatile 1.0 to 5.4 micron instrument mounted on Gemini North providing long-slit, cross-dispersed, and integral-field spectroscopy as well as acquisition imaging. Its filter wheels hold broad-band near-infrared filters and narrow-band order-sorting and emission-line filters.",
+  "short_description": "Gemini Near-InfraRed Spectrograph (GNIRS) filters",
   "facility_description": "The International Gemini Observatory operates twin 8.1-meter optical and infrared telescopes atop Maunakea in Hawai'i (Gemini North) and Cerro Pachón in Chile (Gemini South), managed by NSF NOIRLab.",
   "notes": "GNIRS filter transmissions include Mauna Kea near-infrared broad-band filters (J_MK, K_MK), broad-band blue/red cut filters, and narrow-band filters (H2, PAH). Laboratory transmission scans are distributed on Gemini instrumentation pages; redistribution terms are not specified under NOIRLab open content policy.",
   "licence": {

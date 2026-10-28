@@ -1,5 +1,6 @@
 {
   "description": "The Chinese Small Telescope ARray (CSTAR) is a four-telescope optical array at Dome A in Antarctica, conducting wide-field high-cadence time-domain photometry in SDSS-like g, r, and i bands.",
+  "short_description": "CSTAR telescope array at Dome A, Antarctica: g, r, i passbands",
   "facility_description": "CSTAR was installed at Dome A (Dome Argus, Kunlun Station) on the Antarctic plateau by the Chinese Center for Antarctic Astronomy.",
   "links": [
     {

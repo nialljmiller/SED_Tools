@@ -1,5 +1,6 @@
 {
   "description": "The Advanced Microwave Sounding Unit-A (AMSU-A) on NOAA-15, a 15-channel microwave temperature sounder (23.8-89 GHz). The curves are NOAA's CRTM boxcar channel models (not measured SRFs), converted from frequency to wavelength.",
+  "short_description": "NOAA-15 AMSU-A microwave sounder, 15 channels (CRTM boxcar models)",
   "facility_description": "NOAA polar-orbiting satellites (CRTM sensor ids amsua_n15 ... n19, amsub_n15 ... n17).",
   "links": [
     {

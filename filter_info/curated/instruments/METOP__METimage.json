@@ -1,5 +1,6 @@
 {
   "description": "METimage, the Visible/Infrared Imager (VII) on Metop-SG A1: 20 channels from 0.443 to 13.345 um. Curves from the EUMETSAT NWP SAF RTTOV SRF collection, which credits the original EUMETSAT files.",
+  "short_description": "METimage Visible/Infrared Imager on Metop-SG A1: 20 channels",
   "facility_description": "EUMETSAT Metop polar-orbiting meteorological satellites.",
   "links": [
     {

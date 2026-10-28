@@ -1,5 +1,6 @@
 {
   "description": "IR1 is Akatsuki’s 1-μm camera, using separate 0.90-μm dayside and nightside filters and 0.97- and 1.01-μm filters to study Venusian clouds, near-surface water vapour and surface thermal emission.",
+  "short_description": "Akatsuki IR1 1-μm Venus camera filters (0.90 day/night, 0.97, 1.01)",
   "facility_description": "Akatsuki, also called the Venus Climate Orbiter or PLANET-C, is JAXA’s Venus mission for studying the planet’s atmosphere using cameras at several wavelengths and radio occultation.",
   "notes": "Descriptions are paraphrased from live ISAS/JAXA instrument pages and the cited papers. DARTS About explicitly directs data users to ISAS Data Policy. Section 6 permits commercial and non-commercial reuse, requires ISAS/JAXA origin credit, asks users to identify and describe modifications, and preserves third-party restrictions. The DARTS acknowledgement is conditional on significant use of its service; general DARTS archive papers are not mandatory instrument citations. Filter files are PLANET-C calibration documents mirrored by NASA PDS. No instrument-specific extra redistribution restriction was found in the inspected inventories, labels or owner pages. No magnitude system is asserted. A24 cached sources were read only; owner and publisher pages were fetched live on 2026-10-26.",
   "licence": {

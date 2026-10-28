@@ -1,5 +1,6 @@
 {
   "description": "The Dark Energy Camera (DECam) medium-band filter set (M411, M438, M464, M490, M517) on the Blanco 4m telescope, designed for intermediate-band mapping of Lyman-alpha emitters and Lyman break galaxies.",
+  "short_description": "Dark Energy Camera (DECam) medium bands M411-M517, Blanco 4m",
   "facility_description": "The Víctor M. Blanco 4-meter Telescope is an optical reflecting telescope at Cerro Tololo Inter-American Observatory (CTIO) in Chile, operated by NSF NOIRLab.",
   "links": [
     {

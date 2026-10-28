@@ -1,5 +1,6 @@
 {
   "description": "ARCTIC (Astrophysical Research Consortium Telescope Imaging Camera) is a visible-wavelength optical imager mounted on the ARC 3.5-meter telescope at Apache Point Observatory. It features a 4096 x 4096 pixel backside-illuminated CCD offering high quantum efficiency and wide-field imaging with interchangeable broad and narrow band filters.",
+  "short_description": "ARCTIC CCD imager filters, ARC 3.5-m telescope at Apache Point",
   "facility_description": "The ARC 3.5-meter Telescope is an optical and infrared telescope at Apache Point Observatory (APO) in the Sacramento Mountains of New Mexico, owned and operated by the Astrophysical Research Consortium.",
   "notes": "ARCTIC is the facility optical imager for the ARC 3.5m telescope at APO. Filter curves are hosted on the NMSU-managed APO filter service, which falls under NMSU copyright policy requiring permission for reproduction.",
   "licence": {

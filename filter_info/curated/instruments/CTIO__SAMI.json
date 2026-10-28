@@ -1,5 +1,6 @@
 {
   "description": "SAMI (SOAR Adaptive Module Imager) is the optical imaging camera fed by the SAM laser-guide-star adaptive optics system on the 4.1-meter SOAR Telescope, providing diffraction-limited imaging in broad and narrow optical bands.",
+  "short_description": "SOAR Adaptive Module Imager (SAMI) optical filters, SOAR 4.1-m",
   "facility_description": "The Southern Astrophysical Research (SOAR) 4.1-meter Telescope is situated on Cerro Pachón, Chile, operated by NSF NOIRLab.",
   "notes": "SAMI uses optical filters in the SAM corrected beam. NOIRLab distributes the curves without an open redistribution grant.",
   "licence": {

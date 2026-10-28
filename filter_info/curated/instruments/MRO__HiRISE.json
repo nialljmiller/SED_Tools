@@ -1,4 +1,5 @@
 {
+  "short_description": "MRO HiRISE (High Resolution Imaging Experiment) Red band",
   "licence": {
     "redistribution": "public",
     "terms": "\"All of the images produced by HiRISE and accessible on this site are within the public domain: there are no restrictions on their usage by anyone in the public, including news or science organizations.\"",

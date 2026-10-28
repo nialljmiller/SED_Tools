@@ -1,4 +1,5 @@
 {
+  "short_description": "Swope RetroCam near-IR imager (CSP), curves up to and since 2011",
   "licence": {
     "redistribution": "restricted",
     "terms": "\"Copyright © 2020 Carnegie Science. All rights reserved.\"",

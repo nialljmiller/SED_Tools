@@ -1,5 +1,6 @@
 {
   "description": "IRAS surveyed the sky in four broad infrared bands at 12, 25, 60 and 100 µm. The curves are the relative system responses tabulated in the IRAS Explanatory Supplement (Table II.C.5).",
+  "short_description": "IRAS survey bands at 12, 25, 60 and 100 µm (Explanatory Supplement)",
   "facility_description": "The Infrared Astronomical Satellite was a joint US, UK and Netherlands project; its data and Explanatory Supplement are served by IRSA.",
   "notes": "IRSA says there is no standard IRAS acknowledgement; the sentence above is the optional text IRSA suggests. Neugebauer et al. (1984) is given by DOI because the bibcode 1984ApJ...278L...1N failed check_refs. Table II.C.5 lists filter transmission, relative detector response and relative system response per band; NJM's existing url reference points to this table. The Explanatory Supplement bibcode (1988iras....1.....B) failed check_refs, so no bands.* reference was added. DetectorType left unchanged.",
   "licence": {

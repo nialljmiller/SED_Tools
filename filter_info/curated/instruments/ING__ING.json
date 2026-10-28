@@ -1,5 +1,6 @@
 {
   "description": "Isaac Newton Group of Telescopes (La Palma) filter database: throughput scans of ING-owned broad- and narrow-band filters used at the INT, WHT and JKT, by ING serial number.",
+  "short_description": "Isaac Newton Group (La Palma) filter database, by serial number",
   "facility_description": "Isaac Newton Group of Telescopes (INT, WHT, JKT), Roque de los Muchachos, La Palma.",
   "links": [
     {

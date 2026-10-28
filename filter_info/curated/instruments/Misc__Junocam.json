@@ -1,4 +1,5 @@
 {
+  "short_description": "JunoCam wide-angle camera filters on Juno at Jupiter",
   "licence": {
     "redistribution": "public",
     "terms": "\"Unless the data file is marked with a restrictive notice or license, data that is provided from a NASA-led mission including observations, engineering, calibration, and auxiliary data are licensed as Creative Commons Zero\" \"There are no restrictions on the usage of these data.\"",

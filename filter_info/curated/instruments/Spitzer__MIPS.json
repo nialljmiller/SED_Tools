@@ -1,5 +1,6 @@
 {
   "description": "MIPS is Spitzer's far-infrared imaging photometer, with imaging bands at 24, 70 and 160 µm. The curves are the MIPS imaging bandpass responses published by the Spitzer Science Center.",
+  "short_description": "Spitzer MIPS far-infrared imaging bands at 24, 70 and 160 µm",
   "facility_description": "The Spitzer Space Telescope was NASA's infrared space observatory, operated by JPL/Caltech, with science data archived at IRSA.",
   "notes": "Spitzer ack: the SSC page gives this text for users of Spitzer data without Spitzer funding; funded work uses Templates 1a-4b on the same page. The page also asks authors to cite the fundamental papers describing the Observatory and instruments (listed at the publications page). The source file MIPSfiltsumm.txt is headed 'MIPS imaging filter bandpasses 21 March 2000' (pre-launch) and labels its columns '24 microns', '70 microns NB' and '160 microns'; the NB label on the 70 µm column was not explained on the page and should be checked against NJM's 70 curve. The page does not say whether the response is per photon or per energy. MIPS calibration papers (Engelbracht et al. 2007, Gordon et al. 2007, Stansberry et al. 2007) resolve in check_refs but were not cited on a page opened here, so they are not included.",
   "licence": {

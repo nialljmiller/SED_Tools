@@ -1,5 +1,6 @@
 {
   "description": "The Earth Polychromatic Imaging Camera (EPIC) is a ten-channel spectroradiometer imaging the sunlit Earth from ultraviolet through near-infrared wavelengths. Its narrow bands support ozone, aerosol, cloud and vegetation measurements.",
+  "short_description": "DSCOVR Earth Polychromatic Imaging Camera (EPIC) ten UV-NIR bands",
   "facility_description": "DSCOVR operates near the Sun–Earth L1 point, giving EPIC a view of the sunlit face of Earth.",
   "notes": "The NASA page displays mean filter transmission functions in Figure 9 and describes a backside-thinned CCD. DetectorType is unchanged. Exact provenance and licence of NJM numeric curves still require confirmation; a generic media policy alone is insufficient.",
   "licence": {

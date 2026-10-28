@@ -1,4 +1,5 @@
 {
+  "short_description": "Tromsoe CCD Photometer (TCP) I filter, IAC80 telescope",
   "licence": {
     "redistribution": "permission",
     "terms": "\"it is expressly forbidden to reproduce, distribute, or publicly communicate, in whatever form, the totality or part of the contents of this website for commercial purposes\" \"without the express permission of the IAC.\"",

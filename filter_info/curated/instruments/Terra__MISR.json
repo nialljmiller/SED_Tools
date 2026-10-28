@@ -1,5 +1,6 @@
 {
   "description": "MISR on Terra: relative spectral responses of the four bands (443, 557, 671, 865 nm) from NASA OBPG's NetCDF table terra_misr_RSR.nc.",
+  "short_description": "Terra Multi-angle Imaging SpectroRadiometer (MISR) 443-865 nm bands",
   "facility_description": "Terra (NASA).",
   "links": [
     {

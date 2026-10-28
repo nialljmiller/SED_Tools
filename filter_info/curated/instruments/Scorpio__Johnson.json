@@ -1,4 +1,5 @@
 {
+  "short_description": "SCORPIO camera Johnson V filter",
   "licence": {
     "redistribution": "attribution",
     "terms": "\"When publishing research results obtained from telescopes, a reference in the publication to the telescope and scientific equipment is a prerequisite.\" \"It is also necessary to insert information on support for the operation of telescopes, which is given below.\"",

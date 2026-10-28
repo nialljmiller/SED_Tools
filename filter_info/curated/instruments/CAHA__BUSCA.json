@@ -1,5 +1,6 @@
 {
   "description": "BUSCA uses dichroic beam splitters and four CCDs for simultaneous imaging in four optical channels. Its filter complement includes Strömgren, H-beta and broad-band filters.",
+  "short_description": "BUSCA four-channel simultaneous CCD camera filters, Calar Alto 2.2 m",
   "facility_description": "Calar Alto Observatory is located in the Sierra de Filabres in Almería, Spain, and is jointly operated by IAA-CSIC and the Andalusian Government.",
   "notes": "The technical page gives filter transmission without CCD quantum efficiency. No detector-type change proposed. Research accessed 2026-10-26. General CAHA observing acknowledgement is conditional on observational data and a proposal identifier; no observing proposal or SVO use is invented for these filter curves. CAHA legal notice requires prior written permission for distribution of website contents. The data management plan instead describes open reuse with attribution for publicly released observational data; its application to technical filter files is unconfirmed. Permission is the conservative class pending an explicit exception.",
   "licence": {

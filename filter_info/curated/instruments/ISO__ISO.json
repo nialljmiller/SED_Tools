@@ -1,5 +1,6 @@
 {
   "description": "ISOCAM, the ISO camera: spectral transmission R = T x Q (filter transmission x detector quantum efficiency) of the 11 short-wave (SW1-SW11) and 10 long-wave (LW1-LW10) broad-band filters, from the ISO Handbook Vol. II (CAM), Appendix A, Figures A.1 and A.2.",
+  "short_description": "ISOCAM (ISO camera) SW1-SW11 and LW1-LW10 broad-band filters",
   "facility_description": "The Infrared Space Observatory (ISO) was an ESA infrared space telescope; ISOCAM was its camera (ISO Handbook Vol. II: 'CAM - The ISO Camera', Blommaert, Siebenmorgen, Coulais et al., ESA SP-1262, SAI-99-057/Dc Version 2.0, June 2003).",
   "links": [
     {

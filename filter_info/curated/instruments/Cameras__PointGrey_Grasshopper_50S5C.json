@@ -1,5 +1,6 @@
 {
   "description": "PointGrey Grasshopper 50S5C digital camera: normalized R, G and B channel spectral sensitivities (400-720 nm, 10 nm steps) from the RIT Camera Spectral Sensitivity Database (Jiang et al. 2013).",
+  "short_description": "PointGrey Grasshopper 50S5C RGB sensitivities (Jiang et al. 2013)",
   "facility_description": "Digital cameras (DSLRs, mirrorless, compact, industrial, cinema and phone cameras) whose RGB channel spectral sensitivities or internal IR/UV-cut filter transmissions have been measured.",
   "notes": "RGB curves checked this session: NJM values are identical (max abs diff 0) to the 'Point Grey Grasshopper 50S5C' entry of http://www.gujinwei.org/research/camspec/camspec_database.txt.",
   "licence": {

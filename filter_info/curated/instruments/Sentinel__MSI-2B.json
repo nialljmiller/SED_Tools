@@ -1,5 +1,6 @@
 {
   "description": "The MultiSpectral Instrument (MSI) on Sentinel-2B, a 13-band imager from 443 to 2190 nm (bands B01-B12 and B8A). The curves are ESA's band-averaged spectral responses for Sentinel-2B from the Sentinel-2 Spectral Response Functions workbook (COPE-GSEG-EOPG-TN-15-0007, v5.0), measured on the ground during the MSI assembly, integration and test campaign; each is the whole-instrument band response, peak 1.",
+  "short_description": "Sentinel-2B MultiSpectral Instrument (MSI) bands B01-B12, B8A",
   "facility_description": "Sentinel-2 is ESA's optical high-resolution Earth-observation mission for the Copernicus (formerly GMES) programme; Sentinel-2A, -2B and -2C each carry an MSI.",
   "links": [
     {

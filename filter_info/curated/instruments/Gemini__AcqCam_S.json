@@ -1,5 +1,6 @@
 {
   "description": "The Acquisition Camera (AcqCam) on Gemini South is an optical CCD imager located within the Acquisition and Guidance unit, used for field acquisition, target selection, and direct optical imaging. Its filter wheel contains broad-band visible filters approximating the Johnson-Kron-Cousins UBVRI system.",
+  "short_description": "Gemini South Acquisition Camera (AcqCam) UBVRI filters",
   "facility_description": "The International Gemini Observatory operates twin 8.1-meter optical and infrared telescopes atop Maunakea in Hawai'i (Gemini North) and Cerro Pachón in Chile (Gemini South), managed by NSF NOIRLab.",
   "notes": "AcqCam on Gemini South has been retired from science use. Filter transmission curves are documented on the legacy Gemini instrument pages; redistribution rights for raw filter measurement data are not specified under NOIRLab open content policy.",
   "licence": {

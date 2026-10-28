@@ -1,5 +1,6 @@
 {
   "description": "The imager of IKONOS (Optical Sensor Assembly, Maxar): relative spectral responses of the panchromatic and four multispectral bands, from Maxar's January 2023 constellation spectral response values.",
+  "short_description": "IKONOS Optical Sensor Assembly: Pan and four multispectral RSRs",
   "facility_description": "Commercial very-high-resolution Earth-observation satellite operated by Maxar Technologies (formerly DigitalGlobe / GeoEye / Space Imaging).",
   "links": [
     {

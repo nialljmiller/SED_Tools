@@ -1,5 +1,6 @@
 {
   "description": "The VISSR Atmospheric Sounder (VAS) on GOES-4: 12 infrared sounding channels (3.9-14.7 um).",
+  "short_description": "VISSR Atmospheric Sounder (VAS) on GOES-4, 12 infrared channels",
   "facility_description": "NOAA Geostationary Operational Environmental Satellites (GOES).",
   "links": [
     {

@@ -1,5 +1,6 @@
 {
   "description": "SOFI (Son OF ISAAC) near-IR imager on the NTT: filter transmission curves of its broad- and narrow-band filters.",
+  "short_description": "SOFI (Son OF ISAAC) near-IR imager on the NTT: broad and narrow bands",
   "facility_description": "ESO La Silla Observatory, Chile.",
   "links": [
     {

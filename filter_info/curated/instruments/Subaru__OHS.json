@@ -1,4 +1,5 @@
 {
+  "short_description": "Subaru OHS near-IR filters (OH-background removal, CISCO camera)",
   "licence": {
     "redistribution": "attribution",
     "terms": "\"can be used without prior permission within the following scope:\" \"Academic research, education, and learning activities\" \"We only ask you to give appropriate credit whenever you use these works.\"",

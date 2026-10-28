@@ -1,5 +1,6 @@
 {
   "description": "The WIYN One Degree Imager filter page posts filter-only throughput for the u' and r' filters and for the narrow-band filters NB695 and NB422. The u' and r' curves are shown next to SDSS system throughput for comparison.",
+  "short_description": "WIYN One Degree Imager (ODI) u, g, r, i, z and NB422/NB695",
   "facility_description": "ODI is mounted at the f/6.3 Nasmyth port of the WIYN 3.5 m telescope, a joint facility at Kitt Peak National Observatory.",
   "notes": "The NOIRLab ODI page lists u', g', r', i', z', NB422, NB695, NB746, and H-alpha. Only u, r, NB422, and NB695 are NJM keys. The WIYN credit page requests an acknowledgement for publications that include data from WIYN telescopes; it does not mention filter curves, so no acknowledgement is stored. The NOIRLab copyright page puts press text and images under CC BY 4.0 and says other text on that site is not released under that licence and cannot be used for non-NOIRLab products. The numerical ODI files are hosted on wiyn.org, which was not given its own redistribution terms, so the class is unknown. No magnitude system is stated. The NB422 header quote was read from the start of NB_422.txt.",
   "licence": {

@@ -1,4 +1,5 @@
 {
+  "short_description": "DESI spectrograph NIR throughput, Kitt Peak",
   "licence": {
     "redistribution": "attribution",
     "terms": "\"The Dark Energy Spectroscopic Instrument (DESI) data are licensed under the Creative Commons Attribution 4.0 International License\" \"Users are free to share, copy, redistribute, adapt, transform, and build upon the DESI data available through this website for any purpose, including commercially\"",

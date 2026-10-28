@@ -1,5 +1,6 @@
 {
   "description": "The Advanced Technology Microwave Sounder (ATMS) on Suomi NPP, a 22-channel cross-track microwave sounder (23.8-183.3 GHz). The curves are the 196 measured channel spectral response functions of the public-release dataset for each tested receiver temperature, LO bias and LO unit, converted from frequency to wavelength.",
+  "short_description": "ATMS microwave sounder on Suomi NPP: SRFs per tested configuration",
   "facility_description": "The Joint Polar Satellite System (JPSS) is NOAA's polar-orbiting series (Suomi NPP, NOAA-20, NOAA-21, ...).",
   "links": [
     {

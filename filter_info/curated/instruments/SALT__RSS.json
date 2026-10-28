@@ -1,4 +1,5 @@
 {
+  "short_description": "SALT Robert Stobie Spectrograph (RSS) Fabry-Perot filters",
   "licence": {
     "redistribution": "attribution",
     "terms": "\"All science papers that include SALT data which are submitted for publication in refereed science journals must include the following words of acknowledgment\" \"based on observations made with the Southern African Large Telescope (SALT)\"",

@@ -1,4 +1,5 @@
 {
+  "short_description": "MIRAC3 Mid-InfraRed Array Camera filters at 5 K, 25 K or ambient",
   "licence": {
     "redistribution": "unknown",
     "terms": "",

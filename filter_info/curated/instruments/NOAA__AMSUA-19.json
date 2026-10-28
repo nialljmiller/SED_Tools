@@ -1,5 +1,6 @@
 {
   "description": "The Advanced Microwave Sounding Unit-A (AMSU-A) on NOAA-19, a 15-channel microwave temperature sounder (23.8-89 GHz). The curves are the measured channel SRFs (both sidebands) in NOAA's CRTM oSRF format, converted from frequency to wavelength.",
+  "short_description": "NOAA-19 AMSU-A microwave sounder, 15 channels (measured SRFs)",
   "facility_description": "NOAA-19 is the last of NOAA's POES series of polar-orbiting weather satellites.",
   "links": [
     {

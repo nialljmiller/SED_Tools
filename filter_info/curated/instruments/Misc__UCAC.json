@@ -1,4 +1,5 @@
 {
+  "short_description": "UCAC4 filters, defined as Johnson B and SDSS g, r",
   "licence": {
     "redistribution": "unknown",
     "terms": "",

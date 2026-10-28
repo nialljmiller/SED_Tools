@@ -1,5 +1,6 @@
 {
   "description": "FORS1 was the first FOcal Reducer and low-dispersion Spectrograph on the VLT. These bands are the original Bessell and Gunn broad-band set, as ESO optical-bench transmission scans.",
+  "short_description": "VLT FORS1 original Bessell and Gunn broad-band filters, ESO scans",
   "facility_description": "The ESO Very Large Telescope stands at the Paranal Observatory in Chile.",
   "links": [
     {

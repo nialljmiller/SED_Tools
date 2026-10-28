@@ -1,5 +1,6 @@
 {
   "description": "The Visible and Infra-Red Radiometer (VIRR) on FY-3B is a 10-channel scanning radiometer spanning from the visible (0.44 µm) to the thermal infrared (12.0 µm). It provides daily global observations for cloud monitoring, snow and ice mapping, sea surface temperature, and vegetation dynamics.",
+  "short_description": "FY-3B Visible and Infra-Red Radiometer (VIRR), 10 channels",
   "facility_description": "FengYun-3B is the afternoon polar-orbiting satellite in China’s second-generation meteorological series, launched in November 2010 and operated by the National Satellite Meteorological Center (NSMC) of the China Meteorological Administration (CMA).",
   "notes": "FY-3B VIRR filter curves are published on the NSMC GSICS portal (http://gsics.nsmc.org.cn/portal/en/fycv/srf.html). VIRR serves as the direct operational successor to the FY-1 MVISR instrument. NSMC site policy reserves Copyright © NSMC(NCSW). All Rights Reserved., with redistribution subject to CMA approval. DetectorType is left unchanged.",
   "licence": {

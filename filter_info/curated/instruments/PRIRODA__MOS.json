@@ -1,5 +1,6 @@
 {
   "description": "MOS: detector-averaged relative spectral responses of the 13 bands 408-1010 nm from NASA OBPG's table MOS_RSRs.txt ('derived from data supplied by DLR').",
+  "short_description": "Modular Optoelectronic Scanner (MOS), PRIRODA/MIR, 408-1010 nm",
   "facility_description": "PRIRODA (MIR), SVO's facility for MOS (SVO record 'PRIRODA (MIR) MOS band408 RSR'); the OBPG file does not name the platform.",
   "links": [
     {

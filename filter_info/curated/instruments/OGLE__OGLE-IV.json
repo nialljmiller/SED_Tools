@@ -1,5 +1,6 @@
 {
   "description": "OGLE-IV uses a 32-chip mosaic camera with I- and V-band interference filters made by Asahi Spectra.",
+  "short_description": "OGLE-IV mosaic camera I and V interference filters (Asahi Spectra)",
   "notes": "Owner page opened in this session. No numerical-filter redistribution licence or requested acknowledgement established. No per-band fields or paper references inferred. Public download access is not redistribution permission. Camera page explicitly identifies Asahi commercial filters and links I- and V-filter transmissions. Manufacturer redistribution permission remains unresolved.",
   "licence": {
     "redistribution": "unknown",

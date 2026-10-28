@@ -1,5 +1,6 @@
 {
   "description": "HAWK-I is the VLT High-Acuity Wide-field K-band Imager. Kissler-Patig et al. 2008 describe it as a 0.9–2.4 μm camera with four 2k×2k arrays over a 7.5×7.5 arcmin field. These bands are ESO's filter-transmission scans.",
+  "short_description": "VLT HAWK-I High-Acuity Wide-field K-band Imager filters",
   "facility_description": "The ESO Very Large Telescope stands at the Paranal Observatory in Chile.",
   "links": [
     {

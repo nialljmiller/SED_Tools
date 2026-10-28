@@ -1,5 +1,6 @@
 {
   "description": "The CTIO filter collection comprises the observatory pool of optical narrow-band and broad-band interference filters made available for instrumentation across CTIO telescopes.",
+  "short_description": "CTIO observatory pool of optical narrow- and broad-band filters",
   "facility_description": "Cerro Tololo Inter-American Observatory (CTIO) is an astronomical observatory located on Cerro Tololo in Chile, operated by NSF NOIRLab.",
   "notes": "CTIO filter pool numerical curves are hosted on NOIRLab CTIO science pages without an explicit open redistribution grant.",
   "licence": {

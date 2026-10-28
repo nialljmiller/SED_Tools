@@ -1,5 +1,6 @@
 {
   "description": "The Advanced Technology Microwave Sounder (ATMS) for QuickSounder (ATMS serial number 301), a 22-channel cross-track microwave sounder. The curves are the pre-launch channel spectral response functions of the NASA/GSFC public release for the primary (PRI) and redundant (RED) local oscillators, converted from frequency to wavelength.",
+  "short_description": "Advanced Technology Microwave Sounder (ATMS) on QuickSounder",
   "facility_description": "QuickSounder, a NEON-1 series space mission carrying an ATMS (NASA/GSFC release announcement in the SRF zip).",
   "links": [
     {

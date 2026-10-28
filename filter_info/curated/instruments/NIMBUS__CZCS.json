@@ -1,5 +1,6 @@
 {
   "description": "The Coastal Zone Color Scanner (CZCS) on Nimbus-7, an ocean-colour scanner. The curves are the relative spectral responses of its four ocean-colour bands (443, 520, 550, 670 nm) as distributed by NASA's Ocean Biology DAAC.",
+  "short_description": "Nimbus-7 Coastal Zone Color Scanner (CZCS) ocean-colour bands",
   "facility_description": "Nimbus-7, a NASA satellite that carried the Coastal Zone Color Scanner (CZCS).",
   "links": [
     {

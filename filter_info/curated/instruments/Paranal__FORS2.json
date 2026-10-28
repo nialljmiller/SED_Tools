@@ -1,5 +1,6 @@
 {
   "description": "FORS2 is the FOcal Reducer and low-dispersion Spectrograph still offered on the VLT. These bands are its broad-band filters: Bessell I, the special R, and the high-throughput u, b, v and g set.",
+  "short_description": "VLT FORS2 Bessell I, R_SPECIAL and high-throughput u/b/v/g filters",
   "facility_description": "The ESO Very Large Telescope stands at the Paranal Observatory in Chile.",
   "links": [
     {

@@ -1,4 +1,5 @@
 {
+  "short_description": "Stardust Navigation Camera (NAVCAM) NIR and OpNav filters",
   "licence": {
     "redistribution": "public",
     "terms": "\"There are no restrictions on the usage of these data.\"",

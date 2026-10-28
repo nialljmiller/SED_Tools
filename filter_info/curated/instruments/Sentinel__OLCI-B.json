@@ -1,5 +1,6 @@
 {
   "description": "The Ocean and Land Colour Instrument (OLCI) on Sentinel-3B, a 21-band (Oa01-Oa21, 0.4-1.02 um) pushbroom imaging spectrometer. The curves are ESA's mean relative spectral response function per band.",
+  "short_description": "Sentinel-3B Ocean and Land Colour Instrument (OLCI), 21 bands",
   "facility_description": "Sentinel-3 is the Copernicus ocean and land monitoring mission (ESA/EUMETSAT), with satellites Sentinel-3A (2016) and Sentinel-3B (2018).",
   "links": [
     {

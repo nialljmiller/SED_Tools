@@ -1,5 +1,6 @@
 {
   "description": "Microwave Imager (MWI) flight model FM2, RTTOV Metop-SG satellite id 2. The curves are the channel spectral response functions distributed by the EUMETSAT NWP SAF for the RTTOV radiative-transfer model, converted from frequency to wavelength; bands chNN follow the RTTOV channel order.",
+  "short_description": "Microwave Imager (MWI) flight model FM2, Metop-SG: channel SRFs",
   "facility_description": "Metop-SG satellites (RTTOV platform Metop-SG).",
   "links": [
     {

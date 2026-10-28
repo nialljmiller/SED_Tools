@@ -1,5 +1,6 @@
 {
   "description": "CFHT/WFC holds a single J filter, which is the CFHT WIRCam near-infrared J-band curve.",
+  "short_description": "CFHT WIRCam J-band curve, kept under the legacy name WFC",
   "facility_description": "The Canada-France-Hawaii Telescope (CFHT) is a 3.6-meter optical and infrared telescope operated by NRC (Canada), CNRS/INSU (France), and the University of Hawaii, located on Maunakea in Hawaii.",
   "notes": "In NJM and SVO legacy catalogues, CFHT/WFC contains a single band J whose underlying profile matches FilterID CFHT/Wircam.J. At CFHT, WFC also designates the Wide Field Corrector optical assembly at the prime focus.",
   "licence": {

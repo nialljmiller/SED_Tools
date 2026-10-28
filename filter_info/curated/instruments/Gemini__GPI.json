@@ -1,5 +1,6 @@
 {
   "description": "The Gemini Planet Imager (GPI) is a dedicated high-contrast extreme adaptive optics instrument previously operated at Gemini South for direct imaging and spectroscopy of exoplanets and circumstellar disks. It incorporates an integral field spectrograph and polarimeter operating across near-infrared Y, J, H, and split K bands.",
+  "short_description": "Gemini Planet Imager (GPI) Y, J, H, K1 and K2 bands",
   "facility_description": "The International Gemini Observatory operates twin 8.1-meter optical and infrared telescopes atop Maunakea in Hawai'i (Gemini North) and Cerro Pachón in Chile (Gemini South), managed by NSF NOIRLab.",
   "notes": "GPI 1.0 completed operations at Gemini South in 2020 and is being upgraded as GPI 2.0. Its filter passbands (Y, J, H, K1, K2) define spectral channels for integral field spectroscopy and dual-channel polarimetry. Numerical curve redistribution rights are not explicitly specified under NOIRLab policy.",
   "licence": {

@@ -1,5 +1,6 @@
 {
   "description": "The red detector channel of Hubble’s Faint Object Spectrograph supported spectroscopy using gratings and a prism, with aperture and polarimetry configurations.",
+  "short_description": "Hubble Faint Object Spectrograph red detector gratings and prism",
   "facility_description": "These instruments were operated on the Hubble Space Telescope.",
   "notes": "Sources opened 2026-10-26. Descriptions paraphrase STScI legacy-instrument and pysynphot documentation; NJM configuration identifiers follow the assigned inventory. The STScI public-domain policy excludes separately marked third-party works; it is not a provenance audit of the existing NJM curve bytes. The HST observing-program acknowledgement is conditional and must not imply that filter calibration curves are science observations. No band-specific magnitude system or detector type is inferred. No inherited SVO references are promoted. Bibliography/passband coverage and configuration-specific provenance remain incomplete; see REPORT.md.",
   "licence": {

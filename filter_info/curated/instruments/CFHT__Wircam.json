@@ -1,5 +1,6 @@
 {
   "description": "WIRCam is a wide-field near-infrared mosaic imager at the CFHT prime focus with four HAWAII-2RG detectors, offering broad-band Y, J, H, Ks and narrow-band filters.",
+  "short_description": "WIRCam wide-field near-infrared imager filters, CFHT prime focus",
   "facility_description": "The Canada-France-Hawaii Telescope (CFHT) is a 3.6-meter optical and infrared telescope operated by NRC (Canada), CNRS/INSU (France), and the University of Hawaii, located on Maunakea in Hawaii.",
   "notes": "WIRCam was built by an international consortium led by CFHT, Canada, France, Taiwan, and Korea. The focal plane comprises four 2048x2048 Teledyne HAWAII-2RG arrays. Complete filter transmission functions factoring in primary mirror reflection, camera optics, detector QE, and atmospheric transmission are documented at CADC/WIRwolf.",
   "licence": {

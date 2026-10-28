@@ -1,5 +1,6 @@
 {
   "description": "The SPT-SZ camera of the South Pole Telescope. The curves are the measured average spectral bandpass functions of the 150 and 220 GHz bands for the 2008 season (first SPT data release), the response to a flat-spectrum source, converted from frequency to wavelength.",
+  "short_description": "South Pole Telescope SPT-SZ 150/220 GHz bandpasses, 2008 season",
   "facility_description": "The South Pole Telescope (SPT) is a 10 m millimetre-wave telescope at the Amundsen-Scott South Pole Station.",
   "links": [
     {

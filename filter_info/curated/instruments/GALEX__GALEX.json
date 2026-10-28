@@ -1,5 +1,6 @@
 {
   "description": "GALEX imaged the sky in two ultraviolet bands, far-UV (FUV) and near-UV (NUV), fed simultaneously by a dichroic beamsplitter onto two microchannel-plate detectors.",
+  "short_description": "GALEX far-UV (FUV) and near-UV (NUV) imaging bands",
   "facility_description": "The Galaxy Evolution Explorer was a NASA Small Explorer mission led by Caltech, with a 50 cm Ritchey-Chretien telescope; its data are archived at MAST.",
   "notes": "MAST's acknowledgement for legacy missions is a template: the page shows the word 'mission' (bold italic) as a placeholder, and lists 'Galaxy Evolution Explorer' among the missions to substitute. The acknowledgement above is that template, verbatim, with the placeholder filled in as the page directs ('...made with the Galaxy Evolution Explorer, obtained from...'). The contract number uses an en dash (NAS5–26555) on the page. MAST data-use page: the licence terms quote its first paragraph in full (the HTML has a non-breaking space after 'MAST'). No owner page found that publishes the FUV/NUV effective-area curve files directly (galex.caltech.edu researcher pages now 404); Morrissey et al. (2007) is the calibration paper, but no bands.* reference was added without a quote tying it to the passband tables.",
   "licence": {

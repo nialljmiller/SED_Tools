@@ -1,5 +1,6 @@
 {
   "description": "MOSFIRE is the cryogenic multi-object spectrometer and imager at the Cassegrain focus of Keck I. It images and takes spectra from 0.97 to 2.41 μm. Y, J, H and Ks are the imaging filters; K is the wide spectroscopic order sorter; J2, J3, H1 and H2 are intermediate bands.",
+  "short_description": "Keck I MOSFIRE near-IR imaging and spectroscopic filters (Y to K)",
   "facility_description": "The W. M. Keck Observatory operates the two 10 m Keck telescopes on Maunakea. MOSFIRE is on Keck I.",
   "links": [
     {

@@ -1,5 +1,6 @@
 {
   "description": "The Gunn filter set at Apache Point Observatory provides intermediate-band g, r, i, and z filters implementing the Gunn-Thuan photometric system for instruments at the ARC 3.5-meter telescope.",
+  "short_description": "Gunn-Thuan g, r, i, z filters at Apache Point (ARC 3.5-m)",
   "facility_description": "The ARC 3.5-meter Telescope is an optical and infrared telescope at Apache Point Observatory (APO) in the Sacramento Mountains of New Mexico, owned and operated by the Astrophysical Research Consortium.",
   "notes": "Gunn-Thuan g, r, i, z filters in the APO filter pool. Transmission scans are published on the APO filter server without an open redistribution licence.",
   "licence": {

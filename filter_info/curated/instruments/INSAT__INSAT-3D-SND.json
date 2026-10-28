@@ -1,4 +1,5 @@
 {
+  "short_description": "INSAT-3D Sounder channel spectral responses",
   "licence": {
     "redistribution": "attribution",
     "terms": "\"Material featured on this site belongs to the DOS/ISRO and the same may be reproduced free of charge in any format or media without requiring specific permission.\" \"This is subject to the material being reproduced accurately and not being used in a derogatory manner or in a misleading context.\" \"Wherever the material is being published or issued to others, the source must be prominently acknowledged\"",

@@ -1,5 +1,6 @@
 {
   "description": "Archeops was a balloon-borne bolometer experiment, using Planck high-frequency-instrument technology, to map cosmic microwave background temperature anisotropy over a large fraction of the sky.",
+  "short_description": "Archeops balloon bolometer bands, incl. KS3 (2002 Kiruna flight) set",
   "facility_description": "Archeops flew from a stratospheric balloon and scanned the millimetre sky in total power along large circles at constant elevation.",
   "notes": "The abstract quote is taken from the arXiv abstract page, including its backslash-tilde before 100muK. No requested user acknowledgement was found. The only reuse terms opened for the article are the arXiv non-exclusive licence, which does not grant further reuse and says to contact the author. That is not a grant to redistribute a separate numeric curve. No magnitude system was recorded.",
   "licence": {

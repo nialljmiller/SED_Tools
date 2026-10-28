@@ -1,5 +1,6 @@
 {
   "description": "GEMS-1 sensor built by Orbital Microsystems (OMS). The curves are the channel spectral response functions distributed by the EUMETSAT NWP SAF for the RTTOV radiative-transfer model, converted from frequency to wavelength; bands chNN follow the RTTOV channel order.",
+  "short_description": "Orbital Microsystems GEMS-1 channels (NWP SAF RTTOV SRFs)",
   "facility_description": "RTTOV platform OMS (EUMETSAT NWP SAF list of supported platforms).",
   "links": [
     {

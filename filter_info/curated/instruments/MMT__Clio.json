@@ -1,4 +1,5 @@
 {
+  "short_description": "Clio 1-5 micron AO imager and coronagraph filters (MMT)",
   "licence": {
     "redistribution": "restricted",
     "terms": "\"Welcome to the MMT Observatory. All rights reserved.\"",

@@ -1,5 +1,6 @@
 {
   "description": "The Balzers filter set at Apache Point Observatory consists of twelve neutral density filters (ND1 through ND12) providing attenuation across optical wavelengths for instruments on the ARC 3.5-meter telescope.",
+  "short_description": "Balzers neutral density filters ND1-ND12 at Apache Point (ARC 3.5-m)",
   "facility_description": "The ARC 3.5-meter Telescope is an optical and infrared telescope at Apache Point Observatory (APO) in the Sacramento Mountains of New Mexico, owned and operated by the Astrophysical Research Consortium.",
   "notes": "Balzers neutral density filters (50x50x2 mm) in the APO 3.5m instrument pool. Numerical transmission curves are provided by the APO filter database without an open redistribution grant.",
   "licence": {

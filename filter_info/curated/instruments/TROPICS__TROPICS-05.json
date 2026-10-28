@@ -1,5 +1,6 @@
 {
   "description": "TROPICS radiometer, RTTOV TROPICS satellite id 5 (MIT LL SV2-SV7 dataset). The curves are the channel spectral response functions distributed by the EUMETSAT NWP SAF for the RTTOV radiative-transfer model, converted from frequency to wavelength; bands chNN follow the RTTOV channel order.",
+  "short_description": "TROPICS radiometer, RTTOV satellite id 5 (MIT LL SV2-SV7 data)",
   "facility_description": "RTTOV platform TROPICS (EUMETSAT NWP SAF list of supported platforms).",
   "links": [
     {

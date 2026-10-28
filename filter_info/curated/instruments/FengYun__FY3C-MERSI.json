@@ -1,5 +1,6 @@
 {
   "description": "The Medium Resolution Spectral Imager (MERSI) on FY-3C is a 20-channel optical radiometer providing multispectral imaging from visible to longwave infrared wavelengths. Its channels measure atmospheric aerosols, cloud microphysics, ocean chlorophyll, and terrestrial vegetation.",
+  "short_description": "FY-3C Medium Resolution Spectral Imager (MERSI), 20 channels",
   "facility_description": "FengYun-3C is China’s morning-orbit polar meteorological satellite in the second-generation FY-3 series, launched in September 2013 and operated by the National Satellite Meteorological Center (NSMC) of the China Meteorological Administration (CMA).",
   "notes": "FY-3C MERSI filter curves are hosted on the NSMC GSICS portal (http://gsics.nsmc.org.cn/portal/en/fycv/srf.html). Site terms assert Copyright © NSMC(NCSW). All Rights Reserved., with redistribution governed by CMA policy. DetectorType is left unchanged.",
   "licence": {

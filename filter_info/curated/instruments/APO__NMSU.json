@@ -1,5 +1,6 @@
 {
   "description": "The NMSU filter collection at Apache Point Observatory comprises broad-band U, B, V, R, I filters, Washington system filters (Wash_C2, Wash_C3, Wash_M2), DDO51, and narrow-band H-alpha and [SII] filters used by New Mexico State University and ARC consortium observers on the ARC 3.5-meter telescope.",
+  "short_description": "NMSU filters at Apache Point: UBVRI, Washington, DDO51, H-alpha, [SII]",
   "facility_description": "The ARC 3.5-meter Telescope is an optical and infrared telescope at Apache Point Observatory (APO) in the Sacramento Mountains of New Mexico, owned and operated by the Astrophysical Research Consortium.",
   "notes": "NMSU-UW institutional filter collection for the ARC 3.5m telescope. Traces are hosted in the NMSU-UW-Filters directory on the APO filter server subject to NMSU copyright terms requiring permission for reproduction.",
   "licence": {

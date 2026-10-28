@@ -1,5 +1,6 @@
 {
   "description": "The Goodman High Throughput Spectrograph (Goodman HTS) on the 4.1-meter SOAR Telescope provides optical imaging and spectroscopy using Bessell, SDSS, Stromgren, and custom narrow-band filters.",
+  "short_description": "Goodman HTS imaging filters, SOAR 4.1-m telescope",
   "facility_description": "The Southern Astrophysical Research (SOAR) 4.1-meter Telescope is an optical/near-infrared telescope located on Cerro Pachón, Chile, operated by NSF NOIRLab and CTIO.",
   "links": [
     {

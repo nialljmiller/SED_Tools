@@ -1,5 +1,6 @@
 {
   "description": "CoRoT (Convection, Rotation and planetary Transits) is a space telescope developed by CNES with ESA and international partners to perform high-precision stellar seismology and search for transiting extrasolar planets. Its wide-field camera contains four CCD detectors observing in an asteroseismology channel (AS) and an exoplanetary transit channel (PF).",
+  "short_description": "CoRoT asteroseismology (AS) and exoplanet transit (PF) channels",
   "facility_description": "CoRoT was a French and European space observatory operating in a polar low-Earth orbit from 2006 to 2014.",
   "notes": "CoRoT bandpass data cover the Asteroseismology channel (AS) and the Exoplanet / Planetary Field channel (PF). In-flight instrument performance and design are described in Auvergne et al. (2009). Data products are available through the VizieR catalogue service (catalogue B/corot). DetectorType is left unchanged.",
   "licence": {

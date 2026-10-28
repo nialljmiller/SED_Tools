@@ -1,5 +1,6 @@
 {
   "description": "Omega2000 is a near-infrared wide-field camera at the prime focus of the Calar Alto 3.5 m telescope, designed particularly for surveys. Broad- and narrow-band filters span the z through K wavelength range.",
+  "short_description": "Omega2000 near-infrared wide-field camera filters, Calar Alto 3.5 m",
   "facility_description": "Calar Alto Observatory is located in the Sierra de Filabres in Almería, Spain, and is jointly operated by IAA-CSIC and the Andalusian Government.",
   "notes": "The filter table includes blocking requirements; some filters need an additional blocker to suppress radiation beyond 2.6 microns. The owner bibliography was opened, but instrument/calibration reference resolution remains to be completed. Research accessed 2026-10-26. General CAHA observing acknowledgement is conditional on observational data and a proposal identifier; no observing proposal or SVO use is invented for these filter curves. CAHA legal notice requires prior written permission for distribution of website contents. The data management plan instead describes open reuse with attribution for publicly released observational data; its application to technical filter files is unconfirmed. Permission is the conservative class pending an explicit exception.",
   "licence": {

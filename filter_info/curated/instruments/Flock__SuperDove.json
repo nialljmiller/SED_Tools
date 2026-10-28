@@ -1,5 +1,6 @@
 {
   "description": "SuperDove (PSB.SD) imager on Planet's Flock CubeSats: 8-band instrument; NJM holds the Blue, Green, Red, NIR and Red Edge relative spectral responses.",
+  "short_description": "Planet SuperDove (PSB.SD) imager, 5 of its 8 bands",
   "facility_description": "Flock is Planet Labs' constellation of 3U Dove CubeSats imaging the Earth's land surface near-daily (PlanetScope).",
   "notes": "Planet docs: SuperDove PSB.SD is built \"with a telescope we call \"PSB\" and the same filter response as PS2.SD instrument\", adding red edge, green I, coastal blue and yellow channels. NJM has only 5 of the 8 bands. Planet's RSR support article returned 403. Commercial satellite: redistribution not clearly allowed. | Original-source curves (2026-10-26): Pivots agree with the SVO-derived Flock/SuperDove already on NJM to <= 0.16 %; identical in pivot to the four bands of Planet's dove_r.csv. DetectorType energy assumed.",
   "licence": {

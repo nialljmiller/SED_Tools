@@ -1,5 +1,6 @@
 {
   "description": "Gaia DR2 revised passbands based on updated nominal instrument knowledge and BP/RP spectral data, providing improved G, BP and RP passbands for synthetic photometry.",
+  "short_description": "Gaia DR2 revised passbands (Evans et al. 2018)",
   "facility_description": "Gaia is a European Space Agency astrometric, photometric and spectroscopic space observatory operating at the Sun-Earth L2 Lagrange point.",
   "notes": "Gaia DR2 revised passbands based on the nominal instrument knowledge (Evans et al. 2018, A&A 616, A4). Whole-instrument (telescope optics, filter/prisms, CCD QE) transmissivities for CCD photometry (DetectorType=photon). DetectorType is left unchanged. Distinct from GAIA/DR2 (the release-processing version) and GAIA/GAIA (EDR3/DR3, Gaia2m BP bright/faint).",
   "licence": {

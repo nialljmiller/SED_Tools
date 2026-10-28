@@ -1,5 +1,6 @@
 {
   "description": "The Kepler Space Telescope is a NASA Discovery mission designed to detect transiting Earth-size planets in the habitable zone of solar-like stars. Its photometer consists of a 0.95-meter Schmidt telescope and a 42-CCD focal plane array observing in a single wide optical passband (K) covering 430 to 890 nm.",
+  "short_description": "Kepler Space Telescope wide optical passband (K), 430-890 nm",
   "facility_description": "Kepler was a NASA space observatory operating in an Earth-trailing heliocentric orbit from 2009 to 2018.",
   "notes": "The Kepler instrument passband is defined from 430 to 890 nm by the combined throughput of the Schmidt corrector, primary mirror reflection, and CCD quantum efficiency (Koch et al. 2010, Borucki et al. 2010). Data products and calibration files are hosted at MAST under NASA contract NAS5-26555 with public domain status. DetectorType is left unchanged.",
   "licence": {

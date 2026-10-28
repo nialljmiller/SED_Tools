@@ -1,5 +1,6 @@
 {
   "description": "The UCO filter collection at Apache Point Observatory comprises narrow-band planetary filters loaned by Nicholas Schneider at the University of Colorado Boulder, covering lines near 2098, 5870, 5878, 5905, 6731, 6733, and 8140 Angstroms at various tilt angles of incidence (0 to 5 degrees) for emission-line observations at the ARC 3.5-meter telescope.",
+  "short_description": "U. Colorado tilt-tuned narrow-band planetary filters at Apache Point",
   "facility_description": "The ARC 3.5-meter Telescope is an optical and infrared telescope at Apache Point Observatory (APO) in the Sacramento Mountains of New Mexico, owned and operated by the Astrophysical Research Consortium.",
   "notes": "University of Colorado Boulder (CASA/LASP) tilt-tuned narrow band filter traces for planetary sodium/sulfur imaging. Governed by NMSU copyright policy requiring permission for reproduction.",
   "licence": {

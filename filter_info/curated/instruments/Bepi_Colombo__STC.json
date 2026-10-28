@@ -1,5 +1,6 @@
 {
   "description": "The Stereo Channel (STC) of SIMBIO-SYS is a push-frame stereo camera on the BepiColombo Mercury Planetary Orbiter. Table 5 of Cremonese et al. (2020) names six filters: F420, F550, F750, F920, PANL and PANH. The NJM keys 420nm, 550nm, 750nm and 920nm are those four broad-band filters.",
+  "short_description": "BepiColombo SIMBIO-SYS STC stereo camera filters",
   "facility_description": "BepiColombo is a joint ESA and JAXA mission; the ESA factsheet gives the launch date as 19/20 October 2018 and names the Mercury Planetary Orbiter as the ESA orbiter that carries SIMBIO-SYS.",
   "notes": "PANL and PANH are printed on successive name lines of one spectral-band block in Table 5, so both are given that block's 699.5 nm centre and 204.3 nm FWHM. The SPICE IK v1.1 lists round centres (420, 550, 750, 920 nm at 20 nm; two P700 filters at 700 nm and 200 nm) and its colour-filter NAIF IDs disagree with the FOV names for -121623, -121624 and -121627; those kernel numbers were not used. The ESA Cosmos page lists STC channels as panchromatic (650) plus 550, 700 and 880 nm, which does not match Table 5, and was not used.",
   "licence": {

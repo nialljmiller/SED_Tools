@@ -1,5 +1,6 @@
 {
   "description": "The SDSS filter set at Apache Point Observatory comprises large-format u', g', r', i', and z' broad-band filters defining the Sloan Digital Sky Survey photometric system, available for ARCTIC and Agile imaging at the ARC 3.5-meter telescope.",
+  "short_description": "SDSS u'g'r'i'z' filters at Apache Point (ARCTIC and Agile)",
   "facility_description": "The ARC 3.5-meter Telescope is an optical and infrared telescope at Apache Point Observatory (APO) in the Sacramento Mountains of New Mexico, owned and operated by the Astrophysical Research Consortium.",
   "notes": "SDSS u', g', r', i', z' filters for ARCTIC and Agile. Passbands are defined by Fukugita et al. (1996). All SDSS public data releases are placed in the public domain under ARC/SDSS policy.",
   "licence": {

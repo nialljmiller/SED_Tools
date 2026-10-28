@@ -1,5 +1,6 @@
 {
   "description": "The Earth Radiation Budget Experiment (ERBE) measured Earth radiation using scanning and nonscanning instruments. Its scanner used longwave, shortwave and total-energy detectors to study outgoing thermal and reflected solar radiation.",
+  "short_description": "Earth Radiation Budget Experiment (ERBE) longwave, shortwave, total",
   "facility_description": "The Earth Radiation Budget Satellite (ERBS) carried the first ERBE instruments, launched aboard Space Shuttle Challenger in 1984.",
   "notes": "NJM LW/SW/TOT names are consistent with scanner channel categories, but the exact response-curve source and scanner configuration have not been established. No curve-specific requested acknowledgement or redistribution terms found on the overview page.",
   "licence": {

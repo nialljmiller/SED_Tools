@@ -1,5 +1,6 @@
 {
   "description": "MegaCam is a wide-field optical imager at the CFHT prime focus with a one-degree by one-degree field of view, equipped with broad-band Sloan-like filters (u, g, r, i, z, and gri).",
+  "short_description": "CFHT MegaCam u, g, r, i, z, gri filters, several filter generations",
   "facility_description": "The Canada-France-Hawaii Telescope (CFHT) is a 3.6-meter optical and infrared telescope operated by NRC (Canada), CNRS/INSU (France), and the University of Hawaii, located on Maunakea in Hawaii.",
   "notes": "MegaCam has had three generations of broadband filters: the initial 2002 set (MP9301, MP9401, MP9601, MP9701, MP9801), a replacement i-band filter installed in 2007 (MP9702), and a larger 2015 set covering all CCDs including wings (MP9302, MP9402, MP9602, MP9703, MP9901, and gri). Response curves published by CADC include filter, telescope optics, detector quantum efficiency, and 1.25 airmass atmospheric transmission.",
   "licence": {

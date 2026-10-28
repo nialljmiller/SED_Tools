@@ -1,5 +1,6 @@
 {
   "description": "The Southern Photometric Local Universe Survey (S-PLUS) utilizes a dedicated 0.82-meter robotic telescope (T80-South) at CTIO, equipped with a 12-filter optical system featuring 5 SDSS-like broad bands and 7 narrow bands.",
+  "short_description": "S-PLUS survey 12 filters (5 broad, 7 narrow), T80-South at CTIO",
   "facility_description": "The T80-South telescope is a robotic facility located at Cerro Tololo Inter-American Observatory (CTIO) in Chile.",
   "notes": "T80-South operates as a tenant facility on Cerro Tololo. S-PLUS data and filter curves are maintained by the collaboration.",
   "licence": {

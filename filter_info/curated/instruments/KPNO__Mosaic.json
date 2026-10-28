@@ -1,5 +1,6 @@
 {
   "description": "NOIRLab lists full-size filters for the Mosaic imagers, including Harris B, V, and R, U, I, and SDSS i and r. KPNO copies were measured at NOAO, and the former CTIO Mosaic-2 filters are also at KPNO for Mosaic-1. Tabulated 4 m properties are for parallel light.",
+  "short_description": "KPNO Mosaic imager filters: Harris, SDSS, BATC medium bands and more",
   "facility_description": "These Mosaic filters are catalogued for the Nicholas U. Mayall 4-meter Telescope at Kitt Peak National Observatory.",
   "notes": "The Mosaic list is paginated. Harris B/R, I, and i SDSS were read on page=1 sorted by title; U, V Harris, and r SDSS on page=2. Each band has more than one physical filter (KPNO k-numbers and former CTIO c-numbers). The page says that as of 24 April 2012 all CTIO Mosaic-2 filters were transferred to KPNO for Mosaic-1, and that KPNO Mosaic filters were measured at NOAO. The NOIRLab Kitt Peak acknowledgement is for observations, not these curves, so it is not stored. The public copyright page does not place filter scans under CC BY 4.0 and does not say the work is a US government work, so redistribution is unknown. No magnitude system is stated. Fukugita 1996 is not cited: the table names the filters i SDSS and r SDSS but does not cite that paper.",
   "licence": {

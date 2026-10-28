@@ -1,5 +1,6 @@
 {
   "description": "MSC imager of KOMPSAT-2: relative spectral responses of the Pan, Blue, Green, Red and NIR bands from the KOMPSAT pack's K2_K3_Relative_ENVI.XLS (sheet K2_RSR_ENVI).",
+  "short_description": "MSC imager on KOMPSAT-2: Pan, Blue, Green, Red and NIR responses",
   "facility_description": "KOMPSAT satellites (SVO facility name KOMPSTAT).",
   "links": [
     {

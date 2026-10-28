@@ -1,4 +1,5 @@
 {
+  "short_description": "Geostationary Earth Radiation Budget (GERB2) shortwave and total",
   "licence": {
     "redistribution": "permission",
     "terms": "\"you may download and copy content from the EUMETSAT website(s) for your own personal and non-commercial use\" \"you must request authorisation from EUMETSAT\"",

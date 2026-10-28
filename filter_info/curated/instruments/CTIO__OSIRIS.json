@@ -1,5 +1,6 @@
 {
   "description": "The Ohio State Infrared Imager/Spectrometer (OSIRIS) was a facility near-infrared camera and multi-mode spectrograph mounted on the CTIO Blanco 4-meter and 1.5-meter telescopes, operating in the 1–2.5 micron wavelength regime.",
+  "short_description": "Ohio State Infrared Imager/Spectrometer (OSIRIS) filters at CTIO",
   "facility_description": "Cerro Tololo Inter-American Observatory (CTIO) operates astronomical telescopes on Cerro Tololo in Chile, managed by NSF NOIRLab.",
   "notes": "OSIRIS was developed by Ohio State University and used at CTIO. Transmission curves are historical CTIO data without an explicit open redistribution licence.",
   "licence": {

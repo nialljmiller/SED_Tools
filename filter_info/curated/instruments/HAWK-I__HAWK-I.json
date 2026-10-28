@@ -1,5 +1,6 @@
 {
   "description": "This set is the HAWK-I cryogenic filter scans, including both K files and the NB0984 scan kept only in the Internet Archive. It is the same camera as Paranal/HAWKI, with NJM's band names.",
+  "short_description": "VLT HAWK-I wide-field near-infrared imager cryogenic filter scans",
   "facility_description": "HAWK-I is the wide-field near-infrared imager on ESO's VLT at Paranal.",
   "links": [
     {

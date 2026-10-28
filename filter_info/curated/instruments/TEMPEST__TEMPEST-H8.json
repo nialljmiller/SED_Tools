@@ -1,5 +1,6 @@
 {
   "description": "TEMPEST-H8 radiometer (STP-H8 mission). The curves are the channel spectral response functions distributed by the EUMETSAT NWP SAF for the RTTOV radiative-transfer model, converted from frequency to wavelength; bands chNN follow the RTTOV channel order.",
+  "short_description": "TEMPEST-H8 radiometer (STP-H8) channel SRFs from EUMETSAT NWP SAF",
   "facility_description": "RTTOV platform TEMPEST (EUMETSAT NWP SAF list of supported platforms).",
   "links": [
     {

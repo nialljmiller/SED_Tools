@@ -1,5 +1,6 @@
 {
   "description": "Nikon D3000 digital camera: the transmission of the camera's internal UV/IR-cut ('hot mirror') filter as measured by Kolari Vision on filters removed during full-spectrum conversions.",
+  "short_description": "Nikon D3000 camera internal UV/IR-cut filter (Kolari Vision)",
   "facility_description": "Digital cameras (DSLRs, mirrorless, compact, industrial, cinema and phone cameras) whose RGB channel spectral sensitivities or internal IR/UV-cut filter transmissions have been measured.",
   "notes": "Block band: Kolari page has a chart titled 'Nikon D3000 ICF Transmission' (image chart only; the NJM curve is a digitization, attributed here by camera name only since SVO gives no ProfileReference).",
   "licence": {

@@ -1,5 +1,6 @@
 {
   "description": "MIRI is JWST's mid-infrared imager, coronagraph and spectrometer. The bands here are the imager filters and the four coronagraph filters, covering roughly 5 to 28 μm.",
+  "short_description": "JWST MIRI mid-infrared imager and coronagraph filters",
   "facility_description": "The James Webb Space Telescope is a joint NASA, ESA and CSA infrared observatory that operates at the Sun-Earth L2 point.",
   "notes": "JDox says MIRI imaging uses 9 photometric bands and coronagraphy uses 4 filters; the filter wheel also holds a redundant F2550WR, which is not an NJM band. The wheel-figure caption is marked with a copyright sign and links Wright et al. 2015. Photon-conversion efficiencies are the curves JDox points to; DetectorType was left unchanged. The MAST acknowledgement is the text required for refereed papers based on JWST data, and the program blank is printed as #____. The same STScI policy paragraph asks that NASA and STScI be acknowledged. JDox itself does not repeat a licence. doi:10.1086/682259 is the Glasse et al. 2015 sensitivity paper linked from the MIRI page. No single paper opened here tabulates every current flight curve, so band references were not set.",
   "licence": {

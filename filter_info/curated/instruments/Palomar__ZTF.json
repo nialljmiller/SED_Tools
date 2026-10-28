@@ -1,5 +1,6 @@
 {
   "description": "The Zwicky Transient Facility uses a wide-field mosaic CCD camera to survey the optical transient sky through g, r and i filters.",
+  "short_description": "Zwicky Transient Facility g, r, i filters, Palomar 48-inch Schmidt",
   "facility_description": "ZTF observes with the Samuel Oschin 48-inch Schmidt telescope at Palomar Observatory.",
   "notes": "The owner ztf_information repository explicitly contains vendor-measured on-axis filter transmission functions in filter_transmission and carries a top-level BSD 3-Clause licence, Copyright (c) 2018, Zwicky Transient Facility. Attribution classification refers to that repository and requires retaining the copyright, conditions and disclaimer; it does not establish rights to archive images or every NJM profile. No comparison of NJM numerical curves with these source files was performed. The IRSA mission page publishes a project acknowledgement and identifies Masci et al. (2019) and Bellm et al. (2019) as canonical papers, but full acknowledgement and checked reference identifiers remain for parent follow-up. No band-level metadata is asserted.",
   "licence": {

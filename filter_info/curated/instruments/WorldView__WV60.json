@@ -1,5 +1,6 @@
 {
   "description": "The imager of WorldView-1 (camera WV60, Maxar): relative spectral responses of the panchromatic band, from Maxar's January 2023 constellation spectral response values.",
+  "short_description": "WorldView-1 WV60 imager panchromatic band",
   "facility_description": "Commercial very-high-resolution Earth-observation satellite operated by Maxar Technologies (formerly DigitalGlobe / GeoEye / Space Imaging).",
   "links": [
     {

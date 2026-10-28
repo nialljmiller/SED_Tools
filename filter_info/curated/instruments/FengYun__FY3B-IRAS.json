@@ -1,5 +1,6 @@
 {
   "description": "The Infra-Red Atmospheric Sounder (IRAS) on FY-3B is a 26-channel scanning radiometer observing infrared radiation from 0.69 to 15.5 µm. It retrieves atmospheric vertical profiles of temperature and moisture, surface skin temperature, and total column ozone.",
+  "short_description": "FY-3B Infra-Red Atmospheric Sounder (IRAS), 26 channels",
   "facility_description": "FengYun-3B is the second polar-orbiting satellite in China’s FY-3 series (afternoon sun-synchronous orbit), launched in November 2010 and operated by the National Satellite Meteorological Center (NSMC) of the China Meteorological Administration (CMA).",
   "notes": "FY-3B IRAS filter response curves are distributed via the NSMC GSICS portal (http://gsics.nsmc.org.cn/portal/en/fycv/srf.html). Portal terms assert Copyright © NSMC(NCSW). All Rights Reserved., and commercial redistribution is restricted without CMA permission. DetectorType is left unchanged.",
   "licence": {

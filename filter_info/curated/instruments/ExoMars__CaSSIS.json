@@ -1,5 +1,6 @@
 {
   "description": "CaSSIS (Colour and Stereo Surface Imaging System) is the push-frame colour and stereo camera on ESA's ExoMars Trace Gas Orbiter. Four bandpass filters on a filter strip assembly are called BLU (Blue-Green), PAN, RED and IR in Thomas et al. (2017); the NJM keys Blue, Pan, Red and NIR are those filters.",
+  "short_description": "CaSSIS colour and stereo camera filters, ExoMars Trace Gas Orbiter",
   "facility_description": "The ExoMars Trace Gas Orbiter is the first mission of ESA's ExoMars programme. Thomas et al. (2017) state that it was launched on 14 March 2016, and the ESA ExoMars page states that the Trace Gas Orbiter launched in 2016.",
   "notes": "Blue_fil, Pan_fil, Red_fil and NIR_fil are omitted. Thomas et al. (2017) distinguish filter transmission curves (Fig. 12) from system effective wavelengths (Table 2) but do not define *_fil names, and the Fig. 12 central wavelengths are not printed as text. SVO (one request to svo2.cab.inta-csic.es) timed out, so the filter-only versus total-throughput naming was not taken from SVO. The SPICE IK v0.9 repeats the Table 2 nominal column (675/250, 485/165, 840/100, 985/220 nm), not the measured column used above.",
   "licence": {

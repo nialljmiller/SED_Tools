@@ -1,5 +1,6 @@
 {
   "description": "The Operational Land Imager-2 (OLI-2) on Landsat 9. The curves are the in-band band-average relative spectral responses derived from GLAMR measurements of OLI-2 (USGS RSR workbook).",
+  "short_description": "Landsat 9 Operational Land Imager-2 (OLI-2), GLAMR-derived RSRs",
   "facility_description": "Landsat is the joint NASA/USGS series of Earth-observing satellites (Landsat 1-9, since 1972); USGS operates the missions and distributes the data.",
   "links": [
     {

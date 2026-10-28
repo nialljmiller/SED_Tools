@@ -1,5 +1,6 @@
 {
   "description": "The Spartan Infrared Camera is a high-resolution near-infrared imager on the 4.1-meter SOAR Telescope, built by Michigan State University, providing wide-field and high-resolution imaging in J, H, K, and narrow-band filters.",
+  "short_description": "Spartan near-infrared camera filters, SOAR 4.1-m telescope",
   "facility_description": "The Southern Astrophysical Research (SOAR) 4.1-meter Telescope is located on Cerro Pachón, Chile, operated by NSF NOIRLab.",
   "notes": "Built by MSU for SOAR. Laboratory filter transmission scans were carried out at cryogenic temperatures.",
   "licence": {

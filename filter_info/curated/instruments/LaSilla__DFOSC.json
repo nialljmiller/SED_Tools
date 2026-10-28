@@ -1,5 +1,6 @@
 {
   "description": "DFOSC on the Danish 1.54 m telescope: filter-only lab transmission of its ESO-numbered filters from the ESO filter database (ESO-MIDAS XFilter).",
+  "short_description": "DFOSC on the Danish 1.54 m: ESO-numbered filters, filter only",
   "facility_description": "ESO La Silla Observatory, Chile.",
   "links": [
     {

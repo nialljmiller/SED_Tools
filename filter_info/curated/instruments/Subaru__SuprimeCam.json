@@ -1,5 +1,6 @@
 {
   "description": "Suprime-Cam was the wide-field prime-focus camera on the Subaru Telescope. These are its general broad-band filters: Johnson-Cousins B, V, Rc and Ic, SDSS g', r', i' and z', and Y.",
+  "short_description": "Subaru Suprime-Cam prime-focus camera filters (broad, IB and NB)",
   "facility_description": "Suprime-Cam was the prime-focus camera of the Subaru Telescope, operated by the National Astronomical Observatory of Japan.",
   "links": [
     {

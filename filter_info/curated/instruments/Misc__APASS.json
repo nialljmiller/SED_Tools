@@ -1,4 +1,5 @@
 {
+  "short_description": "APASS survey filters, defined as Johnson B, V and SDSS i, z",
   "licence": {
     "redistribution": "attribution",
     "terms": "\"You should also acknowledge APASS with the following credit line\"",

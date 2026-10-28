@@ -1,5 +1,6 @@
 {
   "description": "The CCD channel belongs to Hubble’s Space Telescope Imaging Spectrograph (STIS), an instrument for spectroscopy and imaging.",
+  "short_description": "Hubble STIS CCD channel filters, with and without gratings",
   "facility_description": "These instruments operate on the Hubble Space Telescope.",
   "notes": "Description from the STScI instrument overview. The general STScI content-use policy applies unless an item carries its own notice. Instrument, passband and calibration papers have not yet been added. Some STIS configurations combine an aperture or filter with a grating or prism; no single passband citation is given across them.",
   "licence": {

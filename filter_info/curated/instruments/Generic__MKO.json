@@ -1,5 +1,6 @@
 {
   "description": "The Mauna Kea Observatories Near-Infrared (MKO-NIR) filter system (J, H, K, L', M') defined to optimize atmospheric transmission windows and minimize background emission for 1-5 micron astronomy.",
+  "short_description": "Mauna Kea Observatories near-infrared (MKO-NIR) J H K L' M' filters",
   "facility_description": "Mauna Kea Observatories is a consortium of astronomical research facilities located at the summit of Mauna Kea on the island of Hawaii.",
   "links": [
     {

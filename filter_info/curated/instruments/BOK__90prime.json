@@ -1,5 +1,6 @@
 {
   "description": "90Prime is a prime-focus wide-field optical CCD mosaic imager on the Steward Observatory 2.3-meter (90-inch) Bok Telescope on Kitt Peak, equipped with UBVRI, SDSS, Washington, and narrow-band filters.",
+  "short_description": "90Prime wide-field imager filters, Bok 2.3-m telescope at Kitt Peak",
   "facility_description": "The Bart Bok 2.3-meter (90-inch) Telescope is located at Kitt Peak National Observatory in Arizona, owned and operated solely by Steward Observatory at the University of Arizona.",
   "notes": "The Steward Observatory MOON wiki documents 90Prime filter tracings and properties under CC BY-SA 4.0. No required observatory-wide publication acknowledgment text is published on the wiki or Bok pages.",
   "licence": {

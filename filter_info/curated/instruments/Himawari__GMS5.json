@@ -1,5 +1,6 @@
 {
   "description": "The VISSR on GMS-5 (Himawari-5), with a split-window and a water-vapour channel. Curves from the EUMETSAT NWP SAF RTTOV SRF collection, which credits the original JMA files.",
+  "short_description": "VISSR on GMS-5 (Himawari-5), with split-window and water-vapour bands",
   "facility_description": "Japan Meteorological Agency (JMA) geostationary meteorological satellites (GMS / MTSAT / Himawari series).",
   "links": [
     {

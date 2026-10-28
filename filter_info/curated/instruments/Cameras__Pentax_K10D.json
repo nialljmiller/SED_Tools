@@ -1,5 +1,6 @@
 {
   "description": "Pentax K10D digital camera: the transmission of the camera's internal UV/IR-cut ('hot mirror') filter as measured by Kolari Vision on filters removed during full-spectrum conversions.",
+  "short_description": "Pentax K10D camera internal UV/IR-cut filter (Kolari Vision)",
   "facility_description": "Digital cameras (DSLRs, mirrorless, compact, industrial, cinema and phone cameras) whose RGB channel spectral sensitivities or internal IR/UV-cut filter transmissions have been measured.",
   "notes": "Block band: Kolari page has a chart titled 'Pentax K10D ICF Transmission' (image chart only; the NJM curve is a digitization).",
   "licence": {

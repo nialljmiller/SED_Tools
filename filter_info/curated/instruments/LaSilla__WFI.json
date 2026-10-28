@@ -1,5 +1,6 @@
 {
   "description": "Wide Field Imager on the MPG/ESO 2.2 m: filter-only transmission of the permanently mounted filters, measured by the La Silla opticians, named by ESO filter number.",
+  "short_description": "Wide Field Imager (WFI) on the MPG/ESO 2.2 m, by ESO filter number",
   "facility_description": "ESO La Silla Observatory, Chile.",
   "links": [
     {

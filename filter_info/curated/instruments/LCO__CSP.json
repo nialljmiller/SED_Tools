@@ -1,5 +1,6 @@
 {
   "description": "Carnegie Supernova Project I (CSP-I) natural-system passbands from the CSP team: TAMU monochromator scans of the Swope telescope with the SITe CCD (u g r i B and three V filters) and with RetroCam (Y, two J filters, H), and of the du Pont telescope with WIRC (Y J H). The final passbands include the atmosphere at airmass 1.2.",
+  "short_description": "Carnegie Supernova Project I (CSP-I) natural-system passbands",
   "notes": "Curves are the final passbands of CSP_filter_package.tgz (README updated 03/16/2018), built by sed_tools.component_sources.csp; manifest.json describes the components (raw optical scans, Telescope.txt, Telescope+Camera.txt) and the atmosphere site lco_csp. The band names are the package's own: three V filters (V_LC3014, V_LC3009, V_LC9844; the original LC-3014 was damaged on 2006-01-14 per the CSP page) and two RetroCam J filters (Jrc1, Jrc2). They are original-source curves, so no SVO record is attached to them (svo_filterID null); SVO's own LCO/CSP keys use other names (V, J_old, J for V_LC9844, Jrc1, Jrc2, going by the CSP page's file links). No licence, usage terms or acknowledgement request was found on the CSP filters page or in the README.",
   "licence": {
     "redistribution": "unknown",

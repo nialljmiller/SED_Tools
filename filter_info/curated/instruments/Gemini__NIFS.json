@@ -1,5 +1,6 @@
 {
   "description": "NIFS is Gemini's near-infrared integral-field spectrograph. These six curves are the ZJ, JH and HK blocking filters, each scanned at room temperature and at 77 K.",
+  "short_description": "Gemini NIFS ZJ, JH and HK blocking filters at 298 K and 77 K",
   "facility_description": "NIFS is used on the Gemini North 8.1 m telescope on Maunakea, operated by Gemini Observatory. It is an infrared integral-field spectrograph with a HAWAII-2RG detector.",
   "links": [
     {

@@ -1,5 +1,6 @@
 {
   "description": "IRS is Spitzer's infrared spectrograph. Its peak-up arrays image through a blue and a red filter (PU_blue, PU_red); these curves are the detector response times filter transmission for each.",
+  "short_description": "Spitzer IRS peak-up imaging blue and red filters",
   "facility_description": "The Spitzer Space Telescope was NASA's infrared space observatory, operated by JPL/Caltech, with science data archived at IRSA.",
   "notes": "Spitzer ack: the SSC page gives this text for users of Spitzer data without Spitzer funding; funded work uses Templates 1a-4b on the same page. The page also asks authors to cite the fundamental papers describing the Observatory and instruments (listed at the publications page). Photon/energy evidence: the curve files (bluePUtrans.txt, redPUtrans.txt) say the second column is 'RQExT', the product of the detector's responsive quantum efficiency (QE times photoconductive gain) and the filter transmission, applied to incident photons/second, at 2.0 V bias used in nominal operations. DetectorType left unchanged. The peak-up page cites no paper for the curves, so no bands.* reference.",
   "licence": {

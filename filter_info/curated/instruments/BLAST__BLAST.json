@@ -1,5 +1,6 @@
 {
   "description": "BLAST, the Balloon-borne Large Aperture Submillimeter Telescope, was a stratospheric 2 m survey telescope with a three-band bolometer camera at 250, 350 and 500 microns.",
+  "short_description": "BLAST balloon submillimetre telescope bands at 250, 350, 500 \u03bcm",
   "facility_description": "BLAST flew on long-duration stratospheric balloons, including flights from Kiruna in 2005 and McMurdo Station in 2006.",
   "notes": "The abstract says microns. NJM's keys are 250mic, 350mic and 500mic. No requested acknowledgement was found. The only reuse terms opened for the article are the arXiv non-exclusive licence, which does not grant further reuse and says to contact the author. That is not a grant to redistribute a separate numeric curve. No magnitude system was recorded.",
   "licence": {

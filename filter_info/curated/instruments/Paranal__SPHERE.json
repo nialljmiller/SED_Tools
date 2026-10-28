@@ -1,5 +1,6 @@
 {
   "description": "These are the SPHERE/IRDIS filter transmissions published by ESO: broad-band, dual-band and narrow-band filters. Each dual-band entry is one channel of the filter ESO lists as a pair.",
+  "short_description": "VLT SPHERE/IRDIS broad-, dual- and narrow-band filters (ESO)",
   "facility_description": "The ESO Very Large Telescope stands at the Paranal Observatory in Chile.",
   "links": [
     {

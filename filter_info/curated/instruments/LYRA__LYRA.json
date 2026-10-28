@@ -1,4 +1,5 @@
 {
+  "short_description": "LYRA ISS all-sky survey photometric bands, 195-930 nm and pan",
   "licence": {
     "redistribution": "public",
     "terms": "\"The SWAP and LYRA instruments follow an open data policy which means that you can freely use the SWAP and LYRA data.\"",

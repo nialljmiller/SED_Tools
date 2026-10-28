@@ -1,5 +1,6 @@
 {
   "description": "Nikon D80 digital camera: normalized R, G and B channel spectral sensitivities (400-720 nm, 10 nm steps) from the RIT Camera Spectral Sensitivity Database (Jiang et al. 2013); plus the transmission of the camera's internal UV/IR-cut ('hot mirror') filter as measured by Kolari Vision on filters removed during full-spectrum conversions.",
+  "short_description": "Nikon D80 RGB sensitivities (Jiang et al. 2013), UV/IR-cut filter",
   "facility_description": "Digital cameras (DSLRs, mirrorless, compact, industrial, cinema and phone cameras) whose RGB channel spectral sensitivities or internal IR/UV-cut filter transmissions have been measured.",
   "notes": "RGB curves checked this session: NJM values are identical (max abs diff 0) to the 'Nikon D80' entry of http://www.gujinwei.org/research/camspec/camspec_database.txt. Block band: Kolari page has a chart titled 'Nikon D80 ICF Transmission' (image chart only; the NJM curve is a digitization, attributed here by camera name only since SVO gives no ProfileReference). Licence set to the stricter source (Kolari: no redistribution grant) because the Block band comes from Kolari; the RGB bands alone are CC BY-NC-SA 4.0 (RIT).",
   "licence": {

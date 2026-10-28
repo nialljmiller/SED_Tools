@@ -1,5 +1,6 @@
 {
   "description": "ESO Multi-Mode Instrument (EMMI) on the NTT: filter-only lab transmission of its ESO-numbered filters from the ESO filter database (ESO-MIDAS XFilter) and the EMMI filter page.",
+  "short_description": "ESO Multi-Mode Instrument (EMMI) on the NTT, ESO-numbered filters",
   "facility_description": "ESO La Silla Observatory, Chile.",
   "links": [
     {

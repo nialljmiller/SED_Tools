@@ -1,5 +1,6 @@
 {
   "description": "The Meteosat Visible and InfraRed Imager (MVIRI) on Meteosat-6: water-vapour (6.3 um) and thermal infrared (11.5 um) detectors, nominal and backup (WV1, WV2, IR1, IR2).",
+  "short_description": "Meteosat-6 Visible and InfraRed Imager (MVIRI) WV and IR channels",
   "facility_description": "EUMETSAT geostationary Meteosat satellites.",
   "links": [
     {

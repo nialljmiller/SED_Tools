@@ -1,5 +1,6 @@
 {
   "description": "Tomorrow.io Microwave Sounder (TMS) on Tomorrow-S06. The curves are the channel spectral response functions distributed by the EUMETSAT NWP SAF for the RTTOV radiative-transfer model, converted from frequency to wavelength; bands chNN follow the RTTOV channel order.",
+  "short_description": "Tomorrow.io Microwave Sounder (TMS) on Tomorrow-S06, channel SRFs",
   "facility_description": "Tomorrow.io satellites Tomorrow-S01 ... S11 carrying the Tomorrow.io Microwave Sounder (RTTOV platform TMS; NWP SAF SRF pages).",
   "links": [
     {

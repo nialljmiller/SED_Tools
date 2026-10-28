@@ -1,5 +1,6 @@
 {
   "description": "ANDICAM (A Novel Dual-Imaging CAMera) was an optical and infrared camera mounted on the SMARTS 1.3-meter telescope at CTIO, designed to obtain simultaneous optical and near-infrared imaging.",
+  "short_description": "ANDICAM optical/near-IR dual camera filters, SMARTS 1.3-m at CTIO",
   "facility_description": "Cerro Tololo Inter-American Observatory (CTIO) is an astronomical observatory located on Cerro Tololo in Chile, operated by NSF NOIRLab.",
   "notes": "ANDICAM provided simultaneous optical and infrared imaging at the SMARTS 1.3m telescope. Filter transmission curves are hosted on OSU astronomy and NOIRLab pages without an open redistribution licence.",
   "licence": {

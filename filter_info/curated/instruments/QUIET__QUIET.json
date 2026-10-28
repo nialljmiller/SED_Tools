@@ -1,5 +1,6 @@
 {
   "description": "QUIET (Q/U Imaging ExperimenT), a CMB polarization experiment with Q-band and W-band receivers. The curves are the Q-band and W-band bandpass profiles of the 1st+2nd season galactic-fields data release (response to a source of uniform spectral radiance, peak 1), converted from frequency to wavelength.",
+  "short_description": "QUIET (Q/U Imaging ExperimenT) CMB polarization Q and W bands",
   "facility_description": "QUIET (Q/U Imaging ExperimenT) CMB polarization experiment; instrument described in QUIET Collaboration (2013), ApJ 768, 9.",
   "links": [
     {

@@ -1,5 +1,6 @@
 {
   "description": "The Advanced Technology Microwave Sounder (ATMS) on NOAA-20 (JPSS-1), a 22-channel cross-track microwave sounder (23.8-183.31 GHz). The curves are the 61 channel spectral response functions of NOAA STAR's 'NOAA-20 ATMS Spectral Response Function (SRF) Dataset' (1/22/2018): NASA/GSFC RF-frequency SRFs at +20 C for the primary (A) and redundant (B) local oscillators, converted from frequency to wavelength.",
+  "short_description": "ATMS microwave sounder on NOAA-20 (JPSS-1): 61 channel SRFs",
   "facility_description": "The Joint Polar Satellite System (JPSS) is NOAA's polar-orbiting series (Suomi NPP, NOAA-20, NOAA-21, ...).",
   "links": [
     {

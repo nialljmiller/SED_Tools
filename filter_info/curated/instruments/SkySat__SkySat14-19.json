@@ -1,5 +1,6 @@
 {
   "description": "SkySat-14 to SkySat-19: relative spectral responses from Planet's Skysat_RSR_Skysat14-SkySat19.csv.",
+  "short_description": "SkySat-14 to SkySat-19 (Planet) relative spectral responses",
   "facility_description": "Planet Labs satellites (SkySat; PlanetScope Doves).",
   "links": [
     {

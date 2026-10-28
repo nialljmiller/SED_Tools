@@ -1,5 +1,6 @@
 {
   "description": "The HRV1 imager of SPOT 2: spectral sensitivities of its bands from the table SPOT_spectral_sensitivity.xls ('Spectral sensitivities & Normal solar equivalent irradiances').",
+  "short_description": "SPOT 2 HRV1 imager band spectral sensitivities (Pan, Xs1-Xs3)",
   "facility_description": "SPOT: the French Earth-observation satellite series (SPOT 1-5 in this table).",
   "links": [
     {

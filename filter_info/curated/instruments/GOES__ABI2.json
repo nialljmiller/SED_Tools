@@ -1,5 +1,6 @@
 {
   "description": "The Advanced Baseline Imager (ABI) flight model FM2 on GOES-17, a 16-channel visible/near-infrared/infrared imager of the GOES-R series. The curves are the GOES-R Calibration Working Group's processed channel relative spectral response functions (0.47-13.3 um), used for imagery, radiance and product calculations. Bands with the _81K suffix are the CWG's separate FM2 IR-channel SRFs for an 81 K focal-plane temperature.",
+  "short_description": "Advanced Baseline Imager (ABI) FM2 on GOES-17, plus 81 K IR SRFs",
   "facility_description": "GOES-R is the NOAA/NASA series of geostationary weather satellites (GOES-16 to GOES-19) whose primary imager is the ABI.",
   "links": [
     {

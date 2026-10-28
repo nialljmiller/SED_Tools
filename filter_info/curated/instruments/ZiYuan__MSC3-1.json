@@ -1,5 +1,6 @@
 {
   "description": "The multispectral camera of ZY-3 01 (ZiYuan-3): normalised relative spectral responses of bands B1-B4 from the ZY3_01_02_Spectral_Response_Values.zip pack.",
+  "short_description": "ZiYuan-3 01 (ZY-3) multispectral camera bands B1-B4",
   "facility_description": "ZiYuan-3 (ZY-3) satellites 01 and 02 (SVO facility ZiYuan).",
   "links": [
     {

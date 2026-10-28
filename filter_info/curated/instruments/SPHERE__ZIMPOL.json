@@ -1,5 +1,6 @@
 {
   "description": "ZIMPOL is the visible Zurich Imaging Polarimeter inside SPHERE, used for imaging and imaging polarimetry from about 500 to 900 nm. These are the ZIMPOL filters and neutral densities on ESO's filter page.",
+  "short_description": "SPHERE Zurich Imaging Polarimeter (ZIMPOL) filters and NDs",
   "facility_description": "SPHERE is the VLT high-contrast imager at Paranal; ZIMPOL is its visible science camera.",
   "links": [
     {

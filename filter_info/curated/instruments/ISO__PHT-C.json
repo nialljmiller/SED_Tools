@@ -1,5 +1,6 @@
 {
   "description": "ISOPHOT PHT-C far-infrared cameras: relative system responses of the 11 filters of C100 (3x3 Ge:Ga array; 50-105 micron) and C200 (2x2 array of stressed detector pixels, cut-off 240 micron; 120-200 micron), from the ISO Handbook Vol. IV.",
+  "short_description": "ISOPHOT PHT-C far-infrared cameras C100 and C200 filters (ISO)",
   "facility_description": "The Infrared Space Observatory (ISO) was an ESA infrared space telescope; ISOPHOT, the Imaging Photo-Polarimeter, was one of its four instruments (ISO Handbook Vol. IV: 'PHT - The Imaging Photo-Polarimeter', Laureijs, Klaas, Richards, Schulz & Abraham, ESA SP-1262, Version 2.0.1, June 2003; ISOPHOT Instrument Consortium, PI D. Lemke, MPI Astronomie, Heidelberg).",
   "links": [
     {

@@ -1,5 +1,6 @@
 {
   "description": "The four broad TD1 S2/68 passbands of the faint-star catalogue (Thompson et al. 1978, CDS II/59B): 1565, 1965 and 2365 A (330 A wide) from the spectrophotometer, and the 2740 A photometer channel (310 A FWHM, defined by a glass transmission filter and the photocathode tube response; II/86 ReadMe). The 2740 curve is the rectangle of that FWHM, not the real filter x photocathode response, which is not published numerically.",
+  "short_description": "TD1 S2/68 broad UV passbands at 1565, 1965, 2365 and 2740 A",
   "facility_description": "TD1 (ESRO TD-1A) carried the S2/68 Ultraviolet Sky Survey Telescope (UVSST), which measured the absolute ultraviolet flux distribution between 2740 A and 1350 A; the first observation period lasted from 19 March 1972 to 31 October 1972 (CDS III/39A ReadMe). The experiment is described by Boksenberg et al. (1973).",
   "links": [
     {

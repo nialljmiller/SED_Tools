@@ -1,5 +1,6 @@
 {
   "description": "GROND, 7-channel simultaneous imager (g'r'i'z'JHK) of MPE on the MPG 2.2 m at La Silla: filter curves published by the instrument PI.",
+  "short_description": "GROND 7-channel simultaneous imager (g'r'i'z'JHK), MPG 2.2 m",
   "facility_description": "ESO La Silla Observatory, Chile.",
   "links": [
     {

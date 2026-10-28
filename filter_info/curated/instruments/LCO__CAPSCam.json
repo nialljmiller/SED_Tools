@@ -1,4 +1,5 @@
 {
+  "short_description": "CAPSCam (Carnegie Astrometric Planet Search Camera) z, du Pont",
   "licence": {
     "redistribution": "restricted",
     "terms": "\"Copyright © 2020 Carnegie Science. All rights reserved.\"",

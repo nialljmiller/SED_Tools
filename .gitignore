@@ -79,6 +79,7 @@ htmlcov/
 !filter_info/references.json
 !filter_info/curated/*.json
 !filter_info/curated/instruments/*.json
+!filter_info/svo_instruments.json
 
 # Test fixtures are excerpts of published curves; *.dat above would otherwise drop them
 !tests/fixtures/**/*.dat

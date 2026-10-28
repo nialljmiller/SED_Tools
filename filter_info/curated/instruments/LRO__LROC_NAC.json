@@ -1,4 +1,5 @@
 {
+  "short_description": "Lunar Reconnaissance Orbiter Narrow Angle Camera (LROC NAC)",
   "licence": {
     "redistribution": "permission",
     "terms": "\"Images available on the LROC website, including but not limited to Featured Images, Featured Sites, curated products, downloads and non-PDS interfaces listed above, are copyrighted.\" \"All commercial use of LROC images not downloaded from the LROC PDS archive require prior permission.\" \"Data products available through the LROC Data Node of the PDS or through NASA PDS interfaces are in the public domain\"",

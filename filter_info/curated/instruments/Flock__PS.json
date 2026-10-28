@@ -1,5 +1,6 @@
 {
   "description": "PlanetScope Dove Classic / Dove-R (PS2, PS2.SD) 4-band imager on Planet's Flock CubeSats: Blue, Green, Red and NIR relative spectral responses.",
+  "short_description": "Planet Flock-3p PS Blue, Green, Red and NIR spectral responses",
   "facility_description": "Flock is Planet Labs' constellation of 3U Dove CubeSats imaging the Earth's land surface near-daily (PlanetScope).",
   "notes": "Planet docs: Dove Classic PS2 \"captures red, green, blue, and near infrared channels\". SVO's cached Flock records (Flock/PS2k.*, Flock/PS2p.*, 'Flock-2k/2p PS ... normalized spectral response') give ProfileReference https://apollomapping.com/about-us/whitepapers (HTTP 403 for me); which Flock generation the NJM 'PS' curves correspond to is not confirmed. Planet's RSR support article (support.planet.com/hc/en-us/articles/360014290293) returned 403. Commercial satellite: redistribution not clearly allowed.",
   "licence": {

@@ -1,5 +1,6 @@
 {
   "description": "NIX is the imaging arm of ERIS, the Enhanced Resolution Imager and Spectrograph on VLT UT4. It images from J through M, with coronagraphy from K through M and long-slit spectroscopy in L. These are the filters in ESO's nix-filters.zip.",
+  "short_description": "ERIS/NIX infrared imager filters, J through M, on VLT UT4",
   "facility_description": "ERIS is mounted at the Cassegrain focus of UT4 at the ESO VLT and uses the Adaptive Optics Facility.",
   "links": [
     {

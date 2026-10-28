@@ -1,4 +1,5 @@
 {
+  "short_description": "Multiwavelength Survey by Yale-Chile (MUSYC) filters",
   "licence": {
     "redistribution": "attribution",
     "terms": "\"use them to give credit to the people whose hard work created these data products\"",

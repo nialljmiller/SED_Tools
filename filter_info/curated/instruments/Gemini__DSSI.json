@@ -1,5 +1,6 @@
 {
   "description": "The Differential Speckle Survey Instrument (DSSI) is a visiting dual-channel optical speckle camera deployed at Gemini North and Gemini South. It uses a dichroic beamsplitter to feed two electron-multiplying CCDs for simultaneous two-color diffraction-limited speckle imaging through medium- and narrow-band optical filters.",
+  "short_description": "Gemini DSSI speckle camera bands, filter+CCD and filter-only",
   "facility_description": "The International Gemini Observatory operates twin 8.1-meter optical and infrared telescopes atop Maunakea in Hawai'i (Gemini North) and Cerro Pachón in Chile (Gemini South), managed by NSF NOIRLab.",
   "notes": "DSSI was a visiting instrument developed at Southern Connecticut State University and operated at Gemini North and South before being succeeded by 'Alopeke and Zorro. Redistribution terms for its instrument filter curves are not explicitly stated.",
   "licence": {

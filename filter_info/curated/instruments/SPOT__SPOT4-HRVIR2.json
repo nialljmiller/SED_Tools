@@ -1,5 +1,6 @@
 {
   "description": "The HRVIR2 imager of SPOT 4: spectral sensitivities of its bands from the table SPOT_spectral_sensitivity.xls ('Spectral sensitivities & Normal solar equivalent irradiances').",
+  "short_description": "SPOT 4 HRVIR2 imager band spectral sensitivities (Mono, Xi1-Xi4)",
   "facility_description": "SPOT: the French Earth-observation satellite series (SPOT 1-5 in this table).",
   "links": [
     {

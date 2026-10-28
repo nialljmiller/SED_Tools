@@ -1,5 +1,6 @@
 {
   "description": "MegaCam is the wide-field CCD imager used at the MMT and at Magellan. This set is the Magellan Sloan u'g'r'i'z' filter set, not the earlier MMT filters and not the CFHT MegaCam.",
+  "short_description": "Magellan MegaCam Sloan u'g'r'i'z' filters (not MMT or CFHT MegaCam)",
   "facility_description": "This MegaCam is the wide-field CCD imager McLeod et al. 2015 describe for the MMT and the Magellan telescopes at Las Campanas Observatory.",
   "links": [
     {

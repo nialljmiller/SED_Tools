@@ -1,4 +1,5 @@
 {
+  "short_description": "du Pont WIRC wide-field infrared camera Y, J, H passbands",
   "licence": {
     "redistribution": "restricted",
     "terms": "\"Copyright © 2020 Carnegie Science. All rights reserved.\"",

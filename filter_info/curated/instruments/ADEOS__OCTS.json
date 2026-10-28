@@ -1,5 +1,6 @@
 {
   "description": "The Ocean Color and Temperature Scanner (OCTS) is a twelve-band optical radiometer measuring ocean colour and sea-surface temperature. Its visible and near-infrared channels probe phytoplankton and dissolved material in ocean water.",
+  "short_description": "ADEOS Ocean Color and Temperature Scanner (OCTS) visible/NIR bands",
   "facility_description": "ADEOS was a Japanese Earth-observation satellite carrying OCTS.",
   "notes": "NJM contains eight visible/near-infrared bands, not all twelve OCTS channels. No curve-specific redistribution grant or requested acknowledgement was located on this instrument page; JAXA general site policy requires further scope review. General site-policy credit example is “Courtesy of JAXA”; commercial use requires prior permission and modifications are limited. No assumption is made that low-resolution standard satellite product terms cover instrument characterization tables.",
   "licence": {

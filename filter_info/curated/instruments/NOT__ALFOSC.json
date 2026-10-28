@@ -1,5 +1,6 @@
 {
   "description": "ALFOSC (Andalucia Faint Object Spectrograph and Camera) is the primary optical instrument on the 2.56-meter Nordic Optical Telescope (NOT), providing imaging in Bessell, interference, and SDSS filters.",
+  "short_description": "ALFOSC filter-only curves, 2.56-m Nordic Optical Telescope",
   "facility_description": "The Nordic Optical Telescope (NOT) is a 2.56-meter optical/infrared telescope located at Roque de los Muchachos Observatory on La Palma, Canary Islands.",
   "links": [
     {

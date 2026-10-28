@@ -1,5 +1,6 @@
 {
   "description": "The imager of GeoEye-1 (GeoEye Imaging System, Maxar): relative spectral responses of the panchromatic and four multispectral bands, from Maxar's January 2023 constellation spectral response values.",
+  "short_description": "GeoEye-1 imager (GIS) panchromatic and four multispectral bands",
   "facility_description": "Commercial very-high-resolution Earth-observation satellite operated by Maxar Technologies (formerly DigitalGlobe / GeoEye / Space Imaging).",
   "links": [
     {

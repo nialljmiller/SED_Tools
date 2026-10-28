@@ -1,5 +1,6 @@
 {
   "description": "The imager of WorldView-2 (camera WV110, Maxar): relative spectral responses of the panchromatic and eight multispectral bands, from Maxar's January 2023 constellation spectral response values.",
+  "short_description": "WorldView-2 WV110 imager: Pan and 8 multispectral bands",
   "facility_description": "Commercial very-high-resolution Earth-observation satellite operated by Maxar Technologies (formerly DigitalGlobe / GeoEye / Space Imaging).",
   "links": [
     {

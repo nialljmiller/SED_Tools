@@ -1,5 +1,6 @@
 {
   "description": "Canon 5DII digital camera: the transmission of the camera's internal UV/IR-cut ('hot mirror') filter as measured by Kolari Vision on filters removed during full-spectrum conversions.",
+  "short_description": "Canon 5DII camera internal UV/IR-cut filter (Kolari Vision)",
   "facility_description": "Digital cameras (DSLRs, mirrorless, compact, industrial, cinema and phone cameras) whose RGB channel spectral sensitivities or internal IR/UV-cut filter transmissions have been measured.",
   "notes": "Block band: Kolari page has a chart titled 'Canon 5D II ICF Transmission' (image chart only; the NJM curve is a digitization).",
   "licence": {

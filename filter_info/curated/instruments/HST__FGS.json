@@ -1,5 +1,6 @@
 {
   "description": "Hubble’s Fine Guidance Sensors provide pointing measurements and enable precision astrometry.",
+  "short_description": "Hubble Fine Guidance Sensors (FGS) filters",
   "facility_description": "These instruments operate on the Hubble Space Telescope.",
   "notes": "Description from the STScI instrument overview. The general STScI content-use policy applies unless an item carries its own notice. Instrument, calibration and passband papers have not yet been added for these bands.",
   "licence": {

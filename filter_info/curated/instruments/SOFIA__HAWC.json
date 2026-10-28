@@ -1,4 +1,5 @@
 {
+  "short_description": "SOFIA HAWC+ far-infrared camera and polarimeter, band B",
   "licence": {
     "redistribution": "attribution",
     "terms": "\"Authors who utilize SOFIA data should provide the following acknowledgement in their publications\"",

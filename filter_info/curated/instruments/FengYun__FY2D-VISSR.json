@@ -1,5 +1,6 @@
 {
   "description": "The Visible and Infrared Spin Scan Radiometer (VISSR) on FY-2D is a geostationary scanning radiometer providing visible and multi-channel infrared imagery. Its split-window thermal, middle-infrared, and water vapor channels monitor weather systems, sea surface temperature, and severe convective events.",
+  "short_description": "FY-2D Visible and Infrared Spin Scan Radiometer (VISSR) IR channels",
   "facility_description": "FengYun-2D is a first-generation geostationary meteorological satellite of China, launched in December 2006 and operated by the National Satellite Meteorological Center (NSMC) of the China Meteorological Administration (CMA).",
   "notes": "FY-2D VISSR filter curves originate from the NSMC GSICS portal (http://gsics.nsmc.org.cn/portal/en/fycv/srf.html). Site terms assert Copyright © NSMC(NCSW). All Rights Reserved., and redistribution is subject to CMA data policy. DetectorType is left unchanged.",
   "licence": {

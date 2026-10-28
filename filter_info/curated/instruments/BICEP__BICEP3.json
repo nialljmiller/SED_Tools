@@ -1,5 +1,6 @@
 {
   "description": "BICEP3 is a 550 mm refracting telescope at the South Pole for polarimetry of the cosmic microwave background at 95 GHz, in the BICEP and Keck series.",
+  "short_description": "BICEP3 South Pole CMB polarimeter band at 95 GHz",
   "facility_description": "BICEP3 observes from the South Pole.",
   "notes": "The 2014 SPIE abstract is the passband statement used here. A later instrument paper, arXiv:2110.00482, was resolved but not used for the band quote. No requested acknowledgement was found. The only reuse terms opened for the article are the arXiv non-exclusive licence, which does not grant further reuse and says to contact the author. That is not a grant to redistribute a separate numeric curve. No magnitude system was recorded.",
   "licence": {

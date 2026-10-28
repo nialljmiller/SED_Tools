@@ -1,5 +1,6 @@
 {
   "description": "Spectral Instruments optical cameras deployed on the Las Cumbres Observatory 2.0-meter Faulkes Telescopes (FTN and FTS), providing optical imaging in Johnson-Cousins, SDSS, and Pan-STARRS filters.",
+  "short_description": "Spectral cameras on the Las Cumbres 2-m Faulkes Telescopes",
   "facility_description": "Las Cumbres Observatory (LCO) operates twin 2.0-meter Faulkes Telescopes at Haleakala Observatory (FTN) and Siding Spring Observatory (FTS).",
   "links": [
     {

@@ -1,5 +1,6 @@
 {
   "description": "The Visible Infrared Imaging Radiometer Suite (VIIRS) on Suomi NPP (flight model F1, 'the VIIRS sensor model flying on the Suomi NPP platform'): 22 bands, M1-M15, M16A, M16B and I1-I5. The curves are the Northrop Grumman October 2011 band-averaged relative spectral responses that NOAA NCC lists as the 'VIIRS Band-Averaged Relative Spectral Response Functions officially used in the IDPS (provided by Northrop Grumman)', with the Government Team's modifications (I5 cutoff extended to 13.036 um, I3 out-of-band response replaced from NG's Nov 2011 update, peak normalised to 1.0), which the Government Team 'deemed acceptable ... to represent the NPP VIIRS At-Launch RSR'.",
+  "short_description": "VIIRS on Suomi NPP: at-launch band-averaged RSRs (22 bands)",
   "facility_description": "The Joint Polar Satellite System (JPSS) is NOAA's series of polar-orbiting weather satellites (Suomi NPP, NOAA-20/J1, NOAA-21/J2, ...); VIIRS is its visible/infrared imager.",
   "links": [
     {

@@ -1,4 +1,5 @@
 {
+  "short_description": "European Southern Observatory filter database, by ESO filter number",
   "licence": {
     "redistribution": "unknown",
     "terms": "\"All data in the ESO archive retain ESO’s copyright, and are distributed according to the terms of the Creative Commons Attribution 4.0 International license (CC BY 4.0).\" \"ESO data files (both raw and processed data) may be distributed by third parties, and disseminated via other services, according to the terms of the Creative Commons Attribution 4.0 International license. Credit to the ESO provenance of the data must be acknowledged, and the file headers preserved.\"",

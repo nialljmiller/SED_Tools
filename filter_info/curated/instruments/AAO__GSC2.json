@@ -1,5 +1,6 @@
 {
   "description": "The Second-Generation Guide Star Catalog (GSC-II) photographic passbands (Bj, Rf, In) correspond to emulsions and filters exposed with the 1.2m UK Schmidt Telescope at AAO for all-sky southern photographic surveys.",
+  "short_description": "GSC-II southern photographic passbands Bj, Rf, In (UK Schmidt)",
   "facility_description": "The UK Schmidt Telescope (UKST) is a 1.2-meter wide-field survey telescope located at Siding Spring Observatory, historically operated by the Anglo-Australian Observatory (AAO).",
   "notes": "GSC2 southern photographic survey plates were obtained using the UK Schmidt Telescope at Siding Spring Observatory. Catalog construction and distribution was led by STScI in collaboration with Osservatorio Astronomico di Torino. Terms and requested citations follow STScI / MAST guidelines.",
   "licence": {

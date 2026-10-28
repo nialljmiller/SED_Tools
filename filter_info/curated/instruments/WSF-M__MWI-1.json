@@ -1,5 +1,6 @@
 {
   "description": "Microwave Imager (MWI) on WSF-M1. The curves are the channel spectral response functions distributed by the EUMETSAT NWP SAF for the RTTOV radiative-transfer model, converted from frequency to wavelength; bands chNN follow the RTTOV channel order.",
+  "short_description": "Microwave Imager (MWI) on WSF-M1, channel SRFs (EUMETSAT NWP SAF)",
   "facility_description": "RTTOV platform WSF-M (EUMETSAT NWP SAF list of supported platforms).",
   "links": [
     {

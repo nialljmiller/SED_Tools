@@ -1,5 +1,6 @@
 {
   "description": "UVI is Akatsuki’s ultraviolet imager, mapping sunlight reflected by Venusian clouds through 283- and 365-nm filters to study sulphur dioxide and the unidentified ultraviolet absorber. Its filter wheel also carries a diffuser.",
+  "short_description": "Akatsuki UVI ultraviolet imager 283 and 365 nm filters, diffuser",
   "facility_description": "Akatsuki, also called the Venus Climate Orbiter or PLANET-C, is JAXA’s Venus mission for studying the planet’s atmosphere using cameras at several wavelengths and radio occultation.",
   "notes": "Descriptions are paraphrased from live ISAS/JAXA instrument pages and the cited papers. DARTS About explicitly directs data users to ISAS Data Policy. Section 6 permits commercial and non-commercial reuse, requires ISAS/JAXA origin credit, asks users to identify and describe modifications, and preserves third-party restrictions. The DARTS acknowledgement is conditional on significant use of its service; general DARTS archive papers are not mandatory instrument citations. Filter files are PLANET-C calibration documents mirrored by NASA PDS. No instrument-specific extra redistribution restriction was found in the inspected inventories, labels or owner pages. No magnitude system is asserted. A24 cached sources were read only; owner and publisher pages were fetched live on 2026-10-26.",
   "licence": {

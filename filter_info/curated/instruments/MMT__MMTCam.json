@@ -1,4 +1,5 @@
 {
+  "short_description": "MMTCam optical imager (f/5 secondary): u, g, r, z filters",
   "licence": {
     "redistribution": "unknown",
     "terms": "",

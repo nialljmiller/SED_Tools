@@ -1,5 +1,6 @@
 {
   "description": "TESS (Transiting Exoplanet Survey Satellite) is a NASA all-sky space survey designed to discover transiting exoplanets around bright nearby stars. Its instrument comprises four wide-field optical cameras, each with four back-illuminated MIT/Lincoln Laboratory CCDs, observing in a single wide bandpass (Red) covering 600 to 1000 nm centered at 786 nm.",
+  "short_description": "TESS (Transiting Exoplanet Survey Satellite) 600-1000 nm bandpass",
   "facility_description": "TESS is a NASA Astrophysics Explorer mission launched into a high-Earth elliptical lunar-resonant orbit in April 2018.",
   "notes": "The TESS bandpass (NJM band name Red) is defined from 600 to 1000 nm by the transmission of the refractive camera optics and the quantum efficiency of the deep-depletion CCDs (Ricker et al. 2015, Sullivan et al. 2015). Archive data products and calibration files are hosted at MAST under NASA contract NAS5-26555 with public domain status. DetectorType is left unchanged.",
   "licence": {

@@ -1,5 +1,6 @@
 {
   "description": "The Operational Land Imager (OLI) on Landsat 8, a nine-band pushbroom imager (coastal aerosol to SWIR, plus panchromatic and cirrus bands). The curves are the in-band band-average relative spectral responses from the USGS RSR workbook.",
+  "short_description": "Landsat 8 Operational Land Imager (OLI), nine bands",
   "facility_description": "Landsat is the joint NASA/USGS series of Earth-observing satellites (Landsat 1-9, since 1972); USGS operates the missions and distributes the data.",
   "links": [
     {

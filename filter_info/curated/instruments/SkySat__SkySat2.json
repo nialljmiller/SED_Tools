@@ -1,5 +1,6 @@
 {
   "description": "The imager of SkySat-2 (Planet): relative spectral responses of the Blue, Green, Red, NIR and Pan bands from Planet's per-satellite file Skysat_RSR_Skysat2.csv.",
+  "short_description": "SkySat-2 (Planet) imager: Blue, Green, Red, NIR and Pan responses",
   "facility_description": "SkySat: Planet's SkySat satellites (one RSR file per satellite).",
   "links": [
     {

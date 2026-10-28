@@ -1,5 +1,6 @@
 {
   "description": "The Dark Energy Camera (DECam) narrow-band filter set on the Blanco 4m telescope, isolating specific emission lines (such as [OIII], H-alpha, [SII], and z~7 Ly-alpha).",
+  "short_description": "Dark Energy Camera (DECam) narrow-band emission-line filters",
   "facility_description": "The Víctor M. Blanco 4-meter Telescope is an optical reflecting telescope at Cerro Tololo Inter-American Observatory (CTIO) in Chile, operated by NSF NOIRLab.",
   "links": [
     {

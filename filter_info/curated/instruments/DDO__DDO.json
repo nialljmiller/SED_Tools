@@ -1,5 +1,6 @@
 {
   "description": "The DDO photometric system is an intermediate-band filter set (m35, m38, m41, m42, m45, m48) established for stellar classification, surface gravity, and metallicity determination of G and K late-type stars.",
+  "short_description": "DDO intermediate-band system (Mann & von Braun 2015 and ADPS)",
   "facility_description": "The David Dunlap Observatory (DDO) in Richmond Hill, Ontario, was the optical research observatory of the University of Toronto Department of Astronomy and Astrophysics.",
   "notes": "The DDO system was developed by McClure & van den Bergh (1968) and standardized by McClure (1976). The ADPS band variations are compiled in the Asiago Database on Photometric Systems (Moro & Munari 2000). No specific digital redistribution license is stated on the archived observatory page.",
   "licence": {

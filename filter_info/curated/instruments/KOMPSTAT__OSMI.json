@@ -1,5 +1,6 @@
 {
   "description": "OSMI (KOMPSAT): relative spectral responses of the six bands 412-865 nm from NASA OBPG's table OSMI_RSRs.txt.",
+  "short_description": "Ocean Scanning Multispectral Imager (OSMI, KOMPSAT), 412-865 nm",
   "facility_description": "KOMPSAT satellites (SVO facility name KOMPSTAT).",
   "links": [
     {

@@ -1,5 +1,6 @@
 {
   "description": "GEMS2A mission sensor (Weather Stream). The curves are the channel spectral response functions distributed by the EUMETSAT NWP SAF for the RTTOV radiative-transfer model, converted from frequency to wavelength; bands chNN follow the RTTOV channel order.",
+  "short_description": "Weather Stream GEMS2A mission sensor channel SRFs (NWP SAF)",
   "facility_description": "Weather Stream GEMS2A mission (RTTOV platform GEMS2; NWP SAF SRF page).",
   "links": [
     {

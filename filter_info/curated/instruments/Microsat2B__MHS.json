@@ -1,5 +1,6 @@
 {
   "description": "MHS on Microsat-2b (NCMRWF, MoES, India). The curves are the channel spectral response functions distributed by the EUMETSAT NWP SAF for the RTTOV radiative-transfer model, converted from frequency to wavelength; bands chNN follow the RTTOV channel order.",
+  "short_description": "MHS channel responses on Microsat-2b (NWP SAF RTTOV SRFs)",
   "facility_description": "RTTOV platform Microsat2B (EUMETSAT NWP SAF list of supported platforms).",
   "links": [
     {

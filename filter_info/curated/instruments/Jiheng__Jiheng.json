@@ -1,5 +1,6 @@
 {
   "description": "Jiheng microwave radiometer (RTTOV platform Jiheng, satellite id 1). The curves are the channel spectral response functions distributed by the EUMETSAT NWP SAF for the RTTOV radiative-transfer model, converted from frequency to wavelength; bands chNN follow the RTTOV channel order.",
+  "short_description": "Jiheng microwave radiometer channel SRFs (NWP SAF, for RTTOV)",
   "facility_description": "RTTOV platform Jiheng (EUMETSAT NWP SAF list of supported platforms).",
   "links": [
     {

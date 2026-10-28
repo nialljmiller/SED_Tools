@@ -1,5 +1,6 @@
 {
   "description": "CHEOPS (CHaracterising ExOPlanet Satellite) is an ESA space telescope designed to measure the transits and radii of known exoplanets around bright stars. Its payload comprises an optical telescope and a single frame-transfer CCD photometer observing in a broad passband from 330 to 1100 nm.",
+  "short_description": "CHEOPS exoplanet satellite broad 330-1100 nm CCD passband",
   "facility_description": "CHEOPS is an ESA small-class space mission operating in a Sun-synchronous low-Earth orbit.",
   "notes": "The CHEOPS passband is formed by the combination of telescope optical transmission and CCD quantum efficiency from 330 to 1100 nm, as documented in the ESA CHEOPS bandpass note (README_CHEOPS_Bandpass-April2021.pdf). The note explicitly states that the bandpass represents the ratio between measured electrons and incident photons, confirming a photon-counting detector type. DetectorType is left unchanged. Terms of use and required acknowledgement are from the ESA Space Science Archives terms and conditions.",
   "licence": {

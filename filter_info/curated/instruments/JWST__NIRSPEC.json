@@ -1,5 +1,6 @@
 {
   "description": "NIRSpec is JWST's near-infrared spectrograph, covering about 0.6 to 5.3 μm with a micro-shutter array, an integral-field unit and fixed slits. These bands are the medium- and high-resolution grating plus long-pass pairs and the low-resolution prism, not the target-acquisition filters.",
+  "short_description": "JWST NIRSpec spectrograph: grating/long-pass pairs and the prism",
   "facility_description": "The James Webb Space Telescope is a joint NASA, ESA and CSA infrared observatory that operates at the Sun-Earth L2 point.",
   "notes": "NJM names the grating bands with an underscore; JDox prints a slash. The quote for the shared comment stops before an HTML link, at the words 'as shown in '. F070LP, F100LP, F110W, F140X and CLEAR alone are not NJM bands. Jakobsen et al. 2022 and Böker et al. 2023 are the instrument papers named on the NIRSpec page; arXiv:2301.13766 is the Böker preprint and was not repeated. DetectorType was left unchanged. The MAST acknowledgement and STScI content-use policy match the other JWST instruments.",
   "licence": {

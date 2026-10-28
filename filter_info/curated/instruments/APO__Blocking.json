@@ -1,5 +1,6 @@
 {
   "description": "Long-pass blocking filters (GG, OG and RG coloured glass) in the Apache Point Observatory filter inventory.",
+  "short_description": "Apache Point long-pass blocking filters (GG, OG, RG coloured glass)",
   "facility_description": "The ARC 3.5-meter Telescope is an optical/infrared telescope at Apache Point Observatory (APO) in New Mexico, operated by the Astrophysical Research Consortium.",
   "links": [
     {

@@ -1,5 +1,6 @@
 {
   "description": "WISE mapped the whole sky in four mid-infrared bands, W1 to W4 (about 3.4, 4.6, 12 and 22 µm). The curves are the WISE relative system response (RSR) curves from the All-Sky Release Explanatory Supplement.",
+  "short_description": "WISE W1-W4 relative system response curves (3.4-22 µm)",
   "facility_description": "The Wide-field Infrared Survey Explorer was a NASA mission, a joint project of UCLA and JPL/Caltech, with data released through IRSA.",
   "notes": "IPAC publishes two RSR sets: QE-based (response per photon; RSR-W?.txt) and energy-based (λR(λ); RSR-W?.EE.txt). Which set NJM holds should be checked before DetectorType is interpreted; DetectorType left unchanged. The page also describes an empirical W4 wavelength rescaling (factor 1.033) for red sources. Band central wavelengths in description are the nominal W1-W4 values cited on the page (W3 12 µm, W4 22 µm); W1/W2 values (3.4, 4.6 µm) appear in the Fig. 5 caption.",
   "licence": {

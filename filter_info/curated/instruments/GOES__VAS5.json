@@ -1,4 +1,5 @@
 {
+  "short_description": "GOES-5 VAS atmospheric sounder channels",
   "licence": {
     "redistribution": "unknown",
     "terms": "\"These images are freely available for noncommercial use with proper attribution.\"",

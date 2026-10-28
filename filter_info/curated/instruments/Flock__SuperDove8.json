@@ -1,5 +1,6 @@
 {
   "description": "PlanetScope SuperDove (PSB.SD), all eight bands: relative spectral responses from Planet's Superdove.csv.",
+  "short_description": "Planet SuperDove (PSB.SD) imager, all eight bands",
   "facility_description": "Planet Labs satellites (SkySat; PlanetScope Doves).",
   "links": [
     {

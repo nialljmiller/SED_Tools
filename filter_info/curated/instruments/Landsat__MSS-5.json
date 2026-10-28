@@ -1,5 +1,6 @@
 {
   "description": "The Multispectral Scanner System (MSS) on Landsat 5, a four-band visible/near-infrared scanner. The curves are the band-average relative spectral responses (band1-band4) published by USGS in the Landsat Spectral Characteristics Viewer.",
+  "short_description": "Landsat 5 Multispectral Scanner System (MSS), bands 1-4",
   "facility_description": "Landsat is the joint NASA/USGS series of Earth-observing satellites (Landsat 1-9, since 1972); USGS operates the missions and distributes the data.",
   "links": [
     {

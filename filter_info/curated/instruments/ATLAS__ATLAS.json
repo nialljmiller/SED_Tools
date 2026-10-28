@@ -1,5 +1,6 @@
 {
   "description": "ATLAS is a University of Hawaii survey funded by NASA that scans the sky for moving objects.",
+  "short_description": "ATLAS (Asteroid Terrestrial-impact Last Alert System) c and o filters",
   "notes": "Owner page opened in this session. No numerical-filter redistribution licence or requested acknowledgement established. No per-band fields or paper references inferred. Public download access is not redistribution permission. ATLAS data policy requires offering co-authorship for non-public data; no applicability to public numerical filter curves was established. Homepage links the Tonry et al. (2018) system definition paper, but paper-level reference validation was not completed.",
   "licence": {
     "redistribution": "unknown",

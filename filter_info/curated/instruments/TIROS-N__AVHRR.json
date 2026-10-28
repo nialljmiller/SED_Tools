@@ -1,5 +1,6 @@
 {
   "description": "The Advanced Very High Resolution Radiometer (AVHRR/1, serial A104) on TIROS-N. Curves: the vendor-measured (ITT) normalised spectral response functions collected by NOAA/NESDIS STAR.",
+  "short_description": "TIROS-N Advanced Very High Resolution Radiometer (AVHRR/1)",
   "facility_description": "TIROS-N, the first of NOAA's TIROS-N series of polar-orbiting satellites.",
   "links": [
     {

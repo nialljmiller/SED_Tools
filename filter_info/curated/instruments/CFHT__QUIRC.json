@@ -1,5 +1,6 @@
 {
   "description": "QUIRC (Quick Infrared Camera) was a near-infrared imager utilizing a 1024 by 1024 pixel HAWAII HgCdTe detector array, deployed at CFHT with the Hokupaʻa adaptive optics system and at the UH 2.2-meter telescope.",
+  "short_description": "QUIRC near-infrared camera filters (CFHT and UH 2.2-m)",
   "facility_description": "The Canada-France-Hawaii Telescope (CFHT) is a 3.6-meter optical and infrared telescope operated by NRC (Canada), CNRS/INSU (France), and the University of Hawaii, located on Maunakea in Hawaii.",
   "notes": "QUIRC was developed by Klaus Hodapp and the University of Hawaii Institute for Astronomy (IfA) around the Rockwell 1024x1024 HAWAII focal plane array, operating in the 1 to 2.5 micron near-infrared window (J, H, K, Kp, Ks, and narrowband lines). At CFHT, it served as science camera behind the Hokupaʻa curvature adaptive optics system.",
   "licence": {

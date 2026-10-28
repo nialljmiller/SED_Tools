@@ -1,5 +1,6 @@
 {
   "description": "Pan-STARRS1 uses five broadband filters, g, r, i, z and y, with a sixth wide w filter spanning approximately g through i. The w filter was mainly used for near-Earth object surveys.",
+  "short_description": "Pan-STARRS1 g, r, i, z, y and wide w passbands (Tonry et al. 2012)",
   "facility_description": "Pan-STARRS1 is a sky-survey facility whose public archive provides observations in its natural photometric system.",
   "notes": "Curve-specific redistribution rights remain unresolved. The general MAST data-use policy is contextual, not a demonstrated licence for the published Tonry et al. passband table or manufacturer measurements. The PS1 owner filter page links published overall throughputs and describes the six passbands; it describes capture cross-section per incident photon at a standard airmass of 1.2. The acknowledgement is copied from the explicitly requested reusable MAST acknowledgement. No DetectorType change is proposed.",
   "licence": {

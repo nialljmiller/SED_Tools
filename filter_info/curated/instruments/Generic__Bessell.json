@@ -1,5 +1,6 @@
 {
   "description": "Bessell & Murphy (2012) revised UBVRI standard passbands, tabulated as normalised photonic (photon-counting) responses for synthetic photometry on the Johnson-Cousins system.",
+  "short_description": "Bessell UBVRI: Bessell & Murphy 2012 curves plus SVO copies",
   "facility_description": "Generic standard-system passbands, not tied to a single telescope; these are distributed through the CDS (Strasbourg) catalogue J/PASP/124/140.",
   "notes": "VizieR's rules say data are free for scientific use with citation of the original authors and publication, and that commercial use depends on the data origin; this catalogue comes from PASP (not AAS, not A&A) and its ReadMe states no copyright. Bessell (1990) is listed for context only: NJM's notes say these curves are the 2012 photonic set, not the 1990 energy-response passbands. The VizieR acknowledgement text is copied verbatim from the VizieR rules page; it is a request ('would be appreciated'). DetectorType unchanged (NJM already records photon).",
   "licence": {

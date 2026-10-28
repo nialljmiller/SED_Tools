@@ -1,5 +1,6 @@
 {
   "description": "OmegaCAM is the 32-CCD, one-square-degree imager on the VLT Survey Telescope. The two bands without an SVO record are the segmented Johnson B and V coloured-glass filters.",
+  "short_description": "OmegaCAM 32-CCD imager filters, VLT Survey Telescope (VST)",
   "facility_description": "The VLT Survey Telescope is the 2.6 m survey telescope at ESO's Paranal Observatory, and OmegaCAM is its camera.",
   "links": [
     {

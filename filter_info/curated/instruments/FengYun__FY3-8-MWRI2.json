@@ -1,5 +1,6 @@
 {
   "description": "MWRI-2 on RTTOV FY-3 satellite id 8. The curves are the channel spectral response functions distributed by the EUMETSAT NWP SAF for the RTTOV radiative-transfer model, converted from frequency to wavelength; bands chNN follow the RTTOV channel order.",
+  "short_description": "FY-3 MWRI-2 microwave channels, RTTOV FY-3 satellite id 8 (NWP SAF)",
   "facility_description": "FengYun FY-3 satellites (RTTOV platform FY-3; data from CMA or BNU per the README).",
   "links": [
     {

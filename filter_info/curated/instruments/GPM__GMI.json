@@ -1,5 +1,6 @@
 {
   "description": "GPM Microwave Imager (GMI) on GPM. The curves are the channel spectral response functions distributed by the EUMETSAT NWP SAF for the RTTOV radiative-transfer model, converted from frequency to wavelength; bands chNN follow the RTTOV channel order.",
+  "short_description": "GPM Microwave Imager (GMI) channels, RTTOV SRFs from NWP SAF",
   "facility_description": "The GPM satellite (RTTOV platform GPM).",
   "links": [
     {

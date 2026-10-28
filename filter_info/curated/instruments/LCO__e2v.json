@@ -1,4 +1,5 @@
 {
+  "short_description": "Swope e2v CCD passbands (B, g, r, i), since 2013",
   "licence": {
     "redistribution": "attribution",
     "terms": "\"all data are published under a Creative Commons BY license\" \"granting right to distribute, remix and build upon the work provided the authors are credited for the original creation\"",

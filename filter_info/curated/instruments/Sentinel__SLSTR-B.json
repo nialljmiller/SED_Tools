@@ -1,5 +1,6 @@
 {
   "description": "The Sea and Land Surface Temperature Radiometer (SLSTR) on Sentinel-3B, a dual-view radiometer with nine standard channels S1-S9 (0.55-12 um). The curves are the measured focal-plane spectral responses from the STFC Rutherford Appleton Laboratory spectral calibration.",
+  "short_description": "Sentinel-3B Sea and Land Surface Temperature Radiometer S1-S9",
   "facility_description": "Sentinel-3 is the Copernicus ocean and land monitoring mission (ESA/EUMETSAT), with satellites Sentinel-3A (2016) and Sentinel-3B (2018).",
   "links": [
     {

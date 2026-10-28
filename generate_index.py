@@ -33,6 +33,8 @@ VEGA_CANDIDATES = [
 # sun_mod_001 from 9600 A, the composite SVO uses (data/sun/README.md). SED_SUN_SPECTRUM overrides it.
 REPO_SUN = Path(__file__).resolve().parent / "data" / "sun" / "sun_flam.csv"
 SUN_CANDIDATES = [os.environ.get("SED_SUN_SPECTRUM", ""), str(REPO_SUN)]
+# Which SVO instruments each NJM instrument duplicates (filter_info/svo_instruments.py writes it).
+SVO_INSTRUMENTS = Path(__file__).resolve().parent / "filter_info" / "svo_instruments.json"
 # SVO's own Fsun and AfAv, which info.json copies under "svo"; the units are SVO's.
 SVO_FIELDS = {
     "Fsun": {
@@ -219,7 +221,24 @@ def write_properties(instrument_dir: Path, filter_files, vega, reference, sun=No
     return True
 
 
-def scan_filters(base_path: Path, vega=None, reference=None, info_sources=None, sun=None):
+def picker_fields(curated_dir: Path, svo_instruments, facility: str, instrument: str):
+    """The instrument's one-line "description" and the "svo_instruments" it duplicates.
+
+    "description" is the curated short_description; "svo_instruments" comes from
+    svo_instruments.json, where an empty list means assessed and none is the same
+    product.  A key is left out while the instrument is unassessed.
+    """
+    fields = {}
+    curated = curated_dir / f"{facility}__{instrument}.json"
+    short = json.loads(curated.read_text()).get("short_description") if curated.is_file() else None
+    if short:
+        fields["description"] = short
+    if f"{facility}/{instrument}" in svo_instruments:
+        fields["svo_instruments"] = svo_instruments[f"{facility}/{instrument}"]
+    return fields
+
+
+def scan_filters(base_path: Path, vega=None, reference=None, info_sources=None, sun=None, svo_instruments=None):
     """Scan filters directory for facility/instrument information."""
     filters_dir = base_path / "filters"
 
@@ -286,6 +305,9 @@ def scan_filters(base_path: Path, vega=None, reference=None, info_sources=None, 
                 "size_bytes": total_size,
                 "size_human": format_size(total_size),
             }
+            if info_sources is not None:
+                instruments[instrument_name].update(picker_fields(
+                    info_sources.curated_dir, svo_instruments or {}, facility_name, instrument_name))
 
         filters_detailed[facility_name] = {
             "name": facility_name,
@@ -294,6 +316,17 @@ def scan_filters(base_path: Path, vega=None, reference=None, info_sources=None, 
         }
 
     return facilities, filters_detailed, total_filters
+
+
+def warn_unassessed(filters_detailed):
+    """Name the instruments that index.json gives no description or svo_instruments."""
+    for key, how in (("description", "a short_description in filter_info/curated/instruments/"),
+                     ("svo_instruments", "a run of python3 -m filter_info.svo_instruments")):
+        missing = [f"{facility}/{name}" for facility, entry in filters_detailed.items()
+                   for name, instrument in entry["instruments"].items() if key not in instrument]
+        if missing:
+            print(f"WARNING: {len(missing)} instruments have no '{key}' in index.json (they need {how}): "
+                  + ", ".join(missing))
 
 
 def format_size(size_bytes: int) -> str:
@@ -366,7 +399,10 @@ def generate_index(data_dir: str = None):
                    "ordered false colour for ultraviolet and infrared bands."),
     }
     info_sources = InfoSources(Path(__file__).resolve().parent)
-    facilities, filters_detailed, total_filters = scan_filters(data_dir, vega, reference, info_sources, sun)
+    duplicates = json.loads(SVO_INSTRUMENTS.read_text())
+    facilities, filters_detailed, total_filters = scan_filters(
+        data_dir, vega, reference, info_sources, sun, duplicates["instruments"])
+    warn_unassessed(filters_detailed)
     # Reference keys info.json uses but references.json lacks:
     # `python -m filter_info.references resolve` looks them up for the next run.
     UNRESOLVED.write_text("".join(f"{k}\n" for k in sorted(info_sources.unresolved)))
@@ -376,6 +412,7 @@ def generate_index(data_dir: str = None):
         "references": len(info_sources.references),
         "unresolved_references": len(info_sources.unresolved),
         "svo_fields": SVO_FIELDS,
+        "svo_instruments": {k: duplicates[k] for k in ("generated", "svo_list", "thresholds", "method")},
     }
 
     # Build index structure

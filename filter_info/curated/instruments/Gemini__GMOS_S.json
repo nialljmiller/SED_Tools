@@ -1,5 +1,6 @@
 {
   "description": "The Gemini Multi-Object Spectrograph South (GMOS-S) is an optical imager and multi-slit/integral-field spectrograph mounted on Gemini South. Its filter complement includes broad-band Sloan-like filters and narrow-band emission line filters for optical imaging and spectroscopy.",
+  "short_description": "Gemini South GMOS-S imaging filters (Sloan-like and narrow-band)",
   "facility_description": "The International Gemini Observatory operates twin 8.1-meter optical and infrared telescopes atop Maunakea in Hawai'i (Gemini North) and Cerro Pachón in Chile (Gemini South), managed by NSF NOIRLab.",
   "notes": "GMOS-S laboratory transmission scans are provided on Gemini instrumentation pages; redistribution terms for numerical transmission files are not specified under NOIRLab open content policy.",
   "licence": {

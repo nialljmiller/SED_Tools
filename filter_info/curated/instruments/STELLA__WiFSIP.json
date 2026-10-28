@@ -1,4 +1,5 @@
 {
+  "short_description": "Wide Field STELLA Imaging Photometer (WiFSIP) filters",
   "licence": {
     "redistribution": "attribution",
     "terms": "\"All papers with data obtained partly or exclusively with the STELLA instruments should place the following sentence as a footnote to the paper title\" \"The allocation of storage and tools is provided for scientific uses.\" \"reserves the right to remove the allocated storage if this is used for illegal, commercial or other private purposes\"",

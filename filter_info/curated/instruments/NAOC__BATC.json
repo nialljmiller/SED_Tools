@@ -1,4 +1,5 @@
 {
+  "short_description": "Beijing-Arizona-Taiwan-Connecticut (BATC) filters, NAOC",
   "licence": {
     "redistribution": "attribution",
     "terms": "\"The data retrieved with VizieR are free of usage in a scientific context\" \"the original authors and publication references including the publisher have to be explicitely cited\"",

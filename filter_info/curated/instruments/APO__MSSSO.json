@@ -1,5 +1,6 @@
 {
   "description": "The MSSSO filter set at Apache Point Observatory consists of 3.125-inch square broad-band U, B, V, R, and I filters constructed according to Mount Stromlo and Siding Spring Observatories specifications for the Bessell UBVRI system, offered for ARCTIC and Agile at the ARC 3.5-meter telescope.",
+  "short_description": "MSSSO Bessell UBVRI filters at Apache Point (ARCTIC and Agile)",
   "facility_description": "The ARC 3.5-meter Telescope is an optical and infrared telescope at Apache Point Observatory (APO) in the Sacramento Mountains of New Mexico, owned and operated by the Astrophysical Research Consortium.",
   "notes": "The APO MSSSO page notes these are theoretical transmission curves calculated from Schott glass catalog transmissions following Bessell (1990, 1995). Governed by NMSU copyright policy requiring permission for reproduction.",
   "licence": {

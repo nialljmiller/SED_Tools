@@ -1,5 +1,6 @@
 {
   "description": "NIRCam is JWST's near-infrared camera for imaging, coronagraphy, slitless spectroscopy and time-series work from about 0.6 to 5 μm. These bands are the short- and long-wavelength filters, including the pupil-wheel filters that are used with a second filter.",
+  "short_description": "JWST NIRCam near-infrared camera filters, plus previous NJM curves",
   "facility_description": "The James Webb Space Telescope is a joint NASA, ESA and CSA infrared observatory that operates at the Sun-Earth L2 point.",
   "notes": "The filter page labels the archive link 'version 7.0: Jan 2025', but the file name on that link is nircam_throughputs_4Nov2022_v5.tar.gz. Pupil-wheel filters F162M, F164N, F323N, F405N, F466N and F470N are used with a second filter. Rieke et al. 2008 is cited there for the bandwidth definition, not as a JWST filter list. Tokunaga & Vacca 2005 is also cited, for the Mauna Kea set, and was not used as a NIRCam reference. No magnitude system is stated on the filter page. DetectorType was left unchanged. The curves include detector QE. The MAST acknowledgement and STScI content-use policy are the same as for the other JWST instruments; JDox does not repeat a licence.",
   "licence": {

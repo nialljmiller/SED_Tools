@@ -1,5 +1,6 @@
 {
   "description": "Hipparcos was an ESA high-precision astrometry and photometry space mission. The Hipparcos instrument observed through a broad optical band (Hp) covering approximately 340 to 850 nm using an image dissector tube detector.",
+  "short_description": "Hipparcos Hp passband: Bessell & Murphy 2012, Bessell 2000, SVO copy",
   "facility_description": "Hipparcos was a European Space Agency astrometric satellite launched into Earth orbit in 1989.",
   "notes": "Passband curve is the Bessell & Murphy (2012) table 2 normalised photonic response (CDS catalogue J/PASP/124/140, table2.dat) for photon-counting synthetic photometry. New Hipparcos reduction is validated in van Leeuwen (2007). DetectorType is left unchanged.",
   "licence": {

@@ -1,4 +1,5 @@
 {
+  "short_description": "Gravitational-wave Optical Transient Observer (GOTO) filters",
   "licence": {
     "redistribution": "public",
     "terms": "\"GOTO resources and data files for public release\"",

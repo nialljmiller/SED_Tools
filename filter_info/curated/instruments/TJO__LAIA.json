@@ -1,4 +1,5 @@
 {
+  "short_description": "LAIA optical imager filters on the Telescopio Joan Oro (TJO)",
   "licence": {
     "redistribution": "permission",
     "terms": "\"you need to obtain our prior written consent\" \"not to directly or indirectly carry out any type of commercial exploitation of the contents\"",

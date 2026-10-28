@@ -1,5 +1,6 @@
 {
   "description": "The South Galactic Cap u-band Sky Survey (SCUSS) was a deep optical photometric survey covering about 5,000 square degrees in the southern Galactic cap, using the 90Prime prime-focus imager on the Bok 2.3-meter telescope.",
+  "short_description": "SCUSS u-band survey filter, with and without atmosphere (Bok 90Prime)",
   "facility_description": "The 2.3-meter Bok Telescope on Kitt Peak is operated by Steward Observatory, University of Arizona.",
   "notes": "SCUSS utilized a dedicated high-throughput u-band filter on 90Prime at the Bok telescope. Survey data and profiles were prepared under NAOC and Steward collaboration; redistribution terms for raw profile files are not explicitly released under an open copyright license.",
   "licence": {

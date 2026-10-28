@@ -1,4 +1,5 @@
 {
+  "short_description": "Telescopi Fabra-ROA Montsec (TFRM) GG475 longpass filter",
   "licence": {
     "redistribution": "attribution",
     "terms": "\"You might use and publish the calculated curves for your purposes, but the curves must remain unmodified.\" \"The origin of published curves must be identifiable by a direct link to our online calculator\" \"All measurement data used for the calculation of the filter curves are the property of SCHOTT AG.\"",

@@ -1,5 +1,6 @@
 {
   "description": "LABOCA, the Large APEX Bolometer Camera, is a 295-bolometer total-power camera on the APEX telescope for continuum mapping in the 870 micrometre atmospheric window. Cold filters define a passband centred at 345 GHz.",
+  "short_description": "APEX LABOCA bolometer camera passband at 345 GHz (870 μm)",
   "facility_description": "The Atacama Pathfinder Experiment is a 12-metre telescope at 5100 metres on the Chajnantor plateau in Chile, a project of the Max Planck Institute for Radio Astronomy hosted by ALMA.",
   "notes": "The public ESO URL /public/teles-instr/apex/laboca/ returned HTTP 404. The passband numbers are the figure caption in Siringo et al. 2009 (arXiv HTML). The APEX acknowledgement is the sentence the ESO archive policy requires for publications that use APEX observational data; the programme-ID placeholders and the footnote digits 1 and 2 are printed on that page. That sentence was not shown to cover the filter curve. The archive policy puts ESO data files under CC BY 4.0. The public copyright page does not put scientific papers or other site text under that licence. Neither page identifies the LABOCA transmission curve, so redistribution of the curve is unknown. No magnitude system is stated. SVO did not answer from this machine, so the SVO bibcodes already stored on NJM were not copied.",
   "licence": {

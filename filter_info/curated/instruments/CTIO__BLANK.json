@@ -1,5 +1,6 @@
 {
   "description": "CTIO BLANK represents the general pool of broad-band and narrow-band optical filters used on the Blanco 4-meter and other telescopes at CTIO, including Harris, Tektronix, Washington, Strömgren, and Gunn filter sets.",
+  "short_description": "CTIO general filter pool (BLANK) for the Blanco 4-m and others",
   "facility_description": "The Víctor M. Blanco 4-meter Telescope is operated at Cerro Tololo Inter-American Observatory (CTIO) in Chile as a program of NSF NOIRLab.",
   "notes": "CTIO BLANK includes optical standard and interference filters used with various prime-focus and Cassegrain instruments at the Blanco telescope. Curves are from NOIRLab observatory records without an open redistribution licence.",
   "licence": {

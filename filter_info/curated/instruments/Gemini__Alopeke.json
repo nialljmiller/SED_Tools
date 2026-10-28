@@ -1,5 +1,6 @@
 {
   "description": "'Alopeke is a dual-channel high-resolution optical speckle interferometer and wide-field imager mounted on the Gemini North telescope. It uses a dichroic beamsplitter at 674 nm to provide simultaneous two-color diffraction-limited imaging in narrow-band speckle filters and standard SDSS broad-band filters.",
+  "short_description": "Gemini North 'Alopeke speckle imager: narrow-band and SDSS filters",
   "facility_description": "The International Gemini Observatory operates twin 8.1-meter optical and infrared telescopes atop Maunakea in Hawai'i (Gemini North) and Cerro Pachón in Chile (Gemini South), managed by NSF NOIRLab.",
   "notes": "'Alopeke filters include narrow-band interference filters (466, 562, 716, 832 nm) from Edmund Optics and wide-field SDSS filters (u, g, r, i, z). Transmission curves are measured and distributed on Gemini instrumentation pages; general redistribution rights are not explicitly specified under NOIRLab policy.",
   "licence": {

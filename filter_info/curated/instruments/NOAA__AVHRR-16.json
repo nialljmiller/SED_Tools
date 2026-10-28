@@ -1,5 +1,6 @@
 {
   "description": "The Advanced Very High Resolution Radiometer (AVHRR/3, serial A301) on NOAA-16. Curves: the vendor-measured (ITT) normalised spectral response functions collected by NOAA/NESDIS STAR.",
+  "short_description": "NOAA-16 Advanced Very High Resolution Radiometer (AVHRR/3) channels",
   "facility_description": "NOAA polar-orbiting operational environmental satellites (POES).",
   "links": [
     {

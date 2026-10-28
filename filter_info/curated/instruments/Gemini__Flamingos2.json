@@ -1,5 +1,6 @@
 {
   "description": "FLAMINGOS-2 is a near-infrared wide-field imager and multi-object spectrograph mounted at the Cassegrain focus of Gemini South. Its filter wheels contain broad-band and narrow-band near-infrared filters covering the 0.9 to 2.5 micron spectral region for imaging and spectroscopic order sorting.",
+  "short_description": "Gemini South FLAMINGOS-2 near-infrared imager filters",
   "facility_description": "The International Gemini Observatory operates twin 8.1-meter optical and infrared telescopes atop Maunakea in Hawai'i (Gemini North) and Cerro Pachón in Chile (Gemini South), managed by NSF NOIRLab.",
   "notes": "FLAMINGOS-2 filter profiles incorporate the optical train (entrance window, filter, nine lenses, two flat mirrors) excluding detector, grisms, telescope and atmosphere. Raw laboratory scan data are published on Gemini instrumentation pages; general redistribution rights are not explicitly specified under NOIRLab policy.",
   "licence": {

@@ -1,5 +1,6 @@
 {
   "description": "The USNO 40-inch u'g'r'i'z' standard-star photometric system establishing the primary standard star network for the Sloan Digital Sky Survey (SDSS).",
+  "short_description": "USNO 40-inch u'g'r'i'z' system, the SDSS standard-star passbands",
   "facility_description": "The USNO 40-inch telescope is an optical telescope located at the United States Naval Observatory Flagstaff Station (NOFS) in Arizona.",
   "links": [
     {

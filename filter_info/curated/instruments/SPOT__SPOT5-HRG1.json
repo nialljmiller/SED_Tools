@@ -1,5 +1,6 @@
 {
   "description": "The HRG1 imager of SPOT 5: spectral sensitivities of its bands from the table SPOT_spectral_sensitivity.xls ('Spectral sensitivities & Normal solar equivalent irradiances').",
+  "short_description": "SPOT 5 HRG1 imager band spectral sensitivities (Pa, B1-B3, MIR)",
   "facility_description": "SPOT: the French Earth-observation satellite series (SPOT 1-5 in this table).",
   "links": [
     {

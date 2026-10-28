@@ -1,5 +1,6 @@
 {
   "description": "IO:O (Infrared-Optical: Optical) is the facility wide-field optical CCD camera on the 2.0-meter robotic Liverpool Telescope, equipped with Bessell and SDSS filter sets.",
+  "short_description": "Liverpool Telescope IO:O optical CCD camera: Bessell, SDSS, H-alpha",
   "facility_description": "The Liverpool Telescope is a 2.0-meter fully robotic telescope operated by Liverpool John Moores University at Roque de los Muchachos Observatory on La Palma.",
   "links": [
     {

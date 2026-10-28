@@ -1,4 +1,5 @@
 {
+  "short_description": "Kyoto Okayama Optical Low-dispersion Spectrograph (KOOLS) filters",
   "licence": {
     "redistribution": "restricted",
     "terms": "\"Copyright(c) 1994- Okayama Astrophysical Observatory, NAOJ, All rights reserved.\"",

@@ -1,5 +1,6 @@
 {
   "description": "The POLDER instrument on PARASOL: relative spectral responses of its nine channels (443, 490, 565, 670, 763, 765, 865, 910, 1020 nm) from CNES's workbook PARASOL_spectral_response.xls.",
+  "short_description": "POLDER on PARASOL (CNES), nine channels from 443 to 1020 nm",
   "facility_description": "PARASOL (CNES); per the CNES archive page it measured in coincidence with the CALIPSO lidar.",
   "links": [
     {

@@ -1,5 +1,6 @@
 {
   "description": "Mosaic II was a wide-field optical camera mounted at the prime focus of the Blanco 4-meter telescope at CTIO, employing an 8192x8192 pixel CCD mosaic array and a wide variety of broad-band and narrow-band filters.",
+  "short_description": "Mosaic II prime-focus CCD camera filters, Blanco 4-m at CTIO",
   "facility_description": "The Víctor M. Blanco 4-meter Telescope is operated at Cerro Tololo Inter-American Observatory (CTIO) in Chile as part of NSF NOIRLab.",
   "notes": "Mosaic II prime-focus imager operated at CTIO from 1999 until DECam commissioning. Filter curves were measured at CTIO.",
   "licence": {

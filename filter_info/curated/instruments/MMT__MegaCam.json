@@ -1,4 +1,5 @@
 {
+  "short_description": "Megacam CCD mosaic camera filters (at MMT and Magellan)",
   "licence": {
     "redistribution": "unknown",
     "terms": "",

@@ -1,5 +1,6 @@
 {
   "description": "The imager of SPOT 7 (Airbus Defence and Space): normalised relative spectral responses of the blue, green, red, NIR and panchromatic bands.",
+  "short_description": "SPOT 7 NAOMI imager: blue, green, red, NIR and panchromatic bands",
   "facility_description": "SPOT 6 and SPOT 7 are Airbus' 1.5 m-class optical Earth-observation satellites (NAOMI cameras).",
   "links": [
     {

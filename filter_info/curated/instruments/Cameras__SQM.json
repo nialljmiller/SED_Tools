@@ -1,5 +1,6 @@
 {
   "description": "The Unihedron Sky Quality Meter (SQM) is a compact photometer widely used for measuring night-sky brightness and light pollution in visual magnitudes per square arcsecond.",
+  "short_description": "Unihedron Sky Quality Meter (SQM) bands, CM-500 filter, scotopic eye",
   "facility_description": "The Sky Quality Meter is a portable commercial and observatory-mounted night-sky photometer manufactured by Unihedron.",
   "links": [
     {

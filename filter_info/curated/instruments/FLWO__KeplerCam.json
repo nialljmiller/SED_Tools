@@ -1,5 +1,6 @@
 {
   "description": "KeplerCam was a 4096x4096 pixel CCD camera with a Fairchild CCD 486 detector on the 1.2-meter telescope at FLWO, used for optical photometry in Harris BVRI, SDSS ugriz, and narrowband filters.",
+  "short_description": "KeplerCam on FLWO 1.2m: Harris BVRI, SDSS ugriz and narrow bands",
   "facility_description": "The Fred Lawrence Whipple Observatory (FLWO) is an observatory facility on Mount Hopkins, Arizona, operated by the Center for Astrophysics | Harvard & Smithsonian.",
   "notes": "KeplerCam operated at the Cassegrain focus of the FLWO 1.2m telescope. Filters included 4-inch Harris BVRI sets, SDSS (Sloan) ugriz sets, and narrowbands. Terms follow CfA / Smithsonian Open Access public domain policy.",
   "licence": {

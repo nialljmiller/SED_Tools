@@ -1,5 +1,6 @@
 {
   "description": "The Thermal Infrared Sensor-2 (TIRS-2) on Landsat 9, with bands 10 and 11. The curves are the band-average relative spectral responses measured in instrument-level thermal vacuum testing (USGS RSR workbook).",
+  "short_description": "Landsat 9 Thermal Infrared Sensor-2 (TIRS-2), bands 10 and 11",
   "facility_description": "Landsat is the joint NASA/USGS series of Earth-observing satellites (Landsat 1-9, since 1972); USGS operates the missions and distributes the data.",
   "links": [
     {

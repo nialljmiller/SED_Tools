@@ -1,5 +1,6 @@
 {
   "description": "The Tycho experiment aboard the ESA Hipparcos satellite used star mapper photomultiplier tubes to observe stars simultaneously in two optical photometric bands: Tycho B (BT) and Tycho V (VT).",
+  "short_description": "Tycho BT and VT passbands of the ESA Hipparcos star mapper",
   "facility_description": "Hipparcos was a European Space Agency astrometric satellite launched into Earth orbit in 1989.",
   "notes": "Passband curves are the Bessell & Murphy (2012) table 2 normalised photonic responses (CDS catalogue J/PASP/124/140, table2.dat) for photon-counting synthetic photometry in the Tycho BT and VT systems. DetectorType is left unchanged.",
   "licence": {

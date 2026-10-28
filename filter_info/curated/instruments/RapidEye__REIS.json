@@ -1,5 +1,6 @@
 {
   "description": "RapidEye REIS: relative spectral responses of the Blue, Green, Red, Red Edge and NIR bands from Planet's RapidEye_RSR.csv (one file for the constellation).",
+  "short_description": "RapidEye Earth Imaging System (REIS) bands, Blue to NIR",
   "facility_description": "RapidEye satellites (Planet publishes one RSR file for the constellation).",
   "links": [
     {

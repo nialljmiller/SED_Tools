@@ -1,4 +1,5 @@
 {
+  "short_description": "WFCCD wide-field reimaging CCD camera, B filter",
   "licence": {
     "redistribution": "restricted",
     "terms": "\"Copyright © 2020 Carnegie Science. All rights reserved.\"",

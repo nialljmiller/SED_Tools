@@ -1,5 +1,6 @@
 {
   "description": "AEISS-A imager of KOMPSAT-3A: relative spectral responses of four multispectral bands from the KOMPSAT pack's 'K3A-Spectral Response.xls' (band01-band04).",
+  "short_description": "AEISS-A imager on KOMPSAT-3A: four multispectral band responses",
   "facility_description": "KOMPSAT satellites (SVO facility name KOMPSTAT).",
   "links": [
     {

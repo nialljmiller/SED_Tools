@@ -1,5 +1,6 @@
 {
   "description": "AstraLux is a lucky-imaging camera at the Cassegrain focus of the Calar Alto 2.2 m telescope, used for high resolution astrometry and photometry. Its filter wheel accepts standard 50 mm filters.",
+  "short_description": "AstraLux lucky-imaging camera filters, Calar Alto 2.2 m",
   "facility_description": "Calar Alto Observatory is located in the Sierra de Filabres in Almería, Spain, and is jointly operated by IAA-CSIC and the Andalusian Government.",
   "notes": "The NJM source link https://www.mpia.de/ASTRALUX/NORTE_FilterData.html and the alternative www2.mpia-hd.mpg.de host both returned 404. Filter-specific rights remain unknown; CAHA website terms do not establish MPIA or manufacturer curve rights. Research accessed 2026-10-26. General CAHA observing acknowledgement is conditional on observational data and a proposal identifier; no observing proposal or SVO use is invented for these filter curves. Rights checked against CAHA legal notice (https://www.caha.es/es/?option=com_content&view=article&id=14725) and data management plan (https://www.caha.es/joomlaCMS/images/docs/DMPlan-CAHA.pdf); neither establishes an unambiguous grant for these third-party filter files.",
   "licence": {

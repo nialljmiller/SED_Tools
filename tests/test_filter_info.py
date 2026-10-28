@@ -290,3 +290,83 @@ def test_check_manifests_names_bands_outside_the_index_file(tmp_path, capsys):
     assert "Test/Cam/manifest.json" in err and "R_old" in err and "V," not in err
     (inst / "manifest.json").write_text(json.dumps({"bands": ["R", "V"], "archived_bands": {"R_old": {}}}))
     assert main(["check_manifests", str(tmp_path)]) == 0
+
+
+def test_curated_short_description_stays_out_of_info_json(tmp_path):
+    svo_dir = _archive(tmp_path)
+    curated = tmp_path / "curated"
+    curated.mkdir()
+    inst = tmp_path / "data" / "filters" / "Test" / "Cam"
+    inst.mkdir(parents=True)
+    curve = inst / "R.dat"
+    curve.write_text(_curve_text("FilterID=Test/Cam.R"))
+    infos = []
+    for extra in ({}, {"short_description": "Test camera R band"}):
+        (curated / "Test__Cam.json").write_text(json.dumps({"description": "The camera.", **extra}))
+        sources = InfoSources(tmp_path, svo_dir=svo_dir, curated_dir=curated, references={})
+        infos.append(compose_info(sources, inst, [curve], {"R": {"WavelengthPivot": 6000.0}}))
+    assert infos[0] == infos[1]
+
+
+def test_index_picker_fields_are_absent_until_assessed(tmp_path):
+    from generate_index import picker_fields
+    (tmp_path / "Test__Cam.json").write_text(json.dumps({"short_description": "Test camera filters"}))
+    assert picker_fields(tmp_path, {"Test/Cam": ["Test/Cam2"]}, "Test", "Cam") == {
+        "description": "Test camera filters", "svo_instruments": ["Test/Cam2"]}
+    assert picker_fields(tmp_path, {"Test/Cam": []}, "Test", "Cam")["svo_instruments"] == []
+    assert picker_fields(tmp_path, {}, "Test", "Other") == {}
+
+
+def _svo_votable(filter_id, detector, samples):
+    rows = "".join(f"<TR><TD>{w}</TD><TD>{t}</TD></TR>\n" for w, t in samples)
+    return (f'<VOTABLE><PARAM name="filterID" value="{filter_id}"/><PARAM name="DetectorType" value="{detector}"/>'
+            f"<DATA><TABLEDATA>\n{rows}</TABLEDATA></DATA></VOTABLE>")
+
+
+def test_svo_curve_multiplied_by_lambda_is_the_same_curve(tmp_path):
+    from filter_info.svo_instruments import same_curve
+    photon = [(w, max(0.0, 1 - abs(w - 6000) / 800)) for w in range(5000, 7001, 50)]
+    njm = tmp_path / "G.dat"
+    njm.write_text("Wavelength,Transmission,DetectorType=photon\n" + "".join(f"{w},{t}\n" for w, t in photon))
+    peak = max(w * t for w, t in photon)
+    energy = tmp_path / "svo_energy.xml"
+    energy.write_text(_svo_votable("Test/Cam.G", "0", [(w, w * t / peak) for w, t in photon]))
+    assert same_curve(njm, energy)["same"] and same_curve(njm, energy)["compared"] == "as photon response"
+    shifted = tmp_path / "svo_shifted.xml"
+    shifted.write_text(_svo_votable("Test/Cam.G", "1", [(w + 100, t) for w, t in photon]))
+    assert not same_curve(njm, shifted)["same"]
+
+
+def test_svo_group_is_held_only_when_one_instrument_holds_every_id():
+    from filter_info.svo_instruments import group_status
+    same = {"same": True}
+    instruments = {"Test/Cam": [], "Test/Cam2": []}
+    held = {"Test/Cam.R": {"njm": {"Test/Cam/R": same}}, "Test/Cam.V": {"njm": {"Test/Cam/V": same}}}
+    assert group_status(held, instruments) == ("held", ["Test/Cam"], 2)
+    split = {"Test/Cam.R": {"njm": {"Test/Cam/R": same}}, "Test/Cam.V": {"njm": {"Test/Cam2/V": same}}}
+    assert group_status(split, instruments) == ("split", [], 2)
+    partial = {"Test/Cam.R": {"njm": {"Test/Cam/R": same}}, "Test/Cam.V": {"njm": {"Test/Cam/V": {"same": False}}}}
+    assert group_status(partial, instruments) == ("partial", [], 1)
+
+
+def test_curve_search_finds_unlinked_ids_but_not_twins(tmp_path):
+    from filter_info.svo_instruments import assess_group, group_status
+    curve = [(w, max(0.0, 1 - abs(w - 6000) / 800)) for w in range(5000, 7001, 50)]
+    inst = tmp_path / "Test" / "Cam"
+    inst.mkdir(parents=True)
+    for band in ("L1", "70"):
+        (inst / f"{band}.dat").write_text("Wavelength,Transmission\n" + "".join(f"{w},{t}\n" for w, t in curve))
+    votables = {}
+    for filter_id in ("Test/Cam.L1", "Test/Cam.R1", "Test/Cam.070GHz"):
+        path = tmp_path / f"{filter_id.replace('/', '_')}.xml"
+        path.write_text(_svo_votable(filter_id, "0", curve))
+        votables[filter_id] = ("20261027000000", path)
+    found = {"Test/Cam.L1": {"Test/Cam/L1": "FilterID"}}
+    bands = assess_group(tmp_path, ["Test/Cam.L1", "Test/Cam.070GHz"], votables, found, lambda *pair: True)
+    assert bands["Test/Cam.070GHz"]["njm"]["Test/Cam/70"]["how"] == "curve search"
+    assert group_status(bands, {"Test/Cam": []})[0] == "held"
+    # R1 has the same curve as L1, but every NJM band with that curve is already taken: one band, one ID.
+    bands = assess_group(tmp_path, ["Test/Cam.L1", "Test/Cam.R1", "Test/Cam.070GHz"], votables, found,
+                         lambda *pair: True)
+    held = [f for f, entry in bands.items() if any(e["same"] for e in entry["njm"].values())]
+    assert len(held) == 2 and group_status(bands, {"Test/Cam": []})[0] == "partial"

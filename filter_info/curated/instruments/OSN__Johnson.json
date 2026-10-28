@@ -1,4 +1,5 @@
 {
+  "short_description": "Observatorio de Sierra Nevada Johnson UBV and Cousins RI filters",
   "licence": {
     "redistribution": "permission",
     "terms": "\"Personal use of text, data and information contained in these pages is permitted.\" \"permission of CSIC is required for publication in any form or for use, distribution or inclusion in other contexts accessible to third parties.\"",

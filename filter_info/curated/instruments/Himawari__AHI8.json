@@ -1,5 +1,6 @@
 {
   "description": "The Advanced Himawari Imager (AHI) flight model AHI-08 on Himawari-8, a 16-band imager from the visible and shortwave infrared to the thermal infrared (0.47-13.3 um) for JMA's geostationary meteorological mission. The curves are the band relative spectral responsivities released by JMA (September 2013, provided by ITT Exelis); each is the whole-instrument band response, peak 1.",
+  "short_description": "Advanced Himawari Imager AHI-08 on Himawari-8: 16 band responses",
   "facility_description": "Himawari-8 and Himawari-9 are Japan Meteorological Agency geostationary meteorological satellites carrying the Advanced Himawari Imager, which succeeded the imagers of the MTSAT series.",
   "links": [
     {

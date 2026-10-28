@@ -1,5 +1,6 @@
 {
   "description": "Detector SCA08 of the Roman Wide Field Instrument only: the owner's effective areas for this sensor chip assembly, for the eight imaging filters, the prism and the grism (first and zeroth order). The detector-averaged curves are Roman/WFI.",
+  "short_description": "Roman WFI detector SCA08 only: eight filters, grism and prism",
   "facility_description": "The Nancy Grace Roman Space Telescope is a NASA mission whose primary science instrument is the Wide Field Instrument.",
   "notes": "Curves: Roman_effarea_v8_SCA08_20240301.ecsv ('Effective area for Roman (m^2) - parameters as of 2024 03 01'), https://github.com/RomanSpaceTelescope/roman-technical-information at commit 14a9b0c; byte-identical to the member of Roman_effarea_tables_20240327.zip. Transmission is the effective area divided by 4.374354 m^2, the area of the 2.36 m aperture stop given in the repository's MissionandObservatory.yaml; the central obscuration is not removed. Grism is the Grism_1stOrder column. Pivots reproduce the owner's synphot zero-point table (Roman_zeropoints_20240301.ecsv) for the imaging filters. DetectorType photon: the owner's zero points are count-rate unit responses (hc divided by the integral of P lambda dlambda).",
   "licence": {

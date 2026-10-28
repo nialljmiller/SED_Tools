@@ -1,5 +1,6 @@
 {
   "description": "The CONTOUR Remote Imager/Spectrometer (CRISP) imager was the second CCD camera on CONTOUR, with filters intended mainly for geological study of the comet nuclei. Its 10-position filter wheel held nine spectral filters about 40 nm wide, centred from 450 to 770 nm in 40-nm steps, and one broadband clear filter.",
+  "short_description": "CONTOUR Remote Imager/Spectrometer (CRISP) bands and filter-only",
   "facility_description": "CONTOUR (Comet Nucleus Tour) was a NASA mission to study the diversity of comet nuclei. The ground-calibration documents for its two CCD imagers are archived at the PDS Small Bodies Node.",
   "notes": "Researched 2026-10-26. CONTOUR ground-calibration data are archived in the PDS Small Bodies Node (CON-CAL-ALL-6-DOC-SET-V1.0); the NASA science data licence page states there are no restrictions on usage. Bandpasses are documented in Izenberg (2002), \"Bandpasses for spectral filters of CONTOUR imagers\". Bands with suffix _fil are the Barr laboratory filter transmissions; base band names are relative responses from monochromator scans through the instrument during APL calibration. Manager review: detector details not found in the linked pages were removed; DetectorType is unchanged.",
   "licence": {

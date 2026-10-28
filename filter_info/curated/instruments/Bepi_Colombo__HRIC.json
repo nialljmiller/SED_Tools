@@ -1,5 +1,6 @@
 {
   "description": "The High Resolution Imaging Channel (HRIC) is the push-frame camera of SIMBIO-SYS on the BepiColombo Mercury Planetary Orbiter. One panchromatic filter and three band-pass filters are deposited on the detector window.",
+  "short_description": "BepiColombo SIMBIO-SYS HRIC camera: panchromatic and 3 bandpasses",
   "facility_description": "BepiColombo is a joint ESA and JAXA mission; the ESA factsheet gives the launch date as 19/20 October 2018 and names the Mercury Planetary Orbiter as the ESA orbiter that carries SIMBIO-SYS.",
   "notes": "Passbands are the measured central wavelength and FWHM in Table 2 of Cremonese et al. (2020), not the round values in the ESA SPICE IK. The ESA Cosmos SIMBIO-SYS page was not used for wavelengths; it says the HRIC channels match STC and lists a different set. Zusi et al. 2019 (2019ApOpt..58.4059Z) was not opened beyond an abstract that does not list these passbands, so it is not cited. SVO was not used.",
   "licence": {

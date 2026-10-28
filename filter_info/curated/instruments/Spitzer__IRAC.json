@@ -1,5 +1,6 @@
 {
   "description": "IRAC is Spitzer's four-channel mid-infrared camera (bands I1-I4). These spectral response curves are based on measurements of the final in-flight system and are meant for colour corrections.",
+  "short_description": "Spitzer IRAC mid-infrared camera, channels I1-I4 spectral response",
   "facility_description": "The Spitzer Space Telescope was NASA's infrared space observatory, operated by JPL/Caltech, with science data archived at IRSA.",
   "notes": "Spitzer ack: the SSC page gives this text for users of Spitzer data without Spitzer funding; funded work uses Templates 1a-4b on the same page. The page also asks authors to cite the fundamental papers describing the Observatory and instruments (listed at the publications page). Photon/energy evidence: the IRAC page says 'At each wavelength, the spectral response curve gives the number of electrons produced in the detector per incoming photon.' DetectorType left unchanged. IRSA offers full-array, subarray and per-pixel curves; which one NJM holds was not checked.",
   "licence": {

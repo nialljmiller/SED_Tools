@@ -1,5 +1,6 @@
 {
   "description": "The TIFR Near Infrared Imaging Camera-II (TIRCAM2) is a cryogenic near-infrared camera on the 3.6m Devasthal Optical Telescope, utilizing broad-band (J, H, K) and narrow-band (Brg, H2, Kcont, PAH, nbL) filters for infrared imaging.",
+  "short_description": "TIRCAM2 near-infrared camera, 3.6m Devasthal Optical Telescope",
   "facility_description": "The 3.6m Devasthal Optical Telescope (DOT) is a national facility operated by the Aryabhatta Research Institute of Observational Sciences (ARIES) in Nainital, Uttarakhand, India.",
   "notes": "TIRCAM2 was built by the Tata Institute of Fundamental Research (TIFR) and mounted on a side-port of the 3.6m DOT at ARIES. Terms are reserved under ARIES copyright.",
   "licence": {

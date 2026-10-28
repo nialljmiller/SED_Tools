@@ -1,5 +1,6 @@
 {
   "description": "Sinistro is the facility optical imager on the Las Cumbres Observatory (LCO) 1.0-meter telescope network, equipped with standard Bessell and SDSS filter sets for robotic time-domain astronomy.",
+  "short_description": "Las Cumbres 1-m network Sinistro imager: Bessell and SDSS filters",
   "facility_description": "Las Cumbres Observatory (LCO) is a globally distributed network of robotic telescopes operated for time-domain astronomy.",
   "links": [
     {

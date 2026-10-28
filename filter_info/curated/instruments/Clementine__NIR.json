@@ -1,5 +1,6 @@
 {
   "description": "The near-infrared (NIR) camera on Clementine imaged the Moon through narrow-band filters during the mission's systematic lunar mapping. The NJM curves cover its filters at 1100, 1250, 1500, 2000 and 2600 nm.",
+  "short_description": "Clementine near-infrared (NIR) camera narrow-band filters",
   "facility_description": "The Deep Space Program Science Experiment (DSPSE), better known as Clementine, was a joint mission of the US Ballistic Missile Defense Organization and NASA that tested sensors and spacecraft components in space and systematically mapped the Moon in 1994.",
   "notes": "Researched 2026-10-26. Clementine data are archived in the NASA Planetary Data System; the NASA science data licence page states there are no restrictions on usage. Design: Priest et al. (1995). Mission overview: Nozette et al. (1994). Manager review: detector part numbers and optical details not found in the linked pages were removed; DetectorType is unchanged.",
   "licence": {

@@ -1,5 +1,6 @@
 {
   "description": "The Gemini Multi-Object Spectrograph North (GMOS-N) is an optical imager and multi-slit/integral-field spectrograph mounted on Gemini North. Its filter mechanism accommodates broad-band Sloan-like filters and specialized narrow-band and order-sorting filters for optical imaging and spectroscopy.",
+  "short_description": "Gemini North GMOS-N imaging filters (Sloan-like and narrow-band)",
   "facility_description": "The International Gemini Observatory operates twin 8.1-meter optical and infrared telescopes atop Maunakea in Hawai'i (Gemini North) and Cerro Pachón in Chile (Gemini South), managed by NSF NOIRLab.",
   "notes": "GMOS-N filter transmission data are provided as laboratory measurements on Gemini instrumentation pages; redistribution terms for numerical transmission files are not specified under NOIRLab open content policy.",
   "licence": {

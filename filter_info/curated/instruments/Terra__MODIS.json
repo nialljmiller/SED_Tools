@@ -1,5 +1,6 @@
 {
   "description": "The Moderate Resolution Imaging Spectroradiometer (MODIS) protoflight model (PFM) on Terra, a 36-band imager from 0.41 to 14.4 um. The MCST curves are band averages of the in-band, channel-dependent relative spectral responses that MCST uses in the calibration look-up tables.",
+  "short_description": "Terra MODIS (PFM) 36 bands, 0.41-14.4 um, MCST band-averaged RSRs",
   "facility_description": "Terra is a NASA Earth Observing System satellite carrying MODIS.",
   "links": [
     {

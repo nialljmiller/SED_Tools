@@ -1,5 +1,6 @@
 {
   "description": "The Thermal Infrared Sensor (TIRS) on Landsat 8, with bands 10 (about 10.9 um) and 11 (about 12.0 um). The curves are the band-average relative spectral responses from the USGS RSR workbook.",
+  "short_description": "Landsat 8 Thermal Infrared Sensor (TIRS), bands 10 and 11",
   "facility_description": "Landsat is the joint NASA/USGS series of Earth-observing satellites (Landsat 1-9, since 1972); USGS operates the missions and distributes the data.",
   "links": [
     {

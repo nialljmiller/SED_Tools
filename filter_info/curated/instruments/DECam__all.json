@@ -1,5 +1,6 @@
 {
   "description": "The Dark Energy Camera (DECam) is a 570-megapixel wide-field prime-focus optical imager on the CTIO Blanco 4m telescope. This instrument entry compiles all 21 available DECam passbands including broad, medium, and narrow filter sets.",
+  "short_description": "Dark Energy Camera (DECam): all 21 broad, medium and narrow bands",
   "facility_description": "The Víctor M. Blanco 4-meter Telescope is an optical reflecting telescope at Cerro Tololo Inter-American Observatory (CTIO) in Chile, operated by NSF NOIRLab.",
   "links": [
     {

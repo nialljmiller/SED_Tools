@@ -1,5 +1,6 @@
 {
   "description": "SeaWiFS: relative spectral responses of the eight bands 412-865 nm from NASA OBPG's table seawifs_rsrs.txt.",
+  "short_description": "SeaWiFS (Sea-viewing Wide Field-of-view Sensor) bands 412-865 nm",
   "facility_description": "SeaStar (OrbView-2) carried SeaWiFS; OBPG names its NetCDF table orbview-2_seawifs_RSR.nc.",
   "links": [
     {

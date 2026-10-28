@@ -1,5 +1,6 @@
 {
   "description": "SMARTS filters include the standard Johnson-Cousins optical filter sets deployed on SMARTS consortium telescopes (such as the CTIO 0.9m and 1.5m telescopes) for long-term stellar and astronomical monitoring.",
+  "short_description": "SMARTS 0.9-m telescope B, V, R, Kc filters (three sets each)",
   "facility_description": "The Small and Moderate Aperture Research Telescope System (SMARTS) operates telescopes at Cerro Tololo Inter-American Observatory (CTIO) in Chile.",
   "notes": "Filter curves correspond to the Tek 2K CCD and facility filters at the SMARTS 0.9m telescope.",
   "licence": {

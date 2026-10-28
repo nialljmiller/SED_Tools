@@ -1,5 +1,6 @@
 {
   "description": "The Gemini South Adaptive Optics Imager (GSAOI) is a near-infrared camera designed to operate with the GeMS multi-conjugate adaptive optics system on Gemini South across the 0.9 to 2.5 micron range. Its filter wheels hold broad-band and narrow-band near-infrared filters providing diffraction-limited imaging over an 85x85 arcsecond field of view.",
+  "short_description": "Gemini South Adaptive Optics Imager (GSAOI) near-infrared filters",
   "facility_description": "The International Gemini Observatory operates twin 8.1-meter optical and infrared telescopes atop Maunakea in Hawai'i (Gemini North) and Cerro Pachón in Chile (Gemini South), managed by NSF NOIRLab.",
   "notes": "GSAOI filter curves were measured in laboratory at room temperature and cryogenic witness shifts (298 K to 77 K) were applied to determine 70 K operating profiles. ASCII and plot data are available on Gemini instrumentation pages; redistribution terms are not specified under NOIRLab open content policy.",
   "licence": {

@@ -1,5 +1,6 @@
 {
   "description": "The Enhanced Thematic Mapper Plus (ETM+) on Landsat 7. The curves are band-average relative spectral responses of bands 1-5 and 7 and the panchromatic band 8 (USGS RSR workbook) and of thermal band 6 (USGS 'Landsat 4, 5, 7 TIRS' workbook, from the Landsat handbook).",
+  "short_description": "Landsat 7 Enhanced Thematic Mapper Plus (ETM+), bands 1-8",
   "facility_description": "Landsat is the joint NASA/USGS series of Earth-observing satellites (Landsat 1-9, since 1972); USGS operates the missions and distributes the data.",
   "links": [
     {

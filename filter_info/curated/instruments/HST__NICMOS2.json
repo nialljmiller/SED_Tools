@@ -1,5 +1,6 @@
 {
   "description": "NICMOS is Hubble’s Near Infrared Camera and Multi-Object Spectrometer. This entry represents camera 2.",
+  "short_description": "Hubble NICMOS camera 2 near-infrared filters",
   "facility_description": "These instruments operate on the Hubble Space Telescope.",
   "notes": "Description from the STScI instrument overview. The general STScI content-use policy applies unless an item carries its own notice. Instrument, calibration and passband papers have not yet been added for these bands.",
   "licence": {

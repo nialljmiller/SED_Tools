@@ -1,5 +1,6 @@
 {
   "description": "The Visible Infrared Imaging Radiometer Suite (VIIRS) on NOAA-21 (JPSS-2, J2): 22 bands (M1-M16 with M16A/M16B, I1-I5, Day/Night Band low- and mid-gain stages) from 0.41 to 12.5 um. The curves are the VIIRS Data Analysis Working Group (DAWG) at-launch band-averaged relative spectral responses, V2 (Jul 2019), the 'Final prelaunch version' published by NOAA NCC, used to populate the VIIRS SDR look-up tables.",
+  "short_description": "VIIRS on NOAA-21 (JPSS-2): DAWG at-launch RSRs, V2",
   "facility_description": "The Joint Polar Satellite System (JPSS) is NOAA's series of polar-orbiting weather satellites (Suomi NPP, NOAA-20/J1, NOAA-21/J2, ...); VIIRS is its visible/infrared imager.",
   "links": [
     {

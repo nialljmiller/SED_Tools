@@ -1,5 +1,6 @@
 {
   "description": "The Dark Energy Camera (DECam) broad-band filter set comprising u, g, r, i, z, Y, and VR on the CTIO Blanco 4m telescope, used primarily for the Dark Energy Survey (DES).",
+  "short_description": "Dark Energy Camera (DECam) broad bands ugrizY and VR, Blanco 4m",
   "facility_description": "The Víctor M. Blanco 4-meter Telescope is an optical reflecting telescope at Cerro Tololo Inter-American Observatory (CTIO) in Chile, operated by NSF NOIRLab.",
   "links": [
     {

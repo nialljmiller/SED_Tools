@@ -1,4 +1,5 @@
 {
+  "short_description": "IMACS wide-field imager/spectrograph filters, Magellan Baade telescope",
   "licence": {
     "redistribution": "restricted",
     "terms": "\"Copyright © 2020 Carnegie Science. All rights reserved.\"",

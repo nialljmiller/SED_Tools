@@ -1,5 +1,6 @@
 {
   "description": "The CFHT general filter collection includes classic standard optical filters (UBVRI) and specialized numbered interference filters (the cfhXXXX series) used across CFHT instruments and focal stations.",
+  "short_description": "CFHT general filter collection: UBVRI and numbered cfh filters",
   "facility_description": "The Canada-France-Hawaii Telescope (CFHT) is a 3.6-meter optical and infrared telescope operated by NRC (Canada), CNRS/INSU (France), and the University of Hawaii, located on Maunakea in Hawaii.",
   "notes": "This inventory covers the CFHT common telescope filter set, including standard Johnson-Cousins/Bessell broadband filters and dozens of dedicated interference filters catalogued under the CFHT cfhXXXX numbering system.",
   "licence": {
