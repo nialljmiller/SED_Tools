@@ -44,15 +44,11 @@ def find_stellar_models(base_dir=None):
     if base_dir is None:
         from .models import STELLAR_DIR_DEFAULT
         base_dir = str(STELLAR_DIR_DEFAULT)
-    
+
     model_dirs = []
     combined = []
-    for item in os.listdir(base_dir):
-        item_path = os.path.join(base_dir, item)
-        lookup_file = os.path.join(item_path, "lookup_table.csv")
-        if not (os.path.isdir(item_path) and os.path.exists(lookup_file)):
-            continue
-        if _is_combined_output(item, lookup_file):
+    for item, item_path in _grids_with_lookup(base_dir):
+        if _is_combined_output(item, os.path.join(item_path, "lookup_table.csv")):
             combined.append(item)
         else:
             model_dirs.append((item, item_path))
@@ -60,6 +56,16 @@ def find_stellar_models(base_dir=None):
         print(f"Leaving out {', '.join(sorted(combined))}: written by an earlier combine. "
               "To combine one again, name it explicitly.")
     return model_dirs
+
+
+def _grids_with_lookup(base_dir):
+    """``(name, path)`` of every grid in base_dir with a lookup table, combine outputs included."""
+    grids = []
+    for item in os.listdir(base_dir):
+        item_path = os.path.join(base_dir, item)
+        if os.path.isdir(item_path) and os.path.exists(os.path.join(item_path, "lookup_table.csv")):
+            grids.append((item, item_path))
+    return grids
 
 
 def _is_combined_output(name, lookup_file):

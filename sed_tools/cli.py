@@ -1436,11 +1436,13 @@ def run_combine_flow(
     one of the inputs.
     """
     from .api import _build_combined_grid
-    from .combine_stellar_atm import find_stellar_models, select_models_interactive
+    from .combine_stellar_atm import _grids_with_lookup, find_stellar_models, select_models_interactive
 
     ensure_dir(base_dir)
 
-    model_dirs = find_stellar_models(base_dir)
+    # The menu offers no earlier combine outputs; --grids may name one, and
+    # --non-interactive says which it leaves out.
+    model_dirs = find_stellar_models(base_dir) if interactive and models is None else _grids_with_lookup(base_dir)
     if not model_dirs:
         raise FileNotFoundError(f"No spectral grids found in {base_dir}")
 
@@ -1495,22 +1497,17 @@ def _named_grids(models: List[str], model_dirs: List[Tuple[str, str]], base_dir:
 
 def _grids_to_combine_by_default(model_dirs: List[Tuple[str, str]], output_name: str) -> List[Tuple[str, str]]:
     """Every grid except earlier combined outputs and ``output_name``; says which were left out."""
+    from .combine_stellar_atm import _is_combined_output
+
     keep = []
     for name, path in model_dirs:
         if name == output_name:
             print(f"Leaving out {name}: it is the output grid")
-        elif _is_combined_grid(path):
+        elif _is_combined_output(name, os.path.join(path, "lookup_table.csv")):
             print(f"Leaving out {name}: an earlier combined grid (name it with --grids to include it)")
         else:
             keep.append((name, path))
     return keep
-
-
-def _is_combined_grid(path: str) -> bool:
-    """True for a grid written by combine: its lookup table has a source_model column."""
-    with open(os.path.join(path, "lookup_table.csv")) as fh:
-        header = fh.readline()
-    return "source_model" in (column.strip().lstrip("#").strip() for column in header.split(","))
 
 
 def run_ml_completer_flow(
