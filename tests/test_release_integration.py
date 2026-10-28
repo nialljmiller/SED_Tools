@@ -358,3 +358,63 @@ def test_query_keeps_svo_spelling_beside_the_download_key(tmp_path, monkeypatch,
     for asked in ("PLANCK", "planck", "Planck"):
         rows = [row for row in Filters.query(asked, include_local=False) if row["source"] == "svo"]
         assert [(r["facility_key"], r["svo_facility_key"]) for r in rows] == [("Planck", "PLANCK")], asked
+
+
+# ----------------------------------------------------------------------
+# Items 11, 12, 23: archive copies stay in archived_bands
+# ----------------------------------------------------------------------
+from sed_tools.combine_filters import write_filter_index  # noqa: E402
+from sed_tools.filter_components import InstrumentManifest  # noqa: E402
+
+ARCHIVED = {"H_svo": {"detector_type": "photon", "detector_type_source": "svo", "published": "filter"}}
+
+
+def _nisp_like(tmp_path, *, index=True):
+    """A set as NJM serves Euclid/NISP: H and Y, plus SVO's H_svo kept under archived_bands."""
+    inst = tmp_path / "Euclid" / "NISP"
+    inst.mkdir(parents=True)
+    for band in ("H", "Y", "H_svo"):
+        (inst / f"{band}.dat").write_text(FILTER_CURVE)
+    if index:
+        (inst / "NISP").write_text("H.dat\nY.dat\n")
+    (inst / "manifest.json").write_text(json.dumps(
+        {"facility": "Euclid", "instrument": "NISP", "bands": ["H", "Y"], "archived_bands": ARCHIVED}))
+    return inst
+
+
+def test_a_manifest_keeps_archived_bands_when_saved(tmp_path):
+    inst = _nisp_like(tmp_path)
+    manifest = InstrumentManifest.load(inst)  # what jwst.py and roman.py do: load, change, save
+    assert manifest.archived_bands == ARCHIVED and manifest.bands == ["H", "Y"]
+    manifest.notes = "rebuilt"
+    manifest.save(inst)
+    assert json.loads((inst / "manifest.json").read_text())["archived_bands"] == ARCHIVED
+    InstrumentManifest("Fac", "Cam", ["g"]).save(tmp_path)
+    assert "archived_bands" not in json.loads((tmp_path / "manifest.json").read_text())  # unchanged format
+
+
+def test_described_from_its_curves_a_set_leaves_archive_copies_out(tmp_path):
+    inst = _nisp_like(tmp_path)
+    described = InstrumentManifest.from_published(inst)  # what euclid, hsc, gmos and _common do
+    assert described.bands == ["H", "Y"] and described.archived_bands == ARCHIVED
+    (inst / "NISP").unlink()
+    assert InstrumentManifest.from_published(inst).bands == ["H", "Y"]  # no index file: the manifest decides
+
+
+def test_only_index_listed_curves_are_bands_and_the_index_never_lists_an_archive_copy(tmp_path):
+    inst = _nisp_like(tmp_path)
+    (inst / "stray.dat").write_text(FILTER_CURVE)  # not in the MESA index: MESA never loads it
+    assert InstrumentManifest.from_published(inst).bands == ["H", "Y"]
+    write_filter_index(inst, "NISP")  # a builder rewriting the index (hsc, lsst, argus, _common)
+    assert (inst / "NISP").read_text().split() == ["H.dat", "Y.dat", "stray.dat"]
+
+
+def test_dropping_bands_njm_does_not_list_keeps_archived_bands(tmp_path):
+    inst = _nisp_like(tmp_path)
+    data = json.loads((inst / "manifest.json").read_text())
+    data["bands"] = ["H", "J", "Y"]  # J: declared, but NJM's index does not list it and it is not installed
+    (inst / "manifest.json").write_text(json.dumps(data))
+    filter_library._drop_unlisted_bands(inst, ["H.dat", "Y.dat"])
+    saved = json.loads((inst / "manifest.json").read_text())
+    assert saved["bands"] == ["H", "Y"] and saved["archived_bands"] == ARCHIVED
+    assert FilterLibrary.published_complete(inst)

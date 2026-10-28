@@ -228,6 +228,25 @@ class AtmosphereSpec:
 # --------------------------------------------------------------------------
 # Manifests
 # --------------------------------------------------------------------------
+def index_listing(instrument_dir: PathLike) -> Optional[List[str]]:
+    """The curve files the instrument's MESA index file lists, or None without one (or an empty one)."""
+    index = Path(instrument_dir) / Path(instrument_dir).name
+    if not index.is_file():
+        return None
+    listed = [line.strip() for line in index.read_text(encoding="utf-8").splitlines()
+              if line.strip() and not line.lstrip().startswith("#")]
+    return listed or None
+
+
+def archived_bands(instrument_dir: PathLike) -> Dict[str, Dict[str, object]]:
+    """The ``archived_bands`` of the directory's manifest (a list of names is read as names), else {}."""
+    path = Path(instrument_dir) / MANIFEST_NAME
+    if not path.is_file():
+        return {}
+    archived = json.loads(path.read_text(encoding="utf-8")).get("archived_bands") or {}
+    return {band: {} for band in archived} if isinstance(archived, list) else dict(archived)
+
+
 @dataclass
 class InstrumentManifest:
     """What an instrument directory provides.
@@ -266,6 +285,11 @@ class InstrumentManifest:
     #: variant never replaces it unless asked for.  Saved only when set,
     #: so existing manifests are written unchanged.
     variants: Dict[str, Dict[str, Dict[str, object]]] = field(default_factory=dict)
+    #: Superseded copies kept beside the set but not part of it (e.g. SVO's
+    #: ``H_svo`` beside ESA's ``H``): band -> {"detector_type",
+    #: "detector_type_source", "published"}.  Never in ``bands`` or the MESA
+    #: index file.  Saved only when set, so existing manifests are written unchanged.
+    archived_bands: Dict[str, Dict[str, object]] = field(default_factory=dict)
 
     def __post_init__(self):
         for band in self.bands:
@@ -301,12 +325,20 @@ class InstrumentManifest:
         """Describe a directory of published curves from their headers.
 
         Bands whose published curve is the bare filter are registered as
-        their own ``filter`` component (no copy is made).
+        their own ``filter`` component (no copy is made).  When the directory
+        has a MESA index file, only the curves it lists are bands; bands an
+        existing manifest lists under ``archived_bands`` never are, and that
+        record is kept.
         """
         instrument_dir = Path(instrument_dir)
-        return cls.from_headers(instrument_dir.parent.name, instrument_dir.name, {
-            p.stem: read_filter_header(p) for p in sorted(instrument_dir.glob("*.dat"))
-        })
+        archived = archived_bands(instrument_dir)
+        listed = index_listing(instrument_dir)
+        curves = [p for p in sorted(instrument_dir.glob("*.dat"))
+                  if p.stem not in archived and (listed is None or p.name in listed)]
+        manifest = cls.from_headers(instrument_dir.parent.name, instrument_dir.name,
+                                    {p.stem: read_filter_header(p) for p in curves})
+        manifest.archived_bands = archived
+        return manifest
 
     @classmethod
     def from_headers(cls, facility: str, instrument: str,
@@ -378,6 +410,8 @@ class InstrumentManifest:
             del data["variants"]
         if not data["atmosphere_sites"]:
             del data["atmosphere_sites"]
+        if not data["archived_bands"]:
+            del data["archived_bands"]
         path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         return path
 

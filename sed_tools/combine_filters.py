@@ -14,7 +14,7 @@ import os
 from pathlib import Path
 from typing import List, Optional, Sequence, Union
 
-from .filter_components import COMPONENTS_DIR, is_auxiliary_path
+from .filter_components import COMPONENTS_DIR, archived_bands, is_auxiliary_path
 from .filter_metadata import copy_filter_file, migrate_filter_file
 from .models import FILTER_DIR_DEFAULT
 
@@ -97,8 +97,14 @@ def unique_filter_target(output_dir: Path, source_file: Path) -> Path:
 
 
 def write_filter_index(filter_dir: Path, instrument: str) -> Path:
-    """Write the MESA index file for all ``*.dat`` files in ``filter_dir``."""
-    dat_files = sorted(child.name for child in filter_dir.glob("*.dat") if child.is_file())
+    """Write the MESA index file for all ``*.dat`` files in ``filter_dir``.
+
+    Bands its ``manifest.json`` lists under ``archived_bands`` (superseded
+    copies kept beside the set) are left out: MESA must not load them.
+    """
+    archived = archived_bands(filter_dir)
+    dat_files = sorted(child.name for child in filter_dir.glob("*.dat")
+                       if child.is_file() and child.stem not in archived)
     index_path = filter_dir / instrument
     index_path.write_text("\n".join(dat_files) + "\n", encoding="utf-8")
     return index_path

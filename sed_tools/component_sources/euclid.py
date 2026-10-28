@@ -227,7 +227,8 @@ def build(
     manifest.outside_range = "zero"  # the factors are tabulated only across each band
     manifest.sources["esa_nisp_passbands"] = f"{PAGE} ({DOI}; Schirmer et al. 2022, {PAPER})"
     mismatched = {b: d for b, d in deviations.items() if d > MATCH_TOLERANCE}
-    manifest.notes = _notes(manifest.bands, written, clamped, deviations, mismatched)
+    # Archived copies (H_svo, ...) are no bands, but the notes still say what they are.
+    manifest.notes = _notes([*manifest.bands, *manifest.archived_bands], written, clamped, deviations, mismatched)
     manifest.save(inst_dir)
     if mismatched:
         logger.warning("Euclid/NISP: components do not reproduce the published curves: %s", mismatched)
