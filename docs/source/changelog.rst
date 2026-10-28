@@ -771,10 +771,18 @@ Each item says what 0.4.1 did, what 0.5.0 does, and when it happens.
   holds under other names (GAIA/GAIA is SVO's GAIA/GAIA3) raised "SVO
   instrument not found"; it is now installed from those SVO instruments under
   NJM's names. When SVO has only some of its bands, those are installed and
-  ``ComponentError`` then names the bands missing and why (GAIA/GAIA's
-  Gbp_bright and Gbp_faint are NJM's only); the set stays incomplete, so the
-  next fetch asks NJM again, which keeps the curves that are its own and
-  replaces the others with a warning.
+  the call succeeds (``sed-tools filters`` exits 0), with one warning naming
+  the set, how many bands came from SVO and the bands missing, and saying to
+  fetch it again when NJM is reachable: ``filters GAIA/GAIA`` installs 4 of
+  its 6 bands, without Gbp_bright and Gbp_faint, which only NJM has. The set
+  stays incomplete: its manifest declares every band, so the next fetch asks
+  NJM again, which keeps the curves that are its own and replaces the others
+  with a warning. ``filters-info`` and the summary in the browser show an
+  "Incomplete" line naming the missing bands, and in Python
+  ``Filters.available`` gives the installed ``bands`` beside every
+  ``expected_bands`` (``missing_files`` names the others' files). An SVO
+  curve that could not be saved still raises ``ComponentError``, after the
+  others are saved.
 - ``Filters.atmospheres()`` downloaded only sites not installed yet, so an
   installed site never took NJM's newer manifest (citation, terms); an
   installed site's manifest is now checked against NJM's once a day and

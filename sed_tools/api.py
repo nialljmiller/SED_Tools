@@ -1786,6 +1786,10 @@ class Filters:
         exactly as before (the directory MESA reads).  Otherwise the published
         curves are downloaded, the instrument's components fetched, and a
         product built under ``products/<recipe>/``, whose path is returned.
+        While NJM is unreachable, a product of NJM's that SVO holds only some
+        bands of is installed with those bands and a warning naming the
+        others; :meth:`available` then shows it incomplete, and fetching it
+        again with NJM reachable completes it.
 
         Parameters
         ----------
@@ -1926,6 +1930,11 @@ class Filters:
         component can be added, and the detector type.  Uses the local copy if present,
         otherwise the NJM manifest or SVO metadata. ``include_remote=False``
         inspects installed data and source registration without network access.
+
+        For an installed set, ``bands`` are the bands installed and
+        ``expected_bands`` every band it declares; ``missing_files`` names the
+        files of the others.  A set :meth:`fetch` could install only in part
+        (from SVO while NJM was unreachable) is one where they differ.
         """
         from .filter_library import FilterLibrary
 

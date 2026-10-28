@@ -700,6 +700,8 @@ def print_filter_availability(info: dict) -> None:
     """Print what a filter set contains and what can be composed from it."""
     print(f"\n{info['facility']}/{info['instrument']}"
           + (f"  ({len(info['bands'])} bands)" if info["bands"] else ""))
+    if _missing_bands(info):
+        _print_field("Incomplete", _incomplete_summary(info) + "; fetch it again when NJM is reachable to complete it")
     src = f" [{info['published_source']}]" if info["published_source"] else ""
     _print_field("Published curves contain", f"{info['published'] or 'unknown'}{src}")
     if info["published"] == "mixed":
@@ -733,6 +735,18 @@ def print_filter_availability(info: dict) -> None:
                if source in ("assumed", "unknown")]
     if assumed:
         _print_field("Detector unverified for", ", ".join(assumed))
+
+
+def _missing_bands(info: dict) -> List[str]:
+    """The bands an installed set declares but does not hold, e.g. those SVO lacks when NJM was down."""
+    return [band for band in info.get("expected_bands") or [] if band not in info["bands"]]
+
+
+def _incomplete_summary(info: dict, room: Optional[int] = None) -> str:
+    """``4 of 6 bands installed; missing Gbp_bright, Gbp_faint``, the names cut to fit ``room`` if given."""
+    missing = _missing_bands(info)
+    text = f"{len(info['bands'])} of {len(info['expected_bands'])} bands installed; missing "
+    return text + (", ".join(missing) if room is None else _names_to_fit(missing, room - len(text)))
 
 
 def _component_summary(info: dict) -> str:
@@ -1400,6 +1414,8 @@ def _pick_summary(target: str, entry: dict, info: dict, catalogue: dict, origin:
     if description:
         lines.append(_cut("  " + " ".join(description.split()), width))
     lines.append(field("From", origin))
+    if _missing_bands(info):
+        lines.append(field("Incomplete", _incomplete_summary(info, width - _FIELD_WIDTH)))
     lines += [field("Note", note) for note in [info.get("component_status"), *(info.get("notes") or [])] if note]
     lines += [field("Unavailable", error) for error in info["errors"]]
     bands = _names_to_fit(info["bands"], width - _FIELD_WIDTH) if info["bands"] else "not known"

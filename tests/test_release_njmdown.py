@@ -109,14 +109,13 @@ def test_njm_product_from_svo_is_installed_under_njm_names_and_says_what_is_miss
     library = FilterLibrary(root)
     library.mirror = NJM_DOWN
     library.svo = svo_browser(root, {("GAIA", "GAIA3"): ["G", "Gbp", "Grp", "Grvs"], ("GAIA", "GAIA2"): ["G"]})
-    with caplog.at_level(logging.WARNING), pytest.raises(ComponentError) as raised:
-        library.published("GAIA", "GAIA")
-    directory = root / "GAIA" / "GAIA"
-    message = str(raised.value)
-    assert message.startswith(f"GAIA/GAIA is only partly installed, in {directory}: 4 of NJM's 6 bands came from "
-                              "SVO's GAIA/GAIA3: G, Gbp, Grp, Grvs; SVO has no curve that is NJM's Gbp_bright, "
-                              "Gbp_faint")
-    assert "Fetch it again when NJM is reachable" in message and "NJM: the mirror is unavailable" in message
+    with caplog.at_level(logging.WARNING):
+        directory = library.published("GAIA", "GAIA")  # Nill, 28 Oct: install, warn, carry on
+    assert directory == root / "GAIA" / "GAIA"
+    incomplete = [r.getMessage() for r in caplog.records if "is incomplete" in r.getMessage()]
+    assert incomplete == [f"GAIA/GAIA is incomplete, in {directory}: 4 of NJM's 6 bands were installed from SVO's "
+                          "GAIA/GAIA3; missing Gbp_bright, Gbp_faint, which SVO does not have. Fetch again when "
+                          "NJM is reachable to complete it (NJM: the mirror is unavailable)."]
     assert "trying SVO" in caplog.text
     assert sorted(p.name for p in directory.glob("*.dat")) == ["G.dat", "Gbp.dat", "Grp.dat", "Grvs.dat"]
     assert read_filter_header(directory / "Gbp.dat")["FilterID"] == "GAIA/GAIA3.Gbp"  # where the curve came from
@@ -172,8 +171,8 @@ def test_fetch_from_njm_later_replaces_svo_curves_that_differ_and_leaves_no_dupl
     library = FilterLibrary(root)
     library.mirror = NJM_DOWN
     library.svo = svo_browser(root, {("GAIA", "GAIA3"): ["G", "Gbp", "Grp", "Grvs"]})
-    with pytest.raises(ComponentError, match="only partly installed"):
-        library.published("GAIA", "GAIA")
+    library.published("GAIA", "GAIA")  # 4 of 6 bands, with a warning
+    assert not FilterLibrary.published_complete(root / "GAIA" / "GAIA")
 
     bands = GAIA["GAIA"]["bands"]
     files = {"index.json": njm_index({"GAIA": {"GAIA": {"filters": bands, "size_bytes": 1}}}),

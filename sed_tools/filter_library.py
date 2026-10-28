@@ -169,10 +169,13 @@ class FilterLibrary:
         other names is taken from those SVO instruments, under NJM's names
         (:meth:`_svo_plan`).  Each source that cannot give a complete set is
         reported with a warning naming the next one tried; when none can,
-        ComponentError carries every source's reason.  So does a set SVO could
-        fill only in part, after installing that part.  Once NJM has put part
-        of its set in place, SVO is not tried: its curves would replace or mix
-        with NJM's.
+        ComponentError carries every source's reason.  When SVO holds only
+        some of the bands of NJM's product, those are installed and returned,
+        with one warning naming the bands missing; the manifest still declares
+        every band, so the set is not taken as complete and the next fetch
+        asks NJM again (``Filters.available`` gives ``expected_bands`` beside
+        the installed ``bands``).  Once NJM has put part of its set in place,
+        SVO is not tried: its curves would replace or mix with NJM's.
         """
         installed = self.installed_directory(facility, instrument)
         if installed is not None and self.published_complete(installed):
@@ -209,11 +212,10 @@ class FilterLibrary:
         except (ComponentError, RequestException, RuntimeError) as exc:
             reasons.append(f"SVO: {exc}")
             raise ComponentError(f"No source can provide {facility}/{instrument}: " + "; ".join(reasons)) from exc
-        if shortfall is None:
-            return directory
-        raise ComponentError(f"{facility}/{instrument} is only partly installed, in {directory}: {shortfall}. "
-                             f"Fetch it again when NJM is reachable to complete it ("
-                             + "; ".join(reasons) + ").")
+        if shortfall is not None:
+            logger.warning("%s/%s is incomplete, in %s: %s. Fetch again when NJM is reachable to complete it (%s).",
+                           facility, instrument, directory, shortfall, "; ".join(reasons))
+        return directory
 
     def _publishing_builder(self, facility, instrument, installed):
         """``(builder, the directory it writes, None)``, or ``(None, None, why it is not used or None)``.
@@ -293,7 +295,8 @@ class FilterLibrary:
 
     def _published_from_svo(self, facility, instrument, installed=None):
         """Download the set from SVO: ``(directory, None)`` when complete, ``(directory, what is missing)``
-        when SVO holds only part of one of NJM's products; raises when SVO cannot provide it."""
+        when SVO holds only some of the bands of one of NJM's products; raises when SVO cannot provide it,
+        or a curve it has could not be saved."""
         plan = self._svo_plan(facility, instrument)
         if plan is not None:
             return self._njm_product_from_svo(plan, installed)
@@ -362,31 +365,33 @@ class FilterLibrary:
         return _SVOPlan(names[0], names[1], list(meta["bands"]), rows, differs, list(meta["svo_instruments"]))
 
     def _njm_product_from_svo(self, plan, installed):
-        """Install a product of NJM's from SVO under NJM's names: ``(directory, None or what is missing)``."""
+        """Install a product of NJM's from SVO under NJM's names.
+
+        Returns ``(directory, None)`` when every band is installed, else
+        ``(directory, what is missing)``: the bands SVO has no curve of.
+        ComponentError, once the others are saved, when a curve SVO has could
+        not be saved.
+        """
         directory = installed if installed is not None else self.root / plan.facility / plan.instrument
         if plan.differs:
             logger.warning("SVO's %s of %s/%s differ from NJM's current curves; they are installed as SVO "
                            "publishes them, and replaced by NJM's (with a warning) when it is fetched from NJM",
                            ", ".join(plan.differs), plan.facility, plan.instrument)
-        failure = None
         try:
             self.svo.download_into(directory, plan.rows, expected=plan.bands)
         except SVOUnreachableError:
             raise
-        except RuntimeError as exc:  # some curves could not be saved
-            failure = exc
-        have = [band for band in plan.bands if (directory / f"{band}.dat").is_file()]
-        missing = [band for band in plan.bands if band not in have]
-        if not missing and failure is None:
+        except RuntimeError as exc:  # some curves could not be saved; every band stays expected
+            have = [band for band in plan.bands if (directory / f"{band}.dat").is_file()]
+            raise ComponentError(f"{plan.facility}/{plan.instrument} is only partly installed, in {directory}: "
+                                 f"{len(have)} of NJM's {len(plan.bands)} bands came from SVO's "
+                                 f"{', '.join(plan.svo_instruments)} ({', '.join(have) or 'none'}); {exc}") from exc
+        missing = [band for band in plan.bands if not (directory / f"{band}.dat").is_file()]
+        if not missing:
             return directory, None
-        absent = [band for band in missing if band not in plan.rows]
-        shortfall = (f"{len(have)} of NJM's {len(plan.bands)} bands came from SVO's "
-                     f"{', '.join(plan.svo_instruments)}: {', '.join(have) or 'none'}")
-        if absent:
-            shortfall += f"; SVO has no curve that is NJM's {', '.join(absent)}"
-        if failure is not None:
-            shortfall += f"; {failure}"
-        return directory, shortfall
+        return directory, (f"{len(plan.bands) - len(missing)} of NJM's {len(plan.bands)} bands were installed from "
+                           f"SVO's {', '.join(plan.svo_instruments)}; missing {', '.join(missing)}, which SVO "
+                           "does not have")
 
     def available(self, facility, instrument, *, remote=True):
         """What can be requested for an instrument, from the first source that can say.
