@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-10-28T06:17:10.304993",
+  "generated": "2026-10-28T06:44:51.840481",
   "base_url": "http://nillmill.ddns.net/sed_tools",
   "statistics": {
     "total_models": 1,
@@ -13995,7 +13995,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 25850,
+            "size_bytes": 25849,
             "size_human": "25.24 KB",
             "description": "Tycho BT and VT passbands of the ESA Hipparcos star mapper",
             "svo_instruments": []
@@ -25437,8 +25437,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 51690,
-            "size_human": "50.48 KB",
+            "size_bytes": 51662,
+            "size_human": "50.45 KB",
             "description": "SELENE (Kaguya) Multiband Imager (MI) lunar VIS and NIR bands",
             "svo_instruments": []
           }
@@ -25583,8 +25583,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 240728,
-            "size_human": "235.09 KB",
+            "size_bytes": 240584,
+            "size_human": "234.95 KB",
             "description": "Sentinel-3A Ocean and Land Colour Instrument (OLCI), 21 bands",
             "svo_instruments": [
               "Sentinel/OLCI-A"
@@ -25626,8 +25626,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 240989,
-            "size_human": "235.34 KB",
+            "size_bytes": 240890,
+            "size_human": "235.24 KB",
             "description": "Sentinel-3B Ocean and Land Colour Instrument (OLCI), 21 bands",
             "svo_instruments": [
               "Sentinel/OLCI-B"
@@ -25657,8 +25657,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 424481,
-            "size_human": "414.53 KB",
+            "size_bytes": 424433,
+            "size_human": "414.49 KB",
             "description": "Sentinel-3A Sea and Land Surface Temperature Radiometer S1-S9",
             "svo_instruments": [
               "Sentinel/SLSTR-A"
@@ -25688,8 +25688,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 475334,
-            "size_human": "464.19 KB",
+            "size_bytes": 475249,
+            "size_human": "464.11 KB",
             "description": "Sentinel-3B Sea and Land Surface Temperature Radiometer S1-S9",
             "svo_instruments": [
               "Sentinel/SLSTR-B"
@@ -25720,7 +25720,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 29065,
+            "size_bytes": 29060,
             "size_human": "28.38 KB",
             "description": "SkyMapper wide-field survey telescope g, r, i, v passbands",
             "svo_instruments": []
@@ -25755,8 +25755,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 107940,
-            "size_human": "105.41 KB",
+            "size_bytes": 107873,
+            "size_human": "105.34 KB",
             "description": "SkySat-1 (Planet) imager: Blue, Green, Red, NIR and Pan responses",
             "svo_instruments": [
               "SkySat/SkySat1"
@@ -25784,8 +25784,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 87989,
-            "size_human": "85.93 KB",
+            "size_bytes": 87985,
+            "size_human": "85.92 KB",
             "description": "SkySat-10 (Planet) imager: Blue, Green, Red, NIR and Pan responses",
             "svo_instruments": [
               "SkySat/SkySat10"
@@ -25811,8 +25811,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 81991,
-            "size_human": "80.07 KB",
+            "size_bytes": 81921,
+            "size_human": "80.00 KB",
             "description": "SkySat-11 (Planet) imager: Blue, Green, Red, NIR and Pan responses",
             "svo_instruments": [
               "SkySat/SkySat11"
@@ -25838,8 +25838,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 81971,
-            "size_human": "80.05 KB",
+            "size_bytes": 81919,
+            "size_human": "80.00 KB",
             "description": "SkySat-12 (Planet) imager: Blue, Green, Red, NIR and Pan responses",
             "svo_instruments": [
               "SkySat/SkySat12"
@@ -25867,8 +25867,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 90075,
-            "size_human": "87.96 KB",
+            "size_bytes": 90045,
+            "size_human": "87.93 KB",
             "description": "SkySat-13 (Planet) imager: Blue, Green, Red, NIR and Pan responses",
             "svo_instruments": [
               "SkySat/SkySat13"
@@ -25919,8 +25919,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 85727,
-            "size_human": "83.72 KB",
+            "size_bytes": 88709,
+            "size_human": "86.63 KB",
             "description": "SkySat-2 (Planet) imager: Blue, Green, Red, NIR and Pan responses",
             "svo_instruments": [
               "SkySat/SkySat2"
@@ -25946,8 +25946,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 84293,
-            "size_human": "82.32 KB",
+            "size_bytes": 85548,
+            "size_human": "83.54 KB",
             "description": "SkySat-3 (Planet) imager: Blue, Green, Red, NIR and Pan responses",
             "svo_instruments": [
               "SkySat/SkySat3"
@@ -25973,8 +25973,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 85581,
-            "size_human": "83.58 KB",
+            "size_bytes": 85548,
+            "size_human": "83.54 KB",
             "description": "SkySat-4 (Planet) imager: Blue, Green, Red, NIR and Pan responses",
             "svo_instruments": [
               "SkySat/SkySat4"
@@ -26000,8 +26000,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 81879,
-            "size_human": "79.96 KB",
+            "size_bytes": 81835,
+            "size_human": "79.92 KB",
             "description": "SkySat-5 (Planet) imager: Blue, Green, Red, NIR and Pan responses",
             "svo_instruments": [
               "SkySat/SkySat5"
@@ -26029,8 +26029,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 89026,
-            "size_human": "86.94 KB",
+            "size_bytes": 88996,
+            "size_human": "86.91 KB",
             "description": "SkySat-6 (Planet) imager: Blue, Green, Red, NIR and Pan responses",
             "svo_instruments": [
               "SkySat/SkySat6"
@@ -26056,8 +26056,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 81869,
-            "size_human": "79.95 KB",
+            "size_bytes": 81835,
+            "size_human": "79.92 KB",
             "description": "SkySat-7 (Planet) imager: Blue, Green, Red, NIR and Pan responses",
             "svo_instruments": [
               "SkySat/SkySat7"
@@ -26083,8 +26083,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 81452,
-            "size_human": "79.54 KB",
+            "size_bytes": 81851,
+            "size_human": "79.93 KB",
             "description": "SkySat-8 (Planet) imager: Blue, Green, Red, NIR and Pan responses",
             "svo_instruments": [
               "SkySat/SkySat8"
@@ -26112,8 +26112,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 89129,
-            "size_human": "87.04 KB",
+            "size_bytes": 89081,
+            "size_human": "86.99 KB",
             "description": "SkySat-9 (Planet) imager: Blue, Green, Red, NIR and Pan responses",
             "svo_instruments": [
               "SkySat/SkySat9"
@@ -26179,8 +26179,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 115920,
-            "size_human": "113.20 KB",
+            "size_bytes": 119966,
+            "size_human": "117.15 KB",
             "description": "Spitzer IRAC mid-infrared camera, channels I1-I4 spectral response",
             "svo_instruments": [
               "Spitzer/IRAC"
@@ -26226,8 +26226,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 37949,
-            "size_human": "37.06 KB",
+            "size_bytes": 40065,
+            "size_human": "39.13 KB",
             "description": "Spitzer MIPS far-infrared imaging bands at 24, 70 and 160 \u00b5m",
             "svo_instruments": [
               "Spitzer/MIPS"
@@ -26258,7 +26258,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 33866,
+            "size_bytes": 33864,
             "size_human": "33.07 KB",
             "description": "Stardust Navigation Camera (NAVCAM) NIR and OpNav filters",
             "svo_instruments": []
@@ -26340,8 +26340,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 75990,
-            "size_human": "74.21 KB",
+            "size_bytes": 78025,
+            "size_human": "76.20 KB",
             "description": "Subaru Faint Object Camera and Spectrograph (FOCAS) filters",
             "svo_instruments": []
           },
@@ -26413,8 +26413,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 412361,
-            "size_human": "402.70 KB",
+            "size_bytes": 414390,
+            "size_human": "404.68 KB",
             "description": "Subaru Hyper Suprime-Cam (HSC) prime-focus camera filters",
             "svo_instruments": [
               "Subaru/HSC"
@@ -26440,8 +26440,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 67612,
-            "size_human": "66.03 KB",
+            "size_bytes": 67602,
+            "size_human": "66.02 KB",
             "description": "Subaru Infrared Camera and Spectrograph (IRCS) J, H, M' filters",
             "svo_instruments": []
           },
@@ -26463,7 +26463,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 88250,
+            "size_bytes": 88249,
             "size_human": "86.18 KB",
             "description": "Subaru Multi-Object InfraRed Camera and Spectrograph (MOIRCS) K",
             "svo_instruments": []
@@ -26489,8 +26489,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 95588,
-            "size_human": "93.35 KB",
+            "size_bytes": 95578,
+            "size_human": "93.34 KB",
             "description": "Subaru OHS near-IR filters (OH-background removal, CISCO camera)",
             "svo_instruments": []
           },
@@ -26548,8 +26548,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 534967,
-            "size_human": "522.43 KB",
+            "size_bytes": 539903,
+            "size_human": "527.25 KB",
             "description": "Subaru Suprime-Cam prime-focus camera filters (broad, IB and NB)",
             "svo_instruments": [
               "Subaru/Suprime"
@@ -26605,8 +26605,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 609720,
-            "size_human": "595.43 KB",
+            "size_bytes": 609430,
+            "size_human": "595.15 KB",
             "description": "Swift Ultraviolet/Optical Telescope (UVOT) filters and effective areas",
             "svo_instruments": []
           }
@@ -26642,8 +26642,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 276380,
-            "size_human": "269.90 KB",
+            "size_bytes": 276317,
+            "size_human": "269.84 KB",
             "description": "CAIN-III camera filters (J, H, K, narrow), Telescopio Carlos Sanchez",
             "svo_instruments": []
           }
@@ -26690,8 +26690,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 101827,
-            "size_human": "99.44 KB",
+            "size_bytes": 101725,
+            "size_human": "99.34 KB",
             "description": "TD1 S2/68 100 A narrow UV passbands, 1400-2500 A (Carnochan 1982)",
             "svo_instruments": [
               "TD1/NARROW1"
@@ -26731,8 +26731,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 91518,
-            "size_human": "89.37 KB",
+            "size_bytes": 91445,
+            "size_human": "89.30 KB",
             "description": "TD1 S2/68 110 A narrow UV passbands, 1455-2475 A (Carnochan 1982)",
             "svo_instruments": [
               "TD1/NARROW2"
@@ -26812,7 +26812,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 1904325,
+            "size_bytes": 1903633,
             "size_human": "1.82 MB",
             "description": "TD1 spectrometer channel effective passbands, 1360-2540 A",
             "svo_instruments": []
@@ -26850,8 +26850,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 77352,
-            "size_human": "75.54 KB",
+            "size_bytes": 77341,
+            "size_human": "75.53 KB",
             "description": "TD1 satellite filters centred at 1400-2740 A",
             "svo_instruments": []
           },
@@ -26880,7 +26880,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 64558,
+            "size_bytes": 64556,
             "size_human": "63.04 KB",
             "description": "TD1 S2/68 broad UV passbands at 1565, 1965, 2365 and 2740 A",
             "svo_instruments": [
@@ -26965,8 +26965,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 26372,
-            "size_human": "25.75 KB",
+            "size_bytes": 27456,
+            "size_human": "26.81 KB",
             "description": "TESS (Transiting Exoplanet Survey Satellite) 600-1000 nm bandpass",
             "svo_instruments": [
               "TESS/TESS"
@@ -27000,8 +27000,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 35408,
-            "size_human": "34.58 KB",
+            "size_bytes": 35313,
+            "size_human": "34.49 KB",
             "description": "TIROS-N Advanced Very High Resolution Radiometer (AVHRR/1)",
             "svo_instruments": [
               "TIROS-N/AVHRR"
@@ -27038,8 +27038,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 67227,
-            "size_human": "65.65 KB",
+            "size_bytes": 67173,
+            "size_human": "65.60 KB",
             "description": "LAIA optical imager filters on the Telescopio Joan Oro (TJO)",
             "svo_instruments": []
           },
@@ -27061,7 +27061,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 19469,
+            "size_bytes": 19465,
             "size_human": "19.01 KB",
             "description": "Telescopi Fabra-ROA Montsec (TFRM) GG475 longpass filter",
             "svo_instruments": []
@@ -27099,8 +27099,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 88912,
-            "size_human": "86.83 KB",
+            "size_bytes": 88892,
+            "size_human": "86.81 KB",
             "description": "TNG DOLORES (LRS) low-resolution spectrograph and camera filters",
             "svo_instruments": [
               "TNG/DOLORES"
@@ -27150,8 +27150,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 41065,
-            "size_human": "40.10 KB",
+            "size_bytes": 41049,
+            "size_human": "40.09 KB",
             "description": "TNG Optical Imager Galileo (OIG) B, R, r', i' filters",
             "svo_instruments": []
           },
@@ -27206,8 +27206,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 300579,
-            "size_human": "293.53 KB",
+            "size_bytes": 300503,
+            "size_human": "293.46 KB",
             "description": "Telescopio Nazionale Galileo optical filter collection",
             "svo_instruments": []
           }
@@ -27263,8 +27263,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 269706,
-            "size_human": "263.38 KB",
+            "size_bytes": 269174,
+            "size_human": "262.87 KB",
             "description": "ULTRACAM filters used at the Thai National Observatory",
             "svo_instruments": []
           }
@@ -27316,8 +27316,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 265563,
-            "size_human": "259.34 KB",
+            "size_bytes": 265521,
+            "size_human": "259.30 KB",
             "description": "ULTRASPEC high-speed EMCCD camera filters, Thai National Telescope",
             "svo_instruments": []
           }
@@ -27344,8 +27344,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 90917,
-            "size_human": "88.79 KB",
+            "size_bytes": 91533,
+            "size_human": "89.39 KB",
             "description": "TRMM CERES shortwave and total channel spectral responses",
             "svo_instruments": []
           }
@@ -27674,8 +27674,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 490298,
-            "size_human": "478.81 KB",
+            "size_bytes": 489528,
+            "size_human": "478.05 KB",
             "description": "Terra MODIS (PFM) 36 bands, 0.41-14.4 um, MCST band-averaged RSRs",
             "svo_instruments": []
           }
@@ -28059,8 +28059,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 19896,
-            "size_human": "19.43 KB",
+            "size_bytes": 19881,
+            "size_human": "19.42 KB",
             "description": "TopHat balloon-borne CMB and dust experiment, Band 3 passband",
             "svo_instruments": []
           }
@@ -28091,8 +28091,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 42326,
-            "size_human": "41.33 KB",
+            "size_bytes": 42250,
+            "size_human": "41.26 KB",
             "description": "UK-DMC SLIM6 (Surrey Linear Imager Multispectral) bands",
             "svo_instruments": []
           }
@@ -28135,8 +28135,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 119683,
-            "size_human": "116.88 KB",
+            "size_bytes": 119501,
+            "size_human": "116.70 KB",
             "description": "UKIRT Fast-Track Imager (UFTI) filters",
             "svo_instruments": [
               "UKIRT/UFTI"
@@ -28170,8 +28170,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 144835,
-            "size_human": "141.44 KB",
+            "size_bytes": 147903,
+            "size_human": "144.44 KB",
             "description": "UKIRT WFCAM ZYJHK passbands (Hewett et al. 2006) and filter curves",
             "svo_instruments": [
               "UKIRT/UKIDSS"
@@ -28208,8 +28208,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 98187,
-            "size_human": "95.89 KB",
+            "size_bytes": 98175,
+            "size_human": "95.87 KB",
             "description": "Vatican Advanced Technology Telescope filters (Vilnius, SDSS)",
             "svo_instruments": []
           }
@@ -28295,8 +28295,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 59092,
-            "size_human": "57.71 KB",
+            "size_bytes": 59089,
+            "size_human": "57.70 KB",
             "description": "Viking Lander 1, Camera 2: full-response and photodiode curves",
             "svo_instruments": []
           },
@@ -28329,8 +28329,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 56765,
-            "size_human": "55.43 KB",
+            "size_bytes": 56600,
+            "size_human": "55.27 KB",
             "description": "Viking Lander 2, Camera 1: full-response and photodiode curves",
             "svo_instruments": []
           },
@@ -28368,8 +28368,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 77052,
-            "size_human": "75.25 KB",
+            "size_bytes": 77037,
+            "size_human": "75.23 KB",
             "description": "Viking Lander 2, Camera 2: full-response and photodiode curves",
             "svo_instruments": []
           }
@@ -28396,8 +28396,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 28232,
-            "size_human": "27.57 KB",
+            "size_bytes": 28222,
+            "size_human": "27.56 KB",
             "description": "Voyager ISS Narrow Angle Camera (NAC) Blue and Green responses",
             "svo_instruments": []
           }
@@ -28423,8 +28423,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 21005,
-            "size_human": "20.51 KB",
+            "size_bytes": 20991,
+            "size_human": "20.50 KB",
             "description": "SuperWASP wide-field camera filter (SW)",
             "svo_instruments": [
               "WASP/SuperWASP"
@@ -28507,8 +28507,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 78267,
-            "size_human": "76.43 KB",
+            "size_bytes": 78259,
+            "size_human": "76.42 KB",
             "description": "WHT LIRIS near-infrared imager/spectrograph filters",
             "svo_instruments": []
           },
@@ -28538,8 +28538,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 63791,
-            "size_human": "62.30 KB",
+            "size_bytes": 63779,
+            "size_human": "62.28 KB",
             "description": "PAUCam optical camera filters (NB505-NB845, g), WHT prime focus",
             "svo_instruments": []
           },
@@ -28590,7 +28590,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 44657,
+            "size_bytes": 44655,
             "size_human": "43.61 KB",
             "description": "ULTRACAM triple-beam CCD camera SDSS r' and i'+z' on the WHT",
             "svo_instruments": []
@@ -28620,8 +28620,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 64146,
-            "size_human": "62.64 KB",
+            "size_bytes": 67411,
+            "size_human": "65.83 KB",
             "description": "WISE W1-W4 relative system response curves (3.4-22 \u00b5m)",
             "svo_instruments": [
               "WISE/WISE"
@@ -28676,8 +28676,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 167864,
-            "size_human": "163.93 KB",
+            "size_bytes": 167679,
+            "size_human": "163.75 KB",
             "description": "WIYN Hydra multi-fiber positioner filter set",
             "svo_instruments": []
           },
@@ -28715,8 +28715,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 117372,
-            "size_human": "114.62 KB",
+            "size_bytes": 117148,
+            "size_human": "114.40 KB",
             "description": "WIYN NESSI speckle imager filters (filter-only and filter+CCD)",
             "svo_instruments": []
           },
@@ -28745,8 +28745,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 195759,
-            "size_human": "191.17 KB",
+            "size_bytes": 197373,
+            "size_human": "192.75 KB",
             "description": "WIYN One Degree Imager (ODI) u, g, r, i, z and NB422/NB695",
             "svo_instruments": []
           },
@@ -28768,8 +28768,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 16196,
-            "size_human": "15.82 KB",
+            "size_bytes": 16182,
+            "size_human": "15.80 KB",
             "description": "WIYN S2KB 2k x 2k CCD imager uStrom filter",
             "svo_instruments": []
           },
@@ -28804,8 +28804,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 216923,
-            "size_human": "211.84 KB",
+            "size_bytes": 216740,
+            "size_human": "211.66 KB",
             "description": "WIYN High-Resolution Infrared Camera (WHIRC) filters",
             "svo_instruments": []
           },
@@ -28866,8 +28866,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 274665,
-            "size_human": "268.23 KB",
+            "size_bytes": 274119,
+            "size_human": "267.69 KB",
             "description": "WIYN 3.5m Observatory collection of filters",
             "svo_instruments": []
           }
@@ -28932,8 +28932,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 209836,
-            "size_human": "204.92 KB",
+            "size_bytes": 228090,
+            "size_human": "222.74 KB",
             "description": "WMAP per-detector passbands of the K, Ka, Q, V and W radiometers",
             "svo_instruments": [
               "WMAP/WMAP"
@@ -29054,8 +29054,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 96866,
-            "size_human": "94.60 KB",
+            "size_bytes": 96781,
+            "size_human": "94.51 KB",
             "description": "WorldView-4 SpaceView-110 imager: Pan and 4 multispectral bands",
             "svo_instruments": [
               "WorldView/SW110"
@@ -29085,8 +29085,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 165448,
-            "size_human": "161.57 KB",
+            "size_bytes": 165336,
+            "size_human": "161.46 KB",
             "description": "WorldView-2 WV110 imager: Pan and 8 multispectral bands",
             "svo_instruments": [
               "WorldView/WV110"
@@ -29127,8 +29127,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 562925,
-            "size_human": "549.73 KB",
+            "size_bytes": 562906,
+            "size_human": "549.71 KB",
             "description": "WorldView-3 imager: Pan, 8 VNIR and 8 SWIR bands",
             "svo_instruments": []
           },
@@ -29148,8 +29148,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 17154,
-            "size_human": "16.75 KB",
+            "size_bytes": 17140,
+            "size_human": "16.74 KB",
             "description": "WorldView-1 WV60 imager panchromatic band",
             "svo_instruments": [
               "WorldView/WV60"
@@ -29195,8 +29195,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 196195,
-            "size_human": "191.60 KB",
+            "size_bytes": 200693,
+            "size_human": "195.99 KB",
             "description": "XMM-Newton Optical Monitor filters UVW2-V, effective areas",
             "svo_instruments": [
               "XMM/OM"
@@ -29232,8 +29232,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 109103,
-            "size_human": "106.55 KB",
+            "size_bytes": 108975,
+            "size_human": "106.42 KB",
             "description": "ZiYuan-3 01 (ZY-3) multispectral camera bands B1-B4",
             "svo_instruments": [
               "ZiYuan/MSC3-1"
@@ -29258,7 +29258,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 91668,
+            "size_bytes": 91667,
             "size_human": "89.52 KB",
             "description": "ZiYuan-3 02 (ZY-3) multispectral camera bands B1-B4",
             "svo_instruments": [
@@ -29345,7 +29345,7 @@
       "svo_records": {
         "dir": "/media/data3/MESA/SED_Tools/source_evidence/svo-archive/parsed",
         "ids": 11066,
-        "sha256": "d3fb1994bf6fc99bcc47ef9a1c745ad7e1f06e7c6854e0e13051eb6bddbaa5e4"
+        "sha256": "52a5f1c2475b77157e2ec8762b0ccf123f3aab65ee465b768a0edc02bba5dfe6"
       },
       "references": 401,
       "unresolved_references": 0,
