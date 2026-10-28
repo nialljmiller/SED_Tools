@@ -531,7 +531,7 @@ def build(
     points = [(airmass, pwv) for airmass in airmasses for pwv in pwvs]
     for site in sites:
         if site not in SITES:
-            raise ValueError(f"Unknown SkyCalc site '{site}'. Choose from {sorted(SITES)}")
+            raise ValueError(f"Unknown SkyCalc site '{site}'. Choose from: {', '.join(sorted(SITES))}")
         archive = _Archive(Path(archive_dir) / site) if archive_dir else None
         _build_site(root / site, site, client, points, edges, fetch_resolution, store_resolution, chunks, archive)
     return root

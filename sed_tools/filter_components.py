@@ -947,9 +947,8 @@ def resolve_atmosphere(manifest: InstrumentManifest, spec: Optional[AtmosphereSp
     if not sites:
         raise ComponentError(f"{owner} has no atmosphere site of its own, so no telluric component is offered")
     if spec.site and spec.site not in sites:
-        where = f"'{sites[0]}'" if len(sites) == 1 else f"{sites}"
         raise ComponentError(
-            f"{owner} observes from {where}; atmospheres from other sites ('{spec.site}') are not mixed in"
+            f"{owner} observes from {', '.join(sites)}; atmospheres from other sites ({spec.site}) are not mixed in"
         )
     site = spec.site or manifest.default_site or (sites[0] if len(sites) == 1 else None)
     if site is None:

@@ -168,7 +168,7 @@ def test_team_site_is_offered_next_to_the_default_site(tmp_path):
     assert manifest.sites() == ["paranal", "here_team"]
     assert resolve_atmosphere(manifest, AtmosphereSpec(None, 1.2, 2.5)).site == "paranal"
     assert resolve_atmosphere(manifest, AtmosphereSpec("here_team", 1.2)).site == "here_team"
-    with pytest.raises(ComponentError, match=r"observes from \['paranal', 'here_team'\].*not mixed in"):
+    with pytest.raises(ComponentError, match=r"observes from paranal, here_team; atmospheres from other sites \(lsst_std\) are not mixed in"):
         resolve_atmosphere(manifest, AtmosphereSpec("lsst_std", 1.2))
     info = manifest.describe()
     assert info["atmosphere"] is True and info["atmosphere_sites"] == ["paranal", "here_team"]
@@ -198,7 +198,7 @@ def test_existing_single_site_instruments_are_unchanged(tmp_path):
     inst = _instrument(tmp_path / "filters", "LSST", "LSST", default_site="lsst_std")
     manifest = InstrumentManifest.load(inst)
     assert manifest.sites() == ["lsst_std"]
-    with pytest.raises(ComponentError, match="observes from 'lsst_std'.*not mixed in"):
+    with pytest.raises(ComponentError, match=r"observes from lsst_std; atmospheres from other sites \(.*\) are not mixed in"):
         resolve_atmosphere(manifest, AtmosphereSpec("paranal", 1.2, 2.5))
 
 
