@@ -142,6 +142,19 @@ def test_a_variants_grid_is_compared_variant_by_variant(tmp_path):
     assert _flux_cube_shortfall(folder) == "does not include 1 of the 25 spectra beside it"
 
 
+def test_a_spectrum_zero_at_every_sampled_wavelength_is_still_found(tmp_path, cube_writer):
+    """A spectrum covering only part of the cube's wavelengths is zero elsewhere (resample_to_grid)."""
+    wl = np.linspace(1000.0, 20000.0, 20)  # the sampled planes are 2, 4, 6, 8, 11, 13, 15, 17
+    flux = np.zeros((3, 1, 1, 20))
+    flux[0, 0, 0] = 1.0                    # covers every wavelength
+    flux[1, 0, 0, [0, 19]] = 1.0           # only at wavelengths no sampled plane has
+    cube_writer(tmp_path / "flux_cube.bin", [5000.0, 6000.0, 7000.0], [4.0], [0.0], wl, flux)
+    (tmp_path / "lookup_table.csv").write_text(
+        "#file_name,teff,logg,metallicity\na.txt,5000,4.0,0.0\nb.txt,6000,4.0,0.0\nc.txt,7000,4.0,0.0\n")
+    names, missing = spectra_not_in_cube(tmp_path / "flux_cube.bin", tmp_path / "lookup_table.csv")
+    assert names == ["a.txt", "b.txt", "c.txt"] and missing == ["c.txt"]  # 7000 K: zero throughout
+
+
 def test_an_unreadable_cube_is_out_of_date(njm, tmp_path):
     SED.fetch(GRID, source="njm", model_root=tmp_path)
     folder = tmp_path / GRID

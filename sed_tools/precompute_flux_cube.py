@@ -266,9 +266,11 @@ def spectra_not_in_cube(cube_path: str, lookup_file: str) -> Tuple[List[str], Li
     spectrum is held when its (Teff, logg, [M/H]) is a point of the cube's
     axes and that point holds flux: a point no spectrum filled is zero at
     every wavelength.  Only the cube's header, its axes and a few wavelength
-    planes are read; a spectrum whose flux is zero at every sampled
-    wavelength counts as not held.  Raises ValueError (or OSError) when
-    either file cannot be read.
+    planes are read, and for a point that is zero in all of those planes its
+    own spectrum, up to its first non-zero value.  Once one such point is
+    zero throughout, the cube lacks that spectrum and the remaining such
+    points are not read: they count as not held.  Raises ValueError (or
+    OSError) when either file cannot be read.
     """
     lookup, cols, _ = _read_lookup_table(lookup_file)
     file_col = find_file_column(cols) or cols[0]
@@ -286,13 +288,33 @@ def spectra_not_in_cube(cube_path: str, lookup_file: str) -> Tuple[List[str], Li
         axes = np.fromfile(fh, dtype=np.float64, count=nt + nl + nm)
         if axes.size != nt + nl + nm:
             raise ValueError(f"{cube_path}: the parameter axes are truncated")
-        filled = _filled_points(fh, (nt, nl, nm, nw), 16 + 8 * (nt + nl + nm + nw), cube_path)
+        data_offset = 16 + 8 * (nt + nl + nm + nw)
+        filled = _filled_points(fh, (nt, nl, nm, nw), data_offset, cube_path)
     it = _axis_positions(axes[:nt], teff)
     il = _axis_positions(axes[nt:nt + nl], logg)
     im = _axis_positions(axes[nt + nl:], meta)
-    held = (it >= 0) & (il >= 0) & (im >= 0)
-    held[held] = filled[im[held], il[held], it[held]]
+    on_axes = (it >= 0) & (il >= 0) & (im >= 0)
+    points = list(zip(im, il, it))
+    unsampled = sorted({points[i] for i in np.flatnonzero(on_axes) if not filled[points[i]]})
+    if unsampled:
+        flux = np.memmap(cube_path, dtype=np.float64, mode="r", offset=data_offset, shape=(nw, nm, nl, nt))
+        for point in unsampled:
+            if not _holds_flux(flux, point):
+                break  # a point no spectrum filled: the cube lacks the spectra there
+            filled[point] = True
+        del flux
+    held = [ok and bool(filled[point]) for ok, point in zip(on_axes, points)]
     return names, [name for name, ok in zip(names, held) if not ok]
+
+
+def _holds_flux(flux: np.ndarray, point: Tuple[int, int, int], chunk: int = 4096) -> bool:
+    """Whether the cube's spectrum at ``point`` (i_meta, i_logg, i_teff) is non-zero anywhere, read in
+    wavelength chunks up to its first non-zero value."""
+    i_m, i_l, i_t = point
+    for w0 in range(0, flux.shape[0], chunk):
+        if np.any(flux[w0:w0 + chunk, i_m, i_l, i_t] != 0):
+            return True
+    return False
 
 
 def _axis_positions(axis: np.ndarray, values: np.ndarray) -> np.ndarray:
