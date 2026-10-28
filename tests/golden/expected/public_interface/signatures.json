@@ -155,8 +155,8 @@
  "precompute_flux_cube": "(model_dir: str, output_file: str, root_dir: str | None = None, override_dict: Dict[str, Any] | None = None) -> None",
  "query": "(*args, **kwargs) -> 'List[SpectralGridInfo]'",
  "regenerate_lookup_table": "(model: str | None = None, files: Iterable[str] | None = None, output_dir: str | None = None)",
- "run_combine_flow": "(base_dir: str = PosixPath('<HOME>/.sed_tools/data/stellar_models'), output_name: str = 'combined_models', interactive: bool = True) -> None",
- "run_filters_flow": "(base_dir: str = '<HOME>/.sed_tools/data/filters') -> None",
- "run_rebuild_flow": "(base_dir: str = '<HOME>/.sed_tools/data/stellar_models', models: List[str] | None = None, rebuild_h5: bool = True, rebuild_flux_cube: bool = True) -> None",
- "run_spectra_flow": "(source: str, base_dir: str = '<HOME>/.sed_tools/data/stellar_models', models: List[str] | None = None, workers: int = 5, force_bundle_h5: bool = True, build_flux_cube: bool = True) -> None"
+ "run_combine_flow": "(base_dir: str = PosixPath('<HOME>/.sed_tools/data/stellar_models'), output_name: str = 'combined_models', interactive: bool = True, *, models: List[str] | None = None) -> None",
+ "run_filters_flow": "(base_dir: str = '<HOME>/.sed_tools/data/filters') -> int",
+ "run_rebuild_flow": "(base_dir: str = '<HOME>/.sed_tools/data/stellar_models', models: List[str] | None = None, rebuild_h5: bool = True, rebuild_flux_cube: bool = True, *, flux_unit: str | None = None) -> None",
+ "run_spectra_flow": "(source: str, base_dir: str = '<HOME>/.sed_tools/data/stellar_models', models: List[str] | None = None, workers: int = 5, force_bundle_h5: bool = True, build_flux_cube: bool = True, *, flux_unit: str | None = None, teff_range: Tuple[float, float] | None = None, logg_range: Tuple[float, float] | None = None, meta_range: Tuple[float, float] | None = None, wl_range: Tuple[float, float] | None = None) -> None"
 }
