@@ -21,7 +21,7 @@ from .component_sources.catalog import (
 from .filter_components import (
     FILTER, OPTICS, QE, PUBLISHED, AtmosphereGrid, AtmosphereSpec, ComponentError,
     InstrumentManifest, atmosphere_file, build_product, find_atmosphere, parse_components,
-    resolve_atmosphere,
+    recipe_name, resolve_atmosphere,
 )
 from .filter_metadata import SVOUnreachableError, migrate_filter_tree, svo_components_header
 from .njm_filter_grabber import NJMFilterGrabber, _status, curve_file
@@ -407,12 +407,12 @@ class FilterLibrary:
         if not list(directory.glob("*.dat")):
             directory = self.published(directory.parent.name, directory.name)
         roles = parse_components(components)
-        if bands is not None:
-            # Before any source is asked for components a band could never use.
-            manifest = InstrumentManifest.load(directory)
-            for band in bands:
-                if band not in manifest.bands:
-                    raise ComponentError(f"{manifest.facility}/{manifest.instrument} has no band '{band}'")
+        # Before any source is asked for components a band could never use.
+        manifest = InstrumentManifest.load(directory)
+        for band in bands or ():
+            if band not in manifest.bands:
+                raise ComponentError(f"{manifest.facility}/{manifest.instrument} has no band '{band}'")
+        _refuse_uncovered_bands(manifest.with_variants(variants), roles, bands)
         self.prepare_components(directory, components=roles, bands=bands, allow_heavy=allow_heavy)
         spec = AtmosphereSpec.coerce(atmosphere)
         if spec is not None:
@@ -531,6 +531,28 @@ class FilterLibrary:
                              "sources": inst["sources"],
                              "component_availability": component_availability(fac["key"], inst["key"])})
         return {"instruments": rows, "errors": errors}
+
+
+def _refuse_uncovered_bands(manifest, roles, bands):
+    """ComponentError, before any download, for bands the manifest gives none of the requested components.
+
+    Only when the manifest declares those components for some of its bands:
+    NJM and the original-source builders, which wrote it, have them for no
+    others (Euclid/NISP's grisms Blue and Red have no factors). A manifest
+    that declares none, as for curves from SVO, is left to prepare_components,
+    since a builder may add them.
+    """
+    needed = [role for role in roles if role in (FILTER, OPTICS, QE)]
+    if not needed:
+        return
+    covered = [band for band in manifest.primary_bands() if manifest.cover(band, needed)]
+    selected = manifest.primary_bands() if bands is None else list(bands)
+    missing = [band for band in selected if not manifest.cover(band, needed)]
+    if covered and missing:
+        raise ComponentError(
+            f"{manifest.facility}/{manifest.instrument} has no {recipe_name(needed)} components for "
+            f"{', '.join(missing)}; they exist for {', '.join(covered)}. Compose only those bands "
+            "(bands=[...], or --bands on the command line).")
 
 
 # ----------------------------------------------------------------------

@@ -418,3 +418,41 @@ def test_dropping_bands_njm_does_not_list_keeps_archived_bands(tmp_path):
     saved = json.loads((inst / "manifest.json").read_text())
     assert saved["bands"] == ["H", "Y"] and saved["archived_bands"] == ARCHIVED
     assert FilterLibrary.published_complete(inst)
+
+
+# ----------------------------------------------------------------------
+# Item 14: compose refuses bands without the components before any download
+# ----------------------------------------------------------------------
+from sed_tools.filter_components import ComponentError  # noqa: E402
+
+
+def _nisp_with_declared_components(tmp_path):
+    """Euclid/NISP as NJM's manifest declares it: filter, optics and qe for H and Y; grisms Blue and Red bare."""
+    inst = tmp_path / "filters" / "Euclid" / "NISP"
+    inst.mkdir(parents=True)
+    for band in ("Blue", "H", "Red", "Y"):
+        (inst / f"{band}.dat").write_text(FILTER_CURVE.replace("Components=filter", "Components=filter+optics+qe"))
+    (inst / "NISP").write_text("Blue.dat\nH.dat\nRed.dat\nY.dat\n")
+    components = {role: {band: f"components/{role}/{band}.dat" for band in ("H", "Y")}
+                  for role in ("filter", "optics", "qe")}  # declared; not downloaded yet
+    InstrumentManifest("Euclid", "NISP", ["Blue", "H", "Red", "Y"], components=components).save(inst)
+    return inst
+
+
+def test_compose_names_the_bands_without_components_before_asking_any_source(tmp_path):
+    _nisp_with_declared_components(tmp_path)
+    library = FilterLibrary(tmp_path / "filters")
+    library.mirror = SimpleNamespace(is_available=lambda: pytest.fail("NJM was asked"))
+    with pytest.raises(ComponentError, match=r"Euclid/NISP has no filter\+optics\+qe components for Blue, Red; "
+                                             r"they exist for H, Y\. Compose only those bands"):
+        library.compose("Euclid/NISP", "filter,optics,qe")
+
+
+def test_compose_of_the_covered_bands_goes_on_to_the_sources(tmp_path):
+    _nisp_with_declared_components(tmp_path)
+    library = FilterLibrary(tmp_path / "filters")
+    asked = []
+    library.prepare_components = lambda directory, **kwargs: asked.append(kwargs["bands"]) or False
+    with pytest.raises(ComponentError):  # nothing downloaded in this test, so the build itself fails
+        library.compose("Euclid/NISP", "filter,optics,qe", bands=["H", "Y"])
+    assert asked == [["H", "Y"]]
