@@ -9,8 +9,10 @@ Checks per instrument (stage/filters/<Facility>/<Instrument>/):
     WavelengthUnit=Angstrom, Components, ComponentsSource (components: Role);
   * wavelengths strictly increasing, transmission >= 0, >= 2 samples, finite;
   * filenames have exactly one dot; band stems unique ignoring case;
-  * the index file lists exactly the published .dat files;
-  * manifest.json loads as InstrumentManifest, its bands match, no missing files;
+  * every .dat stem is in exactly one of manifest "bands" or the keys of
+    "archived_bands" (archive copies such as <band>_svo/<band>_old; absent = none);
+  * the index file lists exactly the "bands" entries, never an archived one;
+  * manifest.json loads as InstrumentManifest, no missing files;
   * the instrument is not already on the mirror (index.json);
   * pivot matches a published value (provenance ref_pivot) within 1.5 %;
   * with --svo, pivot wavelength matches the SVO counterpart within 1.5 %.
@@ -78,24 +80,43 @@ def validate_instrument(inst, mirror, use_svo, report):
     stems = [p.stem for p in published]
     if len({s.lower() for s in stems}) != len(stems):
         errors.append(f"{inst}: band names collide ignoring case")
-    index = inst / instrument
-    if not index.is_file():
-        errors.append(f"{inst}: missing index file {instrument}")
-    else:
-        listed = [ln.strip() for ln in index.read_text().splitlines() if ln.strip()]
-        if sorted(listed) != [p.name for p in published]:
-            errors.append(f"{inst}: index file does not list exactly the published .dat files")
+    # InstrumentManifest.from_dict drops unknown keys, so "archived_bands" comes from the raw JSON.
+    bands, archived = None, {}
     try:
         man = InstrumentManifest.load(inst)
+        bands = list(man.bands)
         if not (inst / "manifest.json").is_file():
             errors.append(f"{inst}: no manifest.json")
-        if sorted(man.bands) != sorted(stems):
-            errors.append(f"{inst}: manifest bands {man.bands} != files {stems}")
+        else:
+            archived = json.loads((inst / "manifest.json").read_text()).get("archived_bands") or {}
+            if not isinstance(archived, dict):
+                errors.append(f"{inst}: manifest archived_bands is not an object")
+                archived = {}
         missing = man.missing_files(inst)
         if missing:
             errors.append(f"{inst}: manifest lists missing files {missing}")
     except Exception as exc:  # noqa: BLE001
         errors.append(f"{inst}: manifest does not load ({exc})")
+    if bands is not None:
+        both = sorted(set(bands) & set(archived))
+        if both:
+            errors.append(f"{inst}: in both manifest bands and archived_bands: {both}")
+        loose = sorted(set(stems) - set(bands) - set(archived))
+        if loose:
+            errors.append(f"{inst}: .dat files in neither manifest bands nor archived_bands: {loose}")
+        gone = sorted(set(archived) - set(stems))
+        if gone:
+            warnings.append(f"{inst}: archived_bands without a .dat file: {gone}")
+    index = inst / instrument
+    if not index.is_file():
+        errors.append(f"{inst}: missing index file {instrument}")
+    elif bands is not None:
+        listed = [ln.strip() for ln in index.read_text().splitlines() if ln.strip()]
+        if sorted(listed) != sorted(f"{b}.dat" for b in bands):
+            errors.append(f"{inst}: index file does not list exactly the manifest bands")
+        listed_archive = sorted(n for n in listed if n.endswith(".dat") and n[:-4] in archived)
+        if listed_archive:
+            errors.append(f"{inst}: index file lists archived bands {listed_archive}")
     fac = mirror.get(facility, {})
     if instrument in fac.get("instruments", {}):
         errors.append(f"{facility}/{instrument} already exists on the mirror")
@@ -112,6 +133,8 @@ def validate_instrument(inst, mirror, use_svo, report):
         piv = pivot_wavelength(wl, tr, hdr.get("DetectorType", "photon"))
         row = {"pivot_A": round(piv, 2), "n": len(wl), "detector": hdr.get("DetectorType"),
                "components": hdr.get("Components"), "source": hdr.get("ComponentsSource")}
+        if p.stem in archived:
+            row["archived"] = True
         pb = prov.get("bands", {}).get(p.stem, {})
         if pb.get("ref_pivot"):
             ref, cite = pb["ref_pivot"]
@@ -155,7 +178,10 @@ def main(argv=None):
         errors, warnings = validate_instrument(inst, mirror, args.svo, report)
         n_err += len(errors)
         status = "FAIL" if errors else "ok"
-        print(f"{status:4} {key}: {len(report[key]['bands'])} bands, {len(warnings)} warnings")
+        rows = report[key]["bands"].values()
+        n_arch = sum(1 for r in rows if r.get("archived"))
+        arch = f" (+{n_arch} archived)" if n_arch else ""
+        print(f"{status:4} {key}: {len(rows) - n_arch} bands{arch}, {len(warnings)} warnings")
         for line in errors + [f"warn: {w}" for w in warnings]:
             print(f"     {line}")
     for key in args.only or []:
