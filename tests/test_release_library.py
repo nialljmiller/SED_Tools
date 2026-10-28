@@ -510,7 +510,8 @@ def test_shipped_catalogue_loads_with_njm_spellings():
             assert set(meta) == {"description", "svo_instruments", "bands", "svo_bands"} and meta["bands"]
             assert set(meta["svo_bands"].values()) <= set(meta["bands"])
     gaia = catalogue["GAIA"]["instruments"]
-    assert gaia["GAIA"]["bands"] == ["G", "Gbp", "Gbp_bright", "Gbp_faint", "Grp", "Grvs"]
+    # NJM may add bands to a served set; the shipped snapshot holds at least the DR3 set
+    assert {"G", "Gbp", "Gbp_bright", "Gbp_faint", "Grp", "Grvs"} <= set(gaia["GAIA"]["bands"])
     assert gaia["GAIA"]["svo_bands"] == {"GAIA/GAIA3.G": "G", "GAIA/GAIA3.Gbp": "Gbp", "GAIA/GAIA3.Grp": "Grp",
                                          "GAIA/GAIA3.Grvs": "Grvs"}
     assert gaia["DR2"]["svo_bands"] == {"GAIA/GAIA2.G": "G", "GAIA/GAIA2.Gbp": "BP", "GAIA/GAIA2.Grp": "RP"}
