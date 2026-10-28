@@ -925,6 +925,68 @@ Each item says what 0.4.1 did, what 0.5.0 does, and when it happens.
   copies (``100_svo`` …) with the set. NJM's set now decides which bands are
   archived when the installed index shares no name with NJM's files.
 
+**Old SVO spellings on a fresh install: what to update**
+
+An instrument asked for under SVO's spelling installs NJM's product (see
+above). Compared with 0.4.1 on a fresh install, for the 16 such spellings
+checked (curves paired by band name, or by nearest pivot wavelength where
+the names differ):
+
+- ``PLANCK/HFI`` installs NJM's Planck HFI curves, from the RIMO R2.00 file
+  each curve's ``Sources`` names, in ``Planck/HFI``, with bands ``100``,
+  ``143``, ``217``, ``353``, ``545`` and ``857``. 0.4.1 installed SVO's
+  curves in ``PLANCK/HFI``, with bands ``100GHz`` … ``857GHz``. The curves
+  differ: on SVO's wavelengths, each normalised to its peak, by up to 0.18 of
+  the peak (353 GHz; 0.007 to 0.11 for the others), and their pivot
+  wavelengths by −0.16 % to +0.02 %. NJM's curves have 12,200-16,800 rows over
+  1.7×10⁵-9.9×10⁷ Å; SVO's 196-4,460 rows around each band.
+- ``PLANCK/LFI`` installs to ``Planck/LFI``, with bands ``30``, ``44`` and
+  ``70`` instead of ``030GHz``, ``044GHz`` and ``070GHz``. At SVO's
+  wavelengths the values are the same; ``30`` and ``44`` extend further
+  (188 and 151 rows against 125 and 118), and ``70`` has SVO's 251 rows.
+  Pivots agree within 0.002 %.
+- ``Herschel/Pacs`` installs to ``Herschel/PACS``, with bands ``70``, ``100``
+  and ``160`` instead of ``blue``, ``green`` and ``red``: the same data at
+  SVO's wavelengths, in about 15,900 rows against 235-405 (pivots within
+  0.03 %). Its MESA index file lists ``100.dat``, ``160.dat``, ``70.dat``, in
+  that order, so the bands come in the order 100, 160, 70 µm; 0.4.1's index
+  listed ``blue``, ``green``, ``red`` (70, 100, 160 µm).
+- For these three, each curve's header now records NJM's provenance
+  (``Components``, ``ComponentsSource=original``,
+  ``DetectorTypeSource=original``, ``Sources``); ``DetectorType`` is
+  unchanged.
+- The other spellings install the same folder, bands and data as 0.4.1, and
+  differ at most in the header's ``DetectorTypeSource`` and ``Sources``:
+  ``JWST/NIRSpec`` (in ``JWST/NIRSPEC``, as in 0.4.1), ``Gemini/GMOS-N``,
+  ``Gemini/GMOS-S``, ``Gemini/AcqCam-N``, ``Gemini/AcqCam-S``,
+  ``CTIO/S-PLUS``, ``BLAST/BLAST-TNG``, ``Bepi-Colombo/HRIC``,
+  ``Bepi-Colombo/STC``, ``DeepImpact/HRI-VIS``, ``DeepImpact/ITS-VIS``,
+  ``DeepImpact/MRI-VIS`` and ``GCOM-C/SGLI`` (in ``Gemini/GMOS_N``,
+  ``CTIO/S_PLUS`` and so on, as in 0.4.1). One exception: in
+  ``Gemini/AcqCam-S`` band ``I``, 63 of the 1,693 values were negative and
+  are now 0 (at most 0.10 of the peak; pivot +0.03 %).
+- Sets already installed are reused unchanged: 0.4.1's ``PLANCK/HFI`` or
+  ``Herschel/Pacs`` is used as it is, on a case-sensitive disk too, and no
+  second copy is made beside it.
+- MESA: an inlist written for a 0.4.1 install of ``PLANCK/HFI``,
+  ``PLANCK/LFI`` or ``Herschel/Pacs`` needs, with a fresh install, the new
+  instrument path (``Planck/HFI``, ``Planck/LFI``, ``Herschel/PACS``) and the
+  new history column names (the band names above). On a case-insensitive
+  disk (the macOS default) the old path still finds the new folder, but the
+  column names still change.
+- To get exactly 0.4.1's SVO curves, download them from SVO directly, into a
+  filter directory of their own::
+
+      from sed_tools.svo_filter_grabber import SVOFilterBrowser
+      svo = SVOFilterBrowser(base_dir="/path/to/svo_filters"); svo.download_filters(svo.list_filters("PLANCK", "HFI"))
+
+  This writes ``PLANCK/HFI`` (index file, manifest and curves) byte for byte
+  as 0.4.1 did; so do ``("PLANCK", "LFI")`` and ``("Herschel", "Pacs")``.
+  Do not point it at the filter directory where NJM's ``Planck/HFI`` is
+  installed: on a case-insensitive disk ``PLANCK/HFI`` is that same folder,
+  whose index file and manifest would be replaced and whose curves would be
+  mixed with SVO's.
+
 **Original-source builders**
 
 - ``LSST/LSST`` took its components from lsst/throughputs v1.9.2; they now
