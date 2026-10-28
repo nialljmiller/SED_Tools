@@ -298,9 +298,9 @@ def run_interactive_workflow(base_dir: str = None):
         _, _, _, _, teff, _, _, _ = _read_cube_header(c)
         gaps = np.diff(teff)
         gap_str = f"max gap {gaps.max():.0f} K" if len(gaps) > 0 else "single point"
-        print(f"  {i:2d}) {os.path.relpath(c, base_dir):<45s} "
-              f"Teff {teff[0]:.0f}–{teff[-1]:.0f} K  "
-              f"{gap_str}  ({len(teff)} pts)")
+        # the cube's numbers on their own line, so a long grid name never pushes them off the terminal
+        print(f"  {i:2d}) {os.path.relpath(c, base_dir)}")
+        print(f"      Teff {teff[0]:.0f}–{teff[-1]:.0f} K  {gap_str}  ({len(teff)} pts)")
 
     sel = input("\nSelect cube: > ").strip()
     if not sel.isdecimal() or not 1 <= int(sel) <= len(cubes):

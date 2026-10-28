@@ -1479,7 +1479,8 @@ def run_filter_combine_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
     from .combine_filters import combine_filter_sets, find_filter_sets
 
     print("\nCombine photometric filter sets")
-    print("This creates one MESA-compatible filter folder and index file from existing .dat files.")
+    print("This creates one MESA-compatible filter folder and index file")
+    print("from existing .dat files.")
 
     chosen_base = input(f"Filter base directory [{base_dir}]: ").strip() or base_dir
     filter_sets = find_filter_sets(chosen_base)

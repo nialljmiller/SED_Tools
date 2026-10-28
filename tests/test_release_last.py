@@ -64,3 +64,51 @@ def test_combine_menu_q_returns_to_the_menu_without_failing(tmp_path, monkeypatc
     assert cli._run_menu_flow(lambda: cli.run_combine_flow(base_dir=str(tmp_path))) is True
     assert "No spectral grids selected." in capsys.readouterr().out
     assert not (tmp_path / "combined_models").exists()
+
+
+# ----------------------------------------------------------------------
+# Lines no wider than an 80-column terminal (paths may be longer)
+# ----------------------------------------------------------------------
+def _wide_lines(text, *allowed):
+    """Lines over 80 columns that contain none of the ``allowed`` substrings (paths)."""
+    return [line for line in text.splitlines() if len(line) > 80 and not any(a in line for a in allowed)]
+
+
+def test_filter_combine_intro_fits_80_columns(tmp_path, monkeypatch, capsys):
+    from sed_tools.cli import run_filter_combine_flow
+
+    answer(monkeypatch, "")
+    run_filter_combine_flow(base_dir=str(tmp_path))
+    out = capsys.readouterr().out
+    assert "MESA-compatible filter folder and index file" in out
+    assert _wide_lines(out, str(tmp_path)) == []  # was 87 wide
+
+
+def test_densifier_cube_list_fits_80_columns(tmp_path, monkeypatch, capsys):
+    import numpy as np
+
+    from conftest import write_flux_cube
+    from sed_tools.grid_densifier import run_interactive_workflow
+
+    name = "a-rather-long-spectral-grid-name_dense"
+    write_flux_cube(tmp_path / name / "flux_cube.bin", [5750, 6000, 6250], [4.0], [0.0], [1000.0, 2000.0],
+                    np.ones((3, 1, 1, 2)))
+    answer(monkeypatch, "")
+    run_interactive_workflow(base_dir=str(tmp_path))
+    out = capsys.readouterr().out
+    assert f"   1) {name}/flux_cube.bin\n      Teff 5750–6250 K  max gap 250 K  (3 pts)\n" in out
+    assert _wide_lines(out, str(tmp_path)) == []  # was 92 wide with a short name
+
+
+def test_mesa_prepare_invalid_choice_fits_80_columns(tmp_path, monkeypatch):
+    from sed_tools import mesa_prepare
+
+    (tmp_path / "Kurucz").mkdir()
+    (tmp_path / "Kurucz" / "lookup_table.csv").write_text("file_name,teff,logg,metallicity\na.txt,5000,4,0\n")
+    answer(monkeypatch, "")
+    with pytest.raises(SystemExit) as excinfo:
+        mesa_prepare.run_interactive(base_dir=str(tmp_path))
+    message = str(excinfo.value.code)
+    assert message == ("Error: invalid spectral grid selection ''.\n"
+                       "Enter a number from 1 to 1 or a grid name. Nothing was exported.")
+    assert _wide_lines(message) == []  # was 107 wide

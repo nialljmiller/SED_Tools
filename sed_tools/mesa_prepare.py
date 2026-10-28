@@ -434,8 +434,8 @@ def _choose_grid(base_path: Path) -> str:
         return available[int(raw) - 1]
     if raw in available:
         return raw
-    raise SystemExit(f"Error: invalid spectral grid selection {raw!r}; "
-                     f"enter a number from 1 to {len(available)} or a grid name. Nothing was exported.")
+    raise SystemExit(f"Error: invalid spectral grid selection {raw!r}.\n"
+                     f"Enter a number from 1 to {len(available)} or a grid name. Nothing was exported.")
 
 
 def _choose_variant(variants: List[VariantInfo]) -> VariantInfo:
