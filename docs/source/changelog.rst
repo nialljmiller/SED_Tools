@@ -712,6 +712,25 @@ Each item says what 0.4.1 did, what 0.5.0 does, and when it happens.
   ``--non-interactive`` judges earlier outputs as the combine menu does (the
   ``source_model`` and ``original_file`` columns, or the folder name
   ``combined_models``).
+- Typing ``q`` at the config menu's "Enter new data directory path" saved
+  ``data_dir = "q"`` (a folder in the current directory); ``q`` and ``b`` now
+  keep the setting, as Enter does. Any other answer is still a path.
+- The grid selection of the combine menu (7) could be left only with Ctrl-C;
+  ``q`` or ``b`` now go back to the menu.
+- A one-column picker (the filter-set combination menu) kept a 10-column
+  margin and cut labels that fit the terminal; a label is now cut, with "…",
+  only when the terminal is narrower than it.
+- Without scipy, torch or scikit-learn (they come with ``[full]``), menu 8
+  and ``ml_completer`` ended with a ``ModuleNotFoundError`` traceback, as did
+  menu 9, ``ml_generator`` and ``ml_generator --auto`` at their first torch
+  or scikit-learn import. They now print, e.g., ``Error: missing scipy,
+  torch, scikit-learn: pip install "sed-tools[full]"`` and exit 1, or go
+  back to the menu. ``densify --ml-model`` without torch, and combining grids
+  without scipy, print the same line instead of a traceback.
+- Three menu lines wider than 80 columns were wrapped: the introduction of
+  the filter-set combination menu, the densifier's list of flux cubes (each
+  cube's Teff range goes on its own line), and mesa_prepare's message for an
+  invalid grid choice.
 
 **Filters, NJM and SVO**
 
@@ -881,6 +900,16 @@ Each item says what 0.4.1 did, what 0.5.0 does, and when it happens.
   and so loses the curve's first sample; it now returns False. A curve whose
   first line is blank, followed by samples, still passes: MESA skips the
   blank line and reads every sample. No curve NJM serves has either layout.
+- ``filters-info`` for an instrument not installed while no source answers
+  described it from the catalogue bundled with SED_Tools as
+  energy-counting (marked unverified), although the curves then installed
+  may be photon-counting (GAIA/DR2's builder writes photon). It now says the
+  detector is not known until the curves are installed; ``Filters.available``
+  gives ``detector_type`` None and each band's source ``unknown``.
+- ``filters-info`` beside an installed copy whose band names differ from
+  NJM's (0.4.1's ``PLANCK/HFI`` from SVO, ``100GHz`` …) listed NJM's archived
+  copies (``100_svo`` …) with the set. NJM's set now decides which bands are
+  archived when the installed index shares no name with NJM's files.
 
 **Original-source builders**
 
