@@ -8,6 +8,7 @@ from __future__ import annotations
 import importlib
 import json
 import logging
+import sys
 from types import SimpleNamespace
 
 import numpy as np
@@ -236,3 +237,124 @@ def test_a_retry_after_a_partial_download_fetches_only_what_is_missing(grabber):
     retry = grabber(_njm_set())
     assert retry._download_set("Fac", "Cam").downloaded == 1
     assert retry.session.curves_requested() == ["r.dat"]
+
+
+# ----------------------------------------------------------------------
+# Item 20: every old spelling still works as input to the API and the CLI
+# ----------------------------------------------------------------------
+from sed_tools import cli, filter_library  # noqa: E402
+from sed_tools.api import Filters  # noqa: E402
+from sed_tools.component_sources.catalog import name_key  # noqa: E402
+from sed_tools.filter_library import FilterLibrary, instrument_catalogue, load_instrument_catalogue  # noqa: E402
+
+#: (spelling given, NJM's spelling): SVO's, 0.4.1's and NJM's own.
+LEGACY = [
+    (("PLANCK", "HFI"), ("Planck", "HFI")),
+    (("Planck", "HFI"), ("Planck", "HFI")),
+    (("Gemini", "GMOS-N"), ("Gemini", "GMOS_N")),
+    (("Gemini", "GMOS_N"), ("Gemini", "GMOS_N")),
+    (("Herschel", "Pacs"), ("Herschel", "PACS")),
+    (("CTIO", "S-PLUS"), ("CTIO", "S_PLUS")),
+    (("Bepi-Colombo", "HRIC"), ("Bepi_Colombo", "HRIC")),
+]
+FILTER_CURVE = ("Wavelength,Transmission,FilterID=X.b;DetectorType=photon;DetectorTypeSource=original;"
+                "WavelengthUnit=Angstrom;Components=filter;ComponentsSource=original;Sources=https://example.invalid\n"
+                "4000,0\n5000,1\n6000,0\n")
+
+
+def _legacy_njm_files():
+    detailed, files = {}, {}
+    for _, (fac, inst) in LEGACY:
+        detailed.setdefault(fac, {"instruments": {}})["instruments"][inst] = {
+            "filters": ["b"], "size_bytes": 200, "info": "info.json", "properties": "properties.json",
+            "description": f"{fac} {inst} passbands", "svo_instruments": []}
+        files[f"filters/{fac}/{inst}/{inst}"] = "b.dat\n"
+        files[f"filters/{fac}/{inst}/b.dat"] = FILTER_CURVE
+        files[f"filters/{fac}/{inst}/info.json"] = json.dumps(
+            {"description": f"{fac} {inst} passbands", "bands": {"b": {"Description": "band b"}}})
+        files[f"filters/{fac}/{inst}/properties.json"] = json.dumps({"bands": {"b": {"WavelengthPivot": 5000.0}}})
+    files["index.json"] = json.dumps({"generated": "2026-10-28", "filters": {
+        "facilities": sorted(detailed), "facilities_detailed": detailed}})
+    return files, detailed
+
+
+@pytest.fixture
+def legacy_sources(tmp_path, monkeypatch):
+    """NJM serves the instruments under its own spelling; SVO is down; nothing is built from source."""
+    files, detailed = _legacy_njm_files()
+    served = Served(files)
+    monkeypatch.setattr(NJMFilterGrabber, "_check_availability", lambda self: True)
+    monkeypatch.setattr(njm_filter_grabber.requests, "Session", lambda: served)
+    monkeypatch.setattr("sed_tools.njm_filter_grabber.time.sleep", lambda seconds: None)
+    monkeypatch.setattr("sed_tools.njm_filter_grabber.tag_filter_file", lambda *a, **k: None)
+
+    def svo_down(*args, **kwargs):
+        raise RuntimeError("SVO is down (test)")
+
+    monkeypatch.setattr(filter_library, "SVOFilterBrowser", lambda **kwargs: SimpleNamespace(
+        list_facilities=svo_down, list_instruments=svo_down, list_filters=svo_down, download_filters=svo_down))
+    monkeypatch.setattr(filter_library, "get_builder", lambda name: pytest.fail(f"builder {name} was run"))
+    monkeypatch.setattr(filter_library, "load_instrument_catalogue", lambda: instrument_catalogue(detailed))
+    monkeypatch.setattr(Filters, "_catalogues", {})
+    monkeypatch.setenv("COLUMNS", "100")
+    return SimpleNamespace(root=tmp_path / "filters", served=served)
+
+
+def _njm_curve_requests(served, njm):
+    return [rel for rel in served.requested if rel.endswith("/b.dat")], f"filters/{njm[0]}/{njm[1]}/b.dat"
+
+
+def test_the_shipped_catalogue_names_each_instrument_as_njm_does():
+    shipped = load_instrument_catalogue()
+    for _, (fac, inst) in LEGACY:
+        assert inst in shipped[fac]["instruments"], f"{fac}/{inst}"
+
+
+@pytest.mark.parametrize("given,njm", LEGACY, ids=["/".join(g) for g, _ in LEGACY])
+def test_fetch_info_and_compose_take_the_old_spelling(legacy_sources, given, njm):
+    directory = Filters.fetch(*given, filter_root=legacy_sources.root)
+    # macOS folds case, so PLANCK/HFI and Planck/HFI may be one directory: compare names, not paths.
+    assert (name_key(directory.parent.name), name_key(directory.name)) == (name_key(njm[0]), name_key(njm[1]))
+    assert FilterLibrary.published_complete(directory)
+    curves, njm_curve = _njm_curve_requests(legacy_sources.served, njm)
+    assert curves == [njm_curve]  # downloaded once, under NJM's spelling
+
+    assert Filters.info(*given, filter_root=legacy_sources.root)["bands"]["b"]["Description"] == "band b"
+    product = Filters.compose("/".join(given), "filter", filter_root=legacy_sources.root)
+    assert (product / "b.dat").is_file()
+    assert _njm_curve_requests(legacy_sources.served, njm)[0] == [njm_curve]  # nothing downloaded again
+
+
+@pytest.mark.parametrize("given,njm", LEGACY, ids=["/".join(g) for g, _ in LEGACY])
+def test_the_cli_takes_the_old_spelling(legacy_sources, monkeypatch, capsys, given, njm):
+    target, base = "/".join(given), str(legacy_sources.root)
+    for argv in (["filters-info", target], ["filters", target], ["filters-info", target],
+                 ["filters-compose", target]):
+        monkeypatch.setattr(sys, "argv", ["sed-tools", *argv, "--base", base])
+        assert cli.main() == 0, (argv, capsys.readouterr())
+    out = capsys.readouterr().out
+    assert "products/filter" in out
+    assert _njm_curve_requests(legacy_sources.served, njm)[0] == [f"filters/{njm[0]}/{njm[1]}/b.dat"]
+
+
+def test_a_set_installed_under_an_old_spelling_is_used_as_it_is(legacy_sources):
+    # 0.4.1 saved SVO's Gemini/GMOS-N; NJM's spelling is GMOS_N. The installed set is used, offline.
+    old = legacy_sources.root / "Gemini" / "GMOS-N"
+    old.mkdir(parents=True)
+    (old / "b.dat").write_text(FILTER_CURVE)
+    (old / "GMOS-N").write_text("b.dat\n")
+    filter_library.InstrumentManifest.from_published(old).save(old)
+    assert Filters.fetch("Gemini", "GMOS-N", filter_root=legacy_sources.root) == old
+    assert (Filters.compose("Gemini/GMOS-N", "filter", filter_root=legacy_sources.root) / "b.dat").is_file()
+    assert legacy_sources.served.requested == []
+
+
+def test_query_keeps_svo_spelling_beside_the_download_key(tmp_path, monkeypatch, legacy_sources):
+    from sed_tools.svo_filter_grabber import Facility
+
+    monkeypatch.setattr(filter_library, "SVOFilterBrowser", lambda **kwargs: SimpleNamespace(
+        list_facilities=lambda: [Facility("PLANCK", "PLANCK", "Planck mission")]))
+    monkeypatch.setattr(Filters, "_filter_root", legacy_sources.root)
+    for asked in ("PLANCK", "planck", "Planck"):
+        rows = [row for row in Filters.query(asked, include_local=False) if row["source"] == "svo"]
+        assert [(r["facility_key"], r["svo_facility_key"]) for r in rows] == [("Planck", "PLANCK")], asked

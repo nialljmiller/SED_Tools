@@ -1733,21 +1733,26 @@ class Filters:
     def _query_remote(cls, facility: Optional[str] = None) -> List[Dict[str, Any]]:
         """Query remote filter sources.
 
-        SVO is treated as the authoritative discovery catalogue. The NJM mirror
-        is also reported when available, but fetch() still validates actual .dat
-        files before accepting a download.
+        ``facility_key`` is the spelling to download with (NJM's, else the
+        original builder's, else SVO's); ``svo_facility_key`` is SVO's own
+        spelling (``facility_key`` up to 0.4.1), or None when SVO does not list
+        the facility.  ``facility`` matches any source's spelling, ignoring case.
+        fetch() validates the actual .dat files before accepting a download.
         """
         from .filter_library import FilterLibrary
 
         report = FilterLibrary(cls._filter_root).facilities()
         for error in report["errors"]:
             logger.warning("Filter discovery: %s", error)
-        return [
-            {"facility": row["label"], "facility_key": row["key"], "source": source, "is_local": False}
-            for row in report["entries"]
-            if not facility or facility.casefold() in (row["key"].casefold(), row["label"].casefold())
-            for source in row["sources"] if source != "local"
-        ]
+        rows = []
+        for row in report["entries"]:
+            names = row.get("names", {})
+            if facility and facility.casefold() not in {n.casefold() for n in (row["key"], row["label"], *names.values())}:
+                continue
+            rows.extend({"facility": row["label"], "facility_key": row["key"], "svo_facility_key": names.get("svo"),
+                         "source": source, "is_local": False}
+                        for source in row["sources"] if source != "local")
+        return rows
 
     @classmethod
     def fetch(

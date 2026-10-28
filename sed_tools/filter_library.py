@@ -692,9 +692,10 @@ def _picker_entries(entries, njm_known, claims=None):
     Each has ``label`` (the name shown), ``fetch_key`` (the spelling to
     download with: NJM's, else the original builder's, else the installed
     directory's, else SVO's), ``key`` (the same), ``sources`` (every source
-    listing it now: ``local``, ``original``, ``svo``, ``njm``) and
+    listing it now: ``local``, ``original``, ``svo``, ``njm``),
     ``description`` (NJM's, else SVO's own text, else ``""``; SVO's can run to
-    several sentences).  ``njm_known`` (NJM's names -> their catalogue record)
+    several sentences) and ``names`` (each source's own spelling, NJM's from
+    the bundled catalogue when NJM does not list it now).  ``njm_known`` (NJM's names -> their catalogue record)
     names and describes entries NJM does not list now, so names do not change
     with NJM's availability; an entry only SVO lists takes them only if
     ``claims`` (SVO name key -> NJM name) says it is NJM's product.
@@ -708,7 +709,7 @@ def _picker_entries(entries, njm_known, claims=None):
         fetch_key = next(names[source] for source in FETCH_ORDER if source in names)
         description = (njm_known.get(names.get("njm")) or {}).get("description") or entry["descriptions"].get("svo", "")
         rows.append({"key": fetch_key, "label": fetch_key, "sources": list(entry["names"]),
-                     "description": description, "fetch_key": fetch_key})
+                     "description": description, "fetch_key": fetch_key, "names": names})
     return sorted(rows, key=lambda row: (row["label"].casefold(), row["label"]))
 
 
