@@ -21,7 +21,7 @@ import urllib3
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 
-from .njm_filter_grabber import NJM_CONNECT_TIMEOUT
+from .njm_filter_grabber import NJM_CONNECT_TIMEOUT, NJMFilterGrabber
 
 logger = logging.getLogger(__name__)
 
@@ -58,8 +58,8 @@ class NJMSpectraGrabber:
         # Cached index data (populated by _check_availability)
         self._index_data = None
         
-        # Check if server is available
-        self._available = self._check_availability()
+        # NJM is not asked again while another client in this process found it down (already reported)
+        self._available = not NJMFilterGrabber._paused() and self._check_availability()
         
     def _check_availability(self) -> bool:
         """Check if the NJM mirror is available, failing fast when it does not answer.
@@ -128,8 +128,9 @@ class NJMSpectraGrabber:
 
     @staticmethod
     def _unreachable(errors: List[str]) -> bool:
-        logger.warning("NJM mirror is unreachable, so its spectral grids are not offered. Attempts: %s",
-                       "; ".join(errors))
+        """Report NJM down, and leave it alone in this whole process for a while (see NJMFilterGrabber._pause)."""
+        NJMFilterGrabber._pause("; ".join(errors), "NJM mirror is unreachable, so its spectral grids are not "
+                                                   "offered. Attempts: " + "; ".join(errors), logger)
         return False
 
     def _cache_index(self, resp: requests.Response) -> None:

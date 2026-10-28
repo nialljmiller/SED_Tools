@@ -183,14 +183,14 @@ class NJMFilterGrabber:
         return False
 
     @staticmethod
-    def _pause(reason: str, message: str) -> None:
+    def _pause(reason: str, message: str, log: logging.Logger = logger) -> None:
         """Leave NJM alone for ``NJM_PAUSE`` seconds in this whole process; ``message`` is warned once per outage."""
         with _STATE.lock:
             _STATE.available = False
             _STATE.unreachable, _STATE.until = reason, monotonic() + NJM_PAUSE
             report, _STATE.reported = not _STATE.reported, True
         if report:
-            logger.warning(message)
+            log.warning(message)
 
     def _disable_ssl_verification(self) -> None:
         """Switch this and every later grabber in the process to skip certificate checks."""
@@ -464,18 +464,24 @@ class NJMFilterGrabber:
                                + "\n  ".join(failed))
         return result.downloaded
 
-    def _download_set(self, facility: str, instrument: str, filters: Optional[List[str]] = None) -> SetDownload:
+    def _download_set(self, facility: str, instrument: str, filters: Optional[List[str]] = None, *,
+                      output_dir: Optional[Path] = None) -> SetDownload:
         """Download an instrument's curves and what comes with them, and report every failure.
 
         ``listed`` is empty when NJM does not serve the instrument.  Raises
         ``requests.RequestException`` only when NJM cannot say which curves it serves.
+        ``output_dir`` is where they go when the instrument is installed under
+        another spelling (``Gemini/GMOS-N`` for NJM's ``Gemini/GMOS_N``); by
+        default ``<base_dir>/<facility>/<instrument>``.
         """
         if filters is None:
             filters = self.discover_filters(facility, instrument)
         if not filters:
             return SetDownload(listed=[])
-        output_dir = Path(self.base_dir) / facility / instrument
+        default_dir = Path(self.base_dir) / facility / instrument
+        output_dir = Path(output_dir) if output_dir is not None else default_dir
         output_dir.mkdir(parents=True, exist_ok=True)
+        elsewhere = output_dir != default_dir
 
         print(f"[njm] Downloading filters: {facility}/{instrument}")
         print(f"  Found {len(filters)} filters")
@@ -490,9 +496,15 @@ class NJMFilterGrabber:
               f"{len(failed)} failed")
         if downloaded:
             # Only beside curves fetched now: the mirror's files describe its current curves.
-            self.download_catalogue_files(facility, instrument)
+            if elsewhere:
+                self._save_catalogue_files(facility, instrument, output_dir)
+            else:
+                self.download_catalogue_files(facility, instrument)
         try:
-            self.download_components(facility, instrument)
+            if elsewhere:
+                self._save_components(facility, instrument, output_dir)
+            else:
+                self.download_components(facility, instrument)
         except (requests.RequestException, RuntimeError, ValueError) as exc:
             result.other_failures.append(f"components: {exc}")
         if remote_index and not (output_dir / "manifest.json").is_file():
@@ -631,6 +643,7 @@ class NJMFilterGrabber:
 
         Only the mirror (or its manifest) can declare the full filter set: an
         index built from the files seen so far would certify a partial set.
+        The file is named after ``output_dir``, as MESA looks for it there.
         """
         try:
             response = self._get(f"{self.filters_url}/{facility}/{instrument}/{instrument}", timeout=10)
@@ -638,7 +651,7 @@ class NJMFilterGrabber:
             logger.warning("NJM index unavailable for %s/%s (%s); completeness cannot be verified",
                            facility, instrument, exc)
             return None
-        (output_dir / instrument).write_text(response.text, encoding="utf-8")
+        (output_dir / output_dir.name).write_text(response.text, encoding="utf-8")
         return [line.strip() for line in response.text.splitlines() if line.strip()]
 
     def download_all_filters(self, facility: Optional[str] = None) -> int:
@@ -704,9 +717,12 @@ class NJMFilterGrabber:
         cannot be fetched or read is skipped with a warning (catalogue lookups
         then use NJM's current copy).  Returns the names saved.
         """
+        return self._save_catalogue_files(facility, instrument, Path(self.base_dir) / facility / instrument)
+
+    def _save_catalogue_files(self, facility: str, instrument: str, output_dir: Path) -> List[str]:
+        """:meth:`download_catalogue_files` into ``output_dir`` (see :meth:`_download_set`)."""
         if not self._available:
             return []
-        output_dir = Path(self.base_dir) / facility / instrument
         saved = []
         for name in self.CATALOGUE_FILES:
             try:
@@ -771,10 +787,13 @@ class NJMFilterGrabber:
         no components for this instrument).  Every file that can be downloaded
         is saved; then RuntimeError lists those that could not be.
         """
+        return self._save_components(facility, instrument, Path(self.base_dir) / facility / instrument)
+
+    def _save_components(self, facility: str, instrument: str, output_dir: Path) -> int:
+        """:meth:`download_components` into ``output_dir`` (see :meth:`_download_set`)."""
         manifest = self.fetch_manifest(facility, instrument)
         if manifest is None:
             return 0
-        output_dir = Path(self.base_dir) / facility / instrument
         output_dir.mkdir(parents=True, exist_ok=True)
         (output_dir / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
 

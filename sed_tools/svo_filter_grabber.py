@@ -7,21 +7,64 @@ import os
 import re
 import sys
 import textwrap
+import threading
 import urllib.parse
 from dataclasses import dataclass
+from time import monotonic
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 import requests
 from bs4 import BeautifulSoup
 
 from .filter_components import InstrumentManifest
-from .filter_metadata import (ENERGY, SOURCE_ASSUMED, SOURCE_SVO, SVOMetadataClient, SVOUnreachableError,
-                              svo_components_header, svo_fps_url, svo_get, write_filter_file)
+from .filter_metadata import (ENERGY, SOURCE_ASSUMED, SOURCE_SVO, SVO_FPS_URL_ENV, SVOMetadataClient,
+                              SVOUnreachableError, svo_components_header, svo_fps_url, svo_get, write_filter_file)
 from .ui_utils import prompt_choice
 from .parsing import parse_multi_selection
 
 SVO_READ_TIMEOUT = 300  # give a connected SVO a generous time to respond
+#: Seconds SVO is left alone, by every browser in the process, after it did not answer.
+SVO_PAUSE = 300
+
+
+class _SVOState:
+    """What this process knows about SVO, shared by every :class:`SVOFilterBrowser`.
+
+    Once SVO does not answer (no connection, or no reply in time), every
+    browser fails at once with that same error for ``SVO_PAUSE`` seconds, so a
+    facility list and the instrument lists after it wait for SVO once in all.
+    """
+
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.reset()
+
+    def reset(self) -> None:
+        self.error: Optional[str] = None  # why SVO is not asked, until `until` (monotonic())
+        self.until = 0.0
+
+    def paused(self) -> Optional[str]:
+        """The error SVO failed with, while it is not to be asked again; else None."""
+        with self.lock:
+            if self.error is not None and monotonic() >= self.until:
+                self.error = None
+            return self.error
+
+    def pause(self, error: str) -> str:
+        """Leave SVO alone for ``SVO_PAUSE`` seconds; returns the error every request until then raises."""
+        with self.lock:
+            self.error = f"{error} SVO is not asked again for {SVO_PAUSE // 60} minutes."
+            self.until = monotonic() + SVO_PAUSE
+            return self.error
+
+
+_STATE = _SVOState()
+
+
+def svo_unavailable() -> Optional[str]:
+    """Why SVO is not asked in this process now (it did not answer lately), or None."""
+    return _STATE.paused()
 
 DEFAULT_BASE_DIR = os.path.join(os.path.dirname(__file__), "data", "filters")
 
@@ -186,23 +229,41 @@ class SVOFilterBrowser:
         if not filters:
             print("No filters to download.")
             return
-        expected: Dict[str, set] = {}  # instrument directory -> bands it should hold
-        failed = []
-        for idx, row in enumerate(filters, 1):
-            print(f"  [{idx:3d}/{len(filters):3d}] {row.filter_id}")
+        targets = []
+        for row in filters:
             out_dir, band_name = self._target(row)
+            targets.append((row, Path(out_dir), band_name))
+        self._save_all(targets, {})
+
+    def download_into(self, directory, bands: Mapping[str, FilterRow], expected: Iterable[str] = ()) -> None:
+        """Save each filter as ``<directory>/<band>.dat`` (``bands``: band -> its SVO row), as download_filters does.
+
+        For an instrument installed under names that are not SVO's: NJM's
+        (``GAIA/GAIA`` from SVO's ``GAIA/GAIA3``), or an installed folder's.
+        The manifest declares ``expected`` too (every band of the set), so a
+        set SVO fills only in part is not taken for a complete one.
+        """
+        directory = Path(directory)
+        directory.mkdir(parents=True, exist_ok=True)
+        self._save_all([(row, directory, band) for band, row in bands.items()], {directory: set(expected)})
+
+    def _save_all(self, targets: Sequence[Tuple[FilterRow, Path, str]], expected: Dict[Path, set]) -> None:
+        """Save each ``(row, directory, band)``, then write each directory's index and manifest."""
+        failed = []
+        for idx, (row, out_dir, band_name) in enumerate(targets, 1):
+            print(f"  [{idx:3d}/{len(targets):3d}] {row.filter_id}")
             expected.setdefault(out_dir, set()).add(band_name)
             try:
                 self._save_filter(row, os.path.join(out_dir, f"{band_name}.dat"))
-            except SVOUnreachableError:
-                raise
+            except SVOUnreachableError as exc:
+                raise SVOUnreachableError(_STATE.pause(str(exc))) from exc
             except (requests.RequestException, ValueError) as exc:  # malformed or unavailable source response
                 print(f"    [error] {row.filter_id}: {exc}")
                 failed.append(f"{row.filter_id}: {exc}")
         for out_dir, bands in expected.items():
-            _write_index_and_manifest(Path(out_dir), bands)
+            _write_index_and_manifest(out_dir, bands)
         if failed:
-            raise RuntimeError(f"{len(failed)} of {len(filters)} SVO filters could not be saved; "
+            raise RuntimeError(f"{len(failed)} of {len(targets)} SVO filters could not be saved; "
                                "run again to retry them:\n  " + "\n  ".join(failed))
 
     def _target(self, row: FilterRow) -> Tuple[str, str]:
@@ -237,12 +298,26 @@ class SVOFilterBrowser:
 
     # -------------------- HTTP helpers --------------------
     def _fetch_index(self, params: Dict[str, str]) -> BeautifulSoup:
+        """One page of SVO's browse index.
+
+        SVOUnreachableError when SVO cannot be connected to or does not answer
+        in time, and then at once, with the same message, for ``SVO_PAUSE``
+        seconds (see :class:`_SVOState`); RuntimeError for any other failure.
+        """
+        paused = _STATE.paused()
+        if paused is not None:
+            raise SVOUnreachableError(paused)
+        url = urllib.parse.urljoin(svo_fps_url(), "index.php")
         try:
-            resp = svo_get(self.session, urllib.parse.urljoin(svo_fps_url(), "index.php"),
-                           params=params, read_timeout=60)
+            resp = svo_get(self.session, url, params=params, read_timeout=60)
             resp.raise_for_status()
-        except SVOUnreachableError:
-            raise
+        except SVOUnreachableError as exc:
+            raise SVOUnreachableError(_STATE.pause(str(exc))) from exc
+        except requests.Timeout as exc:  # connected, but SVO sent no answer
+            raise SVOUnreachableError(_STATE.pause(
+                f"SVO Filter Profile Service did not answer {url} in time ({type(exc).__name__}). Use the NJM "
+                f"mirror or the original-source builders instead, or set {SVO_FPS_URL_ENV} to another FPS "
+                f"endpoint.")) from exc
         except requests.RequestException as exc:
             raise RuntimeError(f"Failed to fetch SVO index: {exc}") from exc
         return BeautifulSoup(resp.text, "html.parser")

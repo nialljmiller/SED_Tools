@@ -62,14 +62,16 @@ def write_flux_cube(
 
 @pytest.fixture(autouse=True)
 def _fresh_njm_state():
-    """What a process knows about NJM is shared by its clients; each test starts as a new process."""
-    from sed_tools import njm_filter_grabber
+    """What a process knows about NJM and SVO is shared by its clients; each test starts as a new process."""
+    from sed_tools import njm_filter_grabber, svo_filter_grabber
     from sed_tools.filter_catalogue import FilterCatalogue
 
     njm_filter_grabber._STATE.reset()
+    svo_filter_grabber._STATE.reset()
     FilterCatalogue._unreachable_until = 0.0
     yield
     njm_filter_grabber._STATE.reset()
+    svo_filter_grabber._STATE.reset()
     FilterCatalogue._unreachable_until = 0.0
 
 

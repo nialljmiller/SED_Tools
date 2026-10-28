@@ -138,16 +138,17 @@ def test_gaia_picker_without_njm_lists_every_other_source(tmp_path, bundled):
     library.svo = svo_stub({"GAIA": "Gaia mission."}, {"GAIA": GAIA_SVO})
     library.mirror = SimpleNamespace(is_available=lambda: False)
     result = library.instruments("GAIA")
-    # SVO's copies are what can be fetched now, so none is dropped; NJM's own text still describes DR2.
+    # The same products, names and descriptions as with NJM up: SVO's copies of NJM's products take NJM's
+    # names (GAIA2 is DR2, GAIA3 is GAIA), and are what can be fetched now. Gaia2m is SVO's own.
     assert labels(result) == [
-        ("DR2", ["original"], "Gaia DR2 passbands (Evans et al. 2018)"),
-        ("DR2r", ["original"], "Gaia DR2 revised passbands"),
+        ("DR2", ["original", "svo"], "Gaia DR2 passbands (Evans et al. 2018)"),
+        ("DR2r", ["original", "svo"], "Gaia DR2 revised passbands"),
+        ("GAIA", ["svo"], "Gaia EDR3 passbands (Riello et al. 2021)"),
         ("GAIA0", ["svo"], "Gaia pre-launch filters"),
-        ("GAIA2", ["svo"], "Original passbands used for the magnitudes published in Gaia DR2."),
         ("Gaia2m", ["svo"], "Revised passbands for Gaia DR2."),
-        ("GAIA2r", ["svo"], "Revised passbands for Gaia DR2."),
-        ("GAIA3", ["svo"], "GAIA eDR3 release."),
     ]
+    assert {e["label"]: e["names"]["svo"] for e in result["entries"]} == {
+        "DR2": "GAIA2", "DR2r": "GAIA2r", "GAIA": "GAIA3", "GAIA0": "GAIA0", "Gaia2m": "Gaia2m"}
     assert result["errors"] == ["NJM unavailable"]
 
 
@@ -173,9 +174,10 @@ def test_svo_and_njm_down_leave_installed_and_original_sources(tmp_path, bundled
     library.mirror = SimpleNamespace(is_available=lambda: False)
     result = library.facilities()
     entries = {e["label"]: e for e in result["entries"]}
-    assert entries["CTIO"]["sources"] == ["local", "original"] and entries["GAIA"]["sources"] == ["original"]
+    # CTIO's only builder (DECam) makes components, not curves, so it is no source of CTIO's sets.
+    assert entries["CTIO"]["sources"] == ["local"] and entries["GAIA"]["sources"] == ["original"]
     assert result["errors"] == ["SVO: Failed to fetch SVO index: connection refused", "NJM unavailable"]
-    assert labels(library.instruments("CTIO")) == [("DECam", ["original"], ""), ("S_PLUS", ["local"], "")]
+    assert labels(library.instruments("CTIO")) == [("S_PLUS", ["local"], "")]
     assert labels(library.instruments("GAIA"))[0] == ("DR2", ["original"], "Gaia DR2 passbands (Evans et al. 2018)")
 
 
@@ -266,7 +268,7 @@ def test_a_same_named_svo_product_njm_does_not_claim_keeps_its_own_name_and_text
     library.svo = svo_stub({"Gemini": ""}, {"Gemini": {"Niri": "SVO's NIRI", "GMOS-N": "SVO's GMOS-N"}})
     library.mirror = SimpleNamespace(is_available=lambda: False)
     shown = {label: rest for label, *rest in labels(library.instruments("Gemini"))}
-    assert shown["GMOS_N"] == [["original", "svo"], "NJM's GMOS-N"]  # NJM's product: NJM's name and text
+    assert shown["GMOS_N"] == [["svo"], "NJM's GMOS-N"]  # NJM's product: NJM's name and text
     assert shown["Niri"] == [["svo"], "SVO's NIRI"] and "NIRI" not in shown  # another product: SVO's own
 
 
@@ -505,7 +507,14 @@ def test_shipped_catalogue_loads_with_njm_spellings():
     assert set(catalogue["GAIA"]["instruments"]) >= {"DR2", "DR2r", "GAIA", "GAIA0"}
     for record in catalogue.values():
         for meta in record["instruments"].values():
-            assert set(meta) == {"description", "svo_instruments"}
+            assert set(meta) == {"description", "svo_instruments", "bands", "svo_bands"} and meta["bands"]
+            assert set(meta["svo_bands"].values()) <= set(meta["bands"])
+    gaia = catalogue["GAIA"]["instruments"]
+    assert gaia["GAIA"]["bands"] == ["G", "Gbp", "Gbp_bright", "Gbp_faint", "Grp", "Grvs"]
+    assert gaia["GAIA"]["svo_bands"] == {"GAIA/GAIA3.G": "G", "GAIA/GAIA3.Gbp": "Gbp", "GAIA/GAIA3.Grp": "Grp",
+                                         "GAIA/GAIA3.Grvs": "Grvs"}
+    assert gaia["DR2"]["svo_bands"] == {"GAIA/GAIA2.G": "G", "GAIA/GAIA2.Gbp": "BP", "GAIA/GAIA2.Grp": "RP"}
+    assert "BP_svo" not in gaia["DR2"]["bands"]  # archived copies are not part of the set
 
 
 def test_catalogue_generator_writes_what_the_loader_reads(tmp_path, monkeypatch):
@@ -514,16 +523,38 @@ def test_catalogue_generator_writes_what_the_loader_reads(tmp_path, monkeypatch)
 
     index = tmp_path / "index.json"
     index.write_text(njm_index({"GAIA": GAIA_NJM, "Junk": {"X": None}}))
+    evidence = tmp_path / "svo_instruments.json"
+    same = lambda *bands: {"njm": {f"GAIA/DR2/{b}": {"same": True} for b in bands}}
+    evidence.write_text(json.dumps({"svo_groups": {"GAIA/GAIA2": {"bands": {
+        "GAIA/GAIA2.G": same("G", "G_svo"), "GAIA/GAIA2.Gbp": same("BP", "BP_svo"),
+        "GAIA/GAIA2.Grp": {"njm": {"GAIA/DR2/RP": {"same": False}}}}}}}))
+    served = {"GAIA/DR2/DR2": "BP.dat\nG.dat\nRP.dat\n", "GAIA/DR2r/DR2r": "G.dat\n", "GAIA/GAIA/GAIA": "G.dat\n",
+              "GAIA/GAIA0/GAIA0": "G.dat\n", "Junk/X/X": "a.dat\n"}
+    requested = []
+
+    def get(url, **kwargs):
+        requested.append(url)
+        return SimpleNamespace(text=served[url.split("/filters/", 1)[1]], raise_for_status=lambda: None)
+
+    monkeypatch.setattr("requests.get", get)
+    monkeypatch.setattr("time.sleep", lambda seconds: None)
     out = tmp_path / "catalogue.json"
     script = Path(__file__).resolve().parents[1] / "scripts" / "make_instrument_catalogue.py"
-    monkeypatch.setattr(sys, "argv", [str(script), "--index", str(index), "--output", str(out)])
+    monkeypatch.setattr(sys, "argv", [str(script), "--index", str(index), "--svo-evidence", str(evidence),
+                                      "--output", str(out)])
     runpy.run_path(str(script), run_name="__main__")
     catalogue = load_instrument_catalogue(out)
-    assert catalogue["GAIA"]["instruments"]["DR2"] == GAIA_NJM["DR2"]
-    assert catalogue["GAIA"]["instruments"]["GAIA0"] == {"description": "", "svo_instruments": ["GAIA/GAIA0"]}
-    assert catalogue["Junk"]["instruments"]["X"] == {"description": "", "svo_instruments": []}
-    assert json.loads(out.read_text())["facilities"]["GAIA"]["instruments"]["GAIA0"] == {
-        "svo_instruments": ["GAIA/GAIA0"]}  # empty fields are not stored
+    assert catalogue["GAIA"]["instruments"]["DR2"] == dict(
+        GAIA_NJM["DR2"], bands=["BP", "G", "RP"], svo_bands={"GAIA/GAIA2.G": "G", "GAIA/GAIA2.Gbp": "BP"})
+    assert catalogue["GAIA"]["instruments"]["GAIA0"] == {"description": "", "svo_instruments": ["GAIA/GAIA0"],
+                                                         "bands": ["G"], "svo_bands": {}}
+    assert catalogue["Junk"]["instruments"]["X"] == {"description": "", "svo_instruments": [], "bands": ["a"],
+                                                     "svo_bands": {}}
+    stored = json.loads(out.read_text())["facilities"]["GAIA"]["instruments"]
+    assert stored["GAIA0"] == {"svo_instruments": ["GAIA/GAIA0"], "bands": ["G"]}  # empty fields are not stored
+    assert stored["DR2"]["svo_bands"] == {"GAIA/GAIA2": ["G", "Gbp=BP"]}  # Grp is not the same curve as RP
+    assert sum('"bands": [' in line for line in out.read_text().splitlines()) == 5  # one line per instrument
+    assert all(url.startswith("https://nillmill.ddns.net/sed_tools/filters/") for url in requested)
 
 
 def test_catalogue_search_reads_an_index_with_the_new_instrument_fields(tmp_path):

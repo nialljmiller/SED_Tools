@@ -18,6 +18,8 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 from tqdm import tqdm
 
+from .svo_spectra_grabber import DISCOVERY_TIMEOUT, discovery_failure, mount_discovery
+
 _SEG_IDX = re.compile(r"\[(\d+)\]")
 
 # Known axis-role overrides per model (0-based axis indices in vgrid/axes[i]/x)
@@ -205,6 +207,7 @@ class MSGSpectraGrabber:
         self.session.mount("https://", HTTPAdapter(max_retries=retry))
 
         self.index_url = "http://user.astro.wisc.edu/~townsend/static.php?ref=msg-grids"
+        mount_discovery(self.session, self.index_url)
         self.model_urls = {}
         self.model_axes = {}   # model -> dict(axes=list, shape=tuple, vlin=array, roles=dict)
 
@@ -212,10 +215,11 @@ class MSGSpectraGrabber:
         """Return the MSG grids on the index page; [] after a warning if it cannot be read."""
         print("Discovering spectral grids from MSG...")
         try:
-            r = self.session.get(self.index_url, timeout=30)
+            r = self.session.get(self.index_url, timeout=DISCOVERY_TIMEOUT)
             r.raise_for_status()
         except requests.RequestException as e:
-            logger.warning("MSG: grid index %s failed (%s); MSG spectral grids are not offered", self.index_url, e)
+            logger.warning("MSG: grid index %s %s; MSG spectral grids are not offered",
+                           self.index_url, discovery_failure(e))
             return []
         soup = BeautifulSoup(r.text, "html.parser")
         models = []

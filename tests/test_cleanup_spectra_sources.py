@@ -340,7 +340,8 @@ def test_svo_discovery_failure_warns_instead_of_vanishing(tmp_path, monkeypatch,
     grabber, _ = make_svo(tmp_path, monkeypatch, {SVO_INDEX: requests.ConnectionError("no route")})
     with caplog.at_level(logging.WARNING):
         assert grabber.discover_models() == []
-    assert any("no route" in m and "not offered" in m for m in warnings_from(caplog, "svo_spectra_grabber"))
+    # One plain line (the raw urllib3 text was several lines' worth for a proxy or timeout).
+    assert any("could not be reached" in m and "not offered" in m for m in warnings_from(caplog, "svo_spectra_grabber"))
 
 
 def test_svo_metadata_warns_at_each_fallback_and_raises_when_a_probe_fails(tmp_path, monkeypatch, caplog):

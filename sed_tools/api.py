@@ -2055,7 +2055,10 @@ class Filters:
         BibTeX where available), the providers' ``acknowledgements``, the
         ``licence``, and per band the SVO-style fields (``Description``,
         ``PhotSystem``, ``MagSys``, ...), owner-published values and what SVO
-        recorded.  Sources are chosen as in :meth:`properties`.
+        recorded.  Sources are chosen as in :meth:`properties`.  Bands NJM keeps
+        beside the set but does not serve as part of it (superseded copies such
+        as ``BP_svo``) are under ``archived_bands``, not ``bands``; so in
+        :meth:`properties`.
         """
         return cls._catalogue(filter_root, offline=offline).info(facility, instrument, refresh=refresh)
 
@@ -2187,7 +2190,8 @@ class Filters:
                 errors.append(f"{fac}/{inst}: {exc}")
                 continue
             if bands is not None:
-                unknown = [b for b in bands if b not in info.get("bands", {})]
+                known = {**(info.get("archived_bands") or {}), **info.get("bands", {})}
+                unknown = [b for b in bands if b not in known]
                 errors.extend(f"{fac}/{inst}: no band {b!r} in info.json" for b in unknown)
                 bands = [b for b in bands if b not in unknown]
                 if not bands:

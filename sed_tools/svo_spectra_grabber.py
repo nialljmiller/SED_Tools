@@ -20,6 +20,28 @@ from .header_parser import parse_header
 
 logger = logging.getLogger(__name__)
 
+#: Connect and read timeouts for a source's grid index.  Discovery asks every source before
+#: anything is downloaded, so a source that is down or hanging must cost seconds, not minutes:
+#: the index is asked once, without the retries a download gets (see ``mount_discovery``).
+DISCOVERY_TIMEOUT = (5, 10)
+
+
+def mount_discovery(session, url):
+    """Make ``session`` ask ``url`` (a grid index) once: no retries, unlike the rest of the source."""
+    session.mount(url, HTTPAdapter(max_retries=0))
+
+
+def discovery_failure(exc):
+    """Why a grid index could not be read, in a few plain words."""
+    status = getattr(getattr(exc, "response", None), "status_code", None)
+    if status is not None:
+        return f"answered HTTP {status}"
+    if isinstance(exc, requests.Timeout):
+        return f"did not answer within {DISCOVERY_TIMEOUT[0]:g}+{DISCOVERY_TIMEOUT[1]:g} s"
+    if isinstance(exc, requests.ConnectionError):
+        return "could not be reached"
+    return str(exc)
+
 
 class SVOSpectraGrabber:
     """
@@ -60,6 +82,7 @@ class SVOSpectraGrabber:
         # Endpoints
         self.model_index_url = "http://svo2.cab.inta-csic.es/theory/newov2/index.php"
         self.spectra_base_url = "http://svo2.cab.inta-csic.es/theory/newov2/ssap.php"
+        mount_discovery(self.session, self.model_index_url)  # also each grid's page there, a discovery fallback
 
         # Budgets
         self.ssap_timeout    = 60          # seconds — SVO can be slow to start responding
@@ -82,11 +105,11 @@ class SVOSpectraGrabber:
         """Return the spectral grids SVO lists; [] after a warning if the index cannot be read."""
         print("Discovering spectral grids from SVO...")
         try:
-            r = self.session.get(self.model_index_url, timeout=20)
+            r = self.session.get(self.model_index_url, timeout=DISCOVERY_TIMEOUT)
             r.raise_for_status()
         except requests.RequestException as e:
-            logger.warning("SVO: spectral grid index %s failed (%s); SVO spectral grids are not offered",
-                           self.model_index_url, e)
+            logger.warning("SVO: spectral grid index %s %s; SVO spectral grids are not offered",
+                           self.model_index_url, discovery_failure(e))
             return []
         soup = BeautifulSoup(r.text, "html.parser")
         models = set()

@@ -201,6 +201,8 @@ class FilterCatalogue:
                 logger.warning("NJM unreachable (%s); using the cached %s", exc, rel)
                 self._came_from(rel, "cache", meta.get("checked"), njm_unreachable=True)
                 return path
+            if status is None:  # no answer: the mirror client has said why, once
+                raise CatalogueError(self._not_cached(rel)) from exc
             raise CatalogueError(f"Cannot fetch {rel} from NJM: {exc}") from exc
         self._store(path, rel, url, response, meta, generation, validate)
         self._came_from(rel, "njm", time.time())
@@ -301,8 +303,16 @@ class FilterCatalogue:
 
         The copy saved beside installed curves describes exactly those curves and is
         used first, unless ``refresh`` or ``prefer_installed=False``; otherwise NJM's
-        current file, cached.
+        current file, cached.  Bands NJM keeps beside the set but does not serve as
+        part of it (superseded copies such as ``BP_svo``) are moved from ``bands``
+        to ``archived_bands`` (see :meth:`_split_archived`).
         """
+        data = self._instrument_file(facility, instrument, kind, prefer_installed=prefer_installed, refresh=refresh)
+        return self._split_archived(facility, instrument, data)
+
+    def _instrument_file(self, facility: str, instrument: str, kind: str, *,
+                         prefer_installed: bool, refresh: bool) -> dict:
+        """The file as installed, cached or served (see :meth:`instrument_file`)."""
         if kind not in (PROPERTIES, INFO):
             raise ValueError(f"kind must be {PROPERTIES!r} or {INFO!r}")
         installed = self._installed(facility, instrument, kind) if prefer_installed and not refresh else None
@@ -340,6 +350,60 @@ class FilterCatalogue:
             origin["njm_unreachable"] = True  # current only as of an index.json NJM could not confirm
         self._origins[(facility, instrument, kind)] = origin
         return data
+
+    def _split_archived(self, facility: str, instrument: str, data: dict) -> dict:
+        """``data`` with the bands that are not part of the served set under ``archived_bands``.
+
+        The set is what the instrument's MESA index file lists: the installed
+        one, else NJM's (cached), else the bands of NJM's catalogue bundled with
+        SED_Tools.  Without any of them, or when none of the file's bands is in
+        the set (names that do not match), ``data`` is returned as it is.
+        """
+        served = self._served_bands(facility, instrument)
+        bands = data.get("bands") or {}
+        if not served or not any(band in served for band in bands):
+            return data
+        archived = {band: record for band, record in bands.items() if band not in served}
+        if not archived:
+            return data
+        return dict(data, bands={band: record for band, record in bands.items() if band in served},
+                    archived_bands=dict(data.get("archived_bands") or {}, **archived))
+
+    def _served_bands(self, facility: str, instrument: str) -> Optional[set]:
+        """The bands of the instrument's set (see :meth:`_split_archived`), or None when unknown."""
+        installed = self._installed_directory(facility, instrument)
+        if installed is not None:
+            listed = installed / installed.name
+            if listed.is_file():
+                return _index_bands(listed.read_text(encoding="utf-8"))
+        try:
+            entry = self.resolve(facility, instrument)
+            rel = f"filters/{entry['facility']}/{entry['instrument']}/{entry['instrument']}"
+            path = self._fetch(rel, generation=self.index().get("generated"))
+        except CatalogueError:
+            path = None
+        if path is not None:
+            return _index_bands(path.read_text(encoding="utf-8"))
+        from .filter_library import load_instrument_catalogue
+        from .component_sources.catalog import match_name
+
+        bundled = load_instrument_catalogue()
+        fac = match_name(facility, bundled)
+        inst = match_name(instrument, bundled[fac]["instruments"]) if fac else None
+        bands = bundled[fac]["instruments"][inst]["bands"] if inst else []
+        return set(bands) or None
+
+    def _installed_directory(self, facility: str, instrument: str) -> Optional[Path]:
+        """The installed directory of an instrument (matched without regard to case), if any."""
+        direct = self.filter_root / facility / instrument
+        if direct.is_dir():
+            return direct
+        if self.filter_root.is_dir():
+            for path in self.filter_root.glob("*/*"):
+                if path.is_dir() and (path.parent.name.casefold(), path.name.casefold()) == (
+                        facility.casefold(), instrument.casefold()):
+                    return path
+        return None
 
     def properties(self, facility: str, instrument: str, **kwargs) -> dict:
         """The instrument's ``properties.json``: ``{"bands": {band: {...}}, "definitions": {...}}``."""
@@ -461,6 +525,12 @@ class FilterCatalogue:
         return frame
 
 
+def _index_bands(text: str) -> set:
+    """The bands a MESA index file lists (its ``.dat`` names without the suffix)."""
+    names = [line.strip() for line in text.splitlines() if line.strip() and not line.lstrip().startswith("#")]
+    return {name[:-len(".dat")] for name in names if name.endswith(".dat")}
+
+
 # ----------------------------------------------------------------------
 # Search criteria
 # ----------------------------------------------------------------------
@@ -552,7 +622,7 @@ def _band_references(info: dict, bands: Optional[Iterable[str]]) -> List[str]:
     everything = list(info.get("references", []))
     if bands is None:
         return everything
-    band_info = info.get("bands", {})
+    band_info = {**(info.get("archived_bands") or {}), **info.get("bands", {})}
     per_band = {ref for b in band_info.values() for ref in b.get("references", [])}
     chosen = [ref for band in bands for ref in band_info.get(band, {}).get("references", [])]
     keep = [ref for ref in everything if ref not in per_band or ref in chosen]
@@ -605,15 +675,18 @@ def collect_citations(infos: Sequence[Tuple[str, dict, Optional[Sequence[str]]]]
 
 
 def _reference_line(ref: dict) -> str:
-    parts = [ref.get("short") or ref["key"]]
+    label = ref.get("short") or ref["key"]
+    if label.startswith("url:"):  # a reference known only by its address
+        label = label[len("url:"):]
+    parts = [label]
     venue = " ".join(str(ref[k]) for k in ("journal", "volume") if ref.get(k))
     if venue:
         parts.append(venue + (f", {ref['page']}" if ref.get("page") else ""))
     line = ", ".join(parts)
     if ref.get("title"):
-        line += f'. "{ref["title"]}"'
+        line += f'. "{" ".join(str(ref["title"]).split())}"'
     link = (f"doi:{ref['doi']}" if ref.get("doi") else ref.get("url") or ref.get("publisher_url"))
-    return line + (f". {link}" if link else "")
+    return line + (f". {link}" if link and link != label else "")
 
 
 def format_bibtex(citations: dict) -> str:
