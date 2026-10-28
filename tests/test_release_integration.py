@@ -578,3 +578,23 @@ def test_flux_unit_is_used_for_spectra_that_declare_none(tmp_path, caplog):
     with caplog.at_level(logging.WARNING, logger="sed_tools.spectra_cleaner"):
         summary = clean_model_dir(str(grid), sample_fraction=1.0, flux_unit="flam")
     assert summary["catalog_units"]["flux"] == "flam" and "is not used" not in caplog.text
+
+
+# ----------------------------------------------------------------------
+# Item 2: the split announcement names only the axes that vary
+# ----------------------------------------------------------------------
+def test_the_split_announcement_names_only_the_axes_that_vary(tmp_path, capsys):
+    grid = tmp_path / "Kurucz"
+    grid.mkdir()
+    rows = []
+    for i, (teff, alpha) in enumerate([(5000.0, 0.0), (6000.0, 0.0), (5000.0, 0.4), (6000.0, 0.4)]):
+        _spectrum(grid / f"s{i}.txt", np.linspace(1000.0, 10000.0, 20))
+        rows.append(f"s{i}.txt,{teff},4.0,0.0,{alpha},1.25,2.0")
+    (grid / "lookup_table.csv").write_text("#file_name,teff,logg,metallicity,alpha,lh,vtur\n" + "\n".join(rows) + "\n")
+    pcf.precompute_flux_cube(str(grid), str(grid / "flux_cube.bin"))
+    out = capsys.readouterr().out
+    assert "Extra physical axis detected: alpha\n" in out and "This grid contains 2 alpha variant(s):" in out
+    assert "alpha = 0.0  " in out and "lh = " not in out
+    # The subgrid names are unchanged: every extra column is part of them.
+    assert sorted(p.name for p in grid.iterdir() if p.is_dir()) == [
+        "Kurucz_alpha_0p00_lh_1p25_vtur_2p00", "Kurucz_alpha_0p40_lh_1p25_vtur_2p00"]

@@ -504,16 +504,22 @@ def _print_split_announcement(
     model_name: str,
     threshold: int,
 ) -> None:
-    """Print the structured 'Extra physical axis detected' message."""
+    """Print the structured 'Extra physical axis detected' message.
+
+    Only the axes that vary between the variants are named: a column with
+    one value throughout (lh and vtur in Kurucz) is no variant axis.  The
+    subgrid directory names still carry every extra column.
+    """
     n_combos = len(groups)
-    axis_label = ", ".join(extra_cols)
+    varying = [col for col in extra_cols if len({dict(key)[col] for key in groups}) > 1]
+    axis_label = ", ".join(varying)
 
     print(f"\nExtra physical axis detected: {axis_label}")
     print("\nMESA-compatible cubes can only vary over:")
     print("  Teff, logg, metallicity")
     print(f"\nThis grid contains {n_combos} {axis_label} variant(s):")
     for key, g in sorted(groups.items()):
-        vals_str = "  ".join(f"{col} = {val}" for col, val in key)
+        vals_str = "  ".join(f"{col} = {val}" for col, val in key if col in varying)
         print(f"  {vals_str:<40}  {len(g['file_names'])} spectra")
 
     if n_combos <= threshold:
