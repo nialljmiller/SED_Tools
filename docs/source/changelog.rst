@@ -809,6 +809,13 @@ Each item says what 0.4.1 did, what 0.5.0 does, and when it happens.
   filter-only components of SDSS ``u`` ... ``z``; they are the USNO 40-inch
   filters of the primed system, in air, and are no longer used so. SDSS
   components come from the ``sdss`` builder.
+- The primed filters are therefore bands of their own, so SDSS's
+  ``filter+optics+qe`` covers ``u`` ... ``z`` only and ``build_all_products``
+  no longer builds it (0.4.1 did). ``build_product(sdss_dir,
+  "filter+optics+qe", bands=["g", "i", "r", "u", "z"])`` builds 0.4.1's
+  product, byte for byte. ``build_all_products`` used to skip silently any
+  recipe that only some bands have; it now warns, for each recipe with
+  optics or QE, naming the bands and that call.
 - Paranal/NACO bands built from the original source are named ``IB_2p00``
   etc. instead of ``IB_2.00``, as on NJM.
 - ``_common.ensure_published`` (DECam, VISTA, HSC, ZTF): when SVO had
