@@ -304,8 +304,9 @@ Component variants, team atmospheres and SkyCalc
   records the SkyCalc version. A resumed grid build keeps the grid's recorded
   settings when it has nothing to fetch, refuses to add points made with
   other settings, and checks the SkyCalc version before writing a new point.
-- New command ``sed-tools filters-atmospheres`` lists the atmosphere sites
-  with the airmasses and PWVs each one has.
+- ``Filters.atmospheres()`` lists the atmosphere sites with the airmasses
+  and PWVs each one has. (The ``filters-atmospheres`` command and menu entry
+  added during this release cycle were removed before release.)
 
 SVO fails fast
 ~~~~~~~~~~~~~~
@@ -456,6 +457,9 @@ Filter pickers, instrument names and NJM
   GAI``); a name is cut with an ellipsis only when the terminal is too
   narrow for it, and pages fit the terminal.
   Downloading several facilities at once asks for confirmation with a count.
+- Picking a facility first lists its instruments, each with its one-line
+  description (NJM's, from the bundled catalogue when NJM cannot be
+  reached, else SVO's), then shows the columns of names.
 - Picking an instrument in ``sed-tools filters`` shows a short summary before
   the download question, from what ``filters-info`` reports: the
   description, where the download comes from (the installed copy, or NJM,
@@ -464,10 +468,9 @@ Filter pickers, instrument names and NJM
   sites and the licence. Declining the download returns to the instrument
   list (in 0.4.1 it asked "Download another instrument?").
 - The interactive menu gains options 13 (filter set information, as
-  ``filters-info``, for an instrument picked from the lists), 14 (atmosphere
-  models, as ``filters-atmospheres``) and 15 (build a filter curve from an
-  instrument's own parts, with the questions asked after a download).
-  Options 1-12 keep 0.4.1's numbers.
+  ``filters-info``, for an instrument picked from the lists) and 14 (build a
+  filter curve from an instrument's own parts, with the questions asked after
+  a download). Options 1-12 keep 0.4.1's numbers.
 - The browser downloads with the library it lists from, so NJM is checked and
   reported once per session; each listing error is printed once; an
   unreachable NJM does not count as an incomplete instrument list. The
@@ -496,8 +499,7 @@ Command line
   ``grids --teff``, ``--logg``, ``--meta`` and ``--wavelength`` (each
   ``LOW HIGH``; NJM, MSG and MAST cut downloads, SVO refuses cuts);
   ``combine --grids NAME ...``; ``ml_generator --trials`` and ``--epochs``
-  (with ``--auto``; defaults 20 and 100); the ``filters-atmospheres``
-  command. From the 0.4.2 work: ``--atmosphere-site`` and ``--airmass
+  (with ``--auto``; defaults 20 and 100). From the 0.4.2 work: ``--atmosphere-site`` and ``--airmass
   unstated`` (``filters``, ``filters-compose``) and
   ``filters-build-components --archive``. The ``filters-search`` and
   ``filters-cite`` commands of the 0.4.2 work were not released; use
@@ -509,7 +511,10 @@ Command line
   band descriptions under their row, and summarises the licence;
   its output fits the terminal.
   NJM's catalogue never makes ``filters-info`` fail.
-- The composition prompt asks again on a bad recipe,
+- The composition prompt offers the atmosphere as a numbered choice: 0
+  (none, what Enter gives, as the old "Fold in the atmosphere? [y/N]" did),
+  then the instrument's own sites with their kind and source, the default
+  site marked and generic (model-derived) sites last. It asks again on a bad recipe,
   detector type, airmass or PWV, defaults the airmass to the site's first
   condition, and offers the bands that can be built when coverage fails.
 - Atmosphere and coverage errors name the band and say what the site has,

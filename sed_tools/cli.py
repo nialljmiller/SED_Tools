@@ -749,7 +749,7 @@ def _atmosphere_summary(info: dict) -> str:
         text = f"can be added at its own site{'s' * (len(sites) > 1)}: {_site_names(sites, default)}"
         if default is None:
             text += "; no default, so choose one with --atmosphere-site"
-        return text + " (sed-tools filters-atmospheres lists the conditions)"
+        return text + " (in Python, Filters.atmospheres() lists the conditions)"
     if info.get("platform") in ("space", "airborne"):
         return f"not applicable ({info['platform']}-based)"
     return "not offered (no site of its own assigned)"
@@ -944,7 +944,7 @@ def _compose_interactively(instrument_dir: Path, info: dict) -> None:
         "detector_type": _ask_detector_type(),
         "allow_heavy": bool(review.get("large_download")
                             and _yes("Allow a large original-source download if needed? [y/N] ")),
-        "atmosphere": _ask_atmosphere(_atmosphere_sites(info), info.get("atmosphere_site"), filter_root),
+        "atmosphere": _ask_atmosphere(info, filter_root),
     }
     try:
         Filters.compose(instrument_dir, filter_root=filter_root, **request)
@@ -984,29 +984,61 @@ def _ask_detector_type() -> Optional[str]:
     return None if pick == "inherit" else pick
 
 
-def _ask_atmosphere(sites: List[str], default_site: Optional[str], filter_root: Path) -> Optional[Dict]:
-    """The atmosphere to fold in, asked only when the instrument offers one; None for none."""
+def _ask_atmosphere(info: dict, filter_root: Path) -> Optional[Dict]:
+    """The atmosphere to fold in, chosen by number from the instrument's own sites; None for none.
+
+    Asked only when the instrument offers an atmosphere (ground-based, with a
+    site of its own).  Its sites are listed with their source, the generic
+    (model-derived) ones last; Enter keeps the curve without atmosphere.
+    """
+    sites = _atmosphere_sites(info)
+    if not sites:
+        return None
+    grids = _site_grids(sites, filter_root)
+    sites.sort(key=lambda site: (grids.get(site) or {}).get("kind") == "derived")  # stable: default first
+    _print_site_choices(sites, _default_site(info, sites), grids)
+    numbers = [str(n) for n in range(len(sites) + 1)]
+    pick = _ask_option("Atmosphere [0, none]: ", numbers + sites, default="0")
+    if pick == "0":
+        return None
+    site = sites[int(pick) - 1] if pick in numbers else pick
+    airmass, pwv = _ask_conditions(site, grids.get(site))
+    return {"site": site, "airmass": airmass, "pwv": pwv}
+
+
+def _site_grids(sites: List[str], filter_root: Path) -> Dict[str, dict]:
+    """The atmosphere grids by site: the cached ones, and NJM's only when one of ``sites`` is not cached yet."""
     from .api import Filters
 
-    if not sites or not _yes(f"Fold in the atmosphere ({', '.join(sites)})? [y/N] "):
-        return None
-    site = sites[0]
-    if len(sites) > 1:
-        default = default_site or sites[0]
-        site = _ask_option(f"Site ({', '.join(sites)}) [{default}]: ", sites, default=default)
-    try:  # the cached grid first: NJM is asked only for a site not cached yet
-        grid = (Filters.atmospheres(filter_root=filter_root, include_remote=False).get(site)
-                or Filters.atmospheres(filter_root=filter_root).get(site))
+    try:
+        grids = Filters.atmospheres(filter_root=filter_root, include_remote=False)
+        if not all(site in grids for site in sites):
+            grids = Filters.atmospheres(filter_root=filter_root)
     except (RequestException, OSError, RuntimeError, ValueError) as exc:
-        raise RuntimeError(f"could not list the atmosphere grids for {site}: {exc}") from exc
-    airmass, pwv = _ask_conditions(site, grid)
-    return {"site": site, "airmass": airmass, "pwv": pwv}
+        raise RuntimeError(f"could not list the atmosphere grids for {', '.join(sites)}: {exc}") from exc
+    return grids
+
+
+def _print_site_choices(sites: List[str], default: Optional[str], grids: Dict[str, dict]) -> None:
+    """``0. none``, then each site numbered, with its kind where its manifest states one and its source."""
+    def name(site):
+        notes = [note for note in ("default site" if site == default else "", (grids.get(site) or {}).get("kind"))
+                 if note]
+        return site + (f" ({', '.join(notes)})" if notes else "")
+
+    names = [name(site) for site in sites]
+    width = max(len("none"), *map(len, names))
+    print("Atmosphere to fold in:")
+    print(f"  0. {'none':<{width}}  the curve without atmosphere")
+    for number, (site, label) in enumerate(zip(sites, names), 1):
+        source = (grids.get(site) or {}).get("source") or "not downloaded yet"
+        print(_cut(f"  {number}. {label:<{width}}  {' '.join(source.split())}", terminal_width()))
 
 
 def _ask_conditions(site: str, grid: Optional[dict]) -> Tuple[Optional[float], Optional[float]]:
     """Airmass (None for 'unstated') and PWV, defaulting to the first conditions the site's grid has."""
     if grid:
-        print(f"  {site}: {_conditions_text(grid)}")
+        print(_wrap(_conditions_text(grid), indent=f"  {site}: ", hanging=" " * (len(site) + 4)))
     else:
         print(f"  {site}: no grid listed yet; the conditions you give are generated if the site allows it")
     if grid and grid["airmass"]:
@@ -1122,14 +1154,6 @@ def run_filter_info_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> int:
         if index is None or not _browse_instruments(library, facilities[index], show, shown=shown):
             break
     return 1 if incomplete else 0
-
-
-def run_atmospheres_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> int:
-    """List the atmosphere sites and the conditions each has, as ``filters-atmospheres`` does."""
-    from .api import Filters
-
-    _print_atmosphere_grids(Filters.atmospheres(filter_root=base_dir), offline=False)
-    return 0
 
 
 def run_filter_compose_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> int:
@@ -1263,12 +1287,24 @@ def _browse_instruments(library, facility_entry: dict, act, *, shown: Optional[s
     if not instruments:
         print(f"No instruments found for {facility}.")
         return True
+    _print_instrument_descriptions(facility, instruments)
     while True:
         index = prompt_choice(_picker_labels(instruments), f"Instruments for {facility}", allow_back=True)
         if index is None:
             return False
         if index == -1 or not act(facility_entry, instruments[index]):
             return True
+
+
+def _print_instrument_descriptions(facility: str, instruments: List[dict]) -> None:
+    """Each instrument of a facility, named in full, with its one-line description cut to the terminal."""
+    labels = _picker_labels(instruments)
+    width, name_width = terminal_width(), max(map(len, labels))
+    print(f"\n{facility}: {len(labels)} instrument{'s' * (len(labels) != 1)}")
+    for label, entry in zip(labels, instruments):
+        description = " ".join(str(entry.get("description") or "").split()) or "no description"
+        room = width - name_width - 4
+        print(f"  {label:<{name_width}}  {_cut(description, room)}" if room > 1 else f"  {label}")
 
 
 def _offer_download(library, facility_entry: dict, instrument_entry: dict, failures: List[str]) -> bool:
@@ -1720,8 +1756,7 @@ def menu() -> str:
     print(f"  {CYAN}2){RESET} Combine filter sets")
     # Added after 0.4.1's twelve options, so the numbers people type keep their meaning.
     print(f" {CYAN}13){RESET} Filter set information")
-    print(f" {CYAN}14){RESET} Atmosphere models for filters")
-    print(f" {CYAN}15){RESET} Build a filter curve from its parts (filter, optics, camera, atmosphere)")
+    print(f" {CYAN}14){RESET} Build a filter curve from its parts (filter, optics, camera, atmosphere)")
 
     print("\n" + YELL + "-- Spectral grids " + "-" * 32 + RESET)
     print(f"  {CYAN}3){RESET} Download spectral grids (NJM / SVO / MSG / MAST)")
@@ -1758,8 +1793,7 @@ def menu() -> str:
         "11": "mesa_prepare",
         "12": "config",
         "13": "filter_info",
-        "14": "atmospheres",
-        "15": "filter_compose",
+        "14": "filter_compose",
         "q": "quit",
         "Q": "quit",
         "quit": "quit",
@@ -1876,12 +1910,6 @@ def _add_filter_component_parsers(sub) -> None:
     fcop = sub.add_parser("filters-compose", help="Compose optical-path components")
     fcop.add_argument("target", help="Facility/Instrument or installed instrument directory")
     _add_filter_product_options(fcop, components="filter")
-
-    fap = sub.add_parser("filters-atmospheres",
-                         help="List the atmosphere sites and the airmasses and PWVs each one has")
-    fap.add_argument("--base", default=str(FILTER_DIR_DEFAULT), help="Base filter directory (atmospheres beside it)")
-    fap.add_argument("--offline", action="store_true", help="List the cached atmospheres only")
-    fap.add_argument("--json", action="store_true", help="Emit the atmosphere grids as JSON")
 
     finv = sub.add_parser("filters-inventory", help="Inventory all SVO, NJM, local and registered instruments")
     finv.add_argument("--base", default=str(FILTER_DIR_DEFAULT), help="Base filter directory")
@@ -2186,35 +2214,6 @@ def _availability_errors(info: dict) -> List[str]:
             if source not in fallback for message in messages]
 
 
-def _cmd_filters_atmospheres(args, parser):
-    from .api import Filters
-
-    grids = Filters.atmospheres(filter_root=args.base, include_remote=not args.offline)
-    if args.json:
-        print(json.dumps(grids, indent=2))
-    else:
-        _print_atmosphere_grids(grids, offline=args.offline)
-    return 0
-
-
-def _print_atmosphere_grids(grids: dict, *, offline: bool) -> None:
-    if not grids:
-        print("No atmosphere grids " + ("cached" if offline else "found"))
-        return
-    for site, grid in grids.items():
-        print(f"\n{site}" + (f"  ({grid['kind']})" if grid.get("kind") else ""))
-        _print_field("Conditions", _conditions_text(grid))
-        if grid.get("altitude_m") is not None:
-            _print_field("Altitude", f"{grid['altitude_m']:g} m")
-        if grid.get("model"):
-            _print_field("Model", grid["model"] + (f", version {grid['model_version']}"
-                                                   if grid.get("model_version") else ""))
-        if grid.get("source"):
-            _print_field("Source", grid["source"])
-        if grid.get("citation"):
-            _print_field("Cite", grid["citation"])
-
-
 def _cmd_filters_inventory(args, parser):
     from .api import Filters
 
@@ -2425,7 +2424,6 @@ _COMMANDS = {
     "filters-combine": _cmd_filters_combine,
     "filters-detector": _cmd_filters_detector,
     "filters-info": _cmd_filters_info,
-    "filters-atmospheres": _cmd_filters_atmospheres,
     "filters-inventory": _cmd_filters_inventory,
     "filters-build-components": _cmd_filters_build_components,
     "rebuild": _cmd_rebuild,
@@ -2476,7 +2474,6 @@ def _run_menu() -> int:
         "filters": run_filters_flow,
         "filters_combine": run_filter_combine_flow,
         "filter_info": run_filter_info_flow,
-        "atmospheres": run_atmospheres_flow,
         "filter_compose": run_filter_compose_flow,
         "rebuild": run_rebuild_flow,
         "combine": run_combine_flow,
