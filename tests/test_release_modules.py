@@ -558,3 +558,69 @@ def test_atmosphere_without_conditions_error_has_no_python_syntax(tmp_path):
         compose_band(inst, "g", [FILTER, ATMOSPHERE], atmosphere_root=tmp_path / "atm")
     assert str(excinfo.value) == ("Including the atmosphere needs the observing conditions: an airmass, "
                                   "and a PWV where the site models it")
+
+
+# ---------------------------------------------------------------------
+# Undeclared flux unit, coverage's A-D note, import's "Load with" hint
+# ---------------------------------------------------------------------
+
+def _undeclared_flux_grid(directory):
+    """Three spectra of a surface flux in erg/s/cm2/A whose headers do not declare the flux unit."""
+    from sed_tools._constants import planck_flam
+
+    directory.mkdir(parents=True)
+    wl = np.linspace(3000.0, 10000.0, 200)
+    for i, teff in enumerate((3500.0, 3600.0, 3700.0)):
+        lines = [f"# teff = {teff}\n", "# logg = 4.5\n", "# metallicity = 0.0\n", "# wavelength_unit = Angstrom\n"]
+        lines += [f"{w:.6f} {f:.8e}\n" for w, f in zip(wl, planck_flam(wl, teff))]
+        (directory / f"s{i}.txt").write_text("".join(lines))
+    return directory
+
+
+def test_undeclared_flux_unit_error_names_the_cli_option(tmp_path):
+    from sed_tools.spectra_cleaner import check_flux_unit
+
+    grid = _undeclared_flux_grid(tmp_path / "Cool")
+    with pytest.raises(ValueError) as excinfo:
+        check_flux_unit(str(grid), sorted(str(p) for p in grid.glob("*.txt")), sample_fraction=1.0)
+    message = str(excinfo.value)
+    assert "Pass the unit as flux_unit='fnu_jy'" in message
+    assert "on the command line, pass --flux-unit fnu_jy to sed-tools grids, rebuild or import" in message
+
+
+def _coverage_grid(directory, teffs):
+    directory.mkdir()
+    rows = "".join(f"s{i}.txt,{t},4.0,0.0\n" for i, t in enumerate(teffs))
+    (directory / "lookup_table.csv").write_text("file_name,teff,logg,metallicity\n" + rows)
+    return directory
+
+
+def test_coverage_says_why_the_normality_test_was_skipped(tmp_path, monkeypatch, capsys):
+    # It said "scipy required" whenever the test was skipped, with scipy installed.
+    import sys
+
+    from sed_tools.grid_coverage import coverage_summary, print_coverage
+
+    print_coverage(coverage_summary(_coverage_grid(tmp_path / "few", [5000, 5500, 6000])))
+    out = capsys.readouterr().out
+    assert "A-D     : skipped (needs at least 8 distinct values; this axis has 3)" in out
+    assert "scipy" not in out
+
+    monkeypatch.setitem(sys.modules, "scipy.stats", None)  # as if scipy were not installed
+    print_coverage(coverage_summary(_coverage_grid(tmp_path / "many", range(4000, 9000, 500))))
+    out = capsys.readouterr().out
+    assert "    A-D     : skipped (needs scipy, which is not installed)" in out
+
+
+def test_import_hint_names_the_model_root_it_imported_into(tmp_path, monkeypatch, capsys):
+    from sed_tools.api import SED
+
+    models = tmp_path / "models"
+    SED.import_grid(_undeclared_flux_grid(tmp_path / "mine"), model_root=models, build_cube=False,
+                    build_h5=False, flux_unit="flam")
+    assert f"Load with: SED.local('mine', model_root={str(models)!r})" in capsys.readouterr().out
+
+    monkeypatch.setattr(SED, "_model_root", models)
+    SED.import_grid(_undeclared_flux_grid(tmp_path / "default"), build_cube=False, build_h5=False,
+                    flux_unit="flam")
+    assert "Load with: SED.local('default')\n" in capsys.readouterr().out

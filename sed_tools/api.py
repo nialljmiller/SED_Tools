@@ -1125,7 +1125,9 @@ class SED:
                 f"Imported '{name}' into {dest} without some spectra. "
                 f"Lacking a Teff, logg or [M/H] header ({len(missing)}): {', '.join(missing) or 'none'}. "
                 f"Unusable after cleaning ({len(unusable)}): {', '.join(unusable) or 'none'}.")
-        print(f"[import] done. Load with: SED.local('{name}')")
+        same_root = Path(base).expanduser().resolve() == Path(cls._model_root).expanduser().resolve()
+        root_arg = "" if same_root else f", model_root={str(base)!r}"
+        print(f"[import] done. Load with: SED.local('{name}'{root_arg})")
         return {
             "name": name,
             "n_files": len(files),

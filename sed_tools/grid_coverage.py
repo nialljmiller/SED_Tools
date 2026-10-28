@@ -254,8 +254,10 @@ def print_coverage(summary: Dict) -> None:
                     f"    A-D     : {ad['statistic']:.3f} "
                     f"(p={ad['pvalue']:.3f}; {verdict})"
                 )
+        elif a["n_unique"] < 8:
+            print(f"    A-D     : skipped (needs at least 8 distinct values; this axis has {a['n_unique']})")
         else:
-            print("    A-D     : skipped (need >=8 distinct values, scipy required)")
+            print("    A-D     : skipped (needs scipy, which is not installed)")
 
 
 # ---------------------------------------------------------------------------
