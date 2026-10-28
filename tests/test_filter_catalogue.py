@@ -387,7 +387,7 @@ def test_cli_search_cite_and_info(root, njm, monkeypatch, capsys):
     write_curve(root / "Fac" / "Cam" / "g.dat", 4800, 1200,
                 header="Wavelength,Transmission,DetectorType=photon;DetectorTypeSource=svo")
     code, out = run_cli(monkeypatch, capsys, "filters-info", "Fac/Cam", "--base", str(root), "--offline")
-    assert code == 1 and "info.json is not cached and working offline" in out
+    assert code == 0 and "info.json is not cached and working offline" in out  # the catalogue is an extra
     assert not njm.fetched("filters/Fac/Cam/info.json")
     code, out = run_cli(monkeypatch, capsys, "filters-info", "Fac/Cam", "--base", str(root))
     assert code == 0 and "A camera." in out and "Free to use." in out and "Cam g" in out

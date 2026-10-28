@@ -3,7 +3,6 @@ from types import SimpleNamespace
 import pytest
 
 from sed_tools import cli
-from sed_tools.api import Filters
 from sed_tools.filter_library import FilterLibrary
 from sed_tools.parsing import parse_multi_selection
 from sed_tools.ui_utils import prompt_choice
@@ -32,18 +31,18 @@ def filter_catalogue(tmp_path, monkeypatch):
                                      {"key": "Camera2", "label": "Camera2"}], "errors": []})
     fetched, offered = [], []
 
-    def fetch(facility, instrument, **kwargs):
+    def fetch(self, facility, instrument):
         fetched.append((facility, instrument))
         return tmp_path / facility / instrument
 
-    monkeypatch.setattr(Filters, "fetch", fetch)
+    monkeypatch.setattr(FilterLibrary, "published", fetch)  # the browser downloads with its own library
     monkeypatch.setattr(cli, "_offer_composition", offered.append)
     return SimpleNamespace(root=tmp_path, fetched=fetched, offered=offered)
 
 
 @pytest.mark.parametrize("selection,facilities", [("1,3", ["A", "C"]), ("1-3", ["A", "B", "C"])])
-def test_multiple_facilities_download_every_instrument_without_prompts(filter_catalogue, monkeypatch, selection, facilities):
-    answers = iter([selection])  # Any confirmation, instrument or component prompt would fail.
+def test_multiple_facilities_download_every_instrument_after_one_confirmation(filter_catalogue, monkeypatch, selection, facilities):
+    answers = iter([selection, "y"])  # Any further confirmation, instrument or component prompt would fail.
     monkeypatch.setattr("builtins.input", lambda prompt="": next(answers))
     cli.run_filters_flow(str(filter_catalogue.root))
     assert filter_catalogue.fetched == [(facility, instrument) for facility in facilities

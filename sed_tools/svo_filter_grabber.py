@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import html
 import os
+import re
 import sys
 import textwrap
 import urllib.parse
@@ -28,6 +30,7 @@ DEFAULT_BASE_DIR = os.path.join(os.path.dirname(__file__), "data", "filters")
 class Facility:
     key: str
     label: str
+    description: str = ""  # SVO's own text about it, if any
 
 
 @dataclass(frozen=True)
@@ -35,6 +38,7 @@ class Instrument:
     facility_key: str
     key: str
     label: str
+    description: str = ""  # SVO's own text about it, if any
 
 
 @dataclass(frozen=True)
@@ -77,7 +81,11 @@ class SVOFilterBrowser:
                 continue
             label = link.get_text(" ", strip=True) or gname
             label = label.split("(")[0].strip() or gname
-            facilities.setdefault(gname, Facility(key=gname, label=label))
+            description = _tip_text(link)
+            known = facilities.get(gname)
+            if known is None or (description and not known.description):
+                facilities[gname] = Facility(key=gname, label=known.label if known else label,
+                                             description=description)
 
         ordered = sorted(facilities.values(), key=lambda f: f.label.lower())
         self._facility_cache = ordered
@@ -98,9 +106,13 @@ class SVOFilterBrowser:
             gname2 = params.get("gname2")
             if not gname2:
                 continue
-            label = link.get_text(" ", strip=True) or gname2
-            label = label.split("(")[0].strip() or gname2
-            instruments.setdefault(gname2, Instrument(facility_key=facility_key, key=gname2, label=label))
+            # A filter's own link (with its id) names the instrument too, but its text is the filter ID
+            # (2MASS/2MASS.J), so the label is always SVO's instrument name.
+            description = "" if "id" in params else _tip_text(link)
+            known = instruments.get(gname2)
+            if known is None or (description and not known.description):
+                instruments[gname2] = Instrument(facility_key=facility_key, key=gname2, label=gname2,
+                                                 description=description)
 
         ordered = sorted(instruments.values(), key=lambda inst: inst.label.lower())
         self._instrument_cache[facility_key] = ordered
@@ -276,6 +288,15 @@ def _write_index_and_manifest(directory: Path, expected: Iterable[str]) -> None:
         for band, rel in entries.items():
             manifest.components.setdefault(role, {}).setdefault(band, rel)
     manifest.save(directory)
+
+
+def _tip_text(link) -> str:
+    """SVO's description of a facility or instrument: the text of its link's mouse-over tip, or ``""``."""
+    match = re.search(r"helptd>(.*?)</td>", link.get("onmouseover") or "", re.S)
+    if match is None:
+        return ""
+    text = html.unescape(re.sub(r"<[^>]+>", "", match.group(1))).replace("\\'", "'")
+    return " ".join(text.split())
 
 
 def _would_collide(instrument_name: str, instrument_key: str, other_keys: Sequence[str]) -> bool:

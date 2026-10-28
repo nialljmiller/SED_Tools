@@ -9,6 +9,8 @@ import logging
 import os
 import re
 import time
+from dataclasses import dataclass, field
+from time import monotonic
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -24,6 +26,13 @@ logger = logging.getLogger(__name__)
 # Answers that mean "ask again later", not "no such file": NJM's Apache answers a burst of
 # requests from one address with 403 until the block lifts, within about a minute.
 RETRY_STATUSES = (403, 429, 500, 502, 503, 504)
+# Answers that, still given after the retries, mean NJM will not serve this client for now.
+BLOCKED_STATUSES = (403, 429)
+#: Seconds to wait for NJM to accept a connection: a mirror that is down fails fast.
+NJM_CONNECT_TIMEOUT = 5.0
+#: Seconds NJM is left alone after it stops answering.
+NJM_PAUSE = 300
+FALLBACK_SOURCES = "installed copies, the original-source builders and SVO"
 
 
 def _status(exc: Exception) -> Optional[int]:
@@ -31,9 +40,46 @@ def _status(exc: Exception) -> Optional[int]:
     return getattr(getattr(exc, "response", None), "status_code", None)
 
 
+def curve_file(name: str) -> str:
+    """The file of a curve named in an NJM index (``g.dat``) or listing (``g``)."""
+    return name if name.endswith(".dat") else f"{name}.dat"
+
+
+def _samples(text: str) -> List[str]:
+    """A curve's sample rows: every line but ``#`` lines and the first other line (the column row).
+
+    Tagging rewrites only the column row, so these identify the curve itself.
+    """
+    lines = [line.rstrip() for line in text.splitlines() if line.strip() and not line.startswith("#")]
+    return lines[1:]
+
+
+def _same_curve(path: Path, served: str) -> bool:
+    """Whether the installed curve at ``path`` has the samples of the mirror's copy ``served``."""
+    try:
+        return _samples(path.read_text(encoding="utf-8")) == _samples(served)
+    except UnicodeDecodeError:  # not a text curve: it cannot be the mirror's
+        return False
+
+
+@dataclass
+class SetDownload:
+    """What :meth:`NJMFilterGrabber._download_set` did for one instrument."""
+
+    listed: List[str]  # the curves NJM's index lists (empty: NJM does not serve the instrument)
+    downloaded: int = 0
+    verified: int = 0  # installed curves found to be NJM's
+    curve_failures: List[str] = field(default_factory=list)  # curves not downloaded or not verified
+    other_failures: List[str] = field(default_factory=list)  # e.g. its components
+
+
 class NJMFilterGrabber:
     """Grabber for filter profiles from NJM mirror server."""
-    
+
+    #: Why NJM stopped answering, and until when (monotonic()) it is not asked again.
+    _unreachable: Optional[str] = None
+    _unreachable_until = 0.0
+
     def __init__(self, base_dir: str = "../data/filters/", max_workers: int = 5):
         self.base_dir = base_dir
         self.max_workers = max_workers
@@ -47,6 +93,7 @@ class NJMFilterGrabber:
 
         self._cached_facilities: Optional[List[str]] = None
         self._index_data: Optional[Dict] = None
+        self._index_unreadable = False
         self._metadata_client = SVOMetadataClient()
         self._available = self._check_availability()
         
@@ -61,11 +108,11 @@ class NJMFilterGrabber:
         """
         try:
             # Try with SSL verification first
-            response = self.session.head(self.base_url, timeout=5)
+            response = self.session.head(self.base_url, timeout=(NJM_CONNECT_TIMEOUT, 10))
         except requests.exceptions.SSLError:
             # SSL certificate issue - try without verification
             try:
-                response = self.session.head(self.base_url, timeout=5, verify=False)
+                response = self.session.head(self.base_url, timeout=(NJM_CONNECT_TIMEOUT, 10), verify=False)
             except requests.RequestException as exc:
                 return self._unavailable(exc)
             self._disable_ssl_verification()
@@ -87,11 +134,12 @@ class NJMFilterGrabber:
             data = response.json()
             self._index_data = data if isinstance(data, dict) else None
         except ValueError:
-            pass  # the mirror answered; discover_facilities fetches the index again
+            pass  # the mirror answered; _index fetches the index again
         return True
 
     def _unavailable(self, reason) -> bool:
-        logger.warning("NJM mirror %s is unavailable (%s); it will not be used", self.base_url, reason)
+        logger.warning("NJM mirror %s is unavailable (%s); it will not be used, and filters come from %s",
+                       self.base_url, reason, FALLBACK_SOURCES)
         return False
 
     def _disable_ssl_verification(self) -> None:
@@ -101,14 +149,29 @@ class NJMFilterGrabber:
 
     def is_available(self) -> bool:
         """Return True if the mirror is available."""
-        return self._available
+        return self._available and not self._paused()
+
+    def _paused(self) -> bool:
+        """Whether NJM stopped answering less than ``NJM_PAUSE`` seconds ago."""
+        if self._unreachable is not None and monotonic() >= self._unreachable_until:
+            self._unreachable = None
+        return self._unreachable is not None
 
     def _get(self, url: str, *, timeout: int = 30, headers: Optional[Dict[str, str]] = None) -> requests.Response:
-        """Retry transient mirror failures, including Apache's temporary 403 block."""
+        """Retry transient mirror failures, including Apache's temporary 403 block.
+
+        A request NJM still does not answer after the retries (no connection,
+        a timeout, or a block that has not lifted) marks NJM unreachable for
+        ``NJM_PAUSE`` seconds, with one warning; requests until then fail at once.
+        """
+        if self._paused():
+            raise requests.ConnectionError(f"NJM is unreachable ({self._unreachable}); "
+                                           f"not asked again for {NJM_PAUSE // 60} minutes")
+        timeouts = (NJM_CONNECT_TIMEOUT, timeout)
         for attempt in range(3):
             try:
-                response = (self.session.get(url, timeout=timeout, headers=headers) if headers
-                            else self.session.get(url, timeout=timeout))
+                response = (self.session.get(url, timeout=timeouts, headers=headers) if headers
+                            else self.session.get(url, timeout=timeouts))
                 response.raise_for_status()
                 return response
             except requests.RequestException as exc:
@@ -116,6 +179,12 @@ class NJMFilterGrabber:
                 if status is not None and status not in RETRY_STATUSES:
                     raise
                 if attempt == 2:
+                    if status is None or status in BLOCKED_STATUSES:
+                        self._unreachable = f"{status or type(exc).__name__} for {url}"
+                        self._unreachable_until = monotonic() + NJM_PAUSE
+                        logger.warning("NJM mirror %s stopped answering (%s); it is not asked again for %d "
+                                       "minutes, and filters come from %s", self.base_url, exc, NJM_PAUSE // 60,
+                                       FALLBACK_SOURCES)
                     raise
                 delay = (1, 60)[attempt] if status == 403 else (1, 3)[attempt]
                 if status == 429:
@@ -127,9 +196,15 @@ class NJMFilterGrabber:
 
     def _save_curve(self, url: str, target: Path, *, timeout: int = 30) -> None:
         """Save a mirror curve, moving any 0.3.0 ``#`` metadata lines onto its column row."""
-        response = self._get(url, timeout=timeout)
+        self._write_curve(self._get(url, timeout=timeout).text, target)
+
+    @staticmethod
+    def _write_curve(text: str, target: Path) -> None:
+        """Write a served curve whole (an interrupted write leaves no partial file) and migrate it."""
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(response.text, encoding="utf-8")
+        tmp = target.with_name(f".{target.name}.part")
+        tmp.write_text(text, encoding="utf-8")
+        os.replace(tmp, target)
         migrate_filter_file(target)
 
     @staticmethod
@@ -185,35 +260,61 @@ class NJMFilterGrabber:
                 return name
         return None
 
+    def _index(self) -> Optional[Dict]:
+        """NJM's ``index.json``, fetched once; None (after a warning) when it cannot be read."""
+        if self._index_data is not None and not isinstance(self._index_data.get("filters"), dict):
+            self._index_data = None  # what the availability check fetched is no filter index
+        if self._index_data is None and not self._index_unreadable:
+            try:
+                data = self._get(f"{self.base_url}/index.json", timeout=10).json()
+                if not isinstance(data, dict) or not isinstance(data.get("filters"), dict):
+                    raise ValueError("it has no 'filters' section")
+                self._index_data = data
+            except (requests.RequestException, ValueError) as exc:
+                logger.warning("Cannot read NJM's index.json (%s); listing the filters directory instead", exc)
+                self._index_unreadable = True
+        return self._index_data
+
     def discover_facilities(self) -> List[str]:
         """Discover available filter facilities from the mirror (cached)."""
         if not self._available:
             return []
-        if self._cached_facilities is not None:
-            return self._cached_facilities
-
-        facilities = []
-        try:
-            data = self._index_data  # fetched by the availability check during a burst block
-            if data is None:
-                response = self.session.get(f"{self.base_url}/index.json", timeout=10)
-                response.raise_for_status()
-                data = response.json()
-            facilities = data.get("filters", {}).get("facilities", [])
-        except (requests.RequestException, ValueError) as exc:
-            logger.warning("Cannot read NJM's index.json (%s); listing the filters directory instead", exc)
-        if not facilities:
-            facilities = self._parse_directory_listing(self.filters_url)
-        self._cached_facilities = facilities
-        return facilities
+        if self._cached_facilities is None:
+            facilities = (self._index() or {"filters": {}})["filters"].get("facilities")
+            facilities = [f for f in facilities if isinstance(f, str)] if isinstance(facilities, list) else []
+            if not facilities:
+                facilities = self._parse_directory_listing(self.filters_url, directories_only=True)
+            self._cached_facilities = facilities
+        return self._cached_facilities
 
     def discover_instruments(self, facility: str) -> List[str]:
         """Discover available instruments for a facility."""
+        return list(self._instrument_records(facility))
+
+    def _instrument_records(self, facility: str) -> Dict[str, Dict]:
+        """NJM's instruments of ``facility``: name -> its ``index.json`` record.
+
+        A record may carry ``description`` and ``svo_instruments`` (the SVO
+        ``Facility/Instrument`` products it is the same as).  Only when
+        ``index.json`` cannot be read are the names taken from the directory
+        listing, with a warning and empty records.
+        """
         if not self._available:
-            return []
-        
-        return self._parse_directory_listing(f"{self.filters_url}/{facility}/")
-    
+            return {}
+        detailed = (self._index() or {"filters": {}})["filters"].get("facilities_detailed")
+        if isinstance(detailed, dict):
+            record = detailed.get(facility, {})
+            instruments = record.get("instruments", {}) if isinstance(record, dict) else None
+            if not isinstance(instruments, dict):
+                logger.warning("NJM's index.json describes %s in an unexpected form; its instruments are "
+                               "not listed from NJM", facility)
+                return {}
+            return {name: meta if isinstance(meta, dict) else {} for name, meta in instruments.items()}
+        logger.warning("NJM's index.json lists no instruments; reading the directory listing of %s instead",
+                       facility)
+        names = self._parse_directory_listing(f"{self.filters_url}/{facility}/", directories_only=True)
+        return {name: {} for name in names}
+
     def discover_filters(self, facility: str, instrument: str) -> List[str]:
         """Discover available filters for a facility/instrument."""
         if not self._available:
@@ -234,11 +335,12 @@ class NJMFilterGrabber:
         return [name.removesuffix(".dat") for name in self._parse_directory_listing(instrument_url)
                 if name.endswith(".dat")]
 
-    def _parse_directory_listing(self, url: str) -> List[str]:
+    def _parse_directory_listing(self, url: str, *, directories_only: bool = False) -> List[str]:
         """Parse Apache directory listing HTML to extract subdirectories/files.
 
-        Empty when NJM has nothing at ``url`` (404); other failures raise
-        ``requests.RequestException``.
+        ``directories_only`` keeps only links with a trailing slash, so a file
+        beside the instruments is never taken for one.  Empty when NJM has
+        nothing at ``url`` (404); other failures raise ``requests.RequestException``.
         """
         try:
             response = self._get(url, timeout=10)
@@ -251,6 +353,8 @@ class NJMFilterGrabber:
         items = []
         for link in soup.find_all('a'):
             href = link.get('href', '')
+            if directories_only and not href.endswith('/'):
+                continue
             if href and href not in ['..', '/', '../'] and not href.startswith('?'):
                 # Remove trailing slash for directories
                 item = href.rstrip('/')
@@ -274,65 +378,89 @@ class NJMFilterGrabber:
             Number of filters downloaded
 
         Every curve that can be downloaded is saved, with the mirror's index,
-        catalogue files, components and manifest.  Then RuntimeError lists every
-        curve (and the components, if they failed) that could not be downloaded.
+        catalogue files, components and manifest.  An installed curve is kept
+        only if its samples match the mirror's copy; otherwise it is replaced.
+        Then RuntimeError lists every curve (and the components, if they
+        failed) that could not be downloaded or checked.
         """
         if not self._available:
             print("[njm] Mirror not available")
             return 0
-
-        # Discover available filters if not specified
-        if filters is None:
-            filters = self.discover_filters(facility, instrument)
-
-        if not filters:
+        result = self._download_set(facility, instrument, filters)
+        if not result.listed:
             print(f"[njm] No filters found for {facility}/{instrument}")
             return 0
+        failed = result.curve_failures + result.other_failures
+        if failed:
+            raise RuntimeError(f"NJM download of {facility}/{instrument} is incomplete; run again to retry:\n  "
+                               + "\n  ".join(failed))
+        return result.downloaded
 
-        # Create output directory
-        output_dir = os.path.join(self.base_dir, facility, instrument)
-        os.makedirs(output_dir, exist_ok=True)
+    def _download_set(self, facility: str, instrument: str, filters: Optional[List[str]] = None) -> SetDownload:
+        """Download an instrument's curves and what comes with them, and report every failure.
+
+        ``listed`` is empty when NJM does not serve the instrument.  Raises
+        ``requests.RequestException`` only when NJM cannot say which curves it serves.
+        """
+        if filters is None:
+            filters = self.discover_filters(facility, instrument)
+        if not filters:
+            return SetDownload(listed=[])
+        output_dir = Path(self.base_dir) / facility / instrument
+        output_dir.mkdir(parents=True, exist_ok=True)
 
         print(f"[njm] Downloading filters: {facility}/{instrument}")
         print(f"  Found {len(filters)} filters")
-        downloaded, skipped, failed = self._download_curves(facility, instrument, filters, Path(output_dir))
+        downloaded, skipped, failed = self._download_curves(facility, instrument, filters, output_dir)
+        result = SetDownload(listed=list(filters), downloaded=downloaded, verified=skipped, curve_failures=failed)
+        if self._paused():
+            result.other_failures.append("its index, catalogue files and components: NJM stopped answering")
+            return result
 
-        remote_index = self._save_index(facility, instrument, Path(output_dir))
-        print(f"[njm] {facility}/{instrument}: {downloaded} downloaded, {skipped} skipped, {len(failed)} failed")
+        remote_index = self._save_index(facility, instrument, output_dir)
+        print(f"[njm] {facility}/{instrument}: {downloaded} downloaded, {skipped} already installed, "
+              f"{len(failed)} failed")
         if downloaded:
             # Only beside curves fetched now: the mirror's files describe its current curves.
             self.download_catalogue_files(facility, instrument)
         try:
             self.download_components(facility, instrument)
         except (requests.RequestException, RuntimeError, ValueError) as exc:
-            failed.append(f"components: {exc}")
-        if remote_index and not (Path(output_dir) / "manifest.json").is_file():
+            result.other_failures.append(f"components: {exc}")
+        if remote_index and not (output_dir / "manifest.json").is_file():
             manifest = InstrumentManifest.from_published(output_dir)
             manifest.bands = sorted(name.removesuffix(".dat") for name in remote_index if name.endswith(".dat"))
             manifest.save(output_dir)
-        if failed:
-            raise RuntimeError(f"NJM download of {facility}/{instrument} is incomplete; run again to retry:\n  "
-                               + "\n  ".join(failed))
-        return downloaded
+        return result
 
     def _download_curves(self, facility: str, instrument: str, filters: List[str],
                          output_dir: Path) -> Tuple[int, int, List[str]]:
-        """Save each listed curve not installed yet; returns (downloaded, skipped, failures)."""
+        """Save each listed curve; returns (downloaded, already installed, failures).
+
+        An installed curve is checked against the mirror's copy: it is kept if
+        its samples match (its header may hold tags added here), and replaced
+        otherwise, e.g. by SVO's curve of the same name written by an earlier release.
+        """
         downloaded, skipped, failed = 0, 0, []
-        for filter_name in filters:
-            # Handle both with and without .dat extension
-            filter_filename = filter_name if filter_name.endswith('.dat') else f"{filter_name}.dat"
-            output_path = output_dir / filter_filename
-            if output_path.exists():
-                self._tag(output_path, facility)
-                skipped += 1
-                continue
+        for number, filter_name in enumerate(filters):
+            output_path = output_dir / curve_file(filter_name)
             try:
-                self._save_curve(f"{self.filters_url}/{facility}/{instrument}/{filter_filename}", output_path)
+                served = self._get(f"{self.filters_url}/{facility}/{instrument}/{output_path.name}", timeout=30).text
             except requests.RequestException as e:  # raised before anything is written
+                if self._paused():  # one line for the rest, not one per curve
+                    failed.append(f"{len(filters) - number} curves from {filter_name} on: {e}")
+                    print(f"  [error] {failed[-1]}")
+                    break
                 print(f"  [error] {filter_name}: {e}")
                 failed.append(f"{filter_name}: {e}")
                 continue
+            if output_path.exists() and _same_curve(output_path, served):
+                self._tag(output_path, facility)
+                skipped += 1
+                continue
+            if output_path.exists():
+                logger.warning("%s differs from NJM's copy; replacing it with NJM's", output_path)
+            self._write_curve(served, output_path)
             result = self._tag(output_path, facility)
             if result is not None and result.source == SOURCE_ASSUMED:
                 print(f"  [warn] {filter_name}: detector type unverified, assuming {result.detector_type}"
@@ -531,6 +659,8 @@ class NJMFilterGrabber:
             except requests.RequestException as exc:
                 print(f"  [error] component {rel}: {exc}")
                 failed.append(f"{rel}: {exc}")
+                if self._paused():  # the rest would fail the same way
+                    break
         if count:
             print(f"[njm] {facility}/{instrument}: {count} component files downloaded")
         if failed:

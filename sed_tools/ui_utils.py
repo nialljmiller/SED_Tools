@@ -2,6 +2,7 @@
 
 from typing import Sequence, Optional, List, Union, Tuple
 import re
+import shutil
 
 from .parsing import parse_multi_selection
 
@@ -36,6 +37,8 @@ def prompt_choice(
     # ---- setup ----
     labels: List[str] = [getattr(o, "label", str(o)) for o in options]
     N = len(labels)
+    # A page is never taller than the terminal, so its first rows do not scroll away.
+    page_size = min(page_size, _layout(max_label, min_cols, max_cols)[1] * _rows_on_screen())
     page = 1
     filt: Optional[Tuple[str, str]] = None  # ('substr'|'neg'|'regex', pattern)
 
@@ -147,9 +150,7 @@ def _print_page(label: str, labels: List[str], chunk: List[int], max_label: int,
     RESET = "\x1b[0m" if use_color else ""
 
     tw = terminal_width()
-    usable = tw - 10
-    col_width = min(usable, max_label)
-    n_cols = max(min_cols, min(max_cols, usable // col_width))
+    col_width, n_cols = _layout(max_label, min_cols, max_cols)
     n_rows = (len(chunk) + n_cols - 1) // n_cols
 
     print(f"\n{BOLD}{label}{RESET}")
@@ -163,11 +164,25 @@ def _print_page(label: str, labels: List[str], chunk: List[int], max_label: int,
                 continue
             i = chunk[flat_idx]
             id_str = f"{i+1:4d}."
-            padded = labels[i][:col_width-6].ljust(col_width-6)
+            room = col_width - 6
+            label = labels[i] if len(labels[i]) <= room else labels[i][:max(room - 1, 0)] + "…"
+            padded = label.ljust(room)
             row_items.append(f"{CYAN}{id_str}{RESET} {padded}")
         print("  ".join(row_items))
 
     print()
+
+
+def _layout(max_label: int, min_cols: int, max_cols: int) -> Tuple[int, int]:
+    """Column width and number of columns for entries up to ``max_label`` wide."""
+    usable = terminal_width() - 10
+    col_width = min(usable, max_label)
+    return col_width, max(min_cols, min(max_cols, usable // col_width))
+
+
+def _rows_on_screen() -> int:
+    """Rows of entries that fit on the terminal with the heading, page and control lines and prompt."""
+    return max(10, shutil.get_terminal_size(fallback=(80, 24)).lines - 8)
 
 
 def _controls(more_pages: bool, multi: bool, allow_back: bool, use_color: bool) -> str:
