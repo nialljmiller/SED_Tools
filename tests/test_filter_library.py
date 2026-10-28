@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from sed_tools import cli, filter_library
+from sed_tools import cli, filter_library, njm_filter_grabber
 from sed_tools.api import Filters
 from sed_tools.component_sources import catalog
 from sed_tools.filter_components import (
@@ -421,10 +421,12 @@ def test_outages_and_refusals_are_still_reported_as_down(tmp_path, monkeypatch):
     assert REAL_AVAILABILITY_CHECK(grabber) is False
     assert down.calls == [("HEAD", "")] and delays == []
 
+    njm_filter_grabber._STATE.reset()  # each case as in a new process: an outage pauses NJM process-wide
     missing = BurstBlockedNJM({"index.json": njm_index()}, head_status=404)
     grabber, delays = blocked_grabber(tmp_path, monkeypatch, missing)
     assert REAL_AVAILABILITY_CHECK(grabber) is False and missing.calls == [("HEAD", "")]
 
+    njm_filter_grabber._STATE.reset()
     blocked = BurstBlockedNJM({"index.json": njm_index()}, blocked=10)  # still blocked after the retries
     grabber, delays = blocked_grabber(tmp_path, monkeypatch, blocked)
     assert REAL_AVAILABILITY_CHECK(grabber) is False

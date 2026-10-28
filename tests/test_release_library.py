@@ -464,8 +464,8 @@ def test_unavailable_njm_says_which_sources_are_used(tmp_path, monkeypatch, capl
     grabber.base_url, grabber.session = NJM, SimpleNamespace(head=head)
     with caplog.at_level(logging.WARNING):
         assert grabber._check_availability() is False
-    assert "it will not be used, and filters come from installed copies, the original-source builders and SVO" \
-        in caplog.text
+    assert ("it will not be used for 5 minutes, and filters come from installed copies, the original-source "
+            "builders and SVO") in caplog.text
 
 
 # ----------------------------------------------------------------------

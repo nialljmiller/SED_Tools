@@ -88,6 +88,9 @@ class FilterCatalogue:
     ``offline=True`` reads installed and cached copies only.
     """
 
+    #: Until when (time.time()) NJM is not asked after a failed request, for every catalogue in the process.
+    _unreachable_until = 0.0
+
     def __init__(self, filter_root: Union[str, Path], *, mirror: Any = None, offline: bool = False,
                  max_workers: int = MAX_CONCURRENT, index_max_age: float = INDEX_MAX_AGE):
         self.filter_root = Path(filter_root)
@@ -97,7 +100,6 @@ class FilterCatalogue:
         self.index_max_age = index_max_age
         self._mirror = mirror
         self._mirror_lock = threading.Lock()
-        self._unreachable_until = 0.0
         self._index: Optional[dict] = None
         self._index_loaded = 0.0
 
@@ -176,7 +178,7 @@ class FilterCatalogue:
             status = getattr(getattr(exc, "response", None), "status_code", None)
             if status == 404:
                 raise CatalogueError(f"NJM does not serve {rel}") from exc
-            self._unreachable_until = time.time() + 300
+            FilterCatalogue._unreachable_until = time.time() + 300
             if path.is_file():
                 logger.warning("NJM unreachable (%s); using the cached %s", exc, rel)
                 return path

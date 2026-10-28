@@ -60,6 +60,19 @@ def write_flux_cube(
         flux.transpose(3, 2, 1, 0).ravel().tofile(fh)
 
 
+@pytest.fixture(autouse=True)
+def _fresh_njm_state():
+    """What a process knows about NJM is shared by its clients; each test starts as a new process."""
+    from sed_tools import njm_filter_grabber
+    from sed_tools.filter_catalogue import FilterCatalogue
+
+    njm_filter_grabber._STATE.reset()
+    FilterCatalogue._unreachable_until = 0.0
+    yield
+    njm_filter_grabber._STATE.reset()
+    FilterCatalogue._unreachable_until = 0.0
+
+
 @pytest.fixture
 def cube_writer() -> Callable[..., None]:
     """Expose :func:`write_flux_cube` to tests as a fixture."""

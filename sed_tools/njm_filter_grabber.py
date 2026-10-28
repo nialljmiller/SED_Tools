@@ -8,6 +8,7 @@ import json
 import logging
 import os
 import re
+import threading
 import time
 from dataclasses import dataclass, field
 from time import monotonic
@@ -33,6 +34,30 @@ NJM_CONNECT_TIMEOUT = 5.0
 #: Seconds NJM is left alone after it stops answering.
 NJM_PAUSE = 300
 FALLBACK_SOURCES = "installed copies, the original-source builders and SVO"
+
+
+class _MirrorState:
+    """What this process knows about NJM, shared by every :class:`NJMFilterGrabber`.
+
+    A new grabber (every FilterLibrary and FilterCatalogue makes one) reuses
+    the last availability check instead of asking NJM again, and a mirror that
+    stopped answering is left alone by all of them for ``NJM_PAUSE`` seconds,
+    reported once per outage.
+    """
+
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.reset()
+
+    def reset(self) -> None:
+        self.available = False  # a check or a request found NJM answering
+        self.unverified_ssl = False  # NJM's certificate could not be verified; requests skip the check
+        self.unreachable: Optional[str] = None  # why NJM is not asked, until `until` (monotonic())
+        self.until = 0.0
+        self.reported = False  # the current outage has been reported
+
+
+_STATE = _MirrorState()
 
 
 def _status(exc: Exception) -> Optional[int]:
@@ -76,10 +101,6 @@ class SetDownload:
 class NJMFilterGrabber:
     """Grabber for filter profiles from NJM mirror server."""
 
-    #: Why NJM stopped answering, and until when (monotonic()) it is not asked again.
-    _unreachable: Optional[str] = None
-    _unreachable_until = 0.0
-
     def __init__(self, base_dir: str = "../data/filters/", max_workers: int = 5):
         self.base_dir = base_dir
         self.max_workers = max_workers
@@ -95,8 +116,21 @@ class NJMFilterGrabber:
         self._index_data: Optional[Dict] = None
         self._index_unreadable = False
         self._metadata_client = SVOMetadataClient()
-        self._available = self._check_availability()
-        
+        self._available = self._mirror_available()
+
+    def _mirror_available(self) -> bool:
+        """Whether NJM answers, checked once in this process and again once a pause has expired."""
+        if self._paused():
+            return False
+        if _STATE.available:
+            if _STATE.unverified_ssl:
+                self._skip_ssl_verification()
+            return True
+        if not self._check_availability():
+            return False
+        _STATE.available, _STATE.reported = True, False
+        return True
+
     def _check_availability(self) -> bool:
         """Check if the NJM mirror is available and responding.
 
@@ -138,11 +172,26 @@ class NJMFilterGrabber:
         return True
 
     def _unavailable(self, reason) -> bool:
-        logger.warning("NJM mirror %s is unavailable (%s); it will not be used, and filters come from %s",
-                       self.base_url, reason, FALLBACK_SOURCES)
+        self._pause(str(reason), f"NJM mirror {self.base_url} is unavailable ({reason}); it will not be "
+                                 f"used for {NJM_PAUSE // 60} minutes, and filters come from {FALLBACK_SOURCES}")
         return False
 
+    @staticmethod
+    def _pause(reason: str, message: str) -> None:
+        """Leave NJM alone for ``NJM_PAUSE`` seconds in this whole process; ``message`` is warned once per outage."""
+        with _STATE.lock:
+            _STATE.available = False
+            _STATE.unreachable, _STATE.until = reason, monotonic() + NJM_PAUSE
+            report, _STATE.reported = not _STATE.reported, True
+        if report:
+            logger.warning(message)
+
     def _disable_ssl_verification(self) -> None:
+        """Switch this and every later grabber in the process to skip certificate checks."""
+        _STATE.unverified_ssl = True
+        self._skip_ssl_verification()
+
+    def _skip_ssl_verification(self) -> None:
         """Suppress SSL warnings and switch the session to skip certificate checks."""
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         self.session.verify = False
@@ -151,21 +200,24 @@ class NJMFilterGrabber:
         """Return True if the mirror is available."""
         return self._available and not self._paused()
 
-    def _paused(self) -> bool:
-        """Whether NJM stopped answering less than ``NJM_PAUSE`` seconds ago."""
-        if self._unreachable is not None and monotonic() >= self._unreachable_until:
-            self._unreachable = None
-        return self._unreachable is not None
+    @staticmethod
+    def _paused() -> bool:
+        """Whether NJM stopped answering, in this process, less than ``NJM_PAUSE`` seconds ago."""
+        with _STATE.lock:
+            if _STATE.unreachable is not None and monotonic() >= _STATE.until:
+                _STATE.unreachable = None
+            return _STATE.unreachable is not None
 
     def _get(self, url: str, *, timeout: int = 30, headers: Optional[Dict[str, str]] = None) -> requests.Response:
         """Retry transient mirror failures, including Apache's temporary 403 block.
 
         A request NJM still does not answer after the retries (no connection,
         a timeout, or a block that has not lifted) marks NJM unreachable for
-        ``NJM_PAUSE`` seconds, with one warning; requests until then fail at once.
+        ``NJM_PAUSE`` seconds in the whole process, with one warning per
+        outage; requests until then fail at once.
         """
         if self._paused():
-            raise requests.ConnectionError(f"NJM is unreachable ({self._unreachable}); "
+            raise requests.ConnectionError(f"NJM is unreachable ({_STATE.unreachable}); "
                                            f"not asked again for {NJM_PAUSE // 60} minutes")
         timeouts = (NJM_CONNECT_TIMEOUT, timeout)
         for attempt in range(3):
@@ -173,6 +225,7 @@ class NJMFilterGrabber:
                 response = (self.session.get(url, timeout=timeouts, headers=headers) if headers
                             else self.session.get(url, timeout=timeouts))
                 response.raise_for_status()
+                _STATE.reported = False  # NJM answers: a later outage is news again
                 return response
             except requests.RequestException as exc:
                 status = getattr(getattr(exc, "response", None), "status_code", None)
@@ -180,11 +233,9 @@ class NJMFilterGrabber:
                     raise
                 if attempt == 2:
                     if status is None or status in BLOCKED_STATUSES:
-                        self._unreachable = f"{status or type(exc).__name__} for {url}"
-                        self._unreachable_until = monotonic() + NJM_PAUSE
-                        logger.warning("NJM mirror %s stopped answering (%s); it is not asked again for %d "
-                                       "minutes, and filters come from %s", self.base_url, exc, NJM_PAUSE // 60,
-                                       FALLBACK_SOURCES)
+                        self._pause(f"{status or type(exc).__name__} for {url}",
+                                    f"NJM mirror {self.base_url} stopped answering ({exc}); it is not asked "
+                                    f"again for {NJM_PAUSE // 60} minutes, and filters come from {FALLBACK_SOURCES}")
                     raise
                 delay = (1, 60)[attempt] if status == 403 else (1, 3)[attempt]
                 if status == 429:
