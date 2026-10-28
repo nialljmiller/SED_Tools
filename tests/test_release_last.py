@@ -147,3 +147,146 @@ def test_picker_keeps_its_columns_for_short_names(monkeypatch, capsys):
     lines = _picker_page(names, 80, monkeypatch, capsys)
     rows = [line for line in lines if line.lstrip()[:1].isdigit()]
     assert len(rows) == 10 and all(line.count(".") == 3 for line in rows)  # three columns, as before
+
+
+# ----------------------------------------------------------------------
+# ML without scipy, torch or scikit-learn: one line naming what to install, no traceback
+# ----------------------------------------------------------------------
+FULL = 'pip install "sed-tools[full]"'
+
+
+def _without(monkeypatch, *modules):
+    """Make ``modules`` uninstalled for this test: importing them (or a submodule another test
+    imported already) fails, and find_spec finds nothing."""
+    import sys
+
+    for name in modules:
+        for loaded in [key for key in sys.modules if key == name or key.startswith(name + ".")] or [name]:
+            monkeypatch.setitem(sys.modules, loaded, None)
+
+
+def _run_cli(monkeypatch, *argv):
+    import sys
+
+    from sed_tools import cli
+
+    monkeypatch.setattr(sys, "argv", ["sed-tools", *argv])
+    return cli.main()
+
+
+def test_ml_completer_command_without_scipy_says_what_to_install(monkeypatch, capsys, tmp_path):
+    _without(monkeypatch, "scipy", "torch", "sklearn")
+    assert _run_cli(monkeypatch, "ml_completer", "--base", str(tmp_path), "--models-dir", str(tmp_path)) == 1
+    err = capsys.readouterr().err
+    assert err == f"Error: missing scipy, torch, scikit-learn: {FULL}\n"  # was a scipy traceback
+    assert len(err.rstrip("\n")) <= 80
+
+
+def test_ml_completer_names_only_what_is_missing(monkeypatch, capsys, tmp_path):
+    _without(monkeypatch, "scipy")
+    assert _run_cli(monkeypatch, "ml_completer", "--base", str(tmp_path), "--models-dir", str(tmp_path)) == 1
+    assert capsys.readouterr().err == f"Error: missing scipy: {FULL}\n"
+
+
+def test_ml_generator_command_without_torch_says_what_to_install(monkeypatch, capsys, tmp_path):
+    _without(monkeypatch, "torch", "sklearn")
+    assert _run_cli(monkeypatch, "ml_generator", "--base", str(tmp_path), "--models-dir", str(tmp_path)) == 1
+    assert capsys.readouterr().err == f"Error: missing torch, scikit-learn: {FULL}\n"
+
+
+def test_ml_generator_auto_without_torch_says_what_to_install(monkeypatch, capsys, tmp_path):
+    import importlib.util
+
+    if importlib.util.find_spec("optuna") is None:
+        pytest.skip("optuna is checked first")
+    _without(monkeypatch, "torch")
+    assert _run_cli(monkeypatch, "ml_generator", "--auto", "--library", str(tmp_path),
+                    "--output", str(tmp_path / "out")) == 1
+    assert capsys.readouterr().err == f"Error: missing torch: {FULL}\n"  # was a torch traceback
+
+
+def _densifier_inputs(tmp_path):
+    import numpy as np
+
+    from conftest import write_flux_cube
+
+    write_flux_cube(tmp_path / "Kurucz" / "flux_cube.bin", [5000, 7000], [4.0], [0.0], [1000.0, 2000.0],
+                    np.ones((2, 1, 1, 2)))
+    model = tmp_path / "models" / "gen"
+    model.mkdir(parents=True)
+    return model
+
+
+def test_densify_with_an_ml_model_without_torch_says_what_to_install(monkeypatch, capsys, tmp_path):
+    model = _densifier_inputs(tmp_path)
+    _without(monkeypatch, "torch")
+    assert _run_cli(monkeypatch, "densify", "--flux-cube", str(tmp_path / "Kurucz" / "flux_cube.bin"),
+                    "--output", str(tmp_path / "dense" / "flux_cube.bin"), "--ml-model", str(model)) == 1
+    assert capsys.readouterr().err == f"Error: missing torch: {FULL}\n"
+    assert not (tmp_path / "dense").exists()
+
+
+def test_menu_ml_options_without_packages_return_to_the_menu(monkeypatch, capsys, tmp_path):
+    from sed_tools import cli
+
+    _without(monkeypatch, "scipy", "torch", "sklearn")
+    model = _densifier_inputs(tmp_path)
+    densifier = cli.run_grid_densifier_flow
+    monkeypatch.setattr(cli, "run_grid_densifier_flow", lambda: densifier(base_dir=str(tmp_path)))
+    # 8 and 9 stop before any question; 10 asks for a cube, spacing, model and output first
+    answer(monkeypatch, "8", "9", "10", "1", "", str(model), str(tmp_path / "dense" / "flux_cube.bin"), "q")
+    assert cli._run_menu() == 1  # each failed, so the session ends with status 1
+    captured = capsys.readouterr()
+    assert captured.err.splitlines() == [f"Error: missing scipy, torch, scikit-learn: {FULL}",
+                                         f"Error: missing torch, scikit-learn: {FULL}",
+                                         f"Error: missing torch: {FULL}"]
+    assert "Traceback" not in captured.out + captured.err
+    assert captured.out.count("0/q) Quit") == 4  # the menu came back after each
+
+
+def test_combine_without_scipy_says_what_to_install(monkeypatch, capsys):
+    from sed_tools import cli
+
+    def needs_scipy():
+        from scipy.spatial import KDTree  # noqa: F401  (as combine_stellar_atm does)
+
+    _without(monkeypatch, "scipy")
+    assert cli._run_menu_flow(needs_scipy) is False
+    assert capsys.readouterr().err == f"Error: missing scipy: {FULL}\n"
+
+
+def test_a_missing_module_that_is_not_optional_keeps_its_traceback():
+    from sed_tools import cli
+
+    def broken():
+        raise ModuleNotFoundError("No module named 'sed_tools_typo'", name="sed_tools_typo")
+
+    with pytest.raises(ModuleNotFoundError):
+        cli._run_menu_flow(broken)
+
+
+def test_import_sed_tools_needs_no_optional_package(tmp_path):
+    import os
+    import site
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    optional = ("scipy", "torch", "sklearn", "optuna")
+    code = ("import sys\n"
+            f"blocked = {optional!r}\n"
+            "if sys.argv[1] == 'blocked':\n"
+            "    for name in blocked: sys.modules[name] = None\n"
+            "import sed_tools, sed_tools.cli, sed_tools.ml, sed_tools.ml_sed_generator, sed_tools.grid_densifier\n"
+            "import sed_tools.combine_stellar_atm\n"
+            "print(sorted(name for name in blocked if sys.modules.get(name) is not None))\n")
+    import matplotlib
+
+    # HOME keeps the user's ~/.sed_tools out of reach; the packages and matplotlib's font cache stay where they are
+    env = dict(os.environ, HOME=str(tmp_path), PYTHONUSERBASE=site.getuserbase(),
+               MPLCONFIGDIR=matplotlib.get_configdir())
+    for mode in ("blocked", "installed"):
+        done = subprocess.run([sys.executable, "-c", code, mode], cwd=Path(__file__).resolve().parents[1],
+                              env=env, capture_output=True, text=True)
+        assert done.returncode == 0, done.stderr
+        assert done.stdout.strip() == "[]"

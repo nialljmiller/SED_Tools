@@ -55,10 +55,30 @@ logger = logging.getLogger(__name__)
 EXPECTED_ERRORS = (RuntimeError, ValueError, OSError, ComponentError, CatalogueError,
                    RequestException, EOFError)
 
+#: Optional packages a workflow may import, and the extra (pyproject.toml) that installs each.
+_OPTIONAL_EXTRAS = {"scipy": "full", "torch": "full", "sklearn": "full", "optuna": "ml-tune"}
+_PIP_NAMES = {"sklearn": "scikit-learn"}
+
 # ------------ Small Utils ------------
 
 def ensure_dir(path: str) -> None:
     os.makedirs(path, exist_ok=True)
+
+
+def _missing_packages(modules: Sequence[str]) -> Optional[str]:
+    """``Error: missing <packages>: pip install "sed-tools[<extra>]"`` for those of ``modules``
+    (keys of _OPTIONAL_EXTRAS) that are not installed; None when all are."""
+    missing = [m for m in modules if importlib.util.find_spec(m) is None]
+    if not missing:
+        return None
+    extras = ",".join(sorted({_OPTIONAL_EXTRAS[m] for m in missing}))
+    return f"Error: missing {', '.join(_PIP_NAMES.get(m, m) for m in missing)}: pip install \"sed-tools[{extras}]\""
+
+
+def _missing_package_error(exc: ImportError) -> Optional[str]:
+    """The _missing_packages line for an optional package that failed to import, else None (a bug)."""
+    root = (exc.name or "").split(".")[0]
+    return _missing_packages([root]) if root in _OPTIONAL_EXTRAS else None
 
 
 def _ask_option(prompt: str, options: Sequence[str], default: Optional[str] = None) -> str:
@@ -1547,8 +1567,12 @@ def run_filter_combine_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
 def run_ml_generator_flow(
     base_dir: str = STELLAR_DIR_DEFAULT,
     models_dir: str = "models"
-) -> None:
-    """Run ML SED Generator interactive workflow."""
+) -> Optional[int]:
+    """Run ML SED Generator interactive workflow; 1, with what to install, when torch or scikit-learn is missing."""
+    missing = _missing_packages(("torch", "sklearn"))
+    if missing:
+        print(missing, file=sys.stderr)
+        return 1
     from .ml_sed_generator import run_interactive_workflow
     run_interactive_workflow(base_dir=base_dir, models_dir=models_dir)
 
@@ -1676,13 +1700,18 @@ def _grids_to_combine_by_default(model_dirs: List[Tuple[str, str]], output_name:
 def run_ml_completer_flow(
     base_dir: str = str(STELLAR_DIR_DEFAULT),
     models_dir: str = "models"
-) -> None:
+) -> Optional[int]:
     """
     Launch the interactive ML SED Completer workflow.
     
     This is a thin wrapper that delegates to ml_sed_completer.run_interactive_workflow().
     All training and inference logic lives in the ml_sed_completer module.
+    Returns 1, saying what to install, when scipy, torch or scikit-learn is missing.
     """
+    missing = _missing_packages(("scipy", "torch", "sklearn"))
+    if missing:
+        print(missing, file=sys.stderr)
+        return 1
     from .ml_sed_completer import run_interactive_workflow
     run_interactive_workflow(base_dir, models_dir)
 
@@ -2303,11 +2332,10 @@ def _cmd_combine(args, parser):
 
 
 def _cmd_ml_completer(args, parser):
-    run_ml_completer_flow(
+    return run_ml_completer_flow(
         base_dir=args.base,
         models_dir=args.models_dir
-    )
-    return 0
+    ) or 0
 
 
 def _cmd_ml_generator(args, parser):
@@ -2315,15 +2343,18 @@ def _cmd_ml_generator(args, parser):
     if not args.auto:
         if limits:
             parser.error("--trials and --epochs apply to --auto training only")
-        run_ml_generator_flow(
+        return run_ml_generator_flow(
             base_dir=args.base,
             models_dir=args.models_dir
-        )
-        return 0
+        ) or 0
     if not args.library or not args.output:
         parser.error("--auto needs --library and --output")
     if importlib.util.find_spec("optuna") is None:
         print("Error: --auto training needs the optuna package, which is not installed (pip install 'sed-tools[ml-tune]').")
+        return 1
+    missing = _missing_packages(("torch", "sklearn"))
+    if missing:
+        print(missing, file=sys.stderr)
         return 1
     from .ml import auto_train_generator
     auto_train_generator(library=args.library, output=args.output, **limits)
@@ -2510,6 +2541,12 @@ def _run_menu_flow(flow) -> bool:
     except EXPECTED_ERRORS as exc:
         _print_error(exc)
         return False
+    except ImportError as exc:  # an optional package a step needs (scipy, torch, ...): say what to install
+        missing = _missing_package_error(exc)
+        if missing is None:
+            raise
+        print(missing, file=sys.stderr)
+        return False
     except KeyboardInterrupt:
         print("\nInterrupted; back to the menu.")
         return True
@@ -2544,6 +2581,12 @@ def main():
         return _COMMANDS[args.cmd](args, args.command_parser)
     except EXPECTED_ERRORS as exc:
         _print_error(exc)
+        return 1
+    except ImportError as exc:  # an optional package a step needs (scipy, torch, ...): say what to install
+        missing = _missing_package_error(exc)
+        if missing is None:
+            raise
+        print(missing, file=sys.stderr)
         return 1
     except KeyboardInterrupt:
         print("\nsed-tools: interrupted", file=sys.stderr)
