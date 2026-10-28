@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-10-28T04:14:20.528390",
+  "generated": "2026-10-28T04:29:18.467395",
   "base_url": "http://nillmill.ddns.net/sed_tools",
   "statistics": {
     "total_models": 1,
@@ -1622,8 +1622,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 153703,
-            "size_human": "150.10 KB",
+            "size_bytes": 111186,
+            "size_human": "108.58 KB",
             "description": "Argus Array beta and rho bands on DR280 telescopes (filter\u00d7optics\u00d7QE)",
             "svo_instruments": []
           },
@@ -1648,8 +1648,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 1297388,
-            "size_human": "1.24 MB",
+            "size_bytes": 674939,
+            "size_human": "659.12 KB",
             "description": "Legacy Argus Array beta and rho curves, superseded by Argus/DR280",
             "svo_instruments": []
           }
@@ -3194,8 +3194,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 1686305,
-            "size_human": "1.61 MB",
+            "size_bytes": 1742934,
+            "size_human": "1.66 MB",
             "description": "CFHT general filter collection: UBVRI and numbered cfh filters",
             "svo_instruments": []
           },
@@ -3220,8 +3220,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 31244,
-            "size_human": "30.51 KB",
+            "size_bytes": 34397,
+            "size_human": "33.59 KB",
             "description": "MOCAM prime-focus CCD mosaic camera filters, CFHT",
             "svo_instruments": [
               "CFHT/MOCAM"
@@ -3259,8 +3259,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 699932,
-            "size_human": "683.53 KB",
+            "size_bytes": 705495,
+            "size_human": "688.96 KB",
             "description": "CFHT MegaCam u, g, r, i, z, gri filters, several filter generations",
             "svo_instruments": [
               "CFHT/MegaCam"
@@ -3343,8 +3343,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 1985386,
-            "size_human": "1.89 MB",
+            "size_bytes": 2002105,
+            "size_human": "1.91 MB",
             "description": "CFHT MegaPrime broad-, narrow- and medium-band filters (full, filter)",
             "svo_instruments": [
               "CFHT/Megaprime"
@@ -3380,8 +3380,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 52019,
-            "size_human": "50.80 KB",
+            "size_bytes": 58746,
+            "size_human": "57.37 KB",
             "description": "QUIRC near-infrared camera filters (CFHT and UH 2.2-m)",
             "svo_instruments": [
               "CFHT/QUIRC"
@@ -3403,8 +3403,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 31149,
-            "size_human": "30.42 KB",
+            "size_bytes": 32218,
+            "size_human": "31.46 KB",
             "description": "CFHT WIRCam J-band curve, kept under the legacy name WFC",
             "svo_instruments": []
           },
@@ -3438,8 +3438,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 161080,
-            "size_human": "157.30 KB",
+            "size_bytes": 167119,
+            "size_human": "163.20 KB",
             "description": "WIRCam wide-field near-infrared imager filters, CFHT prime focus",
             "svo_instruments": []
           }
@@ -3465,8 +3465,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 21852,
-            "size_human": "21.34 KB",
+            "size_bytes": 22987,
+            "size_human": "22.45 KB",
             "description": "CHEOPS exoplanet satellite broad 330-1100 nm CCD passband",
             "svo_instruments": [
               "CHEOPS/CHEOPS"
@@ -3500,8 +3500,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 51300,
-            "size_human": "50.10 KB",
+            "size_bytes": 55243,
+            "size_human": "53.95 KB",
             "description": "SAI MSU Speckle Polarimeter (SPP) filters, CMO 2.5-m telescope",
             "svo_instruments": [
               "CMO-SAI/SPP"
@@ -3538,8 +3538,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 45683,
-            "size_human": "44.61 KB",
+            "size_bytes": 50461,
+            "size_human": "49.28 KB",
             "description": "COBE DIRBE ten infrared bands, 1.25-240 \u03bcm (filter and detector)",
             "svo_instruments": [
               "COBE/DIRBE"
@@ -3574,8 +3574,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 33804,
-            "size_human": "33.01 KB",
+            "size_bytes": 37967,
+            "size_human": "37.08 KB",
             "description": "COMS Geostationary Ocean Color Imager (GOCI) bands, 412-865 nm",
             "svo_instruments": [
               "COMS/GOCI"
@@ -3634,8 +3634,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 211036,
-            "size_human": "206.09 KB",
+            "size_bytes": 224690,
+            "size_human": "219.42 KB",
             "description": "CSST optical survey camera: NUV-y bands and slitless GU, GV, GI",
             "svo_instruments": [
               "CSST/SC0-Phot",
@@ -3666,8 +3666,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 62558,
-            "size_human": "61.09 KB",
+            "size_bytes": 67121,
+            "size_human": "65.55 KB",
             "description": "CSST Multi-channel Imager (MCI) nine medium-band filters",
             "svo_instruments": [
               "CSST/MCI"
@@ -3697,8 +3697,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 16956,
-            "size_human": "16.56 KB",
+            "size_bytes": 19778,
+            "size_human": "19.31 KB",
             "description": "CSTAR telescope array at Dome A, Antarctica: g, r, i passbands",
             "svo_instruments": [
               "CSTAR/CSTAR1",
@@ -3736,8 +3736,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 49615,
-            "size_human": "48.45 KB",
+            "size_bytes": 54217,
+            "size_human": "52.95 KB",
             "description": "ANDICAM optical/near-IR dual camera filters, SMARTS 1.3-m at CTIO",
             "svo_instruments": [
               "CTIO/ANDICAM"
@@ -3799,8 +3799,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 245820,
-            "size_human": "240.06 KB",
+            "size_bytes": 263360,
+            "size_human": "257.19 KB",
             "description": "CTIO general filter pool (BLANK) for the Blanco 4-m and others",
             "svo_instruments": [
               "CTIO/BLANK"
@@ -4056,8 +4056,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 931052,
-            "size_human": "909.23 KB",
+            "size_bytes": 1028313,
+            "size_human": "1004.21 KB",
             "description": "CTIO observatory pool of optical narrow- and broad-band filters",
             "svo_instruments": [
               "CTIO/CTIO"
@@ -4100,8 +4100,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 232717,
-            "size_human": "227.26 KB",
+            "size_bytes": 241359,
+            "size_human": "235.70 KB",
             "description": "Dark Energy Camera (DECam) ugrizY, VR: filter, DES DR1 and old totals",
             "svo_instruments": [
               "CTIO/DECam"
@@ -4139,8 +4139,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 149627,
-            "size_human": "146.12 KB",
+            "size_bytes": 157547,
+            "size_human": "153.85 KB",
             "description": "Goodman HTS imaging filters, SOAR 4.1-m telescope",
             "svo_instruments": [
               "CTIO/Goodman"
@@ -4189,8 +4189,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 189503,
-            "size_human": "185.06 KB",
+            "size_bytes": 201909,
+            "size_human": "197.18 KB",
             "description": "ISPI near-infrared imager filters, Blanco 4-m telescope at CTIO",
             "svo_instruments": [
               "CTIO/ISPI"
@@ -4235,8 +4235,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 183184,
-            "size_human": "178.89 KB",
+            "size_bytes": 193392,
+            "size_human": "188.86 KB",
             "description": "Mosaic II prime-focus CCD camera filters, Blanco 4-m at CTIO",
             "svo_instruments": [
               "CTIO/MosaicII"
@@ -4263,8 +4263,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 64232,
-            "size_human": "62.73 KB",
+            "size_bytes": 67504,
+            "size_human": "65.92 KB",
             "description": "Ohio State Infrared Imager/Spectrometer (OSIRIS) filters at CTIO",
             "svo_instruments": [
               "CTIO/OSIRIS"
@@ -4297,8 +4297,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 84348,
-            "size_human": "82.37 KB",
+            "size_bytes": 89795,
+            "size_human": "87.69 KB",
             "description": "SOAR Adaptive Module Imager (SAMI) optical filters, SOAR 4.1-m",
             "svo_instruments": [
               "CTIO/SAMI"
@@ -4331,8 +4331,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 42813,
-            "size_human": "41.81 KB",
+            "size_bytes": 48240,
+            "size_human": "47.11 KB",
             "description": "SMARTS 0.9-m telescope B, V, R, Kc filters (three sets each)",
             "svo_instruments": [
               "CTIO/SMARTS"
@@ -4371,8 +4371,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 158215,
-            "size_human": "154.51 KB",
+            "size_bytes": 166213,
+            "size_human": "162.32 KB",
             "description": "SOAR Optical Imager (SOI) broad- and narrow-band filters",
             "svo_instruments": [
               "CTIO/SOI"
@@ -4405,8 +4405,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 77266,
-            "size_human": "75.46 KB",
+            "size_bytes": 82893,
+            "size_human": "80.95 KB",
             "description": "S-PLUS survey 12 filters (5 broad, 7 narrow), T80-South at CTIO",
             "svo_instruments": [
               "CTIO/S-PLUS"
@@ -4440,8 +4440,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 104347,
-            "size_human": "101.90 KB",
+            "size_bytes": 110585,
+            "size_human": "107.99 KB",
             "description": "Spartan near-infrared camera filters, SOAR 4.1-m telescope",
             "svo_instruments": [
               "CTIO/Spartan"
@@ -4471,8 +4471,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 42386,
-            "size_human": "41.39 KB",
+            "size_bytes": 46771,
+            "size_human": "45.67 KB",
             "description": "Y4KCam optical imager filters, SMARTS 1.0-m telescope at CTIO",
             "svo_instruments": [
               "CTIO/Y4KCam"
@@ -4502,8 +4502,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 19407,
-            "size_human": "18.95 KB",
+            "size_bytes": 19397,
+            "size_human": "18.94 KB",
             "description": "Arriflex D21 camera RGB responses (Mauer 2009)",
             "svo_instruments": [
               "Cameras/Arriflex"
@@ -4548,8 +4548,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 19951,
-            "size_human": "19.48 KB",
+            "size_bytes": 19937,
+            "size_human": "19.47 KB",
             "description": "Canon 1DMarkII camera RGB sensitivities (Jiang et al. 2013)",
             "svo_instruments": []
           },
@@ -4571,8 +4571,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 19535,
-            "size_human": "19.08 KB",
+            "size_bytes": 19507,
+            "size_human": "19.05 KB",
             "description": "Canon 1DMarkIII camera RGB sensitivities (Jiang et al. 2013)",
             "svo_instruments": []
           },
@@ -4596,8 +4596,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 27331,
-            "size_human": "26.69 KB",
+            "size_bytes": 27303,
+            "size_human": "26.66 KB",
             "description": "Canon 20D RGB sensitivities (Jiang et al. 2013), UV/IR-cut filter",
             "svo_instruments": []
           },
@@ -4621,8 +4621,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 27546,
-            "size_human": "26.90 KB",
+            "size_bytes": 27504,
+            "size_human": "26.86 KB",
             "description": "Canon 300D RGB sensitivities (Jiang et al. 2013), UV/IR-cut filter",
             "svo_instruments": []
           },
@@ -4642,8 +4642,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 16696,
-            "size_human": "16.30 KB",
+            "size_bytes": 16682,
+            "size_human": "16.29 KB",
             "description": "Canon 30D camera internal UV/IR-cut filter (Kolari Vision)",
             "svo_instruments": []
           },
@@ -4686,8 +4686,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 19612,
-            "size_human": "19.15 KB",
+            "size_bytes": 19584,
+            "size_human": "19.12 KB",
             "description": "Canon 40D camera RGB sensitivities (Jiang et al. 2013)",
             "svo_instruments": []
           },
@@ -4709,8 +4709,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 19204,
-            "size_human": "18.75 KB",
+            "size_bytes": 19190,
+            "size_human": "18.74 KB",
             "description": "Canon EOS 450D without IR filter: RGB responses (Mauer 2009)",
             "svo_instruments": []
           },
@@ -4732,8 +4732,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 19635,
-            "size_human": "19.17 KB",
+            "size_bytes": 19607,
+            "size_human": "19.15 KB",
             "description": "Canon 500D camera RGB sensitivities (Jiang et al. 2013)",
             "svo_instruments": []
           },
@@ -4755,8 +4755,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 19398,
-            "size_human": "18.94 KB",
+            "size_bytes": 19356,
+            "size_human": "18.90 KB",
             "description": "Canon 50D camera RGB sensitivities (Jiang et al. 2013)",
             "svo_instruments": []
           },
@@ -4820,8 +4820,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 19632,
-            "size_human": "19.17 KB",
+            "size_bytes": 19590,
+            "size_human": "19.13 KB",
             "description": "Canon 600D camera RGB sensitivities (Jiang et al. 2013)",
             "svo_instruments": []
           },
@@ -4845,8 +4845,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 27284,
-            "size_human": "26.64 KB",
+            "size_bytes": 27256,
+            "size_human": "26.62 KB",
             "description": "Canon 60D RGB sensitivities (Jiang et al. 2013), UV/IR-cut filter",
             "svo_instruments": []
           },
@@ -4887,8 +4887,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 16267,
-            "size_human": "15.89 KB",
+            "size_bytes": 16253,
+            "size_human": "15.87 KB",
             "description": "Canon T2i camera internal UV/IR-cut filter (Kolari Vision)",
             "svo_instruments": []
           },
@@ -4908,8 +4908,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 16478,
-            "size_human": "16.09 KB",
+            "size_bytes": 16464,
+            "size_human": "16.08 KB",
             "description": "Canon XS camera internal UV/IR-cut filter (Kolari Vision)",
             "svo_instruments": []
           },
@@ -4929,8 +4929,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 16494,
-            "size_human": "16.11 KB",
+            "size_bytes": 16480,
+            "size_human": "16.09 KB",
             "description": "Canon XSi camera internal UV/IR-cut filter (Kolari Vision)",
             "svo_instruments": []
           },
@@ -4950,8 +4950,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 16056,
-            "size_human": "15.68 KB",
+            "size_bytes": 16051,
+            "size_human": "15.67 KB",
             "description": "Fujifilm S3 camera internal UV/IR-cut filter (Kolari Vision)",
             "svo_instruments": []
           },
@@ -4973,8 +4973,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 18740,
-            "size_human": "18.30 KB",
+            "size_bytes": 18733,
+            "size_human": "18.29 KB",
             "description": "Fujifilm S5 Pro camera RGB responses (Mauer 2009)",
             "svo_instruments": []
           },
@@ -4994,7 +4994,7 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 16193,
+            "size_bytes": 16188,
             "size_human": "15.81 KB",
             "description": "Fujifilm X100 camera internal UV/IR-cut filter (Kolari Vision)",
             "svo_instruments": []
@@ -5015,7 +5015,7 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 16358,
+            "size_bytes": 16357,
             "size_human": "15.97 KB",
             "description": "Fujifilm Xpro1 camera internal UV/IR-cut filter (Kolari Vision)",
             "svo_instruments": []
@@ -5038,7 +5038,7 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 19966,
+            "size_bytes": 19963,
             "size_human": "19.50 KB",
             "description": "Hasselblad H2 camera RGB sensitivities (Jiang et al. 2013)",
             "svo_instruments": []
@@ -5061,7 +5061,7 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 19385,
+            "size_bytes": 19382,
             "size_human": "18.93 KB",
             "description": "Hasselblad H3D camera RGB responses (Mauer 2009)",
             "svo_instruments": []
@@ -5130,8 +5130,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 19632,
-            "size_human": "19.17 KB",
+            "size_bytes": 19599,
+            "size_human": "19.14 KB",
             "description": "Leica M8 camera RGB responses (Mauer 2009)",
             "svo_instruments": [
               "Cameras/Leica"
@@ -5153,7 +5153,7 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 16202,
+            "size_bytes": 16201,
             "size_human": "15.82 KB",
             "description": "Lumix G10 camera internal UV/IR-cut filter (Kolari Vision)",
             "svo_instruments": []
@@ -5174,7 +5174,7 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 16579,
+            "size_bytes": 16578,
             "size_human": "16.19 KB",
             "description": "Lumix GF1 camera internal UV/IR-cut filter (Kolari Vision)",
             "svo_instruments": []
@@ -5195,7 +5195,7 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 16614,
+            "size_bytes": 16613,
             "size_human": "16.22 KB",
             "description": "Lumix GF2 camera internal UV/IR-cut filter (Kolari Vision)",
             "svo_instruments": []
@@ -5216,7 +5216,7 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 16372,
+            "size_bytes": 16371,
             "size_human": "15.99 KB",
             "description": "Nikon D100 camera internal UV/IR-cut filter (Kolari Vision)",
             "svo_instruments": []
@@ -5241,8 +5241,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 27234,
-            "size_human": "26.60 KB",
+            "size_bytes": 27204,
+            "size_human": "26.57 KB",
             "description": "Nikon D200 RGB sensitivities (Jiang et al. 2013), UV/IR-cut filter",
             "svo_instruments": []
           },
@@ -5264,8 +5264,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 19414,
-            "size_human": "18.96 KB",
+            "size_bytes": 19385,
+            "size_human": "18.93 KB",
             "description": "Nikon D3 camera RGB sensitivities (Jiang et al. 2013)",
             "svo_instruments": []
           },
@@ -5285,7 +5285,7 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 16484,
+            "size_bytes": 16483,
             "size_human": "16.10 KB",
             "description": "Nikon D3000 camera internal UV/IR-cut filter (Kolari Vision)",
             "svo_instruments": []
@@ -5308,8 +5308,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 19815,
-            "size_human": "19.35 KB",
+            "size_bytes": 19786,
+            "size_human": "19.32 KB",
             "description": "Nikon D300s camera RGB sensitivities (Jiang et al. 2013)",
             "svo_instruments": []
           },
@@ -5329,8 +5329,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 16468,
-            "size_human": "16.08 KB",
+            "size_bytes": 16454,
+            "size_human": "16.07 KB",
             "description": "Nikon D3100 camera internal UV/IR-cut filter (Kolari Vision)",
             "svo_instruments": []
           },
@@ -5352,8 +5352,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 19667,
-            "size_human": "19.21 KB",
+            "size_bytes": 19651,
+            "size_human": "19.19 KB",
             "description": "Nikon D3X camera RGB sensitivities (Jiang et al. 2013)",
             "svo_instruments": []
           },
@@ -5377,8 +5377,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 26743,
-            "size_human": "26.12 KB",
+            "size_bytes": 27609,
+            "size_human": "26.96 KB",
             "description": "Nikon D40 RGB sensitivities (Jiang et al. 2013), UV/IR-cut filter",
             "svo_instruments": []
           },
@@ -5398,8 +5398,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15333,
-            "size_human": "14.97 KB",
+            "size_bytes": 16204,
+            "size_human": "15.82 KB",
             "description": "Nikon D40x camera internal UV/IR-cut filter (Kolari Vision)",
             "svo_instruments": []
           },
@@ -5423,8 +5423,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 25294,
-            "size_human": "24.70 KB",
+            "size_bytes": 27536,
+            "size_human": "26.89 KB",
             "description": "Nikon D50 RGB sensitivities (Jiang et al. 2013), UV/IR-cut filter",
             "svo_instruments": []
           },
@@ -5446,8 +5446,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 17986,
-            "size_human": "17.56 KB",
+            "size_bytes": 19788,
+            "size_human": "19.32 KB",
             "description": "Nikon D5100 camera RGB sensitivities (Jiang et al. 2013)",
             "svo_instruments": []
           },
@@ -5467,8 +5467,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15537,
-            "size_human": "15.17 KB",
+            "size_bytes": 16408,
+            "size_human": "16.02 KB",
             "description": "Nikon D60 camera internal UV/IR-cut filter (Kolari Vision)",
             "svo_instruments": []
           },
@@ -5488,8 +5488,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15375,
-            "size_human": "15.01 KB",
+            "size_bytes": 16245,
+            "size_human": "15.86 KB",
             "description": "Nikon D70 camera internal UV/IR-cut filter (Kolari Vision)",
             "svo_instruments": []
           },
@@ -5511,8 +5511,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 18049,
-            "size_human": "17.63 KB",
+            "size_bytes": 19848,
+            "size_human": "19.38 KB",
             "description": "Nikon D700 camera RGB sensitivities (Jiang et al. 2013)",
             "svo_instruments": []
           },
@@ -5536,8 +5536,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 25092,
-            "size_human": "24.50 KB",
+            "size_bytes": 27336,
+            "size_human": "26.70 KB",
             "description": "Nikon D80 RGB sensitivities (Jiang et al. 2013), UV/IR-cut filter",
             "svo_instruments": []
           },
@@ -5561,8 +5561,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 25394,
-            "size_human": "24.80 KB",
+            "size_bytes": 27638,
+            "size_human": "26.99 KB",
             "description": "Nikon D90 RGB sensitivities (Jiang et al. 2013), UV/IR-cut filter",
             "svo_instruments": []
           },
@@ -5584,8 +5584,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 17676,
-            "size_human": "17.26 KB",
+            "size_bytes": 19462,
+            "size_human": "19.01 KB",
             "description": "Nokia N900 camera RGB sensitivities (Jiang et al. 2013)",
             "svo_instruments": [
               "Cameras/Nokia"
@@ -5607,8 +5607,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15445,
-            "size_human": "15.08 KB",
+            "size_bytes": 16344,
+            "size_human": "15.96 KB",
             "description": "Olympus EP1 camera internal UV/IR-cut filter (Kolari Vision)",
             "svo_instruments": []
           },
@@ -5630,8 +5630,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 17582,
-            "size_human": "17.17 KB",
+            "size_bytes": 19417,
+            "size_human": "18.96 KB",
             "description": "Olympus EPL2 camera RGB sensitivities (Jiang et al. 2013)",
             "svo_instruments": []
           },
@@ -5653,8 +5653,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 17108,
-            "size_human": "16.71 KB",
+            "size_bytes": 18856,
+            "size_human": "18.41 KB",
             "description": "Panasonic DMC-LX3 camera RGB responses (camSPECS, Mauer thesis)",
             "svo_instruments": [
               "Cameras/Panasonic"
@@ -5676,8 +5676,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15391,
-            "size_human": "15.03 KB",
+            "size_bytes": 16323,
+            "size_human": "15.94 KB",
             "description": "Pentax K100D camera internal UV/IR-cut filter (Kolari Vision)",
             "svo_instruments": []
           },
@@ -5697,8 +5697,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15465,
-            "size_human": "15.10 KB",
+            "size_bytes": 16396,
+            "size_human": "16.01 KB",
             "description": "Pentax K10D camera internal UV/IR-cut filter (Kolari Vision)",
             "svo_instruments": []
           },
@@ -5720,8 +5720,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 17584,
-            "size_human": "17.17 KB",
+            "size_bytes": 19439,
+            "size_human": "18.98 KB",
             "description": "Pentax K5 camera RGB sensitivities (Jiang et al. 2013)",
             "svo_instruments": []
           },
@@ -5743,8 +5743,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 17787,
-            "size_human": "17.37 KB",
+            "size_bytes": 19640,
+            "size_human": "19.18 KB",
             "description": "Pentax Q camera RGB sensitivities (Jiang et al. 2013)",
             "svo_instruments": []
           },
@@ -5764,8 +5764,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15434,
-            "size_human": "15.07 KB",
+            "size_bytes": 16366,
+            "size_human": "15.98 KB",
             "description": "Pentax ist D camera internal UV/IR-cut filter (Kolari Vision)",
             "svo_instruments": []
           },
@@ -5785,8 +5785,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15631,
-            "size_human": "15.26 KB",
+            "size_bytes": 16564,
+            "size_human": "16.18 KB",
             "description": "Pentax ist DL camera internal UV/IR-cut filter (Kolari Vision)",
             "svo_instruments": []
           },
@@ -5808,8 +5808,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 17920,
-            "size_human": "17.50 KB",
+            "size_bytes": 19736,
+            "size_human": "19.27 KB",
             "description": "PhaseOne camera RGB sensitivities (Jiang et al. 2013)",
             "svo_instruments": [
               "Cameras/PhaseOne"
@@ -5833,8 +5833,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 18138,
-            "size_human": "17.71 KB",
+            "size_bytes": 20013,
+            "size_human": "19.54 KB",
             "description": "PointGrey Grasshopper2 14S5C RGB sensitivities (Jiang et al. 2013)",
             "svo_instruments": []
           },
@@ -5856,8 +5856,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 18156,
-            "size_human": "17.73 KB",
+            "size_bytes": 20026,
+            "size_human": "19.56 KB",
             "description": "PointGrey Grasshopper 50S5C RGB sensitivities (Jiang et al. 2013)",
             "svo_instruments": []
           },
@@ -5883,8 +5883,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 45525,
-            "size_human": "44.46 KB",
+            "size_bytes": 48476,
+            "size_human": "47.34 KB",
             "description": "Unihedron Sky Quality Meter (SQM) bands, CM-500 filter, scotopic eye",
             "svo_instruments": [
               "Cameras/SQM"
@@ -5906,8 +5906,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15532,
-            "size_human": "15.17 KB",
+            "size_bytes": 16415,
+            "size_human": "16.03 KB",
             "description": "Samsung NX10 camera internal UV/IR-cut filter (Kolari Vision)",
             "svo_instruments": []
           },
@@ -5927,8 +5927,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15608,
-            "size_human": "15.24 KB",
+            "size_bytes": 16492,
+            "size_human": "16.11 KB",
             "description": "Samsung NX100 camera internal UV/IR-cut filter (Kolari Vision)",
             "svo_instruments": []
           },
@@ -5948,8 +5948,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15705,
-            "size_human": "15.34 KB",
+            "size_bytes": 16575,
+            "size_human": "16.19 KB",
             "description": "Sony A200 camera internal UV/IR-cut filter (Kolari Vision)",
             "svo_instruments": []
           },
@@ -5969,8 +5969,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15440,
-            "size_human": "15.08 KB",
+            "size_bytes": 16310,
+            "size_human": "15.93 KB",
             "description": "Sony A55 camera internal UV/IR-cut filter (Kolari Vision)",
             "svo_instruments": []
           },
@@ -5990,8 +5990,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15711,
-            "size_human": "15.34 KB",
+            "size_bytes": 16582,
+            "size_human": "16.19 KB",
             "description": "Sony A290 camera internal UV/IR-cut filter (Kolari Vision)",
             "svo_instruments": []
           },
@@ -6011,8 +6011,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15403,
-            "size_human": "15.04 KB",
+            "size_bytes": 16274,
+            "size_human": "15.89 KB",
             "description": "Sony A300 camera internal UV/IR-cut filter (Kolari Vision)",
             "svo_instruments": []
           },
@@ -6032,8 +6032,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15277,
-            "size_human": "14.92 KB",
+            "size_bytes": 16147,
+            "size_human": "15.77 KB",
             "description": "Sony A330 camera internal UV/IR-cut filter (Kolari Vision)",
             "svo_instruments": []
           },
@@ -6055,8 +6055,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 17597,
-            "size_human": "17.18 KB",
+            "size_bytes": 19394,
+            "size_human": "18.94 KB",
             "description": "Sony NEX5N camera RGB sensitivities (Jiang et al. 2013)",
             "svo_instruments": []
           },
@@ -6076,8 +6076,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15475,
-            "size_human": "15.11 KB",
+            "size_bytes": 16347,
+            "size_human": "15.96 KB",
             "description": "Sony NEX 5N camera internal UV/IR-cut filter (Kolari Vision)",
             "svo_instruments": []
           },
@@ -6097,8 +6097,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 15477,
-            "size_human": "15.11 KB",
+            "size_bytes": 16350,
+            "size_human": "15.97 KB",
             "description": "Sony NEX C3 camera internal UV/IR-cut filter (Kolari Vision)",
             "svo_instruments": []
           }
@@ -6208,8 +6208,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 13492811,
-            "size_human": "12.87 MB",
+            "size_bytes": 13402536,
+            "size_human": "12.78 MB",
             "description": "Cassini ISS narrow-angle camera filters and filter combinations",
             "svo_instruments": [
               "Cassini/ISS_NAC"
@@ -6275,8 +6275,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 5312853,
-            "size_human": "5.07 MB",
+            "size_bytes": 5263276,
+            "size_human": "5.02 MB",
             "description": "Cassini ISS wide-angle camera filters and filter combinations",
             "svo_instruments": [
               "Cassini/ISS_WAC"
@@ -6307,8 +6307,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 39793,
-            "size_human": "38.86 KB",
+            "size_bytes": 42470,
+            "size_human": "41.47 KB",
             "description": "Clementine HIRES high-resolution camera narrow-band filters",
             "svo_instruments": [
               "Clementine/HIRES"
@@ -6334,8 +6334,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 44038,
-            "size_human": "43.01 KB",
+            "size_bytes": 47185,
+            "size_human": "46.08 KB",
             "description": "Clementine near-infrared (NIR) camera narrow-band filters",
             "svo_instruments": [
               "Clementine/NIR"
@@ -6361,8 +6361,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 44234,
-            "size_human": "43.20 KB",
+            "size_bytes": 47397,
+            "size_human": "46.29 KB",
             "description": "Clementine ultraviolet-visible (UVVIS) camera narrow-band filters",
             "svo_instruments": [
               "Clementine/UVVIS"
@@ -6412,8 +6412,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 76031,
-            "size_human": "74.25 KB",
+            "size_bytes": 86777,
+            "size_human": "84.74 KB",
             "description": "CONTOUR Forward Imager (CFI) bands, plus filter-only curves",
             "svo_instruments": [
               "Contour/CFI"
@@ -6454,8 +6454,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 72093,
-            "size_human": "70.40 KB",
+            "size_bytes": 81544,
+            "size_human": "79.63 KB",
             "description": "CONTOUR Remote Imager/Spectrometer (CRISP) bands and filter-only",
             "svo_instruments": [
               "Contour/CRISP"
@@ -6484,8 +6484,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 27031,
-            "size_human": "26.40 KB",
+            "size_bytes": 28198,
+            "size_human": "27.54 KB",
             "description": "CoRoT asteroseismology (AS) and exoplanet transit (PF) channels",
             "svo_instruments": [
               "Corot/Corot"
@@ -6524,8 +6524,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 49549,
-            "size_human": "48.39 KB",
+            "size_bytes": 55227,
+            "size_human": "53.93 KB",
             "description": "DDO intermediate-band system (Mann & von Braun 2015 and ADPS)",
             "svo_instruments": [
               "GCPD/DDO"
@@ -6691,8 +6691,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 21571,
-            "size_human": "21.07 KB",
+            "size_bytes": 23414,
+            "size_human": "22.87 KB",
             "description": "Deep Near-Infrared Survey (DENIS) I (Gunn-i), J and Ks channels",
             "svo_instruments": [
               "DENIS/DENIS"
@@ -6727,8 +6727,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 63408,
-            "size_human": "61.92 KB",
+            "size_bytes": 67251,
+            "size_human": "65.67 KB",
             "description": "TIRCAM2 near-infrared camera, 3.6m Devasthal Optical Telescope",
             "svo_instruments": [
               "DOT/TIRCAM2"
@@ -6765,8 +6765,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 65470,
-            "size_human": "63.94 KB",
+            "size_bytes": 70426,
+            "size_human": "68.78 KB",
             "description": "DSCOVR Earth Polychromatic Imaging Camera (EPIC) ten UV-NIR bands",
             "svo_instruments": [
               "DSCOVR/EPIC"
@@ -6801,8 +6801,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 64369,
-            "size_human": "62.86 KB",
+            "size_bytes": 68890,
+            "size_human": "67.28 KB",
             "description": "Dawn Framing Camera clear and seven narrow-band filters",
             "svo_instruments": [
               "Dawn/FC"
@@ -6848,8 +6848,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 252933,
-            "size_human": "247.00 KB",
+            "size_bytes": 262792,
+            "size_human": "256.63 KB",
             "description": "Deep Impact High Resolution Instrument visible CCD filters",
             "svo_instruments": [
               "DeepImpact/HRI-VIS"
@@ -6871,8 +6871,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 19600,
-            "size_human": "19.14 KB",
+            "size_bytes": 21437,
+            "size_human": "20.93 KB",
             "description": "Deep Impact Impactor Targeting Sensor visible CCD, unfiltered",
             "svo_instruments": [
               "DeepImpact/ITS-VIS"
@@ -6912,8 +6912,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 200402,
-            "size_human": "195.71 KB",
+            "size_bytes": 210258,
+            "size_human": "205.33 KB",
             "description": "Deep Impact Medium Resolution Instrument visible CCD filters",
             "svo_instruments": [
               "DeepImpact/MRI-VIS"
@@ -6943,8 +6943,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 94189,
-            "size_human": "91.98 KB",
+            "size_bytes": 96402,
+            "size_human": "94.14 KB",
             "description": "Earth Radiation Budget Experiment (ERBE) longwave, shortwave, total",
             "svo_instruments": [
               "ERBS/ERBE"
@@ -7020,8 +7020,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 13702,
-            "size_human": "13.38 KB",
+            "size_bytes": 15165,
+            "size_human": "14.81 KB",
             "description": "EROS-B Earth observation satellite panchromatic band",
             "svo_instruments": [
               "EROS/EROS-B"
@@ -7052,8 +7052,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 19582,
-            "size_human": "19.12 KB",
+            "size_bytes": 22104,
+            "size_human": "21.59 KB",
             "description": "ERS-1 Along Track Scanning Radiometer (ATSR-1) channels",
             "svo_instruments": [
               "ERS/ATSR1"
@@ -7081,8 +7081,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 39791,
-            "size_human": "38.86 KB",
+            "size_bytes": 43548,
+            "size_human": "42.53 KB",
             "description": "ERS-2 Along Track Scanning Radiometer (ATSR-2) channels",
             "svo_instruments": [
               "ERS/ATSR2"
@@ -7640,7 +7640,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 3943269,
+            "size_bytes": 3942549,
             "size_human": "3.76 MB",
             "description": "European Southern Observatory filter database, by ESO filter number",
             "svo_instruments": []
@@ -7673,8 +7673,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 49260,
-            "size_human": "48.11 KB",
+            "size_bytes": 53443,
+            "size_human": "52.19 KB",
             "description": "Envisat Advanced Along Track Scanning Radiometer (AATSR) channels",
             "svo_instruments": [
               "Envisat/AATSR"
@@ -7710,8 +7710,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 81227,
-            "size_human": "79.32 KB",
+            "size_bytes": 88842,
+            "size_human": "86.76 KB",
             "description": "Envisat Medium Resolution Imaging Spectrometer (MERIS) 15 bands",
             "svo_instruments": [
               "Envisat/MERIS"
@@ -7752,8 +7752,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 299353,
-            "size_human": "292.34 KB",
+            "size_bytes": 253696,
+            "size_human": "247.75 KB",
             "description": "Euclid NISP Y, J, H passbands and blue/red slitless grisms",
             "svo_instruments": [
               "Euclid/NISP",
@@ -7776,8 +7776,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 43955,
-            "size_human": "42.92 KB",
+            "size_bytes": 45469,
+            "size_human": "44.40 KB",
             "description": "Euclid VIS visible camera broad band I_E",
             "svo_instruments": [
               "Euclid/VIS"
@@ -7813,8 +7813,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 65265,
-            "size_human": "63.74 KB",
+            "size_bytes": 69746,
+            "size_human": "68.11 KB",
             "description": "CaSSIS colour and stereo camera filters, ExoMars Trace Gas Orbiter",
             "svo_instruments": [
               "ExoMars/CaSSIS"
@@ -7870,8 +7870,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 190006,
-            "size_human": "185.55 KB",
+            "size_bytes": 203399,
+            "size_human": "198.63 KB",
             "description": "KeplerCam on FLWO 1.2m: Harris BVRI, SDSS ugriz and narrow bands",
             "svo_instruments": [
               "FLWO/KeplerCam"
@@ -7893,8 +7893,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 17650,
-            "size_human": "17.24 KB",
+            "size_bytes": 18822,
+            "size_human": "18.38 KB",
             "description": "MEarth-North M-dwarf transit survey custom iz passband",
             "svo_instruments": [
               "FLWO/MEarth"
@@ -7928,8 +7928,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 39209,
-            "size_human": "38.29 KB",
+            "size_bytes": 43444,
+            "size_human": "42.43 KB",
             "description": "FY-1D Multi-channel Visible and Infrared Scanning Radiometer (MVISR)",
             "svo_instruments": [
               "FengYun/FY1D-MVISR"
@@ -7958,8 +7958,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 46738,
-            "size_human": "45.64 KB",
+            "size_bytes": 51237,
+            "size_human": "50.04 KB",
             "description": "FY-2C Visible and Infrared Spin Scan Radiometer (VISSR) IR channels",
             "svo_instruments": [
               "FengYun/FY2C-VISSR"
@@ -7988,8 +7988,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 43474,
-            "size_human": "42.46 KB",
+            "size_bytes": 47974,
+            "size_human": "46.85 KB",
             "description": "FY-2D Visible and Infrared Spin Scan Radiometer (VISSR) IR channels",
             "svo_instruments": [
               "FengYun/FY2D-VISSR"
@@ -8192,8 +8192,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 293894,
-            "size_human": "287.01 KB",
+            "size_bytes": 306447,
+            "size_human": "299.26 KB",
             "description": "FY-3A Infra-Red Atmospheric Sounder (IRAS), 26 channels",
             "svo_instruments": [
               "FengYun/FY3A-IRAS"
@@ -8234,8 +8234,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 128969,
-            "size_human": "125.95 KB",
+            "size_bytes": 138977,
+            "size_human": "135.72 KB",
             "description": "FY-3A Medium Resolution Spectral Imager (MERSI), 20 channels",
             "svo_instruments": [
               "FengYun/FY3A-MERSI"
@@ -8282,8 +8282,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 398151,
-            "size_human": "388.82 KB",
+            "size_bytes": 410703,
+            "size_human": "401.08 KB",
             "description": "FY-3B Infra-Red Atmospheric Sounder (IRAS), 26 channels",
             "svo_instruments": [
               "FengYun/FY3B-IRAS"
@@ -8323,8 +8323,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 88882,
-            "size_human": "86.80 KB",
+            "size_bytes": 98437,
+            "size_human": "96.13 KB",
             "description": "FY-3B Medium Resolution Spectral Imager (MERSI), 19 of 20 channels",
             "svo_instruments": [
               "FengYun/FY3B-MERSI"
@@ -8355,8 +8355,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 65121,
-            "size_human": "63.59 KB",
+            "size_bytes": 70533,
+            "size_human": "68.88 KB",
             "description": "FY-3B Visible and Infra-Red Radiometer (VIRR), 10 channels",
             "svo_instruments": [
               "FengYun/FY3B-VIRR"
@@ -8403,8 +8403,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 369548,
-            "size_human": "360.89 KB",
+            "size_bytes": 382102,
+            "size_human": "373.15 KB",
             "description": "FY-3C Infra-Red Atmospheric Sounder (IRAS), 26 channels",
             "svo_instruments": [
               "FengYun/FY3C-IRAS"
@@ -8445,8 +8445,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 78364,
-            "size_human": "76.53 KB",
+            "size_bytes": 88371,
+            "size_human": "86.30 KB",
             "description": "FY-3C Medium Resolution Spectral Imager (MERSI), 20 channels",
             "svo_instruments": [
               "FengYun/FY3C-MERSI"
@@ -8474,8 +8474,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 37919,
-            "size_human": "37.03 KB",
+            "size_bytes": 41991,
+            "size_human": "41.01 KB",
             "description": "FY-3C Visible and Infra-Red Radiometer (VIRR), 7 of 10 channels",
             "svo_instruments": [
               "FengYun/FY3C-VIRR"
@@ -8642,8 +8642,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 18783,
-            "size_human": "18.34 KB",
+            "size_bytes": 21528,
+            "size_human": "21.02 KB",
             "description": "Planet Flock-3p PS Blue, Green, Red and NIR spectral responses",
             "svo_instruments": [
               "Flock/PS3p"
@@ -8744,8 +8744,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 39390,
-            "size_human": "38.47 KB",
+            "size_bytes": 39337,
+            "size_human": "38.42 KB",
             "description": "Planet Flock 2k satellites (launched 2017): Blue, Green, Red, NIR",
             "svo_instruments": [
               "Flock/PS2k"
@@ -8774,8 +8774,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 40829,
-            "size_human": "39.87 KB",
+            "size_bytes": 40749,
+            "size_human": "39.79 KB",
             "description": "Planet Flock 2p Doves (launched 2016): Blue, Green, Red, NIR",
             "svo_instruments": [
               "Flock/PS2p"
@@ -8807,8 +8807,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 76754,
-            "size_human": "74.96 KB",
+            "size_bytes": 81741,
+            "size_human": "79.83 KB",
             "description": "Planet SuperDove (PSB.SD) imager, 5 of its 8 bands",
             "svo_instruments": [
               "Flock/SuperDove"
@@ -8870,8 +8870,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 254447,
-            "size_human": "248.48 KB",
+            "size_bytes": 258256,
+            "size_human": "252.20 KB",
             "description": "Gaia DR2 passbands (Evans et al. 2018)",
             "svo_instruments": [
               "GAIA/GAIA2"
@@ -8899,8 +8899,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 267423,
-            "size_human": "261.16 KB",
+            "size_bytes": 269969,
+            "size_human": "263.64 KB",
             "description": "Gaia DR2 revised passbands (Evans et al. 2018)",
             "svo_instruments": [
               "GAIA/GAIA2r"
@@ -8928,8 +8928,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 149731,
-            "size_human": "146.22 KB",
+            "size_bytes": 152230,
+            "size_human": "148.66 KB",
             "description": "Gaia DR3 passbands + BP bright/faint (Ma\u00edz Apell\u00e1niz & Weiler 2018)",
             "svo_instruments": [
               "GAIA/GAIA3"
@@ -8953,7 +8953,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 37808,
+            "size_bytes": 37804,
             "size_human": "36.92 KB",
             "description": "Gaia pre-launch passbands (Jordi et al. 2010)",
             "svo_instruments": [
@@ -8983,8 +8983,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 45222,
-            "size_human": "44.16 KB",
+            "size_bytes": 47053,
+            "size_human": "45.95 KB",
             "description": "GALEX far-UV (FUV) and near-UV (NUV) imaging bands",
             "svo_instruments": [
               "GALEX/GALEX"
@@ -9052,8 +9052,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 497204,
-            "size_human": "485.55 KB",
+            "size_bytes": 515024,
+            "size_human": "502.95 KB",
             "description": "GCOM-C Second-Generation Global Imager (SGLI) channels",
             "svo_instruments": [
               "GCOM-C/SGLI"
@@ -9084,8 +9084,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 25883,
-            "size_human": "25.28 KB",
+            "size_bytes": 28106,
+            "size_human": "27.45 KB",
             "description": "Cape UcBV system (Arp 1958): GCPD ADPS and revised curves",
             "svo_instruments": [
               "GCPD/Cape"
@@ -9110,8 +9110,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 26533,
-            "size_human": "25.91 KB",
+            "size_bytes": 28846,
+            "size_human": "28.17 KB",
             "description": "Kron-Cousins R and I bands from the GCPD (ADPS and revised)",
             "svo_instruments": [
               "GCPD/Cousins",
@@ -9135,8 +9135,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 21352,
-            "size_human": "20.85 KB",
+            "size_bytes": 22820,
+            "size_human": "22.29 KB",
             "description": "Kron-Eggen R and I bands from the GCPD",
             "svo_instruments": [
               "GCPD/Eggen"
@@ -9171,8 +9171,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 54433,
-            "size_human": "53.16 KB",
+            "size_bytes": 61052,
+            "size_human": "59.62 KB",
             "description": "Geneva seven-colour system (U B1 B B2 V1 V G) from the GCPD",
             "svo_instruments": [
               "GCPD/Geneva",
@@ -9205,8 +9205,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 41834,
-            "size_human": "40.85 KB",
+            "size_bytes": 46674,
+            "size_human": "45.58 KB",
             "description": "Johnson UBVRIJKLMN broad-band system from the GCPD (ADPS)",
             "svo_instruments": [
               "GCPD/JHKLMN"
@@ -9248,8 +9248,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 78994,
-            "size_human": "77.14 KB",
+            "size_bytes": 87755,
+            "size_human": "85.70 KB",
             "description": "Johnson UBV, R and I in several GCPD realisations, incl. Landolt",
             "svo_instruments": [
               "GCPD/Johnson"
@@ -9282,8 +9282,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 48217,
-            "size_human": "47.09 KB",
+            "size_bytes": 52260,
+            "size_human": "51.04 KB",
             "description": "Str\u00f6mgren uvby intermediate-band system (GCPD and generic curves)",
             "svo_instruments": [
               "GCPD/Stromgren"
@@ -9318,8 +9318,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 56520,
-            "size_human": "55.20 KB",
+            "size_bytes": 63150,
+            "size_human": "61.67 KB",
             "description": "Vilnius seven-colour intermediate-band system from the GCPD",
             "svo_instruments": [
               "GCPD/Vilnius"
@@ -9348,8 +9348,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 39988,
-            "size_human": "39.05 KB",
+            "size_bytes": 43968,
+            "size_human": "42.94 KB",
             "description": "Sternberg WBVR four-colour system (Tien Shan) from the GCPD",
             "svo_instruments": [
               "GCPD/WBVR"
@@ -9375,8 +9375,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 27595,
-            "size_human": "26.95 KB",
+            "size_bytes": 30188,
+            "size_human": "29.48 KB",
             "description": "Walraven VBLUW five-band system (Leiden Southern Station), GCPD",
             "svo_instruments": [
               "GCPD/Walraven"
@@ -9405,8 +9405,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 34698,
-            "size_human": "33.88 KB",
+            "size_bytes": 38577,
+            "size_human": "37.67 KB",
             "description": "Washington C, M, T1, T2 system, photoelectric and photographic",
             "svo_instruments": [
               "GCPD/Washington"
@@ -9453,8 +9453,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 646433,
-            "size_human": "631.28 KB",
+            "size_bytes": 646411,
+            "size_human": "631.26 KB",
             "description": "Advanced Baseline Imager (ABI) PFM/FM1 on GOES-16, 16 channels",
             "svo_instruments": [
               "GOES/ABI1"
@@ -9504,8 +9504,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 911814,
-            "size_human": "890.44 KB",
+            "size_bytes": 911704,
+            "size_human": "890.34 KB",
             "description": "Advanced Baseline Imager (ABI) FM2 on GOES-17, plus 81 K IR SRFs",
             "svo_instruments": [
               "GOES/ABI2"
@@ -9542,8 +9542,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 510900,
-            "size_human": "498.93 KB",
+            "size_bytes": 510884,
+            "size_human": "498.91 KB",
             "description": "Advanced Baseline Imager (ABI) FM3 on GOES-18, 16 channels",
             "svo_instruments": [
               "GOES/ABI3"
@@ -9582,8 +9582,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 571841,
-            "size_human": "558.44 KB",
+            "size_bytes": 571824,
+            "size_human": "558.42 KB",
             "description": "Advanced Baseline Imager (ABI) FM4 on GOES-19, 16 channels",
             "svo_instruments": [
               "GOES/ABI4"
@@ -9629,8 +9629,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 660485,
-            "size_human": "645.00 KB",
+            "size_bytes": 661301,
+            "size_human": "645.80 KB",
             "description": "GOES-10 five-channel Imager, per-detector and scan-side SRFs",
             "svo_instruments": [
               "GOES/Imager10"
@@ -9731,7 +9731,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 1189343,
+            "size_bytes": 1189721,
             "size_human": "1.13 MB",
             "description": "GOES-12 five-channel Imager, per-detector and scan-side SRFs",
             "svo_instruments": [
@@ -9786,7 +9786,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 3191863,
+            "size_bytes": 3191833,
             "size_human": "3.04 MB",
             "description": "GOES-13 five-channel Imager, per-detector and scan-side SRFs",
             "svo_instruments": []
@@ -9830,8 +9830,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 3517632,
-            "size_human": "3.35 MB",
+            "size_bytes": 3523059,
+            "size_human": "3.36 MB",
             "description": "GOES-14 five-channel Imager, per-detector and scan-side SRFs",
             "svo_instruments": [
               "GOES/Imager14"
@@ -9879,7 +9879,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 3294015,
+            "size_bytes": 3294413,
             "size_human": "3.14 MB",
             "description": "GOES-15 five-channel Imager, per-detector and scan-side SRFs",
             "svo_instruments": [
@@ -9926,8 +9926,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 858655,
-            "size_human": "838.53 KB",
+            "size_bytes": 858630,
+            "size_human": "838.51 KB",
             "description": "GOES-8 five-channel Imager, per-detector and scan-side SRFs",
             "svo_instruments": [
               "GOES/Imager8"
@@ -9982,7 +9982,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 1134727,
+            "size_bytes": 1134637,
             "size_human": "1.08 MB",
             "description": "GOES-9 five-channel Imager, per-detector and scan-side SRFs",
             "svo_instruments": [
@@ -10138,7 +10138,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 3054857,
+            "size_bytes": 3054597,
             "size_human": "2.91 MB",
             "description": "GOES-10 19-channel Sounder, per-detector SRFs",
             "svo_instruments": [
@@ -10357,8 +10357,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 1897729,
-            "size_human": "1.81 MB",
+            "size_bytes": 1923273,
+            "size_human": "1.83 MB",
             "description": "GOES-12 19-channel Sounder, per-detector SRFs",
             "svo_instruments": [
               "GOES/Sounder12"
@@ -12331,7 +12331,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 1929095,
+            "size_bytes": 1927132,
             "size_human": "1.84 MB",
             "description": "Hubble ACS Solar Blind Channel (SBC) far-UV filters and prisms",
             "svo_instruments": [
@@ -12790,7 +12790,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 1269822,
+            "size_bytes": 1266374,
             "size_human": "1.21 MB",
             "description": "Hubble NICMOS camera 1 near-infrared filters",
             "svo_instruments": [
@@ -12835,7 +12835,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 1565189,
+            "size_bytes": 1561741,
             "size_human": "1.49 MB",
             "description": "Hubble NICMOS camera 2 near-infrared filters",
             "svo_instruments": [
@@ -16231,8 +16231,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 5630993,
-            "size_human": "5.37 MB",
+            "size_bytes": 5620338,
+            "size_human": "5.36 MB",
             "description": "JWST NIRCam near-infrared camera filters, plus previous NJM curves",
             "svo_instruments": [
               "JWST/NIRCam"
@@ -18047,7 +18047,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 4825747,
+            "size_bytes": 4823715,
             "size_human": "4.60 MB",
             "description": "LSSTCam ugrizy filters for LSST: full throughput and filter only",
             "svo_instruments": [
@@ -22840,8 +22840,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 487530,
-            "size_human": "476.10 KB",
+            "size_bytes": 486005,
+            "size_human": "474.61 KB",
             "description": "Zwicky Transient Facility g, r, i filters, Palomar 48-inch Schmidt",
             "svo_instruments": []
           }
@@ -23687,8 +23687,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 300701,
-            "size_human": "293.65 KB",
+            "size_bytes": 296340,
+            "size_human": "289.39 KB",
             "description": "Roman WFI detector-averaged: 8 filters, grism, prism (+ old curves)",
             "svo_instruments": [
               "Roman/WFI"
@@ -26413,8 +26413,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 414216,
-            "size_human": "404.51 KB",
+            "size_bytes": 412361,
+            "size_human": "402.70 KB",
             "description": "Subaru Hyper Suprime-Cam (HSC) prime-focus camera filters",
             "svo_instruments": [
               "Subaru/HSC"
@@ -29345,7 +29345,7 @@
       "svo_records": {
         "dir": "/media/data3/MESA/SED_Tools/source_evidence/svo-archive/parsed",
         "ids": 11066,
-        "sha256": "92fc4f50d83fff90fab764ff9be6d6c6a164bb555c10c084a4ee679875125168"
+        "sha256": "64d781fec058e4bc5e7250289c8d1f96581540172701919bc6d6fb0fae897080"
       },
       "references": 401,
       "unresolved_references": 0,
