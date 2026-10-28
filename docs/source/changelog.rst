@@ -812,6 +812,11 @@ Each item says what 0.4.1 did, what 0.5.0 does, and when it happens.
   manifest's ``archived_bands``. Other files left out are named in a
   warning, and an index file listing a missing curve raises
   ``FileNotFoundError``.
+- ``filter_metadata.released_mesa_reads()`` returned True for a curve with
+  no column row (line 1 a sample), although released MESA skips that line
+  and so loses the curve's first sample; it now returns False. A curve whose
+  first line is blank, followed by samples, still passes: MESA skips the
+  blank line and reads every sample. No curve NJM serves has either layout.
 
 **Original-source builders**
 
