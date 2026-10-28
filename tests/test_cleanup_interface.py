@@ -381,7 +381,9 @@ def test_filters_info_exit_status(filters, monkeypatch, source_errors, catalogue
             "published_bands": {}, "components": [], "partial_components": {}, "buildable": [],
             "component_status": "", "component_availability": {"status": "unreviewed", "builder": None},
             "missing_files": [], "errors": source_errors, "atmosphere": False, "platform": "ground",
-            "detector_type": "", "detector_type_sources": {}, "availability_source": "svo"}
+            "detector_type": "", "detector_type_sources": {}, "availability_source": "svo",
+            "sources_failed": {"svo": [e.split(": ", 1)[1] for e in source_errors]} if source_errors else {},
+            "fallback_from": []}
     monkeypatch.setattr(filters, "available", classmethod(lambda cls, *args, **kwargs: info))
     monkeypatch.setattr(cli, "_catalogue_entry", lambda *args, **kwargs:
                         {"info": None, "properties": None, "errors": catalogue_errors})

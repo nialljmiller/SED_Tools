@@ -210,16 +210,24 @@ class FilterLibrary:
                              "missing files" + (f" ({failure})" if failure else "")) from failure
 
     def available(self, facility, instrument, *, remote=True):
+        """What can be requested for an instrument, from the first source that can say.
+
+        Besides the description it has ``availability_source`` (``local``,
+        ``njm``, ``original``, ``svo`` or ``unknown``), ``errors`` (each
+        failure as ``"NJM: ..."`` or ``"SVO: ..."``), ``sources_failed``
+        (``{"njm": [...], "svo": [...]}``, the same failures by source) and
+        ``fallback_from`` (the sources whose failure only made a later one
+        answer: they leave nothing out).
+        """
         directory = self.root / facility / instrument
         if (directory / "manifest.json").is_file() or list(directory.glob("*.dat")):
-            info = InstrumentManifest.load(directory).describe(directory)
-            return dict(info, availability_source="local", errors=[])
-        errors = []
+            return _availability(InstrumentManifest.load(directory).describe(directory), "local", {})
+        failed = {}
         if remote:
             try:
                 info = self._njm_availability(facility, instrument)
             except (RequestException, ValueError) as exc:
-                errors.append(f"NJM: {exc}")
+                failed.setdefault("njm", []).append(str(exc))
             else:
                 if info is not None:
                     return info
@@ -232,7 +240,7 @@ class FilterLibrary:
                               "DetectorType": spec.detector_type,
                               "DetectorTypeSource": "assumed"} for band in spec.filters}
             manifest = InstrumentManifest.from_headers(facility, instrument, headers)
-            return dict(manifest.describe(), availability_source="original", errors=errors)
+            return _availability(manifest.describe(), "original", failed)
         if remote:
             try:
                 rows = self.svo_filters(facility, instrument)
@@ -240,7 +248,7 @@ class FilterLibrary:
                 for row in rows:
                     record = self.svo.metadata_client.get_filter(row.filter_id)
                     if record is None:
-                        errors.append(f"SVO: no metadata for {row.filter_id}")
+                        failed.setdefault("svo", []).append(f"no metadata for {row.filter_id}")
                         headers[row.band] = {}
                     else:
                         headers[row.band] = dict(svo_components_header(record.components),
@@ -248,11 +256,11 @@ class FilterLibrary:
                                                  DetectorTypeSource="svo" if record.detector_type else "assumed")
                 if headers:
                     manifest = InstrumentManifest.from_headers(facility, instrument, headers)
-                    return dict(manifest.describe(), availability_source="svo", errors=errors)
+                    return _availability(manifest.describe(), "svo", failed)
             except (ComponentError, RequestException, RuntimeError) as exc:
-                errors.append(f"SVO: {exc}")
+                failed.setdefault("svo", []).append(str(exc))
         manifest = InstrumentManifest.from_headers(facility, instrument, {})
-        return dict(manifest.describe(), availability_source="unknown", errors=errors)
+        return _availability(manifest.describe(), "unknown", failed)
 
     def _njm_availability(self, facility, instrument):
         """What NJM serves for an instrument (under its name as given, else NJM's spelling), or None.
@@ -268,7 +276,7 @@ class FilterLibrary:
         for fac, inst in spellings:
             data = self.mirror.fetch_manifest(fac, inst)
             if data:
-                return dict(InstrumentManifest.from_dict(data).describe(), availability_source="njm", errors=[])
+                return _availability(InstrumentManifest.from_dict(data).describe(), "njm", {})
             listed = self.mirror.discover_filters(fac, inst)
             if listed:
                 return self._njm_without_manifest(fac, inst, listed)
@@ -278,19 +286,19 @@ class FilterLibrary:
         """Describe an instrument NJM serves without ``manifest.json``, from its ``info.json``."""
         bands = [curve_file(name)[:-len(".dat")] for name in listed]
         headers = {band: {} for band in bands}
-        errors = []
+        failed = {}
         try:
             info = json.loads(self.mirror._catalogue_file(facility, instrument, "info.json"))
         except (RequestException, ValueError) as exc:
             if _status(exc) != 404:
-                errors.append(f"NJM: {exc}")
+                failed["njm"] = [str(exc)]
         else:
             for band in bands:
                 curve = (info["bands"].get(band) or {}).get("curve")
                 if isinstance(curve, dict):
                     headers[band] = {key: value for key, value in curve.items() if isinstance(value, str)}
         manifest = InstrumentManifest.from_headers(facility, instrument, headers)
-        return dict(manifest.describe(), availability_source="njm", errors=errors,
+        return dict(_availability(manifest.describe(), "njm", failed),
                     notes=["no component manifest: NJM serves only the published curves, described "
                            "here from their headers"])
 
@@ -531,6 +539,22 @@ class FilterLibrary:
                              "sources": inst["sources"],
                              "component_availability": component_availability(fac["key"], inst["key"])})
         return {"instruments": rows, "errors": errors}
+
+
+#: How available() names each source in its ``errors`` strings.
+_SOURCE_LABELS = {"njm": "NJM", "svo": "SVO"}
+
+
+def _availability(description, source, failed):
+    """``description`` with ``availability_source``, ``errors``, ``sources_failed`` and ``fallback_from``.
+
+    ``failed`` maps a source to its failure messages, in the order they happened.
+    """
+    errors = [f"{_SOURCE_LABELS[name]}: {message}" for name, messages in failed.items() for message in messages]
+    fallback = [name for name in failed if name != source] if source != "unknown" else []
+    return dict(description, availability_source=source, errors=errors,
+                sources_failed={name: list(messages) for name, messages in failed.items()},
+                fallback_from=fallback)
 
 
 def _refuse_uncovered_bands(manifest, roles, bands):

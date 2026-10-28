@@ -2077,13 +2077,13 @@ def _cmd_filters_info(args, parser):
 
 
 def _availability_errors(info: dict) -> List[str]:
-    """The errors that leave an availability report incomplete.
+    """The failures that leave an availability report incomplete.
 
-    When another source answered, NJM's failure only made it fall back, and is not one of them.
+    A source in ``fallback_from`` (NJM, say, when SVO answered instead) leaves nothing out.
     """
-    answered = info.get("availability_source")
-    return [error for error in info.get("errors", [])
-            if not (error.startswith("NJM") and answered not in (None, "unknown", "njm"))]
+    fallback = set(info.get("fallback_from") or ())
+    return [message for source, messages in (info.get("sources_failed") or {}).items()
+            if source not in fallback for message in messages]
 
 
 def _cmd_filters_search(args, parser):

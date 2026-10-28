@@ -647,3 +647,25 @@ def test_filters_info_says_when_the_catalogue_is_the_cached_copy(capsys):
                                                      "njm_unreachable": True}})
     out = " ".join(capsys.readouterr().out.split())  # the field wraps to the terminal
     assert "Catalogue : from the cached copy, checked 2025-10-27 21:20 UTC; NJM could not be asked" in out
+
+
+# ----------------------------------------------------------------------
+# Item 27: available() says which source failures were only fallbacks
+# ----------------------------------------------------------------------
+def test_available_reports_failures_by_source_and_which_were_fallbacks(tmp_path, monkeypatch):
+    from sed_tools.svo_filter_grabber import FilterRow
+
+    library = FilterLibrary(tmp_path / "filters")
+    library.mirror = SimpleNamespace(is_available=lambda: True, fetch_manifest=lambda f, i: (_ for _ in ()).throw(
+        requests.ConnectionError("Connection refused")))
+    monkeypatch.setattr(library, "_njm_spelling", lambda f, i: None)
+    monkeypatch.setattr(library, "svo_filters", lambda f, i: [FilterRow("Fac/Cam.g", "g", "Fac", "Cam", ""),
+                                                             FilterRow("Fac/Cam.r", "r", "Fac", "Cam", "")])
+    library.svo = SimpleNamespace(metadata_client=SimpleNamespace(
+        get_filter=lambda fid: None if fid.endswith(".r") else SimpleNamespace(components=None, detector_type="photon")))
+    info = library.available("Fac", "Cam")
+    assert info["availability_source"] == "svo"
+    assert info["errors"] == ["NJM: Connection refused", "SVO: no metadata for Fac/Cam.r"]  # as before
+    assert info["sources_failed"] == {"njm": ["Connection refused"], "svo": ["no metadata for Fac/Cam.r"]}
+    assert info["fallback_from"] == ["njm"]
+    assert cli._availability_errors(info) == ["no metadata for Fac/Cam.r"]  # NJM's failure left nothing out

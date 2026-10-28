@@ -726,7 +726,8 @@ def test_auto_training_takes_trials_and_epochs(monkeypatch):
 # NJM unreachable: its catalogue is an extra
 # ----------------------------------------------------------------------
 def test_filters_info_does_not_fail_when_only_njm_is_unreachable(monkeypatch, capsys):
-    info = _availability(errors=["NJM: Connection refused"], availability_source="svo")
+    info = _availability(errors=["NJM: Connection refused"], availability_source="svo",
+                         sources_failed={"njm": ["Connection refused"]}, fallback_from=["njm"])
     monkeypatch.setattr(Filters, "available", classmethod(lambda cls, *a, **k: info))
     monkeypatch.setattr(cli, "_catalogue_entry", lambda *a, **k: {
         "info": None, "properties": None, "errors": ["Cannot fetch index.json from NJM: Connection refused"]})
@@ -737,7 +738,8 @@ def test_filters_info_does_not_fail_when_only_njm_is_unreachable(monkeypatch, ca
 
 
 def test_filters_info_fails_when_no_source_answered(monkeypatch):
-    info = _availability(errors=["NJM: Connection refused", "SVO: timed out"], availability_source="unknown")
+    info = _availability(errors=["NJM: Connection refused", "SVO: timed out"], availability_source="unknown",
+                         sources_failed={"njm": ["Connection refused"], "svo": ["timed out"]}, fallback_from=[])
     monkeypatch.setattr(Filters, "available", classmethod(lambda cls, *a, **k: info))
     monkeypatch.setattr(cli, "_catalogue_entry", lambda *a, **k: {"info": None, "properties": None, "errors": []})
     assert run_cli(monkeypatch, "filters-info", "Fac/Cam") == 1
