@@ -225,8 +225,9 @@ class FilterLibrary:
         if not builder.publishes:
             return None, None, "its builder makes only the separate components, not the published curves"
         if installed is not None and not _same_directory(installed, built):
-            return None, None, (f"its builder writes {names[0]}/{names[1]}, which would be a second copy "
-                                f"beside the installed {installed}")
+            why = f"its builder writes {names[0]}/{names[1]}, which would be a second copy beside {installed}"
+            logger.warning("The original source of %s/%s is not used: %s", facility, instrument, why)
+            return None, None, why
         return builder, built, None
 
     @staticmethod

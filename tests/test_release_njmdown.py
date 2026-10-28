@@ -218,6 +218,21 @@ def test_a_complete_folder_under_another_spelling_is_used_as_it_is(tmp_path, bun
     assert library.published("Planck", "HFI") == legacy
 
 
+def test_a_builder_that_would_write_beside_an_installed_spelling_is_not_run(tmp_path, bundled, monkeypatch,
+                                                                            caplog):
+    root = tmp_path / "filters"
+    legacy = write_set(root / "Herschel" / "Pacs_", ["blue"], manifest_bands=["blue", "red"])  # incomplete
+    library = FilterLibrary(root)
+    library.mirror = NJM_DOWN
+    library.svo = svo_stub({}, {}, down=True)
+    monkeypatch.setattr(filter_library, "get_builder", lambda name: pytest.fail("the builder was run"))
+    with caplog.at_level(logging.WARNING), pytest.raises(ComponentError) as raised:
+        library.published("Herschel", "PACS")
+    assert f"its builder writes Herschel/PACS, which would be a second copy beside {legacy}" in str(raised.value)
+    assert "The original source of Herschel/PACS is not used" in caplog.text
+    assert sorted(p.name for p in (root / "Herschel").iterdir()) == ["Pacs_"]
+
+
 def test_two_installed_spellings_stop_unless_one_is_exact(tmp_path):
     root = tmp_path / "filters"
     write_set(root / "Gemini" / "GMOS-N", ["g"])
