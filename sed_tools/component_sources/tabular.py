@@ -215,6 +215,8 @@ class _SavedSession:
 
 def build(filter_root, *, instrument, raw=None, session=None, **kwargs) -> Path:
     """Build one instrument; ``raw`` may hold the saved research inventory."""
+    if instrument not in SOURCES:
+        raise ValueError(f"tabular has no instrument {instrument!r}; choose one of: {', '.join(SOURCES)}")
     spec = SOURCES[instrument]
     if raw is not None:
         session = _SavedSession(raw, instrument, session or Session())

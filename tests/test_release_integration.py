@@ -530,3 +530,13 @@ def test_original_source_requests_use_a_ten_second_connect_timeout():
     assert CONNECT_TIMEOUT == 10.0
     assert [t[0] for t in timeouts] == [CONNECT_TIMEOUT] * 4
     assert SkyCalcClient(session=session).timeout[0] == CONNECT_TIMEOUT
+
+
+# ----------------------------------------------------------------------
+# Item 29: an unknown tabular instrument is a clear ValueError
+# ----------------------------------------------------------------------
+def test_tabular_names_its_instruments_for_an_unknown_one(tmp_path):
+    from sed_tools.component_sources import tabular
+
+    with pytest.raises(ValueError, match=r"tabular has no instrument 'NOPE'; choose one of: HAWKI"):
+        tabular.build(tmp_path, instrument="NOPE")
