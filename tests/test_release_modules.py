@@ -466,3 +466,95 @@ def test_combine_menu_counts_every_spectrum_of_a_hash_headed_lookup(tmp_path, mo
 
     out = capsys.readouterr().out
     assert "1. hashed (3 model spectra)" in out and "2. plain (3 model spectra)" in out
+
+
+# ---------------------------------------------------------------------
+# P9 (module side): atmosphere and coverage errors say what to choose, not Python syntax
+# ---------------------------------------------------------------------
+
+def _camera(root, *, default_site=None, sites=()):
+    """Test/Camera with one band g, a Gaussian at 5000 Å, and the given atmosphere sites."""
+    from sed_tools.filter_components import InstrumentManifest
+    from sed_tools.filter_metadata import PHOTON, write_filter_file
+
+    inst = root / "Test" / "Camera"
+    inst.mkdir(parents=True)
+    wl = np.linspace(4000.0, 6000.0, 201)
+    write_filter_file(inst / "g.dat", wl, np.exp(-0.5 * ((wl - 5000) / 200) ** 2), detector_type=PHOTON,
+                      source="svo", wavelength_unit="Angstrom", extra={"Components": "filter"})
+    manifest = InstrumentManifest.load(inst)
+    manifest.facility, manifest.instrument = "Test", "Camera"
+    manifest.ground_based = True
+    manifest.default_site = default_site
+    manifest.atmosphere_sites = list(sites)
+    manifest.outside_range = "error"
+    manifest.save(inst)
+    return inst
+
+
+def _write_team_site(root, name, entries, **kw):
+    """A team atmosphere site; entries are (airmass, pwv, (wavelengths, transmission))."""
+    from sed_tools.component_sources._common import DerivedCurve, SiteAtmosphere, write_site
+    from sed_tools.filter_components import TEAM
+
+    def table(wavelength, transmission):
+        return lambda session: (np.array(wavelength), np.array(transmission))
+
+    curves = [(am, pwv, DerivedCurve("u", table(*curve), "")) for am, pwv, curve in entries]
+    write_site(root, SiteAtmosphere(site=name, altitude_m=1000.0, entries=curves, source="test team",
+                                    kind=TEAM, model="MODTRAN", model_version="not stated",
+                                    citation="Someone 2001", **kw), None)
+
+
+@pytest.mark.parametrize("site_kw, match", [
+    ({}, r"^Test/Camera band g: .* covers 4500-7000 A but the band spans"),
+    ({"outside_range": "error", "coverage_tolerance": 1e-4}, r"^Test/Camera band g: .* lies beyond it"),
+])
+def test_coverage_error_names_the_band(tmp_path, site_kw, match):
+    # Used to be "am1.00_pwv1.dat covers 9000-56000 A but 70.25% of the band lies beyond it".
+    from sed_tools.filter_components import FILTER, ComponentCoverageError, compose_band
+
+    inst = _camera(tmp_path / "filters", default_site="short_team")
+    _write_team_site(tmp_path / "atm", "short_team", [(1.2, None, ([4500.0, 7000.0], [0.8, 0.8]))], **site_kw)
+    with pytest.raises(ComponentCoverageError, match=match):
+        compose_band(inst, "g", [FILTER], atmosphere={"airmass": 1.2}, atmosphere_root=tmp_path / "atm")
+
+
+def test_several_sites_error_lists_the_sites_to_choose_from():
+    # Used to be "... sites ['hopkins_2mass', 'ctio_2mass']; choose one with atmosphere={'site': ..., ...}".
+    from sed_tools.filter_components import AtmosphereSpec, ComponentError, InstrumentManifest, resolve_atmosphere
+
+    twomass = InstrumentManifest(facility="2MASS", instrument="2MASS", bands=["J"], ground_based=True)
+    with pytest.raises(ComponentError) as excinfo:
+        resolve_atmosphere(twomass, AtmosphereSpec(None, None))
+    assert str(excinfo.value) == "2MASS/2MASS has several atmosphere sites; choose a site: hopkins_2mass, ctio_2mass"
+
+
+def test_missing_conditions_error_says_what_the_site_has(tmp_path):
+    # Used to be "No cached atmosphere for hopkins_2mass_am1.2; fetch or generate the requested conditions".
+    from sed_tools.filter_components import AtmosphereSpec, ComponentError, atmosphere_file
+
+    flat = ([3000.0, 7000.0], [0.9, 0.9])
+    _write_team_site(tmp_path, "plexus_team", [(None, None, flat)])
+    _write_team_site(tmp_path, "grid_team", [(1.0, 2.5, flat), (1.2, 2.5, flat), (1.2, 5.0, flat)])
+    cases = [
+        (AtmosphereSpec("plexus_team", 1.2),
+         "Site plexus_team has no atmosphere for airmass 1.2; it has unstated airmass (the atmosphere as published)"),
+        (AtmosphereSpec("grid_team", 1.5, 2.5),
+         "Site grid_team has no atmosphere for airmass 1.5 and PWV 2.5 mm; it has airmass 1, 1.2 with PWV 2.5, 5 mm"),
+        (AtmosphereSpec("nowhere", 1.2), "No atmosphere of site nowhere is cached; fetch or generate the site first"),
+    ]
+    for spec, message in cases:
+        with pytest.raises(ComponentError) as excinfo:
+            atmosphere_file(tmp_path, spec)
+        assert str(excinfo.value) == message
+
+
+def test_atmosphere_without_conditions_error_has_no_python_syntax(tmp_path):
+    from sed_tools.filter_components import ATMOSPHERE, FILTER, ComponentError, compose_band
+
+    inst = _camera(tmp_path / "filters", default_site="short_team")
+    with pytest.raises(ComponentError) as excinfo:
+        compose_band(inst, "g", [FILTER, ATMOSPHERE], atmosphere_root=tmp_path / "atm")
+    assert str(excinfo.value) == ("Including the atmosphere needs the observing conditions: an airmass, "
+                                  "and a PWV where the site models it")
