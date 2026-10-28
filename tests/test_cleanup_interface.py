@@ -358,15 +358,6 @@ def run_cli(monkeypatch, *argv):
     return cli.main()
 
 
-def test_filters_cite_exits_1_when_any_target_failed(filters, monkeypatch, capsys):
-    result = {"instruments": [{"instrument": "Fac/Cam", "bands": None}], "acknowledgements": [],
-              "references": [{"key": "ref", "used_by": ["Fac/Cam"], "bibtex": "@misc{ref}"}],
-              "errors": ["Other/IR: not cached"]}
-    monkeypatch.setattr(filters, "citations", classmethod(lambda cls, *targets, **kwargs: result))
-    assert run_cli(monkeypatch, "filters-cite", "Fac/Cam", "Other/IR") == 1
-    assert "[filters] Other/IR: not cached" in capsys.readouterr().out
-
-
 @pytest.mark.parametrize("source_errors,catalogue_errors,offline,expected", [
     ([], [], False, 0),
     (["SVO: no metadata for Fac/Cam.g"], [], False, 1),
@@ -639,6 +630,12 @@ def filter_browser(tmp_path, monkeypatch, filters):
 
     monkeypatch.setattr(FilterLibrary, "published", fetch)  # the browser downloads with its own library
     monkeypatch.setattr(cli, "_offer_composition", lambda directory: None)
+    # What the browser describes before asking to download (Filters.available, NJM's catalogue entry).
+    monkeypatch.setattr(FilterLibrary, "available", lambda self, facility, instrument, remote=True: {
+        "facility": facility, "instrument": instrument, "bands": ["g"], "published": "filter",
+        "published_bands": {}, "components": [], "partial_components": {}, "component_status": None,
+        "errors": [], "atmosphere": False, "platform": "ground", "variants": {}})
+    monkeypatch.setattr(cli, "_catalogue_entry", lambda *a, **k: {"info": None, "properties": None, "errors": []})
     return SimpleNamespace(fetched=fetched, listing_errors=listing_errors)
 
 

@@ -34,14 +34,6 @@ def answer(monkeypatch, *replies):
     monkeypatch.setattr("builtins.input", fake_input)
 
 
-def run_cli(monkeypatch, capsys, *argv):
-    from sed_tools import cli
-
-    monkeypatch.setattr(sys, "argv", ["sed-tools", *argv])
-    code = cli.main()
-    return code, capsys.readouterr().out
-
-
 # ----------------------------------------------------------------------
 # 1. Catalogue gaps vs fetch failures
 # ----------------------------------------------------------------------
@@ -82,23 +74,6 @@ def catalogue_files(serve_ir=True):
     return files
 
 
-@pytest.fixture
-def njm_root(tmp_path, monkeypatch):
-    """A filter root whose catalogue is served by a FakeMirror; returns ``(root, install)``."""
-    from sed_tools.api import Filters
-    from sed_tools.filter_catalogue import FilterCatalogue
-
-    monkeypatch.setattr(Filters, "_catalogues", {})
-    root = tmp_path / "filters"
-    root.mkdir()
-
-    def install(files):
-        key = (str(root.resolve()), False)
-        Filters._catalogues[key] = FilterCatalogue(key[0], mirror=FakeMirror(files))
-
-    return root, install
-
-
 def test_search_reports_gaps_apart_from_fetch_failures(tmp_path):
     from sed_tools.filter_catalogue import FilterCatalogue
 
@@ -107,26 +82,6 @@ def test_search_reports_gaps_apart_from_fetch_failures(tmp_path):
     assert list(result["band"]) == ["g", "U", "K"]
     assert result.attrs["gaps"] == ["Fac/Old: NJM has no properties file"]
     assert result.attrs["errors"] == ["Other/IR: NJM does not serve filters/Other/IR/properties.json"]
-
-
-def test_filters_search_exits_1_when_properties_could_not_be_fetched(njm_root, monkeypatch, capsys):
-    root, install = njm_root
-    install(catalogue_files(serve_ir=False))
-    code, out = run_cli(monkeypatch, capsys, "filters-search", "--base", str(root))
-    assert code == 1
-    assert "[filters] Fac/Old: NJM has no properties file" in out
-    assert "[filters] Other/IR: NJM does not serve filters/Other/IR/properties.json" in out
-
-
-def test_filters_search_exits_0_when_there_are_only_gaps(njm_root, monkeypatch, capsys):
-    root, install = njm_root
-    install(catalogue_files())
-    code, out = run_cli(monkeypatch, capsys, "filters-search", "--base", str(root))
-    assert code == 0 and "[filters] Fac/Old: NJM has no properties file" in out
-
-    code, out = run_cli(monkeypatch, capsys, "filters-search", "--base", str(root), "--format", "json")
-    data = json.loads(out)
-    assert code == 0 and data["errors"] == [] and data["gaps"] == ["Fac/Old: NJM has no properties file"]
 
 
 # ----------------------------------------------------------------------

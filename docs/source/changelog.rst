@@ -274,11 +274,11 @@ Component variants, team atmospheres and SkyCalc
 - Component variants: a manifest can list alternative curves for a
   component (a QE per detector coating or epoch, a filter generation,
   per-CCD responses). The default stays in ``components``; a variant is used
-  only when selected (``Filters.fetch(..., variants={"qe": "single_layer"})``,
-  ``Filters.compose``, ``--variant ROLE=NAME``), and its name becomes part of
-  the product's directory name (``filter+qe+qe_single_layer``). NJM downloads
+  only when selected in Python (``Filters.fetch(..., variants={"qe":
+  "single_layer"})``, ``Filters.compose``), and its name becomes part of the
+  product's directory name (``filter+qe+qe_single_layer``). NJM downloads
   fetch the variant files too. ``filters-info`` lists the variants, default
-  first.
+  first, as "Variants (API only)"; the command line does not select them.
 - Team atmospheres are registered as named sites: ``haleakala_ps1`` (PS1),
   ``paranal_vircam`` (VISTA, ESO's model), ``hopkins_2mass`` and
   ``ctio_2mass`` (2MASS PLEXUS), ``apo_sdss`` (SDSS DR7), ``lco_csp`` (CSP),
@@ -354,17 +354,14 @@ Filter properties and colours
 NJM catalogue: search, descriptions and citations without SVO
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Add ``Filters.search()`` and ``sed-tools filters-search`` to find bands in
-  NJM's catalogue by facility, instrument or band name, by wavelength (bands
+- Add ``Filters.search()`` to find bands in NJM's catalogue by facility, instrument or band name, by wavelength (bands
   covering a wavelength or overlapping a range), by pivot or FWHM range, by
   detector type, or by any column of ``properties.json``. The result is a
   pandas DataFrame with one row per band. Names are matched in
   ``index.json`` first, so ``properties.json`` is fetched only for
   instruments that can still match, at most six requests at a time.
   Instruments NJM serves no ``properties.json`` for are listed in
-  ``attrs["gaps"]`` (``"gaps"`` in the JSON output), apart from fetch
-  failures in ``attrs["errors"]``; ``filters-search`` exits 1 only for fetch
-  failures.
+  ``attrs["gaps"]``, apart from fetch failures in ``attrs["errors"]``.
 - Add ``Filters.properties()`` and ``Filters.info()`` for an instrument's
   ``properties.json`` and ``info.json``. Files are cached in
   ``cache/njm/`` beside the filter root and revalidated by ETag when
@@ -373,8 +370,7 @@ NJM catalogue: search, descriptions and citations without SVO
 - ``sed-tools filters-info`` also prints the instrument's description,
   licence and a per-band table of pivot, FWHM, detector type and photometric
   system; ``--json`` adds them under ``catalogue``.
-- Add ``Filters.citations()``, ``Filters.cite()`` and ``sed-tools
-  filters-cite`` to list the references (with BibTeX), the providers'
+- Add ``Filters.citations()`` and ``Filters.cite()`` to list the references (with BibTeX), the providers'
   acknowledgement texts and the licences for chosen instruments or bands, or
   for everything installed. References are merged across instruments by work.
   Entries with no BibTeX on NJM are given as ``%`` comments rather than
@@ -454,14 +450,24 @@ Filter pickers, instrument names and NJM
   in ``index.json``) is shown once, as NJM's, while NJM is reachable. An entry
   only SVO lists takes NJM's name and description from the bundled catalogue
   only when NJM says it is the same product.
-- The pickers show each row as label, description and the sources it can be
-  downloaded from, in the order a download tries them
-  (``[local,njm,original,svo]``), with a legend; NJM is left out of the tags
-  when it cannot be reached. Long labels are cut with an ellipsis, pages fit the terminal,
-  and the longest labels are shown in full (0.4.1 cut every label to 2
-  characters fewer than the longest, so with SVO down GAIA's instruments
-  showed as ``DR2 DR2 GAI GAI``).
+- The pickers keep 0.4.1's numbered columns of names, but show the longest
+  names in full (0.4.1 cut every label to 2 characters fewer than the
+  longest, so with SVO down GAIA's instruments showed as ``DR2 DR2 GAI
+  GAI``); a name is cut with an ellipsis only when the terminal is too
+  narrow for it, and pages fit the terminal.
   Downloading several facilities at once asks for confirmation with a count.
+- Picking an instrument in ``sed-tools filters`` shows a short summary before
+  the download question, from what ``filters-info`` reports: the
+  description, where the download comes from (the installed copy, or NJM,
+  the original source and SVO in download order), the bands, what each
+  curve contains, the separate components and variants, the atmosphere
+  sites and the licence. Declining the download returns to the instrument
+  list (in 0.4.1 it asked "Download another instrument?").
+- The interactive menu gains options 13 (filter set information, as
+  ``filters-info``, for an instrument picked from the lists), 14 (atmosphere
+  models, as ``filters-atmospheres``) and 15 (build a filter curve from an
+  instrument's own parts, with the questions asked after a download).
+  Options 1-12 keep 0.4.1's numbers.
 - The browser downloads with the library it lists from, so NJM is checked and
   reported once per session; each listing error is printed once; an
   unreachable NJM does not count as an incomplete instrument list. The
@@ -487,23 +493,23 @@ Command line
 - Usage errors print the subcommand's own usage line and a plain message
   (no Python names or syntax) and exit 2.
 - New options: ``--flux-unit`` (``grids``, ``rebuild``, ``import``);
-  ``--variant ROLE=NAME`` (``filters``, ``filters-compose``; repeatable);
   ``grids --teff``, ``--logg``, ``--meta`` and ``--wavelength`` (each
   ``LOW HIGH``; NJM, MSG and MAST cut downloads, SVO refuses cuts);
   ``combine --grids NAME ...``; ``ml_generator --trials`` and ``--epochs``
   (with ``--auto``; defaults 20 and 100); the ``filters-atmospheres``
   command. From the 0.4.2 work: ``--atmosphere-site`` and ``--airmass
-  unstated`` (``filters``, ``filters-compose``),
-  ``filters-build-components --archive``, and the ``filters-search`` and
-  ``filters-cite`` commands.
+  unstated`` (``filters``, ``filters-compose``) and
+  ``filters-build-components --archive``. The ``filters-search`` and
+  ``filters-cite`` commands of the 0.4.2 work were not released; use
+  ``Filters.search()`` and ``Filters.cite()``.
 - ``grids`` without a terminal no longer asks: it needs ``--grids``, and
   takes the whole grid unless a cut option is given. In a terminal an
   unparseable range is asked again (0.4.1 took it as no cut).
 - ``filters-info`` shows the variants and every atmosphere site, puts long
   band descriptions under their row, and summarises the licence;
-  ``filters-info``, ``filters-cite`` and ``filters-search`` fit the terminal.
+  its output fits the terminal.
   NJM's catalogue never makes ``filters-info`` fail.
-- The composition prompt offers the variants, asks again on a bad recipe,
+- The composition prompt asks again on a bad recipe,
   detector type, airmass or PWV, defaults the airmass to the site's first
   condition, and offers the bands that can be built when coverage fails.
 - Atmosphere and coverage errors name the band and say what the site has,
@@ -660,6 +666,9 @@ Each item says what 0.4.1 did, what 0.5.0 does, and when it happens.
 - The picker's columns are wider, so labels are shown in full; occasionally
   one fewer column fits.
 - ``run_combine_flow`` prints the same progress lines as ``SED.combine``.
+- The filter-set combination menu counts, for each set, the curves it would
+  combine (those its MESA index file lists, less ``archived_bands``), not
+  every ``.dat`` file beside them.
 - The interactive number questions of the command line, the ML menus and the
   densifier are one (``ui_utils.ask_number``): the airmass and PWV questions
   no longer accept ``nan`` or ``inf``, a blank answer where one is needed says

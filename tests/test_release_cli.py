@@ -1,6 +1,7 @@
 """The 0.5.0 CLI fixes: messages instead of tracebacks, --flux-unit, variants, atmospheres,
 the picker, output width, usage errors, combine and the new options (REPORT_CLI P1-P19)."""
 
+import re
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -121,7 +122,7 @@ def test_menu_returns_after_ctrl_c_in_a_workflow(menu_flows, monkeypatch, capsys
     assert "Interrupted; back to the menu." in capsys.readouterr().out
 
 
-@pytest.mark.parametrize("typed", ["13", "", "x"])
+@pytest.mark.parametrize("typed", ["99", "", "x"])
 def test_menu_says_unknown_option_and_asks_again(monkeypatch, capsys, typed):
     monkeypatch.setattr(cli, "_print_banner", lambda: None)
     answer(monkeypatch, typed, "q")
@@ -238,22 +239,11 @@ def composed(monkeypatch):
     return calls
 
 
-def test_variant_option_is_passed_to_compose_and_fetch(monkeypatch, composed):
-    assert run_cli(monkeypatch, "filters-compose", "Argus/DR280", "--variant", "filter=addem") == 0
-    assert run_cli(monkeypatch, "filters", "Argus/DR280", "--variant", "filter=addem", "--variant", "qe=x") == 0
-    assert composed[0][1]["variants"] == {"filter": "addem"}
-    assert composed[1][1]["variants"] == {"filter": "addem", "qe": "x"}
-
-
-@pytest.mark.parametrize("argv,message", [
-    (["filters-compose", "A/B", "--variant", "addem"], "expected ROLE=NAME, e.g. filter=addem; got 'addem'"),
-    (["filters-compose", "A/B", "--variant", "filter=a", "--variant", "filter=b"], "two filter variants: a and b"),
-    (["filters", "--variant", "filter=a"], "component options require a Facility/Instrument target"),
-])
-def test_bad_variant_options_are_usage_errors(monkeypatch, capsys, composed, argv, message):
+@pytest.mark.parametrize("command", ["filters", "filters-compose"])
+def test_variants_are_chosen_in_the_api_only(monkeypatch, capsys, composed, command):
     with pytest.raises(SystemExit) as stop:
-        run_cli(monkeypatch, *argv)
-    assert stop.value.code == 2 and message in capsys.readouterr().err
+        run_cli(monkeypatch, command, "Argus/DR280", "--variant", "filter=addem")
+    assert stop.value.code == 2 and "unrecognized arguments: --variant filter=addem" in capsys.readouterr().err
     assert composed == []
 
 
@@ -275,24 +265,17 @@ def _availability(**extra):
 def test_availability_lists_variants_with_the_default_marked(capsys):
     cli.print_filter_availability(_availability(variants=ARGUS_VARIANTS))
     out = " ".join(capsys.readouterr().out.split())
-    assert "Variants : filter: production (default), addem (choose with --variant ROLE=NAME)" in out
+    assert "Variants (API only) : filter: production (default), addem" in out
+    assert "--variant" not in out
 
 
-def test_composition_prompt_offers_variants(tmp_path, monkeypatch, composed, capsys):
+def test_composition_prompt_does_not_ask_for_variants(tmp_path, monkeypatch, composed, capsys):
     monkeypatch.setattr(Filters, "available", classmethod(lambda cls, *a, **k: _availability(variants=ARGUS_VARIANTS)))
-    prompts = answer(monkeypatch, "y", "1", "addem", "")
+    prompts = answer(monkeypatch, "y", "1", "")
     cli._offer_composition(tmp_path / "Argus" / "DR280")
-    assert composed[0][1]["variants"] == {"filter": "addem"} and composed[0][1]["components"] == ["filter"]
-    out = capsys.readouterr().out
-    assert "Recipes (or type your own" in out and "Variants of this instrument" not in out
-    assert "filter variant [production]: " in prompts
-
-
-def test_choosing_the_default_variant_selects_none(tmp_path, monkeypatch, composed):
-    monkeypatch.setattr(Filters, "available", classmethod(lambda cls, *a, **k: _availability(variants=ARGUS_VARIANTS)))
-    answer(monkeypatch, "y", "1", "", "")
-    cli._offer_composition(tmp_path / "Argus" / "DR280")
-    assert composed[0][1]["variants"] is None
+    assert composed[0][1]["components"] == ["filter"] and "variants" not in composed[0][1]
+    assert "Recipes (or type your own" in capsys.readouterr().out
+    assert not any("variant" in prompt for prompt in prompts)
 
 
 # ----------------------------------------------------------------------
@@ -421,6 +404,18 @@ def test_filters_atmospheres_lists_every_site(monkeypatch, capsys):
     assert "ctio_2mass" in out and "airmass 'unstated' (as published)" in out and "2MASS team" in out
 
 
+def _summary_inputs(monkeypatch, info=None, catalogue=None):
+    """Stub what the picker's summary reads (FilterLibrary.available, NJM's catalogue entry); returns the calls."""
+    from sed_tools.filter_library import FilterLibrary
+
+    calls = []
+    monkeypatch.setattr(FilterLibrary, "available",
+                        lambda self, f, i, remote=True: calls.append(f"{f}/{i}") or (info or _availability()))
+    monkeypatch.setattr(cli, "_catalogue_entry", lambda *a, **k: catalogue or {
+        "info": None, "properties": None, "errors": ["NJM does not serve it"]})
+    return calls
+
+
 def test_an_installed_instrument_is_not_offered_for_download(tmp_path, monkeypatch, capsys):
     from sed_tools.filter_library import FilterLibrary
 
@@ -430,42 +425,134 @@ def test_an_installed_instrument_is_not_offered_for_download(tmp_path, monkeypat
     monkeypatch.setattr(FilterLibrary, "published_complete", staticmethod(lambda d: True))
     monkeypatch.setattr(FilterLibrary, "published", lambda self, f, i: fetched.append((f, i)) or tmp_path)
     monkeypatch.setattr(cli, "_offer_composition", offered.append)
+    _summary_inputs(monkeypatch)
     prompts = answer(monkeypatch, "1", "n")
-    assert cli._browse_instruments(FilterLibrary(tmp_path), {"key": "Fac", "label": "Fac"}, str(tmp_path), [])
+    download = lambda facility, instrument: cli._offer_download(library, facility, instrument, [])
+    library = FilterLibrary(tmp_path)
+    assert cli._browse_instruments(library, {"key": "Fac", "label": "Fac"}, download)
     assert not any(p.startswith("Download") for p in prompts)
-    assert f"Fac/Cam is installed: {tmp_path / 'Fac' / 'Cam'}" in capsys.readouterr().out
+    # The path is too long for 80 columns, so its place in the filter directory is given.
+    assert "  From       : installed in the filter directory, as Fac/Cam\n" in capsys.readouterr().out
     assert fetched == [("Fac", "Cam")] and offered == [tmp_path]
 
 
 # ----------------------------------------------------------------------
-# The picker
+# The picker: 0.4.1's numbered columns of names
 # ----------------------------------------------------------------------
-def test_picker_rows_show_label_description_and_sources(monkeypatch):
-    rows = cli._picker_rows([
-        {"key": "DR2", "label": "DR2", "description": "Gaia DR2 passbands (Evans et al. 2018)",
-         "sources": ["svo", "njm"]},
-        {"key": "GAIA3", "label": "GAIA3", "sources": ["svo"]},
-    ])
-    assert rows[0] == "DR2    Gaia DR2 passbands (Evans et al. 2018)  [njm,svo]"
-    assert rows[1] == "GAIA3  " + " " * 38 + "  [svo]"  # the tags line up
+GAIA_INSTRUMENTS = [
+    {"key": name, "label": name, "fetch_key": name, "sources": sources, "description": description}
+    for name, sources, description in [
+        ("DR2", ["njm", "original"], "Gaia DR2 passbands (Evans et al. 2018)"),
+        ("DR2r", ["njm", "original"], "Gaia DR2 revised passbands (Evans et al. 2018)"),
+        ("GAIA", ["njm"], "Gaia DR3 passbands + BP bright/faint (Maíz Apellániz & Weiler 2018)"),
+        ("GAIA0", ["njm"], "Gaia pre-launch passbands (Jordi et al. 2010)"),
+        ("Gaia2m", ["svo"], "Revised passbands for Gaia DR2.")]]
 
 
-def test_picker_rows_cut_the_description_and_keep_the_tag(monkeypatch):
-    long_label = "A very long instrument label indeed"
-    rows = cli._picker_rows([{"key": "x", "label": long_label, "description": "word " * 40,
-                              "sources": ["original", "local", "svo"]}])
-    assert len(rows[0]) <= 80 - 16
-    assert rows[0].endswith("…  [local,original,svo]")
-    assert rows[0].startswith("A very long instrument labe…  word")
+@pytest.fixture
+def gaia(tmp_path, monkeypatch):
+    from sed_tools.filter_library import FilterLibrary
+
+    monkeypatch.setattr(FilterLibrary, "facilities", lambda self: {"entries": [
+        {"key": "GAIA", "label": "GAIA", "fetch_key": "GAIA", "sources": ["njm", "svo"],
+         "description": "Gaia mission."}], "errors": []})
+    monkeypatch.setattr(FilterLibrary, "instruments", lambda self, facility: {
+        "entries": GAIA_INSTRUMENTS, "errors": []})
+    monkeypatch.setattr(FilterLibrary, "mirror", SimpleNamespace(is_available=lambda: True))
+    fetched = []
+    monkeypatch.setattr(FilterLibrary, "published", lambda self, f, i: fetched.append(f"{f}/{i}") or tmp_path)
+    monkeypatch.setattr(cli, "_offer_composition", lambda directory: None)
+    return fetched
 
 
-def test_picker_rows_degrade_without_descriptions_or_sources():
-    assert cli._picker_rows([{"key": "A", "label": "A"}, {"key": "B"}]) == ["A", "B"]
+def test_the_pickers_show_names_only(gaia, tmp_path, monkeypatch, capsys):
+    answer(monkeypatch, "1", "q")
+    assert cli.run_filters_flow(str(tmp_path)) == 0
+    out = capsys.readouterr().out
+    assert "   1. GAIA" in out and "Gaia mission" not in out
+    assert not any(text in out for text in ("[njm", "[svo", "Tags show", "Evans et al."))
+    assert cli._picker_labels(GAIA_INSTRUMENTS + [{"key": "Other"}]) == [
+        "DR2", "DR2r", "GAIA", "GAIA0", "Gaia2m", "Other"]
 
 
-def test_picker_rows_leave_out_an_unreachable_njm():
-    library = SimpleNamespace(mirror=SimpleNamespace(is_available=lambda: False))
-    assert cli._picker_rows([{"key": "A", "label": "A", "sources": ["njm", "svo"]}], library) == ["A  [svo]"]
+@pytest.mark.parametrize("columns", ["80", "120"])
+def test_the_instrument_picker_shows_full_names_in_columns(gaia, tmp_path, monkeypatch, capsys, columns):
+    monkeypatch.setenv("COLUMNS", columns)
+    answer(monkeypatch, "1", "q")
+    cli.run_filters_flow(str(tmp_path))
+    rows = capsys.readouterr().out.split("Instruments for GAIA\n")[1].splitlines()[1:3]
+    assert re.fullmatch(r"\s+1\. DR2\s+3\. GAIA\s+5\. Gaia2m\s*", rows[0])  # 0.4.1 cut these to 'D', 'GA', 'Gaia'
+    assert re.fullmatch(r"\s+2\. DR2r\s+4\. GAIA0\s*", rows[1])
+    assert all(len(row) <= int(columns) for row in rows)
+
+
+def test_picking_an_instrument_shows_its_summary_before_the_download_question(gaia, tmp_path, monkeypatch, capsys):
+    info = _availability(facility="GAIA", instrument="DR2", bands=["BP", "G", "RP"], published="filter+optics+qe",
+                         components=[], buildable=[], platform="space",
+                         component_status="ESA publishes only total passbands (Riello et al. 2021).")
+    catalogue = {"info": {"licence": LICENCE, "references": ["a", "b"]}, "properties": None, "errors": []}
+    looked_up = _summary_inputs(monkeypatch, info, catalogue)
+    shown = []
+    monkeypatch.setattr("builtins.input", lambda prompt="": shown.append((prompt, capsys.readouterr().out))
+                        or ["1", "1", "y", "n", "q"][len(shown) - 1])
+    assert cli.run_filters_flow(str(tmp_path)) == 0
+    prompt, summary = shown[2]  # what was printed between picking DR2 and the download question
+    assert prompt == "Download GAIA/DR2? [Y/n] "
+    assert summary.splitlines() == [
+        "",
+        "GAIA/DR2  (3 bands)",
+        "  Gaia DR2 passbands (Evans et al. 2018)",
+        "  From       : NJM, then the original source",
+        "  Note       : ESA publishes only total passbands (Riello et al. 2021).",
+        "  Bands      : BP, G, RP",
+        "  Components : filter+optics+qe in each curve",
+        "  Separate   : none identified",
+        "  Atmosphere : not applicable (space-based)",
+        "  Licence    : attribution. MIT License Copyright (c) 2026 The University. http…",
+        "  Cite       : 2 references; in Python: Filters.cite('GAIA/DR2')"]
+    assert looked_up == ["GAIA/DR2"] and gaia == ["GAIA/DR2"]
+
+
+def test_declining_the_download_goes_back_to_the_instrument_list(gaia, tmp_path, monkeypatch, capsys):
+    _summary_inputs(monkeypatch)
+    prompts = answer(monkeypatch, "1", "2", "n", "b", "q")
+    assert cli.run_filters_flow(str(tmp_path)) == 0
+    assert prompts == ["> ", "> ", "Download GAIA/DR2r? [Y/n] ", "> ", "> "]
+    assert gaia == []
+    assert capsys.readouterr().out.count("Instruments for GAIA") == 2
+
+
+def test_the_summary_fits_80_columns_in_about_a_dozen_lines():
+    info = _availability(bands=[f"F{n}W" for n in range(100, 700, 10)], variants=ARGUS_VARIANTS,
+                         notes=["no component manifest: NJM serves only the published curves, described here "
+                                "from their headers"], atmosphere=True, atmosphere_site="paranal",
+                         atmosphere_sites=["paranal", "lasilla"], published="filter+instrument+atmosphere")
+    catalogue = {"info": {"licence": LICENCE, "references": ["a"], "description": "Long. Text."},
+                 "properties": None, "errors": []}
+    lines = cli._pick_summary("Fac/Cam", {"description": "word " * 30}, info, catalogue, "SVO")
+    assert all(len(line) <= 80 for line in lines) and len(lines) <= 13
+    flat = "\n".join(lines)
+    assert "Fac/Cam  (60 bands)" in flat and "… (" in flat and "more)" in flat
+    assert "Atmosphere : own sites: paranal (default), lasilla" in flat
+    assert "Variants   : API only; filter: production (default), addem" in flat
+    assert "filters-cite" not in flat and "--variant" not in flat
+
+
+def test_the_summary_says_where_a_download_comes_from():
+    up = SimpleNamespace(mirror=SimpleNamespace(is_available=lambda: True), root=Path("/data/filters"))
+    down = SimpleNamespace(mirror=SimpleNamespace(is_available=lambda: False))
+    entry = {"sources": ["svo", "local", "njm", "original"]}
+    assert cli._download_origin(up, entry, None) == "NJM, then the original source, then SVO"
+    assert cli._download_origin(down, entry, None) == "the original source, then SVO; NJM is unreachable"
+    assert cli._download_origin(up, {"sources": ["local"]}, None) == "only the installed copy, which is incomplete"
+    assert cli._download_origin(up, entry, up.root / "GAIA" / "DR2") == "installed in /data/filters/GAIA/DR2"
+    up.root = Path("/a/data/directory/long/enough/that/its/path/does/not/fit/beside/the/name/filters")
+    origin = cli._download_origin(up, entry, up.root / "GAIA" / "DR2")
+    assert origin == "installed in the filter directory, as GAIA/DR2"
+    lines = cli._pick_summary("GAIA/DR2", {}, _availability(), {"info": None, "properties": None, "errors": []},
+                              origin)
+    assert "  From       : installed in the filter directory, as GAIA/DR2" in lines
+    assert all(len(line) <= 80 for line in lines)
 
 
 def test_picker_cuts_long_labels_with_an_ellipsis(monkeypatch, capsys):
@@ -488,6 +575,7 @@ def catalogue(tmp_path, monkeypatch):
     fetched = []
     monkeypatch.setattr(FilterLibrary, "published", lambda self, f, i: fetched.append(f"{f}/{i}") or tmp_path)
     monkeypatch.setattr(cli, "_offer_composition", lambda directory: None)
+    _summary_inputs(monkeypatch)
     return fetched
 
 
@@ -506,6 +594,94 @@ def test_downloading_several_facilities_asks_first_with_the_count(catalogue, tmp
 
 
 # ----------------------------------------------------------------------
+# Menu entries 13 and 14: filter set information and atmosphere models
+# ----------------------------------------------------------------------
+def test_menu_13_shows_filters_info_for_a_picked_instrument(gaia, monkeypatch, capsys):
+    monkeypatch.setattr(cli, "_print_banner", lambda: None)
+    looked_up = _summary_inputs(monkeypatch, _availability(facility="GAIA", instrument="GAIA0"), {
+        "info": {"licence": LICENCE, "references": ["a"]}, "properties": None, "errors": []})
+    prompts = answer(monkeypatch, "13", "1", "4", "n", "q", "q")
+    assert cli._run_menu() == 0
+    out = capsys.readouterr().out
+    assert "\nGAIA/GAIA0  (2 bands)\n  Published curves contain" in out
+    assert "Cite                     : 1 references; in Python: Filters.cite('GAIA/GAIA0')" in out
+    assert looked_up == ["GAIA/GAIA0"] and gaia == []  # nothing downloaded
+    assert prompts[4] == "> "  # back at the facility picker, then the menu
+
+
+def test_menu_14_lists_the_atmosphere_models(monkeypatch, capsys):
+    monkeypatch.setattr(cli, "_print_banner", lambda: None)
+    monkeypatch.setattr(Filters, "atmospheres", classmethod(lambda cls, *a, **k: {
+        "paranal": {"airmass": [1.0], "pwv": [2.5], "unstated_airmass": False, "kind": "derived"}}))
+    answer(monkeypatch, "14", "q")
+    assert cli._run_menu() == 0
+    out = capsys.readouterr().out
+    assert " 13) Filter set information\n 14) Atmosphere models for filters\n" in out
+    assert "paranal  (derived)" in out and "airmass 1; pwv 2.5 mm" in out
+
+
+@pytest.fixture
+def lsst(tmp_path, monkeypatch):
+    """Facility LSST with instrument LSST, whose curves download to tmp_path/LSST/LSST; returns the compose calls."""
+    from sed_tools.filter_library import FilterLibrary
+
+    monkeypatch.setattr(cli, "_print_banner", lambda: None)
+    monkeypatch.setattr(FilterLibrary, "facilities", lambda self: {"entries": [
+        {"key": "LSST", "label": "LSST", "sources": ["njm"]}], "errors": []})
+    monkeypatch.setattr(FilterLibrary, "instruments", lambda self, facility: {"entries": [
+        {"key": "LSST", "label": "LSST", "sources": ["njm"]}], "errors": []})
+    monkeypatch.setattr(FilterLibrary, "published", lambda self, f, i: tmp_path / f / i)
+    composed = []
+    monkeypatch.setattr(Filters, "compose", classmethod(lambda cls, *a, **k: composed.append((a, k))))
+    return composed
+
+
+def test_menu_15_builds_a_curve_from_the_parts_of_a_picked_instrument(lsst, tmp_path, monkeypatch, capsys):
+    parts = _availability(facility="LSST", instrument="LSST", buildable=["filter", "filter+optics+qe"],
+                          components=["filter", "optics", "qe"])
+    _summary_inputs(monkeypatch, parts)
+    monkeypatch.setattr(cli, "_installed_availability", lambda directory: parts)
+    prompts = answer(monkeypatch, "15", "1", "1", "2", "", "q")
+    assert cli._run_menu() == 0
+    assert " 15) Build a filter curve from its parts (filter, optics, camera, atmosphere)\n" in capsys.readouterr().out
+    assert prompts[3:5] == ["Choose a recipe [1]: ", "Detector convention [inherit], energy or photon: "]
+    assert lsst == [((tmp_path / "LSST" / "LSST",), {"filter_root": tmp_path, "components": ["filter", "optics", "qe"],
+                                                     "detector_type": None, "allow_heavy": False, "atmosphere": None})]
+
+
+def test_menu_15_says_in_one_line_when_an_instrument_has_no_parts(lsst, monkeypatch, capsys):
+    _summary_inputs(monkeypatch, _availability(facility="LSST", instrument="LSST", buildable=[], components=[],
+                                               component_availability={"status": "total-only", "builder": None}))
+    monkeypatch.setattr(cli, "_installed_availability", lambda directory: pytest.fail("nothing is downloaded"))
+    answer(monkeypatch, "15", "1", "1", "q")
+    assert cli._run_menu() == 0
+    out = capsys.readouterr().out
+    assert "\nLSST/LSST has no separate parts to build a filter curve from.\n" in out and lsst == []
+
+
+def test_the_combine_wizard_counts_only_the_curves_combine_takes(tmp_path):
+    listed = tmp_path / "NJM" / "Cam"
+    listed.mkdir(parents=True)
+    for band in ("g", "r", "g_svo", "r_old"):
+        (listed / f"{band}.dat").write_text("Wavelength,Transmission\n1,1\n2,1\n")
+    (listed / "Cam").write_text("g.dat\nr.dat\n")
+    archived = tmp_path / "NJM" / "Archived"
+    archived.mkdir()
+    for band in ("H", "H_svo"):
+        (archived / f"{band}.dat").write_text("Wavelength,Transmission\n1,1\n2,1\n")
+    (archived / "manifest.json").write_text('{"bands": ["H"], "archived_bands": {"H_svo": {}}}')
+    assert cli._FilterSetOption(listed, tmp_path).label == "NJM/Cam (2 filters)"
+    assert cli._FilterSetOption(archived, tmp_path).label == "NJM/Archived (1 filters)"
+
+
+def test_the_removed_search_and_cite_commands_are_usage_errors(monkeypatch, capsys):
+    for command in ("filters-search", "filters-cite"):
+        with pytest.raises(SystemExit) as stop:
+            run_cli(monkeypatch, command)
+        assert stop.value.code == 2 and f"invalid choice: '{command}'" in capsys.readouterr().err
+
+
+# ----------------------------------------------------------------------
 # P12/P13: output width
 # ----------------------------------------------------------------------
 LICENCE = {"redistribution": "attribution",
@@ -520,8 +696,7 @@ def test_filters_info_shows_the_licence_first_sentence_and_url(capsys):
     assert LICENCE["url"] in out  # never split, although it is longer than the room left
     flat = " ".join(out.split())
     assert "attribution. MIT License Copyright (c) 2026 The University." in flat
-    assert "Permission is hereby" not in flat
-    assert "Full text: sed-tools filters-cite Argus/DR280" in flat
+    assert "Permission is hereby" not in flat and "filters-cite" not in flat
 
 
 def test_band_descriptions_wrap_to_the_terminal(capsys):
@@ -531,32 +706,6 @@ def test_band_descriptions_wrap_to_the_terminal(capsys):
     cli.print_catalogue_entry("GAIA/GAIA", {"info": info, "properties": {"bands": props}, "errors": []})
     lines = capsys.readouterr().out.splitlines()
     assert all(len(line) <= 80 for line in lines) and len(lines) > 2
-
-
-def test_citations_wrap_but_bibtex_does_not():
-    url = "https://irsa.ipac.caltech.edu/data_use_terms-with-hyphens.html"
-    text = ("Citations for A/B\n\nLicences\n- A/B: public. " + "word " * 30 + url + "\n\nBibTeX\n@article{x,\n"
-            "  title = {" + "long " * 30 + "}\n}\n")
-    wrapped = cli._wrap_citations(text, 80)
-    head, bibtex = wrapped.split("\nBibTeX\n")
-    assert all(len(line) <= 80 for line in head.splitlines())
-    assert url in head and head.splitlines()[-1].startswith("  ")
-    assert bibtex == text.split("\nBibTeX\n")[1]
-
-
-def test_search_tables_fit_80_columns():
-    import pandas as pd
-
-    frame = pd.DataFrame({"facility": ["GAIA", "Paranal"], "instrument": ["DR2", "VISTA_and_a_long_name"],
-                          "band": ["Gbp_bright_extra_long", "Ks"], "WavelengthPivot": [5117.15, 21521.6],
-                          "FWHM": [2684.89, 2620.0], "WavelengthMin": [3287.5, 19000.0],
-                          "WavelengthMax": [6770.0, 24000.0], "DetectorType": ["photon", None]})
-    text = cli._table_text(frame, 80)
-    lines = text.splitlines()
-    assert all(len(line) <= 80 for line in lines)
-    assert lines[0].split() == ["facility", "instrument", "band", "Pivot", "FWHM", "Min", "Max", "Detector"]
-    assert "21521.6" in text and "-" in lines[2]
-    assert cli._table_text(frame, 200).splitlines()[0].split()[3] == "WavelengthPivot"
 
 
 # ----------------------------------------------------------------------
@@ -571,8 +720,6 @@ def test_usage_errors_show_the_subcommand_usage(monkeypatch, capsys):
 
 
 @pytest.mark.parametrize("argv,message", [
-    (["filters-search", "--pivot", "x", "-"], "expected a number, or '-' for an open end; got 'x'"),
-    (["filters-search", "--where", "foo"], "--where expects KEY=VALUE or KEY=LOW:HIGH, got 'foo'"),
     (["filters-compose", "A/B", "--airmass", "high"], "expected a number or 'unstated', got 'high'"),
     (["ml_generator", "--auto"], "--auto needs --library and --output"),
     (["ml_generator", "--trials", "3"], "--trials and --epochs apply to --auto training only"),
