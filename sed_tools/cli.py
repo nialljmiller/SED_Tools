@@ -1687,9 +1687,10 @@ def run_ml_completer_flow(
 
 def run_config_flow() -> None:
     show_config()
-    print("\nEnter new data directory path, or press Enter to keep current:")
+    print("\nEnter new data directory path, or press Enter (or q) to keep current:")
     raw = input("> ").strip()
-    if not raw:
+    # q and b leave the setting alone, as in the pickers; a directory with that name is ./q
+    if not raw or raw.lower() in ("q", "b"):
         return
     # set_data_dir handles the "move existing data?" prompt itself.
     set_data_dir(raw, interactive=True)
