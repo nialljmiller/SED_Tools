@@ -633,7 +633,7 @@ def test_published_carries_every_source_reason(tmp_path, monkeypatch, caplog):
         raise fm.SVOUnreachableError("SVO Filter Profile Service unreachable")
 
     library = FilterLibrary(tmp_path)
-    library.mirror = SimpleNamespace(is_available=lambda: True, download_filters=njm_download)
+    library.mirror = SimpleNamespace(is_available=lambda: True, _download_set=njm_download)
     library.svo = SimpleNamespace(list_facilities=lambda: [Facility("Fac", "Fac")],
                                   list_instruments=lambda key: [Instrument("Fac", "Cam", "Cam")],
                                   list_filters=lambda fac, inst: [FilterRow("Fac/Cam.g", "g", "Fac", "Cam", "")],

@@ -81,7 +81,8 @@ def test_download_stops_at_first_unreachable_filter(tmp_path):
 
 def test_filter_library_reports_unreachable_svo(tmp_path):
     library = FilterLibrary(tmp_path)
-    library.mirror = SimpleNamespace(fetch_manifest=lambda facility, instrument: None)
+    library.mirror = SimpleNamespace(fetch_manifest=lambda facility, instrument: None,
+                                     discover_filters=lambda facility, instrument: [])
     library.svo = SVOFilterBrowser(base_dir=str(tmp_path), session=DownSession())
     info = library.available("NoSuchFacility", "NoSuchCamera")
     assert info["availability_source"] == "unknown"

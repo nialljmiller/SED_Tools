@@ -507,7 +507,8 @@ def test_svo_outage_keeps_njm_and_original_catalogues(tmp_path):
     library.svo = SimpleNamespace(list_facilities=lambda: (_ for _ in ()).throw(RuntimeError("offline")))
     library.mirror = SimpleNamespace(is_available=lambda: True,
                                      discover_facilities=lambda: ["MirrorOnly"],
-                                     discover_instruments=lambda f: ["Camera"])
+                                     discover_instruments=lambda f: ["Camera"],
+                                     _instrument_records=lambda f: {"Camera": {}})
     inventory = library.inventory()
     assert any(r["facility"] == "MirrorOnly" and r["instrument"] == "Camera" for r in inventory["instruments"])
     assert any("SVO" in error for error in inventory["errors"])

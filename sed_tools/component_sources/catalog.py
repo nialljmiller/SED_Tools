@@ -18,9 +18,10 @@ told why only the published curve is offered.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Optional, Tuple, Union
+from typing import Dict, Iterable, Optional, Tuple, Union
 
 @dataclass(frozen=True)
 class BuilderRef:
@@ -139,13 +140,51 @@ STATUS: Dict[Tuple[str, str], Tuple[str, str]] = {
 }
 
 
+def name_key(name: str) -> str:
+    """A name compared without case or punctuation: ``S-PLUS``, ``S_PLUS`` and ``s plus`` match."""
+    return re.sub(r"[^a-z0-9]", "", name.casefold())
+
+
+def match_name(name: str, names: Iterable[str]) -> Optional[str]:
+    """The one of ``names`` that is ``name``, else the only one equal to it under :func:`name_key`.
+
+    None when nothing matches, or when several names match only under
+    :func:`name_key` (NJM serves both ``Sony_NEX5N`` and ``Sony_NEX_5N``).
+    """
+    names = list(names)
+    if name in names:
+        return name
+    found = [candidate for candidate in names if name_key(candidate) == name_key(name)]
+    return found[0] if len(found) == 1 else None
+
+
+def registered_name(facility: str, instrument: str) -> Optional[Tuple[str, str]]:
+    """The ``BUILDERS_FOR`` spelling of an instrument (``Gemini/GMOS-N`` -> ``Gemini/GMOS_N``), or None."""
+    pairs = list(BUILDERS_FOR)
+    fac = match_name(facility, {f for f, _ in pairs})
+    if fac is None:
+        return None
+    inst = match_name(instrument, [i for f, i in pairs if f == fac])
+    return None if inst is None else (fac, inst)
+
+
 def builder_for(facility: str, instrument: str) -> Optional[BuilderRef]:
-    return BUILDERS_FOR.get((facility, instrument))
+    """The builder of an instrument, matched as :func:`registered_name` does."""
+    names = registered_name(facility, instrument)
+    return None if names is None else BUILDERS_FOR[names]
 
 
 def status_for(facility: str, instrument: str) -> Optional[Tuple[str, str]]:
-    """Status of an instrument; ``(facility, "*")`` entries cover every instrument of a facility."""
-    return STATUS.get((facility, instrument)) or STATUS.get((facility, "*"))
+    """Status of an instrument; ``(facility, "*")`` entries cover every instrument of a facility.
+
+    Names are matched as :func:`match_name` does.
+    """
+    pairs = list(STATUS)
+    fac = match_name(facility, {f for f, _ in pairs})
+    if fac is None:
+        return None
+    inst = match_name(instrument, [i for f, i in pairs if f == fac and i != "*"])
+    return STATUS.get((fac, inst)) or STATUS.get((fac, "*"))
 
 
 def component_availability(facility: str, instrument: str) -> Dict[str, object]:

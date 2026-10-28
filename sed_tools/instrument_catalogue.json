@@ -1,0 +1,1604 @@
+{
+ "facilities": {
+  "2MASS": {
+   "instruments": {
+    "2MASS": {}
+   }
+  },
+  "AAO": {
+   "instruments": {
+    "AAO": {},
+    "GSC2": {}
+   }
+  },
+  "ADEOS": {
+   "instruments": {
+    "GLI": {},
+    "OCTS": {},
+    "POLDER": {}
+   }
+  },
+  "AKARI": {
+   "instruments": {
+    "FIS": {},
+    "IRC": {}
+   }
+  },
+  "APEX": {
+   "instruments": {
+    "LABOCA": {},
+    "SABOCA": {}
+   }
+  },
+  "APO": {
+   "instruments": {
+    "ARCTIC": {},
+    "Balzers": {},
+    "Blocking": {},
+    "Broad": {},
+    "FNAL": {},
+    "Gunn": {},
+    "Hodge": {},
+    "MSSSO": {},
+    "NICFPS": {},
+    "NMSU": {},
+    "Narrow": {},
+    "SDSS": {},
+    "UCO": {},
+    "York": {}
+   }
+  },
+  "ARCHEOPS": {
+   "instruments": {
+    "ARCHEOPS": {}
+   }
+  },
+  "ARGO": {
+   "instruments": {
+    "ARGO": {}
+   }
+  },
+  "ATLAS": {
+   "instruments": {
+    "ATLAS": {}
+   }
+  },
+  "AWS": {
+   "instruments": {
+    "AWS": {}
+   }
+  },
+  "Akatsuki": {
+   "instruments": {
+    "IR1": {},
+    "IR2": {},
+    "LIR": {},
+    "UVI": {}
+   }
+  },
+  "AlSat1": {
+   "instruments": {
+    "SLIM6": {}
+   }
+  },
+  "Aqua": {
+   "instruments": {
+    "AMSUA": {},
+    "MODIS": {}
+   }
+  },
+  "Argus": {
+   "instruments": {
+    "DR280": {},
+    "System": {}
+   }
+  },
+  "Astrosat": {
+   "instruments": {
+    "UVIT": {}
+   }
+  },
+  "BICEP": {
+   "instruments": {
+    "BICEP": {},
+    "BICEP3": {},
+    "BK18": {}
+   }
+  },
+  "BLAST": {
+   "instruments": {
+    "BLAST": {},
+    "BLASTPol": {},
+    "BLAST_TNG": {}
+   }
+  },
+  "BOK": {
+   "instruments": {
+    "90prime": {},
+    "BASS": {},
+    "SCUSS": {}
+   }
+  },
+  "BOOMERANG": {
+   "instruments": {
+    "BNA": {},
+    "BOOMERANG": {}
+   }
+  },
+  "Beijing1": {
+   "instruments": {
+    "SLIM6": {}
+   }
+  },
+  "Bepi_Colombo": {
+   "instruments": {
+    "HRIC": {},
+    "STC": {}
+   }
+  },
+  "CAHA": {
+   "instruments": {
+    "Astralux": {},
+    "BUSCA": {},
+    "CAHA": {},
+    "LAICA": {},
+    "MUNICS": {},
+    "Omega2000": {},
+    "PANIC": {},
+    "PlanetCam2": {}
+   }
+  },
+  "CASTOR": {
+   "instruments": {
+    "CASTOR": {}
+   }
+  },
+  "CFHT": {
+   "instruments": {
+    "CFH12k": {},
+    "CFHT": {},
+    "MOCAM": {},
+    "MegaCam": {},
+    "Megaprime": {},
+    "QUIRC": {},
+    "WFC": {},
+    "Wircam": {}
+   }
+  },
+  "CHEOPS": {
+   "instruments": {
+    "CHEOPS": {}
+   }
+  },
+  "CMP_SAI": {
+   "instruments": {
+    "SPP": {}
+   }
+  },
+  "COBE": {
+   "instruments": {
+    "DIRBE": {}
+   }
+  },
+  "COMS": {
+   "instruments": {
+    "GOCI": {}
+   }
+  },
+  "CSST": {
+   "instruments": {
+    "CSS_OS": {},
+    "MCI": {}
+   }
+  },
+  "CSTAR": {
+   "instruments": {
+    "CSTAR": {}
+   }
+  },
+  "CTIO": {
+   "instruments": {
+    "ANDICAM": {},
+    "BLANK": {},
+    "CTIO": {},
+    "DECam": {},
+    "Goodman": {},
+    "ISPI": {},
+    "MosaicII": {},
+    "OSIRIS": {},
+    "SAMI": {},
+    "SMARTS": {},
+    "SOI": {},
+    "S_PLUS": {},
+    "Spartan": {},
+    "Y4KCam": {}
+   }
+  },
+  "Cameras": {
+   "instruments": {
+    "Arriflex_D21": {},
+    "Canon_10D": {},
+    "Canon_1DMarkII": {},
+    "Canon_1DMarkIII": {},
+    "Canon_20D": {},
+    "Canon_300D": {},
+    "Canon_30D": {},
+    "Canon_350D": {},
+    "Canon_40D": {},
+    "Canon_450D_IR": {},
+    "Canon_500D": {},
+    "Canon_50D": {},
+    "Canon_5D": {},
+    "Canon_5DII": {},
+    "Canon_600D": {},
+    "Canon_60D": {},
+    "Canon_G1X": {},
+    "Canon_T2i": {},
+    "Canon_XS": {},
+    "Canon_XSi": {},
+    "Fujifilm_S3": {},
+    "Fujifilm_S5Pro": {},
+    "Fujifilm_X100": {},
+    "Fujifilm_Xpro1": {},
+    "Hasselblad_H2": {},
+    "Hasselblad_H3D": {},
+    "Kodak_DCS200": {},
+    "Kodak_DCS420": {},
+    "Leica_M8": {},
+    "Lumix_G10": {},
+    "Lumix_GF1": {},
+    "Lumix_GF2": {},
+    "Nikon_D100": {},
+    "Nikon_D200": {},
+    "Nikon_D3": {},
+    "Nikon_D3000": {},
+    "Nikon_D300s": {},
+    "Nikon_D3100": {},
+    "Nikon_D3X": {},
+    "Nikon_D40": {},
+    "Nikon_D40x": {},
+    "Nikon_D50": {},
+    "Nikon_D5100": {},
+    "Nikon_D60": {},
+    "Nikon_D70": {},
+    "Nikon_D700": {},
+    "Nikon_D80": {},
+    "Nikon_D90": {},
+    "Nokia_N900": {},
+    "Olympus_EP1": {},
+    "Olympus_EPL2": {},
+    "Panasonic_DML_LX3": {},
+    "Pentax_K100D": {},
+    "Pentax_K10D": {},
+    "Pentax_K5": {},
+    "Pentax_Q": {},
+    "Pentax_ist_D": {},
+    "Pentax_ist_DL": {},
+    "PhaseOne": {},
+    "PointGrey_Grasshopper2_14S5C": {},
+    "PointGrey_Grasshopper_50S5C": {},
+    "SQM": {},
+    "Samsung_NX10": {},
+    "Samsung_NX100": {},
+    "Sony.A200": {},
+    "Sony.A55": {},
+    "Sony_A290": {},
+    "Sony_A300": {},
+    "Sony_A330": {},
+    "Sony_NEX5N": {},
+    "Sony_NEX_5N": {},
+    "Sony_NEX_C3": {}
+   }
+  },
+  "Cassini": {
+   "instruments": {
+    "ISS_NAC": {},
+    "ISS_WAC": {}
+   }
+  },
+  "Clementine": {
+   "instruments": {
+    "HIRES": {},
+    "NIR": {},
+    "UVVIS": {}
+   }
+  },
+  "Contour": {
+   "instruments": {
+    "CFI": {},
+    "CRISP": {}
+   }
+  },
+  "Corot": {
+   "instruments": {
+    "Corot": {}
+   }
+  },
+  "DDO": {
+   "instruments": {
+    "DDO": {}
+   }
+  },
+  "DECam": {
+   "instruments": {
+    "Broad": {},
+    "Medium": {},
+    "Narrow": {},
+    "all": {}
+   }
+  },
+  "DENIS": {
+   "instruments": {
+    "DENIS": {}
+   }
+  },
+  "DOT": {
+   "instruments": {
+    "TIRCAM2": {}
+   }
+  },
+  "DSCOVR": {
+   "instruments": {
+    "EPIC": {}
+   }
+  },
+  "Dawn": {
+   "instruments": {
+    "FC": {}
+   }
+  },
+  "DeepImpact": {
+   "instruments": {
+    "HRI_VIS": {},
+    "ITS_VIS": {},
+    "MRI_VIS": {}
+   }
+  },
+  "ERBS": {
+   "instruments": {
+    "ERBE": {}
+   }
+  },
+  "ERIS": {
+   "instruments": {
+    "NIX": {}
+   }
+  },
+  "EROS": {
+   "instruments": {
+    "EROS": {}
+   }
+  },
+  "ERS": {
+   "instruments": {
+    "ATSR1": {},
+    "ATSR2": {}
+   }
+  },
+  "ESO": {
+   "instruments": {
+    "ESO": {}
+   }
+  },
+  "Envisat": {
+   "instruments": {
+    "AATSR": {},
+    "MERIS": {}
+   }
+  },
+  "Euclid": {
+   "instruments": {
+    "NISP": {},
+    "VIS": {}
+   }
+  },
+  "ExoMars": {
+   "instruments": {
+    "CaSSIS": {}
+   }
+  },
+  "FLWO": {
+   "instruments": {
+    "KeplerCam": {},
+    "MEarth": {}
+   }
+  },
+  "FengYun": {
+   "instruments": {
+    "FY1D-MVISR": {},
+    "FY2C-VISSR": {},
+    "FY2D-VISSR": {},
+    "FY3-7-MWRIRM": {},
+    "FY3-8-MWHS2": {},
+    "FY3-8-MWRI2": {},
+    "FY3-8-MWTS3": {},
+    "FY3A-IRAS": {},
+    "FY3A-MERSI": {},
+    "FY3B-IRAS": {},
+    "FY3B-MERSI": {},
+    "FY3B-VIRR": {},
+    "FY3C-IRAS": {},
+    "FY3C-MERSI": {},
+    "FY3C-VIRR": {},
+    "FY3F-MWHS2": {},
+    "FY3F-MWRI2": {},
+    "FY3F-MWTS3": {}
+   }
+  },
+  "Flock": {
+   "instruments": {
+    "DoveR": {},
+    "PS": {},
+    "PS-0c0d": {},
+    "PS-0e": {},
+    "PS-0f10": {},
+    "PS2k": {},
+    "PS2p": {},
+    "SuperDove": {},
+    "SuperDove8": {}
+   }
+  },
+  "GAIA": {
+   "instruments": {
+    "DR2": {},
+    "DR2r": {},
+    "GAIA": {},
+    "GAIA0": {}
+   }
+  },
+  "GALEX": {
+   "instruments": {
+    "GALEX": {}
+   }
+  },
+  "GCOM_C": {
+   "instruments": {
+    "SGLI": {}
+   }
+  },
+  "GCPD": {
+   "instruments": {
+    "Cape": {},
+    "Cousins": {},
+    "Eggen": {},
+    "Geneva": {},
+    "JHKLMN": {},
+    "Johnson": {},
+    "Stromgren": {},
+    "Vilnius": {},
+    "WBVR": {},
+    "Walraven": {},
+    "Washington": {}
+   }
+  },
+  "GOES": {
+   "instruments": {
+    "ABI1": {},
+    "ABI2": {},
+    "ABI3": {},
+    "ABI4": {},
+    "Imager10": {},
+    "Imager11": {},
+    "Imager12": {},
+    "Imager13": {},
+    "Imager14": {},
+    "Imager15": {},
+    "Imager8": {},
+    "Imager9": {},
+    "Sounder10": {},
+    "Sounder11": {},
+    "Sounder12": {},
+    "Sounder13": {},
+    "Sounder14": {},
+    "Sounder15": {},
+    "Sounder8": {},
+    "Sounder9": {},
+    "VAS4": {},
+    "VAS5": {},
+    "VAS6": {},
+    "VAS7": {}
+   }
+  },
+  "GOTO": {
+   "instruments": {
+    "GOTO": {}
+   }
+  },
+  "GPM": {
+   "instruments": {
+    "GMI": {}
+   }
+  },
+  "GTC": {
+   "instruments": {
+    "CIRCE": {},
+    "CanariCam": {},
+    "EMIR": {},
+    "HIPERCAM": {},
+    "OSIRIS": {}
+   }
+  },
+  "Galileo": {
+   "instruments": {
+    "SSI": {}
+   }
+  },
+  "Gemini": {
+   "instruments": {
+    "AcqCam_N": {},
+    "AcqCam_S": {},
+    "Alopeke": {},
+    "DSSI": {},
+    "Flamingos2": {},
+    "GMOS_N": {},
+    "GMOS_S": {},
+    "GNIRS": {},
+    "GPI": {},
+    "GSAOI": {},
+    "Michelle": {},
+    "NICI": {},
+    "NIFS": {},
+    "NIRI": {},
+    "OSCIR": {},
+    "Phoenix": {},
+    "TReCS": {},
+    "Zorro": {}
+   }
+  },
+  "Generic": {
+   "instruments": {
+    "Bessell": {},
+    "Bessell_JHKLM": {},
+    "Johnson": {},
+    "MKO": {},
+    "USNO": {}
+   }
+  },
+  "GeoEye": {
+   "instruments": {
+    "GIS": {}
+   }
+  },
+  "Giotto": {
+   "instruments": {
+    "HMC": {}
+   }
+  },
+  "HAWK-I": {
+   "instruments": {
+    "HAWK-I": {}
+   }
+  },
+  "HCT": {
+   "instruments": {
+    "HFOSC": {},
+    "TIRSPEC": {}
+   }
+  },
+  "HST": {
+   "instruments": {
+    "ACS_HRC": {},
+    "ACS_SBC": {},
+    "ACS_WFC": {},
+    "FGS": {},
+    "FOC_F48": {},
+    "FOC_F96": {},
+    "FOS_BLUE": {},
+    "FOS_RED": {},
+    "HSP_POL": {},
+    "HSP_UV1": {},
+    "HSP_UV2": {},
+    "HSP_VIS": {},
+    "NICMOS1": {},
+    "NICMOS2": {},
+    "NICMOS3": {},
+    "STIS_CCD": {},
+    "STIS_FUV": {},
+    "STIS_NUV": {},
+    "WFC3_IR": {},
+    "WFC3_UVIS1": {},
+    "WFC3_UVIS2": {},
+    "WFPC1-PC": {},
+    "WFPC1-WF": {},
+    "WFPC2-PC": {},
+    "WFPC2-WF": {}
+   }
+  },
+  "Hayabusa2": {
+   "instruments": {
+    "ONC-T": {}
+   }
+  },
+  "Herschel": {
+   "instruments": {
+    "PACS": {},
+    "SPIRE": {}
+   }
+  },
+  "Himawari": {
+   "instruments": {
+    "AHI8": {},
+    "AHI9": {},
+    "GMS1": {},
+    "GMS2": {},
+    "GMS3": {},
+    "GMS4": {},
+    "GMS5": {},
+    "MTSAT-1R": {},
+    "MTSAT2": {}
+   }
+  },
+  "Hipparcos": {
+   "instruments": {
+    "Hipparcos": {},
+    "Tycho": {}
+   }
+  },
+  "IAC80": {
+   "instruments": {
+    "CAMELOT": {},
+    "TCP": {}
+   }
+  },
+  "IKONOS": {
+   "instruments": {
+    "OSA": {}
+   }
+  },
+  "ING": {
+   "instruments": {
+    "ING": {}
+   }
+  },
+  "INSAT": {
+   "instruments": {
+    "INSAT-3D-SND": {}
+   }
+  },
+  "INT": {
+   "instruments": {
+    "IPHAS": {},
+    "OASIS": {},
+    "WFC": {}
+   }
+  },
+  "IRAM": {
+   "instruments": {
+    "MAMBO2": {},
+    "NIKA2": {}
+   }
+  },
+  "IRAS": {
+   "instruments": {
+    "IRAS": {}
+   }
+  },
+  "IRS": {
+   "instruments": {
+    "MOS": {}
+   }
+  },
+  "IRSF": {
+   "instruments": {
+    "Sirius": {}
+   }
+  },
+  "IRTF": {
+   "instruments": {
+    "NSFCam": {}
+   }
+  },
+  "ISO": {
+   "instruments": {
+    "ISO": {},
+    "ISO_CVF": {},
+    "PHT-C": {},
+    "PHT-P": {}
+   }
+  },
+  "IUE": {
+   "instruments": {
+    "IUE": {}
+   }
+  },
+  "InSight": {
+   "instruments": {
+    "ICC": {},
+    "IDC": {}
+   }
+  },
+  "Integral": {
+   "instruments": {
+    "OMC": {}
+   }
+  },
+  "JCMT": {
+   "instruments": {
+    "SCUBA2": {}
+   }
+  },
+  "JPSS": {
+   "instruments": {
+    "ATMS-J1": {},
+    "ATMS-J2": {},
+    "ATMS-J3": {},
+    "ATMS-J4": {},
+    "ATMS-NPP": {},
+    "VIIRS": {},
+    "VIIRS-J1": {},
+    "VIIRS-J2": {}
+   }
+  },
+  "JWST": {
+   "instruments": {
+    "MIRI": {},
+    "NIRCam": {},
+    "NIRISS": {},
+    "NIRSPEC": {}
+   }
+  },
+  "Jiheng": {
+   "instruments": {
+    "Jiheng": {}
+   }
+  },
+  "KOMPSTAT": {
+   "instruments": {
+    "AEISS3": {},
+    "AEISS3A": {},
+    "MSC": {},
+    "OSMI": {}
+   }
+  },
+  "KPNO": {
+   "instruments": {
+    "DESI": {},
+    "Flamingos": {},
+    "GoldCam": {},
+    "KOSMOS": {},
+    "KP4in": {},
+    "Mosaic": {},
+    "MzLS": {},
+    "TIFKAM": {}
+   }
+  },
+  "Keck": {
+   "instruments": {
+    "DEIMOS": {},
+    "ESI": {},
+    "LRIS": {},
+    "LWS": {},
+    "MOSFIRE": {},
+    "NIRC2": {},
+    "NIRSPEC": {},
+    "OSIRIS": {}
+   }
+  },
+  "Kepler": {
+   "instruments": {
+    "Kepler": {}
+   }
+  },
+  "LBT": {
+   "instruments": {
+    "LBCB": {},
+    "LBCR": {},
+    "LMIRCam": {},
+    "LUCIFER": {}
+   }
+  },
+  "LCO": {
+   "instruments": {
+    "CAPSCam": {},
+    "CCD3x3": {},
+    "CSP": {},
+    "CSP2": {},
+    "IMACS": {},
+    "MMIRS": {},
+    "MagAOX": {},
+    "MagIC": {},
+    "RetroCam": {},
+    "SITe3": {},
+    "VisAO": {},
+    "WFCCD": {},
+    "WIRC": {},
+    "e2v": {}
+   }
+  },
+  "LICK": {
+   "instruments": {
+    "LICK": {}
+   }
+  },
+  "LRO": {
+   "instruments": {
+    "Diviner": {},
+    "LROC_NAC": {}
+   }
+  },
+  "LSST": {
+   "instruments": {
+    "LSST": {},
+    "LSSTv19": {}
+   }
+  },
+  "LYRA": {
+   "instruments": {
+    "LYRA": {}
+   }
+  },
+  "LaSilla": {
+   "instruments": {
+    "COMBO17": {},
+    "DFOSC": {},
+    "EFOSC": {},
+    "EMMI": {},
+    "GROND": {},
+    "SOFI": {},
+    "SUSI2": {},
+    "TIMMI2": {},
+    "WFI": {}
+   }
+  },
+  "Landsat": {
+   "instruments": {
+    "ETM-7": {},
+    "MSS-1": {},
+    "MSS-2": {},
+    "MSS-3": {},
+    "MSS-4": {},
+    "MSS-5": {},
+    "OLI": {},
+    "OLI-2": {},
+    "TIRS": {},
+    "TIRS-2": {},
+    "TM-4": {},
+    "TM-5": {}
+   }
+  },
+  "LasCumbres": {
+   "instruments": {
+    "Sinistro": {},
+    "Spectral": {}
+   }
+  },
+  "Liverpool": {
+   "instruments": {
+    "IOI": {},
+    "IOO": {},
+    "RATCam": {},
+    "RINGO": {},
+    "RISE": {}
+   }
+  },
+  "MAXIMA": {
+   "instruments": {
+    "MAXIMA": {}
+   }
+  },
+  "MER": {
+   "instruments": {
+    "MI": {},
+    "PanCam": {}
+   }
+  },
+  "METOP": {
+   "instruments": {
+    "AMSUA-A": {},
+    "AMSUA-B": {},
+    "AMSUA-C": {},
+    "AVHRR-A": {},
+    "AVHRR-B": {},
+    "ICI-SG2": {},
+    "METimage": {},
+    "MWI-SG2": {},
+    "MWS-SG1": {}
+   }
+  },
+  "MEX": {
+   "instruments": {
+    "HRSC": {}
+   }
+  },
+  "MKO": {
+   "instruments": {
+    "MIRSI": {}
+   }
+  },
+  "MMT": {
+   "instruments": {
+    "Clio": {},
+    "MIRAC": {},
+    "MMIRS": {},
+    "MMTCam": {},
+    "MegaCam": {}
+   }
+  },
+  "MOA": {
+   "instruments": {
+    "MOA": {},
+    "MOA-II": {}
+   }
+  },
+  "MOM": {
+   "instruments": {
+    "MCC": {}
+   }
+  },
+  "MOST": {
+   "instruments": {
+    "MOST": {}
+   }
+  },
+  "MRO": {
+   "instruments": {
+    "CTX": {},
+    "HiRISE": {}
+   }
+  },
+  "MSX": {
+   "instruments": {
+    "MSX": {}
+   }
+  },
+  "MT": {
+   "instruments": {
+    "SCARAB": {}
+   }
+  },
+  "Magellan": {
+   "instruments": {
+    "FourStar": {},
+    "MegaCam": {}
+   }
+  },
+  "Mariner10": {
+   "instruments": {
+    "TVCam": {}
+   }
+  },
+  "Mars2020": {
+   "instruments": {
+    "MastCamZ": {}
+   }
+  },
+  "McD": {
+   "instruments": {
+    "DIAFI": {}
+   }
+  },
+  "Mercator": {
+   "instruments": {
+    "MAIA": {}
+   }
+  },
+  "Messenger": {
+   "instruments": {
+    "MDIS_NAC": {},
+    "MDIS_WAC": {}
+   }
+  },
+  "Meteosat": {
+   "instruments": {
+    "GERB2": {},
+    "MVIRI03": {},
+    "MVIRI04": {},
+    "MVIRI05": {},
+    "MVIRI06": {},
+    "MVIRI07": {},
+    "SEVIRI08": {},
+    "SEVIRI09": {},
+    "SEVIRI10": {},
+    "SEVIRI11": {}
+   }
+  },
+  "Microsat2B": {
+   "instruments": {
+    "MHS": {}
+   }
+  },
+  "Misc": {
+   "instruments": {
+    "APASS": {},
+    "AndromedA": {},
+    "Junocam": {},
+    "MCPS": {},
+    "MUSYC": {},
+    "UCAC": {}
+   }
+  },
+  "NAOC": {
+   "instruments": {
+    "BATC": {},
+    "BFOSC": {}
+   }
+  },
+  "NEAR": {
+   "instruments": {
+    "MSI": {}
+   }
+  },
+  "NIMBUS": {
+   "instruments": {
+    "CZCS": {},
+    "ITPR5": {},
+    "MRIR3": {}
+   }
+  },
+  "NOAA": {
+   "instruments": {
+    "AMSUA-15": {},
+    "AMSUA-16": {},
+    "AMSUA-17": {},
+    "AMSUA-18": {},
+    "AMSUA-19": {},
+    "AMSUB-15": {},
+    "AMSUB-16": {},
+    "AMSUB-17": {},
+    "AVHRR-10": {},
+    "AVHRR-11": {},
+    "AVHRR-12": {},
+    "AVHRR-13": {},
+    "AVHRR-14": {},
+    "AVHRR-15": {},
+    "AVHRR-16": {},
+    "AVHRR-17": {},
+    "AVHRR-18": {},
+    "AVHRR-19": {},
+    "AVHRR-6": {},
+    "AVHRR-7": {},
+    "AVHRR-8": {},
+    "AVHRR-9": {}
+   }
+  },
+  "NOAO": {
+   "instruments": {
+    "NEWFIRM": {}
+   }
+  },
+  "NOT": {
+   "instruments": {
+    "ALFOSC": {},
+    "NOTcam": {},
+    "StanCam": {}
+   }
+  },
+  "NewHorizons": {
+   "instruments": {
+    "ALICE": {},
+    "MVIC": {}
+   }
+  },
+  "NigeriaSat1": {
+   "instruments": {
+    "SLIM6": {}
+   }
+  },
+  "OAF": {
+   "instruments": {
+    "Bessell": {}
+   }
+  },
+  "OAJ": {
+   "instruments": {
+    "JPAS": {},
+    "JPLUS": {}
+   }
+  },
+  "OAN-SPM": {
+   "instruments": {
+    "OPTICAM": {}
+   }
+  },
+  "OAO": {
+   "instruments": {
+    "KOOLS": {},
+    "MuSCAT": {}
+   }
+  },
+  "OGLE": {
+   "instruments": {
+    "OGLE-IV": {}
+   }
+  },
+  "OHP": {
+   "instruments": {
+    "Cam120": {},
+    "MISTRAL": {}
+   }
+  },
+  "OLIMPO": {
+   "instruments": {
+    "OLIMPO": {}
+   }
+  },
+  "OMS": {
+   "instruments": {
+    "GEMS1": {}
+   }
+  },
+  "OSIRIS-REX": {
+   "instruments": {
+    "MapCam": {}
+   }
+  },
+  "OSN": {
+   "instruments": {
+    "Circ": {},
+    "Comet25": {},
+    "Comet50": {},
+    "Halpha": {},
+    "Johnson": {},
+    "Lines": {},
+    "Molec": {},
+    "Stromgren": {}
+   }
+  },
+  "Odyssey": {
+   "instruments": {
+    "THEMIS": {}
+   }
+  },
+  "P200": {
+   "instruments": {
+    "LFC": {},
+    "WIRC": {}
+   }
+  },
+  "PAN-STARRS": {
+   "instruments": {
+    "PS1": {}
+   }
+  },
+  "PRIRODA": {
+   "instruments": {
+    "MOS": {}
+   }
+  },
+  "Palomar": {
+   "instruments": {
+    "Arp1961": {},
+    "ZTF": {}
+   }
+  },
+  "Paranal": {
+   "instruments": {
+    "FORS1": {},
+    "FORS2": {},
+    "HAWKI": {},
+    "ISAAC": {},
+    "MIDI": {},
+    "NACO": {},
+    "OmegaCAM": {},
+    "SPHERE": {},
+    "VIMOS": {},
+    "VISIR": {},
+    "VISTA": {}
+   }
+  },
+  "Parasol": {
+   "instruments": {
+    "POLDER-P": {}
+   }
+  },
+  "Pathfinder": {
+   "instruments": {
+    "Pathfinder": {}
+   }
+  },
+  "Planck": {
+   "instruments": {
+    "HFI": {},
+    "LFI": {}
+   }
+  },
+  "Pleiades": {
+   "instruments": {
+    "HIRI-1A": {},
+    "HIRI-1B": {}
+   }
+  },
+  "QUIET": {
+   "instruments": {
+    "QUIET": {}
+   }
+  },
+  "QuickBird": {
+   "instruments": {
+    "BGIS2": {}
+   }
+  },
+  "QuickSounder": {
+   "instruments": {
+    "ATMS": {}
+   }
+  },
+  "RapidEye": {
+   "instruments": {
+    "REIS": {}
+   }
+  },
+  "Roman": {
+   "instruments": {
+    "WFI": {},
+    "WFI_SCA01": {},
+    "WFI_SCA02": {},
+    "WFI_SCA03": {},
+    "WFI_SCA04": {},
+    "WFI_SCA05": {},
+    "WFI_SCA06": {},
+    "WFI_SCA07": {},
+    "WFI_SCA08": {},
+    "WFI_SCA09": {},
+    "WFI_SCA10": {},
+    "WFI_SCA11": {},
+    "WFI_SCA12": {},
+    "WFI_SCA13": {},
+    "WFI_SCA14": {},
+    "WFI_SCA15": {},
+    "WFI_SCA16": {},
+    "WFI_SCA17": {},
+    "WFI_SCA18": {}
+   }
+  },
+  "Rosetta": {
+   "instruments": {
+    "OSIRIS_NAC": {},
+    "OSIRIS_WAC": {}
+   }
+  },
+  "SALT": {
+   "instruments": {
+    "RSS": {}
+   }
+  },
+  "SAO": {
+   "instruments": {
+    "SCORPIO": {}
+   }
+  },
+  "SEOSAT": {
+   "instruments": {
+    "PP": {}
+   }
+  },
+  "SLOAN": {
+   "instruments": {
+    "SDSS": {}
+   }
+  },
+  "SOFIA": {
+   "instruments": {
+    "FLITECAM": {},
+    "FORCAST": {},
+    "FPI": {},
+    "HAWC": {},
+    "HIPO": {}
+   }
+  },
+  "SOHO": {
+   "instruments": {
+    "EIT": {},
+    "LASCO": {}
+   }
+  },
+  "SPHERE": {
+   "instruments": {
+    "IRDIS": {},
+    "ZIMPOL": {}
+   }
+  },
+  "SPOT": {
+   "instruments": {
+    "NAOMI6": {},
+    "NAOMI7": {},
+    "SPOT1-HRV1": {},
+    "SPOT1-HRV2": {},
+    "SPOT2-HRV1": {},
+    "SPOT2-HRV2": {},
+    "SPOT3-HRV1": {},
+    "SPOT3-HRV2": {},
+    "SPOT4-HRVIR1": {},
+    "SPOT4-HRVIR2": {},
+    "SPOT5-HRG1": {},
+    "SPOT5-HRG2": {}
+   }
+  },
+  "SPT": {
+   "instruments": {
+    "SPT-3G": {},
+    "SPT-SZ": {}
+   }
+  },
+  "SSOT": {
+   "instruments": {
+    "NAOMI": {}
+   }
+  },
+  "STELLA": {
+   "instruments": {
+    "WiFSIP": {}
+   }
+  },
+  "Scorpio": {
+   "instruments": {
+    "Comet": {},
+    "Cousins": {},
+    "Johnson": {},
+    "SED": {}
+   }
+  },
+  "SeaStar": {
+   "instruments": {
+    "SeaWiFS": {}
+   }
+  },
+  "Selene": {
+   "instruments": {
+    "MI": {}
+   }
+  },
+  "Sentinel": {
+   "instruments": {
+    "MSI-2A": {},
+    "MSI-2B": {},
+    "MSI-2C": {},
+    "OLCI-A": {},
+    "OLCI-B": {},
+    "SLSTR-A": {},
+    "SLSTR-B": {}
+   }
+  },
+  "SkyMapper": {
+   "instruments": {
+    "SkyMapper": {}
+   }
+  },
+  "SkySat": {
+   "instruments": {
+    "SkySat1": {},
+    "SkySat10": {},
+    "SkySat11": {},
+    "SkySat12": {},
+    "SkySat13": {},
+    "SkySat14-19": {},
+    "SkySat2": {},
+    "SkySat3": {},
+    "SkySat4": {},
+    "SkySat5": {},
+    "SkySat6": {},
+    "SkySat7": {},
+    "SkySat8": {},
+    "SkySat9": {}
+   }
+  },
+  "SolarOrbiter": {
+   "instruments": {
+    "SoloHI": {}
+   }
+  },
+  "Spitzer": {
+   "instruments": {
+    "IRAC": {},
+    "IRS": {},
+    "MIPS": {}
+   }
+  },
+  "Stardust": {
+   "instruments": {
+    "NAVCAM": {}
+   }
+  },
+  "Subaru": {
+   "instruments": {
+    "CIAO": {},
+    "FOCAS": {},
+    "HSC": {},
+    "IRCS": {},
+    "MOIRCS": {},
+    "OHS": {},
+    "SuprimeCam": {}
+   }
+  },
+  "Swift": {
+   "instruments": {
+    "UVOT": {}
+   }
+  },
+  "TCS": {
+   "instruments": {
+    "CAIN3": {}
+   }
+  },
+  "TD1": {
+   "instruments": {
+    "NARROW1": {},
+    "NARROW2": {},
+    "SPEC": {},
+    "TD1": {},
+    "WIDE": {}
+   }
+  },
+  "TEMPEST": {
+   "instruments": {
+    "TEMPEST-D": {},
+    "TEMPEST-H8": {}
+   }
+  },
+  "TESS": {
+   "instruments": {
+    "TESS": {}
+   }
+  },
+  "TIROS-N": {
+   "instruments": {
+    "AVHRR": {}
+   }
+  },
+  "TJO": {
+   "instruments": {
+    "LAIA": {},
+    "TFRM": {}
+   }
+  },
+  "TNG": {
+   "instruments": {
+    "DOLORES": {},
+    "NICS": {},
+    "OIG": {},
+    "TNG": {}
+   }
+  },
+  "TNO": {
+   "instruments": {
+    "ULTRACAM": {}
+   }
+  },
+  "TNT": {
+   "instruments": {
+    "ULTRASPEC": {}
+   }
+  },
+  "TRMM": {
+   "instruments": {
+    "CERES": {}
+   }
+  },
+  "TROPICS": {
+   "instruments": {
+    "SV1-Pathfinder": {},
+    "TROPICS-03": {},
+    "TROPICS-05": {},
+    "TROPICS-06": {},
+    "TROPICS-07": {}
+   }
+  },
+  "Teide": {
+   "instruments": {
+    "COSMO11": {},
+    "COSMO15": {}
+   }
+  },
+  "Terra": {
+   "instruments": {
+    "MISR": {},
+    "MODIS": {}
+   }
+  },
+  "Tomorrow": {
+   "instruments": {
+    "TMS-S01": {},
+    "TMS-S02": {},
+    "TMS-S03": {},
+    "TMS-S04": {},
+    "TMS-S05": {},
+    "TMS-S06": {},
+    "TMS-S07": {},
+    "TMS-S08": {},
+    "TMS-S09": {},
+    "TMS-S10": {},
+    "TMS-S11": {}
+   }
+  },
+  "TopHat": {
+   "instruments": {
+    "TopHat": {}
+   }
+  },
+  "UK-DMC": {
+   "instruments": {
+    "SLIM6": {}
+   }
+  },
+  "UKIRT": {
+   "instruments": {
+    "UFTI": {},
+    "WFCAM": {}
+   }
+  },
+  "VATT": {
+   "instruments": {
+    "VATT": {}
+   }
+  },
+  "Viking": {
+   "instruments": {
+    "VIK11": {},
+    "VIK12": {},
+    "VIK21": {},
+    "VIK22": {}
+   }
+  },
+  "Voyager": {
+   "instruments": {
+    "ISS-NAC": {}
+   }
+  },
+  "WASP": {
+   "instruments": {
+    "SuperWASP": {}
+   }
+  },
+  "WHT": {
+   "instruments": {
+    "INGRID": {},
+    "LRIS": {},
+    "PAUCam": {},
+    "PFIP": {},
+    "ULTRACAM": {}
+   }
+  },
+  "WISE": {
+   "instruments": {
+    "WISE": {}
+   }
+  },
+  "WIYN": {
+   "instruments": {
+    "Hydra": {},
+    "NESSI": {},
+    "ODI": {},
+    "S2KB": {},
+    "WHIRC": {},
+    "WIYN": {}
+   }
+  },
+  "WMAP": {
+   "instruments": {
+    "WMAP": {}
+   }
+  },
+  "WSF-M": {
+   "instruments": {
+    "MWI-1": {}
+   }
+  },
+  "WeatherStream": {
+   "instruments": {
+    "GEMS2A": {}
+   }
+  },
+  "WorldView": {
+   "instruments": {
+    "SW110": {},
+    "WV110": {},
+    "WV3": {},
+    "WV60": {}
+   }
+  },
+  "XMM": {
+   "instruments": {
+    "OM": {}
+   }
+  },
+  "ZiYuan": {
+   "instruments": {
+    "MSC3-1": {},
+    "MSC3-2": {}
+   }
+  }
+ },
+ "index_generated": "2026-10-28T02:00:18.983447",
+ "schema": 1,
+ "source": "https://nillmill.ddns.net/sed_tools/index.json"
+}
