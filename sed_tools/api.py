@@ -39,6 +39,7 @@ Example usage::
 
 from __future__ import annotations
 
+import csv
 import logging
 import math
 import shutil
@@ -88,6 +89,18 @@ def _directory_state(directory: Path) -> Dict[str, int]:
     return {path.name: path.stat().st_mtime_ns for path in directory.iterdir()}
 
 
+def _download_count(n_spectra: int, before: Dict[str, int], after: Dict[str, int]) -> str:
+    """``Downloaded N spectra``, or ``K already present, N downloaded`` when the grabber's
+    ``n_spectra`` (the spectra it downloaded or found in place) includes spectra it did not write.
+
+    ``before`` and ``after`` are :func:`_directory_state` around the download.
+    """
+    written = sum(1 for name, mtime in after.items()
+                  if name.lower().endswith(".txt") and before.get(name) != mtime)
+    present = n_spectra - written
+    return f"{present} already present, {written} downloaded" if present > 0 else f"Downloaded {n_spectra} spectra"
+
+
 def _parameter_cuts(teff_min, teff_max, logg_min, logg_max, metallicity_min,
                     metallicity_max) -> Dict[str, Tuple[float, float]]:
     """The grabbers' ``teff_range``, ``logg_range`` and ``meta_range`` for the bounds given.
@@ -110,15 +123,68 @@ def _flux_cube_file(model_dir: Path) -> Optional[Path]:
     return None
 
 
-def _older_than_a_spectrum(path: Path, model_dir: Path) -> bool:
-    """Whether ``path`` was written before one of the spectra in ``model_dir``, so was built without it.
+def _flux_cube_shortfall(model_dir: Path) -> Optional[str]:
+    """What the grid's flux cube lacks of the spectra in ``model_dir``, or None when it holds them all.
 
-    That is how a grid's lookup table, HDF5 bundle and flux cube, built from a
-    selection of its spectra, are known to be out of date once more spectra
-    are downloaded beside them.
+    None too when there is no cube, or no spectrum.  The spectra are the
+    ``.txt`` files there, at the (Teff, logg, [M/H]) its ``lookup_table.csv``
+    gives them, and the cube holds one when it has a point there that holds
+    flux (:func:`~sed_tools.precompute_flux_cube.spectra_not_in_cube`).  A
+    cube built from a selection, before the rest was downloaded beside it,
+    lacks the rest.  With ``variants_index.csv``, each variant's cube is
+    compared with its own lookup table, and between them they must list every
+    spectrum.  The files' contents decide, not their times, so a grid copied
+    without them (``cp -R``, ``scp``) is as complete as the original.
     """
-    written = Path(path).stat().st_mtime_ns
-    return any(spectrum.stat().st_mtime_ns > written for spectrum in Path(model_dir).glob("*.txt"))
+    from .precompute_flux_cube import spectra_not_in_cube
+    from .spectrum_io import list_text_spectra
+
+    model_dir = Path(model_dir)
+    cube = _flux_cube_file(model_dir)
+    present = {path.name for path in list_text_spectra(model_dir)} if cube is not None else set()
+    if not present:
+        return None
+    try:
+        variants = [model_dir] if cube.name == "flux_cube.bin" else [model_dir / v for v in _variant_paths(cube)]
+        listed, lacking = set(), set()
+        for directory in variants:
+            names, missing = spectra_not_in_cube(directory / "flux_cube.bin", directory / "lookup_table.csv")
+            listed.update(names)
+            lacking.update(missing)
+    except (OSError, ValueError, KeyError, TypeError) as exc:  # unreadable or malformed files
+        return f"cannot be compared with the spectra beside it ({exc})"
+    lacking = (lacking | (present - listed)) & present
+    if not lacking:
+        return None
+    return f"does not include {len(lacking)} of the {len(present)} spectra beside it"
+
+
+def _variant_paths(variants_index: Path) -> List[str]:
+    """The folder of each variant ``variants_index.csv`` lists, relative to the grid's folder."""
+    with open(variants_index, newline="", encoding="utf-8") as fh:
+        fields = [name.lstrip("#").strip() for name in fh.readline().strip().split(",")]
+        return [row["path"] for row in csv.DictReader(fh, fieldnames=fields)]
+
+
+def _bundle_shortfall(bundle: Path, model_dir: Path) -> Optional[str]:
+    """How an HDF5 bundle's spectra differ from the ``.txt`` spectra in ``model_dir``; None when they are the same.
+
+    The bundle records each spectrum under its file name
+    (:func:`~sed_tools.spectrum_io.build_h5_bundle`); names are compared, not
+    file times.
+    """
+    from .spectrum_io import bundled_spectra, list_text_spectra
+
+    present = {path.name for path in list_text_spectra(model_dir)}
+    try:
+        held = set(bundled_spectra(bundle))
+    except (OSError, ValueError) as exc:
+        return f"cannot be compared with the spectra beside it ({exc})"
+    if held == present:
+        return None
+    extra = len(held - present)
+    return (f"holds {len(held & present)} of the {len(present)} spectra beside it"
+            + (f" and {extra} that are not there" if extra else ""))
 
 
 def _build_flux_cube(model_dir: Path) -> Path:
@@ -840,12 +906,15 @@ class SED:
         extracts only the selected spectra. SVO cannot select spectra, so from
         SVO the whole grid is downloaded, with a warning, then cut.
 
-        A folder that already holds every selected spectrum with its flux
-        cube (the whole grid, or a wider selection) is cut as it stands:
-        nothing is downloaded or rewritten. A later fetch without bounds, or
-        with wider ones, downloads the rest; a flux cube older than spectra
-        beside it does not include them, so the lookup table, HDF5 bundle and
-        flux cube are then rebuilt from every spectrum in the folder.
+        A folder that already holds every selected spectrum with a flux cube
+        holding every spectrum there (the whole grid, or a wider selection)
+        is cut as it stands: nothing is downloaded or rewritten. A later fetch
+        without bounds, or with wider ones, downloads the rest; a flux cube
+        that then lacks spectra beside it is rebuilt from every spectrum in
+        the folder, with the lookup table and HDF5 bundle. Whether the cube
+        holds them is read from the cube and the lookup table, not from file
+        times, so a grid copied without its file times counts as complete.
+        Bounds that no spectrum meets leave no new folder behind.
 
         Returns
         -------
@@ -873,27 +942,34 @@ class SED:
             raise ValueError(f"Unknown source: {source}")
         model_dir = base_dir / catalog
         cuts = _parameter_cuts(teff_min, teff_max, logg_min, logg_max, metallicity_min, metallicity_max)
+        created = not model_dir.exists()
         before = _directory_state(model_dir)
         used_source = cls._download_from_first_source(catalog, sources_to_try, failures, model_dir, workers,
                                                       cuts)
         selected = bool(cuts) and used_source in _CUTTING_SOURCES
         cube = _flux_cube_file(model_dir)
 
-        if (selected and cube is not None and not _older_than_a_spectrum(cube, model_dir)
-                and _directory_state(model_dir) == before):
+        if (selected and cube is not None and _directory_state(model_dir) == before
+                and _flux_cube_shortfall(model_dir) is None):
             # The whole grid, or a wider selection, installed with its flux cube: cleaning would
             # rewrite its lookup table, so it is cut as it stands.
             print(f"[fetch] {model_dir} already holds every spectrum of {catalog} within the bounds, with "
                   "its flux cube; nothing was downloaded or rewritten")
+        elif created and selected and not (model_dir.is_dir() and any(model_dir.iterdir())):
+            if model_dir.is_dir():
+                model_dir.rmdir()  # no spectrum was within the bounds: remove the empty folder this call made
         else:
             if clean:
                 cls._clean_fetched(catalog, model_dir, flux_unit)
             cube = _flux_cube_file(model_dir)
-            stale = cube is not None and _older_than_a_spectrum(cube, model_dir)
-            if ((selected and cube is None) or stale) and any(model_dir.glob("*.txt")):
+            shortfall = _flux_cube_shortfall(model_dir) if cube is not None else None
+            if ((selected and cube is None) or shortfall) and any(model_dir.glob("*.txt")):
                 # As sed-tools grids does: a selection gets a lookup table, HDF5 bundle and flux cube of
-                # its own, and a cube older than spectra beside it (a selection, then the rest) is
+                # its own, and a cube that lacks spectra beside it (a selection, then the rest) is
                 # rebuilt from every spectrum present.
+                if shortfall:
+                    print(f"[fetch] {cube.name} {shortfall}:\n        rebuilding the lookup table, HDF5 "
+                          "bundle and flux cube from all of them")
                 from .cli import _build_data_products
                 _build_data_products(catalog, str(model_dir), used_source, True, True)
 
@@ -996,10 +1072,11 @@ class SED:
                                "is downloaded, then cut", src, catalog)
                 cuts = None
             print(f"[fetch] Downloading {catalog} from {src}...")
+            before = _directory_state(model_dir)
             n_downloaded = grabber.download_model_spectra(catalog, metadata, **(cuts or {}))
         except _SOURCE_ERRORS as exc:
             return str(exc)
-        print(f"[fetch] Downloaded {n_downloaded} spectra")
+        print(f"[fetch] {_download_count(n_downloaded, before, _directory_state(model_dir))}")
         if cuts and not n_downloaded:
             print(f"[fetch] {src} has no spectrum of {catalog} within the bounds")
             return None

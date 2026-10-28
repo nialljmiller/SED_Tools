@@ -243,7 +243,7 @@ def test_ml_generator_auto_names_the_extra_when_optuna_is_missing(monkeypatch, c
     monkeypatch.setattr(sys, "argv", ["sed-tools", "ml_generator", "--auto", "--library", "lib", "--output", "out"])
 
     assert cli.main() == 1
-    assert "pip install 'sed-tools[ml-tune]'" in capsys.readouterr().out
+    assert "ml-tune" in capsys.readouterr().err.split("pip install ")[1]
 
 
 def test_optuna_is_an_optional_extra_only():

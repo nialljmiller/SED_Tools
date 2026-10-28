@@ -873,7 +873,9 @@ def test_ml_generator_auto_fails_at_once_without_optuna(monkeypatch, capsys):
     monkeypatch.setattr(importlib.util, "find_spec",
                         lambda name, *args: None if name == "optuna" else real_find_spec(name, *args))
     assert run_cli(monkeypatch, "ml_generator", "--auto", "--library", "lib", "--output", "out") == 1
-    assert "--auto training needs the optuna package" in capsys.readouterr().out
+    out, err = capsys.readouterr()
+    assert not out and len(err.splitlines()) == 1  # the one-line refusal of the other ML actions
+    assert err.startswith("Error: missing ") and "optuna" in err and "ml-tune" in err
 
 
 # ----------------------------------------------------------------------

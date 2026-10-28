@@ -186,7 +186,7 @@ def _write_dense_flux(f, flux_orig, source_rows, teff_dense, teff_orig, logg_gri
     n_blocks = (nw + w_block - 1) // w_block
     n_ml = sum(use_ml for _, _, _, use_ml in synthetic)
     print(f"\nGenerating {len(synthetic)} synthetic Teff points ({n_ml} by ML, "
-          f"{len(synthetic) - n_ml} blackbody) in {n_blocks} wavelength block(s)...")
+          f"{len(synthetic) - n_ml} blackbody)\n  in {n_blocks} wavelength block(s)...")
     t_start = time.time()
     for count, w0 in enumerate(range(0, nw, w_block), 1):
         w1 = min(w0 + w_block, nw)

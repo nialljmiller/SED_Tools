@@ -17,12 +17,12 @@ Filters:
 import argparse
 import csv
 import glob
-import importlib.util
 import inspect
 import json
 import logging
 import os
 import re
+import shlex
 import sys
 import textwrap
 import time
@@ -44,6 +44,7 @@ from .spectra_cleaner import FLUX_GUESS_WHY, FLUX_UNITS, clean_model_dir, undecl
 from .svo_regen_spectra_lookup import regenerate_lookup_table
 from .svo_spectra_grabber import SVOSpectraGrabber
 from .ui_utils import NO_DEFAULT as _NO_DEFAULT, OPTIONAL_EXTRAS, ask_number as _ask_number, missing_packages
+from .ui_utils import refused_without
 from .ui_utils import prompt_choice
 from .parsing import parse_multi_selection, parse_numeric_range
 from .spectrum_io import build_h5_bundle, read_text_spectrum
@@ -428,17 +429,24 @@ def _build_data_products(
 ) -> List[str]:
     """Build HDF5 bundle, lookup table, and flux cube for a downloaded spectral grid.
 
-    A bundle or flux cube older than a spectrum beside it was built without
-    that spectrum (a selection, before the rest was downloaded): the bundle is
-    then rebuilt even without ``force_bundle_h5``, and a cube left as it is
-    because ``build_flux_cube`` is False is returned as a problem.  Returns
-    the problems; empty when the products are complete.
+    A bundle or flux cube that lacks spectra beside it was built without them
+    (a selection, before the rest was downloaded): the bundle is then rebuilt
+    even without ``force_bundle_h5``, and a cube left as it is because
+    ``build_flux_cube`` is False is returned as a problem.  Their contents
+    decide, not file times (see api._flux_cube_shortfall).  Returns the
+    problems; empty when the products are complete.
     """
-    from .api import _build_flux_cube, _flux_cube_file, _older_than_a_spectrum
+    from .api import _build_flux_cube, _bundle_shortfall, _flux_cube_file, _flux_cube_shortfall
 
     # HDF5 bundle
     out_h5 = os.path.join(model_dir, f"{name}_bundle.h5" if src == "msg" else f"{name}.h5")
-    if force_bundle_h5 or not os.path.exists(out_h5) or _older_than_a_spectrum(Path(out_h5), Path(model_dir)):
+    stale = None
+    if not force_bundle_h5 and os.path.exists(out_h5):
+        stale = _bundle_shortfall(Path(out_h5), Path(model_dir))
+    if force_bundle_h5 or not os.path.exists(out_h5) or stale:
+        if stale:
+            print(_wrap(f"{os.path.basename(out_h5)} {stale}; rebuilding it",
+                        indent="HDF5 bundle   : ", hanging=" " * 16))
         build_h5_bundle_from_txt(model_dir, out_h5)
         print(f"HDF5 bundle   : {os.path.basename(out_h5)}")
     else:
@@ -450,10 +458,10 @@ def _build_data_products(
 
     # Flux cube
     if not build_flux_cube:
-        cube = _flux_cube_file(Path(model_dir))
-        if cube is not None and _older_than_a_spectrum(cube, Path(model_dir)):
-            return [f"{cube} was built before some of the spectra beside it, so it does not include them; "
-                    f"it was not rebuilt (--no-cube). Rebuild it with: sed-tools rebuild --grids {name}"]
+        shortfall = _flux_cube_shortfall(Path(model_dir))
+        if shortfall:
+            return [f"{_flux_cube_file(Path(model_dir))} {shortfall}; it was not rebuilt (--no-cube). "
+                    f"Rebuild it with: {_rebuild_command(name, model_dir)}"]
         return []
 
     if _build_flux_cube(model_dir).name == "variants_index.csv":
@@ -472,6 +480,15 @@ def _build_data_products(
     else:
         print("Flux cube     : flux_cube.bin")
     return []
+
+
+def _rebuild_command(name: str, model_dir: str) -> str:
+    """``sed-tools rebuild --grids NAME``, with ``--base`` when the grid is not under the default directory."""
+    command = f"sed-tools rebuild --grids {shlex.quote(name)}"
+    base = os.path.dirname(os.path.abspath(model_dir))
+    if base != os.path.abspath(str(STELLAR_DIR_DEFAULT)):
+        command += f" --base {shlex.quote(base)}"
+    return command
 
 
 def run_spectra_flow(
@@ -632,16 +649,20 @@ def _download_from_first_source(name: str, sources: List[str], grabs: Dict, mode
 
 def _download_from(name: str, src: str, g, model_dir: str, ranges: Optional[Dict] = None):
     """Download ``name`` from one source: ``(metadata, None)``, or ``(metadata, what went wrong)``."""
+    from .api import _directory_state, _download_count
+
     meta = None
     try:
         meta = g.get_model_metadata(name)
         if not meta:
             return meta, "no metadata"
         print(f"  Using source: {src}")
-        n_written = g.download_model_spectra(name, meta, **_download_cuts(name, src, g, meta, ranges or {}))
+        cuts = _download_cuts(name, src, g, meta, ranges or {})
+        before = _directory_state(model_dir)
+        n_written = g.download_model_spectra(name, meta, **cuts)
     except (ValueError, RequestException, OSError, RuntimeError) as exc:
         return meta, str(exc)
-    print(f"Downloaded {n_written} spectra → {model_dir}")
+    print(f"{_download_count(n_written, before, _directory_state(model_dir))} → {model_dir}")
     if not n_written and not _is_preprocessed(meta):
         return meta, "no spectra downloaded"
     return meta, None
@@ -2361,12 +2382,7 @@ def _cmd_ml_generator(args, parser):
         ) or 0
     if not args.library or not args.output:
         parser.error("--auto needs --library and --output")
-    if importlib.util.find_spec("optuna") is None:
-        print("Error: --auto training needs the optuna package, which is not installed (pip install 'sed-tools[ml-tune]').")
-        return 1
-    missing = missing_packages(("torch", "sklearn"))
-    if missing:
-        print(missing, file=sys.stderr)
+    if refused_without("torch", "sklearn", "optuna"):
         return 1
     from .ml import auto_train_generator
     auto_train_generator(library=args.library, output=args.output, **limits)

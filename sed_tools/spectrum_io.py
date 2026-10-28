@@ -45,6 +45,17 @@ def read_text_spectrum(path: PathLike) -> tuple[np.ndarray, np.ndarray]:
     return np.asarray(wavelength, dtype=float), np.asarray(flux, dtype=float)
 
 
+def bundled_spectra(bundle_path: PathLike) -> list[str]:
+    """The file names of the spectra an HDF5 bundle from :func:`build_h5_bundle` holds.
+
+    Raises ValueError when the file has no ``spectra`` group, and OSError when it cannot be read.
+    """
+    with h5py.File(bundle_path, "r") as h5:
+        if not isinstance(h5.get("spectra"), h5py.Group):
+            raise ValueError(f"{bundle_path} has no 'spectra' group")
+        return sorted(h5["spectra"].keys())
+
+
 def build_h5_bundle(model_dir: PathLike, output_path: PathLike) -> bool:
     """Bundle text spectra and canonical header metadata; return whether written."""
     spectra = list_text_spectra(model_dir)

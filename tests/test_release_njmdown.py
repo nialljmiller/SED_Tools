@@ -113,9 +113,11 @@ def test_njm_product_from_svo_is_installed_under_njm_names_and_says_what_is_miss
         directory = library.published("GAIA", "GAIA")  # Nill, 28 Oct: install, warn, carry on
     assert directory == root / "GAIA" / "GAIA"
     incomplete = [r.getMessage() for r in caplog.records if "is incomplete" in r.getMessage()]
-    assert incomplete == [f"GAIA/GAIA is incomplete, in {directory}: 4 of NJM's 6 bands were installed from SVO's "
-                          "GAIA/GAIA3; missing Gbp_bright, Gbp_faint, which SVO does not have. Fetch again when "
-                          "NJM is reachable to complete it (NJM: the mirror is unavailable)."]
+    assert incomplete == ["GAIA/GAIA is incomplete: 4 of NJM's 6 bands were installed from SVO's\n"
+                          "GAIA/GAIA3; missing Gbp_bright, Gbp_faint, which SVO does not have. Fetch again\n"
+                          "when NJM is reachable to complete it (NJM: the mirror is unavailable).\n"
+                          f"Installed in: {directory}"]
+    assert all(len(line) <= 80 for line in incomplete[0].splitlines()[:-1])  # all but the folder's line
     assert "trying SVO" in caplog.text
     assert sorted(p.name for p in directory.glob("*.dat")) == ["G.dat", "Gbp.dat", "Grp.dat", "Grvs.dat"]
     assert read_filter_header(directory / "Gbp.dat")["FilterID"] == "GAIA/GAIA3.Gbp"  # where the curve came from

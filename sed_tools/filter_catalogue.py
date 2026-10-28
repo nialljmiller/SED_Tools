@@ -35,7 +35,7 @@ from urllib.parse import quote
 import pandas as pd
 from requests import RequestException
 
-from .filter_metadata import normalize_detector_type
+from .filter_metadata import normalize_detector_type, read_filter_header
 
 logger = logging.getLogger(__name__)
 
@@ -305,10 +305,56 @@ class FilterCatalogue:
         used first, unless ``refresh`` or ``prefer_installed=False``; otherwise NJM's
         current file, cached.  Bands NJM keeps beside the set but does not serve as
         part of it (superseded copies such as ``BP_svo``) are moved from ``bands``
-        to ``archived_bands`` (see :meth:`_split_archived`).
+        to ``archived_bands`` (see :meth:`_split_archived`).  The records of
+        curves installed under other band names are listed under the installed
+        names (see :meth:`_named_as_installed`).
         """
         data = self._instrument_file(facility, instrument, kind, prefer_installed=prefer_installed, refresh=refresh)
+        data = self._named_as_installed(facility, instrument, kind, data, refresh=refresh)
         return self._split_archived(facility, instrument, data)
+
+    def _named_as_installed(self, facility: str, instrument: str, kind: str, data: dict, *,
+                            refresh: bool) -> dict:
+        """``data`` with each record of a curve that is installed under another band name renamed to that name.
+
+        0.4.1 installed PLANCK/HFI from SVO as ``100GHz`` … ``857GHz``: the
+        curves NJM keeps as ``100_svo`` … ``857_svo`` beside its own ``100`` …
+        ``857``.  NJM's records of those copies then describe the installed
+        curves, so they are listed as ``100GHz`` …, and :meth:`_split_archived`
+        moves NJM's other bands, not installed, to ``archived_bands``.  A curve
+        is matched by the FilterID on its header row and in the ``curve`` record
+        of NJM's ``info.json``; only when none of ``data``'s band names is
+        installed.
+        """
+        bands = data.get("bands") or {}
+        directory = self._installed_directory(facility, instrument)
+        listed = directory / directory.name if directory is not None else None
+        if not bands or listed is None or not listed.is_file():
+            return data
+        installed = _index_bands(listed.read_text(encoding="utf-8"))
+        if any(band in installed for band in bands):
+            return data
+        by_id = {}
+        for band in sorted(installed):
+            curve = directory / f"{band}.dat"
+            filter_id = read_filter_header(curve).get("FilterID") if curve.is_file() else None
+            if filter_id:
+                by_id[filter_id] = band
+        if not by_id:
+            return data
+        try:
+            info = data if kind == INFO else self._instrument_file(facility, instrument, INFO,
+                                                                   prefer_installed=True, refresh=refresh)
+        except (CatalogueError, OSError, ValueError):
+            return data  # without info.json the curves cannot be matched; properties.json is still as served
+        renamed = {}
+        for band, record in (info.get("bands") or {}).items():
+            filter_id = ((record or {}).get("curve") or {}).get("FilterID")
+            if band in bands and filter_id in by_id:
+                renamed[band] = by_id[filter_id]
+        if not renamed:
+            return data
+        return dict(data, bands={renamed.get(band, band): record for band, record in bands.items()})
 
     def _instrument_file(self, facility: str, instrument: str, kind: str, *,
                          prefer_installed: bool, refresh: bool) -> dict:

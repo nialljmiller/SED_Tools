@@ -32,6 +32,7 @@ import re
 import shutil
 import struct
 import sys
+import textwrap
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -89,6 +90,13 @@ def load_lookup_table(lookup_file: str) -> Dict[str, List]:
     All columns are returned so callers can discover extra axes.
     The header line may begin with '#'.
     """
+    result, cols, n_rows = _read_lookup_table(lookup_file)
+    print(f"Lookup table: {n_rows} entries, columns: {', '.join(cols)}")
+    return result
+
+
+def _read_lookup_table(lookup_file: str) -> Tuple[Dict[str, List], List[str], int]:
+    """:func:`load_lookup_table` without its message: the table, its header's columns and its row count."""
     with open(lookup_file, "r", encoding="utf-8", errors="ignore") as f:
         header_line = f.readline().lstrip("#").strip()
         cols = [c.strip() for c in header_line.split(",")]
@@ -99,9 +107,7 @@ def load_lookup_table(lookup_file: str) -> Dict[str, List]:
     for row in rows:
         for i, col in enumerate(cols):
             result[col].append(row[i].strip() if i < len(row) else "")
-
-    print(f"Lookup table: {len(rows)} entries, columns: {', '.join(cols)}")
-    return result
+    return result, cols, len(rows)
 
 
 def _float_col(
@@ -246,6 +252,76 @@ def _write_cube(
 
 
 # ---------------------------------------------------------------------------
+# Which listed spectra a written cube holds
+# ---------------------------------------------------------------------------
+
+#: Wavelength planes read to tell a grid point holding a spectrum from a zero-filled one.
+_SAMPLED_PLANES = 8
+
+
+def spectra_not_in_cube(cube_path: str, lookup_file: str) -> Tuple[List[str], List[str]]:
+    """The spectra ``lookup_file`` lists, and those of them the flux cube at ``cube_path`` does not hold.
+
+    The lookup table is read as :func:`precompute_flux_cube` reads it.  A
+    spectrum is held when its (Teff, logg, [M/H]) is a point of the cube's
+    axes and that point holds flux: a point no spectrum filled is zero at
+    every wavelength.  Only the cube's header, its axes and a few wavelength
+    planes are read; a spectrum whose flux is zero at every sampled
+    wavelength counts as not held.  Raises ValueError (or OSError) when
+    either file cannot be read.
+    """
+    lookup, cols, _ = _read_lookup_table(lookup_file)
+    file_col = find_file_column(cols) or cols[0]
+    names = list(lookup[file_col])
+    if not names:
+        return [], []
+    teff, logg, meta = _parse_axes(lookup, lookup_file, file_col)
+    with open(cube_path, "rb") as fh:
+        header = fh.read(16)
+        if len(header) != 16:
+            raise ValueError(f"{cube_path}: the header is truncated")
+        nt, nl, nm, nw = struct.unpack("4i", header)
+        if min(nt, nl, nm, nw) < 1:
+            raise ValueError(f"{cube_path}: the header gives dimensions {nt}, {nl}, {nm}, {nw}")
+        axes = np.fromfile(fh, dtype=np.float64, count=nt + nl + nm)
+        if axes.size != nt + nl + nm:
+            raise ValueError(f"{cube_path}: the parameter axes are truncated")
+        filled = _filled_points(fh, (nt, nl, nm, nw), 16 + 8 * (nt + nl + nm + nw), cube_path)
+    it = _axis_positions(axes[:nt], teff)
+    il = _axis_positions(axes[nt:nt + nl], logg)
+    im = _axis_positions(axes[nt + nl:], meta)
+    held = (it >= 0) & (il >= 0) & (im >= 0)
+    held[held] = filled[im[held], il[held], it[held]]
+    return names, [name for name, ok in zip(names, held) if not ok]
+
+
+def _axis_positions(axis: np.ndarray, values: np.ndarray) -> np.ndarray:
+    """Where each value is on ``axis``, or -1 where it is none of the axis's values (to rounding)."""
+    unique, inverse = np.unique(values, return_inverse=True)
+    close = np.isclose(unique[:, None], axis[None, :], rtol=1e-9, atol=1e-9)
+    return np.where(close.any(axis=1), close.argmax(axis=1), -1)[inverse.ravel()]
+
+
+def _filled_points(fh, dims: Tuple[int, int, int, int], data_offset: int, cube_path: str) -> np.ndarray:
+    """Whether each grid point holds flux, indexed [i_meta, i_logg, i_teff], from a few wavelength planes.
+
+    On disk each wavelength's plane of (Teff, logg, [M/H]) points is contiguous
+    (see :func:`_write_cube`), so each plane is one read.
+    """
+    nt, nl, nm, nw = dims
+    n_points = nt * nl * nm
+    filled = np.zeros((nm, nl, nt), dtype=bool)
+    planes = np.unique(np.linspace(0, nw - 1, _SAMPLED_PLANES + 2)[1:-1].round().astype(int))
+    for iw in planes:
+        fh.seek(data_offset + int(iw) * n_points * 8)
+        flux = np.fromfile(fh, dtype=np.float64, count=n_points)
+        if flux.size != n_points:
+            raise ValueError(f"{cube_path} ends before the {nw} wavelengths its header gives")
+        filled |= flux.reshape(nm, nl, nt) != 0
+    return filled
+
+
+# ---------------------------------------------------------------------------
 # Core population — builds one cube from a filtered/full file list
 # ---------------------------------------------------------------------------
 
@@ -291,6 +367,7 @@ def _populate_and_write(
 
         _write_cube(output_file, teff_grid, logg_grid, meta_grid,
                     wavelengths, flux_cube, usable_ram)
+        _warn_empty_points(count_cube, (teff_grid, logg_grid, meta_grid), output_file)
     finally:
         del flux_cube
         if tmp_path and os.path.exists(tmp_path):
@@ -352,6 +429,27 @@ def _accumulate_spectra(
             + "\n  ".join(empty)
         )
     return count_cube
+
+
+def _warn_empty_points(count_cube: np.ndarray, grids, cube_path: str) -> None:
+    """Warn when points of the cube's Teff x logg x [M/H] grid have no spectrum: their flux is zero.
+
+    Interpolation treats those zeros as flux, so near them it is pulled toward
+    zero.  The cube is written as it is; this only says so.
+    """
+    empty = np.argwhere(count_cube == 0)
+    if not len(empty):
+        return
+    ranges = []
+    for axis, (name, unit) in enumerate((("Teff", " K"), ("logg", ""), ("[M/H]", ""))):
+        values = grids[axis][empty[:, axis]]
+        low, high = float(values.min()), float(values.max())
+        ranges.append(f"{name} {low:g}{unit}" if low == high else f"{name} {low:g} to {high:g}{unit}")
+    text = (f"{len(empty)} of the {count_cube.size} points of this flux cube's Teff x logg x [M/H] grid have "
+            f"no spectrum, so their flux is zero ({', '.join(ranges)}). Interpolating near them pulls the "
+            "flux toward zero. The spectra do not fill the whole grid: the grid's own coverage is irregular, "
+            "or separate selections were fetched into one folder (fetch the rest and rebuild to fill them).")
+    logger.warning("%s\nCube with empty points: %s", textwrap.fill(text, width=80), cube_path)
 
 
 def _warn_averaged_rows(lookup: Dict[str, List], rows, nodes, cube_path: str) -> None:

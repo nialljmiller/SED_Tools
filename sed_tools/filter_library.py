@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import textwrap
 import time
 from dataclasses import dataclass, replace
 from functools import cached_property
@@ -213,8 +214,12 @@ class FilterLibrary:
             reasons.append(f"SVO: {exc}")
             raise ComponentError(f"No source can provide {facility}/{instrument}: " + "; ".join(reasons)) from exc
         if shortfall is not None:
-            logger.warning("%s/%s is incomplete, in %s: %s. Fetch again when NJM is reachable to complete it (%s).",
-                           facility, instrument, directory, shortfall, "; ".join(reasons))
+            text = (f"{facility}/{instrument} is incomplete: {shortfall}. Fetch again when NJM is reachable to "
+                    f"complete it ({'; '.join(reasons)}).")
+            # One warning, wrapped to 80 columns, with the folder on a line of its own
+            logger.warning("%s\nInstalled in: %s",
+                           textwrap.fill(text, width=80, break_long_words=False, break_on_hyphens=False),
+                           directory)
         return directory
 
     def _publishing_builder(self, facility, instrument, installed):
@@ -257,13 +262,18 @@ class FilterLibrary:
         for fac, inst in spellings:
             directory = installed if installed is not None else self.root / fac / inst
             before = _curve_state(directory)
+            partial_manifest = _partial_fill_manifest(directory)
             try:
                 result = (self.mirror._download_set(fac, inst) if installed is None
                           else self.mirror._download_set(fac, inst, output_dir=installed))
             except (RequestException, OSError, RuntimeError, ValueError) as exc:
                 return (directory if _curve_state(directory) != before else None), str(exc)
             if result.listed:
+                # NJM writes its own manifest only when it serves one
+                manifest_kept = partial_manifest is not None and _manifest_text(directory) == partial_manifest
                 reason = self._njm_shortfall(fac, inst, directory, result)
+                if reason is None and manifest_kept:
+                    _describe_completed_set(directory)
                 filled = reason is None or result.downloaded + result.verified > 0  # NJM's curves are there now
                 return (directory if filled else None), reason
         return None, "it does not serve this instrument"
@@ -867,6 +877,33 @@ def _declared_bands(directory):
     data = json.loads((Path(directory) / "manifest.json").read_text(encoding="utf-8"))
     archived = data.get("archived_bands") or {}  # NJM writes {band: {...}}; a list of names works too
     return [band for band in InstrumentManifest.from_dict(data).bands if band not in archived]
+
+
+def _manifest_text(directory):
+    """The installed ``manifest.json`` as text, or None when there is none."""
+    path = Path(directory) / "manifest.json"
+    return path.read_text(encoding="utf-8") if path.is_file() else None
+
+
+def _partial_fill_manifest(directory):
+    """The manifest (as text) of a set installed in part, which declares bands whose curves are not
+    installed (SVO's bands of NJM's set, with NJM down); None for any other folder."""
+    text = _manifest_text(directory)
+    if text is None or all((Path(directory) / f"{band}.dat").is_file() for band in _declared_bands(directory)):
+        return None
+    return text
+
+
+def _describe_completed_set(directory):
+    """Write the manifest of a set NJM has just completed as a fresh NJM download writes it.
+
+    The manifest of the partial fill described only the curves it installed,
+    so the others' published contents and detector types were missing.  Now
+    every curve NJM's index file lists is described from its header.
+    """
+    manifest = InstrumentManifest.from_published(directory)
+    manifest.bands = sorted(Path(name).stem for name in _index_entries(directory) if name.endswith(".dat"))
+    manifest.save(directory)
 
 
 def _drop_unlisted_bands(directory, listed):

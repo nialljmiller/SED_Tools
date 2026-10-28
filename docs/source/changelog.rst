@@ -694,8 +694,8 @@ Each item says what 0.4.1 did, what 0.5.0 does, and when it happens.
 - ``python -m sed_tools.flux_cube_tool`` exited 0 when a filter's photometry
   failed; it now lists the failed filters at the end and exits 1.
 - ``ml_generator --auto`` without optuna failed inside ``ml_optimized`` with
-  ``ModuleNotFoundError``; it now stops before training and names
-  ``pip install 'sed-tools[ml-tune]'``.
+  ``ModuleNotFoundError``; it now stops before training with the one-line
+  refusal of the other ML actions, naming ``pip install "sed-tools[ml-tune]"``.
 - The picker showed the whole list when a ``//regex`` filter was invalid;
   now it says so and keeps the previous filter.
 - The picker's columns are wider, so labels are shown in full; occasionally
@@ -922,8 +922,11 @@ Each item says what 0.4.1 did, what 0.5.0 does, and when it happens.
   gives ``detector_type`` None and each band's source ``unknown``.
 - ``filters-info`` beside an installed copy whose band names differ from
   NJM's (0.4.1's ``PLANCK/HFI`` from SVO, ``100GHz`` …) listed NJM's archived
-  copies (``100_svo`` …) with the set. NJM's set now decides which bands are
-  archived when the installed index shares no name with NJM's files.
+  copies (``100_svo`` …) with the set. Its band table now describes the
+  installed curves: NJM's records of the curve with the same FilterID
+  (``100_svo`` for ``100GHz`` …) are listed under the installed names, and
+  NJM's other bands are archived. Without such a match NJM's set decides
+  which bands are archived.
 
 **Old SVO spellings on a fresh install: what to update**
 
@@ -1051,23 +1054,34 @@ the names differ):
 - MSG still downloads its grid's single HDF5 file whole and extracts only the
   selected spectra. SVO cannot select spectra: from SVO the whole grid is
   downloaded, with a warning saying so, then cut, as in 0.4.1.
-- A folder that already holds every spectrum within the bounds with its flux
-  cube (the whole grid, or a wider selection) is cut as it stands: no
-  spectrum is downloaded and no file in it is rewritten (cleaning used to
-  rewrite its lookup table).
+- A folder that already holds every spectrum within the bounds with a flux
+  cube holding every spectrum there (the whole grid, or a wider selection)
+  is cut as it stands: no spectrum is downloaded and no file in it is
+  rewritten (cleaning used to rewrite its lookup table). Whether the cube
+  holds them is read from the cube and the lookup table, not from file
+  times, so a grid copied without its times (``cp -R``, ``scp``) counts as
+  complete.
 - A later ``SED.fetch`` into the folder without bounds, or with wider ones,
   downloads the rest and rebuilds the lookup table, bundle and flux cube from
-  every spectrum there, since a flux cube older than spectra beside it was
+  every spectrum there, since a flux cube that lacks spectra beside it was
   built without them. 0.4.1's ``SED.fetch`` kept the flux cube and bundle of
   a selection made with the ``grids`` axis-cut prompt after downloading the
   rest, because NJM's whole-grid copies are not downloaded over files
   already there.
-- ``sed-tools grids`` after a selection: with ``--no-h5`` a bundle older than
+- ``sed-tools grids`` after a selection: with ``--no-h5`` a bundle that lacks
   spectra beside it is rebuilt, and with ``--no-cube`` such a flux cube is
-  reported and the command exits 1, naming ``sed-tools rebuild``. Both used
-  to be kept as if they were the whole grid's.
+  reported and the command exits 1, naming ``sed-tools rebuild`` (with
+  ``--base`` when the grid is not in the default folder). Both used to be
+  kept as if they were the whole grid's.
+- Separate selections fetched into one folder (say Teff ≤ 5800 with
+  log g ≤ 4.2, then Teff ≥ 6200 with log g ≥ 4.3) leave points of the flux
+  cube's Teff × log g × [M/H] grid without a spectrum, whose flux is zero
+  and pulls interpolation near them toward zero; building a cube with such
+  points now prints a warning saying how many there are and where (0.4.1's
+  ``rebuild`` made the same cube silently). The cube itself is unchanged.
 - Bounds that no spectrum meets return an empty grid, as before, now without
-  downloading the grid. With Teff, log g or [M/H] cuts, NJM's whole-grid
+  downloading the grid, and leave no empty grid folder behind. With Teff,
+  log g or [M/H] cuts, NJM's whole-grid
   ``lookup_table.csv`` is no longer downloaded either (cleaning rebuilt it
   from the selected spectra anyway).
 - ``SED.fetch`` stopped, or carried on with an empty or stale directory, when

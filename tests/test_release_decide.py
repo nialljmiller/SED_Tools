@@ -57,7 +57,7 @@ def test_filters_fetch_returns_the_partial_set_with_one_warning(gaia_from_svo, c
         directory = Filters.fetch("GAIA", "GAIA", filter_root=gaia_from_svo)
     assert directory == gaia_from_svo / "GAIA" / "GAIA"
     assert len(incomplete_warnings(caplog)) == 1  # one line for the set, not one per band
-    assert "missing Gbp_bright, Gbp_faint" in incomplete_warnings(caplog)[0].getMessage()
+    assert "missing Gbp_bright, Gbp_faint" in " ".join(incomplete_warnings(caplog)[0].getMessage().split())
 
     info = Filters.available("GAIA", "GAIA", filter_root=gaia_from_svo, include_remote=False)
     assert info["bands"] == ["G", "Gbp", "Grp", "Grvs"]
@@ -70,7 +70,7 @@ def test_the_filters_command_exits_0_and_warns_once(gaia_from_svo, monkeypatch, 
         assert run_cli(monkeypatch, "filters", "GAIA/GAIA", "--base", str(gaia_from_svo)) == 0
     assert capsys.readouterr().out.rstrip().endswith(str(gaia_from_svo / "GAIA" / "GAIA"))
     [warning] = incomplete_warnings(caplog)
-    assert "Fetch again when NJM is reachable to complete it" in warning.getMessage()
+    assert "Fetch again when NJM is reachable to complete it" in " ".join(warning.getMessage().split())
 
 
 def test_filters_info_and_the_picker_summary_say_the_set_is_incomplete(gaia_from_svo, monkeypatch, capsys):
@@ -329,8 +329,9 @@ def test_grids_after_a_selection_rebuilds_or_says_why_it_did_not(njm, tmp_path, 
     # The rest, without a cube build: the selection's cube is not taken for the whole grid's.
     assert run_cli(monkeypatch, "grids", "--grids", GRID, "--source", "njm", "--base", base,
                    "--no-h5", "--no-cube") == 1
-    err = capsys.readouterr().err
-    assert "flux_cube.bin was built before some of the spectra beside it" in " ".join(err.split())
+    err = " ".join(capsys.readouterr().err.split())
+    assert "flux_cube.bin does not include 8 of the 12 spectra beside it" in err
+    assert f"Rebuild it with: sed-tools rebuild --grids {GRID} --base {base}" in err
     with h5py.File(folder / f"{GRID}.h5", "r") as bundle:  # rebuilt although --no-h5: it lacked the rest
         assert len(bundle["spectra"]) == 12
 

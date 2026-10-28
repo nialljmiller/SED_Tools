@@ -808,8 +808,9 @@ sed.grid.write('/custom/output/path')
 
 **With `teff_min` … `metallicity_max`, only the spectra within them are downloaded**, as `sed-tools grids --teff … --logg … --meta …` does. The grid's folder (`Kurucz2003all` under the stellar model directory) then holds those spectra, their `lookup_table.csv`, HDF5 bundle and `flux_cube.bin`, so `SED.local('Kurucz2003all')` and MESA use that selection. NJM's flux cube and bundle of the whole grid are not downloaded. MSG downloads its grid's single HDF5 file whole and extracts only the spectra within the bounds. SVO cannot select spectra, so from SVO the whole grid is downloaded, with a warning, then cut.
 
-- A folder that already holds every spectrum within the bounds, with its flux cube (the whole grid, or a wider selection), is cut as it stands: nothing is downloaded or rewritten.
+- A folder that already holds every spectrum within the bounds, with a flux cube holding every spectrum there (the whole grid, or a wider selection), is cut as it stands: nothing is downloaded or rewritten. Whether the cube holds them is read from the cube and the lookup table, not from file times, so a grid copied without its times (`cp -R`, `scp`) counts as complete.
 - A later fetch without bounds, or with wider ones, downloads the rest and rebuilds the lookup table, bundle and flux cube from every spectrum in the folder.
+- Separate selections fetched into one folder (say Teff ≤ 5800 with log g ≤ 4.2, then Teff ≥ 6200 with log g ≥ 4.3) leave points of the flux cube's Teff × log g × [M/H] grid without a spectrum, whose flux is zero and pulls interpolation near them toward zero; building the cube prints a warning saying how many points are empty and where.
 - A whole grid from NJM comes with NJM's flux cube. For a grid from SVO, or a whole grid from MSG, build it with `sed-tools rebuild --grids NAME`.
 - `sed.grid.write()` without a path writes into the grid's own folder, replacing its spectra with copies whose header keeps only Teff, log g, [M/H] and the units; give it another folder.
 
