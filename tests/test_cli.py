@@ -48,11 +48,11 @@ def test_menu_valid_choices():
     from unittest.mock import patch
 
     for key, expected in [
-        ("1", "filters"), ("2", "filters_combine"), ("3", "grids"),
-        ("4", "rebuild"), ("5", "combine"), ("6", "ml_completer"),
-        ("7", "ml_generator"), ("8", "grid_densifier"),
-        ("9", "coverage"), ("10", "import"), ("11", "mesa_prepare"),
-        ("12", "config"), ("0", "quit"),
+        ("1", "filters"), ("2", "filters_combine"), ("3", "filter_info"),
+        ("4", "filter_compose"), ("5", "grids"), ("6", "rebuild"),
+        ("7", "combine"), ("8", "ml_completer"), ("9", "ml_generator"),
+        ("10", "grid_densifier"), ("11", "coverage"), ("12", "import"),
+        ("13", "mesa_prepare"), ("14", "config"), ("0", "quit"),
     ]:
         with patch("builtins.input", return_value=key):
             assert menu() == expected

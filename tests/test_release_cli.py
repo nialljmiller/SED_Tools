@@ -669,11 +669,11 @@ def test_downloading_several_facilities_asks_first_with_the_count(catalogue, tmp
 # ----------------------------------------------------------------------
 # Menu entries 13 and 14: filter set information and atmosphere models
 # ----------------------------------------------------------------------
-def test_menu_13_shows_filters_info_for_a_picked_instrument(gaia, monkeypatch, capsys):
+def test_menu_3_shows_filters_info_for_a_picked_instrument(gaia, monkeypatch, capsys):
     monkeypatch.setattr(cli, "_print_banner", lambda: None)
     looked_up = _summary_inputs(monkeypatch, _availability(facility="GAIA", instrument="GAIA0"), {
         "info": {"licence": LICENCE, "references": ["a"]}, "properties": None, "errors": []})
-    prompts = answer(monkeypatch, "13", "1", "4", "n", "q", "q")
+    prompts = answer(monkeypatch, "3", "1", "4", "n", "q", "q")
     assert cli._run_menu() == 0
     out = capsys.readouterr().out
     assert "\nGAIA/GAIA0  (2 bands)\n  Published curves contain" in out
@@ -698,25 +698,25 @@ def lsst(tmp_path, monkeypatch):
     return composed
 
 
-def test_menu_14_builds_a_curve_from_the_parts_of_a_picked_instrument(lsst, tmp_path, monkeypatch, capsys):
+def test_menu_4_builds_a_curve_from_the_parts_of_a_picked_instrument(lsst, tmp_path, monkeypatch, capsys):
     parts = _availability(facility="LSST", instrument="LSST", buildable=["filter", "filter+optics+qe"],
                           components=["filter", "optics", "qe"])
     _summary_inputs(monkeypatch, parts)
     monkeypatch.setattr(cli, "_installed_availability", lambda directory: parts)
-    prompts = answer(monkeypatch, "14", "1", "1", "2", "", "q")
+    prompts = answer(monkeypatch, "4", "1", "1", "2", "", "q")
     assert cli._run_menu() == 0
-    assert (" 13) Filter set information\n"
-            " 14) Build a filter curve from its parts (filter, optics, camera, atmosphere)\n") in capsys.readouterr().out
+    assert ("  3) Filter set information\n"
+            "  4) Build a filter curve from its parts (filter, optics, camera, atmosphere)\n") in capsys.readouterr().out
     assert prompts[3:5] == ["Choose a recipe [1]: ", "Detector convention [inherit], energy or photon: "]
     assert lsst == [((tmp_path / "LSST" / "LSST",), {"filter_root": tmp_path, "components": ["filter", "optics", "qe"],
                                                      "detector_type": None, "allow_heavy": False, "atmosphere": None})]
 
 
-def test_menu_14_says_in_one_line_when_an_instrument_has_no_parts(lsst, monkeypatch, capsys):
+def test_menu_4_says_in_one_line_when_an_instrument_has_no_parts(lsst, monkeypatch, capsys):
     _summary_inputs(monkeypatch, _availability(facility="LSST", instrument="LSST", buildable=[], components=[],
                                                component_availability={"status": "total-only", "builder": None}))
     monkeypatch.setattr(cli, "_installed_availability", lambda directory: pytest.fail("nothing is downloaded"))
-    answer(monkeypatch, "14", "1", "1", "q")
+    answer(monkeypatch, "4", "1", "1", "q")
     assert cli._run_menu() == 0
     out = capsys.readouterr().out
     assert "\nLSST/LSST has no separate parts to build a filter curve from.\n" in out and lsst == []
