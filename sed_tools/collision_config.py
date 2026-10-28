@@ -66,6 +66,10 @@ _BOOKKEEPING_AXES: Set[str] = {
     "atmosphere", "model", "model_type", "grid", "library",
     # MAST BOSZ specific
     "vturb", "cm", "am",
+    # Provenance of a combined grid (combine_stellar_atm.save_combined_data) and of
+    # an ML-extended one (Completer.extend_catalog): they differ row to row, but
+    # are not physical axes, so such a grid is one cube, not one per row.
+    "source_model", "original_file", "extended_by_ml", "wl_min", "wl_max",
 }
 
 MESA_AXES: Set[str] = _MESA_PARAM_AXES | _BOOKKEEPING_AXES
