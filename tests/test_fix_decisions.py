@@ -276,7 +276,7 @@ def test_cli_offers_the_best_guess_and_takes_a_typed_unit(tmp_path, monkeypatch,
     out = capsys.readouterr().out
     assert "flam        erg/s/cm²/Å (F_λ)" in out and "fnu_jy      Jansky (F_ν)" in out
     assert ("Best guess: fnu_jy, Jansky (F_ν); guessed from the size of the flux values, "
-            "assuming flux received at Earth.") in out
+            "assuming flux received at Earth.") in " ".join(out.split())
 
 
 def test_cli_asks_again_after_an_unknown_unit_and_stops_on_no(tmp_path, monkeypatch, capsys):

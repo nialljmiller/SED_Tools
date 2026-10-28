@@ -288,7 +288,7 @@ def _ask_flux_unit(grid: str, txt_files: List[str], flux_unit: Optional[str] = N
     print(f"\nFlux unit of {grid} is not declared. Accepted flux units:")
     for name, (_, _, description) in FLUX_UNITS.items():
         print(f"  {name:11s} {description}")
-    print(f"  Best guess: {guess}, {FLUX_UNITS[guess][2]}; {FLUX_GUESS_WHY}.")
+    print(_wrap(f"Best guess: {guess}, {FLUX_UNITS[guess][2]}; {FLUX_GUESS_WHY}.", indent="  ", hanging="    "))
     question = f"Flux unit of {grid} (type its name, e.g. {guess}), or n to leave it uncleaned: "
     while True:
         answer = input(question).strip()
@@ -502,6 +502,8 @@ def run_spectra_flow(
     src_list = _spectra_sources(source)
     grabs = _spectra_grabbers(src_list, base_dir, workers)
     model_sources, discovery_failures = _discover_spectral_grids(src_list, grabs)
+    if "njm" in src_list and "njm" not in grabs:
+        discovery_failures.insert(0, "njm: mirror unreachable")
     if not model_sources:
         raise RuntimeError("No spectral grids discovered" + "".join(f"; {f}" for f in discovery_failures))
 
@@ -548,7 +550,9 @@ def _spectra_grabbers(src_list: List[str], base_dir: str, workers: int) -> Dict:
         if njm.is_available():
             grabs["njm"] = njm
         else:
-            print("[njm] Mirror unavailable, using other sources")
+            others = [s for s in src_list if s != "njm"]
+            print("[njm] Mirror unreachable; " + (f"using {', '.join(others)}" if others
+                                                   else "no other source was requested (--source)"))
     if "svo"  in src_list: grabs["svo"]  = SVOSpectraGrabber(base_dir=base_dir, max_workers=workers)
     if "msg"  in src_list: grabs["msg"]  = MSGSpectraGrabber(base_dir=base_dir, max_workers=workers)
     if "mast" in src_list: grabs["mast"] = MASTSpectraGrabber(base_dir=base_dir, max_workers=workers)
@@ -769,7 +773,7 @@ def _variants_summary(variants: dict) -> str:
     parts = []
     for role, named in variants.items():
         default = _default_variant(named)
-        names = ", ".join(f"{n} (default)" if n == default else n for n in named)
+        names = ", ".join([f"{default} (default)"] * bool(default) + [n for n in named if n != default])
         parts.append(f"{role}: {names}" + ("" if default else f" (default: the standard {role} curve)"))
     return "; ".join(parts)
 
@@ -837,18 +841,21 @@ def _licence_summary(licence: dict) -> str:
 def _print_band_table(bands: List[str], props: dict, band_info: dict) -> None:
     """Band, pivot, FWHM, detector and magnitude system, with descriptions wrapped to the terminal."""
     head = f"  {'Band':<16}{'Pivot (Å)':>11}{'FWHM (Å)':>11}  {'Detector':<9}{'MagSys':<8}"
-    room = max(20, terminal_width() - len(head))
-    print(head + "Description")
-    for band in bands:
+    descriptions = [" ".join(str(band_info.get(b, {}).get("Description") or "").split()) for b in bands]
+    room = terminal_width() - len(head)
+    beside = all(len(d) <= room for d in descriptions)  # else each goes on its own lines below its row
+    print((head + ("Description" if beside else "")).rstrip())
+    for band, description in zip(bands, descriptions):
         p, i = props.get(band, {}), band_info.get(band, {})
         num = lambda v: f"{v:>11.1f}" if isinstance(v, (int, float)) else f"{'-':>11}"
         row = (f"  {band:<16}{num(p.get('WavelengthPivot'))}{num(p.get('FWHM'))}  "
                f"{p.get('DetectorType', '-'):<9}{i.get('MagSys') or '-':<8}")
-        description = textwrap.wrap(" ".join(str(i.get("Description") or "").split()), room,
-                                    break_on_hyphens=False, break_long_words=False) or [""]
-        print(row + description[0])
-        for line in description[1:]:
-            print(" " * len(head) + line)
+        if beside:
+            print((row + description).rstrip())
+        else:
+            print(row.rstrip())
+            if description:
+                print(_wrap(description, indent=" " * 6, hanging=" " * 6))
 
 
 def _number_or_open(text: str) -> Optional[float]:
@@ -997,9 +1004,9 @@ def _ask_variants(variants: dict, roles: List[str]) -> Optional[Dict[str, str]]:
             continue
         default = _default_variant(named)
         print(f"Variants of the {key} curve:")
-        for name, entry in named.items():
+        for name in sorted(named, key=lambda n: n != default):  # the default first
             label = f"{name} (default)" if name == default else name
-            print(_wrap(entry.get("description") or "", indent=f"  {label:<20} ", hanging=" " * 23))
+            print(_wrap(named[name].get("description") or "", indent=f"  {label:<20} ", hanging=" " * 23))
         keep = default or "standard"
         options = list(named) + ([] if default else ["standard"])
         pick = _ask_option(f"{key} variant [{keep}]: ", options, default=keep)
@@ -1114,8 +1121,8 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> int:
 
     library = FilterLibrary(base_dir)
     catalogue = library.facilities()
-    for error in catalogue["errors"]:
-        print(f"[filters] {error}")
+    shown: set = set()
+    _print_listing_errors(catalogue["errors"], shown)
     facilities = catalogue["entries"]
     if not facilities:
         print("No facilities found.")
@@ -1130,9 +1137,9 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> int:
         if selected is None:
             break
         if len(selected) > 1:
-            _download_every_instrument(library, [facilities[i] for i in selected], base_dir, failures)
+            _download_every_instrument(library, [facilities[i] for i in selected], base_dir, failures, shown=shown)
             break
-        if not _browse_instruments(library, facilities[selected[0]], base_dir, failures):
+        if not _browse_instruments(library, facilities[selected[0]], base_dir, failures, shown=shown):
             break
     if not failures:
         return 0
@@ -1186,16 +1193,26 @@ def _cut(text: str, width: int) -> str:
     return text if len(text) <= width else text[:max(width - 1, 0)] + "…"
 
 
-def _download_every_instrument(library, facilities: List[dict], base_dir: str, failures: List[str]) -> None:
+def _print_listing_errors(errors: List[str], shown: set) -> None:
+    """Print each catalogue listing error once per browsing session (NJM being down is said once)."""
+    for error in errors:
+        if error not in shown:
+            shown.add(error)
+            print(f"[filters] {error}")
+
+
+def _download_every_instrument(library, facilities: List[dict], base_dir: str, failures: List[str], *,
+                               shown: Optional[set] = None) -> None:
     """After confirming the count, download every instrument of each facility.
 
     An incomplete instrument list is a failure too.
     """
+    shown = set() if shown is None else shown
     listings = []
     for facility in facilities:
         result = library.instruments(facility["key"])
+        _print_listing_errors(result["errors"], shown)
         for error in result["errors"]:
-            print(f"[filters] {error}")
             failures.append(f"{facility['key']}: instrument list incomplete: {error}")
         listings.append((facility, result["entries"]))
     count = sum(len(entries) for _, entries in listings)
@@ -1209,12 +1226,12 @@ def _download_every_instrument(library, facilities: List[dict], base_dir: str, f
             _fetch_instrument(_fetch_key(facility), _fetch_key(instrument), base_dir, failures)
 
 
-def _browse_instruments(library, facility_entry: dict, base_dir: str, failures: List[str]) -> bool:
+def _browse_instruments(library, facility_entry: dict, base_dir: str, failures: List[str], *,
+                        shown: Optional[set] = None) -> bool:
     """Pick instruments of one facility to download; returns False if the user quit."""
     facility = _fetch_key(facility_entry)
     result = library.instruments(facility_entry["key"])
-    for error in result["errors"]:
-        print(f"[filters] {error}")
+    _print_listing_errors(result["errors"], set() if shown is None else shown)
     instruments = result["entries"]
     if not instruments:
         print(f"No instruments found for {facility}.")
@@ -1409,16 +1426,7 @@ def run_combine_flow(
         print("No spectral grids selected.")
         return
 
-    names = [name for name, _ in selected_models]
-    if interactive:
-        output_name = input(f"What should the combined spectral grid be called? [{output_name}] ").strip() or output_name
-        while output_name in names:
-            output_name = (input(f"{output_name} is one of the grids being combined; choose another name: ").strip()
-                           or output_name)
-    elif output_name in names:
-        raise ValueError(f"The output grid {output_name} is also one of the grids to combine; "
-                         "choose another --output or leave it out of --grids")
-
+    output_name = _combined_grid_name(output_name, [name for name, _ in selected_models], interactive)
     print("\nSpectral grid will be saved as:", output_name, "\n")
 
     print(f"\nSelected {len(selected_models)} spectral grids to combine:")
@@ -1432,6 +1440,19 @@ def run_combine_flow(
     print(f"Output saved to: {output_dir}")
     print("You can now use this combined spectral grid in MESA by setting:")
     print(f"stellar_atm = '{output_dir}/'")
+
+
+def _combined_grid_name(output_name: str, inputs: List[str], interactive: bool) -> str:
+    """The output grid's name, asked for when interactive; never one of the ``inputs``."""
+    if interactive:
+        output_name = input(f"What should the combined spectral grid be called? [{output_name}] ").strip() or output_name
+        while output_name in inputs:
+            output_name = (input(f"{output_name} is one of the grids being combined; choose another name: ").strip()
+                           or output_name)
+    elif output_name in inputs:
+        raise ValueError(f"The output grid {output_name} is also one of the grids to combine; "
+                         "choose another --output or leave it out of --grids")
+    return output_name
 
 
 def _named_grids(models: List[str], model_dirs: List[Tuple[str, str]], base_dir: str) -> List[Tuple[str, str]]:
@@ -2189,9 +2210,9 @@ def _cmd_filters_atmospheres(args, parser):
         _print_field("Conditions", _conditions_text(grid))
         if grid.get("altitude_m") is not None:
             _print_field("Altitude", f"{grid['altitude_m']:g} m")
-        model = " ".join(str(part) for part in (grid.get("model"), grid.get("model_version")) if part)
-        if model:
-            _print_field("Model", model)
+        if grid.get("model"):
+            _print_field("Model", grid["model"] + (f", version {grid['model_version']}"
+                                                   if grid.get("model_version") else ""))
         if grid.get("source"):
             _print_field("Source", grid["source"])
         if grid.get("citation"):

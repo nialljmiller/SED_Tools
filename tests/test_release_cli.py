@@ -741,3 +741,15 @@ def test_filters_info_fails_when_no_source_answered(monkeypatch):
     monkeypatch.setattr(Filters, "available", classmethod(lambda cls, *a, **k: info))
     monkeypatch.setattr(cli, "_catalogue_entry", lambda *a, **k: {"info": None, "properties": None, "errors": []})
     assert run_cli(monkeypatch, "filters-info", "Fac/Cam") == 1
+
+
+def test_browsing_says_njm_is_unavailable_once(tmp_path, monkeypatch, capsys):
+    from sed_tools.filter_library import FilterLibrary
+
+    monkeypatch.setattr(FilterLibrary, "facilities", lambda self: {
+        "entries": [{"key": "A", "label": "A", "sources": ["svo"]}], "errors": ["NJM unavailable"]})
+    monkeypatch.setattr(FilterLibrary, "instruments", lambda self, facility: {
+        "entries": [{"key": "Cam", "label": "Cam", "sources": ["svo"]}], "errors": ["NJM unavailable"]})
+    answer(monkeypatch, "1", "b", "1", "b", "q")
+    assert cli.run_filters_flow(str(tmp_path)) == 0
+    assert capsys.readouterr().out.count("[filters] NJM unavailable") == 1
