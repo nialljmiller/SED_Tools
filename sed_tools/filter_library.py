@@ -7,25 +7,30 @@ numerical work. Source catalogues remain data-only descriptions.
 
 from __future__ import annotations
 
+import json
 import logging
-import re
 from functools import cached_property
 from pathlib import Path
 
 from requests import RequestException
 
 from .component_sources import get_builder
-from .component_sources.catalog import BUILDERS_FOR, builder_for, component_availability
+from .component_sources.catalog import (
+    BUILDERS_FOR, builder_for, component_availability, match_name, name_key, registered_name,
+)
 from .filter_components import (
     FILTER, OPTICS, QE, PUBLISHED, AtmosphereGrid, AtmosphereSpec, ComponentError,
     InstrumentManifest, atmosphere_file, build_product, find_atmosphere, parse_components,
     resolve_atmosphere,
 )
 from .filter_metadata import SVOUnreachableError, migrate_filter_tree, svo_components_header
-from .njm_filter_grabber import NJMFilterGrabber
+from .njm_filter_grabber import NJMFilterGrabber, _status, curve_file
 from .svo_filter_grabber import SVOFilterBrowser, _clean_path
 
 logger = logging.getLogger(__name__)
+
+#: Whose spelling of a name the picker shows and downloads with, when several sources list it.
+FETCH_ORDER = ("njm", "original", "local", "svo")
 
 
 class FilterLibrary:
@@ -51,31 +56,35 @@ class FilterLibrary:
         if fac is None:
             raise ComponentError(f"SVO facility not found: {facility}")
         instruments = self.svo.list_instruments(fac.key)
-        inst = next((i for i in instruments if instrument.casefold() in
-                     (i.key.casefold(), i.label.casefold())), None)
-        if inst is None:
+        key = match_name(instrument, [i.key for i in instruments])
+        if key is None:
+            label = match_name(instrument, [i.label for i in instruments])
+            key = next((i.key for i in instruments if i.label == label), None)
+        if key is None:
             raise ComponentError(f"SVO instrument not found: {facility}/{instrument}")
-        return self.svo.list_filters(fac.key, inst.key)
+        return self.svo.list_filters(fac.key, key)
 
     def svo_facility(self, name):
-        identity = self._catalogue_key(name)
+        identity = name_key(name)
         return next((fac for fac in self.svo.list_facilities() if identity in
-                     (self._catalogue_key(fac.key), self._catalogue_key(fac.label))), None)
+                     (name_key(fac.key), name_key(fac.label))), None)
 
     @staticmethod
     def published_complete(directory):
-        """Check every declared band; undeclared partial downloads are unverified."""
+        """Whether an installed instrument holds every curve it declares.
+
+        Every curve its MESA index file lists must be present, and every band
+        its manifest declares except those under ``archived_bands`` (superseded
+        copies NJM keeps beside the set but never serves as part of it).  The
+        manifest counts as well because a download that failed part-way leaves
+        an index of only the curves it saved beside a manifest of the bands it
+        expected.
+        """
         directory = Path(directory)
-        if not list(directory.glob("*.dat")):
+        if not list(directory.glob("*.dat")) or not (directory / "manifest.json").is_file():
             return False
-        index = directory / directory.name
-        if not (directory / "manifest.json").is_file():
-            return False
-        manifest = InstrumentManifest.load(directory)
-        expected = {f"{b}.dat" for b in manifest.bands}
-        if index.is_file():
-            expected.update(line.strip() for line in index.read_text().splitlines()
-                            if line.strip() and not line.lstrip().startswith("#"))
+        expected = {f"{band}.dat" for band in _declared_bands(directory)}
+        expected.update(_index_entries(directory))
         return bool(expected) and all(Path(name).name == name and (directory / name).is_file()
                                       for name in expected)
 
@@ -83,9 +92,13 @@ class FilterLibrary:
         """The directory of the instrument's complete published curves, downloading them if needed.
 
         Sources, in order: an installed complete copy, NJM, the instrument's
-        original-source builder, SVO.  Each source that cannot give a complete
-        set is reported with a warning naming the next one tried; when none can,
-        ComponentError carries every source's reason.
+        original-source builder, SVO.  NJM and the builder are asked under
+        their own spelling of the name, matched ignoring case and punctuation
+        (``CTIO/S-PLUS`` is NJM's ``CTIO/S_PLUS``).  Each source that cannot
+        give a complete set is reported with a warning naming the next one
+        tried; when none can, ComponentError carries every source's reason.
+        Once NJM has put part of its set in place, SVO is not tried: its curves
+        would replace or mix with NJM's.
         """
         directory = self.root / facility / instrument
         if self.published_complete(directory):
@@ -93,42 +106,83 @@ class FilterLibrary:
             migrate_filter_tree(directory)
             return directory
 
-        ref = builder_for(facility, instrument)
-        builder = ref if ref is not None and ref.publishes else None
-        reason = self._published_from_njm(facility, instrument, directory)
+        names = registered_name(facility, instrument)
+        builder = BUILDERS_FOR[names] if names and BUILDERS_FOR[names].publishes else None
+        njm_directory, reason = self._published_from_njm(facility, instrument)
         if reason is None:
-            return directory
+            return njm_directory
         reasons = [f"NJM: {reason}"]
-        logger.warning("NJM cannot provide %s/%s (%s); trying %s", facility, instrument, reason,
-                       "its original-source builder" if builder else "SVO")
+        njm_filled = njm_directory is not None
+        if builder is not None or not njm_filled:
+            logger.warning("NJM cannot provide %s/%s (%s); trying %s", facility, instrument, reason,
+                           "its original-source builder" if builder else "SVO")
         if builder is not None:
-            reason = self._published_from_builder(builder, directory)
+            built = self.root / names[0] / names[1]
+            reason = self._published_from_builder(builder, built)
             if reason is None:
-                return directory
+                return built
             reasons.append(f"original source: {reason}")
-            logger.warning("The original source cannot provide %s/%s (%s); trying SVO", facility, instrument, reason)
+            if not njm_filled:
+                logger.warning("The original source cannot provide %s/%s (%s); trying SVO",
+                               facility, instrument, reason)
+        if njm_filled:
+            raise ComponentError(f"NJM provided only part of {facility}/{instrument}; run again to fetch the rest. "
+                                 f"SVO is not used, so that its curves never replace or mix with NJM's in "
+                                 f"{njm_directory}: " + "; ".join(reasons))
         try:
             return self._published_from_svo(facility, instrument, directory)
         except (ComponentError, RequestException, RuntimeError) as exc:
             reasons.append(f"SVO: {exc}")
             raise ComponentError(f"No source can provide {facility}/{instrument}: " + "; ".join(reasons)) from exc
 
-    def _published_from_njm(self, facility, instrument, directory):
-        """Download the set from NJM; ``None`` once it is complete, else why it is not."""
+    def _published_from_njm(self, facility, instrument):
+        """Download the set from NJM.
+
+        Returns ``(directory, None)`` once every curve NJM's index lists is
+        installed and matches NJM's copy, else ``(directory holding curves NJM
+        wrote or confirmed now, or None, why the set is incomplete)``.
+        """
         if not self.mirror.is_available():
-            return "the mirror is unavailable"
-        try:
-            self.mirror.download_filters(facility, instrument)
-        except (RequestException, OSError, RuntimeError, ValueError) as exc:
-            if not self.published_complete(directory):
-                return str(exc)
+            return None, "the mirror is unavailable"
+        spellings = [(facility, instrument)]
+        njm_names = self._njm_spelling(facility, instrument)
+        if njm_names is not None and njm_names != (facility, instrument):
+            spellings.insert(0, njm_names)
+        for fac, inst in spellings:
+            directory = self.root / fac / inst
+            if (fac, inst) != (facility, instrument) and self.published_complete(directory):
+                migrate_filter_tree(directory)
+                return directory, None
+            before = _curve_state(directory)
+            try:
+                result = self.mirror._download_set(fac, inst)
+            except (RequestException, OSError, RuntimeError, ValueError) as exc:
+                return (directory if _curve_state(directory) != before else None), str(exc)
+            if result.listed:
+                reason = self._njm_shortfall(fac, inst, directory, result)
+                filled = reason is None or result.downloaded + result.verified > 0  # NJM's curves are there now
+                return (directory if filled else None), reason
+        return None, "it does not serve this instrument"
+
+    def _njm_shortfall(self, facility, instrument, directory, result):
+        """Why an NJM download left the set incomplete, or None when it is complete."""
+        missing = [name for name in result.listed if not (directory / curve_file(name)).is_file()]
+        if result.curve_failures:
+            return (f"{len(result.curve_failures)} of {len(result.listed)} curves could not be downloaded or "
+                    "checked: " + "; ".join(result.curve_failures))
+        if missing:
+            return "the mirror has no complete set"
+        if result.other_failures:
             # Every curve arrived; only an extra (components, say) failed, and is fetched again when needed.
-            logger.warning("NJM provided every curve of %s/%s, but: %s", facility, instrument, exc)
-            return None
-        return None if self.published_complete(directory) else "the mirror has no complete set"
+            logger.warning("NJM provided every curve of %s/%s, but: %s", facility, instrument,
+                           "; ".join(result.other_failures))
+        _drop_unlisted_bands(directory, {curve_file(name) for name in result.listed})
+        return None
 
     def _published_from_builder(self, ref, directory):
         """Build the set from its original source; ``None`` once it is complete, else why it is not."""
+        if self.published_complete(directory):  # installed under the builder's spelling
+            return None
         try:
             get_builder(ref.name)(self.root, **dict(ref.kwargs))
         except (RequestException, OSError, RuntimeError, ValueError) as exc:
@@ -163,18 +217,17 @@ class FilterLibrary:
         errors = []
         if remote:
             try:
-                data = self.mirror.fetch_manifest(facility, instrument)
+                info = self._njm_availability(facility, instrument)
             except (RequestException, ValueError) as exc:
                 errors.append(f"NJM: {exc}")
-                data = None
-            if data:
-                manifest = InstrumentManifest.from_dict(data)
-                return dict(manifest.describe(), availability_source="njm", errors=[])
+            else:
+                if info is not None:
+                    return info
         ref = builder_for(facility, instrument)
         if ref is not None and ref.name == "tabular":
             from .component_sources.tabular import SOURCES
 
-            spec = SOURCES[instrument]
+            spec = SOURCES[dict(ref.kwargs)["instrument"]]
             headers = {band: {"Components": FILTER, "ComponentsSource": "original",
                               "DetectorType": spec.detector_type,
                               "DetectorTypeSource": "assumed"} for band in spec.filters}
@@ -200,6 +253,46 @@ class FilterLibrary:
                 errors.append(f"SVO: {exc}")
         manifest = InstrumentManifest.from_headers(facility, instrument, {})
         return dict(manifest.describe(), availability_source="unknown", errors=errors)
+
+    def _njm_availability(self, facility, instrument):
+        """What NJM serves for an instrument (under its name as given, else NJM's spelling), or None.
+
+        An instrument NJM serves without a component manifest (GAIA/GAIA, say)
+        is described from the curve headers its ``info.json`` records, with a
+        note in ``notes`` rather than an error.
+        """
+        spellings = [(facility, instrument)]
+        njm_names = self._njm_spelling(facility, instrument)
+        if njm_names is not None and njm_names != (facility, instrument):
+            spellings.append(njm_names)
+        for fac, inst in spellings:
+            data = self.mirror.fetch_manifest(fac, inst)
+            if data:
+                return dict(InstrumentManifest.from_dict(data).describe(), availability_source="njm", errors=[])
+            listed = self.mirror.discover_filters(fac, inst)
+            if listed:
+                return self._njm_without_manifest(fac, inst, listed)
+        return None
+
+    def _njm_without_manifest(self, facility, instrument, listed):
+        """Describe an instrument NJM serves without ``manifest.json``, from its ``info.json``."""
+        bands = [curve_file(name)[:-len(".dat")] for name in listed]
+        headers = {band: {} for band in bands}
+        errors = []
+        try:
+            info = json.loads(self.mirror._catalogue_file(facility, instrument, "info.json"))
+        except (RequestException, ValueError) as exc:
+            if _status(exc) != 404:
+                errors.append(f"NJM: {exc}")
+        else:
+            for band in bands:
+                curve = (info["bands"].get(band) or {}).get("curve")
+                if isinstance(curve, dict):
+                    headers[band] = {key: value for key, value in curve.items() if isinstance(value, str)}
+        manifest = InstrumentManifest.from_headers(facility, instrument, headers)
+        return dict(manifest.describe(), availability_source="njm", errors=errors,
+                    notes=["no component manifest: NJM serves only the published curves, described "
+                           "here from their headers"])
 
     @staticmethod
     def components_ready(directory, components=None, bands=None):
@@ -314,6 +407,12 @@ class FilterLibrary:
         if not list(directory.glob("*.dat")):
             directory = self.published(directory.parent.name, directory.name)
         roles = parse_components(components)
+        if bands is not None:
+            # Before any source is asked for components a band could never use.
+            manifest = InstrumentManifest.load(directory)
+            for band in bands:
+                if band not in manifest.bands:
+                    raise ComponentError(f"{manifest.facility}/{manifest.instrument} has no band '{band}'")
         self.prepare_components(directory, components=roles, bands=bands, allow_heavy=allow_heavy)
         spec = AtmosphereSpec.coerce(atmosphere)
         if spec is not None:
@@ -323,58 +422,74 @@ class FilterLibrary:
                              bands=bands, detector_type=detector_type, allow_partial=allow_partial,
                              variants=variants)
 
-    @staticmethod
-    def _catalogue_key(name):
-        return re.sub(r"[^a-z0-9]", "", name.casefold())
+    # ------------------------------------------------------------------
+    # Discovery: what the facility and instrument pickers offer
+    # ------------------------------------------------------------------
+    @cached_property
+    def _bundled(self):
+        """NJM's names, descriptions and SVO equivalents as shipped (see :func:`load_instrument_catalogue`)."""
+        return load_instrument_catalogue()
 
-    @classmethod
-    def _catalogue_add(cls, entries, key, label, source):
-        identity = cls._catalogue_key(key)
-        entry = entries.setdefault(identity, {"key": key, "label": label, "sources": []})
-        if source == "svo":
-            entry.update(key=key, label=label)
-        if source not in entry["sources"]:
-            entry["sources"].append(source)
+    def _njm_spelling(self, facility, instrument):
+        """NJM's spelling of an instrument from the bundled catalogue (``CTIO/S-PLUS`` -> ``CTIO/S_PLUS``), or None."""
+        fac = match_name(facility, self._bundled)
+        inst = match_name(instrument, self._bundled[fac]["instruments"]) if fac else None
+        return (fac, inst) if inst else None
+
+    def _njm_instruments(self, facility, live):
+        """NJM's instruments of a facility -> ``{"description", "svo_instruments"}``.
+
+        The bundled catalogue, with each field a reachable NJM's ``index.json``
+        gives (``live``: name -> record) added or overriding it.
+        """
+        fac = match_name(facility, self._bundled)
+        known = {name: dict(meta) for name, meta in (self._bundled[fac]["instruments"] if fac else {}).items()}
+        for name, record in live.items():
+            fresh = _instrument_metadata(record)
+            known[name] = dict(known.get(name, fresh), **{k: v for k, v in fresh.items() if k in record})
+        return known
 
     def facilities(self, *, remote=True):
-        """Discover the union of installed, registered, SVO and NJM facilities."""
-        entries, errors = {}, []
-        for directory in sorted(self.root.glob("*")):
-            if directory.is_dir() and any(directory.glob("*/*.dat")):
-                self._catalogue_add(entries, directory.name, directory.name, "local")
-        for facility, _ in BUILDERS_FOR:
-            self._catalogue_add(entries, facility, facility, "original")
+        """Discover the union of installed, registered, SVO and NJM facilities.
+
+        Returns ``{"entries": [...], "errors": [...]}``; :func:`_picker_entries`
+        describes an entry.  NJM is not needed: without it the other sources
+        are listed, named and described as when it is reachable.
+        """
+        listings, errors = [], []
+        listings.append(("local", [(d.name, "") for d in sorted(self.root.glob("*"))
+                                   if d.is_dir() and any(d.glob("*/*.dat"))]))
+        listings.append(("original", [(facility, "") for facility, _ in BUILDERS_FOR]))
         if remote:
             try:
                 facilities = self.svo.list_facilities()
                 if not facilities:
                     raise ComponentError("SVO returned no facilities")
-                for facility in facilities:
-                    self._catalogue_add(entries, facility.key, facility.label, "svo")
+                listings.append(("svo", [(f.key, f.description) for f in facilities]))
             except (ComponentError, RequestException, RuntimeError) as exc:
                 errors.append(f"SVO: {exc}")
             if self.mirror.is_available():
                 try:
-                    njm_facilities = self.mirror.discover_facilities()
+                    listings.append(("njm", [(name, "") for name in self.mirror.discover_facilities()]))
                 except RequestException as exc:
                     errors.append(f"NJM: {exc}")
-                    njm_facilities = []
-                for facility in njm_facilities:
-                    self._catalogue_add(entries, facility, facility, "njm")
             else:
                 errors.append("NJM unavailable")
-        return {"entries": sorted(entries.values(), key=lambda e: e["key"].casefold()), "errors": errors}
+        return {"entries": _picker_entries(_merge(listings), self._bundled), "errors": errors}
 
     def instruments(self, facility, *, remote=True):
-        """Discover every instrument under one facility without downloading curves."""
-        entries, errors = {}, []
-        same_facility = lambda name: self._catalogue_key(name) == self._catalogue_key(facility)
-        for directory in sorted(self.root.glob("*/*")):
-            if same_facility(directory.parent.name) and directory.is_dir() and list(directory.glob("*.dat")):
-                self._catalogue_add(entries, directory.name, directory.name, "local")
-        for fac, instrument in BUILDERS_FOR:
-            if same_facility(fac):
-                self._catalogue_add(entries, instrument, instrument, "original")
+        """Discover every instrument under one facility without downloading curves.
+
+        Returns ``{"entries": [...], "errors": [...]}`` as :meth:`facilities`
+        does.  An SVO instrument that NJM lists as the same product as one of
+        its own (``svo_instruments``) is not listed separately while NJM is
+        reachable: NJM's owner-sourced copy is offered instead.
+        """
+        same_facility = lambda name: name_key(name) == name_key(facility)
+        listings, errors, live = [], [], {}
+        listings.append(("local", [(d.name, "") for d in sorted(self.root.glob("*/*"))
+                                   if same_facility(d.parent.name) and d.is_dir() and list(d.glob("*.dat"))]))
+        listings.append(("original", [(inst, "") for fac, inst in BUILDERS_FOR if same_facility(fac)]))
         if remote:
             try:
                 fac = self.svo_facility(facility)
@@ -382,30 +497,31 @@ class FilterLibrary:
                     instruments = self.svo.list_instruments(fac.key)
                     if not instruments:
                         raise ComponentError("No instruments returned for a listed SVO facility")
-                    for instrument in instruments:
-                        self._catalogue_add(entries, instrument.key, instrument.label, "svo")
+                    listings.append(("svo", [(i.key, i.description) for i in instruments]))
             except (ComponentError, RequestException, RuntimeError) as exc:
                 errors.append(f"SVO {facility}: {exc}")
             if self.mirror.is_available():
                 try:
                     fac = next((name for name in self.mirror.discover_facilities() if same_facility(name)), None)
-                    njm_instruments = self.mirror.discover_instruments(fac) if fac else []
+                    live = self.mirror._instrument_records(fac) if fac else {}
                 except RequestException as exc:
                     errors.append(f"NJM {facility}: {exc}")
-                    njm_instruments = []
-                for instrument in njm_instruments:
-                    self._catalogue_add(entries, instrument, instrument, "njm")
+                listings.append(("njm", [(name, "") for name in live]))
             else:
                 errors.append("NJM unavailable")
-        return {"entries": sorted(entries.values(), key=lambda e: e["key"].casefold()), "errors": errors}
+        known = self._njm_instruments(facility, live)
+        claims = {name_key(claim.partition("/")[2]): njm for njm, meta in known.items()
+                  for claim in meta["svo_instruments"] if name_key(claim.partition("/")[0]) == name_key(facility)}
+        entries = _merge(listings)
+        _drop_svo_duplicates(entries, claims)
+        return {"entries": _picker_entries(entries, known, claims), "errors": errors}
 
     def inventory(self, *, remote=True, facility=None):
         """List every discovered instrument; retain errors and unreviewed sources."""
         catalogue = self.facilities(remote=remote)
         rows, errors = [], list(catalogue["errors"])
         for fac in catalogue["entries"]:
-            if facility and self._catalogue_key(facility) not in (
-                    self._catalogue_key(fac["key"]), self._catalogue_key(fac["label"])):
+            if facility and name_key(facility) not in (name_key(fac["key"]), name_key(fac["label"])):
                 continue
             source_catalogue = any(s in fac["sources"] for s in ("svo", "njm"))
             result = self.instruments(fac["key"], remote=remote and source_catalogue)
@@ -415,3 +531,194 @@ class FilterLibrary:
                              "sources": inst["sources"],
                              "component_availability": component_availability(fac["key"], inst["key"])})
         return {"instruments": rows, "errors": errors}
+
+
+# ----------------------------------------------------------------------
+# Installed sets
+# ----------------------------------------------------------------------
+def _declared_bands(directory):
+    """The bands an installed manifest declares part of the set: ``bands`` minus ``archived_bands``."""
+    data = json.loads((Path(directory) / "manifest.json").read_text(encoding="utf-8"))
+    archived = data.get("archived_bands") or {}  # NJM writes {band: {...}}; a list of names works too
+    return [band for band in InstrumentManifest.from_dict(data).bands if band not in archived]
+
+
+def _drop_unlisted_bands(directory, listed):
+    """Remove from an NJM set's manifest the bands NJM's index does not list and that are not installed.
+
+    Such bands are never downloaded: an archive copy NJM's manifest did not
+    move to ``archived_bands``, or one left by an earlier release's SVO
+    fallback.  Kept, they would make the set look incomplete for ever.
+    """
+    path = Path(directory) / "manifest.json"
+    if not path.is_file():
+        return
+    data = json.loads(path.read_text(encoding="utf-8"))
+    archived = data.get("archived_bands") or {}
+    stale = [band for band in data.get("bands", []) if band not in archived and f"{band}.dat" not in listed
+             and not (Path(directory) / f"{band}.dat").is_file()]
+    if not stale:
+        return
+    data["bands"] = [band for band in data["bands"] if band not in stale]
+    path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    logger.warning("%s declared bands that NJM's index does not list and that are not installed (%s); "
+                   "they are no longer expected", path, ", ".join(stale))
+
+
+def _index_entries(directory):
+    """The curve files an instrument's MESA index file lists (none without one)."""
+    index = Path(directory) / Path(directory).name
+    if not index.is_file():
+        return []
+    return [line.strip() for line in index.read_text().splitlines()
+            if line.strip() and not line.lstrip().startswith("#")]
+
+
+def _curve_state(directory):
+    """Each curve file's modification time, to tell whether a download wrote any."""
+    return {path.name: path.stat().st_mtime_ns for path in Path(directory).glob("*.dat")}
+
+
+# ----------------------------------------------------------------------
+# The bundled instrument catalogue
+# ----------------------------------------------------------------------
+#: NJM's facilities and instruments, their descriptions and SVO equivalents, as
+#: of the release; regenerate with scripts/make_instrument_catalogue.py.
+INSTRUMENT_CATALOGUE = Path(__file__).parent / "instrument_catalogue.json"
+
+
+def load_instrument_catalogue(path=INSTRUMENT_CATALOGUE):
+    """The bundled catalogue: ``{facility: {"description", "instruments": {name: {...}}}}``.
+
+    Keyed by NJM's spelling; each instrument has ``description`` and
+    ``svo_instruments`` (SVO ``Facility/Instrument`` names of the same
+    product), empty where NJM gives none.
+    """
+    data = json.loads(Path(path).read_text(encoding="utf-8"))
+    return instrument_catalogue(data["facilities"])
+
+
+def instrument_catalogue(facilities):
+    """Normalise ``filters.facilities_detailed`` of NJM's ``index.json`` (or a saved catalogue).
+
+    Only ``description`` and ``svo_instruments`` are kept; a field in another
+    form than the contract's is left empty rather than guessed at.
+    """
+    if not isinstance(facilities, dict):
+        raise ValueError("expected a mapping of facilities")
+    catalogue = {}
+    for facility, record in sorted(facilities.items()):
+        record = record if isinstance(record, dict) else {}
+        instruments = record.get("instruments") if isinstance(record.get("instruments"), dict) else {}
+        catalogue[facility] = {
+            "description": _plain_text(record.get("description")),
+            "instruments": {name: _instrument_metadata(meta) for name, meta in sorted(instruments.items())},
+        }
+    return catalogue
+
+
+def _instrument_metadata(record):
+    record = record if isinstance(record, dict) else {}
+    claims = record.get("svo_instruments")
+    claims = [c for c in claims if isinstance(c, str) and "/" in c] if isinstance(claims, list) else []
+    return {"description": _plain_text(record.get("description")), "svo_instruments": claims}
+
+
+def _plain_text(value):
+    return " ".join(value.split()) if isinstance(value, str) else ""
+
+
+# ----------------------------------------------------------------------
+# Picker entries
+# ----------------------------------------------------------------------
+def _merge(listings):
+    """Group the names each source lists (``[(source, [(name, description), ...]), ...]``) into entries.
+
+    A name joins an entry holding the same name from another source, else one
+    whose name matches it under :func:`name_key` and has no name from this
+    source yet.  One source's own names never join each other: NJM serves
+    both ``Cameras/Sony_NEX5N`` and ``Cameras/Sony_NEX_5N``.
+    """
+    entries = []
+    for source, listing in listings:
+        named = {}
+        for name, description in listing:
+            named.setdefault(name, description)
+        unmatched = []
+        for name, description in named.items():
+            entry = next((e for e in entries if source not in e["names"] and name in e["names"].values()), None)
+            if entry is None:
+                unmatched.append((name, description))
+            else:
+                _join(entry, source, name, description)
+        for name, description in unmatched:
+            entry = next((e for e in entries if source not in e["names"] and name_key(name) in e["keys"]), None)
+            if entry is None:
+                entry = {"names": {}, "descriptions": {}, "keys": set()}
+                entries.append(entry)
+            _join(entry, source, name, description)
+    return entries
+
+
+def _join(entry, source, name, description):
+    entry["names"][source] = name
+    entry["keys"].add(name_key(name))
+    if description:
+        entry["descriptions"][source] = description
+
+
+def _drop_svo_duplicates(entries, claims):
+    """Remove SVO's copy of a product NJM lists as its own, keeping SVO's description for NJM's entry.
+
+    ``claims`` maps an SVO instrument (:func:`name_key`) to the NJM instrument
+    that is the same product.  Only instruments NJM lists now count: while NJM
+    is unreachable, SVO's copies are what can be downloaded.
+    """
+    listed = {e["names"]["njm"]: e for e in entries if "njm" in e["names"]}
+    for entry in [e for e in entries if "svo" in e["names"]]:
+        claimer = listed.get(claims.get(name_key(entry["names"]["svo"])))
+        if claimer is None:
+            continue
+        del entry["names"]["svo"]
+        text = entry["descriptions"].pop("svo", "")
+        if text:
+            claimer["descriptions"].setdefault("svo", text)
+    entries[:] = [e for e in entries if e["names"]]
+
+
+def _picker_entries(entries, njm_known, claims=None):
+    """The entries as the pickers show them, sorted by label.
+
+    Each has ``label`` (the name shown), ``fetch_key`` (the spelling to
+    download with: NJM's, else the original builder's, else the installed
+    directory's, else SVO's), ``key`` (the same), ``sources`` (every source
+    listing it now: ``local``, ``original``, ``svo``, ``njm``) and
+    ``description`` (NJM's, else SVO's own text, else ``""``; SVO's can run to
+    several sentences).  ``njm_known`` (NJM's names -> their catalogue record)
+    names and describes entries NJM does not list now, so names do not change
+    with NJM's availability; an entry only SVO lists takes them only if
+    ``claims`` (SVO name key -> NJM name) says it is NJM's product.
+    """
+    rows = []
+    for entry in entries:
+        names = dict(entry["names"])
+        if "njm" not in names:
+            names["njm"] = _catalogue_name(names, njm_known, claims)
+        names = {source: name for source, name in names.items() if name}
+        fetch_key = next(names[source] for source in FETCH_ORDER if source in names)
+        description = (njm_known.get(names.get("njm")) or {}).get("description") or entry["descriptions"].get("svo", "")
+        rows.append({"key": fetch_key, "label": fetch_key, "sources": list(entry["names"]),
+                     "description": description, "fetch_key": fetch_key})
+    return sorted(rows, key=lambda row: (row["label"].casefold(), row["label"]))
+
+
+def _catalogue_name(names, njm_known, claims):
+    """NJM's name for an entry it does not list now, from the bundled catalogue, or None."""
+    for name in names.values():
+        found = match_name(name, njm_known)
+        if found is None:
+            continue
+        if claims is not None and set(names) == {"svo"} and claims.get(name_key(names["svo"])) != found:
+            return None  # the same name, but NJM does not say it is the same product
+        return found
+    return None
