@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import time
 from dataclasses import dataclass, replace
 from functools import cached_property
 from pathlib import Path
@@ -26,6 +27,7 @@ from .filter_components import (
     InstrumentManifest, atmosphere_file, build_product, find_atmosphere, parse_components,
     recipe_name, resolve_atmosphere,
 )
+from .filter_catalogue import cache_root
 from .filter_metadata import SVOUnreachableError, migrate_filter_tree, svo_components_header
 from .njm_filter_grabber import NJMFilterGrabber, _status, curve_file
 from .svo_filter_grabber import FilterRow, SVOFilterBrowser, _clean_filename, _clean_path, svo_unavailable
@@ -34,6 +36,8 @@ logger = logging.getLogger(__name__)
 
 #: Whose spelling of a name the picker shows and downloads with, when several sources list it.
 FETCH_ORDER = ("njm", "original", "local", "svo")
+#: Seconds between checks of an installed atmosphere site's manifest against NJM's.
+ATMOSPHERE_CHECK_AGE = 24 * 3600
 
 
 @dataclass
@@ -609,11 +613,15 @@ class FilterLibrary:
         return find_atmosphere(self.atmosphere_root, spec)
 
     def atmospheres(self, *, remote=True):
+        """The installed atmosphere sites and, with ``remote``, NJM's, by site.
+
+        With ``remote`` an installed site's manifest is checked against NJM's
+        once a day and updated (its grid files are kept); an unreachable NJM
+        leaves the installed sites, with a warning.
+        """
         sites = {p.parent.name for p in self.atmosphere_root.glob("*/manifest.json")}
         if remote:
-            for site in self.mirror.list_atmosphere_sites():
-                if site not in sites and self.mirror.download_atmosphere(str(self.atmosphere_root), site):
-                    sites.add(site)
+            self._atmospheres_from_njm(sites)
         result = {}
         for site in sorted(sites):
             grid = AtmosphereGrid.load(self.atmosphere_root / site)
@@ -629,6 +637,26 @@ class FilterLibrary:
                 "citation": grid.citation,
             }
         return result
+
+    def _atmospheres_from_njm(self, sites):
+        """Add NJM's sites to ``sites``, downloading their manifests; check installed ones once a day."""
+        checked = cache_root(self.root) / "atmospheres_checked.json"
+        try:
+            when = json.loads(checked.read_text(encoding="utf-8")) if checked.is_file() else {}
+        except ValueError:
+            when = {}  # rewritten below
+        try:
+            for site in self.mirror.list_atmosphere_sites():
+                if site in sites and time.time() - float(when.get(site, 0)) < ATMOSPHERE_CHECK_AGE:
+                    continue
+                if self.mirror.download_atmosphere(str(self.atmosphere_root), site):
+                    sites.add(site)
+                    when[site] = time.time()
+        except (RequestException, ValueError) as exc:
+            logger.warning("NJM's atmospheres could not be listed or checked (%s); the installed ones are used",
+                           exc)
+        checked.parent.mkdir(parents=True, exist_ok=True)
+        checked.write_text(json.dumps(when, indent=1, sort_keys=True) + "\n", encoding="utf-8")
 
     def compose(self, instrument, components, *, atmosphere=None, bands=None,
                 detector_type=None, allow_heavy=False, allow_partial=False, variants=None):

@@ -428,3 +428,72 @@ def test_available_without_njm_follows_published_to_the_builder_before_svo(tmp_p
     info = library.available("Planck", "HFI")
     assert info["availability_source"] == "original" and info["bands"] == ["100", "545"]
     assert info["notes"][0] == "its original-source builder makes the curves when it is fetched"
+
+
+# ----------------------------------------------------------------------
+# Installed atmosphere sites follow NJM's manifest
+# ----------------------------------------------------------------------
+def atmosphere_site(root, site, manifest, grids=()):
+    directory = root / "atmospheres" / site
+    directory.mkdir(parents=True)
+    (directory / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+    for name in grids:
+        (directory / name).write_text("Wavelength,Transmission\n5000,0.9\n6000,0.95\n")
+    return directory
+
+
+STALE = {"site": "lsst_std", "schema": 1, "source": "Rubin", "altitude_m": 2647.0,
+         "entries": [{"airmass": 1.2, "pwv": None, "file": "am1.20.dat"}]}
+SERVED = dict(STALE, citation="lsst/throughputs v1.9.2", terms="No licence.",
+              entries=[{"airmass": 1.0, "pwv": None, "file": "am1.00.dat"},
+                       {"airmass": 1.2, "pwv": None, "file": "am1.20.dat"}])
+
+
+def test_a_stale_installed_atmosphere_takes_njms_manifest_and_keeps_its_grids(tmp_path, njm, caplog):
+    root = tmp_path / "data"
+    site = atmosphere_site(root, "lsst_std", STALE, ["am1.20.dat"])
+    grid = (site / "am1.20.dat").read_bytes()
+    served = json.dumps(SERVED, indent=2, sort_keys=True) + "\n"
+    library = FilterLibrary(root / "filters")
+    library.mirror = njm(root / "filters", {"atmospheres/": '<a href="lsst_std/">lsst_std/</a>',
+                                            "atmospheres/lsst_std/manifest.json": served})
+    with caplog.at_level(logging.WARNING):
+        listed = library.atmospheres()["lsst_std"]
+    assert listed["citation"] == "lsst/throughputs v1.9.2" and listed["airmass"] == [1.0, 1.2]
+    assert (site / "manifest.json").read_text() == served and (site / "am1.20.dat").read_bytes() == grid
+    assert "Updated the lsst_std atmosphere's manifest to NJM's (citation, entries, terms)" in caplog.text
+    requested = len(library.mirror.session.requested)
+    library.atmospheres()  # checked today: only the site list is asked for
+    assert library.mirror.session.requested[requested:] == ["atmospheres/"]
+
+
+def test_points_built_here_and_installed_files_njm_describes_otherwise_are_kept(tmp_path, njm, caplog):
+    root = tmp_path / "data"
+    local = dict(STALE, entries=[{"airmass": 1.3, "pwv": None, "file": "am1.20.dat"},
+                                 {"airmass": 1.5, "pwv": 2.5, "file": "skycalc_am1.50.dat"}])
+    site = atmosphere_site(root, "lsst_std", local, ["am1.20.dat", "skycalc_am1.50.dat"])
+    library = FilterLibrary(root / "filters")
+    library.mirror = njm(root / "filters", {"atmospheres/": '<a href="lsst_std/">lsst_std/</a>',
+                                            "atmospheres/lsst_std/manifest.json": json.dumps(SERVED)})
+    with caplog.at_level(logging.WARNING):
+        library.atmospheres()
+    entries = json.loads((site / "manifest.json").read_text())["entries"]
+    assert {e["file"]: e["airmass"] for e in entries} == {"am1.00.dat": 1.0, "am1.20.dat": 1.3,
+                                                          "skycalc_am1.50.dat": 1.5}
+    assert "kept the installed description of am1.20.dat" in caplog.text
+
+
+def test_installed_atmospheres_are_listed_while_njm_is_down(tmp_path, caplog):
+    root = tmp_path / "data"
+    atmosphere_site(root, "lsst_std", STALE)
+    library = FilterLibrary(root / "filters")
+    library.mirror = SimpleNamespace(list_atmosphere_sites=lambda: (_ for _ in ()).throw(
+        requests.ConnectionError("NJM is unreachable")))
+    with caplog.at_level(logging.WARNING):
+        assert list(library.atmospheres()) == ["lsst_std"]
+    assert "the installed ones are used" in caplog.text
+    library.mirror = NJM_DOWN_ATMOSPHERES
+    assert list(library.atmospheres()) == ["lsst_std"]
+
+
+NJM_DOWN_ATMOSPHERES = SimpleNamespace(list_atmosphere_sites=lambda: [])  # what an unavailable grabber lists

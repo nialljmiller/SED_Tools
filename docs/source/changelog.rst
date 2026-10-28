@@ -743,6 +743,13 @@ Each item says what 0.4.1 did, what 0.5.0 does, and when it happens.
   Gbp_bright and Gbp_faint are NJM's only); the set stays incomplete, so the
   next fetch asks NJM again, which keeps the curves that are its own and
   replaces the others with a warning.
+- ``Filters.atmospheres()`` downloaded only sites not installed yet, so an
+  installed site never took NJM's newer manifest (citation, terms); an
+  installed site's manifest is now checked against NJM's once a day and
+  updated, with a warning naming the fields, keeping its grid files and any
+  point NJM does not list. ``download_atmosphere`` no longer overwrites an
+  installed manifest's own points. With NJM unreachable the installed sites
+  are listed with a warning (an error before).
 - ``FilterLibrary.published`` downloaded into a new folder spelled as NJM
   spells the instrument when it was installed under another spelling; it now
   completes the installed folder (the MESA index file takes that folder's

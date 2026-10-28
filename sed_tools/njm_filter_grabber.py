@@ -837,6 +837,9 @@ class NJMFilterGrabber:
 
         False when NJM has no atmosphere for ``site``; raises
         ``requests.RequestException`` when NJM cannot provide what it lists.
+        An installed manifest is brought up to NJM's, keeping what only it
+        has (see :func:`_update_atmosphere_manifest`); grid files already
+        installed are never replaced.
         """
         if not self._available:
             return False
@@ -849,7 +852,7 @@ class NJMFilterGrabber:
                 return False
             raise
         site_dir.mkdir(parents=True, exist_ok=True)
-        (site_dir / "manifest.json").write_text(response.text, encoding="utf-8")
+        _update_atmosphere_manifest(site_dir, response.text)
         if filename and not (site_dir / filename).exists():
             self._save_curve(f"{base}/{filename}", site_dir / filename, timeout=120)
         elif filename:
@@ -875,6 +878,48 @@ class NJMFilterGrabber:
             "filters": filters,
             "url": f"{self.filters_url}/{facility}/{instrument}/",
         }
+
+
+def _update_atmosphere_manifest(site_dir: Path, served: str) -> None:
+    """Save NJM's manifest of an atmosphere site (``served``), keeping what only the installed one has.
+
+    Rows (``entries``, ``unstated``) for files NJM does not list stay: points
+    built here with SkyCalc, say.  A row NJM describes otherwise stays as
+    installed when its grid file is installed, since it describes that file.
+    Every other field takes NJM's value.  A change is warned about, naming
+    the fields; nothing is written when the manifest is already NJM's.
+    """
+    path = site_dir / "manifest.json"
+    if not path.is_file():
+        _write_atomic(path, served)
+        return
+    installed, latest = json.loads(path.read_text(encoding="utf-8")), json.loads(served)
+    merged, kept = dict(latest), []
+    for key in ("entries", "unstated"):
+        rows = [dict(row) for row in latest.get(key) or []]
+        files = [row.get("file") for row in rows]
+        for row in installed.get(key) or []:
+            name = row.get("file")
+            if name not in files:
+                rows.append(row)  # NJM does not list it: the installed grid's own point
+            elif rows[files.index(name)] != row and (site_dir / str(name)).is_file():
+                rows[files.index(name)] = row
+                kept.append(str(name))
+        if rows or key in latest:
+            merged[key] = rows
+    if merged == installed:
+        return
+    changed = sorted(key for key in set(merged) | set(installed) if merged.get(key) != installed.get(key))
+    _write_atomic(path, served if merged == latest else json.dumps(merged, indent=2, sort_keys=True) + "\n")
+    logger.warning("Updated the %s atmosphere's manifest to NJM's (%s)%s", site_dir.name, ", ".join(changed),
+                   f"; kept the installed description of {', '.join(kept)}, which NJM describes otherwise "
+                   "(remove those files to fetch NJM's)" if kept else "")
+
+
+def _write_atomic(path: Path, text: str) -> None:
+    tmp = path.with_name(f".{path.name}.part")
+    tmp.write_text(text, encoding="utf-8")
+    os.replace(tmp, path)
 
 
 def main():
