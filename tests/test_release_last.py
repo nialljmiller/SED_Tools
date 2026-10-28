@@ -331,3 +331,72 @@ def test_bundled_availability_leaves_the_detector_unknown(builder, tmp_path, bun
     out = capsys.readouterr().out
     assert "  Detector                 : not known until the curves are installed\n" in out
     assert "energy" not in out and "unverified" not in out
+
+
+# ----------------------------------------------------------------------
+# filters-info: NJM's archived copies (*_svo, *_old) stay apart from the set,
+# also beside an installed copy whose band names differ from NJM's
+# ----------------------------------------------------------------------
+HFI_INFO = {"bands": {"100": {"Description": "HFI 100"}, "100_svo": {"Description": "PLANCK HFI 100GH"},
+                      "857": {"Description": "HFI 857"}, "857_svo": {"Description": "PLANCK HFI 857GHz"}}}
+
+
+def _hfi_catalogue(tmp_path, *, njm_index_file=True, offline=False):
+    """A catalogue client for NJM's Planck/HFI beside 0.4.1's PLANCK/HFI from SVO (bands 100GHz, 857GHz)."""
+    import json
+    from types import SimpleNamespace
+
+    from sed_tools.filter_catalogue import FilterCatalogue
+    from test_release_library import Served, njm_index
+
+    installed = tmp_path / "filters" / "PLANCK" / "HFI"
+    installed.mkdir(parents=True)
+    for band in ("100GHz", "857GHz"):
+        (installed / f"{band}.dat").write_text("Wavelength,Transmission\n1,1\n2,1\n")
+    (installed / "HFI").write_text("100GHz.dat\n857GHz.dat\n")
+    files = {"index.json": njm_index({"Planck": {"HFI": {
+                 "filters": ["100", "100_svo", "857", "857_svo"], "properties": "properties.json",
+                 "info": "info.json"}}}),
+             "filters/Planck/HFI/info.json": json.dumps(HFI_INFO),
+             "filters/Planck/HFI/properties.json": json.dumps(HFI_INFO)}
+    if njm_index_file:
+        files["filters/Planck/HFI/HFI"] = "100.dat\n857.dat\n"
+    server = Served(files)
+    mirror = SimpleNamespace(base_url="https://nillmill.ddns.net/sed_tools", is_available=lambda: True,
+                             _get=lambda url, **kwargs: server.get(url, **kwargs))
+    return FilterCatalogue(tmp_path / "filters", mirror=mirror, offline=offline)
+
+
+@pytest.mark.parametrize("spelling", [("Planck", "HFI"), ("PLANCK", "HFI")])
+def test_archived_copies_stay_apart_beside_an_installed_copy_under_other_band_names(spelling, tmp_path):
+    catalogue = _hfi_catalogue(tmp_path)
+    for kind in ("info", "properties"):
+        data = getattr(catalogue, kind)(*spelling)
+        assert list(data["bands"]) == ["100", "857"]  # the *_svo rows used to be listed with them
+        assert list(data["archived_bands"]) == ["100_svo", "857_svo"]
+
+
+def test_bundled_bands_decide_when_njm_has_no_index_file(tmp_path, monkeypatch):
+    from sed_tools import filter_library
+    from sed_tools.filter_library import instrument_catalogue
+
+    monkeypatch.setattr(filter_library, "load_instrument_catalogue", lambda: instrument_catalogue(
+        {"Planck": {"instruments": {"HFI": {"bands": ["100", "857"]}}}}))
+    data = _hfi_catalogue(tmp_path, njm_index_file=False).info("Planck", "HFI")
+    assert list(data["bands"]) == ["100", "857"] and list(data["archived_bands"]) == ["100_svo", "857_svo"]
+
+
+def test_bands_no_list_names_are_left_as_they_are(tmp_path, monkeypatch):
+    from sed_tools import filter_library
+    from sed_tools.filter_library import instrument_catalogue
+
+    monkeypatch.setattr(filter_library, "load_instrument_catalogue", lambda: instrument_catalogue({}))
+    data = _hfi_catalogue(tmp_path, njm_index_file=False).info("Planck", "HFI")
+    assert data == HFI_INFO  # no set to tell the archived copies by: nothing is hidden
+
+
+def test_bands_of_an_installed_copy_under_njm_names_still_decide(tmp_path):
+    catalogue = _hfi_catalogue(tmp_path)
+    (tmp_path / "filters" / "PLANCK" / "HFI" / "HFI").write_text("100.dat\n")  # an installed set of one band
+    data = catalogue.info("Planck", "HFI")
+    assert list(data["bands"]) == ["100"] and list(data["archived_bands"]) == ["100_svo", "857", "857_svo"]

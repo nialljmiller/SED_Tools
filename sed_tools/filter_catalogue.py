@@ -29,7 +29,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from email.utils import formatdate
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Optional, Sequence, Tuple, Union
 from urllib.parse import quote
 
 import pandas as pd
@@ -356,12 +356,15 @@ class FilterCatalogue:
 
         The set is what the instrument's MESA index file lists: the installed
         one, else NJM's (cached), else the bands of NJM's catalogue bundled with
-        SED_Tools.  Without any of them, or when none of the file's bands is in
-        the set (names that do not match), ``data`` is returned as it is.
+        SED_Tools; the first of these that has any of the file's bands.  An
+        installed copy under other band names (0.4.1's PLANCK/HFI from SVO,
+        ``100GHz`` …) has none, so NJM's set decides.  When no set has any of
+        them, ``data`` is returned as it is.
         """
-        served = self._served_bands(facility, instrument)
         bands = data.get("bands") or {}
-        if not served or not any(band in served for band in bands):
+        served = next((names for names in self._served_band_sets(facility, instrument)
+                       if any(band in names for band in bands)), None)
+        if served is None:
             return data
         archived = {band: record for band, record in bands.items() if band not in served}
         if not archived:
@@ -369,13 +372,14 @@ class FilterCatalogue:
         return dict(data, bands={band: record for band, record in bands.items() if band in served},
                     archived_bands=dict(data.get("archived_bands") or {}, **archived))
 
-    def _served_bands(self, facility: str, instrument: str) -> Optional[set]:
-        """The bands of the instrument's set (see :meth:`_split_archived`), or None when unknown."""
+    def _served_band_sets(self, facility: str, instrument: str) -> Iterator[set]:
+        """The bands of the instrument's set from each place that lists them (see :meth:`_split_archived`),
+        in that order; each is read only when the one before it was not used."""
         installed = self._installed_directory(facility, instrument)
         if installed is not None:
             listed = installed / installed.name
             if listed.is_file():
-                return _index_bands(listed.read_text(encoding="utf-8"))
+                yield _index_bands(listed.read_text(encoding="utf-8"))
         try:
             entry = self.resolve(facility, instrument)
             rel = f"filters/{entry['facility']}/{entry['instrument']}/{entry['instrument']}"
@@ -383,15 +387,15 @@ class FilterCatalogue:
         except CatalogueError:
             path = None
         if path is not None:
-            return _index_bands(path.read_text(encoding="utf-8"))
+            yield _index_bands(path.read_text(encoding="utf-8"))
         from .filter_library import load_instrument_catalogue
         from .component_sources.catalog import match_name
 
         bundled = load_instrument_catalogue()
         fac = match_name(facility, bundled)
         inst = match_name(instrument, bundled[fac]["instruments"]) if fac else None
-        bands = bundled[fac]["instruments"][inst]["bands"] if inst else []
-        return set(bands) or None
+        if inst:
+            yield set(bundled[fac]["instruments"][inst]["bands"])
 
     def _installed_directory(self, facility: str, instrument: str) -> Optional[Path]:
         """The installed directory of an instrument (matched without regard to case), if any."""
