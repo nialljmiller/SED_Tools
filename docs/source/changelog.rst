@@ -967,6 +967,10 @@ Each item says what 0.4.1 did, what 0.5.0 does, and when it happens.
 
 **Spectral grid downloads**
 
+- The README and ``SED.fetch``'s docstring now say that its ``teff_min`` …
+  ``metallicity_max`` cuts are applied after the whole grid is downloaded (as
+  in 0.4.1; unchanged), and that ``sed-tools grids --teff … --logg … --meta
+  …`` downloads only the selected spectra.
 - ``SED.fetch`` stopped, or carried on with an empty or stale directory, when
   a source's metadata or download failed or downloaded nothing; it now
   reports that source and tries the next. When every source fails it raises

@@ -788,7 +788,7 @@ sed = SED.fetch('Kurucz2003all')
 # Force specific source
 sed = SED.fetch('Kurucz2003all', source='svo')
 
-# Fetch with parameter filtering and parallel downloads
+# Keep only part of the grid (the whole grid is downloaded first; see below)
 sed = SED.fetch(
     'Kurucz2003all',
     teff_min=4000,
@@ -803,6 +803,20 @@ sed = SED.fetch(
 # Save to disk (generates all SED_Model/MESA-compatible files)
 sed.grid.write()
 sed.grid.write('/custom/output/path')
+```
+
+**The parameter cuts are applied after the whole grid is downloaded.**
+`SED.fetch` downloads every spectrum of the grid, and from NJM also the
+grid's full flux cube and HDF5 bundle. It then returns only the spectra
+within `teff_min` … `metallicity_max`; the other files stay on disk. For a
+large grid that is a large download: `bt-cond` on NJM is 6,028 spectra,
+about 96 GB.
+
+To download only the spectra you want, use the command line, which cuts
+before downloading (NJM, MSG and MAST; SVO serves whole grids only):
+
+```bash
+sed-tools grids --source njm --grids bt-cond --teff 4000 8000 --logg 3 5 --meta -1 0.5
 ```
 
 #### Loading Local Data
@@ -1159,7 +1173,8 @@ for star in stars:
 ```python
 from sed_tools.api import SED
 
-# Hot stars from Kurucz
+# Hot stars from Kurucz (SED.fetch downloads the whole grid, then keeps
+# this Teff range; see "Downloading" for downloading only the range)
 hot = SED.fetch('Kurucz2003all', teff_min=7000, teff_max=50000)
 hot.grid.write()
 

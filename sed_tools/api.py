@@ -775,11 +775,11 @@ class SED:
             Force a specific source: 'svo', 'msg', 'mast', 'njm'
             If None, tries NJM first (pre-processed), then others
         teff_min, teff_max : float, optional
-            Filter to spectra within this Teff range
+            Return only spectra within this Teff range (see Notes)
         logg_min, logg_max : float, optional
-            Filter to spectra within this logg range
+            Return only spectra within this logg range (see Notes)
         metallicity_min, metallicity_max : float, optional
-            Filter to spectra within this metallicity range
+            Return only spectra within this metallicity range (see Notes)
         workers : int
             Number of parallel download workers
         clean : bool
@@ -790,6 +790,16 @@ class SED:
             The spectra's flux unit for cleaning (see spectra_cleaner.clean_model_dir);
             required when their headers do not declare one, and never used
             in place of a declared unit.
+
+        Notes
+        -----
+        The parameter cuts are applied after the whole grid is downloaded:
+        every spectrum is fetched (from NJM also the grid's full flux cube and
+        HDF5 bundle), and only the spectra within the cuts are returned. For a
+        large grid that is a large download (bt-cond on NJM is 6,028 spectra,
+        about 96 GB). ``sed-tools grids --grids NAME --teff LOW HIGH --logg LOW
+        HIGH --meta LOW HIGH`` downloads only the selected spectra (from NJM,
+        MSG or MAST; SVO serves whole grids only).
             
         Returns
         -------
