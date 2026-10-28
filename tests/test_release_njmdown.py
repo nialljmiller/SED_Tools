@@ -470,7 +470,8 @@ def test_a_stale_installed_atmosphere_takes_njms_manifest_and_keeps_its_grids(tm
 def test_points_built_here_and_installed_files_njm_describes_otherwise_are_kept(tmp_path, njm, caplog):
     root = tmp_path / "data"
     local = dict(STALE, entries=[{"airmass": 1.3, "pwv": None, "file": "am1.20.dat"},
-                                 {"airmass": 1.5, "pwv": 2.5, "file": "skycalc_am1.50.dat"}])
+                                 {"airmass": 1.5, "pwv": 2.5, "file": "skycalc_am1.50.dat"},
+                                 {"airmass": 2.0, "pwv": None, "file": "dropped_by_njm.dat"}])  # never fetched
     site = atmosphere_site(root, "lsst_std", local, ["am1.20.dat", "skycalc_am1.50.dat"])
     library = FilterLibrary(root / "filters")
     library.mirror = njm(root / "filters", {"atmospheres/": '<a href="lsst_std/">lsst_std/</a>',

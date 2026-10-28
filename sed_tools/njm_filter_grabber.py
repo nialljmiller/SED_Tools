@@ -883,9 +883,10 @@ class NJMFilterGrabber:
 def _update_atmosphere_manifest(site_dir: Path, served: str) -> None:
     """Save NJM's manifest of an atmosphere site (``served``), keeping what only the installed one has.
 
-    Rows (``entries``, ``unstated``) for files NJM does not list stay: points
-    built here with SkyCalc, say.  A row NJM describes otherwise stays as
-    installed when its grid file is installed, since it describes that file.
+    Rows (``entries``, ``unstated``) for installed files NJM does not list
+    stay: points built here with SkyCalc, say.  A row NJM describes otherwise
+    stays as installed when its grid file is installed, since it describes
+    that file.
     Every other field takes NJM's value.  A change is warned about, naming
     the fields; nothing is written when the manifest is already NJM's.
     """
@@ -900,9 +901,11 @@ def _update_atmosphere_manifest(site_dir: Path, served: str) -> None:
         files = [row.get("file") for row in rows]
         for row in installed.get(key) or []:
             name = row.get("file")
+            installed_file = (site_dir / str(name)).is_file()
             if name not in files:
-                rows.append(row)  # NJM does not list it: the installed grid's own point
-            elif rows[files.index(name)] != row and (site_dir / str(name)).is_file():
+                if installed_file:
+                    rows.append(row)  # a point of the installed grid that NJM does not have
+            elif rows[files.index(name)] != row and installed_file:
                 rows[files.index(name)] = row
                 kept.append(str(name))
         if rows or key in latest:
