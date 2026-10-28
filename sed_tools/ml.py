@@ -222,7 +222,10 @@ def complete_sed(
 
 def list_models(models_dir: str = "models") -> List[Dict[str, Any]]:
     """
-    List all available trained models.
+    List the trained SED completer models in ``models_dir``.
+
+    SED generator models, which may share the directory, are not listed
+    (see ``MLGenerator.list_models``).
     
     Parameters
     ----------
@@ -636,7 +639,7 @@ class Completer:
     
     @staticmethod
     def available_models(models_dir: str = "models") -> List[Dict[str, Any]]:
-        """List available trained models."""
+        """List the trained SED completer models in ``models_dir`` (not generator models)."""
         return list_models(models_dir)
     
     def __repr__(self) -> str:
