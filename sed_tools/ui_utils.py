@@ -163,7 +163,9 @@ def _print_page(label: str, labels: List[str], chunk: List[int], max_label: int,
                 continue
             i = chunk[flat_idx]
             id_str = f"{i+1:4d}."
-            padded = labels[i][:col_width-6].ljust(col_width-6)
+            room = col_width - 6
+            label = labels[i] if len(labels[i]) <= room else labels[i][:max(room - 1, 0)] + "…"
+            padded = label.ljust(room)
             row_items.append(f"{CYAN}{id_str}{RESET} {padded}")
         print("  ".join(row_items))
 

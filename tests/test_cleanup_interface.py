@@ -370,8 +370,9 @@ def test_filters_cite_exits_1_when_any_target_failed(filters, monkeypatch, capsy
 @pytest.mark.parametrize("source_errors,catalogue_errors,offline,expected", [
     ([], [], False, 0),
     (["SVO: no metadata for Fac/Cam.g"], [], False, 1),
-    ([], ["NJM unreachable"], False, 1),
-    ([], ["info.json is not cached and working offline"], True, 1),
+    # NJM's catalogue is an extra: without it the availability report still stands.
+    ([], ["NJM unreachable"], False, 0),
+    ([], ["info.json is not cached and working offline"], True, 0),
 ])
 def test_filters_info_exit_status(filters, monkeypatch, source_errors, catalogue_errors, offline, expected):
     from sed_tools import cli
@@ -423,6 +424,7 @@ def grid_flow(monkeypatch):
                                ("msg", "MSGSpectraGrabber"), ("mast", "MASTSpectraGrabber")):
             monkeypatch.setattr(cli, cls_name, grabbers.get(name, fake_grabber()))
         monkeypatch.setattr(cli, "clean_model_dir", lambda *a, **k: cleaned)
+        monkeypatch.setattr(cli, "undeclared_flux_unit", lambda *a, **k: None)  # cleaning is faked too
 
         def build(name, model_dir, *args):
             if not cube_built:
@@ -497,10 +499,10 @@ def test_spectra_flow_raises_when_no_grid_is_discovered(grid_flow, tmp_path):
         run_spectra_flow("svo", base_dir=str(tmp_path), models=["Grid"])
 
 
-def test_grids_command_fails_when_a_grid_is_not_found(grid_flow, tmp_path, monkeypatch):
+def test_grids_command_fails_when_a_grid_is_not_found(grid_flow, tmp_path, monkeypatch, capsys):
     grid_flow(svo=fake_grabber(["Grid"]))
-    with pytest.raises(RuntimeError, match="Missing: not listed by any source"):
-        run_cli(monkeypatch, "grids", "--source", "svo", "--grids", "Missing", "--base", str(tmp_path))
+    assert run_cli(monkeypatch, "grids", "--source", "svo", "--grids", "Missing", "--base", str(tmp_path)) == 1
+    assert "sed-tools: error: " in capsys.readouterr().err
 
 
 def test_axis_cut_prompt_asks_again_after_an_unparseable_range(monkeypatch, capsys):
@@ -647,13 +649,13 @@ def test_filter_batch_downloads_the_rest_then_lists_failures(filter_browser, mon
     from sed_tools.cli import run_filters_flow
 
     filter_browser.listing_errors["A"] = ["SVO A: timed out"]
-    answer(monkeypatch, "1,2")
-    with pytest.raises(RuntimeError) as excinfo:
-        run_filters_flow()
+    answer(monkeypatch, "1,2", "y")
+    assert run_filters_flow() == 1
+    out = capsys.readouterr().out
     assert filter_browser.fetched == ["A/Cam1", "A/Cam2", "B/Cam1"]
-    assert "B/Cam2: SVO down" in str(excinfo.value)
-    assert "A: instrument list incomplete: SVO A: timed out" in str(excinfo.value)
-    assert "Cannot fetch: SVO down" in capsys.readouterr().out
+    assert "B/Cam2: SVO down" in out
+    assert "A: instrument list incomplete: SVO A: timed out" in out
+    assert "Cannot fetch: SVO down" in out
 
 
 def test_filter_browser_reports_a_failed_build_when_browsing_ends(filter_browser, monkeypatch, capsys):
@@ -665,9 +667,10 @@ def test_filter_browser_reports_a_failed_build_when_browsing_ends(filter_browser
     monkeypatch.setattr(cli, "_offer_composition", fail)
     # Facility A, instrument 1, download, then quit from the instrument list.
     answer(monkeypatch, "1", "1", "y", "y", "q")
-    with pytest.raises(RuntimeError, match="A/Cam1 composed product: Airmass and PWV must be numbers"):
-        cli.run_filters_flow()
-    assert "Composed product of A/Cam1 not built: Airmass and PWV must be numbers" in capsys.readouterr().out
+    assert cli.run_filters_flow() == 1
+    out = capsys.readouterr().out
+    assert "Composed product of A/Cam1 not built: Airmass and PWV must be numbers" in out
+    assert "A/Cam1 composed product: Airmass and PWV must be numbers" in out.split("Failed (1):")[1]
 
 
 def test_filter_browser_ends_quietly_when_nothing_failed(filter_browser, monkeypatch):
@@ -678,24 +681,26 @@ def test_filter_browser_ends_quietly_when_nothing_failed(filter_browser, monkeyp
     assert filter_browser.fetched == ["A/Cam2"]
 
 
-def test_filters_command_without_a_target_fails_when_a_download_failed(filter_browser, monkeypatch):
+def test_filters_command_without_a_target_fails_when_a_download_failed(filter_browser, monkeypatch, capsys):
     answer(monkeypatch, "2", "2", "y", "n", "q")
-    with pytest.raises(RuntimeError, match="B/Cam2: SVO down"):
-        run_cli(monkeypatch, "filters")
+    assert run_cli(monkeypatch, "filters") == 1
+    assert "B/Cam2: SVO down" in capsys.readouterr().out.split("Failed (1):")[1]
 
 
-def test_offer_composition_rejects_an_airmass_that_is_not_a_number(tmp_path, monkeypatch, filters):
+def test_offer_composition_asks_again_for_an_airmass_that_is_not_a_number(tmp_path, monkeypatch, filters, capsys):
     from sed_tools import cli
 
     info = {"buildable": ["filter"], "atmosphere": True, "atmosphere_site": "paranal", "atmosphere_sites": None,
             "component_availability": {"status": "supported", "large_download": False}}
+    built = []
     monkeypatch.setattr(filters, "available", classmethod(lambda cls, *a, **k: info))
     monkeypatch.setattr(filters, "atmospheres", classmethod(lambda cls, *a, **k: {}))
     monkeypatch.setattr(cli, "print_filter_availability", lambda info: None)
-    monkeypatch.setattr(filters, "compose", classmethod(lambda cls, *a, **k: pytest.fail("must not build")))
-    answer(monkeypatch, "y", "1", "", "y", "high")
-    with pytest.raises(ValueError, match="Airmass and PWV must be numbers"):
-        cli._offer_composition(tmp_path / "Fac" / "Cam")
+    monkeypatch.setattr(filters, "compose", classmethod(lambda cls, *a, **k: built.append(k["atmosphere"])))
+    answer(monkeypatch, "y", "1", "", "y", "high", "1.2", "")
+    cli._offer_composition(tmp_path / "Fac" / "Cam")
+    assert "'high' is not a number or 'unstated'" in capsys.readouterr().out
+    assert built == [{"site": "paranal", "airmass": 1.2, "pwv": None}]
 
 
 # ----------------------------------------------------------------------

@@ -42,8 +42,8 @@ def filter_catalogue(tmp_path, monkeypatch):
 
 
 @pytest.mark.parametrize("selection,facilities", [("1,3", ["A", "C"]), ("1-3", ["A", "B", "C"])])
-def test_multiple_facilities_download_every_instrument_without_prompts(filter_catalogue, monkeypatch, selection, facilities):
-    answers = iter([selection])  # Any confirmation, instrument or component prompt would fail.
+def test_multiple_facilities_download_every_instrument_after_one_confirmation(filter_catalogue, monkeypatch, selection, facilities):
+    answers = iter([selection, "y"])  # Any further confirmation, instrument or component prompt would fail.
     monkeypatch.setattr("builtins.input", lambda prompt="": next(answers))
     cli.run_filters_flow(str(filter_catalogue.root))
     assert filter_catalogue.fetched == [(facility, instrument) for facility in facilities

@@ -264,17 +264,19 @@ def _answers(monkeypatch, *answers):
     return prompts
 
 
-@pytest.mark.parametrize("answer, unit", [("", "fnu_jy"), ("y", "fnu_jy"), ("flam", "flam")])
-def test_cli_offers_the_best_guess_and_takes_a_typed_unit(tmp_path, monkeypatch, capsys, answer, unit):
+@pytest.mark.parametrize("answers, unit", [(["", "fnu_jy"], "fnu_jy"), (["y", "flam"], "flam"), (["flam"], "flam")])
+def test_cli_offers_the_best_guess_and_takes_a_typed_unit(tmp_path, monkeypatch, capsys, answers, unit):
     from sed_tools import cli
 
     grid = _surface_flux_grid(tmp_path / "Cool")
-    prompts = _answers(monkeypatch, answer)
+    prompts = _answers(monkeypatch, *answers)
     assert cli._ask_flux_unit("Cool", sorted(str(p) for p in grid.glob("*.txt"))) == unit
-    assert prompts == ["Flux unit of Cool is not declared; best guess: fnu_jy (guessed from the size of the "
-                       "flux values, assuming flux received at Earth). Use it? [Y/n, or type a unit] "]
+    # Enter or 'y' does not take the guess: the unit must be typed.
+    assert prompts == ["Flux unit of Cool (type its name, e.g. fnu_jy), or n to leave it uncleaned: "] * len(answers)
     out = capsys.readouterr().out
     assert "flam        erg/s/cm²/Å (F_λ)" in out and "fnu_jy      Jansky (F_ν)" in out
+    assert ("Best guess: fnu_jy, Jansky (F_ν); guessed from the size of the flux values, "
+            "assuming flux received at Earth.") in out
 
 
 def test_cli_asks_again_after_an_unknown_unit_and_stops_on_no(tmp_path, monkeypatch, capsys):
@@ -303,10 +305,10 @@ def test_cli_rebuild_asks_once_per_grid_and_cleans_with_the_answer(tmp_path, mon
 
     for name in ("A", "B"):
         _surface_flux_grid(tmp_path / name)
-    prompts = _answers(monkeypatch, "flam", "")
+    prompts = _answers(monkeypatch, "flam", "fnu_jy")
     cli.run_rebuild_flow(base_dir=str(tmp_path), models=["A", "B"], rebuild_h5=False, rebuild_flux_cube=False)
 
-    assert [p.split(" is not")[0] for p in prompts] == ["Flux unit of A", "Flux unit of B"]
+    assert [p.split(" (")[0] for p in prompts] == ["Flux unit of A", "Flux unit of B"]
     wl, flux = read_text_spectrum(str(tmp_path / "A" / "s0.txt"))
     np.testing.assert_allclose(flux, planck_flam(wl, 3500.0), rtol=1e-8)
     assert "# original_flux_unit = fnu" in (tmp_path / "B" / "s0.txt").read_text()
@@ -323,8 +325,8 @@ def test_cli_without_a_terminal_stops_naming_the_grid_and_the_guess(tmp_path, mo
     with pytest.raises(RuntimeError) as err:
         cli.run_rebuild_flow(base_dir=str(tmp_path), models=["Cool"], rebuild_h5=False, rebuild_flux_cube=False)
     message = str(err.value)
-    assert f"Cool: ValueError: Flux unit of {grid} is not declared; best guess: 'fnu_jy'" in message
-    assert "flux_unit='fnu_jy'" in message and "sed-tools asks for it when run in a terminal" in message
+    assert "Cool: ValueError: Flux unit of Cool is not declared; best guess: 'fnu_jy'" in message
+    assert "--flux-unit fnu_jy" in message and "sed-tools asks for it when run in a terminal" in message
     assert _contents(grid) == before
 
 
