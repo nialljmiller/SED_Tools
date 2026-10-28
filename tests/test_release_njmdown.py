@@ -498,3 +498,15 @@ def test_installed_atmospheres_are_listed_while_njm_is_down(tmp_path, caplog):
 
 
 NJM_DOWN_ATMOSPHERES = SimpleNamespace(list_atmosphere_sites=lambda: [])  # what an unavailable grabber lists
+
+
+def test_a_builder_instrument_njm_does_not_list_is_still_described_from_svo(tmp_path, bundled, monkeypatch):
+    from sed_tools.component_sources.catalog import BuilderRef
+
+    monkeypatch.setitem(filter_library.BUILDERS_FOR, ("Lab", "Cam"), BuilderRef("lab", publishes=True))
+    root = tmp_path / "filters"
+    library = FilterLibrary(root)
+    library.mirror = NJM_DOWN
+    library.svo = svo_browser(root, {("Lab", "Cam"): ["g"]})
+    info = library.available("Lab", "Cam")
+    assert info["availability_source"] == "svo" and info["bands"] == ["g"]

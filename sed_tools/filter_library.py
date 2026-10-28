@@ -424,7 +424,8 @@ class FilterLibrary:
             manifest = InstrumentManifest.from_headers(facility, instrument, headers)
             return _availability(manifest.describe(), "original", failed)
         builder, _, _ = self._publishing_builder(facility, instrument, None)
-        if builder is not None:  # published() would build it before asking SVO
+        if builder is not None and (self._bundled_record(facility, instrument) or {}).get("bands"):
+            # published() would build it before asking SVO: its bands as NJM lists them
             return self._bundled_availability(facility, instrument, failed, source="original")
         if remote:
             try:
