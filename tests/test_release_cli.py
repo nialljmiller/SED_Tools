@@ -143,7 +143,7 @@ def test_number_prompts_ask_again(monkeypatch, capsys):
     answer(monkeypatch, "high", "", "1.5")
     assert cli._ask_number("Airmass: ") == 1.5
     out = capsys.readouterr().out
-    assert "'high' is not a number." in out and "Please enter a number." in out
+    assert "'high' is not a number; try again." in out and "Please enter a number." in out
     answer(monkeypatch, "")
     assert cli._ask_number("PWV: ", default=None) is None
     answer(monkeypatch, "UNSTATED")

@@ -27,7 +27,7 @@ import sys
 import textwrap
 import traceback
 from pathlib import Path
-from typing import Callable, Dict, List, Optional, Sequence, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 from requests import RequestException
@@ -42,7 +42,7 @@ from .njm_spectra_grabber import NJMSpectraGrabber
 from .spectra_cleaner import FLUX_GUESS_WHY, FLUX_UNITS, clean_model_dir, undeclared_flux_unit
 from .svo_regen_spectra_lookup import regenerate_lookup_table
 from .svo_spectra_grabber import SVOSpectraGrabber
-from .ui_utils import prompt_choice  # public, no leading underscore
+from .ui_utils import NO_DEFAULT as _NO_DEFAULT, ask_number as _ask_number, prompt_choice
 from .parsing import parse_multi_selection, parse_numeric_range
 from .spectrum_io import build_h5_bundle, read_text_spectrum
 from .terminal_plots import terminal_color_enabled, terminal_width
@@ -58,24 +58,6 @@ EXPECTED_ERRORS = (RuntimeError, ValueError, OSError, ComponentError, CatalogueE
 
 def ensure_dir(path: str) -> None:
     os.makedirs(path, exist_ok=True)
-
-
-_NO_DEFAULT = object()
-
-
-def _ask_number(prompt: str, convert: Callable = float, default=_NO_DEFAULT, words: Sequence[str] = ()):
-    """Ask until the answer is a number (or one of ``words``); a blank answer gives ``default`` if there is one."""
-    while True:
-        raw = input(prompt).strip()
-        if not raw and default is not _NO_DEFAULT:
-            return default
-        if raw.lower() in words:
-            return raw.lower()
-        try:
-            return convert(raw)
-        except ValueError:
-            allowed = " or ".join(["a number", *(repr(w) for w in words)])
-            print(f"  {raw!r} is not {allowed}." if raw else f"  Please enter {allowed}.")
 
 
 def _ask_option(prompt: str, options: Sequence[str], default: Optional[str] = None) -> str:

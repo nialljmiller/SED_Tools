@@ -47,7 +47,7 @@ import numpy as np
 from scipy.integrate import simpson as simps
 
 from ._constants import H as PLANCK_H, C as SPEED_C, K as BOLTZMANN_K, SIGMA
-from .ml_sed_generator import _ask_number
+from .ui_utils import ask_number as _ask_number
 
 # Default wavelength grid parameters
 DEFAULT_WL_MIN = 100.0      # Angstroms

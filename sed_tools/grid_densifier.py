@@ -278,7 +278,7 @@ def densify_grid(
 def run_interactive_workflow(base_dir: str = None):
     import glob
 
-    from .ml_sed_generator import _ask_number
+    from .ui_utils import ask_number as _ask_number
 
     if base_dir is None:
         from .models import STELLAR_DIR_DEFAULT

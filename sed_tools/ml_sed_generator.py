@@ -31,7 +31,6 @@ Usage
 
 import json
 import logging
-import math
 import os
 import struct
 from collections import Counter
@@ -39,6 +38,9 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
+
+# The interactive menus' number questions (ml_sed_completer and grid_densifier import them from here too).
+from .ui_utils import ask_number as _ask_number, ask_numbers as _ask_numbers  # noqa: F401
 
 logger = logging.getLogger(__name__)
 
@@ -926,36 +928,6 @@ def _menu_choice(items: List[Dict[str, Any]], prompt: str) -> Optional[Dict[str,
         print("Invalid selection")
         return None
     return items[idx]
-
-
-def _ask_number(prompt: str, default: Optional[float] = None, *, whole: bool = False,
-                positive: bool = False) -> float:
-    """Ask until the answer is a finite number (whole, positive if asked); Enter gives ``default`` if set."""
-    kind = ("a positive " if positive else "a ") + ("whole number" if whole else "number")
-    while True:
-        raw = input(prompt).strip()
-        if not raw and default is not None:
-            return default
-        try:
-            value = int(raw) if whole else float(raw)
-        except ValueError:
-            value = None
-        if value is not None and math.isfinite(value) and (value > 0 or not positive):
-            return value
-        print(f"  {raw!r} is not {kind}; try again.")
-
-
-def _ask_numbers(prompt: str) -> List[float]:
-    """Ask until the answer is a comma-separated list of finite numbers."""
-    while True:
-        raw = input(prompt).strip()
-        try:
-            values = [float(token) for token in raw.split(',')]
-        except ValueError:
-            values = []
-        if values and all(math.isfinite(v) for v in values):
-            return values
-        print(f"  {raw!r} is not a comma-separated list of numbers; try again.")
 
 
 def _training_libraries(base_dir: str) -> List[Dict[str, Any]]:

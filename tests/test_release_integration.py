@@ -598,3 +598,17 @@ def test_the_split_announcement_names_only_the_axes_that_vary(tmp_path, capsys):
     # The subgrid names are unchanged: every extra column is part of them.
     assert sorted(p.name for p in grid.iterdir() if p.is_dir()) == [
         "Kurucz_alpha_0p00_lh_1p25_vtur_2p00", "Kurucz_alpha_0p40_lh_1p25_vtur_2p00"]
+
+
+# ----------------------------------------------------------------------
+# Item 6: one re-asking number question for the CLI and the ML and densifier menus
+# ----------------------------------------------------------------------
+def test_every_number_question_is_the_same_one_and_refuses_nan(monkeypatch, capsys):
+    from sed_tools import ml_sed_completer, ml_sed_generator, ui_utils
+
+    assert cli._ask_number is ml_sed_generator._ask_number is ml_sed_completer._ask_number is ui_utils.ask_number
+    answers = iter(["nan", "inf", "", "1.3"])
+    monkeypatch.setattr("builtins.input", lambda prompt="": next(answers))
+    assert cli._ask_number("Airmass: ", words=("unstated",)) == 1.3  # the CLI's question took nan before
+    out = capsys.readouterr().out
+    assert "'nan' is not a number or 'unstated'; try again." in out and "Please enter a number or 'unstated'." in out

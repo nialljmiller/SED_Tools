@@ -1,12 +1,54 @@
 """UI utility functions for interactive prompts."""
 
 from typing import Sequence, Optional, List, Union, Tuple
+import math
 import re
 import shutil
 
 from .parsing import parse_multi_selection
 
 from .terminal_plots import terminal_color_enabled, terminal_width
+
+
+#: ``default`` of :func:`ask_number` when a blank answer is not allowed (None is a default).
+NO_DEFAULT = object()
+
+
+def ask_number(prompt: str, default=NO_DEFAULT, *, whole: bool = False, positive: bool = False,
+               words: Sequence[str] = ()):
+    """Ask until the answer is a finite number (whole, positive if asked) or one of ``words``.
+
+    A blank answer gives ``default`` when there is one (None included).
+    Every interactive number question uses this, so a typo asks again.
+    """
+    kind = " or ".join([("a positive " if positive else "a ") + ("whole number" if whole else "number"),
+                        *(repr(w) for w in words)])
+    while True:
+        raw = input(prompt).strip()
+        if not raw and default is not NO_DEFAULT:
+            return default
+        if raw.lower() in words:
+            return raw.lower()
+        try:
+            value = int(raw) if whole else float(raw)
+        except ValueError:
+            value = None
+        if value is not None and math.isfinite(value) and (value > 0 or not positive):
+            return value
+        print(f"  {raw!r} is not {kind}; try again." if raw else f"  Please enter {kind}.")
+
+
+def ask_numbers(prompt: str) -> List[float]:
+    """Ask until the answer is a comma-separated list of finite numbers."""
+    while True:
+        raw = input(prompt).strip()
+        try:
+            values = [float(token) for token in raw.split(',')]
+        except ValueError:
+            values = []
+        if values and all(math.isfinite(v) for v in values):
+            return values
+        print(f"  {raw!r} is not a comma-separated list of numbers; try again.")
 
 
 def prompt_choice(

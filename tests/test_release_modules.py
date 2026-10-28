@@ -189,7 +189,7 @@ def test_generator_number_prompts_ask_again(monkeypatch, capsys):
     out = capsys.readouterr().out
     for bad in ("'x'", "'1.5'", "'-3'"):
         assert f"{bad} is not a positive whole number; try again." in out
-    assert "'nan' is not a number; try again." in out and "'' is not a number; try again." in out
+    assert "'nan' is not a number; try again." in out and "Please enter a number." in out
     assert "'5000,x' is not a comma-separated list of numbers; try again." in out
 
 
