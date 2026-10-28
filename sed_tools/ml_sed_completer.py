@@ -47,6 +47,7 @@ import numpy as np
 from scipy.integrate import simpson as simps
 
 from ._constants import H as PLANCK_H, C as SPEED_C, K as BOLTZMANN_K, SIGMA
+from .ml_sed_generator import _ask_number
 
 # Default wavelength grid parameters
 DEFAULT_WL_MIN = 100.0      # Angstroms
@@ -917,10 +918,15 @@ class SEDCompleter:
         """
         Complete/extend an incomplete SED.
         
+        The SED's own samples are kept unchanged, including any outside
+        ``extension_range``. Points are added only where ``extension_range``
+        reaches beyond the SED: those points of a 1,000-point logarithmic
+        grid over ``extension_range`` that lie below or above its coverage.
+        
         Parameters
         ----------
         wavelength : np.ndarray
-            Existing wavelength coverage (Angstroms)
+            Existing wavelength coverage (Angstroms), increasing
         flux : np.ndarray
             Existing flux (erg/s/cm²/Å)
         teff : float
@@ -930,14 +936,14 @@ class SEDCompleter:
         meta : float
             Metallicity [M/H]
         extension_range : tuple
-            (min_wavelength, max_wavelength) for output SED
+            (min_wavelength, max_wavelength) the output SED must cover
         
         Returns
         -------
         wavelength_extended : np.ndarray
-            Extended wavelength array
+            The added points below the SED, its own wavelengths, then the added points above it
         flux_extended : np.ndarray
-            Extended flux array
+            Flux at those wavelengths
         """
         if self.model is None:
             raise RuntimeError("No model loaded. Train or load a model first.")
@@ -955,36 +961,30 @@ class SEDCompleter:
         
         # The black body is the baseline wherever the prediction fades out
         bb_flux = planck_function(full_grid, teff)
-        flux_extended = bb_flux.copy()
         
         y_pred_flux = self._predict_grid_flux(wavelength, flux, teff, logg, meta)
         known_start = self._known_start
         known_end = self._known_end
         
         # The network predicts the whole grid; only the parts outside the
-        # input window extend the SED
-        if need_low.any():
-            wl_low = full_grid[need_low]
-            flux_extended[need_low] = _blend_with_blackbody(
-                wl_low, np.log10(wl_min) - np.log10(wl_low),
-                self.wavelength_grid[:known_start], y_pred_flux[:known_start], bb_flux[need_low],
-            )
+        # input window extend the SED (either part may be empty)
+        wl_low = full_grid[need_low]
+        flux_low = _blend_with_blackbody(
+            wl_low, np.log10(wl_min) - np.log10(wl_low),
+            self.wavelength_grid[:known_start], y_pred_flux[:known_start], bb_flux[need_low],
+        )
+        wl_high = full_grid[need_high]
+        flux_high = _blend_with_blackbody(
+            wl_high, np.log10(wl_high) - np.log10(wl_max),
+            self.wavelength_grid[known_end:], y_pred_flux[known_end:], bb_flux[need_high],
+        )
         
-        if need_high.any():
-            wl_high = full_grid[need_high]
-            flux_extended[need_high] = _blend_with_blackbody(
-                wl_high, np.log10(wl_high) - np.log10(wl_max),
-                self.wavelength_grid[known_end:], y_pred_flux[known_end:], bb_flux[need_high],
-            )
+        wl_out = np.concatenate([wl_low, wavelength, wl_high])
+        flux_out = np.concatenate([flux_low, flux, flux_high])
+        print(f"Extended SED: {wl_min:.0f}-{wl_max:.0f} Å → {wl_out[0]:.0f}-{wl_out[-1]:.0f} Å "
+              f"(its {len(wavelength)} points kept; {len(wl_low)} added below, {len(wl_high)} above)")
         
-        # Insert original data in overlap region
-        overlap_mask = (full_grid >= wl_min) & (full_grid <= wl_max)
-        if overlap_mask.any():
-            flux_extended[overlap_mask] = np.interp(full_grid[overlap_mask], wavelength, flux)
-        
-        print(f"Extended SED: {wavelength.min():.0f}-{wavelength.max():.0f} Å → {full_grid.min():.0f}-{full_grid.max():.0f} Å")
-        
-        return full_grid, flux_extended
+        return wl_out, flux_out
 
     def _predict_grid_flux(self, wavelength, flux, teff, logg, meta) -> np.ndarray:
         """
@@ -1029,7 +1029,8 @@ class SEDCompleter:
         Returns
         -------
         list of dict
-            Model info: name, path, version, etc.
+            Model info: name, path, version, etc. Generators (SEDGenerator
+            models, which may share the directory) are not listed.
         """
         models = []
         models_path = Path(models_dir)
@@ -1046,6 +1047,9 @@ class SEDCompleter:
                 try:
                     with open(config_file, 'r') as f:
                         config = json.load(f)
+                    # Completer configs have no model_type; SEDGenerator writes 'sed_generator'
+                    if 'model_type' in config:
+                        continue
                     
                     models.append({
                         'name': subdir.name,
@@ -1335,14 +1339,8 @@ def _train_menu(base_dir: str, models_dir: str) -> None:
     print(f"\nTraining on: {selected['name']}")
     
     print("\nTraining parameters:")
-    epochs_str = input("  Epochs [100]: ").strip() or "100"
-    batch_size_str = input("  Batch size [32]: ").strip() or "32"
-    try:
-        epochs = int(epochs_str)
-        batch_size = int(batch_size_str)
-    except ValueError:
-        print("Invalid parameters")
-        return
+    epochs = _ask_number("  Epochs [100]: ", 100, whole=True, positive=True)
+    batch_size = _ask_number("  Batch size [32]: ", 32, whole=True, positive=True)
     
     default_name = f"sed_model_{selected['name']}"
     model_name = input(f"  Model name [{default_name}]: ").strip() or default_name
@@ -1365,6 +1363,19 @@ def _train_menu(base_dir: str, models_dir: str) -> None:
     )
     _banner("TRAINING COMPLETE!")
     print(f"Model saved to: {output_path}/")
+
+
+def _ask_extension_range(model_grid: np.ndarray) -> Tuple[float, float]:
+    """Ask for the wavelength range to extend to; Enter keeps the model's own range."""
+    default_lo, default_hi = float(model_grid[0]), float(model_grid[-1])
+    print(f"\nWavelength range to extend to (the model covers {default_lo:g}-{default_hi:g} Å).")
+    print("Every spectrum keeps all its own points; points are added only beyond its ends.")
+    while True:
+        lo = _ask_number(f"  Shortest wavelength in Å [{default_lo:g}]: ", default_lo, positive=True)
+        hi = _ask_number(f"  Longest wavelength in Å [{default_hi:g}]: ", default_hi, positive=True)
+        if lo < hi:
+            return lo, hi
+        print(f"  {lo:g} Å is not below {hi:g} Å; try again.")
 
 
 def _extend_menu(base_dir: str, models_dir: str) -> None:
@@ -1410,6 +1421,7 @@ def _extend_menu(base_dir: str, models_dir: str) -> None:
     if source is None:
         return
     print(f"\nExtending: {source['name']}")
+    extension_range = _ask_extension_range(completer.wavelength_grid)
     
     output_name = source['name'] + "_ml_extended"
     output_dir = os.path.join(base_dir, output_name)
@@ -1421,7 +1433,7 @@ def _extend_menu(base_dir: str, models_dir: str) -> None:
     summary = completer.extend_catalog(
         input_dir=source['path'],
         output_dir=output_dir,
-        extension_range=(100.0, 100000.0),
+        extension_range=extension_range,
         verbose=True,
     )
     

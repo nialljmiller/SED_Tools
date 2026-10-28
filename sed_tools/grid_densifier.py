@@ -278,6 +278,8 @@ def densify_grid(
 def run_interactive_workflow(base_dir: str = None):
     import glob
 
+    from .ml_sed_generator import _ask_number
+
     if base_dir is None:
         from .models import STELLAR_DIR_DEFAULT
         base_dir = str(STELLAR_DIR_DEFAULT)
@@ -306,7 +308,7 @@ def run_interactive_workflow(base_dir: str = None):
         return
     src = cubes[int(sel) - 1]
 
-    spacing  = float(input("Target Teff spacing in K [1000]: ").strip() or "1000")
+    spacing  = _ask_number("Target Teff spacing in K [1000]: ", 1000.0, positive=True)
     ml_model = input("ML model path (leave blank for blackbody only): ").strip() or None
 
     src_dir     = os.path.dirname(src)

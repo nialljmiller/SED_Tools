@@ -31,6 +31,7 @@ Usage
 
 import json
 import logging
+import math
 import os
 import struct
 from collections import Counter
@@ -927,6 +928,36 @@ def _menu_choice(items: List[Dict[str, Any]], prompt: str) -> Optional[Dict[str,
     return items[idx]
 
 
+def _ask_number(prompt: str, default: Optional[float] = None, *, whole: bool = False,
+                positive: bool = False) -> float:
+    """Ask until the answer is a finite number (whole, positive if asked); Enter gives ``default`` if set."""
+    kind = ("a positive " if positive else "a ") + ("whole number" if whole else "number")
+    while True:
+        raw = input(prompt).strip()
+        if not raw and default is not None:
+            return default
+        try:
+            value = int(raw) if whole else float(raw)
+        except ValueError:
+            value = None
+        if value is not None and math.isfinite(value) and (value > 0 or not positive):
+            return value
+        print(f"  {raw!r} is not {kind}; try again.")
+
+
+def _ask_numbers(prompt: str) -> List[float]:
+    """Ask until the answer is a comma-separated list of finite numbers."""
+    while True:
+        raw = input(prompt).strip()
+        try:
+            values = [float(token) for token in raw.split(',')]
+        except ValueError:
+            values = []
+        if values and all(math.isfinite(v) for v in values):
+            return values
+        print(f"  {raw!r} is not a comma-separated list of numbers; try again.")
+
+
 def _training_libraries(base_dir: str) -> List[Dict[str, Any]]:
     """Libraries under base_dir with a flux_cube.bin, and their SED counts ("?" if unknown)."""
     import pandas as pd
@@ -988,8 +1019,8 @@ def _train_menu(base_dir: str, models_dir: str) -> None:
         return
     print(f"\nTraining on: {selected['name']}")
     
-    epochs = int(input("  Epochs [200]: ").strip() or "200")
-    batch_size = int(input("  Batch size [64]: ").strip() or "64")
+    epochs = _ask_number("  Epochs [200]: ", 200, whole=True, positive=True)
+    batch_size = _ask_number("  Batch size [64]: ", 64, whole=True, positive=True)
     
     default_name = f"sed_generator_{selected['name']}"
     model_name = input(f"  Model name [{default_name}]: ").strip() or default_name
@@ -1013,9 +1044,9 @@ def _generate_menu(models_dir: str) -> None:
     gen = SEDGenerator(selected['path'])
     
     print("\nEnter stellar parameters:")
-    teff = float(input("  Teff (K): ").strip())
-    logg = float(input("  logg: ").strip())
-    meta = float(input("  [M/H]: ").strip())
+    teff = _ask_number("  Teff (K): ", positive=True)
+    logg = _ask_number("  logg: ")
+    meta = _ask_number("  [M/H]: ")
     
     print()
     output_dir = _ask_output_dir(os.path.join(selected['path'], "SED"))
@@ -1039,9 +1070,9 @@ def _batch_menu(models_dir: str) -> None:
     
     print("\nDefine parameter grid (comma-separated values):")
     print("  Example: 5000,5500,6000")
-    teff_vals = [float(x.strip()) for x in input("  Teff values: ").strip().split(',')]
-    logg_vals = [float(x.strip()) for x in input("  logg values: ").strip().split(',')]
-    meta_vals = [float(x.strip()) for x in input("  [M/H] values: ").strip().split(',')]
+    teff_vals = _ask_numbers("  Teff values: ")
+    logg_vals = _ask_numbers("  logg values: ")
+    meta_vals = _ask_numbers("  [M/H] values: ")
     
     n_total = len(teff_vals) * len(logg_vals) * len(meta_vals)
     print(f"\nWill generate {n_total} SEDs")
