@@ -244,13 +244,13 @@ def test_list_models_reads_config_fields(tmp_path):
     assert models[0]["architecture"] == {"input_dim": 10}
 
 
-def test_list_models_does_not_filter_by_model_type(tmp_path):
-    # Unlike SEDGenerator.list_models, SEDCompleter.list_models includes
-    # any directory with a config.json, regardless of its content.
-    model_dir = tmp_path / "anything"
-    model_dir.mkdir()
-    (model_dir / SEDCompleter.CONFIG_FILE).write_text(json.dumps({"model_type": "sed_generator"}))
-    assert [m["name"] for m in SEDCompleter.list_models(str(tmp_path))] == ["anything"]
+def test_list_models_leaves_out_generators(tmp_path):
+    # 0.5.0: generators were listed too, and choosing one raised KeyError.
+    # Completer configs have no model_type; SEDGenerator writes 'sed_generator'.
+    for name, config in [("generator", {"model_type": "sed_generator"}), ("completer", {})]:
+        (tmp_path / name).mkdir()
+        (tmp_path / name / SEDCompleter.CONFIG_FILE).write_text(json.dumps(config))
+    assert [m["name"] for m in SEDCompleter.list_models(str(tmp_path))] == ["completer"]
 
 
 def test_list_models_skips_unreadable_config_without_raising(tmp_path):

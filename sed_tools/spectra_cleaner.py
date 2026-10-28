@@ -519,7 +519,8 @@ def _undeclared_flux_unit_message(grid: str, guess: str) -> str:
     return (
         f"Flux unit of {grid} is not declared; best guess: '{guess}', {FLUX_UNITS[guess][2]} "
         f"({FLUX_GUESS_WHY}). Pass the unit as flux_unit='{guess}', or as another of "
-        f"{', '.join(FLUX_UNITS)}, to clean_model_dir, SED.fetch or SED.import_grid. "
+        f"{', '.join(FLUX_UNITS)}, to clean_model_dir, SED.fetch or SED.import_grid; on the "
+        f"command line, pass --flux-unit {guess} to sed-tools grids, rebuild or import. "
         "sed-tools asks for it when run in a terminal."
     )
 

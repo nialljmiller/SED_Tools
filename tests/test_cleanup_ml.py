@@ -230,15 +230,19 @@ def test_completer_complete_sed_values(cpu_torch):
     wl_out, flux_out = completer.complete_sed(wl, flux, teff=5800.0, logg=4.4, meta=0.1,
                                               extension_range=(500.0, 60000.0))
 
-    assert (wl_out[0], wl_out[-1]) == pytest.approx((500.0, 60000.0), rel=1e-14)
-    assert flux_out[[0, 150, 300, 450, 600, 750, 900, 999]] == pytest.approx([
-        410416.9146332419, 1687776.9083537995, 3334628.567953557, 8817909.586145839,
-        4883482.30195489, 710804.2571917092, 2839454.620631518, 2065668.2893293651,
+    # 0.5.0: the input's own samples are kept verbatim (they used to be resampled
+    # onto the grid); only points of the 1,000-point grid beyond them are added.
+    grid = np.logspace(np.log10(500.0), np.log10(60000.0), 1000)
+    below, above = grid < wl[0], grid > wl[-1]
+    np.testing.assert_array_equal(wl_out, np.concatenate([grid[below], wl, grid[above]]))
+    np.testing.assert_array_equal(flux_out[below.sum():below.sum() + len(wl)], flux)
+    # The added points keep the values they had before 0.5.0.
+    on_grid = np.full(grid.size, np.nan)
+    on_grid[below] = flux_out[:below.sum()]
+    on_grid[above] = flux_out[below.sum() + len(wl):]
+    assert on_grid[[0, 150, 300, 900, 999]] == pytest.approx([
+        410416.9146332419, 1687776.9083537995, 3334628.567953557, 2839454.620631518, 2065668.2893293651,
     ], rel=1e-5)
-    assert flux_out.sum() == pytest.approx(3194475556.049119, rel=1e-5)
-    # Inside the input's coverage the output is the input, interpolated.
-    inside = (wl_out >= wl[0]) & (wl_out <= wl[-1])
-    np.testing.assert_array_equal(flux_out[inside], np.interp(wl_out[inside], wl, flux))
 
 
 def test_generator_generate_values(cpu_torch):
@@ -392,7 +396,8 @@ def test_completer_workflow_trains_on_the_chosen_library(stellar_dir, tmp_path, 
     (["1", "x"], "Invalid selection"),
     (["1", "0"], "Invalid selection"),
     (["1", "9"], "Invalid selection"),
-    (["1", "1", "abc", ""], "Invalid parameters"),
+    # 0.5.0: a bad number is asked again (it used to end the menu with "Invalid parameters")
+    (["1", "1", "abc", "", "", "", "n"], "Cancelled"),
     (["9"], "Invalid choice"),
 ])
 def test_completer_workflow_rejects_bad_answers(stellar_dir, tmp_path, monkeypatch, capsys, answers, message):
@@ -417,6 +422,7 @@ def test_completer_workflow_extends_the_chosen_grid(stellar_dir, tmp_path, monke
 
     def fake_load(self, path):
         self.model = object()
+        self.wavelength_grid = np.logspace(2, 5, 1000)
 
     extend_calls = []
 
@@ -426,7 +432,8 @@ def test_completer_workflow_extends_the_chosen_grid(stellar_dir, tmp_path, monke
 
     monkeypatch.setattr(mc.SEDCompleter, "load", fake_load)
     monkeypatch.setattr(ml.Completer, "extend_catalog", fake_extend)
-    _feed_input(monkeypatch, ["2", "1", "1", ""])
+    # 0.5.0: Enter at the two range prompts keeps the model's own range
+    _feed_input(monkeypatch, ["2", "1", "1", "", "", ""])
 
     mc.run_interactive_workflow(str(stellar_dir), str(models))
 

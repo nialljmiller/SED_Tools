@@ -852,10 +852,44 @@ def find_atmosphere(atmosphere_root: PathLike, spec: AtmosphereSpec) -> Optional
 
 
 def atmosphere_file(atmosphere_root: PathLike, spec: AtmosphereSpec) -> Path:
+    """The cached file for ``spec``; ComponentError saying what the site does have otherwise."""
     path = find_atmosphere(atmosphere_root, spec)
-    if path is None:
-        raise ComponentError(f"No cached atmosphere for {spec.label}; fetch or generate the requested conditions")
-    return path
+    if path is not None:
+        return path
+    grid = atmosphere_grid(atmosphere_root, spec.site)
+    if grid is None:
+        raise ComponentError(f"No atmosphere of site {spec.site} is cached; fetch or generate the site first")
+    if grid.find(spec) is None:
+        raise ComponentError(f"Site {spec.site} has no atmosphere for {_conditions(spec)}; "
+                             f"it has {_available_conditions(grid)}")
+    raise ComponentError(f"The {spec.site} atmosphere for {_conditions(spec)} is listed but its file "
+                         "is not cached; fetch it first")
+
+
+def _conditions(spec: AtmosphereSpec) -> str:
+    """``airmass 1.2``, ``airmass 1.2 and PWV 2.5 mm`` or ``unstated airmass``, for messages."""
+    if spec.airmass is None:
+        return "unstated airmass"
+    return f"airmass {spec.airmass:g}" + (f" and PWV {spec.pwv:g} mm" if spec.pwv is not None else "")
+
+
+def _available_conditions(grid: AtmosphereGrid) -> str:
+    """The airmasses and PWVs a site's manifest lists, and whether it has an unstated-airmass atmosphere."""
+    parts = []
+    airmasses = sorted({float(e["airmass"]) for e in grid.entries})
+    if airmasses:
+        listed = "airmass " + ", ".join(f"{a:g}" for a in airmasses)
+        pwvs = sorted({float(e["pwv"]) for e in grid.entries if e.get("pwv") is not None})
+        if pwvs:
+            listed += " with PWV " + ", ".join(f"{p:g}" for p in pwvs) + " mm"
+        parts.append(listed)
+    if grid.unstated:
+        parts.append("unstated airmass (the atmosphere as published)")
+    return "; or ".join(parts) or "no atmospheres"
+
+
+_NEEDS_CONDITIONS = ("Including the atmosphere needs the observing conditions: an airmass, "
+                     "and a PWV where the site models it")
 
 
 def resolve_atmosphere(manifest: InstrumentManifest, spec: Optional[AtmosphereSpec]) -> AtmosphereSpec:
@@ -869,7 +903,7 @@ def resolve_atmosphere(manifest: InstrumentManifest, spec: Optional[AtmosphereSp
     """
     owner = f"{manifest.facility}/{manifest.instrument}"
     if spec is None:
-        raise ComponentError("Including the atmosphere needs atmosphere={'airmass': ..., 'pwv': ...}")
+        raise ComponentError(_NEEDS_CONDITIONS)
     if manifest.ground_based is False:
         raise ComponentError(
             f"{manifest.facility} is {platform(manifest.facility) or 'not ground'}-based; "
@@ -885,8 +919,7 @@ def resolve_atmosphere(manifest: InstrumentManifest, spec: Optional[AtmosphereSp
         )
     site = spec.site or manifest.default_site or (sites[0] if len(sites) == 1 else None)
     if site is None:
-        raise ComponentError(f"{owner} has several atmosphere sites {sites}; choose one with "
-                             "atmosphere={'site': ..., 'airmass': ...}")
+        raise ComponentError(f"{owner} has several atmosphere sites; choose a site: {', '.join(sites)}")
     return AtmosphereSpec(site, spec.airmass, spec.pwv)
 
 
@@ -926,7 +959,7 @@ def _check_composition(roles: set, band: str, manifest: InstrumentManifest,
     if band not in manifest.bands:
         raise ComponentError(f"{manifest.facility}/{manifest.instrument} has no band '{band}'")
     if ATMOSPHERE in roles and spec is None:
-        raise ComponentError("Including the atmosphere needs atmosphere={'airmass': ..., 'pwv': ...}")
+        raise ComponentError(_NEEDS_CONDITIONS)
 
 
 def _composition_steps(instrument_dir: Path, band: str, roles: set, manifest: InstrumentManifest,
@@ -1019,10 +1052,13 @@ def compose_band(
         sources.append(curve.header.get("FilterID") or (
             str(path.relative_to(path.parents[2])) if len(path.parents) > 2 else path.name))
 
-    wavelength, transmission = multiply_curves(
-        curves, allow_partial=allow_partial, outside=manifest.outside_range, policies=policies,
-        tolerances=tolerances,
-    )
+    try:
+        wavelength, transmission = multiply_curves(
+            curves, allow_partial=allow_partial, outside=manifest.outside_range, policies=policies,
+            tolerances=tolerances,
+        )
+    except ComponentCoverageError as exc:
+        raise ComponentCoverageError(f"{manifest.facility}/{manifest.instrument} band {band}: {exc}") from exc
     recipe = recipe_name(ordered)
     header = {
         "Components": recipe_name(covered),
