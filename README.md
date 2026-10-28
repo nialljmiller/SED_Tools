@@ -1167,18 +1167,22 @@ for star in stars:
 ```python
 from sed_tools.api import SED
 
-# Hot stars from Kurucz: only the spectra with Teff 7000-50000 K are downloaded,
-# and the Kurucz2003all folder gets their lookup table, HDF5 bundle and flux cube
-# (a grid that comes from SVO is downloaded whole, then cut; see "Downloading")
-hot = SED.fetch('Kurucz2003all', teff_min=7000, teff_max=50000)
+models = '/path/to/stellar_models'
 
-# Cool stars from BT-Settl
-cool = SED.fetch('bt-settl', teff_min=2500, teff_max=7000)
+# Hot stars from Kurucz, cool stars from BT-Settl. From NJM or MSG only these Teff
+# ranges are downloaded; a grid that comes from SVO is downloaded whole, then cut
+# (see "Downloading"). Each selection is then written to a grid folder of its own.
+hot = SED.fetch('Kurucz2003all', teff_min=7000, teff_max=50000, model_root=models)
+hot.grid.write(f'{models}/Kurucz_hot')
+
+cool = SED.fetch('bt-settl', teff_min=2500, teff_max=7000, model_root=models)
+cool.grid.write(f'{models}/BT-Settl_cool')
 
 # Combine the two selections into a unified grid
 combined = SED.combine(
-    ['Kurucz2003all', 'bt-settl'],
-    output='full_temperature_grid'
+    ['Kurucz_hot', 'BT-Settl_cool'],
+    output='full_temperature_grid',
+    model_root=models,
 )
 ```
 

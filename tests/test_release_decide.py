@@ -92,8 +92,20 @@ def test_a_complete_set_has_no_incomplete_line(tmp_path, monkeypatch, capsys):
 
     root = tmp_path / "filters"
     write_set(root / "Fac" / "Cam", ["B", "V"])
-    assert run_cli(monkeypatch, "filters-info", "Fac/Cam", "--base", str(root), "--offline") == 0
-    assert "Incomplete" not in capsys.readouterr().out
+    # An older manifest listing NJM's archived copy among its bands, without the copy installed
+    write_set(root / "Fac" / "Old", ["H"], manifest_bands=["H", "H_svo"], archived={"H_svo": {}})
+    for target in ("Fac/Cam", "Fac/Old"):
+        assert run_cli(monkeypatch, "filters-info", target, "--base", str(root), "--offline") == 0
+        assert "Incomplete" not in capsys.readouterr().out
+    assert FilterLibrary.published_complete(root / "Fac" / "Old")  # complete for the library too
+
+
+def test_the_browser_downloads_the_partial_set_as_a_success(gaia_from_svo, caplog):
+    failures = []
+    with caplog.at_level(logging.WARNING):
+        cli._fetch_instrument(FilterLibrary(gaia_from_svo), "GAIA", "GAIA", failures)
+    assert failures == []  # the browsing session does not end with exit 1
+    assert len(incomplete_warnings(caplog)) == 1
 
 
 def test_an_svo_curve_that_could_not_be_saved_still_fails(gaia_from_svo, monkeypatch):

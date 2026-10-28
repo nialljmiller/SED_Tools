@@ -568,7 +568,8 @@ class InstrumentManifest:
         if instrument_dir is not None:
             info = self.local(instrument_dir).describe()
             info["missing_files"] = self.missing_files(instrument_dir)
-            info["expected_bands"] = list(self.bands)
+            # The set's bands, as FilterLibrary.published_complete counts them: never an archived copy.
+            info["expected_bands"] = [band for band in self.bands if band not in self.archived_bands]
             return info
         from .component_sources.catalog import component_availability
 
