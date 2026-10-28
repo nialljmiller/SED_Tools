@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-10-28T07:32:48.346795",
+  "generated": "2026-10-28T14:59:57.913315",
   "base_url": "http://nillmill.ddns.net/sed_tools",
   "statistics": {
     "total_models": 1,
@@ -12556,7 +12556,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 22366,
-            "size_human": "21.84 KB"
+            "size_human": "21.84 KB",
+            "description": "UCM standard RGB system for commercial cameras (Cardiel et al. 2021)"
           },
           "USNO": {
             "name": "USNO",
@@ -14161,7 +14162,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 25637,
-            "size_human": "25.04 KB"
+            "size_human": "25.04 KB",
+            "description": "Hayabusa2 ONC-W1 nadir wide-angle camera: total and optics responses"
           },
           "ONC-W2": {
             "name": "ONC-W2",
@@ -14182,7 +14184,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 25506,
-            "size_human": "24.91 KB"
+            "size_human": "24.91 KB",
+            "description": "Hayabusa2 ONC-W2 slant (~30 deg) wide-angle camera: total and optics"
           }
         },
         "instrument_count": 3
@@ -15192,7 +15195,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 17278,
-            "size_human": "16.87 KB"
+            "size_human": "16.87 KB",
+            "description": "INSAT-1B visible (0.64 um) and infrared (11.4 um) channels (ISCCP)"
           },
           "INSAT-3D-IMG": {
             "name": "INSAT-3D-IMG",
@@ -15216,7 +15220,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 36291,
-            "size_human": "35.44 KB"
+            "size_human": "35.44 KB",
+            "description": "INSAT-3D Imager six-channel spectral responses (NWP SAF)"
           },
           "INSAT-3D-SND": {
             "name": "INSAT-3D-SND",
@@ -15278,7 +15283,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 36304,
-            "size_human": "35.45 KB"
+            "size_human": "35.45 KB",
+            "description": "INSAT-3DR Imager six-channel spectral responses (NWP SAF)"
           },
           "INSAT-3DR-SND": {
             "name": "INSAT-3DR-SND",
@@ -15314,7 +15320,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 84300,
-            "size_human": "82.32 KB"
+            "size_human": "82.32 KB",
+            "description": "INSAT-3DR Sounder channel spectral responses (NWP SAF)"
           }
         },
         "instrument_count": 5
@@ -15402,7 +15409,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 39643,
-            "size_human": "38.71 KB"
+            "size_human": "38.71 KB",
+            "description": "UVEX northern Galactic plane survey U, g, r, HeI (Groot et al. 2009)"
           },
           "WFC": {
             "name": "WFC",
@@ -15638,7 +15646,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 96124,
-            "size_human": "93.87 KB"
+            "size_human": "93.87 KB",
+            "description": "IRTF MIRSI mid-infrared imager: K, N and 4.9-24 um filters"
           },
           "MOC": {
             "name": "MOC",
@@ -15661,7 +15670,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 31147,
-            "size_human": "30.42 KB"
+            "size_human": "30.42 KB",
+            "description": "MIRSI Optical Camera (MOC) on the IRTF: SDSS r, i, z filters"
           },
           "MORIS": {
             "name": "MORIS",
@@ -15688,7 +15698,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 72314,
-            "size_human": "70.62 KB"
+            "size_human": "70.62 KB",
+            "description": "IRTF MORIS fast visible camera on SpeX: g r i z V VR OG590, dichroics"
           },
           "NSFCam": {
             "name": "NSFCam",
@@ -15791,7 +15802,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 16411,
-            "size_human": "16.03 KB"
+            "size_human": "16.03 KB",
+            "description": "IRTF iSHELL 1.1-5.3 um high-resolution spectrograph, 5.1 um filter"
           }
         },
         "instrument_count": 5
@@ -17745,7 +17757,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 293203,
-            "size_human": "286.33 KB"
+            "size_human": "286.33 KB",
+            "description": "KPNO 4-m R.C. Spectrograph glass filters (NOIRLab filter list)"
           },
           "TIFKAM": {
             "name": "TIFKAM",
@@ -18308,7 +18321,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 35596,
-            "size_human": "34.76 KB"
+            "size_human": "34.76 KB",
+            "description": "LBT Multi-Object Double Spectrographs (MODS): SDSS u, g, r, i, z"
           }
         },
         "instrument_count": 5
@@ -18657,7 +18671,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 38846,
-            "size_human": "37.94 KB"
+            "size_human": "37.94 KB",
+            "description": "OGLE-IV V and I, filter only and with average CCD response"
           },
           "RetroCam": {
             "name": "RetroCam",
@@ -19183,7 +19198,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 17997,
-            "size_human": "17.58 KB"
+            "size_human": "17.58 KB",
+            "description": "LMT AzTEC 144-pixel 1.1 mm camera passband (Wilson et al. 2008)"
           },
           "Toltec0": {
             "name": "Toltec0",
@@ -19204,7 +19220,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 604954,
-            "size_human": "590.78 KB"
+            "size_human": "590.78 KB",
+            "description": "LMT TolTEC imaging polarimeter, preliminary 1.1/1.4/2.0 mm bands"
           }
         },
         "instrument_count": 2
@@ -19285,7 +19302,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 57566,
-            "size_human": "56.22 KB"
+            "size_human": "56.22 KB",
+            "description": "LRO LROC Wide Angle Camera, 7 filters 320-690 nm (Robinson+ 2010)"
           }
         },
         "instrument_count": 3
@@ -20563,7 +20581,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 21526,
-            "size_human": "21.02 KB"
+            "size_human": "21.02 KB",
+            "description": "Liverpool Telescope SupIRCam near-IR camera J, H, K filters"
           }
         },
         "instrument_count": 6
@@ -21083,7 +21102,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 22679,
-            "size_human": "22.15 KB"
+            "size_human": "22.15 KB",
+            "description": "Mars Express Visual Monitoring Camera (VMC): B&W and colour"
           }
         },
         "instrument_count": 2
@@ -21331,7 +21351,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 27397,
-            "size_human": "26.75 KB"
+            "size_human": "26.75 KB",
+            "description": "MMT SAO Widefield InfraRed Camera (SWIRC) Y, J, H filters"
           }
         },
         "instrument_count": 6
@@ -21731,7 +21752,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 60341,
-            "size_human": "58.93 KB"
+            "size_human": "58.93 KB",
+            "description": "Mars 2020 SHERLOC WATSON camera RGB and cutoff filters (Edgett+ 2019)"
           }
         },
         "instrument_count": 2
@@ -21921,7 +21943,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 17630,
-            "size_human": "17.22 KB"
+            "size_human": "17.22 KB",
+            "description": "Meteosat-2 Visible and InfraRed Imager (MVIRI) VIS channel"
           },
           "MVIRI03": {
             "name": "MVIRI03",
@@ -22430,7 +22453,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 13246,
-            "size_human": "12.94 KB"
+            "size_human": "12.94 KB",
+            "description": "Catalina Survey (CRTS) clear-filter passband"
           },
           "Junocam": {
             "name": "Junocam",
@@ -22553,7 +22577,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 23294,
-            "size_human": "22.75 KB"
+            "size_human": "22.75 KB",
+            "description": "ROTSE-III approximate response (Robotic Optical Transient Search)"
           },
           "UCAC": {
             "name": "UCAC",
@@ -22753,7 +22778,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 17836,
-            "size_human": "17.42 KB"
+            "size_human": "17.42 KB",
+            "description": "Nimbus-3 High Resolution Infrared Radiometer (HRIR) channel 1"
           },
           "ITPR5": {
             "name": "ITPR5",
@@ -23786,7 +23812,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 133071,
-            "size_human": "129.95 KB"
+            "size_human": "129.95 KB",
+            "description": "New Horizons LORRI long-range imager, panchromatic QE"
           },
           "MVIC": {
             "name": "MVIC",
@@ -24375,7 +24402,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 17508,
-            "size_human": "17.10 KB"
+            "size_human": "17.10 KB",
+            "description": "OSIRIS-REx PolyCam camera panchromatic response (Rizk et al. 2018)"
           },
           "SamCam": {
             "name": "SamCam",
@@ -24394,7 +24422,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 17497,
-            "size_human": "17.09 KB"
+            "size_human": "17.09 KB",
+            "description": "OSIRIS-REx SamCam camera panchromatic response (Rizk et al. 2018)"
           }
         },
         "instrument_count": 3
@@ -24506,7 +24535,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 44799,
-            "size_human": "43.75 KB"
+            "size_human": "43.75 KB",
+            "description": "Observatorio de Sierra Nevada Gunn v, g, r interference filters"
           },
           "Halpha": {
             "name": "Halpha",
@@ -24741,7 +24771,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 17734,
-            "size_human": "17.32 KB"
+            "size_human": "17.32 KB",
+            "description": "OVRO 5.5 m Polatron CMB polarimeter, 100 GHz (Philhour et al. 2001)"
           }
         },
         "instrument_count": 1
@@ -25017,7 +25048,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 33156,
-            "size_human": "32.38 KB"
+            "size_human": "32.38 KB",
+            "description": "GSC-II northern photographic passbands Bj, Rf, In (Lasker et al. 2008)"
           },
           "POSS": {
             "name": "POSS",
@@ -25039,7 +25071,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 24388,
-            "size_human": "23.82 KB"
+            "size_human": "23.82 KB",
+            "description": "Palomar Observatory Sky Atlas (POSS) blue and red passbands"
           },
           "Wevers1986": {
             "name": "Wevers1986",
@@ -25060,7 +25093,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 32000,
-            "size_human": "31.25 KB"
+            "size_human": "31.25 KB",
+            "description": "U', J, F passbands of the photometric system of Wevers et al. 1986"
           },
           "ZTF": {
             "name": "ZTF",
@@ -25352,7 +25386,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 25281,
-            "size_human": "24.69 KB"
+            "size_human": "24.69 KB",
+            "description": "Next Generation Transit Survey (NGTS) filter (Wheatley et al. 2018)"
           },
           "OmegaCAM": {
             "name": "OmegaCAM",
@@ -26607,7 +26642,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 17676,
-            "size_human": "17.26 KB"
+            "size_human": "17.26 KB",
+            "description": "Rosetta Navigation Camera (NavCam) sensitivity (Statella+ 2017)"
           },
           "OSIRIS_NAC": {
             "name": "OSIRIS_NAC",
@@ -26945,7 +26981,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 40441,
-            "size_human": "39.49 KB"
+            "size_human": "39.49 KB",
+            "description": "SMART-1 AMIE lunar imager 750-965 nm filters (Shkuratov+ 2003)"
           }
         },
         "instrument_count": 1
@@ -27248,7 +27285,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 66408,
-            "size_human": "64.85 KB"
+            "size_human": "64.85 KB",
+            "description": "SPECULOOS DUET_IR Y, J, H, YJ, clear incl. atmosphere (Pedersen+ 2026)"
           },
           "DUET_VIS": {
             "name": "DUET_VIS",
@@ -27273,7 +27311,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 55206,
-            "size_human": "53.91 KB"
+            "size_human": "53.91 KB",
+            "description": "SPECULOOS DUET_VIS g, r, i, z, iz, clear, incl. atmosphere"
           },
           "SPECULOOS_S": {
             "name": "SPECULOOS_S",
@@ -27299,7 +27338,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 63229,
-            "size_human": "61.75 KB"
+            "size_human": "61.75 KB",
+            "description": "SPECULOOS Southern Observatory g, r, i, z, iz, clear, incl. atmosphere"
           },
           "SPIRIT": {
             "name": "SPIRIT",
@@ -27322,7 +27362,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 66350,
-            "size_human": "64.79 KB"
+            "size_human": "64.79 KB",
+            "description": "SPECULOOS SPIRIT zYJ, J, H, clear, incl. atmosphere (Pedersen+ 2024)"
           }
         },
         "instrument_count": 4
@@ -27748,7 +27789,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 23454,
-            "size_human": "22.90 KB"
+            "size_human": "22.90 KB",
+            "description": "SPOT VEGETATION instrument Blue, Red, NIR, SWIR spectral responses"
           }
         },
         "instrument_count": 13
@@ -29234,7 +29276,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 24826,
-            "size_human": "24.24 KB"
+            "size_human": "24.24 KB",
+            "description": "Subaru SCExAO VAMPIRES H-alpha and continuum filters (Uyama+ 2020)"
           }
         },
         "instrument_count": 8
@@ -29323,7 +29366,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 46755,
-            "size_human": "45.66 KB"
+            "size_human": "45.66 KB",
+            "description": "TAUVEX UV imager approximate filters BBF, NBF3, SF1-SF3"
           }
         },
         "instrument_count": 1
@@ -29799,7 +29843,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 70933,
-            "size_human": "69.27 KB"
+            "size_human": "69.27 KB",
+            "description": "TJO MEIA imager Johnson UBV, Cousins RcIc, incl. telescope and CCD"
           },
           "MEIA2": {
             "name": "MEIA2",
@@ -29824,7 +29869,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 44765,
-            "size_human": "43.72 KB"
+            "size_human": "43.72 KB",
+            "description": "TJO MEIA2 optical imager U, B, V, Rc, Ic filters (filter only)"
           },
           "TFRM": {
             "name": "TFRM",
@@ -31107,7 +31153,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 37773,
-            "size_human": "36.89 KB"
+            "size_human": "36.89 KB",
+            "description": "Venus Express Venus Monitoring Camera UV, VIS, NIR1, NIR2 filters"
           }
         },
         "instrument_count": 1
@@ -31350,7 +31397,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 48534,
-            "size_human": "47.40 KB"
+            "size_human": "47.40 KB",
+            "description": "Voyager ISS Wide Angle Camera (WAC) 5 filters (Smith et al. 1977)"
           }
         },
         "instrument_count": 2
@@ -32389,7 +32437,8 @@
             "properties": "properties.json",
             "info": "info.json",
             "size_bytes": 19136,
-            "size_human": "18.69 KB"
+            "size_human": "18.69 KB",
+            "description": "ZiYuan-3 01 (ZY-3) three-line array camera (TAC) panchromatic band"
           }
         },
         "instrument_count": 3
