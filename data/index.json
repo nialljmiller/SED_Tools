@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-10-28T02:00:18.983447",
+  "generated": "2026-10-28T02:19:52.412096",
   "base_url": "http://nillmill.ddns.net/sed_tools",
   "statistics": {
     "total_models": 1,
@@ -7150,8 +7150,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 296151,
-            "size_human": "289.21 KB"
+            "size_bytes": 299353,
+            "size_human": "292.34 KB"
           },
           "VIS": {
             "name": "VIS",
@@ -15026,8 +15026,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 5623160,
-            "size_human": "5.36 MB"
+            "size_bytes": 5630993,
+            "size_human": "5.37 MB"
           },
           "NIRISS": {
             "name": "NIRISS",
@@ -21944,8 +21944,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 296000,
-            "size_human": "289.06 KB"
+            "size_bytes": 300701,
+            "size_human": "293.65 KB"
           },
           "WFI_SCA01": {
             "name": "WFI_SCA01",
@@ -25285,8 +25285,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 265585,
-            "size_human": "259.36 KB"
+            "size_bytes": 265563,
+            "size_human": "259.34 KB"
           }
         },
         "instrument_count": 1
@@ -25311,8 +25311,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 90915,
-            "size_human": "88.78 KB"
+            "size_bytes": 90917,
+            "size_human": "88.79 KB"
           }
         },
         "instrument_count": 1
@@ -25546,7 +25546,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 1154435,
+            "size_bytes": 1155057,
             "size_human": "1.10 MB"
           },
           "MODIS": {
@@ -25621,8 +25621,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 484837,
-            "size_human": "473.47 KB"
+            "size_bytes": 490298,
+            "size_human": "478.81 KB"
           }
         },
         "instrument_count": 2
@@ -25982,7 +25982,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 19899,
+            "size_bytes": 19896,
             "size_human": "19.43 KB"
           }
         },
@@ -26012,8 +26012,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 42332,
-            "size_human": "41.34 KB"
+            "size_bytes": 42326,
+            "size_human": "41.33 KB"
           }
         },
         "instrument_count": 1
@@ -26054,8 +26054,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 119674,
-            "size_human": "116.87 KB"
+            "size_bytes": 119683,
+            "size_human": "116.88 KB"
           },
           "WFCAM": {
             "name": "WFCAM",
@@ -26085,8 +26085,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 144113,
-            "size_human": "140.74 KB"
+            "size_bytes": 144835,
+            "size_human": "141.44 KB"
           }
         },
         "instrument_count": 2
@@ -26119,8 +26119,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 98185,
-            "size_human": "95.88 KB"
+            "size_bytes": 98187,
+            "size_human": "95.89 KB"
           }
         },
         "instrument_count": 1
@@ -26168,8 +26168,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 103043,
-            "size_human": "100.63 KB"
+            "size_bytes": 103053,
+            "size_human": "100.64 KB"
           },
           "VIK12": {
             "name": "VIK12",
@@ -26200,7 +26200,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 59100,
+            "size_bytes": 59092,
             "size_human": "57.71 KB"
           },
           "VIK21": {
@@ -26232,7 +26232,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 56756,
+            "size_bytes": 56765,
             "size_human": "55.43 KB"
           },
           "VIK22": {
@@ -26269,8 +26269,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 77038,
-            "size_human": "75.23 KB"
+            "size_bytes": 77052,
+            "size_human": "75.25 KB"
           }
         },
         "instrument_count": 4
@@ -26295,8 +26295,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 28240,
-            "size_human": "27.58 KB"
+            "size_bytes": 28232,
+            "size_human": "27.57 KB"
           }
         },
         "instrument_count": 1
@@ -26320,7 +26320,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 21004,
+            "size_bytes": 21005,
             "size_human": "20.51 KB"
           }
         },
@@ -26370,8 +26370,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 263282,
-            "size_human": "257.11 KB"
+            "size_bytes": 265193,
+            "size_human": "258.98 KB"
           },
           "LRIS": {
             "name": "LRIS",
@@ -26501,8 +26501,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 63840,
-            "size_human": "62.34 KB"
+            "size_bytes": 64146,
+            "size_human": "62.64 KB"
           }
         },
         "instrument_count": 1
@@ -26553,8 +26553,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 167839,
-            "size_human": "163.91 KB"
+            "size_bytes": 167864,
+            "size_human": "163.93 KB"
           },
           "NESSI": {
             "name": "NESSI",
@@ -26590,8 +26590,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 117356,
-            "size_human": "114.61 KB"
+            "size_bytes": 117372,
+            "size_human": "114.62 KB"
           },
           "ODI": {
             "name": "ODI",
@@ -26618,8 +26618,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 195588,
-            "size_human": "191.00 KB"
+            "size_bytes": 195759,
+            "size_human": "191.17 KB"
           },
           "S2KB": {
             "name": "S2KB",
@@ -26639,7 +26639,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 16195,
+            "size_bytes": 16196,
             "size_human": "15.82 KB"
           },
           "WHIRC": {
@@ -26733,8 +26733,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 274642,
-            "size_human": "268.21 KB"
+            "size_bytes": 274665,
+            "size_human": "268.23 KB"
           }
         },
         "instrument_count": 6
@@ -26797,8 +26797,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 195422,
-            "size_human": "190.84 KB"
+            "size_bytes": 209836,
+            "size_human": "204.92 KB"
           }
         },
         "instrument_count": 1
@@ -26911,8 +26911,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 96545,
-            "size_human": "94.28 KB"
+            "size_bytes": 96866,
+            "size_human": "94.60 KB"
           },
           "WV110": {
             "name": "WV110",
@@ -26938,8 +26938,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 164467,
-            "size_human": "160.61 KB"
+            "size_bytes": 165448,
+            "size_human": "161.57 KB"
           },
           "WV3": {
             "name": "WV3",
@@ -26976,8 +26976,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 558728,
-            "size_human": "545.63 KB"
+            "size_bytes": 562925,
+            "size_human": "549.73 KB"
           },
           "WV60": {
             "name": "WV60",
@@ -26995,8 +26995,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 16833,
-            "size_human": "16.44 KB"
+            "size_bytes": 17154,
+            "size_human": "16.75 KB"
           }
         },
         "instrument_count": 4
@@ -27038,8 +27038,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 194655,
-            "size_human": "190.09 KB"
+            "size_bytes": 196195,
+            "size_human": "191.60 KB"
           }
         },
         "instrument_count": 1
@@ -27071,8 +27071,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 109099,
-            "size_human": "106.54 KB"
+            "size_bytes": 109103,
+            "size_human": "106.55 KB"
           },
           "MSC3-2": {
             "name": "MSC3-2",
@@ -27093,8 +27093,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 90400,
-            "size_human": "88.28 KB"
+            "size_bytes": 91668,
+            "size_human": "89.52 KB"
           }
         },
         "instrument_count": 2
@@ -27175,8 +27175,8 @@
       "schema": 1,
       "svo_records": {
         "dir": "/media/data3/MESA/SED_Tools/source_evidence/svo-archive/parsed",
-        "ids": 11044,
-        "sha256": "01527abcf778f6055e1679e68f64b0ec6ce15b486cbc338cb341d6d8f5b2a294"
+        "ids": 11066,
+        "sha256": "8c4c61a864abc505aa60853fb33bb0c8e9569dbe1d0f72f7245cfc618bc73761"
       },
       "references": 401,
       "unresolved_references": 0,
