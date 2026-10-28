@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-10-28T14:59:57.913315",
+  "generated": "2026-10-28T15:55:57.325419",
   "base_url": "http://nillmill.ddns.net/sed_tools",
   "statistics": {
     "total_models": 1,
@@ -9,7 +9,7 @@
     "total_size_bytes": 102629311050,
     "total_size_human": "95.58 GB",
     "total_facilities": 219,
-    "total_filters": 13570
+    "total_filters": 13572
   },
   "models": [
     "bt-cond"
@@ -9011,11 +9011,9 @@
           },
           "GAIA": {
             "name": "GAIA",
-            "filter_count": 8,
+            "filter_count": 6,
             "filters": [
               "G",
-              "Gaia2m_G",
-              "Gaia2m_Grp",
               "Gbp",
               "Gbp_bright",
               "Gbp_faint",
@@ -9023,18 +9021,18 @@
               "Grvs"
             ],
             "published_paths": {
-              "filter+instrument": 4,
+              "filter+instrument": 2,
               "filter+qe+instrument": 4
             },
             "detector_types": {
-              "photon": 8
+              "photon": 6
             },
             "separate_components": {},
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 234104,
-            "size_human": "228.62 KB",
+            "size_bytes": 152948,
+            "size_human": "149.36 KB",
             "description": "Gaia DR3 passbands + BP bright/faint (Ma\u00edz Apell\u00e1niz & Weiler 2018)",
             "svo_instruments": [
               "GAIA/GAIA3"
@@ -9064,9 +9062,35 @@
             "svo_instruments": [
               "GAIA/GAIA0"
             ]
+          },
+          "Gaia2m": {
+            "name": "Gaia2m",
+            "filter_count": 4,
+            "filters": [
+              "G",
+              "Gbp_bright",
+              "Gbp_faint",
+              "Grp"
+            ],
+            "published_paths": {
+              "filter+instrument": 4
+            },
+            "detector_types": {
+              "photon": 4
+            },
+            "separate_components": {},
+            "has_component_manifest": true,
+            "properties": "properties.json",
+            "info": "info.json",
+            "size_bytes": 143172,
+            "size_human": "139.82 KB",
+            "description": "Gaia DR2 bands, BP split at G=10.87 (Ma\u00edz Apell\u00e1niz & Weiler 2018)",
+            "svo_instruments": [
+              "GAIA/Gaia2m"
+            ]
           }
         },
-        "instrument_count": 4
+        "instrument_count": 5
       },
       "GALEX": {
         "name": "GALEX",

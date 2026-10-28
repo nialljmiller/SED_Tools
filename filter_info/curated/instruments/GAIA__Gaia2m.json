@@ -1,0 +1,15 @@
+{
+  "description": "Gaia DR2 passbands revised by Maíz Apellániz & Weiler (2018), BP split at G = 10.87: G, Grp, Gbp_bright (G < 10.87) and Gbp_faint (G > 10.87), from their reanalysis of the Gaia DR2 photometric sensitivity curves using HST/STIS spectrophotometry.",
+  "short_description": "Gaia DR2 bands, BP split at G=10.87 (Maíz Apellániz & Weiler 2018)",
+  "facility_description": "Gaia is a European Space Agency astrometric, photometric and spectroscopic space observatory operating at the Sun-Earth L2 Lagrange point.",
+  "notes": "SVO's GAIA/Gaia2m set, which SVO describes as 'Revised passbands for Gaia DR2'. Each of SVO's four records has the Description 'GAIA <band> filter, DR2 Maíz Apellániz & Weiler revision' ('(bright, G<10.87)' and '(faint, G>10.87)' on the two BP curves) and the ProfileReference Maíz Apellániz & Weiler (2018, A&A 619, A180). The curves are SVO's records as retrieved from the SVO Filter Profile Service on 2026-10-27; their wavelength and transmission values equal SVO's ascii files of the same retrieval. Gbp_bright and Gbp_faint have the same data rows as GAIA/GAIA's Gbp_bright and Gbp_faint. G and Grp are not GAIA/GAIA's G and Grp, which are the Gaia (E)DR3 passbands (SVO GAIA/GAIA3). G and Grp were first published on NJM on 2026-10-28 as GAIA/GAIA bands Gaia2m_G and Gaia2m_Grp, and were moved here unchanged the same day. DetectorType: photon is SVO's value for all four bands (DetectorType=1 in SVO's VOTables, 'Photon counter' on its record pages) and is left unchanged. Components (filter+instrument) are SVO's ('Filter + Instrument').",
+  "licence": {
+    "redistribution": "unknown",
+    "terms": "\"© SVO\"",
+    "url": "https://svo2.cab.inta-csic.es/theory/fps/index.php?id=GAIA/Gaia2m.G&mode=browse&gname=GAIA&gname2=Gaia2m",
+    "scope": "Footer of SVO's record pages for GAIA/Gaia2m. SVO states no licence for the curves and asks users to acknowledge the service (listed in info.json). The terms of Maíz Apellániz & Weiler's own distribution of the curves were not checked."
+  },
+  "references": [
+    "bibcode:2018A&A...619A.180M"
+  ]
+}

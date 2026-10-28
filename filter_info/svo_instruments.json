@@ -1,8 +1,19 @@
 {
+ "amended": [
+  {
+   "entries": [
+    "instruments.GAIA/Gaia2m",
+    "svo_groups.GAIA/Gaia2m",
+    "counts"
+   ],
+   "how": "python3 -m filter_info.svo_instruments source_evidence/svo-archive/svo-live-2026-10-27-b00-lists, run on the tree after GAIA/Gaia2m was moved out of GAIA/GAIA into its own instrument; only these entries were taken from that run, every other entry is as generated at the top-level 'generated' time",
+   "utc": "20261028T153513Z"
+  }
+ ],
  "counts": {
-  "held": 343,
+  "held": 344,
   "not held": 60,
-  "partial": 233,
+  "partial": 232,
   "split": 14
  },
  "generated": "2026-10-28T02:27:19Z",
@@ -503,6 +514,9 @@
   ],
   "GAIA/GAIA0": [
    "GAIA/GAIA0"
+  ],
+  "GAIA/Gaia2m": [
+   "GAIA/Gaia2m"
   ],
   "GALEX/GALEX": [
    "GALEX/GALEX"
@@ -40932,7 +40946,15 @@
    "bands": {
     "GAIA/Gaia2m.G": {
      "capture": "20261027214913",
-     "njm": {}
+     "njm": {
+      "GAIA/Gaia2m/G": {
+       "compared": "as published",
+       "how": "FilterID",
+       "overlap": 1.0,
+       "pivot_diff_pct": 0.0,
+       "same": true
+      }
+     }
     },
     "GAIA/Gaia2m.Gbp_bright": {
      "capture": "20261027214915",
@@ -40940,6 +40962,13 @@
       "GAIA/GAIA/Gbp_bright": {
        "compared": "as published",
        "how": "info.json",
+       "overlap": 1.0,
+       "pivot_diff_pct": 0.0,
+       "same": true
+      },
+      "GAIA/Gaia2m/Gbp_bright": {
+       "compared": "as published",
+       "how": "FilterID",
        "overlap": 1.0,
        "pivot_diff_pct": 0.0,
        "same": true
@@ -40955,18 +40984,35 @@
        "overlap": 1.0,
        "pivot_diff_pct": 0.0,
        "same": true
+      },
+      "GAIA/Gaia2m/Gbp_faint": {
+       "compared": "as published",
+       "how": "FilterID",
+       "overlap": 1.0,
+       "pivot_diff_pct": 0.0,
+       "same": true
       }
      }
     },
     "GAIA/Gaia2m.Grp": {
      "capture": "20261027190541",
-     "njm": {}
+     "njm": {
+      "GAIA/Gaia2m/Grp": {
+       "compared": "as published",
+       "how": "FilterID",
+       "overlap": 1.0,
+       "pivot_diff_pct": 0.0,
+       "same": true
+      }
+     }
     }
    },
-   "held_ids": 2,
+   "held_ids": 4,
    "ids": 4,
-   "njm": [],
-   "status": "partial"
+   "njm": [
+    "GAIA/Gaia2m"
+   ],
+   "status": "held"
   },
   "GALEX/GALEX": {
    "bands": {
