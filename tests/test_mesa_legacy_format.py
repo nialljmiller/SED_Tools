@@ -172,7 +172,8 @@ def test_migration_keeps_foreign_lines_and_crlf(tmp_path, caplog):
 @pytest.mark.parametrize("text, ok", [
     ("Wavelength,Transmission,DetectorType=photon\n1,2\n3,4\n", True),
     ("Wavelength,Transmission\n1,2\n3,4", True),
-    ("1,2\n3,4\n", True),  # MESA drops the first sample, as it always has, but allocates correctly
+    ("1,2\n3,4\n", False),  # no column row: MESA allocates correctly but skips the first sample
+    ("\n1,2\n3,4\n", True),  # no column row, but MESA skips the blank line and reads every sample
     ("# c\nWavelength,Transmission\n1,2\n", False),
     ("\nWavelength,Transmission\n1,2\n", False),
     ("Wavelength,Transmission\n1,2\n\n", False),
@@ -182,7 +183,20 @@ def test_released_mesa_check_matches_the_released_reader(tmp_path, text, ok):
     path = tmp_path / "C.dat"
     path.write_text(text)
     allocated, samples = released_mesa_load_filter(path)
-    assert released_mesa_reads(path) is ok is (allocated == len(samples))
+    # Every sample row of the file, found independently of the reader.
+    rows = [tuple(float(v) for v in line.split(",")) for line in text.splitlines() if line[:1].isdigit()]
+    assert released_mesa_reads(path) is ok is (allocated == len(samples) and samples == rows)
+
+
+def test_released_mesa_check_after_migration_sees_the_lost_first_sample(tmp_path):
+    # A 0.3.0-tagged curve that had no column row is restored to "1,2\n3,4\n",
+    # whose first sample released MESA skips as the column row.
+    path = tmp_path / "C.dat"
+    path.write_text("# DetectorType: photon\n1,2\n3,4\n")
+    assert not released_mesa_reads(path, after_migration=True)
+    migrate_filter_file(path)
+    assert path.read_text() == "1,2\n3,4\n"
+    assert not released_mesa_reads(path)
 
 
 def test_keys_from_newer_writers_are_kept(tmp_path):

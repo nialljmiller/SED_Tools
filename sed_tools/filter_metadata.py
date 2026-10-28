@@ -303,17 +303,27 @@ def _released_mesa_reads_lines(lines: Sequence[bytes]) -> bool:
 
 
 def released_mesa_reads(path: PathLike, *, after_migration: bool = False) -> bool:
-    """Whether released MESA colors (25.10.1rc1 to 26.4.1) reads ``path`` without junk samples.
+    """Whether released MESA colors (25.10.1rc1 to 26.4.1) reads exactly the samples of ``path``.
 
     Its ``load_filter`` discards line 1, sizes its arrays from every later
     line, then skips leading ``#`` lines plus the first other line before
     reading samples, so any comment or blank line other than a single column
-    row leaves uninitialised samples.  ``after_migration`` judges the file as
-    :func:`migrate_filter_file` would leave it.
+    row leaves uninitialised samples, and a curve whose first such line is a
+    sample (no column row) loses that sample.  ``after_migration`` judges the
+    file as :func:`migrate_filter_file` would leave it.
     """
     layout = _layout(path)
     lines = _rewritten(layout, {**layout.legacy, **layout.fields}) if after_migration else layout.lines
-    return _released_mesa_reads_lines(lines)
+    return _released_mesa_reads_lines(lines) and not _first_sample_skipped(lines)
+
+
+def _first_sample_skipped(lines: Sequence[bytes]) -> bool:
+    """Whether the line released MESA skips as the column row is a sample."""
+    for line in lines:
+        text = line.decode("utf-8", "replace").rstrip("\r\n")
+        if text[:1] != "#":
+            return _is_sample_row(text)
+    return False
 
 
 def migrate_filter_file(path: PathLike, *, dry_run: bool = False) -> bool:

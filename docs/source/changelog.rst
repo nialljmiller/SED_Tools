@@ -799,6 +799,24 @@ Each item says what 0.4.1 did, what 0.5.0 does, and when it happens.
 - Atmosphere site errors list sites as plain text ("observes from paranal,
   here_team; atmospheres from other sites (lsst_std) are not mixed in")
   instead of Python lists.
+- ``combine_filter_sets`` (``Filters.combine``, ``filters-combine``): a
+  file renamed for a name clash took the prefix ``<facility>_<instrument>_``
+  as it was, so ``Cameras/Sony.A200`` gave ``Old_Sony.A200_V.dat``, which
+  MESA reads as the band ``Old_Sony``. Dots in a renamed file's name now
+  become ``p`` (``Old_SonypA200_V.dat``), as in builders' band names. Files
+  that need no renaming keep their names.
+- ``combine_filter_sets`` copied and indexed every ``.dat`` file of an input
+  directory, including the superseded copies NJM keeps beside some sets
+  (``H_svo.dat``, ``F062_old.dat``). A directory now gives the curves its
+  MESA index file lists (every ``.dat`` file without one), less its
+  manifest's ``archived_bands``. Other files left out are named in a
+  warning, and an index file listing a missing curve raises
+  ``FileNotFoundError``.
+- ``filter_metadata.released_mesa_reads()`` returned True for a curve with
+  no column row (line 1 a sample), although released MESA skips that line
+  and so loses the curve's first sample; it now returns False. A curve whose
+  first line is blank, followed by samples, still passes: MESA skips the
+  blank line and reads every sample. No curve NJM serves has either layout.
 
 **Original-source builders**
 
@@ -809,6 +827,13 @@ Each item says what 0.4.1 did, what 0.5.0 does, and when it happens.
   filter-only components of SDSS ``u`` ... ``z``; they are the USNO 40-inch
   filters of the primed system, in air, and are no longer used so. SDSS
   components come from the ``sdss`` builder.
+- The primed filters are therefore bands of their own, so SDSS's
+  ``filter+optics+qe`` covers ``u`` ... ``z`` only and ``build_all_products``
+  no longer builds it (0.4.1 did). ``build_product(sdss_dir,
+  "filter+optics+qe", bands=["g", "i", "r", "u", "z"])`` builds 0.4.1's
+  product, byte for byte. ``build_all_products`` used to skip silently any
+  recipe that only some bands have; it now warns, for each recipe with
+  optics or QE, naming the bands and that call.
 - Paranal/NACO bands built from the original source are named ``IB_2p00``
   etc. instead of ``IB_2.00``, as on NJM.
 - ``_common.ensure_published`` (DECam, VISTA, HSC, ZTF): when SVO had
