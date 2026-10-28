@@ -393,3 +393,76 @@ def test_export_variant_refuses_a_missing_cube_before_writing(tmp_path):
     with pytest.raises(FileNotFoundError, match="does not exist; nothing was exported"):
         export_variant(variant, tmp_path / "out")
     assert not (tmp_path / "out").exists()
+
+
+# ---------------------------------------------------------------------
+# P16: combining leaves out earlier combine outputs; the menu counts every spectrum
+# ---------------------------------------------------------------------
+
+@pytest.fixture
+def two_grids(tmp_path):
+    base = tmp_path / "stellar"
+    for name in ("Kurucz2003all", "Kurucz2003all__alpha_04"):
+        shutil.copytree(GOLDEN_MODELS / name, base / name)
+    return base
+
+
+def test_find_stellar_models_leaves_out_earlier_combine_outputs(two_grids, capsys):
+    from sed_tools.api import SED
+    from sed_tools.combine_stellar_atm import find_stellar_models
+
+    np.random.seed(0)
+    SED.combine(["Kurucz2003all", "Kurucz2003all__alpha_04"], output="omni", model_root=two_grids,
+                visualization=False)
+    # A combine output whose lookup was rebuilt since is still found by its default name.
+    shutil.copytree(GOLDEN_MODELS / "Kurucz2003all", two_grids / "combined_models")
+    capsys.readouterr()
+
+    found = find_stellar_models(str(two_grids))
+
+    assert sorted(name for name, _ in found) == ["Kurucz2003all", "Kurucz2003all__alpha_04"]
+    assert ("Leaving out combined_models, omni: written by an earlier combine. "
+            "To combine one again, name it explicitly.") in capsys.readouterr().out
+
+
+def test_non_interactive_combine_does_not_fold_in_the_previous_output(two_grids, capsys):
+    # The second run used to combine Kurucz2003all, Kurucz2003all__alpha_04 and
+    # combined_models: 48 spectra, each of the 24 twice.
+    import matplotlib
+    import pandas as pd
+
+    from sed_tools.cli import run_combine_flow
+
+    matplotlib.use("Agg")
+    np.random.seed(0)
+    run_combine_flow(str(two_grids), interactive=False)
+    run_combine_flow(str(two_grids), output_name="combined2", interactive=False)
+
+    out = capsys.readouterr().out
+    assert "Selected 2 spectral grids to combine:" in out and "- combined_models" not in out
+    lookup = pd.read_csv(two_grids / "combined2" / "lookup_table.csv")
+    assert len(lookup) == 24
+    assert set(lookup["source_model"]) == {"Kurucz2003all", "Kurucz2003all__alpha_04"}
+
+
+def test_combine_menu_counts_every_spectrum_of_a_hash_headed_lookup(tmp_path, monkeypatch, capsys):
+    # comment="#" dropped the '#file_name,...' header, so the first spectrum became the header.
+    from sed_tools._lookup_io import write_lookup_csv
+    from sed_tools.combine_stellar_atm import select_models_interactive
+
+    grids = []
+    for name, header in (("hashed", True), ("plain", False)):
+        (tmp_path / name).mkdir()
+        lookup = tmp_path / name / "lookup_table.csv"
+        if header:
+            write_lookup_csv({"file_name": ["a.txt", "b.txt", "c.txt"], "teff": [5000, 5500, 6000]},
+                             str(lookup))
+        else:
+            lookup.write_text("file_name,teff\na.txt,5000\nb.txt,5500\nc.txt,6000\n")
+        grids.append((name, str(tmp_path / name)))
+    _feed_input(monkeypatch, ["all"])
+
+    select_models_interactive(grids)
+
+    out = capsys.readouterr().out
+    assert "1. hashed (3 model spectra)" in out and "2. plain (3 model spectra)" in out

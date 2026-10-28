@@ -1,6 +1,15 @@
 #!/usr/bin/env python3
 """
 Combine multiple stellar spectral grids into a unified flux cube.
+
+Grids found by :func:`find_stellar_models` leave out earlier combine
+outputs, so combining "all" grids never folds a previous combination's
+copies of the same spectra back in. A grid counts as a combine output if
+its lookup table has the ``source_model`` and ``original_file`` columns,
+which :func:`save_combined_data` writes and nothing else in SED_Tools does
+(this also finds outputs of earlier versions), or if its folder has the
+default output name ``combined_models``. A combine output named
+explicitly (``SED.combine(catalogs=[...])``) is still combined.
 """
 
 import argparse
@@ -24,18 +33,52 @@ logger = logging.getLogger(__name__)
 # themselves: this module, and `import sed_tools`, must work without it.
 
 
+# The lookup columns only save_combined_data writes, and the default output name.
+_COMBINED_COLUMNS = {"source_model", "original_file"}
+_DEFAULT_COMBINED_NAME = "combined_models"
+
+
 def find_stellar_models(base_dir=None):
+    """``(name, path)`` of every grid in base_dir with a lookup table, except earlier
+    combine outputs (see the module docstring), which are named on stdout."""
     if base_dir is None:
         from .models import STELLAR_DIR_DEFAULT
         base_dir = str(STELLAR_DIR_DEFAULT)
     
     model_dirs = []
+    combined = []
     for item in os.listdir(base_dir):
         item_path = os.path.join(base_dir, item)
         lookup_file = os.path.join(item_path, "lookup_table.csv")
-        if os.path.isdir(item_path) and os.path.exists(lookup_file):
+        if not (os.path.isdir(item_path) and os.path.exists(lookup_file)):
+            continue
+        if _is_combined_output(item, lookup_file):
+            combined.append(item)
+        else:
             model_dirs.append((item, item_path))
+    if combined:
+        print(f"Leaving out {', '.join(sorted(combined))}: written by an earlier combine. "
+              "To combine one again, name it explicitly.")
     return model_dirs
+
+
+def _is_combined_output(name, lookup_file):
+    """True for a grid an earlier combine wrote (see the module docstring)."""
+    if name == _DEFAULT_COMBINED_NAME:
+        return True
+    try:
+        with open(lookup_file) as f:
+            header = f.readline()
+    except (OSError, UnicodeDecodeError):
+        return False  # offered as a grid; loading it reports the problem
+    return _COMBINED_COLUMNS <= {c.strip() for c in header.strip().lstrip("#").split(",")}
+
+
+def _count_spectra(lookup_file):
+    """Rows of a lookup table as load_model_data reads them: after the header, not blank or '#'."""
+    with open(lookup_file) as f:
+        next(f, None)
+        return sum(1 for line in f if line.strip() and not line.startswith("#"))
 
 
 def select_models_interactive(model_dirs):
@@ -48,8 +91,8 @@ def select_models_interactive(model_dirs):
     for idx, (name, path) in enumerate(model_dirs, start=1):
         lookup_file = os.path.join(path, "lookup_table.csv")
         try:
-            n_models = len(pd.read_csv(lookup_file, comment="#"))
-        except (OSError, pd.errors.ParserError, pd.errors.EmptyDataError, UnicodeDecodeError):
+            n_models = _count_spectra(lookup_file)
+        except (OSError, UnicodeDecodeError):
             n_models = "?"  # only the menu count; loading the grid reports the problem
         print(f"{idx}. {name} ({n_models} model spectra)")
 

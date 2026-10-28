@@ -1145,6 +1145,10 @@ class SED:
         """
         Combine multiple stellar spectral grids into a unified ensemble.
         
+        Every grid named in ``catalogs`` is combined, including an earlier
+        combine output; only discovery of "all" grids leaves those out
+        (see :mod:`sed_tools.combine_stellar_atm`).
+        
         Parameters
         ----------
         catalogs : list of str
