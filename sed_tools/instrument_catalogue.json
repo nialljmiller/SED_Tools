@@ -442,8 +442,9 @@
    "instruments": {
     "DR2": {"bands": ["BP", "G", "RP"], "description": "Gaia DR2 passbands (Evans et al. 2018)", "svo_bands": {"GAIA/GAIA2": ["G", "Gbp=BP", "Grp=RP"]}, "svo_instruments": ["GAIA/GAIA2"]},
     "DR2r": {"bands": ["BP", "G", "RP"], "description": "Gaia DR2 revised passbands (Evans et al. 2018)", "svo_bands": {"GAIA/GAIA2r": ["G", "Gbp=BP", "Grp=RP"]}, "svo_instruments": ["GAIA/GAIA2r"]},
-    "GAIA": {"bands": ["G", "Gbp", "Gbp_bright", "Gbp_faint", "Grp", "Grvs", "Gaia2m_G", "Gaia2m_Grp"], "description": "Gaia DR3 passbands + BP bright/faint (Maíz Apellániz & Weiler 2018)", "svo_bands": {"GAIA/GAIA3": ["G", "Gbp", "Grp", "Grvs"]}, "svo_instruments": ["GAIA/GAIA3"]},
-    "GAIA0": {"bands": ["G", "Gbp", "Grp"], "description": "Gaia pre-launch passbands (Jordi et al. 2010)", "svo_bands": {"GAIA/GAIA0": ["G", "Gbp", "Grp"]}, "svo_instruments": ["GAIA/GAIA0"]}
+    "GAIA": {"bands": ["G", "Gbp", "Gbp_bright", "Gbp_faint", "Grp", "Grvs"], "description": "Gaia DR3 passbands + BP bright/faint (Maíz Apellániz & Weiler 2018)", "svo_bands": {"GAIA/GAIA3": ["G", "Gbp", "Grp", "Grvs"]}, "svo_instruments": ["GAIA/GAIA3"]},
+    "GAIA0": {"bands": ["G", "Gbp", "Grp"], "description": "Gaia pre-launch passbands (Jordi et al. 2010)", "svo_bands": {"GAIA/GAIA0": ["G", "Gbp", "Grp"]}, "svo_instruments": ["GAIA/GAIA0"]},
+    "Gaia2m": {"bands": ["G", "Gbp_bright", "Gbp_faint", "Grp"], "description": "Gaia DR2 bands, BP split at G=10.87 (Maíz Apellániz & Weiler 2018)", "svo_bands": {"GAIA/Gaia2m": ["G", "Gbp_bright", "Gbp_faint", "Grp"]}, "svo_instruments": ["GAIA/Gaia2m"]}
    }
   },
   "GALEX": {
@@ -551,7 +552,7 @@
     "Bessell_JHKLM": {"bands": ["L", "H", "J", "K", "Lp", "M"], "description": "Bessell & Brett 1988 L band (JHKLM system)"},
     "Johnson": {"bands": ["B", "I", "J", "M", "R", "U", "V"], "description": "Generic Johnson UBVRIJM passbands (SVO Generic/Johnson group)", "svo_bands": {"Generic/Johnson": ["B", "I", "J", "M", "R", "U", "V"]}, "svo_instruments": ["Generic/Johnson"]},
     "MKO": {"bands": ["H", "J", "K", "Lp", "Mp"], "description": "Mauna Kea Observatories near-infrared (MKO-NIR) J H K L' M' filters"},
-    "UCM": {"bands": ["B", "G", "R"]},
+    "UCM": {"bands": ["B", "G", "R"], "description": "UCM standard RGB system for commercial cameras (Cardiel et al. 2021)"},
     "USNO": {"bands": ["gp", "ip", "rp", "up", "zp"], "description": "USNO 40-inch u'g'r'i'z' system, the SDSS standard-star passbands"}
    }
   },
@@ -608,8 +609,8 @@
   "Hayabusa2": {
    "instruments": {
     "ONC-T": {"bands": ["Na", "b", "b_fil", "p", "p_fil", "v", "v_fil", "w", "w_fil", "wide", "x", "x_fil", "Na_fil", "ul", "ul_fil", "wide_fil"], "description": "Hayabusa2 optical navigation camera, telescopic nadir unit (ONC-T)"},
-    "ONC-W1": {"bands": ["Pan", "opt"]},
-    "ONC-W2": {"bands": ["Pan", "opt"]}
+    "ONC-W1": {"bands": ["Pan", "opt"], "description": "Hayabusa2 ONC-W1 nadir wide-angle camera: total and optics responses"},
+    "ONC-W2": {"bands": ["Pan", "opt"], "description": "Hayabusa2 ONC-W2 slant (~30 deg) wide-angle camera: total and optics"}
    }
   },
   "Herschel": {
@@ -655,18 +656,18 @@
   },
   "INSAT": {
    "instruments": {
-    "INSAT-1B": {"bands": ["Ch1", "Ch2"]},
-    "INSAT-3D-IMG": {"bands": ["ch01", "ch02", "ch03", "ch04", "ch05", "ch06"]},
+    "INSAT-1B": {"bands": ["Ch1", "Ch2"], "description": "INSAT-1B visible (0.64 um) and infrared (11.4 um) channels (ISCCP)"},
+    "INSAT-3D-IMG": {"bands": ["ch01", "ch02", "ch03", "ch04", "ch05", "ch06"], "description": "INSAT-3D Imager six-channel spectral responses (NWP SAF)"},
     "INSAT-3D-SND": {"bands": ["ch04", "ch05", "ch06", "ch11", "ch18", "ch01", "ch02", "ch03", "ch07", "ch08", "ch09", "ch10", "ch12", "ch13", "ch14", "ch15", "ch16", "ch17"], "description": "INSAT-3D Sounder channel spectral responses"},
-    "INSAT-3DR-IMG": {"bands": ["ch01", "ch02", "ch03", "ch04", "ch05", "ch06"]},
-    "INSAT-3DR-SND": {"bands": ["ch01", "ch02", "ch03", "ch04", "ch05", "ch06", "ch07", "ch08", "ch09", "ch10", "ch11", "ch12", "ch13", "ch14", "ch15", "ch16", "ch17", "ch18"]}
+    "INSAT-3DR-IMG": {"bands": ["ch01", "ch02", "ch03", "ch04", "ch05", "ch06"], "description": "INSAT-3DR Imager six-channel spectral responses (NWP SAF)"},
+    "INSAT-3DR-SND": {"bands": ["ch01", "ch02", "ch03", "ch04", "ch05", "ch06", "ch07", "ch08", "ch09", "ch10", "ch11", "ch12", "ch13", "ch14", "ch15", "ch16", "ch17", "ch18"], "description": "INSAT-3DR Sounder channel spectral responses (NWP SAF)"}
    }
   },
   "INT": {
    "instruments": {
     "IPHAS": {"bands": ["gI", "gR", "Ha"], "description": "INT Photometric H-Alpha Survey (IPHAS) filters"},
     "OASIS": {"bands": ["HR502", "HR530", "HR638", "LR951", "MR454", "MR516", "MR591", "MR661", "MR735", "MR807", "MR875", "MR952", "HR667"], "description": "OASIS integral-field spectrograph filters (WHT, NAOMI port)"},
-    "UVEX": {"bands": ["HeI", "U", "g", "r"]},
+    "UVEX": {"bands": ["HeI", "U", "g", "r"], "description": "UVEX northern Galactic plane survey U, g, r, HeI (Groot et al. 2009)"},
     "WFC": {"bands": ["B", "Gunn_g", "Gunn_r", "Halpha", "Halpha8160", "RGO_i", "RGO_u", "SII", "Strom_b", "Gunn_i", "HeII", "OII", "OIII", "R", "RGO_z", "Strom_u", "Strom_v", "Strom_y", "V"], "description": "Wide Field Camera (WFC), 2.5m Isaac Newton Telescope prime focus"}
    }
   },
@@ -693,11 +694,11 @@
   },
   "IRTF": {
    "instruments": {
-    "MIRSI": {"bands": ["11p7mic", "12p282mic", "12p33mic", "18mic", "20mic", "24mic", "4p9mic", "7p7mic", "8p7mic", "9p7mic", "K", "N"]},
-    "MOC": {"bands": ["sdss_i", "sdss_r", "sdss_z"]},
-    "MORIS": {"bands": ["Dichr_800nm", "Dichr_950nm", "OG590", "V", "VR", "g", "i", "r", "z"]},
+    "MIRSI": {"bands": ["11p7mic", "12p282mic", "12p33mic", "18mic", "20mic", "24mic", "4p9mic", "7p7mic", "8p7mic", "9p7mic", "K", "N"], "description": "IRTF MIRSI mid-infrared imager: K, N and 4.9-24 um filters"},
+    "MOC": {"bands": ["sdss_i", "sdss_r", "sdss_z"], "description": "MIRSI Optical Camera (MOC) on the IRTF: SDSS r, i, z filters"},
+    "MORIS": {"bands": ["Dichr_800nm", "Dichr_950nm", "OG590", "V", "VR", "g", "i", "r", "z"], "description": "IRTF MORIS fast visible camera on SpeX: g r i z V VR OG590, dichroics"},
     "NSFCam": {"bands": ["BRG", "CO", "CONT", "FE", "H21", "H22", "HEI", "HMK", "J", "JMK", "K", "KMK", "KP", "KPMK", "KS", "KSMK", "L", "LP", "LPMK", "M", "MP1", "MPMK", "PAB", "PAG", "S17", "S23", "Co_blk", "FeII", "FeII_blk", "H2-2", "H21_blk", "H22_blk", "HeI_blk", "Kcont", "NSFCam_Brg", "NSFCam_H21", "NSFCam_HeI", "NSFCam_Pag", "Pag_blk", "Sp17", "Sp23", "Blk", "H2-2_blk", "NSFCam_CO_blk", "NSFCam_H2-2", "NSFCam_H22", "NSFCam_Pab", "NSFCam_Pag_blk"], "description": "IRTF NSFCam 1-5 micron camera: broad, MKO-NIR and narrow-band filters", "svo_bands": {"NIRT/NSFCAM": ["CO=Co_blk", "FeII=FeII_blk", "H=HMK", "H2-2", "J=JMK", "K=KMK", "Kcont", "Kp=KPMK", "Ks=KSMK", "Lp=LPMK", "Mp=MPMK", "Spencer17=Sp17", "Spencer23=Sp23"]}, "svo_instruments": ["NIRT/NSFCAM"]},
-    "iSHELL": {"bands": ["5p1mic"]}
+    "iSHELL": {"bands": ["5p1mic"], "description": "IRTF iSHELL 1.1-5.3 um high-resolution spectrograph, 5.1 um filter"}
    }
   },
   "ISO": {
@@ -771,7 +772,7 @@
     "KP4in": {"bands": ["Gunn_I", "Gunn_r", "Gunn_v", "Gunn_z", "Strom_y", "Gunn_g", "Gunn_u", "Strom_b", "Strom_u", "Strom_v"], "description": "KPNO 4-inch filters: Gunn v, r, I, z and Stromgren y"},
     "Mosaic": {"bands": ["B", "I", "R", "U", "V", "i_SDSS", "r_SDSS", "BATC_337", "BATC_390", "BATC_420", "BATC_454", "BATC_493", "BATC_527", "BATC_579", "BATC_607", "BATC_666", "BATC_705", "BATC_755", "BATC_802", "BATC_848", "BATC_918", "BATC_973", "C", "D51", "Gn_Steidel", "Halpha", "Halpha_120", "Halpha_160", "Halpha_40", "Halpha_80", "M", "OIII", "Rhoads820B", "Rhoads820R", "Rhoads918R", "Rhoads_820Bv2", "Rhoads_820Rv2", "Rs_Steidel", "U_Dey", "U_solid", "Un_Steidel", "VR", "WR475", "WRC3", "WRC4", "WRHE2", "g_sdss", "gd_DECam", "rd_DECam", "white", "z_sdss", "zd_DECam", "OIIIoff"], "description": "KPNO Mosaic imager filters: Harris, SDSS, BATC medium bands and more", "svo_bands": {"KPNO/Mosaic": ["B", "C", "D51", "Halpha", "Halpha_120", "Halpha_160", "Halpha_40", "Halpha_80", "I", "M", "R", "V"]}, "svo_instruments": ["KPNO/Mosaic"]},
     "MzLS": {"bands": ["z", "z_filter"], "description": "Mayall z-band Legacy Survey (MzLS) z, full system and filter only", "svo_bands": {"KPNO/MzLS": ["z", "z_filter"]}, "svo_instruments": ["KPNO/MzLS"]},
-    "RCSpec": {"bands": ["4_96", "BG38", "BG39", "GG375", "GG385", "GG420", "GG455", "GG475", "GG495", "KG2", "KG3", "OG515b", "OG530", "OG550b", "OG570", "OG590", "RG610", "RG645", "RG695", "RG830", "WG345", "WG360"]},
+    "RCSpec": {"bands": ["4_96", "BG38", "BG39", "GG375", "GG385", "GG420", "GG455", "GG475", "GG495", "KG2", "KG3", "OG515b", "OG530", "OG550b", "OG570", "OG590", "RG610", "RG645", "RG695", "RG830", "WG345", "WG360"], "description": "KPNO 4-m R.C. Spectrograph glass filters (NOIRLab filter list)"},
     "TIFKAM": {"bands": ["H", "J", "K", "Ks"], "description": "TIFKAM 1-2.5 micron imager and spectrometer: H, J, K, Ks filters", "svo_bands": {"KPNO/TIFKAM": ["H", "J", "K", "Ks"]}, "svo_instruments": ["KPNO/TIFKAM"]}
    }
   },
@@ -798,7 +799,7 @@
     "LBCR": {"bands": ["CN817_1", "CN817_2", "F972N20", "TiO784", "TiO784_1", "TiO784_4", "bessel-I", "bessel-R", "sdss-i", "CN817", "CN817_3", "CN817_4", "TiO784_2", "TiO784_3", "Y", "bessel-V", "sdss-r", "sdss-z"], "description": "LBT LBC Red camera filters: Bessel R and I, SDSS i, narrow bands"},
     "LMIRCam": {"bands": ["H2O-Ice1_300K", "H2O-Ice2_300K", "L-Cont1_300K", "L-Cont3_77K", "L-Cont4_300K", "L-Short_300K", "L_300K", "M_300K", "N03309-8_300K", "N03946-4_300K", "PAH2_77K", "br-alpha-off_300K", "br-alpha-off_77K", "H2O-Ice1_77K", "H2O-Ice2_77K", "L-Cont1_77K", "L-Cont2_300K", "L-Cont2_77K", "L-Cont3_300K", "L-Cont4_77K", "L-Short_77K", "L-Spec_300K", "L-Spec_77K", "L_77K", "M_77K", "N03309-8_77K", "N03946-4_77K", "PAH1_300K", "PAH1_77K", "PAH2_300K", "br-alpha_300K", "br-alpha_77K"], "description": "LMIRCam (LBT Interferometer camera) filters at 300 K or 77 K"},
     "LUCIFER": {"bands": ["BrGamma_ED477_1", "BrGamma_ED477_2", "FeII_ED468_1", "H_4302", "HeI_1085-15", "J-low", "J_0403", "J_ED044", "K_3902", "K_ED059", "OH-hole_1", "OH-hole_2", "OrderSep_60030", "PaGamma_ED467_2", "Y1", "Y2", "z_ED034-2", "FeII_ED468_2", "H2_ED469_1", "H2_ED469_2", "H_ED024", "J-high", "Ks_3902", "Ks_ED046-1", "OrderSep_ED763-1", "OrderSep_ED763-2", "PaBeta_ED476_1", "PaBeta_ED476_3", "PaGamma_ED467_4", "z_3002"], "description": "LBT LUCI 1 and 2 (LUCIFER) infrared multi-mode instrument filters"},
-    "MODS": {"bands": ["sdss_g", "sdss_i", "sdss_r", "sdss_u", "sdss_z"]}
+    "MODS": {"bands": ["sdss_g", "sdss_i", "sdss_r", "sdss_u", "sdss_z"], "description": "LBT Multi-Object Double Spectrographs (MODS): SDSS u, g, r, i, z"}
    }
   },
   "LCO": {
@@ -811,7 +812,7 @@
     "MMIRS": {"bands": ["H", "J", "K", "Y", "zJ", "Hk", "Hk3"], "description": "MMIRS (MMT and Magellan Infrared Spectrograph) filters, LCO listing"},
     "MagAOX": {"bands": ["Sci1-CH4", "Sci1-CH4_atm", "Sci1-Ha", "Sci1-Ha_atm", "Sci1-ip", "Sci1-ip_atm", "Sci1-ip_open", "Sci1-ip_ri_atm", "Sci1-rp", "Sci1-rp_open", "Sci1-rp_open_atm", "Sci1-zp", "Sci1-zp_open", "Sci1-zp_open_atm", "Sci1-zp_ri", "Sci1-zp_ri_atm", "Sci2-CH4", "Sci2-CH4_atm", "Sci2-Ha", "Sci2-Ha_atm", "Sci2-gp", "Sci2-gp_atm", "Sci2-gp_ri", "Sci2-gp_ri_atm", "Sci2-rp", "Sci2-rp_atm", "Sci2-rp_ri", "Sci2-rp_ri_atm", "Sci2-zp", "Sci2-zp_atm", "WFS_6535", "WFS_6535_atm", "WFS_HaIR", "Sci1-ip_open_atm", "Sci1-ip_ri", "Sci1-rp_atm", "Sci1-zp_atm", "Sci2-ip", "Sci2-ip_atm", "WFS_HaIR_atm"], "description": "MagAO-X extreme AO filters, Magellan Clay 6.5m, some with atmosphere"},
     "MagIC": {"bands": ["I", "R", "sdss_g", "sdss_i", "sdss_u", "sdss_z", "B", "V", "sdss_r"], "description": "Magellan Instant Camera (MagIC II) filters: SDSS, R and Mould I"},
-    "OGLE-IV": {"bands": ["I", "I_filter", "V", "V_filter"]},
+    "OGLE-IV": {"bands": ["I", "I_filter", "V", "V_filter"], "description": "OGLE-IV V and I, filter only and with average CCD response"},
     "RetroCam": {"bands": ["H", "H_CSP2", "J", "J_CSP2", "J_old", "K", "Y", "Y_CSP2"], "description": "Swope RetroCam near-IR imager (CSP), curves up to and since 2011", "svo_bands": {"LCO/RetroCam": ["H", "H_CSP2", "J", "J_CSP2", "J_old", "K", "Y", "Y_CSP2"]}, "svo_instruments": ["LCO/RetroCam"]},
     "SITe3": {"bands": ["B", "V_LC3009", "i", "r", "u", "V", "V_LC3014", "g"], "description": "Swope SITe3 CCD passbands: u, r, i, B and V"},
     "VisAO": {"bands": ["SIIc", "ip", "zp", "Ha", "Hac", "Ys", "rp"], "description": "VisAO camera filters, Magellan Clay telescope"},
@@ -827,15 +828,15 @@
   },
   "LMT": {
    "instruments": {
-    "AZTEC": {"bands": ["1p1mm"]},
-    "Toltec0": {"bands": ["band1", "band2", "band3"]}
+    "AZTEC": {"bands": ["1p1mm"], "description": "LMT AzTEC 144-pixel 1.1 mm camera passband (Wilson et al. 2008)"},
+    "Toltec0": {"bands": ["band1", "band2", "band3"], "description": "LMT TolTEC imaging polarimeter, preliminary 1.1/1.4/2.0 mm bands"}
    }
   },
   "LRO": {
    "instruments": {
     "Diviner": {"bands": ["A6", "A3", "A4", "A5", "B1", "B2", "B3", "Solar"], "description": "Diviner Lunar Radiometer Experiment (LRO), channel A6"},
     "LROC_NAC": {"bands": ["L", "R"], "description": "Lunar Reconnaissance Orbiter Narrow Angle Camera (LROC NAC)"},
-    "LROC_WAC": {"bands": ["320nm", "360nm", "415nm", "565nm", "605nm", "645nm", "690nm"]}
+    "LROC_WAC": {"bands": ["320nm", "360nm", "415nm", "565nm", "605nm", "645nm", "690nm"], "description": "LRO LROC Wide Angle Camera, 7 filters 320-690 nm (Robinson+ 2010)"}
    }
   },
   "LSST": {
@@ -891,7 +892,7 @@
     "RATCam": {"bands": ["Halpha", "sdss-i", "sdss-r", "sdss-u", "sdss-z", "bessel-B", "bessel-V", "sdss-g"], "description": "Liverpool Telescope RATCam optical CCD camera filters"},
     "RINGO": {"bands": ["VR"], "description": "Liverpool Telescope RINGO polarimeter, VR filter (GG475 + KG3)", "svo_bands": {"Liverpool/RINGO": ["VR"]}, "svo_instruments": ["Liverpool/RINGO"]},
     "RISE": {"bands": ["VR"], "description": "Liverpool Telescope RISE fast-readout camera, V+R filter", "svo_bands": {"Liverpool/RISE": ["VR"]}, "svo_instruments": ["Liverpool/RISE"]},
-    "SupIRCam": {"bands": ["H", "J", "K"]}
+    "SupIRCam": {"bands": ["H", "J", "K"], "description": "Liverpool Telescope SupIRCam near-IR camera J, H, K filters"}
    }
   },
   "MAXIMA": {
@@ -921,7 +922,7 @@
   "MEX": {
    "instruments": {
     "HRSC": {"bands": ["Green", "ND", "P12", "S1", "S2", "Blue", "NIR", "Red"], "description": "Mars Express High Resolution Stereo Camera (HRSC) channels"},
-    "VMC": {"bands": ["bw", "color"]}
+    "VMC": {"bands": ["bw", "color"], "description": "Mars Express Visual Monitoring Camera (VMC): B&W and colour"}
    }
   },
   "MKO": {
@@ -936,7 +937,7 @@
     "MMIRS": {"bands": ["H", "HK", "HK3", "Kspec", "zJ", "J", "Ks", "Y"], "description": "MMIRS (MMT and Magellan Infrared Spectrograph) filters, MMT listing"},
     "MMTCam": {"bands": ["g", "r", "u", "z", "i"], "description": "MMTCam optical imager (f/5 secondary): u, g, r, z filters"},
     "MegaCam": {"bands": ["g_Mag", "g_Mag_filter", "i_MMT", "r_Mag_filter", "z_Mag", "g_MMT", "g_MMT_filter", "i_MMT_filter", "i_Mag", "i_Mag_filter", "r_MMT", "r_MMT_filter", "r_Mag", "u_MMT", "u_MMT_filter", "u_Mag", "u_Mag_filter", "z_MMT", "z_MMT_filter", "z_Mag_filter"], "description": "Megacam CCD mosaic camera filters (at MMT and Magellan)"},
-    "SWIRC": {"bands": ["H", "J", "Y"]}
+    "SWIRC": {"bands": ["H", "J", "Y"], "description": "MMT SAO Widefield InfraRed Camera (SWIRC) Y, J, H filters"}
    }
   },
   "MOA": {
@@ -985,7 +986,7 @@
   "Mars2020": {
    "instruments": {
     "MastCamZ": {"bands": ["Blue", "Green", "L1", "L2", "L3", "L4", "L5", "L6", "R2", "R3", "R4", "R5", "R6", "Red"], "description": "Mastcam-Z zoom mast camera filters, Mars 2020 Perseverance rover"},
-    "WATSON": {"bands": ["blue", "blue_cut", "cutoff", "green", "green_cut", "red", "red_cut"]}
+    "WATSON": {"bands": ["blue", "blue_cut", "cutoff", "green", "green_cut", "red", "red_cut"], "description": "Mars 2020 SHERLOC WATSON camera RGB and cutoff filters (Edgett+ 2019)"}
    }
   },
   "McD": {
@@ -1007,7 +1008,7 @@
   "Meteosat": {
    "instruments": {
     "GERB2": {"bands": ["SW", "TOT", "LW"], "description": "Geostationary Earth Radiation Budget (GERB2) shortwave and total"},
-    "MVIRI02": {"bands": ["VIS"]},
+    "MVIRI02": {"bands": ["VIS"], "description": "Meteosat-2 Visible and InfraRed Imager (MVIRI) VIS channel"},
     "MVIRI03": {"bands": ["IR1", "VIS", "WV1", "WV2", "IR2"], "description": "Meteosat-3 Visible and InfraRed Imager (MVIRI) VIS, WV, IR channels", "svo_bands": {"Meteosat/MVIRI03": ["IR1", "IR2", "VIS", "WV1", "WV2"]}, "svo_instruments": ["Meteosat/MVIRI03"]},
     "MVIRI04": {"bands": ["IR1", "IR2", "WV1", "WV2", "VIS"], "description": "Meteosat-4 Visible and InfraRed Imager (MVIRI) WV and IR channels"},
     "MVIRI05": {"bands": ["IR1", "IR2", "WV1", "WV2", "VIS", "VIS1", "VIS2", "VIS3", "VIS4"], "description": "Meteosat-5 Visible and InfraRed Imager (MVIRI) WV and IR channels"},
@@ -1028,11 +1029,11 @@
    "instruments": {
     "APASS": {"bands": ["B", "V", "sdss_i", "sdss_z", "sdss_g", "sdss_r"], "description": "APASS survey filters, defined as Johnson B, V and SDSS i, z"},
     "AndromedA": {"bands": ["Bcb", "I", "Icb", "R", "U", "Ucb", "Vcb", "B", "Rcb", "V"], "description": "AndromedA Observatory, Sofia: Chroma Bessell and Schuler filters"},
-    "CRTS": {"bands": ["C"]},
+    "CRTS": {"bands": ["C"], "description": "Catalina Survey (CRTS) clear-filter passband"},
     "Junocam": {"bands": ["Blue_noccd", "Methane", "Red", "Blue", "Green", "Green_noccd", "Methane_noccd", "Red_noccd"], "description": "JunoCam wide-angle camera filters on Juno at Jupiter"},
     "MCPS": {"bands": ["B", "I", "U", "V"], "description": "Magellanic Clouds Photometric Survey (MCPS) Johnson B filter"},
     "MUSYC": {"bands": ["B_hdfs", "Ha", "I_1255", "I_hdfs", "Kgem", "O3_hdfs", "z_ecdfs", "B_1255", "B_cdfs", "H_ecdfs", "Hgem", "I_1030", "I_cdfs", "I_ecdfs", "J_ecdfs", "Ja", "Ka", "R_1255", "R_cdfs", "U38_cdfs", "U38_ecdfs", "U_1255", "U_cdfs", "U_ecdfs", "V_1255", "V_cdfs", "z_1255"], "description": "Multiwavelength Survey by Yale-Chile (MUSYC) filters"},
-    "ROTSE": {"bands": ["R"]},
+    "ROTSE": {"bands": ["R"], "description": "ROTSE-III approximate response (Robotic Optical Transient Search)"},
     "UCAC": {"bands": ["B", "sdss_g", "sdss_r", "R", "V", "sdss_i"], "description": "UCAC4 filters, defined as Johnson B and SDSS g, r"}
    }
   },
@@ -1050,7 +1051,7 @@
   "NIMBUS": {
    "instruments": {
     "CZCS": {"bands": ["band520", "band670", "band443", "band550"], "description": "Nimbus-7 Coastal Zone Color Scanner (CZCS) ocean-colour bands", "svo_bands": {"NIMBUS/CZCS": ["band443", "band520", "band550", "band670"]}, "svo_instruments": ["NIMBUS/CZCS"]},
-    "HRIR3": {"bands": ["Ch1"]},
+    "HRIR3": {"bands": ["Ch1"], "description": "Nimbus-3 High Resolution Infrared Radiometer (HRIR) channel 1"},
     "ITPR5": {"bands": ["Ch1", "Ch3", "Ch4", "Ch5", "Ch6", "Ch7", "Ch2"], "description": "Infrared Temperature Profile Radiometer (ITPR) channels, Nimbus-5"},
     "MRIR3": {"bands": ["Ch3", "Ch5", "Ch1", "Ch2"], "description": "Medium Resolution Infrared Radiometer (MRIR) channels, Nimbus-3"}
    }
@@ -1096,7 +1097,7 @@
   "NewHorizons": {
    "instruments": {
     "ALICE": {"bands": ["SOCC", "airglow", "airglow_v2", "airglow_v0", "airglow_v1"], "description": "New Horizons ALICE ultraviolet imaging spectrograph effective areas"},
-    "LORRI": {"bands": ["Pan"]},
+    "LORRI": {"bands": ["Pan"], "description": "New Horizons LORRI long-range imager, panchromatic QE"},
     "MVIC": {"bands": ["CH4", "CH4_fil", "Clear_fil", "NIR", "Pan2", "Blue", "Blue_fil", "NIR_fil", "Red", "Red_fil"], "description": "New Horizons Multispectral Visible Imaging Camera (MVIC) filters"}
    }
   },
@@ -1151,8 +1152,8 @@
   "OSIRIS-REX": {
    "instruments": {
     "MapCam": {"bands": ["Wc", "Xf", "Bc", "Bf", "Pan", "Vc", "Vf", "Wf", "Xc"], "description": "OSIRIS-REx MapCam filters (W coarse, X fine)"},
-    "PolyCam": {"bands": ["Pan"]},
-    "SamCam": {"bands": ["Pan"]}
+    "PolyCam": {"bands": ["Pan"], "description": "OSIRIS-REx PolyCam camera panchromatic response (Rizk et al. 2018)"},
+    "SamCam": {"bands": ["Pan"], "description": "OSIRIS-REx SamCam camera panchromatic response (Rizk et al. 2018)"}
    }
   },
   "OSN": {
@@ -1160,7 +1161,7 @@
     "Circ": {"bands": ["Cousins_I", "Cousins_R", "Johnson_B", "Johnson_V"], "description": "Observatorio de Sierra Nevada Circ set: Johnson BV, Cousins RI", "svo_bands": {"OSN/Circ": ["Cousins_I", "Cousins_R", "Johnson_B", "Johnson_V"]}, "svo_instruments": ["OSN/Circ"]},
     "Comet25": {"bands": ["Cont6840", "C2", "CO", "H2O"], "description": "Observatorio de Sierra Nevada Comet25 continuum filter (d25)"},
     "Comet50": {"bands": ["C3_z1", "Cont6840", "C2", "C3_z2", "CN", "Cont4430", "NH2"], "description": "Observatorio de Sierra Nevada Comet50 C3 and continuum filters"},
-    "Gunn": {"bands": ["g", "r", "v"]},
+    "Gunn": {"bands": ["g", "r", "v"], "description": "Observatorio de Sierra Nevada Gunn v, g, r interference filters"},
     "Halpha": {"bands": ["6563w", "6652", "6970_z2", "6563n", "6607", "6700_z1", "6700_z2", "6742_z1", "6742_z2", "6789", "6835", "6877", "6925", "6970_z1"], "description": "Observatorio de Sierra Nevada redshifted Halpha filters"},
     "Johnson": {"bands": ["B2", "Cousins_I1", "Cousins_I2", "Cousins_I3", "Cousins_I5", "Cousins_R1", "Cousins_R2", "Cousins_R3", "U2", "V2", "B", "Cousins_I4"], "description": "Observatorio de Sierra Nevada Johnson UBV and Cousins RI filters"},
     "Lines": {"bands": ["HeII_4691_z3", "CaII_3950_z1", "CaII_3950_z2", "Hbeta_4866_z1", "Hbeta_4866_z2", "Hbeta_4866_z3", "Hdelta_4101_z1", "Hdelta_4101_z2", "Hdelta_4101_z3", "HeII_4691_z1", "HeII_4691_z2", "HeI_4471_z1", "HeI_4471_z2", "HeI_4471_z3", "HeI_5876_z1", "HeI_5876_z2", "HeI_5876_z3", "Hgamma_4340_z1", "Hgamma_4340_z2", "Hgamma_4340_z3", "NII_6584", "NeII_3869", "OIII_5000", "OIII_5007_z1", "OIII_5007_z2", "OIII_5057_z1", "OIII_5057_z2", "OIII_5057_z3", "OIII_5107_z1", "OIII_5107_z2", "OIII_5157_z1", "OIII_5157_z2", "OII_3731", "OI_6300", "SII_6716", "SII_6723", "SII_6731_z1", "SII_6731_z2"], "description": "Observatorio de Sierra Nevada emission-line filter (HeII 4691)"},
@@ -1170,7 +1171,7 @@
   },
   "OVRO": {
    "instruments": {
-    "Polatron": {"bands": ["100GHz"]}
+    "Polatron": {"bands": ["100GHz"], "description": "OVRO 5.5 m Polatron CMB polarimeter, 100 GHz (Philhour et al. 2001)"}
    }
   },
   "Odyssey": {
@@ -1197,9 +1198,9 @@
   "Palomar": {
    "instruments": {
     "Arp1961": {"bands": ["103aO_atm", "103aO_B", "103aO_Sch", "103aO_WG2"], "description": "Palomar photographic 103a-O plate sensitivity (Arp 1961)"},
-    "GSC2": {"bands": ["Bj", "In", "Rf"]},
-    "POSS": {"bands": ["Blue", "Red"]},
-    "Wevers1986": {"bands": ["F", "J", "Up"]},
+    "GSC2": {"bands": ["Bj", "In", "Rf"], "description": "GSC-II northern photographic passbands Bj, Rf, In (Lasker et al. 2008)"},
+    "POSS": {"bands": ["Blue", "Red"], "description": "Palomar Observatory Sky Atlas (POSS) blue and red passbands"},
+    "Wevers1986": {"bands": ["F", "J", "Up"], "description": "U', J, F passbands of the photometric system of Wevers et al. 1986"},
     "ZTF": {"bands": ["g", "i", "r", "g_fil", "i_fil", "r_fil"], "description": "Zwicky Transient Facility g, r, i filters, Palomar 48-inch Schmidt"}
    }
   },
@@ -1211,7 +1212,7 @@
     "ISAAC": {"bands": ["Js", "Ks", "NB229", "NB328", "NB380", "NBm", "SZ", "H", "L", "NB207", "NB213", "NB217", "NB407"], "description": "ISAAC infrared (1-5 μm) imager/spectrograph filters, VLT UT3"},
     "MIDI": {"bands": ["N11_3", "ArIII", "N8_7", "Nband", "NeII", "SIV", "SiC"], "description": "MIDI mid-infrared (N-band) VLT Interferometer instrument filter"},
     "NACO": {"bands": ["H_CONICA", "IB_2p00", "IB_2p03", "IB_2p06", "IB_2p09", "IB_2p12", "IB_2p15", "IB_2p18", "IB_2p21", "IB_2p24", "IB_2p27", "IB_2p30", "IB_2p33", "IB_2p36", "IB_2p39", "IB_2p42", "IB_2p45", "IB_2p48", "J_CONICA", "Ks_CONICA", "L_prime", "M_prime", "NB_1p04", "NB_1p08", "NB_1p09", "NB_1p24", "NB_1p26", "NB_1p28", "NB_1p64", "NB_1p75", "NB_2p12", "NB_2p17", "NB_3p74", "NB405"], "description": "NACO (NAOS-CONICA) VLT adaptive-optics imager CONICA filters"},
-    "NGTS": {"bands": ["NGTS"]},
+    "NGTS": {"bands": ["NGTS"], "description": "Next Generation Transit Survey (NGTS) filter (Wheatley et al. 2018)"},
     "OmegaCAM": {"bands": ["B_JOHN", "V_JOHN", "g_SDSS", "i_SDSS", "r_SDSS", "u_SDSS", "z_SDSS", "B_aux", "B_aux_filter", "B_qA_filter", "B_qB", "B_qB_filter", "B_qC", "B_qD", "B_qD_filter", "Halpha-A", "Halpha-B", "Halpha-C", "Halpha-C_filter", "Halpha-D", "Halpha-D_filter", "Halpha_aux", "Halpha_aux_filter", "V_aux", "V_aux_filter", "V_filter", "V_qA", "V_qA_filter", "V_qB", "V_qB_filter", "V_qC_filter", "g_CAL", "g_CAL_filter", "g_SDSS_filter", "i_CAL", "i_CAL_filter", "i_SDSS_filter", "r_CAL", "u_CAL", "u_CAL_filter", "v_strom", "v_strom_aux_filter", "v_strom_filter", "z_SDSS_filter", "B_filter", "B_qA", "B_qC_filter", "Halpha", "Halpha-A_filter", "Halpha-B_filter", "V_qC", "V_qD", "V_qD_filter", "r_CAL_filter", "r_SDSS_filter", "u_SDSS_filter", "v_strom_aux"], "description": "OmegaCAM 32-CCD imager filters, VLT Survey Telescope (VST)"},
     "SPHERE": {"bands": ["B_H", "B_J", "B_Ks", "B_Y", "D_H23_H2", "D_H23_H3", "D_H34_H3", "D_H34_H4", "D_J23_J2", "D_J23_J3", "D_K12_K1", "D_K12_K2", "D_Y23_Y2", "D_Y23_Y3", "N_BrG", "N_CO", "N_CntH", "N_CntJ", "N_CntK1", "N_CntK2", "N_FeII", "N_H2", "N_HeI", "N_PaB"], "description": "VLT SPHERE/IRDIS broad-, dual- and narrow-band filters (ESO)"},
     "VIMOS": {"bands": ["U", "z", "B", "I", "R", "V"], "description": "VIMOS wide-field imager U and z, total transmission, VLT UT3"},
@@ -1286,7 +1287,7 @@
   },
   "Rosetta": {
    "instruments": {
-    "NAVCam": {"bands": ["NAVCam"]},
+    "NAVCam": {"bands": ["NAVCam"], "description": "Rosetta Navigation Camera (NavCam) sensitivity (Statella+ 2017)"},
     "OSIRIS_NAC": {"bands": ["F22", "F28", "F32", "F33", "F34", "F35", "F37", "F41", "F61", "F81", "F82", "F83", "F84", "FFP_UV", "Hydra", "Near_IR", "Ortho", "Blue", "F15", "F16", "F21", "F23", "F24", "F26", "F31", "F36", "F38", "F51", "F58", "F71", "F86", "F87", "F88", "FFP_IR", "FFP_VIS", "Far_UV", "Fe2O3", "Green", "IR", "ND", "NFP_VIS", "Near_UV", "Orange", "Red"], "description": "Rosetta OSIRIS imaging system, narrow-angle camera (NAC) filters"},
     "OSIRIS_WAC": {"bands": ["CN", "CS", "F12", "F13", "F14", "F15", "F16", "F17", "F18", "F21", "F71", "F81", "NA", "OI", "Red", "UV295", "UV375", "F31", "F41", "F51", "F61", "Green", "NH", "NH2", "OH", "UV245", "UV325", "VIS610"], "description": "Rosetta OSIRIS imaging system, wide-angle camera (WAC) filters"}
    }
@@ -1313,7 +1314,7 @@
   },
   "SMART1": {
    "instruments": {
-    "AMIE": {"bands": ["750nm", "830nm", "915nm", "965nm"]}
+    "AMIE": {"bands": ["750nm", "830nm", "915nm", "965nm"], "description": "SMART-1 AMIE lunar imager 750-965 nm filters (Shkuratov+ 2003)"}
    }
   },
   "SOFIA": {
@@ -1333,10 +1334,10 @@
   },
   "SPECULOOS": {
    "instruments": {
-    "DUET_IR": {"bands": ["H", "J", "Y", "YJ", "clear"]},
-    "DUET_VIS": {"bands": ["clear", "g", "i", "iz", "r", "z"]},
-    "SPECULOOS_S": {"bands": ["clear", "g", "i", "iz", "r", "z"]},
-    "SPIRIT": {"bands": ["H", "J", "clear", "zYJ"]}
+    "DUET_IR": {"bands": ["H", "J", "Y", "YJ", "clear"], "description": "SPECULOOS DUET_IR Y, J, H, YJ, clear incl. atmosphere (Pedersen+ 2026)"},
+    "DUET_VIS": {"bands": ["clear", "g", "i", "iz", "r", "z"], "description": "SPECULOOS DUET_VIS g, r, i, z, iz, clear, incl. atmosphere"},
+    "SPECULOOS_S": {"bands": ["clear", "g", "i", "iz", "r", "z"], "description": "SPECULOOS Southern Observatory g, r, i, z, iz, clear, incl. atmosphere"},
+    "SPIRIT": {"bands": ["H", "J", "clear", "zYJ"], "description": "SPECULOOS SPIRIT zYJ, J, H, clear, incl. atmosphere (Pedersen+ 2024)"}
    }
   },
   "SPHERE": {
@@ -1359,7 +1360,7 @@
     "SPOT4-HRVIR2": {"bands": ["Mono", "Xi1", "Xi2", "Xi3", "Xi4"], "description": "SPOT 4 HRVIR2 imager band spectral sensitivities (Mono, Xi1-Xi4)"},
     "SPOT5-HRG1": {"bands": ["B1", "B2", "B3", "MIR", "Pa"], "description": "SPOT 5 HRG1 imager band spectral sensitivities (Pa, B1-B3, MIR)"},
     "SPOT5-HRG2": {"bands": ["B1", "B2", "B3", "MIR", "Pa"], "description": "SPOT 5 HRG2 imager band spectral sensitivities (Pa, B1-B3, MIR)"},
-    "VGT": {"bands": ["Blue", "NIR", "Red", "SWIR"]}
+    "VGT": {"bands": ["Blue", "NIR", "Red", "SWIR"], "description": "SPOT VEGETATION instrument Blue, Red, NIR, SWIR spectral responses"}
    }
   },
   "SPT": {
@@ -1456,7 +1457,7 @@
     "MOIRCS": {"bands": ["K", "H", "J", "Ks", "Y"], "description": "Subaru Multi-Object InfraRed Camera and Spectrograph (MOIRCS) K"},
     "OHS": {"bands": ["J", "K", "N204", "z", "H", "H210", "H221", "Kp", "N215"], "description": "Subaru OHS near-IR filters (OH-background removal, CISCO camera)"},
     "SuprimeCam": {"bands": ["B", "Ic", "Rc", "V", "Y", "g", "i", "r", "z", "IB427", "IB464", "IB484", "IB505", "IB527", "IB574", "IB624", "IB679", "IB709", "IB738", "IB767", "IB827", "NA656_filter", "NB711", "NB711_filter", "NB816", "NB816_filter", "NB921_filter", "z_FD"], "description": "Subaru Suprime-Cam prime-focus camera filters (broad, IB and NB)", "svo_bands": {"Subaru/Suprime": ["B_filter=B", "IB427", "IB464", "IB484", "IB505", "IB527", "IB574", "IB624", "IB679", "IB709", "IB738", "IB767", "IB827", "Ic_filter=Ic", "NA656_filter", "NB711", "NB711_filter", "NB816", "NB816_filter", "NB921_filter", "Rc_filter=Rc", "V_filter=V", "Y_filter=Y", "g_filter=g", "i_filter=i", "r_filter=r", "z_FD", "z_filter=z"]}, "svo_instruments": ["Subaru/Suprime"]},
-    "VAMPIRES": {"bands": ["Cont", "Halpha"]}
+    "VAMPIRES": {"bands": ["Cont", "Halpha"], "description": "Subaru SCExAO VAMPIRES H-alpha and continuum filters (Uyama+ 2020)"}
    }
   },
   "Swift": {
@@ -1466,7 +1467,7 @@
   },
   "TAUVEX": {
    "instruments": {
-    "TAUVEX": {"bands": ["BBF", "NBF3", "SF1", "SF2", "SF3"]}
+    "TAUVEX": {"bands": ["BBF", "NBF3", "SF1", "SF2", "SF3"], "description": "TAUVEX UV imager approximate filters BBF, NBF3, SF1-SF3"}
    }
   },
   "TCS": {
@@ -1502,8 +1503,8 @@
   "TJO": {
    "instruments": {
     "LAIA": {"bands": ["B", "Ic", "Ic_filter", "Rc", "Rc_filter", "U_filter", "V", "B_filter", "U", "V_filter"], "description": "LAIA optical imager filters on the Telescopio Joan Oro (TJO)"},
-    "MEIA": {"bands": ["B", "Ic", "Rc", "U", "V"]},
-    "MEIA2": {"bands": ["B_filter", "Ic_filter", "Rc_filter", "U_filter", "V_filter"]},
+    "MEIA": {"bands": ["B", "Ic", "Rc", "U", "V"], "description": "TJO MEIA imager Johnson UBV, Cousins RcIc, incl. telescope and CCD"},
+    "MEIA2": {"bands": ["B_filter", "Ic_filter", "Rc_filter", "U_filter", "V_filter"], "description": "TJO MEIA2 optical imager U, B, V, Rc, Ic filters (filter only)"},
     "TFRM": {"bands": ["GG475_filter", "GG475"], "description": "Telescopi Fabra-ROA Montsec (TFRM) GG475 longpass filter"}
    }
   },
@@ -1589,7 +1590,7 @@
   },
   "VenusExpress": {
    "instruments": {
-    "VMC": {"bands": ["NIR1", "NIR2", "UV", "VIS"]}
+    "VMC": {"bands": ["NIR1", "NIR2", "UV", "VIS"], "description": "Venus Express Venus Monitoring Camera UV, VIS, NIR1, NIR2 filters"}
    }
   },
   "Viking": {
@@ -1603,7 +1604,7 @@
   "Voyager": {
    "instruments": {
     "ISS-NAC": {"bands": ["Blue", "Green", "Clear", "Orange", "UV", "Violet"], "description": "Voyager ISS Narrow Angle Camera (NAC) Blue and Green responses"},
-    "ISS-WAC": {"bands": ["Blue", "Clear", "Green", "Orange", "Violet"]}
+    "ISS-WAC": {"bands": ["Blue", "Clear", "Green", "Orange", "Violet"], "description": "Voyager ISS Wide Angle Camera (WAC) 5 filters (Smith et al. 1977)"}
    }
   },
   "WASP": {
@@ -1667,11 +1668,11 @@
    "instruments": {
     "MSC3-1": {"bands": ["B1", "B2", "B3", "B4"], "description": "ZiYuan-3 01 (ZY-3) multispectral camera bands B1-B4", "svo_bands": {"ZiYuan/MSC3-1": ["B1", "B2", "B3", "B4"]}, "svo_instruments": ["ZiYuan/MSC3-1"]},
     "MSC3-2": {"bands": ["B1", "B2", "B3", "B4"], "description": "ZiYuan-3 02 (ZY-3) multispectral camera bands B1-B4", "svo_bands": {"ZiYuan/MSC3-2": ["B1", "B2", "B3", "B4"]}, "svo_instruments": ["ZiYuan/MSC3-2"]},
-    "TAC3-1": {"bands": ["Pan"]}
+    "TAC3-1": {"bands": ["Pan"], "description": "ZiYuan-3 01 (ZY-3) three-line array camera (TAC) panchromatic band"}
    }
   }
  },
- "index_generated": "2026-10-28T07:32:48.346795",
+ "index_generated": "2026-10-28T15:55:57.325419",
  "schema": 1,
  "source": "https://nillmill.ddns.net/sed_tools/index.json"
 }
