@@ -6,6 +6,7 @@ No test uses the network: NJM, SVO and the original sources are stand-ins.
 from __future__ import annotations
 
 import importlib
+import json
 import logging
 from types import SimpleNamespace
 
@@ -150,3 +151,88 @@ def test_a_catalogue_failure_pauses_njm_for_later_catalogues(tmp_path):
     with pytest.raises(CatalogueError, match="index.json is not cached and NJM is unreachable"):
         FilterCatalogue(tmp_path / "filters", mirror=mirror).index()
     assert len(asked) == 1
+
+
+# ----------------------------------------------------------------------
+# Item 19: installed curves are checked against NJM only when there is a reason
+# ----------------------------------------------------------------------
+NJM = "https://nillmill.ddns.net/sed_tools"
+CURVE = "Wavelength,Transmission,DetectorType=photon;DetectorTypeSource=original\n4000,0\n5000,1\n6000,0\n"
+
+
+class Served:
+    """A stand-in NJM session: ``files`` maps paths under the mirror to text or an HTTP status."""
+
+    def __init__(self, files):
+        self.files, self.requested, self.headers, self.verify = dict(files), [], {}, True
+
+    def get(self, url, timeout=None, headers=None, **kwargs):
+        rel = url[len(NJM) + 1:]
+        self.requested.append(rel)
+        body = self.files.get(rel, 404)
+        status, text = (body, "") if isinstance(body, int) else (200, body)
+
+        def raise_for_status():
+            if status >= 400:
+                raise requests.HTTPError(f"{status} for {rel}", response=SimpleNamespace(status_code=status, headers={}))
+
+        return SimpleNamespace(status_code=status, text=text, content=text.encode(), headers={},
+                               raise_for_status=raise_for_status, json=lambda: json.loads(text))
+
+    def curves_requested(self):
+        return [rel.rsplit("/", 1)[1] for rel in self.requested if rel.endswith(".dat")]
+
+
+def _njm_set(size_bytes=150):
+    index = {"generated": "2026-10-28", "filters": {"facilities": ["Fac"], "facilities_detailed": {
+        "Fac": {"instruments": {"Cam": {"filters": ["g", "r"], "size_bytes": size_bytes}}}}}}
+    return {"index.json": json.dumps(index), "filters/Fac/Cam/Cam": "g.dat\nr.dat\n",
+            "filters/Fac/Cam/g.dat": CURVE, "filters/Fac/Cam/r.dat": CURVE}
+
+
+@pytest.fixture
+def grabber(tmp_path, monkeypatch):
+    monkeypatch.setattr(NJMFilterGrabber, "_check_availability", lambda self: True)
+    monkeypatch.setattr("sed_tools.njm_filter_grabber.time.sleep", lambda seconds: None)
+    monkeypatch.setattr("sed_tools.njm_filter_grabber.tag_filter_file", lambda *a, **k: None)
+
+    def make(files):
+        made = NJMFilterGrabber(base_dir=str(tmp_path / "filters"))
+        made.session = Served(files)
+        return made
+
+    return make
+
+
+def test_a_repeated_download_of_an_unchanged_set_fetches_no_curve(tmp_path, grabber):
+    first = grabber(_njm_set())
+    assert first._download_set("Fac", "Cam").downloaded == 2
+    again = grabber(_njm_set())  # a later run: a new grabber
+    result = again._download_set("Fac", "Cam")
+    assert (result.downloaded, result.verified, result.curve_failures) == (0, 2, [])
+    assert again.session.curves_requested() == []
+    assert (tmp_path / "cache" / "njm" / "filters" / "Fac" / "Cam" / "verified_curves.json").is_file()
+
+
+def test_a_changed_curve_or_a_changed_njm_record_is_checked_again(tmp_path, grabber, caplog):
+    grabber(_njm_set())._download_set("Fac", "Cam")
+    r = tmp_path / "filters" / "Fac" / "Cam" / "r.dat"
+    r.write_text(CURVE + "7000,0\n")  # changed since NJM's copy was checked
+    with caplog.at_level(logging.WARNING):
+        local_change = grabber(_njm_set())
+        local_change._download_set("Fac", "Cam")
+    assert local_change.session.curves_requested() == ["r.dat"] and r.read_text() == CURVE
+    assert f"{r} differs from NJM's copy" in caplog.text
+
+    njm_change = grabber(_njm_set(size_bytes=151))  # NJM's set changed since
+    njm_change._download_set("Fac", "Cam")
+    assert njm_change.session.curves_requested() == ["g.dat", "r.dat"]
+
+
+def test_a_retry_after_a_partial_download_fetches_only_what_is_missing(grabber):
+    partial = _njm_set()
+    partial["filters/Fac/Cam/r.dat"] = 404
+    assert grabber(partial)._download_set("Fac", "Cam").curve_failures == ["r.dat: 404 for filters/Fac/Cam/r.dat"]
+    retry = grabber(_njm_set())
+    assert retry._download_set("Fac", "Cam").downloaded == 1
+    assert retry.session.curves_requested() == ["r.dat"]

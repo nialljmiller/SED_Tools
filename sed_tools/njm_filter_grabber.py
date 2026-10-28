@@ -13,7 +13,7 @@ import time
 from dataclasses import dataclass, field
 from time import monotonic
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 import requests
 import urllib3
@@ -34,6 +34,8 @@ NJM_CONNECT_TIMEOUT = 5.0
 #: Seconds NJM is left alone after it stops answering.
 NJM_PAUSE = 300
 FALLBACK_SOURCES = "installed copies, the original-source builders and SVO"
+#: Which installed curves a download found to be NJM's, kept under ``<filter root>/../cache/njm/filters/F/I/``.
+VERIFIED_CURVES = "verified_curves.json"
 
 
 class _MirrorState:
@@ -491,10 +493,19 @@ class NJMFilterGrabber:
         An installed curve is checked against the mirror's copy: it is kept if
         its samples match (its header may hold tags added here), and replaced
         otherwise, e.g. by SVO's curve of the same name written by an earlier release.
+        It is not fetched again when an earlier download found it to be NJM's
+        and neither it nor NJM's record of the instrument has changed since
+        (:meth:`_verified_curves`).
         """
-        downloaded, skipped, failed = 0, 0, []
+        downloaded, skipped, failed, njms = 0, 0, [], []
+        installed = any((output_dir / curve_file(name)).is_file() for name in filters)
+        trusted = self._verified_curves(facility, instrument, output_dir) if installed else set()
         for number, filter_name in enumerate(filters):
             output_path = output_dir / curve_file(filter_name)
+            if output_path.name in trusted:
+                skipped += 1
+                njms.append(output_path.name)
+                continue
             try:
                 served = self._get(f"{self.filters_url}/{facility}/{instrument}/{output_path.name}", timeout=30).text
             except requests.RequestException as e:  # raised before anything is written
@@ -508,6 +519,7 @@ class NJMFilterGrabber:
             if output_path.exists() and _same_curve(output_path, served):
                 self._tag(output_path, facility)
                 skipped += 1
+                njms.append(output_path.name)
                 continue
             if output_path.exists():
                 logger.warning("%s differs from NJM's copy; replacing it with NJM's", output_path)
@@ -517,7 +529,70 @@ class NJMFilterGrabber:
                 print(f"  [warn] {filter_name}: detector type unverified, assuming {result.detector_type}"
                       + (f" ({result.note})" if result.note else ""))
             downloaded += 1
+            njms.append(output_path.name)
+        if njms:
+            self._record_verified(facility, instrument, output_dir, njms)
         return downloaded, skipped, failed
+
+    # ------------------------------------------------------------------
+    # Installed curves already found to be NJM's
+    # ------------------------------------------------------------------
+    def _verified_path(self, facility: str, instrument: str) -> Path:
+        from .filter_catalogue import cache_root
+
+        return cache_root(self.base_dir) / "filters" / facility / instrument / VERIFIED_CURVES
+
+    def _njm_record(self, facility: str, instrument: str) -> Optional[str]:
+        """NJM's ``index.json`` record of the instrument's curves (names and size), or None if it has none.
+
+        It changes whenever NJM's set does, so installed curves verified under
+        it need not be fetched again while it stays the same.
+        """
+        detailed = (self._index() or {"filters": {}})["filters"].get("facilities_detailed")
+        facility_record = detailed.get(facility) if isinstance(detailed, dict) else None
+        instruments = facility_record.get("instruments") if isinstance(facility_record, dict) else None
+        record = instruments.get(instrument) if isinstance(instruments, dict) else None
+        if not isinstance(record, dict) or "size_bytes" not in record:
+            return None
+        return json.dumps({"filters": record.get("filters"), "size_bytes": record["size_bytes"]}, sort_keys=True)
+
+    def _verified_curves(self, facility: str, instrument: str, output_dir: Path) -> Set[str]:
+        """Installed curve files an earlier download found to be NJM's, unchanged since on both sides."""
+        record = self._njm_record(facility, instrument)
+        path = self._verified_path(facility, instrument)
+        if record is None or not path.is_file():
+            return set()
+        try:
+            saved = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            logger.warning("%s is unreadable (%s); every installed curve of %s/%s is checked against NJM's copy",
+                           path, exc, facility, instrument)
+            return set()
+        files = saved.get("files") if isinstance(saved, dict) and saved.get("njm_record") == record else None
+        if not isinstance(files, dict):
+            return set()
+        return {name for name, size in files.items()
+                if (output_dir / name).is_file() and (output_dir / name).stat().st_size == size}
+
+    def _record_verified(self, facility: str, instrument: str, output_dir: Path, names: List[str]) -> None:
+        """Note that these installed curve files are NJM's, under NJM's current record of the instrument."""
+        record = self._njm_record(facility, instrument)
+        if record is None:
+            return
+        path = self._verified_path(facility, instrument)
+        files = {name: (output_dir / name).stat().st_size for name in names}
+        if path.is_file():
+            try:
+                saved = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                saved = {}  # rewritten below
+            if isinstance(saved, dict) and saved.get("njm_record") == record and isinstance(saved.get("files"), dict):
+                files = {**saved["files"], **files}
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_name(f".{path.name}.part")
+        tmp.write_text(json.dumps({"njm_record": record, "files": files}, indent=1, sort_keys=True) + "\n",
+                       encoding="utf-8")
+        os.replace(tmp, path)
 
     def _tag(self, path: Path, facility: str):
         """Fill in what the curve's header lacks from SVO; a no-op for curves the mirror tagged fully.

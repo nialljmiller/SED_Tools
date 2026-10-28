@@ -132,7 +132,7 @@ class FakeNJM:
             if status >= 400:
                 raise requests.HTTPError(str(status), response=SimpleNamespace(status_code=status, headers={}))
         return SimpleNamespace(status_code=status, content=content, text=content.decode(), headers=headers or {},
-                               raise_for_status=raise_for_status)
+                               raise_for_status=raise_for_status, json=lambda: json.loads(content))
 
     def fetched(self, rel):
         return [h for r, h in self.requests if r == rel]

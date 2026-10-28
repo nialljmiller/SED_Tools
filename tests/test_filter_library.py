@@ -309,7 +309,8 @@ def test_mirror_index_declares_complete_set_without_remote_manifest(tmp_path, mo
                         SimpleNamespace(source="header"))
 
     def get(url, **kwargs):
-        return SimpleNamespace(text="g.dat\nr.dat\n" if url.endswith("/Camera") else "4000 1\n6000 1\n")
+        text = "g.dat\nr.dat\n" if url.endswith("/Camera") else "4000 1\n6000 1\n"
+        return SimpleNamespace(text=text, json=lambda: __import__("json").loads(text))
 
     monkeypatch.setattr(grabber, "_get", get)
     assert grabber.download_filters("Test", "Camera") == 2
