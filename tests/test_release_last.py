@@ -290,3 +290,44 @@ def test_import_sed_tools_needs_no_optional_package(tmp_path):
                               env=env, capture_output=True, text=True)
         assert done.returncode == 0, done.stderr
         assert done.stdout.strip() == "[]"
+
+
+# ----------------------------------------------------------------------
+# filters-info before anything is installed and with no source answering:
+# the detector is not known, never the energy default
+# ----------------------------------------------------------------------
+@pytest.fixture
+def bundled_dr2(monkeypatch):
+    from sed_tools import filter_library
+    from sed_tools.filter_library import instrument_catalogue
+
+    gaia = {"DR2": {"svo_instruments": ["GAIA/GAIA2"], "bands": ["BP", "G", "RP"],
+                    "svo_bands": {"GAIA/GAIA2": ["G", "Gbp=BP", "Grp=RP"]}}}
+    monkeypatch.setattr(filter_library, "load_instrument_catalogue",
+                        lambda: instrument_catalogue({"GAIA": {"instruments": gaia}}))
+
+
+@pytest.mark.parametrize("builder", [True, False])
+def test_bundled_availability_leaves_the_detector_unknown(builder, tmp_path, bundled_dr2, monkeypatch, capsys):
+    from types import SimpleNamespace
+
+    from sed_tools import filter_library
+    from sed_tools.cli import print_filter_availability
+    from sed_tools.filter_library import FilterLibrary
+    from test_release_library import svo_stub
+
+    if not builder:
+        monkeypatch.delitem(filter_library.BUILDERS_FOR, ("GAIA", "DR2"))
+    library = FilterLibrary(tmp_path / "filters")
+    library.mirror = SimpleNamespace(is_available=lambda: False, fetch_manifest=lambda f, i: None,
+                                     discover_filters=lambda f, i: [])
+    library.svo = svo_stub({}, {}, down=True)
+    info = library.available("GAIA", "DR2")
+    assert info["availability_source"] == ("original" if builder else "unknown")
+    # GAIA/DR2's builder writes photon-counting curves; this used to say energy, "unverified"
+    assert info["detector_type"] is None
+    assert info["detector_type_sources"] == {"BP": "unknown", "G": "unknown", "RP": "unknown"}
+    print_filter_availability(info)
+    out = capsys.readouterr().out
+    assert "  Detector                 : not known until the curves are installed\n" in out
+    assert "energy" not in out and "unverified" not in out

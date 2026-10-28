@@ -469,6 +469,10 @@ class FilterLibrary:
         bands = meta["bands"] if meta else []
         manifest = InstrumentManifest.from_headers(facility, instrument, {band: {} for band in bands})
         info = _availability(manifest.describe(), source, failed)
+        # No curve has been seen, so the detector convention is unknown; the empty headers would read as
+        # energy, which the curves NJM, a builder or SVO then write need not be (GAIA/DR2's are photon).
+        info["detector_type"] = None
+        info["detector_type_sources"] = {band: "unknown" for band in bands}
         notes = ["its original-source builder makes the curves when it is fetched"] if source == "original" else []
         if bands:
             notes.append("bands as NJM served them when this SED_Tools was released; what each curve contains "

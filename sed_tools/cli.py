@@ -738,6 +738,10 @@ def print_filter_availability(info: dict) -> None:
     _print_field("Atmosphere", _atmosphere_summary(info))
     if info["detector_type"]:
         _print_field("Detector", f"{info['detector_type']}-counting")
+    elif info["bands"] and info.get("availability_source") in ("original", "unknown"):
+        # bands from the catalogue bundled with SED_Tools: no curve has been seen yet
+        _print_field("Detector", "not known until the curves are installed")
+        return
     assumed = [band for band, source in info["detector_type_sources"].items()
                if source in ("assumed", "unknown")]
     if assumed:
