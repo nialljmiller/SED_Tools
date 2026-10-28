@@ -743,13 +743,45 @@ def test_filters_info_fails_when_no_source_answered(monkeypatch):
     assert run_cli(monkeypatch, "filters-info", "Fac/Cam") == 1
 
 
-def test_browsing_says_njm_is_unavailable_once(tmp_path, monkeypatch, capsys):
+def test_browsing_prints_each_listing_error_once(tmp_path, monkeypatch, capsys):
     from sed_tools.filter_library import FilterLibrary
 
     monkeypatch.setattr(FilterLibrary, "facilities", lambda self: {
-        "entries": [{"key": "A", "label": "A", "sources": ["svo"]}], "errors": ["NJM unavailable"]})
+        "entries": [{"key": "A", "label": "A", "sources": ["svo"]}], "errors": ["SVO: timed out"]})
     monkeypatch.setattr(FilterLibrary, "instruments", lambda self, facility: {
-        "entries": [{"key": "Cam", "label": "Cam", "sources": ["svo"]}], "errors": ["NJM unavailable"]})
+        "entries": [{"key": "Cam", "label": "Cam", "sources": ["svo"]}], "errors": ["SVO: timed out"]})
     answer(monkeypatch, "1", "b", "1", "b", "q")
     assert cli.run_filters_flow(str(tmp_path)) == 0
-    assert capsys.readouterr().out.count("[filters] NJM unavailable") == 1
+    assert capsys.readouterr().out.count("[filters] SVO: timed out") == 1
+
+
+def test_an_unreachable_njm_is_neither_printed_again_nor_a_failure(tmp_path, monkeypatch, capsys):
+    from sed_tools.filter_library import FilterLibrary
+
+    monkeypatch.setattr(FilterLibrary, "facilities", lambda self: {"entries": [
+        {"key": "A", "label": "A", "sources": ["svo"]}, {"key": "B", "label": "B", "sources": ["svo"]}],
+        "errors": ["NJM unavailable"]})
+    monkeypatch.setattr(FilterLibrary, "instruments", lambda self, facility: {
+        "entries": [{"key": "Cam", "label": "Cam", "sources": ["svo"]}], "errors": ["NJM unavailable"]})
+    fetched = []
+    monkeypatch.setattr(Filters, "fetch", classmethod(lambda cls, f, i, **k: fetched.append(f"{f}/{i}") or tmp_path))
+    answer(monkeypatch, "1,2", "y")
+    assert cli.run_filters_flow(str(tmp_path)) == 0
+    assert fetched == ["A/Cam", "B/Cam"]
+    assert "NJM unavailable" not in capsys.readouterr().out
+
+
+def test_availability_notes_are_shown(capsys):
+    cli.print_filter_availability(_availability(notes=["no component manifest: NJM serves only the published "
+                                                       "curves, described here from their headers"]))
+    out = " ".join(capsys.readouterr().out.split())
+    assert "Note : no component manifest: NJM serves only the published curves" in out
+
+
+def test_an_unknown_band_is_a_clean_error(monkeypatch, capsys):
+    def compose(cls, *a, **k):
+        raise ComponentError("Argus/DR280 has no band 'nosuch'")
+
+    monkeypatch.setattr(Filters, "compose", classmethod(compose))
+    assert run_cli(monkeypatch, "filters-compose", "Argus/DR280", "--bands", "nosuch") == 1
+    assert capsys.readouterr().out == "[filters] Argus/DR280 has no band 'nosuch'\n"

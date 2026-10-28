@@ -722,6 +722,8 @@ def print_filter_availability(info: dict) -> None:
         _print_field("Variants", _variants_summary(info["variants"]) + " (choose with --variant ROLE=NAME)")
     if info["component_status"]:
         _print_field("Note", info["component_status"])
+    for note in info.get("notes") or []:
+        _print_field("Note", note)
     for role, bands in info["partial_components"].items():
         print(f"    {role} only for: {', '.join(bands)}")
     review = info["component_availability"]
@@ -1193,9 +1195,19 @@ def _cut(text: str, width: int) -> str:
     return text if len(text) <= width else text[:max(width - 1, 0)] + "…"
 
 
+#: What FilterLibrary.facilities() and instruments() list when NJM cannot be reached. NJM is
+#: optional: the other sources are listed instead, and the mirror client has already said so.
+_NJM_UNAVAILABLE = "NJM unavailable"
+
+
+def _listing_failures(errors: List[str]) -> List[str]:
+    """The catalogue listing errors that leave a list incomplete (an unreachable NJM does not)."""
+    return [error for error in errors if error != _NJM_UNAVAILABLE]
+
+
 def _print_listing_errors(errors: List[str], shown: set) -> None:
-    """Print each catalogue listing error once per browsing session (NJM being down is said once)."""
-    for error in errors:
+    """Print each listing failure once per browsing session."""
+    for error in _listing_failures(errors):
         if error not in shown:
             shown.add(error)
             print(f"[filters] {error}")
@@ -1212,7 +1224,7 @@ def _download_every_instrument(library, facilities: List[dict], base_dir: str, f
     for facility in facilities:
         result = library.instruments(facility["key"])
         _print_listing_errors(result["errors"], shown)
-        for error in result["errors"]:
+        for error in _listing_failures(result["errors"]):
             failures.append(f"{facility['key']}: instrument list incomplete: {error}")
         listings.append((facility, result["entries"]))
     count = sum(len(entries) for _, entries in listings)
