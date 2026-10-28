@@ -147,6 +147,8 @@ Other results that change:
   ``sed-tools rebuild`` writes: it looked only in ``fluxcube_library/``,
   which nothing writes any more, and stopped with "No flux_cube.bin found".
 - ``sed-tools densify`` always failed with ``TypeError``.
+- ``sed-tools rebuild`` split a combined or ML-extended grid into one
+  "variant" per spectrum, with no flux cube for the grid; it builds one cube.
 - ``MLGenerator.generate_with_outputs`` wrote to ``./output/SED`` instead of
   the documented ``<model>/SED``.
 
@@ -658,6 +660,14 @@ Each item says what 0.4.1 did, what 0.5.0 does, and when it happens.
 - The picker's columns are wider, so labels are shown in full; occasionally
   one fewer column fits.
 - ``run_combine_flow`` prints the same progress lines as ``SED.combine``.
+- The interactive number questions of the command line, the ML menus and the
+  densifier are one (``ui_utils.ask_number``): the airmass and PWV questions
+  no longer accept ``nan`` or ``inf``, a blank answer where one is needed says
+  "Please enter a number.", and a bad one "'x' is not a number; try again."
+- ``combine --grids`` may name an earlier combine output, and
+  ``--non-interactive`` judges earlier outputs as the combine menu does (the
+  ``source_model`` and ``original_file`` columns, or the folder name
+  ``combined_models``).
 
 **Filters, NJM and SVO**
 
@@ -745,6 +755,50 @@ Each item says what 0.4.1 did, what 0.5.0 does, and when it happens.
 - Composed products that include the QE were always labelled
   photon-counting; a band whose manifest records a ``user`` detector type
   now keeps it (only Argus does: its products are energy-counting).
+- NJM's availability, its five-minute pause and the certificate fallback are
+  now shared by the whole process: every ``FilterLibrary`` and
+  ``FilterCatalogue`` used to check NJM again (5 s each with NJM silently
+  down) and repeat the warning; now NJM is checked once, asked again only
+  after the pause, and an outage is warned about once. The warning says NJM
+  is not used for 5 minutes (it said "not used").
+- An NJM download fetched every installed curve of the set again to check it
+  was NJM's. It now records which installed curves it found to be NJM's
+  (``<filter root>/../cache/njm/filters/<F>/<I>/verified_curves.json``, with
+  each file's size and NJM's ``index.json`` record of the instrument), and
+  skips those while neither has changed: a retry after a partial download
+  fetches only the missing curves. A set installed by an earlier release is
+  checked once.
+- ``Filters.compose`` (``filters-compose``) refuses, before any download,
+  bands for which the instrument's manifest declares none of the requested
+  components while declaring them for other bands, naming both: composing
+  Euclid/NISP from ``filter,optics,qe`` without ``--bands`` used to download
+  ESA's tables and then fail on the grisms Blue and Red.
+- Manifests keep ``archived_bands`` (superseded copies NJM keeps beside a set,
+  such as Euclid/NISP's ``H_svo``): ``InstrumentManifest`` reads and saves it
+  (saved only when set), so a rebuild by the JWST or Roman builder no longer
+  drops it. ``InstrumentManifest.from_published`` takes as bands only the
+  curves the MESA index file lists (when there is one), never an archived
+  band, so the Euclid, HSC, GMOS and other builders no longer put archive
+  copies back into ``bands``, and ``write_filter_index`` leaves archived bands
+  out of the MESA index.
+- ``Filters.query()``'s ``facility_key`` is the spelling to download with
+  (NJM's where NJM has the facility); in 0.4.1 it was SVO's. Rows gain
+  ``svo_facility_key`` (SVO's own spelling, or ``None``), and the
+  ``facility`` argument matches any source's spelling, ignoring case. Picker
+  entries gain ``names``, each source's own spelling.
+- ``FilterLibrary.available()`` (``Filters.available``) gains
+  ``sources_failed`` (failures by source) and ``fallback_from`` (the sources
+  whose failure only made a later one answer); ``errors`` is unchanged.
+  ``filters-info`` decides its exit status from them instead of matching
+  ``"NJM"`` in the messages.
+- ``FilterCatalogue.origin()`` says whether NJM catalogue data came from the
+  copy installed beside the curves, the cache or NJM, and when NJM last
+  confirmed it; ``filters-info`` prints "Catalogue: from the cached copy,
+  checked <date> UTC; NJM could not be asked" when that happened, and
+  ``--json`` gives the origin.
+- Atmosphere site errors list sites as plain text ("observes from paranal,
+  here_team; atmospheres from other sites (lsst_std) are not mixed in")
+  instead of Python lists.
 
 **Original-source builders**
 
@@ -779,6 +833,13 @@ Each item says what 0.4.1 did, what 0.5.0 does, and when it happens.
   saved inventory; it still downloads it, with a warning naming it.
 - SkyCalc: a failed request to delete ESO's temporary directory is a warning
   instead of a debug message, and "not a FITS file" names the URL.
+- Original-source downloads (``Table``, ``Fetcher``, the team atmospheres,
+  DECam, HSC, HST, LSST, JWST, SDSS, VISTA) wait 10 s for a connection, as
+  SVO requests do; they used a single 120-600 s timeout or a 30 s connect
+  timeout. ``SkyCalcClient``'s ``connect_timeout`` default is 10 s (was 30 s).
+  Read timeouts are unchanged.
+- ``tabular.build`` raised ``KeyError`` for an unknown instrument; it raises
+  ``ValueError`` naming the instruments it has.
 
 **Spectral grid downloads**
 
@@ -833,6 +894,10 @@ Each item says what 0.4.1 did, what 0.5.0 does, and when it happens.
   rest instead of being skipped.
 - Every grabber's ``discover_models`` reports failures and empty results as
   warnings (they were prints or silent).
+- The NJM spectra grabber tried three ways (HTTPS, HEAD, plain HTTP) before
+  reporting NJM down, about 26 s on a silent outage; no answer now means down
+  at once (5 s). A certificate failure is still retried without verification,
+  and plain HTTP is used only when the TLS handshake fails both ways.
 
 **Reading and cleaning spectra**
 
@@ -872,6 +937,10 @@ Each item says what 0.4.1 did, what 0.5.0 does, and when it happens.
   writes no table.
 - Grids converted file by file because the sample gave no grid-wide units
   now get a warning saying so.
+- ``flux_unit=`` (``SED.fetch``, ``SED.import_grid``, ``clean_model_dir``) is
+  used only for spectra that do not declare their flux unit, as
+  ``--flux-unit`` is; a declared unit is never replaced, and a warning says
+  when the given unit is not used.
 
 **Flux cubes, combine, densify and mesa_prepare**
 
@@ -911,6 +980,15 @@ Each item says what 0.4.1 did, what 0.5.0 does, and when it happens.
   ``FileNotFoundError`` listing them, and refuses a variant without its flux
   cube, before writing anything. A uniform grid is no longer noted as
   averaging variants.
+- ``sed-tools rebuild`` (``precompute_flux_cube``) took the provenance
+  columns of a combined grid (``source_model``, ``original_file``) and of an
+  ML-extended grid (``extended_by_ml``, ``wl_min``, ``wl_max``) as extra
+  physical axes, so such a grid was split into one "variant" per spectrum and
+  got no ``flux_cube.bin`` of its own; they are now bookkeeping columns and
+  the grid is built as one cube.
+- The rebuild's "Extra physical axis detected" message named every extra
+  column (``alpha, lh, vtur`` for Kurucz); it now names only the columns that
+  vary. Subgrid directory names are unchanged.
 
 **Photometry and magnitudes**
 
@@ -1022,86 +1100,6 @@ Each item says what 0.4.1 did, what 0.5.0 does, and when it happens.
   that need it raise ``ImportError`` naming scipy.
 - ``grid_coverage`` lists the representative spectra its terminal preview
   could not plot (they were left out silently).
-
-**Integration of the 0.5.0 work**
-
-- ``sed-tools rebuild`` (``precompute_flux_cube``) took the provenance
-  columns of a combined grid (``source_model``, ``original_file``) and of an
-  ML-extended grid (``extended_by_ml``, ``wl_min``, ``wl_max``) as extra
-  physical axes, so such a grid was split into one "variant" per spectrum and
-  got no ``flux_cube.bin`` of its own; they are now bookkeeping columns and
-  the grid is built as one cube.
-- The rebuild's "Extra physical axis detected" message named every extra
-  column (``alpha, lh, vtur`` for Kurucz); it now names only the columns that
-  vary. Subgrid directory names are unchanged.
-- NJM's availability, its five-minute pause and the certificate fallback are
-  now shared by the whole process: every ``FilterLibrary`` and
-  ``FilterCatalogue`` used to check NJM again (5 s each with NJM silently
-  down) and repeat the warning; now NJM is checked once, asked again only
-  after the pause, and an outage is warned about once. The warning says NJM
-  is not used for 5 minutes (it said "not used").
-- An NJM download fetched every installed curve of the set again to check it
-  was NJM's. It now records which installed curves it found to be NJM's
-  (``<filter root>/../cache/njm/filters/<F>/<I>/verified_curves.json``, with
-  each file's size and NJM's ``index.json`` record of the instrument), and
-  skips those while neither has changed: a retry after a partial download
-  fetches only the missing curves. A set installed by an earlier release is
-  checked once.
-- The NJM spectra grabber tried three ways (HTTPS, HEAD, plain HTTP) before
-  reporting NJM down, about 26 s on a silent outage; no answer now means down
-  at once (5 s). A certificate failure is still retried without verification,
-  and plain HTTP is used only when the TLS handshake fails both ways.
-- Original-source downloads (``Table``, ``Fetcher``, the team atmospheres,
-  DECam, HSC, HST, LSST, JWST, SDSS, VISTA) wait 10 s for a connection, as
-  SVO requests do; they used a single 120-600 s timeout or a 30 s connect
-  timeout. ``SkyCalcClient``'s ``connect_timeout`` default is 10 s (was 30 s).
-  Read timeouts are unchanged.
-- ``tabular.build`` raised ``KeyError`` for an unknown instrument; it raises
-  ``ValueError`` naming the instruments it has.
-- ``flux_unit=`` (``SED.fetch``, ``SED.import_grid``, ``clean_model_dir``) is
-  used only for spectra that do not declare their flux unit, as
-  ``--flux-unit`` is; a declared unit is never replaced, and a warning says
-  when the given unit is not used.
-- ``Filters.compose`` (``filters-compose``) refuses, before any download,
-  bands for which the instrument's manifest declares none of the requested
-  components while declaring them for other bands, naming both: composing
-  Euclid/NISP from ``filter,optics,qe`` without ``--bands`` used to download
-  ESA's tables and then fail on the grisms Blue and Red. Unknown variants are
-  refused at the same point.
-- Manifests keep ``archived_bands`` (superseded copies NJM keeps beside a set,
-  such as Euclid/NISP's ``H_svo``): ``InstrumentManifest`` reads and saves it
-  (saved only when set), so a rebuild by the JWST or Roman builder no longer
-  drops it. ``InstrumentManifest.from_published`` takes as bands only the
-  curves the MESA index file lists (when there is one), never an archived
-  band, so the Euclid, HSC, GMOS and other builders no longer put archive
-  copies back into ``bands``, and ``write_filter_index`` leaves archived bands
-  out of the MESA index.
-- ``Filters.query()``'s ``facility_key`` is the spelling to download with
-  (NJM's where NJM has the facility); in 0.4.1 it was SVO's. Rows gain
-  ``svo_facility_key`` (SVO's own spelling, or ``None``), and the
-  ``facility`` argument matches any source's spelling, ignoring case. Picker
-  entries gain ``names``, each source's own spelling.
-- ``FilterLibrary.available()`` (``Filters.available``) gains
-  ``sources_failed`` (failures by source) and ``fallback_from`` (the sources
-  whose failure only made a later one answer); ``errors`` is unchanged.
-  ``filters-info`` decides its exit status from them instead of matching
-  ``"NJM"`` in the messages.
-- ``FilterCatalogue.origin()`` says whether NJM catalogue data came from the
-  copy installed beside the curves, the cache or NJM, and when NJM last
-  confirmed it; ``filters-info`` prints "Catalogue: from the cached copy,
-  checked <date> UTC; NJM could not be asked" when that happened, and
-  ``--json`` gives the origin.
-- The interactive number questions of the command line, the ML menus and the
-  densifier are one (``ui_utils.ask_number``): the airmass and PWV questions
-  no longer accept ``nan`` or ``inf``, a blank answer where one is needed says
-  "Please enter a number.", and a bad one "'x' is not a number; try again."
-- ``combine --grids`` may name an earlier combine output, and
-  ``--non-interactive`` judges earlier outputs as the combine menu does (the
-  ``source_model`` and ``original_file`` columns, or the folder name
-  ``combined_models``).
-- Atmosphere site errors list sites as plain text ("observes from paranal,
-  here_team; atmospheres from other sites (lsst_std) are not mixed in")
-  instead of Python lists.
 
 Version 0.4.1 (October 2026)
 ----------------------------
