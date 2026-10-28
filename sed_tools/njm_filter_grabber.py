@@ -36,6 +36,26 @@ NJM_PAUSE = 300
 #: Seconds a process keeps NJM's index.json before reading it again.
 NJM_INDEX_MAX_AGE = 3600
 FALLBACK_SOURCES = "installed copies, the original-source builders and SVO"
+
+
+def plain_reason(reason) -> str:
+    """Why NJM could not be reached, in a few plain words rather than a raw exception's text."""
+    text = str(reason)
+    if len(text) <= 60 and "(" not in text:
+        return text
+    lowered = text.lower()
+    if isinstance(reason, requests.exceptions.Timeout) or "timed out" in lowered:
+        return "it did not answer in time"
+    if isinstance(reason, requests.exceptions.SSLError):
+        return "its certificate or TLS handshake failed"
+    for words, plain in (("refused", "connection refused"), ("reset by peer", "connection reset"),
+                         ("aborted", "connection reset"), ("no route", "no route to host"),
+                         ("name or service not known", "host name not found"),
+                         ("nodename nor servname", "host name not found"),
+                         ("name resolution", "host name not found")):
+        if words in lowered:
+            return plain
+    return "could not connect"
 #: Which installed curves a download found to be NJM's, kept under ``<filter root>/../cache/njm/filters/F/I/``.
 VERIFIED_CURVES = "verified_curves.json"
 
@@ -178,8 +198,10 @@ class NJMFilterGrabber:
         return True
 
     def _unavailable(self, reason) -> bool:
-        self._pause(str(reason), f"NJM mirror {self.base_url} is unavailable ({reason}); it will not be "
-                                 f"used for {NJM_PAUSE // 60} minutes, and filters come from {FALLBACK_SOURCES}")
+        reason = plain_reason(reason)
+        self._pause(reason, f"NJM mirror {self.base_url} is unavailable ({reason});\n"
+                            f"  it will not be used for {NJM_PAUSE // 60} minutes, and filters come from "
+                            f"installed copies,\n  the original-source builders and SVO")
         return False
 
     @staticmethod

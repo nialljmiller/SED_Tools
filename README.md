@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/SED_Tools_Logo.jpeg" alt="SED_Tools Logo" width="200"/>
+  <img src="https://raw.githubusercontent.com/nialljmiller/SED_Tools/v0.5.0/docs/SED_Tools_Logo.jpeg" alt="SED_Tools Logo" width="200"/>
 </p>
 
 <h1 align="center">SED_Tools</h1>
@@ -475,7 +475,7 @@ The NJM mirror runs the automatic builders ahead of time (`sed-tools filters-bui
 
 The CLI and Python API use the same acquisition and composition workflow. Availability distinguishes installed component files from registered source support. Missing files are reported, and `recipes_by_band` identifies combinations available for only part of an instrument's band set. Instruments whose separate components have not been reviewed are marked `unreviewed`; they remain available through the generic SVO passband downloader.
 
-The [component-source research inventory](docs/component_sources/README.md)
+The [component-source research inventory](https://github.com/nialljmiller/SED_Tools/blob/v0.5.0/docs/component_sources/README.md)
 tracks every SVO facility/instrument entry, research ownership and the evidence
 needed to add original component sources. Research findings are reviewed before
 they become supported downloaders or NJM mirror data.
@@ -610,7 +610,7 @@ sed-tools combine --grids Kurucz2003all bt-settl --output my_combined_grid
 ### `sed-tools ml_completer`
 
 <p>
-  <img src="docs/prediction_examples.png" alt="Prediction examples" width="200"/>
+  <img src="https://raw.githubusercontent.com/nialljmiller/SED_Tools/v0.5.0/docs/prediction_examples.png" alt="Prediction examples" width="200"/>
 </p>
 
 
@@ -637,7 +637,7 @@ sed-tools ml_completer
 
 
 <p>
-  <img src="docs/prediction_examples.png" alt="Prediction examples" width="200"/>
+  <img src="https://raw.githubusercontent.com/nialljmiller/SED_Tools/v0.5.0/docs/prediction_examples.png" alt="Prediction examples" width="200"/>
 </p>
 
 Train and apply neural networks to generate complete SEDs from stellar parameters alone.
@@ -661,11 +661,11 @@ sed-tools ml_generator --auto --library data/stellar_models/Kurucz2003all --outp
 4. Generates diagnostic plots showing parameter space coverage
 
 <p>
-  <img src="docs/sed_T6969_g4.20_m+0.02_params.png" alt="Prediction examples" width="200"/>
+  <img src="https://raw.githubusercontent.com/nialljmiller/SED_Tools/v0.5.0/docs/sed_T6969_g4.20_m%2B0.02_params.png" alt="Prediction examples" width="200"/>
 </p>
 
 <p>
-  <img src="docs/sed_T6969_g4.20_m+0.02_spectrum.png" alt="Prediction examples" width="200"/>
+  <img src="https://raw.githubusercontent.com/nialljmiller/SED_Tools/v0.5.0/docs/sed_T6969_g4.20_m%2B0.02_spectrum.png" alt="Prediction examples" width="200"/>
 </p>
 
 ---
@@ -689,7 +689,7 @@ sed-tools densify \
   --ml-model data/stellar_models/models/sed_generator_Kurucz2003all
 ```
 
-See [notebook 10](jupyter_notebooks/10_grid_densification.ipynb) for a worked example including before/after comparison plots.
+See [notebook 10](https://github.com/nialljmiller/SED_Tools/blob/v0.5.0/jupyter_notebooks/10_grid_densification.ipynb) for a worked example including before/after comparison plots.
 
 ---
 
@@ -1303,7 +1303,7 @@ All versions (resolves to the latest release): [10.5281/zenodo.18321943](https:/
 
 Version 0.4.1: [10.5281/zenodo.23634323](https://doi.org/10.5281/zenodo.23634323)
 
-Machine-readable citation metadata is available in [`CITATION.cff`](CITATION.cff).
+Machine-readable citation metadata is available in [`CITATION.cff`](https://github.com/nialljmiller/SED_Tools/blob/v0.5.0/CITATION.cff).
 
 SED_Tools is also the designated data-preparation pipeline for the
 [MESA](https://docs.mesastar.org/) `colors` module — see
@@ -1314,13 +1314,13 @@ in the MESA repository.
 
 ## Contributing
 
-Bug reports, feature requests, and pull requests are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). Please also review our [Code of Conduct](CODE_OF_CONDUCT.md) and [Security Policy](SECURITY.md) (for reporting vulnerabilities).
+Bug reports, feature requests, and pull requests are welcome — see [CONTRIBUTING.md](https://github.com/nialljmiller/SED_Tools/blob/v0.5.0/CONTRIBUTING.md). Please also review our [Code of Conduct](https://github.com/nialljmiller/SED_Tools/blob/v0.5.0/CODE_OF_CONDUCT.md) and [Security Policy](https://github.com/nialljmiller/SED_Tools/blob/v0.5.0/SECURITY.md) (for reporting vulnerabilities).
 
 ---
 
 ## License
 
-[MIT License](LICENSE)
+[MIT License](https://github.com/nialljmiller/SED_Tools/blob/v0.5.0/LICENSE)
 
 ---
 
