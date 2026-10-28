@@ -785,3 +785,18 @@ def test_an_unknown_band_is_a_clean_error(monkeypatch, capsys):
     monkeypatch.setattr(Filters, "compose", classmethod(compose))
     assert run_cli(monkeypatch, "filters-compose", "Argus/DR280", "--bands", "nosuch") == 1
     assert capsys.readouterr().out == "[filters] Argus/DR280 has no band 'nosuch'\n"
+
+
+def test_grids_without_a_terminal_or_names_says_to_use_grids(monkeypatch, tmp_path):
+    class Grabber:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def discover_models(self):
+            return ["bt-cond"]
+
+    monkeypatch.setattr(cli, "MSGSpectraGrabber", Grabber)
+    monkeypatch.setattr("sys.stdin", _Stdin(False))
+    with pytest.raises(ValueError, match=r"No terminal to choose from the 1 spectral grids found; name them with "
+                                         r"--grids NAME \.\.\. \(or --grids all\)"):
+        cli.run_spectra_flow("msg", base_dir=str(tmp_path))

@@ -510,6 +510,9 @@ def run_spectra_flow(
     all_models = [_ModelOption(n, srcs) for n, srcs in sorted(model_sources.items())]
     if models is not None:
         chosen, failures = _requested_spectral_grids(models, all_models)
+    elif not sys.stdin.isatty():
+        raise ValueError(f"No terminal to choose from the {len(all_models)} spectral grids found; "
+                         "name them with --grids NAME ... (or --grids all)")
     else:
         idxs = prompt_choice(all_models, label="Spectral grids", allow_back=True, multi=True)
         if idxs is None or idxs == -1:
@@ -1033,8 +1036,9 @@ def _ask_atmosphere(sites: List[str], default_site: Optional[str], filter_root: 
     if len(sites) > 1:
         default = default_site or sites[0]
         site = _ask_option(f"Site ({', '.join(sites)}) [{default}]: ", sites, default=default)
-    try:
-        grid = Filters.atmospheres(filter_root=filter_root).get(site)
+    try:  # the cached grid first: NJM is asked only for a site not cached yet
+        grid = (Filters.atmospheres(filter_root=filter_root, include_remote=False).get(site)
+                or Filters.atmospheres(filter_root=filter_root).get(site))
     except (RequestException, OSError, RuntimeError, ValueError) as exc:
         raise RuntimeError(f"could not list the atmosphere grids for {site}: {exc}") from exc
     airmass, pwv = _ask_conditions(site, grid)
