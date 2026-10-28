@@ -20,6 +20,7 @@ from ..filter_components import (ATMOSPHERE, FILTER, OPTICS, QE, SHARED, Atmosph
                                  InstrumentManifest, add_component)
 from ..filter_metadata import (ENERGY, PHOTON, SOURCE_SVO, SVOMetadataClient, read_filter_header,
                                svo_components_header, svo_fps_url, write_filter_file)
+from ._original import CONNECT_TIMEOUT
 
 Curve = Tuple[np.ndarray, np.ndarray]  # (Angstrom, fraction)
 
@@ -37,7 +38,7 @@ class Table:
     note: str = ""
 
     def read(self, session) -> Curve:
-        resp = session.get(self.url, timeout=300)
+        resp = session.get(self.url, timeout=(CONNECT_TIMEOUT, 300))
         resp.raise_for_status()
         return self.parse(resp.content)
 

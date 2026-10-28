@@ -38,7 +38,7 @@ import numpy as np
 from ..filter_components import FILTER, OPTICS, QE, InstrumentManifest, add_component
 from ..filter_metadata import PHOTON
 from ._common import product
-from ._original import safe_member
+from ._original import CONNECT_TIMEOUT, safe_member
 
 FACILITY = "JWST"
 REFDATA_VERSION = "2026.7"
@@ -64,7 +64,7 @@ def fetch_refdata(dest: Union[str, Path], url: str = REFDATA_URL, session=None,
         session = requests.Session()
     dest = Path(dest)
     dest.mkdir(parents=True, exist_ok=True)
-    resp = session.get(url, timeout=600)
+    resp = session.get(url, timeout=(CONNECT_TIMEOUT, 600))
     resp.raise_for_status()
     data = resp.content
     if sha1 and hashlib.sha1(data).hexdigest() != sha1:

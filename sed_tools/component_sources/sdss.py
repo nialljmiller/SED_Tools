@@ -32,6 +32,7 @@ import numpy as np
 
 from ..filter_components import FILTER, OPTICS, QE, InstrumentManifest, add_component, recipe_name
 from ._common import Table, register_variant
+from ._original import CONNECT_TIMEOUT
 
 DOI = "http://www.ioa.s.u-tokyo.ac.jp/~doi/sdss"
 GUNN = "https://www.sdss4.org/wp-content/uploads/2017/04/filter_curves.fits"
@@ -49,7 +50,7 @@ def read_gunn(session):
 
     from astropy.io import fits
 
-    resp = session.get(GUNN, timeout=300)
+    resp = session.get(GUNN, timeout=(CONNECT_TIMEOUT, 300))
     resp.raise_for_status()
     out = {}
     with fits.open(io.BytesIO(resp.content)) as hdul:

@@ -43,6 +43,7 @@ from ..filter_components import (ATMOSPHERE, FILTER, OPTICS, QE, SHARED, Atmosph
                                  InstrumentManifest, add_component)
 from ..filter_metadata import (ENERGY, PHOTON, SOURCE_ASSUMED, SOURCE_SVO, SVOMetadataClient,
                                svo_components_header, write_filter_file)
+from ._original import CONNECT_TIMEOUT
 
 FACILITY = "LSST"
 BANDS = ("u", "g", "r", "i", "z", "y")
@@ -91,7 +92,7 @@ NOTES = {
 
 
 def _fetch(session, name: str, tag: str) -> Tuple[np.ndarray, np.ndarray]:
-    resp = session.get(f"{REPO}/{tag}/baseline/{name}.dat", timeout=120)
+    resp = session.get(f"{REPO}/{tag}/baseline/{name}.dat", timeout=(CONNECT_TIMEOUT, 120))
     resp.raise_for_status()
     data = np.loadtxt(io.StringIO(resp.text), comments="#", usecols=(0, 1))
     return data[:, 0], data[:, 1]  # nm, fraction

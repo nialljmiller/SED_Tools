@@ -40,10 +40,15 @@ USER_AGENT = "SED_Tools-original-sources"
 # --------------------------------------------------------------------------
 # Downloads
 # --------------------------------------------------------------------------
+#: Seconds an original source's server has to accept a connection, as for SVO: a host
+#: that is down fails fast, while a large file still has minutes to arrive.
+CONNECT_TIMEOUT = 10.0
+
+
 class Fetcher:
     """Download each URL once per build through a ``requests``-like session."""
 
-    def __init__(self, session=None, timeout: Union[float, Tuple[float, float]] = (30, 300)):
+    def __init__(self, session=None, timeout: Union[float, Tuple[float, float]] = (CONNECT_TIMEOUT, 300)):
         if session is None:
             import requests
 

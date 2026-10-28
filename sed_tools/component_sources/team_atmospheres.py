@@ -39,6 +39,7 @@ import numpy as np
 
 from ..filter_components import TEAM
 from ._common import DerivedCurve, SiteAtmosphere, write_site
+from ._original import CONNECT_TIMEOUT
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +70,7 @@ class CachingSession:
 
     def get(self, url: str, **kwargs):
         if url not in self._cache:
-            kwargs.setdefault("timeout", 300)
+            kwargs.setdefault("timeout", (CONNECT_TIMEOUT, 300))
             resp = self.session.get(url, **kwargs)
             resp.raise_for_status()
             if self.archive is not None:
@@ -95,7 +96,7 @@ class CachingSession:
 
 
 def _bytes(session, url: str) -> bytes:
-    resp = session.get(url, timeout=300)
+    resp = session.get(url, timeout=(CONNECT_TIMEOUT, 300))
     resp.raise_for_status()
     raw = resp.content
     head = raw[:512].lstrip().lower()

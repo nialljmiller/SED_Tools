@@ -503,3 +503,30 @@ def test_plain_http_only_when_tls_fails_both_ways(tmp_path, monkeypatch):
         ("GET", plain, False): ok})
     assert grabber.is_available() and grabber.base_url.startswith("http://")
     assert [c[1:3] for c in calls] == [(index, True), (index, False), (plain, False)]
+
+
+# ----------------------------------------------------------------------
+# Item 28: original-source downloads fail fast when a host is down
+# ----------------------------------------------------------------------
+def test_original_source_requests_use_a_ten_second_connect_timeout():
+    from sed_tools.component_sources._common import Table
+    from sed_tools.component_sources._original import CONNECT_TIMEOUT, Fetcher
+    from sed_tools.component_sources.skycalc import SkyCalcClient
+    from sed_tools.component_sources.team_atmospheres import CachingSession, _bytes
+
+    timeouts = []
+
+    def get(url, timeout=None, **kwargs):
+        timeouts.append(timeout)
+        raise requests.ConnectTimeout(url)
+
+    session = SimpleNamespace(get=get, headers={})
+    for request in (lambda: Table("https://host.invalid/t.dat").read(session),
+                    lambda: Fetcher(session).get("https://host.invalid/t.dat"),
+                    lambda: CachingSession(session).get("https://host.invalid/t.dat"),
+                    lambda: _bytes(session, "https://host.invalid/t.dat")):
+        with pytest.raises(requests.ConnectTimeout):
+            request()
+    assert CONNECT_TIMEOUT == 10.0
+    assert [t[0] for t in timeouts] == [CONNECT_TIMEOUT] * 4
+    assert SkyCalcClient(session=session).timeout[0] == CONNECT_TIMEOUT

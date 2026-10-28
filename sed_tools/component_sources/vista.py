@@ -18,6 +18,7 @@ import tarfile
 from dataclasses import dataclass
 
 from ._common import SimpleSource, Table, build_simple
+from ._original import CONNECT_TIMEOUT
 
 BUNDLE = "https://www.eso.org/sci/facilities/paranal/decommissioned/vircam/inst/Filters_QE_Atm_curves.tar.gz"
 _CACHE = {}
@@ -29,7 +30,7 @@ class TarMember(Table):
 
     def read(self, session):
         if self.url not in _CACHE:
-            resp = session.get(self.url, timeout=300)
+            resp = session.get(self.url, timeout=(CONNECT_TIMEOUT, 300))
             resp.raise_for_status()
             _CACHE[self.url] = resp.content
         with tarfile.open(fileobj=io.BytesIO(_CACHE[self.url]), mode="r:gz") as tf:

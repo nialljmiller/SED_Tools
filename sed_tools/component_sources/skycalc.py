@@ -46,6 +46,7 @@ from requests import RequestException
 
 from ..filter_components import ATMOSPHERE, AtmosphereGrid, AtmosphereSpec, DERIVED
 from ..filter_metadata import ENERGY, write_filter_file
+from ._original import CONNECT_TIMEOUT
 
 logger = logging.getLogger(__name__)
 
@@ -206,7 +207,7 @@ class SkyCalcClient:
 
     def __init__(self, session=None, timeout: float = 600.0, retries: int = 4,
                  base_url: str = BASE_URL, form_url: str = FORM_URL, interface: str = "auto",
-                 pause: float = 1.0, connect_timeout: float = 30.0):
+                 pause: float = 1.0, connect_timeout: float = CONNECT_TIMEOUT):
         if session is None:
             import requests
 
@@ -279,7 +280,8 @@ class SkyCalcClient:
         finally:
             if tmpdir:
                 try:
-                    self.session.get(f"{self.base_url}/api/rmtmp", params={"d": tmpdir}, timeout=60)
+                    self.session.get(f"{self.base_url}/api/rmtmp", params={"d": tmpdir},
+                                     timeout=(CONNECT_TIMEOUT, 60))
                 except RequestException as exc:
                     # The result is unaffected; only ESO's temporary directory is left behind.
                     logger.warning("Could not delete SkyCalc tmpdir %s on %s: %s", tmpdir, self.base_url, exc)

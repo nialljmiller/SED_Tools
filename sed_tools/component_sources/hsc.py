@@ -34,6 +34,7 @@ from pathlib import Path
 from ..filter_components import FILTER, TEAM, InstrumentManifest, add_component
 from ..filter_metadata import PHOTON, write_filter_file
 from ._common import SimpleSource, SiteAtmosphere, Table, build_simple, register_variant
+from ._original import CONNECT_TIMEOUT
 
 PAGE = "https://subarutelescope.org/Instruments/HSC/sensitivity.html"
 SUBARU = "https://subarutelescope.org/Instruments/HSC/txt"
@@ -107,7 +108,7 @@ def _user_filter_curves(session):
         table = Table(f"{SUBARU}/wHSC-{band}.txt", note="area-weighted mean")
         out.append((band, *table.read(session), table.url))
     url = f"{SUBARU}/wHSC-MBQ1.zip"
-    resp = session.get(url, timeout=300)
+    resp = session.get(url, timeout=(CONNECT_TIMEOUT, 300))
     resp.raise_for_status()
     with zipfile.ZipFile(io.BytesIO(resp.content)) as zf:
         names = set(zf.namelist())
