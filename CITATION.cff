@@ -8,5 +8,5 @@ authors:
 repository-code: "https://github.com/nialljmiller/SED_Tools"
 url: "https://github.com/nialljmiller/SED_Tools"
 license: MIT
-version: "0.4.1"
-date-released: "2026-10-25"
+version: "0.5.0"
+date-released: "2026-10-28"
