@@ -369,21 +369,20 @@ def run_cli(monkeypatch, capsys, *argv):
     return code, capsys.readouterr().out
 
 
-def test_cli_search_cite_and_info(root, njm, monkeypatch, capsys):
-    code, out = run_cli(monkeypatch, capsys, "filters-search", "--pivot", "4000", "-", "--fwhm", "-", "1400",
-                        "--where", "ABminusVega=:0.5", "--format", "json", "--base", str(root))
-    data = json.loads(out)
-    assert code == 0 and [b["band"] for b in data["bands"]] == ["g"]
+def test_search_and_cite_in_python(root, njm):
+    # The filters-search and filters-cite commands were dropped before release; the API stays.
+    result = Filters.search(pivot=(4000, None), fwhm=(None, 1400), where={"ABminusVega": (None, 0.5)},
+                            filter_root=root)
+    assert list(result["band"]) == ["g"]
     # Fac/Old has no properties file: a gap, reported, but not a failure.
-    assert data["errors"] == [] and data["gaps"] == ["Fac/Old: NJM has no properties file"]
+    assert result.attrs["errors"] == [] and result.attrs["gaps"] == ["Fac/Old: NJM has no properties file"]
+    assert list(Filters.search(wavelength=21000, filter_root=root)["band"]) == ["K"]
+    bibtex = Filters.cite("Other/IR", format="bibtex", filter_root=root)
+    assert bibtex.startswith("% No BibTeX served") and "@article{2020Cam.....1A" in bibtex
 
-    code, out = run_cli(monkeypatch, capsys, "filters-search", "--wavelength", "21000", "--base", str(root))
-    assert code == 0 and "K" in out and "1 band in 1 instrument" in out
-    assert "[filters] Fac/Old: NJM has no properties file" in out
 
-    code, out = run_cli(monkeypatch, capsys, "filters-cite", "Other/IR", "--format", "bibtex", "--base", str(root))
-    assert code == 0 and out.startswith("% No BibTeX served") and "@article{2020Cam.....1A" in out
-
+def test_cli_info(root, njm, monkeypatch, capsys):
+    Filters.search(filter_root=root, properties=False)  # index.json is cached; no info.json yet
     write_curve(root / "Fac" / "Cam" / "g.dat", 4800, 1200,
                 header="Wavelength,Transmission,DetectorType=photon;DetectorTypeSource=svo")
     code, out = run_cli(monkeypatch, capsys, "filters-info", "Fac/Cam", "--base", str(root), "--offline")

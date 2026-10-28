@@ -1209,9 +1209,13 @@ def build_all_products(
     ``conditions`` (``{"airmass": 1.2, "pwv": 2.5}``), the same recipes plus
     the instrument's own atmosphere, and the published curve plus that
     atmosphere when the published curve lacks one.
+
+    A recipe with optics or QE that only some bands have is not built; a
+    warning names it and the :func:`build_product` call that composes it.
     """
     instrument_dir = Path(instrument_dir)
     manifest = InstrumentManifest.load(instrument_dir)
+    _warn_partial_recipes(instrument_dir, manifest)
     recipes = [r for r in manifest.buildable() if not (r == FILTER and manifest.published.get("components") == FILTER)]
     built: List[Path] = [build_product(instrument_dir, r) for r in recipes]
     published_has_atm = all(
@@ -1232,6 +1236,32 @@ def build_all_products(
         for recipe in variants:
             built.append(build_product(instrument_dir, recipe, atmosphere=cond, atmosphere_root=atmosphere_root))
     return built
+
+
+def _warn_partial_recipes(instrument_dir: Path, manifest: InstrumentManifest) -> None:
+    """Warn about recipes with optics or QE that only some primary bands have.
+
+    :func:`build_all_products` builds a recipe only for every primary band,
+    so without this such a product silently does not appear.  SLOAN/SDSS is
+    one: its camera response exists for u ... z but not for the primed
+    filters, which are bands of their own.  A bare ``filter`` recipe is not
+    reported; for most instruments it would only copy filter-only curves.
+    """
+    bands = manifest.primary_bands()
+    recipes_by_bands: Dict[Tuple[str, ...], List[str]] = {}
+    for extra in ((OPTICS,), (QE,), (OPTICS, QE)):
+        roles = (FILTER,) + extra
+        covered = tuple(b for b in bands if manifest.cover(b, roles))
+        if covered and len(covered) < len(bands):
+            recipes_by_bands.setdefault(covered, []).append(recipe_name(roles))
+    for covered, recipes in recipes_by_bands.items():
+        missing = [b for b in bands if b not in covered]
+        logger.warning(
+            "%s/%s: %s not built, because only %d of %d bands have the components (none for %s). "
+            "Build for those bands with build_product(%r, %r, bands=%r)",
+            manifest.facility, manifest.instrument, ", ".join(recipes), len(covered), len(bands),
+            ", ".join(missing), str(instrument_dir), recipes[-1], list(covered),
+        )
 
 
 def add_component(

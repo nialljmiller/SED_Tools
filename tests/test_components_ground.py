@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import io
 import json
+import logging
 import zipfile
 
 import numpy as np
@@ -12,7 +13,8 @@ import pytest
 from sed_tools.combine_filters import write_filter_index
 from sed_tools.component_sources import gmos, hsc, legacy_surveys, sdss, ztf
 from sed_tools.filter_components import (FILTER, QE, ComponentError, InstrumentManifest, add_component,
-                                         build_product, compose_band, product_name, read_curve)
+                                         build_all_products, build_product, compose_band, product_name,
+                                         read_curve)
 from sed_tools.filter_metadata import PHOTON, read_filter_header, released_mesa_reads, write_filter_file
 
 WL = np.linspace(4000.0, 6000.0, 201)
@@ -289,7 +291,8 @@ def test_gmos_qe_epochs_are_variants_without_default(tmp_path):
     assert compose_band(inst, "g", "filter+qe", variants={"qe": "eev"}).transmission.max() == pytest.approx(0.8)
 
 
-def test_sdss_camera_responses_are_variants(tmp_path):
+def _sdss(tmp_path):
+    """SLOAN/SDSS built offline: published u ... z and gprime_filter, Gunn (2001) and Doi et al. (2010) curves."""
     from astropy.io import fits
 
     inst = tmp_path / "SLOAN" / "SDSS"
@@ -309,9 +312,34 @@ def test_sdss_camera_responses_are_variants(tmp_path):
     fits.HDUList(hdus).writeto(buf)
     files[sdss.GUNN] = buf.getvalue()
     sdss.build(tmp_path, session=_Session(files))
+    return inst
+
+
+def test_sdss_camera_responses_are_variants(tmp_path):
+    inst = _sdss(tmp_path)
     m = InstrumentManifest.load(inst)
     assert set(m.variants["filter+optics+qe"]) == {f"camcol{c}" for c in sdss.CAMCOLS} | {"gunn2001"}
     assert m.component_file("filter+optics+qe", "g") == "components/filter+optics+qe/g_gunn2001.dat"
     assert m.component_file(FILTER, "g") is None  # the primed USNO filter is not the camera's filter
     col3 = compose_band(inst, "g", "filter+optics+qe", variants={"filter+optics+qe": "camcol3"})
     assert col3.transmission.max() == pytest.approx(0.3)
+
+
+def test_sdss_camera_response_left_out_of_build_all_products_is_named(tmp_path, caplog):
+    # The primed filters are bands of their own (6c8739a), so filter+optics+qe
+    # covers u ... z only and build_all_products builds no product for it (0.4.1
+    # built one). It must say so and give the call that builds it.
+    inst = _sdss(tmp_path)
+    with caplog.at_level(logging.WARNING, logger="sed_tools.filter_components"):
+        built = build_all_products(inst)
+    assert built == []
+    assert not (inst / "products").exists()
+    bands = sorted(sdss.BANDS)
+    assert ("SLOAN/SDSS: filter+optics+qe not built, because only 5 of 6 bands have the components "
+            "(none for gprime_filter)") in caplog.text
+    assert f"build_product({str(inst)!r}, 'filter+optics+qe', bands={bands!r})" in caplog.text
+
+    product = build_product(inst, "filter+optics+qe", bands=bands)
+    assert product.name == "filter+optics+qe"
+    assert (product / product.name).read_text().split() == [f"{b}.dat" for b in bands]
+    assert all(released_mesa_reads(product / f"{b}.dat") for b in bands)

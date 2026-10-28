@@ -698,14 +698,11 @@ def print_filter_availability(info: dict) -> None:
     if info["published"] == "mixed":
         for band, recipe in info["published_bands"].items():
             print(f"    {band}: {recipe}")
-    comps = info["components"]
-    component_summary = (', '.join(comps) if comps else
-                         'available for selected bands' if info['partial_components'] else 'none identified')
-    _print_field("Separate components", component_summary)
+    _print_field("Separate components", _component_summary(info))
     if info["buildable"]:
         _print_field("Can be built", ", ".join(info["buildable"]))
     if info.get("variants"):
-        _print_field("Variants", _variants_summary(info["variants"]) + " (choose with --variant ROLE=NAME)")
+        _print_field("Variants (API only)", _variants_summary(info["variants"]))
     if info["component_status"]:
         _print_field("Note", info["component_status"])
     for note in info.get("notes") or []:
@@ -727,6 +724,13 @@ def print_filter_availability(info: dict) -> None:
         _print_field("Detector unverified for", ", ".join(assumed))
 
 
+def _component_summary(info: dict) -> str:
+    """The instrument's own separate components, e.g. ``filter, optics, qe``."""
+    if info["components"]:
+        return ", ".join(info["components"])
+    return "available for selected bands" if info["partial_components"] else "none identified"
+
+
 def _atmosphere_sites(info: dict) -> List[str]:
     """The instrument's own atmosphere sites, default first; empty when no atmosphere is offered."""
     if not info.get("atmosphere"):
@@ -741,15 +745,23 @@ def _atmosphere_sites(info: dict) -> List[str]:
 def _atmosphere_summary(info: dict) -> str:
     sites = _atmosphere_sites(info)
     if sites:
-        default = info.get("atmosphere_site") or (sites[0] if len(sites) == 1 else None)
-        names = ", ".join(f"{s} (default)" if s == default else s for s in sites)
-        text = f"can be added at its own site{'s' * (len(sites) > 1)}: {names}"
+        default = _default_site(info, sites)
+        text = f"can be added at its own site{'s' * (len(sites) > 1)}: {_site_names(sites, default)}"
         if default is None:
             text += "; no default, so choose one with --atmosphere-site"
         return text + " (sed-tools filters-atmospheres lists the conditions)"
     if info.get("platform") in ("space", "airborne"):
         return f"not applicable ({info['platform']}-based)"
     return "not offered (no site of its own assigned)"
+
+
+def _default_site(info: dict, sites: List[str]) -> Optional[str]:
+    """The instrument's default atmosphere site: the one it names, else its only site."""
+    return info.get("atmosphere_site") or (sites[0] if len(sites) == 1 else None)
+
+
+def _site_names(sites: List[str], default: Optional[str]) -> str:
+    return ", ".join(f"{s} (default)" if s == default else s for s in sites)
 
 
 def _default_variant(named: dict) -> Optional[str]:
@@ -764,10 +776,6 @@ def _variants_summary(variants: dict) -> str:
         names = ", ".join([f"{default} (default)"] * bool(default) + [n for n in named if n != default])
         parts.append(f"{role}: {names}" + ("" if default else f" (default: the standard {role} curve)"))
     return "; ".join(parts)
-
-
-SEARCH_COLUMNS = ["facility", "instrument", "band", "WavelengthPivot", "FWHM",
-                  "WavelengthMin", "WavelengthMax", "DetectorType"]
 
 
 def _catalogue_entry(facility: str, instrument: str, base: str, *, offline: bool) -> dict:
@@ -786,6 +794,12 @@ def _catalogue_entry(facility: str, instrument: str, base: str, *, offline: bool
     return entry
 
 
+def _print_filter_set(target: str, info: dict, catalogue: dict) -> None:
+    """The filters-info report: availability (Filters.available) and NJM's catalogue entry (_catalogue_entry)."""
+    print_filter_availability(info)
+    print_catalogue_entry(target, catalogue)
+
+
 def print_catalogue_entry(target: str, entry: dict) -> None:
     """Print the NJM description, licence summary and per-band properties of an instrument."""
     info, props = entry["info"] or {}, (entry["properties"] or {}).get("bands", {})
@@ -799,9 +813,9 @@ def print_catalogue_entry(target: str, entry: dict) -> None:
         _print_field("Catalogue", f"from the cached copy{when}; NJM could not be asked")
     licence = info.get("licence") or {}
     if licence:
-        _print_field("Licence", _licence_summary(licence) + f" Full text: sed-tools filters-cite {target}")
+        _print_field("Licence", _licence_summary(licence))
     if info.get("references"):
-        _print_field("Cite", f"{len(info['references'])} references; sed-tools filters-cite {target}")
+        _print_field("Cite", _cite_hint(target, info["references"]))
     bands = sorted(set(props) | set(info.get("bands", {})),
                    key=lambda b: (props.get(b, {}).get("WavelengthPivot") or float("inf"), b))
     if bands:
@@ -811,6 +825,11 @@ def print_catalogue_entry(target: str, entry: dict) -> None:
     if entry["errors"] and not info and not props:
         print(_wrap("so no description, licence or band properties are shown; "
                     "the availability above does not depend on them", indent=" " * 29, hanging=" " * 29))
+
+
+def _cite_hint(target: str, references: list) -> str:
+    """How many references NJM records for an instrument, and the API call that lists them with the licences."""
+    return f"{len(references)} references; in Python: Filters.cite('{target}')"
 
 
 def _first_sentence(text: str, limit: int = 200) -> str:
@@ -853,42 +872,6 @@ def _print_band_table(bands: List[str], props: dict, band_info: dict) -> None:
                 print(_wrap(description, indent=" " * 6, hanging=" " * 6))
 
 
-def _number_or_open(text: str) -> Optional[float]:
-    """A range end: a number, or '-'/'' for an open end; ValueError otherwise."""
-    if text.strip().lower() in ("", "-", "none", "inf", "-inf"):
-        return None
-    try:
-        return float(text)
-    except ValueError:
-        raise ValueError(f"expected a number, or '-' for an open end; got {text!r}") from None
-
-
-def _range_end(text: str) -> Optional[float]:
-    """argparse type for a range end on the command line (see _number_or_open)."""
-    try:
-        return _number_or_open(text)
-    except ValueError as exc:
-        raise argparse.ArgumentTypeError(str(exc)) from None
-
-
-def _where(items: Optional[List[str]]) -> Dict[str, object]:
-    """``KEY=LOW:HIGH`` (either end may be empty) or ``KEY=VALUE`` criteria for filters-search."""
-    criteria: Dict[str, object] = {}
-    for item in items or []:
-        key, sep, value = item.partition("=")
-        if not sep or not key:
-            raise ValueError(f"--where expects KEY=VALUE or KEY=LOW:HIGH, got {item!r}")
-        if ":" in value:
-            lo, _, hi = value.partition(":")
-            criteria[key] = (_number_or_open(lo), _number_or_open(hi))
-        else:
-            try:
-                criteria[key] = float(value)
-            except ValueError:
-                criteria[key] = value
-    return criteria
-
-
 _UNSTATED = "unstated"
 
 
@@ -900,14 +883,6 @@ def _airmass_arg(text):
         return float(text)
     except ValueError:
         raise argparse.ArgumentTypeError(f"expected a number or 'unstated', got {text!r}") from None
-
-
-def _variant_arg(text: str) -> Tuple[str, str]:
-    """argparse type for --variant: ``ROLE=NAME`` as ``(role, name)``."""
-    role, sep, name = text.partition("=")
-    if not sep or not role.strip() or not name.strip():
-        raise argparse.ArgumentTypeError(f"expected ROLE=NAME, e.g. filter=addem; got {text!r}")
-    return role.strip(), name.strip()
 
 
 def _add_filter_product_options(parser, *, components=None):
@@ -924,9 +899,6 @@ def _add_filter_product_options(parser, *, components=None):
     parser.add_argument("--pwv", type=float, help="Atmospheric precipitable water vapour (mm)")
     parser.add_argument("--atmosphere-site",
                         help="One of the instrument's own atmosphere sites (default: its default site)")
-    parser.add_argument("--variant", action="append", type=_variant_arg, metavar="ROLE=NAME",
-                        help="Use a named alternative curve for a component, e.g. filter=addem; "
-                             "repeatable. See the Variants line of filters-info")
     parser.add_argument("--allow-heavy", action="store_true", help="Permit large original-source downloads")
     parser.add_argument("--allow-partial", action="store_true", help="Use zero outside component wavelength coverage")
 
@@ -935,27 +907,44 @@ def _add_filter_product_options(parser, *, components=None):
 
 def _offer_composition(instrument_dir: Path) -> None:
     """After a download, offer to build a composed product; the build's errors propagate."""
+    info = _installed_availability(instrument_dir)
+    print_filter_availability(info)
+    if not _has_parts(info):
+        return
+    question = ("Build a composed version (e.g. filter only"
+                + (", or with atmosphere" if _atmosphere_sites(info) else "") + ")? [y/N] ")
+    if _yes(question):
+        _compose_interactively(instrument_dir, info)
+
+
+def _installed_availability(instrument_dir: Path) -> dict:
+    """Filters.available for an installed instrument directory, without asking any source."""
+    from .api import Filters
+
+    return Filters.available(instrument_dir.parent.name, instrument_dir.name,
+                             filter_root=instrument_dir.parent.parent, include_remote=False)
+
+
+def _has_parts(info: dict) -> bool:
+    """Whether a curve can be built from the instrument's own parts: components, an atmosphere site,
+    or an original-source builder that provides them."""
+    return bool(info["buildable"] or _atmosphere_sites(info)
+                or info["component_availability"]["status"] == "supported")
+
+
+def _compose_interactively(instrument_dir: Path, info: dict) -> None:
+    """Ask for the recipe, detector convention, large downloads and atmosphere, then build the product."""
     from .api import Filters
 
     filter_root = instrument_dir.parent.parent
-    info = Filters.available(instrument_dir.parent.name, instrument_dir.name,
-                             filter_root=filter_root, include_remote=False)
-    print_filter_availability(info)
     review = info["component_availability"]
-    sites = _atmosphere_sites(info)
-    if not info["buildable"] and not sites and review["status"] != "supported":
-        return
-    question = "Build a composed version (e.g. filter only" + (", or with atmosphere" if sites else "") + ")? [y/N] "
-    if not _yes(question):
-        return
     roles = _ask_recipe(info)
     request = {
         "components": roles,
-        "variants": _ask_variants(info.get("variants") or {}, roles),
         "detector_type": _ask_detector_type(),
         "allow_heavy": bool(review.get("large_download")
                             and _yes("Allow a large original-source download if needed? [y/N] ")),
-        "atmosphere": _ask_atmosphere(sites, info.get("atmosphere_site"), filter_root),
+        "atmosphere": _ask_atmosphere(_atmosphere_sites(info), info.get("atmosphere_site"), filter_root),
     }
     try:
         Filters.compose(instrument_dir, filter_root=filter_root, **request)
@@ -987,27 +976,6 @@ def _ask_recipe(info: dict) -> List[str]:
             print("  Use filter, optics, qe or published; the atmosphere is asked about separately.")
         elif roles:
             return list(roles)
-
-
-def _ask_variants(variants: dict, roles: List[str]) -> Optional[Dict[str, str]]:
-    """For each component of the recipe with named alternatives, ask which to use; None keeps the defaults."""
-    from .filter_components import parse_components
-
-    chosen = {}
-    for key, named in variants.items():
-        if not set(parse_components(key)) <= set(roles):
-            continue
-        default = _default_variant(named)
-        print(f"Variants of the {key} curve:")
-        for name in sorted(named, key=lambda n: n != default):  # the default first
-            label = f"{name} (default)" if name == default else name
-            print(_wrap(named[name].get("description") or "", indent=f"  {label:<20} ", hanging=" " * 23))
-        keep = default or "standard"
-        options = list(named) + ([] if default else ["standard"])
-        pick = _ask_option(f"{key} variant [{keep}]: ", options, default=keep)
-        if pick not in (default, "standard"):
-            chosen[key] = pick
-    return chosen or None
 
 
 def _ask_detector_type() -> Optional[str]:
@@ -1096,7 +1064,7 @@ def _composable_bands(instrument_dir: Path, request: Dict) -> Tuple[List[str], D
     for band in manifest.primary_bands():
         try:
             compose_band(instrument_dir, band, request["components"], atmosphere=request["atmosphere"],
-                         atmosphere_root=atmosphere_root, manifest=manifest, variants=request["variants"])
+                         atmosphere_root=atmosphere_root, manifest=manifest)
         except (ComponentError, OSError) as exc:
             failed[band] = str(exc)
         else:
@@ -1116,26 +1084,18 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> int:
     from .filter_library import FilterLibrary
 
     library = FilterLibrary(base_dir)
-    catalogue = library.facilities()
     shown: set = set()
-    _print_listing_errors(catalogue["errors"], shown)
-    facilities = catalogue["entries"]
-    if not facilities:
-        print("No facilities found.")
-        return 0
-
-    print(_wrap("Tags show where a download comes from, first choice first: local (installed), "
-                "njm (SED_Tools mirror), original (the instrument team's own files), "
-                "svo (SVO Filter Profile Service)."))
+    facilities = _listed_facilities(library, shown)
     failures: List[str] = []
-    while True:
-        selected = prompt_choice(_picker_rows(facilities, library), "Filter Facilities", multi=True)
+    download = lambda facility, instrument: _offer_download(library, facility, instrument, failures)
+    while facilities:
+        selected = prompt_choice(_picker_labels(facilities), "Filter Facilities", multi=True)
         if selected is None:
             break
         if len(selected) > 1:
             _download_every_instrument(library, [facilities[i] for i in selected], base_dir, failures, shown=shown)
             break
-        if not _browse_instruments(library, facilities[selected[0]], base_dir, failures, shown=shown):
+        if not _browse_instruments(library, facilities[selected[0]], download, shown=shown):
             break
     if not failures:
         return 0
@@ -1145,8 +1105,88 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> int:
     return 1
 
 
-#: Sources in the order Filters.fetch tries them.
+def run_filter_info_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> int:
+    """Pick instruments, as when downloading, and show what ``filters-info`` shows for each.
+
+    Returns 1 if any report was incomplete because a source could not be asked, else 0.
+    """
+    from .filter_library import FilterLibrary
+
+    library = FilterLibrary(base_dir)
+    shown: set = set()
+    facilities = _listed_facilities(library, shown)
+    incomplete: List[str] = []
+    show = lambda facility, instrument: _show_filter_set(library, facility, instrument, incomplete)
+    while facilities:
+        index = prompt_choice(_picker_labels(facilities), "Filter Facilities")
+        if index is None or not _browse_instruments(library, facilities[index], show, shown=shown):
+            break
+    return 1 if incomplete else 0
+
+
+def run_atmospheres_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> int:
+    """List the atmosphere sites and the conditions each has, as ``filters-atmospheres`` does."""
+    from .api import Filters
+
+    _print_atmosphere_grids(Filters.atmospheres(filter_root=base_dir), offline=False)
+    return 0
+
+
+def run_filter_compose_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> int:
+    """Pick an instrument and build a curve from its own parts, asking what is asked after a download.
+
+    The published curves are downloaded first unless installed; an instrument
+    without parts of its own is named in one line.  Errors propagate.
+    """
+    from .filter_library import FilterLibrary
+
+    library = FilterLibrary(base_dir)
+    picked = _pick_one_instrument(library)
+    if picked is None:
+        return 0
+    facility, instrument, _ = _picked_names(library, *picked)
+    info = library.available(facility, instrument)
+    if info.get("availability_source") == "unknown":
+        raise RuntimeError(f"cannot tell what {facility}/{instrument} is made of: " + "; ".join(info["errors"]))
+    if not _has_parts(info):
+        print(f"{facility}/{instrument} has no separate parts to build a filter curve from.")
+        return 0
+    directory = library.published(facility, instrument)
+    info = _installed_availability(directory)
+    print_filter_availability(info)
+    _compose_interactively(directory, info)
+    return 0
+
+
+def _pick_one_instrument(library) -> Optional[Tuple[dict, dict]]:
+    """The facility and instrument entries the user picks, or None if they quit."""
+    shown: set = set()
+    facilities = _listed_facilities(library, shown)
+    picked: List[Tuple[dict, dict]] = []
+
+    def pick(facility: dict, instrument: dict) -> bool:
+        picked.append((facility, instrument))
+        return False  # stop browsing
+
+    while facilities and not picked:
+        index = prompt_choice(_picker_labels(facilities), "Filter Facilities")
+        if index is None or not _browse_instruments(library, facilities[index], pick, shown=shown):
+            break
+    return picked[0] if picked else None
+
+
+def _listed_facilities(library, shown: set) -> List[dict]:
+    """The facilities the library lists; a listing failure is printed once."""
+    catalogue = library.facilities()
+    _print_listing_errors(catalogue["errors"], shown)
+    if not catalogue["entries"]:
+        print("No facilities found.")
+    return catalogue["entries"]
+
+
+#: Sources in the order Filters.fetch tries them, and how the browser names them.
 _SOURCE_ORDER = ("local", "njm", "original", "svo")
+_SOURCE_NAMES = {"njm": "NJM", "original": "the original source", "svo": "SVO"}
 
 
 def _fetch_key(entry: dict) -> str:
@@ -1154,40 +1194,9 @@ def _fetch_key(entry: dict) -> str:
     return entry.get("fetch_key") or entry["key"]
 
 
-def _picker_rows(entries: List[dict], library=None) -> List[str]:
-    """``label  description  [sources]`` per catalogue entry, cut with '…' to fit the terminal.
-
-    The sources are listed in the order a download tries them, leaving out NJM
-    when ``library`` finds the mirror unreachable.  The source tag is never
-    cut; the description is cut first, then the label.
-    """
-    usable = terminal_width() - 10 - 6  # the picker's margin and each row's "  12. " id
-    njm_listed = any("njm" in (e.get("sources") or []) for e in entries)
-    unused = {"njm"} if njm_listed and library is not None and not library.mirror.is_available() else set()
-    labels = [e.get("label") or e["key"] for e in entries]
-    descriptions = [" ".join(str(e.get("description") or "").split()) for e in entries]
-    tags = [_source_tag(e, unused) for e in entries]
-    tag_width = max(map(len, tags))
-    tag_room = tag_width + 2 if tag_width else 0
-    label_width = min(max(map(len, labels)), 28 if any(descriptions) else usable - tag_room)
-    description_width = min(max(map(len, descriptions)), usable - label_width - 2 - tag_room)
-    if description_width < 8:
-        description_width = 0
-    rows = []
-    for label, description, tag in zip(labels, descriptions, tags):
-        columns = [f"{_cut(label, label_width):<{label_width}}"]
-        if description_width:
-            columns.append(f"{_cut(description, description_width):<{description_width}}")
-        if tag_width:
-            columns.append(tag)
-        rows.append("  ".join(columns).rstrip())
-    return rows
-
-
-def _source_tag(entry: dict, unused: set) -> str:
-    """``[local,njm,...]``: the entry's sources in the order a download tries them, or "" for none."""
-    sources = sorted(set(entry.get("sources") or []) - unused, key=_source_rank)
-    return f"[{','.join(sources)}]" if sources else ""
+def _picker_labels(entries: List[dict]) -> List[str]:
+    """The name the pickers show for each catalogue entry: the library's label, nothing else."""
+    return [entry.get("label") or entry["key"] for entry in entries]
 
 
 def _source_rank(source: str) -> int:
@@ -1242,9 +1251,11 @@ def _download_every_instrument(library, facilities: List[dict], base_dir: str, f
             _fetch_instrument(library, _fetch_key(facility), _fetch_key(instrument), failures)
 
 
-def _browse_instruments(library, facility_entry: dict, base_dir: str, failures: List[str], *,
-                        shown: Optional[set] = None) -> bool:
-    """Pick instruments of one facility to download; returns False if the user quit."""
+def _browse_instruments(library, facility_entry: dict, act, *, shown: Optional[set] = None) -> bool:
+    """Pick instruments of one facility, calling ``act(facility_entry, instrument_entry)`` for each.
+
+    ``act`` returns whether to show the instrument list again.  Returns False if the user quit.
+    """
     facility = _fetch_key(facility_entry)
     result = library.instruments(facility_entry["key"])
     _print_listing_errors(result["errors"], set() if shown is None else shown)
@@ -1253,20 +1264,129 @@ def _browse_instruments(library, facility_entry: dict, base_dir: str, failures: 
         print(f"No instruments found for {facility}.")
         return True
     while True:
-        index = prompt_choice(_picker_rows(instruments, library), f"Instruments for {facility}", allow_back=True)
+        index = prompt_choice(_picker_labels(instruments), f"Instruments for {facility}", allow_back=True)
         if index is None:
             return False
-        if index == -1:
+        if index == -1 or not act(facility_entry, instruments[index]):
             return True
-        instrument = _fetch_key(instruments[index])
-        installed = Path(base_dir) / facility / instrument
-        if library.published_complete(installed):
-            print(f"{facility}/{instrument} is installed: {installed}")
-            _fetch_instrument(library, facility, instrument, failures, offer=True)
-        elif not input(f"Download {facility}/{instrument}? [Y/n] ").strip().lower().startswith("n"):
-            _fetch_instrument(library, facility, instrument, failures, offer=True)
-        if not _yes("Choose another instrument? [y/N] "):
-            return True
+
+
+def _offer_download(library, facility_entry: dict, instrument_entry: dict, failures: List[str]) -> bool:
+    """Describe a picked instrument, then download it unless the user declines.
+
+    Returns whether to show the instrument list again: at once when the
+    download is declined, else if the user asks for another instrument.
+    """
+    facility, instrument, installed = _picked_names(library, facility_entry, instrument_entry)
+    _print_pick_summary(library, facility, instrument, instrument_entry, installed)
+    if installed is None and input(f"Download {facility}/{instrument}? [Y/n] ").strip().lower().startswith("n"):
+        return True
+    _fetch_instrument(library, facility, instrument, failures, offer=True)
+    return _yes("Choose another instrument? [y/N] ")
+
+
+def _show_filter_set(library, facility_entry: dict, instrument_entry: dict, incomplete: List[str]) -> bool:
+    """Print what ``filters-info`` prints for a picked instrument; returns whether to pick another."""
+    facility, instrument, _ = _picked_names(library, facility_entry, instrument_entry)
+    info = library.available(facility, instrument)
+    _print_filter_set(f"{facility}/{instrument}", info,
+                      _catalogue_entry(facility, instrument, str(library.root), offline=False))
+    incomplete.extend(_availability_errors(info))
+    return _yes("Choose another instrument? [y/N] ")
+
+
+def _picked_names(library, facility_entry: dict, instrument_entry: dict) -> Tuple[str, str, Optional[Path]]:
+    """The names to fetch a picked instrument with (the library's ``fetch_key``), and its installed
+    directory when it holds the complete set, else None."""
+    facility, instrument = _fetch_key(facility_entry), _fetch_key(instrument_entry)
+    directory = library.root / facility / instrument
+    return facility, instrument, directory if library.published_complete(directory) else None
+
+
+def _print_pick_summary(library, facility: str, instrument: str, entry: dict, installed: Optional[Path]) -> None:
+    """Before the download question, a short version of what ``filters-info`` says about the instrument."""
+    info = library.available(facility, instrument)
+    catalogue = _catalogue_entry(facility, instrument, str(library.root), offline=False)
+    for line in _pick_summary(f"{facility}/{instrument}", entry, info, catalogue,
+                              _download_origin(library, entry, installed)):
+        print(line)
+
+
+#: The width of a summary line's ``  Name       : `` part.
+_FIELD_WIDTH = 15
+
+
+def _download_origin(library, entry: dict, installed: Optional[Path]) -> str:
+    """Where a download comes from: the installed copy, or the sources the library lists in download order.
+
+    The installed copy's full path is given when it fits the terminal beside
+    the field name, else its place in the filter directory.
+    """
+    if installed is not None:
+        text = f"installed in {installed}"
+        if len(text) > terminal_width() - _FIELD_WIDTH:
+            text = f"installed in the filter directory, as {installed.relative_to(library.root)}"
+        return text
+    sources = sorted(set(entry.get("sources") or []) - {"local"}, key=_source_rank)
+    njm_down = "njm" in sources and not library.mirror.is_available()
+    names = [_SOURCE_NAMES.get(source, source) for source in sources if not (source == "njm" and njm_down)]
+    if not names:
+        return "only the installed copy, which is incomplete" if "local" in (entry.get("sources") or []) \
+            else "no source lists it"
+    return ", then ".join(names) + ("; NJM is unreachable" if njm_down else "")
+
+
+def _pick_summary(target: str, entry: dict, info: dict, catalogue: dict, origin: str) -> List[str]:
+    """The lines of the summary: description, sources, bands, components, atmosphere and licence.
+
+    ``info`` is Filters.available's report and ``catalogue`` _catalogue_entry's,
+    as filters-info shows them; each line is cut with '…' to fit the terminal.
+    """
+    width = terminal_width()
+    label = lambda name: f"  {name:<{_FIELD_WIDTH - 4}}: "
+    field = lambda name, text: _cut(label(name) + " ".join(str(text).split()), width)
+    njm = catalogue["info"] or {}
+    description = entry.get("description") or _first_sentence(njm.get("description") or "")
+    count = len(info["bands"])
+    lines = ["", target + (f"  ({count} band{'s' * (count != 1)})" if count else "")]
+    if description:
+        lines.append(_cut("  " + " ".join(description.split()), width))
+    lines.append(field("From", origin))
+    lines += [field("Note", note) for note in [info.get("component_status"), *(info.get("notes") or [])] if note]
+    lines += [field("Unavailable", error) for error in info["errors"]]
+    bands = _names_to_fit(info["bands"], width - _FIELD_WIDTH) if info["bands"] else "not known"
+    lines.append(field("Bands", bands))
+    lines.append(field("Components", _curve_contents(info)))
+    lines.append(field("Separate", _component_summary(info)))
+    if info.get("variants"):
+        lines.append(field("Variants", "API only; " + _variants_summary(info["variants"])))
+    sites = _atmosphere_sites(info)
+    lines.append(field("Atmosphere", f"own site{'s' * (len(sites) > 1)}: "
+                       + _site_names(sites, _default_site(info, sites)) if sites else _atmosphere_summary(info)))
+    if njm.get("licence"):
+        lines.append(field("Licence", _licence_summary(njm["licence"])))
+    elif catalogue["errors"]:
+        lines.append(field("Licence", f"not known ({catalogue['errors'][0]})"))
+    if njm.get("references"):
+        lines.append(field("Cite", _cite_hint(target, njm["references"])))
+    return lines
+
+
+def _names_to_fit(names: List[str], room: int) -> str:
+    """``names`` joined with commas, cut after a name to fit ``room`` characters, ending '… (N more)'."""
+    for shown in range(len(names), -1, -1):
+        rest = len(names) - shown
+        text = ", ".join(names[:shown] + ([f"… ({rest} more)"] if rest else []))
+        if len(text) <= room or shown == 0:
+            return text
+
+
+def _curve_contents(info: dict) -> str:
+    """What each published curve contains, e.g. ``filter+optics+qe in each curve``."""
+    published = info["published"] or "unknown"
+    if published == "mixed":
+        return "differs by band: " + ", ".join(sorted(set(info["published_bands"].values())))
+    return published if published == "unknown" else f"{published} in each curve"
 
 
 def _fetch_instrument(library, facility: str, instrument: str, failures: List[str], *,
@@ -1299,7 +1419,22 @@ class _FilterSetOption:
             rel = path.relative_to(root)
         except ValueError:
             rel = path
-        self.label = f"{rel} ({len(list(path.glob('*.dat')))} filters)"
+        self.label = f"{rel} ({_set_curve_count(path)} filters)"
+
+
+def _set_curve_count(directory: Path) -> int:
+    """How many curves combine_filter_sets takes from a filter set.
+
+    Those its MESA index file lists (every ``*.dat`` without one), less its
+    manifest's ``archived_bands``; so NJM's ``_svo`` and ``_old`` copies beside
+    a set are not counted.
+    """
+    from .filter_components import archived_bands, index_listing
+
+    archived = archived_bands(directory)
+    listed = index_listing(directory)
+    return sum(1 for path in directory.glob("*.dat")
+               if path.stem not in archived and (listed is None or path.name in listed))
 
 
 def run_filter_combine_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
@@ -1583,6 +1718,10 @@ def menu() -> str:
     print("\n" + YELL + "-- Filters " + "-" * 39 + RESET)
     print(f"  {CYAN}1){RESET} Download Filters (NJM / SVO)")
     print(f"  {CYAN}2){RESET} Combine filter sets")
+    # Added after 0.4.1's twelve options, so the numbers people type keep their meaning.
+    print(f" {CYAN}13){RESET} Filter set information")
+    print(f" {CYAN}14){RESET} Atmosphere models for filters")
+    print(f" {CYAN}15){RESET} Build a filter curve from its parts (filter, optics, camera, atmosphere)")
 
     print("\n" + YELL + "-- Spectral grids " + "-" * 32 + RESET)
     print(f"  {CYAN}3){RESET} Download spectral grids (NJM / SVO / MSG / MAST)")
@@ -1618,6 +1757,9 @@ def menu() -> str:
         "10": "import",
         "11": "mesa_prepare",
         "12": "config",
+        "13": "filter_info",
+        "14": "atmospheres",
+        "15": "filter_compose",
         "q": "quit",
         "Q": "quit",
         "quit": "quit",
@@ -1726,36 +1868,6 @@ def _add_filter_catalogue_parsers(sub) -> None:
 
     fip.add_argument("--offline", action="store_true", help="Inspect local data without contacting sources")
     fip.add_argument("--json", action="store_true", help="Emit availability as JSON")
-
-    fsp = sub.add_parser("filters-search",
-                         help="Search NJM's filter catalogue by name, wavelength and properties (no SVO)")
-    fsp.add_argument("text", nargs="?", help="Case-insensitive substring of Facility/Instrument/Band")
-    fsp.add_argument("--facility", help="Facility name contains this")
-    fsp.add_argument("--instrument", help="Instrument name contains this")
-    fsp.add_argument("--band", help="Band name contains this")
-    fsp.add_argument("--wavelength", nargs="+", type=_range_end, metavar="Å",
-                     help="One value: bands covering it; two: bands overlapping that range")
-    fsp.add_argument("--pivot", nargs=2, type=_range_end, metavar=("LOW", "HIGH"),
-                     help="Pivot wavelength range in Å ('-' leaves an end open)")
-    fsp.add_argument("--fwhm", nargs=2, type=_range_end, metavar=("LOW", "HIGH"), help="FWHM range in Å")
-    fsp.add_argument("--detector-type", choices=["energy", "photon"])
-    fsp.add_argument("--where", action="append", metavar="KEY=VALUE|KEY=LOW:HIGH",
-                     help="Any properties.json column, e.g. ABminusVega=:0.5 or ColorMethod=true; repeatable")
-    fsp.add_argument("--columns", help="Comma-separated columns to show (default: %s)" % ",".join(SEARCH_COLUMNS))
-    fsp.add_argument("--names-only", action="store_true", help="Match names in index.json only; fetch no properties")
-    fsp.add_argument("--format", choices=["table", "csv", "json"], default="table")
-    fsp.add_argument("--base", default=str(FILTER_DIR_DEFAULT), help="Base filter directory (cache beside it)")
-    fsp.add_argument("--refresh", action="store_true", help="Ask NJM again instead of using the cache")
-    fsp.add_argument("--offline", action="store_true", help="Use the cached catalogue only")
-
-    fcip = sub.add_parser("filters-cite",
-                          help="Print references (BibTeX), acknowledgements and licences for instruments")
-    fcip.add_argument("targets", nargs="*",
-                      help="Facility/Instrument or Facility/Instrument/Band; default: every installed instrument")
-    fcip.add_argument("--format", choices=["text", "bibtex", "json"], default="text")
-    fcip.add_argument("--base", default=str(FILTER_DIR_DEFAULT), help="Base filter directory")
-    fcip.add_argument("--refresh", action="store_true", help="Use NJM's current info.json, not installed copies")
-    fcip.add_argument("--offline", action="store_true", help="Use installed and cached info.json only")
 
 
 def _add_filter_component_parsers(sub) -> None:
@@ -1953,29 +2065,18 @@ def _atmosphere_request(args, parser) -> Optional[Dict]:
     return atmosphere
 
 
-def _variant_selection(args, parser) -> Optional[Dict[str, str]]:
-    """``--variant ROLE=NAME`` options as the ``variants`` argument of Filters.fetch/compose."""
-    selection: Dict[str, str] = {}
-    for role, name in args.variant or []:
-        if selection.get(role, name) != name:
-            parser.error(f"--variant gives two {role} variants: {selection[role]} and {name}")
-        selection[role] = name
-    return selection or None
-
-
 def _cmd_filters(args, parser):
     """``filters`` and ``filters-compose``: download (or browse) an instrument, optionally composing it."""
     from .api import Filters
 
-    variants = _variant_selection(args, parser)
     if not args.target:
         if any((args.components, args.bands, args.detector_type, args.airmass is not None,
-                args.pwv is not None, args.atmosphere_site, args.allow_heavy, args.allow_partial, variants)):
+                args.pwv is not None, args.atmosphere_site, args.allow_heavy, args.allow_partial)):
             parser.error("component options require a Facility/Instrument target")
         return run_filters_flow(base_dir=args.base)
     options = dict(filter_root=args.base, components=args.components, atmosphere=_atmosphere_request(args, parser),
                    bands=args.bands, detector_type=args.detector_type,
-                   allow_heavy=args.allow_heavy, allow_partial=args.allow_partial, variants=variants)
+                   allow_heavy=args.allow_heavy, allow_partial=args.allow_partial)
     try:
         if args.cmd == "filters-compose":
             Filters.compose(args.target, **options)
@@ -2004,7 +2105,7 @@ def _atmosphere_error(exc: Exception, args) -> str:
     except (ComponentError, OSError, RuntimeError) as lookup_error:
         return f"{exc} (its atmosphere sites could not be listed: {lookup_error})"
     sites = _atmosphere_sites(info)
-    default = info.get("atmosphere_site") or (sites[0] if len(sites) == 1 else None)
+    default = _default_site(info, sites)
     if not args.atmosphere_site and len(sites) > 1 and default is None:
         return (f"{directory.parent.name}/{directory.name} has several atmosphere sites "
                 f"({', '.join(sites)}) and no default; choose one with --atmosphere-site")
@@ -2069,8 +2170,7 @@ def _cmd_filters_info(args, parser):
     if args.json:
         print(json.dumps(dict(info, catalogue=catalogue), indent=2))
     else:
-        print_filter_availability(info)
-        print_catalogue_entry("/".join(target), catalogue)
+        _print_filter_set("/".join(target), info, catalogue)
     # NJM's catalogue (description, licence, band properties) is an extra: without it the
     # availability report still stands, so only an incomplete availability report fails.
     return 1 if _availability_errors(info) else 0
@@ -2086,140 +2186,21 @@ def _availability_errors(info: dict) -> List[str]:
             if source not in fallback for message in messages]
 
 
-def _cmd_filters_search(args, parser):
-    from .api import Filters
-
-    wavelength = args.wavelength
-    if wavelength is not None and (len(wavelength) > 2 or wavelength == [None]):
-        parser.error("--wavelength takes one value or a LOW HIGH range")
-    try:
-        where = _where(args.where)
-    except ValueError as exc:
-        parser.error(str(exc))
-    try:
-        result = Filters.search(
-            args.text, facility=args.facility, instrument=args.instrument, band=args.band,
-            wavelength=(wavelength[0] if len(wavelength) == 1 else tuple(wavelength)) if wavelength else None,
-            pivot=tuple(args.pivot) if args.pivot else None, fwhm=tuple(args.fwhm) if args.fwhm else None,
-            detector_type=args.detector_type, where=where, properties=not args.names_only,
-            filter_root=args.base, refresh=args.refresh, offline=args.offline)
-    except (CatalogueError, ValueError) as exc:
-        print(f"[filters] {exc}")
-        return 1
-    columns = args.columns.split(",") if args.columns else SEARCH_COLUMNS
-    unknown = [c for c in columns if c not in result.columns and c not in SEARCH_COLUMNS]
-    if unknown:
-        parser.error(f"unknown columns: {', '.join(unknown)}")
-    _print_search_result(result, [c for c in columns if c in result.columns], args.format)
-    # Gaps (instruments NJM serves no properties for) are printed but are not failures.
-    return 1 if result.attrs.get("errors") else 0
-
-
-def _print_search_result(result, columns: List[str], fmt: str) -> None:
-    shown = result[columns]
-    if fmt == "csv":
-        print(shown.to_csv(index=False), end="")
-    elif fmt == "json":
-        print(json.dumps({"bands": json.loads(shown.to_json(orient="records")),
-                          "units": result.attrs.get("units", {}),
-                          "errors": result.attrs.get("errors", []),
-                          "gaps": result.attrs.get("gaps", [])}, indent=2))
-    elif shown.empty:
-        print("No bands match.")
-    else:
-        print(_table_text(shown, terminal_width()))
-        n_inst = len(result[["facility", "instrument"]].drop_duplicates())
-        print(f"\n{len(result)} band{'s' * (len(result) != 1)} in "
-              f"{n_inst} instrument{'s' * (n_inst != 1)}")
-    if fmt != "json":
-        for message in result.attrs.get("gaps", []) + result.attrs.get("errors", []):
-            print(_wrap(f"[filters] {message}", hanging="  "))
-
-
-#: Shorter headers for filters-search tables too wide for the terminal.
-_SHORT_HEADERS = {"WavelengthPivot": "Pivot", "WavelengthMin": "Min", "WavelengthMax": "Max",
-                  "WavelengthMean": "Mean", "WavelengthEff": "Eff", "DetectorType": "Detector"}
-
-
-def _table_text(frame, width: int) -> str:
-    """``frame`` as a text table no wider than ``width``.
-
-    Long headers are shortened first, then the widest text cells are cut with
-    '…'; numbers are never cut, so a table of many numeric columns can still
-    be wider.
-    """
-    import pandas as pd
-
-    columns = list(frame.columns)
-    numeric = {c: pd.api.types.is_numeric_dtype(frame[c]) and not pd.api.types.is_bool_dtype(frame[c])
-               for c in columns}
-    cells = {c: ["-" if pd.isna(v) else f"{v:.6g}" if numeric[c] else str(v) for v in frame[c]] for c in columns}
-    headers = {c: c for c in columns}
-    widths = {c: max(len(headers[c]), *map(len, cells[c])) for c in columns}
-    gaps = 2 * (len(columns) - 1)
-    if sum(widths.values()) + gaps > width:
-        headers = {c: _SHORT_HEADERS.get(c, c) for c in columns}
-        widths = {c: max(len(headers[c]), *map(len, cells[c])) for c in columns}
-    while sum(widths.values()) + gaps > width:
-        cuttable = [c for c in columns if not numeric[c] and widths[c] > max(6, len(headers[c]))]
-        if not cuttable:
-            break
-        widths[max(cuttable, key=widths.get)] -= 1
-
-    def row(values):
-        return "  ".join(f"{_cut(v, widths[c]):>{widths[c]}}" if numeric[c] else f"{_cut(v, widths[c]):<{widths[c]}}"
-                         for c, v in zip(columns, values)).rstrip()
-
-    lines = [row([headers[c] for c in columns])]
-    lines += [row([cells[c][i] for c in columns]) for i in range(len(frame))]
-    return "\n".join(lines)
-
-
-def _cmd_filters_cite(args, parser):
-    from .api import Filters
-    from .filter_catalogue import format_bibtex, format_citations
-
-    try:
-        result = Filters.citations(*args.targets, filter_root=args.base,
-                                   refresh=args.refresh, offline=args.offline)
-    except ValueError as exc:
-        parser.error(str(exc))
-    if args.format == "json":
-        print(json.dumps(result, indent=2))
-    elif args.format == "bibtex":
-        print(format_bibtex(result), end="")
-        for error in result["errors"]:
-            print(f"[filters] {error}", file=sys.stderr)
-    else:
-        print(_wrap_citations(format_citations(result), terminal_width()), end="")
-    return 1 if result["errors"] else 0
-
-
-def _wrap_citations(text: str, width: int) -> str:
-    """Plain-text citations filled to ``width``; the BibTeX after the 'BibTeX' heading is left as it is."""
-    head, heading, bibtex = text.partition("\nBibTeX\n")
-    lines = []
-    for line in head.split("\n"):
-        if len(line) <= width:
-            lines.append(line)
-            continue
-        lead = line[:len(line) - len(line.lstrip())]
-        marker = re.match(r"\s*(- |\[\d+\] )?", line).group(0)
-        lines.append(textwrap.fill(line.strip(), width, initial_indent=lead, subsequent_indent=" " * len(marker),
-                                   break_on_hyphens=False, break_long_words=False))
-    return "\n".join(lines) + heading + bibtex
-
-
 def _cmd_filters_atmospheres(args, parser):
     from .api import Filters
 
     grids = Filters.atmospheres(filter_root=args.base, include_remote=not args.offline)
     if args.json:
         print(json.dumps(grids, indent=2))
-        return 0
+    else:
+        _print_atmosphere_grids(grids, offline=args.offline)
+    return 0
+
+
+def _print_atmosphere_grids(grids: dict, *, offline: bool) -> None:
     if not grids:
-        print("No atmosphere grids " + ("cached" if args.offline else "found"))
-        return 0
+        print("No atmosphere grids " + ("cached" if offline else "found"))
+        return
     for site, grid in grids.items():
         print(f"\n{site}" + (f"  ({grid['kind']})" if grid.get("kind") else ""))
         _print_field("Conditions", _conditions_text(grid))
@@ -2232,7 +2213,6 @@ def _cmd_filters_atmospheres(args, parser):
             _print_field("Source", grid["source"])
         if grid.get("citation"):
             _print_field("Cite", grid["citation"])
-    return 0
 
 
 def _cmd_filters_inventory(args, parser):
@@ -2445,8 +2425,6 @@ _COMMANDS = {
     "filters-combine": _cmd_filters_combine,
     "filters-detector": _cmd_filters_detector,
     "filters-info": _cmd_filters_info,
-    "filters-search": _cmd_filters_search,
-    "filters-cite": _cmd_filters_cite,
     "filters-atmospheres": _cmd_filters_atmospheres,
     "filters-inventory": _cmd_filters_inventory,
     "filters-build-components": _cmd_filters_build_components,
@@ -2497,6 +2475,9 @@ def _run_menu() -> int:
         "grids": lambda: run_spectra_flow(source="all"),
         "filters": run_filters_flow,
         "filters_combine": run_filter_combine_flow,
+        "filter_info": run_filter_info_flow,
+        "atmospheres": run_atmospheres_flow,
+        "filter_compose": run_filter_compose_flow,
         "rebuild": run_rebuild_flow,
         "combine": run_combine_flow,
         "ml_completer": run_ml_completer_flow,

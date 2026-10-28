@@ -10,15 +10,18 @@ index file whose contents list those curve filenames.
 from __future__ import annotations
 
 import argparse
+import logging
 import os
 from pathlib import Path
 from typing import List, Optional, Sequence, Union
 
-from .filter_components import COMPONENTS_DIR, archived_bands, is_auxiliary_path
+from .filter_components import COMPONENTS_DIR, archived_bands, index_listing, is_auxiliary_path
 from .filter_metadata import copy_filter_file, migrate_filter_file
 from .models import FILTER_DIR_DEFAULT
 
 PathLike = Union[str, os.PathLike[str]]
+
+logger = logging.getLogger(__name__)
 
 
 def find_filter_sets(base_dir: Optional[PathLike] = None) -> List[Path]:
@@ -66,10 +69,7 @@ def resolve_filter_sources(source: PathLike, base_dir: PathLike) -> List[Path]:
         if candidate.is_file() and candidate.suffix.lower() == ".dat":
             return [candidate]
         if candidate.is_dir():
-            files = sorted(
-                child for child in candidate.iterdir()
-                if child.is_file() and child.suffix.lower() == ".dat"
-            )
+            files = _set_curves(candidate)
             if files:
                 return files
 
@@ -82,11 +82,42 @@ def resolve_filter_sources(source: PathLike, base_dir: PathLike) -> List[Path]:
     raise FileNotFoundError(f"Could not find .dat filters for input: {source}")
 
 
+def _set_curves(directory: Path) -> List[Path]:
+    """The curves of one filter-set directory that belong in a combined set.
+
+    Those its MESA index file lists (every ``*.dat`` without one), less the
+    bands its manifest lists under ``archived_bands``.  Other curve files
+    beside the set, such as NJM's ``_svo`` and ``_old`` copies, are left out
+    with a warning.
+    """
+    present = sorted(child for child in directory.iterdir()
+                     if child.is_file() and child.suffix.lower() == ".dat")
+    archived = archived_bands(directory)
+    current = [path for path in present if path.stem not in archived]
+    listed = index_listing(directory)
+    if listed is None:
+        return current
+    missing = [name for name in listed if not (directory / name).is_file()]
+    if missing:
+        raise FileNotFoundError(
+            f"{directory / directory.name} lists {', '.join(missing)}, not found in {directory}; "
+            "restore the files or correct the index file")
+    unlisted = [path.name for path in current if path.name not in listed]
+    if unlisted:
+        logger.warning("%s: leaving out %s, which its index file %s does not list",
+                       directory, ", ".join(unlisted), directory.name)
+    return [path for path in current if path.name in listed]
+
+
 def unique_filter_target(output_dir: Path, source_file: Path) -> Path:
     """Choose a non-conflicting output name for a duplicate filter file."""
     parent_names = [parent.name for parent in source_file.parents[:2] if parent.name]
     prefix = "_".join(reversed(parent_names))
     stem = f"{prefix}_{source_file.stem}" if prefix else source_file.stem
+    # MESA names a band after the text before the first dot of its file name
+    # (Cameras/Sony.A200 would give "Cameras_Sony"), so the name made here has
+    # none: "." becomes "p", as in component_sources._original.safe_band.
+    stem = stem.replace(".", "p")
     target = output_dir / f"{stem}{source_file.suffix}"
 
     counter = 2
@@ -119,7 +150,11 @@ def combine_filter_sets(
     instrument: Optional[str] = None,
     on_conflict: str = "rename",
 ) -> Path:
-    """Combine filter files or filter-set directories into one filter set."""
+    """Combine filter files or filter-set directories into one filter set.
+
+    A directory gives the curves its MESA index file lists (every ``*.dat``
+    without one), less its manifest's ``archived_bands``.
+    """
     if not inputs:
         raise ValueError("Provide at least one filter file or filter-set directory to combine")
 
