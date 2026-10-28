@@ -101,7 +101,7 @@ Launch the interactive menu:
 sed-tools
 ```
 
-Options 1-12 are numbered as in 0.4.1. Two filter options follow them: 13 shows what `sed-tools filters-info` shows for an instrument picked from the lists, and 14 builds a filter curve from an instrument's own parts (filter, optics, camera, atmosphere), with the questions asked after a download.
+The menu has four filter options: 1 downloads filters, 2 combines filter sets, 3 shows what `sed-tools filters-info` shows for an instrument picked from the lists, and 4 builds a filter curve from an instrument's own parts (filter, optics, camera, atmosphere), with the questions asked after a download. Options 5-7 are the spectral grids, 8-10 machine learning and 11-14 the tools (14 is Config). In 0.4.1 the filter options were 1 and 2 only, so 0.4.1's options 3-12 are now 5-14.
 
 ### Direct Commands
 
