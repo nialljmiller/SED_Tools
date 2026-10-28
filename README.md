@@ -101,7 +101,7 @@ Launch the interactive menu:
 sed-tools
 ```
 
-Options 1-12 are numbered as in 0.4.1. Three filter options follow them: 13 shows what `sed-tools filters-info` shows for an instrument picked from the lists, 14 lists the atmosphere models (`sed-tools filters-atmospheres`), and 15 builds a filter curve from an instrument's own parts (filter, optics, camera, atmosphere), with the questions asked after a download.
+Options 1-12 are numbered as in 0.4.1. Two filter options follow them: 13 shows what `sed-tools filters-info` shows for an instrument picked from the lists, and 14 builds a filter curve from an instrument's own parts (filter, optics, camera, atmosphere), with the questions asked after a download.
 
 ### Direct Commands
 
@@ -158,7 +158,6 @@ sed-tools config --set /path/to/data --move
 | `grids` | `--wavelength LOW HIGH` | Keep only this wavelength range (Å) |
 | `filters`, `filters-compose` | `--atmosphere-site SITE` | One of the instrument's own atmosphere sites (default: its default site) |
 | `filters`, `filters-compose` | `--airmass unstated` | `--airmass` also accepts `unstated`, for a team atmosphere whose source gives no airmass |
-| `filters-atmospheres` (new) | `--base`, `--offline`, `--json` | List the atmosphere sites and the airmasses and PWVs each one has |
 | `filters-build-components` | `--archive DIR` | Keep every raw download here with its URL, time and SHA-256 (`skycalc`, `team_atmospheres`) |
 | `combine` | `--grids NAME ...` | Names of the local spectral grids to combine (no prompts) |
 | `ml_generator` | `--trials N` | With `--auto`: number of hyperparameter search trials (default 20) |
@@ -171,7 +170,7 @@ Changed meaning:
 
 ### `sed-tools filters`
 
-Download photometric filter transmission curves interactively. The pickers merge the instruments installed locally, the NJM mirror, the original-source builders and the SVO Filter Profile Service, and show each product once, by name, in numbered columns as in 0.4.1. Picking an instrument shows a short summary before the download question: its description, where the download comes from (the installed copy, or NJM, the original source and SVO in the order a download tries them), its bands, what each curve contains, its separate components, its atmosphere sites and its licence. Names use NJM's spelling where NJM has the product; the old spellings (`PLANCK/HFI`, `Gemini/GMOS-N`, `CTIO/S-PLUS`, ...) still work as input. See "NJM is optional" below for the order of sources.
+Download photometric filter transmission curves interactively. The pickers merge the instruments installed locally, the NJM mirror, the original-source builders and the SVO Filter Profile Service, and show each product once, by name, in numbered columns as in 0.4.1. Picking a facility first lists its instruments with their one-line descriptions. Picking an instrument shows a short summary before the download question: its description, where the download comes from (the installed copy, or NJM, the original source and SVO in the order a download tries them), its bands, what each curve contains, its separate components, its atmosphere sites and its licence. Names use NJM's spelling where NJM has the product; the old spellings (`PLANCK/HFI`, `Gemini/GMOS-N`, `CTIO/S-PLUS`, ...) still work as input. See "NJM is optional" below for the order of sources.
 
 ```bash
 # Interactive facility/instrument/filter selection
@@ -233,7 +232,7 @@ cache/njm/              beside filters/: NJM's index.json, properties.json and i
 - **MESA index file.** Named after the instrument directory. MESA loads only the curves it lists, so files beside it that it does not list (such as NJM's superseded `<band>_svo` copies) are not loaded.
 - **`manifest.json`.** `bands`; `published` and `published_bands` (what each published curve contains, e.g. `filter+qe`); `components` (role, then band or `*`, then a file under `components/`); `detector_type`, `detector_types` and `detector_type_sources`; `variants` (alternative component curves, used only when selected with `variants=` in Python); `default_site`, `atmosphere_sites` and `ground_based`; `sources`, `notes` and `outside_range`; and `archived_bands` (superseded copies kept beside the set, never part of `bands` or the MESA index). `variants`, `atmosphere_sites` and `archived_bands` are written only when set.
 - **Products.** A product directory's name records what was selected: `+<role>_<variant>` for a variant, `+atm_<label>` for an atmosphere, `+detector_<type>` for a detector override (e.g. `products/filter+qe+qe_single_layer/`).
-- **Atmospheres.** `atmospheres/<site>/manifest.json` records the site's kind (`team` or `derived`), observing conditions, model, model version, citation and usage terms; `sed-tools filters-atmospheres` lists them.
+- **Atmospheres.** `atmospheres/<site>/manifest.json` records the site's kind (`team` or `derived`), observing conditions, model, model version, citation and usage terms; `Filters.atmospheres()` lists them, and the composition prompt offers an instrument's own sites with their sources.
 - **`properties.json` and `info.json`** beside the curves describe exactly those curves, so SED_Tools prefers them to NJM's current files.
 
 #### NJM is optional
@@ -1048,7 +1047,6 @@ info.covers_range(teff_min=5000, teff_max=6000)
 | `sed-tools ml_completer train` | `SED.ml_completer().train(...)` |
 | `sed-tools ml_generator train` | `SED.ml_generator().train(...)` |
 | `sed-tools ml_generator generate` | `SED.ml_generator().generate(...)` |
-| `sed-tools filters-atmospheres` | `Filters.atmospheres()` |
 | `sed-tools grids --grids X --flux-unit flam` | `SED.fetch('X', flux_unit='flam')` |
 
 ---

@@ -696,7 +696,7 @@ def test_offer_composition_asks_again_for_an_airmass_that_is_not_a_number(tmp_pa
     monkeypatch.setattr(filters, "atmospheres", classmethod(lambda cls, *a, **k: {}))
     monkeypatch.setattr(cli, "print_filter_availability", lambda info: None)
     monkeypatch.setattr(filters, "compose", classmethod(lambda cls, *a, **k: built.append(k["atmosphere"])))
-    answer(monkeypatch, "y", "1", "", "y", "high", "1.2", "")
+    answer(monkeypatch, "y", "1", "", "1", "high", "1.2", "")  # site 1 of the numbered atmosphere choice
     cli._offer_composition(tmp_path / "Fac" / "Cam")
     assert "'high' is not a number or 'unstated'" in capsys.readouterr().out
     assert built == [{"site": "paranal", "airmass": 1.2, "pwv": None}]

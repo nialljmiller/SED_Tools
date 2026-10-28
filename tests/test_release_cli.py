@@ -285,7 +285,7 @@ def test_availability_lists_every_atmosphere_site(capsys):
     cli.print_filter_availability(_availability(atmosphere=True, atmosphere_sites=["hopkins_2mass", "ctio_2mass"]))
     out = " ".join(capsys.readouterr().out.split())
     assert ("Atmosphere : can be added at its own sites: hopkins_2mass, ctio_2mass; no default, "
-            "so choose one with --atmosphere-site") in out
+            "so choose one with --atmosphere-site (in Python, Filters.atmospheres() lists the conditions)") in out
     assert "None" not in out
 
 
@@ -302,8 +302,9 @@ def test_airmass_defaults_to_the_first_condition_the_site_has(monkeypatch, capsy
     assert prompts[0] == f"Airmass [{shown}]: "
 
 
-def test_composition_does_not_mention_an_atmosphere_that_is_not_offered(tmp_path, monkeypatch, composed):
-    monkeypatch.setattr(Filters, "available", classmethod(lambda cls, *a, **k: _availability()))
+@pytest.mark.parametrize("platform", ["space", "ground"])
+def test_composition_does_not_mention_an_atmosphere_that_is_not_offered(tmp_path, monkeypatch, composed, platform):
+    monkeypatch.setattr(Filters, "available", classmethod(lambda cls, *a, **k: _availability(platform=platform)))
     prompts = answer(monkeypatch, "y", "1", "")
     cli._offer_composition(tmp_path / "Fac" / "Cam")
     assert prompts[0] == "Build a composed version (e.g. filter only)? [y/N] "
@@ -392,16 +393,59 @@ def test_atmosphere_component_without_airmass_is_a_usage_error(monkeypatch, caps
     assert "--components atmosphere needs --airmass" in capsys.readouterr().err
 
 
-def test_filters_atmospheres_lists_every_site(monkeypatch, capsys):
-    monkeypatch.setattr(Filters, "atmospheres", classmethod(lambda cls, *a, **k: {
-        "paranal": {"airmass": [1.0, 1.5], "pwv": [2.5], "unstated_airmass": False, "kind": "derived",
-                    "altitude_m": 2635.0, "model": "ESO SkyCalc", "model_version": "2.0", "source": "ESO",
-                    "citation": "Noll et al. 2012"},
-        "ctio_2mass": {"airmass": [], "pwv": [], "unstated_airmass": True, "source": "2MASS team"}}))
-    assert run_cli(monkeypatch, "filters-atmospheres", "--offline") == 0
+SITES = {
+    "paranal": {"airmass": [1.0, 1.5], "pwv": [2.5, 5.0], "unstated_airmass": False, "kind": "derived",
+                "source": "ESO SkyCalc sky model (Noll et al. 2012)"},
+    "paranal_vircam": {"airmass": [1.0, 2.0], "pwv": [1.0, 3.0], "unstated_airmass": False, "kind": "team",
+                       "source": "Model atmospheres distributed with ESO's VIRCAM curves"},
+    "lsst_std": {"airmass": [1.0, 1.2], "pwv": [], "unstated_airmass": False,
+                 "source": "Rubin fiducial atmosphere (MODTRAN, with aerosols), lsst/throughputs v1.9.2"}}
+
+
+@pytest.fixture
+def sites(monkeypatch):
+    """Filters.atmospheres from the cache, as SITES; returns the include_remote of each call."""
+    calls = []
+    monkeypatch.setattr(Filters, "atmospheres", classmethod(
+        lambda cls, filter_root=None, include_remote=True: calls.append(include_remote) or SITES))
+    return calls
+
+
+def test_pressing_enter_at_the_atmosphere_choice_folds_in_none(tmp_path, monkeypatch, composed, sites, capsys):
+    monkeypatch.setattr(Filters, "available", classmethod(lambda cls, *a, **k: _availability(
+        atmosphere=True, atmosphere_site="lsst_std", atmosphere_sites=["lsst_std"])))
+    prompts = answer(monkeypatch, "y", "1", "", "")
+    cli._offer_composition(tmp_path / "LSST" / "LSST")
+    assert [p for p in prompts if p.startswith("Atmosphere")] == ["Atmosphere [0, none]: "]
+    assert composed[0][1]["atmosphere"] is None and sites == [False]  # the cache only: every site is cached
     out = capsys.readouterr().out
-    assert "paranal  (derived)" in out and "airmass 1, 1.5; pwv 2.5 mm" in out
-    assert "ctio_2mass" in out and "airmass 'unstated' (as published)" in out and "2MASS team" in out
+    assert ("Atmosphere to fold in:\n"
+            "  0. none                     the curve without atmosphere\n"
+            "  1. lsst_std (default site)  Rubin fiducial atmosphere (MODTRAN, with aerosols…\n"
+            ) in out
+
+
+def test_an_atmosphere_is_chosen_by_number_generic_sites_last(tmp_path, monkeypatch, composed, sites, capsys):
+    monkeypatch.setattr(Filters, "available", classmethod(lambda cls, *a, **k: _availability(
+        atmosphere=True, atmosphere_site="paranal", atmosphere_sites=["paranal", "paranal_vircam"])))
+    answer(monkeypatch, "y", "1", "", "2", "", "")
+    cli._offer_composition(tmp_path / "Paranal" / "VISTA")
+    assert composed[0][1]["atmosphere"] == {"site": "paranal", "airmass": 1.0, "pwv": 2.5}
+    out = capsys.readouterr().out
+    assert "  1. paranal_vircam (team)            Model atmospheres" in out
+    assert "  2. paranal (default site, derived)  ESO SkyCalc sky model" in out
+    assert "  paranal: airmass 1, 1.5; pwv 2.5, 5 mm" in out
+
+
+def test_an_atmosphere_can_be_named_and_a_site_without_a_grid_is_said_so(tmp_path, monkeypatch, composed, sites,
+                                                                            capsys):
+    monkeypatch.setattr(Filters, "available", classmethod(lambda cls, *a, **k: _availability(
+        atmosphere=True, atmosphere_sites=["hopkins_2mass", "lsst_std"])))
+    answer(monkeypatch, "y", "1", "", "LSST_STD", "1.2")
+    cli._offer_composition(tmp_path / "Fac" / "Cam")
+    assert composed[0][1]["atmosphere"] == {"site": "lsst_std", "airmass": 1.2, "pwv": None}
+    assert "  1. hopkins_2mass  not downloaded yet" in capsys.readouterr().out
+    assert sites == [False, True]  # hopkins_2mass is not cached, so NJM is asked
 
 
 def _summary_inputs(monkeypatch, info=None, catalogue=None):
@@ -469,10 +513,39 @@ def test_the_pickers_show_names_only(gaia, tmp_path, monkeypatch, capsys):
     answer(monkeypatch, "1", "q")
     assert cli.run_filters_flow(str(tmp_path)) == 0
     out = capsys.readouterr().out
-    assert "   1. GAIA" in out and "Gaia mission" not in out
-    assert not any(text in out for text in ("[njm", "[svo", "Tags show", "Evans et al."))
+    assert "   1. GAIA" in out and "Gaia mission" not in out  # no facility descriptions are invented
+    pickers = out.split("\nGAIA: 5 instruments\n")[0] + out.split("Instruments for GAIA")[1]
+    assert not any(text in pickers for text in ("[njm", "[svo", "Tags show", "Evans et al."))
     assert cli._picker_labels(GAIA_INSTRUMENTS + [{"key": "Other"}]) == [
         "DR2", "DR2r", "GAIA", "GAIA0", "Gaia2m", "Other"]
+
+
+def test_picking_a_facility_lists_its_instruments_with_their_descriptions_once(gaia, tmp_path, monkeypatch,
+                                                                               capsys):
+    answer(monkeypatch, "1", "/DR2", "q")
+    cli.run_filters_flow(str(tmp_path))
+    out = capsys.readouterr().out
+    block = out.split("\nGAIA: 5 instruments\n")[1].split("\n\nInstruments for GAIA")[0]
+    assert block.splitlines() == [
+        "  DR2     Gaia DR2 passbands (Evans et al. 2018)",
+        "  DR2r    Gaia DR2 revised passbands (Evans et al. 2018)",
+        "  GAIA    Gaia DR3 passbands + BP bright/faint (Maíz Apellániz & Weiler 2018)",
+        "  GAIA0   Gaia pre-launch passbands (Jordi et al. 2010)",
+        "  Gaia2m  Revised passbands for Gaia DR2."]
+    assert out.count("GAIA: 5 instruments") == 1  # not again when the list is filtered
+
+
+def test_the_description_block_names_in_full_and_cuts_descriptions_at_the_edge(monkeypatch, capsys):
+    monkeypatch.setenv("COLUMNS", "40")
+    cli._print_instrument_descriptions("Cameras", [
+        {"key": "PointGrey_Grasshopper2_14S5C", "description": "Point Grey Grasshopper2 14S5C colour camera"},
+        {"key": "SQM", "description": ""}])
+    assert capsys.readouterr().out.splitlines() == [
+        "", "Cameras: 2 instruments",
+        "  PointGrey_Grasshopper2_14S5C  Point G…",
+        "  SQM                           no desc…"]
+    cli._print_instrument_descriptions("Solo", [{"key": "A" * 40, "description": "text"}])
+    assert capsys.readouterr().out.splitlines() == ["", "Solo: 1 instrument", "  " + "A" * 40]
 
 
 @pytest.mark.parametrize("columns", ["80", "120"])
@@ -609,17 +682,6 @@ def test_menu_13_shows_filters_info_for_a_picked_instrument(gaia, monkeypatch, c
     assert prompts[4] == "> "  # back at the facility picker, then the menu
 
 
-def test_menu_14_lists_the_atmosphere_models(monkeypatch, capsys):
-    monkeypatch.setattr(cli, "_print_banner", lambda: None)
-    monkeypatch.setattr(Filters, "atmospheres", classmethod(lambda cls, *a, **k: {
-        "paranal": {"airmass": [1.0], "pwv": [2.5], "unstated_airmass": False, "kind": "derived"}}))
-    answer(monkeypatch, "14", "q")
-    assert cli._run_menu() == 0
-    out = capsys.readouterr().out
-    assert " 13) Filter set information\n 14) Atmosphere models for filters\n" in out
-    assert "paranal  (derived)" in out and "airmass 1; pwv 2.5 mm" in out
-
-
 @pytest.fixture
 def lsst(tmp_path, monkeypatch):
     """Facility LSST with instrument LSST, whose curves download to tmp_path/LSST/LSST; returns the compose calls."""
@@ -636,24 +698,25 @@ def lsst(tmp_path, monkeypatch):
     return composed
 
 
-def test_menu_15_builds_a_curve_from_the_parts_of_a_picked_instrument(lsst, tmp_path, monkeypatch, capsys):
+def test_menu_14_builds_a_curve_from_the_parts_of_a_picked_instrument(lsst, tmp_path, monkeypatch, capsys):
     parts = _availability(facility="LSST", instrument="LSST", buildable=["filter", "filter+optics+qe"],
                           components=["filter", "optics", "qe"])
     _summary_inputs(monkeypatch, parts)
     monkeypatch.setattr(cli, "_installed_availability", lambda directory: parts)
-    prompts = answer(monkeypatch, "15", "1", "1", "2", "", "q")
+    prompts = answer(monkeypatch, "14", "1", "1", "2", "", "q")
     assert cli._run_menu() == 0
-    assert " 15) Build a filter curve from its parts (filter, optics, camera, atmosphere)\n" in capsys.readouterr().out
+    assert (" 13) Filter set information\n"
+            " 14) Build a filter curve from its parts (filter, optics, camera, atmosphere)\n") in capsys.readouterr().out
     assert prompts[3:5] == ["Choose a recipe [1]: ", "Detector convention [inherit], energy or photon: "]
     assert lsst == [((tmp_path / "LSST" / "LSST",), {"filter_root": tmp_path, "components": ["filter", "optics", "qe"],
                                                      "detector_type": None, "allow_heavy": False, "atmosphere": None})]
 
 
-def test_menu_15_says_in_one_line_when_an_instrument_has_no_parts(lsst, monkeypatch, capsys):
+def test_menu_14_says_in_one_line_when_an_instrument_has_no_parts(lsst, monkeypatch, capsys):
     _summary_inputs(monkeypatch, _availability(facility="LSST", instrument="LSST", buildable=[], components=[],
                                                component_availability={"status": "total-only", "builder": None}))
     monkeypatch.setattr(cli, "_installed_availability", lambda directory: pytest.fail("nothing is downloaded"))
-    answer(monkeypatch, "15", "1", "1", "q")
+    answer(monkeypatch, "14", "1", "1", "q")
     assert cli._run_menu() == 0
     out = capsys.readouterr().out
     assert "\nLSST/LSST has no separate parts to build a filter curve from.\n" in out and lsst == []
@@ -674,8 +737,8 @@ def test_the_combine_wizard_counts_only_the_curves_combine_takes(tmp_path):
     assert cli._FilterSetOption(archived, tmp_path).label == "NJM/Archived (1 filters)"
 
 
-def test_the_removed_search_and_cite_commands_are_usage_errors(monkeypatch, capsys):
-    for command in ("filters-search", "filters-cite"):
+def test_the_removed_commands_are_usage_errors(monkeypatch, capsys):
+    for command in ("filters-search", "filters-cite", "filters-atmospheres"):
         with pytest.raises(SystemExit) as stop:
             run_cli(monkeypatch, command)
         assert stop.value.code == 2 and f"invalid choice: '{command}'" in capsys.readouterr().err
