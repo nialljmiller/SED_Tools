@@ -163,16 +163,8 @@ def _search_all_datasets(f, expected_len: int) -> Optional[np.ndarray]:
 
 def is_index_grid(wl: np.ndarray) -> bool:
     """Detect if wavelength array is actually an index grid (0, 1, 2, ...)."""
-    if wl.size < 4:
+    if wl.size < 4 or wl[0] > 2:
         return False
-    if wl[0] > 2:
-        return False
-    if np.allclose(wl, np.arange(wl.size), atol=0.01):
-        return True
-    if np.allclose(wl, np.arange(1, wl.size + 1), atol=0.01):
-        return True
-    steps = np.diff(wl)
-    if np.allclose(steps, 1.0, atol=0.01):
-        return True
-    
-    return False
+    return (np.allclose(wl, np.arange(wl.size), atol=0.01)
+            or np.allclose(wl, np.arange(1, wl.size + 1), atol=0.01)
+            or np.allclose(np.diff(wl), 1.0, atol=0.01))
