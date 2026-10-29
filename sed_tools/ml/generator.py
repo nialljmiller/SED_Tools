@@ -1,32 +1,8 @@
-#!/usr/bin/env python3
-"""
-ML-Powered SED Generator (PyTorch)
-===================================
+"""SEDGenerator, the engine that makes a whole SED from (Teff, logg, [M/H]) alone, with no input spectrum.
 
-Generates complete Spectral Energy Distributions directly from stellar parameters.
-No input spectrum required - just provide (Teff, logg, [M/H]) and get a full SED.
-
-This is fundamentally different from the SED Completer:
-- Completer: Takes incomplete SED + params → extends to full range
-- Generator: Takes params only → creates complete SED from scratch
-
-Model Storage
--------------
-Each trained model is stored in its own directory:
-    model.pt              - PyTorch state dict
-    config.json           - Architecture, scaler params, wavelength grid
-    training_plots.png    - Loss curves
-    prediction_examples.png - Sample predictions
-
-Usage
------
-    # Training
-    generator = SEDGenerator()
-    generator.train('path/to/library', 'models/my_generator', epochs=200)
-    
-    # Inference
-    generator = SEDGenerator('models/my_generator')
-    wavelength, flux = generator.generate(teff=5500, logg=4.5, meta=0.0)
+A model folder holds model.pt (the network's state dict), config.json (model_type 'sed_generator', architecture,
+scalers, wavelength grid, parameter ranges), training_plots.png and prediction_examples.png. The old import path is
+sed_tools.ml_sed_generator, also run as python -m sed_tools.ml_sed_generator. The completer is ml/completer.py.
 """
 
 import json
@@ -175,15 +151,7 @@ class SEDGenerator:
         library_path: str,
         max_samples: int = 10000,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """
-        Prepare training data from flux cube.
-        
-        Returns
-        -------
-        params : (N, 3) array of [teff, logg, meta]
-        flux : (N, n_wavelengths) array
-        masks : (N, n_wavelengths) validity masks
-        """
+        """params (N, 3: teff, logg, meta), flux and validity masks (N, n_wavelengths), float32, from the flux cube."""
         print("Loading flux cube...")
         teff_grid, logg_grid, meta_grid, wavelengths, flux_cube = self._load_flux_cube(library_path)
         
@@ -220,13 +188,7 @@ class SEDGenerator:
         flux: np.ndarray,
         wavelengths: np.ndarray,
     ) -> Tuple[Optional[str], Optional[Tuple[np.ndarray, np.ndarray]]]:
-        """
-        Resample one grid spectrum to the model grid.
-        
-        Returns ``(None, (flux, valid_mask))``, or ``(reason, None)`` when the
-        spectrum cannot be used. Points outside the original coverage get
-        flux 1e-30 and mask 0.
-        """
+        """(None, (flux, valid_mask)) on the model grid, 1e-30 and 0 outside the coverage; or (reason, None)."""
         if np.any(flux <= 0) or np.any(~np.isfinite(flux)):
             return "non-positive or non-finite flux", None
         
@@ -316,13 +278,9 @@ class SEDGenerator:
         library_path: str,
         max_samples: int,
     ) -> Tuple[Tuple[np.ndarray, np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray, np.ndarray]]:
-        """
-        Prepare and normalise the training data and split it 80/20.
+        """The normalised (params, flux, masks) training and validation sets, split 80/20.
 
-        Returns the training and validation sets, each as normalised
-        (params, flux, masks). Also used by ml_optimized.AutoTrainer, so its
-        trials see the data train() does.
-        """
+        AutoTrainer (ml/tuning.py) uses it too, so its trials see the data train() does."""
         from sklearn.model_selection import train_test_split
 
         params, flux, masks = self._prepare_training_data(library_path, max_samples)
@@ -344,11 +302,7 @@ class SEDGenerator:
         masks: np.ndarray,
         library_path: str,
     ) -> Tuple[np.ndarray, np.ndarray]:
-        """
-        Fit ``self.scaler_params`` and return the normalised parameters and log10 fluxes.
-        
-        The flux scaler uses valid points only. Both arrays are float32.
-        """
+        """Fit self.scaler_params (the flux scaler on valid points only); the normalised parameters and log10 fluxes."""
         print("Normalizing data...")
         flux_log = np.log10(np.maximum(flux, 1e-30))
         
@@ -426,14 +380,12 @@ class SEDGenerator:
             true = f_val[idx]
             mask = m_val[idx]
             
-            # Denormalize
             true_log = true * self.scaler_params['flux_log_std'] + self.scaler_params['flux_log_mean']
             pred_log = pred * self.scaler_params['flux_log_std'] + self.scaler_params['flux_log_mean']
             
             true_flux = 10 ** true_log
             pred_flux = 10 ** pred_log
             
-            # Denorm params for title
             teff = p_val[idx, 0] * self.scaler_params['teff_std'] + self.scaler_params['teff_mean']
             logg = p_val[idx, 1] * self.scaler_params['logg_std'] + self.scaler_params['logg_mean']
             meta = p_val[idx, 2] * self.scaler_params['meta_std'] + self.scaler_params['meta_mean']
@@ -468,10 +420,9 @@ class SEDGenerator:
         
         torch.save(self.model.state_dict(), path / self.MODEL_FILE)
         
-        # Store training parameter samples for visualization (subsample if too many)
+        # At most 500 training points, for the parameter-space plot of generate_with_outputs
         train_params = getattr(self, '_train_params_raw', None)
         if train_params is not None:
-            # Keep at most 500 points for visualization
             if len(train_params) > 500:
                 idx = np.random.choice(len(train_params), 500, replace=False)
                 train_params = train_params[idx]
@@ -740,9 +691,7 @@ def _plot_parameter_space(train_params, teff, logg, meta, teff_range, logg_range
     plt.close(fig)
 
 
-# =============================================================================
-# Interactive Workflow (CLI Option 6)
-# =============================================================================
+# Interactive workflow (sed-tools main menu item 9)
 
 def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> Optional[int]:
     """
@@ -898,9 +847,7 @@ def _list_menu(models_dir: str) -> None:
             print(f"    Architecture: 3 → {arch.get('hidden_layers', [])} → {arch.get('output_dim', '?')}")
 
 
-# =============================================================================
-# CLI Entry Point
-# =============================================================================
+# python -m sed_tools.ml_sed_generator
 
 def main():
     """CLI entry point."""
@@ -909,14 +856,12 @@ def main():
     parser = argparse.ArgumentParser(description="ML SED Generator")
     subparsers = parser.add_subparsers(dest='command', required=True)
     
-    # Train
     train_p = subparsers.add_parser('train', help='Train generator')
     train_p.add_argument('--library', required=True)
     train_p.add_argument('--output', required=True)
     train_p.add_argument('--epochs', type=int, default=200)
     train_p.add_argument('--batch-size', type=int, default=64)
     
-    # Generate
     gen_p = subparsers.add_parser('generate', help='Generate SED')
     gen_p.add_argument('--model', required=True)
     gen_p.add_argument('--teff', type=float, required=True)
@@ -924,7 +869,6 @@ def main():
     gen_p.add_argument('--meta', type=float, required=True)
     gen_p.add_argument('--output', required=True)
     
-    # List
     list_p = subparsers.add_parser('list', help='List generators')
     list_p.add_argument('--models-dir', default='models')
     

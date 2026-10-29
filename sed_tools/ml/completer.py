@@ -1,36 +1,8 @@
-#!/usr/bin/env python3
-"""
-ML-Powered SED Completer (PyTorch)
-===================================
+"""SEDCompleter, the engine that extends an SED beyond its wavelength range: a black body refined by a neural network.
 
-Extends incomplete SEDs to broader wavelength ranges using:
-1. Black body radiation as physical baseline
-2. Neural network trained on complete SEDs for refinement
-
-The tool only appends/extends - never modifies existing wavelength coverage.
-
-Model Storage
--------------
-Each trained model is stored in its own directory containing:
-    model.pt              - PyTorch state dict
-    config.json           - Architecture, scaler params, wavelength grid
-    training_plots.png    - Loss curves
-    prediction_examples.png - Sample predictions vs ground truth
-
-Usage
------
-    # Training
-    completer = SEDCompleter()
-    completer.train('path/to/library', 'path/to/model_dir', epochs=100)
-    
-    # Inference
-    completer = SEDCompleter('path/to/model_dir')
-    wl, flux = completer.complete_sed(wavelength, flux, teff=5500, logg=4.5, meta=0.0)
-    
-CLI
----
-    python -m sed_tools.ml_sed_completer train --library /path/to/lib --output models/my_model
-    python -m sed_tools.ml_sed_completer complete --model models/my_model --input sed.txt --output extended.txt
+A model folder holds model.pt (the network's state dict), config.json (architecture, scalers, wavelength grid),
+training_plots.png and prediction_examples.png. The old import path is sed_tools.ml_sed_completer, which also runs
+as python -m sed_tools.ml_sed_completer. sed_tools.ml (ml/__init__.py) is the 0.4.1 API over this engine.
 """
 
 import json
@@ -38,8 +10,6 @@ import logging
 import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
-
-logger = logging.getLogger("sed_tools.ml_sed_completer")
 
 import numpy as np
 
@@ -50,6 +20,8 @@ from ..ui_utils import (ask_number as _ask_number, banner as _banner, menu_choic
 from .common import (DEFAULT_WL_MAX, DEFAULT_WL_MIN, DEFAULT_WL_POINTS, action_menu, data_loaders, fit, log_grid, mlp,
                      model_configs, normalised_params, param_scaler, print_libraries, resample, sample_spectra,
                      training_libraries)
+
+logger = logging.getLogger("sed_tools.ml_sed_completer")
 
 # Training uses only samples whose input window is at least this fraction valid.
 MIN_WINDOW_COVERAGE = 0.8
@@ -70,15 +42,8 @@ def _warn_window_coverage(window: np.ndarray, wavelength: np.ndarray) -> None:
 
 
 def _blend_with_blackbody(wl_out, log_dist, wl_pred, pred, bb_flux):
-    """
-    Blend the network prediction into the black body away from the data edge.
-    
-    ``log_dist`` is each output point's distance from the edge of the input
-    data in decades of wavelength. The prediction's weight falls as
-    exp(-log_dist / 0.5): the network is trusted for about half a decade (a
-    factor of ~3), then the black body takes over. Log wavelength because
-    stellar spectra behave more uniformly there.
-    """
+    """The prediction blended into the black body. Its weight is exp(-log_dist / 0.5), log_dist being the distance
+    from the data edge in decades (spectra are more uniform in log wavelength): it fades over about half a decade."""
     blend_decades = 0.5
     pred_interp = np.interp(wl_out, wl_pred, pred, left=pred[0], right=pred[-1])
     weight_ml = np.exp(-log_dist / blend_decades)
@@ -210,7 +175,6 @@ class SEDCompleter:
         wl_ext, flux_ext = completer.complete_sed(wl, flux, teff=5500, logg=4.5, meta=0.0)
     """
     
-    # Standard filenames within model directory
     MODEL_FILE = "model.pt"
     CONFIG_FILE = "config.json"
     TRAINING_PLOT = "training_plots.png"
@@ -249,13 +213,7 @@ class SEDCompleter:
         return np.array(normalised_params(self.scaler_params, teff, logg, meta))
     
     def _load_flux_cube(self, library_path: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-        """
-        Load flux cube from binary file.
-        
-        Returns
-        -------
-        teff, logg, meta, wavelengths, flux_cube
-        """
+        """teff, logg, meta, wavelengths and flux cube of library_path/flux_cube.bin."""
         return load_cube(os.path.join(library_path, "flux_cube.bin"))
     
     def _prepare_training_data(
@@ -263,23 +221,8 @@ class SEDCompleter:
         library_path: str,
         max_samples: int = 5000,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-        """
-        Prepare training data from flux cube.
-        
-        Uses randomized "known" regions to train the network to extend from
-        any part of the spectrum (UV-only, optical-only, IR-only, etc.).
-        
-        Returns
-        -------
-        X_input : np.ndarray
-            Input SED (known region, zero-padded to fixed size)
-        y_output : np.ndarray
-            Output SED (full spectrum for extension)
-        params : np.ndarray
-            Stellar parameters (teff, logg, meta)
-        masks : np.ndarray
-            Valid data masks (1 = valid, 0 = invalid/missing)
-        """
+        """X (an input window at a random place, so the network learns to extend from any part of a spectrum), y (the
+        whole spectrum), params and masks (1 where y is valid outside the window), float32, from the flux cube."""
         print("Loading flux cube...")
         teff, logg, meta, wavelengths, flux_cube = self._load_flux_cube(library_path)
         
@@ -327,12 +270,7 @@ class SEDCompleter:
         wavelengths: np.ndarray,
         known_width: int,
     ) -> Tuple[Optional[str], Optional[Tuple[np.ndarray, np.ndarray, np.ndarray]]]:
-        """
-        Cut one training sample from a grid spectrum at a random input window.
-        
-        Returns ``(None, (X_known, y_full, ext_mask))``, or ``(reason, None)``
-        when the spectrum cannot be used.
-        """
+        """(None, (X_known, y_full, ext_mask)) cut from a spectrum at a random input window, or (reason, None)."""
         valid_original = (flux > 0) & np.isfinite(flux)
         if valid_original.sum() < 100:
             return "fewer than 100 positive, finite flux points", None
@@ -461,16 +399,11 @@ class SEDCompleter:
         masks: np.ndarray,
         library_path: str,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """
-        Fit ``self.scaler_params`` and return the network inputs and targets.
-        
-        Fluxes are scaled in log10, using valid points only. Returns
-        ``(X_combined, y_norm, masks)`` as float32, where ``X_combined`` is
-        the normalised input window followed by the three parameters.
-        """
+        """Fit self.scaler_params; (X_combined, y_norm, masks) as float32, X_combined being the normalised log10 input
+        window followed by the three normalised parameters."""
         print("Normalizing data...")
         
-        # Floor at 1e-20 so log10 has no -inf; the floor values are excluded below
+        # Floor at 1e-20 so log10 has no -inf. The > -25 tests below keep the floor (log10 = -20).
         X_log = np.log10(np.maximum(X, 1e-20))
         y_log = np.log10(np.maximum(y, 1e-20))
         
@@ -531,7 +464,6 @@ class SEDCompleter:
         ax.grid(True, alpha=0.3)
         ax.set_yscale('log')
         
-        # Mark best epoch
         best_epoch = np.argmin(history['val_loss']) + 1
         best_loss = min(history['val_loss'])
         ax.axvline(best_epoch, color='g', linestyle='--', alpha=0.7, label=f'Best: epoch {best_epoch}')
@@ -561,7 +493,6 @@ class SEDCompleter:
         
         self.model.eval()
         
-        # Select random examples
         indices = np.random.choice(len(X_val), min(n_examples, len(X_val)), replace=False)
         
         fig, axes = plt.subplots(2, 3, figsize=(15, 10))
@@ -578,24 +509,20 @@ class SEDCompleter:
             y_true = y_val[idx]
             mask = masks[idx] if masks is not None else np.ones_like(y_true)
             
-            # Denormalize for plotting
             y_true_log = y_true * self.scaler_params['ext_log_std'] + self.scaler_params['ext_log_mean']
             y_pred_log = y_pred * self.scaler_params['ext_log_std'] + self.scaler_params['ext_log_mean']
             
             y_true_flux = 10 ** y_true_log
             y_pred_flux = 10 ** y_pred_log
             
-            # Full wavelength grid (output is now full spectrum)
             wl = self.wavelength_grid
-            
-            # Only plot valid (masked) regions - these are the extension points
+            # The extension points: valid and outside the input window
             valid = mask > 0.5
             
             if valid.sum() > 0:
                 ax.loglog(wl[valid], y_true_flux[valid], 'b-', alpha=0.7, label='True', linewidth=1.5)
                 ax.loglog(wl[valid], y_pred_flux[valid], 'r--', alpha=0.7, label='Predicted', linewidth=1.5)
                 
-                # Calculate errors only on valid points
                 rel_error = np.median(np.abs(y_pred[valid] - y_true[valid]) / (np.abs(y_true[valid]) + 1e-8)) * 100
                 coverage = valid.sum() / len(valid) * 100
                 
@@ -641,26 +568,18 @@ class SEDCompleter:
         if n == 0:
             return
         
-        # Determine grid size (max 3 columns)
         cols = 3
         rows = (n + cols - 1) // cols
         
         fig, axes = plt.subplots(rows, cols, figsize=(5*cols, 4*rows))
-        
-        # Handle single subplot case
         if n == 1:
             axes = np.array([axes])
-        
-        # Flatten for easy indexing if multiple rows
         ax_flat = axes.flatten()
         
         for i, (fname, wl_in, flux_in, wl_out, flux_out) in enumerate(examples):
             ax = ax_flat[i]
-            
-            # Plot extended (background, red)
+            # The extended SED behind, in red; the original in front, in blue
             ax.loglog(wl_out, flux_out, 'r-', alpha=0.6, linewidth=2, label='Extended')
-            
-            # Plot original (foreground, blue)
             ax.loglog(wl_in, flux_in, 'b-', alpha=0.8, linewidth=1.5, label='Original')
             
             ax.set_title(fname, fontsize=10, pad=5)
@@ -669,11 +588,10 @@ class SEDCompleter:
             ax.tick_params(labelsize=8)
             ax.grid(True, alpha=0.3, which='both')
             
-            # Only add legend to the first plot to reduce clutter
+            # One legend, on the first plot, to reduce clutter
             if i == 0:
                 ax.legend(fontsize=8, loc='best')
         
-        # Hide empty subplots
         for j in range(i+1, len(ax_flat)):
             ax_flat[j].axis('off')
             
@@ -710,11 +628,9 @@ class SEDCompleter:
         path = Path(path)
         path.mkdir(parents=True, exist_ok=True)
         
-        # Save PyTorch model
         model_file = path / self.MODEL_FILE
         torch.save(self.model.state_dict(), model_file)
         
-        # Build config
         self.config = {
             'architecture': {
                 'input_dim': self.model.input_dim,
@@ -757,7 +673,6 @@ class SEDCompleter:
         if not path.is_dir():
             raise ValueError(f"Model path must be a directory: {path}")
         
-        # Load config
         config_file = path / self.CONFIG_FILE
         with open(config_file, 'r') as f:
             self.config = json.load(f)
@@ -765,17 +680,15 @@ class SEDCompleter:
         self.scaler_params = self.config['scaler_params']
         self.wavelength_grid = np.array(self.config['wavelength_grid'])
         
-        # Restore region indices if available
         regions = self.config.get('regions', {})
         self._known_start = regions.get('known_start')
         self._known_end = regions.get('known_end')
         self._known_width = regions.get('known_width')
         
-        # Configs written before the window was stored use the central one
+        # A config without the stored window gets the central one
         if self._known_start is None or self._known_end is None:
             self._use_central_window()
         
-        # Rebuild model architecture
         arch = self.config['architecture']
         self.model = SEDCompleterNetwork(
             input_dim=arch['input_dim'],
@@ -784,7 +697,6 @@ class SEDCompleter:
             dropout=arch['dropout'],
         )
         
-        # Load weights
         model_file = path / self.MODEL_FILE
         state_dict = torch.load(model_file, map_location=self.device, weights_only=True)
         self.model.load_state_dict(state_dict)
@@ -873,13 +785,8 @@ class SEDCompleter:
         return wl_out, flux_out
 
     def _predict_grid_flux(self, wavelength, flux, teff, logg, meta) -> np.ndarray:
-        """
-        Run the network on an SED and return its predicted flux on ``self.wavelength_grid``.
-        
-        The input is always the stored central window of the model grid, with
-        1e-20 wherever the SED does not reach; a warning says so when that is
-        more than training allowed.
-        """
+        """The network's flux on self.wavelength_grid for an SED. Its input is the stored central window, 1e-20 where
+        the SED does not reach; a warning says when that is more than training allowed."""
         import torch
 
         _warn_window_coverage(self.wavelength_grid[self._known_start:self._known_end], wavelength)
@@ -933,9 +840,7 @@ class SEDCompleter:
         return models
 
 
-# =============================================================================
-# CLI Interface
-# =============================================================================
+# python -m sed_tools.ml_sed_completer
 
 def cli_train(args):
     """CLI handler for training."""
@@ -953,15 +858,12 @@ def cli_train(args):
 
 def cli_complete(args):
     """CLI handler for SED completion."""
-    # Load model
     completer = SEDCompleter(args.model)
     
-    # Load input SED
     data = np.loadtxt(args.input)
     wavelength = data[:, 0]
     flux = data[:, 1]
     
-    # Complete
     wl_ext, flux_ext = completer.complete_sed(
         wavelength, flux,
         teff=args.teff,
@@ -970,7 +872,6 @@ def cli_complete(args):
         extension_range=(args.wl_min, args.wl_max),
     )
     
-    # Save
     np.savetxt(
         args.output,
         np.column_stack([wl_ext, flux_ext]),
@@ -1030,7 +931,6 @@ Examples:
     
     subparsers = parser.add_subparsers(dest='command', required=True)
     
-    # Train command
     train_parser = subparsers.add_parser('train', help='Train model on SED library')
     train_parser.add_argument('--library', required=True, help='Path to SED library')
     train_parser.add_argument('--output', required=True, help='Output model directory')
@@ -1041,7 +941,6 @@ Examples:
     train_parser.add_argument('--patience', type=int, default=20, help='Early stopping patience (default: 20)')
     train_parser.set_defaults(func=cli_train)
     
-    # Complete command
     complete_parser = subparsers.add_parser('complete', help='Complete an incomplete SED')
     complete_parser.add_argument('--model', required=True, help='Model directory')
     complete_parser.add_argument('--input', required=True, help='Input SED file')
@@ -1053,7 +952,6 @@ Examples:
     complete_parser.add_argument('--wl-max', type=float, default=100000.0, help='Max wavelength (default: 100000)')
     complete_parser.set_defaults(func=cli_complete)
     
-    # List command
     list_parser = subparsers.add_parser('list', help='List available models')
     list_parser.add_argument('--models-dir', default='models', help='Models directory (default: models)')
     list_parser.set_defaults(func=cli_list)
@@ -1062,9 +960,7 @@ Examples:
     args.func(args)
 
 
-# =============================================================================
-# Interactive Workflow (for CLI integration)
-# =============================================================================
+# Interactive workflow (sed-tools main menu item 8)
 
 def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> Optional[int]:
     """
@@ -1267,9 +1163,7 @@ def _list_menu(models_dir: str) -> None:
             print(f"    Architecture: {arch.get('input_dim', '?')} -> {hidden} -> {arch.get('output_dim', '?')}")
 
 
-# =============================================================================
-# API wrappers expected by sed_tools/api.py
-# =============================================================================
+# The functions api.MLCompleter calls
 
 def train_model(
     grid_dir: str,
