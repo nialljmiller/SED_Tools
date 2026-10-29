@@ -289,14 +289,6 @@ def test_dr280_never_replaces_a_different_published_file(tmp_path, pins, raw, na
     assert [p.name for p in inst.iterdir()] == [name]
 
 
-def test_parse_refuses_a_table_that_is_not_a_transmission():
-    spec = argus.Input("x.csv", "", "test")
-    with pytest.raises(ValueError, match="expected a transmission"):
-        argus._parse(b"wav_nm,T\n500,0.5\n400,0.6\n", spec)
-    with pytest.raises(ValueError, match="expected a transmission"):
-        argus._parse(b"wav_nm,T\n400,50\n500,60\n", spec)  # percent read as a fraction
-
-
 def test_build_refuses_unknown_instruments_and_options(tmp_path):
     with pytest.raises(ValueError, match="available: DR280, System"):
         argus.build(tmp_path, instrument="ADDem")

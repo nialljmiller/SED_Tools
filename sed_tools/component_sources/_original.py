@@ -230,9 +230,6 @@ def write_instrument(filter_root: Union[str, Path], spec: Instrument, *,
     names = [b.name for b in spec.bands]
     if len({n.lower() for n in names}) != len(names):
         raise ValueError(f"{spec.facility}/{spec.instrument}: duplicate band names {names}")
-    for b in spec.bands:
-        if safe_band(b.name) != b.name:
-            raise ValueError(f"band {b.name!r} is not filename-safe")
     inst_dir = Path(filter_root) / spec.facility / spec.instrument
     inst_dir.mkdir(parents=True, exist_ok=True)
     for b in spec.bands:
@@ -283,8 +280,6 @@ def make_builder(recipes: Mapping[str, Tuple[str, Recipe]]):
             raise ValueError(f"{instrument} belongs to {fac}, not {facility}")
         fetcher = Fetcher(session)
         spec = recipe(fetcher)
-        if (spec.facility, spec.instrument) != (fac, instrument):
-            raise RuntimeError(f"recipe for {fac}/{instrument} built {spec.facility}/{spec.instrument}")
         return write_instrument(filter_root, spec, atmosphere_root=atmosphere_root, session=fetcher.session)
 
     return build

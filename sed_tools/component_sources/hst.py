@@ -277,8 +277,8 @@ def _build_instrument(inst: str, prefix: str, inst_dir: Path, bands: Sequence[st
     manifest.sources["synphot"] = f"{TRDS} ({tables.tmg_name}, {tables.tmc_name}); obsmode {prefix},<band>"
     manifest.notes = _notes(tables, prefix, skipped, tails, pins, used)
     manifest.save(inst_dir)
-    if skipped:
-        logger.warning("HST/%s: %d bands not decomposed into components: %s", inst, len(skipped), skipped)
+    if skipped:  # expected on every build of ACS_WFC, ACS_HRC, WFC3_UVIS1, WFPC2-PC; the notes list them
+        logger.info("HST/%s: %d bands not decomposed into components: %s", inst, len(skipped), skipped)
 
 
 def build(

@@ -133,14 +133,15 @@ def _hst_published(root, bands=("F122M", "FR388N")):
     return inst
 
 
-def test_hst_build_warns_about_bands_it_cannot_decompose(tmp_path, caplog):
+def test_hst_build_records_bands_it_cannot_decompose_in_the_notes(tmp_path, caplog):
     from sed_tools.component_sources import hst
     from sed_tools.filter_components import InstrumentManifest
 
     inst = _hst_published(tmp_path)
-    with caplog.at_level("WARNING", logger="sed_tools.component_sources.hst"):
+    with caplog.at_level("INFO", logger="sed_tools.component_sources.hst"):
         assert hst.build(tmp_path, instruments=["ACS_SBC"], tables=_hst_tables()) == [inst]
     assert "1 bands not decomposed" in caplog.text and "FR388N" in caplog.text
+    assert not [r for r in caplog.records if r.levelname == "WARNING"]  # expected for ramp filters
     manifest = InstrumentManifest.load(inst)
     assert "Not decomposed: FR388N." in manifest.notes
     assert set(manifest.components["filter"]) == {"F122M"}

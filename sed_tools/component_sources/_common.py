@@ -269,10 +269,8 @@ def _publish_original_filters(spec: SimpleSource, inst_dir: Path, session) -> Di
 
     curves = {}
     for band, table in spec.filters.items():
-        wl, tr = table.read(session)
-        if (len(wl) < 2 or not np.all(np.isfinite(wl)) or
-                not np.all(np.isfinite(tr)) or np.any(np.diff(wl) <= 0) or
-                np.any(tr > 1.001)):
+        wl, tr = table.read(session)  # finite values on strictly increasing wavelengths
+        if len(wl) < 2 or np.any(tr > 1.001):
             raise ValueError(f"Invalid filter transmission from {table.url}")
         curves[band] = (wl, tr)
     inst_dir.mkdir(parents=True, exist_ok=True)

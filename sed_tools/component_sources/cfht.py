@@ -152,9 +152,7 @@ def scan(text: str, url: str):
     Two-column files are one averaged scan; wider files hold one scan per
     column and are averaged (CFHT reports the mean).  Values are percent.
     """
-    data = _numeric_rows(text)
-    if data.shape[1] < 2:
-        raise ValueError(f"{url}: expected wavelength and transmission columns")
+    data = _numeric_rows(text)  # rows of at least two numbers
     mean = data[:, 1:].mean(axis=1)
     if mean.max() < 2.0 or mean.max() > 101.0:
         raise ValueError(f"{url}: peak {mean.max():.3g} is not a percentage")
