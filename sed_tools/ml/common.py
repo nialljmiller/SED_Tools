@@ -4,11 +4,16 @@ The engines are completer.py (SEDCompleter) and generator.py (SEDGenerator); ml/
 completer API over them. torch is imported inside the functions, so importing any of them needs no torch.
 """
 
+import json
 import logging
+import os
 from collections import Counter
-from typing import Dict, List, Tuple
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
+
+from ..ui_utils import refused_without
 
 DEFAULT_WL_MIN = 100.0      # Angstroms
 DEFAULT_WL_MAX = 100000.0   # Angstroms
@@ -249,3 +254,73 @@ def _validation_losses(model, loader, device) -> List[float]:
             if not torch.isnan(loss):
                 losses.append(loss.item())
     return losses
+
+
+# Model folders and menus
+
+def model_configs(models_dir: str, config_file: str, logger: logging.Logger):
+    """(folder, config) for each folder of models_dir with a config_file; logger warns of each one unreadable."""
+    models_path = Path(models_dir)
+    if not models_path.exists():
+        return
+    for subdir in models_path.iterdir():
+        config_path = subdir / config_file
+        if not subdir.is_dir() or not config_path.exists():
+            continue
+        try:
+            with open(config_path, 'r') as f:
+                config = json.load(f)
+        except (OSError, ValueError) as exc:
+            logger.warning("Skipping %s: could not read its %s: %s", subdir, config_file, exc)
+            continue
+        yield subdir, config
+
+
+def training_libraries(base_dir: str) -> List[Dict[str, Any]]:
+    """Libraries under base_dir with a flux_cube.bin, and their SED counts ("?" if unknown)."""
+    import pandas as pd
+    
+    libraries = []
+    for name in sorted(os.listdir(base_dir)):
+        path = os.path.join(base_dir, name)
+        if not os.path.isdir(path) or not os.path.exists(os.path.join(path, "flux_cube.bin")):
+            continue
+        
+        lookup = os.path.join(path, "lookup_table.csv")
+        n_seds = "?"
+        if os.path.exists(lookup):
+            try:
+                n_seds = len(pd.read_csv(lookup))
+            except (OSError, ValueError) as exc:
+                _completer_log.warning("Could not count the SEDs in %s: %s", lookup, exc)
+        libraries.append({'name': name, 'path': path, 'n_seds': n_seds})
+    return libraries
+
+
+def print_libraries(libraries: List[Dict[str, Any]]) -> None:
+    """One numbered line per library: its name and its number of SEDs."""
+    for i, library in enumerate(libraries, 1):
+        print(f"  {i:2d}) {library['name']:30s} ({library['n_seds']} SEDs)")
+
+
+def action_menu(actions) -> Optional[int]:
+    """Ask which of ``actions``, each (label, packages it needs, function), to run, and run it.
+
+    Returns 1, having said what to install, when a package the chosen action needs is missing.
+    """
+    print("\nWhat would you like to do?")
+    for number, (label, _, _) in enumerate(actions, 1):
+        print(f"  {number}) {label}")
+    print("  0) Back")
+    
+    choice = input("> ").strip()
+    if choice == "0":
+        return None
+    for number, (_, packages, run) in enumerate(actions, 1):
+        if choice == str(number):
+            if packages and refused_without(*packages):
+                return 1
+            run()
+            return None
+    print("Invalid choice")
+    return None

@@ -38,9 +38,9 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import numpy as np
 
 from ..cube.fileio import load as load_cube
-from .common import (DEFAULT_WL_MAX, DEFAULT_WL_MIN, DEFAULT_WL_POINTS, data_loaders, fit, log_grid, mlp,
-                     normalised_params, param_scaler, resample, sample_spectra)
-from .completer import _training_libraries
+from .common import (DEFAULT_WL_MAX, DEFAULT_WL_MIN, DEFAULT_WL_POINTS, action_menu, data_loaders, fit, log_grid, mlp,
+                     model_configs, normalised_params, param_scaler, print_libraries, resample, sample_spectra,
+                     training_libraries)
 from ..ui_utils import (ask_number as _ask_number, ask_numbers as _ask_numbers, banner as _banner,
                        menu_choice as _menu_choice, refused_without, section as _section)
 
@@ -659,31 +659,14 @@ class SEDGenerator:
     def list_models(models_dir: str = "models") -> List[Dict[str, Any]]:
         """List available trained generators."""
         models = []
-        models_path = Path(models_dir)
-        
-        if not models_path.exists():
-            return models
-        
-        for subdir in models_path.iterdir():
-            if not subdir.is_dir():
-                continue
-            
-            config_file = subdir / SEDGenerator.CONFIG_FILE
-            if config_file.exists():
-                try:
-                    with open(config_file, 'r') as f:
-                        config = json.load(f)
-                    
-                    if config.get('model_type') == 'sed_generator':
-                        models.append({
-                            'name': subdir.name,
-                            'path': str(subdir),
-                            'parameter_ranges': config.get('parameter_ranges', {}),
-                            'architecture': config.get('architecture', {}),
-                        })
-                except (OSError, ValueError) as exc:
-                    logger.warning("Skipping %s: could not read its %s: %s", subdir, SEDGenerator.CONFIG_FILE, exc)
-
+        for subdir, config in model_configs(models_dir, SEDGenerator.CONFIG_FILE, logger):
+            if config.get('model_type') == 'sed_generator':
+                models.append({
+                    'name': subdir.name,
+                    'path': str(subdir),
+                    'parameter_ranges': config.get('parameter_ranges', {}),
+                    'architecture': config.get('architecture', {}),
+                })
         return models
 
 
@@ -778,34 +761,12 @@ def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> Optio
     _banner("ML SED GENERATOR (PyTorch)")
     print("\nGenerate complete SEDs from stellar parameters alone")
     print("Input: (Teff, logg, [M/H]) → Output: Full SED")
-    
-    print("\nWhat would you like to do?")
-    print("  1) Train new generator")
-    print("  2) Generate SED")
-    print("  3) Batch generate (grid of parameters)")
-    print("  4) List available generators")
-    print("  0) Back")
-    
-    choice = input("> ").strip()
-    if choice == "0":
-        return
-    if choice == "1":
-        if refused_without("torch", "sklearn"):
-            return 1
-        _train_menu(base_dir, models_dir)
-    elif choice == "2":
-        if refused_without("torch"):
-            return 1
-        _generate_menu(models_dir)
-    elif choice == "3":
-        if refused_without("torch"):
-            return 1
-        _batch_menu(models_dir)
-    elif choice == "4":
-        _list_menu(models_dir)
-    else:
-        print("Invalid choice")
-    return None
+    return action_menu([
+        ("Train new generator", ("torch", "sklearn"), lambda: _train_menu(base_dir, models_dir)),
+        ("Generate SED", ("torch",), lambda: _generate_menu(models_dir)),
+        ("Batch generate (grid of parameters)", ("torch",), lambda: _batch_menu(models_dir)),
+        ("List available generators", (), lambda: _list_menu(models_dir)),
+    ])
 
 
 def _choose_generator(models_dir: str, show_teff_range: bool) -> Optional[Dict[str, Any]]:
@@ -833,15 +794,14 @@ def _ask_output_dir(default: str) -> str:
 def _train_menu(base_dir: str, models_dir: str) -> None:
     _section("TRAIN NEW GENERATOR")
     
-    libraries = _training_libraries(base_dir)
+    libraries = training_libraries(base_dir)
     if not libraries:
         print(f"\nNo libraries with flux_cube.bin found in {base_dir}")
         return
     
     print("\nAvailable libraries:")
     print("-" * 60)
-    for i, lib in enumerate(libraries, 1):
-        print(f"  {i:2d}) {lib['name']:30s} ({lib['n_seds']} SEDs)")
+    print_libraries(libraries)
     
     selected = _menu_choice(libraries, "\nSelect library: > ")
     if selected is None:

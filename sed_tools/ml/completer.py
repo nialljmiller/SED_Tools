@@ -47,8 +47,9 @@ from .._constants import H as PLANCK_H, C as SPEED_C, K as BOLTZMANN_K, SIGMA
 from ..cube.fileio import load as load_cube
 from ..ui_utils import (ask_number as _ask_number, banner as _banner, menu_choice as _menu_choice, refused_without,
                        section as _section)
-from .common import (DEFAULT_WL_MAX, DEFAULT_WL_MIN, DEFAULT_WL_POINTS, data_loaders, fit, log_grid, mlp,
-                     normalised_params, param_scaler, resample, sample_spectra)
+from .common import (DEFAULT_WL_MAX, DEFAULT_WL_MIN, DEFAULT_WL_POINTS, action_menu, data_loaders, fit, log_grid, mlp,
+                     model_configs, normalised_params, param_scaler, print_libraries, resample, sample_spectra,
+                     training_libraries)
 
 # Training uses only samples whose input window is at least this fraction valid.
 MIN_WINDOW_COVERAGE = 0.8
@@ -920,34 +921,17 @@ class SEDCompleter:
             models, which may share the directory) are not listed.
         """
         models = []
-        models_path = Path(models_dir)
-        
-        if not models_path.exists():
-            return models
-        
-        for subdir in models_path.iterdir():
-            if not subdir.is_dir():
+        for subdir, config in model_configs(models_dir, SEDCompleter.CONFIG_FILE, logger):
+            # Completer configs have no model_type; SEDGenerator writes 'sed_generator'
+            if 'model_type' in config:
                 continue
-            
-            config_file = subdir / SEDCompleter.CONFIG_FILE
-            if config_file.exists():
-                try:
-                    with open(config_file, 'r') as f:
-                        config = json.load(f)
-                    # Completer configs have no model_type; SEDGenerator writes 'sed_generator'
-                    if 'model_type' in config:
-                        continue
-                    
-                    models.append({
-                        'name': subdir.name,
-                        'path': str(subdir),
-                        'version': config.get('version', 'unknown'),
-                        'framework': config.get('framework', 'unknown'),
-                        'architecture': config.get('architecture', {}),
-                    })
-                except (OSError, ValueError) as exc:
-                    logger.warning("Skipping %s: could not read its %s: %s", subdir, SEDCompleter.CONFIG_FILE, exc)
-
+            models.append({
+                'name': subdir.name,
+                'path': str(subdir),
+                'version': config.get('version', 'unknown'),
+                'framework': config.get('framework', 'unknown'),
+                'architecture': config.get('architecture', {}),
+            })
         return models
 
 
@@ -1108,29 +1092,11 @@ def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> Optio
     
     _banner("ML SED COMPLETER (PyTorch)")
     print("\nExtend incomplete SEDs using trained neural networks")
-    
-    print("\nWhat would you like to do?")
-    print("  1) Train new model")
-    print("  2) Complete/extend SEDs (inference)")
-    print("  3) List available models")
-    print("  0) Back")
-    
-    choice = input("> ").strip()
-    if choice == "0":
-        return
-    if choice == "1":
-        if refused_without("torch", "sklearn"):
-            return 1
-        _train_menu(base_dir, models_dir)
-    elif choice == "2":
-        if refused_without("scipy", "torch"):
-            return 1
-        _extend_menu(base_dir, models_dir)
-    elif choice == "3":
-        _list_menu(models_dir)
-    else:
-        print("Invalid choice")
-    return None
+    return action_menu([
+        ("Train new model", ("torch", "sklearn"), lambda: _train_menu(base_dir, models_dir)),
+        ("Complete/extend SEDs (inference)", ("scipy", "torch"), lambda: _extend_menu(base_dir, models_dir)),
+        ("List available models", (), lambda: _list_menu(models_dir)),
+    ])
 
 
 def _confirmed(prompt: str) -> bool:
@@ -1140,32 +1106,6 @@ def _confirmed(prompt: str) -> bool:
         print("Cancelled")
         return False
     return True
-
-
-def _print_libraries(libraries: List[Dict[str, Any]]) -> None:
-    for i, library in enumerate(libraries, 1):
-        print(f"  {i:2d}) {library['name']:30s} ({library['n_seds']} SEDs)")
-
-
-def _training_libraries(base_dir: str) -> List[Dict[str, Any]]:
-    """Libraries under base_dir with a flux_cube.bin, and their SED counts ("?" if unknown)."""
-    import pandas as pd
-    
-    libraries = []
-    for name in sorted(os.listdir(base_dir)):
-        path = os.path.join(base_dir, name)
-        if not os.path.isdir(path) or not os.path.exists(os.path.join(path, "flux_cube.bin")):
-            continue
-        
-        lookup = os.path.join(path, "lookup_table.csv")
-        n_seds = "?"
-        if os.path.exists(lookup):
-            try:
-                n_seds = len(pd.read_csv(lookup))
-            except (OSError, ValueError) as exc:
-                logger.warning("Could not count the SEDs in %s: %s", lookup, exc)
-        libraries.append({'name': name, 'path': path, 'n_seds': n_seds})
-    return libraries
 
 
 def _extendable_grids(base_dir: str) -> List[Dict[str, Any]]:
@@ -1190,7 +1130,7 @@ def _extendable_grids(base_dir: str) -> List[Dict[str, Any]]:
 def _train_menu(base_dir: str, models_dir: str) -> None:
     _section("TRAIN NEW MODEL")
     
-    libraries = _training_libraries(base_dir)
+    libraries = training_libraries(base_dir)
     if not libraries:
         print(f"\nNo model libraries with flux_cube.bin found in {base_dir}")
         print("Download spectral grids first with 'sed-tools grids'")
@@ -1198,7 +1138,7 @@ def _train_menu(base_dir: str, models_dir: str) -> None:
     
     print("\nAvailable model libraries for training:")
     print("-" * 60)
-    _print_libraries(libraries)
+    print_libraries(libraries)
     
     print("\nSelect library to train on (enter number):")
     selected = _menu_choice(libraries)
@@ -1282,7 +1222,7 @@ def _extend_menu(base_dir: str, models_dir: str) -> None:
     
     print("\nAvailable model sets:")
     print("-" * 60)
-    _print_libraries(grids)
+    print_libraries(grids)
     
     print("\nSelect model set to extend (enter number):")
     source = _menu_choice(grids)
