@@ -10,11 +10,10 @@ from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
 import numpy as np
 
 from ..filters.compose import is_auxiliary_path
-from .._flux import (AB_ZERO_FLUX, FILTER_EXTENSIONS, VEGA_ZP_KEYS, FilterCurve,
-                    FluxCube, Spectrum, band_average_flux_lambda,
-                    band_average_flux_lambda_from_arrays, band_average_flux_nu,
-                    load_filter_curve, load_spectrum)
-from ..photometry import _warn_outside_sed, get_metadata_float
+from ..photometry import (AB_ZERO_FLUX, FILTER_EXTENSIONS, VEGA_ZP_KEYS, FilterCurve, Spectrum, _warn_outside_sed,
+                          band_average_flux_lambda, band_average_flux_lambda_from_arrays, band_average_flux_nu,
+                          get_metadata_float, load_filter_curve, load_spectrum)
+from .tool import FluxCube
 
 Number = Union[int, float, np.floating]
 FilterSpec = Union[str, os.PathLike[str], FilterCurve, Tuple[str, Union[str, os.PathLike[str]]]]

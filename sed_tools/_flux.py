@@ -1,17 +1,9 @@
-"""Thin wrappers around the legacy flux cube utilities.
+"""Old import path; the code is in sed_tools/cube/tool.py, which also re-exports the photometry names."""
 
-The command line tool :mod:`flux_cube_tool` already implements robust handling
-of the binary ``flux_cube.bin`` format together with filter parsing helpers. To
-avoid duplicating mature logic we import and re-export the relevant classes and
-functions here.
-"""
-from __future__ import annotations
+from . import _old_path
+from .cube import tool as _module
 
-from .cube.tool import FluxCube
-from .photometry import (AB_ZERO_FLUX, FILTER_EXTENSIONS, VEGA_ZP_KEYS, FilterCurve, Spectrum,
-                         band_average_flux_lambda, band_average_flux_lambda_from_arrays, band_average_flux_nu,
-                         load_filter_curve, load_spectrum)
-
+# The old module's own list: forward() keeps dunder names, so `from sed_tools._flux import *` still gives these.
 __all__ = [
     "AB_ZERO_FLUX",
     "FILTER_EXTENSIONS",
@@ -25,3 +17,5 @@ __all__ = [
     "load_filter_curve",
     "load_spectrum",
 ]
+
+_old_path.forward(__name__, _module)
