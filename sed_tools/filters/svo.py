@@ -171,7 +171,7 @@ class SVOFilterBrowser:
             {"mode": "browse", "gname": facility_key, "gname2": instrument_key, "asttype": ""}
         )
         table = self._find_filter_table(soup)
-        rows: List[FilterRow] = []
+        rows: Dict[str, FilterRow] = {}  # one per filter ID, the first SVO lists
         if table:
             for tr in table.find_all("tr"):
                 cells = tr.find_all("td")
@@ -195,25 +195,15 @@ class SVOFilterBrowser:
                     # (GAIA/GAIA0, GAIA/GAIA3) so one never overwrites another.
                     instrument = instrument_key
                 description = cells[-1].get_text(strip=True) if cells else ""
-                rows.append(
-                    FilterRow(
-                        filter_id=filter_id,
-                        band=band or filter_id,
-                        facility=facility or facility_key,
-                        instrument=instrument or instrument_key,
-                        description=description,
-                    )
-                )
+                rows.setdefault(filter_id, FilterRow(
+                    filter_id=filter_id,
+                    band=band or filter_id,
+                    facility=facility or facility_key,
+                    instrument=instrument or instrument_key,
+                    description=description,
+                ))
 
-        # de-duplicate by filter_id while keeping order
-        seen = set()
-        unique_rows: List[FilterRow] = []
-        for row in rows:
-            if row.filter_id in seen:
-                continue
-            seen.add(row.filter_id)
-            unique_rows.append(row)
-
+        unique_rows = list(rows.values())
         self._filters_cache[cache_key] = unique_rows
         return unique_rows
 

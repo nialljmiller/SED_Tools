@@ -35,6 +35,8 @@ PUBLISHED = "published"
 ROLES = (FILTER, OPTICS, QE, INSTRUMENT, ATMOSPHERE)
 #: Roles that can be selected when composing a product.
 COMPOSABLE_ROLES = (FILTER, OPTICS, QE, ATMOSPHERE)
+# The instrument's own recipes, without atmosphere, in the order they are offered.
+_RECIPES = ((FILTER,), (FILTER, OPTICS), (FILTER, QE), (FILTER, OPTICS, QE))
 
 #: Sub-directories of an instrument that hold components and composed
 #: products rather than published curves.
@@ -191,14 +193,17 @@ class AtmosphereSpec:
 # --------------------------------------------------------------------------
 # Manifests
 # --------------------------------------------------------------------------
+def index_names(text: str) -> List[str]:
+    """The names a MESA index file lists: its lines stripped, without blank and ``#`` lines."""
+    return [line.strip() for line in text.splitlines() if line.strip() and not line.lstrip().startswith("#")]
+
+
 def index_listing(instrument_dir: PathLike) -> Optional[List[str]]:
     """The curve files the instrument's MESA index file lists, or None without one (or an empty one)."""
     index = Path(instrument_dir) / Path(instrument_dir).name
     if not index.is_file():
         return None
-    listed = [line.strip() for line in index.read_text(encoding="utf-8").splitlines()
-              if line.strip() and not line.lstrip().startswith("#")]
-    return listed or None
+    return index_names(index.read_text(encoding="utf-8")) or None
 
 
 def archived_bands(instrument_dir: PathLike) -> Dict[str, Dict[str, object]]:
@@ -396,12 +401,9 @@ class InstrumentManifest:
     def save(self, instrument_dir: PathLike) -> Path:
         path = Path(instrument_dir) / MANIFEST_NAME
         data = asdict(self)
-        if not data["variants"]:
-            del data["variants"]
-        if not data["atmosphere_sites"]:
-            del data["atmosphere_sites"]
-        if not data["archived_bands"]:
-            del data["archived_bands"]
+        for key in ("variants", "atmosphere_sites", "archived_bands"):  # saved only when set
+            if not data[key]:
+                del data[key]
         path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         return path
 
@@ -441,17 +443,12 @@ class InstrumentManifest:
         """
         names = [self.default_site, *self.atmosphere_sites,
                  *instrument_sites(self.facility, self.instrument)]
-        out: List[str] = []
-        for name in names:
-            if name and name not in out:
-                out.append(name)
-        return out
+        return list(dict.fromkeys(name for name in names if name))
 
     def component_file(self, role: str, band: str) -> Optional[str]:
         """File for a component key (a role or composite recipe) and band."""
         entries = self.components.get(role, {})
-        rel = entries.get(band) or entries.get(SHARED)
-        return rel
+        return entries.get(band) or entries.get(SHARED)
 
     def pieces(self, band: str) -> List[Tuple[Tuple[str, ...], str]]:
         """Component files usable for ``band`` as (roles they contain, relative path).
@@ -506,12 +503,7 @@ class InstrumentManifest:
     def buildable(self) -> List[str]:
         """Recipes (without atmosphere) that can be built for every primary band."""
         bands = self.primary_bands()
-        out = []
-        for extra in ((), (OPTICS,), (QE,), (OPTICS, QE)):
-            roles = (FILTER,) + extra
-            if bands and all(self.cover(b, roles) for b in bands):
-                out.append(recipe_name(roles))
-        return out
+        return [recipe_name(roles) for roles in _RECIPES if bands and all(self.cover(b, roles) for b in bands)]
 
     def available_roles(self) -> Tuple[str, ...]:
         """Single roles available on their own for every primary band."""
@@ -527,23 +519,10 @@ class InstrumentManifest:
         view = deepcopy(self)
         root = Path(instrument_dir).resolve()
         view.bands = [b for b in self.bands if (root / f"{b}.dat").is_file()]
-        for role, entries in view.components.items():
-            for band, rel in list(entries.items()):
-                path = (root / rel).resolve()
-                if not path.is_relative_to(root):
-                    raise ComponentError(f"{rel}: component resolves outside its instrument directory")
-                if not path.is_file():
-                    del entries[band]
+        view.components = {role: _present(root, entries, "component") for role, entries in view.components.items()}
         for named in view.variants.values():
             for entry in named.values():
-                files = dict(entry.get("files") or {})
-                for band, rel in list(files.items()):
-                    path = (root / str(rel)).resolve()
-                    if not path.is_relative_to(root):
-                        raise ComponentError(f"{rel}: variant resolves outside its instrument directory")
-                    if not path.is_file():
-                        del files[band]
-                entry["files"] = files
+                entry["files"] = _present(root, dict(entry.get("files") or {}), "variant")
         return view
 
     def missing_files(self, instrument_dir: PathLike) -> List[str]:
@@ -568,8 +547,7 @@ class InstrumentManifest:
         available_roles = self.available_roles()
         role_bands = {role: self.bands_with(role) for role in (FILTER, OPTICS, QE)}
         source_availability = component_availability(self.facility, self.instrument)
-        for extra in ((), (OPTICS,), (QE,), (OPTICS, QE)):
-            roles = (FILTER,) + extra
+        for roles in _RECIPES:
             bands = [b for b in primary_bands if self.cover(b, roles)]
             if bands:
                 recipes[recipe_name(roles)] = bands
@@ -664,8 +642,7 @@ class AtmosphereGrid:
     @classmethod
     def load(cls, site_dir: PathLike) -> "AtmosphereGrid":
         data = json.loads((Path(site_dir) / MANIFEST_NAME).read_text(encoding="utf-8"))
-        known = {f for f in cls.__dataclass_fields__}
-        return cls(**{k: v for k, v in data.items() if k in known})
+        return cls(**{k: v for k, v in data.items() if k in cls.__dataclass_fields__})
 
     def to_dict(self) -> Dict[str, object]:
         data = asdict(self)
@@ -725,6 +702,18 @@ class AtmosphereGrid:
             + f". Grid: airmass {airmasses}" + (f", pwv {pwvs} mm" if pwvs else "")
             + (" (and one of unstated airmass: airmass=None)" if self.unstated else "")
         )
+
+
+def _present(root: Path, files: Mapping[str, str], kind: str) -> Dict[str, str]:
+    """``files`` (band -> path) less those not installed; ComponentError for a path outside ``root``."""
+    present = {}
+    for band, rel in files.items():
+        path = (root / str(rel)).resolve()
+        if not path.is_relative_to(root):
+            raise ComponentError(f"{rel}: {kind} resolves outside its instrument directory")
+        if path.is_file():
+            present[band] = rel
+    return present
 
 
 def _require_inside(rel: str, owner: str) -> None:

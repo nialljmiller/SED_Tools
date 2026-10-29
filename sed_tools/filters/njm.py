@@ -17,10 +17,10 @@ from typing import Dict, List, Optional, Set, Tuple
 import requests
 from bs4 import BeautifulSoup
 
-from .manifest import InstrumentManifest
+from .manifest import InstrumentManifest, index_names
 from .curve_metadata import SOURCE_ASSUMED, SVOMetadataClient, migrate_filter_file, tag_filter_file
-from ..njm_mirror import (BASE_URL, NJM_CONNECT_TIMEOUT, NJM_PAUSE, USER_AGENT, _STATE, _status, pause, paused,
-                         plain_reason, skip_ssl_verification)
+from ..njm_mirror import (BASE_URL, NJM_CONNECT_TIMEOUT, NJM_PAUSE, USER_AGENT, _STATE, _body, _status, cache_root,
+                         pause, paused, plain_reason, skip_ssl_verification)
 
 logger = logging.getLogger("sed_tools.njm_filter_grabber")
 
@@ -96,7 +96,7 @@ class NJMFilterGrabber:
             return False
         if _STATE.available:
             if _STATE.unverified_ssl:
-                self._skip_ssl_verification()
+                skip_ssl_verification(self.session)
             return True
         if not self._check_availability():
             return False
@@ -121,7 +121,8 @@ class NJMFilterGrabber:
                 response = self.session.head(self.base_url, timeout=(NJM_CONNECT_TIMEOUT, 10), verify=False)
             except requests.RequestException as exc:
                 return self._unavailable(exc)
-            self._disable_ssl_verification()
+            _STATE.unverified_ssl = True  # this and every later grabber in the process skip certificate checks
+            skip_ssl_verification(self.session)
             logger.warning("NJM's SSL certificate could not be verified; using %s without verification",
                            self.base_url)
         except requests.RequestException as exc:
@@ -150,14 +151,6 @@ class NJMFilterGrabber:
         return False
 
     _pause = staticmethod(pause)
-
-    def _disable_ssl_verification(self) -> None:
-        """Switch this and every later grabber in the process to skip certificate checks."""
-        _STATE.unverified_ssl = True
-        self._skip_ssl_verification()
-
-    def _skip_ssl_verification(self) -> None:
-        skip_ssl_verification(self.session)
 
     def is_available(self) -> bool:
         """Return True if the mirror is available."""
@@ -342,8 +335,7 @@ class NJMFilterGrabber:
                 logger.warning("Cannot read NJM's index of %s/%s (%s); listing its directory instead",
                                facility, instrument, exc)
         else:
-            return [line.strip() for line in response.text.splitlines()
-                    if line.strip() and not line.lstrip().startswith("#")]
+            return index_names(response.text)
 
         return [name.removesuffix(".dat") for name in self._parse_directory_listing(instrument_url)
                 if name.endswith(".dat")]
@@ -516,8 +508,6 @@ class NJMFilterGrabber:
     # Installed curves already found to be NJM's
     # ------------------------------------------------------------------
     def _verified_path(self, facility: str, instrument: str) -> Path:
-        from .njm_catalogue import cache_root
-
         return cache_root(self.base_dir) / "filters" / facility / instrument / VERIFIED_CURVES
 
     def _njm_record(self, facility: str, instrument: str) -> Optional[str]:
@@ -690,10 +680,7 @@ class NJMFilterGrabber:
 
     def _catalogue_file(self, facility: str, instrument: str, name: str) -> bytes:
         """The served bytes of one catalogue file; ValueError if it is not an NJM catalogue file."""
-        response = self._get(f"{self.filters_url}/{facility}/{instrument}/{name}", timeout=30)
-        content = getattr(response, "content", None)
-        if not isinstance(content, bytes):
-            content = response.text.encode("utf-8")
+        content = _body(self._get(f"{self.filters_url}/{facility}/{instrument}/{name}", timeout=30))
         data = json.loads(content.decode("utf-8"))
         if not isinstance(data, dict) or not isinstance(data.get("bands"), dict):
             raise ValueError(f"not an NJM {name}")

@@ -28,10 +28,9 @@ from .manifest import (
     FILTER, OPTICS, QE, PUBLISHED, AtmosphereGrid, AtmosphereSpec, ComponentError,
     InstrumentManifest, index_listing, parse_components, recipe_name,
 )
-from .njm_catalogue import cache_root
 from .curve_metadata import SVOUnreachableError, migrate_filter_tree, svo_components_header
 from .njm import NJMFilterGrabber, curve_file
-from ..njm_mirror import NJM_NOT_LISTED, _status
+from ..njm_mirror import NJM_NOT_LISTED, _status, cache_root
 from .names import (  # noqa: F401 - FETCH_ORDER, INSTRUMENT_CATALOGUE and instrument_catalogue stay importable here
     FETCH_ORDER, INSTRUMENT_CATALOGUE, _adopt_claimed_svo, _drop_svo_duplicates, _instrument_metadata, _merge,
     _picker_entries, instrument_catalogue, load_instrument_catalogue,

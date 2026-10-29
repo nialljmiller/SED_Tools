@@ -20,8 +20,8 @@ from .curve_metadata import (ENERGY, PHOTON, normalize_detector_type,
 from .manifest import (  # noqa: F401 - every manifest name stays importable from here (filter_components)
     ATMOSPHERE, ATMOSPHERE_KINDS, AUXILIARY_DIRS, COMPONENTS_DIR, COMPOSABLE_ROLES, DERIVED, FILTER,
     FILTER_SIBLING_SUFFIXES, INSTRUMENT, MANIFEST_NAME, MANIFEST_SCHEMA, OPTICS, PRODUCTS_DIR, PUBLISHED, QE,
-    ROLES, SHARED, TEAM, _SVO_TOKENS, _VARIANT_NAME, AtmosphereGrid, AtmosphereSpec, ComponentError,
-    InstrumentManifest, PathLike, _require_inside, archived_bands, index_listing, is_auxiliary_path,
+    ROLES, SHARED, TEAM, _RECIPES, _SVO_TOKENS, _VARIANT_NAME, AtmosphereGrid, AtmosphereSpec, ComponentError,
+    InstrumentManifest, PathLike, _require_inside, archived_bands, index_listing, index_names, is_auxiliary_path,
     math_isclose, parse_components, recipe_name, write_filter_index,
 )
 from .sites import instrument_sites, is_ground_based, own_site, platform  # noqa: F401
@@ -529,8 +529,7 @@ def _warn_partial_recipes(instrument_dir: Path, manifest: InstrumentManifest) ->
     """
     bands = manifest.primary_bands()
     recipes_by_bands: Dict[Tuple[str, ...], List[str]] = {}
-    for extra in ((OPTICS,), (QE,), (OPTICS, QE)):
-        roles = (FILTER,) + extra
+    for roles in _RECIPES[1:]:
         covered = tuple(b for b in bands if manifest.cover(b, roles))
         if covered and len(covered) < len(bands):
             recipes_by_bands.setdefault(covered, []).append(recipe_name(roles))

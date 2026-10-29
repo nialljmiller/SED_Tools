@@ -6,8 +6,9 @@ leaves NJM alone for ``NJM_PAUSE`` seconds.
 
 import logging
 import threading
+from pathlib import Path
 from time import monotonic
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 
 import requests
 import urllib3
@@ -25,9 +26,20 @@ NJM_PAUSE = 300
 NJM_NOT_LISTED = "NJM unavailable"
 
 
+def cache_root(filter_root: "Union[str, Path]") -> "Path":  # quoted: filter_catalogue re-exports it, signature as text
+    """Where NJM catalogue files are cached for a filter root (beside ``atmospheres/``)."""
+    return Path(filter_root).parent / "cache" / "njm"
+
+
 def _status(exc: Exception) -> Optional[int]:
     """The HTTP status of a failed request, or None when there was no answer."""
     return getattr(getattr(exc, "response", None), "status_code", None)
+
+
+def _body(response) -> bytes:
+    """The response bytes as served (JSON is UTF-8 whatever the Content-Type says)."""
+    content = getattr(response, "content", None)
+    return content if isinstance(content, bytes) else response.text.encode("utf-8")
 
 
 def plain_reason(reason) -> str:

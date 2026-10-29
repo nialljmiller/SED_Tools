@@ -24,7 +24,9 @@ import pandas as pd
 from requests import RequestException
 
 from ..component_sources.catalog import name_key as _key
+from ..njm_mirror import _body, cache_root
 from .curve_metadata import normalize_detector_type, read_filter_header
+from .manifest import index_names
 
 logger = logging.getLogger("sed_tools.filter_catalogue")
 
@@ -40,19 +42,8 @@ LEADING_COLUMNS = ["WavelengthPivot", "WavelengthMin", "WavelengthMax", "FWHM", 
 Range = Union[Tuple[Optional[float], Optional[float]], Sequence[Optional[float]]]
 
 
-def _body(response) -> bytes:
-    """The response bytes as served (JSON is UTF-8 whatever the Content-Type says)."""
-    content = getattr(response, "content", None)
-    return content if isinstance(content, bytes) else response.text.encode("utf-8")
-
-
 class CatalogueError(RuntimeError):
     """The catalogue cannot answer: unknown instrument, file not served, mirror offline."""
-
-
-def cache_root(filter_root: Union[str, Path]) -> Path:
-    """Where NJM catalogue files are cached for a filter root (beside ``atmospheres/``)."""
-    return Path(filter_root).parent / "cache" / "njm"
 
 
 def parse_target(target: str) -> Tuple[str, str, Optional[str]]:
@@ -276,8 +267,8 @@ class FilterCatalogue:
     # Per-instrument files
     # ------------------------------------------------------------------
     def _installed(self, facility: str, instrument: str, kind: str) -> Optional[Path]:
-        """The copy kept beside installed curves (see :meth:`_installed_directory`), if any."""
-        directory = self._installed_directory(facility, instrument)
+        """The copy kept beside the installed curves (:meth:`.FilterLibrary.installed_directory`), if any."""
+        directory = self._library.installed_directory(facility, instrument)
         path = directory / f"{kind}.json" if directory is not None else None
         return path if path is not None and path.is_file() else None
 
@@ -311,7 +302,7 @@ class FilterCatalogue:
         installed.
         """
         bands = data.get("bands") or {}
-        directory = self._installed_directory(facility, instrument)
+        directory = self._library.installed_directory(facility, instrument)
         listed = directory / directory.name if directory is not None else None
         if not bands or listed is None or not listed.is_file():
             return data
@@ -395,7 +386,7 @@ class FilterCatalogue:
     def _served_band_sets(self, facility: str, instrument: str) -> Iterator[set]:
         """The bands of the instrument's set from each place that lists them (see :meth:`_split_archived`),
         in that order; each is read only when the one before it was not used."""
-        installed = self._installed_directory(facility, instrument)
+        installed = self._library.installed_directory(facility, instrument)
         if installed is not None:
             listed = installed / installed.name
             if listed.is_file():
@@ -417,15 +408,6 @@ class FilterCatalogue:
         from .library import FilterLibrary
 
         return FilterLibrary(self.filter_root)
-
-    def _installed_directory(self, facility: str, instrument: str) -> Optional[Path]:
-        """The installed directory of an instrument, found as Filters.fetch finds it, or None.
-
-        See :meth:`~sed_tools.filter_library.FilterLibrary.installed_directory`:
-        names match ignoring case and punctuation, and two installed spellings
-        raise ComponentError unless one is spelled exactly as asked.
-        """
-        return self._library.installed_directory(facility, instrument)
 
     def properties(self, facility: str, instrument: str, **kwargs) -> dict:
         """The instrument's ``properties.json``: ``{"bands": {band: {...}}, "definitions": {...}}``."""
@@ -544,8 +526,7 @@ class FilterCatalogue:
 
 def _index_bands(text: str) -> set:
     """The bands a MESA index file lists (its ``.dat`` names without the suffix)."""
-    names = [line.strip() for line in text.splitlines() if line.strip() and not line.lstrip().startswith("#")]
-    return {name[:-len(".dat")] for name in names if name.endswith(".dat")}
+    return {name[:-len(".dat")] for name in index_names(text) if name.endswith(".dat")}
 
 
 # ----------------------------------------------------------------------
