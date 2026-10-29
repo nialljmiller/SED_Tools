@@ -52,12 +52,9 @@ def find_stellar_models(base_dir=None):
 
 def _grids_with_lookup(base_dir):
     """``(name, path)`` of every grid in base_dir with a lookup table, combine outputs included."""
-    grids = []
-    for item in os.listdir(base_dir):
-        item_path = os.path.join(base_dir, item)
-        if os.path.isdir(item_path) and os.path.exists(os.path.join(item_path, "lookup_table.csv")):
-            grids.append((item, item_path))
-    return grids
+    paths = [(item, os.path.join(base_dir, item)) for item in os.listdir(base_dir)]
+    return [(item, path) for item, path in paths
+            if os.path.isdir(path) and os.path.exists(os.path.join(path, "lookup_table.csv"))]
 
 
 def _is_combined_output(name, lookup_file):
@@ -159,12 +156,8 @@ def prepare_sed(filepath, teff):
 
 def create_unified_grid(all_models_data):
     """Create unified parameter grids from all spectral grids."""
-    all_teff = np.concatenate([d["teff"] for d in all_models_data])
-    all_logg = np.concatenate([d["logg"] for d in all_models_data])
-    all_meta = np.concatenate([d["meta"] for d in all_models_data])
-
-    def clean_grid(values, tol):
-        grid = np.unique(np.sort(values))
+    def clean_grid(key, tol):
+        grid = np.unique(np.sort(np.concatenate([d[key] for d in all_models_data])))
         if len(grid) <= 1:
             return grid
         cleaned = [grid[0]]
@@ -173,11 +166,7 @@ def create_unified_grid(all_models_data):
                 cleaned.append(val)
         return np.array(cleaned)
 
-    teff_grid = clean_grid(all_teff, tol=1.0)
-    logg_grid = clean_grid(all_logg, tol=0.01)
-    meta_grid = clean_grid(all_meta, tol=0.01)
-
-    return teff_grid, logg_grid, meta_grid
+    return clean_grid("teff", 1.0), clean_grid("logg", 0.01), clean_grid("meta", 0.01)
 
 
 def create_common_wavelength_grid(all_models_data, sample_size=20):
@@ -230,12 +219,10 @@ def create_common_wavelength_grid(all_models_data, sample_size=20):
 
 def identify_reference_model(all_models_data):
     """Identify reference spectral grid (prefer Kurucz)."""
-    for i, model_data in enumerate(all_models_data):
-        if "kurucz" in os.path.basename(model_data["model_dir"]).lower():
-            print(f"Reference spectral grid: {os.path.basename(model_data['model_dir'])}")
-            return i
-    print(f"Reference spectral grid: {os.path.basename(all_models_data[0]['model_dir'])}")
-    return 0
+    names = [os.path.basename(model_data["model_dir"]) for model_data in all_models_data]
+    reference = next((i for i, name in enumerate(names) if "kurucz" in name.lower()), 0)
+    print(f"Reference spectral grid: {names[reference]}")
+    return reference
 
 
 def compute_normalization_factors(target_data, reference_data, wavelength_grid):
@@ -291,9 +278,7 @@ def compute_normalization_factors(target_data, reference_data, wavelength_grid):
                             f"(teff={teff}, logg={logg}, meta={meta})")
             continue
 
-        query = np.array([teff, logg, meta])
-        query_norm = (query - ref_params.min(axis=0)) / ranges
-        _, idx = tree.query(query_norm)
+        _, idx = tree.query((np.array([teff, logg, meta]) - ref_params.min(axis=0)) / ranges)
         file_ref = os.path.join(reference_data["model_dir"], ref_files[idx])
 
         try:
@@ -394,9 +379,7 @@ def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, w
                 continue
             fl *= norm_factors[model_idx][i]
 
-            node = (int(np.argmin(np.abs(teff_grid - teff))),
-                    int(np.argmin(np.abs(logg_grid - logg))),
-                    int(np.argmin(np.abs(meta_grid - meta))))
+            node = (_nearest_idx(teff_grid, teff), _nearest_idx(logg_grid, logg), _nearest_idx(meta_grid, meta))
             flux_cube[node] = resample_to_grid(wl, fl, teff, wavelength_grid)
             filled_map[node] = True
             source_map[node] = model_idx
@@ -421,10 +404,7 @@ def _fill_gaps(flux_cube, filled_map, source_map, teff_grid, logg_grid, meta_gri
         r = grid.max() - grid.min()
         return (grid - grid.min()) / r if r > 0 else np.zeros_like(grid)
 
-    teff_norm = norm(teff_grid)
-    logg_norm = norm(logg_grid)
-    meta_norm = norm(meta_grid)
-
+    teff_norm, logg_norm, meta_norm = norm(teff_grid), norm(logg_grid), norm(meta_grid)
     filled_indices = np.where(filled_map)
     filled_points = np.column_stack([
         teff_norm[filled_indices[0]],
@@ -435,15 +415,12 @@ def _fill_gaps(flux_cube, filled_map, source_map, teff_grid, logg_grid, meta_gri
 
     tree = KDTree(filled_points)
 
-    for i_t in range(len(teff_grid)):
-        for i_g in range(len(logg_grid)):
-            for i_m in range(len(meta_grid)):
-                if not filled_map[i_t, i_g, i_m]:
-                    query = [teff_norm[i_t], logg_norm[i_g], meta_norm[i_m]]
-                    _, idx = tree.query(query)
-                    src = (filled_indices[0][idx], filled_indices[1][idx], filled_indices[2][idx])
-                    flux_cube[i_t, i_g, i_m, :] = flux_cube[src]
-                    source_map[i_t, i_g, i_m] = source_map[src]
+    for i_t, i_g, i_m in np.ndindex(filled_map.shape):
+        if not filled_map[i_t, i_g, i_m]:
+            _, idx = tree.query([teff_norm[i_t], logg_norm[i_g], meta_norm[i_m]])
+            src = (filled_indices[0][idx], filled_indices[1][idx], filled_indices[2][idx])
+            flux_cube[i_t, i_g, i_m, :] = flux_cube[src]
+            source_map[i_t, i_g, i_m] = source_map[src]
 
 
 def save_combined_data(output_dir, teff_grid, logg_grid, meta_grid,
@@ -526,16 +503,12 @@ def _plot_meta_index(meta_grid):
 def _sed_sample_points(teff_grid, logg_grid, meta_grid, meta_idx, flux_cube, source_map,
                        model_names):
     """Up to 15 nodes (5 Teff x 3 log g quantiles) at meta_idx that have positive flux."""
-    teff_samples = np.unique(
-        teff_grid[np.round(np.linspace(0, len(teff_grid) - 1, 5)).astype(int)]
-    )
-    logg_samples = np.unique(
-        logg_grid[np.round(np.linspace(0, len(logg_grid) - 1, 3)).astype(int)]
-    )
+    def spread(grid, count):
+        return np.unique(grid[np.round(np.linspace(0, len(grid) - 1, count)).astype(int)])
 
     sample_points = []
-    for t_val in teff_samples:
-        for g_val in logg_samples:
+    for t_val in spread(teff_grid, 5):
+        for g_val in spread(logg_grid, 3):
             ti = _nearest_idx(teff_grid, t_val)
             gi = _nearest_idx(logg_grid, g_val)
             flux = flux_cube[ti, gi, meta_idx, :]
