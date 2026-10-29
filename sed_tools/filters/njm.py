@@ -17,7 +17,7 @@ from typing import Dict, List, Optional, Set, Tuple
 import requests
 from bs4 import BeautifulSoup
 
-from .compose import InstrumentManifest
+from .manifest import InstrumentManifest
 from .curve_metadata import SOURCE_ASSUMED, SVOMetadataClient, migrate_filter_file, tag_filter_file
 from ..njm_mirror import (BASE_URL, NJM_CONNECT_TIMEOUT, NJM_PAUSE, USER_AGENT, _STATE, _status, pause, paused,
                          plain_reason, skip_ssl_verification)

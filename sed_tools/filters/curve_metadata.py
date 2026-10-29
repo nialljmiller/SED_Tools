@@ -494,7 +494,7 @@ def svo_components_header(components: Optional[str]) -> Dict[str, str]:
     """``Components``/``ComponentsSource`` header fields from SVO's components string."""
     if not components:
         return {}
-    from .compose import ComponentError, parse_components, recipe_name
+    from .manifest import ComponentError, parse_components, recipe_name
 
     try:
         roles = parse_components(components)

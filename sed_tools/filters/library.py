@@ -23,10 +23,10 @@ from ..component_sources import get_builder
 from ..component_sources.catalog import (
     BUILDERS_FOR, builder_for, component_availability, match_name, name_key, registered_name,
 )
-from .compose import (
+from .compose import atmosphere_file, build_product, find_atmosphere, resolve_atmosphere
+from .manifest import (
     FILTER, OPTICS, QE, PUBLISHED, AtmosphereGrid, AtmosphereSpec, ComponentError,
-    InstrumentManifest, atmosphere_file, build_product, find_atmosphere, index_listing, parse_components,
-    recipe_name, resolve_atmosphere,
+    InstrumentManifest, index_listing, parse_components, recipe_name,
 )
 from .njm_catalogue import cache_root
 from .curve_metadata import SVOUnreachableError, migrate_filter_tree, svo_components_header

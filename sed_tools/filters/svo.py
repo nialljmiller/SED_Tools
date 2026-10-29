@@ -17,7 +17,7 @@ from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 import requests
 from bs4 import BeautifulSoup
 
-from .compose import InstrumentManifest
+from .manifest import InstrumentManifest
 from .curve_metadata import (ENERGY, SOURCE_ASSUMED, SOURCE_SVO, SVO_ALTERNATIVES, SVOMetadataClient,
                               SVOUnreachableError, svo_components_header, svo_fps_url, svo_get, write_filter_file)
 from ..ui_utils import prompt_choice
