@@ -630,6 +630,8 @@ Packaging
 - The CIE tables (``sed_tools/cie/*.csv``) and the instrument catalogue
   (``sed_tools/instrument_catalogue.json``, NJM's ``index.json`` of
   2026-10-28T02:36:36) are package data.
+- Internal: modules moved into packages (``filters/``, ``grids/``, ``cube/``,
+  ``ml/``, ``cli/``, ``api/``); every old import path still works.
 
 Behaviour changes
 ~~~~~~~~~~~~~~~~~
@@ -1468,10 +1470,10 @@ Filter availability and composition
   PWV selection. Track expected SVO bands across partial downloads.
 
 Version 0.3.0 (October 2026)
----------------------------
+----------------------------
 
 Optical Path and Detector Awareness
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Passbands now track the physical elements included along the optical path:
 the site's atmosphere, telescope/instrument optics, filter transmission and
