@@ -82,7 +82,9 @@ class NJMSpectraGrabber:
                 if not self._answers_head(verify, errors):
                     return self._unreachable(errors)
             if not verify:
-                self._disable_ssl_verification(errors)
+                logger.warning("NJM mirror: certificate check failed (%s); continuing without certificate "
+                               "verification", "; ".join(errors))
+                skip_ssl_verification(self.session)
             return True
         return self._plain_http(index_url, errors)
 
@@ -130,12 +132,6 @@ class NJMSpectraGrabber:
             self._index_data = resp.json()
         except ValueError:
             pass  # server is alive; discover_models fetches the index again and reports why it fails
-
-    def _disable_ssl_verification(self, errors: List[str]) -> None:
-        """Switch the session to skip certificate checks, saying why."""
-        logger.warning("NJM mirror: certificate check failed (%s); continuing without certificate verification",
-                       "; ".join(errors))
-        skip_ssl_verification(self.session)
 
     def is_available(self) -> bool:
         """Return True if the mirror is available."""
@@ -228,14 +224,10 @@ class NJMSpectraGrabber:
             (f"{model_name}.h5", 'h5_files'),
             ("flux_cube.bin", 'bin_files'),
         ]:
-            if self._remote_file_exists(urljoin(model_url, aux_name)):
+            if self.session.head(urljoin(model_url, aux_name), timeout=5).status_code == 200:
                 result[category].append(aux_name)
         
         return result
-    
-    def _remote_file_exists(self, url: str) -> bool:
-        """True if the mirror serves *url* (a HEAD answered 200); the request's error if it gets no answer."""
-        return self.session.head(url, timeout=5).status_code == 200
 
     def get_model_metadata(self, model_name: str) -> Dict[str, any]:
         """Return metadata for a model, including list of all files.
@@ -251,7 +243,6 @@ class NJMSpectraGrabber:
         
         # Never empty: without a listing, _fetch_remote_lookup raises when lookup_table.csv lists no spectra
         files = self._discover_model_files(model_name)
-        model_url = f"{self.stellar_models_url}/{model_name}/"
 
         print(f"    Found: {len(files['txt_files'])} spectra, {len(files['bin_files'])} .bin, "
               f"{len(files['h5_files'])} .h5, {len(files['csv_files'])} .csv")
@@ -259,11 +250,8 @@ class NJMSpectraGrabber:
         return {
             "provider": "njm-mirror",
             "model_name": model_name,
-            "model_url": model_url,
-            "txt_files": files['txt_files'],
-            "bin_files": files['bin_files'],
-            "h5_files": files['h5_files'],
-            "csv_files": files['csv_files'],
+            "model_url": f"{self.stellar_models_url}/{model_name}/",
+            **{key: files[key] for key in ('txt_files', 'bin_files', 'h5_files', 'csv_files')},
             "pre_processed": False,  # every spectrum goes through the cleaner
         }
     
@@ -302,11 +290,8 @@ class NJMSpectraGrabber:
             if not fname:
                 continue
             
-            params = {}
-            for key, col in (('teff', teff_col), ('logg', logg_col), ('meta', meta_col)):
-                if col:
-                    params[key] = _float_or_nan(row[col])
-            result[fname] = params
+            result[fname] = {key: _float_or_nan(row[col])
+                             for key, col in (('teff', teff_col), ('logg', logg_col), ('meta', meta_col)) if col}
         
         if not result:
             raise RuntimeError(f"NJM mirror: {lookup_url} lists no spectra")
@@ -328,19 +313,14 @@ class NJMSpectraGrabber:
         for fname in txt_files:
             params = lookup.get(fname)
             if params is None:
-                kept.append(fname)
                 unknown += 1
             elif any(_outside(params, key, rng) for key, rng in ranges):
                 cut += 1
-            else:
-                kept.append(fname)
+                continue
+            kept.append(fname)
         
-        print(f"  [njm] Axis cut: {len(kept)} kept, {cut} removed", end="")
-        if unknown:
-            print(f" ({unknown} not in lookup — kept)")
-        else:
-            print()
-        
+        note = f" ({unknown} not in lookup — kept)" if unknown else ""
+        print(f"  [njm] Axis cut: {len(kept)} kept, {cut} removed{note}")
         return kept
 
     def _apply_wavelength_cut(self, model_dir: str, txt_files: List[str],
@@ -419,9 +399,7 @@ class NJMSpectraGrabber:
 
         # force: re-download for a server-side wavelength cut
         if not force and os.path.exists(output_path):
-            size = os.path.getsize(output_path)
-            min_size = 100 if filename.endswith('.csv') else 1024
-            if size > min_size:
+            if os.path.getsize(output_path) > (100 if filename.endswith('.csv') else 1024):
                 return 'skip', None
 
         # Server-side wl_cut: query params on the normal file URL — Apache rewrites to PHP
@@ -559,9 +537,7 @@ class NJMSpectraGrabber:
             txt_files = self._select_spectra(model_name, model_url, txt_files,
                                              teff_range, logg_range, meta_range)
         
-        all_files = txt_files + bin_files + h5_files + csv_files
-        
-        if not all_files:
+        if not (txt_files or bin_files or h5_files or csv_files):
             print(f"[njm] No files to download for {model_name}")
             return 0
         
@@ -570,20 +546,16 @@ class NJMSpectraGrabber:
         # from the filtered .txt files anyway; with parameter cuts the lookup
         # table too, which lists spectra that are not downloaded
         if has_param_cuts or wl_range:
-            skipped_aux = []
-            if bin_files:
-                skipped_aux.append(f"{len(bin_files)} .bin")
-            if h5_files:
-                skipped_aux.append(f"{len(h5_files)} .h5")
-            if has_param_cuts and csv_files:
-                skipped_aux.append(f"{len(csv_files)} .csv")
-                csv_files = []
+            skipped = [(bin_files, ".bin"), (h5_files, ".h5")] + ([(csv_files, ".csv")] if has_param_cuts else [])
+            skipped_aux = [f"{len(files)} {suffix}" for files, suffix in skipped if files]
             if skipped_aux:
                 print(f"  [njm] Skipping pre-built {', '.join(skipped_aux)} (will rebuild from filtered spectra)")
-            bin_files = []
-            h5_files = []
+            bin_files = h5_files = []
+            if has_param_cuts:
+                csv_files = []
+        aux_files = bin_files + h5_files + csv_files
         
-        print(f"[njm] Downloading {len(txt_files)} spectra + {len(bin_files + h5_files + csv_files)} auxiliary for {model_name}...")
+        print(f"[njm] Downloading {len(txt_files)} spectra + {len(aux_files)} auxiliary for {model_name}...")
         
         server_wl_cut = False
         if wl_range and txt_files:
@@ -592,7 +564,6 @@ class NJMSpectraGrabber:
                 print(f"  [njm] Server-side wavelength cut active ({wl_range[0]:.1f} – {wl_range[1]:.1f} Å)")
         wl_query = f"?wl_min={wl_range[0]}&wl_max={wl_range[1]}" if server_wl_cut else ""
 
-        aux_files = bin_files + h5_files + csv_files
         counts, failures = self._download_files(model_dir, model_url, txt_files, aux_files,
                                                 wl_query, force_txt=server_wl_cut)
         
@@ -674,15 +645,11 @@ def _trim_spectrum_file(fpath: str, wl_range: Tuple[float, float]) -> bool:
                 continue
             n_data += 1
             parts = stripped.split()
-            if len(parts) < 2:
-                data_lines.append(line)
-                continue
             try:
-                wl = float(parts[0])
+                keep = len(parts) < 2 or wl_min <= float(parts[0]) <= wl_max
             except ValueError:
-                data_lines.append(line)  # Keep unparseable lines
-                continue
-            if wl_min <= wl <= wl_max:
+                keep = True  # Keep unparseable lines
+            if keep:
                 data_lines.append(line)
 
     if len(data_lines) == n_data:
