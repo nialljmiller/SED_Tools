@@ -17,8 +17,8 @@ import numpy as np
 import pandas as pd
 from requests import RequestException
 
-from ..grids._lookup_io import find_teff_column, find_logg_column, find_metallicity_column, find_file_column
-from ..grids.lookup import regenerate_lookup_table
+from ..grids.lookup import (find_file_column, find_logg_column, find_metallicity_column, find_teff_column,
+                           regenerate_lookup_table)
 from ..grids.spectrum_io import build_h5_bundle
 from ..cube.model import (
     FILTER_DIR_DEFAULT,
