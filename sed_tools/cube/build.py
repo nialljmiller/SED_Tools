@@ -342,7 +342,8 @@ def _populate_and_write(
 
         nonzero = count_cube > 0
         for axis_idx in range(len(wavelengths)):
-            flux_cube[:, :, :, axis_idx] = np.where(nonzero, flux_cube[:, :, :, axis_idx] / np.maximum(count_cube, 1), 0.0)
+            averaged = flux_cube[:, :, :, axis_idx] / np.maximum(count_cube, 1)
+            flux_cube[:, :, :, axis_idx] = np.where(nonzero, averaged, 0.0)
 
         _write_cube(output_file, teff_grid, logg_grid, meta_grid, wavelengths, flux_cube, usable_ram)
     finally:
