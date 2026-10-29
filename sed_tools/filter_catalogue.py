@@ -282,16 +282,10 @@ class FilterCatalogue:
     # Per-instrument files
     # ------------------------------------------------------------------
     def _installed(self, facility: str, instrument: str, kind: str) -> Optional[Path]:
-        """The copy kept beside installed curves, if any (matched without regard to case)."""
-        direct = self.filter_root / facility / instrument / f"{kind}.json"
-        if direct.is_file():
-            return direct
-        if self.filter_root.is_dir():
-            for path in self.filter_root.glob(f"*/*/{kind}.json"):
-                if (path.parent.parent.name.casefold(), path.parent.name.casefold()) == (
-                        facility.casefold(), instrument.casefold()):
-                    return path
-        return None
+        """The copy kept beside installed curves (see :meth:`_installed_directory`), if any."""
+        directory = self._installed_directory(facility, instrument)
+        path = directory / f"{kind}.json" if directory is not None else None
+        return path if path is not None and path.is_file() else None
 
     def instrument_file(self, facility: str, instrument: str, kind: str, *,
                         prefer_installed: bool = True, refresh: bool = False) -> dict:
@@ -367,17 +361,7 @@ class FilterCatalogue:
                 # NJM's current file may describe other curves than the installed ones.
                 raise CatalogueError(f"{installed} is unreadable ({exc}); repair or remove it, or pass "
                                      "refresh=True to read NJM's current file instead") from exc
-        try:
-            index = self.index()
-        except CatalogueError:
-            if self.offline:
-                cached = self.cache_root / "filters" / facility / instrument / f"{kind}.json"
-                if cached.is_file():
-                    data = self._json_object(cached.read_text(encoding="utf-8"))
-                    self._came_from((facility, instrument, kind), "cache",
-                                    self._read_meta(cached).get("checked"))
-                    return data
-            raise
+        index = self.index()
         entry = self.resolve(facility, instrument)
         name = entry[kind]
         if not name:
@@ -444,11 +428,10 @@ class FilterCatalogue:
         direct = self.filter_root / facility / instrument
         if direct.is_dir():
             return direct
-        if self.filter_root.is_dir():
-            for path in self.filter_root.glob("*/*"):
-                if path.is_dir() and (path.parent.name.casefold(), path.name.casefold()) == (
-                        facility.casefold(), instrument.casefold()):
-                    return path
+        for path in self.filter_root.glob("*/*"):
+            if path.is_dir() and (path.parent.name.casefold(), path.name.casefold()) == (
+                    facility.casefold(), instrument.casefold()):
+                return path
         return None
 
     def properties(self, facility: str, instrument: str, **kwargs) -> dict:
@@ -491,13 +474,8 @@ class FilterCatalogue:
 
     def vega(self, *, refresh: bool = False) -> Path:
         """Path to the cached Vega spectrum NJM's properties use (``vega/vega_flam.csv``, Å and f_λ)."""
-        try:
-            definitions = self.index()["filters"].get("properties_definitions") or {}
-            rel = (definitions.get("vega_spectrum") or {}).get("url") or VEGA_URL
-        except CatalogueError as exc:
-            logger.warning("Cannot read NJM's index.json (%s); using the Vega spectrum at its usual path, %s",
-                           exc, VEGA_URL)
-            rel = VEGA_URL
+        definitions = self.index()["filters"].get("properties_definitions") or {}
+        rel = (definitions.get("vega_spectrum") or {}).get("url") or VEGA_URL
         path = self._fetch(rel, max_age=30 * 24 * 3600, refresh=refresh)
         if path is None:
             raise CatalogueError(self._not_cached(rel))

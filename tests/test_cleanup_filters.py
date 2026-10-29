@@ -93,17 +93,16 @@ def test_offline_catalogue_uses_its_cache_without_a_warning(tmp_path, caplog):
     assert caplog.text == ""
 
 
-def test_vega_path_without_an_index_is_reported(tmp_path, caplog):
+def test_vega_path_without_an_index_stops(tmp_path):
     import time
 
-    from sed_tools.filter_catalogue import VEGA_URL, FilterCatalogue
+    from sed_tools.filter_catalogue import VEGA_URL, CatalogueError, FilterCatalogue
 
     catalogue = FilterCatalogue(tmp_path / "filters", mirror=_down_mirror())
     catalogue._mirror.is_available = lambda: True
-    vega = _cached(catalogue, VEGA_URL, "WAVELENGTH,FLUX\n5000,1e-9\n", checked=time.time())
-    with caplog.at_level(logging.WARNING):
-        assert catalogue.vega() == vega
-    assert "Cannot read NJM's index.json" in caplog.text and VEGA_URL in caplog.text
+    _cached(catalogue, VEGA_URL, "WAVELENGTH,FLUX\n5000,1e-9\n", checked=time.time())
+    with pytest.raises(CatalogueError, match="index.json"):
+        catalogue.vega()  # the Vega spectrum's path is NJM's index.json's to say
 
 
 # ----------------------------------------------------------------------
