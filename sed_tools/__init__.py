@@ -46,10 +46,19 @@ from .cube.model import (
 from .grids.msg import MSGSpectraGrabber
 from .filters.njm import NJMFilterGrabber
 from .grids.njm import NJMSpectraGrabber
-from .cube.build import precompute_flux_cube
 from .grids.clean import clean_model_dir
 from .grids.lookup import regenerate_lookup_table
 from .grids.svo import SVOSpectraGrabber
+
+# Through the old path, as before the move, so the package attribute is the function, not the module.
+from .precompute_flux_cube import precompute_flux_cube
+
+# The old module paths that `import sed_tools` has always made attributes of the package.
+from . import (_constants, _flux, _lookup_io, _resample, collision_config, config, facility_sites,  # noqa: F401
+               filter_catalogue, filter_components, filter_metadata, flux_cube_tool, header_parser,
+               mast_spectra_grabber, models, msg_spectra_grabber, njm_filter_grabber, njm_spectra_grabber,
+               parsing, spectra_cleaner, spectrum_io, svo_regen_spectra_lookup, svo_spectra_grabber,
+               terminal_plots, ui_utils)
 
 __version__ = "0.5.0"
 
