@@ -282,9 +282,7 @@ class NJMFilterGrabber:
     def _write_curve(text: str, target: Path) -> None:
         """Write a served curve whole (an interrupted write leaves no partial file) and migrate it."""
         target.parent.mkdir(parents=True, exist_ok=True)
-        tmp = target.with_name(f".{target.name}.part")
-        tmp.write_text(text, encoding="utf-8")
-        os.replace(tmp, target)
+        _write_atomic(target, text)
         migrate_filter_file(target)
 
     @staticmethod
@@ -608,21 +606,27 @@ class NJMFilterGrabber:
             return None
         return json.dumps({"filters": record.get("filters"), "size_bytes": record["size_bytes"]}, sort_keys=True)
 
+    @staticmethod
+    def _saved_verified(path: Path, record: str) -> Dict[str, int]:
+        """The ``{curve file: size}`` saved at ``path`` under NJM's ``record``; empty for another record.
+
+        A damaged file counts as empty: every installed curve is then checked
+        against NJM's copy, and the file is written afresh.
+        """
+        if not path.is_file():
+            return {}
+        try:
+            saved = json.loads(path.read_text(encoding="utf-8"))
+        except ValueError:
+            return {}
+        return saved["files"] if saved.get("njm_record") == record else {}
+
     def _verified_curves(self, facility: str, instrument: str, output_dir: Path) -> Set[str]:
         """Installed curve files an earlier download found to be NJM's, unchanged since on both sides."""
         record = self._njm_record(facility, instrument)
-        path = self._verified_path(facility, instrument)
-        if record is None or not path.is_file():
+        if record is None:
             return set()
-        try:
-            saved = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, ValueError) as exc:
-            logger.warning("%s is unreadable (%s); every installed curve of %s/%s is checked against NJM's copy",
-                           path, exc, facility, instrument)
-            return set()
-        files = saved.get("files") if isinstance(saved, dict) and saved.get("njm_record") == record else None
-        if not isinstance(files, dict):
-            return set()
+        files = self._saved_verified(self._verified_path(facility, instrument), record)
         return {name for name, size in files.items()
                 if (output_dir / name).is_file() and (output_dir / name).stat().st_size == size}
 
@@ -632,19 +636,9 @@ class NJMFilterGrabber:
         if record is None:
             return
         path = self._verified_path(facility, instrument)
-        files = {name: (output_dir / name).stat().st_size for name in names}
-        if path.is_file():
-            try:
-                saved = json.loads(path.read_text(encoding="utf-8"))
-            except (OSError, ValueError):
-                saved = {}  # rewritten below
-            if isinstance(saved, dict) and saved.get("njm_record") == record and isinstance(saved.get("files"), dict):
-                files = {**saved["files"], **files}
+        files = {**self._saved_verified(path, record), **{name: (output_dir / name).stat().st_size for name in names}}
         path.parent.mkdir(parents=True, exist_ok=True)
-        tmp = path.with_name(f".{path.name}.part")
-        tmp.write_text(json.dumps({"njm_record": record, "files": files}, indent=1, sort_keys=True) + "\n",
-                       encoding="utf-8")
-        os.replace(tmp, path)
+        _write_atomic(path, json.dumps({"njm_record": record, "files": files}, indent=1, sort_keys=True) + "\n")
 
     def _tag(self, path: Path, facility: str):
         """Fill in what the curve's header lacks from SVO; a no-op for curves the mirror tagged fully.
