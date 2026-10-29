@@ -375,7 +375,7 @@ def test_retry_replaces_a_curve_that_is_not_njms(tmp_path, njm, bundled, caplog)
         assert library.published("Euclid", "NISP") == directory
     assert (directory / "Y.dat").read_text() == CURVE  # SVO's copy under NJM's name, replaced
     assert read_filter_header(directory / "H.dat")["FilterID"] == "Euclid/NISP.H"  # NJM's samples: kept as is
-    assert f"{directory / 'Y.dat'} differs from NJM's copy" in caplog.text
+    assert f"{directory}: replaced Y.dat with NJM's copies, which differ" in caplog.text
     assert f"{directory / 'H.dat'} differs" not in caplog.text
 
 

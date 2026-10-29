@@ -186,7 +186,8 @@ def test_fetch_from_njm_later_replaces_svo_curves_that_differ_and_leaves_no_dupl
         assert library.published("GAIA", "GAIA") == root / "GAIA" / "GAIA"
     directory = root / "GAIA" / "GAIA"
     assert sorted(p.stem for p in directory.glob("*.dat")) == bands
-    assert caplog.text.count("differs from NJM's copy; replacing it with NJM's") == 4  # said, not silent
+    assert caplog.text.count("with NJM's copies, which differ") == 1  # said once, not silent
+    assert "replaced G.dat, Gbp.dat, Grp.dat, Grvs.dat with NJM's copies" in caplog.text
     assert FilterLibrary.published_complete(directory)
     verified = json.loads((root.parent / "cache" / "njm" / "filters" / "GAIA" / "GAIA" /
                            "verified_curves.json").read_text())
@@ -462,7 +463,7 @@ def test_a_stale_installed_atmosphere_takes_njms_manifest_and_keeps_its_grids(tm
         listed = library.atmospheres()["lsst_std"]
     assert listed["citation"] == "lsst/throughputs v1.9.2" and listed["airmass"] == [1.0, 1.2]
     assert (site / "manifest.json").read_text() == served and (site / "am1.20.dat").read_bytes() == grid
-    assert "Updated the lsst_std atmosphere's manifest to NJM's (citation, entries, terms)" in caplog.text
+    assert caplog.text == ""  # a routine update: NJM's citation and terms, a new grid point
     requested = len(library.mirror.session.requested)
     library.atmospheres()  # checked today: only the site list is asked for
     assert library.mirror.session.requested[requested:] == ["atmospheres/"]

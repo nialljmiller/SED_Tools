@@ -186,8 +186,6 @@ class NJMFilterGrabber:
             return True
         if response.status_code not in RETRY_STATUSES:
             return self._unavailable(f"HTTP {response.status_code}")
-        logger.warning("NJM answered %s; confirming with index.json (a burst block lifts within about a minute)",
-                       response.status_code)
         try:
             response = self._get(f"{self.base_url}/index.json", timeout=10)
         except requests.RequestException as exc:
@@ -543,7 +541,7 @@ class NJMFilterGrabber:
         and neither it nor NJM's record of the instrument has changed since
         (:meth:`_verified_curves`).
         """
-        downloaded, skipped, failed, njms = 0, 0, [], []
+        downloaded, skipped, failed, njms, replaced, untagged = 0, 0, [], [], [], {}
         installed = any((output_dir / curve_file(name)).is_file() for name in filters)
         trusted = self._verified_curves(facility, instrument, output_dir) if installed else set()
         for number, filter_name in enumerate(filters):
@@ -563,14 +561,14 @@ class NJMFilterGrabber:
                 failed.append(f"{filter_name}: {e}")
                 continue
             if output_path.exists() and _same_curve(output_path, served):
-                self._tag(output_path, facility)
+                self._tag(output_path, facility, untagged)
                 skipped += 1
                 njms.append(output_path.name)
                 continue
             if output_path.exists():
-                logger.warning("%s differs from NJM's copy; replacing it with NJM's", output_path)
+                replaced.append(output_path.name)
             self._write_curve(served, output_path)
-            result = self._tag(output_path, facility)
+            result = self._tag(output_path, facility, untagged)
             if result is not None and result.source == SOURCE_ASSUMED:
                 print(f"  [warn] {filter_name}: detector type unverified, assuming {result.detector_type}"
                       + (f" ({result.note})" if result.note else ""))
@@ -578,6 +576,11 @@ class NJMFilterGrabber:
             njms.append(output_path.name)
         if njms:
             self._record_verified(facility, instrument, output_dir, njms)
+        if replaced:
+            logger.warning("%s: replaced %s with NJM's copies, which differ", output_dir, ", ".join(replaced))
+        if untagged:
+            logger.warning("%s: kept the mirror's headers of %s, which could not be checked against SVO (%s)",
+                           output_dir, ", ".join(untagged), "; ".join(dict.fromkeys(untagged.values())))
         return downloaded, skipped, failed
 
     # ------------------------------------------------------------------
@@ -640,17 +643,17 @@ class NJMFilterGrabber:
         path.parent.mkdir(parents=True, exist_ok=True)
         _write_atomic(path, json.dumps({"njm_record": record, "files": files}, indent=1, sort_keys=True) + "\n")
 
-    def _tag(self, path: Path, facility: str):
+    def _tag(self, path: Path, facility: str, untagged: Dict[str, str]):
         """Fill in what the curve's header lacks from SVO; a no-op for curves the mirror tagged fully.
 
         Returns the :class:`~sed_tools.filter_metadata.DetectorTypeResult`, or
-        None when SVO could not be asked; the mirror's header is then kept as
-        served, with a warning.
+        None when SVO could not be asked: the mirror's header is then kept as
+        served, and why is added to ``untagged`` (file name -> reason).
         """
         try:
             return tag_filter_file(path, client=self._metadata_client, facility=facility)
         except (requests.RequestException, ValueError) as exc:
-            logger.warning("%s: could not check its header against SVO (%s); kept the mirror's header", path, exc)
+            untagged[path.name] = str(exc)
             return None
 
     def _save_index(self, facility: str, instrument: str, output_dir: Path) -> Optional[List[str]]:
@@ -901,9 +904,8 @@ def _update_atmosphere_manifest(site_dir: Path, served: str) -> None:
     Rows (``entries``, ``unstated``) for installed files NJM does not list
     stay: points built here with SkyCalc, say.  A row NJM describes otherwise
     stays as installed when its grid file is installed, since it describes
-    that file.
-    Every other field takes NJM's value.  A change is warned about, naming
-    the fields; nothing is written when the manifest is already NJM's.
+    that file, with a warning naming it.  Every other field takes NJM's value;
+    nothing is written when the manifest is already NJM's.
     """
     path = site_dir / "manifest.json"
     if not path.is_file():
@@ -927,11 +929,11 @@ def _update_atmosphere_manifest(site_dir: Path, served: str) -> None:
             merged[key] = rows
     if merged == installed:
         return
-    changed = sorted(key for key in set(merged) | set(installed) if merged.get(key) != installed.get(key))
     _write_atomic(path, served if merged == latest else json.dumps(merged, indent=2, sort_keys=True) + "\n")
-    logger.warning("Updated the %s atmosphere's manifest to NJM's (%s)%s", site_dir.name, ", ".join(changed),
-                   f"; kept the installed description of {', '.join(kept)}, which NJM describes otherwise "
-                   "(remove those files to fetch NJM's)" if kept else "")
+    if kept:
+        logger.warning("Updated the %s atmosphere's manifest to NJM's, but kept the installed description of %s, "
+                       "which NJM describes otherwise (remove those files to fetch NJM's)",
+                       site_dir.name, ", ".join(kept))
 
 
 def _write_atomic(path: Path, text: str) -> None:

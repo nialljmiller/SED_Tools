@@ -223,7 +223,7 @@ def test_a_changed_curve_or_a_changed_njm_record_is_checked_again(tmp_path, grab
         local_change = grabber(_njm_set())
         local_change._download_set("Fac", "Cam")
     assert local_change.session.curves_requested() == ["r.dat"] and r.read_text() == CURVE
-    assert f"{r} differs from NJM's copy" in caplog.text
+    assert f"{r.parent}: replaced r.dat with NJM's copies, which differ" in caplog.text
 
     njm_filter_grabber._STATE.reset()  # a later process, which reads NJM's index.json again
     njm_change = grabber(_njm_set(size_bytes=151))  # NJM's set changed since

@@ -379,7 +379,8 @@ def test_svo_failure_while_checking_a_mirror_curve_keeps_the_curve(tmp_path, njm
     with caplog.at_level(logging.WARNING):
         assert grabber.download_filters("Fac", "Cam") == 1
     assert (tmp_path / "Fac/Cam/g.dat").read_text() == CURVE
-    assert "could not check its header against SVO (SVO Filter Profile Service unreachable)" in caplog.text
+    assert ("kept the mirror's headers of g.dat, which could not be checked against SVO "
+            "(SVO Filter Profile Service unreachable)") in caplog.text
 
 
 # ----------------------------------------------------------------------
