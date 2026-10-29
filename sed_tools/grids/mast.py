@@ -343,16 +343,11 @@ class MASTSpectraGrabber:
         metals = [_metal_tag(tok.strip()) for tok in raw.split(",") if tok.strip()] or METALS
         return {"provider": "mast-bosz", "version": "2024", "reskey": reskey, "metals": metals}
 
-    def download_model_spectra(
-        self,
-        model_name: str,
-        info: Dict[str, Any],
-        teff_range: Optional[Tuple[float, float]] = None,
-        logg_range: Optional[Tuple[float, float]] = None,
-        meta_range: Optional[Tuple[float, float]] = None,
-        wl_range: Optional[Tuple[float, float]] = None,
-        **_ignored: Any,
-    ) -> int:
+    def download_model_spectra(self, model_name: str, info: Dict[str, Any],
+                               teff_range: Optional[Tuple[float, float]] = None,
+                               logg_range: Optional[Tuple[float, float]] = None,
+                               meta_range: Optional[Tuple[float, float]] = None,
+                               wl_range: Optional[Tuple[float, float]] = None, **_ignored: Any) -> int:
         """Download the BOSZ spectra in the plan from get_model_metadata.
 
         Returns the number written. Raises RuntimeError if the download

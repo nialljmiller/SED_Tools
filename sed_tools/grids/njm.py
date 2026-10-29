@@ -467,15 +467,11 @@ class NJMSpectraGrabber:
         return self._filter_files_by_params(txt_files, lookup, teff_range=teff_range,
                                             logg_range=logg_range, meta_range=meta_range)
     
-    def download_model_spectra(
-        self,
-        model_name: str,
-        metadata: Dict[str, any],
-        teff_range: Optional[Tuple[float, float]] = None,
-        logg_range: Optional[Tuple[float, float]] = None,
-        meta_range: Optional[Tuple[float, float]] = None,
-        wl_range: Optional[Tuple[float, float]] = None,
-    ) -> int:
+    def download_model_spectra(self, model_name: str, metadata: Dict[str, any],
+                               teff_range: Optional[Tuple[float, float]] = None,
+                               logg_range: Optional[Tuple[float, float]] = None,
+                               meta_range: Optional[Tuple[float, float]] = None,
+                               wl_range: Optional[Tuple[float, float]] = None) -> int:
         """Download files from the mirror for a model, with optional axis cuts.
         
         Parameters
