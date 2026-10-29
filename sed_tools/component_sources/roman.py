@@ -55,10 +55,8 @@ RELEASE_NOTE = (
 
 def _declared_units(text: str) -> Dict[str, str]:
     """Column units from the ECSV ``datatype`` header (``''`` when dimensionless)."""
-    units = {}
-    for m in re.finditer(r"\{name: ([^,]+), unit: ([^,]*), datatype", text):
-        units[m.group(1).strip()] = m.group(2).strip().strip("'\"")
-    return units
+    return {m.group(1).strip(): m.group(2).strip().strip("'\"")
+            for m in re.finditer(r"\{name: ([^,]+), unit: ([^,]*), datatype", text)}
 
 
 def parse_qe(text: str) -> Tuple[np.ndarray, np.ndarray]:
