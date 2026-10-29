@@ -75,20 +75,15 @@ class SVOSpectraGrabber:
                            self.model_index_url, discovery_failure(e))
             return []
         soup = BeautifulSoup(r.text, "html.parser")
-        models = set()
-        for a in soup.find_all("a", href=True):
-            href = a["href"]
-            if "models=" in href:
-                val = href.split("models=", 1)[1].split("&", 1)[0]
-                if val:
-                    models.add(val)
+        values = (a["href"].split("models=", 1)[1].split("&", 1)[0] for a in soup.find_all("a", href=True)
+                  if "models=" in a["href"])
+        models = {value for value in values if value}
         if not models:
             models.update(re.findall(r"models=([A-Za-z0-9._\-]+)", r.text))
-        out = sorted(models)
-        if not out:
+        if not models:
             logger.warning("SVO: no spectral grids found on the index page %s; SVO spectral grids are not offered",
                            self.model_index_url)
-        return out
+        return sorted(models)
 
     # -------------------- spectra discovery --------------------
 
@@ -161,10 +156,7 @@ class SVOSpectraGrabber:
         """
         params = {"model": model_name, "REQUEST": "queryData", "FORMAT": "votable"}
         try:
-            with self.session.get(
-                self.spectra_base_url, params=params,
-                timeout=self.ssap_timeout, stream=True
-            ) as r:
+            with self.session.get(self.spectra_base_url, params=params, timeout=self.ssap_timeout, stream=True) as r:
                 if r.status_code != 200:
                     return set(), f"HTTP {r.status_code}"
                 raw = self._read_capped(r, model_name)
@@ -228,19 +220,14 @@ class SVOSpectraGrabber:
         """True if SVO serves a spectrum for this FID; RuntimeError if the request fails."""
         params = {"model": model_name, "fid": int(fid), "format": "ascii"}
         try:
-            r = self.session.head(
-                self.spectra_base_url, params=params,
-                timeout=self.head_timeout, allow_redirects=True
-            )
+            r = self.session.head(self.spectra_base_url, params=params, timeout=self.head_timeout, allow_redirects=True)
             if r.status_code != 200:
                 return False
             cl = r.headers.get("content-length")
             if cl is None or cl == "0":
                 # HEAD gave no content-length info — do a small GET to verify
-                with self.session.get(
-                    self.spectra_base_url, params=params,
-                    timeout=self.head_timeout, stream=True
-                ) as g:
+                with self.session.get(self.spectra_base_url, params=params, timeout=self.head_timeout,
+                                      stream=True) as g:
                     if g.status_code != 200:
                         return False
                     for chunk in g.iter_content(chunk_size=512):
