@@ -84,6 +84,12 @@ def _directory_state(directory: Path) -> Dict[str, int]:
     return {path.name: path.stat().st_mtime_ns for path in directory.iterdir()}
 
 
+def _mixed_sources_error(src: str, model_dir, tried: List[str]) -> RuntimeError:
+    """The error when ``src`` failed after writing into ``model_dir``, so no further source is tried."""
+    return RuntimeError(f"{src} failed after changing {model_dir}, so another source's spectra would be mixed "
+                        f"with its files; no further source tried. Tried: {'; '.join(tried)}")
+
+
 def _download_count(n_spectra: int, before: Dict[str, int], after: Dict[str, int]) -> str:
     """``Downloaded N spectra``, or ``K already present, N downloaded`` when the grabber's
     ``n_spectra`` (the spectra it downloaded or found in place) includes spectra it did not write.
@@ -1035,9 +1041,7 @@ class SED:
                 return src
             failures.append(f"{src}: {error}")
             if _directory_state(model_dir) != before:
-                raise RuntimeError(
-                    f"Fetching '{catalog}' stopped: {src} failed after changing {model_dir}, so another "
-                    f"source's spectra would be mixed with its files. Tried: {'; '.join(failures)}")
+                raise _mixed_sources_error(src, model_dir, failures)
             logger.warning("[fetch] %s: %s, trying next...", src, error)
         raise ValueError(f"Spectral grid '{catalog}' could not be fetched. Tried: {'; '.join(failures)}")
 

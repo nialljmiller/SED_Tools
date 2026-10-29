@@ -597,7 +597,7 @@ def _download_from_first_source(name: str, sources: List[str], grabs: Dict, mode
     mixed with its files.  Raises RuntimeError with every source's error when
     no source succeeds.
     """
-    from .api import _directory_state
+    from .api import _directory_state, _mixed_sources_error
 
     errors = []
     for src in sources:
@@ -610,8 +610,7 @@ def _download_from_first_source(name: str, sources: List[str], grabs: Dict, mode
             return src, meta
         errors.append(f"{src}: {error}")
         if _directory_state(model_dir) != before:
-            raise RuntimeError(f"{src} failed after changing {model_dir}, so another source's spectra would be "
-                               f"mixed with its files; no further source tried. Tried: {'; '.join(errors)}")
+            raise _mixed_sources_error(src, model_dir, errors)
         logger.warning("  [%s] %s — trying next source...", src, error)
     raise RuntimeError(f"no source could supply it. Tried: {'; '.join(errors)}")
 
