@@ -23,11 +23,10 @@ from typing import Dict, Sequence, Tuple
 import numpy as np
 from requests import RequestException
 
+from ..filters.curve_metadata import PHOTON
 from ._original import Component, Fetcher, Instrument, clean_curve, make_band, make_builder, open_fits
 
 logger = logging.getLogger(__name__)
-
-PHOTON = "photon"
 
 #: CALDB tree of the UVOT, on HEASARC and on its AWS Open Data mirror (tried in order).
 CALDB_ROOTS = (

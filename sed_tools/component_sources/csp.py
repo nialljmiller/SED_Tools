@@ -21,9 +21,9 @@ from typing import Dict, Tuple
 import numpy as np
 
 from ..filters.compose import InstrumentManifest  # noqa: F401  stays importable here
+from ..filters.curve_metadata import PHOTON
 from ._original import Component, Fetcher, Instrument, clean_curve, make_band, make_builder, safe_member, support
 
-PHOTON = "photon"
 PAGE = "https://csp.obs.carnegiescience.edu/data/filters"
 DATA = "https://csp.obs.carnegiescience.edu/data/"
 PACKAGE = DATA + "CSP_filter_package.tgz"

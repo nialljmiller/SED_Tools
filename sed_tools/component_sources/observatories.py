@@ -16,9 +16,8 @@ import re
 
 import numpy as np
 
+from ..filters.curve_metadata import PHOTON
 from ._original import Component, Fetcher, Instrument, clean_curve, make_band, make_builder, tar_members
-
-PHOTON = "photon"
 
 
 def _rows(text: str, cols=(0, 1)) -> np.ndarray:

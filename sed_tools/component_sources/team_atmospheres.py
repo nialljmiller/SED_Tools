@@ -30,17 +30,15 @@ import logging
 import re
 import tarfile
 from pathlib import Path
-from typing import Dict, Iterable, Optional, Sequence, Tuple, Union
+from typing import Dict, Iterable, Optional, Sequence, Union
 
 import numpy as np
 
 from ..filters.compose import TEAM
 from ._common import DerivedCurve, SiteAtmosphere, write_site
-from ._original import CONNECT_TIMEOUT, CachingSession, download  # noqa: F401  CONNECT_TIMEOUT stays importable here
+from ._original import CONNECT_TIMEOUT, CachingSession, Curve, download  # noqa: F401  CONNECT_TIMEOUT stays importable here
 
 logger = logging.getLogger(__name__)
-
-Curve = Tuple[np.ndarray, np.ndarray]
 
 
 def _bytes(session, url: str) -> bytes:

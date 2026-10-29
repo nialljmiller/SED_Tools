@@ -40,7 +40,7 @@ from pathlib import Path
 import numpy as np
 
 from ..filters.compose import FILTER, QE, InstrumentManifest, add_component, recipe_name
-from ..filters.curve_metadata import SVOMetadataClient
+from ..filters.curve_metadata import PHOTON, SVOMetadataClient
 from ._common import Table, ensure_published
 from ._original import Band, Component, Fetcher, Instrument, clean_curve, write_instrument
 
@@ -50,7 +50,6 @@ BASS_SITE = "http://batc.bao.ac.cn/BASS/doku.php?id=datarelease:telescope_and_in
 BASS_BANDS = ("g", "r")
 #: Column-1 floor for the QE ratio: values are rounded to 0.001.
 QE_FLOOR = 0.05
-PHOTON = "photon"
 
 
 def read_bass(raw: bytes):

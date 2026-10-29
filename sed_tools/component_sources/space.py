@@ -15,9 +15,8 @@ import zipfile
 
 import numpy as np
 
+from ..filters.curve_metadata import ENERGY, PHOTON
 from ._original import Component, Fetcher, Instrument, fixed_width_pairs, make_band, make_builder, open_fits
-
-PHOTON, ENERGY = "photon", "energy"
 
 
 # ---------------------------------------------------------------------- Gaia

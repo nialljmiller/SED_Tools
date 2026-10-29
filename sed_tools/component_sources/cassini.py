@@ -21,6 +21,7 @@ from typing import Dict, Tuple
 import numpy as np
 
 from ..filters.compose import InstrumentManifest
+from ..filters.curve_metadata import PHOTON
 from ._original import Component, Fetcher, Instrument, clean_curve, make_band, support, write_instrument
 
 FACILITY = "Cassini"
@@ -29,7 +30,6 @@ EFFICIENCY = VOLUME + "calib/efficiency/"
 QE_URL = EFFICIENCY + "ccdqe.tab"
 INFO_URL = EFFICIENCY + "efficiency_info.txt"
 THEORY_URL = VOLUME + "document/theoretical_basis.tex"
-PHOTON = "photon"
 
 #: camera -> (systrans prefix, optics table, ccdqe.tab column, filter wheel 1, filter wheel 2)
 CAMERAS: Dict[str, Tuple[str, str, int, frozenset, frozenset]] = {

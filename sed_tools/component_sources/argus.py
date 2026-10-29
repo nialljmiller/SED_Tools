@@ -66,7 +66,7 @@ from ..filters.compose import (FILTER, OPTICS, QE, SHARED, InstrumentManifest, a
                                  compose_band)
 from ..filters.curve_metadata import ENERGY, read_filter_header, write_filter_file, write_filter_header
 from ._common import register_variant
-from ._original import CachingSession
+from ._original import CachingSession, Curve
 
 FACILITY = "Argus"
 BANDS = ("beta", "rho")
@@ -79,8 +79,6 @@ ARGUS_SIM_RAW = ("https://raw.githubusercontent.com/argus-hdps/argus_sim/{commit
 NJM_HINT = ("Install the curves and components from the NJM mirror instead "
             "(sed_tools.Filters.fetch('Argus', '{instrument}')), or pass raw= (--raw) a directory "
             "holding these files.")
-
-Curve = Tuple[np.ndarray, np.ndarray]  # (Angstrom, fraction)
 
 
 @dataclass(frozen=True)
