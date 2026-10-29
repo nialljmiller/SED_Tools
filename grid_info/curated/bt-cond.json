@@ -25,7 +25,8 @@
     "upstream_spectra": 13648,
     "fraction": 0.4417,
     "upstream_count_from": "SVO's FID list for bt-cond as SED_Tools cached it",
-    "note": "a subset; which SVO spectra are missing is listed in properties.json"
+    "note": "a subset: NJM holds SVO FIDs 1-6,028; FIDs 6,029-13,648 (7,620 spectra) are missing in one block. SVO lists its FIDs in Teff order and NJM's last (FID 6,028) is a 6,600 K model, so the missing block is presumably the hotter models; not verified, as SVO refuses scripted queries",
+    "missing_svo_fids": "6029-13648"
   },
   "licence": {
     "redistribution": "unstated",
@@ -67,7 +68,7 @@
   ],
   "wavelength_medium": "air (SVO: \"Wavelengths have been converted to air wavelengths.\")",
   "flux_quantity": "surface flux F_lambda (SVO's column 2: FLUX (ERG/CM2/S/A))",
-  "notes": "References: SVO's registry record credits 1999ApJ...512..377H; the Lyon README names Allard et al. (2012) as the refereed BT-Settl paper, and its bibcode 2012RSPTA.370.2765A is given from knowledge, not checked here. Bolometric flux: the lowest-gravity spectra (logg -0.5 and 0) hold only 0.38-0.60 of sigma*T^4; see bolometric_exceptions. Nill to confirm this is acceptable for listing.",
+  "notes": "References: SVO's registry record credits 1999ApJ...512..377H; the Lyon README names Allard et al. (2012) as the refereed BT-Settl paper, and its bibcode 2012RSPTA.370.2765A is given from knowledge, not checked here. Bolometric flux: see bolometric_exceptions; Nill to confirm listing with it.",
   "bolometric_exceptions": [
     {
       "logg_max": 0.0,
@@ -75,7 +76,7 @@
         0.3,
         0.7
       ],
-      "why": "BT-Cond's lowest-gravity models (logg -0.5 and 0) integrate to 0.38-0.60 of sigma*T^4 on their own 0.001 A - 10^7 A wavelengths, falling smoothly with gravity; measured 29 Oct 2026 on the guard's 120-spectrum sample (14 such spectra, all at logg <= 0). Not a unit error (that would be a constant 1/pi or 1/(4 pi)), and SED_Tools' cleaner only ever divides over-bright spectra; the headers declare SVO's own unit, unconverted. Not checked against raw SVO files: none on cirrus has these parameters. Treat fluxes there as unreliable"
+      "why": "BT-Cond's lowest-gravity models integrate to 0.38-0.44 (logg -0.5) and 0.52-0.60 (logg 0) of sigma*T^4 on their own 0.001 A - 10^7 A wavelengths, against about 0.95-1.0 at higher gravity (guard sample, 29 Oct 2026). SVO's raw, never cleaned BT-Settl files show the same deficit (0.39-0.44 at logg -0.5, 0.63-0.65 at logg 0, 0.98-0.99 at logg 4.5; source_evidence/grids/bt-cond/btsettl_raw_gravity/), so it is in the upstream models, not made by SED_Tools. The April 2026 cleaner, which rescaled without marking files, would have left a rescaled spectrum at 0.995-1.095 here, not 0.4-0.6. No raw BT-Cond file with these parameters is on cirrus. Fluxes there do not meet sigma*T^4: treat them as unreliable"
     }
   ]
 }
