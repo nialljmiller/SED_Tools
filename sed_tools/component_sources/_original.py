@@ -1,18 +1,8 @@
-"""Shared machinery for instruments rebuilt from their teams' original files.
+"""What every builder shares: downloads, curve maths, recipes, and writing an instrument.
 
-These builders reproduce the curated published curves (and any separately
-published components) that the njm mirror serves, directly from the original
-sources, so that :meth:`FilterLibrary.published` can rebuild them when the
-mirror is unavailable.  Each source module (``surveys``, ``space``,
-``observatories``, ``standards``) maps an instrument to a *recipe*: a
-function that downloads and parses the team's files through a
-:class:`Fetcher` and returns an :class:`Instrument`.  Nothing is written
-until every file of the instrument has been fetched and checked.
-
-Cleaning follows the format contract of the curated library and is the same
-for every recipe (:func:`clean_curve`): undefined (and sentinel) samples are
-dropped, wavelengths sorted, repeated wavelengths averaged, negative
-measurement noise set to 0 and, where the recipe asks, the peak scaled to 1.
+A recipe (``surveys``, ``space``, ``observatories``, ``standards``, ...) downloads its team's files
+through a :class:`Fetcher` and returns an :class:`Instrument`; nothing is written until every file
+is fetched and checked.  :meth:`FilterLibrary.published` uses them when the njm mirror is down.
 """
 
 from __future__ import annotations
@@ -44,9 +34,7 @@ _UNIT_SCALE = {"angstrom": 1.0, "a": 1.0, "aa": 1.0, "nm": 10.0, "micron": 1e4, 
 USER_AGENT = "SED_Tools-original-sources"
 
 
-# --------------------------------------------------------------------------
-# Downloads
-# --------------------------------------------------------------------------
+# ------------------------------------------------------------------ Downloads
 #: Seconds an original source's server has to accept a connection, as for SVO: a host
 #: that is down fails fast, while a large file still has minutes to arrive.
 CONNECT_TIMEOUT = 10.0
@@ -134,9 +122,7 @@ def download(session, url: str, read_timeout: float = 300) -> bytes:
     return resp.content
 
 
-# --------------------------------------------------------------------------
-# Curves
-# --------------------------------------------------------------------------
+# --------------------------------------------------------------------- Curves
 def to_angstrom(x: Sequence[float], unit: str) -> np.ndarray:
     """Convert wavelengths, frequencies (GHz/Hz) or wavenumbers (1/cm) to Angstrom."""
     x = np.asarray(x, dtype=float)
@@ -313,9 +299,7 @@ class Instrument:
 Recipe = Callable[[Fetcher], Instrument]
 
 
-# --------------------------------------------------------------------------
-# Writing
-# --------------------------------------------------------------------------
+# -------------------------------------------------------------------- Writing
 def write_instrument(filter_root: Union[str, Path], spec: Instrument, *,
                      atmosphere_root: Union[str, Path, None] = None, session=None) -> Path:
     """Write the published curves, index, components and manifest of ``spec``.
@@ -395,9 +379,7 @@ def make_builder(recipes: Mapping[str, Tuple[str, Recipe]]):
     return build
 
 
-# --------------------------------------------------------------------------
-# Small parsing helpers shared by several recipes
-# --------------------------------------------------------------------------
+# --------------------------------------------- Archive members and FITS files
 def safe_member(name: str, *, flat: bool = False) -> None:
     """Refuse absolute or parent-relative archive members (and nested ones if ``flat``)."""
     from pathlib import PurePosixPath

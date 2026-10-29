@@ -1,19 +1,8 @@
-"""Which instruments have separable components, from where, and why not.
+"""Which instruments have separable components, which builder supplies them, and why not.
 
-``BUILDERS_FOR`` maps a local ``<Facility>/<Instrument>`` directory to the
-builder that fetches that instrument's own published factors.  The njm
-mirror runs them ahead of time; a client that downloaded the published
-curves elsewhere (e.g. SVO) runs them itself (see
-:func:`ensure_components`).  ``heavy`` builders download large archives and
-only run on request.  ``publishes`` builders can also write an instrument's
-published curves from the original sources, so :meth:`FilterLibrary.published`
-uses them when the njm mirror is unavailable; builders with
-``components=False`` only reproduce the published curves (the team publishes
-no separate factors), so they are not run to obtain components.
-
-``STATUS`` records instruments whose teams publish only a total response,
-or whose component data cannot currently be retrieved, so that users are
-told why only the published curve is offered.
+``BUILDERS_FOR`` maps ``<Facility>/<Instrument>`` to its builder (:class:`BuilderRef` says which run
+on clients and which can also rebuild the published curves); NJM runs them ahead of time, a client
+runs them itself (:func:`ensure_components`).  ``STATUS`` says why only a published curve is offered.
 """
 
 from __future__ import annotations

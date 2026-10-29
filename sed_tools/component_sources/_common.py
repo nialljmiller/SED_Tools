@@ -1,10 +1,8 @@
-"""Shared machinery for builders whose teams publish plain tabulated factors.
+"""Builders for teams that publish plain tabulated factors, and the team-atmosphere sites.
 
-Most sources publish per-band filter curves plus shared optics/QE curves
-(and sometimes the standard atmosphere they used).  A builder describes
-these as a :class:`SimpleSource` and :func:`build_simple` downloads them,
-writes the components, registers the team's atmosphere as the instrument's
-own site, and saves the manifest.
+A builder describes its team's files as a :class:`SimpleSource`; :func:`build_simple` downloads
+them, writes the components and the team's sites, and saves the manifest.  The helpers at the end
+add components to instruments already published (CFHT, ERIS/NIX, 2MASS).
 """
 
 from __future__ import annotations
@@ -243,11 +241,9 @@ def register_sites(manifest: InstrumentManifest, default: Optional[str], sites: 
 
 
 def _publish_original_filters(spec: SimpleSource, inst_dir: Path, session) -> Dict[str, Curve]:
-    """Write the original filter scans as the published curves, and the MESA index.
+    """Write the original filter scans as the published curves (existing ones kept) and the MESA index.
 
-    Existing published curves are kept.  Every band is fetched and checked
-    before anything is written: a failed upstream request must not leave a
-    seemingly complete partial instrument.
+    Every band is fetched and checked first, so a failed download leaves no partial instrument.
     """
     from ..filters.combine import write_filter_index
 
@@ -371,7 +367,7 @@ def register_variant(manifest: InstrumentManifest, key: str, name: str,
     manifest.variants.setdefault(key, {})[name] = entry
 
 
-# Components added to instruments already published (CFHT, ERIS/NIX, 2MASS)
+# ---------- Components added to published instruments (CFHT, ERIS/NIX, 2MASS)
 def published_bands(inst_dir: Path) -> set:
     """Band names of the published curves; refuse an empty instrument."""
     bands = {p.stem for p in inst_dir.glob("*.dat")}

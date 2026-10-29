@@ -77,9 +77,7 @@ def _checked(wl, tr, what: str) -> Curve:
     return wl, tr
 
 
-# --------------------------------------------------------------------------
-# Pan-STARRS1 (Tonry et al. 2012)
-# --------------------------------------------------------------------------
+# -------------------------------------------- Pan-STARRS1 (Tonry et al. 2012)
 PS1_TABLE3 = "https://cdsarc.cds.unistra.fr/ftp/J/ApJ/750/99/table3.dat"
 PS1_README = "https://cdsarc.cds.unistra.fr/ftp/J/ApJ/750/99/ReadMe"
 PS1_PAPER = "https://ui.adsabs.harvard.edu/abs/2012ApJ...750...99T"
@@ -124,9 +122,7 @@ HALEAKALA_PS1 = SiteAtmosphere(
 )
 
 
-# --------------------------------------------------------------------------
-# VISTA/VIRCAM (ESO ETC curves)
-# --------------------------------------------------------------------------
+# ---------------------------------------------- VISTA/VIRCAM (ESO ETC curves)
 VIRCAM_BUNDLE = "https://www.eso.org/sci/facilities/paranal/decommissioned/vircam/inst/Filters_QE_Atm_curves.tar.gz"
 VIRCAM_PAGE = "https://www.eso.org/sci/facilities/paranal/decommissioned/vircam/inst.html"
 VISTA_PAGE = "https://www.eso.org/public/teles-instr/paranal-observatory/surveytelescopes/vista/"
@@ -171,9 +167,7 @@ PARANAL_VIRCAM = SiteAtmosphere(
 )
 
 
-# --------------------------------------------------------------------------
-# 2MASS (Cohen et al. 2003; Explanatory Supplement III.1.b1)
-# --------------------------------------------------------------------------
+# ----------------- 2MASS (Cohen et al. 2003; Explanatory Supplement III.1.b1)
 TWOMASS_DOC = "https://www.ipac.caltech.edu/2mass/releases/allsky/doc/"
 
 
@@ -224,9 +218,7 @@ CTIO_2MASS = SiteAtmosphere(
 )
 
 
-# --------------------------------------------------------------------------
-# Carnegie Supernova Project (CSP_filter_package.tgz)
-# --------------------------------------------------------------------------
+# ------------------------ Carnegie Supernova Project (CSP_filter_package.tgz)
 CSP_PACKAGE = "https://csp.obs.carnegiescience.edu/data/CSP_filter_package.tgz"
 CSP_PAGE = "https://csp.obs.carnegiescience.edu/data/filters"
 CSP_AIRMASS = 1.2
@@ -289,9 +281,7 @@ LCO_CSP = SiteAtmosphere(
 )
 
 
-# --------------------------------------------------------------------------
-# SDSS (DR7 imager response tables)
-# --------------------------------------------------------------------------
+# ------------------------------------------ SDSS (DR7 imager response tables)
 SDSS_DR7 = "https://classic.sdss.org/dr7/instruments/imager/"
 SDSS_FILES = {b: f"{SDSS_DR7}filters/{b}.dat" for b in "ugriz"}
 
@@ -335,9 +325,7 @@ APO_SDSS = SiteAtmosphere(
 )
 
 
-# --------------------------------------------------------------------------
-# BASS (Legacy Surveys DR10 filter files)
-# --------------------------------------------------------------------------
+# ------------------------------------ BASS (Legacy Surveys DR10 filter files)
 BASS_FILES = {b: f"https://www.legacysurvey.org/files/bass-{b}.txt" for b in "gr"}
 BASS_PAGE = "https://www.legacysurvey.org/dr10/description/"
 BASS_MIN_RESPONSE = 0.1  # filter x QE column; 3-decimal rounding limits the ratio below this
@@ -381,9 +369,7 @@ KPNO_BASS = SiteAtmosphere(
 )
 
 
-# --------------------------------------------------------------------------
-# Gemini (ATRAN, Lord 1992)
-# --------------------------------------------------------------------------
+# -------------------------------------------------- Gemini (ATRAN, Lord 1992)
 GEMINI_MODELS = "https://www.gemini.edu/sciops/ObsProcess/obsConstraints/atm-models/"
 GEMINI_PAGE = "https://www.gemini.edu/observing/telescopes-and-sites/sites"
 GEMINI_TERMS = ("Any use of these data should reference Lord, S. D., 1992, NASA Technical Memorandum 103957, "
@@ -437,18 +423,14 @@ CPACHON_GEMINI = SiteAtmosphere(
 )
 
 
-# --------------------------------------------------------------------------
-# Subaru/HSC: the very site its builder writes (one definition, in hsc.py)
-# --------------------------------------------------------------------------
+# --- Subaru/HSC: the very site its builder writes (one definition, in hsc.py)
 def _maunakea_hsc() -> SiteAtmosphere:
     from .hsc import SPEC
 
     return SPEC.site
 
 
-# --------------------------------------------------------------------------
-# Registry and builder
-# --------------------------------------------------------------------------
+# ------------------------------------------------------- Registry and builder
 SITES: Dict[str, SiteAtmosphere] = {
     s.site: s for s in (HALEAKALA_PS1, PARANAL_VIRCAM, HOPKINS_2MASS, CTIO_2MASS, LCO_CSP, APO_SDSS,
                         KPNO_BASS, MAUNAKEA_GEMINI, CPACHON_GEMINI)

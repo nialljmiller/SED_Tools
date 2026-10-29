@@ -1,14 +1,8 @@
-"""Builders that populate ``components/`` for instruments whose teams publish them.
+"""Builders that write instruments' components (and missing published curves) from their teams' files.
 
-Each builder module exposes ``build(filter_root, **options) -> Path`` returning
-the instrument directory it populated.  Builders only add ``components/`` and
-``manifest.json`` (and published curves where none exist); they never alter
-existing published ``.dat`` files or MESA index files.
-
-Builders are run where the data is curated (the njm mirror), e.g.::
-
-    sed-tools filters-build-components argus --raw /path/to/Argus/raw
-    sed-tools filters-build-components argus --instrument DR280 --raw /path/to/Argus/raw
+Each module's ``build(filter_root, **options)`` returns the instrument directory; existing published
+``.dat`` and MESA index files are never altered.  They run where the data is curated (the njm mirror),
+e.g. ``sed-tools filters-build-components argus --instrument DR280 --raw /path/to/Argus/raw``.
 """
 
 from __future__ import annotations

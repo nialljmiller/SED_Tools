@@ -223,9 +223,7 @@ SYSTEM_NOTES = (
 )
 
 
-# --------------------------------------------------------------------------
-# Inputs
-# --------------------------------------------------------------------------
+# --------------------------------------------------------------------- Inputs
 def _parse(data: bytes, spec: Input) -> Curve:
     """(Angstrom, fraction) from a comma-separated table in nm (its bytes already match the pin)."""
     table = np.loadtxt(io.StringIO(data.decode("utf-8")), delimiter=",", skiprows=spec.skip,
@@ -242,10 +240,7 @@ def _missing_local(inputs: Mapping[str, Input], raw: Optional[Path]) -> list:
 
 def _read_inputs(inputs: Mapping[str, Input], raw: Optional[Path], instrument: str,
                  fetch: Optional[CachingSession] = None) -> Dict[str, Curve]:
-    """Every input as (Angstrom, fraction), after checking its SHA-256.
-
-    The local (non-public) inputs are checked before anything is downloaded.
-    """
+    """Every input as (Angstrom, fraction), SHA-256 checked; the local (non-public) ones before any download."""
     missing = _missing_local(inputs, raw)
     if missing:
         listing = "; ".join(f"{spec.file} ({spec.origin})" for spec in missing)
@@ -264,9 +259,7 @@ def _read_inputs(inputs: Mapping[str, Input], raw: Optional[Path], instrument: s
     return curves
 
 
-# --------------------------------------------------------------------------
-# Argus/DR280
-# --------------------------------------------------------------------------
+# ---------------------------------------------------------------- Argus/DR280
 def _label_detector(manifest: InstrumentManifest) -> None:
     """Record the Argus team's detector convention (both instruments) in ``manifest``."""
     manifest.detector_type = DETECTOR_TYPE
@@ -345,9 +338,7 @@ def build_dr280(filter_root: Union[str, Path], raw: Union[str, Path, None] = Non
     return inst_dir
 
 
-# --------------------------------------------------------------------------
-# Argus/System (legacy)
-# --------------------------------------------------------------------------
+# ------------------------------------------------------ Argus/System (legacy)
 def system_header(band: str) -> Dict[str, str]:
     """The column-row metadata of the legacy ``Argus/System`` curve of ``band``.
 

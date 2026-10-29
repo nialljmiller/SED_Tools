@@ -201,11 +201,7 @@ def _product(tables: SynphotTables, comps: Sequence[str],
 
 
 def _split_chain(tables: SynphotTables, prefix: str, band: str) -> Tuple[List[str], Dict[str, List[str]]]:
-    """A band's synphot components in chain order, and the same grouped by role.
-
-    Raises ValueError if the graph has no chain for the band, or the chain
-    does not have exactly one filter and at least one qe component.
-    """
+    """A band's synphot components in chain order, and grouped by role; ValueError if not one filter and a qe."""
     comps = tables.chain(f"{prefix},{band.lower()}")
     roles = {FILTER: [], OPTICS: [], QE: []}
     for comp in comps:
