@@ -31,10 +31,7 @@ def find_column(keys: "Iterable[str]", candidates: "List[str]") -> "Optional[str
     Matching ignores case; the key is returned as *keys* spells it, or None if none matches.
     """
     lc_map = {k.lower(): k for k in keys}
-    for c in candidates:
-        if c.lower() in lc_map:
-            return lc_map[c.lower()]
-    return None
+    return next((lc_map[c.lower()] for c in candidates if c.lower() in lc_map), None)
 
 
 def find_teff_column(keys: "Iterable[str]") -> "Optional[str]":

@@ -133,8 +133,6 @@ def coverage_summary(model_dir: Union[str, Path]) -> Dict:
     """Compute a coverage summary dict for one grid."""
     model_dir = Path(model_dir)
     df = read_grid_nodes(model_dir)
-    n_rows = len(df)
-
     axes: Dict[str, Dict] = {}
     product = 1
     for ax in _AXES:
@@ -155,17 +153,14 @@ def coverage_summary(model_dir: Union[str, Path]) -> Dict:
             "anderson_darling": _anderson_darling(finite),
         }
 
-    complete = df.dropna(subset=list(_AXES))
-    n_distinct_nodes = int(complete.drop_duplicates(subset=list(_AXES)).shape[0])
-    fill = n_distinct_nodes / product
-
+    n_distinct_nodes = int(df.dropna(subset=list(_AXES)).drop_duplicates(subset=list(_AXES)).shape[0])
     return {
         "name": model_dir.name,
         "model_dir": str(model_dir),
-        "n_spectra": n_rows,
+        "n_spectra": len(df),
         "n_distinct_nodes": n_distinct_nodes,
         "full_product": int(product),
-        "fill_fraction": fill,
+        "fill_fraction": n_distinct_nodes / product,
         "axes": axes,
         "_df": df,
     }
