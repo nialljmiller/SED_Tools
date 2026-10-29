@@ -204,11 +204,10 @@ def prompt_choice(
     use_color: bool = True,
     multi: bool = False,
 ) -> Union[int, List[int], None]:
-    """
-    Plain-ASCII picker with stable IDs, paging, grid columns, and simple filters.
-    If multi=True, allows input like "1, 3-5" and returns a List[int] of indices.
-    Otherwise returns a single int.
-    Returns None for quit, -1 for back (if allowed).
+    """Plain-ASCII picker with stable IDs, paging, grid columns, and simple filters.
+
+    Returns the chosen index, or with multi=True (input like "1, 3-5") a list of
+    indices; None for quit, -1 for back (if allowed).
     """
     if not options:
         print(f"No {label} options available.")
@@ -218,7 +217,6 @@ def prompt_choice(
         # Each column holds a 6-character id ("  12. ") before the label.
         max_label = max(len(getattr(x, "label", str(x))) for x in options) + 6
 
-    # ---- setup ----
     labels: List[str] = [getattr(o, "label", str(o)) for o in options]
     N = len(labels)
     # A page is never taller than the terminal, so its first rows do not scroll away.
@@ -226,7 +224,6 @@ def prompt_choice(
     page = 1
     filt: Optional[Tuple[str, str]] = None  # ('substr'|'neg'|'regex', pattern)
 
-    # color toggles
     use_color = use_color and terminal_color_enabled("auto")
     DIM = "\x1b[2m" if use_color else ""
     RED = "\x1b[31m" if use_color else ""
@@ -279,7 +276,6 @@ def prompt_choice(
                 if 1 <= k <= N: return [k - 1] if multi else k - 1
             continue
 
-        # --- Multi Selection Logic ---
         if multi and re.fullmatch(r"[\d\s,-]+", inp):
             try:
                 selected = parse_multi_selection(inp, N)
@@ -290,7 +286,6 @@ def prompt_choice(
                 return selected
             continue
 
-        # --- Single Selection Logic ---
         if not multi and inp.isdigit():
             k = int(inp)
             if 1 <= k <= N: return k - 1
@@ -360,8 +355,7 @@ def _print_page(label: str, labels: List[str], chunk: List[int], max_label: int,
 def _layout(max_label: int, min_cols: int, max_cols: int) -> Tuple[int, int]:
     """Column width and number of columns for entries up to ``max_label`` wide.
 
-    A single column may use the whole line, so a label is cut (with '…') only
-    when the terminal is narrower than it.
+    A single column may use the whole line, so a label is cut only when the terminal is narrower than it.
     """
     usable = terminal_width() - 10
     col_width = min(usable, max_label)
