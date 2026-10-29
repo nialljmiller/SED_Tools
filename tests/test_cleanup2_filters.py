@@ -80,7 +80,7 @@ def test_a_curve_without_a_column_row_is_reported_once_by_its_caller(tmp_path, c
 
 
 @pytest.mark.parametrize("njm_answer, warned", [(None, False), (RuntimeError("2 component files failed"), True)])
-def test_components_no_source_has_are_not_announced_unless_njm_failed(tmp_path, caplog, njm_answer, warned):
+def test_components_njm_says_it_does_not_have_are_not_announced_without_a_builder(tmp_path, caplog, njm_answer, warned):
     from sed_tools import filter_metadata as fm
     from sed_tools.filter_library import FilterLibrary
 

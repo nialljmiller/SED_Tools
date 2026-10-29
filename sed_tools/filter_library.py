@@ -562,7 +562,7 @@ class FilterLibrary:
             return True
         facility, instrument = directory.parent.name, directory.name
         njm_facility, njm_instrument = self._njm_spelling(facility, instrument) or (facility, instrument)
-        reason, njm_failed = "the mirror is unavailable", False
+        reason, njm_failed = "the mirror is unavailable", True
         if self.mirror.is_available():
             try:
                 if (njm_facility, njm_instrument) == (facility, instrument):
@@ -570,14 +570,14 @@ class FilterLibrary:
                 else:  # NJM's spelling, into the folder installed under another one
                     self.mirror._save_components(njm_facility, njm_instrument, directory)
             except (RequestException, RuntimeError, ValueError) as exc:
-                reason, njm_failed = str(exc), True
+                reason = str(exc)
             else:
                 if self.components_ready(directory, components, bands):
                     return True
-                reason = "the mirror does not have them"
+                reason, njm_failed = "the mirror does not have them", False
         ref = builder_for(facility, instrument)
         if ref is None or not ref.components:
-            if njm_failed:  # otherwise nothing failed: there are no such components (build_product says so)
+            if njm_failed:  # else NJM answered that it has none: build_product says what is missing
                 logger.warning("NJM cannot provide the components of %s/%s (%s), and no original source is "
                                "registered", facility, instrument, reason)
             return False
