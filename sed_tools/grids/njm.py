@@ -525,10 +525,8 @@ class NJMSpectraGrabber:
         
         model_url = metadata.get("model_url", f"{self.stellar_models_url}/{model_name}/")
         
-        txt_files = metadata.get("txt_files", [])
-        bin_files = metadata.get("bin_files", [])
-        h5_files = metadata.get("h5_files", [])
-        csv_files = metadata.get("csv_files", [])
+        txt_files, bin_files, h5_files, csv_files = (
+            metadata.get(f"{kind}_files", []) for kind in ("txt", "bin", "h5", "csv"))
         
         has_param_cuts = any([teff_range, logg_range, meta_range])
         if has_param_cuts and txt_files:
