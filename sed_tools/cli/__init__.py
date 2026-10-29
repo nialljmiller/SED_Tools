@@ -18,6 +18,7 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 from requests import RequestException
 
+# Several names below are imported only so that they stay importable from sed_tools.cli.
 from ..api import SED, Filters
 from ..component_sources import AUTOMATIC_BUILDERS, BUILDERS, get_builder
 from ..config import set_data_dir, show_config
@@ -29,6 +30,7 @@ from ..grids.lookup import regenerate_lookup_table
 from ..grids.mast import MASTSpectraGrabber
 from ..grids.msg import MSGSpectraGrabber
 from ..grids.njm import NJMSpectraGrabber
+from ..grids.pipeline import _build_data_products, _rebuild_command, build_h5_bundle_from_txt, local_grids
 from ..grids.spectrum_io import build_h5_bundle, read_text_spectrum
 from ..grids.svo import SVOSpectraGrabber
 from ..terminal_plots import terminal_color_enabled, terminal_width
@@ -42,7 +44,6 @@ from .filters import (
     print_filter_availability, run_filter_combine_flow, run_filter_compose_flow, run_filter_info_flow,
     run_filters_flow,
 )
-from ..grids.pipeline import _build_data_products, _rebuild_command, build_h5_bundle_from_txt, local_grids
 from .grids import (
     _ask_flux_unit, _ask_import_flux_unit, _download_cuts, _download_from_first_source, _print_cleaning_report,
     _report_import_flux_unit, ensure_dir, prompt_njm_axis_cuts, run_combine_flow, run_coverage_flow,
