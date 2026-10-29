@@ -54,7 +54,7 @@ Areas where contributions are most useful:
 
 - Do not open PRs that add unrelated changes bundled together
 - Do not submit changes that have not been tested against real data
-- Do not modify the unit standardization logic in `sed_tools/grids/units.py` (old path `spectra_cleaner`) without opening an issue and discussing it first — it is the single authority for unit conversion across the entire pipeline
+- Do not modify the unit standardization logic in `sed_tools/grids/clean.py` and `sed_tools/grids/units.py` (old path `spectra_cleaner`) without opening an issue and discussing it first — they are the single authority for unit conversion across the entire pipeline
 
 ## Contact
 
