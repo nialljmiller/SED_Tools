@@ -43,7 +43,6 @@ from ..grids._lookup_io import (
     find_file_column, find_logg_column, find_metallicity_column, find_teff_column,
     write_lookup_csv,
 )
-from .resample import resample_to_grid
 from .collision import (
     copy_global_config_to_model,
     discover_extra_axes,
@@ -65,6 +64,65 @@ SPLIT_THRESHOLD = 25
 
 def load_sed(filepath: str) -> Tuple[np.ndarray, np.ndarray]:
     return read_text_spectrum(filepath)
+
+
+_FLUX_FLOOR = 1e-300
+
+
+# Quoted annotations keep the signature help() has always shown for sed_tools._resample.resample_to_grid.
+def resample_to_grid(
+    wl_src:  "np.ndarray",
+    fl_src:  "np.ndarray",
+    teff:    "float",
+    wl_tgt:  "np.ndarray",
+) -> "np.ndarray":
+    """
+    Resample a stellar spectrum onto *wl_tgt*: the one rule every flux cube builder uses.
+
+    Inside the spectrum's wavelength coverage the flux is interpolated
+    linearly in log flux; outside it is zero. No flux is invented outside a
+    spectrum's native coverage: the bolometric integral is dominated by the
+    covered range, and a synthetic (e.g. blackbody) tail would inflate it
+    without a physically justified normalization.
+
+    Parameters
+    ----------
+    wl_src : array
+        Source wavelengths in Angstroms, must be strictly increasing.
+    fl_src : array
+        Source flux in erg/cm²/s/Å, same length as wl_src.
+    teff : float
+        Effective temperature of the star in Kelvin.  Not currently used by
+        this function's extrapolation (out-of-coverage flux is zero-filled
+        regardless of teff); retained in the signature for interface
+        stability with callers.
+    wl_tgt : array
+        Target wavelength grid in Angstroms.
+
+    Returns
+    -------
+    fl_tgt : array
+        Flux on *wl_tgt* in erg/cm²/s/Å.  Always >= 0.
+    """
+    wl_src = np.asarray(wl_src, dtype=np.float64)
+    fl_src = np.asarray(fl_src, dtype=np.float64)
+    wl_tgt = np.asarray(wl_tgt, dtype=np.float64)
+
+    wl_min = float(wl_src[0])
+    wl_max = float(wl_src[-1])
+
+    fl_safe = np.maximum(fl_src, _FLUX_FLOOR)
+    log_fl  = np.log10(fl_safe)
+    in_cov  = (wl_tgt >= wl_min) & (wl_tgt <= wl_max)
+
+    fl_tgt = np.zeros(len(wl_tgt), dtype=np.float64)
+
+    if in_cov.any():
+        fl_tgt[in_cov] = 10.0 ** np.interp(
+            wl_tgt[in_cov], wl_src, log_fl
+        )
+
+    return fl_tgt
 
 
 # ---------------------------------------------------------------------------

@@ -23,7 +23,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from .resample import resample_to_grid
+from .build import resample_to_grid
 from .fileio import write_header
 from ..ui_utils import banner
 from ..grids.spectrum_io import read_text_spectrum

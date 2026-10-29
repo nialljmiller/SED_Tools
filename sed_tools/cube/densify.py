@@ -50,7 +50,7 @@ import numpy as np
 
 from .._constants import available_memory_bytes as _available_ram_bytes
 from .._constants import planck_flam as _blackbody
-from .resample import resample_to_grid
+from .build import resample_to_grid
 from .fileio import flux_offset, write_header
 from ..ui_utils import banner
 
