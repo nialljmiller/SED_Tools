@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""SVO's Filter Profile Service: browse its facilities and instruments, and download their curves."""
 
 from __future__ import annotations
 
@@ -29,12 +30,7 @@ SVO_PAUSE = 300
 
 
 class _SVOState:
-    """What this process knows about SVO, shared by every :class:`SVOFilterBrowser`.
-
-    Once SVO does not answer (no connection, or no reply in time), every
-    browser fails at once with that same error for ``SVO_PAUSE`` seconds, so a
-    facility list and the instrument lists after it wait for SVO once in all.
-    """
+    """What this process knows about SVO: after no answer, every browser fails at once for ``SVO_PAUSE`` seconds."""
 
     def __init__(self):
         self.lock = threading.Lock()
@@ -331,8 +327,7 @@ class SVOFilterBrowser:
 def _write_index_and_manifest(directory: Path, expected: Iterable[str]) -> None:
     """Write the instrument's MESA index (every ``.dat`` present) and merge its curves into the manifest.
 
-    The manifest keeps every expected band even after a partial download, so a
-    retry cannot mistake one saved curve for a complete instrument.
+    The manifest keeps every expected band, so a retry never takes a partial download for a complete set.
     """
     out_dir = str(directory)
     dat_files = sorted(
@@ -364,8 +359,7 @@ def _tip_text(link) -> str:
 
 
 def _would_collide(instrument_name: str, instrument_key: str, other_keys: Sequence[str]) -> bool:
-    """True if filing ``instrument_key`` under ``instrument_name`` could clash
-    with another instrument of the same facility."""
+    """True if filing ``instrument_key`` under ``instrument_name`` could clash with another of the facility."""
     def norm(value: str) -> str:
         return "".join(ch for ch in value.lower() if ch.isalnum())
 
@@ -476,7 +470,6 @@ def _browse_instruments(browser: SVOFilterBrowser, facility: Facility, instrumen
             print("Exiting.")
             return False
         if inst_idx == -1:
-            # user chose to go back to facility list
             return True
         instrument = instruments[inst_idx]
 

@@ -100,16 +100,12 @@ class FilterCatalogue:
     def _came_from(self, key, source: str, checked: Optional[float], njm_unreachable: bool = False) -> None:
         self._origins[key] = {"source": source, "checked": checked, "njm_unreachable": njm_unreachable}
 
-    # ------------------------------------------------------------------
-    # HTTP with an on-disk cache
-    # ------------------------------------------------------------------
+    # ---- HTTP with an on-disk cache
     def _online_mirror(self, *, have_copy: bool = False):
         """The mirror client, or ``None`` to use the cached copy instead.
 
-        A mirror that is not available (its check failed, or it stopped
-        answering in the last five minutes, for any client in the process) is
-        used only for files not yet cached: the check also fails during NJM's
-        brief burst blocks, which the request retries wait out.
+        An unavailable mirror is still asked for files not yet cached: the check also fails during NJM's brief
+        burst blocks, which the request retries wait out.
         """
         if self.offline:
             return None
@@ -141,13 +137,9 @@ class FilterCatalogue:
 
     def _fetch(self, rel: str, *, generation: Optional[str] = None, max_age: Optional[float] = None,
                refresh: bool = False, validate: Optional[Callable[[str], None]] = None) -> Optional[Path]:
-        """Return the cached copy of ``<mirror>/<rel>``, fetching or revalidating it if needed.
+        """The cached copy of ``<mirror>/<rel>``, fetched or revalidated if needed; None if NJM and the cache lack it.
 
-        A copy is fresh while the index ``generation`` it was checked under is
-        unchanged, or for ``max_age`` seconds.  Returns ``None`` if neither the
-        mirror nor the cache has it; raises :class:`CatalogueError` if the mirror
-        does not serve it.  A stale copy used because NJM cannot be asked is
-        reported with a warning.
+        A copy is fresh while the index ``generation`` it was checked under is unchanged, or for ``max_age`` seconds.
         """
         path = self._cache_path(rel)
         meta = self._read_meta(path)
@@ -219,9 +211,7 @@ class FilterCatalogue:
             raise ValueError("not an NJM catalogue file")
         return data
 
-    # ------------------------------------------------------------------
-    # index.json
-    # ------------------------------------------------------------------
+    # ---- index.json
     def index(self, *, refresh: bool = False) -> dict:
         """NJM's ``index.json`` (rechecked after ``index_max_age`` seconds)."""
         if self._index is not None and not refresh and time.time() - self._index_loaded < self.index_max_age:
@@ -263,9 +253,7 @@ class FilterCatalogue:
                 return found[0]
         raise CatalogueError(f"NJM does not serve {facility}/{instrument}")
 
-    # ------------------------------------------------------------------
-    # Per-instrument files
-    # ------------------------------------------------------------------
+    # ---- Per-instrument files
     def _installed(self, facility: str, instrument: str, kind: str) -> Optional[Path]:
         """The copy kept beside the installed curves (:meth:`.FilterLibrary.installed_directory`), if any."""
         directory = self._library.installed_directory(facility, instrument)
@@ -290,16 +278,10 @@ class FilterCatalogue:
 
     def _named_as_installed(self, facility: str, instrument: str, kind: str, data: dict, *,
                             refresh: bool) -> dict:
-        """``data`` with each record of a curve that is installed under another band name renamed to that name.
+        """``data`` with the records of curves installed under other band names listed under those names.
 
-        0.4.1 installed PLANCK/HFI from SVO as ``100GHz`` … ``857GHz``: the
-        curves NJM keeps as ``100_svo`` … ``857_svo`` beside its own ``100`` …
-        ``857``.  NJM's records of those copies then describe the installed
-        curves, so they are listed as ``100GHz`` …, and :meth:`_split_archived`
-        moves NJM's other bands, not installed, to ``archived_bands``.  A curve
-        is matched by the FilterID on its header row and in the ``curve`` record
-        of NJM's ``info.json``; only when none of ``data``'s band names is
-        installed.
+        0.4.1 installed PLANCK/HFI from SVO as ``100GHz`` …, which NJM keeps as ``100_svo`` …; curves are
+        matched by the FilterID of their header and of NJM's ``info.json``, only when no band name is installed.
         """
         bands = data.get("bands") or {}
         directory = self._library.installed_directory(facility, instrument)
@@ -365,12 +347,7 @@ class FilterCatalogue:
     def _split_archived(self, facility: str, instrument: str, data: dict) -> dict:
         """``data`` with the bands that are not part of the served set under ``archived_bands``.
 
-        The set is what the instrument's MESA index file lists: the installed
-        one, else NJM's (cached), else the bands of NJM's catalogue bundled with
-        SED_Tools; the first of these that has any of the file's bands.  An
-        installed copy under other band names (0.4.1's PLANCK/HFI from SVO,
-        ``100GHz`` …) has none, so NJM's set decides.  When no set has any of
-        them, ``data`` is returned as it is.
+        The set is the first of the installed index file, NJM's and the bundled catalogue's that has any of its bands.
         """
         bands = data.get("bands") or {}
         served = next((names for names in self._served_band_sets(facility, instrument)
@@ -384,8 +361,7 @@ class FilterCatalogue:
                     archived_bands=dict(data.get("archived_bands") or {}, **archived))
 
     def _served_band_sets(self, facility: str, instrument: str) -> Iterator[set]:
-        """The bands of the instrument's set from each place that lists them (see :meth:`_split_archived`),
-        in that order; each is read only when the one before it was not used."""
+        """The bands of the instrument's set from each place that lists them, in :meth:`_split_archived`'s order."""
         installed = self._library.installed_directory(facility, instrument)
         if installed is not None:
             listed = installed / installed.name
@@ -456,9 +432,7 @@ class FilterCatalogue:
             raise CatalogueError(self._not_cached(rel))
         return path
 
-    # ------------------------------------------------------------------
-    # Search
-    # ------------------------------------------------------------------
+    # ---- Search
     def _named_bands(self, text: Optional[str], needles: Mapping[str, Optional[str]],
                      wanted_detector: Optional[str], refresh: bool) -> Tuple[List[dict], Dict[Tuple[str, str], dict]]:
         """Bands whose names match, from ``index.json``: their rows and the instruments they belong to."""
@@ -529,9 +503,7 @@ def _index_bands(text: str) -> set:
     return {name[:-len(".dat")] for name in index_names(text) if name.endswith(".dat")}
 
 
-# ----------------------------------------------------------------------
-# Search criteria
-# ----------------------------------------------------------------------
+# ---- Search criteria
 def _criteria(wavelength, pivot, fwhm, where, detector_type: Optional[str]) -> Dict[str, tuple]:
     """The property criteria of a search, by column."""
     criteria = {}
@@ -612,9 +584,7 @@ def _apply(frame: pd.DataFrame, column: str, criterion) -> pd.Series:
     return frame[column].map(lambda v: v == wanted)
 
 
-# ----------------------------------------------------------------------
-# Citations
-# ----------------------------------------------------------------------
+# ---- Citations
 def _band_references(info: dict, bands: Optional[Iterable[str]]) -> List[str]:
     """References for the chosen bands: the instrument-wide ones plus each band's own."""
     everything = list(info.get("references", []))

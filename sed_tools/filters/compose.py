@@ -33,9 +33,7 @@ class ComponentCoverageError(ComponentError):
     """A component does not cover the wavelength range of the band."""
 
 
-# --------------------------------------------------------------------------
-# Curves
-# --------------------------------------------------------------------------
+# ---- Curves
 @dataclass
 class Curve:
     wavelength: np.ndarray  # Angstrom, ascending
@@ -138,9 +136,7 @@ def multiply_curves(
     return grid, product
 
 
-# --------------------------------------------------------------------------
-# Composition
-# --------------------------------------------------------------------------
+# ---- Composition
 def atmosphere_grid(atmosphere_root: PathLike, site: str) -> Optional[AtmosphereGrid]:
     """The cached manifest of ``site``, or None."""
     site_dir = Path(atmosphere_root) / site
@@ -519,13 +515,9 @@ def build_all_products(
 
 
 def _warn_partial_recipes(instrument_dir: Path, manifest: InstrumentManifest) -> None:
-    """Warn about recipes with optics or QE that only some primary bands have.
+    """Warn about recipes with optics or QE that only some primary bands have (SLOAN/SDSS's primed filters).
 
-    :func:`build_all_products` builds a recipe only for every primary band,
-    so without this such a product silently does not appear.  SLOAN/SDSS is
-    one: its camera response exists for u ... z but not for the primed
-    filters, which are bands of their own.  A bare ``filter`` recipe is not
-    reported; for most instruments it would only copy filter-only curves.
+    build_all_products builds a recipe only for every primary band, so without this such a product silently is not made.
     """
     bands = manifest.primary_bands()
     recipes_by_bands: Dict[Tuple[str, ...], List[str]] = {}

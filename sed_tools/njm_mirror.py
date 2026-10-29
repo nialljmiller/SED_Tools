@@ -13,7 +13,7 @@ from typing import Dict, Optional, Union
 import requests
 import urllib3
 
-# The outage warning has always been logged under the filter client's name.
+# Outage warnings are logged under the filter client's name.
 logger = logging.getLogger("sed_tools.njm_filter_grabber")
 
 BASE_URL = "https://nillmill.ddns.net/sed_tools"

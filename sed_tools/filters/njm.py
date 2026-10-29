@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
-"""
-NJM Filter Grabber - Downloads filter profiles from nillmill.ddns.net mirror
-Complements the spectra grabber for complete data access
-"""
+"""The NJM filter client: lists and downloads curves, catalogue files, components and atmospheres from the mirror."""
 
 import json
 import logging
@@ -43,10 +40,7 @@ def curve_file(name: str) -> str:
 
 
 def _samples(text: str) -> List[str]:
-    """A curve's sample rows: every line but ``#`` lines and the first other line (the column row).
-
-    Tagging rewrites only the column row, so these identify the curve itself.
-    """
+    """A curve's sample rows (every line but ``#`` lines and the column row): tagging rewrites only the column row."""
     lines = [line.rstrip() for line in text.splitlines() if line.strip() and not line.startswith("#")]
     return lines[1:]
 
@@ -104,19 +98,14 @@ class NJMFilterGrabber:
         return True
 
     def _check_availability(self) -> bool:
-        """Check if the NJM mirror is available and responding.
+        """Whether NJM answers; no answer or a refusal (404, say) means it is down.
 
-        No answer, or a definite refusal (e.g. 404), means the mirror is down.
-        A 403 is NJM's temporary block on a burst of requests from this address
-        (shared by every client behind it), and 429/5xx are transient too: those
-        are confirmed by fetching ``index.json`` with the usual retries, which
-        wait the block out, rather than reported as an outage.
+        A 403 (NJM's block on a burst from this address), 429 or 5xx is transient: ``index.json`` is then
+        fetched with the usual retries, which wait the block out.
         """
         try:
-            # Try with SSL verification first
             response = self.session.head(self.base_url, timeout=(NJM_CONNECT_TIMEOUT, 10))
         except requests.exceptions.SSLError:
-            # SSL certificate issue - try without verification
             try:
                 response = self.session.head(self.base_url, timeout=(NJM_CONNECT_TIMEOUT, 10), verify=False)
             except requests.RequestException as exc:
@@ -159,12 +148,9 @@ class NJMFilterGrabber:
     _paused = staticmethod(paused)
 
     def _get(self, url: str, *, timeout: int = 30, headers: Optional[Dict[str, str]] = None) -> requests.Response:
-        """Retry transient mirror failures, including Apache's temporary 403 block.
+        """GET with retries of transient failures, Apache's temporary 403 block included.
 
-        A request NJM still does not answer after the retries (no connection,
-        a timeout, or a block that has not lifted) marks NJM unreachable for
-        ``NJM_PAUSE`` seconds in the whole process, with one warning per
-        outage; requests until then fail at once.
+        Still no answer after them pauses NJM for ``NJM_PAUSE`` seconds in the whole process (one warning per outage).
         """
         if self._paused():
             raise requests.ConnectionError(f"NJM is unreachable ({_STATE.unreachable}); "
@@ -212,8 +198,7 @@ class NJMFilterGrabber:
     def find_facility(self, svo_key: str) -> Optional[str]:
         """Return the NJM directory name that best matches an SVO facility key.
 
-        Tries exact match first, then normalized prefix match to handle
-        differences like 'Bepi-Colom' (SVO) vs 'Bepi_Colombo' (NJM).
+        An exact match first, then a normalized prefix match ('Bepi-Colom' at SVO is 'Bepi_Colombo' at NJM).
         """
         facilities = self.discover_facilities()
         if svo_key in facilities:
@@ -226,12 +211,7 @@ class NJMFilterGrabber:
         return None
 
     def get_exclusive_facilities(self, svo_keys: List[str]) -> List[str]:
-        """Return NJM facility names that have no matching SVO facility.
-
-        Uses the same normalized prefix match as find_facility so that, e.g.,
-        'Bepi_Colombo' (NJM) correctly matches 'Bepi-Colom' (SVO) and is NOT
-        returned as exclusive.
-        """
+        """Return NJM facility names that have no matching SVO facility (matched as :meth:`find_facility` does)."""
         svo_norms = {self._normalize_name(k) for k in svo_keys}
         exclusive = []
         for fac in self.discover_facilities():
@@ -258,11 +238,7 @@ class NJMFilterGrabber:
         return None
 
     def _index(self, unreadable: str = "listing the filters directory instead") -> Optional[Dict]:
-        """NJM's ``index.json``, read once per process (again after an hour); None when it cannot be read.
-
-        A failure is warned about once per grabber, followed by ``unreadable``
-        (what is done without it).
-        """
+        """NJM's ``index.json``, read once per process (again after an hour); None, warned once, when unreadable."""
         if self._index_data is None:
             with _STATE.lock:
                 if _STATE.index is not None and monotonic() - _STATE.index_read < NJM_INDEX_MAX_AGE:
@@ -298,13 +274,7 @@ class NJMFilterGrabber:
         return list(self._instrument_records(facility))
 
     def _instrument_records(self, facility: str) -> Dict[str, Dict]:
-        """NJM's instruments of ``facility``: name -> its ``index.json`` record.
-
-        A record may carry ``description`` and ``svo_instruments`` (the SVO
-        ``Facility/Instrument`` products it is the same as).  Only when
-        ``index.json`` cannot be read are the names taken from the directory
-        listing, with a warning and empty records.
-        """
+        """NJM's instruments of ``facility``: name -> its ``index.json`` record ({} from the listing without one)."""
         if not self._available:
             return {}
         detailed = (self._index() or {"filters": {}})["filters"].get("facilities_detailed")
@@ -341,12 +311,7 @@ class NJMFilterGrabber:
                 if name.endswith(".dat")]
 
     def _parse_directory_listing(self, url: str, *, directories_only: bool = False) -> List[str]:
-        """Parse Apache directory listing HTML to extract subdirectories/files.
-
-        ``directories_only`` keeps only links with a trailing slash, so a file
-        beside the instruments is never taken for one.  Empty when NJM has
-        nothing at ``url`` (404); other failures raise ``requests.RequestException``.
-        """
+        """The entries of an Apache directory listing (only subdirectories with ``directories_only``); [] for a 404."""
         try:
             response = self._get(url, timeout=10)
         except requests.RequestException as exc:
@@ -361,9 +326,7 @@ class NJMFilterGrabber:
             if directories_only and not href.endswith('/'):
                 continue
             if href and href not in ['..', '/', '../'] and not href.startswith('?'):
-                # Remove trailing slash for directories
                 item = href.rstrip('/')
-                # Skip parent directory links
                 if not item.startswith('..') and not item.startswith('/'):
                     items.append(item)
         return items
@@ -403,14 +366,9 @@ class NJMFilterGrabber:
 
     def _download_set(self, facility: str, instrument: str, filters: Optional[List[str]] = None, *,
                       output_dir: Optional[Path] = None) -> SetDownload:
-        """Download an instrument's curves and what comes with them, and report every failure.
+        """Download an instrument's curves and what comes with them, into ``output_dir`` if given; report every failure.
 
-        ``listed`` is empty when NJM does not serve the instrument.  Raises
-        ``requests.RequestException`` when NJM cannot say which curves it serves,
-        and RuntimeError when its index file cannot be saved beside them.
-        ``output_dir`` is where they go when the instrument is installed under
-        another spelling (``Gemini/GMOS-N`` for NJM's ``Gemini/GMOS_N``); by
-        default ``<base_dir>/<facility>/<instrument>``.
+        RuntimeError when NJM's index file of the set cannot be saved beside the curves.
         """
         if filters is None:
             filters = self.discover_filters(facility, instrument)
@@ -455,12 +413,8 @@ class NJMFilterGrabber:
                          output_dir: Path) -> Tuple[int, int, List[str]]:
         """Save each listed curve; returns (downloaded, already installed, failures).
 
-        An installed curve is checked against the mirror's copy: it is kept if
-        its samples match (its header may hold tags added here), and replaced
-        otherwise, e.g. by SVO's curve of the same name written by an earlier release.
-        It is not fetched again when an earlier download found it to be NJM's
-        and neither it nor NJM's record of the instrument has changed since
-        (:meth:`_verified_curves`).
+        An installed curve is kept if its samples match NJM's copy, else replaced; it is not fetched again
+        when an earlier download verified it and neither it nor NJM's record of the set has changed.
         """
         downloaded, skipped, failed, njms, replaced, untagged = 0, 0, [], [], [], {}
         installed = any((output_dir / curve_file(name)).is_file() for name in filters)
@@ -504,19 +458,12 @@ class NJMFilterGrabber:
                            output_dir, ", ".join(untagged), "; ".join(dict.fromkeys(untagged.values())))
         return downloaded, skipped, failed
 
-    # ------------------------------------------------------------------
-    # Installed curves already found to be NJM's
-    # ------------------------------------------------------------------
+    # ---- Installed curves already found to be NJM's
     def _verified_path(self, facility: str, instrument: str) -> Path:
         return cache_root(self.base_dir) / "filters" / facility / instrument / VERIFIED_CURVES
 
     def _njm_record(self, facility: str, instrument: str) -> Optional[str]:
-        """NJM's ``index.json`` record of the instrument's curves (names and size), or None if it has none.
-
-        It changes whenever NJM's set does, so installed curves verified under
-        it need not be fetched again while it stays the same.  While NJM is
-        paused nothing is fetched for it: the curves are then checked next time.
-        """
+        """NJM's ``index.json`` record of the set (names, size), changing with it; None without one or when paused."""
         if self._index_data is None and self._paused():
             return None
         index = self._index(f"the installed curves of {facility}/{instrument} are checked against NJM's copies")
@@ -530,12 +477,7 @@ class NJMFilterGrabber:
 
     @staticmethod
     def _saved_verified(path: Path, record: str) -> Dict[str, int]:
-        """The ``{curve file: size}`` saved at ``path`` under NJM's ``record``; empty for another record.
-
-        A file that cannot be read counts as empty: every installed curve is
-        then checked against NJM's copy (a correct result, only slower), and
-        the file is written afresh.
-        """
+        """The ``{curve file: size}`` saved at ``path`` under NJM's ``record``; empty for another record or bad file."""
         if not path.is_file():
             return {}
         try:
@@ -564,12 +506,7 @@ class NJMFilterGrabber:
         _write_atomic(path, json.dumps({"njm_record": record, "files": files}, indent=1, sort_keys=True) + "\n")
 
     def _tag(self, path: Path, facility: str, untagged: Dict[str, str]):
-        """Fill in what the curve's header lacks from SVO; a no-op for curves the mirror tagged fully.
-
-        Returns the :class:`~sed_tools.filter_metadata.DetectorTypeResult`, or
-        None when SVO could not be asked: the mirror's header is then kept as
-        served, and why is added to ``untagged`` (file name -> reason).
-        """
+        """Fill in what the curve's header lacks from SVO; None, with why in ``untagged``, when SVO cannot be asked."""
         try:
             return tag_filter_file(path, client=self._metadata_client, facility=facility)
         except (requests.RequestException, ValueError) as exc:
@@ -577,13 +514,9 @@ class NJMFilterGrabber:
             return None
 
     def _save_index(self, facility: str, instrument: str, output_dir: Path) -> List[str]:
-        """Save the mirror's index of the instrument and return its lines.
+        """Save NJM's index of the instrument, named after ``output_dir`` as MESA looks for it; return its lines.
 
-        Only the mirror (or its manifest) can declare the full filter set: an
-        index built from the files seen so far would certify a partial set.
-        The file is named after ``output_dir``, as MESA looks for it there.
-        RuntimeError, naming the folder, when NJM's index cannot be fetched:
-        without it MESA cannot read the set.
+        Only NJM can declare the full set: an index of the files seen so far would certify a partial one.
         """
         try:
             response = self._get(f"{self.filters_url}/{facility}/{instrument}/{instrument}", timeout=10)
@@ -612,7 +545,6 @@ class NJMFilterGrabber:
 
         total_downloaded = 0
 
-        # Discover facilities
         if facility:
             facilities = [facility]
         else:
@@ -644,9 +576,7 @@ class NJMFilterGrabber:
             raise RuntimeError(f"{len(failed)} NJM downloads are incomplete:\n" + "\n".join(failed))
         return total_downloaded
 
-    # ------------------------------------------------------------------
-    # Catalogue files (see sed_tools.filter_catalogue)
-    # ------------------------------------------------------------------
+    # ---- Catalogue files (see sed_tools.filter_catalogue)
     CATALOGUE_FILES = ("properties.json", "info.json")
 
     def download_catalogue_files(self, facility: str, instrument: str) -> List[str]:
@@ -686,9 +616,7 @@ class NJMFilterGrabber:
             raise ValueError(f"not an NJM {name}")
         return content
 
-    # ------------------------------------------------------------------
-    # Separable components (see sed_tools.filter_components)
-    # ------------------------------------------------------------------
+    # ---- Separable components (see sed_tools.filter_components)
     def fetch_manifest(self, facility: str, instrument: str) -> Optional[Dict]:
         """Return the remote ``manifest.json`` for an instrument, or ``None`` when NJM serves none.
 
@@ -817,11 +745,8 @@ class NJMFilterGrabber:
 def _update_atmosphere_manifest(site_dir: Path, served: str) -> None:
     """Save NJM's manifest of an atmosphere site (``served``), keeping what only the installed one has.
 
-    Rows (``entries``, ``unstated``) for installed files NJM does not list
-    stay: points built here with SkyCalc, say.  A row NJM describes otherwise
-    stays as installed when its grid file is installed, since it describes
-    that file, with a warning naming it.  Every other field takes NJM's value;
-    nothing is written when the manifest is already NJM's.
+    Rows for installed files NJM does not list (built here with SkyCalc, say) stay, and so, with a warning,
+    does an installed file's row that NJM describes otherwise; every other field takes NJM's value.
     """
     path = site_dir / "manifest.json"
     if not path.is_file():

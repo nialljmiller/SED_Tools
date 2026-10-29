@@ -15,9 +15,7 @@ from ..component_sources.catalog import match_name, name_key
 FETCH_ORDER = ("njm", "original", "local", "svo")
 
 
-# ----------------------------------------------------------------------
-# The bundled instrument catalogue
-# ----------------------------------------------------------------------
+# ---- The bundled instrument catalogue
 #: NJM's facilities and instruments, their descriptions and SVO equivalents, as
 #: of the release; regenerate with scripts/make_instrument_catalogue.py.
 INSTRUMENT_CATALOGUE = Path(__file__).parent.parent / "instrument_catalogue.json"
@@ -66,10 +64,7 @@ def _instrument_metadata(record):
 
 
 def _svo_bands(stored, claims, bands):
-    """``{SVO filter ID: NJM band}`` from the stored ``{SVO instrument: ["G", "Gbp=BP", ...]}``.
-
-    Only SVO instruments in ``claims`` and NJM bands in ``bands`` count.
-    """
+    """``{SVO filter ID: NJM band}`` from the stored ``{SVO instrument: ["G", "Gbp=BP", ...]}`` (``claims`` only)."""
     held = {}
     for claim, entries in (stored.items() if isinstance(stored, dict) else ()):
         if claim not in claims or not isinstance(entries, list):
@@ -91,16 +86,11 @@ def _plain_text(value):
     return " ".join(value.split()) if isinstance(value, str) else ""
 
 
-# ----------------------------------------------------------------------
-# Picker entries
-# ----------------------------------------------------------------------
+# ---- Picker entries
 def _merge(listings):
     """Group the names each source lists (``[(source, [(name, description), ...]), ...]``) into entries.
 
-    A name joins an entry holding the same name from another source, else one
-    whose name matches it under :func:`name_key` and has no name from this
-    source yet.  One source's own names never join each other: NJM serves
-    both ``Cameras/Sony_NEX5N`` and ``Cameras/Sony_NEX_5N``.
+    One source's own names never join each other: NJM serves both ``Cameras/Sony_NEX5N`` and ``Cameras/Sony_NEX_5N``.
     """
     entries = []
     for source, listing in listings:
@@ -131,11 +121,9 @@ def _join(entry, source, name, description):
 
 
 def _drop_svo_duplicates(entries, claims):
-    """Remove SVO's copy of a product NJM lists as its own, keeping SVO's description for NJM's entry.
+    """Remove SVO's copy of a product NJM lists now as its own (``claims``: SVO name key -> NJM name).
 
-    ``claims`` maps an SVO instrument (:func:`name_key`) to the NJM instrument
-    that is the same product.  Only instruments NJM lists now count: while NJM
-    is unreachable, SVO's copies are what can be downloaded.
+    While NJM is unreachable, SVO's copies are what can be downloaded, so they stay.
     """
     listed = {e["names"]["njm"]: e for e in entries if "njm" in e["names"]}
     for entry in [e for e in entries if "svo" in e["names"]]:
@@ -150,15 +138,9 @@ def _drop_svo_duplicates(entries, claims):
 
 
 def _adopt_claimed_svo(entries, claims, njm_known):
-    """Name SVO's copy of a product of NJM's after NJM, when NJM does not list it now (NJM is down, say).
+    """Name SVO's copy of a product of NJM's after NJM when NJM does not list it now, so each product is listed once.
 
-    ``claims`` maps an SVO instrument (:func:`name_key`) to the NJM instrument
-    that is the same product.  SVO's name joins the entry that already stands
-    for that product (an original-source builder's or an installed copy's,
-    under NJM's spelling), else its own entry takes NJM's name
-    (``njm_name``).  Of two SVO instruments one NJM product claims (Euclid's
-    NISP and NISP0) one entry remains, holding the first.  So the list names
-    each product once, as when NJM is reachable.
+    Of two SVO instruments one NJM product claims (Euclid's NISP and NISP0) one entry remains, holding the first.
     """
     listed = {e["names"]["njm"] for e in entries if "njm" in e["names"]}
     for entry in [e for e in entries if "svo" in e["names"]]:
@@ -188,16 +170,10 @@ def _stands_for(entry, owner, njm_known):
 def _picker_entries(entries, njm_known, claims=None):
     """The entries as the pickers show them, sorted by label.
 
-    Each has ``label`` (the name shown), ``fetch_key`` (the spelling to
-    download with: NJM's, else the original builder's, else the installed
-    directory's, else SVO's), ``key`` (the same), ``sources`` (every source
-    listing it now: ``local``, ``original``, ``svo``, ``njm``),
-    ``description`` (NJM's, else SVO's own text, else ``""``; SVO's can run to
-    several sentences) and ``names`` (each source's own spelling, NJM's from
-    the bundled catalogue when NJM does not list it now).  ``njm_known`` (NJM's names -> their catalogue record)
-    names and describes entries NJM does not list now, so names do not change
-    with NJM's availability; an entry only SVO lists takes them only if
-    ``claims`` (SVO name key -> NJM name) says it is NJM's product.
+    Each has ``label`` and ``key`` (both the ``fetch_key``: the spelling in :data:`FETCH_ORDER`), ``sources``
+    (those listing it now), ``description`` (NJM's, else SVO's, else ``""``) and ``names`` (each source's own
+    spelling).  ``njm_known`` names entries NJM does not list now, so names do not change with NJM's
+    availability; an entry only SVO lists takes NJM's name only if ``claims`` says it is NJM's product.
     """
     rows = []
     for entry in entries:

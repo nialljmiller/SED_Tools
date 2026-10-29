@@ -47,8 +47,7 @@ AUXILIARY_DIRS = (COMPONENTS_DIR, PRODUCTS_DIR)
 def is_auxiliary_path(path: PathLike, root: Optional[PathLike] = None, dirs: Sequence[str] = AUXILIARY_DIRS) -> bool:
     """True if ``path`` lies inside a ``components/`` or ``products/`` directory.
 
-    Scanners that look for *published* curves by name skip these so that a
-    composed ``products/filter/G.dat`` never shadows ``G.dat``.
+    Scanners of *published* curves skip these, so a composed ``products/filter/G.dat`` never shadows ``G.dat``.
     """
     path = Path(path)
     if root is not None:
@@ -101,9 +100,7 @@ class ComponentError(ValueError):
     """A requested component combination cannot be built."""
 
 
-# --------------------------------------------------------------------------
-# Component vocabulary
-# --------------------------------------------------------------------------
+# ---- Component vocabulary
 def parse_components(text: Union[str, Iterable[str], None]) -> Tuple[str, ...]:
     """Parse ``"filter+qe"``, ``["qe", "filter"]`` or SVO's ``"Filter + CCD"``.
 
@@ -133,9 +130,7 @@ def recipe_name(roles: Iterable[str]) -> str:
     return "+".join(parse_components(list(roles)))
 
 
-# --------------------------------------------------------------------------
-# Atmosphere selection
-# --------------------------------------------------------------------------
+# ---- Atmosphere selection
 @dataclass(frozen=True)
 class AtmosphereSpec:
     """Observing conditions for the telluric component.
@@ -190,9 +185,7 @@ class AtmosphereSpec:
         return f"site={self.site} airmass={airmass}" + (f" pwv={self.pwv:g}" if self.pwv is not None else "")
 
 
-# --------------------------------------------------------------------------
-# Manifests
-# --------------------------------------------------------------------------
+# ---- Manifests
 def index_names(text: str) -> List[str]:
     """The names a MESA index file lists: its lines stripped, without blank and ``#`` lines."""
     return [line.strip() for line in text.splitlines() if line.strip() and not line.lstrip().startswith("#")]
@@ -717,11 +710,7 @@ def _present(root: Path, files: Mapping[str, str], kind: str) -> Dict[str, str]:
 
 
 def _require_inside(rel: str, owner: str) -> None:
-    """Components must live inside their own instrument directory.
-
-    Each instrument is composed only from its own published factors; a
-    manifest can never point at another instrument's files.
-    """
+    """Refuse a component path outside its own instrument directory: an instrument is composed only from its own."""
     parts = Path(rel).parts
     if not parts or Path(rel).is_absolute() or ".." in parts:
         raise ComponentError(f"{owner}: component path {rel!r} is outside the instrument directory")
