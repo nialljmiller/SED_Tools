@@ -20,7 +20,7 @@ from typing import Dict, Tuple
 
 import numpy as np
 
-from ..filters.compose import InstrumentManifest  # noqa: F401  stays importable here
+from ..filters.compose import InstrumentManifest
 from ..filters.curve_metadata import PHOTON
 from ._original import Component, Fetcher, Instrument, clean_curve, make_band, make_builder, safe_member, support
 
@@ -127,7 +127,7 @@ def csp1(fetch: Fetcher) -> Instrument:
         b.atmosphere = "airmass=1.2"
         bands.append(b)
     return Instrument("LCO", "CSP", bands, _csp1_notes(bands, comps, tel[2], raw_notes, checks),
-                      ground_based=True, components=comps, outside_range="error", default_site=CSP_SITE)
+                      ground_based=True, components=comps, outside_range="error")
 
 
 def _csp1_notes(bands, comps, tel_note: str, raw_notes, checks) -> str:
@@ -212,4 +212,9 @@ _build = make_builder(RECIPES)
 
 def build(filter_root, *, instrument, **kwargs):
     """Build an instrument; CSP-I composes with the CSP atmosphere site."""
-    return _build(filter_root, instrument=instrument, **kwargs)
+    out = _build(filter_root, instrument=instrument, **kwargs)
+    if instrument == "CSP":
+        manifest = InstrumentManifest.load(out)
+        manifest.default_site = CSP_SITE
+        manifest.save(out)
+    return out
