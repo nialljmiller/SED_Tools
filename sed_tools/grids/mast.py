@@ -23,6 +23,7 @@ import re
 import string
 import urllib.parse
 import zlib
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger("sed_tools.mast_spectra_grabber")
@@ -150,10 +151,10 @@ def _parse_params_from_name(fname: str) -> Dict[str, str]:
         return {}
     d = m.groupdict()
     teff = int(d["teff"])
-    logg = float(("-" if d["gsgn"] == "-" else "+") + d["gval"])
-    mh   = float(("-" if d["metsgn"] == "-" else "+") + d["metval"])
-    am   = float(("-" if d["asgn"]   == "-" else "+") + d["aval"])
-    cm   = float(("-" if d["csgn"]   == "-" else "+") + d["cval"])
+    logg = float(d["gsgn"] + d["gval"])
+    mh   = float(d["metsgn"] + d["metval"])
+    am   = float(d["asgn"] + d["aval"])
+    cm   = float(d["csgn"] + d["cval"])
     res  = d["res"]; vt = int(d["vturb"])
     return {
         "teff": str(teff), "logg": f"{logg:.2f}",
@@ -161,45 +162,31 @@ def _parse_params_from_name(fname: str) -> Dict[str, str]:
         "vturb": str(vt), "res": res, "atmos": d["atmos"],
     }
 
-def _parse_wavefile(text: str) -> np.ndarray:
-    xs = []
+def _columns(text: str, n: int) -> Tuple[np.ndarray, ...]:
+    """The first n columns of the rows with at least n fields; a field that is not a number ends its row there."""
+    columns = [[] for _ in range(n)]
     for line in text.splitlines():
         s = line.strip()
         if not s or s.startswith("#"):
+            continue
+        parts = s.split()
+        if len(parts) < n:
             continue
         try:
-            xs.append(float(s.split()[0]))
+            for column, part in zip(columns, parts):
+                column.append(float(part))
         except ValueError:
-            pass  # a label line, not a wavelength
-    return np.asarray(xs, dtype=float)
+            continue
+    return tuple(np.asarray(column, float) for column in columns)
+
+def _parse_wavefile(text: str) -> np.ndarray:
+    return _columns(text, 1)[0]
 
 def _parse_rorig_txt(text: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    wl, fx, ct = [], [], []
-    for line in text.splitlines():
-        s = line.strip()
-        if not s or s.startswith("#"):
-            continue
-        parts = s.split()
-        if len(parts) >= 3:
-            try:
-                wl.append(float(parts[0])); fx.append(float(parts[1])); ct.append(float(parts[2]))
-            except ValueError:
-                continue
-    return np.asarray(wl, float), np.asarray(fx, float), np.asarray(ct, float)
+    return _columns(text, 3)
 
 def _parse_resam_txt(text: str) -> Tuple[np.ndarray, np.ndarray]:
-    fx, ct = [], []
-    for line in text.splitlines():
-        s = line.strip()
-        if not s or s.startswith("#"):
-            continue
-        parts = s.split()
-        if len(parts) >= 2:
-            try:
-                fx.append(float(parts[0])); ct.append(float(parts[1]))
-            except ValueError:
-                continue
-    return np.asarray(fx, float), np.asarray(ct, float)
+    return _columns(text, 2)
 
 def _detect_inline_wave(text: str) -> bool:
     """True if the file's first column holds wavelengths, judged on its first 51 data rows.
@@ -432,8 +419,6 @@ class MASTSpectraGrabber:
         fails, the rest are still written, lookup_table.csv is not, and
         RuntimeError lists each failure.
         """
-        import concurrent.futures as cf
-
         reskey: str = info["reskey"]
         metals: List[str] = info["metals"]
 
@@ -503,7 +488,7 @@ class MASTSpectraGrabber:
         results = [try_one(first_url, pre_text=first_text)]
         rest = urls[1:]
         if rest:
-            with cf.ThreadPoolExecutor(max_workers=self.max_workers) as ex:
+            with ThreadPoolExecutor(max_workers=self.max_workers) as ex:
                 results.extend(ex.map(try_one, rest))
         spectra = [spectrum for spectrum, _ in results if spectrum]
         failures = [error for _, error in results if error]
