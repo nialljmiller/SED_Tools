@@ -181,10 +181,7 @@ class NJMSpectraGrabber:
         return models
             
     def _parse_directory_listing(self, url: str) -> List[str]:
-        """Parse Apache directory listing HTML to extract subdirectories/files.
-
-        Raises requests.RequestException if the listing cannot be fetched.
-        """
+        """The entries of the Apache directory listing at url; requests' error if it cannot be fetched."""
         response = self.session.get(url, timeout=15)
         response.raise_for_status()
     
@@ -489,8 +486,7 @@ class NJMSpectraGrabber:
                         teff_range, logg_range, meta_range) -> List[str]:
         """Apply the parameter cuts to the spectrum list using the remote lookup table.
 
-        Raises RuntimeError if the lookup table cannot be read, rather than
-        downloading spectra outside the requested ranges.
+        RuntimeError if the table cannot be read, rather than downloading spectra outside the ranges.
         """
         print(f"  [njm] Applying parameter cuts...")
         if teff_range:

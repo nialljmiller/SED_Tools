@@ -437,11 +437,9 @@ class MSGSpectraGrabber:
         return len(rows)
 
     def _extract_to_text(self, model_name, h5_path, out_dir, spec, ranges):
-        """Write one spectrum to <out_dir>/<model>_fid<n>.txt.
+        """Write one spectrum to <out_dir>/<model>_fid<n>.txt: (status, file name, detail).
 
-        Returns (status, file name, detail): 'cached' if the file is already
-        there, 'excluded' if it lies outside a requested range, 'ok' with its
-        parameters, or 'failed' with the reason.
+        status is 'cached', 'excluded' (outside a requested range), 'ok' (detail: its parameters) or 'failed' (why).
         """
         fid = int(spec["fid"])
         gpath = spec["gname"]
