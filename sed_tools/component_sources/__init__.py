@@ -48,7 +48,9 @@ BUILDERS: Dict[str, str] = {
 }
 
 
-#: Builders that need no local input (``argus`` needs its raw directory).
+#: Builders that ``filters-build-components all`` runs. Each downloads its own
+#: inputs, but ``hst`` and ``jwst`` also need their instruments' published curves
+#: installed. (``argus`` is not one of them: it needs its raw directory.)
 AUTOMATIC_BUILDERS = ("lsst", "hst", "jwst", "hsc", "decam", "vista", "ztf", "skycalc", "team_atmospheres")
 
 
