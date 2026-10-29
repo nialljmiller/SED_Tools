@@ -47,8 +47,6 @@ class FluxCube:
     @classmethod
     def from_file(cls, path: str) -> "FluxCube":
         """Load a :class:`FluxCube` from a binary file."""
-        leftover = b""
-
         with open(path, "rb") as fh:
             header = fh.read(16)
             if len(header) != 16:
@@ -57,11 +55,7 @@ class FluxCube:
             teff, logg, meta, wavelengths = read_axes(fh, nt, nl, nm, nw)
             flux_expected = nt * nl * nm * nw
             flux_flat = np.fromfile(fh, dtype=np.float64, count=flux_expected)
-
-            if flux_flat.size == flux_expected:
-                leftover = fh.read(1)
-            else:
-                leftover = b""
+            leftover = fh.read(1) if flux_flat.size == flux_expected else b""
 
         if flux_flat.size != flux_expected:
             raise ValueError(

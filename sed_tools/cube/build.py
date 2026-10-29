@@ -369,9 +369,7 @@ def _populate_and_write(
     teff_grid, logg_grid, meta_grid = build_grids(teff_vals, logg_vals, meta_vals)
 
     cube_bytes = len(teff_grid) * len(logg_grid) * len(meta_grid) * len(wavelengths) * 8
-    tmp_path = None
-    if cube_bytes > usable_ram:
-        tmp_path = output_file + ".tmp.memmap"
+    tmp_path = output_file + ".tmp.memmap" if cube_bytes > usable_ram else None
 
     flux_cube = _allocate_cube(teff_grid, logg_grid, meta_grid, wavelengths, tmp_path)
     try:

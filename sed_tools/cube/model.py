@@ -134,43 +134,26 @@ class EvaluatedSED:
         if system not in {"AB", "VEGA"}:
             raise ValueError("Photometric system must be either 'AB' or 'Vega'")
 
-        vega_curve: Optional[Spectrum]
-        if isinstance(vega_spectrum, Spectrum):
-            vega_curve = vega_spectrum
-        elif vega_spectrum is None:
-            vega_curve = None
-        else:
+        vega_curve: Optional[Spectrum] = vega_spectrum
+        if vega_spectrum is not None and not isinstance(vega_spectrum, Spectrum):
             vega_curve = load_spectrum(os.fspath(vega_spectrum))
 
         _warn_outside_sed(self.wavelength, resolved.values())
         for name, curve in resolved.items():
+            # A zero or negative band flux or Vega zero point gives inf, -inf or NaN, as computed; no error.
             if system == "AB":
-                flux_density = band_average_flux_nu(
-                    self.wavelength, self.flux, curve
-                )
-                # A zero or negative band flux gives inf or NaN, as computed; no error.
+                flux_density = band_average_flux_nu(self.wavelength, self.flux, curve)
                 with np.errstate(divide="ignore", invalid="ignore"):
                     magnitude = float(-2.5 * np.log10(flux_density / AB_ZERO_FLUX))
-                results[name] = PhotometryResult(
-                    magnitude=magnitude,
-                    flux_density=float(flux_density),
-                    system="AB",
-                    filter_name=name,
-                )
-                continue
-
-            # Vega system
-            flux_density = band_average_flux_lambda(
-                self.wavelength, self.flux, curve
-            )
-            vega_zero = _vega_zero_point(curve, vega_curve)
-            # A zero or negative band flux or zero point gives inf, -inf or NaN, as computed; no error.
-            with np.errstate(divide="ignore", invalid="ignore"):
-                magnitude = float(-2.5 * np.log10(np.divide(flux_density, vega_zero)))
+            else:
+                flux_density = band_average_flux_lambda(self.wavelength, self.flux, curve)
+                vega_zero = _vega_zero_point(curve, vega_curve)
+                with np.errstate(divide="ignore", invalid="ignore"):
+                    magnitude = float(-2.5 * np.log10(np.divide(flux_density, vega_zero)))
             results[name] = PhotometryResult(
                 magnitude=magnitude,
                 flux_density=float(flux_density),
-                system="Vega",
+                system="AB" if system == "AB" else "Vega",
                 filter_name=name,
             )
 
@@ -620,9 +603,7 @@ class SED:
         self, model: Union[str, os.PathLike[str], ModelMatch]
     ) -> Tuple[Path, str]:
         if isinstance(model, ModelMatch):
-            path = Path(model.flux_cube)
-            name = model.name
-            return path, name
+            return Path(model.flux_cube), model.name
 
         flux_path = self._resolve_model_path(model)
         name = flux_path.parent.name if flux_path.parent != flux_path else flux_path.stem
@@ -783,8 +764,7 @@ def _range_center(
         return float((requested[0] + requested[1]) / 2.0)
     if grid.size == 0:
         return 0.0
-    midpoint = grid[len(grid) // 2]
-    return float(midpoint)
+    return float(grid[len(grid) // 2])
 
 
 __all__ = [
