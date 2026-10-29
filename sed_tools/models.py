@@ -22,6 +22,7 @@ FilterSpec = Union[str, os.PathLike[str], FilterCurve, Tuple[str, Union[str, os.
 PACKAGE_ROOT = Path(__file__).resolve().parent
 
 from .config import get_data_dir
+from .cube.fileio import read_axes
 DATA_DIR_DEFAULT     = get_data_dir()
 STELLAR_DIR_DEFAULT  = Path(os.environ.get("SED_STELLAR_DIR", DATA_DIR_DEFAULT / "stellar_models")).expanduser()
 FILTER_DIR_DEFAULT   = Path(os.environ.get("SED_FILTER_DIR",  DATA_DIR_DEFAULT / "filters")).expanduser()
@@ -681,11 +682,7 @@ def _read_flux_cube_header(path: Path) -> Dict[str, np.ndarray]:
         header = fh.read(16)
         if len(header) != 16:
             raise ValueError(f"Flux cube header truncated in {path}")
-        nt, nl, nm, nw = struct.unpack("4i", header)
-        teff = np.fromfile(fh, dtype=np.float64, count=nt)
-        logg = np.fromfile(fh, dtype=np.float64, count=nl)
-        meta = np.fromfile(fh, dtype=np.float64, count=nm)
-        wavelengths = np.fromfile(fh, dtype=np.float64, count=nw)
+        teff, logg, meta, wavelengths = read_axes(fh, *struct.unpack("4i", header))
     return {"teff": teff, "logg": logg, "meta": meta, "wavelengths": wavelengths}
 
 

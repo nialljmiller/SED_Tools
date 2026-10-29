@@ -32,7 +32,6 @@ Usage
 import json
 import logging
 import os
-import struct
 from collections import Counter
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -195,20 +194,9 @@ class SEDGenerator:
     
     def _load_flux_cube(self, library_path: str):
         """Load flux cube from binary file."""
-        cube_path = os.path.join(library_path, "flux_cube.bin")
-        with open(cube_path, 'rb') as f:
-            header = f.read(16)
-            nt, nl, nm, nw = struct.unpack('4i', header)
-            
-            teff = np.fromfile(f, dtype=np.float64, count=nt)
-            logg = np.fromfile(f, dtype=np.float64, count=nl)
-            meta = np.fromfile(f, dtype=np.float64, count=nm)
-            wavelengths = np.fromfile(f, dtype=np.float64, count=nw)
-            
-            flux_data = np.fromfile(f, dtype=np.float64, count=nt*nl*nm*nw)
-            flux_cube = flux_data.reshape((nw, nm, nl, nt))
-        
-        return teff, logg, meta, wavelengths, flux_cube
+        from .cube.fileio import load
+
+        return load(os.path.join(library_path, "flux_cube.bin"))
     
     def _prepare_training_data(
         self,

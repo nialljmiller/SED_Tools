@@ -49,6 +49,7 @@ from .collision_config import (
     discover_extra_axes,
     load_config,
 )
+from .cube.fileio import flux_offset, write_header
 from .spectrum_io import read_text_spectrum
 
 logger = logging.getLogger(__name__)
@@ -229,11 +230,7 @@ def _write_cube(
     t0 = time.time()
     print(f"Writing {output_file} ({total_gib:.2f} GiB, {n_chunks} chunk(s))...")
     with open(output_file, "wb") as f:
-        f.write(struct.pack("4i", nt, nl, nm, nw))
-        teff_grid.astype(np.float64).tofile(f)
-        logg_grid.astype(np.float64).tofile(f)
-        meta_grid.astype(np.float64).tofile(f)
-        wavelengths.astype(np.float64).tofile(f)
+        write_header(f, teff_grid, logg_grid, meta_grid, wavelengths)
         for ci in range(n_chunks):
             w0, w1 = ci * w_chunk, min((ci + 1) * w_chunk, nw)
             chunk = np.array(flux_cube[:, :, :, w0:w1])
@@ -286,7 +283,7 @@ def spectra_not_in_cube(cube_path: str, lookup_file: str) -> Tuple[List[str], Li
         if min(nt, nl, nm, nw) < 1:
             raise ValueError(f"{cube_path}: the header gives dimensions {nt}, {nl}, {nm}, {nw}")
         axes = np.fromfile(fh, dtype=np.float64, count=nt + nl + nm)
-        data_offset = 16 + 8 * (nt + nl + nm + nw)
+        data_offset = flux_offset(nt, nl, nm, nw)
         filled = _filled_points(fh, (nt, nl, nm, nw), data_offset, cube_path)
     it = _axis_positions(axes[:nt], teff)
     il = _axis_positions(axes[nt:nt + nl], logg)

@@ -51,16 +51,12 @@ import numpy as np
 from ._constants import available_memory_bytes as _available_ram_bytes
 from ._constants import planck_flam as _blackbody
 from ._resample import resample_to_grid
+from .cube.fileio import flux_offset, write_header
 
 
 # ---------------------------------------------------------------------------
 # Binary cube I/O
 # ---------------------------------------------------------------------------
-
-def _flux_offset(nt, nl, nm, nw):
-    """Byte offset where the flux data starts in a flux_cube.bin."""
-    return 16 + (nt + nl + nm + nw) * 8
-
 
 def _read_cube_header(path):
     """Read grids and wavelengths only — does not load flux into RAM."""
@@ -79,14 +75,8 @@ def _open_flux_memmap(path, nt, nl, nm, nw):
     Teff varies fastest: the layout MESA, precompute_flux_cube and
     FluxCube.from_file use.
     """
-    offset = _flux_offset(nt, nl, nm, nw)
+    offset = flux_offset(nt, nl, nm, nw)
     return np.memmap(path, dtype=np.float64, mode="r", offset=offset, shape=(nw, nm, nl, nt))
-
-
-def _write_header(f, teff, logg, meta, wl):
-    f.write(struct.pack("iiii", len(teff), len(logg), len(meta), len(wl)))
-    for axis in (teff, logg, meta, wl):
-        f.write(axis.astype(np.float64).tobytes())
 
 
 # ---------------------------------------------------------------------------
@@ -262,7 +252,7 @@ def densify_grid(
 
     os.makedirs(os.path.dirname(os.path.abspath(dst)), exist_ok=True)
     with open(dst, "wb") as f:
-        _write_header(f, teff_dense, logg_grid, meta_grid, wavelengths)
+        write_header(f, teff_dense, logg_grid, meta_grid, wavelengths)
         _write_dense_flux(f, flux_orig, _source_rows(teff_orig, teff_dense), teff_dense, teff_orig,
                           logg_grid, meta_grid, wavelengths, bb_scale, generator, dst)
 

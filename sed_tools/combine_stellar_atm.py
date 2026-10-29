@@ -16,7 +16,6 @@ import argparse
 import logging
 import os
 import shutil
-import struct
 from collections import Counter
 
 import matplotlib.pyplot as plt
@@ -25,6 +24,7 @@ import pandas as pd
 from tqdm import tqdm
 
 from ._resample import resample_to_grid
+from .cube.fileio import write_header
 from .spectrum_io import read_text_spectrum
 
 logger = logging.getLogger(__name__)
@@ -481,12 +481,7 @@ def save_combined_data(output_dir, teff_grid, logg_grid, meta_grid,
     # Save binary flux cube (transposed for Fortran compatibility)
     binary_file = os.path.join(output_dir, "flux_cube.bin")
     with open(binary_file, "wb") as f:
-        f.write(struct.pack("4i", len(teff_grid), len(logg_grid),
-                           len(meta_grid), len(wavelength_grid)))
-        teff_grid.astype(np.float64).tofile(f)
-        logg_grid.astype(np.float64).tofile(f)
-        meta_grid.astype(np.float64).tofile(f)
-        wavelength_grid.astype(np.float64).tofile(f)
+        write_header(f, teff_grid, logg_grid, meta_grid, wavelength_grid)
         # Transpose to (wavelength, meta, logg, teff) for Fortran column-major order
         flux_cube.transpose(3, 2, 1, 0).astype(np.float64).tofile(f)
 

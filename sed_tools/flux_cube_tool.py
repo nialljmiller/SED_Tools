@@ -49,8 +49,10 @@ from typing import Dict, Iterable, List, Sequence, Tuple
 import numpy as np
 
 try:
+    from .cube.fileio import read_axes
     from .filter_metadata import ENERGY, PHOTON, normalize_detector_type, read_filter_header
 except ImportError:  # pragma: no cover - executed as a standalone script
+    from cube.fileio import read_axes
     from filter_metadata import ENERGY, PHOTON, normalize_detector_type, read_filter_header
 
 try:
@@ -265,10 +267,7 @@ class FluxCube:
             if len(header) != 16:
                 raise ValueError("Flux cube header truncated")
             nt, nl, nm, nw = struct.unpack("4i", header)
-            teff = np.fromfile(fh, dtype=np.float64, count=nt)
-            logg = np.fromfile(fh, dtype=np.float64, count=nl)
-            meta = np.fromfile(fh, dtype=np.float64, count=nm)
-            wavelengths = np.fromfile(fh, dtype=np.float64, count=nw)
+            teff, logg, meta, wavelengths = read_axes(fh, nt, nl, nm, nw)
             flux_expected = nt * nl * nm * nw
             flux_flat = np.fromfile(fh, dtype=np.float64, count=flux_expected)
 
