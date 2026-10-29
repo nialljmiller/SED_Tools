@@ -14,6 +14,7 @@ from urllib.parse import unquote
 
 from filter_info.compose import SCHEMA as INFO_SCHEMA, InfoSources, write_info
 from filter_info.references import UNRESOLVED
+from grid_info.check_grids import manifest_matches
 from sed_tools import __version__ as SED_TOOLS_VERSION
 from sed_tools.filter_colors import instrument_colors
 from sed_tools.filter_properties import UNITS, curve_properties, extinction_law, load_sun, load_vega
@@ -59,7 +60,12 @@ SVO_FIELDS = {
 
 
 def scan_stellar_models(base_path: Path):
-    """Scan stellar_models directory for model information."""
+    """Scan stellar_models directory for model information.
+
+    An allow-list: a grid is listed (in models and models_detailed) only when its manifest.json says
+    grid_info/check_grids.py passed it and the folder still holds exactly the files that manifest
+    records, so a folder still uploading, unchecked or changed since its check is never offered.
+    """
     stellar_dir = base_path / "stellar_models"
 
     if not stellar_dir.exists():
@@ -76,6 +82,11 @@ def scan_stellar_models(base_path: Path):
 
         # Skip hidden directories (.cache, .tmp, etc.)
         if model_name.startswith('.'):
+            continue
+
+        listed, why = manifest_matches(model_dir)
+        if not listed:
+            print(f"  not listed: {model_name} ({why})")
             continue
 
         # Check for key files

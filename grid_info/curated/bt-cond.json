@@ -1,0 +1,81 @@
+{
+  "short_description": "BT-Cond PHOENIX atmospheres, 44 % of SVO's set: Teff 800-6,600 K (SVO bt-cond, air wavelengths)",
+  "description": "SVO's BT-COND grid: \"The BT-COND Model grid of theoretical spectra. Brown dwarfs/extrasolar planets atmosphere models without irradiation and no dust opacity (no dust settling) but updated abundances. Wavelengths have been converted to air wavelengths.\" Teff 800-6,600 K, log g -0.5-6.0, [M/H] -4.0 to +0.5, [alpha/M] -0.2 to +0.6. A SUBSET: NJM holds 6,028 of the 13,648 spectra SVO lists (44 %). SVO refuses scripted downloads now, so it cannot be completed from SVO today. NJM serves no cube for it; clients build one (about 200 GB for the whole grid, mostly empty nodes).",
+  "sources": [
+    {
+      "name": "SVO Theory Server",
+      "model": "bt-cond",
+      "title": "BT-COND",
+      "ivoid": "ivo://svo.cab/models/bt-cond",
+      "url": "http://svo2.cab.inta-csic.es/theory/newov2/index.php?models=bt-cond",
+      "retrieved": "spectra dated 2026-05",
+      "fid_list": "source_evidence/grids/bt-cond/svo_fids.json",
+      "copy": "SVO's ASCII spectra (wavelength in Angstrom, flux in erg/cm2/s/A), cleaned by SED_Tools: header rewritten to SED_Tools' standard keys, no unit conversion (original_flux_unit flam)"
+    }
+  ],
+  "upstream": {
+    "provider": "SVO Theory Server",
+    "model": "bt-cond",
+    "ivoid": "ivo://svo.cab/models/bt-cond",
+    "authors": "Allard, Homeier & Freytag; SVO credits Hauschildt, Allard & Baron 1999",
+    "spectra": 13648
+  },
+  "completeness": {
+    "spectra": 6028,
+    "upstream_spectra": 13648,
+    "fraction": 0.4417,
+    "upstream_count_from": "SVO's FID list for bt-cond as SED_Tools cached it",
+    "note": "a subset; which SVO spectra are missing is listed in properties.json"
+  },
+  "licence": {
+    "redistribution": "unstated",
+    "terms_status": "verbatim",
+    "terms": [
+      {
+        "for": "the SVO Theory Server, the copy NJM holds",
+        "text": "If your research benefits from the use of the Spanish Virtual Observatory, we would appreciate if you could include the following acknowledgement in your publication: This research has made use of the Spanish Virtual Observatory ( https://svo.cab.inta-csic.es ) project funded by MCIN/AEI/10.13039/501100011033 through grant PID2023-146210NB-I00.",
+        "url": "https://svo.cab.inta-csic.es/?page_id=277",
+        "accessed": "2026-10-28",
+        "evidence": "source_evidence/grids/2026-10-28-terms/svo_page_277.html"
+      }
+    ],
+    "searched": [
+      "SVO's registry records (ivo://svo.cab/models/*) carry no rights value (RegTAP query of dc.g-vo.org/tap, 2026-10-28; source_evidence/grids/2026-10-28-terms/regtap_svo_rights2.csv)",
+      "SVO's theory pages state no terms of use for the spectra (SVO's theory server answered 403 on 2026-10-28; Wayback copies were read instead)",
+      "The Lyon (Allard) grid README gives papers and a contact address only (Wayback 2022-06-29: source_evidence/grids/2026-10-28-terms/wb_lyon_btsettl_README.txt)"
+    ]
+  },
+  "references": [
+    "bibcode:1999ApJ...512..377H",
+    "bibcode:2012RSPTA.370.2765A"
+  ],
+  "acknowledgements": [
+    {
+      "for": "SVO Theory Server",
+      "text": "This research has made use of the Spanish Virtual Observatory ( https://svo.cab.inta-csic.es ) project funded by MCIN/AEI/10.13039/501100011033 through grant PID2023-146210NB-I00.",
+      "url": "https://svo.cab.inta-csic.es/?page_id=277",
+      "references": [],
+      "applies_to": "all spectra"
+    }
+  ],
+  "credit": "Allard, F., Homeier, D. & Freytag, B. 2012, Phil. Trans. R. Soc. A 370, 2765; SVO's record credits Hauschildt, Allard & Baron 1999, ApJ 512, 377; via the SVO Theory Server",
+  "links": [
+    {
+      "url": "http://svo2.cab.inta-csic.es/theory/newov2/index.php?models=bt-cond",
+      "label": "SVO Theory Server: bt-cond"
+    }
+  ],
+  "wavelength_medium": "air (SVO: \"Wavelengths have been converted to air wavelengths.\")",
+  "flux_quantity": "surface flux F_lambda (SVO's column 2: FLUX (ERG/CM2/S/A))",
+  "notes": "References: SVO's registry record credits 1999ApJ...512..377H; the Lyon README names Allard et al. (2012) as the refereed BT-Settl paper, and its bibcode 2012RSPTA.370.2765A is given from knowledge, not checked here. Bolometric flux: the lowest-gravity spectra (logg -0.5 and 0) hold only 0.38-0.60 of sigma*T^4; see bolometric_exceptions. Nill to confirm this is acceptable for listing.",
+  "bolometric_exceptions": [
+    {
+      "logg_max": 0.0,
+      "range": [
+        0.3,
+        0.7
+      ],
+      "why": "BT-Cond's lowest-gravity models (logg -0.5 and 0) integrate to 0.38-0.60 of sigma*T^4 on their own 0.001 A - 10^7 A wavelengths, falling smoothly with gravity; measured 29 Oct 2026 on the guard's 120-spectrum sample (14 such spectra, all at logg <= 0). Not a unit error (that would be a constant 1/pi or 1/(4 pi)), and SED_Tools' cleaner only ever divides over-bright spectra; the headers declare SVO's own unit, unconverted. Not checked against raw SVO files: none on cirrus has these parameters. Treat fluxes there as unreliable"
+    }
+  ]
+}

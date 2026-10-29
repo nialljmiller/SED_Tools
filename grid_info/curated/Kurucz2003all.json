@@ -1,0 +1,161 @@
+{
+  "short_description": "Castelli & Kurucz (2003) ATLAS9 ODFNEW/NOVER fluxes, [alpha/Fe] = 0 and +0.4 (SVO Kurucz2003all)",
+  "description": "ATLAS9 model-atmosphere fluxes of Castelli & Kurucz (2003), computed with the new opacity distribution functions (ODFNEW) and no convective overshooting (NOVER), mixing length l/Hp = 1.25 and microturbulence 2 km/s. SVO describes the grid as \"ATLAS9 Kurucz ODFNEW /NOVER models. Newly computed ODFs with better opacities and better abundances have been used.\" It has two variants, each with its own MESA cube: [alpha/Fe] = 0 (3,808 spectra, [M/H] -2.5 to +0.5) and [alpha/Fe] = +0.4 (4,284 spectra, [M/H] -4.0 to +0.5). Teff 3,500-50,000 K, log g 0-5. No models exist at high Teff and low log g, so each cube has empty nodes (holes), listed in properties.json.",
+  "sources": [
+    {
+      "name": "SVO Theory Server",
+      "model": "Kurucz2003all",
+      "title": "Kurucz ODFNEW /NOVER (2003)",
+      "ivoid": "ivo://svo.cab/models/kurucz2003all",
+      "url": "http://svo2.cab.inta-csic.es/theory/newov2/index.php?models=Kurucz2003all",
+      "retrieved": "spectra dated 2026-04 ([alpha/Fe] = +0.4) and 2026-06 ([alpha/Fe] = 0); SVO FID list cached 2026-06-07",
+      "fid_list": "source_evidence/grids/Kurucz2003all/svo_fids.json",
+      "copy": "SVO's ASCII spectra (wavelength in Angstrom, flux in erg/cm2/s/A), cleaned by SED_Tools: header rewritten to SED_Tools' standard keys, no unit conversion (original_flux_unit flam)"
+    }
+  ],
+  "upstream": {
+    "provider": "SVO Theory Server",
+    "model": "Kurucz2003all",
+    "ivoid": "ivo://svo.cab/models/kurucz2003all",
+    "authors": "Castelli & Kurucz 2003",
+    "spectra": 8092
+  },
+  "completeness": {
+    "spectra": 8092,
+    "upstream_spectra": 8092,
+    "upstream_count_from": "SVO's FID list for Kurucz2003all as SED_Tools cached it on 2026-06-07"
+  },
+  "licence": {
+    "redistribution": "unstated",
+    "terms_status": "verbatim",
+    "terms": [
+      {
+        "for": "the SVO Theory Server, the copy NJM holds",
+        "text": "If your research benefits from the use of the Spanish Virtual Observatory, we would appreciate if you could include the following acknowledgement in your publication: This research has made use of the Spanish Virtual Observatory ( https://svo.cab.inta-csic.es ) project funded by MCIN/AEI/10.13039/501100011033 through grant PID2023-146210NB-I00.",
+        "url": "https://svo.cab.inta-csic.es/?page_id=277",
+        "accessed": "2026-10-28",
+        "evidence": "source_evidence/grids/2026-10-28-terms/svo_page_277.html"
+      },
+      {
+        "for": "Kurucz's data and programs (kurucz.harvard.edu)",
+        "text": "It provides up-to-date public access to my data and programs.",
+        "url": "http://kurucz.harvard.edu/",
+        "accessed": "2026-10-28",
+        "evidence": "source_evidence/grids/2026-10-28-terms/kurucz_home.txt"
+      }
+    ],
+    "searched": [
+      "SVO's registry records (ivo://svo.cab/models/*) carry no rights value (RegTAP query of dc.g-vo.org/tap, 2026-10-28; source_evidence/grids/2026-10-28-terms/regtap_svo_rights2.csv)",
+      "SVO's theory pages state no terms of use for the spectra (SVO's theory server answered 403 on 2026-10-28; Wayback copies were read instead)",
+      "Castelli's site (https://wwwuser.oats.inaf.it/castelli/) states no terms (source_evidence/grids/2026-10-28-terms/castelli_oats_home.txt)"
+    ]
+  },
+  "references": [
+    "bibcode:2003IAUS..210P.A20C"
+  ],
+  "acknowledgements": [
+    {
+      "for": "SVO Theory Server",
+      "text": "This research has made use of the Spanish Virtual Observatory ( https://svo.cab.inta-csic.es ) project funded by MCIN/AEI/10.13039/501100011033 through grant PID2023-146210NB-I00.",
+      "url": "https://svo.cab.inta-csic.es/?page_id=277",
+      "references": [],
+      "applies_to": "all spectra"
+    }
+  ],
+  "credit": "Castelli, F. & Kurucz, R. L. 2003, IAU Symp. 210, A20 (2003IAUS..210P.A20C), via the SVO Theory Server",
+  "links": [
+    {
+      "url": "http://svo2.cab.inta-csic.es/theory/newov2/index.php?models=Kurucz2003all",
+      "label": "SVO Theory Server: Kurucz2003all"
+    },
+    {
+      "url": "https://wwwuser.oats.inaf.it/castelli/",
+      "label": "F. Castelli's grids"
+    }
+  ],
+  "wavelength_medium": "not stated by SVO",
+  "flux_quantity": "surface flux F_lambda (SVO's column 2: FLUX (ERG/CM2/S/A))",
+  "notes": "",
+  "archived_copies": {
+    "Kurucz2003": {
+      "held_at": "grid_holding/Kurucz2003",
+      "moved_utc": "2026-10-29T22:07:11Z",
+      "is": "SVO's own model Kurucz2003 ('Kurucz ODFNEW /NOVER (2003) alpha:0.0'): the [alpha/Fe] = 0 half",
+      "variant": "Kurucz2003all_alpha_0p00_lh_1p25_vtur_2_km_s",
+      "spectra": 3808,
+      "identical": "3,808 of 3,808 spectra byte-identical to Kurucz2003all files",
+      "cube": "byte-identical to Kurucz2003all's flux_cube.bin as served before 29 Oct 2026 (now in backups/grids-clean-*/Kurucz2003all/)"
+    },
+    "Kurucz2003alp": {
+      "held_at": "grid_holding/Kurucz2003alp",
+      "moved_utc": "2026-10-29T22:07:11Z",
+      "is": "SVO's own model Kurucz2003alp ('Kurucz ODFNEW /NOVER (2003) alpha:0.4'): the [alpha/Fe] = +0.4 half",
+      "variant": "Kurucz2003all_alpha_0p40_lh_1p25_vtur_2_km_s",
+      "spectra": 4284,
+      "identical": "4,284 of 4,284 spectra have the same data lines as Kurucz2003all files; 3,859 are byte-identical, and the other 425 now are too (their Kurucz2003all headers were restored from these files)"
+    },
+    "Kurucz2003all__alpha_04": {
+      "held_at": "grid_holding/Kurucz2003all__alpha_04",
+      "moved_utc": "2026-10-29T22:07:11Z",
+      "is": "an old SED_Tools variant split",
+      "variant": "Kurucz2003all_alpha_0p40_lh_1p25_vtur_2_km_s",
+      "spectra": 4284,
+      "identical": "4,284 of 4,284 spectra byte-identical to Kurucz2003alp's",
+      "cube": "byte-identical to Kurucz2003alp's flux_cube.bin"
+    },
+    "Kurucz2003all__alpha_0.4__lh_1.25__vtur_2": {
+      "held_at": "grid_holding/Kurucz2003all__alpha_0.4__lh_1.25__vtur_2",
+      "moved_utc": "2026-10-29T22:07:12Z",
+      "is": "an old SED_Tools variant split",
+      "variant": "Kurucz2003all_alpha_0p40_lh_1p25_vtur_2_km_s",
+      "spectra": 4284,
+      "identical": "4,284 of 4,284 spectra byte-identical to Kurucz2003alp's",
+      "cube": "its lookup and cube held 3,859 of the 4,284 (the 425 short-header spectra were left out)"
+    },
+    "Kurucz2003all__alpha_0__lh_1.25__vtur_2": {
+      "held_at": "grid_holding/Kurucz2003all__alpha_0__lh_1.25__vtur_2",
+      "moved_utc": "2026-10-29T22:07:12Z",
+      "is": "an old SED_Tools variant split",
+      "variant": "Kurucz2003all_alpha_0p00_lh_1p25_vtur_2_km_s",
+      "spectra": 3808,
+      "identical": "3,808 of 3,808 spectra byte-identical to Kurucz2003all files",
+      "cube": "byte-identical to Kurucz2003all's flux_cube.bin as served before 29 Oct 2026 (now in backups/grids-clean-*/Kurucz2003all/)"
+    },
+    "Kurucz2003all__alpha_00": {
+      "held_at": "grid_holding/Kurucz2003all__alpha_00",
+      "moved_utc": "2026-10-29T22:07:12Z",
+      "is": "a cube-only copy (its lookup names Kurucz2003all files not in the folder)",
+      "variant": "Kurucz2003all_alpha_0p00_lh_1p25_vtur_2_km_s",
+      "spectra": 0,
+      "cube": "byte-identical to Kurucz2003all's flux_cube.bin as served before 29 Oct 2026 (now in backups/grids-clean-*/Kurucz2003all/)"
+    },
+    "Kurucz2003_dense": {
+      "held_at": "grid_holding/Kurucz2003_dense",
+      "moved_utc": "2026-10-29T22:07:12Z",
+      "is": "a cube-only 'dense' copy that was never densified (76 Teff nodes)",
+      "variant": "Kurucz2003all_alpha_0p00_lh_1p25_vtur_2_km_s",
+      "spectra": 0,
+      "cube": "byte-identical to Kurucz2003's flux_cube.bin"
+    },
+    "Kurucz2003all__alpha_0__lh_1.25__vtur_2_dense": {
+      "held_at": "grid_holding/Kurucz2003all__alpha_0__lh_1.25__vtur_2_dense",
+      "moved_utc": "2026-10-29T22:07:13Z",
+      "is": "a cube-only 'dense' copy that was never densified (76 Teff nodes)",
+      "variant": "Kurucz2003all_alpha_0p00_lh_1p25_vtur_2_km_s",
+      "spectra": 0,
+      "cube": "byte-identical to Kurucz2003all's flux_cube.bin as served before 29 Oct 2026 (now in backups/grids-clean-*/Kurucz2003all/)"
+    }
+  },
+  "aliases": {
+    "Kurucz2003": "Kurucz2003all_alpha_0p00_lh_1p25_vtur_2_km_s",
+    "Kurucz2003alp": "Kurucz2003all_alpha_0p40_lh_1p25_vtur_2_km_s"
+  },
+  "withdrawn": {
+    "Kurucz2003all__alpha_00_dense": {
+      "held_at": "grid_holding/Kurucz2003all__alpha_00_dense",
+      "moved_utc": "2026-10-29T22:07:10Z",
+      "is": "a densified [alpha/Fe] = 0 cube (485 Teff x 11 logg x 8 [M/H]) built on 5 Jul 2026, before the densifier fix f436560 (27 Oct)",
+      "why": "scrambled: node integrals 0.39 to 15,000 times pi*B_lambda(Teff); not a copy of any served data"
+    }
+  }
+}

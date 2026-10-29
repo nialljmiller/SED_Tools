@@ -86,3 +86,4 @@ htmlcov/
 
 # Official CIE colour tables shipped with sed_tools.filter_colors
 !sed_tools/cie/*.csv
+!grid_info/curated/*.json

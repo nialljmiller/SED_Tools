@@ -1,0 +1,68 @@
+{
+  "short_description": "NextGen PHOENIX atmospheres, Teff 900-10,000 K (SVO NextGen2; Hauschildt, Allard & Baron 1999)",
+  "description": "SVO's NextGen2 grid, \"The NextGen Model grid of theoretical spectra\" (Hauschildt, Allard & Baron 1999): PHOENIX model atmospheres for cool stars and brown dwarfs, Teff 900-10,000 K, log g 3.0-6.0, [M/H] -4.0 to 0.0. It is not SVO's NextGen (\"NextGen (solar)\", 272 spectra), the grid whose SVO copy is about 100 times too bright above 5,000 K; that grid is not on NJM. This copy's fluxes equal SVO's raw 2025 files exactly.",
+  "sources": [
+    {
+      "name": "SVO Theory Server",
+      "model": "NextGen2",
+      "title": "NextGen",
+      "ivoid": "ivo://svo.cab/models/nextgen2",
+      "url": "http://svo2.cab.inta-csic.es/theory/newov2/index.php?models=NextGen2",
+      "retrieved": "spectra dated 2026-04; SVO FID list cached 2026-04-09",
+      "fid_list": "source_evidence/grids/NextGen2/svo_fids.json",
+      "copy": "SVO's ASCII spectra (wavelength in Angstrom, flux in erg/cm2/s/A), cleaned by SED_Tools: header rewritten to SED_Tools' standard keys, no unit conversion (original_flux_unit flam)"
+    }
+  ],
+  "upstream": {
+    "provider": "SVO Theory Server",
+    "model": "NextGen2",
+    "ivoid": "ivo://svo.cab/models/nextgen2",
+    "authors": "Hauschildt, Allard & Baron 1999",
+    "spectra": 2712
+  },
+  "completeness": {
+    "spectra": 2712,
+    "upstream_spectra": 2712,
+    "upstream_count_from": "SVO's FID list for NextGen2 as SED_Tools cached it on 2026-04-09"
+  },
+  "licence": {
+    "redistribution": "unstated",
+    "terms_status": "verbatim",
+    "terms": [
+      {
+        "for": "the SVO Theory Server, the copy NJM holds",
+        "text": "If your research benefits from the use of the Spanish Virtual Observatory, we would appreciate if you could include the following acknowledgement in your publication: This research has made use of the Spanish Virtual Observatory ( https://svo.cab.inta-csic.es ) project funded by MCIN/AEI/10.13039/501100011033 through grant PID2023-146210NB-I00.",
+        "url": "https://svo.cab.inta-csic.es/?page_id=277",
+        "accessed": "2026-10-28",
+        "evidence": "source_evidence/grids/2026-10-28-terms/svo_page_277.html"
+      }
+    ],
+    "searched": [
+      "SVO's registry records (ivo://svo.cab/models/*) carry no rights value (RegTAP query of dc.g-vo.org/tap, 2026-10-28; source_evidence/grids/2026-10-28-terms/regtap_svo_rights2.csv)",
+      "SVO's theory pages state no terms of use for the spectra (SVO's theory server answered 403 on 2026-10-28; Wayback copies were read instead)",
+      "The Lyon (Allard) grid pages give papers and a contact address only (Wayback copies 2022: source_evidence/grids/2026-10-28-terms/wb_lyon_btsettl_README.txt, source_evidence/grids/2026-10-28-terms/wb_lyon_nextgen_20220124.html)"
+    ]
+  },
+  "references": [
+    "bibcode:1999ApJ...512..377H"
+  ],
+  "acknowledgements": [
+    {
+      "for": "SVO Theory Server",
+      "text": "This research has made use of the Spanish Virtual Observatory ( https://svo.cab.inta-csic.es ) project funded by MCIN/AEI/10.13039/501100011033 through grant PID2023-146210NB-I00.",
+      "url": "https://svo.cab.inta-csic.es/?page_id=277",
+      "references": [],
+      "applies_to": "all spectra"
+    }
+  ],
+  "credit": "Hauschildt, P. H., Allard, F. & Baron, E. 1999, ApJ 512, 377 (1999ApJ...512..377H), via the SVO Theory Server",
+  "links": [
+    {
+      "url": "http://svo2.cab.inta-csic.es/theory/newov2/index.php?models=NextGen2",
+      "label": "SVO Theory Server: NextGen2"
+    }
+  ],
+  "wavelength_medium": "not stated by SVO",
+  "flux_quantity": "surface flux F_lambda (SVO's column 2: FLUX (ERG/CM2/S/A))",
+  "notes": "SVO's FIDs for this grid shifted by one between its 2025 and 2026 downloads, so copies must be matched by parameters, not FID."
+}

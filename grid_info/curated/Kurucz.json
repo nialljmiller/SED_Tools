@@ -1,0 +1,74 @@
+{
+  "short_description": "ATLAS9 Kurucz ODFNEW/NOVER fluxes (SVO Kurucz; Castelli, Gratton & Kurucz 1997)",
+  "description": "SVO's \"Kurucz ODFNEW /NOVER models\" grid (SVO model Kurucz): ATLAS9 fluxes with l/Hp = 1.25 and microturbulence 2 km/s, Teff 3,500-50,000 K, log g 0-5, [M/H] -2.5 to +0.5, from 90.9 Angstrom. SVO's registry record gives Castelli, Gratton & Kurucz (1997, A&A 318, 841) as its reference. It is a different set of spectra from Kurucz2003all (Castelli & Kurucz 2003): no spectrum's data is shared between the two.",
+  "sources": [
+    {
+      "name": "SVO Theory Server",
+      "model": "Kurucz",
+      "title": "Kurucz ODFNEW /NOVER models",
+      "ivoid": "ivo://svo.cab/models/kurucz",
+      "url": "http://svo2.cab.inta-csic.es/theory/newov2/index.php?models=Kurucz",
+      "retrieved": "spectra dated 2026-04; SVO FID list cached 2026-01-05",
+      "fid_list": "source_evidence/grids/Kurucz/svo_fids.json",
+      "copy": "SVO's ASCII spectra (wavelength in Angstrom, flux in erg/cm2/s/A), cleaned by SED_Tools: header rewritten to SED_Tools' standard keys, no unit conversion (original_flux_unit flam)"
+    }
+  ],
+  "upstream": {
+    "provider": "SVO Theory Server",
+    "model": "Kurucz",
+    "ivoid": "ivo://svo.cab/models/kurucz",
+    "authors": "Castelli, Gratton & Kurucz 1997 (SVO's reference)",
+    "spectra": 3808
+  },
+  "completeness": {
+    "spectra": 3808,
+    "upstream_spectra": 3808,
+    "upstream_count_from": "SVO's FID list for Kurucz as SED_Tools cached it on 2026-01-05"
+  },
+  "licence": {
+    "redistribution": "unstated",
+    "terms_status": "verbatim",
+    "terms": [
+      {
+        "for": "the SVO Theory Server, the copy NJM holds",
+        "text": "If your research benefits from the use of the Spanish Virtual Observatory, we would appreciate if you could include the following acknowledgement in your publication: This research has made use of the Spanish Virtual Observatory ( https://svo.cab.inta-csic.es ) project funded by MCIN/AEI/10.13039/501100011033 through grant PID2023-146210NB-I00.",
+        "url": "https://svo.cab.inta-csic.es/?page_id=277",
+        "accessed": "2026-10-28",
+        "evidence": "source_evidence/grids/2026-10-28-terms/svo_page_277.html"
+      },
+      {
+        "for": "Kurucz's data and programs (kurucz.harvard.edu)",
+        "text": "It provides up-to-date public access to my data and programs.",
+        "url": "http://kurucz.harvard.edu/",
+        "accessed": "2026-10-28",
+        "evidence": "source_evidence/grids/2026-10-28-terms/kurucz_home.txt"
+      }
+    ],
+    "searched": [
+      "SVO's registry records (ivo://svo.cab/models/*) carry no rights value (RegTAP query of dc.g-vo.org/tap, 2026-10-28; source_evidence/grids/2026-10-28-terms/regtap_svo_rights2.csv)",
+      "SVO's theory pages state no terms of use for the spectra (SVO's theory server answered 403 on 2026-10-28; Wayback copies were read instead)"
+    ]
+  },
+  "references": [
+    "bibcode:1997A&A...318..841C"
+  ],
+  "acknowledgements": [
+    {
+      "for": "SVO Theory Server",
+      "text": "This research has made use of the Spanish Virtual Observatory ( https://svo.cab.inta-csic.es ) project funded by MCIN/AEI/10.13039/501100011033 through grant PID2023-146210NB-I00.",
+      "url": "https://svo.cab.inta-csic.es/?page_id=277",
+      "references": [],
+      "applies_to": "all spectra"
+    }
+  ],
+  "credit": "Castelli, F., Gratton, R. G. & Kurucz, R. L. 1997, A&A 318, 841 (1997A&A...318..841C), via the SVO Theory Server",
+  "links": [
+    {
+      "url": "http://svo2.cab.inta-csic.es/theory/newov2/index.php?models=Kurucz",
+      "label": "SVO Theory Server: Kurucz"
+    }
+  ],
+  "wavelength_medium": "not stated by SVO",
+  "flux_quantity": "surface flux F_lambda (SVO's column 2: FLUX (ERG/CM2/S/A))",
+  "notes": "Identity: SVO's raw file header reads '# Kurucz ODFNEW /NOVER models' and SVO's registry entry ivo://svo.cab/models/kurucz has the title 'Kurucz ODFNEW /NOVER models' and the reference 1997A&A...318..841C (source_evidence/grids/2026-10-28-terms/regtap_svo_models.csv)."
+}

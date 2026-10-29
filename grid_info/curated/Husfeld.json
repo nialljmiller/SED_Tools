@@ -1,0 +1,68 @@
+{
+  "short_description": "Husfeld et al. (1989) NLTE H-He atmospheres for hot helium-rich stars, Teff 35-80 kK (SVO Husfeld)",
+  "description": "SVO's \"Husfeld et al models for non-LTE Helium-rich stars\": NLTE hydrogen-helium model atmospheres (Husfeld, Butler, Heber & Drilling 1989), Teff 35,000-80,000 K, log g 4.0-7.0, helium abundance Y(He) 0, 0.01, 0.10, 0.25, 0.35, 0.50 and 0.70. There is no metallicity axis: each Y(He) value is a variant with its own MESA cube.",
+  "sources": [
+    {
+      "name": "SVO Theory Server",
+      "model": "Husfeld",
+      "title": "Husfeld et al models for non-LTE Helium-rich stars",
+      "ivoid": "ivo://svo.cab/models/husfeld",
+      "url": "http://svo2.cab.inta-csic.es/theory/newov2/index.php?models=Husfeld",
+      "retrieved": "spectra dated 2026-04; SVO FID list cached 2026-01-06",
+      "fid_list": "source_evidence/grids/Husfeld/svo_fids.json",
+      "copy": "SVO's ASCII spectra (wavelength in Angstrom, flux in erg/cm2/s/A), cleaned by SED_Tools: header rewritten to SED_Tools' standard keys, no unit conversion (original_flux_unit flam)"
+    }
+  ],
+  "upstream": {
+    "provider": "SVO Theory Server",
+    "model": "Husfeld",
+    "ivoid": "ivo://svo.cab/models/husfeld",
+    "authors": "Husfeld, Butler, Heber & Drilling 1989",
+    "spectra": 448
+  },
+  "completeness": {
+    "spectra": 448,
+    "upstream_spectra": 448,
+    "upstream_count_from": "SVO's FID list for Husfeld as SED_Tools cached it on 2026-01-06"
+  },
+  "licence": {
+    "redistribution": "unstated",
+    "terms_status": "verbatim",
+    "terms": [
+      {
+        "for": "the SVO Theory Server, the copy NJM holds",
+        "text": "If your research benefits from the use of the Spanish Virtual Observatory, we would appreciate if you could include the following acknowledgement in your publication: This research has made use of the Spanish Virtual Observatory ( https://svo.cab.inta-csic.es ) project funded by MCIN/AEI/10.13039/501100011033 through grant PID2023-146210NB-I00.",
+        "url": "https://svo.cab.inta-csic.es/?page_id=277",
+        "accessed": "2026-10-28",
+        "evidence": "source_evidence/grids/2026-10-28-terms/svo_page_277.html"
+      }
+    ],
+    "searched": [
+      "SVO's registry records (ivo://svo.cab/models/*) carry no rights value (RegTAP query of dc.g-vo.org/tap, 2026-10-28; source_evidence/grids/2026-10-28-terms/regtap_svo_rights2.csv)",
+      "SVO's theory pages state no terms of use for the spectra (SVO's theory server answered 403 on 2026-10-28; Wayback copies were read instead)",
+      "SVO's Husfeld page gives only the reference (Wayback 2025-05-22: source_evidence/grids/2026-10-28-terms/wb_svo_husfeld_20250522.html); no other host was found"
+    ]
+  },
+  "references": [
+    "bibcode:1989A&A...222..150H"
+  ],
+  "acknowledgements": [
+    {
+      "for": "SVO Theory Server",
+      "text": "This research has made use of the Spanish Virtual Observatory ( https://svo.cab.inta-csic.es ) project funded by MCIN/AEI/10.13039/501100011033 through grant PID2023-146210NB-I00.",
+      "url": "https://svo.cab.inta-csic.es/?page_id=277",
+      "references": [],
+      "applies_to": "all spectra"
+    }
+  ],
+  "credit": "Husfeld, D., Butler, K., Heber, U. & Drilling, J. S. 1989, A&A 222, 150 (1989A&A...222..150H), via the SVO Theory Server",
+  "links": [
+    {
+      "url": "http://svo2.cab.inta-csic.es/theory/newov2/index.php?models=Husfeld",
+      "label": "SVO Theory Server: Husfeld"
+    }
+  ],
+  "wavelength_medium": "not stated by SVO",
+  "flux_quantity": "surface flux F_lambda (SVO's column 2: FLUX (ERG/CM2/S/A))",
+  "notes": "Shape check: no raw upstream copy of this grid exists on cirrus, and SVO refuses scripts, so the guard's shape check rests on every header declaring an unconverted original unit (flam)."
+}

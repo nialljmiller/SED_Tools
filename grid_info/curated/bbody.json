@@ -1,0 +1,60 @@
+{
+  "short_description": "Planck function B_lambda, Teff 10-200,000 K (SVO bbody; 1/pi of a surface flux)",
+  "description": "SVO's \"Black Body\" grid as SVO serves it: the Planck function B_lambda(T) for 588 temperatures from 10 to 200,000 K, 1 Angstrom to 10^7 Angstrom. These files are SVO's raw files, never cleaned: their headers declare no units in SED_Tools' form, and their flux is B_lambda, which integrates to sigma*T^4/pi, not sigma*T^4. MESA's own bbody cube is byte-identical. Held: not listed until it is relabelled as B_lambda or multiplied by pi as a new version (a decision for Nill).",
+  "sources": [
+    {
+      "name": "SVO Theory Server",
+      "model": "bbody",
+      "title": "Black Body",
+      "ivoid": "ivo://svo.cab/models/bbody",
+      "url": "http://svo2.cab.inta-csic.es/theory/newov2/index.php?models=bbody",
+      "retrieved": "spectra dated 2026-06",
+      "copy": "SVO's raw ASCII files, not cleaned"
+    }
+  ],
+  "upstream": {
+    "provider": "SVO Theory Server",
+    "model": "bbody",
+    "ivoid": "ivo://svo.cab/models/bbody"
+  },
+  "licence": {
+    "redistribution": "unstated",
+    "terms_status": "verbatim",
+    "terms": [
+      {
+        "for": "the SVO Theory Server, the copy NJM holds",
+        "text": "If your research benefits from the use of the Spanish Virtual Observatory, we would appreciate if you could include the following acknowledgement in your publication: This research has made use of the Spanish Virtual Observatory ( https://svo.cab.inta-csic.es ) project funded by MCIN/AEI/10.13039/501100011033 through grant PID2023-146210NB-I00.",
+        "url": "https://svo.cab.inta-csic.es/?page_id=277",
+        "accessed": "2026-10-28",
+        "evidence": "source_evidence/grids/2026-10-28-terms/svo_page_277.html"
+      }
+    ],
+    "searched": [
+      "SVO's registry records (ivo://svo.cab/models/*) carry no rights value (RegTAP query of dc.g-vo.org/tap, 2026-10-28; source_evidence/grids/2026-10-28-terms/regtap_svo_rights2.csv)",
+      "SVO's theory pages state no terms of use for the spectra (SVO's theory server answered 403 on 2026-10-28; Wayback copies were read instead)"
+    ]
+  },
+  "references": [],
+  "acknowledgements": [
+    {
+      "for": "SVO Theory Server",
+      "text": "This research has made use of the Spanish Virtual Observatory ( https://svo.cab.inta-csic.es ) project funded by MCIN/AEI/10.13039/501100011033 through grant PID2023-146210NB-I00.",
+      "url": "https://svo.cab.inta-csic.es/?page_id=277",
+      "references": [],
+      "applies_to": "all spectra"
+    }
+  ],
+  "credit": "The Planck function, as computed by the SVO Theory Server",
+  "wavelength_medium": "not applicable",
+  "flux_quantity": "B_lambda (per steradian): pi times it is a surface flux",
+  "notes": "Held by the guard (check 2: no declared units; check 5a: 1/pi of sigma*T^4).",
+  "archived_copies": {
+    "bbb": {
+      "held_at": "grid_holding/bbb",
+      "moved_utc": "2026-10-29T22:07:09Z",
+      "is": "a July 2026 re-cleaning of these 588 SVO bbody files (files named bbody_fid*.txt)",
+      "identical": "579 of 588 spectra have the same data lines as bbody's; headers rewritten with logg = nan and metallicity = nan",
+      "cube": "empty: the NaN axes placed no spectrum"
+    }
+  }
+}
