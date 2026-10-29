@@ -28,6 +28,7 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 from email.utils import formatdate
+from functools import cached_property
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Optional, Sequence, Tuple, Union
 from urllib.parse import quote
@@ -414,25 +415,24 @@ class FilterCatalogue:
             path = None
         if path is not None:
             yield _index_bands(path.read_text(encoding="utf-8"))
-        from .filter_library import load_instrument_catalogue
-        from .component_sources.catalog import match_name
+        bundled = self._library._bundled_record(facility, instrument)
+        if bundled is not None:
+            yield set(bundled["bands"])
 
-        bundled = load_instrument_catalogue()
-        fac = match_name(facility, bundled)
-        inst = match_name(instrument, bundled[fac]["instruments"]) if fac else None
-        if inst:
-            yield set(bundled[fac]["instruments"][inst]["bands"])
+    @cached_property
+    def _library(self):
+        from .filter_library import FilterLibrary
+
+        return FilterLibrary(self.filter_root)
 
     def _installed_directory(self, facility: str, instrument: str) -> Optional[Path]:
-        """The installed directory of an instrument (matched without regard to case), if any."""
-        direct = self.filter_root / facility / instrument
-        if direct.is_dir():
-            return direct
-        for path in self.filter_root.glob("*/*"):
-            if path.is_dir() and (path.parent.name.casefold(), path.name.casefold()) == (
-                    facility.casefold(), instrument.casefold()):
-                return path
-        return None
+        """The installed directory of an instrument, found as Filters.fetch finds it, or None.
+
+        See :meth:`~sed_tools.filter_library.FilterLibrary.installed_directory`:
+        names match ignoring case and punctuation, and two installed spellings
+        raise ComponentError unless one is spelled exactly as asked.
+        """
+        return self._library.installed_directory(facility, instrument)
 
     def properties(self, facility: str, instrument: str, **kwargs) -> dict:
         """The instrument's ``properties.json``: ``{"bands": {band: {...}}, "definitions": {...}}``."""

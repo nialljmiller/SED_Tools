@@ -486,7 +486,8 @@ class NJMFilterGrabber:
         """Download an instrument's curves and what comes with them, and report every failure.
 
         ``listed`` is empty when NJM does not serve the instrument.  Raises
-        ``requests.RequestException`` only when NJM cannot say which curves it serves.
+        ``requests.RequestException`` when NJM cannot say which curves it serves,
+        and RuntimeError when its index file cannot be saved beside them.
         ``output_dir`` is where they go when the instrument is installed under
         another spelling (``Gemini/GMOS-N`` for NJM's ``Gemini/GMOS_N``); by
         default ``<base_dir>/<facility>/<instrument>``.
@@ -657,19 +658,20 @@ class NJMFilterGrabber:
             untagged[path.name] = str(exc)
             return None
 
-    def _save_index(self, facility: str, instrument: str, output_dir: Path) -> Optional[List[str]]:
-        """Save the mirror's index of the instrument and return its lines; None when it cannot be read.
+    def _save_index(self, facility: str, instrument: str, output_dir: Path) -> List[str]:
+        """Save the mirror's index of the instrument and return its lines.
 
         Only the mirror (or its manifest) can declare the full filter set: an
         index built from the files seen so far would certify a partial set.
         The file is named after ``output_dir``, as MESA looks for it there.
+        RuntimeError, naming the folder, when NJM's index cannot be fetched:
+        without it MESA cannot read the set.
         """
         try:
             response = self._get(f"{self.filters_url}/{facility}/{instrument}/{instrument}", timeout=10)
         except requests.RequestException as exc:
-            logger.warning("NJM index unavailable for %s/%s (%s); completeness cannot be verified",
-                           facility, instrument, exc)
-            return None
+            raise RuntimeError(f"NJM's index of {facility}/{instrument} could not be saved in {output_dir} "
+                               f"({exc}); MESA cannot read the set without it, so run again") from exc
         (output_dir / output_dir.name).write_text(response.text, encoding="utf-8")
         return [line.strip() for line in response.text.splitlines() if line.strip()]
 

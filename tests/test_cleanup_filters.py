@@ -67,6 +67,7 @@ def test_unreadable_installed_catalogue_file_is_refused(tmp_path):
 
     root = tmp_path / "filters"
     (root / "Fac" / "Cam").mkdir(parents=True)
+    (root / "Fac" / "Cam" / "g.dat").write_text("Wavelength,Transmission\n4000,1\n6000,1\n")  # an installed copy holds curves
     (root / "Fac" / "Cam" / "properties.json").write_text("{not json")
     catalogue = FilterCatalogue(root, mirror=_down_mirror())
     with pytest.raises(CatalogueError, match="properties.json is unreadable"):
@@ -202,7 +203,7 @@ def test_published_reports_each_fallback_and_every_source_failure(tmp_path, monk
         library.published("Fac", "Cam")
     assert str(info.value) == ("No source can provide Fac/Cam: NJM: the mirror is unavailable; "
                                "original source: team site offline; SVO: SVO index down")
-    assert "NJM cannot provide Fac/Cam (the mirror is unavailable); trying its original-source builder" in caplog.text
+    assert "NJM cannot provide" not in caplog.text  # an NJM outage is the NJM client's one notice per process
     assert "The original source cannot provide Fac/Cam (team site offline); trying SVO" in caplog.text
 
 

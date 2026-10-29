@@ -39,6 +39,10 @@ logger = logging.getLogger(__name__)
 FETCH_ORDER = ("njm", "original", "local", "svo")
 #: Seconds between checks of an installed atmosphere site's manifest against NJM's.
 ATMOSPHERE_CHECK_AGE = 24 * 3600
+#: Why NJM gave nothing while it is down (the NJM client announces each outage once per process).
+NJM_UNAVAILABLE = "the mirror is unavailable"
+_NJM_HAS_NO_COMPONENTS = "the mirror does not have them"
+_COMPONENTS_ONLY = "its builder makes only the separate components, not the published curves"
 
 
 @dataclass
@@ -192,13 +196,15 @@ class FilterLibrary:
         builder, built, why_not = self._publishing_builder(facility, instrument, installed)
         if why_not:
             reasons.append(f"original source: {why_not}")
+        beside = why_not if why_not != _COMPONENTS_ONLY else None  # a builder skipped to avoid a second copy
         if builder is not None:
             next_source = "its original-source builder"
         else:
             next_source = None if njm_filled else self._svo_next()
-            if next_source and why_not:
-                next_source += f" (the original source is not used: {why_not})"
-        if next_source:
+            if next_source and beside:
+                next_source += f" (the original source is not used: {beside})"
+        # An NJM outage is announced once per process by the NJM client, not again for each instrument.
+        if next_source and (beside or not (njm_directory is None and _njm_outage(reason))):
             logger.warning("NJM cannot provide %s/%s (%s); trying %s", facility, instrument, reason, next_source)
         if builder is not None:
             reason = self._published_from_builder(builder, built)
@@ -239,7 +245,7 @@ class FilterLibrary:
             return None, None, None
         builder, built = BUILDERS_FOR[names], self.root / names[0] / names[1]
         if not builder.publishes:
-            return None, None, "its builder makes only the separate components, not the published curves"
+            return None, None, _COMPONENTS_ONLY
         if installed is not None and not _same_directory(installed, built):
             return None, None, f"its builder writes {names[0]}/{names[1]}, which would be a second copy beside {installed}"
         return builder, built, None
@@ -257,7 +263,7 @@ class FilterLibrary:
         wrote or confirmed now, or None, why the set is incomplete)``.
         """
         if not self.mirror.is_available():
-            return None, "the mirror is unavailable"
+            return None, NJM_UNAVAILABLE
         spellings = [(facility, instrument)]
         njm_names = self._njm_spelling(facility, instrument)
         if njm_names is not None and njm_names != (facility, instrument):
@@ -562,7 +568,7 @@ class FilterLibrary:
             return True
         facility, instrument = directory.parent.name, directory.name
         njm_facility, njm_instrument = self._njm_spelling(facility, instrument) or (facility, instrument)
-        reason, njm_failed = "the mirror is unavailable", True
+        reason = NJM_UNAVAILABLE
         if self.mirror.is_available():
             try:
                 if (njm_facility, njm_instrument) == (facility, instrument):
@@ -574,10 +580,11 @@ class FilterLibrary:
             else:
                 if self.components_ready(directory, components, bands):
                     return True
-                reason, njm_failed = "the mirror does not have them", False
+                reason = _NJM_HAS_NO_COMPONENTS
+        announce = not _njm_outage(reason)  # an outage is announced once per process by the NJM client
         ref = builder_for(facility, instrument)
         if ref is None or not ref.components:
-            if njm_failed:  # else NJM answered that it has none: build_product says what is missing
+            if announce and reason != _NJM_HAS_NO_COMPONENTS:  # for 'none', build_product says what is missing
                 logger.warning("NJM cannot provide the components of %s/%s (%s), and no original source is "
                                "registered", facility, instrument, reason)
             return False
@@ -591,8 +598,9 @@ class FilterLibrary:
             logger.warning("%s/%s requires a large source download; use allow_heavy=True or --allow-heavy",
                            facility, instrument)
             return False
-        logger.warning("NJM cannot provide the components of %s/%s (%s); trying their original source",
-                       facility, instrument, reason)
+        if announce:
+            logger.warning("NJM cannot provide the components of %s/%s (%s); trying their original source",
+                           facility, instrument, reason)
         get_builder(ref.name)(self.root, **dict(ref.kwargs))
         return self.components_ready(directory, components, bands)
 
@@ -604,7 +612,8 @@ class FilterLibrary:
         try:
             cached = self._atmosphere_from_njm(spec)
         except RequestException as exc:
-            logger.warning("NJM cannot provide the %s atmosphere (%s); trying its source", spec.label, exc)
+            if not _njm_outage(str(exc)):
+                logger.warning("NJM cannot provide the %s atmosphere (%s); trying its source", spec.label, exc)
         if cached is not None:
             return cached
         # Only registered site models may be recovered. Never substitute a
@@ -678,8 +687,9 @@ class FilterLibrary:
                     sites.add(site)
                     when[site] = time.time()
         except (RequestException, ValueError) as exc:
-            logger.warning("NJM's atmospheres could not be listed or checked (%s); the installed ones are used",
-                           exc)
+            if not _njm_outage(str(exc)):
+                logger.warning("NJM's atmospheres could not be listed or checked (%s); the installed ones are used",
+                               exc)
         checked.parent.mkdir(parents=True, exist_ok=True)
         checked.write_text(json.dumps(when, indent=1, sort_keys=True) + "\n", encoding="utf-8")
 
@@ -831,6 +841,11 @@ class FilterLibrary:
 
 #: How available() names each source in its ``errors`` strings.
 _SOURCE_LABELS = {"njm": "NJM", "svo": "SVO"}
+
+
+def _njm_outage(reason):
+    """Whether NJM's failure is its outage, which the NJM client announces once per process."""
+    return reason == NJM_UNAVAILABLE or NJMFilterGrabber._paused()
 
 
 def _publishing_builders():

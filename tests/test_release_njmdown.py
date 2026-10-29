@@ -118,7 +118,7 @@ def test_njm_product_from_svo_is_installed_under_njm_names_and_says_what_is_miss
                           "when NJM is reachable to complete it (NJM: the mirror is unavailable).\n"
                           f"Installed in: {directory}"]
     assert all(len(line) <= 80 for line in incomplete[0].splitlines()[:-1])  # all but the folder's line
-    assert "trying SVO" in caplog.text
+    assert "trying SVO" not in caplog.text  # NJM's outage is the NJM client's one notice per process
     assert sorted(p.name for p in directory.glob("*.dat")) == ["G.dat", "Gbp.dat", "Grp.dat", "Grvs.dat"]
     assert read_filter_header(directory / "Gbp.dat")["FilterID"] == "GAIA/GAIA3.Gbp"  # where the curve came from
     assert json.loads((directory / "manifest.json").read_text())["bands"] == GAIA["GAIA"]["bands"]
@@ -371,6 +371,7 @@ def test_installed_index_decides_which_bands_are_archived(tmp_path):
     directory = tmp_path / "filters" / "GAIA" / "DR2"
     directory.mkdir(parents=True)
     (directory / "DR2").write_text("BP.dat\nG.dat\n")
+    (directory / "BP.dat").write_text("Wavelength,Transmission\n4000,1\n6000,1\n")  # an installed copy holds curves
     (directory / "properties.json").write_text(json.dumps({"bands": {"BP": {}, "G": {}, "G_svo": {}}}))
     catalogue = FilterCatalogue(tmp_path / "filters", offline=True)
     assert list(catalogue.properties("GAIA", "DR2")["archived_bands"]) == ["G_svo"]

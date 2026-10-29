@@ -130,3 +130,56 @@ def test_a_manifest_answer_without_a_body_is_unreadable_not_absent(tmp_path):
     grabber.session = SimpleNamespace(get=get, headers={}, verify=True)
     with pytest.raises(ValueError, match="unreadable manifest.json for Fac/Cam"):
         grabber.fetch_manifest("Fac", "Cam")
+
+
+CURVE = "Wavelength,Transmission,DetectorType=photon;DetectorTypeSource=original\n4000,0\n5000,1\n6000,0\n"
+
+
+@pytest.mark.parametrize("njm_up", [False, True])
+def test_an_njm_outage_is_not_announced_again_for_each_fetch(tmp_path, caplog, njm_up):
+    from sed_tools.filter_library import FilterLibrary
+    from sed_tools.njm_filter_grabber import SetDownload
+    from test_release_njmdown import svo_browser
+
+    root = tmp_path / "filters"
+    library = FilterLibrary(root)
+    library.mirror = SimpleNamespace(is_available=lambda: njm_up, _download_set=lambda f, i: SetDownload(listed=[]))
+    library.svo = svo_browser(root, {("Fac", "Cam"): ["g", "r"]})
+    with caplog.at_level(logging.WARNING, logger="sed_tools.filter_library"):
+        assert library.published("Fac", "Cam") == root / "Fac" / "Cam"
+    # Down: the NJM client said so once for the process.  Up but without the set: this fetch says so.
+    assert ("NJM cannot provide Fac/Cam (it does not serve this instrument); trying SVO" in caplog.text) == njm_up
+    assert ("NJM cannot provide" in caplog.text) == njm_up
+
+
+def test_a_set_whose_njm_index_cannot_be_saved_is_never_returned(tmp_path, monkeypatch):
+    from sed_tools.filter_components import ComponentError
+    from sed_tools.filter_library import FilterLibrary
+    from test_release_library import Served
+
+    monkeypatch.setattr(NJMFilterGrabber, "_check_availability", lambda self: True)
+    monkeypatch.setattr("sed_tools.njm_filter_grabber.time.sleep", lambda seconds: None)
+    monkeypatch.setattr("sed_tools.njm_filter_grabber.tag_filter_file", lambda *a, **k: None)
+    root = tmp_path / "filters"
+    library = FilterLibrary(root)
+    library.mirror = NJMFilterGrabber(base_dir=str(root))
+    library.mirror.session = Served({"filters/Fac/Cam/Cam": 500, "filters/Fac/Cam/": '<a href="g.dat">g.dat</a>',
+                                     "filters/Fac/Cam/g.dat": CURVE})
+    with pytest.raises(ComponentError, match=r"NJM's index of Fac/Cam could not be saved in .*Fac/Cam") as raised:
+        library.published("Fac", "Cam")
+    assert "run again" in str(raised.value)
+    assert (root / "Fac" / "Cam" / "g.dat").is_file() and not (root / "Fac" / "Cam" / "Cam").exists()
+
+
+def test_the_catalogue_finds_an_installed_copy_as_fetch_does(tmp_path):
+    import json
+
+    from sed_tools.filter_catalogue import FilterCatalogue
+
+    installed = tmp_path / "filters" / "Gemini" / "GMOS-N"  # NJM spells it GMOS_N
+    installed.mkdir(parents=True)
+    (installed / "g.dat").write_text(CURVE)
+    (installed / "info.json").write_text(json.dumps({"description": "as installed", "bands": {"g": {}}}))
+    catalogue = FilterCatalogue(tmp_path / "filters", offline=True)
+    assert catalogue.info("Gemini", "GMOS_N")["description"] == "as installed"
+    assert catalogue.origin("Gemini", "GMOS_N", "info")["source"] == "installed"

@@ -636,6 +636,7 @@ def test_the_catalogue_reports_njm_the_cache_or_an_installed_copy(legacy_sources
 
     installed = legacy_sources.root / "Herschel" / "PACS"
     installed.mkdir(parents=True)
+    (installed / "b.dat").write_text("Wavelength,Transmission\n4000,1\n6000,1\n")  # an installed copy holds curves
     (installed / "info.json").write_text(json.dumps({"description": "installed", "bands": {"b": {}}}))
     assert later.info("Herschel", "PACS")["description"] == "installed"
     assert later.origin("Herschel", "PACS", "info") == {"source": "installed", "checked": None,
