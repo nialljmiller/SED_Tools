@@ -26,7 +26,7 @@ ALIASES: Dict[str, str] = {
 _NUM_RE = re.compile(r"[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?")
 
 # Canonical numeric parameters — values stored as float, nan if unparseable
-_NUMERIC_PARAMS = {"teff", "logg", "metallicity"}
+_NUMERIC_PARAMS = ("teff", "logg", "metallicity")
 
 
 def parse_header(filepath: str) -> Dict[str, object]:
@@ -53,11 +53,7 @@ def parse_header(filepath: str) -> Dict[str, object]:
     OSError
         If the file cannot be opened or read.
     """
-    result: Dict[str, object] = {
-        "teff":        float("nan"),
-        "logg":        float("nan"),
-        "metallicity": float("nan"),
-    }
+    result: Dict[str, object] = {param: float("nan") for param in _NUMERIC_PARAMS}
     with open(filepath, "r", encoding="utf-8", errors="ignore") as fh:
         for line in fh:
             stripped = line.strip()
@@ -75,7 +71,7 @@ def parse_header(filepath: str) -> Dict[str, object]:
                 m = _NUM_RE.search(val_clean)
                 parsed = float(m.group(0)) if m else float("nan")
                 # never let nan overwrite an already-finite value
-                if not (math.isnan(parsed) and not math.isnan(result.get(canonical, float("nan")))):
+                if not math.isnan(parsed) or math.isnan(result[canonical]):
                     result[canonical] = parsed
             else:
                 result[canonical] = val_clean
