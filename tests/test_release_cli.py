@@ -362,20 +362,6 @@ def test_several_sites_without_a_default_name_the_cli_option(tmp_path, monkeypat
     assert "atmosphere={" not in out
 
 
-def test_a_missing_atmosphere_lists_the_conditions_the_site_has(tmp_path, monkeypatch, capsys):
-    def compose(cls, *a, **k):
-        raise ComponentError("No cached atmosphere for ctio_2mass_am1.2; fetch or generate the requested conditions")
-
-    monkeypatch.setattr(Filters, "compose", classmethod(compose))
-    monkeypatch.setattr(Filters, "available", classmethod(lambda cls, *a, **k: _availability(
-        atmosphere=True, atmosphere_sites=["hopkins_2mass", "ctio_2mass"])))
-    monkeypatch.setattr(Filters, "atmospheres", classmethod(lambda cls, *a, **k: {
-        "ctio_2mass": {"airmass": [], "pwv": [], "unstated_airmass": True}}))
-    assert run_cli(monkeypatch, "filters-compose", "2MASS/2MASS", "--base", str(tmp_path), "--airmass", "1.2",
-                   "--atmosphere-site", "ctio_2mass") == 1
-    assert "[filters] ctio_2mass has: airmass 'unstated' (as published)" in capsys.readouterr().out
-
-
 def test_atmosphere_component_without_airmass_is_a_usage_error(monkeypatch, capsys, composed):
     with pytest.raises(SystemExit) as stop:
         run_cli(monkeypatch, "filters-compose", "A/B", "--components", "filter,atmosphere")

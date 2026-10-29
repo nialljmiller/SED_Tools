@@ -139,7 +139,7 @@ def prompt_njm_axis_cuts(
     print(f"  You can restrict the download to a subset of the grid.")
     print(f"  Leave blank to download everything.\n")
 
-    info = grabber.get_grid_info(name, model_url=model_url)
+    info = grabber.get_grid_info(name, model_url=model_url)  # None after a warning saying why
     if info:
         print(f"  Available grid ({info['n_spectra']} spectra):")
         if 'teff_min' in info:
@@ -149,8 +149,6 @@ def prompt_njm_axis_cuts(
         if 'meta_min' in info:
             print(f"    [M/H]: {info['meta_min']:+.2f} – {info['meta_max']:+.2f}    ({info['meta_unique']} values)")
         print()
-    else:
-        print("  (Could not fetch grid info — cuts will still work if lookup_table.csv is available)\n")
 
     cuts['teff_range'] = _ask_range("  Teff range (e.g. '3500,8000') or blank for all: ")
     cuts['logg_range'] = _ask_range("  logg range (e.g. '3.5,5.0') or blank for all: ")
@@ -2156,29 +2154,24 @@ def _cmd_filters(args, parser):
 
 
 def _atmosphere_error(exc: Exception, args) -> str:
-    """The error of a failed composition with an atmosphere, in command-line terms where they help.
-
-    An instrument with several sites and no default needs --atmosphere-site;
-    any other error is followed by the conditions its site has.
-    """
+    """The error of a failed composition with an atmosphere; for an instrument with several sites
+    and no default, in command-line terms (--atmosphere-site).  The site's own errors already say
+    which conditions it has."""
     from .api import Filters
     from .filter_library import FilterLibrary
 
+    if args.atmosphere_site:
+        return str(exc)
     directory = FilterLibrary(args.base).directory(args.target)
     try:
         info = Filters.available(directory.parent.name, directory.name, filter_root=directory.parent.parent,
                                  include_remote=False)
-        grids = Filters.atmospheres(filter_root=directory.parent.parent, include_remote=False)
     except (ComponentError, OSError, RuntimeError) as lookup_error:
         return f"{exc} (its atmosphere sites could not be listed: {lookup_error})"
     sites = _atmosphere_sites(info)
-    default = _default_site(info, sites)
-    if not args.atmosphere_site and len(sites) > 1 and default is None:
+    if len(sites) > 1 and _default_site(info, sites) is None:
         return (f"{directory.parent.name}/{directory.name} has several atmosphere sites "
                 f"({', '.join(sites)}) and no default; choose one with --atmosphere-site")
-    site = args.atmosphere_site or default
-    if site in grids:
-        return f"{exc}\n[filters] {site} has: {_conditions_text(grids[site])}"
     return str(exc)
 
 
