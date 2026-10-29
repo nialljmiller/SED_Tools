@@ -142,10 +142,17 @@ def _clean_spectrum(
     if wl.size < 2:
         return 'skipped_invalid', 'no valid data points', None
     
-    wl, flux = _sorted_unique(wl, flux)
+    # Sort by wavelength and drop repeated wavelengths, keeping the first
+    order = np.argsort(wl)
+    wl, flux = wl[order], flux[order]
+    unique_mask = np.concatenate([[True], np.diff(wl) > 0])
+    wl, flux = wl[unique_mask], flux[unique_mask]
     
     if is_index_grid(wl):
-        wl = _recovered_wavelengths(filepath, meta, len(flux), try_h5_recovery)
+        # Real wavelengths for an index-grid MSG spectrum, from the grid's HDF5 files
+        wl = None
+        if try_h5_recovery and meta.spec_group and 'msg' in meta.source.lower():
+            wl = recover_wavelengths_from_hdf5(os.path.dirname(filepath), meta.spec_group, len(flux))
         if wl is None:
             return 'skipped_index', 'index grid without HDF5 recovery', None
         status = 'recovered'
@@ -196,22 +203,6 @@ def _bolometric_renorm_ratio(wl: np.ndarray, flux: np.ndarray, teff: float) -> O
     if ratio > _RENORM_MAX_RATIO:
         return ratio
     return None
-
-
-def _sorted_unique(wl: np.ndarray, flux: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-    """Sort by wavelength and drop repeated wavelengths, keeping the first."""
-    order = np.argsort(wl)
-    wl, flux = wl[order], flux[order]
-    unique_mask = np.concatenate([[True], np.diff(wl) > 0])
-    return wl[unique_mask], flux[unique_mask]
-
-
-def _recovered_wavelengths(filepath: str, meta: SpectrumMeta, n_points: int,
-                           try_h5_recovery: bool) -> Optional[np.ndarray]:
-    """Real wavelengths for an index-grid MSG spectrum from the grid's HDF5 files, or None."""
-    if not (try_h5_recovery and meta.spec_group and 'msg' in meta.source.lower()):
-        return None
-    return recover_wavelengths_from_hdf5(os.path.dirname(filepath), meta.spec_group, n_points)
 
 
 def rebuild_lookup_table(model_dir: str) -> str:
@@ -288,12 +279,8 @@ def clean_model_dir(
     
     summary = {
         'total': len(txt_files),
-        'converted': [],
-        'recovered': [],
-        'skipped_already': [],
-        'skipped_index': [],
-        'skipped_invalid': [],
-        'error': [],
+        **{status: [] for status in ('converted', 'recovered', 'skipped_already', 'skipped_index',
+                                     'skipped_invalid', 'error')},
         'lookup_updated': False,
         'lookup_path': '',
         'catalog_units': None,
@@ -325,7 +312,13 @@ def clean_model_dir(
         print(f"[clean] Warning: Could not determine spectral grid units. "
               f"Status: {detection_stats.get('status', 'unknown')}")
     if 'renormed' in summary:
-        _warn_renormed(model_dir, summary['renormed'])
+        ratios = list(summary['renormed'].values())
+        logger.warning(
+            "%s: %d spectra integrated to %.3g-%.3g times a blackbody at their Teff, so each "
+            "one's flux was divided by its factor (bolometric renormalisation). The summary's "
+            "'renormed' entry lists every file and factor.",
+            model_dir, len(ratios), min(ratios), max(ratios),
+        )
     if rebuild_lookup:
         lookup_path = rebuild_lookup_table(model_dir)
         if lookup_path:
@@ -364,7 +357,8 @@ def _clean_all_files(txt_files: List[str], catalog_units: Optional[UnitInfo],
     failures = []
     renormed = {}
     t_start = time.time()
-    for i, filepath in enumerate(txt_files):
+    total = len(txt_files)
+    for done, filepath in enumerate(txt_files, 1):
         filename = os.path.basename(filepath)
         try:
             status, detail, renorm_ratio = _clean_spectrum(filepath, catalog_units, try_h5_recovery,
@@ -377,32 +371,17 @@ def _clean_all_files(txt_files: List[str], catalog_units: Optional[UnitInfo],
             renormed[filename] = renorm_ratio
         if status in _UNCONVERTED:
             failures.append((filename, detail))
-        _print_progress(i + 1, len(txt_files), t_start)
+        elapsed = time.time() - t_start
+        rate = done / elapsed if elapsed > 0 else 1.0
+        print(
+            f"\r  [clean] {done}/{total} ({100*done/total:.1f}%)  "
+            f"elapsed {elapsed:.0f}s  ETA {(total - done) / rate:.0f}s   ",
+            end="", flush=True,
+        )
     print()
     if renormed:
         summary['renormed'] = renormed
     return failures
-
-
-def _warn_renormed(model_dir: str, renormed: Dict[str, float]) -> None:
-    ratios = list(renormed.values())
-    logger.warning(
-        "%s: %d spectra integrated to %.3g-%.3g times a blackbody at their Teff, so each "
-        "one's flux was divided by its factor (bolometric renormalisation). The summary's "
-        "'renormed' entry lists every file and factor.",
-        model_dir, len(ratios), min(ratios), max(ratios),
-    )
-
-
-def _print_progress(done: int, total: int, t_start: float) -> None:
-    elapsed = time.time() - t_start
-    rate = done / elapsed if elapsed > 0 else 1.0
-    eta = (total - done) / rate
-    print(
-        f"\r  [clean] {done}/{total} ({100*done/total:.1f}%)  "
-        f"elapsed {elapsed:.0f}s  ETA {eta:.0f}s   ",
-        end="", flush=True,
-    )
 
 
 def _unconverted_report(model_dir: str, n_total: int, failures: List[Tuple[str, str]],
