@@ -595,8 +595,11 @@ def check_physics(grid, headers, read, scans, raw_dir, exceptions=()):
         elif odd:
             warnings.append(f"5a: {len(odd)} of {len(rs)} {label.replace('_', ' ')} lie outside 0.9-1.1 of "
                             f"pi*B_lambda(Teff): {_few(odd)}")
-    if not ratios and not node_ratios:
+    narrow = not ratios and not node_ratios and uncovered > 0 and not excepted
+    if not ratios and not node_ratios and not narrow and not excepted:
         errors.append("5a: no spectrum or node could be compared with sigma*T^4")
+    if narrow:  # e.g. an optical-only grid: sigma*T^4 cannot be judged, so 5b must use raw upstream files
+        warnings.append("5a: not applicable: every sampled spectrum covers under half of sigma*T^4")
     if uncovered:
         warnings.append(f"5a: {uncovered} sampled spectra cover under half of sigma*T^4 and were not judged")
     if excepted:
@@ -604,6 +607,8 @@ def check_physics(grid, headers, read, scans, raw_dir, exceptions=()):
         warnings.append(f"5a: {len(excepted)} sampled spectra lie outside 0.5-2 but within the curated record's "
                         f"bolometric_exceptions ({'; '.join(e['why'] for e in exceptions)}): {_few(excepted)}")
     shape = check_shape(headers, raw_dir, grid)
+    if narrow and shape["method"].startswith("declared"):
+        errors.append("5b: a grid too narrow for 5a needs raw upstream files in source_evidence/grids/<grid>/raw/")
     errors += shape.pop("errors")
     warnings += shape.pop("warnings")
     return _result(errors, warnings, bolometric=summary, shape=shape)

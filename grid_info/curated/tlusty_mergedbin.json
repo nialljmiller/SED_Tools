@@ -1,0 +1,72 @@
+{
+  "short_description": "TLUSTY OSTAR2002 + BSTAR2006 NLTE O and B star grids, binned (SVO tlusty_mergedbin)",
+  "description": "SVO's binned merge of the TLUSTY OSTAR2002 (Lanz & Hubeny 2003) and BSTAR2006 (Lanz & Hubeny 2007) NLTE line-blanketed grids.",
+  "sources": [
+    {
+      "name": "SVO Theory Server",
+      "model": "tlusty_mergedbin",
+      "title": "TLUSTY OSTAR2002+BSTAR2006",
+      "ivoid": "ivo://svo.cab/models/tlusty_mergedbin",
+      "url": "http://svo2.cab.inta-csic.es/theory/newov2/index.php?models=tlusty_mergedbin",
+      "retrieved": "to be read from the files when they land",
+      "fid_list": "source_evidence/grids/tlusty_mergedbin/svo_fids.json",
+      "copy": "SVO's ASCII spectra, cleaned by SED_Tools (to be confirmed from the headers on arrival)"
+    }
+  ],
+  "upstream": {
+    "provider": "SVO Theory Server",
+    "model": "tlusty_mergedbin",
+    "spectra": 1299
+  },
+  "completeness": {
+    "upstream_spectra": 1299,
+    "upstream_count_from": "SVO's FID list for tlusty_mergedbin as SED_Tools cached it"
+  },
+  "licence": {
+    "redistribution": "unstated",
+    "terms_status": "verbatim",
+    "terms": [
+      {
+        "for": "the SVO Theory Server, the copy NJM holds",
+        "text": "If your research benefits from the use of the Spanish Virtual Observatory, we would appreciate if you could include the following acknowledgement in your publication: This research has made use of the Spanish Virtual Observatory ( https://svo.cab.inta-csic.es ) project funded by MCIN/AEI/10.13039/501100011033 through grant PID2023-146210NB-I00.",
+        "url": "https://svo.cab.inta-csic.es/?page_id=277",
+        "accessed": "2026-10-28",
+        "evidence": "source_evidence/grids/2026-10-28-terms/svo_page_277.html"
+      },
+      {
+        "for": "TLUSTY (Hubeny & Lanz): the wording may cover only the computer codes",
+        "text": "This set of computer codes is freely available for all non-commercial, not-for-profit purposes, but cannot be redistributed without prior authorization.",
+        "url": "http://tlusty.oca.eu/Tlusty2002/copyright.html",
+        "accessed": "Wayback capture 2020-12-29",
+        "evidence": "source_evidence/grids/2026-10-28-terms/wb_tlusty_copyright_20201229.html"
+      }
+    ],
+    "searched": [
+      "SVO's registry records (ivo://svo.cab/models/*) carry no rights value (RegTAP query of dc.g-vo.org/tap, 2026-10-28; source_evidence/grids/2026-10-28-terms/regtap_svo_rights2.csv)",
+      "SVO's theory pages state no terms of use for the spectra (SVO's theory server answered 403 on 2026-10-28; Wayback copies were read instead)"
+    ]
+  },
+  "references": [
+    "bibcode:2003ApJS..146..417L",
+    "bibcode:2007ApJS..169...83L"
+  ],
+  "acknowledgements": [
+    {
+      "for": "SVO Theory Server",
+      "text": "This research has made use of the Spanish Virtual Observatory ( https://svo.cab.inta-csic.es ) project funded by MCIN/AEI/10.13039/501100011033 through grant PID2023-146210NB-I00.",
+      "url": "https://svo.cab.inta-csic.es/?page_id=277",
+      "references": [],
+      "applies_to": "all spectra"
+    }
+  ],
+  "credit": "Lanz, T. & Hubeny, I. 2003, ApJS 146, 417; 2007, ApJS 169, 83; via the SVO Theory Server",
+  "links": [
+    {
+      "url": "http://svo2.cab.inta-csic.es/theory/newov2/index.php?models=tlusty_mergedbin",
+      "label": "SVO Theory Server: tlusty_mergedbin"
+    }
+  ],
+  "wavelength_medium": "not stated by SVO",
+  "flux_quantity": "surface flux F_lambda (SVO's FLUX (ERG/CM2/S/A))",
+  "notes": "Prepared on 29 Oct 2026 before the grid landed; confirm the spectrum count, axes, units and copy on arrival. The 2007 bibcode is from knowledge. Hot and wide-range: check for the April 2026 renormalisation."
+}

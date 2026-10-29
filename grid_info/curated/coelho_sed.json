@@ -1,0 +1,65 @@
+{
+  "short_description": "Coelho (2014) synthetic stellar SEDs, 130 nm to 100 micron (SVO coelho_sed)",
+  "description": "SVO's description: \"Low resolution theoretical fluxes covering 130nm to 100micron, fully described in Coelho (2014).\"",
+  "sources": [
+    {
+      "name": "SVO Theory Server",
+      "model": "coelho_sed",
+      "title": "Coelho Synthetic stellar library (SEDs)",
+      "ivoid": "ivo://svo.cab/models/coelho_sed",
+      "url": "http://svo2.cab.inta-csic.es/theory/newov2/index.php?models=coelho_sed",
+      "retrieved": "to be read from the files when they land",
+      "fid_list": "source_evidence/grids/coelho_sed/svo_fids.json",
+      "copy": "SVO's ASCII spectra, cleaned by SED_Tools (to be confirmed from the headers on arrival)"
+    }
+  ],
+  "upstream": {
+    "provider": "SVO Theory Server",
+    "model": "coelho_sed",
+    "spectra": 3727
+  },
+  "completeness": {
+    "upstream_spectra": 3727,
+    "upstream_count_from": "SVO's FID list for coelho_sed as SED_Tools cached it"
+  },
+  "licence": {
+    "redistribution": "unstated",
+    "terms_status": "verbatim",
+    "terms": [
+      {
+        "for": "the SVO Theory Server, the copy NJM holds",
+        "text": "If your research benefits from the use of the Spanish Virtual Observatory, we would appreciate if you could include the following acknowledgement in your publication: This research has made use of the Spanish Virtual Observatory ( https://svo.cab.inta-csic.es ) project funded by MCIN/AEI/10.13039/501100011033 through grant PID2023-146210NB-I00.",
+        "url": "https://svo.cab.inta-csic.es/?page_id=277",
+        "accessed": "2026-10-28",
+        "evidence": "source_evidence/grids/2026-10-28-terms/svo_page_277.html"
+      }
+    ],
+    "searched": [
+      "SVO's registry records (ivo://svo.cab/models/*) carry no rights value (RegTAP query of dc.g-vo.org/tap, 2026-10-28; source_evidence/grids/2026-10-28-terms/regtap_svo_rights2.csv)",
+      "SVO's theory pages state no terms of use for the spectra (SVO's theory server answered 403 on 2026-10-28; Wayback copies were read instead)",
+      "Coelho's site states no terms; it says \"Feel free to contact me in case of doubts\" (Wayback 2026-10-11: source_evidence/grids/2026-10-28-terms/wb_coelho_20261011.html)"
+    ]
+  },
+  "references": [
+    "bibcode:2014MNRAS.440.1027C"
+  ],
+  "acknowledgements": [
+    {
+      "for": "SVO Theory Server",
+      "text": "This research has made use of the Spanish Virtual Observatory ( https://svo.cab.inta-csic.es ) project funded by MCIN/AEI/10.13039/501100011033 through grant PID2023-146210NB-I00.",
+      "url": "https://svo.cab.inta-csic.es/?page_id=277",
+      "references": [],
+      "applies_to": "all spectra"
+    }
+  ],
+  "credit": "Coelho, P. R. T. 2014, MNRAS 440, 1027, via the SVO Theory Server",
+  "links": [
+    {
+      "url": "http://svo2.cab.inta-csic.es/theory/newov2/index.php?models=coelho_sed",
+      "label": "SVO Theory Server: coelho_sed"
+    }
+  ],
+  "wavelength_medium": "not stated by SVO",
+  "flux_quantity": "surface flux F_lambda (SVO's FLUX (ERG/CM2/S/A))",
+  "notes": "Prepared on 29 Oct 2026 before the grid landed; confirm the spectrum count, axes, units and copy on arrival."
+}

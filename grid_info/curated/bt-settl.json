@@ -1,0 +1,65 @@
+{
+  "short_description": "BT-Settl PHOENIX atmospheres with clouds (SVO bt-settl)",
+  "description": "SVO's BT-Settl grid: PHOENIX model atmospheres with a cloud model (Allard et al. 2012), from brown dwarfs to hot stars.",
+  "sources": [
+    {
+      "name": "SVO Theory Server",
+      "model": "bt-settl",
+      "title": "BT-Settl",
+      "ivoid": "ivo://svo.cab/models/bt-settl",
+      "url": "http://svo2.cab.inta-csic.es/theory/newov2/index.php?models=bt-settl",
+      "retrieved": "to be read from the files when they land",
+      "fid_list": "source_evidence/grids/bt-settl/svo_fids.json",
+      "copy": "SVO's ASCII spectra, cleaned by SED_Tools (to be confirmed from the headers on arrival)"
+    }
+  ],
+  "upstream": {
+    "provider": "SVO Theory Server",
+    "model": "bt-settl",
+    "spectra": 13722
+  },
+  "completeness": {
+    "upstream_spectra": 13722,
+    "upstream_count_from": "SVO's FID list for bt-settl as SED_Tools cached it"
+  },
+  "licence": {
+    "redistribution": "unstated",
+    "terms_status": "verbatim",
+    "terms": [
+      {
+        "for": "the SVO Theory Server, the copy NJM holds",
+        "text": "If your research benefits from the use of the Spanish Virtual Observatory, we would appreciate if you could include the following acknowledgement in your publication: This research has made use of the Spanish Virtual Observatory ( https://svo.cab.inta-csic.es ) project funded by MCIN/AEI/10.13039/501100011033 through grant PID2023-146210NB-I00.",
+        "url": "https://svo.cab.inta-csic.es/?page_id=277",
+        "accessed": "2026-10-28",
+        "evidence": "source_evidence/grids/2026-10-28-terms/svo_page_277.html"
+      }
+    ],
+    "searched": [
+      "SVO's registry records (ivo://svo.cab/models/*) carry no rights value (RegTAP query of dc.g-vo.org/tap, 2026-10-28; source_evidence/grids/2026-10-28-terms/regtap_svo_rights2.csv)",
+      "SVO's theory pages state no terms of use for the spectra (SVO's theory server answered 403 on 2026-10-28; Wayback copies were read instead)",
+      "The Lyon README gives papers and a contact address only (source_evidence/grids/2026-10-28-terms/wb_lyon_btsettl_README.txt)"
+    ]
+  },
+  "references": [
+    "bibcode:2012RSPTA.370.2765A"
+  ],
+  "acknowledgements": [
+    {
+      "for": "SVO Theory Server",
+      "text": "This research has made use of the Spanish Virtual Observatory ( https://svo.cab.inta-csic.es ) project funded by MCIN/AEI/10.13039/501100011033 through grant PID2023-146210NB-I00.",
+      "url": "https://svo.cab.inta-csic.es/?page_id=277",
+      "references": [],
+      "applies_to": "all spectra"
+    }
+  ],
+  "credit": "Allard, F., Homeier, D. & Freytag, B. 2012, Phil. Trans. R. Soc. A 370, 2765, via the SVO Theory Server",
+  "links": [
+    {
+      "url": "http://svo2.cab.inta-csic.es/theory/newov2/index.php?models=bt-settl",
+      "label": "SVO Theory Server: bt-settl"
+    }
+  ],
+  "wavelength_medium": "not stated by SVO",
+  "flux_quantity": "surface flux F_lambda (SVO's FLUX (ERG/CM2/S/A))",
+  "notes": "Prepared on 29 Oct 2026 before the grid landed; confirm the spectrum count, axes, units and copy on arrival. Bibcode from knowledge, not checked. Its lowest-gravity models hold about 0.4-0.65 of sigma*T^4 in SVO's raw files (source_evidence/grids/bt-cond/btsettl_raw_gravity/), so it may need the same bolometric_exceptions as bt-cond. An older SED_Tools lookup of this grid dropped minus signs on whole-number [M/H]: the guard's check 3 catches that."
+}

@@ -1,0 +1,64 @@
+{
+  "short_description": "Granada HRES high-resolution library, 3000-7000 A only (SVO hres)",
+  "description": "SVO's Granada HRES library (Martins et al. 2005): high-resolution synthetic spectra covering only about 3000-7000 Angstrom, too little wavelength for broadband photometry on its own.",
+  "sources": [
+    {
+      "name": "SVO Theory Server",
+      "model": "hres",
+      "title": "Granada HRES Library",
+      "ivoid": "ivo://svo.cab/models/hres",
+      "url": "http://svo2.cab.inta-csic.es/theory/newov2/index.php?models=hres",
+      "retrieved": "to be read from the files when they land",
+      "fid_list": "source_evidence/grids/hres/svo_fids.json",
+      "copy": "SVO's ASCII spectra, cleaned by SED_Tools (to be confirmed from the headers on arrival)"
+    }
+  ],
+  "upstream": {
+    "provider": "SVO Theory Server",
+    "model": "hres",
+    "spectra": 1650
+  },
+  "completeness": {
+    "upstream_spectra": 1650,
+    "upstream_count_from": "SVO's FID list for hres as SED_Tools cached it"
+  },
+  "licence": {
+    "redistribution": "unstated",
+    "terms_status": "verbatim",
+    "terms": [
+      {
+        "for": "the SVO Theory Server, the copy NJM holds",
+        "text": "If your research benefits from the use of the Spanish Virtual Observatory, we would appreciate if you could include the following acknowledgement in your publication: This research has made use of the Spanish Virtual Observatory ( https://svo.cab.inta-csic.es ) project funded by MCIN/AEI/10.13039/501100011033 through grant PID2023-146210NB-I00.",
+        "url": "https://svo.cab.inta-csic.es/?page_id=277",
+        "accessed": "2026-10-28",
+        "evidence": "source_evidence/grids/2026-10-28-terms/svo_page_277.html"
+      }
+    ],
+    "searched": [
+      "SVO's registry records (ivo://svo.cab/models/*) carry no rights value (RegTAP query of dc.g-vo.org/tap, 2026-10-28; source_evidence/grids/2026-10-28-terms/regtap_svo_rights2.csv)",
+      "SVO's theory pages state no terms of use for the spectra (SVO's theory server answered 403 on 2026-10-28; Wayback copies were read instead)"
+    ]
+  },
+  "references": [
+    "bibcode:2005MNRAS.358...49M"
+  ],
+  "acknowledgements": [
+    {
+      "for": "SVO Theory Server",
+      "text": "This research has made use of the Spanish Virtual Observatory ( https://svo.cab.inta-csic.es ) project funded by MCIN/AEI/10.13039/501100011033 through grant PID2023-146210NB-I00.",
+      "url": "https://svo.cab.inta-csic.es/?page_id=277",
+      "references": [],
+      "applies_to": "all spectra"
+    }
+  ],
+  "credit": "Martins, L. P. et al. 2005, MNRAS 358, 49, via the SVO Theory Server",
+  "links": [
+    {
+      "url": "http://svo2.cab.inta-csic.es/theory/newov2/index.php?models=hres",
+      "label": "SVO Theory Server: hres"
+    }
+  ],
+  "wavelength_medium": "not stated by SVO",
+  "flux_quantity": "surface flux F_lambda (SVO's FLUX (ERG/CM2/S/A))",
+  "notes": "Prepared on 29 Oct 2026 before the grid landed; confirm the spectrum count, axes, units and copy on arrival. Bibcode from knowledge, not checked. SVO's own feh values are -10, -5, 0, 3 (probably tenths of a dex); an older SED_Tools lookup dropped their signs."
+}
