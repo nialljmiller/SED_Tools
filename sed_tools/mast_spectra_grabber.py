@@ -52,9 +52,6 @@ SCRIPT_URL_RE = re.compile(r'https?://\S+?\.txt(?:\.gz)?', re.IGNORECASE)
 _SPECTRUM_ERRORS = (requests.RequestException, OSError, ValueError)
 
 # ----------------- small utils -----------------
-def _safe_makedirs(path: str) -> None:
-    os.makedirs(path, exist_ok=True)
-
 def _http_get(url: str, session: Optional[requests.Session] = None, timeout: int = 120) -> requests.Response:
     sess = session or requests.Session()
     r = sess.get(url, timeout=timeout)
@@ -268,10 +265,9 @@ def _gather_urls_from_scripts(reskey: str, metals: List[str], session: requests.
     Raises RuntimeError if any script cannot be read (the grid would lack
     that metallicity) or the scripts list no spectra.
     """
-    want_metals = metals if metals and len(metals) != len(METALS) else METALS
     urls = set()
     unread = []
-    for met in want_metals:
+    for met in metals:
         met_enc = urllib.parse.quote(met, safe="")  # 'm+0.00' -> 'm%2B0.00'
         script = f"{SCRIPTS_DIR}/hlsp_bosz_bosz2024_sim_{reskey}_{met_enc}_v1_bulkdl.sh"
         try:
@@ -315,7 +311,7 @@ def _apply_wl_range(
     mask = (wl >= lo) & (wl <= hi)
     if not np.any(mask):
         return np.array([]), np.array([]), None
-    return wl[mask], fx[mask], (ct[mask] if ct is not None and ct.size == wl.size else ct)
+    return wl[mask], fx[mask], (ct[mask] if ct is not None else None)
 
 def _write_spectrum_txt(out_path: str, wl: np.ndarray, fx: np.ndarray, ct: Optional[np.ndarray],
                         src_url: str, params: Dict[str, str], wave_url_used: Optional[str]) -> None:
@@ -355,8 +351,7 @@ def _parse_any(text: str, inline: bool, wave: Optional[np.ndarray],
                     f"BOSZ {reskey} wavelength-grid length mismatch: "
                     f"wave={wave.size}, flux={fx.size}"
                 )
-            continuum = ct if ct.size == fx.size else None
-            return wave, fx, continuum
+            return wave, fx, ct  # _parse_resam_txt reads flux and continuum together
     # last-ditch: 2-col (wave, flux)
     wl_guess, fx_guess = [], []
     for line in text.splitlines():
@@ -450,7 +445,7 @@ class MASTSpectraGrabber:
             return 0
 
         model_dir = os.path.join(self.base_dir, model_name)
-        _safe_makedirs(model_dir)
+        os.makedirs(model_dir, exist_ok=True)
 
         # -------- harvest URLs from official scripts (no listings, no API) --------
         urls = _gather_urls_from_scripts(reskey, metals, self.session)
@@ -495,7 +490,7 @@ class MASTSpectraGrabber:
             if wl.size == 0:
                 raise ValueError("no spectrum could be read from the file")
             wl, fx, ct = _apply_wl_range(wl, fx, ct, wl_range)
-            if wl.size == 0 or fx.size == 0: return None
+            if wl.size == 0: return None
             _write_spectrum_txt(out_path, wl, fx, ct, u, params, wave_url)
             return oname, params
 

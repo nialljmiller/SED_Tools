@@ -202,9 +202,20 @@ def test_njm_discovery_failure_warns_instead_of_vanishing(tmp_path, monkeypatch,
     with caplog.at_level(logging.WARNING):
         assert grabber.discover_models() == []
 
-    messages = warnings_from(caplog, "njm_spectra_grabber")
-    assert any("directory listing instead" in m for m in messages)
-    assert any("403" in m and "not offered" in m for m in messages)
+    [message] = warnings_from(caplog, "njm_spectra_grabber")  # one warning for both failures
+    assert "grid list" in message and "403" in message and "not offered" in message
+
+
+def test_njm_discovery_from_the_directory_listing_is_warned_about_once(tmp_path, monkeypatch, caplog):
+    grabber, session = make_njm(tmp_path, monkeypatch, {f"{NJM}/index.json": FakeResponse(200, "not json")})
+    session.routes[f"{NJM}/stellar_models"] = FakeResponse(
+        200, '<a href="?C=N;O=D">Name</a><a href="/sed_tools/">Parent Directory</a><a href="Grid/">Grid/</a>')
+
+    with caplog.at_level(logging.WARNING):
+        assert grabber.discover_models() == ["Grid"]
+
+    [message] = warnings_from(caplog, "njm_spectra_grabber")
+    assert "using the directory listing instead" in message
 
 
 def test_njm_discovery_reads_cached_index(tmp_path, monkeypatch):
@@ -227,7 +238,7 @@ def test_njm_aux_probe_without_an_answer_raises(tmp_path, monkeypatch):
         GRID + "flux_cube.bin": lambda **kw: requests.ConnectionError("reset"),
     }))
 
-    with pytest.raises(RuntimeError, match="could not check .*flux_cube.bin"):
+    with pytest.raises(requests.ConnectionError, match="reset"):
         grabber.get_model_metadata("Grid")
 
 
@@ -332,7 +343,6 @@ def svo_spectrum_url(fid):
 def make_svo(tmp_path, monkeypatch, routes):
     session = FakeSession(routes)
     monkeypatch.setattr(svo.requests, "Session", lambda: session)
-    monkeypatch.setattr(svo.time, "sleep", lambda seconds: None)
     return svo.SVOSpectraGrabber(base_dir=str(tmp_path)), session
 
 
@@ -344,7 +354,7 @@ def test_svo_discovery_failure_warns_instead_of_vanishing(tmp_path, monkeypatch,
     assert any("could not be reached" in m and "not offered" in m for m in warnings_from(caplog, "svo_spectra_grabber"))
 
 
-def test_svo_metadata_warns_at_each_fallback_and_raises_when_a_probe_fails(tmp_path, monkeypatch, caplog):
+def test_svo_metadata_warns_once_before_probing_and_raises_when_a_probe_fails(tmp_path, monkeypatch, caplog):
     grabber, _ = make_svo(tmp_path, monkeypatch, {
         SSAP_QUERY: FakeResponse(503),
         f"{SVO_INDEX}?models=Grid": requests.ConnectionError("index down"),
@@ -355,9 +365,40 @@ def test_svo_metadata_warns_at_each_fallback_and_raises_when_a_probe_fails(tmp_p
         grabber.get_model_metadata("Grid")
 
     messages = warnings_from(caplog, "svo_spectra_grabber")
-    assert any("HTTP 503" in m and "index page" in m for m in messages)
-    assert any("index down" in m and "probing" in m for m in messages)
+    [message] = messages  # one warning for the fallback, naming both reasons
+    assert "HTTP 503" in message and "index down" in message and "probing" in message
     assert not (tmp_path / ".cache" / "svo_fids" / "Grid.json").exists()
+
+
+def test_svo_metadata_from_the_index_page_is_warned_about_once(tmp_path, monkeypatch, caplog):
+    grabber, _ = make_svo(tmp_path, monkeypatch, {
+        SSAP_QUERY: FakeResponse(503),
+        f"{SVO_INDEX}?models=Grid": FakeResponse(200, '<a href="ssap.php?fid=2">b</a><a href="ssap.php?fid=1">a</a>'),
+    })
+
+    with caplog.at_level(logging.WARNING):
+        assert grabber.get_model_metadata("Grid") == [{"fid": 1}, {"fid": 2}]
+
+    [message] = warnings_from(caplog, "svo_spectra_grabber")
+    assert "HTTP 503" in message and "using the model index page" in message
+
+
+def test_svo_probe_closes_the_get_it_streams(tmp_path, monkeypatch):
+    class Streamed(FakeResponse):
+        closed = False
+
+        def __exit__(self, *exc):
+            self.closed = True
+            return False
+
+    spectrum, error_page = Streamed(200, SVO_SPECTRUM), Streamed(404)
+    answers = {"GET": {1: spectrum, 2: error_page}, "HEAD": FakeResponse(200)}  # HEAD with no Content-Length
+    grabber, session = make_svo(tmp_path, monkeypatch, {})
+    session.get = lambda url, params=None, **kw: answers["GET"][params["fid"]]
+    session.head = lambda url, params=None, **kw: answers["HEAD"]
+
+    assert grabber._head_exists("Grid", 1) is True and spectrum.closed
+    assert grabber._head_exists("Grid", 2) is False and error_page.closed
 
 
 def test_svo_metadata_raises_when_no_method_finds_spectra(tmp_path, monkeypatch):
@@ -415,7 +456,7 @@ def test_svo_failed_downloads_raise_and_leave_no_lookup_table(tmp_path, monkeypa
 
     message = str(err.value)
     assert "2 of 3 spectra" in message
-    assert "FID 2: content is not spectral data" in message and "FID 3: connection error: reset by peer" in message
+    assert "FID 2: content is not spectral data" in message and "FID 3: reset by peer" in message
     model_dir = tmp_path / "Grid"
     assert (model_dir / "Grid_fid1.txt").exists()
     assert not (model_dir / "lookup_table.csv").exists()

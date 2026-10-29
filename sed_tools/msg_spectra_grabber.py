@@ -346,7 +346,6 @@ class MSGSpectraGrabber:
         coordsF = np.unravel_index(flat, shape, order="F")
 
         def vals_from_coords(coords):
-            if coords is None: return None
             out = {}
             for key, j in roles.items():
                 if j >= len(axes):
@@ -359,7 +358,6 @@ class MSGSpectraGrabber:
         vf = vals_from_coords(coordsF)
 
         def plausible(v):
-            if v is None: return False
             t = v.get("teff", float("nan"))
             g = v.get("logg", float("nan"))
             m = v.get("meta", float("nan"))
@@ -374,17 +372,14 @@ class MSGSpectraGrabber:
             teff, logg, meta = vf["teff"], vf["logg"], vf["meta"]
         else:
             # take whichever has more finite fields
-            def score(v): return sum(np.isfinite([v.get("teff",np.nan), v.get("logg",np.nan), v.get("meta",np.nan)])) if v else -1
-            if score(vc) >= score(vf) and vc:
-                teff, logg, meta = vc.get("teff",np.nan), vc.get("logg",np.nan), vc.get("meta",np.nan)
-            elif vf:
-                teff, logg, meta = vf.get("teff",np.nan), vf.get("logg",np.nan), vf.get("meta",np.nan)
+            def score(v): return sum(np.isfinite([v.get("teff",np.nan), v.get("logg",np.nan), v.get("meta",np.nan)]))
+            best = vc if score(vc) >= score(vf) else vf
+            teff, logg, meta = best.get("teff",np.nan), best.get("logg",np.nan), best.get("meta",np.nan)
 
         return teff, logg, meta
 
     def _extract_one(self, h5_path, gpath, model_name, order_index):
         with h5py.File(h5_path, "r") as f:
-            if gpath not in f: raise KeyError(f"missing {gpath}")
             spec_g = f[gpath]
             fx = _pick_flux(spec_g)
 
