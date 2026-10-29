@@ -61,8 +61,7 @@ def _recover_wavelengths(f, spec_g, expected_len=None):
 
         # 3) concatenated segments
         seg_root = rg.get("ranges", rg)
-        seg_names = [k for k in seg_root.keys() if k.startswith("ranges")]
-        seg_names.sort(key=_bracket_number)
+        seg_names = sorted((k for k in seg_root.keys() if k.startswith("ranges")), key=_bracket_number)
         segs=[]
         def num(grp, keys):
             """First of *keys* (attribute, then dataset) that holds a number, else None."""
@@ -265,9 +264,7 @@ class MSGSpectraGrabber:
             if spec_root is None:
                 raise RuntimeError(f"MSG: no 'specsource' group in {h5_path}")
 
-            src=f[spec_root]
-            names=[k for k in src.keys() if k.startswith("specints[")]
-            names.sort(key=_bracket_number)
+            names = sorted((k for k in f[spec_root].keys() if k.startswith("specints[")), key=_bracket_number)
 
             self.model_axes[model_name] = self._load_axes_and_vlin(f, model_name)
 
