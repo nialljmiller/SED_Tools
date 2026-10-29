@@ -224,10 +224,9 @@ def detect_wavelength_unit_from_range(wl: np.ndarray) -> Tuple[str, float, str]:
     if 1e-8 <= wl_max <= 0.1 and wl_span < 1000:
         return 'm', 1e10, 'low'
     
-    # Ambiguous range 10-500: could be nm or Å
-    if 10 <= wl_max <= 500:
-        if wl_max > 100 and wl_min > 10:
-            return 'nm', 10.0, 'low'
+    # Ambiguous range 100-500: could be nm or Å
+    if 100 < wl_max <= 500 and wl_min > 10:
+        return 'nm', 10.0, 'low'
     
     # Default: assume Angstroms
     return 'angstrom', 1.0, 'low'
@@ -239,8 +238,7 @@ def detect_flux_unit_from_range(flux: np.ndarray) -> Tuple[str, float, str]:
     if flux_valid.size == 0:
         return 'flam', 1.0, 'low'
     
-    median = np.median(flux_valid)
-    log_median = np.log10(median)
+    log_median = np.log10(np.median(flux_valid))
     
     # F_lambda in erg/cm²/s/Å: typical range 1e-17 to 1e-5 for stellar surfaces
     if -17 < log_median < -4:
@@ -338,11 +336,7 @@ def detect_catalog_units(txt_files: List[str], sample_fraction: float = 0.10) ->
     n_sample = max(1, min(1000, int(n_total * sample_fraction)))
     
     # Random sample for better representation
-    if n_sample >= n_total:
-        sample_files = txt_files
-    else:
-        sample_files = random.sample(txt_files, n_sample)
-    
+    sample_files = txt_files if n_sample >= n_total else random.sample(txt_files, n_sample)
     detections, skipped_standardized, skipped_invalid, index_grids = _detect_sample(sample_files)
     stats = {
         'total_files': n_total,
@@ -501,11 +495,8 @@ def convert_to_standard_units(
         with np.errstate(divide='ignore', invalid='ignore'):
             flux_flam = flux_scaled * SPEED_OF_LIGHT_ANGSTROM / (wl_ang ** 2)
             flux_flam = np.where(np.isfinite(flux_flam), flux_flam, 0.0)
-    elif unit_info.flux_type == 'normalized':
-        # Keep as-is, no physical conversion possible
-        flux_flam = flux_scaled
     else:
-        # Already F_lambda (or close enough)
+        # Already F_lambda, or normalized (kept as it is: no physical conversion possible)
         flux_flam = flux_scaled
     
     return wl_ang, flux_flam
