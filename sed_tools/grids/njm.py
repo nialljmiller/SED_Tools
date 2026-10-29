@@ -223,14 +223,7 @@ class NJMSpectraGrabber:
         """
         model_url = f"{self.stellar_models_url}/{model_name}/"
         
-        # Categorize files
-        result = {
-            'txt_files': [],
-            'bin_files': [],
-            'h5_files': [],
-            'csv_files': [],
-            'other_files': []
-        }
+        result = {'txt_files': [], 'bin_files': [], 'h5_files': [], 'csv_files': [], 'other_files': []}
         
         try:
             all_files = self._parse_directory_listing(model_url)
@@ -241,17 +234,7 @@ class NJMSpectraGrabber:
         
         if all_files:
             for f in all_files:
-                f_lower = f.lower()
-                if f_lower.endswith('.txt'):
-                    result['txt_files'].append(f)
-                elif f_lower.endswith('.bin'):
-                    result['bin_files'].append(f)
-                elif f_lower.endswith('.h5'):
-                    result['h5_files'].append(f)
-                elif f_lower.endswith('.csv'):
-                    result['csv_files'].append(f)
-                else:
-                    result['other_files'].append(f)
+                result[_category(f)].append(f)
             return result
         
         logger.warning("NJM mirror: no directory listing for %s (%s); taking spectrum names from lookup_table.csv",
@@ -375,41 +358,16 @@ class NJMSpectraGrabber:
         Files not found in the lookup table are KEPT (conservative — don't
         accidentally drop spectra we can't classify).
         """
+        ranges = (('teff', teff_range), ('logg', logg_range), ('meta', meta_range))
         kept = []
         cut = 0
         unknown = 0
-        
         for fname in txt_files:
             params = lookup.get(fname)
-            
             if params is None:
-                # Not in lookup — keep it (conservative)
                 kept.append(fname)
                 unknown += 1
-                continue
-            
-            # Apply each axis cut
-            skip = False
-            
-            if teff_range:
-                teff = params.get('teff', float('nan'))
-                if np.isfinite(teff):
-                    if teff < teff_range[0] or teff > teff_range[1]:
-                        skip = True
-            
-            if logg_range and not skip:
-                logg = params.get('logg', float('nan'))
-                if np.isfinite(logg):
-                    if logg < logg_range[0] or logg > logg_range[1]:
-                        skip = True
-            
-            if meta_range and not skip:
-                meta = params.get('meta', float('nan'))
-                if np.isfinite(meta):
-                    if meta < meta_range[0] or meta > meta_range[1]:
-                        skip = True
-            
-            if skip:
+            elif any(_outside(params, key, rng) for key, rng in ranges):
                 cut += 1
             else:
                 kept.append(fname)
@@ -466,25 +424,13 @@ class NJMSpectraGrabber:
             logger.warning("No grid summary for %s: %s", model_name, exc)
             return None
         
-        teffs = [p['teff'] for p in lookup.values() if 'teff' in p and np.isfinite(p['teff'])]
-        loggs = [p['logg'] for p in lookup.values() if 'logg' in p and np.isfinite(p['logg'])]
-        metas = [p['meta'] for p in lookup.values() if 'meta' in p and np.isfinite(p['meta'])]
-        
         info = {'n_spectra': len(lookup)}
-        
-        if teffs:
-            info['teff_min'] = min(teffs)
-            info['teff_max'] = max(teffs)
-            info['teff_unique'] = len(set(teffs))
-        if loggs:
-            info['logg_min'] = min(loggs)
-            info['logg_max'] = max(loggs)
-            info['logg_unique'] = len(set(loggs))
-        if metas:
-            info['meta_min'] = min(metas)
-            info['meta_max'] = max(metas)
-            info['meta_unique'] = len(set(metas))
-        
+        for key in ('teff', 'logg', 'meta'):
+            values = [p[key] for p in lookup.values() if key in p and np.isfinite(p[key])]
+            if values:
+                info[f'{key}_min'] = min(values)
+                info[f'{key}_max'] = max(values)
+                info[f'{key}_unique'] = len(set(values))
         return info
     
     # =========================================================================
@@ -609,13 +555,8 @@ class NJMSpectraGrabber:
             print(f"    [M/H]: {meta_range[0]:+.2f} – {meta_range[1]:+.2f}")
 
         lookup = self._fetch_remote_lookup(model_name, model_url)
-        selected = self._filter_files_by_params(
-            txt_files, lookup,
-            teff_range=teff_range,
-            logg_range=logg_range,
-            meta_range=meta_range,
-        )
-        return selected
+        return self._filter_files_by_params(txt_files, lookup, teff_range=teff_range,
+                                            logg_range=logg_range, meta_range=meta_range)
     
     def download_model_spectra(
         self,
@@ -739,6 +680,23 @@ class NJMSpectraGrabber:
 def _visible(names: List[str]) -> List[str]:
     """Drop hidden entries (names starting with '.')."""
     return [m for m in names if not m.startswith('.')]
+
+
+def _category(name: str) -> str:
+    """The _discover_model_files list a mirror file belongs in, by its suffix."""
+    lower = name.lower()
+    for suffix in ('.txt', '.bin', '.h5', '.csv'):
+        if lower.endswith(suffix):
+            return f"{suffix[1:]}_files"
+    return 'other_files'
+
+
+def _outside(params: Dict, key: str, rng: Optional[Tuple[float, float]]) -> bool:
+    """Whether a range is given for key and params holds a known (finite) value outside it."""
+    if not rng:
+        return False
+    value = params.get(key, float('nan'))
+    return np.isfinite(value) and (value < rng[0] or value > rng[1])
 
 
 def _find_column(fieldnames_lower: Dict[str, str], candidates: List[str]) -> Optional[str]:
