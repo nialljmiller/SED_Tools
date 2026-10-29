@@ -360,6 +360,25 @@ def write_instrument(filter_root: Union[str, Path], spec: Instrument, *,
     return inst_dir
 
 
+def _each_published(facility_dir: Path, names, table: Mapping, build_one: Callable) -> list:
+    """``build_one(name, table[name], inst_dir, bands)`` for each instrument with published curves."""
+    built, unpublished = [], []
+    for name in names:
+        value = table[name]
+        inst_dir = facility_dir / name
+        bands = sorted(p.stem for p in inst_dir.glob("*.dat"))
+        if not bands:
+            unpublished.append(name)
+            continue
+        build_one(name, value, inst_dir, bands)
+        built.append(inst_dir)
+    if unpublished:
+        raise FileNotFoundError(
+            f"{facility_dir} has no published curves for {', '.join(unpublished)}; fetch them "
+            f"first (njm mirror or SVO). Built: {', '.join(p.name for p in built) or 'none'}.")
+    return built
+
+
 def make_builder(recipes: Mapping[str, Tuple[str, Recipe]]):
     """``build(filter_root, *, instrument, session=None)`` for one source module."""
 

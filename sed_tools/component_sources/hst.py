@@ -30,7 +30,7 @@ import numpy as np
 
 from ..filters.compose import FILTER, OPTICS, QE, InstrumentManifest, add_component
 from ..filters.curve_metadata import PHOTON, SVOMetadataClient
-from ._original import CONNECT_TIMEOUT, merged_product
+from ._original import CONNECT_TIMEOUT, _each_published, merged_product
 
 logger = logging.getLogger(__name__)
 
@@ -286,18 +286,6 @@ def build(
     """
     filter_root = Path(filter_root)
     tables = tables or SynphotTables(session=session)
-    built, unpublished = [], []
-    for inst in instruments or MODES:
-        prefix = MODES[inst]
-        inst_dir = filter_root / FACILITY / inst
-        bands = sorted(p.stem for p in inst_dir.glob("*.dat"))
-        if not bands:
-            unpublished.append(inst)
-            continue
-        _build_instrument(inst, prefix, inst_dir, bands, tables)
-        built.append(inst_dir)
-    if unpublished:
-        raise FileNotFoundError(
-            f"{filter_root / FACILITY} has no published curves for {', '.join(unpublished)}; fetch them "
-            f"first (njm mirror or SVO). Built: {', '.join(p.name for p in built) or 'none'}.")
-    return built
+    return _each_published(
+        filter_root / FACILITY, instruments or MODES, MODES,
+        lambda inst, prefix, inst_dir, bands: _build_instrument(inst, prefix, inst_dir, bands, tables))

@@ -37,7 +37,7 @@ import numpy as np
 
 from ..filters.compose import FILTER, OPTICS, QE, InstrumentManifest, add_component
 from ..filters.curve_metadata import PHOTON
-from ._original import CONNECT_TIMEOUT, download, product, safe_member  # noqa: F401  CONNECT_TIMEOUT stays importable here
+from ._original import CONNECT_TIMEOUT, _each_published, download, product, safe_member  # noqa: F401  CONNECT_TIMEOUT stays importable here
 
 FACILITY = "JWST"
 REFDATA_VERSION = "2026.7"
@@ -164,19 +164,6 @@ def build(
     tel_cfg = json.loads((refdata / "telescope" / "config.json").read_text())
     ote_file = refdata / "telescope" / tel_cfg["paths"]["otefile"]
     ote = _read(ote_file)
-
-    built, unpublished = [], []
-    for svo_inst in instruments or INSTRUMENTS:
-        inst = INSTRUMENTS[svo_inst]
-        inst_dir = filter_root / FACILITY / svo_inst
-        bands = sorted(p.stem for p in inst_dir.glob("*.dat"))
-        if not bands:
-            unpublished.append(svo_inst)
-            continue
-        _build_instrument(inst, inst_dir, bands, refdata, ote, ote_file.name)
-        built.append(inst_dir)
-    if unpublished:
-        raise FileNotFoundError(
-            f"{filter_root / FACILITY} has no published curves for {', '.join(unpublished)}; fetch them "
-            f"first (njm mirror or SVO). Built: {', '.join(p.name for p in built) or 'none'}.")
-    return built
+    return _each_published(
+        filter_root / FACILITY, instruments or INSTRUMENTS, INSTRUMENTS,
+        lambda _, inst, inst_dir, bands: _build_instrument(inst, inst_dir, bands, refdata, ote, ote_file.name))
