@@ -165,7 +165,6 @@ def densify_grid(
     print(f"  Teff range : {teff_orig[0]:.0f} – {teff_orig[-1]:.0f} K")
     print(f"  Largest gap: {gaps.max():.0f} K  (mean {gaps.mean():.0f} K)")
 
-    # Read-only, in the file's order (nw, nm, nl, nt)
     flux_orig = np.memmap(src, dtype=np.float64, mode="r", offset=flux_offset(nt_orig, nl, nm, nw),
                           shape=(nw, nm, nl, nt_orig))
 

@@ -149,7 +149,6 @@ def _clean_spectrum(
     wl, flux = wl[unique_mask], flux[unique_mask]
     
     if is_index_grid(wl):
-        # Real wavelengths for an index-grid MSG spectrum, from the grid's HDF5 files
         wl = None
         if try_h5_recovery and meta.spec_group and 'msg' in meta.source.lower():
             wl = recover_wavelengths_from_hdf5(os.path.dirname(filepath), meta.spec_group, len(flux))
