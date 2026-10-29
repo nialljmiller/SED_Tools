@@ -3,7 +3,7 @@
 1. Whether a grid's flux cube and HDF5 bundle are out of date is read from
    their contents, not from file times: a grid copied without its times is
    complete, and a selection followed by the rest is still rebuilt.
-2. A flux cube with grid points no spectrum fills says so.
+2. A cube whose empty grid points later get spectra is rebuilt with them.
 3. Messages: the rebuild hint names --base, the incomplete-set warning and
    the densifier fit 80 columns, ``[fetch]`` counts what it downloaded,
    ``ml_generator --auto`` refuses in one line; bounds no spectrum meets leave
@@ -14,7 +14,6 @@ Every source is mocked; nothing here touches the network.
 """
 
 import json
-import logging
 import os
 import shutil
 import time
@@ -164,23 +163,13 @@ def test_an_unreadable_cube_is_out_of_date(njm, tmp_path):
 
 
 # ----------------------------------------------------------------------
-# 2. Holes in a cube: warned about, then filled when their spectra arrive
+# 2. Holes in a cube: zero, then filled when their spectra arrive
 # ----------------------------------------------------------------------
-def test_disjoint_selections_warn_of_the_empty_points_and_a_later_fill_is_rebuilt(njm, tmp_path, caplog,
-                                                                                   capsys):
+def test_disjoint_selections_leave_empty_points_and_a_later_fill_is_rebuilt(njm, tmp_path, capsys):
     folder = tmp_path / GRID
     SED.fetch(GRID, source="njm", model_root=tmp_path, teff_max=5800, logg_max=4.2)
-    with caplog.at_level(logging.WARNING, logger="sed_tools.precompute_flux_cube"):
-        SED.fetch(GRID, source="njm", model_root=tmp_path, teff_min=6200, logg_min=4.3)
-    [warning] = [r.getMessage() for r in caplog.records if "no spectrum" in r.getMessage()]
-    assert warning == (
-        "4 of the 8 points of this flux cube's Teff x logg x [M/H] grid have no spectrum,\n"
-        "so their flux is zero (Teff 5750 to 6250 K, logg 4 to 4.5, [M/H] -0.5 to 0).\n"
-        "Interpolating near them pulls the flux toward zero. The spectra do not fill the\n"
-        "whole grid: the grid's own coverage is irregular, or separate selections were\n"
-        "fetched into one folder (fetch the rest and rebuild to fill them).\n"
-        f"Cube with empty points: {folder / 'flux_cube.bin'}")
-    # The cube is as before: the empty points are zero, the others hold their spectra
+    SED.fetch(GRID, source="njm", model_root=tmp_path, teff_min=6200, logg_min=4.3)
+    # The empty points are zero, the others hold their spectra
     nw = len(_read_flux_cube_header(folder / "flux_cube.bin")["wavelengths"])
     cube = np.fromfile(folder / "flux_cube.bin", dtype=np.float64, offset=16 + 8 * (2 + 2 + 2 + nw))
     flux = cube.reshape(nw, 2, 2, 2)  # (wavelength, [M/H], logg, Teff)
@@ -188,22 +177,10 @@ def test_disjoint_selections_warn_of_the_empty_points_and_a_later_fill_is_rebuil
     assert flux[:, :, 0, 0].any(axis=0).all() and flux[:, :, 1, 1].any(axis=0).all()
 
     # Spectra on exactly those empty points: every one is on the cube's axes, yet the cube lacks them
-    caplog.clear()
     capsys.readouterr()
-    with caplog.at_level(logging.WARNING, logger="sed_tools.precompute_flux_cube"):
-        SED.fetch(GRID, source="njm", model_root=tmp_path, teff_max=5800, logg_min=4.3)
+    SED.fetch(GRID, source="njm", model_root=tmp_path, teff_max=5800, logg_min=4.3)
     assert "[fetch] flux_cube.bin does not include 2 of the 6 spectra beside it:" in capsys.readouterr().out
     assert spectra_not_in_cube(folder / "flux_cube.bin", folder / "lookup_table.csv")[1] == []
-    assert [r.getMessage().split(",")[0] for r in caplog.records if "no spectrum" in r.getMessage()] == [
-        "2 of the 8 points of this flux cube's Teff x logg x [M/H] grid have no spectrum"]
-
-
-def test_a_full_grid_has_no_warning(njm_grid, tmp_path, caplog):
-    folder = tmp_path / GRID
-    shutil.copytree(KURUCZ, folder)
-    with caplog.at_level(logging.WARNING, logger="sed_tools.precompute_flux_cube"):
-        _build_flux_cube(folder)
-    assert "no spectrum" not in caplog.text
 
 
 # ----------------------------------------------------------------------
