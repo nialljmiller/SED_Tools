@@ -137,7 +137,8 @@ def test_a_reachable_mirror_is_checked_once_and_its_ssl_fallback_is_kept(tmp_pat
     assert caplog.text.count("could not be verified") == 1
 
 
-def test_a_catalogue_failure_pauses_njm_for_later_catalogues(tmp_path):
+def test_an_error_answer_to_one_catalogue_is_not_an_outage_for_the_next(tmp_path):
+    # Only the NJM client pauses NJM (no answer, or a block that does not lift); an error answer does not.
     from sed_tools.filter_catalogue import CatalogueError, FilterCatalogue
 
     asked = []
@@ -147,11 +148,10 @@ def test_a_catalogue_failure_pauses_njm_for_later_catalogues(tmp_path):
         raise requests.HTTPError("503", response=SimpleNamespace(status_code=503))
 
     mirror = SimpleNamespace(base_url="https://njm.invalid/sed_tools", is_available=lambda: True, _get=get)
-    with pytest.raises(CatalogueError, match="Cannot fetch index.json"):
-        FilterCatalogue(tmp_path / "filters", mirror=mirror).index()
-    with pytest.raises(CatalogueError, match="index.json is not cached and NJM is unreachable"):
-        FilterCatalogue(tmp_path / "filters", mirror=mirror).index()
-    assert len(asked) == 1
+    for _ in range(2):
+        with pytest.raises(CatalogueError, match="Cannot fetch index.json"):
+            FilterCatalogue(tmp_path / "filters", mirror=mirror).index()
+    assert len(asked) == 2
 
 
 # ----------------------------------------------------------------------

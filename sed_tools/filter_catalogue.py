@@ -88,9 +88,6 @@ class FilterCatalogue:
     ``offline=True`` reads installed and cached copies only.
     """
 
-    #: Until when (time.time()) NJM is not asked after a failed request, for every catalogue in the process.
-    _unreachable_until = 0.0
-
     def __init__(self, filter_root: Union[str, Path], *, mirror: Any = None, offline: bool = False,
                  max_workers: int = MAX_CONCURRENT, index_max_age: float = INDEX_MAX_AGE):
         self.filter_root = Path(filter_root)
@@ -124,12 +121,12 @@ class FilterCatalogue:
     def _online_mirror(self, *, have_copy: bool = False):
         """The mirror client, or ``None`` to use the cached copy instead.
 
-        A mirror whose request failed in the last five minutes is not asked again.
-        One that failed its availability check is asked only for files not yet
-        cached: that check also fails during NJM's brief burst blocks, which the
-        request retries wait out.
+        A mirror that is not available (its check failed, or it stopped
+        answering in the last five minutes, for any client in the process) is
+        used only for files not yet cached: the check also fails during NJM's
+        brief burst blocks, which the request retries wait out.
         """
-        if self.offline or time.time() < self._unreachable_until:
+        if self.offline:
             return None
         with self._mirror_lock:  # fetch threads must not each build a client
             if self._mirror is None:
@@ -196,7 +193,6 @@ class FilterCatalogue:
             status = getattr(getattr(exc, "response", None), "status_code", None)
             if status == 404:
                 raise CatalogueError(f"NJM does not serve {rel}") from exc
-            FilterCatalogue._unreachable_until = time.time() + 300
             if path.is_file():
                 logger.warning("NJM unreachable (%s); using the cached %s", exc, rel)
                 self._came_from(rel, "cache", meta.get("checked"), njm_unreachable=True)
