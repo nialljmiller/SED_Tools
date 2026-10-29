@@ -357,11 +357,7 @@ class MASTSpectraGrabber:
         print(f"[MAST:BOSZ] Selected resolution: {reskey}")
         print("  Limit metallicities? e.g., '-1.00,+0.00' or leave blank for ALL")
         raw = input("> ").strip()
-        metals = METALS
-        if raw:
-            sel = [_metal_tag(tok.strip()) for tok in raw.split(",") if tok.strip()]
-            if sel:
-                metals = sel
+        metals = [_metal_tag(tok.strip()) for tok in raw.split(",") if tok.strip()] or METALS
         return {"provider": "mast-bosz", "version": "2024", "reskey": reskey, "metals": metals}
 
     def download_model_spectra(
