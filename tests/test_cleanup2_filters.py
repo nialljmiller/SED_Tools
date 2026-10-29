@@ -77,3 +77,26 @@ def test_a_curve_without_a_column_row_is_reported_once_by_its_caller(tmp_path, c
         assert migrate_filter_file(legacy) is True
     assert caplog.text.count("has no column-name row to hold SED_Tools metadata") == 1
     assert legacy.read_text() == "4000,0.1\n5000,0.9\n"
+
+
+@pytest.mark.parametrize("njm_answer, warned", [(None, False), (RuntimeError("2 component files failed"), True)])
+def test_components_no_source_has_are_not_announced_unless_njm_failed(tmp_path, caplog, njm_answer, warned):
+    from sed_tools import filter_metadata as fm
+    from sed_tools.filter_library import FilterLibrary
+
+    directory = tmp_path / "NoBuilderFac" / "Cam"
+    directory.mkdir(parents=True)
+    fm.write_filter_file(directory / "g.dat", [4000.0, 6000.0], [1.0, 1.0], detector_type=fm.PHOTON,
+                         source="svo", wavelength_unit="Angstrom", extra={"Components": "filter+optics+qe"})
+
+    def download_components(facility, instrument):
+        if njm_answer is not None:
+            raise njm_answer
+        return 0  # NJM serves no components for it
+
+    library = FilterLibrary(tmp_path)
+    library.mirror = SimpleNamespace(is_available=lambda: True, download_components=download_components)
+    with caplog.at_level(logging.WARNING):
+        assert library.prepare_components(directory, components="filter+qe") is False
+    assert ("NJM cannot provide the components of NoBuilderFac/Cam (2 component files failed)" in caplog.text) == warned
+    assert bool(caplog.text) == warned
