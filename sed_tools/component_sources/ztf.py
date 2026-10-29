@@ -86,8 +86,7 @@ def build(filter_root, *, session=None, **kwargs):
     manifest = InstrumentManifest.load(inst_dir)
     manifest.variants.pop(QE, None)
     for name, (stem, url, description) in QE_VARIANTS.items():
-        source = f"{url} ({description})"
-        rel = add_component(inst_dir, QE, *curves[name], name=stem, source=source,
+        rel = add_component(inst_dir, QE, *curves[name], name=stem, source=f"{url} ({description})",
                             manifest=manifest if name == "multi_layer" else None)
         register_variant(manifest, QE, name, {"*": rel}, description=description, source=url,
                          **({"default": True} if name == "multi_layer" else {}))

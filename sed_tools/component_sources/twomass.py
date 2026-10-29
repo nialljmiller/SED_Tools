@@ -149,9 +149,7 @@ def build(filter_root: Union[str, Path], *, session=None, **_ignored) -> Path:
     t = fetch_tables(Fetcher(session), range(1, 12))
     notes = with_earlier_note(inst_dir, NOTES.format(page=PAGE, rsr=RSR_PAGE))
     manifest = fresh_manifest(inst_dir, FACILITY, INSTRUMENT)
-    for band in sorted(FILTER_TABLE):
-        if band not in present:
-            continue
+    for band in sorted(set(FILTER_TABLE) & present):
         n = FILTER_TABLE[band]
         register(manifest, inst_dir, FILTER, *t[n], bands=[band], name=band,
                  source=f"{TABLE.format(n=n)} ({band} filter; xlam read as um)")

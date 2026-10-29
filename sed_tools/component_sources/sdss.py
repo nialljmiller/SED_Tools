@@ -78,20 +78,18 @@ def build(filter_root, *, session=None, **_ignored) -> Path:
     manifest = InstrumentManifest.from_published(inst_dir)
     manifest.facility, manifest.instrument = "SLOAN", "SDSS"
     manifest.variants.pop(KEY, None)
-    files = {}
-    for b in BANDS:
-        files[b] = add_component(inst_dir, KEY, *gunn[b], band=b, name=f"{b}_gunn2001",
-                                 source=f"{GUNN} (extension {b.upper()}, column resnoa)", manifest=manifest)
+    files = {b: add_component(inst_dir, KEY, *gunn[b], band=b, name=f"{b}_gunn2001",
+                              source=f"{GUNN} (extension {b.upper()}, column resnoa)", manifest=manifest)
+             for b in BANDS}
     register_variant(manifest, KEY, "gunn2001", files, default=True, source=GUNN,
                      description=("J. Gunn (June 2001) camera response with no atmosphere (resnoa: the "
                                   "large-source response without the atmosphere), average of the six camera "
                                   "columns; the published curves are the same table's point-source response "
                                   "through 1.3 airmasses at APO (respt)"))
     for c in CAMCOLS:
-        files = {}
-        for b in BANDS:
-            files[b] = add_component(inst_dir, KEY, *curves[(b, c)], band=b, name=f"{b}_camcol{c}",
-                                     source=f"{tables[(b, c)].url} (Doi et al. 2010, camera column {c})")
+        files = {b: add_component(inst_dir, KEY, *curves[(b, c)], band=b, name=f"{b}_camcol{c}",
+                                  source=f"{tables[(b, c)].url} (Doi et al. 2010, camera column {c})")
+                 for b in BANDS}
         register_variant(manifest, KEY, f"camcol{c}", files, source=f"{DOI}/SDSSresponse.html",
                          description=(f"Doi et al. (2010) response of camera column {c}: CCD, filter, first "
                                       "corrector and mirrors, no atmosphere"),
