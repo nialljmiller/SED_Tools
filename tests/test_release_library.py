@@ -427,7 +427,7 @@ def test_njm_that_stops_answering_is_not_asked_again(tmp_path, njm, caplog):
 
 def test_njm_is_asked_again_once_its_pause_is_over(tmp_path, njm, monkeypatch):
     clock = [1000.0]
-    monkeypatch.setattr("sed_tools.njm_filter_grabber.monotonic", lambda: clock[0])
+    monkeypatch.setattr("sed_tools.njm_mirror.monotonic", lambda: clock[0])
     grabber = njm(tmp_path, {"index.json": requests.ConnectionError("refused")})
     with pytest.raises(requests.ConnectionError, match="refused"):
         grabber._get(f"{NJM}/index.json")

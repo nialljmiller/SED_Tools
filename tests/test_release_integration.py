@@ -105,7 +105,7 @@ def test_a_silent_outage_is_checked_and_reported_once_per_process(tmp_path, monk
 
 def test_the_outage_is_checked_again_once_the_pause_expires(tmp_path, monkeypatch, caplog):
     clock = [1000.0]
-    monkeypatch.setattr(njm_filter_grabber, "monotonic", lambda: clock[0])
+    monkeypatch.setattr("sed_tools.njm_mirror.monotonic", lambda: clock[0])
     with caplog.at_level(logging.WARNING, logger="sed_tools.njm_filter_grabber"):
         _, session = _grabbers(monkeypatch, tmp_path, requests.ConnectionError("refused"), n=1)
         clock[0] += njm_filter_grabber.NJM_PAUSE + 1

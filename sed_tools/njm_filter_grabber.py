@@ -8,7 +8,6 @@ import json
 import logging
 import os
 import re
-import threading
 import time
 from dataclasses import dataclass, field
 from time import monotonic
@@ -16,11 +15,12 @@ from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
 
 import requests
-import urllib3
 from bs4 import BeautifulSoup
 
 from .filter_components import InstrumentManifest
 from .filter_metadata import SOURCE_ASSUMED, SVOMetadataClient, migrate_filter_file, tag_filter_file
+from .njm_mirror import (BASE_URL, NJM_CONNECT_TIMEOUT, NJM_PAUSE, USER_AGENT, _STATE, _status, pause, paused,
+                         plain_reason, skip_ssl_verification)
 
 logger = logging.getLogger(__name__)
 
@@ -29,68 +29,12 @@ logger = logging.getLogger(__name__)
 RETRY_STATUSES = (403, 429, 500, 502, 503, 504)
 # Answers that, still given after the retries, mean NJM will not serve this client for now.
 BLOCKED_STATUSES = (403, 429)
-#: Seconds to wait for NJM to accept a connection: a mirror that is down fails fast.
-NJM_CONNECT_TIMEOUT = 5.0
-#: Seconds NJM is left alone after it stops answering.
-NJM_PAUSE = 300
 #: Seconds a process keeps NJM's index.json before reading it again.
 NJM_INDEX_MAX_AGE = 3600
 
 
-def plain_reason(reason) -> str:
-    """Why NJM could not be reached, in a few plain words rather than a raw exception's text."""
-    status = _status(reason)
-    if status is not None:  # NJM answered, but refused (a burst block, say)
-        return f"HTTP {status}"
-    text = str(reason)
-    if len(text) <= 60 and "(" not in text:
-        return text
-    lowered = text.lower()
-    if isinstance(reason, requests.exceptions.Timeout) or "timed out" in lowered:
-        return "it did not answer in time"
-    if isinstance(reason, requests.exceptions.SSLError):
-        return "its certificate or TLS handshake failed"
-    for words, plain in (("refused", "connection refused"), ("reset by peer", "connection reset"),
-                         ("aborted", "connection reset"), ("no route", "no route to host"),
-                         ("name or service not known", "host name not found"),
-                         ("nodename nor servname", "host name not found"),
-                         ("name resolution", "host name not found")):
-        if words in lowered:
-            return plain
-    return "could not connect"
 #: Which installed curves a download found to be NJM's, kept under ``<filter root>/../cache/njm/filters/F/I/``.
 VERIFIED_CURVES = "verified_curves.json"
-
-
-class _MirrorState:
-    """What this process knows about NJM, shared by every :class:`NJMFilterGrabber`.
-
-    A new grabber (every FilterLibrary and FilterCatalogue makes one) reuses
-    the last availability check instead of asking NJM again, and a mirror that
-    stopped answering is left alone by all of them for ``NJM_PAUSE`` seconds,
-    reported once per outage.
-    """
-
-    def __init__(self):
-        self.lock = threading.Lock()
-        self.reset()
-
-    def reset(self) -> None:
-        self.available = False  # a check or a request found NJM answering
-        self.unverified_ssl = False  # NJM's certificate could not be verified; requests skip the check
-        self.unreachable: Optional[str] = None  # why NJM is not asked, until `until` (monotonic())
-        self.until = 0.0
-        self.reported = False  # the current outage has been reported
-        self.index: Optional[Dict] = None  # NJM's index.json, read at `index_read` (monotonic())
-        self.index_read = 0.0
-
-
-_STATE = _MirrorState()
-
-
-def _status(exc: Exception) -> Optional[int]:
-    """The HTTP status of a failed request, or None when there was no answer."""
-    return getattr(getattr(exc, "response", None), "status_code", None)
 
 
 def curve_file(name: str) -> str:
@@ -134,11 +78,11 @@ class NJMFilterGrabber:
         self.max_workers = max_workers
         os.makedirs(base_dir, exist_ok=True)
 
-        self.base_url = "https://nillmill.ddns.net/sed_tools"
+        self.base_url = BASE_URL
         self.filters_url = f"{self.base_url}/filters"
 
         self.session = requests.Session()
-        self.session.headers.update({"User-Agent": "SED_Tools/1.0 (NJM Mirror)"})
+        self.session.headers.update({"User-Agent": USER_AGENT})
 
         self._cached_facilities: Optional[List[str]] = None
         self._index_data: Optional[Dict] = None
@@ -205,15 +149,7 @@ class NJMFilterGrabber:
                             f"installed copies,\n  the original-source builders and SVO")
         return False
 
-    @staticmethod
-    def _pause(reason: str, message: str, log: logging.Logger = logger) -> None:
-        """Leave NJM alone for ``NJM_PAUSE`` seconds in this whole process; ``message`` is warned once per outage."""
-        with _STATE.lock:
-            _STATE.available = False
-            _STATE.unreachable, _STATE.until = reason, monotonic() + NJM_PAUSE
-            report, _STATE.reported = not _STATE.reported, True
-        if report:
-            log.warning(message)
+    _pause = staticmethod(pause)
 
     def _disable_ssl_verification(self) -> None:
         """Switch this and every later grabber in the process to skip certificate checks."""
@@ -221,21 +157,13 @@ class NJMFilterGrabber:
         self._skip_ssl_verification()
 
     def _skip_ssl_verification(self) -> None:
-        """Suppress SSL warnings and switch the session to skip certificate checks."""
-        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-        self.session.verify = False
+        skip_ssl_verification(self.session)
 
     def is_available(self) -> bool:
         """Return True if the mirror is available."""
         return self._available and not self._paused()
 
-    @staticmethod
-    def _paused() -> bool:
-        """Whether NJM stopped answering, in this process, less than ``NJM_PAUSE`` seconds ago."""
-        with _STATE.lock:
-            if _STATE.unreachable is not None and monotonic() >= _STATE.until:
-                _STATE.unreachable = None
-            return _STATE.unreachable is not None
+    _paused = staticmethod(paused)
 
     def _get(self, url: str, *, timeout: int = 30, headers: Optional[Dict[str, str]] = None) -> requests.Response:
         """Retry transient mirror failures, including Apache's temporary 403 block.

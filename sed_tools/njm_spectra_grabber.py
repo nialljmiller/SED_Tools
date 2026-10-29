@@ -17,11 +17,10 @@ from urllib.parse import urljoin
 
 import numpy as np
 import requests
-import urllib3
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 
-from .njm_filter_grabber import NJM_CONNECT_TIMEOUT, NJMFilterGrabber, plain_reason
+from .njm_mirror import BASE_URL, NJM_CONNECT_TIMEOUT, USER_AGENT, pause, paused, plain_reason, skip_ssl_verification
 
 logger = logging.getLogger(__name__)
 
@@ -49,17 +48,17 @@ class NJMSpectraGrabber:
         os.makedirs(base_dir, exist_ok=True)
         
         # Use HTTPS
-        self.base_url = "https://nillmill.ddns.net/sed_tools"
+        self.base_url = BASE_URL
         self.stellar_models_url = f"{self.base_url}/stellar_models"
         
         self.session = requests.Session()
-        self.session.headers.update({"User-Agent": "SED_Tools/1.0 (NJM Mirror)"})
+        self.session.headers.update({"User-Agent": USER_AGENT})
         
         # Cached index data (populated by _check_availability)
         self._index_data = None
         
         # NJM is not asked again while another client in this process found it down (already reported)
-        self._available = not NJMFilterGrabber._paused() and self._check_availability()
+        self._available = not paused() and self._check_availability()
         
     def _check_availability(self) -> bool:
         """Check if the NJM mirror is available, failing fast when it does not answer.
@@ -121,16 +120,15 @@ class NJMSpectraGrabber:
         self._cache_index(resp)
         self.base_url = self.base_url.replace("https://", "http://")
         self.stellar_models_url = self.stellar_models_url.replace("https://", "http://")
-        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-        self.session.verify = False
+        skip_ssl_verification(self.session)
         logger.warning("NJM mirror: HTTPS failed (%s); using plain HTTP at %s", "; ".join(errors), self.base_url)
         return True
 
     @staticmethod
     def _unreachable(errors: List[str]) -> bool:
-        """Report NJM down, and leave it alone in this whole process for a while (see NJMFilterGrabber._pause)."""
+        """Report NJM down, and leave it alone in this whole process for a while (see njm_mirror.pause)."""
         reason = plain_reason(errors[-1].split(": ", 1)[-1])
-        NJMFilterGrabber._pause(reason, f"NJM mirror is unreachable ({reason}),\n"
+        pause(reason, f"NJM mirror is unreachable ({reason}),\n"
                                         "  so its spectral grids are not offered", logger)
         return False
 
@@ -145,8 +143,7 @@ class NJMSpectraGrabber:
         """Switch the session to skip certificate checks, saying why."""
         logger.warning("NJM mirror: certificate check failed (%s); continuing without certificate verification",
                        "; ".join(errors))
-        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-        self.session.verify = False
+        skip_ssl_verification(self.session)
 
     def is_available(self) -> bool:
         """Return True if the mirror is available."""

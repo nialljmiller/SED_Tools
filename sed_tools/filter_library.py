@@ -30,7 +30,8 @@ from .filter_components import (
 )
 from .filter_catalogue import cache_root
 from .filter_metadata import SVOUnreachableError, migrate_filter_tree, svo_components_header
-from .njm_filter_grabber import NJMFilterGrabber, _status, curve_file
+from .njm_filter_grabber import NJMFilterGrabber, curve_file
+from .njm_mirror import _status
 from .svo_filter_grabber import FilterRow, SVOFilterBrowser, _clean_filename, _clean_path, svo_unavailable
 
 logger = logging.getLogger(__name__)
