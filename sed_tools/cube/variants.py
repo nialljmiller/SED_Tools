@@ -13,7 +13,7 @@ from typing import Any, Dict, List, Tuple
 import numpy as np
 
 from . import build  # build imports this module too, so its names are looked up when called
-from ..grids._lookup_io import write_lookup_csv
+from ..grids.lookup import write_lookup_csv
 
 logger = logging.getLogger("sed_tools.precompute_flux_cube")
 

@@ -22,7 +22,7 @@ from .manifest import InstrumentManifest
 from .curve_metadata import (ENERGY, SOURCE_ASSUMED, SOURCE_SVO, SVO_ALTERNATIVES, SVOMetadataClient,
                               SVOUnreachableError, svo_components_header, svo_fps_url, svo_get, write_filter_file)
 from ..ui_utils import prompt_choice
-from ..parsing import parse_multi_selection
+from ..ui_utils import parse_multi_selection
 
 SVO_READ_TIMEOUT = 300  # give a connected SVO a generous time to respond
 #: Seconds SVO is left alone, by every browser in the process, after it did not answer.

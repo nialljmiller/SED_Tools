@@ -17,7 +17,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 
 from .._constants import available_memory_bytes as _available_ram_bytes
-from ..grids._lookup_io import (  # noqa: F401  (write_lookup_csv: importable here, as always)
+from ..grids.lookup import (  # noqa: F401  (write_lookup_csv: importable here, as always)
     find_file_column, find_logg_column, find_metallicity_column, find_teff_column,
     write_lookup_csv,
 )
