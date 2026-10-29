@@ -18,9 +18,7 @@ from ..grids._lookup_io import write_lookup_csv
 logger = logging.getLogger("sed_tools.precompute_flux_cube")
 
 
-# ---------------------------------------------------------------------------
-# Collision handling
-# ---------------------------------------------------------------------------
+# --- Variants and their names ---
 
 def _group_by_extra_axes(
     lookup:     Dict[str, List],
@@ -30,13 +28,8 @@ def _group_by_extra_axes(
     logg_vals:  np.ndarray,
     meta_vals:  np.ndarray,
 ) -> Dict[Tuple, Dict]:
-    """
-    Group lookup rows by their unique extra-axis combination.
-
-    Returns {extra_key_tuple: {"rows": [...], "file_names": [...], "teff": [...], ...}},
-    where "rows" are the row numbers in *lookup* and extra_key_tuple is a tuple
-    of (col_name, value) pairs sorted by col_name for deterministic ordering.
-    """
+    """The lookup rows grouped by their extra-axis values: {key: {"rows", "file_names", "teff", "logg", "meta",
+    "extra_vals"}}, where key is the sorted (column, value) pairs and "rows" are row numbers in *lookup*."""
     groups: Dict[Tuple, Dict] = {}
 
     for i, fname in enumerate(lookup[file_col]):
@@ -68,23 +61,8 @@ def _extra_key_to_filename(extra_key: Tuple) -> str:
     return "__".join(parts) if parts else "default"
 
 
-# ---------------------------------------------------------------------------
-# Subgrid splitting — physically safe extra-axis handling
-# ---------------------------------------------------------------------------
-
 def _value_to_safe_str(val: str) -> str:
-    """Convert a parameter value to a filesystem-safe string.
-
-    Numeric:
-        "0"      -> "0p00"
-        "0.01"   -> "0p01"
-        "0.1"    -> "0p10"
-        "0.25"   -> "0p25"
-        "-0.5"   -> "m0p50"
-        "+0.5"   -> "0p50"
-    Non-numeric:
-        "h-rich" -> "h_rich"
-    """
+    """A value as a file-name fragment: "0.1" -> "0p10", "-0.5" -> "m0p50", "+0.5" -> "0p50", "h-rich" -> "h_rich"."""
     val = str(val).strip()
     try:
         f = float(val)
@@ -96,12 +74,7 @@ def _value_to_safe_str(val: str) -> str:
 
 
 def _subdir_name(model_name: str, extra_key: Tuple) -> str:
-    """Generate a MESA-ready subgrid directory name from an extra-axis key.
-
-    Example:
-        model_name="Husfeld", key=(("yhe", "0.10"),) -> "Husfeld_yhe_0p10"
-        two axes: key=(("alpha","0.4"),("yhe","0.10")) -> "Husfeld_alpha_0p40_yhe_0p10"
-    """
+    """A variant's subgrid folder: "Husfeld", (("alpha", "0.4"), ("yhe", "0.10")) -> Husfeld_alpha_0p40_yhe_0p10."""
     parts = []
     for col, val in extra_key:
         safe_col = re.sub(r"[^a-zA-Z0-9]+", "_", col.strip()).strip("_")
@@ -127,11 +100,9 @@ def _print_split_announcement(
     model_name: str,
     threshold: int,
 ) -> None:
-    """Print the structured 'Extra physical axis detected' message.
+    """Print the 'Extra physical axis detected' message, naming only the axes that vary between the variants.
 
-    Only the axes that vary between the variants are named: a column with
-    one value throughout (lh and vtur in Kurucz) is no variant axis.  The
-    subgrid directory names still carry every extra column.
+    A column with one value throughout (lh and vtur in Kurucz) is no variant axis; the subgrid names still carry it.
     """
     n_combos = len(groups)
     varying = [col for col in extra_cols if len({dict(key)[col] for key in groups}) > 1]
@@ -189,18 +160,8 @@ def _build_split_subgrids(
     wavelengths: np.ndarray,
     usable_ram: int,
 ) -> None:
-    """Build a MESA-ready subgrid directory for every extra-axis combination.
-
-    For each variant:
-      - Creates a subdirectory named {ModelName}_{axis}_{value}/
-      - Writes a filtered lookup_table.csv
-      - Symlinks .txt spectra from parent (warns if symlinks are unsupported)
-      - Builds flux_cube.bin from the variant's spectra
-
-    Then writes variants_index.csv in the parent directory and copies
-    lookup_table.csv to lookup_table_full.csv as the authoritative full-grid record.
-
-    """
+    """One MESA-ready subgrid folder per variant: its lookup_table.csv, links to the parent's spectra and its
+    flux_cube.bin; then variants_index.csv, and lookup_table_full.csv as the record of the full grid."""
     index_entries: List[Dict[str, Any]] = []
 
     for key, g in sorted(groups.items()):
@@ -225,7 +186,6 @@ def _build_split_subgrids(
     write_lookup_csv(index_entries, index_path, columns=["variant_name"] + extra_cols + ["n_spectra", "path"])
     print(f"Variants index: {index_path}")
 
-    # Preserve the full-grid lookup under a permanent name
     src_lookup = os.path.join(model_dir, "lookup_table.csv")
     full_lookup = os.path.join(model_dir, "lookup_table_full.csv")
     if os.path.exists(src_lookup) and not os.path.exists(full_lookup):
@@ -245,9 +205,7 @@ def _write_group_cube(model_dir: str, group: Dict, wavelengths: np.ndarray, cube
                               wavelengths, cube_path, usable_ram, label=label)
 
 
-# ---------------------------------------------------------------------------
-# Strategies for grids with several extra-axis variants
-# ---------------------------------------------------------------------------
+# --- The strategies ---
 
 def _confirm_large_split(model_dir: str, n_groups: int) -> bool:
     """Ask before splitting more than SPLIT_THRESHOLD (build.py) variants; True to go ahead."""
@@ -273,7 +231,7 @@ def _split_into_subgrids(
     wavelengths: np.ndarray,
     usable_ram:  int,
 ) -> None:
-    """Strategy 'split': one MESA-ready subgrid per variant, no cube in the parent."""
+    """Strategy 'split': one MESA-ready subgrid per variant; the parent, which is not MESA-ready, gets no cube."""
     model_name = os.path.basename(os.path.abspath(model_dir))
     _print_split_announcement(groups, extra_cols, model_name, build.SPLIT_THRESHOLD)
 
@@ -287,7 +245,6 @@ def _split_into_subgrids(
     )
     print("\nDone. The parent directory is the source collection.")
     print("Point MESA Colors to one of the subgrid directories listed above.")
-    # The parent gets no flux_cube.bin: it is not MESA-ready.
 
 
 def _build_mean_cube(
