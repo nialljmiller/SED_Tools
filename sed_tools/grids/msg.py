@@ -133,12 +133,8 @@ def _pick_flux(spec_g):
     if ds is not None:
         return np.array(ds[()]).astype(float).squeeze()
     # single 1D/(N,1) candidate
-    cands=[]
-    for k,d in spec_g.items():
-        if isinstance(d,h5py.Dataset):
-            shp=d.shape
-            if len(shp)==1 or (len(shp)==2 and shp[1]==1):
-                cands.append(k)
+    cands = [k for k, d in spec_g.items()
+             if isinstance(d, h5py.Dataset) and (len(d.shape) == 1 or (len(d.shape) == 2 and d.shape[1] == 1))]
     if len(cands)==1:
         return np.array(spec_g[cands[0]][()]).astype(float).squeeze()
     raise RuntimeError("No suitable flux dataset")
@@ -223,9 +219,7 @@ class MSGSpectraGrabber:
             vlin = np.array(f["vgrid/v_lin_seq"][()], dtype=int).ravel()
             prod = int(np.prod(shape)) if shape else 0
             if prod>0 and vlin.size>0:
-                # 1-based?
-                vmax = int(vlin.max())
-                if vmax == prod:
+                if int(vlin.max()) == prod:  # 1-based
                     vlin = vlin - 1
                 vlin = np.clip(vlin, 0, max(prod-1, 0))
         roles = _role_override_for_model(model_name)
@@ -269,12 +263,8 @@ class MSGSpectraGrabber:
             raise RuntimeError(f"MSG: could not read {h5_path}: {e}. If it is a partial "
                                "download, delete it and rerun to download it again") from e
 
-        spectra=[]
         with f:
-            spec_root=None
-            for k in f.keys():
-                if k.startswith("specsource"):
-                    spec_root=k; break
+            spec_root = next((k for k in f.keys() if k.startswith("specsource")), None)
             if spec_root is None:
                 raise RuntimeError(f"MSG: no 'specsource' group in {h5_path}")
 
@@ -282,15 +272,10 @@ class MSGSpectraGrabber:
             names=[k for k in src.keys() if k.startswith("specints[")]
             names.sort(key=_bracket_number)
 
-            axinfo = self._load_axes_and_vlin(f, model_name)
-            self.model_axes[model_name] = axinfo
+            self.model_axes[model_name] = self._load_axes_and_vlin(f, model_name)
 
-            for i, nm in enumerate(names):
-                spectra.append({
-                    "fid": i+1,
-                    "gname": f"{spec_root}/{nm}",
-                    "order_index": i  # index into vlin, same order as groups
-                })
+            # order_index: the index into vlin, same order as the groups
+            spectra = [{"fid": i + 1, "gname": f"{spec_root}/{nm}", "order_index": i} for i, nm in enumerate(names)]
         if not spectra:
             raise RuntimeError(f"MSG: {h5_path} holds no spectra ('specints[...]' groups)")
         print(f"    Found {len(spectra)} spectra for {model_name}")
@@ -303,16 +288,10 @@ class MSGSpectraGrabber:
         roles = axinfo.get("roles", {})
         vlin  = axinfo.get("vlin", None)
 
-        teff = logg = meta = float("nan")
         if vlin is None or not shape or order_index >= len(vlin):
-            return teff, logg, meta
+            return float("nan"), float("nan"), float("nan")
 
         flat = int(vlin[order_index])
-
-        # try both unravel orders, pick the one yielding plausible values
-        # (vlin was clipped into the grid when loaded, so both orders give valid coordinates)
-        coordsC = np.unravel_index(flat, shape, order="C")
-        coordsF = np.unravel_index(flat, shape, order="F")
 
         def vals_from_coords(coords):
             out = {}
@@ -323,57 +302,36 @@ class MSGSpectraGrabber:
                 out[key] = float(axes[j][coords[j]])
             return out
 
-        vc = vals_from_coords(coordsC)
-        vf = vals_from_coords(coordsF)
+        # try both unravel orders, pick the one yielding plausible values
+        # (vlin was clipped into the grid when loaded, so both orders give valid coordinates)
+        vc = vals_from_coords(np.unravel_index(flat, shape, order="C"))
+        vf = vals_from_coords(np.unravel_index(flat, shape, order="F"))
 
-        def plausible(v):
-            t = v.get("teff", float("nan"))
-            g = v.get("logg", float("nan"))
-            m = v.get("meta", float("nan"))
-            ok_t = np.isfinite(t) and (1200 <= t <= 150000)
-            ok_g = np.isfinite(g) and (-1.5 <= g <= 6.8)
-            ok_m = np.isfinite(m) and (-5.0 <= m <= 2.0)
-            return ok_t and ok_g and ok_m
+        def plausible(v):  # a missing, NaN or infinite value fails its bounds
+            return all(lo <= v.get(key, np.nan) <= hi
+                       for key, lo, hi in (("teff", 1200, 150000), ("logg", -1.5, 6.8), ("meta", -5.0, 2.0)))
 
         if plausible(vc):
-            teff, logg, meta = vc["teff"], vc["logg"], vc["meta"]
+            best = vc
         elif plausible(vf):
-            teff, logg, meta = vf["teff"], vf["logg"], vf["meta"]
+            best = vf
         else:
             # take whichever has more finite fields
             def score(v): return sum(np.isfinite([v.get("teff",np.nan), v.get("logg",np.nan), v.get("meta",np.nan)]))
             best = vc if score(vc) >= score(vf) else vf
-            teff, logg, meta = best.get("teff",np.nan), best.get("logg",np.nan), best.get("meta",np.nan)
-
-        return teff, logg, meta
+        return best.get("teff",np.nan), best.get("logg",np.nan), best.get("meta",np.nan)
 
     def _extract_one(self, h5_path, gpath, model_name, order_index):
         with h5py.File(h5_path, "r") as f:
             spec_g = f[gpath]
-            fx = _pick_flux(spec_g)
+            fx = _pick_flux(spec_g)  # a float array, squeezed: an (N, 1) dataset is already 1-D
 
-            # Normalize fx to something we can write: 1-D flux vector
-            fx = np.array(fx)
-
-            # Case 1: dataset is (N, 1) -> flatten
-            if fx.ndim == 2 and fx.shape[1] == 1:
-                fx = fx[:, 0]
-
-            # Case 2: (N, 2) [wl, flux] pairs, when the first column rises: the flux is the second
-            # column. The wavelengths are still recovered below, so wl_from_fx goes unused.
-            elif fx.ndim == 2 and fx.shape[1] == 2:
-                wl_from_fx = fx[:, 0].astype(float)
-                fl_from_fx = fx[:, 1].astype(float)
-
-                # sanity: wl monotonic increasing-ish and length reasonable
-                if wl_from_fx.size > 1 and np.all(np.diff(wl_from_fx) > 0):
-                    wl = wl_from_fx
-                    fx = fl_from_fx
-                else:
-                    # fallback: take first column as flux if it doesn't look like wavelength
-                    fx = fx[:, 0]
-
-            # Case 3: anything higher-dim -> force ravel (last resort)
+            # (N, 2) [wl, flux] pairs, when the first column rises: the flux is the second column (the
+            # wavelengths are still recovered below); otherwise the first column is taken as the flux
+            if fx.ndim == 2 and fx.shape[1] == 2:
+                first = fx[:, 0]
+                fx = fx[:, 1] if first.size > 1 and np.all(np.diff(first) > 0) else first
+            # anything higher-dim -> force ravel (last resort)
             elif fx.ndim > 1:
                 fx = fx.ravel()
 
@@ -457,8 +415,7 @@ class MSGSpectraGrabber:
         if ranges["wl"] is not None:
             wl_lo, wl_hi = ranges["wl"]
             mask = (wl >= wl_lo) & (wl <= wl_hi)
-            wl = wl[mask]
-            fx = fx[mask]
+            wl, fx = wl[mask], fx[mask]
             if wl.size == 0:
                 return ("excluded", fname, None)
 
