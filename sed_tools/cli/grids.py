@@ -31,13 +31,9 @@ def prompt_njm_axis_cuts(
     grabber,  # NJMSpectraGrabber instance
     model_url: Optional[str] = None,
 ) -> Dict:
-    """Interactively prompt the user for axis cuts on an NJM download.
+    """Ask for axis cuts on an NJM download, after showing the grid's ranges from its remote lookup table.
 
-    Shows the available parameter ranges from the remote lookup table,
-    then asks if the user wants to cut on each axis.
-
-    Returns a dict with keys: teff_range, logg_range, meta_range, wl_range
-    (each either a (min, max) tuple or None).
+    Returns a dict with keys teff_range, logg_range, meta_range and wl_range, each a (min, max) tuple or None.
     """
     cuts = {'teff_range': None, 'logg_range': None, 'meta_range': None, 'wl_range': None}
 
@@ -133,15 +129,8 @@ def _ask_rebuild_selection(cand: List[str]) -> List[str]:
 
 
 def _ask_flux_unit(grid: str, txt_files: List[str], flux_unit: Optional[str] = None) -> Optional[str]:
-    """The flux unit to clean a grid with: ``flux_unit`` (from --flux-unit) if given, else the user's
-    choice when the spectra do not declare theirs and there is a terminal to ask on, else None.
-
-    Cleaning decides the rest: it uses the unit only for spectra that do not
-    declare theirs, and stops with ValueError, naming the best guess, when
-    they declare none and none was given.  The user must type a unit: Enter
-    alone does not accept the guess, and 'n' raises ValueError (the grid is
-    not cleaned).
-    """
+    """``flux_unit`` if given, else the unit typed in a terminal for undeclared spectra (Enter never takes
+    the guess; 'n' raises ValueError), else None, leaving cleaning to stop with its best guess."""
     if flux_unit is not None or not sys.stdin.isatty():
         return flux_unit
     guess = undeclared_flux_unit(txt_files)
@@ -230,7 +219,6 @@ def _print_cleaning_report(summary: Dict) -> None:
     detected_wl   = cat_units.get('wavelength', 'unknown')
     detected_flux = cat_units.get('flux', 'unknown')
 
-    # Unit detection summary
     if det_status == 'already_standardized':
         print(f" Method    : Sampled {sample_size}/{n_total} files")
         print(f" Result    : All samples already standardized")
@@ -246,7 +234,6 @@ def _print_cleaning_report(summary: Dict) -> None:
         print(f" Wavelength: {detected_wl}")
         print(f" Flux      : {detected_flux}")
 
-    # Per-file outcome counts
     units_already_standard = (detected_wl == 'angstrom' and detected_flux == 'flam')
     n_converted = len(summary['converted'])
     n_recovered = len(summary['recovered'])
@@ -292,9 +279,7 @@ def run_spectra_flow(
     ``flux_unit`` is used for grids whose spectra do not declare their flux
     unit (see run_rebuild_flow).  The ``*_range`` cuts, each ``(min, max)``,
     are passed to every source (SVO refuses them); without any, an NJM
-    download asks for cuts when run in a terminal and takes the full grid
-    otherwise.
-
+    download asks for cuts in a terminal and takes the full grid otherwise.
     A grid that cannot be completed is reported and the rest are processed;
     then RuntimeError lists every grid that was not completed.
     """
@@ -359,10 +344,7 @@ def _spectra_grabbers(src_list: List[str], base_dir: str, workers: int) -> Dict:
 
 
 def _discover_spectral_grids(src_list: List[str], grabs: Dict) -> Dict[str, List[str]]:
-    """Each grid name with the sources listing it, in --source order.
-
-    A source that cannot be asked lists none; its grabber warns why.
-    """
+    """Each grid name with the sources listing it, in --source order (a source that cannot be asked lists none)."""
     model_sources: Dict[str, List[str]] = {}
     for s in src_list:
         if s in grabs:
@@ -392,10 +374,9 @@ def _requested_spectral_grids(models: List[str], all_models: List[_ModelOption])
 
 def _download_from_first_source(name: str, sources: List[str], grabs: Dict, model_dir: str,
                                 ranges: Optional[Dict] = None):
-    """Download ``name`` from the first active source that can supply it; returns ``(source, metadata)``.
+    """``(source, metadata)`` of the first source that downloads ``name`` (pipeline.download_from_first_source).
 
-    The rule is pipeline.download_from_first_source's; a source without a grabber is listed as not
-    available. RuntimeError gives every source's error when none succeeds.
+    A source without a grabber is listed as not available; RuntimeError gives every source's error.
     """
     tried = [f"{src}: not available" for src in sources if src not in grabs]
     metadata = {}
@@ -451,10 +432,8 @@ def _is_preprocessed(meta) -> bool:
 def _download_and_build_grid(name: str, sources: List[str], grabs: Dict, base_dir: str,
                              force_bundle_h5: bool, build_flux_cube: bool, *,
                              flux_unit: Optional[str] = None, ranges: Optional[Dict] = None) -> List[str]:
-    """Download one grid from its first source that can supply it, clean it and build its products.
-
-    Returns what was not done; empty when the grid is complete.
-    """
+    """Download one grid from its first source that has it, clean it and build its products; returns what
+    was not done."""
     print("\n" + "=" * 64)
     print(f"{''.join(f'[{s}]' for s in sources)} {name}")
     print("=" * 64)
@@ -502,12 +481,7 @@ def run_mesa_prepare_flow(
     model: Optional[str] = None,
     output: Optional[str] = None,
 ) -> None:
-    """
-    Export a single extra-axis sub-variant of a spectral grid as a clean MESA-ready folder.
-
-    Delegates to mesa_prepare.run_interactive(), which handles spectral grid selection,
-    variant display, and output directory creation.
-    """
+    """Export one extra-axis variant of a spectral grid as a MESA-ready folder, asking for what is not given."""
     from ..cube.mesa_export import run_interactive
     run_interactive(base_dir=base_dir, model=model, output=output)
 
@@ -519,11 +493,7 @@ def run_combine_flow(
     *,
     models: Optional[List[str]] = None,
 ) -> None:
-    """
-    Combine multiple stellar spectral grids into unified omni grid.
-
-    This creates a single flux cube spanning the parameter space of all
-    selected spectral grids.
+    """Combine stellar spectral grids into one omni grid, with one flux cube spanning all their parameters.
 
     Args:
         base_dir: Base directory containing stellar_models/ subdirectories
@@ -614,13 +584,8 @@ def run_ml_completer_flow(
     base_dir: str = str(STELLAR_DIR_DEFAULT),
     models_dir: str = "models"
 ) -> Optional[int]:
-    """
-    Launch the interactive ML SED Completer workflow.
-    
-    This is a thin wrapper that delegates to ml_sed_completer.run_interactive_workflow().
-    All training and inference logic lives in the ml_sed_completer module.
-    Returns 1, saying what to install, when the chosen action's packages are missing.
-    """
+    """Run the ML SED Completer interactive workflow; 1, saying what to install, when the chosen action's
+    packages are missing."""
     from ..ml.completer import run_interactive_workflow
     return run_interactive_workflow(base_dir, models_dir)
 
