@@ -48,10 +48,7 @@ def plot_curves(
     plotted range, on the same axis.  ``log_wavelength`` defaults to a log axis
     when the curves span more than a factor of ten in wavelength.
     """
-    try:
-        import matplotlib.pyplot as plt
-    except ImportError as exc:  # pragma: no cover - matplotlib is a dependency
-        raise ImportError("Filter plots need matplotlib: pip install matplotlib") from exc
+    import matplotlib.pyplot as plt
 
     if not curves:
         raise ValueError("no curves to plot")

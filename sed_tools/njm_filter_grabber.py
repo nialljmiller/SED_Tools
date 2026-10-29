@@ -786,8 +786,6 @@ class NJMFilterGrabber:
             if _status(exc) == 404:
                 return None
             raise
-        if response.status_code != 200:
-            return None
         try:
             manifest = response.json()
             parsed = InstrumentManifest.from_dict(manifest)

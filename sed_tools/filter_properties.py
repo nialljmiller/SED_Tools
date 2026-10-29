@@ -61,7 +61,7 @@ from typing import Dict, Optional, Tuple, Union
 
 import numpy as np
 
-from .filter_metadata import normalize_detector_type, read_filter_header
+from .filter_metadata import read_filter_header
 from .flux_cube_tool import (
     SPEED_OF_LIGHT_ANG_PER_S,
     filter_weight,
@@ -211,10 +211,8 @@ def filter_properties(
         raise ValueError("a filter curve needs at least two finite, positive wavelengths")
     if t.max() <= 0:
         raise ValueError("the filter curve has no positive transmission")
-    if normalize_detector_type(detector_type) is None:
-        raise ValueError(f"Unknown detector type: {detector_type!r}")
 
-    w = filter_weight(lam, t, detector_type)
+    w = filter_weight(lam, t, detector_type)  # ValueError for an unknown detector type
     area_t, area_w = np.trapezoid(t, lam), np.trapezoid(w, lam)
     pivot = math.sqrt(area_w / np.trapezoid(w / lam**2, lam))
     significant = np.flatnonzero(t >= 0.01 * t.max())
