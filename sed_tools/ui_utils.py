@@ -38,9 +38,7 @@ def parse_multi_selection(spec: str, total: int) -> list[int]:
             bounds = [part.strip() for part in chunk.split("-", 1)]
             if not all(part.isdigit() for part in bounds):
                 raise ValueError(f"Invalid range: {chunk}")
-            start, end = map(int, bounds)
-            if start > end:
-                start, end = end, start
+            start, end = sorted(map(int, bounds))
             if start < 1 or end > total:
                 raise ValueError(f"Range out of bounds: {chunk}")
             chosen.update(range(start - 1, end))

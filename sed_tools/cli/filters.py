@@ -155,9 +155,8 @@ def print_catalogue_entry(target: str, entry: dict) -> None:
         checked = origin.get("checked")
         when = time.strftime(", checked %Y-%m-%d %H:%M UTC", time.gmtime(checked)) if checked else ""
         _print_field("Catalogue", f"from the cached copy{when}; NJM could not be asked")
-    licence = info.get("licence") or {}
-    if licence:
-        _print_field("Licence", _licence_summary(licence))
+    if info.get("licence"):
+        _print_field("Licence", _licence_summary(info["licence"]))
     if info.get("references"):
         _print_field("Cite", _cite_hint(target, info["references"]))
     bands = sorted(set(props) | set(info.get("bands", {})),

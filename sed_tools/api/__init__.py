@@ -764,8 +764,7 @@ class SED:
         copied or moved; so does a flux_unit that is not a known name.
         """
         files, src_dir = _import_sources(Path(src).expanduser())
-        if name is None:
-            name = src_dir.name
+        name = src_dir.name if name is None else name
         base = Path(model_root) if model_root else cls._model_root
         dest = Path(base) / name
 
