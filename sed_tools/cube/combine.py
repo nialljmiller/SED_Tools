@@ -606,9 +606,8 @@ def visualize_parameter_space(teff_grid, logg_grid, meta_grid, source_map,
 
     ax4 = fig.add_subplot(2, 2, 4)
     density = np.zeros((len(teff_grid), len(logg_grid)))
-    for i in range(len(teff_grid)):
-        for j in range(len(logg_grid)):
-            density[i, j] = len(np.unique(source_map[i, j, :][source_map[i, j, :] >= 0]))
+    for i, j in np.ndindex(density.shape):
+        density[i, j] = len(np.unique(source_map[i, j, :][source_map[i, j, :] >= 0]))
 
     im = ax4.imshow(density.T, origin="lower", aspect="auto",
                     extent=[teff_grid.min(), teff_grid.max(),

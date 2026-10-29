@@ -178,9 +178,7 @@ def plot_sed(
         if clip in ("auto", "flux") and flux.size:
             mask = np.isfinite(flux) & (flux > rel_cutoff * peak)
             if np.any(mask):
-                wl_lo = np.nanmin(wavelength[mask])
-                wl_hi = np.nanmax(wavelength[mask])
-                candidates.append((wl_lo, wl_hi))
+                candidates.append((np.nanmin(wavelength[mask]), np.nanmax(wavelength[mask])))
 
         if clip in ("auto", "filters") and filters:
             f_los = [np.min(fc.wavelength) for fc in filters.values() if fc.wavelength.size]
@@ -192,9 +190,7 @@ def plot_sed(
             lo = min(c[0] for c in candidates)
             hi = max(c[1] for c in candidates)
             span = hi - lo if hi > lo else 1.0
-            lo -= span * margin_frac
-            hi += span * margin_frac
-            plt.xlim(lo, hi)
+            plt.xlim(lo - span * margin_frac, hi + span * margin_frac)
 
     if xlim is not None:
         plt.xlim(*xlim)
