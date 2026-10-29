@@ -13,7 +13,8 @@ from ..cube.model import FILTER_DIR_DEFAULT
 from ..filters.compose import ATMOSPHERE, INSTRUMENT, ComponentError, archived_bands, index_listing, parse_components
 from ..filters.njm_catalogue import CatalogueError
 from ..terminal_plots import terminal_width
-from ..ui_utils import NO_DEFAULT as _NO_DEFAULT, ask_number as _ask_number, ask_option, ask_yes, cut, prompt_choice, wrap
+from ..ui_utils import (NO_DEFAULT as _NO_DEFAULT, ask_number as _ask_number, ask_option, ask_yes, cut,
+                        prompt_choice, wrap)
 
 
 def _print_field(name: str, text) -> None:

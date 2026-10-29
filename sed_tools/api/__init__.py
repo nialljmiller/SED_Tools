@@ -432,26 +432,14 @@ class SED:
     def _query_local(cls) -> List[SpectralGridInfo]:
         """Installed grids with a flux_cube.bin, with their ranges from its header."""
         catalogs = []
-        
         if not cls._model_root.exists():
             return catalogs
-        
         for entry in sorted(cls._model_root.iterdir()):
-            if not entry.is_dir():
-                continue
-            
             cube = entry / "flux_cube.bin"
             lookup = entry / "lookup_table.csv"
-            
-            if not cube.is_file():
+            if not entry.is_dir() or not cube.is_file():
                 continue
-            
-            info = SpectralGridInfo(
-                name=entry.name,
-                source='local',
-                is_local=True,
-            )
-
+            info = SpectralGridInfo(name=entry.name, source='local', is_local=True)
             try:
                 meta = _read_flux_cube_header(cube)
                 info.teff_range = (float(meta['teff'][0]), float(meta['teff'][-1]))
@@ -469,7 +457,6 @@ class SED:
                     raise ValueError(f"Cannot read {lookup} of local grid '{entry.name}': {exc}") from exc
 
             catalogs.append(info)
-        
         return catalogs
     
     @classmethod
