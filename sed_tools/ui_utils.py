@@ -1,4 +1,4 @@
-"""UI utility functions for interactive prompts."""
+"""Prompts, pickers and input parsers shared by the menus (cli, ml, cube, filters.svo)."""
 
 from typing import Sequence, Optional, List, Union, Tuple
 import importlib.util
@@ -6,10 +6,91 @@ import math
 import re
 import shutil
 import sys
-
-from .parsing import parse_multi_selection
+import textwrap
 
 from .terminal_plots import terminal_color_enabled, terminal_width
+
+
+def parse_numeric_range(raw: str) -> Optional[Tuple[float, float]]:
+    """Parse two numbers separated by comma, whitespace, colon, ``..`` or dash."""
+    text = raw.strip()
+    if not text:
+        return None
+    match = re.fullmatch(
+        r"\s*([-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?)"
+        r"\s*(?:,|:|\.\.|\s+|-)\s*"
+        r"([-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?)\s*",
+        text,
+    )
+    if match is None:
+        return None
+    low, high = (float(value) for value in match.groups())
+    return (low, high) if low <= high else (high, low)
+
+
+def parse_multi_selection(spec: str, total: int) -> list[int]:
+    """Parse 1-based IDs such as ``1,3-5`` into unique 0-based indexes."""
+    chosen: set[int] = set()
+    for chunk in (part.strip() for part in spec.split(",")):
+        if not chunk:
+            continue
+        if "-" in chunk:
+            bounds = [part.strip() for part in chunk.split("-", 1)]
+            if not all(part.isdigit() for part in bounds):
+                raise ValueError(f"Invalid range: {chunk}")
+            start, end = map(int, bounds)
+            if start > end:
+                start, end = end, start
+            if start < 1 or end > total:
+                raise ValueError(f"Range out of bounds: {chunk}")
+            chosen.update(range(start - 1, end))
+        else:
+            if not chunk.isdigit():
+                raise ValueError(f"Invalid item: {chunk}")
+            value = int(chunk)
+            if value < 1 or value > total:
+                raise ValueError(f"Selection out of bounds: {value}")
+            chosen.add(value - 1)
+    return sorted(chosen)
+
+
+def ask_option(prompt: str, options: Sequence[str], default: Optional[str] = None) -> str:
+    """Ask until the answer is one of ``options`` (any case); a blank answer gives ``default`` if there is one."""
+    lowered = {o.lower(): o for o in options}
+    while True:
+        raw = input(prompt).strip()
+        if not raw and default is not None:
+            return default
+        if raw.lower() in lowered:
+            return lowered[raw.lower()]
+        print(f"  Please enter one of: {', '.join(options)}.")
+
+
+def ask_yes(prompt: str) -> bool:
+    """A [y/N] question: only an answer starting with 'y' is yes."""
+    return input(prompt).strip().lower().startswith("y")
+
+
+def ask_range(prompt: str) -> Optional[Tuple[float, float]]:
+    """Ask for a range like '3500,8000' until one parses; None for a blank answer (no cut)."""
+    while True:
+        raw = input(prompt).strip()
+        parsed = parse_numeric_range(raw)
+        if parsed is not None or not raw:
+            return parsed
+        print(f"  Could not parse range from '{raw}' — need two values (e.g. '3500,8000')")
+
+
+def wrap(text: str, width: Optional[int] = None, indent: str = "", hanging: str = "") -> str:
+    """``text`` filled to the terminal width; URLs and hyphenated words are never split."""
+    return textwrap.fill(" ".join(str(text).split()), width or terminal_width(),
+                         initial_indent=indent, subsequent_indent=hanging,
+                         break_on_hyphens=False, break_long_words=False)
+
+
+def cut(text: str, width: int) -> str:
+    """``text`` cut to ``width`` characters, ending in '…' when anything was removed."""
+    return text if len(text) <= width else text[:max(width - 1, 0)] + "…"
 
 
 def banner(title: str) -> None:
@@ -56,6 +137,12 @@ def missing_packages(modules: Sequence[str]) -> Optional[str]:
         return None
     extras = ",".join(sorted({OPTIONAL_EXTRAS[m] for m in missing}))
     return f"Error: missing {', '.join(_PIP_NAMES.get(m, m) for m in missing)}: pip install \"sed-tools[{extras}]\""
+
+
+def missing_package_error(exc: ImportError) -> Optional[str]:
+    """The missing_packages line for an optional package that failed to import, else None (a bug)."""
+    root = (exc.name or "").split(".")[0]
+    return missing_packages([root]) if root in OPTIONAL_EXTRAS else None
 
 
 def refused_without(*modules: str) -> bool:

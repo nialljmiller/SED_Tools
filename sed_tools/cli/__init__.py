@@ -23,7 +23,6 @@ import os
 import re
 import shlex
 import sys
-import textwrap
 import time
 import traceback
 from pathlib import Path
@@ -44,9 +43,8 @@ from ..grids.clean import FLUX_GUESS_WHY, FLUX_UNITS, clean_model_dir, undeclare
 from ..grids.lookup import regenerate_lookup_table
 from ..grids.svo import SVOSpectraGrabber
 from ..ui_utils import NO_DEFAULT as _NO_DEFAULT, OPTIONAL_EXTRAS, ask_number as _ask_number, missing_packages
-from ..ui_utils import refused_without
-from ..ui_utils import prompt_choice
-from ..parsing import parse_multi_selection, parse_numeric_range
+from ..ui_utils import (ask_option, ask_range, ask_yes, cut, missing_package_error, parse_multi_selection,
+                        parse_numeric_range, prompt_choice, refused_without, wrap)
 from ..grids.spectrum_io import build_h5_bundle, read_text_spectrum
 from ..terminal_plots import terminal_color_enabled, terminal_width
 
@@ -63,36 +61,6 @@ def ensure_dir(path: str) -> None:
     os.makedirs(path, exist_ok=True)
 
 
-def _missing_package_error(exc: ImportError) -> Optional[str]:
-    """The missing_packages line for an optional package that failed to import, else None (a bug)."""
-    root = (exc.name or "").split(".")[0]
-    return missing_packages([root]) if root in OPTIONAL_EXTRAS else None
-
-
-def _ask_option(prompt: str, options: Sequence[str], default: Optional[str] = None) -> str:
-    """Ask until the answer is one of ``options`` (any case); a blank answer gives ``default`` if there is one."""
-    lowered = {o.lower(): o for o in options}
-    while True:
-        raw = input(prompt).strip()
-        if not raw and default is not None:
-            return default
-        if raw.lower() in lowered:
-            return lowered[raw.lower()]
-        print(f"  Please enter one of: {', '.join(options)}.")
-
-
-def _yes(prompt: str) -> bool:
-    """A [y/N] question: only an answer starting with 'y' is yes."""
-    return input(prompt).strip().lower().startswith("y")
-
-
-def _wrap(text: str, width: Optional[int] = None, indent: str = "", hanging: str = "") -> str:
-    """``text`` filled to the terminal width; URLs and hyphenated words are never split."""
-    return textwrap.fill(" ".join(str(text).split()), width or terminal_width(),
-                         initial_indent=indent, subsequent_indent=hanging,
-                         break_on_hyphens=False, break_long_words=False)
-
-
 def load_txt_spectrum(txt_path: str) -> Tuple[np.ndarray, np.ndarray]:
     return read_text_spectrum(txt_path)
 
@@ -105,19 +73,6 @@ def build_h5_bundle_from_txt(model_dir: str, out_h5: str) -> None:
         print(f"[H5 bundle] No .txt spectra found in {model_dir}; skipping.")
         return
     print(f"[H5 bundle] Wrote {out_h5}")
-
-
-def _ask_range(prompt: str) -> Optional[Tuple[float, float]]:
-    """Ask for a range like '3500,8000', '3500 8000' or '3500-8000' until one parses.
-
-    Returns (min, max), or None for a blank answer (no cut).
-    """
-    while True:
-        raw = input(prompt).strip()
-        parsed = parse_numeric_range(raw)
-        if parsed is not None or not raw:
-            return parsed
-        print(f"  Could not parse range from '{raw}' — need two values (e.g. '3500,8000')")
 
 
 def prompt_njm_axis_cuts(
@@ -150,10 +105,10 @@ def prompt_njm_axis_cuts(
             print(f"    [M/H]: {info['meta_min']:+.2f} – {info['meta_max']:+.2f}    ({info['meta_unique']} values)")
         print()
 
-    cuts['teff_range'] = _ask_range("  Teff range (e.g. '3500,8000') or blank for all: ")
-    cuts['logg_range'] = _ask_range("  logg range (e.g. '3.5,5.0') or blank for all: ")
-    cuts['meta_range'] = _ask_range("  [M/H] range (e.g. '-1.0,0.5') or blank for all: ")
-    cuts['wl_range']   = _ask_range("  Wavelength range in Å (e.g. '3000,10000') or blank for all: ")
+    cuts['teff_range'] = ask_range("  Teff range (e.g. '3500,8000') or blank for all: ")
+    cuts['logg_range'] = ask_range("  logg range (e.g. '3.5,5.0') or blank for all: ")
+    cuts['meta_range'] = ask_range("  [M/H] range (e.g. '-1.0,0.5') or blank for all: ")
+    cuts['wl_range']   = ask_range("  Wavelength range in Å (e.g. '3000,10000') or blank for all: ")
 
     # The grabber prints the cuts as it applies them.
     if all(v is None for v in cuts.values()):
@@ -260,7 +215,7 @@ def _ask_flux_unit(grid: str, txt_files: List[str], flux_unit: Optional[str] = N
     print(f"\nFlux unit of {grid} is not declared. Accepted flux units:")
     for name, (_, _, description) in FLUX_UNITS.items():
         print(f"  {name:11s} {description}")
-    print(_wrap(f"Best guess: {guess}, {FLUX_UNITS[guess][2]}; {FLUX_GUESS_WHY}.", indent="  ", hanging="    "))
+    print(wrap(f"Best guess: {guess}, {FLUX_UNITS[guess][2]}; {FLUX_GUESS_WHY}.", indent="  ", hanging="    "))
     question = f"Flux unit of {grid} (type its name, e.g. {guess}), or n to leave it uncleaned: "
     while True:
         answer = input(question).strip()
@@ -414,7 +369,7 @@ def _build_data_products(
         stale = _bundle_shortfall(Path(out_h5), Path(model_dir))
     if force_bundle_h5 or not os.path.exists(out_h5) or stale:
         if stale:
-            print(_wrap(f"{os.path.basename(out_h5)} {stale}; rebuilding it",
+            print(wrap(f"{os.path.basename(out_h5)} {stale}; rebuilding it",
                         indent="HDF5 bundle   : ", hanging=" " * 16))
         build_h5_bundle_from_txt(model_dir, out_h5)
         print(f"HDF5 bundle   : {os.path.basename(out_h5)}")
@@ -672,7 +627,7 @@ def _download_and_build_grid(name: str, sources: List[str], grabs: Dict, base_di
 
 def _print_field(name: str, text) -> None:
     """``  name : text``, wrapped to the terminal width under the text column."""
-    print(_wrap(text, indent=f"  {name:<25}: ", hanging=" " * 29))
+    print(wrap(text, indent=f"  {name:<25}: ", hanging=" " * 29))
 
 
 def print_filter_availability(info: dict) -> None:
@@ -827,7 +782,7 @@ def print_catalogue_entry(target: str, entry: dict) -> None:
     for error in entry["errors"]:
         print(f"  {'NJM catalogue':<25}: {error}")
     if entry["errors"] and not info and not props:
-        print(_wrap("so no description, licence or band properties are shown; "
+        print(wrap("so no description, licence or band properties are shown; "
                     "the availability above does not depend on them", indent=" " * 29, hanging=" " * 29))
 
 
@@ -873,7 +828,7 @@ def _print_band_table(bands: List[str], props: dict, band_info: dict) -> None:
         else:
             print(row.rstrip())
             if description:
-                print(_wrap(description, indent=" " * 6, hanging=" " * 6))
+                print(wrap(description, indent=" " * 6, hanging=" " * 6))
 
 
 _UNSTATED = "unstated"
@@ -917,7 +872,7 @@ def _offer_composition(instrument_dir: Path) -> None:
         return
     question = ("Build a composed version (e.g. filter only"
                 + (", or with atmosphere" if _atmosphere_sites(info) else "") + ")? [y/N] ")
-    if _yes(question):
+    if ask_yes(question):
         _compose_interactively(instrument_dir, info)
 
 
@@ -947,7 +902,7 @@ def _compose_interactively(instrument_dir: Path, info: dict) -> None:
         "components": roles,
         "detector_type": _ask_detector_type(),
         "allow_heavy": bool(review.get("large_download")
-                            and _yes("Allow a large original-source download if needed? [y/N] ")),
+                            and ask_yes("Allow a large original-source download if needed? [y/N] ")),
         "atmosphere": _ask_atmosphere(info, filter_root),
     }
     try:
@@ -983,7 +938,7 @@ def _ask_recipe(info: dict) -> List[str]:
 
 
 def _ask_detector_type() -> Optional[str]:
-    pick = _ask_option("Detector convention [inherit], energy or photon: ",
+    pick = ask_option("Detector convention [inherit], energy or photon: ",
                        ["inherit", "energy", "photon"], default="inherit")
     return None if pick == "inherit" else pick
 
@@ -1002,7 +957,7 @@ def _ask_atmosphere(info: dict, filter_root: Path) -> Optional[Dict]:
     sites.sort(key=lambda site: (grids.get(site) or {}).get("kind") == "derived")  # stable: default first
     _print_site_choices(sites, _default_site(info, sites), grids)
     numbers = [str(n) for n in range(len(sites) + 1)]
-    pick = _ask_option("Atmosphere [0, none]: ", numbers + sites, default="0")
+    pick = ask_option("Atmosphere [0, none]: ", numbers + sites, default="0")
     if pick == "0":
         return None
     site = sites[int(pick) - 1] if pick in numbers else pick
@@ -1034,13 +989,13 @@ def _print_site_choices(sites: List[str], default: Optional[str], grids: Dict[st
     print(f"  0. {'none':<{width}}  the curve without atmosphere")
     for number, (site, label) in enumerate(zip(sites, names), 1):
         source = (grids.get(site) or {}).get("source") or "not downloaded yet"
-        print(_cut(f"  {number}. {label:<{width}}  {' '.join(source.split())}", terminal_width()))
+        print(cut(f"  {number}. {label:<{width}}  {' '.join(source.split())}", terminal_width()))
 
 
 def _ask_conditions(site: str, grid: Optional[dict]) -> Tuple[Optional[float], Optional[float]]:
     """Airmass (None for 'unstated') and PWV, defaulting to the first conditions the site's grid has."""
     if grid:
-        print(_wrap(_conditions_text(grid), indent=f"  {site}: ", hanging=" " * (len(site) + 4)))
+        print(wrap(_conditions_text(grid), indent=f"  {site}: ", hanging=" " * (len(site) + 4)))
     else:
         print(f"  {site}: no grid listed yet; the conditions you give are generated if the site allows it")
     if grid and grid["airmass"]:
@@ -1081,8 +1036,8 @@ def _compose_the_bands_that_work(instrument_dir: Path, request: Dict, error: Com
         raise error
     print(f"Not every band can be composed as asked ({len(failed)} of {len(working) + len(failed)}):")
     for band, why in failed.items():
-        print(_wrap(why, indent=f"  {band}: ", hanging="    "))
-    if not _yes(f"Build only {', '.join(working)}? [y/N] "):
+        print(wrap(why, indent=f"  {band}: ", hanging="    "))
+    if not ask_yes(f"Build only {', '.join(working)}? [y/N] "):
         raise error
     Filters.compose(instrument_dir, filter_root=instrument_dir.parent.parent, bands=working, **request)
 
@@ -1135,7 +1090,7 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> int:
         return 0
     print(f"\n[filters] Failed ({len(failures)}):")
     for failure in failures:
-        print(_wrap(failure, indent="  - ", hanging="    "))
+        print(wrap(failure, indent="  - ", hanging="    "))
     return 1
 
 
@@ -1229,11 +1184,6 @@ def _source_rank(source: str) -> int:
     return _SOURCE_ORDER.index(source) if source in _SOURCE_ORDER else len(_SOURCE_ORDER)
 
 
-def _cut(text: str, width: int) -> str:
-    """``text`` cut to ``width`` characters, ending in '…' when anything was removed."""
-    return text if len(text) <= width else text[:max(width - 1, 0)] + "…"
-
-
 def _print_listing_errors(errors: List[str], shown: set) -> None:
     """Print each listing failure once per browsing session."""
     for error in _listing_failures(errors):
@@ -1257,7 +1207,7 @@ def _download_every_instrument(library, facilities: List[dict], failures: List[s
     count = sum(len(entries) for _, entries in listings)
     print(f"\n{count} instrument{'s' * (count != 1)} in {len(facilities)} facilities: "
           + ", ".join(f"{f['label']} ({len(entries)})" for f, entries in listings))
-    if not _yes(f"Download all {count}? [y/N] "):
+    if not ask_yes(f"Download all {count}? [y/N] "):
         print("Nothing downloaded.")
         return
     for facility, entries in listings:
@@ -1294,7 +1244,7 @@ def _print_instrument_descriptions(facility: str, instruments: List[dict]) -> No
     for label, entry in zip(labels, instruments):
         description = " ".join(str(entry.get("description") or "").split()) or "no description"
         room = width - name_width - 4
-        print(f"  {label:<{name_width}}  {_cut(description, room)}" if room > 1 else f"  {label}")
+        print(f"  {label:<{name_width}}  {cut(description, room)}" if room > 1 else f"  {label}")
 
 
 def _offer_download(library, facility_entry: dict, instrument_entry: dict, failures: List[str]) -> bool:
@@ -1308,7 +1258,7 @@ def _offer_download(library, facility_entry: dict, instrument_entry: dict, failu
     if installed is None and input(f"Download {facility}/{instrument}? [Y/n] ").strip().lower().startswith("n"):
         return True
     _fetch_instrument(library, facility, instrument, failures, offer=True)
-    return _yes("Choose another instrument? [y/N] ")
+    return ask_yes("Choose another instrument? [y/N] ")
 
 
 def _show_filter_set(library, facility_entry: dict, instrument_entry: dict, incomplete: List[str]) -> bool:
@@ -1318,7 +1268,7 @@ def _show_filter_set(library, facility_entry: dict, instrument_entry: dict, inco
     _print_filter_set(f"{facility}/{instrument}", info,
                       _catalogue_entry(facility, instrument, str(library.root), offline=False))
     incomplete.extend(_availability_errors(info))
-    return _yes("Choose another instrument? [y/N] ")
+    return ask_yes("Choose another instrument? [y/N] ")
 
 
 def _picked_names(library, facility_entry: dict, instrument_entry: dict) -> Tuple[str, str, Optional[Path]]:
@@ -1373,13 +1323,13 @@ def _pick_summary(target: str, entry: dict, info: dict, catalogue: dict, origin:
     """
     width = terminal_width()
     label = lambda name: f"  {name:<{_FIELD_WIDTH - 4}}: "
-    field = lambda name, text: _cut(label(name) + " ".join(str(text).split()), width)
+    field = lambda name, text: cut(label(name) + " ".join(str(text).split()), width)
     njm = catalogue["info"] or {}
     description = entry.get("description") or _first_sentence(njm.get("description") or "")
     count = len(info["bands"])
     lines = ["", target + (f"  ({count} band{'s' * (count != 1)})" if count else "")]
     if description:
-        lines.append(_cut("  " + " ".join(description.split()), width))
+        lines.append(cut("  " + " ".join(description.split()), width))
     lines.append(field("From", origin))
     if _missing_bands(info):
         lines.append(field("Incomplete", _incomplete_summary(info, width - _FIELD_WIDTH)))
@@ -2492,7 +2442,7 @@ def _run_menu_flow(flow) -> bool:
         _print_error(exc)
         return False
     except ImportError as exc:  # an optional package a step needs (scipy, torch, ...): say what to install
-        missing = _missing_package_error(exc)
+        missing = missing_package_error(exc)
         if missing is None:
             raise
         print(missing, file=sys.stderr)
@@ -2533,7 +2483,7 @@ def main():
         _print_error(exc)
         return 1
     except ImportError as exc:  # an optional package a step needs (scipy, torch, ...): say what to install
-        missing = _missing_package_error(exc)
+        missing = missing_package_error(exc)
         if missing is None:
             raise
         print(missing, file=sys.stderr)
