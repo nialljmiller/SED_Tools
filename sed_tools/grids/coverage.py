@@ -18,6 +18,7 @@ from .header_parser import parse_header
 from .spectrum_io import read_text_spectrum
 
 _AXES = ("teff", "logg", "metallicity")
+_LABELS = {"teff": "Teff [K]", "logg": "log g", "metallicity": "[M/H]"}
 _ANSI_ESCAPE = re.compile(r"\x1b\[[0-9;]*m")
 _PATH_COLUMNS = (
     "filename", "file_name", "file", "path", "spectrum", "spectrum_file",
@@ -114,26 +115,16 @@ def _anderson_darling(x: np.ndarray) -> Optional[Dict[str, float]]:
         sl = [float(s) for s in res.significance_level]
         i5 = sl.index(5.0) if 5.0 in sl else len(sl) // 2
         crit5 = float(res.critical_values[i5])
-        return {
-            "statistic": stat,
-            "crit_5pct": crit5,
-            "normal_at_5pct": bool(stat < crit5),
-        }
+        return {"statistic": stat, "crit_5pct": crit5, "normal_at_5pct": bool(stat < crit5)}
     # Newer scipy: only a p-value is provided.
     p = float(getattr(res, "pvalue", float("nan")))
-    return {
-        "statistic": stat,
-        "pvalue": p,
-        "normal_at_5pct": (bool(p > 0.05) if p == p else None),
-    }
+    return {"statistic": stat, "pvalue": p, "normal_at_5pct": (bool(p > 0.05) if p == p else None)}
 
 
 def coverage_summary(model_dir: Union[str, Path]) -> Dict:
     """Compute a coverage summary dict for one grid."""
     model_dir = Path(model_dir)
     df = read_grid_nodes(model_dir)
-    n_rows = len(df)
-
     axes: Dict[str, Dict] = {}
     product = 1
     for ax in _AXES:
@@ -154,17 +145,14 @@ def coverage_summary(model_dir: Union[str, Path]) -> Dict:
             "anderson_darling": _anderson_darling(finite),
         }
 
-    complete = df.dropna(subset=list(_AXES))
-    n_distinct_nodes = int(complete.drop_duplicates(subset=list(_AXES)).shape[0])
-    fill = n_distinct_nodes / product
-
+    n_distinct_nodes = int(df.dropna(subset=list(_AXES)).drop_duplicates(subset=list(_AXES)).shape[0])
     return {
         "name": model_dir.name,
         "model_dir": str(model_dir),
-        "n_spectra": n_rows,
+        "n_spectra": len(df),
         "n_distinct_nodes": n_distinct_nodes,
         "full_product": int(product),
-        "fill_fraction": fill,
+        "fill_fraction": n_distinct_nodes / product,
         "axes": axes,
         "_df": df,
     }
@@ -187,43 +175,26 @@ def print_coverage(summary: Dict) -> None:
     print("=" * 64)
     print(f"  Spectra            : {summary['n_spectra']}")
     print(f"  Distinct (T,g,M) nodes : {summary['n_distinct_nodes']}")
-    print(
-        f"  Full grid product  : {summary['full_product']}  "
-        f"(fill {100.0 * summary['fill_fraction']:.1f}%)"
-    )
+    print(f"  Full grid product  : {summary['full_product']}  (fill {100.0 * summary['fill_fraction']:.1f}%)")
 
-    labels = {"teff": "Teff [K]", "logg": "log g", "metallicity": "[M/H]"}
     for ax in _AXES:
         a = summary["axes"][ax]
-        print(f"\n  {labels[ax]}")
+        print(f"\n  {_LABELS[ax]}")
         if a["n_unique"] == 0:
             print("    no finite values")
             continue
         print(f"    range   : {a['min']:g} -> {a['max']:g}")
         print(f"    values  : {a['n_unique']} unique  [{_fmt_unique(a['unique'])}]")
         if not math.isnan(a["spacing_median"]):
-            print(
-                f"    spacing : min {a['spacing_min']:g}  "
-                f"median {a['spacing_median']:g}  max {a['spacing_max']:g}"
-            )
+            print(f"    spacing : min {a['spacing_min']:g}  median {a['spacing_median']:g}  max {a['spacing_max']:g}")
         if a["n_missing"]:
             print(f"    missing : {a['n_missing']} spectra have no value on this axis")
         ad = a["anderson_darling"]
         if ad is not None:
-            if ad.get("normal_at_5pct") is None:
-                verdict = "indeterminate"
-            else:
-                verdict = "consistent with normal" if ad["normal_at_5pct"] else "non-normal"
-            if "crit_5pct" in ad:
-                print(
-                    f"    A-D     : {ad['statistic']:.3f} "
-                    f"(5% crit {ad['crit_5pct']:.3f}; {verdict})"
-                )
-            else:
-                print(
-                    f"    A-D     : {ad['statistic']:.3f} "
-                    f"(p={ad['pvalue']:.3f}; {verdict})"
-                )
+            verdict = {None: "indeterminate", True: "consistent with normal",
+                       False: "non-normal"}[ad.get("normal_at_5pct")]
+            test = f"5% crit {ad['crit_5pct']:.3f}" if "crit_5pct" in ad else f"p={ad['pvalue']:.3f}"
+            print(f"    A-D     : {ad['statistic']:.3f} ({test}; {verdict})")
         elif a["n_unique"] < 8:
             print(f"    A-D     : skipped (needs at least 8 distinct values; this axis has {a['n_unique']})")
         else:
@@ -287,10 +258,8 @@ def _representative_nodes(df: pd.DataFrame) -> List[Dict]:
         if identity in used:
             continue
         used.add(identity)
-        selected.append({
-            "letter": letter, "description": description,
-            "index": original_index, "row": usable.iloc[pos],
-        })
+        selected.append({"letter": letter, "description": description, "index": original_index,
+                         "row": usable.iloc[pos]})
     return selected
 
 
@@ -298,10 +267,9 @@ def _node_parameters(item: Dict) -> str:
     """Return a compact parameter label suitable for a half-width plot."""
     row = item["row"]
     parts = [f"T={row['teff']:g}"]
-    if np.isfinite(row["logg"]):
-        parts.append(f"g={row['logg']:g}")
-    if np.isfinite(row["metallicity"]):
-        parts.append(f"M/H={row['metallicity']:g}")
+    for key, label in (("logg", "g"), ("metallicity", "M/H")):
+        if np.isfinite(row[key]):
+            parts.append(f"{label}={row[key]:g}")
     return " ".join(parts)
 
 
@@ -310,19 +278,11 @@ def _plot_rows(plots: List[str], columns: int = 2, gap: int = 3) -> str:
     rendered_rows = []
     for start in range(0, len(plots), columns):
         blocks = [plot.splitlines() for plot in plots[start:start + columns]]
-        widths = [
-            max((_visible_width(line) for line in block), default=0)
-            for block in blocks
-        ]
-        row_height = max((len(block) for block in blocks), default=0)
+        widths = [max((_visible_width(line) for line in block), default=0) for block in blocks]
         lines = []
-        for line_number in range(row_height):
-            parts = [
-                _visible_ljust(
-                    block[line_number] if line_number < len(block) else "", width
-                )
-                for block, width in zip(blocks, widths)
-            ]
+        for line_number in range(max((len(block) for block in blocks), default=0)):
+            parts = [_visible_ljust(block[line_number] if line_number < len(block) else "", width)
+                     for block, width in zip(blocks, widths)]
             lines.append((" " * gap).join(parts).rstrip())
         rendered_rows.append("\n".join(lines))
     return "\n\n".join(rendered_rows)
@@ -363,25 +323,18 @@ def _parameter_plots(df: pd.DataFrame, selected: List[Dict], plot_width: int, co
     from ..terminal_plots import scatter2d
 
     labels = {df.index.get_loc(item["index"]): item["letter"] for item in selected}
-    colors = {
-        df.index.get_loc(item["index"]): _PALETTE[i % len(_PALETTE)]
-        for i, item in enumerate(selected)
-    }
-    projections = [
-        ("teff", "logg", "Teff [K]", "log g", True),
-        ("teff", "metallicity", "Teff [K]", "[M/H]", False),
-        ("logg", "metallicity", "log g", "[M/H]", False),
-    ]
-    parameter_plots = []
-    for xaxis, yaxis, xlabel, ylabel, invert in projections:
-        parameter_plots.append(scatter2d(
+    colors = {df.index.get_loc(item["index"]): _PALETTE[i % len(_PALETTE)] for i, item in enumerate(selected)}
+    projections = [("teff", "logg", True), ("teff", "metallicity", False), ("logg", "metallicity", False)]
+    return [
+        scatter2d(
             df[xaxis], df[yaxis],
-            title=f"{xlabel} vs {ylabel}",
-            xlabel=xlabel, ylabel=ylabel, invert_y=invert,
+            title=f"{_LABELS[xaxis]} vs {_LABELS[yaxis]}",
+            xlabel=_LABELS[xaxis], ylabel=_LABELS[yaxis], invert_y=invert,
             point_labels=labels, point_colors=colors, color=color,
             width=plot_width, height=9,
-        ))
-    return parameter_plots
+        )
+        for xaxis, yaxis, invert in projections
+    ]
 
 
 def _print_representative_seds(selected: List[Dict], plot_width: int, color: str) -> None:
@@ -435,42 +388,31 @@ def plot_coverage(
     from mpl_toolkits.mplot3d import Axes3D  # noqa: F401  (registers 3d projection)
 
     sub = df.dropna(subset=list(_AXES))
-    teff = sub["teff"].to_numpy()
-    logg = sub["logg"].to_numpy()
-    meta = sub["metallicity"].to_numpy()
+    values = {axis: sub[axis].to_numpy() for axis in _AXES}
 
     fig = plt.figure(figsize=(14, 10), constrained_layout=True)
     gs = fig.add_gridspec(2, 2)
 
-    # 1) Teff vs log g, coloured by [M/H]
-    ax1 = fig.add_subplot(gs[0, 0])
-    sc1 = ax1.scatter(teff, logg, c=meta, cmap="viridis", s=18, edgecolors="none")
-    ax1.set_xlabel("Teff [K]")
-    ax1.set_ylabel("log g")
-    ax1.set_title(f"{name}: Teff-log g")
-    if logg.size:
-        ax1.invert_yaxis()
-    fig.colorbar(sc1, ax=ax1, label="[M/H]")
+    # The three 2D pairings, each coloured by the third parameter (log g increases downwards)
+    panels = [
+        (gs[0, 0], "teff", "logg", "metallicity", f"{name}: Teff-log g"),
+        (gs[0, 1], "teff", "metallicity", "logg", "Teff-[M/H]"),
+        (gs[1, 0], "logg", "metallicity", "teff", "log g-[M/H]"),
+    ]
+    for cell, x, y, colour, title in panels:
+        ax = fig.add_subplot(cell)
+        points = ax.scatter(values[x], values[y], c=values[colour], cmap="viridis", s=18, edgecolors="none")
+        ax.set_xlabel(_LABELS[x])
+        ax.set_ylabel(_LABELS[y])
+        ax.set_title(title)
+        if y == "logg" and values["logg"].size:
+            ax.invert_yaxis()
+        fig.colorbar(points, ax=ax, label=_LABELS[colour])
 
-    # 2) Teff vs [M/H], coloured by log g
-    ax2 = fig.add_subplot(gs[0, 1])
-    sc2 = ax2.scatter(teff, meta, c=logg, cmap="viridis", s=18, edgecolors="none")
-    ax2.set_xlabel("Teff [K]")
-    ax2.set_ylabel("[M/H]")
-    ax2.set_title("Teff-[M/H]")
-    fig.colorbar(sc2, ax=ax2, label="log g")
-
-    # 3) log g vs [M/H], coloured by Teff
-    ax3 = fig.add_subplot(gs[1, 0])
-    sc3 = ax3.scatter(logg, meta, c=teff, cmap="viridis", s=18, edgecolors="none")
-    ax3.set_xlabel("log g")
-    ax3.set_ylabel("[M/H]")
-    ax3.set_title("log g-[M/H]")
-    fig.colorbar(sc3, ax=ax3, label="Teff [K]")
-
-    # 4) 3D coverage
+    # 3D coverage
     ax4 = fig.add_subplot(gs[1, 1], projection="3d")
-    ax4.scatter(teff, logg, meta, c=meta, cmap="viridis", s=12, edgecolors="none")
+    ax4.scatter(values["teff"], values["logg"], values["metallicity"], c=values["metallicity"],
+                cmap="viridis", s=12, edgecolors="none")
     ax4.set_xlabel("Teff [K]")
     ax4.set_ylabel("log g")
     ax4.set_zlabel("[M/H]")

@@ -75,21 +75,15 @@ class SVOSpectraGrabber:
                            self.model_index_url, discovery_failure(e))
             return []
         soup = BeautifulSoup(r.text, "html.parser")
-        models = set()
-        for a in soup.find_all("a", href=True):
-            href = a["href"]
-            if "models=" in href:
-                val = href.split("models=", 1)[1].split("&", 1)[0]
-                if val:
-                    models.add(val)
+        values = (a["href"].split("models=", 1)[1].split("&", 1)[0] for a in soup.find_all("a", href=True)
+                  if "models=" in a["href"])
+        models = {value for value in values if value}
         if not models:
-            for m in re.findall(r"models=([A-Za-z0-9._\-]+)", r.text):
-                models.add(m)
-        out = sorted(models)
-        if not out:
+            models.update(re.findall(r"models=([A-Za-z0-9._\-]+)", r.text))
+        if not models:
             logger.warning("SVO: no spectral grids found on the index page %s; SVO spectral grids are not offered",
                            self.model_index_url)
-        return out
+        return sorted(models)
 
     # -------------------- spectra discovery --------------------
 
@@ -162,32 +156,24 @@ class SVOSpectraGrabber:
         """
         params = {"model": model_name, "REQUEST": "queryData", "FORMAT": "votable"}
         try:
-            with self.session.get(
-                self.spectra_base_url, params=params,
-                timeout=self.ssap_timeout, stream=True
-            ) as r:
+            with self.session.get(self.spectra_base_url, params=params, timeout=self.ssap_timeout, stream=True) as r:
                 if r.status_code != 200:
                     return set(), f"HTTP {r.status_code}"
                 raw = self._read_capped(r, model_name)
         except requests.RequestException as e:
             return set(), str(e)
 
-        text = raw.decode("utf-8", "ignore")
-        fids = set(int(x) for x in re.findall(r"[?&]fid=(\d+)", text))
-        if not fids:
-            return fids, "the response lists none"
-        return fids, None
+        fids = set(int(x) for x in re.findall(r"[?&]fid=(\d+)", raw.decode("utf-8", "ignore")))
+        return fids, (None if fids else "the response lists none")
 
     def _read_capped(self, r, model_name):
         """The SSAP response body; RuntimeError if it reaches ssap_max_bytes (the FID list would be cut short)."""
         buf = io.BytesIO()
-        total = 0
         for chunk in r.iter_content(chunk_size=131072):
             if not chunk:
                 break
             buf.write(chunk)
-            total += len(chunk)
-            if total >= self.ssap_max_bytes:
+            if buf.tell() >= self.ssap_max_bytes:
                 raise RuntimeError(
                     f"SVO: the SSAP response for {model_name} reached the "
                     f"{self.ssap_max_bytes // 1_048_576} MB cap, so its spectrum list would be "
@@ -206,9 +192,7 @@ class SVOSpectraGrabber:
         if r.status_code != 200:
             return set(), f"HTTP {r.status_code}"
         fids = set(int(x) for x in re.findall(r"[?&]fid=(\d+)", r.text))
-        if not fids:
-            return fids, "the page links none"
-        return fids, None
+        return fids, (None if fids else "the page links none")
 
     # ---- C) Bounded sparse probe + expansion ----
 
@@ -223,15 +207,10 @@ class SVOSpectraGrabber:
         hits = []
         budget = min(self.bruteforce_budget, len(probes))
         with ThreadPoolExecutor(max_workers=min(self.max_workers, 16)) as ex:
-            futs = {
-                ex.submit(self._head_exists, model_name, fid): fid
-                for fid in probes[:budget]
-            }
+            futs = {ex.submit(self._head_exists, model_name, fid): fid for fid in probes[:budget]}
             for fut in as_completed(futs):
                 if fut.result():
                     hits.append(futs[fut])
-        if not hits:
-            return set()
         found = set(hits)
         for seed in sorted(hits):
             found |= self._expand_around(model_name, seed)
@@ -241,19 +220,14 @@ class SVOSpectraGrabber:
         """True if SVO serves a spectrum for this FID; RuntimeError if the request fails."""
         params = {"model": model_name, "fid": int(fid), "format": "ascii"}
         try:
-            r = self.session.head(
-                self.spectra_base_url, params=params,
-                timeout=self.head_timeout, allow_redirects=True
-            )
+            r = self.session.head(self.spectra_base_url, params=params, timeout=self.head_timeout, allow_redirects=True)
             if r.status_code != 200:
                 return False
             cl = r.headers.get("content-length")
             if cl is None or cl == "0":
                 # HEAD gave no content-length info — do a small GET to verify
-                with self.session.get(
-                    self.spectra_base_url, params=params,
-                    timeout=self.head_timeout, stream=True
-                ) as g:
+                with self.session.get(self.spectra_base_url, params=params, timeout=self.head_timeout,
+                                      stream=True) as g:
                     if g.status_code != 200:
                         return False
                     for chunk in g.iter_content(chunk_size=512):
@@ -380,10 +354,8 @@ class SVOSpectraGrabber:
 
     def _write_lookup(self, out_dir, rows):
         path = os.path.join(out_dir, "lookup_table.csv")
-        keys = set()
-        for r in rows:
-            keys.update(r.keys())
-        write_lookup_csv(rows, path, columns=["file_name"] + sorted(k for k in keys if k != "file_name"))
+        keys = sorted({key for row in rows for key in row} - {"file_name"})
+        write_lookup_csv(rows, path, columns=["file_name"] + keys)
         print(f"    Lookup table saved: {path}")
 
 

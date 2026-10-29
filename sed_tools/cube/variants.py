@@ -20,33 +20,21 @@ logger = logging.getLogger("sed_tools.precompute_flux_cube")
 
 # --- Variants and their names ---
 
-def _group_by_extra_axes(
-    lookup:     Dict[str, List],
-    extra_cols: List[str],
-    file_col:   str,
-    teff_vals:  np.ndarray,
-    logg_vals:  np.ndarray,
-    meta_vals:  np.ndarray,
-) -> Dict[Tuple, Dict]:
+def _group_by_extra_axes(lookup: Dict[str, List], extra_cols: List[str], file_col: str, teff_vals: np.ndarray,
+                         logg_vals: np.ndarray, meta_vals: np.ndarray) -> Dict[Tuple, Dict]:
     """The lookup rows grouped by their extra-axis values: {key: {"rows", "file_names", "teff", "logg", "meta",
     "extra_vals"}}, where key is the sorted (column, value) pairs and "rows" are row numbers in *lookup*."""
     groups: Dict[Tuple, Dict] = {}
 
     for i, fname in enumerate(lookup[file_col]):
-        extra_key = tuple(
-            sorted((col, lookup[col][i]) for col in extra_cols)
-        )
-        if extra_key not in groups:
-            groups[extra_key] = {
-                "rows": [], "file_names": [], "teff": [], "logg": [], "meta": [],
-                "extra_vals": dict(extra_key),
-            }
-        g = groups[extra_key]
+        extra_key = tuple(sorted((col, lookup[col][i]) for col in extra_cols))
+        g = groups.setdefault(extra_key, {
+            "rows": [], "file_names": [], "teff": [], "logg": [], "meta": [], "extra_vals": dict(extra_key),
+        })
         g["rows"].append(i)
         g["file_names"].append(fname)
-        g["teff"].append(float(teff_vals[i]))
-        g["logg"].append(float(logg_vals[i]))
-        g["meta"].append(float(meta_vals[i]))
+        for column, values in (("teff", teff_vals), ("logg", logg_vals), ("meta", meta_vals)):
+            g[column].append(float(values[i]))
 
     return groups
 
@@ -68,9 +56,7 @@ def _value_to_safe_str(val: str) -> str:
         f = float(val)
     except ValueError:
         return re.sub(r"[^a-zA-Z0-9]+", "_", val).strip("_")
-    prefix = "m" if f < 0 else ""
-    formatted = f"{abs(f):.2f}".replace(".", "p")
-    return prefix + formatted
+    return ("m" if f < 0 else "") + f"{abs(f):.2f}".replace(".", "p")
 
 
 def _subdir_name(model_name: str, extra_key: Tuple) -> str:
@@ -78,28 +64,18 @@ def _subdir_name(model_name: str, extra_key: Tuple) -> str:
     parts = []
     for col, val in extra_key:
         safe_col = re.sub(r"[^a-zA-Z0-9]+", "_", col.strip()).strip("_")
-        safe_val = _value_to_safe_str(val)
-        parts.append(f"{safe_col}_{safe_val}")
+        parts.append(f"{safe_col}_{_value_to_safe_str(val)}")
     return f"{model_name}_" + "_".join(parts) if parts else model_name
 
 
-def _filter_lookup_by_files(
-    lookup: Dict[str, List],
-    file_names: List[str],
-    file_col: str,
-) -> Dict[str, List]:
+def _filter_lookup_by_files(lookup: Dict[str, List], file_names: List[str], file_col: str) -> Dict[str, List]:
     """Return a copy of lookup restricted to rows whose file_name is in file_names."""
     file_set = set(file_names)
     indices = [i for i, f in enumerate(lookup[file_col]) if f in file_set]
     return {col: [lookup[col][i] for i in indices] for col in lookup}
 
 
-def _print_split_announcement(
-    groups: Dict,
-    extra_cols: List[str],
-    model_name: str,
-    threshold: int,
-) -> None:
+def _print_split_announcement(groups: Dict, extra_cols: List[str], model_name: str, threshold: int) -> None:
     """Print the 'Extra physical axis detected' message, naming only the axes that vary between the variants: a
     column with one value throughout (lh and vtur in Kurucz) is no variant axis, though subgrid names carry it."""
     n_combos = len(groups)
@@ -148,49 +124,6 @@ def _link_spectra(model_dir: str, subdir: str, file_names: List[str]) -> None:
         )
 
 
-def _build_split_subgrids(
-    model_dir: str,
-    model_name: str,
-    groups: Dict,
-    extra_cols: List[str],
-    lookup: Dict[str, List],
-    file_col: str,
-    wavelengths: np.ndarray,
-    usable_ram: int,
-) -> None:
-    """One MESA-ready subgrid folder per variant: its lookup_table.csv, links to the parent's spectra and its
-    flux_cube.bin; then variants_index.csv, and lookup_table_full.csv as the record of the full grid."""
-    index_entries: List[Dict[str, Any]] = []
-
-    for key, g in sorted(groups.items()):
-        name = _subdir_name(model_name, key)
-        subdir = os.path.join(model_dir, name)
-        os.makedirs(subdir, exist_ok=True)
-
-        print(f"\n  [{name}]  {len(g['file_names'])} spectra")
-
-        filtered = _filter_lookup_by_files(lookup, g["file_names"], file_col)
-        write_lookup_csv(filtered, os.path.join(subdir, "lookup_table.csv"))
-        _link_spectra(model_dir, subdir, g["file_names"])
-
-        cube_path = os.path.join(subdir, "flux_cube.bin")
-        build._warn_averaged_rows(lookup, g["rows"], zip(g["teff"], g["logg"], g["meta"]), cube_path)
-        _write_group_cube(model_dir, g, wavelengths, cube_path, usable_ram, label=name)
-        build._print_summary(cube_path, *_parameter_arrays(g))
-        index_entries.append({"variant_name": name, "n_spectra": len(g["file_names"]), "path": name,
-                              **g["extra_vals"]})
-
-    index_path = os.path.join(model_dir, "variants_index.csv")
-    write_lookup_csv(index_entries, index_path, columns=["variant_name"] + extra_cols + ["n_spectra", "path"])
-    print(f"Variants index: {index_path}")
-
-    src_lookup = os.path.join(model_dir, "lookup_table.csv")
-    full_lookup = os.path.join(model_dir, "lookup_table_full.csv")
-    if os.path.exists(src_lookup) and not os.path.exists(full_lookup):
-        shutil.copy2(src_lookup, full_lookup)
-        print("Full-grid lookup preserved: lookup_table_full.csv")
-
-
 def _parameter_arrays(group: Dict) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """The Teff, logg and [M/H] of a group's rows."""
     return np.array(group["teff"]), np.array(group["logg"]), np.array(group["meta"])
@@ -220,16 +153,11 @@ def _confirm_large_split(model_dir: str, n_groups: int) -> bool:
     return input("  Choice [s/a]: ").strip().lower() == "s"
 
 
-def _split_into_subgrids(
-    model_dir:   str,
-    groups:      Dict,
-    extra_cols:  List[str],
-    lookup:      Dict[str, List],
-    file_col:    str,
-    wavelengths: np.ndarray,
-    usable_ram:  int,
-) -> None:
-    """Strategy 'split': one MESA-ready subgrid per variant; the parent, which is not MESA-ready, gets no cube."""
+def _split_into_subgrids(model_dir: str, groups: Dict, extra_cols: List[str], lookup: Dict[str, List], file_col: str,
+                         wavelengths: np.ndarray, usable_ram: int) -> None:
+    """Strategy 'split': one MESA-ready subgrid folder per variant (its lookup_table.csv, links to the parent's
+    spectra, its flux_cube.bin), then variants_index.csv, and lookup_table_full.csv as the record of the full grid;
+    the parent, which is not MESA-ready, gets no cube."""
     model_name = os.path.basename(os.path.abspath(model_dir))
     _print_split_announcement(groups, extra_cols, model_name, build.SPLIT_THRESHOLD)
 
@@ -237,21 +165,40 @@ def _split_into_subgrids(
         print("Aborted. No flux cube built.")
         return
 
-    _build_split_subgrids(
-        model_dir, model_name, groups, extra_cols,
-        lookup, file_col, wavelengths, usable_ram,
-    )
+    index_entries: List[Dict[str, Any]] = []
+
+    for key, g in sorted(groups.items()):
+        name = _subdir_name(model_name, key)
+        subdir = os.path.join(model_dir, name)
+        os.makedirs(subdir, exist_ok=True)
+
+        print(f"\n  [{name}]  {len(g['file_names'])} spectra")
+
+        filtered = _filter_lookup_by_files(lookup, g["file_names"], file_col)
+        write_lookup_csv(filtered, os.path.join(subdir, "lookup_table.csv"))
+        _link_spectra(model_dir, subdir, g["file_names"])
+
+        cube_path = os.path.join(subdir, "flux_cube.bin")
+        build._warn_averaged_rows(lookup, g["rows"], zip(g["teff"], g["logg"], g["meta"]), cube_path)
+        _write_group_cube(model_dir, g, wavelengths, cube_path, usable_ram, label=name)
+        build._print_summary(cube_path, *_parameter_arrays(g))
+        index_entries.append({"variant_name": name, "n_spectra": len(g["file_names"]), "path": name,
+                              **g["extra_vals"]})
+
+    index_path = os.path.join(model_dir, "variants_index.csv")
+    write_lookup_csv(index_entries, index_path, columns=["variant_name"] + extra_cols + ["n_spectra", "path"])
+    print(f"Variants index: {index_path}")
+
+    src_lookup = os.path.join(model_dir, "lookup_table.csv")
+    full_lookup = os.path.join(model_dir, "lookup_table_full.csv")
+    if os.path.exists(src_lookup) and not os.path.exists(full_lookup):
+        shutil.copy2(src_lookup, full_lookup)
+        print("Full-grid lookup preserved: lookup_table_full.csv")
     print("\nDone. The parent directory is the source collection.")
     print("Point MESA Colors to one of the subgrid directories listed above.")
 
 
-def _build_mean_cube(
-    model_dir:   str,
-    groups:      Dict,
-    wavelengths: np.ndarray,
-    output_file: str,
-    usable_ram:  int,
-) -> None:
+def _build_mean_cube(model_dir: str, groups: Dict, wavelengths: np.ndarray, output_file: str, usable_ram: int) -> None:
     """Strategy 'mean': one cube averaging every variant at each node."""
     print(
         "\nWARNING: strategy='mean' collapses extra axes by averaging. "
@@ -267,23 +214,13 @@ def _build_mean_cube(
     _write_group_cube(model_dir, every_row, wavelengths, output_file, usable_ram, label="mean")
 
 
-def _build_filtered_cube(
-    cfg,
-    model_dir:   str,
-    groups:      Dict,
-    extra_cols:  List[str],
-    lookup:      Dict[str, List],
-    wavelengths: np.ndarray,
-    output_file: str,
-    usable_ram:  int,
-) -> None:
+def _build_filtered_cube(cfg, model_dir: str, groups: Dict, extra_cols: List[str], lookup: Dict[str, List],
+                         wavelengths: np.ndarray, output_file: str, usable_ram: int) -> None:
     """Strategy 'filter': one cube from the single variant the config selects."""
     extra_unique = {col: sorted(set(lookup[col])) for col in extra_cols}
     resolved, errors = cfg.resolve_filter_values(extra_unique)
     if errors:
-        raise ValueError(
-            "Filter config errors:\n" + "\n".join(f"  - {e}" for e in errors)
-        )
+        raise ValueError("Filter config errors:\n" + "\n".join(f"  - {e}" for e in errors))
 
     print(f"Filter: {resolved}")
 
@@ -295,13 +232,8 @@ def _build_filtered_cube(
     matched_group = next((g for key, g in groups.items() if selected(key)), None)
 
     if matched_group is None:
-        available_variants = "\n".join(
-            f"  {dict(k)}" for k in sorted(groups.keys())
-        )
-        raise ValueError(
-            f"No variant matches filter {resolved}.\n"
-            f"Available variants:\n{available_variants}"
-        )
+        available_variants = "\n".join(f"  {dict(k)}" for k in sorted(groups.keys()))
+        raise ValueError(f"No variant matches filter {resolved}.\nAvailable variants:\n{available_variants}")
 
     print(f"Matched variant: {matched_group['extra_vals']} "
           f"({len(matched_group['file_names'])} spectra)")

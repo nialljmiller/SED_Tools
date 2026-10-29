@@ -52,12 +52,9 @@ def find_stellar_models(base_dir=None):
 
 def _grids_with_lookup(base_dir):
     """``(name, path)`` of every grid in base_dir with a lookup table, combine outputs included."""
-    grids = []
-    for item in os.listdir(base_dir):
-        item_path = os.path.join(base_dir, item)
-        if os.path.isdir(item_path) and os.path.exists(os.path.join(item_path, "lookup_table.csv")):
-            grids.append((item, item_path))
-    return grids
+    paths = [(item, os.path.join(base_dir, item)) for item in os.listdir(base_dir)]
+    return [(item, path) for item, path in paths
+            if os.path.isdir(path) and os.path.exists(os.path.join(path, "lookup_table.csv"))]
 
 
 def _is_combined_output(name, lookup_file):
@@ -159,12 +156,8 @@ def prepare_sed(filepath, teff):
 
 def create_unified_grid(all_models_data):
     """Create unified parameter grids from all spectral grids."""
-    all_teff = np.concatenate([d["teff"] for d in all_models_data])
-    all_logg = np.concatenate([d["logg"] for d in all_models_data])
-    all_meta = np.concatenate([d["meta"] for d in all_models_data])
-
-    def clean_grid(values, tol):
-        grid = np.unique(np.sort(values))
+    def clean_grid(key, tol):
+        grid = np.unique(np.sort(np.concatenate([d[key] for d in all_models_data])))
         if len(grid) <= 1:
             return grid
         cleaned = [grid[0]]
@@ -173,11 +166,7 @@ def create_unified_grid(all_models_data):
                 cleaned.append(val)
         return np.array(cleaned)
 
-    teff_grid = clean_grid(all_teff, tol=1.0)
-    logg_grid = clean_grid(all_logg, tol=0.01)
-    meta_grid = clean_grid(all_meta, tol=0.01)
-
-    return teff_grid, logg_grid, meta_grid
+    return clean_grid("teff", 1.0), clean_grid("logg", 0.01), clean_grid("meta", 0.01)
 
 
 def create_common_wavelength_grid(all_models_data, sample_size=20):
@@ -230,12 +219,10 @@ def create_common_wavelength_grid(all_models_data, sample_size=20):
 
 def identify_reference_model(all_models_data):
     """Identify reference spectral grid (prefer Kurucz)."""
-    for i, model_data in enumerate(all_models_data):
-        if "kurucz" in os.path.basename(model_data["model_dir"]).lower():
-            print(f"Reference spectral grid: {os.path.basename(model_data['model_dir'])}")
-            return i
-    print(f"Reference spectral grid: {os.path.basename(all_models_data[0]['model_dir'])}")
-    return 0
+    names = [os.path.basename(model_data["model_dir"]) for model_data in all_models_data]
+    reference = next((i for i, name in enumerate(names) if "kurucz" in name.lower()), 0)
+    print(f"Reference spectral grid: {names[reference]}")
+    return reference
 
 
 def compute_normalization_factors(target_data, reference_data, wavelength_grid):
@@ -256,11 +243,7 @@ def compute_normalization_factors(target_data, reference_data, wavelength_grid):
                        ref_name, target_name)
         return np.ones(len(target_data["files"]))
 
-    ref_params = np.column_stack([
-        reference_data["teff"],
-        reference_data["logg"],
-        reference_data["meta"]
-    ])
+    ref_params = np.column_stack([reference_data[key] for key in ("teff", "logg", "meta")])
     valid_mask = np.isfinite(ref_params).all(axis=1)
     ref_params = ref_params[valid_mask]
     ref_files = np.array(reference_data["files"])[valid_mask]
@@ -272,33 +255,27 @@ def compute_normalization_factors(target_data, reference_data, wavelength_grid):
 
     ranges = ref_params.max(axis=0) - ref_params.min(axis=0)
     ranges[ranges == 0] = 1.0
-    ref_params_norm = (ref_params - ref_params.min(axis=0)) / ranges
 
     from scipy.spatial import KDTree
 
-    tree = KDTree(ref_params_norm)
+    tree = KDTree((ref_params - ref_params.min(axis=0)) / ranges)
     norm_factors = []
     failures = []
     kept_native = Counter()
 
-    for file, teff, logg, meta in zip(
-        target_data["files"], target_data["teff"],
-        target_data["logg"], target_data["meta"]
-    ):
+    for file, teff, logg, meta in zip(target_data["files"], target_data["teff"], target_data["logg"],
+                                      target_data["meta"]):
         file_target = os.path.join(target_data["model_dir"], file)
         if not all(np.isfinite([teff, logg, meta])):
             failures.append(f"{file_target}: non-finite parameters "
                             f"(teff={teff}, logg={logg}, meta={meta})")
             continue
 
-        query = np.array([teff, logg, meta])
-        query_norm = (query - ref_params.min(axis=0)) / ranges
-        _, idx = tree.query(query_norm)
+        _, idx = tree.query((np.array([teff, logg, meta]) - ref_params.min(axis=0)) / ranges)
         file_ref = os.path.join(reference_data["model_dir"], ref_files[idx])
 
         try:
-            factor, reason = _normalization_factor(file_target, teff, file_ref, ref_teff[idx],
-                                                   wavelength_grid)
+            factor, reason = _normalization_factor(file_target, teff, file_ref, ref_teff[idx], wavelength_grid)
         except (OSError, ValueError) as exc:  # unreadable target or reference spectrum
             failures.append(str(exc))
             continue
@@ -367,9 +344,7 @@ def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, w
         if model_idx == ref_idx:
             norm_factors[model_idx] = np.ones(len(model_data["files"]))
         else:
-            norm_factors[model_idx] = compute_normalization_factors(
-                model_data, ref_data, wavelength_grid
-            )
+            norm_factors[model_idx] = compute_normalization_factors(model_data, ref_data, wavelength_grid)
 
     # Fill the cube; later grids overwrite earlier ones at shared nodes
     failures = []
@@ -377,11 +352,9 @@ def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, w
         model_name = os.path.basename(model_data["model_dir"])
         print(f"\nProcessing {model_name}...")
 
-        for i, (file, teff, logg, meta) in enumerate(tqdm(
-            zip(model_data["files"], model_data["teff"],
-                model_data["logg"], model_data["meta"]),
-            total=len(model_data["files"]), desc=f"Spectral grid {model_idx + 1}"
-        )):
+        rows = zip(model_data["files"], model_data["teff"], model_data["logg"], model_data["meta"])
+        for i, (file, teff, logg, meta) in enumerate(tqdm(rows, total=len(model_data["files"]),
+                                                          desc=f"Spectral grid {model_idx + 1}")):
             filepath = os.path.join(model_data["model_dir"], file)
             if not all(np.isfinite([teff, logg, meta])):
                 failures.append(f"{filepath}: non-finite parameters "
@@ -394,9 +367,7 @@ def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, w
                 continue
             fl *= norm_factors[model_idx][i]
 
-            node = (int(np.argmin(np.abs(teff_grid - teff))),
-                    int(np.argmin(np.abs(logg_grid - logg))),
-                    int(np.argmin(np.abs(meta_grid - meta))))
+            node = (_nearest_idx(teff_grid, teff), _nearest_idx(logg_grid, logg), _nearest_idx(meta_grid, meta))
             flux_cube[node] = resample_to_grid(wl, fl, teff, wavelength_grid)
             filled_map[node] = True
             source_map[node] = model_idx
@@ -421,29 +392,20 @@ def _fill_gaps(flux_cube, filled_map, source_map, teff_grid, logg_grid, meta_gri
         r = grid.max() - grid.min()
         return (grid - grid.min()) / r if r > 0 else np.zeros_like(grid)
 
-    teff_norm = norm(teff_grid)
-    logg_norm = norm(logg_grid)
-    meta_norm = norm(meta_grid)
-
+    teff_norm, logg_norm, meta_norm = norm(teff_grid), norm(logg_grid), norm(meta_grid)
     filled_indices = np.where(filled_map)
-    filled_points = np.column_stack([
-        teff_norm[filled_indices[0]],
-        logg_norm[filled_indices[1]],
-        meta_norm[filled_indices[2]]
-    ])
+    filled_points = np.column_stack([teff_norm[filled_indices[0]], logg_norm[filled_indices[1]],
+                                     meta_norm[filled_indices[2]]])
     from scipy.spatial import KDTree
 
     tree = KDTree(filled_points)
 
-    for i_t in range(len(teff_grid)):
-        for i_g in range(len(logg_grid)):
-            for i_m in range(len(meta_grid)):
-                if not filled_map[i_t, i_g, i_m]:
-                    query = [teff_norm[i_t], logg_norm[i_g], meta_norm[i_m]]
-                    _, idx = tree.query(query)
-                    src = (filled_indices[0][idx], filled_indices[1][idx], filled_indices[2][idx])
-                    flux_cube[i_t, i_g, i_m, :] = flux_cube[src]
-                    source_map[i_t, i_g, i_m] = source_map[src]
+    for i_t, i_g, i_m in np.ndindex(filled_map.shape):
+        if not filled_map[i_t, i_g, i_m]:
+            _, idx = tree.query([teff_norm[i_t], logg_norm[i_g], meta_norm[i_m]])
+            src = (filled_indices[0][idx], filled_indices[1][idx], filled_indices[2][idx])
+            flux_cube[i_t, i_g, i_m, :] = flux_cube[src]
+            source_map[i_t, i_g, i_m] = source_map[src]
 
 
 def save_combined_data(output_dir, teff_grid, logg_grid, meta_grid,
@@ -470,19 +432,11 @@ def save_combined_data(output_dir, teff_grid, logg_grid, meta_grid,
 
     for model_data in tqdm(all_models_data, desc="Copying"):
         model_name = os.path.basename(model_data["model_dir"])
-        for orig_file, teff, logg, meta in zip(
-            model_data["files"], model_data["teff"],
-            model_data["logg"], model_data["meta"]
-        ):
+        for orig_file, teff, logg, meta in zip(model_data["files"], model_data["teff"], model_data["logg"],
+                                               model_data["meta"]):
             new_filename = f"{model_name}_{file_counter:06d}.txt"
-            lookup_data.append({
-                "file_name": new_filename,
-                "teff": teff,
-                "logg": logg,
-                "meta": meta,
-                "source_model": model_name,
-                "original_file": orig_file,
-            })
+            lookup_data.append({"file_name": new_filename, "teff": teff, "logg": logg, "meta": meta,
+                                "source_model": model_name, "original_file": orig_file})
 
             src_path = os.path.join(model_data["model_dir"], orig_file)
             dst_path = os.path.join(output_dir, new_filename)
@@ -523,19 +477,14 @@ def _plot_meta_index(meta_grid):
     return len(meta_grid) // 2
 
 
-def _sed_sample_points(teff_grid, logg_grid, meta_grid, meta_idx, flux_cube, source_map,
-                       model_names):
+def _sed_sample_points(teff_grid, logg_grid, meta_grid, meta_idx, flux_cube, source_map, model_names):
     """Up to 15 nodes (5 Teff x 3 log g quantiles) at meta_idx that have positive flux."""
-    teff_samples = np.unique(
-        teff_grid[np.round(np.linspace(0, len(teff_grid) - 1, 5)).astype(int)]
-    )
-    logg_samples = np.unique(
-        logg_grid[np.round(np.linspace(0, len(logg_grid) - 1, 3)).astype(int)]
-    )
+    def spread(grid, count):
+        return np.unique(grid[np.round(np.linspace(0, len(grid) - 1, count)).astype(int)])
 
     sample_points = []
-    for t_val in teff_samples:
-        for g_val in logg_samples:
+    for t_val in spread(teff_grid, 5):
+        for g_val in spread(logg_grid, 3):
             ti = _nearest_idx(teff_grid, t_val)
             gi = _nearest_idx(logg_grid, g_val)
             flux = flux_cube[ti, gi, meta_idx, :]
@@ -543,10 +492,7 @@ def _sed_sample_points(teff_grid, logg_grid, meta_grid, meta_idx, flux_cube, sou
                 continue
             src_idx = int(source_map[ti, gi, meta_idx])
             src_name = model_names[src_idx] if 0 <= src_idx < len(model_names) else "unknown"
-            sample_points.append((
-                teff_grid[ti], logg_grid[gi], meta_grid[meta_idx],
-                flux, src_name, src_idx
-            ))
+            sample_points.append((teff_grid[ti], logg_grid[gi], meta_grid[meta_idx], flux, src_name, src_idx))
     return sample_points
 
 
@@ -579,13 +525,8 @@ def plot_sed_samples(teff_grid, logg_grid, meta_grid, wavelength_grid,
         color = cmap_colors[src_idx % len(cmap_colors)]
         valid = flux > 0
         if valid.sum() > 1:
-            ax.loglog(wavelength_grid[valid], flux[valid],
-                      color=color, linewidth=0.8, label=src_name)
-        ax.set_title(
-            f"Teff={teff:.0f} K  log g={logg:.2f}  [M/H]={meta:.2f}\n"
-            f"source: {src_name}",
-            fontsize=8
-        )
+            ax.loglog(wavelength_grid[valid], flux[valid], color=color, linewidth=0.8, label=src_name)
+        ax.set_title(f"Teff={teff:.0f} K  log g={logg:.2f}  [M/H]={meta:.2f}\nsource: {src_name}", fontsize=8)
         ax.set_xlabel("Wavelength (Å)", fontsize=7)
         ax.set_ylabel("Flux (erg/cm²/s/Å)", fontsize=7)
         ax.tick_params(labelsize=6)
@@ -594,10 +535,8 @@ def plot_sed_samples(teff_grid, logg_grid, meta_grid, wavelength_grid,
     for j in range(n, len(axes)):
         axes[j].set_visible(False)
 
-    plt.suptitle(
-        f"SED Samples Across Combined Parameter Space  ([M/H] ≈ {meta_grid[meta_idx]:.2f})",
-        fontsize=13, fontweight="bold"
-    )
+    plt.suptitle(f"SED Samples Across Combined Parameter Space  ([M/H] ≈ {meta_grid[meta_idx]:.2f})",
+                 fontsize=13, fontweight="bold")
     plt.tight_layout()
 
     plot_file = os.path.join(output_dir, "sed_samples.png")
@@ -633,13 +572,11 @@ def visualize_parameter_space(teff_grid, logg_grid, meta_grid, source_map,
 
     ax4 = fig.add_subplot(2, 2, 4)
     density = np.zeros((len(teff_grid), len(logg_grid)))
-    for i in range(len(teff_grid)):
-        for j in range(len(logg_grid)):
-            density[i, j] = len(np.unique(source_map[i, j, :][source_map[i, j, :] >= 0]))
+    for i, j in np.ndindex(density.shape):
+        density[i, j] = len(np.unique(source_map[i, j, :][source_map[i, j, :] >= 0]))
 
     im = ax4.imshow(density.T, origin="lower", aspect="auto",
-                    extent=[teff_grid.min(), teff_grid.max(),
-                           logg_grid.min(), logg_grid.max()], cmap="YlOrRd")
+                    extent=[teff_grid.min(), teff_grid.max(), logg_grid.min(), logg_grid.max()], cmap="YlOrRd")
     ax4.set_xlabel("Teff (K)")
     ax4.set_ylabel("log g")
     ax4.set_title("Model spectrum density per grid point")
@@ -675,8 +612,7 @@ def main():
     parser = argparse.ArgumentParser(description="Combine stellar spectral grids")
     parser.add_argument("--data_dir", default="../data/stellar_models/",
                        help="Base directory containing spectral grids")
-    parser.add_argument("--output", default="combined_models",
-                       help="Output directory name")
+    parser.add_argument("--output", default="combined_models", help="Output directory name")
     parser.add_argument("--interactive", action="store_true", default=True,
                        help="Interactive spectral grid selection")
     args = parser.parse_args()
@@ -702,9 +638,7 @@ def main():
     teff_grid, logg_grid, meta_grid = create_unified_grid(all_models_data)
     wavelength_grid = create_common_wavelength_grid(all_models_data)
 
-    flux_cube, source_map = build_combined_flux_cube(
-        all_models_data, teff_grid, logg_grid, meta_grid, wavelength_grid
-    )
+    flux_cube, source_map = build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, wavelength_grid)
 
     output_dir = os.path.join(args.data_dir, args.output)
     save_combined_data(output_dir, teff_grid, logg_grid, meta_grid,

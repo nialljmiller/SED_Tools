@@ -150,12 +150,8 @@ class EvaluatedSED:
                 vega_zero = _vega_zero_point(curve, vega_curve)
                 with np.errstate(divide="ignore", invalid="ignore"):
                     magnitude = float(-2.5 * np.log10(np.divide(flux_density, vega_zero)))
-            results[name] = PhotometryResult(
-                magnitude=magnitude,
-                flux_density=float(flux_density),
-                system="AB" if system == "AB" else "Vega",
-                filter_name=name,
-            )
+            results[name] = PhotometryResult(magnitude=magnitude, flux_density=float(flux_density),
+                                             system="AB" if system == "AB" else "Vega", filter_name=name)
 
         return results
 
@@ -227,11 +223,8 @@ class SEDModel:
         return EvaluatedSED(wavelength=wavelength, flux=flux, metadata=metadata, _model=self)
 
     def parameter_ranges(self) -> Dict[str, Tuple[float, float]]:
-        return {
-            "teff": (float(self.teff_grid[0]), float(self.teff_grid[-1])),
-            "logg": (float(self.logg_grid[0]), float(self.logg_grid[-1])),
-            "metallicity": (float(self.meta_grid[0]), float(self.meta_grid[-1])),
-        }
+        grids = {"teff": self.teff_grid, "logg": self.logg_grid, "metallicity": self.meta_grid}
+        return {name: (float(grid[0]), float(grid[-1])) for name, grid in grids.items()}
 
     # --- Filter handling ---
 
@@ -242,51 +235,31 @@ class SEDModel:
         for item in entries:
             if isinstance(item, FilterCurve):
                 resolved[item.name] = item
-                continue
-
-            if isinstance(item, tuple):
+            elif isinstance(item, tuple):
                 custom_name, source = item
                 curve = self._load_filter(source, custom_name=custom_name)
                 resolved[curve.name] = curve
-                continue
-
-            if isinstance(item, (str, os.PathLike)):
+            elif isinstance(item, (str, os.PathLike)):
                 resolved.update(self._load_filter_group(item))
-                continue
-
-            raise TypeError(f"Unsupported filter specification: {item!r}")
-
+            else:
+                raise TypeError(f"Unsupported filter specification: {item!r}")
         return resolved
 
-    def _load_filter_group(
-        self,
-        spec: Union[str, os.PathLike[str]],
-    ) -> Dict[str, FilterCurve]:
+    def _load_filter_group(self, spec: Union[str, os.PathLike[str]]) -> Dict[str, FilterCurve]:
         curves: Dict[str, FilterCurve] = {}
         for path in self._locate_filter_paths(spec):
             key = (os.fspath(path), "")
-            if key in self._filter_cache:
-                curve = self._filter_cache[key]
-            else:
-                curve = load_filter_curve(str(path))
-                self._filter_cache[key] = curve
+            if key not in self._filter_cache:
+                self._filter_cache[key] = load_filter_curve(str(path))
+            curve = self._filter_cache[key]
             curves[curve.name] = curve
         return curves
 
-    def _load_filter(
-        self,
-        spec: Union[str, os.PathLike[str]],
-        *,
-        custom_name: Optional[str] = None,
-    ) -> FilterCurve:
+    def _load_filter(self, spec: Union[str, os.PathLike[str]], *, custom_name: Optional[str] = None) -> FilterCurve:
         key = (os.fspath(spec), custom_name or "")
-        if key in self._filter_cache:
-            return self._filter_cache[key]
-
-        path = self._locate_filter_path(spec)
-        curve = load_filter_curve(str(path), name=custom_name)
-        self._filter_cache[key] = curve
-        return curve
+        if key not in self._filter_cache:
+            self._filter_cache[key] = load_filter_curve(str(self._locate_filter_path(spec)), name=custom_name)
+        return self._filter_cache[key]
 
     def _locate_filter_paths(self, spec: Union[str, os.PathLike[str]]) -> List[Path]:
         path = Path(spec)
@@ -299,9 +272,7 @@ class SEDModel:
                 return files
 
         if self.filters_dir is None:
-            raise FileNotFoundError(
-                f"Filter '{spec}' could not be resolved because no filters directory is configured."
-            )
+            raise FileNotFoundError(f"Filter '{spec}' could not be resolved because no filters directory is configured.")
 
         filters_dir = Path(self.filters_dir)
 
@@ -321,17 +292,12 @@ class SEDModel:
             lookup_dir = str(path).lower()
             dir_matches: List[Path] = []
             for candidate_dir in filters_dir.rglob("*"):
-                if not candidate_dir.is_dir() or is_auxiliary_path(candidate_dir, filters_dir):
-                    continue
-                if candidate_dir.name.lower() != lookup_dir:
-                    continue
-                files = _filter_files_in_dir(candidate_dir)
-                if files:
-                    dir_matches.extend(files)
+                if (candidate_dir.is_dir() and not is_auxiliary_path(candidate_dir, filters_dir)
+                        and candidate_dir.name.lower() == lookup_dir):
+                    dir_matches.extend(_filter_files_in_dir(candidate_dir))
 
             if dir_matches:
-                unique = sorted({p.resolve(): p for p in dir_matches}.values())
-                return unique
+                return sorted({p.resolve(): p for p in dir_matches}.values())
 
         if self._filter_index is None:
             self._filter_index = _build_filter_index(filters_dir)
@@ -345,9 +311,7 @@ class SEDModel:
             raise FileNotFoundError(f"No filter file matching '{spec}' was found under {filters_dir}")
         if len(matches) > 1:
             options = ", ".join(str(p) for p in matches)
-            raise FileExistsError(
-                f"Filter specification '{spec}' is ambiguous; matches: {options}"
-            )
+            raise FileExistsError(f"Filter specification '{spec}' is ambiguous; matches: {options}")
         return [matches[0]]
 
     def _locate_filter_path(self, spec: Union[str, os.PathLike[str]]) -> Path:
@@ -368,9 +332,7 @@ class SEDModel:
         if lower <= value <= upper:
             return value
         if not self.fill_gaps:
-            raise ValueError(
-                f"Requested {label}={value} is outside the grid range [{lower}, {upper}]."
-            )
+            raise ValueError(f"Requested {label}={value} is outside the grid range [{lower}, {upper}].")
         return float(min(max(value, lower), upper))
 
 
@@ -395,12 +357,7 @@ class SED:
         self._active_model: Optional[SEDModel] = None
 
         if atm is not None:
-            self.model(
-                atm,
-                interpolation=interpolation,
-                fill_gaps=fill_gaps,
-                activate=True,
-            )
+            self.model(atm, interpolation=interpolation, fill_gaps=fill_gaps, activate=True)
 
     # --- Model discovery ---
 
@@ -408,14 +365,8 @@ class SED:
         """List locally installed spectral grids with a flux cube."""
         if not self.model_root.exists():
             return []
-        models: List[str] = []
-        for entry in sorted(self.model_root.iterdir()):
-            if not entry.is_dir():
-                continue
-            cube = entry / "flux_cube.bin"
-            if cube.is_file():
-                models.append(entry.name)
-        return models
+        entries = sorted(self.model_root.iterdir())
+        return [entry.name for entry in entries if entry.is_dir() and (entry / "flux_cube.bin").is_file()]
 
     available_models = available_grids
 
@@ -432,36 +383,17 @@ class SED:
         for name in self.available_models():
             cube_path = self.model_root / name / "flux_cube.bin"
             metadata = self._get_metadata(name, cube_path)
-            teff_range = (float(metadata["teff"][0]), float(metadata["teff"][-1]))
-            logg_range = (float(metadata["logg"][0]), float(metadata["logg"][-1]))
-            meta_range = (float(metadata["meta"][0]), float(metadata["meta"][-1]))
-
-            contains = _contains_point(
-                float(teff), float(logg), float(metallicity), metadata
-            )
+            grids = [metadata[key] for key in ("teff", "logg", "meta")]
+            bounds = [(float(grid[0]), float(grid[-1])) for grid in grids]
+            point = (float(teff), float(logg), float(metallicity))
+            contains = _contains_point(*point, metadata)
             if not contains and not allow_partial:
                 continue
-
-            distance = _parameter_distance(
-                (float(teff), metadata["teff"]),
-                (float(logg), metadata["logg"]),
-                (float(metallicity), metadata["meta"]),
-            )
-            match = ModelMatch(
-                distance=distance,
-                name=name,
-                flux_cube=cube_path,
-                teff_range=teff_range,
-                logg_range=logg_range,
-                metallicity_range=meta_range,
-                contains_point=contains,
-            )
-            candidates.append(match)
-
-        candidates.sort()
-        if limit is not None:
-            return candidates[:limit]
-        return candidates
+            candidates.append(ModelMatch(
+                distance=_parameter_distance(*zip(point, grids)), name=name, flux_cube=cube_path,
+                teff_range=bounds[0], logg_range=bounds[1], metallicity_range=bounds[2], contains_point=contains,
+            ))
+        return sorted(candidates)[:limit]
 
     def find_grids(
         self,
@@ -491,59 +423,28 @@ class SED:
         if teff_range is None and logg_range is None and metallicity_range is None:
             raise ValueError("Provide at least one parameter range to search for")
 
-        teff_requested = _normalize_range(teff_range, "teff")
-        logg_requested = _normalize_range(logg_range, "logg")
-        meta_requested = _normalize_range(metallicity_range, "metallicity")
+        requested = [_normalize_range(teff_range, "teff"), _normalize_range(logg_range, "logg"),
+                     _normalize_range(metallicity_range, "metallicity")]
 
         candidates: List[ModelMatch] = []
         for name in self.available_models():
             cube_path = self.model_root / name / "flux_cube.bin"
             metadata = self._get_metadata(name, cube_path)
-            teff_grid = metadata["teff"]
-            logg_grid = metadata["logg"]
-            meta_grid = metadata["meta"]
-
-            teff_bounds = (float(teff_grid[0]), float(teff_grid[-1]))
-            logg_bounds = (float(logg_grid[0]), float(logg_grid[-1]))
-            meta_bounds = (float(meta_grid[0]), float(meta_grid[-1]))
-
-            overlap_teff, cover_teff = _range_coverage(teff_requested, teff_bounds)
-            overlap_logg, cover_logg = _range_coverage(logg_requested, logg_bounds)
-            overlap_meta, cover_meta = _range_coverage(meta_requested, meta_bounds)
-
-            if not (overlap_teff and overlap_logg and overlap_meta):
+            grids = [metadata[key] for key in ("teff", "logg", "meta")]
+            bounds = [(float(grid[0]), float(grid[-1])) for grid in grids]
+            coverage = [_range_coverage(wanted, bound) for wanted, bound in zip(requested, bounds)]
+            if not all(overlaps for overlaps, _ in coverage):
                 continue
-
-            covers_range = cover_teff and cover_logg and cover_meta
+            covers_range = all(covers for _, covers in coverage)
             if not covers_range and not allow_partial:
                 continue
-
-            teff_value = _range_center(teff_requested, teff_grid)
-            logg_value = _range_center(logg_requested, logg_grid)
-            meta_value = _range_center(meta_requested, meta_grid)
-
-            distance = _parameter_distance(
-                (teff_value, teff_grid),
-                (logg_value, logg_grid),
-                (meta_value, meta_grid),
-            )
-
-            match = ModelMatch(
-                distance=distance,
-                name=name,
-                flux_cube=cube_path,
-                teff_range=teff_bounds,
-                logg_range=logg_bounds,
-                metallicity_range=meta_bounds,
-                contains_point=_contains_point(teff_value, logg_value, meta_value, metadata),
-                covers_range=covers_range,
-            )
-            candidates.append(match)
-
-        candidates.sort()
-        if limit is not None:
-            return candidates[:limit]
-        return candidates
+            centers = [_range_center(wanted, grid) for wanted, grid in zip(requested, grids)]
+            candidates.append(ModelMatch(
+                distance=_parameter_distance(*zip(centers, grids)), name=name, flux_cube=cube_path,
+                teff_range=bounds[0], logg_range=bounds[1], metallicity_range=bounds[2],
+                contains_point=_contains_point(*centers, metadata), covers_range=covers_range,
+            ))
+        return sorted(candidates)[:limit]
 
     find_atmospheres = find_grids
 
@@ -561,14 +462,9 @@ class SED:
             result = model
         else:
             flux_path, name = self._resolve_model_inputs(model)
-            filters_dir = self.filter_root if self.filter_root.exists() else None
-            result = SEDModel(
-                name=name,
-                flux_cube_path=flux_path,
-                filters_dir=filters_dir,
-                interpolation=interpolation,
-                fill_gaps=fill_gaps,
-            )
+            result = SEDModel(name=name, flux_cube_path=flux_path,
+                              filters_dir=self.filter_root if self.filter_root.exists() else None,
+                              interpolation=interpolation, fill_gaps=fill_gaps)
 
         if activate:
             self._active_model = result
@@ -582,26 +478,21 @@ class SED:
         **aliases: Number,
     ) -> EvaluatedSED:
         if self._active_model is None:
-            raise RuntimeError(
-                "No atmosphere selected. Call 'model(...)' or pass 'atm=' when constructing SED."
-            )
+            raise RuntimeError("No atmosphere selected. Call 'model(...)' or pass 'atm=' when constructing SED.")
         if metallicity is None:
             for key in ("z", "Z"):
                 if key in aliases:
                     metallicity = aliases.pop(key)
                     break
         if aliases:
-            unexpected = ", ".join(sorted(aliases.keys()))
-            raise TypeError(f"Unexpected keyword arguments: {unexpected}")
+            raise TypeError(f"Unexpected keyword arguments: {', '.join(sorted(aliases.keys()))}")
         if metallicity is None:
             raise TypeError("Metallicity value missing; supply 'metallicity' or 'z'.")
         return self._active_model(teff, logg, metallicity)
 
     # --- Helpers ---
 
-    def _resolve_model_inputs(
-        self, model: Union[str, os.PathLike[str], ModelMatch]
-    ) -> Tuple[Path, str]:
+    def _resolve_model_inputs(self, model: Union[str, os.PathLike[str], ModelMatch]) -> Tuple[Path, str]:
         if isinstance(model, ModelMatch):
             return Path(model.flux_cube), model.name
 
@@ -613,16 +504,9 @@ class SED:
         path = Path(model)
         if path.is_file() and path.suffix.lower() == ".bin":
             return path
-        if path.is_dir():
-            cube = path / "flux_cube.bin"
-            if cube.is_file():
-                return cube
-
-        candidate = self.model_root / path
-        if candidate.is_dir():
-            cube = candidate / "flux_cube.bin"
-            if cube.is_file():
-                return cube
+        for directory in (path, self.model_root / path):
+            if directory.is_dir() and (directory / "flux_cube.bin").is_file():
+                return directory / "flux_cube.bin"
 
         candidate = self.model_root / f"{path}.bin"
         if candidate.is_file():
@@ -685,10 +569,7 @@ def _nearest_on_grid(value: float, grid: np.ndarray) -> float:
 def _filter_files_in_dir(directory: Union[str, os.PathLike[str]]) -> List[Path]:
     directory = Path(directory)
 
-    direct = sorted(
-        p for p in directory.iterdir()
-        if p.is_file() and p.suffix.lower() in FILTER_EXTENSIONS
-    )
+    direct = sorted(p for p in directory.iterdir() if p.is_file() and p.suffix.lower() in FILTER_EXTENSIONS)
     if direct:
         return direct
 
@@ -705,12 +586,8 @@ def _build_filter_index(root: Union[str, os.PathLike[str]]) -> Dict[str, List[Pa
     if not root.exists():
         return index
     for path in root.rglob("*"):
-        if not path.is_file() or is_auxiliary_path(path, root):
-            continue
-        if path.suffix.lower() not in FILTER_EXTENSIONS:
-            continue
-        key = path.stem.lower()
-        index.setdefault(key, []).append(path)
+        if path.is_file() and not is_auxiliary_path(path, root) and path.suffix.lower() in FILTER_EXTENSIONS:
+            index.setdefault(path.stem.lower(), []).append(path)
     return index
 
 
@@ -727,9 +604,7 @@ def _normalize_filter_sequence(filters: Sequence[FilterSpec]) -> List[FilterSpec
     return list(filters)
 
 
-def _normalize_range(
-    value: Optional[Sequence[Number]], label: str
-) -> Optional[Tuple[float, float]]:
+def _normalize_range(value: Optional[Sequence[Number]], label: str) -> Optional[Tuple[float, float]]:
     if value is None:
         return None
     if len(value) != 2:
@@ -740,10 +615,7 @@ def _normalize_range(
     return start, end
 
 
-def _range_coverage(
-    requested: Optional[Tuple[float, float]],
-    available: Tuple[float, float],
-) -> Tuple[bool, bool]:
+def _range_coverage(requested: Optional[Tuple[float, float]], available: Tuple[float, float]) -> Tuple[bool, bool]:
     if requested is None:
         return True, True
     req_min, req_max = requested
@@ -753,9 +625,7 @@ def _range_coverage(
     return overlaps, covers
 
 
-def _range_center(
-    requested: Optional[Tuple[float, float]], grid: np.ndarray
-) -> float:
+def _range_center(requested: Optional[Tuple[float, float]], grid: np.ndarray) -> float:
     if requested is not None:
         return float((requested[0] + requested[1]) / 2.0)
     if grid.size == 0:

@@ -70,8 +70,7 @@ def build_h5_bundle(model_dir: PathLike, output_path: PathLike) -> bool:
             item = group.create_group(path.name)
             item.create_dataset("lambda", data=wavelength, dtype="f8")
             item.create_dataset("flux", data=flux, dtype="f8")
-            metadata = parse_header(str(path))
-            for key, value in metadata.items():
+            for key, value in parse_header(str(path)).items():
                 if isinstance(value, float) and np.isnan(value):
                     continue
                 if key == "metallicity":

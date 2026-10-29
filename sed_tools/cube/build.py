@@ -21,11 +21,7 @@ from ..grids.lookup import (  # noqa: F401  (write_lookup_csv: importable here, 
     find_file_column, find_logg_column, find_metallicity_column, find_teff_column,
     write_lookup_csv,
 )
-from .collision import (
-    copy_global_config_to_model,
-    discover_extra_axes,
-    load_config,
-)
+from .collision import copy_global_config_to_model, discover_extra_axes, load_config
 from .fileio import flux_offset, write_header
 # _extra_key_to_filename, _subdir_name and _value_to_safe_str: importable here, as always.
 from .variants import (_build_filtered_cube, _build_mean_cube, _extra_key_to_filename,  # noqa: F401
@@ -86,20 +82,11 @@ def resample_to_grid(
     fl_src = np.asarray(fl_src, dtype=np.float64)
     wl_tgt = np.asarray(wl_tgt, dtype=np.float64)
 
-    wl_min = float(wl_src[0])
-    wl_max = float(wl_src[-1])
-
-    fl_safe = np.maximum(fl_src, _FLUX_FLOOR)
-    log_fl  = np.log10(fl_safe)
-    in_cov  = (wl_tgt >= wl_min) & (wl_tgt <= wl_max)
-
+    log_fl = np.log10(np.maximum(fl_src, _FLUX_FLOOR))
+    in_cov = (wl_tgt >= float(wl_src[0])) & (wl_tgt <= float(wl_src[-1]))
     fl_tgt = np.zeros(len(wl_tgt), dtype=np.float64)
-
     if in_cov.any():
-        fl_tgt[in_cov] = 10.0 ** np.interp(
-            wl_tgt[in_cov], wl_src, log_fl
-        )
-
+        fl_tgt[in_cov] = 10.0 ** np.interp(wl_tgt[in_cov], wl_src, log_fl)
     return fl_tgt
 
 
@@ -131,8 +118,7 @@ def _read_lookup_table(lookup_file: str) -> Tuple[Dict[str, List], List[str], in
     with open(lookup_file, "r", encoding="utf-8", errors="ignore") as f:
         header_line = f.readline().lstrip("#").strip()
         cols = [c.strip() for c in header_line.split(",")]
-        reader = csv.reader(f)
-        rows = [row for row in reader if row and not row[0].strip().startswith("#")]
+        rows = [row for row in csv.reader(f) if row and not row[0].strip().startswith("#")]
 
     result: Dict[str, List] = {c: [] for c in cols}
     for row in rows:
@@ -141,9 +127,7 @@ def _read_lookup_table(lookup_file: str) -> Tuple[Dict[str, List], List[str], in
     return result, cols, len(rows)
 
 
-def _float_col(
-    lookup: Dict[str, List], col: Optional[str], lookup_file: str, file_col: str,
-) -> np.ndarray:
+def _float_col(lookup: Dict[str, List], col: Optional[str], lookup_file: str, file_col: str) -> np.ndarray:
     """Parse one parameter column; a missing column (``col`` None) reads as 0.0 throughout."""
     if col is None:
         return np.zeros(len(next(iter(lookup.values()))))
@@ -163,9 +147,7 @@ def _float_col(
     return np.array(vals)
 
 
-def _parse_axes(
-    lookup: Dict[str, List], lookup_file: str, file_col: str,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+def _parse_axes(lookup: Dict[str, List], lookup_file: str, file_col: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Teff (required), logg and [M/H] of every lookup row; a missing logg or [M/H] column (blackbodies) is 0.0."""
     teff_col = find_teff_column(lookup.keys())
     if teff_col is None:
@@ -173,13 +155,8 @@ def _parse_axes(
             f"{lookup_file} has no Teff column (teff, t_eff, temperature or temp); "
             "cannot build a flux cube."
         )
-    logg_col = find_logg_column(lookup.keys())
-    meta_col = find_metallicity_column(lookup.keys())
-    return (
-        _float_col(lookup, teff_col, lookup_file, file_col),
-        _float_col(lookup, logg_col, lookup_file, file_col),
-        _float_col(lookup, meta_col, lookup_file, file_col),
-    )
+    columns = (teff_col, find_logg_column(lookup.keys()), find_metallicity_column(lookup.keys()))
+    return tuple(_float_col(lookup, col, lookup_file, file_col) for col in columns)
 
 
 def _require_spectra(model_dir: str, file_names: List[str], lookup_file: str) -> None:
@@ -195,14 +172,9 @@ def _require_spectra(model_dir: str, file_names: List[str], lookup_file: str) ->
 
 # --- Building and writing one cube ---
 
-def build_grids(
-    teff_vals: np.ndarray,
-    logg_vals: np.ndarray,
-    meta_vals: np.ndarray,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    teff_grid = np.unique(teff_vals)
-    logg_grid = np.unique(logg_vals)
-    meta_grid = np.unique(meta_vals)
+def build_grids(teff_vals: np.ndarray, logg_vals: np.ndarray,
+                meta_vals: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    teff_grid, logg_grid, meta_grid = np.unique(teff_vals), np.unique(logg_vals), np.unique(meta_vals)
     print(f"Grid: {len(teff_grid)} Teff × {len(logg_grid)} logg × {len(meta_grid)} meta")
     return teff_grid, logg_grid, meta_grid
 
@@ -223,9 +195,7 @@ def compute_common_wavelengths(model_dir: str, file_names: List[str], n_sample: 
     return grid
 
 
-def _allocate_cube(
-    teff_grid, logg_grid, meta_grid, wavelengths, tmp_path=None
-) -> np.ndarray:
+def _allocate_cube(teff_grid, logg_grid, meta_grid, wavelengths, tmp_path=None) -> np.ndarray:
     shape = (len(teff_grid), len(logg_grid), len(meta_grid), len(wavelengths))
     size_gib = np.prod(shape) * 8 / 1024**3
     if tmp_path:
@@ -235,12 +205,8 @@ def _allocate_cube(
     return np.zeros(shape, dtype=np.float64)
 
 
-def _write_cube(
-    output_file: str,
-    teff_grid, logg_grid, meta_grid, wavelengths,
-    flux_cube: np.ndarray,
-    usable_ram: int,
-) -> None:
+def _write_cube(output_file: str, teff_grid, logg_grid, meta_grid, wavelengths, flux_cube: np.ndarray,
+                usable_ram: int) -> None:
     nt, nl, nm, nw = len(teff_grid), len(logg_grid), len(meta_grid), len(wavelengths)
     tlm = nt * nl * nm
     w_chunk = max(1, usable_ram // (tlm * 2 * 8))
@@ -371,22 +337,15 @@ def _populate_and_write(
 
     flux_cube = _allocate_cube(teff_grid, logg_grid, meta_grid, wavelengths, tmp_path)
     try:
-        count_cube = _accumulate_spectra(
-            flux_cube, model_dir, file_names,
-            (teff_vals, logg_vals, meta_vals), (teff_grid, logg_grid, meta_grid),
-            wavelengths, label,
-        )
+        count_cube = _accumulate_spectra(flux_cube, model_dir, file_names, (teff_vals, logg_vals, meta_vals),
+                                         (teff_grid, logg_grid, meta_grid), wavelengths, label)
 
         nonzero = count_cube > 0
         for axis_idx in range(len(wavelengths)):
-            flux_cube[:, :, :, axis_idx] = np.where(
-                nonzero,
-                flux_cube[:, :, :, axis_idx] / np.maximum(count_cube, 1),
-                0.0,
-            )
+            averaged = flux_cube[:, :, :, axis_idx] / np.maximum(count_cube, 1)
+            flux_cube[:, :, :, axis_idx] = np.where(nonzero, averaged, 0.0)
 
-        _write_cube(output_file, teff_grid, logg_grid, meta_grid,
-                    wavelengths, flux_cube, usable_ram)
+        _write_cube(output_file, teff_grid, logg_grid, meta_grid, wavelengths, flux_cube, usable_ram)
     finally:
         del flux_cube
         if tmp_path and os.path.exists(tmp_path):
@@ -431,10 +390,7 @@ def _accumulate_spectra(
         done = i + 1
         rate = done / elapsed if elapsed > 0 else 1.0
         eta = (n - done) / rate
-        print(
-            f"\r  {prefix}spectra {done}/{n} ({100*done/n:.1f}%)  ETA {eta:.0f}s   ",
-            end="", flush=True,
-        )
+        print(f"\r  {prefix}spectra {done}/{n} ({100*done/n:.1f}%)  ETA {eta:.0f}s   ", end="", flush=True)
 
     print(f"\n  {prefix}Done — {n - len(empty)}/{n} loaded.")
     if empty:
@@ -468,8 +424,6 @@ def _warn_averaged_rows(lookup: Dict[str, List], rows, nodes, cube_path: str) ->
     )
 
 
-
-
 # --- precompute_flux_cube and its command line ---
 
 def precompute_flux_cube(
@@ -489,11 +443,8 @@ def precompute_flux_cube(
     model_dir   = str(model_dir)
     output_file = str(output_file)
 
-    cfg = load_config(
-        model_dir     = Path(model_dir),
-        root_dir      = Path(root_dir) if root_dir else None,
-        override_dict = override_dict,
-    )
+    cfg = load_config(model_dir=Path(model_dir), root_dir=Path(root_dir) if root_dir else None,
+                      override_dict=override_dict)
     print(f"On-collision strategy: {cfg.strategy}  (source: {cfg.source})")
 
     # The configuration a cube was built with stays beside it.
@@ -526,10 +477,7 @@ def precompute_flux_cube(
     # No extra axes, or every file shares the same extra-axis values: one cube.
     if len(groups) <= 1:
         _warn_averaged_rows(lookup, range(len(file_names)), zip(teff_vals, logg_vals, meta_vals), output_file)
-        _populate_and_write(
-            model_dir, file_names, teff_vals, logg_vals, meta_vals,
-            wavelengths, output_file, usable,
-        )
+        _populate_and_write(model_dir, file_names, teff_vals, logg_vals, meta_vals, wavelengths, output_file, usable)
         _print_summary(output_file, teff_vals, logg_vals, meta_vals)
         return
 
@@ -548,12 +496,10 @@ def precompute_flux_cube(
 
 def _print_summary(output_file, teff_vals, logg_vals, meta_vals):
     print(f"\nFlux cube: {output_file}")
-    if teff_vals.size:
-        print(f"  Teff : {teff_vals.min():.0f} – {teff_vals.max():.0f} K")
-    if logg_vals.size:
-        print(f"  logg : {logg_vals.min():.2f} – {logg_vals.max():.2f}")
-    if meta_vals.size:
-        print(f"  [M/H]: {meta_vals.min():.2f} – {meta_vals.max():.2f}")
+    for label, values, fmt, unit in (("Teff ", teff_vals, ".0f", " K"), ("logg ", logg_vals, ".2f", ""),
+                                     ("[M/H]", meta_vals, ".2f", "")):
+        if values.size:
+            print(f"  {label}: {values.min():{fmt}} – {values.max():{fmt}}{unit}")
 
 
 def _main():
@@ -564,23 +510,22 @@ def _main():
                         help="SED_Tools root directory (for sed_tools.defaults)")
     args = parser.parse_args()
 
-    def _discover_model_dirs(root="data/stellar_models"):
-        cands = []
-        for base in [root, "./" + root, "../" + root]:
-            if os.path.isdir(base):
-                for name in sorted(os.listdir(base)):
-                    p = os.path.join(base, name)
-                    if not os.path.isdir(p):
-                        continue
-                    has_lookup = os.path.isfile(os.path.join(p, "lookup_table.csv"))
-                    has_txt    = any(fn.lower().endswith(".txt") for fn in os.listdir(p))
-                    if has_lookup or has_txt:
-                        cands.append(p)
-        return sorted(set(cands))
-
     if not args.model_dir:
         print("No --model_dir provided. Discovering local model directories…")
-        cands = _discover_model_dirs()
+        root = "data/stellar_models"
+        found = set()
+        for base in [root, "./" + root, "../" + root]:
+            if not os.path.isdir(base):
+                continue
+            for name in sorted(os.listdir(base)):
+                p = os.path.join(base, name)
+                if not os.path.isdir(p):
+                    continue
+                has_lookup = os.path.isfile(os.path.join(p, "lookup_table.csv"))
+                has_txt    = any(fn.lower().endswith(".txt") for fn in os.listdir(p))
+                if has_lookup or has_txt:
+                    found.add(p)
+        cands = sorted(found)
         if not cands:
             sys.exit("No model directories found.")
         for i, p in enumerate(cands, 1):
@@ -592,9 +537,7 @@ def _main():
 
     if not args.output:
         args.output = os.path.join(args.model_dir, "flux_cube.bin")
-        ans = input(f"Output file [{args.output}]: ").strip()
-        if ans:
-            args.output = ans
+        args.output = input(f"Output file [{args.output}]: ").strip() or args.output
 
     precompute_flux_cube(args.model_dir, args.output, root_dir=args.root_dir)
 

@@ -58,10 +58,7 @@ class FluxCube:
             leftover = fh.read(1) if flux_flat.size == flux_expected else b""
 
         if flux_flat.size != flux_expected:
-            raise ValueError(
-                f"Flux cube body truncated: expected {flux_expected} values,"
-                f" found {flux_flat.size}"
-            )
+            raise ValueError(f"Flux cube body truncated: expected {flux_expected} values, found {flux_flat.size}")
 
         if leftover:
             print("Warning: trailing data detected in flux cube; ignoring extra bytes.")
@@ -71,26 +68,20 @@ class FluxCube:
         flux = flux_flat.reshape((nw, nm, nl, nt)).transpose(3, 2, 1, 0)
         return cls(teff, logg, meta, wavelengths, flux)
 
-    def _hermite_interp_axis(
-        self, values: np.ndarray, grid: np.ndarray, x: float, axis: int
-    ) -> np.ndarray:
+    def _hermite_interp_axis(self, values: np.ndarray, grid: np.ndarray, x: float, axis: int) -> np.ndarray:
         """Cubic Hermite interpolation along one axis."""
         if values.shape[axis] < 2 or len(grid) < 2:
             # Degenerate axis: return the lone slice without interpolation.
             return np.take(values, 0, axis=axis)
 
         if not (grid[0] <= x <= grid[-1]):
-            raise ValueError(
-                f"Requested value {x} is outside interpolation range"
-                f" [{grid[0]}, {grid[-1]}]"
-            )
+            raise ValueError(f"Requested value {x} is outside interpolation range [{grid[0]}, {grid[-1]}]")
 
         idx = int(np.searchsorted(grid, x) - 1)
         idx = max(0, min(idx, len(grid) - 2))
 
         x0 = grid[idx]
-        x1 = grid[idx + 1]
-        h = x1 - x0
+        h = grid[idx + 1] - x0
         t = (x - x0) / h if h != 0 else 0.0
 
         f0 = np.take(values, idx, axis=axis)
@@ -106,25 +97,15 @@ class FluxCube:
 
         return h00 * f0 + h10 * h * m0 + h01 * f1 + h11 * h * m1
 
-    def _axis_derivative(
-        self, values: np.ndarray, grid: np.ndarray, idx: int, axis: int
-    ) -> np.ndarray:
+    def _axis_derivative(self, values: np.ndarray, grid: np.ndarray, idx: int, axis: int) -> np.ndarray:
         n = len(grid)
-
         if idx <= 0:
-            f0 = np.take(values, 0, axis=axis)
-            f1 = np.take(values, 1, axis=axis)
-            return (f1 - f0) / (grid[1] - grid[0])
-        if idx >= n - 1:
-            f0 = np.take(values, n - 2, axis=axis)
-            f1 = np.take(values, n - 1, axis=axis)
-            return (f1 - f0) / (grid[n - 1] - grid[n - 2])
-
-        f_prev = np.take(values, idx - 1, axis=axis)
-        f_next = np.take(values, idx + 1, axis=axis)
-        x_prev = grid[idx - 1]
-        x_next = grid[idx + 1]
-        return (f_next - f_prev) / (x_next - x_prev)
+            lo, hi = 0, 1
+        elif idx >= n - 1:
+            lo, hi = n - 2, n - 1
+        else:
+            lo, hi = idx - 1, idx + 1
+        return (np.take(values, hi, axis=axis) - np.take(values, lo, axis=axis)) / (grid[hi] - grid[lo])
 
     def interpolate_spectrum(self, teff: float, logg: float, meta: float) -> Tuple[np.ndarray, np.ndarray]:
         """Return ``(wavelength, flux)`` at the requested parameter point."""
@@ -138,19 +119,20 @@ def prompt_scale_choice() -> bool:
     resp = input("\nScale flux for distance (apparent magnitudes)? [y/N]: ").strip().lower()
     return resp in ("y", "yes")
 
+def _prompt_length(prompt: str, default_unit: str, unit_names: Tuple[str, ...], factor: float) -> float:
+    """A number and optional unit typed at *prompt*; multiplied by *factor* when the unit is one of *unit_names*."""
+    parts = input(prompt).strip().split()
+    value = float(parts[0])
+    unit = parts[1].lower() if len(parts) > 1 else default_unit
+    return value * factor if unit in unit_names else value
+
 def prompt_distance_m() -> float:
-    val = input("Enter distance (append unit 'pc' or 'm', e.g. '10 pc' or '3.1e17 m'): ").strip()
-    parts = val.split()
-    d = float(parts[0])
-    unit = parts[1].lower() if len(parts) > 1 else "pc"
-    return d * PC_TO_M if unit == "pc" else d
+    return _prompt_length("Enter distance (append unit 'pc' or 'm', e.g. '10 pc' or '3.1e17 m'): ",
+                          "pc", ("pc",), PC_TO_M)
 
 def prompt_radius_m() -> float:
-    val = input("Enter stellar radius (append unit 'Rsun' or 'm', e.g. '1 Rsun' or '7e8 m'): ").strip()
-    parts = val.split()
-    r = float(parts[0])
-    unit = parts[1].lower() if len(parts) > 1 else "Rsun"
-    return r * RSUN_TO_M if unit in ("rsun", "r☉", "r_sun") else r
+    return _prompt_length("Enter stellar radius (append unit 'Rsun' or 'm', e.g. '1 Rsun' or '7e8 m'): ",
+                          "Rsun", ("rsun", "r☉", "r_sun"), RSUN_TO_M)
 
 
 def plot_sed(
@@ -187,9 +169,7 @@ def plot_sed(
         if clip in ("auto", "flux") and flux.size:
             mask = np.isfinite(flux) & (flux > rel_cutoff * peak)
             if np.any(mask):
-                wl_lo = np.nanmin(wavelength[mask])
-                wl_hi = np.nanmax(wavelength[mask])
-                candidates.append((wl_lo, wl_hi))
+                candidates.append((np.nanmin(wavelength[mask]), np.nanmax(wavelength[mask])))
 
         if clip in ("auto", "filters") and filters:
             f_los = [np.min(fc.wavelength) for fc in filters.values() if fc.wavelength.size]
@@ -201,9 +181,7 @@ def plot_sed(
             lo = min(c[0] for c in candidates)
             hi = max(c[1] for c in candidates)
             span = hi - lo if hi > lo else 1.0
-            lo -= span * margin_frac
-            hi += span * margin_frac
-            plt.xlim(lo, hi)
+            plt.xlim(lo - span * margin_frac, hi + span * margin_frac)
 
     if xlim is not None:
         plt.xlim(*xlim)
@@ -229,9 +207,7 @@ def ensure_dir(path: str) -> None:
 
 def save_sed(path: str, wavelength: np.ndarray, flux: np.ndarray) -> None:
     ensure_dir(os.path.dirname(path) or ".")
-    data = np.column_stack((wavelength, flux))
-    header = "wavelength flux"
-    np.savetxt(path, data, header=header)
+    np.savetxt(path, np.column_stack((wavelength, flux)), header="wavelength flux")
 
 
 def prompt_for_parameter(name: str, units: str, grid: np.ndarray, provided: float | None) -> float:
@@ -265,12 +241,8 @@ def prompt_for_parameter(name: str, units: str, grid: np.ndarray, provided: floa
 def infer_filter_directories(flux_cube_path: str) -> List[Path]:
     """Return likely filter directories based on the flux cube location."""
     cube_path = Path(flux_cube_path).expanduser().resolve()
-    candidates: List[Path] = []
-    for parent in [cube_path.parent, *cube_path.parents]:
-        candidate = parent / "filters"
-        if candidate.is_dir():
-            candidates.append(candidate)
-    return candidates
+    candidates = [parent / "filters" for parent in [cube_path.parent, *cube_path.parents]]
+    return [candidate for candidate in candidates if candidate.is_dir()]
 
 
 def _is_auxiliary(path: Path, root: Path) -> bool:
@@ -280,14 +252,7 @@ def _is_auxiliary(path: Path, root: Path) -> bool:
 
 def _unique_resolved(paths: Iterable[Path]) -> List[Path]:
     """Resolved *paths* in order, without duplicates."""
-    unique: List[Path] = []
-    seen: set[Path] = set()
-    for path in paths:
-        resolved = path.resolve()
-        if resolved not in seen:
-            seen.add(resolved)
-            unique.append(resolved)
-    return unique
+    return list(dict.fromkeys(path.resolve() for path in paths))
 
 
 def collect_filter_files(
@@ -325,8 +290,7 @@ def collect_filter_files(
         return [], _unique_resolved(search_roots)
 
     if not search_roots:
-        common_root = Path(os.path.commonpath([str(p.parent) for p in unique_files])).resolve()
-        search_roots = [common_root]
+        search_roots = [Path(os.path.commonpath([str(p.parent) for p in unique_files])).resolve()]
     search_roots = _unique_resolved(search_roots)
 
     filter_entries: List[Tuple[str, Path]] = []
@@ -355,11 +319,8 @@ def collect_filter_files(
 
 
 def extract_filter_system(filter_name: str) -> str:
-    if "/" in filter_name:
-        return filter_name.split("/", 1)[0]
-    if "\\" in filter_name:
-        return filter_name.split("\\", 1)[0]
-    return filter_name
+    separator = "/" if "/" in filter_name else "\\"
+    return filter_name.split(separator, 1)[0]
 
 
 def prompt_for_filter_system(
@@ -381,8 +342,7 @@ def prompt_for_filter_system(
         )
 
     if len(systems) <= 1:
-        key = next(iter(systems)) if systems else None
-        return key, filter_entries
+        return next(iter(systems), None), filter_entries
 
     print("\nDiscovered filter systems:")
     ordered = sorted((system, len(entries)) for system, entries in systems.items())
@@ -392,17 +352,11 @@ def prompt_for_filter_system(
 
     while True:
         response = input("Select a filter system by number (or '0' for all): ").strip()
-        if not response:
-            response = "0"
-        if response.lower() in {"all", "a", "*"}:
+        if response.lower() in {"", "0", "all", "a", "*"}:
             return None, filter_entries
-        if response == "0":
-            return None, filter_entries
-        if response.isdigit():
-            index = int(response)
-            if 1 <= index <= len(ordered):
-                system = ordered[index - 1][0]
-                return system, systems[system]
+        if response.isdigit() and 1 <= int(response) <= len(ordered):
+            system = ordered[int(response) - 1][0]
+            return system, systems[system]
         print("Please enter a valid selection from the list above.")
 
 
@@ -413,15 +367,11 @@ def prompt_for_photometric_system(provided: str | None) -> str:
             return "AB" if normalized == "ab" else "Vega"
         raise SystemExit("Photometric system must be either 'AB' or 'Vega'.")
 
+    answers = {"": "AB", "ab": "AB", "a": "AB", "vega": "Vega", "v": "Vega"}
     while True:
-        response = input("Compute magnitudes in the AB or Vega system? [AB/Vega]: ").strip()
-        if not response:
-            return "AB"
-        normalized = response.lower()
-        if normalized in {"ab", "a"}:
-            return "AB"
-        if normalized in {"vega", "v"}:
-            return "Vega"
+        response = input("Compute magnitudes in the AB or Vega system? [AB/Vega]: ").strip().lower()
+        if response in answers:
+            return answers[response]
         print("Please answer 'AB' or 'Vega'.")
 
 
@@ -482,17 +432,13 @@ def resolve_vega_spectrum_path(
 
     while True:
         choice = input("Select Vega spectrum by number: ").strip()
-        if choice.isdigit():
-            index = int(choice)
-            if 1 <= index <= len(candidates):
-                return candidates[index - 1]
+        if choice.isdigit() and 1 <= int(choice) <= len(candidates):
+            return candidates[int(choice) - 1]
         print("Please select one of the listed Vega spectra.")
 
 
-def _flux_cube_search_locations(
-    hints: Sequence[str | os.PathLike[str]] | None,
-) -> Tuple[List[Path], List[Path]]:
-    """Files named by the hints and $SED_FLUX_CUBE, and directories to search for cubes."""
+def discover_flux_cube_files(hints: Sequence[str | os.PathLike[str]] | None = None) -> List[Path]:
+    """Discover ``flux_cube.bin`` files from common locations and hints."""
     from .model import DATA_DIR_DEFAULT
 
     hints = list(hints or [])
@@ -500,13 +446,12 @@ def _flux_cube_search_locations(
         if os.environ.get(variable):
             hints.append(os.environ[variable])
 
+    found: set[Path] = set()
     search_dirs: List[Path] = []
-    direct_files: List[Path] = []
-
     for hint in hints:
         path = Path(hint).expanduser()
         if path.is_file():
-            direct_files.append(path.resolve())
+            found.add(path.resolve())
         elif path.is_dir():
             search_dirs.append(path)
 
@@ -520,50 +465,27 @@ def _flux_cube_search_locations(
         this_dir / "data",
         this_dir / "data" / "stellar_models",
     ]
-
     for root in default_roots:
         if root not in search_dirs:
             search_dirs.append(root)
-    return direct_files, search_dirs
-
-
-def discover_flux_cube_files(hints: Sequence[str | os.PathLike[str]] | None = None) -> List[Path]:
-    """Discover ``flux_cube.bin`` files from common locations and hints."""
-    direct_files, search_dirs = _flux_cube_search_locations(hints)
-
-    seen: set[Path] = set()
-    results: List[Path] = []
-
-    def register(path: Path) -> None:
-        resolved = path.expanduser().resolve()
-        if resolved in seen:
-            return
-        if resolved.is_file():
-            seen.add(resolved)
-            results.append(resolved)
-
-    for file_path in direct_files:
-        register(file_path)
 
     for directory in search_dirs:
         directory = directory.expanduser().resolve()
         if not directory.exists():
             continue
         if directory.is_file():
-            register(directory)
+            found.add(directory)
             continue
         try:
             for match in directory.rglob("flux_cube.bin"):
                 if match.is_file():
-                    register(match)
+                    found.add(match.resolve())
         except OSError as exc:
             logger.warning(
                 "Could not finish searching %s for flux cubes (%s); "
                 "cubes there may be missing from the candidates.", directory, exc,
             )
-
-    results.sort()
-    return results
+    return sorted(found)
 
 
 def resolve_flux_cube_path(path: str) -> Path:
@@ -598,43 +520,34 @@ def prompt_for_flux_cube_path(hints: Sequence[str | os.PathLike[str]] | None = N
     while True:
         candidates = discover_flux_cube_files(hints)
         if len(candidates) == 1:
-            chosen = candidates[0]
-            print(f"Using flux cube: {chosen}")
-            return chosen
-        if len(candidates) > 1:
+            print(f"Using flux cube: {candidates[0]}")
+            return candidates[0]
+        if candidates:
             print("Discovered flux cube files:")
             for idx, candidate in enumerate(candidates, start=1):
                 print(f"  {idx}. {candidate}")
-            response = input(
-                "Select a flux cube by number or enter a path (or 'q' to quit): "
-            ).strip()
+            response = input("Select a flux cube by number or enter a path (or 'q' to quit): ").strip()
             if not response:
                 continue
-            if response.lower() in {"q", "quit", "exit"}:
-                raise SystemExit("No flux cube selected; aborting.")
-            if response.isdigit():
-                index = int(response)
-                if 1 <= index <= len(candidates):
-                    return candidates[index - 1]
-                print("Invalid selection. Please choose one of the listed numbers.")
+        else:
+            response = input("Enter path to flux_cube.bin (or 'q' to quit): ").strip()
+            if not response:
+                print("Please provide a path to a flux cube file.")
                 continue
-            try:
-                return resolve_flux_cube_path(response)
-            except FileNotFoundError as exc:
-                print(exc)
-                continue
-
-        response = input("Enter path to flux_cube.bin (or 'q' to quit): ").strip()
-        if not response:
-            print("Please provide a path to a flux cube file.")
-            continue
         if response.lower() in {"q", "quit", "exit"}:
             raise SystemExit("No flux cube selected; aborting.")
+        if candidates and response.isdigit():
+            index = int(response)
+            if 1 <= index <= len(candidates):
+                return candidates[index - 1]
+            print("Invalid selection. Please choose one of the listed numbers.")
+            continue
         try:
             return resolve_flux_cube_path(response)
         except FileNotFoundError as exc:
             print(exc)
-            hints.append(response)
+            if not candidates:  # a path typed with no cube found becomes a search hint
+                hints.append(response)
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -661,15 +574,9 @@ def _build_parser() -> argparse.ArgumentParser:
 def main(argv: Sequence[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
 
-    hints: List[str | os.PathLike[str]] = []
-    if args.model_dir:
-        hints.append(args.model_dir)
+    hints: List[str | os.PathLike[str]] = [args.model_dir] if args.model_dir else []
 
-    if args.flux_cube:
-        flux_cube_path = resolve_flux_cube_path(args.flux_cube)
-    else:
-        flux_cube_path = prompt_for_flux_cube_path(hints)
-
+    flux_cube_path = resolve_flux_cube_path(args.flux_cube) if args.flux_cube else prompt_for_flux_cube_path(hints)
     cube = FluxCube.from_file(str(flux_cube_path))
 
     teff = prompt_for_parameter("effective temperature", "K", cube.teff_grid, args.teff)
@@ -702,9 +609,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     failures: List[str] = []
     filter_entries, filter_roots = collect_filter_files(args.filters, str(flux_cube_path))
     if filter_entries:
-        filters, failures = _print_filter_photometry(
-            args, flux_cube_path, filter_entries, filter_roots, wl, flux
-        )
+        filters, failures = _print_filter_photometry(args, flux_cube_path, filter_entries, filter_roots, wl, flux)
     else:
         print("\nNo filter files found; skipping filter photometry.")
 
@@ -712,11 +617,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         save_sed(args.save_sed, wl, flux)
         print(f"Saved SED to {args.save_sed}")
 
-    if args.plot:
-        plot_path = args.plot
-    else:
-        plot_filename = f"sed_T{teff:.0f}_g{logg:.2f}_M{metallicity:.2f}.png"
-        plot_path = os.path.join("plots", plot_filename)
+    plot_path = args.plot or os.path.join("plots", f"sed_T{teff:.0f}_g{logg:.2f}_M{metallicity:.2f}.png")
 
     plot_sed(wl, flux, filters, out_path=plot_path)
     print(f"Saved plot to {plot_path}")
@@ -747,13 +648,9 @@ def _print_filter_photometry(
         nonlocal vega_spec
         if vega_spec is None:
             try:
-                spectrum_path = resolve_vega_spectrum_path(
-                    args.vega_sed, flux_cube_path, args.filters or []
-                )
+                spectrum_path = resolve_vega_spectrum_path(args.vega_sed, flux_cube_path, args.filters or [])
             except FileNotFoundError as exc:
-                raise SystemExit(
-                    f"{exc} Provide a Vega spectrum via --vega-sed or place one near the flux cube."
-                )
+                raise SystemExit(f"{exc} Provide a Vega spectrum via --vega-sed or place one near the flux cube.")
             print(f"Using Vega spectrum: {spectrum_path}")
             vega_spec = load_spectrum(str(spectrum_path))
         return vega_spec
@@ -775,9 +672,7 @@ def _print_filter_photometry(
         curve = load_filter_curve(str(fpath), name)
         filters[name] = curve
         try:
-            flux_label, flux_density, magnitude = _band_magnitude(
-                wl, flux, curve, photometric_system, ensure_vega_spec
-            )
+            flux_label, flux_density, magnitude = _band_magnitude(wl, flux, curve, photometric_system, ensure_vega_spec)
         except ValueError as exc:
             print(f"  {name:30s}  error: {exc}")
             failures.append(f"{name}: {exc}")

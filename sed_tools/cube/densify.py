@@ -24,18 +24,9 @@ from ..ui_utils import banner
 def _read_cube_header(path):
     """Read grids and wavelengths only — does not load flux into RAM."""
     with open(path, "rb") as f:
-        nt, nl, nm, nw = struct.unpack("iiii", f.read(16))
-        teff = np.frombuffer(f.read(8 * nt), dtype=np.float64).copy()
-        logg = np.frombuffer(f.read(8 * nl), dtype=np.float64).copy()
-        meta = np.frombuffer(f.read(8 * nm), dtype=np.float64).copy()
-        wl   = np.frombuffer(f.read(8 * nw), dtype=np.float64).copy()
-    return nt, nl, nm, nw, teff, logg, meta, wl
-
-
-def _open_flux_memmap(path, nt, nl, nm, nw):
-    """Read-only memmap of an existing cube's flux, in the file's order (nw, nm, nl, nt)."""
-    offset = flux_offset(nt, nl, nm, nw)
-    return np.memmap(path, dtype=np.float64, mode="r", offset=offset, shape=(nw, nm, nl, nt))
+        sizes = struct.unpack("iiii", f.read(16))
+        axes = [np.frombuffer(f.read(8 * n), dtype=np.float64).copy() for n in sizes]
+    return (*sizes, *axes)
 
 
 # --- The dense Teff grid and its SEDs ---
@@ -55,7 +46,7 @@ def _build_dense_teff(teff_orig, spacing):
 def _blackbody_scales(flux_orig, teff_orig, wavelengths):
     """Each real node's bolometric flux over its Teff's blackbody (1 where either is <= 0), indexed [teff, logg, meta];
     computed one node at a time, so no (nt, nw) array is held."""
-    nt, nl, nm = flux_orig.shape[3], flux_orig.shape[2], flux_orig.shape[1]
+    _, nm, nl, nt = flux_orig.shape
     bb_scale = np.ones((nt, nl, nm), dtype=np.float64)
     for i_t in range(nt):
         bb_bol = np.trapezoid(_blackbody(wavelengths, teff_orig[i_t]), wavelengths)
@@ -104,12 +95,6 @@ def _synthetic_seds(t_new, i_near, use_ml, wl_block, logg_grid, meta_grid, bb_sc
     return seds
 
 
-def _wavelengths_per_block(nt_orig, nt_new, nl, nm):
-    """How many wavelengths a block holds, so its source and dense parts fit in half the available RAM."""
-    bytes_per_wavelength = (nt_orig + nt_new) * nl * nm * 8
-    return max(1, _available_ram_bytes() // 2 // bytes_per_wavelength)
-
-
 def _write_dense_flux(f, flux_orig, source_rows, teff_dense, teff_orig, logg_grid, meta_grid,
                       wavelengths, bb_scale, generator, dst):
     """Write the dense cube's flux to f a block of wavelengths at a time: source Teffs verbatim, an SED at each node
@@ -123,7 +108,8 @@ def _write_dense_flux(f, flux_orig, source_rows, teff_dense, teff_orig, logg_gri
             use_ml = generator is not None and teff_orig[0] <= t_new <= teff_orig[-1]
             synthetic.append((idx_d, t_new, int(np.argmin(np.abs(teff_orig - t_new))), use_ml))
 
-    w_block = _wavelengths_per_block(nt_orig, nt_new, nl, nm)
+    # Wavelengths per block, so its source and dense parts fit in half the available RAM
+    w_block = max(1, _available_ram_bytes() // 2 // ((nt_orig + nt_new) * nl * nm * 8))
     n_blocks = (nw + w_block - 1) // w_block
     n_ml = sum(use_ml for _, _, _, use_ml in synthetic)
     print(f"\nGenerating {len(synthetic)} synthetic Teff points ({n_ml} by ML, "
@@ -179,7 +165,8 @@ def densify_grid(
     print(f"  Teff range : {teff_orig[0]:.0f} – {teff_orig[-1]:.0f} K")
     print(f"  Largest gap: {gaps.max():.0f} K  (mean {gaps.mean():.0f} K)")
 
-    flux_orig = _open_flux_memmap(src, nt_orig, nl, nm, nw)
+    flux_orig = np.memmap(src, dtype=np.float64, mode="r", offset=flux_offset(nt_orig, nl, nm, nw),
+                          shape=(nw, nm, nl, nt_orig))
 
     generator = None
     if ml_model is not None:
@@ -203,8 +190,7 @@ def densify_grid(
         _write_dense_flux(f, flux_orig, _source_rows(teff_orig, teff_dense), teff_dense, teff_orig,
                           logg_grid, meta_grid, wavelengths, bb_scale, generator, dst)
 
-    size_mb = os.path.getsize(dst) / (1024**2)
-    print(f"  Written: {nt_new} × {nl} × {nm} × {nw}  ({size_mb:.1f} MiB)")
+    print(f"  Written: {nt_new} × {nl} × {nm} × {nw}  ({os.path.getsize(dst) / (1024**2):.1f} MiB)")
     print(f"{'='*60}\n")
 
 
@@ -246,8 +232,7 @@ def run_interactive_workflow(base_dir: str = None) -> Optional[int]:
         return 1
 
     src_dir     = os.path.dirname(src)
-    parent      = os.path.dirname(src_dir)
-    default_dst = os.path.join(parent, os.path.basename(src_dir) + "_dense", "flux_cube.bin")
+    default_dst = os.path.join(os.path.dirname(src_dir), os.path.basename(src_dir) + "_dense", "flux_cube.bin")
     dst = input(f"Output path [{default_dst}]: ").strip() or default_dst
 
     densify_grid(src=src, dst=dst, teff_spacing=spacing, ml_model=ml_model)
@@ -263,13 +248,7 @@ def main() -> None:
     parser.add_argument("--teff-spacing", type=float, default=1000.0)
     parser.add_argument("--ml-model",     default=None)
     args = parser.parse_args()
-
-    densify_grid(
-        src=args.flux_cube,
-        dst=args.output,
-        teff_spacing=args.teff_spacing,
-        ml_model=args.ml_model,
-    )
+    densify_grid(src=args.flux_cube, dst=args.output, teff_spacing=args.teff_spacing, ml_model=args.ml_model)
 
 
 if __name__ == "__main__":
