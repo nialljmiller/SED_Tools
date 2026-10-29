@@ -221,8 +221,8 @@ class SEDCompleter:
         library_path: str,
         max_samples: int = 5000,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-        """X (an input window at a random place, so the network learns to extend from any part of a spectrum), y (the
-        whole spectrum), params and masks (1 where y is valid outside the window), float32, from the flux cube."""
+        """(X, y, params, masks) as float32 from the flux cube: X an input window at a random place in each spectrum
+        (so the network learns to extend from any part), y the whole spectrum, masks 1 where y is valid outside X."""
         print("Loading flux cube...")
         teff, logg, meta, wavelengths, flux_cube = self._load_flux_cube(library_path)
         

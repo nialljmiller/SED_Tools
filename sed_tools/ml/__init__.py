@@ -426,14 +426,7 @@ class Completer:
         wavelength_ext, flux_ext : np.ndarray
             Extended arrays
         """
-        return self._completer.complete_sed(
-            wavelength=wavelength,
-            flux=flux,
-            teff=teff,
-            logg=logg,
-            meta=meta,
-            extension_range=extension_range,
-        )
+        return complete_sed(self._completer, wavelength, flux, teff, logg, meta, extension_range)
     
     def extend_catalog(
         self,
