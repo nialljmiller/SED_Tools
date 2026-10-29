@@ -129,10 +129,9 @@ def _filter_urls_by_params(
     kept = []
     for url in urls:
         params = _parse_params_from_name(os.path.basename(urllib.parse.urlparse(url).path))
-        if not params:
-            kept.append(url)  # cannot be classified; the download reports it
-            continue
-        if _in_range(float(params["teff"]), teff_range) and _in_range(float(params["logg"]), logg_range):
+        # A name that cannot be classified is kept; the download reports it
+        if not params or (_in_range(float(params["teff"]), teff_range)
+                          and _in_range(float(params["logg"]), logg_range)):
             kept.append(url)
     return kept
 
