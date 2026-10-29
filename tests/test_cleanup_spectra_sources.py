@@ -202,9 +202,20 @@ def test_njm_discovery_failure_warns_instead_of_vanishing(tmp_path, monkeypatch,
     with caplog.at_level(logging.WARNING):
         assert grabber.discover_models() == []
 
-    messages = warnings_from(caplog, "njm_spectra_grabber")
-    assert any("directory listing instead" in m for m in messages)
-    assert any("403" in m and "not offered" in m for m in messages)
+    [message] = warnings_from(caplog, "njm_spectra_grabber")  # one warning for both failures
+    assert "grid list" in message and "403" in message and "not offered" in message
+
+
+def test_njm_discovery_from_the_directory_listing_is_warned_about_once(tmp_path, monkeypatch, caplog):
+    grabber, session = make_njm(tmp_path, monkeypatch, {f"{NJM}/index.json": FakeResponse(200, "not json")})
+    session.routes[f"{NJM}/stellar_models"] = FakeResponse(
+        200, '<a href="?C=N;O=D">Name</a><a href="/sed_tools/">Parent Directory</a><a href="Grid/">Grid/</a>')
+
+    with caplog.at_level(logging.WARNING):
+        assert grabber.discover_models() == ["Grid"]
+
+    [message] = warnings_from(caplog, "njm_spectra_grabber")
+    assert "using the directory listing instead" in message
 
 
 def test_njm_discovery_reads_cached_index(tmp_path, monkeypatch):
@@ -227,7 +238,7 @@ def test_njm_aux_probe_without_an_answer_raises(tmp_path, monkeypatch):
         GRID + "flux_cube.bin": lambda **kw: requests.ConnectionError("reset"),
     }))
 
-    with pytest.raises(RuntimeError, match="could not check .*flux_cube.bin"):
+    with pytest.raises(requests.ConnectionError, match="reset"):
         grabber.get_model_metadata("Grid")
 
 

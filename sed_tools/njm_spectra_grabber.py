@@ -71,7 +71,7 @@ class NJMSpectraGrabber:
         connection within NJM_CONNECT_TIMEOUT) means the mirror is down, and
         nothing else is tried.  Plain HTTP is tried only when HTTPS fails its
         TLS handshake with and without verification.  If the mirror is down,
-        the warning lists each attempt's error.
+        the warning gives the last attempt's error.
         """
         index_url = f"{self.base_url}/index.json"
         errors: List[str] = []
@@ -129,7 +129,7 @@ class NJMSpectraGrabber:
     @staticmethod
     def _unreachable(errors: List[str]) -> bool:
         """Report NJM down, and leave it alone in this whole process for a while (see NJMFilterGrabber._pause)."""
-        reason = plain_reason(errors[-1].split(": ", 1)[-1]) if errors else "no answer"
+        reason = plain_reason(errors[-1].split(": ", 1)[-1])
         NJMFilterGrabber._pause(reason, f"NJM mirror is unreachable ({reason}),\n"
                                         "  so its spectral grids are not offered", logger)
         return False
@@ -178,18 +178,19 @@ class NJMSpectraGrabber:
             if data.get("models"):
                 return _visible(data["models"])
             index_problem = "it lists no models"
-            
-        logger.warning("NJM mirror: could not read the grid list from %s (%s); using the directory listing instead",
-                       index_url, index_problem)
+
         try:
             models = _visible(self._parse_directory_listing(self.stellar_models_url))
+            listing_problem = None if models else "it is empty"
         except requests.RequestException as exc:
-            logger.warning("NJM mirror: directory listing %s failed too (%s); NJM spectral grids are not offered",
-                           self.stellar_models_url, exc)
-            return []
-        if not models:
-            logger.warning("NJM mirror: directory listing %s is empty; NJM spectral grids are not offered",
-                           self.stellar_models_url)
+            models, listing_problem = [], str(exc)
+        if listing_problem:
+            logger.warning("NJM mirror: neither the grid list %s (%s) nor the directory listing %s (%s) can be "
+                           "read; NJM spectral grids are not offered",
+                           index_url, index_problem, self.stellar_models_url, listing_problem)
+        else:
+            logger.warning("NJM mirror: could not read the grid list from %s (%s); using the directory listing "
+                           "instead", index_url, index_problem)
         return models
             
     def _parse_directory_listing(self, url: str) -> List[str]:
@@ -204,16 +205,13 @@ class NJMSpectraGrabber:
         
         items = []
         for link in soup.find_all('a'):
-            href = link.get('href', '')
-            if href and href not in ['..', '/', '../', '?', '']:
-                # Remove trailing slash
-                item = href.rstrip('/')
-                # Skip parent links, query strings, and sorting links
-                if not item.startswith('..') and not item.startswith('/') and not item.startswith('?'):
-                    # Skip column sorting links
-                    if item not in ['Name', 'Last modified', 'Size', 'Description']:
-                        items.append(item)
-            
+            item = link.get('href', '').rstrip('/')
+            # Skip parent links, absolute links and the column-sorting links (?C=N;O=D)
+            if not item or item.startswith(('..', '/', '?')):
+                continue
+            if item not in ['Name', 'Last modified', 'Size', 'Description']:
+                items.append(item)
+
         return items
     
     def _discover_model_files(self, model_name: str) -> Dict[str, List[str]]:
@@ -274,40 +272,26 @@ class NJMSpectraGrabber:
         return result
     
     def _remote_file_exists(self, url: str) -> bool:
-        """True if the mirror serves *url*.
-
-        Asks with HEAD; if HEAD errors, with a GET for one byte. Raises
-        RuntimeError if neither gets an answer.
-        """
-        try:
-            return self.session.head(url, timeout=5).status_code == 200
-        except requests.RequestException as head_error:
-            try:
-                resp = self.session.get(url, timeout=5, headers={"Range": "bytes=0-0"})
-            except requests.RequestException as get_error:
-                raise RuntimeError(f"NJM mirror: could not check {url}: HEAD failed ({head_error}), "
-                                   f"GET failed ({get_error})") from get_error
-            return resp.status_code in (200, 206)
+        """True if the mirror serves *url* (a HEAD answered 200); the request's error if it gets no answer."""
+        return self.session.head(url, timeout=5).status_code == 200
 
     def get_model_metadata(self, model_name: str) -> Dict[str, any]:
         """Return metadata for a model, including list of all files.
 
         Raises RuntimeError if the mirror is unreachable or has no files for
-        the model.
+        the model, and requests' error if a check for an auxiliary file gets
+        no answer.
         """
         if not self._available:
             raise RuntimeError(f"NJM mirror {self.base_url} is unreachable; cannot fetch {model_name}")
         
         print(f"  Discovering files for {model_name} on NJM mirror...")
         
-        # Discover all files in the model directory
+        # Discover all files in the model directory; never empty (without a listing,
+        # _fetch_remote_lookup raises when lookup_table.csv lists no spectra)
         files = self._discover_model_files(model_name)
         model_url = f"{self.stellar_models_url}/{model_name}/"
-        
-        total = sum(len(v) for v in files.values())
-        if total == 0:
-            raise RuntimeError(f"NJM mirror has no files for {model_name} at {model_url}")
-        
+
         print(f"    Found: {len(files['txt_files'])} spectra, {len(files['bin_files'])} .bin, "
               f"{len(files['h5_files'])} .h5, {len(files['csv_files'])} .csv")
         
@@ -393,9 +377,6 @@ class NJMSpectraGrabber:
         Files not found in the lookup table are KEPT (conservative — don't
         accidentally drop spectra we can't classify).
         """
-        if not teff_range and not logg_range and not meta_range:
-            return txt_files
-        
         kept = []
         cut = 0
         unknown = 0
@@ -685,11 +666,7 @@ class NJMSpectraGrabber:
         """
         if not self._available:
             raise RuntimeError(f"NJM mirror {self.base_url} is unreachable; cannot download {model_name}")
-        
-        if not metadata:
-            print(f"[njm] No metadata for {model_name}")
-            return 0
-        
+
         model_dir = os.path.join(self.base_dir, model_name)
         os.makedirs(model_dir, exist_ok=True)
         
