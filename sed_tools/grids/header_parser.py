@@ -1,15 +1,6 @@
-"""
-sed_tools/header_parser.py
+"""Spectrum file headers: parse_header reads the '# key = value' lines of a .txt spectrum.
 
-Single source of truth for parsing spectrum file headers.
-
-All modules that need to read parameter metadata from .txt spectrum files
-(svo_spectra_grabber, svo_regen_spectra_lookup,
-spectra_cleaner, njm_spectra_grabber, precompute_flux_cube) should import
-parse_header() from here rather than implementing their own logic.
-
-To add support for a new key alias, edit the ALIASES table below — that is
-the only place a developer needs to touch.
+ALIASES maps the key names grids use to the canonical teff, logg and metallicity.
 """
 
 from __future__ import annotations
@@ -31,7 +22,7 @@ ALIASES: Dict[str, str] = {
                             "original_wavelength_unit", "original_flux_unit", "conversion_confidence"]},
 }
 
-# Numeric regex — matches int or float including scientific notation
+# An int or float, including scientific notation
 _NUM_RE = re.compile(r"[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?")
 
 # Canonical numeric parameters — values stored as float, nan if unparseable
@@ -39,17 +30,18 @@ _NUMERIC_PARAMS = {"teff", "logg", "metallicity"}
 
 
 def parse_header(filepath: str) -> Dict[str, object]:
-    """
-    Parse the comment header of a spectrum .txt file.
+    """Parse the comment header of a spectrum .txt file.
+
     Returns a flat dict with canonical keys. Numeric parameters (teff, logg,
     metallicity) are stored as float (nan if the value couldn't be parsed).
     All other recognised keys are stored as strings. Unrecognised keys are
-    stored under their original lowercased name in the returned dict so no
-    information is lost.
+    stored under their original lowercased name, so no information is lost.
+
     Parameters
     ----------
     filepath : str
         Path to the spectrum file.
+
     Returns
     -------
     dict

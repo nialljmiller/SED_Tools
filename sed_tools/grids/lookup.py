@@ -14,8 +14,7 @@ from .header_parser import parse_header
 logger = logging.getLogger("sed_tools._lookup_io")
 
 
-# Ordered candidate lists for each physical axis.
-# Extends header_parser.ALIASES for DataFrame column matching.
+# The column names find_*_column try, most preferred first
 _TEFF_CANDIDATES  = ["teff", "t_eff", "t eff", "temperature", "temp"]
 _LOGG_CANDIDATES  = ["logg", "log_g", "log(g)", "log g", "surface_gravity", "gravity"]
 _META_CANDIDATES  = ["metallicity", "meta", "feh", "[fe/h]", "[m/h]", "m/h", "m_h", "mh",
@@ -24,19 +23,9 @@ _FILE_CANDIDATES  = ["file_name", "filename", "file"]
 
 
 def find_column(keys: Iterable[str], candidates: List[str]) -> Optional[str]:
-    """Return the first key from *keys* that matches any candidate (case-insensitive).
+    """The key in *keys* (column names, dict keys, ...) that matches the earliest of *candidates*.
 
-    Parameters
-    ----------
-    keys :
-        Available column names (DataFrame columns, dict keys, …).
-    candidates :
-        Ordered list of names to try, from most to least preferred.
-
-    Returns
-    -------
-    str or None
-        The matched key as it appears in *keys*, or ``None`` if no match found.
+    Matching ignores case; the key is returned as *keys* spells it, or None if none matches.
     """
     lc_map = {k.lower(): k for k in keys}
     for c in candidates:
@@ -66,24 +55,12 @@ def write_lookup_csv(
     comment: bool = True,
     restval="",
 ) -> int:
-    """Write a lookup table to *path* with a '#'-prefixed header row (a plain csv header with ``comment=False``).
+    """Write a lookup table to *path* and return the number of data rows written.
 
-    Parameters
-    ----------
-    records :
-        Either a column-major dict ``{col_name: [val, ...]}`` or a list of
-        row dicts ``[{col: val, ...}, ...]``.
-    path :
-        Destination file path.
-    columns :
-        Explicit column order.  If omitted, inferred from *records*.
-    restval :
-        What a row without a column's key gets in that column.
-
-    Returns
-    -------
-    int
-        Number of data rows written.
+    *records* is a column-major dict ``{column: [value, ...]}`` or a list of row dicts.
+    The header row is '#'-prefixed, or a plain csv header with ``comment=False``.
+    *columns* gives the column order (default: the records' own), and *restval*
+    is what a row without a column's key gets in that column.
     """
     if isinstance(records, dict):
         cols = columns or list(records.keys())
@@ -107,12 +84,7 @@ def write_lookup_csv(
 
 
 def scan_existing_files(base_dir):
-    """
-    Scan the directory structure to find existing models and spectra files.
-
-    Returns:
-        dict: A mapping of model names to their respective spectra files.
-    """
+    """Map each folder name under base_dir to the paths of the .txt spectra in it."""
     existing_files = {}
     for root, _, files in os.walk(base_dir):
         for file in files:
@@ -126,7 +98,6 @@ def scan_existing_files(base_dir):
 
 def _discover_txt_files(directory: str) -> List[str]:
     """Return a sorted list of .txt spectra inside *directory*."""
-
     return sorted(
         [
             os.path.join(directory, fname)
@@ -143,8 +114,7 @@ _PARAMETERS = ("teff", "logg", "metallicity")
 def _drop_unstated_parameter(rows, param, output_dir):
     """Remove *param* from every row if no spectrum states it; ValueError if only some do.
 
-    A column of NaN would make the flux-cube builder fail, while a grid with
-    no column for an axis (e.g. a blackbody grid) is built with one node.
+    A NaN column would make the flux-cube builder fail; a grid with no column for an axis is built with one node.
     """
     unstated = [row["file_name"] for row in rows if math.isnan(row[param])]
     if not unstated:
@@ -211,15 +181,13 @@ def regenerate_lookup_table(
         writer.writerows(metadata_rows)
     print(f"Lookup table regenerated: {lookup_table_path}")
 
+
 def main():
+    """Rewrite lookup_table.csv in every grid folder under STELLAR_DIR_DEFAULT."""
     from ..cube.model import STELLAR_DIR_DEFAULT
     base_dir = str(STELLAR_DIR_DEFAULT)
     os.makedirs(base_dir, exist_ok=True)
-
-    # Scan for existing models and files
     existing_files = scan_existing_files(base_dir)
-
-    # Regenerate lookup tables for each model
     for model, files in existing_files.items():
         print(f"Processing spectral grid: {model}")
         output_dir = os.path.join(base_dir, model)
