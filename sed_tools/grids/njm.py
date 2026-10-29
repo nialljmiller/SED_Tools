@@ -467,12 +467,10 @@ class NJMSpectraGrabber:
         RuntimeError if the table cannot be read, rather than downloading spectra outside the ranges.
         """
         print(f"  [njm] Applying parameter cuts...")
-        if teff_range:
-            print(f"    Teff:  {teff_range[0]:.0f} – {teff_range[1]:.0f} K")
-        if logg_range:
-            print(f"    logg:  {logg_range[0]:.2f} – {logg_range[1]:.2f}")
-        if meta_range:
-            print(f"    [M/H]: {meta_range[0]:+.2f} – {meta_range[1]:+.2f}")
+        for label, rng, fmt, unit in (("Teff: ", teff_range, ".0f", " K"), ("logg: ", logg_range, ".2f", ""),
+                                      ("[M/H]:", meta_range, "+.2f", "")):
+            if rng:
+                print(f"    {label} {rng[0]:{fmt}} – {rng[1]:{fmt}}{unit}")
 
         lookup = self._fetch_remote_lookup(model_name, model_url)
         return self._filter_files_by_params(txt_files, lookup, teff_range=teff_range,
