@@ -587,8 +587,7 @@ class Filters:
         (``vega/vega_flam.csv``) scaled to the curves; a path or a
         ``(wavelength Å, f_λ)`` pair overlays another spectrum.  Needs matplotlib.
         """
-        from ..filters.display import instrument_colors
-        from ..filters.plot import plot_curves
+        from ..filters.display import instrument_colors, plot_curves
         from ..filters.properties import load_vega
         from ..photometry import load_filter_curve
 
