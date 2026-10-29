@@ -113,8 +113,10 @@ class SVOFilterBrowser:
         facilities: Dict[str, Facility] = {}
         for link in soup.find_all("a", href=True):
             params = self._parse_params(link["href"])
+            if params.get("mode") != "browse":
+                continue
             gname = params.get("gname")
-            if params.get("mode") != "browse" or not gname or "gname2" in params:
+            if not gname or "gname2" in params:
                 continue
             label = link.get_text(" ", strip=True) or gname
             label = label.split("(")[0].strip() or gname
@@ -161,11 +163,18 @@ class SVOFilterBrowser:
         if table:
             for tr in table.find_all("tr"):
                 cells = tr.find_all("td")
-                link = cells[0].find("a", href=True) if cells else None
-                filter_id = link.get_text(strip=True) if link else ""
-                # Guard against header rows duplicated as td
-                if not filter_id or filter_id.lower() == "filter id":
+                if not cells:
                     continue
+                link = cells[0].find("a", href=True)
+                if not link:
+                    continue
+                filter_id = link.get_text(strip=True)
+                if not filter_id:
+                    continue
+                # Guard against header rows duplicated as td
+                if filter_id.lower() == "filter id":
+                    continue
+                band = _band_from_filter_id(filter_id)
                 facility = cells[-3].get_text(strip=True) if len(cells) >= 3 else facility_key
                 instrument = cells[-2].get_text(strip=True) if len(cells) >= 2 else instrument_key
                 if _would_collide(instrument, instrument_key, sibling_keys):
@@ -173,10 +182,14 @@ class SVOFilterBrowser:
                     # release is "GAIA"); file them under their unique key
                     # (GAIA/GAIA0, GAIA/GAIA3) so one never overwrites another.
                     instrument = instrument_key
+                description = cells[-1].get_text(strip=True) if cells else ""
                 rows.setdefault(filter_id, FilterRow(
-                    filter_id=filter_id, band=_band_from_filter_id(filter_id) or filter_id,
-                    facility=facility or facility_key, instrument=instrument or instrument_key,
-                    description=cells[-1].get_text(strip=True)))
+                    filter_id=filter_id,
+                    band=band or filter_id,
+                    facility=facility or facility_key,
+                    instrument=instrument or instrument_key,
+                    description=description,
+                ))
 
         self._filters_cache[cache_key] = list(rows.values())
         return self._filters_cache[cache_key]
@@ -326,7 +339,11 @@ def _would_collide(instrument_name: str, instrument_key: str, other_keys: Sequen
 
 # -------------------- CLI helpers --------------------
 def _band_from_filter_id(filter_id: str) -> str:
-    return filter_id.rsplit("." if "." in filter_id else "/", 1)[-1]
+    if "." in filter_id:
+        return filter_id.rsplit(".", 1)[-1]
+    if "/" in filter_id:
+        return filter_id.rsplit("/", 1)[-1]
+    return filter_id
 
 
 def _clean_path(value: str) -> str:
