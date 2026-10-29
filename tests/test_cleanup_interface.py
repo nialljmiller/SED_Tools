@@ -78,6 +78,15 @@ def sources(monkeypatch):
     return install
 
 
+def test_query_leaves_out_an_unreachable_njm_and_raises_when_it_is_the_source_asked_for(sources, caplog):
+    sources(njm=fake_grabber(["NJMgrid"], available=False), mast=fake_grabber(["BOSZ"]))
+    with caplog.at_level(logging.WARNING, logger="sed_tools.api"):
+        assert [g.name for g in SED.query(include_local=False)] == ["BOSZ"]
+    assert not caplog.text  # the NJM client warns; the API does not again
+    with pytest.raises(RuntimeError, match="NJM mirror https://mirror.invalid is unreachable"):
+        SED.query(source="njm", include_local=False)
+
+
 def test_query_rejects_an_unknown_source(sources):
     sources()
     with pytest.raises(ValueError, match="Unknown source: sov"):
@@ -85,11 +94,13 @@ def test_query_rejects_an_unknown_source(sources):
 
 
 def test_fetch_error_names_every_source_that_failed(sources, tmp_path, caplog):
-    sources(msg=fake_grabber(["Missing"]))
+    sources(njm=fake_grabber(available=False), msg=fake_grabber(["Missing"]))
     with caplog.at_level(logging.WARNING, logger="sed_tools.api"), pytest.raises(ValueError) as excinfo:
         SED.fetch("Missing", model_root=tmp_path)
     message = str(excinfo.value)
     assert "Spectral grid 'Missing' could not be fetched" in message
+    assert "njm: discovery failed: NJM mirror https://mirror.invalid is unreachable" in message
+    assert "njm" not in caplog.text  # the NJM client warns; the API does not again
     assert "msg: no metadata for Missing" in message
     assert "svo: no metadata for Missing" in message
     assert "svo: no metadata for Missing, trying next" in caplog.text
