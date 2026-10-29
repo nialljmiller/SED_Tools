@@ -106,12 +106,8 @@ class SpectralGridInfo:
     
     def __repr__(self) -> str:
         parts = [f"SpectralGridInfo('{self.name}', source='{self.source}'"]
-        if self.teff_range:
-            parts.append(f"teff={self.teff_range}")
-        if self.logg_range:
-            parts.append(f"logg={self.logg_range}")
-        if self.n_spectra:
-            parts.append(f"n_spectra={self.n_spectra}")
+        parts += [f"{label}={value}" for label, value in
+                  (("teff", self.teff_range), ("logg", self.logg_range), ("n_spectra", self.n_spectra)) if value]
         return ", ".join(parts) + ")"
 
 
@@ -138,14 +134,7 @@ class Spectrum:
         return self.flux
     
     def to_dict(self) -> Dict[str, Any]:
-        return {
-            'wavelength': self.wavelength,
-            'flux': self.flux,
-            'teff': self.teff,
-            'logg': self.logg,
-            'metallicity': self.metallicity,
-            'filename': self.filename,
-        }
+        return {name: getattr(self, name) for name in ('wavelength', 'flux', 'teff', 'logg', 'metallicity', 'filename')}
     
     def save(self, path: Union[str, Path], format: str = 'txt') -> None:
         """Save spectrum to file."""
@@ -184,15 +173,10 @@ class SpectralGrid:
     def parameters(self) -> pd.DataFrame:
         """Return a DataFrame of all spectrum parameters."""
         if self._parameters_df is None:
-            rows = []
-            for spec in self.spectra:
-                rows.append({
-                    'file_name': spec.filename or f"teff{spec.teff}_logg{spec.logg}_meta{spec.metallicity}.txt",
-                    'teff': spec.teff,
-                    'logg': spec.logg,
-                    'metallicity': spec.metallicity,
-                })
-            self._parameters_df = pd.DataFrame(rows)
+            self._parameters_df = pd.DataFrame([
+                {'file_name': spec.filename or f"teff{spec.teff}_logg{spec.logg}_meta{spec.metallicity}.txt",
+                 'teff': spec.teff, 'logg': spec.logg, 'metallicity': spec.metallicity}
+                for spec in self.spectra])
         return self._parameters_df
     
     @property
@@ -261,11 +245,7 @@ class SpectralGrid:
         Path
             The output directory path
         """
-        if path is None:
-            path = self._base_dir / self.name
-        else:
-            path = Path(path)
-        
+        path = self._base_dir / self.name if path is None else Path(path)
         path.mkdir(parents=True, exist_ok=True)
         
         for spec in self.spectra:
@@ -444,10 +424,9 @@ class SED:
             info = SpectralGridInfo(name=entry.name, source='local', is_local=True)
             try:
                 meta = _read_flux_cube_header(cube)
-                info.teff_range = (float(meta['teff'][0]), float(meta['teff'][-1]))
-                info.logg_range = (float(meta['logg'][0]), float(meta['logg'][-1]))
-                info.metallicity_range = (float(meta['meta'][0]), float(meta['meta'][-1]))
-                info.wavelength_range = (float(meta['wavelengths'][0]), float(meta['wavelengths'][-1]))
+                for attr, key in (("teff_range", "teff"), ("logg_range", "logg"), ("metallicity_range", "meta"),
+                                  ("wavelength_range", "wavelengths")):
+                    setattr(info, attr, (float(meta[key][0]), float(meta[key][-1])))
             except (OSError, ValueError, IndexError) as exc:
                 raise ValueError(f"Cannot read the flux cube header of local grid '{entry.name}' ({cube}): "
                                  f"{exc}. Rebuild it with: sed-tools rebuild --grids {entry.name}") from exc
@@ -829,16 +808,9 @@ class SED:
         dest = Path(base) / name
 
         missing = _report_import_headers(files, src_dir)
-        n_ok = len(files) - len(missing)
+        result = {"name": name, "n_files": len(files), "n_parseable": len(files) - len(missing)}
         if dry_run:
-            return {
-                "name": name,
-                "n_files": len(files),
-                "n_parseable": n_ok,
-                "n_missing": len(missing),
-                "dest": str(dest),
-                "dry_run": True,
-            }
+            return {**result, "n_missing": len(missing), "dest": str(dest), "dry_run": True}
 
         from ..grids.clean import check_flux_unit, clean_model_dir
 
@@ -846,11 +818,7 @@ class SED:
 
         dest.mkdir(parents=True, exist_ok=True)
         for f in files:
-            target = dest / f.name
-            if move:
-                shutil.move(str(f), str(target))
-            else:
-                shutil.copy2(str(f), str(target))
+            (shutil.move if move else shutil.copy2)(str(f), str(dest / f.name))
         print(f"[import] {'moved' if move else 'copied'} {len(files)} files -> {dest}")
 
         summary = clean_model_dir(str(dest), try_h5_recovery=True, rebuild_lookup=True, flux_unit=flux_unit)
@@ -867,13 +835,7 @@ class SED:
         same_root = Path(base).expanduser().resolve() == Path(cls._model_root).expanduser().resolve()
         root_arg = "" if same_root else f", model_root={str(base)!r}"
         print(f"[import] done. Load with: SED.local('{name}'{root_arg})")
-        return {
-            "name": name,
-            "n_files": len(files),
-            "n_parseable": n_ok,
-            "dest": str(dest),
-            "dry_run": False,
-        }
+        return {**result, "dest": str(dest), "dry_run": False}
 
     @classmethod
     def combine(

@@ -206,20 +206,11 @@ class Filters:
                                       tag_filter_file, tag_filter_tree)
 
         rows: List[Dict[str, Any]] = []
+        fields = ("detector_type", "source", "filter_id", "changed", "migrated", "note", "kept", "resolved_type",
+                  "resolved_source")
 
         def record(r) -> None:
-            rows.append({
-                "path": str(r.path),
-                "detector_type": r.detector_type,
-                "source": r.source,
-                "filter_id": r.filter_id,
-                "changed": r.changed,
-                "migrated": r.migrated,
-                "note": r.note,
-                "kept": r.kept,
-                "resolved_type": r.resolved_type,
-                "resolved_source": r.resolved_source,
-            })
+            rows.append({"path": str(r.path), **{key: getattr(r, key) for key in fields}})
             if verbose or r.kept or (r.changed and r.source == "assumed"):
                 flag = "*" if r.changed else " "
                 note = f"  ({r.note})" if r.note and (r.kept or r.source == "assumed") else ""
