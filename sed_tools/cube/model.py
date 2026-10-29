@@ -150,12 +150,8 @@ class EvaluatedSED:
                 vega_zero = _vega_zero_point(curve, vega_curve)
                 with np.errstate(divide="ignore", invalid="ignore"):
                     magnitude = float(-2.5 * np.log10(np.divide(flux_density, vega_zero)))
-            results[name] = PhotometryResult(
-                magnitude=magnitude,
-                flux_density=float(flux_density),
-                system="AB" if system == "AB" else "Vega",
-                filter_name=name,
-            )
+            results[name] = PhotometryResult(magnitude=magnitude, flux_density=float(flux_density),
+                                             system="AB" if system == "AB" else "Vega", filter_name=name)
 
         return results
 
@@ -408,13 +404,8 @@ class SED:
             if not contains and not allow_partial:
                 continue
             candidates.append(ModelMatch(
-                distance=_parameter_distance(*zip(point, grids)),
-                name=name,
-                flux_cube=cube_path,
-                teff_range=bounds[0],
-                logg_range=bounds[1],
-                metallicity_range=bounds[2],
-                contains_point=contains,
+                distance=_parameter_distance(*zip(point, grids)), name=name, flux_cube=cube_path,
+                teff_range=bounds[0], logg_range=bounds[1], metallicity_range=bounds[2], contains_point=contains,
             ))
         return sorted(candidates)[:limit]
 
@@ -463,14 +454,9 @@ class SED:
                 continue
             centers = [_range_center(wanted, grid) for wanted, grid in zip(requested, grids)]
             candidates.append(ModelMatch(
-                distance=_parameter_distance(*zip(centers, grids)),
-                name=name,
-                flux_cube=cube_path,
-                teff_range=bounds[0],
-                logg_range=bounds[1],
-                metallicity_range=bounds[2],
-                contains_point=_contains_point(*centers, metadata),
-                covers_range=covers_range,
+                distance=_parameter_distance(*zip(centers, grids)), name=name, flux_cube=cube_path,
+                teff_range=bounds[0], logg_range=bounds[1], metallicity_range=bounds[2],
+                contains_point=_contains_point(*centers, metadata), covers_range=covers_range,
             ))
         return sorted(candidates)[:limit]
 
