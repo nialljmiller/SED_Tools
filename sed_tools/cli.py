@@ -32,6 +32,7 @@ from typing import Dict, List, Optional, Sequence, Tuple
 import numpy as np
 from requests import RequestException
 
+from .api import _listing_failures
 from .config import set_data_dir, show_config
 from .filter_catalogue import CatalogueError
 from .filter_components import ComponentError
@@ -1237,16 +1238,6 @@ def _source_rank(source: str) -> int:
 def _cut(text: str, width: int) -> str:
     """``text`` cut to ``width`` characters, ending in '…' when anything was removed."""
     return text if len(text) <= width else text[:max(width - 1, 0)] + "…"
-
-
-#: What FilterLibrary.facilities() and instruments() list when NJM cannot be reached. NJM is
-#: optional: the other sources are listed instead, and the mirror client has already said so.
-_NJM_UNAVAILABLE = "NJM unavailable"
-
-
-def _listing_failures(errors: List[str]) -> List[str]:
-    """The catalogue listing errors that leave a list incomplete (an unreachable NJM does not)."""
-    return [error for error in errors if error != _NJM_UNAVAILABLE]
 
 
 def _print_listing_errors(errors: List[str], shown: set) -> None:
