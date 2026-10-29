@@ -5,15 +5,20 @@ this module re-exports them.
 """
 
 import argparse
+import glob  # noqa: F401  (kept: `from sed_tools.cli import *` gives what 0.5.0 gave)
 import inspect
 import json
 import logging
 import os
 import re
+import shlex  # noqa: F401  (kept, as glob)
 import sys
+import textwrap  # noqa: F401  (kept, as glob)
+import time  # noqa: F401  (kept, as glob)
 import traceback
 from collections import Counter
-from typing import Dict, List, Optional, Tuple
+from pathlib import Path  # noqa: F401  (kept, as glob)
+from typing import Dict, List, Optional, Sequence, Tuple  # noqa: F401  (Sequence kept, as glob)
 
 import numpy as np
 from requests import RequestException
