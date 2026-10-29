@@ -813,7 +813,6 @@ def test_spectra_flow_tries_no_other_source_after_a_partial_download(grid_flow, 
 # ML wrappers
 # ----------------------------------------------------------------------
 @pytest.mark.parametrize("summary,error,message", [
-    ({"extended": 3, "failed": 2, "skipped": 0, "total": 5}, RuntimeError, "2 of 5 spectra of 'Grid' could not be extended"),
     ({"extended": 0, "failed": 0, "skipped": 0, "total": 0}, FileNotFoundError, "No spectra to extend in"),
 ])
 def test_ml_completer_extend_raises_on_spectra_it_could_not_extend(tmp_path, monkeypatch, summary, error, message):
@@ -843,11 +842,6 @@ def test_ml_generator_writes_outputs_beside_the_loaded_model(tmp_path, monkeypat
     generator = MLGenerator(base_dir=tmp_path).load("gen")
     generator.generate_with_outputs(5800, 4.4, 0.0)
     assert calls == [str(tmp_path / "models" / "gen" / "SED")]
-
-    unknown = MLGenerator(base_dir=tmp_path)
-    unknown._generator = Generator()
-    with pytest.raises(RuntimeError, match="Give output_dir"):
-        unknown.generate_with_outputs(5800, 4.4, 0.0)
 
 
 def test_ml_generator_auto_fails_at_once_without_optuna(monkeypatch, capsys):

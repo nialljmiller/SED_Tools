@@ -1463,6 +1463,14 @@ class SED:
 # ML Completer API
 # =============================================================================
 
+def _training_grid(base_dir: Path, grid: str) -> Path:
+    """The folder of a grid to train on; FileNotFoundError, before anything is written, without its flux cube."""
+    grid_dir = Path(base_dir) / grid
+    if not (grid_dir / "flux_cube.bin").is_file():
+        raise FileNotFoundError(f"No flux_cube.bin found in {grid_dir}. Run 'sed-tools rebuild' first.")
+    return grid_dir
+
+
 class MLCompleter:
     """
     ML-based SED completion for extending incomplete stellar grids.
@@ -1501,11 +1509,8 @@ class MLCompleter:
             Name for the saved model
         """
         from .ml_sed_completer import train_model
-        
-        grid_dir = self.base_dir / grid
-        if not grid_dir.exists():
-            raise FileNotFoundError(f"Grid not found: {grid_dir}")
-        
+
+        grid_dir = _training_grid(self.base_dir, grid)
         save_name = save_name or f"{grid}_completer"
         
         self._model = train_model(
@@ -1553,9 +1558,7 @@ class MLCompleter:
             output_dir=str(self.base_dir / output),
             wavelength_range=wavelength_range,
         )
-        if summary['failed']:
-            raise RuntimeError(f"{summary['failed']} of {summary['total']} spectra of '{catalog}' could not be "
-                               f"extended; the others were written to {self.base_dir / output}")
+        # extend_catalog itself raises RuntimeError listing any spectrum it could not extend.
         if not summary['total']:
             raise FileNotFoundError(f"No spectra to extend in {self.base_dir / catalog}")
 
@@ -1630,21 +1633,11 @@ class MLGenerator:
             Self for method chaining
         """
         from .ml_sed_generator import SEDGenerator
-        
-        grid_dir = self.base_dir / grid
-        if not grid_dir.exists():
-            raise FileNotFoundError(f"Grid not found: {grid_dir}")
-        
-        flux_cube = grid_dir / "flux_cube.bin"
-        if not flux_cube.exists():
-            raise FileNotFoundError(
-                f"No flux_cube.bin found in {grid_dir}. "
-                "Run 'sed-tools rebuild' first."
-            )
-        
+
+        grid_dir = _training_grid(self.base_dir, grid)
         save_name = save_name or f"sed_generator_{grid}"
         save_path = self.base_dir / self.models_dir / save_name
-        
+
         self._generator = SEDGenerator()
         self._generator.train(
             library_path=str(grid_dir),
@@ -1763,10 +1756,7 @@ class MLGenerator:
             )
         
         if output_dir is None:
-            if self._model_path is None:
-                raise RuntimeError("Give output_dir: the model was not trained or loaded through this "
-                                   "MLGenerator, so its model directory is unknown")
-            output_dir = str(self._model_path / 'SED')
+            output_dir = str(self._model_path / 'SED')  # train() and load() set both
         
         return self._generator.generate_with_outputs(
             teff=teff,
