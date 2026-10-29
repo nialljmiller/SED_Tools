@@ -21,8 +21,11 @@ _META_CANDIDATES  = ["metallicity", "meta", "feh", "[fe/h]", "[m/h]", "m/h", "m_
                      "z", "zh", "zmet", "z/z0", "z/zsun"]
 _FILE_CANDIDATES  = ["file_name", "filename", "file"]
 
+# The column finders and the writer have string annotations, so their signatures read as
+# sed_tools._lookup_io's always have; regenerate_lookup_table's stay evaluated (no future import).
 
-def find_column(keys: Iterable[str], candidates: List[str]) -> Optional[str]:
+
+def find_column(keys: "Iterable[str]", candidates: "List[str]") -> "Optional[str]":
     """The key in *keys* (column names, dict keys, ...) that matches the earliest of *candidates*.
 
     Matching ignores case; the key is returned as *keys* spells it, or None if none matches.
@@ -34,27 +37,27 @@ def find_column(keys: Iterable[str], candidates: List[str]) -> Optional[str]:
     return None
 
 
-def find_teff_column(keys: Iterable[str]) -> Optional[str]:
+def find_teff_column(keys: "Iterable[str]") -> "Optional[str]":
     return find_column(keys, _TEFF_CANDIDATES)
 
-def find_logg_column(keys: Iterable[str]) -> Optional[str]:
+def find_logg_column(keys: "Iterable[str]") -> "Optional[str]":
     return find_column(keys, _LOGG_CANDIDATES)
 
-def find_metallicity_column(keys: Iterable[str]) -> Optional[str]:
+def find_metallicity_column(keys: "Iterable[str]") -> "Optional[str]":
     return find_column(keys, _META_CANDIDATES)
 
-def find_file_column(keys: Iterable[str]) -> Optional[str]:
+def find_file_column(keys: "Iterable[str]") -> "Optional[str]":
     return find_column(keys, _FILE_CANDIDATES)
 
 
 def write_lookup_csv(
-    records: Union[Dict[str, List], List[Dict]],
-    path: str,
+    records: "Union[Dict[str, List], List[Dict]]",
+    path: "str",
     *,
-    columns: Optional[List[str]] = None,
-    comment: bool = True,
+    columns: "Optional[List[str]]" = None,
+    comment: "bool" = True,
     restval="",
-) -> int:
+) -> "int":
     """Write a lookup table to *path* and return the number of data rows written.
 
     *records* is a column-major dict ``{column: [value, ...]}`` or a list of row dicts.

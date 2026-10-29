@@ -26,11 +26,14 @@ def discovery_failure(exc):
     return str(exc)
 
 
-def retrying_session(user_agent, retry):
-    """A requests session that sends ``user_agent`` and retries http and https requests as ``retry`` says."""
+def retrying_session(user_agent, retry, separate_adapters=False):
+    """A requests session that sends ``user_agent`` and retries http and https requests as ``retry`` says.
+
+    http and https share one adapter, or with ``separate_adapters`` (MSG's session) get one each.
+    """
     session = requests.Session()
     session.headers.update({"User-Agent": user_agent})
     adapter = HTTPAdapter(max_retries=retry)
     session.mount("http://", adapter)
-    session.mount("https://", adapter)
+    session.mount("https://", HTTPAdapter(max_retries=retry) if separate_adapters else adapter)
     return session

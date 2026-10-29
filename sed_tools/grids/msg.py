@@ -180,7 +180,7 @@ class MSGSpectraGrabber:
         os.makedirs(base_dir, exist_ok=True)
 
         self.session = retrying_session("SED_Tools (MSG)", Retry(
-            total=5, backoff_factor=1, status_forcelist=[500, 502, 503, 504, 429]))
+            total=5, backoff_factor=1, status_forcelist=[500, 502, 503, 504, 429]), separate_adapters=True)
 
         self.index_url = "http://user.astro.wisc.edu/~townsend/static.php?ref=msg-grids"
         mount_discovery(self.session, self.index_url)
