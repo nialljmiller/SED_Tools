@@ -27,6 +27,7 @@ from typing import Dict, Tuple, Union
 import numpy as np
 
 from ..filter_components import QE, SHARED, InstrumentManifest, add_component
+from ._attach import published_bands
 from ._original import Fetcher
 
 FACILITY, INSTRUMENT = "Roman", "WFI"
@@ -105,8 +106,7 @@ def spread_note(wl: np.ndarray, qe: np.ndarray) -> str:
 def build(filter_root: Union[str, Path], *, session=None, **_ignored) -> Path:
     """Add the focal-plane mean QE to ``Roman/WFI``."""
     inst_dir = Path(filter_root) / FACILITY / INSTRUMENT
-    if not list(inst_dir.glob("*.dat")):
-        raise FileNotFoundError(f"{inst_dir}: no published curves; fetch them first")
+    published_bands(inst_dir)  # refuses an instrument with no published curves
     fetch = Fetcher(session)
     wl, qe = parse_qe(fetch.text(QE_URL))
     check_summary(fetch.text(SUMMARY_URL), wl, qe)
