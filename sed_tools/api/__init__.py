@@ -139,19 +139,14 @@ class Spectrum:
     def save(self, path: Union[str, Path], format: str = 'txt') -> None:
         """Save spectrum to file."""
         path = Path(path)
-        
-        if format == 'txt':
-            with open(path, 'w') as f:
-                f.write(f"# teff = {self.teff}\n")
-                f.write(f"# logg = {self.logg}\n")
-                f.write(f"# metallicity = {self.metallicity}\n")
-                f.write("# wavelength_unit = angstrom\n")
-                f.write("# flux_unit = erg/cm2/s/A\n")
-                f.write("# units_standardized = True\n")
-                for w, fl in zip(self.wavelength, self.flux):
-                    f.write(f"{w:.6f} {fl:.8e}\n")
-        else:
+        if format != 'txt':
             raise ValueError(f"Unsupported format: {format}")
+        with open(path, 'w') as f:
+            for line in (f"teff = {self.teff}", f"logg = {self.logg}", f"metallicity = {self.metallicity}",
+                         "wavelength_unit = angstrom", "flux_unit = erg/cm2/s/A", "units_standardized = True"):
+                f.write(f"# {line}\n")
+            for w, fl in zip(self.wavelength, self.flux):
+                f.write(f"{w:.6f} {fl:.8e}\n")
 
 
 def _not_outside(value: float, low: Optional[float], high: Optional[float]) -> bool:
@@ -276,9 +271,8 @@ def _read_listed_spectra(lookup_path: Path, grid_name: str) -> List[Spectrum]:
     df = pd.read_csv(lookup_path)
     df.columns = [c.lstrip('#').strip().lower() for c in df.columns]
     file_col = find_file_column(df.columns)
-    teff_col = find_teff_column(df.columns)
-    logg_col = find_logg_column(df.columns)
-    meta_col = find_metallicity_column(df.columns)
+    param_cols = {"teff": find_teff_column(df.columns), "logg": find_logg_column(df.columns),
+                  "metallicity": find_metallicity_column(df.columns)}
 
     spectra = []
     for _, row in df.iterrows():
@@ -287,15 +281,8 @@ def _read_listed_spectra(lookup_path: Path, grid_name: str) -> List[Spectrum]:
             continue
         try:
             wl, fl = np.loadtxt(model_dir / filename, unpack=True, comments='#')
-            spectra.append(Spectrum(
-                wavelength=wl,
-                flux=fl,
-                teff=float(row.get(teff_col, np.nan)) if teff_col else np.nan,
-                logg=float(row.get(logg_col, np.nan)) if logg_col else np.nan,
-                metallicity=float(row.get(meta_col, np.nan)) if meta_col else np.nan,
-                filename=filename,
-                source_catalog=grid_name,
-            ))
+            params = {name: float(row.get(col, np.nan)) if col else np.nan for name, col in param_cols.items()}
+            spectra.append(Spectrum(wavelength=wl, flux=fl, **params, filename=filename, source_catalog=grid_name))
         except (OSError, ValueError) as exc:
             raise ValueError(f"Cannot read spectrum {model_dir / filename} listed in {lookup_path}: {exc}") from exc
     return spectra
@@ -1214,11 +1201,7 @@ class MLGenerator:
             and (min, max) tuple values
         """
         ranges = self._loaded_generator().config['parameter_ranges']
-        return {
-            'teff': tuple(ranges['teff']),
-            'logg': tuple(ranges['logg']),
-            'metallicity': tuple(ranges['meta']),
-        }
+        return {'teff': tuple(ranges['teff']), 'logg': tuple(ranges['logg']), 'metallicity': tuple(ranges['meta'])}
     
     def _loaded_generator(self):
         """The trained or loaded generator; RuntimeError before train() or load()."""

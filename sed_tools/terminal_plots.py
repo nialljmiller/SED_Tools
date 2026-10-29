@@ -43,8 +43,7 @@ def terminal_color_enabled(mode: str = "auto") -> bool:
 
 def terminal_unicode_enabled() -> bool:
     encoding = sys.stdout.encoding or locale.getpreferredencoding(False) or ""
-    normalized = encoding.lower().replace("-", "").replace("_", "")
-    return "utf8" in normalized
+    return "utf8" in encoding.lower().replace("-", "").replace("_", "")
 
 
 def terminal_width(default: int = 80) -> int:
@@ -91,8 +90,7 @@ def scatter2d(
     canvas_h = max(6, int(height))
     xlo, xhi = _limits(xv)
     ylo, yhi = _limits(yv)
-    unicode_ok = terminal_unicode_enabled()
-    dot, vert, horiz, corner = ("·", "│", "─", "└") if unicode_ok else (".", "|", "-", "+")
+    dot, vert, horiz, corner = ("·", "│", "─", "└") if terminal_unicode_enabled() else (".", "|", "-", "+")
     canvas = [[" " for _ in range(canvas_w)] for _ in range(canvas_h)]
     cell_colors = [[None for _ in range(canvas_w)] for _ in range(canvas_h)]
     labels = point_labels or {}
@@ -160,8 +158,7 @@ def lineplot(
                 canvas[row][col] = char
                 cell_colors[row][col] = item.get("color")
 
-    unicode_ok = terminal_unicode_enabled()
-    vert, horiz, corner = ("│", "─", "└") if unicode_ok else ("|", "-", "+")
+    vert, horiz, corner = ("│", "─", "└") if terminal_unicode_enabled() else ("|", "-", "+")
     use_color = terminal_color_enabled(color)
     lines = [title, f"{ylabel}  {yhi:g}"]
     for row in _painted(canvas, cell_colors, use_color):

@@ -452,9 +452,8 @@ def _cmd_filters_detector(args, parser):
     rows = Filters.tag_detector_types(args.path, facility=args.facility, force=args.force, dry_run=args.dry_run)
     counts = Counter((r["detector_type"], r["source"]) for r in rows)
     changed = sum(r["changed"] for r in rows)
-    verb = "would change" if args.dry_run else "changed"
     migrated = sum(r["migrated"] for r in rows)
-    moved = "would move" if args.dry_run else "moved"
+    verb, moved = ("would change", "would move") if args.dry_run else ("changed", "moved")
     print(f"\n[filters] {len(rows)} files, {changed} {verb}, {migrated} {moved} 0.3.0 '#' metadata to the column row")
     for (dtype, source), n in sorted(counts.items()):
         print(f"  {dtype:6s} [{source}]: {n}")

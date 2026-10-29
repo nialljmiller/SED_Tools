@@ -579,11 +579,10 @@ class Filters:
         catalogue = cls._catalogue(filter_root)
         chosen = cls._plot_bands(targets, filter_root, catalogue, fetch)
 
-        curves, labels = {}, {}
+        curves = {}
         for fac, inst, band, directory in chosen:
-            key = f"{fac}/{inst}/{band}"
             curve = load_filter_curve(str(directory / f"{band}.dat"))
-            curves[key] = (curve.wavelength, curve.transmission)
+            curves[f"{fac}/{inst}/{band}"] = (curve.wavelength, curve.transmission)
         directories = {directory for *_, directory in chosen}
         colors, title = None, None
         if len(directories) == 1:
