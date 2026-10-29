@@ -177,13 +177,11 @@ class SVOSpectraGrabber:
     def _read_capped(self, r, model_name):
         """The SSAP response body; RuntimeError if it reaches ssap_max_bytes (the FID list would be cut short)."""
         buf = io.BytesIO()
-        total = 0
         for chunk in r.iter_content(chunk_size=131072):
             if not chunk:
                 break
             buf.write(chunk)
-            total += len(chunk)
-            if total >= self.ssap_max_bytes:
+            if buf.tell() >= self.ssap_max_bytes:
                 raise RuntimeError(
                     f"SVO: the SSAP response for {model_name} reached the "
                     f"{self.ssap_max_bytes // 1_048_576} MB cap, so its spectrum list would be "
