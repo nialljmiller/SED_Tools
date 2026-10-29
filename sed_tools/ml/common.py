@@ -4,9 +4,19 @@ The engines are completer.py (SEDCompleter) and generator.py (SEDGenerator); ml/
 completer API over them. torch is imported inside the functions, so importing any of them needs no torch.
 """
 
+import logging
+from collections import Counter
 from typing import Dict, List, Tuple
 
 import numpy as np
+
+DEFAULT_WL_MIN = 100.0      # Angstroms
+DEFAULT_WL_MAX = 100000.0   # Angstroms
+DEFAULT_WL_POINTS = 1000
+_PARAMS = ('teff', 'logg', 'meta')
+
+# Both engines' training-data and library warnings log under the completer's logger name.
+_completer_log = logging.getLogger("sed_tools.ml_sed_completer")
 
 
 def get_device():
@@ -21,9 +31,108 @@ def get_device():
     return torch.device("cpu")
 
 
-# ---------------------------------------------------------------------------
-# Training loop shared by SEDCompleter and SEDGenerator
-# ---------------------------------------------------------------------------
+def log_grid(
+    min_wl: float = DEFAULT_WL_MIN,
+    max_wl: float = DEFAULT_WL_MAX,
+    n_points: int = DEFAULT_WL_POINTS,
+) -> np.ndarray:
+    """Logarithmic wavelength grid."""
+    return np.logspace(np.log10(min_wl), np.log10(max_wl), n_points)
+
+
+def mlp(n_in: int, hidden_layers: List[int], n_out: int, dropout: float):
+    """Linear, BatchNorm1d and LeakyReLU per hidden layer, Dropout between them, then a Linear.
+
+    The layer order is the model.pt format: its state_dict keys are the layer indices.
+    """
+    import torch.nn as nn
+
+    layers = []
+    for i, width in enumerate(hidden_layers):
+        layers.append(nn.Linear(n_in, width))
+        layers.append(nn.BatchNorm1d(width))
+        layers.append(nn.LeakyReLU(0.1))
+        if i < len(hidden_layers) - 1:
+            layers.append(nn.Dropout(dropout))
+        n_in = width
+    layers.append(nn.Linear(n_in, n_out))
+    return nn.Sequential(*layers)
+
+
+# Training data
+
+def resample(grid: np.ndarray, wavelengths: np.ndarray, flux: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    """flux on grid (NaN outside its coverage), and where it is valid: covered, finite and positive."""
+    flux_interp = np.interp(grid, wavelengths, flux, left=np.nan, right=np.nan)
+    valid = (
+        (grid >= wavelengths.min()) &
+        (grid <= wavelengths.max()) &
+        np.isfinite(flux_interp) &
+        (flux_interp > 0)
+    )
+    return flux_interp, valid
+
+
+def sample_spectra(teff, logg, meta, flux_cube, n_samples: int, cut, library_path: str):
+    """(teff, logg, meta) rows and training samples cut from n_samples spectra drawn at random from the cube.
+
+    ``cut(flux)`` returns ``(None, sample)`` or ``(reason, None)``. Warns how many spectra were
+    dropped and why; raises ValueError if none was kept.
+    """
+    nl, nm = len(logg), len(meta)
+    params = []
+    samples = []
+    dropped = Counter()
+    indices = np.random.permutation(len(teff) * nl * nm)[:n_samples]
+    for idx in indices:
+        i_t = idx // (nl * nm)
+        remainder = idx % (nl * nm)
+        i_l = remainder // nm
+        i_m = remainder % nm
+        # The cube is stored as [nw, nm, nl, nt]
+        reason, sample = cut(flux_cube[:, i_m, i_l, i_t])
+        if reason:
+            dropped[reason] += 1
+            continue
+        params.append([teff[i_t], logg[i_l], meta[i_m]])
+        samples.append(sample)
+    _warn_dropped(dropped, len(indices), library_path)
+    if not params:
+        raise ValueError(f"No valid training samples found in {library_path}")
+    return params, samples
+
+
+def _warn_dropped(dropped: Counter, n_sampled: int, library_path: str) -> None:
+    """Say how many sampled spectra were left out of the training set, and why."""
+    if not dropped:
+        return
+    reasons = ", ".join(f"{count} with {reason}" for reason, count in dropped.items())
+    _completer_log.warning("Training data from %s: dropped %d of %d sampled spectra (%s)",
+                           library_path, sum(dropped.values()), n_sampled, reasons)
+
+
+def param_scaler(params: np.ndarray, with_range: bool = False) -> Dict[str, float]:
+    """Mean and std (with_range: also min and max) of each (teff, logg, meta) column, keyed as config.json has them."""
+    scaler = {}
+    for i, name in enumerate(_PARAMS):
+        scaler[f'{name}_mean'] = float(np.mean(params[:, i]))
+        scaler[f'{name}_std'] = float(np.std(params[:, i]) + 1e-8)
+        if with_range:
+            scaler[f'{name}_min'] = float(np.min(params[:, i]))
+            scaler[f'{name}_max'] = float(np.max(params[:, i]))
+    return scaler
+
+
+def normalised_params(scaler: Dict[str, float], teff, logg, meta) -> list:
+    """teff, logg and meta scaled as in training; each may be one value or a column of them."""
+    return [
+        (teff - scaler['teff_mean']) / scaler['teff_std'],
+        (logg - scaler['logg_mean']) / scaler['logg_std'],
+        (meta - scaler['meta_mean']) / scaler['meta_std'],
+    ]
+
+
+# Training loop
 
 def masked_mse(y_pred, y_true, mask):
     """Mean squared error over the points where mask is 1."""

@@ -36,7 +36,6 @@ CLI
 import json
 import logging
 import os
-from collections import Counter
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -48,22 +47,11 @@ from .._constants import H as PLANCK_H, C as SPEED_C, K as BOLTZMANN_K, SIGMA
 from ..cube.fileio import load as load_cube
 from ..ui_utils import (ask_number as _ask_number, banner as _banner, menu_choice as _menu_choice, refused_without,
                        section as _section)
+from .common import (DEFAULT_WL_MAX, DEFAULT_WL_MIN, DEFAULT_WL_POINTS, data_loaders, fit, log_grid, mlp,
+                     normalised_params, param_scaler, resample, sample_spectra)
 
-# Default wavelength grid parameters
-DEFAULT_WL_MIN = 100.0      # Angstroms
-DEFAULT_WL_MAX = 100000.0   # Angstroms
-DEFAULT_WL_POINTS = 1000
 # Training uses only samples whose input window is at least this fraction valid.
 MIN_WINDOW_COVERAGE = 0.8
-
-
-def _warn_dropped(dropped: Counter, n_sampled: int, library_path: str) -> None:
-    """Say how many sampled spectra were left out of the training set, and why."""
-    if not dropped:
-        return
-    reasons = ", ".join(f"{count} with {reason}" for reason, count in dropped.items())
-    logger.warning("Training data from %s: dropped %d of %d sampled spectra (%s)",
-                   library_path, sum(dropped.values()), n_sampled, reasons)
 
 
 def _warn_window_coverage(window: np.ndarray, wavelength: np.ndarray) -> None:
@@ -163,28 +151,12 @@ class SEDCompleterNetwork:
         dropout : float
             Dropout rate
         """
-        import torch.nn as nn
-        
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.hidden_layers = hidden_layers or [256, 128, 64]
         self.dropout = dropout
-        
-        # Build network
-        layers = []
-        prev_dim = input_dim + 3  # +3 for stellar parameters
-        
-        for i, hidden_dim in enumerate(self.hidden_layers):
-            layers.append(nn.Linear(prev_dim, hidden_dim))
-            layers.append(nn.BatchNorm1d(hidden_dim))
-            layers.append(nn.LeakyReLU(0.1))
-            if i < len(self.hidden_layers) - 1:  # No dropout on last hidden layer
-                layers.append(nn.Dropout(dropout))
-            prev_dim = hidden_dim
-        
-        layers.append(nn.Linear(prev_dim, output_dim))
-        
-        self.model = nn.Sequential(*layers)
+        # The input is the SED window followed by the three stellar parameters
+        self.model = mlp(input_dim + 3, self.hidden_layers, output_dim, dropout)
         # The same device SEDCompleter.device picks, so inputs and weights agree
         from .common import get_device
         self.device = get_device()
@@ -269,22 +241,11 @@ class SEDCompleter:
             self._device = get_device()
         return self._device
     
-    def _create_wavelength_grid(
-        self,
-        min_wl: float = DEFAULT_WL_MIN,
-        max_wl: float = DEFAULT_WL_MAX,
-        n_points: int = DEFAULT_WL_POINTS,
-    ) -> np.ndarray:
-        """Create logarithmic wavelength grid."""
-        return np.logspace(np.log10(min_wl), np.log10(max_wl), n_points)
+    _create_wavelength_grid = staticmethod(log_grid)
     
     def _normalize_params(self, teff: float, logg: float, meta: float) -> np.ndarray:
         """Normalize stellar parameters using stored scaler."""
-        return np.array([
-            (teff - self.scaler_params['teff_mean']) / self.scaler_params['teff_std'],
-            (logg - self.scaler_params['logg_mean']) / self.scaler_params['logg_std'],
-            (meta - self.scaler_params['meta_mean']) / self.scaler_params['meta_std'],
-        ])
+        return np.array(normalised_params(self.scaler_params, teff, logg, meta))
     
     def _load_flux_cube(self, library_path: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """
@@ -338,34 +299,11 @@ class SEDCompleter:
         self._known_start = (n_wl - known_width) // 2
         self._known_end = self._known_start + known_width
         
-        X_list = []
-        y_list = []
-        params_list = []
-        masks_list = []
-        dropped = Counter()
-        
-        indices = np.random.permutation(total_seds)[:n_samples]
-        for idx in indices:
-            i_t = idx // (nl * nm)
-            remainder = idx % (nl * nm)
-            i_l = remainder // nm
-            i_m = remainder % nm
-            
-            # The cube is stored as [nw, nm, nl, nt]
-            reason, sample = self._training_sample(flux_cube[:, i_m, i_l, i_t], wavelengths, known_width)
-            if reason:
-                dropped[reason] += 1
-                continue
-            
-            X_known, y_full, ext_mask = sample
-            X_list.append(X_known)
-            y_list.append(y_full)
-            params_list.append([teff[i_t], logg[i_l], meta[i_m]])
-            masks_list.append(ext_mask)
-        
-        _warn_dropped(dropped, len(indices), library_path)
-        if len(X_list) == 0:
-            raise ValueError(f"No valid training samples found in {library_path}")
+        params_list, samples = sample_spectra(
+            teff, logg, meta, flux_cube, n_samples,
+            lambda flux: self._training_sample(flux, wavelengths, known_width), library_path,
+        )
+        X_list, y_list, masks_list = zip(*samples)
         
         print(f"  Prepared {len(X_list)} valid samples")
         print(f"  Known region width: {known_width} points (randomized position)")
@@ -396,14 +334,7 @@ class SEDCompleter:
         if valid_original.sum() < 100:
             return "fewer than 100 positive, finite flux points", None
         
-        # Resample to the model grid; NaN outside the original coverage
-        flux_interp = np.interp(self.wavelength_grid, wavelengths, flux, left=np.nan, right=np.nan)
-        valid_mask = (
-            (self.wavelength_grid >= wavelengths.min()) &
-            (self.wavelength_grid <= wavelengths.max()) &
-            np.isfinite(flux_interp) &
-            (flux_interp > 0)
-        )
+        flux_interp, valid_mask = resample(self.wavelength_grid, wavelengths, flux)
         
         # Place the input window at random inside the valid data
         too_narrow = f"coverage narrower than the {known_width}-point input window"
@@ -479,7 +410,6 @@ class SEDCompleter:
         """
         import torch
         from sklearn.model_selection import train_test_split
-        from .common import data_loaders, fit
         
         X, y, params, masks = self._prepare_training_data(library_path, max_samples)
         X_combined, y_norm, masks = self._normalise_training_data(X, y, params, masks, library_path)
@@ -547,12 +477,7 @@ class SEDCompleter:
             raise ValueError("No valid data points for normalization")
         
         self.scaler_params = {
-            'teff_mean': float(np.mean(params[:, 0])),
-            'teff_std': float(np.std(params[:, 0]) + 1e-8),
-            'logg_mean': float(np.mean(params[:, 1])),
-            'logg_std': float(np.std(params[:, 1]) + 1e-8),
-            'meta_mean': float(np.mean(params[:, 2])),
-            'meta_std': float(np.std(params[:, 2]) + 1e-8),
+            **param_scaler(params),
             'flux_log_mean': float(np.mean(x_valid)),
             'flux_log_std': float(np.std(x_valid) + 1e-8),
             'ext_log_mean': float(np.mean(y_valid)),
@@ -569,11 +494,8 @@ class SEDCompleter:
         X_norm = np.where(np.isfinite(X_norm), X_norm, 0.0)
         y_norm = np.where(np.isfinite(y_norm), y_norm, 0.0)
         
-        params_norm = np.column_stack([
-            (params[:, 0] - self.scaler_params['teff_mean']) / self.scaler_params['teff_std'],
-            (params[:, 1] - self.scaler_params['logg_mean']) / self.scaler_params['logg_std'],
-            (params[:, 2] - self.scaler_params['meta_mean']) / self.scaler_params['meta_std'],
-        ])
+        params_norm = np.column_stack(
+            normalised_params(self.scaler_params, params[:, 0], params[:, 1], params[:, 2]))
         
         X_combined = np.concatenate([X_norm, params_norm], axis=1).astype(np.float32)
         y_norm = y_norm.astype(np.float32)

@@ -32,23 +32,19 @@ Usage
 import json
 import logging
 import os
-from collections import Counter
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
 from ..cube.fileio import load as load_cube
-from .completer import _training_libraries, _warn_dropped
+from .common import (DEFAULT_WL_MAX, DEFAULT_WL_MIN, DEFAULT_WL_POINTS, data_loaders, fit, log_grid, mlp,
+                     normalised_params, param_scaler, resample, sample_spectra)
+from .completer import _training_libraries
 from ..ui_utils import (ask_number as _ask_number, ask_numbers as _ask_numbers, banner as _banner,
                        menu_choice as _menu_choice, refused_without, section as _section)
 
 logger = logging.getLogger("sed_tools.ml_sed_generator")
-
-# Default wavelength grid
-DEFAULT_WL_MIN = 100.0       # Angstroms
-DEFAULT_WL_MAX = 100000.0    # Angstroms
-DEFAULT_WL_POINTS = 1000
 
 
 class SEDGeneratorNetwork:
@@ -76,27 +72,11 @@ class SEDGeneratorNetwork:
         dropout : float
             Dropout rate
         """
-        import torch.nn as nn
-        
         self.output_dim = output_dim
         self.hidden_layers = hidden_layers or [512, 512, 256, 256]
         self.dropout = dropout
-        
-        # Build network: 3 inputs → hidden layers → output_dim
-        layers = []
-        prev_dim = 3  # Teff, logg, [M/H]
-        
-        for i, hidden_dim in enumerate(self.hidden_layers):
-            layers.append(nn.Linear(prev_dim, hidden_dim))
-            layers.append(nn.BatchNorm1d(hidden_dim))
-            layers.append(nn.LeakyReLU(0.1))
-            if i < len(self.hidden_layers) - 1:
-                layers.append(nn.Dropout(dropout))
-            prev_dim = hidden_dim
-        
-        layers.append(nn.Linear(prev_dim, output_dim))
-        
-        self.model = nn.Sequential(*layers)
+        # The input is Teff, logg and [M/H]
+        self.model = mlp(3, self.hidden_layers, output_dim, dropout)
         # The same device SEDGenerator.device picks, so inputs and weights agree
         from .common import get_device
         self.device = get_device()
@@ -184,14 +164,7 @@ class SEDGenerator:
             self._device = get_device()
         return self._device
     
-    def _create_wavelength_grid(
-        self,
-        min_wl: float = DEFAULT_WL_MIN,
-        max_wl: float = DEFAULT_WL_MAX,
-        n_points: int = DEFAULT_WL_POINTS,
-    ) -> np.ndarray:
-        """Create logarithmic wavelength grid."""
-        return np.logspace(np.log10(min_wl), np.log10(max_wl), n_points)
+    _create_wavelength_grid = staticmethod(log_grid)
     
     def _load_flux_cube(self, library_path: str):
         """Load flux cube from binary file."""
@@ -222,36 +195,13 @@ class SEDGenerator:
         
         self.wavelength_grid = self._create_wavelength_grid()
         
-        params_list = []
-        flux_list = []
-        masks_list = []
-        dropped = Counter()
-        
         n_samples = min(max_samples, total_seds)
-        indices = np.random.permutation(total_seds)[:n_samples]
-        
         print(f"  Processing {n_samples} SEDs...")
-        
-        for idx in indices:
-            i_t = idx // (nl * nm)
-            remainder = idx % (nl * nm)
-            i_l = remainder // nm
-            i_m = remainder % nm
-            
-            # The cube is stored as [nw, nm, nl, nt]
-            reason, sample = self._training_sample(flux_cube[:, i_m, i_l, i_t], wavelengths)
-            if reason:
-                dropped[reason] += 1
-                continue
-            
-            flux_interp, valid_mask = sample
-            params_list.append([teff_grid[i_t], logg_grid[i_l], meta_grid[i_m]])
-            flux_list.append(flux_interp)
-            masks_list.append(valid_mask)
-        
-        _warn_dropped(dropped, len(indices), library_path)
-        if len(params_list) == 0:
-            raise ValueError(f"No valid training samples found in {library_path}")
+        params_list, samples = sample_spectra(
+            teff_grid, logg_grid, meta_grid, flux_cube, n_samples,
+            lambda flux: self._training_sample(flux, wavelengths), library_path,
+        )
+        flux_list, masks_list = zip(*samples)
         
         params = np.array(params_list, dtype=np.float32)
         flux = np.array(flux_list, dtype=np.float32)
@@ -280,13 +230,7 @@ class SEDGenerator:
         if np.any(flux <= 0) or np.any(~np.isfinite(flux)):
             return "non-positive or non-finite flux", None
         
-        flux_interp = np.interp(self.wavelength_grid, wavelengths, flux, left=np.nan, right=np.nan)
-        valid_mask = (
-            (self.wavelength_grid >= wavelengths.min()) &
-            (self.wavelength_grid <= wavelengths.max()) &
-            np.isfinite(flux_interp) &
-            (flux_interp > 0)
-        )
+        flux_interp, valid_mask = resample(self.wavelength_grid, wavelengths, flux)
         if valid_mask.sum() < len(self.wavelength_grid) * 0.3:
             return "less than 30% of the model grid covered", None
         
@@ -336,8 +280,6 @@ class SEDGenerator:
         -------
         history : dict with 'train_loss' and 'val_loss'
         """
-        from .common import data_loaders, fit
-        
         train_set, val_set = self._training_split(library_path, max_samples)
         p_val, f_val, m_val = val_set
         train_loader, val_loader = data_loaders(train_set, val_set, batch_size)
@@ -416,29 +358,15 @@ class SEDGenerator:
             raise ValueError(f"No valid data points for normalization in {library_path}")
         
         self.scaler_params = {
-            'teff_mean': float(np.mean(params[:, 0])),
-            'teff_std': float(np.std(params[:, 0]) + 1e-8),
-            'teff_min': float(np.min(params[:, 0])),
-            'teff_max': float(np.max(params[:, 0])),
-            'logg_mean': float(np.mean(params[:, 1])),
-            'logg_std': float(np.std(params[:, 1]) + 1e-8),
-            'logg_min': float(np.min(params[:, 1])),
-            'logg_max': float(np.max(params[:, 1])),
-            'meta_mean': float(np.mean(params[:, 2])),
-            'meta_std': float(np.std(params[:, 2]) + 1e-8),
-            'meta_min': float(np.min(params[:, 2])),
-            'meta_max': float(np.max(params[:, 2])),
+            **param_scaler(params, with_range=True),
             'flux_log_mean': float(np.mean(flux_valid)),
             'flux_log_std': float(np.std(flux_valid) + 1e-8),
         }
         
         print(f"  Flux log10 range: [{flux_valid.min():.2f}, {flux_valid.max():.2f}]")
         
-        params_norm = np.column_stack([
-            (params[:, 0] - self.scaler_params['teff_mean']) / self.scaler_params['teff_std'],
-            (params[:, 1] - self.scaler_params['logg_mean']) / self.scaler_params['logg_std'],
-            (params[:, 2] - self.scaler_params['meta_mean']) / self.scaler_params['meta_std'],
-        ]).astype(np.float32)
+        params_norm = np.column_stack(
+            normalised_params(self.scaler_params, params[:, 0], params[:, 1], params[:, 2])).astype(np.float32)
         
         flux_norm = (flux_log - self.scaler_params['flux_log_mean']) / self.scaler_params['flux_log_std']
         flux_norm = np.where(np.isfinite(flux_norm), flux_norm, 0.0).astype(np.float32)
@@ -646,11 +574,7 @@ class SEDGenerator:
         
         self.model.eval()
         
-        params_norm = np.array([
-            (teff - self.scaler_params['teff_mean']) / self.scaler_params['teff_std'],
-            (logg - self.scaler_params['logg_mean']) / self.scaler_params['logg_std'],
-            (meta - self.scaler_params['meta_mean']) / self.scaler_params['meta_std'],
-        ], dtype=np.float32)
+        params_norm = np.array(normalised_params(self.scaler_params, teff, logg, meta), dtype=np.float32)
         
         with torch.no_grad():
             pred = self.model(torch.from_numpy(params_norm[None, :]).to(self.device))
