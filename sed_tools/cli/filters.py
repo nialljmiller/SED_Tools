@@ -749,13 +749,7 @@ def run_filter_combine_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
 
     root = Path(chosen_base)
     options = [_FilterSetOption(path, root) for path in filter_sets]
-    selected = prompt_choice(
-        options,
-        "Local filter sets to combine",
-        multi=True,
-        page_size=50,
-        max_cols=2,
-    )
+    selected = prompt_choice(options, "Local filter sets to combine", multi=True, page_size=50, max_cols=2)
     if selected is None:
         print("No filter sets selected.")
         return
@@ -783,18 +777,10 @@ def run_filter_combine_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
         print("Cancelled.")
         return
 
-    out = combine_filter_sets(
-        output,
-        selected_paths,
-        filter_root=chosen_base,
-        facility=facility,
-        instrument=instrument,
-        on_conflict=conflict,
-    )
-    dat_count = len(list(out.glob("*.dat")))
-    index_name = instrument or out.name
-    print(f"\n[filters] Combined {dat_count} filters into {out}")
-    print(f"[filters] Wrote MESA index file: {out / index_name}")
+    out = combine_filter_sets(output, selected_paths, filter_root=chosen_base, facility=facility,
+                              instrument=instrument, on_conflict=conflict)
+    print(f"\n[filters] Combined {len(list(out.glob('*.dat')))} filters into {out}")
+    print(f"[filters] Wrote MESA index file: {out / (instrument or out.name)}")
     print("Use this path as the MESA instrument/filter-set directory.")
 
 

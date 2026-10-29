@@ -385,19 +385,11 @@ def _range_option(args, name: str, parser) -> Optional[Tuple[float, float]]:
 
 
 def _cmd_grids(args, parser):
-    run_spectra_flow(
-        source=args.source,
-        base_dir=args.base,
-        models=args.models,
-        workers=args.workers,
-        force_bundle_h5=not args.no_h5,
-        build_flux_cube=not args.no_cube,
-        flux_unit=args.flux_unit,
-        teff_range=_range_option(args, "teff", parser),
-        logg_range=_range_option(args, "logg", parser),
-        meta_range=_range_option(args, "meta", parser),
-        wl_range=_range_option(args, "wavelength", parser),
-    )
+    run_spectra_flow(source=args.source, base_dir=args.base, models=args.models, workers=args.workers,
+                     force_bundle_h5=not args.no_h5, build_flux_cube=not args.no_cube, flux_unit=args.flux_unit,
+                     teff_range=_range_option(args, "teff", parser), logg_range=_range_option(args, "logg", parser),
+                     meta_range=_range_option(args, "meta", parser),
+                     wl_range=_range_option(args, "wavelength", parser))
     return 0
 
 
@@ -467,23 +459,15 @@ def _atmosphere_error(exc: Exception, args) -> str:
 def _cmd_filters_combine(args, parser):
     from ..filters.combine import combine_filter_sets
 
-    out = combine_filter_sets(
-        args.output,
-        args.inputs,
-        filter_root=args.base,
-        facility=args.facility,
-        instrument=args.instrument,
-        on_conflict=args.on_conflict,
-    )
+    out = combine_filter_sets(args.output, args.inputs, filter_root=args.base, facility=args.facility,
+                              instrument=args.instrument, on_conflict=args.on_conflict)
     print(f"[filters] Combined filter set written to {out}")
     return 0
 
 
 def _cmd_filters_detector(args, parser):
     # Each file is printed as it is tagged, so on failure main() has only the error left to say.
-    rows = Filters.tag_detector_types(
-        args.path, facility=args.facility, force=args.force, dry_run=args.dry_run
-    )
+    rows = Filters.tag_detector_types(args.path, facility=args.facility, force=args.force, dry_run=args.dry_run)
     counts = Counter((r["detector_type"], r["source"]) for r in rows)
     changed = sum(r["changed"] for r in rows)
     verb = "would change" if args.dry_run else "changed"
@@ -565,31 +549,19 @@ def _build_all_component_sources(base: str, sites: Optional[List[str]]) -> int:
 
 
 def _cmd_rebuild(args, parser):
-    run_rebuild_flow(
-        base_dir=args.base,
-        models=args.models,
-        rebuild_h5=not args.no_h5,
-        rebuild_flux_cube=not args.no_cube,
-        flux_unit=args.flux_unit,
-    )
+    run_rebuild_flow(base_dir=args.base, models=args.models, rebuild_h5=not args.no_h5,
+                     rebuild_flux_cube=not args.no_cube, flux_unit=args.flux_unit)
     return 0
 
 
 def _cmd_combine(args, parser):
-    run_combine_flow(
-        base_dir=args.base,
-        output_name=args.output,
-        interactive=not (args.non_interactive or args.models),
-        models=args.models,
-    )
+    run_combine_flow(base_dir=args.base, output_name=args.output,
+                     interactive=not (args.non_interactive or args.models), models=args.models)
     return 0
 
 
 def _cmd_ml_completer(args, parser):
-    return run_ml_completer_flow(
-        base_dir=args.base,
-        models_dir=args.models_dir
-    ) or 0
+    return run_ml_completer_flow(base_dir=args.base, models_dir=args.models_dir) or 0
 
 
 def _cmd_ml_generator(args, parser):
@@ -597,10 +569,7 @@ def _cmd_ml_generator(args, parser):
     if not args.auto:
         if limits:
             parser.error("--trials and --epochs apply to --auto training only")
-        return run_ml_generator_flow(
-            base_dir=args.base,
-            models_dir=args.models_dir
-        ) or 0
+        return run_ml_generator_flow(base_dir=args.base, models_dir=args.models_dir) or 0
     if not args.library or not args.output:
         parser.error("--auto needs --library and --output")
     if refused_without("torch", "sklearn", "optuna"):
@@ -625,21 +594,12 @@ def _cmd_densify(args, parser):
         parser.error("--ml-gap-threshold is not implemented: with --ml-model, every gap inside the source "
                      "grid's Teff range is filled by the model")
     # --no-lookup needs nothing: densify_grid writes only the flux cube.
-    densify_grid(
-        src=args.flux_cube,
-        dst=args.output,
-        teff_spacing=args.teff_spacing,
-        ml_model=args.ml_model,
-    )
+    densify_grid(src=args.flux_cube, dst=args.output, teff_spacing=args.teff_spacing, ml_model=args.ml_model)
     return 0
 
 
 def _cmd_mesa_prepare(args, parser):
-    run_mesa_prepare_flow(
-        base_dir=args.base,
-        model=args.model,
-        output=args.output,
-    )
+    run_mesa_prepare_flow(base_dir=args.base, model=args.model, output=args.output)
     return 0
 
 
@@ -659,12 +619,8 @@ def _cmd_coverage(args, parser):
     failed = []
     for nm in names:
         try:
-            SED.coverage(
-                nm,
-                model_root=args.base,
-                plot=not args.no_plot,
-                out_path=args.out if len(names) == 1 else None,
-            )
+            SED.coverage(nm, model_root=args.base, plot=not args.no_plot,
+                         out_path=args.out if len(names) == 1 else None)
         except (ValueError, OSError, RuntimeError) as exc:
             failed.append(f"{nm}: {exc}")
     for line in failed:
@@ -674,16 +630,8 @@ def _cmd_coverage(args, parser):
 
 def _cmd_import(args, parser):
     flux_unit = None if args.dry_run else _ask_import_flux_unit(args.path, args.name, args.flux_unit)
-    SED.import_grid(
-        args.path,
-        name=args.name,
-        model_root=args.base,
-        move=args.move,
-        build_h5=not args.no_h5,
-        build_cube=not args.no_cube,
-        dry_run=args.dry_run,
-        flux_unit=flux_unit,
-    )
+    SED.import_grid(args.path, name=args.name, model_root=args.base, move=args.move, build_h5=not args.no_h5,
+                    build_cube=not args.no_cube, dry_run=args.dry_run, flux_unit=flux_unit)
     if args.dry_run:
         _report_import_flux_unit(args.path, args.name, args.flux_unit)
     return 0

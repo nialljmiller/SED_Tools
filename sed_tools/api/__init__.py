@@ -207,12 +207,7 @@ class SpectralGrid:
         filtered = [spec for spec in self.spectra
                     if _not_outside(spec.teff, teff_min, teff_max) and _not_outside(spec.logg, logg_min, logg_max)
                     and _not_outside(spec.metallicity, metallicity_min, metallicity_max)]
-        return SpectralGrid(
-            name=self.name,
-            source=self.source,
-            spectra=filtered,
-            _base_dir=self._base_dir,
-        )
+        return SpectralGrid(name=self.name, source=self.source, spectra=filtered, _base_dir=self._base_dir)
     
     def __len__(self) -> int:
         return len(self.spectra)
@@ -345,10 +340,7 @@ class SED:
         """Usually made by SED.fetch() or SED.local(), not directly."""
         self.cat = catalog
         self._model = model
-        self._core = _SEDCore(
-            model_root=model_root or self._model_root,
-            filter_root=filter_root or self._filter_root,
-        )
+        self._core = _SEDCore(model_root=model_root or self._model_root, filter_root=filter_root or self._filter_root)
         
         if model_root:
             self._model_root = Path(model_root)
@@ -673,12 +665,7 @@ class SED:
         """Load the spectra listed in ``lookup_table.csv`` into a SpectralGrid."""
         lookup_path = model_dir / "lookup_table.csv"
         spectra = _read_listed_spectra(lookup_path, name) if lookup_path.exists() else []
-        return SpectralGrid(
-            name=name,
-            source=source,
-            spectra=spectra,
-            _base_dir=model_dir.parent,
-        )
+        return SpectralGrid(name=name, source=source, spectra=spectra, _base_dir=model_dir.parent)
     
     @classmethod
     def local(
@@ -717,19 +704,9 @@ class SED:
             raise FileNotFoundError(f"flux_cube.bin not found in {model_dir}")
 
         cat = cls._load_catalog_from_dir(model_dir, catalog, 'local')
-        sed_model = SEDModel(
-            name=catalog,
-            flux_cube_path=cube_path,
-            filters_dir=filter_root or cls._filter_root,
-            fill_gaps=fill_gaps,
-        )
-        
-        return cls(
-            catalog=cat,
-            model=sed_model,
-            model_root=base_dir,
-            filter_root=filter_root,
-        )
+        sed_model = SEDModel(name=catalog, flux_cube_path=cube_path, filters_dir=filter_root or cls._filter_root,
+                             fill_gaps=fill_gaps)
+        return cls(catalog=cat, model=sed_model, model_root=base_dir, filter_root=filter_root)
 
     @classmethod
     def coverage(
@@ -1019,12 +996,8 @@ class MLCompleter:
         grid_dir = _training_grid(self.base_dir, grid)
         save_name = save_name or f"{grid}_completer"
         
-        self._model = train_model(
-            grid_dir=str(grid_dir),
-            save_path=str(self.base_dir / self.models_dir / save_name),
-            epochs=epochs,
-            batch_size=batch_size,
-        )
+        self._model = train_model(grid_dir=str(grid_dir), save_path=str(self.base_dir / self.models_dir / save_name),
+                                  epochs=epochs, batch_size=batch_size)
         
         return self
     
@@ -1057,12 +1030,8 @@ class MLCompleter:
         
         output = output or f"{catalog}_extended"
 
-        summary = extend_catalog(
-            model=self._model,
-            catalog_dir=str(self.base_dir / catalog),
-            output_dir=str(self.base_dir / output),
-            wavelength_range=wavelength_range,
-        )
+        summary = extend_catalog(model=self._model, catalog_dir=str(self.base_dir / catalog),
+                                 output_dir=str(self.base_dir / output), wavelength_range=wavelength_range)
         # extend_catalog itself raises RuntimeError listing any spectrum it could not extend.
         if not summary['total']:
             raise FileNotFoundError(f"No spectra to extend in {self.base_dir / catalog}")
@@ -1138,13 +1107,8 @@ class MLGenerator:
         save_path = self.base_dir / self.models_dir / save_name
 
         self._generator = SEDGenerator()
-        self._generator.train(
-            library_path=str(grid_dir),
-            output_path=str(save_path),
-            epochs=epochs,
-            batch_size=batch_size,
-            max_samples=max_samples,
-        )
+        self._generator.train(library_path=str(grid_dir), output_path=str(save_path), epochs=epochs,
+                              batch_size=batch_size, max_samples=max_samples)
         self._model_path = save_path
 
         return self
@@ -1199,12 +1163,7 @@ class MLGenerator:
         flux : np.ndarray
             Flux array in erg/s/cm²/Å
         """
-        return self._loaded_generator().generate(
-            teff=teff,
-            logg=logg,
-            meta=metallicity,
-            check_bounds=check_bounds,
-        )
+        return self._loaded_generator().generate(teff=teff, logg=logg, meta=metallicity, check_bounds=check_bounds)
     
     def generate_with_outputs(
         self,
@@ -1244,13 +1203,8 @@ class MLGenerator:
         generator = self._loaded_generator()
         if output_dir is None:
             output_dir = str(self._model_path / 'SED')  # train() and load() set both
-        return generator.generate_with_outputs(
-            teff=teff,
-            logg=logg,
-            meta=metallicity,
-            output_dir=output_dir,
-            check_bounds=check_bounds,
-        )
+        return generator.generate_with_outputs(teff=teff, logg=logg, meta=metallicity, output_dir=output_dir,
+                                               check_bounds=check_bounds)
     
     def parameter_ranges(self) -> Dict[str, Tuple[float, float]]:
         """Get the parameter ranges the model was trained on.

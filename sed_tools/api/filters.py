@@ -328,14 +328,8 @@ class Filters:
         (:func:`sed_tools.combine_filters.combine_filter_sets`)."""
         from ..filters.combine import combine_filter_sets
 
-        return combine_filter_sets(
-            output,
-            inputs,
-            filter_root=filter_root or cls._filter_root,
-            facility=facility,
-            instrument=instrument,
-            on_conflict=on_conflict,
-        )
+        return combine_filter_sets(output, inputs, filter_root=filter_root or cls._filter_root, facility=facility,
+                                   instrument=instrument, on_conflict=on_conflict)
 
     # NJM catalogue: properties, descriptions, search, citations, plots
     _catalogues: Dict[Tuple[str, bool], Any] = {}

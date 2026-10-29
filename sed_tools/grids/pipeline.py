@@ -105,13 +105,8 @@ def _build_flux_cube(model_dir: Path) -> Path:
     raise RuntimeError(f"No flux cube was built in {model_dir}; see the flux cube messages above")
 
 
-def _build_data_products(
-    name: str,
-    model_dir: str,
-    src: str,
-    force_bundle_h5: bool,
-    build_flux_cube: bool,
-) -> List[str]:
+def _build_data_products(name: str, model_dir: str, src: str, force_bundle_h5: bool,
+                         build_flux_cube: bool) -> List[str]:
     """Build the HDF5 bundle, lookup table and flux cube of a downloaded grid; returns what was not done.
 
     A bundle or cube lacking spectra beside it is rebuilt; with ``build_flux_cube`` False such a cube is a problem.
@@ -163,14 +158,8 @@ def _rebuild_command(name: str, model_dir: str) -> str:
 def _build_combined_grid(selected_models: List[Tuple[str, str]], output_dir: str, *,
                          visualization: bool = True) -> None:
     """Merge the ``(name, path)`` grids onto common parameter and wavelength grids and save to ``output_dir``."""
-    from ..cube.combine import (
-        build_combined_flux_cube,
-        create_common_wavelength_grid,
-        create_unified_grid,
-        load_model_data,
-        save_combined_data,
-        visualize_parameter_space,
-    )
+    from ..cube.combine import (build_combined_flux_cube, create_common_wavelength_grid, create_unified_grid,
+                                load_model_data, save_combined_data, visualize_parameter_space)
 
     print("\nLoading spectral grid data...")
     all_models_data = []
@@ -183,19 +172,8 @@ def _build_combined_grid(selected_models: List[Tuple[str, str]], output_dir: str
     wavelength_grid = create_common_wavelength_grid(all_models_data)
 
     print("\nBuilding combined flux cube...")
-    flux_cube, source_map = build_combined_flux_cube(
-        all_models_data, teff_grid, logg_grid, meta_grid, wavelength_grid
-    )
-
-    save_combined_data(
-        output_dir,
-        teff_grid,
-        logg_grid,
-        meta_grid,
-        wavelength_grid,
-        flux_cube,
-        all_models_data,
-    )
+    flux_cube, source_map = build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, wavelength_grid)
+    save_combined_data(output_dir, teff_grid, logg_grid, meta_grid, wavelength_grid, flux_cube, all_models_data)
 
     if visualization:
         visualize_parameter_space(
