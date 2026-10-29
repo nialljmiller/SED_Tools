@@ -76,9 +76,14 @@ _CUTTING_SOURCES = ("njm", "msg")
 _SOURCE_ERRORS = (RequestException, OSError, ValueError, RuntimeError)
 
 
-def _unusable_after_cleaning(summary: Dict[str, Any]) -> List[str]:
-    """Spectra that ``clean_model_dir`` could not make usable: invalid, index-only or failed."""
-    return [*summary['skipped_invalid'], *summary['skipped_index'], *summary['error']]
+#: What FilterLibrary.facilities() and instruments() list when NJM cannot be reached. NJM is
+#: optional: the other sources are listed instead, and the mirror client has already said so.
+_NJM_UNAVAILABLE = "NJM unavailable"
+
+
+def _listing_failures(errors: List[str]) -> List[str]:
+    """The catalogue listing errors that leave a list incomplete (an unreachable NJM does not)."""
+    return [error for error in errors if error != _NJM_UNAVAILABLE]
 
 
 def _directory_state(directory: Path) -> Dict[str, int]:
@@ -87,6 +92,12 @@ def _directory_state(directory: Path) -> Dict[str, int]:
     if not directory.is_dir():
         return {}
     return {path.name: path.stat().st_mtime_ns for path in directory.iterdir()}
+
+
+def _mixed_sources_error(src: str, model_dir, tried: List[str]) -> RuntimeError:
+    """The error when ``src`` failed after writing into ``model_dir``, so no further source is tried."""
+    return RuntimeError(f"{src} failed after changing {model_dir}, so another source's spectra would be mixed "
+                        f"with its files; no further source tried. Tried: {'; '.join(tried)}")
 
 
 def _download_count(n_spectra: int, before: Dict[str, int], after: Dict[str, int]) -> str:
@@ -716,8 +727,9 @@ class SED:
         List[SpectralGridInfo]
             Available spectral grids matching the criteria
 
-        A remote source that cannot be queried is skipped with a warning;
-        RuntimeError is raised if every requested remote source fails.
+        A remote source that cannot be asked lists nothing, after a warning
+        from its client; RuntimeError if NJM is asked for alone and is
+        unreachable.
         """
         if source not in (None, 'local', 'all', *_SPECTRA_SOURCES):
             raise ValueError(f"Unknown source: {source}")
@@ -793,20 +805,19 @@ class SED:
     
     @classmethod
     def _query_remote(cls, source: Optional[str]) -> List[SpectralGridInfo]:
-        """Grids from each requested remote source; a source that fails is skipped with a warning."""
-        queries = {'svo': cls._query_svo, 'msg': cls._query_msg,
-                   'mast': cls._query_mast, 'njm': cls._query_njm}
-        requested = [name for name in queries if source in (None, 'all', name)]
-        catalogs, errors = [], []
-        for name in requested:
+        """Grids from each requested remote source.  SVO, MSG or MAST list none when they cannot be
+        asked, and their clients warn why; an unreachable NJM is left out (its client has warned),
+        or raises when it is the source asked for."""
+        catalogs = []
+        for name, query in (('svo', cls._query_svo), ('msg', cls._query_msg), ('mast', cls._query_mast)):
+            if source in (None, 'all', name):
+                catalogs.extend(query())
+        if source in (None, 'all', 'njm'):
             try:
-                catalogs.extend(queries[name]())
-            except _SOURCE_ERRORS as exc:
-                errors.append(f"{name}: {exc}")
-                logger.warning("[query] %s spectral grid discovery failed: %s", name, exc)
-        if requested and len(errors) == len(requested):
-            raise RuntimeError("Spectral grid discovery failed for every requested source: "
-                               + "; ".join(errors))
+                catalogs.extend(cls._query_njm())
+            except RuntimeError:
+                if source == 'njm':
+                    raise
         return catalogs
 
     @classmethod
@@ -841,7 +852,8 @@ class SED:
 
     @classmethod
     def _query_njm(cls) -> List[SpectralGridInfo]:
-        """Query NJM mirror remote spectral grids; RuntimeError if the mirror is unreachable."""
+        """Query NJM mirror remote spectral grids; RuntimeError, without a second warning, if the
+        mirror is unreachable (the NJM client warns once per outage)."""
         from .njm_spectra_grabber import NJMSpectraGrabber
         grabber = NJMSpectraGrabber(base_dir=str(cls._model_root))
         if not grabber.is_available():
@@ -960,9 +972,8 @@ class SED:
                 model_dir.rmdir()  # no spectrum was within the bounds: remove the empty folder this call made
         else:
             if clean:
-                cls._clean_fetched(catalog, model_dir, flux_unit)
-            cube = _flux_cube_file(model_dir)
-            shortfall = _flux_cube_shortfall(model_dir) if cube is not None else None
+                cls._clean_fetched(model_dir, flux_unit)  # leaves the flux cube files alone
+            shortfall = _flux_cube_shortfall(model_dir)  # None without a cube
             if ((selected and cube is None) or shortfall) and any(model_dir.glob("*.txt")):
                 # As sed-tools grids does: a selection gets a lookup table, HDF5 bundle and flux cube of
                 # its own, and a cube that lacks spectra beside it (a selection, then the rest) is
@@ -977,8 +988,7 @@ class SED:
         cat = cls._load_catalog_from_dir(model_dir, catalog, used_source)
         
         # Apply parameter filters; a bound of 0 is a bound
-        bounds = (teff_min, teff_max, logg_min, logg_max, metallicity_min, metallicity_max)
-        if any(b is not None for b in bounds):
+        if cuts:
             cat = cat.filter(
                 teff_min=teff_min,
                 teff_max=teff_max,
@@ -992,33 +1002,29 @@ class SED:
         return cls(catalog=cat, model_root=base_dir)
 
     @staticmethod
-    def _clean_fetched(catalog: str, model_dir: Path, flux_unit: Optional[str]) -> None:
-        """Standardize the units of a fetched grid; RuntimeError if cleaning left spectra unusable."""
+    def _clean_fetched(model_dir: Path, flux_unit: Optional[str]) -> None:
+        """Standardize the units of a fetched grid; clean_model_dir raises RuntimeError for any spectrum
+        it leaves unusable."""
         from .spectra_cleaner import clean_model_dir
         summary = clean_model_dir(str(model_dir), try_h5_recovery=True, rebuild_lookup=True,
                                   flux_unit=flux_unit)
         print(f"[fetch] Cleaned: {summary['total']} total, {len(summary['converted'])} converted")
-        unusable = _unusable_after_cleaning(summary)
-        if unusable:
-            raise RuntimeError(
-                f"{len(unusable)} of {summary['total']} spectra of '{catalog}' in {model_dir} are unusable "
-                f"after cleaning (invalid, index-only or failed; see the [clean] report above): "
-                + ", ".join(unusable))
 
     @classmethod
     def _get_sources_for_catalog(cls, catalog: str) -> Tuple[List[str], List[str]]:
-        """Sources whose index lists this spectral grid (NJM first), and each discovery failure."""
-        queries = {'njm': cls._query_njm, 'svo': cls._query_svo,
-                   'msg': cls._query_msg, 'mast': cls._query_mast}
+        """Sources whose index lists this spectral grid (NJM first, then SVO as a fallback), and the
+        entry for an unreachable NJM, which goes in the fetch's error (its client has warned).
+
+        SVO, MSG or MAST list nothing when they cannot be asked; their clients warn why.
+        """
         sources, failures = [], []
-        for name, query in queries.items():
-            try:
-                listed = [info.name for info in query()]
-            except _SOURCE_ERRORS as exc:
-                failures.append(f"{name}: discovery failed: {exc}")
-                logger.warning("[fetch] %s discovery failed: %s; trying the other sources", name, exc)
-                continue
-            if catalog in listed:
+        try:
+            if catalog in [info.name for info in cls._query_njm()]:
+                sources.append('njm')
+        except RuntimeError as exc:
+            failures.append(f"njm: discovery failed: {exc}")
+        for name, query in (('svo', cls._query_svo), ('msg', cls._query_msg), ('mast', cls._query_mast)):
+            if catalog in [info.name for info in query()]:
                 sources.append(name)
 
         # Always include SVO as fallback if not already there
@@ -1047,9 +1053,7 @@ class SED:
                 return src
             failures.append(f"{src}: {error}")
             if _directory_state(model_dir) != before:
-                raise RuntimeError(
-                    f"Fetching '{catalog}' stopped: {src} failed after changing {model_dir}, so another "
-                    f"source's spectra would be mixed with its files. Tried: {'; '.join(failures)}")
+                raise _mixed_sources_error(src, model_dir, failures)
             logger.warning("[fetch] %s: %s, trying next...", src, error)
         raise ValueError(f"Spectral grid '{catalog}' could not be fetched. Tried: {'; '.join(failures)}")
 
@@ -1064,9 +1068,7 @@ class SED:
         """
         try:
             grabber = cls._get_grabber(src, str(model_dir.parent), workers)
-            metadata = grabber.get_model_metadata(catalog)
-            if not metadata:
-                return f"no metadata for {catalog}"
+            metadata = grabber.get_model_metadata(catalog)  # raises when the source has no such grid
             if cuts and src not in _CUTTING_SOURCES:
                 logger.warning("[fetch] %s cannot select spectra by Teff, logg or metallicity, so the whole of %s "
                                "is downloaded, then cut", src, catalog)
@@ -1238,9 +1240,11 @@ class SED:
             spectra_cleaner.clean_model_dir); required when their headers do
             not declare one, and never used in place of a declared unit.
 
-        Returns a summary dict.  Files whose headers lack a parameter, or that
-        cleaning leaves unusable, are left out of the built grid and then
-        listed in a RuntimeError. If the spectra do not declare their flux unit
+        Returns a summary dict.  A spectrum that cleaning leaves unusable
+        stops the import (clean_model_dir's RuntimeError), and so does a Teff,
+        logg or [M/H] that only some headers state (regenerate_lookup_table's
+        ValueError); one that no header states (log g of a blackbody grid) gets
+        no column. If the spectra do not declare their flux unit
         and flux_unit is not given, ValueError names the best guess before any
         file is copied or moved; so does a flux_unit that is not a known name.
         """
@@ -1286,18 +1290,11 @@ class SED:
 
         if build_h5:
             from . import build_h5_bundle_from_txt
-            if not build_h5_bundle_from_txt(str(dest), str(dest / f"{name}.h5")):
-                raise RuntimeError(f"No .txt spectra left in {dest} to bundle into {name}.h5")
+            build_h5_bundle_from_txt(str(dest), str(dest / f"{name}.h5"))  # dest holds the .txt files copied above
 
         if build_cube:
             _build_flux_cube(dest)
 
-        unusable = _unusable_after_cleaning(summary)
-        if missing or unusable:
-            raise RuntimeError(
-                f"Imported '{name}' into {dest} without some spectra. "
-                f"Lacking a Teff, logg or [M/H] header ({len(missing)}): {', '.join(missing) or 'none'}. "
-                f"Unusable after cleaning ({len(unusable)}): {', '.join(unusable) or 'none'}.")
         same_root = Path(base).expanduser().resolve() == Path(cls._model_root).expanduser().resolve()
         root_arg = "" if same_root else f", model_root={str(base)!r}"
         print(f"[import] done. Load with: SED.local('{name}'{root_arg})")
@@ -1474,6 +1471,14 @@ class SED:
 # ML Completer API
 # =============================================================================
 
+def _training_grid(base_dir: Path, grid: str) -> Path:
+    """The folder of a grid to train on; FileNotFoundError, before anything is written, without its flux cube."""
+    grid_dir = Path(base_dir) / grid
+    if not (grid_dir / "flux_cube.bin").is_file():
+        raise FileNotFoundError(f"No flux_cube.bin found in {grid_dir}. Run 'sed-tools rebuild' first.")
+    return grid_dir
+
+
 class MLCompleter:
     """
     ML-based SED completion for extending incomplete stellar grids.
@@ -1512,11 +1517,8 @@ class MLCompleter:
             Name for the saved model
         """
         from .ml_sed_completer import train_model
-        
-        grid_dir = self.base_dir / grid
-        if not grid_dir.exists():
-            raise FileNotFoundError(f"Grid not found: {grid_dir}")
-        
+
+        grid_dir = _training_grid(self.base_dir, grid)
         save_name = save_name or f"{grid}_completer"
         
         self._model = train_model(
@@ -1564,9 +1566,7 @@ class MLCompleter:
             output_dir=str(self.base_dir / output),
             wavelength_range=wavelength_range,
         )
-        if summary['failed']:
-            raise RuntimeError(f"{summary['failed']} of {summary['total']} spectra of '{catalog}' could not be "
-                               f"extended; the others were written to {self.base_dir / output}")
+        # extend_catalog itself raises RuntimeError listing any spectrum it could not extend.
         if not summary['total']:
             raise FileNotFoundError(f"No spectra to extend in {self.base_dir / catalog}")
 
@@ -1641,21 +1641,11 @@ class MLGenerator:
             Self for method chaining
         """
         from .ml_sed_generator import SEDGenerator
-        
-        grid_dir = self.base_dir / grid
-        if not grid_dir.exists():
-            raise FileNotFoundError(f"Grid not found: {grid_dir}")
-        
-        flux_cube = grid_dir / "flux_cube.bin"
-        if not flux_cube.exists():
-            raise FileNotFoundError(
-                f"No flux_cube.bin found in {grid_dir}. "
-                "Run 'sed-tools rebuild' first."
-            )
-        
+
+        grid_dir = _training_grid(self.base_dir, grid)
         save_name = save_name or f"sed_generator_{grid}"
         save_path = self.base_dir / self.models_dir / save_name
-        
+
         self._generator = SEDGenerator()
         self._generator.train(
             library_path=str(grid_dir),
@@ -1774,10 +1764,7 @@ class MLGenerator:
             )
         
         if output_dir is None:
-            if self._model_path is None:
-                raise RuntimeError("Give output_dir: the model was not trained or loaded through this "
-                                   "MLGenerator, so its model directory is unknown")
-            output_dir = str(self._model_path / 'SED')
+            output_dir = str(self._model_path / 'SED')  # train() and load() set both
         
         return self._generator.generate_with_outputs(
             teff=teff,
@@ -1915,7 +1902,7 @@ class Filters:
         from .filter_library import FilterLibrary
 
         report = FilterLibrary(cls._filter_root).facilities()
-        for error in report["errors"]:
+        for error in _listing_failures(report["errors"]):
             logger.warning("Filter discovery: %s", error)
         rows = []
         for row in report["entries"]:

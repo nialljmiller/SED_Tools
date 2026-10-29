@@ -325,7 +325,7 @@ def test_cli_without_a_terminal_stops_naming_the_grid_and_the_guess(tmp_path, mo
     with pytest.raises(RuntimeError) as err:
         cli.run_rebuild_flow(base_dir=str(tmp_path), models=["Cool"], rebuild_h5=False, rebuild_flux_cube=False)
     message = str(err.value)
-    assert "Cool: ValueError: Flux unit of Cool is not declared; best guess: 'fnu_jy'" in message
+    assert f"Cool: ValueError: Flux unit of {grid} is not declared; best guess: 'fnu_jy'" in message
     assert "--flux-unit fnu_jy" in message and "sed-tools asks for it when run in a terminal" in message
     assert _contents(grid) == before
 

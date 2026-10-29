@@ -15,7 +15,6 @@ Filters:
 """
 
 import argparse
-import csv
 import glob
 import inspect
 import json
@@ -33,6 +32,7 @@ from typing import Dict, List, Optional, Sequence, Tuple
 import numpy as np
 from requests import RequestException
 
+from .api import _listing_failures
 from .config import set_data_dir, show_config
 from .filter_catalogue import CatalogueError
 from .filter_components import ComponentError
@@ -139,7 +139,7 @@ def prompt_njm_axis_cuts(
     print(f"  You can restrict the download to a subset of the grid.")
     print(f"  Leave blank to download everything.\n")
 
-    info = grabber.get_grid_info(name, model_url=model_url)
+    info = grabber.get_grid_info(name, model_url=model_url)  # None after a warning saying why
     if info:
         print(f"  Available grid ({info['n_spectra']} spectra):")
         if 'teff_min' in info:
@@ -149,26 +149,14 @@ def prompt_njm_axis_cuts(
         if 'meta_min' in info:
             print(f"    [M/H]: {info['meta_min']:+.2f} – {info['meta_max']:+.2f}    ({info['meta_unique']} values)")
         print()
-    else:
-        print("  (Could not fetch grid info — cuts will still work if lookup_table.csv is available)\n")
 
     cuts['teff_range'] = _ask_range("  Teff range (e.g. '3500,8000') or blank for all: ")
     cuts['logg_range'] = _ask_range("  logg range (e.g. '3.5,5.0') or blank for all: ")
     cuts['meta_range'] = _ask_range("  [M/H] range (e.g. '-1.0,0.5') or blank for all: ")
     cuts['wl_range']   = _ask_range("  Wavelength range in Å (e.g. '3000,10000') or blank for all: ")
 
-    if any(v is not None for v in cuts.values()):
-        print(f"\n  Applied cuts:")
-        if cuts['teff_range']:
-            print(f"    Teff:       {cuts['teff_range'][0]:.0f} – {cuts['teff_range'][1]:.0f} K")
-        if cuts['logg_range']:
-            print(f"    logg:       {cuts['logg_range'][0]:.2f} – {cuts['logg_range'][1]:.2f}")
-        if cuts['meta_range']:
-            print(f"    [M/H]:      {cuts['meta_range'][0]:+.2f} – {cuts['meta_range'][1]:+.2f}")
-        if cuts['wl_range']:
-            print(f"    Wavelength: {cuts['wl_range'][0]:.1f} – {cuts['wl_range'][1]:.1f} Å")
-        print()
-    else:
+    # The grabber prints the cuts as it applies them.
+    if all(v is None for v in cuts.values()):
         print("\n  No cuts — downloading full grid.\n")
 
     return cuts
@@ -255,27 +243,20 @@ def _ask_rebuild_selection(cand: List[str]) -> List[str]:
 
 
 def _ask_flux_unit(grid: str, txt_files: List[str], flux_unit: Optional[str] = None) -> Optional[str]:
-    """The flux unit to clean a grid with: None when its spectra declare theirs, else ``flux_unit`` or the user's choice.
+    """The flux unit to clean a grid with: ``flux_unit`` (from --flux-unit) if given, else the user's
+    choice when the spectra do not declare theirs and there is a terminal to ask on, else None.
 
-    ``flux_unit`` (from --flux-unit) is used only for spectra that do not
-    declare their unit; a grid that declares one keeps it, and a line says
-    so.  Without ``flux_unit`` the user must type a unit: Enter alone does
-    not accept the guess.  Answering 'n', or having no terminal to ask on,
-    raises ValueError: the grid is not cleaned.
+    Cleaning decides the rest: it uses the unit only for spectra that do not
+    declare theirs, and stops with ValueError, naming the best guess, when
+    they declare none and none was given.  The user must type a unit: Enter
+    alone does not accept the guess, and 'n' raises ValueError (the grid is
+    not cleaned).
     """
+    if flux_unit is not None or not sys.stdin.isatty():
+        return flux_unit
     guess = undeclared_flux_unit(txt_files)
     if guess is None:
-        if flux_unit is not None:
-            print(f"[{grid}] its spectra declare their flux unit; --flux-unit {flux_unit} is not used for it")
         return None
-    if flux_unit is not None:
-        print(f"[{grid}] flux unit not declared; using --flux-unit {flux_unit} (best guess was {guess})")
-        return flux_unit
-    if not sys.stdin.isatty():
-        raise ValueError(
-            f"Flux unit of {grid} is not declared; best guess: '{guess}', {FLUX_UNITS[guess][2]} "
-            f"({FLUX_GUESS_WHY}). Give it with --flux-unit {guess}, or another of: {', '.join(FLUX_UNITS)}. "
-            "Without --flux-unit, sed-tools asks for it when run in a terminal.")
     print(f"\nFlux unit of {grid} is not declared. Accepted flux units:")
     for name, (_, _, description) in FLUX_UNITS.items():
         print(f"  {name:11s} {description}")
@@ -326,7 +307,7 @@ def _report_import_flux_unit(path: str, name: Optional[str], flux_unit: Optional
 def _rebuild_grid(model_dir: str, model_name: str, rebuild_h5: bool, rebuild_flux_cube: bool,
                   flux_unit: Optional[str] = None) -> List[str]:
     """Clean one local grid and rebuild its products; returns what was not done (empty when complete)."""
-    from .api import _build_flux_cube, _unusable_after_cleaning
+    from .api import _build_flux_cube
 
     flux_unit = _ask_flux_unit(model_name, _txt_files(model_dir), flux_unit)
     summary = clean_model_dir(model_dir, try_h5_recovery=True, rebuild_lookup=True, flux_unit=flux_unit)
@@ -344,10 +325,6 @@ def _rebuild_grid(model_dir: str, model_name: str, rebuild_h5: bool, rebuild_flu
 
     if rebuild_flux_cube:
         _build_flux_cube(model_dir)
-
-    unusable = _unusable_after_cleaning(summary)
-    if unusable:
-        return [f"{len(unusable)} spectra unusable after cleaning: {', '.join(unusable)}"]
     return []
 
 
@@ -390,9 +367,6 @@ def _print_cleaning_report(summary: Dict) -> None:
     n_converted = len(summary['converted'])
     n_recovered = len(summary['recovered'])
     n_skipped   = len(summary['skipped_already'])
-    n_invalid   = len(summary['skipped_invalid'])
-    n_index     = len(summary['skipped_index'])
-    n_error     = len(summary['error'])
 
     # Files "converted" from units that were already Å and F_λ were only cleaned and tagged.
     n_tagged = 0
@@ -409,15 +383,10 @@ def _print_cleaning_report(summary: Dict) -> None:
     if n_tagged    > 0: print(f"Cleaned       : {n_tagged} files  (units already Å + F_λ)")
     if n_recovered > 0: print(f"Recovered     : {n_recovered} files  (wavelengths from HDF5)")
     if n_skipped   > 0: print(f"Already done  : {n_skipped} files  (units_standardized header)")
-    if n_invalid   > 0: print(f"Invalid       : {n_invalid} files  (empty, corrupt, or λ ≤ 0)")
-    if n_index     > 0: print(f"Index grids   : {n_index} files  (λ=0,1,2… no HDF5 source)")
-    if n_error     > 0: print(f"Errors        : {n_error} files")
 
-    n_usable = n_converted + n_tagged + n_recovered + n_skipped
+    # clean_model_dir raises instead of returning when any file is left invalid, index-only or failed.
     print()
-    if   n_usable == n_total: print(f"All {n_usable} files ready for use")
-    elif n_usable  > 0:       print(f"{n_usable}/{n_total} files usable")
-    else:                     print("No usable files")
+    print(f"All {n_total} files ready for use")
 
 
 def _build_data_products(
@@ -436,7 +405,7 @@ def _build_data_products(
     decide, not file times (see api._flux_cube_shortfall).  Returns the
     problems; empty when the products are complete.
     """
-    from .api import _build_flux_cube, _bundle_shortfall, _flux_cube_file, _flux_cube_shortfall
+    from .api import _build_flux_cube, _bundle_shortfall, _flux_cube_file, _flux_cube_shortfall, _variant_paths
 
     # HDF5 bundle
     out_h5 = os.path.join(model_dir, f"{name}_bundle.h5" if src == "msg" else f"{name}.h5")
@@ -464,19 +433,14 @@ def _build_data_products(
                     f"Rebuild it with: {_rebuild_command(name, model_dir)}"]
         return []
 
-    if _build_flux_cube(model_dir).name == "variants_index.csv":
-        variants_index = os.path.join(model_dir, "variants_index.csv")
-        with open(variants_index) as vf:
-            header = vf.readline()
-            vrows = list(csv.DictReader(vf, fieldnames=[
-                c.lstrip("#").strip() for c in header.strip().split(",")
-            ]))
-        print(f"Flux cubes    : {len(vrows)} MESA-ready subgrid(s) created")
-        for row in vrows:
-            vname = row.get("variant_name", row.get("path", "?"))
-            print(f"  -> {os.path.join(model_dir, vname)}/")
+    written = _build_flux_cube(model_dir)
+    if written.name == "variants_index.csv":
+        subgrids = _variant_paths(written)
+        print(f"Flux cubes    : {len(subgrids)} MESA-ready subgrid(s) created")
+        for subgrid in subgrids:
+            print(f"  -> {os.path.join(model_dir, subgrid)}/")
         print("\n  Point MESA Colors to one of the above subdirectories.")
-        print(f"  See {variants_index} for the full inventory.")
+        print(f"  See {written} for the full inventory.")
     else:
         print("Flux cube     : flux_cube.bin")
     return []
@@ -521,11 +485,10 @@ def run_spectra_flow(
 
     src_list = _spectra_sources(source)
     grabs = _spectra_grabbers(src_list, base_dir, workers)
-    model_sources, discovery_failures = _discover_spectral_grids(src_list, grabs)
-    if "njm" in src_list and "njm" not in grabs:
-        discovery_failures.insert(0, "njm: mirror unreachable")
+    model_sources = _discover_spectral_grids(src_list, grabs)
     if not model_sources:
-        raise RuntimeError("No spectral grids discovered" + "".join(f"; {f}" for f in discovery_failures))
+        unreachable = "; njm: mirror unreachable" if "njm" in src_list and "njm" not in grabs else ""
+        raise RuntimeError("No spectral grids discovered" + unreachable)
 
     all_models = [_ModelOption(n, srcs) for n, srcs in sorted(model_sources.items())]
     if models is not None:
@@ -566,38 +529,29 @@ def _spectra_sources(source: str) -> List[str]:
 
 
 def _spectra_grabbers(src_list: List[str], base_dir: str, workers: int) -> Dict:
-    """A grabber per requested source; NJM is left out, with a message, when the mirror is unavailable."""
+    """A grabber per requested source; NJM is left out when the mirror is unavailable (the grabber warns)."""
     grabs: Dict = {}
     if "njm" in src_list:
         njm = NJMSpectraGrabber(base_dir=base_dir, max_workers=workers)
         if njm.is_available():
             grabs["njm"] = njm
-        else:
-            others = [s for s in src_list if s != "njm"]
-            print("[njm] Mirror unreachable; " + (f"using {', '.join(others)}" if others
-                                                   else "no other source was requested (--source)"))
     if "svo"  in src_list: grabs["svo"]  = SVOSpectraGrabber(base_dir=base_dir, max_workers=workers)
     if "msg"  in src_list: grabs["msg"]  = MSGSpectraGrabber(base_dir=base_dir, max_workers=workers)
     if "mast" in src_list: grabs["mast"] = MASTSpectraGrabber(base_dir=base_dir, max_workers=workers)
     return grabs
 
 
-def _discover_spectral_grids(src_list: List[str], grabs: Dict) -> Tuple[Dict[str, List[str]], List[str]]:
-    """Each grid name with the sources listing it (in --source order), and each source that failed."""
+def _discover_spectral_grids(src_list: List[str], grabs: Dict) -> Dict[str, List[str]]:
+    """Each grid name with the sources listing it, in --source order.
+
+    A source that cannot be asked lists none; its grabber warns why.
+    """
     model_sources: Dict[str, List[str]] = {}
-    failures = []
     for s in src_list:
-        if s not in grabs:
-            continue
-        try:
-            names = grabs[s].discover_models()
-        except (ValueError, RequestException, OSError, RuntimeError) as exc:
-            logger.warning("[%s] Spectral grid discovery failed: %s; using other sources", s, exc)
-            failures.append(f"{s}: discovery failed: {exc}")
-            continue
-        for model_name in names:
-            model_sources.setdefault(model_name, []).append(s)
-    return model_sources, failures
+        if s in grabs:
+            for model_name in grabs[s].discover_models():
+                model_sources.setdefault(model_name, []).append(s)
+    return model_sources
 
 
 def _requested_spectral_grids(models: List[str], all_models: List[_ModelOption]):
@@ -628,7 +582,7 @@ def _download_from_first_source(name: str, sources: List[str], grabs: Dict, mode
     mixed with its files.  Raises RuntimeError with every source's error when
     no source succeeds.
     """
-    from .api import _directory_state
+    from .api import _directory_state, _mixed_sources_error
 
     errors = []
     for src in sources:
@@ -641,8 +595,7 @@ def _download_from_first_source(name: str, sources: List[str], grabs: Dict, mode
             return src, meta
         errors.append(f"{src}: {error}")
         if _directory_state(model_dir) != before:
-            raise RuntimeError(f"{src} failed after changing {model_dir}, so another source's spectra would be "
-                               f"mixed with its files; no further source tried. Tried: {'; '.join(errors)}")
+            raise _mixed_sources_error(src, model_dir, errors)
         logger.warning("  [%s] %s — trying next source...", src, error)
     raise RuntimeError(f"no source could supply it. Tried: {'; '.join(errors)}")
 
@@ -653,9 +606,7 @@ def _download_from(name: str, src: str, g, model_dir: str, ranges: Optional[Dict
 
     meta = None
     try:
-        meta = g.get_model_metadata(name)
-        if not meta:
-            return meta, "no metadata"
+        meta = g.get_model_metadata(name)  # raises when the source has no such grid
         print(f"  Using source: {src}")
         cuts = _download_cuts(name, src, g, meta, ranges or {})
         before = _directory_state(model_dir)
@@ -692,8 +643,6 @@ def _download_and_build_grid(name: str, sources: List[str], grabs: Dict, base_di
 
     Returns what was not done; empty when the grid is complete.
     """
-    from .api import _unusable_after_cleaning
-
     print("\n" + "=" * 64)
     print(f"{''.join(f'[{s}]' for s in sources)} {name}")
     print("=" * 64)
@@ -718,11 +667,7 @@ def _download_and_build_grid(name: str, sources: List[str], grabs: Dict, base_di
         print("\n  No spectra remaining after cleaning")
         return ["no spectra remaining after cleaning"]
 
-    problems = _build_data_products(name, model_dir, src, force_bundle_h5, build_flux_cube)
-    unusable = _unusable_after_cleaning(summary)
-    if unusable:
-        problems.append(f"{len(unusable)} spectra unusable after cleaning: {', '.join(unusable)}")
-    return problems
+    return _build_data_products(name, model_dir, src, force_bundle_h5, build_flux_cube)
 
 
 def _print_field(name: str, text) -> None:
@@ -1182,7 +1127,7 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> int:
         if selected is None:
             break
         if len(selected) > 1:
-            _download_every_instrument(library, [facilities[i] for i in selected], base_dir, failures, shown=shown)
+            _download_every_instrument(library, [facilities[i] for i in selected], failures, shown)
             break
         if not _browse_instruments(library, facilities[selected[0]], download, shown=shown):
             break
@@ -1289,16 +1234,6 @@ def _cut(text: str, width: int) -> str:
     return text if len(text) <= width else text[:max(width - 1, 0)] + "…"
 
 
-#: What FilterLibrary.facilities() and instruments() list when NJM cannot be reached. NJM is
-#: optional: the other sources are listed instead, and the mirror client has already said so.
-_NJM_UNAVAILABLE = "NJM unavailable"
-
-
-def _listing_failures(errors: List[str]) -> List[str]:
-    """The catalogue listing errors that leave a list incomplete (an unreachable NJM does not)."""
-    return [error for error in errors if error != _NJM_UNAVAILABLE]
-
-
 def _print_listing_errors(errors: List[str], shown: set) -> None:
     """Print each listing failure once per browsing session."""
     for error in _listing_failures(errors):
@@ -1307,13 +1242,11 @@ def _print_listing_errors(errors: List[str], shown: set) -> None:
             print(f"[filters] {error}")
 
 
-def _download_every_instrument(library, facilities: List[dict], base_dir: str, failures: List[str], *,
-                               shown: Optional[set] = None) -> None:
+def _download_every_instrument(library, facilities: List[dict], failures: List[str], shown: set) -> None:
     """After confirming the count, download every instrument of each facility.
 
     An incomplete instrument list is a failure too.
     """
-    shown = set() if shown is None else shown
     listings = []
     for facility in facilities:
         result = library.instruments(facility["key"])
@@ -1559,11 +1492,9 @@ def run_filter_combine_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
         page_size=50,
         max_cols=2,
     )
-    if selected is None or selected == []:
+    if selected is None:
         print("No filter sets selected.")
         return
-    if isinstance(selected, int):
-        selected = [selected]
 
     selected_paths = [options[i].path for i in selected]
     print("\nSelected filter sets:")
@@ -2181,29 +2112,24 @@ def _cmd_filters(args, parser):
 
 
 def _atmosphere_error(exc: Exception, args) -> str:
-    """The error of a failed composition with an atmosphere, in command-line terms where they help.
-
-    An instrument with several sites and no default needs --atmosphere-site;
-    any other error is followed by the conditions its site has.
-    """
+    """The error of a failed composition with an atmosphere; for an instrument with several sites
+    and no default, in command-line terms (--atmosphere-site).  The site's own errors already say
+    which conditions it has."""
     from .api import Filters
     from .filter_library import FilterLibrary
 
+    if args.atmosphere_site:
+        return str(exc)
     directory = FilterLibrary(args.base).directory(args.target)
     try:
         info = Filters.available(directory.parent.name, directory.name, filter_root=directory.parent.parent,
                                  include_remote=False)
-        grids = Filters.atmospheres(filter_root=directory.parent.parent, include_remote=False)
     except (ComponentError, OSError, RuntimeError) as lookup_error:
         return f"{exc} (its atmosphere sites could not be listed: {lookup_error})"
     sites = _atmosphere_sites(info)
-    default = _default_site(info, sites)
-    if not args.atmosphere_site and len(sites) > 1 and default is None:
+    if len(sites) > 1 and _default_site(info, sites) is None:
         return (f"{directory.parent.name}/{directory.name} has several atmosphere sites "
                 f"({', '.join(sites)}) and no default; choose one with --atmosphere-site")
-    site = args.atmosphere_site or default
-    if site in grids:
-        return f"{exc}\n[filters] {site} has: {_conditions_text(grids[site])}"
     return str(exc)
 
 
@@ -2227,14 +2153,10 @@ def _cmd_filters_detector(args, parser):
 
     from .api import Filters
 
-    # Each file is printed as it is tagged, so on failure only the error remains to be said.
-    try:
-        rows = Filters.tag_detector_types(
-            args.path, facility=args.facility, force=args.force, dry_run=args.dry_run
-        )
-    except (RequestException, RuntimeError, ValueError) as exc:  # SVOUnreachableError is a RequestException
-        print(f"\n[filters] {exc}")
-        return 1
+    # Each file is printed as it is tagged, so on failure main() has only the error left to say.
+    rows = Filters.tag_detector_types(
+        args.path, facility=args.facility, force=args.force, dry_run=args.dry_run
+    )
     counts = Counter((r["detector_type"], r["source"]) for r in rows)
     changed = sum(r["changed"] for r in rows)
     verb = "would change" if args.dry_run else "changed"

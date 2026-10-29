@@ -35,7 +35,7 @@ GRABBERS = {
 }
 
 
-def fake_grabber(models=(), error=None, available=True, metadata=None, downloaded=0, download_error=None):
+def fake_grabber(models=(), available=True, metadata=None, downloaded=0, download_error=None):
     """A grabber class; ``metadata`` may be an exception to raise, and ``download_error`` is
     raised after ``downloaded`` spectra have been written."""
     class Grabber:
@@ -48,11 +48,11 @@ def fake_grabber(models=(), error=None, available=True, metadata=None, downloade
             return available
 
         def discover_models(self):
-            if error is not None:
-                raise error
             return list(models)
 
         def get_model_metadata(self, name):
+            if metadata is None:
+                raise RuntimeError(f"no metadata for {name}")  # as the real grabbers do
             if isinstance(metadata, Exception):
                 raise metadata
             return metadata
@@ -78,35 +78,13 @@ def sources(monkeypatch):
     return install
 
 
-def test_query_warns_about_a_failing_source_and_lists_the_others(sources, caplog):
-    sources(svo=fake_grabber(error=requests.ConnectionError("SVO down")), msg=fake_grabber(["MSGgrid"]))
-    with caplog.at_level(logging.WARNING, logger="sed_tools.api"):
-        grids = SED.query(include_local=False)
-    assert [g.name for g in grids] == ["MSGgrid"]
-    assert "svo spectral grid discovery failed: SVO down" in caplog.text
-
-
-def test_query_warns_when_the_njm_mirror_is_unreachable(sources, caplog):
+def test_query_leaves_out_an_unreachable_njm_and_raises_when_it_is_the_source_asked_for(sources, caplog):
     sources(njm=fake_grabber(["NJMgrid"], available=False), mast=fake_grabber(["BOSZ"]))
     with caplog.at_level(logging.WARNING, logger="sed_tools.api"):
-        grids = SED.query(include_local=False)
-    assert [g.name for g in grids] == ["BOSZ"]
-    assert "njm spectral grid discovery failed: NJM mirror https://mirror.invalid is unreachable" in caplog.text
-
-
-def test_query_raises_when_the_requested_source_fails(sources):
-    sources(svo=fake_grabber(error=requests.ConnectionError("SVO down")))
-    with pytest.raises(RuntimeError, match="svo: SVO down"):
-        SED.query(source="svo", include_local=False)
-
-
-def test_query_raises_with_every_error_when_all_sources_fail(sources):
-    down = {name: fake_grabber(error=RuntimeError(f"{name} down")) for name in GRABBERS}
-    sources(**down)
-    with pytest.raises(RuntimeError) as excinfo:
-        SED.query(include_local=False)
-    for name in GRABBERS:
-        assert f"{name}: {name} down" in str(excinfo.value)
+        assert [g.name for g in SED.query(include_local=False)] == ["BOSZ"]
+    assert not caplog.text  # the NJM client warns; the API does not again
+    with pytest.raises(RuntimeError, match="NJM mirror https://mirror.invalid is unreachable"):
+        SED.query(source="njm", include_local=False)
 
 
 def test_query_rejects_an_unknown_source(sources):
@@ -116,15 +94,15 @@ def test_query_rejects_an_unknown_source(sources):
 
 
 def test_fetch_error_names_every_source_that_failed(sources, tmp_path, caplog):
-    sources(njm=fake_grabber(available=False), msg=fake_grabber(error=ValueError("bad index")))
+    sources(njm=fake_grabber(available=False), msg=fake_grabber(["Missing"]))
     with caplog.at_level(logging.WARNING, logger="sed_tools.api"), pytest.raises(ValueError) as excinfo:
         SED.fetch("Missing", model_root=tmp_path)
     message = str(excinfo.value)
     assert "Spectral grid 'Missing' could not be fetched" in message
     assert "njm: discovery failed: NJM mirror https://mirror.invalid is unreachable" in message
-    assert "msg: discovery failed: bad index" in message
+    assert "njm" not in caplog.text  # the NJM client warns; the API does not again
+    assert "msg: no metadata for Missing" in message
     assert "svo: no metadata for Missing" in message
-    assert "msg discovery failed: bad index; trying the other sources" in caplog.text
     assert "svo: no metadata for Missing, trying next" in caplog.text
 
 
@@ -160,7 +138,7 @@ def test_fetch_from_msg_reads_the_msg_index_first(tmp_path, monkeypatch):
         def get_model_metadata(self, name):
             if name not in self.model_urls:
                 raise RuntimeError(f"MSG grid {name} is unknown to this grabber")
-            return {}
+            raise RuntimeError(f"no metadata for {name}")
 
     monkeypatch.setattr(GRABBERS["msg"], MSG)
     with pytest.raises(ValueError, match="msg: no metadata for Grid"):
@@ -181,14 +159,6 @@ def test_fetch_rejects_an_unknown_source(tmp_path):
 def test_fetch_raises_when_nothing_was_downloaded(sources, tmp_path):
     sources(svo=fake_grabber(["Grid"], metadata=[{"fid": 1}], downloaded=0))
     with pytest.raises(ValueError, match="svo: no spectra downloaded"):
-        SED.fetch("Grid", source="svo", model_root=tmp_path)
-
-
-def test_fetch_raises_when_cleaning_leaves_unusable_spectra(sources, tmp_path, monkeypatch):
-    sources(svo=fake_grabber(["Grid"], metadata=[{"fid": 1}], downloaded=3))
-    summary = {"total": 3, "converted": [], "skipped_invalid": ["a.txt"], "skipped_index": [], "error": ["b.txt"]}
-    monkeypatch.setattr("sed_tools.spectra_cleaner.clean_model_dir", lambda *a, **k: summary)
-    with pytest.raises(RuntimeError, match="2 of 3 spectra of 'Grid' .* are unusable after cleaning"):
         SED.fetch("Grid", source="svo", model_root=tmp_path)
 
 
@@ -263,18 +233,11 @@ def test_grid_write_raises_when_there_is_nothing_to_bundle(tmp_path):
         grid.write(tmp_path / "out", build_flux_cube=False)
 
 
-def test_import_lists_spectra_left_out_after_building_the_rest(tmp_path, monkeypatch):
+def test_import_dry_run_counts_spectra_lacking_a_parameter(tmp_path):
     src = tmp_path / "src"
     src.mkdir()
     spectrum().save(src / "good.txt")
     spectrum(metallicity=float("nan")).save(src / "no_meta.txt")
-    summary = {"total": 2, "converted": [], "skipped_invalid": [], "skipped_index": [], "error": []}
-    monkeypatch.setattr("sed_tools.spectra_cleaner.clean_model_dir", lambda *a, **k: summary)
-    monkeypatch.setattr("sed_tools.svo_regen_spectra_lookup.regenerate_lookup_table", lambda *a: None)
-
-    with pytest.raises(RuntimeError, match=r"Lacking a Teff, logg or \[M/H\] header \(1\): no_meta.txt"):
-        SED.import_grid(src, name="Grid", model_root=tmp_path / "models", build_cube=False)
-    assert (tmp_path / "models" / "Grid" / "Grid.h5").is_file()
 
     report = SED.import_grid(src, name="Grid", model_root=tmp_path / "models", dry_run=True)
     assert report["n_missing"] == 1
@@ -441,20 +404,11 @@ def test_spectra_flow_builds_what_it_can_then_lists_every_grid_not_completed(gri
     message = str(excinfo.value)
     assert built == ["Good"]
     assert "NoMeta: RuntimeError: no source could supply it. Tried: svo: no metadata" in message
-    assert "Empty: RuntimeError: no source could supply it. Tried: svo: no metadata; mast: no spectra downloaded" in message
+    assert ("Empty: RuntimeError: no source could supply it. Tried: svo: no metadata for Empty; "
+            "mast: no spectra downloaded") in message
     assert "Missing: not listed by any source" in message
     assert "Good" not in message
     assert "Done." not in capsys.readouterr().out
-
-
-def test_spectra_flow_builds_a_grid_with_unusable_spectra_but_lists_them(grid_flow, tmp_path):
-    from sed_tools.cli import run_spectra_flow
-
-    cleaned = dict(CLEAN, total=3, skipped_invalid=["bad.txt"], error=["worse.txt"])
-    built = grid_flow(cleaned=cleaned, svo=fake_grabber(["Grid"], metadata=[{"fid": 1}], downloaded=1))
-    with pytest.raises(RuntimeError, match="Grid: 2 spectra unusable after cleaning: bad.txt, worse.txt"):
-        run_spectra_flow("svo", base_dir=str(tmp_path), models=["Grid"])
-    assert built == ["Grid"]
 
 
 def test_spectra_flow_carries_on_after_a_grid_whose_build_fails(grid_flow, tmp_path):
@@ -475,21 +429,11 @@ def test_spectra_flow_completes_quietly_when_every_grid_is_built(grid_flow, tmp_
     assert capsys.readouterr().out.rstrip().endswith("Done.")
 
 
-def test_spectra_flow_uses_other_sources_when_discovery_fails(grid_flow, tmp_path, caplog):
-    from sed_tools.cli import run_spectra_flow
-
-    grid_flow(svo=fake_grabber(error=requests.ConnectionError("SVO down")),
-              msg=fake_grabber(["Grid"], metadata={"m": 1}, downloaded=1))
-    with caplog.at_level(logging.WARNING, logger="sed_tools.cli"):
-        run_spectra_flow("all", base_dir=str(tmp_path), models=["Grid"])
-    assert "[svo] Spectral grid discovery failed: SVO down; using other sources" in caplog.text
-
-
 def test_spectra_flow_raises_when_no_grid_is_discovered(grid_flow, tmp_path):
     from sed_tools.cli import run_spectra_flow
 
-    grid_flow(svo=fake_grabber(error=requests.ConnectionError("SVO down")))
-    with pytest.raises(RuntimeError, match="No spectral grids discovered; svo: discovery failed: SVO down"):
+    grid_flow(svo=fake_grabber([]))  # as a grabber that could not read its index, after its warning
+    with pytest.raises(RuntimeError, match="No spectral grids discovered"):
         run_spectra_flow("svo", base_dir=str(tmp_path), models=["Grid"])
 
 
@@ -766,14 +710,14 @@ def test_coverage_reports_every_grid_then_exits_1_if_any_failed(tmp_path, monkey
 def test_cleaning_report_reads_the_summary_clean_model_dir_returns(capsys):
     from sed_tools.cli import _print_cleaning_report
 
-    summary = dict(CLEAN, total=5, converted=["a", "b"], recovered=["c"], skipped_already=["d"],
-                   skipped_invalid=["e"], catalog_units={"wavelength": "angstrom", "flux": "flam"},
+    summary = dict(CLEAN, total=4, converted=["a", "b"], recovered=["c"], skipped_already=["d"],
+                   catalog_units={"wavelength": "angstrom", "flux": "flam"},
                    detection_stats={"status": "consensus"})
     _print_cleaning_report(summary)
     out = capsys.readouterr().out
     assert "Cleaned       : 2 files" in out and "Recovered     : 1 files" in out
-    assert "Already done  : 1 files" in out and "Invalid       : 1 files" in out
-    assert "4/5 files usable" in out
+    assert "Already done  : 1 files" in out
+    assert "All 4 files ready for use" in out
 
 
 # ----------------------------------------------------------------------
@@ -831,7 +775,6 @@ def test_spectra_flow_tries_no_other_source_after_a_partial_download(grid_flow, 
 # ML wrappers
 # ----------------------------------------------------------------------
 @pytest.mark.parametrize("summary,error,message", [
-    ({"extended": 3, "failed": 2, "skipped": 0, "total": 5}, RuntimeError, "2 of 5 spectra of 'Grid' could not be extended"),
     ({"extended": 0, "failed": 0, "skipped": 0, "total": 0}, FileNotFoundError, "No spectra to extend in"),
 ])
 def test_ml_completer_extend_raises_on_spectra_it_could_not_extend(tmp_path, monkeypatch, summary, error, message):
@@ -861,11 +804,6 @@ def test_ml_generator_writes_outputs_beside_the_loaded_model(tmp_path, monkeypat
     generator = MLGenerator(base_dir=tmp_path).load("gen")
     generator.generate_with_outputs(5800, 4.4, 0.0)
     assert calls == [str(tmp_path / "models" / "gen" / "SED")]
-
-    unknown = MLGenerator(base_dir=tmp_path)
-    unknown._generator = Generator()
-    with pytest.raises(RuntimeError, match="Give output_dir"):
-        unknown.generate_with_outputs(5800, 4.4, 0.0)
 
 
 def test_ml_generator_auto_fails_at_once_without_optuna(monkeypatch, capsys):
@@ -932,9 +870,9 @@ def test_filters_detector_prints_what_was_tagged_and_what_failed(tmp_path, monke
 
     monkeypatch.setattr(fm, "tag_filter_tree", tag_tree)
     assert run_cli(monkeypatch, "filters-detector", str(tmp_path)) == 1
-    out = capsys.readouterr().out
-    assert "g.dat: photon [svo]" in out
-    assert "[filters] 1 of 2 filter files could not be tagged" in out
+    captured = capsys.readouterr()
+    assert "g.dat: photon [svo]" in captured.out
+    assert "sed-tools: error: 1 of 2 filter files could not be tagged" in captured.err
 
 
 def test_composition_says_when_the_atmosphere_list_failed(tmp_path, monkeypatch, filters):

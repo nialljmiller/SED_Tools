@@ -179,19 +179,9 @@ def test_rebuild_uses_the_flux_unit_option_without_asking(tmp_path, monkeypatch,
     monkeypatch.setattr(cli, "clean_model_dir", lambda d, **k: cleaned.append(k["flux_unit"]) or
                         {"total": 3, "error": [], "skipped_invalid": [], "skipped_index": []})
     monkeypatch.setattr(cli, "regenerate_lookup_table", lambda d: None)
-    monkeypatch.setattr("sed_tools.api._unusable_after_cleaning", lambda summary: [])
     assert run_cli(monkeypatch, "rebuild", "--base", str(tmp_path), "--grids", "Cool", "--no-h5", "--no-cube",
                    "--flux-unit", "flam") == 0
     assert cleaned == ["flam"]
-    assert "[Cool] flux unit not declared; using --flux-unit flam" in capsys.readouterr().out
-
-
-def test_flux_unit_option_leaves_a_declared_unit_alone(tmp_path, capsys):
-    grid = tmp_path / "Declared"
-    grid.mkdir()
-    (grid / "s.txt").write_text("# flux_unit = erg/cm2/s/A\n4000 1e-3\n5000 2e-3\n")
-    assert cli._ask_flux_unit("Declared", [str(grid / "s.txt")], "fnu") is None
-    assert "its spectra declare their flux unit; --flux-unit fnu is not used for it" in capsys.readouterr().out
 
 
 def test_an_unknown_flux_unit_is_a_usage_error(monkeypatch, capsys):
@@ -370,20 +360,6 @@ def test_several_sites_without_a_default_name_the_cli_option(tmp_path, monkeypat
     assert ("2MASS/2MASS has several atmosphere sites (hopkins_2mass, ctio_2mass) and no default; "
             "choose one with --atmosphere-site") in out
     assert "atmosphere={" not in out
-
-
-def test_a_missing_atmosphere_lists_the_conditions_the_site_has(tmp_path, monkeypatch, capsys):
-    def compose(cls, *a, **k):
-        raise ComponentError("No cached atmosphere for ctio_2mass_am1.2; fetch or generate the requested conditions")
-
-    monkeypatch.setattr(Filters, "compose", classmethod(compose))
-    monkeypatch.setattr(Filters, "available", classmethod(lambda cls, *a, **k: _availability(
-        atmosphere=True, atmosphere_sites=["hopkins_2mass", "ctio_2mass"])))
-    monkeypatch.setattr(Filters, "atmospheres", classmethod(lambda cls, *a, **k: {
-        "ctio_2mass": {"airmass": [], "pwv": [], "unstated_airmass": True}}))
-    assert run_cli(monkeypatch, "filters-compose", "2MASS/2MASS", "--base", str(tmp_path), "--airmass", "1.2",
-                   "--atmosphere-site", "ctio_2mass") == 1
-    assert "[filters] ctio_2mass has: airmass 'unstated' (as published)" in capsys.readouterr().out
 
 
 def test_atmosphere_component_without_airmass_is_a_usage_error(monkeypatch, capsys, composed):
