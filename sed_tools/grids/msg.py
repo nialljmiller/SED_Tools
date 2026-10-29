@@ -37,10 +37,7 @@ AXIS_ROLE_OVERRIDES = {
 }
 
 def _dataset_if_exists(g, names):
-    for n in names:
-        if n in g and isinstance(g[n], h5py.Dataset):
-            return g[n]
-    return None
+    return next((g[n] for n in names if n in g and isinstance(g[n], h5py.Dataset)), None)
 
 def _recover_wavelengths(f, spec_g, expected_len=None):
     # 1) direct dataset within spectrum group
@@ -153,10 +150,7 @@ def _guess_roles_from_axes(axes):
     return role
 
 def _role_override_for_model(model_name):
-    for key, mapping in AXIS_ROLE_OVERRIDES.items():
-        if key in model_name:
-            return mapping.copy()
-    return {}
+    return next((mapping.copy() for key, mapping in AXIS_ROLE_OVERRIDES.items() if key in model_name), {})
 
 def _in_range(val, rng):
     """Return True if val is within rng (lo, hi), or if rng is None/val is nan."""
@@ -401,8 +395,7 @@ class MSGSpectraGrabber:
         except (KeyError, RuntimeError, OSError, ValueError) as e:
             return ("failed", fname, str(e))
 
-        if not (_in_range(teff, ranges["teff"]) and _in_range(logg, ranges["logg"])
-                and _in_range(meta, ranges["meta"])):
+        if not all(_in_range(value, ranges[key]) for key, value in (("teff", teff), ("logg", logg), ("meta", meta))):
             return ("excluded", fname, None)
 
         if ranges["wl"] is not None:
