@@ -20,7 +20,7 @@ from __future__ import annotations
 import gzip
 import io
 import logging
-from typing import Dict, Tuple
+from typing import Dict, Sequence, Tuple
 
 import numpy as np
 from requests import RequestException
@@ -68,14 +68,14 @@ def _fits(raw: bytes):
     return fits.open(io.BytesIO(raw))
 
 
-def caldb_get(fetch: Fetcher, path: str) -> Tuple[bytes, str]:
-    """Download a CALDB file from the first root that serves it; return (data, URL).
+def caldb_get(fetch: Fetcher, path: str, roots: Sequence[str] = CALDB_ROOTS) -> Tuple[bytes, str]:
+    """Download a CALDB file from the first of ``roots`` that serves it; return (data, URL).
 
     Each root that fails is named in a warning when a later one serves the
     file, and in the error when none does.
     """
     errors = []
-    for root in CALDB_ROOTS:
+    for root in roots:
         url = root + path
         try:
             data = fetch.get(url)
@@ -157,17 +157,27 @@ def _composition_check(wl, published, composed) -> str:
 
 
 def uvot(fetch: Fetcher) -> Instrument:
-    raw_ft, url_ft = caldb_get(fetch, FTRANS)
-    raw_mi, url_mi = caldb_get(fetch, MIRROR)
-    raw_in, url_in = caldb_get(fetch, INSTEA)
-    raw_sc, url_sc = caldb_get(fetch, SENSCORR)
+    roots = list(CALDB_ROOTS)
+
+    def get(path):
+        # The root that served the last file is asked first: one warning, not one per file, when a host is down.
+        data, url = caldb_get(fetch, path, roots)
+        served = url[:-len(path)]
+        roots.remove(served)
+        roots.insert(0, served)
+        return data, url
+
+    raw_ft, url_ft = get(FTRANS)
+    raw_mi, url_mi = get(MIRROR)
+    raw_in, url_in = get(INSTEA)
+    raw_sc, url_sc = get(SENSCORR)
     filters = ftrans_curves(raw_ft)
     wl_mi, ea_mi = area_curve(raw_mi, "MIRROREFFAREA")
     wl_in, ea_in = area_curve(raw_in, "INSTEFFAREA")
 
     bands, comps, checks = [], [], []
     for band, (filt, arf) in BANDS.items():
-        raw_arf, url_arf = caldb_get(fetch, "cpf/arf/" + arf)
+        raw_arf, url_arf = get("cpf/arf/" + arf)
         wl, area = arf_curve(raw_arf, filt)
         b = make_band(band, wl, area / GEOMETRIC_AREA_CM2, unit="Angstrom", detector_type=PHOTON,
                       components="filter+optics+qe", sources=f"{url_arf} | {POOLE} | {BREEVELD}")
