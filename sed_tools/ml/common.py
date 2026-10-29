@@ -90,10 +90,8 @@ def sample_spectra(teff, logg, meta, flux_cube, n_samples: int, cut, library_pat
     dropped = Counter()
     indices = np.random.permutation(len(teff) * nl * nm)[:n_samples]
     for idx in indices:
-        i_t = idx // (nl * nm)
-        remainder = idx % (nl * nm)
-        i_l = remainder // nm
-        i_m = remainder % nm
+        i_t, remainder = divmod(idx, nl * nm)
+        i_l, i_m = divmod(remainder, nm)
         # The cube is stored as [nw, nm, nl, nt]
         reason, sample = cut(flux_cube[:, i_m, i_l, i_t])
         if reason:
@@ -141,10 +139,7 @@ def normalised_params(scaler: Dict[str, float], teff, logg, meta) -> list:
 
 def masked_mse(y_pred, y_true, mask):
     """Mean squared error over the points where mask is 1."""
-    sq_error = (y_pred - y_true) ** 2
-    masked_error = sq_error * mask
-    n_valid = mask.sum() + 1e-8  # Avoid division by zero
-    return masked_error.sum() / n_valid
+    return ((y_pred - y_true) ** 2 * mask).sum() / (mask.sum() + 1e-8)
 
 
 def data_loaders(train_arrays, val_arrays, batch_size: int):
@@ -221,11 +216,8 @@ def _train_epoch(model, loader, optimizer, device, epoch: int) -> List[float]:
 
     model.train()
     losses = []
-    for x_batch, y_batch, m_batch in loader:
-        x_batch = x_batch.to(device)
-        y_batch = y_batch.to(device)
-        m_batch = m_batch.to(device)
-
+    for batch in loader:
+        x_batch, y_batch, m_batch = (t.to(device) for t in batch)
         optimizer.zero_grad()
         loss = masked_mse(model(x_batch), y_batch, m_batch)
         if torch.isnan(loss):
@@ -246,10 +238,8 @@ def _validation_losses(model, loader, device) -> List[float]:
     model.eval()
     losses = []
     with torch.no_grad():
-        for x_batch, y_batch, m_batch in loader:
-            x_batch = x_batch.to(device)
-            y_batch = y_batch.to(device)
-            m_batch = m_batch.to(device)
+        for batch in loader:
+            x_batch, y_batch, m_batch = (t.to(device) for t in batch)
             loss = masked_mse(model(x_batch), y_batch, m_batch)
             if not torch.isnan(loss):
                 losses.append(loss.item())
