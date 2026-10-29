@@ -200,9 +200,7 @@ def _bolometric_renorm_ratio(wl: np.ndarray, flux: np.ndarray, teff: float) -> O
     if expected < _RENORM_MIN_COVERAGE * SIGMA * teff ** 4:
         return None
     ratio = float(np.trapezoid(np.maximum(flux, 0), wl)) / expected
-    if ratio > _RENORM_MAX_RATIO:
-        return ratio
-    return None
+    return ratio if ratio > _RENORM_MAX_RATIO else None
 
 
 def rebuild_lookup_table(model_dir: str) -> str:

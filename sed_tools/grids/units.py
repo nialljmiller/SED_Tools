@@ -274,10 +274,6 @@ def detect_units_single_file(filepath: str) -> Optional[UnitInfo]:
         return None
     
     wl, flux = read_spectrum_data(filepath)
-    
-    if wl.size < 2 or flux.size < 2:
-        return None
-    
     valid = np.isfinite(wl) & np.isfinite(flux) & (wl > 0)
     wl, flux = wl[valid], flux[valid]
     
@@ -452,9 +448,7 @@ def _with_flux_unit(grid: str, unit_info: UnitInfo, flux_unit: Optional[str], *,
 def _detect_sample(sample_files: List[str]) -> Tuple[List[UnitInfo], int, int, int]:
     """Detect units in each sampled file: (detections, n_already_standardized, n_invalid, n_index_grids)."""
     detections = []
-    skipped_standardized = 0
-    skipped_invalid = 0
-    index_grids = 0
+    skipped_standardized = skipped_invalid = index_grids = 0
     for filepath in sample_files:
         unit_info = detect_units_single_file(filepath)
         if unit_info is None:
