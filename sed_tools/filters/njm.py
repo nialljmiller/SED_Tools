@@ -53,6 +53,11 @@ def _same_curve(path: Path, served: str) -> bool:
         return False
 
 
+def _prefixed(a: str, b: str) -> bool:
+    """Whether one normalised name begins the other."""
+    return a.startswith(b) or b.startswith(a)
+
+
 @dataclass
 class SetDownload:
     """What :meth:`NJMFilterGrabber._download_set` did for one instrument."""
@@ -204,25 +209,13 @@ class NJMFilterGrabber:
         if svo_key in facilities:
             return svo_key
         svo_norm = self._normalize_name(svo_key)
-        for name in facilities:
-            njm_norm = self._normalize_name(name)
-            if njm_norm.startswith(svo_norm) or svo_norm.startswith(njm_norm):
-                return name
-        return None
+        return next((name for name in facilities if _prefixed(self._normalize_name(name), svo_norm)), None)
 
     def get_exclusive_facilities(self, svo_keys: List[str]) -> List[str]:
         """Return NJM facility names that have no matching SVO facility (matched as :meth:`find_facility` does)."""
         svo_norms = {self._normalize_name(k) for k in svo_keys}
-        exclusive = []
-        for fac in self.discover_facilities():
-            fac_norm = self._normalize_name(fac)
-            matched = any(
-                fac_norm.startswith(s) or s.startswith(fac_norm)
-                for s in svo_norms
-            )
-            if not matched:
-                exclusive.append(fac)
-        return exclusive
+        return [fac for fac in self.discover_facilities()
+                if not any(_prefixed(self._normalize_name(fac), s) for s in svo_norms)]
 
     def find_instrument(self, njm_facility: str, svo_instrument: str) -> Optional[str]:
         """Return the NJM instrument name that best matches an SVO instrument key."""
@@ -318,18 +311,10 @@ class NJMFilterGrabber:
             if _status(exc) == 404:
                 return []
             raise
-        soup = BeautifulSoup(response.text, 'html.parser')
-
-        items = []
-        for link in soup.find_all('a'):
-            href = link.get('href', '')
-            if directories_only and not href.endswith('/'):
-                continue
-            if href and href not in ['..', '/', '../'] and not href.startswith('?'):
-                item = href.rstrip('/')
-                if not item.startswith('..') and not item.startswith('/'):
-                    items.append(item)
-        return items
+        hrefs = [link.get('href', '') for link in BeautifulSoup(response.text, 'html.parser').find_all('a')]
+        return [href.rstrip('/') for href in hrefs
+                if (href.endswith('/') or not directories_only) and href not in ('', '/') and not href.startswith('?')
+                and not href.rstrip('/').startswith(('..', '/'))]
 
     def download_filters(self, facility: str, instrument: str,
                         filters: Optional[List[str]] = None) -> int:
@@ -641,10 +626,8 @@ class NJMFilterGrabber:
         # they can be selected offline.
         listed += [rel for named in (manifest.get("variants") or {}).values()
                    for entry in named.values() for rel in (entry.get("files") or {}).values()]
-        rel_paths = sorted({
-            rel for rel in listed
-            if isinstance(rel, str) and "/" in rel  # root-level entries are the published curves themselves
-        })
+        # Root-level entries are the published curves themselves.
+        rel_paths = sorted({rel for rel in listed if isinstance(rel, str) and "/" in rel})
         count = 0
         failed = []
         for rel in rel_paths:
@@ -774,13 +757,10 @@ def main():
     
     if args.list:
         print("\nAvailable facilities:")
-        facilities = grabber.discover_facilities()
-        for fac in facilities:
+        for fac in grabber.discover_facilities():
             print(f"\n  {fac}:")
-            instruments = grabber.discover_instruments(fac)
-            for inst in instruments:
-                filters = grabber.discover_filters(fac, inst)
-                print(f"    - {inst} ({len(filters)} filters)")
+            for inst in grabber.discover_instruments(fac):
+                print(f"    - {inst} ({len(grabber.discover_filters(fac, inst))} filters)")
         return 0
     
     if args.instrument and not args.facility:
