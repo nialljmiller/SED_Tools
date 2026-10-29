@@ -11,35 +11,13 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import requests
 from bs4 import BeautifulSoup
-from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-from .lookup import write_lookup_csv
+from ._http import DISCOVERY_TIMEOUT, discovery_failure, mount_discovery, retrying_session
 from .header_parser import parse_header
+from .lookup import write_lookup_csv
 
 logger = logging.getLogger("sed_tools.svo_spectra_grabber")
-
-#: Connect and read timeouts for a source's grid index.  Discovery asks every source before
-#: anything is downloaded, so a source that is down or hanging must cost seconds, not minutes:
-#: the index is asked once, without the retries a download gets (see ``mount_discovery``).
-DISCOVERY_TIMEOUT = (5, 10)
-
-
-def mount_discovery(session, url):
-    """Make ``session`` ask ``url`` (a grid index) once: no retries, unlike the rest of the source."""
-    session.mount(url, HTTPAdapter(max_retries=0))
-
-
-def discovery_failure(exc):
-    """Why a grid index could not be read, in a few plain words."""
-    status = getattr(getattr(exc, "response", None), "status_code", None)
-    if status is not None:
-        return f"answered HTTP {status}"
-    if isinstance(exc, requests.Timeout):
-        return f"did not answer within {DISCOVERY_TIMEOUT[0]:g}+{DISCOVERY_TIMEOUT[1]:g} s"
-    if isinstance(exc, requests.ConnectionError):
-        return "could not be reached"
-    return str(exc)
 
 
 class SVOSpectraGrabber:
@@ -64,19 +42,8 @@ class SVOSpectraGrabber:
         self.max_workers = max_workers
         os.makedirs(base_dir, exist_ok=True)
 
-        self.session = requests.Session()
-        self.session.headers.update({"User-Agent": "SED_Tools/1.0 (SVO)"})
-
-        # Retry adapter: 5 retries, exponential backoff, retry on common server errors
-        retry = Retry(
-            total=5,
-            backoff_factor=1.5,
-            status_forcelist=[429, 500, 502, 503, 504],
-            allowed_methods=["HEAD", "GET"],
-        )
-        adapter = HTTPAdapter(max_retries=retry)
-        self.session.mount("http://", adapter)
-        self.session.mount("https://", adapter)
+        self.session = retrying_session("SED_Tools/1.0 (SVO)", Retry(
+            total=5, backoff_factor=1.5, status_forcelist=[429, 500, 502, 503, 504], allowed_methods=["HEAD", "GET"]))
 
         # Endpoints
         self.model_index_url = "http://svo2.cab.inta-csic.es/theory/newov2/index.php"

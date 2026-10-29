@@ -13,13 +13,12 @@ import h5py
 import numpy as np
 import requests
 from bs4 import BeautifulSoup
-from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 from tqdm import tqdm
 
-from .lookup import write_lookup_csv
+from ._http import DISCOVERY_TIMEOUT, discovery_failure, mount_discovery, retrying_session
 from .hdf5_wavelengths import _is_physical_wavelength_array as _is_physical_wavelength, _iter_datasets
-from .svo import DISCOVERY_TIMEOUT, discovery_failure, mount_discovery
+from .lookup import write_lookup_csv
 
 _SEG_IDX = re.compile(r"\[(\d+)\]")
 
@@ -175,11 +174,8 @@ class MSGSpectraGrabber:
         self.max_workers = max_workers
         os.makedirs(base_dir, exist_ok=True)
 
-        self.session = requests.Session()
-        self.session.headers.update({"User-Agent": "SED_Tools (MSG)"} )
-        retry = Retry(total=5, backoff_factor=1, status_forcelist=[500,502,503,504,429])
-        self.session.mount("http://", HTTPAdapter(max_retries=retry))
-        self.session.mount("https://", HTTPAdapter(max_retries=retry))
+        self.session = retrying_session("SED_Tools (MSG)", Retry(
+            total=5, backoff_factor=1, status_forcelist=[500, 502, 503, 504, 429]))
 
         self.index_url = "http://user.astro.wisc.edu/~townsend/static.php?ref=msg-grids"
         mount_discovery(self.session, self.index_url)
