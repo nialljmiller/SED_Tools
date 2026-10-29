@@ -33,6 +33,15 @@ WAVELENGTH_FACTORS = {
     'm': 1e10,
 }
 
+# Wavelength unit names a header may give -> the WAVELENGTH_FACTORS name
+_WAVELENGTH_NAMES = {
+    **dict.fromkeys(['angstrom', 'ang', 'a', 'aa', 'å'], 'angstrom'),
+    **dict.fromkeys(['nm', 'nanometer', 'nanometre'], 'nm'),
+    **dict.fromkeys(['um', 'µm', 'micron', 'micrometer'], 'um'),
+    **dict.fromkeys(['cm', 'centimeter'], 'cm'),
+    **dict.fromkeys(['m', 'meter'], 'm'),
+}
+
 # The flux units a caller can give with flux_unit:
 # name -> (flux type, factor applied first, description). The names are the
 # ones detect_units_from_header gives a declared unit.
@@ -137,27 +146,17 @@ def detect_units_from_header(header_text: str) -> Dict[str, Optional[str]]:
     
     # --- Wavelength unit detection ---
     wl_patterns = [
-        (r'wavelength[_\s]*unit\s*[=:]\s*(\S+)', None),
-        (r'wavelength\s*\(\s*(\S+)\s*\)', None),
-        (r'wave\s*\(\s*(\S+)\s*\)', None),
-        (r'lambda\s*\(\s*(\S+)\s*\)', None),
-        (r'columns?\s*[=:].*wavelength[_\s]*\(?([aå]ngstrom|nm|um|µm|micron)\)?', None),
+        r'wavelength[_\s]*unit\s*[=:]\s*(\S+)',
+        r'wavelength\s*\(\s*(\S+)\s*\)',
+        r'wave\s*\(\s*(\S+)\s*\)',
+        r'lambda\s*\(\s*(\S+)\s*\)',
+        r'columns?\s*[=:].*wavelength[_\s]*\(?([aå]ngstrom|nm|um|µm|micron)\)?',
     ]
     
-    for pattern, default in wl_patterns:
+    for pattern in wl_patterns:
         match = re.search(pattern, header_lower)
         if match:
-            unit_str = match.group(1).lower().strip('()[]')
-            if unit_str in ('angstrom', 'ang', 'a', 'aa', 'å'):
-                result['wavelength_unit'] = 'angstrom'
-            elif unit_str in ('nm', 'nanometer', 'nanometre'):
-                result['wavelength_unit'] = 'nm'
-            elif unit_str in ('um', 'µm', 'micron', 'micrometer'):
-                result['wavelength_unit'] = 'um'
-            elif unit_str in ('cm', 'centimeter'):
-                result['wavelength_unit'] = 'cm'
-            elif unit_str in ('m', 'meter'):
-                result['wavelength_unit'] = 'm'
+            result['wavelength_unit'] = _WAVELENGTH_NAMES.get(match.group(1).lower().strip('()[]'))
             break
     
     # --- Flux unit detection ---

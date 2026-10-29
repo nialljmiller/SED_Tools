@@ -296,20 +296,12 @@ def rebuild_lookup_table(model_dir: str) -> str:
     for filepath in txt_files:
         meta, _ = _load_header(filepath)
         row = {'file_name': os.path.basename(filepath)}
-        
-        if np.isfinite(meta.teff):
-            row['teff'] = meta.teff
-        if np.isfinite(meta.logg):
-            row['logg'] = meta.logg
-        if np.isfinite(meta.metallicity):
-            row['metallicity'] = meta.metallicity
-        
+        for param in ('teff', 'logg', 'metallicity'):
+            if np.isfinite(getattr(meta, param)):
+                row[param] = getattr(meta, param)
         row['source'] = meta.source
         row['units_standardized'] = str(meta.units_standardized)
-        
-        for k, v in meta.extra.items():
-            row[k] = v
-        
+        row.update(meta.extra)
         rows.append(row)
         all_keys.update(row.keys())
     

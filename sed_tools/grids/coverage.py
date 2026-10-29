@@ -70,18 +70,10 @@ def read_grid_nodes(model_dir: Union[str, Path]) -> pd.DataFrame:
         # Normalise column names (handles the '#'-prefixed header and case).
         df.columns = [c.lstrip("#").strip().lower() for c in df.columns]
 
-        teff_col = next((c for c in df.columns if "teff" in c), None)
-        logg_col = next((c for c in df.columns if "logg" in c or "log(g)" in c), None)
-        meta_col = next(
-            (c for c in df.columns if "meta" in c or "feh" in c or "m/h" in c), None
-        )
-
         out = pd.DataFrame(index=df.index)
-        out["teff"] = pd.to_numeric(df[teff_col], errors="coerce") if teff_col else np.nan
-        out["logg"] = pd.to_numeric(df[logg_col], errors="coerce") if logg_col else np.nan
-        out["metallicity"] = (
-            pd.to_numeric(df[meta_col], errors="coerce") if meta_col else np.nan
-        )
+        for axis, parts in zip(_AXES, (("teff",), ("logg", "log(g)"), ("meta", "feh", "m/h"))):
+            col = next((c for c in df.columns if any(part in c for part in parts)), None)
+            out[axis] = pd.to_numeric(df[col], errors="coerce") if col else np.nan
         path_col = next((c for c in _PATH_COLUMNS if c in df.columns), None)
         if path_col:
             filenames = df[path_col].where(df[path_col].notna(), "").astype(str)
@@ -103,15 +95,8 @@ def read_grid_nodes(model_dir: Union[str, Path]) -> pd.DataFrame:
     rows = []
     for f in txts:
         h = parse_header(str(f))
-        rows.append(
-            {
-                "teff": float(h.get("teff", float("nan"))),
-                "logg": float(h.get("logg", float("nan"))),
-                "metallicity": float(h.get("metallicity", float("nan"))),
-                "filename": f.name,
-                "path": str(f.resolve()),
-            }
-        )
+        row = {axis: float(h.get(axis, float("nan"))) for axis in _AXES}
+        rows.append({**row, "filename": f.name, "path": str(f.resolve())})
     return pd.DataFrame(rows, columns=list(_AXES) + ["filename", "path"])
 
 
@@ -162,12 +147,12 @@ def coverage_summary(model_dir: Union[str, Path]) -> Dict:
     n_rows = len(df)
 
     axes: Dict[str, Dict] = {}
-    n_unique = {}
+    product = 1
     for ax in _AXES:
         col = df[ax].to_numpy(dtype=float)
         finite = col[np.isfinite(col)]
         uniq = np.unique(finite)
-        n_unique[ax] = int(uniq.size)
+        product *= max(int(uniq.size), 1)
         spacing = np.diff(uniq) if uniq.size > 1 else np.array([])
         axes[ax] = {
             "min": float(uniq.min()) if uniq.size else float("nan"),
@@ -181,9 +166,6 @@ def coverage_summary(model_dir: Union[str, Path]) -> Dict:
             "anderson_darling": _anderson_darling(finite),
         }
 
-    product = 1
-    for ax in _AXES:
-        product *= max(n_unique[ax], 1)
     complete = df.dropna(subset=list(_AXES))
     n_distinct_nodes = int(complete.drop_duplicates(subset=list(_AXES)).shape[0])
     fill = n_distinct_nodes / product
