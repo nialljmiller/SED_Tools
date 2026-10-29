@@ -27,7 +27,7 @@ from typing import Dict, Tuple, Union
 import numpy as np
 
 from ..filters.compose import QE, SHARED, InstrumentManifest, add_component
-from ._attach import published_bands
+from ._common import published_bands
 from ._original import Fetcher
 
 FACILITY, INSTRUMENT = "Roman", "WFI"

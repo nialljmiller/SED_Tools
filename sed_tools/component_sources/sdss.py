@@ -26,13 +26,14 @@ camera's filter component.
 
 from __future__ import annotations
 
+import io
 from pathlib import Path
 
 import numpy as np
 
 from ..filters.compose import FILTER, OPTICS, QE, InstrumentManifest, add_component, recipe_name
 from ._common import Table, register_variant
-from ._original import CONNECT_TIMEOUT
+from ._original import CONNECT_TIMEOUT, download  # noqa: F401  CONNECT_TIMEOUT stays importable here
 
 DOI = "http://www.ioa.s.u-tokyo.ac.jp/~doi/sdss"
 GUNN = "https://www.sdss4.org/wp-content/uploads/2017/04/filter_curves.fits"
@@ -46,14 +47,11 @@ KEY = recipe_name((FILTER, OPTICS, QE))
 
 def read_gunn(session):
     """band -> (wavelength A, resnoa) from the SDSS ``filter_curves.fits``."""
-    import io
-
     from astropy.io import fits
 
-    resp = session.get(GUNN, timeout=(CONNECT_TIMEOUT, 300))
-    resp.raise_for_status()
+    raw = download(session, GUNN)
     out = {}
-    with fits.open(io.BytesIO(resp.content)) as hdul:
+    with fits.open(io.BytesIO(raw)) as hdul:
         for b in BANDS:
             data = hdul[b.upper()].data
             wl = np.asarray(data["wavelength"], dtype=float)

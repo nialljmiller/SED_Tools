@@ -1,26 +1,22 @@
-"""Shared machinery for instruments rebuilt from their teams' original files.
+"""What every builder shares: downloads, curve maths, recipes, and writing an instrument.
 
-These builders reproduce the curated published curves (and any separately
-published components) that the njm mirror serves, directly from the original
-sources, so that :meth:`FilterLibrary.published` can rebuild them when the
-mirror is unavailable.  Each source module (``surveys``, ``space``,
-``observatories``, ``standards``) maps an instrument to a *recipe*: a
-function that downloads and parses the team's files through a
-:class:`Fetcher` and returns an :class:`Instrument`.  Nothing is written
-until every file of the instrument has been fetched and checked.
-
-Cleaning follows the format contract of the curated library and is the same
-for every recipe (:func:`clean_curve`): undefined (and sentinel) samples are
-dropped, wavelengths sorted, repeated wavelengths averaged, negative
-measurement noise set to 0 and, where the recipe asks, the peak scaled to 1.
+A recipe (``surveys``, ``space``, ``observatories``, ``standards``, ...) downloads its team's files
+through a :class:`Fetcher` and returns an :class:`Instrument`; nothing is written until every file
+is fetched and checked.  :meth:`FilterLibrary.published` uses them when the njm mirror is down.
 """
 
 from __future__ import annotations
 
+import datetime
+import gzip
+import hashlib
 import io
+import json
 import logging
+import re
+import tarfile
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Callable, Dict, Mapping, Optional, Sequence, Tuple, Union
 
 import numpy as np
@@ -33,13 +29,12 @@ logger = logging.getLogger(__name__)
 #: Header value for curves taken from the instrument team.
 ORIGINAL = "original"
 C_ANGSTROM_PER_S = 2.99792458e18
+Curve = Tuple[np.ndarray, np.ndarray]  # (Angstrom, fraction)
 _UNIT_SCALE = {"angstrom": 1.0, "a": 1.0, "aa": 1.0, "nm": 10.0, "micron": 1e4, "um": 1e4, "mm": 1e7}
 USER_AGENT = "SED_Tools-original-sources"
 
 
-# --------------------------------------------------------------------------
-# Downloads
-# --------------------------------------------------------------------------
+# ------------------------------------------------------------------ Downloads
 #: Seconds an original source's server has to accept a connection, as for SVO: a host
 #: that is down fails fast, while a large file still has minutes to arrive.
 CONNECT_TIMEOUT = 10.0
@@ -76,9 +71,58 @@ class Fetcher:
         return io.BytesIO(self.get(url))
 
 
-# --------------------------------------------------------------------------
-# Curves
-# --------------------------------------------------------------------------
+class CachingSession:
+    """Fetch each URL once per build; optionally archive every raw download.
+
+    The archive (``archive_dir``) holds the bytes exactly as received plus a
+    ``manifest.json`` with URL, retrieval time (UTC) and SHA-256.
+    """
+
+    def __init__(self, session=None, archive_dir: Union[str, Path, None] = None):
+        if session is None:
+            import requests
+
+            session = requests.Session()
+            session.headers["User-Agent"] = USER_AGENT
+        self.session = session
+        self.archive = Path(archive_dir) if archive_dir else None
+        self._cache: Dict[str, object] = {}
+
+    def get(self, url: str, **kwargs):
+        if url not in self._cache:
+            kwargs.setdefault("timeout", (CONNECT_TIMEOUT, 300))
+            resp = self.session.get(url, **kwargs)
+            resp.raise_for_status()
+            if self.archive is not None:
+                self._record(url, resp)
+            self._cache[url] = resp
+        return self._cache[url]
+
+    def _record(self, url: str, resp) -> None:
+        self.archive.mkdir(parents=True, exist_ok=True)
+        name = re.sub(r"[^A-Za-z0-9._-]+", "_", re.sub(r"^https?://", "", url)).strip("_")
+        (self.archive / name).write_bytes(resp.content)
+        path = self.archive / "manifest.json"
+        data = json.loads(path.read_text()) if path.exists() else {"files": []}
+        data["files"] = [f for f in data["files"] if f["file"] != name]
+        data["files"].append({
+            "file": name, "url": url,
+            "retrieved_utc": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "sha256": hashlib.sha256(resp.content).hexdigest(), "bytes": len(resp.content),
+            "http_status": getattr(resp, "status_code", None),
+            "last_modified": getattr(resp, "headers", {}).get("last-modified"),
+        })
+        path.write_text(json.dumps(data, indent=1) + "\n")
+
+
+def download(session, url: str, read_timeout: float = 300) -> bytes:
+    """The body of ``url``, downloaded through ``session``; an HTTP error raises."""
+    resp = session.get(url, timeout=(CONNECT_TIMEOUT, read_timeout))
+    resp.raise_for_status()
+    return resp.content
+
+
+# --------------------------------------------------------------------- Curves
 def to_angstrom(x: Sequence[float], unit: str) -> np.ndarray:
     """Convert wavelengths, frequencies (GHz/Hz) or wavenumbers (1/cm) to Angstrom."""
     x = np.asarray(x, dtype=float)
@@ -138,10 +182,62 @@ def clean_curve(wl, tr, *, sentinel: Optional[float] = None, normalize: bool = F
     return wl, tr, "; ".join(notes)
 
 
+def product(curves: Sequence[Curve]) -> Curve:
+    """Product on the merged grid over the common range."""
+    if len(curves) == 1:
+        return curves[0]
+    return merged_product(curves)
+
+
+def merged_product(curves: Sequence[Curve]) -> Curve:
+    """:func:`product` without its shortcut: one curve is resampled like several."""
+    lo = max(c[0][0] for c in curves)
+    hi = min(c[0][-1] for c in curves)
+    grid = np.unique(np.concatenate([c[0][(c[0] >= lo) & (c[0] <= hi)] for c in curves]))
+    out = np.ones_like(grid)
+    for wl, tr in curves:
+        out *= np.interp(grid, wl, tr)
+    return grid, out
+
+
+def common_product(curves):
+    """Product of (Angstrom, fraction) curves over their common range.
+
+    Each source table is zero outside its own range, so the product exists
+    only where every factor is tabulated.  The grid is the union of the
+    factors' samples there.
+    """
+    lo = max(float(c[0][0]) for c in curves)
+    hi = min(float(c[0][-1]) for c in curves)
+    if hi <= lo:
+        raise ValueError("factors do not overlap")
+    grid = np.unique(np.concatenate([c[0][(c[0] >= lo) & (c[0] <= hi)] for c in curves]))
+    out = np.ones_like(grid)
+    for wl, tr in curves:
+        out = out * np.interp(grid, wl, tr)
+    return grid, out
+
+
+def fixed_width_pairs(text: str, cols) -> dict:
+    """Side-by-side (wavelength, response) pairs at fixed byte slices; blanks end a column."""
+    curves = {k: ([], []) for k in cols}
+    for line in text.splitlines():
+        for band, (a, b, c, d) in cols.items():
+            w, t = line[a:b].strip(), line[c:d].strip()
+            if w and t:
+                curves[band][0].append(float(w))
+                curves[band][1].append(float(t))
+    return {k: (np.array(w), np.array(t)) for k, (w, t) in curves.items()}
+
+
+def support(wl, tr, frac: float = 1e-3) -> Tuple[float, float]:
+    """First and last wavelength where ``tr`` exceeds ``frac`` of its peak."""
+    above = np.nonzero(tr > frac * tr.max())[0]
+    return float(wl[above[0]]), float(wl[above[-1]])
+
+
 def safe_band(name: str) -> str:
     """A band name usable as ``<band>.dat``: exactly one dot in the filename."""
-    import re
-
     band = re.sub(r"[^A-Za-z0-9_+-]", "_", name.replace(".", "p")).strip("_")
     if not band:
         raise ValueError(f"empty band name from {name!r}")
@@ -203,9 +299,7 @@ class Instrument:
 Recipe = Callable[[Fetcher], Instrument]
 
 
-# --------------------------------------------------------------------------
-# Writing
-# --------------------------------------------------------------------------
+# -------------------------------------------------------------------- Writing
 def write_instrument(filter_root: Union[str, Path], spec: Instrument, *,
                      atmosphere_root: Union[str, Path, None] = None, session=None) -> Path:
     """Write the published curves, index, components and manifest of ``spec``.
@@ -285,13 +379,34 @@ def make_builder(recipes: Mapping[str, Tuple[str, Recipe]]):
     return build
 
 
-# --------------------------------------------------------------------------
-# Small parsing helpers shared by several recipes
-# --------------------------------------------------------------------------
+# --------------------------------------------- Archive members and FITS files
 def safe_member(name: str, *, flat: bool = False) -> None:
     """Refuse absolute or parent-relative archive members (and nested ones if ``flat``)."""
-    from pathlib import PurePosixPath
-
     pp = PurePosixPath(name)
     if pp.is_absolute() or ".." in pp.parts or "\\" in name or (flat and "/" in name):
         raise ValueError(f"refusing archive member {name!r}")
+
+
+def tar_members(raw: bytes, wanted, *, flat: bool = False) -> dict:
+    """Text of the ``wanted`` regular members; refuse unsafe member names."""
+    out = {}
+    with tarfile.open(fileobj=io.BytesIO(raw), mode="r:*") as t:
+        for m in t.getmembers():
+            safe_member(m.name, flat=flat)
+            if not m.isfile():
+                raise ValueError(f"refusing tar member {m.name!r}")
+            if m.name in wanted:
+                out[m.name] = t.extractfile(m).read().decode("ascii")
+    missing = set(wanted) - set(out)
+    if missing:
+        raise ValueError(f"tar lacks {sorted(missing)}")
+    return out
+
+
+def open_fits(raw: bytes):
+    """FITS bytes, gunzipped first if compressed, opened with astropy."""
+    from astropy.io import fits
+
+    if raw[:2] == b"\x1f\x8b":
+        raw = gzip.decompress(raw)
+    return fits.open(io.BytesIO(raw))

@@ -8,7 +8,6 @@ MSX (IRSA RSR tables), Planck HFI/LFI (PR2 RIMO), Spitzer IRAC/MIPS/IRS peak-up
 
 from __future__ import annotations
 
-import gzip
 import html
 import io
 import re
@@ -16,17 +15,8 @@ import zipfile
 
 import numpy as np
 
-from ._original import Component, Fetcher, Instrument, make_band, make_builder
-
-PHOTON, ENERGY = "photon", "energy"
-
-
-def _fits(raw: bytes):
-    from astropy.io import fits
-
-    if raw[:2] == b"\x1f\x8b":
-        raw = gzip.decompress(raw)
-    return fits.open(io.BytesIO(raw))
+from ..filters.curve_metadata import ENERGY, PHOTON
+from ._original import Component, Fetcher, Instrument, fixed_width_pairs, make_band, make_builder, open_fits
 
 
 # ---------------------------------------------------------------------- Gaia
@@ -76,7 +66,7 @@ HERSCHEL_INFO = "https://www.herschel.caltech.edu/page/instruments"
 
 
 def pacs_curve(raw: bytes, key: str):
-    with _fits(raw) as h:
+    with open_fits(raw) as h:
         t = h[1]
         if t.header.get("BAND") != key:
             raise ValueError(f"PACS: FITS BAND {t.header.get('BAND')!r}, expected {key!r}")
@@ -100,7 +90,7 @@ def pacs(fetch: Fetcher) -> Instrument:
 
 
 def spire_rsrf(raw: bytes):
-    with _fits(raw) as h:
+    with open_fits(raw) as h:
         t = h["rsrf"]
         if t.columns["frequency"].unit != "GHz":
             raise ValueError("SPIRE: frequency unit is not GHz")
@@ -127,18 +117,6 @@ HIP_PAPER = "https://ui.adsabs.harvard.edu/abs/2012PASP..124..140B"
 HIP_COLS = {"Hp": (0, 4, 5, 10), "BT": (11, 15, 16, 21), "VT": (22, 26, 27, 32)}
 HIP_NOTE = ("Bessell & Murphy (2012) table 2 normalised photonic responses (CDS J/PASP/124/140), "
             "for photon-counting synthetic photometry. Wavelength column is 0.1 nm = Angstrom.")
-
-
-def fixed_width_pairs(text: str, cols) -> dict:
-    """Side-by-side (wavelength, response) pairs at fixed byte slices; blanks end a column."""
-    curves = {k: ([], []) for k in cols}
-    for line in text.splitlines():
-        for band, (a, b, c, d) in cols.items():
-            w, t = line[a:b].strip(), line[c:d].strip()
-            if w and t:
-                curves[band][0].append(float(w))
-                curves[band][1].append(float(t))
-    return {k: (np.array(w), np.array(t)) for k, (w, t) in curves.items()}
 
 
 def _hip_band(curves, name):
@@ -250,7 +228,7 @@ def planck_bandpass(hdul, ext: str, unit: str):
 
 def hfi(fetch: Fetcher) -> Instrument:
     bands = []
-    with _fits(fetch.get(HFI)) as h:
+    with open_fits(fetch.get(HFI)) as h:
         for f in (100, 143, 217, 353, 545, 857):
             x, t = planck_bandpass(h, f"BANDPASS_F{f}", "1/cm")
             keep = x >= 1.0  # drop the far tail beyond 1 cm (< 1e-7 of the integral)
@@ -267,7 +245,7 @@ def hfi(fetch: Fetcher) -> Instrument:
 
 def lfi(fetch: Fetcher) -> Instrument:
     bands = []
-    with _fits(fetch.get(LFI)) as h:
+    with open_fits(fetch.get(LFI)) as h:
         for f in (30, 44, 70):
             x, t = planck_bandpass(h, f"BANDPASS_{f:03d}", "GHz")
             bands.append(make_band(str(f), x, t, unit="GHz", detector_type=ENERGY,

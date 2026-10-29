@@ -1,19 +1,8 @@
-"""Which instruments have separable components, from where, and why not.
+"""Which instruments have separable components, which builder supplies them, and why not.
 
-``BUILDERS_FOR`` maps a local ``<Facility>/<Instrument>`` directory to the
-builder that fetches that instrument's own published factors.  The njm
-mirror runs them ahead of time; a client that downloaded the published
-curves elsewhere (e.g. SVO) runs them itself (see
-:func:`ensure_components`).  ``heavy`` builders download large archives and
-only run on request.  ``publishes`` builders can also write an instrument's
-published curves from the original sources, so :meth:`FilterLibrary.published`
-uses them when the njm mirror is unavailable; builders with
-``components=False`` only reproduce the published curves (the team publishes
-no separate factors), so they are not run to obtain components.
-
-``STATUS`` records instruments whose teams publish only a total response,
-or whose component data cannot currently be retrieved, so that users are
-told why only the published curve is offered.
+``BUILDERS_FOR`` maps ``<Facility>/<Instrument>`` to its builder (:class:`BuilderRef` says which run
+on clients and which can also rebuild the published curves); NJM runs them ahead of time, a client
+runs them itself (:func:`ensure_components`).  ``STATUS`` says why only a published curve is offered.
 """
 
 from __future__ import annotations
@@ -30,10 +19,6 @@ class BuilderRef:
     heavy: bool = False  # large download; not run automatically on clients
     publishes: bool = False  # can rebuild the published curves from the original sources
     components: bool = True  # supplies separately published components
-
-
-def _tabular(instrument: str) -> BuilderRef:
-    return BuilderRef("tabular", (("instrument", instrument),), publishes=True)
 
 
 #: Instruments rebuilt from their teams' original files (``component_sources``
@@ -100,18 +85,10 @@ BUILDERS_FOR: Dict[Tuple[str, str], BuilderRef] = {
     # Argus inputs are partly non-public: without them the builder raises and points to NJM.
     ("Argus", "DR280"): BuilderRef("argus", (("instrument", "DR280"),), publishes=True),
     ("Argus", "System"): BuilderRef("argus", (("instrument", "System"),)),
-    ("Paranal", "HAWKI"): _tabular("HAWKI"),
-    ("Paranal", "NACO"): _tabular("NACO"),
-    ("Paranal", "SPHERE"): _tabular("SPHERE"),
-    ("Gemini", "GSAOI"): _tabular("GSAOI"),
-    ("Gemini", "NIFS"): _tabular("NIFS"),
-    ("CAHA", "PANIC"): _tabular("PANIC"),
-    ("WHT", "INGRID"): _tabular("INGRID"),
-    ("IRTF", "NSFCam"): _tabular("NSFCam"),
-    ("Liverpool", "IOO"): _tabular("IOO"),
-    ("JWST", "NIRCam"): BuilderRef("jwst", (("instruments", ("NIRCam",)),)),
-    ("JWST", "NIRISS"): BuilderRef("jwst", (("instruments", ("NIRISS",)),)),
-    ("JWST", "MIRI"): BuilderRef("jwst", (("instruments", ("MIRI",)),)),
+    **{(fac, inst): BuilderRef("tabular", (("instrument", inst),), publishes=True) for fac, inst in (
+        ("Paranal", "HAWKI"), ("Paranal", "NACO"), ("Paranal", "SPHERE"), ("Gemini", "GSAOI"), ("Gemini", "NIFS"),
+        ("CAHA", "PANIC"), ("WHT", "INGRID"), ("IRTF", "NSFCam"), ("Liverpool", "IOO"))},
+    **{("JWST", inst): BuilderRef("jwst", (("instruments", (inst,)),)) for inst in ("NIRCam", "NIRISS", "MIRI")},
     **_hst(),
     **_original(),
 }
