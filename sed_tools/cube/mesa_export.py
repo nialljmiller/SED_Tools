@@ -155,20 +155,13 @@ def _library_variants(df: pd.DataFrame, extra_cols: List[str], library_dir: Path
         label = "__".join(f"{k}_{v}" for k, v in axes.items())
         cube_path = library_dir / f"flux_cube__{label}.bin"
         if not cube_path.exists():
-            raise FileNotFoundError(
-                f"No flux cube found in {library_dir} for variant '{label}'.\n"
-                f"Expected: flux_cube__{label}.bin"
-            )
+            raise FileNotFoundError(f"No flux cube found in {library_dir} for variant '{label}'.\n"
+                                    f"Expected: flux_cube__{label}.bin")
         variants.append(_variant_from_rows(rows.reset_index(drop=True), axes, cube_path, model_dir))
     return variants
 
 
-def _variant_from_rows(
-    rows: pd.DataFrame,
-    axes: Dict[str, str],
-    cube_path: Path,
-    model_dir: Path,
-) -> VariantInfo:
+def _variant_from_rows(rows: pd.DataFrame, axes: Dict[str, str], cube_path: Path, model_dir: Path) -> VariantInfo:
     """Build a :class:`VariantInfo` from a subset of lookup-table rows."""
     label = "__".join(f"{k}_{v}" for k, v in axes.items()) if axes else "full_grid"
 
@@ -201,9 +194,7 @@ def _variant_from_rows(
         logg_min=logg_min, logg_max=logg_max, logg_n=logg_n,
         meta_min=meta_min, meta_max=meta_max, meta_n=meta_n,
         wavelength_min=wave_min, wavelength_max=wave_max, wavelength_n=wave_n,
-        flux_cube_path=cube_path,
-        source_model_dir=model_dir,
-        lookup_rows=rows,
+        flux_cube_path=cube_path, source_model_dir=model_dir, lookup_rows=rows,
     )
 
 
@@ -266,12 +257,7 @@ def print_variant_table(variants: List[VariantInfo], model_name: str = "") -> No
     print("=" * 90)
 
 
-def export_variant(
-    variant: VariantInfo,
-    output_dir: str | os.PathLike,
-    *,
-    overwrite: bool = False,
-) -> Path:
+def export_variant(variant: VariantInfo, output_dir: str | os.PathLike, *, overwrite: bool = False) -> Path:
     """
     Write a clean MESA-ready folder for *variant*.
 
@@ -303,10 +289,8 @@ def export_variant(
     src = variant.source_model_dir
 
     if out.exists() and not overwrite:
-        raise FileExistsError(
-            f"Output directory already exists: {out}\n"
-            f"Pass overwrite=True or choose a different name."
-        )
+        raise FileExistsError(f"Output directory already exists: {out}\n"
+                              "Pass overwrite=True or choose a different name.")
 
     file_col = next((c for c in variant.lookup_rows.columns if c.lower() == "file_name"), None)
     if file_col is None:
@@ -350,10 +334,7 @@ def export_variant(
 
 def _choose_grid(base_path: Path) -> str:
     """Prompt for one of the spectral grids in *base_path*; exits with status 1 if none can be chosen."""
-    available = sorted(
-        d.name for d in base_path.iterdir()
-        if d.is_dir() and (d / "lookup_table.csv").exists()
-    )
+    available = sorted(d.name for d in base_path.iterdir() if d.is_dir() and (d / "lookup_table.csv").exists())
     if not available:
         raise SystemExit(f"Error: no spectral grids found in {base_path}. Run 'sed-tools grids' first.")
 
