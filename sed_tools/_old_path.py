@@ -1,5 +1,6 @@
 """The old module paths (sed_tools/filter_library.py and the rest) forward to the modules that now hold the code."""
 
+import importlib
 import sys
 import types
 
@@ -8,9 +9,15 @@ class _OldPath(types.ModuleType):
     """A module at an old import path: reading, setting or deleting a name acts on the moved module.
 
     It keeps its own spec, so python -m and runpy run the old path's file, which calls the moved main.
+    Its __all__ is what `from <old path> import *` gave in 0.5.0.
     """
 
     def __getattr__(self, name):
+        restored = self.__dict__["__restored__"]
+        if name in restored:  # a name the old module had that the moved one no longer imports
+            module, _, attribute = restored[name].partition(":")
+            value = importlib.import_module(module)
+            return getattr(value, attribute) if attribute else value
         return getattr(self.__dict__["__moved_to__"], name)
 
     def __setattr__(self, name, value):
@@ -20,13 +27,18 @@ class _OldPath(types.ModuleType):
         delattr(self.__dict__["__moved_to__"], name)
 
     def __dir__(self):
-        return dir(self.__dict__["__moved_to__"])
+        return sorted(set(dir(self.__dict__["__moved_to__"])) | set(self.__dict__["__restored__"]))
 
 
-def forward(name, moved):
-    """Make the module at import path ``name`` forward to ``moved``; only its dunder names stay its own."""
+def forward(name, moved, **restored):
+    """Make the module at import path ``name`` forward to ``moved``; only its dunder names stay its own.
+
+    ``restored`` maps each name the old module had, and ``moved`` no longer has, to where it comes from
+    ("module" or "module:attribute"); it is imported only when used.
+    """
     module = sys.modules[name]
     for key in [key for key in module.__dict__ if not key.startswith("__")]:
         del module.__dict__[key]
     module.__dict__["__moved_to__"] = moved
+    module.__dict__["__restored__"] = restored
     module.__class__ = _OldPath

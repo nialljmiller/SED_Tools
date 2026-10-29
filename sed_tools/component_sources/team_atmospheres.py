@@ -24,13 +24,16 @@ URL, retrieval time and SHA-256)::
 
 from __future__ import annotations
 
+import datetime  # noqa: F401 - `from ... import *` has given it since 0.5.0
 import gzip
+import hashlib  # noqa: F401 - `from ... import *` has given it since 0.5.0
 import io
+import json  # noqa: F401 - `from ... import *` has given it since 0.5.0
 import logging
 import re
 import tarfile
 from pathlib import Path
-from typing import Dict, Iterable, Optional, Sequence, Union
+from typing import Dict, Iterable, Optional, Sequence, Tuple, Union  # noqa: F401 - Tuple, as above
 
 import numpy as np
 

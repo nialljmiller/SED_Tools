@@ -8,6 +8,7 @@ MSX (IRSA RSR tables), Planck HFI/LFI (PR2 RIMO), Spitzer IRAC/MIPS/IRS peak-up
 
 from __future__ import annotations
 
+import gzip  # noqa: F401 - `from ... import *` has given it since 0.5.0
 import html
 import io
 import re
