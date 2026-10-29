@@ -335,10 +335,8 @@ def _axis_positions(axis: np.ndarray, values: np.ndarray) -> np.ndarray:
 
 
 def _filled_points(fh, dims: Tuple[int, int, int, int], data_offset: int, cube_path: str) -> np.ndarray:
-    """Whether each grid point holds flux, indexed [i_meta, i_logg, i_teff], from a few wavelength planes.
-
-    On disk each wavelength's plane of (Teff, logg, [M/H]) points is contiguous, so each plane is one read.
-    """
+    """Whether each grid point holds flux, indexed [i_meta, i_logg, i_teff], from a few wavelength planes
+    (each wavelength's plane of points is contiguous on disk, so each plane is one read)."""
     nt, nl, nm, nw = dims
     n_points = nt * nl * nm
     filled = np.zeros((nm, nl, nt), dtype=bool)
@@ -404,10 +402,8 @@ def _accumulate_spectra(
     wavelengths: np.ndarray,
     label:       str,
 ) -> np.ndarray:
-    """Add every spectrum into its node of *flux_cube* and return the count per node.
-
-    Raises ValueError, after reading every file, listing the spectra that held no numeric data.
-    """
+    """Add every spectrum into its node of *flux_cube* and return the count per node; after reading every
+    file, raises ValueError listing the spectra that held no numeric data."""
     teff_vals, logg_vals, meta_vals = params
     teff_grid, logg_grid, meta_grid = grids
     t2i = {v: i for i, v in enumerate(teff_grid)}

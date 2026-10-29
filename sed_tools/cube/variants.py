@@ -100,10 +100,8 @@ def _print_split_announcement(
     model_name: str,
     threshold: int,
 ) -> None:
-    """Print the 'Extra physical axis detected' message, naming only the axes that vary between the variants.
-
-    A column with one value throughout (lh and vtur in Kurucz) is no variant axis; the subgrid names still carry it.
-    """
+    """Print the 'Extra physical axis detected' message, naming only the axes that vary between the variants: a
+    column with one value throughout (lh and vtur in Kurucz) is no variant axis, though subgrid names carry it."""
     n_combos = len(groups)
     varying = [col for col in extra_cols if len({dict(key)[col] for key in groups}) > 1]
     axis_label = ", ".join(varying)

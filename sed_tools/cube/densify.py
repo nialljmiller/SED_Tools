@@ -53,10 +53,8 @@ def _build_dense_teff(teff_orig, spacing):
 
 
 def _blackbody_scales(flux_orig, teff_orig, wavelengths):
-    """Each real node's bolometric flux over its Teff's blackbody (1 where either is <= 0), indexed [teff, logg, meta].
-
-    One node at a time, so no (nt, nw) array is held.
-    """
+    """Each real node's bolometric flux over its Teff's blackbody (1 where either is <= 0), indexed [teff, logg, meta];
+    computed one node at a time, so no (nt, nw) array is held."""
     nt, nl, nm = flux_orig.shape[3], flux_orig.shape[2], flux_orig.shape[1]
     bb_scale = np.ones((nt, nl, nm), dtype=np.float64)
     for i_t in range(nt):

@@ -1,5 +1,4 @@
 """Combine several stellar spectral grids into one grid folder with a unified flux cube.
-
 :func:`find_stellar_models` leaves out earlier combine outputs, so combining "all" never folds their copies
 back in: a grid whose lookup table has the ``source_model`` and ``original_file`` columns (only
 :func:`save_combined_data` writes them), or whose folder is ``combined_models``. One named explicitly is combined.
