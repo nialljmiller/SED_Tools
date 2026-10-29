@@ -16,8 +16,8 @@ from bs4 import BeautifulSoup
 
 from .manifest import InstrumentManifest, index_names
 from .curve_metadata import SOURCE_ASSUMED, SVOMetadataClient, migrate_filter_file, tag_filter_file
-from ..njm_mirror import (BASE_URL, NJM_CONNECT_TIMEOUT, NJM_PAUSE, USER_AGENT, _STATE, _body, _status, cache_root,
-                         pause, paused, plain_reason, skip_ssl_verification)
+from ..njm_mirror import (BASE_URL, NJM_CONNECT_TIMEOUT, NJM_PAUSE, USER_AGENT, _STATE, _body, _status, _write_atomic,
+                         cache_root, pause, paused, plain_reason, skip_ssl_verification)
 
 logger = logging.getLogger("sed_tools.njm_filter_grabber")
 
@@ -581,9 +581,7 @@ class NJMFilterGrabber:
                                    "catalogue lookups will use NJM's current copy", name, facility, instrument, exc)
                 continue
             output_dir.mkdir(parents=True, exist_ok=True)
-            tmp = output_dir / f".{name}.part"
-            tmp.write_bytes(content)
-            os.replace(tmp, output_dir / name)
+            _write_atomic(output_dir / name, content)
             saved.append(name)
         return saved
 
@@ -754,12 +752,6 @@ def _update_atmosphere_manifest(site_dir: Path, served: str) -> None:
         logger.warning("Updated the %s atmosphere's manifest to NJM's, but kept the installed description of %s, "
                        "which NJM describes otherwise (remove those files to fetch NJM's)",
                        site_dir.name, ", ".join(kept))
-
-
-def _write_atomic(path: Path, text: str) -> None:
-    tmp = path.with_name(f".{path.name}.part")
-    tmp.write_text(text, encoding="utf-8")
-    os.replace(tmp, path)
 
 
 def main():

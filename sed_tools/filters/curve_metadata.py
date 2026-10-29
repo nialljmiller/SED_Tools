@@ -1,4 +1,4 @@
-"""Detector-type metadata for filter transmission curves.
+"""The filter curve file (``.dat``) and its metadata: detector type, tagging, and the SVO lookups behind them.
 
 A transmission curve is defined either for an *energy-counting* detector
 (e.g. classical photomultiplier-era curves such as Bessell's Johnson-Cousins)

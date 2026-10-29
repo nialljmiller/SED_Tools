@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 import sys
 import threading
 import time
@@ -24,7 +23,7 @@ import pandas as pd
 from requests import RequestException
 
 from ..component_sources.catalog import name_key
-from ..njm_mirror import _body, cache_root
+from ..njm_mirror import _body, _write_atomic, cache_root
 from .curve_metadata import normalize_detector_type, read_filter_header
 from .manifest import index_names
 
@@ -194,9 +193,7 @@ class FilterCatalogue:
                 except ValueError as exc:
                     raise CatalogueError(f"NJM served an unreadable {rel}: {exc}") from exc
             path.parent.mkdir(parents=True, exist_ok=True)
-            tmp = path.with_name(f".{path.name}.part")
-            tmp.write_bytes(content)
-            os.replace(tmp, path)
+            _write_atomic(path, content)
             meta = {}
         meta.update(url=url, checked=time.time(), generation=generation,
                     etag=response_headers.get("ETag") or meta.get("etag"),

@@ -5,6 +5,7 @@ leaves NJM alone for ``NJM_PAUSE`` seconds.
 """
 
 import logging
+import os
 import threading
 from pathlib import Path
 from time import monotonic
@@ -40,6 +41,16 @@ def _body(response) -> bytes:
     """The response bytes as served (JSON is UTF-8 whatever the Content-Type says)."""
     content = getattr(response, "content", None)
     return content if isinstance(content, bytes) else response.text.encode("utf-8")
+
+
+def _write_atomic(path: Path, data) -> None:
+    """Write ``data`` (bytes, or text as UTF-8) whole, through a ``.<name>.part`` file: never a partial file."""
+    tmp = path.with_name(f".{path.name}.part")
+    if isinstance(data, bytes):
+        tmp.write_bytes(data)
+    else:
+        tmp.write_text(data, encoding="utf-8")
+    os.replace(tmp, path)
 
 
 def plain_reason(reason) -> str:
