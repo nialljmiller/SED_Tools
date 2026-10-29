@@ -153,9 +153,8 @@ class FilterCatalogue:
             if path.is_file():
                 self._came_from(rel, "cache", meta.get("checked"), njm_unreachable=not self.offline)
             return path if path.is_file() else None
-        headers = {header: meta[key] for header, key in (("If-None-Match", "etag"),
-                                                          ("If-Modified-Since", "last_modified"))
-                   if path.is_file() and meta.get(key)}
+        conditional = (("If-None-Match", "etag"), ("If-Modified-Since", "last_modified"))
+        headers = {header: meta[key] for header, key in conditional if path.is_file() and meta.get(key)}
         url = f"{mirror.base_url}/{quote(rel, safe='/')}"
         try:
             response = mirror._get(url, timeout=60, headers=headers or None)
