@@ -283,11 +283,10 @@ def spectra_not_in_cube(cube_path: str, lookup_file: str) -> Tuple[List[str], Li
         if len(header) != 16:
             raise ValueError(f"{cube_path}: the header is truncated")
         nt, nl, nm, nw = struct.unpack("4i", header)
+        # A negative count would make np.fromfile read the whole file; a short file fails in _filled_points.
         if min(nt, nl, nm, nw) < 1:
             raise ValueError(f"{cube_path}: the header gives dimensions {nt}, {nl}, {nm}, {nw}")
         axes = np.fromfile(fh, dtype=np.float64, count=nt + nl + nm)
-        if axes.size != nt + nl + nm:
-            raise ValueError(f"{cube_path}: the parameter axes are truncated")
         data_offset = 16 + 8 * (nt + nl + nm + nw)
         filled = _filled_points(fh, (nt, nl, nm, nw), data_offset, cube_path)
     it = _axis_positions(axes[:nt], teff)
