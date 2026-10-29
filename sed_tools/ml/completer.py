@@ -43,10 +43,8 @@ def _warn_window_coverage(window: np.ndarray, wavelength: np.ndarray) -> None:
 def _blend_with_blackbody(wl_out, log_dist, wl_pred, pred, bb_flux):
     """The prediction blended into the black body. Its weight is exp(-log_dist / 0.5), log_dist being the distance
     from the data edge in decades (spectra are more uniform in log wavelength): it fades over about half a decade."""
-    blend_decades = 0.5
     pred_interp = np.interp(wl_out, wl_pred, pred, left=pred[0], right=pred[-1])
-    weight_ml = np.exp(-log_dist / blend_decades)
-    weight_ml = np.clip(weight_ml, 0, 1)
+    weight_ml = np.clip(np.exp(-log_dist / 0.5), 0, 1)
     return weight_ml * pred_interp + (1 - weight_ml) * bb_flux
 
 
@@ -225,10 +223,9 @@ class SEDCompleter:
         teff, logg, meta, wavelengths, flux_cube = self._load_flux_cube(library_path)
         
         nt, nl, nm = len(teff), len(logg), len(meta)
-        total_seds = nt * nl * nm
-        n_samples = min(max_samples, total_seds)
+        n_samples = min(max_samples, nt * nl * nm)
         
-        print(f"  Grid: {nt} Teff × {nl} logg × {nm} [M/H] = {total_seds} total SEDs")
+        print(f"  Grid: {nt} Teff × {nl} logg × {nm} [M/H] = {nt * nl * nm} total SEDs")
         print(f"  Sampling {n_samples} SEDs for training")
         
         self.wavelength_grid = self._create_wavelength_grid()
@@ -250,8 +247,7 @@ class SEDCompleter:
         params = np.array(params_list, dtype=np.float32)
         masks = np.array(masks_list, dtype=np.float32)
         
-        avg_coverage = masks.mean() * 100
-        print(f"  Average extension coverage: {avg_coverage:.1f}%")
+        print(f"  Average extension coverage: {masks.mean() * 100:.1f}%")
         
         return X, y, params, masks
 
@@ -506,11 +502,8 @@ class SEDCompleter:
             y_true = y_val[idx]
             mask = masks[idx] if masks is not None else np.ones_like(y_true)
             
-            y_true_log = y_true * self.scaler_params['ext_log_std'] + self.scaler_params['ext_log_mean']
-            y_pred_log = y_pred * self.scaler_params['ext_log_std'] + self.scaler_params['ext_log_mean']
-            
-            y_true_flux = 10 ** y_true_log
-            y_pred_flux = 10 ** y_pred_log
+            y_true_flux = 10 ** (y_true * self.scaler_params['ext_log_std'] + self.scaler_params['ext_log_mean'])
+            y_pred_flux = 10 ** (y_pred * self.scaler_params['ext_log_std'] + self.scaler_params['ext_log_mean'])
             
             wl = self.wavelength_grid
             # The extension points: valid and outside the input window
@@ -625,8 +618,7 @@ class SEDCompleter:
         path = Path(path)
         path.mkdir(parents=True, exist_ok=True)
         
-        model_file = path / self.MODEL_FILE
-        torch.save(self.model.state_dict(), model_file)
+        torch.save(self.model.state_dict(), path / self.MODEL_FILE)
         
         self.config = {
             'architecture': {
@@ -646,8 +638,7 @@ class SEDCompleter:
             'framework': 'pytorch',
         }
         
-        config_file = path / self.CONFIG_FILE
-        with open(config_file, 'w') as f:
+        with open(path / self.CONFIG_FILE, 'w') as f:
             json.dump(self.config, f, indent=2)
         
         print(f"Model saved to: {path}")
@@ -670,8 +661,7 @@ class SEDCompleter:
         if not path.is_dir():
             raise ValueError(f"Model path must be a directory: {path}")
         
-        config_file = path / self.CONFIG_FILE
-        with open(config_file, 'r') as f:
+        with open(path / self.CONFIG_FILE, 'r') as f:
             self.config = json.load(f)
         
         self.scaler_params = self.config['scaler_params']
@@ -694,9 +684,7 @@ class SEDCompleter:
             dropout=arch['dropout'],
         )
         
-        model_file = path / self.MODEL_FILE
-        state_dict = torch.load(model_file, map_location=self.device, weights_only=True)
-        self.model.load_state_dict(state_dict)
+        self.model.load_state_dict(torch.load(path / self.MODEL_FILE, map_location=self.device, weights_only=True))
         self.model.eval()
         
         print(f"Loaded model from: {path}")
@@ -758,8 +746,7 @@ class SEDCompleter:
         bb_flux = planck_function(full_grid, teff)
         
         y_pred_flux = self._predict_grid_flux(wavelength, flux, teff, logg, meta)
-        known_start = self._known_start
-        known_end = self._known_end
+        known_start, known_end = self._known_start, self._known_end
         
         # The network predicts the whole grid; only the parts outside the
         # input window extend the SED (either part may be empty)
@@ -786,9 +773,8 @@ class SEDCompleter:
         import torch
 
         _warn_window_coverage(self.wavelength_grid[self._known_start:self._known_end], wavelength)
-        flux_safe = np.maximum(flux, 1e-20)
-        flux_log = np.log10(flux_safe)
-        flux_on_grid = np.interp(self.wavelength_grid, wavelength, 10**flux_log, left=1e-20, right=1e-20)
+        flux_on_grid = np.interp(self.wavelength_grid, wavelength, 10**np.log10(np.maximum(flux, 1e-20)),
+                                 left=1e-20, right=1e-20)
         
         flux_known = flux_on_grid[self._known_start:self._known_end]
         flux_known_log = np.log10(np.maximum(flux_known, 1e-20))
@@ -857,11 +843,8 @@ def cli_complete(args):
     completer = SEDCompleter(args.model)
     
     data = np.loadtxt(args.input)
-    wavelength = data[:, 0]
-    flux = data[:, 1]
-    
     wl_ext, flux_ext = completer.complete_sed(
-        wavelength, flux,
+        data[:, 0], data[:, 1],
         teff=args.teff,
         logg=args.logg,
         meta=args.meta,
@@ -1045,10 +1028,8 @@ def _train_menu(base_dir: str, models_dir: str) -> None:
     output_path = os.path.join(models_dir, model_name)
     
     print(f"\nModel will be saved to: {output_path}/")
-    print("  - model.pt")
-    print("  - config.json")
-    print("  - training_plots.png")
-    print("  - prediction_examples.png")
+    for name in ("model.pt", "config.json", "training_plots.png", "prediction_examples.png"):
+        print(f"  - {name}")
     if not _confirmed("\nStart training? [Y/n]: "):
         return
     
@@ -1179,8 +1160,7 @@ def train_model(
     from . import Completer
 
     save_path = str(save_path)
-    completer = SEDCompleter()
-    completer.train(
+    SEDCompleter().train(
         library_path=str(grid_dir),
         output_path=save_path,
         epochs=int(epochs),
