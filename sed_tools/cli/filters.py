@@ -312,10 +312,9 @@ def _ask_atmosphere(info: dict, filter_root: Path) -> Optional[Dict]:
 def _site_grids(sites: List[str], filter_root: Path) -> Dict[str, dict]:
     """The atmosphere grids by site, cached ones refreshed from NJM's manifests (checked once a day)."""
     try:
-        grids = Filters.atmospheres(filter_root=filter_root)
+        return Filters.atmospheres(filter_root=filter_root)
     except (RequestException, OSError, RuntimeError, ValueError) as exc:
         raise RuntimeError(f"could not list the atmosphere grids for {', '.join(sites)}: {exc}") from exc
-    return grids
 
 
 def _print_site_choices(sites: List[str], default: Optional[str], grids: Dict[str, dict]) -> None:
@@ -439,14 +438,9 @@ def run_filter_info_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> int:
     from ..filters.library import FilterLibrary
 
     library = FilterLibrary(base_dir)
-    shown: set = set()
-    facilities = _listed_facilities(library, shown)
     incomplete: List[str] = []
     show = lambda facility, instrument: _show_filter_set(library, facility, instrument, incomplete)
-    while facilities:
-        index = prompt_choice(_picker_labels(facilities), "Filter Facilities")
-        if index is None or not _browse_instruments(library, facilities[index], show, shown=shown):
-            break
+    _browse_facilities(library, show)
     return 1 if incomplete else 0
 
 
@@ -478,19 +472,24 @@ def run_filter_compose_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> int:
 
 def _pick_one_instrument(library) -> Optional[Tuple[dict, dict]]:
     """The facility and instrument entries the user picks, or None if they quit."""
-    shown: set = set()
-    facilities = _listed_facilities(library, shown)
     picked: List[Tuple[dict, dict]] = []
 
     def pick(facility: dict, instrument: dict) -> bool:
         picked.append((facility, instrument))
         return False  # stop browsing
 
-    while facilities and not picked:
-        index = prompt_choice(_picker_labels(facilities), "Filter Facilities")
-        if index is None or not _browse_instruments(library, facilities[index], pick, shown=shown):
-            break
+    _browse_facilities(library, pick, done=lambda: bool(picked))
     return picked[0] if picked else None
+
+
+def _browse_facilities(library, act, done=lambda: False) -> None:
+    """Pick a facility, then its instruments for ``act`` (see _browse_instruments), until the user quits or done()."""
+    shown: set = set()
+    facilities = _listed_facilities(library, shown)
+    while facilities and not done():
+        index = prompt_choice(_picker_labels(facilities), "Filter Facilities")
+        if index is None or not _browse_instruments(library, facilities[index], act, shown=shown):
+            break
 
 
 def _listed_facilities(library, shown: set) -> List[dict]:
@@ -776,11 +775,9 @@ def run_filter_combine_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
         conflict = input("Please enter rename, overwrite, or error [rename]: ").strip().lower() or "rename"
 
     print("\nAbout to create a combined filter set:")
-    print(f"  Base      : {chosen_base}")
-    print(f"  Output    : {output}")
-    print(f"  Facility  : {facility or 'Combined'}")
-    print(f"  Instrument: {instrument or output}")
-    print(f"  Conflicts : {conflict}")
+    for name, value in (("Base", chosen_base), ("Output", output), ("Facility", facility or "Combined"),
+                        ("Instrument", instrument or output), ("Conflicts", conflict)):
+        print(f"  {name:<10}: {value}")
     confirm = input("Proceed? [Y/n] ").strip().lower()
     if confirm and not confirm.startswith("y"):
         print("Cancelled.")
