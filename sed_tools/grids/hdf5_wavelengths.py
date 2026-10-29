@@ -25,14 +25,10 @@ def _is_physical_wavelength_array(wl: np.ndarray) -> bool:
         return False
     if wl[0] < 1.0 or wl[-1] > 1e9:
         return False
-    # Reject pure integer index sequences
-    if wl[0] < 2 and np.allclose(wl, np.arange(wl.size, dtype=float), atol=0.5):
-        return False
+    # Reject pure integer index sequences (one from 0 has already failed wl[0] < 1)
     if wl[0] < 2 and np.allclose(wl, np.arange(1, wl.size + 1, dtype=float), atol=0.5):
         return False
-    if np.allclose(np.diff(wl), 1.0, atol=0.01):
-        return False
-    return True
+    return not np.allclose(np.diff(wl), 1.0, atol=0.01)
 
 
 def recover_wavelengths_from_hdf5(
@@ -111,11 +107,10 @@ def _wavelengths_in_range_group(rg, expected_len: int) -> Optional[np.ndarray]:
             return wl
 
     segs = []
-    seg_names = sorted([k for k in rg.keys() if 'range' in k.lower()], key=_segment_number)
-    for sn in seg_names:
-        if not isinstance(rg[sn], h5py.Group):
-            continue
+    for sn in sorted((k for k in rg.keys() if 'range' in k.lower()), key=_segment_number):
         sg = rg[sn]
+        if not isinstance(sg, h5py.Group):
+            continue
         for key in WAVE_KEYS:
             if key in sg and isinstance(sg[key], h5py.Dataset):
                 segs.append(np.array(sg[key]).astype(float).ravel())
