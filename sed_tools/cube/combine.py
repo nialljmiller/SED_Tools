@@ -243,11 +243,7 @@ def compute_normalization_factors(target_data, reference_data, wavelength_grid):
                        ref_name, target_name)
         return np.ones(len(target_data["files"]))
 
-    ref_params = np.column_stack([
-        reference_data["teff"],
-        reference_data["logg"],
-        reference_data["meta"]
-    ])
+    ref_params = np.column_stack([reference_data[key] for key in ("teff", "logg", "meta")])
     valid_mask = np.isfinite(ref_params).all(axis=1)
     ref_params = ref_params[valid_mask]
     ref_files = np.array(reference_data["files"])[valid_mask]
@@ -259,11 +255,10 @@ def compute_normalization_factors(target_data, reference_data, wavelength_grid):
 
     ranges = ref_params.max(axis=0) - ref_params.min(axis=0)
     ranges[ranges == 0] = 1.0
-    ref_params_norm = (ref_params - ref_params.min(axis=0)) / ranges
 
     from scipy.spatial import KDTree
 
-    tree = KDTree(ref_params_norm)
+    tree = KDTree((ref_params - ref_params.min(axis=0)) / ranges)
     norm_factors = []
     failures = []
     kept_native = Counter()
@@ -406,11 +401,8 @@ def _fill_gaps(flux_cube, filled_map, source_map, teff_grid, logg_grid, meta_gri
 
     teff_norm, logg_norm, meta_norm = norm(teff_grid), norm(logg_grid), norm(meta_grid)
     filled_indices = np.where(filled_map)
-    filled_points = np.column_stack([
-        teff_norm[filled_indices[0]],
-        logg_norm[filled_indices[1]],
-        meta_norm[filled_indices[2]]
-    ])
+    filled_points = np.column_stack([teff_norm[filled_indices[0]], logg_norm[filled_indices[1]],
+                                     meta_norm[filled_indices[2]]])
     from scipy.spatial import KDTree
 
     tree = KDTree(filled_points)
