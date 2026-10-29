@@ -332,7 +332,6 @@ def svo_spectrum_url(fid):
 def make_svo(tmp_path, monkeypatch, routes):
     session = FakeSession(routes)
     monkeypatch.setattr(svo.requests, "Session", lambda: session)
-    monkeypatch.setattr(svo.time, "sleep", lambda seconds: None)
     return svo.SVOSpectraGrabber(base_dir=str(tmp_path)), session
 
 
@@ -344,7 +343,7 @@ def test_svo_discovery_failure_warns_instead_of_vanishing(tmp_path, monkeypatch,
     assert any("could not be reached" in m and "not offered" in m for m in warnings_from(caplog, "svo_spectra_grabber"))
 
 
-def test_svo_metadata_warns_at_each_fallback_and_raises_when_a_probe_fails(tmp_path, monkeypatch, caplog):
+def test_svo_metadata_warns_once_before_probing_and_raises_when_a_probe_fails(tmp_path, monkeypatch, caplog):
     grabber, _ = make_svo(tmp_path, monkeypatch, {
         SSAP_QUERY: FakeResponse(503),
         f"{SVO_INDEX}?models=Grid": requests.ConnectionError("index down"),
@@ -355,9 +354,22 @@ def test_svo_metadata_warns_at_each_fallback_and_raises_when_a_probe_fails(tmp_p
         grabber.get_model_metadata("Grid")
 
     messages = warnings_from(caplog, "svo_spectra_grabber")
-    assert any("HTTP 503" in m and "index page" in m for m in messages)
-    assert any("index down" in m and "probing" in m for m in messages)
+    [message] = messages  # one warning for the fallback, naming both reasons
+    assert "HTTP 503" in message and "index down" in message and "probing" in message
     assert not (tmp_path / ".cache" / "svo_fids" / "Grid.json").exists()
+
+
+def test_svo_metadata_from_the_index_page_is_warned_about_once(tmp_path, monkeypatch, caplog):
+    grabber, _ = make_svo(tmp_path, monkeypatch, {
+        SSAP_QUERY: FakeResponse(503),
+        f"{SVO_INDEX}?models=Grid": FakeResponse(200, '<a href="ssap.php?fid=2">b</a><a href="ssap.php?fid=1">a</a>'),
+    })
+
+    with caplog.at_level(logging.WARNING):
+        assert grabber.get_model_metadata("Grid") == [{"fid": 1}, {"fid": 2}]
+
+    [message] = warnings_from(caplog, "svo_spectra_grabber")
+    assert "HTTP 503" in message and "using the model index page" in message
 
 
 def test_svo_metadata_raises_when_no_method_finds_spectra(tmp_path, monkeypatch):
@@ -415,7 +427,7 @@ def test_svo_failed_downloads_raise_and_leave_no_lookup_table(tmp_path, monkeypa
 
     message = str(err.value)
     assert "2 of 3 spectra" in message
-    assert "FID 2: content is not spectral data" in message and "FID 3: connection error: reset by peer" in message
+    assert "FID 2: content is not spectral data" in message and "FID 3: reset by peer" in message
     model_dir = tmp_path / "Grid"
     assert (model_dir / "Grid_fid1.txt").exists()
     assert not (model_dir / "lookup_table.csv").exists()
