@@ -539,16 +539,12 @@ def _spectra_sources(source: str) -> List[str]:
 
 
 def _spectra_grabbers(src_list: List[str], base_dir: str, workers: int) -> Dict:
-    """A grabber per requested source; NJM is left out, with a message, when the mirror is unavailable."""
+    """A grabber per requested source; NJM is left out when the mirror is unavailable (the grabber warns)."""
     grabs: Dict = {}
     if "njm" in src_list:
         njm = NJMSpectraGrabber(base_dir=base_dir, max_workers=workers)
         if njm.is_available():
             grabs["njm"] = njm
-        else:
-            others = [s for s in src_list if s != "njm"]
-            print("[njm] Mirror unreachable; " + (f"using {', '.join(others)}" if others
-                                                   else "no other source was requested (--source)"))
     if "svo"  in src_list: grabs["svo"]  = SVOSpectraGrabber(base_dir=base_dir, max_workers=workers)
     if "msg"  in src_list: grabs["msg"]  = MSGSpectraGrabber(base_dir=base_dir, max_workers=workers)
     if "mast" in src_list: grabs["mast"] = MASTSpectraGrabber(base_dir=base_dir, max_workers=workers)
