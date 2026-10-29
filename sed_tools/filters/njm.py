@@ -318,18 +318,10 @@ class NJMFilterGrabber:
             if _status(exc) == 404:
                 return []
             raise
-        soup = BeautifulSoup(response.text, 'html.parser')
-
-        items = []
-        for link in soup.find_all('a'):
-            href = link.get('href', '')
-            if directories_only and not href.endswith('/'):
-                continue
-            if href and href not in ['..', '/', '../'] and not href.startswith('?'):
-                item = href.rstrip('/')
-                if not item.startswith('..') and not item.startswith('/'):
-                    items.append(item)
-        return items
+        hrefs = [link.get('href', '') for link in BeautifulSoup(response.text, 'html.parser').find_all('a')]
+        wanted = [href.rstrip('/') for href in hrefs if (href.endswith('/') or not directories_only)
+                  and href not in ('', '/') and not href.startswith('?')]
+        return [item for item in wanted if not item.startswith(('..', '/'))]
 
     def download_filters(self, facility: str, instrument: str,
                         filters: Optional[List[str]] = None) -> int:
@@ -641,10 +633,8 @@ class NJMFilterGrabber:
         # they can be selected offline.
         listed += [rel for named in (manifest.get("variants") or {}).values()
                    for entry in named.values() for rel in (entry.get("files") or {}).values()]
-        rel_paths = sorted({
-            rel for rel in listed
-            if isinstance(rel, str) and "/" in rel  # root-level entries are the published curves themselves
-        })
+        # Root-level entries are the published curves themselves.
+        rel_paths = sorted({rel for rel in listed if isinstance(rel, str) and "/" in rel})
         count = 0
         failed = []
         for rel in rel_paths:

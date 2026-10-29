@@ -62,12 +62,7 @@ from typing import Dict, Optional, Tuple, Union
 import numpy as np
 
 from .curve_metadata import read_filter_header
-from ..photometry import (
-    SPEED_OF_LIGHT_ANG_PER_S,
-    filter_weight,
-    load_filter_curve,
-    load_spectrum,
-)
+from ..photometry import SPEED_OF_LIGHT_ANG_PER_S, filter_weight, load_filter_curve, load_spectrum
 
 AB_JY = 3631.0
 ST_FLAM = 3.631e-9  # erg/s/cm²/Å

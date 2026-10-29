@@ -126,9 +126,8 @@ class SVOFilterBrowser:
                 facilities[gname] = Facility(key=gname, label=known.label if known else label,
                                              description=description)
 
-        ordered = sorted(facilities.values(), key=lambda f: f.label.lower())
-        self._facility_cache = ordered
-        return ordered
+        self._facility_cache = sorted(facilities.values(), key=lambda f: f.label.lower())
+        return self._facility_cache
 
     def list_instruments(self, facility_key: str) -> List[Instrument]:
         if facility_key in self._instrument_cache:
@@ -138,12 +137,8 @@ class SVOFilterBrowser:
         instruments: Dict[str, Instrument] = {}
         for link in soup.find_all("a", href=True):
             params = self._parse_params(link["href"])
-            if params.get("mode") != "browse":
-                continue
-            if params.get("gname") != facility_key:
-                continue
             gname2 = params.get("gname2")
-            if not gname2:
+            if params.get("mode") != "browse" or params.get("gname") != facility_key or not gname2:
                 continue
             # A filter's own link (with its id) names the instrument too, but its text is the filter ID
             # (2MASS/2MASS.J), so the label is always SVO's instrument name.
@@ -153,9 +148,8 @@ class SVOFilterBrowser:
                 instruments[gname2] = Instrument(facility_key=facility_key, key=gname2, label=gname2,
                                                  description=description)
 
-        ordered = sorted(instruments.values(), key=lambda inst: inst.label.lower())
-        self._instrument_cache[facility_key] = ordered
-        return ordered
+        self._instrument_cache[facility_key] = sorted(instruments.values(), key=lambda inst: inst.label.lower())
+        return self._instrument_cache[facility_key]
 
     def list_filters(self, facility_key: str, instrument_key: str) -> List[FilterRow]:
         cache_key = (facility_key, instrument_key)
@@ -163,9 +157,7 @@ class SVOFilterBrowser:
             return self._filters_cache[cache_key]
 
         sibling_keys = [i.key for i in self.list_instruments(facility_key) if i.key != instrument_key]
-        soup = self._fetch_index(
-            {"mode": "browse", "gname": facility_key, "gname2": instrument_key, "asttype": ""}
-        )
+        soup = self._fetch_index({"mode": "browse", "gname": facility_key, "gname2": instrument_key, "asttype": ""})
         table = self._find_filter_table(soup)
         rows: Dict[str, FilterRow] = {}  # one per filter ID, the first SVO lists
         if table:
@@ -199,9 +191,8 @@ class SVOFilterBrowser:
                     description=description,
                 ))
 
-        unique_rows = list(rows.values())
-        self._filters_cache[cache_key] = unique_rows
-        return unique_rows
+        self._filters_cache[cache_key] = list(rows.values())
+        return self._filters_cache[cache_key]
 
     # -------------------- downloading --------------------
     def download_filters(self, filters: Sequence[FilterRow]) -> None:
@@ -215,11 +206,7 @@ class SVOFilterBrowser:
         if not filters:
             print("No filters to download.")
             return
-        targets = []
-        for row in filters:
-            out_dir, band_name = self._target(row)
-            targets.append((row, Path(out_dir), band_name))
-        self._save_all(targets, {})
+        self._save_all([(row, *self._target(row)) for row in filters], {})
 
     def download_into(self, directory, bands: Mapping[str, FilterRow], expected: Iterable[str] = ()) -> None:
         """Save each filter as ``<directory>/<band>.dat`` (``bands``: band -> its SVO row), as download_filters does.
@@ -252,13 +239,12 @@ class SVOFilterBrowser:
             raise RuntimeError(f"{len(failed)} of {len(targets)} SVO filters could not be saved; "
                                "run again to retry them:\n  " + "\n  ".join(failed))
 
-    def _target(self, row: FilterRow) -> Tuple[str, str]:
+    def _target(self, row: FilterRow) -> Tuple[Path, str]:
         """The instrument directory (created) and band file name for ``row``."""
-        facility_dir = _clean_path(row.facility or "UnknownFacility")
-        instrument_dir = _clean_path(row.instrument or "UnknownInstrument")
-        out_dir = os.path.join(self.base_dir, facility_dir, instrument_dir)
+        out_dir = os.path.join(self.base_dir, _clean_path(row.facility or "UnknownFacility"),
+                               _clean_path(row.instrument or "UnknownInstrument"))
         os.makedirs(out_dir, exist_ok=True)
-        return out_dir, _clean_filename(row.band)
+        return Path(out_dir), _clean_filename(row.band)
 
     def _save_filter(self, row: FilterRow, out_path: str) -> None:
         """Write one SVO curve with its metadata header."""
@@ -270,16 +256,9 @@ class SVOFilterBrowser:
         else:
             detector_type, source = ENERGY, SOURCE_ASSUMED
             print(f"    [warn] SVO gives no DetectorType for {row.filter_id}; assuming energy")
-        write_filter_file(
-            out_path,
-            record.wavelength,
-            record.transmission,
-            detector_type=detector_type,
-            source=source,
-            filter_id=row.filter_id,
-            wavelength_unit=record.wavelength_unit,
-            extra=svo_components_header(record.components),
-        )
+        write_filter_file(out_path, record.wavelength, record.transmission, detector_type=detector_type, source=source,
+                          filter_id=row.filter_id, wavelength_unit=record.wavelength_unit,
+                          extra=svo_components_header(record.components))
         print(f"    [saved] {out_path} ({detector_type}-counting)")
 
     # -------------------- HTTP helpers --------------------
@@ -303,10 +282,8 @@ class SVOFilterBrowser:
         return BeautifulSoup(resp.text, "html.parser")
 
     def _parse_params(self, href: str) -> Dict[str, str]:
-        url = urllib.parse.urljoin(svo_fps_url(), href)
-        parsed = urllib.parse.urlparse(url)
-        qs = urllib.parse.parse_qs(parsed.query)
-        return {k: v[0] for k, v in qs.items() if v}
+        query = urllib.parse.urlparse(urllib.parse.urljoin(svo_fps_url(), href)).query
+        return {k: v[0] for k, v in urllib.parse.parse_qs(query).items() if v}
 
     def _find_filter_table(self, soup: BeautifulSoup) -> Optional[BeautifulSoup]:
         for table in soup.find_all("table"):
@@ -324,12 +301,8 @@ def _write_index_and_manifest(directory: Path, expected: Iterable[str]) -> None:
 
     The manifest keeps every expected band, so a retry never takes a partial download for a complete set.
     """
-    out_dir = str(directory)
-    dat_files = sorted(
-        f for f in os.listdir(out_dir)
-        if os.path.isfile(os.path.join(out_dir, f)) and f.endswith(".dat")
-    )
-    with open(os.path.join(out_dir, directory.name), "w", encoding="utf-8") as fh:  # e.g. .../Generic/Johnson/Johnson
+    dat_files = sorted(f.name for f in directory.iterdir() if f.is_file() and f.name.endswith(".dat"))
+    with open(directory / directory.name, "w", encoding="utf-8") as fh:  # e.g. .../Generic/Johnson/Johnson
         fh.write("\n".join(dat_files) + ("\n" if dat_files else ""))
     manifest = InstrumentManifest.load(directory)
     headers = InstrumentManifest.from_published(directory)
@@ -374,9 +347,7 @@ def _band_from_filter_id(filter_id: str) -> str:
 
 
 def _clean_path(value: str) -> str:
-    cleaned = "".join(ch if ch.isalnum() or ch in (" ", ".", "_") else "_" for ch in value)
-    cleaned = cleaned.strip()
-    return cleaned or "Unknown"
+    return "".join(ch if ch.isalnum() or ch in (" ", ".", "_") else "_" for ch in value).strip() or "Unknown"
 
 
 def _clean_filename(value: str) -> str:

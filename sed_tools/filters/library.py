@@ -255,11 +255,8 @@ class FilterLibrary:
         ``(directory holding curves NJM wrote or confirmed now, or None, why the set is incomplete)``."""
         if not self.mirror.is_available():
             return None, NJM_UNAVAILABLE
-        spellings = [(facility, instrument)]
-        njm_names = self._njm_spelling(facility, instrument)
-        if njm_names is not None and njm_names != (facility, instrument):
-            spellings.insert(0, njm_names)
-        for fac, inst in spellings:
+        asked = (facility, instrument)
+        for fac, inst in dict.fromkeys([self._njm_spelling(facility, instrument) or asked, asked]):
             directory = installed if installed is not None else self.root / fac / inst
             before = _curve_state(directory)
             partial_manifest = _partial_fill_manifest(directory)
@@ -482,11 +479,8 @@ class FilterLibrary:
 
     def _njm_availability(self, facility, instrument):
         """What NJM serves for an instrument (under its name as given, else NJM's spelling), or None."""
-        spellings = [(facility, instrument)]
-        njm_names = self._njm_spelling(facility, instrument)
-        if njm_names is not None and njm_names != (facility, instrument):
-            spellings.append(njm_names)
-        for fac, inst in spellings:
+        asked = (facility, instrument)
+        for fac, inst in dict.fromkeys([asked, self._njm_spelling(facility, instrument) or asked]):
             data = self.mirror.fetch_manifest(fac, inst)
             if data:
                 return _availability(InstrumentManifest.from_dict(data).describe(), "njm", {})
@@ -632,11 +626,7 @@ class FilterLibrary:
                 "airmass": sorted({float(e["airmass"]) for e in grid.entries}),
                 "pwv": sorted({float(e["pwv"]) for e in grid.entries if e.get("pwv") is not None}),
                 "unstated_airmass": bool(grid.unstated),
-                "source": grid.source,
-                "kind": grid.kind,
-                "model": grid.model,
-                "model_version": grid.model_version,
-                "citation": grid.citation,
+                **{key: getattr(grid, key) for key in ("source", "kind", "model", "model_version", "citation")},
             }
         return result
 
@@ -715,10 +705,10 @@ class FilterLibrary:
         describes an entry.  NJM is not needed: without it the other sources
         are listed, named and described as when it is reachable.
         """
-        listings, errors = [], []
-        listings.append(("local", [(d.name, "") for d in sorted(self.root.glob("*"))
-                                   if d.is_dir() and any(d.glob("*/*.dat"))]))
-        listings.append(("original", [(facility, "") for facility, _ in _publishing_builders()]))
+        errors = []
+        listings = [("local", [(d.name, "") for d in sorted(self.root.glob("*"))
+                               if d.is_dir() and any(d.glob("*/*.dat"))]),
+                    ("original", [(facility, "") for facility, _ in _publishing_builders()])]
         if remote:
             try:
                 facilities = self.svo.list_facilities()
@@ -750,10 +740,10 @@ class FilterLibrary:
         components are not listed: they cannot provide the curves.
         """
         same_facility = lambda name: name_key(name) == name_key(facility)
-        listings, errors, live = [], [], {}
-        listings.append(("local", [(d.name, "") for d in sorted(self.root.glob("*/*"))
-                                   if same_facility(d.parent.name) and d.is_dir() and list(d.glob("*.dat"))]))
-        listings.append(("original", [(inst, "") for fac, inst in _publishing_builders() if same_facility(fac)]))
+        errors, live = [], {}
+        listings = [("local", [(d.name, "") for d in sorted(self.root.glob("*/*"))
+                               if same_facility(d.parent.name) and d.is_dir() and list(d.glob("*.dat"))]),
+                    ("original", [(inst, "") for fac, inst in _publishing_builders() if same_facility(fac)])]
         if remote:
             try:
                 fac = self.svo_facility(facility)

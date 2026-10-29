@@ -78,22 +78,13 @@ SHARED = "*"  # component key meaning "applies to every band"
 TEAM, DERIVED = "team", "derived"
 ATMOSPHERE_KINDS = (TEAM, DERIVED)
 
-_SVO_TOKENS = {
-    "filter": FILTER,
-    "filters": FILTER,
-    "theoretically defined": FILTER,  # idealised bandpasses (SVO)
-    "ccd": QE,
-    "detector": QE,
-    "qe": QE,
-    "quantum efficiency": QE,
-    "instrument": INSTRUMENT,
-    "optics": OPTICS,
-    "other optical components": OPTICS,
-    "telescope": OPTICS,
-    "mirror": OPTICS,
-    "mirrors": OPTICS,
-    "atmosphere": ATMOSPHERE,
-}
+_SVO_TOKENS = {token: role for role, tokens in (
+    (FILTER, ("filter", "filters", "theoretically defined")),  # the last: idealised bandpasses (SVO)
+    (QE, ("ccd", "detector", "qe", "quantum efficiency")),
+    (INSTRUMENT, ("instrument",)),
+    (OPTICS, ("optics", "other optical components", "telescope", "mirror", "mirrors")),
+    (ATMOSPHERE, ("atmosphere",)),
+) for token in tokens}
 
 
 class ComponentError(ValueError):
@@ -362,13 +353,10 @@ class InstrumentManifest:
         # (HSC.g_filter, ZTF.g_fil, SDSS.gprime_filter); they are that band's
         # own filter component.
         for band in bands:
-            if band in filter_components:
-                continue
-            for suffix in FILTER_SIBLING_SUFFIXES:
-                sibling = f"{band}{suffix}"
-                if published_bands.get(sibling) == FILTER:
-                    filter_components[band] = f"{sibling}.dat"
-                    break
+            sibling = next((f"{band}{suffix}" for suffix in FILTER_SIBLING_SUFFIXES
+                            if published_bands.get(f"{band}{suffix}") == FILTER), None)
+            if sibling and band not in filter_components:
+                filter_components[band] = f"{sibling}.dat"
         recipes = set(published_bands.values())
         if len(recipes) == 1 and len(published_bands) == len(bands):
             summary = recipes.pop()
@@ -449,12 +437,7 @@ class InstrumentManifest:
         Keys may be single roles (``qe``) or composites (``filter+optics+qe``)
         for sources that only publish multiplied curves.
         """
-        out = []
-        for key in self.components:
-            rel = self.component_file(key, band)
-            if rel:
-                out.append((parse_components(key), rel))
-        return out
+        return [(parse_components(key), rel) for key in self.components if (rel := self.component_file(key, band))]
 
     def cover(self, band: str, roles: Iterable[str]) -> Optional[List[Tuple[Tuple[str, ...], str]]]:
         """Pieces that together contain exactly ``roles`` (no overlap), or ``None``.
@@ -485,12 +468,8 @@ class InstrumentManifest:
     def primary_bands(self) -> List[str]:
         """Bands that are not merely another band's filter-only sibling."""
         bands = set(self.bands)
-        siblings = {
-            b for b in self.bands
-            if self.published_bands.get(b) == FILTER and any(
-                b.endswith(sfx) and b[: -len(sfx)] in bands for sfx in FILTER_SIBLING_SUFFIXES
-            )
-        }
+        siblings = {b for b in self.bands if self.published_bands.get(b) == FILTER
+                    and any(b.endswith(sfx) and b[: -len(sfx)] in bands for sfx in FILTER_SIBLING_SUFFIXES)}
         return [b for b in self.bands if b not in siblings]
 
     def buildable(self) -> List[str]:
@@ -535,19 +514,14 @@ class InstrumentManifest:
             return info
         from ..component_sources.catalog import component_availability
 
-        recipes = {}
         primary_bands = self.primary_bands()
         available_roles = self.available_roles()
         role_bands = {role: self.bands_with(role) for role in (FILTER, OPTICS, QE)}
         source_availability = component_availability(self.facility, self.instrument)
-        for roles in _RECIPES:
-            bands = [b for b in primary_bands if self.cover(b, roles)]
-            if bands:
-                recipes[recipe_name(roles)] = bands
+        recipes = {recipe_name(roles): bands for roles in _RECIPES
+                   if (bands := [b for b in primary_bands if self.cover(b, roles)])}
         dtypes = set(self.detector_types.get(b, self.detector_type) for b in self.bands)
-        detector_type = None
-        if dtypes:
-            detector_type = dtypes.pop() if len(dtypes) == 1 else "mixed"
+        detector_type = (dtypes.pop() if len(dtypes) == 1 else "mixed") if dtypes else None
         return {
             "facility": self.facility,
             "instrument": self.instrument,
@@ -558,10 +532,8 @@ class InstrumentManifest:
             "components": list(available_roles),
             "buildable": self.buildable(),
             "recipes_by_band": recipes,
-            "partial_components": {
-                role: bands for role, bands in role_bands.items()
-                if role not in available_roles and bands
-            },
+            "partial_components": {role: bands for role, bands in role_bands.items()
+                                   if role not in available_roles and bands},
             "atmosphere": bool(self.ground_based and self.sites()),
             "atmosphere_site": self.default_site,
             "atmosphere_sites": self.sites() if self.ground_based else [],
@@ -656,30 +628,22 @@ class AtmosphereGrid:
     def find(self, spec: AtmosphereSpec) -> Optional[str]:
         """Look up exact observing conditions; return None when absent."""
         if spec.airmass is None:
-            unstated = list(self.unstated or [])
-            if len(unstated) > 1:
-                raise ComponentError(f"{self.site}: {len(unstated)} atmospheres of unstated airmass; "
+            candidates = list(self.unstated or [])
+            if len(candidates) > 1:
+                raise ComponentError(f"{self.site}: {len(candidates)} atmospheres of unstated airmass; "
                                      "the site manifest must name one")
-            if not unstated:
-                return None
-            rel = str(unstated[0]["file"])
-            _require_inside(rel, f"atmosphere {self.site}")
-            return rel
-        candidates = []
-        for entry in self.entries:
-            if not math_isclose(float(entry["airmass"]), spec.airmass):
-                continue
-            pwv = entry.get("pwv")
-            if spec.pwv is None or (pwv is not None and math_isclose(float(pwv), spec.pwv)):
-                candidates.append(entry)
-        if len(candidates) > 1 and spec.pwv is None:
-            pwvs = sorted({float(e["pwv"]) for e in candidates if e.get("pwv") is not None})
-            raise ComponentError(f"{self.site}: choose pwv explicitly; available at this airmass: {pwvs}")
-        if candidates:
-            rel = str(candidates[0]["file"])
-            _require_inside(rel, f"atmosphere {self.site}")
-            return rel
-        return None
+        else:
+            candidates = [entry for entry in self.entries if math_isclose(float(entry["airmass"]), spec.airmass)
+                          and (spec.pwv is None or (entry.get("pwv") is not None
+                                                    and math_isclose(float(entry["pwv"]), spec.pwv)))]
+            if len(candidates) > 1 and spec.pwv is None:
+                pwvs = sorted({float(e["pwv"]) for e in candidates if e.get("pwv") is not None})
+                raise ComponentError(f"{self.site}: choose pwv explicitly; available at this airmass: {pwvs}")
+        if not candidates:
+            return None
+        rel = str(candidates[0]["file"])
+        _require_inside(rel, f"atmosphere {self.site}")
+        return rel
 
     def select(self, spec: AtmosphereSpec) -> str:
         """Require an exact grid point, or explain which conditions exist."""

@@ -47,10 +47,8 @@ class CatalogueError(RuntimeError):
 def parse_target(target: str) -> Tuple[str, str, Optional[str]]:
     """``"Facility/Instrument"`` or ``"Facility/Instrument/Band"`` -> (facility, instrument, band)."""
     parts = [p for p in str(target).strip().strip("/").split("/") if p]
-    if len(parts) == 2:
-        return parts[0], parts[1], None
-    if len(parts) == 3:
-        return parts[0], parts[1], parts[2]
+    if len(parts) in (2, 3):
+        return parts[0], parts[1], parts[2] if len(parts) == 3 else None
     raise ValueError(f"expected Facility/Instrument or Facility/Instrument/Band, got {target!r}")
 
 
@@ -155,12 +153,8 @@ class FilterCatalogue:
             if path.is_file():
                 self._came_from(rel, "cache", meta.get("checked"), njm_unreachable=not self.offline)
             return path if path.is_file() else None
-        headers = {}
-        if path.is_file():
-            if meta.get("etag"):
-                headers["If-None-Match"] = meta["etag"]
-            if meta.get("last_modified"):
-                headers["If-Modified-Since"] = meta["last_modified"]
+        conditional = (("If-None-Match", "etag"), ("If-Modified-Since", "last_modified"))
+        headers = {header: meta[key] for header, key in conditional if path.is_file() and meta.get(key)}
         url = f"{mirror.base_url}/{quote(rel, safe='/')}"
         try:
             response = mirror._get(url, timeout=60, headers=headers or None)
@@ -177,6 +171,13 @@ class FilterCatalogue:
             raise CatalogueError(f"Cannot fetch {rel} from NJM: {exc}") from exc
         self._store(path, rel, url, response, meta, generation, validate)
         self._came_from(rel, "njm", time.time())
+        return path
+
+    def _fetched(self, rel: str, **kwargs) -> Path:
+        """:meth:`_fetch`, with CatalogueError when neither NJM nor the cache has the file."""
+        path = self._fetch(rel, **kwargs)
+        if path is None:
+            raise CatalogueError(self._not_cached(rel))
         return path
 
     @staticmethod
@@ -218,9 +219,7 @@ class FilterCatalogue:
             if not isinstance(data, dict) or not isinstance(data.get("filters"), dict):
                 raise ValueError("no 'filters' section")
 
-        path = self._fetch("index.json", max_age=self.index_max_age, refresh=refresh, validate=check)
-        if path is None:
-            raise CatalogueError(self._not_cached("index.json"))
+        path = self._fetched("index.json", max_age=self.index_max_age, refresh=refresh, validate=check)
         self._index = json.loads(path.read_text(encoding="utf-8"))
         self._index_loaded = time.time()
         return self._index
@@ -330,9 +329,7 @@ class FilterCatalogue:
         if not name:
             raise CatalogueError(f"NJM has no {kind} file for {entry['facility']}/{entry['instrument']}")
         rel = f"filters/{entry['facility']}/{entry['instrument']}/{name}"
-        path = self._fetch(rel, generation=index.get("generated"), refresh=refresh, validate=self._json_object)
-        if path is None:
-            raise CatalogueError(self._not_cached(rel))
+        path = self._fetched(rel, generation=index.get("generated"), refresh=refresh, validate=self._json_object)
         data = self._json_object(path.read_text(encoding="utf-8"))
         origin = dict(self._origins[rel])
         if origin["source"] == "cache" and (self._origins.get("index.json") or {}).get("njm_unreachable"):
@@ -400,9 +397,7 @@ class FilterCatalogue:
 
         def one(entry):
             rel = f"filters/{entry['facility']}/{entry['instrument']}/{entry[kind]}"
-            path = self._fetch(rel, generation=generation, refresh=refresh, validate=self._json_object)
-            if path is None:
-                raise CatalogueError(self._not_cached(rel))
+            path = self._fetched(rel, generation=generation, refresh=refresh, validate=self._json_object)
             return self._json_object(path.read_text(encoding="utf-8"))
 
         results: Dict[Tuple[str, str], dict] = {}
@@ -423,10 +418,7 @@ class FilterCatalogue:
         """Path to the cached Vega spectrum NJM's properties use (``vega/vega_flam.csv``, Å and f_λ)."""
         definitions = self.index()["filters"].get("properties_definitions") or {}
         rel = (definitions.get("vega_spectrum") or {}).get("url") or VEGA_URL
-        path = self._fetch(rel, max_age=30 * 24 * 3600, refresh=refresh)
-        if path is None:
-            raise CatalogueError(self._not_cached(rel))
-        return path
+        return self._fetched(rel, max_age=30 * 24 * 3600, refresh=refresh)
 
     # ---- Search
     def _named_bands(self, text: Optional[str], needles: Mapping[str, Optional[str]],
@@ -556,21 +548,18 @@ def _apply(frame: pd.DataFrame, column: str, criterion) -> pd.Series:
     kind = criterion[0]
     if kind == "covers":
         return (numeric("WavelengthMin") <= criterion[1]) & (numeric("WavelengthMax") >= criterion[1])
-    if kind == "overlaps":
+    if kind in ("overlaps", "range"):
         lo, hi = criterion[1:]
-        mask = numeric("WavelengthMax").notna() & numeric("WavelengthMin").notna()
+        # overlaps: the curve reaches past lo and starts before hi; range: the value lies between them
+        if kind == "overlaps":
+            reaches, starts = numeric("WavelengthMax"), numeric("WavelengthMin")
+        else:
+            reaches = starts = numeric(column)
+        mask = reaches.notna() & starts.notna()
         if lo is not None:
-            mask &= numeric("WavelengthMax") >= lo
+            mask &= reaches >= lo
         if hi is not None:
-            mask &= numeric("WavelengthMin") <= hi
-        return mask
-    if kind == "range":
-        values = numeric(column)
-        mask = values.notna()
-        if criterion[1] is not None:
-            mask &= values >= criterion[1]
-        if criterion[2] is not None:
-            mask &= values <= criterion[2]
+            mask &= starts <= hi
         return mask
     wanted = criterion[1]
     if column not in frame:
@@ -665,10 +654,7 @@ def format_bibtex(citations: dict) -> str:
             entries.append(ref["bibtex"].strip())
         else:
             missing.append(f"% No BibTeX served for {ref['key']}: {_reference_line(ref)}")
-    blocks = []
-    if missing:
-        blocks.append("\n".join(missing))
-    blocks.extend(entries)
+    blocks = (["\n".join(missing)] if missing else []) + entries
     return "\n\n".join(blocks) + ("\n" if blocks else "")
 
 

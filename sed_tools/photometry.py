@@ -24,41 +24,16 @@ PC_TO_M = 3.085677581e16
 RSUN_TO_M = 6.957e8
 SPEED_OF_LIGHT_ANG_PER_S = 2.99792458e18  # speed of light in Angstrom/s
 AB_ZERO_FLUX = 3.631e-20  # 3631 Jy expressed in erg s^-1 cm^-2 Hz^-1
-UNIT_TO_ANGSTROM: Dict[str, float] = {
-    "angstrom": 1.0,
-    "angstroms": 1.0,
-    "\u00e5": 1.0,
-    "ang": 1.0,
-    "a": 1.0,
-    "aa": 1.0,
-    "nanometer": 10.0,
-    "nanometre": 10.0,
-    "nm": 10.0,
-    "micrometer": 1.0e4,
-    "micrometre": 1.0e4,
-    "micron": 1.0e4,
-    "microns": 1.0e4,
-    "\u00b5m": 1.0e4,
-    "\u03bcm": 1.0e4,
-    "um": 1.0e4,
-    "millimeter": 1.0e7,
-    "millimetre": 1.0e7,
-    "mm": 1.0e7,
-    "meter": 1.0e10,
-    "metre": 1.0e10,
-    "m": 1.0e10,
-}
+UNIT_TO_ANGSTROM: Dict[str, float] = {name: factor for factor, names in (
+    (1.0, ("angstrom", "angstroms", "\u00e5", "ang", "a", "aa")),
+    (10.0, ("nanometer", "nanometre", "nm")),
+    (1.0e4, ("micrometer", "micrometre", "micron", "microns", "\u00b5m", "\u03bcm", "um")),
+    (1.0e7, ("millimeter", "millimetre", "mm")),
+    (1.0e10, ("meter", "metre", "m")),
+) for name in names}
 VEGA_ZP_KEYS = [
-    "zp_vega",
-    "vega_zp",
-    "vega_flux",
-    "zero_point_flux_vega",
-    "zero_point_flux",
-    "zeropointflux",
-    "zeropoint_flux",
-    "zeropointflux_ergcm2sa",
-    "zeropointflux_ergcm2sang",
-    "zeropointfluxergcm2sa",
+    "zp_vega", "vega_zp", "vega_flux", "zero_point_flux_vega", "zero_point_flux", "zeropointflux",
+    "zeropoint_flux", "zeropointflux_ergcm2sa", "zeropointflux_ergcm2sang", "zeropointfluxergcm2sa",
 ]
 
 
@@ -86,8 +61,7 @@ class Spectrum:
 
 
 def normalize_metadata_key(key: str) -> str:
-    normalized = re.sub(r"[^a-z0-9]+", "_", key.strip().lower())
-    return normalized.strip("_")
+    return re.sub(r"[^a-z0-9]+", "_", key.strip().lower()).strip("_")
 
 
 def parse_metadata_value(value: str) -> object:
@@ -132,15 +106,11 @@ def standardize_wavelength_array(
         raise ValueError("No wavelength data found in file")
     order = np.argsort(arr)
     arr = arr[order]
-    unit_key = (unit_hint or "").strip().lower()
-    if not unit_key:
-        unit_key = infer_unit_from_values(arr)
+    unit_key = (unit_hint or "").strip().lower() or infer_unit_from_values(arr)
     if unit_key not in UNIT_TO_ANGSTROM:
         logger.warning("Unrecognised wavelength unit %r; inferring from values instead", unit_hint)
         unit_key = infer_unit_from_values(arr)
-    factor = UNIT_TO_ANGSTROM[unit_key]
-    converted = arr * factor
-    return converted, order, unit_key or "angstrom"
+    return arr * UNIT_TO_ANGSTROM[unit_key], order, unit_key or "angstrom"
 
 
 def load_two_column_file(path: str) -> Tuple[List[float], List[float], Dict[str, object]]:
@@ -166,8 +136,7 @@ def load_two_column_file(path: str) -> Tuple[List[float], List[float], Dict[str,
                         metadata[normalize_metadata_key(key)] = parse_metadata_value(value)
                         break
                 else:
-                    comments = metadata.setdefault("comments", [])
-                    comments.append(meta)
+                    metadata.setdefault("comments", []).append(meta)
                 continue
 
             parts = line.replace(",", " ").split()
@@ -176,9 +145,7 @@ def load_two_column_file(path: str) -> Tuple[List[float], List[float], Dict[str,
                 y = float(parts[1])
             except (IndexError, ValueError):
                 if x_values:
-                    raise ValueError(
-                        f"{path}, line {line_no}: expected two numbers, found {line!r}"
-                    ) from None
+                    raise ValueError(f"{path}, line {line_no}: expected two numbers, found {line!r}") from None
                 continue
             x_values.append(x)
             y_values.append(y)
@@ -244,10 +211,7 @@ def _standardize_file_wavelengths(
         logger.warning(
             "%s declares no wavelength unit; assuming %s from its values. "
             "Declare WavelengthUnit (filter curves: on the column row, via "
-            "sed_tools.filter_metadata.write_filter_header) or pass wavelength_unit= to be explicit.",
-            path,
-            unit_key,
-        )
+            "sed_tools.filter_metadata.write_filter_header) or pass wavelength_unit= to be explicit.", path, unit_key)
     metadata["wavelength_unit_inferred"] = unit_key or "angstrom"
     metadata["wavelength_unit_resolved"] = "angstrom"
     return wavelength, order
@@ -273,11 +237,8 @@ def load_filter_curve(
         # Untagged file: keep the historical energy-counting behaviour.
         detector_type = ENERGY
         metadata.setdefault("detectortypesource", "assumed")
-    curve_name = name or Path(path).stem
-    return FilterCurve(
-        curve_name, wavelength, transmission, metadata,
-        wavelength_unit="angstrom", detector_type=detector_type,
-    )
+    return FilterCurve(name or Path(path).stem, wavelength, transmission, metadata,
+                       wavelength_unit="angstrom", detector_type=detector_type)
 
 
 def filter_weight(
@@ -336,9 +297,7 @@ def band_average_flux_lambda(
     sed_wavelength: np.ndarray, sed_flux: np.ndarray, curve: FilterCurve
 ) -> float:
     interp_flux = np.interp(curve.wavelength, sed_wavelength, sed_flux, left=0.0, right=0.0)
-    return band_average_flux_lambda_from_arrays(
-        curve.wavelength, interp_flux, curve.transmission, curve.detector_type
-    )
+    return band_average_flux_lambda_from_arrays(curve.wavelength, interp_flux, curve.transmission, curve.detector_type)
 
 
 def band_average_flux_nu(
@@ -347,9 +306,7 @@ def band_average_flux_nu(
     interp_flux = np.interp(curve.wavelength, sed_wavelength, sed_flux, left=0.0, right=0.0)
     weight = curve.weight
     numerator = np.trapezoid(interp_flux * weight, curve.wavelength)
-    denom = np.trapezoid(
-        weight * SPEED_OF_LIGHT_ANG_PER_S / (curve.wavelength**2), curve.wavelength
-    )
+    denom = np.trapezoid(weight * SPEED_OF_LIGHT_ANG_PER_S / (curve.wavelength**2), curve.wavelength)
     if denom == 0:
         raise ValueError("Filter transmission integrates to zero")
     return float(numerator / denom)
@@ -357,8 +314,7 @@ def band_average_flux_nu(
 def load_spectrum(path: str, wavelength_unit: str | None = None) -> Spectrum:
     wavelengths, fluxes, metadata = load_two_column_file(path)
     wavelength, order = _standardize_file_wavelengths(path, wavelengths, metadata, wavelength_unit)
-    flux = np.asarray(fluxes, dtype=float)[order]
-    return Spectrum(wavelength, flux, metadata, wavelength_unit="angstrom")
+    return Spectrum(wavelength, np.asarray(fluxes, dtype=float)[order], metadata, wavelength_unit="angstrom")
 
 def _band_magnitude(wl, flux, curve, photometric_system, vega_spectrum):
     """Return (flux label, band-averaged flux, magnitude) for one filter.
