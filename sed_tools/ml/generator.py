@@ -304,8 +304,7 @@ class SEDGenerator:
         print("Normalizing data...")
         flux_log = np.log10(np.maximum(flux, 1e-30))
         
-        valid_mask = (masks > 0.5) & (flux_log > -25)
-        flux_valid = flux_log[valid_mask]
+        flux_valid = flux_log[(masks > 0.5) & (flux_log > -25)]
         if len(flux_valid) == 0:
             raise ValueError(f"No valid data points for normalization in {library_path}")
         
@@ -367,16 +366,11 @@ class SEDGenerator:
         fig, axes = plt.subplots(2, 3, figsize=(15, 10))
         axes = axes.flatten()
         
-        for i, idx in enumerate(indices):
-            ax = axes[i]
-            
-            p_sample = torch.from_numpy(p_val[idx:idx+1]).to(self.device)
-            
+        for ax, idx in zip(axes, indices):
             with torch.no_grad():
-                pred = self.model(p_sample).cpu().numpy()[0]
+                pred = self.model(torch.from_numpy(p_val[idx:idx+1]).to(self.device)).cpu().numpy()[0]
             
             true = f_val[idx]
-            mask = m_val[idx]
             
             true_flux = 10 ** (true * self.scaler_params['flux_log_std'] + self.scaler_params['flux_log_mean'])
             pred_flux = 10 ** (pred * self.scaler_params['flux_log_std'] + self.scaler_params['flux_log_mean'])
@@ -385,7 +379,7 @@ class SEDGenerator:
             logg = p_val[idx, 1] * self.scaler_params['logg_std'] + self.scaler_params['logg_mean']
             meta = p_val[idx, 2] * self.scaler_params['meta_std'] + self.scaler_params['meta_mean']
             
-            valid = mask > 0.5
+            valid = m_val[idx] > 0.5
             if valid.sum() > 0:
                 ax.loglog(self.wavelength_grid[valid], true_flux[valid], 'b-', 
                          alpha=0.7, label='True', linewidth=1.5)
@@ -862,8 +856,7 @@ def main():
         SEDGenerator().train(args.library, args.output, epochs=args.epochs, batch_size=args.batch_size)
     
     elif args.command == 'generate':
-        gen = SEDGenerator(args.model)
-        wl, flux = gen.generate(args.teff, args.logg, args.meta)
+        wl, flux = SEDGenerator(args.model).generate(args.teff, args.logg, args.meta)
         np.savetxt(args.output, np.column_stack([wl, flux]), 
                   header=f'wavelength_A flux_erg/s/cm2/A\n# Teff={args.teff} logg={args.logg} [M/H]={args.meta}',
                   fmt='%.6e')
