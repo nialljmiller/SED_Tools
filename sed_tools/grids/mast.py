@@ -142,17 +142,11 @@ def _parse_params_from_name(fname: str) -> Dict[str, str]:
     if not m:
         return {}
     d = m.groupdict()
-    teff = int(d["teff"])
-    logg = float(d["gsgn"] + d["gval"])
-    mh   = float(d["metsgn"] + d["metval"])
-    am   = float(d["asgn"] + d["aval"])
-    cm   = float(d["csgn"] + d["cval"])
-    res  = d["res"]; vt = int(d["vturb"])
-    return {
-        "teff": str(teff), "logg": f"{logg:.2f}",
-        "mh": f"{mh:.2f}", "am": f"{am:.2f}", "cm": f"{cm:.2f}",
-        "vturb": str(vt), "res": res, "atmos": d["atmos"],
-    }
+    params = {"teff": str(int(d["teff"]))}
+    for key, group in (("logg", "g"), ("mh", "met"), ("am", "a"), ("cm", "c")):  # signed values, as in 'g+4.0'
+        params[key] = f"{float(d[group + 'sgn'] + d[group + 'val']):.2f}"
+    params.update(vturb=str(int(d["vturb"])), res=d["res"], atmos=d["atmos"])
+    return params
 
 def _columns(text: str, n: int) -> Tuple[np.ndarray, ...]:
     """The first n columns of the rows with at least n fields; a field that is not a number ends its row there."""
@@ -171,15 +165,6 @@ def _columns(text: str, n: int) -> Tuple[np.ndarray, ...]:
             continue
     return tuple(np.asarray(column, float) for column in columns)
 
-def _parse_wavefile(text: str) -> np.ndarray:
-    return _columns(text, 1)[0]
-
-def _parse_rorig_txt(text: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    return _columns(text, 3)
-
-def _parse_resam_txt(text: str) -> Tuple[np.ndarray, np.ndarray]:
-    return _columns(text, 2)
-
 def _detect_inline_wave(text: str) -> bool:
     """True if the file's first column holds wavelengths, judged on its first 51 data rows.
 
@@ -191,12 +176,10 @@ def _detect_inline_wave(text: str) -> bool:
         s = line.strip()
         if not s or s.startswith("#"):
             continue
-        parts = s.split()
-        nums = []
-        for p in parts:
-            try: nums.append(float(p))
-            except ValueError: nums = []; break
-        if not nums: continue
+        try:
+            nums = [float(p) for p in s.split()]
+        except ValueError:
+            continue
         if len(nums) < 2:
             return False
         wl.append(nums[0])
@@ -227,7 +210,7 @@ def _try_wave_urls(reskey: str, session: requests.Session) -> Tuple[np.ndarray, 
         if not txt:
             tried.append(f"{url}: not found")
             continue
-        w = _parse_wavefile(txt)
+        w = _columns(txt, 1)[0]
         if w.size > 10 and _is_monotonic_increasing(w):
             return (w, url)
         tried.append(f"{url}: not an increasing wavelength grid ({w.size} values)")
@@ -313,10 +296,10 @@ def _parse_any(text: str, inline: bool, wave: Optional[np.ndarray],
     3-column files carry their wavelengths. 2-column files are (wavelength, flux) when *inline*
     (the grid's first file carries its wavelengths), else (flux, continuum) on the grid *wave*.
     """
-    wl3, f3, c3 = _parse_rorig_txt(text)
+    wl3, f3, c3 = _columns(text, 3)
     if wl3.size:
         return wl3, f3, c3
-    fx, ct = _parse_resam_txt(text)
+    fx, ct = _columns(text, 2)
     if fx.size and not inline:
         if wave is not None:
             if fx.size != wave.size:
@@ -324,7 +307,7 @@ def _parse_any(text: str, inline: bool, wave: Optional[np.ndarray],
                     f"BOSZ {reskey} wavelength-grid length mismatch: "
                     f"wave={wave.size}, flux={fx.size}"
                 )
-            return wave, fx, ct  # _parse_resam_txt reads flux and continuum together
+            return wave, fx, ct
     # last-ditch: 2-col (wave, flux)
     wl_guess, fx_guess = [], []
     for line in text.splitlines():
@@ -346,12 +329,9 @@ def _write_lookup_table(model_dir: str, spectra: List[Tuple[str, Dict[str, str]]
 
     The parameters come from the original BOSZ name: the written name has '+' sanitized to '_', which HEAD_RE misses.
     """
-    out_csv = os.path.join(model_dir, "lookup_table.csv")
-    rows = []; keys = set(["file_name"])
-    for n, params in spectra:
-        pd = dict(params); pd["file_name"] = n
-        rows.append(pd); keys.update(pd.keys())
-    write_lookup_csv(rows, out_csv, columns=["file_name"] + sorted([k for k in keys if k != "file_name"]), comment=False)
+    rows = [{**params, "file_name": name} for name, params in spectra]
+    keys = sorted({key for row in rows for key in row} - {"file_name"})
+    write_lookup_csv(rows, os.path.join(model_dir, "lookup_table.csv"), columns=["file_name"] + keys, comment=False)
     print(f"[MAST] wrote lookup_table.csv with {len(rows)} rows")
 
 # ----------------- main class -----------------
@@ -403,9 +383,7 @@ class MASTSpectraGrabber:
         RuntimeError lists each failure.
         """
         reskey: str = info["reskey"]
-        metals: List[str] = info["metals"]
-
-        metals = _filter_metals_by_range(metals, meta_range)
+        metals = _filter_metals_by_range(info["metals"], meta_range)
         if not metals:
             print(f"[MAST] No BOSZ metallicities match meta_range={meta_range}")
             return 0
@@ -430,42 +408,36 @@ class MASTSpectraGrabber:
         try:
             first_text = _download_text_gz(first_url, session=self.session)
         except _SPECTRUM_ERRORS:
-            first_text = None  # handle_one fetches it again and reports the failure with the rest
+            first_text = None  # try_one fetches it again and reports the failure with the rest
         has_inline = _detect_inline_wave(first_text or "")
 
-        wave = None; wave_url = None
+        wave = wave_url = None
         if reskey != "rorig" and not has_inline:
             wave, wave_url = _try_wave_urls(reskey, self.session)
 
-        def handle_one(u: str, pre_text: Optional[str] = None) -> Optional[Tuple[str, Dict[str, str]]]:
-            """Write one spectrum; its file name and parameters, or None if wl_range leaves no points.
-
-            Raises one of _SPECTRUM_ERRORS if it cannot be fetched, named or read.
-            """
-            text = pre_text if pre_text is not None else _download_text_gz(u, session=self.session)
-            if not text:
-                raise ValueError("empty file")
-            base = os.path.basename(urllib.parse.urlparse(u).path)
-            params = _parse_params_from_name(base)
-            if not params:
-                raise ValueError("file name does not follow the BOSZ 2024 pattern")
-            oname = _sanitize_filename(base.replace(".txt.gz", ".txt"))
-            out_path = os.path.join(model_dir, oname)
-
-            wl, fx, ct = _parse_any(text, has_inline, wave, reskey)
-            if wl.size == 0:
-                raise ValueError("no spectrum could be read from the file")
-            wl, fx, ct = _apply_wl_range(wl, fx, ct, wl_range)
-            if wl.size == 0: return None
-            _write_spectrum_txt(out_path, wl, fx, ct, u, params, wave_url)
-            return oname, params
-
         def try_one(u: str, pre_text: Optional[str] = None
                     ) -> Tuple[Optional[Tuple[str, Dict[str, str]]], Optional[str]]:
+            """Write one spectrum: ((name, params), None), (None, None) if wl_range leaves no points, or (None, why)."""
             try:
-                return handle_one(u, pre_text), None
+                text = pre_text if pre_text is not None else _download_text_gz(u, session=self.session)
+                if not text:
+                    raise ValueError("empty file")
+                base = os.path.basename(urllib.parse.urlparse(u).path)
+                params = _parse_params_from_name(base)
+                if not params:
+                    raise ValueError("file name does not follow the BOSZ 2024 pattern")
+                oname = _sanitize_filename(base.replace(".txt.gz", ".txt"))
+
+                wl, fx, ct = _parse_any(text, has_inline, wave, reskey)
+                if wl.size == 0:
+                    raise ValueError("no spectrum could be read from the file")
+                wl, fx, ct = _apply_wl_range(wl, fx, ct, wl_range)
+                if wl.size == 0:
+                    return None, None
+                _write_spectrum_txt(os.path.join(model_dir, oname), wl, fx, ct, u, params, wave_url)
             except _SPECTRUM_ERRORS as e:
                 return None, f"{u}: {e}"
+            return (oname, params), None
 
         # write first (prefetched) then parallelize the rest
         results = [try_one(first_url, pre_text=first_text)]
