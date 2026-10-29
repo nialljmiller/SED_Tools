@@ -1,16 +1,8 @@
 #!/usr/bin/env python3
-# mast_spectra_grabber.py — robust BOSZ@MAST provider (BOSZ 2024 HLSP)
-"""
-MASTSpectraGrabber
-------------------
-- Does NOT rely on directory listings (which 404 for some branches).
-- Deterministically constructs and fetches the official BOSZ bulk download scripts
-  under /hlsps/.../download_scripts, extracts direct .txt/.txt.gz URLs, and filters
-  by chosen resolution (e.g., r10000 or rorig) and product suffix (_resam vs _noresam).
-- For resampled products (r500..r50000) it fetches the wavelength grid file
-  (bosz2024_wave_<res>.txt). For original resolution ('rorig') it reads wavelengths
-  from the files directly (3 columns).
-- Emits per-spectrum .txt files with a clear header and builds lookup_table.csv.
+"""MASTSpectraGrabber: the BOSZ 2024 grids (MAST HLSP), one per resolution (r500 to r50000, and rorig).
+
+Spectrum URLs come from the official bulk download scripts (directory listings 404 for some branches).
+Resampled grids take wavelengths from bosz2024_wave_<res>.txt; rorig files carry their own.
 """
 
 from __future__ import annotations
@@ -23,6 +15,7 @@ import re
 import string
 import urllib.parse
 import zlib
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger("sed_tools.mast_spectra_grabber")
@@ -30,7 +23,7 @@ logger = logging.getLogger("sed_tools.mast_spectra_grabber")
 import numpy as np
 import requests
 
-from ._lookup_io import write_lookup_csv
+from .lookup import write_lookup_csv
 
 # ----------------- constants -----------------
 DATA_BASE   = "https://archive.stsci.edu/hlsps/bosz/bosz2024"
@@ -150,10 +143,10 @@ def _parse_params_from_name(fname: str) -> Dict[str, str]:
         return {}
     d = m.groupdict()
     teff = int(d["teff"])
-    logg = float(("-" if d["gsgn"] == "-" else "+") + d["gval"])
-    mh   = float(("-" if d["metsgn"] == "-" else "+") + d["metval"])
-    am   = float(("-" if d["asgn"]   == "-" else "+") + d["aval"])
-    cm   = float(("-" if d["csgn"]   == "-" else "+") + d["cval"])
+    logg = float(d["gsgn"] + d["gval"])
+    mh   = float(d["metsgn"] + d["metval"])
+    am   = float(d["asgn"] + d["aval"])
+    cm   = float(d["csgn"] + d["cval"])
     res  = d["res"]; vt = int(d["vturb"])
     return {
         "teff": str(teff), "logg": f"{logg:.2f}",
@@ -161,51 +154,36 @@ def _parse_params_from_name(fname: str) -> Dict[str, str]:
         "vturb": str(vt), "res": res, "atmos": d["atmos"],
     }
 
-def _parse_wavefile(text: str) -> np.ndarray:
-    xs = []
+def _columns(text: str, n: int) -> Tuple[np.ndarray, ...]:
+    """The first n columns of the rows with at least n fields; a field that is not a number ends its row there."""
+    columns = [[] for _ in range(n)]
     for line in text.splitlines():
         s = line.strip()
         if not s or s.startswith("#"):
+            continue
+        parts = s.split()
+        if len(parts) < n:
             continue
         try:
-            xs.append(float(s.split()[0]))
+            for column, part in zip(columns, parts):
+                column.append(float(part))
         except ValueError:
-            pass  # a label line, not a wavelength
-    return np.asarray(xs, dtype=float)
+            continue
+    return tuple(np.asarray(column, float) for column in columns)
+
+def _parse_wavefile(text: str) -> np.ndarray:
+    return _columns(text, 1)[0]
 
 def _parse_rorig_txt(text: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    wl, fx, ct = [], [], []
-    for line in text.splitlines():
-        s = line.strip()
-        if not s or s.startswith("#"):
-            continue
-        parts = s.split()
-        if len(parts) >= 3:
-            try:
-                wl.append(float(parts[0])); fx.append(float(parts[1])); ct.append(float(parts[2]))
-            except ValueError:
-                continue
-    return np.asarray(wl, float), np.asarray(fx, float), np.asarray(ct, float)
+    return _columns(text, 3)
 
 def _parse_resam_txt(text: str) -> Tuple[np.ndarray, np.ndarray]:
-    fx, ct = [], []
-    for line in text.splitlines():
-        s = line.strip()
-        if not s or s.startswith("#"):
-            continue
-        parts = s.split()
-        if len(parts) >= 2:
-            try:
-                fx.append(float(parts[0])); ct.append(float(parts[1]))
-            except ValueError:
-                continue
-    return np.asarray(fx, float), np.asarray(ct, float)
+    return _columns(text, 2)
 
 def _detect_inline_wave(text: str) -> bool:
     """True if the file's first column holds wavelengths, judged on its first 51 data rows.
 
-    That is: the first column increases and either there are 3+ columns
-    or it rises by more than 10 %.  Only detection; no rows are kept.
+    It must increase, and either there are 3+ columns or it rises by more than 10 %.
     """
     wl = []
     has_third_column = False
@@ -233,10 +211,9 @@ def _detect_inline_wave(text: str) -> bool:
 def _try_wave_urls(reskey: str, session: requests.Session) -> Tuple[np.ndarray, str]:
     """The BOSZ wavelength grid for a resolution, as (wavelengths, url).
 
-    Raises RuntimeError saying what each candidate location gave if none
-    holds a usable grid.
+    RuntimeError, saying what each candidate location gave, if none holds a usable grid.
     """
-    # Official locations under /hlsps/
+    # The first is BOSZ's official location; the other four are unverified fallbacks
     candidates = [
         f"{DATA_BASE}/wavelength_grids/bosz2024_wave_{reskey}.txt",
         f"{DATA_BASE}/bosz2024_wave_{reskey}.txt",
@@ -258,13 +235,9 @@ def _try_wave_urls(reskey: str, session: requests.Session) -> Tuple[np.ndarray, 
 
 # ----------------- URL harvesting (no listings) -----------------
 def _gather_urls_from_scripts(reskey: str, metals: List[str], session: requests.Session) -> List[str]:
-    """
-    Build each official bulk script URL deterministically:
-      {SCRIPTS_DIR}/hlsp_bosz_bosz2024_sim_<reskey>_<metal>_v1_bulkdl.sh
-    Extract all direct .txt/.txt.gz URLs; filter by product (_resam vs _noresam).
+    """The spectrum URLs in the bulk scripts {SCRIPTS_DIR}/hlsp_bosz_bosz2024_sim_<reskey>_<metal>_v1_bulkdl.sh.
 
-    Raises RuntimeError if any script cannot be read (the grid would lack
-    that metallicity) or the scripts list no spectra.
+    RuntimeError if any script cannot be read (the grid would lack that metallicity) or they list no spectra.
     """
     urls = set()
     unread = []
@@ -337,9 +310,8 @@ def _parse_any(text: str, inline: bool, wave: Optional[np.ndarray],
                reskey: str) -> Tuple[np.ndarray, np.ndarray, Optional[np.ndarray]]:
     """Wavelength, flux and continuum from a BOSZ file; empty arrays if none can be read.
 
-    3-column files carry their wavelengths.  2-column files are (wavelength,
-    flux) when *inline* (the grid's first file carries its wavelengths),
-    otherwise (flux, continuum) on the wavelength grid *wave*.
+    3-column files carry their wavelengths. 2-column files are (wavelength, flux) when *inline*
+    (the grid's first file carries its wavelengths), else (flux, continuum) on the grid *wave*.
     """
     wl3, f3, c3 = _parse_rorig_txt(text)
     if wl3.size:
@@ -372,8 +344,7 @@ def _parse_any(text: str, inline: bool, wave: Optional[np.ndarray],
 def _write_lookup_table(model_dir: str, spectra: List[Tuple[str, Dict[str, str]]]) -> None:
     """Write lookup_table.csv from (file name, parameters) pairs.
 
-    The parameters come from the original BOSZ name: the written file name
-    has '+' sanitized to '_', which HEAD_RE does not match.
+    The parameters come from the original BOSZ name: the written name has '+' sanitized to '_', which HEAD_RE misses.
     """
     out_csv = os.path.join(model_dir, "lookup_table.csv")
     rows = []; keys = set(["file_name"])
@@ -390,7 +361,6 @@ class MASTSpectraGrabber:
         self.max_workers = max_workers
         self.session = session or requests.Session()
 
-    # API expected by SED_tools.py
     def discover_models(self) -> List[str]:
         print("Discovering spectral grids from MAST (BOSZ 2024)...")
         return [f"BOSZ-2024-{rk}" for rk in RES_KEYS]
@@ -432,8 +402,6 @@ class MASTSpectraGrabber:
         fails, the rest are still written, lookup_table.csv is not, and
         RuntimeError lists each failure.
         """
-        import concurrent.futures as cf
-
         reskey: str = info["reskey"]
         metals: List[str] = info["metals"]
 
@@ -445,7 +413,7 @@ class MASTSpectraGrabber:
         model_dir = os.path.join(self.base_dir, model_name)
         os.makedirs(model_dir, exist_ok=True)
 
-        # -------- harvest URLs from official scripts (no listings, no API) --------
+        # Spectrum URLs from the official scripts (no listings, no API)
         urls = _gather_urls_from_scripts(reskey, metals, self.session)
         urls = _filter_urls_by_params(urls, teff_range=teff_range, logg_range=logg_range)
         if not urls:
@@ -457,7 +425,7 @@ class MASTSpectraGrabber:
             return 0
         print(f"[MAST] harvest = download_scripts ({len(urls)} urls)")
 
-        # -------- detect inline wavelength; if not, fetch wave grid (resampled only) --------
+        # Wavelengths in the files, else the resolution's wave grid (resampled grids only)
         first_url = urls[0]
         try:
             first_text = _download_text_gz(first_url, session=self.session)
@@ -503,7 +471,7 @@ class MASTSpectraGrabber:
         results = [try_one(first_url, pre_text=first_text)]
         rest = urls[1:]
         if rest:
-            with cf.ThreadPoolExecutor(max_workers=self.max_workers) as ex:
+            with ThreadPoolExecutor(max_workers=self.max_workers) as ex:
                 results.extend(ex.map(try_one, rest))
         spectra = [spectrum for spectrum, _ in results if spectrum]
         failures = [error for _, error in results if error]

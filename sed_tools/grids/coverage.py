@@ -1,16 +1,7 @@
-"""
-sed_tools/grid_coverage.py
+"""Parameter-space coverage of a local grid: grid_coverage(name_or_dir, base_dir=..., plot=..., out_path=...).
 
-Parameter-space coverage for any local grid — downloaded or hand-built.
-
-Reads lookup_table.csv directly (so it works on grids that have not yet had a
-flux cube built), falling back to header_parser.parse_header over the .txt
-spectra when no lookup table is present. Reports per-axis ranges, the unique
-grid values and their spacing, node count vs. the full Teff x logg x [M/H]
-product (fill fraction), and an Anderson-Darling normality statistic per axis.
-Optionally writes a Teff-logg + 3D Teff/logg/[M/H] coverage plot.
-
-Public entry point: grid_coverage(name_or_dir, base_dir=..., plot=..., out_path=...).
+It reads lookup_table.csv (no flux cube needed), else the .txt headers, and reports each axis's range, values,
+spacing and Anderson-Darling normality, and how much of the Teff x logg x [M/H] product exists; plots optional.
 """
 
 from __future__ import annotations
@@ -34,9 +25,7 @@ _PATH_COLUMNS = (
 )
 
 
-# ---------------------------------------------------------------------------
-# Node table
-# ---------------------------------------------------------------------------
+# ---- Node table ----
 
 def _resolve_dir(name_or_dir: Union[str, Path], base_dir: Optional[Path]) -> Path:
     """Resolve a grid identifier to a model directory."""
@@ -70,18 +59,10 @@ def read_grid_nodes(model_dir: Union[str, Path]) -> pd.DataFrame:
         # Normalise column names (handles the '#'-prefixed header and case).
         df.columns = [c.lstrip("#").strip().lower() for c in df.columns]
 
-        teff_col = next((c for c in df.columns if "teff" in c), None)
-        logg_col = next((c for c in df.columns if "logg" in c or "log(g)" in c), None)
-        meta_col = next(
-            (c for c in df.columns if "meta" in c or "feh" in c or "m/h" in c), None
-        )
-
         out = pd.DataFrame(index=df.index)
-        out["teff"] = pd.to_numeric(df[teff_col], errors="coerce") if teff_col else np.nan
-        out["logg"] = pd.to_numeric(df[logg_col], errors="coerce") if logg_col else np.nan
-        out["metallicity"] = (
-            pd.to_numeric(df[meta_col], errors="coerce") if meta_col else np.nan
-        )
+        for axis, parts in zip(_AXES, (("teff",), ("logg", "log(g)"), ("meta", "feh", "m/h"))):
+            col = next((c for c in df.columns if any(part in c for part in parts)), None)
+            out[axis] = pd.to_numeric(df[col], errors="coerce") if col else np.nan
         path_col = next((c for c in _PATH_COLUMNS if c in df.columns), None)
         if path_col:
             filenames = df[path_col].where(df[path_col].notna(), "").astype(str)
@@ -103,26 +84,18 @@ def read_grid_nodes(model_dir: Union[str, Path]) -> pd.DataFrame:
     rows = []
     for f in txts:
         h = parse_header(str(f))
-        rows.append(
-            {
-                "teff": float(h.get("teff", float("nan"))),
-                "logg": float(h.get("logg", float("nan"))),
-                "metallicity": float(h.get("metallicity", float("nan"))),
-                "filename": f.name,
-                "path": str(f.resolve()),
-            }
-        )
+        row = {axis: float(h.get(axis, float("nan"))) for axis in _AXES}
+        rows.append({**row, "filename": f.name, "path": str(f.resolve())})
     return pd.DataFrame(rows, columns=list(_AXES) + ["filename", "path"])
 
 
-# ---------------------------------------------------------------------------
-# Stats
-# ---------------------------------------------------------------------------
+# ---- Stats ----
 
 def _anderson_darling(x: np.ndarray) -> Optional[Dict[str, float]]:
-    """Anderson-Darling test for normality. None if too few distinct values
-    or scipy is unavailable. Works across scipy versions (old critical-value
-    API and the newer p-value API)."""
+    """Anderson-Darling normality test; None with fewer than 8 distinct values or without scipy.
+
+    Works with both scipy APIs: critical values (older) or a p-value only (newer).
+    """
     import warnings
 
     x = np.asarray(x, dtype=float)
@@ -162,12 +135,12 @@ def coverage_summary(model_dir: Union[str, Path]) -> Dict:
     n_rows = len(df)
 
     axes: Dict[str, Dict] = {}
-    n_unique = {}
+    product = 1
     for ax in _AXES:
         col = df[ax].to_numpy(dtype=float)
         finite = col[np.isfinite(col)]
         uniq = np.unique(finite)
-        n_unique[ax] = int(uniq.size)
+        product *= max(int(uniq.size), 1)
         spacing = np.diff(uniq) if uniq.size > 1 else np.array([])
         axes[ax] = {
             "min": float(uniq.min()) if uniq.size else float("nan"),
@@ -181,9 +154,6 @@ def coverage_summary(model_dir: Union[str, Path]) -> Dict:
             "anderson_darling": _anderson_darling(finite),
         }
 
-    product = 1
-    for ax in _AXES:
-        product *= max(n_unique[ax], 1)
     complete = df.dropna(subset=list(_AXES))
     n_distinct_nodes = int(complete.drop_duplicates(subset=list(_AXES)).shape[0])
     fill = n_distinct_nodes / product
@@ -260,9 +230,7 @@ def print_coverage(summary: Dict) -> None:
             print("    A-D     : skipped (needs scipy, which is not installed)")
 
 
-# ---------------------------------------------------------------------------
-# Terminal coverage plots
-# ---------------------------------------------------------------------------
+# ---- Terminal coverage plots ----
 
 def _representative_nodes(df: pd.DataFrame) -> List[Dict]:
     """Select deterministic corners plus center in normalized parameter space."""
@@ -454,9 +422,7 @@ def _print_representative_seds(selected: List[Dict], plot_width: int, color: str
         print(f"  skipped {note}")
 
 
-# ---------------------------------------------------------------------------
-# Plot
-# ---------------------------------------------------------------------------
+# ---- Plot ----
 
 def plot_coverage(
     df: pd.DataFrame, name: str, out_path: Union[str, Path]
@@ -517,9 +483,7 @@ def plot_coverage(
     return out_path
 
 
-# ---------------------------------------------------------------------------
-# Public entry point
-# ---------------------------------------------------------------------------
+# ---- Public entry point ----
 
 def grid_coverage(
     name_or_dir: Union[str, Path],

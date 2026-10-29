@@ -1,18 +1,93 @@
+"""lookup_table.csv: finding its columns, writing it, and rebuilding it from spectrum headers.
+
+The old import paths sed_tools._lookup_io and sed_tools.svo_regen_spectra_lookup forward here.
+"""
+
 import csv
+import logging
 import math
 import os
-from typing import Iterable, List, Optional
+from typing import Dict, Iterable, List, Optional, Union
+
 from .header_parser import parse_header
 
+logger = logging.getLogger("sed_tools._lookup_io")
+
+
+# The column names find_*_column try, most preferred first
+_TEFF_CANDIDATES  = ["teff", "t_eff", "t eff", "temperature", "temp"]
+_LOGG_CANDIDATES  = ["logg", "log_g", "log(g)", "log g", "surface_gravity", "gravity"]
+_META_CANDIDATES  = ["metallicity", "meta", "feh", "[fe/h]", "[m/h]", "m/h", "m_h", "mh",
+                     "z", "zh", "zmet", "z/z0", "z/zsun"]
+_FILE_CANDIDATES  = ["file_name", "filename", "file"]
+
+# The column finders and the writer have string annotations, so their signatures read as
+# sed_tools._lookup_io's always have; regenerate_lookup_table's stay evaluated (no future import).
+
+
+def find_column(keys: "Iterable[str]", candidates: "List[str]") -> "Optional[str]":
+    """The key in *keys* (column names, dict keys, ...) that matches the earliest of *candidates*.
+
+    Matching ignores case; the key is returned as *keys* spells it, or None if none matches.
+    """
+    lc_map = {k.lower(): k for k in keys}
+    for c in candidates:
+        if c.lower() in lc_map:
+            return lc_map[c.lower()]
+    return None
+
+
+def find_teff_column(keys: "Iterable[str]") -> "Optional[str]":
+    return find_column(keys, _TEFF_CANDIDATES)
+
+def find_logg_column(keys: "Iterable[str]") -> "Optional[str]":
+    return find_column(keys, _LOGG_CANDIDATES)
+
+def find_metallicity_column(keys: "Iterable[str]") -> "Optional[str]":
+    return find_column(keys, _META_CANDIDATES)
+
+def find_file_column(keys: "Iterable[str]") -> "Optional[str]":
+    return find_column(keys, _FILE_CANDIDATES)
+
+
+def write_lookup_csv(
+    records: "Union[Dict[str, List], List[Dict]]",
+    path: "str",
+    *,
+    columns: "Optional[List[str]]" = None,
+    comment: "bool" = True,
+    restval="",
+) -> "int":
+    """Write a lookup table to *path* and return the number of data rows written.
+
+    *records* is a column-major dict ``{column: [value, ...]}`` or a list of row dicts.
+    The header row is '#'-prefixed, or a plain csv header with ``comment=False``.
+    *columns* gives the column order (default: the records' own), and *restval*
+    is what a row without a column's key gets in that column.
+    """
+    if isinstance(records, dict):
+        cols = columns or list(records.keys())
+        n = len(records[cols[0]]) if cols else 0
+        rows = [{c: records[c][i] for c in cols} for i in range(n)]
+    else:
+        rows = list(records)
+        cols = columns or (list(rows[0].keys()) if rows else [])
+        n = len(rows)
+
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=cols, restval=restval, extrasaction="ignore")
+        if comment:
+            f.write("#" + ",".join(cols) + "\n")
+        else:
+            writer.writeheader()
+        writer.writerows(rows)
+
+    logger.debug("Wrote lookup table: %s (%d rows)", path, n)
+    return n
 
 
 def scan_existing_files(base_dir):
-    """
-    Scan the directory structure to find existing models and spectra files.
-
-    Returns:
-        dict: A mapping of model names to their respective spectra files.
-    """
+    """Map each folder name under base_dir to the paths of the .txt spectra in it."""
     existing_files = {}
     for root, _, files in os.walk(base_dir):
         for file in files:
@@ -26,7 +101,6 @@ def scan_existing_files(base_dir):
 
 def _discover_txt_files(directory: str) -> List[str]:
     """Return a sorted list of .txt spectra inside *directory*."""
-
     return sorted(
         [
             os.path.join(directory, fname)
@@ -43,8 +117,7 @@ _PARAMETERS = ("teff", "logg", "metallicity")
 def _drop_unstated_parameter(rows, param, output_dir):
     """Remove *param* from every row if no spectrum states it; ValueError if only some do.
 
-    A column of NaN would make the flux-cube builder fail, while a grid with
-    no column for an axis (e.g. a blackbody grid) is built with one node.
+    A NaN column would make the flux-cube builder fail; a grid with no column for an axis is built with one node.
     """
     unstated = [row["file_name"] for row in rows if math.isnan(row[param])]
     if not unstated:
@@ -111,15 +184,13 @@ def regenerate_lookup_table(
         writer.writerows(metadata_rows)
     print(f"Lookup table regenerated: {lookup_table_path}")
 
+
 def main():
+    """Rewrite lookup_table.csv in every grid folder under STELLAR_DIR_DEFAULT."""
     from ..cube.model import STELLAR_DIR_DEFAULT
     base_dir = str(STELLAR_DIR_DEFAULT)
     os.makedirs(base_dir, exist_ok=True)
-
-    # Scan for existing models and files
     existing_files = scan_existing_files(base_dir)
-
-    # Regenerate lookup tables for each model
     for model, files in existing_files.items():
         print(f"Processing spectral grid: {model}")
         output_dir = os.path.join(base_dir, model)
