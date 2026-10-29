@@ -218,7 +218,6 @@ class MSGSpectraGrabber:
                 axes.append(np.array(ax["x"][()], dtype=float).ravel())
             i+=1
         shape = tuple(len(a) for a in axes)
-        # v_lin_seq
         vlin = None
         if "vgrid/v_lin_seq" in f and isinstance(f["vgrid/v_lin_seq"], h5py.Dataset):
             vlin = np.array(f["vgrid/v_lin_seq"][()], dtype=int).ravel()
@@ -228,9 +227,7 @@ class MSGSpectraGrabber:
                 vmax = int(vlin.max())
                 if vmax == prod:
                     vlin = vlin - 1
-                # clamp
                 vlin = np.clip(vlin, 0, max(prod-1, 0))
-        # role mapping
         roles = _role_override_for_model(model_name)
         if not roles:
             roles = _guess_roles_from_axes(axes)
@@ -274,7 +271,6 @@ class MSGSpectraGrabber:
 
         spectra=[]
         with f:
-            # specsource root
             spec_root=None
             for k in f.keys():
                 if k.startswith("specsource"):
@@ -286,7 +282,6 @@ class MSGSpectraGrabber:
             names=[k for k in src.keys() if k.startswith("specints[")]
             names.sort(key=_bracket_number)
 
-            # load axes and mapping
             axinfo = self._load_axes_and_vlin(f, model_name)
             self.model_axes[model_name] = axinfo
 
@@ -364,8 +359,8 @@ class MSGSpectraGrabber:
             if fx.ndim == 2 and fx.shape[1] == 1:
                 fx = fx[:, 0]
 
-            # Case 2: dataset is (N, 2) and looks like [wl, flux] pairs
-            # Use it directly rather than guessing wavelengths elsewhere.
+            # Case 2: (N, 2) [wl, flux] pairs, when the first column rises: the flux is the second
+            # column. The wavelengths are still recovered below, so wl_from_fx goes unused.
             elif fx.ndim == 2 and fx.shape[1] == 2:
                 wl_from_fx = fx[:, 0].astype(float)
                 fl_from_fx = fx[:, 1].astype(float)
@@ -455,12 +450,10 @@ class MSGSpectraGrabber:
         except (KeyError, RuntimeError, OSError, ValueError) as e:
             return ("failed", fname, str(e))
 
-        # Apply parameter range filters
         if not (_in_range(teff, ranges["teff"]) and _in_range(logg, ranges["logg"])
                 and _in_range(meta, ranges["meta"])):
             return ("excluded", fname, None)
 
-        # Apply wavelength range trim
         if ranges["wl"] is not None:
             wl_lo, wl_hi = ranges["wl"]
             mask = (wl >= wl_lo) & (wl <= wl_hi)
