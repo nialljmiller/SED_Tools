@@ -22,6 +22,13 @@ from .lookup import write_lookup_csv
 
 _SEG_IDX = re.compile(r"\[(\d+)\]")
 
+
+def _bracket_number(name):
+    """The number in a name's first '[n]' (as in 'specints[12]'), or 0; for sorting groups numerically."""
+    m = _SEG_IDX.search(name)
+    return int(m.group(1)) if m else 0
+
+
 # Known axis-role overrides per model (0-based axis indices in vgrid/axes[i]/x)
 AXIS_ROLE_OVERRIDES = {
     # C3K grids: axes[1]=Teff, axes[2]=[M/H], axes[3]=alpha, axes[4]=logg
@@ -55,9 +62,7 @@ def _recover_wavelengths(f, spec_g, expected_len=None):
         # 3) concatenated segments
         seg_root = rg.get("ranges", rg)
         seg_names = [k for k in seg_root.keys() if k.startswith("ranges")]
-        def seg_key(name):
-            m = _SEG_IDX.search(name); return int(m.group(1)) if m else 0
-        seg_names.sort(key=seg_key)
+        seg_names.sort(key=_bracket_number)
         segs=[]
         def num(grp, keys):
             """First of *keys* (attribute, then dataset) that holds a number, else None."""
@@ -279,9 +284,7 @@ class MSGSpectraGrabber:
 
             src=f[spec_root]
             names=[k for k in src.keys() if k.startswith("specints[")]
-            def keynum(s):
-                m=_SEG_IDX.search(s); return int(m.group(1)) if m else 0
-            names.sort(key=keynum)
+            names.sort(key=_bracket_number)
 
             # load axes and mapping
             axinfo = self._load_axes_and_vlin(f, model_name)

@@ -306,13 +306,9 @@ class NJMSpectraGrabber:
                 continue
             
             params = {}
-            if teff_col:
-                params['teff'] = _float_or_nan(row[teff_col])
-            if logg_col:
-                params['logg'] = _float_or_nan(row[logg_col])
-            if meta_col:
-                params['meta'] = _float_or_nan(row[meta_col])
-            
+            for key, col in (('teff', teff_col), ('logg', logg_col), ('meta', meta_col)):
+                if col:
+                    params[key] = _float_or_nan(row[col])
             result[fname] = params
         
         if not result:

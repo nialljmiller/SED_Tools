@@ -19,33 +19,14 @@ import numpy as np
 
 from .._constants import C, SIGMA, planck_flam  # noqa: F401 - C is importable from here since 0.5.0
 from .lookup import write_lookup_csv
-from .hdf5_wavelengths import (  # noqa: F401 - the cleaner's whole surface stays importable from here
-    WAVE_KEYS,
-    is_index_grid,
-    recover_wavelengths_from_hdf5,
-)
+# The cleaner's whole surface stays importable from here (sed_tools.spectra_cleaner)
+from .hdf5_wavelengths import WAVE_KEYS, is_index_grid, recover_wavelengths_from_hdf5  # noqa: F401
 from .spectrum_io import read_text_spectrum  # noqa: F401
-from .units import (  # noqa: F401
-    FLUX_GUESS_WHY,
-    FLUX_UNITS,
-    SPEED_OF_LIGHT_ANGSTROM,
-    WAVELENGTH_FACTORS,
-    SpectrumMeta,
-    UnitInfo,
-    _check_flux_unit_name,
-    _load_header,
-    _with_flux_unit,
-    check_flux_unit,
-    convert_to_standard_units,
-    detect_catalog_units,
-    detect_flux_unit_from_range,
-    detect_units_from_header,
-    detect_units_single_file,
-    detect_wavelength_unit_from_range,
-    read_spectrum_data,
-    undeclared_flux_unit,
-    validate_converted_spectrum,
-)
+from .units import (FLUX_GUESS_WHY, FLUX_UNITS, SPEED_OF_LIGHT_ANGSTROM, WAVELENGTH_FACTORS,  # noqa: F401
+                    SpectrumMeta, UnitInfo, _check_flux_unit_name, _load_header, _with_flux_unit, check_flux_unit,
+                    convert_to_standard_units, detect_catalog_units, detect_flux_unit_from_range,
+                    detect_units_from_header, detect_units_single_file, detect_wavelength_unit_from_range,
+                    read_spectrum_data, undeclared_flux_unit, validate_converted_spectrum)
 
 logger = logging.getLogger("sed_tools.spectra_cleaner")
 
