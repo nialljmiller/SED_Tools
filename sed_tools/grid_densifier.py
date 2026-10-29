@@ -279,15 +279,13 @@ def run_interactive_workflow(base_dir: str = None) -> Optional[int]:
     """Choose a cube, spacing, ML model and output, then densify; 1 when a model is given without torch."""
     import glob
 
-    from .ui_utils import ask_number as _ask_number, refused_without
+    from .ui_utils import ask_number as _ask_number, banner, refused_without
 
     if base_dir is None:
         from .models import STELLAR_DIR_DEFAULT
         base_dir = str(STELLAR_DIR_DEFAULT)
 
-    print("\n" + "=" * 60)
-    print("GRID DENSIFIER")
-    print("=" * 60)
+    banner("GRID DENSIFIER")
 
     cubes = sorted(glob.glob(os.path.join(base_dir, "*", "flux_cube.bin")))
     if not cubes:

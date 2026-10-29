@@ -46,7 +46,8 @@ logger = logging.getLogger(__name__)
 import numpy as np
 
 from ._constants import H as PLANCK_H, C as SPEED_C, K as BOLTZMANN_K, SIGMA
-from .ui_utils import ask_number as _ask_number, refused_without
+from .ui_utils import (ask_number as _ask_number, banner as _banner, menu_choice as _menu_choice, refused_without,
+                       section as _section)
 
 # Default wavelength grid parameters
 DEFAULT_WL_MIN = 100.0      # Angstroms
@@ -1196,9 +1197,7 @@ def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> Optio
     os.makedirs(base_dir, exist_ok=True)
     os.makedirs(models_dir, exist_ok=True)
     
-    print("\n" + "=" * 60)
-    print("ML SED COMPLETER (PyTorch)")
-    print("=" * 60)
+    _banner("ML SED COMPLETER (PyTorch)")
     print("\nExtend incomplete SEDs using trained neural networks")
     
     print("\nWhat would you like to do?")
@@ -1223,32 +1222,6 @@ def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> Optio
     else:
         print("Invalid choice")
     return None
-
-
-def _banner(title: str) -> None:
-    print("\n" + "=" * 60)
-    print(title)
-    print("=" * 60)
-
-
-def _section(title: str) -> None:
-    print("\n" + "-" * 60)
-    print(title)
-    print("-" * 60)
-
-
-def _menu_choice(items: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
-    """Read a 1-based menu number; print "Invalid selection" and return None for anything else."""
-    selection = input("> ").strip()
-    try:
-        idx = int(selection) - 1
-    except ValueError:
-        print("Invalid selection")
-        return None
-    if idx < 0 or idx >= len(items):
-        print("Invalid selection")
-        return None
-    return items[idx]
 
 
 def _confirmed(prompt: str) -> bool:

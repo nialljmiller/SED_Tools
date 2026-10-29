@@ -40,7 +40,8 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import numpy as np
 
 from .ml_sed_completer import _training_libraries, _warn_dropped
-from .ui_utils import ask_number as _ask_number, ask_numbers as _ask_numbers, refused_without
+from .ui_utils import (ask_number as _ask_number, ask_numbers as _ask_numbers, banner as _banner,
+                       menu_choice as _menu_choice, refused_without, section as _section)
 
 logger = logging.getLogger(__name__)
 
@@ -863,9 +864,7 @@ def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> Optio
     os.makedirs(base_dir, exist_ok=True)
     os.makedirs(models_dir, exist_ok=True)
     
-    print("\n" + "=" * 60)
-    print("ML SED GENERATOR (PyTorch)")
-    print("=" * 60)
+    _banner("ML SED GENERATOR (PyTorch)")
     print("\nGenerate complete SEDs from stellar parameters alone")
     print("Input: (Teff, logg, [M/H]) → Output: Full SED")
     
@@ -896,32 +895,6 @@ def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> Optio
     else:
         print("Invalid choice")
     return None
-
-
-def _section(title: str) -> None:
-    print("\n" + "-" * 60)
-    print(title)
-    print("-" * 60)
-
-
-def _banner(title: str) -> None:
-    print("\n" + "=" * 60)
-    print(title)
-    print("=" * 60)
-
-
-def _menu_choice(items: List[Dict[str, Any]], prompt: str) -> Optional[Dict[str, Any]]:
-    """Read a 1-based menu number; print "Invalid selection" and return None for anything else."""
-    selection = input(prompt).strip()
-    try:
-        idx = int(selection) - 1
-    except ValueError:
-        print("Invalid selection")
-        return None
-    if idx < 0 or idx >= len(items):
-        print("Invalid selection")
-        return None
-    return items[idx]
 
 
 def _choose_generator(models_dir: str, show_teff_range: bool) -> Optional[Dict[str, Any]]:

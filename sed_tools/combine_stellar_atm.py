@@ -711,9 +711,9 @@ def visualize_parameter_space(teff_grid, logg_grid, meta_grid, source_map,
 
 def _print_combination_summary(teff_grid, logg_grid, meta_grid, source_map, model_names):
     """Print the combined grid's extent and each source grid's share of its nodes."""
-    print("\n" + "=" * 60)
-    print("SUMMARY")
-    print("=" * 60)
+    from .ui_utils import banner
+
+    banner("SUMMARY")
     print(f"Grid: {len(teff_grid)} × {len(logg_grid)} × {len(meta_grid)} = "
           f"{len(teff_grid) * len(logg_grid) * len(meta_grid):,} points")
     print(f"Teff: {teff_grid.min():.0f} - {teff_grid.max():.0f} K")

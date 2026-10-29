@@ -12,6 +12,34 @@ from .parsing import parse_multi_selection
 from .terminal_plots import terminal_color_enabled, terminal_width
 
 
+def banner(title: str) -> None:
+    """``title`` between two rules of '=', after a blank line."""
+    print("\n" + "=" * 60)
+    print(title)
+    print("=" * 60)
+
+
+def section(title: str) -> None:
+    """``title`` between two rules of '-', after a blank line."""
+    print("\n" + "-" * 60)
+    print(title)
+    print("-" * 60)
+
+
+def menu_choice(items: Sequence, prompt: str = "> "):
+    """The item a 1-based number picks; prints "Invalid selection" and gives None for anything else."""
+    selection = input(prompt).strip()
+    try:
+        idx = int(selection) - 1
+    except ValueError:
+        print("Invalid selection")
+        return None
+    if idx < 0 or idx >= len(items):
+        print("Invalid selection")
+        return None
+    return items[idx]
+
+
 #: ``default`` of :func:`ask_number` when a blank answer is not allowed (None is a default).
 NO_DEFAULT = object()
 
