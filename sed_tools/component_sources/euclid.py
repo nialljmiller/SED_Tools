@@ -142,8 +142,7 @@ def _add_factors(inst_dir: Path, manifest: InstrumentManifest, band: str,
         add_component(inst_dir, role, wl, tr, band=band, name=band,
                       source=f"{url} ({described[role]}; ESA NISP-PHOTO-PASSBANDS V1.0, {DOI})",
                       manifest=manifest)
-    deviation = _published_deviation(inst_dir, band, wl, curves[FILTER] * curves[OPTICS] * curves[QE])
-    return negative, deviation
+    return negative, _published_deviation(inst_dir, band, wl, curves[FILTER] * curves[OPTICS] * curves[QE])
 
 
 def _notes(bands, written: Dict[str, int], clamped: Dict[str, int], deviations: Dict[str, float],

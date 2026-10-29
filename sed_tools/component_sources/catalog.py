@@ -135,13 +135,17 @@ def match_name(name: str, names: Iterable[str]) -> Optional[str]:
     return found[0] if len(found) == 1 else None
 
 
-def registered_name(facility: str, instrument: str) -> Optional[Tuple[str, str]]:
-    """The ``BUILDERS_FOR`` spelling of an instrument (``Gemini/GMOS-N`` -> ``Gemini/GMOS_N``), or None."""
-    pairs = list(BUILDERS_FOR)
+def _match_pair(pairs, facility: str, instrument: str) -> Tuple[Optional[str], Optional[str]]:
+    """(facility, instrument) as spelled in ``pairs``, each matched by :func:`match_name` (``"*"`` never matches)."""
     fac = match_name(facility, {f for f, _ in pairs})
     if fac is None:
-        return None
-    inst = match_name(instrument, [i for f, i in pairs if f == fac])
+        return None, None
+    return fac, match_name(instrument, [i for f, i in pairs if f == fac and i != "*"])
+
+
+def registered_name(facility: str, instrument: str) -> Optional[Tuple[str, str]]:
+    """The ``BUILDERS_FOR`` spelling of an instrument (``Gemini/GMOS-N`` -> ``Gemini/GMOS_N``), or None."""
+    fac, inst = _match_pair(BUILDERS_FOR, facility, instrument)
     return None if inst is None else (fac, inst)
 
 
@@ -156,12 +160,8 @@ def status_for(facility: str, instrument: str) -> Optional[Tuple[str, str]]:
 
     Names are matched as :func:`match_name` does.
     """
-    pairs = list(STATUS)
-    fac = match_name(facility, {f for f, _ in pairs})
-    if fac is None:
-        return None
-    inst = match_name(instrument, [i for f, i in pairs if f == fac and i != "*"])
-    return STATUS.get((fac, inst)) or STATUS.get((fac, "*"))
+    fac, inst = _match_pair(STATUS, facility, instrument)
+    return None if fac is None else STATUS.get((fac, inst)) or STATUS.get((fac, "*"))
 
 
 def component_availability(facility: str, instrument: str) -> Dict[str, object]:
