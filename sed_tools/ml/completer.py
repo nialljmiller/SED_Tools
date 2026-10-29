@@ -291,14 +291,9 @@ class SEDCompleter:
         print(f"  Sampling {n_samples} SEDs for training")
         
         self.wavelength_grid = self._create_wavelength_grid()
-        n_wl = len(self.wavelength_grid)
-        
-        # The network input is a fixed 40% of the grid. Training moves that
-        # window around; inference uses the central one stored here.
-        known_width = n_wl * 2 // 5
-        self._known_width = known_width
-        self._known_start = (n_wl - known_width) // 2
-        self._known_end = self._known_start + known_width
+        # Training moves the input window around; inference uses the central one
+        self._use_central_window()
+        known_width = self._known_width
         
         params_list, samples = sample_spectra(
             teff, logg, meta, flux_cube, n_samples,
@@ -319,6 +314,13 @@ class SEDCompleter:
         
         return X, y, params, masks
 
+    def _use_central_window(self) -> None:
+        """Make the network's input window the central 40% of the model grid."""
+        n_wl = len(self.wavelength_grid)
+        self._known_width = n_wl * 2 // 5
+        self._known_start = (n_wl - self._known_width) // 2
+        self._known_end = self._known_start + self._known_width
+    
     def _training_sample(
         self,
         flux: np.ndarray,
@@ -769,13 +771,9 @@ class SEDCompleter:
         self._known_end = regions.get('known_end')
         self._known_width = regions.get('known_width')
         
-        # If not stored, compute from wavelength grid (backwards compatibility)
+        # Configs written before the window was stored use the central one
         if self._known_start is None or self._known_end is None:
-            n_wl = len(self.wavelength_grid)
-            width = n_wl * 2 // 5  # 40% of grid
-            self._known_width = width
-            self._known_start = (n_wl - width) // 2
-            self._known_end = self._known_start + width
+            self._use_central_window()
         
         # Rebuild model architecture
         arch = self.config['architecture']
@@ -1329,12 +1327,9 @@ def extend_catalog(
     """
     extension_range = wavelength_range or (DEFAULT_WL_MIN, DEFAULT_WL_MAX)
 
-    # If caller passed a path, load it
     if isinstance(model, (str, Path)):
         model = load_model(str(model))
-
-    # If model provides extend_catalog (the preferred path), use it.
-    if hasattr(model, "extend_catalog") and callable(getattr(model, "extend_catalog")):
+    if callable(getattr(model, "extend_catalog", None)):
         return model.extend_catalog(
             input_dir=str(catalog_dir),
             output_dir=str(output_dir),

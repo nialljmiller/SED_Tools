@@ -559,18 +559,15 @@ class SEDGenerator:
         if self.model is None:
             raise RuntimeError("No model loaded")
         
-        # Check bounds
         if check_bounds:
             ranges = self.config.get('parameter_ranges', {})
-            if 'teff' in ranges:
-                if teff < ranges['teff'][0] or teff > ranges['teff'][1]:
-                    print(f"  Warning: Teff={teff:.0f} outside range [{ranges['teff'][0]:.0f}, {ranges['teff'][1]:.0f}]")
-            if 'logg' in ranges:
-                if logg < ranges['logg'][0] or logg > ranges['logg'][1]:
-                    print(f"  Warning: logg={logg:.2f} outside range [{ranges['logg'][0]:.2f}, {ranges['logg'][1]:.2f}]")
-            if 'meta' in ranges:
-                if meta < ranges['meta'][0] or meta > ranges['meta'][1]:
-                    print(f"  Warning: [M/H]={meta:.2f} outside range [{ranges['meta'][0]:.2f}, {ranges['meta'][1]:.2f}]")
+            for key, label, value, spec in (('teff', 'Teff', teff, '.0f'), ('logg', 'logg', logg, '.2f'),
+                                            ('meta', '[M/H]', meta, '.2f')):
+                if key not in ranges:
+                    continue
+                low, high = ranges[key][0], ranges[key][1]
+                if value < low or value > high:
+                    print(f"  Warning: {label}={value:{spec}} outside range [{low:{spec}}, {high:{spec}}]")
         
         self.model.eval()
         

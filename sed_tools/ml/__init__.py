@@ -356,12 +356,8 @@ class Completer:
         """
         from .completer import SEDCompleter
         
-        if model_path is not None:
-            self._completer = SEDCompleter(model_path)
-            self._model_path = model_path
-        else:
-            self._completer = SEDCompleter()
-            self._model_path = None
+        self._completer = SEDCompleter(model_path)
+        self._model_path = model_path
     
     @property
     def is_trained(self) -> bool:
