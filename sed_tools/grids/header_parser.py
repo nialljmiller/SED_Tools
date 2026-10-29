@@ -18,55 +18,17 @@ import math
 import re
 from typing import Dict
 
-# =============================================================================
-# ALIAS TABLE
-# All keys are lowercased before lookup.
-# Each entry maps one or more raw header key variants to a canonical name.
-# To support a new grid's naming convention, add its key(s) here.
-# =============================================================================
-
+# Header keys (lowercased) and the canonical name each is read as. To read a new
+# grid's naming convention, add its keys here.
 ALIASES: Dict[str, str] = {
-    # ---- effective temperature ----
-    "teff":                  "teff",
-    "t_eff":                 "teff",
-    "t eff":                 "teff",
-    "t-eff":                 "teff",
-    "effective_temperature": "teff",
-    "temperature":           "teff",
-    "temp":                  "teff",
-
-    # ---- surface gravity ----
-    "logg":                  "logg",
-    "log_g":                 "logg",
-    "log(g)":                "logg",
-    "log g":                 "logg",
-    "surface_gravity":       "logg",
-    "gravity":               "logg",
-
-    # ---- metallicity ----
-    "metallicity":           "metallicity",
-    "meta":                  "metallicity",
-    "feh":                   "metallicity",
-    "[fe/h]":                "metallicity",
-    "[m/h]":                 "metallicity",
-    "m/h":                   "metallicity",
-    "m_h":                   "metallicity",
-    "mh":                    "metallicity",
-    "z":                     "metallicity",   # TLUSTY OSTAR/BSTAR convention
-    "zh":                    "metallicity",
-    "zmet":                  "metallicity",
-    "z/z0":                  "metallicity",
-    "z/zsun":                "metallicity",
-
-    # ---- bookkeeping (passed through as-is under canonical name) ----
-    "source":                "source",
-    "spec_group":            "spec_group",
-    "units_standardized":    "units_standardized",
-    "wavelength_unit":       "wavelength_unit",
-    "flux_unit":             "flux_unit",
-    "original_wavelength_unit": "original_wavelength_unit",
-    "original_flux_unit":    "original_flux_unit",
-    "conversion_confidence": "conversion_confidence",
+    **dict.fromkeys(["teff", "t_eff", "t eff", "t-eff", "effective_temperature", "temperature", "temp"], "teff"),
+    **dict.fromkeys(["logg", "log_g", "log(g)", "log g", "surface_gravity", "gravity"], "logg"),
+    **dict.fromkeys(["metallicity", "meta", "feh", "[fe/h]", "[m/h]", "m/h", "m_h", "mh",
+                     "z",  # TLUSTY OSTAR/BSTAR convention
+                     "zh", "zmet", "z/z0", "z/zsun"], "metallicity"),
+    # bookkeeping keys, kept under their own name
+    **{key: key for key in ["source", "spec_group", "units_standardized", "wavelength_unit", "flux_unit",
+                            "original_wavelength_unit", "original_flux_unit", "conversion_confidence"]},
 }
 
 # Numeric regex — matches int or float including scientific notation
