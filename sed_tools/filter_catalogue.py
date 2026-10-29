@@ -22,7 +22,6 @@ from __future__ import annotations
 import json
 import logging
 import os
-import re
 import sys
 import threading
 import time
@@ -36,6 +35,7 @@ from urllib.parse import quote
 import pandas as pd
 from requests import RequestException
 
+from .component_sources.catalog import name_key as _key
 from .filter_metadata import normalize_detector_type, read_filter_header
 
 logger = logging.getLogger(__name__)
@@ -65,10 +65,6 @@ class CatalogueError(RuntimeError):
 def cache_root(filter_root: Union[str, Path]) -> Path:
     """Where NJM catalogue files are cached for a filter root (beside ``atmospheres/``)."""
     return Path(filter_root).parent / "cache" / "njm"
-
-
-def _key(name: str) -> str:
-    return re.sub(r"[^a-z0-9]", "", name.casefold())
 
 
 def parse_target(target: str) -> Tuple[str, str, Optional[str]]:

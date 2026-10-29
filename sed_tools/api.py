@@ -76,14 +76,11 @@ _CUTTING_SOURCES = ("njm", "msg")
 _SOURCE_ERRORS = (RequestException, OSError, ValueError, RuntimeError)
 
 
-#: What FilterLibrary.facilities() and instruments() list when NJM cannot be reached. NJM is
-#: optional: the other sources are listed instead, and the mirror client has already said so.
-_NJM_UNAVAILABLE = "NJM unavailable"
-
-
 def _listing_failures(errors: List[str]) -> List[str]:
     """The catalogue listing errors that leave a list incomplete (an unreachable NJM does not)."""
-    return [error for error in errors if error != _NJM_UNAVAILABLE]
+    from .filter_library import NJM_NOT_LISTED
+
+    return [error for error in errors if error != NJM_NOT_LISTED]
 
 
 def _directory_state(directory: Path) -> Dict[str, int]:

@@ -41,6 +41,8 @@ FETCH_ORDER = ("njm", "original", "local", "svo")
 ATMOSPHERE_CHECK_AGE = 24 * 3600
 #: Why NJM gave nothing while it is down (the NJM client announces each outage once per process).
 NJM_UNAVAILABLE = "the mirror is unavailable"
+#: What facilities() and instruments() list in "errors" when NJM is down; api leaves it out of the failures.
+NJM_NOT_LISTED = "NJM unavailable"
 _NJM_HAS_NO_COMPONENTS = "the mirror does not have them"
 _COMPONENTS_ONLY = "its builder makes only the separate components, not the published curves"
 
@@ -773,7 +775,7 @@ class FilterLibrary:
                 except RequestException as exc:
                     errors.append(f"NJM: {exc}")
             else:
-                errors.append("NJM unavailable")
+                errors.append(NJM_NOT_LISTED)
         return {"entries": _picker_entries(_merge(listings), self._bundled), "errors": errors}
 
     def instruments(self, facility, *, remote=True):
@@ -813,7 +815,7 @@ class FilterLibrary:
                     errors.append(f"NJM {facility}: {exc}")
                 listings.append(("njm", [(name, "") for name in live]))
             else:
-                errors.append("NJM unavailable")
+                errors.append(NJM_NOT_LISTED)
         known = self._njm_instruments(facility, live)
         claims = {name_key(claim.partition("/")[2]): njm for njm, meta in known.items()
                   for claim in meta["svo_instruments"] if name_key(claim.partition("/")[0]) == name_key(facility)}
