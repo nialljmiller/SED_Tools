@@ -108,6 +108,9 @@ SVO_FPS_URL_ENV = "SED_SVO_FPS_URL"
 # A down SVO host never completes the TCP handshake; fail on that within
 # seconds instead of waiting out the read timeout for every request.
 SVO_CONNECT_TIMEOUT = 10.0
+#: What to do instead, ending every "SVO cannot be asked" error.
+SVO_ALTERNATIVES = (f"Use the NJM mirror or the original-source builders (sed-tools filters-build-components) "
+                    f"instead, or set {SVO_FPS_URL_ENV} to another FPS endpoint.")
 
 
 def svo_fps_url() -> str:
@@ -126,9 +129,7 @@ def svo_get(session, url: str, *, read_timeout: float, connect_timeout: float = 
     except requests.ConnectionError as exc:  # includes ConnectTimeout, DNS and refused connections
         raise SVOUnreachableError(
             f"SVO Filter Profile Service unreachable: could not connect to {url} "
-            f"within {connect_timeout:g} s ({type(exc).__name__}). Use the NJM mirror or the "
-            f"original-source builders (sed-tools filters-build-components) instead, or set "
-            f"{SVO_FPS_URL_ENV} to another FPS endpoint."
+            f"within {connect_timeout:g} s ({type(exc).__name__}). {SVO_ALTERNATIVES}"
         ) from exc
 
 
