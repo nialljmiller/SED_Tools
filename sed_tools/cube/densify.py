@@ -191,8 +191,7 @@ def densify_grid(
         _write_dense_flux(f, flux_orig, _source_rows(teff_orig, teff_dense), teff_dense, teff_orig,
                           logg_grid, meta_grid, wavelengths, bb_scale, generator, dst)
 
-    size_mb = os.path.getsize(dst) / (1024**2)
-    print(f"  Written: {nt_new} × {nl} × {nm} × {nw}  ({size_mb:.1f} MiB)")
+    print(f"  Written: {nt_new} × {nl} × {nm} × {nw}  ({os.path.getsize(dst) / (1024**2):.1f} MiB)")
     print(f"{'='*60}\n")
 
 
