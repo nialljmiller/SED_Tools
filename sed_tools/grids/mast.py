@@ -30,7 +30,7 @@ logger = logging.getLogger("sed_tools.mast_spectra_grabber")
 import numpy as np
 import requests
 
-from ._lookup_io import write_lookup_csv
+from .lookup import write_lookup_csv
 
 # ----------------- constants -----------------
 DATA_BASE   = "https://archive.stsci.edu/hlsps/bosz/bosz2024"

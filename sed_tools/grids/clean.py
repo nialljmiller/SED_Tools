@@ -34,7 +34,7 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 
 from .._constants import C, SIGMA, planck_flam  # noqa: F401 - C is importable from here since 0.5.0
-from ._lookup_io import write_lookup_csv
+from .lookup import write_lookup_csv
 from .hdf5_wavelengths import (  # noqa: F401 - the cleaner's whole surface stays importable from here
     WAVE_KEYS,
     is_index_grid,

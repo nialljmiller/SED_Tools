@@ -14,7 +14,7 @@ from bs4 import BeautifulSoup
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-from ._lookup_io import write_lookup_csv
+from .lookup import write_lookup_csv
 from .header_parser import parse_header
 
 logger = logging.getLogger("sed_tools.svo_spectra_grabber")

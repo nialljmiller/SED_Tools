@@ -17,7 +17,7 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 from tqdm import tqdm
 
-from ._lookup_io import write_lookup_csv
+from .lookup import write_lookup_csv
 from .hdf5_wavelengths import _is_physical_wavelength_array as _is_physical_wavelength, _iter_datasets
 from .svo import DISCOVERY_TIMEOUT, discovery_failure, mount_discovery
 
