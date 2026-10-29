@@ -98,12 +98,8 @@ def _keys_match(a: str, b: str) -> bool:
 
 
 def _find_column(target: str, columns: List[str]) -> Optional[str]:
-    """Find the best-matching column name from a list, or None."""
-    norm_target = _normalise_key(target)
-    for col in columns:
-        if _normalise_key(col) == norm_target:
-            return col
-    return None
+    """The first of *columns* naming the same axis as *target*, or None."""
+    return next((col for col in columns if _keys_match(col, target)), None)
 
 
 # ---------------------------------------------------------------------------
@@ -145,15 +141,11 @@ def match_filter_value(
     float_vals = [v for v in available if _parse_float_safe(str(v)) is not None]
     str_vals   = [v for v in available if _parse_float_safe(str(v)) is None]
 
-    if spec_lower == "min":
+    if spec_lower in ("min", "max"):
+        pick = min if spec_lower == "min" else max
         if float_vals:
-            return min(float_vals, key=float), None
-        return min(str_vals, key=str), None
-
-    if spec_lower == "max":
-        if float_vals:
-            return max(float_vals, key=float), None
-        return max(str_vals, key=str), None
+            return pick(float_vals, key=float), None
+        return pick(str_vals, key=str), None
 
     # --- try numeric exact match ---
     spec_float = _parse_float_safe(spec_stripped)
@@ -259,8 +251,7 @@ def _parse_config_dict(data: Dict[str, Any], source: str) -> CollisionConfig:
         raw_filter = oc.get("filter", {})
         if not isinstance(raw_filter, dict):
             raise ValueError(f"[on_collision.filter] must be a table in {source}")
-        for k, v in raw_filter.items():
-            filter_specs[k] = str(v)
+        filter_specs = {k: str(v) for k, v in raw_filter.items()}
 
     return CollisionConfig(strategy=strategy, filter_specs=filter_specs, source=source)
 
@@ -294,27 +285,17 @@ def load_config(
     data: Dict[str, Any] = load_defaults_config()
     source = "packaged sed_tools.defaults"
 
-    # Global defaults
-    if root_dir is not None:
-        global_path = Path(root_dir) / _DEFAULTS_FILENAME
-        if global_path.exists():
+    for folder, filename in ((root_dir, _DEFAULTS_FILENAME), (model_dir, _MODEL_CFG_FILENAME)):
+        if folder is None:
+            continue
+        path = Path(folder) / filename
+        if path.exists():
             try:
-                data = merge_config(data, load_toml(global_path, strict=True))
-                source = str(global_path)
+                data = merge_config(data, load_toml(path, strict=True))
+                source = str(path)
             except Exception as e:
-                raise RuntimeError(f"Error reading {global_path}: {e}") from e
+                raise RuntimeError(f"Error reading {path}: {e}") from e
 
-    # Per-model override
-    if model_dir is not None:
-        model_path = Path(model_dir) / _MODEL_CFG_FILENAME
-        if model_path.exists():
-            try:
-                data = merge_config(data, load_toml(model_path, strict=True))
-                source = str(model_path)
-            except Exception as e:
-                raise RuntimeError(f"Error reading {model_path}: {e}") from e
-
-    # Python API dict override (highest priority)
     if override_dict is not None:
         data = merge_config(data, override_dict)
         source = "Python API dict"
@@ -384,8 +365,4 @@ def discover_extra_axes(lookup_columns: List[str]) -> List[str]:
     'conversion_confidence' etc. are correctly matched against MESA_AXES.
     """
     mesa_norms = {_normalise_key(k) for k in MESA_AXES}
-    extra = []
-    for col in lookup_columns:
-        if _normalise_key(col) not in mesa_norms:
-            extra.append(col)
-    return extra
+    return [col for col in lookup_columns if _normalise_key(col) not in mesa_norms]

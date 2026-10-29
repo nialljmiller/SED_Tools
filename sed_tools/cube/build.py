@@ -593,9 +593,7 @@ def precompute_flux_cube(
     usable    = int(available * 0.75)
     print(f"RAM: {available/1024**3:.1f} GiB available, using up to {usable/1024**3:.1f} GiB")
 
-    groups = {}
-    if extra_cols:
-        groups = _group_by_extra_axes(lookup, extra_cols, file_col, teff_vals, logg_vals, meta_vals)
+    groups = _group_by_extra_axes(lookup, extra_cols, file_col, teff_vals, logg_vals, meta_vals)
 
     # No extra axes, or every file shares the same extra-axis values: one cube.
     if len(groups) <= 1:

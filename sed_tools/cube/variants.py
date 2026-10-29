@@ -121,17 +121,6 @@ def _filter_lookup_by_files(
     return {col: [lookup[col][i] for i in indices] for col in lookup}
 
 
-def _write_variants_index(
-    parent_dir: str,
-    entries: List[Dict[str, Any]],
-    extra_cols: List[str],
-) -> None:
-    """Write variants_index.csv to the parent directory."""
-    path = os.path.join(parent_dir, "variants_index.csv")
-    write_lookup_csv(entries, path, columns=["variant_name"] + extra_cols + ["n_spectra", "path"])
-    print(f"Variants index: {path}")
-
-
 def _print_split_announcement(
     groups: Dict,
     extra_cols: List[str],
@@ -199,7 +188,7 @@ def _build_split_subgrids(
     file_col: str,
     wavelengths: np.ndarray,
     usable_ram: int,
-) -> List[str]:
+) -> None:
     """Build a MESA-ready subgrid directory for every extra-axis combination.
 
     For each variant:
@@ -211,9 +200,7 @@ def _build_split_subgrids(
     Then writes variants_index.csv in the parent directory and copies
     lookup_table.csv to lookup_table_full.csv as the authoritative full-grid record.
 
-    Returns the list of subgrid directory paths created.
     """
-    subdir_paths: List[str] = []
     index_entries: List[Dict[str, Any]] = []
 
     for key, g in sorted(groups.items()):
@@ -227,31 +214,16 @@ def _build_split_subgrids(
         write_lookup_csv(filtered, os.path.join(subdir, "lookup_table.csv"))
         _link_spectra(model_dir, subdir, g["file_names"])
 
-        # Build flux cube (reads txt files from model_dir = parent)
         cube_path = os.path.join(subdir, "flux_cube.bin")
-        teff_arr = np.array(g["teff"])
-        logg_arr = np.array(g["logg"])
-        meta_arr = np.array(g["meta"])
         build._warn_averaged_rows(lookup, g["rows"], zip(g["teff"], g["logg"], g["meta"]), cube_path)
-        build._populate_and_write(
-            model_dir, g["file_names"],
-            teff_arr, logg_arr, meta_arr,
-            wavelengths, cube_path, usable_ram,
-            label=name,
-        )
-        build._print_summary(cube_path, teff_arr, logg_arr, meta_arr)
+        _write_group_cube(model_dir, g, wavelengths, cube_path, usable_ram, label=name)
+        build._print_summary(cube_path, *_parameter_arrays(g))
+        index_entries.append({"variant_name": name, "n_spectra": len(g["file_names"]), "path": name,
+                              **g["extra_vals"]})
 
-        entry: Dict[str, Any] = {
-            "variant_name": name,
-            "n_spectra": len(g["file_names"]),
-            "path": name,
-        }
-        entry.update(g["extra_vals"])
-        index_entries.append(entry)
-        subdir_paths.append(subdir)
-
-    # Write parent-level inventory
-    _write_variants_index(model_dir, index_entries, extra_cols)
+    index_path = os.path.join(model_dir, "variants_index.csv")
+    write_lookup_csv(index_entries, index_path, columns=["variant_name"] + extra_cols + ["n_spectra", "path"])
+    print(f"Variants index: {index_path}")
 
     # Preserve the full-grid lookup under a permanent name
     src_lookup = os.path.join(model_dir, "lookup_table.csv")
@@ -260,7 +232,17 @@ def _build_split_subgrids(
         shutil.copy2(src_lookup, full_lookup)
         print("Full-grid lookup preserved: lookup_table_full.csv")
 
-    return subdir_paths
+
+def _parameter_arrays(group: Dict) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """The Teff, logg and [M/H] of a group's rows."""
+    return np.array(group["teff"]), np.array(group["logg"]), np.array(group["meta"])
+
+
+def _write_group_cube(model_dir: str, group: Dict, wavelengths: np.ndarray, cube_path: str, usable_ram: int,
+                      label: str = "") -> None:
+    """Write the flux cube of a group of lookup rows, from the spectra in model_dir."""
+    build._populate_and_write(model_dir, group["file_names"], *_parameter_arrays(group),
+                              wavelengths, cube_path, usable_ram, label=label)
 
 
 # ---------------------------------------------------------------------------
@@ -321,22 +303,13 @@ def _build_mean_cube(
         "This is physically unsafe.\n"
         "Consider strategy='split' (the default) to get per-variant MESA-ready subgrids."
     )
-    all_files: List[str] = []
-    all_teff: List[float] = []
-    all_logg: List[float] = []
-    all_meta: List[float] = []
+    every_row: Dict[str, List] = {"file_names": [], "teff": [], "logg": [], "meta": []}
     for g in groups.values():
-        all_files.extend(g["file_names"])
-        all_teff.extend(g["teff"])
-        all_logg.extend(g["logg"])
-        all_meta.extend(g["meta"])
+        for column, values in every_row.items():
+            values.extend(g[column])
 
     print(f"Building mean cube (no subgrids) → {output_file}")
-    build._populate_and_write(
-        model_dir, all_files,
-        np.array(all_teff), np.array(all_logg), np.array(all_meta),
-        wavelengths, output_file, usable_ram, label="mean",
-    )
+    _write_group_cube(model_dir, every_row, wavelengths, output_file, usable_ram, label="mean")
 
 
 def _build_filtered_cube(
@@ -359,17 +332,12 @@ def _build_filtered_cube(
 
     print(f"Filter: {resolved}")
 
-    matched_group = None
-    for key, g in groups.items():
-        key_dict = dict(key)
-        match = all(
-            col in key_dict
-            and str(key_dict[col]).strip().lower() == str(val).strip().lower()
-            for col, val in resolved.items()
-        )
-        if match:
-            matched_group = g
-            break
+    def selected(key: Tuple) -> bool:
+        values = dict(key)
+        return all(col in values and str(values[col]).strip().lower() == str(val).strip().lower()
+                   for col, val in resolved.items())
+
+    matched_group = next((g for key, g in groups.items() if selected(key)), None)
 
     if matched_group is None:
         available_variants = "\n".join(
@@ -383,12 +351,5 @@ def _build_filtered_cube(
     print(f"Matched variant: {matched_group['extra_vals']} "
           f"({len(matched_group['file_names'])} spectra)")
     build._warn_averaged_rows(lookup, matched_group["rows"],
-                        zip(matched_group["teff"], matched_group["logg"], matched_group["meta"]), output_file)
-    build._populate_and_write(
-        model_dir,
-        matched_group["file_names"],
-        np.array(matched_group["teff"]),
-        np.array(matched_group["logg"]),
-        np.array(matched_group["meta"]),
-        wavelengths, output_file, usable_ram,
-    )
+                              zip(matched_group["teff"], matched_group["logg"], matched_group["meta"]), output_file)
+    _write_group_cube(model_dir, matched_group, wavelengths, output_file, usable_ram)
