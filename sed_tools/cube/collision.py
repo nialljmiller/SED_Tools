@@ -1,11 +1,5 @@
-"""
-sed_tools/collision_config.py
-
-Loads and validates the on-collision configuration that controls how
-precompute_flux_cube.py behaves when multiple SED files map to the same
-(Teff, logg, [M/H]) node.
-
-Config file format  (TOML):
+"""The [on_collision] configuration: what precompute_flux_cube does when a grid's extra lookup columns
+(alpha, vturb, ...) vary, so that several spectra map to one (Teff, logg, [M/H]) node. The TOML format:
 
     [on_collision]
     strategy = "all-warn"   # split | all-warn | all | mean | filter  (all-warn, all = split)
@@ -16,14 +10,9 @@ Config file format  (TOML):
     f_sed = "2.0"
     composition = "h-rich"  # string: case-insensitive exact match
 
-Config resolution order (later wins):
-    1. The packaged sed_tools.defaults  (strategy = "all-warn")
-    2. <sed_tools_root>/sed_tools.defaults
-    3. <model_dir>/mesa_config.toml
-    4. The override_dict passed through the Python API
-
-The global file is also copied into each model directory when a cube is
-built so the exact configuration used is reproducible alongside the data.
+Later sources win: the packaged sed_tools.defaults (strategy = "all-warn"), <sed_tools_root>/sed_tools.defaults,
+<model_dir>/mesa_config.toml, then the Python API's override_dict. The global file is copied into the model
+directory when a cube is built, so the configuration used stays beside the data.
 """
 
 from __future__ import annotations
@@ -34,10 +23,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 from ..config import load_defaults_config, load_toml, merge_config
 
-# ---------------------------------------------------------------------------
-# MESA axes — everything else in the lookup table is a candidate extra axis
-# ---------------------------------------------------------------------------
-# Physical parameter axes MESA cares about
+# Lookup columns that are not extra axes: MESA's three parameters, then bookkeeping and provenance.
 _MESA_PARAM_AXES: Set[str] = {
     "teff", "Teff", "T_eff",
     "logg", "logG", "log g", "log_g", "log(g)", "LOGG",
@@ -45,7 +31,7 @@ _MESA_PARAM_AXES: Set[str] = {
     "z", "Z", "zh", "zmet",
 }
 
-# Bookkeeping columns written by spectra_cleaner / regenerate_lookup_table
+# Written by the spectra cleaner and regenerate_lookup_table, unless noted
 _BOOKKEEPING_AXES: Set[str] = {
     "file_name", "filename", "file",
     "source",
@@ -76,24 +62,13 @@ MESA_AXES: Set[str] = _MESA_PARAM_AXES | _BOOKKEEPING_AXES
 
 VALID_STRATEGIES = {"split", "all-warn", "all", "mean", "filter"}
 
-# ---------------------------------------------------------------------------
-# Fuzzy key normalisation
-# ---------------------------------------------------------------------------
-
 def _normalise_key(key: str) -> str:
-    """Lowercase, strip non-alphanumeric, collapse runs.
-
-    Examples:
-        '[alpha/Fe]' -> 'alphafe'
-        'f_sed'      -> 'fsed'
-        'Alpha'      -> 'alpha'
-        'v_turb'     -> 'vturb'
-    """
+    """Lowercase with every non-alphanumeric removed: '[alpha/Fe]' -> 'alphafe', 'v_turb' -> 'vturb'."""
     return re.sub(r"[^a-z0-9]+", "", key.strip().lower())
 
 
 def _keys_match(a: str, b: str) -> bool:
-    """Return True if two parameter key names refer to the same axis."""
+    """Whether two column names refer to the same axis."""
     return _normalise_key(a) == _normalise_key(b)
 
 
@@ -101,10 +76,6 @@ def _find_column(target: str, columns: List[str]) -> Optional[str]:
     """The first of *columns* naming the same axis as *target*, or None."""
     return next((col for col in columns if _keys_match(col, target)), None)
 
-
-# ---------------------------------------------------------------------------
-# Fuzzy value matching
-# ---------------------------------------------------------------------------
 
 def _parse_float_safe(s: str) -> Optional[float]:
     """``float(s)``, or None when *s* is a string value such as "h-rich"."""
@@ -119,17 +90,9 @@ def match_filter_value(
     available: List[Any],
     param_name: str,
 ) -> Tuple[Optional[Any], Optional[str]]:
-    """
-    Match a filter spec string against the set of available values for a
-    parameter.
+    """Match a filter spec ("min", "max" or a literal value) against a parameter's values in the lookup table.
 
-    spec: "min" | "max" | a literal value string
-    available: list of values present in the lookup table for this param
-    param_name: used only in error messages
-
-    Returns:
-        (matched_value, error_message)
-        One of the two will be None.
+    Returns ``(matched_value, None)`` or ``(None, error_message)``; param_name is used only in the messages.
     """
     if not available:
         return None, f"No values found for parameter '{param_name}'"
@@ -137,7 +100,6 @@ def match_filter_value(
     spec_stripped = spec.strip()
     spec_lower    = spec_stripped.lower()
 
-    # --- min / max shortcuts ---
     float_vals = [v for v in available if _parse_float_safe(str(v)) is not None]
     str_vals   = [v for v in available if _parse_float_safe(str(v)) is None]
 
@@ -147,14 +109,11 @@ def match_filter_value(
             return pick(float_vals, key=float), None
         return pick(str_vals, key=str), None
 
-    # --- try numeric exact match ---
     spec_float = _parse_float_safe(spec_stripped)
     if spec_float is not None and float_vals:
-        # Exact match within tight epsilon
         for v in float_vals:
             if abs(float(v) - spec_float) < 1e-9:
                 return v, None
-        # No exact match — report two nearest
         sorted_vals = sorted(float_vals, key=float)
         dists = [(abs(float(v) - spec_float), v) for v in sorted_vals]
         dists.sort()
@@ -165,22 +124,15 @@ def match_filter_value(
             f"Nearest: {' and '.join(nearest)}"
         )
 
-    # --- string exact match (case-insensitive, stripped) ---
-    spec_norm = spec_lower.strip()
     for v in available:
-        if str(v).strip().lower() == spec_norm:
+        if str(v).strip().lower() == spec_lower:
             return v, None
 
-    # No match
     return None, (
         f"No match for {param_name}='{spec_stripped}'. "
         f"Available values: {', '.join(str(v) for v in available)}"
     )
 
-
-# ---------------------------------------------------------------------------
-# Config dataclass
-# ---------------------------------------------------------------------------
 
 class CollisionConfig:
     """Resolved on-collision configuration for one model."""
@@ -208,20 +160,14 @@ class CollisionConfig:
         self,
         extra_columns: Dict[str, List[Any]],
     ) -> Tuple[Dict[str, Any], List[str]]:
-        """
-        Resolve filter_specs against the actual values present in the
-        lookup table.
+        """Resolve filter_specs against the values in the lookup table, given as {column_name: [unique values]}.
 
-        extra_columns: {column_name: [list of unique values]}
-
-        Returns:
-            (resolved: {col_name: matched_value}, errors: [str])
+        Returns ``(resolved, errors)``: {column_name: matched_value} and a list of messages.
         """
         resolved: Dict[str, Any] = {}
         errors:   List[str]      = []
 
         for spec_key, spec_val in self.filter_specs.items():
-            # Find which actual column this spec refers to
             matched_col = _find_column(spec_key, list(extra_columns.keys()))
             if matched_col is None:
                 errors.append(
@@ -256,10 +202,6 @@ def _parse_config_dict(data: Dict[str, Any], source: str) -> CollisionConfig:
     return CollisionConfig(strategy=strategy, filter_specs=filter_specs, source=source)
 
 
-# ---------------------------------------------------------------------------
-# Public API
-# ---------------------------------------------------------------------------
-
 _DEFAULTS_FILENAME  = "sed_tools.defaults"
 _MODEL_CFG_FILENAME = "mesa_config.toml"
 
@@ -269,18 +211,8 @@ def load_config(
     root_dir:      Optional[Path] = None,
     override_dict: Optional[Dict[str, Any]] = None,
 ) -> CollisionConfig:
-    """
-    Load the on-collision config with proper precedence:
-
-        built-in default
-            ↓ overridden by
-        <root_dir>/sed_tools.defaults
-            ↓ overridden by
-        <model_dir>/mesa_config.toml
-            ↓ overridden by
-        override_dict  (Python API)
-
-    Any of the optional arguments may be None.
+    """Load the on-collision config: the packaged default, overridden by <root_dir>/sed_tools.defaults, then by
+    <model_dir>/mesa_config.toml, then by override_dict (the Python API). Any argument may be None.
     """
     data: Dict[str, Any] = load_defaults_config()
     source = "packaged sed_tools.defaults"
@@ -304,10 +236,8 @@ def load_config(
 
 
 def copy_global_config_to_model(root_dir: Path, model_dir: Path) -> None:
-    """
-    Copy <root_dir>/sed_tools.defaults into <model_dir>/ so the exact
-    global config used to build the cube is preserved alongside the data.
-    Does nothing if the global file does not exist.
+    """Copy <root_dir>/sed_tools.defaults into model_dir, so the global config a cube was built with stays beside
+    it. Does nothing if the global file does not exist.
     """
     src = Path(root_dir) / _DEFAULTS_FILENAME
     if src.exists():
@@ -316,10 +246,7 @@ def copy_global_config_to_model(root_dir: Path, model_dir: Path) -> None:
 
 
 def write_default_config(root_dir: Path, overwrite: bool = False) -> Path:
-    """
-    Write a commented sed_tools.defaults file to root_dir if one does not
-    already exist (or if overwrite=True).  Returns the path.
-    """
+    """Write a commented sed_tools.defaults to root_dir, unless one exists and overwrite is False; returns its path."""
     path = Path(root_dir) / _DEFAULTS_FILENAME
     if path.exists() and not overwrite:
         return path
@@ -354,15 +281,7 @@ strategy = "split"
     return path
 
 
-# ---------------------------------------------------------------------------
-# Extra-axis discovery from lookup table
-# ---------------------------------------------------------------------------
-
 def discover_extra_axes(lookup_columns: List[str]) -> List[str]:
-    """
-    Return the subset of lookup table column names that are NOT MESA axes.
-    Uses fuzzy normalisation so variants like '[alpha/Fe]', 'alpha_fe',
-    'conversion_confidence' etc. are correctly matched against MESA_AXES.
-    """
+    """The lookup columns that are not MESA axes or bookkeeping (MESA_AXES), compared after _normalise_key."""
     mesa_norms = {_normalise_key(k) for k in MESA_AXES}
     return [col for col in lookup_columns if _normalise_key(col) not in mesa_norms]
