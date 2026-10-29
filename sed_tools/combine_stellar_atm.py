@@ -281,8 +281,7 @@ def compute_normalization_factors(target_data, reference_data, wavelength_grid):
     ref_teff = np.array(reference_data["teff"])[valid_mask]
 
     if len(ref_params) == 0:
-        logger.warning("Reference grid %s has no spectra with finite parameters; "
-                       "%s keeps its native flux scale.", ref_name, target_name)
+        # build_combined_flux_cube then stops, listing the reference grid's non-finite rows.
         return np.ones(len(target_data["files"]))
 
     # Normalize parameters for distance calculation
