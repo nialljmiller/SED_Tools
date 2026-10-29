@@ -764,10 +764,13 @@ def main():
     
     if args.list:
         print("\nAvailable facilities:")
-        for fac in grabber.discover_facilities():
+        facilities = grabber.discover_facilities()
+        for fac in facilities:
             print(f"\n  {fac}:")
-            for inst in grabber.discover_instruments(fac):
-                print(f"    - {inst} ({len(grabber.discover_filters(fac, inst))} filters)")
+            instruments = grabber.discover_instruments(fac)
+            for inst in instruments:
+                filters = grabber.discover_filters(fac, inst)
+                print(f"    - {inst} ({len(filters)} filters)")
         return 0
     
     if args.instrument and not args.facility:
