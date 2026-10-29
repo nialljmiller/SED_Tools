@@ -19,7 +19,8 @@ import numpy as np
 
 from .._constants import C, SIGMA, planck_flam  # noqa: F401 - C is importable from here since 0.5.0
 from .lookup import write_lookup_csv
-# The cleaner's whole surface stays importable from here (sed_tools.spectra_cleaner)
+
+# The rest of the cleaner's surface stays importable from here, the old path sed_tools.spectra_cleaner
 from .hdf5_wavelengths import WAVE_KEYS, is_index_grid, recover_wavelengths_from_hdf5  # noqa: F401
 from .spectrum_io import read_text_spectrum  # noqa: F401
 from .units import (FLUX_GUESS_WHY, FLUX_UNITS, SPEED_OF_LIGHT_ANGSTROM, WAVELENGTH_FACTORS,  # noqa: F401
