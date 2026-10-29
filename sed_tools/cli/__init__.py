@@ -39,7 +39,7 @@ from ..grids.pipeline import _build_data_products, _rebuild_command, build_h5_bu
 from ..grids.spectrum_io import build_h5_bundle, read_text_spectrum
 from ..grids.svo import SVOSpectraGrabber
 from ..terminal_plots import terminal_color_enabled, terminal_width
-from ..ui_utils import (OPTIONAL_EXTRAS, ask_number as _ask_number, missing_package_error, missing_packages,
+from ..ui_utils import (OPTIONAL_EXTRAS, _ansi, ask_number as _ask_number, missing_package_error, missing_packages,
                         parse_multi_selection, parse_numeric_range, prompt_choice, refused_without)
 from .filters import (
     _FilterSetOption, _UNSTATED, _ask_conditions, _atmosphere_sites, _availability_errors, _browse_instruments,
@@ -80,67 +80,41 @@ def run_config_flow() -> None:
     print("Restart sed-tools for the change to take effect.")
 
 
+#: The menu's sections, each a heading and its (command, label) entries, numbered from 1 in this order.
+_MENU = (
+    ("Filters", (("filters", "Download Filters (NJM / SVO)"),
+                 ("filters_combine", "Combine filter sets"),
+                 ("filter_info", "Filter set information"),
+                 ("filter_compose", "Build a filter curve from its parts (filter, optics, camera, atmosphere)"))),
+    ("Spectral grids", (("grids", "Download spectral grids (NJM / SVO / MSG / MAST)"),
+                        ("rebuild", "Rebuild (lookup + HDF5 + flux cube)"),
+                        ("combine", "Combine grids into omni grid"))),
+    ("ML", (("ml_completer", "ML SED Completer (train/extend incomplete SEDs)"),
+            ("ml_generator", "ML SED Generator (generate SEDs from parameters)"),
+            ("grid_densifier", "Grid Densifier (fill coarse Teff gaps)"))),
+    ("Tools", (("coverage", "Coverage (parameter-space summary + plot)"),
+               ("import", "Import a local spectral grid"),
+               ("mesa_prepare", "Prepare a spectral grid for MESA"),
+               ("config", "Config (data directory)"))),
+)
+
+
 def menu() -> str:
-    use_color = terminal_color_enabled("auto")
-    BOLD = "\x1b[1m" if use_color else ""
-    DIM = "\x1b[2m" if use_color else ""
-    CYAN = "\x1b[36m" if use_color else ""
-    YELL = "\x1b[33m" if use_color else ""
-    RED = "\x1b[31m" if use_color else ""
-    RESET = "\x1b[0m" if use_color else ""
-
+    BOLD, DIM, CYAN, YELL, RED, RESET = _ansi(terminal_color_enabled("auto"),
+                                              "bold", "dim", "cyan", "yellow", "red", "reset")
     print(BOLD + "=" * 50 + RESET)
-
-    print("\n" + YELL + "-- Filters " + "-" * 39 + RESET)
-    print(f"  {CYAN}1){RESET} Download Filters (NJM / SVO)")
-    print(f"  {CYAN}2){RESET} Combine filter sets")
-    print(f"  {CYAN}3){RESET} Filter set information")
-    print(f"  {CYAN}4){RESET} Build a filter curve from its parts (filter, optics, camera, atmosphere)")
-
-    print("\n" + YELL + "-- Spectral grids " + "-" * 32 + RESET)
-    print(f"  {CYAN}5){RESET} Download spectral grids (NJM / SVO / MSG / MAST)")
-    print(f"  {CYAN}6){RESET} Rebuild (lookup + HDF5 + flux cube)")
-    print(f"  {CYAN}7){RESET} Combine grids into omni grid")
-
-    print("\n" + YELL + "-- ML " + "-" * 44 + RESET)
-    print(f"  {CYAN}8){RESET} ML SED Completer (train/extend incomplete SEDs)")
-    print(f"  {CYAN}9){RESET} ML SED Generator (generate SEDs from parameters)")
-    print(f" {CYAN}10){RESET} Grid Densifier (fill coarse Teff gaps)")
-
-    print("\n" + YELL + "-- Tools " + "-" * 41 + RESET)
-    print(f" {CYAN}11){RESET} Coverage (parameter-space summary + plot)")
-    print(f" {CYAN}12){RESET} Import a local spectral grid")
-    print(f" {CYAN}13){RESET} Prepare a spectral grid for MESA")
-    print(f" {CYAN}14){RESET} Config (data directory)")
-
+    mapping = dict.fromkeys(("q", "Q", "quit", "QUIT", "Quit", "0"), "quit")
+    number = 0
+    for heading, entries in _MENU:
+        print("\n" + YELL + f"-- {heading} ".ljust(50, "-") + RESET)
+        for command, label in entries:
+            number += 1
+            mapping[str(number)] = command
+            print(" " * (3 - len(str(number))) + f"{CYAN}{number}){RESET} {label}")
     print("\n" + DIM + "-" * 50 + RESET)
     print(f"  {RED}0/q){RESET} Quit")
     print(BOLD + "=" * 50 + RESET)
-
-    choice = input("> ").strip()
-    mapping = {
-        "1": "filters",
-        "2": "filters_combine",
-        "3": "filter_info",
-        "4": "filter_compose",
-        "5": "grids",
-        "6": "rebuild",
-        "7": "combine",
-        "8": "ml_completer",
-        "9": "ml_generator",
-        "10": "grid_densifier",
-        "11": "coverage",
-        "12": "import",
-        "13": "mesa_prepare",
-        "14": "config",
-        "q": "quit",
-        "Q": "quit",
-        "quit": "quit",
-        "QUIT": "quit",
-        "Quit": "quit",
-        "0": "quit",
-    }
-    return mapping.get(choice, "")
+    return mapping.get(input("> ").strip(), "")
 
 # ------------ Command-line parser ------------
 
@@ -671,19 +645,17 @@ def _cmd_mesa_prepare(args, parser):
 
 def _cmd_config(args, parser):
     if args.set:
-        set_data_dir(args.set, move=args.move if args.move else None)
+        set_data_dir(args.set, move=args.move or None)
     else:
         show_config()
     return 0
 
 
 def _cmd_coverage(args, parser):
-    names = args.models
+    names = args.models or local_grids(args.base)
     if not names:
-        names = local_grids(args.base)
-        if not names:
-            print(f"No local grids found under {args.base}")
-            return 1
+        print(f"No local grids found under {args.base}")
+        return 1
     failed = []
     for nm in names:
         try:
@@ -701,10 +673,7 @@ def _cmd_coverage(args, parser):
 
 
 def _cmd_import(args, parser):
-    if args.dry_run:
-        flux_unit = None
-    else:
-        flux_unit = _ask_import_flux_unit(args.path, args.name, args.flux_unit)
+    flux_unit = None if args.dry_run else _ask_import_flux_unit(args.path, args.name, args.flux_unit)
     SED.import_grid(
         args.path,
         name=args.name,
@@ -746,24 +715,14 @@ _COMMANDS = {
 
 def _print_banner() -> None:
     use_color = terminal_color_enabled("auto")
-    BOLD = "\x1b[1m" if use_color else ""
-    RED = "\x1b[31m" if use_color else ""
-    BLUE = "\x1b[34m" if use_color else ""
-    GREEN = "\x1b[32m" if use_color else ""
-    RESET = "\x1b[0m" if use_color else ""
-
-    banner = (
-            "▄▖▄▖▄   ▄▖    ▜   ",
-            "▚ ▙▖▌▌  ▐ ▛▌▛▌▐ ▛▘",
-            "▄▌▙▖▙▘▄▖▐ ▙▌▙▌▐▖▄▌",
-                                  )
-
+    BOLD, RESET = _ansi(use_color, "bold", "reset")
+    banner = ("▄▖▄▖▄   ▄▖    ▜   ",
+              "▚ ▙▖▌▌  ▐ ▛▌▛▌▐ ▛▘",
+              "▄▌▙▖▙▘▄▖▐ ▙▌▙▌▐▖▄▌")
     print()
     print("\n" + BOLD + "=" * 50 + RESET)
-
-    banner_colors = [RED, GREEN, BLUE]
-    for i, line in enumerate(banner):
-        print(f"{BOLD}{banner_colors[i]}{line}{RESET}")
+    for line, color in zip(banner, _ansi(use_color, "red", "green", "blue")):
+        print(f"{BOLD}{color}{line}{RESET}")
 
 
 def _run_menu() -> int:
