@@ -255,27 +255,20 @@ def _ask_rebuild_selection(cand: List[str]) -> List[str]:
 
 
 def _ask_flux_unit(grid: str, txt_files: List[str], flux_unit: Optional[str] = None) -> Optional[str]:
-    """The flux unit to clean a grid with: None when its spectra declare theirs, else ``flux_unit`` or the user's choice.
+    """The flux unit to clean a grid with: ``flux_unit`` (from --flux-unit) if given, else the user's
+    choice when the spectra do not declare theirs and there is a terminal to ask on, else None.
 
-    ``flux_unit`` (from --flux-unit) is used only for spectra that do not
-    declare their unit; a grid that declares one keeps it, and a line says
-    so.  Without ``flux_unit`` the user must type a unit: Enter alone does
-    not accept the guess.  Answering 'n', or having no terminal to ask on,
-    raises ValueError: the grid is not cleaned.
+    Cleaning decides the rest: it uses the unit only for spectra that do not
+    declare theirs, and stops with ValueError, naming the best guess, when
+    they declare none and none was given.  The user must type a unit: Enter
+    alone does not accept the guess, and 'n' raises ValueError (the grid is
+    not cleaned).
     """
+    if flux_unit is not None or not sys.stdin.isatty():
+        return flux_unit
     guess = undeclared_flux_unit(txt_files)
     if guess is None:
-        if flux_unit is not None:
-            print(f"[{grid}] its spectra declare their flux unit; --flux-unit {flux_unit} is not used for it")
         return None
-    if flux_unit is not None:
-        print(f"[{grid}] flux unit not declared; using --flux-unit {flux_unit} (best guess was {guess})")
-        return flux_unit
-    if not sys.stdin.isatty():
-        raise ValueError(
-            f"Flux unit of {grid} is not declared; best guess: '{guess}', {FLUX_UNITS[guess][2]} "
-            f"({FLUX_GUESS_WHY}). Give it with --flux-unit {guess}, or another of: {', '.join(FLUX_UNITS)}. "
-            "Without --flux-unit, sed-tools asks for it when run in a terminal.")
     print(f"\nFlux unit of {grid} is not declared. Accepted flux units:")
     for name, (_, _, description) in FLUX_UNITS.items():
         print(f"  {name:11s} {description}")

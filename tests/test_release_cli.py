@@ -182,15 +182,6 @@ def test_rebuild_uses_the_flux_unit_option_without_asking(tmp_path, monkeypatch,
     assert run_cli(monkeypatch, "rebuild", "--base", str(tmp_path), "--grids", "Cool", "--no-h5", "--no-cube",
                    "--flux-unit", "flam") == 0
     assert cleaned == ["flam"]
-    assert "[Cool] flux unit not declared; using --flux-unit flam" in capsys.readouterr().out
-
-
-def test_flux_unit_option_leaves_a_declared_unit_alone(tmp_path, capsys):
-    grid = tmp_path / "Declared"
-    grid.mkdir()
-    (grid / "s.txt").write_text("# flux_unit = erg/cm2/s/A\n4000 1e-3\n5000 2e-3\n")
-    assert cli._ask_flux_unit("Declared", [str(grid / "s.txt")], "fnu") is None
-    assert "its spectra declare their flux unit; --flux-unit fnu is not used for it" in capsys.readouterr().out
 
 
 def test_an_unknown_flux_unit_is_a_usage_error(monkeypatch, capsys):
