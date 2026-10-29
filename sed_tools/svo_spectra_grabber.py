@@ -216,7 +216,6 @@ class SVOSpectraGrabber:
         fids = set(int(x) for x in re.findall(r"[?&]fid=(\d+)", text))
         if not fids:
             return fids, "the response lists none"
-        print(f"    SSAP: {len(fids)} fids")
         return fids, None
 
     def _read_capped(self, r, model_name):
@@ -249,7 +248,6 @@ class SVOSpectraGrabber:
         fids = set(int(x) for x in re.findall(r"[?&]fid=(\d+)", r.text))
         if not fids:
             return fids, "the page links none"
-        print(f"    index: {len(fids)} fids")
         return fids, None
 
     # ---- C) Bounded sparse probe + expansion ----
@@ -277,7 +275,6 @@ class SVOSpectraGrabber:
         found = set(hits)
         for seed in sorted(hits):
             found |= self._expand_around(model_name, seed)
-        print(f"    probe+expand: {len(found)} fids")
         return found
 
     def _head_exists(self, model_name, fid):
