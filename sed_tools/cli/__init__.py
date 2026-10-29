@@ -39,7 +39,7 @@ from ..grids.pipeline import _build_data_products, _rebuild_command, build_h5_bu
 from ..grids.spectrum_io import build_h5_bundle, read_text_spectrum
 from ..grids.svo import SVOSpectraGrabber
 from ..terminal_plots import terminal_color_enabled, terminal_width
-from ..ui_utils import (OPTIONAL_EXTRAS, ask_number as _ask_number, missing_package_error, missing_packages,
+from ..ui_utils import (OPTIONAL_EXTRAS, _ansi, ask_number as _ask_number, missing_package_error, missing_packages,
                         parse_multi_selection, parse_numeric_range, prompt_choice, refused_without)
 from .filters import (
     _FilterSetOption, _UNSTATED, _ask_conditions, _atmosphere_sites, _availability_errors, _browse_instruments,
@@ -60,8 +60,7 @@ logger = logging.getLogger(__name__)
 
 #: The errors a workflow raises for a request it cannot meet. main() and the
 #: menu print their message; anything else is a bug and keeps its traceback.
-EXPECTED_ERRORS = (RuntimeError, ValueError, OSError, ComponentError, CatalogueError,
-                   RequestException, EOFError)
+EXPECTED_ERRORS = (RuntimeError, ValueError, OSError, ComponentError, CatalogueError, RequestException, EOFError)
 
 
 def load_txt_spectrum(txt_path: str) -> Tuple[np.ndarray, np.ndarray]:
@@ -80,67 +79,41 @@ def run_config_flow() -> None:
     print("Restart sed-tools for the change to take effect.")
 
 
+#: The menu's sections, each a heading and its (command, label) entries, numbered from 1 in this order.
+_MENU = (
+    ("Filters", (("filters", "Download Filters (NJM / SVO)"),
+                 ("filters_combine", "Combine filter sets"),
+                 ("filter_info", "Filter set information"),
+                 ("filter_compose", "Build a filter curve from its parts (filter, optics, camera, atmosphere)"))),
+    ("Spectral grids", (("grids", "Download spectral grids (NJM / SVO / MSG / MAST)"),
+                        ("rebuild", "Rebuild (lookup + HDF5 + flux cube)"),
+                        ("combine", "Combine grids into omni grid"))),
+    ("ML", (("ml_completer", "ML SED Completer (train/extend incomplete SEDs)"),
+            ("ml_generator", "ML SED Generator (generate SEDs from parameters)"),
+            ("grid_densifier", "Grid Densifier (fill coarse Teff gaps)"))),
+    ("Tools", (("coverage", "Coverage (parameter-space summary + plot)"),
+               ("import", "Import a local spectral grid"),
+               ("mesa_prepare", "Prepare a spectral grid for MESA"),
+               ("config", "Config (data directory)"))),
+)
+
+
 def menu() -> str:
-    use_color = terminal_color_enabled("auto")
-    BOLD = "\x1b[1m" if use_color else ""
-    DIM = "\x1b[2m" if use_color else ""
-    CYAN = "\x1b[36m" if use_color else ""
-    YELL = "\x1b[33m" if use_color else ""
-    RED = "\x1b[31m" if use_color else ""
-    RESET = "\x1b[0m" if use_color else ""
-
+    BOLD, DIM, CYAN, YELL, RED, RESET = _ansi(terminal_color_enabled("auto"),
+                                              "bold", "dim", "cyan", "yellow", "red", "reset")
     print(BOLD + "=" * 50 + RESET)
-
-    print("\n" + YELL + "-- Filters " + "-" * 39 + RESET)
-    print(f"  {CYAN}1){RESET} Download Filters (NJM / SVO)")
-    print(f"  {CYAN}2){RESET} Combine filter sets")
-    print(f"  {CYAN}3){RESET} Filter set information")
-    print(f"  {CYAN}4){RESET} Build a filter curve from its parts (filter, optics, camera, atmosphere)")
-
-    print("\n" + YELL + "-- Spectral grids " + "-" * 32 + RESET)
-    print(f"  {CYAN}5){RESET} Download spectral grids (NJM / SVO / MSG / MAST)")
-    print(f"  {CYAN}6){RESET} Rebuild (lookup + HDF5 + flux cube)")
-    print(f"  {CYAN}7){RESET} Combine grids into omni grid")
-
-    print("\n" + YELL + "-- ML " + "-" * 44 + RESET)
-    print(f"  {CYAN}8){RESET} ML SED Completer (train/extend incomplete SEDs)")
-    print(f"  {CYAN}9){RESET} ML SED Generator (generate SEDs from parameters)")
-    print(f" {CYAN}10){RESET} Grid Densifier (fill coarse Teff gaps)")
-
-    print("\n" + YELL + "-- Tools " + "-" * 41 + RESET)
-    print(f" {CYAN}11){RESET} Coverage (parameter-space summary + plot)")
-    print(f" {CYAN}12){RESET} Import a local spectral grid")
-    print(f" {CYAN}13){RESET} Prepare a spectral grid for MESA")
-    print(f" {CYAN}14){RESET} Config (data directory)")
-
+    mapping = dict.fromkeys(("q", "Q", "quit", "QUIT", "Quit", "0"), "quit")
+    number = 0
+    for heading, entries in _MENU:
+        print("\n" + YELL + f"-- {heading} ".ljust(50, "-") + RESET)
+        for command, label in entries:
+            number += 1
+            mapping[str(number)] = command
+            print(" " * (3 - len(str(number))) + f"{CYAN}{number}){RESET} {label}")
     print("\n" + DIM + "-" * 50 + RESET)
     print(f"  {RED}0/q){RESET} Quit")
     print(BOLD + "=" * 50 + RESET)
-
-    choice = input("> ").strip()
-    mapping = {
-        "1": "filters",
-        "2": "filters_combine",
-        "3": "filter_info",
-        "4": "filter_compose",
-        "5": "grids",
-        "6": "rebuild",
-        "7": "combine",
-        "8": "ml_completer",
-        "9": "ml_generator",
-        "10": "grid_densifier",
-        "11": "coverage",
-        "12": "import",
-        "13": "mesa_prepare",
-        "14": "config",
-        "q": "quit",
-        "Q": "quit",
-        "quit": "quit",
-        "QUIT": "quit",
-        "Quit": "quit",
-        "0": "quit",
-    }
-    return mapping.get(choice, "")
+    return mapping.get(input("> ").strip(), "")
 
 # ------------ Command-line parser ------------
 
@@ -256,8 +229,7 @@ def _add_filter_download_parsers(sub) -> None:
     fdp.add_argument("--force", action="store_true",
                      help="Re-resolve files that are already tagged; a result never replaces a type "
                           "from a stronger source (original > inferred > svo > svo-curve-match > assumed)")
-    fdp.add_argument("--dry-run", action="store_true",
-                     help="Report without modifying files")
+    fdp.add_argument("--dry-run", action="store_true", help="Report without modifying files")
 
 
 def _add_filter_catalogue_parsers(sub) -> None:
@@ -311,8 +283,7 @@ def _add_grid_build_parsers(sub) -> None:
 
     cp = sub.add_parser("combine", help="Combine multiple grids into omni grid")
     _add_base_option(cp, STELLAR_DIR_DEFAULT, "Base spectral grid directory")
-    cp.add_argument("--output", default="combined_models",
-                    help="Name for the combined spectral grid")
+    cp.add_argument("--output", default="combined_models", help="Name for the combined spectral grid")
     cp.add_argument("--non-interactive", action="store_true",
                     help="Combine without prompting: the --grids given, else every local spectral grid "
                          "except earlier combined ones")
@@ -321,15 +292,12 @@ def _add_grid_build_parsers(sub) -> None:
 
     mp = sub.add_parser("ml_completer", help="Train/use ML SED completer")
     _add_base_option(mp, STELLAR_DIR_DEFAULT, "Base spectral grid directory")
-    mp.add_argument("--models-dir", default="models",
-                    help="Directory for trained ML models")
+    mp.add_argument("--models-dir", default="models", help="Directory for trained ML models")
 
     gp = sub.add_parser("ml_generator", help="Train/use ML SED generator")
     _add_base_option(gp, STELLAR_DIR_DEFAULT, "Base spectral grid directory")
-    gp.add_argument("--models-dir", default="models",
-                    help="Directory for trained ML models")
-    gp.add_argument("--auto", action="store_true",
-                    help="Run optimized auto-training with hyperparameter search")
+    gp.add_argument("--models-dir", default="models", help="Directory for trained ML models")
+    gp.add_argument("--auto", action="store_true", help="Run optimized auto-training with hyperparameter search")
     gp.add_argument("--library", help="Library path for auto-training")
     gp.add_argument("--output", help="Output directory for auto-training")
     gp.add_argument("--trials", type=_positive_int, default=None,
@@ -350,44 +318,32 @@ def _add_grid_build_parsers(sub) -> None:
                            help="Trained ML generator for gaps inside the grid's Teff range")
     p_densify.add_argument("--ml-gap-threshold", type=float, default=_ML_GAP_THRESHOLD_DEFAULT,
                            help="Not implemented: refused unless left at its default")
-    p_densify.add_argument("--no-lookup", action="store_true",
-                           help="No effect: densify writes only the flux cube")
+    p_densify.add_argument("--no-lookup", action="store_true", help="No effect: densify writes only the flux cube")
 
 
 def _add_grid_tool_parsers(sub) -> None:
-    pp = sub.add_parser("mesa_prepare",
-        help="Export a spectral grid variant as a clean MESA-ready folder")
+    pp = sub.add_parser("mesa_prepare", help="Export a spectral grid variant as a clean MESA-ready folder")
     _add_base_option(pp, STELLAR_DIR_DEFAULT, "Base spectral grid directory")
     pp.add_argument("--grid", "--model", dest="model", default=None,
                     help="Spectral grid name (e.g. Kurucz2003all); prompted if omitted")
-    pp.add_argument("--output", default=None,
-                    help="Output directory for the exported variant; prompted if omitted")
+    pp.add_argument("--output", default=None, help="Output directory for the exported variant; prompted if omitted")
 
     cfg_p = sub.add_parser("config", help="Show or set the data directory")
-    cfg_p.add_argument("--set", metavar="PATH", default=None,
-                       help="Set data directory to PATH")
-    cfg_p.add_argument("--move", action="store_true",
-                       help="With --set: move existing data to the new path")
+    cfg_p.add_argument("--set", metavar="PATH", default=None, help="Set data directory to PATH")
+    cfg_p.add_argument("--move", action="store_true", help="With --set: move existing data to the new path")
 
-    covp = sub.add_parser("coverage",
-        help="Report parameter-space coverage of a local grid")
+    covp = sub.add_parser("coverage", help="Report parameter-space coverage of a local grid")
     _add_base_option(covp, STELLAR_DIR_DEFAULT, "Base spectral grid dir")
     covp.add_argument("--grids", "--models", dest="models", nargs="*", default=None,
                       help="Spectral grid folder name(s); default: every local grid")
-    covp.add_argument("--no-plot", action="store_true",
-                      help="Skip the coverage plot")
-    covp.add_argument("--out", default=None,
-                      help="Output path for the plot PNG (single spectral grid only)")
+    covp.add_argument("--no-plot", action="store_true", help="Skip the coverage plot")
+    covp.add_argument("--out", default=None, help="Output path for the plot PNG (single spectral grid only)")
 
-    imp = sub.add_parser("import",
-        help="Ingest a local grid of .txt spectra into the pipeline")
-    imp.add_argument("--path", required=True,
-                     help="Directory of .txt spectra (or a single .txt file)")
-    imp.add_argument("--name", default=None,
-                     help="Spectral grid name (default: source folder name)")
+    imp = sub.add_parser("import", help="Ingest a local grid of .txt spectra into the pipeline")
+    imp.add_argument("--path", required=True, help="Directory of .txt spectra (or a single .txt file)")
+    imp.add_argument("--name", default=None, help="Spectral grid name (default: source folder name)")
     _add_base_option(imp, STELLAR_DIR_DEFAULT, "Base spectral grid dir")
-    imp.add_argument("--move", action="store_true",
-                     help="Move files instead of copying")
+    imp.add_argument("--move", action="store_true", help="Move files instead of copying")
     imp.add_argument("--no-h5", action="store_true", help="Skip HDF5 bundle")
     imp.add_argument("--no-cube", action="store_true", help="Skip flux cube")
     imp.add_argument("--dry-run", action="store_true",
@@ -411,19 +367,11 @@ def _range_option(args, name: str, parser) -> Optional[Tuple[float, float]]:
 
 
 def _cmd_grids(args, parser):
-    run_spectra_flow(
-        source=args.source,
-        base_dir=args.base,
-        models=args.models,
-        workers=args.workers,
-        force_bundle_h5=not args.no_h5,
-        build_flux_cube=not args.no_cube,
-        flux_unit=args.flux_unit,
-        teff_range=_range_option(args, "teff", parser),
-        logg_range=_range_option(args, "logg", parser),
-        meta_range=_range_option(args, "meta", parser),
-        wl_range=_range_option(args, "wavelength", parser),
-    )
+    run_spectra_flow(source=args.source, base_dir=args.base, models=args.models, workers=args.workers,
+                     force_bundle_h5=not args.no_h5, build_flux_cube=not args.no_cube, flux_unit=args.flux_unit,
+                     teff_range=_range_option(args, "teff", parser), logg_range=_range_option(args, "logg", parser),
+                     meta_range=_range_option(args, "meta", parser),
+                     wl_range=_range_option(args, "wavelength", parser))
     return 0
 
 
@@ -493,28 +441,19 @@ def _atmosphere_error(exc: Exception, args) -> str:
 def _cmd_filters_combine(args, parser):
     from ..filters.combine import combine_filter_sets
 
-    out = combine_filter_sets(
-        args.output,
-        args.inputs,
-        filter_root=args.base,
-        facility=args.facility,
-        instrument=args.instrument,
-        on_conflict=args.on_conflict,
-    )
+    out = combine_filter_sets(args.output, args.inputs, filter_root=args.base, facility=args.facility,
+                              instrument=args.instrument, on_conflict=args.on_conflict)
     print(f"[filters] Combined filter set written to {out}")
     return 0
 
 
 def _cmd_filters_detector(args, parser):
     # Each file is printed as it is tagged, so on failure main() has only the error left to say.
-    rows = Filters.tag_detector_types(
-        args.path, facility=args.facility, force=args.force, dry_run=args.dry_run
-    )
+    rows = Filters.tag_detector_types(args.path, facility=args.facility, force=args.force, dry_run=args.dry_run)
     counts = Counter((r["detector_type"], r["source"]) for r in rows)
     changed = sum(r["changed"] for r in rows)
-    verb = "would change" if args.dry_run else "changed"
     migrated = sum(r["migrated"] for r in rows)
-    moved = "would move" if args.dry_run else "moved"
+    verb, moved = ("would change", "would move") if args.dry_run else ("changed", "moved")
     print(f"\n[filters] {len(rows)} files, {changed} {verb}, {migrated} {moved} 0.3.0 '#' metadata to the column row")
     for (dtype, source), n in sorted(counts.items()):
         print(f"  {dtype:6s} [{source}]: {n}")
@@ -585,37 +524,30 @@ def _build_all_component_sources(base: str, sites: Optional[List[str]]) -> int:
             get_builder(name)(base, **kw)
         except (ValueError, RequestException, OSError, RuntimeError) as exc:
             failed.append(f"{name}: {exc}")
+    return _failure_status("filters", failed)
+
+
+def _failure_status(tag: str, failed: List[str]) -> int:
+    """Print ``[tag] FAILED <line>`` for each failure; the exit status, 1 if there were any."""
     for line in failed:
-        print(f"[filters] FAILED {line}")
+        print(f"[{tag}] FAILED {line}")
     return 1 if failed else 0
 
 
 def _cmd_rebuild(args, parser):
-    run_rebuild_flow(
-        base_dir=args.base,
-        models=args.models,
-        rebuild_h5=not args.no_h5,
-        rebuild_flux_cube=not args.no_cube,
-        flux_unit=args.flux_unit,
-    )
+    run_rebuild_flow(base_dir=args.base, models=args.models, rebuild_h5=not args.no_h5,
+                     rebuild_flux_cube=not args.no_cube, flux_unit=args.flux_unit)
     return 0
 
 
 def _cmd_combine(args, parser):
-    run_combine_flow(
-        base_dir=args.base,
-        output_name=args.output,
-        interactive=not (args.non_interactive or args.models),
-        models=args.models,
-    )
+    run_combine_flow(base_dir=args.base, output_name=args.output,
+                     interactive=not (args.non_interactive or args.models), models=args.models)
     return 0
 
 
 def _cmd_ml_completer(args, parser):
-    return run_ml_completer_flow(
-        base_dir=args.base,
-        models_dir=args.models_dir
-    ) or 0
+    return run_ml_completer_flow(base_dir=args.base, models_dir=args.models_dir) or 0
 
 
 def _cmd_ml_generator(args, parser):
@@ -623,10 +555,7 @@ def _cmd_ml_generator(args, parser):
     if not args.auto:
         if limits:
             parser.error("--trials and --epochs apply to --auto training only")
-        return run_ml_generator_flow(
-            base_dir=args.base,
-            models_dir=args.models_dir
-        ) or 0
+        return run_ml_generator_flow(base_dir=args.base, models_dir=args.models_dir) or 0
     if not args.library or not args.output:
         parser.error("--auto needs --library and --output")
     if refused_without("torch", "sklearn", "optuna"):
@@ -651,70 +580,42 @@ def _cmd_densify(args, parser):
         parser.error("--ml-gap-threshold is not implemented: with --ml-model, every gap inside the source "
                      "grid's Teff range is filled by the model")
     # --no-lookup needs nothing: densify_grid writes only the flux cube.
-    densify_grid(
-        src=args.flux_cube,
-        dst=args.output,
-        teff_spacing=args.teff_spacing,
-        ml_model=args.ml_model,
-    )
+    densify_grid(src=args.flux_cube, dst=args.output, teff_spacing=args.teff_spacing, ml_model=args.ml_model)
     return 0
 
 
 def _cmd_mesa_prepare(args, parser):
-    run_mesa_prepare_flow(
-        base_dir=args.base,
-        model=args.model,
-        output=args.output,
-    )
+    run_mesa_prepare_flow(base_dir=args.base, model=args.model, output=args.output)
     return 0
 
 
 def _cmd_config(args, parser):
     if args.set:
-        set_data_dir(args.set, move=args.move if args.move else None)
+        set_data_dir(args.set, move=args.move or None)
     else:
         show_config()
     return 0
 
 
 def _cmd_coverage(args, parser):
-    names = args.models
+    names = args.models or local_grids(args.base)
     if not names:
-        names = local_grids(args.base)
-        if not names:
-            print(f"No local grids found under {args.base}")
-            return 1
+        print(f"No local grids found under {args.base}")
+        return 1
     failed = []
     for nm in names:
         try:
-            SED.coverage(
-                nm,
-                model_root=args.base,
-                plot=not args.no_plot,
-                out_path=args.out if len(names) == 1 else None,
-            )
+            SED.coverage(nm, model_root=args.base, plot=not args.no_plot,
+                         out_path=args.out if len(names) == 1 else None)
         except (ValueError, OSError, RuntimeError) as exc:
             failed.append(f"{nm}: {exc}")
-    for line in failed:
-        print(f"[coverage] FAILED {line}")
-    return 1 if failed else 0
+    return _failure_status("coverage", failed)
 
 
 def _cmd_import(args, parser):
-    if args.dry_run:
-        flux_unit = None
-    else:
-        flux_unit = _ask_import_flux_unit(args.path, args.name, args.flux_unit)
-    SED.import_grid(
-        args.path,
-        name=args.name,
-        model_root=args.base,
-        move=args.move,
-        build_h5=not args.no_h5,
-        build_cube=not args.no_cube,
-        dry_run=args.dry_run,
-        flux_unit=flux_unit,
-    )
+    flux_unit = None if args.dry_run else _ask_import_flux_unit(args.path, args.name, args.flux_unit)
+    SED.import_grid(args.path, name=args.name, model_root=args.base, move=args.move, build_h5=not args.no_h5,
+                    build_cube=not args.no_cube, dry_run=args.dry_run, flux_unit=flux_unit)
     if args.dry_run:
         _report_import_flux_unit(args.path, args.name, args.flux_unit)
     return 0
@@ -746,24 +647,14 @@ _COMMANDS = {
 
 def _print_banner() -> None:
     use_color = terminal_color_enabled("auto")
-    BOLD = "\x1b[1m" if use_color else ""
-    RED = "\x1b[31m" if use_color else ""
-    BLUE = "\x1b[34m" if use_color else ""
-    GREEN = "\x1b[32m" if use_color else ""
-    RESET = "\x1b[0m" if use_color else ""
-
-    banner = (
-            "▄▖▄▖▄   ▄▖    ▜   ",
-            "▚ ▙▖▌▌  ▐ ▛▌▛▌▐ ▛▘",
-            "▄▌▙▖▙▘▄▖▐ ▙▌▙▌▐▖▄▌",
-                                  )
-
+    BOLD, RESET = _ansi(use_color, "bold", "reset")
+    banner = ("▄▖▄▖▄   ▄▖    ▜   ",
+              "▚ ▙▖▌▌  ▐ ▛▌▛▌▐ ▛▘",
+              "▄▌▙▖▙▘▄▖▐ ▙▌▙▌▐▖▄▌")
     print()
     print("\n" + BOLD + "=" * 50 + RESET)
-
-    banner_colors = [RED, GREEN, BLUE]
-    for i, line in enumerate(banner):
-        print(f"{BOLD}{banner_colors[i]}{line}{RESET}")
+    for line, color in zip(banner, _ansi(use_color, "red", "green", "blue")):
+        print(f"{BOLD}{color}{line}{RESET}")
 
 
 def _run_menu() -> int:

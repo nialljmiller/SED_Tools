@@ -106,12 +106,8 @@ class SpectralGridInfo:
     
     def __repr__(self) -> str:
         parts = [f"SpectralGridInfo('{self.name}', source='{self.source}'"]
-        if self.teff_range:
-            parts.append(f"teff={self.teff_range}")
-        if self.logg_range:
-            parts.append(f"logg={self.logg_range}")
-        if self.n_spectra:
-            parts.append(f"n_spectra={self.n_spectra}")
+        parts += [f"{label}={value}" for label, value in
+                  (("teff", self.teff_range), ("logg", self.logg_range), ("n_spectra", self.n_spectra)) if value]
         return ", ".join(parts) + ")"
 
 
@@ -138,31 +134,19 @@ class Spectrum:
         return self.flux
     
     def to_dict(self) -> Dict[str, Any]:
-        return {
-            'wavelength': self.wavelength,
-            'flux': self.flux,
-            'teff': self.teff,
-            'logg': self.logg,
-            'metallicity': self.metallicity,
-            'filename': self.filename,
-        }
+        return {name: getattr(self, name) for name in ('wavelength', 'flux', 'teff', 'logg', 'metallicity', 'filename')}
     
     def save(self, path: Union[str, Path], format: str = 'txt') -> None:
         """Save spectrum to file."""
         path = Path(path)
-        
-        if format == 'txt':
-            with open(path, 'w') as f:
-                f.write(f"# teff = {self.teff}\n")
-                f.write(f"# logg = {self.logg}\n")
-                f.write(f"# metallicity = {self.metallicity}\n")
-                f.write("# wavelength_unit = angstrom\n")
-                f.write("# flux_unit = erg/cm2/s/A\n")
-                f.write("# units_standardized = True\n")
-                for w, fl in zip(self.wavelength, self.flux):
-                    f.write(f"{w:.6f} {fl:.8e}\n")
-        else:
+        if format != 'txt':
             raise ValueError(f"Unsupported format: {format}")
+        with open(path, 'w') as f:
+            for line in (f"teff = {self.teff}", f"logg = {self.logg}", f"metallicity = {self.metallicity}",
+                         "wavelength_unit = angstrom", "flux_unit = erg/cm2/s/A", "units_standardized = True"):
+                f.write(f"# {line}\n")
+            for w, fl in zip(self.wavelength, self.flux):
+                f.write(f"{w:.6f} {fl:.8e}\n")
 
 
 def _not_outside(value: float, low: Optional[float], high: Optional[float]) -> bool:
@@ -184,15 +168,10 @@ class SpectralGrid:
     def parameters(self) -> pd.DataFrame:
         """Return a DataFrame of all spectrum parameters."""
         if self._parameters_df is None:
-            rows = []
-            for spec in self.spectra:
-                rows.append({
-                    'file_name': spec.filename or f"teff{spec.teff}_logg{spec.logg}_meta{spec.metallicity}.txt",
-                    'teff': spec.teff,
-                    'logg': spec.logg,
-                    'metallicity': spec.metallicity,
-                })
-            self._parameters_df = pd.DataFrame(rows)
+            self._parameters_df = pd.DataFrame([
+                {'file_name': spec.filename or f"teff{spec.teff}_logg{spec.logg}_meta{spec.metallicity}.txt",
+                 'teff': spec.teff, 'logg': spec.logg, 'metallicity': spec.metallicity}
+                for spec in self.spectra])
         return self._parameters_df
     
     @property
@@ -223,12 +202,7 @@ class SpectralGrid:
         filtered = [spec for spec in self.spectra
                     if _not_outside(spec.teff, teff_min, teff_max) and _not_outside(spec.logg, logg_min, logg_max)
                     and _not_outside(spec.metallicity, metallicity_min, metallicity_max)]
-        return SpectralGrid(
-            name=self.name,
-            source=self.source,
-            spectra=filtered,
-            _base_dir=self._base_dir,
-        )
+        return SpectralGrid(name=self.name, source=self.source, spectra=filtered, _base_dir=self._base_dir)
     
     def __len__(self) -> int:
         return len(self.spectra)
@@ -261,11 +235,7 @@ class SpectralGrid:
         Path
             The output directory path
         """
-        if path is None:
-            path = self._base_dir / self.name
-        else:
-            path = Path(path)
-        
+        path = self._base_dir / self.name if path is None else Path(path)
         path.mkdir(parents=True, exist_ok=True)
         
         for spec in self.spectra:
@@ -301,9 +271,8 @@ def _read_listed_spectra(lookup_path: Path, grid_name: str) -> List[Spectrum]:
     df = pd.read_csv(lookup_path)
     df.columns = [c.lstrip('#').strip().lower() for c in df.columns]
     file_col = find_file_column(df.columns)
-    teff_col = find_teff_column(df.columns)
-    logg_col = find_logg_column(df.columns)
-    meta_col = find_metallicity_column(df.columns)
+    param_cols = {"teff": find_teff_column(df.columns), "logg": find_logg_column(df.columns),
+                  "metallicity": find_metallicity_column(df.columns)}
 
     spectra = []
     for _, row in df.iterrows():
@@ -312,15 +281,8 @@ def _read_listed_spectra(lookup_path: Path, grid_name: str) -> List[Spectrum]:
             continue
         try:
             wl, fl = np.loadtxt(model_dir / filename, unpack=True, comments='#')
-            spectra.append(Spectrum(
-                wavelength=wl,
-                flux=fl,
-                teff=float(row.get(teff_col, np.nan)) if teff_col else np.nan,
-                logg=float(row.get(logg_col, np.nan)) if logg_col else np.nan,
-                metallicity=float(row.get(meta_col, np.nan)) if meta_col else np.nan,
-                filename=filename,
-                source_catalog=grid_name,
-            ))
+            params = {name: float(row.get(col, np.nan)) if col else np.nan for name, col in param_cols.items()}
+            spectra.append(Spectrum(wavelength=wl, flux=fl, **params, filename=filename, source_catalog=grid_name))
         except (OSError, ValueError) as exc:
             raise ValueError(f"Cannot read spectrum {model_dir / filename} listed in {lookup_path}: {exc}") from exc
     return spectra
@@ -365,10 +327,7 @@ class SED:
         """Usually made by SED.fetch() or SED.local(), not directly."""
         self.cat = catalog
         self._model = model
-        self._core = _SEDCore(
-            model_root=model_root or self._model_root,
-            filter_root=filter_root or self._filter_root,
-        )
+        self._core = _SEDCore(model_root=model_root or self._model_root, filter_root=filter_root or self._filter_root)
         
         if model_root:
             self._model_root = Path(model_root)
@@ -444,10 +403,9 @@ class SED:
             info = SpectralGridInfo(name=entry.name, source='local', is_local=True)
             try:
                 meta = _read_flux_cube_header(cube)
-                info.teff_range = (float(meta['teff'][0]), float(meta['teff'][-1]))
-                info.logg_range = (float(meta['logg'][0]), float(meta['logg'][-1]))
-                info.metallicity_range = (float(meta['meta'][0]), float(meta['meta'][-1]))
-                info.wavelength_range = (float(meta['wavelengths'][0]), float(meta['wavelengths'][-1]))
+                for attr, key in (("teff_range", "teff"), ("logg_range", "logg"), ("metallicity_range", "meta"),
+                                  ("wavelength_range", "wavelengths")):
+                    setattr(info, attr, (float(meta[key][0]), float(meta[key][-1])))
             except (OSError, ValueError, IndexError) as exc:
                 raise ValueError(f"Cannot read the flux cube header of local grid '{entry.name}' ({cube}): "
                                  f"{exc}. Rebuild it with: sed-tools rebuild --grids {entry.name}") from exc
@@ -575,8 +533,7 @@ class SED:
         cuts = _parameter_cuts(teff_min, teff_max, logg_min, logg_max, metallicity_min, metallicity_max)
         created = not model_dir.exists()
         before = _directory_state(model_dir)
-        used_source = cls._download_from_first_source(catalog, sources_to_try, failures, model_dir, workers,
-                                                      cuts)
+        used_source = cls._download_from_first_source(catalog, sources_to_try, failures, model_dir, workers, cuts)
         selected = bool(cuts) and used_source in _CUTTING_SOURCES
         cube = _flux_cube_file(model_dir)
 
@@ -612,8 +569,7 @@ class SED:
     def _clean_fetched(model_dir: Path, flux_unit: Optional[str]) -> None:
         """Standardize a fetched grid's units; RuntimeError (clean_model_dir) for any spectrum left unusable."""
         from ..grids.clean import clean_model_dir
-        summary = clean_model_dir(str(model_dir), try_h5_recovery=True, rebuild_lookup=True,
-                                  flux_unit=flux_unit)
+        summary = clean_model_dir(str(model_dir), try_h5_recovery=True, rebuild_lookup=True, flux_unit=flux_unit)
         print(f"[fetch] Cleaned: {summary['total']} total, {len(summary['converted'])} converted")
 
     @classmethod
@@ -694,12 +650,7 @@ class SED:
         """Load the spectra listed in ``lookup_table.csv`` into a SpectralGrid."""
         lookup_path = model_dir / "lookup_table.csv"
         spectra = _read_listed_spectra(lookup_path, name) if lookup_path.exists() else []
-        return SpectralGrid(
-            name=name,
-            source=source,
-            spectra=spectra,
-            _base_dir=model_dir.parent,
-        )
+        return SpectralGrid(name=name, source=source, spectra=spectra, _base_dir=model_dir.parent)
     
     @classmethod
     def local(
@@ -738,19 +689,9 @@ class SED:
             raise FileNotFoundError(f"flux_cube.bin not found in {model_dir}")
 
         cat = cls._load_catalog_from_dir(model_dir, catalog, 'local')
-        sed_model = SEDModel(
-            name=catalog,
-            flux_cube_path=cube_path,
-            filters_dir=filter_root or cls._filter_root,
-            fill_gaps=fill_gaps,
-        )
-        
-        return cls(
-            catalog=cat,
-            model=sed_model,
-            model_root=base_dir,
-            filter_root=filter_root,
-        )
+        sed_model = SEDModel(name=catalog, flux_cube_path=cube_path, filters_dir=filter_root or cls._filter_root,
+                             fill_gaps=fill_gaps)
+        return cls(catalog=cat, model=sed_model, model_root=base_dir, filter_root=filter_root)
 
     @classmethod
     def coverage(
@@ -823,22 +764,14 @@ class SED:
         copied or moved; so does a flux_unit that is not a known name.
         """
         files, src_dir = _import_sources(Path(src).expanduser())
-        if name is None:
-            name = src_dir.name
+        name = src_dir.name if name is None else name
         base = Path(model_root) if model_root else cls._model_root
         dest = Path(base) / name
 
         missing = _report_import_headers(files, src_dir)
-        n_ok = len(files) - len(missing)
+        result = {"name": name, "n_files": len(files), "n_parseable": len(files) - len(missing)}
         if dry_run:
-            return {
-                "name": name,
-                "n_files": len(files),
-                "n_parseable": n_ok,
-                "n_missing": len(missing),
-                "dest": str(dest),
-                "dry_run": True,
-            }
+            return {**result, "n_missing": len(missing), "dest": str(dest), "dry_run": True}
 
         from ..grids.clean import check_flux_unit, clean_model_dir
 
@@ -846,11 +779,7 @@ class SED:
 
         dest.mkdir(parents=True, exist_ok=True)
         for f in files:
-            target = dest / f.name
-            if move:
-                shutil.move(str(f), str(target))
-            else:
-                shutil.copy2(str(f), str(target))
+            (shutil.move if move else shutil.copy2)(str(f), str(dest / f.name))
         print(f"[import] {'moved' if move else 'copied'} {len(files)} files -> {dest}")
 
         summary = clean_model_dir(str(dest), try_h5_recovery=True, rebuild_lookup=True, flux_unit=flux_unit)
@@ -867,13 +796,7 @@ class SED:
         same_root = Path(base).expanduser().resolve() == Path(cls._model_root).expanduser().resolve()
         root_arg = "" if same_root else f", model_root={str(base)!r}"
         print(f"[import] done. Load with: SED.local('{name}'{root_arg})")
-        return {
-            "name": name,
-            "n_files": len(files),
-            "n_parseable": n_ok,
-            "dest": str(dest),
-            "dry_run": False,
-        }
+        return {**result, "dest": str(dest), "dry_run": False}
 
     @classmethod
     def combine(
@@ -1057,12 +980,8 @@ class MLCompleter:
         grid_dir = _training_grid(self.base_dir, grid)
         save_name = save_name or f"{grid}_completer"
         
-        self._model = train_model(
-            grid_dir=str(grid_dir),
-            save_path=str(self.base_dir / self.models_dir / save_name),
-            epochs=epochs,
-            batch_size=batch_size,
-        )
+        self._model = train_model(grid_dir=str(grid_dir), save_path=str(self.base_dir / self.models_dir / save_name),
+                                  epochs=epochs, batch_size=batch_size)
         
         return self
     
@@ -1095,12 +1014,8 @@ class MLCompleter:
         
         output = output or f"{catalog}_extended"
 
-        summary = extend_catalog(
-            model=self._model,
-            catalog_dir=str(self.base_dir / catalog),
-            output_dir=str(self.base_dir / output),
-            wavelength_range=wavelength_range,
-        )
+        summary = extend_catalog(model=self._model, catalog_dir=str(self.base_dir / catalog),
+                                 output_dir=str(self.base_dir / output), wavelength_range=wavelength_range)
         # extend_catalog itself raises RuntimeError listing any spectrum it could not extend.
         if not summary['total']:
             raise FileNotFoundError(f"No spectra to extend in {self.base_dir / catalog}")
@@ -1176,13 +1091,8 @@ class MLGenerator:
         save_path = self.base_dir / self.models_dir / save_name
 
         self._generator = SEDGenerator()
-        self._generator.train(
-            library_path=str(grid_dir),
-            output_path=str(save_path),
-            epochs=epochs,
-            batch_size=batch_size,
-            max_samples=max_samples,
-        )
+        self._generator.train(library_path=str(grid_dir), output_path=str(save_path), epochs=epochs,
+                              batch_size=batch_size, max_samples=max_samples)
         self._model_path = save_path
 
         return self
@@ -1237,12 +1147,7 @@ class MLGenerator:
         flux : np.ndarray
             Flux array in erg/s/cm²/Å
         """
-        return self._loaded_generator().generate(
-            teff=teff,
-            logg=logg,
-            meta=metallicity,
-            check_bounds=check_bounds,
-        )
+        return self._loaded_generator().generate(teff=teff, logg=logg, meta=metallicity, check_bounds=check_bounds)
     
     def generate_with_outputs(
         self,
@@ -1282,13 +1187,8 @@ class MLGenerator:
         generator = self._loaded_generator()
         if output_dir is None:
             output_dir = str(self._model_path / 'SED')  # train() and load() set both
-        return generator.generate_with_outputs(
-            teff=teff,
-            logg=logg,
-            meta=metallicity,
-            output_dir=output_dir,
-            check_bounds=check_bounds,
-        )
+        return generator.generate_with_outputs(teff=teff, logg=logg, meta=metallicity, output_dir=output_dir,
+                                               check_bounds=check_bounds)
     
     def parameter_ranges(self) -> Dict[str, Tuple[float, float]]:
         """Get the parameter ranges the model was trained on.
@@ -1300,11 +1200,7 @@ class MLGenerator:
             and (min, max) tuple values
         """
         ranges = self._loaded_generator().config['parameter_ranges']
-        return {
-            'teff': tuple(ranges['teff']),
-            'logg': tuple(ranges['logg']),
-            'metallicity': tuple(ranges['meta']),
-        }
+        return {'teff': tuple(ranges['teff']), 'logg': tuple(ranges['logg']), 'metallicity': tuple(ranges['meta'])}
     
     def _loaded_generator(self):
         """The trained or loaded generator; RuntimeError before train() or load()."""

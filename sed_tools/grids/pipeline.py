@@ -38,12 +38,6 @@ def _directory_state(directory: Path) -> Dict[str, int]:
     return {path.name: path.stat().st_mtime_ns for path in directory.iterdir()}
 
 
-def _mixed_sources_error(src: str, model_dir, tried: List[str]) -> RuntimeError:
-    """The error when ``src`` failed after writing into ``model_dir``, so no further source is tried."""
-    return RuntimeError(f"{src} failed after changing {model_dir}, so another source's spectra would be mixed "
-                        f"with its files; no further source tried. Tried: {'; '.join(tried)}")
-
-
 def download_from_first_source(sources: List[str], attempt: Callable[[str], Optional[str]], model_dir,
                                tried: List[str], warn: Callable[[str, str], None]) -> Optional[str]:
     """The first of ``sources`` whose ``attempt(src)`` returns None (no error); None when all fail.
@@ -59,7 +53,8 @@ def download_from_first_source(sources: List[str], attempt: Callable[[str], Opti
             return src
         tried.append(f"{src}: {error}")
         if _directory_state(model_dir) != before:
-            raise _mixed_sources_error(src, model_dir, tried)
+            raise RuntimeError(f"{src} failed after changing {model_dir}, so another source's spectra would be "
+                               f"mixed with its files; no further source tried. Tried: {'; '.join(tried)}")
         warn(src, error)
     return None
 
@@ -67,8 +62,7 @@ def download_from_first_source(sources: List[str], attempt: Callable[[str], Opti
 def _download_count(n_spectra: int, before: Dict[str, int], after: Dict[str, int]) -> str:
     """``Downloaded N spectra``, or ``K already present, N downloaded`` when the grabber's count
     (spectra downloaded or found in place) includes spectra it did not write."""
-    written = sum(1 for name, mtime in after.items()
-                  if name.lower().endswith(".txt") and before.get(name) != mtime)
+    written = sum(1 for name, mtime in after.items() if name.lower().endswith(".txt") and before.get(name) != mtime)
     present = n_spectra - written
     return f"{present} already present, {written} downloaded" if present > 0 else f"Downloaded {n_spectra} spectra"
 
@@ -110,22 +104,16 @@ def _build_flux_cube(model_dir: Path) -> Path:
     raise RuntimeError(f"No flux cube was built in {model_dir}; see the flux cube messages above")
 
 
-def _build_data_products(
-    name: str,
-    model_dir: str,
-    src: str,
-    force_bundle_h5: bool,
-    build_flux_cube: bool,
-) -> List[str]:
+def _build_data_products(name: str, model_dir: str, src: str, force_bundle_h5: bool,
+                         build_flux_cube: bool) -> List[str]:
     """Build the HDF5 bundle, lookup table and flux cube of a downloaded grid; returns what was not done.
 
     A bundle or cube lacking spectra beside it is rebuilt; with ``build_flux_cube`` False such a cube is a problem.
     """
     out_h5 = os.path.join(model_dir, f"{name}_bundle.h5" if src == "msg" else f"{name}.h5")
-    stale = None
-    if not force_bundle_h5 and os.path.exists(out_h5):
-        stale = _bundle_shortfall(Path(out_h5), Path(model_dir))
-    if force_bundle_h5 or not os.path.exists(out_h5) or stale:
+    fresh = force_bundle_h5 or not os.path.exists(out_h5)
+    stale = None if fresh else _bundle_shortfall(Path(out_h5), Path(model_dir))
+    if fresh or stale:
         if stale:
             print(wrap(f"{os.path.basename(out_h5)} {stale}; rebuilding it",
                        indent="HDF5 bundle   : ", hanging=" " * 16))
@@ -169,14 +157,8 @@ def _rebuild_command(name: str, model_dir: str) -> str:
 def _build_combined_grid(selected_models: List[Tuple[str, str]], output_dir: str, *,
                          visualization: bool = True) -> None:
     """Merge the ``(name, path)`` grids onto common parameter and wavelength grids and save to ``output_dir``."""
-    from ..cube.combine import (
-        build_combined_flux_cube,
-        create_common_wavelength_grid,
-        create_unified_grid,
-        load_model_data,
-        save_combined_data,
-        visualize_parameter_space,
-    )
+    from ..cube.combine import (build_combined_flux_cube, create_common_wavelength_grid, create_unified_grid,
+                                load_model_data, save_combined_data, visualize_parameter_space)
 
     print("\nLoading spectral grid data...")
     all_models_data = []
@@ -189,19 +171,8 @@ def _build_combined_grid(selected_models: List[Tuple[str, str]], output_dir: str
     wavelength_grid = create_common_wavelength_grid(all_models_data)
 
     print("\nBuilding combined flux cube...")
-    flux_cube, source_map = build_combined_flux_cube(
-        all_models_data, teff_grid, logg_grid, meta_grid, wavelength_grid
-    )
-
-    save_combined_data(
-        output_dir,
-        teff_grid,
-        logg_grid,
-        meta_grid,
-        wavelength_grid,
-        flux_cube,
-        all_models_data,
-    )
+    flux_cube, source_map = build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, wavelength_grid)
+    save_combined_data(output_dir, teff_grid, logg_grid, meta_grid, wavelength_grid, flux_cube, all_models_data)
 
     if visualization:
         visualize_parameter_space(
@@ -215,11 +186,9 @@ def _import_sources(src: Path) -> Tuple[List[Path], Path]:
         raise FileNotFoundError(f"Source path not found: {src}")
 
     if src.is_dir():
-        files = sorted(src.glob("*.txt"))
-        src_dir = src
+        files, src_dir = sorted(src.glob("*.txt")), src
     elif src.is_file() and src.suffix.lower() == ".txt":
-        files = [src]
-        src_dir = src.parent
+        files, src_dir = [src], src.parent
     else:
         raise ValueError(f"Source must be a directory or a .txt file: {src}")
 
@@ -245,8 +214,7 @@ def _report_import_headers(files: List[Path], src_dir: Path) -> List[str]:
             print(f"           {b}")
         if len(missing) > 10:
             print(f"           ... and {len(missing) - 10} more")
-        print("[import] If a key is merely unrecognised, add it to ALIASES "
-              "in header_parser.py.")
+        print("[import] If a key is merely unrecognised, add it to ALIASES in header_parser.py.")
     return missing
 
 
@@ -263,19 +231,12 @@ def _grid_folders(base_dir, wanted: Callable[[str, List[str]], bool]) -> List[st
     return names
 
 
-def _has_spectra_or_bundle(path: str, files: List[str]) -> bool:
-    return any(fn.endswith((".txt", ".h5")) for fn in files)
-
-
-def _has_lookup_or_spectra(path: str, files: List[str]) -> bool:
-    return os.path.exists(os.path.join(path, "lookup_table.csv")) or any(fn.endswith(".txt") for fn in files)
-
-
 def rebuildable_grids(base_dir) -> List[str]:
     """Folders under ``base_dir`` holding .txt spectra or an .h5 file."""
-    return _grid_folders(base_dir, _has_spectra_or_bundle)
+    return _grid_folders(base_dir, lambda path, files: any(fn.endswith((".txt", ".h5")) for fn in files))
 
 
 def local_grids(base_dir) -> List[str]:
     """Local spectral grid folders that have a lookup table or at least one .txt."""
-    return _grid_folders(base_dir, _has_lookup_or_spectra)
+    return _grid_folders(base_dir, lambda path, files: os.path.exists(os.path.join(path, "lookup_table.csv"))
+                         or any(fn.endswith(".txt") for fn in files))

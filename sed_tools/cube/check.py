@@ -42,9 +42,7 @@ def _flux_cube_shortfall(model_dir: Path) -> Optional[str]:
     except (OSError, ValueError, KeyError, TypeError) as exc:  # unreadable or malformed files
         return f"cannot be compared with the spectra beside it ({exc})"
     lacking = (lacking | (present - listed)) & present
-    if not lacking:
-        return None
-    return f"does not include {len(lacking)} of the {len(present)} spectra beside it"
+    return f"does not include {len(lacking)} of the {len(present)} spectra beside it" if lacking else None
 
 
 def _variant_paths(variants_index: Path) -> List[str]:

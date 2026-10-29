@@ -57,8 +57,7 @@ def print_filter_availability(info: dict) -> None:
         # bands from the catalogue bundled with SED_Tools: no curve has been seen yet
         _print_field("Detector", "not known until the curves are installed")
         return
-    assumed = [band for band, source in info["detector_type_sources"].items()
-               if source in ("assumed", "unknown")]
+    assumed = [band for band, source in info["detector_type_sources"].items() if source in ("assumed", "unknown")]
     if assumed:
         _print_field("Detector unverified for", ", ".join(assumed))
 
@@ -156,9 +155,8 @@ def print_catalogue_entry(target: str, entry: dict) -> None:
         checked = origin.get("checked")
         when = time.strftime(", checked %Y-%m-%d %H:%M UTC", time.gmtime(checked)) if checked else ""
         _print_field("Catalogue", f"from the cached copy{when}; NJM could not be asked")
-    licence = info.get("licence") or {}
-    if licence:
-        _print_field("Licence", _licence_summary(licence))
+    if info.get("licence"):
+        _print_field("Licence", _licence_summary(info["licence"]))
     if info.get("references"):
         _print_field("Cite", _cite_hint(target, info["references"]))
     bands = sorted(set(props) | set(info.get("bands", {})),
@@ -312,10 +310,9 @@ def _ask_atmosphere(info: dict, filter_root: Path) -> Optional[Dict]:
 def _site_grids(sites: List[str], filter_root: Path) -> Dict[str, dict]:
     """The atmosphere grids by site, cached ones refreshed from NJM's manifests (checked once a day)."""
     try:
-        grids = Filters.atmospheres(filter_root=filter_root)
+        return Filters.atmospheres(filter_root=filter_root)
     except (RequestException, OSError, RuntimeError, ValueError) as exc:
         raise RuntimeError(f"could not list the atmosphere grids for {', '.join(sites)}: {exc}") from exc
-    return grids
 
 
 def _print_site_choices(sites: List[str], default: Optional[str], grids: Dict[str, dict]) -> None:
@@ -439,14 +436,9 @@ def run_filter_info_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> int:
     from ..filters.library import FilterLibrary
 
     library = FilterLibrary(base_dir)
-    shown: set = set()
-    facilities = _listed_facilities(library, shown)
     incomplete: List[str] = []
     show = lambda facility, instrument: _show_filter_set(library, facility, instrument, incomplete)
-    while facilities:
-        index = prompt_choice(_picker_labels(facilities), "Filter Facilities")
-        if index is None or not _browse_instruments(library, facilities[index], show, shown=shown):
-            break
+    _browse_facilities(library, show)
     return 1 if incomplete else 0
 
 
@@ -478,19 +470,24 @@ def run_filter_compose_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> int:
 
 def _pick_one_instrument(library) -> Optional[Tuple[dict, dict]]:
     """The facility and instrument entries the user picks, or None if they quit."""
-    shown: set = set()
-    facilities = _listed_facilities(library, shown)
     picked: List[Tuple[dict, dict]] = []
 
     def pick(facility: dict, instrument: dict) -> bool:
         picked.append((facility, instrument))
         return False  # stop browsing
 
-    while facilities and not picked:
-        index = prompt_choice(_picker_labels(facilities), "Filter Facilities")
-        if index is None or not _browse_instruments(library, facilities[index], pick, shown=shown):
-            break
+    _browse_facilities(library, pick, done=lambda: bool(picked))
     return picked[0] if picked else None
+
+
+def _browse_facilities(library, act, done=lambda: False) -> None:
+    """Pick a facility, then its instruments for ``act`` (see _browse_instruments), until the user quits or done()."""
+    shown: set = set()
+    facilities = _listed_facilities(library, shown)
+    while facilities and not done():
+        index = prompt_choice(_picker_labels(facilities), "Filter Facilities")
+        if index is None or not _browse_instruments(library, facilities[index], act, shown=shown):
+            break
 
 
 def _listed_facilities(library, shown: set) -> List[dict]:
@@ -750,13 +747,7 @@ def run_filter_combine_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
 
     root = Path(chosen_base)
     options = [_FilterSetOption(path, root) for path in filter_sets]
-    selected = prompt_choice(
-        options,
-        "Local filter sets to combine",
-        multi=True,
-        page_size=50,
-        max_cols=2,
-    )
+    selected = prompt_choice(options, "Local filter sets to combine", multi=True, page_size=50, max_cols=2)
     if selected is None:
         print("No filter sets selected.")
         return
@@ -776,28 +767,18 @@ def run_filter_combine_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
         conflict = input("Please enter rename, overwrite, or error [rename]: ").strip().lower() or "rename"
 
     print("\nAbout to create a combined filter set:")
-    print(f"  Base      : {chosen_base}")
-    print(f"  Output    : {output}")
-    print(f"  Facility  : {facility or 'Combined'}")
-    print(f"  Instrument: {instrument or output}")
-    print(f"  Conflicts : {conflict}")
+    for name, value in (("Base", chosen_base), ("Output", output), ("Facility", facility or "Combined"),
+                        ("Instrument", instrument or output), ("Conflicts", conflict)):
+        print(f"  {name:<10}: {value}")
     confirm = input("Proceed? [Y/n] ").strip().lower()
     if confirm and not confirm.startswith("y"):
         print("Cancelled.")
         return
 
-    out = combine_filter_sets(
-        output,
-        selected_paths,
-        filter_root=chosen_base,
-        facility=facility,
-        instrument=instrument,
-        on_conflict=conflict,
-    )
-    dat_count = len(list(out.glob("*.dat")))
-    index_name = instrument or out.name
-    print(f"\n[filters] Combined {dat_count} filters into {out}")
-    print(f"[filters] Wrote MESA index file: {out / index_name}")
+    out = combine_filter_sets(output, selected_paths, filter_root=chosen_base, facility=facility,
+                              instrument=instrument, on_conflict=conflict)
+    print(f"\n[filters] Combined {len(list(out.glob('*.dat')))} filters into {out}")
+    print(f"[filters] Wrote MESA index file: {out / (instrument or out.name)}")
     print("Use this path as the MESA instrument/filter-set directory.")
 
 

@@ -38,9 +38,7 @@ def parse_multi_selection(spec: str, total: int) -> list[int]:
             bounds = [part.strip() for part in chunk.split("-", 1)]
             if not all(part.isdigit() for part in bounds):
                 raise ValueError(f"Invalid range: {chunk}")
-            start, end = map(int, bounds)
-            if start > end:
-                start, end = end, start
+            start, end = sorted(map(int, bounds))
             if start < 1 or end > total:
                 raise ValueError(f"Range out of bounds: {chunk}")
             chosen.update(range(start - 1, end))
@@ -113,12 +111,20 @@ def menu_choice(items: Sequence, prompt: str = "> "):
     try:
         idx = int(selection) - 1
     except ValueError:
-        print("Invalid selection")
-        return None
-    if idx < 0 or idx >= len(items):
+        idx = -1
+    if not 0 <= idx < len(items):
         print("Invalid selection")
         return None
     return items[idx]
+
+
+_ANSI = {"bold": "\x1b[1m", "dim": "\x1b[2m", "red": "\x1b[31m", "green": "\x1b[32m", "yellow": "\x1b[33m",
+         "blue": "\x1b[34m", "cyan": "\x1b[36m", "reset": "\x1b[0m"}
+
+
+def _ansi(use_color: bool, *names: str) -> List[str]:
+    """The ANSI codes of ``names`` (keys of _ANSI), or empty strings when ``use_color`` is false."""
+    return [_ANSI[name] if use_color else "" for name in names]
 
 
 #: ``default`` of :func:`ask_number` when a blank answer is not allowed (None is a default).
@@ -213,11 +219,10 @@ def prompt_choice(
         print(f"No {label} options available.")
         return None
 
+    labels: List[str] = [getattr(o, "label", str(o)) for o in options]
     if max_label < 0:
         # Each column holds a 6-character id ("  12. ") before the label.
-        max_label = max(len(getattr(x, "label", str(x))) for x in options) + 6
-
-    labels: List[str] = [getattr(o, "label", str(o)) for o in options]
+        max_label = max(map(len, labels)) + 6
     N = len(labels)
     # A page is never taller than the terminal, so its first rows do not scroll away.
     page_size = min(page_size, _layout(max_label, min_cols, max_cols)[1] * _rows_on_screen())
@@ -225,9 +230,7 @@ def prompt_choice(
     filt: Optional[Tuple[str, str]] = None  # ('substr'|'neg'|'regex', pattern)
 
     use_color = use_color and terminal_color_enabled("auto")
-    DIM = "\x1b[2m" if use_color else ""
-    RED = "\x1b[31m" if use_color else ""
-    RESET = "\x1b[0m" if use_color else ""
+    DIM, RED, RESET = _ansi(use_color, "dim", "red", "reset")
 
     while True:
         kept = _apply_filter(labels, filt)
@@ -240,8 +243,7 @@ def prompt_choice(
             continue
 
         pages = (len(kept) + page_size - 1) // page_size
-        if page < 1: page = 1
-        if page > pages: page = pages
+        page = min(max(page, 1), pages)
         start = (page - 1) * page_size
         end = min(start + page_size, len(kept))
 
@@ -323,32 +325,17 @@ def _regex_filter(patt: str, current: Optional[Tuple[str, str]], red: str, reset
 
 def _print_page(label: str, labels: List[str], chunk: List[int], max_label: int,
                 min_cols: int, max_cols: int, use_color: bool) -> None:
-    """The heading and one page of numbered labels, laid out in columns."""
-    BOLD = "\x1b[1m" if use_color else ""
-    CYAN = "\x1b[36m" if use_color else ""
-    RESET = "\x1b[0m" if use_color else ""
-
-    tw = terminal_width()
+    """The heading and one page of numbered labels, laid out in columns (down each column first)."""
+    BOLD, CYAN, RESET = _ansi(use_color, "bold", "cyan", "reset")
     col_width, n_cols = _layout(max_label, min_cols, max_cols)
     n_rows = (len(chunk) + n_cols - 1) // n_cols
+    room = col_width - 6
 
     print(f"\n{BOLD}{label}{RESET}")
-    print("=" * min(tw, 60))
-
+    print("=" * min(terminal_width(), 60))
     for row in range(n_rows):
-        row_items = []
-        for col in range(n_cols):
-            flat_idx = row + col * n_rows
-            if flat_idx >= len(chunk):
-                continue
-            i = chunk[flat_idx]
-            id_str = f"{i+1:4d}."
-            room = col_width - 6
-            label = labels[i] if len(labels[i]) <= room else labels[i][:max(room - 1, 0)] + "…"
-            padded = label.ljust(room)
-            row_items.append(f"{CYAN}{id_str}{RESET} {padded}")
-        print("  ".join(row_items))
-
+        items = (f"{CYAN}{i + 1:4d}.{RESET} {cut(labels[i], room).ljust(room)}" for i in chunk[row::n_rows])
+        print("  ".join(items))
     print()
 
 
@@ -372,20 +359,7 @@ def _rows_on_screen() -> int:
 
 def _controls(more_pages: bool, multi: bool, allow_back: bool, use_color: bool) -> str:
     """The line listing the commands the picker accepts."""
-    DIM = "\x1b[2m" if use_color else ""
-    RESET = "\x1b[0m" if use_color else ""
-
-    controls = f"{DIM}"
-    if more_pages:
-        controls += "n, p, g <page>, "
-
-    controls += "/text, !text, //regex, "
-    if multi:
-        controls += "list (1,3) or range (1-5), "
-    else:
-        controls += "id <N> (or just N), "
-
-    controls += "clear"
-    if allow_back: controls += ", b"
-    controls += ", q" + RESET
-    return controls
+    DIM, RESET = _ansi(use_color, "dim", "reset")
+    controls = DIM + ("n, p, g <page>, " if more_pages else "") + "/text, !text, //regex, "
+    controls += "list (1,3) or range (1-5), " if multi else "id <N> (or just N), "
+    return controls + "clear" + (", b" if allow_back else "") + ", q" + RESET

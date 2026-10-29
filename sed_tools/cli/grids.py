@@ -35,8 +35,6 @@ def prompt_njm_axis_cuts(
 
     Returns a dict with keys teff_range, logg_range, meta_range and wl_range, each a (min, max) tuple or None.
     """
-    cuts = {'teff_range': None, 'logg_range': None, 'meta_range': None, 'wl_range': None}
-
     print(f"\n  ── Axis Cuts for {name} ──")
     print(f"  You can restrict the download to a subset of the grid.")
     print(f"  Leave blank to download everything.\n")
@@ -52,10 +50,10 @@ def prompt_njm_axis_cuts(
             print(f"    [M/H]: {info['meta_min']:+.2f} – {info['meta_max']:+.2f}    ({info['meta_unique']} values)")
         print()
 
-    cuts['teff_range'] = ask_range("  Teff range (e.g. '3500,8000') or blank for all: ")
-    cuts['logg_range'] = ask_range("  logg range (e.g. '3.5,5.0') or blank for all: ")
-    cuts['meta_range'] = ask_range("  [M/H] range (e.g. '-1.0,0.5') or blank for all: ")
-    cuts['wl_range']   = ask_range("  Wavelength range in Å (e.g. '3000,10000') or blank for all: ")
+    cuts = {'teff_range': ask_range("  Teff range (e.g. '3500,8000') or blank for all: "),
+            'logg_range': ask_range("  logg range (e.g. '3.5,5.0') or blank for all: "),
+            'meta_range': ask_range("  [M/H] range (e.g. '-1.0,0.5') or blank for all: "),
+            'wl_range': ask_range("  Wavelength range in Å (e.g. '3000,10000') or blank for all: ")}
 
     # The grabber prints the cuts as it applies them.
     if all(v is None for v in cuts.values()):
@@ -157,6 +155,12 @@ def _txt_files(model_dir: str) -> List[str]:
     return sorted(glob.glob(os.path.join(model_dir, "*.txt")))
 
 
+def _clean_grid(name: str, model_dir: str, flux_unit: Optional[str]) -> Dict:
+    """clean_model_dir on a grid's folder, with ``flux_unit`` or the unit asked for (_ask_flux_unit)."""
+    flux_unit = _ask_flux_unit(name, _txt_files(model_dir), flux_unit)
+    return clean_model_dir(model_dir, try_h5_recovery=True, rebuild_lookup=True, flux_unit=flux_unit)
+
+
 def _ask_import_flux_unit(path: str, name: Optional[str], flux_unit: Optional[str] = None) -> Optional[str]:
     """_ask_flux_unit for the spectra SED.import_grid would import from path."""
     files, src_dir = _import_sources(Path(path).expanduser())
@@ -182,11 +186,10 @@ def _report_import_flux_unit(path: str, name: Optional[str], flux_unit: Optional
 def _rebuild_grid(model_dir: str, model_name: str, rebuild_h5: bool, rebuild_flux_cube: bool,
                   flux_unit: Optional[str] = None) -> List[str]:
     """Clean one local grid and rebuild its products; returns what was not done (empty when complete)."""
-    flux_unit = _ask_flux_unit(model_name, _txt_files(model_dir), flux_unit)
-    summary = clean_model_dir(model_dir, try_h5_recovery=True, rebuild_lookup=True, flux_unit=flux_unit)
+    summary = _clean_grid(model_name, model_dir, flux_unit)
     print(f"[clean] {model_name}: total={summary['total']}")
 
-    if not glob.glob(os.path.join(model_dir, "*.txt")):
+    if not _txt_files(model_dir):
         print(f"[rebuild] no spectra (.txt) present after cleaning; skipping {model_name}.")
         return ["no spectra (.txt) present after cleaning"]
 
@@ -234,14 +237,12 @@ def _print_cleaning_report(summary: Dict) -> None:
         print(f" Wavelength: {detected_wl}")
         print(f" Flux      : {detected_flux}")
 
-    units_already_standard = (detected_wl == 'angstrom' and detected_flux == 'flam')
-    n_converted = len(summary['converted'])
+    n_converted, n_tagged = len(summary['converted']), 0
     n_recovered = len(summary['recovered'])
     n_skipped   = len(summary['skipped_already'])
 
     # Files "converted" from units that were already Å and F_λ were only cleaned and tagged.
-    n_tagged = 0
-    if n_converted > 0 and units_already_standard:
+    if n_converted > 0 and detected_wl == 'angstrom' and detected_flux == 'flam':
         n_tagged, n_converted = n_converted, 0
 
     print(f" Total files: {n_total}")
@@ -334,9 +335,7 @@ def _spectra_sources(source: str) -> List[str]:
 def _spectra_grabbers(src_list: List[str], base_dir: str, workers: int) -> Dict:
     """A grabber per requested source; NJM is left out when the mirror is unavailable (the grabber warns)."""
     grabs: Dict = {}
-    for src in ("njm", "svo", "msg", "mast"):
-        if src not in src_list:
-            continue
+    for src in [s for s in ("njm", "svo", "msg", "mast") if s in src_list]:
         grabber = spectra_grabber(src, base_dir, max_workers=workers)
         if src != "njm" or grabber.is_available():
             grabs[src] = grabber
@@ -450,11 +449,9 @@ def _download_and_build_grid(name: str, sources: List[str], grabs: Dict, base_di
         print(f"Missing: {', '.join(missing)}" if missing else "All essential files present")
         return [f"missing {', '.join(missing)}"] if missing else []
 
-    flux_unit = _ask_flux_unit(name, _txt_files(model_dir), flux_unit)
-    summary = clean_model_dir(model_dir, try_h5_recovery=True, rebuild_lookup=True, flux_unit=flux_unit)
-    _print_cleaning_report(summary)
+    _print_cleaning_report(_clean_grid(name, model_dir, flux_unit))
 
-    if not glob.glob(os.path.join(model_dir, "*.txt")):
+    if not _txt_files(model_dir):
         print("\n  No spectra remaining after cleaning")
         return ["no spectra remaining after cleaning"]
 

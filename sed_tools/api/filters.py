@@ -206,20 +206,11 @@ class Filters:
                                       tag_filter_file, tag_filter_tree)
 
         rows: List[Dict[str, Any]] = []
+        fields = ("detector_type", "source", "filter_id", "changed", "migrated", "note", "kept", "resolved_type",
+                  "resolved_source")
 
         def record(r) -> None:
-            rows.append({
-                "path": str(r.path),
-                "detector_type": r.detector_type,
-                "source": r.source,
-                "filter_id": r.filter_id,
-                "changed": r.changed,
-                "migrated": r.migrated,
-                "note": r.note,
-                "kept": r.kept,
-                "resolved_type": r.resolved_type,
-                "resolved_source": r.resolved_source,
-            })
+            rows.append({"path": str(r.path), **{key: getattr(r, key) for key in fields}})
             if verbose or r.kept or (r.changed and r.source == "assumed"):
                 flag = "*" if r.changed else " "
                 note = f"  ({r.note})" if r.note and (r.kept or r.source == "assumed") else ""
@@ -269,8 +260,7 @@ class Filters:
         """
         from ..filters.library import FilterLibrary
 
-        return FilterLibrary(filter_root or cls._filter_root).available(
-            facility, instrument, remote=include_remote)
+        return FilterLibrary(filter_root or cls._filter_root).available(facility, instrument, remote=include_remote)
 
     @classmethod
     def inventory(cls, *, filter_root=None, include_remote=True, facility=None):
@@ -282,8 +272,7 @@ class Filters:
         """
         from ..filters.library import FilterLibrary
 
-        return FilterLibrary(filter_root or cls._filter_root).inventory(
-            remote=include_remote, facility=facility)
+        return FilterLibrary(filter_root or cls._filter_root).inventory(remote=include_remote, facility=facility)
 
     @classmethod
     def atmospheres(cls, filter_root=None, *, include_remote=True):
@@ -337,14 +326,8 @@ class Filters:
         (:func:`sed_tools.combine_filters.combine_filter_sets`)."""
         from ..filters.combine import combine_filter_sets
 
-        return combine_filter_sets(
-            output,
-            inputs,
-            filter_root=filter_root or cls._filter_root,
-            facility=facility,
-            instrument=instrument,
-            on_conflict=on_conflict,
-        )
+        return combine_filter_sets(output, inputs, filter_root=filter_root or cls._filter_root, facility=facility,
+                                   instrument=instrument, on_conflict=on_conflict)
 
     # NJM catalogue: properties, descriptions, search, citations, plots
     _catalogues: Dict[Tuple[str, bool], Any] = {}
@@ -596,11 +579,10 @@ class Filters:
         catalogue = cls._catalogue(filter_root)
         chosen = cls._plot_bands(targets, filter_root, catalogue, fetch)
 
-        curves, labels = {}, {}
+        curves = {}
         for fac, inst, band, directory in chosen:
-            key = f"{fac}/{inst}/{band}"
             curve = load_filter_curve(str(directory / f"{band}.dat"))
-            curves[key] = (curve.wavelength, curve.transmission)
+            curves[f"{fac}/{inst}/{band}"] = (curve.wavelength, curve.transmission)
         directories = {directory for *_, directory in chosen}
         colors, title = None, None
         if len(directories) == 1:

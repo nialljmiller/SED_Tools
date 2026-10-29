@@ -24,19 +24,15 @@ def _normalize_mode(mode: str) -> str:
 
 def terminal_plots_enabled(mode: str = "auto") -> bool:
     mode = _normalize_mode(mode)
-    if mode == "always":
-        return True
-    if mode == "never":
-        return False
+    if mode != "auto":
+        return mode == "always"
     return bool(sys.stdout.isatty() and os.environ.get("TERM", "").lower() not in {"", "dumb"})
 
 
 def terminal_color_enabled(mode: str = "auto") -> bool:
     mode = _normalize_mode(mode)
-    if mode == "always":
-        return True
-    if mode == "never":
-        return False
+    if mode != "auto":
+        return mode == "always"
     return bool(
         sys.stdout.isatty()
         and os.environ.get("TERM", "").lower() not in {"", "dumb"}
@@ -47,8 +43,7 @@ def terminal_color_enabled(mode: str = "auto") -> bool:
 
 def terminal_unicode_enabled() -> bool:
     encoding = sys.stdout.encoding or locale.getpreferredencoding(False) or ""
-    normalized = encoding.lower().replace("-", "").replace("_", "")
-    return "utf8" in normalized
+    return "utf8" in encoding.lower().replace("-", "").replace("_", "")
 
 
 def terminal_width(default: int = 80) -> int:
@@ -59,6 +54,12 @@ def terminal_width(default: int = 80) -> int:
 def _paint(char: str, color: Optional[str], enabled: bool) -> str:
     code = _COLORS.get(str(color).lower()) if color else None
     return f"\x1b[{code}m{char}\x1b[0m" if enabled and code else char
+
+
+def _painted(canvas: List[List[str]], cell_colors: List[list], enabled: bool) -> List[str]:
+    """Each canvas row as text, every character in its cell's colour."""
+    return ["".join(_paint(char, color, enabled) for char, color in zip(chars, colors))
+            for chars, colors in zip(canvas, cell_colors)]
 
 
 def _limits(values: np.ndarray):
@@ -89,8 +90,7 @@ def scatter2d(
     canvas_h = max(6, int(height))
     xlo, xhi = _limits(xv)
     ylo, yhi = _limits(yv)
-    unicode_ok = terminal_unicode_enabled()
-    dot, vert, horiz, corner = ("·", "│", "─", "└") if unicode_ok else (".", "|", "-", "+")
+    dot, vert, horiz, corner = ("·", "│", "─", "└") if terminal_unicode_enabled() else (".", "|", "-", "+")
     canvas = [[" " for _ in range(canvas_w)] for _ in range(canvas_h)]
     cell_colors = [[None for _ in range(canvas_w)] for _ in range(canvas_h)]
     labels = point_labels or {}
@@ -108,12 +108,8 @@ def scatter2d(
     use_color = terminal_color_enabled(color)
     ytop, ybottom = (ylo, yhi) if invert_y else (yhi, ylo)
     lines = [title, "", f"{ylabel}  {ytop:g}"]
-    for row in range(canvas_h):
-        rendered = "".join(
-            _paint(canvas[row][col], cell_colors[row][col], use_color)
-            for col in range(canvas_w)
-        )
-        lines.append(f" {' ' * len(ylabel)} {vert}{rendered}")
+    for row in _painted(canvas, cell_colors, use_color):
+        lines.append(f" {' ' * len(ylabel)} {vert}{row}")
     lines.append(f" {ybottom:g} {corner}{horiz * canvas_w}")
     lines.append(f"       {xlo:g}{' ' * max(1, canvas_w - len(f'{xlo:g}') - len(f'{xhi:g}'))}{xhi:g}")
     lines.append(f"       {xlabel.center(canvas_w)}")
@@ -162,13 +158,11 @@ def lineplot(
                 canvas[row][col] = char
                 cell_colors[row][col] = item.get("color")
 
-    unicode_ok = terminal_unicode_enabled()
-    vert, horiz, corner = ("│", "─", "└") if unicode_ok else ("|", "-", "+")
+    vert, horiz, corner = ("│", "─", "└") if terminal_unicode_enabled() else ("|", "-", "+")
     use_color = terminal_color_enabled(color)
     lines = [title, f"{ylabel}  {yhi:g}"]
-    for row in range(canvas_h):
-        rendered = "".join(_paint(canvas[row][c], cell_colors[row][c], use_color) for c in range(canvas_w))
-        lines.append(f" {vert}{rendered}")
+    for row in _painted(canvas, cell_colors, use_color):
+        lines.append(f" {vert}{row}")
     lines.append(f" {ylo:g} {corner}{horiz * canvas_w}")
     lines.append(f"     {xlo:g}{' ' * max(1, canvas_w - len(f'{xlo:g}') - len(f'{xhi:g}'))}{xhi:g}")
     lines.append(f"     {xlabel.center(canvas_w)}")
