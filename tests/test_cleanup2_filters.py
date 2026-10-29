@@ -39,3 +39,25 @@ def test_a_block_that_does_not_lift_is_reported_as_the_http_status(monkeypatch, 
     assert "could not connect" not in caplog.text
     with pytest.raises(requests.ConnectionError, match=r"NJM is unreachable \(HTTP 403\)"):
         grabber._get(f"{NJM}/index.json")
+
+
+def test_a_partial_svo_fill_with_curves_that_differ_from_njms_gives_one_warning(tmp_path, monkeypatch, caplog):
+    from sed_tools import filter_library
+    from sed_tools.filter_library import FilterLibrary, instrument_catalogue
+    from test_release_njmdown import NJM_DOWN, svo_browser
+
+    record = {"svo_instruments": ["Roman/WFI"], "bands": ["F062", "F087", "F106"],
+              "svo_bands": {"Roman/WFI": ["F087"]}}
+    monkeypatch.setattr(filter_library, "load_instrument_catalogue",
+                        lambda: instrument_catalogue({"Roman": {"instruments": {"WFI": record}}}))
+    root = tmp_path / "filters"
+    library = FilterLibrary(root)
+    library.mirror = NJM_DOWN
+    library.svo = svo_browser(root, {("Roman", "WFI"): ["F062", "F087"]})
+    with caplog.at_level(logging.WARNING, logger="sed_tools.filter_library"):
+        library.published("Roman", "WFI")
+    after_svo = [r.getMessage() for r in caplog.records if "trying SVO" not in r.getMessage()]
+    assert len(after_svo) == 1
+    [warning] = after_svo
+    assert "Roman/WFI is incomplete" in warning and "missing F106" in " ".join(warning.split())
+    assert "SVO's F062 of Roman/WFI differ from NJM's current curves" in " ".join(warning.split())

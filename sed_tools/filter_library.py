@@ -25,7 +25,7 @@ from .component_sources.catalog import (
 )
 from .filter_components import (
     FILTER, OPTICS, QE, PUBLISHED, AtmosphereGrid, AtmosphereSpec, ComponentError,
-    InstrumentManifest, atmosphere_file, build_product, find_atmosphere, parse_components,
+    InstrumentManifest, atmosphere_file, build_product, find_atmosphere, index_listing, parse_components,
     recipe_name, resolve_atmosphere,
 )
 from .filter_catalogue import cache_root
@@ -119,7 +119,7 @@ class FilterLibrary:
         if not list(directory.glob("*.dat")) or not (directory / "manifest.json").is_file():
             return False
         expected = {f"{band}.dat" for band in _declared_bands(directory)}
-        expected.update(_index_entries(directory))
+        expected.update(index_listing(directory) or [])
         return bool(expected) and all(Path(name).name == name and (directory / name).is_file()
                                       for name in expected)
 
@@ -192,7 +192,12 @@ class FilterLibrary:
         builder, built, why_not = self._publishing_builder(facility, instrument, installed)
         if why_not:
             reasons.append(f"original source: {why_not}")
-        next_source = "its original-source builder" if builder else None if njm_filled else self._svo_next()
+        if builder is not None:
+            next_source = "its original-source builder"
+        else:
+            next_source = None if njm_filled else self._svo_next()
+            if next_source and why_not:
+                next_source += f" (the original source is not used: {why_not})"
         if next_source:
             logger.warning("NJM cannot provide %s/%s (%s); trying %s", facility, instrument, reason, next_source)
         if builder is not None:
@@ -236,9 +241,7 @@ class FilterLibrary:
         if not builder.publishes:
             return None, None, "its builder makes only the separate components, not the published curves"
         if installed is not None and not _same_directory(installed, built):
-            why = f"its builder writes {names[0]}/{names[1]}, which would be a second copy beside {installed}"
-            logger.warning("The original source of %s/%s is not used: %s", facility, instrument, why)
-            return None, None, why
+            return None, None, f"its builder writes {names[0]}/{names[1]}, which would be a second copy beside {installed}"
         return builder, built, None
 
     @staticmethod
@@ -295,8 +298,6 @@ class FilterLibrary:
 
     def _published_from_builder(self, ref, directory):
         """Build the set from its original source; ``None`` once it is complete, else why it is not."""
-        if self.published_complete(directory):  # installed under the builder's spelling
-            return None
         try:
             get_builder(ref.name)(self.root, **dict(ref.kwargs))
         except (RequestException, OSError, RuntimeError, ValueError) as exc:
@@ -378,15 +379,13 @@ class FilterLibrary:
         """Install a product of NJM's from SVO under NJM's names.
 
         Returns ``(directory, None)`` when every band is installed, else
-        ``(directory, what is missing)``: the bands SVO has no curve of.
+        ``(directory, what is missing)``: the bands SVO has no curve of.  The
+        bands taken from SVO although NJM's current curve differs are named in
+        that text, or in a warning of their own when nothing is missing.
         ComponentError, once the others are saved, when a curve SVO has could
         not be saved.
         """
         directory = installed if installed is not None else self.root / plan.facility / plan.instrument
-        if plan.differs:
-            logger.warning("SVO's %s of %s/%s differ from NJM's current curves; they are installed as SVO "
-                           "publishes them, and replaced by NJM's (with a warning) when it is fetched from NJM",
-                           ", ".join(plan.differs), plan.facility, plan.instrument)
         try:
             self.svo.download_into(directory, plan.rows, expected=plan.bands)
         except SVOUnreachableError:
@@ -397,11 +396,16 @@ class FilterLibrary:
                                  f"{len(have)} of NJM's {len(plan.bands)} bands came from SVO's "
                                  f"{', '.join(plan.svo_instruments)} ({', '.join(have) or 'none'}); {exc}") from exc
         missing = [band for band in plan.bands if not (directory / f"{band}.dat").is_file()]
+        differs = (f"SVO's {', '.join(plan.differs)} of {plan.facility}/{plan.instrument} differ from NJM's current "
+                   "curves; they are installed as SVO publishes them, and replaced by NJM's (with a warning) when "
+                   "it is fetched from NJM") if plan.differs else ""
         if not missing:
+            if differs:
+                logger.warning("%s", differs)
             return directory, None
         return directory, (f"{len(plan.bands) - len(missing)} of NJM's {len(plan.bands)} bands were installed from "
                            f"SVO's {', '.join(plan.svo_instruments)}; missing {', '.join(missing)}, which SVO "
-                           "does not have")
+                           "does not have" + (f". {differs}" if differs else ""))
 
     def available(self, facility, instrument, *, remote=True):
         """What can be requested for an instrument, from the first source that can say.
@@ -745,11 +749,13 @@ class FilterLibrary:
         if remote:
             try:
                 facilities = self.svo.list_facilities()
-                if not facilities:
-                    raise ComponentError("SVO returned no facilities")
-                listings.append(("svo", [(f.key, f.description) for f in facilities]))
             except (ComponentError, RequestException, RuntimeError) as exc:
-                errors.append(_svo_error(exc))
+                errors.append(f"SVO: {exc}")
+            else:
+                if facilities:
+                    listings.append(("svo", [(f.key, f.description) for f in facilities]))
+                else:
+                    errors.append("SVO: SVO returned no facilities")
             if self.mirror.is_available():
                 try:
                     listings.append(("njm", [(name, "") for name in self.mirror.discover_facilities()]))
@@ -778,15 +784,16 @@ class FilterLibrary:
         if remote:
             try:
                 fac = self.svo_facility(facility)
-                if fac is not None:
-                    instruments = self.svo.list_instruments(fac.key)
-                    if not instruments:
-                        raise ComponentError("No instruments returned for a listed SVO facility")
-                    listings.append(("svo", [(i.key, i.description) for i in instruments]))
+                instruments = self.svo.list_instruments(fac.key) if fac is not None else None
             except SVOUnreachableError as exc:
-                errors.append(_svo_error(exc))  # as facilities() words it: one outage, reported once
+                errors.append(f"SVO: {exc}")  # as facilities() words it: one outage, reported once
             except (ComponentError, RequestException, RuntimeError) as exc:
                 errors.append(f"SVO {facility}: {exc}")
+            else:
+                if instruments:
+                    listings.append(("svo", [(i.key, i.description) for i in instruments]))
+                elif fac is not None:
+                    errors.append(f"SVO {facility}: No instruments returned for a listed SVO facility")
             if self.mirror.is_available():
                 try:
                     fac = next((name for name in self.mirror.discover_facilities() if same_facility(name)), None)
@@ -830,11 +837,6 @@ def _publishing_builders():
     return [names for names, ref in BUILDERS_FOR.items() if ref.publishes]
 
 
-def _svo_error(exc):
-    """A listing error of SVO's that is not about one facility (an outage), worded the same each time."""
-    return f"SVO: {exc}"
-
-
 def _availability(description, source, failed):
     """``description`` with ``availability_source``, ``errors``, ``sources_failed`` and ``fallback_from``.
 
@@ -874,9 +876,8 @@ def _refuse_uncovered_bands(manifest, roles, bands):
 # ----------------------------------------------------------------------
 def _declared_bands(directory):
     """The bands an installed manifest declares part of the set: ``bands`` minus ``archived_bands``."""
-    data = json.loads((Path(directory) / "manifest.json").read_text(encoding="utf-8"))
-    archived = data.get("archived_bands") or {}  # NJM writes {band: {...}}; a list of names works too
-    return [band for band in InstrumentManifest.from_dict(data).bands if band not in archived]
+    manifest = InstrumentManifest.load(directory)
+    return [band for band in manifest.bands if band not in manifest.archived_bands]
 
 
 def _manifest_text(directory):
@@ -902,7 +903,7 @@ def _describe_completed_set(directory):
     every curve NJM's index file lists is described from its header.
     """
     manifest = InstrumentManifest.from_published(directory)
-    manifest.bands = sorted(Path(name).stem for name in _index_entries(directory) if name.endswith(".dat"))
+    manifest.bands = sorted(Path(name).stem for name in index_listing(directory) or [] if name.endswith(".dat"))
     manifest.save(directory)
 
 
@@ -926,15 +927,6 @@ def _drop_unlisted_bands(directory, listed):
     path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     logger.warning("%s declared bands that NJM's index does not list and that are not installed (%s); "
                    "they are no longer expected", path, ", ".join(stale))
-
-
-def _index_entries(directory):
-    """The curve files an instrument's MESA index file lists (none without one)."""
-    index = Path(directory) / Path(directory).name
-    if not index.is_file():
-        return []
-    return [line.strip() for line in index.read_text().splitlines()
-            if line.strip() and not line.lstrip().startswith("#")]
 
 
 def _curve_state(directory):

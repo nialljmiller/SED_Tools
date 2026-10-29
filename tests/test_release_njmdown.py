@@ -231,7 +231,7 @@ def test_a_builder_that_would_write_beside_an_installed_spelling_is_not_run(tmp_
     with caplog.at_level(logging.WARNING), pytest.raises(ComponentError) as raised:
         library.published("Herschel", "PACS")
     assert f"its builder writes Herschel/PACS, which would be a second copy beside {legacy}" in str(raised.value)
-    assert "The original source of Herschel/PACS is not used" in caplog.text
+    assert "trying SVO (the original source is not used: its builder writes Herschel/PACS" in caplog.text
     assert sorted(p.name for p in (root / "Herschel").iterdir()) == ["Pacs_"]
 
 
