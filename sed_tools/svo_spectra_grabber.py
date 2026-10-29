@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # svo_spectra_grabber.py — robust SVO discovery & downloader
 
-import csv
 import io
 import json
 import logging
@@ -15,6 +14,7 @@ from bs4 import BeautifulSoup
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
+from ._lookup_io import write_lookup_csv
 from .header_parser import parse_header
 
 logger = logging.getLogger(__name__)
@@ -423,11 +423,7 @@ class SVOSpectraGrabber:
         keys = set()
         for r in rows:
             keys.update(r.keys())
-        header = ["file_name"] + sorted(k for k in keys if k != "file_name")
-        with open(path, "w", encoding="utf-8", newline="") as f:
-            f.write("#" + ",".join(header) + "\n")
-            w = csv.DictWriter(f, fieldnames=header, extrasaction="ignore")
-            w.writerows(rows)
+        write_lookup_csv(rows, path, columns=["file_name"] + sorted(k for k in keys if k != "file_name"))
         print(f"    Lookup table saved: {path}")
 
 

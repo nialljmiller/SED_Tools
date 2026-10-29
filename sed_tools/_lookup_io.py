@@ -64,8 +64,10 @@ def write_lookup_csv(
     path: str,
     *,
     columns: Optional[List[str]] = None,
+    comment: bool = True,
+    restval="",
 ) -> int:
-    """Write a lookup table to *path* with a '#'-prefixed header row.
+    """Write a lookup table to *path* with a '#'-prefixed header row (a plain csv header with ``comment=False``).
 
     Parameters
     ----------
@@ -76,6 +78,8 @@ def write_lookup_csv(
         Destination file path.
     columns :
         Explicit column order.  If omitted, inferred from *records*.
+    restval :
+        What a row without a column's key gets in that column.
 
     Returns
     -------
@@ -92,8 +96,11 @@ def write_lookup_csv(
         n = len(rows)
 
     with open(path, "w", newline="", encoding="utf-8") as f:
-        f.write("#" + ",".join(cols) + "\n")
-        writer = csv.DictWriter(f, fieldnames=cols, extrasaction="ignore")
+        writer = csv.DictWriter(f, fieldnames=cols, restval=restval, extrasaction="ignore")
+        if comment:
+            f.write("#" + ",".join(cols) + "\n")
+        else:
+            writer.writeheader()
         writer.writerows(rows)
 
     logger.debug("Wrote lookup table: %s (%d rows)", path, n)

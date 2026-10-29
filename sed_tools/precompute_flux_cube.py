@@ -582,12 +582,7 @@ def _write_variants_index(
 ) -> None:
     """Write variants_index.csv to the parent directory."""
     path = os.path.join(parent_dir, "variants_index.csv")
-    fieldnames = ["variant_name"] + extra_cols + ["n_spectra", "path"]
-    with open(path, "w", newline="", encoding="utf-8") as f:
-        f.write("#" + ",".join(fieldnames) + "\n")
-        w = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
-        for e in entries:
-            w.writerow(e)
+    write_lookup_csv(entries, path, columns=["variant_name"] + extra_cols + ["n_spectra", "path"])
     print(f"Variants index: {path}")
 
 

@@ -15,7 +15,6 @@ MASTSpectraGrabber
 
 from __future__ import annotations
 
-import csv
 import gzip
 import io
 import logging
@@ -30,6 +29,8 @@ logger = logging.getLogger(__name__)
 
 import numpy as np
 import requests
+
+from ._lookup_io import write_lookup_csv
 
 # ----------------- constants -----------------
 DATA_BASE   = "https://archive.stsci.edu/hlsps/bosz/bosz2024"
@@ -379,10 +380,7 @@ def _write_lookup_table(model_dir: str, spectra: List[Tuple[str, Dict[str, str]]
     for n, params in spectra:
         pd = dict(params); pd["file_name"] = n
         rows.append(pd); keys.update(pd.keys())
-    header = ["file_name"] + sorted([k for k in keys if k != "file_name"])
-    with open(out_csv, "w", encoding="utf-8", newline="") as f:
-        w = csv.writer(f); w.writerow(header)
-        for r in rows: w.writerow([r.get(k, "") for k in header])
+    write_lookup_csv(rows, out_csv, columns=["file_name"] + sorted([k for k in keys if k != "file_name"]), comment=False)
     print(f"[MAST] wrote lookup_table.csv with {len(rows)} rows")
 
 # ----------------- main class -----------------

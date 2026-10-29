@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # msg_spectra_grabber.py — MSG extractor with correct (Teff, logg, [M/H]) for C3K and friends
 
-import csv
 import logging
 import os
 import re
@@ -18,6 +17,7 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 from tqdm import tqdm
 
+from ._lookup_io import write_lookup_csv
 from .spectra_cleaner import _is_physical_wavelength_array as _is_physical_wavelength, _iter_datasets
 from .svo_spectra_grabber import DISCOVERY_TIMEOUT, discovery_failure, mount_discovery
 
@@ -491,13 +491,8 @@ class MSGSpectraGrabber:
         return ("ok", fname, {"teff":teff,"logg":logg,"meta":meta})
 
     def _write_lookup(self, out_dir, rows):
-        header = ["file_name","teff","logg","meta"]
-        with open(os.path.join(out_dir, "lookup_table.csv"), "w", encoding="utf-8", newline="") as f:
-            w = csv.DictWriter(f, fieldnames=header, extrasaction="ignore")
-            w.writeheader()
-            for r in rows:
-                out = {k: r.get(k, float("nan")) for k in header}
-                w.writerow(out)
+        write_lookup_csv(rows, os.path.join(out_dir, "lookup_table.csv"), columns=["file_name", "teff", "logg", "meta"],
+                         comment=False, restval=float("nan"))
         print(f"    Lookup table saved: {os.path.join(out_dir,'lookup_table.csv')}")
 
     # optional standalone
