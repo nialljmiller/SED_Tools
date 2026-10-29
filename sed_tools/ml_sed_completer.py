@@ -162,10 +162,7 @@ class SEDCompleterNetwork:
         dropout : float
             Dropout rate
         """
-        try:
-            import torch.nn as nn
-        except ImportError:
-            raise ImportError("PyTorch required. Install: pip install torch")
+        import torch.nn as nn
         
         self.input_dim = input_dim
         self.output_dim = output_dim
@@ -282,14 +279,6 @@ class SEDCompleter:
     
     def _normalize_params(self, teff: float, logg: float, meta: float) -> np.ndarray:
         """Normalize stellar parameters using stored scaler."""
-        if self.scaler_params is None:
-            # Fallback defaults
-            return np.array([
-                (teff - 5000.0) / 10000.0,
-                (logg - 3.0) / 3.0,
-                meta / 2.0,
-            ])
-        
         return np.array([
             (teff - self.scaler_params['teff_mean']) / self.scaler_params['teff_std'],
             (logg - self.scaler_params['logg_mean']) / self.scaler_params['logg_std'],
@@ -305,9 +294,6 @@ class SEDCompleter:
         teff, logg, meta, wavelengths, flux_cube
         """
         cube_path = os.path.join(library_path, "flux_cube.bin")
-        if not os.path.exists(cube_path):
-            raise FileNotFoundError(f"flux_cube.bin not found in {library_path}")
-        
         with open(cube_path, 'rb') as f:
             header = f.read(16)
             nt, nl, nm, nw = struct.unpack('4i', header)
@@ -534,11 +520,6 @@ class SEDCompleter:
             epochs=epochs, patience=patience, verbose=verbose, device=self.device,
             progress="  Epoch {epoch:3d}: train_loss={train:.6f}, val_loss={val:.6f}, lr={lr:.2e}",
         )
-        if not history['train_loss']:
-            raise RuntimeError(
-                f"Training on {library_path} produced no usable epoch (every training or "
-                f"validation batch had a NaN loss); nothing was saved to {output_path}"
-            )
         
         print("-" * 60)
         print(f"Training complete. Best val_loss: {best_val_loss:.6f}")
@@ -865,9 +846,6 @@ class SEDCompleter:
         
         # Load config
         config_file = path / self.CONFIG_FILE
-        if not config_file.exists():
-            raise FileNotFoundError(f"Config not found: {config_file}")
-        
         with open(config_file, 'r') as f:
             self.config = json.load(f)
         
@@ -899,9 +877,6 @@ class SEDCompleter:
         
         # Load weights
         model_file = path / self.MODEL_FILE
-        if not model_file.exists():
-            raise FileNotFoundError(f"Model weights not found: {model_file}")
-        
         state_dict = torch.load(model_file, map_location=self.device, weights_only=True)
         self.model.load_state_dict(state_dict)
         self.model.eval()
@@ -1451,7 +1426,7 @@ def _extend_menu(base_dir: str, models_dir: str) -> None:
     _banner("EXTENSION COMPLETE!")
     print(f"Extended model: {output_dir}")
     print(f"  {summary['extended']} SEDs extended successfully")
-    print(f"  {summary.get('skipped', 0)} SEDs skipped (already covered range)")
+    print(f"  {summary['skipped']} SEDs skipped (already covered range)")
 
 
 def _list_menu(models_dir: str) -> None:
@@ -1494,8 +1469,6 @@ def train_model(
     from .ml import Completer
 
     save_path = str(save_path)
-    Path(save_path).mkdir(parents=True, exist_ok=True)
-
     completer = SEDCompleter()
     completer.train(
         library_path=str(grid_dir),
@@ -1533,7 +1506,6 @@ def extend_catalog(
     Extends a spectral grid directory (with lookup_table.csv + spectra files) into output_dir.
     """
     extension_range = wavelength_range or (DEFAULT_WL_MIN, DEFAULT_WL_MAX)
-    Path(output_dir).mkdir(parents=True, exist_ok=True)
 
     # If caller passed a path, load it
     if isinstance(model, (str, Path)):

@@ -39,8 +39,8 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
-# The interactive menus' number questions (ml_sed_completer and grid_densifier import them from here too).
-from .ui_utils import ask_number as _ask_number, ask_numbers as _ask_numbers, refused_without  # noqa: F401
+from .ml_sed_completer import _training_libraries, _warn_dropped
+from .ui_utils import ask_number as _ask_number, ask_numbers as _ask_numbers, refused_without
 
 logger = logging.getLogger(__name__)
 
@@ -75,10 +75,7 @@ class SEDGeneratorNetwork:
         dropout : float
             Dropout rate
         """
-        try:
-            import torch.nn as nn
-        except ImportError:
-            raise ImportError("PyTorch required: pip install torch")
+        import torch.nn as nn
         
         self.output_dim = output_dim
         self.hidden_layers = hidden_layers or [512, 512, 256, 256]
@@ -198,9 +195,6 @@ class SEDGenerator:
     def _load_flux_cube(self, library_path: str):
         """Load flux cube from binary file."""
         cube_path = os.path.join(library_path, "flux_cube.bin")
-        if not os.path.exists(cube_path):
-            raise FileNotFoundError(f"flux_cube.bin not found in {library_path}")
-        
         with open(cube_path, 'rb') as f:
             header = f.read(16)
             nt, nl, nm, nw = struct.unpack('4i', header)
@@ -267,10 +261,7 @@ class SEDGenerator:
             flux_list.append(flux_interp)
             masks_list.append(valid_mask)
         
-        if dropped:
-            reasons = ", ".join(f"{count} with {reason}" for reason, count in dropped.items())
-            logger.warning("Training data from %s: dropped %d of %d sampled spectra (%s)",
-                           library_path, sum(dropped.values()), len(indices), reasons)
+        _warn_dropped(dropped, len(indices), library_path)
         if len(params_list) == 0:
             raise ValueError(f"No valid training samples found in {library_path}")
         
@@ -378,11 +369,6 @@ class SEDGenerator:
             epochs=epochs, patience=patience, verbose=verbose, device=self.device,
             progress="  Epoch {epoch:3d}: train={train:.6f}, val={val:.6f}, lr={lr:.2e}",
         )
-        if not history['train_loss']:
-            raise RuntimeError(
-                f"Training on {library_path} produced no usable epoch (every training or "
-                f"validation batch had a NaN loss); nothing was saved to {output_path}"
-            )
         
         print("-" * 60)
         print(f"Training complete. Best val_loss: {best_val_loss:.6f}")
@@ -497,7 +483,6 @@ class SEDGenerator:
                    arrowprops=dict(arrowstyle='->'), fontsize=10, color='green')
         
         plt.tight_layout()
-        os.makedirs(output_path, exist_ok=True)
         fig.savefig(os.path.join(output_path, self.TRAINING_PLOT), dpi=150)
         plt.close(fig)
         print(f"  Saved: {self.TRAINING_PLOT}")
@@ -939,27 +924,6 @@ def _menu_choice(items: List[Dict[str, Any]], prompt: str) -> Optional[Dict[str,
     return items[idx]
 
 
-def _training_libraries(base_dir: str) -> List[Dict[str, Any]]:
-    """Libraries under base_dir with a flux_cube.bin, and their SED counts ("?" if unknown)."""
-    import pandas as pd
-    
-    libraries = []
-    for name in sorted(os.listdir(base_dir)):
-        path = os.path.join(base_dir, name)
-        if not os.path.isdir(path) or not os.path.exists(os.path.join(path, "flux_cube.bin")):
-            continue
-        
-        lookup = os.path.join(path, "lookup_table.csv")
-        n_seds = "?"
-        if os.path.exists(lookup):
-            try:
-                n_seds = len(pd.read_csv(lookup))
-            except (OSError, ValueError) as exc:
-                logger.warning("Could not count the SEDs in %s: %s", lookup, exc)
-        libraries.append({'name': name, 'path': path, 'n_seds': n_seds})
-    return libraries
-
-
 def _choose_generator(models_dir: str, show_teff_range: bool) -> Optional[Dict[str, Any]]:
     """List the generators in models_dir and read the user's choice."""
     generators = SEDGenerator.list_models(models_dir)
@@ -1059,7 +1023,6 @@ def _batch_menu(models_dir: str) -> None:
     print(f"\nWill generate {n_total} SEDs")
     
     output_dir = _ask_output_dir(os.path.join(selected['path'], "SED", "batch"))
-    os.makedirs(output_dir, exist_ok=True)
     
     print(f"\nGenerating {n_total} SEDs...")
     count = 0

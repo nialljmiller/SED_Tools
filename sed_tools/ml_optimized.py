@@ -46,15 +46,10 @@ class AutoTrainer:
         }
         model = SEDGeneratorNetwork(output_dim, hidden_layers=_hidden_layers(params), dropout=params["dropout"])
         optimizer, scheduler = _optimizer_and_scheduler(model, params["lr"])
-        history, best_val_loss = fit(
+        _, best_val_loss = fit(
             model, train_loader, val_loader, optimizer, scheduler,
             epochs=TRIAL_EPOCHS, patience=TRIAL_EPOCHS, verbose=False, device=self.device, progress="",
         )
-        if not history['train_loss']:
-            raise RuntimeError(
-                f"Trial {trial.number} {params} produced no usable epoch (every training "
-                "or validation batch had a NaN loss)"
-            )
         return best_val_loss
 
     def train_best(self, library_path, output_path, n_trials=20, epochs=100):

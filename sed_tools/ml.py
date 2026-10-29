@@ -270,10 +270,6 @@ def model_info(model_path: str) -> Dict[str, Any]:
     from .ml_sed_completer import SEDCompleter
     
     config_file = Path(model_path) / SEDCompleter.CONFIG_FILE
-    
-    if not config_file.exists():
-        raise FileNotFoundError(f"Model config not found: {config_file}")
-    
     with open(config_file, 'r') as f:
         return json.load(f)
 
@@ -480,9 +476,6 @@ class Completer:
         wavelength_ext, flux_ext : np.ndarray
             Extended arrays
         """
-        if not self.is_trained:
-            raise RuntimeError("No model loaded. Call train() or load() first.")
-        
         return self._completer.complete_sed(
             wavelength=wavelength,
             flux=flux,
