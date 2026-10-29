@@ -15,7 +15,6 @@ Filters:
 """
 
 import argparse
-import csv
 import glob
 import inspect
 import json
@@ -415,7 +414,7 @@ def _build_data_products(
     decide, not file times (see api._flux_cube_shortfall).  Returns the
     problems; empty when the products are complete.
     """
-    from .api import _build_flux_cube, _bundle_shortfall, _flux_cube_file, _flux_cube_shortfall
+    from .api import _build_flux_cube, _bundle_shortfall, _flux_cube_file, _flux_cube_shortfall, _variant_paths
 
     # HDF5 bundle
     out_h5 = os.path.join(model_dir, f"{name}_bundle.h5" if src == "msg" else f"{name}.h5")
@@ -443,19 +442,14 @@ def _build_data_products(
                     f"Rebuild it with: {_rebuild_command(name, model_dir)}"]
         return []
 
-    if _build_flux_cube(model_dir).name == "variants_index.csv":
-        variants_index = os.path.join(model_dir, "variants_index.csv")
-        with open(variants_index) as vf:
-            header = vf.readline()
-            vrows = list(csv.DictReader(vf, fieldnames=[
-                c.lstrip("#").strip() for c in header.strip().split(",")
-            ]))
-        print(f"Flux cubes    : {len(vrows)} MESA-ready subgrid(s) created")
-        for row in vrows:
-            vname = row.get("variant_name", row.get("path", "?"))
-            print(f"  -> {os.path.join(model_dir, vname)}/")
+    written = _build_flux_cube(model_dir)
+    if written.name == "variants_index.csv":
+        subgrids = _variant_paths(written)
+        print(f"Flux cubes    : {len(subgrids)} MESA-ready subgrid(s) created")
+        for subgrid in subgrids:
+            print(f"  -> {os.path.join(model_dir, subgrid)}/")
         print("\n  Point MESA Colors to one of the above subdirectories.")
-        print(f"  See {variants_index} for the full inventory.")
+        print(f"  See {written} for the full inventory.")
     else:
         print("Flux cube     : flux_cube.bin")
     return []
@@ -1155,7 +1149,7 @@ def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> int:
         if selected is None:
             break
         if len(selected) > 1:
-            _download_every_instrument(library, [facilities[i] for i in selected], base_dir, failures, shown=shown)
+            _download_every_instrument(library, [facilities[i] for i in selected], failures, shown)
             break
         if not _browse_instruments(library, facilities[selected[0]], download, shown=shown):
             break
@@ -1280,13 +1274,11 @@ def _print_listing_errors(errors: List[str], shown: set) -> None:
             print(f"[filters] {error}")
 
 
-def _download_every_instrument(library, facilities: List[dict], base_dir: str, failures: List[str], *,
-                               shown: Optional[set] = None) -> None:
+def _download_every_instrument(library, facilities: List[dict], failures: List[str], shown: set) -> None:
     """After confirming the count, download every instrument of each facility.
 
     An incomplete instrument list is a failure too.
     """
-    shown = set() if shown is None else shown
     listings = []
     for facility in facilities:
         result = library.instruments(facility["key"])
@@ -1532,11 +1524,9 @@ def run_filter_combine_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
         page_size=50,
         max_cols=2,
     )
-    if selected is None or selected == []:
+    if selected is None:
         print("No filter sets selected.")
         return
-    if isinstance(selected, int):
-        selected = [selected]
 
     selected_paths = [options[i].path for i in selected]
     print("\nSelected filter sets:")

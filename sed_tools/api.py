@@ -955,9 +955,8 @@ class SED:
                 model_dir.rmdir()  # no spectrum was within the bounds: remove the empty folder this call made
         else:
             if clean:
-                cls._clean_fetched(model_dir, flux_unit)
-            cube = _flux_cube_file(model_dir)
-            shortfall = _flux_cube_shortfall(model_dir) if cube is not None else None
+                cls._clean_fetched(model_dir, flux_unit)  # leaves the flux cube files alone
+            shortfall = _flux_cube_shortfall(model_dir)  # None without a cube
             if ((selected and cube is None) or shortfall) and any(model_dir.glob("*.txt")):
                 # As sed-tools grids does: a selection gets a lookup table, HDF5 bundle and flux cube of
                 # its own, and a cube that lacks spectra beside it (a selection, then the rest) is
@@ -972,8 +971,7 @@ class SED:
         cat = cls._load_catalog_from_dir(model_dir, catalog, used_source)
         
         # Apply parameter filters; a bound of 0 is a bound
-        bounds = (teff_min, teff_max, logg_min, logg_max, metallicity_min, metallicity_max)
-        if any(b is not None for b in bounds):
+        if cuts:
             cat = cat.filter(
                 teff_min=teff_min,
                 teff_max=teff_max,
