@@ -1,4 +1,5 @@
-"""Small dependency-free terminal renderers used by coverage diagnostics."""
+"""Terminal checks (colour, Unicode, width) used by the menus, and the dependency-free text plots of the
+coverage report."""
 
 from __future__ import annotations
 

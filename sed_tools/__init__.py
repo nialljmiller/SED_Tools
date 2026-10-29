@@ -1,7 +1,6 @@
-"""Public package API for SED Tools.
+"""Public package API for SED Tools: the supported import surface and thin compatibility helpers.
 
-Implementation code lives in the package's focused modules.  This module only
-defines the supported import surface and thin compatibility helpers.
+The code is in the subpackages (api, cli, filters, grids, cube, ml) and the old module paths forward to them.
 """
 
 from __future__ import annotations

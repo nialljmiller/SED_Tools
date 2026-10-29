@@ -1,4 +1,4 @@
-"""UI utility functions for interactive prompts."""
+"""Prompts, pickers and input parsers shared by the menus (cli, ml, cube, filters.svo)."""
 
 from typing import Sequence, Optional, List, Union, Tuple
 import importlib.util
@@ -6,10 +6,91 @@ import math
 import re
 import shutil
 import sys
-
-from .parsing import parse_multi_selection
+import textwrap
 
 from .terminal_plots import terminal_color_enabled, terminal_width
+
+
+def parse_numeric_range(raw: str) -> Optional[Tuple[float, float]]:
+    """Parse two numbers separated by comma, whitespace, colon, ``..`` or dash."""
+    text = raw.strip()
+    if not text:
+        return None
+    match = re.fullmatch(
+        r"\s*([-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?)"
+        r"\s*(?:,|:|\.\.|\s+|-)\s*"
+        r"([-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?)\s*",
+        text,
+    )
+    if match is None:
+        return None
+    low, high = (float(value) for value in match.groups())
+    return (low, high) if low <= high else (high, low)
+
+
+def parse_multi_selection(spec: str, total: int) -> list[int]:
+    """Parse 1-based IDs such as ``1,3-5`` into unique 0-based indexes."""
+    chosen: set[int] = set()
+    for chunk in (part.strip() for part in spec.split(",")):
+        if not chunk:
+            continue
+        if "-" in chunk:
+            bounds = [part.strip() for part in chunk.split("-", 1)]
+            if not all(part.isdigit() for part in bounds):
+                raise ValueError(f"Invalid range: {chunk}")
+            start, end = map(int, bounds)
+            if start > end:
+                start, end = end, start
+            if start < 1 or end > total:
+                raise ValueError(f"Range out of bounds: {chunk}")
+            chosen.update(range(start - 1, end))
+        else:
+            if not chunk.isdigit():
+                raise ValueError(f"Invalid item: {chunk}")
+            value = int(chunk)
+            if value < 1 or value > total:
+                raise ValueError(f"Selection out of bounds: {value}")
+            chosen.add(value - 1)
+    return sorted(chosen)
+
+
+def ask_option(prompt: str, options: Sequence[str], default: Optional[str] = None) -> str:
+    """Ask until the answer is one of ``options`` (any case); a blank answer gives ``default`` if there is one."""
+    lowered = {o.lower(): o for o in options}
+    while True:
+        raw = input(prompt).strip()
+        if not raw and default is not None:
+            return default
+        if raw.lower() in lowered:
+            return lowered[raw.lower()]
+        print(f"  Please enter one of: {', '.join(options)}.")
+
+
+def ask_yes(prompt: str) -> bool:
+    """A [y/N] question: only an answer starting with 'y' is yes."""
+    return input(prompt).strip().lower().startswith("y")
+
+
+def ask_range(prompt: str) -> Optional[Tuple[float, float]]:
+    """Ask for a range like '3500,8000' until one parses; None for a blank answer (no cut)."""
+    while True:
+        raw = input(prompt).strip()
+        parsed = parse_numeric_range(raw)
+        if parsed is not None or not raw:
+            return parsed
+        print(f"  Could not parse range from '{raw}' — need two values (e.g. '3500,8000')")
+
+
+def wrap(text: str, width: Optional[int] = None, indent: str = "", hanging: str = "") -> str:
+    """``text`` filled to the terminal width; URLs and hyphenated words are never split."""
+    return textwrap.fill(" ".join(str(text).split()), width or terminal_width(),
+                         initial_indent=indent, subsequent_indent=hanging,
+                         break_on_hyphens=False, break_long_words=False)
+
+
+def cut(text: str, width: int) -> str:
+    """``text`` cut to ``width`` characters, ending in '…' when anything was removed."""
+    return text if len(text) <= width else text[:max(width - 1, 0)] + "…"
 
 
 def banner(title: str) -> None:
@@ -56,6 +137,12 @@ def missing_packages(modules: Sequence[str]) -> Optional[str]:
         return None
     extras = ",".join(sorted({OPTIONAL_EXTRAS[m] for m in missing}))
     return f"Error: missing {', '.join(_PIP_NAMES.get(m, m) for m in missing)}: pip install \"sed-tools[{extras}]\""
+
+
+def missing_package_error(exc: ImportError) -> Optional[str]:
+    """The missing_packages line for an optional package that failed to import, else None (a bug)."""
+    root = (exc.name or "").split(".")[0]
+    return missing_packages([root]) if root in OPTIONAL_EXTRAS else None
 
 
 def refused_without(*modules: str) -> bool:
@@ -117,11 +204,10 @@ def prompt_choice(
     use_color: bool = True,
     multi: bool = False,
 ) -> Union[int, List[int], None]:
-    """
-    Plain-ASCII picker with stable IDs, paging, grid columns, and simple filters.
-    If multi=True, allows input like "1, 3-5" and returns a List[int] of indices.
-    Otherwise returns a single int.
-    Returns None for quit, -1 for back (if allowed).
+    """Plain-ASCII picker with stable IDs, paging, grid columns, and simple filters.
+
+    Returns the chosen index, or with multi=True (input like "1, 3-5") a list of
+    indices; None for quit, -1 for back (if allowed).
     """
     if not options:
         print(f"No {label} options available.")
@@ -131,7 +217,6 @@ def prompt_choice(
         # Each column holds a 6-character id ("  12. ") before the label.
         max_label = max(len(getattr(x, "label", str(x))) for x in options) + 6
 
-    # ---- setup ----
     labels: List[str] = [getattr(o, "label", str(o)) for o in options]
     N = len(labels)
     # A page is never taller than the terminal, so its first rows do not scroll away.
@@ -139,7 +224,6 @@ def prompt_choice(
     page = 1
     filt: Optional[Tuple[str, str]] = None  # ('substr'|'neg'|'regex', pattern)
 
-    # color toggles
     use_color = use_color and terminal_color_enabled("auto")
     DIM = "\x1b[2m" if use_color else ""
     RED = "\x1b[31m" if use_color else ""
@@ -192,7 +276,6 @@ def prompt_choice(
                 if 1 <= k <= N: return [k - 1] if multi else k - 1
             continue
 
-        # --- Multi Selection Logic ---
         if multi and re.fullmatch(r"[\d\s,-]+", inp):
             try:
                 selected = parse_multi_selection(inp, N)
@@ -203,7 +286,6 @@ def prompt_choice(
                 return selected
             continue
 
-        # --- Single Selection Logic ---
         if not multi and inp.isdigit():
             k = int(inp)
             if 1 <= k <= N: return k - 1
@@ -273,8 +355,7 @@ def _print_page(label: str, labels: List[str], chunk: List[int], max_label: int,
 def _layout(max_label: int, min_cols: int, max_cols: int) -> Tuple[int, int]:
     """Column width and number of columns for entries up to ``max_label`` wide.
 
-    A single column may use the whole line, so a label is cut (with '…') only
-    when the terminal is narrower than it.
+    A single column may use the whole line, so a label is cut only when the terminal is narrower than it.
     """
     usable = terminal_width() - 10
     col_width = min(usable, max_label)

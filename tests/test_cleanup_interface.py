@@ -378,9 +378,9 @@ def grid_flow(monkeypatch):
     def install(cleaned=CLEAN, cube_built=True, **grabbers):
         for name, cls_name in (("njm", "NJMSpectraGrabber"), ("svo", "SVOSpectraGrabber"),
                                ("msg", "MSGSpectraGrabber"), ("mast", "MASTSpectraGrabber")):
-            monkeypatch.setattr(cli, cls_name, grabbers.get(name, fake_grabber()))
-        monkeypatch.setattr(cli, "clean_model_dir", lambda *a, **k: cleaned)
-        monkeypatch.setattr(cli, "undeclared_flux_unit", lambda *a, **k: None)  # cleaning is faked too
+            monkeypatch.setattr(GRABBERS[name], grabbers.get(name, fake_grabber()))
+        monkeypatch.setattr(cli.grids, "clean_model_dir", lambda *a, **k: cleaned)
+        monkeypatch.setattr(cli.grids, "undeclared_flux_unit", lambda *a, **k: None)  # cleaning is faked too
 
         def build(name, model_dir, *args):
             if not cube_built:
@@ -388,7 +388,7 @@ def grid_flow(monkeypatch):
             built.append(name)
             return []  # what was not done, as _build_data_products returns
 
-        monkeypatch.setattr(cli, "_build_data_products", build)
+        monkeypatch.setattr(cli.grids, "_build_data_products", build)
         return built
     return install
 
@@ -514,10 +514,10 @@ def rebuild(tmp_path, monkeypatch):
         rebuilt.append(Path(model_dir).name)
         return dict(CLEAN)
 
-    monkeypatch.setattr(cli, "clean_model_dir", clean)
-    monkeypatch.setattr(cli, "regenerate_lookup_table", lambda model_dir: None)
-    monkeypatch.setattr(cli, "build_h5_bundle_from_txt", lambda model_dir, out: None)
-    monkeypatch.setattr("sed_tools.api._build_flux_cube", lambda model_dir: Path(model_dir) / "flux_cube.bin")
+    monkeypatch.setattr(cli.grids, "clean_model_dir", clean)
+    monkeypatch.setattr(cli.grids, "regenerate_lookup_table", lambda model_dir: None)
+    monkeypatch.setattr(cli.grids, "build_h5_bundle_from_txt", lambda model_dir, out: None)
+    monkeypatch.setattr("sed_tools.cli.grids._build_flux_cube", lambda model_dir: Path(model_dir) / "flux_cube.bin")
     return rebuilt
 
 
@@ -574,13 +574,13 @@ def filter_browser(tmp_path, monkeypatch, filters):
         return tmp_path / facility / instrument
 
     monkeypatch.setattr(FilterLibrary, "published", fetch)  # the browser downloads with its own library
-    monkeypatch.setattr(cli, "_offer_composition", lambda directory: None)
+    monkeypatch.setattr(cli.filters, "_offer_composition", lambda directory: None)
     # What the browser describes before asking to download (Filters.available, NJM's catalogue entry).
     monkeypatch.setattr(FilterLibrary, "available", lambda self, facility, instrument, remote=True: {
         "facility": facility, "instrument": instrument, "bands": ["g"], "published": "filter",
         "published_bands": {}, "components": [], "partial_components": {}, "component_status": None,
         "errors": [], "atmosphere": False, "platform": "ground", "variants": {}})
-    monkeypatch.setattr(cli, "_catalogue_entry", lambda *a, **k: {"info": None, "properties": None, "errors": []})
+    monkeypatch.setattr(cli.filters, "_catalogue_entry", lambda *a, **k: {"info": None, "properties": None, "errors": []})
     return SimpleNamespace(fetched=fetched, listing_errors=listing_errors)
 
 
@@ -608,7 +608,7 @@ def test_filter_browser_reports_a_failed_build_when_browsing_ends(filter_browser
     def fail(directory):
         raise ValueError("Airmass and PWV must be numbers (could not convert string to float: 'x')")
 
-    monkeypatch.setattr(cli, "_offer_composition", fail)
+    monkeypatch.setattr(cli.filters, "_offer_composition", fail)
     # Facility A, instrument 1, download, then quit from the instrument list.
     answer(monkeypatch, "1", "1", "y", "y", "q")
     assert cli.run_filters_flow() == 1
@@ -639,7 +639,7 @@ def test_offer_composition_asks_again_for_an_airmass_that_is_not_a_number(tmp_pa
     built = []
     monkeypatch.setattr(filters, "available", classmethod(lambda cls, *a, **k: info))
     monkeypatch.setattr(filters, "atmospheres", classmethod(lambda cls, *a, **k: {}))
-    monkeypatch.setattr(cli, "print_filter_availability", lambda info: None)
+    monkeypatch.setattr(cli.filters, "print_filter_availability", lambda info: None)
     monkeypatch.setattr(filters, "compose", classmethod(lambda cls, *a, **k: built.append(k["atmosphere"])))
     answer(monkeypatch, "y", "1", "", "1", "high", "1.2", "")  # site 1 of the numbered atmosphere choice
     cli._offer_composition(tmp_path / "Fac" / "Cam")
@@ -886,7 +886,7 @@ def test_composition_says_when_the_atmosphere_list_failed(tmp_path, monkeypatch,
 
     monkeypatch.setattr(filters, "available", classmethod(lambda cls, *a, **k: info))
     monkeypatch.setattr(filters, "atmospheres", classmethod(atmospheres))
-    monkeypatch.setattr(cli, "print_filter_availability", lambda info: None)
+    monkeypatch.setattr(cli.filters, "print_filter_availability", lambda info: None)
     answer(monkeypatch, "y", "1", "", "y")
     with pytest.raises(RuntimeError, match="could not list the atmosphere grids for paranal: NJM mirror unreachable"):
         cli._offer_composition(tmp_path / "Fac" / "Cam")

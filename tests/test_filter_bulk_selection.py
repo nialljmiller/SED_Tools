@@ -36,13 +36,13 @@ def filter_catalogue(tmp_path, monkeypatch):
         return tmp_path / facility / instrument
 
     monkeypatch.setattr(FilterLibrary, "published", fetch)  # the browser downloads with its own library
-    monkeypatch.setattr(cli, "_offer_composition", offered.append)
+    monkeypatch.setattr(cli.filters, "_offer_composition", offered.append)
     # What the browser describes before asking to download (Filters.available, NJM's catalogue entry).
     monkeypatch.setattr(FilterLibrary, "available", lambda self, facility, instrument, remote=True: {
         "facility": facility, "instrument": instrument, "bands": ["V"], "published": "filter",
         "published_bands": {}, "components": [], "partial_components": {}, "component_status": None,
         "errors": [], "atmosphere": False, "platform": "ground", "variants": {}})
-    monkeypatch.setattr(cli, "_catalogue_entry", lambda *a, **k: {"info": None, "properties": None, "errors": []})
+    monkeypatch.setattr(cli.filters, "_catalogue_entry", lambda *a, **k: {"info": None, "properties": None, "errors": []})
     return SimpleNamespace(root=tmp_path, fetched=fetched, offered=offered)
 
 
