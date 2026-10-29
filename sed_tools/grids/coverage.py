@@ -18,6 +18,7 @@ from .header_parser import parse_header
 from .spectrum_io import read_text_spectrum
 
 _AXES = ("teff", "logg", "metallicity")
+_LABELS = {"teff": "Teff [K]", "logg": "log g", "metallicity": "[M/H]"}
 _ANSI_ESCAPE = re.compile(r"\x1b\[[0-9;]*m")
 _PATH_COLUMNS = (
     "filename", "file_name", "file", "path", "spectrum", "spectrum_file",
@@ -192,10 +193,9 @@ def print_coverage(summary: Dict) -> None:
         f"(fill {100.0 * summary['fill_fraction']:.1f}%)"
     )
 
-    labels = {"teff": "Teff [K]", "logg": "log g", "metallicity": "[M/H]"}
     for ax in _AXES:
         a = summary["axes"][ax]
-        print(f"\n  {labels[ax]}")
+        print(f"\n  {_LABELS[ax]}")
         if a["n_unique"] == 0:
             print("    no finite values")
             continue
@@ -210,20 +210,13 @@ def print_coverage(summary: Dict) -> None:
             print(f"    missing : {a['n_missing']} spectra have no value on this axis")
         ad = a["anderson_darling"]
         if ad is not None:
-            if ad.get("normal_at_5pct") is None:
-                verdict = "indeterminate"
-            else:
-                verdict = "consistent with normal" if ad["normal_at_5pct"] else "non-normal"
+            verdict = {None: "indeterminate", True: "consistent with normal",
+                       False: "non-normal"}[ad.get("normal_at_5pct")]
             if "crit_5pct" in ad:
-                print(
-                    f"    A-D     : {ad['statistic']:.3f} "
-                    f"(5% crit {ad['crit_5pct']:.3f}; {verdict})"
-                )
+                test = f"5% crit {ad['crit_5pct']:.3f}"
             else:
-                print(
-                    f"    A-D     : {ad['statistic']:.3f} "
-                    f"(p={ad['pvalue']:.3f}; {verdict})"
-                )
+                test = f"p={ad['pvalue']:.3f}"
+            print(f"    A-D     : {ad['statistic']:.3f} ({test}; {verdict})")
         elif a["n_unique"] < 8:
             print(f"    A-D     : skipped (needs at least 8 distinct values; this axis has {a['n_unique']})")
         else:
@@ -367,21 +360,17 @@ def _parameter_plots(df: pd.DataFrame, selected: List[Dict], plot_width: int, co
         df.index.get_loc(item["index"]): _PALETTE[i % len(_PALETTE)]
         for i, item in enumerate(selected)
     }
-    projections = [
-        ("teff", "logg", "Teff [K]", "log g", True),
-        ("teff", "metallicity", "Teff [K]", "[M/H]", False),
-        ("logg", "metallicity", "log g", "[M/H]", False),
-    ]
-    parameter_plots = []
-    for xaxis, yaxis, xlabel, ylabel, invert in projections:
-        parameter_plots.append(scatter2d(
+    projections = [("teff", "logg", True), ("teff", "metallicity", False), ("logg", "metallicity", False)]
+    return [
+        scatter2d(
             df[xaxis], df[yaxis],
-            title=f"{xlabel} vs {ylabel}",
-            xlabel=xlabel, ylabel=ylabel, invert_y=invert,
+            title=f"{_LABELS[xaxis]} vs {_LABELS[yaxis]}",
+            xlabel=_LABELS[xaxis], ylabel=_LABELS[yaxis], invert_y=invert,
             point_labels=labels, point_colors=colors, color=color,
             width=plot_width, height=9,
-        ))
-    return parameter_plots
+        )
+        for xaxis, yaxis, invert in projections
+    ]
 
 
 def _print_representative_seds(selected: List[Dict], plot_width: int, color: str) -> None:
@@ -435,42 +424,31 @@ def plot_coverage(
     from mpl_toolkits.mplot3d import Axes3D  # noqa: F401  (registers 3d projection)
 
     sub = df.dropna(subset=list(_AXES))
-    teff = sub["teff"].to_numpy()
-    logg = sub["logg"].to_numpy()
-    meta = sub["metallicity"].to_numpy()
+    values = {axis: sub[axis].to_numpy() for axis in _AXES}
 
     fig = plt.figure(figsize=(14, 10), constrained_layout=True)
     gs = fig.add_gridspec(2, 2)
 
-    # 1) Teff vs log g, coloured by [M/H]
-    ax1 = fig.add_subplot(gs[0, 0])
-    sc1 = ax1.scatter(teff, logg, c=meta, cmap="viridis", s=18, edgecolors="none")
-    ax1.set_xlabel("Teff [K]")
-    ax1.set_ylabel("log g")
-    ax1.set_title(f"{name}: Teff-log g")
-    if logg.size:
-        ax1.invert_yaxis()
-    fig.colorbar(sc1, ax=ax1, label="[M/H]")
+    # The three 2D pairings, each coloured by the third parameter (log g increases downwards)
+    panels = [
+        (gs[0, 0], "teff", "logg", "metallicity", f"{name}: Teff-log g"),
+        (gs[0, 1], "teff", "metallicity", "logg", "Teff-[M/H]"),
+        (gs[1, 0], "logg", "metallicity", "teff", "log g-[M/H]"),
+    ]
+    for cell, x, y, colour, title in panels:
+        ax = fig.add_subplot(cell)
+        points = ax.scatter(values[x], values[y], c=values[colour], cmap="viridis", s=18, edgecolors="none")
+        ax.set_xlabel(_LABELS[x])
+        ax.set_ylabel(_LABELS[y])
+        ax.set_title(title)
+        if y == "logg" and values["logg"].size:
+            ax.invert_yaxis()
+        fig.colorbar(points, ax=ax, label=_LABELS[colour])
 
-    # 2) Teff vs [M/H], coloured by log g
-    ax2 = fig.add_subplot(gs[0, 1])
-    sc2 = ax2.scatter(teff, meta, c=logg, cmap="viridis", s=18, edgecolors="none")
-    ax2.set_xlabel("Teff [K]")
-    ax2.set_ylabel("[M/H]")
-    ax2.set_title("Teff-[M/H]")
-    fig.colorbar(sc2, ax=ax2, label="log g")
-
-    # 3) log g vs [M/H], coloured by Teff
-    ax3 = fig.add_subplot(gs[1, 0])
-    sc3 = ax3.scatter(logg, meta, c=teff, cmap="viridis", s=18, edgecolors="none")
-    ax3.set_xlabel("log g")
-    ax3.set_ylabel("[M/H]")
-    ax3.set_title("log g-[M/H]")
-    fig.colorbar(sc3, ax=ax3, label="Teff [K]")
-
-    # 4) 3D coverage
+    # 3D coverage
     ax4 = fig.add_subplot(gs[1, 1], projection="3d")
-    ax4.scatter(teff, logg, meta, c=meta, cmap="viridis", s=12, edgecolors="none")
+    ax4.scatter(values["teff"], values["logg"], values["metallicity"], c=values["metallicity"],
+                cmap="viridis", s=12, edgecolors="none")
     ax4.set_xlabel("Teff [K]")
     ax4.set_ylabel("log g")
     ax4.set_zlabel("[M/H]")
