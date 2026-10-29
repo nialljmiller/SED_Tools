@@ -363,10 +363,8 @@ def compose_band(
             str(path.relative_to(path.parents[2])) if len(path.parents) > 2 else path.name))
 
     try:
-        wavelength, transmission = multiply_curves(
-            curves, allow_partial=allow_partial, outside=manifest.outside_range, policies=policies,
-            tolerances=tolerances,
-        )
+        wavelength, transmission = multiply_curves(curves, allow_partial=allow_partial, outside=manifest.outside_range,
+                                                   policies=policies, tolerances=tolerances)
     except ComponentCoverageError as exc:
         raise ComponentCoverageError(f"{manifest.facility}/{manifest.instrument} band {band}: {exc}") from exc
     recipe = recipe_name(ordered)
@@ -441,23 +439,14 @@ def build_product(
         staging = Path(tmp) / "ready"
         staging.mkdir()
         for band in selected:
-            curve = compose_band(
-                instrument_dir, band, roles,
-                atmosphere=spec, atmosphere_root=atmosphere_root,
-                allow_partial=allow_partial, manifest=manifest, variants=variants,
-            )
+            curve = compose_band(instrument_dir, band, roles, atmosphere=spec, atmosphere_root=atmosphere_root,
+                                 allow_partial=allow_partial, manifest=manifest, variants=variants)
             original = _band_detector_type(instrument_dir, band, roles, manifest)
             if override:
                 curve.header["DetectorTypeOriginal"] = original
-            write_filter_file(
-                staging / f"{band}.dat",
-                curve.wavelength,
-                curve.transmission,
-                detector_type=override or original,
-                source="user" if override else "composed",
-                wavelength_unit="Angstrom",
-                extra=curve.header,
-            )
+            write_filter_file(staging / f"{band}.dat", curve.wavelength, curve.transmission,
+                              detector_type=override or original, source="user" if override else "composed",
+                              wavelength_unit="Angstrom", extra=curve.header)
         write_filter_index(staging, name)
         previous = Path(tmp) / "previous"
         if out_dir.exists():
@@ -505,10 +494,7 @@ def build_all_products(
         and not (len(published_recipes) == 1 and published_recipes <= set(manifest.buildable()))
     )
     for cond in conditions:
-        variants = list(manifest.buildable())
-        if add_published:
-            variants.append(PUBLISHED)
-        for recipe in variants:
+        for recipe in manifest.buildable() + ([PUBLISHED] if add_published else []):
             built.append(build_product(instrument_dir, recipe, atmosphere=cond, atmosphere_root=atmosphere_root))
     return built
 
@@ -576,13 +562,9 @@ def add_component(
     rel = f"components/{role}/{stem}.dat"
     path = instrument_dir / rel
     path.parent.mkdir(parents=True, exist_ok=True)
-    write_filter_file(
-        path, wavelength_angstrom, transmission,
-        detector_type=PHOTON if QE in roles else ENERGY,
-        source="component",
-        wavelength_unit="Angstrom",
-        extra={"Role": role, "Components": role, "Sources": source or None},
-    )
+    write_filter_file(path, wavelength_angstrom, transmission, detector_type=PHOTON if QE in roles else ENERGY,
+                      source="component", wavelength_unit="Angstrom",
+                      extra={"Role": role, "Components": role, "Sources": source or None})
     if manifest is not None and variant is not None:
         entry = manifest.variants.setdefault(role, {}).setdefault(variant, {"files": {}})
         entry.setdefault("files", {})[band] = rel
@@ -592,8 +574,5 @@ def add_component(
     elif manifest is not None:
         manifest.components.setdefault(role, {})[band] = rel
         if source:
-            if band == SHARED:
-                manifest.sources[role] = source
-            else:
-                manifest.sources[f"{role}:{band}"] = source
+            manifest.sources[role if band == SHARED else f"{role}:{band}"] = source
     return rel
