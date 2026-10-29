@@ -1,12 +1,19 @@
-import torch
-import numpy as np
-from torch.utils.data import DataLoader, TensorDataset
+"""What the two ML engines share: the device, the training loop, and their common data preparation and menus.
+
+The engines are completer.py (SEDCompleter) and generator.py (SEDGenerator); ml/__init__.py is the 0.4.1
+completer API over them. torch is imported inside the functions, so importing any of them needs no torch.
+"""
+
 from typing import Dict, List, Tuple
 
+import numpy as np
+
+
 def get_device():
-    """Automatically detect and return the best available device."""
+    """CUDA if available (with cudnn.benchmark on), else Apple MPS, else the CPU."""
+    import torch
+
     if torch.cuda.is_available():
-        # Set some GPU optimizations
         torch.backends.cudnn.benchmark = True
         return torch.device("cuda")
     elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
@@ -28,6 +35,9 @@ def masked_mse(y_pred, y_true, mask):
 
 def data_loaders(train_arrays, val_arrays, batch_size: int):
     """DataLoaders over (inputs, targets, masks) arrays; only training batches are shuffled."""
+    import torch
+    from torch.utils.data import DataLoader, TensorDataset
+
     train_dataset = TensorDataset(*(torch.from_numpy(a) for a in train_arrays))
     val_dataset = TensorDataset(*(torch.from_numpy(a) for a in val_arrays))
     return (DataLoader(train_dataset, batch_size=batch_size, shuffle=True),
@@ -93,6 +103,8 @@ def fit(model, train_loader, val_loader, optimizer, scheduler, *, epochs: int, p
 
 def _train_epoch(model, loader, optimizer, device, epoch: int) -> List[float]:
     """One pass over the training batches; returns their losses. NaN batches are skipped."""
+    import torch
+
     model.train()
     losses = []
     for x_batch, y_batch, m_batch in loader:
@@ -115,6 +127,8 @@ def _train_epoch(model, loader, optimizer, device, epoch: int) -> List[float]:
 
 def _validation_losses(model, loader, device) -> List[float]:
     """Losses of the validation batches whose loss is not NaN."""
+    import torch
+
     model.eval()
     losses = []
     with torch.no_grad():
