@@ -122,8 +122,7 @@ class NJMSpectraGrabber:
     def _unreachable(errors: List[str]) -> bool:
         """Report NJM down, and leave it alone in this whole process for a while (see njm_mirror.pause)."""
         reason = plain_reason(errors[-1].split(": ", 1)[-1])
-        pause(reason, f"NJM mirror is unreachable ({reason}),\n"
-                                        "  so its spectral grids are not offered", logger)
+        pause(reason, f"NJM mirror is unreachable ({reason}),\n  so its spectral grids are not offered", logger)
         return False
 
     def _cache_index(self, resp: requests.Response) -> None:
@@ -219,11 +218,8 @@ class NJMSpectraGrabber:
         logger.warning("NJM mirror: no directory listing for %s (%s); taking spectrum names from lookup_table.csv",
                        model_url, listing_problem)
         result['txt_files'] = list(self._fetch_remote_lookup(model_name, model_url))
-        for aux_name, category in [
-            ("lookup_table.csv", 'csv_files'),
-            (f"{model_name}.h5", 'h5_files'),
-            ("flux_cube.bin", 'bin_files'),
-        ]:
+        for aux_name, category in [("lookup_table.csv", 'csv_files'), (f"{model_name}.h5", 'h5_files'),
+                                   ("flux_cube.bin", 'bin_files')]:
             if self.session.head(urljoin(model_url, aux_name), timeout=5).status_code == 200:
                 result[category].append(aux_name)
         
@@ -297,19 +293,14 @@ class NJMSpectraGrabber:
             raise RuntimeError(f"NJM mirror: {lookup_url} lists no spectra")
         return result
 
-    def _filter_files_by_params(
-        self,
-        txt_files: List[str],
-        lookup: Dict[str, Dict],
-        teff_range: Optional[Tuple[float, float]] = None,
-        logg_range: Optional[Tuple[float, float]] = None,
-        meta_range: Optional[Tuple[float, float]] = None,
-    ) -> List[str]:
+    def _filter_files_by_params(self, txt_files: List[str], lookup: Dict[str, Dict],
+                                teff_range: Optional[Tuple[float, float]] = None,
+                                logg_range: Optional[Tuple[float, float]] = None,
+                                meta_range: Optional[Tuple[float, float]] = None) -> List[str]:
         """The files whose lookup-table parameters lie in the ranges; files the table does not list are kept."""
         ranges = (('teff', teff_range), ('logg', logg_range), ('meta', meta_range))
         kept = []
-        cut = 0
-        unknown = 0
+        cut = unknown = 0
         for fname in txt_files:
             params = lookup.get(fname)
             if params is None:
@@ -576,10 +567,8 @@ class NJMSpectraGrabber:
                 print(f"  [njm] All spectra already within requested range")
 
         if failures:
-            raise RuntimeError(
-                f"NJM: {len(failures)} file(s) of {model_name} failed; the rest are in {model_dir}. "
-                f"Rerun to retry the failed files:\n  " + "\n  ".join(failures)
-            )
+            raise RuntimeError(f"NJM: {len(failures)} file(s) of {model_name} failed; the rest are in {model_dir}. "
+                               f"Rerun to retry the failed files:\n  " + "\n  ".join(failures))
         # The number of spectra, as the other grabbers return; cleaning rebuilds the .h5, .bin and .csv
         return len(txt_files)
 
@@ -608,10 +597,7 @@ def _outside(params: Dict, key: str, rng: Optional[Tuple[float, float]]) -> bool
 
 def _find_column(fieldnames_lower: Dict[str, str], candidates: List[str]) -> Optional[str]:
     """Return the original name of the first candidate column present, or None."""
-    for candidate in candidates:
-        if candidate in fieldnames_lower:
-            return fieldnames_lower[candidate]
-    return None
+    return next((fieldnames_lower[candidate] for candidate in candidates if candidate in fieldnames_lower), None)
 
 
 def _float_or_nan(value) -> float:
