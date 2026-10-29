@@ -1,8 +1,7 @@
 """SEDCompleter, the engine that extends an SED beyond its wavelength range: a black body refined by a neural network.
 
-A model folder holds model.pt (the network's state dict), config.json (architecture, scalers, wavelength grid),
-training_plots.png and prediction_examples.png. The old import path is sed_tools.ml_sed_completer, which also runs
-as python -m sed_tools.ml_sed_completer. sed_tools.ml (ml/__init__.py) is the 0.4.1 API over this engine.
+A model folder: model.pt, config.json (architecture, scalers, grid), training_plots.png and prediction_examples.png.
+Old import path sed_tools.ml_sed_completer, also run as python -m; sed_tools.ml is the 0.4.1 API over this engine.
 """
 
 import json
@@ -221,8 +220,7 @@ class SEDCompleter:
         library_path: str,
         max_samples: int = 5000,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-        """(X, y, params, masks) as float32 from the flux cube: X an input window at a random place in each spectrum
-        (so the network learns to extend from any part), y the whole spectrum, masks 1 where y is valid outside X."""
+        """(X, y, params, masks), float32: X a randomly placed input window, y the spectrum, masks 1 where y counts."""
         print("Loading flux cube...")
         teff, logg, meta, wavelengths, flux_cube = self._load_flux_cube(library_path)
         
@@ -399,8 +397,7 @@ class SEDCompleter:
         masks: np.ndarray,
         library_path: str,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """Fit self.scaler_params; (X_combined, y_norm, masks) as float32, X_combined being the normalised log10 input
-        window followed by the three normalised parameters."""
+        """Fit self.scaler_params; (X_combined, y_norm, masks), float32: X_combined is the window, then the params."""
         print("Normalizing data...")
         
         # Floor at 1e-20 so log10 has no -inf. The > -25 tests below keep the floor (log10 = -20).
@@ -785,8 +782,7 @@ class SEDCompleter:
         return wl_out, flux_out
 
     def _predict_grid_flux(self, wavelength, flux, teff, logg, meta) -> np.ndarray:
-        """The network's flux on self.wavelength_grid for an SED. Its input is the stored central window, 1e-20 where
-        the SED does not reach; a warning says when that is more than training allowed."""
+        """The network's flux on self.wavelength_grid for an SED, fed the stored central window (1e-20 beyond it)."""
         import torch
 
         _warn_window_coverage(self.wavelength_grid[self._known_start:self._known_end], wavelength)

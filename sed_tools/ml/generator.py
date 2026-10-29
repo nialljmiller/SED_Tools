@@ -1,8 +1,7 @@
 """SEDGenerator, the engine that makes a whole SED from (Teff, logg, [M/H]) alone, with no input spectrum.
 
-A model folder holds model.pt (the network's state dict), config.json (model_type 'sed_generator', architecture,
-scalers, wavelength grid, parameter ranges), training_plots.png and prediction_examples.png. The old import path is
-sed_tools.ml_sed_generator, also run as python -m sed_tools.ml_sed_generator. The completer is ml/completer.py.
+A model folder: model.pt, config.json (model_type 'sed_generator', scalers, grid, parameter ranges) and two plots.
+Old import path sed_tools.ml_sed_generator, also run as python -m. The completer engine is ml/completer.py.
 """
 
 import json
@@ -279,7 +278,6 @@ class SEDGenerator:
         max_samples: int,
     ) -> Tuple[Tuple[np.ndarray, np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray, np.ndarray]]:
         """The normalised (params, flux, masks) training and validation sets, split 80/20.
-
         AutoTrainer (ml/tuning.py) uses it too, so its trials see the data train() does."""
         from sklearn.model_selection import train_test_split
 
