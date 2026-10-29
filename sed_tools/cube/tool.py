@@ -105,9 +105,7 @@ class FluxCube:
 
         return h00 * f0 + h10 * h * m0 + h01 * f1 + h11 * h * m1
 
-    def _axis_derivative(
-        self, values: np.ndarray, grid: np.ndarray, idx: int, axis: int
-    ) -> np.ndarray:
+    def _axis_derivative(self, values: np.ndarray, grid: np.ndarray, idx: int, axis: int) -> np.ndarray:
         n = len(grid)
         if idx <= 0:
             lo, hi = 0, 1
@@ -364,11 +362,9 @@ def prompt_for_filter_system(
         response = input("Select a filter system by number (or '0' for all): ").strip()
         if response.lower() in {"", "0", "all", "a", "*"}:
             return None, filter_entries
-        if response.isdigit():
-            index = int(response)
-            if 1 <= index <= len(ordered):
-                system = ordered[index - 1][0]
-                return system, systems[system]
+        if response.isdigit() and 1 <= int(response) <= len(ordered):
+            system = ordered[int(response) - 1][0]
+            return system, systems[system]
         print("Please enter a valid selection from the list above.")
 
 
@@ -444,10 +440,8 @@ def resolve_vega_spectrum_path(
 
     while True:
         choice = input("Select Vega spectrum by number: ").strip()
-        if choice.isdigit():
-            index = int(choice)
-            if 1 <= index <= len(candidates):
-                return candidates[index - 1]
+        if choice.isdigit() and 1 <= int(choice) <= len(candidates):
+            return candidates[int(choice) - 1]
         print("Please select one of the listed Vega spectra.")
 
 
@@ -541,9 +535,7 @@ def prompt_for_flux_cube_path(hints: Sequence[str | os.PathLike[str]] | None = N
             print("Discovered flux cube files:")
             for idx, candidate in enumerate(candidates, start=1):
                 print(f"  {idx}. {candidate}")
-            response = input(
-                "Select a flux cube by number or enter a path (or 'q' to quit): "
-            ).strip()
+            response = input("Select a flux cube by number or enter a path (or 'q' to quit): ").strip()
             if not response:
                 continue
             if response.lower() in {"q", "quit", "exit"}:

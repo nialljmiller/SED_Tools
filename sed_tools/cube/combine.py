@@ -500,8 +500,7 @@ def _plot_meta_index(meta_grid):
     return len(meta_grid) // 2
 
 
-def _sed_sample_points(teff_grid, logg_grid, meta_grid, meta_idx, flux_cube, source_map,
-                       model_names):
+def _sed_sample_points(teff_grid, logg_grid, meta_grid, meta_idx, flux_cube, source_map, model_names):
     """Up to 15 nodes (5 Teff x 3 log g quantiles) at meta_idx that have positive flux."""
     def spread(grid, count):
         return np.unique(grid[np.round(np.linspace(0, len(grid) - 1, count)).astype(int)])
@@ -552,8 +551,7 @@ def plot_sed_samples(teff_grid, logg_grid, meta_grid, wavelength_grid,
         color = cmap_colors[src_idx % len(cmap_colors)]
         valid = flux > 0
         if valid.sum() > 1:
-            ax.loglog(wavelength_grid[valid], flux[valid],
-                      color=color, linewidth=0.8, label=src_name)
+            ax.loglog(wavelength_grid[valid], flux[valid], color=color, linewidth=0.8, label=src_name)
         ax.set_title(
             f"Teff={teff:.0f} K  log g={logg:.2f}  [M/H]={meta:.2f}\n"
             f"source: {src_name}",
@@ -647,8 +645,7 @@ def main():
     parser = argparse.ArgumentParser(description="Combine stellar spectral grids")
     parser.add_argument("--data_dir", default="../data/stellar_models/",
                        help="Base directory containing spectral grids")
-    parser.add_argument("--output", default="combined_models",
-                       help="Output directory name")
+    parser.add_argument("--output", default="combined_models", help="Output directory name")
     parser.add_argument("--interactive", action="store_true", default=True,
                        help="Interactive spectral grid selection")
     args = parser.parse_args()

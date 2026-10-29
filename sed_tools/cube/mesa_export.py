@@ -308,9 +308,7 @@ def export_variant(
             f"Pass overwrite=True or choose a different name."
         )
 
-    file_col = next(
-        (c for c in variant.lookup_rows.columns if c.lower() == "file_name"), None
-    )
+    file_col = next((c for c in variant.lookup_rows.columns if c.lower() == "file_name"), None)
     if file_col is None:
         raise KeyError("lookup_rows has no 'file_name' column — cannot locate spectra.")
 

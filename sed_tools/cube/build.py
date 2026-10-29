@@ -211,9 +211,7 @@ def compute_common_wavelengths(model_dir: str, file_names: List[str], n_sample: 
     return grid
 
 
-def _allocate_cube(
-    teff_grid, logg_grid, meta_grid, wavelengths, tmp_path=None
-) -> np.ndarray:
+def _allocate_cube(teff_grid, logg_grid, meta_grid, wavelengths, tmp_path=None) -> np.ndarray:
     shape = (len(teff_grid), len(logg_grid), len(meta_grid), len(wavelengths))
     size_gib = np.prod(shape) * 8 / 1024**3
     if tmp_path:
@@ -373,8 +371,7 @@ def _populate_and_write(
                 0.0,
             )
 
-        _write_cube(output_file, teff_grid, logg_grid, meta_grid,
-                    wavelengths, flux_cube, usable_ram)
+        _write_cube(output_file, teff_grid, logg_grid, meta_grid, wavelengths, flux_cube, usable_ram)
     finally:
         del flux_cube
         if tmp_path and os.path.exists(tmp_path):

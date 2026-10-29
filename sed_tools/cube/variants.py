@@ -257,9 +257,7 @@ def _build_filtered_cube(
     extra_unique = {col: sorted(set(lookup[col])) for col in extra_cols}
     resolved, errors = cfg.resolve_filter_values(extra_unique)
     if errors:
-        raise ValueError(
-            "Filter config errors:\n" + "\n".join(f"  - {e}" for e in errors)
-        )
+        raise ValueError("Filter config errors:\n" + "\n".join(f"  - {e}" for e in errors))
 
     print(f"Filter: {resolved}")
 
@@ -271,9 +269,7 @@ def _build_filtered_cube(
     matched_group = next((g for key, g in groups.items() if selected(key)), None)
 
     if matched_group is None:
-        available_variants = "\n".join(
-            f"  {dict(k)}" for k in sorted(groups.keys())
-        )
+        available_variants = "\n".join(f"  {dict(k)}" for k in sorted(groups.keys()))
         raise ValueError(
             f"No variant matches filter {resolved}.\n"
             f"Available variants:\n{available_variants}"

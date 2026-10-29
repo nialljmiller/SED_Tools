@@ -252,10 +252,7 @@ class SEDModel:
                 raise TypeError(f"Unsupported filter specification: {item!r}")
         return resolved
 
-    def _load_filter_group(
-        self,
-        spec: Union[str, os.PathLike[str]],
-    ) -> Dict[str, FilterCurve]:
+    def _load_filter_group(self, spec: Union[str, os.PathLike[str]]) -> Dict[str, FilterCurve]:
         curves: Dict[str, FilterCurve] = {}
         for path in self._locate_filter_paths(spec):
             key = (os.fspath(path), "")
@@ -332,9 +329,7 @@ class SEDModel:
             raise FileNotFoundError(f"No filter file matching '{spec}' was found under {filters_dir}")
         if len(matches) > 1:
             options = ", ".join(str(p) for p in matches)
-            raise FileExistsError(
-                f"Filter specification '{spec}' is ambiguous; matches: {options}"
-            )
+            raise FileExistsError(f"Filter specification '{spec}' is ambiguous; matches: {options}")
         return [matches[0]]
 
     def _locate_filter_path(self, spec: Union[str, os.PathLike[str]]) -> Path:
@@ -355,9 +350,7 @@ class SEDModel:
         if lower <= value <= upper:
             return value
         if not self.fill_gaps:
-            raise ValueError(
-                f"Requested {label}={value} is outside the grid range [{lower}, {upper}]."
-            )
+            raise ValueError(f"Requested {label}={value} is outside the grid range [{lower}, {upper}].")
         return float(min(max(value, lower), upper))
 
 
@@ -382,12 +375,7 @@ class SED:
         self._active_model: Optional[SEDModel] = None
 
         if atm is not None:
-            self.model(
-                atm,
-                interpolation=interpolation,
-                fill_gaps=fill_gaps,
-                activate=True,
-            )
+            self.model(atm, interpolation=interpolation, fill_gaps=fill_gaps, activate=True)
 
     # --- Model discovery ---
 
@@ -656,9 +644,7 @@ def _normalize_filter_sequence(filters: Sequence[FilterSpec]) -> List[FilterSpec
     return list(filters)
 
 
-def _normalize_range(
-    value: Optional[Sequence[Number]], label: str
-) -> Optional[Tuple[float, float]]:
+def _normalize_range(value: Optional[Sequence[Number]], label: str) -> Optional[Tuple[float, float]]:
     if value is None:
         return None
     if len(value) != 2:
@@ -682,9 +668,7 @@ def _range_coverage(
     return overlaps, covers
 
 
-def _range_center(
-    requested: Optional[Tuple[float, float]], grid: np.ndarray
-) -> float:
+def _range_center(requested: Optional[Tuple[float, float]], grid: np.ndarray) -> float:
     if requested is not None:
         return float((requested[0] + requested[1]) / 2.0)
     if grid.size == 0:
