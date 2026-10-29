@@ -1,3 +1,8 @@
+"""The local spectral grids' flux cubes as SEDs: SED (sed_tools.models.SED) finds the installed grids that cover a
+point or range, SEDModel interpolates one grid's flux_cube.bin, and EvaluatedSED gives photometry. sed_tools.SED
+(api/) is the public class built on them; "model" here means an atmosphere grid, not an ML model.
+"""
+
 from __future__ import annotations
 
 import math
@@ -9,10 +14,12 @@ from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
+from ..config import get_data_dir
 from ..filters.compose import is_auxiliary_path
 from ..photometry import (AB_ZERO_FLUX, FILTER_EXTENSIONS, VEGA_ZP_KEYS, FilterCurve, Spectrum, _warn_outside_sed,
                           band_average_flux_lambda, band_average_flux_lambda_from_arrays, band_average_flux_nu,
                           get_metadata_float, load_filter_curve, load_spectrum)
+from .fileio import read_axes
 from .tool import FluxCube
 
 Number = Union[int, float, np.floating]
@@ -20,8 +27,6 @@ FilterSpec = Union[str, os.PathLike[str], FilterCurve, Tuple[str, Union[str, os.
 
 PACKAGE_ROOT = Path(__file__).resolve().parents[1]
 
-from ..config import get_data_dir
-from .fileio import read_axes
 DATA_DIR_DEFAULT     = get_data_dir()
 STELLAR_DIR_DEFAULT  = Path(os.environ.get("SED_STELLAR_DIR", DATA_DIR_DEFAULT / "stellar_models")).expanduser()
 FILTER_DIR_DEFAULT   = Path(os.environ.get("SED_FILTER_DIR",  DATA_DIR_DEFAULT / "filters")).expanduser()
@@ -222,9 +227,7 @@ class SEDModel:
         self._filter_cache: Dict[str, FilterCurve] = {}
         self._filter_index: Optional[Dict[str, List[Path]]] = None
 
-    # ------------------------------------------------------------------
-    # Flux cube loading & interpolation
-    # ------------------------------------------------------------------
+    # --- Flux cube loading & interpolation ---
 
     def _load_cube(self) -> FluxCube:
         if self._cube is None:
@@ -247,9 +250,7 @@ class SEDModel:
             "metallicity": (float(self.meta_grid[0]), float(self.meta_grid[-1])),
         }
 
-    # ------------------------------------------------------------------
-    # Filter handling
-    # ------------------------------------------------------------------
+    # --- Filter handling ---
 
     def _resolve_filters(self, filters: Sequence[FilterSpec]) -> Dict[str, FilterCurve]:
         entries = _normalize_filter_sequence(filters)
@@ -376,9 +377,7 @@ class SEDModel:
             )
         return paths[0]
 
-    # ------------------------------------------------------------------
-    # Helpers
-    # ------------------------------------------------------------------
+    # --- Helpers ---
 
     def _prepare_value(self, value: float, grid: np.ndarray, label: str) -> float:
         lower = float(grid[0])
@@ -393,7 +392,10 @@ class SEDModel:
 
 
 class SED:
-    """Facade for working with the local SED model repository."""
+    """The installed spectral grids under model_root: find the ones covering a point or range, and evaluate one.
+
+    sed_tools.SED (api/) wraps this class; it is importable as sed_tools.models.SED.
+    """
 
     def __init__(
         self,
@@ -417,9 +419,7 @@ class SED:
                 activate=True,
             )
 
-    # ------------------------------------------------------------------
-    # Model discovery
-    # ------------------------------------------------------------------
+    # --- Model discovery ---
 
     def available_grids(self) -> List[str]:
         """List locally installed spectral grids with a flux cube."""
@@ -564,9 +564,7 @@ class SED:
 
     find_atmospheres = find_grids
 
-    # ------------------------------------------------------------------
-    # Model loading
-    # ------------------------------------------------------------------
+    # --- Model loading ---
 
     def model(
         self,
@@ -616,9 +614,7 @@ class SED:
             raise TypeError("Metallicity value missing; supply 'metallicity' or 'z'.")
         return self._active_model(teff, logg, metallicity)
 
-    # ------------------------------------------------------------------
-    # Helpers
-    # ------------------------------------------------------------------
+    # --- Helpers ---
 
     def _resolve_model_inputs(
         self, model: Union[str, os.PathLike[str], ModelMatch]
@@ -661,10 +657,6 @@ class SED:
             self._metadata_cache[cache_key] = _read_flux_cube_header(cube_path)
         return self._metadata_cache[cache_key]
 
-
-# ----------------------------------------------------------------------
-# Utility helpers
-# ----------------------------------------------------------------------
 
 
 def _read_flux_cube_header(path: Path) -> Dict[str, np.ndarray]:
