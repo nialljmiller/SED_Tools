@@ -187,7 +187,7 @@ def test_disjoint_selections_leave_empty_points_and_a_later_fill_is_rebuilt(njm,
 # 3. Messages and folders
 # ----------------------------------------------------------------------
 def test_the_rebuild_hint_names_base_only_when_the_grid_is_elsewhere(monkeypatch, tmp_path):
-    monkeypatch.setattr(cli, "STELLAR_DIR_DEFAULT", tmp_path / "default")
+    monkeypatch.setattr(cli.grids, "STELLAR_DIR_DEFAULT", tmp_path / "default")
     assert cli._rebuild_command(GRID, str(tmp_path / "default" / GRID)) == f"sed-tools rebuild --grids {GRID}"
     elsewhere = tmp_path / "my grids"
     assert (cli._rebuild_command(GRID, str(elsewhere / GRID))

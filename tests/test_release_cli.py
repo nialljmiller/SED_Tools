@@ -176,9 +176,9 @@ def test_rebuild_uses_the_flux_unit_option_without_asking(tmp_path, monkeypatch,
     _undeclared_grid(tmp_path / "Cool")
     cleaned = []
     monkeypatch.setattr("sys.stdin", _Stdin(False))
-    monkeypatch.setattr(cli, "clean_model_dir", lambda d, **k: cleaned.append(k["flux_unit"]) or
+    monkeypatch.setattr(cli.grids, "clean_model_dir", lambda d, **k: cleaned.append(k["flux_unit"]) or
                         {"total": 3, "error": [], "skipped_invalid": [], "skipped_index": []})
-    monkeypatch.setattr(cli, "regenerate_lookup_table", lambda d: None)
+    monkeypatch.setattr(cli.grids, "regenerate_lookup_table", lambda d: None)
     assert run_cli(monkeypatch, "rebuild", "--base", str(tmp_path), "--grids", "Cool", "--no-h5", "--no-cube",
                    "--flux-unit", "flam") == 0
     assert cleaned == ["flam"]
@@ -321,7 +321,7 @@ def test_composition_offers_the_bands_that_work(tmp_path, monkeypatch, capsys):
             raise ComponentError("am1.00_pwv1.dat covers 9000-56000 A but 70% of the band lies beyond it")
 
     monkeypatch.setattr(Filters, "compose", classmethod(compose))
-    monkeypatch.setattr(cli, "_composable_bands", lambda d, request: (["J", "H"], {"Z": "covers 9000-56000 A"}))
+    monkeypatch.setattr(cli.filters, "_composable_bands", lambda d, request: (["J", "H"], {"Z": "covers 9000-56000 A"}))
     answer(monkeypatch, "y")
     request = {"components": ["filter"], "variants": None, "detector_type": None, "allow_heavy": False,
                "atmosphere": {"site": "paranal", "airmass": 1.0, "pwv": 1.0}}
@@ -431,7 +431,7 @@ def _summary_inputs(monkeypatch, info=None, catalogue=None):
     calls = []
     monkeypatch.setattr(FilterLibrary, "available",
                         lambda self, f, i, remote=True: calls.append(f"{f}/{i}") or (info or _availability()))
-    monkeypatch.setattr(cli, "_catalogue_entry", lambda *a, **k: catalogue or {
+    monkeypatch.setattr(cli.filters, "_catalogue_entry", lambda *a, **k: catalogue or {
         "info": None, "properties": None, "errors": ["NJM does not serve it"]})
     return calls
 
@@ -445,7 +445,7 @@ def test_an_installed_instrument_is_not_offered_for_download(tmp_path, monkeypat
     monkeypatch.setattr(FilterLibrary, "published_complete", staticmethod(lambda d: True))
     monkeypatch.setattr(FilterLibrary, "installed_directory", lambda self, f, i: tmp_path / f / i)
     monkeypatch.setattr(FilterLibrary, "published", lambda self, f, i: fetched.append((f, i)) or tmp_path)
-    monkeypatch.setattr(cli, "_offer_composition", offered.append)
+    monkeypatch.setattr(cli.filters, "_offer_composition", offered.append)
     _summary_inputs(monkeypatch)
     prompts = answer(monkeypatch, "1", "n")
     download = lambda facility, instrument: cli._offer_download(library, facility, instrument, [])
@@ -482,7 +482,7 @@ def gaia(tmp_path, monkeypatch):
     monkeypatch.setattr(FilterLibrary, "mirror", SimpleNamespace(is_available=lambda: True))
     fetched = []
     monkeypatch.setattr(FilterLibrary, "published", lambda self, f, i: fetched.append(f"{f}/{i}") or tmp_path)
-    monkeypatch.setattr(cli, "_offer_composition", lambda directory: None)
+    monkeypatch.setattr(cli.filters, "_offer_composition", lambda directory: None)
     return fetched
 
 
@@ -624,7 +624,7 @@ def catalogue(tmp_path, monkeypatch):
         {"key": "Cam", "label": "Cam", "sources": ["svo"]}], "errors": []})
     fetched = []
     monkeypatch.setattr(FilterLibrary, "published", lambda self, f, i: fetched.append(f"{f}/{i}") or tmp_path)
-    monkeypatch.setattr(cli, "_offer_composition", lambda directory: None)
+    monkeypatch.setattr(cli.filters, "_offer_composition", lambda directory: None)
     _summary_inputs(monkeypatch)
     return fetched
 
@@ -679,7 +679,7 @@ def test_menu_4_builds_a_curve_from_the_parts_of_a_picked_instrument(lsst, tmp_p
     parts = _availability(facility="LSST", instrument="LSST", buildable=["filter", "filter+optics+qe"],
                           components=["filter", "optics", "qe"])
     _summary_inputs(monkeypatch, parts)
-    monkeypatch.setattr(cli, "_installed_availability", lambda directory: parts)
+    monkeypatch.setattr(cli.filters, "_installed_availability", lambda directory: parts)
     prompts = answer(monkeypatch, "4", "1", "1", "2", "", "q")
     assert cli._run_menu() == 0
     assert ("  3) Filter set information\n"
@@ -692,7 +692,7 @@ def test_menu_4_builds_a_curve_from_the_parts_of_a_picked_instrument(lsst, tmp_p
 def test_menu_4_says_in_one_line_when_an_instrument_has_no_parts(lsst, monkeypatch, capsys):
     _summary_inputs(monkeypatch, _availability(facility="LSST", instrument="LSST", buildable=[], components=[],
                                                component_availability={"status": "total-only", "builder": None}))
-    monkeypatch.setattr(cli, "_installed_availability", lambda directory: pytest.fail("nothing is downloaded"))
+    monkeypatch.setattr(cli.filters, "_installed_availability", lambda directory: pytest.fail("nothing is downloaded"))
     answer(monkeypatch, "4", "1", "1", "q")
     assert cli._run_menu() == 0
     out = capsys.readouterr().out
@@ -874,7 +874,7 @@ def test_menu_says_config_without_a_trailing_space(monkeypatch, capsys):
 # P18/P19: grid cuts without a terminal, and --auto limits
 # ----------------------------------------------------------------------
 def test_given_cuts_go_to_any_source_without_asking(monkeypatch):
-    monkeypatch.setattr(cli, "prompt_njm_axis_cuts", lambda *a, **k: pytest.fail("asked"))
+    monkeypatch.setattr(cli.grids, "prompt_njm_axis_cuts", lambda *a, **k: pytest.fail("asked"))
     ranges = {"teff_range": (3500.0, 8000.0), "logg_range": None, "meta_range": None, "wl_range": None}
     assert cli._download_cuts("G", "msg", None, {}, ranges) == ranges
     assert cli._download_cuts("G", "njm", None, {}, ranges) == ranges
@@ -882,7 +882,7 @@ def test_given_cuts_go_to_any_source_without_asking(monkeypatch):
 
 def test_njm_cuts_are_not_asked_without_a_terminal(monkeypatch, capsys):
     monkeypatch.setattr("sys.stdin", _Stdin(False))
-    monkeypatch.setattr(cli, "prompt_njm_axis_cuts", lambda *a, **k: pytest.fail("asked"))
+    monkeypatch.setattr(cli.grids, "prompt_njm_axis_cuts", lambda *a, **k: pytest.fail("asked"))
     none = {"teff_range": None, "logg_range": None, "meta_range": None, "wl_range": None}
     assert cli._download_cuts("G", "njm", None, {}, none) == {}
     assert "No terminal to ask for axis cuts: downloading the full grid" in capsys.readouterr().out
@@ -890,7 +890,7 @@ def test_njm_cuts_are_not_asked_without_a_terminal(monkeypatch, capsys):
 
 def test_njm_cuts_are_asked_in_a_terminal(monkeypatch):
     monkeypatch.setattr("sys.stdin", _Stdin(True))
-    monkeypatch.setattr(cli, "prompt_njm_axis_cuts", lambda name, g, model_url=None: {"teff_range": (1.0, 2.0)})
+    monkeypatch.setattr(cli.grids, "prompt_njm_axis_cuts", lambda name, g, model_url=None: {"teff_range": (1.0, 2.0)})
     assert cli._download_cuts("G", "njm", None, {"model_url": "u"}, {}) == {"teff_range": (1.0, 2.0)}
 
 
@@ -984,7 +984,7 @@ def test_grids_without_a_terminal_or_names_says_to_use_grids(monkeypatch, tmp_pa
         def discover_models(self):
             return ["bt-cond"]
 
-    monkeypatch.setattr(cli, "MSGSpectraGrabber", Grabber)
+    monkeypatch.setattr(cli.grids, "MSGSpectraGrabber", Grabber)
     monkeypatch.setattr("sys.stdin", _Stdin(False))
     with pytest.raises(ValueError, match=r"No terminal to choose from the 1 spectral grids found; name them with "
                                          r"--grids NAME \.\.\. \(or --grids all\)"):
