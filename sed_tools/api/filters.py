@@ -13,6 +13,8 @@ import pandas as pd
 from requests import RequestException
 
 from ..cube.model import FILTER_DIR_DEFAULT
+from ..filters.njm_catalogue import (CatalogueError, FilterCatalogue, collect_citations, format_bibtex,
+                                     format_citations, parse_target)
 from ..njm_mirror import NJM_NOT_LISTED
 
 logger = logging.getLogger("sed_tools.api")
@@ -350,8 +352,6 @@ class Filters:
     @classmethod
     def _catalogue(cls, filter_root=None, *, offline: bool = False):
         """One catalogue client per filter root, so the mirror is checked once per session."""
-        from ..filters.njm_catalogue import FilterCatalogue
-
         key = (str(Path(filter_root or cls._filter_root).expanduser().resolve()), offline)
         if key not in cls._catalogues:
             cls._catalogues[key] = FilterCatalogue(key[0], offline=offline)
@@ -463,8 +463,6 @@ class Filters:
     def _targets(cls, targets, filter_root) -> List[Tuple[str, str, Optional[List[str]], Optional[Path]]]:
         """``(facility, instrument, bands or None, directory or None)`` per target (the forms :meth:`plot`
         takes); no targets means every installed instrument."""
-        from ..filters.njm_catalogue import parse_target
-
         root = Path(filter_root or cls._filter_root)
         items: List[Tuple[str, str, Optional[str], Optional[Path]]] = []
         if not targets:
@@ -513,8 +511,6 @@ class Filters:
         ``used_by``), and the providers' acknowledgement texts, merged.  For a
         subset of bands, the instrument-wide references plus those bands' own.
         """
-        from ..filters.njm_catalogue import CatalogueError, collect_citations
-
         catalogue = cls._catalogue(filter_root, offline=offline)
         infos, errors = [], []
         for fac, inst, bands, directory in cls._targets(targets, filter_root):
@@ -557,8 +553,6 @@ class Filters:
         so then :class:`~sed_tools.filter_catalogue.CatalogueError` is raised
         (:meth:`citations` returns what was found).
         """
-        from ..filters.njm_catalogue import CatalogueError, format_bibtex, format_citations
-
         result = cls.citations(*targets, filter_root=filter_root, refresh=refresh, offline=offline)
         if format == "bibtex":
             if result["errors"]:
@@ -646,8 +640,6 @@ class Filters:
     @classmethod
     def _installed_or_fetched(cls, fac, inst, filter_root, catalogue, fetch) -> Tuple[str, str, Path]:
         """``(facility, instrument, directory)`` of an installed instrument (names ignore case), else fetched."""
-        from ..filters.njm_catalogue import CatalogueError
-
         root = Path(filter_root or cls._filter_root)
         for d in (root / fac / inst, *root.glob("*/*")):
             if (d.is_dir() and (d.parent.name.casefold(), d.name.casefold()) == (fac.casefold(), inst.casefold())

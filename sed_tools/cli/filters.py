@@ -10,7 +10,7 @@ from requests import RequestException
 
 from ..api import Filters, _listing_failures
 from ..cube.model import FILTER_DIR_DEFAULT
-from ..filters.compose import ComponentError
+from ..filters.compose import ATMOSPHERE, INSTRUMENT, ComponentError, archived_bands, index_listing, parse_components
 from ..filters.njm_catalogue import CatalogueError
 from ..terminal_plots import terminal_width
 from ..ui_utils import NO_DEFAULT as _NO_DEFAULT, ask_number as _ask_number, ask_option, ask_yes, cut, prompt_choice, wrap
@@ -114,15 +114,11 @@ def _site_names(sites: List[str], default: Optional[str]) -> str:
     return ", ".join(f"{s} (default)" if s == default else s for s in sites)
 
 
-def _default_variant(named: dict) -> Optional[str]:
-    return next((name for name, entry in named.items() if entry.get("default")), None)
-
-
 def _variants_summary(variants: dict) -> str:
     """``role: a (default), b; role2: c`` for the named alternative component curves."""
     parts = []
     for role, named in variants.items():
-        default = _default_variant(named)
+        default = next((name for name, entry in named.items() if entry.get("default")), None)
         names = ", ".join([f"{default} (default)"] * bool(default) + [n for n in named if n != default])
         parts.append(f"{role}: {names}" + ("" if default else f" (default: the standard {role} curve)"))
     return "; ".join(parts)
@@ -268,8 +264,6 @@ def _compose_interactively(instrument_dir: Path, info: dict) -> None:
 
 def _ask_recipe(info: dict) -> List[str]:
     """Ask for a recipe (a listed one, or one typed as roles) until it names known roles."""
-    from ..filters.compose import ATMOSPHERE, INSTRUMENT, parse_components
-
     options = [recipe.replace("+", ",") for recipe in info["buildable"]] + ["published"]
     print("Recipes (or type your own, e.g. published,optics):")
     for i, opt in enumerate(options, 1):
@@ -761,8 +755,6 @@ def _set_curve_count(directory: Path) -> int:
     manifest's ``archived_bands``; so NJM's ``_svo`` and ``_old`` copies beside
     a set are not counted.
     """
-    from ..filters.compose import archived_bands, index_listing
-
     archived = archived_bands(directory)
     listed = index_listing(directory)
     return sum(1 for path in directory.glob("*.dat")

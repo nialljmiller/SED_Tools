@@ -50,6 +50,8 @@ import pandas as pd
 from requests import RequestException
 
 from ..grids._lookup_io import find_teff_column, find_logg_column, find_metallicity_column, find_file_column
+from ..grids.lookup import regenerate_lookup_table
+from ..grids.spectrum_io import build_h5_bundle
 from ..cube.model import (
     FILTER_DIR_DEFAULT,
     STELLAR_DIR_DEFAULT,
@@ -57,6 +59,7 @@ from ..cube.model import (
     ModelMatch,
     SEDModel,
     SED as _SEDCore,
+    _read_flux_cube_header,
 )
 from ..cube.check import _bundle_shortfall, _flux_cube_file, _flux_cube_shortfall  # noqa: F401
 from ..grids.pipeline import (  # noqa: F401  (_build_combined_grid and _parameter_cuts are re-exported)
@@ -111,14 +114,9 @@ class SpectralGridInfo:
         metallicity: Optional[float] = None,
     ) -> bool:
         """Check if this spectral grid covers a specific point in parameter space."""
-        if teff is not None and self.teff_range:
-            if not (self.teff_range[0] <= teff <= self.teff_range[1]):
-                return False
-        if logg is not None and self.logg_range:
-            if not (self.logg_range[0] <= logg <= self.logg_range[1]):
-                return False
-        if metallicity is not None and self.metallicity_range:
-            if not (self.metallicity_range[0] <= metallicity <= self.metallicity_range[1]):
+        for value, bounds in ((teff, self.teff_range), (logg, self.logg_range),
+                              (metallicity, self.metallicity_range)):
+            if value is not None and bounds and not (bounds[0] <= value <= bounds[1]):
                 return False
         return True
     
@@ -132,20 +130,9 @@ class SpectralGridInfo:
         metallicity_max: Optional[float] = None,
     ) -> bool:
         """Check if this spectral grid covers a parameter range (at least partial overlap)."""
-        if self.teff_range:
-            if teff_min is not None and teff_min > self.teff_range[1]:
-                return False
-            if teff_max is not None and teff_max < self.teff_range[0]:
-                return False
-        if self.logg_range:
-            if logg_min is not None and logg_min > self.logg_range[1]:
-                return False
-            if logg_max is not None and logg_max < self.logg_range[0]:
-                return False
-        if self.metallicity_range:
-            if metallicity_min is not None and metallicity_min > self.metallicity_range[1]:
-                return False
-            if metallicity_max is not None and metallicity_max < self.metallicity_range[0]:
+        for low, high, bounds in ((teff_min, teff_max, self.teff_range), (logg_min, logg_max, self.logg_range),
+                                  (metallicity_min, metallicity_max, self.metallicity_range)):
+            if bounds and ((low is not None and low > bounds[1]) or (high is not None and high < bounds[0])):
                 return False
         return True
     
@@ -210,6 +197,11 @@ class Spectrum:
             raise ValueError(f"Unsupported format: {format}")
 
 
+def _not_outside(value: float, low: Optional[float], high: Optional[float]) -> bool:
+    """False only for a value below ``low`` or above ``high``; a NaN value is never outside."""
+    return not ((low is not None and value < low) or (high is not None and value > high))
+
+
 @dataclass  
 class SpectralGrid:
     """
@@ -264,22 +256,9 @@ class SpectralGrid:
         metallicity_max: Optional[float] = None,
     ) -> 'SpectralGrid':
         """Return a new SpectralGrid with filtered spectra."""
-        filtered = []
-        for spec in self.spectra:
-            if teff_min is not None and spec.teff < teff_min:
-                continue
-            if teff_max is not None and spec.teff > teff_max:
-                continue
-            if logg_min is not None and spec.logg < logg_min:
-                continue
-            if logg_max is not None and spec.logg > logg_max:
-                continue
-            if metallicity_min is not None and spec.metallicity < metallicity_min:
-                continue
-            if metallicity_max is not None and spec.metallicity > metallicity_max:
-                continue
-            filtered.append(spec)
-        
+        filtered = [spec for spec in self.spectra
+                    if _not_outside(spec.teff, teff_min, teff_max) and _not_outside(spec.logg, logg_min, logg_max)
+                    and _not_outside(spec.metallicity, metallicity_min, metallicity_max)]
         return SpectralGrid(
             name=self.name,
             source=self.source,
@@ -345,8 +324,7 @@ class SpectralGrid:
 
         # Build H5 bundle
         if build_h5 and len(self.spectra) > 0:
-            from .. import build_h5_bundle_from_txt
-            if not build_h5_bundle_from_txt(str(path), str(path / f"{self.name}.h5")):
+            if not build_h5_bundle(str(path), str(path / f"{self.name}.h5")):
                 raise RuntimeError(f"No .txt spectra in {path} to bundle into {self.name}.h5")
             print(f"[write] Built {self.name}.h5")
 
@@ -523,18 +501,7 @@ class SED:
         # Filter by parameter coverage; a bound of 0 is a bound
         bounds = (teff_min, teff_max, logg_min, logg_max, metallicity_min, metallicity_max)
         if any(b is not None for b in bounds):
-            catalogs = [
-                c for c in catalogs
-                if c.covers_range(
-                    teff_min=teff_min,
-                    teff_max=teff_max,
-                    logg_min=logg_min,
-                    logg_max=logg_max,
-                    metallicity_min=metallicity_min,
-                    metallicity_max=metallicity_max,
-                )
-            ]
-        
+            catalogs = [c for c in catalogs if c.covers_range(*bounds)]
         return catalogs
     
     @classmethod
@@ -563,7 +530,6 @@ class SED:
             
             # Parameter ranges from the flux cube header
             try:
-                from ..cube.model import _read_flux_cube_header
                 meta = _read_flux_cube_header(cube)
                 info.teff_range = (float(meta['teff'][0]), float(meta['teff'][-1]))
                 info.logg_range = (float(meta['logg'][0]), float(meta['logg'][-1]))
@@ -741,14 +707,8 @@ class SED:
         
         # Apply parameter filters; a bound of 0 is a bound
         if cuts:
-            cat = cat.filter(
-                teff_min=teff_min,
-                teff_max=teff_max,
-                logg_min=logg_min,
-                logg_max=logg_max,
-                metallicity_min=metallicity_min,
-                metallicity_max=metallicity_max,
-            )
+            cat = cat.filter(teff_min=teff_min, teff_max=teff_max, logg_min=logg_min, logg_max=logg_max,
+                             metallicity_min=metallicity_min, metallicity_max=metallicity_max)
             print(f"[fetch] Filtered to {len(cat)} spectra")
         
         return cls(catalog=cat, model_root=base_dir)
@@ -1025,16 +985,13 @@ class SED:
         print(f"[import] {'moved' if move else 'copied'} {len(files)} files -> {dest}")
 
         # --- standard pipeline: clean -> lookup -> h5 -> cube ---
-        from ..grids.lookup import regenerate_lookup_table
-
         summary = clean_model_dir(str(dest), try_h5_recovery=True, rebuild_lookup=True, flux_unit=flux_unit)
         print(f"[import] cleaned: total={summary['total']}")
 
         regenerate_lookup_table(str(dest))
 
         if build_h5:
-            from .. import build_h5_bundle_from_txt
-            build_h5_bundle_from_txt(str(dest), str(dest / f"{name}.h5"))  # dest holds the .txt files copied above
+            build_h5_bundle(str(dest), str(dest / f"{name}.h5"))  # dest holds the .txt files copied above
 
         if build_cube:
             _build_flux_cube(dest)
@@ -1454,12 +1411,7 @@ class MLGenerator:
         flux : np.ndarray
             Flux array in erg/s/cm²/Å
         """
-        if self._generator is None:
-            raise RuntimeError(
-                "No model loaded. Call train() or load() first."
-            )
-        
-        return self._generator.generate(
+        return self._loaded_generator().generate(
             teff=teff,
             logg=logg,
             meta=metallicity,
@@ -1502,15 +1454,10 @@ class MLGenerator:
         flux : np.ndarray
             Flux array in erg/s/cm²/Å
         """
-        if self._generator is None:
-            raise RuntimeError(
-                "No model loaded. Call train() or load() first."
-            )
-        
+        generator = self._loaded_generator()
         if output_dir is None:
             output_dir = str(self._model_path / 'SED')  # train() and load() set both
-        
-        return self._generator.generate_with_outputs(
+        return generator.generate_with_outputs(
             teff=teff,
             logg=logg,
             meta=metallicity,
@@ -1528,16 +1475,19 @@ class MLGenerator:
             Dictionary with 'teff', 'logg', 'metallicity' keys
             and (min, max) tuple values
         """
-        if self._generator is None:
-            raise RuntimeError("No model loaded. Call train() or load() first.")
-        
-        ranges = self._generator.config['parameter_ranges']
+        ranges = self._loaded_generator().config['parameter_ranges']
         return {
             'teff': tuple(ranges['teff']),
             'logg': tuple(ranges['logg']),
             'metallicity': tuple(ranges['meta']),
         }
     
+    def _loaded_generator(self):
+        """The trained or loaded generator; RuntimeError before train() or load()."""
+        if self._generator is None:
+            raise RuntimeError("No model loaded. Call train() or load() first.")
+        return self._generator
+
     @staticmethod
     def list_models(models_dir: str = "models") -> List[Dict[str, Any]]:
         """

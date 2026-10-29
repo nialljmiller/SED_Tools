@@ -12,11 +12,14 @@ import os
 import re
 import sys
 import traceback
+from collections import Counter
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 from requests import RequestException
 
+from ..api import SED, Filters
+from ..component_sources import AUTOMATIC_BUILDERS, BUILDERS, get_builder
 from ..config import set_data_dir, show_config
 from ..cube.model import FILTER_DIR_DEFAULT, STELLAR_DIR_DEFAULT
 from ..filters.compose import ComponentError
@@ -154,6 +157,10 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _add_base_option(parser, default, help: str) -> None:
+    parser.add_argument("--base", default=str(default), help=help)
+
+
 def _add_flux_unit_option(parser) -> None:
     parser.add_argument("--flux-unit", choices=list(FLUX_UNITS),
                         help="Flux unit of spectra whose headers do not declare one (otherwise sed-tools "
@@ -182,7 +189,7 @@ def _airmass_arg(text):
 
 def _add_filter_product_options(parser, *, components=None):
     """Keep filter fetch and composition options identical."""
-    parser.add_argument("--base", default=str(FILTER_DIR_DEFAULT), help="Base filter directory")
+    _add_base_option(parser, FILTER_DIR_DEFAULT, "Base filter directory")
     parser.add_argument("--components", default=components,
                         help="Roles separated by commas or '+': filter, optics, qe, published")
     parser.add_argument("--bands", nargs="+", help="Compose only these bands")
@@ -206,8 +213,7 @@ def _add_grid_download_parser(sub) -> None:
                     help="Which provider(s) to use. NJM mirror is checked first when available.")
     sp.add_argument("--grids", "--models", dest="models", nargs="*", default=None,
                     help="Spectral grid names to process, or 'all'")
-    sp.add_argument("--base", default=str(STELLAR_DIR_DEFAULT),
-                    help="Output directory for spectral grids")
+    _add_base_option(sp, STELLAR_DIR_DEFAULT, "Output directory for spectral grids")
     sp.add_argument("--workers", type=int, default=5, help="Parallel workers")
     sp.add_argument("--no-h5", action="store_true", help="Do not force-create HDF5 bundle")
     sp.add_argument("--no-cube", action="store_true", help="Skip flux cube build")
@@ -232,8 +238,7 @@ def _add_filter_download_parsers(sub) -> None:
     fcp = sub.add_parser("filters-combine", help="Combine filter sets into one MESA-compatible instrument")
     fcp.add_argument("output", help="Output name or Facility/Instrument path for the combined filter set")
     fcp.add_argument("inputs", nargs="+", help="Filter-set directories or .dat files to combine")
-    fcp.add_argument("--base", default=str(FILTER_DIR_DEFAULT),
-                     help="Base filter directory")
+    _add_base_option(fcp, FILTER_DIR_DEFAULT, "Base filter directory")
     fcp.add_argument("--facility", default=None, help="Output facility label (default: Combined)")
     fcp.add_argument("--instrument", default=None, help="Output instrument/index-file name")
     fcp.add_argument("--on-conflict", choices=["rename", "overwrite", "error"], default="rename",
@@ -256,21 +261,19 @@ def _add_filter_catalogue_parsers(sub) -> None:
     fip = sub.add_parser("filters-info",
                          help="Show what a filter set contains and which components can be requested")
     fip.add_argument("target", help="Facility/Instrument, e.g. SLOAN/SDSS")
-    fip.add_argument("--base", default=str(FILTER_DIR_DEFAULT), help="Base filter directory")
+    _add_base_option(fip, FILTER_DIR_DEFAULT, "Base filter directory")
 
     fip.add_argument("--offline", action="store_true", help="Inspect local data without contacting sources")
     fip.add_argument("--json", action="store_true", help="Emit availability as JSON")
 
 
 def _add_filter_component_parsers(sub) -> None:
-    from ..component_sources import AUTOMATIC_BUILDERS, BUILDERS
-
     fcop = sub.add_parser("filters-compose", help="Compose optical-path components")
     fcop.add_argument("target", help="Facility/Instrument or installed instrument directory")
     _add_filter_product_options(fcop, components="filter")
 
     finv = sub.add_parser("filters-inventory", help="Inventory all SVO, NJM, local and registered instruments")
-    finv.add_argument("--base", default=str(FILTER_DIR_DEFAULT), help="Base filter directory")
+    _add_base_option(finv, FILTER_DIR_DEFAULT, "Base filter directory")
     finv.add_argument("--facility", help="Limit discovery to this facility")
     finv.add_argument("--offline", action="store_true", help="List local and registered instruments only")
     finv.add_argument("--json", action="store_true", help="Emit inventory and source errors as JSON")
@@ -279,7 +282,7 @@ def _add_filter_component_parsers(sub) -> None:
                          help="(Mirror curation) populate components/atmospheres from a published source")
     fbp.add_argument("source", help=f"Component source: {', '.join(sorted(BUILDERS))}; or 'all' for "
                                     f"those that need no input ({', '.join(AUTOMATIC_BUILDERS)})")
-    fbp.add_argument("--base", default=str(FILTER_DIR_DEFAULT), help="Base filter directory")
+    _add_base_option(fbp, FILTER_DIR_DEFAULT, "Base filter directory")
     fbp.add_argument("--raw", default=None, help="Raw input directory (source specific)")
     fbp.add_argument("--instrument", help="Instrument to build, for a source that holds several "
                                           "(e.g. tabular, surveys, space); a source that needs one says so")
@@ -296,8 +299,7 @@ _ML_GAP_THRESHOLD_DEFAULT = 5000.0
 
 def _add_grid_build_parsers(sub) -> None:
     rp = sub.add_parser("rebuild", help="Rebuild lookup table + HDF5 + flux cube")
-    rp.add_argument("--base", default=str(STELLAR_DIR_DEFAULT),
-                    help="Base spectral grid dir")
+    _add_base_option(rp, STELLAR_DIR_DEFAULT, "Base spectral grid dir")
     rp.add_argument("--grids", "--models", dest="models", nargs="*", default=None,
                     help="Names of local spectral grids to rebuild")
     rp.add_argument("--no-h5", action="store_true", help="Skip HDF5 bundle")
@@ -305,8 +307,7 @@ def _add_grid_build_parsers(sub) -> None:
     _add_flux_unit_option(rp)
 
     cp = sub.add_parser("combine", help="Combine multiple grids into omni grid")
-    cp.add_argument("--base", default=str(STELLAR_DIR_DEFAULT),
-                    help="Base spectral grid directory")
+    _add_base_option(cp, STELLAR_DIR_DEFAULT, "Base spectral grid directory")
     cp.add_argument("--output", default="combined_models",
                     help="Name for the combined spectral grid")
     cp.add_argument("--non-interactive", action="store_true",
@@ -316,14 +317,12 @@ def _add_grid_build_parsers(sub) -> None:
                     help="Names of the local spectral grids to combine (no prompts)")
 
     mp = sub.add_parser("ml_completer", help="Train/use ML SED completer")
-    mp.add_argument("--base", default=str(STELLAR_DIR_DEFAULT),
-                    help="Base spectral grid directory")
+    _add_base_option(mp, STELLAR_DIR_DEFAULT, "Base spectral grid directory")
     mp.add_argument("--models-dir", default="models",
                     help="Directory for trained ML models")
 
     gp = sub.add_parser("ml_generator", help="Train/use ML SED generator")
-    gp.add_argument("--base", default=str(STELLAR_DIR_DEFAULT),
-                    help="Base spectral grid directory")
+    _add_base_option(gp, STELLAR_DIR_DEFAULT, "Base spectral grid directory")
     gp.add_argument("--models-dir", default="models",
                     help="Directory for trained ML models")
     gp.add_argument("--auto", action="store_true",
@@ -355,8 +354,7 @@ def _add_grid_build_parsers(sub) -> None:
 def _add_grid_tool_parsers(sub) -> None:
     pp = sub.add_parser("mesa_prepare",
         help="Export a spectral grid variant as a clean MESA-ready folder")
-    pp.add_argument("--base", default=str(STELLAR_DIR_DEFAULT),
-                    help="Base spectral grid directory")
+    _add_base_option(pp, STELLAR_DIR_DEFAULT, "Base spectral grid directory")
     pp.add_argument("--grid", "--model", dest="model", default=None,
                     help="Spectral grid name (e.g. Kurucz2003all); prompted if omitted")
     pp.add_argument("--output", default=None,
@@ -370,8 +368,7 @@ def _add_grid_tool_parsers(sub) -> None:
 
     covp = sub.add_parser("coverage",
         help="Report parameter-space coverage of a local grid")
-    covp.add_argument("--base", default=str(STELLAR_DIR_DEFAULT),
-                      help="Base spectral grid dir")
+    _add_base_option(covp, STELLAR_DIR_DEFAULT, "Base spectral grid dir")
     covp.add_argument("--grids", "--models", dest="models", nargs="*", default=None,
                       help="Spectral grid folder name(s); default: every local grid")
     covp.add_argument("--no-plot", action="store_true",
@@ -385,8 +382,7 @@ def _add_grid_tool_parsers(sub) -> None:
                      help="Directory of .txt spectra (or a single .txt file)")
     imp.add_argument("--name", default=None,
                      help="Spectral grid name (default: source folder name)")
-    imp.add_argument("--base", default=str(STELLAR_DIR_DEFAULT),
-                     help="Base spectral grid dir")
+    _add_base_option(imp, STELLAR_DIR_DEFAULT, "Base spectral grid dir")
     imp.add_argument("--move", action="store_true",
                      help="Move files instead of copying")
     imp.add_argument("--no-h5", action="store_true", help="Skip HDF5 bundle")
@@ -453,8 +449,6 @@ def _atmosphere_request(args, parser) -> Optional[Dict]:
 
 def _cmd_filters(args, parser):
     """``filters`` and ``filters-compose``: download (or browse) an instrument, optionally composing it."""
-    from ..api import Filters
-
     if not args.target:
         if any((args.components, args.bands, args.detector_type, args.airmass is not None,
                 args.pwv is not None, args.atmosphere_site, args.allow_heavy, args.allow_partial)):
@@ -478,15 +472,13 @@ def _atmosphere_error(exc: Exception, args) -> str:
     """The error of a failed composition with an atmosphere; for an instrument with several sites
     and no default, in command-line terms (--atmosphere-site).  The site's own errors already say
     which conditions it has."""
-    from ..api import Filters
     from ..filters.library import FilterLibrary
 
     if args.atmosphere_site:
         return str(exc)
     directory = FilterLibrary(args.base).directory(args.target)
     try:
-        info = Filters.available(directory.parent.name, directory.name, filter_root=directory.parent.parent,
-                                 include_remote=False)
+        info = _installed_availability(directory)
     except (ComponentError, OSError, RuntimeError) as lookup_error:
         return f"{exc} (its atmosphere sites could not be listed: {lookup_error})"
     sites = _atmosphere_sites(info)
@@ -512,10 +504,6 @@ def _cmd_filters_combine(args, parser):
 
 
 def _cmd_filters_detector(args, parser):
-    from collections import Counter
-
-    from ..api import Filters
-
     # Each file is printed as it is tagged, so on failure main() has only the error left to say.
     rows = Filters.tag_detector_types(
         args.path, facility=args.facility, force=args.force, dry_run=args.dry_run
@@ -539,8 +527,6 @@ def _cmd_filters_detector(args, parser):
 
 
 def _cmd_filters_info(args, parser):
-    from ..api import Filters
-
     target = _facility_instrument(args.target, parser)
     info = Filters.available(*target, filter_root=args.base, include_remote=not args.offline)
     catalogue = _catalogue_entry(*target, args.base, offline=args.offline)
@@ -554,8 +540,6 @@ def _cmd_filters_info(args, parser):
 
 
 def _cmd_filters_inventory(args, parser):
-    from ..api import Filters
-
     result = Filters.inventory(filter_root=args.base, include_remote=not args.offline, facility=args.facility)
     if args.json:
         print(json.dumps(result, indent=2))
@@ -569,8 +553,6 @@ def _cmd_filters_inventory(args, parser):
 
 
 def _cmd_filters_build_components(args, parser):
-    from ..component_sources import BUILDERS, get_builder
-
     if args.source == "all":
         return _build_all_component_sources(args.base, args.sites)
     if args.source.lower() not in BUILDERS:
@@ -584,27 +566,15 @@ def _cmd_filters_build_components(args, parser):
 
         if args.instrument not in SOURCES:
             parser.error(f"tabular has no instrument {args.instrument!r}; choose one of: {', '.join(SOURCES)}")
-    kwargs = {}
-    if args.raw:
-        kwargs["raw"] = args.raw
-    if args.instrument:
-        kwargs["instrument"] = args.instrument
-    if args.sites:
-        kwargs["sites"] = args.sites
-    if args.airmass:
-        kwargs["airmasses"] = args.airmass
-    if args.pwv:
-        kwargs["pwvs"] = args.pwv
-    if args.archive:
-        kwargs["archive_dir"] = args.archive
+    options = (("raw", args.raw), ("instrument", args.instrument), ("sites", args.sites),
+               ("airmasses", args.airmass), ("pwvs", args.pwv), ("archive_dir", args.archive))
+    kwargs = {key: value for key, value in options if value}
     print(f"[filters] Built {builder(args.base, **kwargs)}")
     return 0
 
 
 def _build_all_component_sources(base: str, sites: Optional[List[str]]) -> int:
     """Run every automatic builder; report each failure and return 1 if any failed."""
-    from ..component_sources import AUTOMATIC_BUILDERS, get_builder
-
     failed = []
     for name in AUTOMATIC_BUILDERS:
         kw = {"sites": sites or ["paranal", "lasilla"]} if name == "skycalc" else {}
@@ -706,8 +676,6 @@ def _cmd_config(args, parser):
 
 
 def _cmd_coverage(args, parser):
-    from ..api import SED
-
     names = args.models
     if not names:
         names = local_grids(args.base)
@@ -731,8 +699,6 @@ def _cmd_coverage(args, parser):
 
 
 def _cmd_import(args, parser):
-    from ..api import SED
-
     if args.dry_run:
         flux_unit = None
     else:
