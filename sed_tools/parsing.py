@@ -25,15 +25,13 @@ def parse_numeric_range(raw: str) -> Optional[Tuple[float, float]]:
 
 def parse_multi_selection(spec: str, total: int) -> list[int]:
     """Parse 1-based IDs such as ``1,3-5`` into unique 0-based indexes."""
-    if total < 0:
-        raise ValueError("total must be non-negative")
     chosen: set[int] = set()
     for chunk in (part.strip() for part in spec.split(",")):
         if not chunk:
             continue
         if "-" in chunk:
             bounds = [part.strip() for part in chunk.split("-", 1)]
-            if len(bounds) != 2 or not all(part.isdigit() for part in bounds):
+            if not all(part.isdigit() for part in bounds):
                 raise ValueError(f"Invalid range: {chunk}")
             start, end = map(int, bounds)
             if start > end:
