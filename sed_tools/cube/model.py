@@ -1,3 +1,8 @@
+"""The local spectral grids' flux cubes as SEDs: SED (sed_tools.models.SED) finds the installed grids that cover a
+point or range, SEDModel interpolates one grid's flux_cube.bin, and EvaluatedSED gives photometry. sed_tools.SED
+(api/) is the public class built on them; "model" here means an atmosphere grid, not an ML model.
+"""
+
 from __future__ import annotations
 
 import math
@@ -9,20 +14,19 @@ from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
+from ..config import get_data_dir
 from ..filters.compose import is_auxiliary_path
-from .._flux import (AB_ZERO_FLUX, FILTER_EXTENSIONS, VEGA_ZP_KEYS, FilterCurve,
-                    FluxCube, Spectrum, band_average_flux_lambda,
-                    band_average_flux_lambda_from_arrays, band_average_flux_nu,
-                    load_filter_curve, load_spectrum)
-from ..photometry import _warn_outside_sed, get_metadata_float
+from ..photometry import (AB_ZERO_FLUX, FILTER_EXTENSIONS, VEGA_ZP_KEYS, FilterCurve, Spectrum, _warn_outside_sed,
+                          band_average_flux_lambda, band_average_flux_lambda_from_arrays, band_average_flux_nu,
+                          get_metadata_float, load_filter_curve, load_spectrum)
+from .fileio import read_axes
+from .tool import FluxCube
 
 Number = Union[int, float, np.floating]
 FilterSpec = Union[str, os.PathLike[str], FilterCurve, Tuple[str, Union[str, os.PathLike[str]]]]
 
 PACKAGE_ROOT = Path(__file__).resolve().parents[1]
 
-from ..config import get_data_dir
-from .fileio import read_axes
 DATA_DIR_DEFAULT     = get_data_dir()
 STELLAR_DIR_DEFAULT  = Path(os.environ.get("SED_STELLAR_DIR", DATA_DIR_DEFAULT / "stellar_models")).expanduser()
 FILTER_DIR_DEFAULT   = Path(os.environ.get("SED_FILTER_DIR",  DATA_DIR_DEFAULT / "filters")).expanduser()
@@ -130,43 +134,26 @@ class EvaluatedSED:
         if system not in {"AB", "VEGA"}:
             raise ValueError("Photometric system must be either 'AB' or 'Vega'")
 
-        vega_curve: Optional[Spectrum]
-        if isinstance(vega_spectrum, Spectrum):
-            vega_curve = vega_spectrum
-        elif vega_spectrum is None:
-            vega_curve = None
-        else:
+        vega_curve: Optional[Spectrum] = vega_spectrum
+        if vega_spectrum is not None and not isinstance(vega_spectrum, Spectrum):
             vega_curve = load_spectrum(os.fspath(vega_spectrum))
 
         _warn_outside_sed(self.wavelength, resolved.values())
         for name, curve in resolved.items():
+            # A zero or negative band flux or Vega zero point gives inf, -inf or NaN, as computed; no error.
             if system == "AB":
-                flux_density = band_average_flux_nu(
-                    self.wavelength, self.flux, curve
-                )
-                # A zero or negative band flux gives inf or NaN, as computed; no error.
+                flux_density = band_average_flux_nu(self.wavelength, self.flux, curve)
                 with np.errstate(divide="ignore", invalid="ignore"):
                     magnitude = float(-2.5 * np.log10(flux_density / AB_ZERO_FLUX))
-                results[name] = PhotometryResult(
-                    magnitude=magnitude,
-                    flux_density=float(flux_density),
-                    system="AB",
-                    filter_name=name,
-                )
-                continue
-
-            # Vega system
-            flux_density = band_average_flux_lambda(
-                self.wavelength, self.flux, curve
-            )
-            vega_zero = _vega_zero_point(curve, vega_curve)
-            # A zero or negative band flux or zero point gives inf, -inf or NaN, as computed; no error.
-            with np.errstate(divide="ignore", invalid="ignore"):
-                magnitude = float(-2.5 * np.log10(np.divide(flux_density, vega_zero)))
+            else:
+                flux_density = band_average_flux_lambda(self.wavelength, self.flux, curve)
+                vega_zero = _vega_zero_point(curve, vega_curve)
+                with np.errstate(divide="ignore", invalid="ignore"):
+                    magnitude = float(-2.5 * np.log10(np.divide(flux_density, vega_zero)))
             results[name] = PhotometryResult(
                 magnitude=magnitude,
                 flux_density=float(flux_density),
-                system="Vega",
+                system="AB" if system == "AB" else "Vega",
                 filter_name=name,
             )
 
@@ -223,9 +210,7 @@ class SEDModel:
         self._filter_cache: Dict[str, FilterCurve] = {}
         self._filter_index: Optional[Dict[str, List[Path]]] = None
 
-    # ------------------------------------------------------------------
-    # Flux cube loading & interpolation
-    # ------------------------------------------------------------------
+    # --- Flux cube loading & interpolation ---
 
     def _load_cube(self) -> FluxCube:
         if self._cube is None:
@@ -248,9 +233,7 @@ class SEDModel:
             "metallicity": (float(self.meta_grid[0]), float(self.meta_grid[-1])),
         }
 
-    # ------------------------------------------------------------------
-    # Filter handling
-    # ------------------------------------------------------------------
+    # --- Filter handling ---
 
     def _resolve_filters(self, filters: Sequence[FilterSpec]) -> Dict[str, FilterCurve]:
         entries = _normalize_filter_sequence(filters)
@@ -377,9 +360,7 @@ class SEDModel:
             )
         return paths[0]
 
-    # ------------------------------------------------------------------
-    # Helpers
-    # ------------------------------------------------------------------
+    # --- Helpers ---
 
     def _prepare_value(self, value: float, grid: np.ndarray, label: str) -> float:
         lower = float(grid[0])
@@ -394,7 +375,10 @@ class SEDModel:
 
 
 class SED:
-    """Facade for working with the local SED model repository."""
+    """The installed spectral grids under model_root: find the ones covering a point or range, and evaluate one.
+
+    sed_tools.SED (api/) wraps this class; it is importable as sed_tools.models.SED.
+    """
 
     def __init__(
         self,
@@ -418,9 +402,7 @@ class SED:
                 activate=True,
             )
 
-    # ------------------------------------------------------------------
-    # Model discovery
-    # ------------------------------------------------------------------
+    # --- Model discovery ---
 
     def available_grids(self) -> List[str]:
         """List locally installed spectral grids with a flux cube."""
@@ -565,9 +547,7 @@ class SED:
 
     find_atmospheres = find_grids
 
-    # ------------------------------------------------------------------
-    # Model loading
-    # ------------------------------------------------------------------
+    # --- Model loading ---
 
     def model(
         self,
@@ -617,17 +597,13 @@ class SED:
             raise TypeError("Metallicity value missing; supply 'metallicity' or 'z'.")
         return self._active_model(teff, logg, metallicity)
 
-    # ------------------------------------------------------------------
-    # Helpers
-    # ------------------------------------------------------------------
+    # --- Helpers ---
 
     def _resolve_model_inputs(
         self, model: Union[str, os.PathLike[str], ModelMatch]
     ) -> Tuple[Path, str]:
         if isinstance(model, ModelMatch):
-            path = Path(model.flux_cube)
-            name = model.name
-            return path, name
+            return Path(model.flux_cube), model.name
 
         flux_path = self._resolve_model_path(model)
         name = flux_path.parent.name if flux_path.parent != flux_path else flux_path.stem
@@ -662,10 +638,6 @@ class SED:
             self._metadata_cache[cache_key] = _read_flux_cube_header(cube_path)
         return self._metadata_cache[cache_key]
 
-
-# ----------------------------------------------------------------------
-# Utility helpers
-# ----------------------------------------------------------------------
 
 
 def _read_flux_cube_header(path: Path) -> Dict[str, np.ndarray]:
@@ -743,12 +715,8 @@ def _build_filter_index(root: Union[str, os.PathLike[str]]) -> Dict[str, List[Pa
 
 
 def _normalize_filter_sequence(filters: Sequence[FilterSpec]) -> List[FilterSpec]:
-    """The filter specs given; a lone list, set or tuple of specs is unpacked.
-
-    A lone ``(name, path)`` tuple is one spec when its second item is a path:
-    a path object, or a string naming an existing file. ``("V", "B")`` stays
-    two filter names.
-    """
+    """The filter specs given, with a lone list, set or tuple of specs unpacked; a lone ``(name, path)`` tuple
+    stays one spec when its second item is a path object or names an existing file (``("V", "B")`` is two)."""
     if len(filters) == 1 and isinstance(filters[0], (list, tuple, set)):
         only = filters[0]
         is_named_path = (isinstance(only, tuple) and len(only) == 2 and isinstance(only[0], str)
@@ -792,8 +760,7 @@ def _range_center(
         return float((requested[0] + requested[1]) / 2.0)
     if grid.size == 0:
         return 0.0
-    midpoint = grid[len(grid) // 2]
-    return float(midpoint)
+    return float(grid[len(grid) // 2])
 
 
 __all__ = [

@@ -1,21 +1,7 @@
-"""
-sed_tools/mesa_prepare.py
-
-Interactive tool for selecting a variant of a stellar spectral grid
-(e.g. a particular alpha-enhancement or microturbulence value) and
-exporting a clean, MESA-ready folder containing only that variant's flux cube
-and lookup table.
-
-Usage (CLI):
-    sed-tools mesa_prepare
-    sed-tools mesa_prepare --grid Kurucz2003all
-    sed-tools mesa_prepare --grid Kurucz2003all --output /path/to/output
-
-Usage (API):
-    from sed_tools.mesa_prepare import list_variants, export_variant
-
-    variants = list_variants("data/stellar_models/Kurucz2003all")
-    export_variant(variants[0], output_dir="data/stellar_models/Kurucz2003all_alpha0")
+"""Export one variant of a spectral grid (e.g. one alpha-enhancement or microturbulence value) as a clean
+MESA-ready folder: list_variants, print_variant_table, export_variant, and the interactive flow behind
+``sed-tools mesa_prepare [--grid NAME] [--output DIR]``. list_variants reads the subgrids cube/variants.py
+writes, and the layout of earlier versions.
 """
 
 from __future__ import annotations
@@ -41,10 +27,6 @@ _LEGACY_CORE_COLUMNS = {"file_name", "teff", "logg", "metallicity", "flux_unit",
                         "conversion_confidence"}
 
 
-# ---------------------------------------------------------------------------
-# Data structures
-# ---------------------------------------------------------------------------
-
 @dataclass
 class VariantInfo:
     """Metadata for a single extra-axis variant of a spectral grid."""
@@ -68,10 +50,6 @@ class VariantInfo:
     source_model_dir: Path              # original model directory (where .txt files live)
     lookup_rows: pd.DataFrame = field(repr=False)  # rows from the master lookup_table
 
-
-# ---------------------------------------------------------------------------
-# Discovery
-# ---------------------------------------------------------------------------
 
 def list_variants(model_dir: str | os.PathLike) -> List[VariantInfo]:
     """
@@ -195,13 +173,6 @@ def _find_variant_cube(library_dir: Path, label: str) -> Path:
     )
 
 
-def _read_cube_header(path: Path) -> dict:
-    """Grid axes from a flux cube's header, or {} if the cube has not been built."""
-    if not path.exists():
-        return {}
-    return _read_flux_cube_header(path)
-
-
 def _variant_from_rows(
     rows: pd.DataFrame,
     axes: Dict[str, str],
@@ -211,7 +182,7 @@ def _variant_from_rows(
     """Build a :class:`VariantInfo` from a subset of lookup-table rows."""
     label = "__".join(f"{k}_{v}" for k, v in axes.items()) if axes else "full_grid"
 
-    # Numeric parameter ranges come from the lookup table rows
+    # Parameter ranges come from the lookup rows, the wavelengths from the cube's header.
     def _range(col: str):
         if col not in rows.columns:
             return float("nan"), float("nan"), 0
@@ -223,12 +194,11 @@ def _variant_from_rows(
     logg_min, logg_max, logg_n   = _range("logg")
     meta_min, meta_max, meta_n   = _range("metallicity")
 
-    # Wavelength range and point count come from the flux cube header
-    hdr = _read_cube_header(cube_path)
-    if hdr:
-        wave_min = float(hdr["wavelengths"][0])
-        wave_max = float(hdr["wavelengths"][-1])
-        wave_n   = len(hdr["wavelengths"])
+    if cube_path.exists():
+        wavelengths = _read_flux_cube_header(cube_path)["wavelengths"]
+        wave_min = float(wavelengths[0])
+        wave_max = float(wavelengths[-1])
+        wave_n   = len(wavelengths)
     else:
         wave_min = wave_max = float("nan")
         wave_n = 0
@@ -246,10 +216,6 @@ def _variant_from_rows(
         lookup_rows=rows,
     )
 
-
-# ---------------------------------------------------------------------------
-# Display
-# ---------------------------------------------------------------------------
 
 def _fmt_range(lo: float, hi: float, n: int, decimals: int) -> str:
     if np.isnan(lo):
@@ -272,7 +238,6 @@ def print_variant_table(variants: List[VariantInfo], model_name: str = "") -> No
     print(f"\n{title}")
     print("=" * 90)
 
-    # Column widths
     col_idx   = 4
     col_label = max(30, max(len(v.label) for v in variants) + 2)
     col_n     = 8
@@ -311,10 +276,6 @@ def print_variant_table(variants: List[VariantInfo], model_name: str = "") -> No
 
     print("=" * 90)
 
-
-# ---------------------------------------------------------------------------
-# Export
-# ---------------------------------------------------------------------------
 
 def export_variant(
     variant: VariantInfo,
@@ -380,23 +341,19 @@ def export_variant(
 
     out.mkdir(parents=True, exist_ok=True)
 
-    # 1. Copy .txt spectrum files for this variant
     print(f"  Copying {len(filenames)} spectrum files...")
     for fname in filenames:
         shutil.copy2(src / fname, out / fname)
     print(f"  Copied {len(filenames)} spectrum files.")
 
-    # 2. Filtered lookup table
     dest_lookup = out / "lookup_table.csv"
     variant.lookup_rows.to_csv(dest_lookup, index=False)
     print(f"  Written lookup_table.csv ({len(variant.lookup_rows)} rows)")
 
-    # 3. Flux cube
     dest_cube = out / "flux_cube.bin"
     shutil.copy2(variant.flux_cube_path, dest_cube)
     print(f"  Copied flux_cube.bin ({dest_cube.stat().st_size / 1024**2:.1f} MiB)")
 
-    # 4. Summary
     print(f"\n  Done. MESA-ready folder: {out}")
     print(f"    {len(filenames)} spectra  |  lookup_table.csv  |  flux_cube.bin")
     print("\n  To use in MESA:")
@@ -404,10 +361,6 @@ def export_variant(
 
     return out
 
-
-# ---------------------------------------------------------------------------
-# Interactive CLI flow
-# ---------------------------------------------------------------------------
 
 def _choose_grid(base_path: Path) -> str:
     """Prompt for one of the spectral grids in *base_path*; exits with status 1 if none can be chosen."""

@@ -1,15 +1,7 @@
-#!/usr/bin/env python3
-"""
-Combine multiple stellar spectral grids into a unified flux cube.
-
-Grids found by :func:`find_stellar_models` leave out earlier combine
-outputs, so combining "all" grids never folds a previous combination's
-copies of the same spectra back in. A grid counts as a combine output if
-its lookup table has the ``source_model`` and ``original_file`` columns,
-which :func:`save_combined_data` writes and nothing else in SED_Tools does
-(this also finds outputs of earlier versions), or if its folder has the
-default output name ``combined_models``. A combine output named
-explicitly (``SED.combine(catalogs=[...])``) is still combined.
+"""Combine several stellar spectral grids into one grid folder with a unified flux cube.
+:func:`find_stellar_models` leaves out earlier combine outputs, so combining "all" never folds their copies
+back in: a grid whose lookup table has the ``source_model`` and ``original_file`` columns (only
+:func:`save_combined_data` writes them), or whose folder is ``combined_models``. One named explicitly is combined.
 """
 
 import argparse
@@ -23,15 +15,14 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from .resample import resample_to_grid
+from .build import resample_to_grid
 from .fileio import write_header
 from ..ui_utils import banner
 from ..grids.spectrum_io import read_text_spectrum
 
 logger = logging.getLogger("sed_tools.combine_stellar_atm")
 
-# scipy is only in the [full] extra, so the functions that need it import it
-# themselves: this module, and `import sed_tools`, must work without it.
+# scipy is only in the [full] extra: the functions that need it import it, so `import sed_tools` works without it.
 
 
 # The lookup columns only save_combined_data writes, and the default output name.
@@ -128,7 +119,6 @@ def load_model_data(model_path):
 
     df = pd.read_csv(lookup_file, comment="#", names=columns, skiprows=1)
 
-    # Find columns (case-insensitive)
     file_col = columns[0]
     teff_col = logg_col = meta_col = None
 
@@ -156,12 +146,9 @@ def load_sed(filepath):
 
 
 def prepare_sed(filepath, teff):
-    """Load a spectrum. Spectra are expected to already be in standard units
-    (wavelength in Angstroms, flux in erg/cm²/s/Å) via spectra_cleaner.py.
-    No renormalization is applied here.
+    """Load a spectrum already in standard units (Angstrom, erg/cm²/s/Å, from the spectra cleaner), unscaled.
 
-    Raises OSError if the file cannot be read, and ValueError if it gives
-    fewer than two readable points.
+    Raises OSError if the file cannot be read, and ValueError if it gives fewer than two readable points.
     """
     wl, flux = load_sed(filepath)
     if wl.size < 2:
@@ -176,7 +163,6 @@ def create_unified_grid(all_models_data):
     all_logg = np.concatenate([d["logg"] for d in all_models_data])
     all_meta = np.concatenate([d["meta"] for d in all_models_data])
 
-    # Get unique sorted values with tolerance cleaning
     def clean_grid(values, tol):
         grid = np.unique(np.sort(values))
         if len(grid) <= 1:
@@ -270,7 +256,6 @@ def compute_normalization_factors(target_data, reference_data, wavelength_grid):
                        ref_name, target_name)
         return np.ones(len(target_data["files"]))
 
-    # Build reference parameter array
     ref_params = np.column_stack([
         reference_data["teff"],
         reference_data["logg"],
@@ -285,7 +270,6 @@ def compute_normalization_factors(target_data, reference_data, wavelength_grid):
         # build_combined_flux_cube then stops, listing the reference grid's non-finite rows.
         return np.ones(len(target_data["files"]))
 
-    # Normalize parameters for distance calculation
     ranges = ref_params.max(axis=0) - ref_params.min(axis=0)
     ranges[ranges == 0] = 1.0
     ref_params_norm = (ref_params - ref_params.min(axis=0)) / ranges
@@ -307,7 +291,6 @@ def compute_normalization_factors(target_data, reference_data, wavelength_grid):
                             f"(teff={teff}, logg={logg}, meta={meta})")
             continue
 
-        # Normalize query point
         query = np.array([teff, logg, meta])
         query_norm = (query - ref_params.min(axis=0)) / ranges
         _, idx = tree.query(query_norm)
@@ -338,14 +321,10 @@ def compute_normalization_factors(target_data, reference_data, wavelength_grid):
 
 
 def _normalization_factor(file_target, teff, file_ref, ref_teff, wavelength_grid):
-    """Ratio of reference to target integrated flux over their common wavelength range.
-
-    Returns (factor, None), or (1.0, reason) when the two cannot be compared.
-    """
+    """Reference over target integrated flux on their common range, as (factor, None), or (1.0, reason)."""
     wl_tgt, flux_tgt = prepare_sed(file_target, teff)
     wl_ref, flux_ref = prepare_sed(file_ref, ref_teff)
 
-    # Find common wavelength range
     wl_min = max(wl_tgt.min(), wl_ref.min(), wavelength_grid.min())
     wl_max = min(wl_tgt.max(), wl_ref.max(), wavelength_grid.max())
     mask = (wavelength_grid >= wl_min) & (wavelength_grid <= wl_max)
@@ -380,7 +359,6 @@ def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, w
     print(f"\nBuilding flux cube: {flux_cube.shape}")
     print(f"Memory: {flux_cube.nbytes / (1024**2):.1f} MB")
 
-    # Get reference model and normalization factors
     ref_idx = identify_reference_model(all_models_data)
     ref_data = all_models_data[ref_idx]
 
@@ -429,7 +407,6 @@ def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, w
             "Fix them or remove their rows from the lookup table:\n  " + "\n  ".join(failures)
         )
 
-    # Fill gaps with nearest neighbor
     empty_count = np.sum(~filled_map)
     if empty_count > 0:
         print(f"\nFilling {empty_count} empty grid points...")
@@ -439,8 +416,7 @@ def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, w
 
 
 def _fill_gaps(flux_cube, filled_map, source_map, teff_grid, logg_grid, meta_grid):
-    """Fill empty grid points using nearest neighbor interpolation."""
-    # Normalize grids
+    """Fill each empty grid point with its nearest filled point's spectrum, in axes scaled to [0, 1]."""
     def norm(grid):
         r = grid.max() - grid.min()
         return (grid - grid.min()) / r if r > 0 else np.zeros_like(grid)
@@ -479,7 +455,6 @@ def save_combined_data(output_dir, teff_grid, logg_grid, meta_grid,
     """
     os.makedirs(output_dir, exist_ok=True)
 
-    # Save binary flux cube (transposed for Fortran compatibility)
     binary_file = os.path.join(output_dir, "flux_cube.bin")
     with open(binary_file, "wb") as f:
         write_header(f, teff_grid, logg_grid, meta_grid, wavelength_grid)
@@ -488,7 +463,6 @@ def save_combined_data(output_dir, teff_grid, logg_grid, meta_grid,
 
     print(f"\nSaved flux cube: {binary_file}")
 
-    # Copy SED files and build lookup table
     print("\nCopying SED files...")
     lookup_data = []
     file_counter = 0
@@ -520,7 +494,6 @@ def save_combined_data(output_dir, teff_grid, logg_grid, meta_grid,
 
             file_counter += 1
 
-    # Save lookup table
     lookup_df = pd.DataFrame(lookup_data)
     lookup_file = os.path.join(output_dir, "lookup_table.csv")
     with open(lookup_file, "w") as f:
@@ -537,8 +510,6 @@ def save_combined_data(output_dir, teff_grid, logg_grid, meta_grid,
             "(copies already made are kept):\n  " + "\n  ".join(copy_failures)
         )
     return lookup_df
-
-
 
 
 def _nearest_idx(arr, val):
@@ -581,12 +552,7 @@ def _sed_sample_points(teff_grid, logg_grid, meta_grid, meta_idx, flux_cube, sou
 
 def plot_sed_samples(teff_grid, logg_grid, meta_grid, wavelength_grid,
                      flux_cube, source_map, all_models_data, output_dir):
-    """
-    Plot representative SED samples from different regions of the combined
-    parameter space, colour-coded by source spectral grid.
-
-    Saves sed_samples.png in output_dir.
-    """
+    """Plot sample SEDs across the combined parameter space, coloured by source grid, as output_dir/sed_samples.png."""
     model_names = [os.path.basename(d["model_dir"]) for d in all_models_data]
     cmap_colors = plt.cm.tab10(np.linspace(0, 1, max(len(model_names), 1)))
 
@@ -640,7 +606,6 @@ def plot_sed_samples(teff_grid, logg_grid, meta_grid, wavelength_grid,
     print(f"Saved: {plot_file}")
 
 
-
 def visualize_parameter_space(teff_grid, logg_grid, meta_grid, source_map,
                               all_models_data, output_dir,
                               wavelength_grid=None, flux_cube=None):
@@ -652,33 +617,20 @@ def visualize_parameter_space(teff_grid, logg_grid, meta_grid, source_map,
 
     fig = plt.figure(figsize=(15, 10))
 
-    # Teff vs logg
-    ax1 = fig.add_subplot(2, 2, 1)
-    for idx, (name, data) in enumerate(zip(model_names, all_models_data)):
-        ax1.scatter(data["teff"], data["logg"], c=[colors[idx]], label=name, alpha=0.6, s=10)
-    ax1.set_xlabel("Teff (K)")
-    ax1.set_ylabel("log g")
-    ax1.invert_yaxis()
-    ax1.grid(True, alpha=0.3)
-    ax1.legend(fontsize=8)
+    panels = (("teff", "logg", "Teff (K)", "log g"), ("teff", "meta", "Teff (K)", "[M/H]"),
+              ("logg", "meta", "log g", "[M/H]"))
+    for position, (x_key, y_key, x_label, y_label) in enumerate(panels, start=1):
+        ax = fig.add_subplot(2, 2, position)
+        for idx, (name, data) in enumerate(zip(model_names, all_models_data)):
+            ax.scatter(data[x_key], data[y_key], c=[colors[idx]], label=name, alpha=0.6, s=10)
+        ax.set_xlabel(x_label)
+        ax.set_ylabel(y_label)
+        if position == 1:
+            ax.invert_yaxis()  # log g downwards, as in an HR diagram
+        ax.grid(True, alpha=0.3)
+        if position == 1:
+            ax.legend(fontsize=8)  # one legend for the three panels
 
-    # Teff vs [M/H]
-    ax2 = fig.add_subplot(2, 2, 2)
-    for idx, (name, data) in enumerate(zip(model_names, all_models_data)):
-        ax2.scatter(data["teff"], data["meta"], c=[colors[idx]], label=name, alpha=0.6, s=10)
-    ax2.set_xlabel("Teff (K)")
-    ax2.set_ylabel("[M/H]")
-    ax2.grid(True, alpha=0.3)
-
-    # logg vs [M/H]
-    ax3 = fig.add_subplot(2, 2, 3)
-    for idx, (name, data) in enumerate(zip(model_names, all_models_data)):
-        ax3.scatter(data["logg"], data["meta"], c=[colors[idx]], label=name, alpha=0.6, s=10)
-    ax3.set_xlabel("log g")
-    ax3.set_ylabel("[M/H]")
-    ax3.grid(True, alpha=0.3)
-
-    # Model density heatmap
     ax4 = fig.add_subplot(2, 2, 4)
     density = np.zeros((len(teff_grid), len(logg_grid)))
     for i in range(len(teff_grid)):
@@ -719,7 +671,6 @@ def _print_combination_summary(teff_grid, logg_grid, meta_grid, source_map, mode
         print(f"  {name}: {n:,} ({100 * n / source_map.size:.1f}%)")
 
 
-
 def main():
     parser = argparse.ArgumentParser(description="Combine stellar spectral grids")
     parser.add_argument("--data_dir", default="../data/stellar_models/",
@@ -744,25 +695,20 @@ def main():
     for name, _ in selected:
         print(f"  - {name}")
 
-    # Load data
     print("\nLoading spectral grid data...")
     all_models_data = [load_model_data(path) for _, path in selected]
 
-    # Create grids
     print("\nCreating parameter grids...")
     teff_grid, logg_grid, meta_grid = create_unified_grid(all_models_data)
     wavelength_grid = create_common_wavelength_grid(all_models_data)
 
-    # Build cube
     flux_cube, source_map = build_combined_flux_cube(
         all_models_data, teff_grid, logg_grid, meta_grid, wavelength_grid
     )
 
-    # Save
     output_dir = os.path.join(args.data_dir, args.output)
     save_combined_data(output_dir, teff_grid, logg_grid, meta_grid,
                       wavelength_grid, flux_cube, all_models_data)
-
 
     visualize_parameter_space(teff_grid, logg_grid, meta_grid, source_map,
                              all_models_data, output_dir,
