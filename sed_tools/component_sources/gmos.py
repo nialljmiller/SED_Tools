@@ -34,8 +34,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from ..filters.compose import QE, InstrumentManifest, add_component
-from ._attach import published_bands
-from ._common import Table, register_variant
+from ._common import Table, published_bands, register_variant
 
 PAGE = "https://www.gemini.edu/instrumentation/gmos/components"
 SCIOPS = "https://www.gemini.edu/sciops/instruments/gmos"

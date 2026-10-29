@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 #: Header value for curves taken from the instrument team.
 ORIGINAL = "original"
 C_ANGSTROM_PER_S = 2.99792458e18
+Curve = Tuple[np.ndarray, np.ndarray]  # (Angstrom, fraction)
 _UNIT_SCALE = {"angstrom": 1.0, "a": 1.0, "aa": 1.0, "nm": 10.0, "micron": 1e4, "um": 1e4, "mm": 1e7}
 USER_AGENT = "SED_Tools-original-sources"
 
@@ -136,6 +137,37 @@ def clean_curve(wl, tr, *, sentinel: Optional[float] = None, normalize: bool = F
     if len(wl) < 2 or not (tr > 0).any():
         raise ValueError("curve has fewer than 2 samples or no positive transmission")
     return wl, tr, "; ".join(notes)
+
+
+def product(curves: Sequence[Curve]) -> Curve:
+    """Product on the merged grid over the common range."""
+    if len(curves) == 1:
+        return curves[0]
+    lo = max(c[0][0] for c in curves)
+    hi = min(c[0][-1] for c in curves)
+    grid = np.unique(np.concatenate([c[0][(c[0] >= lo) & (c[0] <= hi)] for c in curves]))
+    out = np.ones_like(grid)
+    for wl, tr in curves:
+        out *= np.interp(grid, wl, tr)
+    return grid, out
+
+
+def common_product(curves):
+    """Product of (Angstrom, fraction) curves over their common range.
+
+    Each source table is zero outside its own range, so the product exists
+    only where every factor is tabulated.  The grid is the union of the
+    factors' samples there.
+    """
+    lo = max(float(c[0][0]) for c in curves)
+    hi = min(float(c[0][-1]) for c in curves)
+    if hi <= lo:
+        raise ValueError("factors do not overlap")
+    grid = np.unique(np.concatenate([c[0][(c[0] >= lo) & (c[0] <= hi)] for c in curves]))
+    out = np.ones_like(grid)
+    for wl, tr in curves:
+        out = out * np.interp(grid, wl, tr)
+    return grid, out
 
 
 def safe_band(name: str) -> str:
