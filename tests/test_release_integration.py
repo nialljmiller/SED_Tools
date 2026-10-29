@@ -488,13 +488,11 @@ def test_a_silent_spectra_outage_costs_one_connect_timeout(tmp_path, monkeypatch
     assert calls == [("GET", index, True, (njm_filter_grabber.NJM_CONNECT_TIMEOUT, 10))]
 
 
-def test_a_spectra_mirror_answering_below_500_is_up_and_a_5xx_is_down(tmp_path, monkeypatch):
+def test_a_spectra_mirror_that_answers_with_an_error_status_is_confirmed_by_head(tmp_path, monkeypatch):
     index = f"{NJM}/index.json"
-    grabber, calls = _spectra_grabber(tmp_path, monkeypatch, {("GET", index, True): SimpleNamespace(status_code=403)})
-    assert grabber.is_available() and [c[:2] for c in calls] == [("GET", index)]  # NJM's burst block: up
-
-    grabber, calls = _spectra_grabber(tmp_path, monkeypatch, {("GET", index, True): SimpleNamespace(status_code=503)})
-    assert not grabber.is_available() and [c[:2] for c in calls] == [("GET", index)]
+    grabber, calls = _spectra_grabber(tmp_path, monkeypatch, {
+        ("GET", index, True): SimpleNamespace(status_code=503), ("HEAD", NJM, True): SimpleNamespace(status_code=403)})
+    assert grabber.is_available() and [c[:2] for c in calls] == [("GET", index), ("HEAD", NJM)]
 
 
 def test_plain_http_only_when_tls_fails_both_ways(tmp_path, monkeypatch):

@@ -65,13 +65,13 @@ class NJMSpectraGrabber:
         """Check if the NJM mirror is available, failing fast when it does not answer.
 
         GET index.json, which is also cached for discover_models.  A failed
-        certificate check is retried without verification, with a warning.  An
-        answer below 500 means the server is up (even NJM's 403 on a burst of
-        requests); a 5xx, or no answer at all (refused, or no connection within
-        NJM_CONNECT_TIMEOUT), means the mirror is down, and nothing else is
-        tried.  Plain HTTP is tried only when HTTPS fails its TLS handshake with
-        and without verification.  If the mirror is down, the warning gives the
-        last attempt's error.
+        certificate check is retried without verification, with a warning; an
+        HTTP error status is confirmed with a HEAD of the base URL (any answer
+        below 500 means the server is up).  No answer at all (refused, or no
+        connection within NJM_CONNECT_TIMEOUT) means the mirror is down, and
+        nothing else is tried.  Plain HTTP is tried only when HTTPS fails its
+        TLS handshake with and without verification.  If the mirror is down,
+        the warning gives the last attempt's error.
         """
         index_url = f"{self.base_url}/index.json"
         errors: List[str] = []
@@ -84,15 +84,28 @@ class NJMSpectraGrabber:
             except requests.RequestException as exc:
                 errors.append(f"GET {index_url}: {exc}")
                 return self._unreachable(errors)
-            if resp.status_code >= 500:
-                errors.append(f"GET {index_url}: HTTP {resp.status_code}")
-                return self._unreachable(errors)
             if resp.status_code == 200:
                 self._cache_index(resp)
+            else:
+                errors.append(f"GET {index_url}: HTTP {resp.status_code}")
+                if not self._answers_head(verify, errors):
+                    return self._unreachable(errors)
             if not verify:
                 self._disable_ssl_verification(errors)
             return True
         return self._plain_http(index_url, errors)
+
+    def _answers_head(self, verify: bool, errors: List[str]) -> bool:
+        """Whether a HEAD of the base URL gets an answer below 500 (even a 403 means the server is up)."""
+        try:
+            resp = self.session.head(self.base_url, timeout=_TIMEOUT, verify=verify)
+        except requests.RequestException as exc:
+            errors.append(f"HEAD {self.base_url}: {exc}")
+            return False
+        if resp.status_code < 500:
+            return True
+        errors.append(f"HEAD {self.base_url}: HTTP {resp.status_code}")
+        return False
 
     def _plain_http(self, index_url: str, errors: List[str]) -> bool:
         """Use plain HTTP when HTTPS cannot complete its TLS handshake at all."""
