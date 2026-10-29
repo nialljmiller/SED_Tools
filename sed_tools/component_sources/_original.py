@@ -16,7 +16,7 @@ import logging
 import re
 import tarfile
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Callable, Dict, Mapping, Optional, Sequence, Tuple, Union
 
 import numpy as np
@@ -382,8 +382,6 @@ def make_builder(recipes: Mapping[str, Tuple[str, Recipe]]):
 # --------------------------------------------- Archive members and FITS files
 def safe_member(name: str, *, flat: bool = False) -> None:
     """Refuse absolute or parent-relative archive members (and nested ones if ``flat``)."""
-    from pathlib import PurePosixPath
-
     pp = PurePosixPath(name)
     if pp.is_absolute() or ".." in pp.parts or "\\" in name or (flat and "/" in name):
         raise ValueError(f"refusing archive member {name!r}")

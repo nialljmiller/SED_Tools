@@ -26,6 +26,7 @@ camera's filter component.
 
 from __future__ import annotations
 
+import io
 from pathlib import Path
 
 import numpy as np
@@ -46,8 +47,6 @@ KEY = recipe_name((FILTER, OPTICS, QE))
 
 def read_gunn(session):
     """band -> (wavelength A, resnoa) from the SDSS ``filter_curves.fits``."""
-    import io
-
     from astropy.io import fits
 
     raw = download(session, GUNN)
