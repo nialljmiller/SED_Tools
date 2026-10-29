@@ -359,11 +359,8 @@ def detect_catalog_units(txt_files: List[str], sample_fraction: float = 0.10) ->
     wl_agreement = wl_units[consensus_wl] / len(detections)
     flux_agreement = flux_types[consensus_flux] / len(detections)
     
-    stats['wavelength_consensus'] = consensus_wl
-    stats['wavelength_agreement'] = f"{wl_agreement:.0%}"
-    stats['flux_consensus'] = consensus_flux
-    stats['flux_agreement'] = f"{flux_agreement:.0%}"
-    stats['status'] = 'success'
+    stats.update(wavelength_consensus=consensus_wl, wavelength_agreement=f"{wl_agreement:.0%}",
+                 flux_consensus=consensus_flux, flux_agreement=f"{flux_agreement:.0%}", status='success')
     
     if wl_agreement >= 0.9 and flux_agreement >= 0.9:
         confidence = 'catalog_high'
