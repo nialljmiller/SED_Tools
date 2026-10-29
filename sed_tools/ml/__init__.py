@@ -224,8 +224,7 @@ def model_info(model_path: str) -> Dict[str, Any]:
     import json
     from .completer import SEDCompleter
     
-    config_file = Path(model_path) / SEDCompleter.CONFIG_FILE
-    with open(config_file, 'r') as f:
+    with open(Path(model_path) / SEDCompleter.CONFIG_FILE, 'r') as f:
         return json.load(f)
 
 
@@ -262,8 +261,7 @@ def auto_train_generator(
     """
     from .tuning import AutoTrainer
     
-    trainer = AutoTrainer(library, task="generator")
-    generator, _ = trainer.train_best(
+    generator, _ = AutoTrainer(library, task="generator").train_best(
         library_path=library,
         output_path=output,
         n_trials=n_trials,
@@ -546,8 +544,7 @@ class Completer:
         covers_high = wavelength.max() >= extension_range[1] * 0.9
         if covers_low and covers_high:
             np.savetxt(output_file, data, header='wavelength_A flux_erg/s/cm2/A', fmt='%.6e')
-            new_row['extended_by_ml'] = False
-            new_row['file_name'] = filename
+            new_row.update(extended_by_ml=False, file_name=filename)
             return new_row, None
         
         wl_ext, flux_ext = self.extend(
@@ -561,10 +558,8 @@ class Completer:
             header='wavelength_A flux_erg/s/cm2/A',
             fmt='%.6e',
         )
-        new_row['extended_by_ml'] = True
-        new_row['file_name'] = filename
-        new_row['wl_min'] = float(wl_ext.min())
-        new_row['wl_max'] = float(wl_ext.max())
+        new_row.update(extended_by_ml=True, file_name=filename,
+                       wl_min=float(wl_ext.min()), wl_max=float(wl_ext.max()))
         return new_row, (filename, wavelength, flux, wl_ext, flux_ext)
     
     @staticmethod
@@ -646,10 +641,7 @@ def _row_parameters(row, columns) -> Tuple[float, float, float]:
 
 def _find_spectrum(input_dir: str, filename: str) -> str:
     """Path of a catalog spectrum; the lookup may hold a path, so its basename is tried too."""
-    path = os.path.join(input_dir, filename)
-    if os.path.exists(path):
-        return path
-    path = os.path.join(input_dir, os.path.basename(filename))
-    if os.path.exists(path):
-        return path
+    for path in (os.path.join(input_dir, filename), os.path.join(input_dir, os.path.basename(filename))):
+        if os.path.exists(path):
+            return path
     raise FileNotFoundError(f"{filename} not found in {input_dir}")
