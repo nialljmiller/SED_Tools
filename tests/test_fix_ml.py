@@ -247,7 +247,10 @@ def test_ml_generator_auto_names_the_extra_when_optuna_is_missing(monkeypatch, c
 
 
 def test_optuna_is_an_optional_extra_only():
-    import tomllib
+    try:
+        import tomllib
+    except ModuleNotFoundError:  # Python 3.10: the tomli dependency
+        import tomli as tomllib
 
     project = tomllib.loads((Path(__file__).resolve().parents[1] / "pyproject.toml").read_text())["project"]
     assert project["optional-dependencies"]["ml-tune"] == ["optuna>=3"]

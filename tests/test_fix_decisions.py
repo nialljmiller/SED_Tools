@@ -23,7 +23,10 @@ ROOT = Path(__file__).resolve().parents[1]
 # ---------------------------------------------------------------------
 
 def test_psutil_is_not_a_dependency_and_scipy_is_not_required():
-    import tomllib
+    try:
+        import tomllib
+    except ModuleNotFoundError:  # Python 3.10: the tomli dependency
+        import tomli as tomllib
 
     project = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]
     extras = project["optional-dependencies"]
