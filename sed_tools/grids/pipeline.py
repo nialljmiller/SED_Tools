@@ -62,8 +62,7 @@ def download_from_first_source(sources: List[str], attempt: Callable[[str], Opti
 def _download_count(n_spectra: int, before: Dict[str, int], after: Dict[str, int]) -> str:
     """``Downloaded N spectra``, or ``K already present, N downloaded`` when the grabber's count
     (spectra downloaded or found in place) includes spectra it did not write."""
-    written = sum(1 for name, mtime in after.items()
-                  if name.lower().endswith(".txt") and before.get(name) != mtime)
+    written = sum(1 for name, mtime in after.items() if name.lower().endswith(".txt") and before.get(name) != mtime)
     present = n_spectra - written
     return f"{present} already present, {written} downloaded" if present > 0 else f"Downloaded {n_spectra} spectra"
 
@@ -215,8 +214,7 @@ def _report_import_headers(files: List[Path], src_dir: Path) -> List[str]:
             print(f"           {b}")
         if len(missing) > 10:
             print(f"           ... and {len(missing) - 10} more")
-        print("[import] If a key is merely unrecognised, add it to ALIASES "
-              "in header_parser.py.")
+        print("[import] If a key is merely unrecognised, add it to ALIASES in header_parser.py.")
     return missing
 
 

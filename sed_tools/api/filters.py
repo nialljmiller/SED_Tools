@@ -260,8 +260,7 @@ class Filters:
         """
         from ..filters.library import FilterLibrary
 
-        return FilterLibrary(filter_root or cls._filter_root).available(
-            facility, instrument, remote=include_remote)
+        return FilterLibrary(filter_root or cls._filter_root).available(facility, instrument, remote=include_remote)
 
     @classmethod
     def inventory(cls, *, filter_root=None, include_remote=True, facility=None):
@@ -273,8 +272,7 @@ class Filters:
         """
         from ..filters.library import FilterLibrary
 
-        return FilterLibrary(filter_root or cls._filter_root).inventory(
-            remote=include_remote, facility=facility)
+        return FilterLibrary(filter_root or cls._filter_root).inventory(remote=include_remote, facility=facility)
 
     @classmethod
     def atmospheres(cls, filter_root=None, *, include_remote=True):

@@ -546,8 +546,7 @@ class SED:
         cuts = _parameter_cuts(teff_min, teff_max, logg_min, logg_max, metallicity_min, metallicity_max)
         created = not model_dir.exists()
         before = _directory_state(model_dir)
-        used_source = cls._download_from_first_source(catalog, sources_to_try, failures, model_dir, workers,
-                                                      cuts)
+        used_source = cls._download_from_first_source(catalog, sources_to_try, failures, model_dir, workers, cuts)
         selected = bool(cuts) and used_source in _CUTTING_SOURCES
         cube = _flux_cube_file(model_dir)
 
@@ -583,8 +582,7 @@ class SED:
     def _clean_fetched(model_dir: Path, flux_unit: Optional[str]) -> None:
         """Standardize a fetched grid's units; RuntimeError (clean_model_dir) for any spectrum left unusable."""
         from ..grids.clean import clean_model_dir
-        summary = clean_model_dir(str(model_dir), try_h5_recovery=True, rebuild_lookup=True,
-                                  flux_unit=flux_unit)
+        summary = clean_model_dir(str(model_dir), try_h5_recovery=True, rebuild_lookup=True, flux_unit=flux_unit)
         print(f"[fetch] Cleaned: {summary['total']} total, {len(summary['converted'])} converted")
 
     @classmethod

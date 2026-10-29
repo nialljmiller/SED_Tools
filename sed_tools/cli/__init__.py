@@ -60,8 +60,7 @@ logger = logging.getLogger(__name__)
 
 #: The errors a workflow raises for a request it cannot meet. main() and the
 #: menu print their message; anything else is a bug and keeps its traceback.
-EXPECTED_ERRORS = (RuntimeError, ValueError, OSError, ComponentError, CatalogueError,
-                   RequestException, EOFError)
+EXPECTED_ERRORS = (RuntimeError, ValueError, OSError, ComponentError, CatalogueError, RequestException, EOFError)
 
 
 def load_txt_spectrum(txt_path: str) -> Tuple[np.ndarray, np.ndarray]:
@@ -230,8 +229,7 @@ def _add_filter_download_parsers(sub) -> None:
     fdp.add_argument("--force", action="store_true",
                      help="Re-resolve files that are already tagged; a result never replaces a type "
                           "from a stronger source (original > inferred > svo > svo-curve-match > assumed)")
-    fdp.add_argument("--dry-run", action="store_true",
-                     help="Report without modifying files")
+    fdp.add_argument("--dry-run", action="store_true", help="Report without modifying files")
 
 
 def _add_filter_catalogue_parsers(sub) -> None:
@@ -285,8 +283,7 @@ def _add_grid_build_parsers(sub) -> None:
 
     cp = sub.add_parser("combine", help="Combine multiple grids into omni grid")
     _add_base_option(cp, STELLAR_DIR_DEFAULT, "Base spectral grid directory")
-    cp.add_argument("--output", default="combined_models",
-                    help="Name for the combined spectral grid")
+    cp.add_argument("--output", default="combined_models", help="Name for the combined spectral grid")
     cp.add_argument("--non-interactive", action="store_true",
                     help="Combine without prompting: the --grids given, else every local spectral grid "
                          "except earlier combined ones")
@@ -295,15 +292,12 @@ def _add_grid_build_parsers(sub) -> None:
 
     mp = sub.add_parser("ml_completer", help="Train/use ML SED completer")
     _add_base_option(mp, STELLAR_DIR_DEFAULT, "Base spectral grid directory")
-    mp.add_argument("--models-dir", default="models",
-                    help="Directory for trained ML models")
+    mp.add_argument("--models-dir", default="models", help="Directory for trained ML models")
 
     gp = sub.add_parser("ml_generator", help="Train/use ML SED generator")
     _add_base_option(gp, STELLAR_DIR_DEFAULT, "Base spectral grid directory")
-    gp.add_argument("--models-dir", default="models",
-                    help="Directory for trained ML models")
-    gp.add_argument("--auto", action="store_true",
-                    help="Run optimized auto-training with hyperparameter search")
+    gp.add_argument("--models-dir", default="models", help="Directory for trained ML models")
+    gp.add_argument("--auto", action="store_true", help="Run optimized auto-training with hyperparameter search")
     gp.add_argument("--library", help="Library path for auto-training")
     gp.add_argument("--output", help="Output directory for auto-training")
     gp.add_argument("--trials", type=_positive_int, default=None,
@@ -324,44 +318,32 @@ def _add_grid_build_parsers(sub) -> None:
                            help="Trained ML generator for gaps inside the grid's Teff range")
     p_densify.add_argument("--ml-gap-threshold", type=float, default=_ML_GAP_THRESHOLD_DEFAULT,
                            help="Not implemented: refused unless left at its default")
-    p_densify.add_argument("--no-lookup", action="store_true",
-                           help="No effect: densify writes only the flux cube")
+    p_densify.add_argument("--no-lookup", action="store_true", help="No effect: densify writes only the flux cube")
 
 
 def _add_grid_tool_parsers(sub) -> None:
-    pp = sub.add_parser("mesa_prepare",
-        help="Export a spectral grid variant as a clean MESA-ready folder")
+    pp = sub.add_parser("mesa_prepare", help="Export a spectral grid variant as a clean MESA-ready folder")
     _add_base_option(pp, STELLAR_DIR_DEFAULT, "Base spectral grid directory")
     pp.add_argument("--grid", "--model", dest="model", default=None,
                     help="Spectral grid name (e.g. Kurucz2003all); prompted if omitted")
-    pp.add_argument("--output", default=None,
-                    help="Output directory for the exported variant; prompted if omitted")
+    pp.add_argument("--output", default=None, help="Output directory for the exported variant; prompted if omitted")
 
     cfg_p = sub.add_parser("config", help="Show or set the data directory")
-    cfg_p.add_argument("--set", metavar="PATH", default=None,
-                       help="Set data directory to PATH")
-    cfg_p.add_argument("--move", action="store_true",
-                       help="With --set: move existing data to the new path")
+    cfg_p.add_argument("--set", metavar="PATH", default=None, help="Set data directory to PATH")
+    cfg_p.add_argument("--move", action="store_true", help="With --set: move existing data to the new path")
 
-    covp = sub.add_parser("coverage",
-        help="Report parameter-space coverage of a local grid")
+    covp = sub.add_parser("coverage", help="Report parameter-space coverage of a local grid")
     _add_base_option(covp, STELLAR_DIR_DEFAULT, "Base spectral grid dir")
     covp.add_argument("--grids", "--models", dest="models", nargs="*", default=None,
                       help="Spectral grid folder name(s); default: every local grid")
-    covp.add_argument("--no-plot", action="store_true",
-                      help="Skip the coverage plot")
-    covp.add_argument("--out", default=None,
-                      help="Output path for the plot PNG (single spectral grid only)")
+    covp.add_argument("--no-plot", action="store_true", help="Skip the coverage plot")
+    covp.add_argument("--out", default=None, help="Output path for the plot PNG (single spectral grid only)")
 
-    imp = sub.add_parser("import",
-        help="Ingest a local grid of .txt spectra into the pipeline")
-    imp.add_argument("--path", required=True,
-                     help="Directory of .txt spectra (or a single .txt file)")
-    imp.add_argument("--name", default=None,
-                     help="Spectral grid name (default: source folder name)")
+    imp = sub.add_parser("import", help="Ingest a local grid of .txt spectra into the pipeline")
+    imp.add_argument("--path", required=True, help="Directory of .txt spectra (or a single .txt file)")
+    imp.add_argument("--name", default=None, help="Spectral grid name (default: source folder name)")
     _add_base_option(imp, STELLAR_DIR_DEFAULT, "Base spectral grid dir")
-    imp.add_argument("--move", action="store_true",
-                     help="Move files instead of copying")
+    imp.add_argument("--move", action="store_true", help="Move files instead of copying")
     imp.add_argument("--no-h5", action="store_true", help="Skip HDF5 bundle")
     imp.add_argument("--no-cube", action="store_true", help="Skip flux cube")
     imp.add_argument("--dry-run", action="store_true",

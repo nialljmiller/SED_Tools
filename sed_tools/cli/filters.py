@@ -57,8 +57,7 @@ def print_filter_availability(info: dict) -> None:
         # bands from the catalogue bundled with SED_Tools: no curve has been seen yet
         _print_field("Detector", "not known until the curves are installed")
         return
-    assumed = [band for band, source in info["detector_type_sources"].items()
-               if source in ("assumed", "unknown")]
+    assumed = [band for band, source in info["detector_type_sources"].items() if source in ("assumed", "unknown")]
     if assumed:
         _print_field("Detector unverified for", ", ".join(assumed))
 
