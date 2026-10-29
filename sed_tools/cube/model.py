@@ -292,13 +292,9 @@ class SEDModel:
             lookup_dir = str(path).lower()
             dir_matches: List[Path] = []
             for candidate_dir in filters_dir.rglob("*"):
-                if not candidate_dir.is_dir() or is_auxiliary_path(candidate_dir, filters_dir):
-                    continue
-                if candidate_dir.name.lower() != lookup_dir:
-                    continue
-                files = _filter_files_in_dir(candidate_dir)
-                if files:
-                    dir_matches.extend(files)
+                if (candidate_dir.is_dir() and not is_auxiliary_path(candidate_dir, filters_dir)
+                        and candidate_dir.name.lower() == lookup_dir):
+                    dir_matches.extend(_filter_files_in_dir(candidate_dir))
 
             if dir_matches:
                 return sorted({p.resolve(): p for p in dir_matches}.values())
