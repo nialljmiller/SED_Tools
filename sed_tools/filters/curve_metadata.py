@@ -464,10 +464,8 @@ class SVOMetadataClient:
         """Return every SVO filterID registered under ``facility`` (empty if SVO lists none)."""
         if facility in self._facility_ids:
             return self._facility_ids[facility]
-        ids: List[str] = []
         tables = list(self._get_votable({"Facility": facility}).iter_tables())
-        if tables:
-            ids = [_param_text(v) for v in tables[0].to_table()["filterID"]]
+        ids = [_param_text(v) for v in tables[0].to_table()["filterID"]] if tables else []
         self._facility_ids[facility] = ids
         return ids
 
@@ -556,11 +554,8 @@ def resolve_detector_type(
         return None, None, SOURCE_ASSUMED, f"no SVO filter with band '{path.stem}' under facility '{facility}'"
 
     local_curve = _read_curve(path)
-    matches: List[SVOFilterRecord] = []
-    for fid in candidates:
-        record = client.get_filter(fid)
-        if record is not None and _curves_match(local_curve, (record.wavelength, record.transmission)):
-            matches.append(record)
+    matches = [record for record in map(client.get_filter, candidates)
+               if record is not None and _curves_match(local_curve, (record.wavelength, record.transmission))]
 
     types = {m.detector_type for m in matches if m.detector_type}
     if len(types) == 1:
@@ -649,10 +644,8 @@ def tag_filter_file(
                                   resolved_source=source)
 
     new_fields = _resolved_fields(header, client, detector_type, source, filter_id)
-    changed = any(
-        (header.get(k) or None) != (new_fields.get(k) or None)
-        for k in DETECTOR_KEYS + ("Components", "ComponentsSource")
-    )
+    changed = any((header.get(k) or None) != (new_fields.get(k) or None)
+                  for k in DETECTOR_KEYS + ("Components", "ComponentsSource"))
     if changed and not has_column_row(path):
         changed = False
         note = "; ".join(filter(None, [note, "no column-name row to hold metadata; file left as it is"]))
