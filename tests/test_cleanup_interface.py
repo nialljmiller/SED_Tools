@@ -53,6 +53,8 @@ def fake_grabber(models=(), error=None, available=True, metadata=None, downloade
             return list(models)
 
         def get_model_metadata(self, name):
+            if metadata is None:
+                raise RuntimeError(f"no metadata for {name}")  # as the real grabbers do
             if isinstance(metadata, Exception):
                 raise metadata
             return metadata
@@ -86,14 +88,6 @@ def test_query_warns_about_a_failing_source_and_lists_the_others(sources, caplog
     assert "svo spectral grid discovery failed: SVO down" in caplog.text
 
 
-def test_query_warns_when_the_njm_mirror_is_unreachable(sources, caplog):
-    sources(njm=fake_grabber(["NJMgrid"], available=False), mast=fake_grabber(["BOSZ"]))
-    with caplog.at_level(logging.WARNING, logger="sed_tools.api"):
-        grids = SED.query(include_local=False)
-    assert [g.name for g in grids] == ["BOSZ"]
-    assert "njm spectral grid discovery failed: NJM mirror https://mirror.invalid is unreachable" in caplog.text
-
-
 def test_query_raises_when_the_requested_source_fails(sources):
     sources(svo=fake_grabber(error=requests.ConnectionError("SVO down")))
     with pytest.raises(RuntimeError, match="svo: SVO down"):
@@ -121,7 +115,6 @@ def test_fetch_error_names_every_source_that_failed(sources, tmp_path, caplog):
         SED.fetch("Missing", model_root=tmp_path)
     message = str(excinfo.value)
     assert "Spectral grid 'Missing' could not be fetched" in message
-    assert "njm: discovery failed: NJM mirror https://mirror.invalid is unreachable" in message
     assert "msg: discovery failed: bad index" in message
     assert "svo: no metadata for Missing" in message
     assert "msg discovery failed: bad index; trying the other sources" in caplog.text
@@ -160,7 +153,7 @@ def test_fetch_from_msg_reads_the_msg_index_first(tmp_path, monkeypatch):
         def get_model_metadata(self, name):
             if name not in self.model_urls:
                 raise RuntimeError(f"MSG grid {name} is unknown to this grabber")
-            return {}
+            raise RuntimeError(f"no metadata for {name}")
 
     monkeypatch.setattr(GRABBERS["msg"], MSG)
     with pytest.raises(ValueError, match="msg: no metadata for Grid"):
@@ -426,7 +419,8 @@ def test_spectra_flow_builds_what_it_can_then_lists_every_grid_not_completed(gri
     message = str(excinfo.value)
     assert built == ["Good"]
     assert "NoMeta: RuntimeError: no source could supply it. Tried: svo: no metadata" in message
-    assert "Empty: RuntimeError: no source could supply it. Tried: svo: no metadata; mast: no spectra downloaded" in message
+    assert ("Empty: RuntimeError: no source could supply it. Tried: svo: no metadata for Empty; "
+            "mast: no spectra downloaded") in message
     assert "Missing: not listed by any source" in message
     assert "Good" not in message
     assert "Done." not in capsys.readouterr().out

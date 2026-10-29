@@ -154,18 +154,8 @@ def prompt_njm_axis_cuts(
     cuts['meta_range'] = _ask_range("  [M/H] range (e.g. '-1.0,0.5') or blank for all: ")
     cuts['wl_range']   = _ask_range("  Wavelength range in Å (e.g. '3000,10000') or blank for all: ")
 
-    if any(v is not None for v in cuts.values()):
-        print(f"\n  Applied cuts:")
-        if cuts['teff_range']:
-            print(f"    Teff:       {cuts['teff_range'][0]:.0f} – {cuts['teff_range'][1]:.0f} K")
-        if cuts['logg_range']:
-            print(f"    logg:       {cuts['logg_range'][0]:.2f} – {cuts['logg_range'][1]:.2f}")
-        if cuts['meta_range']:
-            print(f"    [M/H]:      {cuts['meta_range'][0]:+.2f} – {cuts['meta_range'][1]:+.2f}")
-        if cuts['wl_range']:
-            print(f"    Wavelength: {cuts['wl_range'][0]:.1f} – {cuts['wl_range'][1]:.1f} Å")
-        print()
-    else:
+    # The grabber prints the cuts as it applies them.
+    if all(v is None for v in cuts.values()):
         print("\n  No cuts — downloading full grid.\n")
 
     return cuts
@@ -621,9 +611,7 @@ def _download_from(name: str, src: str, g, model_dir: str, ranges: Optional[Dict
 
     meta = None
     try:
-        meta = g.get_model_metadata(name)
-        if not meta:
-            return meta, "no metadata"
+        meta = g.get_model_metadata(name)  # raises when the source has no such grid
         print(f"  Using source: {src}")
         cuts = _download_cuts(name, src, g, meta, ranges or {})
         before = _directory_state(model_dir)

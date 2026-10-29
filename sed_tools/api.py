@@ -717,8 +717,9 @@ class SED:
         List[SpectralGridInfo]
             Available spectral grids matching the criteria
 
-        A remote source that cannot be queried is skipped with a warning;
-        RuntimeError is raised if every requested remote source fails.
+        A remote source that cannot be asked lists nothing, after a warning
+        from its client; RuntimeError is raised if every requested remote
+        source raises.
         """
         if source not in (None, 'local', 'all', *_SPECTRA_SOURCES):
             raise ValueError(f"Unknown source: {source}")
@@ -842,11 +843,9 @@ class SED:
 
     @classmethod
     def _query_njm(cls) -> List[SpectralGridInfo]:
-        """Query NJM mirror remote spectral grids; RuntimeError if the mirror is unreachable."""
+        """Query NJM mirror remote spectral grids; none, after the NJM client's warning, while it is unreachable."""
         from .njm_spectra_grabber import NJMSpectraGrabber
         grabber = NJMSpectraGrabber(base_dir=str(cls._model_root))
-        if not grabber.is_available():
-            raise RuntimeError(f"NJM mirror {grabber.base_url} is unreachable")
         return [
             SpectralGridInfo(name=m, source='njm', description="NJM pre-processed mirror")
             for m in grabber.discover_models()
@@ -1056,9 +1055,7 @@ class SED:
         """
         try:
             grabber = cls._get_grabber(src, str(model_dir.parent), workers)
-            metadata = grabber.get_model_metadata(catalog)
-            if not metadata:
-                return f"no metadata for {catalog}"
+            metadata = grabber.get_model_metadata(catalog)  # raises when the source has no such grid
             if cuts and src not in _CUTTING_SOURCES:
                 logger.warning("[fetch] %s cannot select spectra by Teff, logg or metallicity, so the whole of %s "
                                "is downloaded, then cut", src, catalog)
