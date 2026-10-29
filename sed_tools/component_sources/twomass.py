@@ -39,7 +39,7 @@ from typing import Dict, Union
 
 import numpy as np
 
-from ..filter_components import FILTER, OPTICS, QE, SHARED
+from ..filters.compose import FILTER, OPTICS, QE, SHARED
 from ._attach import common_product, fresh_manifest, published_bands, register, with_earlier_note
 from ._original import Fetcher, clean_curve
 
@@ -178,7 +178,7 @@ def validate(instrument_dir: Union[str, Path], session=None) -> Dict[str, Dict[s
     Returns per band the photon-weighted magnitude difference for a flat
     F_nu source and the largest absolute difference on the table grid.
     """
-    from ..filter_components import compose_band
+    from ..filters.compose import compose_band
 
     fetch = Fetcher(session)
     out = {}

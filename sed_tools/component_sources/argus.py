@@ -61,10 +61,10 @@ from typing import Dict, Mapping, Optional, Tuple, Union
 
 import numpy as np
 
-from ..combine_filters import write_filter_index
-from ..filter_components import (FILTER, OPTICS, QE, SHARED, InstrumentManifest, add_component,
+from ..filters.combine import write_filter_index
+from ..filters.compose import (FILTER, OPTICS, QE, SHARED, InstrumentManifest, add_component,
                                  compose_band)
-from ..filter_metadata import ENERGY, read_filter_header, write_filter_file, write_filter_header
+from ..filters.curve_metadata import ENERGY, read_filter_header, write_filter_file, write_filter_header
 from ._common import register_variant
 from .team_atmospheres import CachingSession
 

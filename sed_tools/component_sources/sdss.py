@@ -30,7 +30,7 @@ from pathlib import Path
 
 import numpy as np
 
-from ..filter_components import FILTER, OPTICS, QE, InstrumentManifest, add_component, recipe_name
+from ..filters.compose import FILTER, OPTICS, QE, InstrumentManifest, add_component, recipe_name
 from ._common import Table, register_variant
 from ._original import CONNECT_TIMEOUT
 

@@ -28,7 +28,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from ..filter_components import QE, InstrumentManifest, add_component
+from ..filters.compose import QE, InstrumentManifest, add_component
 from ._common import SimpleSource, Table, build_simple, register_variant
 
 REPO = "https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/7c1d1ed1adeea47ee024272e797e77d7e65160d5"

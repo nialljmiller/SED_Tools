@@ -115,7 +115,7 @@ def test_densify_stops_when_ml_generation_fails(tmp_path, monkeypatch):
 
     fake = types.ModuleType("sed_tools.ml_sed_generator")
     fake.SEDGenerator = FailingGenerator
-    monkeypatch.setitem(sys.modules, "sed_tools.ml_sed_generator", fake)
+    monkeypatch.setitem(sys.modules, "sed_tools.ml.generator", fake)
 
     src = tmp_path / "src.bin"
     _write_small_cube(src)

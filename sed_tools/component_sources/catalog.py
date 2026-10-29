@@ -212,7 +212,7 @@ def ensure_components(
     components=None, bands=None,
 ) -> bool:
     """Compatibility entry point for the shared filter acquisition workflow."""
-    from ..filter_library import FilterLibrary
+    from ..filters.library import FilterLibrary
 
     directory = Path(instrument_dir)
     return FilterLibrary(directory.parent.parent).prepare_components(

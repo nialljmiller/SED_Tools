@@ -71,7 +71,7 @@ def compare_to_published(instrument_dir, components=("filter", "optics", "qe"), 
     """
     import numpy as np
 
-    from ..filter_components import compose_band, InstrumentManifest
+    from ..filters.compose import compose_band, InstrumentManifest
     from ..photometry import FilterCurve, band_average_flux_lambda, load_filter_curve
 
     instrument_dir = Path(instrument_dir)

@@ -12,10 +12,7 @@ from typing import Dict, Iterable, List, Sequence, Tuple
 
 import numpy as np
 
-try:
-    from .filter_metadata import ENERGY, PHOTON, normalize_detector_type, read_filter_header
-except ImportError:  # pragma: no cover - flux_cube_tool executed as a standalone script
-    from filter_metadata import ENERGY, PHOTON, normalize_detector_type, read_filter_header
+from .filters.curve_metadata import ENERGY, PHOTON, normalize_detector_type, read_filter_header
 
 # These were flux_cube_tool's; their warnings keep its logger name.
 logger = logging.getLogger("sed_tools.flux_cube_tool")

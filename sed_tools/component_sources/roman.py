@@ -26,7 +26,7 @@ from typing import Dict, Tuple, Union
 
 import numpy as np
 
-from ..filter_components import QE, SHARED, InstrumentManifest, add_component
+from ..filters.compose import QE, SHARED, InstrumentManifest, add_component
 from ._attach import published_bands
 from ._original import Fetcher
 

@@ -33,7 +33,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ..filter_components import QE, InstrumentManifest, add_component
+from ..filters.compose import QE, InstrumentManifest, add_component
 from ._attach import published_bands
 from ._common import Table, register_variant
 

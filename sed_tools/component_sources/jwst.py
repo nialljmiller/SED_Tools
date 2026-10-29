@@ -35,8 +35,8 @@ from typing import Dict, Iterable, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
-from ..filter_components import FILTER, OPTICS, QE, InstrumentManifest, add_component
-from ..filter_metadata import PHOTON
+from ..filters.compose import FILTER, OPTICS, QE, InstrumentManifest, add_component
+from ..filters.curve_metadata import PHOTON
 from ._common import product
 from ._original import CONNECT_TIMEOUT, safe_member
 

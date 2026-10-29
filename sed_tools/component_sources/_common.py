@@ -16,9 +16,9 @@ from typing import Callable, Dict, Mapping, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
-from ..filter_components import (ATMOSPHERE, FILTER, OPTICS, QE, SHARED, AtmosphereGrid,
+from ..filters.compose import (ATMOSPHERE, FILTER, OPTICS, QE, SHARED, AtmosphereGrid,
                                  InstrumentManifest, add_component)
-from ..filter_metadata import (ENERGY, PHOTON, SOURCE_SVO, SVOMetadataClient, read_filter_header,
+from ..filters.curve_metadata import (ENERGY, PHOTON, SOURCE_SVO, SVOMetadataClient, read_filter_header,
                                svo_components_header, svo_fps_url, write_filter_file)
 from ._original import CONNECT_TIMEOUT
 
@@ -166,7 +166,7 @@ def ensure_published(inst_dir: Path, svo_ids: Mapping[str, str], client: SVOMeta
     a RuntimeError lists the missing ones.  The MESA index is written only
     when nothing is missing, so a partial set never looks complete.
     """
-    from ..combine_filters import write_filter_index
+    from ..filters.combine import write_filter_index
 
     inst_dir.mkdir(parents=True, exist_ok=True)
     missing = []
@@ -265,7 +265,7 @@ def _publish_original_filters(spec: SimpleSource, inst_dir: Path, session) -> Di
     before anything is written: a failed upstream request must not leave a
     seemingly complete partial instrument.
     """
-    from ..combine_filters import write_filter_index
+    from ..filters.combine import write_filter_index
 
     curves = {}
     for band, table in spec.filters.items():

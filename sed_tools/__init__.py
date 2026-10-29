@@ -30,10 +30,10 @@ from .cli import (
     run_rebuild_flow,
     run_spectra_flow,
 )
-from .spectrum_io import build_h5_bundle as build_h5_bundle_from_txt
-from .spectrum_io import list_text_spectra, read_text_spectrum as load_txt_spectrum
-from .mast_spectra_grabber import MASTSpectraGrabber
-from .models import (
+from .grids.spectrum_io import build_h5_bundle as build_h5_bundle_from_txt
+from .grids.spectrum_io import list_text_spectra, read_text_spectrum as load_txt_spectrum
+from .grids.mast import MASTSpectraGrabber
+from .cube.model import (
     DATA_DIR_DEFAULT,
     FILTER_DIR_DEFAULT,
     STELLAR_DIR_DEFAULT,
@@ -43,13 +43,13 @@ from .models import (
     SED as _SEDCore,
     SEDModel,
 )
-from .msg_spectra_grabber import MSGSpectraGrabber
-from .njm_filter_grabber import NJMFilterGrabber
-from .njm_spectra_grabber import NJMSpectraGrabber
-from .precompute_flux_cube import precompute_flux_cube
-from .spectra_cleaner import clean_model_dir
-from .svo_regen_spectra_lookup import regenerate_lookup_table
-from .svo_spectra_grabber import SVOSpectraGrabber
+from .grids.msg import MSGSpectraGrabber
+from .filters.njm import NJMFilterGrabber
+from .grids.njm import NJMSpectraGrabber
+from .cube.build import precompute_flux_cube
+from .grids.clean import clean_model_dir
+from .grids.lookup import regenerate_lookup_table
+from .grids.svo import SVOSpectraGrabber
 
 __version__ = "0.5.0"
 

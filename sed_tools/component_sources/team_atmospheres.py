@@ -37,7 +37,7 @@ from typing import Dict, Iterable, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
-from ..filter_components import TEAM
+from ..filters.compose import TEAM
 from ._common import DerivedCurve, SiteAtmosphere, write_site
 from ._original import CONNECT_TIMEOUT
 

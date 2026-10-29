@@ -20,7 +20,7 @@ from typing import Dict, Tuple
 
 import numpy as np
 
-from ..filter_components import InstrumentManifest
+from ..filters.compose import InstrumentManifest
 from ._original import Component, Fetcher, Instrument, clean_curve, make_band, make_builder, safe_member
 
 PHOTON = "photon"

@@ -25,8 +25,8 @@ from typing import Callable, Dict, Mapping, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
-from ..filter_components import InstrumentManifest, add_component, parse_components, recipe_name
-from ..filter_metadata import DETECTOR_TYPES, write_filter_file
+from ..filters.compose import InstrumentManifest, add_component, parse_components, recipe_name
+from ..filters.curve_metadata import DETECTOR_TYPES, write_filter_file
 
 logger = logging.getLogger(__name__)
 

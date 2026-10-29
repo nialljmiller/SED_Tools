@@ -23,7 +23,7 @@ from pathlib import Path
 
 import numpy as np
 
-from ..filter_components import InstrumentManifest
+from ..filters.compose import InstrumentManifest
 from ._common import SimpleSource, SiteAtmosphere, Table, build_simple
 from ._original import CONNECT_TIMEOUT
 

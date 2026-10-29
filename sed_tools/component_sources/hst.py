@@ -28,8 +28,8 @@ from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Uni
 
 import numpy as np
 
-from ..filter_components import FILTER, OPTICS, QE, InstrumentManifest, add_component
-from ..filter_metadata import PHOTON, SVOMetadataClient
+from ..filters.compose import FILTER, OPTICS, QE, InstrumentManifest, add_component
+from ..filters.curve_metadata import PHOTON, SVOMetadataClient
 from ._original import CONNECT_TIMEOUT
 
 logger = logging.getLogger(__name__)

@@ -34,8 +34,8 @@ from typing import Dict, Iterable, Optional, Tuple, Union
 
 import numpy as np
 
-from ..filter_components import FILTER, OPTICS, QE, InstrumentManifest, add_component
-from ..filter_metadata import PHOTON, write_filter_file
+from ..filters.compose import FILTER, OPTICS, QE, InstrumentManifest, add_component
+from ..filters.curve_metadata import PHOTON, write_filter_file
 from ._original import ORIGINAL, Fetcher
 
 logger = logging.getLogger(__name__)

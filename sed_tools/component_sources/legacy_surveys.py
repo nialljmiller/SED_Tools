@@ -39,8 +39,8 @@ from pathlib import Path
 
 import numpy as np
 
-from ..filter_components import FILTER, QE, InstrumentManifest, add_component, recipe_name
-from ..filter_metadata import SVOMetadataClient
+from ..filters.compose import FILTER, QE, InstrumentManifest, add_component, recipe_name
+from ..filters.curve_metadata import SVOMetadataClient
 from ._common import Table, ensure_published
 from ._original import Band, Component, Fetcher, Instrument, clean_curve, write_instrument
 

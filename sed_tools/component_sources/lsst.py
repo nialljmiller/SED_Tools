@@ -39,9 +39,9 @@ from typing import Dict, Optional, Tuple, Union
 
 import numpy as np
 
-from ..filter_components import (ATMOSPHERE, FILTER, OPTICS, QE, SHARED, AtmosphereGrid,
+from ..filters.compose import (ATMOSPHERE, FILTER, OPTICS, QE, SHARED, AtmosphereGrid,
                                  InstrumentManifest, add_component)
-from ..filter_metadata import (ENERGY, PHOTON, SOURCE_ASSUMED, SOURCE_SVO, SVOMetadataClient,
+from ..filters.curve_metadata import (ENERGY, PHOTON, SOURCE_ASSUMED, SOURCE_SVO, SVOMetadataClient,
                                svo_components_header, write_filter_file)
 from ._original import CONNECT_TIMEOUT
 
@@ -174,7 +174,7 @@ def build(
     else:
         _publish_totals(instrument_dir, instrument, tag, totals)
     if not (instrument_dir / instrument).exists():
-        from ..combine_filters import write_filter_index
+        from ..filters.combine import write_filter_index
 
         write_filter_index(instrument_dir, instrument)
 
@@ -245,7 +245,7 @@ def validate(instrument_dir: Union[str, Path], tag: Optional[str] = None, sessio
     F_nu source and the maximum absolute curve difference.  ``tag`` defaults
     to the instrument's own release.
     """
-    from ..filter_components import compose_band
+    from ..filters.compose import compose_band
 
     if session is None:
         import requests

@@ -13,7 +13,7 @@ from typing import Iterable
 
 import numpy as np
 
-from ..filter_components import InstrumentManifest, add_component
+from ..filters.compose import InstrumentManifest, add_component
 
 
 def published_bands(inst_dir: Path) -> set:

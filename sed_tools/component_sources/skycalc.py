@@ -44,8 +44,8 @@ from typing import Dict, Iterable, List, Optional, Sequence, Tuple, Union
 import numpy as np
 from requests import RequestException
 
-from ..filter_components import ATMOSPHERE, AtmosphereGrid, AtmosphereSpec, DERIVED
-from ..filter_metadata import ENERGY, write_filter_file
+from ..filters.compose import ATMOSPHERE, AtmosphereGrid, AtmosphereSpec, DERIVED
+from ..filters.curve_metadata import ENERGY, write_filter_file
 from ._original import CONNECT_TIMEOUT
 
 logger = logging.getLogger(__name__)

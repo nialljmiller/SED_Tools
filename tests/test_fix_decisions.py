@@ -136,7 +136,7 @@ def test_densified_ml_nodes_do_not_depend_on_the_block_size(tmp_path, cube_write
 
     fake = types.ModuleType("sed_tools.ml_sed_generator")
     fake.SEDGenerator = PowerLawGenerator
-    monkeypatch.setitem(sys.modules, "sed_tools.ml_sed_generator", fake)
+    monkeypatch.setitem(sys.modules, "sed_tools.ml.generator", fake)
     _uneven_source_cube(tmp_path / "src.bin", cube_writer)
 
     one_block = _densify(monkeypatch, tmp_path, "one", 2**40, ml_model="fake")

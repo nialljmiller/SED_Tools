@@ -32,7 +32,7 @@ from typing import Dict, Tuple, Union
 
 import numpy as np
 
-from ..filter_components import FILTER, OPTICS, QE, SHARED
+from ..filters.compose import FILTER, OPTICS, QE, SHARED
 from ._attach import (common_product, fresh_manifest, published_bands, register, with_earlier_note,
                       write_unregistered)
 from ._original import Fetcher, clean_curve

@@ -31,8 +31,8 @@ import io
 import zipfile
 from pathlib import Path
 
-from ..filter_components import FILTER, TEAM, InstrumentManifest, add_component
-from ..filter_metadata import PHOTON, write_filter_file
+from ..filters.compose import FILTER, TEAM, InstrumentManifest, add_component
+from ..filters.curve_metadata import PHOTON, write_filter_file
 from ._common import SimpleSource, SiteAtmosphere, Table, build_simple, register_variant
 from ._original import CONNECT_TIMEOUT
 
@@ -126,7 +126,7 @@ def build(filter_root, *, session=None, **kwargs):
 
         session = requests.Session()
 
-    from ..combine_filters import write_filter_index
+    from ..filters.combine import write_filter_index
 
     first = {b: Table(f"{SUBARU}/wHSC-{t}.txt", note="area-weighted mean")
              for b, t in FIRST.items() if t != CURRENT[b]}

@@ -20,7 +20,7 @@ from typing import Dict, Tuple
 
 import numpy as np
 
-from ..filter_components import InstrumentManifest
+from ..filters.compose import InstrumentManifest
 from ._original import Component, Fetcher, Instrument, clean_curve, make_band, write_instrument
 
 FACILITY = "Cassini"
