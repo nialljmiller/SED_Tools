@@ -194,13 +194,12 @@ class MSGSpectraGrabber:
                            self.index_url, discovery_failure(e))
             return []
         soup = BeautifulSoup(r.text, "html.parser")
-        models = []
+        urls = {}
         for link in soup.find_all("a", href=True):
             href = link["href"]
             if "/msg/grids/" in href and href.endswith(".h5"):
-                name = os.path.basename(href).removesuffix(".h5")
-                models.append({"name": name, "url": urljoin(self.index_url, href)})
-        self.model_urls = {m["name"]: m["url"] for m in models}
+                urls[os.path.basename(href).removesuffix(".h5")] = urljoin(self.index_url, href)
+        self.model_urls = urls
         if not self.model_urls:
             logger.warning("MSG: no grids linked from %s; MSG spectral grids are not offered", self.index_url)
         return sorted(self.model_urls.keys())
@@ -222,9 +221,7 @@ class MSGSpectraGrabber:
                 if int(vlin.max()) == prod:  # 1-based
                     vlin = vlin - 1
                 vlin = np.clip(vlin, 0, max(prod-1, 0))
-        roles = _role_override_for_model(model_name)
-        if not roles:
-            roles = _guess_roles_from_axes(axes)
+        roles = _role_override_for_model(model_name) or _guess_roles_from_axes(axes)
         return {"axes": axes, "shape": shape, "vlin": vlin, "roles": roles}
 
     def get_model_metadata(self, model_name):
@@ -435,9 +432,9 @@ class MSGSpectraGrabber:
         return ("ok", fname, {"teff":teff,"logg":logg,"meta":meta})
 
     def _write_lookup(self, out_dir, rows):
-        write_lookup_csv(rows, os.path.join(out_dir, "lookup_table.csv"), columns=["file_name", "teff", "logg", "meta"],
-                         comment=False, restval=float("nan"))
-        print(f"    Lookup table saved: {os.path.join(out_dir,'lookup_table.csv')}")
+        path = os.path.join(out_dir, "lookup_table.csv")
+        write_lookup_csv(rows, path, columns=["file_name", "teff", "logg", "meta"], comment=False, restval=float("nan"))
+        print(f"    Lookup table saved: {path}")
 
     # optional standalone
     def discover_and_run(self, selected_models=None):
