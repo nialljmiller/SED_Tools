@@ -24,11 +24,10 @@ def _listing_failures(errors: List[str]) -> List[str]:
 
 
 class Filters:
-    """
-    API for working with photometric filter profiles.
-    
+    """API for working with photometric filter profiles.
+
     Usage::
-    
+
         filters = Filters.query()
         filters = Filters.query(facility='HST')
         Filters.fetch('Generic', 'Johnson')
@@ -60,50 +59,26 @@ class Filters:
     
     @classmethod
     def _query_local(cls, facility: Optional[str] = None) -> List[Dict[str, Any]]:
-        """Query locally installed filters.
-
-        Empty/incomplete filter directories are ignored. This avoids treating a
-        failed partial download, e.g. a directory containing only an index file,
-        as a valid local filter set.
-        """
+        """Installed instruments holding at least one .dat curve (a failed download can leave only an index file)."""
         results = []
-
         if not cls._filter_root.exists():
             return results
-
         for fac_dir in sorted(cls._filter_root.iterdir()):
-            if not fac_dir.is_dir():
+            if not fac_dir.is_dir() or (facility and fac_dir.name.lower() != facility.lower()):
                 continue
-            if facility and fac_dir.name.lower() != facility.lower():
-                continue
-
             for inst_dir in sorted(fac_dir.iterdir()):
                 if not inst_dir.is_dir():
                     continue
-
                 filters = sorted(inst_dir.glob("*.dat"))
-                if not filters:
-                    continue
-
-                results.append({
-                    'facility': fac_dir.name,
-                    'instrument': inst_dir.name,
-                    'n_filters': len(filters),
-                    'is_local': True,
-                })
-
+                if filters:
+                    results.append({'facility': fac_dir.name, 'instrument': inst_dir.name,
+                                    'n_filters': len(filters), 'is_local': True})
         return results
 
     @classmethod
     def _query_remote(cls, facility: Optional[str] = None) -> List[Dict[str, Any]]:
-        """Query remote filter sources.
-
-        ``facility_key`` is the spelling to download with (NJM's, else the
-        original builder's, else SVO's); ``svo_facility_key`` is SVO's own
-        spelling (``facility_key`` up to 0.4.1), or None when SVO does not list
-        the facility.  ``facility`` matches any source's spelling, ignoring case.
-        fetch() validates the actual .dat files before accepting a download.
-        """
+        """A row per remote source of each facility: ``facility_key`` is the spelling to download with (NJM's,
+        else the original builder's, else SVO's), ``svo_facility_key`` SVO's own, or None if SVO lacks it."""
         from ..filters.library import FilterLibrary
 
         report = FilterLibrary(cls._filter_root).facilities()
@@ -136,8 +111,8 @@ class Filters:
     ) -> Path:
         """Download filter profiles, optionally composing them from components.
 
-        With no ``components``/``atmosphere`` this returns the published curves
-        exactly as before (the directory MESA reads).  Otherwise the published
+        With no ``components``/``atmosphere`` this returns the directory of the
+        published curves (the one MESA reads).  Otherwise the published
         curves are downloaded, the instrument's components fetched, and a
         product built under ``products/<recipe>/``, whose path is returned.
         While NJM is unreachable, a product of NJM's that SVO holds only some
@@ -356,11 +331,8 @@ class Filters:
         instrument: Optional[str] = None,
         on_conflict: str = "rename",
     ) -> Path:
-        """Combine existing filter sets into one MESA-compatible set.
-
-        This is a convenience wrapper around
-        :func:`sed_tools.combine_filters.combine_filter_sets`.
-        """
+        """Combine existing filter sets into one MESA-compatible set
+        (:func:`sed_tools.combine_filters.combine_filter_sets`)."""
         from ..filters.combine import combine_filter_sets
 
         return combine_filter_sets(
@@ -372,10 +344,7 @@ class Filters:
             on_conflict=on_conflict,
         )
 
-
-    # ------------------------------------------------------------------
     # NJM catalogue: properties, descriptions, search, citations, plots
-    # ------------------------------------------------------------------
     _catalogues: Dict[Tuple[str, bool], Any] = {}
 
     @classmethod
@@ -492,12 +461,8 @@ class Filters:
 
     @classmethod
     def _targets(cls, targets, filter_root) -> List[Tuple[str, str, Optional[List[str]], Optional[Path]]]:
-        """Normalise targets to ``(facility, instrument, bands or None, directory or None)``.
-
-        A target is ``"Facility/Instrument"``, ``"Facility/Instrument/Band"``, a
-        tuple of those parts, an instrument directory, a ``.dat`` file, or a
-        :meth:`search` result.  No targets means every installed instrument.
-        """
+        """``(facility, instrument, bands or None, directory or None)`` per target (the forms :meth:`plot`
+        takes); no targets means every installed instrument."""
         from ..filters.njm_catalogue import parse_target
 
         root = Path(filter_root or cls._filter_root)
@@ -680,8 +645,7 @@ class Filters:
 
     @classmethod
     def _installed_or_fetched(cls, fac, inst, filter_root, catalogue, fetch) -> Tuple[str, str, Path]:
-        """``(facility, instrument, directory)`` of an installed instrument (names ignore case),
-        or of its published curves fetched under NJM's names for it."""
+        """``(facility, instrument, directory)`` of an installed instrument (names ignore case), else fetched."""
         from ..filters.njm_catalogue import CatalogueError
 
         root = Path(filter_root or cls._filter_root)
