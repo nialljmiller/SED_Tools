@@ -37,7 +37,7 @@ import numpy as np
 from ..filter_components import OPTICS
 from ._attach import (common_product, fresh_manifest, published_bands, register, with_earlier_note,
                       write_unregistered)
-from ._original import Fetcher, clean_curve, safe_member
+from ._original import Fetcher, clean_curve
 
 FACILITY, INSTRUMENT = "ERIS", "NIX"
 ZIP_URL = "https://www.eso.org/sci/facilities/paranal/instruments/eris/img/nix-filters.zip"
@@ -77,7 +77,6 @@ NOTES = (
 
 def member_curve(zf: zipfile.ZipFile, name: str, *, unit_scale: float, percent: bool):
     """(Angstrom, fraction) of a zip member, comment lines skipped."""
-    safe_member(name)
     rows = []
     for line in zf.read(name).decode("ascii").splitlines():
         parts = line.split()

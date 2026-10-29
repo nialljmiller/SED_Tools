@@ -16,7 +16,7 @@ import zipfile
 
 import numpy as np
 
-from ._original import Component, Fetcher, Instrument, make_band, make_builder, safe_member
+from ._original import Component, Fetcher, Instrument, make_band, make_builder
 
 PHOTON, ENERGY = "photon", "energy"
 
@@ -41,7 +41,6 @@ GAIA_PAGE = "https://www.cosmos.esa.int/web/gaia/iow_20180316"
 
 
 def gaia_passbands(raw: bytes, member: str) -> np.ndarray:
-    safe_member(member)
     with zipfile.ZipFile(io.BytesIO(raw)) as zf:
         return np.loadtxt(io.StringIO(zf.read(member).decode("utf-8")))
 

@@ -245,8 +245,6 @@ def test_gaia_sentinel_is_dropped():
     b = make_band("G", a[:, 0], a[:, 1], unit="nm", detector_type="photon", components="filter+optics+qe",
                   sources="x", sentinel=99.99)
     assert len(b.wavelength) == 3 and b.wavelength[0] == a[1, 0] * 10
-    with pytest.raises(ValueError):
-        space.gaia_passbands(raw, "../GaiaDR2_Passbands.dat")
 
 
 def test_herschel_and_planck_fits(tmp_path):

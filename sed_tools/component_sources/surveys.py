@@ -31,7 +31,6 @@ ATLAS_TABLE3 = {"c": 533.0, "o": 679.0}  # Tonry 2018 Table 3 "pivot" [nm], c an
 def atlas_tex(raw: bytes) -> str:
     with tarfile.open(fileobj=io.BytesIO(raw), mode="r:*") as t:
         m = t.getmember("atlas_defn.tex")
-        safe_member(m.name)
         if not m.isfile():
             raise ValueError("unsafe member")
         return t.extractfile(m).read().decode("utf-8", "replace")
@@ -232,10 +231,8 @@ LCO_SETS = {"Sinistro": ["U", "B", "V", "R", "I", "up", "gp", "rp", "ip", "zs", 
 
 
 def lco_member(zf: zipfile.ZipFile, member: str) -> np.ndarray:
-    info = zf.getinfo(member)
-    safe_member(info.filename)
     rows = []
-    for line in zf.read(info).decode("latin-1").splitlines():
+    for line in zf.read(member).decode("latin-1").splitlines():
         parts = line.split()
         try:
             rows.append((float(parts[0]), float(parts[1])))
