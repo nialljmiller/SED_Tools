@@ -183,8 +183,7 @@ def _parse_resam_txt(text: str) -> Tuple[np.ndarray, np.ndarray]:
 def _detect_inline_wave(text: str) -> bool:
     """True if the file's first column holds wavelengths, judged on its first 51 data rows.
 
-    That is: the first column increases and either there are 3+ columns
-    or it rises by more than 10 %.  Only detection; no rows are kept.
+    It must increase, and either there are 3+ columns or it rises by more than 10 %.
     """
     wl = []
     has_third_column = False
@@ -212,8 +211,7 @@ def _detect_inline_wave(text: str) -> bool:
 def _try_wave_urls(reskey: str, session: requests.Session) -> Tuple[np.ndarray, str]:
     """The BOSZ wavelength grid for a resolution, as (wavelengths, url).
 
-    Raises RuntimeError saying what each candidate location gave if none
-    holds a usable grid.
+    RuntimeError, saying what each candidate location gave, if none holds a usable grid.
     """
     # The first is BOSZ's official location; the other four are unverified fallbacks
     candidates = [
@@ -237,13 +235,9 @@ def _try_wave_urls(reskey: str, session: requests.Session) -> Tuple[np.ndarray, 
 
 # ----------------- URL harvesting (no listings) -----------------
 def _gather_urls_from_scripts(reskey: str, metals: List[str], session: requests.Session) -> List[str]:
-    """
-    Build each official bulk script URL deterministically:
-      {SCRIPTS_DIR}/hlsp_bosz_bosz2024_sim_<reskey>_<metal>_v1_bulkdl.sh
-    Extract all direct .txt/.txt.gz URLs; filter by product (_resam vs _noresam).
+    """The spectrum URLs in the bulk scripts {SCRIPTS_DIR}/hlsp_bosz_bosz2024_sim_<reskey>_<metal>_v1_bulkdl.sh.
 
-    Raises RuntimeError if any script cannot be read (the grid would lack
-    that metallicity) or the scripts list no spectra.
+    RuntimeError if any script cannot be read (the grid would lack that metallicity) or they list no spectra.
     """
     urls = set()
     unread = []
@@ -316,9 +310,8 @@ def _parse_any(text: str, inline: bool, wave: Optional[np.ndarray],
                reskey: str) -> Tuple[np.ndarray, np.ndarray, Optional[np.ndarray]]:
     """Wavelength, flux and continuum from a BOSZ file; empty arrays if none can be read.
 
-    3-column files carry their wavelengths.  2-column files are (wavelength,
-    flux) when *inline* (the grid's first file carries its wavelengths),
-    otherwise (flux, continuum) on the wavelength grid *wave*.
+    3-column files carry their wavelengths. 2-column files are (wavelength, flux) when *inline*
+    (the grid's first file carries its wavelengths), else (flux, continuum) on the grid *wave*.
     """
     wl3, f3, c3 = _parse_rorig_txt(text)
     if wl3.size:
@@ -351,8 +344,7 @@ def _parse_any(text: str, inline: bool, wave: Optional[np.ndarray],
 def _write_lookup_table(model_dir: str, spectra: List[Tuple[str, Dict[str, str]]]) -> None:
     """Write lookup_table.csv from (file name, parameters) pairs.
 
-    The parameters come from the original BOSZ name: the written file name
-    has '+' sanitized to '_', which HEAD_RE does not match.
+    The parameters come from the original BOSZ name: the written name has '+' sanitized to '_', which HEAD_RE misses.
     """
     out_csv = os.path.join(model_dir, "lookup_table.csv")
     rows = []; keys = set(["file_name"])
