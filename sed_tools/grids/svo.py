@@ -404,22 +404,11 @@ def _lookup_row(fpath: str, fname: str) -> dict:
 
 
 def _is_spectral_content(data: bytes) -> bool:
-    """
-    Return True if the first bytes look like SVO ASCII spectrum output.
-    SVO spectra start with comment lines (#) or a numeric wavelength value.
-    HTML error pages start with '<', 'E', etc.
-    """
+    """True if data starts like an SVO spectrum, with '#' or a number after any BOM or whitespace."""
     if not data:
         return False
-    # Strip leading whitespace/BOM
-    stripped = data.lstrip(b"\xef\xbb\xbf \t\r\n")
-    if not stripped:
-        return False
-    first = stripped[0:1]
-    # Valid: starts with '#' (comment) or a digit / sign (wavelength)
-    if first in (b"#", b"-", b"+") or first.isdigit():
-        return True
-    return False
+    first = data.lstrip(b"\xef\xbb\xbf \t\r\n")[:1]
+    return first in (b"#", b"-", b"+") or first.isdigit()
 
 
 def _file_is_spectral(path: str) -> bool:
