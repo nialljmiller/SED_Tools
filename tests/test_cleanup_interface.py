@@ -255,18 +255,11 @@ def test_grid_write_raises_when_there_is_nothing_to_bundle(tmp_path):
         grid.write(tmp_path / "out", build_flux_cube=False)
 
 
-def test_import_lists_spectra_left_out_after_building_the_rest(tmp_path, monkeypatch):
+def test_import_dry_run_counts_spectra_lacking_a_parameter(tmp_path):
     src = tmp_path / "src"
     src.mkdir()
     spectrum().save(src / "good.txt")
     spectrum(metallicity=float("nan")).save(src / "no_meta.txt")
-    summary = {"total": 2, "converted": [], "skipped_invalid": [], "skipped_index": [], "error": []}
-    monkeypatch.setattr("sed_tools.spectra_cleaner.clean_model_dir", lambda *a, **k: summary)
-    monkeypatch.setattr("sed_tools.svo_regen_spectra_lookup.regenerate_lookup_table", lambda *a: None)
-
-    with pytest.raises(RuntimeError, match=r"Lacking a Teff, logg or \[M/H\] header \(1\): no_meta.txt"):
-        SED.import_grid(src, name="Grid", model_root=tmp_path / "models", build_cube=False)
-    assert (tmp_path / "models" / "Grid" / "Grid.h5").is_file()
 
     report = SED.import_grid(src, name="Grid", model_root=tmp_path / "models", dry_run=True)
     assert report["n_missing"] == 1

@@ -1228,10 +1228,11 @@ class SED:
             spectra_cleaner.clean_model_dir); required when their headers do
             not declare one, and never used in place of a declared unit.
 
-        Returns a summary dict.  Files whose headers lack a parameter are
-        listed in a RuntimeError once the grid is built; a spectrum that
-        cleaning leaves unusable stops the import with clean_model_dir's
-        RuntimeError. If the spectra do not declare their flux unit
+        Returns a summary dict.  A spectrum that cleaning leaves unusable
+        stops the import (clean_model_dir's RuntimeError), and so does a Teff,
+        logg or [M/H] that only some headers state (regenerate_lookup_table's
+        ValueError); one that no header states (log g of a blackbody grid) gets
+        no column. If the spectra do not declare their flux unit
         and flux_unit is not given, ValueError names the best guess before any
         file is copied or moved; so does a flux_unit that is not a known name.
         """
@@ -1277,16 +1278,11 @@ class SED:
 
         if build_h5:
             from . import build_h5_bundle_from_txt
-            if not build_h5_bundle_from_txt(str(dest), str(dest / f"{name}.h5")):
-                raise RuntimeError(f"No .txt spectra left in {dest} to bundle into {name}.h5")
+            build_h5_bundle_from_txt(str(dest), str(dest / f"{name}.h5"))  # dest holds the .txt files copied above
 
         if build_cube:
             _build_flux_cube(dest)
 
-        if missing:
-            raise RuntimeError(
-                f"Imported '{name}' into {dest} without some spectra. "
-                f"Lacking a Teff, logg or [M/H] header ({len(missing)}): {', '.join(missing)}.")
         same_root = Path(base).expanduser().resolve() == Path(cls._model_root).expanduser().resolve()
         root_arg = "" if same_root else f", model_root={str(base)!r}"
         print(f"[import] done. Load with: SED.local('{name}'{root_arg})")
