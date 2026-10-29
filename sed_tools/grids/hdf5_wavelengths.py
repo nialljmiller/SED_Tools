@@ -31,11 +31,7 @@ def _is_physical_wavelength_array(wl: np.ndarray) -> bool:
     return not np.allclose(np.diff(wl), 1.0, atol=0.01)
 
 
-def recover_wavelengths_from_hdf5(
-    model_dir: str,
-    spec_group: str,
-    expected_len: int
-) -> Optional[np.ndarray]:
+def recover_wavelengths_from_hdf5(model_dir: str, spec_group: str, expected_len: int) -> Optional[np.ndarray]:
     """
     Attempt to recover wavelength array from HDF5 file for index grids.
 
@@ -75,10 +71,9 @@ def _wavelengths_in_h5(f, spec_group: str, expected_len: int) -> Optional[np.nda
 
 def _increasing_physical_prefix(wl: np.ndarray, expected_len: int) -> Optional[np.ndarray]:
     """wl[:expected_len] if wl is long enough and that prefix is a rising physical grid."""
-    if (wl.size >= expected_len and
-            np.all(np.diff(wl[:expected_len]) > 0) and
-            _is_physical_wavelength_array(wl[:expected_len])):
-        return wl[:expected_len]
+    prefix = wl[:expected_len]
+    if wl.size >= expected_len and np.all(np.diff(prefix) > 0) and _is_physical_wavelength_array(prefix):
+        return prefix
     return None
 
 
@@ -127,9 +122,8 @@ def _top_level_wavelengths(f, expected_len: int) -> Optional[np.ndarray]:
     for key in WAVE_KEYS:
         if key in f and isinstance(f[key], h5py.Dataset):
             wl = np.array(f[key]).astype(float).ravel()
-            if (wl.size >= 2 and np.all(np.diff(wl) > 0) and
-                    _is_physical_wavelength_array(wl) and
-                    abs(wl.size - expected_len) <= 2):
+            if (wl.size >= 2 and np.all(np.diff(wl) > 0) and _is_physical_wavelength_array(wl)
+                    and abs(wl.size - expected_len) <= 2):
                 return wl[:expected_len] if wl.size > expected_len else wl
     return None
 
@@ -149,9 +143,7 @@ def _search_all_datasets(f, expected_len: int) -> Optional[np.ndarray]:
             arr = np.array(dataset[()]).astype(float).ravel()
         except (TypeError, ValueError):
             continue  # string and compound datasets cannot be wavelength grids
-        if (arr.size == expected_len and
-                np.all(np.diff(arr) > 0) and
-                _is_physical_wavelength_array(arr)):
+        if arr.size == expected_len and np.all(np.diff(arr) > 0) and _is_physical_wavelength_array(arr):
             return arr
     return None
 
