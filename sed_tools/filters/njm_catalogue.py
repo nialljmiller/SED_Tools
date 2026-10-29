@@ -1,8 +1,7 @@
 """NJM's descriptive files about the curves it serves (index.json, properties.json, info.json): search and citations.
 
-They are cached under ``<filter root>/../cache/njm/`` and revalidated with NJM's ETag when
-``index.json`` changes, which is itself rechecked once a day; without NJM the cached copies are used.
-No curve is downloaded here: :mod:`.library` chooses where curves come from and :mod:`.njm` fetches them.
+Cached under ``<filter root>/../cache/njm/``, revalidated by ETag when ``index.json`` (rechecked daily) changes,
+and used as cached without NJM.  No curve is downloaded here: :mod:`.library` chooses sources, :mod:`.njm` fetches.
 """
 
 from __future__ import annotations

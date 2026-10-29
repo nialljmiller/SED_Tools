@@ -1,8 +1,7 @@
 """Where an instrument's filter curves come from, and what composing them needs; the API and CLI use it.
 
-The sources, in order: an installed complete copy, NJM, the original-source builder, then SVO.  The
-folder model is :mod:`.manifest`, the curve maths :mod:`.compose`, NJM's descriptive files (search,
-properties, citations) :mod:`.njm_catalogue`, and the bundled names the pickers show :mod:`.names`.
+Sources, in order: an installed complete copy, NJM, the original-source builder, SVO.  The folder model is
+:mod:`.manifest`, the maths :mod:`.compose`, NJM's descriptive files :mod:`.njm_catalogue`, picker names :mod:`.names`.
 """
 
 from __future__ import annotations
