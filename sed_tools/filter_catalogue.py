@@ -194,7 +194,7 @@ class FilterCatalogue:
             if status == 404:
                 raise CatalogueError(f"NJM does not serve {rel}") from exc
             if path.is_file():
-                logger.warning("NJM unreachable (%s); using the cached %s", exc, rel)
+                logger.warning("Cannot ask NJM (%s); using the cached %s, which may be out of date", exc, rel)
                 self._came_from(rel, "cache", meta.get("checked"), njm_unreachable=True)
                 return path
             if status is None:  # no answer: the mirror client has said why, once
