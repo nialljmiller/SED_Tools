@@ -34,7 +34,7 @@ from urllib.parse import quote
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))  # this checkout's sed_tools, installed or not
 
-from sed_tools.filter_library import INSTRUMENT_CATALOGUE, instrument_catalogue  # noqa: E402
+from sed_tools.filters.names import INSTRUMENT_CATALOGUE, instrument_catalogue  # noqa: E402
 
 MIRROR_URL = "https://nillmill.ddns.net/sed_tools"
 INDEX_URL = f"{MIRROR_URL}/index.json"
