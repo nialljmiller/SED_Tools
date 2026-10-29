@@ -537,7 +537,8 @@ class NJMSpectraGrabber:
             skipped_aux = [f"{len(files)} {suffix}" for files, suffix in skipped if files]
             if skipped_aux:
                 print(f"  [njm] Skipping pre-built {', '.join(skipped_aux)} (will rebuild from filtered spectra)")
-            bin_files = h5_files = []
+            bin_files = []
+            h5_files = []
             if has_param_cuts:
                 csv_files = []
         aux_files = bin_files + h5_files + csv_files
