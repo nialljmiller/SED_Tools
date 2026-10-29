@@ -67,8 +67,7 @@ def planck_function(wavelength_angstrom: np.ndarray, temperature: float) -> np.n
     wavelength_cm = wavelength_angstrom * 1e-8
     
     numerator = 2.0 * PLANCK_H * SPEED_C**2 / wavelength_cm**5
-    exponent = PLANCK_H * SPEED_C / (wavelength_cm * BOLTZMANN_K * temperature)
-    exponent = np.clip(exponent, 0, 700)
+    exponent = np.clip(PLANCK_H * SPEED_C / (wavelength_cm * BOLTZMANN_K * temperature), 0, 700)
     
     denominator = np.exp(exponent) - 1.0
     denominator = np.where(denominator > 0, denominator, 1e-100)
@@ -491,13 +490,9 @@ class SEDCompleter:
         fig, axes = plt.subplots(2, 3, figsize=(15, 10))
         axes = axes.flatten()
         
-        for i, idx in enumerate(indices):
-            ax = axes[i]
-            
-            X_sample = torch.from_numpy(X_val[idx:idx+1]).to(self.device)
-            
+        for i, (ax, idx) in enumerate(zip(axes, indices)):
             with torch.no_grad():
-                y_pred = self.model(X_sample).cpu().numpy()[0]
+                y_pred = self.model(torch.from_numpy(X_val[idx:idx+1]).to(self.device)).cpu().numpy()[0]
             
             y_true = y_val[idx]
             mask = masks[idx] if masks is not None else np.ones_like(y_true)
@@ -629,11 +624,7 @@ class SEDCompleter:
             },
             'scaler_params': self.scaler_params,
             'wavelength_grid': self.wavelength_grid.tolist(),
-            'regions': {
-                'known_start': getattr(self, '_known_start', None),
-                'known_end': getattr(self, '_known_end', None),
-                'known_width': getattr(self, '_known_width', None),
-            },
+            'regions': {key: getattr(self, f'_{key}', None) for key in ('known_start', 'known_end', 'known_width')},
             'version': '2.0.0',
             'framework': 'pytorch',
         }
@@ -826,8 +817,7 @@ class SEDCompleter:
 
 def cli_train(args):
     """CLI handler for training."""
-    completer = SEDCompleter()
-    completer.train(
+    SEDCompleter().train(
         library_path=args.library,
         output_path=args.output,
         epochs=args.epochs,
