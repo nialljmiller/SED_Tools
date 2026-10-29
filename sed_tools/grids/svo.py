@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# svo_spectra_grabber.py — robust SVO discovery & downloader
+"""SVOSpectraGrabber: spectral grids from the SVO theory server, with discovery fallbacks and retried downloads."""
 
 import io
 import json
@@ -11,35 +11,13 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import requests
 from bs4 import BeautifulSoup
-from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-from ._lookup_io import write_lookup_csv
+from ._http import DISCOVERY_TIMEOUT, discovery_failure, mount_discovery, retrying_session
 from .header_parser import parse_header
+from .lookup import write_lookup_csv
 
 logger = logging.getLogger("sed_tools.svo_spectra_grabber")
-
-#: Connect and read timeouts for a source's grid index.  Discovery asks every source before
-#: anything is downloaded, so a source that is down or hanging must cost seconds, not minutes:
-#: the index is asked once, without the retries a download gets (see ``mount_discovery``).
-DISCOVERY_TIMEOUT = (5, 10)
-
-
-def mount_discovery(session, url):
-    """Make ``session`` ask ``url`` (a grid index) once: no retries, unlike the rest of the source."""
-    session.mount(url, HTTPAdapter(max_retries=0))
-
-
-def discovery_failure(exc):
-    """Why a grid index could not be read, in a few plain words."""
-    status = getattr(getattr(exc, "response", None), "status_code", None)
-    if status is not None:
-        return f"answered HTTP {status}"
-    if isinstance(exc, requests.Timeout):
-        return f"did not answer within {DISCOVERY_TIMEOUT[0]:g}+{DISCOVERY_TIMEOUT[1]:g} s"
-    if isinstance(exc, requests.ConnectionError):
-        return "could not be reached"
-    return str(exc)
 
 
 class SVOSpectraGrabber:
@@ -64,21 +42,9 @@ class SVOSpectraGrabber:
         self.max_workers = max_workers
         os.makedirs(base_dir, exist_ok=True)
 
-        self.session = requests.Session()
-        self.session.headers.update({"User-Agent": "SED_Tools/1.0 (SVO)"})
+        self.session = retrying_session("SED_Tools/1.0 (SVO)", Retry(
+            total=5, backoff_factor=1.5, status_forcelist=[429, 500, 502, 503, 504], allowed_methods=["HEAD", "GET"]))
 
-        # Retry adapter: 5 retries, exponential backoff, retry on common server errors
-        retry = Retry(
-            total=5,
-            backoff_factor=1.5,
-            status_forcelist=[429, 500, 502, 503, 504],
-            allowed_methods=["HEAD", "GET"],
-        )
-        adapter = HTTPAdapter(max_retries=retry)
-        self.session.mount("http://", adapter)
-        self.session.mount("https://", adapter)
-
-        # Endpoints
         self.model_index_url = "http://svo2.cab.inta-csic.es/theory/newov2/index.php"
         self.spectra_base_url = "http://svo2.cab.inta-csic.es/theory/newov2/ssap.php"
         mount_discovery(self.session, self.model_index_url)  # also each grid's page there, a discovery fallback
@@ -93,7 +59,6 @@ class SVOSpectraGrabber:
         self.expand_max_gap  = 20
         self.progress_every  = 50          # print progress every N completions
 
-        # Cache
         self.cache_root = os.path.join(self.base_dir, ".cache", "svo_fids")
         os.makedirs(self.cache_root, exist_ok=True)
 
@@ -191,14 +156,9 @@ class SVOSpectraGrabber:
     # ---- A) SSAP stream ----
 
     def _discover_ssap_stream(self, model_name):
-        """
-        Stream the SSAP VOTable and extract FIDs via regex.
+        """FIDs from the SSAP VOTable, as (fids, problem): problem says why fids is empty.
 
-        SVO's VOTable XML contains unclosed CDATA sections which cause astropy
-        and any standard XML parser to fail. Regex over raw bytes is the only
-        reliable approach and is actually faster for this use case.
-
-        Returns (fids, problem): problem says why fids is empty.
+        SVO's VOTable has unclosed CDATA sections that break astropy and any XML parser, so a regex reads the raw bytes.
         """
         params = {"model": model_name, "REQUEST": "queryData", "FORMAT": "votable"}
         try:
@@ -437,22 +397,11 @@ def _lookup_row(fpath: str, fname: str) -> dict:
 
 
 def _is_spectral_content(data: bytes) -> bool:
-    """
-    Return True if the first bytes look like SVO ASCII spectrum output.
-    SVO spectra start with comment lines (#) or a numeric wavelength value.
-    HTML error pages start with '<', 'E', etc.
-    """
+    """True if data starts like an SVO spectrum, with '#' or a number after any BOM or whitespace."""
     if not data:
         return False
-    # Strip leading whitespace/BOM
-    stripped = data.lstrip(b"\xef\xbb\xbf \t\r\n")
-    if not stripped:
-        return False
-    first = stripped[0:1]
-    # Valid: starts with '#' (comment) or a digit / sign (wavelength)
-    if first in (b"#", b"-", b"+") or first.isdigit():
-        return True
-    return False
+    first = data.lstrip(b"\xef\xbb\xbf \t\r\n")[:1]
+    return first in (b"#", b"-", b"+") or first.isdigit()
 
 
 def _file_is_spectral(path: str) -> bool:

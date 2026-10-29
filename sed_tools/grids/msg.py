@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# msg_spectra_grabber.py — MSG extractor with correct (Teff, logg, [M/H]) for C3K and friends
+"""MSGSpectraGrabber: spectra extracted from Townsend's MSG HDF5 grids, with Teff, logg and [M/H] from the grid axes."""
 
 import logging
 import os
@@ -13,15 +13,21 @@ import h5py
 import numpy as np
 import requests
 from bs4 import BeautifulSoup
-from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 from tqdm import tqdm
 
-from ._lookup_io import write_lookup_csv
-from .clean import _is_physical_wavelength_array as _is_physical_wavelength, _iter_datasets
-from .svo import DISCOVERY_TIMEOUT, discovery_failure, mount_discovery
+from ._http import DISCOVERY_TIMEOUT, discovery_failure, mount_discovery, retrying_session
+from .hdf5_wavelengths import _is_physical_wavelength_array as _is_physical_wavelength, _iter_datasets
+from .lookup import write_lookup_csv
 
 _SEG_IDX = re.compile(r"\[(\d+)\]")
+
+
+def _bracket_number(name):
+    """The number in a name's first '[n]' (as in 'specints[12]'), or 0; for sorting groups numerically."""
+    m = _SEG_IDX.search(name)
+    return int(m.group(1)) if m else 0
+
 
 # Known axis-role overrides per model (0-based axis indices in vgrid/axes[i]/x)
 AXIS_ROLE_OVERRIDES = {
@@ -56,9 +62,7 @@ def _recover_wavelengths(f, spec_g, expected_len=None):
         # 3) concatenated segments
         seg_root = rg.get("ranges", rg)
         seg_names = [k for k in seg_root.keys() if k.startswith("ranges")]
-        def seg_key(name):
-            m = _SEG_IDX.search(name); return int(m.group(1)) if m else 0
-        seg_names.sort(key=seg_key)
+        seg_names.sort(key=_bracket_number)
         segs=[]
         def num(grp, keys):
             """First of *keys* (attribute, then dataset) that holds a number, else None."""
@@ -175,11 +179,8 @@ class MSGSpectraGrabber:
         self.max_workers = max_workers
         os.makedirs(base_dir, exist_ok=True)
 
-        self.session = requests.Session()
-        self.session.headers.update({"User-Agent": "SED_Tools (MSG)"} )
-        retry = Retry(total=5, backoff_factor=1, status_forcelist=[500,502,503,504,429])
-        self.session.mount("http://", HTTPAdapter(max_retries=retry))
-        self.session.mount("https://", HTTPAdapter(max_retries=retry))
+        self.session = retrying_session("SED_Tools (MSG)", Retry(
+            total=5, backoff_factor=1, status_forcelist=[500, 502, 503, 504, 429]), separate_adapters=True)
 
         self.index_url = "http://user.astro.wisc.edu/~townsend/static.php?ref=msg-grids"
         mount_discovery(self.session, self.index_url)
@@ -217,7 +218,6 @@ class MSGSpectraGrabber:
                 axes.append(np.array(ax["x"][()], dtype=float).ravel())
             i+=1
         shape = tuple(len(a) for a in axes)
-        # v_lin_seq
         vlin = None
         if "vgrid/v_lin_seq" in f and isinstance(f["vgrid/v_lin_seq"], h5py.Dataset):
             vlin = np.array(f["vgrid/v_lin_seq"][()], dtype=int).ravel()
@@ -227,9 +227,7 @@ class MSGSpectraGrabber:
                 vmax = int(vlin.max())
                 if vmax == prod:
                     vlin = vlin - 1
-                # clamp
                 vlin = np.clip(vlin, 0, max(prod-1, 0))
-        # role mapping
         roles = _role_override_for_model(model_name)
         if not roles:
             roles = _guess_roles_from_axes(axes)
@@ -273,7 +271,6 @@ class MSGSpectraGrabber:
 
         spectra=[]
         with f:
-            # specsource root
             spec_root=None
             for k in f.keys():
                 if k.startswith("specsource"):
@@ -283,11 +280,8 @@ class MSGSpectraGrabber:
 
             src=f[spec_root]
             names=[k for k in src.keys() if k.startswith("specints[")]
-            def keynum(s):
-                m=_SEG_IDX.search(s); return int(m.group(1)) if m else 0
-            names.sort(key=keynum)
+            names.sort(key=_bracket_number)
 
-            # load axes and mapping
             axinfo = self._load_axes_and_vlin(f, model_name)
             self.model_axes[model_name] = axinfo
 
@@ -365,8 +359,8 @@ class MSGSpectraGrabber:
             if fx.ndim == 2 and fx.shape[1] == 1:
                 fx = fx[:, 0]
 
-            # Case 2: dataset is (N, 2) and looks like [wl, flux] pairs
-            # Use it directly rather than guessing wavelengths elsewhere.
+            # Case 2: (N, 2) [wl, flux] pairs, when the first column rises: the flux is the second
+            # column. The wavelengths are still recovered below, so wl_from_fx goes unused.
             elif fx.ndim == 2 and fx.shape[1] == 2:
                 wl_from_fx = fx[:, 0].astype(float)
                 fl_from_fx = fx[:, 1].astype(float)
@@ -382,9 +376,6 @@ class MSGSpectraGrabber:
             # Case 3: anything higher-dim -> force ravel (last resort)
             elif fx.ndim > 1:
                 fx = fx.ravel()
-
-
-
 
             wl = _recover_wavelengths(f, spec_g, expected_len=len(fx))
             n = min(len(wl), len(fx))
@@ -441,11 +432,9 @@ class MSGSpectraGrabber:
         return len(rows)
 
     def _extract_to_text(self, model_name, h5_path, out_dir, spec, ranges):
-        """Write one spectrum to <out_dir>/<model>_fid<n>.txt.
+        """Write one spectrum to <out_dir>/<model>_fid<n>.txt: (status, file name, detail).
 
-        Returns (status, file name, detail): 'cached' if the file is already
-        there, 'excluded' if it lies outside a requested range, 'ok' with its
-        parameters, or 'failed' with the reason.
+        status is 'cached', 'excluded' (outside a requested range), 'ok' (detail: its parameters) or 'failed' (why).
         """
         fid = int(spec["fid"])
         gpath = spec["gname"]
@@ -461,12 +450,10 @@ class MSGSpectraGrabber:
         except (KeyError, RuntimeError, OSError, ValueError) as e:
             return ("failed", fname, str(e))
 
-        # Apply parameter range filters
         if not (_in_range(teff, ranges["teff"]) and _in_range(logg, ranges["logg"])
                 and _in_range(meta, ranges["meta"])):
             return ("excluded", fname, None)
 
-        # Apply wavelength range trim
         if ranges["wl"] is not None:
             wl_lo, wl_hi = ranges["wl"]
             mask = (wl >= wl_lo) & (wl <= wl_hi)
