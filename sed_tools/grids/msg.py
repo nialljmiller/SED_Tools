@@ -119,9 +119,8 @@ def _recover_wavelengths(f, spec_g, expected_len=None):
                 arr = np.array(d[()]).astype(float).ravel()
             except (TypeError, ValueError):
                 continue  # not numeric, so not a wavelength grid
-            if arr.ndim == 1 and arr.size == expected_len and np.all(np.diff(arr) > 0):
-                if _is_physical_wavelength(arr):
-                    return arr
+            if arr.size == expected_len and np.all(np.diff(arr) > 0) and _is_physical_wavelength(arr):
+                return arr
 
     raise RuntimeError("Unable to recover wavelength grid")
 
