@@ -227,14 +227,11 @@ SYSTEM_NOTES = (
 # Inputs
 # --------------------------------------------------------------------------
 def _parse(data: bytes, spec: Input) -> Curve:
-    """(Angstrom, fraction) from a comma-separated table in nm, refusing anything unexpected."""
+    """(Angstrom, fraction) from a comma-separated table in nm (its bytes already match the pin)."""
     table = np.loadtxt(io.StringIO(data.decode("utf-8")), delimiter=",", skiprows=spec.skip,
                        usecols=(0, spec.column), ndmin=2)
     wavelength = table[:, 0] * 10.0
     transmission = table[:, 1] / 100.0 if spec.percent else table[:, 1]
-    if (len(wavelength) < 2 or not np.all(np.isfinite(table)) or np.any(np.diff(wavelength) <= 0)
-            or transmission.min() < 0 or transmission.max() > 1):
-        raise ValueError(f"{spec.file}: expected a transmission (0-1) on increasing wavelengths")
     return wavelength, transmission
 
 
