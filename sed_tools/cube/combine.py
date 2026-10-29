@@ -652,31 +652,19 @@ def visualize_parameter_space(teff_grid, logg_grid, meta_grid, source_map,
 
     fig = plt.figure(figsize=(15, 10))
 
-    # Teff vs logg
-    ax1 = fig.add_subplot(2, 2, 1)
-    for idx, (name, data) in enumerate(zip(model_names, all_models_data)):
-        ax1.scatter(data["teff"], data["logg"], c=[colors[idx]], label=name, alpha=0.6, s=10)
-    ax1.set_xlabel("Teff (K)")
-    ax1.set_ylabel("log g")
-    ax1.invert_yaxis()
-    ax1.grid(True, alpha=0.3)
-    ax1.legend(fontsize=8)
-
-    # Teff vs [M/H]
-    ax2 = fig.add_subplot(2, 2, 2)
-    for idx, (name, data) in enumerate(zip(model_names, all_models_data)):
-        ax2.scatter(data["teff"], data["meta"], c=[colors[idx]], label=name, alpha=0.6, s=10)
-    ax2.set_xlabel("Teff (K)")
-    ax2.set_ylabel("[M/H]")
-    ax2.grid(True, alpha=0.3)
-
-    # logg vs [M/H]
-    ax3 = fig.add_subplot(2, 2, 3)
-    for idx, (name, data) in enumerate(zip(model_names, all_models_data)):
-        ax3.scatter(data["logg"], data["meta"], c=[colors[idx]], label=name, alpha=0.6, s=10)
-    ax3.set_xlabel("log g")
-    ax3.set_ylabel("[M/H]")
-    ax3.grid(True, alpha=0.3)
+    panels = (("teff", "logg", "Teff (K)", "log g"), ("teff", "meta", "Teff (K)", "[M/H]"),
+              ("logg", "meta", "log g", "[M/H]"))
+    for position, (x_key, y_key, x_label, y_label) in enumerate(panels, start=1):
+        ax = fig.add_subplot(2, 2, position)
+        for idx, (name, data) in enumerate(zip(model_names, all_models_data)):
+            ax.scatter(data[x_key], data[y_key], c=[colors[idx]], label=name, alpha=0.6, s=10)
+        ax.set_xlabel(x_label)
+        ax.set_ylabel(y_label)
+        if position == 1:
+            ax.invert_yaxis()  # log g downwards, as in an HR diagram
+        ax.grid(True, alpha=0.3)
+        if position == 1:
+            ax.legend(fontsize=8)  # one legend for the three panels
 
     # Model density heatmap
     ax4 = fig.add_subplot(2, 2, 4)

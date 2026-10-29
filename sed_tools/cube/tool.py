@@ -351,24 +351,24 @@ def collect_filter_files(
         if file_path.suffix.lower() in FILTER_EXTENSIONS and file_path.is_file():
             discovered.append(file_path)
 
+    def add_directory(directory: Path) -> None:
+        search_roots.append(directory)
+        for file_path in sorted(directory.rglob("*")):
+            if not _is_auxiliary(file_path, directory):
+                add_file(file_path)
+
     if entries:
         for item in entries:
             path = Path(item).expanduser().resolve()
             if path.is_dir():
-                search_roots.append(path)
-                for file_path in sorted(path.rglob("*")):
-                    if not _is_auxiliary(file_path, path):
-                        add_file(file_path)
+                add_directory(path)
             elif path.is_file():
                 add_file(path)
             else:
                 raise FileNotFoundError(f"Filter path '{item}' does not exist")
     else:
         for directory in infer_filter_directories(flux_cube_path):
-            search_roots.append(directory)
-            for file_path in sorted(directory.rglob("*")):
-                if not _is_auxiliary(file_path, directory):
-                    add_file(file_path)
+            add_directory(directory)
 
     unique_files = list(dict.fromkeys(discovered))
     if not unique_files:
@@ -546,12 +546,9 @@ def _flux_cube_search_locations(
     from .model import DATA_DIR_DEFAULT
 
     hints = list(hints or [])
-    env_path = os.environ.get("SED_FLUX_CUBE")
-    env_dir = os.environ.get("SED_FLUX_CUBE_DIR")
-    if env_path:
-        hints.append(env_path)
-    if env_dir:
-        hints.append(env_dir)
+    for variable in ("SED_FLUX_CUBE", "SED_FLUX_CUBE_DIR"):
+        if os.environ.get(variable):
+            hints.append(os.environ[variable])
 
     search_dirs: List[Path] = []
     direct_files: List[Path] = []
