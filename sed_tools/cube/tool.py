@@ -520,9 +520,8 @@ def prompt_for_flux_cube_path(hints: Sequence[str | os.PathLike[str]] | None = N
     while True:
         candidates = discover_flux_cube_files(hints)
         if len(candidates) == 1:
-            chosen = candidates[0]
-            print(f"Using flux cube: {chosen}")
-            return chosen
+            print(f"Using flux cube: {candidates[0]}")
+            return candidates[0]
         if candidates:
             print("Discovered flux cube files:")
             for idx, candidate in enumerate(candidates, start=1):
