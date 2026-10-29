@@ -333,17 +333,7 @@ class NJMFilterGrabber:
 
     def download_filters(self, facility: str, instrument: str,
                         filters: Optional[List[str]] = None) -> int:
-        """
-        Download filters for a facility/instrument.
-
-        Args:
-            facility: Facility name (e.g., 'Generic', 'GAIA')
-            instrument: Instrument name (e.g., 'Johnson', 'G3')
-            filters: Optional list of specific filters to download.
-                    If None, downloads all available filters.
-
-        Returns:
-            Number of filters downloaded
+        """Download an instrument's filters (``filters``, else every one NJM lists); returns how many were downloaded.
 
         Every curve that can be downloaded is saved, with the mirror's index,
         catalogue files, components and manifest.  An installed curve is kept
@@ -527,17 +517,9 @@ class NJMFilterGrabber:
         return [line.strip() for line in response.text.splitlines() if line.strip()]
 
     def download_all_filters(self, facility: Optional[str] = None) -> int:
-        """
-        Download all available filters, optionally limited to a facility.
+        """Download every instrument's filters (of ``facility`` only, if given); returns how many were downloaded.
 
-        Args:
-            facility: Optional facility name. If None, downloads from all facilities.
-
-        Returns:
-            Total number of filters downloaded
-
-        Every instrument is attempted; then RuntimeError lists those whose
-        download was incomplete.
+        Every instrument is attempted; then RuntimeError lists those whose download was incomplete.
         """
         if not self._available:
             print("[njm] Mirror not available")
@@ -545,10 +527,7 @@ class NJMFilterGrabber:
 
         total_downloaded = 0
 
-        if facility:
-            facilities = [facility]
-        else:
-            facilities = self.discover_facilities()
+        facilities = [facility] if facility else self.discover_facilities()
 
         if not facilities:
             print("[njm] No facilities found")

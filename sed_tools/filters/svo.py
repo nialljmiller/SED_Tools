@@ -284,12 +284,7 @@ class SVOFilterBrowser:
 
     # -------------------- HTTP helpers --------------------
     def _fetch_index(self, params: Dict[str, str]) -> BeautifulSoup:
-        """One page of SVO's browse index.
-
-        SVOUnreachableError when SVO cannot be connected to or does not answer
-        in time, and then at once, with the same message, for ``SVO_PAUSE``
-        seconds (see :class:`_SVOState`); RuntimeError for any other failure.
-        """
+        """One page of SVO's browse index; SVOUnreachableError (then at once for ``SVO_PAUSE`` s) or RuntimeError."""
         paused = _STATE.paused()
         if paused is not None:
             raise SVOUnreachableError(paused)

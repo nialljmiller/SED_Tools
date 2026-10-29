@@ -178,11 +178,7 @@ def extinction_law() -> dict:
 
 
 def _on_curve(spectrum: Optional[Spectrum], lam: np.ndarray, lo: float, hi: float) -> Optional[np.ndarray]:
-    """A reference spectrum interpolated onto the curve's samples, or None if it misses lo..hi.
-
-    Like SED_Tools photometry, the spectrum is zero outside its range; it must still
-    cover every wavelength where T is at least 1 % of its maximum (lo..hi).
-    """
+    """A reference spectrum on the curve's samples (zero outside its range, as photometry has it), or None."""
     if spectrum is None:
         return None
     sl, sf = (np.asarray(a, dtype=float) for a in spectrum)
