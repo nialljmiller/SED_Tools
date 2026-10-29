@@ -186,16 +186,9 @@ def _library_variants(df: pd.DataFrame, extra_cols: List[str], library_dir: Path
 
 def _find_variant_cube(library_dir: Path, label: str) -> Path:
     """Return the flux cube path for *label*, or raise if not found."""
-    # Exact match
     candidate = library_dir / f"flux_cube__{label}.bin"
     if candidate.exists():
         return candidate
-
-    # Fuzzy: stem comparison
-    for path in library_dir.glob("flux_cube__*.bin"):
-        if path.stem.replace("flux_cube__", "") == label:
-            return path
-
     raise FileNotFoundError(
         f"No flux cube found in {library_dir} for variant '{label}'.\n"
         f"Expected: flux_cube__{label}.bin"

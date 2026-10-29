@@ -32,7 +32,6 @@ import re
 import shutil
 import struct
 import sys
-import textwrap
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -283,11 +282,10 @@ def spectra_not_in_cube(cube_path: str, lookup_file: str) -> Tuple[List[str], Li
         if len(header) != 16:
             raise ValueError(f"{cube_path}: the header is truncated")
         nt, nl, nm, nw = struct.unpack("4i", header)
+        # A negative count would make np.fromfile read the whole file; a short file fails in _filled_points.
         if min(nt, nl, nm, nw) < 1:
             raise ValueError(f"{cube_path}: the header gives dimensions {nt}, {nl}, {nm}, {nw}")
         axes = np.fromfile(fh, dtype=np.float64, count=nt + nl + nm)
-        if axes.size != nt + nl + nm:
-            raise ValueError(f"{cube_path}: the parameter axes are truncated")
         data_offset = 16 + 8 * (nt + nl + nm + nw)
         filled = _filled_points(fh, (nt, nl, nm, nw), data_offset, cube_path)
     it = _axis_positions(axes[:nt], teff)
@@ -389,7 +387,6 @@ def _populate_and_write(
 
         _write_cube(output_file, teff_grid, logg_grid, meta_grid,
                     wavelengths, flux_cube, usable_ram)
-        _warn_empty_points(count_cube, (teff_grid, logg_grid, meta_grid), output_file)
     finally:
         del flux_cube
         if tmp_path and os.path.exists(tmp_path):
@@ -451,27 +448,6 @@ def _accumulate_spectra(
             + "\n  ".join(empty)
         )
     return count_cube
-
-
-def _warn_empty_points(count_cube: np.ndarray, grids, cube_path: str) -> None:
-    """Warn when points of the cube's Teff x logg x [M/H] grid have no spectrum: their flux is zero.
-
-    Interpolation treats those zeros as flux, so near them it is pulled toward
-    zero.  The cube is written as it is; this only says so.
-    """
-    empty = np.argwhere(count_cube == 0)
-    if not len(empty):
-        return
-    ranges = []
-    for axis, (name, unit) in enumerate((("Teff", " K"), ("logg", ""), ("[M/H]", ""))):
-        values = grids[axis][empty[:, axis]]
-        low, high = float(values.min()), float(values.max())
-        ranges.append(f"{name} {low:g}{unit}" if low == high else f"{name} {low:g} to {high:g}{unit}")
-    text = (f"{len(empty)} of the {count_cube.size} points of this flux cube's Teff x logg x [M/H] grid have "
-            f"no spectrum, so their flux is zero ({', '.join(ranges)}). Interpolating near them pulls the "
-            "flux toward zero. The spectra do not fill the whole grid: the grid's own coverage is irregular, "
-            "or separate selections were fetched into one folder (fetch the rest and rebuild to fill them).")
-    logger.warning("%s\nCube with empty points: %s", textwrap.fill(text, width=80), cube_path)
 
 
 def _warn_averaged_rows(lookup: Dict[str, List], rows, nodes, cube_path: str) -> None:

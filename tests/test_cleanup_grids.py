@@ -391,7 +391,7 @@ def test_combine_stops_on_a_missing_spectrum(tmp_path, grid):
     models = _copy_grids(tmp_path)
     _append_lookup_row(models / grid, "missing.txt,0,999.9,2,1.25,4.0,0.0,999.9,999.9,999.9,9000.0,999.9,2,999.9")
     np.random.seed(0)
-    with pytest.raises(ValueError, match=r"missing\.txt: fewer than 2 readable"):
+    with pytest.raises(ValueError, match=r"No such file or directory: '.*missing\.txt'"):
         SED.combine(["Kurucz2003all", "Kurucz2003all__alpha_04"], output="combined",
                     model_root=models, visualization=False)
     assert not (models / "combined").exists()

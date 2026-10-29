@@ -14,7 +14,7 @@ from ._flux import (AB_ZERO_FLUX, FILTER_EXTENSIONS, VEGA_ZP_KEYS, FilterCurve,
                     FluxCube, Spectrum, band_average_flux_lambda,
                     band_average_flux_lambda_from_arrays, band_average_flux_nu,
                     load_filter_curve, load_spectrum)
-from .flux_cube_tool import get_metadata_float
+from .flux_cube_tool import _warn_outside_sed, get_metadata_float
 
 Number = Union[int, float, np.floating]
 FilterSpec = Union[str, os.PathLike[str], FilterCurve, Tuple[str, Union[str, os.PathLike[str]]]]
@@ -137,6 +137,7 @@ class EvaluatedSED:
         else:
             vega_curve = load_spectrum(os.fspath(vega_spectrum))
 
+        _warn_outside_sed(self.wavelength, resolved.values())
         for name, curve in resolved.items():
             if system == "AB":
                 flux_density = band_average_flux_nu(

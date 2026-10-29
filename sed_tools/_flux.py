@@ -3,23 +3,16 @@
 The command line tool :mod:`flux_cube_tool` already implements robust handling
 of the binary ``flux_cube.bin`` format together with filter parsing helpers. To
 avoid duplicating mature logic we import and re-export the relevant classes and
-functions here.  A failed import is turned into an actionable message.
+functions here.
 """
 from __future__ import annotations
 
-try:  # pragma: no cover - import error path depends on user environment
-    from .flux_cube_tool import (AB_ZERO_FLUX,  # type: ignore
-                                 FILTER_EXTENSIONS, VEGA_ZP_KEYS, FilterCurve,
-                                 FluxCube, Spectrum, band_average_flux_lambda,
-                                 band_average_flux_lambda_from_arrays,
-                                 band_average_flux_nu, load_filter_curve,
-                                 load_spectrum)
-except ImportError as exc:  # pragma: no cover - surfaced to users
-    raise ImportError(
-        "The sed_tools package requires the bundled 'flux_cube_tool' module. "
-        "Ensure the SED Tools repository is available on PYTHONPATH and that "
-        "its optional dependencies are installed."
-    ) from exc
+from .flux_cube_tool import (AB_ZERO_FLUX, FILTER_EXTENSIONS, VEGA_ZP_KEYS,
+                             FilterCurve, FluxCube, Spectrum,
+                             band_average_flux_lambda,
+                             band_average_flux_lambda_from_arrays,
+                             band_average_flux_nu, load_filter_curve,
+                             load_spectrum)
 
 __all__ = [
     "AB_ZERO_FLUX",

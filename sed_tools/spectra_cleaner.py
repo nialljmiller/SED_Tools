@@ -1132,6 +1132,9 @@ def clean_model_dir(
             "converted using units detected file by file.",
             model_dir, detection_stats.get('status', 'unknown'), n_per_file,
         )
+    elif catalog_units is None and detection_stats.get('status') != 'already_standardized':
+        print(f"[clean] Warning: Could not determine spectral grid units. "
+              f"Status: {detection_stats.get('status', 'unknown')}")
     if 'renormed' in summary:
         _warn_renormed(model_dir, summary['renormed'])
     
@@ -1156,14 +1159,17 @@ _UNCONVERTED = ('skipped_invalid', 'skipped_index', 'error')
 
 
 def _print_detected_units(catalog_units: Optional[UnitInfo], stats: Dict) -> None:
+    """The grid's units, or that the sample was already standardized.
+
+    Grids whose units could not be determined are reported after cleaning
+    (see clean_model_dir), once it is known whether files were converted one by one.
+    """
     if catalog_units:
         print(f"[clean] Spectral grid units (from {stats.get('sample_size', '?')} samples): "
               f"λ={catalog_units.wavelength_unit} ({stats.get('wavelength_agreement', '?')}), "
               f"flux={catalog_units.flux_type} ({stats.get('flux_agreement', '?')})")
     elif stats.get('status') == 'already_standardized':
         print(f"[clean] Spectral grid already standardized (all {stats.get('sample_size', '?')} samples)")
-    else:
-        print(f"[clean] Warning: Could not determine spectral grid units. Status: {stats.get('status', 'unknown')}")
 
 
 def _clean_all_files(txt_files: List[str], catalog_units: Optional[UnitInfo],

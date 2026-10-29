@@ -280,41 +280,39 @@ def flat_filter(name="V"):
     return FilterCurve(name, wavelength, np.ones_like(wavelength), {})
 
 
-def test_band_averages_warn_about_transmission_outside_the_sed(caplog):
-    from sed_tools.flux_cube_tool import band_average_flux_lambda, band_average_flux_nu
+def test_filters_past_the_sed_are_named_in_one_warning(caplog):
+    from sed_tools.flux_cube_tool import _warn_outside_sed
 
     sed_wavelength = np.arange(3000.0, 5001.0, 100.0)
-    sed_flux = np.ones_like(sed_wavelength)
-    for average in (band_average_flux_lambda, band_average_flux_nu):
-        caplog.clear()
-        with caplog.at_level(logging.WARNING, logger="sed_tools.flux_cube_tool"):
-            average(sed_wavelength, sed_flux, flat_filter())
-        # Transmission is 1 from 4000 to 6000 Å; 950 of its 2000 Å·T lie past 5000 Å.
-        assert ("Filter V: 47.5% of its transmission lies outside the SED's wavelength range "
-                "(3000-5000 Å), where the band average counts the flux as zero, so it is biased low.") in caplog.text
+    with caplog.at_level(logging.WARNING, logger="sed_tools.flux_cube_tool"):
+        _warn_outside_sed(sed_wavelength, [flat_filter("V"), flat_filter("B")])
+    # Transmission is 1 from 4000 to 6000 Å; 950 of its 2000 Å·T lie past 5000 Å.
+    assert [r.getMessage() for r in caplog.records] == [
+        "Filter transmission outside the SED's wavelength range (3000-5000 Å), where the band average "
+        "counts the flux as zero, so these bands are biased low: V (47.5%), B (47.5%)."]
 
 
-def test_band_averages_inside_the_sed_do_not_warn(caplog):
-    from sed_tools.flux_cube_tool import FilterCurve, band_average_flux_lambda
+def test_filters_inside_the_sed_do_not_warn(caplog):
+    from sed_tools.flux_cube_tool import FilterCurve, _warn_outside_sed
 
     sed_wavelength = np.arange(3000.0, 7001.0, 100.0)
     # Zero transmission past the SED's end does not bias the average.
     wavelength = np.arange(4000.0, 8001.0, 100.0)
     curve = FilterCurve("R", wavelength, np.where(wavelength <= 6000.0, 1.0, 0.0), {})
     with caplog.at_level(logging.WARNING, logger="sed_tools.flux_cube_tool"):
-        band_average_flux_lambda(sed_wavelength, np.ones_like(sed_wavelength), flat_filter())
-        band_average_flux_lambda(sed_wavelength, np.ones_like(sed_wavelength), curve)
+        _warn_outside_sed(sed_wavelength, [flat_filter(), curve])
     assert not caplog.records
 
 
-def test_model_photometry_warns_about_a_filter_past_the_model(make_affine_cube, caplog):
+def test_model_photometry_warns_once_about_filters_past_the_model(make_affine_cube, caplog):
     from sed_tools.models import SEDModel
 
     cube = make_affine_cube(wavelengths=(3000.0, 4000.0, 5000.0))
     sed = SEDModel(name="affine", flux_cube_path=cube.path)(4500.0, 2.5, -0.3)
     with caplog.at_level(logging.WARNING, logger="sed_tools.flux_cube_tool"):
-        sed.photometry(flat_filter(), system="AB")
-    assert "Filter V: 47.5% of its transmission lies outside the SED's wavelength range" in caplog.text
+        sed.photometry(flat_filter("V"), flat_filter("B"), system="AB")
+    [warning] = [r.getMessage() for r in caplog.records]
+    assert warning.endswith("so these bands are biased low: V (47.5%), B (47.5%).")
 
 
 # ----------------------------------------------------------------------
