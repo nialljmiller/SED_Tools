@@ -35,7 +35,7 @@ GRABBERS = {
 }
 
 
-def fake_grabber(models=(), error=None, available=True, metadata=None, downloaded=0, download_error=None):
+def fake_grabber(models=(), available=True, metadata=None, downloaded=0, download_error=None):
     """A grabber class; ``metadata`` may be an exception to raise, and ``download_error`` is
     raised after ``downloaded`` spectra have been written."""
     class Grabber:
@@ -48,8 +48,6 @@ def fake_grabber(models=(), error=None, available=True, metadata=None, downloade
             return available
 
         def discover_models(self):
-            if error is not None:
-                raise error
             return list(models)
 
         def get_model_metadata(self, name):
@@ -80,29 +78,6 @@ def sources(monkeypatch):
     return install
 
 
-def test_query_warns_about_a_failing_source_and_lists_the_others(sources, caplog):
-    sources(svo=fake_grabber(error=requests.ConnectionError("SVO down")), msg=fake_grabber(["MSGgrid"]))
-    with caplog.at_level(logging.WARNING, logger="sed_tools.api"):
-        grids = SED.query(include_local=False)
-    assert [g.name for g in grids] == ["MSGgrid"]
-    assert "svo spectral grid discovery failed: SVO down" in caplog.text
-
-
-def test_query_raises_when_the_requested_source_fails(sources):
-    sources(svo=fake_grabber(error=requests.ConnectionError("SVO down")))
-    with pytest.raises(RuntimeError, match="svo: SVO down"):
-        SED.query(source="svo", include_local=False)
-
-
-def test_query_raises_with_every_error_when_all_sources_fail(sources):
-    down = {name: fake_grabber(error=RuntimeError(f"{name} down")) for name in GRABBERS}
-    sources(**down)
-    with pytest.raises(RuntimeError) as excinfo:
-        SED.query(include_local=False)
-    for name in GRABBERS:
-        assert f"{name}: {name} down" in str(excinfo.value)
-
-
 def test_query_rejects_an_unknown_source(sources):
     sources()
     with pytest.raises(ValueError, match="Unknown source: sov"):
@@ -110,14 +85,13 @@ def test_query_rejects_an_unknown_source(sources):
 
 
 def test_fetch_error_names_every_source_that_failed(sources, tmp_path, caplog):
-    sources(njm=fake_grabber(available=False), msg=fake_grabber(error=ValueError("bad index")))
+    sources(msg=fake_grabber(["Missing"]))
     with caplog.at_level(logging.WARNING, logger="sed_tools.api"), pytest.raises(ValueError) as excinfo:
         SED.fetch("Missing", model_root=tmp_path)
     message = str(excinfo.value)
     assert "Spectral grid 'Missing' could not be fetched" in message
-    assert "msg: discovery failed: bad index" in message
+    assert "msg: no metadata for Missing" in message
     assert "svo: no metadata for Missing" in message
-    assert "msg discovery failed: bad index; trying the other sources" in caplog.text
     assert "svo: no metadata for Missing, trying next" in caplog.text
 
 
@@ -444,21 +418,11 @@ def test_spectra_flow_completes_quietly_when_every_grid_is_built(grid_flow, tmp_
     assert capsys.readouterr().out.rstrip().endswith("Done.")
 
 
-def test_spectra_flow_uses_other_sources_when_discovery_fails(grid_flow, tmp_path, caplog):
-    from sed_tools.cli import run_spectra_flow
-
-    grid_flow(svo=fake_grabber(error=requests.ConnectionError("SVO down")),
-              msg=fake_grabber(["Grid"], metadata={"m": 1}, downloaded=1))
-    with caplog.at_level(logging.WARNING, logger="sed_tools.cli"):
-        run_spectra_flow("all", base_dir=str(tmp_path), models=["Grid"])
-    assert "[svo] Spectral grid discovery failed: SVO down; using other sources" in caplog.text
-
-
 def test_spectra_flow_raises_when_no_grid_is_discovered(grid_flow, tmp_path):
     from sed_tools.cli import run_spectra_flow
 
-    grid_flow(svo=fake_grabber(error=requests.ConnectionError("SVO down")))
-    with pytest.raises(RuntimeError, match="No spectral grids discovered; svo: discovery failed: SVO down"):
+    grid_flow(svo=fake_grabber([]))  # as a grabber that could not read its index, after its warning
+    with pytest.raises(RuntimeError, match="No spectral grids discovered"):
         run_spectra_flow("svo", base_dir=str(tmp_path), models=["Grid"])
 
 

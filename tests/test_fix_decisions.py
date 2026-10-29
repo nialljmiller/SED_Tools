@@ -373,7 +373,7 @@ def test_cli_import_command_asks_on_a_terminal_and_not_for_a_dry_run(tmp_path, m
 def test_fetch_stops_on_an_undeclared_flux_unit_and_cleans_with_the_one_given(tmp_path, monkeypatch):
     from sed_tools.api import SED
 
-    def download(cls, catalog, sources, failures, model_dir, workers, cuts):
+    def download(cls, catalog, sources, model_dir, workers, cuts):
         _surface_flux_grid(model_dir)
         return "svo"
 

@@ -728,8 +728,7 @@ class SED:
             Available spectral grids matching the criteria
 
         A remote source that cannot be asked lists nothing, after a warning
-        from its client; RuntimeError is raised if every requested remote
-        source raises.
+        from its client.
         """
         if source not in (None, 'local', 'all', *_SPECTRA_SOURCES):
             raise ValueError(f"Unknown source: {source}")
@@ -805,20 +804,14 @@ class SED:
     
     @classmethod
     def _query_remote(cls, source: Optional[str]) -> List[SpectralGridInfo]:
-        """Grids from each requested remote source; a source that fails is skipped with a warning."""
+        """Grids from each requested remote source.  A source that cannot be asked lists none; its
+        client warns why (SVOSpectraGrabber.discover_models and the others)."""
         queries = {'svo': cls._query_svo, 'msg': cls._query_msg,
                    'mast': cls._query_mast, 'njm': cls._query_njm}
-        requested = [name for name in queries if source in (None, 'all', name)]
-        catalogs, errors = [], []
-        for name in requested:
-            try:
-                catalogs.extend(queries[name]())
-            except _SOURCE_ERRORS as exc:
-                errors.append(f"{name}: {exc}")
-                logger.warning("[query] %s spectral grid discovery failed: %s", name, exc)
-        if requested and len(errors) == len(requested):
-            raise RuntimeError("Spectral grid discovery failed for every requested source: "
-                               + "; ".join(errors))
+        catalogs = []
+        for name, query in queries.items():
+            if source in (None, 'all', name):
+                catalogs.extend(query())
         return catalogs
 
     @classmethod
@@ -945,17 +938,16 @@ class SED:
         base_dir.mkdir(parents=True, exist_ok=True)
 
         if source is None:
-            sources_to_try, failures = cls._get_sources_for_catalog(catalog)
+            sources_to_try = cls._get_sources_for_catalog(catalog)
         elif source in _SPECTRA_SOURCES:
-            sources_to_try, failures = [source], []
+            sources_to_try = [source]
         else:
             raise ValueError(f"Unknown source: {source}")
         model_dir = base_dir / catalog
         cuts = _parameter_cuts(teff_min, teff_max, logg_min, logg_max, metallicity_min, metallicity_max)
         created = not model_dir.exists()
         before = _directory_state(model_dir)
-        used_source = cls._download_from_first_source(catalog, sources_to_try, failures, model_dir, workers,
-                                                      cuts)
+        used_source = cls._download_from_first_source(catalog, sources_to_try, model_dir, workers, cuts)
         selected = bool(cuts) and used_source in _CUTTING_SOURCES
         cube = _flux_cube_file(model_dir)
 
@@ -1009,39 +1001,33 @@ class SED:
         print(f"[fetch] Cleaned: {summary['total']} total, {len(summary['converted'])} converted")
 
     @classmethod
-    def _get_sources_for_catalog(cls, catalog: str) -> Tuple[List[str], List[str]]:
-        """Sources whose index lists this spectral grid (NJM first), and each discovery failure."""
+    def _get_sources_for_catalog(cls, catalog: str) -> List[str]:
+        """Sources whose index lists this spectral grid (NJM first), then SVO as a fallback.
+
+        A source that cannot be asked lists nothing; its client warns why.
+        """
         queries = {'njm': cls._query_njm, 'svo': cls._query_svo,
                    'msg': cls._query_msg, 'mast': cls._query_mast}
-        sources, failures = [], []
-        for name, query in queries.items():
-            try:
-                listed = [info.name for info in query()]
-            except _SOURCE_ERRORS as exc:
-                failures.append(f"{name}: discovery failed: {exc}")
-                logger.warning("[fetch] %s discovery failed: %s; trying the other sources", name, exc)
-                continue
-            if catalog in listed:
-                sources.append(name)
+        sources = [name for name, query in queries.items() if catalog in [info.name for info in query()]]
 
         # Always include SVO as fallback if not already there
         if 'svo' not in sources:
             sources.append('svo')
-        return sources, failures
+        return sources
 
     @classmethod
-    def _download_from_first_source(cls, catalog: str, sources: List[str], failures: List[str],
-                                    model_dir: Path, workers: int,
+    def _download_from_first_source(cls, catalog: str, sources: List[str], model_dir: Path, workers: int,
                                     cuts: Optional[Dict[str, Tuple[float, float]]] = None) -> str:
         """Download ``catalog`` into ``model_dir`` from the first source that can supply it.
 
-        Returns that source.  A source that fails is recorded in ``failures``
-        with a warning and the next one is tried, unless the failed attempt
+        Returns that source.  A source that fails is reported with a warning
+        and the next one is tried, unless the failed attempt
         changed ``model_dir``: the next source's spectra would then be mixed
         with its files, so RuntimeError is raised instead.  ValueError lists
         every failure when no source succeeds.  ``cuts`` are as for
         :meth:`_download_from`.
         """
+        failures = []
         for src in sources:
             print(f"[fetch] Trying {catalog} from {src}...")
             before = _directory_state(model_dir)

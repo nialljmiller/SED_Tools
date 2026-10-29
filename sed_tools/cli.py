@@ -485,11 +485,10 @@ def run_spectra_flow(
 
     src_list = _spectra_sources(source)
     grabs = _spectra_grabbers(src_list, base_dir, workers)
-    model_sources, discovery_failures = _discover_spectral_grids(src_list, grabs)
-    if "njm" in src_list and "njm" not in grabs:
-        discovery_failures.insert(0, "njm: mirror unreachable")
+    model_sources = _discover_spectral_grids(src_list, grabs)
     if not model_sources:
-        raise RuntimeError("No spectral grids discovered" + "".join(f"; {f}" for f in discovery_failures))
+        unreachable = "; njm: mirror unreachable" if "njm" in src_list and "njm" not in grabs else ""
+        raise RuntimeError("No spectral grids discovered" + unreachable)
 
     all_models = [_ModelOption(n, srcs) for n, srcs in sorted(model_sources.items())]
     if models is not None:
@@ -542,22 +541,17 @@ def _spectra_grabbers(src_list: List[str], base_dir: str, workers: int) -> Dict:
     return grabs
 
 
-def _discover_spectral_grids(src_list: List[str], grabs: Dict) -> Tuple[Dict[str, List[str]], List[str]]:
-    """Each grid name with the sources listing it (in --source order), and each source that failed."""
+def _discover_spectral_grids(src_list: List[str], grabs: Dict) -> Dict[str, List[str]]:
+    """Each grid name with the sources listing it, in --source order.
+
+    A source that cannot be asked lists none; its grabber warns why.
+    """
     model_sources: Dict[str, List[str]] = {}
-    failures = []
     for s in src_list:
-        if s not in grabs:
-            continue
-        try:
-            names = grabs[s].discover_models()
-        except (ValueError, RequestException, OSError, RuntimeError) as exc:
-            logger.warning("[%s] Spectral grid discovery failed: %s; using other sources", s, exc)
-            failures.append(f"{s}: discovery failed: {exc}")
-            continue
-        for model_name in names:
-            model_sources.setdefault(model_name, []).append(s)
-    return model_sources, failures
+        if s in grabs:
+            for model_name in grabs[s].discover_models():
+                model_sources.setdefault(model_name, []).append(s)
+    return model_sources
 
 
 def _requested_spectral_grids(models: List[str], all_models: List[_ModelOption]):
