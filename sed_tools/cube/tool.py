@@ -89,8 +89,7 @@ class FluxCube:
         idx = max(0, min(idx, len(grid) - 2))
 
         x0 = grid[idx]
-        x1 = grid[idx + 1]
-        h = x1 - x0
+        h = grid[idx + 1] - x0
         t = (x - x0) / h if h != 0 else 0.0
 
         f0 = np.take(values, idx, axis=axis)
@@ -110,21 +109,13 @@ class FluxCube:
         self, values: np.ndarray, grid: np.ndarray, idx: int, axis: int
     ) -> np.ndarray:
         n = len(grid)
-
         if idx <= 0:
-            f0 = np.take(values, 0, axis=axis)
-            f1 = np.take(values, 1, axis=axis)
-            return (f1 - f0) / (grid[1] - grid[0])
-        if idx >= n - 1:
-            f0 = np.take(values, n - 2, axis=axis)
-            f1 = np.take(values, n - 1, axis=axis)
-            return (f1 - f0) / (grid[n - 1] - grid[n - 2])
-
-        f_prev = np.take(values, idx - 1, axis=axis)
-        f_next = np.take(values, idx + 1, axis=axis)
-        x_prev = grid[idx - 1]
-        x_next = grid[idx + 1]
-        return (f_next - f_prev) / (x_next - x_prev)
+            lo, hi = 0, 1
+        elif idx >= n - 1:
+            lo, hi = n - 2, n - 1
+        else:
+            lo, hi = idx - 1, idx + 1
+        return (np.take(values, hi, axis=axis) - np.take(values, lo, axis=axis)) / (grid[hi] - grid[lo])
 
     def interpolate_spectrum(self, teff: float, logg: float, meta: float) -> Tuple[np.ndarray, np.ndarray]:
         """Return ``(wavelength, flux)`` at the requested parameter point."""
@@ -229,9 +220,7 @@ def ensure_dir(path: str) -> None:
 
 def save_sed(path: str, wavelength: np.ndarray, flux: np.ndarray) -> None:
     ensure_dir(os.path.dirname(path) or ".")
-    data = np.column_stack((wavelength, flux))
-    header = "wavelength flux"
-    np.savetxt(path, data, header=header)
+    np.savetxt(path, np.column_stack((wavelength, flux)), header="wavelength flux")
 
 
 def prompt_for_parameter(name: str, units: str, grid: np.ndarray, provided: float | None) -> float:
@@ -265,12 +254,8 @@ def prompt_for_parameter(name: str, units: str, grid: np.ndarray, provided: floa
 def infer_filter_directories(flux_cube_path: str) -> List[Path]:
     """Return likely filter directories based on the flux cube location."""
     cube_path = Path(flux_cube_path).expanduser().resolve()
-    candidates: List[Path] = []
-    for parent in [cube_path.parent, *cube_path.parents]:
-        candidate = parent / "filters"
-        if candidate.is_dir():
-            candidates.append(candidate)
-    return candidates
+    candidates = [parent / "filters" for parent in [cube_path.parent, *cube_path.parents]]
+    return [candidate for candidate in candidates if candidate.is_dir()]
 
 
 def _is_auxiliary(path: Path, root: Path) -> bool:
@@ -280,14 +265,7 @@ def _is_auxiliary(path: Path, root: Path) -> bool:
 
 def _unique_resolved(paths: Iterable[Path]) -> List[Path]:
     """Resolved *paths* in order, without duplicates."""
-    unique: List[Path] = []
-    seen: set[Path] = set()
-    for path in paths:
-        resolved = path.resolve()
-        if resolved not in seen:
-            seen.add(resolved)
-            unique.append(resolved)
-    return unique
+    return list(dict.fromkeys(path.resolve() for path in paths))
 
 
 def collect_filter_files(
@@ -355,11 +333,8 @@ def collect_filter_files(
 
 
 def extract_filter_system(filter_name: str) -> str:
-    if "/" in filter_name:
-        return filter_name.split("/", 1)[0]
-    if "\\" in filter_name:
-        return filter_name.split("\\", 1)[0]
-    return filter_name
+    separator = "/" if "/" in filter_name else "\\"
+    return filter_name.split(separator, 1)[0]
 
 
 def prompt_for_filter_system(
@@ -381,8 +356,7 @@ def prompt_for_filter_system(
         )
 
     if len(systems) <= 1:
-        key = next(iter(systems)) if systems else None
-        return key, filter_entries
+        return next(iter(systems), None), filter_entries
 
     print("\nDiscovered filter systems:")
     ordered = sorted((system, len(entries)) for system, entries in systems.items())
@@ -392,11 +366,7 @@ def prompt_for_filter_system(
 
     while True:
         response = input("Select a filter system by number (or '0' for all): ").strip()
-        if not response:
-            response = "0"
-        if response.lower() in {"all", "a", "*"}:
-            return None, filter_entries
-        if response == "0":
+        if response.lower() in {"", "0", "all", "a", "*"}:
             return None, filter_entries
         if response.isdigit():
             index = int(response)
@@ -413,15 +383,11 @@ def prompt_for_photometric_system(provided: str | None) -> str:
             return "AB" if normalized == "ab" else "Vega"
         raise SystemExit("Photometric system must be either 'AB' or 'Vega'.")
 
+    answers = {"": "AB", "ab": "AB", "a": "AB", "vega": "Vega", "v": "Vega"}
     while True:
-        response = input("Compute magnitudes in the AB or Vega system? [AB/Vega]: ").strip()
-        if not response:
-            return "AB"
-        normalized = response.lower()
-        if normalized in {"ab", "a"}:
-            return "AB"
-        if normalized in {"vega", "v"}:
-            return "Vega"
+        response = input("Compute magnitudes in the AB or Vega system? [AB/Vega]: ").strip().lower()
+        if response in answers:
+            return answers[response]
         print("Please answer 'AB' or 'Vega'.")
 
 
@@ -489,10 +455,8 @@ def resolve_vega_spectrum_path(
         print("Please select one of the listed Vega spectra.")
 
 
-def _flux_cube_search_locations(
-    hints: Sequence[str | os.PathLike[str]] | None,
-) -> Tuple[List[Path], List[Path]]:
-    """Files named by the hints and $SED_FLUX_CUBE, and directories to search for cubes."""
+def discover_flux_cube_files(hints: Sequence[str | os.PathLike[str]] | None = None) -> List[Path]:
+    """Discover ``flux_cube.bin`` files from common locations and hints."""
     from .model import DATA_DIR_DEFAULT
 
     hints = list(hints or [])
@@ -500,13 +464,12 @@ def _flux_cube_search_locations(
         if os.environ.get(variable):
             hints.append(os.environ[variable])
 
+    found: set[Path] = set()
     search_dirs: List[Path] = []
-    direct_files: List[Path] = []
-
     for hint in hints:
         path = Path(hint).expanduser()
         if path.is_file():
-            direct_files.append(path.resolve())
+            found.add(path.resolve())
         elif path.is_dir():
             search_dirs.append(path)
 
@@ -520,50 +483,27 @@ def _flux_cube_search_locations(
         this_dir / "data",
         this_dir / "data" / "stellar_models",
     ]
-
     for root in default_roots:
         if root not in search_dirs:
             search_dirs.append(root)
-    return direct_files, search_dirs
-
-
-def discover_flux_cube_files(hints: Sequence[str | os.PathLike[str]] | None = None) -> List[Path]:
-    """Discover ``flux_cube.bin`` files from common locations and hints."""
-    direct_files, search_dirs = _flux_cube_search_locations(hints)
-
-    seen: set[Path] = set()
-    results: List[Path] = []
-
-    def register(path: Path) -> None:
-        resolved = path.expanduser().resolve()
-        if resolved in seen:
-            return
-        if resolved.is_file():
-            seen.add(resolved)
-            results.append(resolved)
-
-    for file_path in direct_files:
-        register(file_path)
 
     for directory in search_dirs:
         directory = directory.expanduser().resolve()
         if not directory.exists():
             continue
         if directory.is_file():
-            register(directory)
+            found.add(directory)
             continue
         try:
             for match in directory.rglob("flux_cube.bin"):
                 if match.is_file():
-                    register(match)
+                    found.add(match.resolve())
         except OSError as exc:
             logger.warning(
                 "Could not finish searching %s for flux cubes (%s); "
                 "cubes there may be missing from the candidates.", directory, exc,
             )
-
-    results.sort()
-    return results
+    return sorted(found)
 
 
 def resolve_flux_cube_path(path: str) -> Path:
@@ -661,9 +601,7 @@ def _build_parser() -> argparse.ArgumentParser:
 def main(argv: Sequence[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
 
-    hints: List[str | os.PathLike[str]] = []
-    if args.model_dir:
-        hints.append(args.model_dir)
+    hints: List[str | os.PathLike[str]] = [args.model_dir] if args.model_dir else []
 
     if args.flux_cube:
         flux_cube_path = resolve_flux_cube_path(args.flux_cube)
@@ -712,11 +650,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         save_sed(args.save_sed, wl, flux)
         print(f"Saved SED to {args.save_sed}")
 
-    if args.plot:
-        plot_path = args.plot
-    else:
-        plot_filename = f"sed_T{teff:.0f}_g{logg:.2f}_M{metallicity:.2f}.png"
-        plot_path = os.path.join("plots", plot_filename)
+    plot_path = args.plot or os.path.join("plots", f"sed_T{teff:.0f}_g{logg:.2f}_M{metallicity:.2f}.png")
 
     plot_sed(wl, flux, filters, out_path=plot_path)
     print(f"Saved plot to {plot_path}")
