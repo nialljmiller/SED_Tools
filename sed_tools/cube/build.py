@@ -474,11 +474,8 @@ def precompute_flux_cube(
     model_dir   = str(model_dir)
     output_file = str(output_file)
 
-    cfg = load_config(
-        model_dir     = Path(model_dir),
-        root_dir      = Path(root_dir) if root_dir else None,
-        override_dict = override_dict,
-    )
+    cfg = load_config(model_dir=Path(model_dir), root_dir=Path(root_dir) if root_dir else None,
+                      override_dict=override_dict)
     print(f"On-collision strategy: {cfg.strategy}  (source: {cfg.source})")
 
     # The configuration a cube was built with stays beside it.
@@ -511,10 +508,7 @@ def precompute_flux_cube(
     # No extra axes, or every file shares the same extra-axis values: one cube.
     if len(groups) <= 1:
         _warn_averaged_rows(lookup, range(len(file_names)), zip(teff_vals, logg_vals, meta_vals), output_file)
-        _populate_and_write(
-            model_dir, file_names, teff_vals, logg_vals, meta_vals,
-            wavelengths, output_file, usable,
-        )
+        _populate_and_write(model_dir, file_names, teff_vals, logg_vals, meta_vals, wavelengths, output_file, usable)
         _print_summary(output_file, teff_vals, logg_vals, meta_vals)
         return
 
