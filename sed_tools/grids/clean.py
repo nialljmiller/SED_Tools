@@ -160,9 +160,8 @@ def _clean_spectrum(
         status = 'converted'
     
     # The file has at least two valid points by now, so per-file detection always succeeds
-    if catalog_units is not None:
-        unit_info = catalog_units
-    else:
+    unit_info = catalog_units
+    if unit_info is None:
         unit_info = _with_flux_unit("this spectrum", detect_units_single_file(filepath), flux_unit, report=False)
     wl_std, flux_std = convert_to_standard_units(wl, flux, unit_info)
     valid, msg = validate_converted_spectrum(wl_std, flux_std)
@@ -291,11 +290,8 @@ def clean_model_dir(
     summary['detection_stats'] = detection_stats
     if catalog_units is not None:
         catalog_units = _with_flux_unit(model_dir, catalog_units, flux_unit)
-        summary['catalog_units'] = {
-            'wavelength': catalog_units.wavelength_unit,
-            'flux': catalog_units.flux_type,
-            'confidence': catalog_units.confidence,
-        }
+        summary['catalog_units'] = {'wavelength': catalog_units.wavelength_unit, 'flux': catalog_units.flux_type,
+                                    'confidence': catalog_units.confidence}
     _print_detected_units(catalog_units, detection_stats)
     failures = _clean_all_files(txt_files, catalog_units, try_h5_recovery, summary, flux_unit)
     n_per_file = len(summary['converted']) + len(summary['recovered'])
