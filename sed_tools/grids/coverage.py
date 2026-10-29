@@ -115,18 +115,10 @@ def _anderson_darling(x: np.ndarray) -> Optional[Dict[str, float]]:
         sl = [float(s) for s in res.significance_level]
         i5 = sl.index(5.0) if 5.0 in sl else len(sl) // 2
         crit5 = float(res.critical_values[i5])
-        return {
-            "statistic": stat,
-            "crit_5pct": crit5,
-            "normal_at_5pct": bool(stat < crit5),
-        }
+        return {"statistic": stat, "crit_5pct": crit5, "normal_at_5pct": bool(stat < crit5)}
     # Newer scipy: only a p-value is provided.
     p = float(getattr(res, "pvalue", float("nan")))
-    return {
-        "statistic": stat,
-        "pvalue": p,
-        "normal_at_5pct": (bool(p > 0.05) if p == p else None),
-    }
+    return {"statistic": stat, "pvalue": p, "normal_at_5pct": (bool(p > 0.05) if p == p else None)}
 
 
 def coverage_summary(model_dir: Union[str, Path]) -> Dict:
@@ -183,10 +175,7 @@ def print_coverage(summary: Dict) -> None:
     print("=" * 64)
     print(f"  Spectra            : {summary['n_spectra']}")
     print(f"  Distinct (T,g,M) nodes : {summary['n_distinct_nodes']}")
-    print(
-        f"  Full grid product  : {summary['full_product']}  "
-        f"(fill {100.0 * summary['fill_fraction']:.1f}%)"
-    )
+    print(f"  Full grid product  : {summary['full_product']}  (fill {100.0 * summary['fill_fraction']:.1f}%)")
 
     for ax in _AXES:
         a = summary["axes"][ax]
@@ -197,20 +186,14 @@ def print_coverage(summary: Dict) -> None:
         print(f"    range   : {a['min']:g} -> {a['max']:g}")
         print(f"    values  : {a['n_unique']} unique  [{_fmt_unique(a['unique'])}]")
         if not math.isnan(a["spacing_median"]):
-            print(
-                f"    spacing : min {a['spacing_min']:g}  "
-                f"median {a['spacing_median']:g}  max {a['spacing_max']:g}"
-            )
+            print(f"    spacing : min {a['spacing_min']:g}  median {a['spacing_median']:g}  max {a['spacing_max']:g}")
         if a["n_missing"]:
             print(f"    missing : {a['n_missing']} spectra have no value on this axis")
         ad = a["anderson_darling"]
         if ad is not None:
             verdict = {None: "indeterminate", True: "consistent with normal",
                        False: "non-normal"}[ad.get("normal_at_5pct")]
-            if "crit_5pct" in ad:
-                test = f"5% crit {ad['crit_5pct']:.3f}"
-            else:
-                test = f"p={ad['pvalue']:.3f}"
+            test = f"5% crit {ad['crit_5pct']:.3f}" if "crit_5pct" in ad else f"p={ad['pvalue']:.3f}"
             print(f"    A-D     : {ad['statistic']:.3f} ({test}; {verdict})")
         elif a["n_unique"] < 8:
             print(f"    A-D     : skipped (needs at least 8 distinct values; this axis has {a['n_unique']})")
@@ -275,10 +258,8 @@ def _representative_nodes(df: pd.DataFrame) -> List[Dict]:
         if identity in used:
             continue
         used.add(identity)
-        selected.append({
-            "letter": letter, "description": description,
-            "index": original_index, "row": usable.iloc[pos],
-        })
+        selected.append({"letter": letter, "description": description, "index": original_index,
+                         "row": usable.iloc[pos]})
     return selected
 
 
@@ -286,10 +267,9 @@ def _node_parameters(item: Dict) -> str:
     """Return a compact parameter label suitable for a half-width plot."""
     row = item["row"]
     parts = [f"T={row['teff']:g}"]
-    if np.isfinite(row["logg"]):
-        parts.append(f"g={row['logg']:g}")
-    if np.isfinite(row["metallicity"]):
-        parts.append(f"M/H={row['metallicity']:g}")
+    for key, label in (("logg", "g"), ("metallicity", "M/H")):
+        if np.isfinite(row[key]):
+            parts.append(f"{label}={row[key]:g}")
     return " ".join(parts)
 
 
@@ -298,19 +278,11 @@ def _plot_rows(plots: List[str], columns: int = 2, gap: int = 3) -> str:
     rendered_rows = []
     for start in range(0, len(plots), columns):
         blocks = [plot.splitlines() for plot in plots[start:start + columns]]
-        widths = [
-            max((_visible_width(line) for line in block), default=0)
-            for block in blocks
-        ]
-        row_height = max((len(block) for block in blocks), default=0)
+        widths = [max((_visible_width(line) for line in block), default=0) for block in blocks]
         lines = []
-        for line_number in range(row_height):
-            parts = [
-                _visible_ljust(
-                    block[line_number] if line_number < len(block) else "", width
-                )
-                for block, width in zip(blocks, widths)
-            ]
+        for line_number in range(max((len(block) for block in blocks), default=0)):
+            parts = [_visible_ljust(block[line_number] if line_number < len(block) else "", width)
+                     for block, width in zip(blocks, widths)]
             lines.append((" " * gap).join(parts).rstrip())
         rendered_rows.append("\n".join(lines))
     return "\n\n".join(rendered_rows)
@@ -351,10 +323,7 @@ def _parameter_plots(df: pd.DataFrame, selected: List[Dict], plot_width: int, co
     from ..terminal_plots import scatter2d
 
     labels = {df.index.get_loc(item["index"]): item["letter"] for item in selected}
-    colors = {
-        df.index.get_loc(item["index"]): _PALETTE[i % len(_PALETTE)]
-        for i, item in enumerate(selected)
-    }
+    colors = {df.index.get_loc(item["index"]): _PALETTE[i % len(_PALETTE)] for i, item in enumerate(selected)}
     projections = [("teff", "logg", True), ("teff", "metallicity", False), ("logg", "metallicity", False)]
     return [
         scatter2d(
