@@ -378,11 +378,8 @@ class SEDGenerator:
             true = f_val[idx]
             mask = m_val[idx]
             
-            true_log = true * self.scaler_params['flux_log_std'] + self.scaler_params['flux_log_mean']
-            pred_log = pred * self.scaler_params['flux_log_std'] + self.scaler_params['flux_log_mean']
-            
-            true_flux = 10 ** true_log
-            pred_flux = 10 ** pred_log
+            true_flux = 10 ** (true * self.scaler_params['flux_log_std'] + self.scaler_params['flux_log_mean'])
+            pred_flux = 10 ** (pred * self.scaler_params['flux_log_std'] + self.scaler_params['flux_log_mean'])
             
             teff = p_val[idx, 0] * self.scaler_params['teff_std'] + self.scaler_params['teff_mean']
             logg = p_val[idx, 1] * self.scaler_params['logg_std'] + self.scaler_params['logg_mean']
@@ -420,13 +417,11 @@ class SEDGenerator:
         
         # At most 500 training points, for the parameter-space plot of generate_with_outputs
         train_params = getattr(self, '_train_params_raw', None)
+        train_params_list = []
         if train_params is not None:
             if len(train_params) > 500:
-                idx = np.random.choice(len(train_params), 500, replace=False)
-                train_params = train_params[idx]
+                train_params = train_params[np.random.choice(len(train_params), 500, replace=False)]
             train_params_list = train_params.tolist()
-        else:
-            train_params_list = []
         
         self.config = {
             'model_type': 'sed_generator',
@@ -438,9 +433,8 @@ class SEDGenerator:
             'scaler_params': self.scaler_params,
             'wavelength_grid': self.wavelength_grid.tolist(),
             'parameter_ranges': {
-                'teff': [self.scaler_params['teff_min'], self.scaler_params['teff_max']],
-                'logg': [self.scaler_params['logg_min'], self.scaler_params['logg_max']],
-                'meta': [self.scaler_params['meta_min'], self.scaler_params['meta_max']],
+                name: [self.scaler_params[f'{name}_min'], self.scaler_params[f'{name}_max']]
+                for name in ('teff', 'logg', 'meta')
             },
             'training_params': train_params_list,
             'version': '1.0.0',
@@ -471,8 +465,7 @@ class SEDGenerator:
             dropout=arch['dropout'],
         )
         
-        state_dict = torch.load(path / self.MODEL_FILE, map_location=self.device, weights_only=True)
-        self.model.load_state_dict(state_dict)
+        self.model.load_state_dict(torch.load(path / self.MODEL_FILE, map_location=self.device, weights_only=True))
         self.model.eval()
         
         print(f"Loaded generator from: {path}")
@@ -527,9 +520,7 @@ class SEDGenerator:
             flux_norm = pred.cpu().numpy()[0]
         
         flux_log = flux_norm * self.scaler_params['flux_log_std'] + self.scaler_params['flux_log_mean']
-        flux = 10 ** flux_log
-        
-        return self.wavelength_grid.copy(), flux
+        return self.wavelength_grid.copy(), 10 ** flux_log
     
     def generate_with_outputs(
         self,
@@ -584,11 +575,8 @@ class SEDGenerator:
         teff_range = ranges.get('teff', [3000, 50000])
         logg_range = ranges.get('logg', [0, 5])
         meta_range = ranges.get('meta', [-5, 1])
-        outside_range = (
-            teff < teff_range[0] or teff > teff_range[1] or
-            logg < logg_range[0] or logg > logg_range[1] or
-            meta < meta_range[0] or meta > meta_range[1]
-        )
+        outside_range = any(value < bounds[0] or value > bounds[1]
+                            for value, bounds in ((teff, teff_range), (logg, logg_range), (meta, meta_range)))
         
         spectrum_file = os.path.join(output_dir, f"{base_name}_spectrum.png")
         _plot_generated_sed(wl, flux, teff, logg, meta, outside_range, spectrum_file)
@@ -813,14 +801,12 @@ def _batch_menu(models_dir: str) -> None:
     output_dir = _ask_output_dir(os.path.join(selected['path'], "SED", "batch"))
     
     print(f"\nGenerating {n_total} SEDs...")
-    count = 0
-    for t, g, m in product(teff_vals, logg_vals, meta_vals):
+    for count, (t, g, m) in enumerate(product(teff_vals, logg_vals, meta_vals), 1):
         gen.generate_with_outputs(t, g, m, output_dir)
-        count += 1
         if count % 10 == 0:
             print(f"  Generated {count}/{n_total}...")
     
-    print(f"\n✓ Generated {count} SEDs in {output_dir}/")
+    print(f"\n✓ Generated {n_total} SEDs in {output_dir}/")
 
 
 def _list_menu(models_dir: str) -> None:
@@ -873,8 +859,7 @@ def main():
     args = parser.parse_args()
     
     if args.command == 'train':
-        gen = SEDGenerator()
-        gen.train(args.library, args.output, epochs=args.epochs, batch_size=args.batch_size)
+        SEDGenerator().train(args.library, args.output, epochs=args.epochs, batch_size=args.batch_size)
     
     elif args.command == 'generate':
         gen = SEDGenerator(args.model)
