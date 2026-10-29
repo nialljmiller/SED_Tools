@@ -223,11 +223,8 @@ class SEDModel:
         return EvaluatedSED(wavelength=wavelength, flux=flux, metadata=metadata, _model=self)
 
     def parameter_ranges(self) -> Dict[str, Tuple[float, float]]:
-        return {
-            "teff": (float(self.teff_grid[0]), float(self.teff_grid[-1])),
-            "logg": (float(self.logg_grid[0]), float(self.logg_grid[-1])),
-            "metallicity": (float(self.meta_grid[0]), float(self.meta_grid[-1])),
-        }
+        grids = {"teff": self.teff_grid, "logg": self.logg_grid, "metallicity": self.meta_grid}
+        return {name: (float(grid[0]), float(grid[-1])) for name, grid in grids.items()}
 
     # --- Filter handling ---
 
@@ -258,12 +255,7 @@ class SEDModel:
             curves[curve.name] = curve
         return curves
 
-    def _load_filter(
-        self,
-        spec: Union[str, os.PathLike[str]],
-        *,
-        custom_name: Optional[str] = None,
-    ) -> FilterCurve:
+    def _load_filter(self, spec: Union[str, os.PathLike[str]], *, custom_name: Optional[str] = None) -> FilterCurve:
         key = (os.fspath(spec), custom_name or "")
         if key not in self._filter_cache:
             self._filter_cache[key] = load_filter_curve(str(self._locate_filter_path(spec)), name=custom_name)
@@ -280,9 +272,7 @@ class SEDModel:
                 return files
 
         if self.filters_dir is None:
-            raise FileNotFoundError(
-                f"Filter '{spec}' could not be resolved because no filters directory is configured."
-            )
+            raise FileNotFoundError(f"Filter '{spec}' could not be resolved because no filters directory is configured.")
 
         filters_dir = Path(self.filters_dir)
 
@@ -476,13 +466,9 @@ class SED:
             result = model
         else:
             flux_path, name = self._resolve_model_inputs(model)
-            result = SEDModel(
-                name=name,
-                flux_cube_path=flux_path,
-                filters_dir=self.filter_root if self.filter_root.exists() else None,
-                interpolation=interpolation,
-                fill_gaps=fill_gaps,
-            )
+            result = SEDModel(name=name, flux_cube_path=flux_path,
+                              filters_dir=self.filter_root if self.filter_root.exists() else None,
+                              interpolation=interpolation, fill_gaps=fill_gaps)
 
         if activate:
             self._active_model = result
@@ -496,26 +482,21 @@ class SED:
         **aliases: Number,
     ) -> EvaluatedSED:
         if self._active_model is None:
-            raise RuntimeError(
-                "No atmosphere selected. Call 'model(...)' or pass 'atm=' when constructing SED."
-            )
+            raise RuntimeError("No atmosphere selected. Call 'model(...)' or pass 'atm=' when constructing SED.")
         if metallicity is None:
             for key in ("z", "Z"):
                 if key in aliases:
                     metallicity = aliases.pop(key)
                     break
         if aliases:
-            unexpected = ", ".join(sorted(aliases.keys()))
-            raise TypeError(f"Unexpected keyword arguments: {unexpected}")
+            raise TypeError(f"Unexpected keyword arguments: {', '.join(sorted(aliases.keys()))}")
         if metallicity is None:
             raise TypeError("Metallicity value missing; supply 'metallicity' or 'z'.")
         return self._active_model(teff, logg, metallicity)
 
     # --- Helpers ---
 
-    def _resolve_model_inputs(
-        self, model: Union[str, os.PathLike[str], ModelMatch]
-    ) -> Tuple[Path, str]:
+    def _resolve_model_inputs(self, model: Union[str, os.PathLike[str], ModelMatch]) -> Tuple[Path, str]:
         if isinstance(model, ModelMatch):
             return Path(model.flux_cube), model.name
 
@@ -592,10 +573,7 @@ def _nearest_on_grid(value: float, grid: np.ndarray) -> float:
 def _filter_files_in_dir(directory: Union[str, os.PathLike[str]]) -> List[Path]:
     directory = Path(directory)
 
-    direct = sorted(
-        p for p in directory.iterdir()
-        if p.is_file() and p.suffix.lower() in FILTER_EXTENSIONS
-    )
+    direct = sorted(p for p in directory.iterdir() if p.is_file() and p.suffix.lower() in FILTER_EXTENSIONS)
     if direct:
         return direct
 
@@ -641,10 +619,7 @@ def _normalize_range(value: Optional[Sequence[Number]], label: str) -> Optional[
     return start, end
 
 
-def _range_coverage(
-    requested: Optional[Tuple[float, float]],
-    available: Tuple[float, float],
-) -> Tuple[bool, bool]:
+def _range_coverage(requested: Optional[Tuple[float, float]], available: Tuple[float, float]) -> Tuple[bool, bool]:
     if requested is None:
         return True, True
     req_min, req_max = requested
