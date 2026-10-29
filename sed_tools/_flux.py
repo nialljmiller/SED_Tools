@@ -7,12 +7,10 @@ functions here.
 """
 from __future__ import annotations
 
-from .flux_cube_tool import (AB_ZERO_FLUX, FILTER_EXTENSIONS, VEGA_ZP_KEYS,
-                             FilterCurve, FluxCube, Spectrum,
-                             band_average_flux_lambda,
-                             band_average_flux_lambda_from_arrays,
-                             band_average_flux_nu, load_filter_curve,
-                             load_spectrum)
+from .flux_cube_tool import FluxCube
+from .photometry import (AB_ZERO_FLUX, FILTER_EXTENSIONS, VEGA_ZP_KEYS, FilterCurve, Spectrum,
+                         band_average_flux_lambda, band_average_flux_lambda_from_arrays, band_average_flux_nu,
+                         load_filter_curve, load_spectrum)
 
 __all__ = [
     "AB_ZERO_FLUX",

@@ -62,7 +62,7 @@ from typing import Dict, Optional, Tuple, Union
 import numpy as np
 
 from .filter_metadata import read_filter_header
-from .flux_cube_tool import (
+from .photometry import (
     SPEED_OF_LIGHT_ANG_PER_S,
     filter_weight,
     load_filter_curve,

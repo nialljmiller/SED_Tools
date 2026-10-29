@@ -72,7 +72,7 @@ def compare_to_published(instrument_dir, components=("filter", "optics", "qe"), 
     import numpy as np
 
     from ..filter_components import compose_band, InstrumentManifest
-    from ..flux_cube_tool import FilterCurve, band_average_flux_lambda, load_filter_curve
+    from ..photometry import FilterCurve, band_average_flux_lambda, load_filter_curve
 
     instrument_dir = Path(instrument_dir)
     manifest = InstrumentManifest.load(instrument_dir)

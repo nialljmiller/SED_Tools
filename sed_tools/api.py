@@ -2422,7 +2422,7 @@ class Filters:
         from .filter_colors import instrument_colors
         from .filter_plot import plot_curves
         from .filter_properties import load_vega
-        from .flux_cube_tool import load_filter_curve
+        from .photometry import load_filter_curve
 
         if not targets:
             raise ValueError("nothing to plot: give Facility/Instrument[/Band] targets or a search result")

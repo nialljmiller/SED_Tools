@@ -158,7 +158,7 @@ def instrument_colors(curve_paths: Sequence[Union[str, Path]]) -> Dict[str, Dict
     Every curve must be readable: false colours follow the order of all the
     instrument's bands, so leaving one out would change the others.
     """
-    from .flux_cube_tool import load_filter_curve
+    from .photometry import load_filter_curve
 
     curves = {}
     for path in curve_paths:

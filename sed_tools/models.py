@@ -14,7 +14,7 @@ from ._flux import (AB_ZERO_FLUX, FILTER_EXTENSIONS, VEGA_ZP_KEYS, FilterCurve,
                     FluxCube, Spectrum, band_average_flux_lambda,
                     band_average_flux_lambda_from_arrays, band_average_flux_nu,
                     load_filter_curve, load_spectrum)
-from .flux_cube_tool import _warn_outside_sed, get_metadata_float
+from .photometry import _warn_outside_sed, get_metadata_float
 
 Number = Union[int, float, np.floating]
 FilterSpec = Union[str, os.PathLike[str], FilterCurve, Tuple[str, Union[str, os.PathLike[str]]]]
@@ -185,16 +185,7 @@ def _vega_zero_point(curve: FilterCurve, vega_curve: Optional[Spectrum]) -> floa
             "Filter does not provide a Vega zero point. Supply a Vega spectrum via "
             "the 'vega_spectrum' argument."
         )
-    interp_flux = np.interp(
-        curve.wavelength,
-        vega_curve.wavelength,
-        vega_curve.flux,
-        left=0.0,
-        right=0.0,
-    )
-    return band_average_flux_lambda_from_arrays(
-        curve.wavelength, interp_flux, curve.transmission, curve.detector_type
-    )
+    return band_average_flux_lambda(vega_curve.wavelength, vega_curve.flux, curve)
 
 
 class SEDModel:

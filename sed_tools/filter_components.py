@@ -765,7 +765,7 @@ class Curve:
 
 def read_curve(path: PathLike) -> Curve:
     """Load a component/filter file in Angstrom (honouring ``WavelengthUnit``)."""
-    from .flux_cube_tool import load_filter_curve
+    from .photometry import load_filter_curve
 
     if not Path(path).is_file():
         raise ComponentError(f"Missing throughput file: {path}; fetch this instrument's components again")
