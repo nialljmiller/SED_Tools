@@ -24,13 +24,9 @@ def find_filter_sets(base_dir: Optional[PathLike] = None) -> List[Path]:
     if not root.exists():
         return []
 
-    filter_sets: List[Path] = []
-    for path in sorted(root.rglob("*")):
-        if not path.is_dir() or is_auxiliary_path(path, root, dirs=(COMPONENTS_DIR,)):
-            continue
-        if any(child.is_file() and child.suffix.lower() == ".dat" for child in path.iterdir()):
-            filter_sets.append(path)
-    return filter_sets
+    return [path for path in sorted(root.rglob("*"))
+            if path.is_dir() and not is_auxiliary_path(path, root, dirs=(COMPONENTS_DIR,))
+            and any(child.is_file() and child.suffix.lower() == ".dat" for child in path.iterdir())]
 
 
 def resolve_output_path(
