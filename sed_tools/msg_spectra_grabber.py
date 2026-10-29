@@ -18,6 +18,7 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 from tqdm import tqdm
 
+from .spectra_cleaner import _is_physical_wavelength_array as _is_physical_wavelength, _iter_datasets
 from .svo_spectra_grabber import DISCOVERY_TIMEOUT, discovery_failure, mount_discovery
 
 _SEG_IDX = re.compile(r"\[(\d+)\]")
@@ -34,32 +35,6 @@ def _dataset_if_exists(g, names):
         if n in g and isinstance(g[n], h5py.Dataset):
             return g[n]
     return None
-
-def _iter_datasets_recursive(g, prefix=""):
-    for k, v in g.items():
-        path = f"{prefix}/{k}" if prefix else k
-        if isinstance(v, h5py.Dataset):
-            yield (path, v)
-        elif isinstance(v, h5py.Group):
-            yield from _iter_datasets_recursive(v, path)
-
-def _is_physical_wavelength(arr: np.ndarray) -> bool:
-    """Return True if arr looks like a physical wavelength grid in Angstroms."""
-    if arr.size < 2:
-        return False
-    # Physical wavelengths start above 1 Å and end below 1e9 Å
-    if arr[0] < 1.0 or arr[-1] > 1e9:
-        return False
-    # Must not be a pure integer index sequence (0,1,2,... or 1,2,3,...)
-    if arr[0] < 2 and np.allclose(arr, np.arange(arr.size, dtype=float), atol=0.5):
-        return False
-    if arr[0] < 2 and np.allclose(arr, np.arange(1, arr.size + 1, dtype=float), atol=0.5):
-        return False
-    # Steps should not all be exactly 1 (dead giveaway for index grid)
-    if np.allclose(np.diff(arr), 1.0, atol=0.01):
-        return False
-    return True
-
 
 def _recover_wavelengths(f, spec_g, expected_len=None):
     # 1) direct dataset within spectrum group
@@ -136,7 +111,7 @@ def _recover_wavelengths(f, spec_g, expected_len=None):
     # 5) Fallback: search entire file for a physically plausible wavelength array
     #    Only accept arrays that pass physical wavelength validation.
     if expected_len and expected_len > 1:
-        for path, d in _iter_datasets_recursive(f):
+        for d in _iter_datasets(f):
             try:
                 arr = np.array(d[()]).astype(float).ravel()
             except (TypeError, ValueError):
