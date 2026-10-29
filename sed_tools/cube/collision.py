@@ -115,9 +115,8 @@ def match_filter_value(
             if abs(float(v) - spec_float) < 1e-9:
                 return v, None
         sorted_vals = sorted(float_vals, key=float)
-        dists = [(abs(float(v) - spec_float), v) for v in sorted_vals]
-        dists.sort()
-        nearest = [str(d[1]) for d in dists[:2]]
+        dists = sorted((abs(float(v) - spec_float), v) for v in sorted_vals)
+        nearest = [str(v) for _, v in dists[:2]]
         return None, (
             f"No exact match for {param_name}={spec_stripped}. "
             f"Available values include: {', '.join(str(v) for v in sorted_vals)}. "
@@ -176,30 +175,13 @@ class CollisionConfig:
                 )
                 continue
 
-            value, err = match_filter_value(
-                spec_val, extra_columns[matched_col], matched_col
-            )
+            value, err = match_filter_value(spec_val, extra_columns[matched_col], matched_col)
             if err:
                 errors.append(err)
             else:
                 resolved[matched_col] = value
 
         return resolved, errors
-
-
-def _parse_config_dict(data: Dict[str, Any], source: str) -> CollisionConfig:
-    """Parse a raw TOML dict into a CollisionConfig."""
-    oc = data.get("on_collision", {})
-    strategy = oc.get("strategy", "all-warn")
-
-    filter_specs: Dict[str, str] = {}
-    if strategy == "filter":
-        raw_filter = oc.get("filter", {})
-        if not isinstance(raw_filter, dict):
-            raise ValueError(f"[on_collision.filter] must be a table in {source}")
-        filter_specs = {k: str(v) for k, v in raw_filter.items()}
-
-    return CollisionConfig(strategy=strategy, filter_specs=filter_specs, source=source)
 
 
 _DEFAULTS_FILENAME  = "sed_tools.defaults"
@@ -232,7 +214,15 @@ def load_config(
         data = merge_config(data, override_dict)
         source = "Python API dict"
 
-    return _parse_config_dict(data, source)
+    oc = data.get("on_collision", {})
+    strategy = oc.get("strategy", "all-warn")
+    filter_specs: Dict[str, str] = {}
+    if strategy == "filter":
+        raw_filter = oc.get("filter", {})
+        if not isinstance(raw_filter, dict):
+            raise ValueError(f"[on_collision.filter] must be a table in {source}")
+        filter_specs = {k: str(v) for k, v in raw_filter.items()}
+    return CollisionConfig(strategy=strategy, filter_specs=filter_specs, source=source)
 
 
 def copy_global_config_to_model(root_dir: Path, model_dir: Path) -> None:
@@ -251,7 +241,7 @@ def write_default_config(root_dir: Path, overwrite: bool = False) -> Path:
     if path.exists() and not overwrite:
         return path
 
-    content = """\
+    path.write_text("""\
 # sed_tools.defaults
 # Global on-collision configuration for precompute_flux_cube.
 # Per-model overrides go in <model_dir>/mesa_config.toml (same schema).
@@ -276,8 +266,7 @@ strategy = "split"
 # alpha = "min"          # min | max | exact value e.g. "0.4"
 # f_sed = "2.0"
 # composition = "h-rich" # string: case-insensitive
-"""
-    path.write_text(content)
+""")
     return path
 
 
