@@ -289,6 +289,7 @@ def test_installed_copy_describes_installed_curves(root, njm):
     local = json.loads(catalogue_files()["filters/Fac/Cam/info.json"])
     local["description"] = "As installed."
     (root / "Fac" / "Cam").mkdir(parents=True)
+    (root / "Fac" / "Cam" / "g.dat").write_text("Wavelength,Transmission\n4000,1\n6000,1\n")  # an installed copy holds curves
     (root / "Fac" / "Cam" / "info.json").write_text(json.dumps(local))
     assert Filters.info("Fac", "Cam", filter_root=root)["description"] == "As installed."
     assert Filters.info("Fac", "Cam", filter_root=root, refresh=True)["description"] == "A camera."

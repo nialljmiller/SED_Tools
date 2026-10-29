@@ -67,6 +67,7 @@ def test_unreadable_installed_catalogue_file_is_refused(tmp_path):
 
     root = tmp_path / "filters"
     (root / "Fac" / "Cam").mkdir(parents=True)
+    (root / "Fac" / "Cam" / "g.dat").write_text("Wavelength,Transmission\n4000,1\n6000,1\n")  # an installed copy holds curves
     (root / "Fac" / "Cam" / "properties.json").write_text("{not json")
     catalogue = FilterCatalogue(root, mirror=_down_mirror())
     with pytest.raises(CatalogueError, match="properties.json is unreadable"):
@@ -93,17 +94,16 @@ def test_offline_catalogue_uses_its_cache_without_a_warning(tmp_path, caplog):
     assert caplog.text == ""
 
 
-def test_vega_path_without_an_index_is_reported(tmp_path, caplog):
+def test_vega_path_without_an_index_stops(tmp_path):
     import time
 
-    from sed_tools.filter_catalogue import VEGA_URL, FilterCatalogue
+    from sed_tools.filter_catalogue import VEGA_URL, CatalogueError, FilterCatalogue
 
     catalogue = FilterCatalogue(tmp_path / "filters", mirror=_down_mirror())
     catalogue._mirror.is_available = lambda: True
-    vega = _cached(catalogue, VEGA_URL, "WAVELENGTH,FLUX\n5000,1e-9\n", checked=time.time())
-    with caplog.at_level(logging.WARNING):
-        assert catalogue.vega() == vega
-    assert "Cannot read NJM's index.json" in caplog.text and VEGA_URL in caplog.text
+    _cached(catalogue, VEGA_URL, "WAVELENGTH,FLUX\n5000,1e-9\n", checked=time.time())
+    with pytest.raises(CatalogueError, match="index.json"):
+        catalogue.vega()  # the Vega spectrum's path is NJM's index.json's to say
 
 
 # ----------------------------------------------------------------------
@@ -203,7 +203,7 @@ def test_published_reports_each_fallback_and_every_source_failure(tmp_path, monk
         library.published("Fac", "Cam")
     assert str(info.value) == ("No source can provide Fac/Cam: NJM: the mirror is unavailable; "
                                "original source: team site offline; SVO: SVO index down")
-    assert "NJM cannot provide Fac/Cam (the mirror is unavailable); trying its original-source builder" in caplog.text
+    assert "NJM cannot provide" not in caplog.text  # an NJM outage is the NJM client's one notice per process
     assert "The original source cannot provide Fac/Cam (team site offline); trying SVO" in caplog.text
 
 
@@ -379,7 +379,8 @@ def test_svo_failure_while_checking_a_mirror_curve_keeps_the_curve(tmp_path, njm
     with caplog.at_level(logging.WARNING):
         assert grabber.download_filters("Fac", "Cam") == 1
     assert (tmp_path / "Fac/Cam/g.dat").read_text() == CURVE
-    assert "could not check its header against SVO (SVO Filter Profile Service unreachable)" in caplog.text
+    assert ("kept the mirror's headers of g.dat, which could not be checked against SVO "
+            "(SVO Filter Profile Service unreachable)") in caplog.text
 
 
 # ----------------------------------------------------------------------

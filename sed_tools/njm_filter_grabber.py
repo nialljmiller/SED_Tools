@@ -35,11 +35,13 @@ NJM_CONNECT_TIMEOUT = 5.0
 NJM_PAUSE = 300
 #: Seconds a process keeps NJM's index.json before reading it again.
 NJM_INDEX_MAX_AGE = 3600
-FALLBACK_SOURCES = "installed copies, the original-source builders and SVO"
 
 
 def plain_reason(reason) -> str:
     """Why NJM could not be reached, in a few plain words rather than a raw exception's text."""
+    status = _status(reason)
+    if status is not None:  # NJM answered, but refused (a burst block, say)
+        return f"HTTP {status}"
     text = str(reason)
     if len(text) <= 60 and "(" not in text:
         return text
@@ -184,17 +186,16 @@ class NJMFilterGrabber:
             return True
         if response.status_code not in RETRY_STATUSES:
             return self._unavailable(f"HTTP {response.status_code}")
-        logger.warning("NJM answered %s; confirming with index.json (a burst block lifts within about a minute)",
-                       response.status_code)
         try:
             response = self._get(f"{self.base_url}/index.json", timeout=10)
         except requests.RequestException as exc:
             return self._unavailable(exc)
         try:
             data = response.json()
-            self._index_data = data if isinstance(data, dict) else None
         except ValueError:
-            pass  # the mirror answered; _index fetches the index again
+            data = None  # the mirror answered; _index fetches the index again
+        if isinstance(data, dict) and isinstance(data.get("filters"), dict):
+            self._index_data = data
         return True
 
     def _unavailable(self, reason) -> bool:
@@ -256,14 +257,12 @@ class NJMFilterGrabber:
                 _STATE.reported = False  # NJM answers: a later outage is news again
                 return response
             except requests.RequestException as exc:
-                status = getattr(getattr(exc, "response", None), "status_code", None)
+                status = _status(exc)
                 if status is not None and status not in RETRY_STATUSES:
                     raise
                 if attempt == 2:
                     if status is None or status in BLOCKED_STATUSES:
-                        self._pause(f"{status or type(exc).__name__} for {url}",
-                                    f"NJM mirror {self.base_url} stopped answering ({exc}); it is not asked "
-                                    f"again for {NJM_PAUSE // 60} minutes, and filters come from {FALLBACK_SOURCES}")
+                        self._unavailable(exc)
                     raise
                 delay = (1, 60)[attempt] if status == 403 else (1, 3)[attempt]
                 if status == 429:
@@ -281,9 +280,7 @@ class NJMFilterGrabber:
     def _write_curve(text: str, target: Path) -> None:
         """Write a served curve whole (an interrupted write leaves no partial file) and migrate it."""
         target.parent.mkdir(parents=True, exist_ok=True)
-        tmp = target.with_name(f".{target.name}.part")
-        tmp.write_text(text, encoding="utf-8")
-        os.replace(tmp, target)
+        _write_atomic(target, text)
         migrate_filter_file(target)
 
     @staticmethod
@@ -345,8 +342,6 @@ class NJMFilterGrabber:
         A failure is warned about once per grabber, followed by ``unreadable``
         (what is done without it).
         """
-        if self._index_data is not None and not isinstance(self._index_data.get("filters"), dict):
-            self._index_data = None  # what the availability check fetched is no filter index
         if self._index_data is None:
             with _STATE.lock:
                 if _STATE.index is not None and monotonic() - _STATE.index_read < NJM_INDEX_MAX_AGE:
@@ -491,7 +486,8 @@ class NJMFilterGrabber:
         """Download an instrument's curves and what comes with them, and report every failure.
 
         ``listed`` is empty when NJM does not serve the instrument.  Raises
-        ``requests.RequestException`` only when NJM cannot say which curves it serves.
+        ``requests.RequestException`` when NJM cannot say which curves it serves,
+        and RuntimeError when its index file cannot be saved beside them.
         ``output_dir`` is where they go when the instrument is installed under
         another spelling (``Gemini/GMOS-N`` for NJM's ``Gemini/GMOS_N``); by
         default ``<base_dir>/<facility>/<instrument>``.
@@ -546,7 +542,7 @@ class NJMFilterGrabber:
         and neither it nor NJM's record of the instrument has changed since
         (:meth:`_verified_curves`).
         """
-        downloaded, skipped, failed, njms = 0, 0, [], []
+        downloaded, skipped, failed, njms, replaced, untagged = 0, 0, [], [], [], {}
         installed = any((output_dir / curve_file(name)).is_file() for name in filters)
         trusted = self._verified_curves(facility, instrument, output_dir) if installed else set()
         for number, filter_name in enumerate(filters):
@@ -566,14 +562,14 @@ class NJMFilterGrabber:
                 failed.append(f"{filter_name}: {e}")
                 continue
             if output_path.exists() and _same_curve(output_path, served):
-                self._tag(output_path, facility)
+                self._tag(output_path, facility, untagged)
                 skipped += 1
                 njms.append(output_path.name)
                 continue
             if output_path.exists():
-                logger.warning("%s differs from NJM's copy; replacing it with NJM's", output_path)
+                replaced.append(output_path.name)
             self._write_curve(served, output_path)
-            result = self._tag(output_path, facility)
+            result = self._tag(output_path, facility, untagged)
             if result is not None and result.source == SOURCE_ASSUMED:
                 print(f"  [warn] {filter_name}: detector type unverified, assuming {result.detector_type}"
                       + (f" ({result.note})" if result.note else ""))
@@ -581,6 +577,11 @@ class NJMFilterGrabber:
             njms.append(output_path.name)
         if njms:
             self._record_verified(facility, instrument, output_dir, njms)
+        if replaced:
+            logger.warning("%s: replaced %s with NJM's copies, which differ", output_dir, ", ".join(replaced))
+        if untagged:
+            logger.warning("%s: kept the mirror's headers of %s, which could not be checked against SVO (%s)",
+                           output_dir, ", ".join(untagged), "; ".join(dict.fromkeys(untagged.values())))
         return downloaded, skipped, failed
 
     # ------------------------------------------------------------------
@@ -609,21 +610,28 @@ class NJMFilterGrabber:
             return None
         return json.dumps({"filters": record.get("filters"), "size_bytes": record["size_bytes"]}, sort_keys=True)
 
+    @staticmethod
+    def _saved_verified(path: Path, record: str) -> Dict[str, int]:
+        """The ``{curve file: size}`` saved at ``path`` under NJM's ``record``; empty for another record.
+
+        A file that cannot be read counts as empty: every installed curve is
+        then checked against NJM's copy (a correct result, only slower), and
+        the file is written afresh.
+        """
+        if not path.is_file():
+            return {}
+        try:
+            saved = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            return {}
+        return saved["files"] if saved.get("njm_record") == record else {}
+
     def _verified_curves(self, facility: str, instrument: str, output_dir: Path) -> Set[str]:
         """Installed curve files an earlier download found to be NJM's, unchanged since on both sides."""
         record = self._njm_record(facility, instrument)
-        path = self._verified_path(facility, instrument)
-        if record is None or not path.is_file():
+        if record is None:
             return set()
-        try:
-            saved = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, ValueError) as exc:
-            logger.warning("%s is unreadable (%s); every installed curve of %s/%s is checked against NJM's copy",
-                           path, exc, facility, instrument)
-            return set()
-        files = saved.get("files") if isinstance(saved, dict) and saved.get("njm_record") == record else None
-        if not isinstance(files, dict):
-            return set()
+        files = self._saved_verified(self._verified_path(facility, instrument), record)
         return {name for name, size in files.items()
                 if (output_dir / name).is_file() and (output_dir / name).stat().st_size == size}
 
@@ -633,46 +641,37 @@ class NJMFilterGrabber:
         if record is None:
             return
         path = self._verified_path(facility, instrument)
-        files = {name: (output_dir / name).stat().st_size for name in names}
-        if path.is_file():
-            try:
-                saved = json.loads(path.read_text(encoding="utf-8"))
-            except (OSError, ValueError):
-                saved = {}  # rewritten below
-            if isinstance(saved, dict) and saved.get("njm_record") == record and isinstance(saved.get("files"), dict):
-                files = {**saved["files"], **files}
+        files = {**self._saved_verified(path, record), **{name: (output_dir / name).stat().st_size for name in names}}
         path.parent.mkdir(parents=True, exist_ok=True)
-        tmp = path.with_name(f".{path.name}.part")
-        tmp.write_text(json.dumps({"njm_record": record, "files": files}, indent=1, sort_keys=True) + "\n",
-                       encoding="utf-8")
-        os.replace(tmp, path)
+        _write_atomic(path, json.dumps({"njm_record": record, "files": files}, indent=1, sort_keys=True) + "\n")
 
-    def _tag(self, path: Path, facility: str):
+    def _tag(self, path: Path, facility: str, untagged: Dict[str, str]):
         """Fill in what the curve's header lacks from SVO; a no-op for curves the mirror tagged fully.
 
         Returns the :class:`~sed_tools.filter_metadata.DetectorTypeResult`, or
-        None when SVO could not be asked; the mirror's header is then kept as
-        served, with a warning.
+        None when SVO could not be asked: the mirror's header is then kept as
+        served, and why is added to ``untagged`` (file name -> reason).
         """
         try:
             return tag_filter_file(path, client=self._metadata_client, facility=facility)
         except (requests.RequestException, ValueError) as exc:
-            logger.warning("%s: could not check its header against SVO (%s); kept the mirror's header", path, exc)
+            untagged[path.name] = str(exc)
             return None
 
-    def _save_index(self, facility: str, instrument: str, output_dir: Path) -> Optional[List[str]]:
-        """Save the mirror's index of the instrument and return its lines; None when it cannot be read.
+    def _save_index(self, facility: str, instrument: str, output_dir: Path) -> List[str]:
+        """Save the mirror's index of the instrument and return its lines.
 
         Only the mirror (or its manifest) can declare the full filter set: an
         index built from the files seen so far would certify a partial set.
         The file is named after ``output_dir``, as MESA looks for it there.
+        RuntimeError, naming the folder, when NJM's index cannot be fetched:
+        without it MESA cannot read the set.
         """
         try:
             response = self._get(f"{self.filters_url}/{facility}/{instrument}/{instrument}", timeout=10)
         except requests.RequestException as exc:
-            logger.warning("NJM index unavailable for %s/%s (%s); completeness cannot be verified",
-                           facility, instrument, exc)
-            return None
+            raise RuntimeError(f"NJM's index of {facility}/{instrument} could not be saved in {output_dir} "
+                               f"({exc}); MESA cannot read the set without it, so run again") from exc
         (output_dir / output_dir.name).write_text(response.text, encoding="utf-8")
         return [line.strip() for line in response.text.splitlines() if line.strip()]
 
@@ -790,8 +789,6 @@ class NJMFilterGrabber:
             if _status(exc) == 404:
                 return None
             raise
-        if response.status_code != 200:
-            return None
         try:
             manifest = response.json()
             parsed = InstrumentManifest.from_dict(manifest)
@@ -908,9 +905,8 @@ def _update_atmosphere_manifest(site_dir: Path, served: str) -> None:
     Rows (``entries``, ``unstated``) for installed files NJM does not list
     stay: points built here with SkyCalc, say.  A row NJM describes otherwise
     stays as installed when its grid file is installed, since it describes
-    that file.
-    Every other field takes NJM's value.  A change is warned about, naming
-    the fields; nothing is written when the manifest is already NJM's.
+    that file, with a warning naming it.  Every other field takes NJM's value;
+    nothing is written when the manifest is already NJM's.
     """
     path = site_dir / "manifest.json"
     if not path.is_file():
@@ -934,11 +930,11 @@ def _update_atmosphere_manifest(site_dir: Path, served: str) -> None:
             merged[key] = rows
     if merged == installed:
         return
-    changed = sorted(key for key in set(merged) | set(installed) if merged.get(key) != installed.get(key))
     _write_atomic(path, served if merged == latest else json.dumps(merged, indent=2, sort_keys=True) + "\n")
-    logger.warning("Updated the %s atmosphere's manifest to NJM's (%s)%s", site_dir.name, ", ".join(changed),
-                   f"; kept the installed description of {', '.join(kept)}, which NJM describes otherwise "
-                   "(remove those files to fetch NJM's)" if kept else "")
+    if kept:
+        logger.warning("Updated the %s atmosphere's manifest to NJM's, but kept the installed description of %s, "
+                       "which NJM describes otherwise (remove those files to fetch NJM's)",
+                       site_dir.name, ", ".join(kept))
 
 
 def _write_atomic(path: Path, text: str) -> None:

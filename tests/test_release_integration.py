@@ -137,7 +137,8 @@ def test_a_reachable_mirror_is_checked_once_and_its_ssl_fallback_is_kept(tmp_pat
     assert caplog.text.count("could not be verified") == 1
 
 
-def test_a_catalogue_failure_pauses_njm_for_later_catalogues(tmp_path):
+def test_an_error_answer_to_one_catalogue_is_not_an_outage_for_the_next(tmp_path):
+    # Only the NJM client pauses NJM (no answer, or a block that does not lift); an error answer does not.
     from sed_tools.filter_catalogue import CatalogueError, FilterCatalogue
 
     asked = []
@@ -147,11 +148,10 @@ def test_a_catalogue_failure_pauses_njm_for_later_catalogues(tmp_path):
         raise requests.HTTPError("503", response=SimpleNamespace(status_code=503))
 
     mirror = SimpleNamespace(base_url="https://njm.invalid/sed_tools", is_available=lambda: True, _get=get)
-    with pytest.raises(CatalogueError, match="Cannot fetch index.json"):
-        FilterCatalogue(tmp_path / "filters", mirror=mirror).index()
-    with pytest.raises(CatalogueError, match="index.json is not cached and NJM is unreachable"):
-        FilterCatalogue(tmp_path / "filters", mirror=mirror).index()
-    assert len(asked) == 1
+    for _ in range(2):
+        with pytest.raises(CatalogueError, match="Cannot fetch index.json"):
+            FilterCatalogue(tmp_path / "filters", mirror=mirror).index()
+    assert len(asked) == 2
 
 
 # ----------------------------------------------------------------------
@@ -223,7 +223,7 @@ def test_a_changed_curve_or_a_changed_njm_record_is_checked_again(tmp_path, grab
         local_change = grabber(_njm_set())
         local_change._download_set("Fac", "Cam")
     assert local_change.session.curves_requested() == ["r.dat"] and r.read_text() == CURVE
-    assert f"{r} differs from NJM's copy" in caplog.text
+    assert f"{r.parent}: replaced r.dat with NJM's copies, which differ" in caplog.text
 
     njm_filter_grabber._STATE.reset()  # a later process, which reads NJM's index.json again
     njm_change = grabber(_njm_set(size_bytes=151))  # NJM's set changed since
@@ -636,6 +636,7 @@ def test_the_catalogue_reports_njm_the_cache_or_an_installed_copy(legacy_sources
 
     installed = legacy_sources.root / "Herschel" / "PACS"
     installed.mkdir(parents=True)
+    (installed / "b.dat").write_text("Wavelength,Transmission\n4000,1\n6000,1\n")  # an installed copy holds curves
     (installed / "info.json").write_text(json.dumps({"description": "installed", "bands": {"b": {}}}))
     assert later.info("Herschel", "PACS")["description"] == "installed"
     assert later.origin("Herschel", "PACS", "info") == {"source": "installed", "checked": None,

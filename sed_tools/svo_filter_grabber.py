@@ -18,7 +18,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from .filter_components import InstrumentManifest
-from .filter_metadata import (ENERGY, SOURCE_ASSUMED, SOURCE_SVO, SVO_FPS_URL_ENV, SVOMetadataClient,
+from .filter_metadata import (ENERGY, SOURCE_ASSUMED, SOURCE_SVO, SVO_ALTERNATIVES, SVOMetadataClient,
                               SVOUnreachableError, svo_components_header, svo_fps_url, svo_get, write_filter_file)
 from .ui_utils import prompt_choice
 from .parsing import parse_multi_selection
@@ -315,9 +315,8 @@ class SVOFilterBrowser:
             raise SVOUnreachableError(_STATE.pause(str(exc))) from exc
         except requests.Timeout as exc:  # connected, but SVO sent no answer
             raise SVOUnreachableError(_STATE.pause(
-                f"SVO Filter Profile Service did not answer {url} in time ({type(exc).__name__}). Use the NJM "
-                f"mirror or the original-source builders instead, or set {SVO_FPS_URL_ENV} to another FPS "
-                f"endpoint.")) from exc
+                f"SVO Filter Profile Service did not answer {url} in time ({type(exc).__name__}). "
+                f"{SVO_ALTERNATIVES}")) from exc
         except requests.RequestException as exc:
             raise RuntimeError(f"Failed to fetch SVO index: {exc}") from exc
         return BeautifulSoup(resp.text, "html.parser")

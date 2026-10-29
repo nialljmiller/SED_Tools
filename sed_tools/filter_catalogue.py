@@ -28,6 +28,7 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 from email.utils import formatdate
+from functools import cached_property
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Optional, Sequence, Tuple, Union
 from urllib.parse import quote
@@ -88,9 +89,6 @@ class FilterCatalogue:
     ``offline=True`` reads installed and cached copies only.
     """
 
-    #: Until when (time.time()) NJM is not asked after a failed request, for every catalogue in the process.
-    _unreachable_until = 0.0
-
     def __init__(self, filter_root: Union[str, Path], *, mirror: Any = None, offline: bool = False,
                  max_workers: int = MAX_CONCURRENT, index_max_age: float = INDEX_MAX_AGE):
         self.filter_root = Path(filter_root)
@@ -124,12 +122,12 @@ class FilterCatalogue:
     def _online_mirror(self, *, have_copy: bool = False):
         """The mirror client, or ``None`` to use the cached copy instead.
 
-        A mirror whose request failed in the last five minutes is not asked again.
-        One that failed its availability check is asked only for files not yet
-        cached: that check also fails during NJM's brief burst blocks, which the
-        request retries wait out.
+        A mirror that is not available (its check failed, or it stopped
+        answering in the last five minutes, for any client in the process) is
+        used only for files not yet cached: the check also fails during NJM's
+        brief burst blocks, which the request retries wait out.
         """
-        if self.offline or time.time() < self._unreachable_until:
+        if self.offline:
             return None
         with self._mirror_lock:  # fetch threads must not each build a client
             if self._mirror is None:
@@ -196,9 +194,8 @@ class FilterCatalogue:
             status = getattr(getattr(exc, "response", None), "status_code", None)
             if status == 404:
                 raise CatalogueError(f"NJM does not serve {rel}") from exc
-            FilterCatalogue._unreachable_until = time.time() + 300
             if path.is_file():
-                logger.warning("NJM unreachable (%s); using the cached %s", exc, rel)
+                logger.warning("Cannot ask NJM (%s); using the cached %s, which may be out of date", exc, rel)
                 self._came_from(rel, "cache", meta.get("checked"), njm_unreachable=True)
                 return path
             if status is None:  # no answer: the mirror client has said why, once
@@ -286,16 +283,10 @@ class FilterCatalogue:
     # Per-instrument files
     # ------------------------------------------------------------------
     def _installed(self, facility: str, instrument: str, kind: str) -> Optional[Path]:
-        """The copy kept beside installed curves, if any (matched without regard to case)."""
-        direct = self.filter_root / facility / instrument / f"{kind}.json"
-        if direct.is_file():
-            return direct
-        if self.filter_root.is_dir():
-            for path in self.filter_root.glob(f"*/*/{kind}.json"):
-                if (path.parent.parent.name.casefold(), path.parent.name.casefold()) == (
-                        facility.casefold(), instrument.casefold()):
-                    return path
-        return None
+        """The copy kept beside installed curves (see :meth:`_installed_directory`), if any."""
+        directory = self._installed_directory(facility, instrument)
+        path = directory / f"{kind}.json" if directory is not None else None
+        return path if path is not None and path.is_file() else None
 
     def instrument_file(self, facility: str, instrument: str, kind: str, *,
                         prefer_installed: bool = True, refresh: bool = False) -> dict:
@@ -371,17 +362,7 @@ class FilterCatalogue:
                 # NJM's current file may describe other curves than the installed ones.
                 raise CatalogueError(f"{installed} is unreadable ({exc}); repair or remove it, or pass "
                                      "refresh=True to read NJM's current file instead") from exc
-        try:
-            index = self.index()
-        except CatalogueError:
-            if self.offline:
-                cached = self.cache_root / "filters" / facility / instrument / f"{kind}.json"
-                if cached.is_file():
-                    data = self._json_object(cached.read_text(encoding="utf-8"))
-                    self._came_from((facility, instrument, kind), "cache",
-                                    self._read_meta(cached).get("checked"))
-                    return data
-            raise
+        index = self.index()
         entry = self.resolve(facility, instrument)
         name = entry[kind]
         if not name:
@@ -434,26 +415,24 @@ class FilterCatalogue:
             path = None
         if path is not None:
             yield _index_bands(path.read_text(encoding="utf-8"))
-        from .filter_library import load_instrument_catalogue
-        from .component_sources.catalog import match_name
+        bundled = self._library._bundled_record(facility, instrument)
+        if bundled is not None:
+            yield set(bundled["bands"])
 
-        bundled = load_instrument_catalogue()
-        fac = match_name(facility, bundled)
-        inst = match_name(instrument, bundled[fac]["instruments"]) if fac else None
-        if inst:
-            yield set(bundled[fac]["instruments"][inst]["bands"])
+    @cached_property
+    def _library(self):
+        from .filter_library import FilterLibrary
+
+        return FilterLibrary(self.filter_root)
 
     def _installed_directory(self, facility: str, instrument: str) -> Optional[Path]:
-        """The installed directory of an instrument (matched without regard to case), if any."""
-        direct = self.filter_root / facility / instrument
-        if direct.is_dir():
-            return direct
-        if self.filter_root.is_dir():
-            for path in self.filter_root.glob("*/*"):
-                if path.is_dir() and (path.parent.name.casefold(), path.name.casefold()) == (
-                        facility.casefold(), instrument.casefold()):
-                    return path
-        return None
+        """The installed directory of an instrument, found as Filters.fetch finds it, or None.
+
+        See :meth:`~sed_tools.filter_library.FilterLibrary.installed_directory`:
+        names match ignoring case and punctuation, and two installed spellings
+        raise ComponentError unless one is spelled exactly as asked.
+        """
+        return self._library.installed_directory(facility, instrument)
 
     def properties(self, facility: str, instrument: str, **kwargs) -> dict:
         """The instrument's ``properties.json``: ``{"bands": {band: {...}}, "definitions": {...}}``."""
@@ -495,13 +474,8 @@ class FilterCatalogue:
 
     def vega(self, *, refresh: bool = False) -> Path:
         """Path to the cached Vega spectrum NJM's properties use (``vega/vega_flam.csv``, Å and f_λ)."""
-        try:
-            definitions = self.index()["filters"].get("properties_definitions") or {}
-            rel = (definitions.get("vega_spectrum") or {}).get("url") or VEGA_URL
-        except CatalogueError as exc:
-            logger.warning("Cannot read NJM's index.json (%s); using the Vega spectrum at its usual path, %s",
-                           exc, VEGA_URL)
-            rel = VEGA_URL
+        definitions = self.index()["filters"].get("properties_definitions") or {}
+        rel = (definitions.get("vega_spectrum") or {}).get("url") or VEGA_URL
         path = self._fetch(rel, max_age=30 * 24 * 3600, refresh=refresh)
         if path is None:
             raise CatalogueError(self._not_cached(rel))

@@ -118,7 +118,7 @@ def test_njm_product_from_svo_is_installed_under_njm_names_and_says_what_is_miss
                           "when NJM is reachable to complete it (NJM: the mirror is unavailable).\n"
                           f"Installed in: {directory}"]
     assert all(len(line) <= 80 for line in incomplete[0].splitlines()[:-1])  # all but the folder's line
-    assert "trying SVO" in caplog.text
+    assert "trying SVO" not in caplog.text  # NJM's outage is the NJM client's one notice per process
     assert sorted(p.name for p in directory.glob("*.dat")) == ["G.dat", "Gbp.dat", "Grp.dat", "Grvs.dat"]
     assert read_filter_header(directory / "Gbp.dat")["FilterID"] == "GAIA/GAIA3.Gbp"  # where the curve came from
     assert json.loads((directory / "manifest.json").read_text())["bands"] == GAIA["GAIA"]["bands"]
@@ -186,7 +186,8 @@ def test_fetch_from_njm_later_replaces_svo_curves_that_differ_and_leaves_no_dupl
         assert library.published("GAIA", "GAIA") == root / "GAIA" / "GAIA"
     directory = root / "GAIA" / "GAIA"
     assert sorted(p.stem for p in directory.glob("*.dat")) == bands
-    assert caplog.text.count("differs from NJM's copy; replacing it with NJM's") == 4  # said, not silent
+    assert caplog.text.count("with NJM's copies, which differ") == 1  # said once, not silent
+    assert "replaced G.dat, Gbp.dat, Grp.dat, Grvs.dat with NJM's copies" in caplog.text
     assert FilterLibrary.published_complete(directory)
     verified = json.loads((root.parent / "cache" / "njm" / "filters" / "GAIA" / "GAIA" /
                            "verified_curves.json").read_text())
@@ -230,7 +231,7 @@ def test_a_builder_that_would_write_beside_an_installed_spelling_is_not_run(tmp_
     with caplog.at_level(logging.WARNING), pytest.raises(ComponentError) as raised:
         library.published("Herschel", "PACS")
     assert f"its builder writes Herschel/PACS, which would be a second copy beside {legacy}" in str(raised.value)
-    assert "The original source of Herschel/PACS is not used" in caplog.text
+    assert "trying SVO (the original source is not used: its builder writes Herschel/PACS" in caplog.text
     assert sorted(p.name for p in (root / "Herschel").iterdir()) == ["Pacs_"]
 
 
@@ -370,6 +371,7 @@ def test_installed_index_decides_which_bands_are_archived(tmp_path):
     directory = tmp_path / "filters" / "GAIA" / "DR2"
     directory.mkdir(parents=True)
     (directory / "DR2").write_text("BP.dat\nG.dat\n")
+    (directory / "BP.dat").write_text("Wavelength,Transmission\n4000,1\n6000,1\n")  # an installed copy holds curves
     (directory / "properties.json").write_text(json.dumps({"bands": {"BP": {}, "G": {}, "G_svo": {}}}))
     catalogue = FilterCatalogue(tmp_path / "filters", offline=True)
     assert list(catalogue.properties("GAIA", "DR2")["archived_bands"]) == ["G_svo"]
@@ -462,7 +464,7 @@ def test_a_stale_installed_atmosphere_takes_njms_manifest_and_keeps_its_grids(tm
         listed = library.atmospheres()["lsst_std"]
     assert listed["citation"] == "lsst/throughputs v1.9.2" and listed["airmass"] == [1.0, 1.2]
     assert (site / "manifest.json").read_text() == served and (site / "am1.20.dat").read_bytes() == grid
-    assert "Updated the lsst_std atmosphere's manifest to NJM's (citation, entries, terms)" in caplog.text
+    assert caplog.text == ""  # a routine update: NJM's citation and terms, a new grid point
     requested = len(library.mirror.session.requested)
     library.atmospheres()  # checked today: only the site list is asked for
     assert library.mirror.session.requested[requested:] == ["atmospheres/"]
