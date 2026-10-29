@@ -119,8 +119,7 @@ def _build_data_products(
 ) -> List[str]:
     """Build the HDF5 bundle, lookup table and flux cube of a downloaded grid; returns what was not done.
 
-    A bundle or cube that lacks spectra beside it (_bundle_shortfall, _flux_cube_shortfall) is rebuilt;
-    a cube left so because ``build_flux_cube`` is False is returned as a problem.
+    A bundle or cube lacking spectra beside it is rebuilt; with ``build_flux_cube`` False such a cube is a problem.
     """
     out_h5 = os.path.join(model_dir, f"{name}_bundle.h5" if src == "msg" else f"{name}.h5")
     stale = None

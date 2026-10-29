@@ -139,11 +139,8 @@ def menu() -> str:
 # ------------ Command-line parser ------------
 
 def _build_parser() -> argparse.ArgumentParser:
-    """The ``sed-tools`` parser; subcommands appear in --help in the order added here.
-
-    Each subcommand's parser is its ``command_parser`` default, so its handler
-    reports a usage error with that subcommand's usage line.
-    """
+    """The ``sed-tools`` parser, subcommands in --help order; each subcommand's parser is its
+    ``command_parser`` default, so its handler's usage errors show that subcommand's usage line."""
     parser = argparse.ArgumentParser(description="SED Tools — spectral grids and photometric filters")
     sub = parser.add_subparsers(dest="cmd", required=False)
     _add_grid_download_parser(sub)
@@ -469,9 +466,8 @@ def _cmd_filters(args, parser):
 
 
 def _atmosphere_error(exc: Exception, args) -> str:
-    """The error of a failed composition with an atmosphere; for an instrument with several sites
-    and no default, in command-line terms (--atmosphere-site).  The site's own errors already say
-    which conditions it has."""
+    """A failed composition's error, in command-line terms (--atmosphere-site) for an instrument with
+    several sites and no default; a site's own errors already say which conditions it has."""
     from ..filters.library import FilterLibrary
 
     if args.atmosphere_site:
@@ -765,11 +761,7 @@ def _print_banner() -> None:
 
 
 def _run_menu() -> int:
-    """Show the menu and run the chosen workflow until the user quits.
-
-    A workflow that fails or is interrupted says why, and the menu is shown
-    again.  Returns 1 if any workflow failed during the session, else 0.
-    """
+    """Run the workflows chosen from the menu until the user quits; 1 if any failed (each says why), else 0."""
     _print_banner()
     flows = {
         "grids": lambda: run_spectra_flow(source="all"),

@@ -125,8 +125,8 @@ def _variants_summary(variants: dict) -> str:
 
 
 def _catalogue_entry(facility: str, instrument: str, base: str, *, offline: bool) -> dict:
-    """NJM's info.json and properties.json for ``filters-info``, and where info.json came from
-    (FilterCatalogue.origin); errors are reported, not raised."""
+    """NJM's info.json and properties.json for ``filters-info``, and info.json's origin; errors are listed,
+    not raised."""
     entry = {"info": None, "properties": None, "errors": [], "origin": None}
     for kind in ("info", "properties"):
         try:
@@ -238,8 +238,7 @@ def _installed_availability(instrument_dir: Path) -> dict:
 
 
 def _has_parts(info: dict) -> bool:
-    """Whether a curve can be built from the instrument's own parts: components, an atmosphere site,
-    or an original-source builder that provides them."""
+    """Whether the instrument's own components, atmosphere site or original-source builder can build a curve."""
     return bool(info["buildable"] or _atmosphere_sites(info)
                 or info["component_availability"]["status"] == "supported")
 
@@ -293,12 +292,7 @@ def _ask_detector_type() -> Optional[str]:
 
 
 def _ask_atmosphere(info: dict, filter_root: Path) -> Optional[Dict]:
-    """The atmosphere to fold in, chosen by number from the instrument's own sites; None for none.
-
-    Asked only when the instrument offers an atmosphere (ground-based, with a
-    site of its own).  Its sites are listed with their source, the generic
-    (model-derived) ones last; Enter keeps the curve without atmosphere.
-    """
+    """The atmosphere to fold in, by number from the instrument's own sites (model-derived ones last); None for none."""
     sites = _atmosphere_sites(info)
     if not sites:
         return None
@@ -407,11 +401,10 @@ def _composable_bands(instrument_dir: Path, request: Dict) -> Tuple[List[str], D
 
 
 def run_filters_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> int:
-    """Browse available instruments; use the API for every download and product.
+    """Browse available instruments, downloading and building through the API.
 
-    A download or build that fails is reported at once, and every one that
-    failed is listed again when browsing ends.  Returns the exit status:
-    1 if anything failed, else 0.
+    A download or build that fails is reported at once and listed again when
+    browsing ends.  Returns the exit status: 1 if anything failed, else 0.
     """
     from ..filters.library import FilterLibrary
 
@@ -538,10 +531,7 @@ def _print_listing_errors(errors: List[str], shown: set) -> None:
 
 
 def _download_every_instrument(library, facilities: List[dict], failures: List[str], shown: set) -> None:
-    """After confirming the count, download every instrument of each facility.
-
-    An incomplete instrument list is a failure too.
-    """
+    """After confirming the count, download every instrument of each facility; an incomplete list is a failure too."""
     listings = []
     for facility in facilities:
         result = library.instruments(facility["key"])
@@ -561,10 +551,8 @@ def _download_every_instrument(library, facilities: List[dict], failures: List[s
 
 
 def _browse_instruments(library, facility_entry: dict, act, *, shown: Optional[set] = None) -> bool:
-    """Pick instruments of one facility, calling ``act(facility_entry, instrument_entry)`` for each.
-
-    ``act`` returns whether to show the instrument list again.  Returns False if the user quit.
-    """
+    """Pick instruments of one facility for ``act(facility_entry, instrument_entry)``, which returns whether to
+    show the list again; False if the user quit."""
     facility = _fetch_key(facility_entry)
     result = library.instruments(facility_entry["key"])
     _print_listing_errors(result["errors"], set() if shown is None else shown)
@@ -593,11 +581,7 @@ def _print_instrument_descriptions(facility: str, instruments: List[dict]) -> No
 
 
 def _offer_download(library, facility_entry: dict, instrument_entry: dict, failures: List[str]) -> bool:
-    """Describe a picked instrument, then download it unless the user declines.
-
-    Returns whether to show the instrument list again: at once when the
-    download is declined, else if the user asks for another instrument.
-    """
+    """Describe a picked instrument and download it unless declined; returns whether to show the list again."""
     facility, instrument, installed = _picked_names(library, facility_entry, instrument_entry)
     _print_pick_summary(library, facility, instrument, instrument_entry, installed)
     if installed is None and input(f"Download {facility}/{instrument}? [Y/n] ").strip().lower().startswith("n"):
@@ -617,8 +601,7 @@ def _show_filter_set(library, facility_entry: dict, instrument_entry: dict, inco
 
 
 def _picked_names(library, facility_entry: dict, instrument_entry: dict) -> Tuple[str, str, Optional[Path]]:
-    """The names to fetch a picked instrument with (the library's ``fetch_key``), and its installed
-    directory when it holds the complete set, else None."""
+    """The ``fetch_key`` names of a picked instrument, and its installed directory if that holds the whole set."""
     facility, instrument = _fetch_key(facility_entry), _fetch_key(instrument_entry)
     try:
         directory = library.installed_directory(facility, instrument)
@@ -641,11 +624,8 @@ _FIELD_WIDTH = 15
 
 
 def _download_origin(library, entry: dict, installed: Optional[Path]) -> str:
-    """Where a download comes from: the installed copy, or the sources the library lists in download order.
-
-    The installed copy's full path is given when it fits the terminal beside
-    the field name, else its place in the filter directory.
-    """
+    """Where a download comes from: the installed copy (its full path if that fits the terminal), or the
+    sources in download order."""
     if installed is not None:
         text = f"installed in {installed}"
         if len(text) > terminal_width() - _FIELD_WIDTH:
@@ -661,11 +641,7 @@ def _download_origin(library, entry: dict, installed: Optional[Path]) -> str:
 
 
 def _pick_summary(target: str, entry: dict, info: dict, catalogue: dict, origin: str) -> List[str]:
-    """The lines of the summary: description, sources, bands, components, atmosphere and licence.
-
-    ``info`` is Filters.available's report and ``catalogue`` _catalogue_entry's,
-    as filters-info shows them; each line is cut with '…' to fit the terminal.
-    """
+    """The summary lines (description, sources, bands, components, atmosphere, licence), each cut to the terminal."""
     width = terminal_width()
     label = lambda name: f"  {name:<{_FIELD_WIDTH - 4}}: "
     field = lambda name, text: cut(label(name) + " ".join(str(text).split()), width)
@@ -719,8 +695,7 @@ def _fetch_instrument(library, facility: str, instrument: str, failures: List[st
                       offer: bool = False) -> None:
     """Download one instrument (then offer a composed product); a failure is printed and recorded.
 
-    This is Filters.fetch with the browsing session's library, so NJM is
-    checked, and an unreachable NJM reported, once per session, not per download.
+    The session's library is used, so an unreachable NJM is checked and reported once per session.
     """
     try:
         directory = library.published(facility, instrument)
@@ -749,12 +724,8 @@ class _FilterSetOption:
 
 
 def _set_curve_count(directory: Path) -> int:
-    """How many curves combine_filter_sets takes from a filter set.
-
-    Those its MESA index file lists (every ``*.dat`` without one), less its
-    manifest's ``archived_bands``; so NJM's ``_svo`` and ``_old`` copies beside
-    a set are not counted.
-    """
+    """How many curves combine_filter_sets takes from a set: those its MESA index lists (every ``*.dat``
+    without one), less ``archived_bands``, so NJM's ``_svo`` and ``_old`` copies are not counted."""
     archived = archived_bands(directory)
     listed = index_listing(directory)
     return sum(1 for path in directory.glob("*.dat")
@@ -830,10 +801,7 @@ def run_filter_combine_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
 
 
 def _availability_errors(info: dict) -> List[str]:
-    """The failures that leave an availability report incomplete.
-
-    A source in ``fallback_from`` (NJM, say, when SVO answered instead) leaves nothing out.
-    """
+    """The failures that leave an availability report incomplete; a source in ``fallback_from`` leaves nothing out."""
     fallback = set(info.get("fallback_from") or ())
     return [message for source, messages in (info.get("sources_failed") or {}).items()
             if source not in fallback for message in messages]
