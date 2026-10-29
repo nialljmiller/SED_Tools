@@ -1,54 +1,25 @@
-#!/usr/bin/env python3
-"""
-ML-Powered SED Generator (PyTorch)
-===================================
+"""SEDGenerator, the engine that makes a whole SED from (Teff, logg, [M/H]) alone, with no input spectrum.
 
-Generates complete Spectral Energy Distributions directly from stellar parameters.
-No input spectrum required - just provide (Teff, logg, [M/H]) and get a full SED.
-
-This is fundamentally different from the SED Completer:
-- Completer: Takes incomplete SED + params → extends to full range
-- Generator: Takes params only → creates complete SED from scratch
-
-Model Storage
--------------
-Each trained model is stored in its own directory:
-    model.pt              - PyTorch state dict
-    config.json           - Architecture, scaler params, wavelength grid
-    training_plots.png    - Loss curves
-    prediction_examples.png - Sample predictions
-
-Usage
------
-    # Training
-    generator = SEDGenerator()
-    generator.train('path/to/library', 'models/my_generator', epochs=200)
-    
-    # Inference
-    generator = SEDGenerator('models/my_generator')
-    wavelength, flux = generator.generate(teff=5500, logg=4.5, meta=0.0)
+A model folder: model.pt, config.json (model_type 'sed_generator', scalers, grid, parameter ranges) and two plots.
+Old import path sed_tools.ml_sed_generator, also run as python -m. The completer engine is ml/completer.py.
 """
 
 import json
 import logging
 import os
-from collections import Counter
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
 from ..cube.fileio import load as load_cube
-from .completer import _training_libraries, _warn_dropped
+from .common import (DEFAULT_WL_MAX, DEFAULT_WL_MIN, DEFAULT_WL_POINTS, action_menu, data_loaders, fit, log_grid, mlp,
+                     model_configs, normalised_params, param_scaler, print_libraries, resample, sample_spectra,
+                     training_libraries)
 from ..ui_utils import (ask_number as _ask_number, ask_numbers as _ask_numbers, banner as _banner,
                        menu_choice as _menu_choice, refused_without, section as _section)
 
 logger = logging.getLogger("sed_tools.ml_sed_generator")
-
-# Default wavelength grid
-DEFAULT_WL_MIN = 100.0       # Angstroms
-DEFAULT_WL_MAX = 100000.0    # Angstroms
-DEFAULT_WL_POINTS = 1000
 
 
 class SEDGeneratorNetwork:
@@ -76,27 +47,11 @@ class SEDGeneratorNetwork:
         dropout : float
             Dropout rate
         """
-        import torch.nn as nn
-        
         self.output_dim = output_dim
         self.hidden_layers = hidden_layers or [512, 512, 256, 256]
         self.dropout = dropout
-        
-        # Build network: 3 inputs → hidden layers → output_dim
-        layers = []
-        prev_dim = 3  # Teff, logg, [M/H]
-        
-        for i, hidden_dim in enumerate(self.hidden_layers):
-            layers.append(nn.Linear(prev_dim, hidden_dim))
-            layers.append(nn.BatchNorm1d(hidden_dim))
-            layers.append(nn.LeakyReLU(0.1))
-            if i < len(self.hidden_layers) - 1:
-                layers.append(nn.Dropout(dropout))
-            prev_dim = hidden_dim
-        
-        layers.append(nn.Linear(prev_dim, output_dim))
-        
-        self.model = nn.Sequential(*layers)
+        # The input is Teff, logg and [M/H]
+        self.model = mlp(3, self.hidden_layers, output_dim, dropout)
         # The same device SEDGenerator.device picks, so inputs and weights agree
         from .common import get_device
         self.device = get_device()
@@ -184,14 +139,7 @@ class SEDGenerator:
             self._device = get_device()
         return self._device
     
-    def _create_wavelength_grid(
-        self,
-        min_wl: float = DEFAULT_WL_MIN,
-        max_wl: float = DEFAULT_WL_MAX,
-        n_points: int = DEFAULT_WL_POINTS,
-    ) -> np.ndarray:
-        """Create logarithmic wavelength grid."""
-        return np.logspace(np.log10(min_wl), np.log10(max_wl), n_points)
+    _create_wavelength_grid = staticmethod(log_grid)
     
     def _load_flux_cube(self, library_path: str):
         """Load flux cube from binary file."""
@@ -202,15 +150,7 @@ class SEDGenerator:
         library_path: str,
         max_samples: int = 10000,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """
-        Prepare training data from flux cube.
-        
-        Returns
-        -------
-        params : (N, 3) array of [teff, logg, meta]
-        flux : (N, n_wavelengths) array
-        masks : (N, n_wavelengths) validity masks
-        """
+        """params (N, 3: teff, logg, meta), flux and validity masks (N, n_wavelengths), float32, from the flux cube."""
         print("Loading flux cube...")
         teff_grid, logg_grid, meta_grid, wavelengths, flux_cube = self._load_flux_cube(library_path)
         
@@ -222,36 +162,13 @@ class SEDGenerator:
         
         self.wavelength_grid = self._create_wavelength_grid()
         
-        params_list = []
-        flux_list = []
-        masks_list = []
-        dropped = Counter()
-        
         n_samples = min(max_samples, total_seds)
-        indices = np.random.permutation(total_seds)[:n_samples]
-        
         print(f"  Processing {n_samples} SEDs...")
-        
-        for idx in indices:
-            i_t = idx // (nl * nm)
-            remainder = idx % (nl * nm)
-            i_l = remainder // nm
-            i_m = remainder % nm
-            
-            # The cube is stored as [nw, nm, nl, nt]
-            reason, sample = self._training_sample(flux_cube[:, i_m, i_l, i_t], wavelengths)
-            if reason:
-                dropped[reason] += 1
-                continue
-            
-            flux_interp, valid_mask = sample
-            params_list.append([teff_grid[i_t], logg_grid[i_l], meta_grid[i_m]])
-            flux_list.append(flux_interp)
-            masks_list.append(valid_mask)
-        
-        _warn_dropped(dropped, len(indices), library_path)
-        if len(params_list) == 0:
-            raise ValueError(f"No valid training samples found in {library_path}")
+        params_list, samples = sample_spectra(
+            teff_grid, logg_grid, meta_grid, flux_cube, n_samples,
+            lambda flux: self._training_sample(flux, wavelengths), library_path,
+        )
+        flux_list, masks_list = zip(*samples)
         
         params = np.array(params_list, dtype=np.float32)
         flux = np.array(flux_list, dtype=np.float32)
@@ -270,23 +187,11 @@ class SEDGenerator:
         flux: np.ndarray,
         wavelengths: np.ndarray,
     ) -> Tuple[Optional[str], Optional[Tuple[np.ndarray, np.ndarray]]]:
-        """
-        Resample one grid spectrum to the model grid.
-        
-        Returns ``(None, (flux, valid_mask))``, or ``(reason, None)`` when the
-        spectrum cannot be used. Points outside the original coverage get
-        flux 1e-30 and mask 0.
-        """
+        """(None, (flux, valid_mask)) on the model grid, 1e-30 and 0 outside the coverage; or (reason, None)."""
         if np.any(flux <= 0) or np.any(~np.isfinite(flux)):
             return "non-positive or non-finite flux", None
         
-        flux_interp = np.interp(self.wavelength_grid, wavelengths, flux, left=np.nan, right=np.nan)
-        valid_mask = (
-            (self.wavelength_grid >= wavelengths.min()) &
-            (self.wavelength_grid <= wavelengths.max()) &
-            np.isfinite(flux_interp) &
-            (flux_interp > 0)
-        )
+        flux_interp, valid_mask = resample(self.wavelength_grid, wavelengths, flux)
         if valid_mask.sum() < len(self.wavelength_grid) * 0.3:
             return "less than 30% of the model grid covered", None
         
@@ -336,8 +241,6 @@ class SEDGenerator:
         -------
         history : dict with 'train_loss' and 'val_loss'
         """
-        from .common import data_loaders, fit
-        
         train_set, val_set = self._training_split(library_path, max_samples)
         p_val, f_val, m_val = val_set
         train_loader, val_loader = data_loaders(train_set, val_set, batch_size)
@@ -374,13 +277,8 @@ class SEDGenerator:
         library_path: str,
         max_samples: int,
     ) -> Tuple[Tuple[np.ndarray, np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray, np.ndarray]]:
-        """
-        Prepare and normalise the training data and split it 80/20.
-
-        Returns the training and validation sets, each as normalised
-        (params, flux, masks). Also used by ml_optimized.AutoTrainer, so its
-        trials see the data train() does.
-        """
+        """The normalised (params, flux, masks) training and validation sets, split 80/20.
+        AutoTrainer (ml/tuning.py) uses it too, so its trials see the data train() does."""
         from sklearn.model_selection import train_test_split
 
         params, flux, masks = self._prepare_training_data(library_path, max_samples)
@@ -402,11 +300,7 @@ class SEDGenerator:
         masks: np.ndarray,
         library_path: str,
     ) -> Tuple[np.ndarray, np.ndarray]:
-        """
-        Fit ``self.scaler_params`` and return the normalised parameters and log10 fluxes.
-        
-        The flux scaler uses valid points only. Both arrays are float32.
-        """
+        """Fit self.scaler_params (the flux scaler on valid points only); the normalised parameters and log10 fluxes."""
         print("Normalizing data...")
         flux_log = np.log10(np.maximum(flux, 1e-30))
         
@@ -416,29 +310,15 @@ class SEDGenerator:
             raise ValueError(f"No valid data points for normalization in {library_path}")
         
         self.scaler_params = {
-            'teff_mean': float(np.mean(params[:, 0])),
-            'teff_std': float(np.std(params[:, 0]) + 1e-8),
-            'teff_min': float(np.min(params[:, 0])),
-            'teff_max': float(np.max(params[:, 0])),
-            'logg_mean': float(np.mean(params[:, 1])),
-            'logg_std': float(np.std(params[:, 1]) + 1e-8),
-            'logg_min': float(np.min(params[:, 1])),
-            'logg_max': float(np.max(params[:, 1])),
-            'meta_mean': float(np.mean(params[:, 2])),
-            'meta_std': float(np.std(params[:, 2]) + 1e-8),
-            'meta_min': float(np.min(params[:, 2])),
-            'meta_max': float(np.max(params[:, 2])),
+            **param_scaler(params, with_range=True),
             'flux_log_mean': float(np.mean(flux_valid)),
             'flux_log_std': float(np.std(flux_valid) + 1e-8),
         }
         
         print(f"  Flux log10 range: [{flux_valid.min():.2f}, {flux_valid.max():.2f}]")
         
-        params_norm = np.column_stack([
-            (params[:, 0] - self.scaler_params['teff_mean']) / self.scaler_params['teff_std'],
-            (params[:, 1] - self.scaler_params['logg_mean']) / self.scaler_params['logg_std'],
-            (params[:, 2] - self.scaler_params['meta_mean']) / self.scaler_params['meta_std'],
-        ]).astype(np.float32)
+        params_norm = np.column_stack(
+            normalised_params(self.scaler_params, params[:, 0], params[:, 1], params[:, 2])).astype(np.float32)
         
         flux_norm = (flux_log - self.scaler_params['flux_log_mean']) / self.scaler_params['flux_log_std']
         flux_norm = np.where(np.isfinite(flux_norm), flux_norm, 0.0).astype(np.float32)
@@ -498,14 +378,12 @@ class SEDGenerator:
             true = f_val[idx]
             mask = m_val[idx]
             
-            # Denormalize
             true_log = true * self.scaler_params['flux_log_std'] + self.scaler_params['flux_log_mean']
             pred_log = pred * self.scaler_params['flux_log_std'] + self.scaler_params['flux_log_mean']
             
             true_flux = 10 ** true_log
             pred_flux = 10 ** pred_log
             
-            # Denorm params for title
             teff = p_val[idx, 0] * self.scaler_params['teff_std'] + self.scaler_params['teff_mean']
             logg = p_val[idx, 1] * self.scaler_params['logg_std'] + self.scaler_params['logg_mean']
             meta = p_val[idx, 2] * self.scaler_params['meta_std'] + self.scaler_params['meta_mean']
@@ -540,10 +418,9 @@ class SEDGenerator:
         
         torch.save(self.model.state_dict(), path / self.MODEL_FILE)
         
-        # Store training parameter samples for visualization (subsample if too many)
+        # At most 500 training points, for the parameter-space plot of generate_with_outputs
         train_params = getattr(self, '_train_params_raw', None)
         if train_params is not None:
-            # Keep at most 500 points for visualization
             if len(train_params) > 500:
                 idx = np.random.choice(len(train_params), 500, replace=False)
                 train_params = train_params[idx]
@@ -631,26 +508,19 @@ class SEDGenerator:
         if self.model is None:
             raise RuntimeError("No model loaded")
         
-        # Check bounds
         if check_bounds:
             ranges = self.config.get('parameter_ranges', {})
-            if 'teff' in ranges:
-                if teff < ranges['teff'][0] or teff > ranges['teff'][1]:
-                    print(f"  Warning: Teff={teff:.0f} outside range [{ranges['teff'][0]:.0f}, {ranges['teff'][1]:.0f}]")
-            if 'logg' in ranges:
-                if logg < ranges['logg'][0] or logg > ranges['logg'][1]:
-                    print(f"  Warning: logg={logg:.2f} outside range [{ranges['logg'][0]:.2f}, {ranges['logg'][1]:.2f}]")
-            if 'meta' in ranges:
-                if meta < ranges['meta'][0] or meta > ranges['meta'][1]:
-                    print(f"  Warning: [M/H]={meta:.2f} outside range [{ranges['meta'][0]:.2f}, {ranges['meta'][1]:.2f}]")
+            for key, label, value, spec in (('teff', 'Teff', teff, '.0f'), ('logg', 'logg', logg, '.2f'),
+                                            ('meta', '[M/H]', meta, '.2f')):
+                if key not in ranges:
+                    continue
+                low, high = ranges[key][0], ranges[key][1]
+                if value < low or value > high:
+                    print(f"  Warning: {label}={value:{spec}} outside range [{low:{spec}}, {high:{spec}}]")
         
         self.model.eval()
         
-        params_norm = np.array([
-            (teff - self.scaler_params['teff_mean']) / self.scaler_params['teff_std'],
-            (logg - self.scaler_params['logg_mean']) / self.scaler_params['logg_std'],
-            (meta - self.scaler_params['meta_mean']) / self.scaler_params['meta_std'],
-        ], dtype=np.float32)
+        params_norm = np.array(normalised_params(self.scaler_params, teff, logg, meta), dtype=np.float32)
         
         with torch.no_grad():
             pred = self.model(torch.from_numpy(params_norm[None, :]).to(self.device))
@@ -735,31 +605,14 @@ class SEDGenerator:
     def list_models(models_dir: str = "models") -> List[Dict[str, Any]]:
         """List available trained generators."""
         models = []
-        models_path = Path(models_dir)
-        
-        if not models_path.exists():
-            return models
-        
-        for subdir in models_path.iterdir():
-            if not subdir.is_dir():
-                continue
-            
-            config_file = subdir / SEDGenerator.CONFIG_FILE
-            if config_file.exists():
-                try:
-                    with open(config_file, 'r') as f:
-                        config = json.load(f)
-                    
-                    if config.get('model_type') == 'sed_generator':
-                        models.append({
-                            'name': subdir.name,
-                            'path': str(subdir),
-                            'parameter_ranges': config.get('parameter_ranges', {}),
-                            'architecture': config.get('architecture', {}),
-                        })
-                except (OSError, ValueError) as exc:
-                    logger.warning("Skipping %s: could not read its %s: %s", subdir, SEDGenerator.CONFIG_FILE, exc)
-
+        for subdir, config in model_configs(models_dir, SEDGenerator.CONFIG_FILE, logger):
+            if config.get('model_type') == 'sed_generator':
+                models.append({
+                    'name': subdir.name,
+                    'path': str(subdir),
+                    'parameter_ranges': config.get('parameter_ranges', {}),
+                    'architecture': config.get('architecture', {}),
+                })
         return models
 
 
@@ -836,9 +689,7 @@ def _plot_parameter_space(train_params, teff, logg, meta, teff_range, logg_range
     plt.close(fig)
 
 
-# =============================================================================
-# Interactive Workflow (CLI Option 6)
-# =============================================================================
+# Interactive workflow (sed-tools main menu item 9)
 
 def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> Optional[int]:
     """
@@ -854,34 +705,12 @@ def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> Optio
     _banner("ML SED GENERATOR (PyTorch)")
     print("\nGenerate complete SEDs from stellar parameters alone")
     print("Input: (Teff, logg, [M/H]) → Output: Full SED")
-    
-    print("\nWhat would you like to do?")
-    print("  1) Train new generator")
-    print("  2) Generate SED")
-    print("  3) Batch generate (grid of parameters)")
-    print("  4) List available generators")
-    print("  0) Back")
-    
-    choice = input("> ").strip()
-    if choice == "0":
-        return
-    if choice == "1":
-        if refused_without("torch", "sklearn"):
-            return 1
-        _train_menu(base_dir, models_dir)
-    elif choice == "2":
-        if refused_without("torch"):
-            return 1
-        _generate_menu(models_dir)
-    elif choice == "3":
-        if refused_without("torch"):
-            return 1
-        _batch_menu(models_dir)
-    elif choice == "4":
-        _list_menu(models_dir)
-    else:
-        print("Invalid choice")
-    return None
+    return action_menu([
+        ("Train new generator", ("torch", "sklearn"), lambda: _train_menu(base_dir, models_dir)),
+        ("Generate SED", ("torch",), lambda: _generate_menu(models_dir)),
+        ("Batch generate (grid of parameters)", ("torch",), lambda: _batch_menu(models_dir)),
+        ("List available generators", (), lambda: _list_menu(models_dir)),
+    ])
 
 
 def _choose_generator(models_dir: str, show_teff_range: bool) -> Optional[Dict[str, Any]]:
@@ -909,15 +738,14 @@ def _ask_output_dir(default: str) -> str:
 def _train_menu(base_dir: str, models_dir: str) -> None:
     _section("TRAIN NEW GENERATOR")
     
-    libraries = _training_libraries(base_dir)
+    libraries = training_libraries(base_dir)
     if not libraries:
         print(f"\nNo libraries with flux_cube.bin found in {base_dir}")
         return
     
     print("\nAvailable libraries:")
     print("-" * 60)
-    for i, lib in enumerate(libraries, 1):
-        print(f"  {i:2d}) {lib['name']:30s} ({lib['n_seds']} SEDs)")
+    print_libraries(libraries)
     
     selected = _menu_choice(libraries, "\nSelect library: > ")
     if selected is None:
@@ -1017,9 +845,7 @@ def _list_menu(models_dir: str) -> None:
             print(f"    Architecture: 3 → {arch.get('hidden_layers', [])} → {arch.get('output_dim', '?')}")
 
 
-# =============================================================================
-# CLI Entry Point
-# =============================================================================
+# python -m sed_tools.ml_sed_generator
 
 def main():
     """CLI entry point."""
@@ -1028,14 +854,12 @@ def main():
     parser = argparse.ArgumentParser(description="ML SED Generator")
     subparsers = parser.add_subparsers(dest='command', required=True)
     
-    # Train
     train_p = subparsers.add_parser('train', help='Train generator')
     train_p.add_argument('--library', required=True)
     train_p.add_argument('--output', required=True)
     train_p.add_argument('--epochs', type=int, default=200)
     train_p.add_argument('--batch-size', type=int, default=64)
     
-    # Generate
     gen_p = subparsers.add_parser('generate', help='Generate SED')
     gen_p.add_argument('--model', required=True)
     gen_p.add_argument('--teff', type=float, required=True)
@@ -1043,7 +867,6 @@ def main():
     gen_p.add_argument('--meta', type=float, required=True)
     gen_p.add_argument('--output', required=True)
     
-    # List
     list_p = subparsers.add_parser('list', help='List generators')
     list_p.add_argument('--models-dir', default='models')
     
