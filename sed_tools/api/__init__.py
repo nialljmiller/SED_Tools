@@ -1,40 +1,8 @@
-"""
-Python API for SED_Tools - Programmatic interface to stellar spectral grids.
+"""The Python API for spectral grids: SED (query, fetch, local, import, combine, ML), SpectralGrid,
+Spectrum, SpectralGridInfo, MLCompleter and MLGenerator; ``help()`` on each shows how to use it.
 
-This module provides a Pythonic interface that mirrors and extends the CLI functionality.
-Users can query available spectral grids, fetch filtered data, and construct pipelines.
-
-Example usage::
-
-    from sed_tools.api import SED
-    
-    # Query available remote spectral grids
-    grids = SED.query()
-    grids = SED.query(teff_min=5000, teff_max=7000)  # Filter by coverage
-    
-    # Fetch data from a specific spectral grid
-    sed = SED.fetch('Kurucz2003all', teff_min=4000, teff_max=7000, logg_min=3.0)
-    
-    # Access the spectral grid data
-    print(sed.grid)
-    print(sed.grid.spectra)
-    print(sed.grid.parameters)
-    
-    # Save to disk (same structure as CLI)
-    sed.grid.write()
-    sed.grid.write('/custom/path')
-    
-    # Work with local data
-    sed = SED.local('Kurucz2003all')
-    spectrum = sed(5777, 4.44, 0.0)  # Interpolate
-    
-    # Create ensemble models
-    ensemble = SED.combine(['Kurucz2003all', 'PHOENIX'], output='combined_grid')
-    
-    # ML SED completion
-    completer = SED.ml_completer()
-    completer.train(grid='combined_grid')
-    completer.extend('sparse_model', wavelength_range=(100, 100000))
+Filters is defined in api/filters.py and re-exported here; the download and build steps are in
+grids/pipeline.py and cube/check.py.
 """
 
 from __future__ import annotations
@@ -88,9 +56,7 @@ _LISTED_AS = {"svo": {"url": "http://svo2.cab.inta-csic.es/theory/newov2/"}, "ms
 _SOURCE_ERRORS = (RequestException, OSError, ValueError, RuntimeError)
 
 
-# =============================================================================
-# Data Classes for API Results
-# =============================================================================
+# ------------ Results ------------
 
 @dataclass
 class SpectralGridInfo:
@@ -204,11 +170,7 @@ def _not_outside(value: float, low: Optional[float], high: Optional[float]) -> b
 
 @dataclass  
 class SpectralGrid:
-    """
-    A spectral grid of model spectra and their parameters.
-    
-    This is the main data container returned by SED.fetch().
-    """
+    """A spectral grid of model spectra and their parameters: what SED.fetch() returns in ``sed.grid``."""
     
     name: str
     source: str
@@ -281,9 +243,8 @@ class SpectralGrid:
         build_flux_cube: bool = True,
         build_h5: bool = True,
     ) -> Path:
-        """
-        Write the spectral grid to disk in the standard SED_Tools structure.
-        
+        """Write the spectral grid to disk in the standard SED_Tools structure.
+
         Parameters
         ----------
         path : str or Path, optional
@@ -292,7 +253,7 @@ class SpectralGrid:
             Whether to build the MESA-compatible flux cube
         build_h5 : bool
             Whether to build the HDF5 bundle
-            
+
         Returns
         -------
         Path
@@ -305,16 +266,13 @@ class SpectralGrid:
         
         path.mkdir(parents=True, exist_ok=True)
         
-        # Write individual spectra
         for spec in self.spectra:
             fname = spec.filename or f"teff{spec.teff:.0f}_logg{spec.logg:.2f}_meta{spec.metallicity:.2f}.txt"
             spec.save(path / fname)
         
-        # Write lookup table
         self.parameters.to_csv(path / "lookup_table.csv", index=False)
         print(f"[write] Wrote {len(self.spectra)} spectra to {path}")
-        
-        # Build flux cube
+
         if build_flux_cube and len(self.spectra) > 0:
             written = _build_flux_cube(path)
             if written.name == "flux_cube.bin":
@@ -322,7 +280,6 @@ class SpectralGrid:
             else:
                 print(f"[write] Built one flux cube per extra-axis variant, listed in {written}")
 
-        # Build H5 bundle
         if build_h5 and len(self.spectra) > 0:
             if not build_h5_bundle(str(path), str(path / f"{self.name}.h5")):
                 raise RuntimeError(f"No .txt spectra in {path} to bundle into {self.name}.h5")
@@ -331,16 +288,13 @@ class SpectralGrid:
         return path
 
 
-# Existing imports continue to refer to the same classes.
+# The older names of the two classes.
 Catalog = SpectralGrid
 CatalogInfo = SpectralGridInfo
 
 
 def _read_listed_spectra(lookup_path: Path, grid_name: str) -> List[Spectrum]:
-    """The spectra a lookup table lists, for rows whose file exists beside it.
-
-    Raises ValueError naming the file when a listed spectrum cannot be read.
-    """
+    """The spectra a lookup table lists whose file exists beside it; ValueError names one that cannot be read."""
     model_dir = lookup_path.parent
     df = pd.read_csv(lookup_path)
     df.columns = [c.lstrip('#').strip().lower() for c in df.columns]
@@ -370,48 +324,30 @@ def _read_listed_spectra(lookup_path: Path, grid_name: str) -> List[Spectrum]:
     return spectra
 
 
-# =============================================================================
-# Main SED API Class
-# =============================================================================
-
 class SED:
-    """
-    Main API class for SED_Tools.
-    
-    This class provides both class methods for discovery/fetching and instance
-    methods for working with loaded data.
-    
-    Class methods (discovery):
+    """Spectral grids: class methods to find, download and build them, instances to interpolate a loaded one.
+
+    Class methods:
         SED.query() - List available spectral grids
         SED.fetch() - Download and return a spectral grid
         SED.local() - Load a local spectral grid
+        SED.import_grid() - Ingest a local grid of .txt spectra
         SED.combine() - Create ensemble grids
+        SED.coverage() - Report a local grid's parameter coverage
         SED.ml_completer() - Access ML completion tools
         SED.ml_generator() - Access ML generation tools
-    
+
     Instance methods (loaded data):
         sed(teff, logg, metallicity) - Interpolate a spectrum
         sed.model() - Access the underlying SEDModel
-        sed.photometry() - Compute synthetic photometry
-    
+
     Examples
     --------
-    >>> # Query what's available
-    >>> grids = SED.query()
     >>> grids = SED.query(teff_min=5000)
-    
-    >>> # Fetch remote data
     >>> sed = SED.fetch('Kurucz2003all', teff_min=4000, teff_max=8000)
     >>> sed.grid.write()
-    
-    >>> # Work with local data
     >>> sed = SED.local('Kurucz2003all')
     >>> spectrum = sed(5777, 4.44, 0.0)
-    
-    >>> # Generate SEDs from parameters (no input spectrum needed)
-    >>> generator = SED.ml_generator()
-    >>> generator.load('sed_generator_Kurucz2003all')
-    >>> wl, flux = generator.generate(teff=5777, logg=4.44, metallicity=0.0)
     """
     
     _model_root: Path = STELLAR_DIR_DEFAULT
@@ -424,11 +360,7 @@ class SED:
         model_root: Optional[Union[str, Path]] = None,
         filter_root: Optional[Union[str, Path]] = None,
     ):
-        """
-        Initialize SED instance.
-        
-        Typically created via class methods like SED.fetch() or SED.local().
-        """
+        """Usually made by SED.fetch() or SED.local(), not directly."""
         self.cat = catalog
         self._model = model
         self._core = _SEDCore(
@@ -446,10 +378,8 @@ class SED:
         """The loaded spectral grid; also available through the legacy ``cat`` attribute."""
         return self.cat
 
-    # =========================================================================
-    # Class Methods - Discovery & Fetching
-    # =========================================================================
-    
+    # ------------ Discovery and fetching ------------
+
     @classmethod
     def query(
         cls,
@@ -463,24 +393,19 @@ class SED:
         include_local: bool = True,
         include_remote: bool = True,
     ) -> List[SpectralGridInfo]:
-        """
-        Query available spectral grids.
-        
+        """List the available spectral grids.
+
         Parameters
         ----------
         source : str, optional
             Filter by source: 'svo', 'msg', 'mast', 'njm', 'local', or 'all'
-        teff_min, teff_max : float, optional
-            Filter spectral grids that cover this Teff range
-        logg_min, logg_max : float, optional
-            Filter spectral grids that cover this logg range
-        metallicity_min, metallicity_max : float, optional
-            Filter spectral grids that cover this metallicity range
+        teff_min, teff_max, logg_min, logg_max, metallicity_min, metallicity_max : float, optional
+            Keep the spectral grids that overlap these ranges (a bound of 0 is a bound)
         include_local : bool
             Include locally installed spectral grids
         include_remote : bool
             Query remote sources (SVO, MSG, MAST, NJM)
-            
+
         Returns
         -------
         List[SpectralGridInfo]
@@ -498,7 +423,6 @@ class SED:
         if include_remote:
             catalogs.extend(cls._query_remote(source))
 
-        # Filter by parameter coverage; a bound of 0 is a bound
         bounds = (teff_min, teff_max, logg_min, logg_max, metallicity_min, metallicity_max)
         if any(b is not None for b in bounds):
             catalogs = [c for c in catalogs if c.covers_range(*bounds)]
@@ -506,7 +430,7 @@ class SED:
     
     @classmethod
     def _query_local(cls) -> List[SpectralGridInfo]:
-        """Query locally installed spectral grids."""
+        """Installed grids with a flux_cube.bin, with their ranges from its header."""
         catalogs = []
         
         if not cls._model_root.exists():
@@ -527,8 +451,7 @@ class SED:
                 source='local',
                 is_local=True,
             )
-            
-            # Parameter ranges from the flux cube header
+
             try:
                 meta = _read_flux_cube_header(cube)
                 info.teff_range = (float(meta['teff'][0]), float(meta['teff'][-1]))
@@ -539,7 +462,6 @@ class SED:
                 raise ValueError(f"Cannot read the flux cube header of local grid '{entry.name}' ({cube}): "
                                  f"{exc}. Rebuild it with: sed-tools rebuild --grids {entry.name}") from exc
 
-            # Count spectra from lookup table
             if lookup.exists():
                 try:
                     info.n_spectra = len(pd.read_csv(lookup))
@@ -552,9 +474,7 @@ class SED:
     
     @classmethod
     def _query_remote(cls, source: Optional[str]) -> List[SpectralGridInfo]:
-        """Grids from each requested remote source.  SVO, MSG or MAST list none when they cannot be
-        asked, and their clients warn why; an unreachable NJM is left out (its client has warned),
-        or raises when it is the source asked for."""
+        """Grids from each requested remote source; an unreachable NJM is left out, or raises if asked for alone."""
         catalogs = []
         for name in ('svo', 'msg', 'mast'):
             if source in (None, 'all', name):
@@ -575,8 +495,7 @@ class SED:
 
     @classmethod
     def _query_njm(cls) -> List[SpectralGridInfo]:
-        """The grids the NJM mirror lists; RuntimeError, without a second warning, if it is unreachable
-        (the NJM client warns once per outage)."""
+        """The grids NJM lists; RuntimeError if it is unreachable, without a second warning (its client warned)."""
         grabber = spectra_grabber('njm', str(cls._model_root))
         if not grabber.is_available():
             raise RuntimeError(f"NJM mirror {grabber.base_url} is unreachable")
@@ -598,22 +517,17 @@ class SED:
         model_root: Optional[Union[str, Path]] = None,
         flux_unit: Optional[str] = None,
     ) -> 'SED':
-        """
-        Fetch and download a stellar spectral grid.
-        
+        """Download a stellar spectral grid and return it loaded.
+
         Parameters
         ----------
         catalog : str
             Name of the spectral grid to fetch (e.g., 'Kurucz2003all')
         source : str, optional
-            Force a specific source: 'svo', 'msg', 'mast', 'njm'
+            Force a specific source: 'svo', 'msg', 'mast', 'njm'.
             If None, tries NJM first (pre-processed), then others
-        teff_min, teff_max : float, optional
-            Download and return only spectra within this Teff range (see Notes)
-        logg_min, logg_max : float, optional
-            Download and return only spectra within this logg range (see Notes)
-        metallicity_min, metallicity_max : float, optional
-            Download and return only spectra within this metallicity range (see Notes)
+        teff_min, teff_max, logg_min, logg_max, metallicity_min, metallicity_max : float, optional
+            Download and return only spectra within these ranges (see Notes)
         workers : int
             Number of parallel download workers
         clean : bool
@@ -627,24 +541,21 @@ class SED:
 
         Notes
         -----
-        With any Teff, logg or metallicity bound (a bound of 0 is a bound; a
-        single bound leaves the other side open), only the spectra within the
-        bounds are downloaded, as ``sed-tools grids --teff ... --logg ...
-        --meta ...`` does, and the lookup table, HDF5 bundle and flux cube in
-        ``model_root/catalog`` are built from them, so ``SED.local`` and MESA
-        use that selection. NJM's flux cube and HDF5 bundle of the whole grid
-        are not downloaded. MSG downloads its grid's HDF5 file whole and
-        extracts only the selected spectra. SVO cannot select spectra, so from
-        SVO the whole grid is downloaded, with a warning, then cut.
+        With any bound (a bound of 0 is a bound; a single bound leaves the
+        other side open), only the spectra within the bounds are downloaded,
+        as ``sed-tools grids --teff ... --logg ... --meta ...`` does, and the
+        lookup table, HDF5 bundle and flux cube in ``model_root/catalog`` are
+        built from them, so ``SED.local`` and MESA use that selection. NJM's
+        flux cube and HDF5 bundle of the whole grid are not downloaded. MSG
+        downloads its grid's HDF5 file whole and extracts the selection; SVO
+        cannot select, so the whole grid is downloaded, with a warning, then cut.
 
-        A folder that already holds every selected spectrum with a flux cube
-        holding every spectrum there (the whole grid, or a wider selection)
-        is cut as it stands: nothing is downloaded or rewritten. A later fetch
-        without bounds, or with wider ones, downloads the rest; a flux cube
-        that then lacks spectra beside it is rebuilt from every spectrum in
-        the folder, with the lookup table and HDF5 bundle. Whether the cube
-        holds them is read from the cube and the lookup table, not from file
-        times, so a grid copied without its file times counts as complete.
+        A folder that already holds every selected spectrum, with a flux cube
+        holding every spectrum there, is cut as it stands: nothing is
+        downloaded or rewritten. A later fetch with no or wider bounds
+        downloads the rest, and a flux cube that then lacks spectra beside it
+        is rebuilt from all of them, with the lookup table and HDF5 bundle.
+        The cube's and lookup table's contents decide this, not file times.
         Bounds that no spectrum meets leave no new folder behind.
 
         Returns
@@ -682,8 +593,7 @@ class SED:
 
         if (selected and cube is not None and _directory_state(model_dir) == before
                 and _flux_cube_shortfall(model_dir) is None):
-            # The whole grid, or a wider selection, installed with its flux cube: cleaning would
-            # rewrite its lookup table, so it is cut as it stands.
+            # Cleaning would rewrite the lookup table of a complete installed grid, so it is cut as it stands.
             print(f"[fetch] {model_dir} already holds every spectrum of {catalog} within the bounds, with "
                   "its flux cube; nothing was downloaded or rewritten")
         elif created and selected and not (model_dir.is_dir() and any(model_dir.iterdir())):
@@ -694,18 +604,14 @@ class SED:
                 cls._clean_fetched(model_dir, flux_unit)  # leaves the flux cube files alone
             shortfall = _flux_cube_shortfall(model_dir)  # None without a cube
             if ((selected and cube is None) or shortfall) and any(model_dir.glob("*.txt")):
-                # As sed-tools grids does: a selection gets a lookup table, HDF5 bundle and flux cube of
-                # its own, and a cube that lacks spectra beside it (a selection, then the rest) is
-                # rebuilt from every spectrum present.
+                # As in sed-tools grids: a selection gets products of its own, and a cube lacking
+                # spectra beside it is rebuilt from all of them.
                 if shortfall:
                     print(f"[fetch] {cube.name} {shortfall}:\n        rebuilding the lookup table, HDF5 "
                           "bundle and flux cube from all of them")
                 _build_data_products(catalog, str(model_dir), used_source, True, True)
 
-        # Load spectra into SpectralGrid object
         cat = cls._load_catalog_from_dir(model_dir, catalog, used_source)
-        
-        # Apply parameter filters; a bound of 0 is a bound
         if cuts:
             cat = cat.filter(teff_min=teff_min, teff_max=teff_max, logg_min=logg_min, logg_max=logg_max,
                              metallicity_min=metallicity_min, metallicity_max=metallicity_max)
@@ -715,8 +621,7 @@ class SED:
 
     @staticmethod
     def _clean_fetched(model_dir: Path, flux_unit: Optional[str]) -> None:
-        """Standardize the units of a fetched grid; clean_model_dir raises RuntimeError for any spectrum
-        it leaves unusable."""
+        """Standardize a fetched grid's units; RuntimeError (clean_model_dir) for any spectrum left unusable."""
         from ..grids.clean import clean_model_dir
         summary = clean_model_dir(str(model_dir), try_h5_recovery=True, rebuild_lookup=True,
                                   flux_unit=flux_unit)
@@ -724,11 +629,7 @@ class SED:
 
     @classmethod
     def _get_sources_for_catalog(cls, catalog: str) -> Tuple[List[str], List[str]]:
-        """Sources whose index lists this spectral grid (NJM first, then SVO as a fallback), and the
-        entry for an unreachable NJM, which goes in the fetch's error (its client has warned).
-
-        SVO, MSG or MAST list nothing when they cannot be asked; their clients warn why.
-        """
+        """The sources listing ``catalog`` (NJM first, SVO always as a fallback), and an unreachable NJM's error."""
         sources, failures = [], []
         try:
             if catalog in [info.name for info in cls._query_njm()]:
@@ -739,7 +640,6 @@ class SED:
             if catalog in [info.name for info in cls._query_source(name)]:
                 sources.append(name)
 
-        # Always include SVO as fallback if not already there
         if 'svo' not in sources:
             sources.append('svo')
         return sources, failures
@@ -748,15 +648,8 @@ class SED:
     def _download_from_first_source(cls, catalog: str, sources: List[str], failures: List[str],
                                     model_dir: Path, workers: int,
                                     cuts: Optional[Dict[str, Tuple[float, float]]] = None) -> str:
-        """Download ``catalog`` into ``model_dir`` from the first source that can supply it.
-
-        Returns that source.  A source that fails is recorded in ``failures``
-        with a warning and the next one is tried, unless the failed attempt
-        changed ``model_dir``: the next source's spectra would then be mixed
-        with its files, so RuntimeError is raised instead.  ValueError lists
-        every failure when no source succeeds.  ``cuts`` are as for
-        :meth:`_download_from`.
-        """
+        """The first source that supplies ``catalog`` (pipeline.download_from_first_source); ValueError lists
+        every failure."""
         def attempt(src: str) -> Optional[str]:
             print(f"[fetch] Trying {catalog} from {src}...")
             return cls._download_from(src, catalog, model_dir, workers, cuts)
@@ -772,11 +665,9 @@ class SED:
     @classmethod
     def _download_from(cls, src: str, catalog: str, model_dir: Path, workers: int,
                        cuts: Optional[Dict[str, Tuple[float, float]]] = None) -> Optional[str]:
-        """Download ``catalog`` from one source; returns None on success, else what went wrong.
+        """Download ``catalog`` from one source: None on success (no spectrum within ``cuts`` is one), else the error.
 
-        ``cuts`` (:func:`_parameter_cuts`) select the spectra a source in
-        ``_CUTTING_SOURCES`` downloads; none of them lying within the cuts is a
-        success.  Any other source downloads the whole grid, with a warning.
+        Only the ``_CUTTING_SOURCES`` take ``cuts``; any other source downloads the whole grid, with a warning.
         """
         try:
             grabber = cls._get_grabber(src, str(model_dir.parent), workers)
@@ -829,9 +720,8 @@ class SED:
         filter_root: Optional[Union[str, Path]] = None,
         fill_gaps: bool = True,
     ) -> 'SED':
-        """
-        Load a local stellar spectral grid.
-        
+        """Load a local stellar spectral grid (it needs its flux_cube.bin).
+
         Parameters
         ----------
         catalog : str
@@ -842,7 +732,7 @@ class SED:
             Base directory for filter profiles
         fill_gaps : bool
             Whether to clamp out-of-range parameters to grid edges
-            
+
         Returns
         -------
         SED
@@ -857,11 +747,8 @@ class SED:
         cube_path = model_dir / "flux_cube.bin"
         if not cube_path.exists():
             raise FileNotFoundError(f"flux_cube.bin not found in {model_dir}")
-        
-        # Load the catalog
+
         cat = cls._load_catalog_from_dir(model_dir, catalog, 'local')
-        
-        # Create SEDModel for interpolation
         sed_model = SEDModel(
             name=catalog,
             flux_cube_path=cube_path,
@@ -884,8 +771,7 @@ class SED:
         plot: bool = True,
         out_path: Optional[Union[str, Path]] = None,
     ) -> Dict[str, Any]:
-        """
-        Report parameter-space coverage of a local grid (downloaded or built).
+        """Report parameter-space coverage of a local grid (downloaded or built).
 
         Prints per-axis ranges, unique grid values and spacing, the node count
         vs. the full Teff x logg x [M/H] product (fill fraction), and an
@@ -918,18 +804,13 @@ class SED:
         dry_run: bool = False,
         flux_unit: Optional[str] = None,
     ) -> Dict[str, Any]:
-        """
-        Ingest a local grid of .txt spectra into the SED_Tools pipeline.
+        """Ingest a local grid of .txt spectra into the SED_Tools pipeline.
 
-        The spectra must carry their parameters in the file header in any form
-        recognised by header_parser.parse_header (Teff, logg, [M/H]); if a grid
-        uses a header key the parser does not know, add it to ALIASES in
-        header_parser.py rather than mapping it here.
-
-        Files are copied (or moved with move=True) into
-        <model_root>/<name>/, then run through the standard
-        clean -> lookup -> HDF5 -> flux-cube pipeline, after which the grid is
-        usable via SED.local(name).
+        The spectra must carry Teff, logg and [M/H] in their headers in a form
+        header_parser.parse_header recognises; for an unknown header key, add
+        it to ALIASES in header_parser.py. Files are copied (or moved with
+        move=True) into <model_root>/<name>/, then cleaned, given a lookup
+        table, HDF5 bundle and flux cube, so SED.local(name) can load the grid.
 
         Parameters
         ----------
@@ -948,9 +829,9 @@ class SED:
         stops the import (clean_model_dir's RuntimeError), and so does a Teff,
         logg or [M/H] that only some headers state (regenerate_lookup_table's
         ValueError); one that no header states (log g of a blackbody grid) gets
-        no column. If the spectra do not declare their flux unit
-        and flux_unit is not given, ValueError names the best guess before any
-        file is copied or moved; so does a flux_unit that is not a known name.
+        no column. If the spectra do not declare their flux unit and flux_unit
+        is not given, ValueError names the best guess before any file is
+        copied or moved; so does a flux_unit that is not a known name.
         """
         files, src_dir = _import_sources(Path(src).expanduser())
         if name is None:
@@ -974,7 +855,6 @@ class SED:
 
         check_flux_unit(str(src_dir), [str(f) for f in files], flux_unit)
 
-        # --- stage files into the data dir ---
         dest.mkdir(parents=True, exist_ok=True)
         for f in files:
             target = dest / f.name
@@ -984,7 +864,6 @@ class SED:
                 shutil.copy2(str(f), str(target))
         print(f"[import] {'moved' if move else 'copied'} {len(files)} files -> {dest}")
 
-        # --- standard pipeline: clean -> lookup -> h5 -> cube ---
         summary = clean_model_dir(str(dest), try_h5_recovery=True, rebuild_lookup=True, flux_unit=flux_unit)
         print(f"[import] cleaned: total={summary['total']}")
 
@@ -1015,13 +894,12 @@ class SED:
         model_root: Optional[Union[str, Path]] = None,
         visualization: bool = True,
     ) -> 'SED':
-        """
-        Combine multiple stellar spectral grids into a unified ensemble.
-        
+        """Combine stellar spectral grids into one ensemble grid, and load it.
+
         Every grid named in ``catalogs`` is combined, including an earlier
         combine output; only discovery of "all" grids leaves those out
         (see :mod:`sed_tools.combine_stellar_atm`).
-        
+
         Parameters
         ----------
         catalogs : list of str
@@ -1032,7 +910,7 @@ class SED:
             Base directory for spectral grids
         visualization : bool
             Whether to generate parameter space visualization
-            
+
         Returns
         -------
         SED
@@ -1056,8 +934,6 @@ class SED:
 
         print(f"\nSuccessfully combined {len(selected_models)} spectral grids!")
         print(f"Output: {output_dir}")
-        
-        # Load the result
         return cls.local(output, model_root=base_dir)
     
     @classmethod
@@ -1066,14 +942,7 @@ class SED:
         model_root: Optional[Union[str, Path]] = None,
         models_dir: str = "models",
     ) -> 'MLCompleter':
-        """
-        Get the ML SED completer for extending incomplete grids.
-        
-        Returns
-        -------
-        MLCompleter
-            ML completer instance with train() and extend() methods
-        """
+        """The ML SED completer for extending incomplete grids: an MLCompleter with train(), extend() and load()."""
         base_dir = Path(model_root) if model_root else cls._model_root
         return MLCompleter(base_dir=base_dir, models_dir=models_dir)
     
@@ -1083,39 +952,20 @@ class SED:
         model_root: Optional[Union[str, Path]] = None,
         models_dir: str = "models",
     ) -> 'MLGenerator':
-        """
-        Get the ML SED generator for creating SEDs from stellar parameters.
-        
-        Unlike the completer (which extends existing spectra), the generator
-        creates complete SEDs from scratch using only Teff, logg, and [M/H].
-        
-        Returns
-        -------
-        MLGenerator
-            ML generator instance with train() and generate() methods
-            
-        Example
-        -------
-        >>> generator = SED.ml_generator()
-        >>> generator.train(grid='Kurucz2003all', epochs=200)
-        >>> wl, flux = generator.generate(teff=5777, logg=4.44, metallicity=0.0)
-        """
+        """The ML SED generator, which makes whole SEDs from Teff, logg and [M/H]: an MLGenerator (see its help)."""
         base_dir = Path(model_root) if model_root else cls._model_root
         return MLGenerator(base_dir=base_dir, models_dir=models_dir)
     
-    # =========================================================================
-    # Instance Methods - Working with loaded data
-    # =========================================================================
-    
+    # ------------ A loaded grid ------------
+
     def __call__(
         self,
         teff: Number,
         logg: Number,
         metallicity: Number,
     ) -> EvaluatedSED:
-        """
-        Interpolate a spectrum at the given stellar parameters.
-        
+        """Interpolate a spectrum at the given stellar parameters.
+
         Parameters
         ----------
         teff : float
@@ -1124,7 +974,7 @@ class SED:
             Surface gravity (log g)
         metallicity : float
             Metallicity [M/H]
-            
+
         Returns
         -------
         EvaluatedSED
@@ -1168,9 +1018,7 @@ class SED:
         return self._model.parameter_ranges()
 
 
-# =============================================================================
-# ML Completer API
-# =============================================================================
+# ------------ ML ------------
 
 def _training_grid(base_dir: Path, grid: str) -> Path:
     """The folder of a grid to train on; FileNotFoundError, before anything is written, without its flux cube."""
@@ -1181,11 +1029,10 @@ def _training_grid(base_dir: Path, grid: str) -> Path:
 
 
 class MLCompleter:
-    """
-    ML-based SED completion for extending incomplete stellar grids.
-    
+    """ML-based SED completion for extending incomplete stellar grids.
+
     Usage::
-    
+
         completer = SED.ml_completer()
         completer.train(grid='combined_grid')
         completer.extend('sparse_model', wavelength_range=(100, 100000))
@@ -1203,19 +1050,18 @@ class MLCompleter:
         batch_size: int = 32,
         save_name: Optional[str] = None,
     ) -> 'MLCompleter':
-        """
-        Train the ML model on a stellar spectral grid.
-        
+        """Train the ML model on a stellar spectral grid; returns self.
+
         Parameters
         ----------
         grid : str
-            Name of the grid to train on
+            Name of the grid to train on (must have flux_cube.bin)
         epochs : int
             Number of training epochs
         batch_size : int
             Batch size for training
         save_name : str, optional
-            Name for the saved model
+            Name for the saved model. Default: '{grid}_completer'
         """
         from ..ml.completer import train_model
 
@@ -1237,9 +1083,8 @@ class MLCompleter:
         wavelength_range: Optional[Tuple[float, float]] = None,
         output: Optional[str] = None,
     ) -> SpectralGrid:
-        """
-        Extend an incomplete spectral grid using the trained model.
-        
+        """Extend an incomplete spectral grid using the trained model.
+
         Parameters
         ----------
         catalog : str
@@ -1247,8 +1092,8 @@ class MLCompleter:
         wavelength_range : tuple, optional
             Target wavelength range (min, max) in Angstroms
         output : str, optional
-            Name for the extended output
-            
+            Name for the extended output. Default: '{catalog}_extended'
+
         Returns
         -------
         SpectralGrid
@@ -1282,25 +1127,20 @@ class MLCompleter:
         return self
 
 
-# =============================================================================
-# ML Generator API
-# =============================================================================
-
 class MLGenerator:
-    """
-    ML-based SED generator for creating complete SEDs from stellar parameters.
-    
+    """ML-based SED generator for creating complete SEDs from stellar parameters.
+
     Unlike the completer (which extends existing spectra), the generator
     creates complete SEDs from scratch using only Teff, logg, and [M/H].
-    
+
     Usage::
-    
+
         generator = SED.ml_generator()
         generator.train(grid='Kurucz2003all', epochs=200)
         wl, flux = generator.generate(teff=5777, logg=4.44, metallicity=0.0)
-        
+
     Or load a pre-trained model::
-    
+
         generator = SED.ml_generator()
         generator.load('sed_generator_Kurucz2003all')
         wl, flux = generator.generate(teff=5777, logg=4.44, metallicity=0.0)
@@ -1320,9 +1160,8 @@ class MLGenerator:
         save_name: Optional[str] = None,
         max_samples: int = 10000,
     ) -> 'MLGenerator':
-        """
-        Train the ML generator on a stellar spectral grid.
-        
+        """Train the ML generator on a stellar spectral grid.
+
         Parameters
         ----------
         grid : str
@@ -1332,10 +1171,10 @@ class MLGenerator:
         batch_size : int
             Batch size for training (default: 64)
         save_name : str, optional
-            Name for the saved model. Default: '{grid}_generator'
+            Name for the saved model. Default: 'sed_generator_{grid}'
         max_samples : int
             Maximum training samples to use (default: 10000)
-            
+
         Returns
         -------
         MLGenerator
@@ -1360,14 +1199,13 @@ class MLGenerator:
         return self
     
     def load(self, model_name: str) -> 'MLGenerator':
-        """
-        Load a previously trained generator model.
-        
+        """Load a previously trained generator model (FileNotFoundError if it is not there).
+
         Parameters
         ----------
         model_name : str
             Name of the saved model directory
-            
+
         Returns
         -------
         MLGenerator
@@ -1390,9 +1228,8 @@ class MLGenerator:
         metallicity: float,
         check_bounds: bool = True,
     ) -> Tuple[np.ndarray, np.ndarray]:
-        """
-        Generate a complete SED from stellar parameters.
-        
+        """Generate a complete SED from stellar parameters (RuntimeError before train() or load()).
+
         Parameters
         ----------
         teff : float
@@ -1426,14 +1263,13 @@ class MLGenerator:
         output_dir: Optional[str] = None,
         check_bounds: bool = True,
     ) -> Tuple[np.ndarray, np.ndarray]:
-        """
-        Generate a complete SED and save data file plus diagnostic figures.
-        
+        """Generate a complete SED and save its data file and diagnostic figures.
+
         Creates:
             - sed_T{teff}_g{logg}_m{meta}.txt - The SED data
             - sed_T{teff}_g{logg}_m{meta}_spectrum.png - SED plot
             - sed_T{teff}_g{logg}_m{meta}_params.png - Parameter space plot
-        
+
         Parameters
         ----------
         teff : float
@@ -1466,9 +1302,8 @@ class MLGenerator:
         )
     
     def parameter_ranges(self) -> Dict[str, Tuple[float, float]]:
-        """
-        Get the parameter ranges the model was trained on.
-        
+        """Get the parameter ranges the model was trained on.
+
         Returns
         -------
         dict
@@ -1490,27 +1325,24 @@ class MLGenerator:
 
     @staticmethod
     def list_models(models_dir: str = "models") -> List[Dict[str, Any]]:
-        """
-        List available trained generator models.
-        
+        """List available trained generator models.
+
         Parameters
         ----------
         models_dir : str
             Directory containing trained models
-            
+
         Returns
         -------
         list of dict
-            List of model info dictionaries with 'name', 'path', 
+            List of model info dictionaries with 'name', 'path',
             'parameter_ranges', and 'architecture' keys
         """
         from ..ml.generator import SEDGenerator
         return SEDGenerator.list_models(models_dir)
 
 
-# =============================================================================
-# Convenience exports
-# =============================================================================
+# ------------ Module-level aliases ------------
 
 def query(*args, **kwargs) -> List[SpectralGridInfo]:
     """Alias for SED.query()"""
