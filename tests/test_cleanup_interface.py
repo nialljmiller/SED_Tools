@@ -914,9 +914,9 @@ def test_filters_detector_prints_what_was_tagged_and_what_failed(tmp_path, monke
 
     monkeypatch.setattr(fm, "tag_filter_tree", tag_tree)
     assert run_cli(monkeypatch, "filters-detector", str(tmp_path)) == 1
-    out = capsys.readouterr().out
-    assert "g.dat: photon [svo]" in out
-    assert "[filters] 1 of 2 filter files could not be tagged" in out
+    captured = capsys.readouterr()
+    assert "g.dat: photon [svo]" in captured.out
+    assert "sed-tools: error: 1 of 2 filter files could not be tagged" in captured.err
 
 
 def test_composition_says_when_the_atmosphere_list_failed(tmp_path, monkeypatch, filters):

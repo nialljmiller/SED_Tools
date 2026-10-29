@@ -2209,14 +2209,10 @@ def _cmd_filters_detector(args, parser):
 
     from .api import Filters
 
-    # Each file is printed as it is tagged, so on failure only the error remains to be said.
-    try:
-        rows = Filters.tag_detector_types(
-            args.path, facility=args.facility, force=args.force, dry_run=args.dry_run
-        )
-    except (RequestException, RuntimeError, ValueError) as exc:  # SVOUnreachableError is a RequestException
-        print(f"\n[filters] {exc}")
-        return 1
+    # Each file is printed as it is tagged, so on failure main() has only the error left to say.
+    rows = Filters.tag_detector_types(
+        args.path, facility=args.facility, force=args.force, dry_run=args.dry_run
+    )
     counts = Counter((r["detector_type"], r["source"]) for r in rows)
     changed = sum(r["changed"] for r in rows)
     verb = "would change" if args.dry_run else "changed"
