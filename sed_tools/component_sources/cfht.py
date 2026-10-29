@@ -183,10 +183,8 @@ def build(filter_root: Union[str, Path], *, instrument: str = "Megaprime", sessi
     fetch = Fetcher(session)
     filters = {code: scan(fetch.text(CURVE.format(code=code), "latin-1"), CURVE.format(code=code))
                for code in sorted(set(mapping.values()))}
-    primary = percent_table(fetch.text(PRIMARY), PRIMARY)
-    corrector = percent_table(fetch.text(CORRECTOR), CORRECTOR)
-    qe_model = percent_table(fetch.text(QE_MODEL), QE_MODEL)
-    qe_measured = percent_table(fetch.text(QE_MEASURED), QE_MEASURED)
+    primary, corrector, qe_model, qe_measured = (percent_table(fetch.text(url), url)
+                                                 for url in (PRIMARY, CORRECTOR, QE_MODEL, QE_MEASURED))
 
     text = ", ".join(f"{b}={c}" for b, c in sorted(mapping.items()))
     notes = with_earlier_note(
