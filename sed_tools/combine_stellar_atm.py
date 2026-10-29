@@ -25,6 +25,7 @@ from tqdm import tqdm
 
 from ._resample import resample_to_grid
 from .cube.fileio import write_header
+from .ui_utils import banner
 from .spectrum_io import read_text_spectrum
 
 logger = logging.getLogger(__name__)
@@ -706,8 +707,6 @@ def visualize_parameter_space(teff_grid, logg_grid, meta_grid, source_map,
 
 def _print_combination_summary(teff_grid, logg_grid, meta_grid, source_map, model_names):
     """Print the combined grid's extent and each source grid's share of its nodes."""
-    from .ui_utils import banner
-
     banner("SUMMARY")
     print(f"Grid: {len(teff_grid)} × {len(logg_grid)} × {len(meta_grid)} = "
           f"{len(teff_grid) * len(logg_grid) * len(meta_grid):,} points")

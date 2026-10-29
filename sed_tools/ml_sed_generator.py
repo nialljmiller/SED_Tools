@@ -38,6 +38,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
+from .cube.fileio import load as load_cube
 from .ml_sed_completer import _training_libraries, _warn_dropped
 from .ui_utils import (ask_number as _ask_number, ask_numbers as _ask_numbers, banner as _banner,
                        menu_choice as _menu_choice, refused_without, section as _section)
@@ -194,9 +195,7 @@ class SEDGenerator:
     
     def _load_flux_cube(self, library_path: str):
         """Load flux cube from binary file."""
-        from .cube.fileio import load
-
-        return load(os.path.join(library_path, "flux_cube.bin"))
+        return load_cube(os.path.join(library_path, "flux_cube.bin"))
     
     def _prepare_training_data(
         self,

@@ -21,6 +21,8 @@ USER_AGENT = "SED_Tools/1.0 (NJM Mirror)"
 NJM_CONNECT_TIMEOUT = 5.0
 #: Seconds NJM is left alone after it stops answering.
 NJM_PAUSE = 300
+#: What FilterLibrary.facilities() and instruments() put in "errors" when NJM is down; api leaves it out of the failures.
+NJM_NOT_LISTED = "NJM unavailable"
 
 
 def _status(exc: Exception) -> Optional[int]:

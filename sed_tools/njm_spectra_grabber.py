@@ -20,6 +20,7 @@ import requests
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 
+from .njm_filter_grabber import NJMFilterGrabber  # noqa: F401 - importable from here since 0.5.0
 from .njm_mirror import BASE_URL, NJM_CONNECT_TIMEOUT, USER_AGENT, pause, paused, plain_reason, skip_ssl_verification
 
 logger = logging.getLogger(__name__)

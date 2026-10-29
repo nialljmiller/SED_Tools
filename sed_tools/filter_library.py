@@ -31,7 +31,7 @@ from .filter_components import (
 from .filter_catalogue import cache_root
 from .filter_metadata import SVOUnreachableError, migrate_filter_tree, svo_components_header
 from .njm_filter_grabber import NJMFilterGrabber, curve_file
-from .njm_mirror import _status
+from .njm_mirror import NJM_NOT_LISTED, _status
 from .svo_filter_grabber import FilterRow, SVOFilterBrowser, _clean_filename, _clean_path, svo_unavailable
 
 logger = logging.getLogger(__name__)
@@ -42,8 +42,6 @@ FETCH_ORDER = ("njm", "original", "local", "svo")
 ATMOSPHERE_CHECK_AGE = 24 * 3600
 #: Why NJM gave nothing while it is down (the NJM client announces each outage once per process).
 NJM_UNAVAILABLE = "the mirror is unavailable"
-#: What facilities() and instruments() list in "errors" when NJM is down; api leaves it out of the failures.
-NJM_NOT_LISTED = "NJM unavailable"
 _NJM_HAS_NO_COMPONENTS = "the mirror does not have them"
 _COMPONENTS_ONLY = "its builder makes only the separate components, not the published curves"
 

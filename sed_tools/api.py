@@ -60,6 +60,7 @@ from .models import (
     SEDModel,
     SED as _SEDCore,
 )
+from .njm_mirror import NJM_NOT_LISTED
 
 logger = logging.getLogger(__name__)
 
@@ -78,8 +79,6 @@ _SOURCE_ERRORS = (RequestException, OSError, ValueError, RuntimeError)
 
 def _listing_failures(errors: List[str]) -> List[str]:
     """The catalogue listing errors that leave a list incomplete (an unreachable NJM does not)."""
-    from .filter_library import NJM_NOT_LISTED
-
     return [error for error in errors if error != NJM_NOT_LISTED]
 
 

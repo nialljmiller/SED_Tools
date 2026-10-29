@@ -52,6 +52,7 @@ from ._constants import available_memory_bytes as _available_ram_bytes
 from ._constants import planck_flam as _blackbody
 from ._resample import resample_to_grid
 from .cube.fileio import flux_offset, write_header
+from .ui_utils import banner
 
 
 # ---------------------------------------------------------------------------
@@ -269,7 +270,7 @@ def run_interactive_workflow(base_dir: str = None) -> Optional[int]:
     """Choose a cube, spacing, ML model and output, then densify; 1 when a model is given without torch."""
     import glob
 
-    from .ui_utils import ask_number as _ask_number, banner, refused_without
+    from .ui_utils import ask_number as _ask_number, refused_without
 
     if base_dir is None:
         from .models import STELLAR_DIR_DEFAULT
