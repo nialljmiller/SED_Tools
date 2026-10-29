@@ -61,8 +61,7 @@ class Spectrum:
 
 
 def normalize_metadata_key(key: str) -> str:
-    normalized = re.sub(r"[^a-z0-9]+", "_", key.strip().lower())
-    return normalized.strip("_")
+    return re.sub(r"[^a-z0-9]+", "_", key.strip().lower()).strip("_")
 
 
 def parse_metadata_value(value: str) -> object:
@@ -315,8 +314,7 @@ def band_average_flux_nu(
 def load_spectrum(path: str, wavelength_unit: str | None = None) -> Spectrum:
     wavelengths, fluxes, metadata = load_two_column_file(path)
     wavelength, order = _standardize_file_wavelengths(path, wavelengths, metadata, wavelength_unit)
-    flux = np.asarray(fluxes, dtype=float)[order]
-    return Spectrum(wavelength, flux, metadata, wavelength_unit="angstrom")
+    return Spectrum(wavelength, np.asarray(fluxes, dtype=float)[order], metadata, wavelength_unit="angstrom")
 
 def _band_magnitude(wl, flux, curve, photometric_system, vega_spectrum):
     """Return (flux label, band-averaged flux, magnitude) for one filter.

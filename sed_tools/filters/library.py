@@ -708,7 +708,7 @@ class FilterLibrary:
         errors = []
         listings = [("local", [(d.name, "") for d in sorted(self.root.glob("*"))
                                if d.is_dir() and any(d.glob("*/*.dat"))]),
-                    ("original",[(facility, "") for facility, _ in _publishing_builders()])]
+                    ("original", [(facility, "") for facility, _ in _publishing_builders()])]
         if remote:
             try:
                 facilities = self.svo.list_facilities()
