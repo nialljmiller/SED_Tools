@@ -43,12 +43,12 @@ def _published(inst, band, wl, tr, components="filter+optics+qe"):
 
 
 # ---------------------------------------------------------------------------
-# add_component: peaks above 1 are written unclipped, with a warning
+# add_component: peaks above 1 are written unclipped (builders explain them in the manifest notes)
 # ---------------------------------------------------------------------------
-def test_component_above_one_is_kept_and_warned(tmp_path, caplog):
+def test_component_above_one_is_kept_unclipped(tmp_path, caplog):
     with caplog.at_level(logging.WARNING):
         rel = add_component(tmp_path, FILTER, [4000.0, 5000.0], [0.5, 1.03], band="i")
-    assert "peaks at 1.03 > 1" in caplog.text
+    assert caplog.text == ""
     wl, tr = np.loadtxt(tmp_path / rel, delimiter=",", skiprows=1, unpack=True)
     assert tr.max() == pytest.approx(1.03)
     with pytest.raises(ComponentError, match="percent"):

@@ -264,8 +264,6 @@ def write_filter_header(path: PathLike, fields: Mapping[str, Optional[str]]) -> 
     is not stored and ``False`` is returned.
     """
     layout = _layout(path)
-    if layout.column_row is None and any(fields.values()):
-        logger.warning("%s has no column-name row to hold SED_Tools metadata; left as it is", path)
     lines = _rewritten(layout, fields)
     if lines != layout.lines:
         tmp_path = f"{path}.tmp"
@@ -330,15 +328,16 @@ def migrate_filter_file(path: PathLike, *, dry_run: bool = False) -> bool:
     """Move metadata from leading ``#`` lines (SED_Tools 0.3.0) onto the column row.
 
     Returns whether ``path`` had such lines.  A curve without a column row is
-    restored to its form before tagging; :func:`has_column_row` tells the two apart.
+    restored to its form before tagging, with a warning that its metadata is
+    not stored; :func:`has_column_row` tells the two apart.
     Other comment or blank lines are kept, with a warning when released MESA
     would still misread the curve.
     """
     layout = _layout(path)
     if layout.legacy:
         fields = {**layout.legacy, **layout.fields}
-        if not dry_run:
-            write_filter_header(path, fields)
+        if not dry_run and not write_filter_header(path, fields):
+            logger.warning("%s has no column-name row to hold SED_Tools metadata; left as it is", path)
         if not _released_mesa_reads_lines(_rewritten(layout, fields)):
             logger.warning("%s keeps lines that released MESA miscounts as samples "
                            "(comments or blank lines around the column row); remove them by hand", path)

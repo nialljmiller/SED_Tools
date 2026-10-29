@@ -61,3 +61,19 @@ def test_a_partial_svo_fill_with_curves_that_differ_from_njms_gives_one_warning(
     [warning] = after_svo
     assert "Roman/WFI is incomplete" in warning and "missing F106" in " ".join(warning.split())
     assert "SVO's F062 of Roman/WFI differ from NJM's current curves" in " ".join(warning.split())
+
+
+def test_a_curve_without_a_column_row_is_reported_once_by_its_caller(tmp_path, caplog):
+    from sed_tools.filter_metadata import migrate_filter_file, write_filter_header
+
+    bare = tmp_path / "bare.dat"
+    bare.write_text("4000,0.1\n5000,0.9\n")
+    with caplog.at_level(logging.WARNING):
+        assert write_filter_header(bare, {"DetectorType": "photon"}) is False  # the caller reports it
+    assert caplog.text == ""
+    legacy = tmp_path / "legacy.dat"
+    legacy.write_text("# DetectorType: photon\n4000,0.1\n5000,0.9\n")  # tagged by SED_Tools 0.3.0
+    with caplog.at_level(logging.WARNING):
+        assert migrate_filter_file(legacy) is True
+    assert caplog.text.count("has no column-name row to hold SED_Tools metadata") == 1
+    assert legacy.read_text() == "4000,0.1\n5000,0.9\n"
