@@ -71,10 +71,10 @@ def _wavelengths_in_h5(f, spec_group: str, expected_len: int) -> Optional[np.nda
 
 def _increasing_physical_prefix(wl: np.ndarray, expected_len: int) -> Optional[np.ndarray]:
     """wl[:expected_len] if wl is long enough and that prefix is a rising physical grid."""
+    if wl.size < expected_len:
+        return None
     prefix = wl[:expected_len]
-    if wl.size >= expected_len and np.all(np.diff(prefix) > 0) and _is_physical_wavelength_array(prefix):
-        return prefix
-    return None
+    return prefix if np.all(np.diff(prefix) > 0) and _is_physical_wavelength_array(prefix) else None
 
 
 def _wavelengths_in_group(group, expected_len: int) -> Optional[np.ndarray]:
