@@ -1319,8 +1319,9 @@ the names differ):
   ``MLGenerator.train`` given a grid folder that does not exist say "No
   flux_cube.bin found in <dir>. Run 'sed-tools rebuild' first." (it was
   "Grid not found: <dir>"), before anything is written. A failed
-  ``train_model`` or ``extend_catalog`` (``MLCompleter.train``,
-  ``MLCompleter.extend``) leaves no empty model or output folder.
+  ``train_model`` (``MLCompleter.train``) creates no model folder, and
+  ``extend_catalog`` (``MLCompleter.extend``) creates no output folder when
+  the lookup table or the model cannot be read.
 - ``SEDCompleter.train`` and ``SEDGenerator.train`` saved a model when no
   epoch gave a usable loss (then crashed while plotting); they now raise
   ``RuntimeError`` before saving. ``SEDGenerator.train`` with no flux above
