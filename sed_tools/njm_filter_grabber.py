@@ -35,11 +35,13 @@ NJM_CONNECT_TIMEOUT = 5.0
 NJM_PAUSE = 300
 #: Seconds a process keeps NJM's index.json before reading it again.
 NJM_INDEX_MAX_AGE = 3600
-FALLBACK_SOURCES = "installed copies, the original-source builders and SVO"
 
 
 def plain_reason(reason) -> str:
     """Why NJM could not be reached, in a few plain words rather than a raw exception's text."""
+    status = _status(reason)
+    if status is not None:  # NJM answered, but refused (a burst block, say)
+        return f"HTTP {status}"
     text = str(reason)
     if len(text) <= 60 and "(" not in text:
         return text
@@ -192,9 +194,10 @@ class NJMFilterGrabber:
             return self._unavailable(exc)
         try:
             data = response.json()
-            self._index_data = data if isinstance(data, dict) else None
         except ValueError:
-            pass  # the mirror answered; _index fetches the index again
+            data = None  # the mirror answered; _index fetches the index again
+        if isinstance(data, dict) and isinstance(data.get("filters"), dict):
+            self._index_data = data
         return True
 
     def _unavailable(self, reason) -> bool:
@@ -256,14 +259,12 @@ class NJMFilterGrabber:
                 _STATE.reported = False  # NJM answers: a later outage is news again
                 return response
             except requests.RequestException as exc:
-                status = getattr(getattr(exc, "response", None), "status_code", None)
+                status = _status(exc)
                 if status is not None and status not in RETRY_STATUSES:
                     raise
                 if attempt == 2:
                     if status is None or status in BLOCKED_STATUSES:
-                        self._pause(f"{status or type(exc).__name__} for {url}",
-                                    f"NJM mirror {self.base_url} stopped answering ({exc}); it is not asked "
-                                    f"again for {NJM_PAUSE // 60} minutes, and filters come from {FALLBACK_SOURCES}")
+                        self._unavailable(exc)
                     raise
                 delay = (1, 60)[attempt] if status == 403 else (1, 3)[attempt]
                 if status == 429:
@@ -345,8 +346,6 @@ class NJMFilterGrabber:
         A failure is warned about once per grabber, followed by ``unreadable``
         (what is done without it).
         """
-        if self._index_data is not None and not isinstance(self._index_data.get("filters"), dict):
-            self._index_data = None  # what the availability check fetched is no filter index
         if self._index_data is None:
             with _STATE.lock:
                 if _STATE.index is not None and monotonic() - _STATE.index_read < NJM_INDEX_MAX_AGE:

@@ -418,7 +418,8 @@ def test_njm_that_stops_answering_is_not_asked_again(tmp_path, njm, caplog):
     assert grabber.session.requested.count("filters/Fac/Cam/a.dat") == 3  # retried, then given up
     assert "filters/Fac/Cam/b.dat" not in grabber.session.requested
     assert result.curve_failures == ["3 curves from a.dat on: connect timed out"]
-    assert caplog.text.count("stopped answering") == 1 and "original-source builders and SVO" in caplog.text
+    assert caplog.text.count("is unavailable (connect timed out)") == 1
+    assert "original-source builders and SVO" in caplog.text
     assert not grabber.is_available()
     with pytest.raises(requests.ConnectionError, match="not asked again"):
         grabber._get(f"{NJM}/index.json")
