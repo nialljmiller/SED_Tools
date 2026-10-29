@@ -47,8 +47,7 @@ _SPECTRUM_ERRORS = (requests.RequestException, OSError, ValueError)
 
 # ----------------- small utils -----------------
 def _http_get(url: str, session: Optional[requests.Session] = None, timeout: int = 120) -> requests.Response:
-    sess = session or requests.Session()
-    r = sess.get(url, timeout=timeout)
+    r = (session or requests.Session()).get(url, timeout=timeout)
     r.raise_for_status()
     return r
 
@@ -107,22 +106,13 @@ def _metal_tag(token: str) -> str:
                          + ", ".join(m[1:] for m in METALS))
     return tag
 
-def _filter_metals_by_range(
-    metals: List[str],
-    meta_range: Optional[Tuple[float, float]],
-) -> List[str]:
+def _filter_metals_by_range(metals: List[str], meta_range: Optional[Tuple[float, float]]) -> List[str]:
     if meta_range is None:
         return metals
-    return [
-        met for met in metals
-        if (val := _metal_tag_to_float(met)) is not None and _in_range(val, meta_range)
-    ]
+    return [met for met in metals if (val := _metal_tag_to_float(met)) is not None and _in_range(val, meta_range)]
 
-def _filter_urls_by_params(
-    urls: List[str],
-    teff_range: Optional[Tuple[float, float]] = None,
-    logg_range: Optional[Tuple[float, float]] = None,
-) -> List[str]:
+def _filter_urls_by_params(urls: List[str], teff_range: Optional[Tuple[float, float]] = None,
+                           logg_range: Optional[Tuple[float, float]] = None) -> List[str]:
     if teff_range is None and logg_range is None:
         return urls
 
@@ -253,12 +243,8 @@ def _script_spectrum_urls(stxt: str, reskey: str) -> List[str]:
     return found
 
 # ----------------- spectrum files -----------------
-def _apply_wl_range(
-    wl: np.ndarray,
-    fx: np.ndarray,
-    ct: Optional[np.ndarray],
-    wl_range: Optional[Tuple[float, float]],
-) -> Tuple[np.ndarray, np.ndarray, Optional[np.ndarray]]:
+def _apply_wl_range(wl: np.ndarray, fx: np.ndarray, ct: Optional[np.ndarray],
+                    wl_range: Optional[Tuple[float, float]]) -> Tuple[np.ndarray, np.ndarray, Optional[np.ndarray]]:
     if wl_range is None:
         return wl, fx, ct
     lo, hi = wl_range
@@ -302,10 +288,7 @@ def _parse_any(text: str, inline: bool, wave: Optional[np.ndarray],
     if fx.size and not inline:
         if wave is not None:
             if fx.size != wave.size:
-                raise ValueError(
-                    f"BOSZ {reskey} wavelength-grid length mismatch: "
-                    f"wave={wave.size}, flux={fx.size}"
-                )
+                raise ValueError(f"BOSZ {reskey} wavelength-grid length mismatch: wave={wave.size}, flux={fx.size}")
             return wave, fx, ct
     # last-ditch: 2-col (wave, flux)
     wl_guess, fx_guess = [], []
@@ -390,11 +373,8 @@ class MASTSpectraGrabber:
         urls = _gather_urls_from_scripts(reskey, metals, self.session)
         urls = _filter_urls_by_params(urls, teff_range=teff_range, logg_range=logg_range)
         if not urls:
-            print(
-                f"[MAST] No BOSZ spectra URLs found for {reskey} "
-                f"with teff_range={teff_range}, logg_range={logg_range}, "
-                f"meta_range={meta_range}"
-            )
+            print(f"[MAST] No BOSZ spectra URLs found for {reskey} "
+                  f"with teff_range={teff_range}, logg_range={logg_range}, meta_range={meta_range}")
             return 0
         print(f"[MAST] harvest = download_scripts ({len(urls)} urls)")
 
