@@ -21,11 +21,7 @@ from ..grids.lookup import (  # noqa: F401  (write_lookup_csv: importable here, 
     find_file_column, find_logg_column, find_metallicity_column, find_teff_column,
     write_lookup_csv,
 )
-from .collision import (
-    copy_global_config_to_model,
-    discover_extra_axes,
-    load_config,
-)
+from .collision import copy_global_config_to_model, discover_extra_axes, load_config
 from .fileio import flux_offset, write_header
 # _extra_key_to_filename, _subdir_name and _value_to_safe_str: importable here, as always.
 from .variants import (_build_filtered_cube, _build_mean_cube, _extra_key_to_filename,  # noqa: F401
@@ -131,9 +127,7 @@ def _read_lookup_table(lookup_file: str) -> Tuple[Dict[str, List], List[str], in
     return result, cols, len(rows)
 
 
-def _float_col(
-    lookup: Dict[str, List], col: Optional[str], lookup_file: str, file_col: str,
-) -> np.ndarray:
+def _float_col(lookup: Dict[str, List], col: Optional[str], lookup_file: str, file_col: str) -> np.ndarray:
     """Parse one parameter column; a missing column (``col`` None) reads as 0.0 throughout."""
     if col is None:
         return np.zeros(len(next(iter(lookup.values()))))
@@ -153,9 +147,7 @@ def _float_col(
     return np.array(vals)
 
 
-def _parse_axes(
-    lookup: Dict[str, List], lookup_file: str, file_col: str,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+def _parse_axes(lookup: Dict[str, List], lookup_file: str, file_col: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Teff (required), logg and [M/H] of every lookup row; a missing logg or [M/H] column (blackbodies) is 0.0."""
     teff_col = find_teff_column(lookup.keys())
     if teff_col is None:
@@ -163,13 +155,8 @@ def _parse_axes(
             f"{lookup_file} has no Teff column (teff, t_eff, temperature or temp); "
             "cannot build a flux cube."
         )
-    logg_col = find_logg_column(lookup.keys())
-    meta_col = find_metallicity_column(lookup.keys())
-    return (
-        _float_col(lookup, teff_col, lookup_file, file_col),
-        _float_col(lookup, logg_col, lookup_file, file_col),
-        _float_col(lookup, meta_col, lookup_file, file_col),
-    )
+    columns = (teff_col, find_logg_column(lookup.keys()), find_metallicity_column(lookup.keys()))
+    return tuple(_float_col(lookup, col, lookup_file, file_col) for col in columns)
 
 
 def _require_spectra(model_dir: str, file_names: List[str], lookup_file: str) -> None:
@@ -185,11 +172,8 @@ def _require_spectra(model_dir: str, file_names: List[str], lookup_file: str) ->
 
 # --- Building and writing one cube ---
 
-def build_grids(
-    teff_vals: np.ndarray,
-    logg_vals: np.ndarray,
-    meta_vals: np.ndarray,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+def build_grids(teff_vals: np.ndarray, logg_vals: np.ndarray,
+                meta_vals: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     teff_grid, logg_grid, meta_grid = np.unique(teff_vals), np.unique(logg_vals), np.unique(meta_vals)
     print(f"Grid: {len(teff_grid)} Teff × {len(logg_grid)} logg × {len(meta_grid)} meta")
     return teff_grid, logg_grid, meta_grid
@@ -221,12 +205,8 @@ def _allocate_cube(teff_grid, logg_grid, meta_grid, wavelengths, tmp_path=None) 
     return np.zeros(shape, dtype=np.float64)
 
 
-def _write_cube(
-    output_file: str,
-    teff_grid, logg_grid, meta_grid, wavelengths,
-    flux_cube: np.ndarray,
-    usable_ram: int,
-) -> None:
+def _write_cube(output_file: str, teff_grid, logg_grid, meta_grid, wavelengths, flux_cube: np.ndarray,
+                usable_ram: int) -> None:
     nt, nl, nm, nw = len(teff_grid), len(logg_grid), len(meta_grid), len(wavelengths)
     tlm = nt * nl * nm
     w_chunk = max(1, usable_ram // (tlm * 2 * 8))
@@ -357,19 +337,12 @@ def _populate_and_write(
 
     flux_cube = _allocate_cube(teff_grid, logg_grid, meta_grid, wavelengths, tmp_path)
     try:
-        count_cube = _accumulate_spectra(
-            flux_cube, model_dir, file_names,
-            (teff_vals, logg_vals, meta_vals), (teff_grid, logg_grid, meta_grid),
-            wavelengths, label,
-        )
+        count_cube = _accumulate_spectra(flux_cube, model_dir, file_names, (teff_vals, logg_vals, meta_vals),
+                                         (teff_grid, logg_grid, meta_grid), wavelengths, label)
 
         nonzero = count_cube > 0
         for axis_idx in range(len(wavelengths)):
-            flux_cube[:, :, :, axis_idx] = np.where(
-                nonzero,
-                flux_cube[:, :, :, axis_idx] / np.maximum(count_cube, 1),
-                0.0,
-            )
+            flux_cube[:, :, :, axis_idx] = np.where(nonzero, flux_cube[:, :, :, axis_idx] / np.maximum(count_cube, 1), 0.0)
 
         _write_cube(output_file, teff_grid, logg_grid, meta_grid, wavelengths, flux_cube, usable_ram)
     finally:
@@ -416,10 +389,7 @@ def _accumulate_spectra(
         done = i + 1
         rate = done / elapsed if elapsed > 0 else 1.0
         eta = (n - done) / rate
-        print(
-            f"\r  {prefix}spectra {done}/{n} ({100*done/n:.1f}%)  ETA {eta:.0f}s   ",
-            end="", flush=True,
-        )
+        print(f"\r  {prefix}spectra {done}/{n} ({100*done/n:.1f}%)  ETA {eta:.0f}s   ", end="", flush=True)
 
     print(f"\n  {prefix}Done — {n - len(empty)}/{n} loaded.")
     if empty:
@@ -451,8 +421,6 @@ def _warn_averaged_rows(lookup: Dict[str, List], rows, nodes, cube_path: str) ->
         cube_path, sum(len(members) for members in shared), len(shared),
         ", ".join(differing) if differing else "no column but the file name (duplicate nodes)",
     )
-
-
 
 
 # --- precompute_flux_cube and its command line ---
