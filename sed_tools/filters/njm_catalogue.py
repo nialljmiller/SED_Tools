@@ -153,12 +153,9 @@ class FilterCatalogue:
             if path.is_file():
                 self._came_from(rel, "cache", meta.get("checked"), njm_unreachable=not self.offline)
             return path if path.is_file() else None
-        headers = {}
-        if path.is_file():
-            if meta.get("etag"):
-                headers["If-None-Match"] = meta["etag"]
-            if meta.get("last_modified"):
-                headers["If-Modified-Since"] = meta["last_modified"]
+        headers = {header: meta[key] for header, key in (("If-None-Match", "etag"),
+                                                          ("If-Modified-Since", "last_modified"))
+                   if path.is_file() and meta.get(key)}
         url = f"{mirror.base_url}/{quote(rel, safe='/')}"
         try:
             response = mirror._get(url, timeout=60, headers=headers or None)
@@ -552,21 +549,18 @@ def _apply(frame: pd.DataFrame, column: str, criterion) -> pd.Series:
     kind = criterion[0]
     if kind == "covers":
         return (numeric("WavelengthMin") <= criterion[1]) & (numeric("WavelengthMax") >= criterion[1])
-    if kind == "overlaps":
+    if kind in ("overlaps", "range"):
         lo, hi = criterion[1:]
-        mask = numeric("WavelengthMax").notna() & numeric("WavelengthMin").notna()
+        # overlaps: the curve reaches past lo and starts before hi; range: the value lies between them
+        if kind == "overlaps":
+            reaches, starts = numeric("WavelengthMax"), numeric("WavelengthMin")
+        else:
+            reaches = starts = numeric(column)
+        mask = reaches.notna() & starts.notna()
         if lo is not None:
-            mask &= numeric("WavelengthMax") >= lo
+            mask &= reaches >= lo
         if hi is not None:
-            mask &= numeric("WavelengthMin") <= hi
-        return mask
-    if kind == "range":
-        values = numeric(column)
-        mask = values.notna()
-        if criterion[1] is not None:
-            mask &= values >= criterion[1]
-        if criterion[2] is not None:
-            mask &= values <= criterion[2]
+            mask &= starts <= hi
         return mask
     wanted = criterion[1]
     if column not in frame:
