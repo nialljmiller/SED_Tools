@@ -226,20 +226,14 @@ def _parse(data: bytes, spec: Input) -> Curve:
     """(Angstrom, fraction) from a comma-separated table in nm (its bytes already match the pin)."""
     table = np.loadtxt(io.StringIO(data.decode("utf-8")), delimiter=",", skiprows=spec.skip,
                        usecols=(0, spec.column), ndmin=2)
-    wavelength = table[:, 0] * 10.0
-    transmission = table[:, 1] / 100.0 if spec.percent else table[:, 1]
-    return wavelength, transmission
-
-
-def _missing_local(inputs: Mapping[str, Input], raw: Optional[Path]) -> list:
-    return [spec for spec in inputs.values()
-            if spec.url is None and (raw is None or not (raw / spec.file).is_file())]
+    return table[:, 0] * 10.0, (table[:, 1] / 100.0 if spec.percent else table[:, 1])
 
 
 def _read_inputs(inputs: Mapping[str, Input], raw: Optional[Path], instrument: str,
                  fetch: Optional[CachingSession] = None) -> Dict[str, Curve]:
     """Every input as (Angstrom, fraction), SHA-256 checked; the local (non-public) ones before any download."""
-    missing = _missing_local(inputs, raw)
+    missing = [spec for spec in inputs.values()
+               if spec.url is None and (raw is None or not (raw / spec.file).is_file())]
     if missing:
         listing = "; ".join(f"{spec.file} ({spec.origin})" for spec in missing)
         where = f"in {raw}" if raw is not None else "(no raw directory given)"

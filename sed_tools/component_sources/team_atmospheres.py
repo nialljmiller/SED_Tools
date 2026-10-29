@@ -47,9 +47,8 @@ logger = logging.getLogger(__name__)
 def _bytes(session, url: str) -> bytes:
     raw = download(session, url)
     head = raw[:512].lstrip().lower()
-    if head.startswith(b"<!doctype html") or head.startswith(b"<html"):
-        if b"<pre>" not in raw[:2000].lower():
-            raise ValueError(f"{url} returned HTML, not data")
+    if head.startswith((b"<!doctype html", b"<html")) and b"<pre>" not in raw[:2000].lower():
+        raise ValueError(f"{url} returned HTML, not data")
     return raw
 
 

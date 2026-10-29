@@ -362,9 +362,7 @@ def register_variant(manifest: InstrumentManifest, key: str, name: str,
     ``info`` adds ``description``, ``source``, ``epoch``, ``derived``,
     ``default`` and the like (see :attr:`InstrumentManifest.variants`).
     """
-    entry = {"files": dict(files)}
-    entry.update(info)
-    manifest.variants.setdefault(key, {})[name] = entry
+    manifest.variants.setdefault(key, {})[name] = {"files": dict(files), **info}
 
 
 # ---------- Components added to published instruments (CFHT, ERIS/NIX, 2MASS)
@@ -413,9 +411,7 @@ def register(manifest: InstrumentManifest, inst_dir: Path, role: str, wl, tr, *,
              bands: Iterable[str], name: str, source: str) -> str:
     """Write one component file and register it for each of ``bands``."""
     rel = add_component(inst_dir, role, wl, tr, name=name, source=source)
-    entries = manifest.components.setdefault(role, {})
-    for band in bands:
-        entries[band] = rel
+    manifest.components.setdefault(role, {}).update(dict.fromkeys(bands, rel))
     manifest.sources.setdefault(role, source)
     return rel
 

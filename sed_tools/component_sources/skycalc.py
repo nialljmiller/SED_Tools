@@ -111,7 +111,6 @@ def airmass_altitude(airmass: float) -> float:
 
 def _form_fields(params: Dict[str, object]) -> Dict[str, str]:
     """Translate API parameters into the SkyCalc web form's fields."""
-    yes = lambda key: params[key] == "Y"
     fields = {
         "INS.NAME": "SKYCALC", "INS.MODE": "swspectr", "POSTFILE.FLAG": "0",
         "TEL.SITE.HEIGHT": str(params["observatory"]),
@@ -144,7 +143,7 @@ def _form_fields(params: Dict[str, object]) -> Dict[str, str]:
     for key, name in (("incl_moon", "MOON"), ("incl_starlight", "STARLIGHT"), ("incl_zodiacal", "ZODIACAL"),
                       ("incl_loweratm", "MOLEC.EMIS.LOWER.ATM"), ("incl_upperatm", "MOLEC.EMIS.UPPER.ATM"),
                       ("incl_airglow", "AIRGLOW"), ("incl_therm", "THERMAL")):
-        if yes(key):
+        if params[key] == "Y":
             fields[f"SKYMODEL.INCL.{name}"] = "Y"
     return fields
 
@@ -386,10 +385,8 @@ def _grid_parameters(site: str, fetch_resolution: float, store_resolution: float
 def _load_grid(site_dir: Path, site: str, parameters: Dict, fetch_resolution: float,
                store_resolution: float) -> AtmosphereGrid:
     """The site's grid manifest, described as a SkyCalc grid; an existing grid keeps its recorded settings."""
-    if (site_dir / "manifest.json").exists():
-        grid = AtmosphereGrid.load(site_dir)
-    else:
-        grid = AtmosphereGrid(site=site, entries=[])
+    grid = (AtmosphereGrid.load(site_dir) if (site_dir / "manifest.json").exists()
+            else AtmosphereGrid(site=site, entries=[]))
     recorded = dict(grid.parameters or {})
     if not grid.entries or not recorded:
         # A new grid (or one from before provenance was recorded): describe it now.
@@ -409,7 +406,7 @@ def _load_grid(site_dir: Path, site: str, parameters: Dict, fetch_resolution: fl
 def _check_settings(grid: AtmosphereGrid, parameters: Dict, site: str) -> None:
     """New points must match how the existing ones were made."""
     mismatched = {k: (grid.parameters.get(k), v) for k, v in parameters.items()
-                  if k not in ("interface",) and grid.parameters.get(k) != v}
+                  if k != "interface" and grid.parameters.get(k) != v}
     if mismatched:
         raise ValueError(f"{site}: the existing grid was made with different settings "
                          f"{mismatched}; build it in a new atmosphere root")
