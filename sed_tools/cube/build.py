@@ -537,9 +537,7 @@ def _main():
 
     if not args.output:
         args.output = os.path.join(args.model_dir, "flux_cube.bin")
-        ans = input(f"Output file [{args.output}]: ").strip()
-        if ans:
-            args.output = ans
+        args.output = input(f"Output file [{args.output}]: ").strip() or args.output
 
     precompute_flux_cube(args.model_dir, args.output, root_dir=args.root_dir)
 
