@@ -57,6 +57,12 @@ def _paint(char: str, color: Optional[str], enabled: bool) -> str:
     return f"\x1b[{code}m{char}\x1b[0m" if enabled and code else char
 
 
+def _painted(canvas: List[List[str]], cell_colors: List[list], enabled: bool) -> List[str]:
+    """Each canvas row as text, every character in its cell's colour."""
+    return ["".join(_paint(char, color, enabled) for char, color in zip(chars, colors))
+            for chars, colors in zip(canvas, cell_colors)]
+
+
 def _limits(values: np.ndarray):
     lo, hi = float(np.min(values)), float(np.max(values))
     if lo == hi:
@@ -104,12 +110,8 @@ def scatter2d(
     use_color = terminal_color_enabled(color)
     ytop, ybottom = (ylo, yhi) if invert_y else (yhi, ylo)
     lines = [title, "", f"{ylabel}  {ytop:g}"]
-    for row in range(canvas_h):
-        rendered = "".join(
-            _paint(canvas[row][col], cell_colors[row][col], use_color)
-            for col in range(canvas_w)
-        )
-        lines.append(f" {' ' * len(ylabel)} {vert}{rendered}")
+    for row in _painted(canvas, cell_colors, use_color):
+        lines.append(f" {' ' * len(ylabel)} {vert}{row}")
     lines.append(f" {ybottom:g} {corner}{horiz * canvas_w}")
     lines.append(f"       {xlo:g}{' ' * max(1, canvas_w - len(f'{xlo:g}') - len(f'{xhi:g}'))}{xhi:g}")
     lines.append(f"       {xlabel.center(canvas_w)}")
@@ -162,9 +164,8 @@ def lineplot(
     vert, horiz, corner = ("│", "─", "└") if unicode_ok else ("|", "-", "+")
     use_color = terminal_color_enabled(color)
     lines = [title, f"{ylabel}  {yhi:g}"]
-    for row in range(canvas_h):
-        rendered = "".join(_paint(canvas[row][c], cell_colors[row][c], use_color) for c in range(canvas_w))
-        lines.append(f" {vert}{rendered}")
+    for row in _painted(canvas, cell_colors, use_color):
+        lines.append(f" {vert}{row}")
     lines.append(f" {ylo:g} {corner}{horiz * canvas_w}")
     lines.append(f"     {xlo:g}{' ' * max(1, canvas_w - len(f'{xlo:g}') - len(f'{xhi:g}'))}{xhi:g}")
     lines.append(f"     {xlabel.center(canvas_w)}")

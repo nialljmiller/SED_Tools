@@ -237,14 +237,12 @@ def _print_cleaning_report(summary: Dict) -> None:
         print(f" Wavelength: {detected_wl}")
         print(f" Flux      : {detected_flux}")
 
-    units_already_standard = (detected_wl == 'angstrom' and detected_flux == 'flam')
-    n_converted = len(summary['converted'])
+    n_converted, n_tagged = len(summary['converted']), 0
     n_recovered = len(summary['recovered'])
     n_skipped   = len(summary['skipped_already'])
 
     # Files "converted" from units that were already Å and F_λ were only cleaned and tagged.
-    n_tagged = 0
-    if n_converted > 0 and units_already_standard:
+    if n_converted > 0 and detected_wl == 'angstrom' and detected_flux == 'flam':
         n_tagged, n_converted = n_converted, 0
 
     print(f" Total files: {n_total}")

@@ -543,8 +543,13 @@ def _build_all_component_sources(base: str, sites: Optional[List[str]]) -> int:
             get_builder(name)(base, **kw)
         except (ValueError, RequestException, OSError, RuntimeError) as exc:
             failed.append(f"{name}: {exc}")
+    return _failure_status("filters", failed)
+
+
+def _failure_status(tag: str, failed: List[str]) -> int:
+    """Print ``[tag] FAILED <line>`` for each failure; the exit status, 1 if there were any."""
     for line in failed:
-        print(f"[filters] FAILED {line}")
+        print(f"[{tag}] FAILED {line}")
     return 1 if failed else 0
 
 
@@ -623,9 +628,7 @@ def _cmd_coverage(args, parser):
                          out_path=args.out if len(names) == 1 else None)
         except (ValueError, OSError, RuntimeError) as exc:
             failed.append(f"{nm}: {exc}")
-    for line in failed:
-        print(f"[coverage] FAILED {line}")
-    return 1 if failed else 0
+    return _failure_status("coverage", failed)
 
 
 def _cmd_import(args, parser):
