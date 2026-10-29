@@ -39,9 +39,7 @@ Example usage::
 
 from __future__ import annotations
 
-import csv
 import logging
-import math
 import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -61,6 +59,12 @@ from ..cube.model import (
     SED as _SEDCore,
 )
 from ..njm_mirror import NJM_NOT_LISTED
+from ..cube.check import _bundle_shortfall, _flux_cube_file, _flux_cube_shortfall  # noqa: F401
+from ..grids.pipeline import (  # noqa: F401  (_build_combined_grid and _parameter_cuts are re-exported)
+    _build_combined_grid, _build_data_products, _build_flux_cube, _directory_state, _download_count,
+    _import_sources, _parameter_cuts, _report_import_headers, download_from_first_source,
+    spectra_grabber,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -73,6 +77,10 @@ _SPECTRA_SOURCES = ("njm", "svo", "msg", "mast")
 # downloads its grid's one HDF5 file whole and extracts the spectra within them; SVO serves whole grids.)
 _CUTTING_SOURCES = ("njm", "msg")
 
+# How SED.query describes the grids each remote source lists.
+_LISTED_AS = {"svo": {"url": "http://svo2.cab.inta-csic.es/theory/newov2/"}, "msg": {"description": "MSG HDF5 format"},
+              "mast": {"description": "BOSZ spectral grids"}, "njm": {"description": "NJM pre-processed mirror"}}
+
 # What a remote source raises when it is unreachable or serves something unexpected.
 _SOURCE_ERRORS = (RequestException, OSError, ValueError, RuntimeError)
 
@@ -80,181 +88,6 @@ _SOURCE_ERRORS = (RequestException, OSError, ValueError, RuntimeError)
 def _listing_failures(errors: List[str]) -> List[str]:
     """The catalogue listing errors that leave a list incomplete (an unreachable NJM does not)."""
     return [error for error in errors if error != NJM_NOT_LISTED]
-
-
-def _directory_state(directory: Path) -> Dict[str, int]:
-    """Name and modification time of each entry in ``directory`` ({} if it does not exist)."""
-    directory = Path(directory)
-    if not directory.is_dir():
-        return {}
-    return {path.name: path.stat().st_mtime_ns for path in directory.iterdir()}
-
-
-def _mixed_sources_error(src: str, model_dir, tried: List[str]) -> RuntimeError:
-    """The error when ``src`` failed after writing into ``model_dir``, so no further source is tried."""
-    return RuntimeError(f"{src} failed after changing {model_dir}, so another source's spectra would be mixed "
-                        f"with its files; no further source tried. Tried: {'; '.join(tried)}")
-
-
-def _download_count(n_spectra: int, before: Dict[str, int], after: Dict[str, int]) -> str:
-    """``Downloaded N spectra``, or ``K already present, N downloaded`` when the grabber's
-    ``n_spectra`` (the spectra it downloaded or found in place) includes spectra it did not write.
-
-    ``before`` and ``after`` are :func:`_directory_state` around the download.
-    """
-    written = sum(1 for name, mtime in after.items()
-                  if name.lower().endswith(".txt") and before.get(name) != mtime)
-    present = n_spectra - written
-    return f"{present} already present, {written} downloaded" if present > 0 else f"Downloaded {n_spectra} spectra"
-
-
-def _parameter_cuts(teff_min, teff_max, logg_min, logg_max, metallicity_min,
-                    metallicity_max) -> Dict[str, Tuple[float, float]]:
-    """The grabbers' ``teff_range``, ``logg_range`` and ``meta_range`` for the bounds given.
-
-    A bound of 0 is a bound; an axis bounded on one side only is open on the other.
-    """
-    cuts = {}
-    for name, low, high in (("teff_range", teff_min, teff_max), ("logg_range", logg_min, logg_max),
-                            ("meta_range", metallicity_min, metallicity_max)):
-        if low is not None or high is not None:
-            cuts[name] = (-math.inf if low is None else float(low), math.inf if high is None else float(high))
-    return cuts
-
-
-def _flux_cube_file(model_dir: Path) -> Optional[Path]:
-    """The grid's flux cube: ``flux_cube.bin``, else ``variants_index.csv`` (one cube per variant), else None."""
-    for name in ("flux_cube.bin", "variants_index.csv"):
-        if (Path(model_dir) / name).is_file():
-            return Path(model_dir) / name
-    return None
-
-
-def _flux_cube_shortfall(model_dir: Path) -> Optional[str]:
-    """What the grid's flux cube lacks of the spectra in ``model_dir``, or None when it holds them all.
-
-    None too when there is no cube, or no spectrum.  The spectra are the
-    ``.txt`` files there, at the (Teff, logg, [M/H]) its ``lookup_table.csv``
-    gives them, and the cube holds one when it has a point there that holds
-    flux (:func:`~sed_tools.precompute_flux_cube.spectra_not_in_cube`).  A
-    cube built from a selection, before the rest was downloaded beside it,
-    lacks the rest.  With ``variants_index.csv``, each variant's cube is
-    compared with its own lookup table, and between them they must list every
-    spectrum.  The files' contents decide, not their times, so a grid copied
-    without them (``cp -R``, ``scp``) is as complete as the original.
-    """
-    from ..cube.build import spectra_not_in_cube
-    from ..grids.spectrum_io import list_text_spectra
-
-    model_dir = Path(model_dir)
-    cube = _flux_cube_file(model_dir)
-    present = {path.name for path in list_text_spectra(model_dir)} if cube is not None else set()
-    if not present:
-        return None
-    try:
-        variants = [model_dir] if cube.name == "flux_cube.bin" else [model_dir / v for v in _variant_paths(cube)]
-        listed, lacking = set(), set()
-        for directory in variants:
-            names, missing = spectra_not_in_cube(directory / "flux_cube.bin", directory / "lookup_table.csv")
-            listed.update(names)
-            lacking.update(missing)
-    except (OSError, ValueError, KeyError, TypeError) as exc:  # unreadable or malformed files
-        return f"cannot be compared with the spectra beside it ({exc})"
-    lacking = (lacking | (present - listed)) & present
-    if not lacking:
-        return None
-    return f"does not include {len(lacking)} of the {len(present)} spectra beside it"
-
-
-def _variant_paths(variants_index: Path) -> List[str]:
-    """The folder of each variant ``variants_index.csv`` lists, relative to the grid's folder."""
-    with open(variants_index, newline="", encoding="utf-8") as fh:
-        fields = [name.lstrip("#").strip() for name in fh.readline().strip().split(",")]
-        return [row["path"] for row in csv.DictReader(fh, fieldnames=fields)]
-
-
-def _bundle_shortfall(bundle: Path, model_dir: Path) -> Optional[str]:
-    """How an HDF5 bundle's spectra differ from the ``.txt`` spectra in ``model_dir``; None when they are the same.
-
-    The bundle records each spectrum under its file name
-    (:func:`~sed_tools.spectrum_io.build_h5_bundle`); names are compared, not
-    file times.
-    """
-    from ..grids.spectrum_io import bundled_spectra, list_text_spectra
-
-    present = {path.name for path in list_text_spectra(model_dir)}
-    try:
-        held = set(bundled_spectra(bundle))
-    except (OSError, ValueError) as exc:
-        return f"cannot be compared with the spectra beside it ({exc})"
-    if held == present:
-        return None
-    extra = len(held - present)
-    return (f"holds {len(held & present)} of the {len(present)} spectra beside it"
-            + (f" and {extra} that are not there" if extra else ""))
-
-
-def _build_flux_cube(model_dir: Path) -> Path:
-    """Run precompute_flux_cube on ``model_dir`` and return what it wrote.
-
-    That is ``flux_cube.bin``, or ``variants_index.csv`` when a grid with extra
-    axes is split into one flux cube per variant.  precompute_flux_cube can
-    also stop without writing either (it then prints why), so RuntimeError is
-    raised unless one of them was written by this call.
-    """
-    from ..cube.build import precompute_flux_cube
-
-    model_dir = Path(model_dir)
-    outputs = (model_dir / "flux_cube.bin", model_dir / "variants_index.csv")
-    before = {path: path.stat().st_mtime_ns for path in outputs if path.exists()}
-    precompute_flux_cube(str(model_dir), str(outputs[0]))
-    for path in outputs:
-        if path.exists() and path.stat().st_mtime_ns != before.get(path):
-            return path
-    raise RuntimeError(f"No flux cube was built in {model_dir}; see the flux cube messages above")
-
-
-def _build_combined_grid(selected_models: List[Tuple[str, str]], output_dir: str, *,
-                         visualization: bool = True) -> None:
-    """Merge the ``(name, path)`` grids onto common parameter and wavelength grids and save to ``output_dir``."""
-    from ..cube.combine import (
-        build_combined_flux_cube,
-        create_common_wavelength_grid,
-        create_unified_grid,
-        load_model_data,
-        save_combined_data,
-        visualize_parameter_space,
-    )
-
-    print("\nLoading spectral grid data...")
-    all_models_data = []
-    for name, path in selected_models:
-        print(f"  Loading {name}...")
-        all_models_data.append(load_model_data(path))
-
-    print("\nCreating unified parameter grids...")
-    teff_grid, logg_grid, meta_grid = create_unified_grid(all_models_data)
-    wavelength_grid = create_common_wavelength_grid(all_models_data)
-
-    print("\nBuilding combined flux cube...")
-    flux_cube, source_map = build_combined_flux_cube(
-        all_models_data, teff_grid, logg_grid, meta_grid, wavelength_grid
-    )
-
-    save_combined_data(
-        output_dir,
-        teff_grid,
-        logg_grid,
-        meta_grid,
-        wavelength_grid,
-        flux_cube,
-        all_models_data,
-    )
-
-    if visualization:
-        visualize_parameter_space(
-            teff_grid, logg_grid, meta_grid, source_map, all_models_data, output_dir,
-            wavelength_grid=wavelength_grid, flux_cube=flux_cube)
 
 
 # =============================================================================
@@ -564,49 +397,6 @@ def _read_listed_spectra(lookup_path: Path, grid_name: str) -> List[Spectrum]:
     return spectra
 
 
-def _import_sources(src: Path) -> Tuple[List[Path], Path]:
-    """The .txt spectra to import from a directory or a single file, and their directory."""
-    if not src.exists():
-        raise FileNotFoundError(f"Source path not found: {src}")
-
-    if src.is_dir():
-        files = sorted(src.glob("*.txt"))
-        src_dir = src
-    elif src.is_file() and src.suffix.lower() == ".txt":
-        files = [src]
-        src_dir = src.parent
-    else:
-        raise ValueError(f"Source must be a directory or a .txt file: {src}")
-
-    if not files:
-        raise RuntimeError(f"No .txt spectra found in {src}")
-    return files, src_dir
-
-
-def _report_import_headers(files: List[Path], src_dir: Path) -> List[str]:
-    """Print how many files carry Teff, logg and [M/H]; return the names of those that do not."""
-    from ..grids.header_parser import parse_header
-
-    missing: List[str] = []
-    for f in files:
-        h = parse_header(str(f))
-        vals = [float(h.get(k, float("nan"))) for k in ("teff", "logg", "metallicity")]
-        if any(math.isnan(v) for v in vals):
-            missing.append(f.name)
-
-    print(f"[import] {len(files)} .txt files in {src_dir}")
-    print(f"[import] parseable Teff+logg+[M/H] headers: {len(files) - len(missing)}/{len(files)}")
-    if missing:
-        print(f"[import] missing one or more parameters: {len(missing)}")
-        for b in missing[:10]:
-            print(f"           {b}")
-        if len(missing) > 10:
-            print(f"           ... and {len(missing) - 10} more")
-        print("[import] If a key is merely unrecognised, add it to ALIASES "
-              "in header_parser.py.")
-    return missing
-
-
 # =============================================================================
 # Main SED API Class
 # =============================================================================
@@ -805,9 +595,9 @@ class SED:
         asked, and their clients warn why; an unreachable NJM is left out (its client has warned),
         or raises when it is the source asked for."""
         catalogs = []
-        for name, query in (('svo', cls._query_svo), ('msg', cls._query_msg), ('mast', cls._query_mast)):
+        for name in ('svo', 'msg', 'mast'):
             if source in (None, 'all', name):
-                catalogs.extend(query())
+                catalogs.extend(cls._query_source(name))
         if source in (None, 'all', 'njm'):
             try:
                 catalogs.extend(cls._query_njm())
@@ -817,47 +607,19 @@ class SED:
         return catalogs
 
     @classmethod
-    def _query_svo(cls) -> List[SpectralGridInfo]:
-        """Query SVO remote spectral grids."""
-        from ..grids.svo import SVOSpectraGrabber
-        grabber = SVOSpectraGrabber(base_dir=str(cls._model_root))
-        return [
-            SpectralGridInfo(name=m, source='svo', url="http://svo2.cab.inta-csic.es/theory/newov2/")
-            for m in grabber.discover_models()
-        ]
-
-    @classmethod
-    def _query_msg(cls) -> List[SpectralGridInfo]:
-        """Query MSG (Townsend) remote spectral grids."""
-        from ..grids.msg import MSGSpectraGrabber
-        grabber = MSGSpectraGrabber(base_dir=str(cls._model_root))
-        return [
-            SpectralGridInfo(name=m, source='msg', description="MSG HDF5 format")
-            for m in grabber.discover_models()
-        ]
-
-    @classmethod
-    def _query_mast(cls) -> List[SpectralGridInfo]:
-        """Query MAST (BOSZ) remote spectral grids."""
-        from ..grids.mast import MASTSpectraGrabber
-        grabber = MASTSpectraGrabber(base_dir=str(cls._model_root))
-        return [
-            SpectralGridInfo(name=m, source='mast', description="BOSZ spectral grids")
-            for m in grabber.discover_models()
-        ]
+    def _query_source(cls, source: str) -> List[SpectralGridInfo]:
+        """The grids SVO, MSG or MAST lists."""
+        grabber = spectra_grabber(source, str(cls._model_root))
+        return [SpectralGridInfo(name=m, source=source, **_LISTED_AS[source]) for m in grabber.discover_models()]
 
     @classmethod
     def _query_njm(cls) -> List[SpectralGridInfo]:
-        """Query NJM mirror remote spectral grids; RuntimeError, without a second warning, if the
-        mirror is unreachable (the NJM client warns once per outage)."""
-        from ..grids.njm import NJMSpectraGrabber
-        grabber = NJMSpectraGrabber(base_dir=str(cls._model_root))
+        """The grids the NJM mirror lists; RuntimeError, without a second warning, if it is unreachable
+        (the NJM client warns once per outage)."""
+        grabber = spectra_grabber('njm', str(cls._model_root))
         if not grabber.is_available():
             raise RuntimeError(f"NJM mirror {grabber.base_url} is unreachable")
-        return [
-            SpectralGridInfo(name=m, source='njm', description="NJM pre-processed mirror")
-            for m in grabber.discover_models()
-        ]
+        return [SpectralGridInfo(name=m, source='njm', **_LISTED_AS['njm']) for m in grabber.discover_models()]
 
     @classmethod
     def fetch(
@@ -977,7 +739,6 @@ class SED:
                 if shortfall:
                     print(f"[fetch] {cube.name} {shortfall}:\n        rebuilding the lookup table, HDF5 "
                           "bundle and flux cube from all of them")
-                from ..cli import _build_data_products
                 _build_data_products(catalog, str(model_dir), used_source, True, True)
 
         # Load spectra into SpectralGrid object
@@ -1019,8 +780,8 @@ class SED:
                 sources.append('njm')
         except RuntimeError as exc:
             failures.append(f"njm: discovery failed: {exc}")
-        for name, query in (('svo', cls._query_svo), ('msg', cls._query_msg), ('mast', cls._query_mast)):
-            if catalog in [info.name for info in query()]:
+        for name in ('svo', 'msg', 'mast'):
+            if catalog in [info.name for info in cls._query_source(name)]:
                 sources.append(name)
 
         # Always include SVO as fallback if not already there
@@ -1041,17 +802,17 @@ class SED:
         every failure when no source succeeds.  ``cuts`` are as for
         :meth:`_download_from`.
         """
-        for src in sources:
+        def attempt(src: str) -> Optional[str]:
             print(f"[fetch] Trying {catalog} from {src}...")
-            before = _directory_state(model_dir)
-            error = cls._download_from(src, catalog, model_dir, workers, cuts)
-            if error is None:
-                return src
-            failures.append(f"{src}: {error}")
-            if _directory_state(model_dir) != before:
-                raise _mixed_sources_error(src, model_dir, failures)
+            return cls._download_from(src, catalog, model_dir, workers, cuts)
+
+        def warn(src: str, error: str) -> None:
             logger.warning("[fetch] %s: %s, trying next...", src, error)
-        raise ValueError(f"Spectral grid '{catalog}' could not be fetched. Tried: {'; '.join(failures)}")
+
+        used = download_from_first_source(sources, attempt, model_dir, failures, warn)
+        if used is None:
+            raise ValueError(f"Spectral grid '{catalog}' could not be fetched. Tried: {'; '.join(failures)}")
+        return used
 
     @classmethod
     def _download_from(cls, src: str, catalog: str, model_dir: Path, workers: int,
@@ -1082,25 +843,17 @@ class SED:
 
     @classmethod
     def _get_grabber(cls, source: str, base_dir: str, workers: int):
-        """Get the appropriate grabber instance."""
-        if source == 'svo':
-            from ..grids.svo import SVOSpectraGrabber
-            return SVOSpectraGrabber(base_dir=base_dir, max_workers=workers)
-        elif source == 'msg':
-            from ..grids.msg import MSGSpectraGrabber
-            grabber = MSGSpectraGrabber(base_dir=base_dir, max_workers=workers)
-            grabber.discover_models()  # get_model_metadata finds grids in the index this reads
-            return grabber
-        elif source == 'mast':
-            # The MAST grabber asks on the terminal which metallicities to download.
+        """A grabber for one fetch; NJM uses its own worker count, and MAST is refused (it asks on a terminal)."""
+        if source == 'mast':
             raise RuntimeError("MAST (BOSZ) grids are fetched with 'sed-tools grids --source mast', which asks "
                                "which metallicities to download; SED.fetch cannot answer that prompt")
-        elif source == 'njm':
-            from ..grids.njm import NJMSpectraGrabber
-            return NJMSpectraGrabber(base_dir=base_dir)
-        else:
-            raise ValueError(f"Unknown source: {source}")
-    
+        if source == 'njm':
+            return spectra_grabber('njm', base_dir)
+        grabber = spectra_grabber(source, base_dir, max_workers=workers)
+        if source == 'msg':
+            grabber.discover_models()  # get_model_metadata finds grids in the index this reads
+        return grabber
+
     @classmethod
     def _load_catalog_from_dir(cls, model_dir: Path, name: str, source: str) -> SpectralGrid:
         """Load the spectra listed in ``lookup_table.csv`` into a SpectralGrid."""

@@ -378,7 +378,7 @@ def grid_flow(monkeypatch):
     def install(cleaned=CLEAN, cube_built=True, **grabbers):
         for name, cls_name in (("njm", "NJMSpectraGrabber"), ("svo", "SVOSpectraGrabber"),
                                ("msg", "MSGSpectraGrabber"), ("mast", "MASTSpectraGrabber")):
-            monkeypatch.setattr(cli.grids, cls_name, grabbers.get(name, fake_grabber()))
+            monkeypatch.setattr(GRABBERS[name], grabbers.get(name, fake_grabber()))
         monkeypatch.setattr(cli.grids, "clean_model_dir", lambda *a, **k: cleaned)
         monkeypatch.setattr(cli.grids, "undeclared_flux_unit", lambda *a, **k: None)  # cleaning is faked too
 
@@ -517,7 +517,7 @@ def rebuild(tmp_path, monkeypatch):
     monkeypatch.setattr(cli.grids, "clean_model_dir", clean)
     monkeypatch.setattr(cli.grids, "regenerate_lookup_table", lambda model_dir: None)
     monkeypatch.setattr(cli.grids, "build_h5_bundle_from_txt", lambda model_dir, out: None)
-    monkeypatch.setattr("sed_tools.api._build_flux_cube", lambda model_dir: Path(model_dir) / "flux_cube.bin")
+    monkeypatch.setattr("sed_tools.cli.grids._build_flux_cube", lambda model_dir: Path(model_dir) / "flux_cube.bin")
     return rebuilt
 
 

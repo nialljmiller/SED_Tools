@@ -39,10 +39,10 @@ from .filters import (
     print_filter_availability, run_filter_combine_flow, run_filter_compose_flow, run_filter_info_flow,
     run_filters_flow,
 )
+from ..grids.pipeline import _build_data_products, _rebuild_command, build_h5_bundle_from_txt, local_grids
 from .grids import (
-    _ask_flux_unit, _ask_import_flux_unit, _build_data_products, _discover_local_grids, _download_cuts,
-    _download_from_first_source, _print_cleaning_report, _rebuild_command, _report_import_flux_unit,
-    build_h5_bundle_from_txt, ensure_dir, prompt_njm_axis_cuts, run_combine_flow, run_coverage_flow,
+    _ask_flux_unit, _ask_import_flux_unit, _download_cuts, _download_from_first_source, _print_cleaning_report,
+    _report_import_flux_unit, ensure_dir, prompt_njm_axis_cuts, run_combine_flow, run_coverage_flow,
     run_grid_densifier_flow, run_import_flow, run_mesa_prepare_flow, run_ml_completer_flow, run_ml_generator_flow,
     run_rebuild_flow, run_spectra_flow,
 )
@@ -710,7 +710,7 @@ def _cmd_coverage(args, parser):
 
     names = args.models
     if not names:
-        names = _discover_local_grids(args.base)
+        names = local_grids(args.base)
         if not names:
             print(f"No local grids found under {args.base}")
             return 1

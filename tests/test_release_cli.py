@@ -789,7 +789,7 @@ def combine(tmp_path, monkeypatch):
     _grid(tmp_path, "combined_models", combined=True)
     _grid(tmp_path, "older_mix", combined=True)
     built = []
-    monkeypatch.setattr("sed_tools.api._build_combined_grid", lambda models, out: built.append(
+    monkeypatch.setattr("sed_tools.cli.grids._build_combined_grid", lambda models, out: built.append(
         ([name for name, _ in models], Path(out).name)))
     return built
 
@@ -984,7 +984,7 @@ def test_grids_without_a_terminal_or_names_says_to_use_grids(monkeypatch, tmp_pa
         def discover_models(self):
             return ["bt-cond"]
 
-    monkeypatch.setattr(cli.grids, "MSGSpectraGrabber", Grabber)
+    monkeypatch.setattr("sed_tools.msg_spectra_grabber.MSGSpectraGrabber", Grabber)
     monkeypatch.setattr("sys.stdin", _Stdin(False))
     with pytest.raises(ValueError, match=r"No terminal to choose from the 1 spectral grids found; name them with "
                                          r"--grids NAME \.\.\. \(or --grids all\)"):

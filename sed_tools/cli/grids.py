@@ -4,21 +4,19 @@ ML, densifier and MESA forwarders. The cli package re-exports them."""
 import glob
 import logging
 import os
-import shlex
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 from requests import RequestException
 
+from ..api import SED
 from ..cube.model import STELLAR_DIR_DEFAULT
 from ..grids.clean import FLUX_GUESS_WHY, FLUX_UNITS, clean_model_dir, undeclared_flux_unit
 from ..grids.lookup import regenerate_lookup_table
-from ..grids.mast import MASTSpectraGrabber
-from ..grids.msg import MSGSpectraGrabber
-from ..grids.njm import NJMSpectraGrabber
-from ..grids.spectrum_io import build_h5_bundle
-from ..grids.svo import SVOSpectraGrabber
+from ..grids.pipeline import (_build_combined_grid, _build_data_products, _build_flux_cube, _directory_state,
+                              _download_count, _import_sources, build_h5_bundle_from_txt, download_from_first_source,
+                              local_grids, rebuildable_grids, spectra_grabber)
 from ..ui_utils import ask_range, parse_multi_selection, prompt_choice, wrap
 
 logger = logging.getLogger("sed_tools.cli")
@@ -26,14 +24,6 @@ logger = logging.getLogger("sed_tools.cli")
 
 def ensure_dir(path: str) -> None:
     os.makedirs(path, exist_ok=True)
-
-
-def build_h5_bundle_from_txt(model_dir: str, out_h5: str) -> None:
-    """Create an HDF5 file bundling all .txt spectra."""
-    if not build_h5_bundle(model_dir, out_h5):
-        print(f"[H5 bundle] No .txt spectra found in {model_dir}; skipping.")
-        return
-    print(f"[H5 bundle] Wrote {out_h5}")
 
 
 def prompt_njm_axis_cuts(
@@ -95,7 +85,7 @@ def run_rebuild_flow(
     """
     ensure_dir(base_dir)
 
-    cand = _rebuildable_grids(base_dir)
+    cand = rebuildable_grids(base_dir)
     if not cand:
         raise FileNotFoundError(f"No local spectral grids found under {base_dir}")
 
@@ -123,20 +113,6 @@ def run_rebuild_flow(
     if failures:
         raise RuntimeError(f"Spectral grids not rebuilt ({len(failures)}): " + "; ".join(failures))
     print("\nRebuild complete.")
-
-
-def _rebuildable_grids(base_dir: str) -> List[str]:
-    """Folders under ``base_dir`` holding .txt spectra or an .h5 file."""
-    cand = []
-    for name in sorted(os.listdir(base_dir)):
-        p = os.path.join(base_dir, name)
-        if not os.path.isdir(p):
-            continue
-        has_txt = any(fn.lower().endswith(".txt") for fn in os.listdir(p))
-        has_h5 = any(fn.lower().endswith(".h5") for fn in os.listdir(p))
-        if has_txt or has_h5:
-            cand.append(name)
-    return cand
 
 
 def _ask_rebuild_selection(cand: List[str]) -> List[str]:
@@ -194,16 +170,12 @@ def _txt_files(model_dir: str) -> List[str]:
 
 def _ask_import_flux_unit(path: str, name: Optional[str], flux_unit: Optional[str] = None) -> Optional[str]:
     """_ask_flux_unit for the spectra SED.import_grid would import from path."""
-    from ..api import _import_sources
-
     files, src_dir = _import_sources(Path(path).expanduser())
     return _ask_flux_unit(name or src_dir.name, [str(f) for f in files], flux_unit)
 
 
 def _report_import_flux_unit(path: str, name: Optional[str], flux_unit: Optional[str]) -> None:
     """For ``import --dry-run``: whether the spectra declare their flux unit, and the guess when not."""
-    from ..api import _import_sources
-
     files, src_dir = _import_sources(Path(path).expanduser())
     guess = undeclared_flux_unit([str(f) for f in files])
     grid = name or src_dir.name
@@ -221,8 +193,6 @@ def _report_import_flux_unit(path: str, name: Optional[str], flux_unit: Optional
 def _rebuild_grid(model_dir: str, model_name: str, rebuild_h5: bool, rebuild_flux_cube: bool,
                   flux_unit: Optional[str] = None) -> List[str]:
     """Clean one local grid and rebuild its products; returns what was not done (empty when complete)."""
-    from ..api import _build_flux_cube
-
     flux_unit = _ask_flux_unit(model_name, _txt_files(model_dir), flux_unit)
     summary = clean_model_dir(model_dir, try_h5_recovery=True, rebuild_lookup=True, flux_unit=flux_unit)
     print(f"[clean] {model_name}: total={summary['total']}")
@@ -303,72 +273,6 @@ def _print_cleaning_report(summary: Dict) -> None:
     print(f"All {n_total} files ready for use")
 
 
-def _build_data_products(
-    name: str,
-    model_dir: str,
-    src: str,
-    force_bundle_h5: bool,
-    build_flux_cube: bool,
-) -> List[str]:
-    """Build HDF5 bundle, lookup table, and flux cube for a downloaded spectral grid.
-
-    A bundle or flux cube that lacks spectra beside it was built without them
-    (a selection, before the rest was downloaded): the bundle is then rebuilt
-    even without ``force_bundle_h5``, and a cube left as it is because
-    ``build_flux_cube`` is False is returned as a problem.  Their contents
-    decide, not file times (see api._flux_cube_shortfall).  Returns the
-    problems; empty when the products are complete.
-    """
-    from ..api import _build_flux_cube, _bundle_shortfall, _flux_cube_file, _flux_cube_shortfall, _variant_paths
-
-    # HDF5 bundle
-    out_h5 = os.path.join(model_dir, f"{name}_bundle.h5" if src == "msg" else f"{name}.h5")
-    stale = None
-    if not force_bundle_h5 and os.path.exists(out_h5):
-        stale = _bundle_shortfall(Path(out_h5), Path(model_dir))
-    if force_bundle_h5 or not os.path.exists(out_h5) or stale:
-        if stale:
-            print(wrap(f"{os.path.basename(out_h5)} {stale}; rebuilding it",
-                        indent="HDF5 bundle   : ", hanging=" " * 16))
-        build_h5_bundle_from_txt(model_dir, out_h5)
-        print(f"HDF5 bundle   : {os.path.basename(out_h5)}")
-    else:
-        print(f"HDF5 bundle   : {os.path.basename(out_h5)} (exists)")
-
-    # Lookup table
-    regenerate_lookup_table(model_dir)
-    print(f"Lookup table  : lookup_table.csv")
-
-    # Flux cube
-    if not build_flux_cube:
-        shortfall = _flux_cube_shortfall(Path(model_dir))
-        if shortfall:
-            return [f"{_flux_cube_file(Path(model_dir))} {shortfall}; it was not rebuilt (--no-cube). "
-                    f"Rebuild it with: {_rebuild_command(name, model_dir)}"]
-        return []
-
-    written = _build_flux_cube(model_dir)
-    if written.name == "variants_index.csv":
-        subgrids = _variant_paths(written)
-        print(f"Flux cubes    : {len(subgrids)} MESA-ready subgrid(s) created")
-        for subgrid in subgrids:
-            print(f"  -> {os.path.join(model_dir, subgrid)}/")
-        print("\n  Point MESA Colors to one of the above subdirectories.")
-        print(f"  See {written} for the full inventory.")
-    else:
-        print("Flux cube     : flux_cube.bin")
-    return []
-
-
-def _rebuild_command(name: str, model_dir: str) -> str:
-    """``sed-tools rebuild --grids NAME``, with ``--base`` when the grid is not under the default directory."""
-    command = f"sed-tools rebuild --grids {shlex.quote(name)}"
-    base = os.path.dirname(os.path.abspath(model_dir))
-    if base != os.path.abspath(str(STELLAR_DIR_DEFAULT)):
-        command += f" --base {shlex.quote(base)}"
-    return command
-
-
 def run_spectra_flow(
     source: str,
     base_dir: str = str(STELLAR_DIR_DEFAULT),
@@ -445,13 +349,12 @@ def _spectra_sources(source: str) -> List[str]:
 def _spectra_grabbers(src_list: List[str], base_dir: str, workers: int) -> Dict:
     """A grabber per requested source; NJM is left out when the mirror is unavailable (the grabber warns)."""
     grabs: Dict = {}
-    if "njm" in src_list:
-        njm = NJMSpectraGrabber(base_dir=base_dir, max_workers=workers)
-        if njm.is_available():
-            grabs["njm"] = njm
-    if "svo"  in src_list: grabs["svo"]  = SVOSpectraGrabber(base_dir=base_dir, max_workers=workers)
-    if "msg"  in src_list: grabs["msg"]  = MSGSpectraGrabber(base_dir=base_dir, max_workers=workers)
-    if "mast" in src_list: grabs["mast"] = MASTSpectraGrabber(base_dir=base_dir, max_workers=workers)
+    for src in ("njm", "svo", "msg", "mast"):
+        if src not in src_list:
+            continue
+        grabber = spectra_grabber(src, base_dir, max_workers=workers)
+        if src != "njm" or grabber.is_available():
+            grabs[src] = grabber
     return grabs
 
 
@@ -491,33 +394,28 @@ def _download_from_first_source(name: str, sources: List[str], grabs: Dict, mode
                                 ranges: Optional[Dict] = None):
     """Download ``name`` from the first active source that can supply it; returns ``(source, metadata)``.
 
-    A source that fails is reported and the next one tried, unless the failed
-    attempt changed ``model_dir``: the next source's spectra would then be
-    mixed with its files.  Raises RuntimeError with every source's error when
-    no source succeeds.
+    The rule is pipeline.download_from_first_source's; a source without a grabber is listed as not
+    available. RuntimeError gives every source's error when none succeeds.
     """
-    from ..api import _directory_state, _mixed_sources_error
+    tried = [f"{src}: not available" for src in sources if src not in grabs]
+    metadata = {}
 
-    errors = []
-    for src in sources:
-        if src not in grabs:
-            errors.append(f"{src}: not available")
-            continue
-        before = _directory_state(model_dir)
+    def attempt(src: str) -> Optional[str]:
         meta, error = _download_from(name, src, grabs[src], model_dir, ranges)
-        if error is None:
-            return src, meta
-        errors.append(f"{src}: {error}")
-        if _directory_state(model_dir) != before:
-            raise _mixed_sources_error(src, model_dir, errors)
+        metadata[src] = meta
+        return error
+
+    def warn(src: str, error: str) -> None:
         logger.warning("  [%s] %s — trying next source...", src, error)
-    raise RuntimeError(f"no source could supply it. Tried: {'; '.join(errors)}")
+
+    src = download_from_first_source([s for s in sources if s in grabs], attempt, model_dir, tried, warn)
+    if src is None:
+        raise RuntimeError(f"no source could supply it. Tried: {'; '.join(tried)}")
+    return src, metadata[src]
 
 
 def _download_from(name: str, src: str, g, model_dir: str, ranges: Optional[Dict] = None):
     """Download ``name`` from one source: ``(metadata, None)``, or ``(metadata, what went wrong)``."""
-    from ..api import _directory_state, _download_count
-
     meta = None
     try:
         meta = g.get_model_metadata(name)  # raises when the source has no such grid
@@ -638,7 +536,6 @@ def run_combine_flow(
     A grid is never combined into itself: ValueError when ``output_name`` is
     one of the inputs.
     """
-    from ..api import _build_combined_grid
     from ..cube.combine import _grids_with_lookup, find_stellar_models, select_models_interactive
 
     ensure_dir(base_dir)
@@ -728,28 +625,9 @@ def run_ml_completer_flow(
     return run_interactive_workflow(base_dir, models_dir)
 
 
-def _discover_local_grids(base_dir: str) -> List[str]:
-    """Local spectral grid folders that have a lookup table or at least one .txt."""
-    base_dir = str(base_dir)
-    out = []
-    if not os.path.isdir(base_dir):
-        return out
-    for name in sorted(os.listdir(base_dir)):
-        p = os.path.join(base_dir, name)
-        if not os.path.isdir(p):
-            continue
-        if os.path.exists(os.path.join(p, "lookup_table.csv")) or any(
-            fn.lower().endswith(".txt") for fn in os.listdir(p)
-        ):
-            out.append(name)
-    return out
-
-
 def run_coverage_flow(base_dir: str = str(STELLAR_DIR_DEFAULT)) -> None:
     """Interactive parameter-space coverage report for a local grid."""
-    from ..api import SED
-
-    cands = _discover_local_grids(base_dir)
+    cands = local_grids(base_dir)
     if not cands:
         print(f"No local grids found under {base_dir}")
         return
@@ -761,8 +639,6 @@ def run_coverage_flow(base_dir: str = str(STELLAR_DIR_DEFAULT)) -> None:
 
 def run_import_flow(base_dir: str = str(STELLAR_DIR_DEFAULT)) -> None:
     """Interactive ingest of a local grid into the pipeline."""
-    from ..api import SED
-
     path = input("Path to your grid directory (or a .txt file): ").strip()
     if not path:
         print("No path given.")
