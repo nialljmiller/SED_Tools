@@ -20,7 +20,8 @@ from ..filters.compose import (ATMOSPHERE, FILTER, OPTICS, QE, SHARED, Atmospher
                                  InstrumentManifest, add_component)
 from ..filters.curve_metadata import (ENERGY, PHOTON, SOURCE_SVO, SVOMetadataClient, read_filter_header,
                                svo_components_header, svo_fps_url, write_filter_file)
-from ._original import CONNECT_TIMEOUT, Curve, common_product, product  # common_product: read here by the old _attach path
+from ._original import (CONNECT_TIMEOUT, Curve, common_product,  # noqa: F401  importable from here, as before
+                        download, product)
 
 
 @dataclass
@@ -36,9 +37,7 @@ class Table:
     note: str = ""
 
     def read(self, session) -> Curve:
-        resp = session.get(self.url, timeout=(CONNECT_TIMEOUT, 300))
-        resp.raise_for_status()
-        return self.parse(resp.content)
+        return self.parse(download(session, self.url))
 
     def parse(self, raw: bytes) -> Curve:
         if raw[:2] == b"\x1f\x8b":

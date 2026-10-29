@@ -16,8 +16,7 @@ import re
 
 import numpy as np
 
-from ._original import Component, Fetcher, Instrument, clean_curve, make_band, make_builder
-from .surveys import tar_members
+from ._original import Component, Fetcher, Instrument, clean_curve, make_band, make_builder, tar_members
 
 PHOTON = "photon"
 

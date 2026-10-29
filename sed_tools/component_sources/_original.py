@@ -17,8 +17,14 @@ measurement noise set to 0 and, where the recipe asks, the peak scaled to 1.
 
 from __future__ import annotations
 
+import datetime
+import gzip
+import hashlib
 import io
+import json
 import logging
+import re
+import tarfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Dict, Mapping, Optional, Sequence, Tuple, Union
@@ -75,6 +81,57 @@ class Fetcher:
 
     def stream(self, url: str) -> io.BytesIO:
         return io.BytesIO(self.get(url))
+
+
+class CachingSession:
+    """Fetch each URL once per build; optionally archive every raw download.
+
+    The archive (``archive_dir``) holds the bytes exactly as received plus a
+    ``manifest.json`` with URL, retrieval time (UTC) and SHA-256.
+    """
+
+    def __init__(self, session=None, archive_dir: Union[str, Path, None] = None):
+        if session is None:
+            import requests
+
+            session = requests.Session()
+            session.headers["User-Agent"] = USER_AGENT
+        self.session = session
+        self.archive = Path(archive_dir) if archive_dir else None
+        self._cache: Dict[str, object] = {}
+
+    def get(self, url: str, **kwargs):
+        if url not in self._cache:
+            kwargs.setdefault("timeout", (CONNECT_TIMEOUT, 300))
+            resp = self.session.get(url, **kwargs)
+            resp.raise_for_status()
+            if self.archive is not None:
+                self._record(url, resp)
+            self._cache[url] = resp
+        return self._cache[url]
+
+    def _record(self, url: str, resp) -> None:
+        self.archive.mkdir(parents=True, exist_ok=True)
+        name = re.sub(r"[^A-Za-z0-9._-]+", "_", re.sub(r"^https?://", "", url)).strip("_")
+        (self.archive / name).write_bytes(resp.content)
+        path = self.archive / "manifest.json"
+        data = json.loads(path.read_text()) if path.exists() else {"files": []}
+        data["files"] = [f for f in data["files"] if f["file"] != name]
+        data["files"].append({
+            "file": name, "url": url,
+            "retrieved_utc": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "sha256": hashlib.sha256(resp.content).hexdigest(), "bytes": len(resp.content),
+            "http_status": getattr(resp, "status_code", None),
+            "last_modified": getattr(resp, "headers", {}).get("last-modified"),
+        })
+        path.write_text(json.dumps(data, indent=1) + "\n")
+
+
+def download(session, url: str, read_timeout: float = 300) -> bytes:
+    """The body of ``url``, downloaded through ``session``; an HTTP error raises."""
+    resp = session.get(url, timeout=(CONNECT_TIMEOUT, read_timeout))
+    resp.raise_for_status()
+    return resp.content
 
 
 # --------------------------------------------------------------------------
@@ -143,6 +200,11 @@ def product(curves: Sequence[Curve]) -> Curve:
     """Product on the merged grid over the common range."""
     if len(curves) == 1:
         return curves[0]
+    return merged_product(curves)
+
+
+def merged_product(curves: Sequence[Curve]) -> Curve:
+    """:func:`product` without its shortcut: one curve is resampled like several."""
     lo = max(c[0][0] for c in curves)
     hi = min(c[0][-1] for c in curves)
     grid = np.unique(np.concatenate([c[0][(c[0] >= lo) & (c[0] <= hi)] for c in curves]))
@@ -170,10 +232,26 @@ def common_product(curves):
     return grid, out
 
 
+def fixed_width_pairs(text: str, cols) -> dict:
+    """Side-by-side (wavelength, response) pairs at fixed byte slices; blanks end a column."""
+    curves = {k: ([], []) for k in cols}
+    for line in text.splitlines():
+        for band, (a, b, c, d) in cols.items():
+            w, t = line[a:b].strip(), line[c:d].strip()
+            if w and t:
+                curves[band][0].append(float(w))
+                curves[band][1].append(float(t))
+    return {k: (np.array(w), np.array(t)) for k, (w, t) in curves.items()}
+
+
+def support(wl, tr, frac: float = 1e-3) -> Tuple[float, float]:
+    """First and last wavelength where ``tr`` exceeds ``frac`` of its peak."""
+    above = np.nonzero(tr > frac * tr.max())[0]
+    return float(wl[above[0]]), float(wl[above[-1]])
+
+
 def safe_band(name: str) -> str:
     """A band name usable as ``<band>.dat``: exactly one dot in the filename."""
-    import re
-
     band = re.sub(r"[^A-Za-z0-9_+-]", "_", name.replace(".", "p")).strip("_")
     if not band:
         raise ValueError(f"empty band name from {name!r}")
@@ -327,3 +405,28 @@ def safe_member(name: str, *, flat: bool = False) -> None:
     pp = PurePosixPath(name)
     if pp.is_absolute() or ".." in pp.parts or "\\" in name or (flat and "/" in name):
         raise ValueError(f"refusing archive member {name!r}")
+
+
+def tar_members(raw: bytes, wanted, *, flat: bool = False) -> dict:
+    """Text of the ``wanted`` regular members; refuse unsafe member names."""
+    out = {}
+    with tarfile.open(fileobj=io.BytesIO(raw), mode="r:*") as t:
+        for m in t.getmembers():
+            safe_member(m.name, flat=flat)
+            if not m.isfile():
+                raise ValueError(f"refusing tar member {m.name!r}")
+            if m.name in wanted:
+                out[m.name] = t.extractfile(m).read().decode("ascii")
+    missing = set(wanted) - set(out)
+    if missing:
+        raise ValueError(f"tar lacks {sorted(missing)}")
+    return out
+
+
+def open_fits(raw: bytes):
+    """FITS bytes, gunzipped first if compressed, opened with astropy."""
+    from astropy.io import fits
+
+    if raw[:2] == b"\x1f\x8b":
+        raw = gzip.decompress(raw)
+    return fits.open(io.BytesIO(raw))

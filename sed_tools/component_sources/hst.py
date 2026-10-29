@@ -30,7 +30,7 @@ import numpy as np
 
 from ..filters.compose import FILTER, OPTICS, QE, InstrumentManifest, add_component
 from ..filters.curve_metadata import PHOTON, SVOMetadataClient
-from ._original import CONNECT_TIMEOUT
+from ._original import CONNECT_TIMEOUT, merged_product
 
 logger = logging.getLogger(__name__)
 
@@ -197,14 +197,7 @@ def _tail_beyond_published(path: Path, wl: np.ndarray, total: np.ndarray) -> flo
 def _product(tables: SynphotTables, comps: Sequence[str],
              pins: Optional[Mapping[str, str]] = None) -> Tuple[np.ndarray, np.ndarray]:
     """Product of components on their merged grid, over their common range."""
-    curves = [tables.throughput(c, pins) for c in comps]
-    lo = max(c[0][0] for c in curves)
-    hi = min(c[0][-1] for c in curves)
-    grid = np.unique(np.concatenate([c[0][(c[0] >= lo) & (c[0] <= hi)] for c in curves]))
-    out = np.ones_like(grid)
-    for wl, tr in curves:
-        out *= np.interp(grid, wl, tr)
-    return grid, out
+    return merged_product([tables.throughput(c, pins) for c in comps])
 
 
 def _split_chain(tables: SynphotTables, prefix: str, band: str) -> Tuple[List[str], Dict[str, List[str]]]:

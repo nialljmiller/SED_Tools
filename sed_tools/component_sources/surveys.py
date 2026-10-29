@@ -17,7 +17,8 @@ import zipfile
 
 import numpy as np
 
-from ._original import Component, Fetcher, Instrument, make_band, make_builder, safe_member
+from ._original import (Component, Fetcher, Instrument, make_band, make_builder,
+                        safe_member, tar_members)  # noqa: F401  safe_member stays importable here
 from .team_atmospheres import HALEAKALA_PS1
 
 PHOTON = "photon"
@@ -173,22 +174,6 @@ UKIRT_TABLES = {"Z": "Table02_online.dat", "Y": "Table03_online.dat", "J": "Tabl
 # Hewett et al. 2006 Table 1 (array q.e.), transcribed from photpap_aph.tex in the e-print.
 UKIRT_QE_UM = [0.8, 0.9, 1.0, 1.1, 1.2, 1.4, 1.6, 2.2]
 UKIRT_QE = [0.53, 0.55, 0.54, 0.54, 0.54, 0.57, 0.62, 0.61]
-
-
-def tar_members(raw: bytes, wanted, *, flat: bool = False) -> dict:
-    """Text of the ``wanted`` regular members; refuse unsafe member names."""
-    out = {}
-    with tarfile.open(fileobj=io.BytesIO(raw), mode="r:*") as t:
-        for m in t.getmembers():
-            safe_member(m.name, flat=flat)
-            if not m.isfile():
-                raise ValueError(f"refusing tar member {m.name!r}")
-            if m.name in wanted:
-                out[m.name] = t.extractfile(m).read().decode("ascii")
-    missing = set(wanted) - set(out)
-    if missing:
-        raise ValueError(f"tar lacks {sorted(missing)}")
-    return out
 
 
 def wfcam(fetch: Fetcher) -> Instrument:

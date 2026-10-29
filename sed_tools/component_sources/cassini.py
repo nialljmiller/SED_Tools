@@ -21,7 +21,7 @@ from typing import Dict, Tuple
 import numpy as np
 
 from ..filters.compose import InstrumentManifest
-from ._original import Component, Fetcher, Instrument, clean_curve, make_band, write_instrument
+from ._original import Component, Fetcher, Instrument, clean_curve, make_band, support, write_instrument
 
 FACILITY = "Cassini"
 VOLUME = "https://pds-rings.seti.org/holdings/volumes/COISS_0xxx/COISS_0011/"
@@ -100,11 +100,6 @@ def systrans_url(camera: str, band: str) -> str:
     return f"{EFFICIENCY}systrans/{CAMERAS[camera][0]}{f1}{f2}_systrans.tab"
 
 
-def _support(wl: np.ndarray, tr: np.ndarray) -> Tuple[float, float]:
-    above = np.nonzero(tr > SUPPORT_FRACTION * tr.max())[0]
-    return float(wl[above[0]]), float(wl[above[-1]])
-
-
 def _camera(camera: str, fetch: Fetcher) -> Instrument:
     """Published curves, components and notes of one camera."""
     prefix, optics_name, qe_col, _w1, _w2 = CAMERAS[camera]
@@ -121,7 +116,7 @@ def _camera(camera: str, fetch: Fetcher) -> Instrument:
         wl, sys_tr = st[:, 0], st[:, 1]
         bands.append(make_band(band, wl, sys_tr, unit="nm", detector_type=PHOTON, components="filter+optics+qe",
                                sources=f"{url} | {INFO_URL} | {THEORY_URL}"))
-        s_lo, s_hi = _support(wl, sys_tr)
+        s_lo, s_hi = support(wl, sys_tr, SUPPORT_FRACTION)
         if s_lo < lo_nm or s_hi > hi_nm:
             skipped.append(f"{band} ({f1.upper()}x{f2.upper()}, system transmission {s_lo:.0f}-{s_hi:.0f} nm)")
             continue

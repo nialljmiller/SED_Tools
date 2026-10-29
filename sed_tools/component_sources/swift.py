@@ -17,15 +17,13 @@ tree.
 
 from __future__ import annotations
 
-import gzip
-import io
 import logging
 from typing import Dict, Sequence, Tuple
 
 import numpy as np
 from requests import RequestException
 
-from ._original import Component, Fetcher, Instrument, clean_curve, make_band, make_builder
+from ._original import Component, Fetcher, Instrument, clean_curve, make_band, make_builder, open_fits
 
 logger = logging.getLogger(__name__)
 
@@ -60,14 +58,6 @@ INSTEA = "bcf/effarea/swuinstea20041120v001.fits"
 SENSCORR = "bcf/senscorr/swusenscorr20041120v007.fits"
 
 
-def _fits(raw: bytes):
-    from astropy.io import fits
-
-    if raw[:2] == b"\x1f\x8b":
-        raw = gzip.decompress(raw)
-    return fits.open(io.BytesIO(raw))
-
-
 def caldb_get(fetch: Fetcher, path: str, roots: Sequence[str] = CALDB_ROOTS) -> Tuple[bytes, str]:
     """Download a CALDB file from the first of ``roots`` that serves it; return (data, URL).
 
@@ -97,7 +87,7 @@ def _column_unit(table, name: str) -> str:
 
 def arf_curve(raw: bytes, filt: str) -> Tuple[np.ndarray, np.ndarray]:
     """Bin-centre wavelength (Angstrom) and total effective area (cm^2) of an ARF."""
-    with _fits(raw) as h:
+    with open_fits(raw) as h:
         t = h[1]
         if t.header.get("FILTER", "").strip() != filt or t.header.get("CONTENT", "").strip() != "SPECRESP":
             raise ValueError(f"UVOT ARF: FILTER={t.header.get('FILTER')!r}, expected {filt!r} SPECRESP")
@@ -111,7 +101,7 @@ def arf_curve(raw: bytes, filt: str) -> Tuple[np.ndarray, np.ndarray]:
 
 def ftrans_curves(raw: bytes) -> Dict[str, Tuple[np.ndarray, np.ndarray]]:
     out = {}
-    with _fits(raw) as h:
+    with open_fits(raw) as h:
         for filt, _arf in BANDS.values():
             t = h["TRANSMISSION" + filt]
             if t.header.get("FILTER", "").strip() != filt or _column_unit(t, "WAVELENGTH") != "angstrom":
@@ -121,7 +111,7 @@ def ftrans_curves(raw: bytes) -> Dict[str, Tuple[np.ndarray, np.ndarray]]:
 
 
 def area_curve(raw: bytes, extname: str) -> Tuple[np.ndarray, np.ndarray]:
-    with _fits(raw) as h:
+    with open_fits(raw) as h:
         t = h[extname]
         if _column_unit(t, "WAVELENGTH") != "angstrom" or _column_unit(t, "EA") != "cm**2":
             raise ValueError(f"UVOT {extname}: unexpected units")
@@ -133,7 +123,7 @@ def senscorr_summary(raw: bytes) -> str:
     from astropy.time import Time
 
     parts = []
-    with _fits(raw) as h:
+    with open_fits(raw) as h:
         for filt, _arf in BANDS.values():
             t = h["SENSCORR" + filt]
             ref = t.header["MJDREFI"] + t.header["MJDREFF"]

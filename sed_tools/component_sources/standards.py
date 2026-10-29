@@ -15,8 +15,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from ._original import Fetcher, Instrument, make_band, make_builder
-from .space import fixed_width_pairs
+from ._original import Fetcher, Instrument, fixed_width_pairs, make_band, make_builder
 
 PHOTON = "photon"
 FAC = "Generic"

@@ -66,7 +66,7 @@ from ..filters.compose import (FILTER, OPTICS, QE, SHARED, InstrumentManifest, a
                                  compose_band)
 from ..filters.curve_metadata import ENERGY, read_filter_header, write_filter_file, write_filter_header
 from ._common import register_variant
-from .team_atmospheres import CachingSession
+from ._original import CachingSession
 
 FACILITY = "Argus"
 BANDS = ("beta", "rho")

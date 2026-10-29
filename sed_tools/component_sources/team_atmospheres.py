@@ -24,11 +24,8 @@ URL, retrieval time and SHA-256)::
 
 from __future__ import annotations
 
-import datetime
 import gzip
-import hashlib
 import io
-import json
 import logging
 import re
 import tarfile
@@ -39,66 +36,15 @@ import numpy as np
 
 from ..filters.compose import TEAM
 from ._common import DerivedCurve, SiteAtmosphere, write_site
-from ._original import CONNECT_TIMEOUT
+from ._original import CONNECT_TIMEOUT, CachingSession, download  # noqa: F401  CONNECT_TIMEOUT stays importable here
 
 logger = logging.getLogger(__name__)
 
 Curve = Tuple[np.ndarray, np.ndarray]
 
 
-# --------------------------------------------------------------------------
-# Downloads
-# --------------------------------------------------------------------------
-class CachingSession:
-    """Fetch each URL once per build; optionally archive every raw download.
-
-    The archive (``archive_dir``) holds the bytes exactly as received plus a
-    ``manifest.json`` with URL, retrieval time (UTC) and SHA-256.
-    """
-
-    def __init__(self, session=None, archive_dir: Union[str, Path, None] = None):
-        if session is None:
-            import requests
-
-            from ._original import USER_AGENT
-
-            session = requests.Session()
-            session.headers["User-Agent"] = USER_AGENT
-        self.session = session
-        self.archive = Path(archive_dir) if archive_dir else None
-        self._cache: Dict[str, object] = {}
-
-    def get(self, url: str, **kwargs):
-        if url not in self._cache:
-            kwargs.setdefault("timeout", (CONNECT_TIMEOUT, 300))
-            resp = self.session.get(url, **kwargs)
-            resp.raise_for_status()
-            if self.archive is not None:
-                self._record(url, resp)
-            self._cache[url] = resp
-        return self._cache[url]
-
-    def _record(self, url: str, resp) -> None:
-        self.archive.mkdir(parents=True, exist_ok=True)
-        name = re.sub(r"[^A-Za-z0-9._-]+", "_", re.sub(r"^https?://", "", url)).strip("_")
-        (self.archive / name).write_bytes(resp.content)
-        path = self.archive / "manifest.json"
-        data = json.loads(path.read_text()) if path.exists() else {"files": []}
-        data["files"] = [f for f in data["files"] if f["file"] != name]
-        data["files"].append({
-            "file": name, "url": url,
-            "retrieved_utc": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "sha256": hashlib.sha256(resp.content).hexdigest(), "bytes": len(resp.content),
-            "http_status": getattr(resp, "status_code", None),
-            "last_modified": getattr(resp, "headers", {}).get("last-modified"),
-        })
-        path.write_text(json.dumps(data, indent=1) + "\n")
-
-
 def _bytes(session, url: str) -> bytes:
-    resp = session.get(url, timeout=(CONNECT_TIMEOUT, 300))
-    resp.raise_for_status()
-    raw = resp.content
+    raw = download(session, url)
     head = raw[:512].lstrip().lower()
     if head.startswith(b"<!doctype html") or head.startswith(b"<html"):
         if b"<pre>" not in raw[:2000].lower():
