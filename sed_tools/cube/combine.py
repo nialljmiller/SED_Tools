@@ -263,10 +263,8 @@ def compute_normalization_factors(target_data, reference_data, wavelength_grid):
     failures = []
     kept_native = Counter()
 
-    for file, teff, logg, meta in zip(
-        target_data["files"], target_data["teff"],
-        target_data["logg"], target_data["meta"]
-    ):
+    for file, teff, logg, meta in zip(target_data["files"], target_data["teff"], target_data["logg"],
+                                      target_data["meta"]):
         file_target = os.path.join(target_data["model_dir"], file)
         if not all(np.isfinite([teff, logg, meta])):
             failures.append(f"{file_target}: non-finite parameters "
@@ -277,8 +275,7 @@ def compute_normalization_factors(target_data, reference_data, wavelength_grid):
         file_ref = os.path.join(reference_data["model_dir"], ref_files[idx])
 
         try:
-            factor, reason = _normalization_factor(file_target, teff, file_ref, ref_teff[idx],
-                                                   wavelength_grid)
+            factor, reason = _normalization_factor(file_target, teff, file_ref, ref_teff[idx], wavelength_grid)
         except (OSError, ValueError) as exc:  # unreadable target or reference spectrum
             failures.append(str(exc))
             continue
@@ -347,9 +344,7 @@ def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, w
         if model_idx == ref_idx:
             norm_factors[model_idx] = np.ones(len(model_data["files"]))
         else:
-            norm_factors[model_idx] = compute_normalization_factors(
-                model_data, ref_data, wavelength_grid
-            )
+            norm_factors[model_idx] = compute_normalization_factors(model_data, ref_data, wavelength_grid)
 
     # Fill the cube; later grids overwrite earlier ones at shared nodes
     failures = []
@@ -357,11 +352,9 @@ def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, w
         model_name = os.path.basename(model_data["model_dir"])
         print(f"\nProcessing {model_name}...")
 
-        for i, (file, teff, logg, meta) in enumerate(tqdm(
-            zip(model_data["files"], model_data["teff"],
-                model_data["logg"], model_data["meta"]),
-            total=len(model_data["files"]), desc=f"Spectral grid {model_idx + 1}"
-        )):
+        rows = zip(model_data["files"], model_data["teff"], model_data["logg"], model_data["meta"])
+        for i, (file, teff, logg, meta) in enumerate(tqdm(rows, total=len(model_data["files"]),
+                                                          desc=f"Spectral grid {model_idx + 1}")):
             filepath = os.path.join(model_data["model_dir"], file)
             if not all(np.isfinite([teff, logg, meta])):
                 failures.append(f"{filepath}: non-finite parameters "
@@ -439,19 +432,11 @@ def save_combined_data(output_dir, teff_grid, logg_grid, meta_grid,
 
     for model_data in tqdm(all_models_data, desc="Copying"):
         model_name = os.path.basename(model_data["model_dir"])
-        for orig_file, teff, logg, meta in zip(
-            model_data["files"], model_data["teff"],
-            model_data["logg"], model_data["meta"]
-        ):
+        for orig_file, teff, logg, meta in zip(model_data["files"], model_data["teff"], model_data["logg"],
+                                               model_data["meta"]):
             new_filename = f"{model_name}_{file_counter:06d}.txt"
-            lookup_data.append({
-                "file_name": new_filename,
-                "teff": teff,
-                "logg": logg,
-                "meta": meta,
-                "source_model": model_name,
-                "original_file": orig_file,
-            })
+            lookup_data.append({"file_name": new_filename, "teff": teff, "logg": logg, "meta": meta,
+                                "source_model": model_name, "original_file": orig_file})
 
             src_path = os.path.join(model_data["model_dir"], orig_file)
             dst_path = os.path.join(output_dir, new_filename)
@@ -507,10 +492,7 @@ def _sed_sample_points(teff_grid, logg_grid, meta_grid, meta_idx, flux_cube, sou
                 continue
             src_idx = int(source_map[ti, gi, meta_idx])
             src_name = model_names[src_idx] if 0 <= src_idx < len(model_names) else "unknown"
-            sample_points.append((
-                teff_grid[ti], logg_grid[gi], meta_grid[meta_idx],
-                flux, src_name, src_idx
-            ))
+            sample_points.append((teff_grid[ti], logg_grid[gi], meta_grid[meta_idx], flux, src_name, src_idx))
     return sample_points
 
 
@@ -544,11 +526,7 @@ def plot_sed_samples(teff_grid, logg_grid, meta_grid, wavelength_grid,
         valid = flux > 0
         if valid.sum() > 1:
             ax.loglog(wavelength_grid[valid], flux[valid], color=color, linewidth=0.8, label=src_name)
-        ax.set_title(
-            f"Teff={teff:.0f} K  log g={logg:.2f}  [M/H]={meta:.2f}\n"
-            f"source: {src_name}",
-            fontsize=8
-        )
+        ax.set_title(f"Teff={teff:.0f} K  log g={logg:.2f}  [M/H]={meta:.2f}\nsource: {src_name}", fontsize=8)
         ax.set_xlabel("Wavelength (Å)", fontsize=7)
         ax.set_ylabel("Flux (erg/cm²/s/Å)", fontsize=7)
         ax.tick_params(labelsize=6)
@@ -557,10 +535,8 @@ def plot_sed_samples(teff_grid, logg_grid, meta_grid, wavelength_grid,
     for j in range(n, len(axes)):
         axes[j].set_visible(False)
 
-    plt.suptitle(
-        f"SED Samples Across Combined Parameter Space  ([M/H] ≈ {meta_grid[meta_idx]:.2f})",
-        fontsize=13, fontweight="bold"
-    )
+    plt.suptitle(f"SED Samples Across Combined Parameter Space  ([M/H] ≈ {meta_grid[meta_idx]:.2f})",
+                 fontsize=13, fontweight="bold")
     plt.tight_layout()
 
     plot_file = os.path.join(output_dir, "sed_samples.png")
@@ -600,8 +576,7 @@ def visualize_parameter_space(teff_grid, logg_grid, meta_grid, source_map,
         density[i, j] = len(np.unique(source_map[i, j, :][source_map[i, j, :] >= 0]))
 
     im = ax4.imshow(density.T, origin="lower", aspect="auto",
-                    extent=[teff_grid.min(), teff_grid.max(),
-                           logg_grid.min(), logg_grid.max()], cmap="YlOrRd")
+                    extent=[teff_grid.min(), teff_grid.max(), logg_grid.min(), logg_grid.max()], cmap="YlOrRd")
     ax4.set_xlabel("Teff (K)")
     ax4.set_ylabel("log g")
     ax4.set_title("Model spectrum density per grid point")
@@ -663,9 +638,7 @@ def main():
     teff_grid, logg_grid, meta_grid = create_unified_grid(all_models_data)
     wavelength_grid = create_common_wavelength_grid(all_models_data)
 
-    flux_cube, source_map = build_combined_flux_cube(
-        all_models_data, teff_grid, logg_grid, meta_grid, wavelength_grid
-    )
+    flux_cube, source_map = build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, wavelength_grid)
 
     output_dir = os.path.join(args.data_dir, args.output)
     save_combined_data(output_dir, teff_grid, logg_grid, meta_grid,
