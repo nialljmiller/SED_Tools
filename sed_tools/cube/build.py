@@ -86,20 +86,11 @@ def resample_to_grid(
     fl_src = np.asarray(fl_src, dtype=np.float64)
     wl_tgt = np.asarray(wl_tgt, dtype=np.float64)
 
-    wl_min = float(wl_src[0])
-    wl_max = float(wl_src[-1])
-
-    fl_safe = np.maximum(fl_src, _FLUX_FLOOR)
-    log_fl  = np.log10(fl_safe)
-    in_cov  = (wl_tgt >= wl_min) & (wl_tgt <= wl_max)
-
+    log_fl = np.log10(np.maximum(fl_src, _FLUX_FLOOR))
+    in_cov = (wl_tgt >= float(wl_src[0])) & (wl_tgt <= float(wl_src[-1]))
     fl_tgt = np.zeros(len(wl_tgt), dtype=np.float64)
-
     if in_cov.any():
-        fl_tgt[in_cov] = 10.0 ** np.interp(
-            wl_tgt[in_cov], wl_src, log_fl
-        )
-
+        fl_tgt[in_cov] = 10.0 ** np.interp(wl_tgt[in_cov], wl_src, log_fl)
     return fl_tgt
 
 
@@ -131,8 +122,7 @@ def _read_lookup_table(lookup_file: str) -> Tuple[Dict[str, List], List[str], in
     with open(lookup_file, "r", encoding="utf-8", errors="ignore") as f:
         header_line = f.readline().lstrip("#").strip()
         cols = [c.strip() for c in header_line.split(",")]
-        reader = csv.reader(f)
-        rows = [row for row in reader if row and not row[0].strip().startswith("#")]
+        rows = [row for row in csv.reader(f) if row and not row[0].strip().startswith("#")]
 
     result: Dict[str, List] = {c: [] for c in cols}
     for row in rows:
@@ -200,9 +190,7 @@ def build_grids(
     logg_vals: np.ndarray,
     meta_vals: np.ndarray,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    teff_grid = np.unique(teff_vals)
-    logg_grid = np.unique(logg_vals)
-    meta_grid = np.unique(meta_vals)
+    teff_grid, logg_grid, meta_grid = np.unique(teff_vals), np.unique(logg_vals), np.unique(meta_vals)
     print(f"Grid: {len(teff_grid)} Teff × {len(logg_grid)} logg × {len(meta_grid)} meta")
     return teff_grid, logg_grid, meta_grid
 
@@ -548,12 +536,10 @@ def precompute_flux_cube(
 
 def _print_summary(output_file, teff_vals, logg_vals, meta_vals):
     print(f"\nFlux cube: {output_file}")
-    if teff_vals.size:
-        print(f"  Teff : {teff_vals.min():.0f} – {teff_vals.max():.0f} K")
-    if logg_vals.size:
-        print(f"  logg : {logg_vals.min():.2f} – {logg_vals.max():.2f}")
-    if meta_vals.size:
-        print(f"  [M/H]: {meta_vals.min():.2f} – {meta_vals.max():.2f}")
+    for label, values, fmt, unit in (("Teff ", teff_vals, ".0f", " K"), ("logg ", logg_vals, ".2f", ""),
+                                     ("[M/H]", meta_vals, ".2f", "")):
+        if values.size:
+            print(f"  {label}: {values.min():{fmt}} – {values.max():{fmt}}{unit}")
 
 
 def _main():
@@ -564,23 +550,22 @@ def _main():
                         help="SED_Tools root directory (for sed_tools.defaults)")
     args = parser.parse_args()
 
-    def _discover_model_dirs(root="data/stellar_models"):
-        cands = []
-        for base in [root, "./" + root, "../" + root]:
-            if os.path.isdir(base):
-                for name in sorted(os.listdir(base)):
-                    p = os.path.join(base, name)
-                    if not os.path.isdir(p):
-                        continue
-                    has_lookup = os.path.isfile(os.path.join(p, "lookup_table.csv"))
-                    has_txt    = any(fn.lower().endswith(".txt") for fn in os.listdir(p))
-                    if has_lookup or has_txt:
-                        cands.append(p)
-        return sorted(set(cands))
-
     if not args.model_dir:
         print("No --model_dir provided. Discovering local model directories…")
-        cands = _discover_model_dirs()
+        root = "data/stellar_models"
+        found = set()
+        for base in [root, "./" + root, "../" + root]:
+            if not os.path.isdir(base):
+                continue
+            for name in sorted(os.listdir(base)):
+                p = os.path.join(base, name)
+                if not os.path.isdir(p):
+                    continue
+                has_lookup = os.path.isfile(os.path.join(p, "lookup_table.csv"))
+                has_txt    = any(fn.lower().endswith(".txt") for fn in os.listdir(p))
+                if has_lookup or has_txt:
+                    found.add(p)
+        cands = sorted(found)
         if not cands:
             sys.exit("No model directories found.")
         for i, p in enumerate(cands, 1):
