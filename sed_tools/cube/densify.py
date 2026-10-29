@@ -1,41 +1,7 @@
-"""
-sed_tools/grid_densifier.py
-
-Densify a coarse Teff grid in an existing flux_cube.bin by running
-SEDGenerator over every gap Teff value across all (logg, meta) nodes.
-
-This is a grid runner around ml_sed_generator.SEDGenerator.  It does not
-implement any interpolation — it generates physically grounded SEDs from
-the trained network at the requested Teff values, giving MESA's Hermite
-interpolation short enough intervals that the discrete photometry jumps
-disappear.
-
-A blackbody (π·B_λ scaled to the nearest real grid SED's bolometric flux)
-is used when no ML model is given, and for requested Teff values outside the
-source grid's Teff range. If the ML model fails at any node the run stops.
-
-The dense cube is written a block of wavelengths at a time. A block holds
-every node at its wavelengths, so in the file's (nw, nm, nl, nt) order it is
-one contiguous write; blocks are sized to half the available RAM.
-
-Usage (CLI)
------------
-    python -m sed_tools.grid_densifier \\
-        --flux-cube  data/stellar_models/tmap/flux_cube.bin \\
-        --output     data/stellar_models/tmap_dense/flux_cube.bin \\
-        --teff-spacing 1000 \\
-        --ml-model   models/sed_generator_tmap
-
-API
----
-    from sed_tools.grid_densifier import densify_grid
-
-    densify_grid(
-        src="data/stellar_models/tmap/flux_cube.bin",
-        dst="data/stellar_models/tmap_dense/flux_cube.bin",
-        teff_spacing=1000,
-        ml_model="models/sed_generator_tmap",
-    )
+"""Densify a flux cube's Teff grid: SEDGenerator SEDs at evenly spaced Teffs between the grid's own, so MESA's
+Hermite interpolation has intervals short enough that the photometry jumps disappear. Without an ML model, and
+outside the source Teff range, a blackbody (π·B_λ) scaled to the nearest real SED's bolometric flux is used.
+The dense cube is written a block of wavelengths at a time (contiguous in the file), sized to half the RAM.
 """
 
 from __future__ import annotations
@@ -50,14 +16,10 @@ import numpy as np
 
 from .._constants import available_memory_bytes as _available_ram_bytes
 from .._constants import planck_flam as _blackbody
-from .resample import resample_to_grid
+from .build import resample_to_grid
 from .fileio import flux_offset, write_header
 from ..ui_utils import banner
 
-
-# ---------------------------------------------------------------------------
-# Binary cube I/O
-# ---------------------------------------------------------------------------
 
 def _read_cube_header(path):
     """Read grids and wavelengths only — does not load flux into RAM."""
@@ -71,18 +33,12 @@ def _read_cube_header(path):
 
 
 def _open_flux_memmap(path, nt, nl, nm, nw):
-    """Read-only memmap of an existing cube's flux, in the file's order (nw, nm, nl, nt).
-
-    Teff varies fastest: the layout MESA, precompute_flux_cube and
-    FluxCube.from_file use.
-    """
+    """Read-only memmap of an existing cube's flux, in the file's order (nw, nm, nl, nt)."""
     offset = flux_offset(nt, nl, nm, nw)
     return np.memmap(path, dtype=np.float64, mode="r", offset=offset, shape=(nw, nm, nl, nt))
 
 
-# ---------------------------------------------------------------------------
-# Dense Teff grid
-# ---------------------------------------------------------------------------
+# --- The dense Teff grid and its SEDs ---
 
 def _build_dense_teff(teff_orig, spacing):
     t_start = np.ceil(teff_orig[0] / spacing) * spacing
@@ -97,11 +53,8 @@ def _build_dense_teff(teff_orig, spacing):
 
 
 def _blackbody_scales(flux_orig, teff_orig, wavelengths):
-    """Ratio of each real node's bolometric flux to its Teff's blackbody (1 where either is <= 0).
-
-    Indexed [teff, logg, meta]; flux_orig is in the file's order (nw, nm, nl, nt).
-    Computed one node at a time so no (nt, nw) array is held.
-    """
+    """Each real node's bolometric flux over its Teff's blackbody (1 where either is <= 0), indexed [teff, logg, meta];
+    computed one node at a time, so no (nt, nw) array is held."""
     nt, nl, nm = flux_orig.shape[3], flux_orig.shape[2], flux_orig.shape[1]
     bb_scale = np.ones((nt, nl, nm), dtype=np.float64)
     for i_t in range(nt):
@@ -159,11 +112,8 @@ def _wavelengths_per_block(nt_orig, nt_new, nl, nm):
 
 def _write_dense_flux(f, flux_orig, source_rows, teff_dense, teff_orig, logg_grid, meta_grid,
                       wavelengths, bb_scale, generator, dst):
-    """Write the dense cube's flux to f, one block of wavelengths at a time, printing progress.
-
-    Source Teffs are copied verbatim; every other Teff gets an SED at each node.
-    An ML node is generated once per block (once in all when the cube fits in one).
-    """
+    """Write the dense cube's flux to f a block of wavelengths at a time: source Teffs verbatim, an SED at each node
+    of every other Teff (an ML node is generated once per block)."""
     nw, nm, nl, nt_orig = flux_orig.shape
     nt_new = len(teff_dense)
     synthetic = []
@@ -195,9 +145,7 @@ def _write_dense_flux(f, flux_orig, source_rows, teff_dense, teff_orig, logg_gri
     print()
 
 
-# ---------------------------------------------------------------------------
-# Main
-# ---------------------------------------------------------------------------
+# --- densify_grid, the interactive flow and the command line ---
 
 def densify_grid(
     src: str,
@@ -224,7 +172,6 @@ def densify_grid(
     print(f"  Spacing : {teff_spacing:.0f} K")
     print(f"  ML model: {ml_model or 'none (blackbody fallback)'}")
 
-    # Read header only — no flux in RAM yet
     print("\nReading source cube header...", end=" ", flush=True)
     nt_orig, nl, nm, nw, teff_orig, logg_grid, meta_grid, wavelengths = _read_cube_header(src)
     print(f"done  ({nt_orig} × {nl} × {nm} × {nw})")
@@ -232,7 +179,6 @@ def densify_grid(
     print(f"  Teff range : {teff_orig[0]:.0f} – {teff_orig[-1]:.0f} K")
     print(f"  Largest gap: {gaps.max():.0f} K  (mean {gaps.mean():.0f} K)")
 
-    # Source flux as read-only memmap — pages in from disk on demand
     flux_orig = _open_flux_memmap(src, nt_orig, nl, nm, nw)
 
     generator = None
@@ -261,10 +207,6 @@ def densify_grid(
     print(f"  Written: {nt_new} × {nl} × {nm} × {nw}  ({size_mb:.1f} MiB)")
     print(f"{'='*60}\n")
 
-
-# ---------------------------------------------------------------------------
-# Interactive workflow
-# ---------------------------------------------------------------------------
 
 def run_interactive_workflow(base_dir: str = None) -> Optional[int]:
     """Choose a cube, spacing, ML model and output, then densify; 1 when a model is given without torch."""
@@ -310,10 +252,6 @@ def run_interactive_workflow(base_dir: str = None) -> Optional[int]:
 
     densify_grid(src=src, dst=dst, teff_spacing=spacing, ml_model=ml_model)
 
-
-# ---------------------------------------------------------------------------
-# CLI
-# ---------------------------------------------------------------------------
 
 def main() -> None:
     parser = argparse.ArgumentParser(

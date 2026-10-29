@@ -1,48 +1,7 @@
-#!/usr/bin/env python3
-"""
-Unified ML API for SED Tools
-=============================
+"""The 0.4.1 SED completer API: train_completer, load_completer, complete_sed, list_models, model_info, Completer.
 
-High-level API for machine learning operations on stellar spectral grids.
-
-This module provides a clean, unified interface for:
-- Training SED completion models
-- Running inference to extend incomplete SEDs
-- Managing multiple trained models
-
-Usage
------
-Training::
-
-    from sed_tools.ml import train_completer
-    
-    model = train_completer(
-        library='combined_models',
-        output='models/my_completer',
-        epochs=100,
-    )
-
-Inference::
-
-    from sed_tools.ml import load_completer, complete_sed
-    
-    completer = load_completer('models/my_completer')
-    wl, flux = complete_sed(completer, wavelength, flux, teff=5500, logg=4.5, meta=0.0)
-
-Or using the class-based API::
-
-    from sed_tools.ml import Completer
-    
-    completer = Completer()
-    completer.train('combined_models', 'models/my_completer')
-    wl, flux = completer.extend(wavelength, flux, teff=5500, logg=4.5, meta=0.0)
-
-Model Management::
-
-    from sed_tools.ml import list_models, model_info
-    
-    models = list_models()
-    info = model_info('models/my_completer')
+It is thin over the engines: SEDCompleter in ml/completer.py (old path sed_tools.ml_sed_completer) and SEDGenerator
+in ml/generator.py (sed_tools.ml_sed_generator), which auto_train_generator trains. ml/common.py is what they share.
 """
 
 import logging
@@ -55,21 +14,17 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 __all__ = [
-    # Functions
     'train_completer',
     'load_completer',
     'complete_sed',
     'list_models',
     'model_info',
     'auto_train_generator',
-    # Classes
     'Completer',
 ]
 
 
-# =============================================================================
 # Functional API
-# =============================================================================
 
 def train_completer(
     library: str,
@@ -317,9 +272,7 @@ def auto_train_generator(
     return generator
 
 
-# =============================================================================
 # Class-based API
-# =============================================================================
 
 class Completer:
     """
@@ -356,12 +309,8 @@ class Completer:
         """
         from .completer import SEDCompleter
         
-        if model_path is not None:
-            self._completer = SEDCompleter(model_path)
-            self._model_path = model_path
-        else:
-            self._completer = SEDCompleter()
-            self._model_path = None
+        self._completer = SEDCompleter(model_path)
+        self._model_path = model_path
     
     @property
     def is_trained(self) -> bool:
@@ -476,14 +425,7 @@ class Completer:
         wavelength_ext, flux_ext : np.ndarray
             Extended arrays
         """
-        return self._completer.complete_sed(
-            wavelength=wavelength,
-            flux=flux,
-            teff=teff,
-            logg=logg,
-            meta=meta,
-            extension_range=extension_range,
-        )
+        return complete_sed(self._completer, wavelength, flux, teff, logg, meta, extension_range)
     
     def extend_catalog(
         self,
@@ -583,13 +525,8 @@ class Completer:
         }
     
     def _extend_one(self, row, columns, input_dir, output_dir, extension_range):
-        """
-        Extend, or copy, one catalog spectrum into output_dir.
-        
-        Returns its row for the new lookup table and, if it was extended, an
-        example for the inference plot (None if it was copied). Raises
-        ValueError or OSError if the spectrum cannot be used.
-        """
+        """Extend, or copy, one catalog spectrum into output_dir: its new lookup row, and a plot example if extended.
+        Raises ValueError or OSError, which extend_catalog collects, if the spectrum cannot be used."""
         teff, logg, meta = _row_parameters(row, columns)
         
         filename = str(row[columns['file']])
@@ -641,9 +578,7 @@ class Completer:
         return f"<Completer({status}{path})>"
 
 
-# =============================================================================
 # Catalog helpers for Completer.extend_catalog
-# =============================================================================
 
 # Column names accepted in a catalog's lookup_table.csv, in order of preference
 _CATALOG_COLUMNS = {

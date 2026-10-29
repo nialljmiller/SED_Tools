@@ -16,10 +16,8 @@ import re
 
 import numpy as np
 
-from ._original import Component, Fetcher, Instrument, clean_curve, make_band, make_builder
-from .surveys import tar_members
-
-PHOTON = "photon"
+from ..filters.curve_metadata import PHOTON
+from ._original import Component, Fetcher, Instrument, clean_curve, make_band, make_builder, tar_members
 
 
 def _rows(text: str, cols=(0, 1)) -> np.ndarray:

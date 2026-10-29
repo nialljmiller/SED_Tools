@@ -21,9 +21,9 @@ from typing import Dict, Tuple
 import numpy as np
 
 from ..filters.compose import InstrumentManifest
-from ._original import Component, Fetcher, Instrument, clean_curve, make_band, make_builder, safe_member
+from ..filters.curve_metadata import PHOTON
+from ._original import Component, Fetcher, Instrument, clean_curve, make_band, make_builder, safe_member, support
 
-PHOTON = "photon"
 PAGE = "https://csp.obs.carnegiescience.edu/data/filters"
 DATA = "https://csp.obs.carnegiescience.edu/data/"
 PACKAGE = DATA + "CSP_filter_package.tgz"
@@ -76,11 +76,6 @@ def two_columns(data: bytes) -> Tuple[np.ndarray, np.ndarray]:
     return a[:, 0], a[:, 1]
 
 
-def _support(wl, tr, frac=1e-3):
-    above = np.nonzero(tr > frac * tr.max())[0]
-    return wl[above[0]], wl[above[-1]]
-
-
 def _atmosphere_check(files, band: str, raw_wl, raw_tr) -> str:
     """final / (raw scan x atm_ext_ctio^1.2 x atm_ext_lines) where the final exceeds 10 % of peak."""
     fw, ft = two_columns(files[f"{band}_tel_ccd_atm_ext_1.2.dat"])
@@ -117,7 +112,7 @@ def csp1(fetch: Fetcher) -> Instrument:
                                source=f"{PACKAGE} member {raw_member} (raw telescope+camera+filter scan, "
                                       "no atmosphere)"))
         checks.append(_atmosphere_check(files, stem, rw_c, rt_c))
-        lo, hi = _support(b.wavelength, b.transmission)
+        lo, hi = support(b.wavelength, b.transmission)
         if tel[0][0] <= lo and tel[0][-1] >= hi:
             comps.append(Component("optics", tel[0], tel[1], band=band, name="telescope",
                                    source=f"{PACKAGE} member Telescope.txt (telescope throughput, relative scale)"))

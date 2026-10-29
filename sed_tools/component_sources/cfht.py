@@ -33,9 +33,8 @@ from typing import Dict, Tuple, Union
 import numpy as np
 
 from ..filters.compose import FILTER, OPTICS, QE, SHARED
-from ._attach import (common_product, fresh_manifest, published_bands, register, with_earlier_note,
-                      write_unregistered)
-from ._original import Fetcher, clean_curve
+from ._common import fresh_manifest, published_bands, register, with_earlier_note, write_unregistered
+from ._original import Fetcher, clean_curve, common_product
 
 logger = logging.getLogger(__name__)
 

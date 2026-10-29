@@ -1,4 +1,4 @@
-"""Old import path; the code is in sed_tools/cube/build.py."""
+"""Old import path; the code is in sed_tools/cube/build.py, which uses cube/variants.py."""
 
 from . import _old_path
 from .cube import build as _module

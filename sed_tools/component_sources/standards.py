@@ -15,10 +15,8 @@ from __future__ import annotations
 
 import numpy as np
 
-from ._original import Fetcher, Instrument, make_band, make_builder
-from .space import fixed_width_pairs
-
-PHOTON = "photon"
+from ..filters.curve_metadata import PHOTON
+from ._original import Fetcher, Instrument, fixed_width_pairs, make_band, make_builder
 FAC = "Generic"
 
 B12_URL = "https://cdsarc.cds.unistra.fr/ftp/cats/J/PASP/124/140/table1.dat"
