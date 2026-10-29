@@ -1,26 +1,6 @@
-#!/usr/bin/env python3
-"""
-precompute_flux_cube.py
-
-Builds a MESA-compatible flux_cube.bin from a directory of standardised
-SED .txt files and a lookup_table.csv.
-
-On-collision behaviour (multiple files at the same Teff/logg/[M/H] node)
-is controlled by CollisionConfig loaded from:
-    <root>/sed_tools.defaults          (global defaults)
-    <model_dir>/mesa_config.toml       (per-model override)
-    Python API override_dict argument  (highest priority)
-
-Strategies
-----------
-split     Auto-split extra physical axes into separate MESA-ready subgrid
-          directories.  Each subgrid varies only over Teff, logg, metallicity.
-          This is the default and the physically safe choice.
-all-warn  Alias for split (backward compatible).
-all       Alias for split (backward compatible).
-mean      Build a single mean cube by averaging over extra axes.
-          Physically unsafe — use only if you understand the implications.
-filter    Filter to a specific extra-axis slice, then build normally.
+"""A grid folder's lookup_table.csv and .txt spectra to a MESA flux_cube.bin (precompute_flux_cube), and the
+resampling every cube builder uses. When the table's extra columns (alpha, vturb, ...) vary, cube/variants.py
+applies the [on_collision] strategy of cube/collision.py. spectra_not_in_cube checks a written cube.
 """
 
 import argparse
@@ -54,14 +34,11 @@ from ..grids.spectrum_io import read_text_spectrum
 
 logger = logging.getLogger("sed_tools.precompute_flux_cube")
 
-# Auto-split when the number of extra-axis combinations is at or below this.
-# Above this threshold the user is prompted before creating many directories.
+# Up to this many extra-axis variants are split without asking; above it the user is asked first.
 SPLIT_THRESHOLD = 25
 
 
-# ---------------------------------------------------------------------------
-# SED loading
-# ---------------------------------------------------------------------------
+# --- Spectra and the lookup table ---
 
 def load_sed(filepath: str) -> Tuple[np.ndarray, np.ndarray]:
     return read_text_spectrum(filepath)
@@ -126,10 +103,6 @@ def resample_to_grid(
     return fl_tgt
 
 
-# ---------------------------------------------------------------------------
-# Lookup table loading — returns all columns
-# ---------------------------------------------------------------------------
-
 def _find_lookup_file(model_dir: str) -> str:
     lookup_file = os.path.join(model_dir, "lookup_table.csv")
     if os.path.isfile(lookup_file):
@@ -144,10 +117,9 @@ def _find_lookup_file(model_dir: str) -> str:
 
 
 def load_lookup_table(lookup_file: str) -> Dict[str, List]:
-    """
-    Load lookup_table.csv and return a dict of {column_name: [values]}.
-    All columns are returned so callers can discover extra axes.
-    The header line may begin with '#'.
+    """Every column of lookup_table.csv as {column_name: [values]}, so callers can find extra axes.
+
+    The header line may begin with '#'. Prints the row count and the columns.
     """
     result, cols, n_rows = _read_lookup_table(lookup_file)
     print(f"Lookup table: {n_rows} entries, columns: {', '.join(cols)}")
@@ -194,11 +166,7 @@ def _float_col(
 def _parse_axes(
     lookup: Dict[str, List], lookup_file: str, file_col: str,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Teff, logg and [M/H] of every lookup row.
-
-    Teff is required. A grid without a logg or metallicity column (e.g.
-    blackbodies) gets a single 0.0 node on that axis.
-    """
+    """Teff (required), logg and [M/H] of every lookup row; a missing logg or [M/H] column (blackbodies) is 0.0."""
     teff_col = find_teff_column(lookup.keys())
     if teff_col is None:
         raise ValueError(
@@ -225,9 +193,7 @@ def _require_spectra(model_dir: str, file_names: List[str], lookup_file: str) ->
         )
 
 
-# ---------------------------------------------------------------------------
-# Grid building
-# ---------------------------------------------------------------------------
+# --- Building and writing one cube ---
 
 def build_grids(
     teff_vals: np.ndarray,
@@ -256,10 +222,6 @@ def compute_common_wavelengths(model_dir: str, file_names: List[str], n_sample: 
     print(f"Wavelength grid: {len(grid)} points ({grid[0]:.1f}–{grid[-1]:.1f} Å)")
     return grid
 
-
-# ---------------------------------------------------------------------------
-# Flux cube allocation + writing
-# ---------------------------------------------------------------------------
 
 def _allocate_cube(
     teff_grid, logg_grid, meta_grid, wavelengths, tmp_path=None
@@ -306,9 +268,7 @@ def _write_cube(
     print(f"  Done ({time.time()-t0:.1f}s)")
 
 
-# ---------------------------------------------------------------------------
-# Which listed spectra a written cube holds
-# ---------------------------------------------------------------------------
+# --- Which listed spectra a written cube holds ---
 
 #: Wavelength planes read to tell a grid point holding a spectrum from a zero-filled one.
 _SAMPLED_PLANES = 8
@@ -317,15 +277,12 @@ _SAMPLED_PLANES = 8
 def spectra_not_in_cube(cube_path: str, lookup_file: str) -> Tuple[List[str], List[str]]:
     """The spectra ``lookup_file`` lists, and those of them the flux cube at ``cube_path`` does not hold.
 
-    The lookup table is read as :func:`precompute_flux_cube` reads it.  A
-    spectrum is held when its (Teff, logg, [M/H]) is a point of the cube's
-    axes and that point holds flux: a point no spectrum filled is zero at
-    every wavelength.  Only the cube's header, its axes and a few wavelength
-    planes are read, and for a point that is zero in all of those planes its
-    own spectrum, up to its first non-zero value.  Once one such point is
-    zero throughout, the cube lacks that spectrum and the remaining such
-    points are not read: they count as not held.  Raises ValueError (or
-    OSError) when either file cannot be read.
+    A spectrum is held when its (Teff, logg, [M/H]), read as :func:`precompute_flux_cube` reads the
+    table, is a point of the cube's axes and that point holds flux (a point no spectrum filled is zero
+    everywhere). Only the header, the axes and a few wavelength planes are read, plus, for a point that is
+    zero in all of those, its own spectrum up to its first non-zero value; once one such point is zero
+    throughout, the remaining such points count as not held. Raises ValueError (or OSError) when either
+    file cannot be read.
     """
     lookup, cols, _ = _read_lookup_table(lookup_file)
     file_col = find_file_column(cols) or cols[0]
@@ -362,8 +319,7 @@ def spectra_not_in_cube(cube_path: str, lookup_file: str) -> Tuple[List[str], Li
 
 
 def _holds_flux(flux: np.ndarray, point: Tuple[int, int, int], chunk: int = 4096) -> bool:
-    """Whether the cube's spectrum at ``point`` (i_meta, i_logg, i_teff) is non-zero anywhere, read in
-    wavelength chunks up to its first non-zero value."""
+    """Whether the cube's spectrum at ``point`` (i_meta, i_logg, i_teff) is non-zero; reads up to its first non-zero."""
     i_m, i_l, i_t = point
     for w0 in range(0, flux.shape[0], chunk):
         if np.any(flux[w0:w0 + chunk, i_m, i_l, i_t] != 0):
@@ -381,8 +337,7 @@ def _axis_positions(axis: np.ndarray, values: np.ndarray) -> np.ndarray:
 def _filled_points(fh, dims: Tuple[int, int, int, int], data_offset: int, cube_path: str) -> np.ndarray:
     """Whether each grid point holds flux, indexed [i_meta, i_logg, i_teff], from a few wavelength planes.
 
-    On disk each wavelength's plane of (Teff, logg, [M/H]) points is contiguous
-    (see :func:`_write_cube`), so each plane is one read.
+    On disk each wavelength's plane of (Teff, logg, [M/H]) points is contiguous, so each plane is one read.
     """
     nt, nl, nm, nw = dims
     n_points = nt * nl * nm
@@ -397,9 +352,7 @@ def _filled_points(fh, dims: Tuple[int, int, int, int], data_offset: int, cube_p
     return filled
 
 
-# ---------------------------------------------------------------------------
-# Core population — builds one cube from a filtered/full file list
-# ---------------------------------------------------------------------------
+# --- One cube from a list of spectra ---
 
 def _populate_and_write(
     model_dir:   str,
@@ -412,11 +365,7 @@ def _populate_and_write(
     usable_ram:  int,
     label:       str = "",
 ) -> None:
-    """Build and write one flux cube from the given file list.
-
-    Spectra at the same (Teff, logg, [M/H]) node are averaged; nodes with no
-    spectrum are zero.
-    """
+    """Build and write one flux cube from the given files: spectra at one node are averaged, empty nodes are zero."""
     teff_grid, logg_grid, meta_grid = build_grids(teff_vals, logg_vals, meta_vals)
 
     cube_bytes = len(teff_grid) * len(logg_grid) * len(meta_grid) * len(wavelengths) * 8
@@ -432,7 +381,6 @@ def _populate_and_write(
             wavelengths, label,
         )
 
-        # Divide accumulated flux by count to get mean
         nonzero = count_cube > 0
         for axis_idx in range(len(wavelengths)):
             flux_cube[:, :, :, axis_idx] = np.where(
@@ -458,10 +406,9 @@ def _accumulate_spectra(
     wavelengths: np.ndarray,
     label:       str,
 ) -> np.ndarray:
-    """Add every spectrum into its node of *flux_cube*; return the spectra count per node.
+    """Add every spectrum into its node of *flux_cube* and return the count per node.
 
-    After reading every file, raises ValueError listing the spectra that
-    held no numeric data.
+    Raises ValueError, after reading every file, listing the spectra that held no numeric data.
     """
     teff_vals, logg_vals, meta_vals = params
     teff_grid, logg_grid, meta_grid = grids
@@ -507,11 +454,7 @@ def _accumulate_spectra(
 
 
 def _warn_averaged_rows(lookup: Dict[str, List], rows, nodes, cube_path: str) -> None:
-    """Warn when lookup rows share a (Teff, logg, [M/H]) node: the cube holds their mean.
-
-    ``rows`` are the cube's row numbers in *lookup* and ``nodes`` their parsed
-    (Teff, logg, [M/H]), the values the cube is indexed by.
-    """
+    """Warn when lookup rows share a node: the cube holds their mean. ``nodes`` are the rows' (Teff, logg, [M/H])."""
     at_node: Dict[Tuple[float, float, float], List[int]] = {}
     for row, node in zip(rows, nodes):
         at_node.setdefault(node, []).append(row)
@@ -533,9 +476,7 @@ def _warn_averaged_rows(lookup: Dict[str, List], rows, nodes, cube_path: str) ->
 
 
 
-# ---------------------------------------------------------------------------
-# Main entry point
-# ---------------------------------------------------------------------------
+# --- precompute_flux_cube and its command line ---
 
 def precompute_flux_cube(
     model_dir:     str,
@@ -543,20 +484,13 @@ def precompute_flux_cube(
     root_dir:      Optional[str] = None,
     override_dict: Optional[Dict[str, Any]] = None,
 ) -> None:
-    """
-    Build flux cube(s) for model_dir.
+    """Build the flux cube(s) of model_dir, a folder of .txt spectra and lookup_table.csv.
 
-    Parameters
-    ----------
-    model_dir     : directory containing .txt spectra and lookup_table.csv
-    output_file   : path for the primary (MESA-facing) flux_cube.bin
-    root_dir      : SED_Tools root (for sed_tools.defaults)
-    override_dict : Python-API config override (highest priority)
-
-    Raises before writing anything if the lookup table has no Teff column,
-    holds a non-numeric or non-finite Teff/logg/[M/H], or lists a spectrum
-    that does not exist; raises without writing that cube if a spectrum holds
-    no data.
+    output_file is the primary (MESA-facing) flux_cube.bin; root_dir is the SED_Tools root holding
+    sed_tools.defaults; override_dict overrides the [on_collision] config (highest priority).
+    Raises before writing anything if the lookup table has no Teff column, holds a non-numeric or
+    non-finite Teff/logg/[M/H], or lists a spectrum that does not exist; raises without writing that
+    cube if a spectrum holds no data.
     """
     model_dir   = str(model_dir)
     output_file = str(output_file)
@@ -568,7 +502,7 @@ def precompute_flux_cube(
     )
     print(f"On-collision strategy: {cfg.strategy}  (source: {cfg.source})")
 
-    # Copy global config into model dir for reproducibility
+    # The configuration a cube was built with stays beside it.
     if root_dir:
         copy_global_config_to_model(Path(root_dir), Path(model_dir))
 
@@ -627,10 +561,6 @@ def _print_summary(output_file, teff_vals, logg_vals, meta_vals):
     if meta_vals.size:
         print(f"  [M/H]: {meta_vals.min():.2f} – {meta_vals.max():.2f}")
 
-
-# ---------------------------------------------------------------------------
-# CLI
-# ---------------------------------------------------------------------------
 
 def _main():
     parser = argparse.ArgumentParser(description="Precompute flux cube for stellar spectral grids")
