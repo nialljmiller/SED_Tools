@@ -1,4 +1,7 @@
-"""Real wavelengths for index-grid spectra, recovered from the grid's HDF5 files (MSG grids)."""
+"""Real wavelengths for index-grid spectra, recovered from the grid's HDF5 files (MSG grids), for the cleaner.
+
+msg.py's own recovery uses the physical-grid test and the dataset walk from here.
+"""
 
 from __future__ import annotations
 
@@ -162,18 +165,12 @@ def is_index_grid(wl: np.ndarray) -> bool:
     """Detect if wavelength array is actually an index grid (0, 1, 2, ...)."""
     if wl.size < 4:
         return False
-    
-    # Must start near 0 or 1
     if wl[0] > 2:
         return False
-    
-    # Check if it matches 0..N-1 or 1..N
     if np.allclose(wl, np.arange(wl.size), atol=0.01):
         return True
     if np.allclose(wl, np.arange(1, wl.size + 1), atol=0.01):
         return True
-    
-    # Check uniform step of ~1
     steps = np.diff(wl)
     if np.allclose(steps, 1.0, atol=0.01):
         return True

@@ -61,9 +61,7 @@ FLUX_UNITS = {
 FLUX_GUESS_WHY = "guessed from the size of the flux values, assuming flux received at Earth"
 
 
-# ============================================================================
-# DATA CLASSES
-# ============================================================================
+# ---- Data classes ----
 
 @dataclass
 class UnitInfo:
@@ -94,9 +92,7 @@ class SpectrumMeta:
             self.extra = {}
 
 
-# ============================================================================
-# HEADER PARSING
-# ============================================================================
+# ---- Header parsing ----
 
 def _load_header(filepath: str) -> Tuple[SpectrumMeta, str]:
     """Internal adapter: calls header_parser and returns (SpectrumMeta, raw_header_text)."""
@@ -131,20 +127,13 @@ def read_spectrum_data(filepath: str) -> Tuple[np.ndarray, np.ndarray]:
     return read_text_spectrum(filepath)
 
 
-# ============================================================================
-# UNIT DETECTION FROM HEADER
-# ============================================================================
+# ---- Unit detection from header ----
 
 def detect_units_from_header(header_text: str) -> Dict[str, Optional[str]]:
-    """
-    Extract unit information from header text.
-    
-    Returns dict with 'wavelength_unit' and 'flux_unit' keys.
-    """
+    """The units a header states: a dict with 'wavelength_unit' and 'flux_unit' keys (None where unstated)."""
     result = {'wavelength_unit': None, 'flux_unit': None}
     header_lower = header_text.lower()
     
-    # --- Wavelength unit detection ---
     wl_patterns = [
         r'wavelength[_\s]*unit\s*[=:]\s*(\S+)',
         r'wavelength\s*\(\s*(\S+)\s*\)',
@@ -159,7 +148,6 @@ def detect_units_from_header(header_text: str) -> Dict[str, Optional[str]]:
             result['wavelength_unit'] = _WAVELENGTH_NAMES.get(match.group(1).lower().strip('()[]'))
             break
     
-    # --- Flux unit detection ---
     # Units come before the bare quantity names, so that 'F_nu (Jy)' is read
     # as Jansky and 'F_lambda (W/m2/nm)' as W/m²/nm. The (?<![a-z]) and
     # (?![a-z]) keep text such as 'erg/s/cm2/arcsec2' or 'low mass' from
@@ -195,16 +183,10 @@ def detect_units_from_header(header_text: str) -> Dict[str, Optional[str]]:
     return result
 
 
-# ============================================================================
-# UNIT DETECTION FROM DATA
-# ============================================================================
+# ---- Unit detection from data ----
 
 def detect_wavelength_unit_from_range(wl: np.ndarray) -> Tuple[str, float, str]:
-    """
-    Infer wavelength unit from data range.
-    
-    Returns: (unit_name, conversion_factor, confidence)
-    """
+    """Infer the wavelength unit from the data range: (unit_name, conversion_factor, confidence)."""
     if wl.size < 2:
         return 'angstrom', 1.0, 'low'
     
@@ -252,11 +234,7 @@ def detect_wavelength_unit_from_range(wl: np.ndarray) -> Tuple[str, float, str]:
 
 
 def detect_flux_unit_from_range(flux: np.ndarray) -> Tuple[str, float, str]:
-    """
-    Infer flux unit from data magnitude.
-    
-    Returns: (flux_type, scaling_factor, confidence)
-    """
+    """Infer the flux unit from the data's magnitude: (flux_type, scaling_factor, confidence)."""
     flux_valid = flux[np.isfinite(flux) & (flux > 0)]
     if flux_valid.size == 0:
         return 'flam', 1.0, 'low'
@@ -291,14 +269,9 @@ def detect_flux_unit_from_range(flux: np.ndarray) -> Tuple[str, float, str]:
 
 
 def detect_units_single_file(filepath: str) -> Optional[UnitInfo]:
-    """
-    Detect units from a single file (for sampling).
-    
-    Returns UnitInfo or None if file is invalid/already standardized.
-    """
+    """Detect one file's units (for sampling); None if the file is invalid or already standardized."""
     meta, header_text = _load_header(filepath)
     
-    # Skip if already standardized
     if meta.units_standardized:
         return None
     
@@ -307,17 +280,14 @@ def detect_units_single_file(filepath: str) -> Optional[UnitInfo]:
     if wl.size < 2 or flux.size < 2:
         return None
     
-    # Clean data
     valid = np.isfinite(wl) & np.isfinite(flux) & (wl > 0)
     wl, flux = wl[valid], flux[valid]
     
     if wl.size < 2:
         return None
     
-    # Try header first
     header_units = detect_units_from_header(header_text)
     
-    # Wavelength
     if header_units['wavelength_unit']:
         wl_unit = header_units['wavelength_unit']
         wl_factor = WAVELENGTH_FACTORS.get(wl_unit, 1.0)
@@ -327,14 +297,12 @@ def detect_units_single_file(filepath: str) -> Optional[UnitInfo]:
         wl_unit, wl_factor, wl_conf = detect_wavelength_unit_from_range(wl)
         wl_source = 'range'
     
-    # Flux
     if header_units['flux_unit']:
         flux_type, flux_factor, _ = FLUX_UNITS[header_units['flux_unit']]
         flux_conf = 'high'
     else:
         flux_type, flux_factor, flux_conf = detect_flux_unit_from_range(flux)
     
-    # Combined confidence
     if wl_conf == 'high' and flux_conf == 'high':
         confidence = 'high'
     elif wl_conf in ('high', 'medium') and flux_conf in ('high', 'medium'):
@@ -355,18 +323,13 @@ def detect_units_single_file(filepath: str) -> Optional[UnitInfo]:
     )
 
 
-# ============================================================================
-# SPECTRAL GRID UNIT DETECTION (SAMPLED)
-# ============================================================================
+# ---- Spectral grid unit detection (sampled) ----
 
 def detect_catalog_units(txt_files: List[str], sample_fraction: float = 0.10) -> Tuple[Optional[UnitInfo], Dict]:
-    """
-    Detect units from a sample of model spectrum files.
-    
+    """Detect a grid's units from a sample of its spectrum files: (UnitInfo or None, stats_dict).
+
     Samples ``sample_fraction`` of the files at random (min 1, max 1000) and
     takes the most common wavelength unit and flux type as the grid's units.
-    
-    Returns: (UnitInfo or None, stats_dict)
     """
     if not txt_files:
         return None, {'error': 'no files'}
@@ -390,23 +353,19 @@ def detect_catalog_units(txt_files: List[str], sample_fraction: float = 0.10) ->
         'index_grids': index_grids,
     }
     
-    # If all sampled files are already standardized, skip the spectral grid
     if skipped_standardized == n_sample:
         stats['status'] = 'already_standardized'
         return None, stats
     
-    # If no valid detections, can't determine units
     if not detections:
         stats['status'] = 'no_valid_detections'
         return None, stats
     
-    # Find consensus: most common wavelength unit and flux type
     wl_units = Counter(d.wavelength_unit for d in detections)
     flux_types = Counter(d.flux_type for d in detections)
     consensus_wl = wl_units.most_common(1)[0][0]
     consensus_flux = flux_types.most_common(1)[0][0]
     
-    # Check consensus strength
     wl_agreement = wl_units[consensus_wl] / len(detections)
     flux_agreement = flux_types[consensus_flux] / len(detections)
     
@@ -416,7 +375,6 @@ def detect_catalog_units(txt_files: List[str], sample_fraction: float = 0.10) ->
     stats['flux_agreement'] = f"{flux_agreement:.0%}"
     stats['status'] = 'success'
     
-    # Determine confidence based on agreement
     if wl_agreement >= 0.9 and flux_agreement >= 0.9:
         confidence = 'catalog_high'
     elif wl_agreement >= 0.7 and flux_agreement >= 0.7:
@@ -482,11 +440,9 @@ def _flux_unit_name(unit_info: UnitInfo) -> str:
 
 def _with_flux_unit(grid: str, unit_info: UnitInfo, flux_unit: Optional[str], *,
                     report: bool = True) -> UnitInfo:
-    """unit_info as detected when the spectra declare their flux unit, else with the caller's.
+    """unit_info with the caller's flux_unit if the spectra declare none; ValueError naming the best guess if none given.
 
-    A declared unit is never replaced: a flux_unit given as well is not used,
-    and a warning says so (unless ``report`` is False).  Raises ValueError
-    naming the best guess when the spectra declare none and none was given.
+    A declared unit is kept: a flux_unit given as well is not used, with a warning when report is True.
     """
     if unit_info.flux_declared:
         if flux_unit is not None and report:
@@ -500,10 +456,7 @@ def _with_flux_unit(grid: str, unit_info: UnitInfo, flux_unit: Optional[str], *,
 
 
 def _detect_sample(sample_files: List[str]) -> Tuple[List[UnitInfo], int, int, int]:
-    """Detect units in each sampled file.
-
-    Returns (detections, n_already_standardized, n_invalid, n_index_grids).
-    """
+    """Detect units in each sampled file: (detections, n_already_standardized, n_invalid, n_index_grids)."""
     detections = []
     skipped_standardized = 0
     skipped_invalid = 0
@@ -511,7 +464,6 @@ def _detect_sample(sample_files: List[str]) -> Tuple[List[UnitInfo], int, int, i
     for filepath in sample_files:
         unit_info = detect_units_single_file(filepath)
         if unit_info is None:
-            # Check why it was skipped
             meta, _ = _load_header(filepath)
             if meta.units_standardized:
                 skipped_standardized += 1
@@ -525,33 +477,22 @@ def _detect_sample(sample_files: List[str]) -> Tuple[List[UnitInfo], int, int, i
 
 
 def _representative(detections: List[UnitInfo], wl_unit: str, flux_type: str) -> UnitInfo:
-    """The detection whose flux factor the grid uses.
-
-    The first detection matching both consensus units, else the first with the
-    consensus wavelength unit (one always exists: the consensus came from them).
-    """
+    """The detection whose flux factor the grid uses: first with both consensus units, else with the wavelength one."""
     for d in detections:
         if d.wavelength_unit == wl_unit and d.flux_type == flux_type:
             return d
     return next(d for d in detections if d.wavelength_unit == wl_unit)
 
 
-# ============================================================================
-# UNIT CONVERSION
-# ============================================================================
+# ---- Unit conversion ----
 
 def convert_to_standard_units(
     wl: np.ndarray,
     flux: np.ndarray,
     unit_info: UnitInfo
 ) -> Tuple[np.ndarray, np.ndarray]:
-    """
-    Convert wavelength to Angstroms and flux to F_lambda (erg/cm²/s/Å).
-    """
-    # Convert wavelength to Angstroms
+    """Convert wavelength to Angstroms and flux to F_lambda (erg/cm²/s/Å)."""
     wl_ang = wl * unit_info.wavelength_factor
-    
-    # Convert flux
     flux_scaled = flux * unit_info.flux_factor
     
     if unit_info.flux_type in ('fnu', 'fnu_jy'):
@@ -570,14 +511,10 @@ def convert_to_standard_units(
     return wl_ang, flux_flam
 
 
-# ============================================================================
-# VALIDATION
-# ============================================================================
+# ---- Validation ----
 
 def validate_converted_spectrum(wl: np.ndarray, flux: np.ndarray) -> Tuple[bool, str]:
-    """
-    Validate converted spectrum has sensible values.
-    """
+    """Whether a converted spectrum has sensible values: (ok, reason)."""
     if wl.size == 0 or flux.size == 0:
         return False, "empty arrays"
     

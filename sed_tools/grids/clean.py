@@ -1,24 +1,8 @@
 #!/usr/bin/env python3
-"""
-spectra_cleaner.py — Standardize stellar spectra for MESA
+"""Standardize a grid's spectra for MESA: wavelength in Å, flux as F_lambda in erg/cm²/s/Å, a standard header.
 
-Ensures all SEDs have:
-  - Wavelength in Angstroms (Å)
-  - Flux in erg/cm²/s/Å (F_lambda)
-  - Consistent metadata tags alongside Teff/logg/[M/H]
-
-KEY PRINCIPLE: A spectral grid has ONE unit system, not per-file units.
-
-Processing:
-  1. Sample 10% of the spectral grid to determine units (consensus)
-     A flux unit not declared in the headers is not guessed: cleaning stops
-     and names the best guess, unless the caller gives the unit (flux_unit).
-  2. Apply those units uniformly to ALL files
-  3. Convert wavelength → Angstroms, flux → F_lambda
-  4. Validate, renormalise a spectrum whose absolute flux scale is wrong
-     (see _bolometric_renorm_ratio), and write with standardized header
-
-The tag `# units_standardized = True` prevents reprocessing.
+A grid has one unit system, taken from a sample of its spectra; an undeclared flux unit is never guessed (pass
+flux_unit). Each file is tagged '# units_standardized = True'. units.py and hdf5_wavelengths.py hold the rest.
 """
 
 from __future__ import annotations
@@ -66,9 +50,7 @@ from .units import (  # noqa: F401
 logger = logging.getLogger("sed_tools.spectra_cleaner")
 
 
-# ============================================================================
-# CONSTANTS
-# ============================================================================
+# ---- Constants ----
 
 # A spectrum whose integrated flux is more than 3 times a blackbody's at its
 # Teff, over the same wavelengths, has a wrong absolute flux scale (SVO's NextGen
@@ -78,7 +60,6 @@ logger = logging.getLogger("sed_tools.spectra_cleaner")
 _RENORM_MAX_RATIO = 3.0
 _RENORM_MIN_COVERAGE = 0.05
 
-# Standard header format
 STANDARD_HEADER_TEMPLATE = """\
 # source = {source}
 # teff = {teff}
@@ -93,9 +74,7 @@ STANDARD_HEADER_TEMPLATE = """\
 """
 
 
-# ============================================================================
-# FILE WRITING
-# ============================================================================
+# ---- File writing ----
 
 def write_standardized_spectrum(
     filepath: str,
@@ -105,8 +84,6 @@ def write_standardized_spectrum(
     unit_info: UnitInfo,
 ) -> None:
     """Write standardized spectrum with proper header."""
-    
-    # Build header
     header = STANDARD_HEADER_TEMPLATE.format(
         source=meta.source,
         teff=meta.teff if np.isfinite(meta.teff) else 'nan',
@@ -117,11 +94,8 @@ def write_standardized_spectrum(
         confidence=unit_info.confidence,
     )
     
-    # Add spec_group if present (for HDF5 recovery)
-    if meta.spec_group:
+    if meta.spec_group:  # for HDF5 wavelength recovery
         header += f"# spec_group = {meta.spec_group}\n"
-    
-    # Add extra metadata
     for key, value in meta.extra.items():
         if key not in ('wavelength_unit', 'flux_unit', 'units_standardized',
                        'original_wavelength_unit', 'original_flux_unit', 'conversion_confidence'):
@@ -135,9 +109,7 @@ def write_standardized_spectrum(
         np.savetxt(f, data, fmt='%.6f %.8e')
 
 
-# ============================================================================
-# MAIN CLEANING LOGIC
-# ============================================================================
+# ---- Main cleaning logic ----
 
 def clean_spectrum_file(
     filepath: str,
@@ -150,8 +122,8 @@ def clean_spectrum_file(
     Args:
         filepath: Path to spectrum file
         catalog_units: Pre-determined units for the spectral grid (from the sample).
-                       If None, detects units per-file (legacy behavior); a flux
-                       unit the header does not declare then raises ValueError.
+                       If None, detects units per-file; a flux unit the header
+                       does not declare then raises ValueError.
         try_h5_recovery: Attempt HDF5 wavelength recovery for index grids
     
     Returns: (status, detail)
@@ -175,24 +147,13 @@ def _clean_spectrum(
     try_h5_recovery: bool,
     flux_unit: Optional[str] = None,
 ) -> Tuple[str, str, Optional[float]]:
-    """clean_spectrum_file's work. Also returns the factor the flux was divided by, or None.
-
-    flux_unit is used when catalog_units is None (see clean_model_dir).
-    """
-    # Parse header
+    """clean_spectrum_file's work, plus the factor the flux was divided by (or None); flux_unit is for per-file units."""
     meta, _ = _load_header(filepath)
-    
-    # Skip if already standardized
     if meta.units_standardized:
         return 'skipped_already', 'already standardized', None
-    
-    # Read data
     wl, flux = read_spectrum_data(filepath)
-    
     if wl.size == 0 or flux.size == 0:
         return 'skipped_invalid', 'empty data', None
-    
-    # Clean: remove NaN/inf and non-positive wavelengths
     valid = np.isfinite(wl) & np.isfinite(flux) & (wl > 0)
     wl, flux = wl[valid], flux[valid]
     
@@ -209,15 +170,12 @@ def _clean_spectrum(
     else:
         status = 'converted'
     
-    # Use catalog units if provided, otherwise detect per-file (the file has
-    # at least two valid points by now, so per-file detection always succeeds).
+    # The file has at least two valid points by now, so per-file detection always succeeds
     if catalog_units is not None:
         unit_info = catalog_units
     else:
         unit_info = _with_flux_unit("this spectrum", detect_units_single_file(filepath), flux_unit, report=False)
     wl_std, flux_std = convert_to_standard_units(wl, flux, unit_info)
-    
-    # Validate
     valid, msg = validate_converted_spectrum(wl_std, flux_std)
     if not valid:
         return 'skipped_invalid', f'validation failed: {msg}', None
@@ -244,18 +202,8 @@ def _clean_spectrum(
 def _bolometric_renorm_ratio(wl: np.ndarray, flux: np.ndarray, teff: float) -> Optional[float]:
     """The factor to divide the flux by when its absolute scale is wrong, else None.
 
-    That factor is the spectrum's integrated flux over pi*B_lambda(Teff)
-    integrated on the same wavelengths, so both integrals share one quadrature
-    and a correctly scaled spectrum gives about 1 however it is sampled.
-    Spectra without a Teff, or whose wavelengths hold too little of sigma*T^4,
-    are not checked.
-
-    The first version differed in two ways, both of which rescaled correct
-    spectra. It integrated the blackbody on a 2000-point linear grid, which
-    misses a hot star's peak on a wide wavelength range (correct 30000 K
-    blackbodies over 10 Å-1e7 Å came out 11 times too bright). And it also
-    rescaled spectra below 0.1 times the blackbody, which multiplied correct
-    3000-3500 K giants observed only in the optical by 10-50.
+    The factor is the integrated flux over pi*B_lambda(Teff) integrated on the same wavelengths: both
+    integrals share one quadrature, so a correctly scaled spectrum gives about 1 however it is sampled.
     """
     if not (np.isfinite(teff) and teff > 0):
         return None
@@ -313,9 +261,7 @@ def rebuild_lookup_table(model_dir: str) -> str:
     return out_path
 
 
-# ============================================================================
-# PUBLIC API
-# ============================================================================
+# ---- Public API ----
 
 def clean_model_dir(
     model_dir: str,
@@ -374,10 +320,6 @@ def clean_model_dir(
     
     if not txt_files:
         return summary
-    
-    # =========================================================
-    # STEP 1: Detect catalog-wide units from a sample
-    # =========================================================
     catalog_units, detection_stats = detect_catalog_units(txt_files, sample_fraction)
     if catalog_units is not None:
         catalog_units = _with_flux_unit(model_dir, catalog_units, flux_unit)
@@ -389,10 +331,6 @@ def clean_model_dir(
             'confidence': catalog_units.confidence,
         }
     _print_detected_units(catalog_units, detection_stats)
-    
-    # =========================================================
-    # STEP 2: Apply catalog units to ALL files
-    # =========================================================
     failures = _clean_all_files(txt_files, catalog_units, try_h5_recovery, summary, flux_unit)
     n_per_file = len(summary['converted']) + len(summary['recovered'])
     if catalog_units is None and n_per_file:
@@ -406,10 +344,6 @@ def clean_model_dir(
               f"Status: {detection_stats.get('status', 'unknown')}")
     if 'renormed' in summary:
         _warn_renormed(model_dir, summary['renormed'])
-    
-    # =========================================================
-    # STEP 3: Rebuild lookup table
-    # =========================================================
     if rebuild_lookup:
         lookup_path = rebuild_lookup_table(model_dir)
         if lookup_path:
@@ -428,11 +362,7 @@ _UNCONVERTED = ('skipped_invalid', 'skipped_index', 'error')
 
 
 def _print_detected_units(catalog_units: Optional[UnitInfo], stats: Dict) -> None:
-    """The grid's units, or that the sample was already standardized.
-
-    Grids whose units could not be determined are reported after cleaning
-    (see clean_model_dir), once it is known whether files were converted one by one.
-    """
+    """The grid's units, or that the sample was already standardized; undetermined units are reported after cleaning."""
     if catalog_units:
         print(f"[clean] Spectral grid units (from {stats.get('sample_size', '?')} samples): "
               f"λ={catalog_units.wavelength_unit} ({stats.get('wavelength_agreement', '?')}), "
@@ -444,11 +374,7 @@ def _print_detected_units(catalog_units: Optional[UnitInfo], stats: Dict) -> Non
 def _clean_all_files(txt_files: List[str], catalog_units: Optional[UnitInfo],
                      try_h5_recovery: bool, summary: Dict,
                      flux_unit: Optional[str]) -> List[Tuple[str, str]]:
-    """Clean every file, appending each file name to its status list in *summary*.
-
-    A renormalised spectrum is listed under its status ('converted' or
-    'recovered') and in summary['renormed'] with its factor; that key is added
-    only when there is one.
+    """Clean every file into its status list in *summary* (renormalised ones also in summary['renormed']).
 
     Returns (file name, reason) for every spectrum left unconverted. A file that
     cannot be read is recorded and the batch goes on; a failed rewrite raises.
