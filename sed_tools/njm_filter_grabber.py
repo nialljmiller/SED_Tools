@@ -613,14 +613,15 @@ class NJMFilterGrabber:
     def _saved_verified(path: Path, record: str) -> Dict[str, int]:
         """The ``{curve file: size}`` saved at ``path`` under NJM's ``record``; empty for another record.
 
-        A damaged file counts as empty: every installed curve is then checked
-        against NJM's copy, and the file is written afresh.
+        A file that cannot be read counts as empty: every installed curve is
+        then checked against NJM's copy (a correct result, only slower), and
+        the file is written afresh.
         """
         if not path.is_file():
             return {}
         try:
             saved = json.loads(path.read_text(encoding="utf-8"))
-        except ValueError:
+        except (OSError, ValueError):
             return {}
         return saved["files"] if saved.get("njm_record") == record else {}
 

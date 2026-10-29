@@ -100,3 +100,33 @@ def test_components_njm_says_it_does_not_have_are_not_announced_without_a_builde
         assert library.prepare_components(directory, components="filter+qe") is False
     assert ("NJM cannot provide the components of NoBuilderFac/Cam (2 component files failed)" in caplog.text) == warned
     assert bool(caplog.text) == warned
+
+
+def test_an_unreadable_verification_cache_means_every_curve_is_checked(tmp_path):
+    grabber = NJMFilterGrabber.__new__(NJMFilterGrabber)
+    damaged = tmp_path / "verified_curves.json"
+    damaged.write_text("{not json")
+    assert grabber._saved_verified(damaged, "record") == {}
+    locked = tmp_path / "locked.json"
+    locked.write_text('{"njm_record": "record", "files": {"g.dat": 10}}')
+    locked.chmod(0)
+    try:
+        assert grabber._saved_verified(locked, "record") == {}  # not NJM's fault: never a fallback to SVO
+    finally:
+        locked.chmod(0o600)
+    damaged.write_text('{"njm_record": "old", "files": {"g.dat": 10}}')
+    assert grabber._saved_verified(damaged, "record") == {}  # NJM's set changed since
+    assert grabber._saved_verified(damaged, "old") == {"g.dat": 10}
+
+
+def test_a_manifest_answer_without_a_body_is_unreadable_not_absent(tmp_path):
+    import json
+
+    def get(url, **kwargs):
+        return SimpleNamespace(status_code=204, text="", raise_for_status=lambda: None, json=lambda: json.loads(""))
+
+    grabber = NJMFilterGrabber.__new__(NJMFilterGrabber)
+    grabber.base_url, grabber.filters_url, grabber._available = NJM, f"{NJM}/filters", True
+    grabber.session = SimpleNamespace(get=get, headers={}, verify=True)
+    with pytest.raises(ValueError, match="unreadable manifest.json for Fac/Cam"):
+        grabber.fetch_manifest("Fac", "Cam")
