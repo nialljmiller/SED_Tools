@@ -159,17 +159,13 @@ def prepare_sed(filepath, teff):
     (wavelength in Angstroms, flux in erg/cm²/s/Å) via spectra_cleaner.py.
     No renormalization is applied here.
 
-    Raises ValueError if the file cannot be read or gives fewer than two
-    readable points, so callers can list every bad spectrum in one error.
+    Raises OSError if the file cannot be read, and ValueError if it gives
+    fewer than two readable points.
     """
-    try:
-        wl, flux = load_sed(filepath)
-    except OSError as exc:
-        raise ValueError(f"{filepath}: fewer than 2 readable wavelength/flux rows "
-                         f"(cannot read the file: {exc.strerror or exc})") from exc
+    wl, flux = load_sed(filepath)
     if wl.size < 2:
         raise ValueError(f"{filepath}: fewer than 2 readable wavelength/flux rows "
-                         "(missing, empty or not a spectrum)")
+                         "(empty or not a spectrum)")
     return wl, flux
 
 
@@ -320,7 +316,7 @@ def compute_normalization_factors(target_data, reference_data, wavelength_grid):
         try:
             factor, reason = _normalization_factor(file_target, teff, file_ref, ref_teff[idx],
                                                    wavelength_grid)
-        except ValueError as exc:  # unreadable target or reference spectrum
+        except (OSError, ValueError) as exc:  # unreadable target or reference spectrum
             failures.append(str(exc))
             continue
         if reason:
@@ -415,7 +411,7 @@ def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, w
                 continue
             try:
                 wl, fl = prepare_sed(filepath, teff)
-            except ValueError as exc:
+            except (OSError, ValueError) as exc:
                 failures.append(str(exc))
                 continue
             fl *= norm_factors[model_idx][i]
