@@ -287,8 +287,10 @@ def training_libraries(base_dir: str) -> List[Dict[str, Any]]:
     return libraries
 
 
-def print_libraries(libraries: List[Dict[str, Any]]) -> None:
-    """One numbered line per library: its name and its number of SEDs."""
+def print_libraries(libraries: List[Dict[str, Any]], title: str) -> None:
+    """title, a rule, then one numbered line per library: its name and its number of SEDs."""
+    print(f"\n{title}")
+    print("-" * 60)
     for i, library in enumerate(libraries, 1):
         print(f"  {i:2d}) {library['name']:30s} ({library['n_seds']} SEDs)")
 

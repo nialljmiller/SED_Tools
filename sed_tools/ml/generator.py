@@ -725,9 +725,7 @@ def _train_menu(base_dir: str, models_dir: str) -> None:
         print(f"\nNo libraries with flux_cube.bin found in {base_dir}")
         return
     
-    print("\nAvailable libraries:")
-    print("-" * 60)
-    print_libraries(libraries)
+    print_libraries(libraries, "Available libraries:")
     
     selected = _menu_choice(libraries, "\nSelect library: > ")
     if selected is None:

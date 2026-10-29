@@ -999,9 +999,7 @@ def _train_menu(base_dir: str, models_dir: str) -> None:
         print("Download spectral grids first with 'sed-tools grids'")
         return
     
-    print("\nAvailable model libraries for training:")
-    print("-" * 60)
-    print_libraries(libraries)
+    print_libraries(libraries, "Available model libraries for training:")
     
     print("\nSelect library to train on (enter number):")
     selected = _menu_choice(libraries)
@@ -1081,9 +1079,7 @@ def _extend_menu(base_dir: str, models_dir: str) -> None:
         print(f"\nNo model sets found in {base_dir}")
         return
     
-    print("\nAvailable model sets:")
-    print("-" * 60)
-    print_libraries(grids)
+    print_libraries(grids, "Available model sets:")
     
     print("\nSelect model set to extend (enter number):")
     source = _menu_choice(grids)
