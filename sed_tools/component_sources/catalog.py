@@ -32,10 +32,6 @@ class BuilderRef:
     components: bool = True  # supplies separately published components
 
 
-def _tabular(instrument: str) -> BuilderRef:
-    return BuilderRef("tabular", (("instrument", instrument),), publishes=True)
-
-
 #: Instruments rebuilt from their teams' original files (``component_sources``
 #: modules ``surveys``, ``space``, ``observatories``, ``standards``, ``swift``,
 #: ``csp`` and ``cassini``), as
@@ -100,18 +96,10 @@ BUILDERS_FOR: Dict[Tuple[str, str], BuilderRef] = {
     # Argus inputs are partly non-public: without them the builder raises and points to NJM.
     ("Argus", "DR280"): BuilderRef("argus", (("instrument", "DR280"),), publishes=True),
     ("Argus", "System"): BuilderRef("argus", (("instrument", "System"),)),
-    ("Paranal", "HAWKI"): _tabular("HAWKI"),
-    ("Paranal", "NACO"): _tabular("NACO"),
-    ("Paranal", "SPHERE"): _tabular("SPHERE"),
-    ("Gemini", "GSAOI"): _tabular("GSAOI"),
-    ("Gemini", "NIFS"): _tabular("NIFS"),
-    ("CAHA", "PANIC"): _tabular("PANIC"),
-    ("WHT", "INGRID"): _tabular("INGRID"),
-    ("IRTF", "NSFCam"): _tabular("NSFCam"),
-    ("Liverpool", "IOO"): _tabular("IOO"),
-    ("JWST", "NIRCam"): BuilderRef("jwst", (("instruments", ("NIRCam",)),)),
-    ("JWST", "NIRISS"): BuilderRef("jwst", (("instruments", ("NIRISS",)),)),
-    ("JWST", "MIRI"): BuilderRef("jwst", (("instruments", ("MIRI",)),)),
+    **{(fac, inst): BuilderRef("tabular", (("instrument", inst),), publishes=True) for fac, inst in (
+        ("Paranal", "HAWKI"), ("Paranal", "NACO"), ("Paranal", "SPHERE"), ("Gemini", "GSAOI"), ("Gemini", "NIFS"),
+        ("CAHA", "PANIC"), ("WHT", "INGRID"), ("IRTF", "NSFCam"), ("Liverpool", "IOO"))},
+    **{("JWST", inst): BuilderRef("jwst", (("instruments", (inst,)),)) for inst in ("NIRCam", "NIRISS", "MIRI")},
     **_hst(),
     **_original(),
 }

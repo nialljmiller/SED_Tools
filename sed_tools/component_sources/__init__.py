@@ -19,32 +19,10 @@ from typing import Callable, Dict
 
 #: name -> module (relative to this package)
 BUILDERS: Dict[str, str] = {
-    "argus": ".argus",
-    "skycalc": ".skycalc",
-    "team_atmospheres": ".team_atmospheres",
-    "lsst": ".lsst",
-    "hst": ".hst",
-    "jwst": ".jwst",
-    "hsc": ".hsc",
-    "decam": ".decam",
-    "vista": ".vista",
-    "ztf": ".ztf",
-    "tabular": ".tabular",
-    "surveys": ".surveys",
-    "space": ".space",
-    "observatories": ".observatories",
-    "standards": ".standards",
-    "cfht": ".cfht",
-    "eris": ".eris",
-    "twomass": ".twomass",
-    "legacy_surveys": ".legacy_surveys",
-    "gmos": ".gmos",
-    "sdss": ".sdss",
-    "euclid": ".euclid",
-    "roman": ".roman",
-    "swift": ".swift",
-    "csp": ".csp",
-    "cassini": ".cassini",
+    name: f".{name}"
+    for name in ("argus", "skycalc", "team_atmospheres", "lsst", "hst", "jwst", "hsc", "decam", "vista", "ztf",
+                 "tabular", "surveys", "space", "observatories", "standards", "cfht", "eris", "twomass",
+                 "legacy_surveys", "gmos", "sdss", "euclid", "roman", "swift", "csp", "cassini")
 }
 
 
