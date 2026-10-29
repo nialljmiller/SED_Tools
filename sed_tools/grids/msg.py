@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# msg_spectra_grabber.py — MSG extractor with correct (Teff, logg, [M/H]) for C3K and friends
+"""MSGSpectraGrabber: spectra extracted from Townsend's MSG HDF5 grids, with Teff, logg and [M/H] from the grid axes."""
 
 import logging
 import os
@@ -378,9 +378,6 @@ class MSGSpectraGrabber:
             # Case 3: anything higher-dim -> force ravel (last resort)
             elif fx.ndim > 1:
                 fx = fx.ravel()
-
-
-
 
             wl = _recover_wavelengths(f, spec_g, expected_len=len(fx))
             n = min(len(wl), len(fx))

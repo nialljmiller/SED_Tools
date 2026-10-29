@@ -1,16 +1,9 @@
 #!/usr/bin/env python3
-# mast_spectra_grabber.py — robust BOSZ@MAST provider (BOSZ 2024 HLSP)
-"""
-MASTSpectraGrabber
-------------------
-- Does NOT rely on directory listings (which 404 for some branches).
-- Deterministically constructs and fetches the official BOSZ bulk download scripts
-  under /hlsps/.../download_scripts, extracts direct .txt/.txt.gz URLs, and filters
-  by chosen resolution (e.g., r10000 or rorig) and product suffix (_resam vs _noresam).
-- For resampled products (r500..r50000) it fetches the wavelength grid file
-  (bosz2024_wave_<res>.txt). For original resolution ('rorig') it reads wavelengths
-  from the files directly (3 columns).
-- Emits per-spectrum .txt files with a clear header and builds lookup_table.csv.
+"""MASTSpectraGrabber: the BOSZ 2024 grids (MAST HLSP), one per resolution (r500 to r50000, and rorig).
+
+Spectrum URLs come from the official bulk download scripts under /hlsps/.../download_scripts (directory listings
+404 for some branches). Resampled grids take their wavelengths from bosz2024_wave_<res>.txt, rorig files carry
+their own; each spectrum is written as a .txt file with a header, and the grid gets a lookup_table.csv.
 """
 
 from __future__ import annotations
@@ -223,7 +216,7 @@ def _try_wave_urls(reskey: str, session: requests.Session) -> Tuple[np.ndarray, 
     Raises RuntimeError saying what each candidate location gave if none
     holds a usable grid.
     """
-    # Official locations under /hlsps/
+    # The first is BOSZ's official location; the other four are unverified fallbacks
     candidates = [
         f"{DATA_BASE}/wavelength_grids/bosz2024_wave_{reskey}.txt",
         f"{DATA_BASE}/bosz2024_wave_{reskey}.txt",
@@ -377,7 +370,6 @@ class MASTSpectraGrabber:
         self.max_workers = max_workers
         self.session = session or requests.Session()
 
-    # API expected by SED_tools.py
     def discover_models(self) -> List[str]:
         print("Discovering spectral grids from MAST (BOSZ 2024)...")
         return [f"BOSZ-2024-{rk}" for rk in RES_KEYS]
@@ -430,7 +422,7 @@ class MASTSpectraGrabber:
         model_dir = os.path.join(self.base_dir, model_name)
         os.makedirs(model_dir, exist_ok=True)
 
-        # -------- harvest URLs from official scripts (no listings, no API) --------
+        # Spectrum URLs from the official scripts (no listings, no API)
         urls = _gather_urls_from_scripts(reskey, metals, self.session)
         urls = _filter_urls_by_params(urls, teff_range=teff_range, logg_range=logg_range)
         if not urls:
@@ -442,7 +434,7 @@ class MASTSpectraGrabber:
             return 0
         print(f"[MAST] harvest = download_scripts ({len(urls)} urls)")
 
-        # -------- detect inline wavelength; if not, fetch wave grid (resampled only) --------
+        # Wavelengths in the files, else the resolution's wave grid (resampled grids only)
         first_url = urls[0]
         try:
             first_text = _download_text_gz(first_url, session=self.session)

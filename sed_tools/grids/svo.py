@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# svo_spectra_grabber.py — robust SVO discovery & downloader
+"""SVOSpectraGrabber: spectral grids from the SVO theory server, with discovery fallbacks and retried downloads."""
 
 import io
 import json
@@ -45,7 +45,6 @@ class SVOSpectraGrabber:
         self.session = retrying_session("SED_Tools/1.0 (SVO)", Retry(
             total=5, backoff_factor=1.5, status_forcelist=[429, 500, 502, 503, 504], allowed_methods=["HEAD", "GET"]))
 
-        # Endpoints
         self.model_index_url = "http://svo2.cab.inta-csic.es/theory/newov2/index.php"
         self.spectra_base_url = "http://svo2.cab.inta-csic.es/theory/newov2/ssap.php"
         mount_discovery(self.session, self.model_index_url)  # also each grid's page there, a discovery fallback
@@ -60,7 +59,6 @@ class SVOSpectraGrabber:
         self.expand_max_gap  = 20
         self.progress_every  = 50          # print progress every N completions
 
-        # Cache
         self.cache_root = os.path.join(self.base_dir, ".cache", "svo_fids")
         os.makedirs(self.cache_root, exist_ok=True)
 
@@ -158,14 +156,9 @@ class SVOSpectraGrabber:
     # ---- A) SSAP stream ----
 
     def _discover_ssap_stream(self, model_name):
-        """
-        Stream the SSAP VOTable and extract FIDs via regex.
+        """FIDs from the SSAP VOTable, as (fids, problem): problem says why fids is empty.
 
-        SVO's VOTable XML contains unclosed CDATA sections which cause astropy
-        and any standard XML parser to fail. Regex over raw bytes is the only
-        reliable approach and is actually faster for this use case.
-
-        Returns (fids, problem): problem says why fids is empty.
+        SVO's VOTable has unclosed CDATA sections that break astropy and any XML parser, so a regex reads the raw bytes.
         """
         params = {"model": model_name, "REQUEST": "queryData", "FORMAT": "votable"}
         try:
