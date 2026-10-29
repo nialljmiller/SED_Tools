@@ -1,20 +1,8 @@
-"""The filter catalogue NJM serves beside the curves: search, descriptions and citations.
+"""NJM's descriptive files about the curves it serves (index.json, properties.json, info.json): search and citations.
 
-NJM's ``index.json`` lists every facility, instrument and band.  Each instrument
-directory also holds
-
-- ``properties.json``: values computed from each curve by
-  :mod:`sed_tools.filter_properties` and :mod:`sed_tools.filter_colors`
-  (pivot and other wavelengths, widths, zero points, AB−Vega, DisplayColor, ...);
-- ``info.json``: descriptions, the references to cite (with BibTeX where a
-  service supplied it), the providers' requested acknowledgements, the licence
-  and what SVO recorded about each band.
-
-Everything fetched is cached under ``<filter root>/../cache/njm/``, beside the
-``atmospheres/`` directory, and revalidated with the mirror's ETag only when
-``index.json`` changes.  ``index.json`` itself is rechecked once a day.  Without
-the mirror the cached copies are used.  Per-instrument files are fetched only for
-the instruments a search still needs, at most six at a time (NJM blocks bursts).
+They are cached under ``<filter root>/../cache/njm/`` and revalidated with NJM's ETag when
+``index.json`` changes, which is itself rechecked once a day; without NJM the cached copies are used.
+No curve is downloaded here: :mod:`.library` chooses where curves come from and :mod:`.njm` fetches them.
 """
 
 from __future__ import annotations
@@ -79,6 +67,15 @@ def parse_target(target: str) -> Tuple[str, str, Optional[str]]:
 
 class FilterCatalogue:
     """Cached, read-only access to NJM's ``index.json``, ``properties.json`` and ``info.json``.
+
+    ``index.json`` lists every facility, instrument and band.  ``properties.json``
+    holds the values computed from each curve by :mod:`sed_tools.filter_properties`
+    and :mod:`sed_tools.filter_colors` (pivot and other wavelengths, widths, zero
+    points, AB−Vega, DisplayColor, ...).  ``info.json`` holds descriptions, the
+    references to cite (with BibTeX where a service supplied it), the providers'
+    requested acknowledgements, the licence and what SVO recorded about each band.
+    Per-instrument files are fetched only for the instruments a search still
+    needs, at most six at a time (NJM blocks bursts).
 
     ``mirror`` is an :class:`~sed_tools.njm_filter_grabber.NJMFilterGrabber`, or a
     callable returning one, so that nothing touches the network until it must.
