@@ -60,6 +60,8 @@ class _SVOPlan:
 
 
 class FilterLibrary:
+    """The filter sets under ``root``: where their curves come from, and what composing them needs."""
+
     def __init__(self, root):
         self.root = Path(root)
         self.atmosphere_root = self.root.parent / "atmospheres"

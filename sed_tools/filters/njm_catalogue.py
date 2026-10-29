@@ -23,7 +23,7 @@ from urllib.parse import quote
 import pandas as pd
 from requests import RequestException
 
-from ..component_sources.catalog import name_key as _key
+from ..component_sources.catalog import name_key
 from ..njm_mirror import _body, cache_root
 from .curve_metadata import normalize_detector_type, read_filter_header
 from .manifest import index_names
@@ -247,7 +247,7 @@ class FilterCatalogue:
         """The served instrument matching these names (exactly, then ignoring case and separators)."""
         rows = self.instruments()
         for match in (lambda a, b: a == b, lambda a, b: a.casefold() == b.casefold(),
-                      lambda a, b: _key(a) == _key(b)):
+                      lambda a, b: name_key(a) == name_key(b)):
             found = [r for r in rows if match(r["facility"], facility) and match(r["instrument"], instrument)]
             if len(found) == 1:
                 return found[0]
