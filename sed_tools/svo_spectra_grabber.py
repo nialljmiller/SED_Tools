@@ -290,16 +290,16 @@ class SVOSpectraGrabber:
             cl = r.headers.get("content-length")
             if cl is None or cl == "0":
                 # HEAD gave no content-length info — do a small GET to verify
-                g = self.session.get(
+                with self.session.get(
                     self.spectra_base_url, params=params,
                     timeout=self.head_timeout, stream=True
-                )
-                if g.status_code != 200:
+                ) as g:
+                    if g.status_code != 200:
+                        return False
+                    for chunk in g.iter_content(chunk_size=512):
+                        if chunk:
+                            return _is_spectral_content(chunk[:512])
                     return False
-                for chunk in g.iter_content(chunk_size=512):
-                    if chunk:
-                        return _is_spectral_content(chunk[:512])
-                return False
             return int(cl) > 1024
         except requests.RequestException as e:
             # Treating this FID as absent would silently cut the FID list short

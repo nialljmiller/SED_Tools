@@ -383,6 +383,24 @@ def test_svo_metadata_from_the_index_page_is_warned_about_once(tmp_path, monkeyp
     assert "HTTP 503" in message and "using the model index page" in message
 
 
+def test_svo_probe_closes_the_get_it_streams(tmp_path, monkeypatch):
+    class Streamed(FakeResponse):
+        closed = False
+
+        def __exit__(self, *exc):
+            self.closed = True
+            return False
+
+    spectrum, error_page = Streamed(200, SVO_SPECTRUM), Streamed(404)
+    answers = {"GET": {1: spectrum, 2: error_page}, "HEAD": FakeResponse(200)}  # HEAD with no Content-Length
+    grabber, session = make_svo(tmp_path, monkeypatch, {})
+    session.get = lambda url, params=None, **kw: answers["GET"][params["fid"]]
+    session.head = lambda url, params=None, **kw: answers["HEAD"]
+
+    assert grabber._head_exists("Grid", 1) is True and spectrum.closed
+    assert grabber._head_exists("Grid", 2) is False and error_page.closed
+
+
 def test_svo_metadata_raises_when_no_method_finds_spectra(tmp_path, monkeypatch):
     grabber, _ = make_svo(tmp_path, monkeypatch, {SSAP_QUERY: FakeResponse(200, "<VOTABLE/>")})
     with pytest.raises(RuntimeError, match="no spectra for Grid: SSAP query: the response lists none"):
