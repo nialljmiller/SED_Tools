@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
-"""
-Combine multiple photometric filter sets into one MESA-compatible set.
-
-Unlike spectral grid combination, filter combination does not need a flux
-cube. A filter set is just a directory of ``*.dat`` transmission curves plus an
-index file whose contents list those curve filenames.
-"""
+"""Combine filter sets into one MESA-compatible set: a directory of ``*.dat`` curves and the index file listing them."""
 
 from __future__ import annotations
 
@@ -15,7 +9,7 @@ import os
 from pathlib import Path
 from typing import List, Optional, Sequence, Union
 
-from .compose import COMPONENTS_DIR, archived_bands, index_listing, is_auxiliary_path
+from .manifest import COMPONENTS_DIR, archived_bands, index_listing, is_auxiliary_path, write_filter_index
 from .curve_metadata import copy_filter_file, migrate_filter_file
 from ..cube.model import FILTER_DIR_DEFAULT
 
@@ -83,12 +77,9 @@ def resolve_filter_sources(source: PathLike, base_dir: PathLike) -> List[Path]:
 
 
 def _set_curves(directory: Path) -> List[Path]:
-    """The curves of one filter-set directory that belong in a combined set.
+    """The curves its MESA index file lists (every ``*.dat`` without one), less its ``archived_bands``.
 
-    Those its MESA index file lists (every ``*.dat`` without one), less the
-    bands its manifest lists under ``archived_bands``.  Other curve files
-    beside the set, such as NJM's ``_svo`` and ``_old`` copies, are left out
-    with a warning.
+    Other curve files beside the set, such as NJM's ``_svo`` and ``_old`` copies, are left out with a warning.
     """
     present = sorted(child for child in directory.iterdir()
                      if child.is_file() and child.suffix.lower() == ".dat")
@@ -125,20 +116,6 @@ def unique_filter_target(output_dir: Path, source_file: Path) -> Path:
         target = output_dir / f"{stem}_{counter}{source_file.suffix}"
         counter += 1
     return target
-
-
-def write_filter_index(filter_dir: Path, instrument: str) -> Path:
-    """Write the MESA index file for all ``*.dat`` files in ``filter_dir``.
-
-    Bands its ``manifest.json`` lists under ``archived_bands`` (superseded
-    copies kept beside the set) are left out: MESA must not load them.
-    """
-    archived = archived_bands(filter_dir)
-    dat_files = sorted(child.name for child in filter_dir.glob("*.dat")
-                       if child.is_file() and child.stem not in archived)
-    index_path = filter_dir / instrument
-    index_path.write_text("\n".join(dat_files) + "\n", encoding="utf-8")
-    return index_path
 
 
 def combine_filter_sets(

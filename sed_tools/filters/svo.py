@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""SVO's Filter Profile Service: browse its facilities and instruments, and download their curves."""
 
 from __future__ import annotations
 
@@ -17,7 +18,7 @@ from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 import requests
 from bs4 import BeautifulSoup
 
-from .compose import InstrumentManifest
+from .manifest import InstrumentManifest
 from .curve_metadata import (ENERGY, SOURCE_ASSUMED, SOURCE_SVO, SVO_ALTERNATIVES, SVOMetadataClient,
                               SVOUnreachableError, svo_components_header, svo_fps_url, svo_get, write_filter_file)
 from ..ui_utils import prompt_choice
@@ -29,12 +30,7 @@ SVO_PAUSE = 300
 
 
 class _SVOState:
-    """What this process knows about SVO, shared by every :class:`SVOFilterBrowser`.
-
-    Once SVO does not answer (no connection, or no reply in time), every
-    browser fails at once with that same error for ``SVO_PAUSE`` seconds, so a
-    facility list and the instrument lists after it wait for SVO once in all.
-    """
+    """What this process knows about SVO: after no answer, every browser fails at once for ``SVO_PAUSE`` seconds."""
 
     def __init__(self):
         self.lock = threading.Lock()
@@ -171,7 +167,7 @@ class SVOFilterBrowser:
             {"mode": "browse", "gname": facility_key, "gname2": instrument_key, "asttype": ""}
         )
         table = self._find_filter_table(soup)
-        rows: List[FilterRow] = []
+        rows: Dict[str, FilterRow] = {}  # one per filter ID, the first SVO lists
         if table:
             for tr in table.find_all("tr"):
                 cells = tr.find_all("td")
@@ -195,25 +191,15 @@ class SVOFilterBrowser:
                     # (GAIA/GAIA0, GAIA/GAIA3) so one never overwrites another.
                     instrument = instrument_key
                 description = cells[-1].get_text(strip=True) if cells else ""
-                rows.append(
-                    FilterRow(
-                        filter_id=filter_id,
-                        band=band or filter_id,
-                        facility=facility or facility_key,
-                        instrument=instrument or instrument_key,
-                        description=description,
-                    )
-                )
+                rows.setdefault(filter_id, FilterRow(
+                    filter_id=filter_id,
+                    band=band or filter_id,
+                    facility=facility or facility_key,
+                    instrument=instrument or instrument_key,
+                    description=description,
+                ))
 
-        # de-duplicate by filter_id while keeping order
-        seen = set()
-        unique_rows: List[FilterRow] = []
-        for row in rows:
-            if row.filter_id in seen:
-                continue
-            seen.add(row.filter_id)
-            unique_rows.append(row)
-
+        unique_rows = list(rows.values())
         self._filters_cache[cache_key] = unique_rows
         return unique_rows
 
@@ -298,12 +284,7 @@ class SVOFilterBrowser:
 
     # -------------------- HTTP helpers --------------------
     def _fetch_index(self, params: Dict[str, str]) -> BeautifulSoup:
-        """One page of SVO's browse index.
-
-        SVOUnreachableError when SVO cannot be connected to or does not answer
-        in time, and then at once, with the same message, for ``SVO_PAUSE``
-        seconds (see :class:`_SVOState`); RuntimeError for any other failure.
-        """
+        """One page of SVO's browse index; SVOUnreachableError (then at once for ``SVO_PAUSE`` s) or RuntimeError."""
         paused = _STATE.paused()
         if paused is not None:
             raise SVOUnreachableError(paused)
@@ -341,8 +322,7 @@ class SVOFilterBrowser:
 def _write_index_and_manifest(directory: Path, expected: Iterable[str]) -> None:
     """Write the instrument's MESA index (every ``.dat`` present) and merge its curves into the manifest.
 
-    The manifest keeps every expected band even after a partial download, so a
-    retry cannot mistake one saved curve for a complete instrument.
+    The manifest keeps every expected band, so a retry never takes a partial download for a complete set.
     """
     out_dir = str(directory)
     dat_files = sorted(
@@ -374,8 +354,7 @@ def _tip_text(link) -> str:
 
 
 def _would_collide(instrument_name: str, instrument_key: str, other_keys: Sequence[str]) -> bool:
-    """True if filing ``instrument_key`` under ``instrument_name`` could clash
-    with another instrument of the same facility."""
+    """True if filing ``instrument_key`` under ``instrument_name`` could clash with another of the facility."""
     def norm(value: str) -> str:
         return "".join(ch for ch in value.lower() if ch.isalnum())
 
@@ -486,7 +465,6 @@ def _browse_instruments(browser: SVOFilterBrowser, facility: Facility, instrumen
             print("Exiting.")
             return False
         if inst_idx == -1:
-            # user chose to go back to facility list
             return True
         instrument = instruments[inst_idx]
 

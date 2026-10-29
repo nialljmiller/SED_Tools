@@ -1,8 +1,7 @@
-"""Shared filter acquisition and composition workflow for the API and CLI.
+"""Where an instrument's filter curves come from, and what composing them needs; the API and CLI use it.
 
-The library owns source selection: installed files, NJM, then original
-sources. Manifests describe capabilities; filter_components performs the
-numerical work. Source catalogues remain data-only descriptions.
+Sources, in order: an installed complete copy, NJM, the original-source builder, SVO.  The folder model is
+:mod:`.manifest`, the maths :mod:`.compose`, NJM's descriptive files :mod:`.njm_catalogue`, picker names :mod:`.names`.
 """
 
 from __future__ import annotations
@@ -23,21 +22,22 @@ from ..component_sources import get_builder
 from ..component_sources.catalog import (
     BUILDERS_FOR, builder_for, component_availability, match_name, name_key, registered_name,
 )
-from .compose import (
+from .compose import atmosphere_file, build_product, find_atmosphere, resolve_atmosphere
+from .manifest import (
     FILTER, OPTICS, QE, PUBLISHED, AtmosphereGrid, AtmosphereSpec, ComponentError,
-    InstrumentManifest, atmosphere_file, build_product, find_atmosphere, index_listing, parse_components,
-    recipe_name, resolve_atmosphere,
+    InstrumentManifest, index_listing, parse_components, recipe_name,
 )
-from .njm_catalogue import cache_root
 from .curve_metadata import SVOUnreachableError, migrate_filter_tree, svo_components_header
 from .njm import NJMFilterGrabber, curve_file
-from ..njm_mirror import NJM_NOT_LISTED, _status
+from ..njm_mirror import NJM_NOT_LISTED, _status, cache_root
+from .names import (  # noqa: F401 - FETCH_ORDER, INSTRUMENT_CATALOGUE and instrument_catalogue stay importable here
+    FETCH_ORDER, INSTRUMENT_CATALOGUE, _adopt_claimed_svo, _drop_svo_duplicates, _instrument_metadata, _merge,
+    _picker_entries, instrument_catalogue, load_instrument_catalogue,
+)
 from .svo import FilterRow, SVOFilterBrowser, _clean_filename, _clean_path, svo_unavailable
 
 logger = logging.getLogger("sed_tools.filter_library")
 
-#: Whose spelling of a name the picker shows and downloads with, when several sources list it.
-FETCH_ORDER = ("njm", "original", "local", "svo")
 #: Seconds between checks of an installed atmosphere site's manifest against NJM's.
 ATMOSPHERE_CHECK_AGE = 24 * 3600
 #: Why NJM gave nothing while it is down (the NJM client announces each outage once per process).
@@ -59,6 +59,8 @@ class _SVOPlan:
 
 
 class FilterLibrary:
+    """The filter sets under ``root``: where their curves come from, and what composing them needs."""
+
     def __init__(self, root):
         self.root = Path(root)
         self.atmosphere_root = self.root.parent / "atmospheres"
@@ -80,10 +82,9 @@ class FilterLibrary:
 
         For a product of NJM's that SVO holds under other names (the bundled
         catalogue's ``svo_bands``: NJM's ``GAIA/GAIA`` is SVO's ``GAIA/GAIA3``),
-        the rows of the SVO instruments that hold its bands, renamed to NJM's
-        facility, instrument and band names (see :meth:`_svo_plan`).
-        Otherwise SVO's instrument of that name, matched ignoring case and
-        punctuation.
+        the rows of those SVO instruments under NJM's facility, instrument and
+        band names.  Otherwise SVO's instrument of that name, matched ignoring
+        case and punctuation.
         """
         plan = self._svo_plan(facility, instrument)
         if plan is not None:
@@ -115,10 +116,8 @@ class FilterLibrary:
 
         Every curve its MESA index file lists must be present, and every band
         its manifest declares except those under ``archived_bands`` (superseded
-        copies NJM keeps beside the set but never serves as part of it).  The
-        manifest counts as well because a download that failed part-way leaves
-        an index of only the curves it saved beside a manifest of the bands it
-        expected.
+        copies NJM keeps beside the set).  The manifest counts too: a download
+        that failed part-way leaves an index of only the curves it saved.
         """
         directory = Path(directory)
         if not list(directory.glob("*.dat")) or not (directory / "manifest.json").is_file():
@@ -154,8 +153,7 @@ class FilterLibrary:
                              f"{self.root}) and run again.")
 
     def _other_products(self, facility, instrument):
-        """Other instruments of the facility (NJM's or a builder's) whose names differ from this one's only
-        in case or punctuation; empty unless ``instrument`` is itself one of those names."""
+        """Other instruments of the facility (NJM's or a builder's) named as this one but for case or punctuation."""
         fac = match_name(facility, self._bundled)
         known = set(self._bundled[fac]["instruments"]) if fac else set()
         known.update(inst for fac_name, inst in BUILDERS_FOR if name_key(fac_name) == name_key(facility))
@@ -170,18 +168,17 @@ class FilterLibrary:
         original-source builder, SVO.  NJM and the builder are asked under
         their own spelling of the name, matched ignoring case and punctuation
         (``CTIO/S-PLUS`` is NJM's ``CTIO/S_PLUS``).  An instrument installed
-        under another spelling is completed in that folder
-        (:meth:`installed_directory`).  A product of NJM's that SVO holds under
-        other names is taken from those SVO instruments, under NJM's names
-        (:meth:`_svo_plan`).  Each source that cannot give a complete set is
-        reported with a warning naming the next one tried; when none can,
-        ComponentError carries every source's reason.  When SVO holds only
-        some of the bands of NJM's product, those are installed and returned,
-        with one warning naming the bands missing; the manifest still declares
-        every band, so the set is not taken as complete and the next fetch
-        asks NJM again (``Filters.available`` gives ``expected_bands`` beside
-        the installed ``bands``).  Once NJM has put part of its set in place,
-        SVO is not tried: its curves would replace or mix with NJM's.
+        under another spelling is completed in that folder.  A product of
+        NJM's that SVO holds under other names is taken from those SVO
+        instruments, under NJM's names.  Each source that cannot give a
+        complete set is reported with a warning naming the next one tried;
+        when none can, ComponentError carries every source's reason.  When SVO
+        holds only some of the bands of NJM's product, those are installed
+        and returned, with one warning naming the bands missing; the manifest
+        still declares every band, so the next fetch asks NJM again
+        (``Filters.available`` gives ``expected_bands`` beside the installed
+        ``bands``).  Once NJM has put part of its set in place, SVO is not
+        tried: its curves would replace or mix with NJM's.
         """
         installed = self.installed_directory(facility, instrument)
         if installed is not None and self.published_complete(installed):
@@ -228,7 +225,6 @@ class FilterLibrary:
         if shortfall is not None:
             text = (f"{facility}/{instrument} is incomplete: {shortfall}. Fetch again when NJM is reachable to "
                     f"complete it ({'; '.join(reasons)}).")
-            # One warning, wrapped to 80 columns, with the folder on a line of its own
             logger.warning("%s\nInstalled in: %s",
                            textwrap.fill(text, width=80, break_long_words=False, break_on_hyphens=False),
                            directory)
@@ -237,9 +233,7 @@ class FilterLibrary:
     def _publishing_builder(self, facility, instrument, installed):
         """``(builder, the directory it writes, None)``, or ``(None, None, why it is not used or None)``.
 
-        A builder that makes only the separate components is not a source of
-        the published curves.  Nor is one that would write a second copy beside
-        an instrument installed under another spelling.
+        Not used: a builder of only the components, or one that would write a second copy beside ``installed``.
         """
         names = registered_name(facility, instrument)
         if names is None:
@@ -257,12 +251,8 @@ class FilterLibrary:
         return None if svo_unavailable() else "SVO"
 
     def _published_from_njm(self, facility, instrument, installed=None):
-        """Download the set from NJM, into ``installed`` when the instrument is installed under another spelling.
-
-        Returns ``(directory, None)`` once every curve NJM's index lists is
-        installed and matches NJM's copy, else ``(directory holding curves NJM
-        wrote or confirmed now, or None, why the set is incomplete)``.
-        """
+        """``(directory, None)`` once NJM's whole set is installed (into ``installed`` if given), else
+        ``(directory holding curves NJM wrote or confirmed now, or None, why the set is incomplete)``."""
         if not self.mirror.is_available():
             return None, NJM_UNAVAILABLE
         spellings = [(facility, instrument)]
@@ -312,9 +302,8 @@ class FilterLibrary:
         return None if self.published_complete(directory) else "the builder left an incomplete set"
 
     def _published_from_svo(self, facility, instrument, installed=None):
-        """Download the set from SVO: ``(directory, None)`` when complete, ``(directory, what is missing)``
-        when SVO holds only some of the bands of one of NJM's products; raises when SVO cannot provide it,
-        or a curve it has could not be saved."""
+        """``(directory, None)``, or ``(directory, what is missing)`` for SVO's part of one of NJM's products;
+        raises when SVO cannot provide the set or a curve it has could not be saved."""
         plan = self._svo_plan(facility, instrument)
         if plan is not None:
             return self._njm_product_from_svo(plan, installed)
@@ -341,16 +330,9 @@ class FilterLibrary:
                              "missing files" + (f" ({failure})" if failure else "")) from failure
 
     def _svo_plan(self, facility, instrument):
-        """How SVO can fill a product of NJM's that it holds under other names, or None.
+        """How SVO can fill a product of NJM's that it holds under other names (bundled ``svo_bands``), or None.
 
-        Uses the bundled catalogue: the SVO instruments NJM names as the same
-        product (``svo_instruments``) are listed, and each filter that holds one
-        of NJM's bands (``svo_bands``) is taken under that band's name (SVO's
-        ``GAIA/GAIA2.Gbp`` is NJM's ``GAIA/DR2/BP``).  A filter of theirs whose
-        name is one of NJM's bands that no filter holds is taken as SVO
-        publishes it, since NJM's current curve differs (``differs``).  A
-        claimed SVO instrument SVO does not list is skipped, so its bands are
-        missing; ComponentError when SVO lists none of them.
+        A filter named as one of NJM's bands that no ``svo_bands`` entry holds is that band as SVO publishes it.
         """
         names = self._njm_spelling(facility, instrument)
         meta = self._bundled_record(facility, instrument)
@@ -383,14 +365,9 @@ class FilterLibrary:
         return _SVOPlan(names[0], names[1], list(meta["bands"]), rows, differs, list(meta["svo_instruments"]))
 
     def _njm_product_from_svo(self, plan, installed):
-        """Install a product of NJM's from SVO under NJM's names.
+        """Install a product of NJM's from SVO under NJM's names: ``(directory, None or what is missing)``.
 
-        Returns ``(directory, None)`` when every band is installed, else
-        ``(directory, what is missing)``: the bands SVO has no curve of.  The
-        bands taken from SVO although NJM's current curve differs are named in
-        that text, or in a warning of their own when nothing is missing.
-        ComponentError, once the others are saved, when a curve SVO has could
-        not be saved.
+        ComponentError, once the others are saved, when a curve SVO has could not be saved.
         """
         directory = installed if installed is not None else self.root / plan.facility / plan.instrument
         try:
@@ -464,11 +441,7 @@ class FilterLibrary:
         return self._bundled_availability(facility, instrument, failed)
 
     def _svo_availability(self, facility, instrument, failed):
-        """What SVO has of an instrument, described from its metadata, or None if it lists no filters.
-
-        A product of NJM's is described under NJM's band names, with a note
-        naming NJM's bands SVO has no copy of (see :meth:`_svo_plan`).
-        """
+        """What SVO has of an instrument (a product of NJM's under NJM's band names), or None if it lists none."""
         headers = {}
         for row in self.svo_filters(facility, instrument):
             record = self.svo.metadata_client.get_filter(row.filter_id)
@@ -489,8 +462,7 @@ class FilterLibrary:
         return info
 
     def _bundled_availability(self, facility, instrument, failed, source="unknown"):
-        """The bands NJM served when this SED_Tools was released, else none: no source could say
-        (``source="unknown"``), or the original-source builder makes them when fetched (``"original"``)."""
+        """The bands NJM served when this SED_Tools was released: no source could say, or a builder makes them."""
         meta = self._bundled_record(facility, instrument)
         bands = meta["bands"] if meta else []
         manifest = InstrumentManifest.from_headers(facility, instrument, {band: {} for band in bands})
@@ -509,12 +481,7 @@ class FilterLibrary:
         return info
 
     def _njm_availability(self, facility, instrument):
-        """What NJM serves for an instrument (under its name as given, else NJM's spelling), or None.
-
-        An instrument NJM serves without a component manifest (GAIA/GAIA, say)
-        is described from the curve headers its ``info.json`` records, with a
-        note in ``notes`` rather than an error.
-        """
+        """What NJM serves for an instrument (under its name as given, else NJM's spelling), or None."""
         spellings = [(facility, instrument)]
         njm_names = self._njm_spelling(facility, instrument)
         if njm_names is not None and njm_names != (facility, instrument):
@@ -715,9 +682,7 @@ class FilterLibrary:
                              bands=bands, detector_type=detector_type, allow_partial=allow_partial,
                              variants=variants)
 
-    # ------------------------------------------------------------------
-    # Discovery: what the facility and instrument pickers offer
-    # ------------------------------------------------------------------
+    # ---- Discovery: what the facility and instrument pickers offer
     @cached_property
     def _bundled(self):
         """NJM's names, descriptions and SVO equivalents as shipped (see :func:`load_instrument_catalogue`)."""
@@ -735,11 +700,7 @@ class FilterLibrary:
         return self._bundled[names[0]]["instruments"][names[1]] if names else None
 
     def _njm_instruments(self, facility, live):
-        """NJM's instruments of a facility -> ``{"description", "svo_instruments"}``.
-
-        The bundled catalogue, with each field a reachable NJM's ``index.json``
-        gives (``live``: name -> record) added or overriding it.
-        """
+        """NJM's instruments of a facility: the bundled catalogue, updated from ``live`` (name -> index.json record)."""
         fac = match_name(facility, self._bundled)
         known = {name: dict(meta) for name, meta in (self._bundled[fac]["instruments"] if fac else {}).items()}
         for name, record in live.items():
@@ -855,10 +816,7 @@ def _publishing_builders():
 
 
 def _availability(description, source, failed):
-    """``description`` with ``availability_source``, ``errors``, ``sources_failed`` and ``fallback_from``.
-
-    ``failed`` maps a source to its failure messages, in the order they happened.
-    """
+    """``description`` with ``availability_source``, ``errors``, ``sources_failed`` and ``fallback_from``."""
     errors = [f"{_SOURCE_LABELS[name]}: {message}" for name, messages in failed.items() for message in messages]
     fallback = [name for name in failed if name != source] if source != "unknown" else []
     return dict(description, availability_source=source, errors=errors,
@@ -867,13 +825,9 @@ def _availability(description, source, failed):
 
 
 def _refuse_uncovered_bands(manifest, roles, bands):
-    """ComponentError, before any download, for bands the manifest gives none of the requested components.
+    """ComponentError, before any download, for bands lacking components the manifest has for other bands.
 
-    Only when the manifest declares those components for some of its bands:
-    NJM and the original-source builders, which wrote it, have them for no
-    others (Euclid/NISP's grisms Blue and Red have no factors). A manifest
-    that declares none, as for curves from SVO, is left to prepare_components,
-    since a builder may add them.
+    A manifest that declares them for no band (curves from SVO) is left to prepare_components: a builder may add them.
     """
     needed = [role for role in roles if role in (FILTER, OPTICS, QE)]
     if not needed:
@@ -888,9 +842,7 @@ def _refuse_uncovered_bands(manifest, roles, bands):
             "(bands=[...], or --bands on the command line).")
 
 
-# ----------------------------------------------------------------------
-# Installed sets
-# ----------------------------------------------------------------------
+# ---- Installed sets
 def _declared_bands(directory):
     """The bands an installed manifest declares part of the set: ``bands`` minus ``archived_bands``."""
     manifest = InstrumentManifest.load(directory)
@@ -904,8 +856,7 @@ def _manifest_text(directory):
 
 
 def _partial_fill_manifest(directory):
-    """The manifest (as text) of a set installed in part, which declares bands whose curves are not
-    installed (SVO's bands of NJM's set, with NJM down); None for any other folder."""
+    """The manifest text of a set installed in part (SVO's bands of NJM's set, with NJM down), else None."""
     text = _manifest_text(directory)
     if text is None or all((Path(directory) / f"{band}.dat").is_file() for band in _declared_bands(directory)):
         return None
@@ -913,12 +864,7 @@ def _partial_fill_manifest(directory):
 
 
 def _describe_completed_set(directory):
-    """Write the manifest of a set NJM has just completed as a fresh NJM download writes it.
-
-    The manifest of the partial fill described only the curves it installed,
-    so the others' published contents and detector types were missing.  Now
-    every curve NJM's index file lists is described from its header.
-    """
+    """Rewrite the manifest of a set NJM has just completed as a fresh NJM download writes it."""
     manifest = InstrumentManifest.from_published(directory)
     manifest.bands = sorted(Path(name).stem for name in index_listing(directory) or [] if name.endswith(".dat"))
     manifest.save(directory)
@@ -927,9 +873,7 @@ def _describe_completed_set(directory):
 def _drop_unlisted_bands(directory, listed):
     """Remove from an NJM set's manifest the bands NJM's index does not list and that are not installed.
 
-    Such bands are never downloaded: an archive copy NJM's manifest did not
-    move to ``archived_bands``, or one left by an earlier release's SVO
-    fallback.  Kept, they would make the set look incomplete for ever.
+    Such bands are never downloaded, so kept they would make the set look incomplete for ever.
     """
     path = Path(directory) / "manifest.json"
     if not path.is_file():
@@ -955,212 +899,3 @@ def _same_directory(a, b):
     """Whether two paths are one directory (they are, on a case-insensitive disk, when only case differs)."""
     a, b = Path(a), Path(b)
     return a == b or (a.exists() and b.exists() and os.path.samefile(a, b))
-
-
-# ----------------------------------------------------------------------
-# The bundled instrument catalogue
-# ----------------------------------------------------------------------
-#: NJM's facilities and instruments, their descriptions and SVO equivalents, as
-#: of the release; regenerate with scripts/make_instrument_catalogue.py.
-INSTRUMENT_CATALOGUE = Path(__file__).parent.parent / "instrument_catalogue.json"
-
-
-def load_instrument_catalogue(path=INSTRUMENT_CATALOGUE):
-    """The bundled catalogue: ``{facility: {"description", "instruments": {name: {...}}}}``.
-
-    Keyed by NJM's spelling; each instrument has ``description`` and
-    ``svo_instruments`` (SVO ``Facility/Instrument`` names of the same
-    product), empty where NJM gives none.
-    """
-    data = json.loads(Path(path).read_text(encoding="utf-8"))
-    return instrument_catalogue(data["facilities"])
-
-
-def instrument_catalogue(facilities):
-    """Normalise ``filters.facilities_detailed`` of NJM's ``index.json`` (or a saved catalogue).
-
-    Only ``description``, ``svo_instruments``, and the bundled catalogue's
-    ``bands`` (NJM's served bands) and ``svo_bands`` (SVO filter ID -> one of
-    those bands) are kept; a field in another form than the contract's is left
-    empty rather than guessed at.
-    """
-    if not isinstance(facilities, dict):
-        raise ValueError("expected a mapping of facilities")
-    catalogue = {}
-    for facility, record in sorted(facilities.items()):
-        record = record if isinstance(record, dict) else {}
-        instruments = record.get("instruments") if isinstance(record.get("instruments"), dict) else {}
-        catalogue[facility] = {
-            "description": _plain_text(record.get("description")),
-            "instruments": {name: _instrument_metadata(meta) for name, meta in sorted(instruments.items())},
-        }
-    return catalogue
-
-
-def _instrument_metadata(record):
-    record = record if isinstance(record, dict) else {}
-    claims = record.get("svo_instruments")
-    claims = [c for c in claims if isinstance(c, str) and "/" in c] if isinstance(claims, list) else []
-    bands = record.get("bands")
-    bands = [b for b in bands if _band_name(b)] if isinstance(bands, list) else []
-    return {"description": _plain_text(record.get("description")), "svo_instruments": claims,
-            "bands": bands, "svo_bands": _svo_bands(record.get("svo_bands"), claims, bands)}
-
-
-def _svo_bands(stored, claims, bands):
-    """``{SVO filter ID: NJM band}`` from the stored ``{SVO instrument: ["G", "Gbp=BP", ...]}``.
-
-    Only SVO instruments in ``claims`` and NJM bands in ``bands`` count.
-    """
-    held = {}
-    for claim, entries in (stored.items() if isinstance(stored, dict) else ()):
-        if claim not in claims or not isinstance(entries, list):
-            continue
-        for entry in entries:
-            svo_band, _, band = entry.partition("=") if isinstance(entry, str) else ("", "", "")
-            band = band or svo_band
-            if svo_band and band in bands:
-                held[f"{claim}.{svo_band}"] = band
-    return held
-
-
-def _band_name(value):
-    """Whether ``value`` can name a curve file in an instrument directory."""
-    return isinstance(value, str) and value not in ("", ".", "..") and Path(value).name == value
-
-
-def _plain_text(value):
-    return " ".join(value.split()) if isinstance(value, str) else ""
-
-
-# ----------------------------------------------------------------------
-# Picker entries
-# ----------------------------------------------------------------------
-def _merge(listings):
-    """Group the names each source lists (``[(source, [(name, description), ...]), ...]``) into entries.
-
-    A name joins an entry holding the same name from another source, else one
-    whose name matches it under :func:`name_key` and has no name from this
-    source yet.  One source's own names never join each other: NJM serves
-    both ``Cameras/Sony_NEX5N`` and ``Cameras/Sony_NEX_5N``.
-    """
-    entries = []
-    for source, listing in listings:
-        named = {}
-        for name, description in listing:
-            named.setdefault(name, description)
-        unmatched = []
-        for name, description in named.items():
-            entry = next((e for e in entries if source not in e["names"] and name in e["names"].values()), None)
-            if entry is None:
-                unmatched.append((name, description))
-            else:
-                _join(entry, source, name, description)
-        for name, description in unmatched:
-            entry = next((e for e in entries if source not in e["names"] and name_key(name) in e["keys"]), None)
-            if entry is None:
-                entry = {"names": {}, "descriptions": {}, "keys": set()}
-                entries.append(entry)
-            _join(entry, source, name, description)
-    return entries
-
-
-def _join(entry, source, name, description):
-    entry["names"][source] = name
-    entry["keys"].add(name_key(name))
-    if description:
-        entry["descriptions"][source] = description
-
-
-def _drop_svo_duplicates(entries, claims):
-    """Remove SVO's copy of a product NJM lists as its own, keeping SVO's description for NJM's entry.
-
-    ``claims`` maps an SVO instrument (:func:`name_key`) to the NJM instrument
-    that is the same product.  Only instruments NJM lists now count: while NJM
-    is unreachable, SVO's copies are what can be downloaded.
-    """
-    listed = {e["names"]["njm"]: e for e in entries if "njm" in e["names"]}
-    for entry in [e for e in entries if "svo" in e["names"]]:
-        claimer = listed.get(claims.get(name_key(entry["names"]["svo"])))
-        if claimer is None:
-            continue
-        del entry["names"]["svo"]
-        text = entry["descriptions"].pop("svo", "")
-        if text:
-            claimer["descriptions"].setdefault("svo", text)
-    entries[:] = [e for e in entries if e["names"]]
-
-
-def _adopt_claimed_svo(entries, claims, njm_known):
-    """Name SVO's copy of a product of NJM's after NJM, when NJM does not list it now (NJM is down, say).
-
-    ``claims`` maps an SVO instrument (:func:`name_key`) to the NJM instrument
-    that is the same product.  SVO's name joins the entry that already stands
-    for that product (an original-source builder's or an installed copy's,
-    under NJM's spelling), else its own entry takes NJM's name
-    (``njm_name``).  Of two SVO instruments one NJM product claims (Euclid's
-    NISP and NISP0) one entry remains, holding the first.  So the list names
-    each product once, as when NJM is reachable.
-    """
-    listed = {e["names"]["njm"] for e in entries if "njm" in e["names"]}
-    for entry in [e for e in entries if "svo" in e["names"]]:
-        owner = claims.get(name_key(entry["names"]["svo"]))
-        if owner is None or owner in listed:
-            continue  # not NJM's product, or NJM lists it now (_drop_svo_duplicates kept NJM's)
-        target = next((e for e in entries if e is not entry and _stands_for(e, owner, njm_known)), None)
-        if target is None:
-            if set(entry["names"]) == {"svo"} or _stands_for(entry, owner, njm_known):
-                entry["njm_name"] = owner
-                continue
-            target = {"names": {}, "descriptions": {}, "keys": set(), "njm_name": owner}
-            entries.append(target)
-        name = entry["names"].pop("svo")
-        text = entry["descriptions"].pop("svo", "")
-        if "svo" not in target["names"]:
-            _join(target, "svo", name, text)
-    entries[:] = [e for e in entries if e["names"]]
-
-
-def _stands_for(entry, owner, njm_known):
-    """Whether an entry is NJM's product ``owner``: named so already, or by a source other than SVO."""
-    return entry.get("njm_name") == owner or any(
-        match_name(name, njm_known) == owner for source, name in entry["names"].items() if source != "svo")
-
-
-def _picker_entries(entries, njm_known, claims=None):
-    """The entries as the pickers show them, sorted by label.
-
-    Each has ``label`` (the name shown), ``fetch_key`` (the spelling to
-    download with: NJM's, else the original builder's, else the installed
-    directory's, else SVO's), ``key`` (the same), ``sources`` (every source
-    listing it now: ``local``, ``original``, ``svo``, ``njm``),
-    ``description`` (NJM's, else SVO's own text, else ``""``; SVO's can run to
-    several sentences) and ``names`` (each source's own spelling, NJM's from
-    the bundled catalogue when NJM does not list it now).  ``njm_known`` (NJM's names -> their catalogue record)
-    names and describes entries NJM does not list now, so names do not change
-    with NJM's availability; an entry only SVO lists takes them only if
-    ``claims`` (SVO name key -> NJM name) says it is NJM's product.
-    """
-    rows = []
-    for entry in entries:
-        names = dict(entry["names"])
-        if "njm" not in names:
-            names["njm"] = entry.get("njm_name") or _catalogue_name(names, njm_known, claims)
-        names = {source: name for source, name in names.items() if name}
-        fetch_key = next(names[source] for source in FETCH_ORDER if source in names)
-        description = (njm_known.get(names.get("njm")) or {}).get("description") or entry["descriptions"].get("svo", "")
-        rows.append({"key": fetch_key, "label": fetch_key, "sources": list(entry["names"]),
-                     "description": description, "fetch_key": fetch_key, "names": names})
-    return sorted(rows, key=lambda row: (row["label"].casefold(), row["label"]))
-
-
-def _catalogue_name(names, njm_known, claims):
-    """NJM's name for an entry it does not list now, from the bundled catalogue, or None."""
-    for name in names.values():
-        found = match_name(name, njm_known)
-        if found is None:
-            continue
-        if claims is not None and set(names) == {"svo"} and claims.get(name_key(names["svo"])) != found:
-            return None  # the same name, but NJM does not say it is the same product
-        return found
-    return None

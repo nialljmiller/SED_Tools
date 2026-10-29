@@ -1,9 +1,7 @@
 """Where each SVO facility observes from: the ground, space, or the stratosphere.
 
-Only ground-based facilities can have a telluric (atmosphere) component
-composed in; SkyCalc models ground sites only.  Keys are SVO facility names;
-lookups ignore case and punctuation so directory names written by the
-grabbers (``Bepi_Colombo`` for ``Bepi-Colombo``) match.
+Only ground-based facilities get a telluric component (SkyCalc models ground sites only).  Keys are SVO
+facility names, matched ignoring case and punctuation (the grabbers write ``Bepi_Colombo`` for ``Bepi-Colombo``).
 """
 
 from __future__ import annotations

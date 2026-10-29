@@ -1,4 +1,4 @@
-"""Detector-type metadata for filter transmission curves.
+"""The filter curve file (``.dat``) and its metadata: detector type, tagging, and the SVO lookups behind them.
 
 A transmission curve is defined either for an *energy-counting* detector
 (e.g. classical photomultiplier-era curves such as Bessell's Johnson-Cousins)
@@ -154,9 +154,7 @@ def normalize_detector_type(value: object) -> Optional[str]:
     return None
 
 
-# --------------------------------------------------------------------------
-# Header I/O
-# --------------------------------------------------------------------------
+# ---- Header I/O
 #: The column-name row of every curve SED_Tools writes.
 COLUMN_ROW = "Wavelength,Transmission"
 
@@ -184,8 +182,7 @@ def format_metadata_field(fields: Mapping[str, Optional[str]]) -> str:
 def _parse_metadata_field(text: str) -> Optional[Dict[str, str]]:
     """Fields encoded in ``text``, or ``None`` when it is not a metadata field.
 
-    Keys outside ``HEADER_KEYS`` are kept: a newer SED_Tools may add fields,
-    and dropping the whole field for one unknown key would lose them all.
+    Keys outside ``HEADER_KEYS`` are kept: a newer SED_Tools may add fields.
     """
     fields: Dict[str, str] = {}
     for item in text.split(";"):
@@ -414,9 +411,7 @@ def _band_key(value: str) -> str:
     return cleaned.replace(" ", "_").lower()
 
 
-# --------------------------------------------------------------------------
-# SVO lookups
-# --------------------------------------------------------------------------
+# ---- SVO lookups
 @dataclass
 class SVOFilterRecord:
     filter_id: str
@@ -494,7 +489,7 @@ def svo_components_header(components: Optional[str]) -> Dict[str, str]:
     """``Components``/``ComponentsSource`` header fields from SVO's components string."""
     if not components:
         return {}
-    from .compose import ComponentError, parse_components, recipe_name
+    from .manifest import ComponentError, parse_components, recipe_name
 
     try:
         roles = parse_components(components)
@@ -511,9 +506,7 @@ def _param_text(value: object) -> str:
     return str(value) if value is not None else ""
 
 
-# --------------------------------------------------------------------------
-# Resolution
-# --------------------------------------------------------------------------
+# ---- Resolution
 @dataclass
 class DetectorTypeResult:
     path: Path
@@ -696,9 +689,7 @@ def tag_filter_file(
 def _needs_resolution(header: Mapping[str, str], existing: Optional[str], existing_source: str) -> bool:
     """Whether a file's ``DetectorType`` is resolved again without ``force``.
 
-    An authoritative type is settled once the SVO fields (unit, components) of
-    its ``FilterID`` are recorded; an assumed type is retried, except on an
-    original-source curve, whose assumption is the builder's convention.
+    An assumed type is retried except on an original-source curve, where it is the builder's convention.
     """
     if not existing:
         return True

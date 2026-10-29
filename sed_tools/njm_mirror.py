@@ -5,14 +5,16 @@ leaves NJM alone for ``NJM_PAUSE`` seconds.
 """
 
 import logging
+import os
 import threading
+from pathlib import Path
 from time import monotonic
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 
 import requests
 import urllib3
 
-# The outage warning has always been logged under the filter client's name.
+# Outage warnings are logged under the filter client's name.
 logger = logging.getLogger("sed_tools.njm_filter_grabber")
 
 BASE_URL = "https://nillmill.ddns.net/sed_tools"
@@ -25,9 +27,30 @@ NJM_PAUSE = 300
 NJM_NOT_LISTED = "NJM unavailable"
 
 
+def cache_root(filter_root: "Union[str, Path]") -> "Path":  # quoted: filter_catalogue re-exports it, signature as text
+    """Where NJM catalogue files are cached for a filter root (beside ``atmospheres/``)."""
+    return Path(filter_root).parent / "cache" / "njm"
+
+
 def _status(exc: Exception) -> Optional[int]:
     """The HTTP status of a failed request, or None when there was no answer."""
     return getattr(getattr(exc, "response", None), "status_code", None)
+
+
+def _body(response) -> bytes:
+    """The response bytes as served (JSON is UTF-8 whatever the Content-Type says)."""
+    content = getattr(response, "content", None)
+    return content if isinstance(content, bytes) else response.text.encode("utf-8")
+
+
+def _write_atomic(path: Path, data) -> None:
+    """Write ``data`` (bytes, or text as UTF-8) whole, through a ``.<name>.part`` file: never a partial file."""
+    tmp = path.with_name(f".{path.name}.part")
+    if isinstance(data, bytes):
+        tmp.write_bytes(data)
+    else:
+        tmp.write_text(data, encoding="utf-8")
+    os.replace(tmp, path)
 
 
 def plain_reason(reason) -> str:
