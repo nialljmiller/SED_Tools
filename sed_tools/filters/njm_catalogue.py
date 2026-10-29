@@ -47,10 +47,8 @@ class CatalogueError(RuntimeError):
 def parse_target(target: str) -> Tuple[str, str, Optional[str]]:
     """``"Facility/Instrument"`` or ``"Facility/Instrument/Band"`` -> (facility, instrument, band)."""
     parts = [p for p in str(target).strip().strip("/").split("/") if p]
-    if len(parts) == 2:
-        return parts[0], parts[1], None
-    if len(parts) == 3:
-        return parts[0], parts[1], parts[2]
+    if len(parts) in (2, 3):
+        return parts[0], parts[1], parts[2] if len(parts) == 3 else None
     raise ValueError(f"expected Facility/Instrument or Facility/Instrument/Band, got {target!r}")
 
 
@@ -179,6 +177,13 @@ class FilterCatalogue:
         self._came_from(rel, "njm", time.time())
         return path
 
+    def _fetched(self, rel: str, **kwargs) -> Path:
+        """:meth:`_fetch`, with CatalogueError when neither NJM nor the cache has the file."""
+        path = self._fetch(rel, **kwargs)
+        if path is None:
+            raise CatalogueError(self._not_cached(rel))
+        return path
+
     @staticmethod
     def _store(path: Path, rel: str, url: str, response, meta: dict, generation: Optional[str],
                validate: Optional[Callable[[str], None]]) -> None:
@@ -218,9 +223,7 @@ class FilterCatalogue:
             if not isinstance(data, dict) or not isinstance(data.get("filters"), dict):
                 raise ValueError("no 'filters' section")
 
-        path = self._fetch("index.json", max_age=self.index_max_age, refresh=refresh, validate=check)
-        if path is None:
-            raise CatalogueError(self._not_cached("index.json"))
+        path = self._fetched("index.json", max_age=self.index_max_age, refresh=refresh, validate=check)
         self._index = json.loads(path.read_text(encoding="utf-8"))
         self._index_loaded = time.time()
         return self._index
@@ -330,9 +333,7 @@ class FilterCatalogue:
         if not name:
             raise CatalogueError(f"NJM has no {kind} file for {entry['facility']}/{entry['instrument']}")
         rel = f"filters/{entry['facility']}/{entry['instrument']}/{name}"
-        path = self._fetch(rel, generation=index.get("generated"), refresh=refresh, validate=self._json_object)
-        if path is None:
-            raise CatalogueError(self._not_cached(rel))
+        path = self._fetched(rel, generation=index.get("generated"), refresh=refresh, validate=self._json_object)
         data = self._json_object(path.read_text(encoding="utf-8"))
         origin = dict(self._origins[rel])
         if origin["source"] == "cache" and (self._origins.get("index.json") or {}).get("njm_unreachable"):
@@ -400,9 +401,7 @@ class FilterCatalogue:
 
         def one(entry):
             rel = f"filters/{entry['facility']}/{entry['instrument']}/{entry[kind]}"
-            path = self._fetch(rel, generation=generation, refresh=refresh, validate=self._json_object)
-            if path is None:
-                raise CatalogueError(self._not_cached(rel))
+            path = self._fetched(rel, generation=generation, refresh=refresh, validate=self._json_object)
             return self._json_object(path.read_text(encoding="utf-8"))
 
         results: Dict[Tuple[str, str], dict] = {}
@@ -423,10 +422,7 @@ class FilterCatalogue:
         """Path to the cached Vega spectrum NJM's properties use (``vega/vega_flam.csv``, Å and f_λ)."""
         definitions = self.index()["filters"].get("properties_definitions") or {}
         rel = (definitions.get("vega_spectrum") or {}).get("url") or VEGA_URL
-        path = self._fetch(rel, max_age=30 * 24 * 3600, refresh=refresh)
-        if path is None:
-            raise CatalogueError(self._not_cached(rel))
-        return path
+        return self._fetched(rel, max_age=30 * 24 * 3600, refresh=refresh)
 
     # ---- Search
     def _named_bands(self, text: Optional[str], needles: Mapping[str, Optional[str]],
@@ -665,10 +661,7 @@ def format_bibtex(citations: dict) -> str:
             entries.append(ref["bibtex"].strip())
         else:
             missing.append(f"% No BibTeX served for {ref['key']}: {_reference_line(ref)}")
-    blocks = []
-    if missing:
-        blocks.append("\n".join(missing))
-    blocks.extend(entries)
+    blocks = (["\n".join(missing)] if missing else []) + entries
     return "\n\n".join(blocks) + ("\n" if blocks else "")
 
 
