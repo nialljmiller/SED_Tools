@@ -1,16 +1,7 @@
-"""
-sed_tools/grid_coverage.py
+"""Parameter-space coverage of a local grid: grid_coverage(name_or_dir, base_dir=..., plot=..., out_path=...).
 
-Parameter-space coverage for any local grid — downloaded or hand-built.
-
-Reads lookup_table.csv directly (so it works on grids that have not yet had a
-flux cube built), falling back to header_parser.parse_header over the .txt
-spectra when no lookup table is present. Reports per-axis ranges, the unique
-grid values and their spacing, node count vs. the full Teff x logg x [M/H]
-product (fill fraction), and an Anderson-Darling normality statistic per axis.
-Optionally writes a Teff-logg + 3D Teff/logg/[M/H] coverage plot.
-
-Public entry point: grid_coverage(name_or_dir, base_dir=..., plot=..., out_path=...).
+It reads lookup_table.csv (no flux cube needed), else the .txt headers, and reports each axis's range, values,
+spacing and Anderson-Darling normality, and how much of the Teff x logg x [M/H] product exists; plots optional.
 """
 
 from __future__ import annotations
@@ -34,9 +25,7 @@ _PATH_COLUMNS = (
 )
 
 
-# ---------------------------------------------------------------------------
-# Node table
-# ---------------------------------------------------------------------------
+# ---- Node table ----
 
 def _resolve_dir(name_or_dir: Union[str, Path], base_dir: Optional[Path]) -> Path:
     """Resolve a grid identifier to a model directory."""
@@ -100,14 +89,13 @@ def read_grid_nodes(model_dir: Union[str, Path]) -> pd.DataFrame:
     return pd.DataFrame(rows, columns=list(_AXES) + ["filename", "path"])
 
 
-# ---------------------------------------------------------------------------
-# Stats
-# ---------------------------------------------------------------------------
+# ---- Stats ----
 
 def _anderson_darling(x: np.ndarray) -> Optional[Dict[str, float]]:
-    """Anderson-Darling test for normality. None if too few distinct values
-    or scipy is unavailable. Works across scipy versions (old critical-value
-    API and the newer p-value API)."""
+    """Anderson-Darling normality test; None with fewer than 8 distinct values or without scipy.
+
+    Works with both scipy APIs: critical values (older) or a p-value only (newer).
+    """
     import warnings
 
     x = np.asarray(x, dtype=float)
@@ -242,9 +230,7 @@ def print_coverage(summary: Dict) -> None:
             print("    A-D     : skipped (needs scipy, which is not installed)")
 
 
-# ---------------------------------------------------------------------------
-# Terminal coverage plots
-# ---------------------------------------------------------------------------
+# ---- Terminal coverage plots ----
 
 def _representative_nodes(df: pd.DataFrame) -> List[Dict]:
     """Select deterministic corners plus center in normalized parameter space."""
@@ -436,9 +422,7 @@ def _print_representative_seds(selected: List[Dict], plot_width: int, color: str
         print(f"  skipped {note}")
 
 
-# ---------------------------------------------------------------------------
-# Plot
-# ---------------------------------------------------------------------------
+# ---- Plot ----
 
 def plot_coverage(
     df: pd.DataFrame, name: str, out_path: Union[str, Path]
@@ -499,9 +483,7 @@ def plot_coverage(
     return out_path
 
 
-# ---------------------------------------------------------------------------
-# Public entry point
-# ---------------------------------------------------------------------------
+# ---- Public entry point ----
 
 def grid_coverage(
     name_or_dir: Union[str, Path],

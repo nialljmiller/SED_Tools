@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """MASTSpectraGrabber: the BOSZ 2024 grids (MAST HLSP), one per resolution (r500 to r50000, and rorig).
 
-Spectrum URLs come from the official bulk download scripts under /hlsps/.../download_scripts (directory listings
-404 for some branches). Resampled grids take their wavelengths from bosz2024_wave_<res>.txt, rorig files carry
-their own; each spectrum is written as a .txt file with a header, and the grid gets a lookup_table.csv.
+Spectrum URLs come from the official bulk download scripts (directory listings 404 for some branches).
+Resampled grids take wavelengths from bosz2024_wave_<res>.txt; rorig files carry their own.
 """
 
 from __future__ import annotations
