@@ -38,12 +38,6 @@ def _directory_state(directory: Path) -> Dict[str, int]:
     return {path.name: path.stat().st_mtime_ns for path in directory.iterdir()}
 
 
-def _mixed_sources_error(src: str, model_dir, tried: List[str]) -> RuntimeError:
-    """The error when ``src`` failed after writing into ``model_dir``, so no further source is tried."""
-    return RuntimeError(f"{src} failed after changing {model_dir}, so another source's spectra would be mixed "
-                        f"with its files; no further source tried. Tried: {'; '.join(tried)}")
-
-
 def download_from_first_source(sources: List[str], attempt: Callable[[str], Optional[str]], model_dir,
                                tried: List[str], warn: Callable[[str, str], None]) -> Optional[str]:
     """The first of ``sources`` whose ``attempt(src)`` returns None (no error); None when all fail.
@@ -59,7 +53,8 @@ def download_from_first_source(sources: List[str], attempt: Callable[[str], Opti
             return src
         tried.append(f"{src}: {error}")
         if _directory_state(model_dir) != before:
-            raise _mixed_sources_error(src, model_dir, tried)
+            raise RuntimeError(f"{src} failed after changing {model_dir}, so another source's spectra would be "
+                               f"mixed with its files; no further source tried. Tried: {'; '.join(tried)}")
         warn(src, error)
     return None
 
@@ -122,10 +117,9 @@ def _build_data_products(
     A bundle or cube lacking spectra beside it is rebuilt; with ``build_flux_cube`` False such a cube is a problem.
     """
     out_h5 = os.path.join(model_dir, f"{name}_bundle.h5" if src == "msg" else f"{name}.h5")
-    stale = None
-    if not force_bundle_h5 and os.path.exists(out_h5):
-        stale = _bundle_shortfall(Path(out_h5), Path(model_dir))
-    if force_bundle_h5 or not os.path.exists(out_h5) or stale:
+    fresh = force_bundle_h5 or not os.path.exists(out_h5)
+    stale = None if fresh else _bundle_shortfall(Path(out_h5), Path(model_dir))
+    if fresh or stale:
         if stale:
             print(wrap(f"{os.path.basename(out_h5)} {stale}; rebuilding it",
                        indent="HDF5 bundle   : ", hanging=" " * 16))
@@ -215,11 +209,9 @@ def _import_sources(src: Path) -> Tuple[List[Path], Path]:
         raise FileNotFoundError(f"Source path not found: {src}")
 
     if src.is_dir():
-        files = sorted(src.glob("*.txt"))
-        src_dir = src
+        files, src_dir = sorted(src.glob("*.txt")), src
     elif src.is_file() and src.suffix.lower() == ".txt":
-        files = [src]
-        src_dir = src.parent
+        files, src_dir = [src], src.parent
     else:
         raise ValueError(f"Source must be a directory or a .txt file: {src}")
 
@@ -263,19 +255,12 @@ def _grid_folders(base_dir, wanted: Callable[[str, List[str]], bool]) -> List[st
     return names
 
 
-def _has_spectra_or_bundle(path: str, files: List[str]) -> bool:
-    return any(fn.endswith((".txt", ".h5")) for fn in files)
-
-
-def _has_lookup_or_spectra(path: str, files: List[str]) -> bool:
-    return os.path.exists(os.path.join(path, "lookup_table.csv")) or any(fn.endswith(".txt") for fn in files)
-
-
 def rebuildable_grids(base_dir) -> List[str]:
     """Folders under ``base_dir`` holding .txt spectra or an .h5 file."""
-    return _grid_folders(base_dir, _has_spectra_or_bundle)
+    return _grid_folders(base_dir, lambda path, files: any(fn.endswith((".txt", ".h5")) for fn in files))
 
 
 def local_grids(base_dir) -> List[str]:
     """Local spectral grid folders that have a lookup table or at least one .txt."""
-    return _grid_folders(base_dir, _has_lookup_or_spectra)
+    return _grid_folders(base_dir, lambda path, files: os.path.exists(os.path.join(path, "lookup_table.csv"))
+                         or any(fn.endswith(".txt") for fn in files))

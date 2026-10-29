@@ -24,19 +24,15 @@ def _normalize_mode(mode: str) -> str:
 
 def terminal_plots_enabled(mode: str = "auto") -> bool:
     mode = _normalize_mode(mode)
-    if mode == "always":
-        return True
-    if mode == "never":
-        return False
+    if mode != "auto":
+        return mode == "always"
     return bool(sys.stdout.isatty() and os.environ.get("TERM", "").lower() not in {"", "dumb"})
 
 
 def terminal_color_enabled(mode: str = "auto") -> bool:
     mode = _normalize_mode(mode)
-    if mode == "always":
-        return True
-    if mode == "never":
-        return False
+    if mode != "auto":
+        return mode == "always"
     return bool(
         sys.stdout.isatty()
         and os.environ.get("TERM", "").lower() not in {"", "dumb"}
