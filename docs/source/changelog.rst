@@ -224,7 +224,8 @@ Filters from their original sources
     published curves, and ``ftrans`` and the mirror and instrumental
     effective areas (divided by the primary mirror's 659 cm² geometric area)
     as components. The sensitivity-loss correction is recorded in the notes,
-    not applied. Files are tried on HEASARC, then its AWS Open Data mirror.
+    not applied. Files are tried on HEASARC, then its AWS Open Data mirror;
+    once the mirror has served a file, the rest of the build asks it first.
   - ``csp``: LCO/CSP from the CSP filter package (final passbands at airmass
     1.2, with the three V and two J filters as separate bands, plus the
     optical scans and telescope and camera curves), and LCO/CSP2 (totals
@@ -263,8 +264,7 @@ Filters from their original sources
   2026.7 (21.6 MB without the PSFs), checked against STScI's SHA-1, and is no
   longer marked as a large download.
 - DECam's instrument-only quotients above 1 are kept unclipped and recorded
-  in the manifest notes; ``add_component`` warns for any component peaking
-  above 1.
+  in the manifest notes.
 - Band components cite their own source file, and repeated wavelengths in
   source tables are averaged instead of picked by sort order.
 
@@ -321,9 +321,9 @@ SVO fails fast
   ``https://svo2.cab.inta-csic.es/theory/fps/fps.php``); the browse index is
   taken from the same location.
 - An SVO that cannot be connected to, or does not answer its browse index in
-  time, is not asked again for five minutes by anything in the process, as
-  for NJM: the facility list and each instrument list after it fail at once
-  with the same error, which the pickers print once.
+  time, is not asked for its browse index again for five minutes by anything
+  in the process, as for NJM: the facility list and each instrument list
+  after it fail at once with the same error, which the pickers print once.
 - Spectral grid discovery (``grids``, ``SED.query``) asks the SVO and MSG
   grid indexes once, with a 5 s connect and 10 s read timeout, instead of
   retrying for up to 200 s; a failure is one line ("did not answer within
@@ -442,8 +442,9 @@ Filter pickers, instrument names and NJM
   builder and SVO. NJM and the builder are asked under their own spelling of
   the name, matched ignoring case and punctuation (``CTIO/S-PLUS`` is NJM's
   ``CTIO/S_PLUS``). Each source that cannot give a complete set is reported
-  with a warning naming the next one tried; when none can, ``ComponentError``
-  carries every source's reason.
+  with a warning naming the next one tried (an unreachable NJM by its one
+  outage warning); when none can, ``ComponentError`` carries every source's
+  reason.
 - NJM requests use a 5 s connect timeout. A mirror that stops answering is
   not asked again for five minutes by anything in the process, with one
   warning naming the sources used instead (installed copies, the
@@ -584,10 +585,12 @@ Spectral grids, flux cubes and ML
   and writes each block sequentially, with blocks sized to half the
   available RAM.
 - New warnings, with no number changed: ``complete_sed`` when the input
-  covers less than 80 % of the network's input window; a band average whose
-  filter has transmission outside the SED's wavelength range (counted as
-  zero, so biased low); and a flux-cube build that averages several lookup
-  rows onto one (Teff, log g, [M/H]) node, naming the columns that differ.
+  covers less than 80 % of the network's input window; photometry
+  (``EvaluatedSED.photometry``, ``python -m sed_tools.flux_cube_tool``) with
+  filters whose transmission lies partly outside the SED's wavelength range
+  (counted as zero, so biased low), once per call, naming each such band and
+  its share; and a flux-cube build that averages several lookup rows onto one
+  (Teff, log g, [M/H]) node, naming the columns that differ.
 
 Correct or stop
 ~~~~~~~~~~~~~~~
@@ -661,12 +664,16 @@ Each item says what 0.4.1 did, what 0.5.0 does, and when it happens.
   listing each grid not completed and every source's error. Triggers: grid
   not found, no source with metadata, nothing downloaded, nothing left after
   cleaning, missing files, no flux cube built, or a download, cleaning or
-  build error. Spectra left unusable by cleaning are listed too, though the
-  grid's products are built. With nothing discovered from any source it
-  fails.
+  build error. With nothing discovered from any source it fails.
 - ``grids`` without a terminal stopped at the axis-cut question (EOFError);
   now it asks nothing, takes the whole grid unless a cut option is given, and
   without ``--grids`` says to name the grids.
+- The axis-cut question of ``grids`` (NJM, in a terminal) printed the answers
+  again under "Applied cuts:", and, when NJM's lookup table could not be
+  read, "(Could not fetch grid info — cuts will still work if
+  lookup_table.csv is available)". Neither is printed now: the NJM client
+  prints each range as it applies it, and a warning says why the lookup
+  table could not be read (cuts then stop the download).
 - ``rebuild`` stopped at the first grid that raised, and grids skipped for
   having no spectra still ended "Rebuild complete." (exit 0); now every grid
   that can be rebuilt is, then it exits 1 listing each one that was not
@@ -761,7 +768,8 @@ Each item says what 0.4.1 did, what 0.5.0 does, and when it happens.
 - When no source gives a complete set, ``FilterLibrary.published`` raised
   whatever SVO raised (``RuntimeError``, ``SVOUnreachableError`` or
   ``ComponentError``); it now raises ``ComponentError`` (a ``ValueError``)
-  giving every source's reason, and warns at each fallback.
+  giving every source's reason, and warns at each fallback (for an
+  unreachable NJM, with the one outage warning).
 - ``FilterLibrary.published`` ignored a failure after NJM's curves arrived
   (its components, say); it now returns the complete set with a warning.
 - ``FilterLibrary.published``, SVO step: a failed row now raises
@@ -786,10 +794,11 @@ Each item says what 0.4.1 did, what 0.5.0 does, and when it happens.
 - ``Filters.atmospheres()`` downloaded only sites not installed yet, so an
   installed site never took NJM's newer manifest (citation, terms); an
   installed site's manifest is now checked against NJM's once a day and
-  updated, with a warning naming the fields, keeping its grid files and any
-  point NJM does not list. ``download_atmosphere`` no longer overwrites an
-  installed manifest's own points. With NJM unreachable the installed sites
-  are listed with a warning (an error before).
+  updated, keeping its grid files and any point NJM does not list; an
+  installed point NJM describes otherwise keeps its installed description,
+  with a warning naming its file. ``download_atmosphere`` no longer
+  overwrites an installed manifest's own points. With NJM unreachable the
+  installed sites are listed after NJM's outage warning (an error before).
 - ``FilterLibrary.published`` downloaded into a new folder spelled as NJM
   spells the instrument when it was installed under another spelling; it now
   completes the installed folder (the MESA index file takes that folder's
@@ -813,6 +822,11 @@ Each item says what 0.4.1 did, what 0.5.0 does, and when it happens.
   same. ``download_all_filters`` finishes every facility and instrument,
   including past failed listings and requests, then lists the incomplete
   ones.
+- When NJM's MESA index file of a set could not be fetched,
+  ``NJMFilterGrabber.download_filters`` warned that completeness could not be
+  verified and installed the curves without it, which MESA cannot read; it
+  now saves the curves, then raises ``RuntimeError`` naming the folder and
+  saying to run again.
 - ``NJMFilterGrabber.fetch_manifest`` returned ``None`` on any failure; now
   only for 404. Other failures raise, and an unreadable manifest, or one
   naming another instrument, raises ``ValueError``.
@@ -820,12 +834,13 @@ Each item says what 0.4.1 did, what 0.5.0 does, and when it happens.
   now only for 404, and it retries a 403 burst block like other requests.
 - An SVO failure while checking a mirror curve's header during an NJM
   download was hidden (an untagged curve was written energy/assumed); the
-  mirror's header is now kept, with a warning.
+  mirror's header is now kept, with one warning per set naming those curves.
 - ``FilterLibrary.instruments()`` reports "NJM unavailable" in its errors as
   ``facilities()`` did; ``inventory`` lists each error once.
 - ``FilterLibrary.prepare_components`` and ``prepare_atmosphere`` warn, with
   the reason, when NJM cannot provide the components or the atmosphere,
-  before trying the original source.
+  before trying the original source; an unreachable NJM is announced by its
+  one outage warning instead.
 - ``FilterLibrary.atmospheres(remote=True)`` listed fewer sites silently when
   an NJM listing or site manifest failed (other than 404); it now raises.
 - ``SVOFilterBrowser.download_filters`` printed each failure and returned; it
@@ -1023,9 +1038,7 @@ the names differ):
   ``FilterLibrary.prepare_components`` raises instead of returning ``False``
   for such an empty directory.
 - ``hst.build`` ignored a published curve it could not read; it now raises
-  ``ValueError`` naming the file. HST bands with no single synphot chain
-  (ramp, quad and grism filters) are logged as a warning instead of at info
-  level.
+  ``ValueError`` naming the file.
 - ``tabular.build(raw=...)`` silently downloaded a file missing from the
   saved inventory; it still downloads it, with a warning naming it.
 - SkyCalc: a failed request to delete ESO's temporary directory is a warning
@@ -1076,9 +1089,8 @@ the names differ):
 - Separate selections fetched into one folder (say Teff ≤ 5800 with
   log g ≤ 4.2, then Teff ≥ 6200 with log g ≥ 4.3) leave points of the flux
   cube's Teff × log g × [M/H] grid without a spectrum, whose flux is zero
-  and pulls interpolation near them toward zero; building a cube with such
-  points now prints a warning saying how many there are and where (0.4.1's
-  ``rebuild`` made the same cube silently). The cube itself is unchanged.
+  and pulls interpolation near them toward zero, as in the cube 0.4.1's
+  ``rebuild`` made from such a folder.
 - Bounds that no spectrum meets return an empty grid, as before, now without
   downloading the grid, and leave no empty grid folder behind. With Teff,
   log g or [M/H] cuts, NJM's whole-grid
@@ -1091,10 +1103,12 @@ the names differ):
   changed the grid directory, no other source is tried: ``RuntimeError``
   says why. The ``grids`` command does the same.
 - ``SED.fetch`` and ``SED.query`` caught every exception from a source and
-  logged it at debug level; a failing source is now a warning, and only the
-  errors a remote source raises are caught. ``SED.query`` raises
-  ``RuntimeError`` when every requested remote source fails, and
-  ``ValueError`` for an unknown source (it returned ``[]``).
+  logged it at debug level; a failing source is now a warning, and
+  ``SED.fetch`` catches only the errors a remote source raises. A source
+  ``SED.query`` cannot ask lists no grids, after its client's warning, and the
+  other sources are still listed; ``SED.query(source="njm")`` with the mirror
+  unreachable raises ``RuntimeError``, and an unknown source raises
+  ``ValueError`` (it returned ``[]``).
 - ``SED.fetch`` from MAST blocked on the MAST grabber's metallicity prompt;
   that source now fails, saying to use ``sed-tools grids --source mast``.
 - ``SED.fetch(source="msg")`` found no metadata; it now reads the MSG index
@@ -1116,7 +1130,11 @@ the names differ):
   ``download_model_spectra`` ignored Teff, log g, [M/H] and wavelength ranges
   and now raises ``ValueError`` for them; when a spectrum fails it now writes
   no ``lookup_table.csv`` (it wrote one for the partial grid) and raises
-  listing each FID.
+  listing each FID. A spectrum whose transfer breaks, or that comes back as
+  an error page or a 404, is no longer tried up to five times, 2-16 s apart:
+  it is listed at once, and a rerun downloads only the failed FIDs.
+  Connection errors, timeouts, 429 and 5xx answers are still retried by the
+  session.
 - MSG: ``get_model_metadata`` returned ``[]`` for an unknown grid, a failed or
   unreadable HDF5 file or one without spectra; it now raises. Spectra that
   failed to extract were dropped silently; now the rest are written, no
@@ -1135,10 +1153,17 @@ the names differ):
   rest instead of being skipped.
 - Every grabber's ``discover_models`` reports failures and empty results as
   warnings (they were prints or silent).
+- Progress lines that repeated another count are no longer printed: SVO's
+  "SSAP: N fids", "index: N fids" and "probe+expand: N fids", and NJM's
+  "Downloading N spectrum files...", "Downloading M auxiliary files..." and
+  "N → M spectra after cuts".
 - The NJM spectra grabber tried three ways (HTTPS, HEAD, plain HTTP) before
   reporting NJM down, about 26 s on a silent outage; no answer now means down
   at once (5 s). A certificate failure is still retried without verification,
-  and plain HTTP is used only when the TLS handshake fails both ways.
+  and plain HTTP is used only when the TLS handshake fails both ways. One
+  warning, "NJM mirror is unreachable (...), so its spectral grids are not
+  offered", replaces 0.4.1's "[njm] All connection attempts failed" and
+  "[njm] Mirror unavailable, using other sources" lines.
 
 **Reading and cleaning spectra**
 
@@ -1177,7 +1202,10 @@ the names differ):
   state a parameter it raises ``ValueError`` naming those that do not, and
   writes no table.
 - Grids converted file by file because the sample gave no grid-wide units
-  now get a warning saying so.
+  now get one warning saying so, in place of the line "[clean] Warning: Could
+  not determine spectral grid units" that 0.4.1 printed before cleaning (the
+  line is still printed, after cleaning, when no file was converted that
+  way).
 - ``flux_unit=`` (``SED.fetch``, ``SED.import_grid``, ``clean_model_dir``) is
   used only for spectra that do not declare their flux unit, as
   ``--flux-unit`` is; a declared unit is never replaced, and a warning says
@@ -1282,6 +1310,17 @@ the names differ):
 - ``train_model`` ignored keywords other than ``learning_rate``,
   ``hidden_layers``, ``dropout``, ``val_split`` and ``patience``; all now go to
   ``SEDCompleter.train``, so an unknown one raises ``TypeError``.
+- A model or grid folder without ``config.json``, ``model.pt`` or
+  ``flux_cube.bin`` (``SEDCompleter.load``, ``SEDCompleter.train``,
+  ``SEDGenerator.train``, ``ml.model_info``) raises Python's own
+  ``FileNotFoundError`` naming the missing file, instead of "Config not
+  found: ...", "Model weights not found: ...", "flux_cube.bin not found in
+  ..." or "Model config not found: ...". ``MLCompleter.train`` and
+  ``MLGenerator.train`` given a grid folder that does not exist say "No
+  flux_cube.bin found in <dir>. Run 'sed-tools rebuild' first." (it was
+  "Grid not found: <dir>"), before anything is written. A failed
+  ``train_model`` or ``extend_catalog`` (``MLCompleter.train``,
+  ``MLCompleter.extend``) leaves no empty model or output folder.
 - ``SEDCompleter.train`` and ``SEDGenerator.train`` saved a model when no
   epoch gave a usable loss (then crashed while plotting); they now raise
   ``RuntimeError`` before saving. ``SEDGenerator.train`` with no flux above
@@ -1296,7 +1335,7 @@ the names differ):
 - ``MLGenerator.parameter_ranges`` returned ``(0, 0)`` for ranges missing from
   a model's config; it now raises ``KeyError``.
 - ``MLGenerator.generate_with_outputs`` writes to ``<model>/SED`` (it wrote
-  to ``./output/SED``) and raises if the model directory is unknown.
+  to ``./output/SED``).
 
 **Python API**
 
@@ -1313,9 +1352,12 @@ the names differ):
   warning and returned; the error now propagates, and an HDF5 bundle with no
   ``.txt`` spectra raises ``RuntimeError``.
 - ``SED.import_grid`` reported files lacking Teff, log g or [M/H], or unusable
-  after cleaning, and then said "done"; it now builds the rest of the grid,
-  then raises ``RuntimeError`` listing them. Its "Load with" hint names
-  ``model_root`` when the grid went elsewhere than the default root.
+  after cleaning, and then said "done". Spectra that cleaning cannot convert
+  now stop it with ``RuntimeError`` listing them, and a parameter that only
+  some headers state stops it with ``ValueError`` naming the files that lack
+  it; a parameter no header states gets no column (see
+  ``regenerate_lookup_table``). Its "Load with" hint names ``model_root``
+  when the grid went elsewhere than the default root.
 - ``SED.query`` and ``SED.fetch`` ignored the parameter bounds when every
   bound given was 0 or 0.0; they now apply them.
 - ``clean_model_dir``, ``SED.fetch`` and ``SED.import_grid`` gain
@@ -1334,9 +1376,10 @@ the names differ):
 - Without psutil, available RAM was taken as 2 GiB on macOS, and on Linux
   without a ``MemAvailable`` line; it is now half the physical RAM, with no
   warning. This changes only memory use and chunk counts.
-- An error other than ``ImportError`` while importing matplotlib or
-  ``flux_cube_tool`` now surfaces as itself (it disabled plotting or was
-  reported as a missing module).
+- An error while importing ``flux_cube_tool`` (at ``import sed_tools``) now
+  surfaces as itself; 0.4.1 reported any such error as the bundled module
+  missing from ``PYTHONPATH``. An error other than ``ImportError`` while
+  importing matplotlib surfaces as itself too (it disabled plotting).
 - ``import sed_tools.combine_stellar_atm`` works without scipy; the functions
   that need it raise ``ImportError`` naming scipy.
 - ``grid_coverage`` lists the representative spectra its terminal preview
