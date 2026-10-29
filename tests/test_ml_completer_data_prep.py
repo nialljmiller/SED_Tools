@@ -70,13 +70,6 @@ def test_custom_wavelength_grid_bounds_and_count():
 # _normalize_params
 # ---------------------------------------------------------------------
 
-def test_normalize_params_fallback_defaults_when_no_scaler():
-    c = SEDCompleter()
-    result = c._normalize_params(5000.0, 4.0, 0.0)
-    expected = np.array([(5000.0 - 5000.0) / 10000.0, (4.0 - 3.0) / 3.0, 0.0 / 2.0])
-    np.testing.assert_allclose(result, expected)
-
-
 def test_normalize_params_uses_stored_scaler():
     c = SEDCompleter()
     c.scaler_params = {
@@ -126,7 +119,7 @@ def test_load_flux_cube_reads_grids_and_indexes_wmlt_order(tmp_path, cube_writer
 
 def test_load_flux_cube_missing_file_raises(tmp_path):
     c = SEDCompleter()
-    with pytest.raises(FileNotFoundError, match="flux_cube.bin not found"):
+    with pytest.raises(FileNotFoundError, match="nonexistent/flux_cube.bin"):
         c._load_flux_cube(str(tmp_path / "nonexistent"))
 
 

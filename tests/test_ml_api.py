@@ -55,7 +55,7 @@ def test_model_info_returns_full_config(tmp_path):
 
 
 def test_model_info_missing_config_raises(tmp_path):
-    with pytest.raises(FileNotFoundError, match="Model config not found"):
+    with pytest.raises(FileNotFoundError, match="nonexistent/config.json"):
         model_info(str(tmp_path / "nonexistent"))
 
 

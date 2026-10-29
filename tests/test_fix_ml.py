@@ -260,6 +260,6 @@ def test_auto_trainer_stops_on_a_trial_with_no_usable_epoch(cpu_torch, tiny_libr
 
     monkeypatch.setattr(mg.SEDGeneratorNetwork, "__call__", lambda self, x: self.model(x) * float("nan"))
 
-    with pytest.raises(RuntimeError, match=r"Trial 0 \{'hidden_dim': .*\} produced no usable epoch"):
+    with pytest.raises(RuntimeError, match="produced no usable epoch"):
         AutoTrainer(str(tiny_library)).train_best(str(tiny_library), str(tmp_path / "model"), n_trials=1, epochs=1)
     assert not (tmp_path / "model").exists()

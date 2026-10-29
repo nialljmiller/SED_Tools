@@ -43,8 +43,8 @@ def fit(model, train_loader, val_loader, optimizer, scheduler, *, epochs: int, p
     validation batch ends training. Every 10th epoch, if ``verbose``, prints
     ``progress`` formatted with ``epoch``, ``train``, ``val`` and ``lr``.
 
-    Returns the loss history and the best validation loss. The history is
-    empty if the first epoch had no usable batch.
+    Returns the loss history and the best validation loss. Raises
+    RuntimeError, before any caller saves a model, if no epoch was usable.
     """
     history = {'train_loss': [], 'val_loss': []}
     best_val_loss = float('inf')
@@ -83,6 +83,9 @@ def fit(model, train_loader, val_loader, optimizer, scheduler, *, epochs: int, p
             print(f"  Early stopping at epoch {epoch+1}")
             break
 
+    if not history['train_loss']:
+        raise RuntimeError("Training produced no usable epoch (every training or validation batch "
+                           "had a NaN loss); no model was saved")
     if best_state is not None:
         model.load_state_dict(best_state)
     return history, best_val_loss
