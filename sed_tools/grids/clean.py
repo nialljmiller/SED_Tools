@@ -288,10 +288,9 @@ def clean_model_dir(
     if not txt_files:
         return summary
     catalog_units, detection_stats = detect_catalog_units(txt_files, sample_fraction)
+    summary['detection_stats'] = detection_stats
     if catalog_units is not None:
         catalog_units = _with_flux_unit(model_dir, catalog_units, flux_unit)
-    summary['detection_stats'] = detection_stats
-    if catalog_units:
         summary['catalog_units'] = {
             'wavelength': catalog_units.wavelength_unit,
             'flux': catalog_units.flux_type,
@@ -324,9 +323,7 @@ def clean_model_dir(
             summary['lookup_path'] = lookup_path
     
     if failures:
-        raise RuntimeError(
-            _unconverted_report(model_dir, len(txt_files), failures, summary['lookup_updated'])
-        )
+        raise RuntimeError(_unconverted_report(model_dir, len(txt_files), failures, summary['lookup_updated']))
     return summary
 
 
