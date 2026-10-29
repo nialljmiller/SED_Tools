@@ -76,11 +76,6 @@ _CUTTING_SOURCES = ("njm", "msg")
 _SOURCE_ERRORS = (RequestException, OSError, ValueError, RuntimeError)
 
 
-def _unusable_after_cleaning(summary: Dict[str, Any]) -> List[str]:
-    """Spectra that ``clean_model_dir`` could not make usable: invalid, index-only or failed."""
-    return [*summary['skipped_invalid'], *summary['skipped_index'], *summary['error']]
-
-
 def _directory_state(directory: Path) -> Dict[str, int]:
     """Name and modification time of each entry in ``directory`` ({} if it does not exist)."""
     directory = Path(directory)
@@ -960,7 +955,7 @@ class SED:
                 model_dir.rmdir()  # no spectrum was within the bounds: remove the empty folder this call made
         else:
             if clean:
-                cls._clean_fetched(catalog, model_dir, flux_unit)
+                cls._clean_fetched(model_dir, flux_unit)
             cube = _flux_cube_file(model_dir)
             shortfall = _flux_cube_shortfall(model_dir) if cube is not None else None
             if ((selected and cube is None) or shortfall) and any(model_dir.glob("*.txt")):
@@ -992,18 +987,13 @@ class SED:
         return cls(catalog=cat, model_root=base_dir)
 
     @staticmethod
-    def _clean_fetched(catalog: str, model_dir: Path, flux_unit: Optional[str]) -> None:
-        """Standardize the units of a fetched grid; RuntimeError if cleaning left spectra unusable."""
+    def _clean_fetched(model_dir: Path, flux_unit: Optional[str]) -> None:
+        """Standardize the units of a fetched grid; clean_model_dir raises RuntimeError for any spectrum
+        it leaves unusable."""
         from .spectra_cleaner import clean_model_dir
         summary = clean_model_dir(str(model_dir), try_h5_recovery=True, rebuild_lookup=True,
                                   flux_unit=flux_unit)
         print(f"[fetch] Cleaned: {summary['total']} total, {len(summary['converted'])} converted")
-        unusable = _unusable_after_cleaning(summary)
-        if unusable:
-            raise RuntimeError(
-                f"{len(unusable)} of {summary['total']} spectra of '{catalog}' in {model_dir} are unusable "
-                f"after cleaning (invalid, index-only or failed; see the [clean] report above): "
-                + ", ".join(unusable))
 
     @classmethod
     def _get_sources_for_catalog(cls, catalog: str) -> Tuple[List[str], List[str]]:
@@ -1238,9 +1228,10 @@ class SED:
             spectra_cleaner.clean_model_dir); required when their headers do
             not declare one, and never used in place of a declared unit.
 
-        Returns a summary dict.  Files whose headers lack a parameter, or that
-        cleaning leaves unusable, are left out of the built grid and then
-        listed in a RuntimeError. If the spectra do not declare their flux unit
+        Returns a summary dict.  Files whose headers lack a parameter are
+        listed in a RuntimeError once the grid is built; a spectrum that
+        cleaning leaves unusable stops the import with clean_model_dir's
+        RuntimeError. If the spectra do not declare their flux unit
         and flux_unit is not given, ValueError names the best guess before any
         file is copied or moved; so does a flux_unit that is not a known name.
         """
@@ -1292,12 +1283,10 @@ class SED:
         if build_cube:
             _build_flux_cube(dest)
 
-        unusable = _unusable_after_cleaning(summary)
-        if missing or unusable:
+        if missing:
             raise RuntimeError(
                 f"Imported '{name}' into {dest} without some spectra. "
-                f"Lacking a Teff, logg or [M/H] header ({len(missing)}): {', '.join(missing) or 'none'}. "
-                f"Unusable after cleaning ({len(unusable)}): {', '.join(unusable) or 'none'}.")
+                f"Lacking a Teff, logg or [M/H] header ({len(missing)}): {', '.join(missing)}.")
         same_root = Path(base).expanduser().resolve() == Path(cls._model_root).expanduser().resolve()
         root_arg = "" if same_root else f", model_root={str(base)!r}"
         print(f"[import] done. Load with: SED.local('{name}'{root_arg})")

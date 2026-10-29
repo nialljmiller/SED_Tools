@@ -179,7 +179,6 @@ def test_rebuild_uses_the_flux_unit_option_without_asking(tmp_path, monkeypatch,
     monkeypatch.setattr(cli, "clean_model_dir", lambda d, **k: cleaned.append(k["flux_unit"]) or
                         {"total": 3, "error": [], "skipped_invalid": [], "skipped_index": []})
     monkeypatch.setattr(cli, "regenerate_lookup_table", lambda d: None)
-    monkeypatch.setattr("sed_tools.api._unusable_after_cleaning", lambda summary: [])
     assert run_cli(monkeypatch, "rebuild", "--base", str(tmp_path), "--grids", "Cool", "--no-h5", "--no-cube",
                    "--flux-unit", "flam") == 0
     assert cleaned == ["flam"]

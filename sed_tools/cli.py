@@ -326,7 +326,7 @@ def _report_import_flux_unit(path: str, name: Optional[str], flux_unit: Optional
 def _rebuild_grid(model_dir: str, model_name: str, rebuild_h5: bool, rebuild_flux_cube: bool,
                   flux_unit: Optional[str] = None) -> List[str]:
     """Clean one local grid and rebuild its products; returns what was not done (empty when complete)."""
-    from .api import _build_flux_cube, _unusable_after_cleaning
+    from .api import _build_flux_cube
 
     flux_unit = _ask_flux_unit(model_name, _txt_files(model_dir), flux_unit)
     summary = clean_model_dir(model_dir, try_h5_recovery=True, rebuild_lookup=True, flux_unit=flux_unit)
@@ -344,10 +344,6 @@ def _rebuild_grid(model_dir: str, model_name: str, rebuild_h5: bool, rebuild_flu
 
     if rebuild_flux_cube:
         _build_flux_cube(model_dir)
-
-    unusable = _unusable_after_cleaning(summary)
-    if unusable:
-        return [f"{len(unusable)} spectra unusable after cleaning: {', '.join(unusable)}"]
     return []
 
 
@@ -390,9 +386,6 @@ def _print_cleaning_report(summary: Dict) -> None:
     n_converted = len(summary['converted'])
     n_recovered = len(summary['recovered'])
     n_skipped   = len(summary['skipped_already'])
-    n_invalid   = len(summary['skipped_invalid'])
-    n_index     = len(summary['skipped_index'])
-    n_error     = len(summary['error'])
 
     # Files "converted" from units that were already Å and F_λ were only cleaned and tagged.
     n_tagged = 0
@@ -409,15 +402,10 @@ def _print_cleaning_report(summary: Dict) -> None:
     if n_tagged    > 0: print(f"Cleaned       : {n_tagged} files  (units already Å + F_λ)")
     if n_recovered > 0: print(f"Recovered     : {n_recovered} files  (wavelengths from HDF5)")
     if n_skipped   > 0: print(f"Already done  : {n_skipped} files  (units_standardized header)")
-    if n_invalid   > 0: print(f"Invalid       : {n_invalid} files  (empty, corrupt, or λ ≤ 0)")
-    if n_index     > 0: print(f"Index grids   : {n_index} files  (λ=0,1,2… no HDF5 source)")
-    if n_error     > 0: print(f"Errors        : {n_error} files")
 
-    n_usable = n_converted + n_tagged + n_recovered + n_skipped
+    # clean_model_dir raises instead of returning when any file is left invalid, index-only or failed.
     print()
-    if   n_usable == n_total: print(f"All {n_usable} files ready for use")
-    elif n_usable  > 0:       print(f"{n_usable}/{n_total} files usable")
-    else:                     print("No usable files")
+    print(f"All {n_total} files ready for use")
 
 
 def _build_data_products(
@@ -692,8 +680,6 @@ def _download_and_build_grid(name: str, sources: List[str], grabs: Dict, base_di
 
     Returns what was not done; empty when the grid is complete.
     """
-    from .api import _unusable_after_cleaning
-
     print("\n" + "=" * 64)
     print(f"{''.join(f'[{s}]' for s in sources)} {name}")
     print("=" * 64)
@@ -718,11 +704,7 @@ def _download_and_build_grid(name: str, sources: List[str], grabs: Dict, base_di
         print("\n  No spectra remaining after cleaning")
         return ["no spectra remaining after cleaning"]
 
-    problems = _build_data_products(name, model_dir, src, force_bundle_h5, build_flux_cube)
-    unusable = _unusable_after_cleaning(summary)
-    if unusable:
-        problems.append(f"{len(unusable)} spectra unusable after cleaning: {', '.join(unusable)}")
-    return problems
+    return _build_data_products(name, model_dir, src, force_bundle_h5, build_flux_cube)
 
 
 def _print_field(name: str, text) -> None:

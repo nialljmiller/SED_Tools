@@ -184,14 +184,6 @@ def test_fetch_raises_when_nothing_was_downloaded(sources, tmp_path):
         SED.fetch("Grid", source="svo", model_root=tmp_path)
 
 
-def test_fetch_raises_when_cleaning_leaves_unusable_spectra(sources, tmp_path, monkeypatch):
-    sources(svo=fake_grabber(["Grid"], metadata=[{"fid": 1}], downloaded=3))
-    summary = {"total": 3, "converted": [], "skipped_invalid": ["a.txt"], "skipped_index": [], "error": ["b.txt"]}
-    monkeypatch.setattr("sed_tools.spectra_cleaner.clean_model_dir", lambda *a, **k: summary)
-    with pytest.raises(RuntimeError, match="2 of 3 spectra of 'Grid' .* are unusable after cleaning"):
-        SED.fetch("Grid", source="svo", model_root=tmp_path)
-
-
 # ----------------------------------------------------------------------
 # Local spectral grids
 # ----------------------------------------------------------------------
@@ -445,16 +437,6 @@ def test_spectra_flow_builds_what_it_can_then_lists_every_grid_not_completed(gri
     assert "Missing: not listed by any source" in message
     assert "Good" not in message
     assert "Done." not in capsys.readouterr().out
-
-
-def test_spectra_flow_builds_a_grid_with_unusable_spectra_but_lists_them(grid_flow, tmp_path):
-    from sed_tools.cli import run_spectra_flow
-
-    cleaned = dict(CLEAN, total=3, skipped_invalid=["bad.txt"], error=["worse.txt"])
-    built = grid_flow(cleaned=cleaned, svo=fake_grabber(["Grid"], metadata=[{"fid": 1}], downloaded=1))
-    with pytest.raises(RuntimeError, match="Grid: 2 spectra unusable after cleaning: bad.txt, worse.txt"):
-        run_spectra_flow("svo", base_dir=str(tmp_path), models=["Grid"])
-    assert built == ["Grid"]
 
 
 def test_spectra_flow_carries_on_after_a_grid_whose_build_fails(grid_flow, tmp_path):
@@ -766,14 +748,14 @@ def test_coverage_reports_every_grid_then_exits_1_if_any_failed(tmp_path, monkey
 def test_cleaning_report_reads_the_summary_clean_model_dir_returns(capsys):
     from sed_tools.cli import _print_cleaning_report
 
-    summary = dict(CLEAN, total=5, converted=["a", "b"], recovered=["c"], skipped_already=["d"],
-                   skipped_invalid=["e"], catalog_units={"wavelength": "angstrom", "flux": "flam"},
+    summary = dict(CLEAN, total=4, converted=["a", "b"], recovered=["c"], skipped_already=["d"],
+                   catalog_units={"wavelength": "angstrom", "flux": "flam"},
                    detection_stats={"status": "consensus"})
     _print_cleaning_report(summary)
     out = capsys.readouterr().out
     assert "Cleaned       : 2 files" in out and "Recovered     : 1 files" in out
-    assert "Already done  : 1 files" in out and "Invalid       : 1 files" in out
-    assert "4/5 files usable" in out
+    assert "Already done  : 1 files" in out
+    assert "All 4 files ready for use" in out
 
 
 # ----------------------------------------------------------------------
