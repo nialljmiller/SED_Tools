@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
-"""
-NJM Mirror Grabber - Downloads from nillmill.ddns.net mirror
-Downloads ALL files: individual .txt spectra, flux_cube.bin, .h5 bundle, lookup_table.csv
-All files go through spectra_cleaner for unit standardization.
+"""NJMSpectraGrabber: spectral grids from the NJM mirror (nillmill.ddns.net), spectrum by spectrum.
 
-Supports axis-cutting: filter by Teff, logg, [M/H], and wavelength ranges
-before/during download to avoid transferring unwanted data.
+It downloads every .txt spectrum plus flux_cube.bin, the .h5 bundle and lookup_table.csv, cut by Teff, logg,
+[M/H] and wavelength if asked; the spectra then go through the cleaner. NJM's address and pause are in njm_mirror.
 """
 
 import csv
@@ -48,7 +45,6 @@ class NJMSpectraGrabber:
         self.max_workers = max_workers
         os.makedirs(base_dir, exist_ok=True)
         
-        # Use HTTPS
         self.base_url = BASE_URL
         self.stellar_models_url = f"{self.base_url}/stellar_models"
         
@@ -62,16 +58,11 @@ class NJMSpectraGrabber:
         self._available = not paused() and self._check_availability()
         
     def _check_availability(self) -> bool:
-        """Check if the NJM mirror is available, failing fast when it does not answer.
+        """Whether the mirror answers a GET of index.json (cached for discover_models), failing fast.
 
-        GET index.json, which is also cached for discover_models.  A failed
-        certificate check is retried without verification, with a warning; an
-        HTTP error status is confirmed with a HEAD of the base URL (any answer
-        below 500 means the server is up).  No answer at all (refused, or no
-        connection within NJM_CONNECT_TIMEOUT) means the mirror is down, and
-        nothing else is tried.  Plain HTTP is tried only when HTTPS fails its
-        TLS handshake with and without verification.  If the mirror is down,
-        the warning gives the last attempt's error.
+        A failed certificate check is retried unverified, with a warning; an HTTP error status is
+        confirmed by a HEAD of the base URL (below 500 means up); no answer at all means down, with
+        nothing else tried. Plain HTTP is tried only when TLS fails with and without verification.
         """
         index_url = f"{self.base_url}/index.json"
         errors: List[str] = []
@@ -159,8 +150,6 @@ class NJMSpectraGrabber:
         """
         if not self._available:
             return []  # _check_availability has already warned
-        
-        # Use cached index data from availability check
         if self._index_data and self._index_data.get("models"):
             return _visible(self._index_data["models"])
         
@@ -213,13 +202,10 @@ class NJMSpectraGrabber:
         return items
     
     def _discover_model_files(self, model_name: str) -> Dict[str, List[str]]:
-        """Discover all files in a model directory, categorized by type.
-        
-        Tries directory listing first. If that fails (e.g. 403 because
-        Apache has Options -Indexes), warns and falls back to:
-          1) lookup_table.csv for txt filenames
-          2) probing known auxiliary files directly
-        Raises RuntimeError if lookup_table.csv cannot be read either.
+        """The grid folder's files by type, from its directory listing.
+
+        Without a listing (e.g. a 403 from Apache's Options -Indexes) it warns and takes the spectra from
+        lookup_table.csv and probes the auxiliary files; RuntimeError if lookup_table.csv cannot be read either.
         """
         model_url = f"{self.stellar_models_url}/{model_name}/"
         
@@ -240,8 +226,6 @@ class NJMSpectraGrabber:
         logger.warning("NJM mirror: no directory listing for %s (%s); taking spectrum names from lookup_table.csv",
                        model_url, listing_problem)
         result['txt_files'] = list(self._fetch_remote_lookup(model_name, model_url))
-        
-        # Probe for known auxiliary files
         for aux_name, category in [
             ("lookup_table.csv", 'csv_files'),
             (f"{model_name}.h5", 'h5_files'),
@@ -268,8 +252,7 @@ class NJMSpectraGrabber:
         
         print(f"  Discovering files for {model_name} on NJM mirror...")
         
-        # Discover all files in the model directory; never empty (without a listing,
-        # _fetch_remote_lookup raises when lookup_table.csv lists no spectra)
+        # Never empty: without a listing, _fetch_remote_lookup raises when lookup_table.csv lists no spectra
         files = self._discover_model_files(model_name)
         model_url = f"{self.stellar_models_url}/{model_name}/"
 
@@ -284,20 +267,15 @@ class NJMSpectraGrabber:
             "bin_files": files['bin_files'],
             "h5_files": files['h5_files'],
             "csv_files": files['csv_files'],
-            # CRITICAL: Set to False so ALL files go through cleaning/unit standardization
-            "pre_processed": False,
+            "pre_processed": False,  # every spectrum goes through the cleaner
         }
     
-    # =========================================================================
-    # AXIS CUTTING — fetch lookup table and filter file lists
-    # =========================================================================
+    # ---- Axis cutting: the remote lookup table and the file list ----
 
     def _fetch_remote_lookup(self, model_name: str, model_url: str) -> Dict[str, Dict]:
-        """Download lookup_table.csv from the mirror and parse it.
-        
-        Returns a dict mapping filename -> {teff, logg, meta}; a parameter
-        that is not a number is NaN. Raises RuntimeError if the table cannot
-        be fetched, has no file-name column, or lists no spectra.
+        """The mirror's lookup_table.csv as {file name: {teff, logg, meta}}, NaN where a value is not a number.
+
+        RuntimeError if the table cannot be fetched, has no file-name column, or lists no spectra.
         """
         lookup_url = urljoin(model_url, "lookup_table.csv")
         try:
@@ -306,16 +284,12 @@ class NJMSpectraGrabber:
         except requests.RequestException as exc:
             raise RuntimeError(f"NJM mirror: could not fetch {lookup_url} for {model_name}: {exc}") from exc
         
-        # Parse CSV — handle the #-prefixed header that our pipeline writes
+        # The header row of SED_Tools lookup tables starts with '#'
         lines = response.text.splitlines()
         if not lines:
             raise RuntimeError(f"NJM mirror: {lookup_url} is empty")
-        
-        # Strip leading '#' from header
         header_line = lines[0].lstrip('#').strip()
         reader = csv.DictReader([header_line] + lines[1:])
-        
-        # Find columns
         fieldnames_lower = {f.strip().lower(): f for f in (reader.fieldnames or [])}
         file_col = _find_column(fieldnames_lower, ['file_name', 'filename', 'file'])
         teff_col = _find_column(fieldnames_lower, ['teff', 't_eff'])
@@ -353,11 +327,7 @@ class NJMSpectraGrabber:
         logg_range: Optional[Tuple[float, float]] = None,
         meta_range: Optional[Tuple[float, float]] = None,
     ) -> List[str]:
-        """Filter txt file list using parameter ranges from the lookup table.
-        
-        Files not found in the lookup table are KEPT (conservative — don't
-        accidentally drop spectra we can't classify).
-        """
+        """The files whose lookup-table parameters lie in the ranges; files the table does not list are kept."""
         ranges = (('teff', teff_range), ('logg', logg_range), ('meta', meta_range))
         kept = []
         cut = 0
@@ -382,12 +352,9 @@ class NJMSpectraGrabber:
 
     def _apply_wavelength_cut(self, model_dir: str, txt_files: List[str],
                                wl_range: Tuple[float, float]) -> Tuple[int, List[str]]:
-        """Trim downloaded spectra to the given wavelength range.
-        
-        Rewrites each .txt file in-place, preserving headers. Files that are
-        not on disk (failed downloads, which the caller reports) are skipped.
-        Returns the number of files trimmed and a 'file: error' entry for
-        each file that could not be read or rewritten.
+        """Trim the downloaded spectra in place to wl_range: (number trimmed, 'file: error' per failure).
+
+        Files not on disk (failed downloads, which the caller reports) are skipped.
         """
         trimmed = 0
         failures = []
@@ -404,15 +371,13 @@ class NJMSpectraGrabber:
             
         return trimmed, failures
 
-    # =========================================================================
-    # GRID INFO — report parameter ranges before cutting
-    # =========================================================================
+    # ---- Grid info: parameter ranges before cutting ----
 
     def get_grid_info(self, model_name: str, model_url: Optional[str] = None) -> Optional[Dict]:
         """Fetch the lookup table and report available parameter ranges.
         
-        Returns dict with keys: teff_min, teff_max, logg_min, logg_max,
-        meta_min, meta_max, n_spectra, or None (after a warning saying why)
+        Returns dict with keys: teff_min, teff_max, teff_unique (likewise for
+        logg and meta) and n_spectra, or None (after a warning saying why)
         if the lookup table cannot be read.
         """
         if model_url is None:
@@ -433,9 +398,7 @@ class NJMSpectraGrabber:
                 info[f'{key}_unique'] = len(set(values))
         return info
     
-    # =========================================================================
-    # DOWNLOAD
-    # =========================================================================
+    # ---- Download ----
 
     def _download_one_file(self, url: str, output_path: str) -> None:
         """Download a single file. Raises on failure, leaving no partial file."""
@@ -458,14 +421,10 @@ class NJMSpectraGrabber:
 
     def _fetch_file(self, model_dir: str, model_url: str, filename: str,
                     wl_query: str = "", force: bool = False) -> Tuple[str, Optional[str]]:
-        """Download one model file unless a complete copy is already on disk.
-
-        Returns (status, error): status is 'ok', 'skip' or 'fail', and error
-        says why a file failed.
-        """
+        """Download one model file unless a complete copy is on disk: ('ok', 'skip' or 'fail', why it failed or None)."""
         output_path = os.path.join(model_dir, filename)
 
-        # Skip if already exists (unless forced for wl_cut re-downloads)
+        # force: re-download for a server-side wavelength cut
         if not force and os.path.exists(output_path):
             size = os.path.getsize(output_path)
             min_size = 100 if filename.endswith('.csv') else 1024
@@ -486,17 +445,11 @@ class NJMSpectraGrabber:
     def _download_files(self, model_dir: str, model_url: str, txt_files: List[str],
                         aux_files: List[str], wl_query: str,
                         force_txt: bool) -> Tuple[Dict[str, int], List[str]]:
-        """Download the spectra (in parallel), then the auxiliary files.
-
-        Returns the count of each status ('ok', 'skip', 'fail') and a
-        'file: error' entry for each failure.
-        """
+        """Download the spectra in parallel, then the auxiliary files: (count per status, 'file: error' per failure)."""
         counts = {'ok': 0, 'skip': 0, 'fail': 0}
         failures: List[str] = []
         
-        # Download .txt files first (parallel) - these are the primary data
-        # Force re-download when server-side wl_cut is active (existing files
-        # may have a different wavelength range from a prior download)
+        # force_txt: with a server-side cut, spectra already on disk may hold another wavelength range
         if txt_files:
             with ThreadPoolExecutor(max_workers=self.max_workers) as ex:
                 futures = [ex.submit(self._fetch_file, model_dir, model_url, f, wl_query, force_txt)
@@ -507,8 +460,7 @@ class NJMSpectraGrabber:
                     if error:
                         failures.append(error)
         
-        # Download auxiliary files (sequential)
-        # These will be REGENERATED after cleaning to ensure consistency
+        # The auxiliary files are rebuilt after cleaning anyway
         for filename in aux_files:
             status, error = self._fetch_file(model_dir, model_url, filename)
             counts[status] += 1
@@ -522,10 +474,8 @@ class NJMSpectraGrabber:
                                  wl_range: Tuple[float, float]) -> bool:
         """Ask for one spectrum with wl_min/wl_max; True if the mirror cuts server-side.
 
-        If the server has the rewrite rule + wl_cut.php, the response
-        will include an X-WL-Cut header. Without it, the raw file is
-        served (no header). Each file URL is unique, so mod_evasive
-        treats them as different pages — no rate-limit issues.
+        The mirror's wl_cut.php answers with an X-WL-Cut header; without it the raw file comes back.
+        Each file URL is distinct, so mod_evasive does not rate-limit them.
         """
         probe_url = (f"{self.stellar_models_url}/{model_name}/{probe_file}"
                      f"?wl_min={wl_range[0]}&wl_max={wl_range[1]}")
@@ -656,7 +606,7 @@ class NJMSpectraGrabber:
         
         print(f"[njm] {model_name}: {counts['ok']} downloaded, {counts['skip']} skipped, {counts['fail']} failed")
         
-        # ── WAVELENGTH CUT: trim spectra post-download (only if server-side cut unavailable) ──
+        # The client-side wavelength cut, when the mirror cannot cut
         if wl_range and txt_files and not server_wl_cut:
             print(f"  [njm] Applying wavelength cut (client-side): {wl_range[0]:.1f} – {wl_range[1]:.1f} Å")
             trimmed, trim_failures = self._apply_wavelength_cut(model_dir, txt_files, wl_range)
@@ -671,9 +621,7 @@ class NJMSpectraGrabber:
                 f"NJM: {len(failures)} file(s) of {model_name} failed; the rest are in {model_dir}. "
                 f"Rerun to retry the failed files:\n  " + "\n  ".join(failures)
             )
-        
-        # Return count of txt files (consistent with other grabbers)
-        # The cleaning pipeline will regenerate .h5, .bin, .csv from cleaned .txt files
+        # The number of spectra, as the other grabbers return; cleaning rebuilds the .h5, .bin and .csv
         return len(txt_files)
 
 
