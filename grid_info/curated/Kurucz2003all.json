@@ -159,5 +159,5 @@
     }
   },
   "default_variant": "Kurucz2003all_alpha_0p00_lh_1p25_vtur_2_km_s",
-  "default_variant_note": "flux_cube.bin at the top level is a byte copy of this variant's cube, for clients that read only the top-level cube (SED_Tools 0.4.1 SED.local, MESA). [alpha/Fe] = 0 is the variant the top-level cube held before 29 Oct 2026 (equal to it to 6.5e-14). Newer clients that compare the cube with the whole lookup rebuild one cube per variant locally."
+  "default_variant_note": "flux_cube.bin at the top level is a byte copy of this variant's cube, for clients that read only the top-level cube: SED_Tools 0.4.1's SED.local, tested on 30 Oct 2026 (whether MESA colors reads it was not tested). [alpha/Fe] = 0 is the variant the top-level cube held before 29 Oct 2026 (equal to it to 6.5e-14). Newer clients that compare the cube with the whole lookup rebuild one cube per variant locally."
 }

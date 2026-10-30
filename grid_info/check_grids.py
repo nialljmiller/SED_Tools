@@ -743,8 +743,9 @@ def check_shape(headers, raw_dir, grid, record=None):
         for raw in raws:
             rh = raw_params(raw)
             plain = raw.name[:-3] if raw.name.endswith(".gz") else raw.name
-            hits = index.get(_param_key(rh, extra), []) if math.isfinite(rh["teff"]) else \
-                [n for n in (plain, plain.replace("+", "_")) if n in headers][:1]
+            hits = index.get(_param_key(rh, extra), []) if math.isfinite(rh["teff"]) else []
+            if len(hits) != 1:  # no parameters, or none that match: the same file name (MAST names carry parameters)
+                hits = [n for n in (plain, plain.replace("+", "_")) if n in headers][:1]
             if len(hits) != 1:
                 warnings.append(f"5b: raw {raw.name} matches {len(hits)} spectra")
                 continue
