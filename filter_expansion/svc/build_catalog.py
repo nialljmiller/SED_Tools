@@ -21,12 +21,13 @@ bands.<b>.svo_filterID, and (3) the "aliases" of svo_aliases.json (SVO ID ->
 NJM Facility/Instrument/band, built by filter_expansion/phase4/tools/
 build_svo_aliases.py).  A FilterID always wins over an alias.
 
-Copies: <band>_svo (SVO's copy of a curve NJM holds from the original
-source) and <band>_old (a superseded curve) are served under their own NJM
-path ID Facility/Instrument.<band>_svo|_old, never under the FilterID header
-they share with the plain-named curve, so SVO-form IDs reach NJM's current
-curve.  The same applies to any curve whose FilterID header is another
-curve's NJM path ID (BOK/90prime.g carries BOK/BASS.g, the path ID of
+Copies: every curve the instrument's MESA index file does not list (an
+archive copy kept beside the set, e.g. SVO's version of a curve NJM holds
+from the original source, or a superseded <band>_old), and every <band>_svo
+or <band>_old, is served under its own NJM path ID Facility/Instrument.<band>,
+never under its FilterID header, so SVO-form IDs reach NJM's current curve.
+The same applies to any curve whose FilterID header is another curve's NJM
+path ID (BOK/90prime.g carries BOK/BASS.g, the path ID of
 BOK/BASS/g).  The displaced header ID stays an alias of last resort.
 
 Nothing is computed from the curves here; every property comes from
@@ -200,6 +201,16 @@ def acks_for(acks, svo_curve, svo_meta):
     return hits
 
 
+def index_listed(idir, instrument):
+    """Bands the instrument's MESA index file lists, or None when it has none."""
+    path = os.path.join(idir, instrument)
+    if not os.path.isfile(path):
+        return None
+    with open(path, encoding="utf-8", errors="replace") as handle:
+        return {line.strip()[:-4] for line in handle
+                if line.strip().endswith(".dat") and not line.lstrip().startswith("#")}
+
+
 def is_copy(band):
     """``<band>_svo`` (SVO's copy) and ``<band>_old`` (superseded curve)."""
     return band.endswith(COPY_SUFFIXES)
@@ -228,9 +239,11 @@ def same_curve(path_a, path_b):
         return False
 
 
-def copy_note(filters_dir, facility, instrument, band, header_id, njm_ids):
+def copy_note(filters_dir, facility, instrument, band, header_id, njm_ids, unlisted=False):
     """Comments text for a curve served under its path ID instead of its FilterID header."""
     plain = f"{facility}/{instrument}.{band[:-4]}"
+    if unlisted and not is_copy(band) and header_id not in njm_ids:
+        return f"Archive copy, not in the MESA index file; FilterID header {header_id}"
     if band.endswith("_svo"):
         lead = (f"SVO FPS copy of NJM curve {plain}" if plain in njm_ids
                 else "SVO FPS copy")
@@ -298,15 +311,17 @@ def build(data_dir):
                 if key not in ack_seen:
                     ack_seen[key] = len(all_acks)
                     all_acks.append({k: ack[k] for k in ("for", "text", "references", "citation")})
+            listed = index_listed(idir, instrument)
             for name in curves:
                 band = name[:-4]
                 meta = read_header(os.path.join(idir, name))
                 njm_id = f"{facility}/{instrument}.{band}"
                 header_id = meta.get("FilterID") or njm_id
                 fid, note = header_id, ""
-                if header_id != njm_id and (is_copy(band) or header_id in njm_ids):
+                unlisted = listed is not None and band not in listed
+                if header_id != njm_id and (is_copy(band) or header_id in njm_ids or unlisted):
                     fid = njm_id
-                    note = copy_note(filters_dir, facility, instrument, band, header_id, njm_ids)
+                    note = copy_note(filters_dir, facility, instrument, band, header_id, njm_ids, unlisted)
                 s_fac, s_ins, s_band = split_id(fid)
                 p = bands.get(band)
                 if p is None:
