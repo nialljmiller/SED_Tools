@@ -701,10 +701,9 @@ def match_raw(raw, headers):
 
 
 def check_shape(headers, raw_dir, grid):
-    """5b: each archived raw upstream file against the grid spectrum it is a copy of. The ratio of the two must be
-    constant across wavelength (same shape), and that constant must be one of the flux-convention factors 1, pi
-    (B_lambda or an intensity to surface flux) or 4 pi (Eddington flux H_lambda to surface flux); 5a judges the
-    level. Without raw files, every spectrum header must declare an unconverted original unit (flam, angstrom)."""
+    """5b: each archived raw upstream file against the grid spectrum it is a copy of. Their ratio must be one of the
+    flux-convention factors 1, pi (B_lambda or an intensity to surface flux) or 4 pi (Eddington flux H_lambda to
+    surface flux) at every wavelength: median within 1 %, 1st and 99th percentiles within 2 %. Without raw files, every spectrum header must declare an unconverted original unit (flam, angstrom)."""
     errors, warnings = [], []
     raws = sorted(p for p in raw_dir.iterdir() if p.name.endswith((".txt", ".txt.gz"))) \
         if raw_dir and raw_dir.is_dir() else []
@@ -728,7 +727,8 @@ def check_shape(headers, raw_dir, grid):
             done.append({"spectrum": name, "raw": raw.name, "common_points": int(good.sum()),
                          "ratio_p1": round(float(p1), 6), "ratio_median": round(float(med), 6),
                          "ratio_p99": round(float(p99), 6), "factor": factor})
-            if p99 / p1 > 1.02 or abs(med / CONVENTIONS[factor] - 1) > 0.01:
+            f = CONVENTIONS[factor]
+            if abs(med / f - 1) > 0.01 or p1 / f < 0.98 or p99 / f > 1.02:
                 errors.append(f"5b: {name} is not raw {raw.name} times 1, pi or 4 pi "
                               f"(ratio p1/median/p99 {p1:.4g}/{med:.4g}/{p99:.4g})")
         if not done:
