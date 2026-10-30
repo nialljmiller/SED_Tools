@@ -143,7 +143,7 @@ def build_records(grid, report, aux, curated, cache):
         "axes": {k: {"n": v["n"], "range": v["range"]} for k, v in axes.items()},
         "extra_axes": extra, "variants": variants,
         "cubes": {k: {x: v[x] for x in ("dims", "header_bytes", "dtype", "order")} for k, v in cubes.items()},
-        "default_variant": curated.get("default_variant"), "conversion": curated.get("conversion"),
+        "default_variant": curated.get("default_variant"),
         "archived_copies": curated.get("archived_copies", {}), "aliases": curated.get("aliases", {}),
         "guard": guard, "variant_links": variant_links(grid), "files": files,
     }

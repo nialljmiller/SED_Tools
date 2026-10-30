@@ -11,8 +11,9 @@ A grid (data/stellar_models/<grid>/) is listed only if all eight checks pass (de
                 holds the same spectra. A grid without a cube passes with a warning: clients build one
   5 physics     (a) integral of F_lambda over each sampled spectrum and every filled cube node is within
                 0.5-2 of that of pi*B_lambda(Teff) on the same wavelengths (warning outside 0.9-1.1);
-                (b) shape: sampled spectra equal the raw upstream files in source_evidence/grids/<grid>/raw/,
-                or, without raw files, every header declares that no unit conversion was made
+                (b) shape: archived raw upstream files (source_evidence/grids/<grid>/raw/) equal their spectra
+                times 1, pi or 4 pi, or, without raw files, every header declares that no unit conversion was
+                made; (c) the infrared slope is that of an atmosphere, not of a lambda^-2 tilt
   6 duplicate   no spectrum's data (the lines after the header) and no cube occurs in another listed grid
   7 provenance  info.json (or grid_info/curated/<grid>.json) gives a description, sources, references and
                 the terms, quoted verbatim and found in the archived evidence file, or "none found"
@@ -54,18 +55,17 @@ FLUX_UNIT = "erg/cm2/s/a"                # as SED_Tools' cleaner writes it, comp
 SERVED_SUFFIXES = (".txt", ".csv", ".h5", ".bin")   # what clients download from a grid folder
 BOLO_FAIL, BOLO_WARN = (0.5, 2.0), (0.9, 1.1)
 NODE_TOL = 0.01                          # a node's integral against its own spectrum's, resampled onto the cube
-FAULT_RATIOS = {"1/pi": 1 / math.pi, "1/(4 pi)": 1 / (4 * math.pi)}   # an exception range may not admit these
+CONVENTIONS = {"1": 1.0, "pi": math.pi, "4 pi": 4 * math.pi}   # served surface flux / raw file, check 5b
 # 5c: the infrared slope d ln F_lambda / d ln lambda, fitted over 3-25 times the Wien peak wavelength of the spectrum's
 # Teff (spectra whose wavelengths reach 20 times it). Atmospheres approach the Rayleigh-Jeans -4 there; a lambda^-2
-# tilt (the BOSZ fault) gives about -6. SLOPE_RANGE is set from the real grids (SLOPE_NOTE).
+# tilt (an F_nu spectrum converted as if it were F_lambda) gives about -6. SLOPE_NOTE gives the basis of SLOPE_RANGE.
 SLOPE_WINDOW = (3.0, 25.0)
 SLOPE_RANGE = (-4.6, -1.5)
-SLOPE_NOTE = ("measured 30 Oct 2026 on 11,026 spectra that reach 20 times their Wien peak: every one of Kurucz2003all (6,409), "
-              "NextGen2 (1,953), Husfeld (448) and bbody (583), and samples of Kurucz (633), bt-cond (400), raw SVO TLUSTY (300) "
-              "and the 4 pi H BOSZ rebuild (300) give -3.95 to -2.10 (the flattest are NextGen2's coolest models); the BOSZ copy "
-              "served tilted by lambda^-2 gives -5.84 to -5.67, and any of those spectra tilted by lambda^-2 at most -5.31. The "
-              "upper bound is loose, because cooler grids (morley12, bt-settl) are not yet measured: it catches a lambda^+2 tilt "
-              "only of spectra steeper than -3.5")
+SLOPE_NOTE = ("measured on 30 Oct 2026 on 11,026 spectra of the grids then on NJM and of raw upstream copies on cirrus "
+              "that reach 20 times their Wien peak: -3.95 to -2.10 (the flattest are the coolest brown-dwarf models); "
+              "spectra known to be tilted by lambda^-2 give -5.84 to -5.67, and any of the measured spectra tilted by "
+              "lambda^-2 at most -5.31. The upper bound is loose, as cooler models have not been measured: it catches a "
+              "lambda^+2 tilt only of spectra steeper than -3.5")
 COVERED = 0.5                            # pi*B over the file's wavelengths / sigma T^4 needed to judge 5a
 SAMPLE_ALL_BELOW = 1.5e9                 # bytes of .txt below which every spectrum's data is read
 SAMPLE_SIZE = 120
@@ -603,35 +603,10 @@ def ir_slope(wl, fl, teff):
     return float(np.polyfit(np.log(wl[k]), np.log(fl[k]), 1)[0])
 
 
-_PINS = {}
-
-
-def _pinned(rule, name, ratio):
-    """Whether an exception admits this spectrum: with a "pinned" file ({file name: ratio} under ROOT), only a
-    listed spectrum whose ratio is unchanged (within 0.1 %); without one, any spectrum."""
-    if not rule.get("pinned"):
-        return True
-    if rule["pinned"] not in _PINS:
-        try:
-            _PINS[rule["pinned"]] = json.loads((ROOT / rule["pinned"]).read_text())
-        except (OSError, ValueError):
-            _PINS[rule["pinned"]] = {}
-    pin = _PINS[rule["pinned"]].get(name)
-    return pin is not None and abs(ratio / pin - 1) <= 1e-3
-
-
-def check_physics(grid, headers, read, scans, raw_dir, exceptions=(), record=None):
-    """Check 5. exceptions: the curated record's bolometric_exceptions, each {"logg_max", "range", "why"}: a
-    spectrum with logg at most logg_max whose ratio lies in range is reported as a warning, not an error. A range
-    may not admit 1/pi or 1/(4 pi), and the exceptions may not cover most of the judged spectra."""
+def check_physics(grid, headers, read, scans, raw_dir):
+    """Check 5: 5a the flux level against sigma*T^4, 5c the infrared slope, 5b the shape against raw upstream files."""
     errors, warnings = [], []
-    ratios, uncovered, excepted, shapes = [], 0, [], []
-    for e in exceptions:
-        lo, hi = e["range"]
-        bad = [k for k, v in FAULT_RATIOS.items() if lo <= v * 1.03 and v / 1.03 <= hi]
-        if bad and not e.get("pinned"):
-            errors.append(f"5a: bolometric_exceptions range {lo}-{hi} admits {', '.join(bad)} (a unit fault) and pins "
-                          "no spectrum's ratio")
+    ratios, uncovered, shapes = [], 0, []
     for p, wl, fl in read:
         t = headers[p.name]["teff"]
         if not (math.isfinite(t) and t > 0):
@@ -640,17 +615,10 @@ def check_physics(grid, headers, read, scans, raw_dir, exceptions=(), record=Non
         if bb / (SIGMA * t ** 4) < COVERED:
             uncovered += 1
             continue
-        r = trapz(fl, wl) / bb
+        ratios.append((trapz(fl, wl) / bb, p.name))
         slope = ir_slope(wl, fl, t)
         if slope is not None:
             shapes.append((slope, p.name))
-        rule = next((e for e in exceptions if not BOLO_FAIL[0] <= r <= BOLO_FAIL[1]
-                     and headers[p.name]["logg"] <= e["logg_max"] and e["range"][0] <= r <= e["range"][1]
-                     and _pinned(e, p.name, r)), None)
-        if rule:
-            excepted.append(f"{p.name} ({r:.3g}, logg {headers[p.name]['logg']:g})")
-            continue
-        ratios.append((r, p.name))
     node_ratios = []
     for cube_path, f in scans:
         if "integral" not in f:
@@ -681,12 +649,9 @@ def check_physics(grid, headers, read, scans, raw_dir, exceptions=(), record=Non
         elif odd:
             warnings.append(f"5a: {len(odd)} of {len(rs)} {label.replace('_', ' ')} lie outside 0.9-1.1 of "
                             f"pi*B_lambda(Teff): {_few(odd)}")
-    narrow = not ratios and not node_ratios and uncovered > 0 and not excepted
+    narrow = not ratios and not node_ratios and uncovered > 0
     if not ratios and not node_ratios and not narrow:
-        errors.append("5a: no spectrum or node could be compared with sigma*T^4 outside the curated exceptions")
-    if excepted and len(excepted) > len(ratios):
-        errors.append(f"5a: the curated exceptions cover {len(excepted)} of the {len(excepted) + len(ratios)} judged "
-                      "spectra: an exception must stay an exception")
+        errors.append("5a: no spectrum or node could be compared with sigma*T^4")
     if shapes:
         v = np.array([x for x, _ in shapes])
         summary["infrared_slope"] = {"n": len(shapes), "min": round(float(v.min()), 3),
@@ -696,109 +661,88 @@ def check_physics(grid, headers, read, scans, raw_dir, exceptions=(), record=Non
         if odd:
             errors.append(f"5c: {len(odd)} of {len(shapes)} spectra have an infrared slope (d ln F/d ln lambda at "
                           f"{SLOPE_WINDOW[0]:g}-{SLOPE_WINDOW[1]:g} times the Wien peak) outside {SLOPE_RANGE[0]} to "
-                          f"{SLOPE_RANGE[1]}: a tilted spectrum (the BOSZ fault gives about -6): {_few(odd)}")
+                          f"{SLOPE_RANGE[1]}: a tilted spectrum (a lambda^-2 tilt gives about -6): {_few(odd)}")
     elif ratios:
         warnings.append("5c: no sampled spectrum reaches 20 times its Wien peak, so the infrared slope was not judged")
-    if narrow:  # e.g. an optical-only grid: sigma*T^4 cannot be judged, so 5b must use raw upstream files
+    if narrow:  # sigma*T^4 cannot be judged (e.g. optical-only spectra), so 5b must use raw upstream files
         warnings.append("5a: not applicable: every sampled spectrum covers under half of sigma*T^4")
     if uncovered:
         warnings.append(f"5a: {uncovered} sampled spectra cover under half of sigma*T^4 and were not judged")
-    if excepted:
-        summary["excepted"] = excepted
-        warnings.append(f"5a: {len(excepted)} sampled spectra lie outside 0.5-2 but within the curated record's "
-                        f"bolometric_exceptions ({'; '.join(e['why'] for e in exceptions)}): {_few(excepted)}")
-    shape = check_shape(headers, raw_dir, grid, record)
+    shape = check_shape(headers, raw_dir, grid)
     if narrow and shape["method"].startswith("declared"):
-        errors.append("5b: a grid too narrow for 5a needs raw upstream files in source_evidence/grids/<grid>/raw/")
+        errors.append("5b: spectra covering under half of sigma*T^4 need raw upstream files in "
+                      "source_evidence/grids/<grid>/raw/")
     errors += shape.pop("errors")
     warnings += shape.pop("warnings")
     return _result(errors, warnings, bolometric=summary, shape=shape)
 
 
-def raw_params(path):
-    """Parameters from a raw SVO text file's header ('# teff = 3500 K (...)')."""
-    h, _ = read_header(path)
-    return h
+def match_raw(raw, headers):
+    """The grid spectrum a raw upstream file is a copy of: the one with the same teff, logg and [M/H] that agrees on
+    every other numeric header value both carry; else the one with the same file name (none when ambiguous)."""
+    rh, _ = read_header(raw)
+    plain = raw.name[:-3] if raw.name.endswith(".gz") else raw.name
+    hits = []
+    if math.isfinite(rh["teff"]):
+        def num(v):
+            m = NUM.search(str(v))
+            return float(m.group(0)) if m else None
+        same = lambda a, b: (isinstance(a, float) and isinstance(b, float) and
+                             ((math.isnan(a) and math.isnan(b)) or abs(a - b) <= 1e-6 * max(1.0, abs(a))))
+        for name, h in headers.items():
+            if not all(same(rh[p], h[p]) for p in PARAMS):
+                continue
+            shared = [k for k in set(rh) & set(h) if k not in PARAMS and num(rh[k]) is not None and num(h[k]) is not None]
+            if all(abs(num(rh[k]) - num(h[k])) <= 1e-6 * max(1.0, abs(num(rh[k]))) for k in shared):
+                hits.append(name)
+    if len(hits) != 1:
+        hits = [n for n in (plain, plain.replace("+", "_")) if n in headers][:1]
+    return hits[0] if len(hits) == 1 else None
 
 
-def check_shape(headers, raw_dir, grid, record=None):
-    """5b: the grid's spectra against raw upstream files, else declared identity.
-
-    The curated record may declare a conversion {"factor", "original_flux_unit", "header_conversion"} (BOSZ: F = 4 pi H):
-    raw files must then equal the spectra divided by factor, and without raw files the headers must declare that
-    unit and conversion. raw_match_keys adds header keys to the parameter match; raw_wavelength_file gives the
-    wavelengths of raw files that hold only flux columns; a raw file without parameters matches by file name."""
+def check_shape(headers, raw_dir, grid):
+    """5b: each archived raw upstream file against the grid spectrum it is a copy of. The ratio of the two must be
+    constant across wavelength (same shape), and that constant must be one of the flux-convention factors 1, pi
+    (B_lambda or an intensity to surface flux) or 4 pi (Eddington flux H_lambda to surface flux); 5a judges the
+    level. Without raw files, every spectrum header must declare an unconverted original unit (flam, angstrom)."""
     errors, warnings = [], []
-    conv = (record or {}).get("conversion") or {}
-    factor = float(conv.get("factor", 1.0))
-    extra = tuple((record or {}).get("raw_match_keys", ()))
-    rawwl = (record or {}).get("raw_wavelength_file")
     raws = sorted(p for p in raw_dir.iterdir() if p.name.endswith((".txt", ".txt.gz"))) \
         if raw_dir and raw_dir.is_dir() else []
     if raws:
-        index = {}
-        for name, h in headers.items():
-            index.setdefault(_param_key(h, extra), []).append(name)
         done = []
         for raw in raws:
-            rh = raw_params(raw)
-            plain = raw.name[:-3] if raw.name.endswith(".gz") else raw.name
-            hits = index.get(_param_key(rh, extra), []) if math.isfinite(rh["teff"]) else []
-            if len(hits) != 1:  # no parameters, or none that match: the same file name (MAST names carry parameters)
-                hits = [n for n in (plain, plain.replace("+", "_")) if n in headers][:1]
-            if len(hits) != 1:
-                warnings.append(f"5b: raw {raw.name} matches {len(hits)} spectra")
+            name = match_raw(raw, headers)
+            if name is None:
+                warnings.append(f"5b: raw {raw.name} matches no single spectrum")
                 continue
-            wl, fl = read_data(grid / hits[0])
-            if rawwl:
-                rfl = np.loadtxt(raw, comments="#", usecols=(0,), ndmin=1)
-                rwl = np.loadtxt(ROOT / rawwl, comments="#", usecols=(0,), ndmin=1)
-            else:
-                rwl, rfl = read_data(raw)
-            rfl = rfl * factor
+            wl, fl = read_data(grid / name)
+            rwl, rfl = read_data(raw)
             common, ia, ib = np.intersect1d(wl, rwl, return_indices=True)
             good = rfl[ib] > 0
             if good.sum() < 10:
-                errors.append(f"5b: {hits[0]} shares under 10 wavelengths with raw {raw.name}")
+                errors.append(f"5b: {name} shares under 10 wavelengths with raw {raw.name}")
                 continue
             r = fl[ia][good] / rfl[ib][good]
             p1, med, p99 = np.percentile(r, [1, 50, 99])
-            done.append({"spectrum": hits[0], "raw": raw.name, "common_points": int(good.sum()),
+            factor = min(CONVENTIONS, key=lambda k: abs(med / CONVENTIONS[k] - 1))
+            done.append({"spectrum": name, "raw": raw.name, "common_points": int(good.sum()),
                          "ratio_p1": round(float(p1), 6), "ratio_median": round(float(med), 6),
-                         "ratio_p99": round(float(p99), 6)})
-            if abs(med - 1) > 0.01 or p1 < 0.98 or p99 > 1.02:
-                errors.append(f"5b: {hits[0]} differs in shape from raw {raw.name} "
+                         "ratio_p99": round(float(p99), 6), "factor": factor})
+            if p99 / p1 > 1.02 or abs(med / CONVENTIONS[factor] - 1) > 0.01:
+                errors.append(f"5b: {name} is not raw {raw.name} times 1, pi or 4 pi "
                               f"(ratio p1/median/p99 {p1:.4g}/{med:.4g}/{p99:.4g})")
         if not done:
             errors.append("5b: no raw upstream file could be matched")
-        return {"method": "raw upstream files" + (f" times the declared factor {factor:g}" if factor != 1 else ""),
-                "raw_dir": str(raw_dir.relative_to(ROOT)) if raw_dir else None,
+        return {"method": "raw upstream files", "raw_dir": str(raw_dir.relative_to(ROOT)) if raw_dir else None,
                 "compared": done, "errors": errors, "warnings": warnings}
-    units = {"flam", FLUX_UNIT} | ({str(conv["original_flux_unit"]).lower()} if conv.get("original_flux_unit") else set())
     converted = sorted(n for n, h in headers.items()
-                       if str(h.get("original_flux_unit", "")).lower() not in units
-                       or str(h.get("original_wavelength_unit", "angstrom" if conv else "")).lower() not in ("angstrom", "a")
-                       or (conv.get("header_conversion") and str(h.get("original_flux_unit", "")).lower() not in
-                           ("flam", FLUX_UNIT) and h.get("conversion") != conv["header_conversion"]))
+                       if str(h.get("original_flux_unit", "")).lower() not in ("flam", FLUX_UNIT)
+                       or str(h.get("original_wavelength_unit", "")).lower() not in ("angstrom", "a"))
     if converted:
         errors.append(f"5b: no raw upstream files, and {len(converted)} spectra do not declare an unconverted "
                       f"original unit (original_flux_unit flam, original_wavelength_unit angstrom): {_few(converted)}")
     return {"method": "declared identity conversion (no raw upstream files archived)",
             "spectra_declaring_identity": len(headers) - len(converted), "errors": errors, "warnings": warnings}
-
-
-def _param_key(h, extra=()):
-    key = []
-    for p in PARAMS:
-        v = h.get(p, math.nan)
-        key.append(None if not isinstance(v, float) or math.isnan(v) else round(v, 4))
-    for name in ("alpha", "yhe"):
-        v = h.get(name)
-        if v is not None:
-            m = NUM.search(str(v))
-            key.append(round(float(m.group(0)), 4) if m else None)
-    key.extend(str(h.get(k, "")).strip() for k in extra)
-    return tuple(key)
 
 
 def check_duplicates(grid, txt, others, cache):
@@ -950,8 +894,7 @@ def check_grid(grid, others, cache, previous=None):
     checks["3_lookup"], cols, rows = check_lookup(grid / "lookup_table.csv", [p.name for p in txt], headers)
     record = load_record(grid)
     checks["4_cube"], scans = check_cubes(grid, cols, rows, read, record)
-    checks["5_physics"] = check_physics(grid, headers, read, scans, EVIDENCE / grid.name / "raw",
-                                        record.get("bolometric_exceptions", []), record)
+    checks["5_physics"] = check_physics(grid, headers, read, scans, EVIDENCE / grid.name / "raw")
     checks["6_duplicate"] = check_duplicates(grid, txt, others, cache)
     checks["7_provenance"], info = check_provenance(grid, previous)
     checks["8_shrinkage"] = check_shrinkage(previous, len(txt), axes_of(headers), grid, cache)

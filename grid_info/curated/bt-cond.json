@@ -68,16 +68,5 @@
   ],
   "wavelength_medium": "air (SVO: \"Wavelengths have been converted to air wavelengths.\")",
   "flux_quantity": "surface flux F_lambda (SVO's column 2: FLUX (ERG/CM2/S/A))",
-  "notes": "References: SVO's registry record credits 1999ApJ...512..377H; the Lyon README names Allard et al. (2012) as the refereed BT-Settl paper, and its bibcode 2012RSPTA.370.2765A is given from knowledge, not checked here. Bolometric flux: see bolometric_exceptions; Nill to confirm listing with it.",
-  "bolometric_exceptions": [
-    {
-      "logg_max": 0.0,
-      "range": [
-        0.25,
-        0.86
-      ],
-      "pinned": "source_evidence/grids/bt-cond/bolometric_lowg.json",
-      "why": "BT-Cond's lowest-gravity models integrate to less than sigma*T^4 on their own 0.001 A - 10^7 A wavelengths: all 902 served spectra at logg -0.5 give 0.257-0.850 and at logg 0 give 0.484-0.850 (30 Oct 2026), against about 0.95-1.0 at higher gravity. It is in SVO's own data: the 22 raw SVO bt-cond files on cirrus at logg -0.5 and 0 (all 2,600 K) give 0.546-0.850 and 0.727-0.844, and NJM's copies equal them (six are now raw references for check 5b); SVO's raw BT-Settl shows the same (source_evidence/grids/bt-cond/btsettl_raw_gravity/). Because that range includes 1/pi, the exception is pinned: a spectrum is excepted only if it is listed in the pinned file with the same ratio (to 0.1 %), so any later rescaling, 1/pi included, fails. Fluxes there do not meet sigma*T^4: treat them as unreliable"
-    }
-  ]
+  "notes": "References: SVO's registry record credits 1999ApJ...512..377H; the Lyon README names Allard et al. (2012) as the refereed BT-Settl paper, and its bibcode 2012RSPTA.370.2765A is given from knowledge, not checked here."
 }

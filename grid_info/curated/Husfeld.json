@@ -64,7 +64,6 @@
   ],
   "wavelength_medium": "not stated by SVO",
   "flux_quantity": "surface flux F_lambda (SVO's column 2: FLUX (ERG/CM2/S/A))",
-  "notes": "Shape check: no raw upstream copy of this grid exists on cirrus, and SVO refuses scripts, so the guard's shape check rests on every header declaring an unconverted original unit (flam). Rescaling: the spectra were cleaned in April 2026, when SED_Tools' cleaner rescaled spectra whose coarse 2,000-point blackbody ratio lay above 3 or below 0.1, without marking the file. Over this grid's 30 A - 3.3x10^7 A range such a rescaled spectrum would now integrate to 0.0002-0.002 of sigma*T^4; all 448 integrate to 0.83-1.03, so none was rescaled.",
   "default_variant": "Husfeld_yhe_0p10",
   "default_variant_note": "flux_cube.bin at the top level is a byte copy of this variant's cube, for clients that read only the top-level cube: SED_Tools 0.4.1's SED.local, tested on 30 Oct 2026 (whether MESA colors reads it was not tested). Y(He) = 0.10 is a choice, not a fact of the grid: it is the value nearest the solar helium abundance by number (about 0.09), but SVO's page says only 'value for the Helium abundance', not whether Y(He) is a number or a mass fraction (by mass the nearest would be 0.25). Nill to confirm. The top-level cube served before 29 Oct 2026 was empty."
 }

@@ -1,6 +1,6 @@
 {
-  "short_description": "Planck function B_lambda, Teff 10-200,000 K (SVO bbody; 1/pi of a surface flux)",
-  "description": "SVO's \"Black Body\" grid as SVO serves it: the Planck function B_lambda(T) for 588 temperatures from 10 to 200,000 K, 1 Angstrom to 10^7 Angstrom. These files are SVO's raw files, never cleaned: their headers declare no units in SED_Tools' form, and their flux is B_lambda, which integrates to sigma*T^4/pi, not sigma*T^4. MESA's own bbody cube is byte-identical. Held: not listed until it is relabelled as B_lambda or multiplied by pi as a new version (a decision for Nill).",
+  "short_description": "Planck function as surface flux, pi*B_lambda, Teff 10-200,000 K (SVO bbody times pi)",
+  "description": "Blackbody surface fluxes F_lambda = pi*B_lambda(T) for 588 temperatures from 10 to 200,000 K, 1 Angstrom to 10^7 Angstrom, from SVO's \"Black Body\" grid. SVO's files hold B_lambda (per steradian), which integrates to sigma*T^4/pi; NJM's files are SVO's times pi, so like every other grid they hold a surface flux that integrates to sigma*T^4.",
   "sources": [
     {
       "name": "SVO Theory Server",
@@ -9,7 +9,7 @@
       "ivoid": "ivo://svo.cab/models/bbody",
       "url": "http://svo2.cab.inta-csic.es/theory/newov2/index.php?models=bbody",
       "retrieved": "spectra dated 2026-06",
-      "copy": "SVO's raw ASCII files, not cleaned"
+      "copy": "SVO's ASCII files, flux multiplied by pi and rewritten with SED_Tools' standard header (30 Oct 2026)"
     }
   ],
   "upstream": {
@@ -34,7 +34,9 @@
       "SVO's theory pages state no terms of use for the spectra (SVO's theory server answered 403 on 2026-10-28; Wayback copies were read instead)"
     ]
   },
-  "references": [],
+  "references": [
+    "bibcode:1901AnP...309..553P"
+  ],
   "acknowledgements": [
     {
       "for": "SVO Theory Server",
@@ -44,10 +46,10 @@
       "applies_to": "all spectra"
     }
   ],
-  "credit": "The Planck function, as computed by the SVO Theory Server",
+  "credit": "The Planck function (Planck 1901, Annalen der Physik 309, 553), as tabulated by the SVO Theory Server, times pi",
   "wavelength_medium": "not applicable",
-  "flux_quantity": "B_lambda (per steradian): pi times it is a surface flux",
-  "notes": "Held by the guard (check 2: no declared units; check 5a: 1/pi of sigma*T^4).",
+  "flux_quantity": "surface flux F_lambda = pi*B_lambda(T), in erg/s/cm2/A",
+  "notes": "Multiplied by pi on 30 Oct 2026 (Nill's decision), with SED_Tools' own reader and writer; the previous copy, SVO's B_lambda files as downloaded, is in grid_holding/bbody-B_lambda-20261030. The bibcode of Planck (1901) is given from knowledge, not checked here.",
   "archived_copies": {
     "bbb": {
       "held_at": "grid_holding/bbb",
