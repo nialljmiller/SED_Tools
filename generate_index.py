@@ -59,12 +59,22 @@ SVO_FIELDS = {
 }
 
 
-def scan_stellar_models(base_path: Path):
+def listed_models(index_path: Path):
+    """The models list of an index.json ([] if there is none)."""
+    try:
+        return json.loads(Path(index_path).read_text()).get("models") or []
+    except (OSError, ValueError):
+        return []
+
+
+def scan_stellar_models(base_path: Path, keep=()):
     """Scan stellar_models directory for model information.
 
-    An allow-list: a grid is listed (in models and models_detailed) only when its manifest.json says
+    An allow-list: a grid is listed (in models and models_detailed) when its manifest.json says
     grid_info/check_grids.py passed it and the folder still holds exactly the files that manifest
     records, so a folder still uploading, unchecked or changed since its check is never offered.
+    A grid named in keep (generate_index passes the grids index.json lists already) stays listed even
+    without a passing manifest, so no grid disappears from clients; its manifest says why it fails.
     """
     stellar_dir = base_path / "stellar_models"
 
@@ -85,9 +95,11 @@ def scan_stellar_models(base_path: Path):
             continue
 
         listed, why = manifest_matches(model_dir)
-        if not listed:
+        if not listed and model_name not in keep:
             print(f"  not listed: {model_name} ({why})")
             continue
+        if not listed:
+            print(f"  kept listed, as index.json lists it already: {model_name} ({why})")
 
         # Check for key files
         flux_cube = model_dir / "flux_cube.bin"
@@ -115,6 +127,7 @@ def scan_stellar_models(base_path: Path):
             "spectra_count": spectra_count,
             "size_bytes": total_size,
             "size_human": format_size(total_size),
+            "manifest_passes": listed,
         }
 
         # Only advertise models that actually have spectra
@@ -356,11 +369,7 @@ def check_models_list(models, index_path: Path, allow_model_removal: bool = Fals
     resumed upload reverting a fixed grid, say) should be seen before it is published. allow_model_removal
     (--allow-model-removal) says the change is meant.
     """
-    try:
-        previous = json.loads(index_path.read_text()).get("models") or []
-    except (OSError, ValueError):
-        previous = []
-    dropped = sorted(set(previous) - set(models))
+    dropped = sorted(set(listed_models(index_path)) - set(models))
     if allow_model_removal or (models and not dropped):
         return
     why = "no stellar grid passes" if not models else f"it would drop {', '.join(dropped)}"
@@ -397,7 +406,9 @@ def generate_index(data_dir: str = None, allow_model_removal: bool = False):
 
     # Scan stellar models
     print("Scanning stellar_models/...")
-    models, models_detailed = scan_stellar_models(data_dir)
+    # Every grid index.json lists already stays listed, unless --allow-model-removal says one may go.
+    keep = () if allow_model_removal else listed_models(data_dir / "index.json")
+    models, models_detailed = scan_stellar_models(data_dir, keep)
     check_models_list(models, data_dir / "index.json", allow_model_removal)
 
     # Calculate stellar model statistics
