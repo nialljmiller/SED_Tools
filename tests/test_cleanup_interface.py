@@ -593,6 +593,7 @@ def test_filter_batch_downloads_the_rest_then_lists_failures(filter_browser, mon
     from sed_tools.cli import run_filters_flow
 
     filter_browser.listing_errors["A"] = ["SVO A: timed out"]
+    monkeypatch.setattr("sys.stdin", SimpleNamespace(isatty=lambda: True))  # a terminal: the count is confirmed
     answer(monkeypatch, "1,2", "y")
     assert run_filters_flow() == 1
     out = capsys.readouterr().out

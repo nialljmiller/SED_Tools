@@ -636,6 +636,7 @@ def test_downloads_use_the_fetch_key(catalogue, tmp_path, monkeypatch):
 
 
 def test_downloading_several_facilities_asks_first_with_the_count(catalogue, tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr("sys.stdin", _Stdin(True))  # only a terminal is asked; piped input downloads, as in 0.4.1
     prompts = answer(monkeypatch, "1,2", "n")
     assert cli.run_filters_flow(str(tmp_path)) == 0
     assert catalogue == []
@@ -954,6 +955,7 @@ def test_an_unreachable_njm_is_neither_printed_again_nor_a_failure(tmp_path, mon
         "entries": [{"key": "Cam", "label": "Cam", "sources": ["svo"]}], "errors": ["NJM unavailable"]})
     fetched = []
     monkeypatch.setattr(FilterLibrary, "published", lambda self, f, i: fetched.append(f"{f}/{i}") or tmp_path)
+    monkeypatch.setattr("sys.stdin", _Stdin(True))  # a terminal: the count is confirmed
     answer(monkeypatch, "1,2", "y")
     assert cli.run_filters_flow(str(tmp_path)) == 0
     assert fetched == ["A/Cam", "B/Cam"]

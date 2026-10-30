@@ -2,6 +2,7 @@
 interactive composition and combining sets. The cli package re-exports them."""
 
 import re
+import sys
 import time
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -529,7 +530,8 @@ def _print_listing_errors(errors: List[str], shown: set) -> None:
 
 
 def _download_every_instrument(library, facilities: List[dict], failures: List[str], shown: set) -> None:
-    """After confirming the count, download every instrument of each facility; an incomplete list is a failure too."""
+    """Download every instrument of each facility, after confirming the count at a terminal; an incomplete list is a
+    failure too."""
     listings = []
     for facility in facilities:
         result = library.instruments(facility["key"])
@@ -540,7 +542,7 @@ def _download_every_instrument(library, facilities: List[dict], failures: List[s
     count = sum(len(entries) for _, entries in listings)
     print(f"\n{count} instrument{'s' * (count != 1)} in {len(facilities)} facilities: "
           + ", ".join(f"{f['label']} ({len(entries)})" for f, entries in listings))
-    if not ask_yes(f"Download all {count}? [y/N] "):
+    if sys.stdin.isatty() and not ask_yes(f"Download all {count}? [y/N] "):
         print("Nothing downloaded.")
         return
     for facility, entries in listings:

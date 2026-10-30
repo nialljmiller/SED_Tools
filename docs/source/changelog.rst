@@ -485,7 +485,9 @@ Filter pickers, instrument names and NJM
   longest, so with SVO down GAIA's instruments showed as ``DR2 DR2 GAI
   GAI``); a name is cut with an ellipsis only when the terminal is too
   narrow for it, and pages fit the terminal.
-  Downloading several facilities at once asks for confirmation with a count.
+  Downloading several facilities at once asks for confirmation with a count
+  at a terminal; piped or scripted input downloads without asking, as in
+  0.4.1.
 - Picking a facility first lists its instruments, each with its one-line
   description (NJM's, from the bundled catalogue when NJM cannot be
   reached, else SVO's), then shows the columns of names.
