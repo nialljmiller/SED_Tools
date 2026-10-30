@@ -8,8 +8,9 @@ For each grid it runs grid_info.check_grids on data/stellar_models/<grid>/ and w
   properties.json  values measured from the data: axes, filled and empty nodes, wavelength range and sampling,
                    flux unit, and every check's result
   info.json        grid_info/curated/<grid>.json: description, sources, terms quoted verbatim, references, credit
-These are the grid counterparts of a filter instrument's manifest.json, properties.json and info.json. Records
-already there are first copied to backups/<UTC>-grid-publish/data/stellar_models/<grid>/, outside the served tree.
+These are the grid counterparts of a filter instrument's manifest.json, properties.json and info.json. A record is
+rewritten only when it would change other than in its run times (generated, computed, checked, previous), and only then is the
+record there first copied to backups/<UTC>-grid-publish/data/stellar_models/<grid>/, outside the served tree.
 generate_index.py lists a grid only if its manifest is "published" and its files still match it.
 
 Usage (on NJM, from the server checkout, under the NJM lock):
@@ -165,6 +166,20 @@ def build_records(grid, report, aux, curated, cache):
     return manifest, properties, info
 
 
+VOLATILE = {"generated", "computed", "checked", "previous"}   # run times; records differing only in these are unchanged
+
+
+def _stable(doc):
+    """A record as JSON text without its run times, for comparing a new record with the one on disk."""
+    def strip(d):
+        if isinstance(d, dict):
+            return {k: strip(v) for k, v in d.items() if k not in VOLATILE}
+        if isinstance(d, list):
+            return [strip(v) for v in d]
+        return d
+    return json.dumps(strip(_jsonable(doc)), sort_keys=True)
+
+
 def write_json(path, doc):
     tmp = path.with_name(f".{path.name}.part")
     tmp.write_text(json.dumps(_jsonable(doc), indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
@@ -179,16 +194,24 @@ def publish(grid, cache, stamp, dry_run=False):
     cache.save()
     records = build_records(grid, report, aux, curated, cache)
     cache.save()
+    changed = []
+    for name, doc in zip(("manifest.json", "properties.json", "info.json"), records):
+        try:
+            old = _stable(json.loads((grid / name).read_text()))
+        except (OSError, ValueError):
+            old = None
+        if old != _stable(doc):
+            changed.append((name, doc))
     if dry_run:
-        return report, records
+        return report, records, [name for name, _ in changed]
     backup = ROOT / "backups" / f"{stamp}-grid-publish" / grid.relative_to(ROOT)
-    for name in ("manifest.json", "properties.json", "info.json"):
+    for name, _ in changed:
         if (grid / name).is_file():
             backup.mkdir(parents=True, exist_ok=True)
             shutil.copy2(grid / name, backup / name)
-    for name, doc in zip(("manifest.json", "properties.json", "info.json"), records):
+    for name, doc in changed:
         write_json(grid / name, doc)
-    return report, records
+    return report, records, [name for name, _ in changed]
 
 
 def main(argv=None):
@@ -204,11 +227,13 @@ def main(argv=None):
     held, reports = 0, {}
     for name in args.grids:
         grid = (args.data / "stellar_models" / name).resolve()
-        report, _ = publish(grid, cache, stamp, args.dry_run)
+        report, _, changed = publish(grid, cache, stamp, args.dry_run)
         reports[name] = report
         held += not report["passed"]
+        what = (f"would rewrite {', '.join(changed) or 'nothing'} (dry run: nothing written)" if args.dry_run
+                else f"rewrote {', '.join(changed)}" if changed else "records unchanged, nothing written")
         print(f"{'published' if report['passed'] else 'held'} {name}: {len(report['errors'])} errors, "
-              f"{len(report['warnings'])} warnings{' (dry run: nothing written)' if args.dry_run else ''}")
+              f"{len(report['warnings'])} warnings; {what}")
         for line in report["errors"] + [f"warn: {w}" for w in report["warnings"]]:
             print(f"     {line}")
     if args.json:
