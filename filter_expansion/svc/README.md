@@ -1,11 +1,11 @@
 # NJM SVO-compatible Filter Profile Service
 
-Service URL: **https://nillmill.ddns.net/sed_tools/svo_fps/fps.php**
-(`https://nialljmiller.com/SED_Tools/...` redirects to `https://nillmill.ddns.net/sed_tools/...`).
+Service URL: **https://data.nialljmiller.com/sed_tools/svo_fps/fps.php**
+(`https://nialljmiller.com/SED_Tools/...` redirects to `https://data.nialljmiller.com/sed_tools/...`).
 
 This service answers the query interface of the SVO Filter Profile Service
 (Rodrigo et al. 2012, 2020; Rodrigo & Solano 2024) from the NJM SED_Tools
-filter collection (`https://nillmill.ddns.net/sed_tools/filters/`). It is not
+filter collection (`https://data.nialljmiller.com/sed_tools/filters/`). It is not
 the SVO service. SVO-derived curves are credited to SVO in each record's
 `Comments` and in the `ACKNOWLEDGEMENT` INFO elements of every response.
 
@@ -66,7 +66,7 @@ rejects it), so set the class attribute instead:
 from astroquery.svo_fps import SvoFps
 import astropy.units as u
 
-SvoFps.SVO_MAIN_URL = "https://nillmill.ddns.net/sed_tools/svo_fps/fps.php"
+SvoFps.SVO_MAIN_URL = "https://data.nialljmiller.com/sed_tools/svo_fps/fps.php"
 
 SvoFps.get_filter_list(facility="2MASS")
 SvoFps.get_filter_index(16000 * u.AA, 17000 * u.AA)

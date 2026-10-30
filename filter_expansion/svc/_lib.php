@@ -6,8 +6,8 @@ if (basename($_SERVER['SCRIPT_FILENAME'] ?? '') === '_lib.php') { http_response_
 
 ini_set('serialize_precision', '-1');
 
-const SERVICE_URL = 'https://nillmill.ddns.net/sed_tools/svo_fps/fps.php';
-const GETDATA_URL = 'https://nillmill.ddns.net/sed_tools/svo_fps/getdata.php';
+const SERVICE_URL = 'https://data.nialljmiller.com/sed_tools/svo_fps/fps.php';
+const GETDATA_URL = 'https://data.nialljmiller.com/sed_tools/svo_fps/getdata.php';
 const MAX_PARAM_LEN = 512;
 const RANGE_PARAMS = ['WavelengthRef', 'WavelengthMean', 'WavelengthEff', 'WavelengthMin',
                       'WavelengthMax', 'WidthEff', 'FWHM'];
@@ -164,7 +164,7 @@ function head_xml($status = 'OK', $msg = '') {
     // the fixed citation is only a fallback for a catalog built without them.
     $s .= "  <INFO name=\"SERVICE\" value=\"NJM SVO-compatible Filter Profile Service; interface after the SVO Filter Profile Service"
         . ($ACKS ? '' : ' (Rodrigo et al. 2012, 2020; Rodrigo &amp; Solano 2024)')
-        . ". See https://nillmill.ddns.net/sed_tools/svo_fps/README.html\"/>\n";
+        . ". See https://data.nialljmiller.com/sed_tools/svo_fps/README.html\"/>\n";
     foreach ($ACKS as $a) {   // citation = text + ". References: label (url); ..."
         $s .= "  <INFO name=\"ACKNOWLEDGEMENT\" value=\"" . x($a['for'] ?? '') . "\">"
             . x($a['citation'] ?? $a['text'] ?? '') . "</INFO>\n";
