@@ -7,6 +7,11 @@ import types
 _MISSING = object()
 
 
+def _own(name):
+    """Dunder names (__name__, __spec__ and the rest, which importlib.reload sets) stay the old path's own."""
+    return name.startswith("__") and name.endswith("__")
+
+
 class _OldPath(types.ModuleType):
     """A module at an old import path: reading, setting or deleting a name acts on the moved module.
 
@@ -27,6 +32,8 @@ class _OldPath(types.ModuleType):
     # (pytest 9.2). Each name keeps a stack of the values its sets replaced, so a delete puts back the
     # previous value instead of deleting the moved module's name.
     def __setattr__(self, name, value):
+        if _own(name):
+            return super().__setattr__(name, value)
         moved = self.__dict__["__moved_to__"]
         replaced = self.__dict__["__replaced__"].setdefault(name, [])
         if replaced and replaced[-1] is value:  # setting back what an earlier set replaced
@@ -36,6 +43,8 @@ class _OldPath(types.ModuleType):
         setattr(moved, name, value)
 
     def __delattr__(self, name):
+        if _own(name):
+            return super().__delattr__(name)
         moved = self.__dict__["__moved_to__"]
         replaced = self.__dict__["__replaced__"].get(name)
         previous = replaced.pop() if replaced else _MISSING

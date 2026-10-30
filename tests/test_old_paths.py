@@ -1,9 +1,13 @@
 """Old module paths (sed_tools.filter_library and the rest) forward to the moved modules, also for test tools."""
 
+import importlib
+import types
 from unittest import mock
 
+import sed_tools.cube.tool as tool
 import sed_tools.filter_library as old_library
 import sed_tools.filters.library as library
+import sed_tools.flux_cube_tool as old_tool
 
 
 def _sentinel():
@@ -35,3 +39,13 @@ def test_mock_patch_through_an_old_path_is_undone_on_the_moved_module():
     with mock.patch("sed_tools.filter_library.get_builder", _sentinel):
         assert library.get_builder is _sentinel
     assert library.get_builder is original
+
+
+def test_reloading_an_old_path_leaves_the_moved_module_as_it_was(monkeypatch):
+    importlib.reload(old_tool)
+    assert old_tool.__name__ == "sed_tools.flux_cube_tool"
+    assert type(tool) is types.ModuleType
+    assert tool.__name__ == tool.__spec__.name == "sed_tools.cube.tool"
+    assert tool.__package__ == "sed_tools.cube"
+    monkeypatch.setattr(tool.Path, "rglob", lambda self, pattern: iter(()))  # search no folders
+    old_tool.discover_flux_cube_files([])  # its `from .model import` needs the moved module's own package

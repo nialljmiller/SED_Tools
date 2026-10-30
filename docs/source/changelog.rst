@@ -632,6 +632,9 @@ Packaging
   2026-10-28T02:36:36) are package data.
 - Internal: modules moved into packages (``filters/``, ``grids/``, ``cube/``,
   ``ml/``, ``cli/``, ``api/``); every old import path still works.
+- Internal names moved with them, so code that patches them (``monkeypatch``
+  or ``mock``) must patch the new module paths, e.g. ``sed_tools.cli.grids``
+  rather than ``sed_tools.cli``.
 
 Behaviour changes
 ~~~~~~~~~~~~~~~~~
