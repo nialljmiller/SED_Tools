@@ -53,6 +53,19 @@ H, C, K = 6.62607015e-27, 2.99792458e10, 1.380649e-16
 FLUX_UNIT = "erg/cm2/s/a"                # as SED_Tools' cleaner writes it, compared lower-case
 SERVED_SUFFIXES = (".txt", ".csv", ".h5", ".bin")   # what clients download from a grid folder
 BOLO_FAIL, BOLO_WARN = (0.5, 2.0), (0.9, 1.1)
+NODE_TOL = 0.01                          # a node's integral against its own spectrum's, resampled onto the cube
+FAULT_RATIOS = {"1/pi": 1 / math.pi, "1/(4 pi)": 1 / (4 * math.pi)}   # an exception range may not admit these
+# 5c: the infrared slope d ln F_lambda / d ln lambda, fitted over 3-25 times the Wien peak wavelength of the spectrum's
+# Teff (spectra whose wavelengths reach 20 times it). Atmospheres approach the Rayleigh-Jeans -4 there; a lambda^-2
+# tilt (the BOSZ fault) gives about -6. SLOPE_RANGE is set from the real grids (SLOPE_NOTE).
+SLOPE_WINDOW = (3.0, 25.0)
+SLOPE_RANGE = (-4.6, -1.5)
+SLOPE_NOTE = ("measured 30 Oct 2026 on 11,026 spectra that reach 20 times their Wien peak: every one of Kurucz2003all (6,409), "
+              "NextGen2 (1,953), Husfeld (448) and bbody (583), and samples of Kurucz (633), bt-cond (400), raw SVO TLUSTY (300) "
+              "and the 4 pi H BOSZ rebuild (300) give -3.95 to -2.10 (the flattest are NextGen2's coolest models); the BOSZ copy "
+              "served tilted by lambda^-2 gives -5.84 to -5.67, and any of those spectra tilted by lambda^-2 at most -5.31. The "
+              "upper bound is loose, because cooler grids (morley12, bt-settl) are not yet measured: it catches a lambda^+2 tilt "
+              "only of spectra steeper than -3.5")
 COVERED = 0.5                            # pi*B over the file's wavelengths / sigma T^4 needed to judge 5a
 SAMPLE_ALL_BELOW = 1.5e9                 # bytes of .txt below which every spectrum's data is read
 SAMPLE_SIZE = 120
@@ -178,7 +191,8 @@ def file_hash(path):
 
 
 class HashCache:
-    """SHA-256 of files keyed by path, size and mtime, kept outside the served tree."""
+    """SHA-256 of files keyed by path, size, mtime, ctime and inode, kept outside the served tree: a file whose
+    content changed with its size and mtime restored still has a new ctime, so it is hashed again."""
 
     def __init__(self, path):
         self.path = Path(path)
@@ -191,14 +205,15 @@ class HashCache:
     def get(self, path, spectrum):
         st = os.stat(path)
         key = str(Path(path).resolve())
+        stamp = [st.st_size, int(st.st_mtime), st.st_ctime_ns, st.st_ino]
         hit = self.data.get(key)
-        if hit and hit["size"] == st.st_size and hit["mtime"] == int(st.st_mtime):
+        if hit and hit.get("stamp") == stamp and (not spectrum or "data_sha256" in hit):
             return hit
         if spectrum:
             whole, data = data_hash(path)
-            hit = {"size": st.st_size, "mtime": int(st.st_mtime), "sha256": whole, "data_sha256": data}
+            hit = {"size": st.st_size, "mtime": int(st.st_mtime), "stamp": stamp, "sha256": whole, "data_sha256": data}
         else:
-            hit = {"size": st.st_size, "mtime": int(st.st_mtime), "sha256": file_hash(path)}
+            hit = {"size": st.st_size, "mtime": int(st.st_mtime), "stamp": stamp, "sha256": file_hash(path)}
         self.data[key] = hit
         self.dirty = True
         return hit
@@ -439,6 +454,25 @@ def check_one_cube(cube_path, lookup_cols, rows, folder, label):
     averaged = sum(1 for ns in want.values() if len(ns) > 1)
     if averaged:
         errors.append(f"{label}: {averaged} nodes average several spectra (unsplit extra axes)")
+    # every node holding one spectrum: its integral against that spectrum's, resampled as SED_Tools builds cubes
+    worst, off = 0.0, []
+    wlc = f["wavelengths"]
+    for (it, il, im), ns in want.items():
+        if len(ns) != 1 or (it, il, im) not in filled:
+            continue
+        try:
+            wl, fl = read_data(folder / ns[0])
+        except (OSError, ValueError):
+            continue
+        ref = trapz(resample(wl, fl, wlc), wlc)
+        node = f["integral"][im, il, it]
+        dev = abs(node / ref - 1) if ref > 0 else math.inf
+        worst = max(worst, dev)
+        if dev > NODE_TOL:
+            off.append(f"{ns[0]} ({node / ref if ref > 0 else math.inf:.4g})")
+    if off:
+        errors.append(f"{label}: {len(off)} nodes integrate to more than {NODE_TOL:.0%} away from their own "
+                      f"spectrum: {_few(off)}")
     # node values against their spectra, resampled as SED_Tools builds cubes
     compared = []
     for idx, ns in list(want.items()):
@@ -464,7 +498,8 @@ def check_one_cube(cube_path, lookup_cols, rows, folder, label):
     nodes = sorted(want)
     holes = int(f["nt"] * f["nl"] * f["nm"] - len(filled))
     return _result(errors, warnings, label=label, dims=[f["nt"], f["nl"], f["nm"], f["nw"]], bytes=f["bytes"],
-                   filled_nodes=len(filled), empty_nodes=holes, nodes_checked_against_spectra=compared), \
+                   filled_nodes=len(filled), empty_nodes=holes, nodes_checked_against_spectra=compared,
+                   nodes_vs_own_spectrum_worst=round(worst, 6)), \
         {**f, "want": want, "nodes": nodes}
 
 
@@ -480,20 +515,30 @@ def variant_paths(index):
     return [r["path"] for r in rows if r.get("path")]
 
 
-def check_cubes(grid, cols, rows, read):
-    """Check 4 for the top-level cube or every variant cube; returns the scans for check 5."""
+def check_cubes(grid, cols, rows, read, record=None):
+    """Check 4 for the top-level cube or every variant cube; returns the scans for check 5.
+
+    A split grid may also hold a top-level flux_cube.bin for clients that read only the top level (SED_Tools
+    0.4.1, MESA), if it is a byte copy of the cube of the variant its curated record names as default_variant."""
     errors, warnings, details, scans = [], [], [], []
     top, vindex = grid / "flux_cube.bin", grid / "variants_index.csv"
-    if top.is_file():
+    default_copy = None
+    if top.is_file() and not vindex.is_file():
         res, scan = check_one_cube(top, cols or [], rows, grid, "flux_cube.bin")
         details.append(res)
         errors += res["errors"]
         warnings += res["warnings"]
         if scan:
             scans.append((top, scan))
-        if vindex.is_file():
-            errors.append("flux_cube.bin and variants_index.csv both present: clients use flux_cube.bin")
-    elif vindex.is_file():
+    if vindex.is_file() and top.is_file():
+        default = (record or {}).get("default_variant")
+        dcube = grid / default / "flux_cube.bin" if default else None
+        if dcube is not None and dcube.is_file() and file_hash(top) == file_hash(dcube):
+            default_copy = default
+        else:
+            errors.append("flux_cube.bin beside variants_index.csv is not a byte copy of the cube of the curated "
+                          f"default_variant ({default!r})")
+    if vindex.is_file():
         covered = set()
         for rel in variant_paths(vindex):
             vdir = grid / rel
@@ -504,6 +549,10 @@ def check_cubes(grid, cols, rows, read):
             vcols, vrows = read_lookup(vlookup)
             vf = file_column(vcols)
             vby = {r[vf]: r for r in vrows}
+            wrong = [n for n in vby if not (vdir / n).is_symlink() or os.readlink(vdir / n) != os.path.join("..", n)]
+            if wrong:
+                errors.append(f"variant {rel}: {len(wrong)} spectra are not links to the same file in the grid: "
+                              f"{_few(wrong)}")
             outside = set(vby) - set(rows)
             if outside:
                 errors.append(f"variant {rel}: lists {len(outside)} spectra the grid's lookup does not")
@@ -519,7 +568,7 @@ def check_cubes(grid, cols, rows, read):
         lacking = set(rows) - covered
         if lacking:
             errors.append(f"the variants hold {len(covered)} of {len(rows)} spectra; missing {_few(lacking)}")
-    else:
+    if not top.is_file() and not vindex.is_file():
         warnings.append("no flux cube: clients build one from the spectra")
     h5 = grid / f"{grid.name}.h5"
     if h5.is_file():
@@ -542,14 +591,47 @@ def check_cubes(grid, cols, rows, read):
                    and p.name not in allowed)
     if stray:
         warnings.append(f"old clients also download {stray}")
-    return _result(errors, warnings, cubes=details), scans
+    return _result(errors, warnings, cubes=details, top_level_default_variant=default_copy), scans
 
 
-def check_physics(grid, headers, read, scans, raw_dir, exceptions=()):
+def ir_slope(wl, fl, teff):
+    """5c: d ln F / d ln lambda over SLOPE_WINDOW times the Wien peak of teff; None if the spectrum stops short."""
+    peak = 2.8977719e7 / teff
+    k = (wl >= SLOPE_WINDOW[0] * peak) & (wl <= SLOPE_WINDOW[1] * peak) & (fl > 0)
+    if k.sum() < 10 or wl[k][-1] < 0.8 * SLOPE_WINDOW[1] * peak:
+        return None
+    return float(np.polyfit(np.log(wl[k]), np.log(fl[k]), 1)[0])
+
+
+_PINS = {}
+
+
+def _pinned(rule, name, ratio):
+    """Whether an exception admits this spectrum: with a "pinned" file ({file name: ratio} under ROOT), only a
+    listed spectrum whose ratio is unchanged (within 0.1 %); without one, any spectrum."""
+    if not rule.get("pinned"):
+        return True
+    if rule["pinned"] not in _PINS:
+        try:
+            _PINS[rule["pinned"]] = json.loads((ROOT / rule["pinned"]).read_text())
+        except (OSError, ValueError):
+            _PINS[rule["pinned"]] = {}
+    pin = _PINS[rule["pinned"]].get(name)
+    return pin is not None and abs(ratio / pin - 1) <= 1e-3
+
+
+def check_physics(grid, headers, read, scans, raw_dir, exceptions=(), record=None):
     """Check 5. exceptions: the curated record's bolometric_exceptions, each {"logg_max", "range", "why"}: a
-    spectrum with logg at most logg_max whose ratio lies in range is reported as a warning, not an error."""
+    spectrum with logg at most logg_max whose ratio lies in range is reported as a warning, not an error. A range
+    may not admit 1/pi or 1/(4 pi), and the exceptions may not cover most of the judged spectra."""
     errors, warnings = [], []
-    ratios, uncovered, excepted = [], 0, []
+    ratios, uncovered, excepted, shapes = [], 0, [], []
+    for e in exceptions:
+        lo, hi = e["range"]
+        bad = [k for k, v in FAULT_RATIOS.items() if lo <= v * 1.03 and v / 1.03 <= hi]
+        if bad and not e.get("pinned"):
+            errors.append(f"5a: bolometric_exceptions range {lo}-{hi} admits {', '.join(bad)} (a unit fault) and pins "
+                          "no spectrum's ratio")
     for p, wl, fl in read:
         t = headers[p.name]["teff"]
         if not (math.isfinite(t) and t > 0):
@@ -559,8 +641,12 @@ def check_physics(grid, headers, read, scans, raw_dir, exceptions=()):
             uncovered += 1
             continue
         r = trapz(fl, wl) / bb
+        slope = ir_slope(wl, fl, t)
+        if slope is not None:
+            shapes.append((slope, p.name))
         rule = next((e for e in exceptions if not BOLO_FAIL[0] <= r <= BOLO_FAIL[1]
-                     and headers[p.name]["logg"] <= e["logg_max"] and e["range"][0] <= r <= e["range"][1]), None)
+                     and headers[p.name]["logg"] <= e["logg_max"] and e["range"][0] <= r <= e["range"][1]
+                     and _pinned(e, p.name, r)), None)
         if rule:
             excepted.append(f"{p.name} ({r:.3g}, logg {headers[p.name]['logg']:g})")
             continue
@@ -596,8 +682,23 @@ def check_physics(grid, headers, read, scans, raw_dir, exceptions=()):
             warnings.append(f"5a: {len(odd)} of {len(rs)} {label.replace('_', ' ')} lie outside 0.9-1.1 of "
                             f"pi*B_lambda(Teff): {_few(odd)}")
     narrow = not ratios and not node_ratios and uncovered > 0 and not excepted
-    if not ratios and not node_ratios and not narrow and not excepted:
-        errors.append("5a: no spectrum or node could be compared with sigma*T^4")
+    if not ratios and not node_ratios and not narrow:
+        errors.append("5a: no spectrum or node could be compared with sigma*T^4 outside the curated exceptions")
+    if excepted and len(excepted) > len(ratios):
+        errors.append(f"5a: the curated exceptions cover {len(excepted)} of the {len(excepted) + len(ratios)} judged "
+                      "spectra: an exception must stay an exception")
+    if shapes:
+        v = np.array([x for x, _ in shapes])
+        summary["infrared_slope"] = {"n": len(shapes), "min": round(float(v.min()), 3),
+                                     "median": round(float(np.median(v)), 3), "max": round(float(v.max()), 3),
+                                     "allowed": list(SLOPE_RANGE), "basis": SLOPE_NOTE}
+        odd = [f"{n} ({x:.2f})" for x, n in shapes if not SLOPE_RANGE[0] <= x <= SLOPE_RANGE[1]]
+        if odd:
+            errors.append(f"5c: {len(odd)} of {len(shapes)} spectra have an infrared slope (d ln F/d ln lambda at "
+                          f"{SLOPE_WINDOW[0]:g}-{SLOPE_WINDOW[1]:g} times the Wien peak) outside {SLOPE_RANGE[0]} to "
+                          f"{SLOPE_RANGE[1]}: a tilted spectrum (the BOSZ fault gives about -6): {_few(odd)}")
+    elif ratios:
+        warnings.append("5c: no sampled spectrum reaches 20 times its Wien peak, so the infrared slope was not judged")
     if narrow:  # e.g. an optical-only grid: sigma*T^4 cannot be judged, so 5b must use raw upstream files
         warnings.append("5a: not applicable: every sampled spectrum covers under half of sigma*T^4")
     if uncovered:
@@ -606,7 +707,7 @@ def check_physics(grid, headers, read, scans, raw_dir, exceptions=()):
         summary["excepted"] = excepted
         warnings.append(f"5a: {len(excepted)} sampled spectra lie outside 0.5-2 but within the curated record's "
                         f"bolometric_exceptions ({'; '.join(e['why'] for e in exceptions)}): {_few(excepted)}")
-    shape = check_shape(headers, raw_dir, grid)
+    shape = check_shape(headers, raw_dir, grid, record)
     if narrow and shape["method"].startswith("declared"):
         errors.append("5b: a grid too narrow for 5a needs raw upstream files in source_evidence/grids/<grid>/raw/")
     errors += shape.pop("errors")
@@ -620,23 +721,40 @@ def raw_params(path):
     return h
 
 
-def check_shape(headers, raw_dir, grid):
-    """5b: the grid's spectra against raw upstream files matched by parameters, else declared identity."""
+def check_shape(headers, raw_dir, grid, record=None):
+    """5b: the grid's spectra against raw upstream files, else declared identity.
+
+    The curated record may declare a conversion {"factor", "original_flux_unit", "header_conversion"} (BOSZ: F = 4 pi H):
+    raw files must then equal the spectra divided by factor, and without raw files the headers must declare that
+    unit and conversion. raw_match_keys adds header keys to the parameter match; raw_wavelength_file gives the
+    wavelengths of raw files that hold only flux columns; a raw file without parameters matches by file name."""
     errors, warnings = [], []
-    raws = sorted(raw_dir.glob("*.txt")) if raw_dir and raw_dir.is_dir() else []
+    conv = (record or {}).get("conversion") or {}
+    factor = float(conv.get("factor", 1.0))
+    extra = tuple((record or {}).get("raw_match_keys", ()))
+    rawwl = (record or {}).get("raw_wavelength_file")
+    raws = sorted(p for p in raw_dir.iterdir() if p.name.endswith((".txt", ".txt.gz"))) \
+        if raw_dir and raw_dir.is_dir() else []
     if raws:
         index = {}
         for name, h in headers.items():
-            index.setdefault(_param_key(h), []).append(name)
+            index.setdefault(_param_key(h, extra), []).append(name)
         done = []
         for raw in raws:
             rh = raw_params(raw)
-            hits = index.get(_param_key(rh), [])
+            plain = raw.name[:-3] if raw.name.endswith(".gz") else raw.name
+            hits = index.get(_param_key(rh, extra), []) if math.isfinite(rh["teff"]) else \
+                [n for n in (plain, plain.replace("+", "_")) if n in headers][:1]
             if len(hits) != 1:
-                warnings.append(f"5b: raw {raw.name} matches {len(hits)} spectra by parameters")
+                warnings.append(f"5b: raw {raw.name} matches {len(hits)} spectra")
                 continue
             wl, fl = read_data(grid / hits[0])
-            rwl, rfl = read_data(raw)
+            if rawwl:
+                rfl = np.loadtxt(raw, comments="#", usecols=(0,), ndmin=1)
+                rwl = np.loadtxt(ROOT / rawwl, comments="#", usecols=(0,), ndmin=1)
+            else:
+                rwl, rfl = read_data(raw)
+            rfl = rfl * factor
             common, ia, ib = np.intersect1d(wl, rwl, return_indices=True)
             good = rfl[ib] > 0
             if good.sum() < 10:
@@ -652,11 +770,15 @@ def check_shape(headers, raw_dir, grid):
                               f"(ratio p1/median/p99 {p1:.4g}/{med:.4g}/{p99:.4g})")
         if not done:
             errors.append("5b: no raw upstream file could be matched")
-        return {"method": "raw upstream files", "raw_dir": str(raw_dir.relative_to(ROOT)) if raw_dir else None,
+        return {"method": "raw upstream files" + (f" times the declared factor {factor:g}" if factor != 1 else ""),
+                "raw_dir": str(raw_dir.relative_to(ROOT)) if raw_dir else None,
                 "compared": done, "errors": errors, "warnings": warnings}
+    units = {"flam", FLUX_UNIT} | ({str(conv["original_flux_unit"]).lower()} if conv.get("original_flux_unit") else set())
     converted = sorted(n for n, h in headers.items()
-                       if str(h.get("original_flux_unit", "")).lower() not in ("flam", FLUX_UNIT)
-                       or str(h.get("original_wavelength_unit", "")).lower() not in ("angstrom", "a"))
+                       if str(h.get("original_flux_unit", "")).lower() not in units
+                       or str(h.get("original_wavelength_unit", "angstrom" if conv else "")).lower() not in ("angstrom", "a")
+                       or (conv.get("header_conversion") and str(h.get("original_flux_unit", "")).lower() not in
+                           ("flam", FLUX_UNIT) and h.get("conversion") != conv["header_conversion"]))
     if converted:
         errors.append(f"5b: no raw upstream files, and {len(converted)} spectra do not declare an unconverted "
                       f"original unit (original_flux_unit flam, original_wavelength_unit angstrom): {_few(converted)}")
@@ -664,16 +786,17 @@ def check_shape(headers, raw_dir, grid):
             "spectra_declaring_identity": len(headers) - len(converted), "errors": errors, "warnings": warnings}
 
 
-def _param_key(h):
+def _param_key(h, extra=()):
     key = []
     for p in PARAMS:
         v = h.get(p, math.nan)
         key.append(None if not isinstance(v, float) or math.isnan(v) else round(v, 4))
-    for extra in ("alpha", "yhe"):
-        v = h.get(extra)
+    for name in ("alpha", "yhe"):
+        v = h.get(name)
         if v is not None:
             m = NUM.search(str(v))
             key.append(round(float(m.group(0)), 4) if m else None)
+    key.extend(str(h.get(k, "")).strip() for k in extra)
     return tuple(key)
 
 
@@ -778,10 +901,25 @@ def _norm(text):
     return re.sub(r"\s+", " ", text).strip()
 
 
-def check_shrinkage(previous, count, axes):
+def check_shrinkage(previous, count, axes, grid=None, cache=None):
+    """Check 8: no fewer spectra, no narrower axes, and no file whose content changed while its size and
+    modification time stayed as the previous manifest records them."""
     errors, warnings = [], []
     if not previous:
         return _result([], ["no previous manifest: first version"], previous=None)
+    silent = []
+    if grid is not None and cache is not None:
+        for rel, rec in (previous.get("files") or {}).items():
+            path = Path(grid) / rel
+            if not path.is_file() or "sha256" not in rec:
+                continue
+            st = path.stat()
+            if st.st_size == rec.get("size") and int(st.st_mtime) == rec.get("mtime") and \
+                    cache.get(path, rel.endswith(".txt"))["sha256"] != rec["sha256"]:
+                silent.append(rel)
+    if silent:
+        errors.append(f"{len(silent)} file(s) changed content with the size and time the previous manifest records: "
+                      f"{_few(silent)}")
     if count < previous.get("spectra", 0):
         errors.append(f"{count} spectra, the previous version had {previous['spectra']}")
     for ax, (lo, hi) in axes.items():
@@ -809,16 +947,13 @@ def check_grid(grid, others, cache, previous=None):
     checks = {"1_upload": check_upload(grid)}
     checks["2_spectra"], headers, read = check_spectra(grid, txt)
     checks["3_lookup"], cols, rows = check_lookup(grid / "lookup_table.csv", [p.name for p in txt], headers)
-    checks["4_cube"], scans = check_cubes(grid, cols, rows, read)
-    record = grid / "info.json" if (grid / "info.json").is_file() else CURATED / f"{grid.name}.json"
-    try:
-        exceptions = json.loads(record.read_text()).get("bolometric_exceptions", []) if record.is_file() else []
-    except ValueError:
-        exceptions = []
-    checks["5_physics"] = check_physics(grid, headers, read, scans, EVIDENCE / grid.name / "raw", exceptions)
+    record = load_record(grid)
+    checks["4_cube"], scans = check_cubes(grid, cols, rows, read, record)
+    checks["5_physics"] = check_physics(grid, headers, read, scans, EVIDENCE / grid.name / "raw",
+                                        record.get("bolometric_exceptions", []), record)
     checks["6_duplicate"] = check_duplicates(grid, txt, others, cache)
     checks["7_provenance"], info = check_provenance(grid, previous)
-    checks["8_shrinkage"] = check_shrinkage(previous, len(txt), axes_of(headers))
+    checks["8_shrinkage"] = check_shrinkage(previous, len(txt), axes_of(headers), grid, cache)
     errors = [f"{k[2:]}: {e}" for k, c in checks.items() for e in c["errors"]]
     warnings = [f"{k[2:]}: {w}" for k, c in checks.items() for w in c["warnings"]]
     return {"grid": grid.name, "checked": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
@@ -827,13 +962,29 @@ def check_grid(grid, others, cache, previous=None):
                                 "read": read}
 
 
+def load_record(grid):
+    """The grid's served info.json updated by its curated record (grid_info/curated/<grid>.json); {} without either."""
+    record = {}
+    for path in (Path(grid) / "info.json", CURATED / f"{Path(grid).name}.json"):
+        try:
+            record.update(json.loads(path.read_text()))
+        except (OSError, ValueError):
+            continue
+    return record
+
+
 def tool_version():
+    """The guard that ran: its last commit, its SHA-256, and whether the file is as committed there."""
+    rel = "grid_info/check_grids.py"
+    digest = file_hash(ROOT / rel)
     try:
-        sha = subprocess.run(["git", "-C", str(ROOT), "log", "-1", "--format=%h", "--", "grid_info/check_grids.py"],
+        sha = subprocess.run(["git", "-C", str(ROOT), "log", "-1", "--format=%h", "--", rel],
                              capture_output=True, text=True, timeout=10).stdout.strip() or None
+        blob = subprocess.run(["git", "-C", str(ROOT), "show", f"HEAD:{rel}"], capture_output=True, timeout=10).stdout
+        same = bool(blob) and hashlib.sha256(blob).hexdigest() == digest
     except (OSError, subprocess.SubprocessError):
-        sha = None
-    return {"script": "grid_info/check_grids.py", "commit": sha}
+        sha, same = None, False
+    return {"script": rel, "commit": sha, "sha256": digest, "as_committed": same}
 
 
 def previous_manifest(grid):
@@ -842,7 +993,8 @@ def previous_manifest(grid):
     except (OSError, ValueError):
         return None
     return {"generated": m.get("generated"), "spectra": (m.get("spectra") or {}).get("count", 0),
-            "axes": m.get("axes"), "terms_sha256": (m.get("guard") or {}).get("terms_sha256")}
+            "axes": m.get("axes"), "terms_sha256": (m.get("guard") or {}).get("terms_sha256"),
+            "files": m.get("files") or {}}
 
 
 def grid_folders(stellar_dir):
@@ -867,28 +1019,46 @@ def other_hashes(stellar_dir, exclude, cache):
 
 # ---- what generate_index.py asks ----
 
-def served_files(grid):
-    """Top-level files clients download, plus every variant cube and lookup, as {relative path: (size, mtime)}."""
+SMALL = 64 << 20   # files up to this size (lookups, small cubes) are also compared by SHA-256 at listing time
+
+
+def served_paths(grid):
+    """Top-level files clients download, plus every variant cube and lookup, as {relative path: Path}."""
     grid = Path(grid)
-    out = {}
-    for p in sorted(grid.iterdir()):
-        if p.is_file() and p.suffix.lower() in SERVED_SUFFIXES:
-            st = p.stat()
-            out[p.name] = (st.st_size, int(st.st_mtime))
+    out = {p.name: p for p in sorted(grid.iterdir()) if p.is_file() and p.suffix.lower() in SERVED_SUFFIXES}
     vindex = grid / "variants_index.csv"
     if vindex.is_file():
         for rel in variant_paths(vindex):
             for name in ("lookup_table.csv", "flux_cube.bin"):
-                p = grid / rel / name
-                if p.is_file():
-                    st = p.stat()
-                    out[f"{rel}/{name}"] = (st.st_size, int(st.st_mtime))
+                if (grid / rel / name).is_file():
+                    out[f"{rel}/{name}"] = grid / rel / name
+    return out
+
+
+def served_files(grid):
+    """served_paths as {relative path: (size, mtime, ctime_ns)}: a write since the check changes ctime even when
+    size and mtime are put back."""
+    return {k: (p.stat().st_size, int(p.stat().st_mtime), p.stat().st_ctime_ns) for k, p in served_paths(grid).items()}
+
+
+def variant_links(grid):
+    """{variant folder: SHA-256 of its sorted 'name -> link target' lines}: re-pointed spectrum links change it."""
+    grid = Path(grid)
+    vindex = grid / "variants_index.csv"
+    out = {}
+    if vindex.is_file():
+        for rel in variant_paths(vindex):
+            d = grid / rel
+            lines = sorted(f"{q.name} -> {os.readlink(q) if q.is_symlink() else 'file'}"
+                           for q in d.iterdir() if q.suffix.lower() == ".txt") if d.is_dir() else []
+            out[rel] = hashlib.sha256("\n".join(lines).encode()).hexdigest()
     return out
 
 
 def manifest_matches(grid):
-    """(True, "") when <grid>/manifest.json says the guard passed and the folder still holds exactly the
-    files it records, by name, size and modification time; else (False, why)."""
+    """(True, "") when <grid>/manifest.json says the guard passed and the folder still holds exactly the files
+    it records: by name, size, modification time and ctime (any write since the check changes ctime), by SHA-256
+    for files up to 64 MB other than spectra, and with the same variant links; else (False, why)."""
     grid = Path(grid)
     try:
         m = json.loads((grid / "manifest.json").read_text())
@@ -900,12 +1070,20 @@ def manifest_matches(grid):
         return False, "manifest.json is for another grid or schema"
     if m.get("status") != "published" or not (m.get("guard") or {}).get("passed"):
         return False, f"status {m.get('status')!r}: {'; '.join((m.get('guard') or {}).get('errors', [])[:2])}"
-    recorded = {k: (v["size"], v["mtime"]) for k, v in (m.get("files") or {}).items()
+    files = m.get("files") or {}
+    recorded = {k: (v["size"], v["mtime"], v.get("ctime_ns")) for k, v in files.items()
                 if k.lower().endswith(SERVED_SUFFIXES)}
     present = served_files(grid)
     changed = sorted(k for k in set(recorded) | set(present) if recorded.get(k) != present.get(k))
     if changed:
-        return False, f"{len(changed)} file(s) differ from manifest.json: {_few(changed)}"
+        return False, f"{len(changed)} file(s) differ from manifest.json (size, time or ctime): {_few(changed)}"
+    paths = served_paths(grid)
+    altered = sorted(k for k, p in paths.items() if not k.endswith(".txt") and p.stat().st_size <= SMALL
+                     and file_hash(p) != files[k].get("sha256"))
+    if altered:
+        return False, f"{len(altered)} file(s) differ from manifest.json by SHA-256: {_few(altered)}"
+    if variant_links(grid) != (m.get("variant_links") or {}):
+        return False, "variant spectrum links differ from manifest.json"
     return True, ""
 
 

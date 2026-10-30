@@ -73,10 +73,11 @@
     {
       "logg_max": 0.0,
       "range": [
-        0.3,
-        0.7
+        0.25,
+        0.86
       ],
-      "why": "BT-Cond's lowest-gravity models integrate to 0.38-0.44 (logg -0.5) and 0.52-0.60 (logg 0) of sigma*T^4 on their own 0.001 A - 10^7 A wavelengths, against about 0.95-1.0 at higher gravity (guard sample, 29 Oct 2026). SVO's raw, never cleaned BT-Settl files show the same deficit (0.39-0.44 at logg -0.5, 0.63-0.65 at logg 0, 0.98-0.99 at logg 4.5; source_evidence/grids/bt-cond/btsettl_raw_gravity/), so it is in the upstream models, not made by SED_Tools. The April 2026 cleaner, which rescaled without marking files, would have left a rescaled spectrum at 0.995-1.095 here, not 0.4-0.6. No raw BT-Cond file with these parameters is on cirrus. Fluxes there do not meet sigma*T^4: treat them as unreliable"
+      "pinned": "source_evidence/grids/bt-cond/bolometric_lowg.json",
+      "why": "BT-Cond's lowest-gravity models integrate to less than sigma*T^4 on their own 0.001 A - 10^7 A wavelengths: all 902 served spectra at logg -0.5 give 0.257-0.850 and at logg 0 give 0.484-0.850 (30 Oct 2026), against about 0.95-1.0 at higher gravity. It is in SVO's own data: the 22 raw SVO bt-cond files on cirrus at logg -0.5 and 0 (all 2,600 K) give 0.546-0.850 and 0.727-0.844, and NJM's copies equal them (six are now raw references for check 5b); SVO's raw BT-Settl shows the same (source_evidence/grids/bt-cond/btsettl_raw_gravity/). Because that range includes 1/pi, the exception is pinned: a spectrum is excepted only if it is listed in the pinned file with the same ratio (to 0.1 %), so any later rescaling, 1/pi included, fails. Fluxes there do not meet sigma*T^4: treat them as unreliable"
     }
   ]
 }

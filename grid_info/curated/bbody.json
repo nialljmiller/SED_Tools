@@ -53,7 +53,7 @@
       "held_at": "grid_holding/bbb",
       "moved_utc": "2026-10-29T22:07:09Z",
       "is": "a July 2026 re-cleaning of these 588 SVO bbody files (files named bbody_fid*.txt)",
-      "identical": "579 of 588 spectra have the same data lines as bbody's; headers rewritten with logg = nan and metallicity = nan",
+      "identical": "579 of 588 spectra have the same data lines as bbody's; the other 9 (bbody_fid417-fid425, 29,000-37,000 K) are bbody's flux times a constant 0.31-0.17 each, from the April 2026 renormalisation, so bbb is not a pure copy; its headers were rewritten with logg = nan and metallicity = nan",
       "cube": "empty: the NaN axes placed no spectrum"
     }
   }

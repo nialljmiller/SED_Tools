@@ -349,7 +349,27 @@ def format_size(size_bytes: int) -> str:
     return f"{size_bytes:.2f} PB"
 
 
-def generate_index(data_dir: str = None):
+def check_models_list(models, index_path: Path, allow_model_removal: bool = False):
+    """Refuse (SystemExit) an empty models list, or one without a grid the current index.json lists.
+
+    Clients offer every folder in the directory listing when models is empty, and a grid dropping out (a
+    resumed upload reverting a fixed grid, say) should be seen before it is published. allow_model_removal
+    (--allow-model-removal) says the change is meant.
+    """
+    try:
+        previous = json.loads(index_path.read_text()).get("models") or []
+    except (OSError, ValueError):
+        previous = []
+    dropped = sorted(set(previous) - set(models))
+    if allow_model_removal or (models and not dropped):
+        return
+    why = "no stellar grid passes" if not models else f"it would drop {', '.join(dropped)}"
+    raise SystemExit(f"generate_index: not writing {index_path}: {why} (grid_info/check_grids.py and each "
+                     "grid's manifest.json say why; the lines above name every grid not listed). "
+                     "Rerun with --allow-model-removal if that is meant.")
+
+
+def generate_index(data_dir: str = None, allow_model_removal: bool = False):
     """Generate index.json for the data archive."""
 
     if data_dir is None:
@@ -378,6 +398,7 @@ def generate_index(data_dir: str = None):
     # Scan stellar models
     print("Scanning stellar_models/...")
     models, models_detailed = scan_stellar_models(data_dir)
+    check_models_list(models, data_dir / "index.json", allow_model_removal)
 
     # Calculate stellar model statistics
     total_spectra = sum(m["spectra_count"] for m in models_detailed.values())
@@ -473,5 +494,5 @@ def generate_index(data_dir: str = None):
 if __name__ == "__main__":
     import sys
 
-    data_dir = sys.argv[1] if len(sys.argv) > 1 else None
-    generate_index(data_dir)
+    args = [a for a in sys.argv[1:] if a != "--allow-model-removal"]
+    generate_index(args[0] if args else None, allow_model_removal="--allow-model-removal" in sys.argv[1:])

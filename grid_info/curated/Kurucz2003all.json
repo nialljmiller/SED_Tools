@@ -157,5 +157,7 @@
       "is": "a densified [alpha/Fe] = 0 cube (485 Teff x 11 logg x 8 [M/H]) built on 5 Jul 2026, before the densifier fix f436560 (27 Oct)",
       "why": "scrambled: node integrals 0.39 to 15,000 times pi*B_lambda(Teff); not a copy of any served data"
     }
-  }
+  },
+  "default_variant": "Kurucz2003all_alpha_0p00_lh_1p25_vtur_2_km_s",
+  "default_variant_note": "flux_cube.bin at the top level is a byte copy of this variant's cube, for clients that read only the top-level cube (SED_Tools 0.4.1 SED.local, MESA). [alpha/Fe] = 0 is the variant the top-level cube held before 29 Oct 2026 (equal to it to 6.5e-14). Newer clients that compare the cube with the whole lookup rebuild one cube per variant locally."
 }

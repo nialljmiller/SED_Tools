@@ -27,8 +27,9 @@ from pathlib import Path
 
 import numpy as np
 
-from grid_info.check_grids import (CURATED, DEFAULT_CACHE, ROOT, SCHEMA, SERVED_SUFFIXES, HashCache, _jsonable,
-                                   check_grid, other_hashes, previous_manifest, variant_paths, read_lookup)
+from grid_info.check_grids import (CURATED, DEFAULT_CACHE, ROOT, SCHEMA, HashCache, _jsonable,
+                                   check_grid, other_hashes, previous_manifest, read_lookup, served_paths,
+                                   variant_links)
 
 # Lookup columns that are bookkeeping, not axes (as SED_Tools' cube/collision.py lists them).
 BOOKKEEPING = {"file_name", "source", "units_standardized", "wavelength_unit", "flux_unit", "original_wavelength_unit",
@@ -106,22 +107,18 @@ def cube_facts(grid, scans):
 def file_records(grid, cache):
     """{relative path: size, mtime, sha256 (data_sha256 for spectra), role} for what clients and MESA read."""
     roles = {".txt": "spectrum", ".csv": "lookup", ".h5": "h5", ".bin": "cube"}
-    paths = [p for p in sorted(grid.iterdir()) if p.is_file() and p.suffix.lower() in SERVED_SUFFIXES]
-    vindex = grid / "variants_index.csv"
-    if vindex.is_file():
-        paths += [grid / rel / n for rel in variant_paths(vindex) for n in ("lookup_table.csv", "flux_cube.bin")
-                  if (grid / rel / n).is_file()]
     out = {}
-    for p in paths:
+    for rel, p in served_paths(grid).items():
         hit = cache.get(p, p.suffix.lower() == ".txt")
-        rec = {"size": hit["size"], "mtime": hit["mtime"], "sha256": hit["sha256"], "role": roles[p.suffix.lower()]}
+        rec = {"size": hit["size"], "mtime": hit["mtime"], "ctime_ns": hit["stamp"][2], "sha256": hit["sha256"],
+               "role": roles[p.suffix.lower()]}
         if "data_sha256" in hit:
             rec["data_sha256"] = hit["data_sha256"]
         if p.name == "variants_index.csv":
             rec["role"] = "variants"
         elif p.name == "lookup_table_full.csv":
             rec["role"] = "lookup (whole grid, all variants)"
-        out[str(p.relative_to(grid))] = rec
+        out[rel] = rec
     return out
 
 
@@ -146,8 +143,9 @@ def build_records(grid, report, aux, curated, cache):
         "axes": {k: {"n": v["n"], "range": v["range"]} for k, v in axes.items()},
         "extra_axes": extra, "variants": variants,
         "cubes": {k: {x: v[x] for x in ("dims", "header_bytes", "dtype", "order")} for k, v in cubes.items()},
+        "default_variant": curated.get("default_variant"), "conversion": curated.get("conversion"),
         "archived_copies": curated.get("archived_copies", {}), "aliases": curated.get("aliases", {}),
-        "guard": guard, "files": files,
+        "guard": guard, "variant_links": variant_links(grid), "files": files,
     }
     checks = {k: {x: v for x, v in c.items()} for k, c in report["checks"].items()}
     properties = {
