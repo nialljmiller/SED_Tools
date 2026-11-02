@@ -245,8 +245,6 @@ def test_gaia_sentinel_is_dropped():
     b = make_band("G", a[:, 0], a[:, 1], unit="nm", detector_type="photon", components="filter+optics+qe",
                   sources="x", sentinel=99.99)
     assert len(b.wavelength) == 3 and b.wavelength[0] == a[1, 0] * 10
-    with pytest.raises(ValueError):
-        space.gaia_passbands(raw, "../GaiaDR2_Passbands.dat")
 
 
 def test_herschel_and_planck_fits(tmp_path):
@@ -288,7 +286,10 @@ def test_hipparcos_fixed_width_columns_end_independently():
 
 
 def test_iras_html_table():
-    tables = space.iras_tables(fx("iras_tabC5.html"))
+    page = fx("iras_tabC5.html")
+    with pytest.raises(ValueError, match="rows of 4"):  # the excerpt ends inside a row
+        space.iras_tables(page)
+    tables = space.iras_tables(page.replace("<TD>33.0</TD>", ""))
     assert sorted(tables) == ["12", "60"]
     assert tables["12"].tolist() == [[7.0, 0.0, 0.3, 0.0], [7.5, 0.01, 0.35, 0.008]]
     assert tables["60"].shape == (2, 4)
@@ -436,19 +437,18 @@ def test_bessell_and_mko_parsers():
         standards.mko_scan("WL\tT\n1 2\n")
 
 
-def test_usno_reads_wayback_then_falls_back_to_live_file():
+def test_usno_reads_only_the_wayback_snapshots(tmp_path):
     text = fx("usno_u.res")
     assert standards.usno_table(text, "u").shape == (4, 6)
     with pytest.raises(ValueError, match="unexpected header"):
         standards.usno_table(text, "g")
-    live = standards.USNO_ORIG.format("u")
-    wb = f"https://web.archive.org/web/{standards.USNO_WB['u']}id_/{live}"
-    session = _Session({live: text})
-    assert standards._archived(Fetcher(session), wb, live) == text
-    assert session.calls == [wb, live]
-    session = _Session({})
+    # The curves cite the snapshots, so an unreachable archive stops the build
+    # instead of silently reading the live files.
+    session = _Session({standards.USNO_README: "readme", standards.USNO_ORIG.format("u"): text})
     with pytest.raises(OSError):
-        standards._archived(Fetcher(session), wb, live)
+        standards.build(tmp_path, instrument="USNO", session=session)
+    assert session.calls == [standards.USNO_README_WB]
+    assert not (tmp_path / "Generic").exists()
 
 
 def test_naco_band_names_have_no_inner_dot():

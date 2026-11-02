@@ -292,7 +292,7 @@ def test_published_requires_known_contents(tmp_path):
 def test_atmosphere_from_another_site_is_refused(tmp_path):
     inst = _with_site(_component_instrument(tmp_path / "filters"), "lsst_std")
     atm = _atmosphere(tmp_path / "atm")
-    with pytest.raises(ComponentError, match="observes from 'lsst_std'.*not mixed in"):
+    with pytest.raises(ComponentError, match=r"observes from lsst_std; atmospheres from other sites \(.*\) are not mixed in"):
         build_product(inst, ["filter"], atmosphere={"site": "paranal", **ATM}, atmosphere_root=atm)
 
 

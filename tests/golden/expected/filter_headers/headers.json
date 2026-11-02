@@ -1,0 +1,530 @@
+{
+ "2MASS/2MASS/H.dat": {
+  "header": {
+   "Components": "filter+instrument+atmosphere",
+   "ComponentsSource": "svo",
+   "DetectorType": "energy",
+   "DetectorTypeSource": "original",
+   "FilterID": "2MASS/2MASS.H",
+   "Sources": "https://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=2MASS/2MASS.H",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "2MASS/2MASS/J.dat": {
+  "header": {
+   "Components": "filter+instrument+atmosphere",
+   "ComponentsSource": "svo",
+   "DetectorType": "energy",
+   "DetectorTypeSource": "original",
+   "FilterID": "2MASS/2MASS.J",
+   "Sources": "https://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=2MASS/2MASS.J",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "2MASS/2MASS/Ks.dat": {
+  "header": {
+   "Components": "filter+instrument+atmosphere",
+   "ComponentsSource": "svo",
+   "DetectorType": "energy",
+   "DetectorTypeSource": "original",
+   "FilterID": "2MASS/2MASS.Ks",
+   "Sources": "https://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=2MASS/2MASS.Ks",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "2MASS/2MASS/components/filter/H.dat": {
+  "header": {
+   "Components": "filter",
+   "DetectorType": "energy",
+   "DetectorTypeSource": "component",
+   "Role": "filter",
+   "Sources": "https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec3_1b1.tbl8.html (H filter; xlam read as um)",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "2MASS/2MASS/components/filter/J.dat": {
+  "header": {
+   "Components": "filter",
+   "DetectorType": "energy",
+   "DetectorTypeSource": "component",
+   "Role": "filter",
+   "Sources": "https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec3_1b1.tbl5.html (J filter; xlam read as um)",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "2MASS/2MASS/components/filter/Ks.dat": {
+  "header": {
+   "Components": "filter",
+   "DetectorType": "energy",
+   "DetectorTypeSource": "component",
+   "Role": "filter",
+   "Sources": "https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec3_1b1.tbl10.html (Ks filter; xlam read as um)",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "2MASS/2MASS/components/optics/H.dat": {
+  "header": {
+   "Components": "optics",
+   "DetectorType": "energy",
+   "DetectorTypeSource": "component",
+   "Role": "optics",
+   "Sources": "https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec3_1b1.html: tbl1^2 (mirror, two reflections) x tbl2 (dewar window) x tbl3^7 (lens coating, seven lenses) x tbl6; tbl7 (dichroic path)",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "2MASS/2MASS/components/optics/J.dat": {
+  "header": {
+   "Components": "optics",
+   "DetectorType": "energy",
+   "DetectorTypeSource": "component",
+   "Role": "optics",
+   "Sources": "https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec3_1b1.html: tbl1^2 (mirror, two reflections) x tbl2 (dewar window) x tbl3^7 (lens coating, seven lenses) x tbl4 (dichroic path)",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "2MASS/2MASS/components/optics/Ks.dat": {
+  "header": {
+   "Components": "optics",
+   "DetectorType": "energy",
+   "DetectorTypeSource": "component",
+   "Role": "optics",
+   "Sources": "https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec3_1b1.html: tbl1^2 (mirror, two reflections) x tbl2 (dewar window) x tbl3^7 (lens coating, seven lenses) x tbl6; tbl9 (dichroic path)",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "2MASS/2MASS/components/qe/nicmos3.dat": {
+  "header": {
+   "Components": "qe",
+   "DetectorType": "photon",
+   "DetectorTypeSource": "component",
+   "Role": "qe",
+   "Sources": "https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec3_1b1.tbl11.html (NICMOS3 DQE, characteristic Rockwell curve)",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "Generic/Johnson/B.dat": {
+  "header": {
+   "Components": "filter",
+   "ComponentsSource": "svo",
+   "DetectorType": "energy",
+   "DetectorTypeSource": "svo-curve-match",
+   "FilterID": "Generic/Johnson.B",
+   "Sources": "MESA colors_data r26.04.1 Generic/Johnson; originally the SVO Filter Profile Service",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "Generic/Johnson/I.dat": {
+  "header": {
+   "Components": "filter",
+   "ComponentsSource": "svo",
+   "DetectorType": "energy",
+   "DetectorTypeSource": "svo-curve-match",
+   "FilterID": "Generic/Johnson.I",
+   "Sources": "MESA colors_data r26.04.1 Generic/Johnson; originally the SVO Filter Profile Service",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "Generic/Johnson/J.dat": {
+  "header": {
+   "Components": "filter",
+   "ComponentsSource": "svo",
+   "DetectorType": "energy",
+   "DetectorTypeSource": "svo-curve-match",
+   "FilterID": "Generic/Johnson.J",
+   "Sources": "MESA colors_data r26.04.1 Generic/Johnson; originally the SVO Filter Profile Service",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "Generic/Johnson/M.dat": {
+  "header": {
+   "Components": "filter",
+   "ComponentsSource": "svo",
+   "DetectorType": "energy",
+   "DetectorTypeSource": "svo-curve-match",
+   "FilterID": "Generic/Johnson.M",
+   "Sources": "MESA colors_data r26.04.1 Generic/Johnson; originally the SVO Filter Profile Service",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "Generic/Johnson/R.dat": {
+  "header": {
+   "Components": "filter",
+   "ComponentsSource": "svo",
+   "DetectorType": "energy",
+   "DetectorTypeSource": "svo-curve-match",
+   "FilterID": "Generic/Johnson.R",
+   "Sources": "MESA colors_data r26.04.1 Generic/Johnson; originally the SVO Filter Profile Service",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "Generic/Johnson/U.dat": {
+  "header": {
+   "Components": "filter",
+   "ComponentsSource": "svo",
+   "DetectorType": "energy",
+   "DetectorTypeSource": "svo-curve-match",
+   "FilterID": "Generic/Johnson.U",
+   "Sources": "MESA colors_data r26.04.1 Generic/Johnson; originally the SVO Filter Profile Service",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "Generic/Johnson/V.dat": {
+  "header": {
+   "Components": "filter",
+   "ComponentsSource": "svo",
+   "DetectorType": "energy",
+   "DetectorTypeSource": "svo-curve-match",
+   "FilterID": "Generic/Johnson.V",
+   "Sources": "MESA colors_data r26.04.1 Generic/Johnson; originally the SVO Filter Profile Service",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "LSST/LSST/components/filter/g_v1p5.dat": {
+  "header": {
+   "Components": "filter",
+   "DetectorType": "energy",
+   "DetectorTypeSource": "component",
+   "Role": "filter",
+   "Sources": "lsst/throughputs 1.5 baseline/filter_g.dat",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "LSST/LSST/components/filter/i_v1p5.dat": {
+  "header": {
+   "Components": "filter",
+   "DetectorType": "energy",
+   "DetectorTypeSource": "component",
+   "Role": "filter",
+   "Sources": "lsst/throughputs 1.5 baseline/filter_i.dat",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "LSST/LSST/components/filter/r_v1p5.dat": {
+  "header": {
+   "Components": "filter",
+   "DetectorType": "energy",
+   "DetectorTypeSource": "component",
+   "Role": "filter",
+   "Sources": "lsst/throughputs 1.5 baseline/filter_r.dat",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "LSST/LSST/components/filter/u_v1p5.dat": {
+  "header": {
+   "Components": "filter",
+   "DetectorType": "energy",
+   "DetectorTypeSource": "component",
+   "Role": "filter",
+   "Sources": "lsst/throughputs 1.5 baseline/filter_u.dat",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "LSST/LSST/components/filter/y_v1p5.dat": {
+  "header": {
+   "Components": "filter",
+   "DetectorType": "energy",
+   "DetectorTypeSource": "component",
+   "Role": "filter",
+   "Sources": "lsst/throughputs 1.5 baseline/filter_y.dat",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "LSST/LSST/components/filter/z_v1p5.dat": {
+  "header": {
+   "Components": "filter",
+   "DetectorType": "energy",
+   "DetectorTypeSource": "component",
+   "Role": "filter",
+   "Sources": "lsst/throughputs 1.5 baseline/filter_z.dat",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "LSST/LSST/components/optics/mirrors_lenses_v1p5.dat": {
+  "header": {
+   "Components": "optics",
+   "DetectorType": "energy",
+   "DetectorTypeSource": "component",
+   "Role": "optics",
+   "Sources": "product of lsst/throughputs 1.5 baseline/m1.dat, lsst/throughputs 1.5 baseline/m2.dat, lsst/throughputs 1.5 baseline/m3.dat, lsst/throughputs 1.5 baseline/lens1.dat, lsst/throughputs 1.5 baseline/lens2.dat, lsst/throughputs 1.5 baseline/lens3.dat",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "LSST/LSST/components/qe/detector_v1p5.dat": {
+  "header": {
+   "Components": "qe",
+   "DetectorType": "photon",
+   "DetectorTypeSource": "component",
+   "Role": "qe",
+   "Sources": "lsst/throughputs 1.5 baseline/detector.dat",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "LSST/LSST/g.dat": {
+  "header": {
+   "Components": "filter+instrument+atmosphere",
+   "ComponentsSource": "svo",
+   "DetectorType": "photon",
+   "DetectorTypeSource": "svo",
+   "FilterID": "LSST/LSST.g",
+   "Sources": "https://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=LSST/LSST.g",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "LSST/LSST/g_filter.dat": {
+  "header": {
+   "Components": "filter+instrument+atmosphere",
+   "ComponentsSource": "svo",
+   "DetectorType": "photon",
+   "DetectorTypeSource": "svo",
+   "FilterID": "LSST/LSST.g_filter",
+   "Sources": "https://web.archive.org/web/20251114145214id_/http://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=LSST/LSST.g_filter | SVO Filter Profile Service (Rodrigo et al. 2012, 2020; Rodrigo & Solano 2024), record LSST/LSST.g_filter recovered from the Internet Archive capture 20251114145214 of http://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=LSST/LSST.g_filter | https://github.com/lsst/throughputs/blob/master/baseline/README.md",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "LSST/LSST/i.dat": {
+  "header": {
+   "Components": "filter+instrument+atmosphere",
+   "ComponentsSource": "svo",
+   "DetectorType": "photon",
+   "DetectorTypeSource": "svo",
+   "FilterID": "LSST/LSST.i",
+   "Sources": "https://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=LSST/LSST.i",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "LSST/LSST/i_filter.dat": {
+  "header": {
+   "Components": "filter+instrument+atmosphere",
+   "ComponentsSource": "svo",
+   "DetectorType": "photon",
+   "DetectorTypeSource": "svo",
+   "FilterID": "LSST/LSST.i_filter",
+   "Sources": "https://web.archive.org/web/20230203233604id_/http://svo2.cab.inta-csic.es/svo/theory/fps3/fps.php?ID=LSST/LSST.i_filter | SVO Filter Profile Service (Rodrigo et al. 2012, 2020; Rodrigo & Solano 2024), record LSST/LSST.i_filter recovered from the Internet Archive capture 20230203233604 of http://svo2.cab.inta-csic.es/svo/theory/fps3/fps.php?ID=LSST/LSST.i_filter | https://github.com/lsst/throughputs/blob/master/baseline/README.md",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "LSST/LSST/r.dat": {
+  "header": {
+   "Components": "filter+instrument+atmosphere",
+   "ComponentsSource": "svo",
+   "DetectorType": "photon",
+   "DetectorTypeSource": "svo",
+   "FilterID": "LSST/LSST.r",
+   "Sources": "https://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=LSST/LSST.r",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "LSST/LSST/r_filter.dat": {
+  "header": {
+   "Components": "filter+instrument+atmosphere",
+   "ComponentsSource": "svo",
+   "DetectorType": "photon",
+   "DetectorTypeSource": "svo",
+   "FilterID": "LSST/LSST.r_filter",
+   "Sources": "https://web.archive.org/web/20230203231030id_/http://svo2.cab.inta-csic.es/svo/theory/fps3/fps.php?ID=LSST/LSST.r_filter | SVO Filter Profile Service (Rodrigo et al. 2012, 2020; Rodrigo & Solano 2024), record LSST/LSST.r_filter recovered from the Internet Archive capture 20230203231030 of http://svo2.cab.inta-csic.es/svo/theory/fps3/fps.php?ID=LSST/LSST.r_filter | https://github.com/lsst/throughputs/blob/master/baseline/README.md",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "LSST/LSST/u.dat": {
+  "header": {
+   "Components": "filter+instrument+atmosphere",
+   "ComponentsSource": "svo",
+   "DetectorType": "photon",
+   "DetectorTypeSource": "svo",
+   "FilterID": "LSST/LSST.u",
+   "Sources": "https://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=LSST/LSST.u",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "LSST/LSST/u_filter.dat": {
+  "header": {
+   "Components": "filter+instrument+atmosphere",
+   "ComponentsSource": "svo",
+   "DetectorType": "photon",
+   "DetectorTypeSource": "svo",
+   "FilterID": "LSST/LSST.u_filter",
+   "Sources": "https://web.archive.org/web/20240419162930id_/http://svo2.cab.inta-csic.es/svo/theory/fps3/fps.php?ID=LSST/LSST.u_filter | SVO Filter Profile Service (Rodrigo et al. 2012, 2020; Rodrigo & Solano 2024), record LSST/LSST.u_filter recovered from the Internet Archive capture 20240419162930 of http://svo2.cab.inta-csic.es/svo/theory/fps3/fps.php?ID=LSST/LSST.u_filter | https://github.com/lsst/throughputs/blob/master/baseline/README.md",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "LSST/LSST/y.dat": {
+  "header": {
+   "Components": "filter+instrument+atmosphere",
+   "ComponentsSource": "svo",
+   "DetectorType": "photon",
+   "DetectorTypeSource": "svo",
+   "FilterID": "LSST/LSST.y",
+   "Sources": "https://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=LSST/LSST.y",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "LSST/LSST/y_filter.dat": {
+  "header": {
+   "Components": "filter+instrument+atmosphere",
+   "ComponentsSource": "svo",
+   "DetectorType": "photon",
+   "DetectorTypeSource": "svo",
+   "FilterID": "LSST/LSST.y_filter",
+   "Sources": "https://web.archive.org/web/20240622154005id_/http://svo2.cab.inta-csic.es/svo/theory/fps3/fps.php?ID=LSST/LSST.y_filter | SVO Filter Profile Service (Rodrigo et al. 2012, 2020; Rodrigo & Solano 2024), record LSST/LSST.y_filter recovered from the Internet Archive capture 20240622154005 of http://svo2.cab.inta-csic.es/svo/theory/fps3/fps.php?ID=LSST/LSST.y_filter | https://github.com/lsst/throughputs/blob/master/baseline/README.md",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "LSST/LSST/z.dat": {
+  "header": {
+   "Components": "filter+instrument+atmosphere",
+   "ComponentsSource": "svo",
+   "DetectorType": "photon",
+   "DetectorTypeSource": "svo",
+   "FilterID": "LSST/LSST.z",
+   "Sources": "https://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=LSST/LSST.z",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "LSST/LSST/z_filter.dat": {
+  "header": {
+   "Components": "filter+instrument+atmosphere",
+   "ComponentsSource": "svo",
+   "DetectorType": "photon",
+   "DetectorTypeSource": "svo",
+   "FilterID": "LSST/LSST.z_filter",
+   "Sources": "https://web.archive.org/web/20260417214654id_/http://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=LSST/LSST.z_filter | SVO Filter Profile Service (Rodrigo et al. 2012, 2020; Rodrigo & Solano 2024), record LSST/LSST.z_filter recovered from the Internet Archive capture 20260417214654 of http://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=LSST/LSST.z_filter | https://github.com/lsst/throughputs/blob/master/baseline/README.md",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "Palomar/ZTF/components/filter/g.dat": {
+  "header": {
+   "Components": "filter",
+   "DetectorType": "energy",
+   "DetectorTypeSource": "component",
+   "Role": "filter",
+   "Sources": "https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/7c1d1ed1adeea47ee024272e797e77d7e65160d5/filter_transmission/ZTF_g_band_test_data_pos1_0AOI.csv (vendor, on-axis)",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "Palomar/ZTF/components/filter/i.dat": {
+  "header": {
+   "Components": "filter",
+   "DetectorType": "energy",
+   "DetectorTypeSource": "component",
+   "Role": "filter",
+   "Sources": "https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/7c1d1ed1adeea47ee024272e797e77d7e65160d5/filter_transmission/ztf_i_band.csv (vendor)",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "Palomar/ZTF/components/filter/r.dat": {
+  "header": {
+   "Components": "filter",
+   "DetectorType": "energy",
+   "DetectorTypeSource": "component",
+   "Role": "filter",
+   "Sources": "https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/7c1d1ed1adeea47ee024272e797e77d7e65160d5/filter_transmission/ZTF_r_band_test_data_pos1_0AOI.csv (vendor, on-axis)",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "Palomar/ZTF/components/qe/qe.dat": {
+  "header": {
+   "Components": "qe",
+   "DetectorType": "photon",
+   "DetectorTypeSource": "component",
+   "Role": "qe",
+   "Sources": "https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/7c1d1ed1adeea47ee024272e797e77d7e65160d5/QE/e2v_ztf_singlelayer.csv + https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/7c1d1ed1adeea47ee024272e797e77d7e65160d5/QE/e2v_ztf_multi2.csv (equal-weight mean of single- and multi-layer AR coatings (8+8 CCDs))",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "Palomar/ZTF/components/qe/qe_multi.dat": {
+  "header": {
+   "Components": "qe",
+   "DetectorType": "photon",
+   "DetectorTypeSource": "component",
+   "Role": "qe",
+   "Sources": "https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/7c1d1ed1adeea47ee024272e797e77d7e65160d5/QE/e2v_ztf_multi2.csv (e2v CCD QE, multi-layer AR coating (the inner 8 of ZTF's 16 CCDs); used by SVO's published Palomar/ZTF g, r and i)",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "Palomar/ZTF/components/qe/qe_single.dat": {
+  "header": {
+   "Components": "qe",
+   "DetectorType": "photon",
+   "DetectorTypeSource": "component",
+   "Role": "qe",
+   "Sources": "https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/7c1d1ed1adeea47ee024272e797e77d7e65160d5/QE/e2v_ztf_singlelayer.csv (e2v CCD QE, single-layer AR coating (the northernmost and southernmost 8 CCDs))",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "Palomar/ZTF/g.dat": {
+  "header": {
+   "Components": "filter+qe",
+   "ComponentsSource": "svo",
+   "DetectorType": "photon",
+   "DetectorTypeSource": "svo",
+   "FilterID": "Palomar/ZTF.g",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "Palomar/ZTF/i.dat": {
+  "header": {
+   "Components": "filter+qe",
+   "ComponentsSource": "svo",
+   "DetectorType": "photon",
+   "DetectorTypeSource": "svo",
+   "FilterID": "Palomar/ZTF.i",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ },
+ "Palomar/ZTF/r.dat": {
+  "header": {
+   "Components": "filter+qe",
+   "ComponentsSource": "svo",
+   "DetectorType": "photon",
+   "DetectorTypeSource": "svo",
+   "FilterID": "Palomar/ZTF.r",
+   "WavelengthUnit": "Angstrom"
+  },
+  "released_mesa_reads": true
+ }
+}

@@ -26,12 +26,14 @@ camera's filter component.
 
 from __future__ import annotations
 
+import io
 from pathlib import Path
 
 import numpy as np
 
-from ..filter_components import FILTER, OPTICS, QE, InstrumentManifest, add_component, recipe_name
+from ..filters.compose import FILTER, OPTICS, QE, InstrumentManifest, add_component, recipe_name
 from ._common import Table, register_variant
+from ._original import CONNECT_TIMEOUT, download  # noqa: F401  CONNECT_TIMEOUT stays importable here
 
 DOI = "http://www.ioa.s.u-tokyo.ac.jp/~doi/sdss"
 GUNN = "https://www.sdss4.org/wp-content/uploads/2017/04/filter_curves.fits"
@@ -45,14 +47,11 @@ KEY = recipe_name((FILTER, OPTICS, QE))
 
 def read_gunn(session):
     """band -> (wavelength A, resnoa) from the SDSS ``filter_curves.fits``."""
-    import io
-
     from astropy.io import fits
 
-    resp = session.get(GUNN, timeout=300)
-    resp.raise_for_status()
+    raw = download(session, GUNN)
     out = {}
-    with fits.open(io.BytesIO(resp.content)) as hdul:
+    with fits.open(io.BytesIO(raw)) as hdul:
         for b in BANDS:
             data = hdul[b.upper()].data
             wl = np.asarray(data["wavelength"], dtype=float)
@@ -79,20 +78,18 @@ def build(filter_root, *, session=None, **_ignored) -> Path:
     manifest = InstrumentManifest.from_published(inst_dir)
     manifest.facility, manifest.instrument = "SLOAN", "SDSS"
     manifest.variants.pop(KEY, None)
-    files = {}
-    for b in BANDS:
-        files[b] = add_component(inst_dir, KEY, *gunn[b], band=b, name=f"{b}_gunn2001",
-                                 source=f"{GUNN} (extension {b.upper()}, column resnoa)", manifest=manifest)
+    files = {b: add_component(inst_dir, KEY, *gunn[b], band=b, name=f"{b}_gunn2001",
+                              source=f"{GUNN} (extension {b.upper()}, column resnoa)", manifest=manifest)
+             for b in BANDS}
     register_variant(manifest, KEY, "gunn2001", files, default=True, source=GUNN,
                      description=("J. Gunn (June 2001) camera response with no atmosphere (resnoa: the "
                                   "large-source response without the atmosphere), average of the six camera "
                                   "columns; the published curves are the same table's point-source response "
                                   "through 1.3 airmasses at APO (respt)"))
     for c in CAMCOLS:
-        files = {}
-        for b in BANDS:
-            files[b] = add_component(inst_dir, KEY, *curves[(b, c)], band=b, name=f"{b}_camcol{c}",
-                                     source=f"{tables[(b, c)].url} (Doi et al. 2010, camera column {c})")
+        files = {b: add_component(inst_dir, KEY, *curves[(b, c)], band=b, name=f"{b}_camcol{c}",
+                                  source=f"{tables[(b, c)].url} (Doi et al. 2010, camera column {c})")
+                 for b in BANDS}
         register_variant(manifest, KEY, f"camcol{c}", files, source=f"{DOI}/SDSSresponse.html",
                          description=(f"Doi et al. (2010) response of camera column {c}: CCD, filter, first "
                                       "corrector and mirrors, no atmosphere"),

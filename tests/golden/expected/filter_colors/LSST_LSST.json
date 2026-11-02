@@ -1,0 +1,62 @@
+{
+ "g": {
+  "ColorMethod": "true",
+  "DisplayColor": "#00d8ff",
+  "VisibleFraction": 1.0
+ },
+ "g_filter": {
+  "ColorMethod": "true",
+  "DisplayColor": "#00cfff",
+  "VisibleFraction": 1.0
+ },
+ "i": {
+  "ColorMethod": "false",
+  "DisplayColor": "#ee3b2b",
+  "VisibleFraction": 0.4756
+ },
+ "i_filter": {
+  "ColorMethod": "false",
+  "DisplayColor": "#ec181f",
+  "VisibleFraction": 0.4646
+ },
+ "r": {
+  "ColorMethod": "true",
+  "DisplayColor": "#ff8400",
+  "VisibleFraction": 1.0
+ },
+ "r_filter": {
+  "ColorMethod": "true",
+  "DisplayColor": "#ff8700",
+  "VisibleFraction": 1.0
+ },
+ "u": {
+  "ColorMethod": "false",
+  "DisplayColor": "#7c2bee",
+  "VisibleFraction": 0.3114
+ },
+ "u_filter": {
+  "ColorMethod": "false",
+  "DisplayColor": "#a50da5",
+  "VisibleFraction": 0.1856
+ },
+ "y": {
+  "ColorMethod": "false",
+  "DisplayColor": "#b80f50",
+  "VisibleFraction": 0.0
+ },
+ "y_filter": {
+  "ColorMethod": "false",
+  "DisplayColor": "#a50d59",
+  "VisibleFraction": 0.0
+ },
+ "z": {
+  "ColorMethod": "false",
+  "DisplayColor": "#de1231",
+  "VisibleFraction": 0.0
+ },
+ "z_filter": {
+  "ColorMethod": "false",
+  "DisplayColor": "#cb1042",
+  "VisibleFraction": 0.0
+ }
+}

@@ -1,31 +1,25 @@
-"""Shared machinery for builders whose teams publish plain tabulated factors.
+"""Builders for teams that publish plain tabulated factors, and the team-atmosphere sites.
 
-Most sources publish per-band filter curves plus shared optics/QE curves
-(and sometimes the standard atmosphere they used).  A builder describes
-these as a :class:`SimpleSource` and :func:`build_simple` downloads them,
-writes the components, registers the team's atmosphere as the instrument's
-own site, and saves the manifest.
+A builder describes its team's files as a :class:`SimpleSource`; :func:`build_simple` downloads
+them, writes the components and the team's sites, and saves the manifest.  The helpers at the end
+add components to instruments already published (CFHT, ERIS/NIX, 2MASS).
 """
 
 from __future__ import annotations
 
 import gzip
-import io
-import logging
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Callable, Dict, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import Callable, Dict, Iterable, Mapping, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
-from ..filter_components import (ATMOSPHERE, FILTER, OPTICS, QE, SHARED, AtmosphereGrid,
+from ..filters.compose import (ATMOSPHERE, FILTER, OPTICS, QE, SHARED, AtmosphereGrid,
                                  InstrumentManifest, add_component)
-from ..filter_metadata import (ENERGY, PHOTON, SOURCE_SVO, SVOMetadataClient, read_filter_header,
+from ..filters.curve_metadata import (ENERGY, PHOTON, SOURCE_SVO, SVOMetadataClient, read_filter_header,
                                svo_components_header, svo_fps_url, write_filter_file)
-
-logger = logging.getLogger(__name__)
-
-Curve = Tuple[np.ndarray, np.ndarray]  # (Angstrom, fraction)
+from ._original import (CONNECT_TIMEOUT, Curve, common_product,  # noqa: F401  importable from here, as before
+                        download, product)
 
 
 @dataclass
@@ -41,9 +35,7 @@ class Table:
     note: str = ""
 
     def read(self, session) -> Curve:
-        resp = session.get(self.url, timeout=300)
-        resp.raise_for_status()
-        return self.parse(resp.content)
+        return self.parse(download(session, self.url))
 
     def parse(self, raw: bytes) -> Curve:
         if raw[:2] == b"\x1f\x8b":
@@ -74,19 +66,6 @@ class Table:
         # A physical transmission cannot be negative, and the component
         # loader requires nonnegative values.
         return wl, np.maximum(tr, 0.0)
-
-
-def product(curves: Sequence[Curve]) -> Curve:
-    """Product on the merged grid over the common range."""
-    if len(curves) == 1:
-        return curves[0]
-    lo = max(c[0][0] for c in curves)
-    hi = min(c[0][-1] for c in curves)
-    grid = np.unique(np.concatenate([c[0][(c[0] >= lo) & (c[0] <= hi)] for c in curves]))
-    out = np.ones_like(grid)
-    for wl, tr in curves:
-        out *= np.interp(grid, wl, tr)
-    return grid, out
 
 
 @dataclass
@@ -163,17 +142,23 @@ class SimpleSource:
 
 
 def ensure_published(inst_dir: Path, svo_ids: Mapping[str, str], client: SVOMetadataClient) -> None:
-    """Write any missing published curves from SVO (the MESA-facing default)."""
-    from ..combine_filters import write_filter_index
+    """Write any missing published curves from SVO (the MESA-facing default).
+
+    If SVO has no record for some of ``svo_ids``, the others are written and
+    a RuntimeError lists the missing ones.  The MESA index is written only
+    when nothing is missing, so a partial set never looks complete.
+    """
+    from ..filters.combine import write_filter_index
 
     inst_dir.mkdir(parents=True, exist_ok=True)
+    missing = []
     for band, fid in svo_ids.items():
         path = inst_dir / f"{band}.dat"
         if path.exists():
             continue
         record = client.get_filter(fid)
         if record is None:
-            logger.warning("SVO has no %s", fid)
+            missing.append(fid)
             continue
         write_filter_file(
             path, record.wavelength, record.transmission,
@@ -181,6 +166,10 @@ def ensure_published(inst_dir: Path, svo_ids: Mapping[str, str], client: SVOMeta
             wavelength_unit=record.wavelength_unit,
             extra={**svo_components_header(record.components), "Sources": f"{svo_fps_url()}?ID={fid}"},
         )
+    if missing:
+        raise RuntimeError(
+            f"{inst_dir}: SVO has no {', '.join(missing)}, so the published curves are incomplete "
+            "(the others were written). Check these IDs at SVO, or install the curves from the njm mirror.")
     if not (inst_dir / inst_dir.name).exists() and list(inst_dir.glob("*.dat")):
         write_filter_index(inst_dir, inst_dir.name)
 
@@ -251,57 +240,37 @@ def register_sites(manifest: InstrumentManifest, default: Optional[str], sites: 
     manifest.atmosphere_sites = list(dict.fromkeys([*manifest.atmosphere_sites, *extra]))
 
 
-def build_simple(
-    spec: SimpleSource,
-    filter_root: Union[str, Path],
-    *,
-    atmosphere_root: Union[str, Path, None] = None,
-    session=None,
-    svo_client: Optional[SVOMetadataClient] = None,
-) -> Path:
-    if session is None:
-        import requests
+def _publish_original_filters(spec: SimpleSource, inst_dir: Path, session) -> Dict[str, Curve]:
+    """Write the original filter scans as the published curves (existing ones kept) and the MESA index.
 
-        session = requests.Session()
-    filter_root = Path(filter_root)
-    inst_dir = filter_root / spec.facility / spec.instrument
-    if not spec.published_from_filters:
-        ensure_published(inst_dir, spec.svo_ids, svo_client or SVOMetadataClient())
+    Every band is fetched and checked first, so a failed download leaves no partial instrument.
+    """
+    from ..filters.combine import write_filter_index
 
-    # Fetch every original band before changing the local library. A failed
-    # upstream request must not leave a seemingly complete partial instrument.
-    original_filters = {}
-    if spec.published_from_filters:
-        for band, table in spec.filters.items():
-            wl, tr = table.read(session)
-            if (len(wl) < 2 or not np.all(np.isfinite(wl)) or
-                    not np.all(np.isfinite(tr)) or np.any(np.diff(wl) <= 0) or
-                    np.any(tr > 1.001)):
-                raise ValueError(f"Invalid filter transmission from {table.url}")
-            original_filters[band] = (wl, tr)
-        inst_dir.mkdir(parents=True, exist_ok=True)
-        for band, curve in original_filters.items():
-            path = inst_dir / f"{band}.dat"
-            if not path.exists():
-                write_filter_file(
-                    path, *curve, detector_type=spec.detector_type, source="assumed",
-                    wavelength_unit="Angstrom",
-                    extra={"Components": FILTER, "ComponentsSource": "original",
-                           "Sources": spec.filters[band].url},
-                )
-        from ..combine_filters import write_filter_index
-
-        write_filter_index(inst_dir, spec.instrument)
-
-    manifest = (InstrumentManifest.from_published(inst_dir) if spec.published_from_filters
-                else InstrumentManifest.load(inst_dir))
-    # Keep what the published curves already provide (e.g. SVO filter-only siblings).
-    manifest.components = InstrumentManifest.from_published(inst_dir).components
-    published = {p.stem for p in inst_dir.glob("*.dat")}
+    curves = {}
     for band, table in spec.filters.items():
-        if band not in published:
-            logger.info("%s/%s: no published %s curve; skipping its filter", spec.facility, spec.instrument, band)
-            continue
+        wl, tr = table.read(session)  # finite values on strictly increasing wavelengths
+        if len(wl) < 2 or np.any(tr > 1.001):
+            raise ValueError(f"Invalid filter transmission from {table.url}")
+        curves[band] = (wl, tr)
+    inst_dir.mkdir(parents=True, exist_ok=True)
+    for band, curve in curves.items():
+        path = inst_dir / f"{band}.dat"
+        if not path.exists():
+            write_filter_file(
+                path, *curve, detector_type=spec.detector_type, source="assumed",
+                wavelength_unit="Angstrom",
+                extra={"Components": FILTER, "ComponentsSource": "original",
+                       "Sources": spec.filters[band].url},
+            )
+    write_filter_index(inst_dir, spec.instrument)
+    return curves
+
+
+def _add_components(spec: SimpleSource, inst_dir: Path, manifest: InstrumentManifest,
+                    original_filters: Mapping[str, Curve], session) -> None:
+    """Write the filter, optics, qe and composite components of ``spec``."""
+    for band, table in spec.filters.items():
         if (spec.published_from_filters and
                 read_filter_header(inst_dir / f"{band}.dat").get("ComponentsSource") == "original"):
             continue  # the published filter scan is already this component
@@ -320,10 +289,58 @@ def build_simple(
         add_component(inst_dir, QE, wl, tr, band=SHARED, name="qe",
                       source=spec.qe.url + (f" ({spec.qe.note})" if spec.qe.note else ""), manifest=manifest)
     for band, (recipe, make) in spec.composites.items():
-        if band in published:
-            wl, tr = make(session)
-            add_component(inst_dir, recipe, wl, tr, band=band, name=band,
-                          source=f"{spec.references.get(recipe, '')}", manifest=manifest)
+        wl, tr = make(session)
+        add_component(inst_dir, recipe, wl, tr, band=band, name=band,
+                      source=f"{spec.references.get(recipe, '')}", manifest=manifest)
+
+
+def _write_sites(spec: SimpleSource, manifest: InstrumentManifest, atmosphere_root: Path, session) -> None:
+    """Write the team atmospheres of ``spec`` and record its sites in ``manifest``."""
+    if spec.site is not None:
+        write_site(atmosphere_root, spec.site, session)
+        manifest.default_site = spec.site.site
+    elif spec.default_site:
+        manifest.default_site = spec.default_site
+    for extra in spec.sites:
+        write_site(atmosphere_root, extra, session)
+    if spec.sites:
+        register_sites(manifest, None, spec.sites)
+
+
+def build_simple(
+    spec: SimpleSource,
+    filter_root: Union[str, Path],
+    *,
+    atmosphere_root: Union[str, Path, None] = None,
+    session=None,
+    svo_client: Optional[SVOMetadataClient] = None,
+) -> Path:
+    """Write the published curves (where missing), components, atmospheres and manifest of ``spec``."""
+    if session is None:
+        import requests
+
+        session = requests.Session()
+    filter_root = Path(filter_root)
+    inst_dir = filter_root / spec.facility / spec.instrument
+    if spec.published_from_filters:
+        original_filters = _publish_original_filters(spec, inst_dir, session)
+    else:
+        ensure_published(inst_dir, spec.svo_ids, svo_client or SVOMetadataClient())
+        original_filters = {}
+
+    # Every band given a component must have a published curve to belong to.
+    published = {p.stem for p in inst_dir.glob("*.dat")}
+    unpublished = sorted((set(spec.filters) | set(spec.composites)) - published)
+    if unpublished:
+        raise FileNotFoundError(
+            f"{inst_dir} has no published curve for {', '.join(unpublished)}; add them to the "
+            f"{spec.facility}/{spec.instrument} builder's svo_ids, or install them from the njm mirror first")
+
+    manifest = (InstrumentManifest.from_published(inst_dir) if spec.published_from_filters
+                else InstrumentManifest.load(inst_dir))
+    # Keep what the published curves already provide (e.g. SVO filter-only siblings).
+    manifest.components = InstrumentManifest.from_published(inst_dir).components
+    _add_components(spec, inst_dir, manifest, original_filters, session)
 
     manifest.facility, manifest.instrument = spec.facility, spec.instrument
     manifest.detector_type = spec.detector_type
@@ -332,15 +349,7 @@ def build_simple(
     manifest.sources.update(spec.references)
     manifest.notes = spec.notes
     root = Path(atmosphere_root) if atmosphere_root else filter_root.parent / "atmospheres"
-    if spec.site is not None:
-        write_site(root, spec.site, session)
-        manifest.default_site = spec.site.site
-    elif spec.default_site:
-        manifest.default_site = spec.default_site
-    for extra in spec.sites:
-        write_site(root, extra, session)
-    if spec.sites:
-        register_sites(manifest, None, spec.sites)
+    _write_sites(spec, manifest, root, session)
     manifest.save(inst_dir)
     return inst_dir
 
@@ -353,6 +362,60 @@ def register_variant(manifest: InstrumentManifest, key: str, name: str,
     ``info`` adds ``description``, ``source``, ``epoch``, ``derived``,
     ``default`` and the like (see :attr:`InstrumentManifest.variants`).
     """
-    entry = {"files": dict(files)}
-    entry.update(info)
-    manifest.variants.setdefault(key, {})[name] = entry
+    manifest.variants.setdefault(key, {})[name] = {"files": dict(files), **info}
+
+
+# ---------- Components added to published instruments (CFHT, ERIS/NIX, 2MASS)
+def published_bands(inst_dir: Path) -> set:
+    """Band names of the published curves; refuse an empty instrument."""
+    bands = {p.stem for p in inst_dir.glob("*.dat")}
+    if not bands:
+        raise FileNotFoundError(
+            f"{inst_dir} has no published curves; fetch the instrument (njm mirror or SVO) first")
+    return bands
+
+
+def fresh_manifest(inst_dir: Path, facility: str, instrument: str) -> InstrumentManifest:
+    """Describe the published curves from their headers, as a clean start.
+
+    Components from an earlier build are dropped from the description (their
+    files stay on disk); filter-only published curves are registered as
+    their own filter, as :meth:`InstrumentManifest.from_published` does.
+    """
+    manifest = InstrumentManifest.from_published(inst_dir)
+    manifest.facility, manifest.instrument = facility, instrument
+    return manifest
+
+
+EARLIER = " Earlier note: "
+
+
+def with_earlier_note(inst_dir: Path, notes: str) -> str:
+    """``notes`` followed by the note an earlier manifest carried (kept, not rewritten).
+
+    Only a note this builder did not write is carried, once: a rebuild finds
+    its own text (and any carried note) and keeps the carried part as is.
+    """
+    path = inst_dir / "manifest.json"
+    if not path.exists():
+        return notes
+    earlier = InstrumentManifest.load(inst_dir).notes or ""
+    if EARLIER in earlier:
+        earlier = earlier.split(EARLIER, 1)[1]
+    elif earlier[:60] == notes[:60]:
+        earlier = ""
+    return notes + (EARLIER + earlier if earlier.strip() else "")
+
+
+def register(manifest: InstrumentManifest, inst_dir: Path, role: str, wl, tr, *,
+             bands: Iterable[str], name: str, source: str) -> str:
+    """Write one component file and register it for each of ``bands``."""
+    rel = add_component(inst_dir, role, wl, tr, name=name, source=source)
+    manifest.components.setdefault(role, {}).update(dict.fromkeys(bands, rel))
+    manifest.sources.setdefault(role, source)
+    return rel
+
+
+def write_unregistered(inst_dir: Path, role: str, wl, tr, *, name: str, source: str) -> str:
+    """An alternative factor kept next to the registered one, not composed by default."""
+    return add_component(inst_dir, role, wl, tr, name=name, source=source)

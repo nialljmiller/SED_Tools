@@ -1,0 +1,62 @@
+{
+  "bands": [
+    "B",
+    "I",
+    "J",
+    "M",
+    "R",
+    "U",
+    "V"
+  ],
+  "components": {
+    "filter": {
+      "B": "B.dat",
+      "I": "I.dat",
+      "J": "J.dat",
+      "M": "M.dat",
+      "R": "R.dat",
+      "U": "U.dat",
+      "V": "V.dat"
+    }
+  },
+  "default_site": null,
+  "detector_type": "energy",
+  "detector_type_sources": {
+    "B": "svo-curve-match",
+    "I": "svo-curve-match",
+    "J": "svo-curve-match",
+    "M": "svo-curve-match",
+    "R": "svo-curve-match",
+    "U": "svo-curve-match",
+    "V": "svo-curve-match"
+  },
+  "detector_types": {
+    "B": "energy",
+    "I": "energy",
+    "J": "energy",
+    "M": "energy",
+    "R": "energy",
+    "U": "energy",
+    "V": "energy"
+  },
+  "facility": "Generic",
+  "ground_based": true,
+  "instrument": "Johnson",
+  "notes": "",
+  "outside_range": "error",
+  "published": {
+    "components": "filter",
+    "source": "svo"
+  },
+  "published_bands": {
+    "B": "filter",
+    "I": "filter",
+    "J": "filter",
+    "M": "filter",
+    "R": "filter",
+    "U": "filter",
+    "V": "filter"
+  },
+  "schema": 1,
+  "sources": {}
+}

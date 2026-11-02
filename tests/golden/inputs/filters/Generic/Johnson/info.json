@@ -1,0 +1,389 @@
+{
+ "acknowledgements": [
+  {
+   "applies_to": "curves and metadata",
+   "for": "SVO Filter Profile Service",
+   "references": [
+    "bibcode:2012ivoa.rept.1015R",
+    "bibcode:2020sea..confE.182R",
+    "bibcode:2024A&A...689A..93R"
+   ],
+   "text": "This research has made use of the SVO Filter Profile Service \"Carlos Rodrigo\", funded by MCIN/AEI/10.13039/501100011033/ through grant PID2023-146210NB-I00"
+  }
+ ],
+ "bands": {
+  "B": {
+   "Band": "B",
+   "Comments": "Johnson B generic filter\r\n",
+   "Description": "Johnson B",
+   "MagSys": "Vega",
+   "PhotCalID": "Generic/Johnson.B/Vega",
+   "PhotSystem": "Johnson",
+   "ZeroPointType": "Pogson",
+   "curve": {
+    "Components": "filter",
+    "ComponentsSource": "svo",
+    "DetectorType": "energy",
+    "DetectorTypeSource": "svo-curve-match",
+    "FilterID": "Generic/Johnson.B"
+   },
+   "references": [],
+   "svo": {
+    "AfAv": 1.3,
+    "DetectorType": "energy",
+    "Fsun": 183.79,
+    "added": "2010-04-17 05:58:56",
+    "captures": {
+     "browse": {
+      "sha256": "6e17a281972729969736ca5bbaa1f183a71b335d6dc8cd8bcd47148bc4737fc4",
+      "timestamp": "20240519055427",
+      "url": "http://svo2.cab.inta-csic.es/theory/fps/index.php?id=Generic/Johnson.B&&mode=browse&gname=Generic&gname2=Johnson"
+     },
+     "votable": {
+      "sha256": "8335f7a9419f73eba4c258e4e6514cb703126b18a7e1ba8cf7b66d80377f1abb",
+      "timestamp": "20211028211759",
+      "url": "http://svo2.cab.inta-csic.es/theory/fps3/fps.php?ID=Generic/Johnson.B"
+     }
+    },
+    "components": "Filter",
+    "curve": "identical",
+    "filterID": "Generic/Johnson.B",
+    "matched_by": "FilterID",
+    "updated": "2021-07-27 19:15:00"
+   }
+  },
+  "I": {
+   "Band": "I",
+   "Comments": "Johnson I generic filter\r\n",
+   "Description": "Johnson I",
+   "MagSys": "Vega",
+   "PhotCalID": "Generic/Johnson.I/Vega",
+   "PhotSystem": "Johnson",
+   "ZeroPointType": "Pogson",
+   "curve": {
+    "Components": "filter",
+    "ComponentsSource": "svo",
+    "DetectorType": "energy",
+    "DetectorTypeSource": "svo-curve-match",
+    "FilterID": "Generic/Johnson.I"
+   },
+   "references": [],
+   "svo": {
+    "AfAv": 0.535,
+    "DetectorType": "energy",
+    "Fsun": 96.57,
+    "added": "2010-04-17 05:58:56",
+    "captures": {
+     "browse": {
+      "sha256": "85506ed9e2d6f620fa13becf41d3e2a8008d60c105d24ae6922d05905ad35e86",
+      "timestamp": "20240519042032",
+      "url": "http://svo2.cab.inta-csic.es/theory/fps/index.php?id=Generic/Johnson.I&&mode=browse&gname=Generic&gname2=Johnson"
+     },
+     "votable": {
+      "sha256": "dc6096497d04c05bfc40ee14d947345bfeb5d0623a9bcb38330cd45fca6fd87a",
+      "timestamp": "20211025163245",
+      "url": "http://svo2.cab.inta-csic.es/theory/fps3/fps.php?ID=Generic/Johnson.I"
+     }
+    },
+    "components": "Filter",
+    "curve": "identical",
+    "filterID": "Generic/Johnson.I",
+    "matched_by": "FilterID",
+    "updated": "2021-07-27 19:15:00"
+   }
+  },
+  "J": {
+   "Band": "J",
+   "Comments": "Johnson J generic filter\r\n",
+   "Description": "Johnson J",
+   "MagSys": "Vega",
+   "PhotCalID": "Generic/Johnson.J/Vega",
+   "PhotSystem": "Johnson",
+   "ZeroPointType": "Pogson",
+   "curve": {
+    "Components": "filter",
+    "ComponentsSource": "svo",
+    "DetectorType": "energy",
+    "DetectorTypeSource": "svo-curve-match",
+    "FilterID": "Generic/Johnson.J"
+   },
+   "references": [],
+   "svo": {
+    "AfAv": 0.307,
+    "DetectorType": "energy",
+    "Fsun": 45.85,
+    "added": "2010-04-17 05:58:56",
+    "captures": {
+     "browse": {
+      "sha256": "9602e01dc745aa06a72aa825089ba691ff55102ad50e0cfe0a9f8ee03b2a4753",
+      "timestamp": "20240519000054",
+      "url": "http://svo2.cab.inta-csic.es/theory/fps/index.php?id=Generic/Johnson.J&&mode=browse&gname=Generic&gname2=Johnson"
+     },
+     "votable": {
+      "sha256": "905c7d337936ba74c562fd3b03215345169ebca6b8e48b391d0e10094b871124",
+      "timestamp": "20210918011248",
+      "url": "http://svo2.cab.inta-csic.es/theory/fps3/fps.php?ID=Generic/Johnson.J"
+     }
+    },
+    "components": "Filter",
+    "curve": "identical",
+    "filterID": "Generic/Johnson.J",
+    "matched_by": "FilterID",
+    "updated": "2021-07-27 19:15:01"
+   }
+  },
+  "M": {
+   "Band": "M",
+   "Comments": "Johnson M generic filter\r\n",
+   "Description": "Johnson M",
+   "MagSys": "Vega",
+   "PhotCalID": "Generic/Johnson.M/Vega",
+   "PhotSystem": "Johnson",
+   "ZeroPointType": "Pogson",
+   "curve": {
+    "Components": "filter",
+    "ComponentsSource": "svo",
+    "DetectorType": "energy",
+    "DetectorTypeSource": "svo-curve-match",
+    "FilterID": "Generic/Johnson.M"
+   },
+   "references": [],
+   "svo": {
+    "AfAv": 0.0461,
+    "DetectorType": "energy",
+    "Fsun": 0.347,
+    "added": "2010-04-17 05:58:56",
+    "captures": {
+     "browse": {
+      "sha256": "a6311b76a8dc80fa2086b323091a56a959d55efebc8e657ecbd997b335d085e9",
+      "timestamp": "20240521003431",
+      "url": "http://svo2.cab.inta-csic.es/theory/fps/index.php?id=Generic/Johnson.M&&mode=browse&gname=Generic&gname2=Johnson"
+     },
+     "votable": {
+      "sha256": "2280c63b655a052d3d8a855a76cb85cf505a5a26a862051de5ecd0dedef6bd76",
+      "timestamp": "20211025155701",
+      "url": "http://svo2.cab.inta-csic.es/theory/fps3/fps.php?ID=Generic/Johnson.M"
+     }
+    },
+    "components": "Filter",
+    "curve": "identical",
+    "filterID": "Generic/Johnson.M",
+    "matched_by": "FilterID",
+    "updated": "2021-07-27 19:15:01"
+   }
+  },
+  "R": {
+   "Band": "R",
+   "Comments": "Johnson R generic filter",
+   "Description": "Johnson R",
+   "PhotSystem": "Johnson",
+   "curve": {
+    "Components": "filter",
+    "ComponentsSource": "svo",
+    "DetectorType": "energy",
+    "DetectorTypeSource": "svo-curve-match",
+    "FilterID": "Generic/Johnson.R"
+   },
+   "references": [],
+   "svo": {
+    "AfAv": 0.761,
+    "DetectorType": "energy",
+    "Fsun": 145.38,
+    "added": "2010-04-17 05:58:56",
+    "captures": {
+     "browse": {
+      "sha256": "482fea4c2efcf2de6dc9e799184fad6183d0106b0359b7af2ffc384b00dbcd63",
+      "timestamp": "20240519084309",
+      "url": "http://svo2.cab.inta-csic.es/theory/fps/index.php?id=Generic/Johnson.R&&mode=browse&gname=Generic&gname2=Johnson"
+     }
+    },
+    "components": "Filter",
+    "curve": "not harvested",
+    "filterID": "Generic/Johnson.R",
+    "matched_by": "FilterID",
+    "updated": "2021-07-27 19:15:01"
+   }
+  },
+  "U": {
+   "Band": "U",
+   "Description": "Johnson U",
+   "MagSys": "Vega",
+   "PhotCalID": "Generic/Johnson.U/Vega",
+   "PhotSystem": "Johnson",
+   "ZeroPointType": "Pogson",
+   "curve": {
+    "Components": "filter",
+    "ComponentsSource": "svo",
+    "DetectorType": "energy",
+    "DetectorTypeSource": "svo-curve-match",
+    "FilterID": "Generic/Johnson.U"
+   },
+   "references": [],
+   "svo": {
+    "AfAv": 1.62,
+    "DetectorType": "energy",
+    "Fsun": 106.0,
+    "added": "2010-04-17 05:58:56",
+    "captures": {
+     "browse": {
+      "sha256": "553bb9d91c3211f6d6f4a491d2d1371ab1ecf4c8cac9911cd7aebe5c04095533",
+      "timestamp": "20240519003913",
+      "url": "http://svo2.cab.inta-csic.es/theory/fps/index.php?id=Generic/Johnson.U&&mode=browse&gname=Generic&gname2=Johnson"
+     },
+     "votable": {
+      "sha256": "3d5b8c8487d99714bdf2751cc26553bb9138e9f941009ad449945604fa4af157",
+      "timestamp": "20211025171829",
+      "url": "http://svo2.cab.inta-csic.es/theory/fps3/fps.php?ID=Generic/Johnson.U"
+     }
+    },
+    "components": "Filter",
+    "curve": "identical",
+    "filterID": "Generic/Johnson.U",
+    "matched_by": "FilterID",
+    "updated": "2021-07-27 19:15:02"
+   }
+  },
+  "V": {
+   "Band": "V",
+   "Comments": "Johnson V generic filter",
+   "Description": "Johnson V",
+   "PhotSystem": "Johnson",
+   "curve": {
+    "Components": "filter",
+    "ComponentsSource": "svo",
+    "DetectorType": "energy",
+    "DetectorTypeSource": "svo-curve-match",
+    "FilterID": "Generic/Johnson.V"
+   },
+   "references": [],
+   "svo": {
+    "AfAv": 1.0,
+    "DetectorType": "energy",
+    "Fsun": 181.95,
+    "added": "2010-04-17 05:58:56",
+    "captures": {
+     "browse": {
+      "sha256": "9d264ed00da5eb0e38a3fae98145b26013e48822c952537492d646fb5c2ca6cd",
+      "timestamp": "20240519163033",
+      "url": "http://svo2.cab.inta-csic.es/theory/fps/index.php?id=Generic/Johnson.V&&mode=browse&gname=Generic&gname2=Johnson"
+     }
+    },
+    "components": "Filter",
+    "curve": "not harvested",
+    "filterID": "Generic/Johnson.V",
+    "matched_by": "FilterID",
+    "updated": "2021-07-27 19:15:02"
+   }
+  }
+ },
+ "bibliography": {
+  "bibcode:1953ApJ...117..313J": {
+   "authors": [
+    "Johnson, H. L.",
+    "Morgan, W. W."
+   ],
+   "bibcode": "1953ApJ...117..313J",
+   "bibtex": "@article{1953ApJ...117..313J, title={Fundamental stellar photometry for standards of spectral type on the revised system of the Yerkes spectral atlas}, volume={117}, ISSN={1538-4357}, url={http://dx.doi.org/10.1086/145697}, DOI={10.1086/145697}, journal={The Astrophysical Journal}, publisher={American Astronomical Society}, author={Johnson, H. L. and Morgan, W. W.}, year={1953}, month=May, pages={313} }",
+   "doi": "10.1086/145697",
+   "journal": "ApJ",
+   "page": "313",
+   "resolved": "2026-10-26",
+   "short": "Johnson & Morgan 1953",
+   "title": "Fundamental stellar photometry for standards of spectral type on the revised system of the Yerkes spectral atlas",
+   "type": "article",
+   "url": "https://ui.adsabs.harvard.edu/abs/1953ApJ...117..313J",
+   "volume": "117",
+   "year": 1953
+  },
+  "bibcode:2012ivoa.rept.1015R": {
+   "authors": [
+    "Rodrigo, C.",
+    "Solano, E.",
+    "Bayo, A."
+   ],
+   "bibcode": "2012ivoa.rept.1015R",
+   "bibtex": "@techreport{2012ivoa.rept.1015R,\n  author = {Rodrigo, C. and Solano, E. and Bayo, A.},\n  title = {SVO Filter Profile Service Version 1.0},\n  institution = {International Virtual Observatory Alliance},\n  type = {IVOA Working Draft},\n  year = {2012},\n  month = oct,\n  url = {http://www.ivoa.net/documents/Notes/SVOFPS/index.html}\n}",
+   "journal": "IVOA Working Draft, 15 October 2012",
+   "publisher_url": "http://www.ivoa.net/documents/Notes/SVOFPS/index.html",
+   "short": "Rodrigo et al. 2012",
+   "title": "SVO Filter Profile Service Version 1.0",
+   "type": "techreport",
+   "url": "https://ui.adsabs.harvard.edu/abs/2012ivoa.rept.1015R",
+   "year": 2012
+  },
+  "bibcode:2020sea..confE.182R": {
+   "authors": [
+    "Rodrigo, C.",
+    "Solano, E."
+   ],
+   "bibcode": "2020sea..confE.182R",
+   "bibtex": "@inproceedings{2020sea..confE.182R,\n  author = {Rodrigo, C. and Solano, E.},\n  title = {The SVO Filter Profile Service},\n  year = {2020},\n  url = {https://ui.adsabs.harvard.edu/abs/2020sea..confE.182R}\n}",
+   "short": "Rodrigo & Solano 2020",
+   "title": "The SVO Filter Profile Service",
+   "type": "inproceedings",
+   "url": "https://ui.adsabs.harvard.edu/abs/2020sea..confE.182R",
+   "year": 2020
+  },
+  "bibcode:2024A&A...689A..93R": {
+   "authors": [
+    "Rodrigo, Carlos",
+    "Cruz, Patricia",
+    "Aguilar, John F.",
+    "Aller, Alba",
+    "Solano, Enrique",
+    "Gálvez-Ortiz, Maria Cruz",
+    "Jiménez-Esteban, Francisco",
+    "Mas-Buitrago, Pedro",
+    "Bayo, Amelia",
+    "Cortés-Contreras, Miriam",
+    "Murillo-Ojeda, Raquel",
+    "Bonoli, Silvia",
+    "Cenarro, Javier",
+    "Dupke, Renato",
+    "López-Sanjuan, Carlos",
+    "Marín-Franch, Antonio",
+    "de Oliveira, Claudia Mendes",
+    "Moles, Mariano",
+    "Taylor, Keith",
+    "Varela, Jesús",
+    "Ramió, Héctor Vázquez"
+   ],
+   "bibcode": "2024A&A...689A..93R",
+   "bibtex": "@article{2024A&A...689A..93R, title={Photometric segregation of dwarf and giant FGK stars using the SVO Filter Profile Service and photometric tools}, volume={689}, ISSN={1432-0746}, url={http://dx.doi.org/10.1051/0004-6361/202449998}, DOI={10.1051/0004-6361/202449998}, journal={Astronomy \\& Astrophysics}, publisher={EDP Sciences}, author={Rodrigo, Carlos and Cruz, Patricia and Aguilar, John F. and Aller, Alba and Solano, Enrique and Gálvez-Ortiz, Maria Cruz and Jiménez-Esteban, Francisco and Mas-Buitrago, Pedro and Bayo, Amelia and Cortés-Contreras, Miriam and Murillo-Ojeda, Raquel and Bonoli, Silvia and Cenarro, Javier and Dupke, Renato and López-Sanjuan, Carlos and Marín-Franch, Antonio and de Oliveira, Claudia Mendes and Moles, Mariano and Taylor, Keith and Varela, Jesús and Ramió, Héctor Vázquez}, year={2024}, month=Sept, pages={A93} }",
+   "doi": "10.1051/0004-6361/202449998",
+   "journal": "A&A",
+   "page": "A93",
+   "resolved": "2026-10-25",
+   "short": "Rodrigo et al. 2024",
+   "title": "Photometric segregation of dwarf and giant FGK stars using the SVO Filter Profile Service and photometric tools",
+   "type": "article",
+   "url": "https://ui.adsabs.harvard.edu/abs/2024A&A...689A..93R",
+   "volume": "689",
+   "year": 2024
+  }
+ },
+ "description": "Generic Johnson broad-band passbands (U, B, V, R, I, J, M) as held in the SVO Filter Profile Service 'Generic/Johnson' group.",
+ "facility": "Generic",
+ "facility_description": "Generic photometric-system passbands, not tied to a single telescope or instrument.",
+ "instrument": "Johnson",
+ "licence": {
+  "redistribution": "unknown",
+  "scope": "Published paper; no statement.",
+  "terms": "",
+  "url": "https://ui.adsabs.harvard.edu/abs/1953ApJ...117..313J"
+ },
+ "notes": "SVO gives no ProfileReference for this group in the archived VOTables, so the original source of these curves is not identified; Johnson & Morgan (1953) is the defining paper of the UBV system only, not a confirmed source of these tables. Description values are copied verbatim from SVO VOTables via Wayback captures (svo2.cab.inta-csic.es timed out all session). Licence unknown: SVO's own terms page could not be reached; the SVO acknowledgement already on NJM was not re-verified. No archived VOTable for: R, V.",
+ "references": [
+  "bibcode:1953ApJ...117..313J",
+  "bibcode:2012ivoa.rept.1015R",
+  "bibcode:2020sea..confE.182R",
+  "bibcode:2024A&A...689A..93R"
+ ],
+ "schema": 1,
+ "svo_groups": {
+  "Generic/Johnson": {
+   "description": "Johnson generic photometric system",
+   "facility_description": "Generic filters, not directly associated to any specific instrument."
+  }
+ }
+}

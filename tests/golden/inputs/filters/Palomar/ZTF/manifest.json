@@ -1,0 +1,79 @@
+{
+  "bands": [
+    "g",
+    "i",
+    "r"
+  ],
+  "components": {
+    "filter": {
+      "g": "components/filter/g.dat",
+      "i": "components/filter/i.dat",
+      "r": "components/filter/r.dat"
+    },
+    "qe": {
+      "*": "components/qe/qe_multi.dat"
+    }
+  },
+  "default_site": null,
+  "detector_type": "photon",
+  "detector_type_sources": {
+    "g": "svo",
+    "i": "svo",
+    "r": "svo"
+  },
+  "detector_types": {
+    "g": "photon",
+    "i": "photon",
+    "r": "photon"
+  },
+  "facility": "Palomar",
+  "ground_based": true,
+  "instrument": "ZTF",
+  "notes": "QE: the default is the multi-layer AR-coated e2v CCD QE (the inner 8 of 16 CCDs), which SVO's published g, r and i curves use; the single-layer QE (outer 8 CCDs) is variant 'single_layer'. Variant 'mean' (qe.dat) is a SED_Tools-derived equal-weight mean of the two, not a team product. No optics throughput is published.",
+  "outside_range": "zero",
+  "published": {
+    "components": "filter+qe",
+    "source": "svo"
+  },
+  "published_bands": {
+    "g": "filter+qe",
+    "i": "filter+qe",
+    "r": "filter+qe"
+  },
+  "schema": 1,
+  "sources": {
+    "coatings": "https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/7c1d1ed1adeea47ee024272e797e77d7e65160d5/README.md: ZTF's 16 CCDs have two anti-reflection coatings: the northernmost and southernmost eight are single-layer, the inner eight multi-layer (ztf_information README).",
+    "filter:g": "https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/7c1d1ed1adeea47ee024272e797e77d7e65160d5/filter_transmission/ZTF_g_band_test_data_pos1_0AOI.csv (vendor, on-axis)",
+    "filter:i": "https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/7c1d1ed1adeea47ee024272e797e77d7e65160d5/filter_transmission/ztf_i_band.csv (vendor)",
+    "filter:r": "https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/7c1d1ed1adeea47ee024272e797e77d7e65160d5/filter_transmission/ZTF_r_band_test_data_pos1_0AOI.csv (vendor, on-axis)",
+    "qe": "https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/7c1d1ed1adeea47ee024272e797e77d7e65160d5/QE/e2v_ztf_multi2.csv (e2v CCD QE, multi-layer AR coating (the inner 8 of ZTF's 16 CCDs); used by SVO's published Palomar/ZTF g, r and i)",
+    "repository": "https://github.com/ZwickyTransientFacility/ztf_information"
+  },
+  "variants": {
+    "qe": {
+      "mean": {
+        "derived": true,
+        "description": "equal-weight mean of the single- and multi-layer QE, derived by SED_Tools (8+8 CCDs); no team document gives a camera-average QE",
+        "files": {
+          "*": "components/qe/qe.dat"
+        },
+        "source": "https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/7c1d1ed1adeea47ee024272e797e77d7e65160d5/QE/e2v_ztf_singlelayer.csv + https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/7c1d1ed1adeea47ee024272e797e77d7e65160d5/QE/e2v_ztf_multi2.csv"
+      },
+      "multi_layer": {
+        "default": true,
+        "description": "e2v CCD QE, multi-layer AR coating (the inner 8 of ZTF's 16 CCDs); used by SVO's published Palomar/ZTF g, r and i",
+        "files": {
+          "*": "components/qe/qe_multi.dat"
+        },
+        "source": "https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/7c1d1ed1adeea47ee024272e797e77d7e65160d5/QE/e2v_ztf_multi2.csv"
+      },
+      "single_layer": {
+        "description": "e2v CCD QE, single-layer AR coating (the northernmost and southernmost 8 CCDs)",
+        "files": {
+          "*": "components/qe/qe_single.dat"
+        },
+        "source": "https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/7c1d1ed1adeea47ee024272e797e77d7e65160d5/QE/e2v_ztf_singlelayer.csv"
+      }
+    }
+  }
+}

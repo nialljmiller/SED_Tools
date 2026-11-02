@@ -43,12 +43,12 @@ def _published(inst, band, wl, tr, components="filter+optics+qe"):
 
 
 # ---------------------------------------------------------------------------
-# add_component: peaks above 1 are written unclipped, with a warning
+# add_component: peaks above 1 are written unclipped (builders explain them in the manifest notes)
 # ---------------------------------------------------------------------------
-def test_component_above_one_is_kept_and_warned(tmp_path, caplog):
+def test_component_above_one_is_kept_unclipped(tmp_path, caplog):
     with caplog.at_level(logging.WARNING):
         rel = add_component(tmp_path, FILTER, [4000.0, 5000.0], [0.5, 1.03], band="i")
-    assert "peaks at 1.03 > 1" in caplog.text
+    assert caplog.text == ""
     wl, tr = np.loadtxt(tmp_path / rel, delimiter=",", skiprows=1, unpack=True)
     assert tr.max() == pytest.approx(1.03)
     with pytest.raises(ComponentError, match="percent"):
@@ -107,6 +107,7 @@ def test_euclid_build_writes_components_and_compares(tmp_path, scale, expect):
     inst = tmp_path / "Euclid" / "NISP"
     _published(inst, "Y", wave * 10.0, total * scale)
     _published(inst, "Blue", wave * 10.0, total, components="filter+instrument")
+    (inst / "NISP").write_text("Blue.dat\nY.dat\n")  # as NJM serves the set
     session = _Session({euclid.URL.format(band="Y"): text})
     euclid.build(tmp_path, bands=["Y"], session=session)
     m = InstrumentManifest.load(inst)
@@ -126,6 +127,9 @@ def test_euclid_build_writes_missing_published_curves(tmp_path):
     text = "\n".join(lines) + "\n"
     inst = tmp_path / "Euclid" / "NISP"
     _published(inst, "Y_svo", wave * 10.0, total * 0.6)
+    # NJM keeps SVO's copy beside the set, outside its bands and index file.
+    archived = {"Y_svo": {"detector_type": "photon", "detector_type_source": "svo", "published": "filter+optics+qe"}}
+    InstrumentManifest("Euclid", "NISP", bands=[], archived_bands=archived).save(inst)
     euclid.build(tmp_path, bands=["Y", "Blue"], session=_Session({euclid.URL.format(band="Y"): text}))
     header = read_filter_header(inst / "Y.dat")
     assert header["FilterID"] == "Euclid/NISP.Y" and header["DetectorType"] == "photon"
@@ -133,7 +137,8 @@ def test_euclid_build_writes_missing_published_curves(tmp_path):
     assert released_mesa_reads(inst / "Y.dat")
     assert (inst / "NISP").read_text() == "Y.dat\n"
     m = InstrumentManifest.load(inst)
-    assert m.bands == ["Y", "Y_svo"] and "reproduces" in m.notes and "Y_svo are SVO's copies" in m.notes
+    assert m.bands == ["Y"] and "reproduces" in m.notes and "Y_svo are SVO's copies" in m.notes
+    assert m.archived_bands == archived  # the archive copy never goes back into bands
     assert "negative samples set to 0: Y 1" in m.notes
     with pytest.raises(ValueError, match="photometric band"):  # grisms have no ESA factors
         euclid.build(tmp_path, bands=["Blue"], session=_Session({}))

@@ -33,8 +33,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ..filter_components import QE, InstrumentManifest, add_component
-from ._common import Table, register_variant
+from ..filters.compose import QE, InstrumentManifest, add_component
+from ._common import Table, published_bands, register_variant
 
 PAGE = "https://www.gemini.edu/instrumentation/gmos/components"
 SCIOPS = "https://www.gemini.edu/sciops/instruments/gmos"
@@ -106,8 +106,7 @@ def build(filter_root, *, instrument, session=None, **_ignored) -> Path:
 
         session = requests.Session()
     inst_dir = Path(filter_root) / "Gemini" / instrument
-    if not list(inst_dir.glob("*.dat")):
-        raise FileNotFoundError(f"{inst_dir} has no published curves; fetch the instrument first")
+    published_bands(inst_dir)  # refuses an instrument with no published curves
     curves = {name: table.read(session) for name, (table, _, _) in QE_VARIANTS[instrument].items()}
 
     manifest = InstrumentManifest.from_published(inst_dir)  # filter-only curves are their own filter

@@ -29,12 +29,12 @@ from __future__ import annotations
 
 import io
 import zipfile
-from ..filter_components import TEAM
-from ._common import SimpleSource, SiteAtmosphere, Table, build_simple
+from pathlib import Path
 
-from ..filter_components import FILTER, InstrumentManifest, add_component
-from ..filter_metadata import PHOTON, write_filter_file
+from ..filters.compose import FILTER, TEAM, InstrumentManifest, add_component
+from ..filters.curve_metadata import PHOTON, write_filter_file
 from ._common import SimpleSource, SiteAtmosphere, Table, build_simple, register_variant
+from ._original import CONNECT_TIMEOUT, download  # noqa: F401  CONNECT_TIMEOUT stays importable here
 
 PAGE = "https://subarutelescope.org/Instruments/HSC/sensitivity.html"
 SUBARU = "https://subarutelescope.org/Instruments/HSC/txt"
@@ -108,9 +108,7 @@ def _user_filter_curves(session):
         table = Table(f"{SUBARU}/wHSC-{band}.txt", note="area-weighted mean")
         out.append((band, *table.read(session), table.url))
     url = f"{SUBARU}/wHSC-MBQ1.zip"
-    resp = session.get(url, timeout=300)
-    resp.raise_for_status()
-    with zipfile.ZipFile(io.BytesIO(resp.content)) as zf:
+    with zipfile.ZipFile(io.BytesIO(download(session, url))) as zf:
         names = set(zf.namelist())
         for band in MBQ1:
             member = f"wHSC-{band}.txt"
@@ -125,9 +123,8 @@ def build(filter_root, *, session=None, **kwargs):
         import requests
 
         session = requests.Session()
-    from pathlib import Path
 
-    from ..combine_filters import write_filter_index
+    from ..filters.combine import write_filter_index
 
     first = {b: Table(f"{SUBARU}/wHSC-{t}.txt", note="area-weighted mean")
              for b, t in FIRST.items() if t != CURRENT[b]}

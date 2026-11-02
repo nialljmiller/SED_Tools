@@ -11,6 +11,9 @@ extensions = [
     'sphinx.ext.napoleon',     # Support for Google/NumPy style docstrings
     'sphinx.ext.viewcode',     # Add links to highlighted source code
 ]
+# Optional packages a documented module imports at the top (sed_tools.ml.tuning: optuna).
+autodoc_mock_imports = ['optuna']
+
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 

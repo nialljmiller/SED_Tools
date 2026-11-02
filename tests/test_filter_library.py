@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from sed_tools import cli, filter_library
+from sed_tools import cli, filter_library, njm_filter_grabber
 from sed_tools.api import Filters
 from sed_tools.component_sources import catalog
 from sed_tools.filter_components import (
@@ -290,8 +290,10 @@ def test_mirror_does_not_certify_partial_download(tmp_path, monkeypatch):
     monkeypatch.setattr(grabber, "_get", get)
     monkeypatch.setattr("sed_tools.njm_filter_grabber.tag_filter_file", lambda *args, **kwargs:
                         SimpleNamespace(source="header"))
-    assert grabber.download_filters("Test", "Camera") == 1
+    with pytest.raises(RuntimeError, match="NJM's index of Test/Camera could not be saved"):
+        grabber.download_filters("Test", "Camera")
     directory = tmp_path / "Test" / "Camera"
+    assert (directory / "g.dat").is_file()
     assert not (directory / "Camera").exists()
     assert not FilterLibrary.published_complete(directory)
 
@@ -307,7 +309,8 @@ def test_mirror_index_declares_complete_set_without_remote_manifest(tmp_path, mo
                         SimpleNamespace(source="header"))
 
     def get(url, **kwargs):
-        return SimpleNamespace(text="g.dat\nr.dat\n" if url.endswith("/Camera") else "4000 1\n6000 1\n")
+        text = "g.dat\nr.dat\n" if url.endswith("/Camera") else "4000 1\n6000 1\n"
+        return SimpleNamespace(text=text, json=lambda: __import__("json").loads(text))
 
     monkeypatch.setattr(grabber, "_get", get)
     assert grabber.download_filters("Test", "Camera") == 2
@@ -349,7 +352,7 @@ def test_mirror_retries_temporary_forbidden(tmp_path, monkeypatch):
 class BurstBlockedNJM:
     """A fake NJM session that answers the first ``blocked`` requests with 403, like Apache's burst block."""
 
-    BASE = "https://nillmill.ddns.net/sed_tools"
+    BASE = "https://data.nialljmiller.com/sed_tools"
 
     def __init__(self, files, blocked=0, head_error=None, head_status=301):
         self.files, self.blocked = files, blocked
@@ -419,10 +422,12 @@ def test_outages_and_refusals_are_still_reported_as_down(tmp_path, monkeypatch):
     assert REAL_AVAILABILITY_CHECK(grabber) is False
     assert down.calls == [("HEAD", "")] and delays == []
 
+    njm_filter_grabber._STATE.reset()  # each case as in a new process: an outage pauses NJM process-wide
     missing = BurstBlockedNJM({"index.json": njm_index()}, head_status=404)
     grabber, delays = blocked_grabber(tmp_path, monkeypatch, missing)
     assert REAL_AVAILABILITY_CHECK(grabber) is False and missing.calls == [("HEAD", "")]
 
+    njm_filter_grabber._STATE.reset()
     blocked = BurstBlockedNJM({"index.json": njm_index()}, blocked=10)  # still blocked after the retries
     grabber, delays = blocked_grabber(tmp_path, monkeypatch, blocked)
     assert REAL_AVAILABILITY_CHECK(grabber) is False
@@ -505,7 +510,8 @@ def test_svo_outage_keeps_njm_and_original_catalogues(tmp_path):
     library.svo = SimpleNamespace(list_facilities=lambda: (_ for _ in ()).throw(RuntimeError("offline")))
     library.mirror = SimpleNamespace(is_available=lambda: True,
                                      discover_facilities=lambda: ["MirrorOnly"],
-                                     discover_instruments=lambda f: ["Camera"])
+                                     discover_instruments=lambda f: ["Camera"],
+                                     _instrument_records=lambda f: {"Camera": {}})
     inventory = library.inventory()
     assert any(r["facility"] == "MirrorOnly" and r["instrument"] == "Camera" for r in inventory["instruments"])
     assert any("SVO" in error for error in inventory["errors"])

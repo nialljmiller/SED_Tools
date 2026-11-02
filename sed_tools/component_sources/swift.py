@@ -17,15 +17,18 @@ tree.
 
 from __future__ import annotations
 
-import gzip
-import io
-from typing import Dict, Tuple
+import gzip  # noqa: F401 - `from ... import *` has given it since 0.5.0
+import io  # noqa: F401 - `from ... import *` has given it since 0.5.0
+import logging
+from typing import Dict, Sequence, Tuple
 
 import numpy as np
+from requests import RequestException
 
-from ._original import Component, Fetcher, Instrument, clean_curve, make_band, make_builder
+from ..filters.curve_metadata import PHOTON
+from ._original import Component, Fetcher, Instrument, clean_curve, make_band, make_builder, open_fits
 
-PHOTON = "photon"
+logger = logging.getLogger(__name__)
 
 #: CALDB tree of the UVOT, on HEASARC and on its AWS Open Data mirror (tried in order).
 CALDB_ROOTS = (
@@ -56,27 +59,25 @@ INSTEA = "bcf/effarea/swuinstea20041120v001.fits"
 SENSCORR = "bcf/senscorr/swusenscorr20041120v007.fits"
 
 
-def _fits(raw: bytes):
-    from astropy.io import fits
+def caldb_get(fetch: Fetcher, path: str, roots: Sequence[str] = CALDB_ROOTS) -> Tuple[bytes, str]:
+    """Download a CALDB file from the first of ``roots`` that serves it; return (data, URL).
 
-    if raw[:2] == b"\x1f\x8b":
-        raw = gzip.decompress(raw)
-    return fits.open(io.BytesIO(raw))
-
-
-def caldb_get(fetch: Fetcher, path: str) -> Tuple[bytes, str]:
-    """Download a CALDB file from the first root that serves it; return (data, URL)."""
+    Each root that fails is named in a warning when a later one serves the
+    file, and in the error when none does.
+    """
     errors = []
-    for root in CALDB_ROOTS:
+    for root in roots:
         url = root + path
         try:
             data = fetch.get(url)
-        except Exception as exc:  # TLS/host failures and HTTP errors: try the mirror
+        except (RequestException, ValueError) as exc:  # TLS, host and HTTP errors; HTML instead of data
             errors.append(f"{url}: {exc}")
             continue
         if not data.startswith(b"SIMPLE  ="):
             errors.append(f"{url}: not a FITS file")
             continue
+        if errors:
+            logger.warning("UVOT CALDB: %s; using %s", "; ".join(errors), url)
         return data, url
     raise RuntimeError("UVOT CALDB file unavailable: " + "; ".join(errors))
 
@@ -87,7 +88,7 @@ def _column_unit(table, name: str) -> str:
 
 def arf_curve(raw: bytes, filt: str) -> Tuple[np.ndarray, np.ndarray]:
     """Bin-centre wavelength (Angstrom) and total effective area (cm^2) of an ARF."""
-    with _fits(raw) as h:
+    with open_fits(raw) as h:
         t = h[1]
         if t.header.get("FILTER", "").strip() != filt or t.header.get("CONTENT", "").strip() != "SPECRESP":
             raise ValueError(f"UVOT ARF: FILTER={t.header.get('FILTER')!r}, expected {filt!r} SPECRESP")
@@ -101,7 +102,7 @@ def arf_curve(raw: bytes, filt: str) -> Tuple[np.ndarray, np.ndarray]:
 
 def ftrans_curves(raw: bytes) -> Dict[str, Tuple[np.ndarray, np.ndarray]]:
     out = {}
-    with _fits(raw) as h:
+    with open_fits(raw) as h:
         for filt, _arf in BANDS.values():
             t = h["TRANSMISSION" + filt]
             if t.header.get("FILTER", "").strip() != filt or _column_unit(t, "WAVELENGTH") != "angstrom":
@@ -111,7 +112,7 @@ def ftrans_curves(raw: bytes) -> Dict[str, Tuple[np.ndarray, np.ndarray]]:
 
 
 def area_curve(raw: bytes, extname: str) -> Tuple[np.ndarray, np.ndarray]:
-    with _fits(raw) as h:
+    with open_fits(raw) as h:
         t = h[extname]
         if _column_unit(t, "WAVELENGTH") != "angstrom" or _column_unit(t, "EA") != "cm**2":
             raise ValueError(f"UVOT {extname}: unexpected units")
@@ -123,7 +124,7 @@ def senscorr_summary(raw: bytes) -> str:
     from astropy.time import Time
 
     parts = []
-    with _fits(raw) as h:
+    with open_fits(raw) as h:
         for filt, _arf in BANDS.values():
             t = h["SENSCORR" + filt]
             ref = t.header["MJDREFI"] + t.header["MJDREFF"]
@@ -147,17 +148,27 @@ def _composition_check(wl, published, composed) -> str:
 
 
 def uvot(fetch: Fetcher) -> Instrument:
-    raw_ft, url_ft = caldb_get(fetch, FTRANS)
-    raw_mi, url_mi = caldb_get(fetch, MIRROR)
-    raw_in, url_in = caldb_get(fetch, INSTEA)
-    raw_sc, url_sc = caldb_get(fetch, SENSCORR)
+    roots = list(CALDB_ROOTS)
+
+    def get(path):
+        # The root that served the last file is asked first: one warning, not one per file, when a host is down.
+        data, url = caldb_get(fetch, path, roots)
+        served = url[:-len(path)]
+        roots.remove(served)
+        roots.insert(0, served)
+        return data, url
+
+    raw_ft, url_ft = get(FTRANS)
+    raw_mi, url_mi = get(MIRROR)
+    raw_in, url_in = get(INSTEA)
+    raw_sc, url_sc = get(SENSCORR)
     filters = ftrans_curves(raw_ft)
     wl_mi, ea_mi = area_curve(raw_mi, "MIRROREFFAREA")
     wl_in, ea_in = area_curve(raw_in, "INSTEFFAREA")
 
     bands, comps, checks = [], [], []
     for band, (filt, arf) in BANDS.items():
-        raw_arf, url_arf = caldb_get(fetch, "cpf/arf/" + arf)
+        raw_arf, url_arf = get("cpf/arf/" + arf)
         wl, area = arf_curve(raw_arf, filt)
         b = make_band(band, wl, area / GEOMETRIC_AREA_CM2, unit="Angstrom", detector_type=PHOTON,
                       components="filter+optics+qe", sources=f"{url_arf} | {POOLE} | {BREEVELD}")

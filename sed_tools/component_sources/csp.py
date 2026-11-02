@@ -20,10 +20,10 @@ from typing import Dict, Tuple
 
 import numpy as np
 
-from ..filter_components import InstrumentManifest
-from ._original import Component, Fetcher, Instrument, clean_curve, make_band, make_builder, safe_member
+from ..filters.compose import InstrumentManifest
+from ..filters.curve_metadata import PHOTON
+from ._original import Component, Fetcher, Instrument, clean_curve, make_band, make_builder, safe_member, support
 
-PHOTON = "photon"
 PAGE = "https://csp.obs.carnegiescience.edu/data/filters"
 DATA = "https://csp.obs.carnegiescience.edu/data/"
 PACKAGE = DATA + "CSP_filter_package.tgz"
@@ -76,11 +76,6 @@ def two_columns(data: bytes) -> Tuple[np.ndarray, np.ndarray]:
     return a[:, 0], a[:, 1]
 
 
-def _support(wl, tr, frac=1e-3):
-    above = np.nonzero(tr > frac * tr.max())[0]
-    return wl[above[0]], wl[above[-1]]
-
-
 def _atmosphere_check(files, band: str, raw_wl, raw_tr) -> str:
     """final / (raw scan x atm_ext_ctio^1.2 x atm_ext_lines) where the final exceeds 10 % of peak."""
     fw, ft = two_columns(files[f"{band}_tel_ccd_atm_ext_1.2.dat"])
@@ -117,7 +112,7 @@ def csp1(fetch: Fetcher) -> Instrument:
                                source=f"{PACKAGE} member {raw_member} (raw telescope+camera+filter scan, "
                                       "no atmosphere)"))
         checks.append(_atmosphere_check(files, stem, rw_c, rt_c))
-        lo, hi = _support(b.wavelength, b.transmission)
+        lo, hi = support(b.wavelength, b.transmission)
         if tel[0][0] <= lo and tel[0][-1] >= hi:
             comps.append(Component("optics", tel[0], tel[1], band=band, name="telescope",
                                    source=f"{PACKAGE} member Telescope.txt (telescope throughput, relative scale)"))
@@ -131,9 +126,15 @@ def csp1(fetch: Fetcher) -> Instrument:
                       components="filter+optics+qe+atmosphere", sources=f"{src} (member {member})")
         b.atmosphere = "airmass=1.2"
         bands.append(b)
+    return Instrument("LCO", "CSP", bands, _csp1_notes(bands, comps, tel[2], raw_notes, checks),
+                      ground_based=True, components=comps, outside_range="error")
+
+
+def _csp1_notes(bands, comps, tel_note: str, raw_notes, checks) -> str:
+    """The CSP-I manifest notes: the package, the bands and their epochs, the components and checks."""
     with_tel = sorted({c.band for c in comps if c.name == "telescope"})
     clean = "; ".join(f"{b.name}: {b.clean_note}" for b in bands if b.clean_note)
-    note = (
+    return (
         "Carnegie Supernova Project I passbands from the CSP team's filter package "
         f"({PACKAGE}, README updated 03/16/2018; filters page {PAGE}; Krisciunas et al. 2017, {KRISCIUNAS}). "
         "TAMU scans (Rheault, Marshall, DePoy, Villanueva) with a 2.5 nm FWHM monochromator. Published curves "
@@ -155,7 +156,7 @@ def csp1(fetch: Fetcher) -> Instrument:
         "shared with the NIR bands): filter+optics+qe = the README's 'Raw optical Telescope+Camera+Filter "
         "scans' {band}_texas_WLcorr.txt (no atmosphere; sorted by wavelength"
         + (f"; {'; '.join(raw_notes)}" if raw_notes else "") + "); optics (file "
-        "telescope) = Telescope.txt 'Telescope throughput' (header: nm" + (f"; {tel[2]}" if tel[2] else "")
+        "telescope) = Telescope.txt 'Telescope throughput' (header: nm" + (f"; {tel_note}" if tel_note else "")
         + "), for the bands it covers ("
         + " ".join(with_tel) + "; it ends at 800 nm, so not i); optics+qe (file telescope_camera) = "
         "Telescope+Camera.txt 'Telescope and Camera together' (no header; nm by range, 302-900 nm). Both are "
@@ -174,7 +175,6 @@ def csp1(fetch: Fetcher) -> Instrument:
         "Contreras et al. 2010 guess), hfilter (undocumented) and the raw NIR *_texas_SWO/DUP.dat scans "
         "(the README calls them 'raw NIR filter scans' without saying whether they include the telescope "
         "and camera).")
-    return Instrument("LCO", "CSP", bands, note, ground_based=True, components=comps, outside_range="error")
 
 
 def csp2(fetch: Fetcher) -> Instrument:

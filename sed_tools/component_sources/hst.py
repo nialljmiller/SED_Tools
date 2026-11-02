@@ -28,8 +28,9 @@ from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Uni
 
 import numpy as np
 
-from ..filter_components import FILTER, OPTICS, QE, InstrumentManifest, add_component
-from ..filter_metadata import PHOTON, SOURCE_SVO, SVOMetadataClient, svo_components_header, write_filter_file
+from ..filters.compose import FILTER, OPTICS, QE, InstrumentManifest, add_component
+from ..filters.curve_metadata import PHOTON, SVOMetadataClient
+from ._original import CONNECT_TIMEOUT, _each_published, merged_product
 
 logger = logging.getLogger(__name__)
 
@@ -104,7 +105,7 @@ class SynphotTables:
         self._cache: Dict[str, Tuple[np.ndarray, np.ndarray]] = {}
 
     def _get(self, url: str) -> bytes:
-        resp = self.session.get(url, timeout=300)
+        resp = self.session.get(url, timeout=(CONNECT_TIMEOUT, 300))
         resp.raise_for_status()
         return resp.content
 
@@ -185,7 +186,10 @@ def _pin_note(tables: SynphotTables, pins: Mapping[str, str], used: Iterable[str
 
 def _tail_beyond_published(path: Path, wl: np.ndarray, total: np.ndarray) -> float:
     """Largest total outside the published curve's wavelength range, relative to its peak."""
-    pw, pt = np.loadtxt(path, delimiter=",", skiprows=1, usecols=(0, 1), unpack=True)
+    try:
+        pw, pt = np.loadtxt(path, delimiter=",", skiprows=1, usecols=(0, 1), unpack=True)
+    except ValueError as exc:
+        raise ValueError(f"{path}: cannot read the published curve: {exc}") from exc
     out = (wl < pw.min()) | (wl > pw.max())
     return float(total[out].max() / pt.max()) if out.any() and pt.max() > 0 else 0.0
 
@@ -193,14 +197,77 @@ def _tail_beyond_published(path: Path, wl: np.ndarray, total: np.ndarray) -> flo
 def _product(tables: SynphotTables, comps: Sequence[str],
              pins: Optional[Mapping[str, str]] = None) -> Tuple[np.ndarray, np.ndarray]:
     """Product of components on their merged grid, over their common range."""
-    curves = [tables.throughput(c, pins) for c in comps]
-    lo = max(c[0][0] for c in curves)
-    hi = min(c[0][-1] for c in curves)
-    grid = np.unique(np.concatenate([c[0][(c[0] >= lo) & (c[0] <= hi)] for c in curves]))
-    out = np.ones_like(grid)
-    for wl, tr in curves:
-        out *= np.interp(grid, wl, tr)
-    return grid, out
+    return merged_product([tables.throughput(c, pins) for c in comps])
+
+
+def _split_chain(tables: SynphotTables, prefix: str, band: str) -> Tuple[List[str], Dict[str, List[str]]]:
+    """A band's synphot components in chain order, and grouped by role; ValueError if not one filter and a qe."""
+    comps = tables.chain(f"{prefix},{band.lower()}")
+    roles = {FILTER: [], OPTICS: [], QE: []}
+    for comp in comps:
+        roles[classify(comp, band)].append(comp)
+    if len(roles[FILTER]) != 1 or not roles[QE]:
+        raise ValueError(f"unclassifiable chain {comps}")
+    return comps, roles
+
+
+def _notes(tables: SynphotTables, prefix: str, skipped: Mapping[str, str], tails: Mapping[str, float],
+           pins: Mapping[str, str], used: set) -> str:
+    """Manifest notes: the obsmode, bands not decomposed, the unpublished tail and any pins."""
+    notes = (
+        f"Components from STScI synphot obsmode '{prefix},<band>'. QE includes STScI's empirical "
+        "detector-side corrections (*_cor, *_tds*) so filter+optics+qe reproduces synphot's total."
+        + (f" Not decomposed: {', '.join(sorted(skipped))}." if skipped else "")
+    )
+    widest = max(tails, key=tails.get) if tails else None
+    if widest and tails[widest] > 0:
+        notes += (
+            " The components extend beyond the wavelength range of the published curves, which "
+            f"omit that tail; there the composed product reaches up to {tails[widest]:.1e} of the "
+            f"published peak ({widest}), which matters for sources much brighter there."
+        )
+    if pins and used & set(pins):
+        notes += (
+            " Pinned to the release the published curves were computed with: "
+            + ", ".join(sorted(pins[c] for c in used & set(pins)))
+            + ". The newest TRDS files differ by an achromatic factor per band ("
+            + _pin_note(tables, pins, used) + "); for the current calibration use synphot itself."
+        )
+    return notes
+
+
+def _build_instrument(inst: str, prefix: str, inst_dir: Path, bands: Sequence[str],
+                      tables: SynphotTables) -> None:
+    """Write the components of one instrument's published ``bands``, and its manifest."""
+    manifest = InstrumentManifest.load(inst_dir)
+    manifest.components = {}
+    pins = PINNED.get(inst, {})
+    skipped, used, tails = {}, set(), {}
+    for band in bands:
+        try:
+            comps, roles = _split_chain(tables, prefix, band)
+        except ValueError as exc:
+            # Ramp, quad and grism bands have no single chain; the notes list them.
+            skipped[band] = str(exc)
+            continue
+        used.update(comps)
+        for role, comps_for_role in roles.items():
+            if not comps_for_role:
+                continue
+            wl, tr = _product(tables, comps_for_role, pins)
+            add_component(
+                inst_dir, role, wl, tr, band=band, name=band,
+                source="; ".join(tables.source(c, pins) for c in comps_for_role), manifest=manifest,
+            )
+        tails[band] = _tail_beyond_published(inst_dir / f"{band}.dat", *_product(tables, comps, pins))
+    manifest.detector_type = PHOTON
+    manifest.ground_based = False
+    manifest.outside_range = "zero"  # synphot evaluates throughput tables as zero outside their range
+    manifest.sources["synphot"] = f"{TRDS} ({tables.tmg_name}, {tables.tmc_name}); obsmode {prefix},<band>"
+    manifest.notes = _notes(tables, prefix, skipped, tails, pins, used)
+    manifest.save(inst_dir)
+    if skipped:  # expected on every build of ACS_WFC, ACS_HRC, WFC3_UVIS1, WFPC2-PC; the notes list them
+        logger.info("HST/%s: %d bands not decomposed into components: %s", inst, len(skipped), skipped)
 
 
 def build(
@@ -211,75 +278,14 @@ def build(
     svo_client: Optional[SVOMetadataClient] = None,
     tables: Optional[SynphotTables] = None,
 ) -> List[Path]:
-    """Populate components for the HST imagers in :data:`MODES`."""
+    """Populate components for the HST imagers in :data:`MODES`.
+
+    Instruments without published curves are left out; once the others are
+    built, a FileNotFoundError lists them.  ``svo_client`` is accepted for
+    compatibility and is not used.
+    """
     filter_root = Path(filter_root)
     tables = tables or SynphotTables(session=session)
-    svo_client = svo_client or SVOMetadataClient()
-    built = []
-    for inst in instruments or MODES:
-        prefix = MODES[inst]
-        inst_dir = filter_root / FACILITY / inst
-        inst_dir.mkdir(parents=True, exist_ok=True)
-        bands = sorted(p.stem for p in inst_dir.glob("*.dat"))
-        if not bands:
-            logger.warning("HST/%s: no published curves present; fetch them first", inst)
-            continue
-        manifest = InstrumentManifest.load(inst_dir)
-        manifest.components = {}
-        skipped = {}
-        pins = PINNED.get(inst, {})
-        used = set()
-        tails = {}
-        for band in bands:
-            try:
-                comps = tables.chain(f"{prefix},{band.lower()}")
-            except (ValueError, KeyError) as exc:
-                skipped[band] = str(exc)
-                continue
-            roles = {FILTER: [], OPTICS: [], QE: []}
-            for comp in comps:
-                roles[classify(comp, band)].append(comp)
-            if len(roles[FILTER]) != 1 or not roles[QE]:
-                skipped[band] = f"unclassifiable chain {comps}"
-                continue
-            used.update(comps)
-            for role, comps_for_role in roles.items():
-                if not comps_for_role:
-                    continue
-                wl, tr = _product(tables, comps_for_role, pins)
-                add_component(
-                    inst_dir, role, wl, tr, band=band, name=band,
-                    source="; ".join(tables.source(c, pins) for c in comps_for_role), manifest=manifest,
-                )
-            try:
-                tails[band] = _tail_beyond_published(inst_dir / f"{band}.dat", *_product(tables, comps, pins))
-            except (OSError, ValueError, IndexError):
-                pass
-        manifest.detector_type = PHOTON
-        manifest.ground_based = False
-        manifest.outside_range = "zero"  # synphot evaluates throughput tables as zero outside their range
-        manifest.sources["synphot"] = f"{TRDS} ({tables.tmg_name}, {tables.tmc_name}); obsmode {prefix},<band>"
-        manifest.notes = (
-            f"Components from STScI synphot obsmode '{prefix},<band>'. QE includes STScI's empirical "
-            "detector-side corrections (*_cor, *_tds*) so filter+optics+qe reproduces synphot's total."
-            + (f" Not decomposed: {', '.join(sorted(skipped))}." if skipped else "")
-        )
-        widest = max(tails, key=tails.get) if tails else None
-        if widest and tails[widest] > 0:
-            manifest.notes += (
-                " The components extend beyond the wavelength range of the published curves, which "
-                f"omit that tail; there the composed product reaches up to {tails[widest]:.1e} of the "
-                f"published peak ({widest}), which matters for sources much brighter there."
-            )
-        if pins and used & set(pins):
-            manifest.notes += (
-                " Pinned to the release the published curves were computed with: "
-                + ", ".join(sorted(pins[c] for c in used & set(pins)))
-                + ". The newest TRDS files differ by an achromatic factor per band ("
-                + _pin_note(tables, pins, used) + "); for the current calibration use synphot itself."
-            )
-        manifest.save(inst_dir)
-        if skipped:
-            logger.info("HST/%s skipped %d bands: %s", inst, len(skipped), skipped)
-        built.append(inst_dir)
-    return built
+    return _each_published(
+        filter_root / FACILITY, instruments or MODES, MODES,
+        lambda inst, prefix, inst_dir, bands: _build_instrument(inst, prefix, inst_dir, bands, tables))

@@ -1,0 +1,12 @@
+Wavelength,Transmission,FilterID=Generic/Johnson.B;DetectorType=energy;DetectorTypeSource=svo-curve-match;WavelengthUnit=Angstrom;Components=filter;ComponentsSource=svo;Sources=MESA%20colors_data%20r26.04.1%20Generic/Johnson%3B%20originally%20the%20SVO%20Filter%20Profile%20Service
+3700.0,0.0
+3800.0,0.11
+4000.0,0.92
+4200.0,1.0
+4400.0,0.94
+4600.0,0.79
+4800.0,0.58
+5000.0,0.36
+5200.0,0.15
+5400.0,0.04
+5600.0,0.0

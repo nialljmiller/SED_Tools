@@ -1,0 +1,56 @@
+{
+  "bands": [
+    "H",
+    "J",
+    "Ks"
+  ],
+  "components": {
+    "filter": {
+      "H": "components/filter/H.dat",
+      "J": "components/filter/J.dat",
+      "Ks": "components/filter/Ks.dat"
+    },
+    "optics": {
+      "H": "components/optics/H.dat",
+      "J": "components/optics/J.dat",
+      "Ks": "components/optics/Ks.dat"
+    },
+    "qe": {
+      "*": "components/qe/nicmos3.dat"
+    }
+  },
+  "default_site": null,
+  "detector_type": "energy",
+  "detector_type_sources": {
+    "H": "original",
+    "J": "original",
+    "Ks": "original"
+  },
+  "detector_types": {
+    "H": "energy",
+    "J": "energy",
+    "Ks": "energy"
+  },
+  "facility": "2MASS",
+  "ground_based": true,
+  "instrument": "2MASS",
+  "notes": "Components from the 2MASS All-Sky Explanatory Supplement III.1.b1 (https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec3_1b1.html); wavelengths (unlabelled xlam) read as micrometres. filter: J tbl5, H tbl8, Ks tbl10. optics (per band): telescope mirror tbl1 squared (two reflections; the table is one surface) x ZnSe dewar window tbl2 x lens coating tbl3 to the 7th power (seven lenses per band) x the band's dichroic path (J: J-dichroic reflection tbl4; H: J-dichroic transmission tbl6 x H-dichroic reflection tbl7; Ks: tbl6 x H-dichroic transmission tbl9). qe: NICMOS3 tbl11 (a characteristic Rockwell curve, not measured per device). Every factor is zero outside its table. The supplement's own total instrumental throughput (tbl12-14) is reproduced to <=0.0003 mag in H and Ks (shape, black bodies 3000-30000 K); in J to <=0.007 mag, because tbl12 is 0 at 1.080-1.090 um but not at 1.095-1.100 um, before the J-dichroic table starts at 1.105 um (holding the dichroic's edge value instead gives -0.006 mag). The published curves are Cohen et al. (2003) RSRs (Explanatory Supplement VI.4a, https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec6_4a.html): that throughput times the PLEXUS atmosphere, multiplied by wavelength and peak-normalised for direct F_lambda integration, hence DetectorType=energy. filter+optics+qe here carries no wavelength factor and no atmosphere; SED_Tools integrates it as photon counting, which applies the wavelength factor once. A filter or filter+optics product inherits the RSR's 'energy' label in SED_Tools although the 2MASS cameras count photons: build it with detector_type='photon'. Against the published RSRs (shape, black bodies 3000-30000 K and flat F_nu), filter x optics x qe x the supplement's PLEXUS atmosphere agrees to <=0.006 mag in J, <=0.0005 mag in H (0.0000 with the south table) and <=0.0043 mag in Ks; without an atmosphere J differs by up to 0.065 mag. The PLEXUS north (Mt. Hopkins) and south (CTIO) atmospheres (tbl15/16) are not part of this instrument's components.",
+  "outside_range": "zero",
+  "published": {
+    "components": "filter+instrument+atmosphere",
+    "source": "svo"
+  },
+  "published_bands": {
+    "H": "filter+instrument+atmosphere",
+    "J": "filter+instrument+atmosphere",
+    "Ks": "filter+instrument+atmosphere"
+  },
+  "schema": 1,
+  "sources": {
+    "filter": "https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec3_1b1.html: J tbl5, H tbl8, Ks tbl10",
+    "optics": "https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec3_1b1.html: tbl1^2 x tbl2 x tbl3^7 x the band's dichroic path",
+    "page": "https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec3_1b1.html",
+    "qe": "https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec3_1b1.tbl11.html (NICMOS3 DQE, characteristic Rockwell curve)",
+    "rsr": "https://www.ipac.caltech.edu/2mass/releases/allsky/doc/sec6_4a.html"
+  }
+}

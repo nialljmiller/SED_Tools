@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/SED_Tools_Logo.jpeg" alt="SED_Tools Logo" width="200"/>
+  <img src="https://raw.githubusercontent.com/nialljmiller/SED_Tools/v0.5.0/docs/SED_Tools_Logo.jpeg" alt="SED_Tools Logo" width="200"/>
 </p>
 
 <h1 align="center">SED_Tools</h1>
@@ -29,7 +29,7 @@ SED_Tools is a Python package for working with stellar spectral energy distribut
 ### Key Features
 
 - **Multi-source downloads** — Fetch model spectra from SVO, MSG, MAST (BOSZ), and NJM mirror
-- **Photometric filters** — Download transmission curves from the NJM mirror with SVO Filter Profile Service fallback
+- **Photometric filters** — Download transmission curves from the NJM mirror, the instrument teams' original files, or the SVO Filter Profile Service; NJM is optional
 - **Optical path components** — Track which parts of the atmosphere, telescope/instrument optics, filter and detector QE are included in a passband; compose available factors for the same instrument and site
 - **Detector-aware photometry** — Record photon- or energy-counting response conventions and use the corresponding integration weights for synthetic photometry
 - **Unit standardization** — Convert all spectra to consistent units (wavelength in Å, flux in erg/cm²/s/Å)
@@ -87,7 +87,7 @@ pip install -e .
 - numpy, pandas, h5py, astropy, matplotlib
 - PyTorch (required for ML completer and generator)
 
-See `pyproject.toml` for the complete dependency list.
+Optional extras: `pip install "sed-tools[full]"` (scipy, scikit-learn, torch, xlrd, dust_extinction), `"sed-tools[extinction]"` (dust_extinction only, for `AfAv`) and `"sed-tools[ml-tune]"` (optuna, for `ml_generator --auto`). psutil is not needed. See `pyproject.toml` for the complete dependency list.
 
 ---
 
@@ -100,6 +100,8 @@ Launch the interactive menu:
 ```bash
 sed-tools
 ```
+
+The menu has four filter options: 1 downloads filters, 2 combines filter sets, 3 shows what `sed-tools filters-info` shows for an instrument picked from the lists, and 4 builds a filter curve from an instrument's own parts (filter, optics, camera, atmosphere), with the questions asked after a download. Options 5-7 are the spectral grids, 8-10 machine learning and 11-14 the tools (14 is Config). In 0.4.1 the filter options were 1 and 2 only, so 0.4.1's options 3-12 are now 5-14.
 
 ### Direct Commands
 
@@ -145,9 +147,30 @@ sed-tools config --set /path/to/data --move
 
 ## CLI Reference
 
+### Options added in 0.5.0
+
+| Command | Option | What it does |
+|---|---|---|
+| `grids` (`spectra`), `rebuild`, `import` | `--flux-unit {flam,fnu,fnu_jy,flam_si,flam_si_nm,flam_si_um,normalized}` | Flux unit of spectra whose headers do not declare one (otherwise sed-tools asks in a terminal, and stops without one); spectra that declare theirs keep it |
+| `grids` | `--teff LOW HIGH` | Download only spectra with Teff in this range (K); NJM, MSG and MAST cut downloads, SVO refuses cuts |
+| `grids` | `--logg LOW HIGH` | Download only spectra with log g in this range |
+| `grids` | `--meta LOW HIGH` | Download only spectra with [M/H] in this range |
+| `grids` | `--wavelength LOW HIGH` | Keep only this wavelength range (Å) |
+| `filters`, `filters-compose` | `--atmosphere-site SITE` | One of the instrument's own atmosphere sites (default: its default site) |
+| `filters`, `filters-compose` | `--airmass unstated` | `--airmass` also accepts `unstated`, for a team atmosphere whose source gives no airmass |
+| `filters-build-components` | `--archive DIR` | Keep every raw download here with its URL, time and SHA-256 (`skycalc`, `team_atmospheres`) |
+| `combine` | `--grids NAME ...` | Names of the local spectral grids to combine (no prompts) |
+| `ml_generator` | `--trials N` | With `--auto`: number of hyperparameter search trials (default 20) |
+| `ml_generator` | `--epochs N` | With `--auto`: maximum epochs of the final training (default 100) |
+
+Changed meaning:
+- `combine --non-interactive` combines the `--grids` given, else every local spectral grid except earlier combined ones (and the output grid).
+- `densify` now runs. It refuses, as usage errors, the options `densify_grid` cannot honour: `--method interp`, `--method ml` without `--ml-model`, `--method blackbody` with `--ml-model`, and `--ml-gap-threshold` other than its default.
+- Usage errors print the subcommand's usage and exit 2. A failed command exits 1; the interactive menu exits 1 at quit if any workflow failed. Set `SED_TOOLS_DEBUG=1` for tracebacks.
+
 ### `sed-tools filters`
 
-Download photometric filter transmission curves interactively. The browser merges the SVO Filter Profile Service catalogue with the NJM mirror: facilities that exist on SVO are listed first, and any facilities available **only** on the NJM mirror are surfaced alongside them (marked `[NJM]`). Filters are fetched from the NJM mirror when available (fastest), with automatic fallback to SVO for everything else.
+Download photometric filter transmission curves interactively. The pickers merge the instruments installed locally, the NJM mirror, the original-source builders and the SVO Filter Profile Service, and show each product once, by name, in numbered columns as in 0.4.1. Picking a facility first lists its instruments with their one-line descriptions. Picking an instrument shows a short summary before the download question: its description, where the download comes from (the installed copy, or NJM, the original source and SVO in the order a download tries them), its bands, what each curve contains, its separate components, its atmosphere sites and its licence. Names use NJM's spelling where NJM has the product; the old spellings (`PLANCK/HFI`, `Gemini/GMOS-N`, `CTIO/S-PLUS`, ...) still work as input. See "NJM is optional" below for the order of sources.
 
 ```bash
 # Interactive facility/instrument/filter selection
@@ -187,6 +210,38 @@ from sed_tools.api import Filters
 combined = Filters.combine("Gaia2MASS", "GAIA/GAIA", "2MASS/2MASS")
 print(combined)
 ```
+
+#### How filters are stored
+
+The filter root is `<data dir>/filters/` (see `sed-tools config`; `SED_FILTER_DIR` overrides it). An installed instrument looks like this:
+
+```
+filters/<Facility>/<Instrument>/
+  <band>.dat            published curves: what MESA reads
+  <Instrument>          MESA index file: the curve files MESA loads, one per line
+  manifest.json         what the instrument provides, with provenance
+  properties.json       band properties computed by NJM (NJM downloads only)
+  info.json             descriptions, references, acknowledgements, licence (NJM downloads only)
+  components/<role>/    separate factors: filter/, optics/, qe/, or a composite such as filter+optics+qe/
+  products/<recipe>/    composed sets; each is a MESA instrument directory with its own <recipe> index file
+atmospheres/<site>/     beside filters/: the site's manifest.json and its .dat curves
+cache/njm/              beside filters/: NJM's index.json, properties.json and info.json, cached
+```
+
+- **Curves.** Each `<band>.dat` starts with a column row, `Wavelength,Transmission,Key=value;...`, whose third field holds the metadata (`FilterID`, `DetectorType`, `DetectorTypeSource`, `WavelengthUnit`, `Components`, ...); then one `wavelength,transmission` sample per line. MESA discards the column row.
+- **MESA index file.** Named after the instrument directory. MESA loads only the curves it lists, so files beside it that it does not list (such as NJM's superseded `<band>_svo` copies) are not loaded.
+- **`manifest.json`.** `bands`; `published` and `published_bands` (what each published curve contains, e.g. `filter+qe`); `components` (role, then band or `*`, then a file under `components/`); `detector_type`, `detector_types` and `detector_type_sources`; `variants` (alternative component curves, used only when selected with `variants=` in Python); `default_site`, `atmosphere_sites` and `ground_based`; `sources`, `notes` and `outside_range`; and `archived_bands` (superseded copies kept beside the set, never part of `bands` or the MESA index). `variants`, `atmosphere_sites` and `archived_bands` are written only when set.
+- **Products.** A product directory's name records what was selected: `+<role>_<variant>` for a variant, `+atm_<label>` for an atmosphere, `+detector_<type>` for a detector override (e.g. `products/filter+qe+qe_single_layer/`).
+- **Atmospheres.** `atmospheres/<site>/manifest.json` records the site's kind (`team` or `derived`), observing conditions, model, model version, citation and usage terms; `Filters.atmospheres()` lists them, and the composition prompt offers an instrument's own sites with their sources.
+- **`properties.json` and `info.json`** beside the curves describe exactly those curves, so SED_Tools prefers them to NJM's current files.
+
+#### NJM is optional
+
+Filters are taken from the first of these sources that has a complete set: an installed copy, the NJM mirror, the instrument team's original files (the original-source builders, for the instruments registered in `sed_tools/component_sources/catalog.py`), and the SVO Filter Profile Service. NJM and the builders are asked under their own spelling of a name, matched without regard to case or punctuation, so `CTIO/S-PLUS` fetches NJM's `CTIO/S_PLUS`.
+
+Facility and instrument names, their one-line descriptions, and which SVO entries are the same product as an NJM instrument come from a catalogue shipped with the package (`sed_tools/instrument_catalogue.json`). A reachable NJM adds to it, so the pickers show the same names with or without NJM. When NJM does not answer, its requests give up after a 5 s connect timeout, one warning per session names the sources used instead (installed copies, the original-source builders and SVO), and NJM is not asked again for five minutes. The summary shown after picking an instrument then says NJM is unreachable, and `filters-info` uses the cached catalogue and says so. `sed-tools grids` warns that NJM's spectral grids are not offered and lists the other sources' grids.
+
+Without NJM, an NJM set that SVO holds under other names (NJM's `GAIA/GAIA` is SVO's `GAIA/GAIA3`) is installed from SVO under NJM's names. If SVO has only some of its bands, those are installed and a warning names the missing ones (`GAIA/GAIA`: 4 of 6, without `Gbp_bright` and `Gbp_faint`). `filters-info` and the summary in the browser mark the set "Incomplete", and in Python `Filters.available()` gives the installed `bands` and every `expected_bands`. Fetch it again when NJM is reachable to complete it.
 
 #### Understanding the optical path and detector response
 
@@ -291,20 +346,11 @@ NJM serves, beside the curves, a catalogue that SED_Tools reads directly, so SVO
 - each instrument's `info.json` holds descriptions, the references to cite (with BibTeX where a service supplied it), the providers' requested acknowledgements, the licence and what SVO recorded about each band.
 
 ```bash
-# Bands covering 2.15 µm with an FWHM of 1000-5000 Å (wavelengths in Å; '-' leaves an end open)
-sed-tools filters-search --wavelength 21500 --fwhm 1000 5000
-# By name (substring of Facility/Instrument/Band), pivot range and detector type
-sed-tools filters-search SDSS --pivot 4000 7000 --detector-type photon
-# Any properties.json column, as a range or a value; csv or json output
-sed-tools filters-search --where ABminusVega=:0.5 --where ColorMethod=true --format csv
-
 # Description, licence and a per-band table, after the component report
 sed-tools filters-info 2MASS/2MASS
-
-# References, BibTeX, acknowledgements and licences: named instruments or bands, or everything installed
-sed-tools filters-cite 2MASS/2MASS GAIA/GAIA/G
-sed-tools filters-cite --format bibtex > filters.bib
 ```
+
+Searching and citing are done in Python:
 
 ```python
 from sed_tools.api import Filters
@@ -324,7 +370,7 @@ Filters.plot(bands)                                              # a search resu
 - **Search.** Name criteria are matched in `index.json` first. `properties.json` is then fetched only for instruments that can still match, at most six requests at a time, retrying when NJM briefly blocks a burst.
   - A single `wavelength` keeps bands whose span (`WavelengthMin`–`WavelengthMax`, where T is at least 1 % of its peak) covers it; a range keeps bands overlapping it.
   - Astropy quantities are accepted. A band with a missing value, such as a Vega quantity where the Vega spectrum does not cover it, never matches a criterion on that value.
-- **Caching.** Catalogue files are cached in `cache/njm/` beside the filter root (next to `atmospheres/`). `index.json` is rechecked daily; the other files are revalidated, by ETag, only when `index.json` changes. Without the mirror the cached copies are used (`--offline` / `offline=True` never contacts it; `--refresh` / `refresh=True` asks again).
+- **Caching.** Catalogue files are cached in `cache/njm/` beside the filter root (next to `atmospheres/`). `index.json` is rechecked daily; the other files are revalidated, by ETag, only when `index.json` changes. Without the mirror the cached copies are used (`filters-info --offline` / `offline=True` never contacts it; `refresh=True` asks again).
 - **Downloads.** A downloaded instrument keeps `properties.json` and `info.json` beside its curves, and these copies are preferred because they describe exactly those curves. The MESA index file still lists only the curves.
 - **Citations.** References are merged across instruments, one per work (bibcode form). For chosen bands, the instrument-wide references plus those bands' own are given. Acknowledgement texts are quoted as the providers ask. References for which NJM has no BibTeX appear in the `.bib` output as `%` comments with what is known; nothing is made up.
 - **Plots.** Curves use `sed_tools.filter_colors`: true colours for visible bands and ordered false colours otherwise. One instrument's bands keep its own colours; a selection across instruments is coloured as one set. Instruments not yet installed are downloaded first. `normalize` is `"peak"` or `"area"`; `vega=True` overlays NJM's `vega/vega_flam.csv`, scaled to the curves.
@@ -359,14 +405,14 @@ Filters.fetch("LSST", "LSST", components=["filter", "optics", "qe"],
               atmosphere={"airmass": 1.2})                                   # + its own atmosphere
 ```
 
-Requests that cannot be met are refused with an explanation rather than approximated: components the team never published (e.g. Gaia's bare filters), an atmosphere from another site, adding an atmosphere to a curve that already includes one, or to a space/airborne instrument. A published curve that is the bare filter counts as the `filter` component automatically. Products containing QE are photon-counting; otherwise they inherit the instrument's detector type.
+Requests that cannot be met are refused with an explanation rather than approximated: components the team never published (e.g. Gaia's bare filters), an atmosphere from another site, adding an atmosphere to a curve that already includes one, or to a space/airborne instrument. A published curve that is the bare filter counts as the `filter` component automatically. Products containing QE are photon-counting; otherwise they inherit the instrument's detector type. A band whose manifest records a `user` detector type (Argus, whose team states its sensors are energy counting) keeps that type in every product.
 
 An instrument's atmosphere is one at its own location, with the user choosing only airmass and PWV. Each site directory has a `manifest.json` recording its kind, observing conditions, model, model version, parameters, citation and any usage terms:
 
 - **Team** sites (`kind: team`) hold the standard atmosphere an instrument team published, stored as published (wavelengths converted to Å) unless the entry records a `derivation`; such curves carry `ComponentsSource=derived`.
 - **Derived** sites (`kind: derived`) are grids SED_Tools computes with the [ESO SkyCalc](https://www.eso.org/observing/etc/skycalc/) sky model (`lasilla`, `paranal`, `armazones`, `highanddry`), fetched at R=200000 and bin-averaged to R=20000 so unresolved lines are integrated correctly. SkyCalc models Cerro Paranal, so it is used only for ESO facilities there and at La Silla (FORS2, HAWK-I, SPHERE, ERIS, VISTA, La Silla instruments). Other observatories are offered only their team's own atmospheres.
 
-The default is the manifest's `default_site`. Further sites at the same location are listed in the manifest's `atmosphere_sites` or registered for the instrument in `sed_tools/facility_sites.py`, and are chosen by name. Builders register a team atmosphere with `component_sources._common.SiteAtmosphere` (written by `write_site`; `SimpleSource.site`/`sites`, or `Instrument.sites` for original-source recipes); `component_sources/team_atmospheres.py` holds the registered ones.
+The default is the manifest's `default_site`. Further sites at the same location are listed in the manifest's `atmosphere_sites` or registered for the instrument in `sed_tools/filters/sites.py`, and are chosen by name. Builders register a team atmosphere with `component_sources._common.SiteAtmosphere` (written by `write_site`; `SimpleSource.site`/`sites`, or `Instrument.sites` for original-source recipes); `component_sources/team_atmospheres.py` holds the registered ones.
 
 | Site | Kind | Conditions | Model and source | Instruments |
 |---|---|---|---|---|
@@ -412,7 +458,14 @@ Where components come from:
 | CAHA PANIC, WHT INGRID, IRTF NSFCam | Independently sourced in-band filter scans (7 PANIC, 20 INGRID warm/cold variants, 26 historical NSFCam); filter-only |
 | Liverpool IO:O | Seven filter scans plus the separately published CCD QE and cryostat-window transmission from the IO:O efficiency model; other telescope optics remain unavailable |
 | ZTF | `ztf_information` filters and CCD QE |
-| 57 SVO instrument groups (SDSS, Swift/UVOT, UKIRT/WFCAM, OmegaCAM, Suprime-Cam, ...) | SVO's own filter-only sibling curves (`g_filter`, `g_fil`, `gprime_filter`) |
+| SLOAN/SDSS | Response without atmosphere from Gunn's 2001 `filter_curves.fits` (default `filter+optics+qe`), Doi et al. (2010) camera-column responses as variants (+ `apo_sdss`) |
+| Swift/UVOT | HEASARC CALDB: current ARFs (published), `ftrans`, mirror and instrumental effective areas (÷ 659 cm²) |
+| LCO CSP, CSP2 | CSP filter package: final passbands, optical scans, telescope and camera curves (+ `lco_csp`); CSP2 totals only |
+| Cassini ISS NAC/WAC | PDS: system transmission (published), CCD QE, optics, derived filter pairs |
+| Gemini GMOS-N/S | Detector QE by epoch (variants, no default) |
+| BOK/BASS, KPNO/MzLS | Legacy Surveys curves: BASS filter+qe and qe (+ `kpno_bass`); MzLS corrected z with the filter |
+| Argus/DR280 | Chroma filters (variants `production`, `addem`), DR280 optics, IMX455 QE |
+| SVO instrument groups with filter-only sibling curves (UKIRT/WFCAM, OmegaCAM, Suprime-Cam, ...) | SVO's own filter-only sibling curves (`g_filter`, `g_fil`) |
 | Pan-STARRS1 | not yet built: PS1's Table 3 has the open (no filter) cross-section and the atmosphere |
 | Gaia, WISE, Spitzer, GALEX, TESS, Kepler, Hipparcos/Tycho | none — only totals are published (`filters-info` says so) |
 
@@ -422,7 +475,7 @@ The NJM mirror runs the automatic builders ahead of time (`sed-tools filters-bui
 
 The CLI and Python API use the same acquisition and composition workflow. Availability distinguishes installed component files from registered source support. Missing files are reported, and `recipes_by_band` identifies combinations available for only part of an instrument's band set. Instruments whose separate components have not been reviewed are marked `unreviewed`; they remain available through the generic SVO passband downloader.
 
-The [component-source research inventory](docs/component_sources/README.md)
+The [component-source research inventory](https://github.com/nialljmiller/SED_Tools/blob/v0.5.0/docs/component_sources/README.md)
 tracks every SVO facility/instrument entry, research ownership and the evidence
 needed to add original component sources. Research findings are reviewed before
 they become supported downloaders or NJM mirror data.
@@ -483,13 +536,18 @@ sed-tools grids --source svo --grids Kurucz2003all
 # Parallel downloads
 sed-tools grids --grids Kurucz2003all --workers 8
 
+# Cut the download
+sed-tools grids --source njm --grids Kurucz2003all --teff 3500 8000 --logg 3 5
+
+# Give the flux unit of spectra that do not declare one
+sed-tools grids --grids MyGrid --flux-unit flam
 ```
 
 **What it does:**
 
 1. Queries the selected source for available spectral grids
 2. Downloads spectrum files matching your criteria
-3. Standardizes units (wavelength → Å, flux → erg/cm²/s/Å)
+3. Standardizes units (wavelength → Å, flux → erg/cm²/s/Å). If the spectra do not declare their flux unit, it asks for it in a terminal, or stops unless `--flux-unit` gives it; spectra that declare theirs keep it
 4. Generates `lookup_table.csv` with stellar parameters
 5. Automatically runs `rebuild` to create binary files
 
@@ -534,8 +592,11 @@ Merge multiple stellar spectral grids into a unified ensemble.
 # Interactive spectral grid selection
 sed-tools combine
 
-# Combine all available local spectral grids
+# Combine every local spectral grid except earlier combine outputs
 sed-tools combine --non-interactive
+
+# Combine named grids without prompts
+sed-tools combine --grids Kurucz2003all bt-settl --output my_combined_grid
 ```
 
 **Use cases:**
@@ -549,7 +610,7 @@ sed-tools combine --non-interactive
 ### `sed-tools ml_completer`
 
 <p>
-  <img src="docs/prediction_examples.png" alt="Prediction examples" width="200"/>
+  <img src="https://raw.githubusercontent.com/nialljmiller/SED_Tools/v0.5.0/docs/prediction_examples.png" alt="Prediction examples" width="200"/>
 </p>
 
 
@@ -576,7 +637,7 @@ sed-tools ml_completer
 
 
 <p>
-  <img src="docs/prediction_examples.png" alt="Prediction examples" width="200"/>
+  <img src="https://raw.githubusercontent.com/nialljmiller/SED_Tools/v0.5.0/docs/prediction_examples.png" alt="Prediction examples" width="200"/>
 </p>
 
 Train and apply neural networks to generate complete SEDs from stellar parameters alone.
@@ -586,6 +647,10 @@ Train and apply neural networks to generate complete SEDs from stellar parameter
 ```bash
 # Interactive mode
 sed-tools ml_generator
+
+# Hyperparameter search, then training of the best model (needs: pip install "sed-tools[full,ml-tune]")
+sed-tools ml_generator --auto --library data/stellar_models/Kurucz2003all --output models/auto \
+                       --trials 20 --epochs 100
 ```
 
 **How it works:**
@@ -596,18 +661,18 @@ sed-tools ml_generator
 4. Generates diagnostic plots showing parameter space coverage
 
 <p>
-  <img src="docs/sed_T6969_g4.20_m+0.02_params.png" alt="Prediction examples" width="200"/>
+  <img src="https://raw.githubusercontent.com/nialljmiller/SED_Tools/v0.5.0/docs/sed_T6969_g4.20_m%2B0.02_params.png" alt="Prediction examples" width="200"/>
 </p>
 
 <p>
-  <img src="docs/sed_T6969_g4.20_m+0.02_spectrum.png" alt="Prediction examples" width="200"/>
+  <img src="https://raw.githubusercontent.com/nialljmiller/SED_Tools/v0.5.0/docs/sed_T6969_g4.20_m%2B0.02_spectrum.png" alt="Prediction examples" width="200"/>
 </p>
 
 ---
 
 ### `sed-tools densify`
 
-Fill coarse Teff gaps in an existing flux cube to eliminate stair-stepping artefacts in MESA photometric outputs. New Teff nodes are filled with ML predictions (when a generator model is provided and the point is within its training range) or a Planck blackbody scaled to the nearest real SED's bolometric flux. The densifier never loads the full cube into RAM — it uses `np.memmap` throughout.
+Fill coarse Teff gaps in an existing flux cube to eliminate stair-stepping artefacts in MESA photometric outputs. New Teff nodes are filled with ML predictions (when a generator model is provided and the point is within its training range) or a Planck blackbody scaled to the nearest real SED's bolometric flux. The densifier reads the source cube through `np.memmap` and builds the dense cube one block of wavelengths at a time, with blocks sized to half the available RAM, so cubes larger than memory are handled.
 
 ```bash
 # Densify with blackbody fallback (no ML model)
@@ -624,7 +689,7 @@ sed-tools densify \
   --ml-model data/stellar_models/models/sed_generator_Kurucz2003all
 ```
 
-See [notebook 10](jupyter_notebooks/10_grid_densification.ipynb) for a worked example including before/after comparison plots.
+See [notebook 10](https://github.com/nialljmiller/SED_Tools/blob/v0.5.0/jupyter_notebooks/10_grid_densification.ipynb) for a worked example including before/after comparison plots.
 
 ---
 
@@ -641,6 +706,9 @@ sed-tools import --path /path/to/my_spectra/ --name MyGrid --dry-run
 
 # Move files instead of copying; skip HDF5 bundle
 sed-tools import --path /path/to/my_spectra/ --name MyGrid --move --no-h5
+
+# Give the flux unit of spectra whose headers do not declare one (--dry-run reports whether they do)
+sed-tools import --path /path/to/my_spectra/ --name MyGrid --flux-unit flam
 ```
 
 ---
@@ -661,7 +729,7 @@ sed-tools coverage --grids Kurucz2003all --no-plot
 
 ### `sed-tools mesa_prepare`
 
-Export a specific extra-axis sub-variant (e.g. one alpha-enhancement, turbulent velocity, or mixing length combination) from a spectral grid that has multiple variants in its `fluxcube_library/`. Produces a clean, self-contained MESA-ready folder containing only the selected variant's flux cube.
+Export one extra-axis variant (e.g. one alpha-enhancement, microturbulence or mixing-length combination) of a spectral grid as a clean, self-contained MESA-ready folder holding only that variant's flux cube and lookup table. `sed-tools rebuild` splits a grid whose extra axes vary into one subgrid per variant (`<grid>/<variant path>/`, each with its own `flux_cube.bin` and `lookup_table.csv`) and lists them in `<grid>/variants_index.csv`; `mesa_prepare` reads that file first. A `fluxcube_library/` written by earlier SED_Tools versions is still read when present. A uniform grid with its `flux_cube.bin` is already MESA-ready, and the command says so. The provenance columns of combined and ML-extended grids are not variant axes.
 
 ```bash
 # Interactive spectral grid and variant selection
@@ -722,7 +790,7 @@ sed = SED.fetch('Kurucz2003all')
 # Force specific source
 sed = SED.fetch('Kurucz2003all', source='svo')
 
-# Fetch with parameter filtering and parallel downloads
+# Download only part of the grid
 sed = SED.fetch(
     'Kurucz2003all',
     teff_min=4000,
@@ -734,10 +802,17 @@ sed = SED.fetch(
     workers=8,
 )
 
-# Save to disk (generates all SED_Model/MESA-compatible files)
-sed.grid.write()
+# Write the returned spectra, with a lookup table, flux cube and HDF5 bundle of their own, to another folder
 sed.grid.write('/custom/output/path')
 ```
+
+**With `teff_min` … `metallicity_max`, only the spectra within them are downloaded**, as `sed-tools grids --teff … --logg … --meta …` does. The grid's folder (`Kurucz2003all` under the stellar model directory) then holds those spectra, their `lookup_table.csv`, HDF5 bundle and `flux_cube.bin`, so `SED.local('Kurucz2003all')` and MESA use that selection. NJM's flux cube and bundle of the whole grid are not downloaded. MSG downloads its grid's single HDF5 file whole and extracts only the spectra within the bounds. SVO cannot select spectra, so from SVO the whole grid is downloaded, with a warning, then cut.
+
+- A folder that already holds every spectrum within the bounds, with a flux cube holding every spectrum there (the whole grid, or a wider selection), is cut as it stands: nothing is downloaded or rewritten. Whether the cube holds them is read from the cube and the lookup table, not from file times, so a grid copied without its times (`cp -R`, `scp`) counts as complete.
+- A later fetch without bounds, or with wider ones, downloads the rest and rebuilds the lookup table, bundle and flux cube from every spectrum in the folder.
+- Separate selections fetched into one folder (say Teff ≤ 5800 with log g ≤ 4.2, then Teff ≥ 6200 with log g ≥ 4.3) leave points of the flux cube's Teff × log g × [M/H] grid without a spectrum, whose flux is zero and pulls interpolation near them toward zero.
+- A whole grid from NJM comes with NJM's flux cube. For a grid from SVO, or a whole grid from MSG, build it with `sed-tools rebuild --grids NAME`.
+- `sed.grid.write()` without a path writes into the grid's own folder, replacing its spectra with copies whose header keeps only Teff, log g, [M/H] and the units; give it another folder.
 
 #### Loading Local Data
 
@@ -970,9 +1045,7 @@ info.covers_range(teff_min=5000, teff_max=6000)
 |-------------|----------------------|
 | `sed-tools filters` | `Filters.fetch(...)` |
 | `sed-tools filters-combine X A B` | `Filters.combine('X', 'A', 'B')` |
-| `sed-tools filters-search --wavelength W` | `Filters.search(wavelength=W)` |
 | `sed-tools filters-info F/I` | `Filters.available('F', 'I')`, `Filters.info('F', 'I')`, `Filters.properties('F', 'I')` |
-| `sed-tools filters-cite F/I` | `Filters.cite('F/I')` |
 | `sed-tools grids` (list) | `SED.query()` |
 | `sed-tools grids --grids X` | `SED.fetch('X')` |
 | `sed-tools rebuild --grids X` | `sed.grid.write()` |
@@ -983,6 +1056,7 @@ info.covers_range(teff_min=5000, teff_max=6000)
 | `sed-tools ml_completer train` | `SED.ml_completer().train(...)` |
 | `sed-tools ml_generator train` | `SED.ml_generator().train(...)` |
 | `sed-tools ml_generator generate` | `SED.ml_generator().generate(...)` |
+| `sed-tools grids --grids X --flux-unit flam` | `SED.fetch('X', flux_unit='flam')` |
 
 ---
 
@@ -1055,7 +1129,7 @@ SED_Tools/
 
 | Source | URL | Description |
 |--------|-----|-------------|
-| NJM Server | [nialljmiller.com/SED_Tools/](https://nialljmiller.com/SED_Tools/) | Pre-processed data host (fastest) |
+| NJM Server | [data.nialljmiller.com/sed_tools/](https://data.nialljmiller.com/sed_tools/) | Pre-processed data host (fastest) |
 | SVO | [svo2.cab.inta-csic.es](http://svo2.cab.inta-csic.es/theory/fps/) | Spanish Virtual Observatory |
 | MSG | [astro.wisc.edu/~townsend](http://user.astro.wisc.edu/~townsend/static.php?ref=msg-grids) | MSG Stellar spectral grids |
 | MAST | [archive.stsci.edu/prepds/bosz](https://archive.stsci.edu/prepds/bosz/) | BOSZ Spectral Library, including BOSZ 2024 fixed-resolution and original-resolution grids |
@@ -1094,18 +1168,22 @@ for star in stars:
 ```python
 from sed_tools.api import SED
 
-# Hot stars from Kurucz
-hot = SED.fetch('Kurucz2003all', teff_min=7000, teff_max=50000)
-hot.grid.write()
+models = '/path/to/stellar_models'
 
-# Cool stars from BT-Settl
-cool = SED.fetch('bt-settl', teff_min=2500, teff_max=7000)
-cool.grid.write()
+# Hot stars from Kurucz, cool stars from BT-Settl. From NJM or MSG only these Teff
+# ranges are downloaded; a grid that comes from SVO is downloaded whole, then cut
+# (see "Downloading"). Each selection is then written to a grid folder of its own.
+hot = SED.fetch('Kurucz2003all', teff_min=7000, teff_max=50000, model_root=models)
+hot.grid.write(f'{models}/Kurucz_hot')
 
-# Combine into unified grid
+cool = SED.fetch('bt-settl', teff_min=2500, teff_max=7000, model_root=models)
+cool.grid.write(f'{models}/BT-Settl_cool')
+
+# Combine the two selections into a unified grid
 combined = SED.combine(
-    ['Kurucz2003all', 'bt-settl'],
-    output='full_temperature_grid'
+    ['Kurucz_hot', 'BT-Settl_cool'],
+    output='full_temperature_grid',
+    model_root=models,
 )
 ```
 
@@ -1225,7 +1303,7 @@ All versions (resolves to the latest release): [10.5281/zenodo.18321943](https:/
 
 Version 0.4.1: [10.5281/zenodo.23634323](https://doi.org/10.5281/zenodo.23634323)
 
-Machine-readable citation metadata is available in [`CITATION.cff`](CITATION.cff).
+Machine-readable citation metadata is available in [`CITATION.cff`](https://github.com/nialljmiller/SED_Tools/blob/v0.5.0/CITATION.cff).
 
 SED_Tools is also the designated data-preparation pipeline for the
 [MESA](https://docs.mesastar.org/) `colors` module — see
@@ -1236,13 +1314,13 @@ in the MESA repository.
 
 ## Contributing
 
-Bug reports, feature requests, and pull requests are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). Please also review our [Code of Conduct](CODE_OF_CONDUCT.md) and [Security Policy](SECURITY.md) (for reporting vulnerabilities).
+Bug reports, feature requests, and pull requests are welcome — see [CONTRIBUTING.md](https://github.com/nialljmiller/SED_Tools/blob/v0.5.0/CONTRIBUTING.md). Please also review our [Code of Conduct](https://github.com/nialljmiller/SED_Tools/blob/v0.5.0/CODE_OF_CONDUCT.md) and [Security Policy](https://github.com/nialljmiller/SED_Tools/blob/v0.5.0/SECURITY.md) (for reporting vulnerabilities).
 
 ---
 
 ## License
 
-[MIT License](LICENSE)
+[MIT License](https://github.com/nialljmiller/SED_Tools/blob/v0.5.0/LICENSE)
 
 ---
 

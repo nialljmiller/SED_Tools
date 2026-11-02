@@ -1,0 +1,68 @@
+{
+  "bands": [
+    "u",
+    "g",
+    "r",
+    "i",
+    "z",
+    "y"
+  ],
+  "components": {
+    "filter": {
+      "g": "components/filter/g_v1p5.dat",
+      "i": "components/filter/i_v1p5.dat",
+      "r": "components/filter/r_v1p5.dat",
+      "u": "components/filter/u_v1p5.dat",
+      "y": "components/filter/y_v1p5.dat",
+      "z": "components/filter/z_v1p5.dat"
+    },
+    "optics": {
+      "*": "components/optics/mirrors_lenses_v1p5.dat"
+    },
+    "qe": {
+      "*": "components/qe/detector_v1p5.dat"
+    }
+  },
+  "default_site": "lsst_std",
+  "detector_type": "photon",
+  "detector_type_sources": {
+    "g": "svo",
+    "i": "svo",
+    "r": "svo",
+    "u": "svo",
+    "y": "svo",
+    "z": "svo"
+  },
+  "detector_types": {
+    "g": "photon",
+    "i": "photon",
+    "r": "photon",
+    "u": "photon",
+    "y": "photon",
+    "z": "photon"
+  },
+  "facility": "LSST",
+  "ground_based": true,
+  "instrument": "LSST",
+  "notes": "Published curves are SVO's LSST/LSST.*, which equal lsst/throughputs release 1.5 baseline/total_<b>.dat to 5e-7 (filter x m1-m3 x lens1-3 x detector x atmos_std, X=1.2). Components are that release's (tag 1.5), with Rubin's time-averaged ten-year losses, so filter x optics x qe x lsst_std(X=1.2) reproduces the published curves. Earlier builds put release 1.9.2 components here (components/*/<name>.dat without the _v1p5 suffix; kept on disk, no longer registered); release 1.9 is instrument LSST/LSSTv19. Atmosphere site 'lsst_std': baseline/README.md: 'atmos_std.dat is a fiducial atmosphere throughput at Rubin at 1.2 airmasses' (the same README also calls it 'the zenith atmos_std.dat atmosphere'). atmos_10.dat is X=1.0: the syseng_throughputs section of that README says 'To represent zenith, optimum throughputs, the X=1.0, with aerosols [atmosphere](./siteProperties/atmos_10_aerosol.dat) curve should be used', and atmos_10.dat equals that file at the sha1 in its header except the 1150 nm sample; ln T(atmos_std)/ln T(atmos_10) has median 1.199.",
+  "outside_range": "error",
+  "published": {
+    "components": "filter+instrument+atmosphere",
+    "source": "svo"
+  },
+  "published_bands": {
+    "g": "filter+instrument+atmosphere",
+    "i": "filter+instrument+atmosphere",
+    "r": "filter+instrument+atmosphere",
+    "u": "filter+instrument+atmosphere",
+    "y": "filter+instrument+atmosphere",
+    "z": "filter+instrument+atmosphere"
+  },
+  "schema": 1,
+  "sources": {
+    "filter": "lsst/throughputs 1.5 baseline/filter_u.dat",
+    "optics": "product of lsst/throughputs 1.5 baseline/m1.dat, lsst/throughputs 1.5 baseline/m2.dat, lsst/throughputs 1.5 baseline/m3.dat, lsst/throughputs 1.5 baseline/lens1.dat, lsst/throughputs 1.5 baseline/lens2.dat, lsst/throughputs 1.5 baseline/lens3.dat",
+    "qe": "lsst/throughputs 1.5 baseline/detector.dat",
+    "repository": "https://github.com/lsst/throughputs/tree/1.5/baseline"
+  }
+}

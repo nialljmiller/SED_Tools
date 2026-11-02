@@ -28,19 +28,16 @@ from __future__ import annotations
 import hashlib
 import io
 import json
-import logging
 import re
 import tarfile
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Tuple, Union
+from typing import Dict, Iterable, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
-from ..filter_components import FILTER, OPTICS, QE, InstrumentManifest, add_component
-from ..filter_metadata import PHOTON
-from ._original import safe_member
-
-logger = logging.getLogger(__name__)
+from ..filters.compose import FILTER, OPTICS, QE, InstrumentManifest, add_component
+from ..filters.curve_metadata import PHOTON
+from ._original import CONNECT_TIMEOUT, _each_published, download, product, safe_member  # noqa: F401  CONNECT_TIMEOUT stays importable here
 
 FACILITY = "JWST"
 REFDATA_VERSION = "2026.7"
@@ -66,9 +63,7 @@ def fetch_refdata(dest: Union[str, Path], url: str = REFDATA_URL, session=None,
         session = requests.Session()
     dest = Path(dest)
     dest.mkdir(parents=True, exist_ok=True)
-    resp = session.get(url, timeout=600)
-    resp.raise_for_status()
-    data = resp.content
+    data = download(session, url, read_timeout=600)
     if sha1 and hashlib.sha1(data).hexdigest() != sha1:
         raise RuntimeError(f"Pandeia reference data from {url} does not match SHA-1 {sha1}")
     root = None
@@ -103,16 +98,6 @@ def _read(path: Path) -> Tuple[np.ndarray, np.ndarray]:
     return wl[order], tr[order]
 
 
-def _product(curves: List[Tuple[np.ndarray, np.ndarray]]) -> Tuple[np.ndarray, np.ndarray]:
-    lo = max(c[0][0] for c in curves)
-    hi = min(c[0][-1] for c in curves)
-    grid = np.unique(np.concatenate([c[0][(c[0] >= lo) & (c[0] <= hi)] for c in curves]))
-    out = np.ones_like(grid)
-    for wl, tr in curves:
-        out *= np.interp(grid, wl, tr)
-    return grid, out
-
-
 def _band_factors(inst: str, band: str, paths: Dict[str, str]) -> Optional[Dict[str, List[str]]]:
     """Reference-file keys per role for one imaging band (None if not imaging)."""
     key = band.lower()
@@ -128,6 +113,38 @@ def _band_factors(inst: str, band: str, paths: Dict[str, str]) -> Optional[Dict[
     return None
 
 
+def _build_instrument(inst: str, inst_dir: Path, bands: Sequence[str], refdata: Path,
+                      ote: Tuple[np.ndarray, np.ndarray], ote_name: str) -> None:
+    """Write the components of one instrument's imaging ``bands``, and its manifest."""
+    paths = json.loads((refdata / inst / "config.json").read_text())["paths"]
+    manifest = InstrumentManifest.load(inst_dir)
+    manifest.components = {}
+    skipped = []
+    for band in bands:
+        factors = _band_factors(inst, band, paths)
+        if factors is None:
+            skipped.append(band)
+            continue
+        for role, keys in factors.items():
+            curves = [_read(refdata / inst / paths[k]) for k in keys]
+            sources = [f"Pandeia {REFDATA_VERSION} jwst/{inst}/{paths[k]}" for k in keys]
+            if role == OPTICS:
+                curves.insert(0, ote)
+                sources.insert(0, f"Pandeia {REFDATA_VERSION} jwst/telescope/{ote_name}")
+            wl, tr = product(curves)
+            add_component(inst_dir, role, wl, tr, band=band, name=band,
+                          source="; ".join(sources), manifest=manifest)
+    manifest.detector_type = PHOTON
+    manifest.ground_based = False
+    manifest.outside_range = "zero"  # Pandeia's convention: factors are zero outside their tables
+    manifest.sources["pandeia"] = f"Pandeia reference data {REFDATA_VERSION} (JWST, in-flight; {REFDATA_PAGE})"
+    manifest.notes = (
+        "Optics = OTE x instrument internal optics (x dichroic for NIRCam). "
+        + (f"Not decomposed (not imaging filters in Pandeia): {', '.join(skipped)}." if skipped else "")
+    )
+    manifest.save(inst_dir)
+
+
 def build(
     filter_root: Union[str, Path],
     *,
@@ -135,7 +152,11 @@ def build(
     instruments: Optional[Iterable[str]] = None,
     session=None,
 ) -> List[Path]:
-    """Populate components for JWST NIRCam, NIRISS and MIRI imaging bands."""
+    """Populate components for JWST NIRCam, NIRISS and MIRI imaging bands.
+
+    Instruments without published curves are left out; once the others are
+    built, a FileNotFoundError lists them.
+    """
     filter_root = Path(filter_root)
     refdata = Path(raw) if raw else fetch_refdata(filter_root.parent / "cache" / "pandeia", session=session)
     if (refdata / "jwst").is_dir():
@@ -143,41 +164,6 @@ def build(
     tel_cfg = json.loads((refdata / "telescope" / "config.json").read_text())
     ote_file = refdata / "telescope" / tel_cfg["paths"]["otefile"]
     ote = _read(ote_file)
-
-    built = []
-    for svo_inst in instruments or INSTRUMENTS:
-        inst = INSTRUMENTS[svo_inst]
-        inst_dir = filter_root / FACILITY / svo_inst
-        bands = sorted(p.stem for p in inst_dir.glob("*.dat"))
-        if not bands:
-            logger.warning("JWST/%s: no published curves present; fetch them first", svo_inst)
-            continue
-        paths = json.loads((refdata / inst / "config.json").read_text())["paths"]
-        manifest = InstrumentManifest.load(inst_dir)
-        manifest.components = {}
-        skipped = []
-        for band in bands:
-            factors = _band_factors(inst, band, paths)
-            if factors is None:
-                skipped.append(band)
-                continue
-            for role, keys in factors.items():
-                curves = [_read(refdata / inst / paths[k]) for k in keys]
-                sources = [f"Pandeia {REFDATA_VERSION} jwst/{inst}/{paths[k]}" for k in keys]
-                if role == OPTICS:
-                    curves.insert(0, ote)
-                    sources.insert(0, f"Pandeia {REFDATA_VERSION} jwst/telescope/{ote_file.name}")
-                wl, tr = _product(curves) if len(curves) > 1 else curves[0]
-                add_component(inst_dir, role, wl, tr, band=band, name=band,
-                              source="; ".join(sources), manifest=manifest)
-        manifest.detector_type = PHOTON
-        manifest.ground_based = False
-        manifest.outside_range = "zero"  # Pandeia's convention: factors are zero outside their tables
-        manifest.sources["pandeia"] = f"Pandeia reference data {REFDATA_VERSION} (JWST, in-flight; {REFDATA_PAGE})"
-        manifest.notes = (
-            "Optics = OTE x instrument internal optics (x dichroic for NIRCam). "
-            + (f"Not decomposed (not imaging filters in Pandeia): {', '.join(skipped)}." if skipped else "")
-        )
-        manifest.save(inst_dir)
-        built.append(inst_dir)
-    return built
+    return _each_published(
+        filter_root / FACILITY, instruments or INSTRUMENTS, INSTRUMENTS,
+        lambda _, inst, inst_dir, bands: _build_instrument(inst, inst_dir, bands, refdata, ote, ote_file.name))

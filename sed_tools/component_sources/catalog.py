@@ -1,26 +1,16 @@
-"""Which instruments have separable components, from where, and why not.
+"""Which instruments have separable components, which builder supplies them, and why not.
 
-``BUILDERS_FOR`` maps a local ``<Facility>/<Instrument>`` directory to the
-builder that fetches that instrument's own published factors.  The njm
-mirror runs them ahead of time; a client that downloaded the published
-curves elsewhere (e.g. SVO) runs them itself (see
-:func:`ensure_components`).  ``heavy`` builders download large archives and
-only run on request.  ``publishes`` builders can also write an instrument's
-published curves from the original sources, so :meth:`FilterLibrary.published`
-uses them when the njm mirror is unavailable; builders with
-``components=False`` only reproduce the published curves (the team publishes
-no separate factors), so they are not run to obtain components.
-
-``STATUS`` records instruments whose teams publish only a total response,
-or whose component data cannot currently be retrieved, so that users are
-told why only the published curve is offered.
+``BUILDERS_FOR`` maps ``<Facility>/<Instrument>`` to its builder (:class:`BuilderRef` says which run
+on clients and which can also rebuild the published curves); NJM runs them ahead of time, a client
+runs them itself (:func:`ensure_components`).  ``STATUS`` says why only a published curve is offered.
 """
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Optional, Tuple, Union
+from typing import Dict, Iterable, Optional, Tuple, Union
 
 @dataclass(frozen=True)
 class BuilderRef:
@@ -29,10 +19,6 @@ class BuilderRef:
     heavy: bool = False  # large download; not run automatically on clients
     publishes: bool = False  # can rebuild the published curves from the original sources
     components: bool = True  # supplies separately published components
-
-
-def _tabular(instrument: str) -> BuilderRef:
-    return BuilderRef("tabular", (("instrument", instrument),), publishes=True)
 
 
 #: Instruments rebuilt from their teams' original files (``component_sources``
@@ -96,18 +82,13 @@ BUILDERS_FOR: Dict[Tuple[str, str], BuilderRef] = {
     ("Gemini", "GMOS_N"): BuilderRef("gmos", (("instrument", "GMOS_N"),)),
     ("Gemini", "GMOS_S"): BuilderRef("gmos", (("instrument", "GMOS_S"),)),
     ("SLOAN", "SDSS"): BuilderRef("sdss"),
-    ("Paranal", "HAWKI"): _tabular("HAWKI"),
-    ("Paranal", "NACO"): _tabular("NACO"),
-    ("Paranal", "SPHERE"): _tabular("SPHERE"),
-    ("Gemini", "GSAOI"): _tabular("GSAOI"),
-    ("Gemini", "NIFS"): _tabular("NIFS"),
-    ("CAHA", "PANIC"): _tabular("PANIC"),
-    ("WHT", "INGRID"): _tabular("INGRID"),
-    ("IRTF", "NSFCam"): _tabular("NSFCam"),
-    ("Liverpool", "IOO"): _tabular("IOO"),
-    ("JWST", "NIRCam"): BuilderRef("jwst", (("instruments", ("NIRCam",)),)),
-    ("JWST", "NIRISS"): BuilderRef("jwst", (("instruments", ("NIRISS",)),)),
-    ("JWST", "MIRI"): BuilderRef("jwst", (("instruments", ("MIRI",)),)),
+    # Argus inputs are partly non-public: without them the builder raises and points to NJM.
+    # Only NJM serves the published curves.
+    ("Argus", "DR280"): BuilderRef("argus", (("instrument", "DR280"),)),
+    **{(fac, inst): BuilderRef("tabular", (("instrument", inst),), publishes=True) for fac, inst in (
+        ("Paranal", "HAWKI"), ("Paranal", "NACO"), ("Paranal", "SPHERE"), ("Gemini", "GSAOI"), ("Gemini", "NIFS"),
+        ("CAHA", "PANIC"), ("WHT", "INGRID"), ("IRTF", "NSFCam"), ("Liverpool", "IOO"))},
+    **{("JWST", inst): BuilderRef("jwst", (("instruments", (inst,)),)) for inst in ("NIRCam", "NIRISS", "MIRI")},
     **_hst(),
     **_original(),
 }
@@ -136,13 +117,51 @@ STATUS: Dict[Tuple[str, str], Tuple[str, str]] = {
 }
 
 
+def name_key(name: str) -> str:
+    """A name compared without case or punctuation: ``S-PLUS``, ``S_PLUS`` and ``s plus`` match."""
+    return re.sub(r"[^a-z0-9]", "", name.casefold())
+
+
+def match_name(name: str, names: Iterable[str]) -> Optional[str]:
+    """The one of ``names`` that is ``name``, else the only one equal to it under :func:`name_key`.
+
+    None when nothing matches, or when several names match only under
+    :func:`name_key` (NJM serves both ``Sony_NEX5N`` and ``Sony_NEX_5N``).
+    """
+    names = list(names)
+    if name in names:
+        return name
+    found = [candidate for candidate in names if name_key(candidate) == name_key(name)]
+    return found[0] if len(found) == 1 else None
+
+
+def _match_pair(pairs, facility: str, instrument: str) -> Tuple[Optional[str], Optional[str]]:
+    """(facility, instrument) as spelled in ``pairs``, each matched by :func:`match_name` (``"*"`` never matches)."""
+    fac = match_name(facility, {f for f, _ in pairs})
+    if fac is None:
+        return None, None
+    return fac, match_name(instrument, [i for f, i in pairs if f == fac and i != "*"])
+
+
+def registered_name(facility: str, instrument: str) -> Optional[Tuple[str, str]]:
+    """The ``BUILDERS_FOR`` spelling of an instrument (``Gemini/GMOS-N`` -> ``Gemini/GMOS_N``), or None."""
+    fac, inst = _match_pair(BUILDERS_FOR, facility, instrument)
+    return None if inst is None else (fac, inst)
+
+
 def builder_for(facility: str, instrument: str) -> Optional[BuilderRef]:
-    return BUILDERS_FOR.get((facility, instrument))
+    """The builder of an instrument, matched as :func:`registered_name` does."""
+    names = registered_name(facility, instrument)
+    return None if names is None else BUILDERS_FOR[names]
 
 
 def status_for(facility: str, instrument: str) -> Optional[Tuple[str, str]]:
-    """Status of an instrument; ``(facility, "*")`` entries cover every instrument of a facility."""
-    return STATUS.get((facility, instrument)) or STATUS.get((facility, "*"))
+    """Status of an instrument; ``(facility, "*")`` entries cover every instrument of a facility.
+
+    Names are matched as :func:`match_name` does.
+    """
+    fac, inst = _match_pair(STATUS, facility, instrument)
+    return None if fac is None else STATUS.get((fac, inst)) or STATUS.get((fac, "*"))
 
 
 def component_availability(facility: str, instrument: str) -> Dict[str, object]:
@@ -170,7 +189,7 @@ def ensure_components(
     components=None, bands=None,
 ) -> bool:
     """Compatibility entry point for the shared filter acquisition workflow."""
-    from ..filter_library import FilterLibrary
+    from ..filters.library import FilterLibrary
 
     directory = Path(instrument_dir)
     return FilterLibrary(directory.parent.parent).prepare_components(

@@ -1,0 +1,13 @@
+#file_name, alpha, conversion_confidence, flux_unit, lh, logg, metallicity, original_flux_unit, original_wavelength_unit, source, teff, units_standardized, vtur, wavelength_unit
+Kurucz2003all_fid16515.txt,0,catalog_high,erg/cm2/s/A,1.25,4.0,-0.5,flam,angstrom,unknown,5750.0,True,2 km/s,Angstrom
+Kurucz2003all_fid16516.txt,0,catalog_high,erg/cm2/s/A,1.25,4.5,-0.5,flam,angstrom,unknown,5750.0,True,2 km/s,Angstrom
+Kurucz2003all_fid16526.txt,0,catalog_high,erg/cm2/s/A,1.25,4.0,-0.5,flam,angstrom,unknown,6000.0,True,2 km/s,Angstrom
+Kurucz2003all_fid16527.txt,0,catalog_high,erg/cm2/s/A,1.25,4.5,-0.5,flam,angstrom,unknown,6000.0,True,2 km/s,Angstrom
+Kurucz2003all_fid16536.txt,0,catalog_high,erg/cm2/s/A,1.25,4.0,-0.5,flam,angstrom,unknown,6250.0,True,2 km/s,Angstrom
+Kurucz2003all_fid16537.txt,0,catalog_high,erg/cm2/s/A,1.25,4.5,-0.5,flam,angstrom,unknown,6250.0,True,2 km/s,Angstrom
+Kurucz2003all_fid18895.txt,0,catalog_high,erg/cm2/s/A,1.25,4.0,0.0,flam,angstrom,unknown,5750.0,True,2 km/s,Angstrom
+Kurucz2003all_fid18896.txt,0,catalog_high,erg/cm2/s/A,1.25,4.5,0.0,flam,angstrom,unknown,5750.0,True,2 km/s,Angstrom
+Kurucz2003all_fid18906.txt,0,catalog_high,erg/cm2/s/A,1.25,4.0,0.0,flam,angstrom,unknown,6000.0,True,2 km/s,Angstrom
+Kurucz2003all_fid18907.txt,0,catalog_high,erg/cm2/s/A,1.25,4.5,0.0,flam,angstrom,unknown,6000.0,True,2 km/s,Angstrom
+Kurucz2003all_fid18916.txt,0,catalog_high,erg/cm2/s/A,1.25,4.0,0.0,flam,angstrom,unknown,6250.0,True,2 km/s,Angstrom
+Kurucz2003all_fid18917.txt,0,catalog_high,erg/cm2/s/A,1.25,4.5,0.0,flam,angstrom,unknown,6250.0,True,2 km/s,Angstrom

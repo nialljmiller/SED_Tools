@@ -1,7 +1,6 @@
-"""Public package API for SED Tools.
+"""Public package API for SED Tools: the supported import surface and thin compatibility helpers.
 
-Implementation code lives in the package's focused modules.  This module only
-defines the supported import surface and thin compatibility helpers.
+The code is in the subpackages (api, cli, filters, grids, cube, ml) and the old module paths forward to them.
 """
 
 from __future__ import annotations
@@ -30,10 +29,10 @@ from .cli import (
     run_rebuild_flow,
     run_spectra_flow,
 )
-from .spectrum_io import build_h5_bundle as build_h5_bundle_from_txt
-from .spectrum_io import list_text_spectra, read_text_spectrum as load_txt_spectrum
-from .mast_spectra_grabber import MASTSpectraGrabber
-from .models import (
+from .grids.spectrum_io import build_h5_bundle as build_h5_bundle_from_txt
+from .grids.spectrum_io import list_text_spectra, read_text_spectrum as load_txt_spectrum
+from .grids.mast import MASTSpectraGrabber
+from .cube.model import (
     DATA_DIR_DEFAULT,
     FILTER_DIR_DEFAULT,
     STELLAR_DIR_DEFAULT,
@@ -43,15 +42,24 @@ from .models import (
     SED as _SEDCore,
     SEDModel,
 )
-from .msg_spectra_grabber import MSGSpectraGrabber
-from .njm_filter_grabber import NJMFilterGrabber
-from .njm_spectra_grabber import NJMSpectraGrabber
-from .precompute_flux_cube import precompute_flux_cube
-from .spectra_cleaner import clean_model_dir
-from .svo_regen_spectra_lookup import regenerate_lookup_table
-from .svo_spectra_grabber import SVOSpectraGrabber
+from .grids.msg import MSGSpectraGrabber
+from .filters.njm import NJMFilterGrabber
+from .grids.njm import NJMSpectraGrabber
+from .grids.clean import clean_model_dir
+from .grids.lookup import regenerate_lookup_table
+from .grids.svo import SVOSpectraGrabber
 
-__version__ = "0.4.1"
+# Through the old path, as before the move, so the package attribute is the function, not the module.
+from .precompute_flux_cube import precompute_flux_cube
+
+# The old module paths that `import sed_tools` has always made attributes of the package.
+from . import (_constants, _flux, _lookup_io, _resample, collision_config, config, facility_sites,  # noqa: F401
+               filter_catalogue, filter_components, filter_metadata, flux_cube_tool, header_parser,
+               mast_spectra_grabber, models, msg_spectra_grabber, njm_filter_grabber, njm_spectra_grabber,
+               parsing, spectra_cleaner, spectrum_io, svo_regen_spectra_lookup, svo_spectra_grabber,
+               terminal_plots, ui_utils)
+
+__version__ = "0.5.0"
 
 
 def list_txt_spectra(model_dir: str) -> list[str]:

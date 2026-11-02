@@ -1,0 +1,37 @@
+{
+ "B": {
+  "ColorMethod": "true",
+  "DisplayColor": "#0043ff",
+  "VisibleFraction": 0.9943
+ },
+ "I": {
+  "ColorMethod": "false",
+  "DisplayColor": "#ee3b2b",
+  "VisibleFraction": 0.0488
+ },
+ "J": {
+  "ColorMethod": "false",
+  "DisplayColor": "#d4113a",
+  "VisibleFraction": 0.0
+ },
+ "M": {
+  "ColorMethod": "false",
+  "DisplayColor": "#a50d59",
+  "VisibleFraction": 0.0
+ },
+ "R": {
+  "ColorMethod": "true",
+  "DisplayColor": "#ff6900",
+  "VisibleFraction": 0.7628
+ },
+ "U": {
+  "ColorMethod": "false",
+  "DisplayColor": "#7c2bee",
+  "VisibleFraction": 0.1195
+ },
+ "V": {
+  "ColorMethod": "true",
+  "DisplayColor": "#7fff00",
+  "VisibleFraction": 1.0
+ }
+}

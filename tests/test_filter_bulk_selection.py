@@ -3,7 +3,6 @@ from types import SimpleNamespace
 import pytest
 
 from sed_tools import cli
-from sed_tools.api import Filters
 from sed_tools.filter_library import FilterLibrary
 from sed_tools.parsing import parse_multi_selection
 from sed_tools.ui_utils import prompt_choice
@@ -32,20 +31,39 @@ def filter_catalogue(tmp_path, monkeypatch):
                                      {"key": "Camera2", "label": "Camera2"}], "errors": []})
     fetched, offered = [], []
 
-    def fetch(facility, instrument, **kwargs):
+    def fetch(self, facility, instrument):
         fetched.append((facility, instrument))
         return tmp_path / facility / instrument
 
-    monkeypatch.setattr(Filters, "fetch", fetch)
-    monkeypatch.setattr(cli, "_offer_composition", offered.append)
+    monkeypatch.setattr(FilterLibrary, "published", fetch)  # the browser downloads with its own library
+    monkeypatch.setattr(cli.filters, "_offer_composition", offered.append)
+    # What the browser describes before asking to download (Filters.available, NJM's catalogue entry).
+    monkeypatch.setattr(FilterLibrary, "available", lambda self, facility, instrument, remote=True: {
+        "facility": facility, "instrument": instrument, "bands": ["V"], "published": "filter",
+        "published_bands": {}, "components": [], "partial_components": {}, "component_status": None,
+        "errors": [], "atmosphere": False, "platform": "ground", "variants": {}})
+    monkeypatch.setattr(cli.filters, "_catalogue_entry", lambda *a, **k: {"info": None, "properties": None, "errors": []})
     return SimpleNamespace(root=tmp_path, fetched=fetched, offered=offered)
 
 
 @pytest.mark.parametrize("selection,facilities", [("1,3", ["A", "C"]), ("1-3", ["A", "B", "C"])])
 def test_multiple_facilities_download_every_instrument_without_prompts(filter_catalogue, monkeypatch, selection, facilities):
+    monkeypatch.setattr("sys.stdin", SimpleNamespace(isatty=lambda: False))  # piped or scripted input, as in 0.4.1
     answers = iter([selection])  # Any confirmation, instrument or component prompt would fail.
     monkeypatch.setattr("builtins.input", lambda prompt="": next(answers))
     cli.run_filters_flow(str(filter_catalogue.root))
+    assert filter_catalogue.fetched == [(facility, instrument) for facility in facilities
+                                        for instrument in ("Camera1", "Camera2")]
+    assert filter_catalogue.offered == []
+
+
+@pytest.mark.parametrize("selection,facilities", [("1,3", ["A", "C"]), ("1-3", ["A", "B", "C"])])
+def test_multiple_facilities_download_every_instrument_after_one_confirmation(filter_catalogue, monkeypatch, selection, facilities):
+    monkeypatch.setattr("sys.stdin", SimpleNamespace(isatty=lambda: True))  # at a terminal
+    answers = iter([selection, "y"])  # Any further confirmation, instrument or component prompt would fail.
+    monkeypatch.setattr("builtins.input", lambda prompt="": next(answers))
+    cli.run_filters_flow(str(filter_catalogue.root))
+    assert next(answers, None) is None  # the confirmation was asked
     assert filter_catalogue.fetched == [(facility, instrument) for facility in facilities
                                         for instrument in ("Camera1", "Camera2")]
     assert filter_catalogue.offered == []

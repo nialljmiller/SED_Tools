@@ -20,17 +20,15 @@ The detector-to-detector spread is recorded in the manifest notes.
 
 from __future__ import annotations
 
-import logging
 import re
 from pathlib import Path
 from typing import Dict, Tuple, Union
 
 import numpy as np
 
-from ..filter_components import QE, SHARED, InstrumentManifest, add_component
+from ..filters.compose import QE, SHARED, InstrumentManifest, add_component
+from ._common import published_bands
 from ._original import Fetcher
-
-logger = logging.getLogger(__name__)
 
 FACILITY, INSTRUMENT = "Roman", "WFI"
 COMMIT = "14a9b0c98b0da723d0f2e4c6277956183c1fdd06"  # repository HEAD on 2026-10-26 (v1.6)
@@ -57,10 +55,8 @@ RELEASE_NOTE = (
 
 def _declared_units(text: str) -> Dict[str, str]:
     """Column units from the ECSV ``datatype`` header (``''`` when dimensionless)."""
-    units = {}
-    for m in re.finditer(r"\{name: ([^,]+), unit: ([^,]*), datatype", text):
-        units[m.group(1).strip()] = m.group(2).strip().strip("'\"")
-    return units
+    return {m.group(1).strip(): m.group(2).strip().strip("'\"")
+            for m in re.finditer(r"\{name: ([^,]+), unit: ([^,]*), datatype", text)}
 
 
 def parse_qe(text: str) -> Tuple[np.ndarray, np.ndarray]:
@@ -108,8 +104,7 @@ def spread_note(wl: np.ndarray, qe: np.ndarray) -> str:
 def build(filter_root: Union[str, Path], *, session=None, **_ignored) -> Path:
     """Add the focal-plane mean QE to ``Roman/WFI``."""
     inst_dir = Path(filter_root) / FACILITY / INSTRUMENT
-    if not list(inst_dir.glob("*.dat")):
-        raise FileNotFoundError(f"{inst_dir}: no published curves; fetch them first")
+    published_bands(inst_dir)  # refuses an instrument with no published curves
     fetch = Fetcher(session)
     wl, qe = parse_qe(fetch.text(QE_URL))
     check_summary(fetch.text(SUMMARY_URL), wl, qe)

@@ -1,0 +1,175 @@
+{
+ "acknowledgements": [
+  {
+   "applies_to": "curves and metadata",
+   "for": "SVO Filter Profile Service",
+   "references": [
+    "bibcode:2012ivoa.rept.1015R",
+    "bibcode:2020sea..confE.182R",
+    "bibcode:2024A&A...689A..93R"
+   ],
+   "text": "This research has made use of the SVO Filter Profile Service \"Carlos Rodrigo\", funded by MCIN/AEI/10.13039/501100011033/ through grant PID2023-146210NB-I00"
+  }
+ ],
+ "bands": {
+  "g": {
+   "curve": {
+    "Components": "filter+qe",
+    "ComponentsSource": "svo",
+    "DetectorType": "photon",
+    "DetectorTypeSource": "svo",
+    "FilterID": "Palomar/ZTF.g",
+    "sources": [
+     "url:https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/7c1d1ed1adeea47ee024272e797e77d7e65160d5/README.md:",
+     "url:https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/7c1d1ed1adeea47ee024272e797e77d7e65160d5/filter_transmission/ZTF_g_band_test_data_pos1_0AOI.csv",
+     "url:https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/7c1d1ed1adeea47ee024272e797e77d7e65160d5/QE/e2v_ztf_multi2.csv",
+     "url:https://github.com/ZwickyTransientFacility/ztf_information"
+    ]
+   },
+   "references": []
+  },
+  "i": {
+   "curve": {
+    "Components": "filter+qe",
+    "ComponentsSource": "svo",
+    "DetectorType": "photon",
+    "DetectorTypeSource": "svo",
+    "FilterID": "Palomar/ZTF.i",
+    "sources": [
+     "url:https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/7c1d1ed1adeea47ee024272e797e77d7e65160d5/README.md:",
+     "url:https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/7c1d1ed1adeea47ee024272e797e77d7e65160d5/filter_transmission/ztf_i_band.csv",
+     "url:https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/7c1d1ed1adeea47ee024272e797e77d7e65160d5/QE/e2v_ztf_multi2.csv",
+     "url:https://github.com/ZwickyTransientFacility/ztf_information"
+    ]
+   },
+   "references": []
+  },
+  "r": {
+   "curve": {
+    "Components": "filter+qe",
+    "ComponentsSource": "svo",
+    "DetectorType": "photon",
+    "DetectorTypeSource": "svo",
+    "FilterID": "Palomar/ZTF.r",
+    "sources": [
+     "url:https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/7c1d1ed1adeea47ee024272e797e77d7e65160d5/README.md:",
+     "url:https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/7c1d1ed1adeea47ee024272e797e77d7e65160d5/filter_transmission/ZTF_r_band_test_data_pos1_0AOI.csv",
+     "url:https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/7c1d1ed1adeea47ee024272e797e77d7e65160d5/QE/e2v_ztf_multi2.csv",
+     "url:https://github.com/ZwickyTransientFacility/ztf_information"
+    ]
+   },
+   "references": []
+  }
+ },
+ "bibliography": {
+  "bibcode:2012ivoa.rept.1015R": {
+   "authors": [
+    "Rodrigo, C.",
+    "Solano, E.",
+    "Bayo, A."
+   ],
+   "bibcode": "2012ivoa.rept.1015R",
+   "bibtex": "@techreport{2012ivoa.rept.1015R,\n  author = {Rodrigo, C. and Solano, E. and Bayo, A.},\n  title = {SVO Filter Profile Service Version 1.0},\n  institution = {International Virtual Observatory Alliance},\n  type = {IVOA Working Draft},\n  year = {2012},\n  month = oct,\n  url = {http://www.ivoa.net/documents/Notes/SVOFPS/index.html}\n}",
+   "journal": "IVOA Working Draft, 15 October 2012",
+   "publisher_url": "http://www.ivoa.net/documents/Notes/SVOFPS/index.html",
+   "short": "Rodrigo et al. 2012",
+   "title": "SVO Filter Profile Service Version 1.0",
+   "type": "techreport",
+   "url": "https://ui.adsabs.harvard.edu/abs/2012ivoa.rept.1015R",
+   "year": 2012
+  },
+  "bibcode:2020sea..confE.182R": {
+   "authors": [
+    "Rodrigo, C.",
+    "Solano, E."
+   ],
+   "bibcode": "2020sea..confE.182R",
+   "bibtex": "@inproceedings{2020sea..confE.182R,\n  author = {Rodrigo, C. and Solano, E.},\n  title = {The SVO Filter Profile Service},\n  year = {2020},\n  url = {https://ui.adsabs.harvard.edu/abs/2020sea..confE.182R}\n}",
+   "short": "Rodrigo & Solano 2020",
+   "title": "The SVO Filter Profile Service",
+   "type": "inproceedings",
+   "url": "https://ui.adsabs.harvard.edu/abs/2020sea..confE.182R",
+   "year": 2020
+  },
+  "bibcode:2024A&A...689A..93R": {
+   "authors": [
+    "Rodrigo, Carlos",
+    "Cruz, Patricia",
+    "Aguilar, John F.",
+    "Aller, Alba",
+    "Solano, Enrique",
+    "Gálvez-Ortiz, Maria Cruz",
+    "Jiménez-Esteban, Francisco",
+    "Mas-Buitrago, Pedro",
+    "Bayo, Amelia",
+    "Cortés-Contreras, Miriam",
+    "Murillo-Ojeda, Raquel",
+    "Bonoli, Silvia",
+    "Cenarro, Javier",
+    "Dupke, Renato",
+    "López-Sanjuan, Carlos",
+    "Marín-Franch, Antonio",
+    "de Oliveira, Claudia Mendes",
+    "Moles, Mariano",
+    "Taylor, Keith",
+    "Varela, Jesús",
+    "Ramió, Héctor Vázquez"
+   ],
+   "bibcode": "2024A&A...689A..93R",
+   "bibtex": "@article{2024A&A...689A..93R, title={Photometric segregation of dwarf and giant FGK stars using the SVO Filter Profile Service and photometric tools}, volume={689}, ISSN={1432-0746}, url={http://dx.doi.org/10.1051/0004-6361/202449998}, DOI={10.1051/0004-6361/202449998}, journal={Astronomy \\& Astrophysics}, publisher={EDP Sciences}, author={Rodrigo, Carlos and Cruz, Patricia and Aguilar, John F. and Aller, Alba and Solano, Enrique and Gálvez-Ortiz, Maria Cruz and Jiménez-Esteban, Francisco and Mas-Buitrago, Pedro and Bayo, Amelia and Cortés-Contreras, Miriam and Murillo-Ojeda, Raquel and Bonoli, Silvia and Cenarro, Javier and Dupke, Renato and López-Sanjuan, Carlos and Marín-Franch, Antonio and de Oliveira, Claudia Mendes and Moles, Mariano and Taylor, Keith and Varela, Jesús and Ramió, Héctor Vázquez}, year={2024}, month=Sept, pages={A93} }",
+   "doi": "10.1051/0004-6361/202449998",
+   "journal": "A&A",
+   "page": "A93",
+   "resolved": "2026-10-25",
+   "short": "Rodrigo et al. 2024",
+   "title": "Photometric segregation of dwarf and giant FGK stars using the SVO Filter Profile Service and photometric tools",
+   "type": "article",
+   "url": "https://ui.adsabs.harvard.edu/abs/2024A&A...689A..93R",
+   "volume": "689",
+   "year": 2024
+  }
+ },
+ "description": "The Zwicky Transient Facility uses a wide-field mosaic CCD camera to survey the optical transient sky through g, r and i filters.",
+ "facility": "Palomar",
+ "facility_description": "ZTF observes with the Samuel Oschin 48-inch Schmidt telescope at Palomar Observatory.",
+ "instrument": "ZTF",
+ "licence": {
+  "redistribution": "attribution",
+  "terms": "\"BSD 3-Clause License Copyright (c) 2018, Zwicky Transient Facility All rights reserved. Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met: * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer. * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution. * Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\"",
+  "url": "https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/master/LICENSE"
+ },
+ "links": [
+  {
+   "label": "ZTF project",
+   "source": "ZTF/Caltech",
+   "url": "https://www.ztf.caltech.edu/"
+  },
+  {
+   "label": "ZTF archive, acknowledgement and canonical papers",
+   "source": "IPAC/IRSA",
+   "url": "https://irsa.ipac.caltech.edu/Missions/ztf.html"
+  },
+  {
+   "label": "Owner repository of vendor-measured on-axis filter transmissions",
+   "source": "Zwicky Transient Facility",
+   "url": "https://github.com/ZwickyTransientFacility/ztf_information"
+  },
+  {
+   "label": "Filter repository BSD 3-Clause licence",
+   "source": "Zwicky Transient Facility",
+   "url": "https://raw.githubusercontent.com/ZwickyTransientFacility/ztf_information/master/LICENSE"
+  }
+ ],
+ "notes": "The owner ztf_information repository explicitly contains vendor-measured on-axis filter transmission functions in filter_transmission and carries a top-level BSD 3-Clause licence, Copyright (c) 2018, Zwicky Transient Facility. Attribution classification refers to that repository and requires retaining the copyright, conditions and disclaimer; it does not establish rights to archive images or every NJM profile. No comparison of NJM numerical curves with these source files was performed. The IRSA mission page publishes a project acknowledgement and identifies Masci et al. (2019) and Bellm et al. (2019) as canonical papers, but full acknowledgement and checked reference identifiers remain for parent follow-up. No band-level metadata is asserted.",
+ "references": [
+  "bibcode:2012ivoa.rept.1015R",
+  "bibcode:2020sea..confE.182R",
+  "bibcode:2024A&A...689A..93R"
+ ],
+ "schema": 1,
+ "svo_unmatched": [
+  "g",
+  "i",
+  "r"
+ ]
+}

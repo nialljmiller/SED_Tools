@@ -65,7 +65,7 @@ def test_load_flux_cube_reads_grids_and_indexes_wmlt_order(tmp_path, cube_writer
 
 
 def test_load_flux_cube_missing_file_raises(tmp_path):
-    with pytest.raises(FileNotFoundError, match="flux_cube.bin not found"):
+    with pytest.raises(FileNotFoundError, match="nonexistent/flux_cube.bin"):
         SEDGenerator()._load_flux_cube(str(tmp_path / "nonexistent"))
 
 

@@ -32,15 +32,18 @@ PLEXUS atmospheres (tbl15/16) are not added here.
 
 from __future__ import annotations
 
+import logging
 import re
 from pathlib import Path
 from typing import Dict, Union
 
 import numpy as np
 
-from ..filter_components import FILTER, OPTICS, QE, SHARED
-from ._attach import common_product, fresh_manifest, published_bands, register, with_earlier_note
-from ._original import Fetcher, clean_curve
+from ..filters.compose import FILTER, OPTICS, QE, SHARED
+from ._common import fresh_manifest, published_bands, register, with_earlier_note
+from ._original import Fetcher, clean_curve, common_product
+
+logger = logging.getLogger(__name__)
 
 FACILITY, INSTRUMENT = "2MASS", "2MASS"
 DOC = "https://www.ipac.caltech.edu/2mass/releases/allsky/doc/"
@@ -140,12 +143,13 @@ def band_optics(t: Dict[int, tuple], band: str):
 def build(filter_root: Union[str, Path], *, session=None, **_ignored) -> Path:
     inst_dir = Path(filter_root) / FACILITY / INSTRUMENT
     present = published_bands(inst_dir)
+    missing = sorted(set(FILTER_TABLE) - present)
+    if missing:
+        logger.warning("2MASS: no published curve for %s; their filter and optics are skipped", missing)
     t = fetch_tables(Fetcher(session), range(1, 12))
     notes = with_earlier_note(inst_dir, NOTES.format(page=PAGE, rsr=RSR_PAGE))
     manifest = fresh_manifest(inst_dir, FACILITY, INSTRUMENT)
-    for band in sorted(FILTER_TABLE):
-        if band not in present:
-            continue
+    for band in sorted(set(FILTER_TABLE) & present):
         n = FILTER_TABLE[band]
         register(manifest, inst_dir, FILTER, *t[n], bands=[band], name=band,
                  source=f"{TABLE.format(n=n)} ({band} filter; xlam read as um)")
@@ -172,7 +176,7 @@ def validate(instrument_dir: Union[str, Path], session=None) -> Dict[str, Dict[s
     Returns per band the photon-weighted magnitude difference for a flat
     F_nu source and the largest absolute difference on the table grid.
     """
-    from ..filter_components import compose_band
+    from ..filters.compose import compose_band
 
     fetch = Fetcher(session)
     out = {}

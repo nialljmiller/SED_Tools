@@ -1,13 +1,8 @@
-"""Builders that populate ``components/`` for instruments whose teams publish them.
+"""Builders that write instruments' components (and missing published curves) from their teams' files.
 
-Each builder module exposes ``build(filter_root, **options) -> Path`` returning
-the instrument directory it populated.  Builders only add ``components/`` and
-``manifest.json`` (and published curves where none exist); they never alter
-existing published ``.dat`` files or MESA index files.
-
-Builders are run where the data is curated (the njm mirror), e.g.::
-
-    sed-tools filters-build-components argus --raw /path/to/Argus/raw
+Each module's ``build(filter_root, **options)`` returns the instrument directory; existing published
+``.dat`` and MESA index files are never altered.  They run where the data is curated (the njm mirror),
+e.g. ``sed-tools filters-build-components argus --instrument DR280 --raw /path/to/Argus/raw``.
 """
 
 from __future__ import annotations
@@ -18,36 +13,16 @@ from typing import Callable, Dict
 
 #: name -> module (relative to this package)
 BUILDERS: Dict[str, str] = {
-    "argus": ".argus",
-    "skycalc": ".skycalc",
-    "team_atmospheres": ".team_atmospheres",
-    "lsst": ".lsst",
-    "hst": ".hst",
-    "jwst": ".jwst",
-    "hsc": ".hsc",
-    "decam": ".decam",
-    "vista": ".vista",
-    "ztf": ".ztf",
-    "tabular": ".tabular",
-    "surveys": ".surveys",
-    "space": ".space",
-    "observatories": ".observatories",
-    "standards": ".standards",
-    "cfht": ".cfht",
-    "eris": ".eris",
-    "twomass": ".twomass",
-    "legacy_surveys": ".legacy_surveys",
-    "gmos": ".gmos",
-    "sdss": ".sdss",
-    "euclid": ".euclid",
-    "roman": ".roman",
-    "swift": ".swift",
-    "csp": ".csp",
-    "cassini": ".cassini",
+    name: f".{name}"
+    for name in ("argus", "skycalc", "team_atmospheres", "lsst", "hst", "jwst", "hsc", "decam", "vista", "ztf",
+                 "tabular", "surveys", "space", "observatories", "standards", "cfht", "eris", "twomass",
+                 "legacy_surveys", "gmos", "sdss", "euclid", "roman", "swift", "csp", "cassini")
 }
 
 
-#: Builders that need no local input (``argus`` needs its raw directory).
+#: Builders that ``filters-build-components all`` runs. Each downloads its own
+#: inputs, but ``hst`` and ``jwst`` also need their instruments' published curves
+#: installed. (``argus`` is not one of them: it needs its raw directory.)
 AUTOMATIC_BUILDERS = ("lsst", "hst", "jwst", "hsc", "decam", "vista", "ztf", "skycalc", "team_atmospheres")
 
 
@@ -68,8 +43,8 @@ def compare_to_published(instrument_dir, components=("filter", "optics", "qe"), 
     """
     import numpy as np
 
-    from ..filter_components import compose_band, InstrumentManifest
-    from ..flux_cube_tool import FilterCurve, band_average_flux_lambda, load_filter_curve
+    from ..filters.compose import compose_band, InstrumentManifest
+    from ..photometry import FilterCurve, band_average_flux_lambda, load_filter_curve
 
     instrument_dir = Path(instrument_dir)
     manifest = InstrumentManifest.load(instrument_dir)

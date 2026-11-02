@@ -32,10 +32,9 @@ from typing import Dict, Tuple, Union
 
 import numpy as np
 
-from ..filter_components import FILTER, OPTICS, QE, SHARED
-from ._attach import (common_product, fresh_manifest, published_bands, register, with_earlier_note,
-                      write_unregistered)
-from ._original import Fetcher, clean_curve
+from ..filters.compose import FILTER, OPTICS, QE, SHARED
+from ._common import fresh_manifest, published_bands, register, with_earlier_note, write_unregistered
+from ._original import Fetcher, clean_curve, common_product
 
 logger = logging.getLogger(__name__)
 
@@ -152,9 +151,7 @@ def scan(text: str, url: str):
     Two-column files are one averaged scan; wider files hold one scan per
     column and are averaged (CFHT reports the mean).  Values are percent.
     """
-    data = _numeric_rows(text)
-    if data.shape[1] < 2:
-        raise ValueError(f"{url}: expected wavelength and transmission columns")
+    data = _numeric_rows(text)  # rows of at least two numbers
     mean = data[:, 1:].mean(axis=1)
     if mean.max() < 2.0 or mean.max() > 101.0:
         raise ValueError(f"{url}: peak {mean.max():.3g} is not a percentage")
@@ -180,16 +177,14 @@ def build(filter_root: Union[str, Path], *, instrument: str = "Megaprime", sessi
     mapping = {b: c for b, c in BANDS[instrument].items() if b in present}
     missing = sorted(set(BANDS[instrument]) - present)
     if missing:
-        logger.info("CFHT/%s: no published curve for %s; their filters are skipped", instrument, missing)
+        logger.warning("CFHT/%s: no published curve for %s; their filters are skipped", instrument, missing)
 
     # Fetch and check everything before writing anything.
     fetch = Fetcher(session)
     filters = {code: scan(fetch.text(CURVE.format(code=code), "latin-1"), CURVE.format(code=code))
                for code in sorted(set(mapping.values()))}
-    primary = percent_table(fetch.text(PRIMARY), PRIMARY)
-    corrector = percent_table(fetch.text(CORRECTOR), CORRECTOR)
-    qe_model = percent_table(fetch.text(QE_MODEL), QE_MODEL)
-    qe_measured = percent_table(fetch.text(QE_MEASURED), QE_MEASURED)
+    primary, corrector, qe_model, qe_measured = (percent_table(fetch.text(url), url)
+                                                 for url in (PRIMARY, CORRECTOR, QE_MODEL, QE_MEASURED))
 
     text = ", ".join(f"{b}={c}" for b, c in sorted(mapping.items()))
     notes = with_earlier_note(

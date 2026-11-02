@@ -60,6 +60,28 @@ def write_flux_cube(
         flux.transpose(3, 2, 1, 0).ravel().tofile(fh)
 
 
+@pytest.fixture(autouse=True)
+def _private_config_file(tmp_path_factory, monkeypatch):
+    """No test reads or writes the user's own ~/.sed_tools/config.toml."""
+    from sed_tools import config
+
+    config_dir = tmp_path_factory.mktemp("sed_tools_config")
+    monkeypatch.setattr(config, "_CONFIG_DIR", config_dir)
+    monkeypatch.setattr(config, "_CONFIG_FILE", config_dir / "config.toml")
+
+
+@pytest.fixture(autouse=True)
+def _fresh_njm_state():
+    """What a process knows about NJM and SVO is shared by its clients; each test starts as a new process."""
+    from sed_tools import njm_filter_grabber, svo_filter_grabber
+
+    njm_filter_grabber._STATE.reset()
+    svo_filter_grabber._STATE.reset()
+    yield
+    njm_filter_grabber._STATE.reset()
+    svo_filter_grabber._STATE.reset()
+
+
 @pytest.fixture
 def cube_writer() -> Callable[..., None]:
     """Expose :func:`write_flux_cube` to tests as a fixture."""

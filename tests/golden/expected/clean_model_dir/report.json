@@ -1,0 +1,34 @@
+{
+ "catalog_units": null,
+ "converted": [],
+ "detection_stats": {
+  "index_grids": 0,
+  "sample_size": 12,
+  "skipped_invalid": 0,
+  "skipped_standardized": 12,
+  "status": "already_standardized",
+  "total_files": 12,
+  "valid_detections": 0
+ },
+ "error": [],
+ "lookup_path": "<WORK>/Kurucz2003all/lookup_table.csv",
+ "lookup_updated": true,
+ "recovered": [],
+ "skipped_already": [
+  "Kurucz2003all_fid16515.txt",
+  "Kurucz2003all_fid16516.txt",
+  "Kurucz2003all_fid16526.txt",
+  "Kurucz2003all_fid16527.txt",
+  "Kurucz2003all_fid16536.txt",
+  "Kurucz2003all_fid16537.txt",
+  "Kurucz2003all_fid18895.txt",
+  "Kurucz2003all_fid18896.txt",
+  "Kurucz2003all_fid18906.txt",
+  "Kurucz2003all_fid18907.txt",
+  "Kurucz2003all_fid18916.txt",
+  "Kurucz2003all_fid18917.txt"
+ ],
+ "skipped_index": [],
+ "skipped_invalid": [],
+ "total": 12
+}

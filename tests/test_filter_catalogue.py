@@ -132,7 +132,7 @@ class FakeNJM:
             if status >= 400:
                 raise requests.HTTPError(str(status), response=SimpleNamespace(status_code=status, headers={}))
         return SimpleNamespace(status_code=status, content=content, text=content.decode(), headers=headers or {},
-                               raise_for_status=raise_for_status)
+                               raise_for_status=raise_for_status, json=lambda: json.loads(content))
 
     def fetched(self, rel):
         return [h for r, h in self.requests if r == rel]
@@ -192,7 +192,8 @@ def test_search_by_wavelength_pivot_fwhm_detector_and_any_property(root, njm):
     # A null Vega quantity never matches, and never raises.
     assert list(Filters.search(where={"ABminusVega": (None, 0.5)}, filter_root=root)["band"]) == ["g", "i"]
     assert list(Filters.search(where={"DetectorType": "ENERGY"}, filter_root=root)["band"]) == ["J", "K"]
-    assert "Fac/Old: NJM has no properties file" in covers.attrs["errors"]
+    # A permanent catalogue gap is reported apart from fetch failures.
+    assert covers.attrs["gaps"] == ["Fac/Old: NJM has no properties file"] and covers.attrs["errors"] == []
     assert covers.attrs["units"]["FWHM"] == "Angstrom"
 
     njm.requests.clear()
@@ -288,6 +289,7 @@ def test_installed_copy_describes_installed_curves(root, njm):
     local = json.loads(catalogue_files()["filters/Fac/Cam/info.json"])
     local["description"] = "As installed."
     (root / "Fac" / "Cam").mkdir(parents=True)
+    (root / "Fac" / "Cam" / "g.dat").write_text("Wavelength,Transmission\n4000,1\n6000,1\n")  # an installed copy holds curves
     (root / "Fac" / "Cam" / "info.json").write_text(json.dumps(local))
     assert Filters.info("Fac", "Cam", filter_root=root)["description"] == "As installed."
     assert Filters.info("Fac", "Cam", filter_root=root, refresh=True)["description"] == "A camera."
@@ -368,22 +370,24 @@ def run_cli(monkeypatch, capsys, *argv):
     return code, capsys.readouterr().out
 
 
-def test_cli_search_cite_and_info(root, njm, monkeypatch, capsys):
-    code, out = run_cli(monkeypatch, capsys, "filters-search", "--pivot", "4000", "-", "--fwhm", "-", "1400",
-                        "--where", "ABminusVega=:0.5", "--format", "json", "--base", str(root))
-    data = json.loads(out)
-    assert code == 0 and [b["band"] for b in data["bands"]] == ["g"]
+def test_search_and_cite_in_python(root, njm):
+    # The filters-search and filters-cite commands were dropped before release; the API stays.
+    result = Filters.search(pivot=(4000, None), fwhm=(None, 1400), where={"ABminusVega": (None, 0.5)},
+                            filter_root=root)
+    assert list(result["band"]) == ["g"]
+    # Fac/Old has no properties file: a gap, reported, but not a failure.
+    assert result.attrs["errors"] == [] and result.attrs["gaps"] == ["Fac/Old: NJM has no properties file"]
+    assert list(Filters.search(wavelength=21000, filter_root=root)["band"]) == ["K"]
+    bibtex = Filters.cite("Other/IR", format="bibtex", filter_root=root)
+    assert bibtex.startswith("% No BibTeX served") and "@article{2020Cam.....1A" in bibtex
 
-    code, out = run_cli(monkeypatch, capsys, "filters-search", "--wavelength", "21000", "--base", str(root))
-    assert code == 0 and "K" in out and "1 band in 1 instrument" in out
 
-    code, out = run_cli(monkeypatch, capsys, "filters-cite", "Other/IR", "--format", "bibtex", "--base", str(root))
-    assert code == 0 and out.startswith("% No BibTeX served") and "@article{2020Cam.....1A" in out
-
+def test_cli_info(root, njm, monkeypatch, capsys):
+    Filters.search(filter_root=root, properties=False)  # index.json is cached; no info.json yet
     write_curve(root / "Fac" / "Cam" / "g.dat", 4800, 1200,
                 header="Wavelength,Transmission,DetectorType=photon;DetectorTypeSource=svo")
     code, out = run_cli(monkeypatch, capsys, "filters-info", "Fac/Cam", "--base", str(root), "--offline")
-    assert code == 0 and "info.json is not cached and working offline" in out
+    assert code == 0 and "info.json is not cached and working offline" in out  # the catalogue is an extra
     assert not njm.fetched("filters/Fac/Cam/info.json")
     code, out = run_cli(monkeypatch, capsys, "filters-info", "Fac/Cam", "--base", str(root))
     assert code == 0 and "A camera." in out and "Free to use." in out and "Cam g" in out

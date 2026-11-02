@@ -1,0 +1,1179 @@
+{
+ "acknowledgements": [
+  {
+   "applies_to": "all bands",
+   "for": "LSSTCam instrument citation",
+   "references": [
+    "doi:10.71929/rubin/2571927"
+   ],
+   "text": "SLAC National Accelerator Laboratory & NSF-DOE Vera C. Rubin Observatory, The LSST Camera (LSSTCam) (2025)",
+   "url": "https://lsstcam.lsst.io/"
+  },
+  {
+   "applies_to": "curves and metadata",
+   "for": "SVO Filter Profile Service",
+   "references": [
+    "bibcode:2012ivoa.rept.1015R",
+    "bibcode:2020sea..confE.182R",
+    "bibcode:2024A&A...689A..93R"
+   ],
+   "text": "This research has made use of the SVO Filter Profile Service \"Carlos Rodrigo\", funded by MCIN/AEI/10.13039/501100011033/ through grant PID2023-146210NB-I00"
+  }
+ ],
+ "bands": {
+  "g": {
+   "Band": "g",
+   "Comments": "Full throughput: system - mirrors, lenses, filter, detector, and the zenith atmosphere.\r\nAerosols added to atmosphere\r\nVersion 1.5\r\n\r\n",
+   "Description": "LSST g filter (full)",
+   "MagSys": "Vega",
+   "PhotCalID": "LSST/LSST.g/Vega",
+   "PhotSystem": "LSST",
+   "ProfileReference": [
+    {
+     "ref": "url:https://github.com/lsst/throughputs/blob/master/baseline/README.md"
+    }
+   ],
+   "ZeroPointType": "Pogson",
+   "curve": {
+    "Components": "filter+instrument+atmosphere",
+    "ComponentsSource": "svo",
+    "DetectorType": "photon",
+    "DetectorTypeSource": "svo",
+    "FilterID": "LSST/LSST.g",
+    "sources": [
+     "url:https://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=LSST/LSST.g",
+     "url:https://github.com/lsst/throughputs/tree/1.5/baseline"
+    ]
+   },
+   "references": [
+    "url:https://github.com/lsst/throughputs/blob/master/baseline/README.md"
+   ],
+   "svo": {
+    "DetectorType": "photon",
+    "captures": {
+     "votable": {
+      "sha256": "aaca42bf91aa8e7f6b892720b7f694d1fd588ddc5ef1f7b5054dd28f897f7519",
+      "timestamp": "20230203233224",
+      "url": "http://svo2.cab.inta-csic.es/svo/theory/fps3/fps.php?ID=LSST/LSST.g"
+     }
+    },
+    "components": "Filter + Instrument + Atmosphere",
+    "curve": "identical",
+    "filterID": "LSST/LSST.g",
+    "matched_by": "FilterID"
+   }
+  },
+  "g_filter": {
+   "Band": "g",
+   "Comments": "Version 1.5\r\n",
+   "Description": "LSST u filter (filter only)",
+   "MagSys": "Vega",
+   "PhotCalID": "LSST/LSST.g_filter/Vega",
+   "PhotSystem": "LSST",
+   "ProfileReference": [
+    {
+     "label": "LSST throughputs",
+     "ref": "url:https://github.com/lsst/throughputs/blob/master/baseline/README.md"
+    }
+   ],
+   "ZeroPointType": "Pogson",
+   "curve": {
+    "Components": "filter+instrument+atmosphere",
+    "ComponentsSource": "svo",
+    "DetectorType": "photon",
+    "DetectorTypeSource": "svo",
+    "FilterID": "LSST/LSST.g_filter",
+    "sources": [
+     "url:https://web.archive.org/web/20251114145214id_/http://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=LSST/LSST.g_filter",
+     "url:http://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=LSST/LSST.g_filter",
+     "url:https://github.com/lsst/throughputs/blob/master/baseline/README.md",
+     "url:https://github.com/lsst/throughputs/tree/1.5/baseline"
+    ]
+   },
+   "references": [
+    "url:https://github.com/lsst/throughputs/blob/master/baseline/README.md"
+   ],
+   "svo": {
+    "AfAv": 1.2,
+    "DetectorType": "photon",
+    "Fsun": 187.17,
+    "added": "2020-01-13 10:39:21",
+    "captures": {
+     "browse": {
+      "sha256": "d9fc6e7d10143bc618d5f51d4646de4dbf07ed401a68ba21ca81cad0943542eb",
+      "timestamp": "20260307213908",
+      "url": "http://svo2.cab.inta-csic.es/theory/fps/index.php?id=LSST/LSST.g_filter&&mode=browse&asttype=astro&gname=LSST&gname2=LSST"
+     },
+     "votable": {
+      "sha256": "e8cf394ed38691b48e923c08cc8629f73b611845a28e46c6de205a6d3c49c637",
+      "timestamp": "20251114145214",
+      "url": "http://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=LSST/LSST.g_filter"
+     }
+    },
+    "components": "Filter + Instrument + Atmosphere",
+    "curve": "identical",
+    "filterID": "LSST/LSST.g_filter",
+    "matched_by": "FilterID",
+    "updated": "2021-07-27 20:14:56"
+   }
+  },
+  "i": {
+   "Comments": "Full throughput: system - mirrors, lenses, filter, detector, and the zenith atmosphere.\r\nAerosols added to atmosphere\r\nVersion 1.5\r\n",
+   "Description": "LSST i filter (full)",
+   "MagSys": "Vega",
+   "PhotCalID": "LSST/LSST.i/Vega",
+   "PhotSystem": "LSST",
+   "ProfileReference": [
+    {
+     "ref": "url:https://github.com/lsst/throughputs/blob/master/baseline/README.md"
+    }
+   ],
+   "ZeroPointType": "Pogson",
+   "curve": {
+    "Components": "filter+instrument+atmosphere",
+    "ComponentsSource": "svo",
+    "DetectorType": "photon",
+    "DetectorTypeSource": "svo",
+    "FilterID": "LSST/LSST.i",
+    "sources": [
+     "url:https://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=LSST/LSST.i",
+     "url:https://github.com/lsst/throughputs/tree/1.5/baseline"
+    ]
+   },
+   "references": [
+    "url:https://github.com/lsst/throughputs/blob/master/baseline/README.md"
+   ],
+   "svo": {
+    "DetectorType": "photon",
+    "captures": {
+     "votable": {
+      "sha256": "7f8ddfaafe30d8bc6b760c81dac3f1e212582d8c2515199b79689e71860cca74",
+      "timestamp": "20230127173302",
+      "url": "http://svo2.cab.inta-csic.es/svo/theory/fps3/fps.php?ID=LSST/LSST.i"
+     }
+    },
+    "components": "Filter + Instrument + Atmosphere",
+    "curve": "identical",
+    "filterID": "LSST/LSST.i",
+    "matched_by": "FilterID"
+   }
+  },
+  "i_filter": {
+   "Band": "i",
+   "Comments": "Version 1.5\r\n",
+   "Description": "LSST i filter (filter only)",
+   "MagSys": "Vega",
+   "PhotCalID": "LSST/LSST.i_filter/Vega",
+   "PhotSystem": "LSST",
+   "ProfileReference": [
+    {
+     "label": "LSST throughputs",
+     "ref": "url:https://github.com/lsst/throughputs/blob/master/baseline/README.md"
+    }
+   ],
+   "ZeroPointType": "Pogson",
+   "curve": {
+    "Components": "filter+instrument+atmosphere",
+    "ComponentsSource": "svo",
+    "DetectorType": "photon",
+    "DetectorTypeSource": "svo",
+    "FilterID": "LSST/LSST.i_filter",
+    "sources": [
+     "url:https://web.archive.org/web/20230203233604id_/http://svo2.cab.inta-csic.es/svo/theory/fps3/fps.php?ID=LSST/LSST.i_filter",
+     "url:http://svo2.cab.inta-csic.es/svo/theory/fps3/fps.php?ID=LSST/LSST.i_filter",
+     "url:https://github.com/lsst/throughputs/blob/master/baseline/README.md",
+     "url:https://github.com/lsst/throughputs/tree/1.5/baseline"
+    ]
+   },
+   "references": [
+    "url:https://github.com/lsst/throughputs/blob/master/baseline/README.md"
+   ],
+   "svo": {
+    "AfAv": 0.664,
+    "DetectorType": "photon",
+    "Fsun": 125.57,
+    "added": "2020-01-13 11:02:36",
+    "captures": {
+     "browse": {
+      "sha256": "6feda73684d0b6a91b4e5cfed6ebb8d871bf6c364ac24c72bebf6361ff477277",
+      "timestamp": "20260307213819",
+      "url": "http://svo2.cab.inta-csic.es/theory/fps/index.php?id=LSST/LSST.i_filter&&mode=browse&asttype=astro&gname=LSST&gname2=LSST"
+     },
+     "votable": {
+      "sha256": "2b2649809e5563fd8cc1468c260c7fbcc95df70cfdb38462b6f99b838556710b",
+      "timestamp": "20230203233604",
+      "url": "http://svo2.cab.inta-csic.es/svo/theory/fps3/fps.php?ID=LSST/LSST.i_filter"
+     }
+    },
+    "components": "Filter + Instrument + Atmosphere",
+    "curve": "identical",
+    "filterID": "LSST/LSST.i_filter",
+    "matched_by": "FilterID",
+    "updated": "2021-07-27 20:14:57"
+   }
+  },
+  "r": {
+   "Band": "r",
+   "Comments": "Full throughput: system - mirrors, lenses, filter, detector, and the zenith atmosphere.\r\nAerosols added to atmosphere\r\nVersion 1.5\r\n",
+   "Description": "LSST r filter (full)",
+   "MagSys": "Vega",
+   "PhotCalID": "LSST/LSST.r/Vega",
+   "PhotSystem": "LSST",
+   "ProfileReference": [
+    {
+     "ref": "url:https://github.com/lsst/throughputs/blob/master/baseline/README.md"
+    }
+   ],
+   "ZeroPointType": "Pogson",
+   "curve": {
+    "Components": "filter+instrument+atmosphere",
+    "ComponentsSource": "svo",
+    "DetectorType": "photon",
+    "DetectorTypeSource": "svo",
+    "FilterID": "LSST/LSST.r",
+    "sources": [
+     "url:https://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=LSST/LSST.r",
+     "url:https://github.com/lsst/throughputs/tree/1.5/baseline"
+    ]
+   },
+   "references": [
+    "url:https://github.com/lsst/throughputs/blob/master/baseline/README.md"
+   ],
+   "svo": {
+    "DetectorType": "photon",
+    "captures": {
+     "votable": {
+      "sha256": "7a70accdc2b9198506c7628dbe2d5cfdfa9b522fc8e6400c50db7f1aedfad8f8",
+      "timestamp": "20240616015120",
+      "url": "http://svo2.cab.inta-csic.es/svo/theory/fps3/fps.php?ID=LSST/LSST.r"
+     }
+    },
+    "components": "Filter + Instrument + Atmosphere",
+    "curve": "identical",
+    "filterID": "LSST/LSST.r",
+    "matched_by": "FilterID"
+   }
+  },
+  "r_filter": {
+   "Band": "r",
+   "Comments": "Version 1.5\r\n",
+   "Description": "LSST r filter (filter only)",
+   "MagSys": "Vega",
+   "PhotCalID": "LSST/LSST.r_filter/Vega",
+   "PhotSystem": "LSST",
+   "ProfileReference": [
+    {
+     "label": "LSST throughputs",
+     "ref": "url:https://github.com/lsst/throughputs/blob/master/baseline/README.md"
+    }
+   ],
+   "ZeroPointType": "Pogson",
+   "curve": {
+    "Components": "filter+instrument+atmosphere",
+    "ComponentsSource": "svo",
+    "DetectorType": "photon",
+    "DetectorTypeSource": "svo",
+    "FilterID": "LSST/LSST.r_filter",
+    "sources": [
+     "url:https://web.archive.org/web/20230203231030id_/http://svo2.cab.inta-csic.es/svo/theory/fps3/fps.php?ID=LSST/LSST.r_filter",
+     "url:http://svo2.cab.inta-csic.es/svo/theory/fps3/fps.php?ID=LSST/LSST.r_filter",
+     "url:https://github.com/lsst/throughputs/blob/master/baseline/README.md",
+     "url:https://github.com/lsst/throughputs/tree/1.5/baseline"
+    ]
+   },
+   "references": [
+    "url:https://github.com/lsst/throughputs/blob/master/baseline/README.md"
+   ],
+   "svo": {
+    "AfAv": 0.873,
+    "DetectorType": "photon",
+    "Fsun": 167.69,
+    "added": "2020-01-13 11:02:52",
+    "captures": {
+     "browse": {
+      "sha256": "550318545a5b74ad2203b9fd62d1d5d927b1d437e98337f0d3f1ed4e18574f30",
+      "timestamp": "20260307203934",
+      "url": "http://svo2.cab.inta-csic.es/theory/fps/index.php?id=LSST/LSST.r_filter&&mode=browse&asttype=astro&gname=LSST&gname2=LSST"
+     },
+     "votable": {
+      "sha256": "833c3763e980600fa5dc907ee6aeea88878ef595174477688515b09189fc8ef7",
+      "timestamp": "20230203231030",
+      "url": "http://svo2.cab.inta-csic.es/svo/theory/fps3/fps.php?ID=LSST/LSST.r_filter"
+     }
+    },
+    "components": "Filter + Instrument + Atmosphere",
+    "curve": "identical",
+    "filterID": "LSST/LSST.r_filter",
+    "matched_by": "FilterID",
+    "updated": "2021-07-27 20:14:59"
+   }
+  },
+  "u": {
+   "Comments": "Full throughput: system - mirrors, lenses, filter, detector, and the zenith atmosphere.\r\nAerosols added to atmosphere\r\nVersion 1.5\r\n",
+   "Description": "LSST u filter (full)",
+   "MagSys": "Vega",
+   "PhotCalID": "LSST/LSST.u/Vega",
+   "PhotSystem": "LSST",
+   "ProfileReference": [
+    {
+     "ref": "url:https://github.com/lsst/throughputs/blob/master/baseline/README.md"
+    }
+   ],
+   "ZeroPointType": "Pogson",
+   "curve": {
+    "Components": "filter+instrument+atmosphere",
+    "ComponentsSource": "svo",
+    "DetectorType": "photon",
+    "DetectorTypeSource": "svo",
+    "FilterID": "LSST/LSST.u",
+    "sources": [
+     "url:https://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=LSST/LSST.u",
+     "url:https://github.com/lsst/throughputs/tree/1.5/baseline"
+    ]
+   },
+   "references": [
+    "url:https://github.com/lsst/throughputs/blob/master/baseline/README.md"
+   ],
+   "svo": {
+    "DetectorType": "photon",
+    "captures": {
+     "votable": {
+      "sha256": "b8481e2c3479b1acdd096326fec9428c0ecd679203ea0495423dbcf9b943fcaf",
+      "timestamp": "20230127181208",
+      "url": "http://svo2.cab.inta-csic.es/svo/theory/fps3/fps.php?ID=LSST/LSST.u"
+     }
+    },
+    "components": "Filter + Instrument + Atmosphere",
+    "curve": "identical",
+    "filterID": "LSST/LSST.u",
+    "matched_by": "FilterID"
+   }
+  },
+  "u_filter": {
+   "Band": "u",
+   "Comments": "Version 1.5\r\n",
+   "Description": "LSST u filter (filter only)",
+   "MagSys": "Vega",
+   "PhotCalID": "LSST/LSST.u_filter/Vega",
+   "PhotSystem": "LSST",
+   "ProfileReference": [
+    {
+     "label": "LSST throughputs",
+     "ref": "url:https://github.com/lsst/throughputs/blob/master/baseline/README.md"
+    }
+   ],
+   "ZeroPointType": "Pogson",
+   "curve": {
+    "Components": "filter+instrument+atmosphere",
+    "ComponentsSource": "svo",
+    "DetectorType": "photon",
+    "DetectorTypeSource": "svo",
+    "FilterID": "LSST/LSST.u_filter",
+    "sources": [
+     "url:https://web.archive.org/web/20240419162930id_/http://svo2.cab.inta-csic.es/svo/theory/fps3/fps.php?ID=LSST/LSST.u_filter",
+     "url:http://svo2.cab.inta-csic.es/svo/theory/fps3/fps.php?ID=LSST/LSST.u_filter",
+     "url:https://github.com/lsst/throughputs/blob/master/baseline/README.md",
+     "url:https://github.com/lsst/throughputs/tree/1.5/baseline"
+    ]
+   },
+   "references": [
+    "url:https://github.com/lsst/throughputs/blob/master/baseline/README.md"
+   ],
+   "svo": {
+    "AfAv": 1.6,
+    "DetectorType": "photon",
+    "Fsun": 102.75,
+    "added": "2020-01-13 11:03:13",
+    "captures": {
+     "browse": {
+      "sha256": "61f8cef5d9c279f95658bf1ebc34629472a47c1248872ea56b178c0e68494b13",
+      "timestamp": "20260309212827",
+      "url": "http://svo2.cab.inta-csic.es/theory/fps/index.php?id=LSST/LSST.u_filter&&mode=browse&asttype=astro&gname=LSST&gname2=LSST"
+     },
+     "votable": {
+      "sha256": "b5b57dd1b9d17a14ae48057813f7b61c9fba6b8b44556d7f5eeadf8333711de4",
+      "timestamp": "20240419162930",
+      "url": "http://svo2.cab.inta-csic.es/svo/theory/fps3/fps.php?ID=LSST/LSST.u_filter"
+     }
+    },
+    "components": "Filter + Instrument + Atmosphere",
+    "curve": "identical",
+    "filterID": "LSST/LSST.u_filter",
+    "matched_by": "FilterID",
+    "updated": "2021-07-27 20:15:00"
+   }
+  },
+  "y": {
+   "Comments": "Full throughput: system - mirrors, lenses, filter, detector, and the zenith atmosphere.\r\nAerosols added to atmosphere\r\nVersion 1.5\r\n",
+   "Description": "LSST y filter (full)",
+   "MagSys": "Vega",
+   "PhotCalID": "LSST/LSST.y/Vega",
+   "PhotSystem": "LSST",
+   "ProfileReference": [
+    {
+     "ref": "url:https://github.com/lsst/throughputs/blob/master/baseline/README.md"
+    }
+   ],
+   "ZeroPointType": "Pogson",
+   "curve": {
+    "Components": "filter+instrument+atmosphere",
+    "ComponentsSource": "svo",
+    "DetectorType": "photon",
+    "DetectorTypeSource": "svo",
+    "FilterID": "LSST/LSST.y",
+    "sources": [
+     "url:https://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=LSST/LSST.y",
+     "url:https://github.com/lsst/throughputs/tree/1.5/baseline"
+    ]
+   },
+   "references": [
+    "url:https://github.com/lsst/throughputs/blob/master/baseline/README.md"
+   ],
+   "svo": {
+    "DetectorType": "photon",
+    "captures": {
+     "votable": {
+      "sha256": "6f667229332900614244fe428016747119db15db66c794ae4c6615034131091e",
+      "timestamp": "20230203223430",
+      "url": "http://svo2.cab.inta-csic.es/svo/theory/fps3/fps.php?ID=LSST/LSST.y"
+     }
+    },
+    "components": "Filter + Instrument + Atmosphere",
+    "curve": "identical",
+    "filterID": "LSST/LSST.y",
+    "matched_by": "FilterID"
+   }
+  },
+  "y_filter": {
+   "Band": "y",
+   "Comments": "Version 1.5\r\n",
+   "Description": "LSST y filter (filter only)",
+   "MagSys": "Vega",
+   "PhotCalID": "LSST/LSST.y_filter/Vega",
+   "PhotSystem": "LSST",
+   "ProfileReference": [
+    {
+     "label": "LSST throughputs",
+     "ref": "url:https://github.com/lsst/throughputs/blob/master/baseline/README.md"
+    }
+   ],
+   "ZeroPointType": "Pogson",
+   "curve": {
+    "Components": "filter+instrument+atmosphere",
+    "ComponentsSource": "svo",
+    "DetectorType": "photon",
+    "DetectorTypeSource": "svo",
+    "FilterID": "LSST/LSST.y_filter",
+    "sources": [
+     "url:https://web.archive.org/web/20240622154005id_/http://svo2.cab.inta-csic.es/svo/theory/fps3/fps.php?ID=LSST/LSST.y_filter",
+     "url:http://svo2.cab.inta-csic.es/svo/theory/fps3/fps.php?ID=LSST/LSST.y_filter",
+     "url:https://github.com/lsst/throughputs/blob/master/baseline/README.md",
+     "url:https://github.com/lsst/throughputs/tree/1.5/baseline"
+    ]
+   },
+   "references": [
+    "url:https://github.com/lsst/throughputs/blob/master/baseline/README.md"
+   ],
+   "svo": {
+    "AfAv": 0.421,
+    "DetectorType": "photon",
+    "Fsun": 70.9,
+    "added": "2020-01-13 11:03:35",
+    "captures": {
+     "browse": {
+      "sha256": "20c26ae90dcb37ba6a371dba530d5ce0f83558c8afe3ebed140d893088628a8c",
+      "timestamp": "20260309212545",
+      "url": "http://svo2.cab.inta-csic.es/theory/fps/index.php?id=LSST/LSST.y_filter&&mode=browse&asttype=astro&gname=LSST&gname2=LSST"
+     },
+     "votable": {
+      "sha256": "f890867d5fe80a42bf334772432d0a6740364cf00072a4435eecd9efd13e7354",
+      "timestamp": "20240622154005",
+      "url": "http://svo2.cab.inta-csic.es/svo/theory/fps3/fps.php?ID=LSST/LSST.y_filter"
+     }
+    },
+    "components": "Filter + Instrument + Atmosphere",
+    "curve": "identical",
+    "filterID": "LSST/LSST.y_filter",
+    "matched_by": "FilterID",
+    "updated": "2021-07-27 20:15:01"
+   }
+  },
+  "z": {
+   "Band": "z",
+   "Comments": "Full throughput: system - mirrors, lenses, filter, detector, and the zenith atmosphere.\r\nAerosols added to atmosphere\r\nVersion 1.5\r\n",
+   "Description": "LSST z filter (full)",
+   "MagSys": "Vega",
+   "PhotCalID": "LSST/LSST.z/Vega",
+   "PhotSystem": "LSST",
+   "ProfileReference": [
+    {
+     "ref": "url:https://github.com/lsst/throughputs/blob/master/baseline/README.md"
+    }
+   ],
+   "ZeroPointType": "Pogson",
+   "curve": {
+    "Components": "filter+instrument+atmosphere",
+    "ComponentsSource": "svo",
+    "DetectorType": "photon",
+    "DetectorTypeSource": "svo",
+    "FilterID": "LSST/LSST.z",
+    "sources": [
+     "url:https://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=LSST/LSST.z",
+     "url:https://github.com/lsst/throughputs/tree/1.5/baseline"
+    ]
+   },
+   "references": [
+    "url:https://github.com/lsst/throughputs/blob/master/baseline/README.md"
+   ],
+   "svo": {
+    "DetectorType": "photon",
+    "captures": {
+     "votable": {
+      "sha256": "ba8fe3e571e3eebce21467dc993563a7d473d4678d735c38da9717d175bc9a4e",
+      "timestamp": "20240718024042",
+      "url": "http://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=LSST/LSST.z"
+     }
+    },
+    "components": "Filter + Instrument + Atmosphere",
+    "curve": "identical",
+    "filterID": "LSST/LSST.z",
+    "matched_by": "FilterID"
+   }
+  },
+  "z_filter": {
+   "Band": "z",
+   "Comments": "Version 1.5\r\n",
+   "Description": "LSST z filter (filter only)",
+   "MagSys": "Vega",
+   "PhotCalID": "LSST/LSST.z_filter/Vega",
+   "PhotSystem": "LSST",
+   "ProfileReference": [
+    {
+     "label": "LSST throughputs",
+     "ref": "url:https://github.com/lsst/throughputs/blob/master/baseline/README.md"
+    }
+   ],
+   "ZeroPointType": "Pogson",
+   "curve": {
+    "Components": "filter+instrument+atmosphere",
+    "ComponentsSource": "svo",
+    "DetectorType": "photon",
+    "DetectorTypeSource": "svo",
+    "FilterID": "LSST/LSST.z_filter",
+    "sources": [
+     "url:https://web.archive.org/web/20260417214654id_/http://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=LSST/LSST.z_filter",
+     "url:http://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=LSST/LSST.z_filter",
+     "url:https://github.com/lsst/throughputs/blob/master/baseline/README.md",
+     "url:https://github.com/lsst/throughputs/tree/1.5/baseline"
+    ]
+   },
+   "references": [
+    "url:https://github.com/lsst/throughputs/blob/master/baseline/README.md"
+   ],
+   "svo": {
+    "AfAv": 0.531,
+    "DetectorType": "photon",
+    "Fsun": 95.76,
+    "added": "2020-01-13 11:03:53",
+    "captures": {
+     "browse": {
+      "sha256": "75bcd43ebd2c51701c8e6d64c83476e85ea84b91ad6570dc2cf8823a58b7948d",
+      "timestamp": "20260307202450",
+      "url": "http://svo2.cab.inta-csic.es/theory/fps/index.php?id=LSST/LSST.z_filter&&mode=browse&asttype=astro&gname=LSST&gname2=LSST"
+     },
+     "votable": {
+      "sha256": "a2463cdf0b43b03e956b806f33ccf7b1db12673aadda0eef9d77d2e2eb3de02c",
+      "timestamp": "20260417214654",
+      "url": "http://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=LSST/LSST.z_filter"
+     }
+    },
+    "components": "Filter + Instrument + Atmosphere",
+    "curve": "identical",
+    "filterID": "LSST/LSST.z_filter",
+    "matched_by": "FilterID",
+    "updated": "2021-07-27 20:15:03"
+   }
+  }
+ },
+ "bibliography": {
+  "bibcode:2012ivoa.rept.1015R": {
+   "authors": [
+    "Rodrigo, C.",
+    "Solano, E.",
+    "Bayo, A."
+   ],
+   "bibcode": "2012ivoa.rept.1015R",
+   "bibtex": "@techreport{2012ivoa.rept.1015R,\n  author = {Rodrigo, C. and Solano, E. and Bayo, A.},\n  title = {SVO Filter Profile Service Version 1.0},\n  institution = {International Virtual Observatory Alliance},\n  type = {IVOA Working Draft},\n  year = {2012},\n  month = oct,\n  url = {http://www.ivoa.net/documents/Notes/SVOFPS/index.html}\n}",
+   "journal": "IVOA Working Draft, 15 October 2012",
+   "publisher_url": "http://www.ivoa.net/documents/Notes/SVOFPS/index.html",
+   "short": "Rodrigo et al. 2012",
+   "title": "SVO Filter Profile Service Version 1.0",
+   "type": "techreport",
+   "url": "https://ui.adsabs.harvard.edu/abs/2012ivoa.rept.1015R",
+   "year": 2012
+  },
+  "bibcode:2020sea..confE.182R": {
+   "authors": [
+    "Rodrigo, C.",
+    "Solano, E."
+   ],
+   "bibcode": "2020sea..confE.182R",
+   "bibtex": "@inproceedings{2020sea..confE.182R,\n  author = {Rodrigo, C. and Solano, E.},\n  title = {The SVO Filter Profile Service},\n  year = {2020},\n  url = {https://ui.adsabs.harvard.edu/abs/2020sea..confE.182R}\n}",
+   "short": "Rodrigo & Solano 2020",
+   "title": "The SVO Filter Profile Service",
+   "type": "inproceedings",
+   "url": "https://ui.adsabs.harvard.edu/abs/2020sea..confE.182R",
+   "year": 2020
+  },
+  "bibcode:2024A&A...689A..93R": {
+   "authors": [
+    "Rodrigo, Carlos",
+    "Cruz, Patricia",
+    "Aguilar, John F.",
+    "Aller, Alba",
+    "Solano, Enrique",
+    "Gálvez-Ortiz, Maria Cruz",
+    "Jiménez-Esteban, Francisco",
+    "Mas-Buitrago, Pedro",
+    "Bayo, Amelia",
+    "Cortés-Contreras, Miriam",
+    "Murillo-Ojeda, Raquel",
+    "Bonoli, Silvia",
+    "Cenarro, Javier",
+    "Dupke, Renato",
+    "López-Sanjuan, Carlos",
+    "Marín-Franch, Antonio",
+    "de Oliveira, Claudia Mendes",
+    "Moles, Mariano",
+    "Taylor, Keith",
+    "Varela, Jesús",
+    "Ramió, Héctor Vázquez"
+   ],
+   "bibcode": "2024A&A...689A..93R",
+   "bibtex": "@article{2024A&A...689A..93R, title={Photometric segregation of dwarf and giant FGK stars using the SVO Filter Profile Service and photometric tools}, volume={689}, ISSN={1432-0746}, url={http://dx.doi.org/10.1051/0004-6361/202449998}, DOI={10.1051/0004-6361/202449998}, journal={Astronomy \\& Astrophysics}, publisher={EDP Sciences}, author={Rodrigo, Carlos and Cruz, Patricia and Aguilar, John F. and Aller, Alba and Solano, Enrique and Gálvez-Ortiz, Maria Cruz and Jiménez-Esteban, Francisco and Mas-Buitrago, Pedro and Bayo, Amelia and Cortés-Contreras, Miriam and Murillo-Ojeda, Raquel and Bonoli, Silvia and Cenarro, Javier and Dupke, Renato and López-Sanjuan, Carlos and Marín-Franch, Antonio and de Oliveira, Claudia Mendes and Moles, Mariano and Taylor, Keith and Varela, Jesús and Ramió, Héctor Vázquez}, year={2024}, month=Sept, pages={A93} }",
+   "doi": "10.1051/0004-6361/202449998",
+   "journal": "A&A",
+   "page": "A93",
+   "resolved": "2026-10-25",
+   "short": "Rodrigo et al. 2024",
+   "title": "Photometric segregation of dwarf and giant FGK stars using the SVO Filter Profile Service and photometric tools",
+   "type": "article",
+   "url": "https://ui.adsabs.harvard.edu/abs/2024A&A...689A..93R",
+   "volume": "689",
+   "year": 2024
+  },
+  "doi:10.1117/12.3019698": {
+   "authors": [
+    "Roodman, Aaron J.",
+    "Rasmussen, Andrew",
+    "Bradshaw, Andrew K.",
+    "Charles, Eric",
+    "Chiang, Jim",
+    "Digel, Seth",
+    "Dubois, Richard",
+    "Johnson, Tony",
+    "Kahn, Steve",
+    "Liang, Shuang",
+    "Marshall, Stuart",
+    "Neal, Homer",
+    "Plazas, Andres A.",
+    "Reil, Kevin",
+    "Rykoff, Eli",
+    "Schindler, Rafe",
+    "Schutt, Theo",
+    "Utsumi, Yousuke",
+    "Bogart, Joanne",
+    "Bond, Tim",
+    "Bowdish, Boyd",
+    "Cisneros, Stephen",
+    "Eisner, Alan",
+    "Freytag, Mark",
+    "Hascall, Diane",
+    "Lange, Travis",
+    "Lazarte, Juan Carlos",
+    "Lopez, Margaux",
+    "Mendez, Chris",
+    "Newbry, Scott P.",
+    "Nordby, Martin",
+    "Onoprienko, Dmitry",
+    "Osier, Shawn",
+    "Pollek, Hannah",
+    "Qiu, Brian",
+    "Saxton, Owen",
+    "Tether, Stephen",
+    "Thayer, Gregg",
+    "Turri, Max",
+    "Banovetz, John",
+    "O'Connor, Paul",
+    "Riot, Vincent",
+    "Wolfe, Justin",
+    "Lage, Craig",
+    "Polin, Daniel",
+    "Snyder, Adam",
+    "Tyson, Anthony",
+    "Nichols, Renee",
+    "Ritz, Steve",
+    "Shestakov, Adrian",
+    "Wood, Duncan",
+    "Broughton, Alex",
+    "Park, Hyeyun",
+    "Esteves, Johnny",
+    "Barrau, Aurélien",
+    "Bregeon, Johan",
+    "Combet, Celine",
+    "Dargaud, Guillaume",
+    "Lagorio, Eric",
+    "Migliore, Myriam",
+    "Vezzu, Francis",
+    "Antilogus, Pierre",
+    "Astier, Pierre",
+    "Daubard, Guillaume",
+    "Juramy, Claire",
+    "Laporte, Didier",
+    "Guillemin, Thibault",
+    "Aubourg, Eric",
+    "Boucaud, Alexandre",
+    "Parisel, Camille",
+    "Virieux, Francoise",
+    "Breugnon, Patrick",
+    "Karst, Pierre",
+    "Marini, Aurelien",
+    "Fisher-Levine, Merlin",
+    "Waters, Chris"
+   ],
+   "bibtex": "@inproceedings{10.1117/12.3019698, title={LSST camera verification testing and characterization}, url={http://dx.doi.org/10.1117/12.3019698}, DOI={10.1117/12.3019698}, booktitle={Ground-based and Airborne Instrumentation for Astronomy X}, publisher={SPIE}, author={Roodman, Aaron J. and Rasmussen, Andrew and Bradshaw, Andrew K. and Charles, Eric and Chiang, Jim and Digel, Seth and Dubois, Richard and Johnson, Tony and Kahn, Steve and Liang, Shuang and Marshall, Stuart and Neal, Homer and Plazas, Andres A. and Reil, Kevin and Rykoff, Eli and Schindler, Rafe and Schutt, Theo and Utsumi, Yousuke and Bogart, Joanne and Bond, Tim and Bowdish, Boyd and Cisneros, Stephen and Eisner, Alan and Freytag, Mark and Hascall, Diane and Lange, Travis and Lazarte, Juan Carlos and Lopez, Margaux and Mendez, Chris and Newbry, Scott P. and Nordby, Martin and Onoprienko, Dmitry and Osier, Shawn and Pollek, Hannah and Qiu, Brian and Saxton, Owen and Tether, Stephen and Thayer, Gregg and Turri, Max and Banovetz, John and O’Connor, Paul and Riot, Vincent and Wolfe, Justin and Lage, Craig and Polin, Daniel and Snyder, Adam and Tyson, Anthony and Nichols, Renee and Ritz, Steve and Shestakov, Adrian and Wood, Duncan and Broughton, Alex and Park, Hyeyun and Esteves, Johnny and Barrau, Aurélien and Bregeon, Johan and Combet, Celine and Dargaud, Guillaume and Lagorio, Eric and Migliore, Myriam and Vezzu, Francis and Antilogus, Pierre and Astier, Pierre and Daubard, Guillaume and Juramy, Claire and Laporte, Didier and Guillemin, Thibault and Aubourg, Eric and Boucaud, Alexandre and Parisel, Camille and Virieux, Francoise and Breugnon, Patrick and Karst, Pierre and Marini, Aurelien and Fisher-Levine, Merlin and Waters, Chris}, editor={Vernet, Joël R. and Bryant, Julia J. and Motohara, Kentaro}, year={2024}, month=July, pages={90} }",
+   "doi": "10.1117/12.3019698",
+   "journal": "Ground-based and Airborne Instrumentation for Astronomy X",
+   "page": "90",
+   "resolved": "2026-10-25",
+   "short": "Roodman et al. 2024",
+   "title": "LSST camera verification testing and characterization",
+   "type": "misc",
+   "url": "https://doi.org/10.1117/12.3019698",
+   "year": 2024
+  },
+  "doi:10.3847/1538-4357/ab042c": {
+   "authors": [
+    "Ivezić, Željko",
+    "Kahn, Steven M.",
+    "Tyson, J. Anthony",
+    "Abel, Bob",
+    "Acosta, Emily",
+    "Allsman, Robyn",
+    "Alonso, David",
+    "AlSayyad, Yusra",
+    "Anderson, Scott F.",
+    "Andrew, John",
+    "P. Angel, James Roger",
+    "Angeli, George Z.",
+    "Ansari, Reza",
+    "Antilogus, Pierre",
+    "Araujo, Constanza",
+    "Armstrong, Robert",
+    "Arndt, Kirk T.",
+    "Astier, Pierre",
+    "Aubourg, Éric",
+    "Auza, Nicole",
+    "Axelrod, Tim S.",
+    "Bard, Deborah J.",
+    "Barr, Jeff D.",
+    "Barrau, Aurelian",
+    "Bartlett, James G.",
+    "Bauer, Amanda E.",
+    "Bauman, Brian J.",
+    "Baumont, Sylvain",
+    "Bechtol, Ellen",
+    "Bechtol, Keith",
+    "Becker, Andrew C.",
+    "Becla, Jacek",
+    "Beldica, Cristina",
+    "Bellavia, Steve",
+    "Bianco, Federica B.",
+    "Biswas, Rahul",
+    "Blanc, Guillaume",
+    "Blazek, Jonathan",
+    "Blandford, Roger D.",
+    "Bloom, Josh S.",
+    "Bogart, Joanne",
+    "Bond, Tim W.",
+    "Booth, Michael T.",
+    "Borgland, Anders W.",
+    "Borne, Kirk",
+    "Bosch, James F.",
+    "Boutigny, Dominique",
+    "Brackett, Craig A.",
+    "Bradshaw, Andrew",
+    "Brandt, William Nielsen",
+    "Brown, Michael E.",
+    "Bullock, James S.",
+    "Burchat, Patricia",
+    "Burke, David L.",
+    "Cagnoli, Gianpietro",
+    "Calabrese, Daniel",
+    "Callahan, Shawn",
+    "Callen, Alice L.",
+    "Carlin, Jeffrey L.",
+    "Carlson, Erin L.",
+    "Chandrasekharan, Srinivasan",
+    "Charles-Emerson, Glenaver",
+    "Chesley, Steve",
+    "Cheu, Elliott C.",
+    "Chiang, Hsin-Fang",
+    "Chiang, James",
+    "Chirino, Carol",
+    "Chow, Derek",
+    "Ciardi, David R.",
+    "Claver, Charles F.",
+    "Cohen-Tanugi, Johann",
+    "Cockrum, Joseph J.",
+    "Coles, Rebecca",
+    "Connolly, Andrew J.",
+    "Cook, Kem H.",
+    "Cooray, Asantha",
+    "Covey, Kevin R.",
+    "Cribbs, Chris",
+    "Cui, Wei",
+    "Cutri, Roc",
+    "Daly, Philip N.",
+    "Daniel, Scott F.",
+    "Daruich, Felipe",
+    "Daubard, Guillaume",
+    "Daues, Greg",
+    "Dawson, William",
+    "Delgado, Francisco",
+    "Dellapenna, Alfred",
+    "Peyster, Robert de",
+    "Val-Borro, Miguel de",
+    "Digel, Seth W.",
+    "Doherty, Peter",
+    "Dubois, Richard",
+    "Dubois-Felsmann, Gregory P.",
+    "Durech, Josef",
+    "Economou, Frossie",
+    "Eifler, Tim",
+    "Eracleous, Michael",
+    "Emmons, Benjamin L.",
+    "Neto, Angelo Fausti",
+    "Ferguson, Henry",
+    "Figueroa, Enrique",
+    "Fisher-Levine, Merlin",
+    "Focke, Warren",
+    "Foss, Michael D.",
+    "Frank, James",
+    "Freemon, Michael D.",
+    "Gangler, Emmanuel",
+    "Gawiser, Eric",
+    "Geary, John C.",
+    "Gee, Perry",
+    "Geha, Marla",
+    "Gessner, Charles J. B.",
+    "Gibson, Robert R.",
+    "Gilmore, D. Kirk",
+    "Glanzman, Thomas",
+    "Glick, William",
+    "Goldina, Tatiana",
+    "Goldstein, Daniel A.",
+    "Goodenow, Iain",
+    "Graham, Melissa L.",
+    "Gressler, William J.",
+    "Gris, Philippe",
+    "Guy, Leanne P.",
+    "Guyonnet, Augustin",
+    "Haller, Gunther",
+    "Harris, Ron",
+    "Hascall, Patrick A.",
+    "Haupt, Justine",
+    "Hernandez, Fabio",
+    "Herrmann, Sven",
+    "Hileman, Edward",
+    "Hoblitt, Joshua",
+    "Hodgson, John A.",
+    "Hogan, Craig",
+    "Howard, James D.",
+    "Huang, Dajun",
+    "Huffer, Michael E.",
+    "Ingraham, Patrick",
+    "Innes, Walter R.",
+    "Jacoby, Suzanne H.",
+    "Jain, Bhuvnesh",
+    "Jammes, Fabrice",
+    "Jee, M. James",
+    "Jenness, Tim",
+    "Jernigan, Garrett",
+    "Jevremović, Darko",
+    "Johns, Kenneth",
+    "Johnson, Anthony S.",
+    "Johnson, Margaret W. G.",
+    "Jones, R. Lynne",
+    "Juramy-Gilles, Claire",
+    "Jurić, Mario",
+    "Kalirai, Jason S.",
+    "Kallivayalil, Nitya J.",
+    "Kalmbach, Bryce",
+    "Kantor, Jeffrey P.",
+    "Karst, Pierre",
+    "Kasliwal, Mansi M.",
+    "Kelly, Heather",
+    "Kessler, Richard",
+    "Kinnison, Veronica",
+    "Kirkby, David",
+    "Knox, Lloyd",
+    "Kotov, Ivan V.",
+    "Krabbendam, Victor L.",
+    "Krughoff, K. Simon",
+    "Kubánek, Petr",
+    "Kuczewski, John",
+    "Kulkarni, Shri",
+    "Ku, John",
+    "Kurita, Nadine R.",
+    "Lage, Craig S.",
+    "Lambert, Ron",
+    "Lange, Travis",
+    "Langton, J. Brian",
+    "Guillou, Laurent Le",
+    "Levine, Deborah",
+    "Liang, Ming",
+    "Lim, Kian-Tat",
+    "Lintott, Chris J.",
+    "Long, Kevin E.",
+    "Lopez, Margaux",
+    "Lotz, Paul J.",
+    "Lupton, Robert H.",
+    "Lust, Nate B.",
+    "MacArthur, Lauren A.",
+    "Mahabal, Ashish",
+    "Mandelbaum, Rachel",
+    "Markiewicz, Thomas W.",
+    "Marsh, Darren S.",
+    "Marshall, Philip J.",
+    "Marshall, Stuart",
+    "May, Morgan",
+    "McKercher, Robert",
+    "McQueen, Michelle",
+    "Meyers, Joshua",
+    "Migliore, Myriam",
+    "Miller, Michelle",
+    "Mills, David J.",
+    "Miraval, Connor",
+    "Moeyens, Joachim",
+    "Moolekamp, Fred E.",
+    "Monet, David G.",
+    "Moniez, Marc",
+    "Monkewitz, Serge",
+    "Montgomery, Christopher",
+    "Morrison, Christopher B.",
+    "Mueller, Fritz",
+    "Muller, Gary P.",
+    "Arancibia, Freddy Muñoz",
+    "Neill, Douglas R.",
+    "Newbry, Scott P.",
+    "Nief, Jean-Yves",
+    "Nomerotski, Andrei",
+    "Nordby, Martin",
+    "O’Connor, Paul",
+    "Oliver, John",
+    "Olivier, Scot S.",
+    "Olsen, Knut",
+    "O’Mullane, William",
+    "Ortiz, Sandra",
+    "Osier, Shawn",
+    "Owen, Russell E.",
+    "Pain, Reynald",
+    "Palecek, Paul E.",
+    "Parejko, John K.",
+    "Parsons, James B.",
+    "Pease, Nathan M.",
+    "Peterson, J. Matt",
+    "Peterson, John R.",
+    "Petravick, Donald L.",
+    "Petrick, M. E. Libby",
+    "Petry, Cathy E.",
+    "Pierfederici, Francesco",
+    "Pietrowicz, Stephen",
+    "Pike, Rob",
+    "Pinto, Philip A.",
+    "Plante, Raymond",
+    "Plate, Stephen",
+    "Plutchak, Joel P.",
+    "Price, Paul A.",
+    "Prouza, Michael",
+    "Radeka, Veljko",
+    "Rajagopal, Jayadev",
+    "Rasmussen, Andrew P.",
+    "Regnault, Nicolas",
+    "Reil, Kevin A.",
+    "Reiss, David J.",
+    "Reuter, Michael A.",
+    "Ridgway, Stephen T.",
+    "Riot, Vincent J.",
+    "Ritz, Steve",
+    "Robinson, Sean",
+    "Roby, William",
+    "Roodman, Aaron",
+    "Rosing, Wayne",
+    "Roucelle, Cecille",
+    "Rumore, Matthew R.",
+    "Russo, Stefano",
+    "Saha, Abhijit",
+    "Sassolas, Benoit",
+    "Schalk, Terry L.",
+    "Schellart, Pim",
+    "Schindler, Rafe H.",
+    "Schmidt, Samuel",
+    "Schneider, Donald P.",
+    "Schneider, Michael D.",
+    "Schoening, William",
+    "Schumacher, German",
+    "Schwamb, Megan E.",
+    "Sebag, Jacques",
+    "Selvy, Brian",
+    "Sembroski, Glenn H.",
+    "Seppala, Lynn G.",
+    "Serio, Andrew",
+    "Serrano, Eduardo",
+    "Shaw, Richard A.",
+    "Shipsey, Ian",
+    "Sick, Jonathan",
+    "Silvestri, Nicole",
+    "Slater, Colin T.",
+    "Smith, J. Allyn",
+    "Smith, R. Chris",
+    "Sobhani, Shahram",
+    "Soldahl, Christine",
+    "Storrie-Lombardi, Lisa",
+    "Stover, Edward",
+    "Strauss, Michael A.",
+    "Street, Rachel A.",
+    "Stubbs, Christopher W.",
+    "Sullivan, Ian S.",
+    "Sweeney, Donald",
+    "Swinbank, John D.",
+    "Szalay, Alexander",
+    "Takacs, Peter",
+    "Tether, Stephen A.",
+    "Thaler, Jon J.",
+    "Thayer, John Gregg",
+    "Thomas, Sandrine",
+    "Thornton, Adam J.",
+    "Thukral, Vaikunth",
+    "Tice, Jeffrey",
+    "Trilling, David E.",
+    "Turri, Max",
+    "Berg, Richard Van",
+    "Berk, Daniel Vanden",
+    "Vetter, Kurt",
+    "Virieux, Francoise",
+    "Vucina, Tomislav",
+    "Wahl, William",
+    "Walkowicz, Lucianne",
+    "Walsh, Brian",
+    "Walter, Christopher W.",
+    "Wang, Daniel L.",
+    "Wang, Shin-Yawn",
+    "Warner, Michael",
+    "Wiecha, Oliver",
+    "Willman, Beth",
+    "Winters, Scott E.",
+    "Wittman, David",
+    "Wolff, Sidney C.",
+    "Wood-Vasey, W. Michael",
+    "Wu, Xiuqin",
+    "Xin, Bo",
+    "Yoachim, Peter",
+    "Zhan, Hu"
+   ],
+   "bibtex": "@article{10.3847/1538-4357/ab042c, title={LSST: From Science Drivers to Reference Design and Anticipated Data Products}, volume={873}, ISSN={1538-4357}, url={http://dx.doi.org/10.3847/1538-4357/ab042c}, DOI={10.3847/1538-4357/ab042c}, number={2}, journal={The Astrophysical Journal}, publisher={American Astronomical Society}, author={Ivezić, Željko and Kahn, Steven M. and Tyson, J. Anthony and Abel, Bob and Acosta, Emily and Allsman, Robyn and Alonso, David and AlSayyad, Yusra and Anderson, Scott F. and Andrew, John and P. Angel, James Roger and Angeli, George Z. and Ansari, Reza and Antilogus, Pierre and Araujo, Constanza and Armstrong, Robert and Arndt, Kirk T. and Astier, Pierre and Aubourg, Éric and Auza, Nicole and Axelrod, Tim S. and Bard, Deborah J. and Barr, Jeff D. and Barrau, Aurelian and Bartlett, James G. and Bauer, Amanda E. and Bauman, Brian J. and Baumont, Sylvain and Bechtol, Ellen and Bechtol, Keith and Becker, Andrew C. and Becla, Jacek and Beldica, Cristina and Bellavia, Steve and Bianco, Federica B. and Biswas, Rahul and Blanc, Guillaume and Blazek, Jonathan and Blandford, Roger D. and Bloom, Josh S. and Bogart, Joanne and Bond, Tim W. and Booth, Michael T. and Borgland, Anders W. and Borne, Kirk and Bosch, James F. and Boutigny, Dominique and Brackett, Craig A. and Bradshaw, Andrew and Brandt, William Nielsen and Brown, Michael E. and Bullock, James S. and Burchat, Patricia and Burke, David L. and Cagnoli, Gianpietro and Calabrese, Daniel and Callahan, Shawn and Callen, Alice L. and Carlin, Jeffrey L. and Carlson, Erin L. and Chandrasekharan, Srinivasan and Charles-Emerson, Glenaver and Chesley, Steve and Cheu, Elliott C. and Chiang, Hsin-Fang and Chiang, James and Chirino, Carol and Chow, Derek and Ciardi, David R. and Claver, Charles F. and Cohen-Tanugi, Johann and Cockrum, Joseph J. and Coles, Rebecca and Connolly, Andrew J. and Cook, Kem H. and Cooray, Asantha and Covey, Kevin R. and Cribbs, Chris and Cui, Wei and Cutri, Roc and Daly, Philip N. and Daniel, Scott F. and Daruich, Felipe and Daubard, Guillaume and Daues, Greg and Dawson, William and Delgado, Francisco and Dellapenna, Alfred and Peyster, Robert de and Val-Borro, Miguel de and Digel, Seth W. and Doherty, Peter and Dubois, Richard and Dubois-Felsmann, Gregory P. and Durech, Josef and Economou, Frossie and Eifler, Tim and Eracleous, Michael and Emmons, Benjamin L. and Neto, Angelo Fausti and Ferguson, Henry and Figueroa, Enrique and Fisher-Levine, Merlin and Focke, Warren and Foss, Michael D. and Frank, James and Freemon, Michael D. and Gangler, Emmanuel and Gawiser, Eric and Geary, John C. and Gee, Perry and Geha, Marla and Gessner, Charles J. B. and Gibson, Robert R. and Gilmore, D. Kirk and Glanzman, Thomas and Glick, William and Goldina, Tatiana and Goldstein, Daniel A. and Goodenow, Iain and Graham, Melissa L. and Gressler, William J. and Gris, Philippe and Guy, Leanne P. and Guyonnet, Augustin and Haller, Gunther and Harris, Ron and Hascall, Patrick A. and Haupt, Justine and Hernandez, Fabio and Herrmann, Sven and Hileman, Edward and Hoblitt, Joshua and Hodgson, John A. and Hogan, Craig and Howard, James D. and Huang, Dajun and Huffer, Michael E. and Ingraham, Patrick and Innes, Walter R. and Jacoby, Suzanne H. and Jain, Bhuvnesh and Jammes, Fabrice and Jee, M. James and Jenness, Tim and Jernigan, Garrett and Jevremović, Darko and Johns, Kenneth and Johnson, Anthony S. and Johnson, Margaret W. G. and Jones, R. Lynne and Juramy-Gilles, Claire and Jurić, Mario and Kalirai, Jason S. and Kallivayalil, Nitya J. and Kalmbach, Bryce and Kantor, Jeffrey P. and Karst, Pierre and Kasliwal, Mansi M. and Kelly, Heather and Kessler, Richard and Kinnison, Veronica and Kirkby, David and Knox, Lloyd and Kotov, Ivan V. and Krabbendam, Victor L. and Krughoff, K. Simon and Kubánek, Petr and Kuczewski, John and Kulkarni, Shri and Ku, John and Kurita, Nadine R. and Lage, Craig S. and Lambert, Ron and Lange, Travis and Langton, J. Brian and Guillou, Laurent Le and Levine, Deborah and Liang, Ming and Lim, Kian-Tat and Lintott, Chris J. and Long, Kevin E. and Lopez, Margaux and Lotz, Paul J. and Lupton, Robert H. and Lust, Nate B. and MacArthur, Lauren A. and Mahabal, Ashish and Mandelbaum, Rachel and Markiewicz, Thomas W. and Marsh, Darren S. and Marshall, Philip J. and Marshall, Stuart and May, Morgan and McKercher, Robert and McQueen, Michelle and Meyers, Joshua and Migliore, Myriam and Miller, Michelle and Mills, David J. and Miraval, Connor and Moeyens, Joachim and Moolekamp, Fred E. and Monet, David G. and Moniez, Marc and Monkewitz, Serge and Montgomery, Christopher and Morrison, Christopher B. and Mueller, Fritz and Muller, Gary P. and Arancibia, Freddy Muñoz and Neill, Douglas R. and Newbry, Scott P. and Nief, Jean-Yves and Nomerotski, Andrei and Nordby, Martin and O’Connor, Paul and Oliver, John and Olivier, Scot S. and Olsen, Knut and O’Mullane, William and Ortiz, Sandra and Osier, Shawn and Owen, Russell E. and Pain, Reynald and Palecek, Paul E. and Parejko, John K. and Parsons, James B. and Pease, Nathan M. and Peterson, J. Matt and Peterson, John R. and Petravick, Donald L. and Petrick, M. E. Libby and Petry, Cathy E. and Pierfederici, Francesco and Pietrowicz, Stephen and Pike, Rob and Pinto, Philip A. and Plante, Raymond and Plate, Stephen and Plutchak, Joel P. and Price, Paul A. and Prouza, Michael and Radeka, Veljko and Rajagopal, Jayadev and Rasmussen, Andrew P. and Regnault, Nicolas and Reil, Kevin A. and Reiss, David J. and Reuter, Michael A. and Ridgway, Stephen T. and Riot, Vincent J. and Ritz, Steve and Robinson, Sean and Roby, William and Roodman, Aaron and Rosing, Wayne and Roucelle, Cecille and Rumore, Matthew R. and Russo, Stefano and Saha, Abhijit and Sassolas, Benoit and Schalk, Terry L. and Schellart, Pim and Schindler, Rafe H. and Schmidt, Samuel and Schneider, Donald P. and Schneider, Michael D. and Schoening, William and Schumacher, German and Schwamb, Megan E. and Sebag, Jacques and Selvy, Brian and Sembroski, Glenn H. and Seppala, Lynn G. and Serio, Andrew and Serrano, Eduardo and Shaw, Richard A. and Shipsey, Ian and Sick, Jonathan and Silvestri, Nicole and Slater, Colin T. and Smith, J. Allyn and Smith, R. Chris and Sobhani, Shahram and Soldahl, Christine and Storrie-Lombardi, Lisa and Stover, Edward and Strauss, Michael A. and Street, Rachel A. and Stubbs, Christopher W. and Sullivan, Ian S. and Sweeney, Donald and Swinbank, John D. and Szalay, Alexander and Takacs, Peter and Tether, Stephen A. and Thaler, Jon J. and Thayer, John Gregg and Thomas, Sandrine and Thornton, Adam J. and Thukral, Vaikunth and Tice, Jeffrey and Trilling, David E. and Turri, Max and Berg, Richard Van and Berk, Daniel Vanden and Vetter, Kurt and Virieux, Francoise and Vucina, Tomislav and Wahl, William and Walkowicz, Lucianne and Walsh, Brian and Walter, Christopher W. and Wang, Daniel L. and Wang, Shin-Yawn and Warner, Michael and Wiecha, Oliver and Willman, Beth and Winters, Scott E. and Wittman, David and Wolff, Sidney C. and Wood-Vasey, W. Michael and Wu, Xiuqin and Xin, Bo and Yoachim, Peter and Zhan, Hu}, year={2019}, month=Mar, pages={111} }",
+   "doi": "10.3847/1538-4357/ab042c",
+   "journal": "ApJ",
+   "page": "111",
+   "resolved": "2026-10-25",
+   "short": "Ivezić et al. 2019",
+   "title": "LSST: From Science Drivers to Reference Design and Anticipated Data Products",
+   "type": "article",
+   "url": "https://doi.org/10.3847/1538-4357/ab042c",
+   "volume": "873",
+   "year": 2019
+  },
+  "doi:10.71929/rubin/2571927": {
+   "bibtex": "@misc{10.71929/rubin/2571927,\n  doi = {10.71929/RUBIN/2571927},\n  url = {https://www.osti.gov/servlets/purl/2571927},\n  author = {{SLAC National Accelerator Laboratory} and {NSF-DOE Vera C. Rubin Observatory}},\n  keywords = {79},\n  title = {The LSST Camera (LSSTCam)},\n  publisher = {SLAC National Accelerator Laboratory},\n  year = {2025}\n}",
+   "doi": "10.71929/rubin/2571927",
+   "resolved": "2026-10-25",
+   "short": "The LSST Camera (LSSTCam)",
+   "title": "The LSST Camera (LSSTCam)",
+   "type": "misc",
+   "url": "https://doi.org/10.71929/rubin/2571927",
+   "year": 2025
+  },
+  "url:https://github.com/lsst/throughputs/blob/master/baseline/README.md": {
+   "short": "LSST throughputs",
+   "type": "web",
+   "url": "https://github.com/lsst/throughputs/blob/master/baseline/README.md"
+  }
+ },
+ "description": "LSSTCam is a 3.2-gigapixel optical survey camera with a 9.6-square-degree field of view and six filters, u, g, r, i, z and y, used for the Legacy Survey of Space and Time.",
+ "facility": "LSST",
+ "facility_description": "The Simonyi Survey Telescope at NSF-DOE Vera C. Rubin Observatory carries LSSTCam for the Legacy Survey of Space and Time.",
+ "instrument": "LSST",
+ "licence": {
+  "redistribution": "unknown",
+  "scope": "Repository has no licence (GitHub license: null); docs footer '© Copyright 2025 Association of Universities for Research in Astronomy, Inc. (AURA).'",
+  "terms": "",
+  "url": "https://github.com/lsst/throughputs"
+ },
+ "links": [
+  {
+   "label": "LSSTCam instrument, filters and citation guidance",
+   "source": "Rubin Observatory",
+   "url": "https://lsstcam.lsst.io/"
+  },
+  {
+   "label": "LSST baseline throughput repository",
+   "source": "Rubin Observatory",
+   "url": "https://github.com/lsst/throughputs"
+  },
+  {
+   "label": "System Engineering source throughput curves",
+   "source": "Rubin Observatory",
+   "url": "https://github.com/lsst-pst/syseng_throughputs"
+  },
+  {
+   "label": "LSST throughputs at github",
+   "source": "svo",
+   "url": "https://github.com/lsst/throughputs/tree/master/baseline"
+  },
+  {
+   "label": "LSST",
+   "source": "svo",
+   "url": "https://www.lsst.org/"
+  }
+ ],
+ "notes": "Owner pages opened in this session: LSSTCam documentation, lsst/throughputs and lsst-pst/syseng_throughputs. No explicit curve redistribution licence was found there. Public GitHub visibility is not a licence; no software or documentation licence has been applied to curve data. Current LSSTCam documentation and repository revisions need not match the historical NJM profiles; no band-level reference or numerical metadata is asserted. The owner instrument page describes total throughput including atmosphere at airmass 1.2, optics and detector sensitivity. The acknowledgement entry is the owner-requested instrument citation string rather than a dataset acknowledgement.",
+ "references": [
+  "doi:10.71929/rubin/2571927",
+  "doi:10.3847/1538-4357/ab042c",
+  "doi:10.1117/12.3019698",
+  "url:https://github.com/lsst/throughputs/blob/master/baseline/README.md",
+  "bibcode:2012ivoa.rept.1015R",
+  "bibcode:2020sea..confE.182R",
+  "bibcode:2024A&A...689A..93R"
+ ],
+ "schema": 1,
+ "svo_groups": {
+  "LSST/LSST": {
+   "description": "LSST throughputs",
+   "facility_description": "The Large Synoptic Survey Telescope",
+   "links": [
+    {
+     "label": "LSST throughputs at github",
+     "source": "svo",
+     "url": "https://github.com/lsst/throughputs/tree/master/baseline"
+    },
+    {
+     "label": "LSST",
+     "source": "svo",
+     "url": "https://www.lsst.org/"
+    }
+   ]
+  }
+ }
+}

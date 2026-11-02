@@ -1,0 +1,17 @@
+{
+ "g": {
+  "ColorMethod": "true",
+  "DisplayColor": "#00c4ff",
+  "VisibleFraction": 0.9996
+ },
+ "i": {
+  "ColorMethod": "false",
+  "DisplayColor": "#ee3b2b",
+  "VisibleFraction": 0.2439
+ },
+ "r": {
+  "ColorMethod": "true",
+  "DisplayColor": "#ff6000",
+  "VisibleFraction": 1.0
+ }
+}

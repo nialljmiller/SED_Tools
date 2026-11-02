@@ -24,84 +24,31 @@ URL, retrieval time and SHA-256)::
 
 from __future__ import annotations
 
-import datetime
+import datetime  # noqa: F401 - `from ... import *` has given it since 0.5.0
 import gzip
-import hashlib
+import hashlib  # noqa: F401 - `from ... import *` has given it since 0.5.0
 import io
-import json
+import json  # noqa: F401 - `from ... import *` has given it since 0.5.0
 import logging
 import re
 import tarfile
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Sequence, Tuple, Union
+from typing import Dict, Iterable, Optional, Sequence, Tuple, Union  # noqa: F401 - Tuple, as above
 
 import numpy as np
 
-from ..filter_components import TEAM
+from ..filters.compose import TEAM
 from ._common import DerivedCurve, SiteAtmosphere, write_site
+from ._original import CONNECT_TIMEOUT, CachingSession, Curve, download  # noqa: F401  CONNECT_TIMEOUT stays importable here
 
 logger = logging.getLogger(__name__)
 
-Curve = Tuple[np.ndarray, np.ndarray]
-
-
-# --------------------------------------------------------------------------
-# Downloads
-# --------------------------------------------------------------------------
-class CachingSession:
-    """Fetch each URL once per build; optionally archive every raw download.
-
-    The archive (``archive_dir``) holds the bytes exactly as received plus a
-    ``manifest.json`` with URL, retrieval time (UTC) and SHA-256.
-    """
-
-    def __init__(self, session=None, archive_dir: Union[str, Path, None] = None):
-        if session is None:
-            import requests
-
-            from ._original import USER_AGENT
-
-            session = requests.Session()
-            session.headers["User-Agent"] = USER_AGENT
-        self.session = session
-        self.archive = Path(archive_dir) if archive_dir else None
-        self._cache: Dict[str, object] = {}
-
-    def get(self, url: str, **kwargs):
-        if url not in self._cache:
-            kwargs.setdefault("timeout", 300)
-            resp = self.session.get(url, **kwargs)
-            resp.raise_for_status()
-            if self.archive is not None:
-                self._record(url, resp)
-            self._cache[url] = resp
-        return self._cache[url]
-
-    def _record(self, url: str, resp) -> None:
-        self.archive.mkdir(parents=True, exist_ok=True)
-        name = re.sub(r"[^A-Za-z0-9._-]+", "_", re.sub(r"^https?://", "", url)).strip("_")
-        (self.archive / name).write_bytes(resp.content)
-        path = self.archive / "manifest.json"
-        data = json.loads(path.read_text()) if path.exists() else {"files": []}
-        data["files"] = [f for f in data["files"] if f["file"] != name]
-        data["files"].append({
-            "file": name, "url": url,
-            "retrieved_utc": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "sha256": hashlib.sha256(resp.content).hexdigest(), "bytes": len(resp.content),
-            "http_status": getattr(resp, "status_code", None),
-            "last_modified": getattr(resp, "headers", {}).get("last-modified"),
-        })
-        path.write_text(json.dumps(data, indent=1) + "\n")
-
 
 def _bytes(session, url: str) -> bytes:
-    resp = session.get(url, timeout=300)
-    resp.raise_for_status()
-    raw = resp.content
+    raw = download(session, url)
     head = raw[:512].lstrip().lower()
-    if head.startswith(b"<!doctype html") or head.startswith(b"<html"):
-        if b"<pre>" not in raw[:2000].lower():
-            raise ValueError(f"{url} returned HTML, not data")
+    if head.startswith((b"<!doctype html", b"<html")) and b"<pre>" not in raw[:2000].lower():
+        raise ValueError(f"{url} returned HTML, not data")
     return raw
 
 
@@ -130,9 +77,7 @@ def _checked(wl, tr, what: str) -> Curve:
     return wl, tr
 
 
-# --------------------------------------------------------------------------
-# Pan-STARRS1 (Tonry et al. 2012)
-# --------------------------------------------------------------------------
+# -------------------------------------------- Pan-STARRS1 (Tonry et al. 2012)
 PS1_TABLE3 = "https://cdsarc.cds.unistra.fr/ftp/J/ApJ/750/99/table3.dat"
 PS1_README = "https://cdsarc.cds.unistra.fr/ftp/J/ApJ/750/99/ReadMe"
 PS1_PAPER = "https://ui.adsabs.harvard.edu/abs/2012ApJ...750...99T"
@@ -152,7 +97,7 @@ def ps1_atmosphere(text: str) -> Curve:
             raise ValueError("PS1 table3: fixed-width and whitespace columns disagree")
         wl.append(float(line[0:4]) * 10.0)
         tr.append(aero * ray * mol)
-    return _checked(wl, tr, "PS1 table3 atmosphere")
+    return np.array(wl), np.array(tr)
 
 
 HALEAKALA_PS1 = SiteAtmosphere(
@@ -177,9 +122,7 @@ HALEAKALA_PS1 = SiteAtmosphere(
 )
 
 
-# --------------------------------------------------------------------------
-# VISTA/VIRCAM (ESO ETC curves)
-# --------------------------------------------------------------------------
+# ---------------------------------------------- VISTA/VIRCAM (ESO ETC curves)
 VIRCAM_BUNDLE = "https://www.eso.org/sci/facilities/paranal/decommissioned/vircam/inst/Filters_QE_Atm_curves.tar.gz"
 VIRCAM_PAGE = "https://www.eso.org/sci/facilities/paranal/decommissioned/vircam/inst.html"
 VISTA_PAGE = "https://www.eso.org/public/teles-instr/paranal-observatory/surveytelescopes/vista/"
@@ -195,7 +138,7 @@ def vircam_atmosphere(raw: bytes, member: str, header: str) -> Curve:
     if header not in text.splitlines()[0]:
         raise ValueError(f"{member}: unexpected title {text.splitlines()[0]!r}")
     data = _columns(text, 2, skip=2)  # f02.sm reads 'lines 3 999999'
-    return _checked(data[:, 0] * 1e4, data[:, 1], member)
+    return data[:, 0] * 1e4, data[:, 1]
 
 
 def _vircam(member: str, header: str) -> DerivedCurve:
@@ -224,9 +167,7 @@ PARANAL_VIRCAM = SiteAtmosphere(
 )
 
 
-# --------------------------------------------------------------------------
-# 2MASS (Cohen et al. 2003; Explanatory Supplement III.1.b1)
-# --------------------------------------------------------------------------
+# ----------------- 2MASS (Cohen et al. 2003; Explanatory Supplement III.1.b1)
 TWOMASS_DOC = "https://www.ipac.caltech.edu/2mass/releases/allsky/doc/"
 
 
@@ -241,7 +182,7 @@ def twomass_table(raw: bytes, title: str) -> Curve:
     data = _columns(body.group(1), 3)
     if not np.array_equal(data[:, 0], np.arange(1, len(data) + 1)):
         raise ValueError("2MASS table: row numbers are not consecutive (truncated?)")
-    return _checked(data[:, 1] * 1e4, data[:, 2], title)
+    return data[:, 1] * 1e4, data[:, 2]
 
 
 def _twomass(table: str, title: str) -> DerivedCurve:
@@ -277,9 +218,7 @@ CTIO_2MASS = SiteAtmosphere(
 )
 
 
-# --------------------------------------------------------------------------
-# Carnegie Supernova Project (CSP_filter_package.tgz)
-# --------------------------------------------------------------------------
+# ------------------------ Carnegie Supernova Project (CSP_filter_package.tgz)
 CSP_PACKAGE = "https://csp.obs.carnegiescience.edu/data/CSP_filter_package.tgz"
 CSP_PAGE = "https://csp.obs.carnegiescience.edu/data/filters"
 CSP_AIRMASS = 1.2
@@ -298,15 +237,16 @@ def csp_atmosphere(raw: bytes, airmass: float = CSP_AIRMASS) -> Curve:
     ext = _csp_member(raw, "atm_ext_ctio.dat")
     lines = _csp_member(raw, "atm_ext_lines.dat")
     _checked(ext[:, 0], ext[:, 1], "atm_ext_ctio.dat")
-    # The lines file is a normalised spectrum: two samples (7150, 7574.2 A)
-    # reach 1.0025; they are kept, and the product below must be a transmission.
+    # Both inputs must be increasing for np.interp.  The lines file is a normalised
+    # spectrum: two samples (7150, 7574.2 A) reach 1.0025; they are kept, and
+    # write_site refuses the product if it exceeds 1.
     if np.any(np.diff(lines[:, 0]) <= 0) or np.any(lines[:, 1] < 0) or lines[:, 1].max() > 1.01:
         raise ValueError("atm_ext_lines.dat: unexpected values")
     lo, hi = max(ext[0, 0], lines[0, 0]), min(ext[-1, 0], lines[-1, 0])
     grid = np.unique(np.concatenate([ext[:, 0], lines[:, 0]]))
     grid = grid[(grid >= lo) & (grid <= hi)]
     tr = np.interp(grid, ext[:, 0], ext[:, 1]) ** airmass * np.interp(grid, lines[:, 0], lines[:, 1])
-    return _checked(grid, tr, "CSP atmosphere")
+    return grid, tr
 
 
 LCO_CSP = SiteAtmosphere(
@@ -341,9 +281,7 @@ LCO_CSP = SiteAtmosphere(
 )
 
 
-# --------------------------------------------------------------------------
-# SDSS (DR7 imager response tables)
-# --------------------------------------------------------------------------
+# ------------------------------------------ SDSS (DR7 imager response tables)
 SDSS_DR7 = "https://classic.sdss.org/dr7/instruments/imager/"
 SDSS_FILES = {b: f"{SDSS_DR7}filters/{b}.dat" for b in "ugriz"}
 
@@ -360,7 +298,7 @@ def sdss_transparency(session) -> Curve:
                 raise ValueError(f"SDSS {band}: transparency at {wl} A disagrees between band files")
             values[wl] = t
     wl = np.array(sorted(values))
-    return _checked(wl, np.array([values[w] for w in wl]), "SDSS transparency")
+    return wl, np.array([values[w] for w in wl])
 
 
 APO_SDSS = SiteAtmosphere(
@@ -387,9 +325,7 @@ APO_SDSS = SiteAtmosphere(
 )
 
 
-# --------------------------------------------------------------------------
-# BASS (Legacy Surveys DR10 filter files)
-# --------------------------------------------------------------------------
+# ------------------------------------ BASS (Legacy Surveys DR10 filter files)
 BASS_FILES = {b: f"https://www.legacysurvey.org/files/bass-{b}.txt" for b in "gr"}
 BASS_PAGE = "https://www.legacysurvey.org/dr10/description/"
 BASS_MIN_RESPONSE = 0.1  # filter x QE column; 3-decimal rounding limits the ratio below this
@@ -409,7 +345,7 @@ def bass_atmosphere(session) -> Curve:
                 raise ValueError(f"BASS: {wl} A is in-band for two filters")
             values[wl] = ratio
     wl = np.array(sorted(values))
-    return _checked(wl, np.array([values[w] for w in wl]), "BASS atmosphere")
+    return wl, np.array([values[w] for w in wl])
 
 
 KPNO_BASS = SiteAtmosphere(
@@ -433,9 +369,7 @@ KPNO_BASS = SiteAtmosphere(
 )
 
 
-# --------------------------------------------------------------------------
-# Gemini (ATRAN, Lord 1992)
-# --------------------------------------------------------------------------
+# -------------------------------------------------- Gemini (ATRAN, Lord 1992)
 GEMINI_MODELS = "https://www.gemini.edu/sciops/ObsProcess/obsConstraints/atm-models/"
 GEMINI_PAGE = "https://www.gemini.edu/observing/telescopes-and-sites/sites"
 GEMINI_TERMS = ("Any use of these data should reference Lord, S. D., 1992, NASA Technical Memorandum 103957, "
@@ -447,7 +381,7 @@ def gemini_atran(raw: bytes, url: str) -> Curve:
     data = _columns(raw.decode("ascii"), 2)
     if data[0, 0] > 0.9 + 1e-9 or data[-1, 0] < 5.599:
         raise ValueError(f"{url}: covers {data[0, 0]}-{data[-1, 0]} um, not 0.9-5.6 um (truncated?)")
-    return _checked(data[:, 0] * 1e4, data[:, 1], url)
+    return data[:, 0] * 1e4, data[:, 1]
 
 
 def _gemini_entries(prefix: str, pwvs: Sequence[float]):
@@ -489,18 +423,14 @@ CPACHON_GEMINI = SiteAtmosphere(
 )
 
 
-# --------------------------------------------------------------------------
-# Subaru/HSC: the very site its builder writes (one definition, in hsc.py)
-# --------------------------------------------------------------------------
+# --- Subaru/HSC: the very site its builder writes (one definition, in hsc.py)
 def _maunakea_hsc() -> SiteAtmosphere:
     from .hsc import SPEC
 
     return SPEC.site
 
 
-# --------------------------------------------------------------------------
-# Registry and builder
-# --------------------------------------------------------------------------
+# ------------------------------------------------------- Registry and builder
 SITES: Dict[str, SiteAtmosphere] = {
     s.site: s for s in (HALEAKALA_PS1, PARANAL_VIRCAM, HOPKINS_2MASS, CTIO_2MASS, LCO_CSP, APO_SDSS,
                         KPNO_BASS, MAUNAKEA_GEMINI, CPACHON_GEMINI)
@@ -525,7 +455,8 @@ def build(
     names = list(SITES) if sites is None else list(sites)
     unknown = [n for n in names if n not in SITES]
     if unknown:
-        raise ValueError(f"Unknown team atmosphere site(s) {unknown}. Choose from {sorted(SITES)}")
+        raise ValueError(f"Unknown team atmosphere site(s) {', '.join(unknown)}. "
+                         f"Choose from: {', '.join(sorted(SITES))}")
     fetch = CachingSession(session, archive_dir)
     for name in names:
         if (root / name / "manifest.json").exists() and not overwrite:

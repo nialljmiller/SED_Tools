@@ -1,0 +1,21 @@
+{
+  "altitude_m": 2647.0,
+  "citation": "Rubin Observatory lsst/throughputs release v1.9.2, baseline/atmos_10.dat (airmass 1.0) and baseline/atmos_std.dat (airmass 1.2): https://github.com/lsst/throughputs/tree/v1.9.2/baseline",
+  "entries": [
+    {
+      "airmass": 1.0,
+      "file": "am1.00.dat",
+      "pwv": null
+    },
+    {
+      "airmass": 1.2,
+      "file": "am1.20.dat",
+      "pwv": null
+    }
+  ],
+  "notes": "Cerro Pachon; fixed water vapour as in Rubin's baseline.",
+  "schema": 1,
+  "site": "lsst_std",
+  "source": "Rubin fiducial atmosphere (MODTRAN, with aerosols), lsst/throughputs v1.9.2",
+  "terms": "No licence: lsst/throughputs has no LICENSE file at tag v1.9.2 and GitHub reports none (checked 2026-10-26); its README states no terms. Rubin documentation footer: \"\u00a9 Copyright 2025 Association of Universities for Research in Astronomy, Inc. (AURA).\" (https://lsstcam.lsst.io/, accessed 2026-10-26). Redistribution class (NJM review, 2026-10-26): unknown."
+}

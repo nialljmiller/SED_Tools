@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sed-tools"
-version = "0.4.1"
+version = "0.5.0"
 description = "Programmatic access to SED Tools stellar spectral grids and photometry helpers."
 readme = "README.md"
 authors = [{ name = "Niall Miller" }]
@@ -42,6 +42,8 @@ full = [
     ]
 # A(lambda)/A(V) (AfAv) in sed_tools.filter_properties: the Fitzpatrick (1999) law.
 extinction = ["dust_extinction>=1.6"]
+# Hyperparameter search for `sed-tools ml_generator --auto` (with torch and scikit-learn from [full]).
+ml-tune = ["optuna>=3"]
 
 [project.urls]
 "Homepage" = "https://github.com/nialljmiller/SED_Tools"
@@ -53,7 +55,7 @@ include = ["sed_tools*"]
 include-package-data = true
 
 [tool.setuptools.package-data]
-sed_tools = ["sed_tools.defaults", "cie/*.csv"]
+sed_tools = ["sed_tools.defaults", "cie/*.csv", "instrument_catalogue.json"]
 
 [project.scripts]
 sed-tools = "sed_tools.cli:main"
