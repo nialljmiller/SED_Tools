@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""NJMSpectraGrabber: spectral grids from the NJM mirror (nillmill.ddns.net), spectrum by spectrum.
+"""NJMSpectraGrabber: spectral grids from the NJM mirror (data.nialljmiller.com), spectrum by spectrum.
 
 It downloads every .txt spectrum plus flux_cube.bin, the .h5 bundle and lookup_table.csv, cut by Teff, logg,
 [M/H] and wavelength if asked; the spectra then go through the cleaner. NJM's address and pause are in njm_mirror.

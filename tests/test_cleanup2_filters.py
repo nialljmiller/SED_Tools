@@ -11,7 +11,7 @@ import requests
 
 from sed_tools.njm_filter_grabber import NJMFilterGrabber
 
-NJM = "https://nillmill.ddns.net/sed_tools"
+NJM = "https://data.nialljmiller.com/sed_tools"
 
 
 def _refusing_grabber(monkeypatch, status):

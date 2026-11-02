@@ -354,7 +354,7 @@ def test_njm_spectra_are_not_asked_while_njm_is_paused(tmp_path, monkeypatch):
 def catalogue_with(tmp_path, files):
     server = Served(dict({"index.json": njm_index({"GAIA": {"DR2": {
         "filters": ["BP", "BP_svo", "G"], "properties": "properties.json", "info": "info.json"}}})}, **files))
-    mirror = SimpleNamespace(base_url="https://nillmill.ddns.net/sed_tools", is_available=lambda: True,
+    mirror = SimpleNamespace(base_url="https://data.nialljmiller.com/sed_tools", is_available=lambda: True,
                              _get=lambda url, **kwargs: server.get(url, **kwargs))
     return FilterCatalogue(tmp_path / "filters", mirror=mirror)
 
@@ -381,7 +381,7 @@ def test_unreachable_njm_is_said_plainly_once(tmp_path):
     def down(url, **kwargs):
         raise requests.ConnectionError("('Connection aborted.', ConnectionResetError(54, 'reset'))")
 
-    mirror = SimpleNamespace(base_url="https://nillmill.ddns.net/sed_tools", is_available=lambda: True, _get=down)
+    mirror = SimpleNamespace(base_url="https://data.nialljmiller.com/sed_tools", is_available=lambda: True, _get=down)
     catalogue = FilterCatalogue(tmp_path / "filters", mirror=mirror)
     with pytest.raises(CatalogueError) as raised:
         catalogue.info("GAIA", "DR2")

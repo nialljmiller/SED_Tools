@@ -17,7 +17,7 @@ import urllib3
 # Outage warnings are logged under the filter client's name.
 logger = logging.getLogger("sed_tools.njm_filter_grabber")
 
-BASE_URL = "https://nillmill.ddns.net/sed_tools"
+BASE_URL = "https://data.nialljmiller.com/sed_tools"
 USER_AGENT = "SED_Tools/1.0 (NJM Mirror)"
 #: Seconds to wait for NJM to accept a connection: a mirror that is down fails fast.
 NJM_CONNECT_TIMEOUT = 5.0

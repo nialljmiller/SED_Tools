@@ -210,7 +210,7 @@ def test_published_reports_each_fallback_and_every_source_failure(tmp_path, monk
 # ----------------------------------------------------------------------
 # njm_filter_grabber (a fake session; never the network)
 # ----------------------------------------------------------------------
-NJM = "https://nillmill.ddns.net/sed_tools"
+NJM = "https://data.nialljmiller.com/sed_tools"
 CURVE = "Wavelength,Transmission,DetectorType=photon;DetectorTypeSource=svo\n4000,0.1\n5000,1\n6000,0.1\n"
 
 

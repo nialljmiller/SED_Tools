@@ -417,7 +417,7 @@ def _hfi_catalogue(tmp_path, *, njm_index_file=True, offline=False):
     if njm_index_file:
         files["filters/Planck/HFI/HFI"] = "100.dat\n857.dat\n"
     server = Served(files)
-    mirror = SimpleNamespace(base_url="https://nillmill.ddns.net/sed_tools", is_available=lambda: True,
+    mirror = SimpleNamespace(base_url="https://data.nialljmiller.com/sed_tools", is_available=lambda: True,
                              _get=lambda url, **kwargs: server.get(url, **kwargs))
     return FilterCatalogue(tmp_path / "filters", mirror=mirror, offline=offline)
 

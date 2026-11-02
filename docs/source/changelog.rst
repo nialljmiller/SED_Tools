@@ -449,6 +449,10 @@ Filter pickers, instrument names and NJM
   not asked again for five minutes by anything in the process, with one
   warning naming the sources used instead (installed copies, the
   original-source builders and SVO).
+- NJM is now reached at ``https://data.nialljmiller.com/sed_tools``, served
+  through Cloudflare. ``nillmill.ddns.net`` serves the same files and keeps
+  working for earlier releases; files over 100 MB still come from it by
+  redirect.
 - NJM's instruments are read from its ``index.json``; its directory listing
   is a last resort, keeps directories only, and is announced.
 - Picker entries from ``FilterLibrary.facilities()`` and ``instruments()``

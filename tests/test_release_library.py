@@ -22,7 +22,7 @@ from sed_tools.filter_metadata import read_filter_header
 from sed_tools.njm_filter_grabber import NJMFilterGrabber
 from sed_tools.svo_filter_grabber import Facility, FilterRow, Instrument, SVOFilterBrowser
 
-NJM = "https://nillmill.ddns.net/sed_tools"
+NJM = "https://data.nialljmiller.com/sed_tools"
 CURVE = "Wavelength,Transmission,DetectorType=photon;DetectorTypeSource=original\n4000,0\n5000,1\n6000,0\n"
 SVO_CURVE = "Wavelength,Transmission,DetectorType=photon;DetectorTypeSource=svo\n4100,0\n5000,1\n5900,0\n"
 
@@ -558,7 +558,7 @@ def test_catalogue_generator_writes_what_the_loader_reads(tmp_path, monkeypatch)
     assert stored["GAIA0"] == {"svo_instruments": ["GAIA/GAIA0"], "bands": ["G"]}  # empty fields are not stored
     assert stored["DR2"]["svo_bands"] == {"GAIA/GAIA2": ["G", "Gbp=BP"]}  # Grp is not the same curve as RP
     assert sum('"bands": [' in line for line in out.read_text().splitlines()) == 5  # one line per instrument
-    assert all(url.startswith("https://nillmill.ddns.net/sed_tools/filters/") for url in requested)
+    assert all(url.startswith("https://data.nialljmiller.com/sed_tools/filters/") for url in requested)
 
 
 def test_catalogue_search_reads_an_index_with_the_new_instrument_fields(tmp_path):

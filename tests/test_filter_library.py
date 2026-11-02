@@ -352,7 +352,7 @@ def test_mirror_retries_temporary_forbidden(tmp_path, monkeypatch):
 class BurstBlockedNJM:
     """A fake NJM session that answers the first ``blocked`` requests with 403, like Apache's burst block."""
 
-    BASE = "https://nillmill.ddns.net/sed_tools"
+    BASE = "https://data.nialljmiller.com/sed_tools"
 
     def __init__(self, files, blocked=0, head_error=None, head_status=301):
         self.files, self.blocked = files, blocked

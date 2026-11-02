@@ -238,7 +238,7 @@ def test_filters_info_describes_curves_installed_under_other_band_names(tmp_path
                      "filters/Planck/HFI/HFI": "100.dat\n857.dat\n",
                      "filters/Planck/HFI/info.json": json.dumps(info),
                      "filters/Planck/HFI/properties.json": json.dumps(properties)})
-    mirror = SimpleNamespace(base_url="https://nillmill.ddns.net/sed_tools", is_available=lambda: True,
+    mirror = SimpleNamespace(base_url="https://data.nialljmiller.com/sed_tools", is_available=lambda: True,
                              _get=lambda url, **kwargs: server.get(url, **kwargs))
     catalogue = FilterCatalogue(tmp_path / "filters", mirror=mirror)
 

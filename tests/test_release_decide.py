@@ -129,7 +129,7 @@ def test_an_svo_curve_that_could_not_be_saved_still_fails(gaia_from_svo, monkeyp
 # 2. SED.fetch with bounds downloads only the spectra within them
 # ----------------------------------------------------------------------
 GRID = "Kurucz2003all"
-NJM_URL = "https://nillmill.ddns.net/sed_tools"
+NJM_URL = "https://data.nialljmiller.com/sed_tools"
 #: The golden Kurucz test grid: Teff 5750, 6000, 6250; logg 4.0, 4.5; [M/H] -0.5, 0.0.
 KURUCZ = Path(__file__).parent / "golden" / "inputs" / "stellar_models" / GRID
 #: Teff 5900-6100 selects the four spectra at 6000 K.

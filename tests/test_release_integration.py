@@ -96,10 +96,10 @@ def test_a_silent_outage_is_checked_and_reported_once_per_process(tmp_path, monk
     with caplog.at_level(logging.WARNING, logger="sed_tools.njm_filter_grabber"):
         grabbers, session = _grabbers(monkeypatch, tmp_path, requests.ConnectTimeout("timed out"))
     assert [g.is_available() for g in grabbers] == [False, False, False]
-    assert session.calls == [("HEAD", "https://nillmill.ddns.net/sed_tools", True)]  # one 5 s wait, not three
+    assert session.calls == [("HEAD", "https://data.nialljmiller.com/sed_tools", True)]  # one 5 s wait, not three
     assert caplog.text.count("is unavailable (timed out)") == 1
     with pytest.raises(requests.ConnectionError, match="not asked again for 5 minutes"):
-        grabbers[2]._get("https://nillmill.ddns.net/sed_tools/index.json")
+        grabbers[2]._get("https://data.nialljmiller.com/sed_tools/index.json")
     assert len(session.calls) == 1
 
 
@@ -157,7 +157,7 @@ def test_an_error_answer_to_one_catalogue_is_not_an_outage_for_the_next(tmp_path
 # ----------------------------------------------------------------------
 # Item 19: installed curves are checked against NJM only when there is a reason
 # ----------------------------------------------------------------------
-NJM = "https://nillmill.ddns.net/sed_tools"
+NJM = "https://data.nialljmiller.com/sed_tools"
 CURVE = "Wavelength,Transmission,DetectorType=photon;DetectorTypeSource=original\n4000,0\n5000,1\n6000,0\n"
 
 

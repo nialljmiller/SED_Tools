@@ -1129,7 +1129,7 @@ SED_Tools/
 
 | Source | URL | Description |
 |--------|-----|-------------|
-| NJM Server | [nialljmiller.com/SED_Tools/](https://nialljmiller.com/SED_Tools/) | Pre-processed data host (fastest) |
+| NJM Server | [data.nialljmiller.com/sed_tools/](https://data.nialljmiller.com/sed_tools/) | Pre-processed data host (fastest) |
 | SVO | [svo2.cab.inta-csic.es](http://svo2.cab.inta-csic.es/theory/fps/) | Spanish Virtual Observatory |
 | MSG | [astro.wisc.edu/~townsend](http://user.astro.wisc.edu/~townsend/static.php?ref=msg-grids) | MSG Stellar spectral grids |
 | MAST | [archive.stsci.edu/prepds/bosz](https://archive.stsci.edu/prepds/bosz/) | BOSZ Spectral Library, including BOSZ 2024 fixed-resolution and original-resolution grids |

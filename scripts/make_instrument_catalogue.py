@@ -36,7 +36,7 @@ sys.path.insert(0, str(ROOT))  # this checkout's sed_tools, installed or not
 
 from sed_tools.filters.names import INSTRUMENT_CATALOGUE, instrument_catalogue  # noqa: E402
 
-MIRROR_URL = "https://nillmill.ddns.net/sed_tools"
+MIRROR_URL = "https://data.nialljmiller.com/sed_tools"
 INDEX_URL = f"{MIRROR_URL}/index.json"
 USER_AGENT = "SED_Tools-builder/1 (https://github.com/nialljmiller/SED_Tools)"
 PAUSE = 0.2  # seconds between requests: NJM blocks bursts

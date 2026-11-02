@@ -147,7 +147,7 @@ def warnings_from(caplog, module):
 
 # ---------------------------------------------------------------- NJM mirror
 
-NJM = "https://nillmill.ddns.net/sed_tools"
+NJM = "https://data.nialljmiller.com/sed_tools"
 GRID = f"{NJM}/stellar_models/Grid/"
 LOOKUP = "#file_name,teff,logg,meta\na.txt,5000,4.0,0.0\nb.txt,6000,4.5,0.0\n"
 SPECTRUM = "# teff = 5000\n" + "".join(f"{wl} 1.0\n" for wl in range(1000, 1400))
