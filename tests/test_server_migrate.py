@@ -25,17 +25,17 @@ def test_migration_is_offline_idempotent_and_reports(tmp_path, monkeypatch, caps
     (root / "raw.dat").write_text("# DetectorType: photon\n3830 0\n4000 1\n")
     monkeypatch.setattr(requests.Session, "request", lambda *a, **k: pytest.fail("migration is offline"))
 
-    assert migrate_filters.main([str(tmp_path / "filters"), "--dry-run"]) == 0
+    assert migrate_filters.main([str(tmp_path / "filters"), "--dry-run"]) == 1
     assert (root / "G.dat").read_text() == TAGGED_030
     assert "2 curves: would move" in capsys.readouterr().out
 
-    assert migrate_filters.main([str(tmp_path / "filters")]) == 0
+    assert migrate_filters.main([str(tmp_path / "filters")]) == 1
     out = capsys.readouterr().out
-    assert "2 curves: moved" in out and "1 have no column-name row" in out
+    assert "2 curves: moved" in out and "1 have no column-name row" in out and str(root / "raw.dat") in out
     assert read_filter_header(root / "G.dat")["DetectorType"] == "photon"
     assert released_mesa_reads(root / "G.dat")
     assert (root / "raw.dat").read_text() == "3830 0\n4000 1\n"
-    assert migrate_filters.main([str(tmp_path / "filters")]) == 0
+    assert migrate_filters.main([str(tmp_path / "filters")]) == 1
     assert "0 curves: moved" in capsys.readouterr().out
 
 
