@@ -2,7 +2,7 @@
 Changelog
 =========
 
-Version 0.5.0 (October 2026)
+Version 0.5.0 (November 2026)
 ----------------------------
 
 This release holds everything since 0.4.1, including the changes prepared for
