@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-11-02T16:28:22.452968",
+  "generated": "2026-11-02T16:48:38.054975",
   "base_url": "http://nillmill.ddns.net/sed_tools",
   "statistics": {
     "total_models": 6,
@@ -9,7 +9,7 @@
     "total_size_bytes": 107958794469,
     "total_size_human": "100.54 GB",
     "total_facilities": 219,
-    "total_filters": 12261
+    "total_filters": 12259
   },
   "models": [
     "Husfeld",
@@ -1648,39 +1648,13 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 111186,
-            "size_human": "108.58 KB",
-            "description": "Argus Array beta and rho bands on DR280 telescopes (filter\u00d7optics\u00d7QE)",
-            "svo_instruments": []
-          },
-          "System": {
-            "name": "System",
-            "filter_count": 2,
-            "filters": [
-              "beta",
-              "rho"
-            ],
-            "published_paths": {
-              "filter+optics+qe": 2
-            },
-            "detector_types": {
-              "energy": 2
-            },
-            "separate_components": {
-              "filter": 2,
-              "optics": 2,
-              "qe": 2
-            },
-            "has_component_manifest": true,
-            "properties": "properties.json",
-            "info": "info.json",
-            "size_bytes": 674939,
-            "size_human": "659.12 KB",
-            "description": "Legacy Argus Array beta and rho curves, superseded by Argus/DR280",
+            "size_bytes": 217925,
+            "size_human": "212.82 KB",
+            "description": "Argus Array beta and rho bands on DR280 telescopes (measured filters\u00d7optics\u00d7QE)",
             "svo_instruments": []
           }
         },
-        "instrument_count": 2
+        "instrument_count": 1
       },
       "Astrosat": {
         "name": "Astrosat",
