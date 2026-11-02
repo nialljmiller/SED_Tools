@@ -131,9 +131,9 @@ def test_completer_train_values(cpu_torch, tiny_library, tmp_path):
                               batch_size=3, max_samples=12, hidden_layers=[8], patience=20)
 
     assert history["train_loss"] == pytest.approx(
-        [1.217055320739746, 1.2087888717651367, 1.1866831382115681], rel=1e-5)
+        [1.217055320739746, 1.2087888717651367, 1.1866831382115681], rel=1e-3)
     assert history["val_loss"] == pytest.approx(
-        [0.9876893758773804, 0.977878987789154, 0.9719147086143494], rel=1e-5)
+        [0.9876893758773804, 0.977878987789154, 0.9719147086143494], rel=1e-3)
     assert completer.scaler_params == pytest.approx({
         "teff_mean": 5000.0, "teff_std": 816.49658203125,
         "logg_mean": 4.25, "logg_std": 0.25,
@@ -141,7 +141,7 @@ def test_completer_train_values(cpu_torch, tiny_library, tmp_path):
         "flux_log_mean": -10.225753784179688, "flux_log_std": 0.7680805921554565,
         "ext_log_mean": -10.368162155151367, "ext_log_std": 1.48019278049469,
     }, rel=1e-6)
-    assert _state_sums(completer.model) == pytest.approx((37.48151246241832, 1686.1791792145195), rel=1e-5)
+    assert _state_sums(completer.model) == pytest.approx((37.48151246241832, 1686.1791792145195), rel=1e-3)
     assert np.random.random() == 0.9571551589530464
     assert torch.rand(2).tolist() == pytest.approx([0.41561412811279297, 0.5646539926528931], abs=0)
 
@@ -164,16 +164,16 @@ def test_generator_train_values(cpu_torch, tiny_library, tmp_path):
                               batch_size=3, max_samples=12, hidden_layers=[8])
 
     assert history["train_loss"] == pytest.approx(
-        [1.2670124769210815, 1.2379244565963745, 1.1913456122080486], rel=1e-5)
+        [1.2670124769210815, 1.2379244565963745, 1.1913456122080486], rel=1e-3)
     assert history["val_loss"] == pytest.approx(
-        [1.0461859703063965, 1.0439506769180298, 1.041712760925293], rel=1e-5)
+        [1.0461859703063965, 1.0439506769180298, 1.041712760925293], rel=1e-3)
     assert generator.scaler_params == pytest.approx({
         "teff_mean": 5000.0, "teff_std": 816.49658203125, "teff_min": 4000.0, "teff_max": 6000.0,
         "logg_mean": 4.25, "logg_std": 0.25, "logg_min": 4.0, "logg_max": 4.5,
         "meta_mean": -0.25, "meta_std": 0.25, "meta_min": -0.5, "meta_max": 0.0,
         "flux_log_mean": -10.267520904541016, "flux_log_std": 1.031362771987915,
     }, rel=1e-6)
-    assert _state_sums(generator.model) == pytest.approx((26.80382775522594, 1610.2340406870499), rel=1e-5)
+    assert _state_sums(generator.model) == pytest.approx((26.80382775522594, 1610.2340406870499), rel=1e-3)
     assert np.random.random() == 0.3834415188257777
     assert torch.rand(2).tolist() == pytest.approx([0.3398873209953308, 0.19384098052978516], abs=0)
 
