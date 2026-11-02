@@ -53,7 +53,8 @@
           "ref": "doi:10.1086/429382",
           "label": "Tokunaga & Vacca (2005)"
         }
-      ]
+      ],
+      "svo_filterID": "IRTF/NSFCam.Ks"
     },
     "JMK": {
       "Description": "NSFCam MKO JMK filter",
@@ -104,7 +105,8 @@
           "ref": "doi:10.1086/429382",
           "label": "Tokunaga & Vacca (2005)"
         }
-      ]
+      ],
+      "svo_filterID": "IRTF/NSFCam.Lp"
     },
     "MPMK": {
       "Description": "NSFCam MKO MPMK filter",
@@ -138,7 +140,8 @@
           "ref": "doi:10.1086/429382",
           "label": "Tokunaga & Vacca (2005)"
         }
-      ]
+      ],
+      "svo_filterID": "IRTF/NSFCam.Kp"
     },
     "KS": {
       "Description": "NSFCam KS broad-band filter"

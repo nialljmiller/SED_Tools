@@ -34,7 +34,8 @@
       "Comments": "The zip member is named Br-a. The sampled column runs from 3.986e-6 to 4.114e-6, which is 3.986–4.114 μm if that column is metres. The header does not label the unit. The quoted span is the range of samples in the file, not a measured FWHM.",
       "references": [
         "bibcode:2023A&A...674A.207D"
-      ]
+      ],
+      "svo_filterID": "Paranal/ERIS.Br-a"
     },
     "Br-a-cont": {
       "Description": "ERIS/NIX Br-a-cont",

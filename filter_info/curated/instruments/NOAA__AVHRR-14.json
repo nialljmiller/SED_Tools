@@ -14,7 +14,11 @@
       "source": "Internet Archive"
     }
   ],
-  "references": [],
+  "references": [
+    "bibcode:2012ivoa.rept.1015R",
+    "bibcode:2020sea..confE.182R",
+    "bibcode:2024A&A...689A..93R"
+  ],
   "notes": "AVHRR/2 instrument S/N A204 on NOAA-14: normalised spectral response functions of channels Ch1, Ch2, Ch3, Ch4, Ch5 as measured by the instrument vendor (ITT) and published by NOAA NESDIS STAR (AVHRR SRF page, https://www.star.nesdis.noaa.gov/smcd/spb/fwu/homepage/AVHRR/spec_resp_func/index.html, now offline; files taken from Internet Archive snapshots of the owner URLs). STAR: 'Measured: The spectral response function as determined by the instrument vendor (ITT industries). These are the most original data available to NOAA'. Negative values (measurement noise) are set to 0 and each curve is scaled to peak 1. DetectorType=energy is assumed: the owner gives a normalised (relative) spectral response without stating photon or energy weighting; meteorological imager SRFs are applied as weights on spectral radiance (energy convention). SVO's archived records for these instruments carry DetectorType 0 (energy). Source: NOAA/NESDIS STAR (X. Wu), data from ITT.",
   "licence": {
     "redistribution": "attribution",

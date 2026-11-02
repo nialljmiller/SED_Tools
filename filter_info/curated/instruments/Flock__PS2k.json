@@ -18,6 +18,10 @@
       "source": "Planet Labs support"
     }
   ],
-  "references": [],
+  "references": [
+    "bibcode:2012ivoa.rept.1015R",
+    "bibcode:2020sea..confE.182R",
+    "bibcode:2024A&A...689A..93R"
+  ],
   "notes": "Original-source curves (2026-10-26): Pivots vs SVO: <= 0.07 %. Planet's file distributed by Apollo Mapping. DetectorType energy assumed."
 }

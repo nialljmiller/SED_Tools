@@ -14,5 +14,10 @@
       "references": [],
       "applies_to": "all bands"
     }
+  ],
+  "references": [
+    "bibcode:2012ivoa.rept.1015R",
+    "bibcode:2020sea..confE.182R",
+    "bibcode:2024A&A...689A..93R"
   ]
 }

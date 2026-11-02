@@ -18,6 +18,10 @@
       "source": "Planet Labs support"
     }
   ],
-  "references": [],
+  "references": [
+    "bibcode:2012ivoa.rept.1015R",
+    "bibcode:2020sea..confE.182R",
+    "bibcode:2024A&A...689A..93R"
+  ],
   "notes": "Original-source curves (2026-10-26): Header column order 'R,G,B' contradicted by the data; read as B,G,R. Pivots vs SVO: Blue +0.33 %, Green +0.14 %, Red +0.15 %, NIR -0.59 %. Planet's file distributed by Apollo Mapping. DetectorType energy assumed."
 }

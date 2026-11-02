@@ -9,7 +9,11 @@
       "source": "EUMETSAT"
     }
   ],
-  "references": [],
+  "references": [
+    "bibcode:2012ivoa.rept.1015R",
+    "bibcode:2020sea..confE.182R",
+    "bibcode:2024A&A...689A..93R"
+  ],
   "notes": "Spinning Enhanced Visible and InfraRed Imager (SEVIRI) PFM on Meteosat-8 (MSG-1): the 12 channel spectral response curves of EUMETSAT's 'MSG SEVIRI Spectral Response Characterisation' workbook (EUM/MSG/TEN/06/0010 Issue 2, 30 October 2012), derived from the SEVIRI characterisation reports and on-ground characterisation data (EUM/MSG/TEN/06/0011). The cold IR channels (3.9-13.4 um) are given for both focal-plane temperatures measured, 85 K and 95 K (bands _85K, _95K; the workbook's 'ls'/'Dls' values, central wavelength and bandwidth for a scene, are given only for 95 K). HRV is the normal 0.45-1.05 um measurement; HRV_extended is EUMETSAT's extension to 0.3-1.302 um using the scaled FM3 measurements. Values are the workbook's normalised response 'tn' (peak about 1), unchanged apart from setting negative noise samples to 0 and dropping empty cells. EUMETSAT recommends linear interpolation in the wavenumber domain (Info sheet). DetectorType=energy is assumed: the owner gives a normalised (relative) spectral response without stating photon or energy weighting; meteorological imager SRFs are applied as weights on spectral radiance (energy convention). SVO's archived records for these instruments carry DetectorType 0 (energy). Source: EUMETSAT; file fetched from an Internet Archive snapshot of the owner URL (the owner URL now returns HTTP 404).",
   "licence": {
     "redistribution": "permission",

@@ -10,7 +10,10 @@
     }
   ],
   "references": [
-    "doi:10.1175/1520-0477(1994)075<0757:IGITFO>2.0.CO;2"
+    "doi:10.1175/1520-0477(1994)075<0757:IGITFO>2.0.CO;2",
+    "bibcode:2012ivoa.rept.1015R",
+    "bibcode:2020sea..confE.182R",
+    "bibcode:2024A&A...689A..93R"
   ],
   "bands": {},
   "evidence": [],
