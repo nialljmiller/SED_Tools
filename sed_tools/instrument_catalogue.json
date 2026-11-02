@@ -89,8 +89,7 @@
   },
   "Argus": {
    "instruments": {
-    "DR280": {"bands": ["beta", "rho"], "description": "Argus Array beta and rho bands on DR280 telescopes (filter×optics×QE)"},
-    "System": {"bands": ["beta", "rho"], "description": "Legacy Argus Array beta and rho curves, superseded by Argus/DR280"}
+    "DR280": {"bands": ["beta", "rho"], "description": "Argus Array beta and rho bands on DR280 telescopes (filter×optics×QE)"}
    }
   },
   "Astrosat": {

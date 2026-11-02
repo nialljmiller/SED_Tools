@@ -369,9 +369,8 @@ def test_system_without_raw_inputs_points_to_njm(tmp_path, pins, system_dir):
 
 
 # --------------------------------------------------------------------------- registry
-def test_both_instruments_are_registered():
+def test_only_dr280_is_registered_and_njm_serves_its_curves():
     dr280 = catalog.builder_for("Argus", "DR280")
-    system = catalog.builder_for("Argus", "System")
-    assert (dr280.name, dict(dr280.kwargs), dr280.publishes) == ("argus", {"instrument": "DR280"}, True)
-    assert (system.name, dict(system.kwargs), system.publishes) == ("argus", {"instrument": "System"}, False)
+    assert (dr280.name, dict(dr280.kwargs), dr280.publishes) == ("argus", {"instrument": "DR280"}, False)
+    assert catalog.builder_for("Argus", "System") is None
     assert catalog.component_availability("Argus", "DR280")["status"] == "supported"

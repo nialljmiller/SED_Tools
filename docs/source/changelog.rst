@@ -248,6 +248,11 @@ Filters from their original sources
     variants ``production`` (default) and ``addem``. Inputs are pinned by
     SHA-256; the non-public ones are read from the raw directory, and
     without them the builder says to install the instrument from NJM.
+    It makes only the components: the published curves come from NJM.
+    Argus/System, the earlier curves, is no longer in the bundled
+    catalogue or the component registry, as NJM withdraws it;
+    ``filters-build-components argus`` still builds its components as in
+    0.4.1.
 
 - Rubin/LSST is split by release: ``LSST/LSST`` takes its components from
   release 1.5, which its SVO curves equal, and release 1.9 is
@@ -467,7 +472,7 @@ Filter pickers, instrument names and NJM
   listed as DR2, DR2r and GAIA, and Euclid's NISP0 is part of NISP. An entry
   only SVO lists takes NJM's name and description from the bundled catalogue
   only when NJM says it is the same product.
-- Builders that make only an instrument's separate components (30 of 84,
+- Builders that make only an instrument's separate components (30 of 83,
   e.g. 2MASS, HST, JWST, Euclid/NISP) are no longer listed (``sources``,
   the pickers) as a source of its curves.
 - With NJM down, a product of NJM's is filled from the SVO instruments that

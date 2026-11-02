@@ -83,8 +83,8 @@ BUILDERS_FOR: Dict[Tuple[str, str], BuilderRef] = {
     ("Gemini", "GMOS_S"): BuilderRef("gmos", (("instrument", "GMOS_S"),)),
     ("SLOAN", "SDSS"): BuilderRef("sdss"),
     # Argus inputs are partly non-public: without them the builder raises and points to NJM.
-    ("Argus", "DR280"): BuilderRef("argus", (("instrument", "DR280"),), publishes=True),
-    ("Argus", "System"): BuilderRef("argus", (("instrument", "System"),)),
+    # Only NJM serves the published curves.
+    ("Argus", "DR280"): BuilderRef("argus", (("instrument", "DR280"),)),
     **{(fac, inst): BuilderRef("tabular", (("instrument", inst),), publishes=True) for fac, inst in (
         ("Paranal", "HAWKI"), ("Paranal", "NACO"), ("Paranal", "SPHERE"), ("Gemini", "GSAOI"), ("Gemini", "NIFS"),
         ("CAHA", "PANIC"), ("WHT", "INGRID"), ("IRTF", "NSFCam"), ("Liverpool", "IOO"))},
