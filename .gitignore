@@ -91,3 +91,9 @@ htmlcov/
 # Fixed inputs and recorded outputs of the golden tests (tests/golden/cases.py)
 !tests/golden/**
 tests/golden/**/__pycache__/
+
+# Server working trees (never commit)
+/backups/
+/staging/
+/grid_holding/
+/source_evidence/

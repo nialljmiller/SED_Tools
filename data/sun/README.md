@@ -7,7 +7,7 @@ The mirror's `Fsun` values (the Sun's band-averaged flux density at 1 AU, in eac
 | `sun_reference_stis_002.fits` | CALSPEC's solar reference spectrum, unmodified, from https://archive.stsci.edu/hlsps/reference-atlases/cdbs/current_calspec/sun_reference_stis_002.fits (SHA-256 `20133cdf2a402655e3726de6b334bf09d05c9429ebd27ebf5492dc37fc89cfd8`, 37,440 bytes) |
 | `sun_mod_001.fits` | CALSPEC's Kurucz model of the Sun, unmodified, from https://archive.stsci.edu/hlsps/reference-atlases/cdbs/current_calspec/sun_mod_001.fits (SHA-256 `2622479d6582669c5218a726b7d8ef1555a963a8ecc59bb86b454c737d90510f`, 1,198,080 bytes) |
 | `sun_flam.csv` | The two spliced at 9600 Å, as NJM uses them (SHA-256 `08b8dbcf908992460f02a0f2733a542e43dba3711cbf952263153b0e2903cdd5`): `WAVELENGTH` in Å (vacuum), `FLUX` in erg s⁻¹ cm⁻² Å⁻¹ at 1 AU; 56,996 rows, 1195 Å to 299.99 µm |
-| `make_sun_flam.py` | The script that writes `sun_flam.csv` from the two FITS files |
+| `scripts/make_sun_flam.py` (in the repository, not served) | The script that writes `sun_flam.csv` from the two FITS files |
 
 Both FITS files were downloaded on 2026-10-26 (17:00 UTC). They are the only solar spectra in the live CALSPEC directory listing ([current_calspec](https://archive.stsci.edu/hlsps/reference-atlases/cdbs/current_calspec/)), where it dates both 2020-07-16.
 
