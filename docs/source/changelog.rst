@@ -10,6 +10,16 @@ Version 0.5.1 (unreleased)
   Nothing called it. The files a site lists are the ``file`` keys of its
   ``entries`` and ``unstated`` records.
 
+Fixed
+~~~~~
+
+- **ML training crashed when the last training batch held one spectrum**
+  ("Expected more than 1 value per channel when training"), e.g. the
+  completer on a 42-spectrum grid at its default batch size of 32, or the
+  generator on an 82-spectrum grid at 64. That one-spectrum batch is now
+  left out of each epoch. Training that ran before is unchanged, and so are
+  the models it makes.
+
 Version 0.5.0 (November 2026)
 ----------------------------
 

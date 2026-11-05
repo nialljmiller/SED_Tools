@@ -1,5 +1,5 @@
 """The ML engines on Apple silicon (MPS), extend_catalog on '#'-headed lookup
-tables, and ``ml_generator --auto``.
+tables, ``ml_generator --auto``, and training whose last batch would hold one spectrum.
 
 Tests that need torch (or optuna) skip without it; the rest are torch-free.
 The MPS test does not seed torch: it draws from the state test_ml_engines.py leaves, so this file
@@ -229,3 +229,14 @@ def test_auto_trainer_stops_on_a_trial_with_no_usable_epoch(cpu_torch, tiny_libr
     with pytest.raises(RuntimeError, match="produced no usable epoch"):
         AutoTrainer(str(tiny_library)).train_best(str(tiny_library), str(tmp_path / "model"), n_trials=1, epochs=1)
     assert not (tmp_path / "model").exists()
+
+
+# ---------------------------------------------------------------------
+# A last training batch of one spectrum
+# ---------------------------------------------------------------------
+@pytest.mark.parametrize("engine", [mc.SEDCompleter, mg.SEDGenerator])
+def test_training_drops_a_last_batch_of_one_spectrum(cpu_torch, tiny_library, tmp_path, engine):
+    # 9 training spectra in batches of 8: BatchNorm used to raise "Expected more than 1 value per channel".
+    history = engine().train(str(tiny_library), str(tmp_path / "model"), epochs=1, batch_size=8,
+                             max_samples=12, hidden_layers=[8])
+    assert len(history["train_loss"]) == 1
