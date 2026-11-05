@@ -25,7 +25,8 @@ from .collision import copy_global_config_to_model, discover_extra_axes, load_co
 from .fileio import flux_offset, write_header
 # _extra_key_to_filename, _subdir_name and _value_to_safe_str: importable here, as always.
 from .variants import (_build_filtered_cube, _build_mean_cube, _extra_key_to_filename,  # noqa: F401
-                       _group_by_extra_axes, _split_into_subgrids, _subdir_name, _value_to_safe_str)
+                       _group_by_extra_axes, _parameter_arrays, _print_summary, _split_into_subgrids, _subdir_name,
+                       _value_to_safe_str, _warn_averaged_rows)
 from ..grids.spectrum_io import read_text_spectrum
 
 logger = logging.getLogger("sed_tools.precompute_flux_cube")
@@ -403,27 +404,6 @@ def _accumulate_spectra(
     return count_cube
 
 
-def _warn_averaged_rows(lookup: Dict[str, List], rows, nodes, cube_path: str) -> None:
-    """Warn when lookup rows share a node: the cube holds their mean. ``nodes`` are the rows' (Teff, logg, [M/H])."""
-    at_node: Dict[Tuple[float, float, float], List[int]] = {}
-    for row, node in zip(rows, nodes):
-        at_node.setdefault(node, []).append(row)
-    shared = [members for members in at_node.values() if len(members) > 1]
-    if not shared:
-        return
-    columns = list(lookup)
-    not_compared = {find_file_column(columns) or columns[0], find_teff_column(columns),
-                    find_logg_column(columns), find_metallicity_column(columns)}
-    differing = [col for col in columns if col not in not_compared
-                 and any(len({lookup[col][i] for i in members}) > 1 for members in shared)]
-    logger.warning(
-        "%s: %d lookup rows were averaged onto %d (Teff, logg, [M/H]) node(s), so each of those "
-        "nodes holds a mean spectrum. The averaged rows differ in: %s.",
-        cube_path, sum(len(members) for members in shared), len(shared),
-        ", ".join(differing) if differing else "no column but the file name (duplicate nodes)",
-    )
-
-
 # --- precompute_flux_cube and its command line ---
 
 def precompute_flux_cube(
@@ -483,23 +463,20 @@ def precompute_flux_cube(
 
     print(f"\n{len(groups)} extra-axis variant(s) across {len(file_names)} spectra.")
 
+    def write_cube(group: Dict, cube_path: str, label: str = "") -> None:
+        """The strategies' writer: the flux cube of a group of lookup rows, from the spectra in model_dir."""
+        _populate_and_write(model_dir, group["file_names"], *_parameter_arrays(group), wavelengths, cube_path, usable,
+                            label=label)
+
     if cfg.strategy in ("split", "all", "all-warn"):
-        _split_into_subgrids(model_dir, groups, extra_cols, lookup, file_col, wavelengths, usable)
+        _split_into_subgrids(model_dir, groups, extra_cols, lookup, file_col, write_cube, SPLIT_THRESHOLD)
         return
     if cfg.strategy == "mean":
-        _build_mean_cube(model_dir, groups, wavelengths, output_file, usable)
+        _build_mean_cube(groups, output_file, write_cube)
     elif cfg.strategy == "filter":
-        _build_filtered_cube(cfg, model_dir, groups, extra_cols, lookup, wavelengths, output_file, usable)
+        _build_filtered_cube(cfg, groups, extra_cols, lookup, output_file, write_cube)
 
     _print_summary(output_file, teff_vals, logg_vals, meta_vals)
-
-
-def _print_summary(output_file, teff_vals, logg_vals, meta_vals):
-    print(f"\nFlux cube: {output_file}")
-    for label, values, fmt, unit in (("Teff ", teff_vals, ".0f", " K"), ("logg ", logg_vals, ".2f", ""),
-                                     ("[M/H]", meta_vals, ".2f", "")):
-        if values.size:
-            print(f"  {label}: {values.min():{fmt}} – {values.max():{fmt}}{unit}")
 
 
 def _main():

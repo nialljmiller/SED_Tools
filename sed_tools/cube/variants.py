@@ -1,6 +1,6 @@
 """Grids whose extra lookup columns (alpha, vturb, ...) vary: one MESA-ready subgrid per variant (the
 'split' strategy), a mean cube, or one filtered variant; subgrid names and variants_index.csv.
-precompute_flux_cube in cube/build.py chooses the strategy; build.py writes each cube.
+precompute_flux_cube in cube/build.py chooses the strategy and passes in SPLIT_THRESHOLD and its writer of one cube.
 """
 
 import logging
@@ -12,8 +12,8 @@ from typing import Any, Dict, List, Tuple
 
 import numpy as np
 
-from . import build  # build imports this module too, so its names are looked up when called
-from ..grids.lookup import write_lookup_csv
+from ..grids.lookup import (find_file_column, find_logg_column, find_metallicity_column, find_teff_column,
+                            write_lookup_csv)
 
 logger = logging.getLogger("sed_tools.precompute_flux_cube")
 
@@ -129,21 +129,43 @@ def _parameter_arrays(group: Dict) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     return np.array(group["teff"]), np.array(group["logg"]), np.array(group["meta"])
 
 
-def _write_group_cube(model_dir: str, group: Dict, wavelengths: np.ndarray, cube_path: str, usable_ram: int,
-                      label: str = "") -> None:
-    """Write the flux cube of a group of lookup rows, from the spectra in model_dir."""
-    build._populate_and_write(model_dir, group["file_names"], *_parameter_arrays(group),
-                              wavelengths, cube_path, usable_ram, label=label)
+def _warn_averaged_rows(lookup: Dict[str, List], rows, nodes, cube_path: str) -> None:
+    """Warn when lookup rows share a node: the cube holds their mean. ``nodes`` are the rows' (Teff, logg, [M/H])."""
+    at_node: Dict[Tuple[float, float, float], List[int]] = {}
+    for row, node in zip(rows, nodes):
+        at_node.setdefault(node, []).append(row)
+    shared = [members for members in at_node.values() if len(members) > 1]
+    if not shared:
+        return
+    columns = list(lookup)
+    not_compared = {find_file_column(columns) or columns[0], find_teff_column(columns),
+                    find_logg_column(columns), find_metallicity_column(columns)}
+    differing = [col for col in columns if col not in not_compared
+                 and any(len({lookup[col][i] for i in members}) > 1 for members in shared)]
+    logger.warning(
+        "%s: %d lookup rows were averaged onto %d (Teff, logg, [M/H]) node(s), so each of those "
+        "nodes holds a mean spectrum. The averaged rows differ in: %s.",
+        cube_path, sum(len(members) for members in shared), len(shared),
+        ", ".join(differing) if differing else "no column but the file name (duplicate nodes)",
+    )
+
+
+def _print_summary(output_file, teff_vals, logg_vals, meta_vals):
+    print(f"\nFlux cube: {output_file}")
+    for label, values, fmt, unit in (("Teff ", teff_vals, ".0f", " K"), ("logg ", logg_vals, ".2f", ""),
+                                     ("[M/H]", meta_vals, ".2f", "")):
+        if values.size:
+            print(f"  {label}: {values.min():{fmt}} – {values.max():{fmt}}{unit}")
 
 
 # --- The strategies ---
 
-def _confirm_large_split(model_dir: str, n_groups: int) -> bool:
-    """Ask before splitting more than SPLIT_THRESHOLD (build.py) variants; True to go ahead."""
+def _confirm_large_split(model_dir: str, n_groups: int, threshold: int) -> bool:
+    """Ask before splitting more than *threshold* variants; True to go ahead."""
     if not sys.stdin.isatty():
         raise RuntimeError(
             f"{model_dir}: {n_groups} extra-axis combinations exceed the auto-split "
-            f"threshold ({build.SPLIT_THRESHOLD}); no flux cube was built. Run interactively "
+            f"threshold ({threshold}); no flux cube was built. Run interactively "
             "to confirm the split, or set strategy = \"filter\" or \"mean\" under "
             "[on_collision] in mesa_config.toml."
         )
@@ -154,14 +176,14 @@ def _confirm_large_split(model_dir: str, n_groups: int) -> bool:
 
 
 def _split_into_subgrids(model_dir: str, groups: Dict, extra_cols: List[str], lookup: Dict[str, List], file_col: str,
-                         wavelengths: np.ndarray, usable_ram: int) -> None:
+                         write_cube, threshold: int) -> None:
     """Strategy 'split': one MESA-ready subgrid folder per variant (its lookup_table.csv, links to the parent's
     spectra, its flux_cube.bin), then variants_index.csv, and lookup_table_full.csv as the record of the full grid;
-    the parent, which is not MESA-ready, gets no cube."""
+    the parent, which is not MESA-ready, gets no cube. Above *threshold* variants it asks first."""
     model_name = os.path.basename(os.path.abspath(model_dir))
-    _print_split_announcement(groups, extra_cols, model_name, build.SPLIT_THRESHOLD)
+    _print_split_announcement(groups, extra_cols, model_name, threshold)
 
-    if len(groups) > build.SPLIT_THRESHOLD and not _confirm_large_split(model_dir, len(groups)):
+    if len(groups) > threshold and not _confirm_large_split(model_dir, len(groups), threshold):
         print("Aborted. No flux cube built.")
         return
 
@@ -179,9 +201,9 @@ def _split_into_subgrids(model_dir: str, groups: Dict, extra_cols: List[str], lo
         _link_spectra(model_dir, subdir, g["file_names"])
 
         cube_path = os.path.join(subdir, "flux_cube.bin")
-        build._warn_averaged_rows(lookup, g["rows"], zip(g["teff"], g["logg"], g["meta"]), cube_path)
-        _write_group_cube(model_dir, g, wavelengths, cube_path, usable_ram, label=name)
-        build._print_summary(cube_path, *_parameter_arrays(g))
+        _warn_averaged_rows(lookup, g["rows"], zip(g["teff"], g["logg"], g["meta"]), cube_path)
+        write_cube(g, cube_path, label=name)
+        _print_summary(cube_path, *_parameter_arrays(g))
         index_entries.append({"variant_name": name, "n_spectra": len(g["file_names"]), "path": name,
                               **g["extra_vals"]})
 
@@ -198,7 +220,7 @@ def _split_into_subgrids(model_dir: str, groups: Dict, extra_cols: List[str], lo
     print("Point MESA Colors to one of the subgrid directories listed above.")
 
 
-def _build_mean_cube(model_dir: str, groups: Dict, wavelengths: np.ndarray, output_file: str, usable_ram: int) -> None:
+def _build_mean_cube(groups: Dict, output_file: str, write_cube) -> None:
     """Strategy 'mean': one cube averaging every variant at each node."""
     print(
         "\nWARNING: strategy='mean' collapses extra axes by averaging. "
@@ -211,11 +233,11 @@ def _build_mean_cube(model_dir: str, groups: Dict, wavelengths: np.ndarray, outp
             values.extend(g[column])
 
     print(f"Building mean cube (no subgrids) → {output_file}")
-    _write_group_cube(model_dir, every_row, wavelengths, output_file, usable_ram, label="mean")
+    write_cube(every_row, output_file, label="mean")
 
 
-def _build_filtered_cube(cfg, model_dir: str, groups: Dict, extra_cols: List[str], lookup: Dict[str, List],
-                         wavelengths: np.ndarray, output_file: str, usable_ram: int) -> None:
+def _build_filtered_cube(cfg, groups: Dict, extra_cols: List[str], lookup: Dict[str, List], output_file: str,
+                         write_cube) -> None:
     """Strategy 'filter': one cube from the single variant the config selects."""
     extra_unique = {col: sorted(set(lookup[col])) for col in extra_cols}
     resolved, errors = cfg.resolve_filter_values(extra_unique)
@@ -237,6 +259,6 @@ def _build_filtered_cube(cfg, model_dir: str, groups: Dict, extra_cols: List[str
 
     print(f"Matched variant: {matched_group['extra_vals']} "
           f"({len(matched_group['file_names'])} spectra)")
-    build._warn_averaged_rows(lookup, matched_group["rows"],
-                              zip(matched_group["teff"], matched_group["logg"], matched_group["meta"]), output_file)
-    _write_group_cube(model_dir, matched_group, wavelengths, output_file, usable_ram)
+    _warn_averaged_rows(lookup, matched_group["rows"],
+                        zip(matched_group["teff"], matched_group["logg"], matched_group["meta"]), output_file)
+    write_cube(matched_group, output_file)
