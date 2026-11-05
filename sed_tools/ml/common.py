@@ -213,12 +213,17 @@ def masked_mse(y_pred, y_true, mask):
 
 
 def data_loaders(train_arrays, val_arrays, batch_size: int):
-    """DataLoaders over (inputs, targets, masks) arrays; only training batches are shuffled."""
+    """DataLoaders over (inputs, targets, masks) arrays; only training batches are shuffled.
+
+    A last training batch of one sample is dropped (BatchNorm cannot train on it), unless it is the only batch.
+    """
     import torch
     from torch.utils.data import DataLoader, TensorDataset
     train_dataset = TensorDataset(*(torch.from_numpy(a) for a in train_arrays))
     val_dataset = TensorDataset(*(torch.from_numpy(a) for a in val_arrays))
-    return (DataLoader(train_dataset, batch_size=batch_size, shuffle=True),
+    n_train = len(train_dataset)
+    drop_last = n_train > batch_size and n_train % batch_size == 1
+    return (DataLoader(train_dataset, batch_size=batch_size, shuffle=True, drop_last=drop_last),
             DataLoader(val_dataset, batch_size=batch_size))
 
 

@@ -10,6 +10,51 @@ Version 0.5.1 (unreleased)
   Nothing called it. The files a site lists are the ``file`` keys of its
   ``entries`` and ``unstated`` records.
 
+Fixed
+~~~~~
+
+- **ML training crashed when the last training batch held one spectrum**
+  ("Expected more than 1 value per channel when training"), e.g. the
+  completer on a 42-spectrum grid at its default batch size of 32, or the
+  generator on an 82-spectrum grid at 64. That one-spectrum batch is now
+  left out of each epoch. Training that ran before is unchanged, and so are
+  the models it makes.
+- **python -m sed_tools.svo_regen_spectra_lookup --help** rewrote every
+  ``lookup_table.csv`` under the stellar-models folder instead of printing
+  help, because the command read no arguments. ``--help`` now prints its
+  usage (naming that folder) and changes nothing, and an unknown argument is
+  a usage error (exit 2). Run without arguments, it rewrites the tables as
+  before.
+- **The flux cube tool's stellar-radius prompt** (``python -m
+  sed_tools.flux_cube_tool``, when scaling for distance) took a number typed
+  without a unit as metres, so ``1.5`` meant 1.5 m, not 1.5 R☉. A bare number
+  is now in R☉, as the prompt says; type ``m`` after it for metres.
+  ``Rsun`` and ``m`` work as before, and so does the distance prompt.
+- **python -m sed_tools.precompute_flux_cube** without ``--model_dir``
+  listed each grid twice, as ``./data/stellar_models/<grid>`` and
+  ``data/stellar_models/<grid>``. Each grid is now listed once, as
+  ``data/stellar_models/<grid>``.
+- **python -m sed_tools.svo_filter_grabber** took any argument but ``-h`` or
+  ``--help`` as its base directory, so ``--bogus`` created a folder named
+  ``--bogus`` and started browsing SVO. An unknown option is now a usage
+  error (exit 2), and ``--help`` prints the usage. The first positional
+  argument is still the base directory, and any after it are still ignored.
+- **SED.model("Loose")** (``sed_tools.models.SED``) for a flux cube saved
+  as ``Loose.bin`` directly in the model root named the model after the
+  model root's folder (e.g. ``stellar_models``). It is now named ``Loose``,
+  after the file. A ``flux_cube.bin`` is still named after its folder.
+- **NJMFilterGrabber.discover_filters** gave band names as an instrument's
+  index file lists them (``g.dat``, as in 0.4.1) but without ``.dat``
+  (``g``) when NJM has no readable index file and the directory listing is
+  used instead. Both now give ``g.dat``, and so do ``get_filter_info`` and
+  the download error messages. Downloads are unchanged.
+- **SVO grids found only by probing FIDs** (when neither SSAP nor the
+  grid's index page lists its spectra) could miss spectra. Probing around
+  each FID found started 12 FIDs away from it, so a short run of spectra
+  beside it was never requested: FIDs 100-105 gave only 100. It now starts
+  with the FIDs next to it and stops, as before, after 20 misses in a row.
+  ``SVOSpectraGrabber.expand_window`` no longer has any effect.
+
 Version 0.5.0 (November 2026)
 ----------------------------
 

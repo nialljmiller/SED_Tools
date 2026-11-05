@@ -44,7 +44,7 @@ def _prompt_length(prompt: str, default_unit: str, unit_names: Tuple[str, ...], 
     """A number and optional unit typed at *prompt*; multiplied by *factor* when the unit is one of *unit_names*."""
     parts = input(prompt).strip().split()
     value = float(parts[0])
-    unit = parts[1].lower() if len(parts) > 1 else default_unit
+    unit = (parts[1] if len(parts) > 1 else default_unit).lower()
     return value * factor if unit in unit_names else value
 
 def prompt_distance_m() -> float:

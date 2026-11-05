@@ -167,7 +167,7 @@ def test_unreadable_index_falls_back_to_the_listing_with_a_warning(tmp_path, njm
                              "filters/Fac/Cam/Cam": 500, "filters/Fac/Cam/": '<a href="g.dat">g.dat</a>'})
     with caplog.at_level(logging.WARNING):
         assert grabber.discover_facilities() == ["Fac"]
-        assert grabber.discover_filters("Fac", "Cam") == ["g"]
+        assert grabber.discover_filters("Fac", "Cam") == ["g.dat"]  # as an index file lists it (it gave "g")
     assert "Cannot read NJM's index.json" in caplog.text
     assert "Cannot read NJM's index of Fac/Cam (500 for filters/Fac/Cam/Cam); listing its directory instead" in caplog.text
 

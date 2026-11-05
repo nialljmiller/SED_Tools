@@ -35,6 +35,8 @@ def offline(monkeypatch, tmp_path):
 
     monkeypatch.setattr(requests.Session, "send", refuse)
     monkeypatch.chdir(tmp_path)
+    # svo_regen_spectra_lookup without argument parsing rewrote every lookup table under it, even for --help
+    monkeypatch.setattr("sed_tools.cube.model.STELLAR_DIR_DEFAULT", tmp_path / "stellar_models")
 
 
 def answer(monkeypatch, *replies):
@@ -74,9 +76,8 @@ HELP = {
     "njm_filter_grabber": "Download filters from NJM mirror",
     "precompute_flux_cube": "Precompute flux cube for stellar spectral grids",
     "svo_filter_grabber": "Interactively browse the SVO Filter Profile Service",
+    "svo_regen_spectra_lookup": "Rewrite lookup_table.csv in every spectral grid folder from the headers of its spectra",
 }
-# svo_filter_grabber takes any other argument as its base directory, and svo_regen_spectra_lookup takes none.
-ARGPARSE = sorted(set(HELP) - {"svo_filter_grabber"})
 
 
 @pytest.mark.parametrize("module", sorted(HELP))
@@ -86,11 +87,19 @@ def test_help_prints_the_usage_and_exits_0(module, monkeypatch, capsys):
     assert out.lower().startswith("usage:") and HELP[module] in out
 
 
-@pytest.mark.parametrize("module", ARGPARSE)
+@pytest.mark.parametrize("module", sorted(HELP))
 def test_a_bad_argument_prints_the_usage_and_exits_2(module, monkeypatch, capsys):
     assert run_m(monkeypatch, module, "--no-such-option") == 2
     captured = capsys.readouterr()
     assert captured.out == "" and "usage:" in captured.err and "error:" in captured.err
+
+
+def test_svo_filter_grabber_ignores_arguments_after_the_folder_as_in_041(tmp_path, monkeypatch):
+    from sed_tools.filters import svo
+    seen = []
+    monkeypatch.setattr(svo, "run_interactive", seen.append)
+    assert svo.main([str(tmp_path), "extra"]) == 0
+    assert seen == [str(tmp_path)]
 
 
 # ----------------------------------------------------------------------
@@ -131,6 +140,9 @@ def test_precompute_flux_cube_asks_for_the_grid_and_the_output(tmp_path, monkeyp
     (tmp_path / "data" / "stellar_models" / "notes.txt").write_text("not a grid\n")
     answer(monkeypatch, "0")
     assert run_m(monkeypatch, "precompute_flux_cube") == "Invalid selection."
+    # Listed once (it was listed as ./data/stellar_models/<grid> and as data/stellar_models/<grid>)
+    menu = [line for line in capsys.readouterr().out.splitlines() if line[:1].isdigit()]
+    assert menu == [f"1. data/stellar_models/{KURUCZ.name}"]
     answer(monkeypatch, "1", "")  # the first grid listed, and the default output beside it
     assert run_m(monkeypatch, "precompute_flux_cube") == 0
     assert "No --model_dir provided. Discovering local model directories" in capsys.readouterr().out

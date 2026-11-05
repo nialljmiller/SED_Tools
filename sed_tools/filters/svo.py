@@ -467,24 +467,14 @@ def _browse_instruments(browser: SVOFilterBrowser, facility: Facility, instrumen
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
-    argv = list(argv or sys.argv[1:])
-    if argv and argv[0] in ("-h", "--help"):
-        print(
-            textwrap.dedent(
-                f"""
-                Usage: {os.path.basename(sys.argv[0])} [base_dir]
-
-                Interactively browse the SVO Filter Profile Service, choose a facility and
-                instrument, then download all filters for that instrument into
-                <base_dir>/<Facility>/<Instrument>/<Band>.dat.
-
-                If base_dir is not provided, the default is {DEFAULT_BASE_DIR}.
-                """
-            ).strip()
-        )
-        return 0
-
-    base_dir = argv[0] if argv else DEFAULT_BASE_DIR
+    import argparse
+    parser = argparse.ArgumentParser(
+        description="Interactively browse the SVO Filter Profile Service, choose a facility and instrument, then "
+                    "download all filters for that instrument into <base_dir>/<Facility>/<Instrument>/<Band>.dat.")
+    parser.add_argument("base_dir", nargs="*", default=[DEFAULT_BASE_DIR],
+                        help=f"If base_dir is not provided, the default is {DEFAULT_BASE_DIR}. "
+                             "Further arguments are ignored, as in 0.4.1.")
+    base_dir = parser.parse_args(list(argv or sys.argv[1:])).base_dir[0]
     try:
         run_interactive(base_dir)
         return 0
