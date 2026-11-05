@@ -621,10 +621,6 @@ class AtmosphereGrid:
         path.write_text(json.dumps(self.to_dict(), indent=2, sort_keys=True) + "\n", encoding="utf-8")
         return path
 
-    def files(self) -> List[str]:
-        """Every data file the site lists."""
-        return [str(e["file"]) for e in self.entries] + [str(e["file"]) for e in (self.unstated or [])]
-
     def find(self, spec: AtmosphereSpec) -> Optional[str]:
         """Look up exact observing conditions; return None when absent."""
         if spec.airmass is None:
