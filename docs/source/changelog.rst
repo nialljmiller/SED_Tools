@@ -1665,7 +1665,7 @@ New Modules
    SED's bolometric flux) is used when no ML model is available or the
    requested Teff falls outside the generator's training range.
 
-**``tests/audit_pipeline.py``**
+**``scripts/audit_pipeline.py``**
    Comprehensive pipeline audit script.  For every installed spectral grid, checks:
 
    - ``units_standardized = True`` header flag on raw files
