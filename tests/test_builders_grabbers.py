@@ -63,9 +63,13 @@ def _probing(tmp_path, monkeypatch, present, window, gap):
     return grabber, asked
 
 
-def test_probe_finds_a_contiguous_grid(tmp_path, monkeypatch):
-    grabber, _ = _probing(tmp_path, monkeypatch, set(range(1, 61)), window=12, gap=20)
-    assert grabber._bounded_probe("Kurucz") == set(range(1, 61))
+@pytest.mark.parametrize("present", [
+    set(range(1, 61)),
+    set(range(100, 106)),  # a short block beside its one probed FID (100): it used to give {100}
+])
+def test_probe_finds_a_contiguous_grid(tmp_path, monkeypatch, present):
+    grabber, _ = _probing(tmp_path, monkeypatch, present, window=12, gap=20)
+    assert grabber._bounded_probe("Kurucz") == present
 
 
 # -------------------------------------------------------------------- MAST and MSG

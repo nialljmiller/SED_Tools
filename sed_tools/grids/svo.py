@@ -55,7 +55,7 @@ class SVOSpectraGrabber:
         self.head_timeout    = 10          # seconds per HEAD
         self.dl_timeout      = 90          # seconds per spectrum download
         self.bruteforce_budget = 350
-        self.expand_window   = 12
+        self.expand_window   = 12          # unused since 0.5.1: expansion starts beside each hit
         self.expand_max_gap  = 20
         self.progress_every  = 50          # print progress every N completions
 
@@ -245,7 +245,7 @@ class SVOSpectraGrabber:
             misses = 0
             step = 1
             while misses < self.expand_max_gap:
-                fid = seed + direction * (self.expand_window + step - 1)
+                fid = seed + direction * step
                 step += 1
                 if fid <= 0:
                     misses += 1

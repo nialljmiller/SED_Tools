@@ -48,6 +48,12 @@ Fixed
   (``g``) when NJM has no readable index file and the directory listing is
   used instead. Both now give ``g.dat``, and so do ``get_filter_info`` and
   the download error messages. Downloads are unchanged.
+- **SVO grids found only by probing FIDs** (when neither SSAP nor the
+  grid's index page lists its spectra) could miss spectra. Probing around
+  each FID found started 12 FIDs away from it, so a short run of spectra
+  beside it was never requested: FIDs 100-105 gave only 100. It now starts
+  with the FIDs next to it and stops, as before, after 20 misses in a row.
+  ``SVOSpectraGrabber.expand_window`` no longer has any effect.
 
 Version 0.5.0 (November 2026)
 ----------------------------
